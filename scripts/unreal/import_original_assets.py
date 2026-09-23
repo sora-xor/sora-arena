@@ -80,9 +80,20 @@ if (bokken["name"] != "SM_Nyaagyu_DojoBokken"
 bokken_fbx = bokken_root / bokken["fbx"]
 if not bokken_fbx.is_file() or hashlib.sha256(bokken_fbx.read_bytes()).hexdigest() != bokken["fbx_sha256"]:
     raise RuntimeError("The original dojo bokken is missing or changed")
+arc_carbine = json.loads((bokken_root / "arc_carbine_manifest.json").read_text())
+if (arc_carbine["schema_version"] != 1
+        or arc_carbine["name"] != "SM_Nyaagyu_ArcCarbine"
+        or arc_carbine["generator"] != "scripts/art/create_arc_carbine.py"
+        or arc_carbine["fbx"] != arc_carbine["name"] + ".fbx"
+        or arc_carbine["unreal_asset"] != "/Game/Generated/Meshes/SM_Nyaagyu_ArcCarbine.SM_Nyaagyu_ArcCarbine"):
+    raise RuntimeError("The original Arc carbine runtime identity changed")
+arc_fbx = bokken_root / arc_carbine["fbx"]
+if not arc_fbx.is_file() or hashlib.sha256(arc_fbx.read_bytes()).hexdigest() != arc_carbine["fbx_sha256"]:
+    raise RuntimeError("The original Arc carbine is missing or changed")
 mesh_names = manifest["characters"] + manifest["weapons"] + [hero_katana["name"]]
 tasks = []
-for name, path in [(name, source / f"{name}.fbx") for name in mesh_names] + [(bokken["name"], bokken_fbx)]:
+for name, path in [(name, source / f"{name}.fbx") for name in mesh_names] + [
+        (bokken["name"], bokken_fbx), (arc_carbine["name"], arc_fbx)]:
     if not path.is_file():
         raise RuntimeError(f"Required original mesh is missing: {path}")
     task = unreal.AssetImportTask()
@@ -104,7 +115,7 @@ for name, path in [(name, source / f"{name}.fbx") for name in mesh_names] + [(bo
     task.options = options
     tasks.append(task)
 tools.import_asset_tasks(tasks)
-for name in mesh_names + [bokken["name"]]:
+for name in mesh_names + [bokken["name"], arc_carbine["name"]]:
     if not assets.does_asset_exist(f"/Game/Generated/Meshes/{name}"):
         raise RuntimeError(f"Unreal import did not create {name}")
 

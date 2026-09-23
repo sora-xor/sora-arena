@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_ArcCarbine",
+  "generator": "scripts/art/create_arc_carbine.py",
+  "generator_blender": "5.2.2 LTS",
+  "source_blend": "Nyaagyu_ArcCarbine.blend",
+  "fbx": "SM_Nyaagyu_ArcCarbine.fbx",
+  "preview": "Nyaagyu_ArcCarbine_Blender.png",
+  "unreal_asset": "/Game/Generated/Meshes/SM_Nyaagyu_ArcCarbine.SM_Nyaagyu_ArcCarbine",
+  "source_parts": 84,
+  "source_triangles": 12532,
+  "bounds_m": {
+    "min": [
+      -0.4295,
+      -0.0625,
+      -0.219
+    ],
+    "max": [
+      0.5275,
+      0.0625,
+      0.174
+    ]
+  },
+  "local_forward": "+X toward muzzle; +Z up",
+  "mesh_origin_m": [
+    0,
+    0,
+    0
+  ],
+  "grip_web_m": [
+    -0.11,
+    0,
+    -0.05
+  ],
+  "grip_palm_center_m": [
+    -0.11,
+    0,
+    -0.12
+  ],
+  "muzzle_center_m": [
+    0.526,
+    0,
+    0.026
+  ],
+  "license": "Original project-owned geometry and shaders; linked timber/patina texture maps CC0 Poly Haven. No purchased assets.",
+  "texture_dependency": "../../Environment/PolyHaven/manifest.json; project-relative links in .blend, no FBX texture paths",
+  "palette_asset_ids": [
+    "wood_planks_dirt",
+    "rusty_metal_02"
+  ],
+  "palette_manifest_sha256": "d21c351a0ca82165f885d9fc4cbcff652009fee0b9336ae9367b2ccd667cdd0b",
+  "units": "Blender meters; Unreal FBX import converts to centimeters",
+  "scope": "Visual standard weapon ID 1 only. No gameplay/stat changes. Blender review only; UE import, material fidelity and runtime frame rate unverified.",
+  "blend_sha256": "a31400a62eff0a8910b4bb1943e05200f416bdf6a8f3f1e6b2000ec0a5141bf4",
+  "fbx_sha256": "977937dfee0f67429700c7a39ae0e1f822e6bd8a4b18999c91d4dc26758144da",
+  "preview_sha256": "61483ce03c15a73073cd3fb4f7aafc45b652c5e501bef6508f71d6a32da4525c"
+}

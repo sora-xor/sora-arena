@@ -98,6 +98,33 @@ assert (bokken_root / bokken["fbx"]).read_bytes().startswith(b"Kaydara FBX Binar
 assert b"/Users/" not in (bokken_root / bokken["fbx"]).read_bytes()
 assert bokken["unreal_asset"] in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
 assert bokken["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
+arc = json.loads((bokken_root / "arc_carbine_manifest.json").read_text())
+assert arc["schema_version"] == 1 and arc["name"] == "SM_Nyaagyu_ArcCarbine"
+assert arc["generator"] == "scripts/art/create_arc_carbine.py"
+assert arc["fbx"] == arc["name"] + ".fbx"
+assert arc["unreal_asset"] == "/Game/Generated/Meshes/SM_Nyaagyu_ArcCarbine.SM_Nyaagyu_ArcCarbine"
+assert catalog["weapons"][1]["id"] == 1 and catalog["weapons"][1]["name_en"] == "Arc Carbine"
+assert catalog["weapons"][1]["special"] is False
+assert arc["mesh_origin_m"] == [0, 0, 0] and arc["local_forward"] == "+X toward muzzle; +Z up"
+assert arc["grip_web_m"] == [-.11, 0, -.05] and arc["grip_palm_center_m"] == [-.11, 0, -.12]
+assert 3000 < arc["source_triangles"] < 30000 and arc["source_parts"] >= 50
+assert .90 < arc["bounds_m"]["max"][0] - arc["bounds_m"]["min"][0] < 1.05
+assert -.23 < arc["bounds_m"]["min"][2] < -.20
+assert .5 < arc["muzzle_center_m"][0] < .54
+assert "Original project-owned geometry" in arc["license"] and "CC0 Poly Haven" in arc["license"]
+palette_root = content / "SourceArt/Environment/PolyHaven"
+assert hashlib.sha256((palette_root / "manifest.json").read_bytes()).hexdigest() == arc["palette_manifest_sha256"]
+assert arc["palette_asset_ids"] == ["wood_planks_dirt", "rusty_metal_02"]
+for name, digest in ((arc["source_blend"], "blend_sha256"),
+                     (arc["fbx"], "fbx_sha256"),
+                     (arc["preview"], "preview_sha256")):
+    path = bokken_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == arc[digest]
+arc_fbx = (bokken_root / arc["fbx"]).read_bytes()
+assert arc_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in arc_fbx
+assert arc["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
+assert arc["unreal_asset"] in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
 environment_root = content / "SourceArt/Environment/Original"
 environment = json.loads((environment_root / "manifest.json").read_text())
 assert environment["schema_version"] == 1
@@ -211,4 +238,4 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 32 FBX source assets including a dojo bokken and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 33 FBX source assets including a dojo bokken, Arc carbine and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
