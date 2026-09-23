@@ -468,6 +468,22 @@ the current asset count nor the engine feature flags constitute AAA
 photorealism. The exact 5.8.2, Windows/Nanite, Lumen coverage, 60 fps, and
 full-content release gates remain open.
 
+The next Mac diagnostic loaded 276 expected generated packages, cooked 898
+packages without reported warnings or errors, and staged an
+`org.sora.soraarena` Development app. The Nyaakoto skeletal reimport retained
+the authored vertex colors and three distance LODs; the repaired six-map
+grey/white fur shader compiled on METAL_SM5. Its [packaged body and face
+frames](visual-reviews/README.md) still fail the character art gate: the eyes,
+ears, throat seam, armor and fur silhouette remain stylized. A separate
+anatomical head variant also failed the profile review and was not integrated.
+The gate's round tapered posts improved the entrance silhouette, while the
+larger 4K path atlas reduced distant tiling but failed the close gameplay
+view because distinct stones still repeat and detail softened. The atlas is
+source-only; the main path binding and collision remain unchanged. The horse
+anatomy and measured-tack study has editable source and texture maps but is
+also source-only and still visibly stylized. No frame in this pass qualifies
+AAA photorealism or the exact UE 5.8.2 release path.
+
 ## Workstreams
 
 - Deterministic Rust combat/economics, replay, P2P evidence and Unreal C ABI.
