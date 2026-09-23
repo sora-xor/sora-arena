@@ -6,15 +6,15 @@
   "generator": "scripts/art/create_nyaagyu_hero_character.py",
   "validator": "scripts/art/validate_nyaagyu_hero_character.py",
   "source_blend": "Nyaagyu_HeroCharacter.blend",
-  "blend_sha256": "d43406c1645bfa64057383e6434956a46cf108bd9b52c2e8f8ba646e6095c015",
+  "blend_sha256": "c4bdc00177f723502dc007bc3196d7bb708eef457b387ce1354041a7e6d55c87",
   "fbx": "SM_Nyaagyu_HeroCharacter.fbx",
-  "fbx_sha256": "5977b0ab993c80d38d57e3b85017a1ef454143acc2b7beb37f51940eef5c9736",
+  "fbx_sha256": "cc8b155e87e55c5ecaff8d266e15a61a551d980504df42fa1948f2fe2a6ff3ed",
   "preview": "Nyaagyu_HeroCharacter_Blender.png",
-  "preview_sha256": "31c431cfb53be2298442450d131f35fd38cbc49bcc3dabdd9785b82544c71481",
+  "preview_sha256": "6daff5d27ef9607c94b7037d6da114cf3a46d94bad3a4c57cf6124eb01bf3150",
   "detail_preview": "Nyaagyu_HeroFace_Blender.png",
-  "detail_preview_sha256": "4d43760871337ae9f52f88a8eaed22eb48d9c69cfca9972d704e9fdbc9565e58",
+  "detail_preview_sha256": "a496fd696d444de9cffde70a8474e00a888032408ba4952fd067f6d756f8f166",
   "eye_macro": "EyeStudy/Nyaakoto_Eye_Macro_Blender.png",
-  "eye_macro_sha256": "286a3aa876728fe9806c25dedf1dd4cf37f58544ea696e2ed22f7403976e04a2",
+  "eye_macro_sha256": "52162924719be886be14e2be2c400ddc0289fac7145f3f31794d674fdb43378d",
   "generated_textures": [
     {
       "path": "EyeStudy/T_Nyaakoto_Iris_Albedo.png",
@@ -22,8 +22,8 @@
     }
   ],
   "unreal_asset": "/Game/ArtReview/Characters/SM_Nyaagyu_HeroCharacter.SM_Nyaagyu_HeroCharacter",
-  "source_parts": 393,
-  "source_triangles": 111487,
+  "source_parts": 421,
+  "source_triangles": 124803,
   "bounds_m": {
     "min": [
       -0.6542,

@@ -71,7 +71,8 @@ triangles=sum(len(p.vertices)-2 for o in parts for p in o.data.polygons)
 assert triangles==manifest["source_triangles"] and 10000<triangles<200000
 assert len([o for o in parts if re.fullmatch(r"Finger_-?1_[0-3]",o.name)])==8
 assert len([o for o in parts if o.name.startswith("Toe_")])==8
-assert len([o for o in parts if o.name.startswith("Whisker_")])==8
+assert len([o for o in parts if o.name.startswith("Whisker_")])==16
+assert len([o for o in parts if o.name.startswith("Muzzle_follicle_")])==24
 assert manifest["sora_kamon_placements"]==["chest","waist","sode_-1","sode_1"]
 for placement in manifest["sora_kamon_placements"]:
     paths=[o for o in parts if o.name.startswith(f"UserSupplied_SORAKamon_{placement}_Path_")]
@@ -83,6 +84,15 @@ for side in (-1,1):
     iris=bpy.data.objects[f"Eye_iris_{side}"]
     assert iris.data.uv_layers.get("Iris_Pigment_UV") is not None
     assert len(iris.data.polygons)>800
+    sclera=bpy.data.objects[f"Eye_scleral_crescent_{side}"]
+    assert sclera.data.uv_layers.get("Iris_Pigment_UV") is not None
+    assert len(sclera.data.polygons)>300
+    pad=bpy.data.objects[f"Muzzle_pad_{side}"]
+    assert pad.data.uv_layers.get("Muzzle_Fur_UV") is not None
+    assert len(pad.data.polygons)==256
+    assert len(bpy.data.objects[f"Muzzle_mesh_fur_{side}"].data.polygons)==1150
+    assert len(bpy.data.objects[f"Eye_lower_lid_shelf_{side}"].data.polygons)==16
+    assert bpy.data.objects.get(f"Triangular_nose_naris_{side}") is not None
     assert bpy.data.objects.get(f"Corneal_glint_{side}") is not None
     assert bpy.data.objects.get(f"Eye_upper_tarsal_margin_{side}") is not None
 assert bpy.data.materials["M_Hero_EyeGlint"].node_tree.nodes.get("Principled BSDF").inputs["Transmission Weight"].default_value==0.0

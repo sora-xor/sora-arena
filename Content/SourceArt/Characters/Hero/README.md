@@ -16,7 +16,8 @@ left unchanged. The earlier invented ray motif on the waist was removed.
 `manifest.json` pins every output and the insignia source by SHA-256.
 
 The eye study now has a shallow orbital seat, UV-mapped iris discs, narrow
-vertical pupils, curved eyelid margins and a small modeled catchlight. Its original
+vertical pupils, curved eyelid margins, lower lid shelves, a narrow ivory
+scleral crescent and a small modeled catchlight. Its original
 1024 px blue-grey radial pigment map is in `EyeStudy/` and packed into the
 editable `.blend`. The close-up Blender review is
 `EyeStudy/Nyaakoto_Eye_Macro_Blender.png`. This replaces the previous flat blue
@@ -24,9 +25,14 @@ eye spheres without adding material slots to the runtime's 23-slot contract.
 `scripts/unreal/import_nyaakoto_pbr.py` verifies the atlas hash and binds it
 as `MI_Nyaakoto_BlueEye.AlbedoMap`; the eye slot uses a neutral tint so its
 painted pigment survives Unreal's material multiplication. The other 22
-material identities and both authored skeletal LODs stay unchanged.
-It improves iris readability, but the skull, lids, fur and muzzle remain
-stylized. The review render does not establish photoreal quality or in-game
+material identities and both authored skeletal LODs stay unchanged. The
+current face pass adds UV-mapped muzzle pads, a smaller nose with nostrils,
+a philtrum, tapered whiskers with follicles, and short muzzle fur cards. The
+grey fur tint is neutral to retain the authored albedo; the pale eye trim is
+cool ivory. Side and eye close-ups are in `Nyaagyu_HeroFace_Blender.png` and
+`EyeStudy/Nyaakoto_Eye_Macro_Blender.png`. The cheek-to-muzzle transition,
+ears, fur direction, eye depth, and exposed neck remain visibly stylized.
+These review renders do not establish photoreal quality or in-game
 appearance; the material and deformation need Unreal and animation review. A
 full transparent cornea needs a separate UE material path before it can be
 added without obscuring the iris in the current opaque runtime master.
@@ -46,12 +52,15 @@ blender -b Content/SourceArt/Characters/Hero/Nyaagyu_HeroCharacter.blend \
   --python scripts/art/validate_nyaagyu_hero_character.py
 blender -b --factory-startup --python scripts/art/rig_nyaakoto_runtime.py
 blender -b --factory-startup --python scripts/art/validate_nyaakoto_runtime_skin.py
+blender -b --factory-startup --python scripts/art/generate_nyaakoto_lods.py
+blender -b --factory-startup --python scripts/art/validate_nyaakoto_lods.py
+python3 scripts/art/validate_nyaakoto_pbr.py
 python3 scripts/unreal/validate_content.py
 ```
 
 The original `Nyaagyu_HeroCharacter.blend` stays an unrigged, editable design
 source and its static FBX remains in `/Game/ArtReview/Characters`. The separate
-`Nyaakoto_RuntimeSkin.blend` binds its 393 authored parts to the established
+`Nyaakoto_RuntimeSkin.blend` binds its 421 authored parts to the established
 20-bone samurai skeleton. Its `SK_NyaagyuSamurai.fbx` and
 `A_NyaagyuSamurai_Walk.fbx` replace the orange prototype's runtime exports
 under `/Game/Generated`; armor, yumi, arrows, sheathed katana and exact kamon

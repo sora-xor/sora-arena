@@ -93,7 +93,7 @@ EAR_INNER = mat("M_Hero_EarSkin", (.40,.17,.17), rough=.82, noise=83, bump=.0000
 NOSE = mat("M_Hero_RoseNose", (.42,.17,.18), rough=.47)
 EYE = mat("M_Hero_BlueEye", (.16,.31,.43), rough=.36, coat=.12)
 EYE_DARK = mat("M_Hero_EyePupil", (.008,.012,.013), rough=.12, coat=.38)
-EYE_WHITE = mat("M_Hero_EyeGlint", (.83,.78,.61), rough=.15)
+EYE_WHITE = mat("M_Hero_EyeGlint", (.78,.83,.86), rough=.15)
 INDIGO = mat("M_Hero_IndigoSilk", (.016,.023,.045), rough=.80, noise=185, bump=.00013)
 INDIGO_LIGHT = mat("M_Hero_FoldedIndigo", (.030,.041,.068), rough=.84, noise=190, bump=.00013)
 KIMONO = mat("M_Hero_UndyedLinen", (.42,.37,.31), rough=.91, noise=185, bump=.00017)
@@ -306,6 +306,129 @@ def eye_lid(name, sign, upper, material, radius):
     return line(name, points, radius, material, 3)
 
 
+def lower_lid_shelf(sign):
+    """A narrow furred lower lid joins the globe to the cheek instead of a wire rim."""
+    origin, horizontal, vertical, normal = eye_basis(sign)
+    vertices = []
+    faces = []
+    for index in range(17):
+        u = -1 + index / 8
+        arch = max(0, 1 - u * u) ** .72
+        rim_z = -.012 * arch + .0015 * u
+        vertices.extend((
+            origin + horizontal * (.026 * u) + vertical * rim_z
+            + normal * (.0078 - .002 * u * u),
+            origin + horizontal * (.029 * u) + vertical * (rim_z - .0065 * arch - .002)
+            + normal * (.0025 - .001 * u * u),
+        ))
+        if index:
+            a = (index - 1) * 2
+            faces.append((a, a + 1, a + 3, a + 2))
+    return smooth(surface(f"Eye_lower_lid_shelf_{sign}", vertices, faces, FUR))
+
+
+def muzzle_pad(sign):
+    """Loft a tapered mystacial pad that grows out of the cheek and cups the lip."""
+    profiles = (
+        # x, lateral center, z, lateral radius, vertical radius
+        (.160, .069, 1.561, .010, .018),
+        (.179, .063, 1.559, .032, .026),
+        (.201, .055, 1.555, .044, .031),
+        (.227, .047, 1.552, .041, .031),
+        (.249, .040, 1.554, .031, .027),
+        (.265, .031, 1.559, .019, .019),
+        (.269, .023, 1.565, .002, .004),
+    )
+    sides = 32
+    vertices = []
+    faces = []
+    for x, lateral, z, width, height in profiles:
+        for index in range(sides):
+            angle = math.tau * index / sides
+            vertices.append((x, sign * (lateral + width * math.cos(angle)),
+                             z + height * math.sin(angle)))
+    for ring in range(len(profiles) - 1):
+        for index in range(sides):
+            a = ring * sides + index
+            b = ring * sides + (index + 1) % sides
+            c = (ring + 1) * sides + (index + 1) % sides
+            d = (ring + 1) * sides + index
+            faces.append((d, c, b, a) if sign > 0 else (a, b, c, d))
+    rear = len(vertices)
+    vertices.append((profiles[0][0], sign * profiles[0][1], profiles[0][2]))
+    front = len(vertices)
+    vertices.append((profiles[-1][0] + .001, sign * profiles[-1][1], profiles[-1][2]))
+    last = (len(profiles) - 1) * sides
+    for index in range(sides):
+        following = (index + 1) % sides
+        faces.append((rear, following, index) if sign > 0 else
+                     (rear, index, following))
+        faces.append((front, last + index, last + following) if sign > 0 else
+                     (front, last + following, last + index))
+    pad = smooth(surface(f"Muzzle_pad_{sign}", vertices, faces, FUR_LIGHT))
+    uv = pad.data.uv_layers.new(name="Muzzle_Fur_UV")
+    for loop in pad.data.loops:
+        point = pad.data.vertices[loop.vertex_index].co
+        uv.data[loop.index].uv = ((point.x - .15) * 5,
+                                  (point.z - 1.50) * 5 + abs(point.y) * 1.5)
+    return pad
+
+
+def muzzle_fur_cards(name, pad, count, seed, sign):
+    """Place fine, short fibers on the actual pad surface, not an oval proxy."""
+    rng = random.Random(seed)
+    pad.data.calc_loop_triangles()
+    triangles = [triangle for triangle in pad.data.loop_triangles
+                 if triangle.area > 1e-10 and triangle.normal.x > -.3]
+    weights = [triangle.area for triangle in triangles]
+    vertices = []
+    faces = []
+    for triangle in rng.choices(triangles, weights=weights, k=count):
+        a, b, c = (pad.data.vertices[index].co for index in triangle.vertices)
+        u, v = rng.random(), rng.random()
+        if u + v > 1:
+            u, v = 1-u, 1-v
+        normal = triangle.normal.normalized()
+        root = a + (b-a)*u + (c-a)*v + normal*.00015
+        growth = (normal*.35 + Vector((-.16, sign*.17, -.76))).normalized()
+        width_axis = normal.cross(growth)
+        if width_axis.length < .01:
+            width_axis = Vector((0, 1, 0))
+        width_axis.normalize()
+        half_width = rng.uniform(.00008, .00020)
+        length = rng.uniform(.0018, .0045)
+        index = len(vertices)
+        vertices.extend((root-width_axis*half_width,
+                         root+width_axis*half_width, root+growth*length))
+        faces.append((index,index+1,index+2))
+    return surface(name, vertices, faces, FUR_LIGHT)
+
+
+def tapered_whisker(name, points, material, width=.00029):
+    """A curved, narrowing vibrissa with a visibly rooted but fine tip."""
+    curve = bpy.data.curves.new(name, "CURVE")
+    curve.dimensions = "3D"
+    curve.resolution_u = 12
+    curve.bevel_depth = width
+    curve.bevel_resolution = 2
+    spline = curve.splines.new("BEZIER")
+    spline.bezier_points.add(len(points) - 1)
+    for control, point, radius in zip(spline.bezier_points, points,
+                                      (1.0, .80, .42, .045)):
+        control.co = point
+        control.handle_left_type = "AUTO"
+        control.handle_right_type = "AUTO"
+        control.radius = radius
+    whisker = bpy.data.objects.new(name, curve)
+    parts.objects.link(whisker)
+    curve.materials.append(material)
+    bpy.ops.object.select_all(action="DESELECT")
+    whisker.select_set(True)
+    bpy.context.view_layer.objects.active = whisker
+    bpy.ops.object.convert(target="MESH")
+    return smooth(bpy.context.object)
+
+
 def ring_loft(name, rings, material, sides=32, pleats=0):
     vertices=[]; faces=[]
     for z, x0, rx, ry in rings:
@@ -366,7 +489,7 @@ def ear(sign):
         for edge in range(5):
             faces.append((a+edge,a+(edge+1)%5,b+(edge+1)%5,b+edge))
     faces.extend(((0,1,2,3,4),(20,24,23,22,21)))
-    outer=smooth(surface(f"Ear_outer_{sign}",vertices,faces,FUR_DARK))
+    outer=smooth(surface(f"Ear_outer_{sign}",vertices,faces,FUR))
     inner=[(.090,y-sign*.049,1.692),(.076,y,1.697),
            (.090,y+sign*.049,1.692),(.075,y+sign*.049,1.754),
            (.053,y,1.814),(.075,y-sign*.049,1.754)]
@@ -505,12 +628,17 @@ for vertex in skull.data.vertices:
     p.y *= 1+.105*cheek-.11*max(0,-p.z/.19)
     p.x += .008*math.exp(-((p.z-.060)/.042)**2)
     p.x -= .015*max(0,-p.z/.19)
+    # Carry the lower face forward into the whisker-pad roots. This gives the
+    # pads a continuous zygomatic-to-lip plane instead of two pasted-on balls.
+    muzzle_root=math.exp(-((p.z+.091)/.054)**2-((abs(p.y)-.050)/.077)**2)
+    p.x += .018*muzzle_root*max(0,min(1,(p.x-.07)/.10))
     # Seat each globe into a shallow orbital depression in the continuous head
     # mass; the dark tarsal margins below will cover the remaining join.
     for eye_sign in (-1, 1):
         orbital = math.exp(-(((p.y-eye_sign*.084)/.041)**2
                              + ((p.z-.030)/.029)**2)*1.4)
         p.x -= .008*orbital*max(0,min(1,(p.x-.08)/.10))
+skull.data.update()
 def tabby_fiber_patches():
     """Layer charcoal fibers along the skull, avoiding blocky polygon markings."""
     rng=random.Random(1897)
@@ -548,15 +676,20 @@ def tabby_fiber_patches():
 tabby_fiber_patches()
 short_fur_cards("Head_short_mesh_fur",(.037,0,1.642),(.188,.198,.190),FUR,7600,781)
 short_fur_cards("Head_face_mesh_fur",(.037,0,1.642),(.188,.198,.190),FUR,9200,973,False)
-sphere("Lower_jaw",(.177,0,1.532),(.070,.086,.048),FUR_LIGHT,40,24)
+sphere("Lower_jaw",(.166,0,1.522),(.074,.079,.035),FUR_LIGHT,48,28)
 for sign in (-1,1):
     ear(sign)
     sphere(f"Cheek_ruff_{sign}",(.073,sign*.142,1.572),(.069,.051,.064),FUR_LIGHT,36,24)
     short_fur_cards(f"Cheek_mesh_fur_{sign}",(.073,sign*.142,1.572),(.070,.054,.068),FUR_LIGHT,1300,sign+234,False)
-    # The white muzzle is a shallow paired pad, with the bridge and jaw tucked
-    # behind it.  Individual follicles and divergent whiskers carry the edge.
-    sphere(f"Muzzle_pad_{sign}",(.215,sign*.039,1.560),(.044,.048,.028),FUR_LIGHT,40,24)
+    # Paired lip/whisker pads emerge from the cheek, narrowing to the nose.
+    # Their sockets and strands form irregular rows rather than painted dots.
+    pad = muzzle_pad(sign)
+    muzzle_fur_cards(f"Muzzle_mesh_fur_{sign}", pad, 1150, 791+sign, sign)
     sphere(f"Eye_socket_{sign}",(.204,sign*.084,1.672),(.003,.026,.017),EYE_DARK,56,36)
+    # Keep the sclera as a narrow, partly covered crescent at the canthus.
+    # A bright full circle would turn the feline eye into a cartoon human eye.
+    eye_patch(f"Eye_scleral_crescent_{sign}",sign,.0245,.0155,.0071,.0007,
+              EYE_WHITE,rings=4,segments=80)
     eye_patch(f"Eye_iris_{sign}",sign,.022,.015,.008,.0015,EYE)
     eye_patch(f"Eye_vertical_pupil_{sign}",sign,.0031,.011,.010,.001,EYE_DARK,6,48)
     # The current UE master is opaque. Keep this a small highlight until a
@@ -565,36 +698,50 @@ for sign in (-1,1):
            (.001,.002,.0025),EYE_WHITE,12,8)
     eye_lid(f"Eye_upper_tarsal_margin_{sign}",sign,True,FUR_DARK,.00175)
     eye_lid(f"Eye_lower_tarsal_margin_{sign}",sign,False,FUR_DARK,.0014)
+    lower_lid_shelf(sign)
     eye_lid(f"Eye_upper_wetline_{sign}",sign,True,EYE_WHITE,.00042)
     sphere(f"Eye_lacrimal_corner_{sign}",(.211,sign*.056,1.670),
            (.0025,.0032,.0026),EAR_INNER,16,12)
     line(f"Angular_brow_{sign}",[(.174,sign*.044,1.724),(.184,sign*.086,1.729),
                                   (.168,sign*.127,1.716)],.0014,FUR_DARK,2)
-    for dot in range(5):
-        row=dot//3;col=dot%3
-        sphere(f"Muzzle_follicle_{sign}_{dot}",
-               (.253-row*.007,sign*(.033+col*.012),1.562-row*.010),
-               (.0014,.0015,.0014),FUR_DARK,8,6)
-    for w in range(4):
-        line(f"Whisker_{sign}_{w}",[(.251,sign*.048,1.567+w*.004),
-             (.289,sign*.154,1.572+(w-2)*.013),
-             (.272,sign*.300,1.566+(w-2)*.031)],.00032,FUR_LIGHT,2)
+    whisker_roots = []
+    for row in range(3):
+        for col in range(4):
+            x = .255 - .006 * row - .009 * col
+            y = .034 + .015 * col + .002 * (row % 2)
+            z = 1.573 - .014 * row + .002 * (col % 2)
+            sphere(f"Muzzle_follicle_{sign}_{row}_{col}",
+                   (x,sign*y,z),(.0010,.0013,.0011),FUR_DARK,10,8)
+            whisker_roots.append((row,col,x,y,z))
+    long_roots = [whisker_roots[index] for index in (0,1,2,4,5,6,8,9)]
+    for whisker,(row,col,x,y,z) in enumerate(long_roots):
+        lift = (.028, .021, .012, .006, -.002, -.014, -.026, -.038)[whisker]
+        spread = .251 + .015 * (col % 3) + .009 * row
+        tapered_whisker(f"Whisker_{sign}_{whisker}",(
+            (x, sign*y, z),
+            (x-.015, sign*(y+.047), z+lift*.21),
+            (.132-.011*row, sign*(y+.145), z+lift*.70),
+            (.070-.010*row, sign*spread, z+lift)),FUR_LIGHT)
     for whisker in range(42):
         rng=random.Random(240+sign*100+whisker)
         a=rng.uniform(-.55,.55)
         y=sign*(.151+rng.uniform(-.017,.017))
         z=1.55+rng.uniform(-.049,.055)
         line(f"Guard_hair_{sign}_{whisker}",[(.075,y,z),(.040,y+sign*.033,z+a*.027)],.00035,FUR_LIGHT,1)
-sphere("Soft_nose_bridge",(.195,0,1.612),(.045,.043,.038),FUR)
-sphere("White_nose_blaze",(.230,0,1.590),(.016,.024,.025),FUR_LIGHT,32,20)
-# A softly triangular nose with a central philtrum replaces the round button.
-nose=sphere("Triangular_nose",(.265,0,1.580),(.009,.025,.012),NOSE,32,20)
+# A rounded, hairless nasal planum has a broad dorsal edge, tapering ventral
+# tip and two separate nares. A grooved philtrum reaches the split upper lip.
+nose=sphere("Triangular_nose",(.276,0,1.579),(.009,.022,.012),NOSE,48,32)
 for vertex in nose.data.vertices:
-    if vertex.co.z<0:
-        vertex.co.y*=.48+.52*(vertex.co.z+.012)/.012
-line("Philtrum",[(.274,0,1.575),(.264,0,1.541)],.0011,FUR_DARK)
-line("Mouth_right",[(.264,0,1.541),(.252,.035,1.536)],.0009,FUR_DARK)
-line("Mouth_left",[(.264,0,1.541),(.252,-.035,1.536)],.0009,FUR_DARK)
+    height = max(0,min(1,(vertex.co.z+.012)/.024))
+    vertex.co.y *= .33+.67*height**.8
+    vertex.co.x += .002*(1-height)
+for sign in (-1,1):
+    sphere(f"Triangular_nose_naris_{sign}",(.284,sign*.011,1.578),
+           (.0007,.0025,.0018),FUR_DARK,16,10)
+line("Philtrum",[(.285,0,1.566),(.281,0,1.551),(.274,0,1.538)],.00065,FUR_DARK)
+for sign in (-1,1):
+    line(f"Mouth_upper_lip_{sign}",[(.274,0,1.538),(.271,sign*.017,1.532),
+         (.254,sign*.037,1.535),(.228,sign*.054,1.544)],.00055,FUR_DARK)
 
 # No helmet or headband hides the upright ears and distinctive tabby face in
 # the user's Nyaakoto reference. The asymmetric small crown stripes remain fur.
