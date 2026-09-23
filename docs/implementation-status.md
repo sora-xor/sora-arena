@@ -114,6 +114,12 @@ target. See [native integration](iroha-integration.md) for exact scope and evide
 The compiled monolithic hit layout independently fails the current 4 MiB proof
 limit before proof generation: canonical trace openings alone require about
 43 MB at two players/three walls and 126 MB at twelve players/four walls.
+[A narrower one-axis geometry relation](iroha-integration.md#measured-native-proof-research)
+has generated a 3,847,520-byte native proof below that cap, and an independent
+saved-proof verifier accepted it and rejected eleven changes. The original
+combined run remains marked invalid because its negative fixture used an
+out-of-range Boolean; a corrected full reprove has not run. This proves neither
+a complete 3D hit nor a kill or settlement.
 [Proof feasibility](proof/arena-feasibility.md) records the measurements and
 the staged-composition requirement. This is a failed gate for that layout, not
 a reduction of the agreed player count or proof coverage.

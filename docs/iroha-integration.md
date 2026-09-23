@@ -43,6 +43,21 @@ are under `iroha-arena/target/arena-damage-stark-research/`; its reproducible
 harness and scope are documented in
 `iroha-arena/crates/iroha_core/src/execution_proofs/ARENA_DAMAGE_AIR.md`.
 
+A separate research relation composes both endpoints of **one** AABB axis,
+ordered bounds, the parallel-ray gate, and near/far selection in 1,274 AIR
+columns and 1,410 constraints. Its 28 focused equation cases pass. A native
+3,847,520-byte proof (SHA-256
+`aab951c703519882390429ccf4b54efcd1c47c7ae8ed1a790c2348cb61f2bf41`)
+was generated in 431,299 ms and accepted by the native verifier in 18,887 ms;
+peak prover RSS was 1,074,266,112 bytes. A verifier-only run against the saved
+proof and archived, hash-matched proving sources accepted it in 19,017 ms and
+rejected eleven altered statements or malformed proofs. The original combined
+run is marked **invalid** because a negative fixture supplied out-of-range
+Boolean `hit=2`; that fixture has been corrected, but no full reprove has run.
+This is evidence for one axis only, not a 3D intersection, hit, kill, payout,
+match proof, or registered production profile. The exact record is in
+`iroha-arena/crates/iroha_core/src/execution_proofs/ARENA_GEOMETRY_AIR.md`.
+
 ## Native wallet bridge
 
 The isolated upstream bridge adds `connect_norito_native_transaction_scaffold_build_v1` in `crates/connect_norito_bridge/include/connect_norito_bridge.h`. It accepts a UTF-8 JSON object with exactly:
