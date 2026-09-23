@@ -524,6 +524,16 @@ too regular, carried weapon pieces intersect the shell, and the surrounding
 body remains stylized. It is also source-only. Neither study is a photoreal
 character upgrade or evidence of a shippable animated rig.
 
+The [first-person paw/grip source study](../Content/SourceArt/Characters/NyaakotoFirstPersonPaws/README.md)
+adds anatomically separate digits/pads, modeled kote plates, authored pad PBR
+maps, and katana/yumi contact poses. Grip radii, UVs, source hashes and FBX
+round trips pass. Its fixed first-person renders still read as smooth gloves
+and simplified sleeves, without driven draw or sword animation, so runtime
+hands and weapon bindings were not changed. A [free realistic-cat base survey](art-research/nyaakoto-realistic-cat-base-survey.md)
+found no no-account model that met the photoreal hero and open-source licensing
+gate; the strongest realistic quadruped candidate has account/restricted raw
+asset terms and cannot simply replace the biped hero rig.
+
 ## Workstreams
 
 - Deterministic Rust combat/economics, replay, P2P evidence and Unreal C ABI.
