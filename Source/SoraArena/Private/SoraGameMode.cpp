@@ -442,7 +442,9 @@ FString ASoraGameMode::ObjectiveText() const
         FString Next=TEXT("東の鳥居へ");
         for(int32 I=0;I<Chapter.Sites.Num();++I)
             if((WorldBuilder->ActivatedMask()&(1<<I))==0) { Next=Chapter.Sites[I].Name; break; }
-        return FString::Printf(ChapterId==0?TEXT("%s  |  稽古場 %d / 3  |  立合い %d / %d"):TEXT("%s  |  拠点 %d / 3  |  侵略者 %d / %d"),*Next,WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
+        if(ChapterId==0)
+            return FString::Printf(TEXT("%s  |  稽古場 %d / 3  |  立合い %d / %d"),*Next,WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
+        return FString::Printf(TEXT("%s  |  拠点 %d / 3  |  侵略者 %d / %d"),*Next,WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
     }
     return FString::Printf(TEXT("生産の復旧 %d / 3    |    侵略者 %d / %d    |    出口：東の鳥居"),WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
 }

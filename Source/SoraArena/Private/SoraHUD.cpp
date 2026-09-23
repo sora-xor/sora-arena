@@ -24,7 +24,7 @@ void ASoraHUD::Label(const FString& T,float X,float Y,float S,FLinearColor C)
         JapaneseFont->FontCacheType=EFontCacheType::Runtime;
         JapaneseFont->LegacyFontSize=28;
         JapaneseFont->LegacyFontName=FName(TEXT("Regular"));
-        JapaneseFont->CompositeFont=FCompositeFont(FName(TEXT("Regular")),FPaths::ProjectContentDir()/TEXT("SourceArt/Fonts/NotoSansCJKjp-Regular.otf"),EFontHinting::Default,EFontLoadingPolicy::LazyLoad);
+        JapaneseFont->GetMutableInternalCompositeFont()=FCompositeFont(FName(TEXT("Regular")),FPaths::ProjectContentDir()/TEXT("SourceArt/Fonts/NotoSansCJKjp-Regular.otf"),EFontHinting::Default,EFontLoadingPolicy::LazyLoad);
     }
     DrawText(T,C,X,Y,JapaneseFont,S,false);
 }
