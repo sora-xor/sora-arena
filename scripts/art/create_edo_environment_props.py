@@ -240,6 +240,71 @@ def torii_lintel(name, half_width, bottom_z, height, depth, mat):
     return obj
 
 
+def torii_post(side):
+    """Build a gently tapered timber post with a subtle inward crown."""
+    rings = (0.43, 0.55, 0.95, 1.45, 2.15, 2.9, 3.65, 4.35, 4.84)
+    sides = 40
+    vertices = []
+    for z in rings:
+        t = (z - rings[0]) / (rings[-1] - rings[0])
+        center_x = side * (2.35 - .043 * t)
+        for index in range(sides):
+            angle = math.tau * index / sides
+            # A hewn timber is never a mathematically perfect lathed cylinder.
+            radius = (.230 - .031 * t) * (1 + .009 * math.sin(5 * angle + z * 1.7)
+                                            + .004 * math.sin(13 * angle - z * 2.1))
+            vertices.append((center_x + radius * math.cos(angle),
+                             radius * math.sin(angle), z))
+    faces = []
+    for ring in range(len(rings) - 1):
+        for index in range(sides):
+            next_index = (index + 1) % sides
+            faces.append((ring*sides+index, ring*sides+next_index,
+                          (ring+1)*sides+next_index, (ring+1)*sides+index))
+    faces.append(tuple(reversed(range(sides))))
+    faces.append(tuple((len(rings)-1)*sides+i for i in range(sides)))
+    mesh = bpy.data.meshes.new(f"Torii_Post_{side}_mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(f"Torii_Post_{side}", mesh)
+    active_collection.objects.link(obj)
+    mesh.materials.append(LACQUER)
+    for face in mesh.polygons[:-2]:
+        face.use_smooth = True
+    return obj
+
+
+def torii_worn_lacquer(side, name, z0, z1, angle_center, angle_width):
+    """Expose an irregular patch of underlying timber on the approach face."""
+    columns, rows = 8, 3
+    vertices = []
+    for row in range(rows):
+        for column in range(columns + 1):
+            u = column / columns
+            angle = angle_center + (u - .5) * angle_width
+            saw = .026 * math.sin((column + 1) * 2.47 + side * .7)
+            z = (z0 + saw if row == 0 else
+                 z1 + .017 * math.sin(column * 3.13) if row == rows - 1 else
+                 (z0 + z1) * .5 + .014 * math.sin(column * 1.81))
+            t = (z - .43) / 4.41
+            center_x = side * (2.35 - .043 * t)
+            radius = (.230 - .031*t) * 1.018
+            vertices.append((center_x + radius * math.cos(angle),
+                             radius * math.sin(angle), z))
+    faces = []
+    for row in range(rows - 1):
+        for column in range(columns):
+            a = row * (columns+1) + column
+            faces.append((a, a+1, a+columns+2, a+columns+1))
+    mesh = bpy.data.meshes.new(name + "_mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    active_collection.objects.link(obj)
+    mesh.materials.append(TIMBER)
+    return obj
+
+
 active_collection = ASSETS["SM_Edo_LanternPost"]
 # A 3.6 m street post, socketed into stone, with a hung four-panel lantern.
 box("Stone_Footing", (0, 0, .14), (.42, .42, .28), STONE, .018)
@@ -275,10 +340,19 @@ active_collection = ASSETS["SM_Nyaagyu_ToriiGate"]
 for side in (-1, 1):
     x = side * 2.35
     box(f"Torii_StoneBase_{side}", (x, 0, .22), (.55, .53, .44), STONE, .02)
-    box(f"Torii_Post_{side}", (x, 0, 2.55), (.38, .36, 4.58), LACQUER, .02)
+    torii_post(side)
     for z in (.46, 3.75, 4.78):
-        box(f"Torii_AccentedCollar_{side}_{z}", (x, 0, z), (.43, .40, .035), AGED_IRON, .005)
-    box(f"Torii_PostCap_{side}", (x, 0, 4.9), (.44, .41, .10), BRASS, .006)
+        crown = side * (2.35 - .043 * max(0, (z-.43)/4.41))
+        cylinder(f"Torii_AccentedCollar_{side}_{z}", (crown, 0, z),
+                 .251 if z < 1 else .222, .035, AGED_IRON, 48)
+    cylinder(f"Torii_PostCap_{side}", (side*2.307, 0, 4.89), .224,
+             .10, BRASS, 48)
+    torii_worn_lacquer(side, f"Torii_ExposedTimber_Foot_{side}",
+                       .64, .85, -math.pi/2, .52)
+    torii_worn_lacquer(side, f"Torii_ExposedTimber_Mid_{side}",
+                       2.12, 2.25, -math.pi/2-.28, .36)
+    torii_worn_lacquer(side, f"Torii_ExposedTimber_Upper_{side}",
+                       3.44, 3.54, -math.pi/2+.37, .26)
 torii_lintel("Curved_Kasagi", 2.88, 4.94, .36, .58, LACQUER)
 torii_lintel("Kasagi_IronCrown", 2.96, 5.31, .055, .61, AGED_IRON)
 box("Shimaki_Underbeam", (0, 0, 4.81), (5.15, .40, .14), LACQUER, .018)

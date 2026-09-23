@@ -17,3 +17,14 @@ blender -b Content/SourceArt/Environment/Original/Edo_Alien_Props.blend \
 These are source meshes and Blender review renders. The generated FBX files
 retain material slots and authored UCX collision proxies; they do not establish
 photoreal material quality or Unreal 5.8.2 rendering performance.
+
+The gate now has tapered, gently inward-leaning round timber posts instead of
+square blocks. Each post has a deliberately irregular hewn profile, separate
+aged-iron collars and brass cap, and three small areas of exposed timber under
+the vermilion lacquer. The editable gate has 30 parts and the FBX render mesh
+has 17,800 source triangles; its three UCX proxies and exact SORA SVG relief
+remain unchanged. A narrow UE 5.8.3 Mac diagnostic reimport retained all five
+material zones and cooked without shader errors. The Blender group render is
+a source inspection only. Eye-height gameplay comparison and exact UE 5.8.2 /
+Windows performance gates are still required before calling this visual pass
+finished.
