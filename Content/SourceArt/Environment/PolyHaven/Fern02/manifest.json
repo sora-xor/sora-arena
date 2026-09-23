@@ -10,11 +10,11 @@
   },
   "generator": "scripts/art/create_nyaagyu_fern_shoulder.py",
   "source_blend": "NyaagyuFern02_ShoulderStudy.blend",
-  "source_blend_sha256": "b54134ffdb2cb6ca8bcfd4bac02e1f76d6ccc79e6c0a4cfd7f5e1533c93be520",
+  "source_blend_sha256": "a766674e488c22e04056dee3148d35a252302ae1b13da9999922619f84d3bbdc",
   "preview": "Preview_Fern02_EyeHeight_SourceOnly.png",
-  "preview_sha256": "bc7200b44c50c818ef53ce1bfdbed6deff053e35222eafd9fa77b8108a78558c",
+  "preview_sha256": "cf204f33d158c746f6d3f1123b301b8d53d2b08aa5fd4d28a05c62c94f123dd7",
   "mac_fallback_preview": "Preview_Fern02_MAC_Fallback_SourceOnly.png",
-  "mac_fallback_preview_sha256": "ea62dc6c36487535cf3c2ace09e06c1a80d58a3e91fee8f804b1c8487ac49528",
+  "mac_fallback_preview_sha256": "e0d3facdafc557837bcdf530dadd57750066e9c52b9b1c8f658bf897a05d8a7a",
   "source_tris_by_variant": {
     "a": 784,
     "b": 2384,
@@ -26,7 +26,7 @@
       "variant": "a",
       "tier": "hi",
       "fbx": "SM_NyaagyuFern02_A_HI.fbx",
-      "fbx_sha256": "b769159195730730676378465c51e9796f2fe78e0c28778ddcce60fff55d026d",
+      "fbx_sha256": "2933f034582e273af3ba63865e823dacbd7fa51a7bcf93151c4b8513e7bbfe8f",
       "triangles": 784,
       "bounds_m": {
         "min": [
@@ -47,7 +47,7 @@
       "variant": "a",
       "tier": "mac_lod1",
       "fbx": "SM_NyaagyuFern02_A_MAC_LOD1.fbx",
-      "fbx_sha256": "bd11302883012fc8c50eeb2df35807bf5dab5f94cae6fd1fb05c44b12f6eb540",
+      "fbx_sha256": "5578523f0e8030fc351852ae97b5fe92e6e1daf1f8c1fd224572fe1574cbafc6",
       "triangles": 415,
       "bounds_m": {
         "min": [
@@ -68,7 +68,7 @@
       "variant": "b",
       "tier": "hi",
       "fbx": "SM_NyaagyuFern02_B_HI.fbx",
-      "fbx_sha256": "a3f00d58647a7c6c95c0da67ff0bb82e1eceb8098a1aa3cd7c60e54e22da373e",
+      "fbx_sha256": "322edd81336e10e6bebbd3d0754f5a815730f3362fc46239a96be83eb725e9b3",
       "triangles": 2384,
       "bounds_m": {
         "min": [
@@ -89,7 +89,7 @@
       "variant": "b",
       "tier": "mac_lod1",
       "fbx": "SM_NyaagyuFern02_B_MAC_LOD1.fbx",
-      "fbx_sha256": "e7faaef13ead4e5c60beeabc1872b4878f0a01fed2a9974e4e787c8cecf6009c",
+      "fbx_sha256": "dbdf9ae817a540178ea1224229edd717cba6d1b095cc34b23bd588fbed4def94",
       "triangles": 1263,
       "bounds_m": {
         "min": [
@@ -110,7 +110,7 @@
       "variant": "c",
       "tier": "hi",
       "fbx": "SM_NyaagyuFern02_C_HI.fbx",
-      "fbx_sha256": "9dc2aa1772a97b137bc0c32c375d2d51839448157a887497c17ce568ae9c77e3",
+      "fbx_sha256": "d17e8f0a7d6b7c15df5eafbdca8730281579271c54a1d9c85593f031806e4694",
       "triangles": 2248,
       "bounds_m": {
         "min": [
@@ -131,7 +131,7 @@
       "variant": "c",
       "tier": "mac_lod1",
       "fbx": "SM_NyaagyuFern02_C_MAC_LOD1.fbx",
-      "fbx_sha256": "c41b5868bcdde6e3e63e458515dc8c83d78f2262d0c2e824b4471e3dff91ccb7",
+      "fbx_sha256": "a59ad0c51e9263bdc1076cfededd14f28f9ca5d1f87ad5c5101b2c6b8e5edc88",
       "triangles": 1191,
       "bounds_m": {
         "min": [
@@ -152,7 +152,7 @@
       "variant": "d",
       "tier": "hi",
       "fbx": "SM_NyaagyuFern02_D_HI.fbx",
-      "fbx_sha256": "a76535065ae6959e9e078add8b3a4b809c27eefe140650b9ab752a774fb1914f",
+      "fbx_sha256": "649269bf083166563d45c5b4a4231ff187a9a7cfd01103f086a51a0f107160e0",
       "triangles": 816,
       "bounds_m": {
         "min": [
@@ -173,7 +173,7 @@
       "variant": "d",
       "tier": "mac_lod1",
       "fbx": "SM_NyaagyuFern02_D_MAC_LOD1.fbx",
-      "fbx_sha256": "9961ea1fa925c9ccb67e2e174bcbede6709ae19b8ebf9f904d4c4650f7c9fccf",
+      "fbx_sha256": "632ff2af266c126da716be7e8434bc2b3b5644599177692caf8a75af96d83cef",
       "triangles": 432,
       "bounds_m": {
         "min": [
@@ -303,87 +303,87 @@
   "upstream_files": [
     {
       "path": "Upstream/fern_02.bin",
-      "bytes": 176176,
-      "sha256": "fe1abb762bcbbc7ad9e86925c8080437a62add257d9280e9142fdc85c226e64c",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/fern_02/fern_02.bin",
-      "md5": "c061e9255f7d36ae9ce0e92ef3e100b2"
+      "bytes": 176176,
+      "md5": "c061e9255f7d36ae9ce0e92ef3e100b2",
+      "sha256": "fe1abb762bcbbc7ad9e86925c8080437a62add257d9280e9142fdc85c226e64c"
     },
     {
       "path": "Upstream/fern_02_4k.gltf",
-      "bytes": 6899,
-      "sha256": "7d5d458d4be38edceff922586234fa906377db5257e66d7cdde34b37e79788f7",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/fern_02/fern_02_4k.gltf",
-      "md5": "10425c45145273a2899b8cc585592d2e"
+      "bytes": 6899,
+      "md5": "10425c45145273a2899b8cc585592d2e",
+      "sha256": "7d5d458d4be38edceff922586234fa906377db5257e66d7cdde34b37e79788f7"
     },
     {
       "path": "Upstream/textures/fern_02_alpha_2k.png",
-      "bytes": 230089,
-      "sha256": "f51eb9b8f9f4b25a882f8fe12d1ef53ba69448bac7e71396ec1f05b684e9ea75",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/fern_02/fern_02_alpha_2k.png",
-      "md5": "ff18f7e8e869c58eac8f9c7d7c519f4a"
+      "bytes": 230089,
+      "md5": "ff18f7e8e869c58eac8f9c7d7c519f4a",
+      "sha256": "f51eb9b8f9f4b25a882f8fe12d1ef53ba69448bac7e71396ec1f05b684e9ea75"
     },
     {
       "path": "Upstream/textures/fern_02_alpha_4k.png",
-      "bytes": 470827,
-      "sha256": "50dd262282e9787ae8abf4475b5d2071df8a88f5242f480602a0672347bd7ff9",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/fern_02/fern_02_alpha_4k.png",
-      "md5": "520e194db987df18fd73b49d979ada0c"
+      "bytes": 470827,
+      "md5": "520e194db987df18fd73b49d979ada0c",
+      "sha256": "50dd262282e9787ae8abf4475b5d2071df8a88f5242f480602a0672347bd7ff9"
     },
     {
       "path": "Upstream/textures/fern_02_arm_2k.jpg",
-      "bytes": 850856,
-      "sha256": "1eaf9bd29e2d83a77ca5d89bdddebcd9216b8b4ba244644580fe5b89bbe713f1",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fern_02/fern_02_arm_2k.jpg",
-      "md5": "7f7b46e813a3cb4811405191de0ecdce"
+      "bytes": 850856,
+      "md5": "7f7b46e813a3cb4811405191de0ecdce",
+      "sha256": "1eaf9bd29e2d83a77ca5d89bdddebcd9216b8b4ba244644580fe5b89bbe713f1"
     },
     {
       "path": "Upstream/textures/fern_02_arm_4k.jpg",
-      "bytes": 2569142,
-      "sha256": "0ccfb4d98966c0e69769e9ddd5be872e34bb1d2f8aece3aff6d42fd3e61f8f1c",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/fern_02/fern_02_arm_4k.jpg",
-      "md5": "37426a24b433a05fe3958acc34232ede"
+      "bytes": 2569142,
+      "md5": "37426a24b433a05fe3958acc34232ede",
+      "sha256": "0ccfb4d98966c0e69769e9ddd5be872e34bb1d2f8aece3aff6d42fd3e61f8f1c"
     },
     {
       "path": "Upstream/textures/fern_02_diff_2k.jpg",
-      "bytes": 993703,
-      "sha256": "9ee18172170728050871772e2cd6d8d37b52f9138e61b49b04486623f9caf84b",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fern_02/fern_02_diff_2k.jpg",
-      "md5": "ba8bbb9dc9ff55bdc081565cd926d776"
+      "bytes": 993703,
+      "md5": "ba8bbb9dc9ff55bdc081565cd926d776",
+      "sha256": "9ee18172170728050871772e2cd6d8d37b52f9138e61b49b04486623f9caf84b"
     },
     {
       "path": "Upstream/textures/fern_02_diff_4k.jpg",
-      "bytes": 3025392,
-      "sha256": "f924354b032fcde77830b0c33c4dff80b4b143f793e70126894788f199b61960",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/fern_02/fern_02_diff_4k.jpg",
-      "md5": "07642c942fe65ae5b03b212398ba7004"
+      "bytes": 3025392,
+      "md5": "07642c942fe65ae5b03b212398ba7004",
+      "sha256": "f924354b032fcde77830b0c33c4dff80b4b143f793e70126894788f199b61960"
     },
     {
       "path": "Upstream/textures/fern_02_nor_dx_2k.jpg",
-      "bytes": 1369183,
-      "sha256": "4c6531d4c3b8f7e149bcbaeb4b1ca28e8d50c6ad7bcd8eff228bcfb756aa57f3",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fern_02/fern_02_nor_dx_2k.jpg",
-      "md5": "b56f5a028d42bc888f624db5c7204820"
+      "bytes": 1369183,
+      "md5": "b56f5a028d42bc888f624db5c7204820",
+      "sha256": "4c6531d4c3b8f7e149bcbaeb4b1ca28e8d50c6ad7bcd8eff228bcfb756aa57f3"
     },
     {
       "path": "Upstream/textures/fern_02_nor_dx_4k.jpg",
-      "bytes": 5070321,
-      "sha256": "31a427c608b2e0e52a1bd5310b21c6ad9b070a060656f8cb57876a72354b7e3b",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/fern_02/fern_02_nor_dx_4k.jpg",
-      "md5": "33c86f5ffe8ca857c200662912e43af5"
+      "bytes": 5070321,
+      "md5": "33c86f5ffe8ca857c200662912e43af5",
+      "sha256": "31a427c608b2e0e52a1bd5310b21c6ad9b070a060656f8cb57876a72354b7e3b"
     },
     {
       "path": "Upstream/textures/fern_02_nor_gl_2k.jpg",
-      "bytes": 1365615,
-      "sha256": "dfe1ac4a428d21f7c134411500177d66b8dd800c8fec6f0040c50f44414a777b",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fern_02/fern_02_nor_gl_2k.jpg",
-      "md5": "00936dff4661dc9fe1f2fbe6c000615a"
+      "bytes": 1365615,
+      "md5": "00936dff4661dc9fe1f2fbe6c000615a",
+      "sha256": "dfe1ac4a428d21f7c134411500177d66b8dd800c8fec6f0040c50f44414a777b"
     },
     {
       "path": "Upstream/textures/fern_02_nor_gl_4k.jpg",
-      "bytes": 5058951,
-      "sha256": "14125a030e3fab96f52343215a65167ea46bcabae4bdef3444ba8ae22cb05e41",
       "official_url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/fern_02/fern_02_nor_gl_4k.jpg",
-      "md5": "1a35f2135cd71a64a255406b11f988a2"
+      "bytes": 5058951,
+      "md5": "1a35f2135cd71a64a255406b11f988a2",
+      "sha256": "14125a030e3fab96f52343215a65167ea46bcabae4bdef3444ba8ae22cb05e41"
     }
   ]
 }

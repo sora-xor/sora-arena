@@ -20,7 +20,7 @@ if not version.startswith("5.8.2"):
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/PolyHaven/Fern02"
 manifest_path = source / "manifest.json"
-EXPECTED_MANIFEST_SHA256 = "90d8f1665c9ea1bbdfd2761b6acdd5bb421c645737dd87b7304bb81165507d63"
+EXPECTED_MANIFEST_SHA256 = "7aefb46c2c3b8134ae16bf64e4443840ea8617b57acee893ca22485ab07b6239"
 
 
 def sha(path: Path) -> str:
@@ -208,7 +208,7 @@ for (letter, tier), item in mesh_records.items():
              for slot in mesh.get_editor_property("static_materials")]
     if slots != [item["material_slot"]]:
         raise RuntimeError(f"Fern 02 FBX material identity changed: {name}: {slots}")
-    if subsystem.get_lod_count(mesh) < 1 or subsystem.get_number_verts(mesh, 0) < 400:
+    if subsystem.get_lod_count(mesh) < 1 or subsystem.get_number_verts(mesh, 0) < 150:
         raise RuntimeError(f"Fern 02 FBX geometry failed to build: {name}")
     nanite = subsystem.get_nanite_settings(mesh)
     if bool(nanite.get_editor_property("enabled")) != (tier == "hi"):

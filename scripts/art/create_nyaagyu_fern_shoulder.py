@@ -133,6 +133,7 @@ def export(obj, path):
                              object_types={"MESH"}, apply_unit_scale=True,
                              axis_forward="-Y", axis_up="Z", bake_anim=False,
                              add_leaf_bones=False, path_mode="STRIP",
+                             mesh_smooth_type="FACE", use_tspace=True,
                              embed_textures=False)
 
 
