@@ -14,10 +14,10 @@ been compiled. Run the doctor to inspect the actual machine.
 | Git LFS | **3.8.0**, installed; LFS filters and hooks initialized for this repository only |
 | Epic Games Launcher | **20.3.2**, installed at `~/Applications/SORAToolchain/Epic Games Launcher.app`; bundle version and arm64 executable verified |
 | Existing Epic launcher | The older `/Applications` copy self-updated to 18.1.2 during inspection; it was preserved |
-| Unreal Engine | Only **5.2.0** found at `/Users/Shared/Epic Games/UE_5.2`; **5.8.2 is not installed** |
+| Unreal Engine | **5.2.0** exists at `/Users/Shared/Epic Games/UE_5.2`; the Launcher is downloading **5.8.3**; **5.8.2 is not installed** |
 | Xcode | **26.1.1, build 17B100**, installed at `~/Applications/SORAToolchain/Xcode_26.1.1.app`; full Apple code-signature verification passed, SDK **26.1** found, and first-launch status reports complete. Existing **27.0** is preserved |
 | Engine source commit | Not acquired or verified; `source_commit` remains `null` |
-| UE 5.8 compilation / packaging / runtime | **Not performed: the required engine is unavailable** |
+| UE 5.8 compilation / packaging / runtime | **Not performed: 5.8.2 is absent and the 5.8.3 interim download is incomplete** |
 
 The machine's global `xcode-select` remains pointed at Command Line Tools. These
 scripts select Xcode and its matching `SDKROOT` only for their own process; they
@@ -31,18 +31,19 @@ Xcode 27 is a pin mismatch, not a claim that every use with UE 5.8 is impossible
   `EpicGames/UnrealEngine`; a direct HTTPS Git request cannot authenticate
   noninteractively. The private source repository must become accessible before
   an engine source build can be downloaded or its exact revision pinned.
-- The current Launcher Library shows a new **5.8.3** tile and no 5.8.2 choice
-  in its version selector. The signed-in Epic account is present, but the
-  engine download has not started. Exact 5.8.2 now needs Epic's private source
-  access or an existing licensed installation; the local GitHub account still
+- The current Launcher Library shows a **5.8.3** tile and no 5.8.2 choice
+  in its version selector. The signed-in Epic account is downloading 5.8.3;
+  installation and `Build.version` validation are still pending. Exact 5.8.2
+  needs Epic's private source access or an existing licensed installation; the local GitHub account still
   receives HTTP 404 for that repository. No engine files or source revision
   have been verified. Epic released 5.8.3 on 2026-09-22, so the original
   description of 5.8.2 as the latest hotfix is stale. The release engine pin
   remains 5.8.2 until the requested version choice is resolved.
 - Epic's offline macOS installer is restricted to eligible Developer Portal
   organizations; it is not an account-free route to the historical hotfix.
-- The Mac locked while navigating the Launcher. UI installation is paused
-  until it is unlocked; source and native validation can continue independently.
+- The Mac is unlocked and the Launcher download is active. A 5.8.3 compile
+  diagnostic may run only after installation and an explicit opt-in; it does
+  not satisfy the 5.8.2 release pin.
 - Direct command-line expansion of the Apple download was denied by OS file
   permissions. Normal Finder/Archive Utility extraction succeeded, and Apple's
   complete app signature verified. Moving into `/Applications` was also denied,
@@ -75,14 +76,44 @@ SDK and first-launch setup status, actual Blender/Git LFS command output, reposi
 file, editor executable, and disk space. Exit status **1** indicates a missing or
 mismatched check; status **0** indicates these presence/version checks passed.
 Its `build_ready` JSON flag is a prerequisites check, not a compile result.
+The JSON also reports `release_prerequisites_ready` and
+`interim_compile_prerequisites_ready` separately. With the override unset,
+the doctor and Mac build script strictly require **5.8.2**.
+
+### Opt-in 5.8.3 compile diagnostic
+
+After the Launcher finishes installing 5.8.3, the following checks that
+installation and allows **only Mac editor compile and launch diagnostics**:
+
+```sh
+export UE_ROOT='/Users/Shared/Epic Games/UE_5.8'
+SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/doctor.py --json
+SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/build-mac.sh Development
+SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/run-editor.sh
+```
+
+The override must be exactly `5.8.3`; any other set value, including an empty
+string or `5.8.2`, fails closed. The interim check also requires an installed,
+executable UnrealEditor binary so a partial Launcher download cannot appear
+ready. The build and editor wrapper print interim diagnostic banners. This does
+not change `versions.json`'s **5.8.2 release pin**, the `.uproject` association,
+Windows build policy, or asset import scripts. Without the exact override,
+`run-editor.sh` still requires 5.8.2. A passing interim compile or editor launch
+will not qualify a release, prove gameplay/rendering, or supply
+an exact 5.8.2 source revision. The Launcher build's source revision is not yet
+recorded. `python3 scripts/toolchain/test_doctor_interim.py` runs host-only
+fake-engine tests for the strict default, exact opt-in and rejected values;
+it never invokes Unreal.
 
 ## Finish Unreal and Xcode provisioning
 
-1. Resolve the engine pin: to keep **5.8.2**, obtain that source through Epic's
+1. Resolve the release engine pin: to keep **5.8.2**, obtain that source through Epic's
    supported GitHub access procedure (Epic/GitHub account linking and private
    repository access), or supply an existing licensed installation. If the
-   newer **5.8.3** hotfix is selected, update the exact version pin and install
-   the Launcher tile. Keep the existing 5.2 installation separate.
+   newer **5.8.3** hotfix is chosen for release later, make that an explicit
+   pin/revision change with its own qualification. The current Launcher 5.8.3
+   download is limited to the opt-in compile diagnostic above. Keep the
+   existing 5.2 installation separate.
 2. After source access is available, resolve the official 5.8.2 release reference,
    record its full commit SHA in `versions.json`, and use the same revision on all
    build machines. No guessed source revision is recorded here.

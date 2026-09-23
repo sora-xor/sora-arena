@@ -2,6 +2,7 @@
   "schema_version": 1,
   "unreal": {
     "version": "5.8.2",
+    "interim_compile_diagnostic_version": "5.8.3",
     "source_commit": null,
     "source_commit_note": "Record the verified Epic source commit after repository access is available; no source revision has been downloaded or validated yet.",
     "default_macos_root": "/Users/Shared/Epic Games/UE_5.8",
