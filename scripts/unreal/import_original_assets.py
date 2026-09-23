@@ -108,14 +108,32 @@ insignia = (hero_character_root / hero_character["insignia_source"]).resolve()
 if (not insignia.is_file()
         or hashlib.sha256(insignia.read_bytes()).hexdigest() != hero_character["insignia_sha256"]):
     raise RuntimeError("The user-supplied SORA hero insignia source is missing or changed")
+naginata_root = source / "Weapons/MonofilamentNaginata"
+naginata = json.loads((naginata_root / "manifest.json").read_text())
+naginata_name = "SM_Nyaagyu_MonofilamentNaginata"
+if (naginata["schema_version"] != 1
+        or naginata["weapon_id"] != 12
+        or naginata["name"] != naginata_name
+        or naginata["generator"] != "scripts/art/create_monofilament_naginata.py"
+        or naginata["fbx"] != naginata_name + ".fbx"
+        or naginata["unreal_asset"] != f"/Game/ArtReview/Weapons/{naginata_name}.{naginata_name}"):
+    raise RuntimeError("The Samurai special naginata must remain an art-review source")
+naginata_fbx = naginata_root / naginata["fbx"]
+if (not naginata_fbx.is_file()
+        or hashlib.sha256(naginata_fbx.read_bytes()).hexdigest() != naginata["fbx_sha256"]):
+    raise RuntimeError("The original naginata FBX is missing or changed")
 mesh_names = manifest["characters"] + manifest["weapons"] + [hero_katana["name"]]
 tasks = []
 runtime_destination = "/Game/Generated/Meshes"
 review_destination = "/Game/ArtReview/Characters"
+review_weapon_destination = "/Game/ArtReview/Weapons"
+assets.make_directory(review_destination)
+assets.make_directory(review_weapon_destination)
 for name, path, destination in [(name, source / f"{name}.fbx", runtime_destination) for name in mesh_names] + [
         (bokken["name"], bokken_fbx, runtime_destination),
         (arc_carbine["name"], arc_fbx, runtime_destination),
-        (hero_character_name, hero_character_fbx, review_destination)]:
+        (hero_character_name, hero_character_fbx, review_destination),
+        (naginata_name, naginata_fbx, review_weapon_destination)]:
     if not path.is_file():
         raise RuntimeError(f"Required original mesh is missing: {path}")
     task = unreal.AssetImportTask()
@@ -142,6 +160,8 @@ for name in mesh_names + [bokken["name"], arc_carbine["name"]]:
         raise RuntimeError(f"Unreal import did not create {name}")
 if not assets.does_asset_exist(f"{review_destination}/{hero_character_name}"):
     raise RuntimeError("Unreal review import did not create the feline concept mesh")
+if not assets.does_asset_exist(f"{review_weapon_destination}/{naginata_name}"):
+    raise RuntimeError("Unreal review import did not create the special naginata mesh")
 
 # Source-authored environment heroes have one render mesh and explicit UCX
 # convex collision boxes. Their linked Poly Haven source textures are verified

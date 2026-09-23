@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_MonofilamentNaginata",
+  "weapon_id": 12,
+  "weapon_name_ja": "単分子薙刀",
+  "weapon_name_en": "Monofilament Naginata",
+  "generator": "scripts/art/create_monofilament_naginata.py",
+  "validator": "scripts/art/validate_monofilament_naginata.py",
+  "generator_blender": "5.2.2 LTS",
+  "source_blend": "Nyaagyu_MonofilamentNaginata.blend",
+  "fbx": "SM_Nyaagyu_MonofilamentNaginata.fbx",
+  "preview": "Nyaagyu_MonofilamentNaginata_Blender.png",
+  "detail_preview": "Nyaagyu_MonofilamentNaginata_Detail_Blender.png",
+  "unreal_asset": "/Game/ArtReview/Weapons/SM_Nyaagyu_MonofilamentNaginata.SM_Nyaagyu_MonofilamentNaginata",
+  "source_parts": 30,
+  "source_triangles": 27938,
+  "bounds_m": {
+    "min": [
+      -0.869,
+      -0.0355,
+      -0.029
+    ],
+    "max": [
+      1.442,
+      0.029,
+      0.12922
+    ]
+  },
+  "length_m": 2.311,
+  "mesh_origin_m": [
+    0,
+    0,
+    0
+  ],
+  "local_forward": "+X toward blade tip; +Z up",
+  "rear_grip_center_m": [
+    -0.47,
+    0,
+    0
+  ],
+  "front_grip_center_m": [
+    0.445,
+    0,
+    0
+  ],
+  "blade_root_m": [
+    0.952,
+    0,
+    0.01
+  ],
+  "blade_tip_m": [
+    1.442,
+    0,
+    0.127
+  ],
+  "muzzle_center_m": null,
+  "muzzle_note": "Not applicable: melee polearm; local +X points to the blade tip.",
+  "material_provenance": "Original project-owned Blender Principled BSDF shaders with authored metallic/roughness and procedural micro-roughness/bump; no external image textures.",
+  "fbx_material_limit": "Material slots and UVs only; Blender shader nodes do not automatically become UE PBR materials.",
+  "external_images": [],
+  "license": "Original project-owned geometry and shader design; no third-party or purchased assets.",
+  "units": "Blender meters; Unreal FBX import converts to centimeters",
+  "scope": "Visual source-art review of Samurai special weapon ID 12 only. No combat-stat, entitlement, NFT, or bond changes. UE material/scale/appearance approval pending.",
+  "blend_sha256": "504cd79dd6cdee7de1fedc72d3787ee3008a3ffac9cf3276be64a5dafc045124",
+  "fbx_sha256": "8f6f025c23a5960def9bde1c4dc911bef71f4e30c3333f657c2199b21c00ebc8",
+  "preview_sha256": "9d4f808f29e688c02d0b90521292b427eff380ca2b99e44ef12ed45d8b800f8b",
+  "detail_preview_sha256": "7c1faed6df0bf2c97ded65af60002d923e099199e55f391443d625ba4300e00b"
+}

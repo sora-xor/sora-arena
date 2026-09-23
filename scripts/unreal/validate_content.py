@@ -125,6 +125,27 @@ arc_fbx = (bokken_root / arc["fbx"]).read_bytes()
 assert arc_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in arc_fbx
 assert arc["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
 assert arc["unreal_asset"] in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+naginata_root = content / "SourceArt/Weapons/MonofilamentNaginata"
+naginata = json.loads((naginata_root / "manifest.json").read_text())
+assert naginata["schema_version"] == 1 and naginata["name"] == "SM_Nyaagyu_MonofilamentNaginata"
+assert naginata["weapon_id"] == 12 and catalog["weapons"][12]["name_en"] == "Monofilament Naginata"
+assert catalog["weapons"][12]["special"] is True
+assert naginata["generator"] == "scripts/art/create_monofilament_naginata.py"
+assert naginata["validator"] == "scripts/art/validate_monofilament_naginata.py"
+assert naginata["unreal_asset"] == "/Game/ArtReview/Weapons/SM_Nyaagyu_MonofilamentNaginata.SM_Nyaagyu_MonofilamentNaginata"
+assert naginata["muzzle_center_m"] is None and naginata["local_forward"] == "+X toward blade tip; +Z up"
+assert 2.2 < naginata["length_m"] < 2.4 and naginata["external_images"] == []
+assert "Original project-owned" in naginata["license"]
+for filename, key in ((naginata["source_blend"], "blend_sha256"),
+                      (naginata["fbx"], "fbx_sha256"),
+                      (naginata["preview"], "preview_sha256"),
+                      (naginata["detail_preview"], "detail_preview_sha256")):
+    path = naginata_root / filename
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == naginata[key]
+assert (naginata_root / naginata["fbx"]).read_bytes().startswith(b"Kaydara FBX Binary")
+assert naginata["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
+assert naginata["name"] not in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
 hero_character_root = content / "SourceArt/Characters/Hero"
 hero_character = json.loads((hero_character_root / "manifest.json").read_text())
 assert hero_character["schema_version"] == 1
@@ -275,4 +296,5 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 34 FBX source assets including a dojo bokken, Arc carbine, feline hero character and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
+fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
