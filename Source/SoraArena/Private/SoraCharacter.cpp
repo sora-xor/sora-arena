@@ -114,7 +114,7 @@ void ASoraCharacter::SetCampaignHeroLoadout(bool Enabled)
     Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine;
     AmmoByWeapon[Hero.YumiId]=Hero.QuiverArrows;
     BuildWeapon();
-    if(bChanged) BuildHeroQuiver();
+    if(bChanged) { BuildHeroQuiver(); BuildHeroSaya(); }
 }
 void ASoraCharacter::SuspendDojoAction()
 {
@@ -299,6 +299,27 @@ void ASoraCharacter::BuildHeroQuiver()
         Add(*FString::Printf(TEXT("NyaakotoFletching%d"),Index),TEXT("/Engine/BasicShapes/Cone.Cone"),
             FVector(-10+Index%2*3,Lateral,98),FVector(.035f,.035f,.10f),FLinearColor(.70f,.095f,.055f));
     }
+}
+void ASoraCharacter::BuildHeroSaya()
+{
+    if(!bCampaignHero||bEnemy) return;
+    // The drawn first-person sword and its scabbard are separate static meshes.
+    // Place the koiguchi forward at Nyaakoto's left hip, tip trailing behind;
+    // the owner's first-person view sees only the unsheathed blade.
+    UStaticMesh* Saya=LoadObject<UStaticMesh>(nullptr,
+        TEXT("/Game/Generated/Meshes/SM_Nyaagyu_HeroSaya.SM_Nyaagyu_HeroSaya"));
+    if(!Saya) return;
+    auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(
+        this,UStaticMeshComponent::StaticClass(),TEXT("NyaakotoHeroSaya")));
+    Mesh->SetStaticMesh(Saya);
+    Mesh->SetupAttachment(GetMesh());
+    Mesh->SetRelativeLocation(FVector(17,-25,95));
+    Mesh->SetRelativeRotation(FRotator(0,180,0));
+    Mesh->SetRelativeScale3D(FVector(.90));
+    Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Mesh->SetOwnerNoSee(true);
+    Mesh->RegisterComponent(); AddInstanceComponent(Mesh);
+    BodyParts.Add(Mesh); QuiverParts.Add(Mesh);
 }
 void ASoraCharacter::BuildWeapon()
 {

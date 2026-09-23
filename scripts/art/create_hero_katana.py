@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Content" / "SourceArt"
 OUT.mkdir(parents=True, exist_ok=True)
 FBX = OUT / "SM_Nyaagyu_HeroKatana.fbx"
+SAYA_FBX = OUT / "SM_Nyaagyu_HeroSaya.fbx"
 BLEND = OUT / "Nyaagyu_HeroKatana.blend"
 PREVIEW = OUT / "Nyaagyu_HeroKatana_Preview.png"
 DETAIL = OUT / "Nyaagyu_HeroKatana_Detail.png"
@@ -393,23 +394,65 @@ parts=[o for o in asset_collection.objects if o.type == "MESH"]
 assert len(parts) >= 20, len(parts)
 assert sum(len(o.data.polygons) for o in parts) > 5000
 
-# Export as a single ready-to-import static mesh; retain separate objects in
-# the .blend source. A join of duplicate parts avoids damaging editable art.
-bpy.ops.object.select_all(action="DESELECT")
-for obj in parts:
-    obj.select_set(True)
-bpy.context.view_layer.objects.active=parts[0]
-bpy.ops.object.duplicate()
-copies=list(bpy.context.selected_objects)
-bpy.context.view_layer.objects.active=copies[0]
-bpy.ops.object.join()
-export_obj=bpy.context.object
-export_obj.name=ASSET_NAME
-bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
-bpy.ops.export_scene.fbx(filepath=str(FBX),use_selection=True,object_types={"MESH"},
-    apply_unit_scale=True,global_scale=1.0,axis_forward="-Y",axis_up="Z",
-    add_leaf_bones=False,bake_anim=False,path_mode="AUTO")
-bpy.data.objects.remove(export_obj,do_unlink=True)
+
+def assign_projection_uv(obj):
+    """Keep a stable physical-scale UV on fine fittings and curved steel alike.
+
+    The side of the blade uses X along its length; each other face projects
+    from its dominant normal. Texture tiling is deliberate at this prop scale.
+    """
+    data = obj.data
+    layer = data.uv_layers.get("HeroKatanaProjection") or data.uv_layers.new(name="HeroKatanaProjection")
+    for polygon in data.polygons:
+        nx, ny, nz = map(abs, polygon.normal)
+        for loop_index in polygon.loop_indices:
+            x, y, z = data.vertices[data.loops[loop_index].vertex_index].co
+            if ny >= nx and ny >= nz:
+                uv = (x * 4.0, z * 4.0)
+            elif nz >= nx:
+                uv = (x * 4.0, y * 4.0)
+            else:
+                uv = (y * 4.0, z * 4.0)
+            layer.data[loop_index].uv = uv
+
+
+for part in parts:
+    assign_projection_uv(part)
+
+# A drawn first-person katana must not carry its saya in parallel with the
+# blade. Preserve all scabbard components in the editable source and review
+# render; export only the unsheathed weapon to the runtime asset identity.
+saya_prefixes = ("Saya_", "Koiguchi_", "Kojiri_", "Kurikata_", "Sageo_")
+drawn_parts = [part for part in parts if not part.name.startswith(saya_prefixes)]
+saya_parts = [part for part in parts if part.name.startswith(saya_prefixes)]
+assert len(drawn_parts) >= 15 and len(drawn_parts) < len(parts)
+
+# Export drawn sword and saya independently.  Source parts remain editable and
+# the scabbard is recentered from its side-by-side review pose for a future hip
+# attachment. The FBX runtime identity of the sword is unchanged.
+def export_prop(selected_parts, name, path, recenter_y=0):
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in selected_parts:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active=selected_parts[0]
+    bpy.ops.object.duplicate()
+    copies=list(bpy.context.selected_objects)
+    bpy.context.view_layer.objects.active=copies[0]
+    bpy.ops.object.join()
+    export_obj=bpy.context.object
+    export_obj.name=name
+    if recenter_y:
+        for vertex in export_obj.data.vertices:
+            vertex.co.y -= recenter_y
+    bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
+    bpy.ops.export_scene.fbx(filepath=str(path),use_selection=True,object_types={"MESH"},
+        apply_unit_scale=True,global_scale=1.0,axis_forward="-Y",axis_up="Z",
+        add_leaf_bones=False,bake_anim=False,path_mode="AUTO")
+    bpy.data.objects.remove(export_obj,do_unlink=True)
+
+
+export_prop(drawn_parts, ASSET_NAME, FBX)
+export_prop(saya_parts, "SM_Nyaagyu_HeroSaya", SAYA_FBX, saya_y)
 
 # A studio preview is kept as an editable Blender scene. The warm key and cool
 # edge light are an art presentation, not a purported engine screenshot.
@@ -484,12 +527,17 @@ manifest["hero_katana"]={
     "source_blend":BLEND.name,
     "generator":"scripts/art/create_hero_katana.py",
     "fbx":FBX.name,
+    "saya_name":"SM_Nyaagyu_HeroSaya",
+    "saya_fbx":SAYA_FBX.name,
     "preview":PREVIEW.name,
     "detail_preview":DETAIL.name,
     "fbx_sha256":hashlib.sha256(FBX.read_bytes()).hexdigest(),
+    "saya_fbx_sha256":hashlib.sha256(SAYA_FBX.read_bytes()).hexdigest(),
     "units":"Blender meters; FBX converts for Unreal centimeter import",
     "materials":"Physically based Principled BSDF source materials, with metalness/roughness and subtle procedural surface variation; author matching Unreal material instances on import",
-    "scope":"Detailed single hero prop and saya. This does not establish game-wide photorealism or verify Unreal rendering.",
+    "runtime_export":"Drawn katana only; the separately modeled saya remains in the editable Blender source and review renders",
+    "projection_uv":"Dominant-normal planar UV, four repeats per source meter; present on every modeled part",
+    "scope":"Detailed drawn hero katana with separate non-runtime saya source. This does not establish game-wide photorealism or verify Unreal rendering.",
 }
 manifest_path.write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 print("HERO_KATANA_READY",len(parts),sum(len(o.data.polygons) for o in parts),FBX,PREVIEW)

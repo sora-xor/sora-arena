@@ -122,6 +122,7 @@ private:
     int32 EnemyIndex = 0;
     void BuildCat();
     void BuildHeroQuiver();
+    void BuildHeroSaya();
     void BuildWeapon();
     void BotTick(float Dt);
     void BossTick(float Dt, ASoraCharacter* Target);

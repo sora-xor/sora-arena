@@ -72,6 +72,12 @@ if hero_katana["name"] != "SM_Nyaagyu_HeroKatana" or hero_katana["fbx"] != "SM_N
 hero_source = source / hero_katana["fbx"]
 if not hero_source.is_file() or hashlib.sha256(hero_source.read_bytes()).hexdigest() != hero_katana["fbx_sha256"]:
     raise RuntimeError("The hero katana source does not match its authored manifest hash")
+if (hero_katana["saya_name"] != "SM_Nyaagyu_HeroSaya"
+        or hero_katana["saya_fbx"] != "SM_Nyaagyu_HeroSaya.fbx"):
+    raise RuntimeError("The separate hero saya asset identity changed")
+saya_source = source / hero_katana["saya_fbx"]
+if not saya_source.is_file() or hashlib.sha256(saya_source.read_bytes()).hexdigest() != hero_katana["saya_fbx_sha256"]:
+    raise RuntimeError("The hero saya source does not match its authored manifest hash")
 bokken_root = source / "Weapons/Original"
 bokken = json.loads((bokken_root / "manifest.json").read_text())
 if (bokken["name"] != "SM_Nyaagyu_DojoBokken"
@@ -141,7 +147,7 @@ naginata_fbx = naginata_root / naginata["fbx"]
 if (not naginata_fbx.is_file()
         or hashlib.sha256(naginata_fbx.read_bytes()).hexdigest() != naginata["fbx_sha256"]):
     raise RuntimeError("The original naginata FBX is missing or changed")
-mesh_names = manifest["characters"] + manifest["weapons"] + [hero_katana["name"]]
+mesh_names = manifest["characters"] + manifest["weapons"] + [hero_katana["name"], hero_katana["saya_name"]]
 tasks = []
 runtime_destination = "/Game/Generated/Meshes"
 review_destination = "/Game/ArtReview/Characters"
@@ -540,5 +546,6 @@ if not font.is_file() or not (source / "Fonts/OFL.txt").is_file():
     raise RuntimeError("Japanese runtime font and its redistribution license are required")
 
 runpy.run_path(str(root / "scripts/unreal/import_nyaakoto_pbr.py"), run_name="__main__")
+runpy.run_path(str(root / "scripts/unreal/import_hero_katana_pbr.py"), run_name="__main__")
 assets.save_directory("/Game/Generated", only_if_is_dirty=False, recursive=True)
 unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon/horse meshes, {len(environment_tasks)} source-authored environment props, {len(terrain_tasks)} mesh terrain tiles, {len(tree_tasks)} CC0 foliage LODs; Japanese font staged separately")

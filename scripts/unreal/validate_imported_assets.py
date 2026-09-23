@@ -19,6 +19,7 @@ PALETTE = "/Game/Generated/Environment"
 TERRAIN = "/Game/Generated/Environment/Terrain"
 FOLIAGE = "/Game/Generated/Environment/Foliage"
 NYAAKOTO = "/Game/Generated/Characters/Nyaakoto"
+HERO_KATANA = "/Game/Generated/Weapons/HeroKatana"
 
 
 def require(condition, message):
@@ -102,6 +103,110 @@ def nyaakoto_pbr_source(source_root):
     return record
 
 
+def hero_katana_pbr_source(source_root):
+    art_root = source_root / "Weapons/HeroKatana/PBR"
+    record = read_manifest(art_root / "manifest.json")
+    require(record.get("schema_version") == 1
+            and record.get("generator") == "scripts/art/create_hero_katana_pbr_textures.py"
+            and record.get("license") ==
+            "Original project-owned procedural surface maps; no third-party texture data"
+            and [group.get("name") for group in record.get("maps", [])] ==
+            ["forged_steel", "patinated_metal", "woven_silk", "ray_skin", "urushi", "neutral"]
+            and len(record.get("material_slots", {})) == 12,
+            "The hero katana PBR source identity changed")
+    groups = {group["name"]: group for group in record["maps"]}
+    for name, group in groups.items():
+        require(group.get("resolution") == ([4, 4] if name == "neutral" else [2048, 2048])
+                and [item.get("channel") for item in group.get("maps", [])] ==
+                ["Albedo", "NormalDX", "ORM"],
+                f"Hero katana PBR texture channels changed: {name}")
+        for item in group["maps"]:
+            filename = f"T_HeroKatana_{name}_{item['channel']}.png"
+            require(item.get("file") == filename,
+                    f"Hero katana PBR texture identity changed: {name}")
+            path = source_file(art_root, filename)
+            data = path.read_bytes()
+            require(hashlib.sha256(data).hexdigest() == item.get("sha256")
+                    and data[:16] == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR",
+                    f"Hero katana PBR source map changed: {path}")
+    for slot, values in record["material_slots"].items():
+        require(re.fullmatch(r"M_HK_[A-Za-z0-9_]+", slot) is not None
+                and values.get("surface") in groups
+                and len(values.get("tint", [])) == 3
+                and all(0 <= value <= 1 for value in values["tint"])
+                and 0 < values.get("roughness_scale", 0) <= 2
+                and 0 <= values.get("metallic_scale", -1) <= 1,
+                f"Hero katana PBR material slot changed: {slot}")
+    return record
+
+
+def validate_hero_katana_loaded(unreal, asset_library):
+    record = hero_katana_pbr_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
+    material_lib = unreal.MaterialEditingLibrary
+    master_path = f"{HERO_KATANA}/M_HeroKatana_PBR.M_HeroKatana_PBR"
+    master = asset_library.load_asset(master_path)
+    require({str(name) for name in material_lib.get_texture_parameter_names(master)} ==
+            {"AlbedoMap", "NormalMap", "ORMMap"},
+            "Hero katana PBR master lost a texture parameter")
+    for group in record["maps"]:
+        for item in group["maps"]:
+            name = Path(item["file"]).stem
+            texture = asset_library.load_asset(f"{HERO_KATANA}/Textures/{name}.{name}")
+            require(bool(texture.get_editor_property("srgb")) == (item["channel"] == "Albedo"),
+                    f"Hero katana texture color space changed: {name}")
+            if item["channel"] == "NormalDX":
+                require(texture.get_editor_property("compression_settings") ==
+                        unreal.TextureCompressionSettings.TC_NORMALMAP
+                        and not bool(texture.get_editor_property("flip_green_channel")),
+                        f"Hero katana tangent normal import changed: {name}")
+            elif item["channel"] == "ORM":
+                require(texture.get_editor_property("compression_settings") ==
+                        unreal.TextureCompressionSettings.TC_MASKS,
+                        f"Hero katana ORM compression changed: {name}")
+    instances = {}
+    for slot, surface in record["material_slots"].items():
+        name = "MI_HK_" + slot.removeprefix("M_HK_")
+        path = f"{HERO_KATANA}/{name}.{name}"
+        instance = asset_library.load_asset(path)
+        parent = instance.get_editor_property("parent")
+        require(parent is not None and parent.get_path_name() == master_path,
+                f"Hero katana instance has the wrong PBR parent: {path}")
+        for parameter, channel in (("AlbedoMap", "Albedo"),
+                                   ("NormalMap", "NormalDX"), ("ORMMap", "ORM")):
+            texture_name = f"T_HeroKatana_{surface['surface']}_{channel}"
+            expected = f"{HERO_KATANA}/Textures/{texture_name}.{texture_name}"
+            actual = material_lib.get_material_instance_texture_parameter_value(instance, parameter)
+            require(actual is not None and actual.get_path_name() == expected,
+                    f"Hero katana material lost its {parameter}: {name}")
+        for parameter, value in (("RoughnessScale", surface["roughness_scale"]),
+                                 ("MetallicScale", surface["metallic_scale"])):
+            actual = material_lib.get_material_instance_scalar_parameter_value(instance, parameter)
+            require(abs(actual - value) < 1e-5,
+                    f"Hero katana material changed its {parameter}: {name}")
+        tint = material_lib.get_material_instance_vector_parameter_value(instance, "Tint")
+        require(all(abs(getattr(tint, channel) - value) < 1e-5
+                    for channel, value in zip("rgb", surface["tint"])),
+                f"Hero katana material changed its tint: {name}")
+        instances[slot] = instance
+    bound = set()
+    for mesh_name, expected_count in (("SM_Nyaagyu_HeroKatana", 9),
+                                      ("SM_Nyaagyu_HeroSaya", 4)):
+        mesh = asset_library.load_asset(f"{MESHES}/{mesh_name}.{mesh_name}")
+        slots = mesh.get_editor_property("static_materials")
+        require(len(slots) == expected_count,
+                f"Hero katana/saya slot count changed: {mesh_name}")
+        local = set()
+        for slot in slots:
+            name = str(slot.get_editor_property("material_slot_name"))
+            material = slot.get_editor_property("material_interface")
+            require(name in instances and name not in local and material is not None
+                    and material.get_path_name() == instances[name].get_path_name(),
+                    f"Hero katana/saya PBR binding changed: {mesh_name} {name}")
+            local.add(name)
+        bound.update(local)
+    require(bound == set(instances), "A hero katana/saya material is not bound to an imported mesh")
+
+
 def nyaakoto_lod_source(source_root):
     """Validate the two authored FBXs; they live inside one skeletal package."""
     hero = source_root / "Characters/Hero"
@@ -142,11 +247,18 @@ def expected_assets(project_root):
             "The original character, weapon or animation manifest changed")
     hero = manifest.get("hero_katana", {})
     require(hero.get("name") == "SM_Nyaagyu_HeroKatana"
-            and hero.get("fbx") == "SM_Nyaagyu_HeroKatana.fbx",
+            and hero.get("fbx") == "SM_Nyaagyu_HeroKatana.fbx"
+            and hero.get("saya_name") == "SM_Nyaagyu_HeroSaya"
+            and hero.get("saya_fbx") == "SM_Nyaagyu_HeroSaya.fbx",
             "The hero katana identity changed")
+    for filename, digest in ((hero["fbx"], hero["fbx_sha256"]),
+                             (hero["saya_fbx"], hero["saya_fbx_sha256"])):
+        path = source_file(source_root, filename)
+        require(hashlib.sha256(path.read_bytes()).hexdigest() == digest,
+                f"The katana or saya FBX source changed: {filename}")
 
     specs = {}
-    for name in characters + weapons + [hero["name"]]:
+    for name in characters + weapons + [hero["name"], hero["saya_name"]]:
         source_file(source_root, f"{name}.fbx")
         add(specs, f"{MESHES}/{name}.{name}", "StaticMesh")
     for name in skeletal:
@@ -169,6 +281,16 @@ def expected_assets(project_root):
     for slot in pbr["material_slots"]:
         name = "MI_Nyaakoto_" + slot.removeprefix("M_Hero_")
         add(specs, f"{NYAAKOTO}/{name}.{name}", "MaterialInstanceConstant")
+
+    katana_pbr = hero_katana_pbr_source(source_root)
+    for group in katana_pbr["maps"]:
+        for item in group["maps"]:
+            name = Path(item["file"]).stem
+            add(specs, f"{HERO_KATANA}/Textures/{name}.{name}", "Texture2D")
+    add(specs, f"{HERO_KATANA}/M_HeroKatana_PBR.M_HeroKatana_PBR", "Material")
+    for slot in katana_pbr["material_slots"]:
+        name = "MI_HK_" + slot.removeprefix("M_HK_")
+        add(specs, f"{HERO_KATANA}/{name}.{name}", "MaterialInstanceConstant")
 
     named_mesh(source_root, specs, "Weapons/Original", "manifest.json",
                "SM_Nyaagyu_DojoBokken", MESHES)
@@ -440,6 +562,7 @@ def validate_loaded_assets(unreal, specs):
         require(isinstance(asset, expected_class),
                 f"Wrong Unreal class for {path}: expected {class_name}, "
                 f"got {type(asset).__name__}")
+    validate_hero_katana_loaded(unreal, asset_library)
     pbr = nyaakoto_pbr_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
     hero = asset_library.load_asset(f"{MESHES}/SK_NyaagyuSamurai.SK_NyaagyuSamurai")
     slots = [str(entry.get_editor_property("material_slot_name"))

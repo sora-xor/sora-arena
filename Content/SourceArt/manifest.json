@@ -52,11 +52,16 @@
     "source_blend": "Nyaagyu_HeroKatana.blend",
     "generator": "scripts/art/create_hero_katana.py",
     "fbx": "SM_Nyaagyu_HeroKatana.fbx",
+    "saya_name": "SM_Nyaagyu_HeroSaya",
+    "saya_fbx": "SM_Nyaagyu_HeroSaya.fbx",
     "preview": "Nyaagyu_HeroKatana_Preview.png",
     "detail_preview": "Nyaagyu_HeroKatana_Detail.png",
-    "fbx_sha256": "73c586593e2291e0b0e8e9de21856d06c99a33fc2f490a4acfe993b06fb1f301",
+    "fbx_sha256": "8b3c494295dccba0e6626d7ee5f26cf2335409334fa5d48a3c4b634db3de7c2b",
+    "saya_fbx_sha256": "e1dadbb98308787cc4ab3f2e64f3457bc3d8ca6c10ff71f42f53682ccef282ae",
     "units": "Blender meters; FBX converts for Unreal centimeter import",
     "materials": "Physically based Principled BSDF source materials, with metalness/roughness and subtle procedural surface variation; author matching Unreal material instances on import",
-    "scope": "Detailed single hero prop and saya. This does not establish game-wide photorealism or verify Unreal rendering."
+    "runtime_export": "Drawn katana only; the separately modeled saya remains in the editable Blender source and review renders",
+    "projection_uv": "Dominant-normal planar UV, four repeats per source meter; present on every modeled part",
+    "scope": "Detailed drawn hero katana with separate non-runtime saya source. This does not establish game-wide photorealism or verify Unreal rendering."
   }
 }

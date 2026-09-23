@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_hero_katana_pbr_textures.py",
+  "license": "Original project-owned procedural surface maps; no third-party texture data",
+  "seed": 20051839,
+  "maps": [
+    {
+      "name": "forged_steel",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_HeroKatana_forged_steel_Albedo.png",
+          "sha256": "65b3b211f0d4ed950ddebfea48f28bf07d16ce6466fcf1472a1f53f4f658fde1"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_HeroKatana_forged_steel_NormalDX.png",
+          "sha256": "9b8793a5ffac1611bfe7f45a74c88e0ac6ee05a6f7460bec6b8e8535fc2d5d6e"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_HeroKatana_forged_steel_ORM.png",
+          "sha256": "8d2382c53f086060b28de8b1e70c25090ec0ee3826f6430b68429ec3d1a12dd8"
+        }
+      ]
+    },
+    {
+      "name": "patinated_metal",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_HeroKatana_patinated_metal_Albedo.png",
+          "sha256": "c557e2449ccbd4e8799c3f5990819ddef03e7231d26296266aae7aa6f05a3125"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_HeroKatana_patinated_metal_NormalDX.png",
+          "sha256": "8500cc885d38c4dec2e9dd9cff5b2d13607fe3922e4e08ff6fe7d65e0ab7ae84"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_HeroKatana_patinated_metal_ORM.png",
+          "sha256": "ae96df92cdeda920bdaf5702922f58d53acf9a29e232679bf3202dfaeb09a47a"
+        }
+      ]
+    },
+    {
+      "name": "woven_silk",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_HeroKatana_woven_silk_Albedo.png",
+          "sha256": "d4b06fc63385b024a47cf2fdb8345bf6db8cf65131f7125dff7f1ff210914eeb"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_HeroKatana_woven_silk_NormalDX.png",
+          "sha256": "fe88561a1b27e0f11383927d879fc12d79a3b4b254b7664a8752c94c1ba8a2b2"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_HeroKatana_woven_silk_ORM.png",
+          "sha256": "cff2c9637ed331555b80ec9778a1012bb9264f8730c99bef3b34b55a62ef9119"
+        }
+      ]
+    },
+    {
+      "name": "ray_skin",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_HeroKatana_ray_skin_Albedo.png",
+          "sha256": "145ccc61c6e49c706053299c06e3067c934f4da68f62e91b8b1a8de7e6ceb158"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_HeroKatana_ray_skin_NormalDX.png",
+          "sha256": "33fe6ae8c9678a042657701e8cbb9c734f118898a0b35c167677dde38732aa5d"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_HeroKatana_ray_skin_ORM.png",
+          "sha256": "4f4112f078396dffe6d2c05226431293fb1e2acf4be8d792ee669e280162a14e"
+        }
+      ]
+    },
+    {
+      "name": "urushi",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_HeroKatana_urushi_Albedo.png",
+          "sha256": "cf93977aec4e38579afeb0999973a3996efe49c0f72709d16ac78bf4dc0c2299"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_HeroKatana_urushi_NormalDX.png",
+          "sha256": "0728783f9ce25ee727c86c1ffa6ea443e9dd2e08cca9c0f3ca1805dba591fbd4"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_HeroKatana_urushi_ORM.png",
+          "sha256": "0ee8414be5ee7bbc08b54864b525789560de6bb88687b3cb3fff1139e5eca64f"
+        }
+      ]
+    },
+    {
+      "name": "neutral",
+      "resolution": [
+        4,
+        4
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_HeroKatana_neutral_Albedo.png",
+          "sha256": "1af23638ce8528329d2d063fba0c494a0895cea75d4d286b8b40f63b80a5d8bd"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_HeroKatana_neutral_NormalDX.png",
+          "sha256": "b8e871ad80427c679edeb3e0d690a38638bd2ea14a215edc97123505255014e4"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_HeroKatana_neutral_ORM.png",
+          "sha256": "e8804d35d7c44a44fe40b512fbd2e941d5beb7e4a40fc6b506d2260785810cd9"
+        }
+      ]
+    }
+  ],
+  "material_slots": {
+    "M_HK_Tamahagane_Polished": {
+      "surface": "forged_steel",
+      "tint": [
+        0.37,
+        0.43,
+        0.47
+      ],
+      "roughness_scale": 0.94,
+      "metallic_scale": 1.0
+    },
+    "M_HK_Ha_BrightSteel": {
+      "surface": "forged_steel",
+      "tint": [
+        0.62,
+        0.66,
+        0.67
+      ],
+      "roughness_scale": 0.67,
+      "metallic_scale": 1.0
+    },
+    "M_HK_Hamon_FrostedSteel": {
+      "surface": "forged_steel",
+      "tint": [
+        0.47,
+        0.5,
+        0.51
+      ],
+      "roughness_scale": 1.55,
+      "metallic_scale": 1.0
+    },
+    "M_HK_Mune_BrushedSteel": {
+      "surface": "forged_steel",
+      "tint": [
+        0.22,
+        0.26,
+        0.28
+      ],
+      "roughness_scale": 1.36,
+      "metallic_scale": 1.0
+    },
+    "M_HK_PatinatedIron": {
+      "surface": "patinated_metal",
+      "tint": [
+        0.07,
+        0.072,
+        0.069
+      ],
+      "roughness_scale": 1.0,
+      "metallic_scale": 0.94
+    },
+    "M_HK_AgedBrass": {
+      "surface": "patinated_metal",
+      "tint": [
+        0.43,
+        0.3,
+        0.12
+      ],
+      "roughness_scale": 0.8,
+      "metallic_scale": 0.94
+    },
+    "M_HK_BuffaloHorn": {
+      "surface": "urushi",
+      "tint": [
+        0.025,
+        0.026,
+        0.025
+      ],
+      "roughness_scale": 1.35,
+      "metallic_scale": 0.0
+    },
+    "M_HK_RaySkin_Ivory": {
+      "surface": "ray_skin",
+      "tint": [
+        0.34,
+        0.32,
+        0.25
+      ],
+      "roughness_scale": 1.0,
+      "metallic_scale": 0.0
+    },
+    "M_HK_IndigoIto": {
+      "surface": "woven_silk",
+      "tint": [
+        0.031,
+        0.052,
+        0.069
+      ],
+      "roughness_scale": 1.0,
+      "metallic_scale": 0.0
+    },
+    "M_HK_Urushi_BlackBrown": {
+      "surface": "urushi",
+      "tint": [
+        0.024,
+        0.017,
+        0.013
+      ],
+      "roughness_scale": 1.0,
+      "metallic_scale": 0.0
+    },
+    "M_HK_Sageo_Silk": {
+      "surface": "woven_silk",
+      "tint": [
+        0.08,
+        0.085,
+        0.08
+      ],
+      "roughness_scale": 1.05,
+      "metallic_scale": 0.0
+    },
+    "M_HK_Induction_Inlay": {
+      "surface": "neutral",
+      "tint": [
+        0.018,
+        0.31,
+        0.29
+      ],
+      "roughness_scale": 0.46,
+      "metallic_scale": 0.0
+    }
+  }
+}
