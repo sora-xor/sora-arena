@@ -139,7 +139,7 @@ tint = node(master, unreal.MaterialExpressionVectorParameter, -700, -330,
             parameter_name="Tint", default_value=unreal.LinearColor(1, 1, 1, 1))
 colored = node(master, unreal.MaterialExpressionMultiply, -350, -330)
 link(base, "RGB", colored, "A")
-link(vertex, "RGB", colored, "B")
+link(vertex, "", colored, "B")
 tinted = node(master, unreal.MaterialExpressionMultiply, -80, -330)
 link(colored, "", tinted, "A")
 link(tint, "RGB", tinted, "B")
