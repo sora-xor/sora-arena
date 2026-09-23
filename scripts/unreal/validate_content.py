@@ -162,8 +162,13 @@ assert naginata["name"] in (ROOT / "scripts/unreal/import_original_assets.py").r
 assert naginata["name"] not in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
 hero_character_root = content / "SourceArt/Characters/Hero"
 hero_character = json.loads((hero_character_root / "manifest.json").read_text())
-assert hero_character["schema_version"] == 1
+assert hero_character["schema_version"] == 2
 assert hero_character["name"] == "SM_Nyaagyu_HeroCharacter"
+assert hero_character["character_name_ja"] == "ニャーコト"
+assert hero_character["character_name_en"] == "Nyaakoto"
+assert hero_character["user_design_reference_embedded"] is False
+assert hero_character["user_design_reference_sha256"] == "c9f7a4bbe6ba529b2bbdb629db3ba09858c11b563c334e31593876455a550801"
+assert hero_character["sora_kamon_placements"] == ["chest", "waist", "sode_-1", "sode_1"]
 assert hero_character["generator"] == "scripts/art/create_nyaagyu_hero_character.py"
 assert hero_character["validator"] == "scripts/art/validate_nyaagyu_hero_character.py"
 assert hero_character["fbx"] == hero_character["name"] + ".fbx"
@@ -173,7 +178,7 @@ assert hero_character["local_forward"] == "+X face-forward; +Z up"
 assert hero_character["rigged"] is False and hero_character["external_images"] == []
 assert hero_character["source_parts"] >= 250 and 40000 <= hero_character["source_triangles"] < 100000
 assert hero_character["bounds_m"]["min"][2] < .01
-assert 1.83 < hero_character["bounds_m"]["max"][2] < 1.90
+assert 2.15 < hero_character["bounds_m"]["max"][2] < 2.22
 assert "Original project-owned character geometry" in hero_character["license"]
 assert "user-supplied SORA insignia" in hero_character["license"]
 for name, digest in ((hero_character["source_blend"], "blend_sha256"),
@@ -197,8 +202,9 @@ assert concept_bytes[:16] == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
 assert list(struct.unpack(">II", concept_bytes[16:24])) == concept["dimensions_px"]
 environment_root = content / "SourceArt/Environment/Original"
 environment = json.loads((environment_root / "manifest.json").read_text())
-assert environment["schema_version"] == 1
+assert environment["schema_version"] == 2
 assert environment["generator"] == "scripts/art/create_edo_environment_props.py"
+assert environment["sora_kamon_svg_sha256"] == hero_character["insignia_sha256"]
 assert environment["lantern_light_local_z_m"] == 2.52
 assert "Original project-owned geometry" in environment["license"]
 assert "CC0 Poly Haven" in environment["license"]

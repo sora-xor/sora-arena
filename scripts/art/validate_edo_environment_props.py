@@ -34,7 +34,7 @@ expected = ["SM_Edo_LanternPost", "SM_Nyaagyu_ToriiGate", "SM_Alien_DebtKiosk"]
 assert bpy.app.version[:2] == (5, 2), bpy.app.version_string
 assert Path(bpy.data.filepath).resolve() == (OUT / manifest["source_blend"]).resolve()
 assert [entry["name"] for entry in manifest["assets"]] == expected
-assert manifest["schema_version"] == 1
+assert manifest["schema_version"] == 2
 assert manifest["lantern_light_local_z_m"] == 2.52
 assert "Original project-owned geometry" in manifest["license"]
 assert "CC0 Poly Haven" in manifest["license"]
@@ -49,6 +49,16 @@ lantern_collection = bpy.data.collections.get("Edo_LanternPost_Editable")
 assert lantern_collection is not None
 core = lantern_collection.objects.get("Amber_LightCore")
 assert core is not None and abs(core.location.z - manifest["lantern_light_local_z_m"]) < 0.001
+gate_collection = bpy.data.collections.get("Nyaagyu_ToriiGate_Editable")
+assert gate_collection is not None
+logo = (ROOT / "Content/SourceArt/UI/sora_logo_NOtext2.svg")
+assert hashlib.sha256(logo.read_bytes()).hexdigest() == manifest["sora_kamon_svg_sha256"]
+assert gate_collection.objects.get("Gate_NamePlaque") is not None
+assert gate_collection.objects.get("Gate_SORAKamon_backplate") is not None
+paths = [obj for obj in gate_collection.objects if obj.name.startswith("UserSupplied_SORAKamon_gate_Path_")]
+assert len(paths) == 2
+assert {obj["source_svg_sha256"] for obj in paths} == {manifest["sora_kamon_svg_sha256"]}
+assert gate_collection.objects.get("Gate_Crest") is None
 
 for entry in manifest["assets"]:
     fbx = OUT / entry["fbx"]

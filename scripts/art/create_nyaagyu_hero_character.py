@@ -1,4 +1,4 @@
-"""Author an original, editable Nyaagyu feline-samurai world-character study.
+"""Author an original, editable Nyaakoto feline-samurai world-character study.
 
 Run with Blender 5.2.2: blender -b --factory-startup --python
 scripts/art/create_nyaagyu_hero_character.py
@@ -81,18 +81,18 @@ def mat(name, rgb, *, rough=.65, metal=0.0, coat=0.0, noise=0.0, bump=.0, emissi
     return m
 
 
-FUR = mat("M_Hero_AmberFur", (.39,.19,.079), rough=.93, noise=125, bump=.00025)
-FUR_DARK = mat("M_Hero_UmberFur", (.094,.051,.032), rough=.92, noise=132, bump=.00019)
-FUR_LIGHT = mat("M_Hero_CreamFur", (.68,.55,.39), rough=.91, noise=112, bump=.00018)
-EAR_INNER = mat("M_Hero_EarSkin", (.30,.096,.089), rough=.82, noise=83, bump=.00006)
-NOSE = mat("M_Hero_RoseNose", (.23,.086,.082), rough=.47)
-EYE = mat("M_Hero_AmberEye", (.73,.34,.043), rough=.15, coat=.42)
+FUR = mat("M_Hero_GreyTabbyFur", (.13,.15,.18), rough=.93, noise=125, bump=.00025)
+FUR_DARK = mat("M_Hero_CharcoalStripeFur", (.045,.053,.063), rough=.92, noise=132, bump=.00019)
+FUR_LIGHT = mat("M_Hero_WhiteFur", (.77,.80,.79), rough=.91, noise=112, bump=.00018)
+EAR_INNER = mat("M_Hero_EarSkin", (.40,.17,.17), rough=.82, noise=83, bump=.00006)
+NOSE = mat("M_Hero_RoseNose", (.42,.17,.18), rough=.47)
+EYE = mat("M_Hero_BlueEye", (.095,.35,.64), rough=.15, coat=.42)
 EYE_DARK = mat("M_Hero_EyePupil", (.008,.012,.013), rough=.19, coat=.28)
 EYE_WHITE = mat("M_Hero_EyeGlint", (.83,.78,.61), rough=.15)
-INDIGO = mat("M_Hero_IndigoSilk", (.019,.039,.063), rough=.80, noise=185, bump=.00013)
-INDIGO_LIGHT = mat("M_Hero_FoldedIndigo", (.043,.071,.096), rough=.84, noise=190, bump=.00013)
-KIMONO = mat("M_Hero_UndyedLinen", (.46,.39,.30), rough=.91, noise=185, bump=.00017)
-LACQUER = mat("M_Hero_OxbloodUrushi", (.072,.016,.014), rough=.25, coat=.65, noise=58, bump=.00006)
+INDIGO = mat("M_Hero_IndigoSilk", (.016,.023,.045), rough=.80, noise=185, bump=.00013)
+INDIGO_LIGHT = mat("M_Hero_FoldedIndigo", (.030,.041,.068), rough=.84, noise=190, bump=.00013)
+KIMONO = mat("M_Hero_UndyedLinen", (.42,.37,.31), rough=.91, noise=185, bump=.00017)
+LACQUER = mat("M_Hero_OxbloodUrushi", (.105,.011,.016), rough=.25, coat=.65, noise=58, bump=.00006)
 LACQUER_DARK = mat("M_Hero_BlackUrushi", (.015,.014,.014), rough=.28, coat=.57, noise=62, bump=.00006)
 IRON = mat("M_Hero_BlackenedIron", (.052,.057,.060), rough=.35, metal=.90, noise=107, bump=.00009)
 BRASS = mat("M_Hero_AgedBrass", (.43,.25,.093), rough=.32, metal=.89, noise=89, bump=.00008)
@@ -100,6 +100,11 @@ SILVER = mat("M_Hero_BurnishedSteel", (.45,.51,.53), rough=.22, metal=.96, noise
 CLAW = mat("M_Hero_IvoryClaw", (.63,.59,.48), rough=.43, noise=65)
 TEAL = mat("M_Hero_JadeCircuit", (.016,.40,.34), rough=.25, metal=.19, emission=.35)
 RESISTANCE_RED = mat("M_Hero_SORAResistanceRed", (.72,.036,.065), rough=.48)
+SASH_RED = mat("M_Hero_ScarletSash", (.23,.011,.024), rough=.79, noise=168, bump=.00013)
+BAMBOO = mat("M_Hero_YumiLaminatedBamboo", (.27,.15,.065), rough=.56, noise=93, bump=.00012)
+ARROW = mat("M_Hero_BambooArrowShaft", (.48,.32,.17), rough=.72, noise=111, bump=.00008)
+FLETCH = mat("M_Hero_RedArrowFletch", (.66,.050,.055), rough=.88, noise=118, bump=.00004)
+STRING = mat("M_Hero_YumiSilkString", (.70,.66,.53), rough=.82)
 
 
 def keep(obj, name, material):
@@ -246,6 +251,7 @@ ring_loft("Linen_under_kimono",[(.80,-.015,.16,.18),(.94,-.018,.19,.225),(1.15,-
 ring_loft("Indigo_samurai_haori",[(.85,-.024,.205,.255),(.99,-.024,.23,.29),(1.20,-.02,.225,.28),(1.38,-.01,.16,.20)],INDIGO_LIGHT)
 ring_loft("Layered_hakama_waist",[(.68,-.015,.19,.245),(.77,-.015,.19,.245),(.87,-.015,.205,.26)],INDIGO,pleats=.035)
 sphere("Fur_neck",(.02,0,1.413),(.105,.122,.135),FUR)
+sphere("White_throat_bib",(.103,0,1.413),(.049,.091,.117),FUR_LIGHT)
 
 # Legs are actually split; visible paws and digitigrade lower-leg transitions.
 for sign in (-1,1):
@@ -301,47 +307,56 @@ for row in range(6):
             sphere(f"Do_rivet_{row}_{sign}_{j}",(.210,y+j*.077,z),(.003,.004,.005),BRASS,8,6)
         line(f"Do_indigo_lacing_{row}_{sign}",[(.214,y-sign*.066,z+.016),(.215,y,z-.015),(.214,y+sign*.066,z+.016)],.0021,INDIGO)
 box("Obi_waist",(.003,0,.858),(.39,.53,.085),INDIGO,.013)
+box("Resistance_sash_band",(.016,0,.861),(.394,.538,.058),SASH_RED,.010)
+box("Resistance_sash_hip_knot",(.207,-.206,.853),(.066,.094,.073),SASH_RED,.012)
+surface("Resistance_sash_long_tail",[(.229,-.245,.836),(.227,-.137,.839),(.234,-.120,.539),(.230,-.236,.585)],[(0,1,2,3)],SASH_RED,thickness=.004)
+surface("Resistance_sash_short_tail",[(.230,-.239,.838),(.230,-.140,.839),(.226,-.122,.668),(.225,-.239,.695)],[(0,1,2,3)],SASH_RED,thickness=.004)
 box("Obi_burnished_plate",(.215,0,.858),(.023,.146,.091),BRASS,.009)
 sphere("Clan_mon_roundel",(.230,0,.858),(.010,.051,.046),LACQUER_DARK,24,16)
-for angle in range(6):
-    a=math.tau*angle/6
-    line(f"Clan_mon_ray_{angle}",[(.24,0,.858),(.242,.026*math.cos(a),.858+.024*math.sin(a))],.0028,BRASS)
 line("Under_kimono_cross_collar_a",[(.163,-.14,1.356),(.188,.04,1.20),(.192,.129,1.102)],.020,KIMONO)
 line("Under_kimono_cross_collar_b",[(.165,.14,1.355),(.193,-.025,1.205),(.197,-.110,1.13)],.018,INDIGO)
 
-# Use the user's exact SVG paths as a small raised resistance insignia. The
-# vector source is read byte-for-byte; this is not a redrawn approximation.
+# Use the user's exact SVG paths for every clan crest. The vector source is
+# read byte-for-byte; no rays or procedural substitute are allowed as kamon.
 logo_svg=ROOT / "Content/SourceArt/UI/sora_logo_NOtext2.svg"
 logo_record=json.loads((logo_svg.parent/"sora_logo_manifest.json").read_text())
 assert hashlib.sha256(logo_svg.read_bytes()).hexdigest()==logo_record["source_sha256"]
+
+def sora_kamon(name, center, diameter, material):
+    before=set(bpy.data.objects)
+    bpy.ops.import_curve.svg(filepath=str(logo_svg))
+    curves=[o for o in set(bpy.data.objects)-before if o.type=="CURVE"]
+    assert len(curves)==2,[o.name for o in curves]
+    corners=[o.matrix_world @ Vector(c) for o in curves for c in o.bound_box]
+    lo_x=min(v.x for v in corners);hi_x=max(v.x for v in corners)
+    lo_y=min(v.y for v in corners);hi_y=max(v.y for v in corners)
+    origin=((lo_x+hi_x)/2,(lo_y+hi_y)/2)
+    scale=diameter/max(hi_x-lo_x,hi_y-lo_y)
+    for index,o in enumerate(curves):
+        bpy.ops.object.select_all(action="DESELECT")
+        o.select_set(True)
+        bpy.context.view_layer.objects.active=o
+        bpy.ops.object.convert(target="MESH")
+        o=bpy.context.object
+        for vert in o.data.vertices:
+            p=o.matrix_world @ vert.co
+            vert.co=(center[0],center[1]+(p.x-origin[0])*scale,
+                     center[2]+(p.y-origin[1])*scale)
+        o.matrix_world.identity()
+        for c in tuple(o.users_collection):
+            c.objects.unlink(o)
+        parts.objects.link(o)
+        o.name=f"UserSupplied_SORAKamon_{name}_Path_{index}"
+        o.data.materials.clear()
+        o.data.materials.append(material)
+        o["source_svg_sha256"]=logo_record["source_sha256"]
+
 bone("Resistance_insignia_backing",(.222,-.108,1.207),(.230,-.108,1.207),.044,.044,LACQUER_DARK,32)
-before=set(bpy.data.objects)
-bpy.ops.import_curve.svg(filepath=str(logo_svg))
-logo_curves=[o for o in set(bpy.data.objects)-before if o.type=="CURVE"]
-assert len(logo_curves)==2, [o.name for o in logo_curves]
-corners=[o.matrix_world @ Vector(c) for o in logo_curves for c in o.bound_box]
-low_x=min(v.x for v in corners);high_x=max(v.x for v in corners)
-low_y=min(v.y for v in corners);high_y=max(v.y for v in corners)
-logo_center=((low_x+high_x)/2,(low_y+high_y)/2)
-logo_scale=.069/max(high_x-low_x,high_y-low_y)
-for index,o in enumerate(logo_curves):
-    bpy.ops.object.select_all(action="DESELECT")
-    o.select_set(True)
-    bpy.context.view_layer.objects.active=o
-    bpy.ops.object.convert(target="MESH")
-    o=bpy.context.object
-    for vert in o.data.vertices:
-        p=o.matrix_world @ vert.co
-        vert.co=(.235, -.108+(p.x-logo_center[0])*logo_scale,
-                 1.207+(p.y-logo_center[1])*logo_scale)
-    o.matrix_world.identity()
-    for c in tuple(o.users_collection):
-        c.objects.unlink(o)
-    parts.objects.link(o)
-    o.name=f"UserSupplied_SORAInsignia_Path_{index}"
-    o.data.materials.clear()
-    o.data.materials.append(RESISTANCE_RED)
-    o["source_svg_sha256"]=logo_record["source_sha256"]
+sora_kamon("chest",(.235,-.108,1.207),.069,RESISTANCE_RED)
+sora_kamon("waist",(.245,0,.858),.068,RESISTANCE_RED)
+for sign in (-1,1):
+    bone(f"Sode_kamon_backing_{sign}",(.116,sign*.345,1.325),(.121,sign*.345,1.325),.032,.032,LACQUER_DARK,24)
+    sora_kamon(f"sode_{sign}",(.126,sign*.345,1.325),.052,BRASS)
 
 # Head: short-furred broad cheeks, raised brow and correctly separated muzzle.
 head_start=set(parts.objects)
@@ -372,6 +387,7 @@ for sign in (-1,1):
         z=1.55+rng.uniform(-.06,.07)
         line(f"Guard_hair_{sign}_{whisker}",[(.075,y,z),(.026,y+sign*.040,z+a*.035)],.0006,FUR_LIGHT,1)
 sphere("Soft_nose_bridge",(.202,0,1.626),(.060,.060,.035),FUR)
+sphere("White_nose_blaze",(.235,0,1.614),(.026,.026,.036),FUR_LIGHT,24,16)
 for sign in (-1,1):
     for stripe in range(2):
         y0=sign*(.022+stripe*.043)
@@ -381,10 +397,8 @@ line("Philtrum",[(.297,0,1.58),(.29,0,1.547)],.0017,FUR_DARK)
 line("Mouth_right",[(.29,0,1.547),(.28,.054,1.541)],.0014,FUR_DARK)
 line("Mouth_left",[(.29,0,1.547),(.28,-.054,1.541)],.0014,FUR_DARK)
 
-# Knotted head cloth and ear-clear helmet brim, without enclosing the cat face.
-line("Hachimaki_headband",[(.16,-.172,1.762),(.065,-.202,1.784),(-.118,-.143,1.781),(-.150,0,1.779),(-.118,.143,1.781),(.066,.202,1.783),(.16,.171,1.762)],.010,INDIGO)
-sphere("Hachimaki_knot",(-.166,-.138,1.77),(.043,.045,.041),INDIGO_LIGHT)
-surface("Hachimaki_trailing_cloth",[(-.17,-.148,1.77),(-.23,-.19,1.72),(-.29,-.21,1.55),(-.27,-.16,1.56)],[(0,1,2,3)],INDIGO,thickness=.002)
+# No helmet or headband hides the upright ears and distinctive tabby face in
+# the user's Nyaakoto reference. The asymmetric small crown stripes remain fur.
 
 # A restrained head-to-shoulder ratio avoids a mascot silhouette. Apply the
 # same transform to all facial parts, ears, whiskers and the hachimaki.
@@ -408,6 +422,54 @@ line("Saya_lacquer",[(-.11,-.304,.91),(-.30,-.32,.72),(-.47,-.33,.43),(-.54,-.32
 for p in ((-.125,-.306,.89),(-.49,-.33,.39)):
     sphere("Saya_brass_collar",p,(.035,.035,.026),BRASS,16,12)
 line("Sageo_silk_cord",[(-.14,-.31,.91),(-.20,-.38,.72),(-.11,-.35,.57)],.005,INDIGO_LIGHT)
+# A sheathed katana's wrapped hilt projects forward from the left hip; the
+# blade is never modelled as an exposed back-scabbard or fantasy straight sword.
+line("Katana_tsuka_sheathed",[(-.105,-.310,.925),(.058,-.331,1.021),(.247,-.351,1.120)],.019,FUR_LIGHT)
+sphere("Katana_tsuba_iron",(-.101,-.312,.928),(.024,.049,.051),IRON,24,14)
+for i in range(8):
+    t=i/8
+    x=-.073+t*.290
+    z=.946+t*.170
+    line(f"Katana_tsukamaki_cross_{i}",[(x,-.351,z-.017),(x+.024,-.355,z+.018)],.003,INDIGO)
+sphere("Katana_kashira",(.251,-.352,1.125),(.023,.024,.023),IRON,18,12)
+
+# The open ebira is a source-art interpretation of the Japanese quiver type
+# documented by the British Museum. Six bamboo shafts show red fletching above
+# the shoulder, as in the supplied Nyaakoto image. Nocks point upward.
+box("Ebira_lacquer_backboard",(-.230,-.340,1.134),(.030,.213,.374),LACQUER_DARK,.009)
+for z in (.984,1.099,1.218,1.321):
+    line(f"Ebira_rattan_crossbar_{z}",[(-.245,-.448,z),(-.259,-.338,z),(-.245,-.232,z)],.008,BAMBOO)
+for y in (-.437,-.243):
+    line(f"Ebira_lacing_{y}",[(-.227,y,.947),(-.239,y,1.327)],.005,SASH_RED)
+line("Ebira_shoulder_strap",[(-.227,-.329,1.29),(-.065,-.213,1.39),(.145,.130,1.25)],.012,INDIGO)
+for index in range(6):
+    y=-.420+index*.033
+    x=-.266-(index%2)*.011
+    z_top=1.727+index*.012
+    bone(f"Ya_bamboo_shaft_{index}",(x,y,1.05),(x+.005,y,z_top),.0042,.0042,ARROW,10)
+    bone(f"Ya_nock_{index}",(x+.005,y,z_top-.009),(x+.005,y,z_top+.012),.006,.006,IRON,10)
+    for side in (-1,1):
+        offset=side*.022
+        surface(f"Ya_red_fletch_{index}_{side}",
+                [(x+.005,y,z_top-.078),(x+.006,y+offset,z_top-.030),
+                 (x+.005,y,z_top+.006)],[(0,1,2)],FLETCH,thickness=.001)
+
+# A long asymmetric yumi is carried beside the back, clear of the cat's face.
+# The ~2.2 m laminated-bamboo silhouette and grip about one-third from the
+# lower tip follow the All Japan Kyudo Federation equipment proportions; the
+# placement is a static review pose, not a claim of historical carry mechanics.
+yumi_points=[(-.405,-.505,.045),(-.483,-.517,.37),(-.520,-.520,.69),
+             (-.471,-.524,1.020),(-.451,-.526,1.380),(-.364,-.522,1.780),
+             (-.215,-.511,2.178)]
+line("Yumi_laminated_bamboo",yumi_points,.010,BAMBOO,5)
+line("Yumi_silk_string",[yumi_points[0],(-.222,-.531,1.085),yumi_points[-1]],.0017,STRING,2)
+line("Yumi_lower_grip_wrap",[(-.521,-.520,.640),(-.518,-.520,.736)],.016,INDIGO,4)
+for i in range(5):
+    z=.644+i*.022
+    line(f"Yumi_grip_rattan_{i}",[(-.539,-.533,z),(-.502,-.533,z+.006)],.0026,BRASS)
+for index,point in enumerate((yumi_points[0],yumi_points[-1])):
+    sphere(f"Yumi_horn_nock_{index}",point,(.012,.011,.017),IRON,14,10)
+
 box("Karakuri_wrist_cell",(.062,-.461,1.00),(.052,.040,.092),IRON,.008)
 for z in (.971,.990,1.009):
     line(f"Wrist_cell_trace_{z}",[(.092,-.482,z),(.105,-.490,z+.010)],.003,TEAL)
@@ -496,8 +558,10 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 manifest={
-    "schema_version":1,
+    "schema_version":2,
     "name":NAME,
+    "character_name_ja":"ニャーコト",
+    "character_name_en":"Nyaakoto",
     "generator":"scripts/art/create_nyaagyu_hero_character.py",
     "validator":"scripts/art/validate_nyaagyu_hero_character.py",
     "source_blend":BLEND.name,"blend_sha256":sha(BLEND),
@@ -508,10 +572,16 @@ manifest={
     "source_parts":len(source_parts),"source_triangles":source_tris,
     "bounds_m":bounds,"local_forward":"+X face-forward; +Z up",
     "world_origin_m":[0,0,0],"rigged":False,"external_images":[],
+    "user_design_reference_sha256":"c9f7a4bbe6ba529b2bbdb629db3ba09858c11b563c334e31593876455a550801",
+    "user_design_reference_embedded":False,
+    "design_details":["grey tabby and white fur","blue eyes","red-and-black lamellar armor",
+                      "red waist sash","sheathed katana","asymmetric yumi",
+                      "open ebira with six red-fletched bamboo arrows"],
     "insignia_source":"../../UI/sora_logo_NOtext2.svg",
     "insignia_sha256":logo_record["source_sha256"],
+    "sora_kamon_placements":["chest","waist","sode_-1","sode_1"],
     "license":"Original project-owned character geometry, shaders and review renders; exact user-supplied SORA insignia paths retain their user-provided provenance and are licensed only for this game. No purchased or external models/textures",
-    "limitations":"Stylized concept/blockout, not the photoreal shipping character. Unrigged static mesh. Blender procedural shaders and fur geometry have not been evaluated in UE 5.8.2. No animation, cloth simulation, groom, UE import, or in-game performance claim.",
+    "limitations":"Stylized concept/blockout, not the photoreal shipping character. Unrigged static mesh; the bow and quiver are static pose source, not functional carry/draw animation. Blender procedural shaders and fur geometry have not been evaluated in UE 5.8.2. No animation, cloth simulation, groom, UE import, or in-game performance claim.",
 }
 MANIFEST.write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+"\n")
 print("NYAAGYU_HERO_SOURCE_CREATED",len(source_parts),source_tris,bounds)

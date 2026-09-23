@@ -24,6 +24,9 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Content/SourceArt/Environment/Original"
 PALETTE = ROOT / "Content/SourceArt/Environment/PolyHaven"
 FONT = ROOT / "Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
+SORA_SVG = ROOT / "Content/SourceArt/UI/sora_logo_NOtext2.svg"
+SORA_LOGO_RECORD = json.loads((SORA_SVG.parent / "sora_logo_manifest.json").read_text())
+assert hashlib.sha256(SORA_SVG.read_bytes()).hexdigest() == SORA_LOGO_RECORD["source_sha256"]
 OUT.mkdir(parents=True, exist_ok=True)
 bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.object.select_all(action="SELECT")
@@ -185,6 +188,34 @@ def label(name, text, location, size, mat):
     return keep(bpy.context.object, name)
 
 
+def gate_sora_kamon(name, x, front_y, z, diameter, mat):
+    """Project the exact supplied SVG paths onto the torii's front plane."""
+    before = set(bpy.data.objects)
+    bpy.ops.import_curve.svg(filepath=str(SORA_SVG))
+    curves = [obj for obj in set(bpy.data.objects) - before if obj.type == "CURVE"]
+    assert len(curves) == 2, [obj.name for obj in curves]
+    corners = [obj.matrix_world @ Vector(corner) for obj in curves for corner in obj.bound_box]
+    lo_x, hi_x = min(v.x for v in corners), max(v.x for v in corners)
+    lo_y, hi_y = min(v.y for v in corners), max(v.y for v in corners)
+    center_x, center_y = (lo_x + hi_x) / 2, (lo_y + hi_y) / 2
+    scale = diameter / max(hi_x - lo_x, hi_y - lo_y)
+    for index, obj in enumerate(curves):
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.convert(target="MESH")
+        obj = bpy.context.object
+        for vert in obj.data.vertices:
+            p = obj.matrix_world @ vert.co
+            vert.co = (x + (p.x - center_x) * scale, front_y,
+                       z + (p.y - center_y) * scale)
+        obj.matrix_world.identity()
+        obj = keep(obj, f"UserSupplied_SORAKamon_{name}_Path_{index}")
+        obj.data.materials.clear()
+        obj.data.materials.append(mat)
+        obj["source_svg_sha256"] = SORA_LOGO_RECORD["source_sha256"]
+
+
 def torii_lintel(name, half_width, bottom_z, height, depth, mat):
     """A slight upper-rail rise makes the gate silhouette legible at distance."""
     verts = []
@@ -256,7 +287,10 @@ for side in (-1, 1):
     box(f"Nuki_EndBrace_{side}", (side * 2.52, 0, 3.91), (.15, .31, .28), BRASS, .005)
     # Thin repair inlay gives the gate a distinct Nyaagyu resistance identity.
     tube(f"Rescue_RepairSeam_{side}", [(side*2.36, -.193, 2.55), (side*2.36, -.193, 3.48)], .007, BRASS)
-label("Gate_Crest", "猫柳生", (0, -.122, 4.05), .18, BRASS)
+label("Gate_NamePlaque", "猫柳生", (0, -.122, 4.05), .18, BRASS)
+cylinder("Gate_SORAKamon_backplate", (0, -.324, 5.115), .165, .015,
+         AGED_IRON, 32, (math.pi / 2, 0, 0))
+gate_sora_kamon("gate", 0, -.337, 5.115, .255, BRASS)
 
 
 active_collection = ASSETS["SM_Alien_DebtKiosk"]
@@ -442,8 +476,10 @@ for image in bpy.data.images:
 bpy.ops.wm.save_as_mainfile(filepath=str(blend))
 manifest_path = OUT / "manifest.json"
 manifest_path.write_text(json.dumps({
-    "schema_version": 1,
+    "schema_version": 2,
     "generator": "scripts/art/create_edo_environment_props.py",
+    "sora_kamon_svg_sha256": SORA_LOGO_RECORD["source_sha256"],
+    "sora_kamon_placement": "Nyaagyu torii gate front lintel",
     "generator_blender": bpy.app.version_string,
     "license": "Original project-owned geometry; no purchased meshes. Linked palette maps are CC0 Poly Haven files with separate manifest.",
     "source_blend": blend.name,

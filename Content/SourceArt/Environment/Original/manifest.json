@@ -1,6 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "generator": "scripts/art/create_edo_environment_props.py",
+  "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "sora_kamon_placement": "Nyaagyu torii gate front lintel",
   "generator_blender": "5.2.2 LTS",
   "license": "Original project-owned geometry; no purchased meshes. Linked palette maps are CC0 Poly Haven files with separate manifest.",
   "source_blend": "Edo_Alien_Props.blend",
@@ -15,7 +17,7 @@
     {
       "name": "SM_Edo_LanternPost",
       "fbx": "SM_Edo_LanternPost.fbx",
-      "fbx_sha256": "9155f510319d43131c816eb627ff42f2ec4ce474058323f4325f50bbefe7052c",
+      "fbx_sha256": "5f9d555d1d53a3933aaee706a964c7785afab1ed8f3e9f064498a0d317b96fc4",
       "editable_parts": 41,
       "source_triangles": 3536,
       "collision_boxes": 1,
@@ -38,14 +40,14 @@
     {
       "name": "SM_Nyaagyu_ToriiGate",
       "fbx": "SM_Nyaagyu_ToriiGate.fbx",
-      "fbx_sha256": "0bdd0abbacd62646e22a18e1e7987ed1e7ee2f3b8999e89879bfb42918d28c9f",
-      "editable_parts": 21,
-      "source_triangles": 15532,
+      "fbx_sha256": "0a0cbb9727b35d684930bd9c93157a463e9b7e200c3d580fcc1ffd97eb1db4aa",
+      "editable_parts": 24,
+      "source_triangles": 15752,
       "collision_boxes": 3,
       "bounds_m": {
         "min": [
           -2.96,
-          -0.305,
+          -0.337,
           0.0
         ],
         "max": [
@@ -61,7 +63,7 @@
     {
       "name": "SM_Alien_DebtKiosk",
       "fbx": "SM_Alien_DebtKiosk.fbx",
-      "fbx_sha256": "d8912e00ecd3a6af1b4eac439f2a3038bedf4c7f8d69cca0f534fbb1c932701d",
+      "fbx_sha256": "94ae51302a610e7fdb933ecda46de7b86f2649a94cf362a18ec950ee006cba7b",
       "editable_parts": 55,
       "source_triangles": 16924,
       "collision_boxes": 1,
