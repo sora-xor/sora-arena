@@ -7,7 +7,7 @@ legacy formats, aliases, and fallback decoders are prohibited.
 Japanese is the primary language for all dialogue and player-facing interfaces.
 English subtitles are on by default. Localization is part of campaign production,
 including subtitle timing, speaker identification, readable Japanese fonts and
-controller-readable menus. The offline catalog now contains 24 timed bilingual
+controller-readable menus. The offline catalog now contains 25 timed bilingual
 dialogue cues across eight chapters, shown during active gameplay; no voice acting
 is recorded, and timing/readability still need Unreal play verification.
 The HUD gives Japanese and English campaign subtitles, speaker names and notices
@@ -50,7 +50,9 @@ requirements; prototype props vary by task type and change appearance on
 activation. The first dojo encounter uses nonlethal wooden-sword sparring
 rather than pre-invasion alien enemies. It persists defeated opponents,
 restored sites, and exit completion to a local SaveGame checkpoint, rejecting
-inconsistent site progress on load. This still needs an editor build and an
+inconsistent site progress on load. Round resets now destroy live explosive
+shells before restoring an encounter, so a previous attempt cannot damage new
+opponents or advance their saved kill count. This still needs an editor build and an
 in-game save/reload test; the shared encounter layouts do not meet the
 six-to-eight-hour campaign target.
 The final chapter now reserves its eighteenth opponent for a distinct alien
@@ -162,8 +164,9 @@ verified session/offer snapshot and a separate pre-sign confirmation. See
 Join and NFT purchase signing now fail closed in the game before a wallet
 request until that review exists. A non-authorizing typed Join inspector is
 implemented in the native bridge and its two focused Rust tests pass. It
-remains uncommitted under Iroha's signed-commit rule and is absent from the
-currently staged game library. It cannot substitute for the missing
+remains uncommitted under Iroha's signed-commit rule. A release-profile local
+research bridge containing this inspector is staged on macOS and passed native
+smoke checks; it cannot substitute for the missing
 authenticated session quote. Open and payout-claim scaffolds retain their
 existing test-network behavior.
 The Iroha JavaScript native addon now builds and publishes with the project-specific
