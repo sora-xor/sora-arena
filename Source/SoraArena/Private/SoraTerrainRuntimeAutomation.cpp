@@ -66,6 +66,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         TileLocations.Add(Name, Component->GetRelativeLocation());
         TestEqual(*FString::Printf(TEXT("Terrain asset %s"), *Name), Mesh->GetPathName(),
             FString::Printf(TEXT("/Game/Generated/Environment/Terrain/%s.%s"), *Name, *Name));
+#if WITH_EDITORONLY_DATA
 #if PLATFORM_MAC
         TestFalse(*FString::Printf(TEXT("Mac tile %s uses conventional geometry"), *Name),
             Mesh->GetNaniteSettings().bEnabled);
@@ -73,6 +74,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         TestTrue(*FString::Printf(TEXT("High-detail tile %s enables Nanite"), *Name),
             Mesh->GetNaniteSettings().bEnabled);
 #endif
+#endif // Nanite authoring settings are stripped from packaged game targets.
         TestTrue(*FString::Printf(TEXT("Terrain tile %s does not change collision"), *Name),
             Component->GetCollisionEnabled() == ECollisionEnabled::NoCollision);
         TestTrue(*FString::Printf(TEXT("Terrain tile %s contributes to distance-field lighting"), *Name),
