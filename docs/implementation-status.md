@@ -345,6 +345,14 @@ unregistered Arena proof. The research fixture also fixes all batch epochs at
 zero while native forced batches advance epochs. A synthetic test-only session
 would not meet the consensus-evidence requirement; source-derived `ArenaV1`,
 canonical epoch mapping and restoration validation remain required.
+
+An unfunded, unregistered translation test now verifies all thirteen signed
+two-tick peer batches and maps them to native forced-batch epochs 0–12,
+deriving separate P2P, input-transcript, and conditional dispute roots. It
+rejects altered epochs, order, frames, slots, and hash-domain substitution.
+Its checkpoint is supplied by the caller, not selected by consensus, so this
+does not relax the native routing or settlement gate.
+
 An unregistered Iroha research preflight separately measured an 18,000-batch,
 twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
 4 MiB proof envelope before the rest of a complete combat witness. Repeated
