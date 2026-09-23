@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_horse_pbr.py",
+  "base_horse_blend_sha256": "2e60daa03a5cae8a351018bd30abbcbb8863df3661838fdec081fcce6e763d92",
+  "base_horse_fbx_sha256": "bd86398256e7a69613ff6edec97db3a405bd1fea4f202efb67b8e61116242bf4",
+  "sora_logo_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "source_license": "First-party OpenAI image-generation output owned by the project user under the OpenAI Terms of Use, subject to those terms; no third-party stock textures",
+  "sources": [
+    {
+      "surface": "horse_coat",
+      "file": "Source/SealBrownHorseCoat_ImageGen_v1.png",
+      "sha256": "ee6228efa78ec44c6f6e2ea9bdde2bec82e3d871ff3393b094ff9c1a4c489c12",
+      "origin": "Built-in OpenAI image_gen.imagegen; text-only prompt; 2026-09-24",
+      "origin_output_id": "exec-4d1cc66a-c60e-491a-8d27-711f3f5c3ea6",
+      "prompt": "Use case: photorealistic-natural. Asset type: PBR albedo source texture for an original Edo-era Japanese horse in an Unreal Engine game. A square top-down orthographic macro photograph-like swatch of a healthy compact horse's short sleek seal-brown coat: fine individual dark reddish-brown hairs, slightly darker roots and warm chestnut highlights, subtle natural mottling, no white patches. Every part of frame is horse coat at one consistent scale. Broad neutral diffused lighting suitable for albedo, with no cast shadow, specular hotspot, vignette or depth of field. Visually seamless opposite edges for tiling. No horse anatomy, saddle, mane, skin, face, background, text or watermark.",
+      "source_url": null,
+      "commercial_use_rights_basis": "OpenAI Terms of Use, Content ownership assignment; subject to the Terms",
+      "rights_url": "https://openai.com/policies/row-terms-of-use/"
+    },
+    {
+      "surface": "tazuna_leather",
+      "file": "Source/TannedTazunaLeather_ImageGen_v1.png",
+      "sha256": "19f71195568d1b23191c895301b9369e6037c9b6cb01e65a7f56d7cd06c5c274",
+      "origin": "Built-in OpenAI image_gen.imagegen; text-only prompt; 2026-09-24",
+      "origin_output_id": "exec-ef17bea5-3cb0-4c50-986c-1dcd0c81127f",
+      "prompt": "Use case: photorealistic-natural. Asset type: repeatable PBR albedo source for historically plausible Japanese horse tack leather in a game. Square top-down orthographic macro swatch of dark chestnut-brown vegetable-tanned leather with dense irregular grain, very fine age creases and subtle rubbed edges but no cuts or seam lines. Even neutral diffuse capture lighting suitable for albedo, no cast shadows or specular highlights. Material fills the frame at consistent scale and is visually seamless across opposite edges. No straps, buckles, stitching, saddle silhouette, labels, text, logo or watermark.",
+      "source_url": null,
+      "commercial_use_rights_basis": "OpenAI Terms of Use, Content ownership assignment; subject to the Terms",
+      "rights_url": "https://openai.com/policies/row-terms-of-use/"
+    },
+    {
+      "surface": "abumi_iron",
+      "file": "Source/BlackenedAbumiIron_ImageGen_v1.png",
+      "sha256": "4a1f5a1310e895a1457cb7d4bce39dec272bbe0576bf63e892db134dd51fdc03",
+      "origin": "Built-in OpenAI image_gen.imagegen; text-only prompt; 2026-09-24",
+      "origin_output_id": "exec-3533b491-95f4-4626-b062-5f5d1156131d",
+      "prompt": "Use case: photorealistic-natural. Asset type: PBR albedo source for Japanese horse stirrups, bit, and fittings in a historical game. Square top-down orthographic macro material swatch of hand-worked blackened wrought iron: deep charcoal iron with subtle irregular forge texture, worn grey edges suggested only through fine material variation, tiny oxidation specks, no rust flakes. Uniform neutral diffuse albedo lighting without shadows, reflections, depth of field, or specular hotspots. Same material at a consistent scale fills the whole frame, visually seamless opposite edges. No stirrup shape, bit, hardware silhouette, text, logo or watermark.",
+      "source_url": null,
+      "commercial_use_rights_basis": "OpenAI Terms of Use, Content ownership assignment; subject to the Terms",
+      "rights_url": "https://openai.com/policies/row-terms-of-use/"
+    }
+  ],
+  "maps": [
+    {
+      "name": "horse_coat",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaagyu_horse_coat_Albedo.png",
+          "sha256": "3bb37bf3176d30271935282f1724e7b4bd153a2141da54b9ff0d4b4e842fac1c"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaagyu_horse_coat_NormalDX.png",
+          "sha256": "72be9f7babdd8f14aa76ed5c09fb0c0052a3049232a0291a033ed4e893e0d1ac"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaagyu_horse_coat_ORM.png",
+          "sha256": "ee52a89780d688d8cb0d821efcffe2f62d987746e936bcccf436eee75ed559da"
+        }
+      ],
+      "roughness": 0.72,
+      "metallic": 0.0
+    },
+    {
+      "name": "tazuna_leather",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaagyu_tazuna_leather_Albedo.png",
+          "sha256": "0a3be7550ae9d3affdc71caf4f2b6c985ac09a62da0bc85c20db69aa9871b763"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaagyu_tazuna_leather_NormalDX.png",
+          "sha256": "e19cd44803664c6cea176b62e96ffb33a4184233a6b60e8e9a41dc48b7f4f5bb"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaagyu_tazuna_leather_ORM.png",
+          "sha256": "ef3e1d37c5e6a7dc58005b0984e788d69c0bd23fd27a7a3506538abbda23beee"
+        }
+      ],
+      "roughness": 0.67,
+      "metallic": 0.0
+    },
+    {
+      "name": "abumi_iron",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaagyu_abumi_iron_Albedo.png",
+          "sha256": "7a89acd7a9573660facf6721704a0d4ca2b56d17f295358addcba23f8ea076d6"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaagyu_abumi_iron_NormalDX.png",
+          "sha256": "a5880aec230d0da26cb05584783fcb7b91ceb4a1d4510338ef1976cf3a8b2e0b"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaagyu_abumi_iron_ORM.png",
+          "sha256": "7dc149af2dc177b63e4b4e5fe0b23e27af4c0f56a70b232b52305232871173ef"
+        }
+      ],
+      "roughness": 0.46,
+      "metallic": 0.88
+    }
+  ],
+  "material_slots": {
+    "M_Horse_SealBrownCoat": {
+      "surface": "horse_coat",
+      "tint": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "M_Horse_DarkPoints": {
+      "surface": "horse_coat",
+      "tint": [
+        0.54,
+        0.52,
+        0.51
+      ]
+    },
+    "M_Tack_DarkLeather": {
+      "surface": "tazuna_leather",
+      "tint": [
+        0.83,
+        0.78,
+        0.73
+      ]
+    },
+    "M_Tack_BlackenedIron": {
+      "surface": "abumi_iron",
+      "tint": [
+        0.91,
+        0.93,
+        0.95
+      ]
+    }
+  },
+  "limitations": "Generated swatches are not measured scans. Normal/roughness are high-frequency authoring estimates, not calibrated material capture. Original horse anatomy, tack dimensions, and static rig limits remain unchanged."
+}

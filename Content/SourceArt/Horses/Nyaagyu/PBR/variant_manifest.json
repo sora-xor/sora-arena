@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_horse_pbr_variant.py",
+  "base_blend_sha256": "2e60daa03a5cae8a351018bd30abbcbb8863df3661838fdec081fcce6e763d92",
+  "base_fbx_sha256": "bd86398256e7a69613ff6edec97db3a405bd1fea4f202efb67b8e61116242bf4",
+  "pbr_manifest_sha256": "623e2fd6abc81c613874e386a481db0e87f5bf46c42d34d84908f27eddf974a5",
+  "blend": "Nyaagyu_HorseAndTack_PBR.blend",
+  "blend_sha256": "bc35f96f5d35de5a59f488233a9d23e5d6328aa853d832a1043f58489119c76b",
+  "fbx": "SM_Nyaagyu_HorseAndTack_PBR.fbx",
+  "fbx_sha256": "9c24e0e5aad82af2ff12c562548d59bb73d7c7195001cce9551219459d0bfbeb",
+  "review": "Nyaagyu_HorseAndTack_PBR_Review.png",
+  "review_sha256": "c679e773cb5d001010bcd6ffdaebbb9fdd69e49e22001a8c2fa8b73c62f4f56f",
+  "source_parts": 135,
+  "source_triangles": 69392,
+  "source_geometry_sha256": "db649dd55bbfd4d716d09096de24b6c5c448c21fa6bb47558e4d2ce5a604519d",
+  "material_slots": [
+    "M_Horse_BlackMane",
+    "M_Horse_DarkPoints",
+    "M_Horse_Eye",
+    "M_Horse_EyeRim",
+    "M_Horse_HoofHorn",
+    "M_Horse_Muzzle",
+    "M_Horse_SealBrownCoat",
+    "M_Tack_AgedGold",
+    "M_Tack_BlackUrushi",
+    "M_Tack_BlackenedIron",
+    "M_Tack_CrimsonSilk",
+    "M_Tack_DarkLeather",
+    "M_Tack_IndigoSilk",
+    "M_Tack_OxbloodUrushi",
+    "M_Tack_SORA_Red",
+    "M_Tack_SilverInlay",
+    "M_Tack_StainedWood"
+  ],
+  "exact_sora_kamon_objects": [
+    "SORA_kamon_exact_svg_abumi_-1_0",
+    "SORA_kamon_exact_svg_abumi_-1_1",
+    "SORA_kamon_exact_svg_abumi_1_0",
+    "SORA_kamon_exact_svg_abumi_1_1",
+    "SORA_kamon_exact_svg_aori_-1_0",
+    "SORA_kamon_exact_svg_aori_-1_1",
+    "SORA_kamon_exact_svg_aori_1_0",
+    "SORA_kamon_exact_svg_aori_1_1"
+  ],
+  "sora_logo_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "anchors_m": {
+    "Horse_Root": [
+      0,
+      0,
+      0
+    ],
+    "Saddle_RiderSeat": [
+      -0.03,
+      0,
+      1.43
+    ],
+    "Tazuna_LeftGrip": [
+      0.183,
+      -0.125,
+      1.352
+    ],
+    "Tazuna_RightGrip": [
+      0.183,
+      0.125,
+      1.352
+    ],
+    "Abumi_LeftFoot": [
+      -0.035,
+      -0.432,
+      0.867
+    ],
+    "Abumi_RightFoot": [
+      -0.035,
+      0.432,
+      0.867
+    ]
+  },
+  "unreal_asset": "/Game/ArtReview/Horses/NyaagyuPBR/SM_Nyaagyu_HorseAndTack_PBR.SM_Nyaagyu_HorseAndTack_PBR",
+  "limitations": "UVs and material maps only. Static, unrigged anatomy/tack remains stylized; no measured fur groom, tack wear scan, animation, riding simulation, or UE import validation."
+}
