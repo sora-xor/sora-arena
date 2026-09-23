@@ -36,6 +36,10 @@ if [[ ! -x "$PROJECT_ROOT/Binaries/Mac/SoraArena.app/Contents/MacOS/SoraArena" ]
   echo "Mac game target is missing; build it before staging." >&2
   exit 1
 fi
+if [[ ! -f "$PROJECT_ROOT/Binaries/Mac/SoraArena.target" ]]; then
+  echo "Mac game target receipt is missing; finish the build before staging." >&2
+  exit 1
+fi
 if [[ ! -f "$PROJECT_ROOT/Saved/Cooked/Mac/ue.projectstore" ]]; then
   echo "Mac cooked content is missing; run scripts/toolchain/cook-mac.sh first." >&2
   exit 1
