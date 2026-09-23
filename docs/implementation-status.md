@@ -69,7 +69,11 @@ bound to its selected weapon, preventing cross-weapon precharge. Those rules
 advanced the identity to `sora-arena-first-release-4`. A subsequent attribution
 correction makes self-inflicted explosive deaths reward no opponent even after
 recent qualifying enemy damage; this advances the rules identity to
-`sora-arena-first-release-5`. Native presentation ABI
+`sora-arena-first-release-5`. A wall-surface blast correction now lets a
+grenade hitting a closed collision face damage a target on the impact side,
+while preserving far-side occlusion; its fired-projectile regression checks an
+exact 100-unit XOR transfer. This advances the provisional identity to
+`sora-arena-first-release-6`. Native presentation ABI
 3 exposes charge progress to a Japanese HUD bar and world-pawn weapon pose;
 opponent readability has not been playtested. The deliberately re-recorded
 ABI 3 macOS fixture retains identical controls, participant loadouts, map
@@ -78,6 +82,8 @@ geometry and input encoding. Its state/presentation expectations change in all
 rebuilt library passes 73 cases / 44,100 ticks, eleven negative guards, and
 72 native practice scenarios / 86,400 replayed ticks. The full locked offline
 Rust suite, format checking, and strict all-targets Clippy pass.
+The version-6 fixture refresh changes state hashes and streams for the rules
+identity; its event and presentation streams are unchanged from version 5.
 These deterministic checks are not a human balance playtest. The separate
 campaign prototype catalog still differs from the Rust multiplayer catalog;
 full gameplay balance, presentation and proof coverage remain open.
