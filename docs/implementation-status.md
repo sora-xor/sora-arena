@@ -53,12 +53,16 @@ six-to-eight-hour campaign target.
 The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
 the six-class selector is available in offline arena practice. This source
 behavior still needs an Unreal menu and save/reload check.
-Four original Edo/alien environment props now have editable Blender source,
+Five original Edo/alien environment props now have editable Blender source,
 FBX exports, metric collision/bounds checks, and campaign placement source.
 The Lantern Ward debt terminal has a retained flat blockout and a licensed CC0
 PBR material comparison; its geometry still reads as a prototype. Blender
 review renders and import manifests do not establish in-engine appearance; the
 UE 5.8.2 import and visual pass remain open.
+An original irrigation sluice now adds a hand-cranked timber/stone gate and
+alien meter to the agricultural liberation chapter's Estate sites. Its editable
+Blender source, FBX, collision-box round trip, material provenance and hashes
+pass local checks; it is decorative campaign geometry pending the same UE pass.
 
 The provisional first-release balance correction changed Arc carbine and
 Clockwork repeater attack cooldowns from 10 to 12 simulation ticks. A clean-lane
@@ -118,11 +122,16 @@ pass. The version-2 evidence journal now syncs each verified signed handshake
 offer before returning its channel response, restores bounded replay protection,
 and rejects a rolled-back file when given an externally retained receipt. An
 [offline loopback UDP research transport](p2p-localhost.md) now exchanges real
-encrypted packets between two pre-admitted peers. Five focused tests cover a
+encrypted packets between two pre-admitted peers. Focused tests cover a
 certificate/two-reveal exchange, loss with byte-identical retransmission,
 reordered and duplicate twelve-slot fragments, persistence failure, and
-rejection of bonded admission. It has no production transport, ACK scheduler,
-NAT traversal, independently trusted receipt anchor, or settlement authority.
+rejection of bonded admission.
+The loopback transport now also has bounded authenticated ACK/retry: it sends
+the same sealed fragments at most four times, ACKs only durably journaled
+evidence, re-ACKs authenticated duplicate fragments without redelivery, and
+queues incoming evidence during an ACK wait. Drop, reorder, forged ACK, retry
+exhaustion and fresh-key restart tests pass. It remains a zero-bond localhost
+research path without production NAT/relay transport or settlement authority.
 
 The Unreal wallet source can prepare allowlisted native transactions, verify a
 wallet signature through the native Connect bridge, submit a signed Norito
