@@ -208,10 +208,13 @@ void ASoraCharacter::BuildWeapon()
     for(const auto& P:WeaponParts) if(P) P->DestroyComponent(); WeaponParts.Reset();
     if(!FSoraCatalog::Get().IsReady()) return;
     const auto& W=FSoraCatalog::Get().Weapon(WeaponId);
-    // Weapon 0 is the ordinary Samurai katana; the hero prop changes presentation only.
-    UStaticMesh* AuthoredMesh=!bDojoTraining&&WeaponId==0
-        ? LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_HeroKatana.SM_Nyaagyu_HeroKatana"))
-        : nullptr;
+    // Chapter-one sparring uses the original bokken; ordinary weapon 0 uses the
+    // hero katana. Both change presentation only, never combat rules.
+    UStaticMesh* AuthoredMesh=nullptr;
+    if(bDojoTraining)
+        AuthoredMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_DojoBokken.SM_Nyaagyu_DojoBokken"));
+    else if(WeaponId==0)
+        AuthoredMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_HeroKatana.SM_Nyaagyu_HeroKatana"));
     if(!AuthoredMesh&&!bDojoTraining)
     {
         const FString Asset=FString::Printf(TEXT("/Game/Generated/Meshes/SM_Weapon_%02d.SM_Weapon_%02d"),WeaponId,WeaponId);

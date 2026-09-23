@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_DojoBokken",
+  "generator": "scripts/art/create_dojo_bokken.py",
+  "authorship": "Original project-owned geometry, source materials and lighting; no third-party mesh or texture",
+  "license": "Original project-owned artwork; no purchased assets",
+  "source_blend": "Nyaagyu_DojoBokken.blend",
+  "fbx": "SM_Nyaagyu_DojoBokken.fbx",
+  "preview": "Nyaagyu_DojoBokken_Blender.png",
+  "fbx_sha256": "bc3270c3d95480bfea4fc387382758f8dc7bdbe89635b55f67ed5f319054209f",
+  "blend_sha256": "e1766d6d1dfa7c4cacc5c41ca3910ea6a4994c5ac0dffef2a5339ae4f91a364d",
+  "preview_sha256": "cb8dc34bdf6c7650f68d9ab4745db04acc3d1c4a1744e5682c241968c4b5911e",
+  "source_triangles": 8208,
+  "units": "Blender meters; FBX unit metadata converts to Unreal centimeters",
+  "length_m": 1.067,
+  "unreal_asset": "/Game/Generated/Meshes/SM_Nyaagyu_DojoBokken.SM_Nyaagyu_DojoBokken",
+  "scope": "Visual nonlethal dojo sparring prop. Damage rules are independent. UE 5.8.2 material appearance and scale remain unverified."
+}

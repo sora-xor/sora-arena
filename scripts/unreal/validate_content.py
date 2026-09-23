@@ -78,6 +78,26 @@ for file in (hero["source_blend"], hero["preview"], hero["detail_preview"]):
 for name in manifest["characters"] + manifest["weapons"] + manifest.get("skeletal_characters",[]) + manifest.get("walk_animations",[]) + [hero["name"]]:
     path = content / "SourceArt" / (name+".fbx")
     assert path.stat().st_size > 1000 and path.read_bytes().startswith(b"Kaydara FBX Binary")
+bokken_root = content / "SourceArt/Weapons/Original"
+bokken = json.loads((bokken_root / "manifest.json").read_text())
+assert bokken["schema_version"] == 1
+assert bokken["name"] == "SM_Nyaagyu_DojoBokken"
+assert bokken["fbx"] == bokken["name"] + ".fbx"
+assert bokken["generator"] == "scripts/art/create_dojo_bokken.py"
+assert bokken["license"] == "Original project-owned artwork; no purchased assets"
+assert bokken["unreal_asset"] == "/Game/Generated/Meshes/SM_Nyaagyu_DojoBokken.SM_Nyaagyu_DojoBokken"
+assert 3500 < bokken["source_triangles"] < 10000
+assert 1.0 < bokken["length_m"] < 1.1
+for name, key in ((bokken["fbx"], "fbx_sha256"),
+                  (bokken["source_blend"], "blend_sha256"),
+                  (bokken["preview"], "preview_sha256")):
+    path = bokken_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == bokken[key]
+assert (bokken_root / bokken["fbx"]).read_bytes().startswith(b"Kaydara FBX Binary")
+assert b"/Users/" not in (bokken_root / bokken["fbx"]).read_bytes()
+assert bokken["unreal_asset"] in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+assert bokken["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
 environment_root = content / "SourceArt/Environment/Original"
 environment = json.loads((environment_root / "manifest.json").read_text())
 assert environment["schema_version"] == 1
@@ -130,4 +150,4 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 28 FBX source assets including 3 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 29 FBX source assets including a dojo bokken and 3 original environment props, licensed Japanese font, hash-verified SORA logo.")

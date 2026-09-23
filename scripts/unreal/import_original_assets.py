@@ -71,10 +71,18 @@ if hero_katana["name"] != "SM_Nyaagyu_HeroKatana" or hero_katana["fbx"] != "SM_N
 hero_source = source / hero_katana["fbx"]
 if not hero_source.is_file() or hashlib.sha256(hero_source.read_bytes()).hexdigest() != hero_katana["fbx_sha256"]:
     raise RuntimeError("The hero katana source does not match its authored manifest hash")
+bokken_root = source / "Weapons/Original"
+bokken = json.loads((bokken_root / "manifest.json").read_text())
+if (bokken["name"] != "SM_Nyaagyu_DojoBokken"
+        or bokken["fbx"] != bokken["name"] + ".fbx"
+        or bokken["unreal_asset"] != "/Game/Generated/Meshes/SM_Nyaagyu_DojoBokken.SM_Nyaagyu_DojoBokken"):
+    raise RuntimeError("The original dojo bokken runtime identity changed")
+bokken_fbx = bokken_root / bokken["fbx"]
+if not bokken_fbx.is_file() or hashlib.sha256(bokken_fbx.read_bytes()).hexdigest() != bokken["fbx_sha256"]:
+    raise RuntimeError("The original dojo bokken is missing or changed")
 mesh_names = manifest["characters"] + manifest["weapons"] + [hero_katana["name"]]
 tasks = []
-for name in mesh_names:
-    path = source / f"{name}.fbx"
+for name, path in [(name, source / f"{name}.fbx") for name in mesh_names] + [(bokken["name"], bokken_fbx)]:
     if not path.is_file():
         raise RuntimeError(f"Required original mesh is missing: {path}")
     task = unreal.AssetImportTask()
@@ -96,7 +104,7 @@ for name in mesh_names:
     task.options = options
     tasks.append(task)
 tools.import_asset_tasks(tasks)
-for name in mesh_names:
+for name in mesh_names + [bokken["name"]]:
     if not assets.does_asset_exist(f"/Game/Generated/Meshes/{name}"):
         raise RuntimeError(f"Unreal import did not create {name}")
 
