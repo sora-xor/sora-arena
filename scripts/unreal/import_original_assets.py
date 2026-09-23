@@ -7,6 +7,7 @@ assets or substitutes an older engine. Re-run after editing the Blender sources.
 from pathlib import Path
 import hashlib
 import json
+import runpy
 import unreal
 
 version = unreal.SystemLibrary.get_engine_version()
@@ -524,5 +525,6 @@ font = source / "Fonts/NotoSansCJKjp-Regular.otf"
 if not font.is_file() or not (source / "Fonts/OFL.txt").is_file():
     raise RuntimeError("Japanese runtime font and its redistribution license are required")
 
+runpy.run_path(str(root / "scripts/unreal/import_nyaakoto_pbr.py"), run_name="__main__")
 assets.save_directory("/Game/Generated", only_if_is_dirty=False, recursive=True)
 unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon/horse meshes, {len(environment_tasks)} source-authored environment props, {len(terrain_tasks)} mesh terrain tiles, {len(tree_tasks)} CC0 foliage LODs; Japanese font staged separately")
