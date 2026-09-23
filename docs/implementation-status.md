@@ -484,6 +484,26 @@ anatomy and measured-tack study has editable source and texture maps but is
 also source-only and still visibly stylized. No frame in this pass qualifies
 AAA photorealism or the exact UE 5.8.2 release path.
 
+The subsequent facial-anatomy V2 source study moved Nyaakoto's eyes, ear cups,
+muzzle volumes and neck transition. Its Blender/FBX validator passes, but its
+front/profile renders still have a toy-like dome, separate muzzle and flat ears;
+it is explicitly excluded from runtime. A measured Edo horse-tack comparison
+used a CC0 older horse model as visual reference only and improved the mane and
+eye of the isolated source horse; hocks, fetlocks, hooves, groom and rider fit
+remain below the historical and photoreal gates. No reference animal geometry
+or textures were copied into the game.
+
+A new [2.20 m yumi and ya source study](../Content/SourceArt/Weapons/NyaagyuYumi/README.md)
+replaces the block-shape *authoring*
+approach with an editable asymmetric laminated stave, horn nocks, modeled
+leather and cord grip, arrow/fletching, and the exact user-supplied SORA crest.
+It uses hash-pinned CC0 photographed bamboo and leather 2K albedo, normal and
+ARM scans. Its Blender/FBX round trip passes for 60 mesh parts and preserves
+the stave/grip UVs. The first-person runtime still uses the earlier prototype:
+the study needs period-art review, a driven draw/string/arrow rig, correct paw
+contact and a packaged UE 5.8.2 visual pass. The source renders do not yet pass
+the AAA photoreal gate.
+
 ## Workstreams
 
 - Deterministic Rust combat/economics, replay, P2P evidence and Unreal C ABI.
