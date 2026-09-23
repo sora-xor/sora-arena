@@ -9,7 +9,7 @@ import struct
 ROOT = Path(__file__).resolve().parents[2]
 content = ROOT / "Content"
 catalog = json.loads((content / "Data/catalog.json").read_text())
-assert catalog["schema_version"] == 2
+assert catalog["schema_version"] == 3
 assert catalog["default_language"] == "ja" and catalog["english_subtitles_default"] is True
 speakers = catalog["dialogue_speakers"]
 speaker_ids = {speaker["id"] for speaker in speakers}
@@ -38,10 +38,21 @@ for w in catalog["weapons"]:
     assert w["special"] == (w["id"] >= 12)
     assert w["kind"] in ("melee","hitscan","explosive","healing")
     if w["kind"] == "explosive": assert w["blast_radius"] > 0 and w["projectile_speed"] > 0
+site_kinds = {"training", "debt_seal", "irrigation", "workshop", "foundry", "ledger", "power", "supplies"}
 for chapter in catalog["chapters"]:
     assert 0 <= chapter["map"] < 4 and chapter["kills"] > 0
     assert chapter["narrative_en"] and chapter["title_en"] and chapter["objective_en"]
     assert re.search(r"[\u3040-\u9fff]",chapter["narrative"])
+    assert len(chapter["sites"]) == 3
+    for index, site in enumerate(chapter["sites"]):
+        assert site["kind"] in site_kinds
+        assert 0 <= site["requires_kills"] <= chapter["kills"]
+        assert site["requires_sites"] == sorted(set(site["requires_sites"]))
+        assert all(isinstance(prior, int) and not isinstance(prior, bool) and 0 <= prior < index for prior in site["requires_sites"])
+        assert all(site[field].strip() for field in ("name", "name_en", "restored", "restored_en"))
+        assert all(re.search(r"[\u3040-\u9fff]",site[field]) for field in ("name", "restored"))
+    assert chapter["sites"][0]["requires_sites"] == []
+    assert chapter["sites"][-1]["requires_kills"] == chapter["kills"]
     assert len(chapter["dialogue"]) >= 2
     previous_end = 0.0
     for cue in chapter["dialogue"]:
@@ -119,4 +130,4 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with {cue_count} timed bilingual dialogue cues, 4 maps, 28 FBX source assets including 3 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 28 FBX source assets including 3 original environment props, licensed Japanese font, hash-verified SORA logo.")

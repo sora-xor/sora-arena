@@ -34,10 +34,15 @@ required before claiming the Unreal integration works. A separate headless test
 runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
 checks deterministic terminal state and XOR conservation; it does not measure
 networking, combat load, rendering, or proving.
-The offline campaign now persists chapter objectives (defeated invaders,
-restored production sites, and exit completion) to a local SaveGame checkpoint
-and restores them on retry/restart; this still needs an editor build and an
-in-game save/reload test.
+The offline campaign now has 24 authored Japanese production-site tasks with
+English subtitle text. Each task has a combat threshold and earlier-site
+requirements; prototype props vary by task type and change appearance on
+activation. The first dojo encounter uses nonlethal wooden-sword sparring
+rather than pre-invasion alien enemies. It persists defeated opponents,
+restored sites, and exit completion to a local SaveGame checkpoint, rejecting
+inconsistent site progress on load. This still needs an editor build and an
+in-game save/reload test; the shared encounter layouts do not meet the
+six-to-eight-hour campaign target.
 The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
 the six-class selector is available in offline arena practice. This source
 behavior still needs an Unreal menu and save/reload check.

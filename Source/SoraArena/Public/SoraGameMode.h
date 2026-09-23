@@ -30,7 +30,7 @@ public:
     UArenaKernelSubsystem* Kernel() const;
     void SelectClass(int32 Id);
     void Interact(ASoraCharacter* Player);
-    void EnemyKilled(ASoraCharacter* Enemy);
+    void OpponentDefeated(ASoraCharacter* Opponent);
     void PlayerKilled();
     void SaveProgress();
     bool bMenu = true;

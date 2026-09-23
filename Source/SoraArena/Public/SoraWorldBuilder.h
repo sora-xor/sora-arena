@@ -5,15 +5,17 @@
 class UStaticMeshComponent;
 class UMaterialInterface;
 struct FSoraPracticeMap;
+struct FSoraChapter;
 UCLASS()
 class SORAARENA_API ASoraWorldBuilder : public AActor
 {
     GENERATED_BODY()
 public:
     ASoraWorldBuilder();
-    void Build(int32 MapId);
+    void Build(int32 MapId, const FSoraChapter* Chapter = nullptr);
     void BuildPractice(int32 MapId, const FSoraPracticeMap& Map);
     bool ActivateNearest(const FVector& Location);
+    int32 NearestInactiveNode(const FVector& Location) const;
     int32 ActiveNodes() const { return Activated.Num(); }
     int32 ActivatedMask() const;
     void RestoreActivatedMask(int32 Mask);
@@ -27,9 +29,11 @@ public:
 private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Pieces;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Nodes;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> SiteEffects;
+    TArray<FLinearColor> SiteRestoredColors;
     UPROPERTY() TArray<TObjectPtr<AActor>> DecorActors;
     TSet<int32> Activated;
-    void Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision = true, FRotator Rotation = FRotator::ZeroRotator, const FString& SurfaceRole = TEXT(""));
+    UStaticMeshComponent* Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision = true, FRotator Rotation = FRotator::ZeroRotator, const FString& SurfaceRole = TEXT(""));
     void Building(FVector Location, FVector Size, FLinearColor Wall, bool HighTech);
     bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation);
     void Torii(FVector Location, float Yaw);

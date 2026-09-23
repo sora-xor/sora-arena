@@ -24,7 +24,12 @@ void ASoraGameMode::BeginPlay()
     Super::BeginPlay();
     if(!FSoraCatalog::Get().Load()) { Notice=FSoraCatalog::Get().Error; return; }
     Save=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("SoraSoloCampaign"),0));
-    if(!Save) Save=Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
+    if(!Save||Save->SaveSchema!=3)
+    {
+        Save=Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
+        if(!Save) return;
+        Save->SaveSchema=3;
+    }
     ChapterId=FMath::Clamp(Save->CurrentChapter,0,7); SelectedClass=FMath::Clamp(Save->SelectedClass,0,5);
     bEnglishSubtitles=Save->EnglishSubtitles;
     bCampaignComplete=Save->CampaignComplete; MapId=FSoraCatalog::Get().Chapter(ChapterId).Map;
@@ -40,14 +45,25 @@ void ASoraGameMode::ResetRound()
     for(const auto& E:Enemies) if(IsValid(E)) E->Destroy(); Enemies.Reset();
     Kills=0; Spawned=0; RoundTime=0; bDefeated=false; bChapterComplete=false;
     KillsNeeded=bCampaign?FSoraCatalog::Get().Chapter(ChapterId).Kills:12;
-    WorldBuilder->Build(MapId);
+    WorldBuilder->Build(MapId,bCampaign?&FSoraCatalog::Get().Chapter(ChapterId):nullptr);
     const bool bHasCheckpoint=bCampaign&&Save&&Save->CheckpointChapter==ChapterId;
     if(bHasCheckpoint)
     {
-        Kills=FMath::Clamp(Save->CheckpointKills,0,KillsNeeded);
-        WorldBuilder->RestoreActivatedMask(Save->CheckpointNodesMask);
-        bChapterComplete=Save->CheckpointComplete&&Kills==KillsNeeded&&WorldBuilder->ActiveNodes()==3;
-        Spawned=Kills;
+        const int32 Mask=Save->CheckpointNodesMask;
+        bool bValid=Save->CheckpointKills>=0&&Save->CheckpointKills<=KillsNeeded&&(Mask&~7)==0;
+        const auto& Sites=FSoraCatalog::Get().Chapter(ChapterId).Sites;
+        for(int32 I=0;bValid&&I<Sites.Num();++I)
+            if((Mask&(1<<I))!=0)
+                bValid=Save->CheckpointKills>=Sites[I].RequiredKills&&
+                    (Mask&Sites[I].RequiredSitesMask)==Sites[I].RequiredSitesMask;
+        if(bValid)
+        {
+            Kills=Save->CheckpointKills;
+            WorldBuilder->RestoreActivatedMask(Mask);
+            bChapterComplete=Save->CheckpointComplete&&Kills==KillsNeeded&&WorldBuilder->ActiveNodes()==3;
+            Spawned=Kills;
+        }
+        else ClearCheckpoint();
     }
     // Completion is durable even after the terminal checkpoint has been cleared.
     // Reopening a finished campaign must show its liberated state, not restart
@@ -68,6 +84,7 @@ void ASoraGameMode::ResetRound()
         // The campaign follows one Nyaagyu samurai. The six-class selection is
         // for arena practice and does not rewrite the story protagonist.
         Player->ApplyClass(bCampaign?0:SelectedClass);
+        Player->SetDojoTraining(bCampaign&&ChapterId==0);
     }
     if(!bChapterComplete) for(int32 I=0;I<FMath::Min(4,KillsNeeded-Kills);++I) SpawnEnemy();
     const bool bResumed=bRestoredVictory||(bHasCheckpoint&&(Kills>0||WorldBuilder->ActiveNodes()>0||bChapterComplete));
@@ -81,8 +98,12 @@ void ASoraGameMode::ResetRound()
     }
     else if(bResumed)
     {
-        Notice=bChapterComplete?TEXT("出口の封印は解かれた。Enter で物語を進めよう。"):TEXT("復旧記録から再開した。残る拠点と侵略者を確認しよう。");
-        NoticeEnglish=bChapterComplete?TEXT("The exit is open. Press Enter to continue the story."):TEXT("Checkpoint restored. Check the remaining sites and invaders.");
+        Notice=bChapterComplete?TEXT("出口の封印は解かれた。Enter で物語を進めよう。")
+            :bCampaign&&ChapterId==0?TEXT("稽古の記録から再開した。残る立合いと道場の仕事を確かめよう。")
+            :TEXT("復旧記録から再開した。残る拠点と侵略者を確認しよう。");
+        NoticeEnglish=bChapterComplete?TEXT("The exit is open. Press Enter to continue the story.")
+            :bCampaign&&ChapterId==0?TEXT("Training checkpoint restored. Check the remaining bouts and dojo tasks.")
+            :TEXT("Checkpoint restored. Check the remaining sites and invaders.");
     }
     else
     {
@@ -96,7 +117,9 @@ void ASoraGameMode::SpawnEnemy()
     if(!WorldBuilder||Spawned>=KillsNeeded) return;
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
     auto* Enemy=GetWorld()->SpawnActor<ASoraCharacter>(WorldBuilder->SpawnPoint(Spawned),FRotator(0,180,0),Params);
-    Enemy->MakeEnemy(Spawned); Enemies.Add(Enemy); ++Spawned;
+    if(bCampaign&&ChapterId==0) Enemy->MakeDojoPupil(Spawned);
+    else Enemy->MakeEnemy(Spawned);
+    Enemies.Add(Enemy); ++Spawned;
 }
 void ASoraGameMode::Tick(float Dt)
 {
@@ -178,12 +201,49 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
 {
     if(bDeterministicPractice) return;
     if(!WorldBuilder||!Player) return;
-    if(WorldBuilder->ActivateNearest(Player->GetActorLocation()))
+    const int32 SiteId=WorldBuilder->NearestInactiveNode(Player->GetActorLocation());
+    if(SiteId!=INDEX_NONE)
     {
-        Player->Heal(22.f);
-        Notice=TEXT("生産を再開した。この工房は、再び民のものだ。");
-        NoticeEnglish=TEXT("Production restored. The community now controls this workshop."); NoticeTime=5.f;
-        if(bCampaign) SaveCheckpoint();
+        if(bCampaign)
+        {
+            const auto& Site=FSoraCatalog::Get().Chapter(ChapterId).Sites[SiteId];
+            const int32 Missing=Site.RequiredSitesMask&~WorldBuilder->ActivatedMask();
+            if(Missing!=0)
+            {
+                int32 Prior=0;
+                while((Missing&(1<<Prior))==0) ++Prior;
+                const auto& Dependency=FSoraCatalog::Get().Chapter(ChapterId).Sites[Prior];
+                Notice=Dependency.Name+TEXT("を先に復旧しよう。");
+                NoticeEnglish=TEXT("Restore ")+Dependency.NameEnglish+TEXT(" first.");
+                NoticeTime=5.f; return;
+            }
+            if(Kills<Site.RequiredKills)
+            {
+                Notice=bCampaign&&ChapterId==0
+                    ?FString::Printf(TEXT("%sの前に、門弟とあと %d 回立ち合おう。"),*Site.Name,Site.RequiredKills-Kills)
+                    :FString::Printf(TEXT("%sはまだ敵に守られている。侵略者をあと %d 体退けよう。"),*Site.Name,Site.RequiredKills-Kills);
+                NoticeEnglish=bCampaign&&ChapterId==0
+                    ?FString::Printf(TEXT("Complete %d more sparring bouts before %s."),Site.RequiredKills-Kills,*Site.NameEnglish)
+                    :FString::Printf(TEXT("%s is still guarded. Defeat %d more invaders."),*Site.NameEnglish,Site.RequiredKills-Kills);
+                NoticeTime=5.f; return;
+            }
+        }
+        if(WorldBuilder->ActivateNearest(Player->GetActorLocation()))
+        {
+            Player->Heal(22.f);
+            if(bCampaign)
+            {
+                const auto& Site=FSoraCatalog::Get().Chapter(ChapterId).Sites[SiteId];
+                Notice=Site.Restored; NoticeEnglish=Site.RestoredEnglish;
+                SaveCheckpoint();
+            }
+            else
+            {
+                Notice=TEXT("生産を再開した。この工房は、再び民のものだ。");
+                NoticeEnglish=TEXT("Production restored. The community now controls this workshop.");
+            }
+            NoticeTime=7.f;
+        }
         return;
     }
     if(FVector::Dist2D(Player->GetActorLocation(),WorldBuilder->ExitPoint())<270.f)
@@ -192,22 +252,44 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
         {
             bChapterComplete=true;
             if(bCampaign) { Save->HighestChapter=FMath::Max(Save->HighestChapter,FMath::Min(7,ChapterId+1)); if(ChapterId==7) bCampaignComplete=true; }
-            Notice=ChapterId==7&&bCampaign?TEXT("猫柳生は自由だ。生み出す力は、民の手にある。"):TEXT("街区を解放した。Enter で次の戦いへ。");
-            NoticeEnglish=ChapterId==7&&bCampaign?TEXT("Nyaagyu is free. Production belongs to its people."):TEXT("District liberated. Press Enter to continue.");
+            Notice=ChapterId==7&&bCampaign?TEXT("猫柳生は自由だ。生み出す力は、民の手にある。")
+                :bCampaign&&ChapterId==0?TEXT("道場の修行を終えた。Enter で物語を進めよう。")
+                :TEXT("街区を解放した。Enter で次の戦いへ。");
+            NoticeEnglish=ChapterId==7&&bCampaign?TEXT("Nyaagyu is free. Production belongs to its people.")
+                :bCampaign&&ChapterId==0?TEXT("Dojo training complete. Press Enter to continue the story.")
+                :TEXT("District liberated. Press Enter to continue.");
             if(bCampaign) SaveCheckpoint();
         }
-        else { Notice=TEXT("三つの生産拠点を直し、残る侵略者を退けよう。"); NoticeEnglish=TEXT("Restore all three production sites and defeat the remaining invaders first."); NoticeTime=5.f; }
+        else
+        {
+            Notice=bCampaign&&ChapterId==0?TEXT("残る立合いと道場の仕事を終えよう。"):TEXT("残る拠点の仕事を終え、侵略者を退けよう。");
+            NoticeEnglish=bCampaign&&ChapterId==0?TEXT("Finish the remaining sparring and dojo tasks first."):TEXT("Finish the remaining site tasks and defeat the invaders first.");
+            NoticeTime=5.f;
+        }
     }
 }
-void ASoraGameMode::EnemyKilled(ASoraCharacter* Enemy)
+void ASoraGameMode::OpponentDefeated(ASoraCharacter* /*Opponent*/)
 {
     if(bDeterministicPractice) return;
     ++Kills; if(auto* Player=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0))) Player->Heal(8.f);
     if(Spawned<KillsNeeded) SpawnEnemy();
-    if(Kills>=KillsNeeded) { Notice=TEXT("侵略者を退けた。工房を取り戻し、東の鳥居へ向かおう。"); NoticeEnglish=TEXT("Invaders cleared. Restore the workshops, then return to the eastern torii gate."); NoticeTime=7.f; }
+    if(Kills>=KillsNeeded)
+    {
+        Notice=bCampaign&&ChapterId==0?TEXT("門弟との立合いを終えた。道場の鍛冶場を直し、東の鳥居へ向かおう。"):TEXT("侵略者を退けた。残る生産拠点を取り戻し、東の鳥居へ向かおう。");
+        NoticeEnglish=bCampaign&&ChapterId==0?TEXT("Sparring complete. Restore the dojo smithy, then reach the eastern torii gate."):TEXT("Invaders cleared. Restore the remaining production sites, then reach the eastern torii gate.");
+        NoticeTime=7.f;
+    }
     if(bCampaign) SaveCheckpoint();
 }
-void ASoraGameMode::PlayerKilled() { if(bDeterministicPractice) return; bDefeated=true; Notice=TEXT("仲間は、あなたを待っている。Enter で最後の復旧記録から再開する。"); NoticeEnglish=TEXT("The resistance remembers. Press Enter to retry from the latest checkpoint."); }
+void ASoraGameMode::PlayerKilled()
+{
+    if(bDeterministicPractice) return;
+    bDefeated=true;
+    Notice=bCampaign&&ChapterId==0?TEXT("立合いはここまで。Enter で稽古をやり直そう。")
+        :TEXT("仲間は、あなたを待っている。Enter で最後の復旧記録から再開する。");
+    NoticeEnglish=bCampaign&&ChapterId==0?TEXT("The sparring bout has ended. Press Enter to resume training.")
+        :TEXT("The resistance remembers. Press Enter to retry from the latest checkpoint.");
+}
 void ASoraGameMode::ToggleSubtitles() { bEnglishSubtitles=!bEnglishSubtitles; SaveProgress(); }
 void ASoraGameMode::SaveCheckpoint()
 {
@@ -247,6 +329,14 @@ FString ASoraGameMode::ObjectiveText() const
         return TEXT("武芸稽古を準備しています…");
     }
     if(!WorldBuilder) return TEXT("舞台を準備しています…");
+    if(bCampaign)
+    {
+        const auto& Chapter=FSoraCatalog::Get().Chapter(ChapterId);
+        FString Next=TEXT("東の鳥居へ");
+        for(int32 I=0;I<Chapter.Sites.Num();++I)
+            if((WorldBuilder->ActivatedMask()&(1<<I))==0) { Next=Chapter.Sites[I].Name; break; }
+        return FString::Printf(ChapterId==0?TEXT("%s  |  稽古場 %d / 3  |  立合い %d / %d"):TEXT("%s  |  拠点 %d / 3  |  侵略者 %d / %d"),*Next,WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
+    }
     return FString::Printf(TEXT("生産の復旧 %d / 3    |    侵略者 %d / %d    |    出口：東の鳥居"),WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
 }
 UArenaKernelSubsystem* ASoraGameMode::Kernel() const

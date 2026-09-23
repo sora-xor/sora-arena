@@ -14,7 +14,7 @@ bool FSoraCatalog::Load()
     if (!FFileHelper::LoadFileToString(Text, *Path) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
     { Error = TEXT("Cannot load Content/Data/catalog.json"); UE_LOG(LogTemp, Error, TEXT("%s"), *Error); return false; }
     double SchemaVersion = 0;
-    if (!Root->TryGetNumberField(TEXT("schema_version"), SchemaVersion) || SchemaVersion != 2)
+    if (!Root->TryGetNumberField(TEXT("schema_version"), SchemaVersion) || SchemaVersion != 3)
     { Error = TEXT("Unsupported offline catalog schema"); return false; }
     Weapons.Reset(); Classes.Reset(); Chapters.Reset(); Maps.Reset(); DialogueSpeakers.Reset();
     const TArray<TSharedPtr<FJsonValue>>* Rows = nullptr;
@@ -61,6 +61,42 @@ bool FSoraCatalog::Load()
         FSoraChapter C; C.Title = O->GetStringField(TEXT("title")); C.Narrative = O->GetStringField(TEXT("narrative")); C.Objective = O->GetStringField(TEXT("objective"));
         C.NarrativeEnglish = O->GetStringField(TEXT("narrative_en"));
         C.Map = O->GetIntegerField(TEXT("map")); C.Kills = O->GetIntegerField(TEXT("kills"));
+        const TArray<TSharedPtr<FJsonValue>>* SiteRows = nullptr;
+        if (!O->TryGetArrayField(TEXT("sites"), SiteRows) || SiteRows->Num() != 3)
+        { Error = TEXT("Each chapter needs three authored production sites"); return false; }
+        static const TSet<FString> SiteKinds = {
+            TEXT("training"), TEXT("debt_seal"), TEXT("irrigation"), TEXT("workshop"),
+            TEXT("foundry"), TEXT("ledger"), TEXT("power"), TEXT("supplies")
+        };
+        for (const auto& SiteRow : *SiteRows)
+        {
+            const auto SiteObject = SiteRow->AsObject();
+            FSoraProductionSite Site; const int32 SiteIndex = C.Sites.Num();
+            const TArray<TSharedPtr<FJsonValue>>* Prerequisites = nullptr;
+            if (!SiteObject.IsValid() ||
+                !SiteObject->TryGetStringField(TEXT("name"), Site.Name) ||
+                !SiteObject->TryGetStringField(TEXT("name_en"), Site.NameEnglish) ||
+                !SiteObject->TryGetStringField(TEXT("restored"), Site.Restored) ||
+                !SiteObject->TryGetStringField(TEXT("restored_en"), Site.RestoredEnglish) ||
+                !SiteObject->TryGetStringField(TEXT("kind"), Site.Kind) ||
+                !SiteObject->TryGetNumberField(TEXT("requires_kills"), Site.RequiredKills) ||
+                !SiteObject->TryGetArrayField(TEXT("requires_sites"), Prerequisites) ||
+                Site.Name.IsEmpty() || Site.NameEnglish.IsEmpty() || Site.Restored.IsEmpty() ||
+                Site.RestoredEnglish.IsEmpty() || !SiteKinds.Contains(Site.Kind) ||
+                Site.RequiredKills < 0 || Site.RequiredKills > C.Kills)
+            { Error = TEXT("Invalid chapter production site"); return false; }
+            for (const auto& Prerequisite : *Prerequisites)
+            {
+                double Id = -1;
+                if (!Prerequisite.IsValid() || !Prerequisite->TryGetNumber(Id) ||
+                    !FMath::IsFinite(Id) || Id < 0 || Id >= SiteIndex ||
+                    Id != static_cast<double>(FMath::FloorToInt(Id)) ||
+                    (Site.RequiredSitesMask & (1 << static_cast<int32>(Id))) != 0)
+                { Error = TEXT("Invalid production site prerequisite"); return false; }
+                Site.RequiredSitesMask |= 1 << static_cast<int32>(Id);
+            }
+            C.Sites.Add(MoveTemp(Site));
+        }
         const TArray<TSharedPtr<FJsonValue>>* CueRows = nullptr;
         if (!O->TryGetArrayField(TEXT("dialogue"), CueRows)) { Error = TEXT("Chapter lacks dialogue"); return false; }
         float PreviousEnd = 0.f;

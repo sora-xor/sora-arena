@@ -20,6 +20,8 @@ public:
     virtual float TakeDamage(float Damage, const FDamageEvent& Event, AController* InstigatorController, AActor* Causer) override;
     void ApplyClass(int32 Id);
     void MakeEnemy(int32 Id);
+    void MakeDojoPupil(int32 Id);
+    void SetDojoTraining(bool Enabled);
     void SetKernelDriven(bool Enabled, const FSoraPracticeMap* Map = nullptr);
     void ApplyKernelPlayer(const FSoraPracticePlayer& State);
     FSoraPracticeInput ConsumeKernelInput();
@@ -52,6 +54,8 @@ private:
     bool bSkeletalVisual = false;
     bool bWalkingVisual = false;
     bool bEnemy = false;
+    bool bDojoPupil = false;
+    bool bDojoTraining = false;
     bool bKernelDriven = false;
     FVector KernelPreviousFeet = FVector::ZeroVector;
     float InputForward = 0.f, InputRight = 0.f;

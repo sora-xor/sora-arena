@@ -39,6 +39,16 @@ struct FSoraDialogueCue
     float StartSeconds = 0.f;
     float DurationSeconds = 0.f;
 };
+struct FSoraProductionSite
+{
+    FString Name;
+    FString NameEnglish;
+    FString Restored;
+    FString RestoredEnglish;
+    FString Kind;
+    int32 RequiredKills = 0;
+    int32 RequiredSitesMask = 0;
+};
 struct FSoraChapter
 {
     FString Title;
@@ -48,6 +58,7 @@ struct FSoraChapter
     int32 Map = 0;
     int32 Kills = 6;
     TArray<FSoraDialogueCue> Dialogue;
+    TArray<FSoraProductionSite> Sites;
 };
 struct FSoraMap
 {

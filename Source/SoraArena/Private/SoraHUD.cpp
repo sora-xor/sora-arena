@@ -160,7 +160,7 @@ void ASoraHUD::DrawHUD()
         Panel(45*S,H-45*S,290*S,4*S,FLinearColor(.12,.19,.21)); Panel(45*S,H-45*S,290*S*FMath::Clamp(P->Health/P->MaxHealth,0.f,1.f),4*S,Teal);
         const auto& Weapon=FSoraCatalog::Get().Weapon(P->WeaponId);
         Panel(W-390*S,H-110*S,365*S,80*S,FLinearColor(.015,.035,.05,.9));
-        Label(Weapon.Name,W-365*S,H-96*S,.72*S,Ivory);
+        Label(G->bCampaign&&G->ChapterId==0?TEXT("木刀 / 非致死の立合い"):Weapon.Name,W-365*S,H-96*S,.72*S,Ivory);
         if(G->bDeterministicPractice)
         {
             if(auto* K=G->Kernel()) if(K->PracticePlayers.Num()>0)
@@ -194,14 +194,20 @@ void ASoraHUD::DrawHUD()
         {
             for(int32 I=0;I<G->Arena()->NodePositions.Num();++I)
             {
+                if((G->Arena()->ActivatedMask()&(1<<I))!=0) continue;
                 const FVector Position=G->Arena()->NodePositions[I]+FVector(0,0,250);
                 if(FVector::DotProduct(Position-P->GetActorLocation(),P->GetActorForwardVector())>0)
                 {
                     const FVector Screen=Project(Position); const int32 M=FMath::RoundToInt(FVector::Dist2D(Position,P->GetActorLocation())/100);
-                    if(Screen.X>0&&Screen.X<W&&Screen.Y>170*S&&Screen.Y<H-120*S) Label(FString::Printf(TEXT("工房 %d / %dm"),I+1,M),Screen.X-75*S,Screen.Y,.42*S,Teal);
+                    if(Screen.X>0&&Screen.X<W&&Screen.Y>170*S&&Screen.Y<H-120*S)
+                    {
+                        const FString SiteName=G->bCampaign?FSoraCatalog::Get().Chapter(G->ChapterId).Sites[I].Name:FString::Printf(TEXT("工房 %d"),I+1);
+                        Label(FString::Printf(TEXT("%s / %dm"),*SiteName,M),Screen.X-75*S,Screen.Y,.42*S,Teal);
+                    }
                 }
             }
-            bool Near=false; for(auto Pos:G->Arena()->NodePositions) Near|=FVector::Dist2D(Pos,P->GetActorLocation())<230;
+            const bool NearSite=G->Arena()->NearestInactiveNode(P->GetActorLocation())!=INDEX_NONE;
+            bool Near=NearSite;
             Near|=FVector::Dist2D(G->Arena()->ExitPoint(),P->GetActorLocation())<270;
             if(Near) Label(TEXT("E  調べる"),CX-75*S,CY+60*S,.65*S,Gold);
         }

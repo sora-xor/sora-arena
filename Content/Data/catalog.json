@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "rules_scope": "Unreal offline prototype only; not a proof-qualified multiplayer ruleset.",
   "dialogue_speakers": [
     { "id": "mentor", "ja": "師範", "en": "Master" },
@@ -391,10 +391,15 @@
       "map": 0,
       "kills": 4,
       "narrative": "猫柳生（ニャーギュウ）の道場。師は猫柳生新陰流（ニャーギュウシンカゲリュウ）を伝える。「間合いを知り、命を守れ。剣は民のためにある。」",
-      "objective": "道場の工房を再起動し、修練を終える",
+      "objective": "門弟と木刀で立ち合い、道場の鍛冶場を直す",
       "title_en": "Dojo Apprenticeship",
       "narrative_en": "At the Nyaagyu dojo, your teacher introduces Nyaagyū Shinkage-ryū: protect life, master distance, and act with purpose.",
-      "objective_en": "Restore the dojo workshops and complete the practice encounter.",
+      "objective_en": "Spar with the pupils using wooden swords, then restore the dojo smithy.",
+      "sites": [
+        {"name":"間合いの稽古場","name_en":"Distance training ground","kind":"training","requires_kills":0,"requires_sites":[],"restored":"師の教えに従い、間合いと守りの型を確かめた。","restored_en":"You practiced distance and defense under your master's guidance."},
+        {"name":"木刀の試合場","name_en":"Wooden-sword sparring ring","kind":"training","requires_kills":2,"requires_sites":[0],"restored":"二人の門弟を相手に、刃を急がせず立ち合った。","restored_en":"You sparred with two pupils without rushing the blade."},
+        {"name":"道場の鍛冶場","name_en":"Dojo smithy","kind":"workshop","requires_kills":4,"requires_sites":[1],"restored":"稽古を終え、道具を直す鍛冶場に火を戻した。","restored_en":"Training complete, you rekindled the forge that repairs the dojo's tools."}
+      ],
       "dialogue": [
         { "speaker": "mentor", "start_s": 0.8, "duration_s": 4.8, "ja": "刃を急がせるな。相手の足音を聞け。", "en": "Do not hurry your blade. Listen to your opponent's footing." },
         { "speaker": "samurai", "start_s": 6.2, "duration_s": 4.8, "ja": "間合いを測り、命を守ります。", "en": "I will measure the distance and protect life." },
@@ -410,6 +415,11 @@
       "title_en": "The Invasion",
       "narrative_en": "Alien banker cats descend through the evening sky. Their debt seals seize the granaries and silence the workshops.",
       "objective_en": "Break the occupation of the Nyaagyu estate.",
+      "sites": [
+        {"name":"蔵の債務封印","name_en":"Granary debt seal","kind":"debt_seal","requires_kills":2,"requires_sites":[],"restored":"債務の封印を断ち、蔵を民に開いた。","restored_en":"You broke the debt seal and reopened the granary to its people."},
+        {"name":"食糧の配給所","name_en":"Food distribution point","kind":"supplies","requires_kills":4,"requires_sites":[0],"restored":"隠されていた食糧を取り戻し、住民に分けた。","restored_en":"Recovered food was distributed among the residents."},
+        {"name":"屋敷の工房","name_en":"Estate workshop","kind":"workshop","requires_kills":7,"requires_sites":[1],"restored":"屋敷の工房に職人が戻り、修理を始めた。","restored_en":"Craftspeople returned to the estate workshop and began repairs."}
+      ],
       "dialogue": [
         { "speaker": "scout", "start_s": 0.8, "duration_s": 4.8, "ja": "空から船が来た。蔵に見知らぬ封印が！", "en": "Ships came from the sky. Strange seals cover the granaries!" },
         { "speaker": "banker", "start_s": 6.2, "duration_s": 4.8, "ja": "今日から、その収穫も労働も我らへの負債だ。", "en": "From today, your harvest and labor are debts owed to us." },
@@ -425,6 +435,11 @@
       "title_en": "Occupied Streets",
       "narrative_en": "The Lantern Ward trades under compulsory debt. Neighbors hide tools, food, and hope behind paper walls.",
       "objective_en": "Reopen three neighborhood production sites.",
+      "sites": [
+        {"name":"道具の隠し場","name_en":"Hidden tool cache","kind":"supplies","requires_kills":0,"requires_sites":[],"restored":"住民が守り抜いた道具を見つけ、職人へ返した。","restored_en":"You found the tools neighbors had hidden and returned them to the makers."},
+        {"name":"提灯の工房","name_en":"Lantern workshop","kind":"workshop","requires_kills":4,"requires_sites":[0],"restored":"工房に灯が戻り、街の提灯が再び作られる。","restored_en":"The workshop fires returned, and the ward began making lanterns again."},
+        {"name":"共同の炊き出し","name_en":"Communal kitchen","kind":"supplies","requires_kills":8,"requires_sites":[1],"restored":"作られた食糧を街の皆で分け合った。","restored_en":"The neighborhood shared its prepared food."}
+      ],
       "dialogue": [
         { "speaker": "scout", "start_s": 0.8, "duration_s": 4.8, "ja": "提灯街の工房は三つとも止められた。", "en": "All three workshops in Lantern Ward have been shut down." },
         { "speaker": "artisan", "start_s": 6.2, "duration_s": 4.8, "ja": "道具は隠した。火さえ戻れば、また作れる。", "en": "We hid the tools. Restore the fires, and we can make things again." },
@@ -440,6 +455,11 @@
       "title_en": "Agricultural Liberation",
       "narrative_en": "The fields can feed everyone, but the invaders claim every harvest before it grows. Protect the farmers and reclaim their machinery.",
       "objective_en": "Restore the agricultural pumps and defeat the collection patrol.",
+      "sites": [
+        {"name":"水路の取水口","name_en":"Irrigation intake","kind":"irrigation","requires_kills":2,"requires_sites":[],"restored":"せき止められた水を田へ戻した。","restored_en":"Water flowed back to the fields through the reopened intake."},
+        {"name":"田畑の水車","name_en":"Field waterwheel","kind":"irrigation","requires_kills":5,"requires_sites":[0],"restored":"水車を修理し、畑へ水を送った。","restored_en":"The repaired waterwheel began carrying water to the fields."},
+        {"name":"収穫の分配所","name_en":"Harvest distribution point","kind":"supplies","requires_kills":10,"requires_sites":[1],"restored":"収穫を記録し、育てた者と地域に渡した。","restored_en":"The harvest was recorded and shared with its growers and community."}
+      ],
       "dialogue": [
         { "speaker": "farmer", "start_s": 0.8, "duration_s": 4.8, "ja": "水車を奪われた。稲はまだ芽も出ていないのに。", "en": "They took the pumps before the rice had even sprouted." },
         { "speaker": "samurai", "start_s": 6.2, "duration_s": 4.8, "ja": "水を戻す。収穫は育てた者に渡そう。", "en": "We will restore the water. The harvest will go to those who grew it." },
@@ -455,6 +475,11 @@
       "title_en": "The Foundry Uprising",
       "narrative_en": "At the Silk Foundry, craftspeople join the resistance. Their shared production becomes the basis of a new local currency: SORA XOR.",
       "objective_en": "Liberate the foundry and restart its production.",
+      "sites": [
+        {"name":"職人の避難所","name_en":"Artisans' refuge","kind":"supplies","requires_kills":3,"requires_sites":[],"restored":"捕らわれた職人たちを救い、安全な作業場へ導いた。","restored_en":"You freed the craftspeople and guided them to a safe workspace."},
+        {"name":"絹と鋼の炉","name_en":"Silk and steel furnace","kind":"foundry","requires_kills":7,"requires_sites":[0],"restored":"職人たちが炉を再点火し、必要な品を作り始めた。","restored_en":"The craftspeople relit the furnace and began making needed supplies."},
+        {"name":"生産の記録台","name_en":"Production record station","kind":"ledger","requires_kills":12,"requires_sites":[1],"restored":"完成品の数量を確かめ、架空の生産本位 SORA XOR の記録に刻んだ。","restored_en":"Finished goods were counted in the story's fictional production-backed SORA XOR records."}
+      ],
       "dialogue": [
         { "speaker": "artisan", "start_s": 0.8, "duration_s": 4.8, "ja": "絹も鋼も、作ったのはこの手だ。", "en": "Silk and steel were made by these hands." },
         { "speaker": "scout", "start_s": 6.2, "duration_s": 4.8, "ja": "生産を記録し、民の新しい通貨にしよう。", "en": "Let us record our production as the basis for a new currency." },
@@ -470,6 +495,11 @@
       "title_en": "Ledger-Vault Infiltration",
       "narrative_en": "Inside the Debt Citadel, the occupiers keep the contracts that bind Nyaagyu. The resistance seeks the machines controlling them.",
       "objective_en": "Disable the vault district and restore its workshops.",
+      "sites": [
+        {"name":"監視の中継器","name_en":"Surveillance relay","kind":"power","requires_kills":3,"requires_sites":[],"restored":"監視の中継器を止め、潜入路を開いた。","restored_en":"You disabled the surveillance relay and opened an infiltration route."},
+        {"name":"債務の帳簿","name_en":"Debt ledger vault","kind":"ledger","requires_kills":8,"requires_sites":[0],"restored":"人々を縛る債務の記録を解放した。","restored_en":"You freed the records used to bind the people in debt."},
+        {"name":"金庫の印刷機","name_en":"Vault printing press","kind":"workshop","requires_kills":14,"requires_sites":[1],"restored":"印刷機を止め、民の修理道具へ作り替えた。","restored_en":"The seized press was dismantled and repurposed for community repairs."}
+      ],
       "dialogue": [
         { "speaker": "scout", "start_s": 0.8, "duration_s": 4.8, "ja": "金庫の奥に、街を縛る装置がある。", "en": "The machine binding the city lies deep inside the vault." },
         { "speaker": "banker", "start_s": 6.2, "duration_s": 4.8, "ja": "契約は永遠だ。誰も帳簿からは逃れられぬ。", "en": "The contract is eternal. No one escapes the ledger." },
@@ -485,6 +515,11 @@
       "title_en": "Alien Flagship Assault",
       "narrative_en": "The alien flagship draws power from the citadel below. Cut its occupation network before the final extraction.",
       "objective_en": "Sever the flagship support network.",
+      "sites": [
+        {"name":"地上の通信塔","name_en":"Ground signal relay","kind":"power","requires_kills":4,"requires_sites":[],"restored":"旗艦に命令を送る通信塔を切り離した。","restored_en":"The ground relay no longer sent commands to the flagship."},
+        {"name":"収奪の動力炉","name_en":"Extraction power core","kind":"foundry","requires_kills":10,"requires_sites":[0],"restored":"収奪の動力炉を止め、地上へ力を返した。","restored_en":"You stopped the extraction core and restored power to the ground."},
+        {"name":"脱出の信号機","name_en":"Evacuation beacon","kind":"power","requires_kills":16,"requires_sites":[1],"restored":"住民に安全な脱出路を知らせた。","restored_en":"The beacon marked a safe evacuation route for residents."}
+      ],
       "dialogue": [
         { "speaker": "scout", "start_s": 0.8, "duration_s": 4.8, "ja": "旗艦が城塞から最後の力を吸い上げている。", "en": "The flagship is drawing the last power from the citadel." },
         { "speaker": "banker", "start_s": 6.2, "duration_s": 4.8, "ja": "従えば、生き残るための融資をやろう。", "en": "Submit, and we may lend you enough to survive." },
@@ -500,6 +535,11 @@
       "title_en": "Final Liberation",
       "narrative_en": "The clans reclaim their workshops and govern the fruits of their labor. Nyaagyu chooses production-backed SORA XOR and a future beyond the debt empire.",
       "objective_en": "Free the last district and reunite the resistance.",
+      "sites": [
+        {"name":"住民の避難所","name_en":"Civilian refuge","kind":"supplies","requires_kills":4,"requires_sites":[],"restored":"残された家族を助け、避難所を開いた。","restored_en":"You rescued the remaining families and opened the refuge."},
+        {"name":"共同の修理工房","name_en":"Communal repair workshop","kind":"workshop","requires_kills":9,"requires_sites":[0],"restored":"職人が道具を直し、街の再建を始めた。","restored_en":"Craftspeople repaired tools and began rebuilding the ward."},
+        {"name":"解放の集会所","name_en":"Liberation assembly","kind":"ledger","requires_kills":18,"requires_sites":[1],"restored":"住民が生産と分配の記録を自分たちで引き受けた。","restored_en":"Residents took charge of their own production and distribution records."}
+      ],
       "dialogue": [
         { "speaker": "artisan", "start_s": 0.8, "duration_s": 4.8, "ja": "工房も田畑も、また動き始めた。", "en": "The workshops and fields are working again." },
         { "speaker": "samurai", "start_s": 6.2, "duration_s": 4.8, "ja": "あとはこの街だ。誰も借りに縛られぬように。", "en": "Only this ward remains. No one will be bound by debt again." },

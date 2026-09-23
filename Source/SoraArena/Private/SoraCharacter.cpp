@@ -60,9 +60,27 @@ void ASoraCharacter::ApplyClass(int32 Id)
 }
 void ASoraCharacter::MakeEnemy(int32 Id)
 {
-    bEnemy=true; EnemyIndex=Id; bUseControllerRotationYaw=false;
+    bEnemy=true; bDojoPupil=false; bDojoTraining=false; EnemyIndex=Id; bUseControllerRotationYaw=false;
     GetCharacterMovement()->bOrientRotationToMovement=false;
     ApplyClass(Id%6); BuildCat();
+}
+void ASoraCharacter::SetDojoTraining(bool Enabled)
+{
+    const bool bChanged=bDojoTraining!=Enabled;
+    bDojoTraining=Enabled;
+    if(Enabled&&FSoraCatalog::Get().IsReady())
+    {
+        WeaponId=FSoraCatalog::Get().Class(0).Weapons[0];
+        Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine;
+        BuildWeapon();
+    }
+    else if(bChanged) BuildWeapon();
+}
+void ASoraCharacter::MakeDojoPupil(int32 Id)
+{
+    bEnemy=true; bDojoPupil=true; EnemyIndex=Id; bUseControllerRotationYaw=false;
+    GetCharacterMovement()->bOrientRotationToMovement=false;
+    ApplyClass(0); SetDojoTraining(true); BuildCat();
 }
 void ASoraCharacter::SetKernelDriven(bool Enabled,const FSoraPracticeMap* Map)
 {
@@ -140,7 +158,8 @@ void ASoraCharacter::BuildCat()
 {
     for(const auto& P:BodyParts) if(P) P->DestroyComponent(); BodyParts.Reset();
     bSkeletalVisual=false; GetMesh()->SetSkeletalMesh(nullptr);
-    const FString CatName=bEnemy?TEXT("AlienBanker"):TEXT("NyaagyuSamurai");
+    const bool bAlien=bEnemy&&!bDojoPupil;
+    const FString CatName=bAlien?TEXT("AlienBanker"):TEXT("NyaagyuSamurai");
     const FString RigPath=FString::Printf(TEXT("/Game/Generated/Meshes/SK_%s.SK_%s"),*CatName,*CatName);
     if(auto* RigMesh=LoadObject<USkeletalMesh>(nullptr,*RigPath))
     {
@@ -151,7 +170,7 @@ void ASoraCharacter::BuildCat()
         if(IdleAnimation) GetMesh()->PlayAnimation(IdleAnimation,true);
         bSkeletalVisual=true; bWalkingVisual=false; return;
     }
-    const TCHAR* Asset=bEnemy?TEXT("/Game/Generated/Meshes/SM_AlienBanker.SM_AlienBanker"):TEXT("/Game/Generated/Meshes/SM_NyaagyuSamurai.SM_NyaagyuSamurai");
+    const TCHAR* Asset=bAlien?TEXT("/Game/Generated/Meshes/SM_AlienBanker.SM_AlienBanker"):TEXT("/Game/Generated/Meshes/SM_NyaagyuSamurai.SM_NyaagyuSamurai");
     if(auto* AuthoredMesh=LoadObject<UStaticMesh>(nullptr,Asset))
     {
         auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),TEXT("OriginalCatMesh")));
@@ -160,8 +179,8 @@ void ASoraCharacter::BuildCat()
         Mesh->SetOwnerNoSee(!bEnemy); Mesh->RegisterComponent(); AddInstanceComponent(Mesh); BodyParts.Add(Mesh);
         return;
     }
-    const FLinearColor Fur=bEnemy?FLinearColor(.3,.34,.42):FLinearColor(.65,.4,.20);
-    const FLinearColor Cloth=bEnemy?FLinearColor(.17,.055,.26):FLinearColor(.04,.18,.24);
+    const FLinearColor Fur=bAlien?FLinearColor(.3,.34,.42):FLinearColor(.65,.4,.20);
+    const FLinearColor Cloth=bAlien?FLinearColor(.17,.055,.26):FLinearColor(.04,.18,.24);
     auto Add=[&](FString Name,const TCHAR* Mesh,FVector L,FVector S,FLinearColor Color)
     {
         auto* M=ASoraWorldBuilder::Shape(this,GetCapsuleComponent(),Name,Mesh,L,S,Color);
@@ -190,10 +209,10 @@ void ASoraCharacter::BuildWeapon()
     if(!FSoraCatalog::Get().IsReady()) return;
     const auto& W=FSoraCatalog::Get().Weapon(WeaponId);
     // Weapon 0 is the ordinary Samurai katana; the hero prop changes presentation only.
-    UStaticMesh* AuthoredMesh=WeaponId==0
+    UStaticMesh* AuthoredMesh=!bDojoTraining&&WeaponId==0
         ? LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_HeroKatana.SM_Nyaagyu_HeroKatana"))
         : nullptr;
-    if(!AuthoredMesh)
+    if(!AuthoredMesh&&!bDojoTraining)
     {
         const FString Asset=FString::Printf(TEXT("/Game/Generated/Meshes/SM_Weapon_%02d.SM_Weapon_%02d"),WeaponId,WeaponId);
         AuthoredMesh=LoadObject<UStaticMesh>(nullptr,*Asset);
@@ -214,9 +233,9 @@ void ASoraCharacter::BuildWeapon()
     };
     if(W.Kind==TEXT("melee"))
     {
-        Add(TEXT("Blade"),FVector(30,0,10),FVector(.9,.025,.07),FLinearColor(.72,.80,.84));
+        Add(TEXT("Blade"),FVector(30,0,10),FVector(.9,.025,.07),bDojoTraining?FLinearColor(.46,.27,.11):FLinearColor(.72,.80,.84));
         Add(TEXT("Tsuka"),FVector(-24,0,10),FVector(.22,.055,.075),FLinearColor(.15,.06,.025));
-        Add(TEXT("Tsuba"),FVector(-10,0,10),FVector(.025,.16,.20),FLinearColor(.52,.32,.08));
+        Add(TEXT("Tsuba"),FVector(-10,0,10),FVector(.025,.16,.20),bDojoTraining?FLinearColor(.31,.16,.06):FLinearColor(.52,.32,.08));
     }
     else
     {
@@ -333,8 +352,20 @@ float ASoraCharacter::TakeDamage(float Damage,const FDamageEvent& Event,AControl
     if(Health<=0)
     {
         auto* GM=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
-        if(bEnemy) { GM->EnemyKilled(this); SetActorEnableCollision(false); SetActorRotation(FRotator(0,GetActorRotation().Yaw,85)); SetLifeSpan(2.f); }
-        else { bFireHeld=false; GM->PlayerKilled(); }
+        if(bEnemy)
+        {
+            // Zero here means the sparring pupil has yielded, not died; the
+            // actor stands for a moment and cannot be scored a second time.
+            GM->OpponentDefeated(this); SetActorEnableCollision(false);
+            if(bDojoPupil) SetActorTickEnabled(false);
+            else SetActorRotation(FRotator(0,GetActorRotation().Yaw,85));
+            SetLifeSpan(2.f);
+        }
+        else
+        {
+            if(bDojoTraining) Health=1.f;
+            bFireHeld=false; GM->PlayerKilled();
+        }
     }
     return Applied;
 }
@@ -359,6 +390,17 @@ void ASoraCharacter::BotTick(float Dt)
     if(GetWorld()->LineTraceSingleByChannel(Ahead,GetActorLocation(),GetActorLocation()+Move*180,ECC_Visibility,P)&&Ahead.GetActor()!=Target)
         Move=FVector(-Move.Y,Move.X,0)*(EnemyIndex%2?1:-1);
     if(Dist>650) AddMovementInput(Move,.55f); else AddMovementInput(GetActorRightVector(),FMath::Sin(LifeTime+EnemyIndex)*.2f);
+    if(bDojoPupil)
+    {
+        if(GetWorld()->GetTimeSeconds()<NextEnemyShot||Dist>190.f) return;
+        NextEnemyShot=GetWorld()->GetTimeSeconds()+1.35f;
+        const FVector From=GetActorLocation()+FVector(0,0,50),To=Target->GetActorLocation()+FVector(0,0,50);
+        FHitResult Hit; FCollisionQueryParams PupilTrace(SCENE_QUERY_STAT(DojoSpar),false,this);
+        GetWorld()->LineTraceSingleByChannel(Hit,From,To,ECC_Visibility,PupilTrace);
+        if(Hit.GetActor()==Target)
+            UGameplayStatics::ApplyPointDamage(Target,4.f,(To-From).GetSafeNormal(),Hit,GetController(),this,UDamageType::StaticClass());
+        return;
+    }
     if(GetWorld()->GetTimeSeconds()<NextEnemyShot||Dist>2100) return;
     NextEnemyShot=GetWorld()->GetTimeSeconds()+1.3f+EnemyIndex%3*.2f;
     FVector From=GetActorLocation()+FVector(0,0,50); FVector To=Target->GetActorLocation()+FVector(0,0,35);
@@ -410,7 +452,7 @@ void ASoraCharacter::ChooseClass(int32 Id) { if(auto* G=Cast<ASoraGameMode>(UGam
 void ASoraCharacter::Equip(int32 Slot)
 {
     if(bKernelDriven) { if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->SelectPracticeWeapon(Slot); return; }
-    if(!CanPlay()||bReloading) return;
+    if(!CanPlay()||bReloading||(bDojoTraining&&Slot!=0)) return;
     AmmoByWeapon[WeaponId]=Ammo; WeaponId=FSoraCatalog::Get().Class(ClassId).Weapons[Slot];
     Ammo=AmmoByWeapon[WeaponId]; NextShot=GetWorld()->GetTimeSeconds()+.25f; BuildWeapon();
 }

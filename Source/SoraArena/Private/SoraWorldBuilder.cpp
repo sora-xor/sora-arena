@@ -57,11 +57,12 @@ void ASoraWorldBuilder::Surface(UStaticMeshComponent* Mesh,const FString& Role,F
         Instance->SetVectorParameterValue(TEXT("Tint"),Color); Mesh->SetMaterial(0,Instance);
     }
 }
-void ASoraWorldBuilder::Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision, FRotator Rotation,const FString& SurfaceRole)
+UStaticMeshComponent* ASoraWorldBuilder::Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision, FRotator Rotation,const FString& SurfaceRole)
 {
     auto* M = Shape(this,RootComponent,Name,TEXT("/Engine/BasicShapes/Cube.Cube"),Location,Size/100.f,Color,Collision);
     M->SetRelativeRotation(Rotation); Pieces.Add(M);
     if(!SurfaceRole.IsEmpty()) Surface(M,SurfaceRole);
+    return M;
 }
 void ASoraWorldBuilder::Building(FVector L, FVector Size, FLinearColor Wall, bool HighTech)
 {
@@ -131,7 +132,7 @@ void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 void ASoraWorldBuilder::ClearArena()
 {
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
-    for(const auto& A:DecorActors) if(A) A->Destroy(); DecorActors.Reset(); Nodes.Reset(); Activated.Reset(); NodePositions.Reset();
+    for(const auto& A:DecorActors) if(A) A->Destroy(); DecorActors.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset(); Activated.Reset(); NodePositions.Reset();
 }
 void ASoraWorldBuilder::BuildPractice(int32 MapId,const FSoraPracticeMap& Map)
 {
@@ -157,7 +158,7 @@ void ASoraWorldBuilder::BuildPractice(int32 MapId,const FSoraPracticeMap& Map)
     }
     Lighting(MapId);
 }
-void ASoraWorldBuilder::Build(int32 MapId)
+void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
 {
     ClearArena();
     const FLinearColor Accent=FSoraCatalog::Get().Map(MapId).Accent;
@@ -189,9 +190,57 @@ void ASoraWorldBuilder::Build(int32 MapId)
     for(int32 I=0;I<NodePositions.Num();++I)
     {
         const FVector P=NodePositions[I];
+        const FString Kind=Chapter&&Chapter->Sites.IsValidIndex(I)?Chapter->Sites[I].Kind:TEXT("workshop");
         Box(FString::Printf(TEXT("ProductionBase%d"),I),P+FVector(0,0,45),FVector(200,200,90),FLinearColor(.14f,.19f,.23f),true,FRotator::ZeroRotator,TEXT("Metal"));
         auto* N=Shape(this,RootComponent,FString::Printf(TEXT("ProductionCore%d"),I),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),P+FVector(0,0,145),FVector(.7f,.7f,1.5f),FLinearColor(.8f,.07f,.12f),true); Pieces.Add(N); Nodes.Add(N);
-        for(int32 S:{-1,1}) Box(FString::Printf(TEXT("SolarPanel%d%d"),I,S),P+FVector(S*110,0,185),FVector(150,150,12),Accent,true,FRotator(0,0,S*20));
+        SiteEffects.Add(nullptr);
+        SiteRestoredColors.Add(Kind==TEXT("foundry")?FLinearColor(.96f,.37f,.08f)
+            :Kind==TEXT("irrigation")?FLinearColor(.08f,.45f,.83f)
+            :Kind==TEXT("supplies")||Kind==TEXT("training")||Kind==TEXT("workshop")?FLinearColor(.82f,.59f,.19f)
+            :FLinearColor(.07f,.62f,.53f));
+        if(Kind==TEXT("irrigation"))
+        {
+            SiteEffects[I]=Box(FString::Printf(TEXT("WaterChannel%d"),I),P+FVector(0,-205,18),FVector(420,130,35),FLinearColor(.04f,.07f,.09f),false);
+            auto* Wheel=Shape(this,RootComponent,FString::Printf(TEXT("Waterwheel%d"),I),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),P+FVector(0,0,290),FVector(2.1f,.32f,2.1f),FLinearColor(.27f,.18f,.08f),false);
+            Wheel->SetRelativeRotation(FRotator(90,0,0)); Pieces.Add(Wheel);
+        }
+        else if(Kind==TEXT("foundry"))
+        {
+            Box(FString::Printf(TEXT("Furnace%d"),I),P+FVector(0,0,255),FVector(280,250,290),FLinearColor(.19f,.21f,.24f),true,FRotator::ZeroRotator,TEXT("Stone"));
+            SiteEffects[I]=Box(FString::Printf(TEXT("ForgeMouth%d"),I),P+FVector(0,-130,220),FVector(125,20,100),FLinearColor(.12f,.05f,.03f),false);
+            Box(FString::Printf(TEXT("ForgeStack%d"),I),P+FVector(80,70,475),FVector(80,80,220),FLinearColor(.14f,.16f,.18f),true,FRotator::ZeroRotator,TEXT("Metal"));
+        }
+        else if(Kind==TEXT("ledger")||Kind==TEXT("debt_seal"))
+        {
+            Box(FString::Printf(TEXT("LedgerFrame%d"),I),P+FVector(0,0,305),FVector(275,58,245),FLinearColor(.08f,.10f,.15f),true,FRotator::ZeroRotator,TEXT("Metal"));
+            SiteEffects[I]=Box(FString::Printf(TEXT("LedgerScreen%d"),I),P+FVector(0,-31,305),FVector(250,8,220),FLinearColor(.75f,.06f,.12f),false);
+        }
+        else if(Kind==TEXT("supplies"))
+        {
+            for(int32 Stack=0;Stack<3;++Stack)
+            {
+                auto* Crate=Box(FString::Printf(TEXT("SupplyCrate%d_%d"),I,Stack),P+FVector(-120+Stack*115,85,145+Stack*24),FVector(95,95,100),FLinearColor(.42f,.28f,.13f),true,FRotator::ZeroRotator,TEXT("Timber"));
+                if(Stack==0) SiteEffects[I]=Crate;
+            }
+        }
+        else if(Kind==TEXT("training"))
+        {
+            for(int32 Rack:{-1,1}) Box(FString::Printf(TEXT("SwordRack%d_%d"),I,Rack),P+FVector(Rack*125,50,255),FVector(22,160,200),FLinearColor(.33f,.16f,.07f),true,FRotator::ZeroRotator,TEXT("Timber"));
+            SiteEffects[I]=Box(FString::Printf(TEXT("PracticeBeam%d"),I),P+FVector(0,50,360),FVector(300,36,26),FLinearColor(.45f,.22f,.09f),true,FRotator::ZeroRotator,TEXT("Timber"));
+        }
+        else if(Kind==TEXT("power"))
+        {
+            Box(FString::Printf(TEXT("PowerPylon%d"),I),P+FVector(0,0,380),FVector(75,75,460),FLinearColor(.12f,.18f,.23f),true,FRotator::ZeroRotator,TEXT("Metal"));
+            SiteEffects[I]=Box(FString::Printf(TEXT("PowerBeacon%d"),I),P+FVector(0,0,625),FVector(120,120,50),FLinearColor(.72f,.06f,.10f),false);
+        }
+        else
+        {
+            for(int32 S:{-1,1})
+            {
+                auto* Panel=Box(FString::Printf(TEXT("WorkshopPanel%d%d"),I,S),P+FVector(S*110,0,185),FVector(150,150,12),Accent,true,FRotator(0,0,S*20));
+                if(S==-1) SiteEffects[I]=Panel;
+            }
+        }
     }
     if(MapId==3) ImportedProp(TEXT("SM_Alien_DebtKiosk"),NodePositions[1]+FVector(315,0,0),FRotator(0,90,0));
     for(int32 I=0;I<10;++I)
@@ -239,10 +288,20 @@ void ASoraWorldBuilder::Lighting(int32 MapId)
 }
 bool ASoraWorldBuilder::ActivateNearest(const FVector& Location)
 {
-    for(int32 I=0;I<NodePositions.Num();++I)
-        if(!Activated.Contains(I)&&FVector::Dist2D(Location,NodePositions[I])<230.f)
-        { Activated.Add(I); Tint(Nodes[I],FLinearColor(.05f,.75f,.5f)); return true; }
+    const int32 I=NearestInactiveNode(Location);
+    if(I>=0&&Nodes.IsValidIndex(I)&&IsValid(Nodes[I]))
+    {
+        Activated.Add(I); Tint(Nodes[I],FLinearColor(.05f,.75f,.5f));
+        if(SiteEffects.IsValidIndex(I)&&IsValid(SiteEffects[I])) Tint(SiteEffects[I],SiteRestoredColors[I]);
+        return true;
+    }
     return false;
+}
+int32 ASoraWorldBuilder::NearestInactiveNode(const FVector& Location) const
+{
+    for(int32 I=0;I<NodePositions.Num();++I)
+        if(!Activated.Contains(I)&&FVector::Dist2D(Location,NodePositions[I])<230.f) return I;
+    return INDEX_NONE;
 }
 int32 ASoraWorldBuilder::ActivatedMask() const
 {
@@ -255,7 +314,10 @@ void ASoraWorldBuilder::RestoreActivatedMask(int32 Mask)
     Activated.Reset();
     for(int32 I=0;I<NodePositions.Num()&&I<31;++I)
         if((Mask&(1<<I))!=0&&Nodes.IsValidIndex(I)&&IsValid(Nodes[I]))
-        { Activated.Add(I); Tint(Nodes[I],FLinearColor(.05f,.75f,.5f)); }
+        {
+            Activated.Add(I); Tint(Nodes[I],FLinearColor(.05f,.75f,.5f));
+            if(SiteEffects.IsValidIndex(I)&&IsValid(SiteEffects[I])) Tint(SiteEffects[I],SiteRestoredColors[I]);
+        }
 }
 FVector ASoraWorldBuilder::SpawnPoint(int32 Index) const
 {

@@ -7,6 +7,9 @@ class SORAARENA_API USoraSaveGame : public USaveGame
 {
     GENERATED_BODY()
 public:
+    // Legacy prototype checkpoints are not interpreted under the first-release
+    // chapter rules, where the dojo uses nonlethal sparring.
+    UPROPERTY(SaveGame) int32 SaveSchema = 0;
     UPROPERTY(SaveGame) int32 CurrentChapter = 0;
     UPROPERTY(SaveGame) int32 HighestChapter = 0;
     UPROPERTY(SaveGame) int32 SelectedClass = 0;
