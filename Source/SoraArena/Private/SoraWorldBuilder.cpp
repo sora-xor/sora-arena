@@ -94,17 +94,45 @@ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRot
     // In campaign the authored UCX is useful for placement review. The world
     // builder keeps its established simple collision proxies for combat.
     Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    const bool bEstateDojo=Name==TEXT("SM_Nyaagyu_EstateDojo");
     for(int32 Index=0;Index<Asset->GetStaticMaterials().Num();++Index)
     {
         const FString Slot=Asset->GetStaticMaterials()[Index].MaterialSlotName.ToString();
         FString Role;
+        FLinearColor TintColor=FLinearColor::White;
+        float TileSizeCm=0.f;
         if(Slot.Contains(TEXT("M_Env_Timber"))) Role=TEXT("Timber");
         else if(Slot.Contains(TEXT("M_Env_Stone"))) Role=TEXT("Stone");
         else if(Slot.Contains(TEXT("M_Env_Metal"))) Role=TEXT("Metal");
+        else if(bEstateDojo&&Slot.StartsWith(TEXT("M_Dojo_Kawara_")))
+        {
+            // The imported Blender material is flat. The curved kawara mesh
+            // keeps its silhouette; projected stone normal/roughness maps add
+            // firing variation at a tile-sized scale in the playable scene.
+            Role=TEXT("Stone"); TileSizeCm=35.f;
+            TintColor=Slot.EndsWith(TEXT("_1"))?FLinearColor(.36f,.46f,.67f)
+                :Slot.EndsWith(TEXT("_2"))?FLinearColor(.25f,.34f,.57f)
+                :FLinearColor(.32f,.42f,.66f);
+        }
+        else if(bEstateDojo&&Slot==TEXT("M_Dojo_CharredCedar"))
+        {
+            Role=TEXT("Timber"); TileSizeCm=140.f;
+            TintColor=FLinearColor(.24f,.23f,.24f);
+        }
         if(!Role.IsEmpty())
         {
             const FString MaterialPath=TEXT("/Game/Generated/Environment/MI_Nyaagyu_")+Role+TEXT(".MI_Nyaagyu_")+Role;
-            if(auto* Material=LoadObject<UMaterialInterface>(nullptr,*MaterialPath,nullptr,LOAD_NoWarn)) Mesh->SetMaterial(Index,Material);
+            if(auto* Material=LoadObject<UMaterialInterface>(nullptr,*MaterialPath,nullptr,LOAD_NoWarn))
+            {
+                if(TileSizeCm>0.f)
+                {
+                    auto* Instance=UMaterialInstanceDynamic::Create(Material,Mesh);
+                    Instance->SetVectorParameterValue(TEXT("Tint"),TintColor);
+                    Instance->SetVectorParameterValue(TEXT("TileSize"),FLinearColor(TileSizeCm,TileSizeCm,TileSizeCm,1.f));
+                    Mesh->SetMaterial(Index,Instance);
+                }
+                else Mesh->SetMaterial(Index,Material);
+            }
         }
     }
     Mesh->RegisterComponent(); AddInstanceComponent(Mesh); Pieces.Add(Mesh);
