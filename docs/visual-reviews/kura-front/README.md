@@ -43,6 +43,28 @@ WorldBuilder and GameMode changes were restored byte-for-byte after capture;
 generated ArtReview assets remain unreferenced there. Main runtime files were
 never changed for this review.
 
+The [compressed raw diagnostic logs](logs/) preserve import, build, cook,
+stage, and packaged-run output for the baseline, broken first candidate,
+UV-corrected candidate, and inward-facing yaw test. The unedited final close
+frame has SHA-256 `ea0c63ac3277418a6fa6f952088b0a83f263169d157f5d7f4a2ab081d7cb74f7`;
+the unedited inward-facing entrance frame has SHA-256
+`1842872db0ade0738d33a9974bc09b62bc6a04b368b65e37653cbfe73a2fa6ca`.
+The corresponding package stage log records `BUILD SUCCESSFUL`,
+`AutomationTool ExitCode=0`, and bundle ID `org.sora.soraarena`; the packaged
+run log records the entrance camera and screenshot requests. The diagnostic
+commands were:
+
+```sh
+UnrealEditor-Cmd SoraArena.uproject -ExecutePythonScript=scripts/unreal/import_nyaagyu_kura_front_art_review.py -Unattended -NullRHI -NoSplash -NoSound -stdout -FullStdOutLogOutput
+scripts/toolchain/build-mac.sh Development Game
+scripts/toolchain/cook-mac.sh Development
+scripts/toolchain/stage-mac.sh /tmp/sora-arena-mac-kura-front-all-facing-road
+SoraArena.app/Contents/MacOS/SoraArena -game -RenderOffscreen -SoraArtReview -unattended -nop4 -nosplash -log
+```
+
+The importer ran only in the UE 5.8.3 diagnostic worktree with its version
+guard altered there; the committed importer remains pinned to UE 5.8.2.
+
 The raw diagnostic [baseline, UV-corrected, and final yaw-review logs](logs/)
 are archived with [SHA-256 checksums](logs/SHA256SUMS). They record the import,
 Mac cook, stage/package, and packaged capture evidence retained before the
