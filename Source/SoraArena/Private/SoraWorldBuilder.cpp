@@ -474,7 +474,10 @@ void ASoraWorldBuilder::Lighting(int32 MapId)
     const bool bOccupiedStreet=MapId==1;
     auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,1200),FRotator(bOccupiedStreet?-10.f:-28.f,-35.f,0));
     Sun->SetMobility(EComponentMobility::Movable);
-    Sun->GetLightComponent()->SetIntensity(bEstate?.45f:(bOccupiedStreet?1.8f:4.f));
+    // The Estate's earlier 0.45-lux key left roofs and tabby faces nearly
+    // black against a bright overcast dome. A packaged M1 diagnostic A/B at
+    // the same camera found 25 lux readable while 250 washed out the paving.
+    Sun->GetLightComponent()->SetIntensity(bEstate?25.f:(bOccupiedStreet?1.8f:4.f));
     Sun->SetLightColor(bEstate?FLinearColor(.83f,.89f,1.f):FLinearColor(1.f,.82f,.66f));
     auto* SunComponent=CastChecked<UDirectionalLightComponent>(Sun->GetLightComponent());
     SunComponent->SetAtmosphereSunLight(true);
