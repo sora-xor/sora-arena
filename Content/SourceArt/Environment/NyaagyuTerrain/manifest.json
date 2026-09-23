@@ -1,0 +1,1090 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_mesh_terrain.py",
+  "validator": "scripts/art/validate_nyaagyu_mesh_terrain.py",
+  "source_blend": "Nyaagyu_Estate_MeshTerrain_Source.blend",
+  "source_blend_sha256": "11d1534c295b5d720fe7508fd13673e74f5b6538f28c6a209b32c3257ec462b5",
+  "preview": "Nyaagyu_Estate_MeshTerrain_Blender.png",
+  "preview_sha256": "d217674c7746fa41f2096c0285bb8b9bcb099ee71f19d2d924dee7561891f68f",
+  "units": "meters in Blender; centimeters in UE placement records",
+  "world_xy_cm": [
+    -3200,
+    -2600,
+    3200,
+    2600
+  ],
+  "tile_layout": [
+    4,
+    4
+  ],
+  "tile_size_cm": [
+    1600,
+    1300
+  ],
+  "density": {
+    "hi": {
+      "quads_per_tile": [
+        128,
+        104
+      ],
+      "quad_spacing_cm": 12.5,
+      "intended": "Windows Nanite candidate"
+    },
+    "mac": {
+      "quads_per_tile": [
+        16,
+        13
+      ],
+      "quad_spacing_cm": 100,
+      "intended": "M1 Ultra conventional mesh fallback candidate"
+    }
+  },
+  "height_function": "scripts/art/create_nyaagyu_mesh_terrain.py:elevation",
+  "max_visual_collision_delta_cm": 4.5,
+  "material_slots": [
+    "M_Terrain_Soil_PolyHaven",
+    "M_Terrain_Stone_PolyHaven"
+  ],
+  "palette_manifest": "../PolyHaven/manifest.json",
+  "palette_license": "CC0-1.0; https://polyhaven.com/license",
+  "palette_files": [
+    {
+      "role": "soil",
+      "channel": "diffuse",
+      "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+      "sha256": "29c997d77f56e4ea16d3e998a306be0c17fddb28ab4822657c7cd8249040ffda",
+      "bytes": 4539452
+    },
+    {
+      "role": "soil",
+      "channel": "normal",
+      "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+      "sha256": "9bbc1abea84c6774ead2153f8444a5ac5675ac4ce19e7e02d1cb869b20b81f26",
+      "bytes": 24178023
+    },
+    {
+      "role": "soil",
+      "channel": "arm",
+      "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+      "sha256": "9056337763fa1db614b98aee969c4f07277731292b9549171e7b66c88cf6a416",
+      "bytes": 18103277
+    },
+    {
+      "role": "stone",
+      "channel": "diffuse",
+      "path": "Content/SourceArt/Environment/PolyHaven/stone_floor/stone_floor_diff_2k.jpg",
+      "sha256": "ce19d3cb1e683419b6a596e1baffbf2b429f970f8ddba81e391ad9a38f310ed8",
+      "bytes": 3800807
+    },
+    {
+      "role": "stone",
+      "channel": "normal",
+      "path": "Content/SourceArt/Environment/PolyHaven/stone_floor/stone_floor_nor_dx_2k.png",
+      "sha256": "14981993cccbcca9a4775200dfd38f7ad381a7b494ae09b760a9ea036d74e247",
+      "bytes": 22634443
+    },
+    {
+      "role": "stone",
+      "channel": "arm",
+      "path": "Content/SourceArt/Environment/PolyHaven/stone_floor/stone_floor_arm_2k.png",
+      "sha256": "339e2af892ff7f371346bce64f3b88f96ea5455959d3340c7d2ffe7ed91cf557",
+      "bytes": 16322804
+    }
+  ],
+  "tiles": [
+    {
+      "tier": "hi",
+      "index": [
+        0,
+        0
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X0_Y0",
+      "fbx": "SM_NyaagyuTerrain_HI_X0_Y0.fbx",
+      "fbx_sha256": "edb9ea3009628e149c9a636251b64075523051fe3a74f26ba6b76ba883bff671",
+      "placement_center_cm": [
+        -2400,
+        -1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -3200,
+        -2600,
+        -1600,
+        -1300
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X0_Y0",
+      "z_range_cm": [
+        1.1467,
+        2.4371
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        1,
+        0
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X1_Y0",
+      "fbx": "SM_NyaagyuTerrain_HI_X1_Y0.fbx",
+      "fbx_sha256": "725e062118943774d4d99218aec1c1f94ca9b1265529629a4609d41ba42217d9",
+      "placement_center_cm": [
+        -800,
+        -1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -1600,
+        -2600,
+        0,
+        -1300
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X1_Y0",
+      "z_range_cm": [
+        1.1115,
+        2.4497
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        2,
+        0
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X2_Y0",
+      "fbx": "SM_NyaagyuTerrain_HI_X2_Y0.fbx",
+      "fbx_sha256": "464683d7e12d4dad9533c5900864fa2954fb0e8e10f5d8ee929604fbb7343ded",
+      "placement_center_cm": [
+        800,
+        -1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        0,
+        -2600,
+        1600,
+        -1300
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X2_Y0",
+      "z_range_cm": [
+        1.1612,
+        2.4456
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        3,
+        0
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X3_Y0",
+      "fbx": "SM_NyaagyuTerrain_HI_X3_Y0.fbx",
+      "fbx_sha256": "e638fd35ce94b3a691bff14686eae1f1a2c78eb06fd492d5683b13856216643a",
+      "placement_center_cm": [
+        2400,
+        -1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        1600,
+        -2600,
+        3200,
+        -1300
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X3_Y0",
+      "z_range_cm": [
+        1.1208,
+        2.435
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        0,
+        1
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X0_Y1",
+      "fbx": "SM_NyaagyuTerrain_HI_X0_Y1.fbx",
+      "fbx_sha256": "50b784f628ef5983af93b2ce2b9cd9dfaffa09e50627dad201831904425d2dba",
+      "placement_center_cm": [
+        -2400,
+        -650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -3200,
+        -1300,
+        -1600,
+        0
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X0_Y1",
+      "z_range_cm": [
+        1.1611,
+        2.4169
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        1,
+        1
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X1_Y1",
+      "fbx": "SM_NyaagyuTerrain_HI_X1_Y1.fbx",
+      "fbx_sha256": "fec06ff2a33fda727c3d0363bd98d39fad6ddb6975908076b6a22f30cead7f59",
+      "placement_center_cm": [
+        -800,
+        -650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -1600,
+        -1300,
+        0,
+        0
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X1_Y1",
+      "z_range_cm": [
+        1.1935,
+        3.9097
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        2,
+        1
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X2_Y1",
+      "fbx": "SM_NyaagyuTerrain_HI_X2_Y1.fbx",
+      "fbx_sha256": "29bbe10a130078a8323b47962839bbe94059fa1381ea7a5c1704eeb214fbb342",
+      "placement_center_cm": [
+        800,
+        -650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        0,
+        -1300,
+        1600,
+        0
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X2_Y1",
+      "z_range_cm": [
+        1.3183,
+        2.3769
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        3,
+        1
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X3_Y1",
+      "fbx": "SM_NyaagyuTerrain_HI_X3_Y1.fbx",
+      "fbx_sha256": "e4fcb716e17eed7d92d5a864655c4dc4adf6a5f8f564e844fcac8cedc81b2026",
+      "placement_center_cm": [
+        2400,
+        -650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        1600,
+        -1300,
+        3200,
+        0
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X3_Y1",
+      "z_range_cm": [
+        1.1695,
+        2.487
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        0,
+        2
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X0_Y2",
+      "fbx": "SM_NyaagyuTerrain_HI_X0_Y2.fbx",
+      "fbx_sha256": "ae547a2098fe8a166bda07a1069c770d1d03ef507641dbf96def249e7d1e62a0",
+      "placement_center_cm": [
+        -2400,
+        650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -3200,
+        0,
+        -1600,
+        1300
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X0_Y2",
+      "z_range_cm": [
+        1.1695,
+        2.487
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        1,
+        2
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X1_Y2",
+      "fbx": "SM_NyaagyuTerrain_HI_X1_Y2.fbx",
+      "fbx_sha256": "726b4ea206403fc3aefd4d2c5e799f99562fab6734f2c92f3623ac060319fa7d",
+      "placement_center_cm": [
+        -800,
+        650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -1600,
+        0,
+        0,
+        1300
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X1_Y2",
+      "z_range_cm": [
+        1.1817,
+        3.8312
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        2,
+        2
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X2_Y2",
+      "fbx": "SM_NyaagyuTerrain_HI_X2_Y2.fbx",
+      "fbx_sha256": "7be3867b28a8e7f93768713247cfca42ff3ce5395ff326849ef81a63aefed577",
+      "placement_center_cm": [
+        800,
+        650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        0,
+        0,
+        1600,
+        1300
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X2_Y2",
+      "z_range_cm": [
+        1.1935,
+        3.732
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        3,
+        2
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X3_Y2",
+      "fbx": "SM_NyaagyuTerrain_HI_X3_Y2.fbx",
+      "fbx_sha256": "9bf004758417277ed86b18920a9aadab9f477219d0fa88d4dd83eb47ae89825d",
+      "placement_center_cm": [
+        2400,
+        650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        1600,
+        0,
+        3200,
+        1300
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X3_Y2",
+      "z_range_cm": [
+        1.1611,
+        2.4169
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        0,
+        3
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X0_Y3",
+      "fbx": "SM_NyaagyuTerrain_HI_X0_Y3.fbx",
+      "fbx_sha256": "2d973a07443a2a624f92792099e95363863e105368e971355706ae47daf9d80e",
+      "placement_center_cm": [
+        -2400,
+        1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -3200,
+        1300,
+        -1600,
+        2600
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X0_Y3",
+      "z_range_cm": [
+        1.1208,
+        2.435
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        1,
+        3
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X1_Y3",
+      "fbx": "SM_NyaagyuTerrain_HI_X1_Y3.fbx",
+      "fbx_sha256": "e16ce660ad1bbc2f3e0e7ede4b71cdcea0d8a9613b29af33823d56425e7ccf1d",
+      "placement_center_cm": [
+        -800,
+        1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -1600,
+        1300,
+        0,
+        2600
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X1_Y3",
+      "z_range_cm": [
+        1.1612,
+        2.4456
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        2,
+        3
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X2_Y3",
+      "fbx": "SM_NyaagyuTerrain_HI_X2_Y3.fbx",
+      "fbx_sha256": "dfba7143180cf8fd9865df843057d29a7c9c9510d72c4fd5615c02e056ee52ba",
+      "placement_center_cm": [
+        800,
+        1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        0,
+        1300,
+        1600,
+        2600
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X2_Y3",
+      "z_range_cm": [
+        1.1115,
+        2.4497
+      ]
+    },
+    {
+      "tier": "hi",
+      "index": [
+        3,
+        3
+      ],
+      "name": "SM_NyaagyuTerrain_HI_X3_Y3",
+      "fbx": "SM_NyaagyuTerrain_HI_X3_Y3.fbx",
+      "fbx_sha256": "f5c719ab7c2481fa2cdb86545e6e8a20b88a6f6e40c81906528c021d8eb8aa5b",
+      "placement_center_cm": [
+        2400,
+        1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        1600,
+        1300,
+        3200,
+        2600
+      ],
+      "sample_grid": [
+        129,
+        105
+      ],
+      "triangles": 26624,
+      "source_object": "SourceTerrain_hi_X3_Y3",
+      "z_range_cm": [
+        1.1467,
+        2.4371
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        0,
+        0
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X0_Y0",
+      "fbx": "SM_NyaagyuTerrain_MAC_X0_Y0.fbx",
+      "fbx_sha256": "5226fa6ca92f90acd370715005a95efaa229e97c97832bcd4204504591a35b98",
+      "placement_center_cm": [
+        -2400,
+        -1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -3200,
+        -2600,
+        -1600,
+        -1300
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X0_Y0",
+      "z_range_cm": [
+        1.2175,
+        2.3606
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        1,
+        0
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X1_Y0",
+      "fbx": "SM_NyaagyuTerrain_MAC_X1_Y0.fbx",
+      "fbx_sha256": "8be5c069cd510776edad1155ae812102974a462fa5b2984bac62b95a5e07b60f",
+      "placement_center_cm": [
+        -800,
+        -1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -1600,
+        -2600,
+        0,
+        -1300
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X1_Y0",
+      "z_range_cm": [
+        1.1521,
+        2.3783
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        2,
+        0
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X2_Y0",
+      "fbx": "SM_NyaagyuTerrain_MAC_X2_Y0.fbx",
+      "fbx_sha256": "070445d09545a44793da090fcca8de81bb94022da40b1c3fedcf4e8d472d6aa7",
+      "placement_center_cm": [
+        800,
+        -1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        0,
+        -2600,
+        1600,
+        -1300
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X2_Y0",
+      "z_range_cm": [
+        1.2729,
+        2.4248
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        3,
+        0
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X3_Y0",
+      "fbx": "SM_NyaagyuTerrain_MAC_X3_Y0.fbx",
+      "fbx_sha256": "1b5dcfa7e3d817fcf65f0974d0944cda4b95869b262095060d20e568459ea5a8",
+      "placement_center_cm": [
+        2400,
+        -1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        1600,
+        -2600,
+        3200,
+        -1300
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X3_Y0",
+      "z_range_cm": [
+        1.168,
+        2.3723
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        0,
+        1
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X0_Y1",
+      "fbx": "SM_NyaagyuTerrain_MAC_X0_Y1.fbx",
+      "fbx_sha256": "c8af587c96407ae293bec852b1b073fadcc79e4c5c67115cea766248f4b1d460",
+      "placement_center_cm": [
+        -2400,
+        -650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -3200,
+        -1300,
+        -1600,
+        0
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X0_Y1",
+      "z_range_cm": [
+        1.2958,
+        2.3971
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        1,
+        1
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X1_Y1",
+      "fbx": "SM_NyaagyuTerrain_MAC_X1_Y1.fbx",
+      "fbx_sha256": "1d5e44d233c5dc7bae482ac3d6440642f3f1b7684f9c3808b236e8d34d25d471",
+      "placement_center_cm": [
+        -800,
+        -650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -1600,
+        -1300,
+        0,
+        0
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X1_Y1",
+      "z_range_cm": [
+        1.2524,
+        3.3893
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        2,
+        1
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X2_Y1",
+      "fbx": "SM_NyaagyuTerrain_MAC_X2_Y1.fbx",
+      "fbx_sha256": "76d458cca6e0d87651af55aea7079be91e2b915419ca8fd2b764835d9ca97c48",
+      "placement_center_cm": [
+        800,
+        -650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        0,
+        -1300,
+        1600,
+        0
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X2_Y1",
+      "z_range_cm": [
+        1.4246,
+        2.2479
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        3,
+        1
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X3_Y1",
+      "fbx": "SM_NyaagyuTerrain_MAC_X3_Y1.fbx",
+      "fbx_sha256": "b7fb94bc728d8c9d9204701c771f34bff33490bcdeb1b7f8f43a93bde5c38251",
+      "placement_center_cm": [
+        2400,
+        -650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        1600,
+        -1300,
+        3200,
+        0
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X3_Y1",
+      "z_range_cm": [
+        1.3098,
+        2.3486
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        0,
+        2
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X0_Y2",
+      "fbx": "SM_NyaagyuTerrain_MAC_X0_Y2.fbx",
+      "fbx_sha256": "13a5eda60b6768a15abb3e84eb72c478331f597a2632ead70d0d904573feef1a",
+      "placement_center_cm": [
+        -2400,
+        650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -3200,
+        0,
+        -1600,
+        1300
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X0_Y2",
+      "z_range_cm": [
+        1.3098,
+        2.3486
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        1,
+        2
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X1_Y2",
+      "fbx": "SM_NyaagyuTerrain_MAC_X1_Y2.fbx",
+      "fbx_sha256": "a6e1c2f9748e26b075802d8430dbd44d2695fdc53641946f9456c26b2634bc15",
+      "placement_center_cm": [
+        -800,
+        650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -1600,
+        0,
+        0,
+        1300
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X1_Y2",
+      "z_range_cm": [
+        1.2762,
+        3.3389
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        2,
+        2
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X2_Y2",
+      "fbx": "SM_NyaagyuTerrain_MAC_X2_Y2.fbx",
+      "fbx_sha256": "d9fbc6099f885fcf3aa155b27f9f73eb6e5f3580bad746acf31f12aa16fe58ff",
+      "placement_center_cm": [
+        800,
+        650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        0,
+        0,
+        1600,
+        1300
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X2_Y2",
+      "z_range_cm": [
+        1.2524,
+        3.3182
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        3,
+        2
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X3_Y2",
+      "fbx": "SM_NyaagyuTerrain_MAC_X3_Y2.fbx",
+      "fbx_sha256": "962d8b22b0cc4dd44616a10bb21843bb9572434505f4febab27676e16e3c759d",
+      "placement_center_cm": [
+        2400,
+        650,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        1600,
+        0,
+        3200,
+        1300
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X3_Y2",
+      "z_range_cm": [
+        1.2958,
+        2.3971
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        0,
+        3
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X0_Y3",
+      "fbx": "SM_NyaagyuTerrain_MAC_X0_Y3.fbx",
+      "fbx_sha256": "97727e731af14d6465abad1c895bedc519cf5bd500144d290a68ba354b2ef51c",
+      "placement_center_cm": [
+        -2400,
+        1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -3200,
+        1300,
+        -1600,
+        2600
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X0_Y3",
+      "z_range_cm": [
+        1.168,
+        2.3723
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        1,
+        3
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X1_Y3",
+      "fbx": "SM_NyaagyuTerrain_MAC_X1_Y3.fbx",
+      "fbx_sha256": "fe61b96809605dc7893cf31436d9b8fa37e5f7314a00b829f759ac2d3c3f022a",
+      "placement_center_cm": [
+        -800,
+        1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        -1600,
+        1300,
+        0,
+        2600
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X1_Y3",
+      "z_range_cm": [
+        1.2729,
+        2.4248
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        2,
+        3
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X2_Y3",
+      "fbx": "SM_NyaagyuTerrain_MAC_X2_Y3.fbx",
+      "fbx_sha256": "8c4a6b21cb10aaf4988ba3ca1984fe839b69f0377a749f638171607d38405fb5",
+      "placement_center_cm": [
+        800,
+        1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        0,
+        1300,
+        1600,
+        2600
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X2_Y3",
+      "z_range_cm": [
+        1.1521,
+        2.3783
+      ]
+    },
+    {
+      "tier": "mac",
+      "index": [
+        3,
+        3
+      ],
+      "name": "SM_NyaagyuTerrain_MAC_X3_Y3",
+      "fbx": "SM_NyaagyuTerrain_MAC_X3_Y3.fbx",
+      "fbx_sha256": "952b97683fe0a6dfbf440823d17f424855103005b9e60a78fdf548bdacf543d4",
+      "placement_center_cm": [
+        2400,
+        1950,
+        0
+      ],
+      "world_bounds_xy_cm": [
+        1600,
+        1300,
+        3200,
+        2600
+      ],
+      "sample_grid": [
+        17,
+        14
+      ],
+      "triangles": 416,
+      "source_object": "SourceTerrain_mac_X3_Y3",
+      "z_range_cm": [
+        1.2175,
+        2.3606
+      ]
+    }
+  ],
+  "license": "Original project-owned terrain geometry and Blender review render; reused Poly Haven texture maps are CC0-1.0 under their separate asset records. No purchased assets.",
+  "limitations": "Source-art meshes only. No UE 5.8.2 import, World Partition level, Mesh Partition conversion, compiled sections, Nanite setup, Lumen validation, collision integration, lighting comparison, or performance qualification is claimed."
+}
