@@ -1,0 +1,625 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_integrated_roji.py",
+  "generator_sha256": "2c4c15a57b4d7695d338108003629a589a60aa3c594981b2c3a9651fba8c04df",
+  "source_blend": "Nyaagyu_IntegratedRoji_Source.blend",
+  "source_blend_sha256": "620568037a7bc50cc879b0151b6d76c5531b69c41579e45626622ac6dbd5049e",
+  "eye_height_review": "Nyaagyu_IntegratedRoji_EyeHeight_Blender.png",
+  "eye_height_sha256": "67fc67d249bed6cbca4307a24ae5c1a9aeafed70992fc1d7aee136a0984d753b",
+  "overhead_review": "Nyaagyu_IntegratedRoji_Overhead_Blender.png",
+  "overhead_sha256": "ba79cd0dae7606b06ca1d08734122fe8d7c99847f1f0024c39ff900587b412ec",
+  "base_terrain_manifest": "Content/SourceArt/Environment/NyaagyuTerrain/manifest.json",
+  "base_terrain_manifest_sha256": "b9c0279862138cb89135bd8ee1401d5c476a24b7b6c36c857cb56b8bc710631e",
+  "stone_scan_manifest": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/manifest.json",
+  "stone_scan_manifest_sha256": "2b97d5c64435c007ea7c252d52d562e44d6f8bd2e254f5b46afdd3426177d854",
+  "soil_scan_manifest": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+  "soil_scan_manifest_sha256": "d21c351a0ca82165f885d9fc4cbcff652009fee0b9336ae9367b2ccd667cdd0b",
+  "gravel_scan_manifest": "Content/SourceArt/Environment/NyaagyuIntegratedRoji/GravelGround01/manifest.json",
+  "gravel_scan_manifest_sha256": "56db89e7c8f0f7cb44097e4af04e5b58a2b0640a69d4b3c961167187db1166fd",
+  "license": "Original geometry and patina; reused Poly Haven Rock 01, Brown Mud Leaves 01, and Gravel Ground 01 PBR scans are CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "road_extent_m": [
+    64,
+    5.24
+  ],
+  "nominal_stone_count": 579,
+  "road_stone_area_m2": 107.3462,
+  "tile_records": [
+    {
+      "name": "SM_NyaagyuIntegratedRoji_HI_X0_Y1",
+      "fbx": "SM_NyaagyuIntegratedRoji_HI_X0_Y1.fbx",
+      "fbx_sha256": "20e682487e319f2a2f561ed51858e0278f79174650a7995b4c4f645b3ed898fe",
+      "tier": "hi",
+      "index": [
+        0,
+        1
+      ],
+      "placement_center_cm": [
+        -2400,
+        -650,
+        0
+      ],
+      "base_quads": 13312,
+      "stone_count": 77,
+      "stone_triangles": 7532,
+      "total_triangles": 34156,
+      "local_bounds_m": [
+        [
+          -8.6972,
+          -6.5,
+          0.011
+        ],
+        [
+          8.0424,
+          6.7404,
+          0.0372
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_HI_X1_Y1",
+      "fbx": "SM_NyaagyuIntegratedRoji_HI_X1_Y1.fbx",
+      "fbx_sha256": "554ba3cac54ffd16c66a23165a9ba4c86a50c34648aa4857433f5f4cb4174f4c",
+      "tier": "hi",
+      "index": [
+        1,
+        1
+      ],
+      "placement_center_cm": [
+        -800,
+        -650,
+        0
+      ],
+      "base_quads": 13312,
+      "stone_count": 59,
+      "stone_triangles": 5999,
+      "total_triangles": 32623,
+      "local_bounds_m": [
+        [
+          -8.2398,
+          -6.5,
+          0.0118
+        ],
+        [
+          8.3134,
+          6.7132,
+          0.039
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_HI_X2_Y1",
+      "fbx": "SM_NyaagyuIntegratedRoji_HI_X2_Y1.fbx",
+      "fbx_sha256": "f77155b0b2e654f70f0c9fc50c287a6a28b7762e193661e08f5e8b6846740850",
+      "tier": "hi",
+      "index": [
+        2,
+        1
+      ],
+      "placement_center_cm": [
+        800,
+        -650,
+        0
+      ],
+      "base_quads": 13312,
+      "stone_count": 82,
+      "stone_triangles": 7770,
+      "total_triangles": 34394,
+      "local_bounds_m": [
+        [
+          -8.2655,
+          -6.5,
+          0.0128
+        ],
+        [
+          8.1375,
+          6.7092,
+          0.0378
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_HI_X3_Y1",
+      "fbx": "SM_NyaagyuIntegratedRoji_HI_X3_Y1.fbx",
+      "fbx_sha256": "af4eba6d444571c1271cb5f2082c88e485cd8ac4073c5e38f39a1cdbc2899068",
+      "tier": "hi",
+      "index": [
+        3,
+        1
+      ],
+      "placement_center_cm": [
+        2400,
+        -650,
+        0
+      ],
+      "base_quads": 13312,
+      "stone_count": 87,
+      "stone_triangles": 8302,
+      "total_triangles": 34926,
+      "local_bounds_m": [
+        [
+          -8.2556,
+          -6.5,
+          0.0114
+        ],
+        [
+          8.7516,
+          6.6384,
+          0.0372
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_HI_X0_Y2",
+      "fbx": "SM_NyaagyuIntegratedRoji_HI_X0_Y2.fbx",
+      "fbx_sha256": "8d54ef5063d46637d25b047ad2b3ad0949957282bd9cbdd811018f1b8672ac99",
+      "tier": "hi",
+      "index": [
+        0,
+        2
+      ],
+      "placement_center_cm": [
+        -2400,
+        650,
+        0
+      ],
+      "base_quads": 13312,
+      "stone_count": 75,
+      "stone_triangles": 7406,
+      "total_triangles": 34030,
+      "local_bounds_m": [
+        [
+          -8.6752,
+          -6.7561,
+          0.0116
+        ],
+        [
+          8.0,
+          6.5,
+          0.0371
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_HI_X1_Y2",
+      "fbx": "SM_NyaagyuIntegratedRoji_HI_X1_Y2.fbx",
+      "fbx_sha256": "b0eae773a5df28a70444f6b4181d356944dbfd3639502e2d3aa1f8122e920ac3",
+      "tier": "hi",
+      "index": [
+        1,
+        2
+      ],
+      "placement_center_cm": [
+        -800,
+        650,
+        0
+      ],
+      "base_quads": 13312,
+      "stone_count": 64,
+      "stone_triangles": 6321,
+      "total_triangles": 32945,
+      "local_bounds_m": [
+        [
+          -8.1322,
+          -6.8523,
+          0.0118
+        ],
+        [
+          8.134,
+          6.5,
+          0.0382
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_HI_X2_Y2",
+      "fbx": "SM_NyaagyuIntegratedRoji_HI_X2_Y2.fbx",
+      "fbx_sha256": "21ba69ba4fcec5b4d8817420a1aad51338114fedf7514841601a99018e7e7b8b",
+      "tier": "hi",
+      "index": [
+        2,
+        2
+      ],
+      "placement_center_cm": [
+        800,
+        650,
+        0
+      ],
+      "base_quads": 13312,
+      "stone_count": 68,
+      "stone_triangles": 6370,
+      "total_triangles": 32994,
+      "local_bounds_m": [
+        [
+          -8.1967,
+          -6.6939,
+          0.0121
+        ],
+        [
+          8.2067,
+          6.5,
+          0.0375
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_HI_X3_Y2",
+      "fbx": "SM_NyaagyuIntegratedRoji_HI_X3_Y2.fbx",
+      "fbx_sha256": "611dfba8567c79a6d61a3177f53c18e3d53d43e2be3687ebfb365a6a42f9a44b",
+      "tier": "hi",
+      "index": [
+        3,
+        2
+      ],
+      "placement_center_cm": [
+        2400,
+        650,
+        0
+      ],
+      "base_quads": 13312,
+      "stone_count": 67,
+      "stone_triangles": 6489,
+      "total_triangles": 33113,
+      "local_bounds_m": [
+        [
+          -8.1089,
+          -6.6426,
+          0.011
+        ],
+        [
+          8.7371,
+          6.5,
+          0.0379
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_MAC_X0_Y1",
+      "fbx": "SM_NyaagyuIntegratedRoji_MAC_X0_Y1.fbx",
+      "fbx_sha256": "27cd7929287925b7306d6f9e7362cc1e1eb66f6cc80198c2f231cc21ca958290",
+      "tier": "mac",
+      "index": [
+        0,
+        1
+      ],
+      "placement_center_cm": [
+        -2400,
+        -650,
+        0
+      ],
+      "base_quads": 832,
+      "stone_count": 77,
+      "stone_triangles": 2760,
+      "total_triangles": 4424,
+      "local_bounds_m": [
+        [
+          -8.6956,
+          -6.5,
+          0.0114
+        ],
+        [
+          8.0424,
+          6.7369,
+          0.0349
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_MAC_X1_Y1",
+      "fbx": "SM_NyaagyuIntegratedRoji_MAC_X1_Y1.fbx",
+      "fbx_sha256": "d895be7c2eeb83adc1655dfce29be62b0293582087d01dcce79c238031b96396",
+      "tier": "mac",
+      "index": [
+        1,
+        1
+      ],
+      "placement_center_cm": [
+        -800,
+        -650,
+        0
+      ],
+      "base_quads": 832,
+      "stone_count": 59,
+      "stone_triangles": 2200,
+      "total_triangles": 3864,
+      "local_bounds_m": [
+        [
+          -8.2398,
+          -6.5,
+          0.0125
+        ],
+        [
+          8.3134,
+          6.7132,
+          0.0349
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_MAC_X2_Y1",
+      "fbx": "SM_NyaagyuIntegratedRoji_MAC_X2_Y1.fbx",
+      "fbx_sha256": "c0c3856951d80657f2aebe0393ea31e6b9f381adf47c71462362d42495801dee",
+      "tier": "mac",
+      "index": [
+        2,
+        1
+      ],
+      "placement_center_cm": [
+        800,
+        -650,
+        0
+      ],
+      "base_quads": 832,
+      "stone_count": 82,
+      "stone_triangles": 2890,
+      "total_triangles": 4554,
+      "local_bounds_m": [
+        [
+          -8.2655,
+          -6.5,
+          0.0134
+        ],
+        [
+          8.1375,
+          6.7092,
+          0.0349
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_MAC_X3_Y1",
+      "fbx": "SM_NyaagyuIntegratedRoji_MAC_X3_Y1.fbx",
+      "fbx_sha256": "1a148366b7953adab938c3877863f3c663cdc032717997d5952acfc7c8438606",
+      "tier": "mac",
+      "index": [
+        3,
+        1
+      ],
+      "placement_center_cm": [
+        2400,
+        -650,
+        0
+      ],
+      "base_quads": 832,
+      "stone_count": 87,
+      "stone_triangles": 3090,
+      "total_triangles": 4754,
+      "local_bounds_m": [
+        [
+          -8.2276,
+          -6.5,
+          0.0121
+        ],
+        [
+          8.7516,
+          6.6384,
+          0.0347
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_MAC_X0_Y2",
+      "fbx": "SM_NyaagyuIntegratedRoji_MAC_X0_Y2.fbx",
+      "fbx_sha256": "38b1fc461a270f8c6f4058520e48ad9899b2cf72994ed90cf983e5fb2ecf766f",
+      "tier": "mac",
+      "index": [
+        0,
+        2
+      ],
+      "placement_center_cm": [
+        -2400,
+        650,
+        0
+      ],
+      "base_quads": 832,
+      "stone_count": 75,
+      "stone_triangles": 2750,
+      "total_triangles": 4414,
+      "local_bounds_m": [
+        [
+          -8.6747,
+          -6.7561,
+          0.0125
+        ],
+        [
+          8.0,
+          6.5,
+          0.0345
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_MAC_X1_Y2",
+      "fbx": "SM_NyaagyuIntegratedRoji_MAC_X1_Y2.fbx",
+      "fbx_sha256": "91afec496c4e7c20bd6b38dca40b14c272700829cf63e2144dd02dc2e3e6d030",
+      "tier": "mac",
+      "index": [
+        1,
+        2
+      ],
+      "placement_center_cm": [
+        -800,
+        650,
+        0
+      ],
+      "base_quads": 832,
+      "stone_count": 64,
+      "stone_triangles": 2360,
+      "total_triangles": 4024,
+      "local_bounds_m": [
+        [
+          -8.0972,
+          -6.846,
+          0.0118
+        ],
+        [
+          8.134,
+          6.5,
+          0.0346
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_MAC_X2_Y2",
+      "fbx": "SM_NyaagyuIntegratedRoji_MAC_X2_Y2.fbx",
+      "fbx_sha256": "9f544618efc956c86268b7a55c96a4ab42ae86de6b7fae96c6f95760bffc77d6",
+      "tier": "mac",
+      "index": [
+        2,
+        2
+      ],
+      "placement_center_cm": [
+        800,
+        650,
+        0
+      ],
+      "base_quads": 832,
+      "stone_count": 68,
+      "stone_triangles": 2395,
+      "total_triangles": 4059,
+      "local_bounds_m": [
+        [
+          -8.1967,
+          -6.6823,
+          0.0124
+        ],
+        [
+          8.2067,
+          6.5,
+          0.0346
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    },
+    {
+      "name": "SM_NyaagyuIntegratedRoji_MAC_X3_Y2",
+      "fbx": "SM_NyaagyuIntegratedRoji_MAC_X3_Y2.fbx",
+      "fbx_sha256": "c1c738b1ad9ccccfe54ebb1d637749062bf7e9dbaa183cc0c690298d2123ce4d",
+      "tier": "mac",
+      "index": [
+        3,
+        2
+      ],
+      "placement_center_cm": [
+        2400,
+        650,
+        0
+      ],
+      "base_quads": 832,
+      "stone_count": 67,
+      "stone_triangles": 2390,
+      "total_triangles": 4054,
+      "local_bounds_m": [
+        [
+          -8.0995,
+          -6.6426,
+          0.0115
+        ],
+        [
+          8.7365,
+          6.5,
+          0.0349
+        ]
+      ],
+      "slots": [
+        "M_Roji_EstateSoil",
+        "M_Roji_MineralBed",
+        "M_Roji_IndividualStone",
+        "M_Roji_EdgeMineral"
+      ]
+    }
+  ],
+  "collision": "Unchanged flat Estate box and deterministic kernel; candidate FBXs are visual only",
+  "old_repeating_scan_removed": true,
+  "integration": "Replaces the repeated road material inside each existing central terrain tile with mineral/silt bed; stone shells belong to the same exported tile; peripheral tiles remain unchanged",
+  "limitations": "Source-only art candidate. It has not yet passed exact UE 5.8.2 import, an isolated packaged camera A/B, Windows Nanite, Mac fallback performance, or independent historical review. Procedural masonry and two scan sources alone do not meet AAA photoreal art quality."
+}

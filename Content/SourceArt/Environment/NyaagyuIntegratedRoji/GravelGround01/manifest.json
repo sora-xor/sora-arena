@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "asset_id": "gravel_ground_01",
+  "name": "Gravel Ground 01",
+  "author": "Rob Tuytel",
+  "source_url": "https://polyhaven.com/a/gravel_ground_01",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "source_dimensions_mm": [
+    3000,
+    3000
+  ],
+  "role": "compacted mineral/gravel base for the Estate road",
+  "files": [
+    {
+      "channel": "Diffuse",
+      "file": "gravel_ground_01_diff_2k.jpg",
+      "bytes": 3823037,
+      "sha256": "b626c16301208b67eba976ad71860d98fd6fe82ae1c87d9d27692e70c1089cd2",
+      "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/gravel_ground_01/gravel_ground_01_diff_2k.jpg"
+    },
+    {
+      "channel": "nor_dx",
+      "file": "gravel_ground_01_nor_dx_2k.png",
+      "bytes": 9681918,
+      "sha256": "75d60591c44ef079d76dd9b020048577c49154a512d6de7c83fc75e7d8f0cbc3",
+      "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/gravel_ground_01/gravel_ground_01_nor_dx_2k.png"
+    },
+    {
+      "channel": "arm",
+      "file": "gravel_ground_01_arm_2k.png",
+      "bytes": 6300464,
+      "sha256": "70ff8cf81cdda24e40ed80f818bdf50f599a8e03ec67e339f4966ff845dfa33e",
+      "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/gravel_ground_01/gravel_ground_01_arm_2k.png"
+    }
+  ]
+}

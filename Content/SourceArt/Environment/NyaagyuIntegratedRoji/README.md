@@ -1,0 +1,18 @@
+# Nyaagyu Estate integrated roji road study
+
+This editable **source-only candidate** replaces the conspicuous repeated cobble photograph across the entire 64 m Estate approach. It rebuilds the eight central Estate terrain tiles in each of two rendering tiers. The source grid's former road faces become a photographed compacted gravel/mineral bed; 579 different shallow-set stones are modeled into the same exported tile meshes. The original soil faces, terrain vertices, world placement, and peripheral tiles remain intact. There is no 6 m patch laid above the old cobble scan.
+
+The stones use a seeded global point field, neighbor-clipped individual footprints, varied dropout and size, blunt/chipped edges, subtle crown, beveled contact, and original per-corner color/patina. Broad patches of gravel separate stone groups so the route does not read as continuous European cobbles. The point field spans the full route and does not repeat a modular segment. The photographed gravel fills seams and occasional worn gaps. HI source has 269,181 triangles across eight tiles; the conventional Mac source has 34,147. Both contain the same 579 stone identities. Geometry tops stay within a shallow visual band; gameplay still uses the flat Estate box and deterministic combat kernel. Stone tops do **not** alter movement or projectile collision.
+
+PBR sources are the project's already pinned [Rock 01](https://polyhaven.com/a/rock_01) (1.5 m mineral face) and [Brown Mud Leaves 01](https://polyhaven.com/a/brown_mud_leaves_01) (1.3 m roadside soil), plus a newly pinned [Gravel Ground 01](https://polyhaven.com/a/gravel_ground_01) (3 m compacted road bed). Each has aligned albedo, DirectX normal, and ARM maps under [Poly Haven CC0](https://polyhaven.com/license). The gravel files, official download URLs, dimensions, and SHA-256 hashes are in `GravelGround01/manifest.json`; the other two are pinned in their existing manifests. The original surface geometry and baked vertex patina are project-owned. The FBXs contain materials by slot name and no machine-local image paths. `Nyaagyu_IntegratedRoji_Source.blend` retains the editable terrain-plus-stone tile objects and the properly linked source scans.
+
+Rebuild and validate from the repository root:
+
+```sh
+blender -b --factory-startup --python scripts/art/create_nyaagyu_integrated_roji.py
+blender -b Content/SourceArt/Environment/NyaagyuIntegratedRoji/Nyaagyu_IntegratedRoji_Source.blend --python scripts/art/validate_nyaagyu_integrated_roji.py
+```
+
+The independent validator checks all source hashes, scan license and provenance, 16 FBXs, exact inherited terrain vertex positions, four material slots, stone distribution across the 64 m road, HI/Mac identity, UV and patina retention, triangle budgets, and actual FBX round-trips. `scripts/unreal/import_nyaagyu_integrated_roji.py` pins UE 5.8.2 and imports candidate assets without placing them in gameplay. The eye-height and overhead PNGs are **Blender source reviews**, not Unreal frames.
+
+This is not a historical certification of estate-road construction or a AAA photoreal completion claim. The shape still has procedural regularity, and Blender studio lighting cannot establish the actual Estate result. The source requires an isolated, fixed-camera packaged Unreal entrance/close comparison; any visual failure leaves the release terrain untouched. Exact UE 5.8.2 cooking, Windows Nanite quality, software-Lumen/Mac appearance, collision parity, and frame time remain separate gates.
