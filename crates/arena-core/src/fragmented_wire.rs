@@ -61,6 +61,14 @@ struct PendingPacket {
     received: usize,
 }
 
+pub(crate) enum FragmentResult {
+    Pending,
+    Complete(Vec<u8>),
+    /// A fragment from a previously authenticated complete packet. The
+    /// caller may re-ACK it, but must not deliver its evidence twice.
+    AcceptedReplay(u64),
+}
+
 #[derive(Default)]
 pub(crate) struct FragmentAssembler {
     pending: Vec<PendingPacket>,
@@ -77,7 +85,8 @@ impl FragmentAssembler {
         expected_sender: usize,
         floor: Option<u64>,
         key: &ChannelKey,
-    ) -> Result<Option<Vec<u8>>, Error> {
+        accepted: &[(u64, [u8; 32])],
+    ) -> Result<FragmentResult, Error> {
         if !(HEADER_BYTES + TAG_BYTES..=MAX_DATAGRAM_BYTES).contains(&fragment.len()) {
             return Err(Error::InvalidEvidence("fragment length outside bound"));
         }
@@ -99,9 +108,6 @@ impl FragmentAssembler {
             return Err(Error::InvalidEvidence("fragment sender differs"));
         }
         let sequence = u64::from_le_bytes(take_array(fragment, &mut at)?);
-        if floor.is_some_and(|accepted| sequence <= accepted) {
-            return Err(Error::InvalidEvidence("fragment replay or reordering"));
-        }
         let total = u16::from_le_bytes(take_array(fragment, &mut at)?) as usize;
         let count = take(fragment, &mut at, 1)?[0] as usize;
         let index = take(fragment, &mut at, 1)?[0] as usize;
@@ -117,6 +123,14 @@ impl FragmentAssembler {
         let expected_len = (total - offset).min(CHUNK_BYTES);
         if chunk_len != expected_len || at + chunk_len != authenticated_len {
             return Err(Error::InvalidEvidence("fragment chunk length differs"));
+        }
+        if floor.is_some_and(|floor| sequence <= floor) {
+            if accepted.iter().any(|(old_sequence, old_digest)| {
+                *old_sequence == sequence && *old_digest == digest
+            }) {
+                return Ok(FragmentResult::AcceptedReplay(sequence));
+            }
+            return Err(Error::InvalidEvidence("fragment replay or reordering"));
         }
         let chunk = &fragment[at..authenticated_len];
         let slot = match self.pending.iter().position(|p| p.sequence == sequence) {
@@ -153,14 +167,14 @@ impl FragmentAssembler {
         }
         if let Some(existing) = &pending.chunks[index] {
             if existing == chunk {
-                return Ok(None);
+                return Ok(FragmentResult::Pending);
             }
             return Err(Error::InvalidEvidence("conflicting fragment payload"));
         }
         pending.chunks[index] = Some(chunk.to_vec());
         pending.received += 1;
         if pending.received != count {
-            return Ok(None);
+            return Ok(FragmentResult::Pending);
         }
         let complete = self.pending.swap_remove(slot);
         let mut packet = Vec::with_capacity(total);
@@ -170,7 +184,7 @@ impl FragmentAssembler {
         if packet.len() != total || Sha256::digest(&packet).as_slice() != digest {
             return Err(Error::InvalidEvidence("reassembled packet hash differs"));
         }
-        Ok(Some(packet))
+        Ok(FragmentResult::Complete(packet))
     }
 }
 
@@ -201,21 +215,19 @@ mod tests {
             let packet = vec![sequence as u8; MAX_ENCRYPTED_PACKET_BYTES];
             let fragments = fragment_packet(&packet, 0, sequence, &key).unwrap();
             assert_eq!(fragments.len(), 2);
-            assert!(
-                receiver
-                    .push(&fragments[0], 0, None, &key)
-                    .unwrap()
-                    .is_none()
-            );
+            assert!(matches!(
+                receiver.push(&fragments[0], 0, None, &key, &[]).unwrap(),
+                FragmentResult::Pending
+            ));
         }
         let stale = fragment_packet(&vec![0; MAX_ENCRYPTED_PACKET_BYTES], 0, 0, &key).unwrap();
-        assert!(receiver.push(&stale[0], 0, None, &key).is_err());
+        assert!(receiver.push(&stale[0], 0, None, &key, &[]).is_err());
         let next = vec![55; 100];
         let fragments = fragment_packet(&next, 0, 5, &key).unwrap();
         assert_eq!(fragments.len(), 1);
-        assert_eq!(
-            receiver.push(&fragments[0], 0, None, &key).unwrap(),
-            Some(next)
-        );
+        assert!(matches!(
+            receiver.push(&fragments[0], 0, None, &key, &[]).unwrap(),
+            FragmentResult::Complete(bytes) if bytes == next
+        ));
     }
 }

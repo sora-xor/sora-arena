@@ -14,9 +14,11 @@ use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256};
 use zeroize::Zeroizing;
 
+use std::collections::VecDeque;
+
 use crate::{
     Error,
-    fragmented_wire::{FragmentAssembler, fragment_packet},
+    fragmented_wire::{FragmentAssembler, FragmentResult, fragment_packet},
     protocol::{CommitmentSet, Context},
     wire::{MAX_WIRE_PACKET_BYTES, WireFrame, WireReceiver},
 };
@@ -67,6 +69,28 @@ impl ChannelKey {
         mac.verify_slice(tag)
             .map_err(|_| Error::InvalidEvidence("fragment authentication failed"))
     }
+
+    fn ack_mac_key(&self) -> [u8; 32] {
+        let mut derive =
+            <Hmac<Sha256> as Mac>::new_from_slice(self.0.as_ref()).expect("fixed-size HMAC key");
+        derive.update(b"sora-arena:durable-evidence-ack-key:v1");
+        derive.finalize().into_bytes().into()
+    }
+
+    fn ack_tag(&self, bytes: &[u8]) -> [u8; 32] {
+        let derived = self.ack_mac_key();
+        let mut mac = <Hmac<Sha256> as Mac>::new_from_slice(&derived).expect("fixed-size HMAC key");
+        mac.update(bytes);
+        mac.finalize().into_bytes().into()
+    }
+
+    fn verify_ack_tag(&self, bytes: &[u8], tag: &[u8]) -> Result<(), Error> {
+        let derived = self.ack_mac_key();
+        let mut mac = <Hmac<Sha256> as Mac>::new_from_slice(&derived).expect("fixed-size HMAC key");
+        mac.update(bytes);
+        mac.verify_slice(tag)
+            .map_err(|_| Error::InvalidEvidence("evidence ACK authentication failed"))
+    }
 }
 
 impl std::fmt::Debug for ChannelKey {
@@ -108,6 +132,10 @@ impl EncryptedSender {
 
     pub const fn sequence_floor(&self) -> Option<u64> {
         self.sequence_floor
+    }
+
+    pub(crate) fn verify_ack_tag(&self, bytes: &[u8], tag: &[u8]) -> Result<(), Error> {
+        self.key.verify_ack_tag(bytes, tag)
     }
 
     pub fn seal(&mut self, frame: &WireFrame, signing_key: &SigningKey) -> Result<Vec<u8>, Error> {
@@ -179,7 +207,17 @@ pub struct EncryptedReceiver {
     key: ChannelKey,
     wire: WireReceiver,
     fragments: FragmentAssembler,
+    accepted: VecDeque<(u64, [u8; 32])>,
 }
+
+/// Replay is authenticated but must not be delivered or journaled again.
+pub(crate) enum FragmentDelivery {
+    Pending,
+    Frame(WireFrame),
+    AcceptedReplay(u64),
+}
+
+const MAX_RECENT_ACCEPTED: usize = 4;
 
 impl EncryptedReceiver {
     pub fn new(
@@ -205,11 +243,20 @@ impl EncryptedReceiver {
             key,
             wire,
             fragments: FragmentAssembler::default(),
+            accepted: VecDeque::new(),
         })
+    }
+
+    pub(crate) fn ack_tag(&self, bytes: &[u8]) -> [u8; 32] {
+        self.key.ack_tag(bytes)
     }
 
     pub fn sequence_floor(&self) -> Option<u64> {
         self.wire.sequence_floor()[self.expected_sender]
+    }
+
+    pub(crate) fn expected_sender(&self) -> usize {
+        self.expected_sender
     }
 
     pub fn open(
@@ -276,6 +323,11 @@ impl EncryptedReceiver {
         }
         self.wire = candidate;
         self.fragments.forget_through(sequence);
+        self.accepted
+            .push_back((sequence, Sha256::digest(packet).into()));
+        if self.accepted.len() > MAX_RECENT_ACCEPTED {
+            self.accepted.pop_front();
+        }
         Ok(frame)
     }
 
@@ -286,15 +338,35 @@ impl EncryptedReceiver {
         fragment: &[u8],
         pending: Option<&CommitmentSet>,
     ) -> Result<Option<WireFrame>, Error> {
-        let packet = self.fragments.push(
+        match self.open_fragment_or_replay(fragment, pending)? {
+            FragmentDelivery::Pending => Ok(None),
+            FragmentDelivery::Frame(frame) => Ok(Some(frame)),
+            FragmentDelivery::AcceptedReplay(_) => {
+                Err(Error::InvalidEvidence("fragment replay or reordering"))
+            }
+        }
+    }
+
+    pub(crate) fn open_fragment_or_replay(
+        &mut self,
+        fragment: &[u8],
+        pending: Option<&CommitmentSet>,
+    ) -> Result<FragmentDelivery, Error> {
+        match self.fragments.push(
             fragment,
             self.expected_sender,
             self.sequence_floor(),
             &self.key,
-        )?;
-        packet
-            .map(|complete| self.open(&complete, pending))
-            .transpose()
+            self.accepted.make_contiguous(),
+        )? {
+            FragmentResult::Pending => Ok(FragmentDelivery::Pending),
+            FragmentResult::AcceptedReplay(sequence) => {
+                Ok(FragmentDelivery::AcceptedReplay(sequence))
+            }
+            FragmentResult::Complete(packet) => {
+                self.open(&packet, pending).map(FragmentDelivery::Frame)
+            }
+        }
     }
 }
 

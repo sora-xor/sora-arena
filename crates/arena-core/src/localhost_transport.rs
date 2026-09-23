@@ -3,24 +3,25 @@
 //! A fresh authenticated X25519 exchange provides pairwise directional keys.
 //! Complete signed frames are journaled before transmission, and received
 //! frames are journaled before being returned. Prepared datagrams may be
-//! retransmitted byte-for-byte after a timeout; there is no ACK protocol,
+//! retransmitted byte-for-byte by a bounded ACK scheduler. There is no
 //! matchmaking, NAT traversal, chain settlement, or production peer recovery.
 //! A restarted process must restore its journal against an independently
 //! retained receipt and negotiate *new* keys; it cannot resume old channels.
 
 use std::{
+    collections::VecDeque,
     fs::{self, File, OpenOptions},
     io::{self, Read, Write},
     net::{SocketAddr, UdpSocket},
     path::{Path, PathBuf},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use ed25519_dalek::SigningKey;
 
 use crate::{
     Error,
-    encrypted_wire::{EncryptedReceiver, EncryptedSender},
+    encrypted_wire::{EncryptedReceiver, EncryptedSender, FragmentDelivery},
     fragmented_wire::MAX_DATAGRAM_BYTES,
     handshake::{Initiator, PairwiseKeys},
     protocol::{Context, Reveal},
@@ -29,7 +30,15 @@ use crate::{
 };
 
 const RECEIPT_MAGIC: &[u8] = b"SORA-ARENA-LOCAL-RECEIPT\x01";
+const ACK_MAGIC: &[u8] = b"SORA-ARENA-ACK";
+const ACK_VERSION: u16 = 1;
+const ACK_HEADER_BYTES: usize = ACK_MAGIC.len() + 2 + 1 + 8;
+const ACK_TAG_BYTES: usize = 32;
+const ACK_PACKET_BYTES: usize = ACK_HEADER_BYTES + ACK_TAG_BYTES;
 const MAX_RECEIVE_DATAGRAMS: usize = 64;
+const MAX_QUEUED_FRAMES: usize = 8;
+const MAX_PEER_TIMEOUT: Duration = Duration::from_secs(5);
+pub const MAX_SEND_ATTEMPTS: usize = 4;
 
 #[derive(Debug)]
 pub enum TransportError {
@@ -39,6 +48,7 @@ pub enum TransportError {
     Timeout,
     UnexpectedSource,
     OversizedDatagram,
+    InboxFull,
     Closed,
 }
 
@@ -51,6 +61,7 @@ impl std::fmt::Display for TransportError {
             Self::Timeout => f.write_str("loopback peer did not respond before timeout"),
             Self::UnexpectedSource => f.write_str("datagram source differs from admitted peer"),
             Self::OversizedDatagram => f.write_str("datagram exceeds transport MTU"),
+            Self::InboxFull => f.write_str("reliable receive queue is full"),
             Self::Closed => f.write_str("local transport closed after persistence failure"),
         }
     }
@@ -159,7 +170,19 @@ pub struct LocalhostPeer {
     receipts: ReceiptFiles,
     sender: EncryptedSender,
     receiver: EncryptedReceiver,
+    timeout: Duration,
+    queued: VecDeque<WireFrame>,
     closed: bool,
+    #[cfg(test)]
+    drop_next_ack: bool,
+    #[cfg(test)]
+    fail_next_ack: bool,
+}
+
+enum ReceivedDatagram {
+    Ack(u64),
+    Evidence(WireFrame),
+    Incomplete,
 }
 
 impl LocalhostPeer {
@@ -210,7 +233,7 @@ impl LocalhostPeer {
             identity,
             journal,
             receipts,
-            timeout: _,
+            timeout,
         } = admission;
         let context: Context = journal.session().evidence().context.clone();
         let sender = EncryptedSender::new(
@@ -236,7 +259,13 @@ impl LocalhostPeer {
             receipts,
             sender,
             receiver,
+            timeout,
+            queued: VecDeque::new(),
             closed: false,
+            #[cfg(test)]
+            drop_next_ack: false,
+            #[cfg(test)]
+            fail_next_ack: false,
         })
     }
 
@@ -292,41 +321,158 @@ impl LocalhostPeer {
         Ok(())
     }
 
+    /// Stop-and-wait delivery of one already journaled packet. Each attempt
+    /// sends the same sealed fragments and waits at most the admitted timeout.
+    /// Incoming evidence is durably accepted and queued while waiting. After
+    /// the bounded attempts fail, the caller must reconcile the peer's durable
+    /// journal; a timeout never proves that the peer rejected the evidence.
+    pub fn transmit_reliably(&mut self, packet: &PreparedEvidence) -> Result<()> {
+        if self.closed {
+            return Err(TransportError::Closed);
+        }
+        if self.sender.sequence_floor() != Some(packet.sequence) {
+            return Err(
+                Error::InvalidEvidence("reliable send requires latest prepared sequence").into(),
+            );
+        }
+        let prior_timeout = self.socket.read_timeout()?;
+        let outcome = self.transmit_reliably_inner(packet);
+        self.socket.set_read_timeout(prior_timeout)?;
+        outcome
+    }
+
+    fn transmit_reliably_inner(&mut self, packet: &PreparedEvidence) -> Result<()> {
+        for _ in 0..MAX_SEND_ATTEMPTS {
+            self.transmit(packet)?;
+            let deadline = Instant::now() + self.timeout;
+            for _ in 0..MAX_RECEIVE_DATAGRAMS {
+                let Some(remaining) = deadline.checked_duration_since(Instant::now()) else {
+                    break;
+                };
+                if remaining.is_zero() {
+                    break;
+                }
+                self.socket.set_read_timeout(Some(remaining))?;
+                let datagram = match read_datagram(&self.socket, self.remote) {
+                    Ok(datagram) => datagram,
+                    Err(TransportError::Timeout) => break,
+                    Err(error) => return Err(error),
+                };
+                if self.queued.len() == MAX_QUEUED_FRAMES && !datagram.starts_with(ACK_MAGIC) {
+                    return Err(TransportError::InboxFull);
+                }
+                match self.process_datagram(&datagram)? {
+                    ReceivedDatagram::Ack(sequence) if sequence == packet.sequence => return Ok(()),
+                    ReceivedDatagram::Evidence(frame) => self.queued.push_back(frame),
+                    _ => {}
+                }
+            }
+        }
+        Err(TransportError::Timeout)
+    }
+
     /// Complete, authenticated frames are appended to the local journal and
     /// externally recorded before returning them to game code.
     pub fn receive(&mut self) -> Result<WireFrame> {
         if self.closed {
             return Err(TransportError::Closed);
         }
+        if let Some(frame) = self.queued.pop_front() {
+            return Ok(frame);
+        }
         for _ in 0..MAX_RECEIVE_DATAGRAMS {
             let datagram = read_datagram(&self.socket, self.remote)?;
-            let pending = self
-                .journal
-                .session()
-                .evidence()
-                .pending
-                .as_ref()
-                .map(|(set, _)| set);
-            let Some(frame) = self.receiver.open_fragment(&datagram, pending)? else {
-                continue;
-            };
-            let receipt = match append_message(&mut self.journal, &frame.message) {
-                Ok(receipt) => receipt,
-                Err(error) => {
-                    self.closed = true;
-                    return Err(error.into());
-                }
-            };
-            if let Err(error) = self.receipts.persist(receipt) {
-                self.closed = true;
-                return Err(error);
+            if let ReceivedDatagram::Evidence(frame) = self.process_datagram(&datagram)? {
+                return Ok(frame);
             }
-            return Ok(frame);
         }
         Err(TransportError::Evidence(Error::InvalidEvidence(
             "too many incomplete datagrams",
         )))
     }
+
+    fn process_datagram(&mut self, datagram: &[u8]) -> Result<ReceivedDatagram> {
+        if datagram.starts_with(ACK_MAGIC) {
+            return decode_ack(datagram, self.local_slot, &self.sender).map(ReceivedDatagram::Ack);
+        }
+        let pending = self
+            .journal
+            .session()
+            .evidence()
+            .pending
+            .as_ref()
+            .map(|(set, _)| set);
+        match self.receiver.open_fragment_or_replay(datagram, pending)? {
+            FragmentDelivery::Pending => Ok(ReceivedDatagram::Incomplete),
+            FragmentDelivery::AcceptedReplay(sequence) => {
+                // The evidence was already persisted. An ACK write failure
+                // cannot undo that receipt; the sender will retry again.
+                let _ = self.send_ack(sequence);
+                Ok(ReceivedDatagram::Incomplete)
+            }
+            FragmentDelivery::Frame(frame) => {
+                let receipt = match append_message(&mut self.journal, &frame.message) {
+                    Ok(receipt) => receipt,
+                    Err(error) => {
+                        self.closed = true;
+                        return Err(error.into());
+                    }
+                };
+                if let Err(error) = self.receipts.persist(receipt) {
+                    self.closed = true;
+                    return Err(error);
+                }
+                // The frame is now durable and must be delivered to game code
+                // even if this non-authorizing UDP control packet cannot leave.
+                let _ = self.send_ack(frame.sequence);
+                Ok(ReceivedDatagram::Evidence(frame))
+            }
+        }
+    }
+
+    fn send_ack(&mut self, sequence: u64) -> Result<()> {
+        #[cfg(test)]
+        if std::mem::take(&mut self.fail_next_ack) {
+            return Err(io::Error::other("injected ACK send failure").into());
+        }
+        #[cfg(test)]
+        if std::mem::take(&mut self.drop_next_ack) {
+            return Ok(());
+        }
+        let mut ack = [0; ACK_PACKET_BYTES];
+        ack[..ACK_MAGIC.len()].copy_from_slice(ACK_MAGIC);
+        ack[ACK_MAGIC.len()..ACK_MAGIC.len() + 2].copy_from_slice(&ACK_VERSION.to_le_bytes());
+        ack[ACK_MAGIC.len() + 2] = self.receiver_slot()?;
+        ack[ACK_MAGIC.len() + 3..ACK_HEADER_BYTES].copy_from_slice(&sequence.to_le_bytes());
+        let tag = self.receiver.ack_tag(&ack[..ACK_HEADER_BYTES]);
+        ack[ACK_HEADER_BYTES..].copy_from_slice(&tag);
+        send_datagram(&self.socket, self.remote, &ack)
+    }
+
+    fn receiver_slot(&self) -> Result<u8> {
+        u8::try_from(self.receiver.expected_sender())
+            .map_err(|_| Error::InvalidConfig("remote slot exceeds ACK bound").into())
+    }
+}
+
+fn decode_ack(packet: &[u8], local_slot: usize, sender: &EncryptedSender) -> Result<u64> {
+    if packet.len() != ACK_PACKET_BYTES
+        || packet[..ACK_MAGIC.len()] != *ACK_MAGIC
+        || u16::from_le_bytes(
+            packet[ACK_MAGIC.len()..ACK_MAGIC.len() + 2]
+                .try_into()
+                .expect("fixed ACK version"),
+        ) != ACK_VERSION
+        || packet[ACK_MAGIC.len() + 2] as usize != local_slot
+    {
+        return Err(Error::InvalidEvidence("ACK framing or sender differs").into());
+    }
+    sender.verify_ack_tag(&packet[..ACK_HEADER_BYTES], &packet[ACK_HEADER_BYTES..])?;
+    Ok(u64::from_le_bytes(
+        packet[ACK_MAGIC.len() + 3..ACK_HEADER_BYTES]
+            .try_into()
+            .expect("fixed ACK sequence"),
+    ))
 }
 
 fn append_message(
@@ -353,8 +499,8 @@ fn configure_socket(socket: &UdpSocket, remote: SocketAddr, timeout: Duration) -
     if !socket.local_addr()?.ip().is_loopback() || !remote.ip().is_loopback() {
         return Err(Error::InvalidConfig("localhost transport requires loopback addresses").into());
     }
-    if timeout.is_zero() {
-        return Err(Error::InvalidConfig("localhost transport timeout must be positive").into());
+    if timeout.is_zero() || timeout > MAX_PEER_TIMEOUT {
+        return Err(Error::InvalidConfig("localhost transport timeout outside bound").into());
     }
     socket.set_read_timeout(Some(timeout))?;
     Ok(())
@@ -644,6 +790,134 @@ mod tests {
     }
 
     #[test]
+    fn reliable_send_waits_for_durable_ack_without_rejournaling() {
+        let (_root, mut initiator, mut responder, keys) = setup(2);
+        let (set, _) = frontier(&initiator, &keys);
+        let frame = certificate(&initiator, &keys, &set);
+        let outgoing = initiator.prepare(&frame).unwrap();
+        let retained = initiator.journal().receipt();
+        let receiving = thread::spawn(move || {
+            assert_eq!(responder.receive().unwrap(), frame);
+            responder
+        });
+        initiator.transmit_reliably(&outgoing).unwrap();
+        responder = receiving.join().unwrap();
+        assert_eq!(initiator.journal().receipt(), retained);
+        assert_eq!(responder.journal().receipt().records, 2);
+    }
+
+    #[test]
+    fn incoming_evidence_during_ack_wait_is_journaled_and_queued() {
+        let (_root, mut initiator, mut responder, keys) = setup(2);
+        let (set, reveals) = frontier(&initiator, &keys);
+        let certificate = certificate(&initiator, &keys, &set);
+        let certified = initiator.prepare(&certificate).unwrap();
+        initiator.transmit(&certified).unwrap();
+        assert_eq!(responder.receive().unwrap(), certificate);
+        let peer_reveal = WireFrame {
+            sender: 1,
+            sequence: 0,
+            message: WireMessage::Reveal {
+                set: set.clone(),
+                reveal: reveals[1].clone(),
+            },
+        };
+        let peer_packet = responder.prepare(&peer_reveal).unwrap();
+        responder.transmit(&peer_packet).unwrap();
+        let own_reveal = WireFrame {
+            sender: 0,
+            sequence: 1,
+            message: WireMessage::Reveal {
+                set,
+                reveal: reveals[0].clone(),
+            },
+        };
+        let own_packet = initiator.prepare(&own_reveal).unwrap();
+        let receiving = thread::spawn(move || {
+            assert_eq!(responder.receive().unwrap(), own_reveal);
+            responder
+        });
+        initiator.transmit_reliably(&own_packet).unwrap();
+        responder = receiving.join().unwrap();
+        assert_eq!(initiator.receive().unwrap(), peer_reveal);
+        assert_eq!(initiator.journal().session().evidence().next_tick, 2);
+        assert_eq!(responder.journal().session().evidence().next_tick, 2);
+    }
+
+    #[test]
+    fn lost_ack_retries_exact_bytes_and_duplicate_is_only_acknowledged() {
+        let (_root, mut initiator, mut responder, keys) = setup(2);
+        let (set, _) = frontier(&initiator, &keys);
+        let frame = certificate(&initiator, &keys, &set);
+        let outgoing = initiator.prepare(&frame).unwrap();
+        let exact = outgoing.fragments.clone();
+        initiator.timeout = Duration::from_millis(35);
+        responder.drop_next_ack = true;
+        responder
+            .socket
+            .set_read_timeout(Some(Duration::from_millis(90)))
+            .unwrap();
+        let receiving = thread::spawn(move || {
+            assert_eq!(responder.receive().unwrap(), frame);
+            let accepted = responder.journal().receipt();
+            assert!(matches!(responder.receive(), Err(TransportError::Timeout)));
+            assert_eq!(responder.journal().receipt(), accepted);
+            responder
+        });
+        initiator.transmit_reliably(&outgoing).unwrap();
+        responder = receiving.join().unwrap();
+        assert_eq!(outgoing.fragments, exact);
+        assert_eq!(initiator.journal().receipt().records, 1);
+        assert_eq!(responder.journal().receipt().records, 2);
+    }
+
+    #[test]
+    fn ack_write_failure_cannot_hide_durably_received_evidence() {
+        let (_root, mut initiator, mut responder, keys) = setup(2);
+        let (set, _) = frontier(&initiator, &keys);
+        let frame = certificate(&initiator, &keys, &set);
+        let outgoing = initiator.prepare(&frame).unwrap();
+        responder.fail_next_ack = true;
+        initiator.transmit(&outgoing).unwrap();
+        assert_eq!(responder.receive().unwrap(), frame);
+        let accepted = responder.journal().receipt();
+        initiator.transmit(&outgoing).unwrap();
+        responder
+            .socket
+            .set_read_timeout(Some(Duration::from_millis(25)))
+            .unwrap();
+        assert!(matches!(responder.receive(), Err(TransportError::Timeout)));
+        assert_eq!(responder.journal().receipt(), accepted);
+        let ack = read_datagram(&initiator.socket, initiator.remote).unwrap();
+        assert_eq!(
+            decode_ack(&ack, initiator.local_slot, &initiator.sender).unwrap(),
+            0
+        );
+        let mut forged = ack.clone();
+        forged[ACK_MAGIC.len() + 3] ^= 1;
+        assert!(decode_ack(&forged, initiator.local_slot, &initiator.sender).is_err());
+        forged = ack;
+        forged[ACK_PACKET_BYTES - 1] ^= 1;
+        assert!(decode_ack(&forged, initiator.local_slot, &initiator.sender).is_err());
+    }
+
+    #[test]
+    fn bounded_retry_exhaustion_does_not_claim_peer_rejection() {
+        let (_root, mut initiator, responder, keys) = setup(2);
+        let (set, _) = frontier(&initiator, &keys);
+        let frame = certificate(&initiator, &keys, &set);
+        let outgoing = initiator.prepare(&frame).unwrap();
+        initiator.timeout = Duration::from_millis(10);
+        let before = initiator.journal().receipt();
+        assert!(matches!(
+            initiator.transmit_reliably(&outgoing),
+            Err(TransportError::Timeout)
+        ));
+        assert_eq!(initiator.journal().receipt(), before);
+        assert_eq!(responder.journal().receipt().records, 1);
+    }
+
+    #[test]
     fn reordered_and_duplicate_udp_fragments_reassemble_once() {
         let (_root, mut initiator, mut responder, keys) = setup(12);
         let (set, _) = frontier(&initiator, &keys);
@@ -658,11 +932,138 @@ mod tests {
         assert_eq!(responder.receive().unwrap(), frame);
         let retained = responder.journal().receipt();
         send_datagram(&initiator.socket, initiator.remote, first).unwrap();
-        assert!(matches!(
-            responder.receive(),
-            Err(TransportError::Evidence(Error::InvalidEvidence(_)))
-        ));
+        responder
+            .socket
+            .set_read_timeout(Some(Duration::from_millis(25)))
+            .unwrap();
+        assert!(matches!(responder.receive(), Err(TransportError::Timeout)));
         assert_eq!(responder.journal().receipt(), retained);
+    }
+
+    #[test]
+    fn reordered_fragments_with_lost_ack_are_reacknowledged_once() {
+        let (_root, mut initiator, mut responder, keys) = setup(12);
+        let (set, _) = frontier(&initiator, &keys);
+        let frame = certificate(&initiator, &keys, &set);
+        let outgoing = initiator.prepare(&frame).unwrap();
+        assert_eq!(outgoing.fragment_count(), 2);
+        responder.drop_next_ack = true;
+        send_datagram(&initiator.socket, initiator.remote, &outgoing.fragments[1]).unwrap();
+        send_datagram(&initiator.socket, initiator.remote, &outgoing.fragments[1]).unwrap();
+        send_datagram(&initiator.socket, initiator.remote, &outgoing.fragments[0]).unwrap();
+        assert_eq!(responder.receive().unwrap(), frame);
+        let accepted = responder.journal().receipt();
+        initiator.timeout = Duration::from_millis(50);
+        responder
+            .socket
+            .set_read_timeout(Some(Duration::from_millis(100)))
+            .unwrap();
+        let pumping = thread::spawn(move || {
+            assert!(matches!(responder.receive(), Err(TransportError::Timeout)));
+            responder
+        });
+        initiator.transmit_reliably(&outgoing).unwrap();
+        responder = pumping.join().unwrap();
+        assert_eq!(responder.journal().receipt(), accepted);
+    }
+
+    #[test]
+    fn restart_restores_journals_but_requires_fresh_channel_acks() {
+        let (root, mut initiator, mut responder, keys) = setup(2);
+        let (set, reveals) = frontier(&initiator, &keys);
+        let certified = certificate(&initiator, &keys, &set);
+        let old_packet = initiator.prepare(&certified).unwrap();
+        initiator.transmit(&old_packet).unwrap();
+        assert_eq!(responder.receive().unwrap(), certified);
+        let stale_ack = read_datagram(&initiator.socket, initiator.remote).unwrap();
+        let context = initiator.journal.session().evidence().context.clone();
+        let config = initiator.journal.session().confirmed().config.clone();
+        let participants = (0..2)
+            .map(|slot| Participant {
+                team: slot as u8,
+                class: 0,
+                weapon: 0,
+                bond: 0,
+                special_entitled: false,
+            })
+            .collect::<Vec<_>>();
+        let initiator_receipt = initiator.journal().receipt();
+        let responder_receipt = responder.journal().receipt();
+        drop(initiator);
+        drop(responder);
+
+        let initiator_journal = DurableSession::restore(
+            &root.0.join("initiator.journal"),
+            context.clone(),
+            config.clone(),
+            &participants,
+            initiator_receipt,
+        )
+        .unwrap();
+        let responder_journal = DurableSession::restore(
+            &root.0.join("responder.journal"),
+            context,
+            config,
+            &participants,
+            responder_receipt,
+        )
+        .unwrap();
+        let initiator_socket = UdpSocket::bind("127.0.0.1:0").unwrap();
+        let responder_socket = UdpSocket::bind("127.0.0.1:0").unwrap();
+        let initiator_addr = initiator_socket.local_addr().unwrap();
+        let responder_addr = responder_socket.local_addr().unwrap();
+        let responder_key = keys[1].clone();
+        let responder_receipts = ReceiptFiles::new(root.0.join("responder-receipts")).unwrap();
+        let receiving = thread::spawn(move || {
+            LocalhostPeer::respond(LocalPeerAdmission {
+                socket: responder_socket,
+                remote: initiator_addr,
+                local_slot: 1,
+                remote_slot: 0,
+                identity: responder_key,
+                journal: responder_journal,
+                receipts: responder_receipts,
+                timeout: Duration::from_secs(2),
+            })
+        });
+        initiator = LocalhostPeer::initiate(LocalPeerAdmission {
+            socket: initiator_socket,
+            remote: responder_addr,
+            local_slot: 0,
+            remote_slot: 1,
+            identity: keys[0].clone(),
+            journal: initiator_journal,
+            receipts: ReceiptFiles::new(root.0.join("initiator-receipts")).unwrap(),
+            timeout: Duration::from_secs(2),
+        })
+        .unwrap();
+        responder = receiving.join().unwrap().unwrap();
+        assert!(decode_ack(&stale_ack, 0, &initiator.sender).is_err());
+        assert!(
+            responder
+                .receiver
+                .open_fragment(&old_packet.fragments[0], None)
+                .is_err()
+        );
+        let reveal = WireFrame {
+            sender: 0,
+            sequence: 0,
+            message: WireMessage::Reveal {
+                set,
+                reveal: reveals[0].clone(),
+            },
+        };
+        let fresh_packet = initiator.prepare(&reveal).unwrap();
+        let receiving = thread::spawn(move || {
+            assert_eq!(responder.receive().unwrap(), reveal);
+            responder
+        });
+        initiator.transmit_reliably(&fresh_packet).unwrap();
+        responder = receiving.join().unwrap();
+        assert_eq!(
+            responder.journal().receipt().records,
+            responder_receipt.records + 2
+        );
     }
 
     #[test]
