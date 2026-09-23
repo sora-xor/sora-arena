@@ -235,6 +235,13 @@ research bridge containing this inspector is staged on macOS and passed native
 smoke checks; it cannot substitute for the missing
 authenticated session quote. Open and payout-claim scaffolds retain their
 existing test-network behavior.
+An additional portable C++17 Join/Buy preflight now compares exact supplied
+session, bond, equipment, offer, custody and expiry terms, with Japanese-first
+status text and English subtitles. Its Mac host driver and Windows compiler
+syntax check pass. This is deliberately non-authorizing: no authenticated
+ledger snapshot or final fee quote is wired to it, and the Join/Buy wallet
+signing block remains in place.
+
 The Windows GNU Connect bridge also passed a source-sealed static cross-build:
 its PE x86-64 DLL has 175 exports exactly matching the native C header and
 the game's 26 Windows C ABI declarations compile. The staged DLL and source
