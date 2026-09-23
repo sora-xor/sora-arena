@@ -89,6 +89,24 @@ as stylized. The sparse courtyard and regular wall sections also miss the
 photoreal target. These frames are art diagnostics, not acceptance evidence
 for the stated AAA, performance, Nanite, or exact UE 5.8.2 release gates.
 
+`UE583_Estate_PathQuilt_Entrance_FailedGate.png` and
+`UE583_Estate_PathQuilt_Close_FailedGate.png` are unedited 1280×720 frames
+from a packaged UE **5.8.3** Mac diagnostic with a 4K co-registered 7.2 m
+path quilt derived from the same pinned CC0 stone scan. The first is the
+level entrance with HUD hidden; the second looks down at the path from
+player eye height. The offscreen `-SoraArtReview` capture used a transient
+chapter-one review save and did not write the campaign slot. The combined
+Mac cook/stage completed with zero cook warnings or errors, and runtime
+requested both named PNGs. SHA-256 values respectively:
+`cf99c4b974ec89c14338b24aad47666bf8e447217f7edb3a09d15f435355d58f`
+and `4fe170ab24e002d18ad0b0839a9ce10c591225aa651257a388a671050a848f28`.
+Compared with the earlier 1.8 m close frame, the entrance's exact tiling is
+less obvious, but the close frame still repeats distinctive stone forms
+across its width and is softer. The broad route still looks regular. The
+visual gate **failed**, so this atlas is source-only and the main project
+retains the original terrain material/mesh. Neither frame qualifies the
+photoreal target or the exact UE 5.8.2 release build.
+
 `UE583_Estate_RoadsideDressing_Diagnostic.png` is an unedited packaged Mac
 frame after seven collision-free placements from the original ground-dressing
 mesh were added beside the route. The limited patch is visible on the right

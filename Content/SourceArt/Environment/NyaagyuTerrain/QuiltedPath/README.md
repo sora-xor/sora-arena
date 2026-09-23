@@ -22,15 +22,17 @@ quality.
 
 `Nyaagyu_PathQuilt_Review.jpg` is a top-down texture contact sheet, **not an
 Unreal gameplay screenshot**. A diagnostic-only import into UE 5.8.3/M1
-Ultra bound the three visual maps at 720 cm, and the combined packaged Mac
-cook/stage completed with zero cook warnings or errors. Permanent adoption is
-gated on inspecting a packaged eye-height frame at the old Estate camera and
-a downward close view. At the time of this record the Mac was locked, so no
-such frame was available. Until that review passes, this atlas remains a
-source-art candidate; do not present it as photoreal AAA terrain or as a
-qualified UE 5.8.2 release asset. The Unreal material currently uses
-world-aligned projection, while the source FBX UV/height must be regenerated
-at the new physical scale only if this candidate passes the visual gate.
+Ultra bound the three visual maps at 720 cm; the combined packaged Mac
+cook/stage completed with zero cook warnings or errors. An offscreen,
+packaged-game review then captured the Estate entrance and downward road view
+at the established camera. The [unedited frames](../../../../../docs/visual-reviews/README.md)
+show a **failed visual gate**: the old exact 1.8 m grid is reduced at distance,
+but distinctive oval and square stones repeat across the close view, and the
+larger atlas softens the photographed detail. The broad route remains too
+regular. This atlas stays source-only. The main game continues to bind the
+original 1.8 m scan; the source FBX UV/height and collision were not changed
+for this candidate. It is neither photoreal AAA terrain nor a qualified
+UE 5.8.2 release asset.
 
 Regenerate and validate:
 
