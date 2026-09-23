@@ -80,7 +80,7 @@ on disconnect. A durable local journal preserves certified pending commitments,
 individual valid reveals and signed checkpoints across restart, then replays the
 kernel against the caller's exact admission. Recovery rejects damaged records,
 forged signatures and rollback behind a caller-supplied trusted receipt. Native
-consensus deadlines and forced resolution, transport and complete FPS AIR
+consensus deadlines and forced resolution, production transport and complete FPS AIR
 integration are still required; no peer timeout can settle funds. See
 [P2P recovery](p2p-recovery.md) for the remaining durability and integration gates.
 The bounded P2P wire codec signs complete commitment certificates, reveal
@@ -94,17 +94,24 @@ ephemeral X25519/HKDF handshake derives pairwise directional keys and an
 admission-bound channel binding; six focused tests and the full workspace suite
 pass. The version-2 evidence journal now syncs each verified signed handshake
 offer before returning its channel response, restores bounded replay protection,
-and rejects a rolled-back file when given an externally retained receipt. Live
-peer transport, independent receipt retention, retransmission and NAT traversal
-remain open.
+and rejects a rolled-back file when given an externally retained receipt. An
+[offline loopback UDP research transport](p2p-localhost.md) now exchanges real
+encrypted packets between two pre-admitted peers. Five focused tests cover a
+certificate/two-reveal exchange, loss with byte-identical retransmission,
+reordered and duplicate twelve-slot fragments, persistence failure, and
+rejection of bonded admission. It has no production transport, ACK scheduler,
+NAT traversal, independently trusted receipt anchor, or settlement authority.
 
 The Unreal wallet source can prepare allowlisted native transactions, verify a
 wallet signature through the native Connect bridge, submit a signed Norito
 transaction to an explicitly configured isolated loopback Torii, and reconcile
 its exact hash against ledger-state status. HTTP acceptance is not treated as
-finality, and ambiguous submissions are never retried. Static C ABI checking
-passes; an Unreal editor build, live pairing, submission and recovery run remain
-outstanding. Shipping builds keep submission disabled.
+finality, and ambiguous submissions are never retried. An identity-only
+recovery record is synced before POST; after restart it permits only exact-hash
+reconciliation under the same loopback network configuration. The portable
+C++17 codec passes 23 checks. An Unreal editor build, crash/restart, live
+pairing, submission and recovery run remain outstanding. Shipping builds keep
+submission disabled.
 The Iroha JavaScript native addon now builds and publishes with the project-specific
 Xcode 26.1.1 linker; 29 focused allocation, equipment, resource and racing SDK
 tests pass. This does not exercise Unreal or a live validator network.
@@ -131,6 +138,12 @@ a complete 3D hit nor a kill or settlement.
 [Proof feasibility](proof/arena-feasibility.md) records the measurements and
 the staged-composition requirement. This is a failed gate for that layout, not
 a reduction of the agreed player count or proof coverage.
+An unregistered Iroha research preflight separately measured an 18,000-batch,
+twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
+4 MiB proof envelope before the rest of a complete combat witness. Repeated
+whole-history cloning and hashing under fixed gas quotes is another unresolved
+capacity gate. The native 4,096-batch cap and unfunded Arena status remain in
+place; the research validator does not authenticate control inputs or kills.
 
 ## Workstreams
 
