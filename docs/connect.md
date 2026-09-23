@@ -60,7 +60,10 @@ the approved wallet session. Shipping builds cannot satisfy that gate, including
 for `OpenGameSessionV1`, listing, cancellation and payout claims. A signed
 transaction can be submitted outside the game, so the submission-only gate was
 insufficient to keep real-value operations disabled during research. Pairing
-itself does not authorize a signature.
+itself does not authorize a signature. A loopback URL and a locally configured
+network ID do not attest that the node is an isolated chain or that its assets
+are test-value; deployment identity and asset qualification remain separate
+release gates.
 `JoinGameSessionV1` and `BuyNftV1` are decode-allowlisted but their signing
 requests stop before `SignRequestTx`: neither the authenticated game-session
 terms nor a verified live NFT offer is available to this UI yet. This applies
