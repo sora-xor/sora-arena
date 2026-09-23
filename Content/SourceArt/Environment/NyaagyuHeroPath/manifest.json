@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_HeroStonePath_6m",
+  "generator": "scripts/art/create_nyaagyu_hero_path.py",
+  "generator_sha256": "7a582407cc5c16619640aed3b8ccd963fc595b5d424b2f1172b82cce8e1484a0",
+  "source_blend": "Nyaagyu_HeroStonePath_Source.blend",
+  "blend_sha256": "d187f83f1d9fdcfaf79b8c71600adefdbabff6df43723fd5ece6c56edd85baab",
+  "fbx": "SM_Nyaagyu_HeroStonePath_6m.fbx",
+  "fbx_sha256": "8764e45954f8c23a322a62d46874518ac0e3252b063d7decf5cc3c45d94671b8",
+  "review": "Nyaagyu_HeroStonePath_Blender.png",
+  "review_sha256": "d4697efd20299c26ca39c20632b70eac69e8dbc41db7a75a5bc119527b26dd37",
+  "overhead_review": "Nyaagyu_HeroStonePath_Overhead_Blender.png",
+  "overhead_review_sha256": "06fa6b34cfb2a3f3fa3f2b0bb010094a010c45d3299ca3a3e025a2c5428f94a5",
+  "eye_height_review": "Nyaagyu_HeroStonePath_EyeHeight_Blender.png",
+  "eye_height_review_sha256": "e8629c1541022df0fb210696808886f71a15f412e0f49d216cfa9a7b29f9068b",
+  "source_parts": 65,
+  "individual_stones": 64,
+  "source_triangles": 37878,
+  "bounds_m": {
+    "min": [
+      -2.99,
+      -1.44,
+      0.0003
+    ],
+    "max": [
+      2.99,
+      1.44,
+      0.0556
+    ]
+  },
+  "stone_area_m2": 9.705,
+  "nominal_road_length_m": 6.0,
+  "orientation": "Local X follows Estate road; local Y crosses road; +Z up",
+  "mean_stone_top_m": 0.0348,
+  "gap_range_m": [
+    0.0123,
+    0.0368
+  ],
+  "collision": "Presentation only; gameplay collision and deterministic combat stay on Estate terrain",
+  "nanite_windows": true,
+  "mac_conventional_fallback": {
+    "source_fbx": "SM_Nyaagyu_HeroStonePath_6m.fbx",
+    "fallback_percent_triangles": 1.0,
+    "fallback_target": "PercentTriangles",
+    "generate_fallback": "Enabled",
+    "render_config": "Config/Mac/MacEngine.ini"
+  },
+  "material_slots": [
+    "M_HeroPath_SiltBed",
+    "M_HeroPath_StoneEdge",
+    "M_HeroPath_StoneFace"
+  ],
+  "material_sources": {
+    "M_HeroPath_StoneFace": "FaceAtlas",
+    "M_HeroPath_StoneEdge": "Mineral",
+    "M_HeroPath_SiltBed": "Silt"
+  },
+  "dependencies": {
+    "Mineral": {
+      "asset_id": "rock_01",
+      "source_url": "https://polyhaven.com/a/rock_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_diff_2k.jpg",
+          "sha256": "fe9013368539b5604602e64bfa48bef1a2a4c452fcb6894868fb556d0b14501c",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_nor_dx_2k.png",
+          "sha256": "e75062267abe1ae9d3792d4a2667f893a1a952dd0c59274a13fb3d348ca97a3a",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rock_01/rock_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_arm_2k.jpg",
+          "sha256": "a954de58336738e6f963466f1453202ef7e186bd6492106c3b989c39f0d2e23c",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_arm_2k.jpg"
+        }
+      }
+    },
+    "Silt": {
+      "asset_id": "brown_mud_leaves_01",
+      "source_url": "https://polyhaven.com/a/brown_mud_leaves_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "sha256": "29c997d77f56e4ea16d3e998a306be0c17fddb28ab4822657c7cd8249040ffda",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+          "sha256": "9bbc1abea84c6774ead2153f8444a5ac5675ac4ce19e7e02d1cb869b20b81f26",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+          "sha256": "9056337763fa1db614b98aee969c4f07277731292b9549171e7b66c88cf6a416",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png"
+        }
+      }
+    },
+    "FaceAtlas": {
+      "asset_id": "grey_stone_path_derived_stone_interiors",
+      "source_url": "https://polyhaven.com/a/grey_stone_path",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "derivation_manifest": "Content/SourceArt/Environment/NyaagyuHeroPath/atlas_manifest.json",
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuHeroPath/T_HeroPath_StoneFaces_Albedo.jpg",
+          "sha256": "b5ff76ac3e0ea980d54f3ba25426f957bc0058981a7122212084881eb8ace08c",
+          "derived_from": "Content/SourceArt/Environment/NyaagyuTerrain/manifest.json"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuHeroPath/T_HeroPath_StoneFaces_NormalDX.png",
+          "sha256": "bd34e5b3863fd9d194987606f2ae74b8501e625c0bc1f1b70f7cf82893a75655",
+          "derived_from": "Content/SourceArt/Environment/NyaagyuTerrain/manifest.json"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuHeroPath/T_HeroPath_StoneFaces_ORM.png",
+          "sha256": "c42add1edd15b27ed37a347083ecd819e2a4c5b6fd28f0303aa860c958b362a4",
+          "derived_from": "Content/SourceArt/Environment/NyaagyuTerrain/manifest.json"
+        }
+      }
+    }
+  },
+  "atlas_manifest_sha256": "c4240f6362eb18c39c865790cb272f62ccb8eba59012890daeff67d900d4182e",
+  "review_terrain_scan": {
+    "asset_id": "grey_stone_path",
+    "source_url": "https://polyhaven.com/a/grey_stone_path",
+    "license": "CC0-1.0"
+  },
+  "unreal_asset": "/Game/Generated/Environment/Props/SM_Nyaagyu_HeroStonePath_6m.SM_Nyaagyu_HeroStonePath_6m",
+  "license": "Original project-owned geometry and existing pinned Poly Haven CC0-1.0 PBR scans",
+  "limitations": "Blender source review only. The insert has not yet been placed, shader-qualified, or performance-tested in UE 5.8.2. Individual stones are mesh-modeled but not a hand-sculpted AAA photogrammetry reconstruction; collision remains the terrain."
+}

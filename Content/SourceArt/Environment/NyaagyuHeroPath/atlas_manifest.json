@@ -1,0 +1,1009 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/build_nyaagyu_hero_path_atlas.py",
+  "generator_sha256": "60ede0bb3cb02c1433d693810f931c9982e56dc73ea82957a084a1fa2a69187c",
+  "source_manifest": "Content/SourceArt/Environment/NyaagyuTerrain/manifest.json",
+  "source_asset": "grey_stone_path",
+  "source_url": "https://polyhaven.com/a/grey_stone_path",
+  "source_license": "CC0-1.0",
+  "source_files": {
+    "Diffuse": {
+      "repo_path": "Content/SourceArt/Environment/NyaagyuTerrain/GreyStonePath/grey_stone_path_diff_2k.jpg",
+      "sha256": "bf405e4e8a2d720976f710c4bb6de7734bc0bea613657e6c9362d3716418cc51"
+    },
+    "nor_dx": {
+      "repo_path": "Content/SourceArt/Environment/NyaagyuTerrain/GreyStonePath/grey_stone_path_nor_dx_2k.png",
+      "sha256": "51d7936c326ed7a2582f700109ba0a53b9a8b588d664b48ab11f3a7d3af225e4"
+    },
+    "arm": {
+      "repo_path": "Content/SourceArt/Environment/NyaagyuTerrain/GreyStonePath/grey_stone_path_arm_2k.png",
+      "sha256": "58e43f2a4daad0503b74347b5e7b07b2d92d0fbe56d707ba225269e5442f8d4b"
+    }
+  },
+  "size_px": 4096,
+  "grid": 8,
+  "cell_px": 480,
+  "margin_px": 128,
+  "count": 64,
+  "crop_policy": "Co-registered 224-256 px stone-interior crops with <=7.5% dark grout; no tangent-space normal transforms",
+  "cells": [
+    {
+      "index": 0,
+      "source_crop_xy_size_px": [
+        1376,
+        864,
+        240
+      ],
+      "source_dark_grout_fraction": 0.04325,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        128,
+        128
+      ]
+    },
+    {
+      "index": 1,
+      "source_crop_xy_size_px": [
+        832,
+        1312,
+        240
+      ],
+      "source_dark_grout_fraction": 0.05363,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        608,
+        128
+      ]
+    },
+    {
+      "index": 2,
+      "source_crop_xy_size_px": [
+        1024,
+        1504,
+        224
+      ],
+      "source_dark_grout_fraction": 0.06479,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1088,
+        128
+      ]
+    },
+    {
+      "index": 3,
+      "source_crop_xy_size_px": [
+        480,
+        704,
+        256
+      ],
+      "source_dark_grout_fraction": 0.04407,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1568,
+        128
+      ]
+    },
+    {
+      "index": 4,
+      "source_crop_xy_size_px": [
+        32,
+        256,
+        224
+      ],
+      "source_dark_grout_fraction": 0.0109,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2048,
+        128
+      ]
+    },
+    {
+      "index": 5,
+      "source_crop_xy_size_px": [
+        960,
+        640,
+        224
+      ],
+      "source_dark_grout_fraction": 0.06595,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2528,
+        128
+      ]
+    },
+    {
+      "index": 6,
+      "source_crop_xy_size_px": [
+        128,
+        1312,
+        240
+      ],
+      "source_dark_grout_fraction": 0.03705,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3008,
+        128
+      ]
+    },
+    {
+      "index": 7,
+      "source_crop_xy_size_px": [
+        800,
+        480,
+        240
+      ],
+      "source_dark_grout_fraction": 0.00398,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3488,
+        128
+      ]
+    },
+    {
+      "index": 8,
+      "source_crop_xy_size_px": [
+        1728,
+        1120,
+        240
+      ],
+      "source_dark_grout_fraction": 0.07196,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        128,
+        608
+      ]
+    },
+    {
+      "index": 9,
+      "source_crop_xy_size_px": [
+        96,
+        1728,
+        224
+      ],
+      "source_dark_grout_fraction": 0.02374,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        608,
+        608
+      ]
+    },
+    {
+      "index": 10,
+      "source_crop_xy_size_px": [
+        960,
+        1664,
+        240
+      ],
+      "source_dark_grout_fraction": 0.01622,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1088,
+        608
+      ]
+    },
+    {
+      "index": 11,
+      "source_crop_xy_size_px": [
+        736,
+        992,
+        240
+      ],
+      "source_dark_grout_fraction": 0.05908,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1568,
+        608
+      ]
+    },
+    {
+      "index": 12,
+      "source_crop_xy_size_px": [
+        352,
+        864,
+        224
+      ],
+      "source_dark_grout_fraction": 0.05999,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2048,
+        608
+      ]
+    },
+    {
+      "index": 13,
+      "source_crop_xy_size_px": [
+        256,
+        640,
+        256
+      ],
+      "source_dark_grout_fraction": 0.06157,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2528,
+        608
+      ]
+    },
+    {
+      "index": 14,
+      "source_crop_xy_size_px": [
+        384,
+        128,
+        240
+      ],
+      "source_dark_grout_fraction": 0.06502,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3008,
+        608
+      ]
+    },
+    {
+      "index": 15,
+      "source_crop_xy_size_px": [
+        32,
+        1024,
+        240
+      ],
+      "source_dark_grout_fraction": 0.05635,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3488,
+        608
+      ]
+    },
+    {
+      "index": 16,
+      "source_crop_xy_size_px": [
+        1728,
+        960,
+        224
+      ],
+      "source_dark_grout_fraction": 0.0568,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        128,
+        1088
+      ]
+    },
+    {
+      "index": 17,
+      "source_crop_xy_size_px": [
+        672,
+        384,
+        256
+      ],
+      "source_dark_grout_fraction": 0.06534,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        608,
+        1088
+      ]
+    },
+    {
+      "index": 18,
+      "source_crop_xy_size_px": [
+        1728,
+        1312,
+        256
+      ],
+      "source_dark_grout_fraction": 0.07257,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1088,
+        1088
+      ]
+    },
+    {
+      "index": 19,
+      "source_crop_xy_size_px": [
+        1408,
+        672,
+        256
+      ],
+      "source_dark_grout_fraction": 0.05336,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1568,
+        1088
+      ]
+    },
+    {
+      "index": 20,
+      "source_crop_xy_size_px": [
+        1408,
+        96,
+        256
+      ],
+      "source_dark_grout_fraction": 0.04659,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2048,
+        1088
+      ]
+    },
+    {
+      "index": 21,
+      "source_crop_xy_size_px": [
+        960,
+        480,
+        224
+      ],
+      "source_dark_grout_fraction": 0.00598,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2528,
+        1088
+      ]
+    },
+    {
+      "index": 22,
+      "source_crop_xy_size_px": [
+        1696,
+        192,
+        256
+      ],
+      "source_dark_grout_fraction": 0.01672,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3008,
+        1088
+      ]
+    },
+    {
+      "index": 23,
+      "source_crop_xy_size_px": [
+        800,
+        800,
+        224
+      ],
+      "source_dark_grout_fraction": 0.02774,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3488,
+        1088
+      ]
+    },
+    {
+      "index": 24,
+      "source_crop_xy_size_px": [
+        1376,
+        1344,
+        224
+      ],
+      "source_dark_grout_fraction": 0.00799,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        128,
+        1568
+      ]
+    },
+    {
+      "index": 25,
+      "source_crop_xy_size_px": [
+        96,
+        672,
+        256
+      ],
+      "source_dark_grout_fraction": 0.07225,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        608,
+        1568
+      ]
+    },
+    {
+      "index": 26,
+      "source_crop_xy_size_px": [
+        960,
+        1248,
+        256
+      ],
+      "source_dark_grout_fraction": 0.06812,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1088,
+        1568
+      ]
+    },
+    {
+      "index": 27,
+      "source_crop_xy_size_px": [
+        832,
+        1504,
+        224
+      ],
+      "source_dark_grout_fraction": 0.04241,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1568,
+        1568
+      ]
+    },
+    {
+      "index": 28,
+      "source_crop_xy_size_px": [
+        384,
+        352,
+        224
+      ],
+      "source_dark_grout_fraction": 0.0233,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2048,
+        1568
+      ]
+    },
+    {
+      "index": 29,
+      "source_crop_xy_size_px": [
+        832,
+        288,
+        256
+      ],
+      "source_dark_grout_fraction": 0.05327,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2528,
+        1568
+      ]
+    },
+    {
+      "index": 30,
+      "source_crop_xy_size_px": [
+        1248,
+        288,
+        256
+      ],
+      "source_dark_grout_fraction": 0.06479,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3008,
+        1568
+      ]
+    },
+    {
+      "index": 31,
+      "source_crop_xy_size_px": [
+        1248,
+        640,
+        224
+      ],
+      "source_dark_grout_fraction": 0.07342,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3488,
+        1568
+      ]
+    },
+    {
+      "index": 32,
+      "source_crop_xy_size_px": [
+        1664,
+        1472,
+        224
+      ],
+      "source_dark_grout_fraction": 0.03149,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        128,
+        2048
+      ]
+    },
+    {
+      "index": 33,
+      "source_crop_xy_size_px": [
+        704,
+        1216,
+        256
+      ],
+      "source_dark_grout_fraction": 0.0724,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        608,
+        2048
+      ]
+    },
+    {
+      "index": 34,
+      "source_crop_xy_size_px": [
+        1568,
+        640,
+        224
+      ],
+      "source_dark_grout_fraction": 0.05891,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1088,
+        2048
+      ]
+    },
+    {
+      "index": 35,
+      "source_crop_xy_size_px": [
+        512,
+        1600,
+        224
+      ],
+      "source_dark_grout_fraction": 0.07209,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1568,
+        2048
+      ]
+    },
+    {
+      "index": 36,
+      "source_crop_xy_size_px": [
+        1440,
+        480,
+        256
+      ],
+      "source_dark_grout_fraction": 0.06822,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "index": 37,
+      "source_crop_xy_size_px": [
+        32,
+        416,
+        224
+      ],
+      "source_dark_grout_fraction": 0.04624,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2528,
+        2048
+      ]
+    },
+    {
+      "index": 38,
+      "source_crop_xy_size_px": [
+        928,
+        960,
+        240
+      ],
+      "source_dark_grout_fraction": 0.07295,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3008,
+        2048
+      ]
+    },
+    {
+      "index": 39,
+      "source_crop_xy_size_px": [
+        512,
+        32,
+        240
+      ],
+      "source_dark_grout_fraction": 0.04717,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3488,
+        2048
+      ]
+    },
+    {
+      "index": 40,
+      "source_crop_xy_size_px": [
+        1600,
+        320,
+        240
+      ],
+      "source_dark_grout_fraction": 0.06085,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        128,
+        2528
+      ]
+    },
+    {
+      "index": 41,
+      "source_crop_xy_size_px": [
+        512,
+        1344,
+        224
+      ],
+      "source_dark_grout_fraction": 0.0613,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        608,
+        2528
+      ]
+    },
+    {
+      "index": 42,
+      "source_crop_xy_size_px": [
+        1088,
+        1344,
+        240
+      ],
+      "source_dark_grout_fraction": 0.05828,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1088,
+        2528
+      ]
+    },
+    {
+      "index": 43,
+      "source_crop_xy_size_px": [
+        128,
+        1152,
+        224
+      ],
+      "source_dark_grout_fraction": 0.06545,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1568,
+        2528
+      ]
+    },
+    {
+      "index": 44,
+      "source_crop_xy_size_px": [
+        128,
+        512,
+        256
+      ],
+      "source_dark_grout_fraction": 0.07144,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2048,
+        2528
+      ]
+    },
+    {
+      "index": 45,
+      "source_crop_xy_size_px": [
+        544,
+        224,
+        240
+      ],
+      "source_dark_grout_fraction": 0.07161,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2528,
+        2528
+      ]
+    },
+    {
+      "index": 46,
+      "source_crop_xy_size_px": [
+        1248,
+        960,
+        256
+      ],
+      "source_dark_grout_fraction": 0.06651,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3008,
+        2528
+      ]
+    },
+    {
+      "index": 47,
+      "source_crop_xy_size_px": [
+        640,
+        864,
+        256
+      ],
+      "source_dark_grout_fraction": 0.0686,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3488,
+        2528
+      ]
+    },
+    {
+      "index": 48,
+      "source_crop_xy_size_px": [
+        1280,
+        1728,
+        224
+      ],
+      "source_dark_grout_fraction": 0.07155,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        128,
+        3008
+      ]
+    },
+    {
+      "index": 49,
+      "source_crop_xy_size_px": [
+        448,
+        960,
+        240
+      ],
+      "source_dark_grout_fraction": 0.0721,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        608,
+        3008
+      ]
+    },
+    {
+      "index": 50,
+      "source_crop_xy_size_px": [
+        288,
+        0,
+        240
+      ],
+      "source_dark_grout_fraction": 0.03505,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1088,
+        3008
+      ]
+    },
+    {
+      "index": 51,
+      "source_crop_xy_size_px": [
+        1408,
+        1184,
+        224
+      ],
+      "source_dark_grout_fraction": 0.07077,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1568,
+        3008
+      ]
+    },
+    {
+      "index": 52,
+      "source_crop_xy_size_px": [
+        800,
+        640,
+        240
+      ],
+      "source_dark_grout_fraction": 0.0567,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2048,
+        3008
+      ]
+    },
+    {
+      "index": 53,
+      "source_crop_xy_size_px": [
+        1568,
+        160,
+        224
+      ],
+      "source_dark_grout_fraction": 0.05313,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2528,
+        3008
+      ]
+    },
+    {
+      "index": 54,
+      "source_crop_xy_size_px": [
+        448,
+        608,
+        224
+      ],
+      "source_dark_grout_fraction": 0.0525,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3008,
+        3008
+      ]
+    },
+    {
+      "index": 55,
+      "source_crop_xy_size_px": [
+        320,
+        224,
+        256
+      ],
+      "source_dark_grout_fraction": 0.05089,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3488,
+        3008
+      ]
+    },
+    {
+      "index": 56,
+      "source_crop_xy_size_px": [
+        64,
+        1408,
+        224
+      ],
+      "source_dark_grout_fraction": 0.01545,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        128,
+        3488
+      ]
+    },
+    {
+      "index": 57,
+      "source_crop_xy_size_px": [
+        768,
+        1120,
+        224
+      ],
+      "source_dark_grout_fraction": 0.03906,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        608,
+        3488
+      ]
+    },
+    {
+      "index": 58,
+      "source_crop_xy_size_px": [
+        128,
+        224,
+        240
+      ],
+      "source_dark_grout_fraction": 0.07472,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1088,
+        3488
+      ]
+    },
+    {
+      "index": 59,
+      "source_crop_xy_size_px": [
+        1312,
+        736,
+        240
+      ],
+      "source_dark_grout_fraction": 0.04651,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        1568,
+        3488
+      ]
+    },
+    {
+      "index": 60,
+      "source_crop_xy_size_px": [
+        864,
+        1728,
+        224
+      ],
+      "source_dark_grout_fraction": 0.05465,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2048,
+        3488
+      ]
+    },
+    {
+      "index": 61,
+      "source_crop_xy_size_px": [
+        32,
+        128,
+        224
+      ],
+      "source_dark_grout_fraction": 0.07151,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        2528,
+        3488
+      ]
+    },
+    {
+      "index": 62,
+      "source_crop_xy_size_px": [
+        704,
+        512,
+        224
+      ],
+      "source_dark_grout_fraction": 0.06075,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3008,
+        3488
+      ]
+    },
+    {
+      "index": 63,
+      "source_crop_xy_size_px": [
+        1792,
+        1536,
+        224
+      ],
+      "source_dark_grout_fraction": 0.07426,
+      "quarter_turns": 0,
+      "mirrored": false,
+      "atlas_xy_px": [
+        3488,
+        3488
+      ]
+    }
+  ],
+  "outputs": {
+    "Diffuse": {
+      "file": "T_HeroPath_StoneFaces_Albedo.jpg",
+      "sha256": "b5ff76ac3e0ea980d54f3ba25426f957bc0058981a7122212084881eb8ace08c",
+      "bytes": 5697491
+    },
+    "nor_dx": {
+      "file": "T_HeroPath_StoneFaces_NormalDX.png",
+      "sha256": "bd34e5b3863fd9d194987606f2ae74b8501e625c0bc1f1b70f7cf82893a75655",
+      "bytes": 21646938
+    },
+    "arm": {
+      "file": "T_HeroPath_StoneFaces_ORM.png",
+      "sha256": "c42add1edd15b27ed37a347083ecd819e2a4c5b6fd28f0303aa860c958b362a4",
+      "bytes": 16527663
+    }
+  },
+  "limitations": "Cropped 2K scan texture detail can soften at extreme close range; individual hand-sculpted faces and a 4K per-stone scan set remain future AAA art requirements."
+}
