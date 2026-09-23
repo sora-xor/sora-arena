@@ -450,6 +450,24 @@ whole-history cloning and hashing under fixed gas quotes is another unresolved
 capacity gate. The native 4,096-batch cap and unfunded Arena status remain in
 place; the research validator does not authenticate control inputs or kills.
 
+## 2026-09-24 visual-art gate
+
+The earlier asset counts above describe historical source passes, not the
+current quality level. The current estate source includes a 58-module perimeter
+wall, a 425,984-triangle high-density terrain tier and a 26,624-triangle Mac
+tier with a pinned CC0 Grey Stone Path scan, a connected-head Nyaakoto
+iteration, and an isolated 28-bone horse walk study. The latter is not yet a
+runtime riding system. The Mac diagnostic on UE 5.8.3 loaded 258 generated
+packages and passed build, cook and stage; a material graph error initially
+produced checkerboard terrain and black torii. A corrected graph and fail-closed
+Mac shader-compile gate then passed another cook/stage, and the packaged game
+captured [unedited estate, character and path views](visual-reviews/README.md)
+with no material shader-map errors in the logs. These views still show repeated
+road motifs, sparse scene dressing and visibly stylized cat anatomy. Neither
+the current asset count nor the engine feature flags constitute AAA
+photorealism. The exact 5.8.2, Windows/Nanite, Lumen coverage, 60 fps, and
+full-content release gates remain open.
+
 ## Workstreams
 
 - Deterministic Rust combat/economics, replay, P2P evidence and Unreal C ABI.
