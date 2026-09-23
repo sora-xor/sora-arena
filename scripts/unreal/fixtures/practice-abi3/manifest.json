@@ -28,9 +28,9 @@
     "scope": "exact files owning the exercised World/geometry/combat/economy/C ABI plus dependency manifests; unrelated transport/proof implementation is excluded",
     "files_sha256": {
       "Cargo.toml": "06b5cdcf5cddc6e57c56e6384af4a30a3cf8ee12eb24250cd44ab5fdd506ab46",
-      "Cargo.lock": "95742f3282d0140cf2c4808090cad06e429e54f34c57f041005cfa1987d017fc",
-      "crates/arena-core/Cargo.toml": "ad4ab67d0d15360f5e356f2c8aaa15d8f8e8ba50cc31ea7c6fdf75431af5fd67",
-      "crates/arena-core/src/lib.rs": "16e7278bcfa436da1b6c251380a2cfd2901095a0ba9ca1349e0d64a1e2340104",
+      "Cargo.lock": "431b0d17c0f25a42f29048558b948ada04cd0e20d2f9789c855d68b6cbf63a84",
+      "crates/arena-core/Cargo.toml": "63b455bb93e4869884ab0166c6c4e77db89902ccae2fbda9891facd16683218d",
+      "crates/arena-core/src/lib.rs": "c27f71016d15a6a1a1bc0d6f5cfb26b0ec7e8190ba8fbafc9a565ffdbd4f415b",
       "crates/arena-core/src/catalog.rs": "440fd39976e7a339a7ad4d2670a95c223f1237b3dc3a3900fadc7540a615357e",
       "crates/arena-core/src/economy.rs": "39a549f173143850caa64851020d1322c9b3cd7b0fb9771f0c931c3bc3ec1345",
       "crates/arena-core/src/math.rs": "dd9d498cc49ba048125494a11152d7fbfcf8719459d57e43942147955c67a63c",
