@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_Yumi_Study",
+  "status": "source_only_visual_candidate",
+  "generator": "scripts/art/create_nyaagyu_yumi_study.py",
+  "generator_sha256": "03f4b3642dec49d6dd8a3aca3a7d9cc781862372ff5831add1e347e660ff657f",
+  "units": "metres",
+  "bow_height_m": 2.2,
+  "grip_height_from_lower_nock_m": 0.75,
+  "historic_accuracy": "shape and materials informed by living bowmaking guidance; not a replica or fitting certification",
+  "source_blend": "Nyaagyu_Yumi_Study.blend",
+  "source_blend_sha256": "7acec0b10e8ceaaf375d299be610848faa8f99dc781816becf6c8b4cba06f92a",
+  "source_fbx": "SM_Nyaagyu_Yumi_Study.fbx",
+  "source_fbx_sha256": "7ab55a0f4d622ffa130a666f5b3eab21deb159cf69a57558ae4201f9d35e978f",
+  "renders": [
+    {
+      "file": "Nyaagyu_Yumi_ThreeQuarter.png",
+      "sha256": "c73d696cbfe83c05d5df3f32ebcac95a6a7695f7f77686d38bd6c1460b177f40"
+    },
+    {
+      "file": "Nyaagyu_Yumi_Profile.png",
+      "sha256": "4a2595afa0fda8e696b54a41bbef283a7b40b11ff46a9cbbe28610d9f430473a"
+    },
+    {
+      "file": "Nyaagyu_Yumi_GripDetail.png",
+      "sha256": "f8e07eb1d9fa163653c3603a5148f046efa633481a4a44f2d5ae898146ab6112"
+    }
+  ],
+  "textures": [
+    {
+      "surface": "bamboo",
+      "channel": "Albedo",
+      "file": "Textures/bamboo_veneer_diff_2k.jpg",
+      "md5": "fa0e742547faf21baa35455528d03da5",
+      "sha256": "f706462756c039c104838cddf4877a3b899da5e5cd0573ec441d4e20f9843f4b",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/bamboo_veneer/bamboo_veneer_diff_2k.jpg"
+    },
+    {
+      "surface": "bamboo",
+      "channel": "NormalDX",
+      "file": "Textures/bamboo_veneer_nor_dx_2k.png",
+      "md5": "ab51a4a010cd4d4060adf943ef29d816",
+      "sha256": "d5d370531a6bc579cc673da9f76c11cfbc59bd88833c6bfd8d02983f80ee42ee",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/bamboo_veneer/bamboo_veneer_nor_dx_2k.png"
+    },
+    {
+      "surface": "bamboo",
+      "channel": "ARM",
+      "file": "Textures/bamboo_veneer_arm_2k.png",
+      "md5": "3f1b621d3846f76b78ab6b23423aad77",
+      "sha256": "82f0f94044a8fc26a03fb8fdd6e14211791e87c229b28aa438094210b3b9cad8",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/bamboo_veneer/bamboo_veneer_arm_2k.png"
+    },
+    {
+      "surface": "leather",
+      "channel": "Albedo",
+      "file": "Textures/brown_leather_albedo_2k.jpg",
+      "md5": "1bd381c43817743a2affdd1ce2d193c7",
+      "sha256": "b0de2403a31efa31e501b0028c0bd8e504d5bd6318f4a5ce90c550c3067f96d8",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_leather/brown_leather_albedo_2k.jpg"
+    },
+    {
+      "surface": "leather",
+      "channel": "NormalDX",
+      "file": "Textures/brown_leather_nor_dx_2k.png",
+      "md5": "9f1c1a25da2f1b86bff92e5d0ca45257",
+      "sha256": "c76cba0a99c2828d5ff210363fb4838b9a348ebc0082e4c9b3bc95cd358ae47c",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_leather/brown_leather_nor_dx_2k.png"
+    },
+    {
+      "surface": "leather",
+      "channel": "ARM",
+      "file": "Textures/brown_leather_arm_2k.png",
+      "md5": "2889ad73bce0e089e58ee2183408f7d4",
+      "sha256": "b7db6dc4fa33fc4869ca626fa65a266e79330da5620743852fa7cc3a16630fc4",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_leather/brown_leather_arm_2k.png"
+    }
+  ],
+  "texture_sources": [
+    "https://polyhaven.com/a/bamboo_veneer",
+    "https://polyhaven.com/a/brown_leather"
+  ],
+  "texture_license": "CC0-1.0",
+  "texture_license_url": "https://polyhaven.com/license",
+  "kamon_source": "Content/SourceArt/UI/sora_logo_NOtext2.svg",
+  "kamon_source_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "reference_urls": [
+    "https://www.kyudo.com/kyudo-l.html",
+    "https://kyudo.com/asahiam-buybow.html"
+  ],
+  "runtime_integrated": false
+}
