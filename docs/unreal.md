@@ -119,6 +119,12 @@ The Silk Foundry chapter has an original `SM_SilkFoundry_LevyLoom` decorative pr
 The HUD loads the SORA insignia next to `SORA 抵抗軍 / 猫柳生` on both the campaign menu and in combat. The original SVG is preserved byte-for-byte with SHA-256 `d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910`; the transparent runtime PNG has SHA-256 `f6d9573096e7e044e9e4a84d739bf724281c4f394131812e1a6eeac915c8a39d`. `Content/SourceArt/UI/sora_logo_manifest.json` records the rasterization provenance. The user supplied the mark for this game; it has no claimed CC0 or general redistribution license. The editor import and actual in-game appearance still need verification in UE 5.8.2.
 
 The anatomy pass adds narrower facial proportions, orbital lids, short geometric guard-hair cards, folded fabric and laced armor. These remain stylized prototype assets. They are not production photorealistic cats, groom assets, refined skin weights, cinematic animation or qualified shipping content.
+`Content/SourceArt/Concepts/Nyaagyu_Photoreal_Character_Target.png` is the
+separate photoreal art-direction reference for tabby fur, worn indigo cloth,
+lacquered armor, rain and lantern lighting. Its JSON record pins the exact
+image-generation prompt and SHA-256. It is 2D concept art, not a mesh, texture
+set, in-engine screenshot or proof of final visual fidelity. The generated
+background emblems are incidental art, not the supplied SORA mark.
 
 ### Nyaagyu Estate production surface palette
 
