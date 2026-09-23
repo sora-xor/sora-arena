@@ -20,9 +20,9 @@ if not engine.startswith("5.8.2"):
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/NyaagyuToriiFootStudy"
 manifest_path = source / "manifest.json"
-EXPECTED_MANIFEST_SHA256 = "e62a2dfeb5f6f89a3b9ee2d494de97aeeb69cf735204c3fb9199dcd38d0ace9b"
-EXPECTED_GENERATOR_SHA256 = "8c6e72011d2ab7787121c1ca6e28c38c362a1f67f9bb7def3be50f4a5f4509ae"
-EXPECTED_BLEND_SHA256 = "ce978d350b05e45589ecac3c079fb8a436db88128013d7ccf98ea07d6c567e0b"
+EXPECTED_MANIFEST_SHA256 = "b8a94b4a9777e0905e9aa1cc03ee9c26d6075b1751d0f85c92fbd93beabf03b7"
+EXPECTED_GENERATOR_SHA256 = "c65b416edeb94fe5c9416d9d23e48c64badd36a36a84405b05aadfed64e046e8"
+EXPECTED_BLEND_SHA256 = "20500b7ca9cf9754c983bd3576e7883ac2e5a6f74466e8feb1d485ca9b99502e"
 
 
 def sha(path: Path) -> str:
