@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_HeroBustStudy",
+  "generator": "scripts/art/create_nyaagyu_hero_bust_study.py",
+  "generator_blender": "5.2.2 LTS",
+  "source_blend": "Nyaagyu_HeroBustStudy.blend",
+  "fbx": "SM_Nyaagyu_HeroBustStudy.fbx",
+  "portrait_preview": "Nyaagyu_HeroBust_Portrait_Blender.png",
+  "face_preview": "Nyaagyu_HeroBust_Face_Blender.png",
+  "source_parts": 160,
+  "source_triangles": 102071,
+  "fur_cards": 32155,
+  "head_voxel_m": 0.006,
+  "bounds_m": {
+    "min": [
+      -0.27,
+      -0.396,
+      0.878
+    ],
+    "max": [
+      0.2719,
+      0.396,
+      1.8587
+    ]
+  },
+  "local_forward": "+X face-forward; +Z up",
+  "materials": [
+    "M_Bust_BurnishedIron",
+    "M_Bust_CoatVertexColor",
+    "M_Bust_CorneaGlint",
+    "M_Bust_DarkBronze",
+    "M_Bust_DarkEyeBed",
+    "M_Bust_EarSkin",
+    "M_Bust_FurBrownCards",
+    "M_Bust_FurDarkCards",
+    "M_Bust_FurLightCards",
+    "M_Bust_FurWhiteCards",
+    "M_Bust_GoldGreenIris",
+    "M_Bust_IndigoSeam",
+    "M_Bust_InductionGlass",
+    "M_Bust_MouthShadow",
+    "M_Bust_NaturalLinen",
+    "M_Bust_RoseBrownNose",
+    "M_Bust_SmokedUrushi",
+    "M_Bust_VerticalPupil",
+    "M_Bust_WeatheredIndigoLinen",
+    "M_Bust_WornUrushiEdge"
+  ],
+  "review_render": {
+    "renderer": "Blender Cycles",
+    "resolution_px": [
+      1200,
+      1200
+    ],
+    "samples": 32,
+    "denoising": true
+  },
+  "runtime_performance": "Unmeasured. 102,071-triangle source with 32,155 opaque triangular fur cards requires LOD, two-sided shader and UE 5.8/target-hardware profiling before any gameplay use.",
+  "license": "Original project-owned geometry, vertex colors, procedurally authored shaders, fur cards and review renders; no paid or third-party mesh/texture",
+  "external_images": [],
+  "scope": "Unrigged static head/upper-body visual study; excluded from runtime and authored as a separate variant of the existing hero",
+  "limitations": "No Unreal import, animation, groom, cloth simulation, LOD, cross-platform performance or photoreal certification. Hair cards need two-sided material and LOD review. Blender shader graphs require deliberate Unreal equivalents.",
+  "blend_sha256": "a5d415f92f57052838b288a5bd6bb88b509768404d3c4b621f239b6372fe40ef",
+  "fbx_sha256": "372b63a84cf3de2d5433cc1d10067610592d45a70dc2719150d01932a9dcf043",
+  "portrait_preview_sha256": "800c1753d9bb380cfe45f2f9fee919c1b8c778612f78082e786dca9d997994f9",
+  "face_preview_sha256": "530cae8dbd7e524ebc76a30c63de1057793ca7166929eecc635a22bea6a45302"
+}
