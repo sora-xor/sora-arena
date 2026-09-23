@@ -534,6 +534,14 @@ found no no-account model that met the photoreal hero and open-source licensing
 gate; the strongest realistic quadruped candidate has account/restricted raw
 asset terms and cannot simply replace the biped hero rig.
 
+The [packaged Fern 02 A/B](visual-reviews/fern02/README.md) verified that the
+licensed scan's masked fronds render through the full conventional Mac fallback
+in UE 5.8.3. Its fixed entrance comparison shows only small patches around the
+torii posts, and the close view exposes card-like clumps above flat ground.
+The isolated importer and editable source are retained, but the tested eight
+plants were not placed in the main WorldBuilder. They do not qualify the
+Estate's scene composition or photorealism.
+
 ## Workstreams
 
 - Deterministic Rust combat/economics, replay, P2P evidence and Unreal C ABI.
