@@ -166,6 +166,17 @@ a complete 3D hit nor a kill or settlement.
 [Proof feasibility](proof/arena-feasibility.md) records the measurements and
 the staged-composition requirement. This is a failed gate for that layout, not
 a reduction of the agreed player count or proof coverage.
+An unregistered, unfunded native Arena movement research relation now proves
+four restricted position transitions across two players and two 60 Hz ticks.
+It binds an exact zero-bond admission, peer-signed commitment/reveal batch,
+map/rules identity and the accepted inputs, and matches the current
+`sora-arena-first-release-6` kernel on that slice. Its 81-column, 90-constraint
+preflight capped encoded proof size at 1,315,072 bytes. A fresh M1 Ultra proof
+was 1,164,832 bytes, generated in 87.183 seconds at 254,361,600 bytes peak
+RSS; separate-process verification took 11.909 seconds and rejected altered
+position, input, session and proof bytes. The batch is peer-accepted rather
+than ledger-selected, and the relation proves no hits, deaths or payouts;
+it cannot register or settle an Arena match.
 An unregistered Iroha research preflight separately measured an 18,000-batch,
 twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
 4 MiB proof envelope before the rest of a complete combat witness. Repeated
