@@ -53,7 +53,7 @@ assert len(parts)==manifest["source_parts"] and len(parts)>110
 assert len([obj for obj in parts if obj.name.startswith("SORA_kamon_exact_svg_")])==8
 assert all(obj["source_svg_sha256"]==manifest["insignia_sha256"]
            for obj in parts if obj.name.startswith("SORA_kamon_exact_svg_"))
-for name in ("Horse_barrel","Horse_chest","Horse_haunch","Horse_long_head",
+for name in ("Horse_anatomical_core",
              "Horse_tail_root","Kura_wooden_tree","Kura_lacquered_seat",
              "Kura_maewa_high_lacquer_panel","Kura_shizuwa_high_lacquer_panel",
              "Kura_girth_under_belly","Tack_breaststrap","Tack_crupper",
@@ -63,15 +63,20 @@ for name in ("Horse_barrel","Horse_chest","Horse_haunch","Horse_long_head",
              "Tazuna_rein_-1","Tazuna_rein_1"):
     assert any(obj.name==name for obj in parts),name
 assert len([obj for obj in parts if "_hoof" in obj.name])==4
-assert len([obj for obj in parts if obj.name.endswith("_continuous_limb")])==4
-assert len(collection.objects["Horse_neck"].data.vertices)==6*28
-assert len(collection.objects["Horse_long_head"].data.vertices)==5*28
+assert not [obj for obj in parts if obj.name.endswith("_continuous_limb")]
+core=collection.objects["Horse_anatomical_core"]
+assert len(core.data.vertices)>20000
+assert {mat.name for mat in core.data.materials}=={
+    "M_Horse_SealBrownCoat","M_Horse_DarkPoints"}
+assert {core.data.materials[p.material_index].name for p in core.data.polygons}=={
+    "M_Horse_SealBrownCoat","M_Horse_DarkPoints"}
+assert len([obj for obj in parts if obj.name.startswith("Horse_mane_strand_")])==104
+assert len([obj for obj in parts if obj.name.startswith("Horse_forelock_strand_")])==18
+assert len([obj for obj in parts if obj.name.startswith("Horse_tail_strand_")])==54
 for side in (-1,1):
     for label in ("fore","hind"):
-        limb=collection.objects[f"Horse_{label}_{side}_continuous_limb"]
         hoof=collection.objects[f"Horse_{label}_{side}_hoof"]
-        assert len(limb.data.vertices)==7*20 and len(hoof.data.vertices)==2*20
-        assert [mat.name for mat in limb.data.materials]==["M_Horse_SealBrownCoat","M_Horse_DarkPoints"]
+        assert len(hoof.data.vertices)==3*20
 assert all(any(obj.name==f"Horse_eye_{side}" for obj in parts) for side in (-1,1))
 triangles=sum(len(poly.vertices)-2 for obj in parts for poly in obj.data.polygons)
 assert triangles==manifest["source_triangles"] and 8000<triangles<250000

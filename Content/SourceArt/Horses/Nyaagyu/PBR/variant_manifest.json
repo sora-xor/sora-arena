@@ -1,20 +1,22 @@
 {
   "schema_version": 1,
   "generator": "scripts/art/create_nyaagyu_horse_pbr_variant.py",
-  "base_blend_sha256": "9e0978623d463df7af8c4895ed007ef5cede576e4a44d53f3ed9d84a30740403",
-  "base_fbx_sha256": "41ab3073e49934127698a49284bec07780d341bfde356198b89b1484b34da066",
-  "pbr_manifest_sha256": "7c8924d088669004b31b73235190f0b4feed3e0362c87a3e80ad30a27f338510",
+  "base_blend_sha256": "0ea0b1b96752f02d7c1dd3d44b08b8b9241184e609394450e453cbe54e75d573",
+  "base_fbx_sha256": "e051a578d0d8a1e1626e4f8254cb8ac5fbb3d0beb6af31cf6fa7140dc4ffc6a4",
+  "pbr_manifest_sha256": "478df71a8a762411a7ec767e68ffa51b3c676fb31f49c3ef625c8fdd8b2888df",
   "blend": "Nyaagyu_HorseAndTack_PBR.blend",
-  "blend_sha256": "bc003aa41861bf91cf2a7767a58aefbaa517dcb6d52494f7bb3877de60a08b57",
+  "blend_sha256": "4cce0174938d550a8a697382715ffbabac85354a44ef6d66080654bbad94b99e",
   "fbx": "SM_Nyaagyu_HorseAndTack_PBR.fbx",
-  "fbx_sha256": "67b6993ce81856800a158c4a9a581929c30d7cff65d15fbdbcabe8da952a673d",
+  "fbx_sha256": "4d637ad6809a79bf9ad98a6a1cfebb6c9f7d1f8e3edace0f5207d8ddab635346",
   "review": "Nyaagyu_HorseAndTack_PBR_Review.png",
-  "review_sha256": "9309fbd0a541e0a3f6a515f27167ff10e9304b6e41fa9abfb80f121f87add2ba",
+  "review_sha256": "29d6f020db8ebea2b90fa2a27dbd805048a47722db7b77cb47d06b7e55a37453",
   "before_anatomy_review": "Nyaagyu_HorseAndTack_PBR_BeforeAnatomy.png",
   "before_anatomy_review_sha256": "c679e773cb5d001010bcd6ffdaebbb9fdd69e49e22001a8c2fa8b73c62f4f56f",
-  "source_parts": 111,
-  "source_triangles": 61936,
-  "source_geometry_sha256": "d90fdce025eb452105a687aeeb238499989600894c5f950d9bdde19e903b31cc",
+  "before_second_pass_review": "Nyaagyu_HorseAndTack_PBR_PreSecondPass.png",
+  "before_second_pass_review_sha256": "9309fbd0a541e0a3f6a515f27167ff10e9304b6e41fa9abfb80f121f87add2ba",
+  "source_parts": 252,
+  "source_triangles": 150684,
+  "source_geometry_sha256": "22703d71a3cb1574db3befc2f1c835dc068c47a673179458ec566bc3966da620",
   "material_slots": [
     "M_Horse_BlackMane",
     "M_Horse_DarkPoints",
@@ -78,5 +80,5 @@
     ]
   },
   "unreal_asset": "/Game/ArtReview/Horses/NyaagyuPBR/SM_Nyaagyu_HorseAndTack_PBR.SM_Nyaagyu_HorseAndTack_PBR",
-  "limitations": "UVs and material maps only. Static, unrigged anatomy/tack remains stylized; no measured fur groom, tack wear scan, animation, riding simulation, or UE import validation."
+  "limitations": "Material/UV variant of the welded-body static horse source. Unrigged anatomy/tack remains stylized; no measured equine groom, tack wear scan, animation, riding simulation, or UE import validation."
 }

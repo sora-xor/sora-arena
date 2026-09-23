@@ -1,10 +1,10 @@
-"""UV and shade the original horse without changing its editable geometry.
+"""UV and shade the current horse without changing its editable geometry.
 
 Run: blender -b --factory-startup --python scripts/art/create_nyaagyu_horse_pbr_variant.py
 
 This produces a separate source/render/FBX so the historical tack study and
 its provenance remain intact. The horse is still static and anatomically
-stylized; this pass only improves surface response.
+stylized; this pass improves its surface response.
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ BLEND = PBR / "Nyaagyu_HorseAndTack_PBR.blend"
 FBX = PBR / "SM_Nyaagyu_HorseAndTack_PBR.fbx"
 REVIEW = PBR / "Nyaagyu_HorseAndTack_PBR_Review.png"
 BEFORE_ANATOMY = PBR / "Nyaagyu_HorseAndTack_PBR_BeforeAnatomy.png"
+BEFORE_SECOND_PASS = PBR / "Nyaagyu_HorseAndTack_PBR_PreSecondPass.png"
 MANIFEST = PBR / "variant_manifest.json"
 
 
@@ -38,6 +39,7 @@ assert sha(HORSE / BASE["fbx"]) == BASE["fbx_sha256"]
 assert MATERIALS["base_horse_blend_sha256"] == BASE["blend_sha256"]
 assert MATERIALS["base_horse_fbx_sha256"] == BASE["fbx_sha256"]
 assert MATERIALS["sora_logo_sha256"] == BASE["insignia_sha256"]
+assert BEFORE_SECOND_PASS.stat().st_size > 1000
 for item in MATERIALS["sources"]:
     assert sha(PBR / item["file"]) == item["sha256"]
 for item in MATERIALS["maps"]:
@@ -71,8 +73,8 @@ assert len(exact_kamon) == 8
 for name in exact_kamon:
     assert bpy.data.objects[name]["source_svg_sha256"] == BASE["insignia_sha256"]
 
-# World-oriented planar UVs have a consistent physical scale on the original
-# 135 parts. Each polygon chooses the projection whose normal faces most toward
+# World-oriented planar UVs have a consistent physical scale on the editable
+# parts. Each polygon chooses the projection whose normal faces most toward
 # the viewer; seams are inherent to the procedural mapping, never welded into
 # or used to alter the source geometry. The maps are exact-wrap textures.
 for obj in meshes:
@@ -80,14 +82,22 @@ for obj in meshes:
     for poly in obj.data.polygons:
         material = obj.data.materials[poly.material_index].name
         if material.startswith("M_Horse_"):
-            scale = 4.0 if obj.name in {"Horse_neck", "Horse_long_head"} or "_continuous_limb" in obj.name else 6.0
+            # Short equine coat should retain a single physical fiber scale
+            # across torso, neck, head, and limbs. The prior split projection
+            # made the neck conspicuously smooth next to long body strokes.
+            scale = 10.5
         else:
             scale = 8.0
         normal = obj.matrix_world.to_3x3() @ poly.normal
         axis = max(range(3), key=lambda i: abs(normal[i]))
         for loop_index in poly.loop_indices:
             point = obj.matrix_world @ obj.data.vertices[obj.data.loops[loop_index].vertex_index].co
-            if axis == 0:
+            if obj.name == "Horse_anatomical_core":
+                # One continuous side projection avoids per-face axis flips on
+                # the voxel-welded shoulder and throat. These tiny polygons
+                # otherwise produce large pale mapping islands in the coat.
+                u, v = point.x, point.z
+            elif axis == 0:
                 u, v = point.y, point.z
             elif axis == 1:
                 u, v = point.x, point.z
@@ -161,12 +171,12 @@ for slot, config in MATERIALS["material_slots"].items():
     links.new(reverse_green.outputs[0], combine.inputs["Green"])
     links.new(channels.outputs["Blue"], combine.inputs["Blue"])
     bump = nodes.new("ShaderNodeNormalMap")
-    bump.inputs["Strength"].default_value = .4
+    bump.inputs["Strength"].default_value = .38
     links.new(combine.outputs["Color"], bump.inputs["Color"])
     links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
 
 # The original static export is hidden in the editable source. Export a
-# separate joined PBR mesh while leaving the 135 individually named parts and
+# separate joined PBR mesh while leaving the individually named parts and
 # all six gameplay attachment anchors in the new .blend.
 bpy.ops.object.select_all(action="DESELECT")
 for obj in meshes:
@@ -224,6 +234,8 @@ record = {
     "review": REVIEW.name, "review_sha256": sha(REVIEW),
     "before_anatomy_review": BEFORE_ANATOMY.name,
     "before_anatomy_review_sha256": sha(BEFORE_ANATOMY),
+    "before_second_pass_review": BEFORE_SECOND_PASS.name,
+    "before_second_pass_review_sha256": sha(BEFORE_SECOND_PASS),
     "source_parts": len(meshes),
     "source_triangles": sum(len(poly.vertices) - 2 for obj in meshes for poly in obj.data.polygons),
     "source_geometry_sha256": geometry_before,
@@ -232,7 +244,7 @@ record = {
     "sora_logo_sha256": BASE["insignia_sha256"],
     "anchors_m": BASE["anchors_m"],
     "unreal_asset": "/Game/ArtReview/Horses/NyaagyuPBR/SM_Nyaagyu_HorseAndTack_PBR.SM_Nyaagyu_HorseAndTack_PBR",
-    "limitations": "UVs and material maps only. Static, unrigged anatomy/tack remains stylized; no measured fur groom, tack wear scan, animation, riding simulation, or UE import validation.",
+    "limitations": "Material/UV variant of the welded-body static horse source. Unrigged anatomy/tack remains stylized; no measured equine groom, tack wear scan, animation, riding simulation, or UE import validation.",
 }
 MANIFEST.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n")
 print("NYAAGYU_HORSE_PBR_VARIANT_COMPLETE", len(meshes), geometry_before, sha(FBX))

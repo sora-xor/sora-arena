@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import random
 from pathlib import Path
 
 import bpy
@@ -64,13 +65,13 @@ def material(name, color, roughness, metallic=0, noise=0):
 
 COAT = material("M_Horse_SealBrownCoat", (.16, .082, .044), .86, noise=185)
 COAT_DARK = material("M_Horse_DarkPoints", (.062, .037, .025), .89, noise=210)
-COAT_LIGHT = material("M_Horse_Muzzle", (.27, .16, .10), .91, noise=200)
+COAT_LIGHT = material("M_Horse_Muzzle", (.085, .050, .035), .86, noise=200)
 MANE = material("M_Horse_BlackMane", (.027, .025, .022), .90, noise=160)
-HOOF = material("M_Horse_HoofHorn", (.054, .044, .036), .73, noise=140)
+HOOF = material("M_Horse_HoofHorn", (.028, .022, .018), .82, noise=140)
 EYE = material("M_Horse_Eye", (.012, .010, .008), .13)
 EYE_RIM = material("M_Horse_EyeRim", (.032, .017, .011), .77)
-LACQUER = material("M_Tack_BlackUrushi", (.021, .017, .015), .23, noise=75)
-RED_LACQUER = material("M_Tack_OxbloodUrushi", (.105, .018, .016), .25, noise=71)
+LACQUER = material("M_Tack_BlackUrushi", (.021, .017, .015), .38, noise=75)
+RED_LACQUER = material("M_Tack_OxbloodUrushi", (.105, .018, .016), .35, noise=71)
 WOOD = material("M_Tack_StainedWood", (.17, .095, .044), .63, noise=190)
 LEATHER = material("M_Tack_DarkLeather", (.095, .046, .026), .69, noise=160)
 SILK = material("M_Tack_IndigoSilk", (.026, .044, .082), .79, noise=215)
@@ -144,6 +145,30 @@ def tube(name, points, radius, mat, resolution=3):
     return smooth(move(bpy.context.object, name))
 
 
+def tapered_hair(name, points, radius, mat):
+    """Lightweight source strands; static review fibers, not a groom or sim."""
+    data = bpy.data.curves.new(name, "CURVE")
+    data.dimensions = "3D"
+    data.resolution_u = 7
+    data.bevel_depth = radius
+    data.bevel_resolution = 1
+    spline = data.splines.new("BEZIER")
+    spline.bezier_points.add(len(points)-1)
+    for index, (point, xyz) in enumerate(zip(spline.bezier_points, points)):
+        point.co = xyz
+        point.radius = max(.05, 1-index/(len(points)-1))
+        point.handle_left_type = "AUTO"
+        point.handle_right_type = "AUTO"
+    obj = bpy.data.objects.new(name, data)
+    parts.objects.link(obj)
+    data.materials.append(mat)
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.convert(target="MESH")
+    return smooth(move(bpy.context.object, name))
+
+
 def cone_between(name, a, b, radius_a, radius_b, mat, vertices=20):
     a, b = Vector(a), Vector(b)
     vector = b - a
@@ -199,28 +224,31 @@ def xz_loft(name, rings, mat, facets=28):
 
 
 # Approximate 1.32 m at the withers: a compact Japanese-type mount, not a
-# breed-level reconstruction. The body keeps separate haunch/chest volumes and
-# equine joint bends instead of an elongated generic racing-horse silhouette.
-sphere("Horse_barrel", (-.12, 0, 1.015), (.59, .280, .315), COAT, 48, 32)
-sphere("Horse_chest", (.33, 0, 1.03), (.30, .300, .34), COAT, 40, 26)
-sphere("Horse_haunch", (-.57, 0, 1.03), (.31, .302, .31), COAT, 40, 26)
-sphere("Horse_withers", (.27, 0, 1.23), (.20, .23, .12), COAT, 32, 20)
+# breed-level reconstruction. One continuous torso replaces the overlapping
+# barrel/chest/haunch spheres and gives the shoulder and rump a shared surface.
+xz_loft("Horse_torso_continuous",
+        [(-.84,1.045,.052,.09),(-.75,1.04,.235,.255),
+         (-.59,1.035,.300,.305),(-.38,1.03,.296,.292),
+         (-.14,1.025,.288,.280),(.10,1.035,.306,.296),
+         (.32,1.055,.321,.310),(.48,1.085,.280,.258),
+         (.62,1.115,.120,.145)],COAT,facets=48)
 xz_loft("Horse_neck",[(.33,1.16,.225,.223),(.405,1.25,.222,.215),
                       (.505,1.375,.185,.184),(.625,1.505,.139,.151),
                       (.735,1.59,.103,.132),(.795,1.625,.086,.121)],COAT)
 sphere("Horse_jowl", (.812, 0, 1.492), (.112, .143, .108), COAT, 32, 20)
-xz_loft("Horse_long_head",[(.765,1.626,.086,.118),(.832,1.592,.108,.135),
-                           (.925,1.504,.101,.135),(1.032,1.422,.077,.114),
-                           (1.103,1.359,.082,.119)],COAT)
-sphere("Horse_muzzle", (1.111, 0, 1.343), (.087, .119, .061), COAT_LIGHT, 32, 20)
+xz_loft("Horse_long_head",[(.755,1.635,.065,.102),(.814,1.615,.097,.123),
+                           (.864,1.574,.110,.137),(.925,1.511,.108,.135),
+                           (.992,1.452,.092,.123),(1.052,1.401,.074,.108),
+                           (1.105,1.357,.068,.108)],COAT)
+sphere("Horse_muzzle", (1.112, 0, 1.341), (.090, .111, .059), COAT_LIGHT, 32, 20)
 sphere("Horse_lower_lip", (1.101, 0, 1.302), (.076, .103, .026), COAT_DARK)
 for side in (-1, 1):
     y = side * .103
     sphere(f"Horse_nostril_rim_{side}", (1.145, y, 1.374), (.023, .012, .021), COAT_DARK)
     sphere(f"Horse_nostril_{side}", (1.149, side * .110, 1.376), (.012, .007, .013), MANE)
-    sphere(f"Horse_eye_rim_{side}", (.854, side * .124, 1.588), (.039, .012, .031), EYE_RIM)
-    sphere(f"Horse_eye_{side}", (.863, side * .134, 1.591), (.023, .009, .022), EYE)
-    sphere(f"Horse_eye_reflection_{side}", (.871, side * .141, 1.603), (.006, .002, .005), SILVER, 12, 8)
+    sphere(f"Horse_eye_rim_{side}", (.854, side * .124, 1.588), (.040, .012, .025), EYE_RIM)
+    sphere(f"Horse_eye_{side}", (.863, side * .134, 1.591), (.028, .009, .017), EYE)
+    sphere(f"Horse_eye_reflection_{side}", (.871, side * .141, 1.598), (.005, .002, .004), SILVER, 12, 8)
     cone_between(f"Horse_ear_{side}", (.777, side * .092, 1.674),
                  (.762, side * .112, 1.820), .047, .006, COAT, 18)
     cone_between(f"Horse_inner_ear_{side}", (.791, side * .129, 1.695),
@@ -257,16 +285,19 @@ def leg(name, side, rings, dark_from):
     # the same ground-contact plane and original named object identity.
     hoof_x=rings[-1][0]+.018
     hoof=[]
-    for height,cx,rx,ry in ((.119,hoof_x,.053,.048),
-                           (.006,hoof_x+.016,.097,.075)):
+    for height,cx,rx,ry in ((.119,hoof_x-.020,.048,.045),
+                           (.058,hoof_x+.004,.074,.061),
+                           (.006,hoof_x+.035,.102,.074)):
         for step in range(facets):
             angle=math.tau*step/facets
             hoof.append((cx+rx*math.cos(angle),y+ry*math.sin(angle),height))
     hoof_faces=[tuple(reversed(range(facets)))]
-    for step in range(facets):
-        following=(step+1)%facets
-        hoof_faces.append((step,following,facets+following,facets+step))
-    hoof_faces.append(tuple(facets+step for step in range(facets)))
+    for ring in range(2):
+        for step in range(facets):
+            following=(step+1)%facets
+            hoof_faces.append((ring*facets+step,ring*facets+following,
+                               (ring+1)*facets+following,(ring+1)*facets+step))
+    hoof_faces.append(tuple(2*facets+step for step in range(facets)))
     smooth(mesh(f"Horse_{name}_{side}_hoof",hoof,hoof_faces,HOOF))
     tube(f"Horse_{name}_{side}_coronet",
          [(hoof_x-.067,y-.051,.116),(hoof_x,y-.057,.119),
@@ -283,21 +314,62 @@ for side in (-1, 1):
                      (-.817,.37,.048,.045),(-.759,.165,.051,.046),
                      (-.750,.114,.053,.049)],dark_from=3)
 
-for index in range(15):
-    t = index / 14
-    x = .37 + .40 * t
-    z = 1.35 + .34 * t - .02 * math.sin(math.pi * t)
-    cone_between(f"Horse_mane_lock_{index}", (x, 0, z),
-                 (x-.075, .004, z+.025+.018*(index%3)), .027, .001,
-                 MANE, 12)
-tube("Horse_tail_root", [(-.76, 0, 1.08), (-.89, .015, .98),
-                         (-1.02, .035, .79), (-1.08, .04, .55)], .055, MANE)
-for index in range(10):
-    angle = math.tau * index / 10
-    tube(f"Horse_tail_strand_{index}",
-         [(-1.045, .04, .76), (-1.08+.012*math.cos(angle), .04+.055*math.sin(angle), .57),
-          (-1.06+.042*math.cos(angle), .04+.076*math.sin(angle), .37)],
-         .012, MANE, 2)
+# Voxel-weld the overlapping torso, neck, head, and four limbs into one shell.
+# This removes hard intersection lines at the shoulders and haunches while
+# preserving the distinct dark distal coat below the knees/hocks. It remains
+# static sculpt topology, not a deformation-ready equine rig.
+anatomical_names=("Horse_torso_continuous","Horse_neck","Horse_jowl","Horse_long_head")
+anatomical_names+=tuple(f"Horse_{kind}_{side}_continuous_limb"
+                        for side in (-1,1) for kind in ("fore","hind"))
+bpy.ops.object.select_all(action="DESELECT")
+for target in anatomical_names:
+    parts.objects[target].select_set(True)
+bpy.context.view_layer.objects.active=parts.objects["Horse_torso_continuous"]
+bpy.ops.object.join()
+anatomical=bpy.context.object
+anatomical.name="Horse_anatomical_core"
+anatomical.data.remesh_voxel_size=.014
+bpy.ops.object.voxel_remesh()
+relax=anatomical.modifiers.new("Organic_joint_relaxation","SMOOTH")
+relax.factor=.62
+relax.iterations=3
+bpy.ops.object.modifier_apply(modifier=relax.name)
+smooth(anatomical)
+coat_slot=next(i for i,m in enumerate(anatomical.data.materials) if m.name==COAT.name)
+dark_slot=next(i for i,m in enumerate(anatomical.data.materials) if m.name==COAT_DARK.name)
+for polygon in anatomical.data.polygons:
+    polygon.material_index=dark_slot if polygon.center.z < .69 else coat_slot
+
+rng = random.Random(0xAB001)
+for side in (-1,1):
+    for index in range(52):
+        t=(index+.42*rng.random())/52
+        x=.37+.39*t
+        z=1.355+.335*t-.020*math.sin(math.pi*t)
+        y=side*rng.uniform(.025,.070)
+        drop=rng.uniform(.043,.105)
+        tapered_hair(f"Horse_mane_strand_{side}_{index:02}",
+                     [(x,y,z),(x-.018,side*(abs(y)+.025),z+.012),
+                      (x-.054,side*(abs(y)+.082),z-drop)],
+                     rng.uniform(.0025,.0050),MANE)
+for index in range(18):
+    y=rng.uniform(-.058,.058)
+    tapered_hair(f"Horse_forelock_strand_{index:02}",
+                 [(.766,y,1.753),(.806,y*1.3,1.713),
+                  (.845,y*1.65,1.653-rng.uniform(0,.025))],
+                 rng.uniform(.0025,.0045),MANE)
+tube("Horse_tail_root", [(-.78, 0, 1.08), (-.87, .012, .99),
+                         (-.975, .028, .83)], .037, MANE)
+for index in range(54):
+    angle=math.tau*index/54
+    y=.030+.046*math.sin(angle)
+    x=-.985+.028*math.cos(angle)
+    tapered_hair(f"Horse_tail_strand_{index:02}",
+                 [(-.91,y*.50,.94),(x,y,.78),
+                  (x-.075,y*1.5,.58),
+                  (x-.095+rng.uniform(-.035,.035),y*1.85+rng.uniform(-.025,.025),
+                   .33+rng.uniform(-.07,.06))],
+                 rng.uniform(.0035,.0075),MANE)
 
 
 # Kura: a black-lacquered wooden tree with raised maewa/shizuwa over a silk

@@ -1,9 +1,11 @@
 # Nyaagyu horse and tack PBR study
 
 This is a separate material/UV variant of the [original editable horse](../README.md).
-It keeps the original 111 mesh parts, 61,936 triangles, 17 material slots,
-six named tack/rider anchors, and eight exact SORA kamon SVG relief objects.
-Its static proportions and animation limitations remain unchanged.
+It keeps the current source geometry, 17 material slots, six named tack/rider
+anchors, and eight exact SORA kamon SVG relief objects. The current source
+contains a single welded body/limb shell, with 252 editable mesh parts and
+150,684 source triangles. The PBR variant changes only UVs/materials, not that
+source geometry. Its static and animation limitations remain unchanged.
 
 The coat, tazuna/abumi leather, and blackened abumi/bit iron use three
 project-generated material swatches. Each source image, generation prompt,
@@ -37,4 +39,4 @@ a game-ready horse; it needs measured anatomy, a rig and gait, closer tack
 construction, rider interaction, and actual engine/performance qualification.
 
 Material comparison: [untextured source](../Nyaagyu_HorseAndTack_Blender.png) / [PBR variant](Nyaagyu_HorseAndTack_PBR_Review.png).
-Anatomy comparison: [before the neck, head, limb, and hoof revision](Nyaagyu_HorseAndTack_PBR_BeforeAnatomy.png) / [revised silhouette with the same PBR surfaces](Nyaagyu_HorseAndTack_PBR_Review.png).
+Anatomy comparison: [before the first neck, head, limb, and hoof revision](Nyaagyu_HorseAndTack_PBR_BeforeAnatomy.png) / [before the second welded-body pass](Nyaagyu_HorseAndTack_PBR_PreSecondPass.png) / [current same-camera review](Nyaagyu_HorseAndTack_PBR_Review.png). The weld improves the neck/shoulder/haunch joins and the mane/tail shapes, while the coat/face, lower limbs, hoof-wall anatomy, and tack still need substantial production work.
