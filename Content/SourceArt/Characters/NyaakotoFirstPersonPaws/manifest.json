@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "status": "source-only art candidate; no runtime binding",
+  "units": "metres",
+  "generator": "scripts/art/create_nyaakoto_first_person_paws.py",
+  "mesh_sources": "Project-authored parametric/voxel sculpt; no third-party mesh",
+  "existing_review_props": [
+    "Content/SourceArt/Nyaagyu_HeroKatana.blend",
+    "Content/SourceArt/Weapons/NyaagyuYumi/Nyaagyu_Yumi_Study.blend"
+  ],
+  "source_sha256": {
+    "Content/SourceArt/Nyaagyu_HeroKatana.blend": "4fe5b3e1175e443d6459efa00bfeaf50942ff6b5270d09b0c61cbdbed83e3ec5",
+    "Content/SourceArt/Weapons/NyaagyuYumi/Nyaagyu_Yumi_Study.blend": "0afb0c79b71b2f33370ebd2d220f39cbd8b431efebe51d119ee4a285fa267d39"
+  },
+  "original_paw_pad_maps": "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/manifest.json",
+  "reused_project_pbr": "Content/SourceArt/Characters/Hero/PBR",
+  "reused_project_pbr_sha256": {
+    "T_Nyaakoto_fur_white_Albedo.png": "1e24595b1fa77b77f6a02c8a4d26c7b0e2ddeecda771acd2fb50f2426288039c",
+    "T_Nyaakoto_fur_white_NormalDX.png": "167d49ecca5780cd0b9937f67e6e0a5f8a3ef025f97f2f6b51a7b9bac0cbaa37",
+    "T_Nyaakoto_fur_white_ORM.png": "d67e8a7cb4d13b6bc954bf1dd1d7834b4cb3bb9558efc7dbc23ba2d85a85bc1a",
+    "T_Nyaakoto_fur_grey_Albedo.png": "4132878e71b04f52eafd69cd6196fe1de5011ac783225f45a275f4458e9cdca8",
+    "T_Nyaakoto_fur_grey_NormalDX.png": "0b5bae70d465992aeb6a97870e162106c4ab532ac5c0e562cc43cfea60c76a9a",
+    "T_Nyaakoto_fur_grey_ORM.png": "f8f559bcdf3ac2700625d3c7d61e99c968832bd25af0484593189f48a10e1a0c",
+    "T_Nyaakoto_silk_indigo_Albedo.png": "a7866f1ed77c57420266280c5fc751db5e0c688a54da1ecb88003c5da76d969c",
+    "T_Nyaakoto_silk_indigo_NormalDX.png": "c918e776469b1c69458a8fcd9a58a10ef67f08d0cd3e3f50c14056bcb81e852b",
+    "T_Nyaakoto_silk_indigo_ORM.png": "dae41cb5c3390346bd8600923c19336d67e83c6eb7cf05d990489a8dcee6c09b",
+    "T_Nyaakoto_lacquer_oxblood_Albedo.png": "032c7eb261cb3fefc6dd31d74ed36e52926dc79caec3fe8b644068f9f8505c28",
+    "T_Nyaakoto_lacquer_oxblood_NormalDX.png": "f898794445f8ab64d565600a5416672253e716a1611705710ed098f67709243c",
+    "T_Nyaakoto_lacquer_oxblood_ORM.png": "df48804d2c84479ca061d59c65da93ab1cfa06af84fa11f0a1758b0b8ba8caf6"
+  },
+  "weapon_contact": {
+    "katana_handle_centres_m": [
+      -0.095,
+      -0.215
+    ],
+    "katana_handle_axis": "+X",
+    "yumi_grip_centre_m": [
+      0.012,
+      0,
+      0
+    ],
+    "yumi_grip_axis": "+Z",
+    "canonical_digital_pad_centres_m": [
+      [
+        -0.01899999938905239,
+        -0.008999999612569809,
+        -0.024000000208616257
+      ],
+      [
+        -0.01899999938905239,
+        -0.008999999612569809,
+        -0.003000000026077032
+      ],
+      [
+        -0.01899999938905239,
+        -0.008999999612569809,
+        0.019999999552965164
+      ],
+      [
+        -0.01899999938905239,
+        -0.008999999612569809,
+        0.03999999910593033
+      ]
+    ],
+    "nominal_handle_radius_m": 0.022
+  },
+  "outputs": {
+    "Nyaakoto_FirstPersonPaws_GripStudy.blend": {
+      "sha256": "8f2710f6d38072764f46183fc6424c69e34964774737206fb74f70e46e911e9c",
+      "bytes": 6444809
+    },
+    "SM_Nyaakoto_KatanaPaws_GripStudy.fbx": {
+      "sha256": "81790a001b39c723074acc68d477ec340d746381438b05576ff250ffb6a65ae4",
+      "bytes": 3828572
+    },
+    "SM_Nyaakoto_YumiPaw_GripStudy.fbx": {
+      "sha256": "34df1e04f2b72f935cc0e576e01eb9bba5aef236b8c29af501f6ee5aaa6d4908",
+      "bytes": 1924620
+    },
+    "Nyaakoto_KatanaGrip_Contact.png": {
+      "sha256": "c6d01d7888cd74eea3499dbbf82f36a2af929c72deb5abd6a1bdabf28afb6a53",
+      "bytes": 1399667
+    },
+    "Nyaakoto_KatanaGrip_FirstPerson.png": {
+      "sha256": "714171db64abc86957ca2945f198c285292905aefe81edacd2e7d343ef7d7c63",
+      "bytes": 1222148
+    },
+    "Nyaakoto_YumiGrip_Contact.png": {
+      "sha256": "5859b9a759f7bfab947ce3b7adee5418e1f6145005f4db9bb85f4607bea2c8ae",
+      "bytes": 1462321
+    },
+    "Nyaakoto_YumiGrip_FirstPerson.png": {
+      "sha256": "f39358f997a7a4d374f6c6cf693e92233a34166a0e860f0da594b738cada2364",
+      "bytes": 1232298
+    }
+  }
+}

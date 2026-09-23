@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaakoto_paw_pad_textures.py",
+  "license": "Original project-owned procedural texture; no third-party data",
+  "seed": 741823,
+  "resolution": [
+    1024,
+    1024
+  ],
+  "maps": {
+    "Albedo": {
+      "file": "T_Nyaakoto_PawPad_Albedo.png",
+      "sha256": "e58646805aac491cd10e53b713b0b284f7f78ab89be971b1a4e3a901f9773f56"
+    },
+    "NormalDX": {
+      "file": "T_Nyaakoto_PawPad_NormalDX.png",
+      "sha256": "8962c4a0891bb2dca1f657f9579e12bf7b25fd4db11aa8b42d0ece46a5ae102d"
+    },
+    "ORM": {
+      "file": "T_Nyaakoto_PawPad_ORM.png",
+      "sha256": "7b40c526cfd67e8e9ec0a2924bc4c736a32ba66f0f41f9c07276ee2b5ac4facb"
+    }
+  }
+}
