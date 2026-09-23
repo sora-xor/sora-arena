@@ -119,9 +119,9 @@
     }
   ],
   "source_blend": "NyaagyuTree_Source.blend",
-  "source_blend_sha256": "e8f6fa621df10327189cf7cf5eb726cfdd8940b4c743452be46ba41fadb6dbd0",
+  "source_blend_sha256": "782079a3a061d748929b6c1b2b2d30c0e718298a4f2d0a1c6dfa9b01806b8360",
   "preview": "Preview_NyaagyuTree.png",
-  "preview_sha256": "82fc22190219e50eff3735a68d82769c25b23eeab611ced4a7d39842c005635c",
+  "preview_sha256": "94fd7d84c5fe2217bfdc250d94bb925b4bc1d300ce8440b6cfe5bfd02ec533e2",
   "material_slots": [
     "M_NyaagyuTree_Branches",
     "M_NyaagyuTree_Leaves",
@@ -132,7 +132,7 @@
       "tier": "hi",
       "name": "SM_NyaagyuTree_HI",
       "fbx": "SM_NyaagyuTree_HI.fbx",
-      "fbx_sha256": "7dad9c333a1ca604a9900258e592b38e5a3d87e02d7997bf72e8a111d67614c8",
+      "fbx_sha256": "4938f7e809e631421616a7affda33f0b8ebd3158cd5617ac9a63fa52e1150e06",
       "source_triangles": 353864,
       "bounds_m": {
         "min": [
@@ -153,7 +153,7 @@
       "tier": "mac",
       "name": "SM_NyaagyuTree_MAC",
       "fbx": "SM_NyaagyuTree_MAC.fbx",
-      "fbx_sha256": "3d1d951f336516ca25ca2de68bfdd2e18add843beb017007d988ca3eb932f7fd",
+      "fbx_sha256": "fc3938a4947a350dd94fc5e8a7e1a8f9842cc22338bfe2d0f4dd7678e512b68d",
       "source_triangles": 94918,
       "bounds_m": {
         "min": [

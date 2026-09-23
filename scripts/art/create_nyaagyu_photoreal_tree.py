@@ -99,7 +99,7 @@ def material(role, prefix, normal_name):
     # material uses separately pinned 2K DirectX normal maps.
     normal.image = bpy.data.images.load(
         str(UPSTREAM / "textures" / f"tree_small_02_{normal_name}_1k.jpg"),
-        check_existing=True)
+        check_existing=False)
     normal.image.colorspace_settings.name = "Non-Color"
     normal_map = nodes.new("ShaderNodeNormalMap")
     links.new(normal.outputs["Color"], normal_map.inputs["Color"])
@@ -260,6 +260,13 @@ scene.render.filepath = str(ART / "Preview_NyaagyuTree.png")
 scene.world = bpy.data.worlds.new("Soft_overcast_preview")
 scene.world.color = (.32, .34, .36)
 bpy.ops.render.render(write_still=True)
+scene.render.filepath = "//Preview_NyaagyuTree.png"
+for old_material in tuple(bpy.data.materials):
+    if old_material.users == 0:
+        bpy.data.materials.remove(old_material)
+for old_image in tuple(bpy.data.images):
+    if old_image.users == 0 and old_image.name != "Render Result":
+        bpy.data.images.remove(old_image)
 for image in bpy.data.images:
     if image.source == "FILE" and image.filepath:
         image.filepath = bpy.path.relpath(str(Path(bpy.path.abspath(image.filepath)).resolve()),

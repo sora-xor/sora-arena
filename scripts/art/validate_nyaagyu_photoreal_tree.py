@@ -43,6 +43,7 @@ for key, digest_key in (("source_blend", "source_blend_sha256"),
                         ("preview", "preview_sha256")):
     path = ART / manifest[key]
     assert path.stat().st_size > 1000 and digest(path) == manifest[digest_key]
+assert b"/Users/" not in (ART / manifest["source_blend"]).read_bytes()
 
 for tier, entry in zip(("hi", "mac"), manifest["meshes"]):
     bpy.ops.wm.read_factory_settings(use_empty=True)
