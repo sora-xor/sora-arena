@@ -192,6 +192,19 @@ source hashes, bounds and material-slot checks pass. Its render is still visibly
 stylized and it is neither runtime-imported nor a photoreal shipping character;
 rigging, production materials, LODs, and UE 5.8 visual/performance checks remain.
 
+The current Estate art pass adds a distinct provision storehouse with individually
+modeled roof tiles, measured CC0 plaster/wood/stone surfaces, and three CC0 pine
+sapling variants with high-density Windows and conventional Mac tiers. The
+first-person katana now has authored UVs and six 2K PBR map sets; its saya is a
+separate body-mounted mesh. Independent source validators pass. In the isolated
+5.8.3 worktree, after both original-asset and palette import passes, the editor
+validator loads **207** expected packages and verifies the new material bindings.
+The latest Mac diagnostic cook processed **795** packages; its packaged
+Nyaakoto LOD automation test passed. The earlier 154-package/735-package
+figures above document the preceding art revision. Source previews remain below
+the user's AAA photoreal target. The runtime scene, close-up character shading,
+animation, lighting and measured frame time need direct in-game review.
+
 The provisional first-release balance correction changed Arc carbine and
 Clockwork repeater attack cooldowns from 10 to 12 simulation ticks. A clean-lane
 `World::step` test checks body-shot death ticks against 100/125/150 HP targets
