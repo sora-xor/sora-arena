@@ -157,6 +157,28 @@ def hero_katana_pbr_source(source_root):
     return record
 
 
+def torii_lacquer_source(source_root):
+    art_root = source_root / "Environment/ToriiLacquer"
+    record = read_manifest(art_root / "manifest.json")
+    require(record.get("schema_version") == 1
+            and record.get("generator") == "scripts/art/create_torii_lacquer_pbr.py"
+            and record.get("material_slot") == "M_Env_VermilionLacquer"
+            and record.get("unreal_instance") ==
+            f"{PALETTE}/MI_Nyaagyu_ToriiLacquer.MI_Nyaagyu_ToriiLacquer"
+            and record.get("tile_size_cm") == 120.0
+            and record.get("license") ==
+            "Original project-owned procedural texture; no third-party input image"
+            and set(record.get("maps", {})) == {"Albedo", "NormalDX", "ORM"},
+            "The original torii lacquer source identity changed")
+    for channel, entry in record["maps"].items():
+        file = source_file(art_root, entry["file"])
+        require(file.name == f"T_Nyaagyu_ToriiLacquer_{channel}.png"
+                and entry.get("resolution") == [2048, 2048]
+                and hashlib.sha256(file.read_bytes()).hexdigest() == entry["sha256"],
+                f"The torii lacquer {channel} source changed")
+    return record
+
+
 def validate_hero_katana_loaded(unreal, asset_library):
     record = hero_katana_pbr_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
     material_lib = unreal.MaterialEditingLibrary
@@ -601,6 +623,11 @@ def expected_assets(project_root):
         name = f"T_Plaster_{item['channel']}"
         add(specs, f"{PALETTE}/Textures/{name}.{name}", "Texture2D")
     add(specs, plaster["unreal_instance"], "MaterialInstanceConstant")
+    torii = torii_lacquer_source(source_root)
+    for item in torii["maps"].values():
+        name = Path(item["file"]).stem
+        add(specs, f"{PALETTE}/Textures/{name}.{name}", "Texture2D")
+    add(specs, torii["unreal_instance"], "MaterialInstanceConstant")
     return specs
 
 
@@ -686,6 +713,39 @@ def validate_loaded_assets(unreal, specs):
         parent = asset_library.load_asset(path).get_editor_property("parent")
         require(parent is not None and parent.get_path_name() == base_path,
                 f"Palette instance has the wrong PBR parent: {path}")
+    torii = torii_lacquer_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
+    lacquer = asset_library.load_asset(torii["unreal_instance"])
+    parent = lacquer.get_editor_property("parent")
+    require(parent is not None and parent.get_path_name() == base_path,
+            "Torii lacquer lost the world-aligned PBR master")
+    for parameter, channel in (("AlbedoMap", "Albedo"),
+                               ("NormalMap", "NormalDX"), ("ARMMap", "ORM")):
+        name = Path(torii["maps"][channel]["file"]).stem
+        expected = f"{PALETTE}/Textures/{name}.{name}"
+        texture = asset_library.load_asset(expected)
+        actual = material_lib.get_material_instance_texture_parameter_value(lacquer, parameter)
+        require(actual is not None and actual.get_path_name() == expected,
+                f"Torii lacquer lost its {parameter} source map")
+        require(bool(texture.get_editor_property("srgb")) == (channel == "Albedo"),
+                f"Torii lacquer {channel} color-space import changed")
+        if channel == "NormalDX":
+            require(texture.get_editor_property("compression_settings") ==
+                    unreal.TextureCompressionSettings.TC_NORMALMAP
+                    and not bool(texture.get_editor_property("flip_green_channel")),
+                    "Torii lacquer DirectX normal import changed")
+        if channel == "ORM":
+            require(texture.get_editor_property("compression_settings") ==
+                    unreal.TextureCompressionSettings.TC_MASKS,
+                    "Torii lacquer ORM compression changed")
+    lacquer_tile = material_lib.get_material_instance_vector_parameter_value(lacquer, "TileSize")
+    require(all(abs(getattr(lacquer_tile, channel) - 120.0) < 1e-5 for channel in "rgb"),
+            "Torii lacquer lost its 120 cm world projection")
+    gate = asset_library.load_asset(f"{PROPS}/SM_Nyaagyu_ToriiGate.SM_Nyaagyu_ToriiGate")
+    bound = [slot.get_editor_property("material_interface") for slot in gate.get_editor_property("static_materials")
+             if str(slot.get_editor_property("material_slot_name")) == torii["material_slot"]]
+    require(len(bound) == 1 and bound[0] is not None
+            and bound[0].get_path_name() == torii["unreal_instance"],
+            "Torii lacquer is not bound to the imported gate slot")
     for role in ("Soil", "Stone"):
         path = f"{PALETTE}/MI_Nyaagyu_Terrain{role}.MI_Nyaagyu_Terrain{role}"
         instance = asset_library.load_asset(path)
@@ -753,6 +813,12 @@ def validate_loaded_assets(unreal, specs):
                 settings = mesh.get_editor_property("nanite_settings")
                 require(bool(settings.get_editor_property("enabled")) == (tier == "HI"),
                         f"Estate terrain Nanite tier mismatch: {path}")
+                slots = sorted(str(entry.get_editor_property("material_slot_name"))
+                               for entry in mesh.get_editor_property("static_materials"))
+                expected_slots = (["M_Terrain_Soil_PolyHaven", "M_Terrain_Stone_PolyHaven"]
+                                  if y in (1, 2) else ["M_Terrain_Soil_PolyHaven"])
+                require(slots == expected_slots,
+                        f"Estate stone-road material zone missing from imported tile: {path}: {slots}")
     for tier in ("HI", "MAC"):
         name = f"SM_NyaagyuTree_{tier}"
         mesh = asset_library.load_asset(f"{FOLIAGE}/{name}.{name}")

@@ -318,6 +318,21 @@ for entry in environment["assets"]:
     assert len(entry["bounds_m"]["min"]) == len(entry["bounds_m"]["max"]) == 3
     assert entry["bounds_m"]["min"][2] >= -0.01
     assert entry["bounds_m"]["max"][2] >= 2.2
+torii_pbr_root = content / "SourceArt/Environment/ToriiLacquer"
+torii_pbr = json.loads((torii_pbr_root / "manifest.json").read_text())
+assert torii_pbr["schema_version"] == 1
+assert torii_pbr["generator"] == "scripts/art/create_torii_lacquer_pbr.py"
+assert torii_pbr["material_slot"] == "M_Env_VermilionLacquer"
+assert torii_pbr["unreal_instance"] == "/Game/Generated/Environment/MI_Nyaagyu_ToriiLacquer.MI_Nyaagyu_ToriiLacquer"
+assert torii_pbr["tile_size_cm"] == 120.0
+assert torii_pbr["license"] == "Original project-owned procedural texture; no third-party input image"
+assert set(torii_pbr["maps"]) == {"Albedo", "NormalDX", "ORM"}
+for channel, entry in torii_pbr["maps"].items():
+    path = torii_pbr_root / entry["file"]
+    assert path.name == f"T_Nyaagyu_ToriiLacquer_{channel}.png"
+    assert entry["resolution"] == [2048, 2048]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == entry["sha256"]
+assert "import_torii_lacquer_pbr.py" in (ROOT / "scripts/unreal/import_environment_palette.py").read_text()
 terrain_root = content / "SourceArt/Environment/NyaagyuTerrain"
 terrain = json.loads((terrain_root / "manifest.json").read_text())
 assert terrain["schema_version"] == 1

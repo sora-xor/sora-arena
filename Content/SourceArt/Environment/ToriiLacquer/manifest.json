@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_torii_lacquer_pbr.py",
+  "seed": 450814,
+  "material_slot": "M_Env_VermilionLacquer",
+  "unreal_instance": "/Game/Generated/Environment/MI_Nyaagyu_ToriiLacquer.MI_Nyaagyu_ToriiLacquer",
+  "tile_size_cm": 120.0,
+  "license": "Original project-owned procedural texture; no third-party input image",
+  "physical_intent": "Weathered vermilion dielectric lacquer with vertical brush drag and sparse exposed timber; RGB=albedo, DirectX normal, ORM=AO/roughness/metallic",
+  "maps": {
+    "Albedo": {
+      "file": "T_Nyaagyu_ToriiLacquer_Albedo.png",
+      "sha256": "3b0edae769d00737aba0df03347a258defdcdeb2da206e32822d905b22d52f75",
+      "resolution": [
+        2048,
+        2048
+      ]
+    },
+    "NormalDX": {
+      "file": "T_Nyaagyu_ToriiLacquer_NormalDX.png",
+      "sha256": "8c4235870f36c7104eacd37a791e21e1bbd84ce4577742c40e363e595f51cdb7",
+      "resolution": [
+        2048,
+        2048
+      ]
+    },
+    "ORM": {
+      "file": "T_Nyaagyu_ToriiLacquer_ORM.png",
+      "sha256": "d2cfd70ab43ad77f6d0d3605348f3e89f9b9311c89f71889f1066ba5c324ef42",
+      "resolution": [
+        2048,
+        2048
+      ]
+    }
+  },
+  "review": "Nyaagyu_ToriiLacquer_PBR_Channels.png",
+  "scope": "Material source art; actual Unreal appearance and frame cost require packaged review"
+}
