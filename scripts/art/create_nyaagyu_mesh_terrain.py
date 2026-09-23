@@ -286,6 +286,33 @@ for tier in ("hi","mac"):
             # Replace each slot in place so the per-face split survives export.
             temp.data.materials[0]=export_soil
             temp.data.materials[1]=export_stone
+            # UE's FBX conversion mirrors local Y while retaining local X/Z.
+            # Pre-mirror only the export copy; the editable Blender source
+            # remains in world coordinates. Reverse face winding so the
+            # exported terrain keeps upward-facing normals after the mirror.
+            # Preserve UV and vertex tint by polygon/vertex because flipping
+            # a polygon changes the order of its per-corner loops.
+            export_uv=temp.data.uv_layers.active
+            export_tint=temp.data.color_attributes["EstateMacroTint"]
+            corner_attributes={}
+            for poly in temp.data.polygons:
+                for loop_index in poly.loop_indices:
+                    vertex_index=temp.data.loops[loop_index].vertex_index
+                    corner_attributes[(poly.index,vertex_index)]=(
+                        export_uv.data[loop_index].uv.copy(),
+                        tuple(export_tint.data[loop_index].color))
+            for vertex in temp.data.vertices:
+                vertex.co.y=-vertex.co.y
+            for poly in temp.data.polygons:
+                poly.flip()
+            for poly in temp.data.polygons:
+                for loop_index in poly.loop_indices:
+                    vertex_index=temp.data.loops[loop_index].vertex_index
+                    uv_value,tint_value=corner_attributes[(poly.index,vertex_index)]
+                    export_uv.data[loop_index].uv=uv_value
+                    export_tint.data[loop_index].color=tint_value
+            temp.data.update()
+            assert min(poly.normal.z for poly in temp.data.polygons)>.97
             temp.location=(0,0,0)
             temp.name=export_name
             bpy.ops.export_scene.fbx(filepath=str(fbx),use_selection=True,

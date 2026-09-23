@@ -132,6 +132,8 @@ for tier in ("hi","mac"):
             assert abs(max(v.y for v in box)-6.5)<.0005
             tri=sum(len(poly.vertices)-2 for poly in model.data.polygons)
             assert tri==t["triangles"],(tier,ix,iy,tri)
+            assert len(model.data.polygons)==len(obj.data.polygons)
+            assert min(poly.normal.z for poly in model.data.polygons)>.97
             slots={s.material.name.split(".",1)[0] for s in model.material_slots}
             assert slots==set(manifest["material_slots"]),slots
             source_stone=sum(poly.material_index==1 for poly in obj.data.polygons)
@@ -144,6 +146,49 @@ for tier in ("hi","mac"):
             imported_red=[sample.color[0] for sample in imported_tint.data]
             assert abs(min(red)-min(imported_red))<.001
             assert abs(max(red)-max(imported_red))<.001
+            # Unreal's FBX conversion mirrors local Y. The export copy must
+            # therefore already have mirrored Y so that the final UE mesh
+            # places every Stone face on the original center route. Compare
+            # all faces and corners, not just material counts: the latter
+            # missed a valid-looking route displaced to two side strips.
+            source_uv=obj.data.uv_layers.active
+            imported_uv=model.data.uv_layers.active
+            assert source_uv is not None and imported_uv is not None
+            expected_faces={}
+            for poly in obj.data.polygons:
+                key=(round(poly.center.x*16),round(-poly.center.y*16))
+                corners={}
+                for loop_index in poly.loop_indices:
+                    vertex=obj.data.vertices[obj.data.loops[loop_index].vertex_index]
+                    corner=(round(vertex.co.x*16),round(-vertex.co.y*16))
+                    corners[corner]=(vertex.co.z,
+                                     tuple(source_uv.data[loop_index].uv),
+                                     tuple(tint.data[loop_index].color))
+                assert key not in expected_faces,key
+                expected_faces[key]=(poly.material_index,corners)
+            for poly in model.data.polygons:
+                center=model.matrix_world @ poly.center
+                key=(round(center.x*16),round(center.y*16))
+                assert key in expected_faces,(tier,ix,iy,key)
+                material_index,corners=expected_faces.pop(key)
+                assert poly.material_index==material_index,(tier,ix,iy,key)
+                if material_index==1:
+                    # The tile center plus UE's importer Y mirror must keep
+                    # the Stone face within the estate's ~3.3 m road.
+                    assert abs(obj.location.y-center.y)<3.4,(tier,ix,iy,center.y)
+                for loop_index in poly.loop_indices:
+                    vertex=model.data.vertices[model.data.loops[loop_index].vertex_index]
+                    position=model.matrix_world @ vertex.co
+                    corner=(round(position.x*16),round(position.y*16))
+                    assert corner in corners,(tier,ix,iy,key,corner)
+                    height,uv_expected,tint_expected=corners.pop(corner)
+                    assert abs(position.z-height)<.0001
+                    uv_actual=imported_uv.data[loop_index].uv
+                    tint_actual=imported_tint.data[loop_index].color
+                    assert all(abs(uv_actual[k]-uv_expected[k])<.001 for k in range(2))
+                    assert all(abs(tint_actual[k]-tint_expected[k])<.001 for k in range(4))
+                assert not corners,(tier,ix,iy,key)
+            assert not expected_faces,(tier,ix,iy,len(expected_faces))
             bpy.data.objects.remove(model,do_unlink=True)
 
 # Exact edge heights are independently checked at all thirty internal seams.
