@@ -215,6 +215,12 @@ C declaration and Unreal function-pointer type. With `--game-fixtures`,
 `verify-bridge.py` exercises typed Join terms and rejects malformed or non-Join
 scaffolds if the symbol is present. Use `--require-arena-join-inspector` to fail
 verification when the symbol is missing.
+`UArenaWalletSubsystem::InspectJoinScaffold` now exposes those canonical typed
+terms as read-only JSON for a paired, matching account and network. It checks
+the inspector's payload hash against the general native scaffold inspection
+and requires `authorization_ready=false`. It neither shows a qualified bond
+term sheet to players nor requests a wallet signature; the Join/Buy signing
+block remains in force.
 
 `SubmitSignedTestTransaction()` is a separate, explicit operation. It is
 disabled in shipping builds and unless `Arena.Connect` explicitly sets

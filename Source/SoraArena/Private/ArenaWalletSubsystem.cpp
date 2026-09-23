@@ -944,6 +944,47 @@ void UArenaWalletSubsystem::AcceptApproval(const TArray<uint8>& Frame)
     SetState(EArenaWalletState::Approved, TEXT("ウォレット署名を確認しました。ボンド残高とゲーム参加は別途検証が必要です。"));
 }
 
+bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, FString& OutInspectionJson)
+{
+    OutInspectionJson.Empty();
+    if (!Native || !Native->JoinTermsInspect || ApprovedAccount.IsEmpty()
+        || (State != EArenaWalletState::Approved && State != EArenaWalletState::Signed)
+        || ScaffoldBase64.IsEmpty() || ScaffoldBase64.Len() > ArenaConnect::MaxFrameBytes * 2) return false;
+    TArray<uint8> Scaffold;
+    if (!FBase64::Decode(ScaffoldBase64, Scaffold) || Scaffold.IsEmpty()
+        || Scaffold.Num() > ArenaConnect::MaxFrameBytes || FBase64::Encode(Scaffold) != ScaffoldBase64) return false;
+    FNativeBytes General(*Native), Terms(*Native);
+    TSharedPtr<FJsonObject> GeneralJson, TermsJson;
+    if (Native->InspectTransaction(Scaffold.GetData(), Scaffold.Num(), &General.Data, &General.Size) != 0
+        || !General.Bounded() || !ArenaConnect::ParseObject(General.Data, General.Size, GeneralJson)) return false;
+    FString Authority, Network, Name, Kind, GeneralHash;
+    const TSharedPtr<FJsonObject>* Executable = nullptr;
+    if (!GeneralJson->TryGetStringField(TEXT("authority"), Authority) || Authority != ApprovedAccount
+        || !GeneralJson->TryGetStringField(TEXT("network_id"), Network) || Network != NetworkLiteral
+        || !GeneralJson->TryGetStringField(TEXT("payload_signing_hash_hex"), GeneralHash)
+        || !ArenaConnect::CanonicalHash(GeneralHash)
+        || !GeneralJson->TryGetObjectField(TEXT("executable"), Executable)
+        || !(*Executable)->TryGetStringField(TEXT("kind"), Kind) || Kind != TEXT("native_instruction")
+        || !(*Executable)->TryGetStringField(TEXT("name"), Name) || Name != TEXT("JoinGameSessionV1")) return false;
+    if (Native->JoinTermsInspect(Scaffold.GetData(), Scaffold.Num(), &Terms.Data, &Terms.Size) != 0
+        || !Terms.Bounded(128 * 1024) || !ArenaConnect::ParseObject(Terms.Data, Terms.Size, TermsJson)) return false;
+    FString Schema, Scope, TermsAuthority, TermsHash, ScaffoldHash;
+    bool bAuthorizationReady = true;
+    const TSharedPtr<FJsonObject>* Join = nullptr;
+    const TSharedPtr<FJsonObject>* Fee = nullptr;
+    if (TermsJson->Values.Num() != 11
+        || !TermsJson->TryGetStringField(TEXT("schema"), Schema) || Schema != TEXT("sora.arena.join_terms_inspection.v1")
+        || !TermsJson->TryGetBoolField(TEXT("authorization_ready"), bAuthorizationReady) || bAuthorizationReady
+        || !TermsJson->TryGetStringField(TEXT("verification_scope"), Scope) || Scope != TEXT("canonical_scaffold_only")
+        || !TermsJson->TryGetStringField(TEXT("authority"), TermsAuthority) || TermsAuthority != ApprovedAccount
+        || !TermsJson->TryGetStringField(TEXT("payload_signing_hash_hex"), TermsHash) || TermsHash != GeneralHash
+        || !TermsJson->TryGetStringField(TEXT("scaffold_blake3_hex"), ScaffoldHash) || !ArenaConnect::CanonicalHash(ScaffoldHash)
+        || !TermsJson->TryGetObjectField(TEXT("join"), Join)
+        || !TermsJson->TryGetObjectField(TEXT("fee_payment"), Fee)) return false;
+    OutInspectionJson = ArenaConnect::Text(Terms.Data, Terms.Size);
+    return true;
+}
+
 bool UArenaWalletSubsystem::RequestSignTransaction(const FString& ScaffoldBase64, const FString& Ed25519PublicKeyHex)
 {
     if (!Native || !Socket.IsValid() || !Socket->IsConnected() || bIgnoreCancelledSignatureResult || bRecoveryBlocked

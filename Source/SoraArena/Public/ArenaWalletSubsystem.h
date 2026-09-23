@@ -50,6 +50,9 @@ public:
     /** Constructs one allowlisted typed native instruction through the bridge, then requests its signature. */
     UFUNCTION(BlueprintCallable, Category="SORA|Wallet")
     bool RequestNativeTransactionSignature(const FString& ExactRequestJson, const FString& Ed25519PublicKeyHex);
+    /** Read-only canonical join preview. Its authorization_ready flag is always false. */
+    UFUNCTION(BlueprintCallable, Category="SORA|Wallet")
+    bool InspectJoinScaffold(const FString& ScaffoldBase64, FString& OutInspectionJson);
     /** Disabled by default and in shipping builds; only an explicitly configured loopback test node is eligible. */
     UFUNCTION(BlueprintCallable, Category="SORA|Wallet") bool SubmitSignedTestTransaction();
     /** Read-only exact-hash reconciliation, including an identity restored after restart. It never resends. */

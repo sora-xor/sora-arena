@@ -191,6 +191,10 @@ verified session/offer snapshot and a separate pre-sign confirmation. See
 Join and NFT purchase signing now fail closed in the game before a wallet
 request until that review exists. A non-authorizing typed Join inspector is
 implemented in the native bridge and its two focused Rust tests pass. It
+is now callable read-only from Unreal for a paired account/network, with the
+typed payload hash cross-checked against the general scaffold inspection and
+`authorization_ready=false` required. No UI treats that JSON as a qualified
+term sheet, and it cannot lift the Join/Buy signing gate. It
 remains uncommitted under Iroha's signed-commit rule. A release-profile local
 research bridge containing this inspector is staged on macOS and passed native
 smoke checks; it cannot substitute for the missing
