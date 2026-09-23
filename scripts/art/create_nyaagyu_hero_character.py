@@ -504,7 +504,7 @@ manifest={
     "fbx":FBX.name,"fbx_sha256":sha(FBX),
     "preview":PREVIEW.name,"preview_sha256":sha(PREVIEW),
     "detail_preview":DETAIL.name,"detail_preview_sha256":sha(DETAIL),
-    "unreal_asset":f"/Game/Generated/Meshes/{NAME}.{NAME}",
+    "unreal_asset":f"/Game/ArtReview/Characters/{NAME}.{NAME}",
     "source_parts":len(source_parts),"source_triangles":source_tris,
     "bounds_m":bounds,"local_forward":"+X face-forward; +Z up",
     "world_origin_m":[0,0,0],"rigged":False,"external_images":[],

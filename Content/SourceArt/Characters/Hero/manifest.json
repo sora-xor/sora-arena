@@ -11,7 +11,7 @@
   "preview_sha256": "770a0f10087cef2d09e69f48094be7e7d64eaf5c9aacb00bff1ee4e29d8c156f",
   "detail_preview": "Nyaagyu_HeroFace_Blender.png",
   "detail_preview_sha256": "8d8808d0f83590802f9c35431cad0850321a6a140e7221af91e6efa7a2ff8ce9",
-  "unreal_asset": "/Game/Generated/Meshes/SM_Nyaagyu_HeroCharacter.SM_Nyaagyu_HeroCharacter",
+  "unreal_asset": "/Game/ArtReview/Characters/SM_Nyaagyu_HeroCharacter.SM_Nyaagyu_HeroCharacter",
   "source_parts": 293,
   "source_triangles": 51463,
   "bounds_m": {

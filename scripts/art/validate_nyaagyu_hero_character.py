@@ -31,7 +31,7 @@ assert Path(bpy.data.filepath).resolve()==(out/manifest["source_blend"]).resolve
 assert manifest["schema_version"]==1 and manifest["name"]==name
 assert manifest["generator"]=="scripts/art/create_nyaagyu_hero_character.py"
 assert manifest["validator"]=="scripts/art/validate_nyaagyu_hero_character.py"
-assert manifest["unreal_asset"]==f"/Game/Generated/Meshes/{name}.{name}"
+assert manifest["unreal_asset"]==f"/Game/ArtReview/Characters/{name}.{name}"
 assert manifest["fbx"]==name+".fbx"
 assert manifest["local_forward"]=="+X face-forward; +Z up"
 assert manifest["world_origin_m"]==[0,0,0] and manifest["rigged"] is False

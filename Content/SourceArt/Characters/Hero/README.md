@@ -20,6 +20,8 @@ python3 scripts/unreal/validate_content.py
 The two PNGs are Blender source-art review renders. The mesh is unrigged and
 has no authored combat animations, fur groom, cloth simulation, or Unreal
 runtime material pass. It is deliberately imported as a static visual asset
-under `/Game/Generated/Meshes/SM_Nyaagyu_HeroCharacter`; it is not yet the
-runtime player character or a photoreal final design. Unreal 5.8.2 import, visual quality, animation,
+under `/Game/ArtReview/Characters/SM_Nyaagyu_HeroCharacter`; it is not yet the
+runtime player character or a photoreal final design. This review folder is
+outside the project's always-cooked `/Game/Generated` runtime content.
+Unreal 5.8.2 import, visual quality, animation,
 and performance require editor and gameplay review.

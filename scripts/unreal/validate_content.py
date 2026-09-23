@@ -132,7 +132,7 @@ assert hero_character["name"] == "SM_Nyaagyu_HeroCharacter"
 assert hero_character["generator"] == "scripts/art/create_nyaagyu_hero_character.py"
 assert hero_character["validator"] == "scripts/art/validate_nyaagyu_hero_character.py"
 assert hero_character["fbx"] == hero_character["name"] + ".fbx"
-assert hero_character["unreal_asset"] == "/Game/Generated/Meshes/SM_Nyaagyu_HeroCharacter.SM_Nyaagyu_HeroCharacter"
+assert hero_character["unreal_asset"] == "/Game/ArtReview/Characters/SM_Nyaagyu_HeroCharacter.SM_Nyaagyu_HeroCharacter"
 assert hero_character["world_origin_m"] == [0, 0, 0]
 assert hero_character["local_forward"] == "+X face-forward; +Z up"
 assert hero_character["rigged"] is False and hero_character["external_images"] == []
