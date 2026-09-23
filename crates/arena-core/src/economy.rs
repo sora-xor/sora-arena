@@ -206,6 +206,10 @@ pub fn conserved(accounts: &[Account]) -> bool {
 }
 
 #[cfg(test)]
+#[path = "economy_reference_qualification.rs"]
+mod reference_qualification;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     #[test]
