@@ -31,6 +31,7 @@ SCAN_FILES = {
 OUT.mkdir(parents=True, exist_ok=True)
 for name in SCAN_FILES.values():
     assert (SCAN / name).is_file(), f"Missing pinned CC0 scan {name}"
+bpy.context.preferences.filepaths.save_version = 0
 
 bpy.ops.object.select_all(action="SELECT")
 bpy.ops.object.delete(use_global=False)

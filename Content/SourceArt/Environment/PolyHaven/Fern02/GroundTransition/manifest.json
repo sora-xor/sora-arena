@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "name": "SM_NyaagyuFernGroundTransition",
+  "generator": "scripts/art/create_nyaagyu_fern_ground_transition.py",
+  "generator_sha256": "337536cb177c63171ca3c2e20d97b93f0bb20c4d45fc3e621cfd827f8128e3f0",
+  "source_blend": "Nyaagyu_FernGroundTransition.blend",
+  "source_blend_sha256": "360c6f8b0c2fe4e6886ca7b2e81f8c1fc51120b6b270d6588580493ba85642f5",
+  "meshes": {
+    "hi": {
+      "fbx": "SM_NyaagyuFernGroundTransition_HI.fbx",
+      "sha256": "05b4f57153528abf9d053be3cdebc3a83e8972ef74c29a38a6da6c84c1820e9b",
+      "triangles": 14252,
+      "bounds_m": {
+        "min": [
+          -1.534,
+          -0.6271,
+          -0.015
+        ],
+        "max": [
+          1.7278,
+          0.6074,
+          0.3766
+        ]
+      },
+      "material_slots": [
+        "M_FernGround_Soil",
+        "M_FernGround_Litter",
+        "M_FernGround_Stone",
+        "M_FernGround_Root",
+        "M_Fern02_4K"
+      ],
+      "nanite_candidate": true
+    },
+    "mac_lod1": {
+      "fbx": "SM_NyaagyuFernGroundTransition_MAC_LOD1.fbx",
+      "sha256": "3be664941c1192d1cf4fbf2fbde6323700487abddb4d5473ad05353c9f632ed6",
+      "triangles": 9831,
+      "bounds_m": {
+        "min": [
+          -1.534,
+          -0.6271,
+          -0.015
+        ],
+        "max": [
+          1.7278,
+          0.6074,
+          0.3742
+        ]
+      },
+      "material_slots": [
+        "M_FernGround_Soil",
+        "M_FernGround_Litter",
+        "M_FernGround_Stone",
+        "M_FernGround_Root",
+        "M_Fern02_2K"
+      ],
+      "nanite_candidate": false
+    }
+  },
+  "previews": {
+    "hi": {
+      "file": "Preview_FernGroundTransition_EyeHeight.png",
+      "sha256": "3d661768ed4a3a9eaf6973078540a9c68129dbe57ee8918049bd8fc4abf4914a"
+    },
+    "mac_lod1": {
+      "file": "Preview_FernGroundTransition_MacFallback.png",
+      "sha256": "d9d37345b69508f5d06b13f986d1718abd93afb05d13ab50352f1e5aafcf3468"
+    }
+  },
+  "placements_local_m": [
+    {
+      "variant": "B",
+      "xy": [
+        -0.93,
+        -0.05
+      ],
+      "yaw_rad": 0.18,
+      "scale": 0.78
+    },
+    {
+      "variant": "A",
+      "xy": [
+        -0.54,
+        0.19
+      ],
+      "yaw_rad": 1.32,
+      "scale": 0.77
+    },
+    {
+      "variant": "C",
+      "xy": [
+        -0.13,
+        -0.06
+      ],
+      "yaw_rad": -0.69,
+      "scale": 0.79
+    },
+    {
+      "variant": "D",
+      "xy": [
+        0.27,
+        0.25
+      ],
+      "yaw_rad": 1.84,
+      "scale": 0.96
+    },
+    {
+      "variant": "B",
+      "xy": [
+        0.72,
+        -0.05
+      ],
+      "yaw_rad": 2.19,
+      "scale": 0.69
+    },
+    {
+      "variant": "A",
+      "xy": [
+        1.12,
+        0.11
+      ],
+      "yaw_rad": -0.4,
+      "scale": 0.82
+    }
+  ],
+  "recommended_review_origin_cm": [
+    -1950,
+    335,
+    0
+  ],
+  "orientation": "Local X follows Estate road; +Y points into north shoulder; +Z up",
+  "gameplay_collision": false,
+  "nanite_windows": true,
+  "mac_conventional_fallback": {
+    "source_fbx": "SM_NyaagyuFernGroundTransition_MAC_LOD1.fbx",
+    "render_config": "Config/Mac/MacEngine.ini"
+  },
+  "scan_dependencies": {
+    "DampSilt": {
+      "asset_id": "brown_mud_leaves_01",
+      "source_url": "https://polyhaven.com/a/brown_mud_leaves_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "sha256": "29c997d77f56e4ea16d3e998a306be0c17fddb28ab4822657c7cd8249040ffda",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+          "sha256": "9bbc1abea84c6774ead2153f8444a5ac5675ac4ce19e7e02d1cb869b20b81f26",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+          "sha256": "9056337763fa1db614b98aee969c4f07277731292b9549171e7b66c88cf6a416",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png"
+        }
+      }
+    },
+    "ForestLitter": {
+      "asset_id": "forest_leaves_02",
+      "source_url": "https://polyhaven.com/a/forest_leaves_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_diffuse_2k.jpg",
+          "sha256": "9c38b2b151a0415457a6914966422cfca5a546c94674442e5395e0b1e908a196",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_diffuse_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_nor_dx_2k.png",
+          "sha256": "d1cc3491948446214bcd0b742a5bf5a8cdebc10036ec37da8f3f5c8e6c45eb86",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_arm_2k.png",
+          "sha256": "d8106fc2d56ceb1bbffdfa00772364aed678b51c1621cae7d554f6230151635f",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_arm_2k.png"
+        }
+      }
+    },
+    "RiverStone": {
+      "asset_id": "rock_01",
+      "source_url": "https://polyhaven.com/a/rock_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_diff_2k.jpg",
+          "sha256": "fe9013368539b5604602e64bfa48bef1a2a4c452fcb6894868fb556d0b14501c",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_nor_dx_2k.png",
+          "sha256": "e75062267abe1ae9d3792d4a2667f893a1a952dd0c59274a13fb3d348ca97a3a",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rock_01/rock_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_arm_2k.jpg",
+          "sha256": "a954de58336738e6f963466f1453202ef7e186bd6492106c3b989c39f0d2e23c",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_arm_2k.jpg"
+        }
+      }
+    }
+  },
+  "ground_dressing_manifest_sha256": "14ddd6aeb9967dcadd4c8be725d466acbef263bbcab13200527a0cc845dba102",
+  "fern_source_manifest_sha256": "7aefb46c2c3b8134ae16bf64e4443840ea8617b57acee893ca22485ab07b6239",
+  "license": "Original geometry plus pinned Poly Haven CC0-1.0 Fern 02 and PBR surface scans; no paid assets",
+  "limitations": "Source-art candidate until fixed-camera packaged A/B and release-engine QA; visual-only collision policy."
+}
