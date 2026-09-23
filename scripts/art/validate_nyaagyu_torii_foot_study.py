@@ -58,6 +58,11 @@ mesh = imported[0]
 assert len(mesh.data.materials) == 1
 assert mesh.data.materials[0].name.startswith("M_ToriiFoot_MossyRock_CC0")
 assert mesh.data.uv_layers.get("UVMap")
+primary_uv = mesh.data.uv_layers[0]
+assert primary_uv.name == "UVMap"
+u = [loop.uv.x for loop in primary_uv.data]
+v = [loop.uv.y for loop in primary_uv.data]
+assert max(u)-min(u) > 1.0 and max(v)-min(v) > .6
 assert len(mesh.data.polygons) == sum(len(o.data.polygons) for o in parts)
 assert (OUT / "ToriiFoot_Before_Blender.png").is_file()
 assert (OUT / "ToriiFoot_After_Blender.png").is_file()
