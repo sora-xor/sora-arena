@@ -35,7 +35,7 @@
     ]
   },
   "placement_origin": "Building ground center; local -Y is public frontage toward estate road",
-  "placement_cm": "Replace the MapId 0 Building(P, FVector(650,700,Height), ...) visual at P; use yaw 0 for northern row and 180 for southern row, preserve the deterministic campaign collision box.",
+  "placement_cm": "Replace the MapId 0 Building(P, FVector(650,700,Height), ...) visual at P; after FBX conversion use yaw 180 for northern row and 0 for southern row so public frontage faces the estate road, preserving the deterministic campaign collision box.",
   "collision_guidance": "The three UCX boxes are art-review proxies. Preserve the existing campaign kernel-compatible building collision in WorldBuilder; do not admit this decorative mesh into multiplayer map geometry without a versioned collision update.",
   "license": "Original project-owned geometry; exact user-supplied SORA SVG crest retains user-provided provenance. Linked timber and stone maps are CC0 Poly Haven, and Japanese Noto font is SIL OFL. No purchased assets.",
   "history_reference": [

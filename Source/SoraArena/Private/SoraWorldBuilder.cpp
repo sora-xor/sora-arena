@@ -353,7 +353,11 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
                 // These visual meshes never enter the P2P practice map.
                 const TCHAR* VisualAsset=(I==1||I==3)
                     ?TEXT("SM_Nyaagyu_ProvisionKura"):TEXT("SM_Nyaagyu_EstateDojo");
-                if(ImportedProp(VisualAsset,P,FRotator(0,S>0?0.f:180.f,0)))
+                // FBX conversion reverses the source's frontage axis. Face
+                // both visual entrances toward the central estate road;
+                // Building()'s hidden collision pieces stay at their
+                // established transforms.
+                if(ImportedProp(VisualAsset,P,FRotator(0,S>0?180.f:0.f,0)))
                     for(int32 Piece=BuildingStart;Piece<Pieces.Num()-1;++Piece)
                         if(Pieces[Piece]) Pieces[Piece]->SetVisibility(false);
                 const float TreeScale=.90f+.05f*((I+3*(S+1))%5);

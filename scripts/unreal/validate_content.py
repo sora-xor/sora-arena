@@ -521,6 +521,8 @@ dojo_fbx = (dojo_root / dojo["fbx"]).read_bytes()
 assert dojo_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in dojo_fbx
 assert dojo["name"] in world_builder and dojo["name"] in import_script
 assert "SetVisibility(false)" in world_builder
+assert "FRotator(0,S>0?180.f:0.f,0)" in world_builder
+assert "yaw 180 for northern row and 0 for southern row" in dojo["placement_cm"]
 kura_root = content / "SourceArt/Environment/NyaagyuKura"
 kura = json.loads((kura_root / "manifest.json").read_text())
 assert kura["schema_version"] == 1
@@ -543,6 +545,7 @@ kura_fbx = (kura_root / kura["fbx"]).read_bytes()
 assert kura_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in kura_fbx
 assert kura["name"] in world_builder and kura["name"] in import_script
 assert "(I==1||I==3)" in world_builder
+assert "yaw 180 on north row and 0 on south row" in kura["placement_cm"]
 roof_root = content / "SourceArt/Environment/PolyHaven/GreyRoofTiles"
 roof = json.loads((roof_root / "manifest.json").read_text())
 assert roof["schema_version"] == 1 and roof["asset_id"] == "grey_roof_tiles"

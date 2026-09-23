@@ -39,7 +39,7 @@
     ]
   },
   "placement_origin": "Ground center; local -Y front/loading doors face estate road",
-  "placement_cm": "Use for four of the ten MapId 0 row buildings at existing P with yaw 0 on north row and 180 on south row, preserving all Building() collision pieces.",
+  "placement_cm": "Use for four of the ten MapId 0 row buildings at existing P; after FBX conversion yaw 180 on north row and 0 on south row face loading doors toward the estate road, preserving all Building() collision pieces.",
   "collision_guidance": "UCX proxies in FBX are art-review only. In campaign, hidden original WorldBuilder building components retain collision. Practice map uses none of this mesh.",
   "license": "Original project-owned geometry and review render. Exact user-supplied SORA SVG retains user-provided provenance. Linked timber, stone, grey roof tile, and white plaster PBR maps are CC0 Poly Haven; Noto Japanese font is SIL OFL. No purchased assets.",
   "history_reference": [
