@@ -289,7 +289,10 @@ def eye_patch(name, sign, width, height, depth, crown, material,
             j = (index + 1) % segments
             faces.append((lo + index, hi + index, hi + j, lo + j))
     obj = smooth(surface(name, vertices, faces, material, thickness=thickness))
-    uv = obj.data.uv_layers.new(name="Iris_Pigment_UV")
+    # Unreal samples UV channel 0 in the shared PBR master.  Joined Blender
+    # meshes can have several named layers, so authored pigment coordinates
+    # must occupy the same primary layer as the other source parts.
+    uv = obj.data.uv_layers.new(name="UVMap")
     for loop in obj.data.loops:
         uv.data[loop.index].uv = coordinates[loop.vertex_index]
     return obj
@@ -366,7 +369,7 @@ def muzzle_pad(sign):
         faces.append((front, last + index, last + following) if sign > 0 else
                      (front, last + following, last + index))
     pad = smooth(surface(f"Muzzle_pad_{sign}", vertices, faces, FUR_LIGHT))
-    uv = pad.data.uv_layers.new(name="Muzzle_Fur_UV")
+    uv = pad.data.uv_layers.new(name="UVMap")
     for loop in pad.data.loops:
         point = pad.data.vertices[loop.vertex_index].co
         uv.data[loop.index].uv = ((point.x - .15) * 5,

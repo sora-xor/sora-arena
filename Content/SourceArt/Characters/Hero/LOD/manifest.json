@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "generator": "scripts/art/generate_nyaakoto_lods.py",
-  "source_blend_sha256": "ef04582263c528e08728ed2b179f74f77b8bdc3990fb66f38a6481da1361db43",
-  "lod0_fbx_sha256": "a51572dbe9e21400e55b1d14da93a3e63ccb29fe8f1c74643105f576092d4dd3",
+  "source_blend_sha256": "9e58ab3883b40637ff32ea3802ace3173bbe17e00fb2f2bed19033eab4df75a2",
+  "lod0_fbx_sha256": "b8e1bb5e13f5e6e0f97e48a01c093eb0d3d5a0648bc54d4811aa945caa43792e",
   "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
   "lods": [
     {
       "level": 1,
       "fbx": "SK_NyaagyuSamurai_LOD1.fbx",
-      "sha256": "964ea45721432a1ffcfa75a6bc3b1f0dc7e136d61c25bac4581f8598fe96aecc",
+      "sha256": "96630ad4de12afe5d007f6fd5e07f6ef217cd29d7aa934ded7d17072a1c0699b",
       "source_parts": 421,
       "vertices": 62223,
       "triangles": 85197,
@@ -78,7 +78,7 @@
     {
       "level": 2,
       "fbx": "SK_NyaagyuSamurai_LOD2.fbx",
-      "sha256": "d7f49923211cc783dad7fe73ae9dedc3ce7d2346b3996a97b98e09cffb0ee103",
+      "sha256": "5657e7a5e78c0cc32847ed286a77400288bcb341437f6ade65ea6aa3ebdbd03f",
       "source_parts": 209,
       "vertices": 24715,
       "triangles": 47154,

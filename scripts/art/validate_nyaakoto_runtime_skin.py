@@ -66,7 +66,7 @@ materials = {m.name for m in mesh.data.materials}
 pbr = json.loads((hero / "PBR/manifest.json").read_text())
 assert materials == set(pbr["material_slots"])
 uv = mesh.data.uv_layers.active
-assert uv is not None
+assert uv is not None and len(mesh.data.uv_layers) == 1 and uv.name == "UVMap"
 grey_slot = next(i for i, material in enumerate(mesh.data.materials)
                  if material.name == "M_Hero_GreyTabbyFur")
 grey_loops = [loop_index for polygon in mesh.data.polygons
@@ -74,6 +74,21 @@ grey_loops = [loop_index for polygon in mesh.data.polygons
 grey_uv = [uv.data[index].uv for index in grey_loops]
 assert grey_uv and max(point.x for point in grey_uv) - min(point.x for point in grey_uv) > .2
 assert max(point.y for point in grey_uv) - min(point.y for point in grey_uv) > .2
+# The shared Unreal PBR material samples UV0.  The face/iris once exported
+# authored UVs on channel 2 while channel 0 was a single dark corner texel.
+for name in ("M_Hero_GreyTabbyFur", "M_Hero_WhiteFur", "M_Hero_BlueEye"):
+    slot = next(i for i, material in enumerate(mesh.data.materials)
+                if material.name == name)
+    loops = [index for polygon in mesh.data.polygons
+             if polygon.material_index == slot for index in polygon.loop_indices]
+    points = [uv.data[index].uv for index in loops]
+    assert points and sum(abs(point.x) > 1e-6 or abs(point.y) > 1e-6
+                          for point in points) / len(points) > .95, name
+    if name == "M_Hero_BlueEye":
+        assert .01 <= min(point.x for point in points) < .05
+        assert .95 < max(point.x for point in points) <= .99
+        assert .01 <= min(point.y for point in points) < .05
+        assert .95 < max(point.y for point in points) <= .99
 for material in ("M_Hero_GreyTabbyFur", "M_Hero_WhiteFur", "M_Hero_BlueEye",
                  "M_Hero_OxbloodUrushi", "M_Hero_IndigoSilk", "M_Hero_ScarletSash",
                  "M_Hero_YumiLaminatedBamboo", "M_Hero_RedArrowFletch",

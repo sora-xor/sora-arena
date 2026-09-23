@@ -82,13 +82,13 @@ assert not any(o.name.startswith("Clan_mon_ray_") for o in parts)
 assert any(o.name=="Skull" for o in parts)
 for side in (-1,1):
     iris=bpy.data.objects[f"Eye_iris_{side}"]
-    assert iris.data.uv_layers.get("Iris_Pigment_UV") is not None
+    assert list(iris.data.uv_layers.keys()) == ["UVMap"]
     assert len(iris.data.polygons)>800
     sclera=bpy.data.objects[f"Eye_scleral_crescent_{side}"]
-    assert sclera.data.uv_layers.get("Iris_Pigment_UV") is not None
+    assert list(sclera.data.uv_layers.keys()) == ["UVMap"]
     assert len(sclera.data.polygons)>300
     pad=bpy.data.objects[f"Muzzle_pad_{side}"]
-    assert pad.data.uv_layers.get("Muzzle_Fur_UV") is not None
+    assert list(pad.data.uv_layers.keys()) == ["UVMap"]
     assert len(pad.data.polygons)==256
     assert len(bpy.data.objects[f"Muzzle_mesh_fur_{side}"].data.polygons)==1150
     assert len(bpy.data.objects[f"Eye_lower_lid_shelf_{side}"].data.polygons)==16

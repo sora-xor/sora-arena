@@ -139,7 +139,7 @@ for level in (1, 2):
             bpy.data.objects.remove(obj, do_unlink=True)
             continue
         if not obj.data.uv_layers:
-            uv = obj.data.uv_layers.new(name="Nyaakoto_FurUV")
+            uv = obj.data.uv_layers.new(name="UVMap")
             for loop in obj.data.loops:
                 p = obj.matrix_world @ obj.data.vertices[loop.vertex_index].co
                 uv.data[loop.index].uv = ((p.y + .8) * 2.4, (p.z - .55) * 2.4)

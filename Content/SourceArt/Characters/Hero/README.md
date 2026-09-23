@@ -22,6 +22,11 @@ scleral crescent and a small modeled catchlight. Its original
 editable `.blend`. The close-up Blender review is
 `EyeStudy/Nyaakoto_Eye_Macro_Blender.png`. This replaces the previous flat blue
 eye spheres without adding material slots to the runtime's 23-slot contract.
+The iris, muzzle, and generated fur coordinates now occupy primary `UVMap`
+channel 0 before the source meshes are joined. Unreal's shared PBR master
+samples that channel; an earlier export left the iris on channel 2 and sampled
+only the dark atlas corner in gameplay. The FBX round-trip validator checks
+channel 0 coverage for the eye and fur surfaces.
 `scripts/unreal/import_nyaakoto_pbr.py` verifies the atlas hash and binds it
 as `MI_Nyaakoto_BlueEye.AlbedoMap`; the eye slot uses a neutral tint so its
 painted pigment survives Unreal's material multiplication. The other 22
