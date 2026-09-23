@@ -115,6 +115,11 @@ wiring. Its editor import targets `/Game/ArtReview/Characters`, outside the
 always-cooked runtime asset folder. A separate generated photoreal concept
 image provides an art-direction target for fur, cloth, armor and lighting.
 It is a 2D reference, not a game mesh or evidence of in-engine visual quality.
+An additional unrigged Nyaagyu bust study has editable Blender source and a
+102,071-triangle FBX with 32,155 fur-card triangles. Its Blender round-trip,
+source hashes, bounds and material-slot checks pass. Its render is still visibly
+stylized and it is neither runtime-imported nor a photoreal shipping character;
+rigging, production materials, LODs, and UE 5.8 visual/performance checks remain.
 
 The provisional first-release balance correction changed Arc carbine and
 Clockwork repeater attack cooldowns from 10 to 12 simulation ticks. A clean-lane
