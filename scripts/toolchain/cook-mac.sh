@@ -9,8 +9,8 @@ spec = importlib.util.spec_from_file_location('doctor', Path(sys.argv[1])/'docto
 doctor = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(doctor)
 report = doctor.inspect()
-if not report['build_ready']:
-    sys.exit('Selected Unreal/Xcode cook prerequisites are not ready; run scripts/toolchain/doctor.py for details.')
+if not report['cook_ready']:
+    sys.exit('Selected Unreal/Xcode/Metal cook prerequisites are not ready; run scripts/toolchain/doctor.py for details.')
 if report['engine_mode'] == 'interim_compile_diagnostic':
     print('INTERIM UE 5.8.3 COOK DIAGNOSTIC ONLY; UE 5.8.2 release prerequisites remain unmet.',
           file=sys.stderr)

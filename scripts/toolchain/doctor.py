@@ -91,6 +91,11 @@ def inspect():
     setup_ok = code == 0
     add("xcode_first_launch", "complete" if setup_ok else "incomplete", "setup already complete", setup_ok,
         output if not setup_ok else None)
+    code, metal_output = command(["xcrun", "--sdk", "macosx", "metal", "-v"], env=build_env)
+    metal_ok = code == 0
+    add("metal_toolchain", "available" if metal_ok else "missing",
+        "Metal compiler executable through selected Xcode", metal_ok,
+        metal_output if not metal_ok else None)
 
     blender = shutil.which("blender") or "/Applications/Blender.app/Contents/MacOS/Blender"
     code, output = command([blender, "--version"])
@@ -115,11 +120,13 @@ def inspect():
                      engine_version == INTERIM_UE_VERSION and build_sh.is_file() and editor_ok)
     build_ready = (release_ready if mode == "release" else
                    interim_ready if mode == "interim_compile_diagnostic" else False)
+    cook_ready = build_ready and metal_ok
     note = ("Interim UE 5.8.3 compile/editor diagnostics only; the 5.8.2 release pin and "
             "source-revision/packaging/runtime acceptance remain unmet."
             if interim_mode else
             "Presence/version checks only; successful Unreal compilation, cooking and runtime testing are separate acceptance checks.")
-    return {"build_ready": build_ready, "release_prerequisites_ready": release_ready,
+    return {"build_ready": build_ready, "cook_ready": cook_ready,
+            "release_prerequisites_ready": release_ready,
             "interim_compile_prerequisites_ready": interim_ready,
             "engine_mode": mode, "selected_engine_version": selected_version,
             "release_engine_version": RELEASE_UE_VERSION,
@@ -148,6 +155,8 @@ def main():
               ("READY" if report["interim_compile_prerequisites_ready"] else "NOT READY"))
         print("Selected Mac build mode: " + report["engine_mode"] + " (" +
               ("READY" if report["build_ready"] else "NOT READY") + ")")
+        print("Selected Mac cook prerequisites: " +
+              ("READY" if report["cook_ready"] else "NOT READY"))
         print(report["note"])
     return 0 if report["all_checks_pass"] else 1
 

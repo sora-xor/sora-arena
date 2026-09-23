@@ -39,7 +39,7 @@ class InterimEngineSelection(unittest.TestCase):
             "MajorVersion": 5, "MinorVersion": 8, "PatchVersion": patch_version
         }))
 
-    def inspect(self, interim=None):
+    def inspect(self, interim=None, metal_available=True):
         environment = {
             "UE_ROOT": str(self.engine),
             "SORA_DEVELOPER_DIR": str(self.developer),
@@ -54,6 +54,9 @@ class InterimEngineSelection(unittest.TestCase):
                 return 0, ""
             if args[:4] == ["xcrun", "--sdk", "macosx", "--show-sdk-path"]:
                 return 0, str(self.sdk)
+            if args[:4] == ["xcrun", "--sdk", "macosx", "metal"]:
+                return ((0, "Apple metal version test") if metal_available else
+                        (1, "missing Metal Toolchain"))
             if args[:3] == ["git", "lfs", "version"]:
                 return 0, "git-lfs/3.8.0"
             if len(args) >= 5 and args[:2] == ["git", "-C"] and args[3:5] == ["config", "--local"]:
@@ -77,6 +80,7 @@ class InterimEngineSelection(unittest.TestCase):
         self.assertTrue(report["release_prerequisites_ready"])
         self.assertFalse(report["interim_compile_prerequisites_ready"])
         self.assertTrue(report["build_ready"])
+        self.assertTrue(report["cook_ready"])
         self.assertTrue(report["all_checks_pass"])
 
     def test_583_requires_exact_opt_in(self):
@@ -90,6 +94,7 @@ class InterimEngineSelection(unittest.TestCase):
         self.assertTrue(interim["interim_compile_prerequisites_ready"])
         self.assertFalse(interim["release_prerequisites_ready"])
         self.assertTrue(interim["build_ready"])
+        self.assertTrue(interim["cook_ready"])
         self.assertTrue(interim["all_checks_pass"])
 
     def test_unknown_override_fails_closed(self):
@@ -114,6 +119,13 @@ class InterimEngineSelection(unittest.TestCase):
         self.assertTrue(report["release_prerequisites_ready"])
         self.assertFalse(report["interim_compile_prerequisites_ready"])
         self.assertFalse(report["build_ready"])
+
+    def test_missing_metal_blocks_cook_but_not_code_build(self):
+        self.set_version(3)
+        report = self.inspect("5.8.3", metal_available=False)
+        self.assertTrue(report["build_ready"])
+        self.assertFalse(report["cook_ready"])
+        self.assertFalse(report["all_checks_pass"])
 
 
 if __name__ == "__main__":
