@@ -91,8 +91,8 @@ void ASoraHUD::DrawHUD()
         Panel(40*S,95*S,1190*S,700*S,FLinearColor(.013,.027,.033,.45f));
         const float L=80*S;
         Label(TEXT("剣を、工房を、民の手に。"),L,112*S,.55*S,Gold);
-        Label(NSLOCTEXT("SoraArena", "MenuTitle", "猫柳生").ToString(),L,155*S,2.8*S,Ivory);
-        Label(TEXT("ニャーギュウ ― 異星の債務帝国に挑む、侍猫の物語。"),L,245*S,.65*S,Muted);
+        Label(NSLOCTEXT("SoraArena", "MenuTitle", "猫柳生").ToString(),L,155*S,2.1*S,Ivory);
+        Label(TEXT("ニャーギュウ ― 異星の債務帝国に挑む、侍猫の物語。"),L,257*S,.65*S,Muted);
         FString MenuChapter = TEXT("稽古場");
         if(G->bDeterministicPractice) MenuChapter=TEXT("武芸稽古 / オフライン");
         else if(G->bCampaignComplete&&G->bCampaign) MenuChapter=TEXT("猫柳生、解放済み");
@@ -209,6 +209,8 @@ void ASoraHUD::DrawHUD()
         if(auto* Kernel=GetWorld()->GetGameInstance()->GetSubsystem<UArenaKernelSubsystem>()) Label(Kernel->StatusText,W-690*S,53*S,.34*S,Muted);
         return;
     }
+    Panel(20*S,87*S,FMath::Min(W-40*S,850*S),G->bEnglishSubtitles?125*S:90*S,
+        FLinearColor(.013f,.027f,.033f,.78f));
     Label(G->bCampaign?FSoraCatalog::Get().Chapter(G->ChapterId).Title:FSoraCatalog::Get().Map(G->MapId).Name,30*S,95*S,.82*S,Ivory);
     Label(G->ObjectiveText(),30*S,137*S,.52*S,Teal);
     if(G->bEnglishSubtitles)

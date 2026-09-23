@@ -1,4 +1,5 @@
 #include "SoraWorldBuilder.h"
+#include "SoraCatalog.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "ArenaKernelSubsystem.h"
@@ -16,6 +17,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
 {
     (void)Parameters;
+    if (!TestTrue(TEXT("Offline catalog loads before campaign world construction"),
+        FSoraCatalog::Get().Load()))
+        return false;
     FTestWorldWrapper TestWorld;
     if (!TestTrue(TEXT("A disposable game world can be created"), TestWorld.CreateTestWorld(EWorldType::Game)))
         return false;
