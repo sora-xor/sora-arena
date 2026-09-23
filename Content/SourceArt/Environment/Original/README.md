@@ -25,6 +25,10 @@ the vermilion lacquer. The editable gate has 30 parts and the FBX render mesh
 has 17,800 source triangles; its three UCX proxies and exact SORA SVG relief
 remain unchanged. A narrow UE 5.8.3 Mac diagnostic reimport retained all five
 material zones and cooked without shader errors. The Blender group render is
-a source inspection only. Eye-height gameplay comparison and exact UE 5.8.2 /
-Windows performance gates are still required before calling this visual pass
-finished.
+a source inspection only. The [packaged Estate entrance
+review](../../../../docs/visual-reviews/UE583_Estate_PathQuilt_Entrance_FailedGate.png)
+shows the round posts in gameplay. Their silhouette is an improvement over the
+square blockout, while the bright lacquer, sparse surroundings, and overall
+composition still fall short of the photoreal target. That diagnostic also
+contained a rejected path-atlas candidate; the main game kept its earlier
+path. Exact UE 5.8.2, Windows Nanite, and measured performance gates remain.
