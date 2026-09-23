@@ -5,6 +5,12 @@ with an offline campaign and planned P2P multiplayer settled through native Iroh
 execution proofs. Japanese is the primary language for dialogue and interfaces;
 English subtitles are enabled by default.
 
+The campaign's production-only XOR is a fictional story premise. The supplied
+SORA Nexus article describes a broader monetary design with a purchasing-power
+anchor, reserves, and separate Phoenix investment interests; its editorial
+notes are source context, not game requirements. Arena's proposed XOR bonds
+are a separate gameplay rule and remain disabled for real-value play.
+
 **Current state: foundation prototype, not a finished or qualified game.** The
 Rust reference kernel, payout rules, signed input evidence, bounded prediction
 and rollback, durable evidence recovery, and Unreal C ABI run locally. Unreal game code, original prototype
