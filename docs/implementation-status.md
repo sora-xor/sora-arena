@@ -14,8 +14,10 @@ Japanese Game localization resource passed `SoraArena.Localization.NativeJapanes
 in a UE 5.8.3 `-game` run: Unreal loaded its metadata/resource, selected `ja`
 without the previous English fallback, resolved the Japanese menu title, and
 found the separately authored English subtitle. A separately staged 5.8.3 Mac
-app contains those localization resources and passes a headless startup smoke;
-the pinned 5.8.2 and packaged Japanese UI/subtitle rendering still require checks.
+app contains those resources, passes a headless startup smoke, and passes the
+same Japanese automation inside the package with
+`native=ja active=ja title=猫柳生 english_subtitle=present`. The pinned 5.8.2
+and packaged Japanese UI/subtitle visual readability still require checks.
 The HUD gives Japanese and English campaign subtitles, speaker names and notices
 a minimum text size at 720p and above; content and font-width checks pass, but
 the UE 5.8.2 visual and controller readability pass is still open.

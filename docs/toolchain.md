@@ -121,8 +121,10 @@ different build failure still exits nonzero. UAT staging requires that receipt.
 The isolated 5.8.3 diagnostic then completed UAT stage/package/archive in
 74 seconds; the archived app passed strict `codesign` verification and a
 `-NullRHI -unattended -ExecCmds=Quit` startup smoke. Its pak contains the
-Japanese `Game.locmeta` and `ja/Game.locres`; a full packaged Japanese UI and
-subtitle rendering check remains open. This recovery is not yet validated on
+Japanese `Game.locmeta` and `ja/Game.locres`. The packaged
+`SoraArena.Localization.NativeJapanese` automation also passed, reporting
+`native=ja active=ja title=猫柳生 english_subtitle=present`; a visual Japanese
+UI and subtitle readability check remains open. This recovery is not yet validated on
 the requested 5.8.2 build.
 
 ## Finish Unreal and Xcode provisioning
