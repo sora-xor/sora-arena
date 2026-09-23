@@ -360,8 +360,17 @@ def expected_assets(project_root):
             and terrain.get("max_visual_collision_delta_cm", 100) <= 5
             and terrain.get("material_slots") ==
             ["M_Terrain_Soil_PolyHaven", "M_Terrain_Stone_PolyHaven"]
+            and terrain.get("macro_tint", {}).get("vertex_color_attribute") == "EstateMacroTint"
             and len(terrain.get("tiles", [])) == 32,
             "The modular estate terrain identity changed")
+    require([item.get("channel") for item in terrain.get("palette_files", [])
+             if item.get("role") == "stone"] ==
+            ["diffuse", "normal", "arm", "displacement"],
+            "The scanned stone relief source changed")
+    for item in terrain["palette_files"]:
+        source = source_file(project_root, item["path"])
+        require(hashlib.sha256(source.read_bytes()).hexdigest() == item["sha256"],
+                f"Estate terrain palette source changed: {source}")
     for tier in ("hi", "mac"):
         for y in range(4):
             for x in range(4):
@@ -379,6 +388,9 @@ def expected_assets(project_root):
                 require(hashlib.sha256(fbx.read_bytes()).hexdigest() == tile.get("fbx_sha256"),
                         f"Estate terrain source changed: {fbx}")
                 add(specs, f"{TERRAIN}/{name}.{name}", "StaticMesh")
+    for role in ("Soil", "Stone"):
+        name = f"MI_Nyaagyu_Terrain{role}"
+        add(specs, f"{PALETTE}/{name}.{name}", "MaterialInstanceConstant")
 
     tree_root = source_root / "Environment/PolyHaven/TreeSmall02"
     tree = read_manifest(tree_root / "manifest.json")
@@ -626,6 +638,15 @@ def validate_loaded_assets(unreal, specs):
         parent = asset_library.load_asset(path).get_editor_property("parent")
         require(parent is not None and parent.get_path_name() == base_path,
                 f"Palette instance has the wrong PBR parent: {path}")
+    for role in ("Soil", "Stone"):
+        path = f"{PALETTE}/MI_Nyaagyu_Terrain{role}.MI_Nyaagyu_Terrain{role}"
+        instance = asset_library.load_asset(path)
+        parent = instance.get_editor_property("parent")
+        require(parent is not None and parent.get_path_name() ==
+                f"{PALETTE}/MI_Nyaagyu_{role}.MI_Nyaagyu_{role}"
+                and abs(material_lib.get_material_instance_scalar_parameter_value(
+                    instance, "TerrainVertexTint") - 1.0) < 1e-5,
+                f"Estate terrain instance lost its vertex macro-tint binding: {path}")
     roof_instance = asset_library.load_asset(f"{PALETTE}/MI_Nyaagyu_Kawara.MI_Nyaagyu_Kawara")
     for parameter, channel in (("AlbedoMap", "Diffuse"),
                                ("NormalMap", "nor_dx"), ("ARMMap", "arm")):

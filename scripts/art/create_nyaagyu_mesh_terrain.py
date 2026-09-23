@@ -14,6 +14,7 @@ import math
 from pathlib import Path
 
 import bpy
+import numpy as np
 from mathutils import Vector
 
 
@@ -25,13 +26,14 @@ PALETTE_MANIFEST=json.loads((PALETTE/"manifest.json").read_text())
 assert PALETTE_MANIFEST["asset_license"]=="CC0-1.0"
 BLEND=OUT/"Nyaagyu_Estate_MeshTerrain_Source.blend"
 PREVIEW=OUT/"Nyaagyu_Estate_MeshTerrain_Blender.png"
+DETAIL_PREVIEW=OUT/"Nyaagyu_Estate_StonePath_Detail_Blender.png"
 MANIFEST=OUT/"manifest.json"
 WORLD_X_M=64.0
 WORLD_Y_M=52.0
 TILES_X=TILES_Y=4
 TILE_X_M=WORLD_X_M/TILES_X
 TILE_Y_M=WORLD_Y_M/TILES_Y
-GRID={"hi":(128,104),"mac":(16,13)}  # 12.5 cm / 1 m quad edges
+GRID={"hi":(128,104),"mac":(32,26)}  # 12.5 cm / 50 cm quad edges
 MATERIALS={"soil":("brown_mud_leaves_01",1.30),
            "stone":("stone_floor",1.85)}
 SITES=[(-12.5,-7.0),(0.0,10.0),(12.5,-8.0)]
@@ -78,7 +80,14 @@ def terrain_material(role,asset_id):
         source_files.append({"role":role,"channel":channel,
                              "path":str(path.relative_to(ROOT)),
                              "sha256":item["sha256"],"bytes":item["bytes"]})
-    links.new(images["diffuse"].outputs["Color"],bsdf.inputs["Base Color"])
+    vertex_tint=mat.node_tree.nodes.new("ShaderNodeVertexColor")
+    vertex_tint.layer_name="EstateMacroTint"
+    modulate=mat.node_tree.nodes.new("ShaderNodeMixRGB")
+    modulate.blend_type="MULTIPLY"
+    modulate.inputs[0].default_value=1.0
+    links.new(images["diffuse"].outputs["Color"],modulate.inputs[1])
+    links.new(vertex_tint.outputs["Color"],modulate.inputs[2])
+    links.new(modulate.outputs["Color"],bsdf.inputs["Base Color"])
     arm=mat.node_tree.nodes.new("ShaderNodeSeparateColor")
     links.new(images["arm"].outputs["Color"],arm.inputs["Color"])
     links.new(arm.outputs["Green"],bsdf.inputs["Roughness"])
@@ -106,6 +115,22 @@ def terrain_material(role,asset_id):
 
 soil=terrain_material("soil","brown_mud_leaves_01")
 stone=terrain_material("stone","stone_floor")
+DISPLACEMENT_SHA256="ffcbb3ce31a7b92178f1441076b48d6b6e04c851fdd48edbef48595784717a21"
+DISPLACEMENT_UPSTREAM_MD5="8413a85bb5748cabf486b5593daf7c33"
+displacement_path=PALETTE/"stone_floor/stone_floor_disp_2k.png"
+assert displacement_path.stat().st_size==6424960
+assert hashlib.sha256(displacement_path.read_bytes()).hexdigest()==DISPLACEMENT_SHA256
+source_files.append({"role":"stone","channel":"displacement",
+                     "path":str(displacement_path.relative_to(ROOT)),
+                     "sha256":DISPLACEMENT_SHA256,"bytes":6424960,
+                     "upstream_md5":DISPLACEMENT_UPSTREAM_MD5,
+                     "url":"https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_floor/stone_floor_disp_2k.png"})
+displacement_image=bpy.data.images.load(str(displacement_path),check_existing=True)
+displacement_image.colorspace_settings.name="Non-Color"
+width,height=displacement_image.size
+pixels=np.empty(len(displacement_image.pixels),dtype=np.float32)
+displacement_image.pixels.foreach_get(pixels)
+displacement_values=pixels.reshape((height,width,4))[:,:,0]
 # FBX files retain only slot identities; their PBR maps are rebound to the
 # project's already licensed UE palette at import. A plain export material
 # prevents Blender's FBX writer from embedding machine-specific Video paths.
@@ -122,6 +147,52 @@ def smoothstep(a,b,value):
     return t*t*(3-2*t)
 
 
+def value_noise(x,y,cell):
+    gx=x/cell;gy=y/cell
+    ix=math.floor(gx);iy=math.floor(gy)
+    fx=smoothstep(0,1,gx-ix);fy=smoothstep(0,1,gy-iy)
+    def corner(cx,cy):
+        h=((cx*73856093)^(cy*19349663))&0xffffffff
+        h=(h^(h>>13))*1274126177&0xffffffff
+        return h/0xffffffff
+    a=corner(ix,iy)*(1-fx)+corner(ix+1,iy)*fx
+    b=corner(ix,iy+1)*(1-fx)+corner(ix+1,iy+1)*fx
+    return a*(1-fy)+b*fy
+
+
+def macro_tint(x,y,role):
+    # World-space 4–16 m color patches break the short scan repeat and remain
+    # identical on both LODs and at every tile edge. No extra texture lookup.
+    broad=value_noise(x+.17*y,y-.17*x,15.0)
+    middle=value_noise(.7*x-.71*y,.71*x+.7*y,6.4)
+    fine=value_noise(x-.23*y,y+.23*x,3.8)
+    v=.48*broad+.36*middle+.16*fine-.5
+    if role=="soil":
+        channels=(.91+.58*v,.91+.46*v,.90+.52*v)
+    else:
+        channels=(.93+.38*v,.93+.37*v,.92+.35*v)
+    return tuple(max(.55,min(1.0,channel)) for channel in channels)+(1,)
+
+
+def path_half_width(x):
+    # A laid stone route follows the estate axis, but its soil edge is worn
+    # rather than a ruler-straight six-metre band.
+    return 3.08+.14*math.sin(x*.37)+.07*math.sin(x*1.21+.8)
+
+
+def scan_displacement(x,y):
+    """Bilinearly sample the licensed stone scan at its measured 1.85 m scale."""
+    u=(x/MATERIALS["stone"][1])%1*width-.5
+    v=(y/MATERIALS["stone"][1])%1*height-.5
+    x0=math.floor(u);y0=math.floor(v)
+    tx=u-x0;ty=v-y0
+    a=displacement_values[y0%height,x0%width]
+    b=displacement_values[y0%height,(x0+1)%width]
+    c=displacement_values[(y0+1)%height,x0%width]
+    d=displacement_values[(y0+1)%height,(x0+1)%width]
+    return float((a*(1-tx)+b*tx)*(1-ty)+(c*(1-tx)+d*tx)*ty)
+
+
 def elevation(x,y):
     """Global meters. Cosmetic displacement remains a few centimeters only."""
     road_mask=smoothstep(3.0,4.2,abs(y))
@@ -131,6 +202,11 @@ def elevation(x,y):
            +.0027*math.sin(x*1.31+y*.76)*math.sin(y*1.16-x*.21))
     fine=.0009*math.sin(x*16.1+y*3.3)*math.sin(y*18.4-x*2.7)
     z=.018+(broad+fine)*road_mask*pad_mask
+    # The photographed stone map supplies matched color, normal, and height.
+    # Only its low-amplitude profile enters geometry; gameplay stays flat.
+    stone_interior=1-smoothstep(path_half_width(x)-.20,path_half_width(x),abs(y))
+    if stone_interior:
+        z+=.006*(scan_displacement(x,y)-.5)*stone_interior
     # Banks flank two narrative sluice positions, without an actual trench,
     # hole, or gameplay slope. Peak lip is < 4 cm above collision-ground Z=0.
     for sx,sy in SITES[:2]:
@@ -159,7 +235,8 @@ def create_tile(tier,ix,iy):
             a=gy*(nx+1)+gx
             faces.append((a,a+1,a+nx+2,a+nx+1))
             world_y=cy+(-TILE_Y_M/2+(gy+.5)*TILE_Y_M/ny)
-            material_indices.append(1 if abs(world_y)<=3.3 else 0)
+            world_x=cx+(-TILE_X_M/2+(gx+.5)*TILE_X_M/nx)
+            material_indices.append(1 if abs(world_y)<=path_half_width(world_x) else 0)
     name=f"SourceTerrain_{tier}_X{ix}_Y{iy}"
     data=bpy.data.meshes.new(name)
     data.from_pydata(vertices,[],faces)
@@ -173,6 +250,8 @@ def create_tile(tier,ix,iy):
     for mat in (soil,stone):
         data.materials.append(mat)
     uv=data.uv_layers.new(name="UV0_ProjectWorldScale")
+    color=data.color_attributes.new(name="EstateMacroTint",type="FLOAT_COLOR",domain="CORNER")
+    data.color_attributes.active_color=color
     for index,poly in enumerate(data.polygons):
         mi=material_indices[index]
         poly.material_index=mi
@@ -181,6 +260,7 @@ def create_tile(tier,ix,iy):
         for loop_index in poly.loop_indices:
             p=data.vertices[data.loops[loop_index].vertex_index].co
             uv.data[loop_index].uv=((cx+p.x)/tile_size,(cy+p.y)/tile_size)
+            color.data[loop_index].color=macro_tint(cx+p.x,cy+p.y,"stone" if mi else "soil")
     return obj,cx,cy
 
 
@@ -209,7 +289,8 @@ for tier in ("hi","mac"):
             bpy.ops.export_scene.fbx(filepath=str(fbx),use_selection=True,
                                      object_types={"MESH"},apply_unit_scale=True,
                                      global_scale=1.0,axis_forward="-Y",axis_up="Z",
-                                     bake_anim=False,path_mode="STRIP")
+                                     bake_anim=False,path_mode="STRIP",
+                                     colors_type="LINEAR",prioritize_active_color=True)
             bpy.data.objects.remove(temp,do_unlink=True)
             world_bounds_cm=[round((cx-TILE_X_M/2)*100),round((cy-TILE_Y_M/2)*100),
                              round((cx+TILE_X_M/2)*100),round((cy+TILE_Y_M/2)*100)]
@@ -256,6 +337,17 @@ scene.render.image_settings.file_format="PNG"
 scene.view_settings.view_transform="AgX"
 scene.render.filepath=str(PREVIEW)
 bpy.ops.render.render(write_still=True)
+# A second, eye-height review exposes the scan scale, stone joints, and
+# transition into the soil. The overview alone cannot reveal those details.
+cam_data.type="PERSP";cam_data.lens=40
+cam.location=(3.2,-3.8,1.45)
+cam.rotation_euler=(Vector((-2.0,-.2,.06))-cam.location).to_track_quat("-Z","Y").to_euler()
+sun_data.angle=.085
+scene.cycles.samples=32
+scene.render.resolution_x=1600
+scene.render.resolution_y=1000
+scene.render.filepath=str(DETAIL_PREVIEW)
+bpy.ops.render.render(write_still=True)
 for image in bpy.data.images:
     if image.source=="FILE":
         image.filepath=bpy.path.relpath(image.filepath,start=str(OUT))
@@ -267,15 +359,19 @@ manifest={
     "validator":"scripts/art/validate_nyaagyu_mesh_terrain.py",
     "source_blend":BLEND.name,"source_blend_sha256":sha(BLEND),
     "preview":PREVIEW.name,"preview_sha256":sha(PREVIEW),
+    "detail_preview":DETAIL_PREVIEW.name,"detail_preview_sha256":sha(DETAIL_PREVIEW),
     "units":"meters in Blender; centimeters in UE placement records",
     "world_xy_cm":[-3200,-2600,3200,2600],
     "tile_layout":[TILES_X,TILES_Y],
     "tile_size_cm":[1600,1300],
     "density":{"hi":{"quads_per_tile":[128,104],"quad_spacing_cm":12.5,
                       "intended":"Windows Nanite candidate"},
-               "mac":{"quads_per_tile":[16,13],"quad_spacing_cm":100,
+               "mac":{"quads_per_tile":[32,26],"quad_spacing_cm":50,
                       "intended":"M1 Ultra conventional mesh fallback candidate"}},
     "height_function":"scripts/art/create_nyaagyu_mesh_terrain.py:elevation",
+    "macro_tint":{"vertex_color_attribute":"EstateMacroTint",
+                  "function":"scripts/art/create_nyaagyu_mesh_terrain.py:macro_tint",
+                  "intended":"Terrain-only vertex-color albedo modulation; no extra texture fetch"},
     "max_visual_collision_delta_cm":4.5,
     "material_slots":[soil.name,stone.name],
     "palette_manifest":"../PolyHaven/manifest.json",

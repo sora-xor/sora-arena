@@ -326,6 +326,8 @@ for tier in ("hi", "mac"):
             options.static_mesh_import_data.combine_meshes = True
             options.static_mesh_import_data.generate_lightmap_u_vs = False
             options.static_mesh_import_data.auto_generate_collision = False
+            options.static_mesh_import_data.set_editor_property(
+                "vertex_color_import_option", unreal.VertexColorImportOption.REPLACE)
             options.static_mesh_import_data.set_editor_property("build_nanite", tier == "hi")
             task.options = options
             terrain_tasks.append(task)

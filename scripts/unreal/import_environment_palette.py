@@ -89,7 +89,15 @@ for index,(parameter,channel) in enumerate([('AlbedoMap','Diffuse'),('NormalMap'
     link(obj,'',call,'TextureObject');link(tile,'RGB',call,'TextureSize');projected[channel]=call
 colored=node(mat,unreal.MaterialExpressionMultiply,-250,-200)
 link(projected['Diffuse'],'XYZ Texture',colored,'A');link(tint,'RGB',colored,'B')
-output(colored,'',unreal.MaterialProperty.MP_BASE_COLOR)
+vertex=node(mat,unreal.MaterialExpressionVertexColor,-550,-760)
+macro_strength=node(mat,unreal.MaterialExpressionScalarParameter,-330,-760,
+                    parameter_name='TerrainVertexTint',default_value=0.0)
+macro_colored=node(mat,unreal.MaterialExpressionMultiply,0,-440)
+link(colored,'',macro_colored,'A');link(vertex,'RGB',macro_colored,'B')
+macro_blend=node(mat,unreal.MaterialExpressionLinearInterpolate,200,-200)
+link(colored,'',macro_blend,'A');link(macro_colored,'',macro_blend,'B')
+link(macro_strength,'',macro_blend,'Alpha')
+output(macro_blend,'',unreal.MaterialProperty.MP_BASE_COLOR)
 output(projected['nor_dx'],'XYZ Texture',unreal.MaterialProperty.MP_NORMAL)
 for index,(component,prop) in enumerate([('r',unreal.MaterialProperty.MP_AMBIENT_OCCLUSION),('g',unreal.MaterialProperty.MP_ROUGHNESS),('b',unreal.MaterialProperty.MP_METALLIC)]):
     mask=node(mat,unreal.MaterialExpressionComponentMask,-250,index*120+160,r=component=='r',g=component=='g',b=component=='b',a=False)
@@ -110,6 +118,19 @@ for record in surface_assets:
         if actual is None or actual.get_path_name()!=expected.get_path_name():
             raise RuntimeError('Texture parameter did not bind: '+param+' for '+record['role'])
     size=record['tile_size_cm'];lib.set_material_instance_vector_parameter_value(instance,'TileSize',unreal.LinearColor(size,size,size,1))
+    assets.save_loaded_asset(instance)
+
+# Only terrain receives world-space vertex macro tint. Architectural stone and
+# soil instances keep the photographed palette unchanged.
+for role in ('Soil','Stone'):
+    name='MI_Nyaagyu_Terrain'+role
+    path=DEST+'/'+name
+    instance=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,DEST,unreal.MaterialInstanceConstant,unreal.MaterialInstanceConstantFactoryNew())
+    base=assets.load_asset(DEST+'/MI_Nyaagyu_'+role)
+    lib.set_material_instance_parent(instance,base)
+    lib.set_material_instance_scalar_parameter_value(instance,'TerrainVertexTint',1.0)
+    if abs(lib.get_material_instance_scalar_parameter_value(instance,'TerrainVertexTint')-1.0)>1e-5:
+        raise RuntimeError('Terrain vertex macro tint did not bind: '+name)
     assets.save_loaded_asset(instance)
 
 sky=create_material('M_Nyaagyu_Sky')

@@ -34,13 +34,15 @@ assert manifest["world_xy_cm"]==[-3200,-2600,3200,2600]
 assert manifest["tile_layout"]==[4,4]
 assert manifest["tile_size_cm"]==[1600,1300]
 assert manifest["density"]["hi"]["quads_per_tile"]==[128,104]
-assert manifest["density"]["mac"]["quads_per_tile"]==[16,13]
+assert manifest["density"]["mac"]["quads_per_tile"]==[32,26]
 assert manifest["density"]["hi"]["quad_spacing_cm"]==12.5
-assert manifest["density"]["mac"]["quad_spacing_cm"]==100
+assert manifest["density"]["mac"]["quad_spacing_cm"]==50
+assert manifest["macro_tint"]["vertex_color_attribute"]=="EstateMacroTint"
 assert manifest["palette_license"].startswith("CC0-1.0")
 assert "No UE 5.8.2 import" in manifest["limitations"]
 for filename,field in ((manifest["source_blend"],"source_blend_sha256"),
-                       (manifest["preview"],"preview_sha256")):
+                       (manifest["preview"],"preview_sha256"),
+                       (manifest["detail_preview"],"detail_preview_sha256")):
     path=out/filename
     assert path.stat().st_size>1000,path
     assert hashlib.sha256(path.read_bytes()).hexdigest()==manifest[field],path
@@ -48,7 +50,11 @@ palette=root/"Content/SourceArt/Environment/PolyHaven/manifest.json"
 assert (out/manifest["palette_manifest"]).resolve()==palette.resolve()
 palette_manifest=json.loads(palette.read_text())
 assert palette_manifest["asset_license"]=="CC0-1.0"
-assert len(manifest["palette_files"])==6
+assert len(manifest["palette_files"])==7
+displacement=[item for item in manifest["palette_files"]
+              if item["role"]=="stone" and item["channel"]=="displacement"]
+assert len(displacement)==1
+assert displacement[0]["upstream_md5"]=="8413a85bb5748cabf486b5593daf7c33"
 for item in manifest["palette_files"]:
     path=root/item["path"]
     assert path.stat().st_size==item["bytes"],path
@@ -101,6 +107,12 @@ for tier in ("hi","mac"):
             assert len(obj.data.materials)==2
             assert [m.name for m in obj.data.materials]==manifest["material_slots"]
             assert len(obj.data.uv_layers)==1
+            tint=obj.data.color_attributes.get("EstateMacroTint")
+            assert tint is not None and tint.domain=="CORNER"
+            assert len(tint.data)==len(obj.data.loops)
+            red=[sample.color[0] for sample in tint.data]
+            assert .55<min(red)<1.15 and .65<max(red)<1.2
+            assert max(red)-min(red)>.06
             fbx=out/t["fbx"]
             assert fbx.stat().st_size>2000
             fbx_bytes=fbx.read_bytes()
@@ -108,7 +120,7 @@ for tier in ("hi","mac"):
             assert hashlib.sha256(fbx_bytes).hexdigest()==t["fbx_sha256"]
             assert b"/Users/" not in fbx_bytes
             before=set(bpy.data.objects)
-            bpy.ops.import_scene.fbx(filepath=str(fbx))
+            bpy.ops.import_scene.fbx(filepath=str(fbx),colors_type="LINEAR")
             imported=[o for o in set(bpy.data.objects)-before if o.type=="MESH"]
             assert len(imported)==1,[o.name for o in imported]
             model=imported[0]
@@ -122,6 +134,12 @@ for tier in ("hi","mac"):
             assert tri==t["triangles"],(tier,ix,iy,tri)
             slots={s.material.name.split(".",1)[0] for s in model.material_slots}
             assert slots==set(manifest["material_slots"]),slots
+            imported_tint=model.data.color_attributes.get("EstateMacroTint")
+            assert imported_tint is not None and imported_tint.domain=="CORNER"
+            assert len(imported_tint.data)==len(model.data.loops)
+            imported_red=[sample.color[0] for sample in imported_tint.data]
+            assert abs(min(red)-min(imported_red))<.001
+            assert abs(max(red)-max(imported_red))<.001
             bpy.data.objects.remove(model,do_unlink=True)
 
 # Exact edge heights are independently checked at all thirty internal seams.
@@ -139,15 +157,22 @@ for tier in ("hi","mac"):
                 for i in range(nx+1):
                     assert abs(here[ny*(nx+1)+i].co.z-north[i].co.z)<1e-6
 
-# Every Mac vertex coincides with the corresponding eighth dense sample.
+# The road is no longer a flat blockout: the licensed stone displacement
+# creates measurable (but sub-centimetre) relief in its central band.
+stone_tile=mesh_by_key[("hi",1,1)]
+stone_height_cm=[v.co.z*100 for v in stone_tile.data.vertices
+                 if abs(v.co.y+stone_tile.location.y)<2]
+assert max(stone_height_cm)-min(stone_height_cm)>.25
+
+# Every Mac vertex coincides with the corresponding fourth dense sample.
 for iy in range(4):
     for ix in range(4):
         hi=mesh_by_key[("hi",ix,iy)].data.vertices
         low=mesh_by_key[("mac",ix,iy)].data.vertices
-        for j in range(14):
-            for i in range(17):
-                a=hi[(j*8)*129+i*8].co
-                b=low[j*17+i].co
+        for j in range(27):
+            for i in range(33):
+                a=hi[(j*4)*129+i*4].co
+                b=low[j*33+i].co
                 assert all(abs(a[k]-b[k])<1e-6 for k in range(3))
 
 print("NYAAGYU_MESH_TERRAIN_FBX_ROUNDTRIP_PASS",len(tiles),

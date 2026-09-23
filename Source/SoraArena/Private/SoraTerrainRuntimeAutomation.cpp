@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
@@ -44,9 +45,11 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     TSet<FString> SeenTiles;
     TMap<FString, FVector> TileLocations;
     bool bCollisionGroundPresent = false;
+    bool bBlockoutRoadPresent = false;
     for (UStaticMeshComponent* Component : CampaignMeshes)
     {
         if (!Component) continue;
+        bBlockoutRoadPresent |= Component->GetName().StartsWith(TEXT("CentralRoad"));
         if (Component->GetName().StartsWith(TEXT("Ground")) &&
             Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics)
             bCollisionGroundPresent = true;
@@ -66,6 +69,17 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         TileLocations.Add(Name, Component->GetRelativeLocation());
         TestEqual(*FString::Printf(TEXT("Terrain asset %s"), *Name), Mesh->GetPathName(),
             FString::Printf(TEXT("/Game/Generated/Environment/Terrain/%s.%s"), *Name, *Name));
+        for (int32 SlotIndex = 0; SlotIndex < Mesh->GetStaticMaterials().Num(); ++SlotIndex)
+        {
+            const FString Slot = Mesh->GetStaticMaterials()[SlotIndex].MaterialSlotName.ToString();
+            const FString Role = Slot.Contains(TEXT("M_Terrain_Soil")) ? TEXT("Soil") : TEXT("Stone");
+            const FString MaterialName = TEXT("MI_Nyaagyu_Terrain") + Role;
+            const UMaterialInterface* Bound = Component->GetMaterial(SlotIndex);
+            TestNotNull(*FString::Printf(TEXT("Terrain %s material %d is bound"), *Name, SlotIndex), Bound);
+            if (Bound)
+                TestEqual(*FString::Printf(TEXT("Terrain %s material %d uses macro-tint instance"), *Name, SlotIndex),
+                    Bound->GetPathName(), FString::Printf(TEXT("/Game/Generated/Environment/%s.%s"), *MaterialName, *MaterialName));
+        }
 #if WITH_EDITORONLY_DATA
 #if PLATFORM_MAC
         TestFalse(*FString::Printf(TEXT("Mac tile %s uses conventional geometry"), *Name),
@@ -88,6 +102,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     }
     TestEqual(TEXT("Campaign has exactly sixteen authored terrain tiles"), TerrainCount, 16);
     TestTrue(TEXT("Separate flat gameplay ground still supplies collision"), bCollisionGroundPresent);
+    TestFalse(TEXT("Raised blockout road must not hide photographed terrain path"), bBlockoutRoadPresent);
 
     for (int32 Y = 0; Y < 4; ++Y)
     for (int32 X = 0; X < 4; ++X)

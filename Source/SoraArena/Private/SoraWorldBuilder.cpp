@@ -162,8 +162,8 @@ void ASoraWorldBuilder::NyaagyuTerrain()
 #else
     const TCHAR* Tier=TEXT("HI");
 #endif
-    auto* Soil=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_Soil.MI_Nyaagyu_Soil"),nullptr,LOAD_NoWarn);
-    auto* Stone=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_Stone.MI_Nyaagyu_Stone"),nullptr,LOAD_NoWarn);
+    auto* Soil=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_TerrainSoil.MI_Nyaagyu_TerrainSoil"),nullptr,LOAD_NoWarn);
+    auto* Stone=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_TerrainStone.MI_Nyaagyu_TerrainStone"),nullptr,LOAD_NoWarn);
     if (!Soil || !Stone)
         UE_LOG(LogTemp,Error,TEXT("SORA estate terrain needs the pinned CC0 soil and stone PBR materials"));
     for(int32 Y=0;Y<4;++Y)
@@ -310,7 +310,10 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
     const FLinearColor Accent=FSoraCatalog::Get().Map(MapId).Accent;
     Box(TEXT("Ground"),FVector(0,0,-50),FVector(6400,5200,100),FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
     if(MapId==0) NyaagyuTerrain();
-    Box(TEXT("CentralRoad"),FVector(0,0,2),FVector(5600,660,5),FLinearColor(.29f,.30f,.28f),false,FRotator::ZeroRotator,TEXT("Stone"));
+    // The imported estate tiles already carry the photographed stone route.
+    // The old raised blockout covered that path and hid its relief entirely.
+    if(MapId!=0)
+        Box(TEXT("CentralRoad"),FVector(0,0,2),FVector(5600,660,5),FLinearColor(.29f,.30f,.28f),false,FRotator::ZeroRotator,TEXT("Stone"));
     for(int32 S:{-1,1})
     {
         Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,0,220),FVector(100,5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
