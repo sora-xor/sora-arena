@@ -961,6 +961,16 @@ bool UArenaWalletSubsystem::RequestSignTransaction(const FString& ScaffoldBase64
     const TSharedPtr<FJsonObject>* Executable = nullptr;
     if (!Json->TryGetStringField(TEXT("schema"), Schema) || Schema != TEXT("iroha.detached_transaction_scaffold.v1") || !Json->TryGetStringField(TEXT("authority"), Authority) || Authority != ApprovedAccount || !Json->TryGetStringField(TEXT("network_id"), Network) || Network != NetworkLiteral || !Json->TryGetStringField(TEXT("payload_bytes_b64"), PayloadBase64) || !FBase64::Decode(PayloadBase64, Payload) || Payload.IsEmpty() || Payload.Num() > ArenaConnect::MaxFrameBytes || FBase64::Encode(Payload) != PayloadBase64 || !Json->TryGetObjectField(TEXT("executable"), Executable) || !(*Executable)->TryGetStringField(TEXT("kind"), Kind) || Kind != TEXT("native_instruction") || !(*Executable)->TryGetStringField(TEXT("name"), Name) || !ArenaConnect::IsAllowedInstruction(Name) || AppSequence == MAX_uint64)
     { SetState(State, TEXT("アカウント・ネットワーク・取引種別が一致しないため署名を中止しました。")); return false; }
+    // A signed byte string can be submitted outside this game. Until native
+    // Arena qualification, block the signing request itself on every network
+    // except the explicitly selected isolated loopback test deployment.
+    FString TestOrigin, TestNetwork;
+    if (!ArenaConnect::ReadIsolatedTestConfig(TestOrigin, TestNetwork)
+        || TestOrigin != Origin || TestNetwork != NetworkLiteral)
+    {
+        SetState(State, TEXT("対戦決済は未認証です。明示された隔離テスト網以外では取引署名を停止します。"));
+        return false;
+    }
     if (ArenaConnect::RequiresQualifiedTermsReview(Name))
     {
         SetState(State, Name == TEXT("JoinGameSessionV1")

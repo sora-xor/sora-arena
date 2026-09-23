@@ -54,10 +54,18 @@ required. Arena equipment NFTs are returnable: `StakeGameItemV1` is explicitly
 rejected by the Arena wallet allowlist, even if a general-purpose bridge supports
 that instruction. Death does not transfer an equipment NFT. No transaction is
 sent just by pairing.
+Every allowlisted game/NFT signing request now requires an explicitly enabled
+isolated loopback test Torii whose origin and canonical network ID exactly match
+the approved wallet session. Shipping builds cannot satisfy that gate, including
+for `OpenGameSessionV1`, listing, cancellation and payout claims. A signed
+transaction can be submitted outside the game, so the submission-only gate was
+insufficient to keep real-value operations disabled during research. Pairing
+itself does not authorize a signature.
 `JoinGameSessionV1` and `BuyNftV1` are decode-allowlisted but their signing
 requests stop before `SignRequestTx`: neither the authenticated game-session
 terms nor a verified live NFT offer is available to this UI yet. This applies
-to both externally supplied scaffolds and the native transaction builder.
+to both externally supplied scaffolds and the native transaction builder, even
+on the isolated test network.
 
 ## Build and configure
 

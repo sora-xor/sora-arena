@@ -163,7 +163,9 @@ recovery record is synced before POST; after restart it permits only exact-hash
 reconciliation under the same loopback network configuration. The portable
 C++17 codec passes 23 checks. An Unreal editor build, crash/restart, live
 pairing, submission and recovery run remain outstanding. Shipping builds keep
-submission disabled.
+both signing and submission of allowlisted game/NFT transactions disabled.
+Research signing requires an explicit isolated loopback Torii and exact network
+match before any wallet request, since signed bytes could be submitted elsewhere.
 The menu now presents the existing Japanese transaction state with an English
 status explanation, without displaying raw inspection JSON. Exact typed
 join, bond and NFT purchase terms still need a game-facing review flow: the
