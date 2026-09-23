@@ -546,7 +546,7 @@ void ASoraCharacter::ResolveCommittedStrike()
         BestDistance=Distance; TargetActor=Candidate; TargetHit=Hit;
     }
     // One intentional contact, followed by recovery, instead of a full-body
-    multi-hit spin. Yari remains a narrow thrust; naginata has a wider cut.
+    // multi-hit spin. Yari remains a narrow thrust; naginata has a wider cut.
     if(TargetActor)
     {
         const float Applied=UGameplayStatics::ApplyPointDamage(TargetActor,
