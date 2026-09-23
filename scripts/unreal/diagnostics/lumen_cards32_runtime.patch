@@ -1,0 +1,30 @@
+diff --git a/Source/SoraArena/Private/SoraWorldBuilder.cpp b/Source/SoraArena/Private/SoraWorldBuilder.cpp
+--- a/Source/SoraArena/Private/SoraWorldBuilder.cpp
++++ b/Source/SoraArena/Private/SoraWorldBuilder.cpp
+@@ -18,3 +18,5 @@
+ #include "Engine/World.h"
++#include "Misc/CommandLine.h"
++#include "Misc/Parse.h"
+ #include "Engine/TextureCube.h"
+ #include "ArenaKernelSubsystem.h"
+@@ -81,7 +83,19 @@ void ASoraWorldBuilder::Building(FVector L, FVector Size, FLinearColor Wall, bool HighTech)
+ }
+ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRotator Rotation, float Scale)
+ {
+-    const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Props/%s.%s"),*Name,*Name);
++    FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Props/%s.%s"),*Name,*Name);
++#if !UE_BUILD_SHIPPING
++    // Diagnostic only: select separately rebuilt cards without changing
++    // materials, placement, collision, or the production building packages.
++    if (FParse::Param(FCommandLine::Get(),TEXT("SoraReviewLumenCards32")) &&
++        (Name==TEXT("SM_Nyaagyu_EstateDojo") || Name==TEXT("SM_Nyaagyu_ProvisionKura")))
++    {
++        const FString ReviewName=Name+TEXT("_LumenCards32");
++        Path=FString::Printf(TEXT("/Game/Generated/Environment/ArtReview/Diagnostics/LumenCards32/%s.%s"),
++            *ReviewName,*ReviewName);
++        UE_LOG(LogTemp,Display,TEXT("SORA_LUMEN_CARDS32_SELECTED: %s -> %s"),*Name,*Path);
++    }
++#endif
+     auto* Asset=LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
+     if (!Asset)
+     {
