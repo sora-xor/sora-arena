@@ -63,6 +63,15 @@ for name in ("Horse_barrel","Horse_chest","Horse_haunch","Horse_long_head",
              "Tazuna_rein_-1","Tazuna_rein_1"):
     assert any(obj.name==name for obj in parts),name
 assert len([obj for obj in parts if "_hoof" in obj.name])==4
+assert len([obj for obj in parts if obj.name.endswith("_continuous_limb")])==4
+assert len(collection.objects["Horse_neck"].data.vertices)==6*28
+assert len(collection.objects["Horse_long_head"].data.vertices)==5*28
+for side in (-1,1):
+    for label in ("fore","hind"):
+        limb=collection.objects[f"Horse_{label}_{side}_continuous_limb"]
+        hoof=collection.objects[f"Horse_{label}_{side}_hoof"]
+        assert len(limb.data.vertices)==7*20 and len(hoof.data.vertices)==2*20
+        assert [mat.name for mat in limb.data.materials]==["M_Horse_SealBrownCoat","M_Horse_DarkPoints"]
 assert all(any(obj.name==f"Horse_eye_{side}" for obj in parts) for side in (-1,1))
 triangles=sum(len(poly.vertices)-2 for obj in parts for poly in obj.data.polygons)
 assert triangles==manifest["source_triangles"] and 8000<triangles<250000

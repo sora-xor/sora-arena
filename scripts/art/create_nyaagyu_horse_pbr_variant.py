@@ -25,6 +25,7 @@ MATERIALS = json.loads((PBR / "manifest.json").read_text())
 BLEND = PBR / "Nyaagyu_HorseAndTack_PBR.blend"
 FBX = PBR / "SM_Nyaagyu_HorseAndTack_PBR.fbx"
 REVIEW = PBR / "Nyaagyu_HorseAndTack_PBR_Review.png"
+BEFORE_ANATOMY = PBR / "Nyaagyu_HorseAndTack_PBR_BeforeAnatomy.png"
 MANIFEST = PBR / "variant_manifest.json"
 
 
@@ -78,7 +79,10 @@ for obj in meshes:
     uv_layer = obj.data.uv_layers.get("Nyaagyu_PBR_UV") or obj.data.uv_layers.new(name="Nyaagyu_PBR_UV")
     for poly in obj.data.polygons:
         material = obj.data.materials[poly.material_index].name
-        scale = 6.0 if material.startswith("M_Horse_") else 8.0
+        if material.startswith("M_Horse_"):
+            scale = 4.0 if obj.name in {"Horse_neck", "Horse_long_head"} or "_continuous_limb" in obj.name else 6.0
+        else:
+            scale = 8.0
         normal = obj.matrix_world.to_3x3() @ poly.normal
         axis = max(range(3), key=lambda i: abs(normal[i]))
         for loop_index in poly.loop_indices:
@@ -218,6 +222,8 @@ record = {
     "blend": BLEND.name, "blend_sha256": sha(BLEND),
     "fbx": FBX.name, "fbx_sha256": sha(FBX),
     "review": REVIEW.name, "review_sha256": sha(REVIEW),
+    "before_anatomy_review": BEFORE_ANATOMY.name,
+    "before_anatomy_review_sha256": sha(BEFORE_ANATOMY),
     "source_parts": len(meshes),
     "source_triangles": sum(len(poly.vertices) - 2 for obj in meshes for poly in obj.data.polygons),
     "source_geometry_sha256": geometry_before,

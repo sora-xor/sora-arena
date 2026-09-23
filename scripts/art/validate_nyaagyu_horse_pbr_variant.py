@@ -71,7 +71,8 @@ assert record["unreal_asset"] == (
 )
 for filename, key in ((record["blend"], "blend_sha256"),
                       (record["fbx"], "fbx_sha256"),
-                      (record["review"], "review_sha256")):
+                      (record["review"], "review_sha256"),
+                      (record["before_anatomy_review"], "before_anatomy_review_sha256")):
     path = PBR / filename
     assert path.stat().st_size > 1000
     assert sha(path) == record[key], path

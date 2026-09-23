@@ -1,7 +1,7 @@
 # Nyaagyu horse and tack PBR study
 
 This is a separate material/UV variant of the [original editable horse](../README.md).
-It keeps the original 135 mesh parts, 69,392 triangles, 17 material slots,
+It keeps the original 111 mesh parts, 61,936 triangles, 17 material slots,
 six named tack/rider anchors, and eight exact SORA kamon SVG relief objects.
 Its static proportions and animation limitations remain unchanged.
 
@@ -36,4 +36,5 @@ their source material appearance. This variant is an art-review asset, not
 a game-ready horse; it needs measured anatomy, a rig and gait, closer tack
 construction, rider interaction, and actual engine/performance qualification.
 
-Comparison: [before](../Nyaagyu_HorseAndTack_Blender.png) / [after](Nyaagyu_HorseAndTack_PBR_Review.png).
+Material comparison: [untextured source](../Nyaagyu_HorseAndTack_Blender.png) / [PBR variant](Nyaagyu_HorseAndTack_PBR_Review.png).
+Anatomy comparison: [before the neck, head, limb, and hoof revision](Nyaagyu_HorseAndTack_PBR_BeforeAnatomy.png) / [revised silhouette with the same PBR surfaces](Nyaagyu_HorseAndTack_PBR_Review.png).

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "generator": "scripts/art/create_nyaagyu_horse_pbr.py",
-  "base_horse_blend_sha256": "2e60daa03a5cae8a351018bd30abbcbb8863df3661838fdec081fcce6e763d92",
-  "base_horse_fbx_sha256": "bd86398256e7a69613ff6edec97db3a405bd1fea4f202efb67b8e61116242bf4",
+  "base_horse_blend_sha256": "9e0978623d463df7af8c4895ed007ef5cede576e4a44d53f3ed9d84a30740403",
+  "base_horse_fbx_sha256": "41ab3073e49934127698a49284bec07780d341bfde356198b89b1484b34da066",
   "sora_logo_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
   "source_license": "First-party OpenAI image-generation output owned by the project user under the OpenAI Terms of Use, subject to those terms; no third-party stock textures",
   "sources": [

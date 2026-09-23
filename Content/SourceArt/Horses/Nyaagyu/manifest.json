@@ -4,11 +4,11 @@
   "generator": "scripts/art/create_nyaagyu_horse_tack.py",
   "validator": "scripts/art/validate_nyaagyu_horse_tack.py",
   "source_blend": "Nyaagyu_HorseAndTack.blend",
-  "blend_sha256": "2e60daa03a5cae8a351018bd30abbcbb8863df3661838fdec081fcce6e763d92",
+  "blend_sha256": "9e0978623d463df7af8c4895ed007ef5cede576e4a44d53f3ed9d84a30740403",
   "fbx": "SM_Nyaagyu_HorseAndTack.fbx",
-  "fbx_sha256": "bd86398256e7a69613ff6edec97db3a405bd1fea4f202efb67b8e61116242bf4",
+  "fbx_sha256": "41ab3073e49934127698a49284bec07780d341bfde356198b89b1484b34da066",
   "preview": "Nyaagyu_HorseAndTack_Blender.png",
-  "preview_sha256": "6490934d5c5f4602d12a8dd635595493272f695225877050de2a7ce40e5e0c8d",
+  "preview_sha256": "d19a0b0ac6274808a8905cd4faa3f2152b84307aef068772b2176b3c25029d77",
   "unreal_asset": "/Game/ArtReview/Horses/SM_Nyaagyu_HorseAndTack.SM_Nyaagyu_HorseAndTack",
   "local_forward": "+X horse-forward; +Z up",
   "world_origin_m": [
@@ -17,8 +17,8 @@
     0
   ],
   "units": "meters",
-  "source_parts": 135,
-  "source_triangles": 69392,
+  "source_parts": 111,
+  "source_triangles": 61936,
   "bounds_m": {
     "min": [
       -1.1324,
@@ -26,7 +26,7 @@
       0.006
     ],
     "max": [
-      1.197,
+      1.198,
       0.4991,
       1.821
     ]

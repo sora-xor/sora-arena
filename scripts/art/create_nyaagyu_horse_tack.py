@@ -168,6 +168,36 @@ def box(name, center, size, mat, edge=0):
     return smooth(obj)
 
 
+def xz_loft(name, rings, mat, facets=28):
+    """Closed, softly tapered mass following an anatomical X/Z center line.
+
+    Rings contain (x, z, vertical-half-depth, lateral-half-width). A local
+    normal to the center line shapes the dorsal and ventral contours rather
+    than stacking spheres, which previously made the horse's neck bulbous.
+    """
+    vertices=[]
+    for index,(x,z,depth,width) in enumerate(rings):
+        prior=Vector(rings[max(index-1,0)][:2])
+        following=Vector(rings[min(index+1,len(rings)-1)][:2])
+        tangent=(following-prior).normalized()
+        perpendicular=Vector((-tangent.y,tangent.x))
+        for step in range(facets):
+            angle=math.tau*step/facets
+            c=math.cos(angle)
+            vertices.append((x+perpendicular.x*depth*c,
+                             width*math.sin(angle),
+                             z+perpendicular.y*depth*c))
+    faces=[]
+    faces.append(tuple(reversed(range(facets))))
+    for ring in range(len(rings)-1):
+        for step in range(facets):
+            next_step=(step+1)%facets
+            faces.append((ring*facets+step,ring*facets+next_step,
+                          (ring+1)*facets+next_step,(ring+1)*facets+step))
+    faces.append(tuple((len(rings)-1)*facets+step for step in range(facets)))
+    return smooth(mesh(name,vertices,faces,mat))
+
+
 # Approximate 1.32 m at the withers: a compact Japanese-type mount, not a
 # breed-level reconstruction. The body keeps separate haunch/chest volumes and
 # equine joint bends instead of an elongated generic racing-horse silhouette.
@@ -175,13 +205,15 @@ sphere("Horse_barrel", (-.12, 0, 1.015), (.59, .280, .315), COAT, 48, 32)
 sphere("Horse_chest", (.33, 0, 1.03), (.30, .300, .34), COAT, 40, 26)
 sphere("Horse_haunch", (-.57, 0, 1.03), (.31, .302, .31), COAT, 40, 26)
 sphere("Horse_withers", (.27, 0, 1.23), (.20, .23, .12), COAT, 32, 20)
-neck = sphere("Horse_neck", (.58, 0, 1.36), (.19, .205, .34), COAT, 36, 26)
-neck.rotation_euler[1] = -.47
-sphere("Horse_jowl", (.81, 0, 1.51), (.19, .16, .20), COAT, 32, 20)
-head = sphere("Horse_long_head", (.91, 0, 1.49), (.17, .125, .24), COAT, 36, 24)
-head.rotation_euler[1] = -.23
-sphere("Horse_muzzle", (1.08, 0, 1.34), (.117, .125, .086), COAT_LIGHT, 32, 20)
-sphere("Horse_lower_lip", (1.075, 0, 1.29), (.101, .113, .039), COAT_DARK)
+xz_loft("Horse_neck",[(.33,1.16,.225,.223),(.405,1.25,.222,.215),
+                      (.505,1.375,.185,.184),(.625,1.505,.139,.151),
+                      (.735,1.59,.103,.132),(.795,1.625,.086,.121)],COAT)
+sphere("Horse_jowl", (.812, 0, 1.492), (.112, .143, .108), COAT, 32, 20)
+xz_loft("Horse_long_head",[(.765,1.626,.086,.118),(.832,1.592,.108,.135),
+                           (.925,1.504,.101,.135),(1.032,1.422,.077,.114),
+                           (1.103,1.359,.082,.119)],COAT)
+sphere("Horse_muzzle", (1.111, 0, 1.343), (.087, .119, .061), COAT_LIGHT, 32, 20)
+sphere("Horse_lower_lip", (1.101, 0, 1.302), (.076, .103, .026), COAT_DARK)
 for side in (-1, 1):
     y = side * .103
     sphere(f"Horse_nostril_rim_{side}", (1.145, y, 1.374), (.023, .012, .021), COAT_DARK)
@@ -195,36 +227,61 @@ for side in (-1, 1):
                  (.766, side * .132, 1.797), .025, .005, COAT_DARK, 16)
 
 
-def leg(name, side, points, widths):
-    y = side * .215
-    for index, (a, b) in enumerate(zip(points, points[1:])):
-        cone_between(f"Horse_{name}_{side}_segment_{index}",
-                     (a[0], y, a[1]), (b[0], y, b[1]),
-                     widths[index], widths[index + 1],
-                     COAT if index == 0 else COAT_DARK)
-    for index, p in enumerate(points[1:-1]):
-        sphere(f"Horse_{name}_{side}_joint_{index}", (p[0], y, p[1]),
-               (widths[index+1], widths[index+1], widths[index+1]),
-               COAT if index == 0 else COAT_DARK, 18, 12)
-    hoof_x = points[-1][0] + .018
-    # Sloped horn wall and planar bearing surface, rather than spherical feet.
-    top=[(hoof_x-.059,y-.049,.119),(hoof_x+.051,y-.049,.119),
-         (hoof_x+.051,y+.049,.119),(hoof_x-.059,y+.049,.119)]
-    bottom=[(hoof_x-.080,y-.071,.006),(hoof_x+.109,y-.077,.006),
-            (hoof_x+.109,y+.077,.006),(hoof_x-.080,y+.071,.006)]
-    mesh(f"Horse_{name}_{side}_hoof",top+bottom,
-         [(0,1,2,3),(7,6,5,4),(0,4,5,1),(1,5,6,2),
-          (2,6,7,3),(3,7,4,0)],HOOF)
+def leg(name, side, rings, dark_from):
+    """One continuous tapered limb per leg, with anatomical bend landmarks."""
+    y=side*.215
+    facets=20
+    vertices=[]
+    for x,z,front_back,lateral in rings:
+        for step in range(facets):
+            angle=math.tau*step/facets
+            vertices.append((x+front_back*math.cos(angle),
+                             y+lateral*math.sin(angle),z))
+    faces=[tuple(reversed(range(facets)))]
+    for ring in range(len(rings)-1):
+        for step in range(facets):
+            following=(step+1)%facets
+            faces.append((ring*facets+step,ring*facets+following,
+                          (ring+1)*facets+following,(ring+1)*facets+step))
+    faces.append(tuple((len(rings)-1)*facets+step for step in range(facets)))
+    limb=smooth(mesh(f"Horse_{name}_{side}_continuous_limb",vertices,faces,COAT))
+    limb.data.materials.append(COAT_DARK)
+    for ring in range(len(rings)-1):
+        if ring>=dark_from:
+            for polygon in limb.data.polygons[1+ring*facets:1+(ring+1)*facets]:
+                polygon.material_index=1
+    limb.data.polygons[-1].material_index=1
+
+    # A 20-sided shell follows the fetlock and gently flares into a rounded
+    # toe. It replaces the earlier six-faced, box-like hoof while retaining
+    # the same ground-contact plane and original named object identity.
+    hoof_x=rings[-1][0]+.018
+    hoof=[]
+    for height,cx,rx,ry in ((.119,hoof_x,.053,.048),
+                           (.006,hoof_x+.016,.097,.075)):
+        for step in range(facets):
+            angle=math.tau*step/facets
+            hoof.append((cx+rx*math.cos(angle),y+ry*math.sin(angle),height))
+    hoof_faces=[tuple(reversed(range(facets)))]
+    for step in range(facets):
+        following=(step+1)%facets
+        hoof_faces.append((step,following,facets+following,facets+step))
+    hoof_faces.append(tuple(facets+step for step in range(facets)))
+    smooth(mesh(f"Horse_{name}_{side}_hoof",hoof,hoof_faces,HOOF))
     tube(f"Horse_{name}_{side}_coronet",
-         [(hoof_x-.084, y-.073, .111), (hoof_x+.002, y-.085, .118),
-          (hoof_x+.083, y-.072, .108)], .004, COAT_DARK)
+         [(hoof_x-.067,y-.051,.116),(hoof_x,y-.057,.119),
+          (hoof_x+.061,y-.050,.116)],.003,COAT_DARK)
 
 
 for side in (-1, 1):
-    leg("fore", side, [(.39, 1.05), (.49, .70), (.475, .47),
-                       (.51, .24), (.52, .12)], [.115, .087, .061, .044, .048])
-    leg("hind", side, [(-.59, 1.01), (-.75, .72), (-.69, .52),
-                       (-.83, .37), (-.75, .12)], [.16, .095, .064, .046, .049])
+    leg("fore",side,[(.39,1.11,.146,.128),(.447,.89,.124,.105),
+                     (.485,.70,.090,.078),(.475,.49,.061,.054),
+                     (.503,.285,.044,.041),(.520,.166,.049,.044),
+                     (.524,.114,.052,.048)],dark_from=3)
+    leg("hind",side,[(-.57,1.09,.175,.151),(-.655,.85,.151,.126),
+                     (-.764,.69,.108,.092),(-.714,.52,.071,.064),
+                     (-.817,.37,.048,.045),(-.759,.165,.051,.046),
+                     (-.750,.114,.053,.049)],dark_from=3)
 
 for index in range(15):
     t = index / 14
