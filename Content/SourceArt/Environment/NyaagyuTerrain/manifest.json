@@ -3,11 +3,11 @@
   "generator": "scripts/art/create_nyaagyu_mesh_terrain.py",
   "validator": "scripts/art/validate_nyaagyu_mesh_terrain.py",
   "source_blend": "Nyaagyu_Estate_MeshTerrain_Source.blend",
-  "source_blend_sha256": "2f1599cd16b1811b0da625d05fde12f4dcfdf5de3b8801f24ea72a4653200558",
+  "source_blend_sha256": "59573ed4dc49d5f84a6e2d5872062019e1c2907f838f1423b1dd7d7b3d2211a0",
   "preview": "Nyaagyu_Estate_MeshTerrain_Blender.png",
-  "preview_sha256": "fe87ff270f94d305d6afb0b743a207c120360fe31140cabee883f75b2800e445",
+  "preview_sha256": "0874504a9d4ec29fee0c90a4038018b7abb739d1d854437ce3a29dee336d4e61",
   "detail_preview": "Nyaagyu_Estate_StonePath_Detail_Blender.png",
-  "detail_preview_sha256": "e64be1a0d4a3eef985e26e4540234d95d76085c1a020e5e96cf8a8cf8a6388be",
+  "detail_preview_sha256": "a220e96a8ca0d568bd656a0645a387810599a11ab961e3f0fd7c8499926d6c78",
   "units": "meters in Blender; centimeters in UE placement records",
   "world_xy_cm": [
     -3200,
@@ -116,7 +116,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X0_Y0",
       "fbx": "SM_NyaagyuTerrain_HI_X0_Y0.fbx",
-      "fbx_sha256": "24b9cb038ca98168fd80ff7f126018a6aca155b5dbb4ca9e4aab76f3ab83342b",
+      "fbx_sha256": "c1f96a5a986e3ea3a23bbd15a7f0c234c4f2a584eca780befd0cae242c67f0bf",
       "placement_center_cm": [
         -2400,
         -1950,
@@ -147,7 +147,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X1_Y0",
       "fbx": "SM_NyaagyuTerrain_HI_X1_Y0.fbx",
-      "fbx_sha256": "8fa791ee13b21abf86247693b1b1846cc2bc956dfa51bb5b6e606372d6dfd966",
+      "fbx_sha256": "cba3225f20e1ed03a4141429dcbb61cb2542d16217b3b79cfe7a3287e3373fc0",
       "placement_center_cm": [
         -800,
         -1950,
@@ -178,7 +178,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X2_Y0",
       "fbx": "SM_NyaagyuTerrain_HI_X2_Y0.fbx",
-      "fbx_sha256": "a4ded97f57e8f9faf1d9eabe7b50b82b1d1464d1a8c17a07fda9d49f69cd74d9",
+      "fbx_sha256": "fa0d8bd1cd620501356abc0ba6f309a4f02f541bf3f12e430440f54252514795",
       "placement_center_cm": [
         800,
         -1950,
@@ -209,7 +209,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X3_Y0",
       "fbx": "SM_NyaagyuTerrain_HI_X3_Y0.fbx",
-      "fbx_sha256": "ce2c37debdcf659538970567d5761304a81ea359be7c67c19642bf40b1569c6c",
+      "fbx_sha256": "cc11a259a1dc5fd546d527a928d9e3078675daf040b257bcaf95e94998be17f3",
       "placement_center_cm": [
         2400,
         -1950,
@@ -240,7 +240,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X0_Y1",
       "fbx": "SM_NyaagyuTerrain_HI_X0_Y1.fbx",
-      "fbx_sha256": "7b1008b42966d8ddd4c16f6df5227ee057c6f8ace0fc3ec609f12da1e6b44e4e",
+      "fbx_sha256": "112e7927534a3f773bf59c3b6e622c85764fbb9c7721506fa3a50e853dba95cc",
       "placement_center_cm": [
         -2400,
         -650,
@@ -271,7 +271,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X1_Y1",
       "fbx": "SM_NyaagyuTerrain_HI_X1_Y1.fbx",
-      "fbx_sha256": "ec4383e8a6a3b3a12b1c9bcf76259a143ab90fc562a93fa2073b6147751bee5b",
+      "fbx_sha256": "400e74421c3691fd8229922bfd6c94a901ef919bb591d664fbca3a11ca4c2c48",
       "placement_center_cm": [
         -800,
         -650,
@@ -302,7 +302,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X2_Y1",
       "fbx": "SM_NyaagyuTerrain_HI_X2_Y1.fbx",
-      "fbx_sha256": "7ed89bec3d3231c76060572ed4a2774abdd34fe172e058d8f12854c74e3cab93",
+      "fbx_sha256": "7b32ba2c24184f8d960081da66c0415f0f6a5167763f1a332ff92412abb67645",
       "placement_center_cm": [
         800,
         -650,
@@ -333,7 +333,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X3_Y1",
       "fbx": "SM_NyaagyuTerrain_HI_X3_Y1.fbx",
-      "fbx_sha256": "a496f75dad46760f7ce2c67c38490c91035cf14a4e94b424aaf00622cc2f7f57",
+      "fbx_sha256": "f366378d1c66d0986e8e8a3b3a5fd7e3e3cd092d765f87606361ed73a15d6759",
       "placement_center_cm": [
         2400,
         -650,
@@ -364,7 +364,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X0_Y2",
       "fbx": "SM_NyaagyuTerrain_HI_X0_Y2.fbx",
-      "fbx_sha256": "cf9483cfc7c67c4464844db45470bb4ae687d5509c07998b43ef3c34765bdffd",
+      "fbx_sha256": "a32885b8904a0918c7737c3c658910a6c7b4c13a88b18827fb4f2d863469b9f1",
       "placement_center_cm": [
         -2400,
         650,
@@ -395,7 +395,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X1_Y2",
       "fbx": "SM_NyaagyuTerrain_HI_X1_Y2.fbx",
-      "fbx_sha256": "eca151b162b0edcc7fe661a584e4cb9af806e2cc8f50568f054a15117081f391",
+      "fbx_sha256": "8ef1b7f49c93c3d770050f1431f4cdb2165d71a6bdb7ca8e825b4dbf48a66d80",
       "placement_center_cm": [
         -800,
         650,
@@ -426,7 +426,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X2_Y2",
       "fbx": "SM_NyaagyuTerrain_HI_X2_Y2.fbx",
-      "fbx_sha256": "9547f744cce2d68ddaaa140aca021bef31df64c5b44df7958fff85c768416591",
+      "fbx_sha256": "f5f1b082dab6821deda3e93fd9f0c0842eed67e31e464878dba78063ea40385c",
       "placement_center_cm": [
         800,
         650,
@@ -457,7 +457,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X3_Y2",
       "fbx": "SM_NyaagyuTerrain_HI_X3_Y2.fbx",
-      "fbx_sha256": "34675c5aa6cdf818fd5f3dd46bc0680bd35bc8442dd8cecd6256a4588d9d88d9",
+      "fbx_sha256": "c26c3cff79df7ced6188339934276c92c05985e5fc7be0ba55b2ca1affe5b3fe",
       "placement_center_cm": [
         2400,
         650,
@@ -488,7 +488,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X0_Y3",
       "fbx": "SM_NyaagyuTerrain_HI_X0_Y3.fbx",
-      "fbx_sha256": "c4d0c3d1160d25dc1dd52b708f2e110a8b4485ee21c8c896a90c30a3a612305e",
+      "fbx_sha256": "283de218be980b0076ca7d0dab68196b61ae043a4c1e29b868f0d5008acdeabd",
       "placement_center_cm": [
         -2400,
         1950,
@@ -519,7 +519,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X1_Y3",
       "fbx": "SM_NyaagyuTerrain_HI_X1_Y3.fbx",
-      "fbx_sha256": "2e6438625804f23d0ad2b52ce10c0ca67737cf2871226c6a9208488e12106f47",
+      "fbx_sha256": "26500ce7144d95fdbaac83b4e098822c04c13a51fdbaacece3428768f9414d5c",
       "placement_center_cm": [
         -800,
         1950,
@@ -550,7 +550,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X2_Y3",
       "fbx": "SM_NyaagyuTerrain_HI_X2_Y3.fbx",
-      "fbx_sha256": "1323fcc4b0aa4c2a18cc627762de7cab9201e9eaaeff699bae7f24cf6b1d300a",
+      "fbx_sha256": "bf209c953f067a652e014609c6593ba28a76ceef9bdd404a1a7a3517ef0eecfd",
       "placement_center_cm": [
         800,
         1950,
@@ -581,7 +581,7 @@
       ],
       "name": "SM_NyaagyuTerrain_HI_X3_Y3",
       "fbx": "SM_NyaagyuTerrain_HI_X3_Y3.fbx",
-      "fbx_sha256": "65cce0396a27cee57caa73655f09d6255f0966c684ce6cb90eee11d902d8dcb6",
+      "fbx_sha256": "83a96239a2646e981ca1246b8c17f347e123c0ba4b50f757d546eb67f3a490fe",
       "placement_center_cm": [
         2400,
         1950,
@@ -612,7 +612,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X0_Y0",
       "fbx": "SM_NyaagyuTerrain_MAC_X0_Y0.fbx",
-      "fbx_sha256": "8d930f2a52e21dfa6b6260316f7cead88cc2a29b4ea2191933f8e568d1dbc644",
+      "fbx_sha256": "80bce59f99a4c1e8ee53e38000fae862cfeea7a4168d5ea3d32fffa8920e6b01",
       "placement_center_cm": [
         -2400,
         -1950,
@@ -643,7 +643,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X1_Y0",
       "fbx": "SM_NyaagyuTerrain_MAC_X1_Y0.fbx",
-      "fbx_sha256": "0a03e04b5aa268826a980397f7d04534af897bc763ee205648af65785b658bc7",
+      "fbx_sha256": "3c77df66093527251d6909ca6731cb07567dbc9701aca0f87fa3c268cfd73004",
       "placement_center_cm": [
         -800,
         -1950,
@@ -674,7 +674,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X2_Y0",
       "fbx": "SM_NyaagyuTerrain_MAC_X2_Y0.fbx",
-      "fbx_sha256": "799972b4e782a545fc16eb44764e818257f1bf23da2396795c8119cf8e8bd48c",
+      "fbx_sha256": "93df0392d6248cd444c12a1320092343960e76cd876e59d54a1cc35fe39e3dd2",
       "placement_center_cm": [
         800,
         -1950,
@@ -705,7 +705,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X3_Y0",
       "fbx": "SM_NyaagyuTerrain_MAC_X3_Y0.fbx",
-      "fbx_sha256": "a9404ea165839582fc5f657efaf375ca4046a432f0d55554633ffb9d2bd5e9cf",
+      "fbx_sha256": "961091b38349ea95a6d786ff9e3ac0de1f397d1fa2a3fbef94c48a69c43e960d",
       "placement_center_cm": [
         2400,
         -1950,
@@ -736,7 +736,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X0_Y1",
       "fbx": "SM_NyaagyuTerrain_MAC_X0_Y1.fbx",
-      "fbx_sha256": "940913fdd80546acfa04d3f8a09c809c94c86152c467c273f0038347228c2ce6",
+      "fbx_sha256": "839213a8345a81b03156615d0134dc72927403fe2e45436f4e5695986f0f26bc",
       "placement_center_cm": [
         -2400,
         -650,
@@ -767,7 +767,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X1_Y1",
       "fbx": "SM_NyaagyuTerrain_MAC_X1_Y1.fbx",
-      "fbx_sha256": "60c315823d4d7cbba1598577174d2b4a5841db58f50a671ed8def28df4e862bb",
+      "fbx_sha256": "45a6154804fa635d59a840655abaa759fbec38be8a766a0774cf2f1ad34ff0fc",
       "placement_center_cm": [
         -800,
         -650,
@@ -798,7 +798,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X2_Y1",
       "fbx": "SM_NyaagyuTerrain_MAC_X2_Y1.fbx",
-      "fbx_sha256": "1915d666b980295adace4da767bb13bd7b9859a6b7d513ab35429d4bb9f1171f",
+      "fbx_sha256": "30a6e3792a2e0b4f1ec9e0f93046ef4ec8b3bbe105834b00b70cf079b40960c6",
       "placement_center_cm": [
         800,
         -650,
@@ -829,7 +829,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X3_Y1",
       "fbx": "SM_NyaagyuTerrain_MAC_X3_Y1.fbx",
-      "fbx_sha256": "36bc815dbe05147198874088c562e3227decefbf2e5983902789134a332b0122",
+      "fbx_sha256": "77f91a163a5a7b464ad4e43f97b80d67ca26d2b756a6fef47ea48f6481f435e3",
       "placement_center_cm": [
         2400,
         -650,
@@ -860,7 +860,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X0_Y2",
       "fbx": "SM_NyaagyuTerrain_MAC_X0_Y2.fbx",
-      "fbx_sha256": "da096b28fd5f8a7d4415210da34c5c58e20089ca245336eb6f38df4e58bf3db8",
+      "fbx_sha256": "144615252a3388e3650565fdf507060da528af8abdb3c64f48898a5384ffb6a3",
       "placement_center_cm": [
         -2400,
         650,
@@ -891,7 +891,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X1_Y2",
       "fbx": "SM_NyaagyuTerrain_MAC_X1_Y2.fbx",
-      "fbx_sha256": "5841a9116b7a99a1ac51c050a9e7c142cf3fa61d1df1e549cf7ae4b12c6cf475",
+      "fbx_sha256": "43a6ba35dcb2c46b03c3ef4ae43f2a37d95a0eee88968af25dd91167cd29458c",
       "placement_center_cm": [
         -800,
         650,
@@ -922,7 +922,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X2_Y2",
       "fbx": "SM_NyaagyuTerrain_MAC_X2_Y2.fbx",
-      "fbx_sha256": "26383bbec716e7083b02350a63745300894c93c838337d1d6680abf3ef976528",
+      "fbx_sha256": "f7043234a38ccf3641cbbc9b892b2f91cfae49d395efb4e77a549f40c06504a8",
       "placement_center_cm": [
         800,
         650,
@@ -953,7 +953,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X3_Y2",
       "fbx": "SM_NyaagyuTerrain_MAC_X3_Y2.fbx",
-      "fbx_sha256": "a17cc492e28270faaf40296bcb63ea583d5308f482bc191a222123a0b44b1181",
+      "fbx_sha256": "9d1f07cda23715c92fd8a6fce7b8c7fbd58fb8f82f447a42976d12cbd19ed8fe",
       "placement_center_cm": [
         2400,
         650,
@@ -984,7 +984,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X0_Y3",
       "fbx": "SM_NyaagyuTerrain_MAC_X0_Y3.fbx",
-      "fbx_sha256": "d4f681036441fb641a436b2cdca23bb3a61b162d1c951f1ee3aac4d2be84c722",
+      "fbx_sha256": "fe70effd2c0b2de755558a4e093aa473ac56f8a2237bfe4f181510ab83b0fc9b",
       "placement_center_cm": [
         -2400,
         1950,
@@ -1015,7 +1015,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X1_Y3",
       "fbx": "SM_NyaagyuTerrain_MAC_X1_Y3.fbx",
-      "fbx_sha256": "3c51d0b757f033ad49b615d61dca193c6d64b929f563bd186a8da17cff8235a2",
+      "fbx_sha256": "55ef1190dda23e305427531744c0d3747b97cdf98c4d8698506d216e9416bf4d",
       "placement_center_cm": [
         -800,
         1950,
@@ -1046,7 +1046,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X2_Y3",
       "fbx": "SM_NyaagyuTerrain_MAC_X2_Y3.fbx",
-      "fbx_sha256": "3b8f551d3a9b615a6d086576517b85a3a82f859c66ade59e346b220497f316e5",
+      "fbx_sha256": "08d8d5e0e3bb1752037460e47a2881012192fd265267c0451ceae5ada9a2a3e4",
       "placement_center_cm": [
         800,
         1950,
@@ -1077,7 +1077,7 @@
       ],
       "name": "SM_NyaagyuTerrain_MAC_X3_Y3",
       "fbx": "SM_NyaagyuTerrain_MAC_X3_Y3.fbx",
-      "fbx_sha256": "e613866c50d62eeb878c14ce633a3da655124e6cf6f9907901f2826b7ab585cf",
+      "fbx_sha256": "55aa496ca4134321dc003a9c659279b2dde1c1f0728cba1dbb78fc63713505d5",
       "placement_center_cm": [
         2400,
         1950,

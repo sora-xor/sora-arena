@@ -281,9 +281,11 @@ for tier in ("hi","mac"):
             bpy.ops.object.duplicate()
             temp=bpy.context.object
             temp.data=temp.data.copy()
-            temp.data.materials.clear()
-            temp.data.materials.append(export_soil)
-            temp.data.materials.append(export_stone)
+            # Clearing the slots resets every polygon's material index to 0,
+            # silently turning the authored stone route into soil in the FBX.
+            # Replace each slot in place so the per-face split survives export.
+            temp.data.materials[0]=export_soil
+            temp.data.materials[1]=export_stone
             temp.location=(0,0,0)
             temp.name=export_name
             bpy.ops.export_scene.fbx(filepath=str(fbx),use_selection=True,

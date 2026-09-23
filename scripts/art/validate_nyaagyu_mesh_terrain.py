@@ -134,6 +134,10 @@ for tier in ("hi","mac"):
             assert tri==t["triangles"],(tier,ix,iy,tri)
             slots={s.material.name.split(".",1)[0] for s in model.material_slots}
             assert slots==set(manifest["material_slots"]),slots
+            source_stone=sum(poly.material_index==1 for poly in obj.data.polygons)
+            imported_stone=sum(poly.material_index==1 for poly in model.data.polygons)
+            assert imported_stone==source_stone,(tier,ix,iy,source_stone,imported_stone)
+            assert (source_stone>0)==(iy in (1,2)),(tier,ix,iy,source_stone)
             imported_tint=model.data.color_attributes.get("EstateMacroTint")
             assert imported_tint is not None and imported_tint.domain=="CORNER"
             assert len(imported_tint.data)==len(model.data.loops)

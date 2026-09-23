@@ -7,6 +7,7 @@ are fetched in the game or editor; the manifest-pinned source files must exist.
 from pathlib import Path
 import hashlib
 import json
+import runpy
 import unreal
 
 if not unreal.SystemLibrary.get_engine_version().startswith('5.8.2'):
@@ -90,10 +91,13 @@ for index,(parameter,channel) in enumerate([('AlbedoMap','Diffuse'),('NormalMap'
 colored=node(mat,unreal.MaterialExpressionMultiply,-250,-200)
 link(projected['Diffuse'],'XYZ Texture',colored,'A');link(tint,'RGB',colored,'B')
 vertex=node(mat,unreal.MaterialExpressionVertexColor,-550,-760)
+vertex_rgb=node(mat,unreal.MaterialExpressionComponentMask,-360,-600,
+                r=True,g=True,b=True,a=False)
+link(vertex,'',vertex_rgb,'')
 macro_strength=node(mat,unreal.MaterialExpressionScalarParameter,-330,-760,
                     parameter_name='TerrainVertexTint',default_value=0.0)
 macro_colored=node(mat,unreal.MaterialExpressionMultiply,0,-440)
-link(colored,'',macro_colored,'A');link(vertex,'RGB',macro_colored,'B')
+link(colored,'',macro_colored,'A');link(vertex_rgb,'',macro_colored,'B')
 macro_blend=node(mat,unreal.MaterialExpressionLinearInterpolate,200,-200)
 link(colored,'',macro_blend,'A');link(macro_colored,'',macro_blend,'B')
 link(macro_strength,'',macro_blend,'Alpha')
@@ -145,4 +149,5 @@ cube=node(sky,unreal.MaterialExpressionTextureSampleParameterCube,-100,-100,para
 link(normal,'',cube,'');output(cube,'RGB',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
 lib.layout_material_expressions(sky);lib.recompile_material(sky);assets.save_loaded_asset(sky)
 assets.save_directory(DEST,only_if_is_dirty=False,recursive=True)
+runpy.run_path(str(ROOT/'scripts/unreal/import_torii_lacquer_pbr.py'),run_name='__main__')
 unreal.log('NYAAGYU_PBR_READY: 6 real-scale CC0 materials including kawara and plaster + overcast HDRI. Powered by Poly Haven — https://polyhaven.com')
