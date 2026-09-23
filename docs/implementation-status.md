@@ -53,6 +53,13 @@ restored sites, and exit completion to a local SaveGame checkpoint, rejecting
 inconsistent site progress on load. This still needs an editor build and an
 in-game save/reload test; the shared encounter layouts do not meet the
 six-to-eight-hour campaign target.
+The final chapter now reserves its eighteenth opponent for a distinct alien
+collector boss with locked-aim cyan beam and amber cleave warnings, recovery,
+bilingual HUD/dialogue and a local checkpoint that respawns the boss at full
+health after seventeen guards. The prototype save schema advances to 4 so a
+pre-boss checkpoint cannot skip the encounter; no compatibility decoder is
+included. Content validation passes 25 timed bilingual cues, but UE compilation,
+readability, combat balance and save recovery still require an in-engine run.
 The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
 the six-class selector is available in offline arena practice. This source
 behavior still needs an Unreal menu and save/reload check.
