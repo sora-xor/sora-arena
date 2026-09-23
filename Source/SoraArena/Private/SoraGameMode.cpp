@@ -25,11 +25,11 @@ void ASoraGameMode::BeginPlay()
     Super::BeginPlay();
     if(!FSoraCatalog::Get().Load()) { Notice=FSoraCatalog::Get().Error; return; }
     Save=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("SoraSoloCampaign"),0));
-    if(!Save||Save->SaveSchema!=4)
+    if(!Save||Save->SaveSchema!=5)
     {
         Save=Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
         if(!Save) return;
-        Save->SaveSchema=4;
+        Save->SaveSchema=5;
     }
     ChapterId=FMath::Clamp(Save->CurrentChapter,0,7); SelectedClass=FMath::Clamp(Save->SelectedClass,0,5);
     bEnglishSubtitles=Save->EnglishSubtitles;
@@ -49,6 +49,7 @@ void ASoraGameMode::ResetRound()
     for(const auto& E:Enemies) if(IsValid(E)) E->Destroy();
     Enemies.Reset(); BossActor=nullptr;
     Kills=0; Spawned=0; RoundTime=0; bDefeated=false; bChapterComplete=false;
+    DojoLessonMask=0u;
     KillsNeeded=bCampaign?FSoraCatalog::Get().Chapter(ChapterId).Kills:12;
     WorldBuilder->Build(MapId,bCampaign?&FSoraCatalog::Get().Chapter(ChapterId):nullptr);
     const bool bHasCheckpoint=bCampaign&&Save&&Save->CheckpointChapter==ChapterId;
@@ -61,10 +62,14 @@ void ASoraGameMode::ResetRound()
             SiteRules[I]={Sites[I].RequiredKills,static_cast<unsigned>(Sites[I].RequiredSitesMask)};
         const SoraCampaignRules::FCheckpoint Checkpoint{
             Save->CheckpointKills,static_cast<unsigned>(Mask),Save->CheckpointComplete};
-        const bool bValid=Sites.Num()==3&&SoraCampaignRules::CheckpointValid(Checkpoint,KillsNeeded,SiteRules,Sites.Num());
+        const unsigned SavedDojoMask=static_cast<unsigned>(Save->CheckpointDojoLessonMask);
+        const bool bValid=Sites.Num()==3&&SoraCampaignRules::CheckpointValid(Checkpoint,KillsNeeded,SiteRules,Sites.Num())&&
+            (ChapterId==0?SoraDojoRules::CheckpointValid({SavedDojoMask},Checkpoint.Kills,Checkpoint.NodesMask)
+                         :SavedDojoMask==0u);
         if(bValid)
         {
             Kills=Save->CheckpointKills;
+            if(ChapterId==0) DojoLessonMask=SavedDojoMask;
             WorldBuilder->RestoreActivatedMask(Mask);
             bChapterComplete=Save->CheckpointComplete&&Kills==KillsNeeded&&WorldBuilder->ActiveNodes()==3;
             // At seventeen final-chapter defeats, restoring a checkpoint
@@ -96,7 +101,7 @@ void ASoraGameMode::ResetRound()
         Player->SetDojoTraining(bCampaign&&ChapterId==0);
     }
     if(!bChapterComplete) for(int32 I=0;I<FMath::Min(4,KillsNeeded-Kills);++I) SpawnEnemy();
-    const bool bResumed=bRestoredVictory||(bHasCheckpoint&&(Kills>0||WorldBuilder->ActiveNodes()>0||bChapterComplete));
+    const bool bResumed=bRestoredVictory||(bHasCheckpoint&&(Kills>0||WorldBuilder->ActiveNodes()>0||bChapterComplete||DojoLessonMask!=0u));
     // Dialogue is presentation only. A resumed objective checkpoint does not replay
     // the chapter opening, and no cue cursor is written into the campaign save.
     bPlayChapterDialogue=bCampaign&&!bResumed;
@@ -199,9 +204,22 @@ void ASoraGameMode::BeginRound()
         ResetRound();
     }
     else if(bDefeated) ResetRound();
+    if(bMenu&&bCampaign&&ChapterId==0)
+        for(const auto& Enemy:Enemies) if(IsValid(Enemy)) Enemy->SuspendDojoAction();
     bMenu=false;
 }
-void ASoraGameMode::ToggleMenu() { bMenu=!bMenu; }
+void ASoraGameMode::ToggleMenu()
+{
+    bMenu=!bMenu;
+    if(bCampaign&&ChapterId==0)
+    {
+        if(bMenu)
+        {
+            if(auto* Player=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0))) Player->SuspendDojoAction();
+        }
+        for(const auto& Enemy:Enemies) if(IsValid(Enemy)) Enemy->SuspendDojoAction();
+    }
+}
 void ASoraGameMode::NextMap()
 {
     if(!bMenu) return; bCampaign=false; MapId=(MapId+1)%4; ResetRound();
@@ -209,6 +227,7 @@ void ASoraGameMode::NextMap()
 void ASoraGameMode::NewCampaign()
 {
     if(!bMenu) return; bDeterministicPractice=false; bCampaign=true; bCampaignComplete=false; ChapterId=0; MapId=0;
+    DojoLessonMask=0u;
     if(Save) Save->HighestChapter=0;
     ClearCheckpoint();
     SaveProgress(); ResetRound();
@@ -282,6 +301,12 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
     }
     if(FVector::Dist2D(Player->GetActorLocation(),WorldBuilder->ExitPoint())<270.f)
     {
+        if(bCampaign&&ChapterId==0&&!CanScoreDojoBout())
+        {
+            Notice=TEXT("師の稽古を終えてから、鳥居へ向かおう。");
+            NoticeEnglish=TEXT("Finish the master's four lessons before leaving the dojo.");
+            NoticeTime=5.f; return;
+        }
         SoraCampaignRules::FCheckpoint ExitProgress{Kills,static_cast<unsigned>(WorldBuilder->ActivatedMask()),bChapterComplete};
         if(SoraCampaignRules::CompleteChapter(ExitProgress,KillsNeeded,3))
         {
@@ -310,6 +335,7 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
 void ASoraGameMode::OpponentDefeated(ASoraCharacter* Opponent)
 {
     if(bDeterministicPractice) return;
+    if(bCampaign&&ChapterId==0&&!CanScoreDojoBout()) return;
     SoraCampaignRules::FCheckpoint Progress{Kills,
         WorldBuilder?static_cast<unsigned>(WorldBuilder->ActivatedMask()):0u,bChapterComplete};
     if(!SoraCampaignRules::RecordDefeat(Progress,KillsNeeded)) return;
@@ -329,6 +355,35 @@ void ASoraGameMode::OpponentDefeated(ASoraCharacter* Opponent)
     }
     if(bCampaign) SaveCheckpoint();
 }
+bool ASoraGameMode::CanScoreDojoBout() const
+{
+    return bCampaign&&ChapterId==0&&SoraDojoRules::CanScoreBout({DojoLessonMask});
+}
+int32 ASoraGameMode::DojoLessonStage() const
+{
+    return bCampaign&&ChapterId==0?SoraDojoRules::NextLesson({DojoLessonMask}):4;
+}
+bool ASoraGameMode::RecordDojoLesson(SoraDojoRules::EAction Action,int32 DurationMs,bool bFacingAttacker,int32 RecoveryMs)
+{
+    if(!bCampaign||ChapterId!=0||bMenu||bDefeated||bChapterComplete) return false;
+    SoraDojoRules::FProgress Progress{DojoLessonMask};
+    if(!SoraDojoRules::Record(Progress,Action,DurationMs,bFacingAttacker,RecoveryMs)) return false;
+    DojoLessonMask=Progress.CompletedMask;
+    static const TCHAR* Japanese[]={
+        TEXT("壱の型・構え。守りを保った。次は門弟の一撃を受けよう。"),
+        TEXT("弐の型・受け。刃を正面で受けた。次は予兆に合わせて防御を押そう。"),
+        TEXT("参の型・捌き。打ち込みを見切った。次は木刀を振り、刃が戻るまで待とう。"),
+        TEXT("肆の型・残心。打った後も構えを崩さない。これより門弟との立合いだ。")};
+    static const TCHAR* English[]={
+        TEXT("Form one: stance held. Now face and guard a pupil's strike."),
+        TEXT("Form two: guarded. Release defense, then press it during the golden warning to parry."),
+        TEXT("Form three: parried. Swing your wooden sword, then let it fully recover."),
+        TEXT("Form four: recovery mastered. You may now score the sparring bouts.")};
+    const int32 Completed=DojoLessonStage()-1;
+    Notice=Japanese[Completed]; NoticeEnglish=English[Completed]; NoticeTime=8.f;
+    SaveCheckpoint();
+    return true;
+}
 void ASoraGameMode::PlayerKilled()
 {
     if(bDeterministicPractice) return;
@@ -346,6 +401,7 @@ void ASoraGameMode::SaveCheckpoint()
     Save->CheckpointKills=FMath::Clamp(Kills,0,KillsNeeded);
     Save->CheckpointNodesMask=WorldBuilder->ActivatedMask();
     Save->CheckpointComplete=bChapterComplete;
+    Save->CheckpointDojoLessonMask=bCampaign&&ChapterId==0?static_cast<int32>(DojoLessonMask):0;
     SaveProgress();
 }
 void ASoraGameMode::ClearCheckpoint()
@@ -355,6 +411,7 @@ void ASoraGameMode::ClearCheckpoint()
     Save->CheckpointKills=0;
     Save->CheckpointNodesMask=0;
     Save->CheckpointComplete=false;
+    Save->CheckpointDojoLessonMask=0;
 }
 void ASoraGameMode::SaveProgress()
 {
@@ -380,12 +437,29 @@ FString ASoraGameMode::ObjectiveText() const
     if(bCampaign)
     {
         const auto& Chapter=FSoraCatalog::Get().Chapter(ChapterId);
+        if(ChapterId==0&&DojoLessonStage()<4)
+            return FString::Printf(TEXT("猫柳生新陰流  |  型 %d / 4"),DojoLessonStage()+1);
         FString Next=TEXT("東の鳥居へ");
         for(int32 I=0;I<Chapter.Sites.Num();++I)
             if((WorldBuilder->ActivatedMask()&(1<<I))==0) { Next=Chapter.Sites[I].Name; break; }
         return FString::Printf(ChapterId==0?TEXT("%s  |  稽古場 %d / 3  |  立合い %d / %d"):TEXT("%s  |  拠点 %d / 3  |  侵略者 %d / %d"),*Next,WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
     }
     return FString::Printf(TEXT("生産の復旧 %d / 3    |    侵略者 %d / %d    |    出口：東の鳥居"),WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
+}
+FString ASoraGameMode::DojoLessonText(bool bEnglish) const
+{
+    if(!bCampaign||ChapterId!=0||DojoLessonStage()>=4) return FString();
+    static const TCHAR* Japanese[]={
+        TEXT("壱・構え：防御を 0.6 秒保つ"),
+        TEXT("弐・受け：相手に向き、防御を保って一撃を受ける"),
+        TEXT("参・捌き：金色の予兆に合わせて防御を押す"),
+        TEXT("肆・残心：木刀を振り、攻撃を止めて刃の戻りを待つ")};
+    static const TCHAR* English[]={
+        TEXT("STANCE: hold Guard for 0.6 seconds."),
+        TEXT("GUARD: face a pupil and hold Guard through its strike."),
+        TEXT("PARRY: release, then press Guard during the golden warning."),
+        TEXT("RECOVERY: swing once, release attack, and wait for the blade to return.")};
+    return bEnglish?English[DojoLessonStage()]:Japanese[DojoLessonStage()];
 }
 UArenaKernelSubsystem* ASoraGameMode::Kernel() const
 {

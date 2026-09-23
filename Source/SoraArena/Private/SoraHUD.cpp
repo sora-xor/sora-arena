@@ -129,7 +129,7 @@ void ASoraHUD::DrawHUD()
         }
         else
         {
-            Label(TEXT("WASD 移動   マウス 照準   左クリック 射撃   右クリック 斬撃   Shift 疾走   Space 跳躍"),L,725*S,.55*S,Ivory);
+            Label(TEXT("WASD 移動   マウス 照準   左クリック 射撃   右クリック 斬撃   Ctrl 防御   Shift 疾走   Space 跳躍"),L,725*S,.49*S,Ivory);
             Label(TEXT("1 主武器   2 近接武器   3 特殊武器の試用   R 装填   E 調べる   Esc メニュー   F10 英語字幕"),L,763*S,.55*S,Ivory);
         }
         Label(TEXT("IROHA CONNECT  /  C 接続を開始   L ウォレットを開く   X 接続を解除"),L,815*S,.52*S,Gold);
@@ -206,6 +206,12 @@ void ASoraHUD::DrawHUD()
     }
     Label(G->bCampaign?FSoraCatalog::Get().Chapter(G->ChapterId).Title:FSoraCatalog::Get().Map(G->MapId).Name,30*S,95*S,.82*S,Ivory);
     Label(G->ObjectiveText(),30*S,137*S,.52*S,Teal);
+    if(G->bCampaign&&G->ChapterId==0&&G->DojoLessonStage()<4)
+    {
+        Panel(25*S,169*S,720*S,G->bEnglishSubtitles?72*S:47*S,FLinearColor(.013,.027,.033,.88f));
+        Label(G->DojoLessonText(false),40*S,175*S,.46*S,Ivory);
+        if(G->bEnglishSubtitles) Label(G->DojoLessonText(true),40*S,205*S,.34*S,Muted);
+    }
     if(const ASoraCharacter* Boss=G->CampaignBoss())
     {
         const float BossWidth=FMath::Min(W-20.f,FMath::Max(560.f*S,470.f));

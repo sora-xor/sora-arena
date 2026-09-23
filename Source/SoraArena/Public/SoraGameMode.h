@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "SoraPracticeClock.h"
+#include "SoraDojoRules.h"
 #include "SoraGameMode.generated.h"
 class ASoraCharacter;
 class ASoraWorldBuilder;
@@ -31,6 +32,10 @@ public:
     void SelectClass(int32 Id);
     void Interact(ASoraCharacter* Player);
     void OpponentDefeated(ASoraCharacter* Opponent);
+    bool RecordDojoLesson(SoraDojoRules::EAction Action, int32 DurationMs,
+        bool bFacingAttacker = true, int32 RecoveryMs = 0);
+    bool CanScoreDojoBout() const;
+    int32 DojoLessonStage() const;
     void PlayerKilled();
     void SaveProgress();
     bool bMenu = true;
@@ -50,6 +55,7 @@ public:
     float NoticeTime = 0;
     float RoundTime = 0;
     FString ObjectiveText() const;
+    FString DojoLessonText(bool bEnglish) const;
     const FSoraDialogueCue* CurrentDialogueCue() const;
     ASoraWorldBuilder* Arena() const { return WorldBuilder; }
     const ASoraCharacter* CampaignBoss() const;
@@ -59,6 +65,7 @@ private:
     UPROPERTY() TArray<TObjectPtr<ASoraCharacter>> Enemies;
     UPROPERTY() TObjectPtr<ASoraCharacter> BossActor;
     int32 Spawned = 0;
+    unsigned DojoLessonMask = 0u;
     FSoraPracticeClock PracticeClock;
     bool bPlayChapterDialogue = false;
     UPROPERTY() TArray<TObjectPtr<ASoraCharacter>> PracticePawns;

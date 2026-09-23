@@ -81,6 +81,7 @@ void ASoraCharacter::SetDojoTraining(bool Enabled)
 {
     const bool bChanged=bDojoTraining!=Enabled;
     bDojoTraining=Enabled;
+    bOfflineGuardHeld=false; bDojoRecoveryPending=false;
     if(Enabled&&FSoraCatalog::Get().IsReady())
     {
         WeaponId=FSoraCatalog::Get().Class(0).Weapons[0];
@@ -89,9 +90,23 @@ void ASoraCharacter::SetDojoTraining(bool Enabled)
     }
     else if(bChanged) BuildWeapon();
 }
+void ASoraCharacter::SuspendDojoAction()
+{
+    if(bDojoTraining)
+    {
+        bOfflineGuardHeld=false;
+        bDojoRecoveryPending=false;
+    }
+    if(bDojoPupil)
+    {
+        bPupilWindup=false;
+        NextEnemyShot=GetWorld()->GetTimeSeconds()+.8f;
+    }
+}
 void ASoraCharacter::MakeDojoPupil(int32 Id)
 {
     bEnemy=true; bDojoPupil=true; EnemyIndex=Id; bUseControllerRotationYaw=false;
+    bPupilWindup=false; NextEnemyShot=GetWorld()->GetTimeSeconds()+1.4f+Id*.35f;
     GetCharacterMovement()->bOrientRotationToMovement=false;
     ApplyClass(0); SetDojoTraining(true); BuildCat();
 }
@@ -276,6 +291,22 @@ void ASoraCharacter::Tick(float Dt)
     if(bKernelDriven) return;
     if(!FSoraCatalog::Get().IsReady()||!CanPlay()) return;
     if(bEnemy) { BotTick(Dt); return; }
+    if(bDojoTraining)
+    {
+        if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)))
+        {
+            const float Now=GetWorld()->GetTimeSeconds();
+            if(bOfflineGuardHeld&&G->DojoLessonStage()==0)
+                G->RecordDojoLesson(SoraDojoRules::EAction::Stance,
+                    FMath::RoundToInt((Now-OfflineGuardPressedAt)*1000.f));
+            if(bDojoRecoveryPending&&Now>=DojoRecoveryEndsAt&&!bFireHeld)
+            {
+                if(G->RecordDojoLesson(SoraDojoRules::EAction::Recovery,
+                    FMath::RoundToInt((Now-DojoRecoveryStartedAt)*1000.f),true,DojoRecoveryRequiredMs))
+                    bDojoRecoveryPending=false;
+            }
+        }
+    }
     if(bReloading&&GetWorld()->GetTimeSeconds()>=ReloadEnd) { Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine; bReloading=false; }
     if(bFireHeld) Fire();
     GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*(bSprint?1.35f:1.f);
@@ -348,6 +379,19 @@ void ASoraCharacter::Melee()
     if(!CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading) return;
     const int32 MeleeId=FSoraCatalog::Get().Weapon(WeaponId).Kind==TEXT("melee")?WeaponId:FSoraCatalog::Get().Class(ClassId).Weapons[0];
     const auto& W=FSoraCatalog::Get().Weapon(MeleeId); NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
+    if(bDojoTraining)
+    {
+        if(const auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)))
+        {
+            if(G->DojoLessonStage()==3)
+            {
+                bDojoRecoveryPending=true;
+                DojoRecoveryStartedAt=GetWorld()->GetTimeSeconds();
+                DojoRecoveryEndsAt=NextShot;
+                DojoRecoveryRequiredMs=FMath::CeilToInt(W.Cooldown*1000.f);
+            }
+        }
+    }
     const FVector Start=Camera->GetComponentLocation(); const FVector Dir=Camera->GetForwardVector();
     FCollisionQueryParams Params(SCENE_QUERY_STAT(Melee),false,this); TArray<FHitResult> Hits;
     GetWorld()->SweepMultiByChannel(Hits,Start,Start+Dir*W.Range,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeSphere(45),Params);
@@ -356,8 +400,9 @@ void ASoraCharacter::Melee()
     {
         FHitResult Block; GetWorld()->LineTraceSingleByChannel(Block,Start,H.ImpactPoint,ECC_Visibility,Params);
         if(Block.GetActor()&&Block.GetActor()!=H.GetActor()) continue;
-        Damaged.Add(H.GetActor()); UGameplayStatics::ApplyPointDamage(H.GetActor(),W.Damage,Dir,H,GetController(),this,UDamageType::StaticClass());
-        if(Cast<ASoraCharacter>(H.GetActor())) HitMarkerTime=.18f;
+        Damaged.Add(H.GetActor());
+        const float Applied=UGameplayStatics::ApplyPointDamage(H.GetActor(),W.Damage,Dir,H,GetController(),this,UDamageType::StaticClass());
+        if(Applied>0&&Cast<ASoraCharacter>(H.GetActor())) HitMarkerTime=.18f;
     }
     Beam(GetWorld(),Start+Dir*50-Camera->GetRightVector()*40,Start+Dir*125+Camera->GetRightVector()*55,FLinearColor(.55,.9,1),2.5,.12);
 }
@@ -373,6 +418,31 @@ float ASoraCharacter::TakeDamage(float Damage,const FDamageEvent& Event,AControl
     if(bKernelDriven) return 0;
     if(!CanPlay()||Damage<=0) return 0;
     if(const auto* Other=Cast<ASoraCharacter>(Causer)) if(Other->bEnemy&&bEnemy) return 0;
+    if(bDojoPupil)
+    {
+        const auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
+        if(!G||!G->CanScoreDojoBout()) return 0;
+    }
+    if(bDojoTraining&&bOfflineGuardHeld)
+    {
+        if(const auto* Pupil=Cast<ASoraCharacter>(Causer)) if(Pupil->bDojoPupil)
+        {
+            const FVector ToAttacker=(Pupil->GetActorLocation()-GetActorLocation()).GetSafeNormal2D();
+            const bool bFacing=FVector::DotProduct(GetActorForwardVector(),ToAttacker)>=.25f;
+            if(bFacing)
+            {
+                if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)))
+                {
+                    const int32 HeldMs=FMath::RoundToInt((GetWorld()->GetTimeSeconds()-OfflineGuardPressedAt)*1000.f);
+                    if(G->DojoLessonStage()==2)
+                        G->RecordDojoLesson(SoraDojoRules::EAction::Parry,HeldMs,true);
+                    else if(G->DojoLessonStage()==1)
+                        G->RecordDojoLesson(SoraDojoRules::EAction::Guard,HeldMs,true);
+                }
+                return 0.f;
+            }
+        }
+    }
     const float Applied=FMath::Min(Health,Damage); Health-=Applied; DamageFlash=.3f;
     if(Health<=0)
     {
@@ -415,16 +485,31 @@ void ASoraCharacter::BotTick(float Dt)
     FHitResult Ahead; FCollisionQueryParams P(SCENE_QUERY_STAT(BotNavigation),false,this);
     if(GetWorld()->LineTraceSingleByChannel(Ahead,GetActorLocation(),GetActorLocation()+Move*180,ECC_Visibility,P)&&Ahead.GetActor()!=Target)
         Move=FVector(-Move.Y,Move.X,0)*(EnemyIndex%2?1:-1);
-    if(Dist>650) AddMovementInput(Move,.55f); else AddMovementInput(GetActorRightVector(),FMath::Sin(LifeTime+EnemyIndex)*.2f);
+    if(!bDojoPupil||!bPupilWindup)
+    {
+        if(Dist>(bDojoPupil?160.f:650.f)) AddMovementInput(Move,.55f);
+        else AddMovementInput(GetActorRightVector(),FMath::Sin(LifeTime+EnemyIndex)*.2f);
+    }
     if(bDojoPupil)
     {
-        if(GetWorld()->GetTimeSeconds()<NextEnemyShot||Dist>190.f) return;
-        NextEnemyShot=GetWorld()->GetTimeSeconds()+1.35f;
-        const FVector From=GetActorLocation()+FVector(0,0,50),To=Target->GetActorLocation()+FVector(0,0,50);
-        FHitResult Hit; FCollisionQueryParams PupilTrace(SCENE_QUERY_STAT(DojoSpar),false,this);
-        GetWorld()->LineTraceSingleByChannel(Hit,From,To,ECC_Visibility,PupilTrace);
-        if(Hit.GetActor()==Target)
-            UGameplayStatics::ApplyPointDamage(Target,4.f,(To-From).GetSafeNormal(),Hit,GetController(),this,UDamageType::StaticClass());
+        const float Now=GetWorld()->GetTimeSeconds();
+        const FVector From=GetActorLocation()+FVector(0,0,50);
+        if(bPupilWindup)
+        {
+            if(Now<PupilWindupEndsAt) return;
+            bPupilWindup=false;
+            FHitResult Hit; FCollisionQueryParams PupilTrace(SCENE_QUERY_STAT(DojoSpar),false,this);
+            const FVector To=From+PupilLockedDirection*200.f;
+            GetWorld()->LineTraceSingleByChannel(Hit,From,To,ECC_Visibility,PupilTrace);
+            Beam(GetWorld(),From,Hit.bBlockingHit?Hit.ImpactPoint:To,FLinearColor(.83f,.92f,1.f),2.5f,.14f);
+            if(Hit.GetActor()==Target)
+                UGameplayStatics::ApplyPointDamage(Target,4.f,PupilLockedDirection,Hit,GetController(),this,UDamageType::StaticClass());
+            return;
+        }
+        if(Now<NextEnemyShot||Dist>190.f) return;
+        bPupilWindup=true; PupilWindupEndsAt=Now+.55f; NextEnemyShot=PupilWindupEndsAt+1.45f;
+        PupilLockedDirection=(Target->GetActorLocation()+FVector(0,0,50)-From).GetSafeNormal();
+        Beam(GetWorld(),From,From+PupilLockedDirection*200.f,FLinearColor(1.f,.68f,.16f),2.f,.55f);
         return;
     }
     if(GetWorld()->GetTimeSeconds()<NextEnemyShot||Dist>2100) return;
@@ -538,8 +623,17 @@ void ASoraCharacter::NextMap() { if(auto* G=Cast<ASoraGameMode>(UGameplayStatics
 void ASoraCharacter::NewCampaign() { if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->NewCampaign(); }
 void ASoraCharacter::ReturnCampaign() { if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->ReturnCampaign(); }
 void ASoraCharacter::Practice() { if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->DeterministicPractice(); }
-void ASoraCharacter::BlockDown() { if(bKernelDriven&&CanPlay()) KernelHeldButtons|=4; }
-void ASoraCharacter::BlockUp() { KernelHeldButtons&=~4u; }
+void ASoraCharacter::BlockDown()
+{
+    if(!CanPlay()) return;
+    if(bKernelDriven) { KernelHeldButtons|=4; return; }
+    if(bDojoTraining&&!bOfflineGuardHeld)
+    {
+        bOfflineGuardHeld=true;
+        OfflineGuardPressedAt=GetWorld()->GetTimeSeconds();
+    }
+}
+void ASoraCharacter::BlockUp() { KernelHeldButtons&=~4u; bOfflineGuardHeld=false; }
 void ASoraCharacter::Ability() { if(bKernelDriven&&CanPlay()) KernelQueuedButtons|=16; }
 void ASoraCharacter::MeleeUp() { KernelHeldButtons&=~2u; }
 void ASoraCharacter::Subtitles() { if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->ToggleSubtitles(); }

@@ -1,4 +1,5 @@
 #include "SoraCampaignRules.h"
+#include "SoraDojoRules.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -22,9 +23,46 @@ static void Expect(bool Condition, const char* Message, int Chapter)
     }
 }
 
+static void TestDojoLessons()
+{
+    using namespace SoraDojoRules;
+    FProgress Training{0u};
+    Expect(ProgressValid(Training) && NextLesson(Training) == 0, "new dojo lesson invalid", 0);
+    Expect(!CanScoreBout(Training), "bout opened before lessons", 0);
+    Expect(!Record(Training, EAction::Guard, 1000), "guard bypassed stance", 0);
+    Expect(!Record(Training, EAction::Stance, StanceHoldMs - 1), "short stance passed", 0);
+    Expect(Training.CompletedMask == 0u, "rejected stance changed state", 0);
+    Expect(Record(Training, EAction::Stance, StanceHoldMs), "held stance failed", 0);
+    Expect(NextLesson(Training) == 1 && CheckpointValid(Training, 0, 0u), "stance checkpoint invalid", 0);
+    Expect(CheckpointValid(Training, 0, 1u), "catalog's zero-bout first site rejected", 0);
+    Expect(!CheckpointValid(Training, 1, 0u), "bout saved before curriculum", 0);
+    Expect(!CheckpointValid(Training, 0, 3u), "second site saved before bouts", 0);
+    Expect(!Record(Training, EAction::Guard, GuardHoldMs, false), "guard worked with back turned", 0);
+    Expect(!Record(Training, EAction::Guard, GuardHoldMs - 1), "short guard passed", 0);
+    Expect(Record(Training, EAction::Guard, GuardHoldMs), "held facing guard failed", 0);
+    Expect(NextLesson(Training) == 2 && CheckpointValid(Training, 0, 0u), "guard checkpoint invalid", 0);
+    Expect(!Record(Training, EAction::Parry, ParryWindowMs + 1), "late parry passed", 0);
+    Expect(!Record(Training, EAction::Parry, ParryWindowMs, false), "backwards parry passed", 0);
+    Expect(Record(Training, EAction::Parry, ParryWindowMs), "timed facing parry failed", 0);
+    Expect(NextLesson(Training) == 3 && CheckpointValid(Training, 0, 0u), "parry checkpoint invalid", 0);
+    Expect(!Record(Training, EAction::Recovery, 649, true, 650), "unfinished recovery passed", 0);
+    Expect(!Record(Training, EAction::Recovery, 650, true, 0), "zero recovery passed", 0);
+    Expect(Record(Training, EAction::Recovery, 650, true, 650), "full recovery failed", 0);
+    Expect(CanScoreBout(Training) && NextLesson(Training) == 4, "bout stayed locked", 0);
+    Expect(CheckpointValid(Training, 2, 1u), "completed lesson checkpoint invalid", 0);
+    Expect(!Record(Training, EAction::Stance, 1000), "completed lesson repeated", 0);
+    for (unsigned Invalid : {2u, 5u, 8u, 16u})
+    {
+        Expect(!ProgressValid({Invalid}), "non-prefix lesson mask accepted", 0);
+        Expect(!CheckpointValid({Invalid}, 0, 0u), "forged lesson checkpoint accepted", 0);
+    }
+    std::cout << "chapter 1: stance, guard, parry, recovery and saved lesson gates passed\n";
+}
+
 int main()
 {
     static_assert(sizeof(Chapters) / sizeof(Chapters[0]) == 8, "Eight chapters are required");
+    TestDojoLessons();
     for (int Chapter = 0; Chapter < 8; ++Chapter)
     {
         const FChapterFixture& Plan = Chapters[Chapter];

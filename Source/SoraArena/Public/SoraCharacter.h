@@ -24,6 +24,7 @@ public:
     void MakeDojoPupil(int32 Id);
     void MakeCampaignBoss(int32 Id);
     void SetDojoTraining(bool Enabled);
+    void SuspendDojoAction();
     void SetKernelDriven(bool Enabled, const FSoraPracticeMap* Map = nullptr);
     void ApplyKernelPlayer(const FSoraPracticePlayer& State);
     FSoraPracticeInput ConsumeKernelInput();
@@ -66,6 +67,15 @@ private:
     bool bEnemy = false;
     bool bDojoPupil = false;
     bool bDojoTraining = false;
+    bool bOfflineGuardHeld = false;
+    bool bDojoRecoveryPending = false;
+    bool bPupilWindup = false;
+    float OfflineGuardPressedAt = 0.f;
+    float DojoRecoveryStartedAt = 0.f;
+    float DojoRecoveryEndsAt = 0.f;
+    float PupilWindupEndsAt = 0.f;
+    int32 DojoRecoveryRequiredMs = 0;
+    FVector PupilLockedDirection = FVector::ForwardVector;
     bool bCampaignBoss = false;
     bool bBossWindup = false;
     bool bBossRecovery = false;

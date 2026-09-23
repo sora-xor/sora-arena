@@ -35,6 +35,16 @@ game_mode = (ROOT / "Source/SoraArena/Private/SoraGameMode.cpp").read_text()
 for gate in ("CheckpointValid", "RecordDefeat", "RestoreSite", "CompleteChapter",
              "CanSpawnFinalBoss", "AdvanceChapter", "CampaignLiberated"):
     assert f"SoraCampaignRules::{gate}" in game_mode, f"GameMode no longer uses tested {gate} gate"
+for gate in ("Record", "CheckpointValid", "CanScoreBout"):
+    assert f"SoraDojoRules::{gate}" in game_mode, f"GameMode no longer uses tested dojo {gate} gate"
+character = (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+assert "SoraDojoRules::EAction::Stance" in character
+assert "SoraDojoRules::EAction::Guard" in character
+assert "SoraDojoRules::EAction::Parry" in character
+assert "SoraDojoRules::EAction::Recovery" in character
+save_header = (ROOT / "Source/SoraArena/Public/SoraSaveGame.h").read_text()
+assert "UPROPERTY(SaveGame) int32 CheckpointDojoLessonMask" in save_header
+assert "Save->SaveSchema=5" in game_mode
 
 lines = ["static constexpr FChapterFixture Chapters[] = {"]
 for chapter in chapters:

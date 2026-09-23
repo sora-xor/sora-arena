@@ -20,4 +20,6 @@ public:
     UPROPERTY(SaveGame) int32 CheckpointKills = 0;
     UPROPERTY(SaveGame) int32 CheckpointNodesMask = 0;
     UPROPERTY(SaveGame) bool CheckpointComplete = false;
+    // Chapter-one stance, guard, parry, and recovery form a prefix mask.
+    UPROPERTY(SaveGame) int32 CheckpointDojoLessonMask = 0;
 };
