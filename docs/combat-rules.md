@@ -50,6 +50,15 @@ Other hits, including projectiles from a player currently holding Plasma,
 retain normal defense rules. These are provisional sidegrade tradeoffs pending
 human balance and readability playtests.
 
+`cargo run --release -p arena-cli -- balance` now measures every weapon through
+the 60 Hz kernel against a stationary, undefended 125-HP Samurai in a clear
+lane. The six standard ranged weapons kill in 1.017–1.217 seconds in that
+scenario. Standard melee ranges from 1.017 to 1.617 seconds; charged Plasma
+matchlock and Micro-mortar take about 1.78–1.80 seconds. The command reports
+the exact death tick, shots and damage events for each weapon. This is a
+repeatable mechanical baseline, not evidence of fair duels, readable effects,
+map balance, or human playtesting.
+
 In Control and Payload, the Healing lance's ray selects the nearest living
 player before the first wall. It heals an ally by 15 health up to that class's
 maximum, or damages an enemy by 15. A full-health ally still intercepts the

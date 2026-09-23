@@ -1,7 +1,8 @@
 //! Headless deterministic simulation/qualification diagnostic. Never moves XOR.
 use arena_core::{
-    catalog,
-    simulation::{Config, FIRE, Input, Mode, Participant, World},
+    catalog::{self, AttackKind},
+    math::Vec3,
+    simulation::{Config, Event, FIRE, Input, Mode, Participant, World},
 };
 use std::time::Instant;
 
@@ -91,13 +92,100 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             );
             println!("execution_proof=NOT_IMPLEMENTED qualified=false ledger_transactions=0");
         }
+        "balance" => {
+            println!("weapon,class,kind,lane_mm,death_tick,elapsed_seconds,shots,damage_events");
+            for weapon in catalog::WEAPONS {
+                let attacker_class = if weapon.id < 12 {
+                    weapon.id / 2
+                } else {
+                    weapon.id - 12
+                };
+                let mut world = World::new(
+                    Config {
+                        mode: Mode::FreeForAll,
+                        map: 0,
+                        max_ticks: 600,
+                        base_bond: 0,
+                        offline: true,
+                    },
+                    &[
+                        Participant {
+                            team: 0,
+                            class: attacker_class,
+                            weapon: weapon.id,
+                            bond: 0,
+                            special_entitled: false,
+                        },
+                        Participant {
+                            team: 1,
+                            class: 0,
+                            weapon: 0,
+                            bond: 0,
+                            special_entitled: false,
+                        },
+                    ],
+                )?;
+                // A stationary, undefended 125-HP Samurai in a clear lane.
+                // This is a repeatable mechanical diagnostic, not a playtest.
+                let distance = if weapon.kind == AttackKind::Melee {
+                    1500
+                } else {
+                    5000_i32.max(weapon.arming_mm + 500)
+                };
+                world.players[0].position = Vec3::new(0, 0, 0);
+                world.players[1].position = Vec3::new(distance, 0, 0);
+                let mut death_tick = None;
+                let mut shots = 0;
+                let mut damage_events = 0;
+                for tick in 0..600 {
+                    world.step(&[
+                        Input {
+                            buttons: FIRE,
+                            ..Input::default()
+                        },
+                        Input::default(),
+                    ])?;
+                    for event in &world.events {
+                        match event {
+                            Event::Shot { slot: 0, .. } => shots += 1,
+                            Event::Damage {
+                                attacker: 0,
+                                victim: 1,
+                                ..
+                            } => damage_events += 1,
+                            Event::Death { victim: 1, .. } => death_tick = Some(tick),
+                            _ => {}
+                        }
+                    }
+                    if death_tick.is_some() || world.terminal {
+                        break;
+                    }
+                }
+                let elapsed = death_tick.map_or(String::from("none"), |tick| {
+                    format!("{:.3}", f64::from(tick + 1) / 60.0)
+                });
+                let tick = death_tick.map_or(String::from("none"), |tick| tick.to_string());
+                println!(
+                    "{},{},{:?},{},{},{},{},{}",
+                    weapon.id,
+                    attacker_class,
+                    weapon.kind,
+                    distance,
+                    tick,
+                    elapsed,
+                    shots,
+                    damage_events
+                );
+            }
+            println!("scope=offline clear-lane mechanics only; proof_qualified=false");
+        }
         "qualification" => {
             println!(
                 "arena_profile_qualified=false\nexecution_relation=not_implemented\nmainnet_funding=disabled\nmarketplace=disabled\nreference_kernel=development"
             );
         }
         "help" | "--help" | "-h" => println!(
-            "SORA Arena headless tools\n  catalog\n  simulate [ticks<=36000] [players<=12]\n  qualification\nSimulation is not a cryptographic proof; no wallet is accessed."
+            "SORA Arena headless tools\n  catalog\n  simulate [ticks<=36000] [players<=12]\n  balance\n  qualification\nSimulation is not a cryptographic proof; no wallet is accessed."
         ),
         _ => return Err(format!("unknown command: {command}").into()),
     }
