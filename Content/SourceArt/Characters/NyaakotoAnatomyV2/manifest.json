@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "identity": "Nyaakoto / ニャーコト source-only feline facial anatomy revision V2",
+  "scale": "meters; +X face forward, +Z up; existing character coordinates",
+  "fbx": "SM_Nyaakoto_FacialAnatomy_V2_Study.fbx",
+  "source_blend": "Nyaakoto_FacialAnatomy_V2_Study.blend",
+  "uv_channel": "UVMap / UV0 on every mesh",
+  "user_reference_sha256": "c9f7a4bbe6ba529b2bbdb629db3ba09858c11b563c334e31593876455a550801",
+  "user_reference_embedded": false,
+  "anatomy_reference": "https://commons.wikimedia.org/wiki/File:KATZENSCHAEDEL_LATERAL_1280x1024.jpg (CC0; visual reference only, not embedded)",
+  "texture_provenance": "Project-owned generated fur swatches and iris bitmap loaded from ../Hero/PBR and packed into the Blender source; see ../Hero/PBR/Source/README.md",
+  "baked_albedo": "T_Nyaakoto_HeadStudy_Albedo.png",
+  "production_status": "REVIEW_ONLY; no integration, rig, game import, or photoreal qualification",
+  "files_sha256": {
+    "Nyaakoto_AnatomyV2_Front.png": "74c5de0a00408885ca672de2136de4d8958eefbaf8c12135bdc089ff39df27c9",
+    "Nyaakoto_AnatomyV2_Profile.png": "d463d3ee550e9a1aa3b554969c3d0d50b6d0cf5a90b285ada8bb39bb512d6798",
+    "Nyaakoto_AnatomyV2_ThreeQuarter.png": "07b8c3e38c3eeda83c4dca1bfa61d54b1401d50e78f625733dd4a5035bf48c7a",
+    "Nyaakoto_FacialAnatomy_V2_Study.blend": "44acb7c0f1ba4c39a0e400f6601f6941bc7ea2be9ac5beee934d430cf5436d45",
+    "SM_Nyaakoto_FacialAnatomy_V2_Study.fbx": "3fc2997f2510bb5deff6947b488022624464c776de7076aad4e209cac3f17677",
+    "T_Nyaakoto_HeadStudy_Albedo.png": "2307277d1677bc6e3a5ff93b8d9c592ac564156b70b22f070c63b0684ee803cb"
+  }
+}
