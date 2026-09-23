@@ -95,6 +95,7 @@ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRot
     // builder keeps its established simple collision proxies for combat.
     Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     const bool bEstateDojo=Name==TEXT("SM_Nyaagyu_EstateDojo");
+    const bool bProvisionKura=Name==TEXT("SM_Nyaagyu_ProvisionKura");
     for(int32 Index=0;Index<Asset->GetStaticMaterials().Num();++Index)
     {
         const FString Slot=Asset->GetStaticMaterials()[Index].MaterialSlotName.ToString();
@@ -118,6 +119,21 @@ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRot
         {
             Role=TEXT("Timber"); TileSizeCm=140.f;
             TintColor=FLinearColor(.24f,.23f,.24f);
+        }
+        else if(bProvisionKura&&Slot==TEXT("M_Kura_Kawara"))
+        {
+            Role=TEXT("Kawara"); TileSizeCm=300.f;
+            TintColor=FLinearColor(.93f,.94f,.96f);
+        }
+        else if(bProvisionKura&&Slot==TEXT("M_Kura_LimePlaster"))
+        {
+            Role=TEXT("Plaster"); TileSizeCm=100.f;
+            TintColor=FLinearColor(1.0f,.98f,.93f);
+        }
+        else if(bProvisionKura&&Slot==TEXT("M_Kura_CharredCedar"))
+        {
+            Role=TEXT("Timber"); TileSizeCm=140.f;
+            TintColor=FLinearColor(.23f,.22f,.22f);
         }
         if(!Role.IsEmpty())
         {
@@ -278,11 +294,13 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
             Building(P,FVector(650,700,Height),MapId==3?FLinearColor(.12f,.15f,.19f):FLinearColor(.63f,.56f,.40f),MapId>=2);
             if(MapId==0)
             {
-                // Keep the established campaign collision boxes exactly as
-                // built above, but render the original detailed dojo instead
-                // of the simple blockout. Its UCX meshes remain decorative;
-                // the separate P2P practice map never loads this building.
-                if(ImportedProp(TEXT("SM_Nyaagyu_EstateDojo"),P,FRotator(0,S>0?0.f:180.f,0)))
+                // Six dojo halls and four provision storehouses break up the
+                // estate's silhouette. Every original Building() component
+                // remains as collision; only its blockout render is hidden.
+                // These visual meshes never enter the P2P practice map.
+                const TCHAR* VisualAsset=(I==1||I==3)
+                    ?TEXT("SM_Nyaagyu_ProvisionKura"):TEXT("SM_Nyaagyu_EstateDojo");
+                if(ImportedProp(VisualAsset,P,FRotator(0,S>0?0.f:180.f,0)))
                     for(int32 Piece=BuildingStart;Piece<Pieces.Num()-1;++Piece)
                         if(Pieces[Piece]) Pieces[Piece]->SetVisibility(false);
                 const float TreeScale=.90f+.05f*((I+3*(S+1))%5);

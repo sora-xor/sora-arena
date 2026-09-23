@@ -204,6 +204,7 @@ def expected_assets(project_root):
         ("NyaagyuSluice", "SM_Nyaagyu_IrrigationSluice"),
         ("SilkFoundryLoom", "SM_SilkFoundry_LevyLoom"),
         ("NyaagyuDojo", "SM_Nyaagyu_EstateDojo"),
+        ("NyaagyuKura", "SM_Nyaagyu_ProvisionKura"),
     ):
         named_mesh(source_root, specs, f"Environment/{folder}", "manifest.json",
                    name, PROPS)
@@ -216,6 +217,16 @@ def expected_assets(project_root):
             and dojo.get("sora_kamon_svg_sha256") ==
             hashlib.sha256(logo_svg.read_bytes()).hexdigest(),
             "The original Nyaagyu dojo source identity changed")
+    kura = read_manifest(source_root / "Environment/NyaagyuKura/manifest.json")
+    require(kura.get("generator") == "scripts/art/create_nyaagyu_kura.py"
+            and kura.get("collision_boxes") == 3
+            and kura.get("roof_tile_count") == 600
+            and kura.get("shutter_count") == 4
+            and kura.get("palette_asset_ids") ==
+            ["wood_planks_dirt", "stone_floor", "grey_roof_tiles", "white_plaster_02"]
+            and kura.get("sora_kamon_svg_sha256") ==
+            hashlib.sha256(logo_svg.read_bytes()).hexdigest(),
+            "The original Nyaagyu provision storehouse source identity changed")
 
     terrain_root = source_root / "Environment/NyaagyuTerrain"
     terrain = read_manifest(terrain_root / "manifest.json")
@@ -348,6 +359,25 @@ def expected_assets(project_root):
         name = f"T_Kawara_{item['channel']}"
         add(specs, f"{PALETTE}/Textures/{name}.{name}", "Texture2D")
     add(specs, roof["unreal_instance"], "MaterialInstanceConstant")
+    plaster = read_manifest(palette_root / "WhitePlaster02/manifest.json")
+    require(plaster.get("schema_version") == 1
+            and plaster.get("asset_id") == "white_plaster_02"
+            and plaster.get("role") == "plaster"
+            and plaster.get("license") == "CC0-1.0"
+            and plaster.get("source_dimensions_mm") == [1000, 1000]
+            and plaster.get("tile_size_cm") == 100.0
+            and plaster.get("unreal_instance") ==
+            f"{PALETTE}/MI_Nyaagyu_Plaster.MI_Nyaagyu_Plaster"
+            and [item.get("channel") for item in plaster.get("files", [])] ==
+            ["Diffuse", "nor_dx", "arm"],
+            "The pinned CC0 white plaster surface changed")
+    for item in plaster["files"]:
+        source = source_file(palette_root / "WhitePlaster02", item["file"])
+        require(hashlib.sha256(source.read_bytes()).hexdigest() == item["sha256"],
+                f"White plaster source map changed: {source}")
+        name = f"T_Plaster_{item['channel']}"
+        add(specs, f"{PALETTE}/Textures/{name}.{name}", "Texture2D")
+    add(specs, plaster["unreal_instance"], "MaterialInstanceConstant")
     return specs
 
 
@@ -419,7 +449,7 @@ def validate_loaded_assets(unreal, specs):
                     for channel, value in zip("rgb", surface["tint"])),
                 f"Nyaakoto material {name} changed its tint")
     base_path = f"{PALETTE}/M_Nyaagyu_PBR.M_Nyaagyu_PBR"
-    for role in ("Timber", "Stone", "Soil", "Metal", "Kawara"):
+    for role in ("Timber", "Stone", "Soil", "Metal", "Kawara", "Plaster"):
         path = f"{PALETTE}/MI_Nyaagyu_{role}.MI_Nyaagyu_{role}"
         parent = asset_library.load_asset(path).get_editor_property("parent")
         require(parent is not None and parent.get_path_name() == base_path,
@@ -446,6 +476,33 @@ def validate_loaded_assets(unreal, specs):
     tile = material_lib.get_material_instance_vector_parameter_value(roof_instance, "TileSize")
     require(all(abs(getattr(tile, channel) - 300.0) < 1e-5 for channel in "rgb"),
             "Kawara projection lost its measured three-metre scale")
+    plaster_instance = asset_library.load_asset(f"{PALETTE}/MI_Nyaagyu_Plaster.MI_Nyaagyu_Plaster")
+    for parameter, channel in (("AlbedoMap", "Diffuse"),
+                               ("NormalMap", "nor_dx"), ("ARMMap", "arm")):
+        expected = f"{PALETTE}/Textures/T_Plaster_{channel}.T_Plaster_{channel}"
+        actual = material_lib.get_material_instance_texture_parameter_value(plaster_instance, parameter)
+        require(actual is not None and actual.get_path_name() == expected,
+                f"Plaster instance lost its {parameter} scan map")
+        texture = asset_library.load_asset(expected)
+        require(bool(texture.get_editor_property("srgb")) == (channel == "Diffuse"),
+                f"Plaster {channel} texture color space changed")
+        if channel == "nor_dx":
+            require(texture.get_editor_property("compression_settings") ==
+                    unreal.TextureCompressionSettings.TC_NORMALMAP
+                    and not bool(texture.get_editor_property("flip_green_channel")),
+                    "Plaster DX normal import changed")
+        if channel == "arm":
+            require(texture.get_editor_property("compression_settings") ==
+                    unreal.TextureCompressionSettings.TC_MASKS,
+                    "Plaster AO/roughness/metallic import changed")
+    plaster_tile = material_lib.get_material_instance_vector_parameter_value(plaster_instance, "TileSize")
+    require(all(abs(getattr(plaster_tile, channel) - 100.0) < 1e-5 for channel in "rgb"),
+            "Plaster projection lost its measured one-metre scale")
+    for name in ("SM_Nyaagyu_EstateDojo", "SM_Nyaagyu_ProvisionKura"):
+        path = f"{PROPS}/{name}.{name}"
+        mesh = asset_library.load_asset(path)
+        require(bool(mesh.get_editor_property("nanite_settings").get_editor_property("enabled")),
+                f"Estate building lost its Windows Nanite data: {path}")
     for tier in ("HI", "MAC"):
         for y in range(4):
             for x in range(4):

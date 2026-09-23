@@ -227,11 +227,21 @@ if (dojo["schema_version"] != 1 or dojo["name"] != dojo_name
         or dojo["sora_kamon_svg_sha256"] != logo_manifest["source_sha256"]
         or dojo["collision_boxes"] != 3):
     raise RuntimeError("The original Nyaagyu Estate dojo identity changed")
+kura_source = source / "Environment/NyaagyuKura"
+kura = json.loads((kura_source / "manifest.json").read_text())
+kura_name = "SM_Nyaagyu_ProvisionKura"
+if (kura["schema_version"] != 1 or kura["name"] != kura_name
+        or kura["generator"] != "scripts/art/create_nyaagyu_kura.py"
+        or kura["unreal_asset"] != f"/Game/Generated/Environment/Props/{kura_name}.{kura_name}"
+        or kura["sora_kamon_svg_sha256"] != logo_manifest["source_sha256"]
+        or kura["collision_boxes"] != 3
+        or kura["palette_asset_ids"] != ["wood_planks_dirt", "stone_floor", "grey_roof_tiles", "white_plaster_02"]):
+    raise RuntimeError("The original Nyaagyu provision storehouse identity changed")
 assets.make_directory("/Game/Generated/Environment/Props")
 environment_tasks = []
 environment_entries = ([(environment_source, entry) for entry in environment_manifest["assets"]]
                        + [(street_source, street_terminal), (sluice_source, sluice),
-                          (loom_source, loom), (dojo_source, dojo)])
+                          (loom_source, loom), (dojo_source, dojo), (kura_source, kura)])
 for entry_root, entry in environment_entries:
     fbx = entry_root / entry["fbx"]
     if (entry["fbx"] != entry["name"] + ".fbx" or not fbx.is_file()
@@ -253,16 +263,16 @@ for entry_root, entry in environment_entries:
     options.static_mesh_import_data.combine_meshes = False
     options.static_mesh_import_data.generate_lightmap_u_vs = True
     options.static_mesh_import_data.auto_generate_collision = False
-    options.static_mesh_import_data.set_editor_property("build_nanite", entry["name"] == dojo_name)
+    options.static_mesh_import_data.set_editor_property("build_nanite", entry["name"] in (dojo_name, kura_name))
     task.options = options
     environment_tasks.append(task)
 tools.import_asset_tasks(environment_tasks)
-for name in environment_names + [street_name, sluice_name, loom_name, dojo_name]:
+for name in environment_names + [street_name, sluice_name, loom_name, dojo_name, kura_name]:
     mesh = assets.load_asset(f"/Game/Generated/Environment/Props/{name}")
     if not isinstance(mesh, unreal.StaticMesh):
         raise RuntimeError(f"Unreal import did not create the original environment prop: {name}")
-    if name == dojo_name and not mesh.get_editor_property("nanite_settings").get_editor_property("enabled"):
-        raise RuntimeError("The authored Estate dojo did not build its Windows Nanite data")
+    if name in (dojo_name, kura_name) and not mesh.get_editor_property("nanite_settings").get_editor_property("enabled"):
+        raise RuntimeError(f"The authored Estate building did not build its Windows Nanite data: {name}")
 
 # Modular estate relief is campaign presentation only. The HI tiles build
 # Nanite data for supported Windows GPUs; MAC tiles are independent conventional

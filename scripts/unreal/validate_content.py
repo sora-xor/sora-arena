@@ -443,6 +443,28 @@ dojo_fbx = (dojo_root / dojo["fbx"]).read_bytes()
 assert dojo_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in dojo_fbx
 assert dojo["name"] in world_builder and dojo["name"] in import_script
 assert "SetVisibility(false)" in world_builder
+kura_root = content / "SourceArt/Environment/NyaagyuKura"
+kura = json.loads((kura_root / "manifest.json").read_text())
+assert kura["schema_version"] == 1
+assert kura["name"] == "SM_Nyaagyu_ProvisionKura"
+assert kura["generator"] == "scripts/art/create_nyaagyu_kura.py"
+assert kura["unreal_asset"] == "/Game/Generated/Environment/Props/SM_Nyaagyu_ProvisionKura.SM_Nyaagyu_ProvisionKura"
+assert kura["fbx"] == kura["name"] + ".fbx"
+assert 300 <= kura["source_parts"] <= 500 and 45000 <= kura["source_triangles"] < 100000
+assert kura["roof_tile_count"] == 600 and kura["shutter_count"] == 4 and kura["collision_boxes"] == 3
+assert kura["palette_asset_ids"] == ["wood_planks_dirt", "stone_floor", "grey_roof_tiles", "white_plaster_02"]
+assert kura["sora_kamon_svg_sha256"] == hero_character["insignia_sha256"]
+assert "Original project-owned geometry" in kura["license"] and "CC0 Poly Haven" in kura["license"]
+for name, digest in ((kura["source_blend"], "blend_sha256"),
+                     (kura["fbx"], "fbx_sha256"),
+                     (kura["preview"], "preview_sha256")):
+    path = kura_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == kura[digest]
+kura_fbx = (kura_root / kura["fbx"]).read_bytes()
+assert kura_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in kura_fbx
+assert kura["name"] in world_builder and kura["name"] in import_script
+assert "(I==1||I==3)" in world_builder
 roof_root = content / "SourceArt/Environment/PolyHaven/GreyRoofTiles"
 roof = json.loads((roof_root / "manifest.json").read_text())
 assert roof["schema_version"] == 1 and roof["asset_id"] == "grey_roof_tiles"
@@ -458,6 +480,22 @@ for item in roof["files"]:
     assert hashlib.sha256(data).hexdigest() == item["sha256"]
 assert 'Role=TEXT("Kawara"); TileSizeCm=300.f;' in world_builder
 assert "MI_Nyaagyu_Kawara" in (ROOT / "scripts/unreal/validate_imported_assets.py").read_text()
+plaster_root = content / "SourceArt/Environment/PolyHaven/WhitePlaster02"
+plaster = json.loads((plaster_root / "manifest.json").read_text())
+assert plaster["schema_version"] == 1 and plaster["asset_id"] == "white_plaster_02"
+assert plaster["role"] == "plaster" and plaster["license"] == "CC0-1.0"
+assert plaster["asset_url"] == "https://polyhaven.com/a/white_plaster_02"
+assert plaster["authors"] == {"Rob Tuytel": "All"}
+assert plaster["source_dimensions_mm"] == [1000, 1000] and plaster["tile_size_cm"] == 100.0
+assert plaster["unreal_instance"] == "/Game/Generated/Environment/MI_Nyaagyu_Plaster.MI_Nyaagyu_Plaster"
+assert [item["channel"] for item in plaster["files"]] == ["Diffuse", "nor_dx", "arm"]
+assert hashlib.sha256((plaster_root / "manifest.json").read_bytes()).hexdigest() == kura["plaster_manifest_sha256"]
+for item in plaster["files"]:
+    data = (plaster_root / item["file"]).read_bytes()
+    assert len(data) == item["bytes"]
+    assert hashlib.sha256(data).hexdigest() == item["sha256"]
+assert 'Role=TEXT("Plaster"); TileSizeCm=100.f;' in world_builder
+assert "MI_Nyaagyu_Plaster" in (ROOT / "scripts/unreal/validate_imported_assets.py").read_text()
 assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())
@@ -485,4 +523,4 @@ absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 7 original environment props, 18 hash-pinned Nyaakoto PBR maps for 23 runtime materials, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 8 original environment props, 18 hash-pinned Nyaakoto PBR maps for 23 runtime materials, licensed Japanese font, hash-verified SORA logo.")
