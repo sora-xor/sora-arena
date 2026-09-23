@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_EstateWall_4m",
+  "generator": "scripts/art/create_nyaagyu_estate_wall.py",
+  "generator_sha256": "43f495f1c8143edf62483ce621d6b208beae2387ff2e374fa0f6c78c3b7b2167",
+  "source_blend": "Nyaagyu_EstateWall.blend",
+  "blend_sha256": "be61f83b0ce7875f1dbba86b61adaeb20e814b154074a5c3ef00363f82a4be06",
+  "fbx": "SM_Nyaagyu_EstateWall_4m.fbx",
+  "fbx_sha256": "b0fe8086319be0c445fe4be6d9a205409a68e4976614d7dce9a63263830c0d87",
+  "review_before": "Nyaagyu_WallProxy_Before_Blender.png",
+  "review_before_sha256": "35b956ff9cc50bf1fc57b0b3169414960b2809902071271cb9a369303f79ccb9",
+  "review_after": "Nyaagyu_EstateWall_Blender.png",
+  "review_after_sha256": "977fde766c3d54ee3858f704b542321742afa36ba84c160b18d4d06a2831b39b",
+  "source_parts": 165,
+  "source_triangles": 11218,
+  "bounds_m": {
+    "min": [
+      -0.48,
+      -1.999,
+      -2.6953
+    ],
+    "max": [
+      0.48,
+      1.999,
+      2.69
+    ]
+  },
+  "module_length_m": 4.0,
+  "collision_envelope_m": [
+    1.0,
+    4.0,
+    5.4
+  ],
+  "collision": "Visual-only module; existing C++ 100 cm perimeter-wall cubes remain gameplay collision",
+  "nanite_windows": true,
+  "mac_conventional_fallback": {
+    "source_fbx": "SM_Nyaagyu_EstateWall_4m.fbx",
+    "fallback_percent_triangles": 1.0,
+    "fallback_target": "PercentTriangles",
+    "generate_fallback": "Enabled",
+    "render_config": "Config/Mac/MacEngine.ini"
+  },
+  "material_slots": [
+    "M_Wall_CharredTimber",
+    "M_Wall_EarthenScar",
+    "M_Wall_Kawara",
+    "M_Wall_LimePlaster",
+    "M_Wall_StoneDark",
+    "M_Wall_StoneFoundation"
+  ],
+  "slot_definitions": {
+    "M_Wall_CharredTimber": {
+      "source": "Timber",
+      "tint": [
+        0.16,
+        0.16,
+        0.16
+      ],
+      "roughness_bias": 0.08
+    },
+    "M_Wall_EarthenScar": {
+      "source": "Plaster",
+      "tint": [
+        0.58,
+        0.38,
+        0.24
+      ],
+      "roughness_bias": 0.08
+    },
+    "M_Wall_Kawara": {
+      "source": "Kawara",
+      "tint": [
+        0.48,
+        0.5,
+        0.53
+      ],
+      "roughness_bias": 0.05
+    },
+    "M_Wall_LimePlaster": {
+      "source": "Plaster",
+      "tint": [
+        0.91,
+        0.85,
+        0.73
+      ],
+      "roughness_bias": 0.02
+    },
+    "M_Wall_StoneDark": {
+      "source": "Stone",
+      "tint": [
+        0.68,
+        0.7,
+        0.68
+      ],
+      "roughness_bias": 0.07
+    },
+    "M_Wall_StoneFoundation": {
+      "source": "Stone",
+      "tint": [
+        0.9,
+        0.91,
+        0.88
+      ],
+      "roughness_bias": 0.05
+    }
+  },
+  "scan_manifest_sha256": "2b97d5c64435c007ea7c252d52d562e44d6f8bd2e254f5b46afdd3426177d854",
+  "dependencies": {
+    "Stone": {
+      "asset_id": "rock_01",
+      "source_url": "https://polyhaven.com/a/rock_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_diff_2k.jpg",
+          "sha256": "fe9013368539b5604602e64bfa48bef1a2a4c452fcb6894868fb556d0b14501c",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_nor_dx_2k.png",
+          "sha256": "e75062267abe1ae9d3792d4a2667f893a1a952dd0c59274a13fb3d348ca97a3a",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rock_01/rock_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_arm_2k.jpg",
+          "sha256": "a954de58336738e6f963466f1453202ef7e186bd6492106c3b989c39f0d2e23c",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_arm_2k.jpg"
+        }
+      }
+    },
+    "Plaster": {
+      "asset_id": "white_plaster_02",
+      "source_url": "https://polyhaven.com/a/white_plaster_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/white_plaster_02_diff_2k.jpg",
+          "sha256": "0ca5245ba70777d3e41ff4566c9f8d363855461891802c55cb7dc0f6f85f084e",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/white_plaster_02_nor_dx_2k.png",
+          "sha256": "3c5bef5be1d0871848bb1d59aa770933cd626dc514b5f833f79fb9b1e71ead4b",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/white_plaster_02_arm_2k.jpg",
+          "sha256": "acdb65bfabb3613812bdad9156021400e518bdf4998c011921ce43695a5e24d4",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_arm_2k.jpg"
+        }
+      }
+    },
+    "Timber": {
+      "asset_id": "wood_planks_dirt",
+      "source_url": "https://polyhaven.com/a/wood_planks_dirt",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+          "sha256": "5c8640bbd63e56dbca947dbd2d0be380c661feb556c2949ec95d842ce7f31a59",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+          "sha256": "958c93dbd644dc7ea925bff951cbe6275c4066f60000417e1abef2c1b9a3e6fc",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+          "sha256": "556835168ffb105f31666add0237f7fb7a11a5d6d05d4cfa5979a4e957b9da63",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/wood_planks_dirt/wood_planks_dirt_arm_4k.png"
+        }
+      }
+    },
+    "Kawara": {
+      "asset_id": "grey_roof_tiles",
+      "source_url": "https://polyhaven.com/a/grey_roof_tiles",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_diff_4k.jpg",
+          "sha256": "28b0a8716d492b6d121e62d12f0c23b061a6b41c1f441e7c9e79cc76db161e3f",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/grey_roof_tiles/grey_roof_tiles_diff_4k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_nor_dx_4k.png",
+          "sha256": "30720ff6ddb2d99199d6b6aedbd4741c0cee2f01e0d7bef7c5dec45b6f74b5df",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/grey_roof_tiles/grey_roof_tiles_nor_dx_4k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_arm_4k.png",
+          "sha256": "06014af2deb71778bf613bf2eccc713a956f42874e1418ba3e0c7c5750fb6d31",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/grey_roof_tiles/grey_roof_tiles_arm_4k.png"
+        }
+      }
+    }
+  },
+  "unreal_asset": "/Game/Generated/Environment/Props/SM_Nyaagyu_EstateWall_4m.SM_Nyaagyu_EstateWall_4m",
+  "license": "Original project-owned geometry, existing and locally pinned Poly Haven CC0 scans; no paid assets",
+  "reference_notes": [
+    {
+      "url": "https://whc.unesco.org/en/list/661",
+      "use": "UNESCO describes Himeji's early seventeenth-century stone walls, wood construction, and white-plastered earthen walls; broad material vocabulary only"
+    },
+    {
+      "url": "https://www.himejicastle.jp/en/guide/history/",
+      "use": "Himeji Castle's primary visitor site documents layered plaster and fired clay roof tiles; no measurements copied"
+    },
+    {
+      "url": "https://kyoto.travel/en/travel-inspiration/kyoto-craftmanship-small-production-crafts/",
+      "use": "Kyoto's tourism office describes Kyoto kawara ceramics; Estate tile cap is fictional"
+    }
+  ],
+  "limitations": "Fictional Nyaagyu Estate fortification, not a surveyed Edo building. CC0 scans are physically plausible surfaces but roof scan has Western overlaps and is used only as micro-surface on original curved clay geometry. In-engine lighting, seam tiling, Nanite build, and Mac render cost remain unqualified."
+}

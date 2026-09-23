@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "asset_id": "rock_01",
+  "name": "Rock 01",
+  "role": "uncoursed-looking natural stone surface on original wall foundation geometry",
+  "asset_url": "https://polyhaven.com/a/rock_01",
+  "metadata_url": "https://api.polyhaven.com/files/rock_01",
+  "info_url": "https://api.polyhaven.com/info/rock_01",
+  "authors": {
+    "Rob Tuytel": "All"
+  },
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+  "resolution": "2k",
+  "source_dimensions_mm": [
+    1500,
+    1500
+  ],
+  "application": "Photographic mineral color, DX normal, and ARM only; project-authored 3D stone joints and silhouette carry shape. This is not a historical masonry reconstruction.",
+  "files": [
+    {
+      "channel": "Diffuse",
+      "file": "rock_01_diff_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_diff_2k.jpg",
+      "bytes": 3020379,
+      "upstream_md5": "fd84a894b55e56b17bdfdeec99277f92",
+      "sha256": "fe9013368539b5604602e64bfa48bef1a2a4c452fcb6894868fb556d0b14501c"
+    },
+    {
+      "channel": "nor_dx",
+      "file": "rock_01_nor_dx_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rock_01/rock_01_nor_dx_2k.png",
+      "bytes": 7379401,
+      "upstream_md5": "312f5ec5e0498b52c2841ebf41b5b236",
+      "sha256": "e75062267abe1ae9d3792d4a2667f893a1a952dd0c59274a13fb3d348ca97a3a"
+    },
+    {
+      "channel": "arm",
+      "file": "rock_01_arm_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_arm_2k.jpg",
+      "bytes": 925560,
+      "upstream_md5": "9c66ab2e8b6efbe3fd3479f06a1ccdc7",
+      "sha256": "a954de58336738e6f963466f1453202ef7e186bd6492106c3b989c39f0d2e23c"
+    }
+  ]
+}
