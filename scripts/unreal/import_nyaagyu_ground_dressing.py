@@ -247,4 +247,4 @@ for index, slot in enumerate(slots):
 assets.save_loaded_asset(mesh)
 assets.save_directory(dest, only_if_is_dirty=False, recursive=True)
 assets.save_directory(prop_path, only_if_is_dirty=False, recursive=True)
-unreal.log(f"NYAAGYU_ESTATE_WALL_READY: 4 m visual module, {len(instances)} material slots, Nanite + full conventional fallback; terrain collision unchanged")
+unreal.log(f"NYAAGYU_ROADSIDE_READY: 4 m visual module, {len(instances)} material slots, Nanite + full conventional fallback; terrain collision unchanged")

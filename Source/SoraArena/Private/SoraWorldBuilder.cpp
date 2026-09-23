@@ -79,7 +79,7 @@ void ASoraWorldBuilder::Building(FVector L, FVector Size, FLinearColor Wall, boo
         Box(N+FString::FromInt(I)+TEXT("Window"),L+FVector(Size.X*.505f,I*Size.Y*.24f,Size.Z*.55f),FVector(8,Size.Y*.17f,Size.Z*.42f),HighTech?FLinearColor(.04f,.62f,.66f):FLinearColor(.88f,.66f,.34f),false);
     if (HighTech) Box(N+TEXT("Antenna"),L+FVector(0,0,Size.Z+220),FVector(25,25,340),FLinearColor(.12f,.65f,.68f));
 }
-bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRotator Rotation)
+bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRotator Rotation, float Scale)
 {
     const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Props/%s.%s"),*Name,*Name);
     auto* Asset=LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
@@ -91,9 +91,11 @@ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRot
     auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
     Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
     Mesh->SetRelativeLocation(Location); Mesh->SetRelativeRotation(Rotation);
+    Mesh->SetRelativeScale3D(FVector(Scale));
     // In campaign the authored UCX is useful for placement review. The world
     // builder keeps its established simple collision proxies for combat.
     Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Mesh->SetGenerateOverlapEvents(false);
     Mesh->SetCastShadow(true);
     Mesh->SetAffectDistanceFieldLighting(true);
     Mesh->SetAffectDynamicIndirectLighting(true);
@@ -370,6 +372,20 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
             const float TreeScale=1.65f+.14f*(I%4);
             NyaagyuPine(FVector(X,Y,0),FRotator(0,31.f*I+17.f,0),TreeScale,I%3);
         }
+        // Thin scanned silt, moss, fallen leaves, and small stones sit along
+        // peripheral gaps. The center stone route and combat cover stay clear.
+        // Scale/yaw variation avoids a visibly tiled four-metre carpet.
+        const FVector DressingLocations[] = {
+            FVector(-2600,-500,2), FVector(-2600,500,2),
+            FVector(-1850,540,2),
+            FVector(2700,-1700,2), FVector(2700,1700,2),
+            FVector(-1750,1180,2), FVector(1750,-1180,2),
+        };
+        const float DressingYaw[] = {14.f,171.f,39.f,-22.f,49.f,-31.f,157.f};
+        const float DressingScale[] = {.82f,.78f,.58f,.87f,.96f,.83f,.91f};
+        for(int32 I=0;I<7;++I)
+            ImportedProp(TEXT("SM_Nyaagyu_RoadsideLeafSilt_4m"),DressingLocations[I],
+                FRotator(0,DressingYaw[I],0),DressingScale[I]);
     }
     for(int32 I=0;I<12;++I)
     {

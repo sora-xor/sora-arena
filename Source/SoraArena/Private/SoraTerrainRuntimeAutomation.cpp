@@ -49,6 +49,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     int32 CargoVisualCount = 0;
     int32 HiddenCoverColliders = 0;
     int32 WallVisualCount = 0;
+    int32 RoadsideVisualCount = 0;
     int32 HiddenBoundaryColliders = 0;
     for (UStaticMeshComponent* Component : CampaignMeshes)
     {
@@ -69,6 +70,20 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
                 Component->bAffectDistanceFieldLighting);
             TestTrue(TEXT("Estate wall art participates in dynamic indirect lighting"),
                 Component->bAffectDynamicIndirectLighting);
+        }
+        if (Component->GetName().StartsWith(TEXT("SM_Nyaagyu_RoadsideLeafSilt_4m")))
+        {
+            ++RoadsideVisualCount;
+            TestTrue(TEXT("Roadside dressing never changes combat collision"),
+                Component->GetCollisionEnabled() == ECollisionEnabled::NoCollision);
+            TestFalse(TEXT("Roadside dressing emits no overlaps"),
+                Component->GetGenerateOverlapEvents());
+            const float YawRadians = FMath::DegreesToRadians(Component->GetRelativeRotation().Yaw);
+            const float YExtent = Component->GetRelativeScale3D().X *
+                (220.f * FMath::Abs(FMath::Sin(YawRadians)) +
+                 130.f * FMath::Abs(FMath::Cos(YawRadians)));
+            TestTrue(TEXT("Roadside dressing stays off the central combat route"),
+                FMath::Abs(Component->GetRelativeLocation().Y) - YExtent >= 340.f);
         }
         if (Component->GetName().StartsWith(TEXT("WallX")) ||
             Component->GetName().StartsWith(TEXT("WallY")))
@@ -140,6 +155,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Campaign has twelve authored cargo visuals"), CargoVisualCount, 12);
     TestEqual(TEXT("Campaign retains twelve hidden cover colliders"), HiddenCoverColliders, 12);
     TestEqual(TEXT("Campaign has fifty-eight authored perimeter modules"), WallVisualCount, 58);
+    TestEqual(TEXT("Campaign has seven sparse peripheral ground-dressing visuals"), RoadsideVisualCount, 7);
     TestEqual(TEXT("Campaign retains four hidden perimeter colliders"), HiddenBoundaryColliders, 4);
     TestTrue(TEXT("Separate flat gameplay ground still supplies collision"), bCollisionGroundPresent);
     TestFalse(TEXT("Raised blockout road must not hide photographed terrain path"), bBlockoutRoadPresent);
@@ -169,6 +185,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     int32 PracticeTerrainCount = 0;
     int32 PracticeCargoCount = 0;
     int32 PracticeWallVisualCount = 0;
+    int32 PracticeRoadsideVisualCount = 0;
     bool bKernelGroundPresent = false;
     bool bKernelWallPresent = false;
     for (UStaticMeshComponent* Component : PracticeMeshes)
@@ -177,6 +194,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         PracticeTerrainCount += Component->GetName().StartsWith(TEXT("SM_NyaagyuTerrain_")) ? 1 : 0;
         PracticeCargoCount += Component->GetName().StartsWith(TEXT("SM_Nyaagyu_CargoStack")) ? 1 : 0;
         PracticeWallVisualCount += Component->GetName().StartsWith(TEXT("SM_Nyaagyu_EstateWall_4m")) ? 1 : 0;
+        PracticeRoadsideVisualCount += Component->GetName().StartsWith(TEXT("SM_Nyaagyu_RoadsideLeafSilt_4m")) ? 1 : 0;
         bKernelGroundPresent |= Component->GetName().StartsWith(TEXT("KernelGround")) &&
             Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics;
         bKernelWallPresent |= Component->GetName().StartsWith(TEXT("KernelWall0")) &&
@@ -185,6 +203,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Practice mode has no authored terrain components"), PracticeTerrainCount, 0);
     TestEqual(TEXT("Practice mode has no authored cargo components"), PracticeCargoCount, 0);
     TestEqual(TEXT("Practice mode has no authored perimeter components"), PracticeWallVisualCount, 0);
+    TestEqual(TEXT("Practice mode has no ground-dressing components"), PracticeRoadsideVisualCount, 0);
     TestTrue(TEXT("Practice mode has kernel-defined colliding ground"), bKernelGroundPresent);
     TestTrue(TEXT("Practice mode has kernel-defined colliding wall"), bKernelWallPresent);
 

@@ -37,7 +37,7 @@ private:
     TSet<int32> Activated;
     UStaticMeshComponent* Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision = true, FRotator Rotation = FRotator::ZeroRotator, const FString& SurfaceRole = TEXT(""));
     void Building(FVector Location, FVector Size, FLinearColor Wall, bool HighTech);
-    bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation);
+    bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation, float Scale = 1.f);
     void NyaagyuTerrain();
     void NyaagyuTree(FVector Location, FRotator Rotation, float Scale);
     void NyaagyuPine(FVector Location, FRotator Rotation, float Scale, int32 Variant);

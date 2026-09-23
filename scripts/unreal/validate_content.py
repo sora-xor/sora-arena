@@ -343,6 +343,26 @@ assert 'ImportedProp(TEXT("SM_Nyaagyu_EstateWall_4m")' in world_builder
 assert "WallX->SetVisibility(false)" in world_builder and "WallY->SetVisibility(false)" in world_builder
 assert "SM_Nyaagyu_EstateWall_4m" not in world_builder.split(
     "void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "import_nyaagyu_ground_dressing.py" in import_script
+assert 'ImportedProp(TEXT("SM_Nyaagyu_RoadsideLeafSilt_4m")' in world_builder
+assert "SM_Nyaagyu_RoadsideLeafSilt_4m" not in world_builder.split(
+    "void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+ground_dressing_root = content / "SourceArt/Environment/NyaagyuGroundDressing"
+ground_dressing = json.loads((ground_dressing_root / "manifest.json").read_text())
+assert ground_dressing["schema_version"] == 1
+assert ground_dressing["name"] == "SM_Nyaagyu_RoadsideLeafSilt_4m"
+assert ground_dressing["source_triangles"] >= 12000
+assert ground_dressing["collision"].startswith("Visual only")
+assert ground_dressing["nanite_windows"] is True
+assert ground_dressing["unreal_asset"] == (
+    "/Game/Generated/Environment/Props/SM_Nyaagyu_RoadsideLeafSilt_4m."
+    "SM_Nyaagyu_RoadsideLeafSilt_4m")
+for filename, digest in ((ground_dressing["source_blend"], ground_dressing["blend_sha256"]),
+                         (ground_dressing["fbx"], ground_dressing["fbx_sha256"]),
+                         (ground_dressing["review"], ground_dressing["review_sha256"]),
+                         (ground_dressing["scatter_review"], ground_dressing["scatter_review_sha256"])):
+    path = ground_dressing_root / filename
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
 terrain_root = content / "SourceArt/Environment/NyaagyuTerrain"
 terrain = json.loads((terrain_root / "manifest.json").read_text())
 assert terrain["schema_version"] == 1

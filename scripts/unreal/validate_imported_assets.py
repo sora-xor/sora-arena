@@ -22,6 +22,7 @@ NYAAKOTO = "/Game/Generated/Characters/Nyaakoto"
 HERO_KATANA = "/Game/Generated/Weapons/HeroKatana"
 CARGO = "/Game/Generated/Environment/CargoStack"
 WALL = "/Game/Generated/Environment/EstateWall"
+ROADSIDE = "/Game/Generated/Environment/Roadside"
 
 
 def require(condition, message):
@@ -291,6 +292,57 @@ def estate_wall_source(project_root, source_root):
     return record
 
 
+def roadside_source(project_root, source_root):
+    art_root = source_root / "Environment/NyaagyuGroundDressing"
+    record = read_manifest(art_root / "manifest.json")
+    name = "SM_Nyaagyu_RoadsideLeafSilt_4m"
+    slots = {"M_Ground_DampSilt", "M_Ground_LeafOchre", "M_Ground_LeafUmber",
+             "M_Ground_Moss", "M_Ground_RiverStone", "M_Ground_WetStone"}
+    require(record.get("schema_version") == 1 and record.get("name") == name
+            and record.get("generator") == "scripts/art/create_nyaagyu_ground_dressing.py"
+            and record.get("unreal_asset") == f"{PROPS}/{name}.{name}"
+            and record.get("nominal_road_length_m") == 4.0
+            and record.get("collision", "").startswith("Visual only")
+            and record.get("nanite_windows") is True
+            and record.get("mac_conventional_fallback", {}).get(
+                "fallback_percent_triangles") == 1.0
+            and set(record.get("material_slots", [])) == slots
+            and set(record.get("slot_definitions", {})) == slots
+            and set(record.get("dependencies", {})) ==
+            {"DampSilt", "ForestLitter", "RiverStone"},
+            "Roadside ground-dressing identity or collision policy changed")
+    for key, digest in (("fbx", "fbx_sha256"), ("source_blend", "blend_sha256"),
+                        ("review", "review_sha256"),
+                        ("scatter_review", "scatter_review_sha256")):
+        path = source_file(art_root, record[key])
+        require(hashlib.sha256(path.read_bytes()).hexdigest() == record[digest],
+                f"Roadside source changed: {path}")
+    generator = source_file(project_root, record["generator"])
+    require(hashlib.sha256(generator.read_bytes()).hexdigest() == record["generator_sha256"],
+            "Roadside geometry generator changed")
+    scan = source_file(art_root, "ScanForestLeaves02/manifest.json")
+    require(hashlib.sha256(scan.read_bytes()).hexdigest() ==
+            record["new_scan_manifest_sha256"], "Roadside forest scan provenance changed")
+    lower = record["bounds_m"]["min"]
+    upper = record["bounds_m"]["max"]
+    require(len(lower) == len(upper) == 3
+            and lower[0] >= -2.2 and upper[0] <= 2.2
+            and lower[1] >= -1.3 and upper[1] <= 1.3
+            and lower[2] >= -.02 and upper[2] <= .2
+            and record.get("source_triangles", 0) >= 12_000,
+            "Roadside dressing escaped its shallow four-metre footprint")
+    for surface, dependency in record["dependencies"].items():
+        require(dependency.get("license") == "CC0-1.0"
+                and dependency.get("source_url", "").startswith("https://polyhaven.com/a/")
+                and set(dependency.get("files", {})) == {"Albedo", "NormalDX", "ORM"},
+                f"Roadside {surface} scan provenance changed")
+        for channel, file in dependency["files"].items():
+            path = source_file(project_root, file["repo_path"])
+            require(hashlib.sha256(path.read_bytes()).hexdigest() == file["sha256"],
+                    f"Roadside {surface} {channel} scan changed")
+    return record
+
+
 def validate_hero_katana_loaded(unreal, asset_library):
     record = hero_katana_pbr_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
     material_lib = unreal.MaterialEditingLibrary
@@ -525,6 +577,17 @@ def expected_assets(project_root):
     for slot in wall["material_slots"]:
         name = "MI_NyaagyuEstateWall_" + slot.removeprefix("M_Wall_")
         add(specs, f"{WALL}/{name}.{name}", "MaterialInstanceConstant")
+    roadside = roadside_source(project_root, source_root)
+    add(specs, roadside["unreal_asset"], "StaticMesh")
+    for surface in roadside["dependencies"]:
+        for channel in ("Albedo", "NormalDX", "ORM"):
+            name = f"T_Roadside_{surface}_{channel}"
+            add(specs, f"{ROADSIDE}/Textures/{name}.{name}", "Texture2D")
+    for name in ("M_NyaagyuRoadside_OpaquePBR", "M_NyaagyuRoadside_FeatheredPBR"):
+        add(specs, f"{ROADSIDE}/{name}.{name}", "Material")
+    for slot in roadside["material_slots"]:
+        name = "MI_NyaagyuRoadside_" + slot.removeprefix("M_Ground_")
+        add(specs, f"{ROADSIDE}/{name}.{name}", "MaterialInstanceConstant")
     dojo_root = source_root / "Environment/NyaagyuDojo"
     dojo = read_manifest(dojo_root / "manifest.json")
     require(dojo.get("generator") == "scripts/art/create_nyaagyu_dojo.py"
@@ -987,6 +1050,60 @@ def validate_loaded_assets(unreal, specs):
                 require(texture.get_editor_property("compression_settings") ==
                         unreal.TextureCompressionSettings.TC_MASKS,
                         f"Estate wall {surface} ORM compression changed")
+    roadside = roadside_source(
+        Path(unreal.Paths.project_dir()).resolve(),
+        Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
+    roadside_mesh = asset_library.load_asset(roadside["unreal_asset"])
+    settings = roadside_mesh.get_editor_property("nanite_settings")
+    require(bool(settings.get_editor_property("enabled"))
+            and settings.get_editor_property("fallback_percent_triangles") >= .999
+            and settings.get_editor_property("fallback_target") ==
+            unreal.NaniteFallbackTarget.PERCENT_TRIANGLES
+            and settings.get_editor_property("generate_fallback") ==
+            unreal.NaniteGenerateFallback.ENABLED,
+            "Roadside dressing lost Nanite data or full Mac fallback")
+    roadside_slots = roadside_mesh.get_editor_property("static_materials")
+    require({str(item.get_editor_property("material_slot_name")) for item in roadside_slots} ==
+            set(roadside["material_slots"]), "Roadside material zones disappeared")
+    feather_path = f"{ROADSIDE}/M_NyaagyuRoadside_FeatheredPBR.M_NyaagyuRoadside_FeatheredPBR"
+    opaque_path = f"{ROADSIDE}/M_NyaagyuRoadside_OpaquePBR.M_NyaagyuRoadside_OpaquePBR"
+    feather = asset_library.load_asset(feather_path)
+    opaque = asset_library.load_asset(opaque_path)
+    require(feather.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_MASKED
+            and opaque.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_OPAQUE,
+            "Roadside feathered/opaque material blending changed")
+    for item in roadside_slots:
+        slot = str(item.get_editor_property("material_slot_name"))
+        name = "MI_NyaagyuRoadside_" + slot.removeprefix("M_Ground_")
+        instance_path = f"{ROADSIDE}/{name}.{name}"
+        bound = item.get_editor_property("material_interface")
+        require(bound is not None and bound.get_path_name() == instance_path,
+                f"Roadside mesh lost material {slot}")
+        instance = asset_library.load_asset(instance_path)
+        parent = instance.get_editor_property("parent")
+        expect_parent = feather_path if slot in {"M_Ground_DampSilt", "M_Ground_Moss"} else opaque_path
+        require(parent is not None and parent.get_path_name() == expect_parent,
+                f"Roadside {slot} PBR parent changed")
+        surface = roadside["slot_definitions"][slot]["source"]
+        for parameter, channel in (("AlbedoMap", "Albedo"),
+                                   ("NormalMap", "NormalDX"), ("ORMMap", "ORM")):
+            texture_name = f"T_Roadside_{surface}_{channel}"
+            texture_path = f"{ROADSIDE}/Textures/{texture_name}.{texture_name}"
+            texture = asset_library.load_asset(texture_path)
+            actual = material_lib.get_material_instance_texture_parameter_value(instance, parameter)
+            require(actual is not None and actual.get_path_name() == texture_path,
+                    f"Roadside {slot} lost {parameter}")
+            require(bool(texture.get_editor_property("srgb")) == (channel == "Albedo"),
+                    f"Roadside {surface} {channel} color space changed")
+            if channel == "NormalDX":
+                require(texture.get_editor_property("compression_settings") ==
+                        unreal.TextureCompressionSettings.TC_NORMALMAP
+                        and not bool(texture.get_editor_property("flip_green_channel")),
+                        f"Roadside {surface} DirectX normal settings changed")
+            if channel == "ORM":
+                require(texture.get_editor_property("compression_settings") ==
+                        unreal.TextureCompressionSettings.TC_MASKS,
+                        f"Roadside {surface} ORM compression changed")
     for role in ("Soil", "Stone"):
         path = f"{PALETTE}/MI_Nyaagyu_Terrain{role}.MI_Nyaagyu_Terrain{role}"
         instance = asset_library.load_asset(path)
