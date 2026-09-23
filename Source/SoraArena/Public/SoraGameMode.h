@@ -65,6 +65,7 @@ private:
     UPROPERTY() TMap<uint32, TObjectPtr<AActor>> PracticeProjectileActors;
     bool ResetPractice();
     void ClearPractice();
+    void ClearOfflineProjectiles();
     void UpdatePracticePresentation();
     void PresentPracticeEvents();
     void ResetRound();

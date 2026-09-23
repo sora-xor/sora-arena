@@ -42,6 +42,9 @@ void ASoraGameMode::ResetRound()
     if(bDeterministicPractice) { ResetPractice(); return; }
     ClearPractice();
     if(!WorldBuilder||!FSoraCatalog::Get().IsReady()) return;
+    // A shell fired before death or chapter advance must never damage the
+    // restored encounter or score a kill against its freshly spawned enemies.
+    ClearOfflineProjectiles();
     for(const auto& E:Enemies) if(IsValid(E)) E->Destroy();
     Enemies.Reset(); BossActor=nullptr;
     Kills=0; Spawned=0; RoundTime=0; bDefeated=false; bChapterComplete=false;
@@ -385,6 +388,12 @@ void ASoraGameMode::ClearPractice()
     PracticeProjectileActors.Reset(); PracticeClock.Reset();
     if(auto* Player=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0))) Player->SetKernelDriven(false);
 }
+void ASoraGameMode::ClearOfflineProjectiles()
+{
+    TArray<AActor*> Projectiles;
+    UGameplayStatics::GetAllActorsOfClass(this,ASoraProjectile::StaticClass(),Projectiles);
+    for(auto* Projectile:Projectiles) if(IsValid(Projectile)) Projectile->Destroy();
+}
 bool ASoraGameMode::ResetPractice()
 {
     if(!WorldBuilder||!FSoraCatalog::Get().IsReady())
@@ -397,8 +406,7 @@ bool ASoraGameMode::ResetPractice()
         NoticeEnglish=TEXT("The real Rust library must be staged and validated before practice can start."); bMenu=true; return false;
     }
     for(const auto& Enemy:Enemies) if(IsValid(Enemy)) Enemy->Destroy(); Enemies.Reset();
-    TArray<AActor*> OldProjectiles; UGameplayStatics::GetAllActorsOfClass(this,ASoraProjectile::StaticClass(),OldProjectiles);
-    for(auto* Projectile:OldProjectiles) Projectile->Destroy();
+    ClearOfflineProjectiles();
     bDefeated=false; bChapterComplete=false; Kills=0; RoundTime=0; bPracticeSlowed=false;
     WorldBuilder->BuildPractice(MapId,K->PracticeMap);
     auto* Player=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0));
