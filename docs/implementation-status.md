@@ -310,6 +310,13 @@ thirteen signed two-tick P2P-shaped batches plus one exact idle pad frame. Its
 two focused tests pass transcript chaining, input/kill-row agreement and
 adversarial mutations. The saved STARK does not bind that transcript, and
 Iroha has not selected it as canonical session history.
+An independent `arena-core` regression now replays the exact 26-tick extension
+of that kill scene through `World::step`, pinning 27 state boundaries, 78 encoded
+controls across 13 two-tick batches, events, final allocations and a source
+fingerprint. Its focused test passes. This catches game-kernel drift in the
+fixed research scene; the fingerprint is not a cryptographic binding in the
+Iroha proof or a general live-match execution relation. See the
+[kernel parity fixture](proof/arena-kill-history-v2-kernel-parity.md).
 An unregistered Iroha research preflight separately measured an 18,000-batch,
 twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
 4 MiB proof envelope before the rest of a complete combat witness. Repeated
