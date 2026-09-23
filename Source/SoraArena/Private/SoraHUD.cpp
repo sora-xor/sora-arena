@@ -73,6 +73,8 @@ void ASoraHUD::DrawHUD()
     Label(TEXT("オフライン開発版  |  XOR・NFT の送金は行いません"),W-650*S,24*S,.47*S,Teal);
     if(G->bMenu)
     {
+        const UArenaWalletSubsystem* MenuWallet=GetWorld()->GetGameInstance()->GetSubsystem<UArenaWalletSubsystem>();
+        const bool bCompactClasses=MenuWallet&&MenuWallet->bHasUnverifiedJoinPreview;
         if(!bTitleArtResolved)
         {
             TitleArt=LoadObject<UTexture2D>(nullptr,TEXT("/Game/Generated/UI/T_NyaagyuTitle.T_NyaagyuTitle"),nullptr,LOAD_NoWarn); bTitleArtResolved=true;
@@ -110,8 +112,9 @@ void ASoraHUD::DrawHUD()
             Label(TEXT("流儀を選ぶ  /  変更すると、この戦いをやり直します"),L,465*S,.55*S,Gold);
             for(int32 I=0;I<6;++I)
             {
-                const float X=L+(I%3)*385*S,Y=(515+(I/3)*84)*S;
-                Panel(X-10*S,Y-8*S,355*S,69*S,I==G->SelectedClass?FLinearColor(.08,.25,.26,.9):FLinearColor(.07,.095,.11,.9));
+                const float X=L+(I%(bCompactClasses?2:3))*385*S;
+                const float Y=(bCompactClasses?500+(I/2)*57:515+(I/3)*84)*S;
+                Panel(X-10*S,Y-8*S,355*S,(bCompactClasses?53:69)*S,I==G->SelectedClass?FLinearColor(.08,.25,.26,.9):FLinearColor(.07,.095,.11,.9));
                 Label(FString::Printf(TEXT("F%d   %s"),I+1,*FSoraCatalog::Get().Class(I).Name),X,Y,.68*S,I==G->SelectedClass?Teal:Ivory);
                 Label(FSoraCatalog::Get().Class(I).Role,X,Y+28*S,.42*S,Muted);
             }
@@ -130,7 +133,7 @@ void ASoraHUD::DrawHUD()
             Label(TEXT("1 主武器   2 近接武器   3 特殊武器の試用   R 装填   E 調べる   Esc メニュー   F10 英語字幕"),L,763*S,.55*S,Ivory);
         }
         Label(TEXT("IROHA CONNECT  /  C 接続を開始   L ウォレットを開く   X 接続を解除"),L,815*S,.52*S,Gold);
-        if(auto* Wallet=GetWorld()->GetGameInstance()->GetSubsystem<UArenaWalletSubsystem>())
+        if(const UArenaWalletSubsystem* Wallet=MenuWallet)
         {
             WrappedLabel(Wallet->StatusText,L,852*S,.46*S,Muted,W-L*2,23*S,2);
             if(!Wallet->ApprovedAccount.IsEmpty()) Label(TEXT("承認済み： ")+Wallet->ApprovedAccount.Left(62),L,902*S,.42*S,Teal);
@@ -157,6 +160,29 @@ void ASoraHUD::DrawHUD()
                     }
                     Label(EnglishState,TxX+20*S,TxY+118*S,EnglishSubtitleScale,Muted);
                 }
+            }
+            if(Wallet->bHasUnverifiedJoinPreview)
+            {
+                const float PreviewX=W-700*S,PreviewY=455*S,PreviewW=650*S;
+                Panel(PreviewX,PreviewY,PreviewW,540*S,FLinearColor(.013,.027,.033,.96f));
+                Label(TEXT("参加条件の下書き  /  未検証"),PreviewX+20*S,PreviewY+12*S,.68*S,Gold);
+                if(G->bEnglishSubtitles) Label(TEXT("UNVERIFIED Join scaffold; no wallet approval."),PreviewX+20*S,PreviewY+43*S,.42*S,Muted);
+                Label(TEXT("申請入金額: ")+Wallet->JoinPreviewStake,PreviewX+20*S,PreviewY+78*S,.44*S,Ivory);
+                WrappedLabel(TEXT("資産 ID（申請）: ")+Wallet->JoinPreviewAsset,PreviewX+20*S,PreviewY+110*S,.38*S,Muted,PreviewW-40*S,18*S,2);
+                WrappedLabel(TEXT("NFT 装備予約（申請）: ")+Wallet->JoinPreviewNftReservations,PreviewX+20*S,PreviewY+152*S,.38*S,Ivory,PreviewW-40*S,18*S,2);
+                if(!Wallet->JoinPreviewNftMetadata.IsEmpty())
+                {
+                    WrappedLabel(TEXT("NFT 情報ハッシュ（申請）: ")+Wallet->JoinPreviewNftMetadata,PreviewX+20*S,PreviewY+194*S,.38*S,Muted,PreviewW-40*S,18*S,2);
+                    WrappedLabel(TEXT("装備ロール ID（申請）: ")+Wallet->JoinPreviewNftRole,PreviewX+20*S,PreviewY+235*S,.38*S,Muted,PreviewW-40*S,18*S,2);
+                    WrappedLabel(TEXT("返還規則（申請）: ")+Wallet->JoinPreviewNftPolicy,PreviewX+20*S,PreviewY+276*S,.38*S,Muted,PreviewW-40*S,18*S,2);
+                }
+                Label(TEXT("手数料負担の申請: ")+Wallet->JoinPreviewFeePayer,PreviewX+20*S,PreviewY+316*S,.40*S,Ivory);
+                WrappedLabel(TEXT("手数料上限明細（申請）: ")+Wallet->JoinPreviewFeeCaps,PreviewX+20*S,PreviewY+342*S,.36*S,Ivory,PreviewW-40*S,18*S,5);
+                Label(TEXT("死亡時の損失・最大損失: 未確認"),PreviewX+20*S,PreviewY+439*S,.43*S,Gold);
+                Label(TEXT("一部表示：台帳の試合規則・残高・所有権は未照合。"),PreviewX+20*S,PreviewY+462*S,.36*S,Muted);
+                if(G->bEnglishSubtitles)
+                    WrappedLabel(TEXT("Partial, unverified terms. Death loss and maximum loss unavailable; no wallet approval."),PreviewX+20*S,PreviewY+485*S,.35*S,Muted,PreviewW-40*S,16*S,2);
+                Label(TEXT("この画面から署名・入金はできません。"),PreviewX+20*S,PreviewY+520*S,.36*S,Teal);
             }
             if(Wallet->State==EArenaWalletState::AwaitingApproval&&Wallet->WalletQrTexture)
             {

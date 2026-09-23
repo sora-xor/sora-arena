@@ -186,10 +186,11 @@ input key, and any invitation. The existing native builder smoke check compares
 those values and fee intent byte-for-byte after re-inspection. This is useful
 transaction evidence, but it is not a complete game admission quote.
 
-The Unreal subsystem currently checks the inspected authority, network, and
-allowlisted instruction name, stores the full inspection as raw JSON, and sends
-the canonical payload to the wallet immediately. It does not render a typed
-term sheet or require a separate in-game confirmation. It also has no certified
+The Unreal subsystem checks the inspected authority, network, and allowlisted
+instruction name. Open and payout-claim scaffolds retain the isolated-test
+signing path; Join and Buy are rejected before any wallet signing request. It
+does not render a qualified term sheet or require a separate in-game
+confirmation. It also has no certified
 session/manifest read to establish the base bond, per-death loss, maximum loss,
 equipment reservation, or whether the declared asset is the configured XOR
 asset. `fee_payment` is an exact fee intent, not proof of a final network fee.
@@ -223,12 +224,29 @@ C declaration and Unreal function-pointer type. With `--game-fixtures`,
 `verify-bridge.py` exercises typed Join terms and rejects malformed or non-Join
 scaffolds if the symbol is present. Use `--require-arena-join-inspector` to fail
 verification when the symbol is missing.
-`UArenaWalletSubsystem::InspectJoinScaffold` now exposes those canonical typed
+`UArenaWalletSubsystem::InspectJoinScaffold` exposes those canonical typed
 terms as read-only JSON for a paired, matching account and network. It checks
 the inspector's payload hash against the general native scaffold inspection
-and requires `authorization_ready=false`. It neither shows a qualified bond
-term sheet to players nor requests a wallet signature; the Join/Buy signing
-block remains in force.
+and requires `authorization_ready=false`. A successful bounded inspection now
+also populates a Japanese-primary, English-secondary menu preview. The preview
+labels the requested `expected_stake` and asset identity, requested NFT
+reservation IDs, exact metadata and role hashes, return policy, fee payer, and
+exact-string fee charge caps as **unverified**.
+It is explicitly a **partial** preview: the Join session and manifest hashes,
+input key, application data, invitation, transaction time bounds, and the
+fee intent's gas limit and sponsor-program details are still only in the raw
+inspection result returned to the caller. The UI does not imply those fields
+were reviewed. It shows death loss and maximum loss as unavailable, since the native response
+has neither rule or an authenticated base bond. The fee caps are intent, not a
+final network fee quote. Requested NFT reservations are not verified ownership
+or active equipment custody. The preview supports at most one NFT reservation
+and two fee charge caps, with field-length bounds matching the canvas; an
+inspection exceeding those limits fails rather than hiding a term. No menu
+action creates a Join scaffold yet, so the preview appears only after an
+explicit caller invokes the read-only inspector. It never requests a wallet
+signature or changes the Join/Buy signing block. An authenticated session
+quote, exact loss rules, asset/ownership reads, and an Unreal visual/build run
+remain prerequisites for a real join review.
 
 `SubmitSignedTestTransaction()` is a separate, explicit operation. It is
 disabled in shipping builds and unless `Arena.Connect` explicitly sets

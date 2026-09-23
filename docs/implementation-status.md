@@ -190,8 +190,13 @@ pairing, submission and recovery run remain outstanding. Shipping builds keep
 both signing and submission of allowlisted game/NFT transactions disabled.
 Research signing requires an explicit isolated loopback Torii and exact network
 match before any wallet request, since signed bytes could be submitted elsewhere.
-The menu now presents the existing Japanese transaction state with an English
-status explanation, without displaying raw inspection JSON. Exact typed
+The menu presents the existing Japanese transaction state with an English
+status explanation. A bounded read-only Join scaffold preview displays
+requested deposit/asset, up to one NFT reservation including its metadata
+hash, role hash and return policy, and two fee caps, marked unverified and
+partial in Japanese with an English explanation. Missing authenticated
+death-loss and maximum-loss terms are explicitly unavailable; no menu action
+creates a Join scaffold yet. Exact typed
 join, bond and NFT purchase terms still need a game-facing review flow: the
 current native inspection has transaction fields, but the game lacks a
 verified session/offer snapshot and a separate pre-sign confirmation. See

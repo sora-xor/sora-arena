@@ -487,6 +487,19 @@ void UArenaWalletSubsystem::SetTransactionState(EArenaTransactionState NewState,
     OnTransactionStateChanged.Broadcast();
 }
 
+void UArenaWalletSubsystem::ClearJoinPreview()
+{
+    bHasUnverifiedJoinPreview = false;
+    JoinPreviewStake.Empty();
+    JoinPreviewAsset.Empty();
+    JoinPreviewNftReservations.Empty();
+    JoinPreviewNftMetadata.Empty();
+    JoinPreviewNftRole.Empty();
+    JoinPreviewNftPolicy.Empty();
+    JoinPreviewFeePayer.Empty();
+    JoinPreviewFeeCaps.Empty();
+}
+
 void UArenaWalletSubsystem::RestorePendingTransactionIdentity()
 {
     TArray<FString> Files;
@@ -544,6 +557,7 @@ void UArenaWalletSubsystem::ClearTransport()
 {
     ++Generation;
     Deadline = 0;
+    ClearJoinPreview();
     if (SessionRequest.IsValid())
     {
         SessionRequest->OnProcessRequestComplete().Unbind();
@@ -947,6 +961,7 @@ void UArenaWalletSubsystem::AcceptApproval(const TArray<uint8>& Frame)
 bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, FString& OutInspectionJson)
 {
     OutInspectionJson.Empty();
+    ClearJoinPreview();
     if (!Native || !Native->JoinTermsInspect || ApprovedAccount.IsEmpty()
         || (State != EArenaWalletState::Approved && State != EArenaWalletState::Signed)
         || ScaffoldBase64.IsEmpty() || ScaffoldBase64.Len() > ArenaConnect::MaxFrameBytes * 2) return false;
@@ -981,6 +996,68 @@ bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, F
         || !TermsJson->TryGetStringField(TEXT("scaffold_blake3_hex"), ScaffoldHash) || !ArenaConnect::CanonicalHash(ScaffoldHash)
         || !TermsJson->TryGetObjectField(TEXT("join"), Join)
         || !TermsJson->TryGetObjectField(TEXT("fee_payment"), Fee)) return false;
+
+    FString Stake, Asset, Payer;
+    const TArray<TSharedPtr<FJsonValue>>* Resources = nullptr;
+    const TSharedPtr<FJsonObject>* FeeValue = nullptr;
+    const TArray<TSharedPtr<FJsonValue>>* ChargeLimits = nullptr;
+    // The canvas preview has a deliberately bounded number and width of rows. Refuse
+    // a preview that would hide any reservation, fee cap, or part of a field.
+    if (!(*Join)->TryGetStringField(TEXT("expected_stake"), Stake) || Stake.IsEmpty() || Stake.Len() > 32
+        || !(*Join)->TryGetStringField(TEXT("expected_asset_definition"), Asset) || Asset.IsEmpty() || Asset.Len() > 64
+        || !(*Join)->TryGetArrayField(TEXT("resources"), Resources)
+        || !(*Fee)->TryGetStringField(TEXT("payer"), Payer) || (Payer != TEXT("authority") && Payer != TEXT("sponsor"))
+        || !(*Fee)->TryGetObjectField(TEXT("value"), FeeValue)
+        || !(*FeeValue)->TryGetArrayField(TEXT("charge_limits"), ChargeLimits)
+        || Resources->Num() > 1 || ChargeLimits->Num() > 2) return false;
+
+    FString NftSummary = FString::Printf(TEXT("%d"), Resources->Num());
+    FString NftMetadata, NftRole, NftPolicy;
+    for (const TSharedPtr<FJsonValue>& Entry : *Resources)
+    {
+        const TSharedPtr<FJsonObject>* Resource = nullptr;
+        const TSharedPtr<FJsonObject>* Policy = nullptr;
+        FString NftId, PolicyKind;
+        if (!Entry.IsValid() || !Entry->TryGetObject(Resource) || !Resource || !Resource->IsValid()
+            || !(*Resource)->TryGetStringField(TEXT("nft_id"), NftId)
+            || !(*Resource)->TryGetStringField(TEXT("expected_metadata_hash"), NftMetadata)
+            || !(*Resource)->TryGetStringField(TEXT("role_id"), NftRole)
+            || !(*Resource)->TryGetObjectField(TEXT("policy"), Policy) || !Policy || !Policy->IsValid()
+            || !(*Policy)->TryGetStringField(TEXT("kind"), PolicyKind)
+            || PolicyKind != TEXT("return_to_original_owner_at_terminal")
+            || !(*Policy)->HasTypedField<EJson::Null>(TEXT("value"))
+            || NftId.IsEmpty() || NftId.Len() > 50
+            || NftMetadata.IsEmpty() || NftMetadata.Len() > 80
+            || NftRole.IsEmpty() || NftRole.Len() > 80) return false;
+        NftSummary += TEXT("\n") + NftId;
+        NftPolicy = PolicyKind + TEXT(" / null");
+    }
+
+    FString FeeCaps = FString::Printf(TEXT("%d"), ChargeLimits->Num());
+    for (const TSharedPtr<FJsonValue>& Entry : *ChargeLimits)
+    {
+        const TSharedPtr<FJsonObject>* Limit = nullptr;
+        const TSharedPtr<FJsonObject>* FeeKind = nullptr;
+        FString Amount, FeeAsset, Kind;
+        if (!Entry.IsValid() || !Entry->TryGetObject(Limit) || !Limit || !Limit->IsValid()
+            || !(*Limit)->TryGetStringField(TEXT("max_amount"), Amount)
+            || !(*Limit)->TryGetStringField(TEXT("asset_definition_id"), FeeAsset)
+            || !(*Limit)->TryGetObjectField(TEXT("kind"), FeeKind) || !FeeKind || !FeeKind->IsValid()
+            || !(*FeeKind)->TryGetStringField(TEXT("kind"), Kind)
+            || (Kind != TEXT("nexus") && Kind != TEXT("pipeline_gas"))
+            || Amount.IsEmpty() || Amount.Len() > 32 || FeeAsset.IsEmpty() || FeeAsset.Len() > 64) return false;
+        FeeCaps += TEXT("\n") + Kind + TEXT(": ") + Amount + TEXT(" / ") + FeeAsset;
+    }
+
+    JoinPreviewStake = MoveTemp(Stake);
+    JoinPreviewAsset = MoveTemp(Asset);
+    JoinPreviewNftReservations = MoveTemp(NftSummary);
+    JoinPreviewNftMetadata = MoveTemp(NftMetadata);
+    JoinPreviewNftRole = MoveTemp(NftRole);
+    JoinPreviewNftPolicy = MoveTemp(NftPolicy);
+    JoinPreviewFeePayer = MoveTemp(Payer);
+    JoinPreviewFeeCaps = MoveTemp(FeeCaps);
+    bHasUnverifiedJoinPreview = true;
     OutInspectionJson = ArenaConnect::Text(Terms.Data, Terms.Size);
     return true;
 }

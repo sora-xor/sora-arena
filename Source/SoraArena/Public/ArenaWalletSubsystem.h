@@ -72,6 +72,16 @@ public:
     UPROPERTY(BlueprintReadOnly, Category="SORA|Wallet") FString LastSignedTransactionHash;
     UPROPERTY(BlueprintReadOnly, Category="SORA|Wallet") EArenaTransactionState TransactionState = EArenaTransactionState::None;
     UPROPERTY(BlueprintReadOnly, Category="SORA|Wallet") FString TransactionStatusText;
+    /** Last read-only Join scaffold inspection, never an authenticated admission quote. */
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") bool bHasUnverifiedJoinPreview = false;
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") FString JoinPreviewStake;
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") FString JoinPreviewAsset;
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") FString JoinPreviewNftReservations;
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") FString JoinPreviewNftMetadata;
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") FString JoinPreviewNftRole;
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") FString JoinPreviewNftPolicy;
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") FString JoinPreviewFeePayer;
+    UPROPERTY(Transient, BlueprintReadOnly, Category="SORA|Wallet") FString JoinPreviewFeeCaps;
     UPROPERTY(BlueprintAssignable, Category="SORA|Wallet") FOnArenaWalletStateChanged OnStateChanged;
     UPROPERTY(BlueprintAssignable, Category="SORA|Wallet") FOnArenaTransactionStateChanged OnTransactionStateChanged;
     UPROPERTY(BlueprintAssignable, Category="SORA|Wallet") FOnArenaWalletTransactionSigned OnTransactionSigned;
@@ -102,6 +112,7 @@ private:
     void SetState(EArenaWalletState NewState, const FString& Message);
     void SetTransactionState(EArenaTransactionState NewState, const FString& Message);
     void ClearSubmissionRequests();
+    void ClearJoinPreview();
     void RestorePendingTransactionIdentity();
     bool IsRecoveryIdentityCurrent() const;
     void PollTransactionStatus();
