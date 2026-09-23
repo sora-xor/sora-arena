@@ -36,6 +36,7 @@ assert len(feet) == 2
 assert sorted(round(o["slot_origin_m"][0], 2) for o in feet) == [-2.35, 2.35]
 for foot in feet:
     assert foot.get("covers_original_foot") is True
+    assert abs(foot.get("displacement_geometry_amplitude_m", 0)-.008) < 1e-9
     assert foot.data.uv_layers.get("UVMap")
     bounds = [foot.matrix_world @ v.co for v in foot.data.vertices]
     min_z, max_z = min(p.z for p in bounds), max(p.z for p in bounds)

@@ -10,9 +10,11 @@ footing rather than moving the gate or changing its SORA kamon.
 
 The surface uses the [Poly Haven Mossy Rock scan](https://polyhaven.com/a/mossy_rock)
 at 2K: diffuse, DirectX normal, ARM, and displacement are pinned in
-`manifest.json`. Poly Haven publishes this asset under CC0. The scanned maps
-provide microstructure; the irregular stepped profile, chipped rim and rock
-debris are modeled geometry. The source `.blend` links to files in `MossyRock`
+`manifest.json`. Poly Haven publishes this asset under CC0. The diffuse,
+normal, and ARM maps provide material microstructure; the pinned displacement
+map also perturbs the fitted stone contour by up to about 4 mm. The irregular
+stepped profile, chipped rim and rock debris are modeled geometry. The source
+`.blend` links to files in `MossyRock`
 by relative path. No source asset with an extraction-restricted license is
 included.
 

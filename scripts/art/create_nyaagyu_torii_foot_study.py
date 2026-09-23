@@ -106,6 +106,17 @@ def scan_material():
 
 
 STONE = scan_material()
+displacement_image = bpy.data.images.load(str(SCAN / SCAN_FILES["displacement"]), check_existing=True)
+displacement_image.filepath = bpy.path.relpath(str(SCAN / SCAN_FILES["displacement"]))
+displacement_image.colorspace_settings.name = "Non-Color"
+
+
+def scan_displacement(u: float, v: float) -> float:
+    """Sample the pinned height map at the UV used for the visible stone."""
+    width, height = displacement_image.size
+    col = int((u % 1.0) * (width - 1))
+    row = int((v % 1.0) * (height - 1))
+    return displacement_image.pixels[4*(row*width+col)]
 
 
 def matte(name, rgb, roughness=1.0):
@@ -144,6 +155,7 @@ def foot(side: int):
             chip = (.008*math.sin(11*angle + side*.8 + z*7.1)
                     + .005*math.sin(29*angle - z*17.3)
                     + .0025*math.sin(73*angle + z*23.0))
+            chip += .008 * (scan_displacement((angle+math.pi)/math.tau*1.45,z/.90)-.5)
             hx = .373 - .045*taper + chip
             hy = .365 - .038*taper + chip*.8
             weather = .0035*math.sin(z*57 + j*.77) + .002*math.sin(z*91-j*2.11)
@@ -178,6 +190,7 @@ def foot(side: int):
             else:
                 layer.data[loop_index].uv = ((v.x-cx)/1.0 + .5, v.y/1.0 + .5)
     obj["source_scan"] = "Poly Haven mossy_rock CC0 2K"
+    obj["displacement_geometry_amplitude_m"] = .008
     obj["art_role"] = "visual-only hewn stone foot; no combat collision"
     obj["slot_origin_m"] = (cx, 0.0, 0.0)
     obj["covers_original_foot"] = True
