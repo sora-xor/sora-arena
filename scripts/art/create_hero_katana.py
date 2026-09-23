@@ -144,7 +144,7 @@ def tube(name, points, radius, mat, resolution=4):
     return move_to_asset(bpy.context.object)
 
 
-def sectioned_oval(name, sections, material, sides=32, y_offset=0):
+def sectioned_oval(name, sections, material, sides=48, y_offset=0):
     vertices = []
     faces = []
     for x, zcenter, ry, rz in sections:
@@ -239,7 +239,9 @@ for x, ry, rz in [(.008, .015, .027), (-.008, .014, .026)]:
 
 
 def tsuba():
-    n = 72
+    # The close first-person guard must retain a continuous forged outline;
+    # 72 facets were visible at review distance, especially on the rim.
+    n = 192
     vv = []
     ff = []
     def outer(a, scale=1):
@@ -272,8 +274,8 @@ def tsuba():
     for sx in (-1,1):
         x=sx*.00545
         points=[]
-        for i in range(145):
-            a=math.tau*i/144
+        for i in range(385):
+            a=math.tau*i/384
             y,z=outer(a,.806)
             points.append((x,y,z))
         tube("Tsuba_AgedBrassRimInlay", points, .00065, BRASS, 2)
@@ -298,6 +300,8 @@ sectioned_oval("Tsuka_RaySkinCore",[
 
 # Raised samegawa granules, modeled explicitly so the grip retains its tactile
 # material in an FBX import even when Blender procedural nodes are not copied.
+# A two-ring rounded dome avoids the sharp six-triangle crowns in the first
+# close-up review; this is still project-owned geometry, not a scanned skin.
 bead_verts=[]; bead_faces=[]
 for row in range(93):
     x=-.319+.268*row/92
@@ -311,14 +315,18 @@ for row in range(93):
         # A lightly varied low dome; 0.7 mm scale is visible in closeups.
         r=.00070+.00015*math.sin(row*7.23+column*3.71)
         start=len(bead_verts)
-        for k in range(6):
-            a=math.tau*k/6
-            v=base+Vector((math.cos(a)*r,0,0))+tangent*(math.sin(a)*r)
-            bead_verts.append(tuple(v))
-        bead_verts.append(tuple(base+normal*(r*.83)))
-        for k in range(6):
-            bead_faces.append((start+k,start+(k+1)%6,start+6))
-mesh("Samegawa_RaySkinGranules",bead_verts,bead_faces,[SKIN],smooth=False)
+        sides=12
+        for radius,height in ((r,0),(.68*r,.60*r)):
+            for k in range(sides):
+                a=math.tau*k/sides
+                v=base+Vector((math.cos(a)*radius,0,0))+tangent*(math.sin(a)*radius)+normal*height
+                bead_verts.append(tuple(v))
+        bead_verts.append(tuple(base+normal*(r*.90)))
+        for k in range(sides):
+            following=(k+1)%sides
+            bead_faces.append((start+k,start+following,start+sides+following,start+sides+k))
+            bead_faces.append((start+sides+k,start+sides+following,start+2*sides))
+mesh("Samegawa_RaySkinGranules",bead_verts,bead_faces,[SKIN],smooth=True)
 
 for name,x0,x1,ry,rz,material in [
     ("Kashira_Endcap",-.345,-.327,.021,.027,IRON),
