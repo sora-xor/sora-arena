@@ -350,7 +350,23 @@ impl World {
         }
     }
     fn blocked(&self, from: Vec3, to: Vec3) -> bool {
-        self.walls.iter().any(|w| w.intersect(from, to).is_some())
+        self.walls.iter().any(|w| {
+            // A projectile can detonate exactly on a wall face. Its same-side
+            // blast ray starts on the closed AABB boundary, so a t=0 hit is
+            // not occlusion when the ray immediately leaves that wall.
+            if w.contains(from) {
+                let direction = to.delta(from);
+                let outward = from.offset(Vec3::new(
+                    direction.x.signum(),
+                    direction.y.signum(),
+                    direction.z.signum(),
+                ));
+                if !w.contains(outward) {
+                    return false;
+                }
+            }
+            w.intersect(from, to).is_some()
+        })
     }
     fn safe_motion(&self, old: Vec3, desired: Vec3) -> Vec3 {
         let mut next = old;
@@ -1148,6 +1164,58 @@ mod tests {
         assert_eq!(w.accounts[0].remaining, 1000);
         assert_eq!(w.accounts[1].kills, 0);
         assert_eq!(w.accounts[1].earnings, 0);
+        assert!(economy::conserved(&w.accounts));
+    }
+    #[test]
+    fn wall_surface_blast_reaches_a_target_on_the_impact_side() {
+        let mut w = World::new(
+            Config {
+                mode: Mode::FreeForAll,
+                map: 0,
+                max_ticks: 600,
+                base_bond: 1000,
+                offline: false,
+            },
+            &[
+                Participant {
+                    team: 0,
+                    class: 3,
+                    weapon: 7,
+                    bond: 1000,
+                    special_entitled: false,
+                },
+                Participant {
+                    team: 1,
+                    class: 0,
+                    weapon: 1,
+                    bond: 1000,
+                    special_entitled: false,
+                },
+            ],
+        )
+        .unwrap();
+        // The grenade travels in exact 350-mm steps and meets the near wall
+        // face at x=6500. The enemy is beside it, clear of the wall itself.
+        w.players[0].position = Vec3::new(4050, 0, 0);
+        w.players[1].position = Vec3::new(6000, 1800, 0);
+        w.players[1].health = 60;
+        let impact = Vec3::new(6500, 0, EYE_HEIGHT);
+        assert!(!w.blocked(impact, Vec3::new(6000, 1800, 900)));
+        assert!(w.blocked(impact, Vec3::new(8500, 1000, 900)));
+        w.step(&[
+            Input {
+                buttons: FIRE,
+                ..Input::default()
+            },
+            Input::default(),
+        ])
+        .unwrap();
+        for _ in 0..6 {
+            w.step(&[Input::default(), Input::default()]).unwrap();
+        }
+        assert!(!w.players[1].alive);
+        assert_eq!(w.accounts[1].remaining, 900);
+        assert_eq!(w.accounts[0].earnings, 100);
         assert!(economy::conserved(&w.accounts));
     }
     #[test]

@@ -209,3 +209,25 @@ for `lib.rs` and `simulation.rs`. Verification passes 73 cases / 44,100 ticks,
 eleven negative guards, 72 practice scenarios / 86,400 ticks, and the locked
 offline Rust suite. These fixtures still do not prove payout correctness or
 Windows/macOS parity.
+
+### 2026-09-23 wall-surface blast attribution, rules version 6
+
+A grenade that arrived exactly on a wall's closed AABB face could have its
+same-side blast ray counted as blocked at the zero-distance intersection. A
+nearby enemy then survived a valid lethal blast, preventing the corresponding
+XOR death transfer. The occlusion rule now ignores that wall only when the ray
+immediately leaves its surface; a ray into or through the wall remains blocked.
+The focused kernel regression fires a real grenade at the near face, checks a
+same-side kill and exact 100-unit transfer, and checks far-side occlusion.
+This outcome-affecting correction advances the rules identity to
+`sora-arena-first-release-6`.
+
+The macOS arm64 release library was rebuilt and staged before deliberately
+re-recording this ABI 3 reference. Against the immediately prior fixture,
+control bytes and hashes, session configurations, rosters, ABI layout, runner
+identity, native map/weapon identities, event streams, and presentation streams
+were unchanged. The 73 initial/final state hashes, checkpoint state hashes,
+and state streams changed with the rules identity; source identity changed
+only for `lib.rs` and `simulation.rs`. The offline reference scenarios do not
+exercise the wall-surface payout regression and cannot establish Windows parity
+or execution-proof qualification.
