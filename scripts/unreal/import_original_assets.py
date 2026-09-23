@@ -501,6 +501,8 @@ for name in manifest.get("skeletal_characters", []):
     if not assets.does_asset_exist(idle_target) or not assets.does_asset_exist(walk_target):
         raise RuntimeError(f"Required animation was not imported for {name}")
 
+runpy.run_path(str(root / "scripts/unreal/import_nyaakoto_lods.py"), run_name="__main__")
+
 path = "/Game/Generated/Materials/M_ArenaSurface"
 material = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
     "M_ArenaSurface", "/Game/Generated/Materials", unreal.Material, unreal.MaterialFactoryNew())

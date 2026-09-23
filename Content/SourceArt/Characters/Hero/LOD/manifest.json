@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/generate_nyaakoto_lods.py",
+  "source_blend_sha256": "d2d6b2ad518e82760235d528794a129212f76941bee6d20dadd67d3a1f046e52",
+  "lod0_fbx_sha256": "b1380e5b67bc5adf9e5b5d1bc6c8c36cbddc82a34ed3c7cb9b322adc0af6bb23",
+  "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "lods": [
+    {
+      "level": 1,
+      "fbx": "SK_NyaagyuSamurai_LOD1.fbx",
+      "sha256": "cb0699649cef1d7212cbc64f2414e43d2e340dcee8f2b7d43d4446a5161ac911",
+      "source_parts": 389,
+      "vertices": 48137,
+      "triangles": 60089,
+      "bounds_m": {
+        "x": [
+          -0.6542,
+          0.2737
+        ],
+        "y": [
+          -0.552,
+          0.552
+        ],
+        "z": [
+          -0.001,
+          2.195
+        ]
+      },
+      "material_slots": [
+        "M_Hero_AgedBrass",
+        "M_Hero_BambooArrowShaft",
+        "M_Hero_BlackUrushi",
+        "M_Hero_BlackenedIron",
+        "M_Hero_BlueEye",
+        "M_Hero_CharcoalStripeFur",
+        "M_Hero_EarSkin",
+        "M_Hero_EyeGlint",
+        "M_Hero_EyePupil",
+        "M_Hero_FoldedIndigo",
+        "M_Hero_GreyTabbyFur",
+        "M_Hero_IndigoSilk",
+        "M_Hero_IvoryClaw",
+        "M_Hero_JadeCircuit",
+        "M_Hero_OxbloodUrushi",
+        "M_Hero_RedArrowFletch",
+        "M_Hero_RoseNose",
+        "M_Hero_SORAResistanceRed",
+        "M_Hero_ScarletSash",
+        "M_Hero_UndyedLinen",
+        "M_Hero_WhiteFur",
+        "M_Hero_YumiLaminatedBamboo",
+        "M_Hero_YumiSilkString"
+      ],
+      "bone_names": [
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin_L",
+        "shin_R",
+        "spine",
+        "tail_01",
+        "tail_02",
+        "tail_03",
+        "thigh_L",
+        "thigh_R",
+        "upperarm_L",
+        "upperarm_R"
+      ],
+      "card_fur": "20% sampled source triangle cards"
+    },
+    {
+      "level": 2,
+      "fbx": "SK_NyaagyuSamurai_LOD2.fbx",
+      "sha256": "195d2033a7545ba561a16a1968a5db59f73874a7452d59da2b3714768f0fad6f",
+      "source_parts": 191,
+      "vertices": 15298,
+      "triangles": 29020,
+      "bounds_m": {
+        "x": [
+          -0.6542,
+          0.2737
+        ],
+        "y": [
+          -0.5518,
+          0.5518
+        ],
+        "z": [
+          -0.0011,
+          2.195
+        ]
+      },
+      "material_slots": [
+        "M_Hero_AgedBrass",
+        "M_Hero_BambooArrowShaft",
+        "M_Hero_BlackUrushi",
+        "M_Hero_BlackenedIron",
+        "M_Hero_BlueEye",
+        "M_Hero_CharcoalStripeFur",
+        "M_Hero_EarSkin",
+        "M_Hero_EyeGlint",
+        "M_Hero_EyePupil",
+        "M_Hero_FoldedIndigo",
+        "M_Hero_GreyTabbyFur",
+        "M_Hero_IndigoSilk",
+        "M_Hero_IvoryClaw",
+        "M_Hero_JadeCircuit",
+        "M_Hero_OxbloodUrushi",
+        "M_Hero_RedArrowFletch",
+        "M_Hero_RoseNose",
+        "M_Hero_SORAResistanceRed",
+        "M_Hero_ScarletSash",
+        "M_Hero_UndyedLinen",
+        "M_Hero_WhiteFur",
+        "M_Hero_YumiLaminatedBamboo",
+        "M_Hero_YumiSilkString"
+      ],
+      "bone_names": [
+        "foot_L",
+        "foot_R",
+        "forearm_L",
+        "forearm_R",
+        "hand_L",
+        "hand_R",
+        "head",
+        "neck",
+        "pelvis",
+        "root",
+        "shin_L",
+        "shin_R",
+        "spine",
+        "tail_01",
+        "tail_02",
+        "tail_03",
+        "thigh_L",
+        "thigh_R",
+        "upperarm_L",
+        "upperarm_R"
+      ],
+      "card_fur": "none; surface normal maps only"
+    }
+  ],
+  "license": "Original project-owned source geometry and distance LODs; user-supplied SORA crest retained exactly",
+  "limitations": "LOD0 remains dense at close range. LOD1/2 are authored FBXs; cooked use requires Unreal LOD import and a package test. Screen-size thresholds and M1 Ultra frame cost need in-game measurement."
+}

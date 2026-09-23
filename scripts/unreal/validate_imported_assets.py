@@ -102,6 +102,31 @@ def nyaakoto_pbr_source(source_root):
     return record
 
 
+def nyaakoto_lod_source(source_root):
+    """Validate the two authored FBXs; they live inside one skeletal package."""
+    hero = source_root / "Characters/Hero"
+    record = read_manifest(hero / "LOD/manifest.json")
+    runtime = read_manifest(hero / "runtime_skin_manifest.json")
+    pbr = read_manifest(hero / "PBR/manifest.json")
+    require(record.get("schema_version") == 1
+            and record.get("generator") == "scripts/art/generate_nyaakoto_lods.py"
+            and record.get("source_blend_sha256") == runtime.get("runtime_blend_sha256")
+            and record.get("lod0_fbx_sha256") == runtime.get("skeletal_fbx_sha256")
+            and record.get("sora_kamon_svg_sha256") == runtime.get("sora_kamon_svg_sha256")
+            and [entry.get("level") for entry in record.get("lods", [])] == [1, 2],
+            "The Nyaakoto LOD source identities changed")
+    last_vertices = runtime["source_vertices"]
+    for entry in record["lods"]:
+        file = source_file(hero / "LOD", entry["fbx"])
+        require(hashlib.sha256(file.read_bytes()).hexdigest() == entry["sha256"]
+                and set(entry["material_slots"]) == set(pbr["material_slots"])
+                and set(entry["bone_names"]) == set(runtime["skeleton_bones"])
+                and 0 < entry["vertices"] < last_vertices * .7,
+                f"Nyaakoto LOD{entry['level']} is missing, changed or insufficiently reduced")
+        last_vertices = entry["vertices"]
+    return record
+
+
 def expected_assets(project_root):
     """Return exact package/class expectations from the pinned source manifests."""
     source_root = project_root / "Content/SourceArt"
@@ -135,6 +160,7 @@ def expected_assets(project_root):
             add(specs, f"/Game/Generated/Animations/{animation}.{animation}", "AnimSequence")
 
     pbr = nyaakoto_pbr_source(source_root)
+    nyaakoto_lod_source(source_root)
     for group in pbr["maps"]:
         for item in group["maps"]:
             name = Path(item["file"]).stem
@@ -341,6 +367,13 @@ def validate_loaded_assets(unreal, specs):
              for entry in hero.get_editor_property("materials")]
     require(len(slots) == len(set(slots)) == 23 and set(slots) == set(pbr["material_slots"]),
             f"Nyaakoto skeletal mesh slots do not match its authored PBR materials: {slots}")
+    subsystem = unreal.get_editor_subsystem(unreal.SkeletalMeshEditorSubsystem)
+    require(subsystem.get_lod_count(hero) == 3,
+            "Nyaakoto authored LOD1/LOD2 were not imported into the runtime mesh")
+    counts = [subsystem.get_num_verts(hero, index) for index in range(3)]
+    require(counts[0] > 0 and 0 < counts[1] < counts[0] * .7
+            and 0 < counts[2] < counts[1] * .7,
+            f"Nyaakoto authored LODs did not reduce rendered vertices: {counts}")
     material_lib = unreal.MaterialEditingLibrary
     master_path = f"{NYAAKOTO}/M_Nyaakoto_PBR.M_Nyaakoto_PBR"
     master = asset_library.load_asset(master_path)
