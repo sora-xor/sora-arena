@@ -19,8 +19,8 @@ project still requires an actual 5.8.2 build and playtest. Full FPS proofs, live
 networking, complete campaign content and photoreal assets remain in development.
 Real-value bonding and trading are disabled.
 The monolithic native hit-proof layout exceeds Iroha's 4 MiB proof cap before
-proving. Narrow, unregistered movement and fixed-scene hit research proofs fit
-individually; [the feasibility record](docs/proof/arena-feasibility.md) tracks
+proving. Narrow, unregistered movement, fixed-scene hit, and fixed-scene kill
+research proofs fit individually; [the feasibility record](docs/proof/arena-feasibility.md) tracks
 their measured scope and the required staged full-match proof work.
 
 ## Run the deterministic reference
