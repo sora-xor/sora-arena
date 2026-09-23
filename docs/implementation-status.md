@@ -46,10 +46,12 @@ six-to-eight-hour campaign target.
 The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
 the six-class selector is available in offline arena practice. This source
 behavior still needs an Unreal menu and save/reload check.
-Three original Edo/alien environment props now have editable Blender source,
+Four original Edo/alien environment props now have editable Blender source,
 FBX exports, metric collision/bounds checks, and campaign placement source.
-Blender review renders and the import manifest do not establish in-engine
-appearance; the UE 5.8.2 import and visual pass remain open.
+The Lantern Ward debt terminal has a retained flat blockout and a licensed CC0
+PBR material comparison; its geometry still reads as a prototype. Blender
+review renders and import manifests do not establish in-engine appearance; the
+UE 5.8.2 import and visual pass remain open.
 
 The provisional first-release balance correction changed Arc carbine and
 Clockwork repeater attack cooldowns from 10 to 12 simulation ticks. A clean-lane
@@ -122,6 +124,10 @@ The focused native equipment integration suite also passes all five tests,
 including rejection of a snapshot missing authoritative custody maps. A broad
 `iroha_core --lib` test build remains blocked by unrelated Kagemusha and
 consensus test-fixture API errors; the focused result does not qualify the node.
+The generic native genesis API now accepts the immutable admission body and
+validates it before Race root derivation; one focused integration test passes
+and rejects malformed version, skin, duplicate input key, and missing slot.
+This Iroha work is uncommitted pending the repository's signed-commit policy.
 
 A research adapter has also produced and independently verified a native STARK
 for one fixed public damage/parry transition, rejecting seven tampering cases.
