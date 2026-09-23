@@ -114,6 +114,14 @@ The ABI checker should be run with that platform's compiler as well. Native
 packaging code signs the actual library as part of the platform release process;
 that release signing has not been performed here.
 
+On the available Apple Silicon Mac, `python3 scripts/connect/check_windows_bridge_crossbuild.py`
+attempts a pinned Rust/MinGW GNU cross-build. It stages a DLL only after checking
+that Iroha sources stayed stable during compilation, the file is an x86-64 PE,
+its Connect exports match the C header exactly, and the 26 Unreal function
+pointer declarations compile against that header with the Windows C++ compiler.
+This static check cannot load the DLL or replace the Windows MSVC, Unreal, and
+wallet runtime passes.
+
 For local development, `SORA_CONNECT_BRIDGE` can select an explicit native
 library path. Keep this environment override under the developer's control.
 `SoraArena.Build.cs` stages the default library only if it exists. A package can
