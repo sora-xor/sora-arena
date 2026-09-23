@@ -259,6 +259,32 @@ signature or changes the Join/Buy signing block. An authenticated session
 quote, exact loss rules, asset/ownership reads, and an Unreal visual/build run
 remain prerequisites for a real join review.
 
+`SoraQuotePreflight.h` now contains a host-tested, non-authorizing comparison
+for future Join and Buy reviews. The Join comparison requires the exact
+network, session, manifest, asset, total bond, session revision, open join
+deadline, and any NFT identity, metadata, role, and owner to match supplied
+snapshot terms. It rejects a bond unless ten identical death losses exactly
+exhaust it and the maximum loss equals the initial deposit. The Buy comparison
+requires the complete offer terms, retained commitment, open status, sale
+custody, authorized buyer, and unexpired height to match. Japanese-first
+messages have English subtitle text. Run
+`python3 scripts/connect/test_quote_preflight.py` for the adversarial host
+fixtures. This component neither authenticates its supplied snapshots nor
+reads the chain, and is not wired to wallet signing.
+
+The missing Join source is an authenticated `FindGameSessionById` result plus
+a qualified Arena execution profile that resolves each participant's exact
+`B` or `2B` admission deposit and 10% loss. Generic
+`GameSessionRecordV1.stake` is only the minimum deposit under
+`VerifiedAllocations`; it does not by itself prove those Arena terms. NFT
+entitlement additionally needs a live custody/ownership and publisher-catalog
+read. A Buy review needs an authenticated `FindNftSaleOfferById` record and
+current consensus height, with the retained offer commitment and custody
+checked against the typed `BuyNftV1.offer`. Both paths still need an exact
+network-fee quote, a separate in-game confirmation bound to the canonical
+payload hash, and independent wallet signing/finality checks. Until those
+sources exist, a matching local preflight result is never approval.
+
 `SubmitSignedTestTransaction()` is a separate, explicit operation. It is
 disabled in shipping builds and unless `Arena.Connect` explicitly sets
 `bEnableIsolatedTestTransactions=true`, `IsolatedTestNetworkId`, and
