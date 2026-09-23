@@ -50,6 +50,14 @@ score terminal at tick 19,565 with the same state hash on two runs
 12,000 initial atomic units remained conserved as 8,900 reserve plus 3,100
 earned credits. This is a headless reference workload, not a network,
 proof, rendering or human balance benchmark.
+An eight-player local kernel fixture now executes 7,200 fixed-input ticks,
+with every state hash matching a second run and an encoded-input replay. A
+separate opt-in eight-socket signed loopback UDP fixture ran 3,600 two-tick
+batches, 60 unanimous checkpoint rounds and 227,220 authenticated packet
+deliveries in 90.92 seconds on the M1 Ultra; all eight peers matched the
+pinned kernel hashes. This is zero-bond research with fixture-held keys and
+lossless local transport, not a production 4v4 P2P match, execution proof or
+settlement. See [the loopback research note](proof/eight-peer-loopback-research.md).
 The offline campaign now has 24 authored Japanese production-site tasks with
 English subtitle text. Each task has a combat threshold and earlier-site
 requirements; prototype props vary by task type and change appearance on
@@ -61,6 +69,11 @@ shells before restoring an encounter, so a previous attempt cannot damage new
 opponents or advance their saved kill count. This still needs an editor build and an
 in-game save/reload test; the shared encounter layouts do not meet the
 six-to-eight-hour campaign target.
+The [host campaign acceptance driver](campaign/offline-acceptance.md) exercises
+the same extracted GameMode progression rules across all eight catalog
+chapters, checkpoint values, the final boss gate and final liberation. It
+checks all 25 Japanese dialogue cues have English counterparts. It does not
+test Unreal save slots, played combat, subtitle rendering or campaign length.
 The final chapter now reserves its eighteenth opponent for a distinct alien
 collector boss with locked-aim cyan beam and amber cleave warnings, recovery,
 bilingual HUD/dialogue and a local checkpoint that respawns the boss at full
@@ -213,6 +226,11 @@ research bridge containing this inspector is staged on macOS and passed native
 smoke checks; it cannot substitute for the missing
 authenticated session quote. Open and payout-claim scaffolds retain their
 existing test-network behavior.
+The Windows GNU Connect bridge also passed a source-sealed static cross-build:
+its PE x86-64 DLL has 175 exports exactly matching the native C header and
+the game's 26 Windows C ABI declarations compile. The staged DLL and source
+fingerprints are recorded in [the Connect build note](connect.md). Windows
+loading, wallet pairing, transactions and MSVC packaging remain untested.
 The Iroha JavaScript native addon now builds and publishes with the project-specific
 Xcode 26.1.1 linker; 29 focused allocation, equipment, resource and racing SDK
 tests pass. This does not exercise Unreal or a live validator network.

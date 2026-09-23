@@ -122,6 +122,17 @@ pointer declarations compile against that header with the Windows C++ compiler.
 This static check cannot load the DLL or replace the Windows MSVC, Unreal, and
 wallet runtime passes.
 
+The 2026-09-23 research cross-build passed with Rust 1.93.1 for
+`x86_64-pc-windows-gnu`: the staged PE DLL has 175 exports matching the C
+header, the 26 Unreal function-pointer declarations pass the MinGW C++ ABI
+check, and its SHA-256 is
+`858557a3127c32c061752836c806e03fbf80e296ec8de7b2ea52627420f2dc8b`.
+The adjacent ignored `Binaries/Win64/connect_norito_bridge.dll.build.json`
+records the exact tested source fingerprints. Because the Iroha checkout still
+has uncommitted source, its Git revision alone cannot reconstruct this build.
+The DLL has not been loaded on Windows or in Unreal, and no Windows wallet
+pairing or transaction has been tested.
+
 For local development, `SORA_CONNECT_BRIDGE` can select an explicit native
 library path. Keep this environment override under the developer's control.
 `SoraArena.Build.cs` stages the default library only if it exists. A package can

@@ -91,7 +91,17 @@ def main():
         "xcrun", "--find", "clang", env=env
     ).stdout.strip()
     env["CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER"] = "x86_64-w64-mingw32-gcc"
-    env["CC_x86_64_pc_windows_gnu"] = "x86_64-w64-mingw32-gcc"
+    # pqcrypto-mlkem's C compatibility header assumes glibc `features.h` under
+    # GCC, even on MinGW. Clang takes its supported compiler branch and the
+    # unmodified ML-KEM C sources compile against the actual Windows headers.
+    mingw_root = Path(run("x86_64-w64-mingw32-gcc", "-print-sysroot").stdout.strip())
+    mingw_include = mingw_root / "x86_64-w64-mingw32/include"
+    if not mingw_include.is_dir():
+        raise SystemExit(f"MinGW target headers missing: {mingw_include}")
+    env["CC_x86_64_pc_windows_gnu"] = env["CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER"]
+    env["CFLAGS_x86_64_pc_windows_gnu"] = (
+        f"-target x86_64-w64-windows-gnu -isystem {mingw_include}"
+    )
     env["CXX_x86_64_pc_windows_gnu"] = "x86_64-w64-mingw32-g++"
     env["AR_x86_64_pc_windows_gnu"] = "x86_64-w64-mingw32-ar"
     env["CARGO_TARGET_DIR"] = str(TARGET_DIR)
@@ -103,7 +113,7 @@ def main():
     if "PE32+ executable (DLL)" not in file_type or "x86-64" not in file_type:
         raise SystemExit(f"Unexpected Windows bridge format: {file_type}")
     header_symbols = set(re.findall(
-        r"^\s*(?:uint32_t|int32_t|void)\s+(connect_norito_[a-z0-9_]+)\(",
+        r"^\s*(?:uint32_t|uint64_t|int32_t|void)\s+(connect_norito_[a-z0-9_]+)\(",
         HEADER.read_text(), re.MULTILINE))
     exports = exported_symbols()
     if not header_symbols or exports != header_symbols:
@@ -113,6 +123,9 @@ def main():
         "--compiler", "x86_64-w64-mingw32-g++", cwd=ROOT)
     STAGED.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(DLL, STAGED)
+    if source_seal() != before:
+        STAGED.unlink()
+        raise SystemExit("Iroha sources changed while staging the Windows bridge")
     manifest = {
         **before,
         "rustc": rustc,
@@ -126,7 +139,7 @@ def main():
     print(f"SHA-256: {manifest['library_sha256']}; exact C exports: {len(exports)}")
     print("Windows runtime and wallet qualification remain open.")
     if build.stderr.strip():
-        print(build.stderr.strip(), file=sys.stderr)
+        print(build.stderr.strip()[-4000:], file=sys.stderr)
 
 
 if __name__ == "__main__":
