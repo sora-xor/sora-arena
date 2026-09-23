@@ -110,11 +110,8 @@ for index,(component,prop) in enumerate([('r',unreal.MaterialProperty.MP_AMBIENT
         # Vertex alpha is a source-authored dampness mask. Non-terrain
         # instances leave TerrainVertexTint at zero, so their roughness stays
         # exactly on the scanned material's ARM green channel.
-        damp_alpha=node(mat,unreal.MaterialExpressionComponentMask,-600,590,
-                        r=False,g=False,b=False,a=True)
-        link(vertex,'',damp_alpha,'')
         enabled_damp=node(mat,unreal.MaterialExpressionMultiply,-380,590)
-        link(damp_alpha,'',enabled_damp,'A')
+        link(vertex,'A',enabled_damp,'A')
         link(macro_strength,'',enabled_damp,'B')
         damp_amount=node(mat,unreal.MaterialExpressionScalarParameter,-620,790,
                          parameter_name='TerrainDampRoughness',default_value=.30)

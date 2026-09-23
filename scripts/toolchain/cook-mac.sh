@@ -26,5 +26,21 @@ if [[ ! -x "$EDITOR_CMD" ]]; then
   echo "UnrealEditor-Cmd is missing: $EDITOR_CMD" >&2
   exit 1
 fi
-exec "$EDITOR_CMD" "$PROJECT" -run=Cook -TargetPlatform=Mac \
-  -Unattended -NullRHI -NoSplash -NoSound -stdout -FullStdOutLogOutput "$@"
+COOK_LOG="$(mktemp -t sora-arena-cook.XXXXXX)"
+trap 'rm -f "$COOK_LOG"' EXIT
+"$EDITOR_CMD" "$PROJECT" -run=Cook -TargetPlatform=Mac \
+  -Unattended -NullRHI -NoSplash -NoSound -stdout -FullStdOutLogOutput "$@" 2>&1 | tee "$COOK_LOG"
+python3 - "$COOK_LOG" <<'PY'
+from pathlib import Path
+import sys
+
+lines = Path(sys.argv[1]).read_text(errors="replace").splitlines()
+shader_failures = [line for line in lines if
+    "Failed to compile Material for platform" in line or
+    ("Cooking a material resource" in line and "valid ShaderMap" in line)]
+if shader_failures:
+    print("Mac cook rejected invalid material shader maps:", file=sys.stderr)
+    for line in shader_failures[:12]:
+        print(line, file=sys.stderr)
+    sys.exit(1)
+PY

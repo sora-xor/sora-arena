@@ -66,3 +66,25 @@ the character's stylized anatomy still miss the photoreal target. SHA-256:
 
 These newer captures are diagnostic UE 5.8.3/M1 Ultra evidence, not a
 5.8.2 release qualification, a Windows Nanite result, or a 60-fps claim.
+
+`UE583_Estate_GreyStonePath_Fixed_Diagnostic.png`,
+`UE583_Nyaakoto_ConnectedHead_Diagnostic.png`, and
+`UE583_Estate_GreyStonePath_Close_Diagnostic.png` are unedited frames from a
+new packaged Mac diagnostic after importing the irregular Grey Stone Path
+scan and a connected-head Nyaakoto source pass. The first is the HUD-free
+entrance, the second a deliberate close character inspection, and the third a
+downward view of the pathway. The material graph initially failed Metal shader
+compilation because a component mask requested alpha from a float3 output;
+the first package showed checkerboard terrain and black torii. The corrected
+graph uses the vertex-color alpha output directly. The repaired cook/stage and
+game launch passed, and the cook/runtime logs contain no failed material
+compilation or invalid shader-map messages. Image SHA-256 values, in the same
+order: `d7773c2ed5de904082ffd8e0e7944f706570f832d3b5d5f1b5d8f9614d76650e`,
+`96ccc07a508eeb1d464da395f3220fa335f7ffa3578ec5382cfe85bb298bf119`,
+and `3d88eba27ae366ba49eb2de359164454a94a88834257ffc9bd764d835854dbdd`.
+The path now has convincing local photographed detail, but its repeated tile
+layout remains obvious at a distance. Nyaakoto's head is topologically
+connected and textured, yet the eyes, ears, neck, mouth, and armor still read
+as stylized. The sparse courtyard and regular wall sections also miss the
+photoreal target. These frames are art diagnostics, not acceptance evidence
+for the stated AAA, performance, Nanite, or exact UE 5.8.2 release gates.
