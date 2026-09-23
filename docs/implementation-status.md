@@ -15,7 +15,7 @@ is recorded, and timing/readability still need Unreal play verification.
 
 | Milestone | Current state | Completion evidence still required |
 | --- | --- | --- |
-| Foundation | Active: deterministic Rust kernel and C ABI; 80 workspace tests pass; strict Clippy passes; native generic admission, catalog and Connect changes in isolated Iroha worktree | UE 5.8.2 build, real wallet pairing, complete two-player proof-to-settlement path |
+| Foundation | Active: deterministic Rust kernel and C ABI; locked workspace tests and strict Clippy pass; native generic admission, catalog and Connect changes in isolated Iroha worktree | UE 5.8.2 build, real wallet pairing, complete two-player proof-to-settlement path |
 | Research match | Pending | 4v4 two-minute match, then 6v6 ten-minute match with complete proof coverage and measured resources |
 | Vertical slice | Source and original prototype assets in progress | One finished mission/arena, representative classes and complete buy/equip/bond/play/settle flow |
 | Full production | Chapter/class/weapon/arena data and offline prototype source present | Eight authored chapters, finished art/animation/audio/cinematics, accessibility and measured balance |
@@ -64,7 +64,7 @@ geometry and input encoding. Its state/presentation expectations change in all
 73 cases, while event streams change only for four Kanabo loadout cases. The
 rebuilt library passes 73 cases / 44,100 ticks, eleven negative guards, and
 72 native practice scenarios / 86,400 replayed ticks. The full locked offline
-Rust suite passes 80 tests, format checking, and strict all-targets Clippy.
+Rust suite, format checking, and strict all-targets Clippy pass.
 These deterministic checks are not a human balance playtest. The separate
 campaign prototype catalog still differs from the Rust multiplayer catalog;
 full gameplay balance, presentation and proof coverage remain open.
@@ -84,8 +84,11 @@ oversized, malformed, cross-session and replayed packets. The codec does not
 prove the combat execution. A pairwise ChaCha20-Poly1305 wrapper now encrypts
 those signed frames with session/channel binding and restored replay floors.
 Authenticated 1,200-byte fragmentation now carries the largest 12-player
-certificate in two datagrams, with bounded out-of-order reassembly. Key
-agreement, live peer transport, retransmission and NAT traversal remain open.
+certificate in two datagrams, with bounded out-of-order reassembly. A signed
+ephemeral X25519/HKDF handshake derives pairwise directional keys and an
+admission-bound channel binding; six focused tests and the full workspace suite
+pass. Durable integration of its replay guard, live peer transport,
+retransmission and NAT traversal remain open.
 
 The Unreal wallet source can prepare allowlisted native transactions, verify a
 wallet signature through the native Connect bridge, submit a signed Norito
