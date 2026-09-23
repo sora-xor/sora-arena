@@ -542,6 +542,18 @@ The isolated importer and editable source are retained, but the tested eight
 plants were not placed in the main WorldBuilder. They do not qualify the
 Estate's scene composition or photorealism.
 
+The [follow-up fern ground-transition package](visual-reviews/fern02-ground-transition/README.md)
+also passed import, Mac cook and fixed-camera capture, but failed the visual
+gate: the entrance camera barely sees it around the torii, while a close view
+shows a bright hard-edged soil strip and crowded path. Its modeled roots,
+stones, scanned ground and fern contacts remain source-only. Separate source
+studies now test a full [integrated gravel-and-stone road](../Content/SourceArt/Environment/NyaagyuIntegratedRoji/README.md),
+a [weathered kura frontage](../Content/SourceArt/Environment/NyaagyuKuraFront/README.md),
+and [scan-backed gate footings](../Content/SourceArt/Environment/NyaagyuToriiFootStudy/README.md).
+Their Blender and FBX validations establish editable geometry and texture
+provenance, not in-game quality. Main WorldBuilder placement awaits unedited
+packaged A/B review at the player camera; none is a photoreal AAA+ claim.
+
 ## Workstreams
 
 - Deterministic Rust combat/economics, replay, P2P evidence and Unreal C ABI.
