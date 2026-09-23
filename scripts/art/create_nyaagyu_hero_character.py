@@ -86,7 +86,7 @@ FUR_DARK = mat("M_Hero_CharcoalStripeFur", (.045,.053,.063), rough=.92, noise=13
 FUR_LIGHT = mat("M_Hero_WhiteFur", (.77,.80,.79), rough=.91, noise=112, bump=.00018)
 EAR_INNER = mat("M_Hero_EarSkin", (.40,.17,.17), rough=.82, noise=83, bump=.00006)
 NOSE = mat("M_Hero_RoseNose", (.42,.17,.18), rough=.47)
-EYE = mat("M_Hero_BlueEye", (.095,.35,.64), rough=.15, coat=.42)
+EYE = mat("M_Hero_BlueEye", (.16,.31,.43), rough=.16, coat=.38)
 EYE_DARK = mat("M_Hero_EyePupil", (.008,.012,.013), rough=.19, coat=.28)
 EYE_WHITE = mat("M_Hero_EyeGlint", (.83,.78,.61), rough=.15)
 INDIGO = mat("M_Hero_IndigoSilk", (.016,.023,.045), rough=.80, noise=185, bump=.00013)
@@ -235,15 +235,40 @@ def short_fur_cards(name, center, radii, material, count, seed, skip_face=True):
 
 
 def ear(sign):
+    """Sculpt a cupped pinna, rather than the flat triangular concept ear."""
     y=sign*.151
-    base=[(-.055,y-sign*.075,1.661),(-.045,y+sign*.075,1.658),(.085,y+sign*.064,1.685),(.092,y-sign*.060,1.685)]
-    tip=(.012,y+sign*.016,1.883)
-    o=surface(f"Ear_outer_{sign}",base+[tip],[(0,1,4),(1,2,4),(2,3,4),(3,0,4),(0,3,2,1)],FUR_DARK,thickness=.006)
-    # The asymmetrical pinna's forward inside is visibly recessed from the rim.
-    q=[(.092,y-sign*.047,1.705),(.088,y+sign*.047,1.705),(.023,y+sign*.013,1.846)]
-    surface(f"Ear_inner_{sign}",q,[(0,1,2)],EAR_INNER,thickness=.002)
-    line(f"Ear_cream_edge_{sign}",[q[0],(.065,y-sign*.028,1.785),q[2]],.002,FUR_LIGHT)
-    return o
+    # Paired front/back rings give the ear an actual folded thickness.  The
+    # front surface is concave across its width; the inner skin sits below a
+    # continuous fur rim and tapers before the cartilaginous tip.
+    levels=((1.662,.071,.080,.007),
+            (1.711,.075,.100,.008),
+            (1.785,.046,.076,.011),
+            (1.846,.018,.041,.014),
+            (1.867,.002,.025,.018))
+    vertices=[]
+    for z,half_width,front_x,back_x in levels:
+        for lateral,x in ((-1,front_x-.017),(0,front_x-.031),(1,front_x-.017)):
+            vertices.append((x,y+sign*lateral*half_width,z))
+        for lateral,x in ((1,back_x),(-1,back_x)):
+            vertices.append((x,y+sign*lateral*half_width,z))
+    faces=[]
+    for level in range(len(levels)-1):
+        a=level*5;b=(level+1)*5
+        for edge in range(5):
+            faces.append((a+edge,a+(edge+1)%5,b+(edge+1)%5,b+edge))
+    faces.extend(((0,1,2,3,4),(20,24,23,22,21)))
+    outer=smooth(surface(f"Ear_outer_{sign}",vertices,faces,FUR_DARK))
+    inner=[(.090,y-sign*.049,1.692),(.076,y,1.697),
+           (.090,y+sign*.049,1.692),(.075,y+sign*.049,1.754),
+           (.053,y,1.814),(.075,y-sign*.049,1.754)]
+    smooth(surface(f"Ear_inner_{sign}",inner,
+                   ((0,1,5),(1,4,5),(1,2,3),(1,3,4)),EAR_INNER))
+    for side in (-1,1):
+        line(f"Ear_cream_edge_{sign}_{side}",
+             [(.096,y+sign*side*.057,1.688),
+              (.079,y+sign*side*.051,1.754),
+              (.054,y+sign*side*.026,1.829)],.00055,FUR_LIGHT)
+    return outer
 
 
 # A grounded bipedal feline body, with separate jacket, neck and hakama panels.
@@ -358,44 +383,99 @@ for sign in (-1,1):
     bone(f"Sode_kamon_backing_{sign}",(.116,sign*.345,1.325),(.121,sign*.345,1.325),.032,.032,LACQUER_DARK,24)
     sora_kamon(f"sode_{sign}",(.126,sign*.345,1.325),.052,BRASS)
 
-# Head: short-furred broad cheeks, raised brow and correctly separated muzzle.
+# Head: short-furred broad cheeks, a restrained stop and a tapered feline muzzle.
+# These are still rigid source pieces; a final hero would need a continuous
+# sculpt, hand-painted region masks, groom and facial deformation rig.
 head_start=set(parts.objects)
-sphere("Skull",(.04,0,1.644),(.193,.202,.196),FUR,48,32)
-short_fur_cards("Head_short_mesh_fur",(.04,0,1.644),(.194,.203,.197),FUR,3800,781)
-sphere("Lower_jaw",(.18,0,1.535),(.081,.099,.065),FUR_LIGHT,32,20)
+skull=sphere("Skull",(.037,0,1.642),(.187,.196,.188),FUR,64,40)
+for vertex in skull.data.vertices:
+    p=vertex.co
+    # The front plane is flatter at the brow, broadens at the zygomatic arches
+    # and narrows underneath the jaw. This breaks the mascot-sphere profile.
+    cheek=math.exp(-((p.z+.030)/.055)**2)
+    p.y *= 1+.105*cheek-.11*max(0,-p.z/.19)
+    p.x += .008*math.exp(-((p.z-.060)/.042)**2)
+    p.x -= .015*max(0,-p.z/.19)
+def tabby_fiber_patches():
+    """Layer charcoal fibers along the skull, avoiding blocky polygon markings."""
+    rng=random.Random(1897)
+    vertices=[];faces=[]
+    for _ in range(124000):
+        z=rng.uniform(-.84,.93)
+        theta=rng.uniform(-math.pi/2,math.pi/2)
+        r=math.sqrt(1-z*z)
+        n=Vector((r*math.cos(theta),r*math.sin(theta),z))
+        lx=n.x*.187;ly=n.y*.196;lz=n.z*.188
+        y=abs(ly)
+        forehead=lx>.09 and lz>.075 and any(
+            abs(y-(.025+band*.046+max(0,lz-.085)*.18))<.009
+            for band in range(3))
+        cheek=lx>.04 and y>.105 and -.080<lz<.045 and any(
+            abs(lz-(-.046+band*.043-(y-.105)*.31))<.008
+            for band in range(3))
+        if not (forehead or cheek):
+            continue
+        ly*=1+.105*math.exp(-((lz+.030)/.055)**2)-.11*max(0,-lz/.19)
+        lx+=.008*math.exp(-((lz-.060)/.042)**2)-.015*max(0,-lz/.19)
+        p=Vector((.037+lx,ly,1.642+lz))+n*.0015
+        tangent=n.cross(Vector((0,0,1)))
+        if tangent.length<.1:
+            tangent=Vector((0,1,0))
+        tangent.normalize()
+        width=rng.uniform(.00024,.00053)
+        growth=(Vector((-.2,math.copysign(.30,ly),-.78))+n*.1).normalized()
+        tip=p+growth*rng.uniform(.004,.008)
+        index=len(vertices)
+        vertices.extend((p-tangent*width,p+tangent*width,tip))
+        faces.append((index,index+1,index+2))
+    return surface("Head_tabby_stripe_fibers",vertices,faces,FUR_DARK)
+
+tabby_fiber_patches()
+short_fur_cards("Head_short_mesh_fur",(.037,0,1.642),(.188,.198,.190),FUR,7600,781)
+short_fur_cards("Head_face_mesh_fur",(.037,0,1.642),(.188,.198,.190),FUR,9200,973,False)
+sphere("Lower_jaw",(.177,0,1.532),(.070,.086,.048),FUR_LIGHT,40,24)
 for sign in (-1,1):
     ear(sign)
-    sphere(f"Cheek_ruff_{sign}",(.070,sign*.153,1.576),(.065,.065,.071),FUR_LIGHT,28,20)
-    short_fur_cards(f"Cheek_mesh_fur_{sign}",(.070,sign*.153,1.576),(.066,.066,.072),FUR_LIGHT,650,sign+234,False)
-    sphere(f"Muzzle_pad_{sign}",(.218,sign*.051,1.568),(.057,.051,.036),FUR_LIGHT,30,20)
-    sphere(f"Eye_socket_{sign}",(.193,sign*.089,1.672),(.018,.043,.032),FUR_DARK,30,20)
-    sphere(f"Eye_iris_{sign}",(.208,sign*.089,1.672),(.008,.029,.024),EYE,32,20)
-    sphere(f"Vertical_pupil_{sign}",(.215,sign*.089,1.672),(.004,.006,.021),EYE_DARK,16,12)
-    sphere(f"Corneal_glint_{sign}",(.219,sign*.077,1.684),(.002,.004,.005),EYE_WHITE,12,8)
-    line(f"Angular_brow_{sign}",[(.184,sign*.044,1.713),(.196,sign*.088,1.721),(.174,sign*.131,1.710)],.006,FUR_DARK)
-    for dot in range(3):
-        sphere(f"Muzzle_follicle_{sign}_{dot}",(.275,sign*(.042+dot*.014),1.567-dot*.010),(.0018,.002,.0018),FUR_DARK,8,6)
+    sphere(f"Cheek_ruff_{sign}",(.073,sign*.142,1.572),(.069,.051,.064),FUR_LIGHT,36,24)
+    short_fur_cards(f"Cheek_mesh_fur_{sign}",(.073,sign*.142,1.572),(.070,.054,.068),FUR_LIGHT,1300,sign+234,False)
+    # The white muzzle is a shallow paired pad, with the bridge and jaw tucked
+    # behind it.  Individual follicles and divergent whiskers carry the edge.
+    sphere(f"Muzzle_pad_{sign}",(.215,sign*.039,1.560),(.044,.048,.028),FUR_LIGHT,40,24)
+    sphere(f"Eye_socket_{sign}",(.204,sign*.084,1.672),(.006,.033,.022),FUR_DARK,40,24)
+    sphere(f"Eye_iris_{sign}",(.209,sign*.084,1.672),(.004,.024,.017),EYE,40,24)
+    sphere(f"Vertical_pupil_{sign}",(.213,sign*.084,1.672),(.0019,.004,.013),EYE_DARK,24,16)
+    sphere(f"Corneal_glint_{sign}",(.216,sign*.073,1.680),(.001,.002,.0025),EYE_WHITE,12,8)
+    line(f"Eye_upper_lid_{sign}",[(.207,sign*.051,1.682),(.211,sign*.076,1.691),
+                                   (.208,sign*.103,1.686),(.199,sign*.117,1.674)],.0018,FUR_DARK,2)
+    line(f"Eye_lower_lid_{sign}",[(.207,sign*.051,1.665),(.211,sign*.081,1.655),
+                                   (.202,sign*.111,1.665)],.0013,FUR_DARK,2)
+    line(f"Angular_brow_{sign}",[(.174,sign*.044,1.724),(.184,sign*.086,1.729),
+                                  (.168,sign*.127,1.716)],.0024,FUR_DARK,2)
+    for dot in range(5):
+        row=dot//3;col=dot%3
+        sphere(f"Muzzle_follicle_{sign}_{dot}",
+               (.253-row*.007,sign*(.033+col*.012),1.562-row*.010),
+               (.0014,.0015,.0014),FUR_DARK,8,6)
     for w in range(4):
-        line(f"Whisker_{sign}_{w}",[(.270,sign*.051,1.57+w*.006),(.307,sign*.16,1.573+(w-2)*.018),(.285,sign*.32,1.57+(w-2)*.035)],.0007,FUR_LIGHT,2)
-    for stripe in range(3):
-        z=1.596+stripe*.042
-        line(f"Tiger_cheek_stripe_{sign}_{stripe}",[(.103,sign*.196,z+.018),(.132,sign*.181,z+.001),(.157,sign*.159,z-.019)],.0044,FUR_DARK,2)
-    for whisker in range(24):
+        line(f"Whisker_{sign}_{w}",[(.251,sign*.048,1.567+w*.004),
+             (.289,sign*.154,1.572+(w-2)*.013),
+             (.272,sign*.300,1.566+(w-2)*.031)],.00032,FUR_LIGHT,2)
+    for whisker in range(42):
         rng=random.Random(240+sign*100+whisker)
         a=rng.uniform(-.55,.55)
-        y=sign*(.155+rng.uniform(-.025,.025))
-        z=1.55+rng.uniform(-.06,.07)
-        line(f"Guard_hair_{sign}_{whisker}",[(.075,y,z),(.026,y+sign*.040,z+a*.035)],.0006,FUR_LIGHT,1)
-sphere("Soft_nose_bridge",(.202,0,1.626),(.060,.060,.035),FUR)
-sphere("White_nose_blaze",(.235,0,1.614),(.026,.026,.036),FUR_LIGHT,24,16)
-for sign in (-1,1):
-    for stripe in range(2):
-        y0=sign*(.022+stripe*.043)
-        line(f"Forehead_tabby_mark_{sign}_{stripe}",[(.173,y0,1.762),(.158,y0+sign*.019,1.790),(.127,y0+sign*.045,1.813)],.004,FUR_DARK,2)
-sphere("Triangular_nose",(.280,0,1.586),(.022,.027,.014),NOSE,24,14)
-line("Philtrum",[(.297,0,1.58),(.29,0,1.547)],.0017,FUR_DARK)
-line("Mouth_right",[(.29,0,1.547),(.28,.054,1.541)],.0014,FUR_DARK)
-line("Mouth_left",[(.29,0,1.547),(.28,-.054,1.541)],.0014,FUR_DARK)
+        y=sign*(.151+rng.uniform(-.017,.017))
+        z=1.55+rng.uniform(-.049,.055)
+        line(f"Guard_hair_{sign}_{whisker}",[(.075,y,z),(.040,y+sign*.033,z+a*.027)],.00035,FUR_LIGHT,1)
+sphere("Soft_nose_bridge",(.195,0,1.612),(.045,.043,.038),FUR)
+sphere("White_nose_blaze",(.230,0,1.590),(.016,.024,.025),FUR_LIGHT,32,20)
+# A softly triangular nose with a central philtrum replaces the round button.
+nose=sphere("Triangular_nose",(.265,0,1.580),(.009,.025,.012),NOSE,32,20)
+for vertex in nose.data.vertices:
+    if vertex.co.z<0:
+        vertex.co.y*=.48+.52*(vertex.co.z+.012)/.012
+line("Philtrum",[(.274,0,1.575),(.264,0,1.541)],.0011,FUR_DARK)
+line("Mouth_right",[(.264,0,1.541),(.252,.035,1.536)],.0009,FUR_DARK)
+line("Mouth_left",[(.264,0,1.541),(.252,-.035,1.536)],.0009,FUR_DARK)
 
 # No helmet or headband hides the upright ears and distinctive tabby face in
 # the user's Nyaakoto reference. The asymmetric small crown stripes remain fur.
