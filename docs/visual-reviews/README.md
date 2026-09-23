@@ -37,5 +37,15 @@ eye contour, neck, and limited animation remain stylized and fall well short
 of the photoreal target. SHA-256:
 `9cb58fbe3610183f6e0d3431e8d367194fe83d864b96f8cd93ce2532f9adfb72`.
 
-These two newer captures are diagnostic UE 5.8.3/M1 Ultra evidence, not a
+`UE583_Nyaakoto_UV0_Diagnostic.png` is an unedited packaged Mac frame of the
+same close-up and 25-lux diagnostic setup after correcting the character FBX's
+primary UV channel. The previous iris sampled one dark corner of its painted
+atlas because its authored coordinates exported on channel 2; parts of the fur
+and muzzle had the same channel mismatch. The blue irises and fine fur texture
+now render in gameplay. This fixes a material integration defect, while the
+separate white muzzle and cheek forms, cylindrical neck, simple ears, dark eye
+sockets, and rigid armor still read as stylized. SHA-256:
+`8a85ad9f2d12cb1f3afd79652470e12f1831a6e973df2e9529e393d142179f7c`.
+
+These newer captures are diagnostic UE 5.8.3/M1 Ultra evidence, not a
 5.8.2 release qualification, a Windows Nanite result, or a 60-fps claim.
