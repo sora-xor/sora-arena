@@ -1,0 +1,24 @@
+{
+  "arena_join_terms_inspection_source_sha256": "97062ae289a4b5e2cf8a6d8cd7825a77765afbcfe64ceed8de4f5851c9723c81",
+  "artifact_kind": "local-research-release-build",
+  "header_sha256": "73a6ae237b4f20624851f8315e38a07bf08168d3d1557591356408289b014518",
+  "library_sha256": "f44b6d37d596200c9a3897d17eb9b6f7a919ffcf84e61ef8e3bc126f854fb152",
+  "limitations": "The Iroha source checkout had uncommitted tracked and untracked changes. This snapshot record is not a reproducible source archive or product-release signature. Live wallet pairing, Unreal loading, network submission, settlement, and Windows qualification were not tested.",
+  "profile": "release",
+  "source_revision_observed_at_build": "8209033deae7409d800fcc576a63609a0c2c5f9d",
+  "toolchain": {
+    "rustc": "1.93.1",
+    "target": "aarch64-apple-darwin",
+    "xcode": "26.1.1 (17B100)"
+  },
+  "tracked_diff_sha256_observed_at_build": "abc183ea9ea27c7bf20ae844f4a3a8b91df5a638dc99705542ba4739afdd19f6",
+  "untracked_source_count_observed_at_build": 38,
+  "untracked_source_tree_sha256_observed_at_build": "5ab0ab7a2c2cd83d8a57ec805ebf8ddce15f1d823d58fd641554bc1214acd69e",
+  "verification": {
+    "abi_pointer_types": 26,
+    "arena_join_terms_inspection": "typed canonical Join matched; authorization_ready false; malformed and non-Join rejected",
+    "native_smoke": "passed",
+    "recovery_codec_checks": 23,
+    "source_snapshot_stable_during_build": true
+  }
+}

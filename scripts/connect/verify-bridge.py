@@ -97,6 +97,10 @@ def verify_game_builder(api, fixture_path):
     finalize = api.connect_norito_detached_transaction_scaffold_finalize_ed25519_v1
     finalize.argtypes = [PTR, UL, PTR, UL, PTR, UL, OUT, LEN, OUT, LEN]
     finalize.restype = c.c_int32
+    join_inspector = getattr(api, 'connect_norito_arena_join_terms_inspect_v1', None)
+    if join_inspector is not None:
+        join_inspector.argtypes = [PTR, UL, OUT, LEN]
+        join_inspector.restype = c.c_int32
 
     def array(data):
         return (U8 * len(data)).from_buffer_copy(data)
@@ -143,6 +147,46 @@ def verify_game_builder(api, fixture_path):
         finally:
             if reviewed:
                 api.connect_norito_free(reviewed)
+        if action == 'JoinGameSessionV1' and join_inspector is not None:
+            terms_ptr, terms_len = PTR(), UL()
+            code = join_inspector(array(scaffold), len(scaffold), c.byref(terms_ptr), c.byref(terms_len))
+            try:
+                if code or not terms_ptr or not 0 < terms_len.value <= 128 * 1024:
+                    raise RuntimeError('Native Arena Join terms inspection failed.')
+                terms = json.loads(c.string_at(terms_ptr, terms_len.value))
+                if (terms.get('schema') != 'sora.arena.join_terms_inspection.v1'
+                        or terms.get('authorization_ready') is not False
+                        or terms.get('verification_scope') != 'canonical_scaffold_only'
+                        or terms.get('network_id') != request['network_id']
+                        or terms.get('authority') != authority
+                        or terms.get('creation_time_ms') != request['creation_time_ms']
+                        or terms.get('time_to_live_ms') != request['time_to_live_ms']
+                        or terms.get('fee_payment') != request['fee_payment']
+                        or terms.get('join') != vectors[action]
+                        or terms.get('payload_signing_hash_hex') != review.get('payload_signing_hash_hex')
+                        or not re.fullmatch(r'[0-9a-f]{64}', terms.get('scaffold_blake3_hex', ''))):
+                    raise RuntimeError('Native Arena Join terms differ from the canonical transaction or claim authorization.')
+            finally:
+                if terms_ptr:
+                    api.connect_norito_free(terms_ptr)
+            for malformed in (scaffold + b'\x00', b''):
+                rejected_ptr, rejected_len = PTR(), UL()
+                code = join_inspector(array(malformed), len(malformed), c.byref(rejected_ptr), c.byref(rejected_len))
+                try:
+                    if code == 0 or rejected_ptr or rejected_len.value:
+                        raise RuntimeError('Native Arena Join inspector accepted a malformed scaffold or returned stale data.')
+                finally:
+                    if rejected_ptr:
+                        api.connect_norito_free(rejected_ptr)
+        elif join_inspector is not None:
+            rejected_ptr, rejected_len = PTR(), UL()
+            code = join_inspector(array(scaffold), len(scaffold), c.byref(rejected_ptr), c.byref(rejected_len))
+            try:
+                if code == 0 or rejected_ptr or rejected_len.value:
+                    raise RuntimeError('Native Arena Join inspector accepted a different game action.')
+            finally:
+                if rejected_ptr:
+                    api.connect_norito_free(rejected_ptr)
         # A placeholder plus zero signature cannot become an authorized transaction.
         signed, signed_size, signed_review, signed_review_size = PTR(), UL(), PTR(), UL()
         code = finalize(array(scaffold), len(scaffold), (U8 * 32)(), 32, (U8 * 64)(), 64,
@@ -174,14 +218,19 @@ def verify_game_builder(api, fixture_path):
             if build(bad) is not None:
                 raise RuntimeError('Native builder accepted ' + mutation)
             rejected += 1
-    return {'canonical_actions': actions, 'malformed_requests_rejected': rejected,
-            'unauthorized_placeholder_finalization': 'rejected', 'submission': 'never attempted'}
+    report = {'canonical_actions': actions, 'malformed_requests_rejected': rejected,
+              'unauthorized_placeholder_finalization': 'rejected', 'submission': 'never attempted'}
+    if join_inspector is not None:
+        report['arena_join_terms_inspection'] = 'typed terms matched; authorization false; malformed and non-Join scaffolds rejected'
+    return report
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('library', type=Path)
     parser.add_argument('--game-fixtures', type=Path, help='optional public native game-v1-codec.json fixture file')
+    parser.add_argument('--require-arena-join-inspector', action='store_true',
+                        help='fail if the native research Join inspector is absent')
     args = parser.parse_args()
     path = args.library.resolve()
     if not path.is_file():
@@ -195,6 +244,10 @@ def main():
     required = re.findall(r'ARENA_BIND\([^,]+, "([^"]+)"\)', source.read_text())
     for name in required:
         getattr(api, name)
+    if args.require_arena_join_inspector and not hasattr(api, 'connect_norito_arena_join_terms_inspect_v1'):
+        sys.exit('Required Arena Join inspector is absent; library was not staged.')
+    if args.require_arena_join_inspector and not args.game_fixtures:
+        sys.exit('Arena Join inspector verification requires --game-fixtures.')
     api.connect_norito_free.argtypes = [PTR]
     api.connect_norito_free.restype = None
 

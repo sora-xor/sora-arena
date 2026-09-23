@@ -70,11 +70,12 @@ scripts/connect/check-abi.py
 IROHA_SOURCE_ROOT=../iroha-arena scripts/connect/build-bridge.sh
 scripts/connect/verify-bridge.py Binaries/Mac/libconnect_norito_bridge.dylib
 scripts/connect/verify-bridge.py Binaries/Mac/libconnect_norito_bridge.dylib --game-fixtures ../iroha-arena/javascript/iroha_js/test/fixtures/game-v1-codec.json
+scripts/connect/verify-bridge.py Binaries/Mac/libconnect_norito_bridge.dylib --game-fixtures ../iroha-arena/javascript/iroha_js/test/fixtures/game-v1-codec.json --require-arena-join-inspector
 ```
 
 If macOS Command Line Tools cannot find C++ standard headers, scope
 `DEVELOPER_DIR` to a working Xcode installation for `check-abi.py`. The current
-25 function-pointer declarations passed this isolated check with the installed
+26 function-pointer declarations passed this isolated check with the installed
 Xcode 26.1.1 compiler (and separately Xcode 27); this does not compile the Unreal
 subsystem or establish engine compatibility.
 
@@ -82,8 +83,10 @@ The build script uses the source checkout's `target/` directory by default to
 reuse dependencies; `SORA_CONNECT_TARGET_DIR` selects another build directory.
 It builds the actual native library, executes native admission/crypto smoke
 checks, and only then stages the library and a source/header/library hash record.
-It does not write a placeholder library. The hash record identifies tracked
-changes and explicitly does not attest untracked source content.
+It does not write a placeholder library. The generic script's hash record
+identifies tracked changes but does not attest untracked source content. The
+current local research build also records a stable pre/post-build fingerprint
+of untracked files in [`connect-bridge-local-build.json`](connect-bridge-local-build.json).
 
 The default staged locations are:
 
@@ -197,8 +200,10 @@ This research FFI symbol is optional for pairing under bridge ABI 23 and must be
 negotiated by its exact name, `connect_norito_arena_join_terms_inspect_v1`.
 Its absence leaves Join/Buy signing blocked; its presence also leaves signing
 blocked until an authenticated session review exists. `check-abi.py` checks its
-C declaration and Unreal function-pointer type, while `verify-bridge.py`
-reports its presence in the actual staged library.
+C declaration and Unreal function-pointer type. With `--game-fixtures`,
+`verify-bridge.py` exercises typed Join terms and rejects malformed or non-Join
+scaffolds if the symbol is present. Use `--require-arena-join-inspector` to fail
+verification when the symbol is missing.
 
 `SubmitSignedTestTransaction()` is a separate, explicit operation. It is
 disabled in shipping builds and unless `Arena.Connect` explicitly sets
@@ -261,11 +266,15 @@ status observation never by itself unlocks a bond or weapon entitlement.
   With `--game-fixtures`, it also builds and reinspects canonical Open/Join/Claim
   transactions, compares exact authority/network/fees/instruction values, rejects
   21 malformed requests, and rejects unsigned placeholder finalization.
-  On 2026-09-22 these native checks **passed** on the actual development library
-  now staged at `Binaries/Mac/libconnect_norito_bridge.dylib`, SHA-256
-  `0caeb82fcfbf1119a011a8d02f58d22487db9db50947830b92013fad88a66ff0`.
-  Its sidecar records the development profile and observed source metadata;
-  this is not a release/reproducible-build attestation or a live wallet test.
+  On 2026-09-23 these native checks **passed** on the staged release-profile
+  local research library at `Binaries/Mac/libconnect_norito_bridge.dylib`,
+  SHA-256 `f44b6d37d596200c9a3897d17eb9b6f7a919ffcf84e61ef8e3bc126f854fb152`.
+  The required Arena Join inspector also matched exact typed fixture terms,
+  reported `authorization_ready: false`, and rejected malformed and non-Join
+  scaffolds. The ignored sidecar and tracked build manifest record the compiler,
+  source snapshot, and library hash. The Iroha checkout still had uncommitted
+  source, so this is not a reproducible source archive, product-release signature,
+  or live wallet test.
 - `SoraArena.Connect.LaunchBindings` contains Unreal automation cases for network
   checksum and origin validation, node/session/role substitution, duplicate URI
   fields, extra fields, fragments, substituted URI schemes, rejection of NFT
