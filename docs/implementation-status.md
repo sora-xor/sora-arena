@@ -174,9 +174,12 @@ maps. It replaces the visual building blockouts with a 74k-triangle Edo-inspired
 dojo containing a tiled roof, veranda, shoji, and the exact supplied SORA
 kamon; gameplay collision remains on the prior simple proxies. The skinned
 Nyaakoto runtime cat has a 20-bone rig, 23 fixed material slots, authored
-fur/cloth/lacquer PBR maps, yumi, quiver and katana. Source validators and the
-5.8.3 editor import validator pass for all 150 expected packages and exact
-character material bindings. Blender reviews still show a stylized character,
+fur/cloth/lacquer PBR maps, yumi, quiver and katana. The roof has a separate
+4K CC0 grey ceramic PBR scan applied to the original curved geometry; its
+photographed overlap pattern still needs a period-art review. Source validators
+and the 5.8.3 editor import validator pass for all 154 expected packages and
+exact character and roof material bindings. Blender reviews still show a
+stylized character,
 and the new 130k-vertex LOD0 needs distance LODs and performance review. This
 asset work is not a photoreal AAA qualification; an in-game visual pass and
 measured Windows/Mac frame times remain required.
