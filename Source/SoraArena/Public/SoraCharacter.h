@@ -8,6 +8,7 @@ class UStaticMeshComponent;
 struct FSoraPracticeInput;
 struct FSoraPracticePlayer;
 struct FSoraPracticeMap;
+class USoraControlSaveGame;
 UCLASS()
 class SORAARENA_API ASoraCharacter : public ACharacter
 {
@@ -38,12 +39,14 @@ public:
     UCameraComponent* GetCamera() const { return Camera; }
     void Heal(float Amount);
     static void Beam(UWorld* World, FVector A, FVector B, FLinearColor Color, float Radius = 1.5f, float Life = .08f);
-    // Session-scoped controls for a future options screen. Wallet actions are deliberately excluded.
+    // Local controls. Combat action remaps cannot target wallet or menu commands.
     UFUNCTION(BlueprintCallable, Category="SORA|Controls") bool RemapCombatAction(FName ActionName, FKey NewKey);
     UFUNCTION(BlueprintPure, Category="SORA|Controls") TArray<FKey> GetActionKeys(FName ActionName) const;
     UFUNCTION(BlueprintCallable, Category="SORA|Controls") void SetGamepadDeadZones(float MoveDeadZone, float LookDeadZone);
     UFUNCTION(BlueprintCallable, Category="SORA|Controls") void SetGamepadLookSensitivity(float Sensitivity);
     UFUNCTION(BlueprintPure, Category="SORA|Controls") float GetGamepadLookSensitivity() const { return GamepadLookSensitivity; }
+    UFUNCTION(BlueprintCallable, Category="SORA|Controls") void SetInvertedLook(bool Enabled);
+    UFUNCTION(BlueprintPure, Category="SORA|Controls") bool GetInvertedLook() const { return bInvertedLook; }
 private:
     UPROPERTY() TObjectPtr<UCameraComponent> Camera;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> BodyParts;
@@ -51,6 +54,7 @@ private:
     UPROPERTY() TObjectPtr<USceneComponent> WeaponRoot;
     UPROPERTY() TObjectPtr<class UAnimationAsset> IdleAnimation;
     UPROPERTY() TObjectPtr<class UAnimationAsset> WalkAnimation;
+    UPROPERTY() TObjectPtr<USoraControlSaveGame> ControlProfile;
     bool bSkeletalVisual = false;
     bool bWalkingVisual = false;
     bool bEnemy = false;
@@ -61,6 +65,8 @@ private:
     float InputForward = 0.f, InputRight = 0.f;
     float GamepadMoveDeadZone = .18f, GamepadLookDeadZone = .12f;
     float GamepadLookSensitivity = 1.f;
+    bool bInvertedLook = false;
+    bool bRestoringControlProfile = false;
     uint32 KernelHeldButtons = 0, KernelQueuedButtons = 0;
     bool bFireHeld = false;
     bool bSprint = false;
@@ -86,4 +92,7 @@ private:
     void ClassOne(); void ClassTwo(); void ClassThree(); void ClassFour(); void ClassFive(); void ClassSix();
     void ClassPrevious(); void ClassNext();
     void ChooseClass(int32 Id);
+    bool ApplyCombatActionMapping(FName ActionName, FKey NewKey, bool bRequireMenu);
+    void LoadControlProfile();
+    void SaveControlProfile();
 };

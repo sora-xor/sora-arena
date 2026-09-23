@@ -21,6 +21,7 @@
 #include "Engine/SkeletalMesh.h"
 #include "Animation/AnimationAsset.h"
 #include "ArenaKernelSubsystem.h"
+#include "SoraControlSaveGame.h"
 
 ASoraCharacter::ASoraCharacter()
 {
@@ -271,14 +272,14 @@ void ASoraCharacter::Tick(float Dt)
 void ASoraCharacter::Forward(float V) { if(bKernelDriven) { InputForward=V; return; } if(CanPlay()) AddMovementInput(GetActorForwardVector(),V); }
 void ASoraCharacter::Strafe(float V) { if(bKernelDriven) { InputRight=V; return; } if(CanPlay()) AddMovementInput(GetActorRightVector(),V); }
 void ASoraCharacter::Yaw(float V) { if(CanPlay()) AddControllerYawInput(V); }
-void ASoraCharacter::Pitch(float V) { if(CanPlay()) AddControllerPitchInput(V); }
+void ASoraCharacter::Pitch(float V) { if(CanPlay()) AddControllerPitchInput(bInvertedLook?-V:V); }
 void ASoraCharacter::GamepadYaw(float V)
 {
     if(CanPlay()) AddControllerYawInput(FMath::Clamp(V,-1.f,1.f)*90.f*GamepadLookSensitivity*GetWorld()->GetDeltaSeconds());
 }
 void ASoraCharacter::GamepadPitch(float V)
 {
-    if(CanPlay()) AddControllerPitchInput(FMath::Clamp(V,-1.f,1.f)*70.f*GamepadLookSensitivity*GetWorld()->GetDeltaSeconds());
+    if(CanPlay()) AddControllerPitchInput(FMath::Clamp(V,-1.f,1.f)*70.f*GamepadLookSensitivity*GetWorld()->GetDeltaSeconds()*(bInvertedLook?-1.f:1.f));
 }
 void ASoraCharacter::FireDown() { if(bKernelDriven) { if(CanPlay()) KernelHeldButtons|=1; return; } bFireHeld=true; Fire(); }
 void ASoraCharacter::FireUp() { bFireHeld=false; KernelHeldButtons&=~1u; }
@@ -480,13 +481,30 @@ TArray<FKey> ASoraCharacter::GetActionKeys(FName ActionName) const
 }
 bool ASoraCharacter::RemapCombatAction(FName ActionName,FKey NewKey)
 {
+    if(!ApplyCombatActionMapping(ActionName,NewKey,true)) return false;
+    if(ControlProfile)
+    {
+        const bool bGamepad=NewKey.IsGamepadKey(),bMouse=NewKey.IsMouseButton();
+        ControlProfile->Bindings.RemoveAll([&](const FSoraControlBinding& Binding)
+        {
+            return Binding.ActionName==ActionName&&Binding.Key.IsGamepadKey()==bGamepad&&Binding.Key.IsMouseButton()==bMouse;
+        });
+        FSoraControlBinding Binding;
+        Binding.ActionName=ActionName; Binding.Key=NewKey;
+        ControlProfile->Bindings.Add(Binding);
+        SaveControlProfile();
+    }
+    return true;
+}
+bool ASoraCharacter::ApplyCombatActionMapping(FName ActionName,FKey NewKey,bool bRequireMenu)
+{
     // Never permit wallet, menu, or campaign commands to be rebound by combat UI.
     static const TSet<FName> Allowed={
         TEXT("Fire"),TEXT("Melee"),TEXT("Jump"),TEXT("Sprint"),TEXT("Reload"),TEXT("Interact"),
         TEXT("Block"),TEXT("Ability"),TEXT("WeaponOne"),TEXT("WeaponTwo"),TEXT("WeaponThree")};
     const auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
     auto* PC=Cast<APlayerController>(GetController());
-    if(!G||!G->bMenu||!Allowed.Contains(ActionName)||!NewKey.IsValid()||!NewKey.IsBindableToActions()||!PC||!PC->PlayerInput) return false;
+    if((bRequireMenu&&(!G||!G->bMenu))||!Allowed.Contains(ActionName)||!NewKey.IsValid()||!NewKey.IsBindableToActions()||!PC||!PC->PlayerInput) return false;
     UPlayerInput* PlayerInput=PC->PlayerInput;
     for(const FInputActionKeyMapping& Mapping:PlayerInput->ActionMappings)
     {
@@ -509,8 +527,15 @@ bool ASoraCharacter::RemapCombatAction(FName ActionName,FKey NewKey)
 }
 void ASoraCharacter::SetGamepadDeadZones(float MoveDeadZone,float LookDeadZone)
 {
+    if(!FMath::IsFinite(MoveDeadZone)||!FMath::IsFinite(LookDeadZone)) return;
     GamepadMoveDeadZone=FMath::Clamp(MoveDeadZone,0.f,.5f);
     GamepadLookDeadZone=FMath::Clamp(LookDeadZone,0.f,.5f);
+    if(ControlProfile&&!bRestoringControlProfile)
+    {
+        ControlProfile->MoveDeadZone=GamepadMoveDeadZone;
+        ControlProfile->LookDeadZone=GamepadLookDeadZone;
+        SaveControlProfile();
+    }
     auto* PC=Cast<APlayerController>(GetController());
     if(!PC||!PC->PlayerInput) return;
     UPlayerInput* PlayerInput=PC->PlayerInput;
@@ -526,12 +551,54 @@ void ASoraCharacter::SetGamepadDeadZones(float MoveDeadZone,float LookDeadZone)
 }
 void ASoraCharacter::SetGamepadLookSensitivity(float Sensitivity)
 {
+    if(!FMath::IsFinite(Sensitivity)) return;
     GamepadLookSensitivity=FMath::Clamp(Sensitivity,.25f,3.f);
+    if(ControlProfile&&!bRestoringControlProfile)
+    {
+        ControlProfile->LookSensitivity=GamepadLookSensitivity;
+        SaveControlProfile();
+    }
+}
+void ASoraCharacter::SetInvertedLook(bool Enabled)
+{
+    bInvertedLook=Enabled;
+    if(ControlProfile&&!bRestoringControlProfile)
+    {
+        ControlProfile->InvertedLook=Enabled;
+        SaveControlProfile();
+    }
+}
+void ASoraCharacter::LoadControlProfile()
+{
+    ControlProfile=Cast<USoraControlSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("SoraControlsV1"),0));
+    if(!ControlProfile||ControlProfile->SaveSchema!=1)
+        ControlProfile=Cast<USoraControlSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraControlSaveGame::StaticClass()));
+    if(!ControlProfile) return;
+    bRestoringControlProfile=true;
+    SetGamepadDeadZones(FMath::IsFinite(ControlProfile->MoveDeadZone)?ControlProfile->MoveDeadZone:.18f,
+        FMath::IsFinite(ControlProfile->LookDeadZone)?ControlProfile->LookDeadZone:.12f);
+    SetGamepadLookSensitivity(FMath::IsFinite(ControlProfile->LookSensitivity)?ControlProfile->LookSensitivity:1.f);
+    SetInvertedLook(ControlProfile->InvertedLook);
+    const TArray<FSoraControlBinding> StoredBindings=ControlProfile->Bindings;
+    ControlProfile->Bindings.Reset();
+    // Eleven approved combat actions can each have one keyboard, mouse, and pad key.
+    // A malformed local save cannot replay an unbounded series of key-map edits.
+    if(StoredBindings.Num()<=33) for(const FSoraControlBinding& Binding:StoredBindings)
+    {
+        if(ApplyCombatActionMapping(Binding.ActionName,Binding.Key,false))
+            ControlProfile->Bindings.Add(Binding);
+    }
+    bRestoringControlProfile=false;
+}
+void ASoraCharacter::SaveControlProfile()
+{
+    if(ControlProfile&&!UGameplayStatics::SaveGameToSlot(ControlProfile,TEXT("SoraControlsV1"),0))
+        UE_LOG(LogTemp,Warning,TEXT("SORA local control preferences could not be saved"));
 }
 void ASoraCharacter::SetupPlayerInputComponent(UInputComponent* I)
 {
     Super::SetupPlayerInputComponent(I);
-    SetGamepadDeadZones(GamepadMoveDeadZone,GamepadLookDeadZone);
+    LoadControlProfile();
     I->BindAxis(TEXT("MoveForward"),this,&ASoraCharacter::Forward); I->BindAxis(TEXT("MoveRight"),this,&ASoraCharacter::Strafe);
     I->BindAxis(TEXT("LookYaw"),this,&ASoraCharacter::Yaw); I->BindAxis(TEXT("LookPitch"),this,&ASoraCharacter::Pitch);
     I->BindAxis(TEXT("GamepadLookYaw"),this,&ASoraCharacter::GamepadYaw); I->BindAxis(TEXT("GamepadLookPitch"),this,&ASoraCharacter::GamepadPitch);
