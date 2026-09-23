@@ -106,13 +106,13 @@ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRot
         else if(Slot.Contains(TEXT("M_Env_Metal"))) Role=TEXT("Metal");
         else if(bEstateDojo&&Slot.StartsWith(TEXT("M_Dojo_Kawara_")))
         {
-            // The imported Blender material is flat. The curved kawara mesh
-            // keeps its silhouette; projected stone normal/roughness maps add
-            // firing variation at a tile-sized scale in the playable scene.
-            Role=TEXT("Stone"); TileSizeCm=35.f;
-            TintColor=Slot.EndsWith(TEXT("_1"))?FLinearColor(.36f,.46f,.67f)
-                :Slot.EndsWith(TEXT("_2"))?FLinearColor(.25f,.34f,.57f)
-                :FLinearColor(.32f,.42f,.66f);
+            // The original curved tiles supply the roof silhouette. The
+            // pinned grey ceramic scan supplies color and PBR surface detail
+            // at its measured three-metre scale, with restrained tile variation.
+            Role=TEXT("Kawara"); TileSizeCm=300.f;
+            TintColor=Slot.EndsWith(TEXT("_1"))?FLinearColor(.86f,.88f,.90f)
+                :Slot.EndsWith(TEXT("_2"))?FLinearColor(.77f,.80f,.83f)
+                :FLinearColor(.94f,.95f,.96f);
         }
         else if(bEstateDojo&&Slot==TEXT("M_Dojo_CharredCedar"))
         {

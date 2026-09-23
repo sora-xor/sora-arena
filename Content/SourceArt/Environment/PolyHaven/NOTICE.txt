@@ -2,7 +2,11 @@ Powered by Poly Haven — https://polyhaven.com
 
 These texture and HDRI assets are provided free under CC0 1.0 Universal.
 Commercial use and redistribution are allowed. They remain public-domain assets, not proprietary SORA artwork.
-Asset pages, creators, exact source files and SHA-256 checksums are recorded in manifest.json.
+Asset pages, creators, exact source files and SHA-256 checksums are recorded in
+manifest.json and GreyRoofTiles/manifest.json. The latter is a photographed
+grey ceramic surface mapped onto original curved kawara geometry. The scan's
+overlap pattern is not an Edo-period construction reference; the geometry and
+in-game projection require separate historical and visual review.
 License: https://polyhaven.com/license
 Legal code: https://creativecommons.org/publicdomain/zero/1.0/legalcode
 

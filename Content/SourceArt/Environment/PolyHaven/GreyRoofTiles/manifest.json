@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "asset_id": "grey_roof_tiles",
+  "name": "Grey Roof Tiles",
+  "role": "kawara",
+  "asset_url": "https://polyhaven.com/a/grey_roof_tiles",
+  "metadata_url": "https://api.polyhaven.com/files/grey_roof_tiles",
+  "info_url": "https://api.polyhaven.com/info/grey_roof_tiles",
+  "authors": {
+    "Rob Tuytel": "All"
+  },
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+  "resolution": "4k",
+  "source_dimensions_mm": [
+    3000,
+    3000
+  ],
+  "tile_size_cm": 300.0,
+  "unreal_instance": "/Game/Generated/Environment/MI_Nyaagyu_Kawara.MI_Nyaagyu_Kawara",
+  "application": "World-aligned scanned ceramic color, micro-normal and AO/roughness/metallic on original project-authored curved kawara geometry. The Western overlap pattern visible in the source scan is not an Edo-period reconstruction; material projection requires in-engine review.",
+  "files": [
+    {
+      "channel": "Diffuse",
+      "file": "grey_roof_tiles_diff_4k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/grey_roof_tiles/grey_roof_tiles_diff_4k.jpg",
+      "format": "jpg",
+      "bytes": 6511882,
+      "upstream_md5": "11cb0491bf0292f92f6a06782f3dc830",
+      "sha256": "28b0a8716d492b6d121e62d12f0c23b061a6b41c1f441e7c9e79cc76db161e3f"
+    },
+    {
+      "channel": "nor_dx",
+      "file": "grey_roof_tiles_nor_dx_4k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/grey_roof_tiles/grey_roof_tiles_nor_dx_4k.png",
+      "format": "png",
+      "bytes": 14713417,
+      "upstream_md5": "0cdb306df160791defcda4149ea32cab",
+      "sha256": "30720ff6ddb2d99199d6b6aedbd4741c0cee2f01e0d7bef7c5dec45b6f74b5df"
+    },
+    {
+      "channel": "arm",
+      "file": "grey_roof_tiles_arm_4k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/grey_roof_tiles/grey_roof_tiles_arm_4k.png",
+      "format": "png",
+      "bytes": 20611120,
+      "upstream_md5": "cf42aacb88a0d9706650517a7db99a81",
+      "sha256": "06014af2deb71778bf613bf2eccc713a956f42874e1418ba3e0c7c5750fb6d31"
+    }
+  ]
+}

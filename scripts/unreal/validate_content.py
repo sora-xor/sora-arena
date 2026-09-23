@@ -443,6 +443,21 @@ dojo_fbx = (dojo_root / dojo["fbx"]).read_bytes()
 assert dojo_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in dojo_fbx
 assert dojo["name"] in world_builder and dojo["name"] in import_script
 assert "SetVisibility(false)" in world_builder
+roof_root = content / "SourceArt/Environment/PolyHaven/GreyRoofTiles"
+roof = json.loads((roof_root / "manifest.json").read_text())
+assert roof["schema_version"] == 1 and roof["asset_id"] == "grey_roof_tiles"
+assert roof["role"] == "kawara" and roof["license"] == "CC0-1.0"
+assert roof["asset_url"] == "https://polyhaven.com/a/grey_roof_tiles"
+assert roof["authors"] == {"Rob Tuytel": "All"}
+assert roof["source_dimensions_mm"] == [3000, 3000] and roof["tile_size_cm"] == 300.0
+assert roof["unreal_instance"] == "/Game/Generated/Environment/MI_Nyaagyu_Kawara.MI_Nyaagyu_Kawara"
+assert [item["channel"] for item in roof["files"]] == ["Diffuse", "nor_dx", "arm"]
+for item in roof["files"]:
+    data = (roof_root / item["file"]).read_bytes()
+    assert len(data) == item["bytes"]
+    assert hashlib.sha256(data).hexdigest() == item["sha256"]
+assert 'Role=TEXT("Kawara"); TileSizeCm=300.f;' in world_builder
+assert "MI_Nyaagyu_Kawara" in (ROOT / "scripts/unreal/validate_imported_assets.py").read_text()
 assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())

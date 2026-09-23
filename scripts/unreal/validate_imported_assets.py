@@ -303,6 +303,25 @@ def expected_assets(project_root):
         if role != "sky":
             name = f"MI_Nyaagyu_{role.title()}"
             add(specs, f"{PALETTE}/{name}.{name}", "MaterialInstanceConstant")
+    roof = read_manifest(palette_root / "GreyRoofTiles/manifest.json")
+    require(roof.get("schema_version") == 1
+            and roof.get("asset_id") == "grey_roof_tiles"
+            and roof.get("role") == "kawara"
+            and roof.get("license") == "CC0-1.0"
+            and roof.get("source_dimensions_mm") == [3000, 3000]
+            and roof.get("tile_size_cm") == 300.0
+            and roof.get("unreal_instance") ==
+            f"{PALETTE}/MI_Nyaagyu_Kawara.MI_Nyaagyu_Kawara"
+            and [item.get("channel") for item in roof.get("files", [])] ==
+            ["Diffuse", "nor_dx", "arm"],
+            "The pinned CC0 ceramic kawara surface changed")
+    for item in roof["files"]:
+        source = source_file(palette_root / "GreyRoofTiles", item["file"])
+        require(hashlib.sha256(source.read_bytes()).hexdigest() == item["sha256"],
+                f"Kawara source map changed: {source}")
+        name = f"T_Kawara_{item['channel']}"
+        add(specs, f"{PALETTE}/Textures/{name}.{name}", "Texture2D")
+    add(specs, roof["unreal_instance"], "MaterialInstanceConstant")
     return specs
 
 
@@ -367,11 +386,33 @@ def validate_loaded_assets(unreal, specs):
                     for channel, value in zip("rgb", surface["tint"])),
                 f"Nyaakoto material {name} changed its tint")
     base_path = f"{PALETTE}/M_Nyaagyu_PBR.M_Nyaagyu_PBR"
-    for role in ("Timber", "Stone", "Soil", "Metal"):
+    for role in ("Timber", "Stone", "Soil", "Metal", "Kawara"):
         path = f"{PALETTE}/MI_Nyaagyu_{role}.MI_Nyaagyu_{role}"
         parent = asset_library.load_asset(path).get_editor_property("parent")
         require(parent is not None and parent.get_path_name() == base_path,
                 f"Palette instance has the wrong PBR parent: {path}")
+    roof_instance = asset_library.load_asset(f"{PALETTE}/MI_Nyaagyu_Kawara.MI_Nyaagyu_Kawara")
+    for parameter, channel in (("AlbedoMap", "Diffuse"),
+                               ("NormalMap", "nor_dx"), ("ARMMap", "arm")):
+        expected = f"{PALETTE}/Textures/T_Kawara_{channel}.T_Kawara_{channel}"
+        actual = material_lib.get_material_instance_texture_parameter_value(roof_instance, parameter)
+        require(actual is not None and actual.get_path_name() == expected,
+                f"Kawara instance lost its {parameter} scanned ceramic map")
+        texture = asset_library.load_asset(expected)
+        require(bool(texture.get_editor_property("srgb")) == (channel == "Diffuse"),
+                f"Kawara {channel} texture color space changed")
+        if channel == "nor_dx":
+            require(texture.get_editor_property("compression_settings") ==
+                    unreal.TextureCompressionSettings.TC_NORMALMAP
+                    and not bool(texture.get_editor_property("flip_green_channel")),
+                    "Kawara DX normal map import changed")
+        if channel == "arm":
+            require(texture.get_editor_property("compression_settings") ==
+                    unreal.TextureCompressionSettings.TC_MASKS,
+                    "Kawara AO/roughness/metallic map import changed")
+    tile = material_lib.get_material_instance_vector_parameter_value(roof_instance, "TileSize")
+    require(all(abs(getattr(tile, channel) - 300.0) < 1e-5 for channel in "rgb"),
+            "Kawara projection lost its measured three-metre scale")
     for tier in ("HI", "MAC"):
         for y in range(4):
             for x in range(4):
