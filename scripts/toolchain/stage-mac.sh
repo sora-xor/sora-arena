@@ -49,6 +49,13 @@ if [[ ! -x "$UAT" ]]; then
   echo "RunUAT.sh is missing: $UAT" >&2
   exit 1
 fi
-exec "$UAT" BuildCookRun -project="$PROJECT" -platform=Mac \
+"$UAT" BuildCookRun -project="$PROJECT" -platform=Mac \
   -clientconfig=Development -skipbuild -skipcook -stage -pak -package -archive \
   -archivedirectory="$ARCHIVE_DIRECTORY" -unattended -noP4
+APP_PLIST="$ARCHIVE_DIRECTORY/Mac/$(basename "$PROJECT" .uproject).app/Contents/Info.plist"
+ACTUAL_BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PLIST")"
+if [[ "$ACTUAL_BUNDLE_ID" != 'org.sora.soraarena' ]]; then
+  echo "Packaged Mac bundle identifier mismatch: expected org.sora.soraarena, got $ACTUAL_BUNDLE_ID" >&2
+  exit 1
+fi
+echo "Verified Mac bundle identifier: $ACTUAL_BUNDLE_ID"
