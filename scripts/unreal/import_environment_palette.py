@@ -83,6 +83,8 @@ for index,(component,prop) in enumerate([('r',unreal.MaterialProperty.MP_AMBIENT
     mask=node(mat,unreal.MaterialExpressionComponentMask,-250,index*120+160,r=component=='r',g=component=='g',b=component=='b',a=False)
     link(projected['arm'],'XYZ Texture',mask,'');output(mask,'',prop)
 lib.layout_material_expressions(mat);lib.recompile_material(mat);assets.save_loaded_asset(mat)
+if set(str(name) for name in lib.get_texture_parameter_names(mat)) != {'AlbedoMap','NormalMap','ARMMap'}:
+    raise RuntimeError('The world-aligned material texture parameters are incomplete')
 
 for record in manifest['assets']:
     if record['role']=='sky':continue
@@ -90,7 +92,11 @@ for record in manifest['assets']:
     instance=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,DEST,unreal.MaterialInstanceConstant,unreal.MaterialInstanceConstantFactoryNew())
     lib.set_material_instance_parent(instance,mat)
     for param,channel in [('AlbedoMap','Diffuse'),('NormalMap','nor_dx'),('ARMMap','arm')]:
-        if not lib.set_material_instance_texture_parameter_value(instance,param,textures[record['role']][channel]):raise RuntimeError('Texture parameter not found: '+param)
+        expected=textures[record['role']][channel]
+        lib.set_material_instance_texture_parameter_value(instance,param,expected)
+        actual=lib.get_material_instance_texture_parameter_value(instance,param)
+        if actual is None or actual.get_path_name()!=expected.get_path_name():
+            raise RuntimeError('Texture parameter did not bind: '+param+' for '+record['role'])
     size=record['tile_size_cm'];lib.set_material_instance_vector_parameter_value(instance,'TileSize',unreal.LinearColor(size,size,size,1))
     assets.save_loaded_asset(instance)
 
