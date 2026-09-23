@@ -187,6 +187,18 @@ separate-process verification took 12.260 seconds and rejected altered
 position, input, session and proof bytes. The batch is peer-accepted rather
 than ledger-selected, and the relation proves no hits, deaths or payouts;
 it cannot register or settle an Arena match.
+A second unregistered, zero-bond native research proof covers one fixed
+genesis-derived Arc carbine hit in a canonical, peer-signed two-tick,
+three-player FFA batch. Deterministic host checks fix the exact scene,
+accepted controls, target reduction, 22-damage row and projected state;
+native AIR proves 30 wall/body slab fractions and the damage arithmetic.
+Its 658-column, 1,414-constraint preflight caps wire size at 2,607,552
+bytes. The saved proof is 2,471,808 bytes (SHA-256
+`f7e626081cf1938d388876129ab591681029835756be7a17041a76523a8a76cd`),
+generated in 134.148 seconds at 664,354,816 bytes peak process RSS; a
+fresh process verified it in 17.426 seconds and rejected statement/proof
+mutations. This is a fixed-scene arithmetic result, not a general
+movement/hit-to-state proof, kill proof or XOR settlement relation.
 An unregistered Iroha research preflight separately measured an 18,000-batch,
 twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
 4 MiB proof envelope before the rest of a complete combat witness. Repeated
