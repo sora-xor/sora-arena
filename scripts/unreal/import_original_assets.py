@@ -131,10 +131,19 @@ if (sluice["schema_version"] != 1 or sluice["name"] != sluice_name
         or sluice["generator"] != "scripts/art/create_nyaagyu_sluice.py"
         or sluice["unreal_asset"] != f"/Game/Generated/Environment/Props/{sluice_name}.{sluice_name}"):
     raise RuntimeError("The original Nyaagyu irrigation sluice identity changed")
+loom_source = source / "Environment/SilkFoundryLoom"
+loom = json.loads((loom_source / "manifest.json").read_text())
+loom_name = "SM_SilkFoundry_LevyLoom"
+if (loom["schema_version"] != 1 or loom["name"] != loom_name
+        or loom["generator"] != "scripts/art/create_silk_foundry_loom.py"
+        or loom["unreal_asset"] != f"/Game/Generated/Environment/Props/{loom_name}.{loom_name}"
+        or loom["collision_boxes"] != 4):
+    raise RuntimeError("The original Silk Foundry loom identity changed")
 assets.make_directory("/Game/Generated/Environment/Props")
 environment_tasks = []
 environment_entries = ([(environment_source, entry) for entry in environment_manifest["assets"]]
-                       + [(street_source, street_terminal), (sluice_source, sluice)])
+                       + [(street_source, street_terminal), (sluice_source, sluice),
+                          (loom_source, loom)])
 for entry_root, entry in environment_entries:
     fbx = entry_root / entry["fbx"]
     if (entry["fbx"] != entry["name"] + ".fbx" or not fbx.is_file()
@@ -159,7 +168,7 @@ for entry_root, entry in environment_entries:
     task.options = options
     environment_tasks.append(task)
 tools.import_asset_tasks(environment_tasks)
-for name in environment_names + [street_name, sluice_name]:
+for name in environment_names + [street_name, sluice_name, loom_name]:
     mesh = assets.load_asset(f"/Game/Generated/Environment/Props/{name}")
     if not isinstance(mesh, unreal.StaticMesh):
         raise RuntimeError(f"Unreal import did not create the original environment prop: {name}")

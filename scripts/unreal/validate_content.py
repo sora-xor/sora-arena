@@ -167,6 +167,27 @@ for name, digest in ((sluice["source_blend"], "blend_sha256"),
 assert sluice["name"] in world_builder and sluice["name"] in import_script
 assert 'if(MapId==0) ImportedProp(TEXT("SM_Nyaagyu_IrrigationSluice")' in world_builder
 assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+loom_root = content / "SourceArt/Environment/SilkFoundryLoom"
+loom = json.loads((loom_root / "manifest.json").read_text())
+assert loom["schema_version"] == 1
+assert loom["name"] == "SM_SilkFoundry_LevyLoom"
+assert loom["generator"] == "scripts/art/create_silk_foundry_loom.py"
+assert loom["unreal_asset"] == "/Game/Generated/Environment/Props/SM_SilkFoundry_LevyLoom.SM_SilkFoundry_LevyLoom"
+assert loom["fbx"] == loom["name"] + ".fbx"
+assert loom["source_parts"] >= 250 and 15000 <= loom["source_triangles"] < 50000
+assert loom["collision_boxes"] == 4
+assert "Original project-owned geometry" in loom["license"] and "CC0 Poly Haven" in loom["license"]
+assert loom["bounds_m"]["min"][2] == 0 and 2.2 < loom["bounds_m"]["max"][2] < 2.4
+for name, digest in ((loom["source_blend"], "blend_sha256"),
+                     (loom["fbx"], "fbx_sha256"),
+                     (loom["preview"], "preview_sha256")):
+    path = loom_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == loom[digest]
+loom_fbx = (loom_root / loom["fbx"]).read_bytes()
+assert loom_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in loom_fbx
+assert loom["name"] in world_builder and loom["name"] in import_script
+assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())
 assert logo_manifest["source_svg"] == "sora_logo_NOtext2.svg"
@@ -190,4 +211,4 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 31 FBX source assets including a dojo bokken and 5 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 32 FBX source assets including a dojo bokken and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
