@@ -10,6 +10,7 @@ pub mod economy;
 pub mod encrypted_wire;
 mod fragmented_wire;
 pub mod handshake;
+pub mod localhost_transport;
 pub mod math;
 pub mod protocol;
 pub mod recovery;
