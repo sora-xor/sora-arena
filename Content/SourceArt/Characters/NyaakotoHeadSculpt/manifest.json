@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "identity": "Nyaakoto / ニャーコト source-only feline head study",
+  "scale": "meters; +X face forward, +Z up; existing character coordinates",
+  "fbx": "SM_Nyaakoto_AnatomicalHead_Study.fbx",
+  "source_blend": "Nyaakoto_AnatomicalHead_Study.blend",
+  "uv_channel": "UVMap / UV0 on every mesh",
+  "user_reference_sha256": "c9f7a4bbe6ba529b2bbdb629db3ba09858c11b563c334e31593876455a550801",
+  "user_reference_embedded": false,
+  "anatomy_reference": "https://commons.wikimedia.org/wiki/File:KATZENSCHAEDEL_LATERAL_1280x1024.jpg (CC0; visual reference only, not embedded)",
+  "texture_provenance": "Copies of project-owned OpenAI-generated fur swatches and iris bitmap; see ../Hero/PBR/Source/README.md",
+  "baked_albedo": "T_Nyaakoto_HeadStudy_Albedo.png",
+  "production_status": "REVIEW_ONLY; no integration, rig, game import, or photoreal qualification",
+  "files_sha256": {
+    "Nyaakoto_AnatomicalHead_Study.blend": "6e8ed0a67d2e01c64a9c4ac0e3ed510398fce67a652df01b9ee0285936ee79c9",
+    "Nyaakoto_HeadStudy_Front.png": "3d551245bf72e7919d091706d51d10b821744dc30bca4d13efa28ed38c0db5eb",
+    "Nyaakoto_HeadStudy_Profile.png": "0e57c33e55a627cbcd77815ac4baac843b51d66e44ba0d9343dee78d518423cf",
+    "Nyaakoto_HeadStudy_ThreeQuarter.png": "1917aa93f0d03a744ab414a9c5ca9ab798056793f844a642c5420825c48bb316",
+    "SM_Nyaakoto_AnatomicalHead_Study.fbm/T_Nyaakoto_HeadStudy_Albedo.png": "3a838ea426e2e8eb92d2488a3819488bfcc8e2e8de5f680eb2b399e353898aa8",
+    "SM_Nyaakoto_AnatomicalHead_Study.fbm/T_Nyaakoto_Iris_Albedo.png": "40ff9d6787393d5f0a585200fe787334ff3f5cc7a2bbd05908006e74283f4e33",
+    "SM_Nyaakoto_AnatomicalHead_Study.fbx": "c91952d244846a7aba51f3c7fa6a41b34aa61abb7df3a76d3c4fe6089f207b33",
+    "T_Nyaakoto_HeadStudy_Albedo.png": "3a838ea426e2e8eb92d2488a3819488bfcc8e2e8de5f680eb2b399e353898aa8",
+    "T_Nyaakoto_Iris_Albedo.png": "40ff9d6787393d5f0a585200fe787334ff3f5cc7a2bbd05908006e74283f4e33",
+    "T_Nyaakoto_fur_charcoal_Albedo.png": "7d055b6d357e482bf1d864a6cf4118d922aed9321e9db4c14da78d2d861980e6",
+    "T_Nyaakoto_fur_grey_Albedo.png": "4132878e71b04f52eafd69cd6196fe1de5011ac783225f45a275f4458e9cdca8",
+    "T_Nyaakoto_fur_white_Albedo.png": "1e24595b1fa77b77f6a02c8a4d26c7b0e2ddeecda771acd2fb50f2426288039c"
+  }
+}
