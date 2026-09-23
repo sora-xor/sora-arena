@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_ProvisionKura",
+  "generator": "scripts/art/create_nyaagyu_kura.py",
+  "generator_blender": "5.2.2 LTS",
+  "source_blend": "Nyaagyu_ProvisionKura.blend",
+  "fbx": "SM_Nyaagyu_ProvisionKura.fbx",
+  "preview": "Nyaagyu_ProvisionKura_Blender.png",
+  "blend_sha256": "e4c45adb4e1623ced6968df197d3b98c67561674f9d4f1716fa5f8cf9eebc627",
+  "fbx_sha256": "03482bb62621034352cfeac330f9c06947c6f7fb14fd0b202ad7a8859bb65235",
+  "preview_sha256": "31db9e5d7439feb549f5fa315c946ce8f9538b7948bf934e16840e3842ae03d1",
+  "palette_manifest_sha256": "d21c351a0ca82165f885d9fc4cbcff652009fee0b9336ae9367b2ccd667cdd0b",
+  "roof_manifest_sha256": "81343d5cdad492e3c740daf309232c6c5f5587ea18d58d99854c7aacefed0acf",
+  "font_sha256": "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5",
+  "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "palette_asset_ids": [
+    "wood_planks_dirt",
+    "stone_floor",
+    "grey_roof_tiles"
+  ],
+  "unreal_asset": "/Game/Generated/Environment/Props/SM_Nyaagyu_ProvisionKura.SM_Nyaagyu_ProvisionKura",
+  "source_parts": 367,
+  "source_triangles": 58574,
+  "roof_tile_count": 600,
+  "shutter_count": 4,
+  "collision_boxes": 3,
+  "bounds_m": {
+    "min": [
+      -3.705,
+      -3.905,
+      0.0
+    ],
+    "max": [
+      3.705,
+      3.695,
+      5.285
+    ]
+  },
+  "placement_origin": "Ground center; local -Y front/loading doors face estate road",
+  "placement_cm": "Use for four of the ten MapId 0 row buildings at existing P with yaw 0 on north row and 180 on south row, preserving all Building() collision pieces.",
+  "collision_guidance": "UCX proxies in FBX are art-review only. In campaign, hidden original WorldBuilder building components retain collision. Practice map uses none of this mesh.",
+  "license": "Original project-owned geometry and review render. Exact user-supplied SORA SVG retains user-provided provenance. Linked timber, stone, and grey roof tile PBR maps are CC0 Poly Haven; Noto Japanese font is SIL OFL. No purchased assets.",
+  "history_reference": [
+    {
+      "url": "https://japan-heritage.bunka.go.jp/ja/special/145/",
+      "note": "Agency for Cultural Affairs heritage overview of white kura walls, protected storage, and Edo-period shop-house design. This production storehouse is fictional, not a reconstruction."
+    }
+  ],
+  "scope": "Original editable source, FBX, and Blender review render. Unreal import, in-game photorealism, historical reconstruction, and performance require separate qualification."
+}
