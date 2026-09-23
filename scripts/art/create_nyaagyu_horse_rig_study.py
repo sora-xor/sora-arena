@@ -16,7 +16,7 @@ import tempfile
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Quaternion, Vector
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -221,6 +221,19 @@ for name, target in anchor_bones.items():
 # order is sourced; angles and support timings are deliberately a study.
 footfall = ("hind_L", "fore_L", "hind_R", "fore_R")
 phase_offset = {name: i * .25 for i, name in enumerate(footfall)}
+
+
+def sagittal_rotation(pose_bone, radians, frame, group):
+    # Blender's bone-local Y follows the bone length. Euler Y therefore twists
+    # the limb rather than swinging it in the horse's X/Z plane. Convert the
+    # horse's world +Y sagittal hinge axis into each rest bone's local frame.
+    rest = arm.data.bones[pose_bone.name].matrix_local.to_3x3()
+    axis = (rest.inverted() @ Vector((0, 1, 0))).normalized()
+    pose_bone.rotation_mode = "QUATERNION"
+    pose_bone.rotation_quaternion = Quaternion(axis, radians)
+    pose_bone.keyframe_insert(data_path="rotation_quaternion", frame=frame, group=group)
+
+
 arm.animation_data_create()
 walk = bpy.data.actions.new("AN_Nyaagyu_Horse_Walk4Beat_InPlace_36f")
 arm.animation_data.action = walk
@@ -245,16 +258,12 @@ for frame in range(1, 38):
                                   ("pastern", -sign * .13 * fold),
                                   ("hoof", sign * .06 * fold)):
             p = arm.pose.bones[f"{family}_{segment}"]
-            p.rotation_mode = "XYZ"
-            p.rotation_euler.y = radians
-            p.keyframe_insert(data_path="rotation_euler", frame=frame, group=family)
+            sagittal_rotation(p, radians, frame, family)
     for name, radians in (("neck", .022 * math.sin(4 * math.pi * t)),
                           ("head", -.016 * math.sin(4 * math.pi * t + .4)),
                           ("tail", .035 * math.sin(2 * math.pi * t))):
         p = arm.pose.bones[name]
-        p.rotation_mode = "XYZ"
-        p.rotation_euler.y = radians
-        p.keyframe_insert(data_path="rotation_euler", frame=frame, group=name)
+        sagittal_rotation(p, radians, frame, name)
 
 scene.frame_set(1)
 bpy.ops.object.select_all(action="DESELECT")

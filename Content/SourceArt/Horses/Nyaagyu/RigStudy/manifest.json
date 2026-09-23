@@ -7,29 +7,29 @@
   "base_source_path": "Content/SourceArt/Horses/Nyaagyu/Nyaagyu_HorseAndTack.blend",
   "base_source_sha256": "0ea0b1b96752f02d7c1dd3d44b08b8b9241184e609394450e453cbe54e75d573",
   "source_blend": "Nyaagyu_Horse_RigStudy.blend",
-  "source_blend_sha256": "b4dd110708eaae29b7ff4a02401cccac9621af21534a15bc367b699924c7525a",
+  "source_blend_sha256": "f142c6cfa2be9f1e8ce9842dfdcae36bf5af696624d442716d216ada49ae5889",
   "fbx": "SK_Nyaagyu_Horse_RigStudy.fbx",
-  "fbx_sha256": "f00a25dfa3ffb2a02cc236aac09c6d609322b35ed0123a4935a8276c20398983",
+  "fbx_sha256": "1855865fc1127767427b0cfdef4b3a281aefa86b14c6fab751bee67c1becbbc3",
   "review_frames": [
     {
       "frame": 1,
       "file": "Nyaagyu_Walk_Frame_01.png",
-      "sha256": "ac8fb46383cba2aec731e6e90817e37658379e1bbf39270ab39c0ec7caf0dc94"
+      "sha256": "3cc320d7f4f38bdcaf3cec46356b2e181967d0478fe4bb8b067f86fa816403b9"
     },
     {
       "frame": 10,
       "file": "Nyaagyu_Walk_Frame_10.png",
-      "sha256": "ad738a10d43b9d21a6b0ad2d85d31e4abe9de08a77024f428e816784242fdac9"
+      "sha256": "2b42311c3db22a60cfda3ca3524729ba13e8498c978bd084336679caf1097435"
     },
     {
       "frame": 19,
       "file": "Nyaagyu_Walk_Frame_19.png",
-      "sha256": "73889339df563c89cd63afc7f83eac8936c594ca8f1a8414731e0b39de7785cb"
+      "sha256": "b40d5877df8fe189149281db2a283945303ddd54286b9c04bba41143300e304c"
     },
     {
       "frame": 28,
       "file": "Nyaagyu_Walk_Frame_28.png",
-      "sha256": "effe6694e8d229ca66956285275dcad8bb1d3854f221290977923436e1492db3"
+      "sha256": "ef40d8f614f3fecdbd4a627aa7eb469fbe207c7084934fa11d8381553f59e713"
     }
   ],
   "source_parts": 252,

@@ -104,14 +104,18 @@ angles = {}
 hoof_positions = {}
 for frame in (1, 10, 19, 28, 37):
     scene.frame_set(frame)
-    angles[frame] = tuple(round(arm.pose.bones[f"{family}_upper"].rotation_euler.y, 5)
+    angles[frame] = tuple(tuple(round(value, 5) for value in arm.pose.bones[f"{family}_upper"].rotation_quaternion)
                           for family in manifest["walk"]["footfall_order"])
-    hoof_positions[frame] = tuple(round(bpy.data.objects[f"Horse_{family}_{side}_hoof"].matrix_world.translation.x, 5)
-                                  for family, side in (("hind", -1), ("fore", -1), ("hind", 1), ("fore", 1)))
+    hoof_positions[frame] = tuple(round(sum((obj.matrix_world @ v.co).x for v in obj.data.vertices) / len(obj.data.vertices), 5)
+                                  for family, side in (("hind", -1), ("fore", -1), ("hind", 1), ("fore", 1))
+                                  for obj in (bpy.data.objects[f"Horse_{family}_{side}_hoof"],))
 assert len({angles[f] for f in (1, 10, 19, 28)}) == 4
 assert len({hoof_positions[f] for f in (1, 10, 19, 28)}) == 4
-assert all(abs(angles[1][i] - angles[37][i]) < .00001 for i in range(4))
+assert all(abs(angles[1][i][j] - angles[37][i][j]) < .00001 for i in range(4) for j in range(4))
 assert all(abs(hoof_positions[1][i] - hoof_positions[37][i]) < .00001 for i in range(4))
+assert all(max(hoof_positions[f][i] for f in (1, 10, 19, 28)) -
+           min(hoof_positions[f][i] for f in (1, 10, 19, 28)) > .045
+           for i in range(4)), hoof_positions
 scene.frame_set(1)
 
 before = set(bpy.data.objects)
