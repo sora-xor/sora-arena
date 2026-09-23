@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_BokutoForm",
+  "generator": "scripts/art/create_dojo_bokuto_form_study.py",
+  "source_blend": "Nyaagyu_BokutoForm.blend",
+  "blend_sha256": "8ff0982a3f9b1e99adc90d74639dbb5de7cd75f9781777709c086afd7d70bd66",
+  "fbx": "SM_Nyaagyu_BokutoForm.fbx",
+  "fbx_sha256": "974281078bcf70d8ed707b48567e41ffdc5a097a6cdf7b94b144fb728b15f6d0",
+  "preview": "Nyaagyu_BokutoForm_Blender.png",
+  "preview_sha256": "e9f2cbbdb119e698c0909cf0fa440d9155a153a91ba70fe36c4d8bbfd7a68c73",
+  "detail_preview": "Nyaagyu_BokutoForm_Detail_Blender.png",
+  "detail_preview_sha256": "ade212f58c63a9d45929bd5821ed985583647b569f9273ef2f008da2618de6f7",
+  "parts": 4,
+  "triangles": 5332,
+  "bounds_m": {
+    "min_x": -0.242,
+    "max_x": 0.773
+  },
+  "dimensions_cm": {
+    "total": 101.5,
+    "grip": 24.2,
+    "sori": 1.5
+  },
+  "materials": [
+    "M_Bokuto_HandOiledOakGrip",
+    "M_Bokuto_QuarterSawnWhiteOak",
+    "M_Bokuto_DarkLeatherTsuba",
+    "M_Bokuto_DarkLeatherTsuba"
+  ],
+  "source_texture_manifest_sha256": "500f3fae81e8e9bafe84fe521f10162fb3658614b20acf042be39f273d392fdf",
+  "leather_source_manifest_sha256": "a0ef20a5f198b1202a09d81ab1d8a1c9adb766b596547fbaa4eb226f9cc1fa45",
+  "proportion_reference": "https://www.kendo.or.jp/wp/wp-content/uploads/2023/07/jodo-shiai_regulations.pdf",
+  "scope": "Source-only modern jodo-proportioned bokuto study. No historic Edo attribution, Unreal import, combat geometry, collision, or animation change."
+}

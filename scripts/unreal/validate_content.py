@@ -112,6 +112,22 @@ assert (bokken_root / bokken["fbx"]).read_bytes().startswith(b"Kaydara FBX Binar
 assert b"/Users/" not in (bokken_root / bokken["fbx"]).read_bytes()
 assert bokken["unreal_asset"] in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
 assert bokken["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
+form_root = content / "SourceArt/Weapons/DojoBokutoForm"
+form = json.loads((form_root / "manifest.json").read_text())
+assert form["schema_version"] == 1 and form["name"] == "SM_Nyaagyu_BokutoForm"
+assert form["generator"] == "scripts/art/create_dojo_bokuto_form_study.py"
+assert form["dimensions_cm"] == {"total": 101.5, "grip": 24.2, "sori": 1.5}
+assert form["parts"] == 4 and form["triangles"] == 5332
+assert form["scope"].startswith("Source-only")
+for filename, key in ((form["source_blend"], "blend_sha256"),
+                      (form["fbx"], "fbx_sha256"),
+                      (form["preview"], "preview_sha256"),
+                      (form["detail_preview"], "detail_preview_sha256")):
+    path = form_root / filename
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == form[key]
+assert (form_root / form["fbx"]).read_bytes().startswith(b"Kaydara FBX Binary")
+assert b"/Users/" not in (form_root / form["fbx"]).read_bytes()
 arc = json.loads((bokken_root / "arc_carbine_manifest.json").read_text())
 assert arc["schema_version"] == 1 and arc["name"] == "SM_Nyaagyu_ArcCarbine"
 assert arc["generator"] == "scripts/art/create_arc_carbine.py"
