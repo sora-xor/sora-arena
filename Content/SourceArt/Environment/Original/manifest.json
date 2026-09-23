@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_edo_environment_props.py",
+  "generator_blender": "5.2.2 LTS",
+  "license": "Original project-owned geometry; no purchased meshes. Linked palette maps are CC0 Poly Haven files with separate manifest.",
+  "source_blend": "Edo_Alien_Props.blend",
+  "preview": "Edo_Alien_PropReview_Blender.png",
+  "detail_preview": "Alien_DebtKiosk_Detail_Blender.png",
+  "units": "Blender meters; Unreal import converts to centimeters",
+  "fbx_design": "One joined render mesh per asset plus named UCX convex collision boxes; editable source parts remain in the .blend.",
+  "lantern_light_local_z_m": 2.52,
+  "texture_dependency": "../PolyHaven/manifest.json (relative links in source blend; FBX uses material roles without embedded paths)",
+  "scope": "Original source art and Blender review render only. UE 5.8.2 import, materials, lighting, gameplay, and performance are unverified.",
+  "assets": [
+    {
+      "name": "SM_Edo_LanternPost",
+      "fbx": "SM_Edo_LanternPost.fbx",
+      "fbx_sha256": "9155f510319d43131c816eb627ff42f2ec4ce474058323f4325f50bbefe7052c",
+      "editable_parts": 41,
+      "source_triangles": 3536,
+      "collision_boxes": 1,
+      "bounds_m": {
+        "min": [
+          -0.21,
+          -0.23,
+          0.0
+        ],
+        "max": [
+          0.865,
+          0.23,
+          3.34
+        ]
+      },
+      "world_builder_yaw_offset_deg": 0,
+      "placement_origin": "Ground plane at world origin; local -Y is the visible front",
+      "local_span_axis": "object-dependent"
+    },
+    {
+      "name": "SM_Nyaagyu_ToriiGate",
+      "fbx": "SM_Nyaagyu_ToriiGate.fbx",
+      "fbx_sha256": "0bdd0abbacd62646e22a18e1e7987ed1e7ee2f3b8999e89879bfb42918d28c9f",
+      "editable_parts": 21,
+      "source_triangles": 15532,
+      "collision_boxes": 3,
+      "bounds_m": {
+        "min": [
+          -2.96,
+          -0.305,
+          0.0
+        ],
+        "max": [
+          2.96,
+          0.305,
+          5.475
+        ]
+      },
+      "world_builder_yaw_offset_deg": 90,
+      "placement_origin": "Ground plane at world origin; local -Y is the visible front",
+      "local_span_axis": "+X"
+    },
+    {
+      "name": "SM_Alien_DebtKiosk",
+      "fbx": "SM_Alien_DebtKiosk.fbx",
+      "fbx_sha256": "d8912e00ecd3a6af1b4eac439f2a3038bedf4c7f8d69cca0f534fbb1c932701d",
+      "editable_parts": 55,
+      "source_triangles": 16924,
+      "collision_boxes": 1,
+      "bounds_m": {
+        "min": [
+          -0.765,
+          -0.445,
+          0.0
+        ],
+        "max": [
+          0.765,
+          0.42,
+          2.347
+        ]
+      },
+      "world_builder_yaw_offset_deg": 90,
+      "placement_origin": "Ground plane at world origin; local -Y is the visible front",
+      "local_span_axis": "object-dependent"
+    }
+  ]
+}

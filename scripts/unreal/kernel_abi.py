@@ -20,14 +20,14 @@ class MapInfo(ctypes.Structure):
 class MapWall(ctypes.Structure):
     _fields_=[(name,ctypes.c_int32) for name in ['min_x','min_y','min_z','max_x','max_y','max_z']]
 class Presentation(ctypes.Structure):
-    _fields_=[('yaw',ctypes.c_uint16),('pitch',ctypes.c_int16),('cooldown_ticks',ctypes.c_uint32),('max_health',ctypes.c_int32),('guarding',ctypes.c_uint32),('spawn_protection_ticks',ctypes.c_uint32),('ability_cooldown_ticks',ctypes.c_uint32)]+[(name,ctypes.c_uint32) for name in ['ammo','magazine','reload_ticks']]
+    _fields_=[('yaw',ctypes.c_uint16),('pitch',ctypes.c_int16),('cooldown_ticks',ctypes.c_uint32),('max_health',ctypes.c_int32),('guarding',ctypes.c_uint32),('spawn_protection_ticks',ctypes.c_uint32),('ability_cooldown_ticks',ctypes.c_uint32)]+[(name,ctypes.c_uint32) for name in ['ammo','magazine','reload_ticks','charge_ticks_current','charge_ticks_required']]
 class Weapon(ctypes.Structure):
     _fields_=[('id',ctypes.c_uint32),('kind',ctypes.c_uint32),('damage',ctypes.c_int32),('range_mm',ctypes.c_int32),('cooldown_ticks',ctypes.c_uint32)]+[(name,ctypes.c_int32) for name in ['stamina_cost','projectile_mm_tick','blast_mm','arming_mm']]+[(name,ctypes.c_uint32) for name in ['charge_ticks','magazine','reload_ticks']]
 class Event(ctypes.Structure):
     _fields_=[(name,ctypes.c_uint32) for name in ['tick','kind','actor_slot','target_slot','weapon_id']]+[(name,ctypes.c_int32) for name in ['x','y','z','value']]
 class Projectile(ctypes.Structure):
     _fields_=[(name,ctypes.c_uint32) for name in ['id','owner_slot','weapon_id']]+[(name,ctypes.c_int32) for name in ['x','y','z']]
-assert [ctypes.sizeof(t) for t in (MapInfo,MapWall,Presentation,Weapon,Event,Projectile)]==[36,24,36,48,36,24]
+assert [ctypes.sizeof(t) for t in (MapInfo,MapWall,Presentation,Weapon,Event,Projectile)]==[36,24,44,48,36,24]
 
 def load_kernel(source):
     # The staging/practice diagnostics intentionally contain assertions with
@@ -39,8 +39,8 @@ def load_kernel(source):
     lib=ctypes.CDLL(str(source))
     lib.arena_abi_version.restype=ctypes.c_uint32
     lib.arena_proof_qualified.restype=ctypes.c_uint32
-    if lib.arena_abi_version()!=2:
-        raise RuntimeError('Wrong kernel ABI; exactly ABI 2 is required')
+    if lib.arena_abi_version()!=3:
+        raise RuntimeError('Wrong kernel ABI; exactly ABI 3 is required')
     lib.arena_create.argtypes=[ctypes.POINTER(Config),ctypes.POINTER(Participant),ctypes.c_size_t];lib.arena_create.restype=ctypes.c_void_p
     lib.arena_step.argtypes=[ctypes.c_void_p,ctypes.POINTER(Input),ctypes.c_size_t];lib.arena_step.restype=ctypes.c_int32
     lib.arena_snapshot.argtypes=[ctypes.c_void_p,ctypes.POINTER(Snapshot)];lib.arena_snapshot.restype=ctypes.c_int32

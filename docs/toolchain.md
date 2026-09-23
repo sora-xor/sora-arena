@@ -117,9 +117,8 @@ checks; the version table alone does not establish compatibility.
 
 ## Windows, Linux, and rendering validation
 
-- Windows client: begin with Epic's documented build-farm combination, **Visual
-  Studio 2022 17.14**, **MSVC 14.44.35207**, and **Windows SDK 10.0.22621.0**. Those
-  tools have not been installed or tested on this Mac.
+- Windows client: use the pinned build and diagnostic path below. Windows has
+  not been built or tested on this Mac.
 - Linux server: use an x86-64 Linux builder with **Ubuntu 22.04** and Epic's
   **v26 / clang 20.1.8** toolchain, or Epic's supported Windows-to-Linux
   cross-compilation workflow. Mac-to-Linux cross-compilation is not supported by
@@ -132,6 +131,50 @@ checks; the version table alone does not establish compatibility.
   Shader Model 6. First-person rendering currently does not support groom
   strands; first-person paws/arms need mesh/card fur even when world-space
   characters have optional strand grooming.
+
+### Windows project build and staging
+
+On a 64-bit Windows machine, install the licensed **UE 5.8.2** engine, Visual
+Studio **2022 17.14** with MSVC **14.44.35207**, Windows SDK
+**10.0.22621.0**, native x86-64 Rust MSVC, and Python 3. The scripts never
+install or upgrade them. In PowerShell, from the repository root:
+
+```powershell
+$env:UE_ROOT = 'C:\Program Files\Epic Games\UE_5.8'
+rustup target add x86_64-pc-windows-msvc
+.\scripts\toolchain\doctor-windows.ps1
+.\scripts\toolchain\doctor-windows.ps1 -Json
+.\scripts\toolchain\build-windows.ps1 -Configuration Development
+```
+
+`UE_ROOT` can point to another licensed installation; omit it to use the
+recorded default. The read-only doctor verifies `Engine/Build/Build.version`
+reports **exactly 5.8.2**, `Build.bat`, a complete nonpreview 17.14 Visual
+Studio instance found through `vswhere`, exact MSVC compiler/linker and SDK
+headers/libraries/tools, the Rust MSVC host and installed target, Python 3,
+project C++/Rust source, and the project-scoped UBT pins. It exits nonzero on
+any mismatch and does not claim a successful compilation. If an engine source
+revision is recorded later in `versions.json`, it also verifies that checkout.
+
+The build script first requires a passing doctor. It copies the pinned
+`Config/UnrealBuildTool/BuildConfiguration.xml` into the project's ignored
+`Saved/UnrealBuildTool/BuildConfiguration.xml` only if that local file is
+absent. An existing local file must specify the same compiler and SDK or the
+doctor rejects it. This follows Epic's [project-specific UBT configuration
+location](https://dev.epicgames.com/documentation/unreal-engine/build-configuration-for-unreal-engine)
+without changing machine-wide Visual Studio settings. The UBT file selects
+Visual Studio 2022, exact MSVC, and exact SDK; the build command repeats the
+compiler selection explicitly.
+
+It then builds the real Rust FFI DLL with `cargo --locked`, stages it through
+`stage_kernel.py --platform Win64` after ABI/execution checks, runs the pinned
+73-case native parity fixture and negative guard tests, and invokes the UE
+`SoraArenaEditor Win64` target. Each failure stops the sequence. The Windows
+parity fixture must pass unchanged against the macOS reference before any
+cross-platform parity claim. The script builds an editor diagnostic; it does
+not cook, package, sign, visually inspect, measure frame rate, run a live P2P
+match, or establish proof-qualified settlement. Neither the Windows toolchain
+nor the script has been run on Windows yet.
 
 ## Official references
 

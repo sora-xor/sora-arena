@@ -71,7 +71,8 @@ fixture-guard tests passed. This remains a macOS reference, not Windows evidence
 ### 2026-09-22 ammunition and presentation ABI 2
 
 The fixture was replaced after adding authoritative magazine/reload state and
-charge interruption rules. Callers now require exactly ABI 2 before accessing
+charge interruption rules. At that historical reference update, callers required
+exactly ABI 2 before accessing
 the larger presentation and weapon-spec buffers. No ABI 1 fallback is retained.
 The canonical input encoding is unchanged; bit 32 now starts a kernel reload.
 All state hashes include ammunition and reload timing, so every case's expected
@@ -104,9 +105,82 @@ manifest and module list, native library hash, and recording metadata changed.
 The current macOS library passed all 73 cases / 44,100 ticks and eleven negative
 guards. The fragmentation tests are separate from this offline parity fixture.
 
+### 2026-09-23 provisional hitscan balance, rules version 2
+
+Clean-lane `World::step` measurements showed that the Arc carbine and
+Clockwork repeater each killed a 100 HP target in five hits at tick 40, or
+0.68 seconds from the first trigger input. Both are hitscan weapons. Their
+attack cooldowns changed from 10 to 12 ticks, making the same kill occur at
+tick 48 (0.82 seconds); the rules identity advanced to
+`sora-arena-first-release-2`. This is a provisional correction, not evidence
+that live multiplayer is balanced.
+
+The macOS arm64 reference was deliberately re-recorded from the rebuilt native
+library. Structural comparison against the immediately prior fixture found
+changed expectations in **all 73 cases**. Control bytes and hashes, input and
+digest encodings, ABI layout, runner identities, and map geometry identity are
+unchanged. The native weapon-specification SHA-256 changed from
+`fe2191c0742f70e8dce7834341d4b3d45996d0ac0fdb8c08139c15536c805258`
+to `293394ddcd072747e9224e3458bea8ce8dce71f03388ec878e8f4e9382a83146`.
+The source identities for `lib.rs`, `catalog.rs`, and `simulation.rs` changed;
+the last includes an adjusted cooldown-sensitive test bound. The current
+library again passed all 73 cases / 44,100 ticks and eleven negative fixture
+guards on macOS arm64. The full locked offline Rust workspace suite passed 66
+tests. Windows parity and Unreal gameplay remain unverified.
+
+### 2026-09-23 team-mode Healing lance, rules version 3
+
+The Healing lance now selects the nearest ray-intersected living player in a
+team match: a teammate receives 15 health up to class maximum, or an enemy
+receives 15 damage. Dead teammates cannot be revived. FFA remains damage-only.
+Simultaneous queued healing resolves before damage. Five kernel behavior tests
+exercise targeting order, healing cap, dead targets, FFA, and same-tick survival.
+The rules identity advanced to `sora-arena-first-release-3`.
+
+The macOS reference was deliberately re-recorded from the rebuilt ABI 2
+library. Compared with the rules-version-2 fixture, all 73 cases have changed
+state hashes and checkpoints. Their event and presentation streams are
+unchanged: this offline fixture contains no team-mode Healing lance shot.
+Control bytes/hashes, ABI layout, runner, input/digest encoding, map and weapon
+data identities also remain unchanged. Source identities changed only for
+`lib.rs` and `simulation.rs`. The new library passed 73 cases / 44,100 ticks,
+all eleven negative fixture guards, and the 71-test locked offline Rust suite
+on macOS arm64. Windows parity and Unreal gameplay are still unverified.
+
+### 2026-09-23 charged combat and presentation ABI 3
+
+Plasma matchlock's charged **direct** hit now penetrates directional guard;
+projectile and self-damage retain the normal defense rules. Kanabo now requires
+an eighteen-tick held windup and spends stamina only on the strike. Charge
+progress is bound to the selected weapon, so holding melee cannot precharge a
+Micro-mortar or another firearm. These outcome-affecting changes advance the
+rules identity to `sora-arena-first-release-4`.
+
+The current presentation ABI is exactly **3**, with two appended `u32` fields:
+`charge_ticks_current` at byte 36 and `charge_ticks_required` at byte 40; the
+structure is 44 bytes. Native Unreal code and the Python loader reject every
+other ABI. The HUD bar and practice-pawn weapon pose read this authoritative
+snapshot, although Unreal has not been compiled or playtested. The fixture
+directory and identity moved from `practice-abi2` to `practice-abi3`; there is
+no ABI 2 fixture or compatibility loader in this release source.
+
+The macOS arm64 reference was deliberately re-recorded after rebuilding and
+staging the ABI 3 library. Compared with the immediately prior ABI 2/rules-3
+reference, the 73 control streams, participant loadouts, map geometry, input
+encoding and digest encoding are unchanged. Session configurations differ only
+in their required ABI number. The native weapon-specification SHA-256 changed
+from `293394ddcd072747e9224e3458bea8ce8dce71f03388ec878e8f4e9382a83146`
+to `cb0ad920ba09c1effe43ea042c5314d27888c3637dd0f7d9b5c29ae2dac76d7a`.
+All 73 cases changed their state and presentation expectations; event streams
+changed only in the four Hanabi/Kanabo standard-loadout cases, each with three
+fewer shot events in the 600-tick transcript. The new library passes all 73
+cases / 44,100 canonical ticks, eleven negative fixture guards, and 72 native
+practice scenarios / 86,400 replayed ticks. The locked offline Rust workspace
+suite passes 80 tests. Windows parity and Unreal gameplay remain unverified.
+
 ### Validation interpreter checks
 
-The loader requires exactly ABI 2 with an explicit exception before any layout
+The loader requires exactly ABI 3 with an explicit exception before any layout
 query and rejects optimized Python (`-O`, `-OO`, or `PYTHONOPTIMIZE`). This prevents
 staging or practice diagnostics from silently skipping assertions containing
 native calls. Eleven guard tests now pass, including stale-library rejection,

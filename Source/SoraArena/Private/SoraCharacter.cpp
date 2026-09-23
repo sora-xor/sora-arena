@@ -117,8 +117,13 @@ void ASoraCharacter::ApplyKernelPlayer(const FSoraPracticePlayer& State)
     GetCapsuleComponent()->SetCollisionEnabled(State.Alive?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
     if(bEnemy) SetActorHiddenInGame(!State.Alive);
     if(ChangedWeapon) BuildWeapon();
-    // Cosmetic pose follows authoritative snapshot ticks; no local refill timer.
-    WeaponRoot->SetRelativeRotation(FRotator(bReloading?-30.f:0.f,0,0));
+    // The same authoritative charge snapshot lifts every practice pawn's weapon,
+    // so local and opposing players see commitment before the strike event.
+    const float Windup=State.Alive&&State.ChargeRequired>0
+        ? FMath::Clamp(static_cast<float>(State.ChargeTicks)/State.ChargeRequired,0.f,1.f)
+        : 0.f;
+    WeaponRoot->SetRelativeLocation(FVector(40,18,-18+8.f*Windup));
+    WeaponRoot->SetRelativeRotation(FRotator(bReloading?-30.f:28.f*Windup,0,0));
     if(bSkeletalVisual)
     {
         const bool Moving=State.Alive&&Speed>5.f;

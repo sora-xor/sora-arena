@@ -4,7 +4,8 @@
     "version": "5.8.2",
     "source_commit": null,
     "source_commit_note": "Record the verified Epic source commit after repository access is available; no source revision has been downloaded or validated yet.",
-    "default_macos_root": "/Users/Shared/Epic Games/UE_5.8"
+    "default_macos_root": "/Users/Shared/Epic Games/UE_5.8",
+    "default_windows_root": "C:\\Program Files\\Epic Games\\UE_5.8"
   },
   "xcode": "26.1.1",
   "default_macos_xcode": "~/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer",

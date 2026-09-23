@@ -62,7 +62,7 @@ const fn w(
 use AttackKind::{Hitscan as H, Melee as M, Projectile as P};
 pub const WEAPONS: [Weapon; 18] = [
     w(0, "Katana", M, 60, 2300, 36, 25, 0, 0, 0, 0, 0, 0),
-    w(1, "Arc carbine", H, 22, 45000, 10, 0, 0, 0, 0, 0, 24, 96),
+    w(1, "Arc carbine", H, 22, 45000, 12, 0, 0, 0, 0, 0, 24, 96),
     w(2, "Kusarigama", M, 40, 3000, 32, 25, 0, 0, 0, 0, 0, 0),
     w(3, "Needle SMG", H, 12, 26000, 6, 0, 0, 0, 0, 0, 32, 102),
     w(4, "Wakizashi", M, 35, 1800, 24, 15, 0, 0, 0, 0, 0, 0),
@@ -81,7 +81,7 @@ pub const WEAPONS: [Weapon; 18] = [
         5,
         138,
     ),
-    w(6, "Kanabo", M, 80, 2100, 48, 35, 0, 0, 0, 0, 0, 0),
+    w(6, "Kanabo", M, 80, 2100, 48, 35, 0, 0, 0, 18, 0, 0),
     w(
         7,
         "Grenade launcher",
@@ -104,7 +104,7 @@ pub const WEAPONS: [Weapon; 18] = [
         H,
         20,
         38000,
-        10,
+        12,
         0,
         0,
         0,

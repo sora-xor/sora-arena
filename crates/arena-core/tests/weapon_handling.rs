@@ -42,22 +42,22 @@ fn step(world: &mut World, buttons: u32) -> usize {
 fn empty_magazine_cannot_fire_until_exact_reload_boundary() {
     let mut world = practice(0, 1);
     let mut shots = Vec::new();
-    for tick in 0..=336 {
+    for tick in 0..=384 {
         if step(&mut world, FIRE) > 0 {
             shots.push(tick);
         }
         assert!(world.players[0].ammo <= 24);
-        if tick == 230 {
+        if tick == 276 {
             assert_eq!(world.players[0].ammo, 0);
         }
-        if tick == 240 {
+        if tick == 288 {
             assert_eq!(world.players[0].reload_ticks, 96);
         }
-        if tick == 335 {
+        if tick == 383 {
             assert_eq!(world.players[0].reload_ticks, 1);
         }
     }
-    let expected: Vec<_> = (0..24).map(|n| n * 10).chain([336]).collect();
+    let expected: Vec<_> = (0..24).map(|n| n * 12).chain([384]).collect();
     assert_eq!(shots, expected);
     assert_eq!(world.players[0].ammo, 23);
 }

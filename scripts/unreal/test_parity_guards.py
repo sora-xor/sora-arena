@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 import kernel_abi
 
 DIRECTORY=Path(__file__).resolve().parent
-FIXTURE=DIRECTORY/'fixtures/practice-abi2'
+FIXTURE=DIRECTORY/'fixtures/practice-abi3'
 
 class ParityRejectionTests(unittest.TestCase):
     def setUp(self):
@@ -68,9 +68,9 @@ class ParityRejectionTests(unittest.TestCase):
 
     def test_stale_library_is_rejected_before_layout_queries(self):
         old_library=Mock()
-        old_library.arena_abi_version.return_value=1
+        old_library.arena_abi_version.return_value=2
         with patch.object(kernel_abi.ctypes,'CDLL',return_value=old_library):
-            with self.assertRaisesRegex(RuntimeError,'exactly ABI 2'):
+            with self.assertRaisesRegex(RuntimeError,'exactly ABI 3'):
                 kernel_abi.load_kernel('unused-fake-library')
         old_library.arena_create.assert_not_called()
         old_library.arena_player_presentation.assert_not_called()

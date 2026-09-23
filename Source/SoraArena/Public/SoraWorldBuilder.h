@@ -31,6 +31,7 @@ private:
     TSet<int32> Activated;
     void Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision = true, FRotator Rotation = FRotator::ZeroRotator, const FString& SurfaceRole = TEXT(""));
     void Building(FVector Location, FVector Size, FLinearColor Wall, bool HighTech);
+    bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation);
     void Torii(FVector Location, float Yaw);
     void ClearArena();
     void Lighting(int32 MapId);

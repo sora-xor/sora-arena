@@ -67,6 +67,36 @@ for file in (hero["source_blend"], hero["preview"], hero["detail_preview"]):
 for name in manifest["characters"] + manifest["weapons"] + manifest.get("skeletal_characters",[]) + manifest.get("walk_animations",[]) + [hero["name"]]:
     path = content / "SourceArt" / (name+".fbx")
     assert path.stat().st_size > 1000 and path.read_bytes().startswith(b"Kaydara FBX Binary")
+environment_root = content / "SourceArt/Environment/Original"
+environment = json.loads((environment_root / "manifest.json").read_text())
+assert environment["schema_version"] == 1
+assert environment["generator"] == "scripts/art/create_edo_environment_props.py"
+assert environment["lantern_light_local_z_m"] == 2.52
+assert "Original project-owned geometry" in environment["license"]
+assert "CC0 Poly Haven" in environment["license"]
+for name in (environment["source_blend"], environment["preview"], environment["detail_preview"]):
+    assert (environment_root / name).stat().st_size > 1000
+environment_names = ["SM_Edo_LanternPost", "SM_Nyaagyu_ToriiGate", "SM_Alien_DebtKiosk"]
+assert [entry["name"] for entry in environment["assets"]] == environment_names
+world_builder = (ROOT / "Source/SoraArena/Private/SoraWorldBuilder.cpp").read_text()
+import_script = (ROOT / "scripts/unreal/import_original_assets.py").read_text()
+assert all(name in world_builder and name in import_script for name in environment_names)
+assert "Yaw+90.f" in world_builder and "HasAuthoredLantern?252.f:350.f" in world_builder
+assert 'SM_Alien_DebtKiosk"),NodePositions[1]+FVector(315,0,0),FRotator(0,90,0)' in world_builder
+assert "SORA authored environment prop" in world_builder
+assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+for entry in environment["assets"]:
+    fbx = environment_root / entry["fbx"]
+    assert entry["fbx"] == entry["name"] + ".fbx"
+    assert fbx.stat().st_size > 1000 and fbx.read_bytes().startswith(b"Kaydara FBX Binary")
+    assert b"/Users/" not in fbx.read_bytes()
+    assert hashlib.sha256(fbx.read_bytes()).hexdigest() == entry["fbx_sha256"]
+    assert entry["source_triangles"] >= 3000 and entry["source_triangles"] < 50000
+    assert entry["collision_boxes"] in (1, 3)
+    assert entry["world_builder_yaw_offset_deg"] == (0 if "Lantern" in entry["name"] else 90)
+    assert len(entry["bounds_m"]["min"]) == len(entry["bounds_m"]["max"]) == 3
+    assert entry["bounds_m"]["min"][2] >= -0.01
+    assert entry["bounds_m"]["max"][2] >= 2.2
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())
 assert logo_manifest["source_svg"] == "sora_logo_NOtext2.svg"
@@ -89,4 +119,4 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with {cue_count} timed bilingual dialogue cues, 4 maps, 25 FBX assets including hero katana and prototype rigs, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with {cue_count} timed bilingual dialogue cues, 4 maps, 28 FBX source assets including 3 original environment props, licensed Japanese font, hash-verified SORA logo.")

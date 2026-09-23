@@ -115,6 +115,7 @@ pub struct Player {
     pub attack_cooldown: u16,
     pub ability_cooldown: u16,
     pub charge: u16,
+    pub charge_weapon: u8,
     pub ammo: u16,
     pub reload_ticks: u16,
     pub guarding: bool,
@@ -128,6 +129,19 @@ pub struct DamageRecord {
     pub attacker: usize,
     pub victim: usize,
     pub damage: u32,
+}
+#[derive(Debug, Clone, Copy)]
+struct PendingDamage {
+    attacker: usize,
+    victim: usize,
+    amount: i32,
+    weapon: u8,
+    direct_hitscan: bool,
+}
+impl PendingDamage {
+    fn penetrates_directional_guard(self) -> bool {
+        self.direct_hitscan && self.weapon == 14
+    }
 }
 #[derive(Debug, Clone)]
 pub struct Projectile {
@@ -288,6 +302,7 @@ impl World {
                 attack_cooldown: 0,
                 ability_cooldown: 0,
                 charge: 0,
+                charge_weapon: u8::MAX,
                 ammo: catalog::WEAPONS[p.weapon as usize].magazine,
                 reload_ticks: 0,
                 guarding: false,
@@ -389,6 +404,7 @@ impl World {
                     p.spawn_protection = 120;
                     p.velocity_z = 0;
                     p.charge = 0;
+                    p.charge_weapon = u8::MAX;
                     p.ammo = catalog::WEAPONS[p.weapon as usize].magazine;
                     p.reload_ticks = 0;
                     p.guarding = false;
@@ -452,7 +468,8 @@ impl World {
         }
         self.damage_history
             .retain(|h| self.tick.saturating_sub(h.tick) <= ASSIST_TICKS);
-        let mut damage = Vec::<(usize, usize, i32)>::new();
+        let mut damage = Vec::<PendingDamage>::new();
+        let mut healing = Vec::<(usize, i32)>::new();
         // Gather attacks before applying damage so mutual kills are possible.
         for (slot, input) in inputs.iter().enumerate() {
             if !self.players[slot].alive {
@@ -472,10 +489,12 @@ impl World {
             }
             if self.players[slot].reload_ticks > 0 || self.players[slot].guarding {
                 self.players[slot].charge = 0;
+                self.players[slot].charge_weapon = u8::MAX;
                 continue;
             }
             if input.buttons & (FIRE | MELEE) == 0 {
                 self.players[slot].charge = 0;
+                self.players[slot].charge_weapon = u8::MAX;
                 continue;
             }
             if self.players[slot].attack_cooldown != 0 {
@@ -486,10 +505,15 @@ impl World {
             } else {
                 self.players[slot].weapon
             };
+            if self.players[slot].charge_weapon != weapon {
+                self.players[slot].charge = 0;
+                self.players[slot].charge_weapon = weapon;
+            }
             let spec = catalog::WEAPONS[weapon as usize];
             if spec.kind != AttackKind::Melee && self.players[slot].ammo == 0 {
                 self.players[slot].reload_ticks = spec.reload_ticks;
                 self.players[slot].charge = 0;
+                self.players[slot].charge_weapon = u8::MAX;
                 continue;
             }
             if self.players[slot].stamina < spec.stamina {
@@ -500,6 +524,7 @@ impl World {
                 continue;
             }
             self.players[slot].charge = 0;
+            self.players[slot].charge_weapon = u8::MAX;
             self.players[slot].stamina -= spec.stamina;
             if spec.kind != AttackKind::Melee {
                 self.players[slot].ammo -= 1;
@@ -514,6 +539,7 @@ impl World {
             self.events.push(Event::Shot { slot, weapon });
             match spec.kind {
                 AttackKind::Melee | AttackKind::Hitscan => {
+                    let heals_allies = weapon == 17 && self.config.mode.team();
                     let mut nearest = self
                         .walls
                         .iter()
@@ -522,9 +548,11 @@ impl World {
                         .unwrap_or((1 << 20) + 1);
                     let mut hit = None;
                     for other in 0..self.players.len() {
-                        if !self.enemy(slot, other)
+                        let enemy = self.enemy(slot, other);
+                        if other == slot
+                            || (!enemy && !heals_allies)
                             || !self.players[other].alive
-                            || self.players[other].spawn_protection > 0
+                            || (enemy && self.players[other].spawn_protection > 0)
                         {
                             continue;
                         }
@@ -541,7 +569,17 @@ impl World {
                         }
                     }
                     if let Some(other) = hit {
-                        damage.push((slot, other, spec.damage));
+                        if heals_allies && !self.enemy(slot, other) {
+                            healing.push((other, spec.damage));
+                        } else {
+                            damage.push(PendingDamage {
+                                attacker: slot,
+                                victim: other,
+                                amount: spec.damage,
+                                weapon,
+                                direct_hitscan: spec.kind == AttackKind::Hitscan,
+                            });
+                        }
                     }
                 }
                 AttackKind::Projectile => {
@@ -620,7 +658,13 @@ impl World {
                             <= i64::from(spec.blast_mm) * i64::from(spec.blast_mm)
                             && !self.blocked(p.position, center)
                         {
-                            damage.push((p.owner, slot, spec.damage));
+                            damage.push(PendingDamage {
+                                attacker: p.owner,
+                                victim: slot,
+                                amount: spec.damage,
+                                weapon: p.weapon,
+                                direct_hitscan: false,
+                            });
                         }
                     }
                 }
@@ -629,12 +673,31 @@ impl World {
                 self.projectiles.push(p);
             }
         }
+        // Simultaneous shots are resolved from one canonical pre-damage target
+        // snapshot. Healing lands first, then the ordered damage batch, so a
+        // timely lance hit can prevent a lethal hit without reviving the dead.
+        for (target, amount) in healing {
+            let player = &mut self.players[target];
+            if player.alive && player.health > 0 {
+                let maximum = catalog::CLASSES[player.class as usize].health;
+                player.health = player.health.saturating_add(amount).min(maximum);
+            }
+        }
         let mut killers = vec![None; self.players.len()];
-        for (attacker, victim, mut amount) in damage {
+        for hit in damage {
+            let PendingDamage {
+                attacker,
+                victim,
+                mut amount,
+                ..
+            } = hit;
             if self.players[victim].health <= 0 {
                 continue;
             }
-            if self.players[victim].guarding && attacker != victim {
+            if self.players[victim].guarding
+                && attacker != victim
+                && !hit.penetrates_directional_guard()
+            {
                 let facing = math::direction(self.players[victim].yaw, 0);
                 let incoming = self.players[attacker]
                     .position
@@ -732,6 +795,7 @@ impl World {
                 self.players[victim].alive = false;
                 self.players[victim].respawn_ticks = RESPAWN_TICKS;
                 self.players[victim].charge = 0;
+                self.players[victim].charge_weapon = u8::MAX;
                 self.players[victim].reload_ticks = 0;
                 self.damage_history.retain(|h| h.victim != victim);
                 self.events.push(Event::Death {
@@ -861,6 +925,7 @@ impl World {
             h.update(p.yaw.to_le_bytes());
             h.update(p.pitch.to_le_bytes());
             h.update(p.respawn_ticks.to_le_bytes());
+            h.update([p.charge_weapon]);
             for n in [
                 p.attack_cooldown,
                 p.ability_cooldown,
@@ -1016,7 +1081,7 @@ mod tests {
             },
             Input::default(),
         ];
-        for _ in 0..60 {
+        for _ in 0..=60 {
             w.step(&i).unwrap();
         }
         assert!(!w.players[1].alive);

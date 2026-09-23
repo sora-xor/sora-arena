@@ -37,17 +37,39 @@ The existing ammunition is retained; partial progress is discarded. Reloading
 and guarding clear charge progress. A charged attack consumes a round only when
 it produces a shot. Death cancels pending reload/charge; respawn restores the
 magazine and clears melee defense and attack recovery. Ability cooldown retains
-its existing separate behavior.
+its existing separate behavior. Charge progress is tagged with the selected
+weapon and cannot be transferred by switching from melee to a charged firearm.
+The tag is included in the canonical state hash.
 
-Ammunition and reload state are included in the canonical state hash and must be
+Kanabo strikes require eighteen held 60 Hz ticks of windup and land on the
+nineteenth held tick. Releasing or guarding restarts that windup. Stamina is
+spent only when the strike occurs, followed by its forty-eight-tick recovery.
+Plasma matchlock direct hits require a twenty-four-tick charge and penetrate
+directional parry and guard; its three-round magazine and long reload remain.
+Other hits, including projectiles from a player currently holding Plasma,
+retain normal defense rules. These are provisional sidegrade tradeoffs pending
+human balance and readability playtests.
+
+In Control and Payload, the Healing lance's ray selects the nearest living
+player before the first wall. It heals an ally by 15 health up to that class's
+maximum, or damages an enemy by 15. A full-health ally still intercepts the
+shot. Dead allies are skipped and cannot be revived. In FFA, it damages other
+players. Its ammunition and cooldown apply to every shot. All shots gather
+targets from the same pre-damage state; queued healing resolves before ordered
+damage, allowing a same-tick rescue but no resurrection. This health
+transition is part of the versioned combat rules and still needs a complete
+execution proof. The current native event interface reports the shot and
+subsequent health snapshot, but has no dedicated heal effect event.
+
+Ammunition, reload, and weapon-bound charge state are included in the canonical state hash and must be
 constrained by the complete future FPS execution relation. The current damage
 proof experiment does not cover these rules. The native presentation ABI is
-exactly 2; callers reject earlier development layouts before accessing buffers.
+exactly 3; callers reject earlier development layouts before accessing buffers.
 No compatibility decoder, fallback, or alias is provided.
 
 Behavioral tests cover exact empty-magazine and partial-reload boundaries,
 interruption one tick before completion, charge interruption, ammunition
-consumption, death during reload followed by respawn, melee independence, and
-state-hash binding. The replay fixture
+consumption, death during reload followed by respawn, melee independence,
+Kanabo/Plasma semantics, and state-hash binding. The replay fixture
 checks the same native state through the C ABI. Balance and rendering still
 require actual cross-platform gameplay tests.

@@ -17,6 +17,7 @@ struct FSoraPracticePlayer
     int32 Slot = 0, ClassId = 0, WeaponId = 0, Health = 0, MaxHealth = 1;
     int32 Stamina = 0, Cooldown = 0, RespawnTicks = 0, Kills = 0, Deaths = 0;
     int32 Ammo = 0, Magazine = 0, ReloadTicks = 0;
+    int32 ChargeTicks = 0, ChargeRequired = 0;
     bool Alive = false;
 };
 struct FSoraPracticeWall

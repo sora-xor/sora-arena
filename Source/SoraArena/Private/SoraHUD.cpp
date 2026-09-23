@@ -160,6 +160,15 @@ void ASoraHUD::DrawHUD()
                     FString::Printf(TEXT("弾数 %02d / %02d   R 装填"),State.Ammo,State.Magazine);
                 Label(Ammunition,W-365*S,H-71*S,.46*S,Gold);
                 Label(FString::Printf(TEXT("気力 %d / 100    待機 %.2f 秒"),State.Stamina,State.Cooldown/60.f),W-365*S,H-48*S,.33*S,Muted);
+                if(State.Alive&&State.ChargeRequired>0&&State.ChargeTicks>0)
+                {
+                    const float Progress=FMath::Clamp(static_cast<float>(State.ChargeTicks)/State.ChargeRequired,0.f,1.f);
+                    Panel(W-390*S,H-145*S,365*S,29*S,FLinearColor(.015,.035,.05,.92));
+                    Label(FString::Printf(TEXT("構え %d / %d"),State.ChargeTicks,State.ChargeRequired),W-365*S,H-142*S,.37*S,Gold);
+                    if(G->bEnglishSubtitles) Label(TEXT("WINDUP"),W-125*S,H-141*S,.28*S,Muted);
+                    Panel(W-365*S,H-122*S,320*S,4*S,FLinearColor(.12,.19,.21));
+                    Panel(W-365*S,H-122*S,320*S*Progress,4*S,Gold);
+                }
                 if(!State.Alive)
                 {
                     Panel(W*.25,H*.35,W*.5,120*S,FLinearColor(.013,.027,.033,.88f));

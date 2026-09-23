@@ -100,6 +100,46 @@ for name in mesh_names:
     if not assets.does_asset_exist(f"/Game/Generated/Meshes/{name}"):
         raise RuntimeError(f"Unreal import did not create {name}")
 
+# Source-authored environment heroes have one render mesh and explicit UCX
+# convex collision boxes. Their linked Poly Haven source textures are verified
+# separately by import_environment_palette.py and bound to slots at runtime.
+environment_source = source / "Environment/Original"
+environment_manifest = json.loads((environment_source / "manifest.json").read_text())
+environment_names = ["SM_Edo_LanternPost", "SM_Nyaagyu_ToriiGate", "SM_Alien_DebtKiosk"]
+if ([entry["name"] for entry in environment_manifest["assets"]] != environment_names
+        or environment_manifest["generator"] != "scripts/art/create_edo_environment_props.py"):
+    raise RuntimeError("The original environment prop identities changed")
+assets.make_directory("/Game/Generated/Environment/Props")
+environment_tasks = []
+for entry in environment_manifest["assets"]:
+    fbx = environment_source / entry["fbx"]
+    if (entry["fbx"] != entry["name"] + ".fbx" or not fbx.is_file()
+            or hashlib.sha256(fbx.read_bytes()).hexdigest() != entry["fbx_sha256"]):
+        raise RuntimeError(f"The original environment prop is missing or changed: {fbx}")
+    task = unreal.AssetImportTask()
+    task.filename = str(fbx)
+    task.destination_path = "/Game/Generated/Environment/Props"
+    task.destination_name = entry["name"]
+    task.automated = True
+    task.replace_existing = True
+    task.save = True
+    options = unreal.FbxImportUI()
+    options.import_mesh = True
+    options.import_materials = True
+    options.import_textures = False
+    options.import_as_skeletal = False
+    options.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
+    options.static_mesh_import_data.combine_meshes = False
+    options.static_mesh_import_data.generate_lightmap_u_vs = True
+    options.static_mesh_import_data.auto_generate_collision = False
+    task.options = options
+    environment_tasks.append(task)
+tools.import_asset_tasks(environment_tasks)
+for name in environment_names:
+    mesh = assets.load_asset(f"/Game/Generated/Environment/Props/{name}")
+    if not isinstance(mesh, unreal.StaticMesh):
+        raise RuntimeError(f"Unreal import did not create the original environment prop: {name}")
+
 for name in manifest.get("skeletal_characters", []):
     short=name.removeprefix("SK_")
     task=unreal.AssetImportTask()
@@ -161,4 +201,4 @@ if not font.is_file() or not (source / "Fonts/OFL.txt").is_file():
     raise RuntimeError("Japanese runtime font and its redistribution license are required")
 
 assets.save_directory("/Game/Generated", only_if_is_dirty=False, recursive=True)
-unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} original meshes; Japanese font staged separately")
+unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon meshes, {len(environment_tasks)} source-authored environment props; Japanese font staged separately")

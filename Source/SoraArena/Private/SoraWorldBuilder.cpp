@@ -77,9 +77,53 @@ void ASoraWorldBuilder::Building(FVector L, FVector Size, FLinearColor Wall, boo
         Box(N+FString::FromInt(I)+TEXT("Window"),L+FVector(Size.X*.505f,I*Size.Y*.24f,Size.Z*.55f),FVector(8,Size.Y*.17f,Size.Z*.42f),HighTech?FLinearColor(.04f,.62f,.66f):FLinearColor(.88f,.66f,.34f),false);
     if (HighTech) Box(N+TEXT("Antenna"),L+FVector(0,0,Size.Z+220),FVector(25,25,340),FLinearColor(.12f,.65f,.68f));
 }
+bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRotator Rotation)
+{
+    const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Props/%s.%s"),*Name,*Name);
+    auto* Asset=LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
+    if (!Asset)
+    {
+        UE_LOG(LogTemp,Error,TEXT("SORA authored environment prop %s is missing; run import_original_assets.py in UE 5.8.2. Primitive fallback is provisional."),*Path);
+        return false;
+    }
+    auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
+    Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
+    Mesh->SetRelativeLocation(Location); Mesh->SetRelativeRotation(Rotation);
+    // In campaign the authored UCX is useful for placement review. The world
+    // builder keeps its established simple collision proxies for combat.
+    Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    for(int32 Index=0;Index<Asset->GetStaticMaterials().Num();++Index)
+    {
+        const FString Slot=Asset->GetStaticMaterials()[Index].MaterialSlotName.ToString();
+        FString Role;
+        if(Slot.Contains(TEXT("M_Env_Timber"))) Role=TEXT("Timber");
+        else if(Slot.Contains(TEXT("M_Env_Stone"))) Role=TEXT("Stone");
+        else if(Slot.Contains(TEXT("M_Env_Metal"))) Role=TEXT("Metal");
+        if(!Role.IsEmpty())
+        {
+            const FString MaterialPath=TEXT("/Game/Generated/Environment/MI_Nyaagyu_")+Role+TEXT(".MI_Nyaagyu_")+Role;
+            if(auto* Material=LoadObject<UMaterialInterface>(nullptr,*MaterialPath,nullptr,LOAD_NoWarn)) Mesh->SetMaterial(Index,Material);
+        }
+    }
+    Mesh->RegisterComponent(); AddInstanceComponent(Mesh); Pieces.Add(Mesh);
+    return true;
+}
 void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 {
     const FRotator R(0,Yaw,0); const FVector Side=R.RotateVector(FVector(0,1,0));
+    if(ImportedProp(TEXT("SM_Nyaagyu_ToriiGate"),L,FRotator(0,Yaw+90.f,0)))
+    {
+        for(int32 S:{-1,1})
+        {
+            auto* Proxy=Shape(this,RootComponent,FString::Printf(TEXT("ToriiCollision%d"),Pieces.Num()),TEXT("/Engine/BasicShapes/Cube.Cube"),
+                L+Side*S*235+FVector(0,0,250),FVector(.42,.42,5),FLinearColor::White,true);
+            Proxy->SetRelativeRotation(R); Proxy->SetVisibility(false); Pieces.Add(Proxy);
+        }
+        auto* Lintel=Shape(this,RootComponent,FString::Printf(TEXT("ToriiCollisionLintel%d"),Pieces.Num()),TEXT("/Engine/BasicShapes/Cube.Cube"),
+            L+FVector(0,0,511),FVector(.6,5.75,.49),FLinearColor::White,true);
+        Lintel->SetRelativeRotation(R); Lintel->SetVisibility(false); Pieces.Add(Lintel);
+        return;
+    }
     for(int32 S:{-1,1}) Box(FString::Printf(TEXT("Torii%d"),Pieces.Num()),L+Side*S*240+FVector(0,0,250),FVector(44,44,500),FLinearColor(.55f,.035f,.025f),true,R);
     Box(FString::Printf(TEXT("Lintel%d"),Pieces.Num()),L+FVector(0,0,510),FVector(80,660,65),FLinearColor(.4f,.025f,.02f),true,R);
     Box(FString::Printf(TEXT("Crossbeam%d"),Pieces.Num()),L+FVector(0,0,415),FVector(42,610,35),FLinearColor(.55f,.035f,.025f),true,R);
@@ -149,12 +193,23 @@ void ASoraWorldBuilder::Build(int32 MapId)
         auto* N=Shape(this,RootComponent,FString::Printf(TEXT("ProductionCore%d"),I),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),P+FVector(0,0,145),FVector(.7f,.7f,1.5f),FLinearColor(.8f,.07f,.12f),true); Pieces.Add(N); Nodes.Add(N);
         for(int32 S:{-1,1}) Box(FString::Printf(TEXT("SolarPanel%d%d"),I,S),P+FVector(S*110,0,185),FVector(150,150,12),Accent,true,FRotator(0,0,S*20));
     }
+    if(MapId==3) ImportedProp(TEXT("SM_Alien_DebtKiosk"),NodePositions[1]+FVector(315,0,0),FRotator(0,90,0));
     for(int32 I=0;I<10;++I)
     {
         FVector P(-2250+(I%5)*1125,(I<5?-1:1)*470,0);
-        Box(FString::Printf(TEXT("LanternPole%d"),I),P+FVector(0,0,180),FVector(14,14,360),FLinearColor(.12,.08,.06));
-        Pieces.Add(Shape(this,RootComponent,FString::Printf(TEXT("Lantern%d"),I),TEXT("/Engine/BasicShapes/Sphere.Sphere"),P+FVector(0,0,355),FVector(.7,.7,1),FLinearColor(.95,.53,.16)));
-        auto* Light=GetWorld()->SpawnActor<APointLight>(P+FVector(0,0,350),FRotator::ZeroRotator);
+        const bool HasAuthoredLantern=ImportedProp(TEXT("SM_Edo_LanternPost"),P,FRotator::ZeroRotator);
+        if(HasAuthoredLantern)
+        {
+            auto* Pole=Shape(this,RootComponent,FString::Printf(TEXT("LanternCollision%d"),I),TEXT("/Engine/BasicShapes/Cube.Cube"),
+                P+FVector(0,0,175),FVector(.14,.14,3.5),FLinearColor::White,true);
+            Pole->SetVisibility(false); Pieces.Add(Pole);
+        }
+        else
+        {
+            Box(FString::Printf(TEXT("LanternPole%d"),I),P+FVector(0,0,180),FVector(14,14,360),FLinearColor(.12,.08,.06));
+            Pieces.Add(Shape(this,RootComponent,FString::Printf(TEXT("Lantern%d"),I),TEXT("/Engine/BasicShapes/Sphere.Sphere"),P+FVector(0,0,355),FVector(.7,.7,1),FLinearColor(.95,.53,.16)));
+        }
+        auto* Light=GetWorld()->SpawnActor<APointLight>(P+FVector(0,0,HasAuthoredLantern?252.f:350.f),FRotator::ZeroRotator);
         Light->PointLightComponent->SetIntensity(1100.f); Light->PointLightComponent->SetAttenuationRadius(650.f); Light->SetLightColor(FLinearColor(1,.6,.25)); DecorActors.Add(Light);
     }
     Lighting(MapId);

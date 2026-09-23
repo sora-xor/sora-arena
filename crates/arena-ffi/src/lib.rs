@@ -110,6 +110,8 @@ pub struct ArenaPlayerPresentation {
     pub ammo: u32,
     pub magazine: u32,
     pub reload_ticks: u32,
+    pub charge_ticks_current: u32,
+    pub charge_ticks_required: u32,
 }
 #[repr(C)]
 #[derive(Default)]
@@ -243,6 +245,14 @@ pub unsafe extern "C" fn arena_player_presentation(
     let Some(p) = (unsafe { &*handle }).world.players.get(slot as usize) else {
         return 1;
     };
+    let charge_spec = catalog::WEAPONS
+        .get(p.charge_weapon as usize)
+        .unwrap_or(&catalog::WEAPONS[p.weapon as usize]);
+    let charge_ticks_current = if p.alive && p.charge_weapon == charge_spec.id {
+        p.charge.min(charge_spec.charge_ticks) as u32
+    } else {
+        0
+    };
     unsafe {
         out.write(ArenaPlayerPresentation {
             yaw: p.yaw,
@@ -255,6 +265,8 @@ pub unsafe extern "C" fn arena_player_presentation(
             ammo: p.ammo as u32,
             magazine: catalog::WEAPONS[p.weapon as usize].magazine as u32,
             reload_ticks: p.reload_ticks as u32,
+            charge_ticks_current,
+            charge_ticks_required: charge_spec.charge_ticks as u32,
         })
     };
     0
@@ -569,7 +581,15 @@ mod tests {
         assert_eq!(std::mem::size_of::<ArenaSnapshot>(), 48);
         assert_eq!(std::mem::size_of::<ArenaMapInfo>(), 36);
         assert_eq!(std::mem::size_of::<ArenaMapWall>(), 24);
-        assert_eq!(std::mem::size_of::<ArenaPlayerPresentation>(), 36);
+        assert_eq!(std::mem::size_of::<ArenaPlayerPresentation>(), 44);
+        assert_eq!(
+            std::mem::offset_of!(ArenaPlayerPresentation, charge_ticks_current),
+            36
+        );
+        assert_eq!(
+            std::mem::offset_of!(ArenaPlayerPresentation, charge_ticks_required),
+            40
+        );
         assert_eq!(std::mem::size_of::<ArenaWeaponSpec>(), 48);
         assert_eq!(std::mem::size_of::<ArenaEvent>(), 36);
         assert_eq!(std::mem::size_of::<ArenaProjectileSnapshot>(), 24);
@@ -646,6 +666,13 @@ mod tests {
             assert_eq!(presentation.cooldown_ticks, 47);
             assert_eq!(
                 (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (0, 0)
+            );
+            assert_eq!(
+                (
                     presentation.ammo,
                     presentation.magazine,
                     presentation.reload_ticks
@@ -657,6 +684,134 @@ mod tests {
             assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
             assert_eq!((presentation.ammo, presentation.reload_ticks), (4, 144));
             assert_eq!(arena_player_presentation(handle, 1, &mut presentation), 1);
+            arena_destroy(handle);
+        }
+    }
+    #[test]
+    fn presentation_exposes_only_weapon_bound_windup_progress() {
+        unsafe {
+            let config = ArenaConfig {
+                abi_version: ABI_VERSION,
+                mode: 0,
+                map_id: 0,
+                max_ticks: 120,
+                base_bond: 0,
+                player_count: 1,
+                offline: 1,
+            };
+            let mut participant = ArenaParticipant {
+                slot: 0,
+                team: 0,
+                class_id: 3,
+                weapon_id: 6,
+                bond: 0,
+                special_entitled: 0,
+                reserved: 0,
+            };
+            let handle = arena_create(&config, &participant, 1);
+            assert!(!handle.is_null());
+            let mut input = ArenaInput {
+                slot: 0,
+                buttons: simulation::FIRE,
+                move_x: 0,
+                move_y: 0,
+                yaw: 0,
+                pitch: 0,
+            };
+            let mut presentation = ArenaPlayerPresentation::default();
+            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
+            assert_eq!(
+                (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (0, 18)
+            );
+            for _ in 0..9 {
+                assert_eq!(arena_step(handle, &input, 1), 0);
+            }
+            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
+            assert_eq!(
+                (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (9, 18)
+            );
+            input.buttons = 0;
+            assert_eq!(arena_step(handle, &input, 1), 0);
+            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
+            assert_eq!(
+                (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (0, 18)
+            );
+            arena_destroy(handle);
+
+            participant.weapon_id = 7;
+            let handle = arena_create(&config, &participant, 1);
+            assert!(!handle.is_null());
+            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
+            assert_eq!(
+                (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (0, 0)
+            );
+            input.buttons = simulation::MELEE;
+            assert_eq!(arena_step(handle, &input, 1), 0);
+            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
+            assert_eq!(
+                (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (1, 18)
+            );
+            input.buttons = 0;
+            assert_eq!(arena_step(handle, &input, 1), 0);
+            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
+            assert_eq!(
+                (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (0, 0)
+            );
+            arena_destroy(handle);
+
+            participant.weapon_id = 15;
+            participant.special_entitled = 1;
+            let handle = arena_create(&config, &participant, 1);
+            assert!(!handle.is_null());
+            input.buttons = simulation::MELEE;
+            for _ in 0..18 {
+                assert_eq!(arena_step(handle, &input, 1), 0);
+            }
+            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
+            assert_eq!(
+                (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (18, 18)
+            );
+            input.buttons = simulation::FIRE;
+            assert_eq!(arena_step(handle, &input, 1), 0);
+            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
+            assert_eq!(
+                (
+                    presentation.charge_ticks_current,
+                    presentation.charge_ticks_required
+                ),
+                (1, 15)
+            );
+            let mut snapshot = ArenaSnapshot::default();
+            assert_eq!(arena_snapshot(handle, &mut snapshot), 0);
+            assert_eq!(snapshot.event_count, 0);
             arena_destroy(handle);
         }
     }
@@ -685,7 +840,7 @@ mod tests {
             let h = arena_create(&c, &p, 1);
             assert!(!h.is_null());
             let old_layout = ArenaConfig {
-                abi_version: 1,
+                abi_version: 2,
                 ..c
             };
             assert!(arena_create(&old_layout, &p, 1).is_null());

@@ -15,7 +15,7 @@ is recorded, and timing/readability still need Unreal play verification.
 
 | Milestone | Current state | Completion evidence still required |
 | --- | --- | --- |
-| Foundation | Active: deterministic Rust kernel and C ABI; 64 workspace tests pass; strict Clippy passes; native generic admission, catalog and Connect changes in isolated Iroha worktree | UE 5.8.2 build, real wallet pairing, complete two-player proof-to-settlement path |
+| Foundation | Active: deterministic Rust kernel and C ABI; 80 workspace tests pass; strict Clippy passes; native generic admission, catalog and Connect changes in isolated Iroha worktree | UE 5.8.2 build, real wallet pairing, complete two-player proof-to-settlement path |
 | Research match | Pending | 4v4 two-minute match, then 6v6 ten-minute match with complete proof coverage and measured resources |
 | Vertical slice | Source and original prototype assets in progress | One finished mission/arena, representative classes and complete buy/equip/bond/play/settle flow |
 | Full production | Chapter/class/weapon/arena data and offline prototype source present | Eight authored chapters, finished art/animation/audio/cinematics, accessibility and measured balance |
@@ -30,11 +30,41 @@ prototype currently has its own gameplay implementation. Kernel-driven offline
 practice source and its native presentation queries are implemented. A real
 macOS library passes 73 checked-in replay cases / 44,100 canonical ticks; Windows
 has not run that fixture. Actual UE compilation and runtime testing are still
-required before claiming the Unreal integration works.
+required before claiming the Unreal integration works. A separate headless test
+runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
+checks deterministic terminal state and XOR conservation; it does not measure
+networking, combat load, rendering, or proving.
 The offline campaign now persists chapter objectives (defeated invaders,
 restored production sites, and exit completion) to a local SaveGame checkpoint
 and restores them on retry/restart; this still needs an editor build and an
 in-game save/reload test.
+Three original Edo/alien environment props now have editable Blender source,
+FBX exports, metric collision/bounds checks, and campaign placement source.
+Blender review renders and the import manifest do not establish in-engine
+appearance; the UE 5.8.2 import and visual pass remain open.
+
+The provisional first-release balance correction changed Arc carbine and
+Clockwork repeater attack cooldowns from 10 to 12 simulation ticks. A clean-lane
+`World::step` test checks body-shot death ticks against 100/125/150 HP targets
+for both guns. The team-mode Healing lance heals the nearest living ally
+intersected by its ray, capped at that class's maximum health; an enemy struck
+first still takes damage. In FFA it damages opponents. Queued heals resolve
+before same-tick damage, and five behavior tests cover targeting, cap, dead
+allies, FFA, and simultaneous order. Plasma matchlock now penetrates guard only
+with its charged direct hit. Kanabo has an eighteen-tick windup, and charge is
+bound to its selected weapon, preventing cross-weapon precharge. Those rules
+advance the identity to `sora-arena-first-release-4`. Native presentation ABI
+3 exposes charge progress to a Japanese HUD bar and world-pawn weapon pose;
+opponent readability has not been playtested. The deliberately re-recorded
+ABI 3 macOS fixture retains identical controls, participant loadouts, map
+geometry and input encoding. Its state/presentation expectations change in all
+73 cases, while event streams change only for four Kanabo loadout cases. The
+rebuilt library passes 73 cases / 44,100 ticks, eleven negative guards, and
+72 native practice scenarios / 86,400 replayed ticks. The full locked offline
+Rust suite passes 80 tests, format checking, and strict all-targets Clippy.
+These deterministic checks are not a human balance playtest. The separate
+campaign prototype catalog still differs from the Rust multiplayer catalog;
+full gameplay balance, presentation and proof coverage remain open.
 
 Local rollback replays only complete signed commitment/reveal batches into the
 confirmed world. Speculative state is isolated, capped at 120 ticks, and discarded

@@ -31,19 +31,19 @@ for weapon_id in range(18):
     spec=Weapon();assert lib.arena_weapon_spec(weapon_id,ctypes.byref(spec))==0
     assert spec.id==weapon_id and spec.kind<=2 and spec.range_mm>0 and spec.cooldown_ticks>0
     assert (spec.magazine==0)==(spec.kind==0) and (spec.reload_ticks==0)==(spec.kind==0)
-config=Config(2,0,0,60,0,1,1);participant=Participant(0,0,0,1,0,0,0)
+config=Config(3,0,0,60,0,1,1);participant=Participant(0,0,0,1,0,0,0)
 handle=lib.arena_create(ctypes.byref(config),ctypes.byref(participant),1)
 assert handle,'The actual kernel rejected the offline diagnostic session'
 try:
     controls=Input(0,0,32,0,0,0)
     for tick in range(60): assert lib.arena_step(handle,ctypes.byref(controls),1)==0,f'Kernel failed at tick {tick}'
     state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0
-    assert state.abi_version==2 and state.tick==60 and state.player_count==1
+    assert state.abi_version==3 and state.tick==60 and state.player_count==1
     assert state.deposited==state.remaining==state.earnings==0,'Offline diagnostic moved simulated stake'
     digest=(ctypes.c_uint8*32)();assert lib.arena_state_hash(handle,digest,32)==0
-    print(f'Actual kernel: ABI 2, {state.tick} offline ticks, proof_qualified={bool(lib.arena_proof_qualified())}, state_hash={bytes(digest).hex()}')
+    print(f'Actual kernel: ABI 3, {state.tick} offline ticks, proof_qualified={bool(lib.arena_proof_qualified())}, state_hash={bytes(digest).hex()}')
 finally: lib.arena_destroy(handle)
-projectile_config=Config(2,0,0,60,0,1,1)
+projectile_config=Config(3,0,0,60,0,1,1)
 grenadier=Participant(0,0,3,7,0,0,0)
 handle=lib.arena_create(ctypes.byref(projectile_config),ctypes.byref(grenadier),1)
 assert handle,'Reference projectile practice admission failed'
@@ -57,6 +57,7 @@ try:
     assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
     assert player.weapon_id==7 and visual.yaw==32768 and visual.max_health==player.health and visual.cooldown_ticks>0
     assert (visual.ammo,visual.magazine,visual.reload_ticks)==(4,5,0)
+    assert (visual.charge_ticks_current,visual.charge_ticks_required)==(0,0)
     event=Event();assert lib.arena_event(handle,0,ctypes.byref(event))==0
     assert (event.tick,event.kind,event.actor_slot,event.weapon_id)==(0,1,0,7)
     count=ctypes.c_uint32();assert lib.arena_projectile_count(handle,ctypes.byref(count))==0 and count.value==1
@@ -69,6 +70,36 @@ try:
     assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
     assert (visual.ammo,visual.magazine,visual.reload_ticks)==(4,5,144)
     print('Practice ABI verified: 4 reference maps, 18 weapons, player presentation, current-tick events and stable projectile IDs.')
+finally: lib.arena_destroy(handle)
+kanabo=Participant(0,0,3,6,0,0,0)
+handle=lib.arena_create(ctypes.byref(projectile_config),ctypes.byref(kanabo),1)
+assert handle,'Kanabo windup diagnostic admission failed'
+try:
+    visual=Presentation();assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
+    assert (visual.charge_ticks_current,visual.charge_ticks_required)==(0,18)
+    held=Input(0,1,0,0,0,0)
+    for tick in range(18):
+        assert lib.arena_step(handle,ctypes.byref(held),1)==0
+        assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
+        assert (visual.charge_ticks_current,visual.charge_ticks_required)==(tick+1,18)
+        state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0 and state.event_count==0
+    assert lib.arena_step(handle,ctypes.byref(held),1)==0
+    assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
+    assert (visual.charge_ticks_current,visual.charge_ticks_required)==(0,18)
+    state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0 and state.event_count==1
+finally: lib.arena_destroy(handle)
+special=Participant(0,0,3,15,0,1,0)
+handle=lib.arena_create(ctypes.byref(projectile_config),ctypes.byref(special),1)
+assert handle,'Special weapon windup diagnostic admission failed'
+try:
+    visual=Presentation();melee=Input(0,2,0,0,0,0)
+    for _ in range(18): assert lib.arena_step(handle,ctypes.byref(melee),1)==0
+    assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
+    assert (visual.charge_ticks_current,visual.charge_ticks_required)==(18,18)
+    melee.buttons=1;assert lib.arena_step(handle,ctypes.byref(melee),1)==0
+    assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
+    assert (visual.charge_ticks_current,visual.charge_ticks_required)==(1,15)
+    state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0 and state.event_count==0
 finally: lib.arena_destroy(handle)
 if hashlib.sha256(source.read_bytes()).digest()!=source_hash:
     raise SystemExit('The kernel changed while it was being validated. Finish the build, then stage it again.')

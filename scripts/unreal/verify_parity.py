@@ -18,7 +18,7 @@ import sys
 import kernel_abi as abi
 
 ROOT=Path(__file__).resolve().parents[2]
-DEFAULT_FIXTURE=Path(__file__).resolve().parent/'fixtures/practice-abi2'
+DEFAULT_FIXTURE=Path(__file__).resolve().parent/'fixtures/practice-abi3'
 SOURCE_FILES=[
     'Cargo.toml','Cargo.lock','crates/arena-core/Cargo.toml',
     'crates/arena-core/src/lib.rs','crates/arena-core/src/catalog.rs',
@@ -79,7 +79,7 @@ def roster(class_id,weapon_slot):
              'bond':0,'special_entitled':0,'reserved':0} for slot in range(6)]
 
 def config(map_id,ticks):
-    return {'abi_version':2,'mode':0,'map_id':map_id,'max_ticks':ticks,'base_bond':0,'player_count':6,'offline':1}
+    return {'abi_version':3,'mode':0,'map_id':map_id,'max_ticks':ticks,'base_bond':0,'player_count':6,'offline':1}
 
 def make_controls(lib):
     exercise=bytearray()
@@ -130,7 +130,7 @@ def run_case(lib,case,data):
             frame=decode_frame(data,tick,count)
             require(lib.arena_step(handle,frame,count)==0,f'step {tick} rejected')
             snapshot=abi.Snapshot();require(lib.arena_snapshot(handle,ctypes.byref(snapshot))==0,'snapshot failed')
-            require(snapshot.abi_version==2 and snapshot.player_count==count and snapshot.tick==tick+1,'snapshot identity/tick mismatch')
+            require(snapshot.abi_version==3 and snapshot.player_count==count and snapshot.tick==tick+1,'snapshot identity/tick mismatch')
             require(snapshot.deposited==snapshot.remaining==snapshot.earnings==0 and snapshot.proof_qualified==0,'fixture moved stake or changed proof qualification')
             digest=state_hash(lib,handle)
             states.update(struct.pack('<I',snapshot.tick)+digest)
@@ -189,7 +189,7 @@ def main():
     runtime={'system':system,'machine':platform.machine(),'python':platform.python_version(),'library_sha256':sha(library.read_bytes())}
     if args.record_reference:
         controls,death_roster=make_controls(lib)
-        manifest={'schema_version':1,'fixture_id':'sora-arena-practice-abi2','scope':'offline C ABI simulation and presentation parity; not network, renderer or execution-proof qualification',
+        manifest={'schema_version':1,'fixture_id':'sora-arena-practice-abi3','scope':'offline C ABI simulation and presentation parity; not network, renderer or execution-proof qualification',
             'recorded_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'reference_host':runtime,
             'input_encoding':{'bytes_per_slot':8,'format':'<HbbHh','fields':['buttons:u16','forward:i8','right:i8','yaw:u16','pitch:i16'],'endianness':'little','order':'tick-major then permanent slot ascending; no padding, tick and slot implicit','tick_rate':60},
             'source_identity':{'normalization':'replace CRLF with LF in UTF-8 source bytes','scope':'exact files owning the exercised World/geometry/combat/economy/C ABI plus dependency manifests; unrelated transport/proof implementation is excluded','files_sha256':identity},
@@ -210,7 +210,7 @@ def main():
         print(f'Recorded {len(manifest["cases"])} actual native reference cases on {system}/{platform.machine()}; other platforms remain unverified.')
     else:
         manifest=json.loads(manifest_path.read_text())
-        require(manifest['schema_version']==1 and manifest['fixture_id']=='sora-arena-practice-abi2','unsupported fixture identity')
+        require(manifest['schema_version']==1 and manifest['fixture_id']=='sora-arena-practice-abi3','unsupported fixture identity')
         require(manifest['input_encoding']['format']=='<HbbHh' and manifest['input_encoding']['bytes_per_slot']==8 and manifest['input_encoding']['tick_rate']==60,'unexpected input encoding')
         require(identity==manifest['source_identity']['files_sha256'],'source identity changed; review changes before explicitly authoring a new reference fixture')
         require(runner==manifest['runner_files_sha256'],'fixture runner identity changed; review changes before explicitly authoring a new reference fixture')

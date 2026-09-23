@@ -53,7 +53,7 @@ shots=damage_events=respawns=0
 for map_id in range(4):
     for class_id in range(6):
         for weapon_slot in range(3):
-            config=Config(2,0,map_id,600,0,6,1)
+            config=Config(3,0,map_id,600,0,6,1)
             people=roster(class_id,weapon_slot)
             a=lib.arena_create(ctypes.byref(config),people,6)
             b=lib.arena_create(ctypes.byref(config),people,6)
@@ -65,7 +65,7 @@ for map_id in range(4):
                     frame=controls(tick)
                     assert lib.arena_step(a,frame,6)==0 and lib.arena_step(b,frame,6)==0
                     state=Snapshot();assert lib.arena_snapshot(a,ctypes.byref(state))==0
-                    assert state.tick==tick+1 and state.deposited==state.remaining==state.earnings==0
+                    assert state.abi_version==3 and state.tick==tick+1 and state.deposited==state.remaining==state.earnings==0
                     for index in range(state.event_count):
                         event=Event();assert lib.arena_event(a,index,ctypes.byref(event))==0
                         assert event.tick==tick
@@ -78,6 +78,7 @@ for map_id in range(4):
                             assert lib.arena_player_presentation(a,slot,ctypes.byref(visual))==0
                             assert player.initial_bond==player.remaining_bond==player.earnings==0
                             assert player.health<=visual.max_health and 0<=player.stamina<=100
+                            assert 0<=visual.charge_ticks_current<=visual.charge_ticks_required<=600
                 assert state.terminal==1
                 final=digest(a)
                 assert lib.arena_step(a,controls(600),6)!=0 and digest(a)==final
@@ -87,7 +88,7 @@ for map_id in range(4):
 
 # Clear sightline on the east side of the estate: a stationary matchlock bot
 # eliminates slot zero, which must respawn without creating any economic value.
-death_config=Config(2,0,0,900,0,6,1);people=roster(0,1)
+death_config=Config(3,0,0,900,0,6,1);people=roster(0,1)
 people[4]=Participant(4,0,2,5,0,0,0)
 handle=lib.arena_create(ctypes.byref(death_config),people,6);assert handle
 death_count=respawn_count=0

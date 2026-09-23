@@ -11,7 +11,7 @@ extern "C" {
  * Status: 0 OK, 1 invalid argument, 2 simulation rejected, 3 panic contained.
  * One owning thread must serialize access to each handle. */
 typedef struct ArenaHandle ArenaHandle;
-/* Query arena_abi_version() and require exactly 2 before using this layout.
+/* Query arena_abi_version() and require exactly 3 before using this layout.
  * Earlier development layouts are rejected; there is no compatibility mode. */
 typedef struct {
     uint32_t abi_version, mode, map_id, max_ticks;
@@ -55,6 +55,7 @@ typedef struct {
     int32_t max_health;
     uint32_t guarding, spawn_protection_ticks, ability_cooldown_ticks;
     uint32_t ammo, magazine, reload_ticks; /* Reload state is authoritative. */
+    uint32_t charge_ticks_current, charge_ticks_required; /* Current selected windup. */
 } ArenaPlayerPresentation;
 typedef struct {
     uint32_t id, kind; /* kind: 0 melee, 1 hitscan, 2 projectile */

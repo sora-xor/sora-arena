@@ -3,8 +3,9 @@
 #include "Misc/Paths.h"
 #include "arena.h"
 
-static_assert(sizeof(ArenaPlayerPresentation)==36,"Unexpected ABI 2 player presentation layout");
-static_assert(sizeof(ArenaWeaponSpec)==48,"Unexpected ABI 2 weapon layout");
+static_assert(sizeof(ArenaPlayerPresentation)==44,"Unexpected ABI 3 player presentation layout");
+static_assert(offsetof(ArenaPlayerPresentation,charge_ticks_current)==36,"Unexpected ABI 3 charge offset");
+static_assert(sizeof(ArenaWeaponSpec)==48,"Unexpected ABI 3 weapon layout");
 
 struct FKernelRuntime
 {
@@ -28,7 +29,7 @@ struct FKernelRuntime
 };
 namespace
 {
-constexpr uint32 ExpectedKernelAbi = 2;
+constexpr uint32 ExpectedKernelAbi = 3;
 FVector Millimeters(int32 X,int32 Y,int32 Z) { return FVector(X/10.0,Y/10.0,Z/10.0); }
 uint16 CanonicalYaw(float Yaw) { return static_cast<uint16>(FMath::RoundToInt(FRotator::ClampAxis(Yaw)*65536.f/360.f)&65535); }
 int16 CanonicalPitch(float Pitch) { return static_cast<int16>(FMath::Clamp(FMath::RoundToInt(Pitch*16384.f/90.f),-16384,16384)); }
@@ -212,12 +213,13 @@ bool UArenaKernelSubsystem::RefreshPractice()
     for(uint32 I=0;I<State.player_count;++I)
     {
         ArenaPlayerSnapshot P{}; ArenaPlayerPresentation Visual{};
-        if(Runtime->Player(Runtime->Practice,I,&P)!=0||Runtime->Presentation(Runtime->Practice,I,&Visual)!=0||P.initial_bond||P.remaining_bond||P.earnings)
+        if(Runtime->Player(Runtime->Practice,I,&P)!=0||Runtime->Presentation(Runtime->Practice,I,&Visual)!=0||P.initial_bond||P.remaining_bond||P.earnings||Visual.charge_ticks_required>600||Visual.charge_ticks_current>Visual.charge_ticks_required)
         { PracticeError=TEXT("稽古の参加者状態を検証できません。"); return false; }
         FSoraPracticePlayer Player; Player.Feet=Millimeters(P.x,P.y,P.z); Player.Slot=P.slot; Player.ClassId=P.class_id; Player.WeaponId=P.weapon_id;
         Player.Aim=FRotator(Visual.pitch*90.f/16384.f,Visual.yaw*360.f/65536.f,0);
         Player.Health=P.health; Player.MaxHealth=Visual.max_health; Player.Stamina=P.stamina; Player.Cooldown=Visual.cooldown_ticks;
         Player.Ammo=Visual.ammo; Player.Magazine=Visual.magazine; Player.ReloadTicks=Visual.reload_ticks;
+        Player.ChargeTicks=Visual.charge_ticks_current; Player.ChargeRequired=Visual.charge_ticks_required;
         Player.RespawnTicks=P.respawn_ticks; Player.Alive=P.alive!=0; Player.Kills=P.kills; Player.Deaths=P.deaths;
         PracticePlayers.Add(Player);
     }

@@ -66,6 +66,12 @@ admission authority, not a witness-selectable weapon-stat table.
    damage, guarding/parry, death and assist attribution; payouts; objectives;
    and terminal conditions. Inactive branches, vector lengths, sparse event
    counts, padding and transitions to the next stage must be constrained.
+   The relation must also bind charge progress to its specific weapon so a
+   Kanabo windup cannot precharge another weapon, resolve team-mode Healing
+   lance recovery before same-tick damage without reviving the dead, and apply
+   Plasma matchlock guard penetration only to its charged direct hit. These
+   transitions affect deaths and therefore XOR transfers; they cannot remain
+   presentation-only rules.
    The current `arena_hit_air.rs` can supply parity cases, not a drop-in wire
    layout. A narrower axis-staged geometry relation must retain truncation,
    `Q20` boundaries, wall-first and strict-closer tie rules.
