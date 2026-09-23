@@ -117,6 +117,13 @@ photoreal art gate. The package used UE 5.8.3 only for a diagnostic on M1
 Ultra. SHA-256:
 `dfb0b9d2439b5e2f3288a631bb8fa3b19e92bb0e956bc48871d930128b504a37`.
 
+The [bamboo/rill Estate comparison](bamboo-rill/README.md) archives unedited
+fixed-camera before/after and close-route frames from an isolated packaged UE
+5.8.3 Mac diagnostic. The collision-free southern-shoulder candidate was
+mostly hidden behind the foreground torii/building; its rill was invisible
+from the route. Its first-person visual gate failed, so the placement was
+removed and the water-court art remains source-only.
+
 `UE583_Nyaakoto_CoatBlend_Body_Diagnostic.png` and
 `UE583_Nyaakoto_CoatBlend_Face_Diagnostic.png` are unedited frames from an
 offscreen packaged UE 5.8.3/METAL_SM5 Mac game. A diagnostic-only command-line
