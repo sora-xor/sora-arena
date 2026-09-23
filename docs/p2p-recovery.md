@@ -150,8 +150,10 @@ malformed fragments, and checks the complete packet's
 SHA-256 digest before the ordinary AEAD and Ed25519 checks. Duplicate fragments
 do not advance the replay floor. A receiver must call `open_fragment` on the
 same channel instance and persist its accepted sequence floor as above. This
-framing does not supply retransmission, congestion control, NAT traversal,
-peer discovery or a network transport.
+framing by itself does not supply retransmission, congestion control, NAT
+traversal, peer discovery or a network transport. The separate test-only
+localhost transport adds bounded authenticated ACK/retry for already sealed
+fragments; see [its current limits](p2p-localhost.md).
 
 The responder's `OfferReplayGuard` rejects an already accepted signed
 offer, including when it could generate a fresh local ephemeral secret. Its
@@ -172,8 +174,8 @@ handshake does not establish that the remote human is honest or that an
 admission context was selected correctly; those are separate qualification
 requirements.
 
-This code implements local key agreement and authenticated datagram
-primitives only. It does not implement peer discovery, NAT traversal, packet
-relays, congestion control, retransmission, ordered delivery, or a live
-network transport. It is not an execution proof or a substitute for the
+These primitives implement local key agreement and authenticated datagrams.
+The localhost research path implements bounded ACK/retry, but neither path
+implements peer discovery, NAT traversal, packet relays, production congestion
+control, or a live multi-peer network transport. It is not an execution proof or a substitute for the
 certified commitment frontier and durable evidence journal.
