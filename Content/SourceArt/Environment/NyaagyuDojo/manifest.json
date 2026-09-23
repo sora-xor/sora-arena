@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_EstateDojo",
+  "generator": "scripts/art/create_nyaagyu_dojo.py",
+  "generator_blender": "5.2.2 LTS",
+  "source_blend": "Nyaagyu_EstateDojo.blend",
+  "fbx": "SM_Nyaagyu_EstateDojo.fbx",
+  "preview": "Nyaagyu_EstateDojo_Blender.png",
+  "fbx_sha256": "6882d5a28fbf3193f1519bfd1470dfc07d72fbc801289a956d16bbb9ac8fb9ab",
+  "blend_sha256": "1c885ba09f31a2a5a7979da0414b50feed55df1a3185f281afbfe3f64058b0f1",
+  "preview_sha256": "f696b4c736a7add19ef140111379367f44fa746999e8a51f09f84ab239cdd031",
+  "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "font_sha256": "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5",
+  "palette_manifest_sha256": "d21c351a0ca82165f885d9fc4cbcff652009fee0b9336ae9367b2ccd667cdd0b",
+  "palette_asset_ids": [
+    "wood_planks_dirt",
+    "stone_floor"
+  ],
+  "unreal_asset": "/Game/Generated/Environment/Props/SM_Nyaagyu_EstateDojo.SM_Nyaagyu_EstateDojo",
+  "source_parts": 424,
+  "source_triangles": 73946,
+  "roof_tile_count": 748,
+  "shoji_bays": 4,
+  "collision_boxes": 3,
+  "bounds_m": {
+    "min": [
+      -3.63,
+      -4.1,
+      -0.002
+    ],
+    "max": [
+      3.704,
+      3.761,
+      5.245
+    ]
+  },
+  "placement_origin": "Building ground center; local -Y is public frontage toward estate road",
+  "placement_cm": "Replace the MapId 0 Building(P, FVector(650,700,Height), ...) visual at P; use yaw 0 for northern row and 180 for southern row, preserve the deterministic campaign collision box.",
+  "collision_guidance": "The three UCX boxes are art-review proxies. Preserve the existing campaign kernel-compatible building collision in WorldBuilder; do not admit this decorative mesh into multiplayer map geometry without a versioned collision update.",
+  "license": "Original project-owned geometry; exact user-supplied SORA SVG crest retains user-provided provenance. Linked timber and stone maps are CC0 Poly Haven, and Japanese Noto font is SIL OFL. No purchased assets.",
+  "history_reference": [
+    {
+      "url": "https://kyoto.travel/en/destinations/the-former-retreat-of-tomomi-iwakura/",
+      "note": "Edo-era samurai-residence shikidai, veranda and shoin room arrangement inform the fictional dojo massing."
+    },
+    {
+      "url": "https://www.nihonminkaen.jp/shukuba_english.html",
+      "note": "Museum documentation of an Edo-period samurai house gate and pantile roof informs the material language; this is not a reconstruction."
+    }
+  ],
+  "scope": "Original source art and Blender review render. Unreal import, in-game presentation, historical reconstruction, and AAA performance are not established by this manifest."
+}

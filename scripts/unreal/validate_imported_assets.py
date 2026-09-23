@@ -128,9 +128,19 @@ def expected_assets(project_root):
         ("StreetDebtTerminal", "SM_Alien_StreetDebtTerminal"),
         ("NyaagyuSluice", "SM_Nyaagyu_IrrigationSluice"),
         ("SilkFoundryLoom", "SM_SilkFoundry_LevyLoom"),
+        ("NyaagyuDojo", "SM_Nyaagyu_EstateDojo"),
     ):
         named_mesh(source_root, specs, f"Environment/{folder}", "manifest.json",
                    name, PROPS)
+    dojo_root = source_root / "Environment/NyaagyuDojo"
+    dojo = read_manifest(dojo_root / "manifest.json")
+    require(dojo.get("generator") == "scripts/art/create_nyaagyu_dojo.py"
+            and dojo.get("collision_boxes") == 3
+            and dojo.get("shoji_bays") == 4
+            and dojo.get("roof_tile_count") == 748
+            and dojo.get("sora_kamon_svg_sha256") ==
+            hashlib.sha256(logo_svg.read_bytes()).hexdigest(),
+            "The original Nyaagyu dojo source identity changed")
 
     terrain_root = source_root / "Environment/NyaagyuTerrain"
     terrain = read_manifest(terrain_root / "manifest.json")

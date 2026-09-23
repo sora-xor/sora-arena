@@ -245,9 +245,17 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
         {
             FVector P(-2000+I*1000,S*(MapId==1?1200:1800),0);
             const float Height=MapId==3?780.f:330.f+(I%2)*100.f;
+            const int32 BuildingStart=Pieces.Num();
             Building(P,FVector(650,700,Height),MapId==3?FLinearColor(.12f,.15f,.19f):FLinearColor(.63f,.56f,.40f),MapId>=2);
             if(MapId==0)
             {
+                // Keep the established campaign collision boxes exactly as
+                // built above, but render the original detailed dojo instead
+                // of the simple blockout. Its UCX meshes remain decorative;
+                // the separate P2P practice map never loads this building.
+                if(ImportedProp(TEXT("SM_Nyaagyu_EstateDojo"),P,FRotator(0,S>0?0.f:180.f,0)))
+                    for(int32 Piece=BuildingStart;Piece<Pieces.Num()-1;++Piece)
+                        if(Pieces[Piece]) Pieces[Piece]->SetVisibility(false);
                 const float TreeScale=.90f+.05f*((I+3*(S+1))%5);
                 NyaagyuTree(P+FVector(450,-S*250,0),FRotator(0,37.f*I+(S>0?73.f:0.f),0),TreeScale);
             }

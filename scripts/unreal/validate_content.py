@@ -395,6 +395,28 @@ loom_fbx = (loom_root / loom["fbx"]).read_bytes()
 assert loom_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in loom_fbx
 assert loom["name"] in world_builder and loom["name"] in import_script
 assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+dojo_root = content / "SourceArt/Environment/NyaagyuDojo"
+dojo = json.loads((dojo_root / "manifest.json").read_text())
+assert dojo["schema_version"] == 1
+assert dojo["name"] == "SM_Nyaagyu_EstateDojo"
+assert dojo["generator"] == "scripts/art/create_nyaagyu_dojo.py"
+assert dojo["unreal_asset"] == "/Game/Generated/Environment/Props/SM_Nyaagyu_EstateDojo.SM_Nyaagyu_EstateDojo"
+assert dojo["fbx"] == dojo["name"] + ".fbx"
+assert 300 <= dojo["source_parts"] <= 600 and 45000 <= dojo["source_triangles"] < 120000
+assert dojo["shoji_bays"] == 4 and dojo["roof_tile_count"] == 748 and dojo["collision_boxes"] == 3
+assert dojo["sora_kamon_svg_sha256"] == hero_character["insignia_sha256"]
+assert "Original project-owned geometry" in dojo["license"] and "CC0 Poly Haven" in dojo["license"]
+for name, digest in ((dojo["source_blend"], "blend_sha256"),
+                     (dojo["fbx"], "fbx_sha256"),
+                     (dojo["preview"], "preview_sha256")):
+    path = dojo_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == dojo[digest]
+dojo_fbx = (dojo_root / dojo["fbx"]).read_bytes()
+assert dojo_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in dojo_fbx
+assert dojo["name"] in world_builder and dojo["name"] in import_script
+assert "SetVisibility(false)" in world_builder
+assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())
 assert hero_character["insignia_sha256"] == logo_manifest["source_sha256"]
@@ -421,4 +443,4 @@ absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 7 original environment props, licensed Japanese font, hash-verified SORA logo.")
