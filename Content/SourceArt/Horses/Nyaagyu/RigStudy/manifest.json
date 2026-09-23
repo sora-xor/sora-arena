@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "name": "SK_Nyaagyu_Horse_RigStudy",
+  "generator": "scripts/art/create_nyaagyu_horse_rig_study.py",
+  "validator": "scripts/art/validate_nyaagyu_horse_rig_study.py",
+  "base_commit": "d319aadae6ecf2bad1967f9462b6660f2136612a",
+  "base_source_path": "Content/SourceArt/Horses/Nyaagyu/Nyaagyu_HorseAndTack.blend",
+  "base_source_sha256": "0ea0b1b96752f02d7c1dd3d44b08b8b9241184e609394450e453cbe54e75d573",
+  "source_blend": "Nyaagyu_Horse_RigStudy.blend",
+  "source_blend_sha256": "b4dd110708eaae29b7ff4a02401cccac9621af21534a15bc367b699924c7525a",
+  "fbx": "SK_Nyaagyu_Horse_RigStudy.fbx",
+  "fbx_sha256": "f00a25dfa3ffb2a02cc236aac09c6d609322b35ed0123a4935a8276c20398983",
+  "review_frames": [
+    {
+      "frame": 1,
+      "file": "Nyaagyu_Walk_Frame_01.png",
+      "sha256": "ac8fb46383cba2aec731e6e90817e37658379e1bbf39270ab39c0ec7caf0dc94"
+    },
+    {
+      "frame": 10,
+      "file": "Nyaagyu_Walk_Frame_10.png",
+      "sha256": "ad738a10d43b9d21a6b0ad2d85d31e4abe9de08a77024f428e816784242fdac9"
+    },
+    {
+      "frame": 19,
+      "file": "Nyaagyu_Walk_Frame_19.png",
+      "sha256": "73889339df563c89cd63afc7f83eac8936c594ca8f1a8414731e0b39de7785cb"
+    },
+    {
+      "frame": 28,
+      "file": "Nyaagyu_Walk_Frame_28.png",
+      "sha256": "effe6694e8d229ca66956285275dcad8bb1d3854f221290977923436e1492db3"
+    }
+  ],
+  "source_parts": 252,
+  "skinned_core_vertices": 35854,
+  "bone_names": [
+    "abumi_L",
+    "abumi_R",
+    "chest",
+    "fore_L_hoof",
+    "fore_L_lower",
+    "fore_L_pastern",
+    "fore_L_upper",
+    "fore_R_hoof",
+    "fore_R_lower",
+    "fore_R_pastern",
+    "fore_R_upper",
+    "head",
+    "hind_L_hoof",
+    "hind_L_lower",
+    "hind_L_pastern",
+    "hind_L_upper",
+    "hind_R_hoof",
+    "hind_R_lower",
+    "hind_R_pastern",
+    "hind_R_upper",
+    "neck",
+    "pelvis",
+    "root",
+    "saddle_mount",
+    "spine",
+    "tail",
+    "tazuna_L",
+    "tazuna_R"
+  ],
+  "anchor_bones": {
+    "Horse_Root": "root",
+    "Saddle_RiderSeat": "saddle_mount",
+    "Tazuna_LeftGrip": "tazuna_L",
+    "Tazuna_RightGrip": "tazuna_R",
+    "Abumi_LeftFoot": "abumi_L",
+    "Abumi_RightFoot": "abumi_R"
+  },
+  "walk": {
+    "name": "AN_Nyaagyu_Horse_Walk4Beat_InPlace_36f",
+    "start_frame": 1,
+    "end_frame": 37,
+    "fps": 30,
+    "footfall_order": [
+      "hind_L",
+      "fore_L",
+      "hind_R",
+      "fore_R"
+    ],
+    "contact_frames": {
+      "hind_L": 1,
+      "fore_L": 10,
+      "hind_R": 19,
+      "fore_R": 28
+    },
+    "in_place": true
+  },
+  "local_forward": "+X horse-forward; +Z up; existing source -Y = Left anchor",
+  "sora_logo_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "tack_reference": {
+    "abumi": "https://www.metmuseum.org/art/collection/search/712927",
+    "mon_placement": "https://www.metmuseum.org/art/collection/search/35376",
+    "walk_order": "https://vet.ucalgary.ca/summercamps/animal-interactions/tuesday/equine"
+  },
+  "license": "Original project-owned rig, animation and renders over the pinned project-owned horse geometry; exact user-supplied SORA SVG geometry retained.",
+  "limitations": "Source-only quadruped deformation and walk-cycle study; not rideable, not photoreal, and not a historically or biomechanically verified gait. No rein simulation, saddle-contact dynamics, ground-contact IK, UE skeletal import, engine animation blueprint, gameplay collision, horse control, or in-game performance validation."
+}
