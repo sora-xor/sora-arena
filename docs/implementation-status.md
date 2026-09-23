@@ -10,6 +10,9 @@ including subtitle timing, speaker identification, readable Japanese fonts and
 controller-readable menus. The offline catalog now contains 24 timed bilingual
 dialogue cues across eight chapters, shown during active gameplay; no voice acting
 is recorded, and timing/readability still need Unreal play verification.
+The HUD gives Japanese and English campaign subtitles, speaker names and notices
+a minimum text size at 720p and above; content and font-width checks pass, but
+the UE 5.8.2 visual and controller readability pass is still open.
 
 ## Milestones and current evidence
 
