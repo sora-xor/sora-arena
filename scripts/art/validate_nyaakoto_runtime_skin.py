@@ -71,6 +71,12 @@ grey_slot = next(i for i, material in enumerate(mesh.data.materials)
                  if material.name == "M_Hero_GreyTabbyFur")
 grey_loops = [loop_index for polygon in mesh.data.polygons
               if polygon.material_index == grey_slot for loop_index in polygon.loop_indices]
+coat = mesh.data.color_attributes.get("CoatBlend")
+assert coat is not None and coat.domain == "CORNER"
+assert len(mesh.data.color_attributes) == 1 and len(coat.data) == len(mesh.data.loops)
+grey_blend = [coat.data[index].color[0] for index in grey_loops]
+assert min(grey_blend) < .01 and max(grey_blend) > .99
+assert sum(.1 < value < .9 for value in grey_blend) > 1000
 grey_uv = [uv.data[index].uv for index in grey_loops]
 assert grey_uv and max(point.x for point in grey_uv) - min(point.x for point in grey_uv) > .2
 assert max(point.y for point in grey_uv) - min(point.y for point in grey_uv) > .2

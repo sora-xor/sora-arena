@@ -72,6 +72,15 @@ for entry in record["lods"]:
     assert all(len(vertex.groups) == 1 for vertex in mesh.data.vertices)
     materials = {material.name.split(".", 1)[0] for material in mesh.data.materials}
     assert materials == set(entry["material_slots"]) == set(pbr["material_slots"])
+    coat = mesh.data.color_attributes.get("CoatBlend")
+    assert coat is not None and coat.domain == "CORNER"
+    assert len(mesh.data.color_attributes) == 1 and len(coat.data) == len(mesh.data.loops)
+    grey_slot = next(index for index, material in enumerate(mesh.data.materials)
+                     if material.name.split(".",1)[0] == "M_Hero_GreyTabbyFur")
+    grey_blend = [coat.data[loop].color[0] for face in mesh.data.polygons
+                  if face.material_index == grey_slot for loop in face.loop_indices]
+    assert min(grey_blend) < .01 and max(grey_blend) > .99
+    assert sum(.1 < value < .9 for value in grey_blend) > 50
     world = [mesh.matrix_world @ Vector(corner) for corner in mesh.bound_box]
     for axis_index, axis_name in enumerate("xyz"):
         low = min(point[axis_index] for point in world)

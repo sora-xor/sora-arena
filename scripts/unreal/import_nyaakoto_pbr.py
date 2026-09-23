@@ -114,28 +114,59 @@ master = assets.load_asset(master_path) if assets.does_asset_exist(master_path) 
     master_name, destination, unreal.Material, unreal.MaterialFactoryNew())
 master.set_editor_property("used_with_skeletal_mesh", True)
 lib.delete_all_material_expressions(master)
-base = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -850, -380,
+base = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -1100, -580,
             parameter_name="AlbedoMap", texture=textures["neutral"]["Albedo"])
-normal = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -850, -50,
+normal = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -1100, -170,
               parameter_name="NormalMap", texture=textures["neutral"]["NormalDX"])
-orm = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -850, 260,
+orm = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -1100, 230,
            parameter_name="ORMMap", texture=textures["neutral"]["ORM"])
-tint = node(master, unreal.MaterialExpressionVectorParameter, -480, -550,
+white_base = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -1100, -400,
+                  parameter_name="WhiteFurAlbedoMap", texture=textures["fur_white"]["Albedo"])
+white_normal = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -1100, 20,
+                    parameter_name="WhiteFurNormalMap", texture=textures["fur_white"]["NormalDX"])
+white_orm = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -1100, 430,
+                 parameter_name="WhiteFurORMMap", texture=textures["fur_white"]["ORM"])
+vertex_color = node(master, unreal.MaterialExpressionVertexColor, -850, 680)
+blend_enabled = node(master, unreal.MaterialExpressionScalarParameter, -850, 830,
+                     parameter_name="CoatBlendEnabled", default_value=0.0)
+coat_factor = node(master, unreal.MaterialExpressionMultiply, -620, 740)
+link(vertex_color, "R", coat_factor, "A")
+link(blend_enabled, "", coat_factor, "B")
+white_tint = node(master, unreal.MaterialExpressionVectorParameter, -830, -620,
+                  parameter_name="WhiteFurTint", default_value=unreal.LinearColor(.92, .93, .94, 1))
+white_colored = node(master, unreal.MaterialExpressionMultiply, -620, -450)
+link(white_base, "RGB", white_colored, "A")
+link(white_tint, "RGB", white_colored, "B")
+albedo_blend = node(master, unreal.MaterialExpressionLinearInterpolate, -400, -500)
+link(base, "RGB", albedo_blend, "A")
+link(white_colored, "", albedo_blend, "B")
+link(coat_factor, "", albedo_blend, "Alpha")
+normal_blend = node(master, unreal.MaterialExpressionLinearInterpolate, -400, -120)
+link(normal, "RGB", normal_blend, "A")
+link(white_normal, "RGB", normal_blend, "B")
+link(coat_factor, "", normal_blend, "Alpha")
+normal_unit = node(master, unreal.MaterialExpressionNormalize, -180, -100)
+link(normal_blend, "", normal_unit, "")
+orm_blend = node(master, unreal.MaterialExpressionLinearInterpolate, -400, 300)
+link(orm, "RGB", orm_blend, "A")
+link(white_orm, "RGB", orm_blend, "B")
+link(coat_factor, "", orm_blend, "Alpha")
+tint = node(master, unreal.MaterialExpressionVectorParameter, -180, -620,
             parameter_name="Tint", default_value=unreal.LinearColor(1, 1, 1, 1))
-roughness_scale = node(master, unreal.MaterialExpressionScalarParameter, -470, 560,
+roughness_scale = node(master, unreal.MaterialExpressionScalarParameter, -180, 560,
                        parameter_name="RoughnessScale", default_value=1.0)
-metallic_scale = node(master, unreal.MaterialExpressionScalarParameter, -470, 760,
+metallic_scale = node(master, unreal.MaterialExpressionScalarParameter, -180, 760,
                       parameter_name="MetallicScale", default_value=0.0)
-colored = node(master, unreal.MaterialExpressionMultiply, -180, -350)
-link(base, "RGB", colored, "A")
+colored = node(master, unreal.MaterialExpressionMultiply, 40, -400)
+link(albedo_blend, "", colored, "A")
 link(tint, "RGB", colored, "B")
 output(colored, "", unreal.MaterialProperty.MP_BASE_COLOR)
-output(normal, "RGB", unreal.MaterialProperty.MP_NORMAL)
+output(normal_unit, "", unreal.MaterialProperty.MP_NORMAL)
 ao = node(master, unreal.MaterialExpressionComponentMask, -470, 130, r=True, g=False, b=False, a=False)
 roughness = node(master, unreal.MaterialExpressionComponentMask, -470, 360, r=False, g=True, b=False, a=False)
 metallic = node(master, unreal.MaterialExpressionComponentMask, -470, 690, r=False, g=False, b=True, a=False)
 for mask in (ao, roughness, metallic):
-    link(orm, "RGB", mask, "")
+    link(orm_blend, "", mask, "")
 output(ao, "", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
 roughness_mul = node(master, unreal.MaterialExpressionMultiply, -120, 420)
 link(roughness, "", roughness_mul, "A")
@@ -148,7 +179,10 @@ output(metallic_mul, "", unreal.MaterialProperty.MP_METALLIC)
 lib.layout_material_expressions(master)
 lib.recompile_material(master)
 assets.save_loaded_asset(master)
-if {str(item) for item in lib.get_texture_parameter_names(master)} != {"AlbedoMap", "NormalMap", "ORMMap"}:
+required_texture_parameters = {
+    "AlbedoMap", "NormalMap", "ORMMap", "WhiteFurAlbedoMap", "WhiteFurNormalMap", "WhiteFurORMMap",
+}
+if {str(item) for item in lib.get_texture_parameter_names(master)} != required_texture_parameters:
     raise RuntimeError("Nyaakoto PBR master lost a required texture parameter")
 
 for slot_name, surface in record["material_slots"].items():
@@ -170,6 +204,22 @@ for slot_name, surface in record["material_slots"].items():
         instance, "Tint", unreal.LinearColor(*surface["tint"], 1))
     lib.set_material_instance_scalar_parameter_value(instance, "RoughnessScale", surface["roughness_scale"])
     lib.set_material_instance_scalar_parameter_value(instance, "MetallicScale", surface["metallic_scale"])
+    enable_blend = float(slot_name == "M_Hero_GreyTabbyFur")
+    lib.set_material_instance_scalar_parameter_value(instance, "CoatBlendEnabled", enable_blend)
+    if abs(lib.get_material_instance_scalar_parameter_value(instance, "CoatBlendEnabled") - enable_blend) > 1e-6:
+        raise RuntimeError(f"Nyaakoto {name} lost its coat-mask selector")
+    if enable_blend:
+        for parameter, channel in (("WhiteFurAlbedoMap", "Albedo"),
+                                   ("WhiteFurNormalMap", "NormalDX"),
+                                   ("WhiteFurORMMap", "ORM")):
+            expected = textures["fur_white"][channel]
+            lib.set_material_instance_texture_parameter_value(instance, parameter, expected)
+            bound = lib.get_material_instance_texture_parameter_value(instance, parameter)
+            if not bound or bound.get_path_name() != expected.get_path_name():
+                raise RuntimeError(f"Nyaakoto {name} lost its {parameter} binding")
+        white_tint_value = record["material_slots"]["M_Hero_WhiteFur"]["tint"]
+        lib.set_material_instance_vector_parameter_value(
+            instance, "WhiteFurTint", unreal.LinearColor(*white_tint_value, 1))
     assets.save_loaded_asset(instance)
 
 assets.save_directory(destination, only_if_is_dirty=False, recursive=True)

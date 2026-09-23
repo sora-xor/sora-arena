@@ -106,6 +106,9 @@ bpy.context.view_layer.objects.active = duplicates[0]
 bpy.ops.object.join()
 mesh = bpy.context.object
 mesh.name = "SK_NyaagyuSamurai"
+coat=mesh.data.color_attributes.get("CoatBlend")
+assert coat is not None and coat.domain=="CORNER"
+mesh.data.color_attributes.active_color=coat
 assert len(mesh.data.vertices) == sum(weights.values())
 assert all(len(vertex.groups) == 1 for vertex in mesh.data.vertices)
 
@@ -190,7 +193,7 @@ for clip, frames in (("Idle", 96), ("Walk", 32)):
         apply_unit_scale=True, add_leaf_bones=False, use_armature_deform_only=True,
         bake_anim=True, bake_anim_use_nla_strips=False,
         bake_anim_use_all_actions=False, bake_anim_simplify_factor=0,
-        path_mode="STRIP")
+        path_mode="STRIP", prioritize_active_color=True)
 iris_node = iris_nodes.new("ShaderNodeTexImage")
 iris_node.name = "Painted radial iris pigment"
 iris_node.image = iris_image

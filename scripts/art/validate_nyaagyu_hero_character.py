@@ -86,9 +86,15 @@ assert len(skull.data.polygons)>19000
 assert set(face.material_index for face in skull.data.polygons)=={0,1}
 assert [material.name for material in skull.data.materials]==[
     "M_Hero_GreyTabbyFur","M_Hero_WhiteFur"]
+assert all(list(o.data.color_attributes.keys())==["CoatBlend"] for o in parts)
+skull_mask=[item.color[0] for item in skull.data.color_attributes["CoatBlend"].data]
+assert min(skull_mask)<.01 and max(skull_mask)>.99
+assert sum(.1<item<.9 for item in skull_mask)>1000
 neck=bpy.data.objects["Fur_neck"]
 assert list(neck.data.uv_layers.keys())==["UVMap"]
 assert set(face.material_index for face in neck.data.polygons)=={0,1}
+neck_mask=[item.color[0] for item in neck.data.color_attributes["CoatBlend"].data]
+assert min(neck_mask)<.01 and max(neck_mask)>.99
 assert bpy.data.objects.get("White_throat_bib") is None
 assert bpy.data.objects.get("Lower_jaw") is None
 assert len(bpy.data.objects["Head_white_mesh_fur"].data.polygons)==2200
@@ -131,6 +137,12 @@ bpy.ops.import_scene.fbx(filepath=str(fbx))
 imported=[o for o in set(bpy.data.objects)-before if o.type=="MESH"]
 assert len(imported)==1 and imported[0].name==name,[o.name for o in imported]
 mesh=imported[0]
+coat=mesh.data.color_attributes.get("CoatBlend")
+assert coat is not None and coat.domain=="CORNER"
+assert len(mesh.data.color_attributes)==1 and len(coat.data)==len(mesh.data.loops)
+fbx_mask=[item.color[0] for item in coat.data]
+assert min(fbx_mask)<.01 and max(fbx_mask)>.99
+assert sum(.1<item<.9 for item in fbx_mask)>1000
 corners=[mesh.matrix_world @ Vector(v) for v in mesh.bound_box]
 for axis in range(3):
     assert abs(min(v[axis] for v in corners)-manifest["bounds_m"]["min"][axis])<.02

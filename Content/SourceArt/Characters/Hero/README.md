@@ -16,7 +16,7 @@ left unchanged. The earlier invented ray motif on the waist was removed.
 `manifest.json` pins every output and the insignia source by SHA-256.
 
 The eye study now has a shallow orbital seat, UV-mapped iris discs, narrow
-vertical pupils, curved eyelid margins, lower lid shelves, a narrow ivory
+vertical pupils, curved eyelid margins, upper and lower lid shelves, a narrow ivory
 scleral crescent and a small modeled catchlight. Its original
 1024 px blue-grey radial pigment map is in `EyeStudy/` and packed into the
 editable `.blend`. The close-up Blender review is
@@ -34,16 +34,27 @@ material identities and both authored skeletal LODs stay unchanged. The
 latest pass deforms one UV-mapped skull into the cheek, whisker-pad, lip, and
 chin volumes; the white lower face is assigned on that same surface. The
 separate white pad spheres and jaw have been removed. The tapered neck now
-meets a raised side collar with a lower front opening. Ears have a curved
+meets a raised side collar with a lower V opening. Ears have a curved
 outer shell, recessed lining, and rooted fine fur; the eye aperture is
 narrower. The grey fur tint remains neutral and the pale eye trim cool ivory.
+The further anatomy pass narrows the crown and jaw, sculpts the nasal bridge,
+paired whisker pads and philtrum into the skull, cups the ear and seats each
+eye about 6 mm deeper under the upper lid. The `CoatBlend` red vertex-color
+channel softens the grey-to-white fur transition across the skull and neck.
+Blender's source preview approximates that albedo blend; the Unreal PBR
+master blends the hashed grey/white albedo, tangent normals, and ORM maps on
+UV0, with only the grey-fur instance enabling the blend. Source, runtime FBX,
+and both skeletal LOD round-trip validators check that one color layer and its
+intermediate values survive export. The source still has exactly 23 material
+identities.
 Side and eye close-ups are in `Nyaagyu_HeroFace_Blender.png` and
-`EyeStudy/Nyaakoto_Eye_Macro_Blender.png`. The preceding source revision
-`b06694c` contains the same-camera before renders in those paths, plus the
-full-body `Nyaagyu_HeroCharacter_Blender.png`.
+`EyeStudy/Nyaakoto_Eye_Macro_Blender.png`. Source revision `cb5a11e`
+contains the same-camera before side and full-body renders in those paths;
+the current side and full-body images are the after review.
 
-The white-fur boundary, ears, fur direction, eye depth, rigid neck seam, and
-armor construction remain visibly stylized. The new geometry is an incremental
+The broad smooth skull, nearly planar ear cartilage, bead-like eye aperture,
+shallow muzzle profile, exposed skull-to-throat seam, rigid neck/armor, and
+coarse fur direction remain visibly stylized. The new geometry is an incremental
 source-art improvement, not the art-direction target in
 `docs/art-direction/NYAAKOTO_PHOTOREAL_TARGET.md`.
 These review renders do not establish photoreal quality or in-game
@@ -74,7 +85,7 @@ python3 scripts/unreal/validate_content.py
 
 The original `Nyaagyu_HeroCharacter.blend` stays an unrigged, editable design
 source and its static FBX remains in `/Game/ArtReview/Characters`. The separate
-`Nyaakoto_RuntimeSkin.blend` binds its 419 authored parts to the established
+`Nyaakoto_RuntimeSkin.blend` binds the authored parts to the established
 20-bone samurai skeleton. Its `SK_NyaagyuSamurai.fbx` and
 `A_NyaagyuSamurai_Walk.fbx` replace the orange prototype's runtime exports
 under `/Game/Generated`; armor, yumi, arrows, sheathed katana and exact kamon

@@ -112,6 +112,61 @@ ARROW = mat("M_Hero_BambooArrowShaft", (.48,.32,.17), rough=.72, noise=111, bump
 FLETCH = mat("M_Hero_RedArrowFletch", (.66,.050,.055), rough=.88, noise=118, bump=.00004)
 STRING = mat("M_Hero_YumiSilkString", (.70,.66,.53), rough=.82)
 
+# The source render and the UE material use the same per-vertex R-channel
+# blend for white/grey fur. Both sampled PBR textures stay on UV0; no new FBX
+# material identity is introduced.
+fur_nodes,fur_links=FUR.node_tree.nodes,FUR.node_tree.links
+fur_bsdf=fur_nodes["Principled BSDF"]
+grey_base=fur_bsdf.inputs["Base Color"].links[0].from_socket
+fur_links.remove(fur_bsdf.inputs["Base Color"].links[0])
+fur_vertex=fur_nodes.new("ShaderNodeAttribute")
+fur_vertex.attribute_name="CoatBlend"
+fur_mix=fur_nodes.new("ShaderNodeMixRGB")
+fur_mix.blend_type="MIX"
+fur_mix.inputs[2].default_value=(*FUR_LIGHT.diffuse_color[:3],1)
+fur_links.new(fur_vertex.outputs["Color"],fur_mix.inputs[0])
+fur_links.new(grey_base,fur_mix.inputs[1])
+fur_links.new(fur_mix.outputs[0],fur_bsdf.inputs["Base Color"])
+
+
+def smoothstep(lo, hi, value):
+    fraction=max(0,min(1,(value-lo)/(hi-lo)))
+    return fraction*fraction*(3-2*fraction)
+
+
+def coat_boundary(y):
+    # A real tabby's facial white breaks into short guard hairs.  The wide,
+    # nearly level line previously read as a painted moustache in UE.
+    ay=abs(y)
+    patch=.026*math.exp(-((ay-.061)/.060)**2)-.034*smoothstep(.110,.200,ay)
+    broken=.0038*math.sin(113*y)+.0022*math.sin(241*y+.6)
+    return 1.593+patch+broken
+
+
+def skull_coat_blend(point):
+    x,y,z=point
+    top=1-smoothstep(coat_boundary(y)-.030,coat_boundary(y)+.037,z)
+    front=smoothstep(.045,.123,x)
+    side=1-smoothstep(.154,.205,abs(y))
+    return top*front*side
+
+
+def neck_coat_blend(point):
+    x,y,_=point
+    front=smoothstep(-.065,.067,x)
+    flank=1-.72*smoothstep(.080,.156,abs(y))
+    return front*flank
+
+
+def paint_coat_blend(obj, mask=None):
+    """Attach one stable primary vertex-color layer to each FBX part."""
+    colors=obj.data.color_attributes.new(name="CoatBlend",type="BYTE_COLOR",domain="CORNER")
+    for loop in obj.data.loops:
+        point=obj.matrix_world @ obj.data.vertices[loop.vertex_index].co
+        value=mask(point) if mask else 0.0
+        colors.data[loop.index].color=(value,value,value,1.0)
+    return colors
+
 
 def build_iris_texture():
     """Paint an original radial iris atlas rather than using a flat blue disc.
@@ -261,7 +316,7 @@ def eye_basis(sign):
     vertical = Vector((0, 0, 1))
     horizontal = Vector((-sign * .18, .984, 0)).normalized()
     normal = horizontal.cross(vertical).normalized()
-    origin = Vector((.205, sign * .084, 1.672))
+    origin = Vector((.199, sign * .084, 1.672))
     return origin, horizontal, vertical, normal
 
 
@@ -304,8 +359,8 @@ def eye_lid(name, sign, upper, material, radius):
     points = []
     for u in (-1.0, -.7, -.35, 0.0, .35, .7, 1.0):
         arch = max(0.0, 1.0 - u * u) ** .72
-        z = (.013 if upper else -.010) * arch + .0015 * u
-        points.append(origin + horizontal * (.023 * u) + vertical * z
+        z = (.015 if upper else -.0115) * arch + .0015 * u
+        points.append(origin + horizontal * (.026 * u) + vertical * z
                       + normal * (.008 - .002 * u * u))
     return line(name, points, radius, material, 3)
 
@@ -318,17 +373,37 @@ def lower_lid_shelf(sign):
     for index in range(17):
         u = -1 + index / 8
         arch = max(0, 1 - u * u) ** .72
-        rim_z = -.010 * arch + .0015 * u
+        rim_z = -.0115 * arch + .0015 * u
         vertices.extend((
-            origin + horizontal * (.023 * u) + vertical * rim_z
+            origin + horizontal * (.026 * u) + vertical * rim_z
             + normal * (.0078 - .002 * u * u),
-            origin + horizontal * (.026 * u) + vertical * (rim_z - .0065 * arch - .002)
+            origin + horizontal * (.029 * u) + vertical * (rim_z - .0065 * arch - .002)
             + normal * (.0025 - .001 * u * u),
         ))
         if index:
             a = (index - 1) * 2
             faces.append((a, a + 1, a + 3, a + 2))
     return smooth(surface(f"Eye_lower_lid_shelf_{sign}", vertices, faces, FUR))
+
+
+def upper_lid_shelf(sign):
+    """Furred upper lid rolls back into the brow and partly covers the iris."""
+    origin, horizontal, vertical, normal = eye_basis(sign)
+    vertices, faces = [], []
+    for index in range(21):
+        u = -1 + index / 10
+        arch = max(0, 1-u*u) ** .72
+        rim_z = .0141*arch + .0014*u
+        vertices.extend((
+            origin + horizontal*(.0255*u) + vertical*rim_z
+            + normal*(.0089-.002*u*u),
+            origin + horizontal*(.0285*u) + vertical*(rim_z+.0065*arch+.002)
+            + normal*(.0022-.001*u*u),
+        ))
+        if index:
+            a=(index-1)*2
+            faces.append((a,a+1,a+3,a+2))
+    return smooth(surface(f"Eye_upper_lid_shelf_{sign}",vertices,faces,FUR))
 
 
 def surface_fur_cards(name, source, material, count, seed, accept=None,
@@ -436,12 +511,12 @@ def ear(sign):
         (1.662, .151, .056, .082, .010),
         (1.686, .151, .076, .105, .011),
         (1.714, .153, .078, .103, .014),
-        (1.742, .155, .073, .097, .015),
-        (1.770, .157, .064, .088, .017),
-        (1.796, .159, .053, .077, .019),
-        (1.820, .162, .039, .063, .020),
-        (1.841, .164, .023, .050, .022),
-        (1.858, .166, .008, .038, .025),
+        (1.742, .155, .071, .097, .015),
+        (1.770, .157, .061, .088, .017),
+        (1.796, .159, .049, .077, .019),
+        (1.820, .162, .035, .063, .020),
+        (1.841, .164, .020, .050, .022),
+        (1.854, .166, .005, .038, .025),
     )
     columns = 13
     vertices = []
@@ -449,7 +524,7 @@ def ear(sign):
         for depth in (0, 1):
             for index in range(columns):
                 q = -1 + 2*index/(columns-1)
-                x = (front_x - .018*(1-q*q) + .008*q*q) if depth == 0 else (
+                x = (front_x - .023*(1-q*q) + .008*q*q) if depth == 0 else (
                     back_x - .004*(1-q*q))
                 vertices.append((x, sign*(cy+q*half_width), z))
     faces = []
@@ -472,8 +547,10 @@ def ear(sign):
     inner_vertices, inner_faces = [], []
     for z, cy, half_width, front_x, _ in levels[1:-1]:
         for index in range(9):
-            q=(-.59+1.18*index/8)
-            inner_vertices.append((front_x-.018*(1-q*q)+.008*q*q+.0014,
+            q=(-.47+.94*index/8)
+            # Conform the lining to the cupped front surface. The centre of
+            # that surface is recessed relative to its thick, furred rim.
+            inner_vertices.append((front_x-.023*(1-q*q)+.008*q*q+.0014,
                                    sign*(cy+q*half_width), z))
     for row in range(len(levels)-3):
         for index in range(8):
@@ -505,28 +582,35 @@ def ear(sign):
 ring_loft("Linen_under_kimono",[(.80,-.015,.16,.18),(.94,-.018,.19,.225),(1.15,-.02,.19,.24),(1.34,-.01,.145,.18)],KIMONO)
 haori=ring_loft("Indigo_samurai_haori",[(.85,-.024,.205,.255),(.99,-.024,.23,.29),
                                        (1.20,-.02,.225,.28),(1.38,-.01,.16,.20),
-                                       (1.455,.015,.128,.150)],INDIGO_LIGHT)
+                                       (1.510,.015,.128,.150)],INDIGO_LIGHT)
 # A crossed kimono opening falls at the throat while the raised side/back
 # collar conceals the rigid neck joint. Avoid a straight turtleneck rim.
 for vertex in haori.data.vertices:
     front=max(0,min(1,(vertex.co.x-.015)/.125))
-    top=max(0,min(1,(vertex.co.z-1.38)/.075))
-    vertex.co.z-=.055*front*top
+    top=max(0,min(1,(vertex.co.z-1.38)/.130))
+    vertex.co.z-=.073*front*top
 haori.data.update()
 ring_loft("Layered_hakama_waist",[(.68,-.015,.19,.245),(.77,-.015,.19,.245),(.87,-.015,.205,.26)],INDIGO,pleats=.035)
 neck_rings=(
     # z, forward center, fore-aft radius, lateral radius
-    (1.285,.012,.107,.136),(1.326,.013,.111,.134),
-    (1.366,.018,.108,.125),(1.405,.023,.098,.112),
-    (1.444,.028,.094,.105),(1.482,.032,.101,.113),
-    (1.519,.035,.105,.123),(1.550,.031,.103,.129),
+    (1.285,.010,.109,.137),(1.326,.011,.110,.135),
+    (1.366,.014,.105,.127),(1.405,.017,.091,.113),
+    (1.444,.021,.096,.117),(1.482,.025,.111,.132),
+    (1.519,.025,.119,.146),(1.550,.021,.116,.150),
 )
 neck_vertices,neck_faces=[],[]
 neck_sides=64
 for z,x0,rx,ry in neck_rings:
     for index in range(neck_sides):
         angle=math.tau*index/neck_sides
-        neck_vertices.append((x0+rx*math.cos(angle),ry*math.sin(angle),z))
+        front=max(0,math.cos(angle))
+        throat=.008*front*front*math.exp(-((z-1.470)/.060)**2)
+        nape=.007*max(0,-math.cos(angle))*math.exp(-((z-1.375)/.085)**2)
+        # Extensor muscles and fur widen into the lower jaw. This loft avoids
+        # the straight extrusion seen in the packaged close-up.
+        lateral=ry*(1-.025*math.cos(2*angle))
+        neck_vertices.append((x0+rx*math.cos(angle)+throat-nape,
+                              lateral*math.sin(angle),z))
 for row in range(len(neck_rings)-1):
     for index in range(neck_sides):
         a=row*neck_sides+index
@@ -541,16 +625,20 @@ for loop in neck.data.loops:
                                  (point.z-1.28)/.29)
 for face in neck.data.polygons:
     point=face.center
-    # The visible throat is white all the way around its front and sides;
-    # the grey join lies behind the neck under the haori collar.
-    face.material_index=int(point.x>-.025)
+    # The solid white slot begins only after the grey-slot vertex blend has
+    # already reached white, so there is no exposed material-ID line.
+    face.material_index=int(neck_coat_blend(point)>.995)
 neck.data.update()
-surface_fur_cards("Fur_neck_mesh_fur_grey",neck,FUR,560,530,
+paint_coat_blend(neck,neck_coat_blend)
+surface_fur_cards("Fur_neck_mesh_fur_grey",neck,FUR,1200,530,
                   accept=lambda p,tri: neck.data.polygons[tri.polygon_index].material_index==0,
                   length=(.003,.009))
-surface_fur_cards("Fur_neck_mesh_fur_white",neck,FUR_LIGHT,1100,531,
+surface_fur_cards("Fur_neck_mesh_fur_white",neck,FUR_LIGHT,2100,531,
                   accept=lambda p,tri: neck.data.polygons[tri.polygon_index].material_index==1,
                   length=(.004,.012))
+surface_fur_cards("Fur_neck_jaw_transition",neck,FUR_LIGHT,1200,538,
+                  accept=lambda p,tri: p.z>1.485 and neck_coat_blend(p)>.75,
+                  length=(.008,.016),width=(.00008,.00020))
 
 # Legs are actually split; visible paws and digitigrade lower-leg transitions.
 for sign in (-1,1):
@@ -667,16 +755,22 @@ for vertex in skull.data.vertices:
     p=vertex.co
     front=max(0,min(1,(p.x-.025)/.105))
     cheek=math.exp(-((p.z+.045)/.060)**2)
-    p.y *= 1+.105*cheek-.09*max(0,-p.z/.19)
+    crown=max(0,min(1,(p.z-.005)/.11))
+    p.y *= 1+.058*cheek-.12*max(0,-p.z/.19)-.045*crown
     p.z -= .020*math.exp(-((p.z-.150)/.055)**2)
-    # Broad malar planes converge into two softly raised mystacial regions.
-    # Their shared vertices preserve continuity through nose bridge and chin.
-    pad=math.exp(-((p.z+.090)/.050)**2-((abs(p.y)-.050)/.072)**2)
-    bridge=math.exp(-((p.z+.044)/.082)**2-(p.y/.061)**2)
+    # The pair of mystacial pads is raised from the same skin, with a shallow
+    # central philtrum groove and a sloping nasal bridge.  A sphere plus white
+    # paint gave the old frontal face a toy-like horizontal moustache.
+    pad=math.exp(-((p.z+.087)/.046)**2
+                 -((abs(p.y)-(.052 if p.y<0 else .055))/.055)**2)
+    bridge=math.exp(-((p.z+.030)/.061)**2-(p.y/.044)**2)
+    groove=math.exp(-((p.z+.102)/.027)**2-(p.y/.012)**2)
+    malar=math.exp(-((p.z+.052)/.055)**2-((abs(p.y)-.115)/.045)**2)
     chin=math.exp(-((p.z+.139)/.035)**2-(p.y/.066)**2)
-    p.x += front*(.071*pad+.028*bridge+.038*chin)
+    p.x += front*((.078 if p.y<0 else .074)*pad+.031*bridge
+                  +.015*malar+.033*chin-.009*groove)
     p.x += .007*math.exp(-((p.z-.060)/.040)**2)*front
-    p.x -= .010*max(0,-p.z/.19)
+    p.x -= .014*max(0,-p.z/.19)
     # Seat the globes under the brow instead of laying them on a round forehead.
     for eye_sign in (-1, 1):
         orbital = math.exp(-(((p.y-eye_sign*.084)/.041)**2
@@ -700,12 +794,11 @@ bm.free()
 skull.data.materials.append(FUR_LIGHT)
 for face in skull.data.polygons:
     point=skull.matrix_world @ face.center
-    x,y,z=point
-    white_edge=1.605+.019*math.exp(-((abs(y)-.095)/.055)**2)-.017*(abs(y)/.19)**2
-    # The connected white muzzle flows into the front of the jaw.  Brow and
-    # flank remain tabby; short white fibers later break the hard color edge.
-    face.material_index=int(x>.074 and abs(y)<.184 and z<white_edge)
+    # Faces deep inside the white area switch slots only where the R-channel
+    # blend has reached its white end state. The transition remains in grey.
+    face.material_index=int(skull_coat_blend(point)>.995)
 skull.data.update()
+paint_coat_blend(skull,skull_coat_blend)
 
 def tabby_fiber_patches():
     """Root broken tabby bands on the actual sculpted skull surface."""
@@ -754,8 +847,7 @@ surface_fur_cards("Head_white_mesh_fur",skull,FUR_LIGHT,2200,974,
                   accept=lambda p,tri: skull.data.polygons[tri.polygon_index].material_index==1)
 surface_fur_cards("Head_transition_mesh_fur",skull,FUR,2700,975,
                   accept=lambda p,tri: skull.data.polygons[tri.polygon_index].material_index==0
-                  and p.x>.07 and abs(p.z-(1.605+.019*math.exp(-((abs(p.y)-.095)/.055)**2)
-                                                 -.017*(abs(p.y)/.19)**2))<.015,
+                  and p.x>.07 and abs(p.z-coat_boundary(p.y))<.025,
                   length=(.005,.011),width=(.00007,.00018))
 for sign in (-1,1):
     ear(sign)
@@ -767,31 +859,33 @@ for sign in (-1,1):
                       accept=lambda p,tri: skull.data.polygons[tri.polygon_index].material_index==1
                       and p.y*sign>.012 and p.x>.175 and p.z>1.51,
                       length=(.0015,.004))
-    sphere(f"Eye_socket_{sign}",(.204,sign*.084,1.672),(.003,.023,.014),EYE_DARK,56,36)
+    sphere(f"Eye_socket_{sign}",(.198,sign*.084,1.672),(.003,.027,.017),EYE_DARK,56,36)
     # Keep the sclera as a narrow, partly covered crescent at the canthus.
     # A bright full circle would turn the feline eye into a cartoon human eye.
-    eye_patch(f"Eye_scleral_crescent_{sign}",sign,.0215,.014,.0071,.0007,
+    eye_patch(f"Eye_scleral_crescent_{sign}",sign,.0250,.0164,.0071,.0007,
               EYE_WHITE,rings=4,segments=80)
-    eye_patch(f"Eye_iris_{sign}",sign,.0195,.013,.008,.0015,EYE)
-    eye_patch(f"Eye_vertical_pupil_{sign}",sign,.0028,.0095,.010,.001,EYE_DARK,6,48)
+    eye_patch(f"Eye_iris_{sign}",sign,.0220,.0148,.008,.0015,EYE)
+    eye_patch(f"Eye_vertical_pupil_{sign}",sign,.0030,.0104,.010,.001,EYE_DARK,6,48)
     # The current UE master is opaque. Keep this a small highlight until a
     # dedicated transparent cornea can be authored and qualified on both GPUs.
-    sphere(f"Corneal_glint_{sign}",(.216,sign*.073,1.680),
+    sphere(f"Corneal_glint_{sign}",(.210,sign*.073,1.680),
            (.001,.002,.0025),EYE_WHITE,12,8)
     eye_lid(f"Eye_upper_tarsal_margin_{sign}",sign,True,FUR_DARK,.00175)
     eye_lid(f"Eye_lower_tarsal_margin_{sign}",sign,False,FUR_DARK,.0014)
+    upper_lid_shelf(sign)
     lower_lid_shelf(sign)
     eye_lid(f"Eye_upper_wetline_{sign}",sign,True,EYE_WHITE,.00042)
-    sphere(f"Eye_lacrimal_corner_{sign}",(.211,sign*.061,1.670),
+    sphere(f"Eye_lacrimal_corner_{sign}",(.205,sign*.061,1.670),
            (.0017,.0021,.0017),EAR_INNER,16,12)
     line(f"Angular_brow_{sign}",[(.174,sign*.044,1.724),(.184,sign*.086,1.729),
                                   (.168,sign*.127,1.716)],.0014,FUR_DARK,2)
     whisker_roots = []
     for row in range(3):
         for col in range(4):
-            x = .255 - .006 * row - .009 * col
-            y = .034 + .015 * col + .002 * (row % 2)
-            z = 1.573 - .014 * row + .002 * (col % 2)
+            drift = .0012*math.sin((row*7+col*11+sign*3)*2.4)
+            x = .255 - .006 * row - .009 * col + drift
+            y = .034 + .015 * col + .002 * (row % 2) + .6*drift
+            z = 1.573 - .014 * row + .002 * (col % 2) + .7*drift
             sphere(f"Muzzle_follicle_{sign}_{row}_{col}",
                    (x,sign*y,z),(.0010,.0013,.0011),FUR_DARK,10,8)
             whisker_roots.append((row,col,x,y,z))
@@ -904,6 +998,9 @@ for z in (.971,.990,1.009):
 
 # Export a separate joined static mesh; editable source parts remain untouched.
 source_parts=[o for o in parts.objects if o.type=="MESH"]
+for piece in source_parts:
+    if piece.data.color_attributes.get("CoatBlend") is None:
+        paint_coat_blend(piece)
 source_tris=sum(len(p.vertices)-2 for o in source_parts for p in o.data.polygons)
 bpy.ops.object.select_all(action="DESELECT")
 for o in source_parts:
@@ -919,6 +1016,9 @@ bpy.context.view_layer.objects.active=duplicates[0]
 bpy.ops.object.join()
 joined=bpy.context.object
 joined.name=NAME
+joined_coat=joined.data.color_attributes.get("CoatBlend")
+assert joined_coat is not None and joined_coat.domain=="CORNER"
+joined.data.color_attributes.active_color=joined_coat
 scene.cursor.location=(0,0,0)
 bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
 # FBX carries native material slots into Unreal, while its absolute image paths
@@ -929,7 +1029,8 @@ iris_node = iris_nodes["Painted radial iris pigment"]
 iris_nodes.remove(iris_node)
 bpy.ops.export_scene.fbx(filepath=str(FBX),use_selection=True,object_types={"MESH"},
                          apply_unit_scale=True,global_scale=1.0,axis_forward="-Y",
-                         axis_up="Z",path_mode="STRIP",add_leaf_bones=False,bake_anim=False)
+                         axis_up="Z",path_mode="STRIP",add_leaf_bones=False,bake_anim=False,
+                         prioritize_active_color=True)
 iris_node = iris_nodes.new("ShaderNodeTexImage")
 iris_node.name = "Painted radial iris pigment"
 iris_node.image = bpy.data.images["Nyaakoto_Iris_Painted_1024"]
