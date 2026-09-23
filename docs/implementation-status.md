@@ -81,6 +81,13 @@ Its FBX has one 18,376-triangle render mesh and four UCX boxes; Blender
 round-trip, hashes, license checks, and static import validation pass. Existing
 combat collision remains unchanged. Unreal import, material translation, visual
 quality, and frame rate have not been measured.
+The standard Arc carbine (weapon ID 1) now selects an original Edo/sci-fi
+hero mesh in the first-person presentation path. Its 84-part editable Blender
+source and 12,532-triangle UV-mapped FBX pass material/license, hash, metric
+bounds and Blender round-trip checks; the muzzle faces local +X from a
+receiver-centered origin. The current 0.75 weapon-root scale is an initial
+placement only. Unreal import, paw grip, materials, visual quality and combat
+frame time still need an engine run.
 
 The provisional first-release balance correction changed Arc carbine and
 Clockwork repeater attack cooldowns from 10 to 12 simulation ticks. A clean-lane
@@ -236,6 +243,19 @@ generated in 134.148 seconds at 664,354,816 bytes peak process RSS; a
 fresh process verified it in 17.426 seconds and rejected statement/proof
 mutations. This is a fixed-scene arithmetic result, not a general
 movement/hit-to-state proof, kill proof or XOR settlement relation.
+A third unregistered, unfunded native research proof covers one fixed
+25-tick, three-player Arc-carbine kill. Its projected combat/account rows
+constrain six hits, 125→0 health, a 100-unit fixed loss from a 1,000-unit
+victim bond, and 20/80 FFA assist/killer credits; adjacent tick rows and two
+selected wall/body rays are also constrained. The saved 2,624,704-byte STARK
+(SHA-256 `577d706dc0d0d2396c412b817c490c08bab4bef655b0d3bdc65e2c8b84562e49`)
+was proved in 138.033 seconds with 706,609,152 bytes peak RSS and verified
+in a fresh process in 17.821 seconds. Focused mutation checks rejected
+changed controls, geometry, combat state, awards, row links and proof bytes.
+The fixture hardcodes one scene and uses a 25-tick research batch, not the
+production two-tick P2P protocol; it cannot authorize any chain payout or
+establish full-match proof feasibility. See
+[the native research record](iroha-integration.md#measured-native-proof-research).
 An unregistered Iroha research preflight separately measured an 18,000-batch,
 twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
 4 MiB proof envelope before the rest of a complete combat witness. Repeated

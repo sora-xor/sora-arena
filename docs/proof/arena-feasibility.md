@@ -86,6 +86,24 @@ exact native artifacts and tampering checks in
 `../iroha-arena/docs/source/arena_movement_research_v1.md` and
 `../iroha-arena/docs/source/arena_ranged_research_v1.md`.
 
+A further **fixed-scene kill** experiment proved a 25-tick, three-player FFA
+sequence with two Arc carbine shooters, a victim's health changing
+125→81→37→0, a fixed 100-unit loss from its 1,000-unit initial bond, and
+20/80 assist/killer credits. Native AIR constrains the projected combat and
+account rows and adjacent-tick boundary chaining; two wall/body rays are also
+proved. Its 720 columns and 1,634 constraints yielded a 2,624,704-byte proof
+(SHA-256 `577d706dc0d0d2396c412b817c490c08bab4bef655b0d3bdc65e2c8b84562e49`).
+Generation took 138.033 seconds at 706,609,152 bytes peak process RSS; a
+separate process verified it in 17.821 seconds at 216,055,808 bytes peak RSS.
+Statement, geometry, state, allocation, chaining, and proof mutations were
+rejected in the focused checks. The fixture hardcodes the exact expected
+projected states and uses one 25-tick research batch, unlike production's
+two-tick P2P batches. It is **unregistered and unfunded**, and proves neither
+arbitrary kills nor the complete World, canonical ledger-selected history,
+NFT admission, terminal settlement, or any complete match. The source-sealed
+record is `../iroha-arena/docs/source/arena_kill_research_v1.md`; the wider
+`iroha_core --lib` test build remains broken by unrelated fixture drift.
+
 For scale only, naively proving all 18,000 two-tick slices at the measured
 fixed-scene hit cost would take 2,414,664 seconds (about 28 days) of serial
 proving and produce 44,492,544,000 bytes of separate proofs. This is **not** a
@@ -105,11 +123,13 @@ binding, exact coverage indices, and a final composition proof. No host-supplied
 kill log or unchecked checkpoint can bridge stages. Malicious omissions,
 reordering, duplicate stages, and divergent public commitments must reject.
 
-Research should implement a bounded native hit-plus-damage stage, measure
-actual process peak, proof length, generation and verification time, then test
-chaining and exact coverage on a two-player match. Next repeat at 4v4 for two
+The fixed-scene kill experiment establishes only a bounded arithmetic step.
+Next implement general hit, damage, death and payout stages for arbitrary
+admitted inputs, prove full-state chaining and exact coverage on a two-player
+match, and bind the canonical two-tick P2P history to ledger selection. Then
+repeat at 4v4 for two
 minutes and 6v6 for the full ten minutes. Optimize representation or proving
 architecture only while retaining all requested rules and the native security
 parameters. The 30-minute/96-GiB gate is not passed by the one-transition
-experiment or the lower-bound table. If a complete staged profile cannot meet
+experiments or the lower-bound table. If a complete staged profile cannot meet
 it, report the failed gate before proposing any scope change.

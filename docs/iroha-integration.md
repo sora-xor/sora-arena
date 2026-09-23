@@ -58,6 +58,24 @@ This is evidence for one axis only, not a 3D intersection, hit, kill, payout,
 match proof, or registered production profile. The exact record is in
 `iroha-arena/crates/iroha_core/src/execution_proofs/ARENA_GEOMETRY_AIR.md`.
 
+A later unregistered native research adapter produced a real STARK for one
+fixed, genesis-derived 25-tick, three-player Arc-carbine kill. It constrains
+the projected shot, cooldown, ammunition, health, death, reserve and FFA
+assist/killer award rows; adjacent rows are linked by AIR equations, and two
+host-selected wall/body rays have proved slab geometry. With 720 columns and
+1,634 constraints, the saved proof is 2,624,704 bytes (SHA-256
+`577d706dc0d0d2396c412b817c490c08bab4bef655b0d3bdc65e2c8b84562e49`).
+The M1 Ultra proved it in 138,033 ms at 706,609,152 bytes peak RSS; a fresh
+process verified in 17,821 ms at 216,055,808 bytes peak RSS. Focused checks
+rejected forged controls, hit geometry, state, bond awards, linked rows and
+proof bytes. The fixture fixes the expected scene and states, uses one 25-tick
+research batch rather than production two-tick P2P batches, and is not a
+general Arena execution relation or custody authorization. Its source hashes,
+scope and mutation record are in
+`iroha-arena/docs/source/arena_kill_research_v1.md`. The broad
+`iroha_core --lib` test build is still blocked by unrelated existing fixture
+compile errors; focused research checks passed.
+
 ## Native wallet bridge
 
 The isolated upstream bridge adds `connect_norito_native_transaction_scaffold_build_v1` in `crates/connect_norito_bridge/include/connect_norito_bridge.h`. It accepts a UTF-8 JSON object with exactly:
