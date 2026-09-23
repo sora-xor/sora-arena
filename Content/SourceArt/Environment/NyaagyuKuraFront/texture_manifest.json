@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_kura_front_textures.py",
+  "license": "Derived from Rob Tuytel's Wood Planks Dirt scan, Poly Haven CC0-1.0; SORA Arena crop, UV atlas and subtle patina work is original project-owned work.",
+  "source_url": "https://polyhaven.com/a/wood_planks_dirt",
+  "license_url": "https://polyhaven.com/license",
+  "source_dimensions_mm": [
+    2000,
+    2000
+  ],
+  "source_files": {
+    "Albedo": {
+      "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+      "sha256": "5c8640bbd63e56dbca947dbd2d0be380c661feb556c2949ec95d842ce7f31a59"
+    },
+    "NormalDX": {
+      "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+      "sha256": "958c93dbd644dc7ea925bff951cbe6275c4066f60000417e1abef2c1b9a3e6fc"
+    },
+    "ARM": {
+      "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+      "sha256": "556835168ffb105f31666add0237f7fb7a11a5d6d05d4cfa5979a4e957b9da63"
+    }
+  },
+  "atlas_files": {
+    "Albedo": {
+      "file": "T_KuraFront_AgedCedar_Albedo_2k.jpg",
+      "sha256": "4ea6233e370a2bf3dc094e32627c98e7e2d68f6946d022348a4e63fe52afd388"
+    },
+    "NormalDX": {
+      "file": "T_KuraFront_AgedCedar_NormalDX_2k.png",
+      "sha256": "662ffd54dfcbdf20fdd4f6cd02aa2535e1e954190def2f308fec94eead6cb104"
+    },
+    "ARM": {
+      "file": "T_KuraFront_AgedCedar_ARM_2k.png",
+      "sha256": "4cdb98d9674a0400ada601a5bc178d81a4b226bba78947cfd6ff366f6019f7e6"
+    }
+  },
+  "size_px": 2048,
+  "board_count": 14,
+  "source_crop_rects_px": [
+    [
+      95,
+      40,
+      435,
+      3540
+    ],
+    [
+      366,
+      77,
+      706,
+      3577
+    ],
+    [
+      637,
+      114,
+      977,
+      3614
+    ],
+    [
+      908,
+      151,
+      1248,
+      3651
+    ],
+    [
+      1179,
+      188,
+      1519,
+      3688
+    ],
+    [
+      1450,
+      225,
+      1790,
+      3725
+    ],
+    [
+      1721,
+      262,
+      2061,
+      3762
+    ],
+    [
+      1992,
+      299,
+      2332,
+      3799
+    ],
+    [
+      2263,
+      336,
+      2603,
+      3836
+    ],
+    [
+      2534,
+      373,
+      2874,
+      3873
+    ],
+    [
+      2805,
+      50,
+      3145,
+      3550
+    ],
+    [
+      3076,
+      87,
+      3416,
+      3587
+    ],
+    [
+      3347,
+      124,
+      3687,
+      3624
+    ],
+    [
+      3618,
+      161,
+      3958,
+      3661
+    ]
+  ],
+  "normal_convention": "DirectX green-down; invert green in Blender, import without flip into Unreal",
+  "packing": "ARM red AO, green roughness, blue metallic"
+}

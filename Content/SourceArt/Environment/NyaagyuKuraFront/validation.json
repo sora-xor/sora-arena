@@ -1,0 +1,23 @@
+{
+  "result": "PASS",
+  "source_parts": 381,
+  "source_triangles": 59342,
+  "board_uv0": 14,
+  "forged_straps": 6,
+  "fbx_roundtrip_objects": 1,
+  "fbx_roundtrip_polygons": 29621,
+  "fbx_roundtrip_triangles": 59342,
+  "fbx_bounds_m": {
+    "min": [
+      -3.705000638961792,
+      -3.9050004482269287,
+      0.0
+    ],
+    "max": [
+      3.705000638961792,
+      3.695000648498535,
+      5.284999847412109
+    ]
+  },
+  "source_only": true
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_KuraFront_Candidate",
+  "generator": "scripts/art/create_nyaagyu_kura_front.py",
+  "generator_sha256": "da13bcc40df73f70032953863be8a40d5cab1baee9b0f67e28eda36a0f7cc4a9",
+  "base_source": "Content/SourceArt/Environment/NyaagyuKura/Nyaagyu_ProvisionKura.blend",
+  "base_source_sha256": "8354c7cdc8a648863e9aced8b20f59729efcc31ea4d8a15675f6b33d374afc28",
+  "blender_version": "5.2.2 LTS",
+  "source_blend": "Nyaagyu_KuraFront_Candidate.blend",
+  "source_blend_sha256": "2443c35cfaaf6ad8ef3c982237c9fe3dd76b7307debf3f4c03b5b3a8cec010c0",
+  "fbx": "SM_Nyaagyu_KuraFront_Candidate.fbx",
+  "fbx_sha256": "03812da33775e6a49cd6dbd4ba0158093c38798789be741bd11e976b1ce5e335",
+  "preview": "KuraFront_Close_EyeHeight_Source.png",
+  "preview_sha256": "88c15bf6c359a136442b1a8f6ff902d59c19beb9c267e92b6c259e8e6c1546c3",
+  "baseline_preview": "KuraFront_Baseline_EyeHeight_Source.png",
+  "baseline_preview_sha256": "0bf345ac4ac1f46ae8b40b7b974774441ffa946c2e1dd1dbc977d9cfb314b56d",
+  "texture_manifest": "texture_manifest.json",
+  "texture_manifest_sha256": "97002ab9ff26cbd1aae48744ae31ea11425236f126333c1a32aea3495276a25c",
+  "source_parts": 381,
+  "source_triangles": 59342,
+  "removed_flat_door_parts": 38,
+  "new_front_parts": 52,
+  "door_board_count": 14,
+  "door_uv_layer": "UV0",
+  "bounds_m": {
+    "min": [
+      -3.705,
+      -3.905,
+      0.0
+    ],
+    "max": [
+      3.705,
+      3.695,
+      5.285
+    ]
+  },
+  "collision": "Visual only. Preserve established WorldBuilder building collision; this FBX includes no UCX or newly authoritative hit surface.",
+  "placement": "Candidate one-off visual replacement for the southern first visible provision Kura at (-1000,-1800,0) cm, yaw 180 degrees; not runtime admitted.",
+  "licenses": "Base kura geometry is original project-owned; SORA mark is exact user-supplied SVG. Cedar PBR atlas derives from pinned CC0 Poly Haven Wood Planks Dirt; forge-iron maps derive from pinned CC0 Poly Haven Rusty Metal 02. Existing plaster, roof and stone PBR are pinned CC0 Poly Haven. No purchased assets.",
+  "scope": "Source-only close eye-height art review. Packaged first-person composition and performance gate still required; no AAA claim."
+}
