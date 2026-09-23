@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Ticker.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "ArenaWalletSubsystem.generated.h"
 
@@ -35,6 +36,7 @@ class SORAARENA_API UArenaWalletSubsystem : public UGameInstanceSubsystem
     GENERATED_BODY()
 public:
     UArenaWalletSubsystem();
+    UArenaWalletSubsystem(FVTableHelper& Helper);
     virtual ~UArenaWalletSubsystem() override;
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
@@ -92,7 +94,7 @@ private:
     TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> SubmissionRequest;
     TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> StatusRequest;
     TSharedPtr<IWebSocket> Socket;
-    FDelegateHandle TickerHandle;
+    FTSTicker::FDelegateHandle TickerHandle;
     uint64 Generation = 0;
     uint64 TransactionGeneration = 0;
     uint64 AppSequence = 1;

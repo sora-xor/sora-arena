@@ -453,6 +453,7 @@ struct FNativeBytes
 }
 
 UArenaWalletSubsystem::UArenaWalletSubsystem() = default;
+UArenaWalletSubsystem::UArenaWalletSubsystem(FVTableHelper& Helper) : Super(Helper) {}
 UArenaWalletSubsystem::~UArenaWalletSubsystem() = default;
 
 void UArenaWalletSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -547,7 +548,7 @@ void UArenaWalletSubsystem::ClearSubmissionRequests()
     {
         if (!Request->IsValid()) continue;
         (*Request)->OnProcessRequestComplete().Unbind();
-        (*Request)->OnRequestProgress().Unbind();
+        (*Request)->OnRequestProgress64().Unbind();
         (*Request)->CancelRequest();
         Request->Reset();
     }
@@ -561,7 +562,7 @@ void UArenaWalletSubsystem::ClearTransport()
     if (SessionRequest.IsValid())
     {
         SessionRequest->OnProcessRequestComplete().Unbind();
-        SessionRequest->OnRequestProgress().Unbind();
+        SessionRequest->OnRequestProgress64().Unbind();
         SessionRequest->CancelRequest();
         SessionRequest.Reset();
     }
@@ -705,9 +706,9 @@ void UArenaWalletSubsystem::BeginPairing(const FString& ToriiOrigin, const FStri
     SessionRequest->SetTimeout(20.0f);
     const uint64 Attempt = Generation;
     TWeakObjectPtr<UArenaWalletSubsystem> Weak(this);
-    SessionRequest->OnRequestProgress().BindLambda([Weak, Attempt](FHttpRequestPtr Request, int32, int32 Received)
+    SessionRequest->OnRequestProgress64().BindLambda([Weak, Attempt](FHttpRequestPtr Request, uint64, uint64 Received)
     {
-        if (Received <= ArenaConnect::MaxSessionJsonBytes) return;
+        if (Received <= static_cast<uint64>(ArenaConnect::MaxSessionJsonBytes)) return;
         Request->CancelRequest();
         AsyncTask(ENamedThreads::GameThread, [Weak, Attempt]()
         { if (Weak.IsValid() && Weak->Generation == Attempt) Weak->Fail(TEXT("接続応答が上限を超えました。")); });
@@ -1038,15 +1039,15 @@ bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, F
     {
         const TSharedPtr<FJsonObject>* Limit = nullptr;
         const TSharedPtr<FJsonObject>* FeeKind = nullptr;
-        FString Amount, FeeAsset, Kind;
+        FString Amount, FeeAsset, FeeKindName;
         if (!Entry.IsValid() || !Entry->TryGetObject(Limit) || !Limit || !Limit->IsValid()
             || !(*Limit)->TryGetStringField(TEXT("max_amount"), Amount)
             || !(*Limit)->TryGetStringField(TEXT("asset_definition_id"), FeeAsset)
             || !(*Limit)->TryGetObjectField(TEXT("kind"), FeeKind) || !FeeKind || !FeeKind->IsValid()
-            || !(*FeeKind)->TryGetStringField(TEXT("kind"), Kind)
-            || (Kind != TEXT("nexus") && Kind != TEXT("pipeline_gas"))
+            || !(*FeeKind)->TryGetStringField(TEXT("kind"), FeeKindName)
+            || (FeeKindName != TEXT("nexus") && FeeKindName != TEXT("pipeline_gas"))
             || Amount.IsEmpty() || Amount.Len() > 32 || FeeAsset.IsEmpty() || FeeAsset.Len() > 64) return false;
-        FeeCaps += TEXT("\n") + Kind + TEXT(": ") + Amount + TEXT(" / ") + FeeAsset;
+        FeeCaps += TEXT("\n") + FeeKindName + TEXT(": ") + Amount + TEXT(" / ") + FeeAsset;
     }
 
     JoinPreviewStake = MoveTemp(Stake);
@@ -1246,8 +1247,8 @@ bool UArenaWalletSubsystem::SubmitSignedTestTransaction()
     const FString Identity = LastSignedTransactionHash;
     const FString Entrypoint = LastEntrypointHash;
     TWeakObjectPtr<UArenaWalletSubsystem> Weak(this);
-    SubmissionRequest->OnRequestProgress().BindLambda([](FHttpRequestPtr Request, int32, int32 Received)
-    { if (Received > ArenaConnect::MaxTransactionStatusJsonBytes) Request->CancelRequest(); });
+    SubmissionRequest->OnRequestProgress64().BindLambda([](FHttpRequestPtr Request, uint64, uint64 Received)
+    { if (Received > static_cast<uint64>(ArenaConnect::MaxTransactionStatusJsonBytes)) Request->CancelRequest(); });
     SubmissionRequest->OnProcessRequestComplete().BindLambda([Weak, Attempt, Identity, Entrypoint](FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
     {
         AsyncTask(ENamedThreads::GameThread, [Weak, Attempt, Identity, Entrypoint, Request, Response, Success]()
@@ -1322,8 +1323,8 @@ void UArenaWalletSubsystem::PollTransactionStatus()
     const uint64 Attempt = TransactionGeneration;
     const FString Identity = LastSignedTransactionHash;
     TWeakObjectPtr<UArenaWalletSubsystem> Weak(this);
-    StatusRequest->OnRequestProgress().BindLambda([](FHttpRequestPtr Request, int32, int32 Received)
-    { if (Received > ArenaConnect::MaxTransactionStatusJsonBytes) Request->CancelRequest(); });
+    StatusRequest->OnRequestProgress64().BindLambda([](FHttpRequestPtr Request, uint64, uint64 Received)
+    { if (Received > static_cast<uint64>(ArenaConnect::MaxTransactionStatusJsonBytes)) Request->CancelRequest(); });
     StatusRequest->OnProcessRequestComplete().BindLambda([Weak, Attempt, Identity](FHttpRequestPtr Request, FHttpResponsePtr Response, bool Success)
     {
         AsyncTask(ENamedThreads::GameThread, [Weak, Attempt, Identity, Request, Response, Success]()
