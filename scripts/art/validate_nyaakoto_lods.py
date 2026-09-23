@@ -67,6 +67,8 @@ for entry in record["lods"]:
     assert mesh.parent == rig and len(rig.data.bones) == 20
     assert set(rig.data.bones.keys()) == set(runtime["skeleton_bones"])
     assert len(mesh.data.vertices) == entry["vertices"]
+    triangles = sum(len(face.vertices) - 2 for face in mesh.data.polygons)
+    assert triangles == entry["triangles"]
     assert all(len(vertex.groups) == 1 for vertex in mesh.data.vertices)
     materials = {material.name.split(".", 1)[0] for material in mesh.data.materials}
     assert materials == set(entry["material_slots"]) == set(pbr["material_slots"])
@@ -81,6 +83,6 @@ for entry in record["lods"]:
     assert_paths_embedded((mesh.matrix_world @ vertex.co for vertex in mesh.data.vertices), marks)
     assert mesh.data.uv_layers.active is not None
     print("NYAAKOTO_LOD_FBX_PASS", entry["level"], len(mesh.data.vertices),
-          len(mesh.data.polygons), len(mesh.data.materials), len(rig.data.bones))
+          triangles, len(mesh.data.materials), len(rig.data.bones))
 
 passed = True
