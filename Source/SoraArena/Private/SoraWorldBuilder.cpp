@@ -94,6 +94,10 @@ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRot
     // In campaign the authored UCX is useful for placement review. The world
     // builder keeps its established simple collision proxies for combat.
     Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Mesh->SetCastShadow(true);
+    Mesh->SetAffectDistanceFieldLighting(true);
+    Mesh->SetAffectDynamicIndirectLighting(true);
+    Mesh->SetVisibleInRayTracing(true);
     const bool bEstateDojo=Name==TEXT("SM_Nyaagyu_EstateDojo");
     const bool bProvisionKura=Name==TEXT("SM_Nyaagyu_ProvisionKura");
     for(int32 Index=0;Index<Asset->GetStaticMaterials().Num();++Index)
@@ -316,8 +320,23 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
         Box(TEXT("CentralRoad"),FVector(0,0,2),FVector(5600,660,5),FLinearColor(.29f,.30f,.28f),false,FRotator::ZeroRotator,TEXT("Stone"));
     for(int32 S:{-1,1})
     {
-        Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,0,220),FVector(100,5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
-        Box(FString::Printf(TEXT("WallY%d"),S),FVector(0,S*2550,220),FVector(6400,100,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        auto* WallX=Box(FString::Printf(TEXT("WallX%d"),S),FVector(S*3150,0,220),FVector(100,5200,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        auto* WallY=Box(FString::Printf(TEXT("WallY%d"),S),FVector(0,S*2550,220),FVector(6400,100,540),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,TEXT("Stone"));
+        if(MapId==0)
+        {
+            // One four-metre authored module repeats inside each established
+            // wall volume. The primitive boxes remain the only collision.
+            bool bCompleteX=true;
+            for(int32 I=0;I<13;++I)
+                if(!ImportedProp(TEXT("SM_Nyaagyu_EstateWall_4m"),FVector(S*3150,-2400+I*400,220),FRotator::ZeroRotator))
+                { bCompleteX=false; break; }
+            if(bCompleteX) WallX->SetVisibility(false);
+            bool bCompleteY=true;
+            for(int32 I=0;I<16;++I)
+                if(!ImportedProp(TEXT("SM_Nyaagyu_EstateWall_4m"),FVector(-3000+I*400,S*2550,220),FRotator(0,90.f,0)))
+                { bCompleteY=false; break; }
+            if(bCompleteY) WallY->SetVisibility(false);
+        }
         for(int32 I=0;I<5;++I)
         {
             FVector P(-2000+I*1000,S*(MapId==1?1200:1800),0);

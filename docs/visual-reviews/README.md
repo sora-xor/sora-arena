@@ -47,5 +47,22 @@ separate white muzzle and cheek forms, cylindrical neck, simple ears, dark eye
 sockets, and rigid armor still read as stylized. SHA-256:
 `8a85ad9f2d12cb1f3afd79652470e12f1831a6e973df2e9529e393d142179f7c`.
 
+`UE583_Estate_RoadCargo_Diagnostic.png` is an unedited packaged Mac frame
+after correcting the terrain FBX export orientation and replacing twelve
+visible cover cubes with an original cargo-stack mesh. The photographed stone
+route now runs between the torii, while the established simple collision is
+unchanged. The regular paving and empty broad terrain remain plainly visible.
+SHA-256:
+`e73dd5e06e7f3a5484c26b123957dea1fa09e387bf8093ed14ed47f3ff5f4bdf`.
+
+`UE583_Estate_Wall_Diagnostic.png` is the next unedited packaged Mac frame
+at the same entrance camera and diagnostic 25-lux key. Fifty-eight original
+four-metre wall modules replace the four visible perimeter boxes, using
+licensed CC0 scanned stone, plaster, timber, and tile maps. The original
+perimeter collision stays in place. The modules and materials load without
+runtime asset errors, but repeated wall sections, sparse scene dressing, and
+the character's stylized anatomy still miss the photoreal target. SHA-256:
+`9ae91b59d78046e1bb7fc12e40d6eb688d64457158741ec5532f2d2a65a67375`.
+
 These newer captures are diagnostic UE 5.8.3/M1 Ultra evidence, not a
 5.8.2 release qualification, a Windows Nanite result, or a 60-fps claim.

@@ -260,7 +260,7 @@ assert horse["unreal_asset"] == "/Game/ArtReview/Horses/SM_Nyaagyu_HorseAndTack.
 assert horse["local_forward"] == "+X horse-forward; +Z up"
 assert horse["world_origin_m"] == [0, 0, 0] and horse["units"] == "meters"
 assert horse["rigged"] is False and horse["external_images"] == []
-assert horse["source_parts"] >= 100 and 50000 <= horse["source_triangles"] < 100000
+assert horse["source_parts"] >= 200 and 120000 <= horse["source_triangles"] < 200000
 assert 1.7 < horse["bounds_m"]["max"][2] < 1.9
 assert "Original project-owned horse/tack geometry" in horse["license"]
 assert horse["insignia_sha256"] == hero_character["insignia_sha256"]
@@ -338,6 +338,11 @@ assert 'if(MapId==0 && ImportedProp(TEXT("SM_Nyaagyu_CargoStack")' in world_buil
 assert "Cover->SetVisibility(false)" in world_builder
 assert "SM_Nyaagyu_CargoStack" not in world_builder.split(
     "void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "import_nyaagyu_estate_wall.py" in import_script
+assert 'ImportedProp(TEXT("SM_Nyaagyu_EstateWall_4m")' in world_builder
+assert "WallX->SetVisibility(false)" in world_builder and "WallY->SetVisibility(false)" in world_builder
+assert "SM_Nyaagyu_EstateWall_4m" not in world_builder.split(
+    "void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 terrain_root = content / "SourceArt/Environment/NyaagyuTerrain"
 terrain = json.loads((terrain_root / "manifest.json").read_text())
 assert terrain["schema_version"] == 1
@@ -348,11 +353,18 @@ assert terrain["tile_layout"] == [4, 4] and terrain["tile_size_cm"] == [1600, 13
 assert terrain["max_visual_collision_delta_cm"] <= 5
 assert terrain["material_slots"] == ["M_Terrain_Soil_PolyHaven", "M_Terrain_Stone_PolyHaven"]
 assert terrain["palette_license"] == "CC0-1.0; https://polyhaven.com/license"
+pathway = terrain["stone_pathway_scan"]
+assert pathway["asset_id"] == "grey_stone_path"
+assert pathway["source_url"] == "https://polyhaven.com/a/grey_stone_path"
+assert pathway["license"] == "CC0-1.0" and pathway["tile_size_cm"] == 180
+assert [entry["channel"] for entry in pathway["files"]] == ["Diffuse", "nor_dx", "arm", "disp"]
+for entry in pathway["files"]:
+    scan_file = (terrain_root / entry["file"]).resolve()
+    assert scan_file.is_relative_to(terrain_root.resolve()) and scan_file.is_file()
+    assert hashlib.sha256(scan_file.read_bytes()).hexdigest() == entry["sha256"]
 assert len(terrain["tiles"]) == 32
 assert [(entry["role"], entry["channel"]) for entry in terrain["palette_files"]] == [
-    ("soil", "diffuse"), ("soil", "normal"), ("soil", "arm"),
-    ("stone", "diffuse"), ("stone", "normal"), ("stone", "arm"),
-    ("stone", "displacement")]
+    ("soil", "diffuse"), ("soil", "normal"), ("soil", "arm")]
 assert "if(MapId==0) NyaagyuTerrain();" in world_builder
 assert "NyaagyuTerrain()" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 assert "SetCollisionEnabled(ECollisionEnabled::NoCollision)" in world_builder
@@ -569,4 +581,4 @@ absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 9 original environment props, 18 hash-pinned Nyaakoto PBR maps for 23 runtime materials, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 10 original environment props, 18 hash-pinned Nyaakoto PBR maps for 23 runtime materials, licensed Japanese font, hash-verified SORA logo.")

@@ -21,6 +21,7 @@ FOLIAGE = "/Game/Generated/Environment/Foliage"
 NYAAKOTO = "/Game/Generated/Characters/Nyaakoto"
 HERO_KATANA = "/Game/Generated/Weapons/HeroKatana"
 CARGO = "/Game/Generated/Environment/CargoStack"
+WALL = "/Game/Generated/Environment/EstateWall"
 
 
 def require(condition, message):
@@ -239,6 +240,55 @@ def cargo_stack_source(project_root, source_root):
             require(hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"],
                     f"Cargo PBR map changed: {path}")
     return record, pbr
+
+
+def estate_wall_source(project_root, source_root):
+    art_root = source_root / "Environment/NyaagyuEstateWall"
+    record = read_manifest(art_root / "manifest.json")
+    name = "SM_Nyaagyu_EstateWall_4m"
+    expected_slots = {"M_Wall_CharredTimber", "M_Wall_EarthenScar", "M_Wall_Kawara",
+                      "M_Wall_LimePlaster", "M_Wall_StoneDark", "M_Wall_StoneFoundation"}
+    require(record.get("schema_version") == 1 and record.get("name") == name
+            and record.get("generator") == "scripts/art/create_nyaagyu_estate_wall.py"
+            and record.get("unreal_asset") == f"{PROPS}/{name}.{name}"
+            and record.get("module_length_m") == 4.0
+            and record.get("collision_envelope_m") == [1.0, 4.0, 5.4]
+            and record.get("collision", "").startswith("Visual-only")
+            and record.get("nanite_windows") is True
+            and record.get("mac_conventional_fallback", {}).get(
+                "fallback_percent_triangles") == 1.0
+            and set(record.get("material_slots", [])) == expected_slots
+            and set(record.get("slot_definitions", {})) == expected_slots
+            and set(record.get("dependencies", {})) == {"Stone", "Plaster", "Timber", "Kawara"},
+            "Estate perimeter wall identity or collision policy changed")
+    for key, digest in (("fbx", "fbx_sha256"), ("source_blend", "blend_sha256")):
+        path = source_file(art_root, record[key])
+        require(hashlib.sha256(path.read_bytes()).hexdigest() == record[digest],
+                f"Estate wall source changed: {path}")
+    generator = source_file(project_root, record["generator"])
+    require(hashlib.sha256(generator.read_bytes()).hexdigest() == record["generator_sha256"],
+            "Estate wall geometry generator changed")
+    scan_manifest = source_file(art_root, "ScanRock01/manifest.json")
+    require(hashlib.sha256(scan_manifest.read_bytes()).hexdigest() ==
+            record["scan_manifest_sha256"], "Estate wall rock scan provenance changed")
+    lower = record["bounds_m"]["min"]
+    upper = record["bounds_m"]["max"]
+    require(len(lower) == len(upper) == 3
+            and lower[0] >= -0.5 and upper[0] <= 0.5
+            and lower[1] >= -2 and upper[1] <= 2
+            and lower[2] >= -2.7 and upper[2] <= 2.7
+            and record.get("source_triangles", 0) >= 10_000,
+            "Estate wall visual escaped the retained collision envelope")
+    for surface, dependency in record["dependencies"].items():
+        require(dependency.get("license") == "CC0-1.0"
+                and dependency.get("source_url", "").startswith("https://polyhaven.com/a/")
+                and set(dependency.get("files", {})) == {"Albedo", "NormalDX", "ORM"},
+                f"Estate wall scan provenance changed: {surface}")
+        for channel, file in dependency["files"].items():
+            path = source_file(project_root, file["repo_path"])
+            require(hashlib.sha256(path.read_bytes()).hexdigest() == file["sha256"],
+                    f"Estate wall {surface} {channel} scan changed")
+    return record
 
 
 def validate_hero_katana_loaded(unreal, asset_library):
@@ -465,6 +515,16 @@ def expected_assets(project_root):
     for slot in cargo["material_slots"]:
         name = "MI_NyaagyuCargo_" + slot.removeprefix("M_Cargo_")
         add(specs, f"{CARGO}/{name}.{name}", "MaterialInstanceConstant")
+    wall = estate_wall_source(project_root, source_root)
+    add(specs, wall["unreal_asset"], "StaticMesh")
+    for surface in wall["dependencies"]:
+        for channel in ("Albedo", "NormalDX", "ORM"):
+            name = f"T_EstateWall_{surface}_{channel}"
+            add(specs, f"{WALL}/Textures/{name}.{name}", "Texture2D")
+    add(specs, f"{WALL}/M_NyaagyuEstateWall_PBR.M_NyaagyuEstateWall_PBR", "Material")
+    for slot in wall["material_slots"]:
+        name = "MI_NyaagyuEstateWall_" + slot.removeprefix("M_Wall_")
+        add(specs, f"{WALL}/{name}.{name}", "MaterialInstanceConstant")
     dojo_root = source_root / "Environment/NyaagyuDojo"
     dojo = read_manifest(dojo_root / "manifest.json")
     require(dojo.get("generator") == "scripts/art/create_nyaagyu_dojo.py"
@@ -498,14 +558,28 @@ def expected_assets(project_root):
             and terrain.get("macro_tint", {}).get("vertex_color_attribute") == "EstateMacroTint"
             and len(terrain.get("tiles", [])) == 32,
             "The modular estate terrain identity changed")
-    require([item.get("channel") for item in terrain.get("palette_files", [])
-             if item.get("role") == "stone"] ==
-            ["diffuse", "normal", "arm", "displacement"],
-            "The scanned stone relief source changed")
+    require([(item.get("role"), item.get("channel"))
+             for item in terrain.get("palette_files", [])] ==
+            [("soil", "diffuse"), ("soil", "normal"), ("soil", "arm")],
+            "The estate soil palette source changed")
     for item in terrain["palette_files"]:
         source = source_file(project_root, item["path"])
         require(hashlib.sha256(source.read_bytes()).hexdigest() == item["sha256"],
                 f"Estate terrain palette source changed: {source}")
+    pathway = terrain.get("stone_pathway_scan", {})
+    require(pathway.get("asset_id") == "grey_stone_path"
+            and pathway.get("source_url") == "https://polyhaven.com/a/grey_stone_path"
+            and pathway.get("license") == "CC0-1.0"
+            and pathway.get("tile_size_cm") == 180
+            and [entry.get("channel") for entry in pathway.get("files", [])] ==
+            ["Diffuse", "nor_dx", "arm", "disp"],
+            "Estate terrain-only stone scan identity changed")
+    for entry in pathway["files"]:
+        scan_file = source_file(terrain_root, entry["file"])
+        require(hashlib.sha256(scan_file.read_bytes()).hexdigest() == entry.get("sha256"),
+                f"Estate terrain-only stone scan changed: {scan_file}")
+        name = "T_TerrainGreyStonePath_" + entry["channel"]
+        add(specs, f"{PALETTE}/Textures/{name}.{name}", "Texture2D")
     for tier in ("hi", "mac"):
         for y in range(4):
             for x in range(4):
@@ -866,6 +940,53 @@ def validate_loaded_assets(unreal, specs):
                     require(texture.get_editor_property("compression_settings") ==
                             unreal.TextureCompressionSettings.TC_MASKS,
                             f"Cargo {surface} ORM compression changed")
+    wall = estate_wall_source(
+        Path(unreal.Paths.project_dir()).resolve(),
+        Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
+    wall_mesh = asset_library.load_asset(wall["unreal_asset"])
+    settings = wall_mesh.get_editor_property("nanite_settings")
+    require(bool(settings.get_editor_property("enabled"))
+            and settings.get_editor_property("fallback_percent_triangles") >= .999
+            and settings.get_editor_property("fallback_target") ==
+            unreal.NaniteFallbackTarget.PERCENT_TRIANGLES
+            and settings.get_editor_property("generate_fallback") ==
+            unreal.NaniteGenerateFallback.ENABLED,
+            "Estate wall lost its Nanite data or full Mac fallback")
+    wall_slots = wall_mesh.get_editor_property("static_materials")
+    require({str(item.get_editor_property("material_slot_name")) for item in wall_slots} ==
+            set(wall["material_slots"]), "Estate wall FBX material zones disappeared")
+    master_path = f"{WALL}/M_NyaagyuEstateWall_PBR.M_NyaagyuEstateWall_PBR"
+    for item in wall_slots:
+        slot = str(item.get_editor_property("material_slot_name"))
+        name = "MI_NyaagyuEstateWall_" + slot.removeprefix("M_Wall_")
+        instance_path = f"{WALL}/{name}.{name}"
+        bound = item.get_editor_property("material_interface")
+        require(bound is not None and bound.get_path_name() == instance_path,
+                f"Estate wall mesh lost material {slot}")
+        instance = asset_library.load_asset(instance_path)
+        parent = instance.get_editor_property("parent")
+        require(parent is not None and parent.get_path_name() == master_path,
+                f"Estate wall {slot} PBR parent changed")
+        surface = wall["slot_definitions"][slot]["source"]
+        for parameter, channel in (("AlbedoMap", "Albedo"),
+                                   ("NormalMap", "NormalDX"), ("ORMMap", "ORM")):
+            texture_name = f"T_EstateWall_{surface}_{channel}"
+            texture_path = f"{WALL}/Textures/{texture_name}.{texture_name}"
+            texture = asset_library.load_asset(texture_path)
+            actual = material_lib.get_material_instance_texture_parameter_value(instance, parameter)
+            require(actual is not None and actual.get_path_name() == texture_path,
+                    f"Estate wall {slot} lost {parameter}")
+            require(bool(texture.get_editor_property("srgb")) == (channel == "Albedo"),
+                    f"Estate wall {surface} {channel} color space changed")
+            if channel == "NormalDX":
+                require(texture.get_editor_property("compression_settings") ==
+                        unreal.TextureCompressionSettings.TC_NORMALMAP
+                        and not bool(texture.get_editor_property("flip_green_channel")),
+                        f"Estate wall {surface} DirectX normal settings changed")
+            if channel == "ORM":
+                require(texture.get_editor_property("compression_settings") ==
+                        unreal.TextureCompressionSettings.TC_MASKS,
+                        f"Estate wall {surface} ORM compression changed")
     for role in ("Soil", "Stone"):
         path = f"{PALETTE}/MI_Nyaagyu_Terrain{role}.MI_Nyaagyu_Terrain{role}"
         instance = asset_library.load_asset(path)
@@ -875,6 +996,38 @@ def validate_loaded_assets(unreal, specs):
                 and abs(material_lib.get_material_instance_scalar_parameter_value(
                     instance, "TerrainVertexTint") - 1.0) < 1e-5,
                 f"Estate terrain instance lost its vertex macro-tint binding: {path}")
+        require(abs(material_lib.get_material_instance_scalar_parameter_value(
+                    instance, "TerrainDampRoughness") - .30) < 1e-5,
+                f"Estate terrain instance lost its vertex-alpha dampness binding: {path}")
+    terrain_stone = asset_library.load_asset(
+        f"{PALETTE}/MI_Nyaagyu_TerrainStone.MI_Nyaagyu_TerrainStone")
+    for parameter, channel in (("AlbedoMap", "Diffuse"),
+                               ("NormalMap", "nor_dx"), ("ARMMap", "arm")):
+        expected = (f"{PALETTE}/Textures/T_TerrainGreyStonePath_{channel}."
+                    f"T_TerrainGreyStonePath_{channel}")
+        actual = material_lib.get_material_instance_texture_parameter_value(
+            terrain_stone, parameter)
+        require(actual is not None and actual.get_path_name() == expected,
+                f"Estate terrain stone lost its dedicated {parameter} scan")
+    for channel in ("Diffuse", "nor_dx", "arm", "disp"):
+        name = "T_TerrainGreyStonePath_" + channel
+        texture = asset_library.load_asset(f"{PALETTE}/Textures/{name}.{name}")
+        require(bool(texture.get_editor_property("srgb")) == (channel == "Diffuse"),
+                f"Estate pathway {channel} color space changed")
+        if channel == "nor_dx":
+            require(texture.get_editor_property("compression_settings") ==
+                    unreal.TextureCompressionSettings.TC_NORMALMAP
+                    and not bool(texture.get_editor_property("flip_green_channel")),
+                    "Estate pathway DirectX normal settings changed")
+        if channel == "arm":
+            require(texture.get_editor_property("compression_settings") ==
+                    unreal.TextureCompressionSettings.TC_MASKS,
+                    "Estate pathway ARM texture settings changed")
+    pathway_size = material_lib.get_material_instance_vector_parameter_value(
+        terrain_stone, "TileSize")
+    require(all(abs(getattr(pathway_size, channel) - 180.0) < 1e-5
+                for channel in "rgb"),
+            "Estate pathway projection lost its measured 1.8-metre scale")
     roof_instance = asset_library.load_asset(f"{PALETTE}/MI_Nyaagyu_Kawara.MI_Nyaagyu_Kawara")
     for parameter, channel in (("AlbedoMap", "Diffuse"),
                                ("NormalMap", "nor_dx"), ("ARMMap", "arm")):

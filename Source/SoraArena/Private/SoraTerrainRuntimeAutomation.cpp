@@ -48,6 +48,8 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     bool bBlockoutRoadPresent = false;
     int32 CargoVisualCount = 0;
     int32 HiddenCoverColliders = 0;
+    int32 WallVisualCount = 0;
+    int32 HiddenBoundaryColliders = 0;
     for (UStaticMeshComponent* Component : CampaignMeshes)
     {
         if (!Component) continue;
@@ -57,6 +59,25 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
             ++CargoVisualCount;
             TestTrue(TEXT("Cargo art cannot change combat collision"),
                 Component->GetCollisionEnabled() == ECollisionEnabled::NoCollision);
+        }
+        if (Component->GetName().StartsWith(TEXT("SM_Nyaagyu_EstateWall_4m")))
+        {
+            ++WallVisualCount;
+            TestTrue(TEXT("Estate wall art cannot change combat collision"),
+                Component->GetCollisionEnabled() == ECollisionEnabled::NoCollision);
+            TestTrue(TEXT("Estate wall art participates in distance-field lighting"),
+                Component->bAffectDistanceFieldLighting);
+            TestTrue(TEXT("Estate wall art participates in dynamic indirect lighting"),
+                Component->bAffectDynamicIndirectLighting);
+        }
+        if (Component->GetName().StartsWith(TEXT("WallX")) ||
+            Component->GetName().StartsWith(TEXT("WallY")))
+        {
+            ++HiddenBoundaryColliders;
+            TestFalse(TEXT("Primitive perimeter render is hidden behind authored modules"),
+                Component->IsVisible());
+            TestTrue(TEXT("Original perimeter wall still blocks campaign combat"),
+                Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics);
         }
         if (Component->GetName().StartsWith(TEXT("Cover")))
         {
@@ -118,6 +139,8 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Campaign has exactly sixteen authored terrain tiles"), TerrainCount, 16);
     TestEqual(TEXT("Campaign has twelve authored cargo visuals"), CargoVisualCount, 12);
     TestEqual(TEXT("Campaign retains twelve hidden cover colliders"), HiddenCoverColliders, 12);
+    TestEqual(TEXT("Campaign has fifty-eight authored perimeter modules"), WallVisualCount, 58);
+    TestEqual(TEXT("Campaign retains four hidden perimeter colliders"), HiddenBoundaryColliders, 4);
     TestTrue(TEXT("Separate flat gameplay ground still supplies collision"), bCollisionGroundPresent);
     TestFalse(TEXT("Raised blockout road must not hide photographed terrain path"), bBlockoutRoadPresent);
 
@@ -145,6 +168,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     Builder->GetComponents(PracticeMeshes);
     int32 PracticeTerrainCount = 0;
     int32 PracticeCargoCount = 0;
+    int32 PracticeWallVisualCount = 0;
     bool bKernelGroundPresent = false;
     bool bKernelWallPresent = false;
     for (UStaticMeshComponent* Component : PracticeMeshes)
@@ -152,6 +176,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         if (!Component) continue;
         PracticeTerrainCount += Component->GetName().StartsWith(TEXT("SM_NyaagyuTerrain_")) ? 1 : 0;
         PracticeCargoCount += Component->GetName().StartsWith(TEXT("SM_Nyaagyu_CargoStack")) ? 1 : 0;
+        PracticeWallVisualCount += Component->GetName().StartsWith(TEXT("SM_Nyaagyu_EstateWall_4m")) ? 1 : 0;
         bKernelGroundPresent |= Component->GetName().StartsWith(TEXT("KernelGround")) &&
             Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics;
         bKernelWallPresent |= Component->GetName().StartsWith(TEXT("KernelWall0")) &&
@@ -159,6 +184,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     }
     TestEqual(TEXT("Practice mode has no authored terrain components"), PracticeTerrainCount, 0);
     TestEqual(TEXT("Practice mode has no authored cargo components"), PracticeCargoCount, 0);
+    TestEqual(TEXT("Practice mode has no authored perimeter components"), PracticeWallVisualCount, 0);
     TestTrue(TEXT("Practice mode has kernel-defined colliding ground"), bKernelGroundPresent);
     TestTrue(TEXT("Practice mode has kernel-defined colliding wall"), bKernelWallPresent);
 

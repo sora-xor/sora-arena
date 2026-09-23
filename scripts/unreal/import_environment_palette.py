@@ -105,7 +105,30 @@ output(macro_blend,'',unreal.MaterialProperty.MP_BASE_COLOR)
 output(projected['nor_dx'],'XYZ Texture',unreal.MaterialProperty.MP_NORMAL)
 for index,(component,prop) in enumerate([('r',unreal.MaterialProperty.MP_AMBIENT_OCCLUSION),('g',unreal.MaterialProperty.MP_ROUGHNESS),('b',unreal.MaterialProperty.MP_METALLIC)]):
     mask=node(mat,unreal.MaterialExpressionComponentMask,-250,index*120+160,r=component=='r',g=component=='g',b=component=='b',a=False)
-    link(projected['arm'],'XYZ Texture',mask,'');output(mask,'',prop)
+    link(projected['arm'],'XYZ Texture',mask,'')
+    if component=='g':
+        # Vertex alpha is a source-authored dampness mask. Non-terrain
+        # instances leave TerrainVertexTint at zero, so their roughness stays
+        # exactly on the scanned material's ARM green channel.
+        damp_alpha=node(mat,unreal.MaterialExpressionComponentMask,-600,590,
+                        r=False,g=False,b=False,a=True)
+        link(vertex,'',damp_alpha,'')
+        enabled_damp=node(mat,unreal.MaterialExpressionMultiply,-380,590)
+        link(damp_alpha,'',enabled_damp,'A')
+        link(macro_strength,'',enabled_damp,'B')
+        damp_amount=node(mat,unreal.MaterialExpressionScalarParameter,-620,790,
+                         parameter_name='TerrainDampRoughness',default_value=.30)
+        damp_reduction=node(mat,unreal.MaterialExpressionMultiply,-140,590)
+        link(enabled_damp,'',damp_reduction,'A')
+        link(damp_amount,'',damp_reduction,'B')
+        dry_fraction=node(mat,unreal.MaterialExpressionOneMinus,40,590)
+        link(damp_reduction,'',dry_fraction,'')
+        wet_roughness=node(mat,unreal.MaterialExpressionMultiply,250,590)
+        link(mask,'',wet_roughness,'A')
+        link(dry_fraction,'',wet_roughness,'B')
+        output(wet_roughness,'',prop)
+    else:
+        output(mask,'',prop)
 lib.layout_material_expressions(mat);lib.recompile_material(mat);assets.save_loaded_asset(mat)
 if set(str(name) for name in lib.get_texture_parameter_names(mat)) != {'AlbedoMap','NormalMap','ARMMap'}:
     raise RuntimeError('The world-aligned material texture parameters are incomplete')
@@ -133,9 +156,61 @@ for role in ('Soil','Stone'):
     base=assets.load_asset(DEST+'/MI_Nyaagyu_'+role)
     lib.set_material_instance_parent(instance,base)
     lib.set_material_instance_scalar_parameter_value(instance,'TerrainVertexTint',1.0)
+    lib.set_material_instance_scalar_parameter_value(instance,'TerrainDampRoughness',.30)
     if abs(lib.get_material_instance_scalar_parameter_value(instance,'TerrainVertexTint')-1.0)>1e-5:
         raise RuntimeError('Terrain vertex macro tint did not bind: '+name)
+    if abs(lib.get_material_instance_scalar_parameter_value(instance,'TerrainDampRoughness')-.30)>1e-5:
+        raise RuntimeError('Terrain vertex dampness did not bind: '+name)
     assets.save_loaded_asset(instance)
+
+# The irregular estate pathway is a terrain-only scan. Architectural stone
+# continues to use the separate, measured foundation palette above.
+terrain_root=ROOT/'Content/SourceArt/Environment/NyaagyuTerrain'
+terrain_manifest=json.loads((terrain_root/'manifest.json').read_text())
+pathway=terrain_manifest.get('stone_pathway_scan',{})
+if (pathway.get('asset_id')!='grey_stone_path'
+        or pathway.get('source_url')!='https://polyhaven.com/a/grey_stone_path'
+        or pathway.get('license')!='CC0-1.0'
+        or pathway.get('tile_size_cm')!=180
+        or [item.get('channel') for item in pathway.get('files',[])]!=
+        ['Diffuse','nor_dx','arm','disp']):
+    raise RuntimeError('Pinned CC0 estate stone pathway source identity changed')
+pathway_textures={}
+for entry in pathway['files']:
+    source_file=(terrain_root/entry['file']).resolve()
+    if (not source_file.is_relative_to(terrain_root.resolve())
+            or not source_file.is_file()
+            or hashlib.sha256(source_file.read_bytes()).hexdigest()!=entry['sha256']):
+        raise RuntimeError('Stone pathway scan missing or changed: '+str(source_file))
+    channel=entry['channel']
+    name='T_TerrainGreyStonePath_'+channel
+    task=unreal.AssetImportTask()
+    task.filename=str(source_file)
+    task.destination_path=DEST+'/Textures'
+    task.destination_name=name
+    task.automated=True;task.replace_existing=True;task.save=True
+    tools.import_asset_tasks([task])
+    texture=assets.load_asset(DEST+'/Textures/'+name)
+    if not isinstance(texture,unreal.Texture2D):
+        raise RuntimeError('Estate stone pathway texture import failed: '+name)
+    texture.set_editor_property('srgb',channel=='Diffuse')
+    if channel=='nor_dx':
+        texture.set_editor_property('compression_settings',unreal.TextureCompressionSettings.TC_NORMALMAP)
+        texture.set_editor_property('flip_green_channel',False)
+    elif channel=='arm':
+        texture.set_editor_property('compression_settings',unreal.TextureCompressionSettings.TC_MASKS)
+    texture.set_editor_property('max_texture_size',2048)
+    assets.save_loaded_asset(texture)
+    pathway_textures[channel]=texture
+terrain_stone=assets.load_asset(DEST+'/MI_Nyaagyu_TerrainStone')
+for parameter,channel in [('AlbedoMap','Diffuse'),('NormalMap','nor_dx'),('ARMMap','arm')]:
+    lib.set_material_instance_texture_parameter_value(terrain_stone,parameter,pathway_textures[channel])
+    actual=lib.get_material_instance_texture_parameter_value(terrain_stone,parameter)
+    if actual is None or actual.get_path_name()!=pathway_textures[channel].get_path_name():
+        raise RuntimeError('Estate pathway scan did not bind: '+parameter)
+size=pathway['tile_size_cm']
+lib.set_material_instance_vector_parameter_value(terrain_stone,'TileSize',unreal.LinearColor(size,size,size,1))
+assets.save_loaded_asset(terrain_stone)
 
 sky=create_material('M_Nyaagyu_Sky')
 sky.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_UNLIT)
@@ -150,4 +225,4 @@ link(normal,'',cube,'');output(cube,'RGB',unreal.MaterialProperty.MP_EMISSIVE_CO
 lib.layout_material_expressions(sky);lib.recompile_material(sky);assets.save_loaded_asset(sky)
 assets.save_directory(DEST,only_if_is_dirty=False,recursive=True)
 runpy.run_path(str(ROOT/'scripts/unreal/import_torii_lacquer_pbr.py'),run_name='__main__')
-unreal.log('NYAAGYU_PBR_READY: 6 real-scale CC0 materials including kawara and plaster + overcast HDRI. Powered by Poly Haven — https://polyhaven.com')
+unreal.log('NYAAGYU_PBR_READY: 6 real-scale CC0 materials, terrain-only stone pathway, kawara and plaster + overcast HDRI. Powered by Poly Haven — https://polyhaven.com')
