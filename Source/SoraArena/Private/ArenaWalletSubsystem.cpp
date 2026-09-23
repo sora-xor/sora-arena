@@ -252,6 +252,12 @@ bool IsAllowedInstruction(const FString& Name)
     return Allowed.Contains(Name);
 }
 
+bool RequiresQualifiedTermsReview(const FString& Name)
+{
+    // Neither a typed scaffold nor a wallet approval proves the live game/offer terms.
+    return Name == TEXT("JoinGameSessionV1") || Name == TEXT("BuyNftV1");
+}
+
 std::string Utf8String(const FString& Value)
 {
     const FTCHARToUTF8 Encoded(*Value);
@@ -379,7 +385,7 @@ struct FArenaConnectNative
     int32 (*ApprovePublic)(const uint8*, unsigned long, uint8*) = nullptr;
     int32 (*ApproveSignature)(const uint8*, unsigned long, uint8*) = nullptr;
     FBlob ApproveAccount = nullptr, ApprovePermissions = nullptr, ApproveProof = nullptr;
-    FBlob Hash = nullptr, InspectTransaction = nullptr, DecodeEnvelopeJson = nullptr;
+    FBlob Hash = nullptr, InspectTransaction = nullptr, JoinTermsInspect = nullptr, DecodeEnvelopeJson = nullptr;
     int32 (*VerifyApproval)(const uint8*, unsigned long, const uint8*, unsigned long, const uint8*, unsigned long, const uint8*, unsigned long, const uint8*, unsigned long, const char*, unsigned long, const uint8*, unsigned long, const uint8*, unsigned long, const char*, unsigned long, const char*, unsigned long, const uint8*, unsigned long) = nullptr;
     int32 (*DeriveKeys)(const uint8*, const uint8*, const uint8*, uint8*, uint8*) = nullptr;
     int32 (*SignRequest)(uint64, const uint8*, unsigned long, uint8**, unsigned long*) = nullptr;
@@ -425,6 +431,8 @@ struct FArenaConnectNative
         ARENA_BIND(Finalize, "connect_norito_detached_transaction_scaffold_finalize_ed25519_v1");
 #undef ARENA_BIND
         Bind(BuildTransaction, TEXT("connect_norito_native_transaction_scaffold_build_v1"));
+        // Optional research inspector; ABI 23 alone does not prove this symbol is present.
+        Bind(JoinTermsInspect, TEXT("connect_norito_arena_join_terms_inspect_v1"));
         return true;
     }
 };
@@ -953,6 +961,13 @@ bool UArenaWalletSubsystem::RequestSignTransaction(const FString& ScaffoldBase64
     const TSharedPtr<FJsonObject>* Executable = nullptr;
     if (!Json->TryGetStringField(TEXT("schema"), Schema) || Schema != TEXT("iroha.detached_transaction_scaffold.v1") || !Json->TryGetStringField(TEXT("authority"), Authority) || Authority != ApprovedAccount || !Json->TryGetStringField(TEXT("network_id"), Network) || Network != NetworkLiteral || !Json->TryGetStringField(TEXT("payload_bytes_b64"), PayloadBase64) || !FBase64::Decode(PayloadBase64, Payload) || Payload.IsEmpty() || Payload.Num() > ArenaConnect::MaxFrameBytes || FBase64::Encode(Payload) != PayloadBase64 || !Json->TryGetObjectField(TEXT("executable"), Executable) || !(*Executable)->TryGetStringField(TEXT("kind"), Kind) || Kind != TEXT("native_instruction") || !(*Executable)->TryGetStringField(TEXT("name"), Name) || !ArenaConnect::IsAllowedInstruction(Name) || AppSequence == MAX_uint64)
     { SetState(State, TEXT("アカウント・ネットワーク・取引種別が一致しないため署名を中止しました。")); return false; }
+    if (ArenaConnect::RequiresQualifiedTermsReview(Name))
+    {
+        SetState(State, Name == TEXT("JoinGameSessionV1")
+            ? TEXT("参加ボンドの条件を確認できません。対戦規則・固定損失額・装備予約・手数料を表示できるまで参加署名を停止します。")
+            : TEXT("NFT の売却条件と所有状態を確認できません。購入署名を停止します。"));
+        return false;
+    }
     FNativeBytes Envelope(*Native), Ciphertext(*Native);
     if (Native->SignRequest(AppSequence, Payload.GetData(), Payload.Num(), &Envelope.Data, &Envelope.Size) != 0 || !Envelope.Bounded() || Native->Encrypt(AppDirectionKey.GetData(), SessionId.GetData(), 0, Envelope.Data, Envelope.Size, &Ciphertext.Data, &Ciphertext.Size) != 0 || !Ciphertext.Bounded())
     { Fail(TEXT("暗号化された署名依頼を作成できませんでした。")); return false; }
@@ -1318,6 +1333,9 @@ bool FArenaConnectBindingTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("NFT wagering is not an Arena action"), ArenaConnect::IsAllowedInstruction(TEXT("StakeGameItemV1")));
     TestFalse(TEXT("Unrelated transfer is not an Arena action"), ArenaConnect::IsAllowedInstruction(TEXT("Transfer")));
     TestTrue(TEXT("Funded session join is an Arena action"), ArenaConnect::IsAllowedInstruction(TEXT("JoinGameSessionV1")));
+    TestTrue(TEXT("Funded join requires qualified terms review before signing"), ArenaConnect::RequiresQualifiedTermsReview(TEXT("JoinGameSessionV1")));
+    TestTrue(TEXT("NFT purchase requires qualified offer review before signing"), ArenaConnect::RequiresQualifiedTermsReview(TEXT("BuyNftV1")));
+    TestFalse(TEXT("Payout claim does not use join or purchase review"), ArenaConnect::RequiresQualifiedTermsReview(TEXT("ClaimGamePayoutV1")));
 
     const FString Hash = Network.Mid(5, 64);
     TestTrue(TEXT("Exact native signed transaction hash"), ArenaConnect::CanonicalHash(Hash));

@@ -236,7 +236,8 @@ def main():
     report = {'abi': 23, 'library': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
               'required_symbols': len(required), 'native_smoke_checks': 'passed',
               'encrypted_envelope_roundtrip_and_tamper_rejection': 'passed',
-              'live_wallet_pairing': 'not tested', 'native_transaction_builder': hasattr(api, 'connect_norito_native_transaction_scaffold_build_v1')}
+              'live_wallet_pairing': 'not tested', 'native_transaction_builder': hasattr(api, 'connect_norito_native_transaction_scaffold_build_v1'),
+              'arena_join_terms_inspector': hasattr(api, 'connect_norito_arena_join_terms_inspect_v1')}
     if args.game_fixtures:
         report['native_game_builder'] = verify_game_builder(api, args.game_fixtures)
     print(json.dumps(report, indent=2))

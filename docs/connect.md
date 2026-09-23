@@ -54,6 +54,10 @@ required. Arena equipment NFTs are returnable: `StakeGameItemV1` is explicitly
 rejected by the Arena wallet allowlist, even if a general-purpose bridge supports
 that instruction. Death does not transfer an equipment NFT. No transaction is
 sent just by pairing.
+`JoinGameSessionV1` and `BuyNftV1` are decode-allowlisted but their signing
+requests stop before `SignRequestTx`: neither the authenticated game-session
+terms nor a verified live NFT offer is available to this UI yet. This applies
+to both externally supplied scaffolds and the native transaction builder.
 
 ## Build and configure
 
@@ -180,6 +184,21 @@ that result before `SignRequestTx`, then keep the wallet approval and finality
 checks independent. Until that path is implemented and tested, raw inspection
 JSON and the menu's transaction-state text must not be presented as an exact
 bond or purchase review.
+
+The matching bridge source now has a bounded,
+`sora.arena.join_terms_inspection.v1` result for **canonical scaffold only**.
+It re-decodes a single typed Join and binds its complete fields and fee intent
+to the payload signing hash and placeholder-scaffold BLAKE3 digest. Its
+`authorization_ready` field is always `false`. The placeholder scaffold digest
+is not the final signed transaction hash; this endpoint has no authenticated
+session read, manifest economics, fee quote, or asset/NFT state and does not
+lift the Unreal signing block.
+This research FFI symbol is optional for pairing under bridge ABI 23 and must be
+negotiated by its exact name, `connect_norito_arena_join_terms_inspect_v1`.
+Its absence leaves Join/Buy signing blocked; its presence also leaves signing
+blocked until an authenticated session review exists. `check-abi.py` checks its
+C declaration and Unreal function-pointer type, while `verify-bridge.py`
+reports its presence in the actual staged library.
 
 `SubmitSignedTestTransaction()` is a separate, explicit operation. It is
 disabled in shipping builds and unless `Arena.Connect` explicitly sets

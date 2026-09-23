@@ -22,7 +22,8 @@ def main():
     declarations = source.split('struct FArenaConnectNative\n{', 1)[1].split('    ~FArenaConnectNative()', 1)[0]
     pairs = re.findall(r'ARENA_BIND\((\w+), "(\w+)"\)', source)
     pairs += [('Abi', 'connect_norito_bridge_abi_version'),
-              ('BuildTransaction', 'connect_norito_native_transaction_scaffold_build_v1')]
+              ('BuildTransaction', 'connect_norito_native_transaction_scaffold_build_v1'),
+              ('JoinTermsInspect', 'connect_norito_arena_join_terms_inspect_v1')]
     body = '#include <cstdint>\n#include <type_traits>\n'
     body += '#include ' + '"' + str(args.header.resolve()).replace('\\', '\\\\').replace('"', '\\"') + '"\n'
     for bits in (8, 16, 32, 64):
