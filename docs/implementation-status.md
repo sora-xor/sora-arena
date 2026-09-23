@@ -36,7 +36,10 @@ geometry and class abilities are a foundation implementation. The Unreal campaig
 prototype currently has its own gameplay implementation. Kernel-driven offline
 practice source and its native presentation queries are implemented. A real
 macOS library passes 73 checked-in replay cases / 44,100 canonical ticks; Windows
-has not run that fixture. Actual UE compilation and runtime testing are still
+has not run that fixture. A pinned Windows GNU cross-build now produces a PE
+x86-64 kernel DLL with all fifteen header exports and matching sizes/alignments
+for eleven C ABI structs; it cannot establish Windows runtime parity. Actual
+UE compilation and runtime testing are still
 required before claiming the Unreal integration works. A separate headless test
 runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
 checks deterministic terminal state and XOR conservation; it does not measure

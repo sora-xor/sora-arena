@@ -117,8 +117,9 @@ checks; the version table alone does not establish compatibility.
 
 ## Windows, Linux, and rendering validation
 
-- Windows client: use the pinned build and diagnostic path below. Windows has
-  not been built or tested on this Mac.
+- Windows client: use the pinned MSVC/UE build and diagnostic path below. The
+  Rust kernel alone has a GNU cross-build on this Mac; no Windows executable
+  has been run and the UE/Connect clients have not been built there.
 - Linux server: use an x86-64 Linux builder with **Ubuntu 22.04** and Epic's
   **v26 / clang 20.1.8** toolchain, or Epic's supported Windows-to-Linux
   cross-compilation workflow. Mac-to-Linux cross-compilation is not supported by
@@ -133,6 +134,22 @@ checks; the version table alone does not establish compatibility.
   characters have optional strand grooming.
 
 ### Windows project build and staging
+
+For an early, **static-only** check on this M1 Ultra, the pinned Rust 1.93.1
+Windows GNU target and free MinGW GCC 16.2.0 can cross-build `arena-ffi`:
+
+```sh
+rustup target add x86_64-pc-windows-gnu --toolchain 1.93.1
+python3 scripts/toolchain/check_windows_kernel_crossbuild.py
+```
+
+The script builds offline with `--locked`, checks the PE x86-64 DLL, compiles
+Windows C assertions for all eleven ABI struct sizes/alignments, and compares
+all fifteen exported functions to the C header. On 2026-09-23 the resulting
+DLL SHA-256 was
+`24f3a95e51fda5b4c2d01b5987edc90ad667505b0338602f0a7984adf6ed6f5e`.
+This GNU cross-build does **not** replace the required Windows MSVC/Unreal
+build, execute the DLL, compare simulation replays, or qualify on-chain proofs.
 
 On a 64-bit Windows machine, install the licensed **UE 5.8.2** engine, Visual
 Studio **2022 17.14** with MSVC **14.44.35207**, Windows SDK
