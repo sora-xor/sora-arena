@@ -15,6 +15,7 @@
 #include "Engine/World.h"
 #include "ArenaKernelSubsystem.h"
 #include "Engine/Texture2D.h"
+#include "Internationalization/Text.h"
 
 void ASoraHUD::Label(const FString& T,float X,float Y,float S,FLinearColor C)
 {
@@ -90,7 +91,7 @@ void ASoraHUD::DrawHUD()
         Panel(40*S,95*S,1190*S,700*S,FLinearColor(.013,.027,.033,.45f));
         const float L=80*S;
         Label(TEXT("剣を、工房を、民の手に。"),L,112*S,.55*S,Gold);
-        Label(TEXT("猫柳生"),L,155*S,2.8*S,Ivory);
+        Label(NSLOCTEXT("SoraArena", "MenuTitle", "猫柳生").ToString(),L,155*S,2.8*S,Ivory);
         Label(TEXT("ニャーギュウ ― 異星の債務帝国に挑む、侍猫の物語。"),L,245*S,.65*S,Muted);
         FString MenuChapter = TEXT("稽古場");
         if(G->bDeterministicPractice) MenuChapter=TEXT("武芸稽古 / オフライン");

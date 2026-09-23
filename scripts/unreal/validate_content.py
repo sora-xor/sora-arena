@@ -23,6 +23,10 @@ assert "[Internationalization]\nCulture=ja" in game_config
 assert "InternationalizationPreset=EFIGSCJK" in game_config
 assert "!CulturesToStage=ClearArray" in game_config
 assert set(re.findall(r"^\+CulturesToStage=(\S+)$", game_config, re.MULTILINE)) == {"ja", "en"}
+from native_japanese_localization import validate_source, expected_meta, expected_resource, META, RESOURCE
+validate_source()
+assert META.read_bytes() == expected_meta()
+assert RESOURCE.read_bytes() == expected_resource()
 assert len(catalog["classes"]) == 6 and len(catalog["weapons"]) == 18
 assert len(catalog["chapters"]) == 8 and len(catalog["maps"]) == 4
 assert [w["id"] for w in catalog["weapons"]] == list(range(18))
