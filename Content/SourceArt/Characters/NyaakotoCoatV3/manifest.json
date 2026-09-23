@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "identity": "Nyaakoto / ニャーコト connected-head and coat V3 source-only study",
+  "production_status": "REVIEW_ONLY; no runtime integration, rig, or AAA qualification",
+  "user_reference_sha256": "c9f7a4bbe6ba529b2bbdb629db3ba09858c11b563c334e31593876455a550801",
+  "user_reference_embedded": false,
+  "v2_source_blend_sha256": "44acb7c0f1ba4c39a0e400f6601f6941bc7ea2be9ac5beee934d430cf5436d45",
+  "texture_provenance": "Project-owned V2 unique-UV bake; color is retained and micro-normal/ORM are artist-derived, not scans",
+  "scale": "meters; +X face forward; +Z up",
+  "groom_strands": 30282,
+  "fbx": "SM_Nyaakoto_HeadCoat_V3_Study.fbx",
+  "source_blend": "Nyaakoto_HeadCoat_V3_Study.blend",
+  "map_conventions": "NormalGL for Blender; NormalDX for Unreal; ORM R=unbaked AO white, G=roughness, B=metallic zero",
+  "files_sha256": {
+    "Nyaakoto_CoatV3_Front.png": "d469ff4c629b0d6f3dbd62f4a11b0de7b6952136d4d4b3011dc62913efef4e1a",
+    "Nyaakoto_CoatV3_Profile.png": "c4de78b68d7fe60ed6019b5599f12d70bf44a1519dcfc498b9f81f2fee0df640",
+    "Nyaakoto_CoatV3_ThreeQuarter.png": "2ce664b24c843a275f451b9b79a219c1d5428c612f0cb797baa9cc2f9e0a8614",
+    "Nyaakoto_HeadCoat_V3_Study.blend": "9563f2521fe272b4dbf969e7a1d3e99b22f17dbcb6f6e3ab683f89eb093b9e98",
+    "SM_Nyaakoto_HeadCoat_V3_Study.fbx": "fbb140efb2a7ea65333ee9575f4f43089db491115cf93df0a5fb19b1b859d7f0",
+    "T_Nyaakoto_CoatV3_Albedo.png": "810d0b212949e6ba7bc71e520d055ed40e54c37a45da71f6aa1d09d24aaad500",
+    "T_Nyaakoto_CoatV3_NormalDX.png": "04a3f02349297a889eb81786a6946b58bdca0697063ebdfe5f91c114b19db516",
+    "T_Nyaakoto_CoatV3_NormalGL.png": "3fa91a1025da88f261fbf474423535a6e11d20a580ec682da0b8d039e17a023f",
+    "T_Nyaakoto_CoatV3_ORM.png": "0aecf838b19539f4e41cc46d8bfb223b7f3173f20065a006e5f8d58be5a4203f",
+    "validate_coat_maps.py": "102490bc7fb611df4d7de3eacbd41fbb97d5814fd46df2113f27972a6e807b7e"
+  }
+}
