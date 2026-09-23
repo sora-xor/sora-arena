@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_torii_foot_study.py",
+  "source_blend": "Nyaagyu_ToriiFoot_Study.blend",
+  "fbx": "SM_Nyaagyu_ToriiFoot_Study.fbx",
+  "fbx_sha256": "ba51bdf0437777aea1cfde5e96d22365ded82c11c1b166f2a6b7998786c24d82",
+  "editable_parts": 26,
+  "source_triangles": 9688,
+  "material_slots": [
+    "M_ToriiFoot_MossyRock_CC0"
+  ],
+  "scan_asset": "https://polyhaven.com/a/mossy_rock",
+  "scan_license": "CC0",
+  "scan_files": {
+    "diffuse": {
+      "file": "mossy_rock_diff_2k.jpg",
+      "sha256": "98ecbd1d19953433f5909b79958992b1da2b45addbee772d1d4c27287f368499"
+    },
+    "normal_dx": {
+      "file": "mossy_rock_nor_dx_2k.png",
+      "sha256": "92fd7266d5e955f3d516fa39fa39082a16959c18dbf512fd999f7dbe7eb16602"
+    },
+    "arm": {
+      "file": "mossy_rock_arm_2k.png",
+      "sha256": "c4a644ab39a49fb293e7b7bf291bc6f163d0510e877681fa94b1a18d57ebf4b0"
+    },
+    "displacement": {
+      "file": "mossy_rock_disp_2k.png",
+      "sha256": "3ee19ec26fa8ecf27b1fc961902e0656321d37f3d66a5c4fd809303db858ff7c"
+    }
+  },
+  "placement": "local gate origin: centers x=+-2.35 m, y=0; no gameplay collision",
+  "visual_gate": "source-only pending fixed-camera packaged UE5.8.3 A/B; not AAA-qualified"
+}
