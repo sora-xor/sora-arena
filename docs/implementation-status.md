@@ -167,6 +167,19 @@ Mesh Partition Lumen-heightfield path have not yet been integrated or qualified.
 The 5.8.3 import/cook/stage checks do not prove Lumen card/probe coverage,
 photoreal appearance, Windows rendering, or 60 fps. See
 [terrain source and integration record](mesh-terrain-nyaagyu.md).
+The Estate campaign now replaces its ten pink-sphere tree prototypes with
+separately authored 354k-triangle Nanite and 95k-triangle conventional tiers
+of a CC0 scanned Poly Haven broadleaf tree, including masked leaves and PBR
+maps. It replaces the visual building blockouts with a 74k-triangle Edo-inspired
+dojo containing a tiled roof, veranda, shoji, and the exact supplied SORA
+kamon; gameplay collision remains on the prior simple proxies. The skinned
+Nyaakoto runtime cat has a 20-bone rig, 23 fixed material slots, authored
+fur/cloth/lacquer PBR maps, yumi, quiver and katana. Source validators and the
+5.8.3 editor import validator pass for all 150 expected packages and exact
+character material bindings. Blender reviews still show a stylized character,
+and the new 130k-vertex LOD0 needs distance LODs and performance review. This
+asset work is not a photoreal AAA qualification; an in-game visual pass and
+measured Windows/Mac frame times remain required.
 An additional unrigged Nyaagyu bust study has editable Blender source and a
 102,071-triangle FBX with 32,155 fur-card triangles. Its Blender round-trip,
 source hashes, bounds and material-slot checks pass. Its render is still visibly
