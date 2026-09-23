@@ -148,7 +148,10 @@ The loopback transport now also has bounded authenticated ACK/retry: it sends
 the same sealed fragments at most four times, ACKs only durably journaled
 evidence, re-ACKs authenticated duplicate fragments without redelivery, and
 queues incoming evidence during an ACK wait. Drop, reorder, forged ACK, retry
-exhaustion and fresh-key restart tests pass. It remains a zero-bond localhost
+exhaustion and fresh-key restart tests pass. A full local receive queue now
+authenticates and re-ACKs only previously journaled replays; new evidence is
+refused before state mutation or ACK, then accepted when capacity returns.
+Focused regressions and the arena-core suite pass. It remains a zero-bond localhost
 research path without production NAT/relay transport or settlement authority.
 
 The Unreal wallet source can prepare allowlisted native transactions, verify a
