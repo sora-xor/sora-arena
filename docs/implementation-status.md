@@ -94,6 +94,13 @@ bounds and Blender round-trip checks; the muzzle faces local +X from a
 receiver-centered origin. The current 0.75 weapon-root scale is an initial
 placement only. Unreal import, paw grip, materials, visual quality and combat
 frame time still need an engine run.
+The Nyaagyu hero now has an editable 1.849 m Blender static-character
+blockout with 293 parts, 51,463 source triangles and an exact SVG-derived
+SORA chest mark. Its FBX round-trip and import-source checks pass, but the
+render remains stylized; it has no rig, animation, groom or runtime character
+wiring. A separate generated photoreal concept image provides an art-direction
+target for fur, cloth, armor and lighting. It is a 2D reference, not a game
+mesh or evidence of in-engine visual quality.
 
 The provisional first-release balance correction changed Arc carbine and
 Clockwork repeater attack cooldowns from 10 to 12 simulation ticks. A clean-lane

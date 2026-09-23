@@ -152,6 +152,14 @@ hero_character_fbx = (hero_character_root / hero_character["fbx"]).read_bytes()
 assert hero_character_fbx.startswith(b"Kaydara FBX Binary")
 assert b"/Users/" not in hero_character_fbx
 assert hero_character["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
+concept_root = content / "SourceArt/Concepts"
+concept = json.loads((concept_root / "nyaagyu_photoreal_character_target.json").read_text())
+assert concept["schema_version"] == 1 and concept["generator"] == "OpenAI built-in image_gen"
+assert concept["input_images"] == [] and "concept only" in concept["purpose"]
+concept_bytes = (concept_root / concept["asset"]).read_bytes()
+assert hashlib.sha256(concept_bytes).hexdigest() == concept["sha256"]
+assert concept_bytes[:16] == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+assert list(struct.unpack(">II", concept_bytes[16:24])) == concept["dimensions_px"]
 environment_root = content / "SourceArt/Environment/Original"
 environment = json.loads((environment_root / "manifest.json").read_text())
 assert environment["schema_version"] == 1
