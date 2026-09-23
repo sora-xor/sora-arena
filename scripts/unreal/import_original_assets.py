@@ -463,6 +463,8 @@ for record in tree["meshes"]:
         raise RuntimeError(f"Nyaagyu foliage Nanite tier mismatch: {record['name']}")
     assets.save_loaded_asset(mesh)
 
+runpy.run_path(str(root / "scripts/unreal/import_nyaagyu_pine.py"), run_name="__main__")
+
 runtime_skin = json.loads((source / "Characters/Hero/runtime_skin_manifest.json").read_text())
 if (runtime_skin.get("schema_version") != 1
         or runtime_skin.get("generator") != "scripts/art/rig_nyaakoto_runtime.py"

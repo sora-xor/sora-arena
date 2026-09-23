@@ -301,6 +301,55 @@ def expected_assets(project_root):
         name = f"T_NyaagyuTree_{channel}"
         add(specs, f"{FOLIAGE}/Textures/{name}.{name}", "Texture2D")
 
+    pine_root = source_root / "Environment/PolyHaven/PineSaplingSmall"
+    pine = read_manifest(pine_root / "manifest.json")
+    require(pine.get("schema_version") == 1
+            and pine.get("asset_id") == "pine_sapling_small"
+            and pine.get("upstream_page") == "https://polyhaven.com/a/pine_sapling_small"
+            and pine.get("license") == "CC0-1.0; https://polyhaven.com/license"
+            and pine.get("generator") == "scripts/art/create_nyaagyu_pine_saplings.py"
+            and pine.get("material_slots") == ["M_NyaagyuPine_Bark", "M_NyaagyuPine_Needles"]
+            and pine.get("gameplay_collision") is False
+            and pine.get("instances_in_nyaagyu_estate") == 9
+            and len(pine.get("upstream_files", [])) == 8
+            and len(pine.get("texture_files", [])) == 8
+            and len(pine.get("meshes", [])) == 6,
+            "The pinned Nyaagyu CC0 pine identity changed")
+    for file in pine["upstream_files"] + pine["texture_files"]:
+        path = source_file(pine_root, file["path"])
+        require(path.stat().st_size == file["bytes"]
+                and hashlib.sha256(path.read_bytes()).hexdigest() == file["sha256"],
+                f"Pinned pine source changed: {path}")
+    for name, key in ((pine["source_blend"], "source_blend_sha256"),
+                      (pine["preview"], "preview_sha256")):
+        path = source_file(pine_root, name)
+        require(hashlib.sha256(path.read_bytes()).hexdigest() == pine[key],
+                f"Nyaagyu pine source review changed: {path}")
+    for variant in "abc":
+        for tier in ("hi", "mac"):
+            matches = [item for item in pine["meshes"]
+                       if item.get("variant") == variant and item.get("tier") == tier]
+            require(len(matches) == 1, f"Missing or duplicate pine {variant}/{tier} tier")
+            record = matches[0]
+            name = f"SM_NyaagyuPine_{variant.upper()}_{tier.upper()}"
+            require(record.get("name") == name and record.get("fbx") == name + ".fbx"
+                    and record.get("unreal_asset") == f"{FOLIAGE}/{name}.{name}"
+                    and record.get("nanite") == (tier == "hi")
+                    and record.get("material_slots") == pine["material_slots"]
+                    and record.get("source_triangles", 0) > (70000 if tier == "hi" else 20000),
+                    f"The Nyaagyu pine {variant}/{tier} mesh identity changed")
+            file = source_file(pine_root, record["fbx"])
+            require(hashlib.sha256(file.read_bytes()).hexdigest() == record["fbx_sha256"],
+                    f"Nyaagyu pine FBX changed: {file}")
+            add(specs, record["unreal_asset"], "StaticMesh")
+    for role in ("Bark", "Needles"):
+        name = f"M_NyaagyuPine_{role}"
+        add(specs, f"{FOLIAGE}/{name}.{name}", "Material")
+    for file in pine["texture_files"]:
+        channel = Path(file["path"]).stem.removeprefix("pine_sapling_small_").removesuffix("_2k")
+        name = f"T_NyaagyuPine_{channel}"
+        add(specs, f"{FOLIAGE}/Textures/{name}.{name}", "Texture2D")
+
     logo_root = source_root / "UI"
     logo = read_manifest(logo_root / "sora_logo_manifest.json")
     require(logo.get("unreal_asset") ==
@@ -524,6 +573,25 @@ def validate_loaded_assets(unreal, specs):
     leaves = asset_library.load_asset(f"{FOLIAGE}/M_NyaagyuTree_Leaves.M_NyaagyuTree_Leaves")
     require(leaves.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_MASKED,
             "The Nyaagyu tree leaves lost their alpha cutout")
+    for variant in "ABC":
+        for tier in ("HI", "MAC"):
+            name = f"SM_NyaagyuPine_{variant}_{tier}"
+            mesh = asset_library.load_asset(f"{FOLIAGE}/{name}.{name}")
+            require(bool(mesh.get_editor_property("nanite_settings").get_editor_property("enabled")) == (tier == "HI"),
+                    f"Nyaagyu pine Nanite tier mismatch: {name}")
+            slots = [str(item.get_editor_property("material_slot_name"))
+                     for item in mesh.get_editor_property("static_materials")]
+            require(sorted(slots) == ["M_NyaagyuPine_Bark", "M_NyaagyuPine_Needles"],
+                    f"Nyaagyu pine material zones missing: {name}")
+    needles = asset_library.load_asset(f"{FOLIAGE}/M_NyaagyuPine_Needles.M_NyaagyuPine_Needles")
+    require(needles.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_MASKED
+            and bool(needles.get_editor_property("two_sided")),
+            "Nyaagyu pine needles lost their two-sided cutout material")
+    mask = asset_library.load_asset(
+        f"{FOLIAGE}/Textures/T_NyaagyuPine_twig_mask.T_NyaagyuPine_twig_mask")
+    require(mask.get_editor_property("compression_settings") == unreal.TextureCompressionSettings.TC_MASKS
+            and not bool(mask.get_editor_property("srgb")),
+            "Nyaagyu pine needle mask color space or compression changed")
     return len(specs)
 
 

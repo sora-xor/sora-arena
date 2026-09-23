@@ -38,6 +38,7 @@ private:
     bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation);
     void NyaagyuTerrain();
     void NyaagyuTree(FVector Location, FRotator Rotation, float Scale);
+    void NyaagyuPine(FVector Location, FRotator Rotation, float Scale, int32 Variant);
     void Torii(FVector Location, float Yaw);
     void ClearArena();
     void Lighting(int32 MapId);

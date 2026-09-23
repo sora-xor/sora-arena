@@ -353,6 +353,15 @@ assert [(record["tier"], record["nanite"]) for record in tree["meshes"]] == [("h
 assert "NyaagyuTree(P+FVector(450,-S*250,0)" in world_builder
 assert "Bloom%d%d%d" not in world_builder
 assert "NyaagyuTree(" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+pine_root = content / "SourceArt/Environment/PolyHaven/PineSaplingSmall"
+pine = json.loads((pine_root / "manifest.json").read_text())
+assert pine["schema_version"] == 1 and pine["asset_id"] == "pine_sapling_small"
+assert pine["license"] == "CC0-1.0; https://polyhaven.com/license"
+assert pine["gameplay_collision"] is False and pine["instances_in_nyaagyu_estate"] == 9
+assert len(pine["upstream_files"]) == 8 and len(pine["texture_files"]) == 8
+assert len(pine["meshes"]) == 6
+assert "NyaagyuPine(FVector(X,Y,0)" in world_builder
+assert "NyaagyuPine(" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 for record in tree["upstream_files"] + tree["texture_files"]:
     path = tree_root / record["path"]
     assert path.stat().st_size == record["bytes"]

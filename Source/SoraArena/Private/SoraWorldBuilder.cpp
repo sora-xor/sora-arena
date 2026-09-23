@@ -226,6 +226,35 @@ void ASoraWorldBuilder::NyaagyuTree(FVector Location, FRotator Rotation, float S
     Mesh->SetVisibleInRayTracing(true);
     Mesh->RegisterComponent(); AddInstanceComponent(Mesh); Pieces.Add(Mesh);
 }
+void ASoraWorldBuilder::NyaagyuPine(FVector Location, FRotator Rotation, float Scale, int32 Variant)
+{
+#if PLATFORM_MAC
+    const TCHAR* Tier=TEXT("MAC");
+#else
+    const TCHAR* Tier=TEXT("HI");
+#endif
+    const TCHAR* Form=Variant==0?TEXT("A"):Variant==1?TEXT("B"):TEXT("C");
+    const FString Name=FString::Printf(TEXT("SM_NyaagyuPine_%s_%s"),Form,Tier);
+    const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Foliage/%s.%s"),*Name,*Name);
+    auto* Asset=LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
+    if(!Asset)
+    {
+        UE_LOG(LogTemp,Error,TEXT("SORA pinned CC0 Nyaagyu pine is missing: %s"),*Path);
+        return;
+    }
+    auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
+    Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
+    Mesh->SetRelativeLocation(Location); Mesh->SetRelativeRotation(Rotation); Mesh->SetRelativeScale3D(FVector(Scale));
+    // Young pines add silhouette and dappled light only; campaign/practice
+    // hit volumes and the deterministic kernel stay unchanged.
+    Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Mesh->SetGenerateOverlapEvents(false);
+    Mesh->SetCastShadow(true);
+    Mesh->SetAffectDistanceFieldLighting(true);
+    Mesh->SetAffectDynamicIndirectLighting(true);
+    Mesh->SetVisibleInRayTracing(true);
+    Mesh->RegisterComponent(); AddInstanceComponent(Mesh); Pieces.Add(Mesh);
+}
 void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 {
     const FRotator R(0,Yaw,0); const FVector Side=R.RotateVector(FVector(0,1,0));
@@ -306,6 +335,18 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
                 const float TreeScale=.90f+.05f*((I+3*(S+1))%5);
                 NyaagyuTree(P+FVector(450,-S*250,0),FRotator(0,37.f*I+(S>0?73.f:0.f),0),TreeScale);
             }
+        }
+    }
+    if(MapId==0)
+    {
+        // Three scanned forms break up repetition between the established
+        // broadleaf trees. Keep trunks in the gaps along the estate edge.
+        for(int32 I=0;I<9;++I)
+        {
+            const float X=-2500.f+(I%5)*1000.f;
+            const float Y=(I<5?-1.f:1.f)*(2280.f-(I%3)*65.f);
+            const float TreeScale=1.65f+.14f*(I%4);
+            NyaagyuPine(FVector(X,Y,0),FRotator(0,31.f*I+17.f,0),TreeScale,I%3);
         }
     }
     for(int32 I=0;I<12;++I)

@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "asset_id": "pine_sapling_small",
+  "upstream_page": "https://polyhaven.com/a/pine_sapling_small",
+  "upstream_api": "https://api.polyhaven.com/files/pine_sapling_small",
+  "license": "CC0-1.0; https://polyhaven.com/license",
+  "authors": [
+    "Rico Cilliers",
+    "Rob Tuytel"
+  ],
+  "generator": "scripts/art/create_nyaagyu_pine_saplings.py",
+  "description": "Three scanned pine-sapling forms; two PBR zones, needle cutout mask, HI Nanite and conventional Mac tiers; campaign visual foliage only",
+  "upstream_files": [
+    {
+      "path": "Upstream/pine_sapling_small.bin",
+      "bytes": 17771796,
+      "sha256": "b4d2fc73d53f1d8717eb5ef9a2c66957d2a53152787e543aace88fcd6fca94ef"
+    },
+    {
+      "path": "Upstream/pine_sapling_small_1k.gltf",
+      "bytes": 11442,
+      "sha256": "f358c01926861dd082f32dba60f7c9fba232b585a985cf38c0d2229eecf4bc48"
+    },
+    {
+      "path": "Upstream/textures/pine_sapling_small_bark_arm_1k.jpg",
+      "bytes": 801278,
+      "sha256": "336a4680cd571b6076b67afee2310b290b8900d9d126eb39ec1ae92e95be2ea9"
+    },
+    {
+      "path": "Upstream/textures/pine_sapling_small_bark_diff_1k.jpg",
+      "bytes": 725265,
+      "sha256": "5c76836b01c3536fa0e24207b67bf4f3315b53ebe2b4ecc6f08dfcf3f8d74929"
+    },
+    {
+      "path": "Upstream/textures/pine_sapling_small_bark_nor_gl_1k.jpg",
+      "bytes": 1016849,
+      "sha256": "05c46455531781b6cf18cae0648cf627f60ee942adaa8bcbfd1592fc2506a9e0"
+    },
+    {
+      "path": "Upstream/textures/pine_sapling_small_twig_arm_1k.jpg",
+      "bytes": 394056,
+      "sha256": "2eb0aa44124b5a4ae9401e00b23b3c916f4c3f421616ce1bb932f248fc061288"
+    },
+    {
+      "path": "Upstream/textures/pine_sapling_small_twig_diff_1k.jpg",
+      "bytes": 477942,
+      "sha256": "54af7d6fb664b5a38bcb118b557bc50e01e86ec54d6f1a573c3e32c649a53362"
+    },
+    {
+      "path": "Upstream/textures/pine_sapling_small_twig_nor_gl_1k.jpg",
+      "bytes": 692711,
+      "sha256": "76af87821d7ff00e25768d5d97a449394fe64a21ae55d099da7f5ed46d9098c8"
+    }
+  ],
+  "texture_files": [
+    {
+      "path": "Textures/pine_sapling_small_bark_arm_2k.jpg",
+      "bytes": 2941366,
+      "sha256": "7afccadf4d239dfbcb99338067bf1b4d0c3316b42021ac2d7cdf17f8dddb7346"
+    },
+    {
+      "path": "Textures/pine_sapling_small_bark_diff_2k.jpg",
+      "bytes": 2700448,
+      "sha256": "359bb1be7aab30f5b79d391af9ef088503d6d135d529c9fc06bce60adf28ef60"
+    },
+    {
+      "path": "Textures/pine_sapling_small_bark_nor_dx_2k.jpg",
+      "bytes": 3369455,
+      "sha256": "b228f0b7f4221c5d958a635e98609d62c904069ccb68bb2125cea199e1821bc5"
+    },
+    {
+      "path": "Textures/pine_sapling_small_twig_alpha_2k.png",
+      "bytes": 334535,
+      "sha256": "0d471fe538f67d85fb5d4d19b02ad88a5c31b18f83bdb5b9c40eb2f3e16e98f6"
+    },
+    {
+      "path": "Textures/pine_sapling_small_twig_arm_2k.jpg",
+      "bytes": 1251644,
+      "sha256": "f7907164f65ac089d997a6759db63c3504d25a97ad6c26c9ef5a7f58b985d11d"
+    },
+    {
+      "path": "Textures/pine_sapling_small_twig_diff_2k.jpg",
+      "bytes": 1542464,
+      "sha256": "216afcc5da6dca9e6286c516520e221cd1babf8a9cddf141cd4b98c2b10f4df0"
+    },
+    {
+      "path": "Textures/pine_sapling_small_twig_mask_2k.png",
+      "bytes": 318955,
+      "sha256": "b78c1d3d7d0d476fe31126a57771c542e52631e8b2c21e13cd03f82a204a5cce"
+    },
+    {
+      "path": "Textures/pine_sapling_small_twig_nor_dx_2k.jpg",
+      "bytes": 2589750,
+      "sha256": "b88ef0676c96edc5f1abd5eef21ad7bc831b934f57d1253a131e819cdf84df6e"
+    }
+  ],
+  "source_blend": "NyaagyuPine_Source.blend",
+  "source_blend_sha256": "125f1ac81952714ee8f670bce01d2e738b493961dc304b9d9d80bc0ef06b50e9",
+  "preview": "Preview_NyaagyuPine.png",
+  "preview_sha256": "387f7982a58723581119bc87b5e9a6a4579a7b411452dbf9ce0fe79d0f198f47",
+  "material_slots": [
+    "M_NyaagyuPine_Bark",
+    "M_NyaagyuPine_Needles"
+  ],
+  "meshes": [
+    {
+      "variant": "a",
+      "tier": "hi",
+      "name": "SM_NyaagyuPine_A_HI",
+      "fbx": "SM_NyaagyuPine_A_HI.fbx",
+      "fbx_sha256": "7d02d4762d7aabceb68ba55b11081e6778d1e29ea63fd83af9714532ba12c718",
+      "source_triangles": 88558,
+      "bounds_m": {
+        "min": [
+          -0.3938,
+          -0.356,
+          -0.0155
+        ],
+        "max": [
+          0.3938,
+          0.3714,
+          1.2833
+        ]
+      },
+      "material_slots": [
+        "M_NyaagyuPine_Bark",
+        "M_NyaagyuPine_Needles"
+      ],
+      "nanite": true,
+      "unreal_asset": "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_A_HI.SM_NyaagyuPine_A_HI"
+    },
+    {
+      "variant": "a",
+      "tier": "mac",
+      "name": "SM_NyaagyuPine_A_MAC",
+      "fbx": "SM_NyaagyuPine_A_MAC.fbx",
+      "fbx_sha256": "c62eb9b92b65648ca6540c1ec8eaacae740634d8b08e5af2b56c171771b3ee5d",
+      "source_triangles": 26945,
+      "bounds_m": {
+        "min": [
+          -0.3934,
+          -0.356,
+          -0.0155
+        ],
+        "max": [
+          0.3944,
+          0.3714,
+          1.283
+        ]
+      },
+      "material_slots": [
+        "M_NyaagyuPine_Bark",
+        "M_NyaagyuPine_Needles"
+      ],
+      "nanite": false,
+      "unreal_asset": "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_A_MAC.SM_NyaagyuPine_A_MAC"
+    },
+    {
+      "variant": "b",
+      "tier": "hi",
+      "name": "SM_NyaagyuPine_B_HI",
+      "fbx": "SM_NyaagyuPine_B_HI.fbx",
+      "fbx_sha256": "a1458d9855e09d98487ab6392cf9e70f4a5f4d7dd66808f8c546e82503e9db57",
+      "source_triangles": 75970,
+      "bounds_m": {
+        "min": [
+          -0.2644,
+          -0.399,
+          0.0009
+        ],
+        "max": [
+          0.2644,
+          0.3314,
+          1.0465
+        ]
+      },
+      "material_slots": [
+        "M_NyaagyuPine_Bark",
+        "M_NyaagyuPine_Needles"
+      ],
+      "nanite": true,
+      "unreal_asset": "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_B_HI.SM_NyaagyuPine_B_HI"
+    },
+    {
+      "variant": "b",
+      "tier": "mac",
+      "name": "SM_NyaagyuPine_B_MAC",
+      "fbx": "SM_NyaagyuPine_B_MAC.fbx",
+      "fbx_sha256": "d7cb4a639cc5c09a9c48df14d1e9cc00100991192a576da9fda5323871eb4a7d",
+      "source_triangles": 23131,
+      "bounds_m": {
+        "min": [
+          -0.2645,
+          -0.3992,
+          0.0009
+        ],
+        "max": [
+          0.2645,
+          0.3314,
+          1.047
+        ]
+      },
+      "material_slots": [
+        "M_NyaagyuPine_Bark",
+        "M_NyaagyuPine_Needles"
+      ],
+      "nanite": false,
+      "unreal_asset": "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_B_MAC.SM_NyaagyuPine_B_MAC"
+    },
+    {
+      "variant": "c",
+      "tier": "hi",
+      "name": "SM_NyaagyuPine_C_HI",
+      "fbx": "SM_NyaagyuPine_C_HI.fbx",
+      "fbx_sha256": "9566632ebbd541ca5ffba6ef39aecd7c55f19d6291309b54b00f003491f3fc23",
+      "source_triangles": 82910,
+      "bounds_m": {
+        "min": [
+          -0.2564,
+          -0.2593,
+          0.0007
+        ],
+        "max": [
+          0.2564,
+          0.3207,
+          0.962
+        ]
+      },
+      "material_slots": [
+        "M_NyaagyuPine_Bark",
+        "M_NyaagyuPine_Needles"
+      ],
+      "nanite": true,
+      "unreal_asset": "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_C_HI.SM_NyaagyuPine_C_HI"
+    },
+    {
+      "variant": "c",
+      "tier": "mac",
+      "name": "SM_NyaagyuPine_C_MAC",
+      "fbx": "SM_NyaagyuPine_C_MAC.fbx",
+      "fbx_sha256": "bf944ed9ea518ebef8ed89a6276509a44785b800559331e9a8e9abe71d88bb2e",
+      "source_triangles": 25242,
+      "bounds_m": {
+        "min": [
+          -0.256,
+          -0.2593,
+          0.0007
+        ],
+        "max": [
+          0.2562,
+          0.3209,
+          0.9622
+        ]
+      },
+      "material_slots": [
+        "M_NyaagyuPine_Bark",
+        "M_NyaagyuPine_Needles"
+      ],
+      "nanite": false,
+      "unreal_asset": "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_C_MAC.SM_NyaagyuPine_C_MAC"
+    }
+  ],
+  "instances_in_nyaagyu_estate": 9,
+  "gameplay_collision": false
+}
