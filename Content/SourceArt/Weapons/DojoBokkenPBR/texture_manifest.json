@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_dojo_bokken_pbr_textures.py",
+  "pillow_version": "9.3.0",
+  "numpy_version": "1.23.5",
+  "source": "Source/Oak_QuarterSawn_ImageGen_v1.png",
+  "source_sha256": "e6a1034167a367d2469fa67b2013a63522b50313544d4f25dd2dd2c38d97af8f",
+  "source_output_id": "exec-e8f16775-bb5f-479b-8efb-478432eeb9fe",
+  "source_prompt": "Use case: photorealistic-natural. Asset type: source albedo texture for a close-view, hand-shaped Japanese white-oak bokken used in a photorealistic Unreal Engine first-person samurai game. Generate ONE seamless/tileable square orthographic surface photograph of quarter-sawn Japanese white oak, long fine grain running vertically through the entire image, pale honey to light tan with subtle darker pores, natural irregularity and a few quiet mineral streaks, extremely fine scale, no plank seams or end grain. Flat color-calibrated overcast illumination suitable as unlit PBR base color, no directional shadows, no specular highlights, no vignette. Fill frame edge to edge with wood. Do not depict a sword, tabletop, object, writing, logo, knots, splits, dirt, bark, dramatic streaks, or background. Prioritize photographic material realism and non-repeating natural detail; no illustration or painting.",
+  "source_rights": "Project-generated bitmap via built-in image generation; OpenAI Terms of Use, no purchased third-party asset.",
+  "maps": {
+    "Albedo": {
+      "file": "T_DojoBokken_WhiteOak_Albedo_2k.png",
+      "sha256": "d5b3ec6688b0458cea3721b49b555289b94e3d89af64420a9a3e895f42d834a4",
+      "resolution": [
+        2048,
+        2048
+      ]
+    },
+    "NormalDX": {
+      "file": "T_DojoBokken_WhiteOak_NormalDX_2k.png",
+      "sha256": "9822114703e1900121d495113eb73df5e89c74f7d5b40900bcd633327e473737",
+      "resolution": [
+        2048,
+        2048
+      ]
+    },
+    "ORM": {
+      "file": "T_DojoBokken_WhiteOak_ORM_2k.png",
+      "sha256": "6e760a5d87b531e9c2cdad2272d3e37c4d674944947c5ebcd52deb8293d816d2",
+      "resolution": [
+        2048,
+        2048
+      ]
+    }
+  },
+  "limitations": "The source is 1254 px and resampled to 2048 px; no additional detail is created by upsampling. Normal and roughness derive from color, not measured surface height. In-engine visual approval remains required."
+}

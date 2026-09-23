@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_dojo_bokken_pbr_study.py",
+  "base_blend_sha256": "e1766d6d1dfa7c4cacc5c41ca3910ea6a4994c5ac0dffef2a5339ae4f91a364d",
+  "base_fbx_sha256": "bc3270c3d95480bfea4fc387382758f8dc7bdbe89635b55f67ed5f319054209f",
+  "texture_manifest_sha256": "500f3fae81e8e9bafe84fe521f10162fb3658614b20acf042be39f273d392fdf",
+  "source_blend": "Nyaagyu_DojoBokken_PBRStudy.blend",
+  "blend_sha256": "787b77b8bc22f70c4019d31c04509080654a6373fba7684903ed468567231a92",
+  "fbx": "SM_Nyaagyu_DojoBokken_PBRStudy.fbx",
+  "fbx_sha256": "8ecc18c9b2c6b6a9e3aaf49e9d13ae0ca87d9ada18c4e474d64cd8e794c65ea6",
+  "preview": "Nyaagyu_DojoBokken_PBRStudy_Blender.png",
+  "preview_sha256": "e104e6d954dc1f66979d05f26afeb797d6f68743b3049cb503e7416316cba8f9",
+  "geometry_sha256": "7860237c9bf152fade0e85ee7aba0cddf8b296a82ce1e504402d88a6bc6bdf5f",
+  "source_parts": 16,
+  "source_triangles": 8208,
+  "material_slots": [
+    "M_Bokken_EndGrain",
+    "M_Bokken_HandOiledGrip",
+    "M_Bokken_QuietWoodGrain",
+    "M_Bokken_SeasonedWhiteOak"
+  ],
+  "unreal_asset": "/Game/Generated/ArtReview/DojoBokkenPBR/SM_Nyaagyu_DojoBokken_PBRStudy.SM_Nyaagyu_DojoBokken_PBRStudy",
+  "scope": "Editable material/UV study with unchanged combat geometry. No gameplay promotion until packaged UE 5.8.2 visual and performance review."
+}
