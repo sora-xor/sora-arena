@@ -270,14 +270,14 @@ material = assets.load_asset(path) if assets.does_asset_exist(path) else tools.c
 lib = unreal.MaterialEditingLibrary
 lib.delete_all_material_expressions(material)
 color = lib.create_material_expression(material, unreal.MaterialExpressionVectorParameter, -600, -200)
-color.parameter_name = "BaseColor"
-color.default_value = unreal.LinearColor(.35,.4,.4,1)
+color.set_editor_property("parameter_name", "BaseColor")
+color.set_editor_property("default_value", unreal.LinearColor(.35,.4,.4,1))
 roughness = lib.create_material_expression(material, unreal.MaterialExpressionScalarParameter,-400,250)
-roughness.parameter_name = "Roughness"
-roughness.default_value = .72
+roughness.set_editor_property("parameter_name", "Roughness")
+roughness.set_editor_property("default_value", .72)
 metallic = lib.create_material_expression(material, unreal.MaterialExpressionScalarParameter,-400,350)
-metallic.parameter_name = "Metallic"
-metallic.default_value = 0
+metallic.set_editor_property("parameter_name", "Metallic")
+metallic.set_editor_property("default_value", 0)
 lib.connect_material_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
 lib.connect_material_property(roughness, "", unreal.MaterialProperty.MP_ROUGHNESS)
 lib.connect_material_property(metallic, "", unreal.MaterialProperty.MP_METALLIC)
