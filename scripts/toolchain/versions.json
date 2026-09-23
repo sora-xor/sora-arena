@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "unreal": {
+    "version": "5.8.2",
+    "source_commit": null,
+    "source_commit_note": "Record the verified Epic source commit after repository access is available; no source revision has been downloaded or validated yet.",
+    "default_macos_root": "/Users/Shared/Epic Games/UE_5.8"
+  },
+  "xcode": "26.1.1",
+  "default_macos_xcode": "~/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer",
+  "blender": "5.2.2",
+  "git_lfs": "3.8.0",
+  "linux": {
+    "distribution": "Ubuntu 22.04",
+    "unreal_toolchain": "v26",
+    "clang": "20.1.8"
+  },
+  "windows": {
+    "visual_studio": "2022 17.14",
+    "msvc": "14.44.35207",
+    "sdk": "10.0.22621.0"
+  }
+}

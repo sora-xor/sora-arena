@@ -1,0 +1,555 @@
+{
+  "schema_version": 2,
+  "rules_scope": "Unreal offline prototype only; not a proof-qualified multiplayer ruleset.",
+  "dialogue_speakers": [
+    { "id": "mentor", "ja": "師範", "en": "Master" },
+    { "id": "samurai", "ja": "猫柳生の侍", "en": "Nyaagyu Samurai" },
+    { "id": "scout", "ja": "斥候", "en": "Scout" },
+    { "id": "farmer", "ja": "農家", "en": "Farmer" },
+    { "id": "artisan", "ja": "職人", "en": "Artisan" },
+    { "id": "banker", "ja": "異星の徴収官", "en": "Alien Collector" }
+  ],
+  "classes": [
+    {
+      "id": 0,
+      "name": "侍",
+      "role": "前衛 / 間合いと守り",
+      "health": 145,
+      "speed": 520,
+      "weapons": [
+        0,
+        1,
+        12
+      ],
+      "name_en": "Samurai",
+      "role_en": "Frontline / timing and defense"
+    },
+    {
+      "id": 1,
+      "name": "忍",
+      "role": "奇襲 / 機動と精密",
+      "health": 105,
+      "speed": 660,
+      "weapons": [
+        2,
+        3,
+        13
+      ],
+      "name_en": "Shinobi",
+      "role_en": "Flanking / mobility and precision"
+    },
+    {
+      "id": 2,
+      "name": "鉄砲",
+      "role": "射撃 / 間合いの制圧",
+      "health": 120,
+      "speed": 545,
+      "weapons": [
+        4,
+        5,
+        14
+      ],
+      "name_en": "Teppō",
+      "role_en": "Marksman / deliberate ranged pressure"
+    },
+    {
+      "id": 3,
+      "name": "花火",
+      "role": "爆破 / 陣地の制圧",
+      "health": 135,
+      "speed": 505,
+      "weapons": [
+        6,
+        7,
+        15
+      ],
+      "name_en": "Hanabi",
+      "role_en": "Demolition / area denial"
+    },
+    {
+      "id": 4,
+      "name": "絡繰",
+      "role": "工匠 / 継続支援",
+      "health": 130,
+      "speed": 535,
+      "weapons": [
+        8,
+        9,
+        16
+      ],
+      "name_en": "Karakuri",
+      "role_en": "Engineering / sustained pressure"
+    },
+    {
+      "id": 5,
+      "name": "薬師",
+      "role": "支援 / 回復と連携",
+      "health": 115,
+      "speed": 575,
+      "weapons": [
+        10,
+        11,
+        17
+      ],
+      "name_en": "Kusushi",
+      "role_en": "Support / recovery and positioning"
+    }
+  ],
+  "weapons": [
+    {
+      "id": 0,
+      "name": "刀",
+      "class": 0,
+      "kind": "melee",
+      "damage": 52,
+      "cooldown": 0.65,
+      "range": 195,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Fast precise cuts; requires closing distance.",
+      "name_en": "Katana"
+    },
+    {
+      "id": 1,
+      "name": "アーク・カービン",
+      "class": 0,
+      "kind": "hitscan",
+      "damage": 24,
+      "cooldown": 0.23,
+      "range": 6500,
+      "reload": 1.6,
+      "magazine": 24,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Reliable mid-range fire; sustained recoil.",
+      "name_en": "Arc Carbine"
+    },
+    {
+      "id": 2,
+      "name": "鎖鎌",
+      "class": 1,
+      "kind": "melee",
+      "damage": 40,
+      "cooldown": 0.48,
+      "range": 250,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Longer reach; lower damage per contact.",
+      "name_en": "Kusarigama"
+    },
+    {
+      "id": 3,
+      "name": "ニードル短機関銃",
+      "class": 1,
+      "kind": "hitscan",
+      "damage": 13,
+      "cooldown": 0.105,
+      "range": 3300,
+      "reload": 1.7,
+      "magazine": 32,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "High fire rate; limited effective range.",
+      "name_en": "Needle SMG"
+    },
+    {
+      "id": 4,
+      "name": "脇差",
+      "class": 2,
+      "kind": "melee",
+      "damage": 39,
+      "cooldown": 0.48,
+      "range": 160,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Quick draw; very short reach.",
+      "name_en": "Wakizashi"
+    },
+    {
+      "id": 5,
+      "name": "コイル火縄銃",
+      "class": 2,
+      "kind": "hitscan",
+      "damage": 72,
+      "cooldown": 0.95,
+      "range": 10000,
+      "reload": 2.3,
+      "magazine": 5,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Strong single shots; long recovery and reload.",
+      "name_en": "Coil Matchlock"
+    },
+    {
+      "id": 6,
+      "name": "金棒",
+      "class": 3,
+      "kind": "melee",
+      "damage": 80,
+      "cooldown": 1.0,
+      "range": 210,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Heavy impact; slow commitment.",
+      "name_en": "Kanabō"
+    },
+    {
+      "id": 7,
+      "name": "擲弾筒",
+      "class": 3,
+      "kind": "explosive",
+      "damage": 66,
+      "cooldown": 0.9,
+      "range": 5500,
+      "reload": 2.4,
+      "magazine": 5,
+      "blast_radius": 360,
+      "projectile_speed": 2450,
+      "special": false,
+      "tradeoff": "Splash damage; visible arcing shells and self-damage.",
+      "name_en": "Grenade Launcher"
+    },
+    {
+      "id": 8,
+      "name": "鍛冶槌",
+      "class": 4,
+      "kind": "melee",
+      "damage": 59,
+      "cooldown": 0.78,
+      "range": 175,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Reliable impact; short reach.",
+      "name_en": "Forge Hammer"
+    },
+    {
+      "id": 9,
+      "name": "連発銃",
+      "class": 4,
+      "kind": "hitscan",
+      "damage": 20,
+      "cooldown": 0.17,
+      "range": 5800,
+      "reload": 2.0,
+      "magazine": 36,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Large magazine; lower burst impact.",
+      "name_en": "Repeater"
+    },
+    {
+      "id": 10,
+      "name": "短刀",
+      "class": 5,
+      "kind": "melee",
+      "damage": 34,
+      "cooldown": 0.39,
+      "range": 155,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Rapid strikes; requires close exposure.",
+      "name_en": "Tantō"
+    },
+    {
+      "id": 11,
+      "name": "パルス・カービン",
+      "class": 5,
+      "kind": "hitscan",
+      "damage": 22,
+      "cooldown": 0.24,
+      "range": 6500,
+      "reload": 1.55,
+      "magazine": 22,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Controllable support fire; moderate output.",
+      "name_en": "Pulse Carbine"
+    },
+    {
+      "id": 12,
+      "name": "単分子薙刀",
+      "class": 0,
+      "kind": "melee",
+      "damage": 58,
+      "cooldown": 0.9,
+      "range": 300,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": true,
+      "tradeoff": "Extended reach; slower attacks than katana.",
+      "name_en": "Monofilament Naginata"
+    },
+    {
+      "id": 13,
+      "name": "幻影短機関銃",
+      "class": 1,
+      "kind": "hitscan",
+      "damage": 18,
+      "cooldown": 0.155,
+      "range": 3000,
+      "reload": 2.2,
+      "magazine": 22,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": true,
+      "tradeoff": "Harder individual hits; smaller magazine.",
+      "name_en": "Phantom SMG"
+    },
+    {
+      "id": 14,
+      "name": "プラズマ火縄銃",
+      "class": 2,
+      "kind": "hitscan",
+      "damage": 95,
+      "cooldown": 1.5,
+      "range": 10000,
+      "reload": 2.8,
+      "magazine": 3,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": true,
+      "tradeoff": "Heavy precision shot; low capacity and long recovery.",
+      "name_en": "Plasma Matchlock"
+    },
+    {
+      "id": 15,
+      "name": "小型迫撃砲",
+      "class": 3,
+      "kind": "explosive",
+      "damage": 85,
+      "cooldown": 1.35,
+      "range": 5000,
+      "reload": 2.8,
+      "magazine": 3,
+      "blast_radius": 460,
+      "projectile_speed": 1900,
+      "special": true,
+      "tradeoff": "Wide blast; slow telegraphed arc and self-damage.",
+      "name_en": "Micro-Mortar"
+    },
+    {
+      "id": 16,
+      "name": "電撃放射器",
+      "class": 4,
+      "kind": "hitscan",
+      "damage": 32,
+      "cooldown": 0.31,
+      "range": 2200,
+      "reload": 1.9,
+      "magazine": 18,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": true,
+      "tradeoff": "Strong close control; short range.",
+      "name_en": "Shock Emitter"
+    },
+    {
+      "id": 17,
+      "name": "治癒の槍",
+      "class": 5,
+      "kind": "healing",
+      "damage": 16,
+      "cooldown": 0.4,
+      "range": 4800,
+      "reload": 2.3,
+      "magazine": 16,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": true,
+      "tradeoff": "Restores a small amount of user health in offline practice; reduced damage.",
+      "name_en": "Healing Lance"
+    }
+  ],
+  "chapters": [
+    {
+      "title": "道場の修行",
+      "map": 0,
+      "kills": 4,
+      "narrative": "猫柳生（ニャーギュウ）の道場。師は猫柳生新陰流（ニャーギュウシンカゲリュウ）を伝える。「間合いを知り、命を守れ。剣は民のためにある。」",
+      "objective": "道場の工房を再起動し、修練を終える",
+      "title_en": "Dojo Apprenticeship",
+      "narrative_en": "At the Nyaagyu dojo, your teacher introduces Nyaagyū Shinkage-ryū: protect life, master distance, and act with purpose.",
+      "objective_en": "Restore the dojo workshops and complete the practice encounter.",
+      "dialogue": [
+        { "speaker": "mentor", "start_s": 0.8, "duration_s": 4.8, "ja": "刃を急がせるな。相手の足音を聞け。", "en": "Do not hurry your blade. Listen to your opponent's footing." },
+        { "speaker": "samurai", "start_s": 6.2, "duration_s": 4.8, "ja": "間合いを測り、命を守ります。", "en": "I will measure the distance and protect life." },
+        { "speaker": "mentor", "start_s": 11.6, "duration_s": 4.8, "ja": "それが猫柳生新陰流。剣は民のためにある。", "en": "That is Nyaagyū Shinkage-ryū. The sword serves the people." }
+      ]
+    },
+    {
+      "title": "異星からの侵略",
+      "map": 0,
+      "kills": 7,
+      "narrative": "夕空を裂き、異星の銀行猫たちが降り立つ。債務の封印が蔵を閉ざし、工房から火を奪った。",
+      "objective": "猫柳生の屋敷を占領から解放する",
+      "title_en": "The Invasion",
+      "narrative_en": "Alien banker cats descend through the evening sky. Their debt seals seize the granaries and silence the workshops.",
+      "objective_en": "Break the occupation of the Nyaagyu estate.",
+      "dialogue": [
+        { "speaker": "scout", "start_s": 0.8, "duration_s": 4.8, "ja": "空から船が来た。蔵に見知らぬ封印が！", "en": "Ships came from the sky. Strange seals cover the granaries!" },
+        { "speaker": "banker", "start_s": 6.2, "duration_s": 4.8, "ja": "今日から、その収穫も労働も我らへの負債だ。", "en": "From today, your harvest and labor are debts owed to us." },
+        { "speaker": "samurai", "start_s": 11.6, "duration_s": 4.8, "ja": "民の手を縛る帳簿なら、ここで断つ。", "en": "If your ledger binds their hands, I will break its hold here." }
+      ]
+    },
+    {
+      "title": "占領された街",
+      "map": 1,
+      "kills": 8,
+      "narrative": "提灯街では、働く前から借りが生まれる。住民は道具と食糧、そして希望を隠し、反撃の時を待っていた。",
+      "objective": "三つの生産拠点を取り戻す",
+      "title_en": "Occupied Streets",
+      "narrative_en": "The Lantern Ward trades under compulsory debt. Neighbors hide tools, food, and hope behind paper walls.",
+      "objective_en": "Reopen three neighborhood production sites.",
+      "dialogue": [
+        { "speaker": "scout", "start_s": 0.8, "duration_s": 4.8, "ja": "提灯街の工房は三つとも止められた。", "en": "All three workshops in Lantern Ward have been shut down." },
+        { "speaker": "artisan", "start_s": 6.2, "duration_s": 4.8, "ja": "道具は隠した。火さえ戻れば、また作れる。", "en": "We hid the tools. Restore the fires, and we can make things again." },
+        { "speaker": "samurai", "start_s": 11.6, "duration_s": 4.8, "ja": "火を灯そう。街の明かりは民のものだ。", "en": "Then let us light them. This ward's lanterns belong to its people." }
+      ]
+    },
+    {
+      "title": "田畑の解放",
+      "map": 0,
+      "kills": 10,
+      "narrative": "実りは十分にある。それでも侵略者は、まだ育たぬ稲まで取り立てる。田畑を守り、農具を民の手に返せ。",
+      "objective": "農業用の装置を直し、徴収部隊を退ける",
+      "title_en": "Agricultural Liberation",
+      "narrative_en": "The fields can feed everyone, but the invaders claim every harvest before it grows. Protect the farmers and reclaim their machinery.",
+      "objective_en": "Restore the agricultural pumps and defeat the collection patrol.",
+      "dialogue": [
+        { "speaker": "farmer", "start_s": 0.8, "duration_s": 4.8, "ja": "水車を奪われた。稲はまだ芽も出ていないのに。", "en": "They took the pumps before the rice had even sprouted." },
+        { "speaker": "samurai", "start_s": 6.2, "duration_s": 4.8, "ja": "水を戻す。収穫は育てた者に渡そう。", "en": "We will restore the water. The harvest will go to those who grew it." },
+        { "speaker": "farmer", "start_s": 11.6, "duration_s": 4.8, "ja": "ならば、皆で食べられるだけ作ろう。", "en": "Then we will grow enough for everyone to eat." }
+      ]
+    },
+    {
+      "title": "工房の蜂起",
+      "map": 2,
+      "kills": 12,
+      "narrative": "絹の工房で、職人たちが立ち上がる。共に生み出した価値を、新たな通貨 SORA XOR の礎とするために。",
+      "objective": "工房を解放し、生産を再開する",
+      "title_en": "The Foundry Uprising",
+      "narrative_en": "At the Silk Foundry, craftspeople join the resistance. Their shared production becomes the basis of a new local currency: SORA XOR.",
+      "objective_en": "Liberate the foundry and restart its production.",
+      "dialogue": [
+        { "speaker": "artisan", "start_s": 0.8, "duration_s": 4.8, "ja": "絹も鋼も、作ったのはこの手だ。", "en": "Silk and steel were made by these hands." },
+        { "speaker": "scout", "start_s": 6.2, "duration_s": 4.8, "ja": "生産を記録し、民の新しい通貨にしよう。", "en": "Let us record our production as the basis for a new currency." },
+        { "speaker": "samurai", "start_s": 11.6, "duration_s": 4.8, "ja": "SORA XOR。ここで生まれた価値を、ここへ返す。", "en": "SORA XOR. Value made here will return to the people here." }
+      ]
+    },
+    {
+      "title": "債務金庫への潜入",
+      "map": 3,
+      "kills": 14,
+      "narrative": "債務の城塞には、猫柳生を縛る契約が眠る。その支配を動かす装置を止め、奪われた工房を取り戻せ。",
+      "objective": "金庫区画の支配を止める",
+      "title_en": "Ledger-Vault Infiltration",
+      "narrative_en": "Inside the Debt Citadel, the occupiers keep the contracts that bind Nyaagyu. The resistance seeks the machines controlling them.",
+      "objective_en": "Disable the vault district and restore its workshops.",
+      "dialogue": [
+        { "speaker": "scout", "start_s": 0.8, "duration_s": 4.8, "ja": "金庫の奥に、街を縛る装置がある。", "en": "The machine binding the city lies deep inside the vault." },
+        { "speaker": "banker", "start_s": 6.2, "duration_s": 4.8, "ja": "契約は永遠だ。誰も帳簿からは逃れられぬ。", "en": "The contract is eternal. No one escapes the ledger." },
+        { "speaker": "samurai", "start_s": 11.6, "duration_s": 4.8, "ja": "人を縛る文字より、人が作る明日を選ぶ。", "en": "I choose the future people build over the words that bind them." }
+      ]
+    },
+    {
+      "title": "異星旗艦への突撃",
+      "map": 3,
+      "kills": 16,
+      "narrative": "異星の旗艦は城塞から力を吸い上げる。最後の収奪が始まる前に、地上の支配網を断ち切れ。",
+      "objective": "旗艦を支える地上網を断つ",
+      "title_en": "Alien Flagship Assault",
+      "narrative_en": "The alien flagship draws power from the citadel below. Cut its occupation network before the final extraction.",
+      "objective_en": "Sever the flagship support network.",
+      "dialogue": [
+        { "speaker": "scout", "start_s": 0.8, "duration_s": 4.8, "ja": "旗艦が城塞から最後の力を吸い上げている。", "en": "The flagship is drawing the last power from the citadel." },
+        { "speaker": "banker", "start_s": 6.2, "duration_s": 4.8, "ja": "従えば、生き残るための融資をやろう。", "en": "Submit, and we may lend you enough to survive." },
+        { "speaker": "samurai", "start_s": 11.6, "duration_s": 4.8, "ja": "借りる必要はない。私たちは作れる。", "en": "We need no loan. We can make what we need." }
+      ]
+    },
+    {
+      "title": "最後の解放",
+      "map": 1,
+      "kills": 18,
+      "narrative": "工房と田畑は民の手へ戻った。生産に根ざす SORA XOR と共に、猫柳生は借りに縛られぬ明日を選ぶ。",
+      "objective": "最後の街区を解放し、仲間と合流する",
+      "title_en": "Final Liberation",
+      "narrative_en": "The clans reclaim their workshops and govern the fruits of their labor. Nyaagyu chooses production-backed SORA XOR and a future beyond the debt empire.",
+      "objective_en": "Free the last district and reunite the resistance.",
+      "dialogue": [
+        { "speaker": "artisan", "start_s": 0.8, "duration_s": 4.8, "ja": "工房も田畑も、また動き始めた。", "en": "The workshops and fields are working again." },
+        { "speaker": "samurai", "start_s": 6.2, "duration_s": 4.8, "ja": "あとはこの街だ。誰も借りに縛られぬように。", "en": "Only this ward remains. No one will be bound by debt again." },
+        { "speaker": "scout", "start_s": 11.6, "duration_s": 4.8, "ja": "東の鳥居で待つ。皆で新しい朝を迎えよう。", "en": "We will wait at the eastern torii. Let us greet a new morning together." }
+      ]
+    }
+  ],
+  "maps": [
+    {
+      "id": 0,
+      "name": "猫柳生の屋敷",
+      "accent": [
+        0.08,
+        0.65,
+        0.5
+      ],
+      "name_en": "Nyaagyu Estate"
+    },
+    {
+      "id": 1,
+      "name": "提灯街",
+      "accent": [
+        0.95,
+        0.38,
+        0.13
+      ],
+      "name_en": "Lantern Ward"
+    },
+    {
+      "id": 2,
+      "name": "絹の工房",
+      "accent": [
+        0.07,
+        0.68,
+        0.73
+      ],
+      "name_en": "Silk Foundry"
+    },
+    {
+      "id": 3,
+      "name": "債務の城塞",
+      "accent": [
+        0.52,
+        0.15,
+        0.8
+      ],
+      "name_en": "Debt Citadel"
+    }
+  ],
+  "default_language": "ja",
+  "english_subtitles_default": true,
+  "voice_over": "not_recorded"
+}

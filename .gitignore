@@ -73,3 +73,18 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Native deterministic kernel and local tooling
+/target/
+__pycache__/
+*.pyc
+.DS_Store
+/Local/
+/Artifacts/
+/Content/ThirdPartyRestricted/
+/Plugins/ArenaNative/Binaries/
+
+# Wallet and development-network secrets never belong in source control
+*.secret
+*.key
+.env

@@ -1,0 +1,8 @@
+; Copy these public deployment values into Saved/Config/MacEditor/Game.ini
+; (or the matching platform config). Do not put wallet keys or bearer tokens here.
+[Arena.Connect]
+ToriiOrigin=https://YOUR-TORII-HOST
+; Exact 74-character genesis-derived hash:UPPERCASE_HEX#CRC16, obtained independently.
+NetworkId=
+; Optional: bind pairing to one expected canonical account identity.
+ExpectedAccount=

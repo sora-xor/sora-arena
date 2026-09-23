@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "purpose": "Production PBR surface textures and image-based lighting for the Nyaagyu Estate",
+  "credit": "Powered by Poly Haven — https://polyhaven.com",
+  "asset_license": "CC0-1.0",
+  "license_verified_at_utc": "2026-09-22T09:38:09.819466+00:00",
+  "license_url": "https://polyhaven.com/license",
+  "api_terms_url": "https://polyhaven.com/our-api",
+  "assets": [
+    {
+      "asset_id": "wood_planks_dirt",
+      "name": "Wood Planks Dirt",
+      "role": "timber",
+      "resolution": "4k",
+      "asset_url": "https://polyhaven.com/a/wood_planks_dirt",
+      "metadata_url": "https://api.polyhaven.com/files/wood_planks_dirt",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "source_dimensions_mm": [
+        2000,
+        2000
+      ],
+      "tile_size_cm": 200.0,
+      "files": [
+        {
+          "channel": "Diffuse",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+          "file": "wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+          "format": "jpg",
+          "bytes": 14364491,
+          "upstream_md5": "f25f73cb3185e50bd4dbb556a7d22793",
+          "sha256": "5c8640bbd63e56dbca947dbd2d0be380c661feb556c2949ec95d842ce7f31a59"
+        },
+        {
+          "channel": "nor_dx",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+          "file": "wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+          "format": "png",
+          "bytes": 16555698,
+          "upstream_md5": "8f85833244650848a2280da9ec446689",
+          "sha256": "958c93dbd644dc7ea925bff951cbe6275c4066f60000417e1abef2c1b9a3e6fc"
+        },
+        {
+          "channel": "arm",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+          "file": "wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+          "format": "png",
+          "bytes": 43070227,
+          "upstream_md5": "d6567068f9d2fa3fea5fde1c99a5c687",
+          "sha256": "556835168ffb105f31666add0237f7fb7a11a5d6d05d4cfa5979a4e957b9da63"
+        }
+      ]
+    },
+    {
+      "asset_id": "stone_floor",
+      "name": "Stone Floor",
+      "role": "stone",
+      "resolution": "2k",
+      "asset_url": "https://polyhaven.com/a/stone_floor",
+      "metadata_url": "https://api.polyhaven.com/files/stone_floor",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "authors": {
+        "Dimitrios Savva": "All"
+      },
+      "source_dimensions_mm": [
+        1849.9999046325684,
+        1849.9999046325684
+      ],
+      "tile_size_cm": 185.0,
+      "files": [
+        {
+          "channel": "Diffuse",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_floor/stone_floor_diff_2k.jpg",
+          "file": "stone_floor/stone_floor_diff_2k.jpg",
+          "format": "jpg",
+          "bytes": 3800807,
+          "upstream_md5": "f786fb0cd3c4119fa9db9445f74cf3aa",
+          "sha256": "ce19d3cb1e683419b6a596e1baffbf2b429f970f8ddba81e391ad9a38f310ed8"
+        },
+        {
+          "channel": "nor_dx",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_floor/stone_floor_nor_dx_2k.png",
+          "file": "stone_floor/stone_floor_nor_dx_2k.png",
+          "format": "png",
+          "bytes": 22634443,
+          "upstream_md5": "0da466f3128da817a3b2d366f78e07b6",
+          "sha256": "14981993cccbcca9a4775200dfd38f7ad381a7b494ae09b760a9ea036d74e247"
+        },
+        {
+          "channel": "arm",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_floor/stone_floor_arm_2k.png",
+          "file": "stone_floor/stone_floor_arm_2k.png",
+          "format": "png",
+          "bytes": 16322804,
+          "upstream_md5": "2c898a3c9156983dc24df9a0fb5eeaea",
+          "sha256": "339e2af892ff7f371346bce64f3b88f96ea5455959d3340c7d2ffe7ed91cf557"
+        }
+      ]
+    },
+    {
+      "asset_id": "brown_mud_leaves_01",
+      "name": "Brown Mud Leaves 01",
+      "role": "soil",
+      "resolution": "2k",
+      "asset_url": "https://polyhaven.com/a/brown_mud_leaves_01",
+      "metadata_url": "https://api.polyhaven.com/files/brown_mud_leaves_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "source_dimensions_mm": [
+        1299.9998331069946,
+        1299.9998331069946
+      ],
+      "tile_size_cm": 130.0,
+      "files": [
+        {
+          "channel": "Diffuse",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "file": "brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "format": "jpg",
+          "bytes": 4539452,
+          "upstream_md5": "e8b45aee8e00a253eb3a2b08cea89776",
+          "sha256": "29c997d77f56e4ea16d3e998a306be0c17fddb28ab4822657c7cd8249040ffda"
+        },
+        {
+          "channel": "nor_dx",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+          "file": "brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+          "format": "png",
+          "bytes": 24178023,
+          "upstream_md5": "d9ece11098edf7ee8c3ba6afb223a51a",
+          "sha256": "9bbc1abea84c6774ead2153f8444a5ac5675ac4ce19e7e02d1cb869b20b81f26"
+        },
+        {
+          "channel": "arm",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+          "file": "brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+          "format": "png",
+          "bytes": 18103277,
+          "upstream_md5": "975879d67e3b85b4fbdd8b169284b91a",
+          "sha256": "9056337763fa1db614b98aee969c4f07277731292b9549171e7b66c88cf6a416"
+        }
+      ]
+    },
+    {
+      "asset_id": "rusty_metal_02",
+      "name": "Rusty Metal 02",
+      "role": "metal",
+      "resolution": "2k",
+      "asset_url": "https://polyhaven.com/a/rusty_metal_02",
+      "metadata_url": "https://api.polyhaven.com/files/rusty_metal_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "source_dimensions_mm": [
+        1000,
+        1000
+      ],
+      "tile_size_cm": 100.0,
+      "files": [
+        {
+          "channel": "Diffuse",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+          "file": "rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+          "format": "jpg",
+          "bytes": 1952454,
+          "upstream_md5": "385195f8de0117418d99dc1d06b7ff38",
+          "sha256": "4c887dd400ed8a5964377c65e20654262307d6888443eae85feb80cc6e72287a"
+        },
+        {
+          "channel": "nor_dx",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+          "file": "rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+          "format": "png",
+          "bytes": 3897295,
+          "upstream_md5": "6a8f6cd5eafa52f14752d6e5512d7efa",
+          "sha256": "c1d4c83f14a6ba123f017f1022fca8b92899b577da443c68b3741b6ee9b5b999"
+        },
+        {
+          "channel": "arm",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rusty_metal_02/rusty_metal_02_arm_2k.png",
+          "file": "rusty_metal_02/rusty_metal_02_arm_2k.png",
+          "format": "png",
+          "bytes": 5067593,
+          "upstream_md5": "b844a82aff1adb28453411dd94d40556",
+          "sha256": "4d36db2e58b4f044f70b3547f5917ce84f783f5d5543a83ed72884f8542930a3"
+        }
+      ]
+    },
+    {
+      "asset_id": "kloofendal_overcast_puresky",
+      "name": "Kloofendal Overcast (Pure Sky)",
+      "role": "sky",
+      "resolution": "4k",
+      "asset_url": "https://polyhaven.com/a/kloofendal_overcast_puresky",
+      "metadata_url": "https://api.polyhaven.com/files/kloofendal_overcast_puresky",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "authors": {
+        "Greg Zaal": "All"
+      },
+      "source_dimensions_mm": null,
+      "tile_size_cm": null,
+      "files": [
+        {
+          "channel": "hdri",
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/kloofendal_overcast_puresky_4k.hdr",
+          "file": "kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+          "format": "hdr",
+          "bytes": 16953534,
+          "upstream_md5": "6678d8e9a87f9b8cdfc4fc4038591d59",
+          "sha256": "77ade807bd208195073a51b970dea574fa70cd80cf666aeedf5cd416ab5c8abd"
+        }
+      ]
+    }
+  ]
+}

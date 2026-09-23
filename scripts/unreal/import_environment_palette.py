@@ -1,0 +1,109 @@
+"""Import the pinned CC0 Nyaagyu production palette in Unreal Engine 5.8.2.
+
+Creates world-aligned PBR material instances with real-world texture scale, DX
+normal maps and correctly unpacked AO/Roughness/Metallic maps. No website assets
+are fetched in the game or editor; the manifest-pinned source files must exist.
+"""
+from pathlib import Path
+import hashlib
+import json
+import unreal
+
+if not unreal.SystemLibrary.get_engine_version().startswith('5.8.2'):
+    raise RuntimeError('This asset authoring script requires Unreal Engine 5.8.2')
+ROOT=Path(unreal.Paths.project_dir()).resolve()
+SOURCE=ROOT/'Content/SourceArt/Environment/PolyHaven'
+manifest=json.loads((SOURCE/'manifest.json').read_text())
+assert manifest['asset_license']=='CC0-1.0'
+assets=unreal.EditorAssetLibrary;tools=unreal.AssetToolsHelpers.get_asset_tools();lib=unreal.MaterialEditingLibrary
+DEST='/Game/Generated/Environment'
+assets.make_directory(DEST+'/Textures')
+textures={}
+for record in manifest['assets']:
+    textures[record['role']]={}
+    for file in record['files']:
+        source=SOURCE/file['file']
+        if hashlib.sha256(source.read_bytes()).hexdigest()!=file['sha256']:
+            raise RuntimeError('Source asset hash mismatch: '+str(source))
+        name='T_NyaagyuOvercast' if file['channel']=='hdri' else f"T_{record['role'].title()}_{file['channel']}"
+        task=unreal.AssetImportTask();task.filename=str(source);task.destination_path=DEST+'/Textures';task.destination_name=name
+        task.automated=True;task.replace_existing=True;task.save=True;tools.import_asset_tasks([task])
+        texture=assets.load_asset(DEST+'/Textures/'+name)
+        if texture is None:raise RuntimeError('Texture import failed: '+name)
+        if file['channel']=='hdri':
+            if not isinstance(texture,unreal.TextureCube):raise RuntimeError('Overcast HDR must import as a TextureCube')
+        else:
+            texture.set_editor_property('srgb',file['channel']=='Diffuse')
+            if file['channel']=='nor_dx':
+                texture.set_editor_property('compression_settings',unreal.TextureCompressionSettings.TC_NORMALMAP)
+                texture.set_editor_property('flip_green_channel',False)
+            elif file['channel']=='arm':texture.set_editor_property('compression_settings',unreal.TextureCompressionSettings.TC_MASKS)
+            texture.set_editor_property('max_texture_size',int(record['resolution'][:-1])*1024)
+        assets.save_loaded_asset(texture)
+        textures[record['role']][file['channel']]=texture
+
+
+def create_material(name):
+    path=DEST+'/'+name
+    mat=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,DEST,unreal.Material,unreal.MaterialFactoryNew())
+    lib.delete_all_material_expressions(mat)
+    return mat
+
+
+def node(mat,cls,x,y,**properties):
+    result=lib.create_material_expression(mat,cls,x,y)
+    for key,value in properties.items():result.set_editor_property(key,value)
+    return result
+
+
+def link(a,out,b,pin):
+    if not lib.connect_material_expressions(a,out,b,pin):raise RuntimeError(f'Material connection failed: {out} -> {pin}')
+
+
+def output(a,pin,prop):
+    if not lib.connect_material_property(a,pin,prop):raise RuntimeError(f'Material output failed: {prop}')
+
+mat=create_material('M_Nyaagyu_PBR')
+mat.set_editor_property('tangent_space_normal',False)
+tile=node(mat,unreal.MaterialExpressionVectorParameter,-1100,-450,parameter_name='TileSize',default_value=unreal.LinearColor(200,200,200,1))
+tint=node(mat,unreal.MaterialExpressionVectorParameter,-550,-500,parameter_name='Tint',default_value=unreal.LinearColor(1,1,1,1))
+projected={}
+for index,(parameter,channel) in enumerate([('AlbedoMap','Diffuse'),('NormalMap','nor_dx'),('ARMMap','arm')]):
+    obj=node(mat,unreal.MaterialExpressionTextureObjectParameter,-1100,index*260,parameter_name=parameter,texture=textures['timber'][channel])
+    call=node(mat,unreal.MaterialExpressionMaterialFunctionCall,-750,index*260)
+    function_name='WorldAlignedNormal' if channel=='nor_dx' else 'WorldAlignedTexture'
+    function=assets.load_asset('/Engine/Functions/Engine_MaterialFunctions01/Texturing/'+function_name)
+    if function is None or not call.set_material_function(function):raise RuntimeError('Missing world-aligned material function '+function_name)
+    link(obj,'',call,'TextureObject');link(tile,'RGB',call,'TextureSize');projected[channel]=call
+colored=node(mat,unreal.MaterialExpressionMultiply,-250,-200)
+link(projected['Diffuse'],'XYZ Texture',colored,'A');link(tint,'RGB',colored,'B')
+output(colored,'',unreal.MaterialProperty.MP_BASE_COLOR)
+output(projected['nor_dx'],'XYZ Texture',unreal.MaterialProperty.MP_NORMAL)
+for index,(component,prop) in enumerate([('r',unreal.MaterialProperty.MP_AMBIENT_OCCLUSION),('g',unreal.MaterialProperty.MP_ROUGHNESS),('b',unreal.MaterialProperty.MP_METALLIC)]):
+    mask=node(mat,unreal.MaterialExpressionComponentMask,-250,index*120+160,r=component=='r',g=component=='g',b=component=='b',a=False)
+    link(projected['arm'],'XYZ Texture',mask,'');output(mask,'',prop)
+lib.layout_material_expressions(mat);lib.recompile_material(mat);assets.save_loaded_asset(mat)
+
+for record in manifest['assets']:
+    if record['role']=='sky':continue
+    name='MI_Nyaagyu_'+record['role'].title();path=DEST+'/'+name
+    instance=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,DEST,unreal.MaterialInstanceConstant,unreal.MaterialInstanceConstantFactoryNew())
+    lib.set_material_instance_parent(instance,mat)
+    for param,channel in [('AlbedoMap','Diffuse'),('NormalMap','nor_dx'),('ARMMap','arm')]:
+        if not lib.set_material_instance_texture_parameter_value(instance,param,textures[record['role']][channel]):raise RuntimeError('Texture parameter not found: '+param)
+    size=record['tile_size_cm'];lib.set_material_instance_vector_parameter_value(instance,'TileSize',unreal.LinearColor(size,size,size,1))
+    assets.save_loaded_asset(instance)
+
+sky=create_material('M_Nyaagyu_Sky')
+sky.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_UNLIT)
+sky.set_editor_property('two_sided',True);sky.set_editor_property('is_sky',True)
+position=node(sky,unreal.MaterialExpressionWorldPosition,-800,-200)
+camera=node(sky,unreal.MaterialExpressionCameraPositionWS,-800,50)
+direction=node(sky,unreal.MaterialExpressionSubtract,-550,-100)
+link(position,'XYZ',direction,'A');link(camera,'',direction,'B')
+normal=node(sky,unreal.MaterialExpressionNormalize,-350,-100);link(direction,'',normal,'')
+cube=node(sky,unreal.MaterialExpressionTextureSampleParameterCube,-100,-100,parameter_name='SkyTexture',texture=textures['sky']['hdri'])
+link(normal,'',cube,'');output(cube,'RGB',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+lib.layout_material_expressions(sky);lib.recompile_material(sky);assets.save_loaded_asset(sky)
+assets.save_directory(DEST,only_if_is_dirty=False,recursive=True)
+unreal.log('NYAAGYU_PBR_READY: 4 real-scale CC0 materials + overcast HDRI. Powered by Poly Haven — https://polyhaven.com')

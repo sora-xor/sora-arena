@@ -1,0 +1,57 @@
+{
+  "provenance": "Original procedural meshes authored for SORA Arena. No external source assets.",
+  "units": "meters in Blender; FBX unit metadata converts to Unreal centimeters",
+  "characters": [
+    "SM_NyaagyuSamurai",
+    "SM_AlienBanker"
+  ],
+  "weapons": [
+    "SM_Weapon_00",
+    "SM_Weapon_01",
+    "SM_Weapon_02",
+    "SM_Weapon_03",
+    "SM_Weapon_04",
+    "SM_Weapon_05",
+    "SM_Weapon_06",
+    "SM_Weapon_07",
+    "SM_Weapon_08",
+    "SM_Weapon_09",
+    "SM_Weapon_10",
+    "SM_Weapon_11",
+    "SM_Weapon_12",
+    "SM_Weapon_13",
+    "SM_Weapon_14",
+    "SM_Weapon_15",
+    "SM_Weapon_16",
+    "SM_Weapon_17"
+  ],
+  "limitations": [
+    "Prototype anatomy and short geometric fur cards, not production grooming",
+    "Procedural cloth and rigid per-region skin weights need refinement",
+    "No photorealism or performance qualification",
+    "Skeletal asset loading and idle/walk switching are implemented in the UE pawn; engine import and playback verification remain pending"
+  ],
+  "skeletal_characters": [
+    "SK_NyaagyuSamurai",
+    "SK_AlienBanker"
+  ],
+  "walk_animations": [
+    "A_NyaagyuSamurai_Walk",
+    "A_AlienBanker_Walk"
+  ],
+  "rig_status": "Original 20-bone prototype rigs with skin weights and keyed idle/walk clips; deformation needs artist refinement.",
+  "hero_katana": {
+    "name": "SM_Nyaagyu_HeroKatana",
+    "authorship": "Original geometry, material graphs and lighting authored for SORA Arena by procedural Blender script; no third-party source meshes or textures",
+    "license": "Original project-owned artwork; no purchased assets",
+    "source_blend": "Nyaagyu_HeroKatana.blend",
+    "generator": "scripts/art/create_hero_katana.py",
+    "fbx": "SM_Nyaagyu_HeroKatana.fbx",
+    "preview": "Nyaagyu_HeroKatana_Preview.png",
+    "detail_preview": "Nyaagyu_HeroKatana_Detail.png",
+    "fbx_sha256": "73c586593e2291e0b0e8e9de21856d06c99a33fc2f490a4acfe993b06fb1f301",
+    "units": "Blender meters; FBX converts for Unreal centimeter import",
+    "materials": "Physically based Principled BSDF source materials, with metalness/roughness and subtle procedural surface variation; author matching Unreal material instances on import",
+    "scope": "Detailed single hero prop and saya. This does not establish game-wide photorealism or verify Unreal rendering."
+  }
+}

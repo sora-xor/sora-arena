@@ -1,0 +1,2 @@
+# Canonical wire transcripts must remain byte-identical across platform checkouts.
+*.controls binary

@@ -1,0 +1,11 @@
+[package]
+name = "arena-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+arena-core = { path = "../arena-core" }
+
+[lints]
+workspace = true

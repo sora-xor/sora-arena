@@ -1,0 +1,9 @@
+{
+  "provenance": "User-supplied SORA mark for SORA Arena; kept byte-for-byte in the original SVG. No third-party asset license is asserted.",
+  "source_svg": "sora_logo_NOtext2.svg",
+  "source_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "runtime_png": "SORA_Resistance_Logo.png",
+  "runtime_sha256": "f6d9573096e7e044e9e4a84d739bf724281c4f394131812e1a6eeac915c8a39d",
+  "rasterization": "CairoSVG 2.7.1 with Cairo 1.18.6, 1024 x 1024 transparent RGBA; geometry and color unchanged",
+  "unreal_asset": "/Game/Generated/UI/T_SoraResistanceLogo.T_SoraResistanceLogo"
+}
