@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_WaterCourt_4m",
+  "identity": "original project-authored visual-only Edo-inspired rainwater court",
+  "units": "m",
+  "source_blend": "Content/SourceArt/Environment/NyaagyuWaterCourt/Nyaagyu_WaterCourt_Source.blend",
+  "export_fbx": "Content/SourceArt/Environment/NyaagyuWaterCourt/SM_Nyaagyu_WaterCourt_4m.fbx",
+  "generator": "scripts/art/create_nyaagyu_water_court.py",
+  "texture_generator": "scripts/art/create_nyaagyu_water_court_textures.py",
+  "render_eye_height": "Content/SourceArt/Environment/NyaagyuWaterCourt/Nyaagyu_WaterCourt_EyeHeight_Blender.png",
+  "render_detail": "Content/SourceArt/Environment/NyaagyuWaterCourt/Nyaagyu_WaterCourt_Detail_Blender.png",
+  "subset_fbx": "Content/SourceArt/Environment/NyaagyuWaterCourt/SM_Nyaagyu_BambooRill_4m.fbx",
+  "subset_render_eye_height": "Content/SourceArt/Environment/NyaagyuWaterCourt/Nyaagyu_BambooRill_EyeHeight_Blender.png",
+  "subset_name": "SM_Nyaagyu_BambooRill_4m",
+  "subset_bounds_m": {
+    "x": [
+      -2.3923,
+      2.6066
+    ],
+    "y": [
+      -0.4565,
+      3.0483
+    ],
+    "z": [
+      -0.0622,
+      3.4275
+    ]
+  },
+  "subset_source_parts": 2881,
+  "subset_triangles": 53540,
+  "subset_material_slots": [
+    "M_Court_Mud",
+    "M_Court_ShallowRainwater",
+    "M_Court_Stone",
+    "M_Court_StoneWet",
+    "M_Court_Bamboo",
+    "M_Court_BambooNode",
+    "M_Court_Moss",
+    "M_Court_BambooLeaf"
+  ],
+  "bounds_m": {
+    "x": [
+      -2.3923,
+      2.6066
+    ],
+    "y": [
+      -0.4565,
+      3.0483
+    ],
+    "z": [
+      -0.0622,
+      3.4275
+    ]
+  },
+  "source_mesh_parts": 2962,
+  "source_triangles": 59100,
+  "export_triangles": 59100,
+  "culms": 32,
+  "leaves": 2334,
+  "material_slots": [
+    "M_Court_Mud",
+    "M_Court_ShallowRainwater",
+    "M_Court_Stone",
+    "M_Court_StoneWet",
+    "M_Court_CedarDark",
+    "M_Court_Cedar",
+    "M_Court_Roof",
+    "M_Court_Bamboo",
+    "M_Court_BambooNode",
+    "M_Court_Moss",
+    "M_Court_BambooLeaf"
+  ],
+  "scan_dependencies": {
+    "AgedCedar": {
+      "asset_id": "wood_planks_dirt",
+      "source_url": "https://polyhaven.com/a/wood_planks_dirt",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+          "sha256": "5c8640bbd63e56dbca947dbd2d0be380c661feb556c2949ec95d842ce7f31a59",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg"
+        },
+        "NormalDX": {
+          "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+          "sha256": "958c93dbd644dc7ea925bff951cbe6275c4066f60000417e1abef2c1b9a3e6fc",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+        },
+        "ORM": {
+          "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+          "sha256": "556835168ffb105f31666add0237f7fb7a11a5d6d05d4cfa5979a4e957b9da63",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/wood_planks_dirt/wood_planks_dirt_arm_4k.png"
+        }
+      }
+    },
+    "CarvedStone": {
+      "asset_id": "rock_01",
+      "source_url": "https://polyhaven.com/a/rock_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_diff_2k.jpg",
+          "sha256": "fe9013368539b5604602e64bfa48bef1a2a4c452fcb6894868fb556d0b14501c",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_nor_dx_2k.png",
+          "sha256": "e75062267abe1ae9d3792d4a2667f893a1a952dd0c59274a13fb3d348ca97a3a",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rock_01/rock_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_arm_2k.jpg",
+          "sha256": "a954de58336738e6f963466f1453202ef7e186bd6492106c3b989c39f0d2e23c",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_arm_2k.jpg"
+        }
+      }
+    },
+    "RoofCeramic": {
+      "asset_id": "grey_roof_tiles",
+      "source_url": "https://polyhaven.com/a/grey_roof_tiles",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_diff_4k.jpg",
+          "sha256": "28b0a8716d492b6d121e62d12f0c23b061a6b41c1f441e7c9e79cc76db161e3f",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/grey_roof_tiles/grey_roof_tiles_diff_4k.jpg"
+        },
+        "NormalDX": {
+          "path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_nor_dx_4k.png",
+          "sha256": "30720ff6ddb2d99199d6b6aedbd4741c0cee2f01e0d7bef7c5dec45b6f74b5df",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/grey_roof_tiles/grey_roof_tiles_nor_dx_4k.png"
+        },
+        "ORM": {
+          "path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_arm_4k.png",
+          "sha256": "06014af2deb71778bf613bf2eccc713a956f42874e1418ba3e0c7c5750fb6d31",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/grey_roof_tiles/grey_roof_tiles_arm_4k.png"
+        }
+      }
+    },
+    "Moss": {
+      "asset_id": "forest_leaves_02",
+      "source_url": "https://polyhaven.com/a/forest_leaves_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_diffuse_2k.jpg",
+          "sha256": "9c38b2b151a0415457a6914966422cfca5a546c94674442e5395e0b1e908a196",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_diffuse_2k.jpg"
+        },
+        "NormalDX": {
+          "path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_nor_dx_2k.png",
+          "sha256": "d1cc3491948446214bcd0b742a5bf5a8cdebc10036ec37da8f3f5c8e6c45eb86",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_nor_dx_2k.png"
+        },
+        "ORM": {
+          "path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_arm_2k.png",
+          "sha256": "d8106fc2d56ceb1bbffdfa00772364aed678b51c1621cae7d554f6230151635f",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_arm_2k.png"
+        }
+      }
+    },
+    "CompactedSilt": {
+      "asset_id": "brown_mud_leaves_01",
+      "source_url": "https://polyhaven.com/a/brown_mud_leaves_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "sha256": "29c997d77f56e4ea16d3e998a306be0c17fddb28ab4822657c7cd8249040ffda",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+          "sha256": "9bbc1abea84c6774ead2153f8444a5ac5675ac4ce19e7e02d1cb869b20b81f26",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+          "sha256": "9056337763fa1db614b98aee969c4f07277731292b9549171e7b66c88cf6a416",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png"
+        }
+      }
+    },
+    "BambooCulm": {
+      "asset_id": "original_bambooculm",
+      "license": "original-project-art",
+      "generator": "scripts/art/create_nyaagyu_water_court_textures.py",
+      "files": {
+        "Albedo": {
+          "path": "Content/SourceArt/Environment/NyaagyuWaterCourt/Textures/T_WaterCourt_BambooCulm_Albedo.png",
+          "sha256": "dc8b0cdce325c2704f20f09a122a91f40119761228543fc2b3a769530cd428ec"
+        },
+        "NormalDX": {
+          "path": "Content/SourceArt/Environment/NyaagyuWaterCourt/Textures/T_WaterCourt_BambooCulm_NormalDX.png",
+          "sha256": "d27b3142b6f2a5590df07fab7153b9e4b70f85afabca8500ec4f16ae1df40197"
+        },
+        "ORM": {
+          "path": "Content/SourceArt/Environment/NyaagyuWaterCourt/Textures/T_WaterCourt_BambooCulm_ORM.png",
+          "sha256": "69d592ced1fc5fa39d981bec29998b6c33ba5c084145295fb4b5d081b2471162"
+        }
+      }
+    },
+    "BambooLeaf": {
+      "asset_id": "original_bambooleaf",
+      "license": "original-project-art",
+      "generator": "scripts/art/create_nyaagyu_water_court_textures.py",
+      "files": {
+        "Albedo": {
+          "path": "Content/SourceArt/Environment/NyaagyuWaterCourt/Textures/T_WaterCourt_BambooLeaf_Albedo.png",
+          "sha256": "2350b162af8132b5987d30a12cd1439f157c3eedf2dbb06d0d8b915cb6b1f188"
+        },
+        "NormalDX": {
+          "path": "Content/SourceArt/Environment/NyaagyuWaterCourt/Textures/T_WaterCourt_BambooLeaf_NormalDX.png",
+          "sha256": "21e9ae65a2e337b33933e96fb0309438a78f9a892202c6f8aac9c97739310cc4"
+        },
+        "ORM": {
+          "path": "Content/SourceArt/Environment/NyaagyuWaterCourt/Textures/T_WaterCourt_BambooLeaf_ORM.png",
+          "sha256": "0e9c9ac569ef113c9f7d71c59715874b797be87b0ae9f7704918a0c972929072"
+        }
+      }
+    }
+  },
+  "placement_policy": "visual-only; no new gameplay collision; off central route; fail visual gate if solid canopy creates false cover",
+  "historical_scope": "fictional Edo-inspired dojo rainwater court; not a surveyed reconstruction",
+  "source_files_sha256": {
+    "Content/SourceArt/Environment/NyaagyuWaterCourt/Nyaagyu_WaterCourt_Source.blend": "3ce3a5cb729e9df282b92682f7b870545cbe20594b981d97e6afef743e6ea067",
+    "Content/SourceArt/Environment/NyaagyuWaterCourt/SM_Nyaagyu_WaterCourt_4m.fbx": "c2c0928a1fb5d16eee266e53c62a0f3aebd56a21e13326615bc823af6d7f6b14",
+    "Content/SourceArt/Environment/NyaagyuWaterCourt/SM_Nyaagyu_BambooRill_4m.fbx": "18e531d8445c6e403315f59da54bc6bd2a4b1bb1d17f0868e40a9da770bd7b2a",
+    "Content/SourceArt/Environment/NyaagyuWaterCourt/Nyaagyu_WaterCourt_EyeHeight_Blender.png": "63cbfd196bf4ddd1da83d326c4a6a65271fdd44ba5450e907f5db8585a453c5a",
+    "Content/SourceArt/Environment/NyaagyuWaterCourt/Nyaagyu_WaterCourt_Detail_Blender.png": "787daab9730aeecfc2fbddc0ee5e9db2d089135b1bec4fb48aff80c776dcb2b8",
+    "Content/SourceArt/Environment/NyaagyuWaterCourt/Nyaagyu_BambooRill_EyeHeight_Blender.png": "ca02360e03134d5c2f837cc232e6408dcb6c87694981f21941b1f1b33a485607"
+  }
+}
