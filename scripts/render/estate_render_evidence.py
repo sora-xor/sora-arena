@@ -143,8 +143,9 @@ def archive(args: argparse.Namespace) -> dict:
         raise ValueError(f"archive destination already exists; refusing to overwrite evidence: {output}")
     if not capture_dir.is_dir():
         raise ValueError(f"capture directory missing: {capture_dir}")
-    inputs = {"runtime.log": args.runtime_log.expanduser().resolve(),
-              "commands.txt": args.command_log.expanduser().resolve()}
+    inputs = {"commands.txt": args.command_log.expanduser().resolve()}
+    for index, raw_log in enumerate(args.runtime_log, start=1):
+        inputs[f"logs/run-{index:02d}.log"] = raw_log.expanduser().resolve()
     for name, path in inputs.items():
         if not path.is_file() or not path.stat().st_size:
             raise ValueError(f"missing or empty raw {name}: {path}")
@@ -167,6 +168,7 @@ def archive(args: argparse.Namespace) -> dict:
     for record in records:
         if record["status"] == "captured":
             shutil.copy2(capture_dir / record["filename"], output / record["filename"])
+    (output / "logs").mkdir()
     for name, path in inputs.items():
         shutil.copy2(path, output / name)
     info.update({"archive_created_utc": datetime.now(timezone.utc).isoformat(),
@@ -176,7 +178,8 @@ def archive(args: argparse.Namespace) -> dict:
                  "raw_logs": {name: {"sha256": sha256(output / name),
                                        "bytes": (output / name).stat().st_size} for name in inputs}})
     (output / "manifest.json").write_text(json.dumps(info, indent=2, sort_keys=True) + "\n")
-    sums = [(sha256(path), path.name) for path in output.iterdir() if path.is_file()]
+    sums = [(sha256(path), path.relative_to(output).as_posix())
+            for path in output.rglob("*") if path.is_file()]
     (output / "SHA256SUMS").write_text("".join(f"{digest}  {name}\n" for digest, name in sorted(sums, key=lambda item: item[1])))
     return info
 
@@ -193,7 +196,8 @@ def main() -> int:
     sub.add_parser("preflight")
     archive_parser = sub.add_parser("archive")
     archive_parser.add_argument("--capture-dir", type=Path, required=True)
-    archive_parser.add_argument("--runtime-log", type=Path, required=True)
+    archive_parser.add_argument("--runtime-log", type=Path, required=True, action="append",
+                                help="Repeat for every unfiltered packaged-game run log")
     archive_parser.add_argument("--command-log", type=Path, required=True)
     archive_parser.add_argument("--output", type=Path, required=True)
     archive_parser.add_argument("--hardware-label", required=True)

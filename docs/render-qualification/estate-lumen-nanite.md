@@ -32,7 +32,7 @@ Wait at least two seconds after each visualization switch and allow scene
 capture/streaming to settle before requesting the screenshot. Disable HUD for
 every mode. Record the actual camera transform, view mode, cvar readbacks,
 renderer/RHI/shader platform, screenshot request, and any failure in
-`commands.txt`; retain the original UE `runtime.log`. Where packaged-game
+`commands.txt`; retain every original UE run log. Where packaged-game
 `viewmode` is gated by a CheatManager, use the editor View Modes menu or a
 **disposable diagnostic-only** viewport hook that calls
 `UGameViewportClient::SetViewMode` and the viewport visualization-mode setters.
@@ -113,7 +113,8 @@ python3 scripts/render/estate_render_evidence.py \
   --platform mac --allow-interim \
   --project-root /absolute/path/to/diagnostic/sora-arena \
   archive --capture-dir /absolute/path/to/raw-pngs \
-  --runtime-log /absolute/path/to/runtime.log \
+  --runtime-log /absolute/path/to/lit-runtime.log \
+  --runtime-log /absolute/path/to/surface-cache-runtime.log \
   --command-log /absolute/path/to/commands.txt \
   --hardware-label 'M1 Ultra, METAL_SM5' \
   --output /absolute/path/to/docs/render-qualification/estate-2026-09-24
@@ -124,7 +125,9 @@ The tool refuses missing or incorrectly sized captures and never overwrites
 an existing archive. If a visualization fails, archive the available raw
 evidence with `--allow-incomplete`; `manifest.json` then records
 `capture_complete: false` and every missing filename. `SHA256SUMS` records
-the copied PNG/log/manifest bytes. The archive is an evidence record, not an
+the copied PNG/log/manifest bytes. Each `--runtime-log` becomes an unmodified
+`logs/run-NN.log`; `commands.txt` must map each run to its launch command and
+captures. The archive is an evidence record, not an
 automatic coverage score or a photoreal/AAA+ acceptance test.
 
 Command names, coverage semantics, and platform limits follow Epic's
