@@ -183,7 +183,7 @@ bool ExactFields(const FJsonObject& Object, std::initializer_list<const TCHAR*> 
         bool bAllowed = false;
         for (const TCHAR* Field : Fields)
         {
-            if (Exact(Entry.Key, Field)) { bAllowed = true; break; }
+            if (Entry.Key.ToView().Equals(Field, ESearchCase::CaseSensitive)) { bAllowed = true; break; }
         }
         if (!bAllowed) return false;
     }
