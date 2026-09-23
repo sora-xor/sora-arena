@@ -67,8 +67,12 @@ def check_meshes(parts):
     assert abs((max(gx)-min(gx))-.242) < .0001
     assert abs(min(bx)) < .0001 and abs(max(bx)-.773) < .0001
     assert 0.01 < max(float((guard.matrix_world @ v.co).y) for v in guard.data.vertices) < .05
-    assert abs(min(float((retainer.matrix_world @ v.co).x) for v in retainer.data.vertices)+.009) < .0001
-    assert abs(max(float((retainer.matrix_world @ v.co).x) for v in retainer.data.vertices)+.0025) < .0001
+    guard_x = [float((guard.matrix_world @ v.co).x) for v in guard.data.vertices]
+    retain_x = [float((retainer.matrix_world @ v.co).x) for v in retainer.data.vertices]
+    assert abs(min(guard_x)+.005) < .0001 and abs(max(guard_x)+.001) < .0001
+    assert abs(min(retain_x)+.0125) < .0001 and abs(max(retain_x)+.0051) < .0001
+    assert max(retain_x) < min(guard_x)
+    assert max(guard_x) < min(bx) or max(guard_x) < 0
     # The midspan deviation of the blade's centreline from its end chord is
     # the modeled sori. Its deliberately blunt final profile remains >4 mm wide.
     sections = sorted(set(round(float((blade.matrix_world @ v.co).x), 5)

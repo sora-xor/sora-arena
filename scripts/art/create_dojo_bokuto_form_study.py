@@ -225,7 +225,8 @@ blade = ring_mesh("Tachi_MuneShinogiBluntHaWhiteOak", 160,
 
 def leather_tsuba():
     verts, faces = [], []
-    for x in (-.0025, .0025):
+    # Both faces sit on the oval tsuka before the broader blade shoulder.
+    for x in (-.005, -.001):
         for radius in (.0165, .040):
             for i in range(40):
                 a = math.tau*i/40
@@ -274,7 +275,7 @@ def retainer_profile(_x):
 
 
 retainer = ring_mesh("Tsubadome_LeatherRetainingCollar", 4,
-                     retainer_profile, -.009, -.0025, leather)
+                     retainer_profile, -.0125, -.0051, leather)
 parts = (grip, blade, guard, retainer)
 assert abs(min(v.co.x for o in parts for v in o.data.vertices)+.242) < 1e-6
 assert abs(max(v.co.x for o in parts for v in o.data.vertices)-.773) < 1e-6
