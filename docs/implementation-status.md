@@ -44,6 +44,12 @@ required before claiming the Unreal integration works. A separate headless test
 runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
 checks deterministic terminal state and XOR conservation; it does not measure
 networking, combat load, rendering, or proving.
+A separate release-mode 12-player Control bot-input diagnostic reached its
+score terminal at tick 19,565 with the same state hash on two runs
+(`0dda20c238c44564fc4e9d2e34db311e10c751c416821a254454126df0d20345`);
+12,000 initial atomic units remained conserved as 8,900 reserve plus 3,100
+earned credits. This is a headless reference workload, not a network,
+proof, rendering or human balance benchmark.
 The offline campaign now has 24 authored Japanese production-site tasks with
 English subtitle text. Each task has a combat threshold and earlier-site
 requirements; prototype props vary by task type and change appearance on
