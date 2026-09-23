@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "reference_blend_sha256": "d5cda854af9f5b312de354877d833b612989067abb1ae938f736a7a8dde97b5d",
+  "source_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "armor_collection": "Nyaakoto_Do_Editable",
+  "mesh_parts": 146,
+  "braided_curve_parts": 60,
+  "source_mesh_triangles_before_modifiers": 26536,
+  "render_camera": "fixed 900x900 torso crop; before, front, three-quarter",
+  "files": [
+    {
+      "file": "Nyaakoto_Do_Study.blend",
+      "sha256": "95f64844d7829e87cce9366abe92fbac839a49fc7265da994c5735e2a112315a",
+      "bytes": 9489217
+    },
+    {
+      "file": "SM_Nyaakoto_Do_Study.fbx",
+      "sha256": "ba4c9c0b2c0889f4c41503de6ee5d29deafd465392123b1916203a2faa080885",
+      "bytes": 1383148
+    },
+    {
+      "file": "Nyaakoto_Do_Before.png",
+      "sha256": "e9da91adee51edecd94cfd557f2fe97d928c5a71b82f8918a3b83722cd0fcbbb",
+      "bytes": 1154215
+    },
+    {
+      "file": "Nyaakoto_Do_After_Front.png",
+      "sha256": "d195b1e35b3ab0e9f8996bc0c60b28c2b411519e6e10e2aa6073596f62678608",
+      "bytes": 1119939
+    },
+    {
+      "file": "Nyaakoto_Do_After_ThreeQuarter.png",
+      "sha256": "037a5c7511b794a2603325137e8aebceb262415f82388707c64825f73cae3bbe",
+      "bytes": 1139833
+    }
+  ],
+  "historical_references": [
+    "https://www.britishmuseum.org/collection/object/A_2017-3024-1-1-14",
+    "https://www.metmuseum.org/exhibitions/listings/2009/art-of-the-samurai/photo-gallery"
+  ],
+  "limitations": "Source-only comparative formed-plate and odoshi study, not a museum reconstruction or shippable rig. New shell is not skinned, and SORA logo placement, cloth dynamics, texel density, and packaged-game shading remain to be reviewed."
+}

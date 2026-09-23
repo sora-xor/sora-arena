@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "license": "Project-owned original procedural texture study; no third-party bitmap input",
+  "resolution_px": [
+    2048,
+    2048
+  ],
+  "normal_convention": "DirectX",
+  "orm_channels": {
+    "r": "occlusion",
+    "g": "roughness",
+    "b": "metallic"
+  },
+  "files": [
+    {
+      "file": "T_Nyaakoto_Do_Lacquer_Albedo.png",
+      "sha256": "60aad6662a2fccddd2aabf8ccc3903605b28fd8a99b77186d7fdd492ad38cd2b",
+      "bytes": 1329683
+    },
+    {
+      "file": "T_Nyaakoto_Do_Lacquer_NormalDX.png",
+      "sha256": "dd5759f6b543ee5acf33fda7b9c4f4d61f1d53a49d62bf9fa459d73e1fe2e3bc",
+      "bytes": 2270516
+    },
+    {
+      "file": "T_Nyaakoto_Do_Lacquer_ORM.png",
+      "sha256": "f3890a0c0a507f0865f9ecc56cc6f98da825bf051a1ea5d82143e29c0c888759",
+      "bytes": 854528
+    }
+  ]
+}
