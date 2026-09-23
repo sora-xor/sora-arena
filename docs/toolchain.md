@@ -18,7 +18,7 @@ been compiled. Run the doctor to inspect the actual machine.
 | Xcode | **26.1.1, build 17B100**, installed at `~/Applications/SORAToolchain/Xcode_26.1.1.app`; full Apple code-signature verification passed, SDK **26.1** found, and first-launch status reports complete. Existing **27.0** is preserved |
 | Metal Toolchain | Apple's separate **17B54** component was downloaded through the selected Xcode; `xcrun --sdk macosx metal -v` reports compiler **32023.830**. Xcode's SDK and first-launch checks alone did not install this compiler. |
 | Engine revision | The installed 5.8.3 `Build.version` reports promoted build changelist **58210709** on `++UE5+Release-5.8`; the exact 5.8.2 source commit has not been acquired, so release `source_commit` remains `null` |
-| UE 5.8 compilation / packaging / runtime | The project Mac editor target compiled in isolated **5.8.3**, with SaveGame and Connect automations passing. Original art and the CC0 palette imported there; 59 expected packages loaded by type. After installing the separate Metal Toolchain, a Mac diagnostic cook completed: **630 packages cooked**, 7 skipped by platform. The 5.8.2 release build, staged app, visual quality and gameplay qualification remain open. |
+| UE 5.8 compilation / packaging / runtime | The project Mac editor and game targets compiled in isolated **5.8.3**, with SaveGame, Connect and Japanese-culture automations passing. Original art and the CC0 palette imported there; 59 expected packages loaded by type. With the separate Metal Toolchain, a Mac diagnostic cook completed: **630 packages cooked**, 7 skipped by platform. UAT then staged and archived a **1.0 GiB** self-contained Mac app using pak/IoStore. Its signature verified and a headless packaged launch reached `Game Engine Initialized` and exited 0. This app predates the latest historical-arms source change. The pinned 5.8.2 release build, Windows build, visual quality and gameplay qualification remain open. |
 
 The machine's global `xcode-select` remains pointed at Command Line Tools. These
 scripts select Xcode and its matching `SDKROOT` only for their own process; they
@@ -43,8 +43,9 @@ Xcode 27 is a pin mismatch, not a claim that every use with UE 5.8 is impossible
   organizations; it is not an account-free route to the historical hotfix.
 - The Mac editor target compiled with the exact 5.8.3 diagnostic opt-in in an
   isolated worktree. Its source art and palette imports are also isolated there.
-  This does not satisfy the 5.8.2 release pin or establish played gameplay,
-  rendered art quality, Windows parity, or packaging.
+  A diagnostic game target also compiled and a cooked package launched, but
+  this does not satisfy the 5.8.2 release pin or establish played gameplay,
+  rendered art quality, Windows parity, or release packaging/signing.
 - Direct command-line expansion of the Apple download was denied by OS file
   permissions. Normal Finder/Archive Utility extraction succeeded, and Apple's
   complete app signature verified. Moving into `/Applications` was also denied,
@@ -110,6 +111,19 @@ an exact 5.8.2 source revision. The installed 5.8.3 build reports changelist
 58210709, not an exact 5.8.2 source commit. `python3 scripts/toolchain/test_doctor_interim.py` runs host-only
 fake-engine tests for the strict default, exact opt-in and rejected values;
 it never invokes Unreal.
+
+On this Mac, UBT compiled and linked the game target but its nested Xcode
+post-build invocation failed at the generated `Touch UBT generated tiles`
+pre-action. The game wrapper retries the exact generated scheme only for that
+specific failure, verifies the signed `.app`, then invokes Unreal's own
+`WriteMetadata` mode for the matching build products and target receipt. A
+different build failure still exits nonzero. UAT staging requires that receipt.
+The isolated 5.8.3 diagnostic then completed UAT stage/package/archive in
+74 seconds; the archived app passed strict `codesign` verification and a
+`-NullRHI -unattended -ExecCmds=Quit` startup smoke. Its pak contains the
+Japanese `Game.locmeta` and `ja/Game.locres`; a full packaged Japanese UI and
+subtitle rendering check remains open. This recovery is not yet validated on
+the requested 5.8.2 build.
 
 ## Finish Unreal and Xcode provisioning
 

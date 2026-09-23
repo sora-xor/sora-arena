@@ -13,8 +13,9 @@ is recorded, and timing/readability still need Unreal play verification. A nativ
 Japanese Game localization resource passed `SoraArena.Localization.NativeJapanese`
 in a UE 5.8.3 `-game` run: Unreal loaded its metadata/resource, selected `ja`
 without the previous English fallback, resolved the Japanese menu title, and
-found the separately authored English subtitle. The pinned 5.8.2 and packaged
-runtime still require checks.
+found the separately authored English subtitle. A separately staged 5.8.3 Mac
+app contains those localization resources and passes a headless startup smoke;
+the pinned 5.8.2 and packaged Japanese UI/subtitle rendering still require checks.
 The HUD gives Japanese and English campaign subtitles, speaker names and notices
 a minimum text size at 720p and above; content and font-width checks pass, but
 the UE 5.8.2 visual and controller readability pass is still open.
@@ -52,7 +53,10 @@ The same isolated 5.8.3 checkout loaded `/Engine/Maps/Entry` with
 startup smoke check, not a played campaign or rendered performance test.
 With Apple's separate Metal Toolchain installed, a Mac UE 5.8.3 diagnostic
 cook exited successfully: 630 packages cooked and seven skipped by platform.
-This does not establish a staged app or the pinned 5.8.2 release cook.
+The cooked content and a pre-historical-arms game target then staged and
+archived through UAT. The 1.0 GiB Mac app has pak/IoStore content, a valid
+local code signature and an exit-0 headless packaged startup. This is not a
+5.8.2 release cook, distribution signature, played session, or frame-rate test.
 A separate headless test
 runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
 checks deterministic terminal state and XOR conservation; it does not measure
