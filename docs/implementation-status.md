@@ -13,6 +13,10 @@ is recorded, and timing/readability still need Unreal play verification.
 The HUD gives Japanese and English campaign subtitles, speaker names and notices
 a minimum text size at 720p and above; content and font-width checks pass, but
 the UE 5.8.2 visual and controller readability pass is still open.
+Local control preferences now save inverted look, stick dead zones, look
+sensitivity and whitelisted combat-action remaps separately from campaign
+checkpoints. Wallet and menu bindings remain fixed. The control UI and actual
+Windows/macOS controller verification are still open.
 
 ## Milestones and current evidence
 
