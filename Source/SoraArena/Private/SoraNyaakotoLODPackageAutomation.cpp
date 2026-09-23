@@ -7,7 +7,8 @@
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FSoraNyaakotoCookedLODsTest,
     "SoraArena.Character.NyaakotoCookedLODs",
-    EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext |
+    EAutomationTestFlags::EngineFilter)
 
 bool FSoraNyaakotoCookedLODsTest::RunTest(const FString& Parameters)
 {
