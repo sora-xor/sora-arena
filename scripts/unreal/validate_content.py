@@ -192,6 +192,36 @@ hero_character_fbx = (hero_character_root / hero_character["fbx"]).read_bytes()
 assert hero_character_fbx.startswith(b"Kaydara FBX Binary")
 assert b"/Users/" not in hero_character_fbx
 assert hero_character["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
+horse_root = content / "SourceArt/Horses/Nyaagyu"
+horse = json.loads((horse_root / "manifest.json").read_text())
+assert horse["schema_version"] == 1
+assert horse["name"] == "SM_Nyaagyu_HorseAndTack"
+assert horse["generator"] == "scripts/art/create_nyaagyu_horse_tack.py"
+assert horse["validator"] == "scripts/art/validate_nyaagyu_horse_tack.py"
+assert horse["fbx"] == horse["name"] + ".fbx"
+assert horse["unreal_asset"] == "/Game/ArtReview/Horses/SM_Nyaagyu_HorseAndTack.SM_Nyaagyu_HorseAndTack"
+assert horse["local_forward"] == "+X horse-forward; +Z up"
+assert horse["world_origin_m"] == [0, 0, 0] and horse["units"] == "meters"
+assert horse["rigged"] is False and horse["external_images"] == []
+assert horse["source_parts"] >= 100 and 50000 <= horse["source_triangles"] < 100000
+assert 1.7 < horse["bounds_m"]["max"][2] < 1.9
+assert "Original project-owned horse/tack geometry" in horse["license"]
+assert horse["insignia_sha256"] == hero_character["insignia_sha256"]
+assert (horse_root / horse["insignia_source"]).resolve() == (content / "SourceArt/UI/sora_logo_NOtext2.svg").resolve()
+for name, digest in ((horse["source_blend"], "blend_sha256"),
+                     (horse["fbx"], "fbx_sha256"),
+                     (horse["preview"], "preview_sha256")):
+    path = horse_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == horse[digest]
+horse_fbx = (horse_root / horse["fbx"]).read_bytes()
+assert horse_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in horse_fbx
+anchors = horse["anchors_m"]
+assert set(anchors) == {"Horse_Root", "Saddle_RiderSeat", "Tazuna_LeftGrip", "Tazuna_RightGrip", "Abumi_LeftFoot", "Abumi_RightFoot"}
+assert anchors["Tazuna_LeftGrip"][0] == anchors["Tazuna_RightGrip"][0]
+assert anchors["Tazuna_LeftGrip"][1] == -anchors["Tazuna_RightGrip"][1]
+assert anchors["Abumi_LeftFoot"][1] == -anchors["Abumi_RightFoot"][1]
+assert horse["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
 concept_root = content / "SourceArt/Concepts"
 concept = json.loads((concept_root / "nyaagyu_photoreal_character_target.json").read_text())
 assert concept["schema_version"] == 1 and concept["generator"] == "OpenAI built-in image_gen"
@@ -317,4 +347,4 @@ absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")

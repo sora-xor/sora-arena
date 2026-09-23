@@ -108,6 +108,24 @@ insignia = (hero_character_root / hero_character["insignia_source"]).resolve()
 if (not insignia.is_file()
         or hashlib.sha256(insignia.read_bytes()).hexdigest() != hero_character["insignia_sha256"]):
     raise RuntimeError("The user-supplied SORA hero insignia source is missing or changed")
+horse_root = source / "Horses/Nyaagyu"
+horse = json.loads((horse_root / "manifest.json").read_text())
+horse_name = "SM_Nyaagyu_HorseAndTack"
+if (horse["schema_version"] != 1
+        or horse["name"] != horse_name
+        or horse["generator"] != "scripts/art/create_nyaagyu_horse_tack.py"
+        or horse["fbx"] != horse_name + ".fbx"
+        or horse["unreal_asset"] != f"/Game/ArtReview/Horses/{horse_name}.{horse_name}"
+        or horse["rigged"] is not False):
+    raise RuntimeError("The Edo horse/tack asset identity changed")
+horse_fbx = horse_root / horse["fbx"]
+if (not horse_fbx.is_file()
+        or hashlib.sha256(horse_fbx.read_bytes()).hexdigest() != horse["fbx_sha256"]):
+    raise RuntimeError("The Edo horse/tack FBX is missing or changed")
+horse_insignia = (horse_root / horse["insignia_source"]).resolve()
+if (not horse_insignia.is_file()
+        or hashlib.sha256(horse_insignia.read_bytes()).hexdigest() != horse["insignia_sha256"]):
+    raise RuntimeError("The horse/tack kamon does not match the supplied SORA logo")
 naginata_root = source / "Weapons/MonofilamentNaginata"
 naginata = json.loads((naginata_root / "manifest.json").read_text())
 naginata_name = "SM_Nyaagyu_MonofilamentNaginata"
@@ -127,12 +145,15 @@ tasks = []
 runtime_destination = "/Game/Generated/Meshes"
 review_destination = "/Game/ArtReview/Characters"
 review_weapon_destination = "/Game/ArtReview/Weapons"
+review_horse_destination = "/Game/ArtReview/Horses"
 assets.make_directory(review_destination)
 assets.make_directory(review_weapon_destination)
+assets.make_directory(review_horse_destination)
 for name, path, destination in [(name, source / f"{name}.fbx", runtime_destination) for name in mesh_names] + [
         (bokken["name"], bokken_fbx, runtime_destination),
         (arc_carbine["name"], arc_fbx, runtime_destination),
         (hero_character_name, hero_character_fbx, review_destination),
+        (horse_name, horse_fbx, review_horse_destination),
         (naginata_name, naginata_fbx, review_weapon_destination)]:
     if not path.is_file():
         raise RuntimeError(f"Required original mesh is missing: {path}")
@@ -160,6 +181,8 @@ for name in mesh_names + [bokken["name"], arc_carbine["name"]]:
         raise RuntimeError(f"Unreal import did not create {name}")
 if not assets.does_asset_exist(f"{review_destination}/{hero_character_name}"):
     raise RuntimeError("Unreal review import did not create the feline concept mesh")
+if not assets.does_asset_exist(f"{review_horse_destination}/{horse_name}"):
+    raise RuntimeError("Unreal review import did not create the Edo horse/tack study")
 if not assets.does_asset_exist(f"{review_weapon_destination}/{naginata_name}"):
     raise RuntimeError("Unreal review import did not create the special naginata mesh")
 
@@ -289,4 +312,4 @@ if not font.is_file() or not (source / "Fonts/OFL.txt").is_file():
     raise RuntimeError("Japanese runtime font and its redistribution license are required")
 
 assets.save_directory("/Game/Generated", only_if_is_dirty=False, recursive=True)
-unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon meshes, {len(environment_tasks)} source-authored environment props; Japanese font staged separately")
+unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon/horse meshes, {len(environment_tasks)} source-authored environment props; Japanese font staged separately")

@@ -100,6 +100,9 @@ def expected_assets(project_root):
     named_mesh(source_root, specs, "Characters/Hero", "manifest.json",
                "SM_Nyaagyu_HeroCharacter", "/Game/ArtReview/Characters",
                schema_version=2, rigged=False)
+    named_mesh(source_root, specs, "Horses/Nyaagyu", "manifest.json",
+               "SM_Nyaagyu_HorseAndTack", "/Game/ArtReview/Horses",
+               rigged=False)
     named_mesh(source_root, specs, "Weapons/MonofilamentNaginata", "manifest.json",
                "SM_Nyaagyu_MonofilamentNaginata", "/Game/ArtReview/Weapons")
 
