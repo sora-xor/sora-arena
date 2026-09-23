@@ -179,9 +179,11 @@ fur/cloth/lacquer PBR maps, yumi, quiver and katana. The roof has a separate
 photographed overlap pattern still needs a period-art review. Source validators
 and the 5.8.3 editor import validator pass for all 154 expected packages and
 exact character and roof material bindings. Blender reviews still show a
-stylized character,
-and the new 130k-vertex LOD0 needs distance LODs and performance review. This
-asset work is not a photoreal AAA qualification; an in-game visual pass and
+stylized character. Two authored distance LODs reduce Nyaakoto from 136,701
+runtime vertices to 53,302 and 18,546 in the 5.8.3 editor; the three-LOD
+editor automation passes. Cooked-game LOD retention and performance still need
+verification. This asset work is not a photoreal AAA qualification; an in-game
+visual pass and
 measured Windows/Mac frame times remain required.
 An additional unrigged Nyaagyu bust study has editable Blender source and a
 102,071-triangle FBX with 32,155 fur-card triangles. Its Blender round-trip,
