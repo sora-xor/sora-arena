@@ -148,7 +148,22 @@ for index, (prop, mask) in enumerate((
     part = node(material, unreal.MaterialExpressionComponentMask, -240, 270 + 140 * index,
                 r=mask[0], g=mask[1], b=mask[2], a=False)
     link(samples["arm"], "RGB", part, "")
-    output(part, "", prop)
+    if prop == unreal.MaterialProperty.MP_ROUGHNESS:
+        # Match the shipped terrain-only instance's source-authored wetness;
+        # the A/B should isolate UV variation, not alter the PBR response.
+        damp = node(material, unreal.MaterialExpressionScalarParameter, -650, 760,
+                    parameter_name="TerrainDampRoughness", default_value=0.30)
+        masked_damp = node(material, unreal.MaterialExpressionMultiply, -440, 760)
+        link(vertex, "A", masked_damp, "A")
+        link(damp, "", masked_damp, "B")
+        dry = node(material, unreal.MaterialExpressionOneMinus, -220, 760)
+        link(masked_damp, "", dry, "")
+        wet_roughness = node(material, unreal.MaterialExpressionMultiply, 0, 760)
+        link(part, "", wet_roughness, "A")
+        link(dry, "", wet_roughness, "B")
+        output(wet_roughness, "", prop)
+    else:
+        output(part, "", prop)
 
 lib.layout_material_expressions(material)
 lib.recompile_material(material)
