@@ -293,7 +293,14 @@ void ASoraCharacter::GamepadPitch(float V)
 {
     if(CanPlay()) AddControllerPitchInput(FMath::Clamp(V,-1.f,1.f)*70.f*GamepadLookSensitivity*GetWorld()->GetDeltaSeconds()*(bInvertedLook?-1.f:1.f));
 }
-void ASoraCharacter::FireDown() { if(bKernelDriven) { if(CanPlay()) KernelHeldButtons|=1; return; } bFireHeld=true; Fire(); }
+void ASoraCharacter::FireDown()
+{
+    // Input can arrive while the title/menu is open. Never carry a held trigger
+    // into resumed combat if it was first pressed outside gameplay.
+    if(!CanPlay()) return;
+    if(bKernelDriven) { KernelHeldButtons|=1; return; }
+    bFireHeld=true; Fire();
+}
 void ASoraCharacter::FireUp() { bFireHeld=false; KernelHeldButtons&=~1u; }
 void ASoraCharacter::SprintDown() { if(CanPlay()) bSprint=true; } void ASoraCharacter::SprintUp() { bSprint=false; }
 void ASoraCharacter::JumpDown() { if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; } if(CanPlay()) Jump(); }

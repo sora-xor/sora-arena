@@ -22,6 +22,8 @@ The left stick uses an 0.18 per-axis dead zone. The right stick uses an 0.12 per
 
 The deliberate shared buttons are context-gated: the bottom face button is Jump in play and Continue in the menu; left stick click is Sprint in play and New Campaign in the menu; left shoulder is Ability in play and Previous Class in the menu. The wallet's pairing/open/disconnect actions retain their keyboard-only mappings. No wallet transaction can be triggered by these controller bindings.
 
+The fire trigger is accepted only during active gameplay. Pressing it while the title menu or a defeat screen is open cannot leave a held-fire state that shoots as soon as the player resumes.
+
 Before calling this controller feature complete, test on Windows and macOS packaged builds with at least one Xbox-layout controller and one PlayStation-layout controller. Check dead-zone drift, horizontal/vertical aim direction and turn rate at 30/60/120 rendered fps, simultaneous mouse/controller input, menu and practice context changes, remapping conflict rejection, held-button release, Japanese menu readability, and identical canonical replay inputs from equivalent final controls. This check cannot be performed until the pinned UE 5.8 engine is available.
 
 The implementation uses [Epic's UE 5.8 input mapping overview](https://dev.epicgames.com/documentation/unreal-engine/input-overview-in-unreal-engine), [the `UPlayerInput` API](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/UPlayerInput), [axis properties](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/FInputAxisProperties), and [the gamepad key list](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/InputCore/EKeys).
