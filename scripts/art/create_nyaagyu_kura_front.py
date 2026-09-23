@@ -271,6 +271,22 @@ render = bpy.context.object
 render.name = NAME
 render["author"] = "Source-only Nyaagyu Kura facade candidate"
 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+# The parent kura has a first UV channel named UVMap. Blender's join retains
+# that channel before the new boards' UV0, and Unreal TextureSample reads
+# channel 0 by default. Copy the board atlas coordinates onto the exported
+# first channel only for cedar faces; leave every parent material's UVs alone.
+cedar_index = next(i for i, mat in enumerate(render.data.materials)
+                   if mat and mat.name == "M_KuraFront_CC0CedarAtlas")
+assert render.data.uv_layers[0].name == "UVMap"
+assert "UV0" in render.data.uv_layers
+export_uv = render.data.uv_layers[0].data
+board_uv = render.data.uv_layers["UV0"].data
+cedar_polygons = [face for face in render.data.polygons
+                  if face.material_index == cedar_index]
+assert len(cedar_polygons) >= 400
+for face in cedar_polygons:
+    for loop_index in face.loop_indices:
+        export_uv[loop_index].uv = board_uv[loop_index].uv
 bpy.ops.object.select_all(action="DESELECT")
 render.select_set(True)
 bpy.context.view_layer.objects.active = render

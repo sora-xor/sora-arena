@@ -91,6 +91,19 @@ assert "UV0" in mesh.data.uv_layers, [x.name for x in mesh.data.uv_layers]
 slots = {m.name for m in mesh.data.materials if m}
 assert "M_KuraFront_CC0CedarAtlas" in slots, slots
 assert "M_KuraFront_ForgedIron" in slots, slots
+assert mesh.data.uv_layers[0].name == "UVMap", [x.name for x in mesh.data.uv_layers]
+cedar_index = next(i for i,m in enumerate(mesh.data.materials)
+                   if m and m.name == "M_KuraFront_CC0CedarAtlas")
+cedar_faces = [face for face in mesh.data.polygons if face.material_index == cedar_index]
+assert len(cedar_faces) >= 400, len(cedar_faces)
+cedar_u = [mesh.data.uv_layers[0].data[i].uv.x
+           for face in cedar_faces for i in face.loop_indices]
+cedar_v = [mesh.data.uv_layers[0].data[i].uv.y
+           for face in cedar_faces for i in face.loop_indices]
+assert min(cedar_u) <= .005 and max(cedar_u) >= .995, (min(cedar_u),max(cedar_u))
+assert min(cedar_v) <= .005 and max(cedar_v) >= .995, (min(cedar_v),max(cedar_v))
+assert min(cedar_u) >= -.01 and max(cedar_u) <= 1.01
+assert min(cedar_v) >= -.01 and max(cedar_v) <= 1.01
 bounds = {"min":[min((mesh.matrix_world @ Vector(c))[axis] for c in mesh.bound_box)
                  for axis in range(3)],
           "max":[max((mesh.matrix_world @ Vector(c))[axis] for c in mesh.bound_box)
@@ -106,6 +119,11 @@ report = {
     "source_parts": len(source),
     "source_triangles": manifest["source_triangles"],
     "board_uv0": 14,
+    "fbx_cedar_channel0_uv_extent": {
+        "u": [min(cedar_u), max(cedar_u)],
+        "v": [min(cedar_v), max(cedar_v)],
+        "polygons": len(cedar_faces),
+    },
     "forged_straps": 6,
     "fbx_roundtrip_objects": len(imported),
     "fbx_roundtrip_polygons": len(mesh.data.polygons),

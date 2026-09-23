@@ -3,6 +3,17 @@
   "source_parts": 381,
   "source_triangles": 59342,
   "board_uv0": 14,
+  "fbx_cedar_channel0_uv_extent": {
+    "u": [
+      -3.423948014003031e-09,
+      1.0
+    ],
+    "v": [
+      -0.000746091827750206,
+      1.0007460117340088
+    ],
+    "polygons": 476
+  },
   "forged_straps": 6,
   "fbx_roundtrip_objects": 1,
   "fbx_roundtrip_polygons": 29621,
