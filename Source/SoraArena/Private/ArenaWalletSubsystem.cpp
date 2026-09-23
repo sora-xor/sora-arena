@@ -116,7 +116,8 @@ bool ParseNetworkId(const FString& Literal, TArray<uint8>& Out)
         Crc ^= static_cast<uint16>(Literal[I]) << 8;
         for (int32 Bit = 0; Bit < 8; ++Bit) Crc = static_cast<uint16>((Crc & 0x8000) ? ((Crc << 1) ^ 0x1021) : (Crc << 1));
     }
-    return Literal.Right(4) == FString::Printf(TEXT("%04X"), Crc);
+    // FString's == is case-insensitive; the network literal requires canonical uppercase CRC hex.
+    return Literal.Right(4).Equals(FString::Printf(TEXT("%04X"), Crc), ESearchCase::CaseSensitive);
 }
 
 bool NormalizeOrigin(const FString& Input, FString& Out)
@@ -1439,6 +1440,7 @@ bool FArenaConnectBindingTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Exact network width"), Bytes.Num(), 32);
     TestFalse(TEXT("Network checksum substitution"), ArenaConnect::ParseNetworkId(Network.Left(73) + TEXT("F"), Bytes));
     TestFalse(TEXT("Noncanonical lowercase checksum"), ArenaConnect::ParseNetworkId(Network.Left(70) + TEXT("c50e"), Bytes));
+    TestFalse(TEXT("Noncanonical mixed-case checksum"), ArenaConnect::ParseNetworkId(Network.Left(70) + TEXT("C50e"), Bytes));
     TestFalse(TEXT("Display labels are not network identities"), ArenaConnect::ParseNetworkId(TEXT("sora-mainnet"), Bytes));
 
     FString Origin;
