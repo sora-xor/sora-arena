@@ -150,6 +150,23 @@ assert street_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in street
 assert street["name"] in world_builder and street["name"] in import_script
 assert 'if(MapId==1)' in world_builder and 'StreetDebtTerminalCollision' in world_builder
 assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+sluice_root = content / "SourceArt/Environment/NyaagyuSluice"
+sluice = json.loads((sluice_root / "manifest.json").read_text())
+assert sluice["schema_version"] == 1
+assert sluice["name"] == "SM_Nyaagyu_IrrigationSluice"
+assert sluice["generator"] == "scripts/art/create_nyaagyu_sluice.py"
+assert sluice["unreal_asset"] == "/Game/Generated/Environment/Props/SM_Nyaagyu_IrrigationSluice.SM_Nyaagyu_IrrigationSluice"
+assert 5000 <= sluice["source_triangles"] < 50000 and sluice["collision_boxes"] == 3
+assert "Original project-owned geometry" in sluice["license"] and "CC0 Poly Haven" in sluice["license"]
+for name, digest in ((sluice["source_blend"], "blend_sha256"),
+                     (sluice["fbx"], "fbx_sha256"),
+                     (sluice["preview"], "preview_sha256")):
+    path = sluice_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == sluice[digest]
+assert sluice["name"] in world_builder and sluice["name"] in import_script
+assert 'if(MapId==0) ImportedProp(TEXT("SM_Nyaagyu_IrrigationSluice")' in world_builder
+assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())
 assert logo_manifest["source_svg"] == "sora_logo_NOtext2.svg"
@@ -173,4 +190,4 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 30 FBX source assets including a dojo bokken and 4 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 31 FBX source assets including a dojo bokken and 5 original environment props, licensed Japanese font, hash-verified SORA logo.")

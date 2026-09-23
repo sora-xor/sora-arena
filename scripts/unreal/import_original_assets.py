@@ -124,10 +124,17 @@ if (street_terminal["schema_version"] != 1 or street_terminal["name"] != street_
         or street_terminal["generator"] != "scripts/art/create_street_debt_terminal.py"
         or street_terminal["unreal_asset"] != f"/Game/Generated/Environment/Props/{street_name}.{street_name}"):
     raise RuntimeError("The original street debt terminal identity changed")
+sluice_source = source / "Environment/NyaagyuSluice"
+sluice = json.loads((sluice_source / "manifest.json").read_text())
+sluice_name = "SM_Nyaagyu_IrrigationSluice"
+if (sluice["schema_version"] != 1 or sluice["name"] != sluice_name
+        or sluice["generator"] != "scripts/art/create_nyaagyu_sluice.py"
+        or sluice["unreal_asset"] != f"/Game/Generated/Environment/Props/{sluice_name}.{sluice_name}"):
+    raise RuntimeError("The original Nyaagyu irrigation sluice identity changed")
 assets.make_directory("/Game/Generated/Environment/Props")
 environment_tasks = []
 environment_entries = ([(environment_source, entry) for entry in environment_manifest["assets"]]
-                       + [(street_source, street_terminal)])
+                       + [(street_source, street_terminal), (sluice_source, sluice)])
 for entry_root, entry in environment_entries:
     fbx = entry_root / entry["fbx"]
     if (entry["fbx"] != entry["name"] + ".fbx" or not fbx.is_file()
@@ -152,7 +159,7 @@ for entry_root, entry in environment_entries:
     task.options = options
     environment_tasks.append(task)
 tools.import_asset_tasks(environment_tasks)
-for name in environment_names + [street_name]:
+for name in environment_names + [street_name, sluice_name]:
     mesh = assets.load_asset(f"/Game/Generated/Environment/Props/{name}")
     if not isinstance(mesh, unreal.StaticMesh):
         raise RuntimeError(f"Unreal import did not create the original environment prop: {name}")

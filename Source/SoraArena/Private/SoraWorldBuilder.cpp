@@ -203,6 +203,10 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
             SiteEffects[I]=Box(FString::Printf(TEXT("WaterChannel%d"),I),P+FVector(0,-205,18),FVector(420,130,35),FLinearColor(.04f,.07f,.09f),false);
             auto* Wheel=Shape(this,RootComponent,FString::Printf(TEXT("Waterwheel%d"),I),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),P+FVector(0,0,290),FVector(2.1f,.32f,2.1f),FLinearColor(.27f,.18f,.08f),false);
             Wheel->SetRelativeRotation(FRotator(90,0,0)); Pieces.Add(Wheel);
+            // The authored sluice makes restored agricultural production visible
+            // in the Nyaagyu Estate campaign. It is decorative; multiplayer
+            // practice continues to use only deterministic kernel collision.
+            if(MapId==0) ImportedProp(TEXT("SM_Nyaagyu_IrrigationSluice"),P+FVector(0,-295,0),FRotator::ZeroRotator);
         }
         else if(Kind==TEXT("foundry"))
         {
