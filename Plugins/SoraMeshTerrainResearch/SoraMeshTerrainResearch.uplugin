@@ -1,0 +1,19 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1-research",
+  "FriendlyName": "SORA Mesh Terrain Research",
+  "Description": "Editor-only, opt-in conversion of the Nyaagyu terrain research map to UE 5.8 Mesh Partition. Never required by the shipping game.",
+  "Category": "Research",
+  "EnabledByDefault": false,
+  "CanContainContent": false,
+  "Modules": [
+    {"Name": "SoraMeshTerrainResearch", "Type": "Editor", "LoadingPhase": "Default"}
+  ],
+  "Plugins": [
+    {"Name": "MeshPartition", "Enabled": true},
+    {"Name": "MeshPartitionWater", "Enabled": true},
+    {"Name": "PCGMeshPartitionInterop", "Enabled": true},
+    {"Name": "MeshTerrainMode", "Enabled": true}
+  ]
+}
