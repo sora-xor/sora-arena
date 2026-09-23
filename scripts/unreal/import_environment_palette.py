@@ -19,7 +19,12 @@ roof=json.loads((SOURCE/'GreyRoofTiles/manifest.json').read_text())
 if (roof['asset_id']!='grey_roof_tiles' or roof['role']!='kawara'
         or roof['license']!='CC0-1.0' or roof['tile_size_cm']!=300.0):
     raise RuntimeError('Pinned CC0 kawara surface identity changed')
-surface_assets=manifest['assets']+[roof]
+plaster=json.loads((SOURCE/'WhitePlaster02/manifest.json').read_text())
+if (plaster['asset_id']!='white_plaster_02' or plaster['role']!='plaster'
+        or plaster['license']!='CC0-1.0' or plaster['tile_size_cm']!=100.0
+        or plaster['unreal_instance']!='/Game/Generated/Environment/MI_Nyaagyu_Plaster.MI_Nyaagyu_Plaster'):
+    raise RuntimeError('Pinned CC0 white plaster surface identity changed')
+surface_assets=manifest['assets']+[roof,plaster]
 assets=unreal.EditorAssetLibrary;tools=unreal.AssetToolsHelpers.get_asset_tools();lib=unreal.MaterialEditingLibrary
 DEST='/Game/Generated/Environment'
 assets.make_directory(DEST+'/Textures')
@@ -27,7 +32,9 @@ textures={}
 for record in surface_assets:
     textures[record['role']]={}
     for file in record['files']:
-        source=SOURCE/('GreyRoofTiles' if record['role']=='kawara' else '')/file['file']
+        folder=('GreyRoofTiles' if record['role']=='kawara' else
+                'WhitePlaster02' if record['role']=='plaster' else '')
+        source=SOURCE/folder/file['file']
         if hashlib.sha256(source.read_bytes()).hexdigest()!=file['sha256']:
             raise RuntimeError('Source asset hash mismatch: '+str(source))
         name='T_NyaagyuOvercast' if file['channel']=='hdri' else f"T_{record['role'].title()}_{file['channel']}"
@@ -117,4 +124,4 @@ cube=node(sky,unreal.MaterialExpressionTextureSampleParameterCube,-100,-100,para
 link(normal,'',cube,'');output(cube,'RGB',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
 lib.layout_material_expressions(sky);lib.recompile_material(sky);assets.save_loaded_asset(sky)
 assets.save_directory(DEST,only_if_is_dirty=False,recursive=True)
-unreal.log('NYAAGYU_PBR_READY: 5 real-scale CC0 materials including kawara + overcast HDRI. Powered by Poly Haven — https://polyhaven.com')
+unreal.log('NYAAGYU_PBR_READY: 6 real-scale CC0 materials including kawara and plaster + overcast HDRI. Powered by Poly Haven — https://polyhaven.com')
