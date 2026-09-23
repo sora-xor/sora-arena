@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "asset_id": "tree_small_02",
+  "upstream_page": "https://polyhaven.com/a/tree_small_02",
+  "upstream_api": "https://api.polyhaven.com/files/tree_small_02",
+  "license": "CC0-1.0; https://polyhaven.com/license",
+  "authors": [
+    "Rico Cilliers"
+  ],
+  "generator": "scripts/art/create_nyaagyu_photoreal_tree.py",
+  "description": "4.6 m scanned broadleaf tree; three PBR zones and cutout leaves; Nyaagyu campaign decoration only",
+  "upstream_files": [
+    {
+      "path": "Upstream/textures/tree_small_02_arm_1k.jpg",
+      "bytes": 708242,
+      "sha256": "891c5a1bb124292984b01558e9f2b0302d27d2fa3ccf9dfc6c34f9ea4ca24e6c"
+    },
+    {
+      "path": "Upstream/textures/tree_small_02_branch_arm_1k.jpg",
+      "bytes": 375732,
+      "sha256": "8968b46d76c67da09ebbf4eed04b8123c9e0ddf5b55d123968b35b32aa76d27a"
+    },
+    {
+      "path": "Upstream/textures/tree_small_02_branch_diff_1k.jpg",
+      "bytes": 449977,
+      "sha256": "a71b768e330c0c6cca097e30314f6b4e842ef724a1370f6aab14b4434eec64cb"
+    },
+    {
+      "path": "Upstream/textures/tree_small_02_branch_nor_gl_1k.jpg",
+      "bytes": 581596,
+      "sha256": "a2efae9e7fede259601188cd5cb7e561fc502bd87e04d862a9532b2d8e647a62"
+    },
+    {
+      "path": "Upstream/textures/tree_small_02_diff_1k.jpg",
+      "bytes": 863246,
+      "sha256": "4e0093f407b3a1120a36de49a48ebe5a465a9a9b77e361c7a3e66866e115e404"
+    },
+    {
+      "path": "Upstream/textures/tree_small_02_leaves_arm_1k.jpg",
+      "bytes": 633698,
+      "sha256": "71f81374daf5a8f3e6eb2c694264a1769fdb0bea508178e4105618eecea83c3e"
+    },
+    {
+      "path": "Upstream/textures/tree_small_02_leaves_diff_1k.jpg",
+      "bytes": 340003,
+      "sha256": "261e7d7a5ac7d2e16ea8823ff8510be8f3f615999724232994039ad2885e5c36"
+    },
+    {
+      "path": "Upstream/textures/tree_small_02_leaves_nor_gl_1k.jpg",
+      "bytes": 681604,
+      "sha256": "8c72e04fb23e16ae1df79c01385a638473d1dd4dede3d51e83d70153c129f09b"
+    },
+    {
+      "path": "Upstream/textures/tree_small_02_nor_gl_1k.jpg",
+      "bytes": 1228646,
+      "sha256": "9c83be074c950ea1b94c732c0c0291b53b9ba357f932d378bafe3ca3b4418871"
+    },
+    {
+      "path": "Upstream/tree_small_02.bin",
+      "bytes": 95102324,
+      "sha256": "8da6c3c389ad8748286d1b7488cd827f75ebdad9d8f59ef7dfb0916df5edc634"
+    },
+    {
+      "path": "Upstream/tree_small_02_1k.gltf",
+      "bytes": 9075,
+      "sha256": "3062a709614c05b80fdc1e56583998bc3cb1027b0d52f956c8ecfb882ff8ca6d"
+    }
+  ],
+  "texture_files": [
+    {
+      "path": "Textures/tree_small_02_arm_2k.jpg",
+      "bytes": 2586815,
+      "sha256": "e96b4e84e9786b982d01562e0d249f6e58db1b656dd511db7c034d6ed60b1c92"
+    },
+    {
+      "path": "Textures/tree_small_02_branch_arm_2k.jpg",
+      "bytes": 1147503,
+      "sha256": "82da928cc4e8a45c559f6abe8053227c7ae6cc14eb8d026a30c203aedd087042"
+    },
+    {
+      "path": "Textures/tree_small_02_branch_diff_2k.jpg",
+      "bytes": 1425692,
+      "sha256": "9032de9e063ee7e3763a6b10d19d89302f5776e85a966b6dd1c3a5634b2a80e1"
+    },
+    {
+      "path": "Textures/tree_small_02_branch_nor_dx_2k.jpg",
+      "bytes": 1790025,
+      "sha256": "6a742bea1b5b212e06cf78f6469f28828fef0074b0fa106b7203add9d62802f8"
+    },
+    {
+      "path": "Textures/tree_small_02_diff_2k.jpg",
+      "bytes": 3170612,
+      "sha256": "4ab3210b6ec6bb1181145500bca71d1c1f81ead6baaa8600f5979c2cec50c6a4"
+    },
+    {
+      "path": "Textures/tree_small_02_leaves_alpha_2k.png",
+      "bytes": 636661,
+      "sha256": "566484c7047ce67af5a4435c1e4da2b773578d73f83ae45dfad0fd442df7b9d5"
+    },
+    {
+      "path": "Textures/tree_small_02_leaves_arm_2k.jpg",
+      "bytes": 2191542,
+      "sha256": "a126c0d92b60c44c0664e4d3651831970e259b0d5a1fb39ebb67081cbecaca96"
+    },
+    {
+      "path": "Textures/tree_small_02_leaves_diff_2k.jpg",
+      "bytes": 961870,
+      "sha256": "6c984a46861562f2a20381c54106aa5e07ce0d3fce785907f8d263157e7561af"
+    },
+    {
+      "path": "Textures/tree_small_02_leaves_nor_dx_2k.jpg",
+      "bytes": 2361018,
+      "sha256": "ccb19c4d201e140292b0cc9b8c5f298c8eefdb24b82ac10daf7193b4a209c487"
+    },
+    {
+      "path": "Textures/tree_small_02_nor_dx_2k.jpg",
+      "bytes": 4550246,
+      "sha256": "70e26cb4e5f45c5aa91c2a89af113342f536ff30a29f523a8994f1a0aef1890d"
+    }
+  ],
+  "source_blend": "NyaagyuTree_Source.blend",
+  "source_blend_sha256": "e8f6fa621df10327189cf7cf5eb726cfdd8940b4c743452be46ba41fadb6dbd0",
+  "preview": "Preview_NyaagyuTree.png",
+  "preview_sha256": "82fc22190219e50eff3735a68d82769c25b23eeab611ced4a7d39842c005635c",
+  "material_slots": [
+    "M_NyaagyuTree_Branches",
+    "M_NyaagyuTree_Leaves",
+    "M_NyaagyuTree_Trunk"
+  ],
+  "meshes": [
+    {
+      "tier": "hi",
+      "name": "SM_NyaagyuTree_HI",
+      "fbx": "SM_NyaagyuTree_HI.fbx",
+      "fbx_sha256": "7dad9c333a1ca604a9900258e592b38e5a3d87e02d7997bf72e8a111d67614c8",
+      "source_triangles": 353864,
+      "bounds_m": {
+        "min": [
+          -1.3088,
+          -2.9109,
+          -0.0241
+        ],
+        "max": [
+          1.6107,
+          1.3834,
+          4.5398
+        ]
+      },
+      "unreal_asset": "/Game/Generated/Environment/Foliage/SM_NyaagyuTree_HI.SM_NyaagyuTree_HI",
+      "nanite": true
+    },
+    {
+      "tier": "mac",
+      "name": "SM_NyaagyuTree_MAC",
+      "fbx": "SM_NyaagyuTree_MAC.fbx",
+      "fbx_sha256": "3d1d951f336516ca25ca2de68bfdd2e18add843beb017007d988ca3eb932f7fd",
+      "source_triangles": 94918,
+      "bounds_m": {
+        "min": [
+          -1.3157,
+          -2.9124,
+          -0.0242
+        ],
+        "max": [
+          1.6113,
+          1.3842,
+          4.557
+        ]
+      },
+      "unreal_asset": "/Game/Generated/Environment/Foliage/SM_NyaagyuTree_MAC.SM_NyaagyuTree_MAC",
+      "nanite": false
+    }
+  ],
+  "instances_in_nyaagyu_estate": 10,
+  "gameplay_collision": false
+}

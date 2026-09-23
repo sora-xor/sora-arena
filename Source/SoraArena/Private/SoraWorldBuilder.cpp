@@ -153,6 +153,34 @@ void ASoraWorldBuilder::NyaagyuTerrain()
         Mesh->RegisterComponent(); AddInstanceComponent(Mesh); Pieces.Add(Mesh);
     }
 }
+void ASoraWorldBuilder::NyaagyuTree(FVector Location, FRotator Rotation, float Scale)
+{
+#if PLATFORM_MAC
+    const TCHAR* Tier=TEXT("MAC");
+#else
+    const TCHAR* Tier=TEXT("HI");
+#endif
+    const FString Name=FString::Printf(TEXT("SM_NyaagyuTree_%s"),Tier);
+    const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Foliage/%s.%s"),*Name,*Name);
+    auto* Asset=LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
+    if(!Asset)
+    {
+        UE_LOG(LogTemp,Error,TEXT("SORA pinned CC0 Nyaagyu tree is missing: %s"),*Path);
+        return;
+    }
+    auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
+    Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
+    Mesh->SetRelativeLocation(Location); Mesh->SetRelativeRotation(Rotation); Mesh->SetRelativeScale3D(FVector(Scale));
+    // Tree silhouettes, leaf masks and lighting are presentation only. The
+    // campaign retains its existing proxies; practice loads none of these.
+    Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Mesh->SetGenerateOverlapEvents(false);
+    Mesh->SetCastShadow(true);
+    Mesh->SetAffectDistanceFieldLighting(true);
+    Mesh->SetAffectDynamicIndirectLighting(true);
+    Mesh->SetVisibleInRayTracing(true);
+    Mesh->RegisterComponent(); AddInstanceComponent(Mesh); Pieces.Add(Mesh);
+}
 void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 {
     const FRotator R(0,Yaw,0); const FVector Side=R.RotateVector(FVector(0,1,0));
@@ -220,8 +248,8 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
             Building(P,FVector(650,700,Height),MapId==3?FLinearColor(.12f,.15f,.19f):FLinearColor(.63f,.56f,.40f),MapId>=2);
             if(MapId==0)
             {
-                auto* Trunk=Shape(this,RootComponent,FString::Printf(TEXT("Tree%d%d"),S,I),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),P+FVector(450,-S*250,180),FVector(.45,.45,4),FLinearColor(.15,.075,.04),true); Pieces.Add(Trunk);
-                for(int32 J=0;J<3;++J) Pieces.Add(Shape(this,RootComponent,FString::Printf(TEXT("Bloom%d%d%d"),S,I,J),TEXT("/Engine/BasicShapes/Sphere.Sphere"),P+FVector(450+(J-1)*120,-S*250,430+J*30),FVector(4,3,2.4),FLinearColor(.66f,.32f,.38f)));
+                const float TreeScale=.90f+.05f*((I+3*(S+1))%5);
+                NyaagyuTree(P+FVector(450,-S*250,0),FRotator(0,37.f*I+(S>0?73.f:0.f),0),TreeScale);
             }
         }
     }

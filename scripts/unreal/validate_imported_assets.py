@@ -17,6 +17,7 @@ MESHES = "/Game/Generated/Meshes"
 PROPS = "/Game/Generated/Environment/Props"
 PALETTE = "/Game/Generated/Environment"
 TERRAIN = "/Game/Generated/Environment/Terrain"
+FOLIAGE = "/Game/Generated/Environment/Foliage"
 
 
 def require(condition, message):
@@ -161,6 +162,49 @@ def expected_assets(project_root):
                         f"Estate terrain source changed: {fbx}")
                 add(specs, f"{TERRAIN}/{name}.{name}", "StaticMesh")
 
+    tree_root = source_root / "Environment/PolyHaven/TreeSmall02"
+    tree = read_manifest(tree_root / "manifest.json")
+    require(tree.get("schema_version") == 1
+            and tree.get("asset_id") == "tree_small_02"
+            and tree.get("license") == "CC0-1.0; https://polyhaven.com/license"
+            and tree.get("generator") == "scripts/art/create_nyaagyu_photoreal_tree.py"
+            and tree.get("material_slots") == ["M_NyaagyuTree_Branches", "M_NyaagyuTree_Leaves", "M_NyaagyuTree_Trunk"]
+            and tree.get("gameplay_collision") is False
+            and tree.get("instances_in_nyaagyu_estate") == 10
+            and len(tree.get("upstream_files", [])) == 11
+            and len(tree.get("texture_files", [])) == 10
+            and len(tree.get("meshes", [])) == 2,
+            "The pinned Nyaagyu CC0 tree identity changed")
+    for file in tree["upstream_files"] + tree["texture_files"]:
+        path = source_file(tree_root, file["path"])
+        require(path.stat().st_size == file["bytes"]
+                and hashlib.sha256(path.read_bytes()).hexdigest() == file["sha256"],
+                f"Pinned tree source changed: {path}")
+    for name, digest in ((tree["source_blend"], tree["source_blend_sha256"]),
+                         (tree["preview"], tree["preview_sha256"])):
+        path = source_file(tree_root, name)
+        require(hashlib.sha256(path.read_bytes()).hexdigest() == digest,
+                f"Nyaagyu tree source review changed: {path}")
+    for tier, record in zip(("hi", "mac"), tree["meshes"]):
+        name = f"SM_NyaagyuTree_{tier.upper()}"
+        require(record.get("tier") == tier and record.get("name") == name
+                and record.get("fbx") == name + ".fbx"
+                and record.get("unreal_asset") == f"{FOLIAGE}/{name}.{name}"
+                and record.get("nanite") == (tier == "hi")
+                and 60000 <= record.get("source_triangles", 0) <= 400000,
+                f"The Nyaagyu tree {tier} LOD changed")
+        path = source_file(tree_root, record["fbx"])
+        require(hashlib.sha256(path.read_bytes()).hexdigest() == record["fbx_sha256"],
+                f"Nyaagyu tree FBX changed: {path}")
+        add(specs, record["unreal_asset"], "StaticMesh")
+    for role in ("Branches", "Leaves", "Trunk"):
+        name = f"M_NyaagyuTree_{role}"
+        add(specs, f"{FOLIAGE}/{name}.{name}", "Material")
+    for file in tree["texture_files"]:
+        channel = Path(file["path"]).stem.removeprefix("tree_small_02_").removesuffix("_2k")
+        name = f"T_NyaagyuTree_{channel}"
+        add(specs, f"{FOLIAGE}/Textures/{name}.{name}", "Texture2D")
+
     logo_root = source_root / "UI"
     logo = read_manifest(logo_root / "sora_logo_manifest.json")
     require(logo.get("unreal_asset") ==
@@ -228,6 +272,18 @@ def validate_loaded_assets(unreal, specs):
                 settings = mesh.get_editor_property("nanite_settings")
                 require(bool(settings.get_editor_property("enabled")) == (tier == "HI"),
                         f"Estate terrain Nanite tier mismatch: {path}")
+    for tier in ("HI", "MAC"):
+        name = f"SM_NyaagyuTree_{tier}"
+        mesh = asset_library.load_asset(f"{FOLIAGE}/{name}.{name}")
+        require(bool(mesh.get_editor_property("nanite_settings").get_editor_property("enabled")) == (tier == "HI"),
+                f"Nyaagyu tree Nanite tier mismatch: {name}")
+        slots = [str(entry.get_editor_property("material_slot_name"))
+                 for entry in mesh.get_editor_property("static_materials")]
+        require(sorted(slots) == ["M_NyaagyuTree_Branches", "M_NyaagyuTree_Leaves", "M_NyaagyuTree_Trunk"],
+                f"Nyaagyu tree material zones missing: {name}")
+    leaves = asset_library.load_asset(f"{FOLIAGE}/M_NyaagyuTree_Leaves.M_NyaagyuTree_Leaves")
+    require(leaves.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_MASKED,
+            "The Nyaagyu tree leaves lost their alpha cutout")
     return len(specs)
 
 

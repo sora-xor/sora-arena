@@ -37,6 +37,7 @@ private:
     void Building(FVector Location, FVector Size, FLinearColor Wall, bool HighTech);
     bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation);
     void NyaagyuTerrain();
+    void NyaagyuTree(FVector Location, FRotator Rotation, float Scale);
     void Torii(FVector Location, float Yaw);
     void ClearArena();
     void Lighting(int32 MapId);

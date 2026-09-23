@@ -310,6 +310,148 @@ for task in terrain_tasks:
     if nanite_enabled != ("_HI_" in task.destination_name):
         raise RuntimeError(f"Unreal terrain Nanite setting did not match its tier: {path}")
 
+# The Estate's photographed broadleaf tree replaces its primitive pink
+# canopies. The authored two-tier meshes are decorative and retain no combat
+# collision; masked leaves and 2K PBR maps are imported explicitly so FBX
+# material guesses cannot silently turn the canopy into opaque cards.
+tree_root = source / "Environment/PolyHaven/TreeSmall02"
+tree = json.loads((tree_root / "manifest.json").read_text())
+foliage_root = "/Game/Generated/Environment/Foliage"
+foliage_textures = foliage_root + "/Textures"
+if (tree["schema_version"] != 1 or tree["asset_id"] != "tree_small_02"
+        or tree["license"] != "CC0-1.0; https://polyhaven.com/license"
+        or tree["generator"] != "scripts/art/create_nyaagyu_photoreal_tree.py"
+        or tree["material_slots"] != ["M_NyaagyuTree_Branches", "M_NyaagyuTree_Leaves", "M_NyaagyuTree_Trunk"]
+        or tree["instances_in_nyaagyu_estate"] != 10 or tree["gameplay_collision"] is not False
+        or len(tree["meshes"]) != 2 or len(tree["texture_files"]) != 10):
+    raise RuntimeError("The pinned Nyaagyu foliage source identity changed")
+for file in tree["upstream_files"] + tree["texture_files"]:
+    path = tree_root / file["path"]
+    if (not path.is_file() or path.stat().st_size != file["bytes"]
+            or hashlib.sha256(path.read_bytes()).hexdigest() != file["sha256"]):
+        raise RuntimeError(f"Pinned CC0 tree file missing or changed: {path}")
+assets.make_directory(foliage_root)
+assets.make_directory(foliage_textures)
+tree_tasks = []
+for tier, record in zip(("hi", "mac"), tree["meshes"]):
+    name = f"SM_NyaagyuTree_{tier.upper()}"
+    fbx = tree_root / record["fbx"]
+    if (record["tier"] != tier or record["name"] != name or record["fbx"] != name + ".fbx"
+            or record["unreal_asset"] != f"{foliage_root}/{name}.{name}"
+            or record["nanite"] != (tier == "hi") or not fbx.is_file()
+            or hashlib.sha256(fbx.read_bytes()).hexdigest() != record["fbx_sha256"]):
+        raise RuntimeError(f"Nyaagyu foliage LOD missing or changed: {name}")
+    task = unreal.AssetImportTask()
+    task.filename = str(fbx)
+    task.destination_path = foliage_root
+    task.destination_name = name
+    task.automated = True
+    task.replace_existing = True
+    task.save = True
+    options = unreal.FbxImportUI()
+    options.import_mesh = True
+    options.import_materials = False
+    options.import_textures = False
+    options.import_as_skeletal = False
+    options.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
+    options.static_mesh_import_data.combine_meshes = True
+    options.static_mesh_import_data.generate_lightmap_u_vs = False
+    options.static_mesh_import_data.auto_generate_collision = False
+    options.static_mesh_import_data.set_editor_property("build_nanite", tier == "hi")
+    task.options = options
+    tree_tasks.append(task)
+tools.import_asset_tasks(tree_tasks)
+
+tree_textures = {}
+for file in tree["texture_files"]:
+    path = tree_root / file["path"]
+    channel = path.stem.removeprefix("tree_small_02_").removesuffix("_2k")
+    name = "T_NyaagyuTree_" + channel
+    task = unreal.AssetImportTask()
+    task.filename = str(path)
+    task.destination_path = foliage_textures
+    task.destination_name = name
+    task.automated = True
+    task.replace_existing = True
+    task.save = True
+    tools.import_asset_tasks([task])
+    texture = assets.load_asset(f"{foliage_textures}/{name}")
+    if not isinstance(texture, unreal.Texture2D) or channel in tree_textures:
+        raise RuntimeError(f"Nyaagyu foliage texture import failed: {name}")
+    texture.set_editor_property("srgb", channel.endswith("diff"))
+    if channel.endswith("nor_dx"):
+        texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
+        texture.set_editor_property("flip_green_channel", False)
+    elif channel.endswith("arm") or channel.endswith("alpha"):
+        texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_MASKS)
+    texture.set_editor_property("max_texture_size", 2048)
+    assets.save_loaded_asset(texture)
+    tree_textures[channel] = texture
+
+tree_materials = {}
+material_lib = unreal.MaterialEditingLibrary
+for role, prefix in (("Branches", "branch_"), ("Leaves", "leaves_"), ("Trunk", "")):
+    name = "M_NyaagyuTree_" + role
+    object_path = f"{foliage_root}/{name}"
+    material = (assets.load_asset(object_path) if assets.does_asset_exist(object_path)
+                else tools.create_asset(name, foliage_root, unreal.Material, unreal.MaterialFactoryNew()))
+    material_lib.delete_all_material_expressions(material)
+    material.set_editor_property("two_sided", True)
+    if role == "Leaves":
+        material.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+    for parameter, channel, property_name, y in (
+        ("AlbedoMap", prefix + "diff", unreal.MaterialProperty.MP_BASE_COLOR, -250),
+        ("NormalMap", prefix + "nor_dx", unreal.MaterialProperty.MP_NORMAL, 0)):
+        texture = material_lib.create_material_expression(material, unreal.MaterialExpressionTextureSampleParameter2D, -600, y)
+        texture.set_editor_property("parameter_name", parameter)
+        texture.set_editor_property("texture", tree_textures[channel])
+        if not material_lib.connect_material_property(texture, "RGB", property_name):
+            raise RuntimeError(f"Could not bind Nyaagyu foliage {role} {parameter}")
+    arm = material_lib.create_material_expression(material, unreal.MaterialExpressionTextureSampleParameter2D, -600, 250)
+    arm.set_editor_property("parameter_name", "ARMMap")
+    arm.set_editor_property("texture", tree_textures[prefix + "arm"])
+    for channel, property_name in (("R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION),
+                                   ("G", unreal.MaterialProperty.MP_ROUGHNESS),
+                                   ("B", unreal.MaterialProperty.MP_METALLIC)):
+        if not material_lib.connect_material_property(arm, channel, property_name):
+            raise RuntimeError(f"Could not bind Nyaagyu foliage {role} ARM {channel}")
+    if role == "Leaves":
+        alpha = material_lib.create_material_expression(material, unreal.MaterialExpressionTextureSampleParameter2D, -600, 500)
+        alpha.set_editor_property("parameter_name", "AlphaMap")
+        alpha.set_editor_property("texture", tree_textures["leaves_alpha"])
+        if not material_lib.connect_material_property(alpha, "R", unreal.MaterialProperty.MP_OPACITY_MASK):
+            raise RuntimeError("Could not bind masked Nyaagyu foliage alpha")
+    material_lib.layout_material_expressions(material)
+    material_lib.recompile_material(material)
+    assets.save_loaded_asset(material)
+    tree_materials[name] = material
+
+for record in tree["meshes"]:
+    mesh = assets.load_asset(f"{foliage_root}/{record['name']}")
+    if not isinstance(mesh, unreal.StaticMesh):
+        raise RuntimeError(f"Unreal did not import Nyaagyu foliage: {record['name']}")
+    actual_slots = [str(entry.get_editor_property("material_slot_name"))
+                    for entry in mesh.get_editor_property("static_materials")]
+    if sorted(actual_slots) != sorted(tree["material_slots"]):
+        raise RuntimeError(f"Nyaagyu foliage material zones lost on FBX import: {actual_slots}")
+    for index, slot in enumerate(actual_slots):
+        mesh.set_material(index, tree_materials[slot])
+    if bool(mesh.get_editor_property("nanite_settings").get_editor_property("enabled")) != record["nanite"]:
+        raise RuntimeError(f"Nyaagyu foliage Nanite tier mismatch: {record['name']}")
+    assets.save_loaded_asset(mesh)
+
+runtime_skin = json.loads((source / "Characters/Hero/runtime_skin_manifest.json").read_text())
+if (runtime_skin.get("schema_version") != 1
+        or runtime_skin.get("generator") != "scripts/art/rig_nyaakoto_runtime.py"
+        or runtime_skin.get("skeletal_fbx") != "SK_NyaagyuSamurai.fbx"
+        or runtime_skin.get("walk_fbx") != "A_NyaagyuSamurai_Walk.fbx"):
+    raise RuntimeError("Nyaakoto runtime skin identity changed")
+for filename_key, hash_key in (("skeletal_fbx", "skeletal_fbx_sha256"),
+                               ("walk_fbx", "walk_fbx_sha256")):
+    path = source / runtime_skin[filename_key]
+    if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != runtime_skin[hash_key]:
+        raise RuntimeError(f"Pinned Nyaakoto runtime mesh or animation changed: {path}")
+
 for name in manifest.get("skeletal_characters", []):
     short=name.removeprefix("SK_")
     task=unreal.AssetImportTask()
@@ -371,4 +513,4 @@ if not font.is_file() or not (source / "Fonts/OFL.txt").is_file():
     raise RuntimeError("Japanese runtime font and its redistribution license are required")
 
 assets.save_directory("/Game/Generated", only_if_is_dirty=False, recursive=True)
-unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon/horse meshes, {len(environment_tasks)} source-authored environment props, {len(terrain_tasks)} mesh terrain tiles; Japanese font staged separately")
+unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon/horse meshes, {len(environment_tasks)} source-authored environment props, {len(terrain_tasks)} mesh terrain tiles, {len(tree_tasks)} CC0 foliage LODs; Japanese font staged separately")

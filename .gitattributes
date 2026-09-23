@@ -15,3 +15,5 @@
 # Preserve the original QR Code generator sources byte-for-byte, including
 # upstream trailing whitespace, when checking our staged patch.
 Source/SoraArena/Private/ThirdParty/QrCodeGen/* whitespace=-blank-at-eol
+
+Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/*.bin filter=lfs diff=lfs merge=lfs -text

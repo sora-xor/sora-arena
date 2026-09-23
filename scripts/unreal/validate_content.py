@@ -316,6 +316,25 @@ for tier in ("hi", "mac"):
             assert fbx.read_bytes().startswith(b"Kaydara FBX Binary")
             assert b"/Users/" not in fbx.read_bytes()
             assert hashlib.sha256(fbx.read_bytes()).hexdigest() == record["fbx_sha256"]
+tree_root = content / "SourceArt/Environment/PolyHaven/TreeSmall02"
+tree = json.loads((tree_root / "manifest.json").read_text())
+assert tree["schema_version"] == 1 and tree["asset_id"] == "tree_small_02"
+assert tree["license"] == "CC0-1.0; https://polyhaven.com/license"
+assert tree["gameplay_collision"] is False and tree["instances_in_nyaagyu_estate"] == 10
+assert len(tree["upstream_files"]) == 11 and len(tree["texture_files"]) == 10
+assert [(record["tier"], record["nanite"]) for record in tree["meshes"]] == [("hi", True), ("mac", False)]
+assert "NyaagyuTree(P+FVector(450,-S*250,0)" in world_builder
+assert "Bloom%d%d%d" not in world_builder
+assert "NyaagyuTree(" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+for record in tree["upstream_files"] + tree["texture_files"]:
+    path = tree_root / record["path"]
+    assert path.stat().st_size == record["bytes"]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == record["sha256"]
+for record in tree["meshes"]:
+    path = tree_root / record["fbx"]
+    assert path.read_bytes().startswith(b"Kaydara FBX Binary")
+    assert b"/Users/" not in path.read_bytes()
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == record["fbx_sha256"]
 street_root = content / "SourceArt/Environment/StreetDebtTerminal"
 street = json.loads((street_root / "manifest.json").read_text())
 assert street["schema_version"] == 1
