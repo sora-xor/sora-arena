@@ -38,6 +38,7 @@ assert manifest["density"]["mac"]["quads_per_tile"]==[32,26]
 assert manifest["density"]["hi"]["quad_spacing_cm"]==12.5
 assert manifest["density"]["mac"]["quad_spacing_cm"]==50
 assert manifest["macro_tint"]["vertex_color_attribute"]=="EstateMacroTint"
+assert manifest["macro_tint"]["alpha_semantics"].startswith("0..1 world-space dampness")
 assert manifest["palette_license"].startswith("CC0-1.0")
 assert "No UE 5.8.2 import" in manifest["limitations"]
 for filename,field in ((manifest["source_blend"],"source_blend_sha256"),
@@ -50,22 +51,45 @@ palette=root/"Content/SourceArt/Environment/PolyHaven/manifest.json"
 assert (out/manifest["palette_manifest"]).resolve()==palette.resolve()
 palette_manifest=json.loads(palette.read_text())
 assert palette_manifest["asset_license"]=="CC0-1.0"
-assert len(manifest["palette_files"])==7
-displacement=[item for item in manifest["palette_files"]
-              if item["role"]=="stone" and item["channel"]=="displacement"]
-assert len(displacement)==1
-assert displacement[0]["upstream_md5"]=="8413a85bb5748cabf486b5593daf7c33"
+assert len(manifest["palette_files"])==3
+assert {(item["role"],item["channel"]) for item in manifest["palette_files"]}=={
+    ("soil","diffuse"),("soil","normal"),("soil","arm")}
 for item in manifest["palette_files"]:
     path=root/item["path"]
     assert path.stat().st_size==item["bytes"],path
     assert hashlib.sha256(path.read_bytes()).hexdigest()==item["sha256"],path
+pathway=manifest["stone_pathway_scan"]
+assert pathway["asset_id"]=="grey_stone_path"
+assert pathway["source_url"]=="https://polyhaven.com/a/grey_stone_path"
+assert pathway["license"]=="CC0-1.0" and pathway["tile_size_cm"]==180
+assert [item["channel"] for item in pathway["files"]]==[
+    "Diffuse","nor_dx","arm","disp"]
 for image in bpy.data.images:
     if image.source=="FILE":
-        assert image.filepath.startswith("//../PolyHaven/"),image.filepath
+        assert image.filepath.startswith(("//../PolyHaven/","//GreyStonePath/")),image.filepath
         assert Path(bpy.path.abspath(image.filepath)).resolve().is_file()
+scan_paths={}
+for item in pathway["files"]:
+    path=(out/item["file"]).resolve()
+    assert path.is_relative_to(out.resolve()) and path.is_file(),path
+    assert path.stat().st_size==item["bytes"],path
+    data=path.read_bytes()
+    assert hashlib.sha256(data).hexdigest()==item["sha256"],path
+    assert hashlib.md5(data).hexdigest()==item["upstream_md5"],path
+    image=bpy.data.images.load(str(path),check_existing=False)
+    assert tuple(image.size)==(2048,2048),(path,image.size[:])
+    bpy.data.images.remove(image)
+    scan_paths[item["channel"]]=path
 
 assert set(manifest["material_slots"])=={
     "M_Terrain_Soil_PolyHaven","M_Terrain_Stone_PolyHaven"}
+stone_material=bpy.data.materials.get("M_Terrain_Stone_PolyHaven")
+assert stone_material is not None and stone_material.use_nodes
+for channel,node_name in (("Diffuse","diffuse"),("nor_dx","normal"),("arm","arm")):
+    node=stone_material.node_tree.nodes.get(node_name)
+    assert node and node.image and Path(bpy.path.abspath(node.image.filepath)).resolve()==scan_paths[channel]
+wet_strength=stone_material.node_tree.nodes.get("TerrainWetnessStrength")
+assert wet_strength and abs(wet_strength.inputs[1].default_value-.30)<1e-6
 tiles=manifest["tiles"]
 assert len(tiles)==32
 assert len({t["name"] for t in tiles})==32
@@ -113,6 +137,9 @@ for tier in ("hi","mac"):
             red=[sample.color[0] for sample in tint.data]
             assert .55<min(red)<1.15 and .65<max(red)<1.2
             assert max(red)-min(red)>.06
+            dampness=[sample.color[3] for sample in tint.data]
+            assert all(0<=value<=1 for value in dampness)
+            assert max(dampness)-min(dampness)>.08
             fbx=out/t["fbx"]
             assert fbx.stat().st_size>2000
             fbx_bytes=fbx.read_bytes()

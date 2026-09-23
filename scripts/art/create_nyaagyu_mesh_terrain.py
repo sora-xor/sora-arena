@@ -35,8 +35,28 @@ TILE_X_M=WORLD_X_M/TILES_X
 TILE_Y_M=WORLD_Y_M/TILES_Y
 GRID={"hi":(128,104),"mac":(32,26)}  # 12.5 cm / 50 cm quad edges
 MATERIALS={"soil":("brown_mud_leaves_01",1.30),
-           "stone":("stone_floor",1.85)}
+           "stone":("grey_stone_path",1.80)}
 SITES=[(-12.5,-7.0),(0.0,10.0),(12.5,-8.0)]
+STONE_PATHWAY_SCAN={
+    "asset_id":"grey_stone_path",
+    "source_url":"https://polyhaven.com/a/grey_stone_path",
+    "license":"CC0-1.0",
+    "tile_size_cm":180,
+    "files":[
+        {"channel":"Diffuse","file":"GreyStonePath/grey_stone_path_diff_2k.jpg",
+         "sha256":"bf405e4e8a2d720976f710c4bb6de7734bc0bea613657e6c9362d3716418cc51",
+         "upstream_md5":"686579822b7b6c1c4600a738156328d4","bytes":3569941},
+        {"channel":"nor_dx","file":"GreyStonePath/grey_stone_path_nor_dx_2k.png",
+         "sha256":"51d7936c326ed7a2582f700109ba0a53b9a8b588d664b48ab11f3a7d3af225e4",
+         "upstream_md5":"796ad56cddc2d31c987b47cca16809d4","bytes":22777736},
+        {"channel":"arm","file":"GreyStonePath/grey_stone_path_arm_2k.png",
+         "sha256":"58e43f2a4daad0503b74347b5e7b07b2d92d0fbe56d707ba225269e5442f8d4b",
+         "upstream_md5":"69027c0e579a18c4a7e944552463bc63","bytes":16048111},
+        {"channel":"disp","file":"GreyStonePath/grey_stone_path_disp_2k.png",
+         "sha256":"648b48ccbd497ba28100e56baa6eee10d5d37d66156816bafd79548c4295298b",
+         "upstream_md5":"effeebe2b7feea91d9e7e480e74d4590","bytes":6510319},
+    ],
+}
 
 bpy.context.preferences.filepaths.save_version=0
 bpy.ops.object.select_all(action="SELECT")
@@ -60,6 +80,17 @@ def tex_record(asset_id,marker):
     return path,item
 
 
+def stone_pathway_file(channel):
+    record=next(item for item in STONE_PATHWAY_SCAN["files"]
+                if item["channel"]==channel)
+    path=OUT/record["file"]
+    assert path.is_file() and path.stat().st_size==record["bytes"]
+    data=path.read_bytes()
+    assert hashlib.sha256(data).hexdigest()==record["sha256"]
+    assert hashlib.md5(data).hexdigest()==record["upstream_md5"]
+    return path
+
+
 source_files=[]
 def terrain_material(role,asset_id):
     mat=bpy.data.materials.new("M_Terrain_"+role.capitalize()+"_PolyHaven")
@@ -69,7 +100,14 @@ def terrain_material(role,asset_id):
     links=mat.node_tree.links
     images={}
     for channel,marker in (("diffuse","_diff_"),("normal","_nor_dx_"),("arm","_arm_")):
-        path,item=tex_record(asset_id,marker)
+        if role=="stone":
+            scan_channel={"diffuse":"Diffuse","normal":"nor_dx","arm":"arm"}[channel]
+            path=stone_pathway_file(scan_channel)
+        else:
+            path,item=tex_record(asset_id,marker)
+            source_files.append({"role":role,"channel":channel,
+                                 "path":str(path.relative_to(ROOT)),
+                                 "sha256":item["sha256"],"bytes":item["bytes"]})
         image=bpy.data.images.load(str(path),check_existing=True)
         image.colorspace_settings.name="sRGB" if channel=="diffuse" else "Non-Color"
         node=mat.node_tree.nodes.new("ShaderNodeTexImage")
@@ -77,9 +115,6 @@ def terrain_material(role,asset_id):
         node.image=image
         node.interpolation="Linear"
         images[channel]=node
-        source_files.append({"role":role,"channel":channel,
-                             "path":str(path.relative_to(ROOT)),
-                             "sha256":item["sha256"],"bytes":item["bytes"]})
     vertex_tint=mat.node_tree.nodes.new("ShaderNodeVertexColor")
     vertex_tint.layer_name="EstateMacroTint"
     modulate=mat.node_tree.nodes.new("ShaderNodeMixRGB")
@@ -90,7 +125,23 @@ def terrain_material(role,asset_id):
     links.new(modulate.outputs["Color"],bsdf.inputs["Base Color"])
     arm=mat.node_tree.nodes.new("ShaderNodeSeparateColor")
     links.new(images["arm"].outputs["Color"],arm.inputs["Color"])
-    links.new(arm.outputs["Green"],bsdf.inputs["Roughness"])
+    # Source preview interprets the vertex alpha as local dampness. The FBX
+    # retains that channel for the terrain-only UE material; ordinary palette
+    # instances continue to use the scan's unmodified roughness.
+    wet_amount=mat.node_tree.nodes.new("ShaderNodeMath")
+    wet_amount.name="TerrainWetnessStrength"
+    wet_amount.operation="MULTIPLY"
+    wet_amount.inputs[1].default_value=.30 if role=="stone" else .22
+    links.new(vertex_tint.outputs["Alpha"],wet_amount.inputs[0])
+    dry_fraction=mat.node_tree.nodes.new("ShaderNodeMath")
+    dry_fraction.operation="SUBTRACT"
+    dry_fraction.inputs[0].default_value=1.0
+    links.new(wet_amount.outputs[0],dry_fraction.inputs[1])
+    damp_roughness=mat.node_tree.nodes.new("ShaderNodeMath")
+    damp_roughness.operation="MULTIPLY"
+    links.new(arm.outputs["Green"],damp_roughness.inputs[0])
+    links.new(dry_fraction.outputs[0],damp_roughness.inputs[1])
+    links.new(damp_roughness.outputs[0],bsdf.inputs["Roughness"])
     links.new(arm.outputs["Blue"],bsdf.inputs["Metallic"])
     # Poly Haven supplies DirectX normal maps. Invert green for Blender's
     # OpenGL-style normal input; UE import should retain the original DX map.
@@ -114,18 +165,10 @@ def terrain_material(role,asset_id):
 
 
 soil=terrain_material("soil","brown_mud_leaves_01")
-stone=terrain_material("stone","stone_floor")
-DISPLACEMENT_SHA256="ffcbb3ce31a7b92178f1441076b48d6b6e04c851fdd48edbef48595784717a21"
-DISPLACEMENT_UPSTREAM_MD5="8413a85bb5748cabf486b5593daf7c33"
-displacement_path=PALETTE/"stone_floor/stone_floor_disp_2k.png"
-assert displacement_path.stat().st_size==6424960
-assert hashlib.sha256(displacement_path.read_bytes()).hexdigest()==DISPLACEMENT_SHA256
-source_files.append({"role":"stone","channel":"displacement",
-                     "path":str(displacement_path.relative_to(ROOT)),
-                     "sha256":DISPLACEMENT_SHA256,"bytes":6424960,
-                     "upstream_md5":DISPLACEMENT_UPSTREAM_MD5,
-                     "url":"https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_floor/stone_floor_disp_2k.png"})
-displacement_image=bpy.data.images.load(str(displacement_path),check_existing=True)
+stone=terrain_material("stone",None)
+# The global architectural stone palette stays untouched. Terrain stone uses
+# only the separately catalogued, hash-pinned pathway scan.
+displacement_image=bpy.data.images.load(str(stone_pathway_file("disp")),check_existing=True)
 displacement_image.colorspace_settings.name="Non-Color"
 width,height=displacement_image.size
 pixels=np.empty(len(displacement_image.pixels),dtype=np.float32)
@@ -160,28 +203,72 @@ def value_noise(x,y,cell):
     return a*(1-fy)+b*fy
 
 
+PUDDLES=((-24.0,-1.75,2.5,.85),(-14.0,1.85,2.0,.75),
+         (-3.0,-1.25,3.2,1.0),(8.0,1.75,2.7,.85),
+         (19.0,-1.8,2.3,.8),(27.0,1.35,1.9,.7))
+
+
+def puddle_mask(x,y):
+    # Shallow, irregular runoff basins sit off the main footfall line.
+    edge=.20*(value_noise(x+.3*y,y-.2*x,.9)-.5)
+    return max((1-smoothstep(.58,1.08,
+                            math.hypot((x-px)/rx,(y-py)/ry)+edge))
+               for px,py,rx,ry in PUDDLES)
+
+
+def wetness(x,y,role):
+    if role=="stone":
+        gutter=smoothstep(1.4,2.8,abs(y))*smoothstep(.34,.74,
+                    value_noise(x+11.0,y-7.0,4.1))
+        return min(.96,.07+.76*puddle_mask(x,y)+.29*gutter)
+    shoulder=math.exp(-((abs(y)-3.7)/1.7)**2)
+    low=smoothstep(.34,.74,value_noise(x-23.0,y+9.0,5.6))
+    return min(.85,.09+.50*low+.18*shoulder)
+
+
 def macro_tint(x,y,role):
     # World-space 4–16 m color patches break the short scan repeat and remain
     # identical on both LODs and at every tile edge. No extra texture lookup.
     broad=value_noise(x+.17*y,y-.17*x,15.0)
     middle=value_noise(.7*x-.71*y,.71*x+.7*y,6.4)
     fine=value_noise(x-.23*y,y+.23*x,3.8)
-    v=.48*broad+.36*middle+.16*fine-.5
+    v=.40*broad+.37*middle+.23*fine-.5
+    damp=wetness(x,y,role)
     if role=="soil":
-        channels=(.91+.58*v,.91+.46*v,.90+.52*v)
+        channels=(.93+.66*v,.91+.54*v,.86+.50*v)
+        darken=1-.24*damp
     else:
-        channels=(.93+.38*v,.93+.37*v,.92+.35*v)
-    return tuple(max(.55,min(1.0,channel)) for channel in channels)+(1,)
+        channels=(.96+.46*v,.94+.43*v,.91+.40*v)
+        darken=1-.32*damp
+        # Silt from the muddy shoulder collects in discontinuous pockets
+        # between the edge stones. This remains a vertex tint on both LODs;
+        # the licensed scan supplies the actual leaf and grout detail.
+        shoulder=smoothstep(1.78,2.85,abs(y))
+        deposit=smoothstep(.42,.70,value_noise(x+4.7,y-8.2,1.55))
+        silt=.22*shoulder*deposit
+        channels=(channels[0]*(1-.10*silt),
+                  channels[1]*(1-.32*silt),
+                  channels[2]*(1-.60*silt))
+    return tuple(max(.54,min(1.0,channel*darken)) for channel in channels)+(damp,)
 
 
-def path_half_width(x):
-    # A laid stone route follows the estate axis, but its soil edge is worn
-    # rather than a ruler-straight six-metre band.
-    return 3.08+.14*math.sin(x*.37)+.07*math.sin(x*1.21+.8)
+def path_half_width(x,side):
+    # Independently worn shoulders keep the route centered under the torii,
+    # while avoiding the same six-metre silhouette along all 64 metres.
+    irregular=value_noise(x+side*37.0,side*13.0,3.2)-.5
+    width=3.04+.16*math.sin(x*.37+side*.4)+.12*math.sin(x*1.21+side*1.3)+.17*irregular
+    # Narrow, asymmetrical soil incursions replace occasional outer stones.
+    # The playable center lane stays broad and its collision remains flat.
+    broken_edges=((-26.0,-1,1.05),(-16.5,1,.85),(-7.2,-1,.75),
+                  (3.5,1,1.15),(14.0,-1,.9),(24.4,1,.8))
+    for bx,bs,span in broken_edges:
+        if bs==side:
+            width-=.34*(1-smoothstep(.35,span,abs(x-bx)))
+    return max(2.43,min(3.32,width))
 
 
 def scan_displacement(x,y):
-    """Bilinearly sample the licensed stone scan at its measured 1.85 m scale."""
+    """Bilinearly sample the licensed pathway scan at its measured 1.8 m scale."""
     u=(x/MATERIALS["stone"][1])%1*width-.5
     v=(y/MATERIALS["stone"][1])%1*height-.5
     x0=math.floor(u);y0=math.floor(v)
@@ -200,13 +287,20 @@ def elevation(x,y):
     pad_mask=smoothstep(1.2,3.8,nearest)
     broad=(.0035*math.sin(x*.43)*math.sin(y*.53)
            +.0027*math.sin(x*1.31+y*.76)*math.sin(y*1.16-x*.21))
-    fine=.0009*math.sin(x*16.1+y*3.3)*math.sin(y*18.4-x*2.7)
+    fine=(.0009*math.sin(x*16.1+y*3.3)*math.sin(y*18.4-x*2.7)
+          +.0016*(value_noise(x,y,.75)-.5))
     z=.018+(broad+fine)*road_mask*pad_mask
     # The photographed stone map supplies matched color, normal, and height.
     # Only its low-amplitude profile enters geometry; gameplay stays flat.
-    stone_interior=1-smoothstep(path_half_width(x)-.20,path_half_width(x),abs(y))
+    edge=path_half_width(x,1 if y>=0 else -1)
+    stone_interior=1-smoothstep(edge-.20,edge,abs(y))
     if stone_interior:
-        z+=.006*(scan_displacement(x,y)-.5)*stone_interior
+        settled=.0022*(value_noise(x+.2*y,y-.1*x,.65)-.5)
+        z+=(.006*(scan_displacement(x,y)-.5)+settled
+            -.0032*puddle_mask(x,y))*stone_interior
+    shoulder=smoothstep(2.15,3.15,abs(y))*(1-smoothstep(3.7,4.5,abs(y)))
+    silt=.0026*shoulder*smoothstep(.46,.74,value_noise(x-6.4,y+3.2,1.55))
+    z+=silt
     # Banks flank two narrative sluice positions, without an actual trench,
     # hole, or gameplay slope. Peak lip is < 4 cm above collision-ground Z=0.
     for sx,sy in SITES[:2]:
@@ -236,7 +330,8 @@ def create_tile(tier,ix,iy):
             faces.append((a,a+1,a+nx+2,a+nx+1))
             world_y=cy+(-TILE_Y_M/2+(gy+.5)*TILE_Y_M/ny)
             world_x=cx+(-TILE_X_M/2+(gx+.5)*TILE_X_M/nx)
-            material_indices.append(1 if abs(world_y)<=path_half_width(world_x) else 0)
+            material_indices.append(1 if abs(world_y)<=path_half_width(
+                world_x,1 if world_y>=0 else -1) else 0)
     name=f"SourceTerrain_{tier}_X{ix}_Y{iy}"
     data=bpy.data.meshes.new(name)
     data.from_pydata(vertices,[],faces)
@@ -400,12 +495,14 @@ manifest={
     "height_function":"scripts/art/create_nyaagyu_mesh_terrain.py:elevation",
     "macro_tint":{"vertex_color_attribute":"EstateMacroTint",
                   "function":"scripts/art/create_nyaagyu_mesh_terrain.py:macro_tint",
-                  "intended":"Terrain-only vertex-color albedo modulation; no extra texture fetch"},
+                  "alpha_semantics":"0..1 world-space dampness; Blender source reduces scanned roughness at high alpha",
+                  "intended":"Terrain-only vertex-color albedo and wetness modulation; no extra texture fetch"},
     "max_visual_collision_delta_cm":4.5,
     "material_slots":[soil.name,stone.name],
     "palette_manifest":"../PolyHaven/manifest.json",
     "palette_license":"CC0-1.0; https://polyhaven.com/license",
     "palette_files":source_files,
+    "stone_pathway_scan":STONE_PATHWAY_SCAN,
     "tiles":tiles,
     "license":"Original project-owned terrain geometry and Blender review render; reused Poly Haven texture maps are CC0-1.0 under their separate asset records. No purchased assets.",
     "limitations":"Source-art meshes only. No UE 5.8.2 import, World Partition level, Mesh Partition conversion, compiled sections, Nanite setup, Lumen validation, collision integration, lighting comparison, or performance qualification is claimed.",
