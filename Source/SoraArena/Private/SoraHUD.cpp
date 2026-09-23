@@ -88,15 +88,26 @@ void ASoraHUD::DrawHUD()
         else if(G->bCampaignComplete&&G->bCampaign) MenuChapter=TEXT("猫柳生、解放済み");
         else if(G->bCampaign) MenuChapter=FString::Printf(TEXT("第 %02d 章  /  %s"),G->ChapterId+1,*FSoraCatalog::Get().Chapter(G->ChapterId).Title);
         Label(MenuChapter,L,300*S,.8*S,Teal);
-        Label(FString::Printf(TEXT("%s  |  %s"),*FSoraCatalog::Get().Map(G->MapId).Name,*FSoraCatalog::Get().Class(G->SelectedClass).Role),L,340*S,.6*S,Ivory);
+        const int32 DisplayClass=G->bCampaign?0:G->SelectedClass;
+        Label(FString::Printf(TEXT("%s  |  %s"),*FSoraCatalog::Get().Map(G->MapId).Name,*FSoraCatalog::Get().Class(DisplayClass).Role),L,340*S,.6*S,Ivory);
         Label(G->bCampaignComplete&&G->bCampaign?TEXT("物語は完結した。N はじめから   P 武芸稽古   M マップ変更"):TEXT("ENTER 続ける   B 保存した物語へ   N はじめから   P 武芸稽古   M マップ変更"),L,397*S,.52*S,Ivory);
-        Label(TEXT("流儀を選ぶ  /  変更すると、この戦いをやり直します"),L,465*S,.55*S,Gold);
-        for(int32 I=0;I<6;++I)
+        if(G->bCampaign)
         {
-            const float X=L+(I%3)*385*S,Y=(515+(I/3)*84)*S;
-            Panel(X-10*S,Y-8*S,355*S,69*S,I==G->SelectedClass?FLinearColor(.08,.25,.26,.9):FLinearColor(.07,.095,.11,.9));
-            Label(FString::Printf(TEXT("F%d   %s"),I+1,*FSoraCatalog::Get().Class(I).Name),X,Y,.68*S,I==G->SelectedClass?Teal:Ivory);
-            Label(FSoraCatalog::Get().Class(I).Role,X,Y+28*S,.42*S,Muted);
+            Label(TEXT("主人公  /  猫柳生の侍"),L,465*S,.65*S,Gold);
+            Label(TEXT("猫柳生新陰流の剣を学び、生産を奪われた民とともに戦う。"),L,518*S,.55*S,Ivory);
+            if(G->bEnglishSubtitles) Label(TEXT("A Nyaagyu samurai fights beside the people who restore production."),L,554*S,.42*S,Muted);
+            Label(TEXT("六つの対戦流儀は P 武芸稽古で試せます。"),L,610*S,.46*S,Teal);
+        }
+        else
+        {
+            Label(TEXT("流儀を選ぶ  /  変更すると、この戦いをやり直します"),L,465*S,.55*S,Gold);
+            for(int32 I=0;I<6;++I)
+            {
+                const float X=L+(I%3)*385*S,Y=(515+(I/3)*84)*S;
+                Panel(X-10*S,Y-8*S,355*S,69*S,I==G->SelectedClass?FLinearColor(.08,.25,.26,.9):FLinearColor(.07,.095,.11,.9));
+                Label(FString::Printf(TEXT("F%d   %s"),I+1,*FSoraCatalog::Get().Class(I).Name),X,Y,.68*S,I==G->SelectedClass?Teal:Ivory);
+                Label(FSoraCatalog::Get().Class(I).Role,X,Y+28*S,.42*S,Muted);
+            }
         }
         if(G->bDeterministicPractice)
         {

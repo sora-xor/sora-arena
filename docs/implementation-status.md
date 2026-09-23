@@ -38,6 +38,9 @@ The offline campaign now persists chapter objectives (defeated invaders,
 restored production sites, and exit completion) to a local SaveGame checkpoint
 and restores them on retry/restart; this still needs an editor build and an
 in-game save/reload test.
+The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
+the six-class selector is available in offline arena practice. This source
+behavior still needs an Unreal menu and save/reload check.
 Three original Edo/alien environment props now have editable Blender source,
 FBX exports, metric collision/bounds checks, and campaign placement source.
 Blender review renders and the import manifest do not establish in-engine

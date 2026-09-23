@@ -65,7 +65,9 @@ void ASoraGameMode::ResetRound()
         Player->GetCharacterMovement()->StopMovementImmediately();
         Player->SetActorLocation(WorldBuilder->PlayerStart(),false,nullptr,ETeleportType::TeleportPhysics);
         Player->SetActorRotation(FRotator::ZeroRotator); if(Player->GetController()) Player->GetController()->SetControlRotation(FRotator::ZeroRotator);
-        Player->ApplyClass(SelectedClass);
+        // The campaign follows one Nyaagyu samurai. The six-class selection is
+        // for arena practice and does not rewrite the story protagonist.
+        Player->ApplyClass(bCampaign?0:SelectedClass);
     }
     if(!bChapterComplete) for(int32 I=0;I<FMath::Min(4,KillsNeeded-Kills);++I) SpawnEnemy();
     const bool bResumed=bRestoredVictory||(bHasCheckpoint&&(Kills>0||WorldBuilder->ActiveNodes()>0||bChapterComplete));
@@ -169,6 +171,7 @@ void ASoraGameMode::ReturnCampaign()
 void ASoraGameMode::SelectClass(int32 Id)
 {
     if(!bMenu||!FSoraCatalog::Get().IsReady()) return;
+    if(bCampaign) return;
     SelectedClass=FMath::Clamp(Id,0,5); SaveProgress(); ResetRound();
 }
 void ASoraGameMode::Interact(ASoraCharacter* Player)
