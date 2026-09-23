@@ -130,6 +130,12 @@ reconciliation under the same loopback network configuration. The portable
 C++17 codec passes 23 checks. An Unreal editor build, crash/restart, live
 pairing, submission and recovery run remain outstanding. Shipping builds keep
 submission disabled.
+The menu now presents the existing Japanese transaction state with an English
+status explanation, without displaying raw inspection JSON. Exact typed
+join, bond and NFT purchase terms still need a game-facing review flow: the
+current native inspection has transaction fields, but the game lacks a
+verified session/offer snapshot and a separate pre-sign confirmation. See
+[Connect review gap](connect.md#exact-game-facing-review-gap).
 The Iroha JavaScript native addon now builds and publishes with the project-specific
 Xcode 26.1.1 linker; 29 focused allocation, equipment, resource and racing SDK
 tests pass. This does not exercise Unreal or a live validator network.
