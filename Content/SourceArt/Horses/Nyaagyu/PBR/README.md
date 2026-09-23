@@ -6,6 +6,12 @@ anchors, and eight exact SORA kamon SVG relief objects. The current source
 contains a single welded body/limb shell, with 252 editable mesh parts and
 150,684 source triangles. The PBR variant changes only UVs/materials, not that
 source geometry. Its static and animation limitations remain unchanged.
+The exported FBX now has the physical-scale projection as its sole `UV0`
+channel. A round-trip audit found that the previous hoof-horn faces sampled a
+zero-filled first channel while their actual UVs sat in channel 1; that would
+make a default Unreal texture sample flat. The updated validator requires
+nonzero `UV0` coverage on the hoof horn, leather and iron. This fixes texture
+coordinates, not the horse's still-stylized anatomy or unmeasured rendering.
 
 The coat, tazuna/abumi leather, and blackened abumi/bit iron use three
 project-generated material swatches. Each source image, generation prompt,
@@ -22,6 +28,8 @@ python3 scripts/art/create_nyaagyu_horse_pbr.py
 blender -b --factory-startup --python scripts/art/create_nyaagyu_horse_pbr_variant.py
 python3 scripts/art/validate_nyaagyu_horse_pbr.py
 blender -b --factory-startup --python scripts/art/validate_nyaagyu_horse_pbr_variant.py
+blender -b --factory-startup --python scripts/art/audit_fbx_primary_uv.py -- \
+  Content/SourceArt/Horses/Nyaagyu/PBR/SM_Nyaagyu_HorseAndTack_PBR.fbx
 ```
 
 The Unreal importer is separate from the original-art pipeline and targets

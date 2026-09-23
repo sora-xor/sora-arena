@@ -104,6 +104,14 @@ for obj in meshes:
             else:
                 u, v = point.x, point.y
             uv_layer.data[loop_index].uv = (u * scale, v * scale)
+    # The source mesh may already carry an unwrapped or zero-filled UVMap.
+    # FBX preserves layer order, and Unreal's default texture samples use
+    # channel 0. Keep the authored physical-scale PBR projection as the sole
+    # exported channel, including on the small tack and hoof material zones.
+    for old_layer in tuple(obj.data.uv_layers):
+        if old_layer != uv_layer:
+            obj.data.uv_layers.remove(old_layer)
+    uv_layer.name = "UV0"
 
 assert geometry_fingerprint() == geometry_before
 
@@ -217,7 +225,7 @@ bpy.ops.file.pack_all()
 bpy.ops.wm.save_as_mainfile(filepath=str(BLEND))
 
 assert geometry_fingerprint() == geometry_before
-assert all(obj.data.uv_layers.get("Nyaagyu_PBR_UV") for obj in meshes)
+assert all(len(obj.data.uv_layers) == 1 and obj.data.uv_layers[0].name == "UV0" for obj in meshes)
 assert sorted(material.name for material in export.data.materials) == sorted(
     material.name for material in bpy.data.materials
     if material.name.startswith(("M_Horse_", "M_Tack_"))

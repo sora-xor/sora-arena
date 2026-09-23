@@ -85,8 +85,8 @@ bpy.ops.wm.open_mainfile(filepath=str(PBR / record["blend"]))
 meshes = source_meshes()
 assert len(meshes) == record["source_parts"]
 assert geometry_fingerprint(meshes) == original
-assert all(obj.data.uv_layers.get("Nyaagyu_PBR_UV") for obj in meshes)
-assert all(len(obj.data.uv_layers["Nyaagyu_PBR_UV"].data) == len(obj.data.loops)
+assert all(len(obj.data.uv_layers) == 1 and obj.data.uv_layers[0].name == "UV0" for obj in meshes)
+assert all(len(obj.data.uv_layers[0].data) == len(obj.data.loops)
            for obj in meshes)
 assert sorted(obj.name for obj in meshes if obj.name.startswith("SORA_kamon_exact_svg_")) == record["exact_sora_kamon_objects"]
 assert all(obj["source_svg_sha256"] == base["insignia_sha256"]
@@ -112,7 +112,17 @@ imported = [obj for obj in set(bpy.data.objects) - before if obj.type == "MESH"]
 assert len(imported) == 1, imported
 mesh = imported[0]
 assert mesh.name.startswith("SM_Nyaagyu_HorseAndTack_PBR")
-assert mesh.data.uv_layers and len(mesh.data.uv_layers[0].data) == len(mesh.data.loops)
+assert len(mesh.data.uv_layers) == 1 and mesh.data.uv_layers[0].name == "UV0"
+assert len(mesh.data.uv_layers[0].data) == len(mesh.data.loops)
+for material in ("M_Horse_HoofHorn", "M_Tack_DarkLeather", "M_Tack_BlackenedIron"):
+    slot = next(i for i, item in enumerate(mesh.material_slots)
+                if item.material.name.split(".", 1)[0] == material)
+    loops = [index for face in mesh.data.polygons if face.material_index == slot
+             for index in face.loop_indices]
+    assert loops, material
+    values = [mesh.data.uv_layers[0].data[index].uv for index in loops]
+    assert max(value.x for value in values) - min(value.x for value in values) > .05, material
+    assert max(value.y for value in values) - min(value.y for value in values) > .05, material
 slots = sorted(slot.material.name.split(".", 1)[0] for slot in mesh.material_slots)
 assert slots == record["material_slots"]
 assert len(slots) == 17
