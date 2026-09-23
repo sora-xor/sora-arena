@@ -78,6 +78,10 @@ Rust suite, format checking, and strict all-targets Clippy pass.
 These deterministic checks are not a human balance playtest. The separate
 campaign prototype catalog still differs from the Rust multiplayer catalog;
 full gameplay balance, presentation and proof coverage remain open.
+The headless `arena-cli balance` diagnostic now measures all 18 weapons against
+one stationary 125-HP target through the real kernel; the six standard ranged
+weapons span 1.017–1.217 seconds in a clear lane. It does not model opposing
+movement, defense, cover, latency, or visual readability.
 
 Local rollback replays only complete signed commitment/reveal batches into the
 confirmed world. Speculative state is isolated, capped at 120 ticks, and discarded
