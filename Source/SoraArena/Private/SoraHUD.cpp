@@ -53,6 +53,13 @@ void ASoraHUD::DrawHUD()
     auto* P=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0)); if(!G) return;
     const float W=Canvas->SizeX,H=Canvas->SizeY;
     const float S=FMath::Clamp(FMath::Min(W/1600.f,H/1000.f),.45f,1.5f);
+    // Story text needs a readable floor when the rest of the HUD scales down.
+    const float JapaneseSubtitleScale=FMath::Max(.65f*S,.65f);
+    const float EnglishSubtitleScale=FMath::Max(.60f*S,.60f);
+    const float JapaneseSpeakerScale=FMath::Max(.55f*S,.55f);
+    const float EnglishSpeakerScale=FMath::Max(.52f*S,.52f);
+    const float JapaneseSubtitleLineHeight=FMath::Max(24.f*S,22.f);
+    const float EnglishSubtitleLineHeight=FMath::Max(20.f*S,20.f);
     const FLinearColor Ivory(.93,.90,.80),Gold(.94,.65,.21),Teal(.22,.81,.75),Muted(.56,.63,.65);
     if(!FSoraCatalog::Get().IsReady()) { Label(TEXT("SORA ARENA / コンテンツの読み込みエラー"),50,60,1,Gold); Label(FSoraCatalog::Get().Error,50,110,.65,Ivory); return; }
     Panel(0,0,W,75*S,FLinearColor(.018,.035,.045,.86));
@@ -95,7 +102,7 @@ void ASoraHUD::DrawHUD()
         {
             Label(TEXT("主人公  /  猫柳生の侍"),L,465*S,.65*S,Gold);
             Label(TEXT("猫柳生新陰流の剣を学び、生産を奪われた民とともに戦う。"),L,518*S,.55*S,Ivory);
-            if(G->bEnglishSubtitles) Label(TEXT("A Nyaagyu samurai fights beside the people who restore production."),L,554*S,.42*S,Muted);
+            if(G->bEnglishSubtitles) Label(TEXT("A Nyaagyu samurai fights beside the people who restore production."),L,554*S,EnglishSubtitleScale,Muted);
             Label(TEXT("六つの対戦流儀は P 武芸稽古で試せます。"),L,610*S,.46*S,Teal);
         }
         else
@@ -218,24 +225,24 @@ void ASoraHUD::DrawHUD()
         Panel(20*S,H-400*S,W-40*S,125*S,FLinearColor(.013,.027,.033,.93));
         if(const auto* Speaker=FSoraCatalog::Get().DialogueSpeaker(Cue->SpeakerId))
         {
-            Label(Speaker->Japanese,35*S,H-392*S,.46*S,Gold);
-            if(G->bEnglishSubtitles) Label(Speaker->English,W-285*S,H-392*S,.38*S,Muted);
+            Label(Speaker->Japanese,35*S,H-392*S,JapaneseSpeakerScale,Gold);
+            if(G->bEnglishSubtitles) Label(Speaker->English,W-285*S,H-392*S,EnglishSpeakerScale,Muted);
         }
-        WrappedLabel(Cue->Japanese,35*S,H-358*S,.57*S,Ivory,W-70*S,24*S,2);
-        if(G->bEnglishSubtitles) WrappedLabel(Cue->English,35*S,H-312*S,.43*S,Muted,W-70*S,20*S,2);
+        WrappedLabel(Cue->Japanese,35*S,H-358*S,JapaneseSubtitleScale,Ivory,W-70*S,JapaneseSubtitleLineHeight,2);
+        if(G->bEnglishSubtitles) WrappedLabel(Cue->English,35*S,H-312*S,EnglishSubtitleScale,Muted,W-70*S,EnglishSubtitleLineHeight,2);
     }
     if(G->NoticeTime>0)
     {
-        Panel(20*S,H-255*S,W-40*S,110*S,FLinearColor(.015,.035,.045,.94));
-        WrappedLabel(G->Notice,35*S,H-245*S,.55*S,Ivory,W-70*S,24*S,2);
-        if(G->bEnglishSubtitles) WrappedLabel(G->NoticeEnglish,35*S,H-190*S,.43*S,Muted,W-70*S,20*S,2);
+        Panel(20*S,H-255*S,W-40*S,125*S,FLinearColor(.015,.035,.045,.94));
+        WrappedLabel(G->Notice,35*S,H-245*S,JapaneseSubtitleScale,Ivory,W-70*S,JapaneseSubtitleLineHeight,2);
+        if(G->bEnglishSubtitles) WrappedLabel(G->NoticeEnglish,35*S,H-185*S,EnglishSubtitleScale,Muted,W-70*S,EnglishSubtitleLineHeight,2);
     }
     if(G->bDefeated||G->bChapterComplete)
     {
         Panel(0,H*.3,W,H*.35,FLinearColor(.012,.026,.034,.94));
         Label(G->bDeterministicPractice?TEXT("稽古終了"):G->bDefeated?TEXT("ふたたび立ち上がれ"):G->bCampaignComplete?TEXT("猫柳生、解放"):TEXT("街区を解放した"),W*.2,H*.36,1.8*S,G->bDefeated?Gold:Teal);
         WrappedLabel(G->Notice,W*.2,H*.48,.65*S,Ivory,W*.65,29*S,2);
-        if(G->bEnglishSubtitles) WrappedLabel(G->NoticeEnglish,W*.2,H*.535,.42*S,Muted,W*.65,20*S,2);
+        if(G->bEnglishSubtitles) WrappedLabel(G->NoticeEnglish,W*.2,H*.535,EnglishSubtitleScale,Muted,W*.65,EnglishSubtitleLineHeight,2);
         Label(TEXT("ENTER  続ける    |    ESC  メニュー"),W*.2,H*.56,.65*S,Muted);
     }
 }
