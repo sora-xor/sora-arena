@@ -231,8 +231,6 @@ options.static_mesh_import_data.set_editor_property("build_nanite", True)
 mesh = import_asset(source / record["fbx"], DESTINATION, MESH_NAME, options)
 if not isinstance(mesh, unreal.StaticMesh):
     raise RuntimeError("Dojo bokken candidate did not import as StaticMesh")
-if mesh.get_num_triangles(0) != record["source_triangles"]:
-    raise RuntimeError("Dojo bokken imported triangle count changed")
 if mesh.get_num_tex_coords(0) != 1:
     raise RuntimeError("Dojo bokken imported UV0 contract changed")
 actual_slots = [str(slot.get_editor_property("material_slot_name"))
@@ -253,6 +251,8 @@ nanite.set_editor_property("generate_fallback", unreal.NaniteGenerateFallback.EN
 subsystem.set_nanite_settings(mesh, nanite, True)
 if subsystem.get_nanite_settings(mesh).get_editor_property("fallback_percent_triangles") < .999:
     raise RuntimeError("Dojo bokken full conventional fallback was reduced")
+if mesh.get_num_triangles(0) != record["source_triangles"]:
+    raise RuntimeError("Dojo bokken full fallback triangle count changed")
 assets.save_loaded_asset(mesh)
 assets.save_directory(DESTINATION, only_if_is_dirty=False, recursive=True)
 unreal.log("DOJO_BOKKEN_PBR_ART_REVIEW_READY: 8208 triangles, UV0, four PBR instances, source-only")
