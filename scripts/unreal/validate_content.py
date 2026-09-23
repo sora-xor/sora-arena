@@ -179,6 +179,33 @@ for filename, digest in ((runtime_skin["skeletal_fbx"], "skeletal_fbx_sha256"),
     path = content / "SourceArt" / filename
     assert path.stat().st_size > 1000
     assert hashlib.sha256(path.read_bytes()).hexdigest() == runtime_skin[digest]
+pbr_root = hero_character_root / "PBR"
+pbr = json.loads((pbr_root / "manifest.json").read_text())
+assert pbr["schema_version"] == 1
+assert pbr["generator"] == "scripts/art/create_nyaakoto_pbr_textures.py"
+assert pbr["source_license"] == "Project-owned procedurally authored maps; no external texture asset"
+assert [group["name"] for group in pbr["maps"]] == [
+    "fur_grey", "fur_white", "fur_charcoal", "silk_indigo", "lacquer_oxblood", "neutral"]
+for group in pbr["maps"]:
+    assert group["resolution"] == ([4, 4] if group["name"] == "neutral" else [2048, 2048])
+    assert [item["channel"] for item in group["maps"]] == ["Albedo", "NormalDX", "ORM"]
+    for item in group["maps"]:
+        assert item["file"] == f'T_Nyaakoto_{group["name"]}_{item["channel"]}.png'
+        data = (pbr_root / item["file"]).read_bytes()
+        assert hashlib.sha256(data).hexdigest() == item["sha256"]
+        assert data[:16] == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+        assert list(struct.unpack(">II", data[16:24])) == group["resolution"]
+        assert data[24:26] == b"\x08\x02"  # 8-bit RGB source texture
+assert len(pbr["material_slots"]) == 23
+assert "M_Hero_GreyTabbyFur" in pbr["material_slots"]
+assert "M_Hero_SORAResistanceRed" in pbr["material_slots"]
+for slot, surface in pbr["material_slots"].items():
+    assert re.fullmatch(r"M_Hero_[A-Za-z0-9]+", slot)
+    assert surface["surface"] in {group["name"] for group in pbr["maps"]}
+    assert len(surface["tint"]) == 3 and all(0 <= value <= 1 for value in surface["tint"])
+    assert 0 < surface["roughness_scale"] <= 2
+    assert 0 <= surface["metallic_scale"] <= 1
+assert "MI_Nyaakoto_" in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
 assert hero_character["schema_version"] == 2
 assert hero_character["name"] == "SM_Nyaagyu_HeroCharacter"
 assert hero_character["character_name_ja"] == "ニャーコト"
@@ -443,4 +470,4 @@ absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 7 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 7 original environment props, 18 hash-pinned Nyaakoto PBR maps for 23 runtime materials, licensed Japanese font, hash-verified SORA logo.")

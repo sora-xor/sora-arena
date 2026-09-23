@@ -18,6 +18,7 @@ PROPS = "/Game/Generated/Environment/Props"
 PALETTE = "/Game/Generated/Environment"
 TERRAIN = "/Game/Generated/Environment/Terrain"
 FOLIAGE = "/Game/Generated/Environment/Foliage"
+NYAAKOTO = "/Game/Generated/Characters/Nyaakoto"
 
 
 def require(condition, message):
@@ -63,6 +64,44 @@ def named_mesh(source_root, specs, folder, manifest_name, expected_name, package
     add(specs, path, "StaticMesh")
 
 
+def nyaakoto_pbr_source(source_root):
+    """Check source map identity before trusting generated material packages."""
+    art_root = source_root / "Characters/Hero/PBR"
+    record = read_manifest(art_root / "manifest.json")
+    require(record.get("schema_version") == 1
+            and record.get("generator") == "scripts/art/create_nyaakoto_pbr_textures.py"
+            and record.get("source_license") ==
+            "Project-owned procedurally authored maps; no external texture asset"
+            and [group.get("name") for group in record.get("maps", [])] ==
+            ["fur_grey", "fur_white", "fur_charcoal", "silk_indigo", "lacquer_oxblood", "neutral"]
+            and len(record.get("material_slots", {})) == 23,
+            "The Nyaakoto PBR source identity changed")
+    groups = {group["name"]: group for group in record["maps"]}
+    for name, group in groups.items():
+        require(group.get("resolution") == ([4, 4] if name == "neutral" else [2048, 2048])
+                and [item.get("channel") for item in group.get("maps", [])] ==
+                ["Albedo", "NormalDX", "ORM"],
+                f"Nyaakoto PBR texture channels changed: {name}")
+        for item in group["maps"]:
+            filename = f"T_Nyaakoto_{name}_{item['channel']}.png"
+            require(item.get("file") == filename,
+                    f"Nyaakoto PBR texture identity changed: {name}")
+            path = source_file(art_root, filename)
+            data = path.read_bytes()
+            require(hashlib.sha256(data).hexdigest() == item.get("sha256")
+                    and data[:16] == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR",
+                    f"Nyaakoto PBR source map changed: {path}")
+    for slot, values in record["material_slots"].items():
+        require(re.fullmatch(r"M_Hero_[A-Za-z0-9]+", slot) is not None
+                and values.get("surface") in groups
+                and len(values.get("tint", [])) == 3
+                and all(0 <= value <= 1 for value in values["tint"])
+                and 0 < values.get("roughness_scale", 0) <= 2
+                and 0 <= values.get("metallic_scale", -1) <= 1,
+                f"Nyaakoto PBR material slot changed: {slot}")
+    return record
+
+
 def expected_assets(project_root):
     """Return exact package/class expectations from the pinned source manifests."""
     source_root = project_root / "Content/SourceArt"
@@ -94,6 +133,16 @@ def expected_assets(project_root):
             if action == "Walk":
                 source_file(source_root, f"{animation}.fbx")
             add(specs, f"/Game/Generated/Animations/{animation}.{animation}", "AnimSequence")
+
+    pbr = nyaakoto_pbr_source(source_root)
+    for group in pbr["maps"]:
+        for item in group["maps"]:
+            name = Path(item["file"]).stem
+            add(specs, f"{NYAAKOTO}/Textures/{name}.{name}", "Texture2D")
+    add(specs, f"{NYAAKOTO}/M_Nyaakoto_PBR.M_Nyaakoto_PBR", "Material")
+    for slot in pbr["material_slots"]:
+        name = "MI_Nyaakoto_" + slot.removeprefix("M_Hero_")
+        add(specs, f"{NYAAKOTO}/{name}.{name}", "MaterialInstanceConstant")
 
     named_mesh(source_root, specs, "Weapons/Original", "manifest.json",
                "SM_Nyaagyu_DojoBokken", MESHES)
@@ -267,6 +316,56 @@ def validate_loaded_assets(unreal, specs):
         require(isinstance(asset, expected_class),
                 f"Wrong Unreal class for {path}: expected {class_name}, "
                 f"got {type(asset).__name__}")
+    pbr = nyaakoto_pbr_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
+    hero = asset_library.load_asset(f"{MESHES}/SK_NyaagyuSamurai.SK_NyaagyuSamurai")
+    slots = [str(entry.get_editor_property("material_slot_name"))
+             for entry in hero.get_editor_property("materials")]
+    require(len(slots) == len(set(slots)) == 23 and set(slots) == set(pbr["material_slots"]),
+            f"Nyaakoto skeletal mesh slots do not match its authored PBR materials: {slots}")
+    material_lib = unreal.MaterialEditingLibrary
+    master_path = f"{NYAAKOTO}/M_Nyaakoto_PBR.M_Nyaakoto_PBR"
+    master = asset_library.load_asset(master_path)
+    require({str(name) for name in material_lib.get_texture_parameter_names(master)} ==
+            {"AlbedoMap", "NormalMap", "ORMMap"},
+            "Nyaakoto PBR master lost its three texture parameters")
+    for group in pbr["maps"]:
+        for item in group["maps"]:
+            name = Path(item["file"]).stem
+            texture = asset_library.load_asset(f"{NYAAKOTO}/Textures/{name}.{name}")
+            require(bool(texture.get_editor_property("srgb")) == (item["channel"] == "Albedo"),
+                    f"Nyaakoto texture color space changed: {name}")
+            if item["channel"] == "NormalDX":
+                require(texture.get_editor_property("compression_settings") ==
+                        unreal.TextureCompressionSettings.TC_NORMALMAP
+                        and not bool(texture.get_editor_property("flip_green_channel")),
+                        f"Nyaakoto tangent normal import changed: {name}")
+            elif item["channel"] == "ORM":
+                require(texture.get_editor_property("compression_settings") ==
+                        unreal.TextureCompressionSettings.TC_MASKS,
+                        f"Nyaakoto ORM mask compression changed: {name}")
+    for slot, surface in pbr["material_slots"].items():
+        name = "MI_Nyaakoto_" + slot.removeprefix("M_Hero_")
+        path = f"{NYAAKOTO}/{name}.{name}"
+        instance = asset_library.load_asset(path)
+        parent = instance.get_editor_property("parent")
+        require(parent is not None and parent.get_path_name() == master_path,
+                f"Nyaakoto instance has the wrong PBR parent: {path}")
+        for parameter, channel in (("AlbedoMap", "Albedo"),
+                                   ("NormalMap", "NormalDX"), ("ORMMap", "ORM")):
+            texture_name = f"T_Nyaakoto_{surface['surface']}_{channel}"
+            expected_path = f"{NYAAKOTO}/Textures/{texture_name}.{texture_name}"
+            bound = material_lib.get_material_instance_texture_parameter_value(instance, parameter)
+            require(bound is not None and bound.get_path_name() == expected_path,
+                    f"Nyaakoto material {name} lost its {parameter} map binding")
+        for parameter, value in (("RoughnessScale", surface["roughness_scale"]),
+                                 ("MetallicScale", surface["metallic_scale"])):
+            bound = material_lib.get_material_instance_scalar_parameter_value(instance, parameter)
+            require(abs(bound - value) < 1e-5,
+                    f"Nyaakoto material {name} changed its {parameter}")
+        tint = material_lib.get_material_instance_vector_parameter_value(instance, "Tint")
+        require(all(abs(getattr(tint, channel) - value) < 1e-5
+                    for channel, value in zip("rgb", surface["tint"])),
+                f"Nyaakoto material {name} changed its tint")
     base_path = f"{PALETTE}/M_Nyaagyu_PBR.M_Nyaagyu_PBR"
     for role in ("Timber", "Stone", "Soil", "Metal"):
         path = f"{PALETTE}/MI_Nyaagyu_{role}.MI_Nyaagyu_{role}"
