@@ -9,7 +9,12 @@ English subtitles are on by default. Localization is part of campaign production
 including subtitle timing, speaker identification, readable Japanese fonts and
 controller-readable menus. The offline catalog now contains 25 timed bilingual
 dialogue cues across eight chapters, shown during active gameplay; no voice acting
-is recorded, and timing/readability still need Unreal play verification.
+is recorded, and timing/readability still need Unreal play verification. A native
+Japanese Game localization resource passed `SoraArena.Localization.NativeJapanese`
+in a UE 5.8.3 `-game` run: Unreal loaded its metadata/resource, selected `ja`
+without the previous English fallback, resolved the Japanese menu title, and
+found the separately authored English subtitle. The pinned 5.8.2 and packaged
+runtime still require checks.
 The HUD gives Japanese and English campaign subtitles, speaker names and notices
 a minimum text size at 720p and above; content and font-width checks pass, but
 the UE 5.8.2 visual and controller readability pass is still open.
@@ -45,6 +50,9 @@ the pinned 5.8.2 build and actual Unreal gameplay integration remain unverified.
 The same isolated 5.8.3 checkout loaded `/Engine/Maps/Entry` with
 `SoraGameMode` in a headless Mac game startup and exited cleanly. This is a
 startup smoke check, not a played campaign or rendered performance test.
+With Apple's separate Metal Toolchain installed, a Mac UE 5.8.3 diagnostic
+cook exited successfully: 630 packages cooked and seven skipped by platform.
+This does not establish a staged app or the pinned 5.8.2 release cook.
 A separate headless test
 runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
 checks deterministic terminal state and XOR conservation; it does not measure
@@ -220,8 +228,9 @@ its exact hash against ledger-state status. HTTP acceptance is not treated as
 finality, and ambiguous submissions are never retried. An identity-only
 recovery record is synced before POST; after restart it permits only exact-hash
 reconciliation under the same loopback network configuration. The portable
-C++17 codec passes 23 checks. An Unreal editor build, crash/restart, live
-pairing, submission and recovery run remain outstanding. Shipping builds keep
+C++17 codec passes 23 checks. The Mac Unreal editor target compiled in the
+interim UE 5.8.3 worktree and `SoraArena.Connect.LaunchBindings` passed there.
+Crash/restart, live pairing, submission and recovery runs remain outstanding. Shipping builds keep
 both signing and submission of allowlisted game/NFT transactions disabled.
 Research signing requires an explicit isolated loopback Torii and exact network
 match before any wallet request, since signed bytes could be submitted elsewhere.

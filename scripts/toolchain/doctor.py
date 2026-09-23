@@ -121,7 +121,7 @@ def inspect():
     build_ready = (release_ready if mode == "release" else
                    interim_ready if mode == "interim_compile_diagnostic" else False)
     cook_ready = build_ready and metal_ok
-    note = ("Interim UE 5.8.3 compile/editor diagnostics only; the 5.8.2 release pin and "
+    note = ("Interim UE 5.8.3 build/cook/stage diagnostics only; the 5.8.2 release pin and "
             "source-revision/packaging/runtime acceptance remain unmet."
             if interim_mode else
             "Presence/version checks only; successful Unreal compilation, cooking and runtime testing are separate acceptance checks.")

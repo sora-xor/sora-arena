@@ -16,8 +16,9 @@ been compiled. Run the doctor to inspect the actual machine.
 | Existing Epic launcher | The older `/Applications` copy self-updated to 18.1.2 during inspection; it was preserved |
 | Unreal Engine | **5.2.0** exists at `/Users/Shared/Epic Games/UE_5.2`; the Launcher installed **5.8.3** at `/Users/Shared/Epic Games/UE_5.8`; **5.8.2 is not installed** |
 | Xcode | **26.1.1, build 17B100**, installed at `~/Applications/SORAToolchain/Xcode_26.1.1.app`; full Apple code-signature verification passed, SDK **26.1** found, and first-launch status reports complete. Existing **27.0** is preserved |
+| Metal Toolchain | Apple's separate **17B54** component was downloaded through the selected Xcode; `xcrun --sdk macosx metal -v` reports compiler **32023.830**. Xcode's SDK and first-launch checks alone did not install this compiler. |
 | Engine revision | The installed 5.8.3 `Build.version` reports promoted build changelist **58210709** on `++UE5+Release-5.8`; the exact 5.8.2 source commit has not been acquired, so release `source_commit` remains `null` |
-| UE 5.8 compilation / packaging / runtime | The project Mac editor target **compiled in 5.8.3** in an isolated diagnostic worktree after source API fixes. Memory and disk SaveGame cases and the Connect automation passed. Original art and the CC0 palette imported there, and 59 expected packages loaded with their declared Unreal types. The 5.8.2 release build, packaged builds, visual quality and gameplay qualification have not run |
+| UE 5.8 compilation / packaging / runtime | The project Mac editor target compiled in isolated **5.8.3**, with SaveGame and Connect automations passing. Original art and the CC0 palette imported there; 59 expected packages loaded by type. After installing the separate Metal Toolchain, a Mac diagnostic cook completed: **630 packages cooked**, 7 skipped by platform. The 5.8.2 release build, staged app, visual quality and gameplay qualification remain open. |
 
 The machine's global `xcode-select` remains pointed at Command Line Tools. These
 scripts select Xcode and its matching `SDKROOT` only for their own process; they
@@ -71,35 +72,40 @@ silently upgrading the project's toolchain. Homebrew must already be installed.
 It does not provision Epic/Apple accounts, download Unreal, or change global
 Git/Xcode configuration.
 
-The doctor checks engine `Build.version`, Mac build scripts, selected Xcode and
-SDK and first-launch setup status, actual Blender/Git LFS command output, repository LFS setup, the root project
+The doctor checks engine `Build.version`, Mac build scripts, selected Xcode,
+SDK, first-launch setup and executable Metal compiler, actual Blender/Git LFS command output, repository LFS setup, the root project
 file, editor executable, and disk space. Exit status **1** indicates a missing or
 mismatched check; status **0** indicates these presence/version checks passed.
-Its `build_ready` JSON flag is a prerequisites check, not a compile result.
+Its `build_ready` JSON flag checks code-build prerequisites; `cook_ready`
+additionally requires a working Metal compiler. Neither is a build or cook result.
 The JSON also reports `release_prerequisites_ready` and
 `interim_compile_prerequisites_ready` separately. With the override unset,
 the doctor and Mac build script strictly require **5.8.2**.
 
-### Opt-in 5.8.3 compile diagnostic
+### Opt-in 5.8.3 diagnostic
 
-The following checks the installed 5.8.3 and allows **only Mac editor compile
-and launch diagnostics**:
+The following checks the installed 5.8.3 for isolated Mac editor, game-target,
+cook, staging and launch diagnostics:
 
 ```sh
 export UE_ROOT='/Users/Shared/Epic Games/UE_5.8'
 SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/doctor.py --json
 SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/build-mac.sh Development
+SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/build-mac.sh Development Game
+SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/cook-mac.sh
+SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/stage-mac.sh /tmp/sora-arena-mac-diagnostic
 SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/run-editor.sh
 ```
 
 The override must be exactly `5.8.3`; any other set value, including an empty
 string or `5.8.2`, fails closed. The interim check also requires an installed,
 executable UnrealEditor binary so a partial Launcher download cannot appear
-ready. The build and editor wrapper print interim diagnostic banners. This does
+ready. The build, cook, stage and editor wrappers print interim diagnostic
+banners. This does
 not change `versions.json`'s **5.8.2 release pin**, the `.uproject` association,
 Windows build policy, or asset import scripts. Without the exact override,
-`run-editor.sh` still requires 5.8.2. A passing interim compile or editor launch
-will not qualify a release, prove gameplay/rendering, or supply
+`run-editor.sh` still requires 5.8.2. Diagnostic compile, launch, cook or stage
+results do not qualify a release, prove gameplay or rendering, or supply
 an exact 5.8.2 source revision. The installed 5.8.3 build reports changelist
 58210709, not an exact 5.8.2 source commit. `python3 scripts/toolchain/test_doctor_interim.py` runs host-only
 fake-engine tests for the strict default, exact opt-in and rejected values;
@@ -123,6 +129,9 @@ it never invokes Unreal.
    `/Applications/Xcode_26.1.1.app` also works. Complete any Apple sign-in and
    license/setup prompts in the normal UI. Do not replace another Xcode version
    or globally change `xcode-select` for this project.
+   Install the separate Apple Metal compiler component with
+   `DEVELOPER_DIR=/path/to/Xcode_26.1.1.app/Contents/Developer xcodebuild -downloadComponent MetalToolchain`;
+   verify `DEVELOPER_DIR=/path/to/Xcode_26.1.1.app/Contents/Developer xcrun --sdk macosx metal -v` succeeds.
 4. Set paths and run the doctor, then build:
 
 ```sh
