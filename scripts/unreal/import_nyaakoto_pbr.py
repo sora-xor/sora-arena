@@ -113,7 +113,14 @@ master_path = destination + "/" + master_name
 master = assets.load_asset(master_path) if assets.does_asset_exist(master_path) else tools.create_asset(
     master_name, destination, unreal.Material, unreal.MaterialFactoryNew())
 master.set_editor_property("used_with_skeletal_mesh", True)
-lib.delete_all_material_expressions(master)
+# UE 5.8's bulk helper removes from the array it iterates and can leave half
+# the previous graph alive. Old output links then compile disconnected masks.
+# Delete a snapshot one expression at a time before rebuilding this generated
+# material; neither the source textures nor player data are affected.
+for old_expression in list(lib.get_material_expressions(master)):
+    lib.delete_material_expression(master, old_expression)
+if lib.get_num_material_expressions(master):
+    raise RuntimeError("Nyaakoto PBR master retained expressions from its prior import")
 base = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -1100, -580,
             parameter_name="AlbedoMap", texture=textures["neutral"]["Albedo"])
 normal = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -1100, -170,
@@ -147,10 +154,6 @@ link(white_normal, "RGB", normal_blend, "B")
 link(coat_factor, "", normal_blend, "Alpha")
 normal_unit = node(master, unreal.MaterialExpressionNormalize, -180, -100)
 link(normal_blend, "", normal_unit, "")
-orm_blend = node(master, unreal.MaterialExpressionLinearInterpolate, -400, 300)
-link(orm, "RGB", orm_blend, "A")
-link(white_orm, "RGB", orm_blend, "B")
-link(coat_factor, "", orm_blend, "Alpha")
 tint = node(master, unreal.MaterialExpressionVectorParameter, -180, -620,
             parameter_name="Tint", default_value=unreal.LinearColor(1, 1, 1, 1))
 roughness_scale = node(master, unreal.MaterialExpressionScalarParameter, -180, 560,
@@ -162,11 +165,25 @@ link(albedo_blend, "", colored, "A")
 link(tint, "RGB", colored, "B")
 output(colored, "", unreal.MaterialProperty.MP_BASE_COLOR)
 output(normal_unit, "", unreal.MaterialProperty.MP_NORMAL)
-ao = node(master, unreal.MaterialExpressionComponentMask, -470, 130, r=True, g=False, b=False, a=False)
-roughness = node(master, unreal.MaterialExpressionComponentMask, -470, 360, r=False, g=True, b=False, a=False)
-metallic = node(master, unreal.MaterialExpressionComponentMask, -470, 690, r=False, g=False, b=True, a=False)
-for mask in (ao, roughness, metallic):
-    link(orm_blend, "", mask, "")
+orm_masks = []
+
+
+def blend_orm_channel(channel, y):
+    flags = dict(r=channel == "r", g=channel == "g", b=channel == "b", a=False)
+    grey = node(master, unreal.MaterialExpressionComponentMask, -650, y, **flags)
+    white = node(master, unreal.MaterialExpressionComponentMask, -650, y + 95, **flags)
+    link(orm, "RGB", grey, "")
+    link(white_orm, "RGB", white, "")
+    orm_masks.extend((grey, white))
+    blended = node(master, unreal.MaterialExpressionLinearInterpolate, -350, y)
+    link(grey, "", blended, "A")
+    link(white, "", blended, "B")
+    link(coat_factor, "", blended, "Alpha")
+    return blended
+
+ao = blend_orm_channel("r", 130)
+roughness = blend_orm_channel("g", 370)
+metallic = blend_orm_channel("b", 700)
 output(ao, "", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
 roughness_mul = node(master, unreal.MaterialExpressionMultiply, -120, 420)
 link(roughness, "", roughness_mul, "A")
@@ -176,6 +193,10 @@ metallic_mul = node(master, unreal.MaterialExpressionMultiply, -120, 700)
 link(metallic, "", metallic_mul, "A")
 link(metallic_scale, "", metallic_mul, "B")
 output(metallic_mul, "", unreal.MaterialProperty.MP_METALLIC)
+if any(not lib.get_inputs_for_material_expression(master, mask)[0] for mask in orm_masks):
+    raise RuntimeError("Nyaakoto PBR ORM mask lost its source connection")
+if lib.get_num_material_expressions(master) != 29:
+    raise RuntimeError("Nyaakoto PBR master retained an unexpected expression")
 lib.layout_material_expressions(master)
 lib.recompile_material(master)
 assets.save_loaded_asset(master)
