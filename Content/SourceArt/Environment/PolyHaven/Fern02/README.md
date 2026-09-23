@@ -8,9 +8,11 @@ The original four-card-clump geometry has 6,232 triangles total. The eight FBXs 
 
 The 4K scan gives much more credible frond cutouts than a flat green proxy. The preview still exposes repetitive card structure in larger clumps and a flat ground substrate, and it lacks actual Estate lighting and material behavior. **The photoreal/AAA in-game art gate remains failed.** Import into an isolated diagnostic build only if a packaged first-person A/B comparison is run; reject placement if frond edges shimmer, foliage overdraw hurts frame time, the ground intersection floats, or the off-path placement changes readability. An unnamed scan is not evidence of a historically appropriate fern species.
 
-Regenerate and validate with Blender 5.2 LTS:
+Regenerate and validate with Blender 5.2 LTS. Blender needs `--python-exit-code 1` because its default process exit status can otherwise be zero after a Python exception:
 
 ```sh
-blender -b --factory-startup --python scripts/art/create_nyaagyu_fern_shoulder.py
-blender -b --factory-startup --python scripts/art/validate_nyaagyu_fern_shoulder.py
+blender -b --factory-startup --python-exit-code 1 --python scripts/art/create_nyaagyu_fern_shoulder.py
+blender -b --factory-startup --python-exit-code 1 --python scripts/art/validate_nyaagyu_fern_shoulder.py
 ```
+
+`scripts/unreal/import_nyaagyu_fern_art_review.py` is pinned to **UE 5.8.2** and imports the scanned PBR/alpha maps and both mesh tiers only under `/Game/Generated/ArtReview/Fern02`. It does not place any actor or modify the Estate or game rules. The Mac LOD1 assets are independent conventional meshes with the 2K material, while Windows HI meshes request Nanite and a complete conventional fallback. Use a separate diagnostic checkout for any UE 5.8.3 experiment; do not change the release pin.
