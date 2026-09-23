@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_RoadsideLeafSilt_4m",
+  "generator": "scripts/art/create_nyaagyu_ground_dressing.py",
+  "generator_sha256": "2ddc86be044a38f1d5de4ba452a3129a0c8506c91b426217fbb22967832bcb47",
+  "source_blend": "Nyaagyu_RoadsideLeafSilt.blend",
+  "blend_sha256": "fd45175ad459bacf0acd24bc0ca7b06e50f4ff55c56988837460df9e8c032ff5",
+  "fbx": "SM_Nyaagyu_RoadsideLeafSilt_4m.fbx",
+  "fbx_sha256": "4ce0fd17d6e9cfd239c8fca6af9ba12ab1c343146e9af92232f6976379a10032",
+  "review": "Nyaagyu_RoadsideLeafSilt_Blender.png",
+  "review_sha256": "87c0841fa238decb4942d160beb9262bc96d24d62eec04a9316b89c8d71ac3da",
+  "scatter_review": "Nyaagyu_RoadsideLeafSilt_ThreePlacements_Blender.png",
+  "scatter_review_sha256": "b4f47d8137349e28a9701b3feacf1a64172ef7c63d11aa37a8c15dd3bd84091f",
+  "source_parts": 209,
+  "source_triangles": 12582,
+  "bounds_m": {
+    "min": [
+      -2.0099,
+      -1.0721,
+      -0.0075
+    ],
+    "max": [
+      2.0157,
+      1.0766,
+      0.0774
+    ]
+  },
+  "nominal_road_length_m": 4.0,
+  "orientation": "Local X follows Estate road; +Y points outward from road center; +Z up",
+  "placement_variants": [
+    {
+      "yaw_deg": 14.0,
+      "uniform_scale": 0.92,
+      "review_x_m": -4.25,
+      "review_y_m": 0.35
+    },
+    {
+      "yaw_deg": 171.0,
+      "uniform_scale": 1.04,
+      "review_x_m": 0.0,
+      "review_y_m": -0.22
+    },
+    {
+      "yaw_deg": -22.0,
+      "uniform_scale": 0.87,
+      "review_x_m": 4.18,
+      "review_y_m": 0.4
+    }
+  ],
+  "collision": "Visual only; flat Estate terrain collision remains authoritative; no asset or runtime collision",
+  "nanite_windows": true,
+  "mac_conventional_fallback": {
+    "source_fbx": "SM_Nyaagyu_RoadsideLeafSilt_4m.fbx",
+    "fallback_percent_triangles": 1.0,
+    "fallback_target": "PercentTriangles",
+    "generate_fallback": "Enabled",
+    "render_config": "Config/Mac/MacEngine.ini"
+  },
+  "material_slots": [
+    "M_Ground_DampSilt",
+    "M_Ground_LeafOchre",
+    "M_Ground_LeafUmber",
+    "M_Ground_Moss",
+    "M_Ground_RiverStone",
+    "M_Ground_WetStone"
+  ],
+  "slot_definitions": {
+    "M_Ground_DampSilt": {
+      "source": "DampSilt",
+      "tint": [
+        0.79,
+        0.76,
+        0.72
+      ],
+      "roughness_bias": -0.08
+    },
+    "M_Ground_LeafUmber": {
+      "source": "ForestLitter",
+      "tint": [
+        0.69,
+        0.48,
+        0.32
+      ],
+      "roughness_bias": 0.06,
+      "two_sided": true
+    },
+    "M_Ground_LeafOchre": {
+      "source": "ForestLitter",
+      "tint": [
+        0.85,
+        0.69,
+        0.43
+      ],
+      "roughness_bias": 0.04,
+      "two_sided": true
+    },
+    "M_Ground_Moss": {
+      "source": "ForestLitter",
+      "tint": [
+        0.57,
+        0.68,
+        0.49
+      ],
+      "roughness_bias": 0.08,
+      "two_sided": true
+    },
+    "M_Ground_RiverStone": {
+      "source": "RiverStone",
+      "tint": [
+        0.78,
+        0.75,
+        0.68
+      ],
+      "roughness_bias": 0.07
+    },
+    "M_Ground_WetStone": {
+      "source": "RiverStone",
+      "tint": [
+        0.49,
+        0.51,
+        0.49
+      ],
+      "roughness_bias": -0.09
+    }
+  },
+  "dependencies": {
+    "DampSilt": {
+      "asset_id": "brown_mud_leaves_01",
+      "source_url": "https://polyhaven.com/a/brown_mud_leaves_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "sha256": "29c997d77f56e4ea16d3e998a306be0c17fddb28ab4822657c7cd8249040ffda",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+          "sha256": "9bbc1abea84c6774ead2153f8444a5ac5675ac4ce19e7e02d1cb869b20b81f26",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+          "sha256": "9056337763fa1db614b98aee969c4f07277731292b9549171e7b66c88cf6a416",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png"
+        }
+      }
+    },
+    "ForestLitter": {
+      "asset_id": "forest_leaves_02",
+      "source_url": "https://polyhaven.com/a/forest_leaves_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_diffuse_2k.jpg",
+          "sha256": "9c38b2b151a0415457a6914966422cfca5a546c94674442e5395e0b1e908a196",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_diffuse_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_nor_dx_2k.png",
+          "sha256": "d1cc3491948446214bcd0b742a5bf5a8cdebc10036ec37da8f3f5c8e6c45eb86",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuGroundDressing/ScanForestLeaves02/forest_leaves_02_arm_2k.png",
+          "sha256": "d8106fc2d56ceb1bbffdfa00772364aed678b51c1621cae7d554f6230151635f",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_arm_2k.png"
+        }
+      }
+    },
+    "RiverStone": {
+      "asset_id": "rock_01",
+      "source_url": "https://polyhaven.com/a/rock_01",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "files": {
+        "Albedo": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_diff_2k.jpg",
+          "sha256": "fe9013368539b5604602e64bfa48bef1a2a4c452fcb6894868fb556d0b14501c",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_diff_2k.jpg"
+        },
+        "NormalDX": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_nor_dx_2k.png",
+          "sha256": "e75062267abe1ae9d3792d4a2667f893a1a952dd0c59274a13fb3d348ca97a3a",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rock_01/rock_01_nor_dx_2k.png"
+        },
+        "ORM": {
+          "repo_path": "Content/SourceArt/Environment/NyaagyuEstateWall/ScanRock01/rock_01_arm_2k.jpg",
+          "sha256": "a954de58336738e6f963466f1453202ef7e186bd6492106c3b989c39f0d2e23c",
+          "upstream_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_01/rock_01_arm_2k.jpg"
+        }
+      }
+    }
+  },
+  "new_scan_manifest_sha256": "bee6e2163004b6ac8e160aff549f9af0fa8f451b8147ffeb5639e3d893f46f81",
+  "unreal_asset": "/Game/Generated/Environment/Props/SM_Nyaagyu_RoadsideLeafSilt_4m.SM_Nyaagyu_RoadsideLeafSilt_4m",
+  "license": "Original project-owned geometry and locally pinned Poly Haven CC0-1.0 PBR scans; no paid assets",
+  "limitations": "Vegetation/stone scattering study. The source review is a Blender render, not an Unreal runtime image; repeated tiling, terrain height fit, 5.8.2 shader import, and frame cost remain to be measured. Tiny stones are visual and non-colliding."
+}

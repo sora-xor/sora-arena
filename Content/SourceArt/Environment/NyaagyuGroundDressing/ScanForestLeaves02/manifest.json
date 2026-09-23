@@ -1,0 +1,41 @@
+{
+  "asset_id": "forest_leaves_02",
+  "asset_url": "https://polyhaven.com/a/forest_leaves_02",
+  "metadata_url": "https://api.polyhaven.com/files/forest_leaves_02",
+  "info_url": "https://api.polyhaven.com/info/forest_leaves_02",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "authors": {
+    "Rob Tuytel": "All"
+  },
+  "source_dimensions_mm": [
+    3000.9725093841553,
+    3000.9801387786865
+  ],
+  "files": [
+    {
+      "channel": "Diffuse",
+      "file": "forest_leaves_02_diffuse_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_diffuse_2k.jpg",
+      "bytes": 1668009,
+      "upstream_md5": "b7837ba1c51fb0e11af36d6b4e225c20",
+      "sha256": "9c38b2b151a0415457a6914966422cfca5a546c94674442e5395e0b1e908a196"
+    },
+    {
+      "channel": "nor_dx",
+      "file": "forest_leaves_02_nor_dx_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_nor_dx_2k.png",
+      "bytes": 10707841,
+      "upstream_md5": "2d3e0b3b81778d83cbe9affca0941fb7",
+      "sha256": "d1cc3491948446214bcd0b742a5bf5a8cdebc10036ec37da8f3f5c8e6c45eb86"
+    },
+    {
+      "channel": "arm",
+      "file": "forest_leaves_02_arm_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_arm_2k.png",
+      "bytes": 6912984,
+      "upstream_md5": "ce01b23560c9fca6e62fec5f8ecd1bae",
+      "sha256": "d8106fc2d56ceb1bbffdfa00772364aed678b51c1621cae7d554f6230151635f"
+    }
+  ]
+}
