@@ -329,6 +329,13 @@ tamper checks; the conservative complete envelope bound is 2,946,649 bytes,
 below 4 MiB. Proving took 169.685 seconds and 768,720,896 bytes peak RSS on
 the M1 Ultra. This manually fixed scene is not a registered `ArenaV1` profile,
 ledger-selected history, general live-kernel relation, or settlement authority.
+The next selected-history gate is blocked at native routing: Iroha's closed
+registry currently admits only the racing relation, so its Open, Start and
+Reveal instructions cannot create a genuine ledger-retained session for this
+unregistered Arena proof. The research fixture also fixes all batch epochs at
+zero while native forced batches advance epochs. A synthetic test-only session
+would not meet the consensus-evidence requirement; source-derived `ArenaV1`,
+canonical epoch mapping and restoration validation remain required.
 An unregistered Iroha research preflight separately measured an 18,000-batch,
 twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
 4 MiB proof envelope before the rest of a complete combat witness. Repeated
