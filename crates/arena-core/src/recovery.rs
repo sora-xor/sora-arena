@@ -6,21 +6,28 @@
 //! A trusted receipt from a peer/ledger is needed to detect deletion of complete
 //! suffix records. Local bytes alone cannot establish the latest agreed frontier.
 use std::{
+    collections::BTreeSet,
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
     path::Path,
+    sync::Arc,
 };
 
+use ed25519_dalek::SigningKey;
 use sha2::{Digest, Sha256};
 
 use crate::{
     Error, MAX_PLAYERS, RULES_VERSION,
-    protocol::{CommitmentSet, Context, Hash, Reveal, SlotSignature, input_commitment},
+    handshake::{
+        self, MAX_ACCEPTED_OFFERS_PER_MATCH, OFFER_PACKET_BYTES, PairwiseKeys,
+        RESPONSE_PACKET_BYTES,
+    },
+    protocol::{CommitmentSet, Context, Hash, Phase, Reveal, SlotSignature, input_commitment},
     rollback::{Checkpoint, RollbackSession},
     simulation::{Config, Input, Mode, Participant, World},
 };
 
-const MAGIC: &[u8] = b"SORA-ARENA-EVIDENCE\x01";
+const MAGIC: &[u8] = b"SORA-ARENA-EVIDENCE\x02";
 const MAX_RECORD: usize = 4096;
 const MAX_FILE: u64 = 64 * 1024 * 1024;
 
@@ -55,6 +62,11 @@ impl From<Error> for RecoveryError {
     }
 }
 type Result<T> = std::result::Result<T, RecoveryError>;
+type AcceptedOffers = Vec<Arc<BTreeSet<Hash>>>;
+
+fn empty_accepted_offers(count: usize) -> AcceptedOffers {
+    (0..count).map(|_| Arc::new(BTreeSet::new())).collect()
+}
 
 /// Keep this receipt outside the journal before relying on its latest frontier.
 /// It authenticates byte retention, not a monetary outcome or chain finality.
@@ -93,6 +105,7 @@ pub struct PrefixFailure {
 pub struct AuthenticatedPrefix {
     session: RollbackSession,
     partial: Vec<Option<Reveal>>,
+    accepted_offers: AcceptedOffers,
     resolution_fault: Option<Error>,
     receipt: Receipt,
     prefix_bytes: u64,
@@ -106,6 +119,12 @@ impl AuthenticatedPrefix {
     }
     pub fn partial_reveals(&self) -> &[Option<Reveal>] {
         &self.partial
+    }
+    /// Signed handshake offers durably accepted by one original responder slot.
+    pub fn accepted_offer_digests(&self, responder: usize) -> Option<Vec<Hash>> {
+        self.accepted_offers
+            .get(responder)
+            .map(|offers| offers.iter().copied().collect())
     }
     pub fn resolution_fault(&self) -> Option<&Error> {
         self.resolution_fault.as_ref()
@@ -159,6 +178,7 @@ pub fn inspect_prefix(
     let mut result = AuthenticatedPrefix {
         session: RollbackSession::new(context, config, participants)?,
         partial: vec![None; participants.len()],
+        accepted_offers: empty_accepted_offers(participants.len()),
         resolution_fault: None,
         receipt: Receipt {
             records: 0,
@@ -181,8 +201,15 @@ pub fn inspect_prefix(
             };
         let mut session = result.session.clone();
         let mut partial = result.partial.clone();
+        let mut accepted_offers = result.accepted_offers.clone();
         let mut resolution_fault = result.resolution_fault.clone();
-        if let Err(error) = apply(&mut session, &mut partial, &mut resolution_fault, &record) {
+        if let Err(error) = apply(
+            &mut session,
+            &mut partial,
+            &mut accepted_offers,
+            &mut resolution_fault,
+            &record,
+        ) {
             result.failure = Some(PrefixFailure {
                 record_offset: start as u64,
                 offset: (start + 8) as u64,
@@ -192,6 +219,7 @@ pub fn inspect_prefix(
         }
         result.session = session;
         result.partial = partial;
+        result.accepted_offers = accepted_offers;
         result.resolution_fault = resolution_fault;
         result.receipt = receipt;
         result.prefix_bytes = end as u64;
@@ -282,12 +310,18 @@ enum Record {
     Checkpoint(Checkpoint, Vec<SlotSignature>),
     Interrupt,
     Finish,
+    HandshakeOffer {
+        initiator: usize,
+        responder: usize,
+        offer: [u8; OFFER_PACKET_BYTES],
+    },
 }
 
 pub struct DurableSession {
     file: File,
     session: RollbackSession,
     partial: Vec<Option<Reveal>>,
+    accepted_offers: AcceptedOffers,
     resolution_fault: Option<Error>,
     receipt: Receipt,
     bytes: u64,
@@ -327,6 +361,7 @@ impl DurableSession {
             file,
             session,
             partial: vec![None; participants.len()],
+            accepted_offers: empty_accepted_offers(participants.len()),
             resolution_fault: None,
             receipt: Receipt {
                 records: 0,
@@ -366,6 +401,7 @@ impl DurableSession {
             file,
             session: RollbackSession::new(context, config, participants)?,
             partial: vec![None; participants.len()],
+            accepted_offers: empty_accepted_offers(participants.len()),
             resolution_fault: None,
             receipt: Receipt {
                 records: 0,
@@ -393,6 +429,7 @@ impl DurableSession {
             apply(
                 &mut result.session,
                 &mut result.partial,
+                &mut result.accepted_offers,
                 &mut result.resolution_fault,
                 &record,
             )?;
@@ -419,6 +456,11 @@ impl DurableSession {
     }
     pub fn partial_reveals(&self) -> &[Option<Reveal>] {
         &self.partial
+    }
+    pub fn accepted_offer_digests(&self, responder: usize) -> Option<Vec<Hash>> {
+        self.accepted_offers
+            .get(responder)
+            .map(|offers| offers.iter().copied().collect())
     }
     /// Complete openings stay available for dispute if reference execution fails.
     /// A recorded fault freezes gameplay and cannot release escrow or NFTs.
@@ -474,6 +516,46 @@ impl DurableSession {
     pub fn finish(&mut self) -> Result<Receipt> {
         self.append(Record::Finish)
     }
+    /// Authenticates an admitted peer's ephemeral offer, then syncs the exact
+    /// signed public bytes into this journal before returning keys or a
+    /// response. Retain the returned receipt independently before transmitting
+    /// that response so whole-suffix deletion is detectable on restart.
+    pub fn accept_handshake_offer(
+        &mut self,
+        initiator: usize,
+        responder: usize,
+        identity: &SigningKey,
+        offer: &[u8],
+    ) -> Result<(PairwiseKeys, [u8; RESPONSE_PACKET_BYTES], Receipt)> {
+        if self.poisoned {
+            return Err(RecoveryError::Poisoned);
+        }
+        if self.session.evidence().phase == Phase::Terminal {
+            return Err(Error::InvalidEvidence("terminal handshake offer").into());
+        }
+        let accepted = self
+            .accepted_offers
+            .get(responder)
+            .ok_or(Error::InvalidEvidence("handshake responder outside roster"))?;
+        let mut replay = handshake::OfferReplayGuard::restore(accepted.iter().copied())?;
+        let (keys, response) = handshake::accept_offer(
+            &self.session.evidence().context,
+            initiator,
+            responder,
+            identity,
+            offer,
+            &mut replay,
+        )?;
+        let offer: [u8; OFFER_PACKET_BYTES] = offer
+            .try_into()
+            .map_err(|_| Error::InvalidEvidence("handshake offer length differs"))?;
+        let receipt = self.append(Record::HandshakeOffer {
+            initiator,
+            responder,
+            offer,
+        })?;
+        Ok((keys, response, receipt))
+    }
     pub fn predict(&mut self, controls: Vec<Input>) -> Result<()> {
         if self.poisoned {
             return Err(RecoveryError::Poisoned);
@@ -488,8 +570,15 @@ impl DurableSession {
         }
         let mut session = self.session.clone();
         let mut partial = self.partial.clone();
+        let mut accepted_offers = self.accepted_offers.clone();
         let mut resolution_fault = self.resolution_fault.clone();
-        apply(&mut session, &mut partial, &mut resolution_fault, &record)?;
+        apply(
+            &mut session,
+            &mut partial,
+            &mut accepted_offers,
+            &mut resolution_fault,
+            &record,
+        )?;
         let payload = record.encode();
         let sequence = self
             .receipt
@@ -511,6 +600,7 @@ impl DurableSession {
         self.file.sync_all()?;
         self.session = session;
         self.partial = partial;
+        self.accepted_offers = accepted_offers;
         self.resolution_fault = resolution_fault;
         self.bytes += frame.len() as u64;
         self.receipt = Receipt {
@@ -525,6 +615,7 @@ impl DurableSession {
 fn apply(
     session: &mut RollbackSession,
     partial: &mut [Option<Reveal>],
+    accepted_offers: &mut AcceptedOffers,
     resolution_fault: &mut Option<Error>,
     record: &Record,
 ) -> Result<()> {
@@ -579,6 +670,31 @@ fn apply(
         }
         Record::Interrupt => session.interrupt(),
         Record::Finish => session.finish_local()?,
+        Record::HandshakeOffer {
+            initiator,
+            responder,
+            offer,
+        } => {
+            if session.evidence().phase == Phase::Terminal {
+                return Err(Error::InvalidEvidence("terminal handshake offer").into());
+            }
+            let accepted = accepted_offers
+                .get_mut(*responder)
+                .ok_or(Error::InvalidEvidence("handshake responder outside roster"))?;
+            let digest = handshake::verified_offer_digest(
+                &session.evidence().context,
+                *initiator,
+                *responder,
+                offer,
+            )?;
+            if accepted.contains(&digest) {
+                return Err(Error::InvalidEvidence("handshake offer replay").into());
+            }
+            if accepted.len() == MAX_ACCEPTED_OFFERS_PER_MATCH {
+                return Err(Error::InvalidEvidence("handshake replay guard is full").into());
+            }
+            Arc::make_mut(accepted).insert(digest);
+        }
     }
     Ok(())
 }
@@ -661,6 +777,14 @@ impl Record {
             }
             Self::Interrupt => out.push(3),
             Self::Finish => out.push(4),
+            Self::HandshakeOffer {
+                initiator,
+                responder,
+                offer,
+            } => {
+                out.extend([5, *initiator as u8, *responder as u8]);
+                out.extend(offer);
+            }
         }
         out
     }
@@ -712,6 +836,11 @@ impl Record {
             ),
             3 => Self::Interrupt,
             4 => Self::Finish,
+            5 => Self::HandshakeOffer {
+                initiator: r.byte()? as usize,
+                responder: r.byte()? as usize,
+                offer: r.array()?,
+            },
             _ => return Err(RecoveryError::Corrupt("unknown record type")),
         };
         if !r.bytes.is_empty() {
@@ -765,7 +894,7 @@ impl<'a> Reader<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::protocol::{Phase, sign_commitment_set};
+    use crate::{handshake::Initiator, protocol::sign_commitment_set};
     use ed25519_dalek::SigningKey;
     use std::{
         fs,
@@ -1077,6 +1206,121 @@ mod tests {
                 .state_hash(),
             expected
         );
+    }
+
+    #[test]
+    fn accepted_handshake_offer_survives_restart_and_trusted_receipt_detects_rollback() {
+        let fixture = Fixture::new();
+        let mut journal = fixture.create();
+        let initial = journal.receipt();
+        let header_only = fs::read(&fixture.path).unwrap();
+        let (initiator, offer) =
+            Initiator::start(fixture.context.clone(), 0, 1, &fixture.keys[0]).unwrap();
+        let (responder_keys, response, accepted) = journal
+            .accept_handshake_offer(0, 1, &fixture.keys[1], &offer)
+            .unwrap();
+        let initiator_keys = initiator.finish(&response).unwrap();
+        assert_eq!(
+            responder_keys.channel_binding,
+            initiator_keys.channel_binding
+        );
+        assert_eq!(journal.accepted_offer_digests(1).unwrap().len(), 1);
+        assert!(
+            journal
+                .accept_handshake_offer(0, 1, &fixture.keys[1], &offer)
+                .is_err()
+        );
+        assert_eq!(journal.receipt(), accepted);
+        drop(journal);
+
+        let saved = fs::read(&fixture.path).unwrap();
+        let prefix = inspect_prefix(
+            &fixture.path,
+            fixture.context.clone(),
+            fixture.config.clone(),
+            &fixture.participants,
+            initial,
+        )
+        .unwrap();
+        assert_eq!(prefix.receipt(), accepted);
+        assert_eq!(prefix.accepted_offer_digests(1).unwrap().len(), 1);
+        let mut recovered = fixture.restore(accepted).unwrap();
+        assert_eq!(recovered.accepted_offer_digests(1).unwrap().len(), 1);
+        assert!(
+            recovered
+                .accept_handshake_offer(0, 1, &fixture.keys[1], &offer)
+                .is_err()
+        );
+        let (fresh, new_offer) =
+            Initiator::start(fixture.context.clone(), 0, 1, &fixture.keys[0]).unwrap();
+        let (_, answer, later) = recovered
+            .accept_handshake_offer(0, 1, &fixture.keys[1], &new_offer)
+            .unwrap();
+        fresh.finish(&answer).unwrap();
+        assert_eq!(recovered.accepted_offer_digests(1).unwrap().len(), 2);
+        drop(recovered);
+        assert_eq!(
+            fixture
+                .restore(later)
+                .unwrap()
+                .accepted_offer_digests(1)
+                .unwrap()
+                .len(),
+            2
+        );
+
+        fs::write(&fixture.path, &header_only).unwrap();
+        assert!(fixture.restore(accepted).is_err());
+        assert!(fixture.restore(initial).is_ok());
+        fs::write(&fixture.path, saved).unwrap();
+        let mut recovered = fixture.restore(accepted).unwrap();
+        assert_eq!(recovered.accepted_offer_digests(1).unwrap().len(), 1);
+        recovered.interrupt().unwrap();
+        recovered.finish().unwrap();
+        let terminal = recovered.receipt();
+        assert!(
+            recovered
+                .accept_handshake_offer(0, 1, &fixture.keys[1], &new_offer)
+                .is_err()
+        );
+        assert_eq!(recovered.receipt(), terminal);
+    }
+
+    #[test]
+    fn retained_handshake_signature_is_reverified_after_record_hash_recomputed() {
+        let fixture = Fixture::new();
+        let mut journal = fixture.create();
+        let initial = journal.receipt();
+        let start = fs::metadata(&fixture.path).unwrap().len() as usize;
+        let (_, offer) = Initiator::start(fixture.context.clone(), 0, 1, &fixture.keys[0]).unwrap();
+        let before = journal.receipt();
+        let size_before = fs::metadata(&fixture.path).unwrap().len();
+        let mut tampered = offer;
+        *tampered.last_mut().unwrap() ^= 1;
+        assert!(
+            journal
+                .accept_handshake_offer(0, 1, &fixture.keys[1], &tampered)
+                .is_err()
+        );
+        assert_eq!(journal.receipt(), before);
+        assert_eq!(fs::metadata(&fixture.path).unwrap().len(), size_before);
+        journal
+            .accept_handshake_offer(0, 1, &fixture.keys[1], &offer)
+            .unwrap();
+        drop(journal);
+
+        let mut bytes = fs::read(&fixture.path).unwrap();
+        let size = u32::from_le_bytes(bytes[start + 4..start + 8].try_into().unwrap()) as usize;
+        assert_eq!(size, 3 + OFFER_PACKET_BYTES);
+        bytes[start + 8 + size - 1] ^= 1;
+        let digest = record_hash(initial.digest, 1, &bytes[start + 8..start + 8 + size]);
+        bytes[start + 8 + size..].copy_from_slice(&digest);
+        fs::write(&fixture.path, &bytes).unwrap();
+        assert!(matches!(
+            fixture.restore(initial),
+            Err(RecoveryError::Evidence(_))
+        ));
+        assert_eq!(fs::read(&fixture.path).unwrap(), bytes);
     }
 }
 

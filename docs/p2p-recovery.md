@@ -1,7 +1,7 @@
 # Local P2P evidence recovery
 
 `arena_core::recovery::DurableSession` wraps the rollback session in an append-only
-first-release journal. This is local evidence storage, not the Iroha transaction
+first-release version-2 journal. This is local evidence storage, not the Iroha transaction
 format, an execution proof, a signed payout, or authority to resolve a missing
 reveal. There are no legacy decoders.
 
@@ -13,7 +13,8 @@ trusting self-declared terms in a recovered file. The chain adapter that supplie
 this authenticated admission is still required.
 
 Every accepted commitment certificate, individual reveal, signed checkpoint,
-interruption and local finish is length bounded, sequenced and hash chained.
+signed handshake offer, interruption and local finish is length bounded,
+sequenced and hash chained.
 Certificates and checkpoints are checked with every original Ed25519 key. Each
 reveal must open its exact certified input commitment. Every player commits
 exactly `BATCH_TICKS = 2` canonical controls per batch. This is a fixed protocol
@@ -47,7 +48,8 @@ same file limit, checks the caller's exact admission, and replays the same
 canonical record decoder and certificate checks as full restore. A cooperative
 active writer prevents inspection. The result contains the last fully verified
 receipt, exclusive prefix byte end, observed file size, confirmed session,
-pending certificate and partial openings, and any resolution fault. It retains
+pending certificate, partial openings, accepted handshake offer digests, and
+any resolution fault. It retains
 no file handle and exposes no writer or repair operation.
 
 An externally retained minimum receipt must occur inside that verified prefix;
@@ -68,8 +70,8 @@ Restore requires a previously trusted receipt and rejects a file that no longer
 contains it. A receipt retained only inside the same file cannot detect removal
 of a whole suffix. The transport/chain integration must retain the receipt
 independently before relying on a frontier; this is explicit in the API. The
-journal contains controls, salts and public signatures, never wallet or gameplay
-private keys. It is not encrypted at rest.
+journal contains controls, salts, public signatures and signed ephemeral public
+offers, never wallet, gameplay or ephemeral private keys. It is not encrypted at rest.
 
 A match may end during the first tick of a certified two-tick batch. The complete
 input batch stays in the transcript, but controls after the first terminal
@@ -82,7 +84,10 @@ largest 12-player two-tick batch with one certificate, twelve separate reveals,
 and one full checkpoint occupies 3,250 bytes (2,788 bytes with a single grouped
 reveal record); 18,000 such batches plus admission fit the file bound. Immutable
 history uses shared 64-batch chunks so transactional candidates do not copy all
-prior controls and signatures for every append.
+prior controls and signatures for every append. A signed offer record is 158
+bytes; the full 1,024-offer allowance for all twelve responder slots adds at
+most 1,941,504 bytes. The full-clock journal and handshake capacity are not a
+measured simultaneous workload.
 
 One measured local diagnostic completed 36,000 ticks with 12 players using idle
 controls, grouped reveals and shared history: 36,002 records, 34,039,658 bytes,
@@ -152,7 +157,13 @@ The responder's `OfferReplayGuard` rejects an already accepted signed
 offer, including when it could generate a fresh local ephemeral secret. Its
 accepted offer digests must be persisted with the match evidence before the
 caller sends the returned response or uses the keys, then restored across
-reconnects. The guard retains at most 1,024 accepted offers per match and
+reconnects. `DurableSession::accept_handshake_offer` verifies the admitted
+signature, syncs the exact public offer to the journal, and only then returns
+the response and channel keys. Restore and read-only prefix inspection verify
+the signature again and reconstruct the responder's replay set. The caller
+must retain the returned journal receipt independently before sending the
+response; a missing whole suffix cannot be detected from the journal alone.
+The guard retains at most 1,024 accepted offers per responder per match and
 rejects further offers when full; recovery must preserve the current channel
 or end the match under the certified disconnect rules. The initiator
 keeps its one-use secret in memory only; an old response cannot complete a new

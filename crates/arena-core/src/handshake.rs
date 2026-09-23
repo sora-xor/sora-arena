@@ -11,7 +11,7 @@ use std::collections::BTreeSet;
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use hkdf::Hkdf;
 use sha2::{Digest, Sha256};
-use x25519_dalek::{EphemeralSecret, PublicKey, SharedSecret};
+use x25519_dalek::{EphemeralSecret, PublicKey, SharedSecret, x25519};
 use zeroize::Zeroizing;
 
 use crate::{Error, encrypted_wire::ChannelKey, protocol::Context};
@@ -241,9 +241,33 @@ fn decode_offer(
         &offer[..OFFER_PACKET_BYTES - SIGNATURE_BYTES],
         &offer[OFFER_PACKET_BYTES - SIGNATURE_BYTES..],
     )?;
-    Ok(offer[HEADER_BYTES..HEADER_BYTES + 32]
+    let public: [u8; 32] = offer[HEADER_BYTES..HEADER_BYTES + 32]
         .try_into()
-        .expect("fixed handshake offer public key"))
+        .expect("fixed handshake offer public key");
+    if x25519([0x42; 32], public) == [0; 32] {
+        return Err(Error::InvalidEvidence("non-contributory handshake key"));
+    }
+    Ok(public)
+}
+
+/// Revalidate a retained signed offer against the caller's exact admission.
+/// The durable journal stores the complete public offer, never an ephemeral
+/// secret, so recovery can reconstruct its replay guard independently.
+pub(crate) fn verified_offer_digest(
+    context: &Context,
+    initiator: usize,
+    responder: usize,
+    offer: &[u8],
+) -> Result<[u8; 32], Error> {
+    context.validate()?;
+    if initiator == responder
+        || initiator >= context.roster.len()
+        || responder >= context.roster.len()
+    {
+        return Err(Error::InvalidEvidence("invalid retained handshake slots"));
+    }
+    decode_offer(context, initiator, responder, offer)?;
+    Ok(offer_digest(context, offer))
 }
 
 fn decode_response(
@@ -270,9 +294,13 @@ fn decode_response(
         &response[..RESPONSE_PACKET_BYTES - SIGNATURE_BYTES],
         &response[RESPONSE_PACKET_BYTES - SIGNATURE_BYTES..],
     )?;
-    Ok(response[HEADER_BYTES + 32..HEADER_BYTES + 64]
+    let public: [u8; 32] = response[HEADER_BYTES + 32..HEADER_BYTES + 64]
         .try_into()
-        .expect("fixed handshake response public key"))
+        .expect("fixed handshake response public key");
+    if x25519([0x42; 32], public) == [0; 32] {
+        return Err(Error::InvalidEvidence("non-contributory handshake key"));
+    }
+    Ok(public)
 }
 
 fn verify_signature(

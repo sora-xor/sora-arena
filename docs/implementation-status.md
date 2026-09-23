@@ -87,8 +87,11 @@ Authenticated 1,200-byte fragmentation now carries the largest 12-player
 certificate in two datagrams, with bounded out-of-order reassembly. A signed
 ephemeral X25519/HKDF handshake derives pairwise directional keys and an
 admission-bound channel binding; six focused tests and the full workspace suite
-pass. Durable integration of its replay guard, live peer transport,
-retransmission and NAT traversal remain open.
+pass. The version-2 evidence journal now syncs each verified signed handshake
+offer before returning its channel response, restores bounded replay protection,
+and rejects a rolled-back file when given an externally retained receipt. Live
+peer transport, independent receipt retention, retransmission and NAT traversal
+remain open.
 
 The Unreal wallet source can prepare allowlisted native transactions, verify a
 wallet signature through the native Connect bridge, submit a signed Norito
