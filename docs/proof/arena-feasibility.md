@@ -73,6 +73,27 @@ or recursive design. Raising the cap alone would not resolve the memory and
 full-coverage requirements above. The gate has failed for the present layout;
 the value-bearing Arena profile stays disabled.
 
+Two narrower native research proofs now fit individually, but their scopes are
+far short of a match. A two-player, two-tick cardinal-movement relation produced
+a 1,192,288-byte STARK in 121.994 seconds with 252,723,200 bytes peak process
+RSS; fresh verification took 12.260 seconds. A three-player, two-tick
+fixed-scene Arc-carbine hit produced a 2,471,808-byte STARK in 134.148 seconds
+with 664,354,816 bytes peak process RSS; fresh verification took 17.426
+seconds. The latter proves 30 slab fractions and damage arithmetic while host
+validation fixes the scene, target and projected state. Neither relation is
+registered, funded, ledger-selected, or a general kill/payout proof. See the
+exact native artifacts and tampering checks in
+`../iroha-arena/docs/source/arena_movement_research_v1.md` and
+`../iroha-arena/docs/source/arena_ranged_research_v1.md`.
+
+For scale only, naively proving all 18,000 two-tick slices at the measured
+fixed-scene hit cost would take 2,414,664 seconds (about 28 days) of serial
+proving and produce 44,492,544,000 bytes of separate proofs. This is **not** a
+forecast or lower bound for a newly designed staged/recursive prover: the
+fixed scene cannot express most real ticks, and proof amortization could change
+both costs. It does show that repeating the current research adapter cannot
+meet the agreed 30-minute target or the single-proof ledger envelope.
+
 ## Next required implementation and measurement
 
 A staged relation must preserve the **one canonical tick order**: committed
