@@ -134,6 +134,30 @@ void ASoraHUD::DrawHUD()
         {
             WrappedLabel(Wallet->StatusText,L,852*S,.46*S,Muted,W-L*2,23*S,2);
             if(!Wallet->ApprovedAccount.IsEmpty()) Label(TEXT("承認済み： ")+Wallet->ApprovedAccount.Left(62),L,902*S,.42*S,Teal);
+            if(Wallet->TransactionState!=EArenaTransactionState::None&&Wallet->State!=EArenaWalletState::AwaitingApproval)
+            {
+                const float TxX=W-700*S,TxY=270*S,TxW=650*S;
+                Panel(TxX,TxY,TxW,170*S,FLinearColor(.013,.027,.033,.94f));
+                Label(TEXT("署名・台帳の状態"),TxX+20*S,TxY+12*S,JapaneseSubtitleScale,Gold);
+                WrappedLabel(Wallet->TransactionStatusText,TxX+20*S,TxY+45*S,JapaneseSubtitleScale,Ivory,TxW-40*S,JapaneseSubtitleLineHeight,2);
+                if(G->bEnglishSubtitles)
+                {
+                    const TCHAR* EnglishState=TEXT("Transaction status unavailable.");
+                    switch(Wallet->TransactionState)
+                    {
+                    case EArenaTransactionState::AwaitingSignature: EnglishState=TEXT("Awaiting signature; check terms and fees."); break;
+                    case EArenaTransactionState::Signed: EnglishState=TEXT("Signed locally; not submitted."); break;
+                    case EArenaTransactionState::Submitting: EnglishState=TEXT("Submitting to the isolated test network."); break;
+                    case EArenaTransactionState::Pending: EnglishState=TEXT("Waiting for on-chain finality."); break;
+                    case EArenaTransactionState::Uncertain: EnglishState=TEXT("Status unknown; do not resend."); break;
+                    case EArenaTransactionState::Finalized: EnglishState=TEXT("Torii reports applied; match entry is separate."); break;
+                    case EArenaTransactionState::Rejected: EnglishState=TEXT("Rejected or expired on-chain."); break;
+                    case EArenaTransactionState::Cancelled: EnglishState=TEXT("Cancelled before submission."); break;
+                    case EArenaTransactionState::None: break;
+                    }
+                    Label(EnglishState,TxX+20*S,TxY+118*S,EnglishSubtitleScale,Muted);
+                }
+            }
             if(Wallet->State==EArenaWalletState::AwaitingApproval&&Wallet->WalletQrTexture)
             {
                 const int32 Pixels=Wallet->WalletQrTexture->GetSizeX();
