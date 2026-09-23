@@ -80,6 +80,19 @@ for placement in manifest["sora_kamon_placements"]:
     assert {o["source_svg_sha256"] for o in paths}=={manifest["insignia_sha256"]}
 assert not any(o.name.startswith("Clan_mon_ray_") for o in parts)
 assert any(o.name=="Skull" for o in parts)
+skull=bpy.data.objects["Skull"]
+assert list(skull.data.uv_layers.keys())==["UVMap"]
+assert len(skull.data.polygons)>19000
+assert set(face.material_index for face in skull.data.polygons)=={0,1}
+assert [material.name for material in skull.data.materials]==[
+    "M_Hero_GreyTabbyFur","M_Hero_WhiteFur"]
+neck=bpy.data.objects["Fur_neck"]
+assert list(neck.data.uv_layers.keys())==["UVMap"]
+assert set(face.material_index for face in neck.data.polygons)=={0,1}
+assert bpy.data.objects.get("White_throat_bib") is None
+assert bpy.data.objects.get("Lower_jaw") is None
+assert len(bpy.data.objects["Head_white_mesh_fur"].data.polygons)==2200
+assert len(bpy.data.objects["Head_transition_mesh_fur"].data.polygons)==2700
 for side in (-1,1):
     iris=bpy.data.objects[f"Eye_iris_{side}"]
     assert list(iris.data.uv_layers.keys()) == ["UVMap"]
@@ -87,10 +100,12 @@ for side in (-1,1):
     sclera=bpy.data.objects[f"Eye_scleral_crescent_{side}"]
     assert list(sclera.data.uv_layers.keys()) == ["UVMap"]
     assert len(sclera.data.polygons)>300
-    pad=bpy.data.objects[f"Muzzle_pad_{side}"]
-    assert list(pad.data.uv_layers.keys()) == ["UVMap"]
-    assert len(pad.data.polygons)==256
-    assert len(bpy.data.objects[f"Muzzle_mesh_fur_{side}"].data.polygons)==1150
+    assert bpy.data.objects.get(f"Muzzle_pad_{side}") is None
+    assert bpy.data.objects.get(f"Cheek_ruff_{side}") is None
+    assert len(bpy.data.objects[f"Muzzle_mesh_fur_{side}"].data.polygons)==950
+    assert len(bpy.data.objects[f"Ear_outer_{side}"].data.polygons)>200
+    assert len(bpy.data.objects[f"Ear_rim_fur_{side}"].data.polygons)==160
+    assert len(bpy.data.objects[f"Ear_inner_fur_{side}"].data.polygons)==220
     assert len(bpy.data.objects[f"Eye_lower_lid_shelf_{side}"].data.polygons)==16
     assert bpy.data.objects.get(f"Triangular_nose_naris_{side}") is not None
     assert bpy.data.objects.get(f"Corneal_glint_{side}") is not None

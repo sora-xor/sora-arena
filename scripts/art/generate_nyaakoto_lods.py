@@ -80,10 +80,13 @@ def rig_bone(name: str, p: Vector) -> str:
 
 FUR_CARDS = (
     "Head_tabby_stripe_fibers", "Head_face_mesh_fur",
-    "Head_short_mesh_fur", "Cheek_mesh_fur_", "Muzzle_mesh_fur_",
+    "Head_short_mesh_fur", "Head_white_mesh_fur",
+    "Head_transition_mesh_fur", "Cheek_mesh_fur_", "Muzzle_mesh_fur_",
+    "Fur_neck_mesh_fur_", "Ear_rim_fur_", "Ear_inner_fur_",
 )
 LOD2_OMIT = (
-    "Guard_hair_", "Muzzle_follicle_", "Ear_cream_edge_",
+    "Guard_hair_", "Muzzle_follicle_", "Ear_rim_fur_", "Ear_inner_fur_",
+    "Fur_neck_mesh_fur_",
     "Eye_upper_lid_", "Eye_lower_lid_", "Angular_brow_",
     "Do_rivet_", "Sode_rivet_", "Do_indigo_lacing_",
     "Greave_braid_", "Kote_binding_", "Hakama_fold_",
