@@ -13,7 +13,11 @@ separate horn nocks and hemp string, leather sleeve with modeled binding, and
 a nocked 98 cm ya with modeled feather barbs and iron point. The grip marker is
 made from the user's exact `Content/SourceArt/UI/sora_logo_NOtext2.svg` paths.
 It is a visually informed design study, **not** a certified Edo bow replica.
-Living [kyūdō guidance](https://www.kyudo.com/kyudo-l.html) establishes the
+The [Nelson-Atkins Museum's Edo yumi](https://art.nelson-atkins.org/objects/26468/bow)
+is a 210.82 cm lacquered wood and wisteria-vine object; the
+[British Museum's samurai exhibition guide](https://www.britishmuseum.org/exhibitions/samurai/samurai-large-print-guide)
+describes wood/bamboo laminated bow development. Living
+[kyūdō guidance](https://www.kyudo.com/kyudo-l.html) establishes the
 asymmetric upper/lower limbs; [bow care guidance](https://kyudo.com/asahiam-buybow.html)
 describes the roughly 15 cm bow-to-string brace dimension. Period-specific
 lamination, string knotting, arrowhead and grip construction still require

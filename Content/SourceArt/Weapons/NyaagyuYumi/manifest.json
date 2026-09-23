@@ -3,27 +3,27 @@
   "name": "SM_Nyaagyu_Yumi_Study",
   "status": "source_only_visual_candidate",
   "generator": "scripts/art/create_nyaagyu_yumi_study.py",
-  "generator_sha256": "03f4b3642dec49d6dd8a3aca3a7d9cc781862372ff5831add1e347e660ff657f",
+  "generator_sha256": "10efce63f571830edcdf727e2672a0db4aa472113f649e27aa1f03fbfb76353d",
   "units": "metres",
   "bow_height_m": 2.2,
   "grip_height_from_lower_nock_m": 0.75,
   "historic_accuracy": "shape and materials informed by living bowmaking guidance; not a replica or fitting certification",
   "source_blend": "Nyaagyu_Yumi_Study.blend",
-  "source_blend_sha256": "7acec0b10e8ceaaf375d299be610848faa8f99dc781816becf6c8b4cba06f92a",
+  "source_blend_sha256": "0afb0c79b71b2f33370ebd2d220f39cbd8b431efebe51d119ee4a285fa267d39",
   "source_fbx": "SM_Nyaagyu_Yumi_Study.fbx",
-  "source_fbx_sha256": "7ab55a0f4d622ffa130a666f5b3eab21deb159cf69a57558ae4201f9d35e978f",
+  "source_fbx_sha256": "19f44d00cb6c49b51748ae949de72d2e4af85efc77014f3773bc3737c30d7528",
   "renders": [
     {
       "file": "Nyaagyu_Yumi_ThreeQuarter.png",
-      "sha256": "c73d696cbfe83c05d5df3f32ebcac95a6a7695f7f77686d38bd6c1460b177f40"
+      "sha256": "5d660e615cb73b845d69429db8f788f8f905fed09481fa40a0d6a9eb0dd51e6f"
     },
     {
       "file": "Nyaagyu_Yumi_Profile.png",
-      "sha256": "4a2595afa0fda8e696b54a41bbef283a7b40b11ff46a9cbbe28610d9f430473a"
+      "sha256": "299c7e371a3c8eb7bc75c7cfea176d8ef4aa31b41df43a2add59205fc4bc3515"
     },
     {
       "file": "Nyaagyu_Yumi_GripDetail.png",
-      "sha256": "f8e07eb1d9fa163653c3603a5148f046efa633481a4a44f2d5ae898146ab6112"
+      "sha256": "16fbfac52526edb17a716b84834885fb749b8a7b524a7a5b4e6e4c8d9e1bc219"
     }
   ],
   "textures": [
@@ -85,6 +85,8 @@
   "kamon_source": "Content/SourceArt/UI/sora_logo_NOtext2.svg",
   "kamon_source_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
   "reference_urls": [
+    "https://art.nelson-atkins.org/objects/26468/bow",
+    "https://www.britishmuseum.org/exhibitions/samurai/samurai-large-print-guide",
     "https://www.kyudo.com/kyudo-l.html",
     "https://kyudo.com/asahiam-buybow.html"
   ],

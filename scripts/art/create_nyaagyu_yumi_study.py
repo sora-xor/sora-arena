@@ -110,9 +110,9 @@ def simple_material(name, color, roughness, metal=0.0):
     return mat
 
 
-M_BAMBOO = image_material("M_Yumi_PhotographedBamboo", (0.90, 0.77, 0.62), 0.95)
-M_BACK = image_material("M_Yumi_UrushiOverBamboo", (0.25, 0.11, 0.08), 0.58)
-M_SIDE = image_material("M_Yumi_VisibleLamination", (0.47, 0.27, 0.15), 1.1)
+M_BAMBOO = image_material("M_Yumi_PhotographedBamboo", (0.85, 0.75, 0.65), 0.95)
+M_BACK = image_material("M_Yumi_UrushiOverBamboo", (0.17, 0.095, 0.075), 0.58)
+M_SIDE = image_material("M_Yumi_VisibleLamination", (0.28, 0.20, 0.14), 1.1)
 M_GRIP = image_material("M_Yumi_IndigoGripLeather", (0.32, 0.44, 0.70), 0.96, source=LEATHER)
 M_BIND = simple_material("M_Yumi_SmokedSilkBinding", (0.24, 0.15, 0.085), 0.79)
 M_HORN = simple_material("M_Yumi_BuffaloHornNocks", (0.048, 0.042, 0.035), 0.31)
@@ -433,7 +433,10 @@ manifest={
     "texture_license_url":"https://polyhaven.com/license",
     "kamon_source":"Content/SourceArt/UI/sora_logo_NOtext2.svg",
     "kamon_source_sha256":LOGO_RECORD["source_sha256"],
-    "reference_urls":["https://www.kyudo.com/kyudo-l.html","https://kyudo.com/asahiam-buybow.html"],
+    "reference_urls":["https://art.nelson-atkins.org/objects/26468/bow",
+                      "https://www.britishmuseum.org/exhibitions/samurai/samurai-large-print-guide",
+                      "https://www.kyudo.com/kyudo-l.html",
+                      "https://kyudo.com/asahiam-buybow.html"],
     "runtime_integrated":False,
 }
 (OUT/"manifest.json").write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+"\n")
