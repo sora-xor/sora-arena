@@ -125,6 +125,33 @@ arc_fbx = (bokken_root / arc["fbx"]).read_bytes()
 assert arc_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in arc_fbx
 assert arc["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
 assert arc["unreal_asset"] in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+hero_character_root = content / "SourceArt/Characters/Hero"
+hero_character = json.loads((hero_character_root / "manifest.json").read_text())
+assert hero_character["schema_version"] == 1
+assert hero_character["name"] == "SM_Nyaagyu_HeroCharacter"
+assert hero_character["generator"] == "scripts/art/create_nyaagyu_hero_character.py"
+assert hero_character["validator"] == "scripts/art/validate_nyaagyu_hero_character.py"
+assert hero_character["fbx"] == hero_character["name"] + ".fbx"
+assert hero_character["unreal_asset"] == "/Game/Generated/Meshes/SM_Nyaagyu_HeroCharacter.SM_Nyaagyu_HeroCharacter"
+assert hero_character["world_origin_m"] == [0, 0, 0]
+assert hero_character["local_forward"] == "+X face-forward; +Z up"
+assert hero_character["rigged"] is False and hero_character["external_images"] == []
+assert hero_character["source_parts"] >= 250 and 40000 <= hero_character["source_triangles"] < 100000
+assert hero_character["bounds_m"]["min"][2] < .01
+assert 1.83 < hero_character["bounds_m"]["max"][2] < 1.90
+assert "Original project-owned character geometry" in hero_character["license"]
+assert "user-supplied SORA insignia" in hero_character["license"]
+for name, digest in ((hero_character["source_blend"], "blend_sha256"),
+                     (hero_character["fbx"], "fbx_sha256"),
+                     (hero_character["preview"], "preview_sha256"),
+                     (hero_character["detail_preview"], "detail_preview_sha256")):
+    path = hero_character_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == hero_character[digest]
+hero_character_fbx = (hero_character_root / hero_character["fbx"]).read_bytes()
+assert hero_character_fbx.startswith(b"Kaydara FBX Binary")
+assert b"/Users/" not in hero_character_fbx
+assert hero_character["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
 environment_root = content / "SourceArt/Environment/Original"
 environment = json.loads((environment_root / "manifest.json").read_text())
 assert environment["schema_version"] == 1
@@ -217,6 +244,8 @@ assert loom["name"] in world_builder and loom["name"] in import_script
 assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())
+assert hero_character["insignia_sha256"] == logo_manifest["source_sha256"]
+assert (hero_character_root / hero_character["insignia_source"]).resolve() == (content / "SourceArt/UI/sora_logo_NOtext2.svg").resolve()
 assert logo_manifest["source_svg"] == "sora_logo_NOtext2.svg"
 assert logo_manifest["runtime_png"] == "SORA_Resistance_Logo.png"
 assert logo_manifest["unreal_asset"] == "/Game/Generated/UI/T_SoraResistanceLogo.T_SoraResistanceLogo"
@@ -238,4 +267,4 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 33 FBX source assets including a dojo bokken, Arc carbine and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 34 FBX source assets including a dojo bokken, Arc carbine, feline hero character and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")

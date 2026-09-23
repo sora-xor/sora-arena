@@ -90,10 +90,29 @@ if (arc_carbine["schema_version"] != 1
 arc_fbx = bokken_root / arc_carbine["fbx"]
 if not arc_fbx.is_file() or hashlib.sha256(arc_fbx.read_bytes()).hexdigest() != arc_carbine["fbx_sha256"]:
     raise RuntimeError("The original Arc carbine is missing or changed")
+hero_character_root = source / "Characters/Hero"
+hero_character = json.loads((hero_character_root / "manifest.json").read_text())
+hero_character_name = "SM_Nyaagyu_HeroCharacter"
+if (hero_character["schema_version"] != 1
+        or hero_character["name"] != hero_character_name
+        or hero_character["generator"] != "scripts/art/create_nyaagyu_hero_character.py"
+        or hero_character["fbx"] != hero_character_name + ".fbx"
+        or hero_character["unreal_asset"] != f"/Game/Generated/Meshes/{hero_character_name}.{hero_character_name}"
+        or hero_character["rigged"] is not False):
+    raise RuntimeError("The original feline hero character asset identity changed")
+hero_character_fbx = hero_character_root / hero_character["fbx"]
+if (not hero_character_fbx.is_file()
+        or hashlib.sha256(hero_character_fbx.read_bytes()).hexdigest() != hero_character["fbx_sha256"]):
+    raise RuntimeError("The original feline hero character FBX is missing or changed")
+insignia = (hero_character_root / hero_character["insignia_source"]).resolve()
+if (not insignia.is_file()
+        or hashlib.sha256(insignia.read_bytes()).hexdigest() != hero_character["insignia_sha256"]):
+    raise RuntimeError("The user-supplied SORA hero insignia source is missing or changed")
 mesh_names = manifest["characters"] + manifest["weapons"] + [hero_katana["name"]]
 tasks = []
 for name, path in [(name, source / f"{name}.fbx") for name in mesh_names] + [
-        (bokken["name"], bokken_fbx), (arc_carbine["name"], arc_fbx)]:
+        (bokken["name"], bokken_fbx), (arc_carbine["name"], arc_fbx),
+        (hero_character_name, hero_character_fbx)]:
     if not path.is_file():
         raise RuntimeError(f"Required original mesh is missing: {path}")
     task = unreal.AssetImportTask()
@@ -115,7 +134,7 @@ for name, path in [(name, source / f"{name}.fbx") for name in mesh_names] + [
     task.options = options
     tasks.append(task)
 tools.import_asset_tasks(tasks)
-for name in mesh_names + [bokken["name"], arc_carbine["name"]]:
+for name in mesh_names + [bokken["name"], arc_carbine["name"], hero_character_name]:
     if not assets.does_asset_exist(f"/Game/Generated/Meshes/{name}"):
         raise RuntimeError(f"Unreal import did not create {name}")
 
