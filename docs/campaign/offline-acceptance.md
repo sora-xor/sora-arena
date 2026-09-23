@@ -10,6 +10,9 @@ The `SoraArena.Campaign.SaveRoundTrip` Unreal automation case is now in source.
 It passed in the isolated UE 5.8.3 Mac editor diagnostic on 2026-09-23:
 `USoraSaveGame` serialized to memory and restored the chapter, dojo lesson mask,
 production-site mask, defeated-pupil count, completion and English-subtitle
-settings. It does not exercise an on-disk save slot or played mission.
-This does not replace the disk save/reload and live chapter recovery checks
-above.
+settings. The separate `SoraArena.Campaign.DiskSaveRecovery` automation also
+passed in the same 5.8.3 diagnostic. It wrote and reloaded four unique-slot
+checkpoint cases (dojo, production sites, pre-boss and completed campaign),
+checked subtitle settings and all stored fields, and deleted its test slot.
+Neither test tears down and reloads a played world or verifies live chapter
+recovery and HUD behavior.

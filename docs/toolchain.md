@@ -17,7 +17,7 @@ been compiled. Run the doctor to inspect the actual machine.
 | Unreal Engine | **5.2.0** exists at `/Users/Shared/Epic Games/UE_5.2`; the Launcher installed **5.8.3** at `/Users/Shared/Epic Games/UE_5.8`; **5.8.2 is not installed** |
 | Xcode | **26.1.1, build 17B100**, installed at `~/Applications/SORAToolchain/Xcode_26.1.1.app`; full Apple code-signature verification passed, SDK **26.1** found, and first-launch status reports complete. Existing **27.0** is preserved |
 | Engine revision | The installed 5.8.3 `Build.version` reports promoted build changelist **58210709** on `++UE5+Release-5.8`; the exact 5.8.2 source commit has not been acquired, so release `source_commit` remains `null` |
-| UE 5.8 compilation / packaging / runtime | The project Mac editor target **compiled in 5.8.3** in an isolated diagnostic worktree after source API fixes. The SaveGame and Connect automation cases passed. Original art and the CC0 palette imported there, and 59 expected packages loaded with their declared Unreal types. The 5.8.2 release build, packaged builds, visual quality and gameplay qualification have not run |
+| UE 5.8 compilation / packaging / runtime | The project Mac editor target **compiled in 5.8.3** in an isolated diagnostic worktree after source API fixes. Memory and disk SaveGame cases and the Connect automation passed. Original art and the CC0 palette imported there, and 59 expected packages loaded with their declared Unreal types. The 5.8.2 release build, packaged builds, visual quality and gameplay qualification have not run |
 
 The machine's global `xcode-select` remains pointed at Command Line Tools. These
 scripts select Xcode and its matching `SDKROOT` only for their own process; they

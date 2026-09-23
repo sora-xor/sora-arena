@@ -77,8 +77,10 @@ inconsistent site progress on load. Round resets now destroy live explosive
 shells before restoring an encounter, so a previous attempt cannot damage new
 opponents or advance their saved kill count. The `SoraArena.Campaign.SaveRoundTrip`
 automation passed inside UE 5.8.3, covering `USoraSaveGame` memory serialization
-and restoration of all checkpoint fields. Disk slot teardown/reload and an
-in-game save/reload test remain open; the shared encounter layouts do not meet the
+and restoration of all checkpoint fields. `SoraArena.Campaign.DiskSaveRecovery`
+also passed four on-disk save/load cases and removed its temporary slot. World
+teardown and an in-game checkpoint recovery test remain open; the shared
+encounter layouts do not meet the
 six-to-eight-hour campaign target.
 The [host campaign acceptance driver](campaign/offline-acceptance.md) exercises
 the same extracted GameMode progression rules across all eight catalog
@@ -91,8 +93,8 @@ bilingual HUD/dialogue and a local checkpoint that respawns the boss at full
 health after seventeen guards. The prototype save schema advances to 5 so a
 pre-boss checkpoint cannot skip the encounter; no compatibility decoder is
 included. Content validation passes 25 timed bilingual cues. The interim
-UE 5.8.3 editor compile and memory SaveGame automation do not verify subtitle
-readability, combat balance, disk save recovery or the pinned 5.8.2 build.
+UE 5.8.3 editor compile and SaveGame automation do not verify subtitle
+readability, combat balance, played-world recovery or the pinned 5.8.2 build.
 The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
 the six-class selector is available in offline arena practice. This source
 behavior still needs an Unreal menu and save/reload check.
@@ -265,8 +267,10 @@ Xcode 26.1.1 linker; 29 focused allocation, equipment, resource and racing SDK
 tests pass. This does not exercise Unreal or a live validator network.
 The focused native equipment integration suite also passes all five tests,
 including rejection of a snapshot missing authoritative custody maps. A broad
-`iroha_core --lib` test build still has 284 compiler errors, predominantly
-Kagemusha test-fixture API drift; the focused result does not qualify the node.
+`iroha_core --lib` test build still has 257 compiler errors after bounded
+Kagemusha fixture repairs, predominantly stale test-fixture API usage; the
+focused result does not qualify the node. A data-model `--lib` test build also
+stops on 60 unrelated stale Kagemusha and staking fixture errors.
 The generic native genesis API now accepts the immutable admission body and
 validates it before Race root derivation; one focused integration test passes
 and rejects malformed version, skin, duplicate input key, and missing slot.
@@ -356,6 +360,13 @@ unregistered Arena proof. The research fixture also fixes all batch epochs at
 zero while native forced batches advance epochs. A synthetic test-only session
 would not meet the consensus-evidence requirement; source-derived `ArenaV1`,
 canonical epoch mapping and restoration validation remain required.
+The existing RaceV1 profile ID hashes the entire native
+`execution_proofs.rs` source file. A proposed enum addition would change that
+historical proof identity, so it was reverted. Staged negative registry,
+instruction and verifier-dispatch tests keep the exact Arena research ID
+unregistered and unfunded while a separate, reviewed profile-identity strategy
+is developed; those tests have not executed because the broad data-model test
+target still fails to compile on unrelated fixtures.
 
 An unfunded, unregistered translation test now verifies all thirteen signed
 two-tick peer batches and maps them to native forced-batch epochs 0–12,
