@@ -21,7 +21,9 @@ public:
     void RestoreActivatedMask(int32 Mask);
     FVector SpawnPoint(int32 Index) const;
     FVector ExitPoint() const { return FVector(2250,0,110); }
-    FVector PlayerStart() const { return FVector(-2300,0,120); }
+    // Begin far enough west of the entrance torii to frame the gate and
+    // estate in first person instead of spawning with the camera under a beam.
+    FVector PlayerStart() const { return FVector(-2700,0,120); }
     static UStaticMeshComponent* Shape(AActor* Owner, USceneComponent* Parent, const FString& Name, const TCHAR* Asset, FVector Location, FVector Scale, FLinearColor Color, bool Collision = false);
     static void Tint(UStaticMeshComponent* Mesh, FLinearColor Color);
     static void Surface(UStaticMeshComponent* Mesh, const FString& Role, FLinearColor Color = FLinearColor::White);

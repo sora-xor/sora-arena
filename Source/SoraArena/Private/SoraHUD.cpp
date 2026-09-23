@@ -330,19 +330,22 @@ void ASoraHUD::DrawHUD()
             if(Near) Label(TEXT("E  調べる"),CX-75*S,CY+60*S,.65*S,Gold);
         }
     }
-    if(const auto* Cue=G->CurrentDialogueCue())
+    const auto* Cue=G->CurrentDialogueCue();
+    if(Cue)
     {
-        // Timed story cues are overlays; gameplay input and objective timers continue.
-        Panel(20*S,H-400*S,W-40*S,125*S,FLinearColor(.013,.027,.033,.93));
+        // Story dialogue and the chapter summary share the lower-third space.
+        // Drawing both at once covered nearly half a 720p gameplay frame.
+        // Gameplay input and objective timers continue beneath the cue.
+        Panel(20*S,H-300*S,W-40*S,170*S,FLinearColor(.013,.027,.033,.88));
         if(const auto* Speaker=FSoraCatalog::Get().DialogueSpeaker(Cue->SpeakerId))
         {
-            Label(Speaker->Japanese,35*S,H-392*S,JapaneseSpeakerScale,Gold);
-            if(G->bEnglishSubtitles) Label(Speaker->English,W-285*S,H-392*S,EnglishSpeakerScale,Muted);
+            Label(Speaker->Japanese,35*S,H-290*S,JapaneseSpeakerScale,Gold);
+            if(G->bEnglishSubtitles) Label(Speaker->English,W-285*S,H-290*S,EnglishSpeakerScale,Muted);
         }
-        WrappedLabel(Cue->Japanese,35*S,H-358*S,JapaneseSubtitleScale,Ivory,W-70*S,JapaneseSubtitleLineHeight,2);
-        if(G->bEnglishSubtitles) WrappedLabel(Cue->English,35*S,H-312*S,EnglishSubtitleScale,Muted,W-70*S,EnglishSubtitleLineHeight,2);
+        WrappedLabel(Cue->Japanese,35*S,H-260*S,JapaneseSubtitleScale,Ivory,W-70*S,JapaneseSubtitleLineHeight,2);
+        if(G->bEnglishSubtitles) WrappedLabel(Cue->English,35*S,H-195*S,EnglishSubtitleScale,Muted,W-70*S,EnglishSubtitleLineHeight,2);
     }
-    if(G->NoticeTime>0)
+    if(!Cue&&G->NoticeTime>0)
     {
         Panel(20*S,H-255*S,W-40*S,125*S,FLinearColor(.015,.035,.045,.94));
         WrappedLabel(G->Notice,35*S,H-245*S,JapaneseSubtitleScale,Ivory,W-70*S,JapaneseSubtitleLineHeight,2);
