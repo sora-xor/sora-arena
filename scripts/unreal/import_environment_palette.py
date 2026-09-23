@@ -59,7 +59,10 @@ for record in surface_assets:
 def create_material(name):
     path=DEST+'/'+name
     mat=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,DEST,unreal.Material,unreal.MaterialFactoryNew())
-    lib.delete_all_material_expressions(mat)
+    for old_expression in list(lib.get_material_expressions(mat)):
+        lib.delete_material_expression(mat, old_expression)
+    if lib.get_num_material_expressions(mat):
+        raise RuntimeError(f"Environment material {name} retained expressions from its prior import")
     return mat
 
 

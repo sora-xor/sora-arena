@@ -426,7 +426,10 @@ for role, prefix in (("Branches", "branch_"), ("Leaves", "leaves_"), ("Trunk", "
     object_path = f"{foliage_root}/{name}"
     material = (assets.load_asset(object_path) if assets.does_asset_exist(object_path)
                 else tools.create_asset(name, foliage_root, unreal.Material, unreal.MaterialFactoryNew()))
-    material_lib.delete_all_material_expressions(material)
+    for old_expression in list(material_lib.get_material_expressions(material)):
+        material_lib.delete_material_expression(material, old_expression)
+    if material_lib.get_num_material_expressions(material):
+        raise RuntimeError(f"Tree material {name} retained expressions from its prior import")
     material.set_editor_property("two_sided", True)
     if role == "Leaves":
         material.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
@@ -527,7 +530,10 @@ path = "/Game/Generated/Materials/M_ArenaSurface"
 material = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
     "M_ArenaSurface", "/Game/Generated/Materials", unreal.Material, unreal.MaterialFactoryNew())
 lib = unreal.MaterialEditingLibrary
-lib.delete_all_material_expressions(material)
+for old_expression in list(lib.get_material_expressions(material)):
+    lib.delete_material_expression(material, old_expression)
+if lib.get_num_material_expressions(material):
+    raise RuntimeError("Arena surface material retained expressions from its prior import")
 color = lib.create_material_expression(material, unreal.MaterialExpressionVectorParameter, -600, -200)
 color.set_editor_property("parameter_name", "BaseColor")
 color.set_editor_property("default_value", unreal.LinearColor(.35,.4,.4,1))

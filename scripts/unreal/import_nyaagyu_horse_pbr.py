@@ -113,7 +113,10 @@ master_name = "M_NyaagyuHorse_PBR"
 master_path = destination + "/" + master_name
 master = assets.load_asset(master_path) if assets.does_asset_exist(master_path) else tools.create_asset(
     master_name, destination, unreal.Material, unreal.MaterialFactoryNew())
-lib.delete_all_material_expressions(master)
+for old_expression in list(lib.get_material_expressions(master)):
+    lib.delete_material_expression(master, old_expression)
+if lib.get_num_material_expressions(master):
+    raise RuntimeError("Horse material retained expressions from its prior import")
 base_map = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -850, -320,
                 parameter_name="AlbedoMap", texture=textures["horse_coat"]["Albedo"])
 normal_map = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -850, -30,

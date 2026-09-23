@@ -126,7 +126,10 @@ master_name = "M_NyaagyuEstateWall_PBR"
 master_path = dest + "/" + master_name
 master = assets.load_asset(master_path) if assets.does_asset_exist(master_path) else asset_tools.create_asset(
     master_name, dest, unreal.Material, unreal.MaterialFactoryNew())
-lib.delete_all_material_expressions(master)
+for old_expression in list(lib.get_material_expressions(master)):
+    lib.delete_material_expression(master, old_expression)
+if lib.get_num_material_expressions(master):
+    raise RuntimeError("Estate wall material retained expressions from its prior import")
 base = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -950, -370,
             parameter_name="AlbedoMap", texture=textures["Stone"]["Albedo"])
 normal = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -950, -80,

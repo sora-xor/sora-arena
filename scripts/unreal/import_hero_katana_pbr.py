@@ -82,7 +82,10 @@ master_name = "M_HeroKatana_PBR"
 master_path = destination + "/" + master_name
 master = assets.load_asset(master_path) if assets.does_asset_exist(master_path) else tools.create_asset(
     master_name, destination, unreal.Material, unreal.MaterialFactoryNew())
-lib.delete_all_material_expressions(master)
+for old_expression in list(lib.get_material_expressions(master)):
+    lib.delete_material_expression(master, old_expression)
+if lib.get_num_material_expressions(master):
+    raise RuntimeError("Hero katana material retained expressions from its prior import")
 base = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, -400,
             parameter_name="AlbedoMap", texture=textures["neutral"]["Albedo"])
 normal = node(master, unreal.MaterialExpressionTextureSampleParameter2D, -900, -50,

@@ -148,7 +148,10 @@ def master(name, feathered):
     path = dest + "/" + name
     material = assets.load_asset(path) if assets.does_asset_exist(path) else asset_tools.create_asset(
         name, dest, unreal.Material, unreal.MaterialFactoryNew())
-    lib.delete_all_material_expressions(material)
+    for old_expression in list(lib.get_material_expressions(material)):
+        lib.delete_material_expression(material, old_expression)
+    if lib.get_num_material_expressions(material):
+        raise RuntimeError(f"Hero path material {name} retained expressions from its prior import")
     material.set_editor_property("two_sided", feathered)
     material.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED if feathered else unreal.BlendMode.BLEND_OPAQUE)
     base = node(material, unreal.MaterialExpressionTextureSampleParameter2D, -1000, -350,
