@@ -25,6 +25,7 @@
 #include "WebSocketsModule.h"
 #include "ThirdParty/QrCodeGen/qrcodegen.h"
 #include <atomic>
+#include <initializer_list>
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
 #endif
@@ -44,6 +45,13 @@ struct FIngressBudget
     std::atomic<bool> Stopped{false};
 };
 const FString Permissions = TEXT("{\"methods\":[\"SIGN_REQUEST_TX\"],\"events\":[],\"resources\":null}");
+
+// FString's equality operators fold case. Protocol identities, hashes, enum
+// literals, and encoded bytes must instead match the exact signed spelling.
+bool Exact(const FString& A, const FString& B)
+{
+    return A.Equals(B, ESearchCase::CaseSensitive);
+}
 
 void Erase(TArray<uint8>& Bytes)
 {
@@ -84,7 +92,7 @@ bool DecodeBase64Url(const FString& Encoded, int32 Size, TArray<uint8>& Out)
     if (Encoded.Len() != (Size * 8 + 5) / 6) return false;
     FString Standard = Encoded.Replace(TEXT("-"), TEXT("+")).Replace(TEXT("_"), TEXT("/"));
     while (Standard.Len() % 4) Standard += TEXT("=");
-    return FBase64::Decode(Standard, Out) && Out.Num() == Size && Base64Url(Out) == Encoded;
+    return FBase64::Decode(Standard, Out) && Out.Num() == Size && Exact(Base64Url(Out), Encoded);
 }
 
 bool DecodeHex(const FString& Hex, int32 Size, TArray<uint8>& Out, bool UpperOnly = false)
@@ -137,7 +145,7 @@ bool NormalizeOrigin(const FString& Input, FString& Out)
     if (Authority.StartsWith(TEXT("[")))
     {
         int32 End = INDEX_NONE;
-        if (!Authority.FindChar(']', End) || Authority.Left(End + 1) != TEXT("[::1]")) return false;
+        if (!Authority.FindChar(']', End) || !Exact(Authority.Left(End + 1), TEXT("[::1]"))) return false;
         Host = Authority.Left(End + 1);
         if (Authority.Len() > End + 1)
         {
@@ -167,6 +175,21 @@ bool ParseObject(const uint8* Data, int32 Size, TSharedPtr<FJsonObject>& Out)
     return FJsonSerializer::Deserialize(Reader, Out) && Out.IsValid();
 }
 
+bool ExactFields(const FJsonObject& Object, std::initializer_list<const TCHAR*> Fields)
+{
+    if (Object.Values.Num() != static_cast<int32>(Fields.size())) return false;
+    for (const auto& Entry : Object.Values)
+    {
+        bool bAllowed = false;
+        for (const TCHAR* Field : Fields)
+        {
+            if (Exact(Entry.Key, Field)) { bAllowed = true; break; }
+        }
+        if (!bAllowed) return false;
+    }
+    return true;
+}
+
 bool CanonicalHash(const FString& Hash)
 {
     if (Hash.Len() != 64) return false;
@@ -182,6 +205,16 @@ bool JsonContentType(const FString& ContentType)
         || ContentType.StartsWith(TEXT("application/json;"), ESearchCase::IgnoreCase);
 }
 
+bool IsAcceptedSubmissionReceipt(const FString& RequestUrl, const FString& ResponseUrl,
+    int32 HttpCode, bool bEmptyBody, const FString& Preference,
+    const FString& ObservedHash, const FString& ObservedEntrypoint,
+    const FString& ExpectedHash, const FString& ExpectedEntrypoint)
+{
+    return Exact(ResponseUrl, RequestUrl) && HttpCode == 202 && bEmptyBody
+        && Exact(Preference, TEXT("return=minimal"))
+        && Exact(ObservedHash, ExpectedHash) && Exact(ObservedEntrypoint, ExpectedEntrypoint);
+}
+
 EChainObservation ReadExactStatus(int32 HttpCode, const FString& ContentType, const TArray<uint8>& Body, const FString& Hash)
 {
     if ((HttpCode != 200 && HttpCode != 404) || !JsonContentType(ContentType)
@@ -194,23 +227,26 @@ EChainObservation ReadExactStatus(int32 HttpCode, const FString& ContentType, co
         FString Code;
         const TSharedPtr<FJsonObject>* Details = nullptr;
         const TSharedPtr<FJsonObject>* Absence = nullptr;
-        if (Root->Values.Num() != 3 || !Root->TryGetStringField(TEXT("code"), Code) || Code != TEXT("pipeline_transaction_status_not_found")
+        if (!ExactFields(*Root, {TEXT("code"), TEXT("message"), TEXT("details")})
+            || !Root->TryGetStringField(TEXT("code"), Code) || !Exact(Code, TEXT("pipeline_transaction_status_not_found"))
             || !Root->TryGetObjectField(TEXT("details"), Details)
-            || (*Details)->Values.Num() != 1
+            || !ExactFields(**Details, {TEXT("pipeline_transaction_status_not_found")})
             || !(*Details)->TryGetObjectField(TEXT("pipeline_transaction_status_not_found"), Absence)
-            || (*Absence)->Values.Num() != 2
+            || !ExactFields(**Absence, {TEXT("hash"), TEXT("scope")})
             || !(*Absence)->TryGetStringField(TEXT("hash"), ObservedHash)
             || !(*Absence)->TryGetStringField(TEXT("scope"), Scope)) return EChainObservation::Invalid;
-        return ObservedHash == Hash && Scope == TEXT("global") ? EChainObservation::Absent : EChainObservation::Invalid;
+        return Exact(ObservedHash, Hash) && Exact(Scope, TEXT("global")) ? EChainObservation::Absent : EChainObservation::Invalid;
     }
     FString Source;
     const TSharedPtr<FJsonObject>* Status = nullptr;
-    if (Root->Values.Num() != 4 || !Root->TryGetStringField(TEXT("hash"), ObservedHash)
-        || ObservedHash != Hash || !Root->TryGetStringField(TEXT("scope"), Scope) || Scope != TEXT("global")
+    if (!ExactFields(*Root, {TEXT("hash"), TEXT("scope"), TEXT("resolved_from"), TEXT("status")})
+        || !Root->TryGetStringField(TEXT("hash"), ObservedHash)
+        || !Exact(ObservedHash, Hash) || !Root->TryGetStringField(TEXT("scope"), Scope) || !Exact(Scope, TEXT("global"))
         || !Root->TryGetStringField(TEXT("resolved_from"), Source)
-        || (Source != TEXT("cache") && Source != TEXT("queue") && Source != TEXT("state"))
+        || (!Exact(Source, TEXT("cache")) && !Exact(Source, TEXT("queue")) && !Exact(Source, TEXT("state")))
         || !Root->TryGetObjectField(TEXT("status"), Status)
-        || ((*Status)->Values.Num() != 1 && (*Status)->Values.Num() != 2)) return EChainObservation::Invalid;
+        || (!ExactFields(**Status, {TEXT("kind")})
+            && !ExactFields(**Status, {TEXT("kind"), TEXT("block_height")}))) return EChainObservation::Invalid;
     if ((*Status)->Values.Num() == 2)
     {
         double Height = 0;
@@ -218,10 +254,10 @@ EChainObservation ReadExactStatus(int32 HttpCode, const FString& ContentType, co
     }
     FString Kind;
     if (!(*Status)->TryGetStringField(TEXT("kind"), Kind)) return EChainObservation::Invalid;
-    if (Kind == TEXT("Applied") && Source == TEXT("state")) return EChainObservation::Applied;
-    if ((Kind == TEXT("Rejected") || Kind == TEXT("Expired")) && Source == TEXT("state")) return EChainObservation::Rejected;
-    if (Kind == TEXT("Queued") || Kind == TEXT("Approved") || Kind == TEXT("Committed")
-        || Kind == TEXT("Applied") || Kind == TEXT("Rejected") || Kind == TEXT("Expired")) return EChainObservation::InFlight;
+    if (Exact(Kind, TEXT("Applied")) && Exact(Source, TEXT("state"))) return EChainObservation::Applied;
+    if ((Exact(Kind, TEXT("Rejected")) || Exact(Kind, TEXT("Expired"))) && Exact(Source, TEXT("state"))) return EChainObservation::Rejected;
+    if (Exact(Kind, TEXT("Queued")) || Exact(Kind, TEXT("Approved")) || Exact(Kind, TEXT("Committed"))
+        || Exact(Kind, TEXT("Applied")) || Exact(Kind, TEXT("Rejected")) || Exact(Kind, TEXT("Expired"))) return EChainObservation::InFlight;
     return EChainObservation::Invalid;
 }
 
@@ -239,8 +275,13 @@ bool MatchLaunchUri(const FString& Uri, const TMap<FString, FString>& Expected)
         if (!Part.Split(TEXT("="), &Key, &Value)) return false;
         Key = FGenericPlatformHttp::UrlDecode(Key);
         Value = FGenericPlatformHttp::UrlDecode(Value);
-        const FString* Wanted = Expected.Find(Key);
-        if (!Wanted || Seen.Contains(Key) || *Wanted != Value) return false;
+        // TMap<FString, ...> lookup can fold case, so verify the key itself.
+        const FString* Wanted = nullptr;
+        for (const auto& Entry : Expected)
+        {
+            if (Exact(Key, Entry.Key)) { Wanted = &Entry.Value; break; }
+        }
+        if (!Wanted || Seen.Contains(Key) || !Exact(*Wanted, Value)) return false;
         Seen.Add(Key);
     }
     return true;
@@ -249,14 +290,17 @@ bool MatchLaunchUri(const FString& Uri, const TMap<FString, FString>& Expected)
 bool IsAllowedInstruction(const FString& Name)
 {
     // Arena equipment is returnable. NFT wagering is intentionally not an Arena action.
-    static const TSet<FString> Allowed = {TEXT("OpenGameSessionV1"), TEXT("JoinGameSessionV1"), TEXT("ClaimGamePayoutV1"), TEXT("OfferNftV1"), TEXT("BuyNftV1"), TEXT("CancelNftOfferV1")};
-    return Allowed.Contains(Name);
+    for (const TCHAR* Allowed : {TEXT("OpenGameSessionV1"), TEXT("JoinGameSessionV1"), TEXT("ClaimGamePayoutV1"), TEXT("OfferNftV1"), TEXT("BuyNftV1"), TEXT("CancelNftOfferV1")})
+    {
+        if (Exact(Name, Allowed)) return true;
+    }
+    return false;
 }
 
 bool RequiresQualifiedTermsReview(const FString& Name)
 {
     // Neither a typed scaffold nor a wallet approval proves the live game/offer terms.
-    return Name == TEXT("JoinGameSessionV1") || Name == TEXT("BuyNftV1");
+    return Exact(Name, TEXT("JoinGameSessionV1")) || Exact(Name, TEXT("BuyNftV1"));
 }
 
 std::string Utf8String(const FString& Value)
@@ -278,7 +322,7 @@ bool ReadIsolatedTestConfig(FString& OutOrigin, FString& OutNetwork)
     FString Normalized;
     TArray<uint8> NetworkBytes;
     return bEnabled && OutOrigin.StartsWith(TEXT("http://"), ESearchCase::CaseSensitive)
-        && NormalizeOrigin(OutOrigin, Normalized) && Normalized == OutOrigin
+        && NormalizeOrigin(OutOrigin, Normalized) && Exact(Normalized, OutOrigin)
         && ParseNetworkId(OutNetwork, NetworkBytes)
         && ArenaTransactionRecovery::LoopbackHttpOrigin(Utf8String(OutOrigin));
 #endif
@@ -309,7 +353,8 @@ ERecoveryRead ReadRecovery(const FString& ExpectedOrigin, const FString& Expecte
     if (Files.IsEmpty()) return ERecoveryRead::Missing;
     if (Files.Num() != 1) return ERecoveryRead::Invalid;
     const FString& Name = Files[0];
-    if (!Name.StartsWith(TEXT("pending-")) || !Name.EndsWith(TEXT(".v1"))) return ERecoveryRead::Invalid;
+    if (!Name.StartsWith(TEXT("pending-"), ESearchCase::CaseSensitive)
+        || !Name.EndsWith(TEXT(".v1"), ESearchCase::CaseSensitive)) return ERecoveryRead::Invalid;
     const FString FilenameHash = Name.Mid(8, Name.Len() - 11);
     if (!CanonicalHash(FilenameHash)) return ERecoveryRead::Invalid;
     const FString Path = FPaths::Combine(RecoveryDirectory(), Name);
@@ -532,7 +577,7 @@ bool UArenaWalletSubsystem::IsRecoveryIdentityCurrent() const
 {
     FString PinnedOrigin, PinnedNetwork;
     if (bRecoveryBlocked || !ArenaConnect::ReadIsolatedTestConfig(PinnedOrigin, PinnedNetwork)
-        || SubmissionOrigin != PinnedOrigin || SubmissionNetworkLiteral != PinnedNetwork
+        || !ArenaConnect::Exact(SubmissionOrigin, PinnedOrigin) || !ArenaConnect::Exact(SubmissionNetworkLiteral, PinnedNetwork)
         || !ArenaConnect::CanonicalHash(LastSignedTransactionHash)
         || !ArenaConnect::CanonicalHash(LastEntrypointHash)) return false;
     ArenaTransactionRecovery::Record Identity;
@@ -719,7 +764,9 @@ void UArenaWalletSubsystem::BeginPairing(const FString& ToriiOrigin, const FStri
         AsyncTask(ENamedThreads::GameThread, [Weak, Attempt, Request, Response, Success]()
         {
             if (!Weak.IsValid() || Weak->Generation != Attempt) return;
-            if (!Success || !Response.IsValid() || Response->GetResponseCode() != 200 || Response->GetURL() != Request->GetURL() || Response->GetContent().Num() > ArenaConnect::MaxSessionJsonBytes)
+            if (!Success || !Response.IsValid() || Response->GetResponseCode() != 200
+                || !ArenaConnect::Exact(Response->GetURL(), Request->GetURL())
+                || Response->GetContent().Num() > ArenaConnect::MaxSessionJsonBytes)
             { Weak->Fail(TEXT("接続サービスから有効な応答を受信できませんでした。")); return; }
             // Do not retain the HTTP response and its launch tokens for the session lifetime.
             Weak->SessionRequest.Reset();
@@ -748,7 +795,10 @@ void UArenaWalletSubsystem::AcceptSessionResponse(const TArray<uint8>& JsonBytes
         if (!Json->TryGetStringField(Field, Value)) { Fail(TEXT("接続応答に必要な情報がありません。")); return; }
         Values.Add(Field, Value);
     }
-    if (Values[TEXT("sid")] != ArenaConnect::Base64Url(SessionId) || Values[TEXT("network_id")] != NetworkLiteral || Values[TEXT("app_pk")] != ArenaConnect::Base64Url(AppPublicKey) || Values[TEXT("nonce")] != ArenaConnect::Base64Url(Nonce))
+    if (!ArenaConnect::Exact(Values[TEXT("sid")], ArenaConnect::Base64Url(SessionId))
+        || !ArenaConnect::Exact(Values[TEXT("network_id")], NetworkLiteral)
+        || !ArenaConnect::Exact(Values[TEXT("app_pk")], ArenaConnect::Base64Url(AppPublicKey))
+        || !ArenaConnect::Exact(Values[TEXT("nonce")], ArenaConnect::Base64Url(Nonce)))
     { Fail(TEXT("接続先がセッション識別子を書き換えました。接続を中止しました。")); return; }
     for (const TCHAR* Key : {TEXT("token_app"), TEXT("token_wallet"), TEXT("token_management"), TEXT("token_relay")})
     {
@@ -764,7 +814,7 @@ void UArenaWalletSubsystem::AcceptSessionResponse(const TArray<uint8>& JsonBytes
     WalletLaunchUri = Values[TEXT("wallet_uri")];
     BuildWalletQr();
     RelayToken = Values[TEXT("token_relay")];
-    FString WsOrigin = Origin.StartsWith(TEXT("https://")) ? TEXT("wss://") + Origin.Mid(8) : TEXT("ws://") + Origin.Mid(7);
+    FString WsOrigin = Origin.StartsWith(TEXT("https://"), ESearchCase::CaseSensitive) ? TEXT("wss://") + Origin.Mid(8) : TEXT("ws://") + Origin.Mid(7);
     TMap<FString, FString> Headers = {{TEXT("Authorization"), TEXT("Bearer ") + Values[TEXT("token_app")]}};
     Socket = FWebSocketsModule::Get().CreateWebSocket(WsOrigin + TEXT("/v1/connect/ws?sid=") + Values[TEXT("sid")] + TEXT("&role=app"), FString(), Headers);
     const uint64 Attempt = Generation;
@@ -940,7 +990,13 @@ void UArenaWalletSubsystem::AcceptApproval(const TArray<uint8>& Frame)
     TSharedPtr<FJsonObject> Perms, ProofObject;
     const TArray<TSharedPtr<FJsonValue>>* Methods = nullptr;
     const TArray<TSharedPtr<FJsonValue>>* Events = nullptr;
-    if ((!ExpectedAccountLiteral.IsEmpty() && AccountText != ExpectedAccountLiteral) || !ArenaConnect::ParseObject(Permissions.Data, Permissions.Size, Perms) || Perms->Values.Num() != 3 || !Perms->TryGetArrayField(TEXT("methods"), Methods) || Methods->Num() != 1 || (*Methods)[0]->Type != EJson::String || (*Methods)[0]->AsString() != TEXT("SIGN_REQUEST_TX") || !Perms->TryGetArrayField(TEXT("events"), Events) || !Events->IsEmpty() || !Perms->HasTypedField<EJson::Null>(TEXT("resources")) || !ArenaConnect::ParseObject(Proof.Data, Proof.Size, ProofObject) || !ProofObject->Values.IsEmpty())
+    if ((!ExpectedAccountLiteral.IsEmpty() && !ArenaConnect::Exact(AccountText, ExpectedAccountLiteral))
+        || !ArenaConnect::ParseObject(Permissions.Data, Permissions.Size, Perms) || Perms->Values.Num() != 3
+        || !Perms->TryGetArrayField(TEXT("methods"), Methods) || Methods->Num() != 1
+        || (*Methods)[0]->Type != EJson::String || !ArenaConnect::Exact((*Methods)[0]->AsString(), TEXT("SIGN_REQUEST_TX"))
+        || !Perms->TryGetArrayField(TEXT("events"), Events) || !Events->IsEmpty()
+        || !Perms->HasTypedField<EJson::Null>(TEXT("resources"))
+        || !ArenaConnect::ParseObject(Proof.Data, Proof.Size, ProofObject) || !ProofObject->Values.IsEmpty())
     { Fail(TEXT("ウォレットのアカウントまたは許可内容が要求と一致しません。")); return; }
     auto Relay = ArenaConnect::Utf8(RelayToken);
     const int32 Verified = Native->VerifyApproval(NetworkBytes.GetData(), 32, SessionId.GetData(), 32, AppPublicKey.GetData(), 32, Nonce.GetData(), 16, WalletPublic, 32, reinterpret_cast<const char*>(Account.Data), Account.Size, Permissions.Data, Permissions.Size, nullptr, 0, reinterpret_cast<const char*>(Relay.GetData()), Relay.Num(), "ed25519", 7, Signature, 64);
@@ -969,20 +1025,20 @@ bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, F
         || ScaffoldBase64.IsEmpty() || ScaffoldBase64.Len() > ArenaConnect::MaxFrameBytes * 2) return false;
     TArray<uint8> Scaffold;
     if (!FBase64::Decode(ScaffoldBase64, Scaffold) || Scaffold.IsEmpty()
-        || Scaffold.Num() > ArenaConnect::MaxFrameBytes || FBase64::Encode(Scaffold) != ScaffoldBase64) return false;
+        || Scaffold.Num() > ArenaConnect::MaxFrameBytes || !ArenaConnect::Exact(FBase64::Encode(Scaffold), ScaffoldBase64)) return false;
     FNativeBytes General(*Native), Terms(*Native);
     TSharedPtr<FJsonObject> GeneralJson, TermsJson;
     if (Native->InspectTransaction(Scaffold.GetData(), Scaffold.Num(), &General.Data, &General.Size) != 0
         || !General.Bounded() || !ArenaConnect::ParseObject(General.Data, General.Size, GeneralJson)) return false;
     FString Authority, Network, Name, Kind, GeneralHash;
     const TSharedPtr<FJsonObject>* Executable = nullptr;
-    if (!GeneralJson->TryGetStringField(TEXT("authority"), Authority) || Authority != ApprovedAccount
-        || !GeneralJson->TryGetStringField(TEXT("network_id"), Network) || Network != NetworkLiteral
+    if (!GeneralJson->TryGetStringField(TEXT("authority"), Authority) || !ArenaConnect::Exact(Authority, ApprovedAccount)
+        || !GeneralJson->TryGetStringField(TEXT("network_id"), Network) || !ArenaConnect::Exact(Network, NetworkLiteral)
         || !GeneralJson->TryGetStringField(TEXT("payload_signing_hash_hex"), GeneralHash)
         || !ArenaConnect::CanonicalHash(GeneralHash)
         || !GeneralJson->TryGetObjectField(TEXT("executable"), Executable)
-        || !(*Executable)->TryGetStringField(TEXT("kind"), Kind) || Kind != TEXT("native_instruction")
-        || !(*Executable)->TryGetStringField(TEXT("name"), Name) || Name != TEXT("JoinGameSessionV1")) return false;
+        || !(*Executable)->TryGetStringField(TEXT("kind"), Kind) || !ArenaConnect::Exact(Kind, TEXT("native_instruction"))
+        || !(*Executable)->TryGetStringField(TEXT("name"), Name) || !ArenaConnect::Exact(Name, TEXT("JoinGameSessionV1"))) return false;
     if (Native->JoinTermsInspect(Scaffold.GetData(), Scaffold.Num(), &Terms.Data, &Terms.Size) != 0
         || !Terms.Bounded(128 * 1024) || !ArenaConnect::ParseObject(Terms.Data, Terms.Size, TermsJson)) return false;
     FString Schema, Scope, TermsAuthority, TermsHash, ScaffoldHash;
@@ -990,11 +1046,11 @@ bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, F
     const TSharedPtr<FJsonObject>* Join = nullptr;
     const TSharedPtr<FJsonObject>* Fee = nullptr;
     if (TermsJson->Values.Num() != 11
-        || !TermsJson->TryGetStringField(TEXT("schema"), Schema) || Schema != TEXT("sora.arena.join_terms_inspection.v1")
+        || !TermsJson->TryGetStringField(TEXT("schema"), Schema) || !ArenaConnect::Exact(Schema, TEXT("sora.arena.join_terms_inspection.v1"))
         || !TermsJson->TryGetBoolField(TEXT("authorization_ready"), bAuthorizationReady) || bAuthorizationReady
-        || !TermsJson->TryGetStringField(TEXT("verification_scope"), Scope) || Scope != TEXT("canonical_scaffold_only")
-        || !TermsJson->TryGetStringField(TEXT("authority"), TermsAuthority) || TermsAuthority != ApprovedAccount
-        || !TermsJson->TryGetStringField(TEXT("payload_signing_hash_hex"), TermsHash) || TermsHash != GeneralHash
+        || !TermsJson->TryGetStringField(TEXT("verification_scope"), Scope) || !ArenaConnect::Exact(Scope, TEXT("canonical_scaffold_only"))
+        || !TermsJson->TryGetStringField(TEXT("authority"), TermsAuthority) || !ArenaConnect::Exact(TermsAuthority, ApprovedAccount)
+        || !TermsJson->TryGetStringField(TEXT("payload_signing_hash_hex"), TermsHash) || !ArenaConnect::Exact(TermsHash, GeneralHash)
         || !TermsJson->TryGetStringField(TEXT("scaffold_blake3_hex"), ScaffoldHash) || !ArenaConnect::CanonicalHash(ScaffoldHash)
         || !TermsJson->TryGetObjectField(TEXT("join"), Join)
         || !TermsJson->TryGetObjectField(TEXT("fee_payment"), Fee)) return false;
@@ -1008,7 +1064,8 @@ bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, F
     if (!(*Join)->TryGetStringField(TEXT("expected_stake"), Stake) || Stake.IsEmpty() || Stake.Len() > 32
         || !(*Join)->TryGetStringField(TEXT("expected_asset_definition"), Asset) || Asset.IsEmpty() || Asset.Len() > 64
         || !(*Join)->TryGetArrayField(TEXT("resources"), Resources)
-        || !(*Fee)->TryGetStringField(TEXT("payer"), Payer) || (Payer != TEXT("authority") && Payer != TEXT("sponsor"))
+        || !(*Fee)->TryGetStringField(TEXT("payer"), Payer)
+        || (!ArenaConnect::Exact(Payer, TEXT("authority")) && !ArenaConnect::Exact(Payer, TEXT("sponsor")))
         || !(*Fee)->TryGetObjectField(TEXT("value"), FeeValue)
         || !(*FeeValue)->TryGetArrayField(TEXT("charge_limits"), ChargeLimits)
         || Resources->Num() > 1 || ChargeLimits->Num() > 2) return false;
@@ -1026,7 +1083,7 @@ bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, F
             || !(*Resource)->TryGetStringField(TEXT("role_id"), NftRole)
             || !(*Resource)->TryGetObjectField(TEXT("policy"), Policy) || !Policy || !Policy->IsValid()
             || !(*Policy)->TryGetStringField(TEXT("kind"), PolicyKind)
-            || PolicyKind != TEXT("return_to_original_owner_at_terminal")
+            || !ArenaConnect::Exact(PolicyKind, TEXT("return_to_original_owner_at_terminal"))
             || !(*Policy)->HasTypedField<EJson::Null>(TEXT("value"))
             || NftId.IsEmpty() || NftId.Len() > 50
             || NftMetadata.IsEmpty() || NftMetadata.Len() > 80
@@ -1046,7 +1103,7 @@ bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, F
             || !(*Limit)->TryGetStringField(TEXT("asset_definition_id"), FeeAsset)
             || !(*Limit)->TryGetObjectField(TEXT("kind"), FeeKind) || !FeeKind || !FeeKind->IsValid()
             || !(*FeeKind)->TryGetStringField(TEXT("kind"), FeeKindName)
-            || (FeeKindName != TEXT("nexus") && FeeKindName != TEXT("pipeline_gas"))
+            || (!ArenaConnect::Exact(FeeKindName, TEXT("nexus")) && !ArenaConnect::Exact(FeeKindName, TEXT("pipeline_gas")))
             || Amount.IsEmpty() || Amount.Len() > 32 || FeeAsset.IsEmpty() || FeeAsset.Len() > 64) return false;
         FeeCaps += TEXT("\n") + FeeKindName + TEXT(": ") + Amount + TEXT(" / ") + FeeAsset;
     }
@@ -1071,7 +1128,10 @@ bool UArenaWalletSubsystem::RequestSignTransaction(const FString& ScaffoldBase64
         || TransactionState == EArenaTransactionState::Uncertain
         || (State != EArenaWalletState::Approved && State != EArenaWalletState::Signed)) return false;
     TArray<uint8> Scaffold, Signatory, Payload;
-    if (ScaffoldBase64.Len() > ArenaConnect::MaxFrameBytes * 2 || !FBase64::Decode(ScaffoldBase64, Scaffold) || Scaffold.IsEmpty() || Scaffold.Num() > ArenaConnect::MaxFrameBytes || FBase64::Encode(Scaffold) != ScaffoldBase64 || !ArenaConnect::DecodeHex(Ed25519PublicKeyHex, 32, Signatory))
+    if (ScaffoldBase64.Len() > ArenaConnect::MaxFrameBytes * 2 || !FBase64::Decode(ScaffoldBase64, Scaffold)
+        || Scaffold.IsEmpty() || Scaffold.Num() > ArenaConnect::MaxFrameBytes
+        || !ArenaConnect::Exact(FBase64::Encode(Scaffold), ScaffoldBase64)
+        || !ArenaConnect::DecodeHex(Ed25519PublicKeyHex, 32, Signatory))
     { SetState(State, TEXT("署名対象の形式が不正です。")); return false; }
     FNativeBytes Inspected(*Native);
     TSharedPtr<FJsonObject> Json;
@@ -1079,21 +1139,30 @@ bool UArenaWalletSubsystem::RequestSignTransaction(const FString& ScaffoldBase64
     { SetState(State, TEXT("署名対象をネイティブ検証できませんでした。")); return false; }
     FString Schema, Authority, Network, PayloadBase64, Kind, Name;
     const TSharedPtr<FJsonObject>* Executable = nullptr;
-    if (!Json->TryGetStringField(TEXT("schema"), Schema) || Schema != TEXT("iroha.detached_transaction_scaffold.v1") || !Json->TryGetStringField(TEXT("authority"), Authority) || Authority != ApprovedAccount || !Json->TryGetStringField(TEXT("network_id"), Network) || Network != NetworkLiteral || !Json->TryGetStringField(TEXT("payload_bytes_b64"), PayloadBase64) || !FBase64::Decode(PayloadBase64, Payload) || Payload.IsEmpty() || Payload.Num() > ArenaConnect::MaxFrameBytes || FBase64::Encode(Payload) != PayloadBase64 || !Json->TryGetObjectField(TEXT("executable"), Executable) || !(*Executable)->TryGetStringField(TEXT("kind"), Kind) || Kind != TEXT("native_instruction") || !(*Executable)->TryGetStringField(TEXT("name"), Name) || !ArenaConnect::IsAllowedInstruction(Name) || AppSequence == MAX_uint64)
+    if (!Json->TryGetStringField(TEXT("schema"), Schema) || !ArenaConnect::Exact(Schema, TEXT("iroha.detached_transaction_scaffold.v1"))
+        || !Json->TryGetStringField(TEXT("authority"), Authority) || !ArenaConnect::Exact(Authority, ApprovedAccount)
+        || !Json->TryGetStringField(TEXT("network_id"), Network) || !ArenaConnect::Exact(Network, NetworkLiteral)
+        || !Json->TryGetStringField(TEXT("payload_bytes_b64"), PayloadBase64) || !FBase64::Decode(PayloadBase64, Payload)
+        || Payload.IsEmpty() || Payload.Num() > ArenaConnect::MaxFrameBytes
+        || !ArenaConnect::Exact(FBase64::Encode(Payload), PayloadBase64)
+        || !Json->TryGetObjectField(TEXT("executable"), Executable)
+        || !(*Executable)->TryGetStringField(TEXT("kind"), Kind) || !ArenaConnect::Exact(Kind, TEXT("native_instruction"))
+        || !(*Executable)->TryGetStringField(TEXT("name"), Name) || !ArenaConnect::IsAllowedInstruction(Name)
+        || AppSequence == MAX_uint64)
     { SetState(State, TEXT("アカウント・ネットワーク・取引種別が一致しないため署名を中止しました。")); return false; }
     // A signed byte string can be submitted outside this game. Until native
     // Arena qualification, block the signing request itself on every network
     // except the explicitly selected isolated loopback test deployment.
     FString TestOrigin, TestNetwork;
     if (!ArenaConnect::ReadIsolatedTestConfig(TestOrigin, TestNetwork)
-        || TestOrigin != Origin || TestNetwork != NetworkLiteral)
+        || !ArenaConnect::Exact(TestOrigin, Origin) || !ArenaConnect::Exact(TestNetwork, NetworkLiteral))
     {
         SetState(State, TEXT("対戦決済は未認証です。明示された隔離テスト網以外では取引署名を停止します。"));
         return false;
     }
     if (ArenaConnect::RequiresQualifiedTermsReview(Name))
     {
-        SetState(State, Name == TEXT("JoinGameSessionV1")
+        SetState(State, ArenaConnect::Exact(Name, TEXT("JoinGameSessionV1"))
             ? TEXT("参加ボンドの条件を確認できません。対戦規則・固定損失額・装備予約・手数料を表示できるまで参加署名を停止します。")
             : TEXT("NFT の売却条件と所有状態を確認できません。購入署名を停止します。"));
         return false;
@@ -1167,7 +1236,11 @@ void UArenaWalletSubsystem::ReceiveEncrypted(const TArray<uint8>& Frame, uint64 
     const TSharedPtr<FJsonObject>* Result = nullptr;
     FString Algorithm, EncodedSignature;
     TArray<uint8> Signature;
-    if (!(*Payload)->TryGetObjectField(TEXT("SignResultOk"), Result) || !(*Result)->TryGetStringField(TEXT("algorithm"), Algorithm) || Algorithm != TEXT("ed25519") || !(*Result)->TryGetStringField(TEXT("signature_b64"), EncodedSignature) || !FBase64::Decode(EncodedSignature, Signature) || Signature.Num() != 64 || FBase64::Encode(Signature) != EncodedSignature)
+    if (!(*Payload)->TryGetObjectField(TEXT("SignResultOk"), Result)
+        || !(*Result)->TryGetStringField(TEXT("algorithm"), Algorithm) || !ArenaConnect::Exact(Algorithm, TEXT("ed25519"))
+        || !(*Result)->TryGetStringField(TEXT("signature_b64"), EncodedSignature)
+        || !FBase64::Decode(EncodedSignature, Signature) || Signature.Num() != 64
+        || !ArenaConnect::Exact(FBase64::Encode(Signature), EncodedSignature))
     { Fail(TEXT("署名応答の形式が不正です。")); return; }
     FNativeBytes Signed(*Native), Finalized(*Native);
     TSharedPtr<FJsonObject> Finalization;
@@ -1175,7 +1248,8 @@ void UArenaWalletSubsystem::ReceiveEncrypted(const TArray<uint8>& Frame, uint64 
     if (Native->Finalize(PendingScaffold.GetData(), PendingScaffold.Num(), PendingSignatory.GetData(), PendingSignatory.Num(), Signature.GetData(), Signature.Num(), &Signed.Data, &Signed.Size, &Finalized.Data, &Finalized.Size) != 0 || !Signed.Bounded()
         || !Finalized.Bounded(1024) || !ArenaConnect::ParseObject(Finalized.Data, Finalized.Size, Finalization)
         || Finalization->Values.Num() != 4
-        || !Finalization->TryGetStringField(TEXT("schema"), Schema) || Schema != TEXT("iroha.detached_transaction_finalization.v1")
+        || !Finalization->TryGetStringField(TEXT("schema"), Schema)
+        || !ArenaConnect::Exact(Schema, TEXT("iroha.detached_transaction_finalization.v1"))
         || !Finalization->TryGetStringField(TEXT("payload_signing_hash_hex"), PayloadHash) || !ArenaConnect::CanonicalHash(PayloadHash)
         || !Finalization->TryGetStringField(TEXT("transaction_hash_hex"), SignedHash) || !ArenaConnect::CanonicalHash(SignedHash)
         || !Finalization->TryGetStringField(TEXT("entrypoint_hash_hex"), EntrypointHash) || !ArenaConnect::CanonicalHash(EntrypointHash))
@@ -1203,7 +1277,8 @@ bool UArenaWalletSubsystem::SubmitSignedTestTransaction()
 #else
     FString PinnedOrigin, PinnedNetwork;
     if (bRecoveryBlocked || !ArenaConnect::ReadIsolatedTestConfig(PinnedOrigin, PinnedNetwork)
-        || PinnedOrigin != SubmissionOrigin || PinnedNetwork != SubmissionNetworkLiteral)
+        || !ArenaConnect::Exact(PinnedOrigin, SubmissionOrigin)
+        || !ArenaConnect::Exact(PinnedNetwork, SubmissionNetworkLiteral))
     {
         SetTransactionState(TransactionState, TEXT("隔離テスト網の明示設定がないため送信しません。"));
         return false;
@@ -1213,7 +1288,8 @@ bool UArenaWalletSubsystem::SubmitSignedTestTransaction()
         || !ArenaConnect::CanonicalHash(LastEntrypointHash) || LastSignedTransactionBase64.IsEmpty()
         || LastSignedTransactionBase64.Len() > ArenaConnect::MaxFrameBytes * 2
         || !FBase64::Decode(LastSignedTransactionBase64, Signed) || Signed.IsEmpty()
-        || Signed.Num() > ArenaConnect::MaxFrameBytes || FBase64::Encode(Signed) != LastSignedTransactionBase64)
+        || Signed.Num() > ArenaConnect::MaxFrameBytes
+        || !ArenaConnect::Exact(FBase64::Encode(Signed), LastSignedTransactionBase64))
     {
         SetTransactionState(TransactionState, TEXT("検証済みの署名取引がありません。"));
         return false;
@@ -1254,13 +1330,15 @@ bool UArenaWalletSubsystem::SubmitSignedTestTransaction()
     {
         AsyncTask(ENamedThreads::GameThread, [Weak, Attempt, Identity, Entrypoint, Request, Response, Success]()
         {
-            if (!Weak.IsValid() || Weak->TransactionGeneration != Attempt || Weak->LastSignedTransactionHash != Identity) return;
+            if (!Weak.IsValid() || Weak->TransactionGeneration != Attempt
+                || !ArenaConnect::Exact(Weak->LastSignedTransactionHash, Identity)) return;
             Weak->SubmissionRequest.Reset();
-            const bool bAccepted = Success && Response.IsValid() && Response->GetURL() == Request->GetURL()
-                && Response->GetResponseCode() == 202 && Response->GetContent().IsEmpty()
-                && Response->GetHeader(TEXT("preference-applied")) == TEXT("return=minimal")
-                && Response->GetHeader(TEXT("x-iroha-signed-transaction-hash")) == Identity
-                && Response->GetHeader(TEXT("x-iroha-entrypoint-hash")) == Entrypoint;
+            const bool bAccepted = Success && Response.IsValid()
+                && ArenaConnect::IsAcceptedSubmissionReceipt(Request->GetURL(), Response->GetURL(),
+                    Response->GetResponseCode(), Response->GetContent().IsEmpty(),
+                    Response->GetHeader(TEXT("preference-applied")),
+                    Response->GetHeader(TEXT("x-iroha-signed-transaction-hash")),
+                    Response->GetHeader(TEXT("x-iroha-entrypoint-hash")), Identity, Entrypoint);
             Weak->SetTransactionState(bAccepted ? EArenaTransactionState::Pending : EArenaTransactionState::Uncertain,
                 bAccepted ? TEXT("取引を受理しました。台帳への適用を照会しています。")
                           : TEXT("送信結果が不明です。同一取引を再送せず、取引IDで照会します。"));
@@ -1330,7 +1408,8 @@ void UArenaWalletSubsystem::PollTransactionStatus()
     {
         AsyncTask(ENamedThreads::GameThread, [Weak, Attempt, Identity, Request, Response, Success]()
         {
-            if (!Weak.IsValid() || Weak->TransactionGeneration != Attempt || Weak->LastSignedTransactionHash != Identity) return;
+            if (!Weak.IsValid() || Weak->TransactionGeneration != Attempt
+                || !ArenaConnect::Exact(Weak->LastSignedTransactionHash, Identity)) return;
             Weak->StatusRequest.Reset();
             if (!Weak->IsRecoveryIdentityCurrent())
             {
@@ -1341,7 +1420,7 @@ void UArenaWalletSubsystem::PollTransactionStatus()
                 return;
             }
             ArenaConnect::EChainObservation Observation = ArenaConnect::EChainObservation::Invalid;
-            if (Success && Response.IsValid() && Response->GetURL() == Request->GetURL()
+            if (Success && Response.IsValid() && ArenaConnect::Exact(Response->GetURL(), Request->GetURL())
                 && Weak->Native && Response->GetContent().Num() <= ArenaConnect::MaxTransactionStatusJsonBytes)
             {
                 // The native canonical parser rejects duplicate keys, trailing data, and invalid UTF-8.
@@ -1455,26 +1534,40 @@ bool FArenaConnectBindingTest::RunTest(const FString& Parameters)
     const FString Uri = TEXT("iroha://connect?sid=bound-session&role=wallet&node=https%3A%2F%2Ftorii.example");
     TestTrue(TEXT("Exact URI bindings"), ArenaConnect::MatchLaunchUri(Uri, Expected));
     TestFalse(TEXT("Session substitution"), ArenaConnect::MatchLaunchUri(Uri.Replace(TEXT("bound-session"), TEXT("other-session")), Expected));
+    TestFalse(TEXT("Session case substitution"), ArenaConnect::MatchLaunchUri(Uri.Replace(TEXT("bound-session"), TEXT("Bound-session")), Expected));
     TestFalse(TEXT("Role substitution"), ArenaConnect::MatchLaunchUri(Uri.Replace(TEXT("role=wallet"), TEXT("role=app")), Expected));
+    TestFalse(TEXT("Role case substitution"), ArenaConnect::MatchLaunchUri(Uri.Replace(TEXT("role=wallet"), TEXT("role=Wallet")), Expected));
     TestFalse(TEXT("Node substitution"), ArenaConnect::MatchLaunchUri(Uri.Replace(TEXT("torii.example"), TEXT("evil.example")), Expected));
+    TestFalse(TEXT("URI key case substitution"), ArenaConnect::MatchLaunchUri(Uri.Replace(TEXT("sid="), TEXT("SID=")), Expected));
     TestFalse(TEXT("Repeated field"), ArenaConnect::MatchLaunchUri(TEXT("iroha://connect?sid=bound-session&sid=bound-session&node=https%3A%2F%2Ftorii.example"), Expected));
     TestFalse(TEXT("Unexpected extra field"), ArenaConnect::MatchLaunchUri(Uri + TEXT("&extra=1"), Expected));
     TestFalse(TEXT("Fragment rejected"), ArenaConnect::MatchLaunchUri(Uri + TEXT("#ignored"), Expected));
     TestFalse(TEXT("Scheme substitution"), ArenaConnect::MatchLaunchUri(Uri.Replace(TEXT("iroha://"), TEXT("https://")), Expected));
     TestFalse(TEXT("NFT wagering is not an Arena action"), ArenaConnect::IsAllowedInstruction(TEXT("StakeGameItemV1")));
     TestFalse(TEXT("Unrelated transfer is not an Arena action"), ArenaConnect::IsAllowedInstruction(TEXT("Transfer")));
+    TestFalse(TEXT("Instruction case substitution"), ArenaConnect::IsAllowedInstruction(TEXT("joingamesessionv1")));
     TestTrue(TEXT("Funded session join is an Arena action"), ArenaConnect::IsAllowedInstruction(TEXT("JoinGameSessionV1")));
     TestTrue(TEXT("Funded join requires qualified terms review before signing"), ArenaConnect::RequiresQualifiedTermsReview(TEXT("JoinGameSessionV1")));
     TestTrue(TEXT("NFT purchase requires qualified offer review before signing"), ArenaConnect::RequiresQualifiedTermsReview(TEXT("BuyNftV1")));
     TestFalse(TEXT("Payout claim does not use join or purchase review"), ArenaConnect::RequiresQualifiedTermsReview(TEXT("ClaimGamePayoutV1")));
 
-    const FString Hash = Network.Mid(5, 64);
+    const FString Hash = Network.Mid(5, 62) + TEXT("a1");
     TestTrue(TEXT("Exact native signed transaction hash"), ArenaConnect::CanonicalHash(Hash));
     TestFalse(TEXT("Hash marker missing"), ArenaConnect::CanonicalHash(Hash.Left(63) + TEXT("0")));
     TestFalse(TEXT("Uppercase transaction hash"), ArenaConnect::CanonicalHash(Hash.Left(63) + TEXT("F")));
     const FString Applied = FString::Printf(TEXT("{\"hash\":\"%s\",\"scope\":\"global\",\"resolved_from\":\"state\",\"status\":{\"kind\":\"Applied\"}}"), *Hash);
     const auto AppliedBytes = ArenaConnect::Utf8(Applied);
     TestEqual(TEXT("Only state-resolved Applied is final"), static_cast<int32>(ArenaConnect::ReadExactStatus(200, TEXT("application/json"), AppliedBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Applied));
+    const auto CaseChangedHashBytes = ArenaConnect::Utf8(Applied.Replace(*Hash, *(Hash.Left(62) + TEXT("A1")), ESearchCase::CaseSensitive));
+    TestEqual(TEXT("Case-changed transaction hash cannot finalize"), static_cast<int32>(ArenaConnect::ReadExactStatus(200, TEXT("application/json"), CaseChangedHashBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
+    const auto LowercaseKindBytes = ArenaConnect::Utf8(Applied.Replace(TEXT("Applied"), TEXT("applied")));
+    TestEqual(TEXT("Case-changed status kind cannot finalize"), static_cast<int32>(ArenaConnect::ReadExactStatus(200, TEXT("application/json"), LowercaseKindBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
+    const auto UppercaseScopeBytes = ArenaConnect::Utf8(Applied.Replace(TEXT("global"), TEXT("GLOBAL")));
+    TestEqual(TEXT("Case-changed status scope cannot finalize"), static_cast<int32>(ArenaConnect::ReadExactStatus(200, TEXT("application/json"), UppercaseScopeBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
+    const auto UppercaseSourceBytes = ArenaConnect::Utf8(Applied.Replace(TEXT("state"), TEXT("State")));
+    TestEqual(TEXT("Case-changed resolution source cannot finalize"), static_cast<int32>(ArenaConnect::ReadExactStatus(200, TEXT("application/json"), UppercaseSourceBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
+    const auto UppercaseHashFieldBytes = ArenaConnect::Utf8(Applied.Replace(TEXT("\"hash\":"), TEXT("\"Hash\":"), ESearchCase::CaseSensitive));
+    TestEqual(TEXT("Case-changed status field cannot finalize"), static_cast<int32>(ArenaConnect::ReadExactStatus(200, TEXT("application/json"), UppercaseHashFieldBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
     const auto CachedBytes = ArenaConnect::Utf8(Applied.Replace(TEXT("\"state\""), TEXT("\"cache\"")));
     TestEqual(TEXT("Cached Applied is not final"), static_cast<int32>(ArenaConnect::ReadExactStatus(200, TEXT("application/json"), CachedBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::InFlight));
     const auto RejectedBytes = ArenaConnect::Utf8(Applied.Replace(TEXT("\"Applied\""), TEXT("\"Rejected\"")));
@@ -1486,10 +1579,32 @@ bool FArenaConnectBindingTest::RunTest(const FString& Parameters)
     const FString Absent = FString::Printf(TEXT("{\"code\":\"pipeline_transaction_status_not_found\",\"message\":\"not found\",\"details\":{\"pipeline_transaction_status_not_found\":{\"hash\":\"%s\",\"scope\":\"global\"}}}"), *Hash);
     const auto AbsentBytes = ArenaConnect::Utf8(Absent);
     TestEqual(TEXT("Typed global 404 remains unresolved"), static_cast<int32>(ArenaConnect::ReadExactStatus(404, TEXT("application/json"), AbsentBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Absent));
+    const auto CaseChangedAbsentHashBytes = ArenaConnect::Utf8(Absent.Replace(*Hash, *(Hash.Left(62) + TEXT("A1")), ESearchCase::CaseSensitive));
+    TestEqual(TEXT("Case-changed absent hash is invalid"), static_cast<int32>(ArenaConnect::ReadExactStatus(404, TEXT("application/json"), CaseChangedAbsentHashBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
+    const auto CaseChangedAbsentCodeBytes = ArenaConnect::Utf8(Absent.Replace(
+        TEXT("\"code\":\"pipeline_transaction_status_not_found\""),
+        TEXT("\"code\":\"PIPELINE_TRANSACTION_STATUS_NOT_FOUND\""), ESearchCase::CaseSensitive));
+    TestEqual(TEXT("Case-changed absent code is invalid"), static_cast<int32>(ArenaConnect::ReadExactStatus(404, TEXT("application/json"), CaseChangedAbsentCodeBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
+    const auto UppercaseAbsentHashFieldBytes = ArenaConnect::Utf8(Absent.Replace(TEXT("\"hash\":"), TEXT("\"Hash\":"), ESearchCase::CaseSensitive));
+    TestEqual(TEXT("Case-changed absent field is invalid"), static_cast<int32>(ArenaConnect::ReadExactStatus(404, TEXT("application/json"), UppercaseAbsentHashFieldBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
     const auto LocalAbsenceBytes = ArenaConnect::Utf8(Absent.Replace(TEXT("\"global\""), TEXT("\"local\"")));
     TestEqual(TEXT("Local 404 cannot resolve global lookup"), static_cast<int32>(ArenaConnect::ReadExactStatus(404, TEXT("application/json"), LocalAbsenceBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
     TestEqual(TEXT("Untyped 404 rejected"), static_cast<int32>(ArenaConnect::ReadExactStatus(404, TEXT("application/json"), ArenaConnect::Utf8(TEXT("{}")), Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
     TestEqual(TEXT("Non-JSON status rejected"), static_cast<int32>(ArenaConnect::ReadExactStatus(200, TEXT("text/plain"), AppliedBytes, Hash)), static_cast<int32>(ArenaConnect::EChainObservation::Invalid));
+
+    const FString Url = TEXT("http://127.0.0.1:8080/v1/pipeline/transactions");
+    const FString EntrypointHash = Hash.Left(62) + TEXT("b1");
+    const auto Receipt = [&Url, &Hash, &EntrypointHash](const FString& ResponseUrl, const FString& Preference,
+        const FString& ObservedHash, const FString& ObservedEntrypoint)
+    {
+        return ArenaConnect::IsAcceptedSubmissionReceipt(Url, ResponseUrl, 202, true, Preference,
+            ObservedHash, ObservedEntrypoint, Hash, EntrypointHash);
+    };
+    TestTrue(TEXT("Exact signed transaction receipt"), Receipt(Url, TEXT("return=minimal"), Hash, EntrypointHash));
+    TestFalse(TEXT("Case-changed receipt transaction hash"), Receipt(Url, TEXT("return=minimal"), Hash.Left(62) + TEXT("A1"), EntrypointHash));
+    TestFalse(TEXT("Case-changed receipt entrypoint hash"), Receipt(Url, TEXT("return=minimal"), Hash, EntrypointHash.Left(62) + TEXT("B1")));
+    TestFalse(TEXT("Case-changed receipt preference"), Receipt(Url, TEXT("Return-Minimal"), Hash, EntrypointHash));
+    TestFalse(TEXT("Case-changed receipt URL"), Receipt(Url.Replace(TEXT("pipeline"), TEXT("Pipeline")), TEXT("return=minimal"), Hash, EntrypointHash));
     return true;
 }
 #endif
