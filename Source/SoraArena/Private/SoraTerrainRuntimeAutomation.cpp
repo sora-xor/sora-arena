@@ -53,12 +53,17 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         if (!Component->GetName().StartsWith(TEXT("SM_NyaagyuTerrain_"))) continue;
 
         ++TerrainCount;
-        const FString Name = Component->GetName();
+        const UStaticMesh* Mesh = Component->GetStaticMesh();
+        if (!TestNotNull(*FString::Printf(TEXT("Terrain component %s has an asset"),
+            *Component->GetName()), Mesh)) continue;
+        // NewObject may append a unique suffix to a component name when it
+        // collides with an asset object. The imported asset has the stable ID.
+        const FString Name = Mesh->GetName();
+        TestTrue(*FString::Printf(TEXT("Terrain component %s names its asset"),
+            *Component->GetName()), Component->GetName().StartsWith(Name));
         TestFalse(*FString::Printf(TEXT("Terrain tile %s appears only once"), *Name), SeenTiles.Contains(Name));
         SeenTiles.Add(Name);
         TileLocations.Add(Name, Component->GetRelativeLocation());
-        const UStaticMesh* Mesh = Component->GetStaticMesh();
-        if (!TestNotNull(*FString::Printf(TEXT("Terrain tile %s loaded"), *Name), Mesh)) continue;
         TestEqual(*FString::Printf(TEXT("Terrain asset %s"), *Name), Mesh->GetPathName(),
             FString::Printf(TEXT("/Game/Generated/Environment/Terrain/%s.%s"), *Name, *Name));
 #if PLATFORM_MAC
