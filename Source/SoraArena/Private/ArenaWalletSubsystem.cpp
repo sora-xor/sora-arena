@@ -1,11 +1,14 @@
 #include "ArenaWalletSubsystem.h"
+#include "ArenaTransactionRecoveryRecord.h"
 
 #include "Async/Async.h"
 #include "Containers/Ticker.h"
 #include "Dom/JsonObject.h"
 #include "Engine/Texture2D.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
+#include "HAL/FileManager.h"
 #include "HAL/PlatformProcess.h"
+#include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformTime.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
@@ -13,6 +16,7 @@
 #include "IWebSocket.h"
 #include "Misc/Base64.h"
 #include "Misc/ConfigCacheIni.h"
+#include "Misc/Guid.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -247,6 +251,115 @@ bool IsAllowedInstruction(const FString& Name)
     static const TSet<FString> Allowed = {TEXT("OpenGameSessionV1"), TEXT("JoinGameSessionV1"), TEXT("ClaimGamePayoutV1"), TEXT("OfferNftV1"), TEXT("BuyNftV1"), TEXT("CancelNftOfferV1")};
     return Allowed.Contains(Name);
 }
+
+std::string Utf8String(const FString& Value)
+{
+    const FTCHARToUTF8 Encoded(*Value);
+    return std::string(Encoded.Get(), Encoded.Length());
+}
+
+bool ReadIsolatedTestConfig(FString& OutOrigin, FString& OutNetwork)
+{
+#if UE_BUILD_SHIPPING
+    return false;
+#else
+    if (!GConfig) return false;
+    bool bEnabled = false;
+    GConfig->GetBool(TEXT("Arena.Connect"), TEXT("bEnableIsolatedTestTransactions"), bEnabled, GGameIni);
+    GConfig->GetString(TEXT("Arena.Connect"), TEXT("IsolatedTestToriiOrigin"), OutOrigin, GGameIni);
+    GConfig->GetString(TEXT("Arena.Connect"), TEXT("IsolatedTestNetworkId"), OutNetwork, GGameIni);
+    FString Normalized;
+    TArray<uint8> NetworkBytes;
+    return bEnabled && OutOrigin.StartsWith(TEXT("http://"), ESearchCase::CaseSensitive)
+        && NormalizeOrigin(OutOrigin, Normalized) && Normalized == OutOrigin
+        && ParseNetworkId(OutNetwork, NetworkBytes)
+        && ArenaTransactionRecovery::LoopbackHttpOrigin(Utf8String(OutOrigin));
+#endif
+}
+
+FString RecoveryDirectory()
+{
+    return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("ArenaConnect"), TEXT("Recovery"));
+}
+
+FString RecoveryPath(const FString& Hash)
+{
+    return FPaths::Combine(RecoveryDirectory(), TEXT("pending-") + Hash + TEXT(".v1"));
+}
+
+void RecoveryFiles(TArray<FString>& Out)
+{
+    IFileManager::Get().FindFiles(Out, *FPaths::Combine(RecoveryDirectory(), TEXT("pending-*")), true, false);
+}
+
+enum class ERecoveryRead : uint8 { Missing, Valid, Invalid };
+
+ERecoveryRead ReadRecovery(const FString& ExpectedOrigin, const FString& ExpectedNetwork,
+    ArenaTransactionRecovery::Record& Out)
+{
+    TArray<FString> Files;
+    RecoveryFiles(Files);
+    if (Files.IsEmpty()) return ERecoveryRead::Missing;
+    if (Files.Num() != 1) return ERecoveryRead::Invalid;
+    const FString& Name = Files[0];
+    if (!Name.StartsWith(TEXT("pending-")) || !Name.EndsWith(TEXT(".v1"))) return ERecoveryRead::Invalid;
+    const FString FilenameHash = Name.Mid(8, Name.Len() - 11);
+    if (!CanonicalHash(FilenameHash)) return ERecoveryRead::Invalid;
+    const FString Path = FPaths::Combine(RecoveryDirectory(), Name);
+    TUniquePtr<IFileHandle> Handle(FPlatformFileManager::Get().GetPlatformFile().OpenRead(*Path, false));
+    if (!Handle.IsValid()) return ERecoveryRead::Invalid;
+    const int64 FileSize = Handle->Size();
+    if (FileSize <= 0 || FileSize > static_cast<int64>(ArenaTransactionRecovery::MaxRecordBytes)) return ERecoveryRead::Invalid;
+    TArray<uint8> Bytes;
+    Bytes.SetNumUninitialized(static_cast<int32>(FileSize));
+    if (!Handle->Read(Bytes.GetData(), FileSize) || Handle->Size() != FileSize) return ERecoveryRead::Invalid;
+    const std::string_view Encoded(reinterpret_cast<const char*>(Bytes.GetData()), static_cast<size_t>(Bytes.Num()));
+    if (!ArenaTransactionRecovery::Decode(Encoded, Utf8String(ExpectedOrigin), Utf8String(ExpectedNetwork), Out)
+        || Out.TransactionHash != Utf8String(FilenameHash)) return ERecoveryRead::Invalid;
+    return ERecoveryRead::Valid;
+}
+
+bool PersistRecovery(const ArenaTransactionRecovery::Record& Identity,
+    const FString& ExpectedOrigin, const FString& ExpectedNetwork)
+{
+    std::string Encoded;
+    if (!ArenaTransactionRecovery::Encode(Identity, Utf8String(ExpectedOrigin), Utf8String(ExpectedNetwork), Encoded)) return false;
+    TArray<FString> Existing;
+    RecoveryFiles(Existing);
+    if (!Existing.IsEmpty()) return false;
+    IPlatformFile& File = FPlatformFileManager::Get().GetPlatformFile();
+    const FString Directory = RecoveryDirectory();
+    if (!File.CreateDirectoryTree(*Directory)) return false;
+    const FString Hash = UTF8_TO_TCHAR(Identity.TransactionHash.c_str());
+    const FString Destination = RecoveryPath(Hash);
+    const FString Staging = FPaths::Combine(Directory, TEXT("staging-") + Hash + TEXT("-")
+        + FGuid::NewGuid().ToString(EGuidFormats::Digits) + TEXT(".tmp"));
+    bool bWritten = false;
+    {
+        TUniquePtr<IFileHandle> Handle(File.OpenWrite(*Staging, false, false));
+        bWritten = Handle.IsValid() && Handle->Write(reinterpret_cast<const uint8*>(Encoded.data()), static_cast<int64>(Encoded.size()))
+            && Handle->Flush(true);
+    }
+    if (!bWritten || !IFileManager::Get().Move(*Destination, *Staging, false, false))
+    {
+        File.DeleteFile(*Staging);
+        return false;
+    }
+    ArenaTransactionRecovery::Record ReadBack;
+    return ReadRecovery(ExpectedOrigin, ExpectedNetwork, ReadBack) == ERecoveryRead::Valid
+        && ReadBack.TransactionHash == Identity.TransactionHash
+        && ReadBack.EntrypointHash == Identity.EntrypointHash;
+}
+
+bool ForgetRecovery(const ArenaTransactionRecovery::Record& Identity,
+    const FString& ExpectedOrigin, const FString& ExpectedNetwork)
+{
+    ArenaTransactionRecovery::Record Stored;
+    if (ReadRecovery(ExpectedOrigin, ExpectedNetwork, Stored) != ERecoveryRead::Valid
+        || Stored.TransactionHash != Identity.TransactionHash
+        || Stored.EntrypointHash != Identity.EntrypointHash) return false;
+    return IFileManager::Get().Delete(*RecoveryPath(UTF8_TO_TCHAR(Identity.TransactionHash.c_str())), false, true);
+}
 }
 
     /** Exact C signatures use unsigned long: it is 32-bit on Win64 and 64-bit on macOS. */
@@ -339,6 +452,7 @@ void UArenaWalletSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     Super::Initialize(Collection);
     StatusText = TEXT("ウォレット未接続。シングルプレイは接続不要です。");
     TransactionStatusText = TEXT("取引はありません。");
+    RestorePendingTransactionIdentity();
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UArenaWalletSubsystem::TickSession));
 }
 
@@ -363,6 +477,45 @@ void UArenaWalletSubsystem::SetTransactionState(EArenaTransactionState NewState,
     TransactionState = NewState;
     TransactionStatusText = Message;
     OnTransactionStateChanged.Broadcast();
+}
+
+void UArenaWalletSubsystem::RestorePendingTransactionIdentity()
+{
+    TArray<FString> Files;
+    ArenaConnect::RecoveryFiles(Files);
+    if (Files.IsEmpty()) return;
+    FString PinnedOrigin, PinnedNetwork;
+    ArenaTransactionRecovery::Record Identity;
+    if (!ArenaConnect::ReadIsolatedTestConfig(PinnedOrigin, PinnedNetwork)
+        || ArenaConnect::ReadRecovery(PinnedOrigin, PinnedNetwork, Identity) != ArenaConnect::ERecoveryRead::Valid)
+    {
+        bRecoveryBlocked = true;
+        SetTransactionState(EArenaTransactionState::Uncertain,
+            TEXT("保存された取引IDまたは隔離テスト網の設定が一致しません。送信と照会を停止しました。"));
+        return;
+    }
+    SubmissionOrigin = UTF8_TO_TCHAR(Identity.Origin.c_str());
+    SubmissionNetworkLiteral = UTF8_TO_TCHAR(Identity.NetworkId.c_str());
+    LastSignedTransactionHash = UTF8_TO_TCHAR(Identity.TransactionHash.c_str());
+    LastEntrypointHash = UTF8_TO_TCHAR(Identity.EntrypointHash.c_str());
+    ArenaConnect::Erase(LastSignedTransactionBase64);
+    // The pre-dispatch record also covers a crash before Torii sees the POST.
+    // Restored acceptance is therefore unknown until a fresh exact-hash query.
+    SetTransactionState(EArenaTransactionState::Uncertain,
+        TEXT("隔離テスト網の取引IDを復元しました。再送せず、取引IDから状態を照会できます。"));
+}
+
+bool UArenaWalletSubsystem::IsRecoveryIdentityCurrent() const
+{
+    FString PinnedOrigin, PinnedNetwork;
+    if (bRecoveryBlocked || !ArenaConnect::ReadIsolatedTestConfig(PinnedOrigin, PinnedNetwork)
+        || SubmissionOrigin != PinnedOrigin || SubmissionNetworkLiteral != PinnedNetwork
+        || !ArenaConnect::CanonicalHash(LastSignedTransactionHash)
+        || !ArenaConnect::CanonicalHash(LastEntrypointHash)) return false;
+    ArenaTransactionRecovery::Record Identity;
+    return ArenaConnect::ReadRecovery(PinnedOrigin, PinnedNetwork, Identity) == ArenaConnect::ERecoveryRead::Valid
+        && Identity.TransactionHash == ArenaConnect::Utf8String(LastSignedTransactionHash)
+        && Identity.EntrypointHash == ArenaConnect::Utf8String(LastEntrypointHash);
 }
 
 void UArenaWalletSubsystem::ClearSubmissionRequests()
@@ -785,7 +938,7 @@ void UArenaWalletSubsystem::AcceptApproval(const TArray<uint8>& Frame)
 
 bool UArenaWalletSubsystem::RequestSignTransaction(const FString& ScaffoldBase64, const FString& Ed25519PublicKeyHex)
 {
-    if (!Native || !Socket.IsValid() || !Socket->IsConnected() || bIgnoreCancelledSignatureResult
+    if (!Native || !Socket.IsValid() || !Socket->IsConnected() || bIgnoreCancelledSignatureResult || bRecoveryBlocked
         || TransactionState == EArenaTransactionState::Submitting || TransactionState == EArenaTransactionState::Pending
         || TransactionState == EArenaTransactionState::Uncertain
         || (State != EArenaWalletState::Approved && State != EArenaWalletState::Signed)) return false;
@@ -903,15 +1056,9 @@ bool UArenaWalletSubsystem::SubmitSignedTestTransaction()
     SetTransactionState(TransactionState, TEXT("製品ビルドでは取引送信を無効にしています。"));
     return false;
 #else
-    bool bEnabled = false;
     FString PinnedOrigin, PinnedNetwork;
-    GConfig->GetBool(TEXT("Arena.Connect"), TEXT("bEnableIsolatedTestTransactions"), bEnabled, GGameIni);
-    GConfig->GetString(TEXT("Arena.Connect"), TEXT("IsolatedTestToriiOrigin"), PinnedOrigin, GGameIni);
-    GConfig->GetString(TEXT("Arena.Connect"), TEXT("IsolatedTestNetworkId"), PinnedNetwork, GGameIni);
-    const bool bLoopback = SubmissionOrigin == TEXT("http://127.0.0.1") || SubmissionOrigin.StartsWith(TEXT("http://127.0.0.1:"))
-        || SubmissionOrigin == TEXT("http://localhost") || SubmissionOrigin.StartsWith(TEXT("http://localhost:"))
-        || SubmissionOrigin == TEXT("http://[::1]") || SubmissionOrigin.StartsWith(TEXT("http://[::1]:"));
-    if (!bEnabled || !bLoopback || PinnedOrigin != SubmissionOrigin || PinnedNetwork != SubmissionNetworkLiteral)
+    if (bRecoveryBlocked || !ArenaConnect::ReadIsolatedTestConfig(PinnedOrigin, PinnedNetwork)
+        || PinnedOrigin != SubmissionOrigin || PinnedNetwork != SubmissionNetworkLiteral)
     {
         SetTransactionState(TransactionState, TEXT("隔離テスト網の明示設定がないため送信しません。"));
         return false;
@@ -924,6 +1071,19 @@ bool UArenaWalletSubsystem::SubmitSignedTestTransaction()
         || Signed.Num() > ArenaConnect::MaxFrameBytes || FBase64::Encode(Signed) != LastSignedTransactionBase64)
     {
         SetTransactionState(TransactionState, TEXT("検証済みの署名取引がありません。"));
+        return false;
+    }
+    const ArenaTransactionRecovery::Record IdentityRecord{
+        ArenaConnect::Utf8String(SubmissionOrigin), ArenaConnect::Utf8String(SubmissionNetworkLiteral),
+        ArenaConnect::Utf8String(LastSignedTransactionHash), ArenaConnect::Utf8String(LastEntrypointHash)};
+    // Persist identity before dispatch. A crash at any later point must never
+    // turn an ambiguous POST into a second submission of the signed payload.
+    if (!ArenaConnect::PersistRecovery(IdentityRecord, PinnedOrigin, PinnedNetwork))
+    {
+        ArenaConnect::Erase(Signed);
+        bRecoveryBlocked = true;
+        SetTransactionState(EArenaTransactionState::Signed,
+            TEXT("取引IDを保存できないため送信しません。隔離テスト網の回復状態を確認してください。"));
         return false;
     }
     ClearSubmissionRequests();
@@ -977,8 +1137,16 @@ bool UArenaWalletSubsystem::SubmitSignedTestTransaction()
 
 bool UArenaWalletSubsystem::ReconcileTransaction()
 {
-    if ((TransactionState != EArenaTransactionState::Pending && TransactionState != EArenaTransactionState::Uncertain)
-        || !ArenaConnect::CanonicalHash(LastSignedTransactionHash) || SubmissionOrigin.IsEmpty()) return false;
+    if (TransactionState != EArenaTransactionState::Pending && TransactionState != EArenaTransactionState::Uncertain)
+        return false;
+    if (!IsRecoveryIdentityCurrent())
+    {
+        bRecoveryBlocked = true;
+        SetTransactionState(EArenaTransactionState::Uncertain,
+            TEXT("取引IDまたは隔離テスト網の設定を確認できません。照会を停止しました。"));
+        return false;
+    }
+    if (!LoadNativeBridge()) return false;
     StatusPollCount = 0;
     NextStatusPollAt = 0;
     PollTransactionStatus();
@@ -988,8 +1156,15 @@ bool UArenaWalletSubsystem::ReconcileTransaction()
 void UArenaWalletSubsystem::PollTransactionStatus()
 {
     if ((TransactionState != EArenaTransactionState::Pending && TransactionState != EArenaTransactionState::Uncertain)
-        || StatusRequest.IsValid() || !ArenaConnect::CanonicalHash(LastSignedTransactionHash)
-        || SubmissionOrigin.IsEmpty()) return;
+        || StatusRequest.IsValid()) return;
+    if (!IsRecoveryIdentityCurrent())
+    {
+        bRecoveryBlocked = true;
+        NextStatusPollAt = 0;
+        SetTransactionState(EArenaTransactionState::Uncertain,
+            TEXT("取引IDまたは隔離テスト網の設定を確認できません。再送と照会を停止しました。"));
+        return;
+    }
     if (StatusPollCount >= ArenaConnect::MaxTransactionPolls)
     {
         SetTransactionState(EArenaTransactionState::Uncertain, TEXT("照会時間を超えました。取引IDを保持しています。後で再照会してください。"));
@@ -1012,6 +1187,14 @@ void UArenaWalletSubsystem::PollTransactionStatus()
         {
             if (!Weak.IsValid() || Weak->TransactionGeneration != Attempt || Weak->LastSignedTransactionHash != Identity) return;
             Weak->StatusRequest.Reset();
+            if (!Weak->IsRecoveryIdentityCurrent())
+            {
+                Weak->bRecoveryBlocked = true;
+                Weak->NextStatusPollAt = 0;
+                Weak->SetTransactionState(EArenaTransactionState::Uncertain,
+                    TEXT("隔離テスト網の設定または回復記録が変更されました。照会を停止しました。"));
+                return;
+            }
             ArenaConnect::EChainObservation Observation = ArenaConnect::EChainObservation::Invalid;
             if (Success && Response.IsValid() && Response->GetURL() == Request->GetURL()
                 && Weak->Native && Response->GetContent().Num() <= ArenaConnect::MaxTransactionStatusJsonBytes)
@@ -1030,11 +1213,22 @@ void UArenaWalletSubsystem::PollTransactionStatus()
             switch (Observation)
             {
             case ArenaConnect::EChainObservation::Applied:
+            case ArenaConnect::EChainObservation::Rejected:
+            {
+                const ArenaTransactionRecovery::Record Current{
+                    ArenaConnect::Utf8String(Weak->SubmissionOrigin), ArenaConnect::Utf8String(Weak->SubmissionNetworkLiteral),
+                    ArenaConnect::Utf8String(Weak->LastSignedTransactionHash), ArenaConnect::Utf8String(Weak->LastEntrypointHash)};
+                if (!ArenaConnect::ForgetRecovery(Current, Weak->SubmissionOrigin, Weak->SubmissionNetworkLiteral))
+                    Weak->bRecoveryBlocked = true;
+                if (Observation == ArenaConnect::EChainObservation::Rejected)
+                {
+                    Weak->SetTransactionState(EArenaTransactionState::Rejected,
+                        TEXT("Torii が台帳状態で取引の拒否または期限切れを報告しました。"));
+                    return;
+                }
                 Weak->SetTransactionState(EArenaTransactionState::Finalized, TEXT("Torii が台帳状態で取引適用を報告しました。ゲーム参加は別途検証します。"));
                 return;
-            case ArenaConnect::EChainObservation::Rejected:
-                Weak->SetTransactionState(EArenaTransactionState::Rejected, TEXT("Torii が台帳状態で取引の拒否または期限切れを報告しました。"));
-                return;
+            }
             case ArenaConnect::EChainObservation::InFlight:
                 Weak->SetTransactionState(EArenaTransactionState::Pending, TEXT("取引は確認中です。確定を待っています。"));
                 break;

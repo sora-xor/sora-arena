@@ -170,15 +170,39 @@ transaction has not yet been observed, not that a new submission is safe.
 Polling is bounded to 90 attempts at two-second intervals, and can be
 resumed by identity. Cancelling before signature discards any late wallet
 signature. Cancelling after submission stops local monitoring but retains the
-hash, since cancelling HTTP cannot reverse a chain transaction. This initial
-subsystem tracks one transaction at a time in memory; it does not yet provide
-durable restart recovery or concurrent settlement tracking. A public Torii
+hash, since cancelling HTTP cannot reverse a chain transaction.
+
+Before the first POST, the subsystem flushes and moves a versioned, bounded
+identity record into the project's `Saved/ArenaConnect/Recovery` directory.
+Its only fields are the exact loopback Torii origin, canonical network ID,
+signed transaction hash, and entrypoint hash. It never writes signed bytes,
+wallet keys, Connect session tokens, or the pairing URI. A normal process
+restart restores one valid record as **Uncertain**, with no signed payload and
+no automatic submission. The user may call `ReconcileTransaction()` to issue
+only the exact-hash GET. Every query and response requires the same explicitly
+enabled loopback test-network configuration and the same intact identity file.
+Malformed, mismatched, or multiple pending records stop submission and status
+queries rather than guessing an identity. A record is deleted only after an
+exact state-resolved terminal observation; failure to remove it blocks a new
+submission. A crash before the POST may leave an uncertain record for a
+transaction that was never sent; even a scoped 404 does not authorize a retry.
+Staging files from a crash before the final record move are ignored because the
+HTTP request has not yet been started. This first subsystem still tracks only
+one outstanding identity per game process, so multiple pending files require
+manual investigation. Recovery is for a process restart; machine power-loss
+durability and multi-process behavior have not been qualified. A public Torii
 status observation never by itself unlocks a bond or weapon entitlement.
 
 ## Verification and current limits
 
 - `check-abi.py` compiles the dynamic function pointer declarations against the
   actual bridge header without loading Unreal. This is a C type check only.
+- `python3 scripts/connect/verify-recovery.py` compiles the exact C++17 record
+  codec used by the Unreal subsystem without the engine, runs 23 positive
+  and negative format/binding checks, and statically checks that persistence
+  and signed-byte erasure precede the POST. It passed on macOS with project-local
+  Xcode 26.1.1. This does not validate Unreal's file I/O, a crash/restart in a
+  packaged build, or live Torii reconciliation.
 - `verify-bridge.py` loads a real library and checks ABI/symbols, OS-random key
   generation, network/key/nonce-bound session IDs, invalid-width rejection,
   matching peer direction keys, authenticated envelope round trips, wrong-key

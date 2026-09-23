@@ -52,7 +52,7 @@ public:
     bool RequestNativeTransactionSignature(const FString& ExactRequestJson, const FString& Ed25519PublicKeyHex);
     /** Disabled by default and in shipping builds; only an explicitly configured loopback test node is eligible. */
     UFUNCTION(BlueprintCallable, Category="SORA|Wallet") bool SubmitSignedTestTransaction();
-    /** Read-only exact-hash reconciliation. It never resends a signed transaction. */
+    /** Read-only exact-hash reconciliation, including an identity restored after restart. It never resends. */
     UFUNCTION(BlueprintCallable, Category="SORA|Wallet") bool ReconcileTransaction();
     /** Cancels an outstanding wallet request locally; dispatched submissions remain uncertain until reconciled. */
     UFUNCTION(BlueprintCallable, Category="SORA|Wallet") void CancelTransactionRequest();
@@ -88,6 +88,7 @@ private:
     double NextStatusPollAt = 0;
     int32 StatusPollCount = 0;
     bool bIgnoreCancelledSignatureResult = false;
+    bool bRecoveryBlocked = false;
     FString Origin, NetworkLiteral, ExpectedAccountLiteral, RelayToken;
     FString SubmissionOrigin, SubmissionNetworkLiteral, LastEntrypointHash;
     TArray<uint8> NetworkBytes, SessionId, AppPublicKey, AppPrivateKey, Nonce;
@@ -98,6 +99,8 @@ private:
     void SetState(EArenaWalletState NewState, const FString& Message);
     void SetTransactionState(EArenaTransactionState NewState, const FString& Message);
     void ClearSubmissionRequests();
+    void RestorePendingTransactionIdentity();
+    bool IsRecoveryIdentityCurrent() const;
     void PollTransactionStatus();
     void Fail(const FString& Message, EArenaWalletState FailureState = EArenaWalletState::Error);
     void ClearTransport();
