@@ -34,7 +34,7 @@
       "crates/arena-core/src/catalog.rs": "440fd39976e7a339a7ad4d2670a95c223f1237b3dc3a3900fadc7540a615357e",
       "crates/arena-core/src/economy.rs": "39a549f173143850caa64851020d1322c9b3cd7b0fb9771f0c931c3bc3ec1345",
       "crates/arena-core/src/math.rs": "dd9d498cc49ba048125494a11152d7fbfcf8719459d57e43942147955c67a63c",
-      "crates/arena-core/src/simulation.rs": "8119623d138800425b91b3a8a6fbd392dc6e40049f8a4815b7a910edbd8806ac",
+      "crates/arena-core/src/simulation.rs": "e0026524c7f2e0d1c0178ee51579aa780fc193c1d883fb5fd2110af4ad3192c7",
       "crates/arena-ffi/Cargo.toml": "dd3ffa40abdeb3b9cc0e86af17bc4a165359c910d58458a492741bd388b1af31",
       "crates/arena-ffi/src/lib.rs": "2e6a76b2c608439eb55a20c23e5df2d21a65524e5a9b4c10dba0d732905bf262",
       "crates/arena-ffi/include/arena.h": "46a2842218a23cf7d2e5a7a9225618283e33e059250432a830dbaf75c0e38a7a"

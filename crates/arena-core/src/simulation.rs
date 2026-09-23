@@ -1120,8 +1120,10 @@ mod tests {
             ],
         )
         .unwrap();
+        // A real grenade travels 2100 mm to the enemy's near face, arms, and
+        // detonates inside its owner's 2500 mm blast radius.
         w.players[0].position = Vec3::new(0, 0, 0);
-        w.players[1].position = Vec3::new(5000, 0, 0);
+        w.players[1].position = Vec3::new(2450, 0, 0);
         w.players[0].health = 50;
         w.damage_history.push(DamageRecord {
             tick: 0,
@@ -1129,16 +1131,17 @@ mod tests {
             victim: 0,
             damage: 30,
         });
-        w.projectiles.push(Projectile {
-            id: 0,
-            owner: 0,
-            position: Vec3::new(0, 0, 50),
-            velocity: Vec3::new(0, 0, -350),
-            weapon: 7,
-            traveled: 2000,
-            age: 1,
-        });
-        w.step(&[Input::default(), Input::default()]).unwrap();
+        w.step(&[
+            Input {
+                buttons: FIRE,
+                ..Input::default()
+            },
+            Input::default(),
+        ])
+        .unwrap();
+        for _ in 0..6 {
+            w.step(&[Input::default(), Input::default()]).unwrap();
+        }
         assert!(!w.players[0].alive);
         assert_eq!(w.accounts[0].deaths, 1);
         assert_eq!(w.accounts[0].paid_deaths, 0);
