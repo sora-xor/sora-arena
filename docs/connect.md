@@ -150,6 +150,37 @@ the signed transaction and entrypoint hashes alongside the verified bytes.
 `OnTransactionSigned` exposes those bytes to the local caller; it does not
 submit them.
 
+### Exact game-facing review gap
+
+The native inspector returns structured `executable: {kind, name, value}` and
+`fee_payment` fields bound to the canonical signing payload. Its
+`JoinGameSessionV1.value` includes `session_id`, `expected_manifest_hash`,
+`expected_asset_definition`, exact-string `expected_stake`, `resources`, the
+input key, and any invitation. The existing native builder smoke check compares
+those values and fee intent byte-for-byte after re-inspection. This is useful
+transaction evidence, but it is not a complete game admission quote.
+
+The Unreal subsystem currently checks the inspected authority, network, and
+allowlisted instruction name, stores the full inspection as raw JSON, and sends
+the canonical payload to the wallet immediately. It does not render a typed
+term sheet or require a separate in-game confirmation. It also has no certified
+session/manifest read to establish the base bond, per-death loss, maximum loss,
+equipment reservation, or whether the declared asset is the configured XOR
+asset. `fee_payment` is an exact fee intent, not proof of a final network fee.
+For a purchase, the UI likewise lacks a verified live offer read tying seller,
+NFT identity, price, expiry, and ownership to the inspected `BuyNftV1` payload;
+the current builder smoke check does not exercise a Buy fixture.
+
+Before exposing join or purchase approval in the game, add a versioned native
+review result that binds those typed terms and the canonical payload hash to a
+verified session or offer snapshot. Preserve atomic quantities as strings and
+display the exact asset identity, fees, loss rules, and NFT reservations in
+Japanese with English explanation. Require a separate player confirmation of
+that result before `SignRequestTx`, then keep the wallet approval and finality
+checks independent. Until that path is implemented and tested, raw inspection
+JSON and the menu's transaction-state text must not be presented as an exact
+bond or purchase review.
+
 `SubmitSignedTestTransaction()` is a separate, explicit operation. It is
 disabled in shipping builds and unless `Arena.Connect` explicitly sets
 `bEnableIsolatedTestTransactions=true`, `IsolatedTestNetworkId`, and
