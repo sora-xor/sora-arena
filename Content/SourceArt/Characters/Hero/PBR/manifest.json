@@ -1,0 +1,384 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaakoto_pbr_textures.py",
+  "source_license": "Project-owned procedurally authored maps; no external texture asset",
+  "seed": 270426,
+  "maps": [
+    {
+      "name": "fur_grey",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaakoto_fur_grey_Albedo.png",
+          "sha256": "7f94e02ebd33347f05ce2a132d9849cb25376116af6a23bd0f66d2a0fe53426e"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaakoto_fur_grey_NormalDX.png",
+          "sha256": "c8f860b18630b447691521045fc6befb251cd952d380736f8f3c0f57e9b21e95"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaakoto_fur_grey_ORM.png",
+          "sha256": "df17de232a03e516bd0b19a7828bd52d46c23f3090c630ff50f024ff3e1f09e6"
+        }
+      ]
+    },
+    {
+      "name": "fur_white",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaakoto_fur_white_Albedo.png",
+          "sha256": "bd9663bb66bc1936f40c45324cb9f883cbe9a7e3b3f7df5e9d16ab546e5515d3"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaakoto_fur_white_NormalDX.png",
+          "sha256": "3941ab33f481e96066c0d9cf37880011c2d56d88bbb5612957e541bea05d19c3"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaakoto_fur_white_ORM.png",
+          "sha256": "22114ce689b173ec8712eb8af3f8ec8695166956dcebcde1ed0282f293999500"
+        }
+      ]
+    },
+    {
+      "name": "fur_charcoal",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaakoto_fur_charcoal_Albedo.png",
+          "sha256": "8b1c5a7f743d1ad01bd17553b773ed6998830eecae5a383a5b1e6312b8daf94d"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaakoto_fur_charcoal_NormalDX.png",
+          "sha256": "76a8f1acc331a2c4d0e67d5afdb9869b474b9f3d85c7b04f9a61cd89ba2ffc37"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaakoto_fur_charcoal_ORM.png",
+          "sha256": "06975d05d9ff9cbf0494d5686cf68fde7b440f8a0da5ec9e60c2b6f015d26df9"
+        }
+      ]
+    },
+    {
+      "name": "silk_indigo",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaakoto_silk_indigo_Albedo.png",
+          "sha256": "a7866f1ed77c57420266280c5fc751db5e0c688a54da1ecb88003c5da76d969c"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaakoto_silk_indigo_NormalDX.png",
+          "sha256": "c918e776469b1c69458a8fcd9a58a10ef67f08d0cd3e3f50c14056bcb81e852b"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaakoto_silk_indigo_ORM.png",
+          "sha256": "dae41cb5c3390346bd8600923c19336d67e83c6eb7cf05d990489a8dcee6c09b"
+        }
+      ]
+    },
+    {
+      "name": "lacquer_oxblood",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaakoto_lacquer_oxblood_Albedo.png",
+          "sha256": "032c7eb261cb3fefc6dd31d74ed36e52926dc79caec3fe8b644068f9f8505c28"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaakoto_lacquer_oxblood_NormalDX.png",
+          "sha256": "f898794445f8ab64d565600a5416672253e716a1611705710ed098f67709243c"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaakoto_lacquer_oxblood_ORM.png",
+          "sha256": "df48804d2c84479ca061d59c65da93ab1cfa06af84fa11f0a1758b0b8ba8caf6"
+        }
+      ]
+    },
+    {
+      "name": "neutral",
+      "resolution": [
+        4,
+        4
+      ],
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_Nyaakoto_neutral_Albedo.png",
+          "sha256": "1af23638ce8528329d2d063fba0c494a0895cea75d4d286b8b40f63b80a5d8bd"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_Nyaakoto_neutral_NormalDX.png",
+          "sha256": "b8e871ad80427c679edeb3e0d690a38638bd2ea14a215edc97123505255014e4"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_Nyaakoto_neutral_ORM.png",
+          "sha256": "1af23638ce8528329d2d063fba0c494a0895cea75d4d286b8b40f63b80a5d8bd"
+        }
+      ]
+    }
+  ],
+  "material_slots": {
+    "M_Hero_AgedBrass": {
+      "surface": "neutral",
+      "tint": [
+        0.43,
+        0.25,
+        0.093
+      ],
+      "roughness_scale": 0.32,
+      "metallic_scale": 0.89
+    },
+    "M_Hero_BambooArrowShaft": {
+      "surface": "neutral",
+      "tint": [
+        0.48,
+        0.32,
+        0.17
+      ],
+      "roughness_scale": 0.72,
+      "metallic_scale": 0
+    },
+    "M_Hero_BlackenedIron": {
+      "surface": "neutral",
+      "tint": [
+        0.052,
+        0.057,
+        0.06
+      ],
+      "roughness_scale": 0.35,
+      "metallic_scale": 0.9
+    },
+    "M_Hero_BlackUrushi": {
+      "surface": "lacquer_oxblood",
+      "tint": [
+        0.022,
+        0.021,
+        0.021
+      ],
+      "roughness_scale": 0.95,
+      "metallic_scale": 0
+    },
+    "M_Hero_BlueEye": {
+      "surface": "neutral",
+      "tint": [
+        0.095,
+        0.35,
+        0.64
+      ],
+      "roughness_scale": 0.15,
+      "metallic_scale": 0
+    },
+    "M_Hero_CharcoalStripeFur": {
+      "surface": "fur_charcoal",
+      "tint": [
+        0.045,
+        0.053,
+        0.063
+      ],
+      "roughness_scale": 1,
+      "metallic_scale": 0
+    },
+    "M_Hero_EarSkin": {
+      "surface": "neutral",
+      "tint": [
+        0.4,
+        0.17,
+        0.17
+      ],
+      "roughness_scale": 0.82,
+      "metallic_scale": 0
+    },
+    "M_Hero_EyeGlint": {
+      "surface": "neutral",
+      "tint": [
+        0.83,
+        0.78,
+        0.61
+      ],
+      "roughness_scale": 0.15,
+      "metallic_scale": 0
+    },
+    "M_Hero_EyePupil": {
+      "surface": "neutral",
+      "tint": [
+        0.008,
+        0.012,
+        0.013
+      ],
+      "roughness_scale": 0.19,
+      "metallic_scale": 0
+    },
+    "M_Hero_FoldedIndigo": {
+      "surface": "silk_indigo",
+      "tint": [
+        0.03,
+        0.041,
+        0.068
+      ],
+      "roughness_scale": 1.3,
+      "metallic_scale": 0
+    },
+    "M_Hero_GreyTabbyFur": {
+      "surface": "fur_grey",
+      "tint": [
+        0.18,
+        0.21,
+        0.245
+      ],
+      "roughness_scale": 1,
+      "metallic_scale": 0
+    },
+    "M_Hero_IndigoSilk": {
+      "surface": "silk_indigo",
+      "tint": [
+        0.016,
+        0.023,
+        0.045
+      ],
+      "roughness_scale": 1,
+      "metallic_scale": 0
+    },
+    "M_Hero_IvoryClaw": {
+      "surface": "neutral",
+      "tint": [
+        0.63,
+        0.59,
+        0.48
+      ],
+      "roughness_scale": 0.43,
+      "metallic_scale": 0
+    },
+    "M_Hero_JadeCircuit": {
+      "surface": "neutral",
+      "tint": [
+        0.016,
+        0.4,
+        0.34
+      ],
+      "roughness_scale": 0.25,
+      "metallic_scale": 0.19
+    },
+    "M_Hero_OxbloodUrushi": {
+      "surface": "lacquer_oxblood",
+      "tint": [
+        0.105,
+        0.011,
+        0.016
+      ],
+      "roughness_scale": 1,
+      "metallic_scale": 0
+    },
+    "M_Hero_RedArrowFletch": {
+      "surface": "neutral",
+      "tint": [
+        0.66,
+        0.05,
+        0.055
+      ],
+      "roughness_scale": 0.88,
+      "metallic_scale": 0
+    },
+    "M_Hero_RoseNose": {
+      "surface": "neutral",
+      "tint": [
+        0.42,
+        0.17,
+        0.18
+      ],
+      "roughness_scale": 0.47,
+      "metallic_scale": 0
+    },
+    "M_Hero_ScarletSash": {
+      "surface": "silk_indigo",
+      "tint": [
+        0.23,
+        0.011,
+        0.024
+      ],
+      "roughness_scale": 1.34,
+      "metallic_scale": 0
+    },
+    "M_Hero_SORAResistanceRed": {
+      "surface": "neutral",
+      "tint": [
+        0.72,
+        0.036,
+        0.065
+      ],
+      "roughness_scale": 0.48,
+      "metallic_scale": 0
+    },
+    "M_Hero_UndyedLinen": {
+      "surface": "silk_indigo",
+      "tint": [
+        0.42,
+        0.37,
+        0.31
+      ],
+      "roughness_scale": 1.5,
+      "metallic_scale": 0
+    },
+    "M_Hero_WhiteFur": {
+      "surface": "fur_white",
+      "tint": [
+        0.77,
+        0.8,
+        0.79
+      ],
+      "roughness_scale": 1,
+      "metallic_scale": 0
+    },
+    "M_Hero_YumiLaminatedBamboo": {
+      "surface": "neutral",
+      "tint": [
+        0.27,
+        0.15,
+        0.065
+      ],
+      "roughness_scale": 0.56,
+      "metallic_scale": 0
+    },
+    "M_Hero_YumiSilkString": {
+      "surface": "silk_indigo",
+      "tint": [
+        0.7,
+        0.66,
+        0.53
+      ],
+      "roughness_scale": 1.4,
+      "metallic_scale": 0
+    }
+  }
+}

@@ -63,6 +63,17 @@ assert set(record["skeleton_bones"]) == set(rig.data.bones.keys())
 assert all(len(v.groups) == 1 for v in mesh.data.vertices)
 assert sum(1 for v in mesh.data.vertices if mesh.vertex_groups[v.groups[0].group].name == "head") == record["head_weighted_vertices"]
 materials = {m.name for m in mesh.data.materials}
+pbr = json.loads((hero / "PBR/manifest.json").read_text())
+assert materials == set(pbr["material_slots"])
+uv = mesh.data.uv_layers.active
+assert uv is not None
+grey_slot = next(i for i, material in enumerate(mesh.data.materials)
+                 if material.name == "M_Hero_GreyTabbyFur")
+grey_loops = [loop_index for polygon in mesh.data.polygons
+              if polygon.material_index == grey_slot for loop_index in polygon.loop_indices]
+grey_uv = [uv.data[index].uv for index in grey_loops]
+assert grey_uv and max(point.x for point in grey_uv) - min(point.x for point in grey_uv) > .2
+assert max(point.y for point in grey_uv) - min(point.y for point in grey_uv) > .2
 for material in ("M_Hero_GreyTabbyFur", "M_Hero_WhiteFur", "M_Hero_BlueEye",
                  "M_Hero_OxbloodUrushi", "M_Hero_IndigoSilk", "M_Hero_ScarletSash",
                  "M_Hero_YumiLaminatedBamboo", "M_Hero_RedArrowFletch",

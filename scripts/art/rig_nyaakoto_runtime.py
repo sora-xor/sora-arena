@@ -81,6 +81,14 @@ for src in parts:
     runtime.objects.link(obj)
     obj.matrix_world = src.matrix_world.copy()
     obj.name = f"Runtime_{src.name}"
+    # The sculpted cheek and short-fur meshes have no UVs in the art-review
+    # source. Give them stable face-plane coordinates before the final join so
+    # the runtime fur normal/albedo maps do not collapse to one texel.
+    if not obj.data.uv_layers:
+        uv = obj.data.uv_layers.new(name="Nyaakoto_FurUV")
+        for loop in obj.data.loops:
+            point = obj.matrix_world @ obj.data.vertices[loop.vertex_index].co
+            uv.data[loop.index].uv = ((point.y + .8) * 2.4, (point.z - .55) * 2.4)
     # Splitting source parts keeps hard armor, crest paths and arrow fletching
     # coherent while preserving every authored material slot on final join.
     groups = {bone: obj.vertex_groups.new(name=bone) for bone in all_bones}

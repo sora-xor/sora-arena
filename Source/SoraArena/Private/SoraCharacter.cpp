@@ -19,6 +19,7 @@
 #include "Engine/GameInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
+#include "Materials/MaterialInterface.h"
 #include "Animation/AnimationAsset.h"
 #include "ArenaKernelSubsystem.h"
 #include "SoraControlSaveGame.h"
@@ -220,6 +221,21 @@ void ASoraCharacter::BuildCat()
     {
         GetMesh()->SetSkeletalMesh(RigMesh); GetMesh()->SetRelativeLocation(FVector(0,0,-88));
         GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision); GetMesh()->SetOwnerNoSee(!bEnemy);
+        if(!bAlien)
+        {
+            const TArray<FSkeletalMaterial>& Slots=RigMesh->GetMaterials();
+            for(int32 Index=0;Index<Slots.Num();++Index)
+            {
+                const FString Slot=Slots[Index].MaterialSlotName.ToString();
+                if(!Slot.StartsWith(TEXT("M_Hero_"))) continue;
+                const FString Name=TEXT("MI_Nyaakoto_")+Slot.RightChop(7);
+                const FString Path=FString::Printf(TEXT("/Game/Generated/Characters/Nyaakoto/%s.%s"),*Name,*Name);
+                if(auto* Material=LoadObject<UMaterialInterface>(nullptr,*Path,nullptr,LOAD_NoWarn))
+                    GetMesh()->SetMaterial(Index,Material);
+                else
+                    UE_LOG(LogTemp,Error,TEXT("Nyaakoto PBR material is missing: %s"),*Path);
+            }
+        }
         IdleAnimation=LoadObject<UAnimationAsset>(nullptr,*FString::Printf(TEXT("/Game/Generated/Animations/A_%s_Idle.A_%s_Idle"),*CatName,*CatName));
         WalkAnimation=LoadObject<UAnimationAsset>(nullptr,*FString::Printf(TEXT("/Game/Generated/Animations/A_%s_Walk.A_%s_Walk"),*CatName,*CatName));
         if(IdleAnimation) GetMesh()->PlayAnimation(IdleAnimation,true);
