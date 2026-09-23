@@ -333,6 +333,11 @@ for channel, entry in torii_pbr["maps"].items():
     assert entry["resolution"] == [2048, 2048]
     assert hashlib.sha256(path.read_bytes()).hexdigest() == entry["sha256"]
 assert "import_torii_lacquer_pbr.py" in (ROOT / "scripts/unreal/import_environment_palette.py").read_text()
+assert "import_nyaagyu_cargo_stack.py" in import_script
+assert 'if(MapId==0 && ImportedProp(TEXT("SM_Nyaagyu_CargoStack")' in world_builder
+assert "Cover->SetVisibility(false)" in world_builder
+assert "SM_Nyaagyu_CargoStack" not in world_builder.split(
+    "void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 terrain_root = content / "SourceArt/Environment/NyaagyuTerrain"
 terrain = json.loads((terrain_root / "manifest.json").read_text())
 assert terrain["schema_version"] == 1

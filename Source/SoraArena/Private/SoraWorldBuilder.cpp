@@ -355,7 +355,11 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
     for(int32 I=0;I<12;++I)
     {
         const float X=-2300+(I%6)*900; const float Y=(I<6?-1:1)*(680+(I%2)*200);
-        Box(FString::Printf(TEXT("Cover%d"),I),FVector(X,Y,70),FVector(230,180,140),I%2?FLinearColor(.29f,.19f,.09f):FLinearColor(.23f,.27f,.28f),true,FRotator::ZeroRotator,I%2?TEXT("Timber"):TEXT("Stone"));
+        auto* Cover=Box(FString::Printf(TEXT("Cover%d"),I),FVector(X,Y,70),FVector(230,180,140),I%2?FLinearColor(.29f,.19f,.09f):FLinearColor(.23f,.27f,.28f),true,FRotator::ZeroRotator,I%2?TEXT("Timber"):TEXT("Stone"));
+        // Keep the established cover volume for campaign combat. The cargo
+        // stack is a visual mesh only and never enters a P2P practice map.
+        if(MapId==0 && ImportedProp(TEXT("SM_Nyaagyu_CargoStack"),FVector(X,Y,0),FRotator(0,I%2?180.f:0.f,0)))
+            Cover->SetVisibility(false);
     }
     Torii(FVector(-2250,0,0),0); Torii(FVector(2300,0,0),0);
     NodePositions={FVector(-1250,-700,0),FVector(0,1000,0),FVector(1250,-800,0)};

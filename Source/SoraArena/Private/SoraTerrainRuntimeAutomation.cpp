@@ -46,10 +46,25 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     TMap<FString, FVector> TileLocations;
     bool bCollisionGroundPresent = false;
     bool bBlockoutRoadPresent = false;
+    int32 CargoVisualCount = 0;
+    int32 HiddenCoverColliders = 0;
     for (UStaticMeshComponent* Component : CampaignMeshes)
     {
         if (!Component) continue;
         bBlockoutRoadPresent |= Component->GetName().StartsWith(TEXT("CentralRoad"));
+        if (Component->GetName().StartsWith(TEXT("SM_Nyaagyu_CargoStack")))
+        {
+            ++CargoVisualCount;
+            TestTrue(TEXT("Cargo art cannot change combat collision"),
+                Component->GetCollisionEnabled() == ECollisionEnabled::NoCollision);
+        }
+        if (Component->GetName().StartsWith(TEXT("Cover")))
+        {
+            ++HiddenCoverColliders;
+            TestFalse(TEXT("Primitive cover render is hidden behind authored cargo"), Component->IsVisible());
+            TestTrue(TEXT("Original cover volume still blocks campaign combat"),
+                Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics);
+        }
         if (Component->GetName().StartsWith(TEXT("Ground")) &&
             Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics)
             bCollisionGroundPresent = true;
@@ -101,6 +116,8 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         TestTrue(*FString::Printf(TEXT("Terrain tile %s is registered"), *Name), Component->IsRegistered());
     }
     TestEqual(TEXT("Campaign has exactly sixteen authored terrain tiles"), TerrainCount, 16);
+    TestEqual(TEXT("Campaign has twelve authored cargo visuals"), CargoVisualCount, 12);
+    TestEqual(TEXT("Campaign retains twelve hidden cover colliders"), HiddenCoverColliders, 12);
     TestTrue(TEXT("Separate flat gameplay ground still supplies collision"), bCollisionGroundPresent);
     TestFalse(TEXT("Raised blockout road must not hide photographed terrain path"), bBlockoutRoadPresent);
 
@@ -127,18 +144,21 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     TInlineComponentArray<UStaticMeshComponent*> PracticeMeshes;
     Builder->GetComponents(PracticeMeshes);
     int32 PracticeTerrainCount = 0;
+    int32 PracticeCargoCount = 0;
     bool bKernelGroundPresent = false;
     bool bKernelWallPresent = false;
     for (UStaticMeshComponent* Component : PracticeMeshes)
     {
         if (!Component) continue;
         PracticeTerrainCount += Component->GetName().StartsWith(TEXT("SM_NyaagyuTerrain_")) ? 1 : 0;
+        PracticeCargoCount += Component->GetName().StartsWith(TEXT("SM_Nyaagyu_CargoStack")) ? 1 : 0;
         bKernelGroundPresent |= Component->GetName().StartsWith(TEXT("KernelGround")) &&
             Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics;
         bKernelWallPresent |= Component->GetName().StartsWith(TEXT("KernelWall0")) &&
             Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics;
     }
     TestEqual(TEXT("Practice mode has no authored terrain components"), PracticeTerrainCount, 0);
+    TestEqual(TEXT("Practice mode has no authored cargo components"), PracticeCargoCount, 0);
     TestTrue(TEXT("Practice mode has kernel-defined colliding ground"), bKernelGroundPresent);
     TestTrue(TEXT("Practice mode has kernel-defined colliding wall"), bKernelWallPresent);
 

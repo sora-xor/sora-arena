@@ -549,5 +549,6 @@ if not font.is_file() or not (source / "Fonts/OFL.txt").is_file():
 
 runpy.run_path(str(root / "scripts/unreal/import_nyaakoto_pbr.py"), run_name="__main__")
 runpy.run_path(str(root / "scripts/unreal/import_hero_katana_pbr.py"), run_name="__main__")
+runpy.run_path(str(root / "scripts/unreal/import_nyaagyu_cargo_stack.py"), run_name="__main__")
 assets.save_directory("/Game/Generated", only_if_is_dirty=False, recursive=True)
 unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon/horse meshes, {len(environment_tasks)} source-authored environment props, {len(terrain_tasks)} mesh terrain tiles, {len(tree_tasks)} CC0 foliage LODs; Japanese font staged separately")

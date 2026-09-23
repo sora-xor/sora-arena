@@ -7,6 +7,9 @@ Nyaakoto image. It is not a mesh, texture, animation, scanned asset, or screensh
 from the game. The supplied image establishes the grey tabby identity, white
 muzzle, blue/vermillion armor, yumi, arrows, and katana. The exact project SORA
 SVG, rather than a generated approximation, defines all finished kamon.
+The earlier [facial study](../../Content/SourceArt/Characters/Hero/Reference/Nyaagyu_Photoreal_Concept_v1.png)
+remains a separate anatomy reference; this plate adds full-body armor and weapon
+direction.
 
 The current Blender and packaged UE character remains visibly stylized. Closing
 the gap requires original source-asset work, followed by repeatable in-engine

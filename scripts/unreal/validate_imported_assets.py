@@ -20,6 +20,7 @@ TERRAIN = "/Game/Generated/Environment/Terrain"
 FOLIAGE = "/Game/Generated/Environment/Foliage"
 NYAAKOTO = "/Game/Generated/Characters/Nyaakoto"
 HERO_KATANA = "/Game/Generated/Weapons/HeroKatana"
+CARGO = "/Game/Generated/Environment/CargoStack"
 
 
 def require(condition, message):
@@ -177,6 +178,67 @@ def torii_lacquer_source(source_root):
                 and hashlib.sha256(file.read_bytes()).hexdigest() == entry["sha256"],
                 f"The torii lacquer {channel} source changed")
     return record
+
+
+def cargo_stack_source(project_root, source_root):
+    art_root = source_root / "Environment/NyaagyuCargoStack"
+    record = read_manifest(art_root / "manifest.json")
+    pbr_path = source_file(art_root, "PBR/manifest.json")
+    pbr = read_manifest(pbr_path)
+    require(record.get("schema_version") == 1
+            and record.get("name") == "SM_Nyaagyu_CargoStack"
+            and record.get("generator") == "scripts/art/create_nyaagyu_cargo_stack.py"
+            and record.get("unreal_asset") ==
+            f"{PROPS}/SM_Nyaagyu_CargoStack.SM_Nyaagyu_CargoStack"
+            and record.get("collision_envelope_m") == [2.3, 1.8, 1.4]
+            and record.get("collision", "").startswith("Visual only")
+            and record.get("pbr_manifest_sha256") ==
+            hashlib.sha256(pbr_path.read_bytes()).hexdigest()
+            and pbr.get("schema_version") == 1
+            and pbr.get("generator") == "scripts/art/create_nyaagyu_cargo_pbr.py"
+            and pbr.get("origin") ==
+            "Original project-authored deterministic procedural pixels; no external texture inputs"
+            and [group.get("name") for group in pbr.get("sets", [])] ==
+            ["Wood", "Straw", "IndigoCloth"],
+            "The authored cargo stack or PBR provenance changed")
+    fbx = source_file(art_root, record["fbx"])
+    require(hashlib.sha256(fbx.read_bytes()).hexdigest() == record["fbx_sha256"],
+            "The authored cargo mesh changed")
+    logo = (art_root / record["insignia_source"]).resolve()
+    require(logo.is_relative_to(source_root.resolve())
+            and logo.is_file()
+            and hashlib.sha256(logo.read_bytes()).hexdigest() ==
+            record["insignia_sha256"]
+            and len(record.get("exact_sora_kamon_objects", [])) == 2,
+            "Cargo kamon must use the exact supplied SORA SVG")
+    lower = record.get("bounds_m", {}).get("min", [-9, -9, -1])
+    upper = record.get("bounds_m", {}).get("max", [9, 9, 9])
+    require(len(lower) == len(upper) == 3
+            and lower[0] >= -1.15 and upper[0] <= 1.15
+            and lower[1] >= -0.9 and upper[1] <= 0.9
+            and lower[2] >= 0 and upper[2] <= 1.4
+            and record.get("source_triangles", 0) >= 20_000,
+            "Cargo art escaped the retained combat cover volume")
+    expected_slots = {"M_Cargo_AgedTimber", "M_Cargo_BlackIron", "M_Cargo_DarkInterior",
+                      "M_Cargo_HempRope", "M_Cargo_IndigoCloth", "M_Cargo_SORA_Red",
+                      "M_Cargo_StrawWrap", "M_Cargo_WornEdge"}
+    require(set(record.get("material_slots", [])) == expected_slots
+            and set(pbr.get("material_slots", {})) ==
+            expected_slots - {"M_Cargo_BlackIron", "M_Cargo_SORA_Red"},
+            "Cargo FBX material slots changed")
+    generator = source_file(project_root, pbr["generator"])
+    require(hashlib.sha256(generator.read_bytes()).hexdigest() == pbr["generator_sha256"],
+            "Cargo procedural texture generator changed")
+    for group in pbr["sets"]:
+        require(group.get("resolution") == [2048, 2048]
+                and [item.get("channel") for item in group.get("maps", [])] ==
+                ["Albedo", "NormalDX", "ORM"],
+                f"Cargo {group.get('name')} PBR set is incomplete")
+        for item in group["maps"]:
+            path = source_file(art_root / "PBR", item["file"])
+            require(hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"],
+                    f"Cargo PBR map changed: {path}")
+    return record, pbr
 
 
 def validate_hero_katana_loaded(unreal, asset_library):
@@ -392,6 +454,17 @@ def expected_assets(project_root):
     ):
         named_mesh(source_root, specs, f"Environment/{folder}", "manifest.json",
                    name, PROPS)
+    cargo, cargo_pbr = cargo_stack_source(project_root, source_root)
+    add(specs, cargo["unreal_asset"], "StaticMesh")
+    for group in cargo_pbr["sets"]:
+        for item in group["maps"]:
+            name = Path(item["file"]).stem
+            add(specs, f"{CARGO}/Textures/{name}.{name}", "Texture2D")
+    for name in ("M_NyaagyuCargo_PBR", "M_NyaagyuCargo_FlatPBR"):
+        add(specs, f"{CARGO}/{name}.{name}", "Material")
+    for slot in cargo["material_slots"]:
+        name = "MI_NyaagyuCargo_" + slot.removeprefix("M_Cargo_")
+        add(specs, f"{CARGO}/{name}.{name}", "MaterialInstanceConstant")
     dojo_root = source_root / "Environment/NyaagyuDojo"
     dojo = read_manifest(dojo_root / "manifest.json")
     require(dojo.get("generator") == "scripts/art/create_nyaagyu_dojo.py"
@@ -748,6 +821,51 @@ def validate_loaded_assets(unreal, specs):
     require(len(bound) == 1 and bound[0] is not None
             and bound[0].get_path_name() == torii["unreal_instance"],
             "Torii lacquer is not bound to the imported gate slot")
+    cargo, cargo_pbr = cargo_stack_source(
+        Path(unreal.Paths.project_dir()).resolve(),
+        Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
+    cargo_mesh = asset_library.load_asset(cargo["unreal_asset"])
+    require(bool(cargo_mesh.get_editor_property("nanite_settings").get_editor_property("enabled")),
+            "Cargo art lost its Windows Nanite data")
+    cargo_slots = cargo_mesh.get_editor_property("static_materials")
+    require({str(slot.get_editor_property("material_slot_name")) for slot in cargo_slots} ==
+            set(cargo["material_slots"]),
+            "Cargo FBX material zones disappeared")
+    for slot in cargo_slots:
+        slot_name = str(slot.get_editor_property("material_slot_name"))
+        name = "MI_NyaagyuCargo_" + slot_name.removeprefix("M_Cargo_")
+        instance_path = f"{CARGO}/{name}.{name}"
+        bound = slot.get_editor_property("material_interface")
+        require(bound is not None and bound.get_path_name() == instance_path,
+                f"Cargo mesh lost material {slot_name}")
+        instance = asset_library.load_asset(instance_path)
+        textured = slot_name in cargo_pbr["material_slots"]
+        parent_name = "M_NyaagyuCargo_PBR" if textured else "M_NyaagyuCargo_FlatPBR"
+        parent = instance.get_editor_property("parent")
+        require(parent is not None and parent.get_path_name() ==
+                f"{CARGO}/{parent_name}.{parent_name}",
+                f"Cargo {slot_name} material parent changed")
+        if textured:
+            surface = cargo_pbr["material_slots"][slot_name]["surface"]
+            for parameter, channel in (("AlbedoMap", "Albedo"),
+                                       ("NormalMap", "NormalDX"), ("ORMMap", "ORM")):
+                texture_name = f"T_NyaagyuCargo_{surface}_{channel}"
+                texture_path = f"{CARGO}/Textures/{texture_name}.{texture_name}"
+                texture = asset_library.load_asset(texture_path)
+                actual = material_lib.get_material_instance_texture_parameter_value(instance, parameter)
+                require(actual is not None and actual.get_path_name() == texture_path,
+                        f"Cargo {slot_name} lost {parameter}")
+                require(bool(texture.get_editor_property("srgb")) == (channel == "Albedo"),
+                        f"Cargo {surface} {channel} color space changed")
+                if channel == "NormalDX":
+                    require(texture.get_editor_property("compression_settings") ==
+                            unreal.TextureCompressionSettings.TC_NORMALMAP
+                            and not bool(texture.get_editor_property("flip_green_channel")),
+                            f"Cargo {surface} DirectX normal settings changed")
+                if channel == "ORM":
+                    require(texture.get_editor_property("compression_settings") ==
+                            unreal.TextureCompressionSettings.TC_MASKS,
+                            f"Cargo {surface} ORM compression changed")
     for role in ("Soil", "Stone"):
         path = f"{PALETTE}/MI_Nyaagyu_Terrain{role}.MI_Nyaagyu_Terrain{role}"
         instance = asset_library.load_asset(path)
