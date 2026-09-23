@@ -733,7 +733,11 @@ impl World {
                 }
             }
             if self.players[victim].health <= 0 {
-                killers[victim] = if self.enemy(attacker, victim) {
+                killers[victim] = if attacker == victim {
+                    // A self-inflicted blast is a suicide even when an enemy
+                    // dealt qualifying damage earlier in the assist window.
+                    None
+                } else if self.enemy(attacker, victim) {
                     Some(attacker)
                 } else {
                     self.damage_history
@@ -1087,6 +1091,61 @@ mod tests {
         assert!(!w.players[1].alive);
         assert_eq!(w.accounts[1].remaining, 900);
         assert_eq!(w.accounts[0].earnings, 100);
+    }
+    #[test]
+    fn suicide_after_enemy_damage_never_transfers_bond() {
+        let mut w = World::new(
+            Config {
+                mode: Mode::FreeForAll,
+                map: 0,
+                max_ticks: 600,
+                base_bond: 1000,
+                offline: false,
+            },
+            &[
+                Participant {
+                    team: 0,
+                    class: 3,
+                    weapon: 7,
+                    bond: 1000,
+                    special_entitled: false,
+                },
+                Participant {
+                    team: 1,
+                    class: 0,
+                    weapon: 1,
+                    bond: 1000,
+                    special_entitled: false,
+                },
+            ],
+        )
+        .unwrap();
+        w.players[0].position = Vec3::new(0, 0, 0);
+        w.players[1].position = Vec3::new(5000, 0, 0);
+        w.players[0].health = 50;
+        w.damage_history.push(DamageRecord {
+            tick: 0,
+            attacker: 1,
+            victim: 0,
+            damage: 30,
+        });
+        w.projectiles.push(Projectile {
+            id: 0,
+            owner: 0,
+            position: Vec3::new(0, 0, 50),
+            velocity: Vec3::new(0, 0, -350),
+            weapon: 7,
+            traveled: 2000,
+            age: 1,
+        });
+        w.step(&[Input::default(), Input::default()]).unwrap();
+        assert!(!w.players[0].alive);
+        assert_eq!(w.accounts[0].deaths, 1);
+        assert_eq!(w.accounts[0].paid_deaths, 0);
+        assert_eq!(w.accounts[0].remaining, 1000);
+        assert_eq!(w.accounts[1].kills, 0);
+        assert_eq!(w.accounts[1].earnings, 0);
+        assert!(economy::conserved(&w.accounts));
     }
     #[test]
     fn walls_stop_damage() {

@@ -187,3 +187,25 @@ native calls. Eleven guard tests now pass, including stale-library rejection,
 optimized staging leaving binaries unchanged, and optimized parity runs replacing
 old success reports with failure. Re-recording after this runner-only correction
 confirmed identical controls and all 73 case expectations.
+
+### 2026-09-23 suicide attribution, rules version 5
+
+An armed self-inflicted explosive death could previously pay a recent enemy
+damager from the five-second assist history. The outcome rule now treats that
+death as a suicide with no XOR transfer, regardless of earlier enemy damage.
+A focused `World::step` regression test detonates a self-owned projectile after
+qualifying enemy damage and verifies that the full initial bond remains in the
+victim's reserve. This financially relevant correction advances the rules
+identity to `sora-arena-first-release-5`.
+
+The macOS arm64 release library was rebuilt, staged, and deliberately used to
+re-record this ABI 3 reference. Structural comparison with the immediately
+prior fixture found identical control bytes and hashes, session configurations,
+rosters, ABI layout, runner identity, map/weapon identities, event streams,
+presentation streams, and event counts. All 73 initial and final state hashes,
+state streams, and 735 checkpoint state hashes/streams changed as expected from
+the rules identity in the canonical world hash. Source identity changed only
+for `lib.rs` and `simulation.rs`. Verification passes 73 cases / 44,100 ticks,
+eleven negative guards, 72 practice scenarios / 86,400 ticks, and the locked
+offline Rust suite. These fixtures still do not prove payout correctness or
+Windows/macOS parity.

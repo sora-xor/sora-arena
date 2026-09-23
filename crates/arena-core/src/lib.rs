@@ -23,7 +23,7 @@ pub const TICK_RATE: u32 = 60;
 pub const MAX_PLAYERS: usize = 12;
 pub const MAX_TICKS: u32 = 36_000;
 pub const ASSIST_TICKS: u32 = 5 * TICK_RATE;
-pub const RULES_VERSION: &str = "sora-arena-first-release-4";
+pub const RULES_VERSION: &str = "sora-arena-first-release-5";
 
 /// Qualification is an actual release gate, never a user-configurable toggle.
 pub const fn proof_qualified() -> bool {

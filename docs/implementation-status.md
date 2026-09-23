@@ -61,7 +61,10 @@ before same-tick damage, and five behavior tests cover targeting, cap, dead
 allies, FFA, and simultaneous order. Plasma matchlock now penetrates guard only
 with its charged direct hit. Kanabo has an eighteen-tick windup, and charge is
 bound to its selected weapon, preventing cross-weapon precharge. Those rules
-advance the identity to `sora-arena-first-release-4`. Native presentation ABI
+advanced the identity to `sora-arena-first-release-4`. A subsequent attribution
+correction makes self-inflicted explosive deaths reward no opponent even after
+recent qualifying enemy damage; this advances the rules identity to
+`sora-arena-first-release-5`. Native presentation ABI
 3 exposes charge progress to a Japanese HUD bar and world-pawn weapon pose;
 opponent readability has not been playtested. The deliberately re-recorded
 ABI 3 macOS fixture retains identical controls, participant loadouts, map
