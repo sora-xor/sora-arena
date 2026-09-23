@@ -1,0 +1,715 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/build_nyaagyu_path_quilt.py",
+  "generator_sha256": "9a7ae5f849480c0c3f7022c18b1e290ff409ba1838ad974347f502fe02ba5ba6",
+  "source_asset": "grey_stone_path",
+  "source_url": "https://polyhaven.com/a/grey_stone_path",
+  "license": "CC0-1.0",
+  "physical_size_cm": [
+    720,
+    720
+  ],
+  "texture_size_px": [
+    4096,
+    4096
+  ],
+  "seed": 1352968049,
+  "quilt": {
+    "grid": [
+      8,
+      8
+    ],
+    "patch_px": 640,
+    "stride_px": 512,
+    "overlap_px": 128,
+    "selection": "top 12 scan crops by color edge match; seeded choice; minimum-error seam",
+    "registration": "all four channels use the exact same crop and seam mask; no rotations or mirrors"
+  },
+  "source_files": {
+    "Diffuse": {
+      "repo_path": "Content/SourceArt/Environment/NyaagyuTerrain/GreyStonePath/grey_stone_path_diff_2k.jpg",
+      "sha256": "bf405e4e8a2d720976f710c4bb6de7734bc0bea613657e6c9362d3716418cc51"
+    },
+    "nor_dx": {
+      "repo_path": "Content/SourceArt/Environment/NyaagyuTerrain/GreyStonePath/grey_stone_path_nor_dx_2k.png",
+      "sha256": "51d7936c326ed7a2582f700109ba0a53b9a8b588d664b48ab11f3a7d3af225e4"
+    },
+    "arm": {
+      "repo_path": "Content/SourceArt/Environment/NyaagyuTerrain/GreyStonePath/grey_stone_path_arm_2k.png",
+      "sha256": "58e43f2a4daad0503b74347b5e7b07b2d92d0fbe56d707ba225269e5442f8d4b"
+    },
+    "disp": {
+      "repo_path": "Content/SourceArt/Environment/NyaagyuTerrain/GreyStonePath/grey_stone_path_disp_2k.png",
+      "sha256": "648b48ccbd497ba28100e56baa6eee10d5d37d66156816bafd79548c4295298b"
+    }
+  },
+  "patches": [
+    {
+      "row": 0,
+      "col": 0,
+      "source_xy_px_at_1024": [
+        384,
+        256
+      ],
+      "overlap_px": 128,
+      "edge_score": 0.0
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "source_xy_px_at_1024": [
+        384,
+        208
+      ],
+      "overlap_px": 128,
+      "edge_score": 219.227
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "source_xy_px_at_1024": [
+        80,
+        288
+      ],
+      "overlap_px": 128,
+      "edge_score": 212.762
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "source_xy_px_at_1024": [
+        336,
+        0
+      ],
+      "overlap_px": 128,
+      "edge_score": 267.567
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "source_xy_px_at_1024": [
+        384,
+        192
+      ],
+      "overlap_px": 128,
+      "edge_score": 175.24
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "source_xy_px_at_1024": [
+        64,
+        176
+      ],
+      "overlap_px": 128,
+      "edge_score": 199.157
+    },
+    {
+      "row": 0,
+      "col": 6,
+      "source_xy_px_at_1024": [
+        320,
+        272
+      ],
+      "overlap_px": 128,
+      "edge_score": 243.303
+    },
+    {
+      "row": 0,
+      "col": 7,
+      "source_xy_px_at_1024": [
+        368,
+        160
+      ],
+      "overlap_px": 128,
+      "edge_score": 383.442
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "source_xy_px_at_1024": [
+        160,
+        352
+      ],
+      "overlap_px": 128,
+      "edge_score": 226.366
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "source_xy_px_at_1024": [
+        384,
+        288
+      ],
+      "overlap_px": 128,
+      "edge_score": 510.487
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "source_xy_px_at_1024": [
+        48,
+        240
+      ],
+      "overlap_px": 128,
+      "edge_score": 438.194
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "source_xy_px_at_1024": [
+        80,
+        160
+      ],
+      "overlap_px": 128,
+      "edge_score": 534.209
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "source_xy_px_at_1024": [
+        336,
+        288
+      ],
+      "overlap_px": 128,
+      "edge_score": 444.9
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "source_xy_px_at_1024": [
+        64,
+        208
+      ],
+      "overlap_px": 128,
+      "edge_score": 479.385
+    },
+    {
+      "row": 1,
+      "col": 6,
+      "source_xy_px_at_1024": [
+        304,
+        288
+      ],
+      "overlap_px": 128,
+      "edge_score": 543.496
+    },
+    {
+      "row": 1,
+      "col": 7,
+      "source_xy_px_at_1024": [
+        368,
+        192
+      ],
+      "overlap_px": 128,
+      "edge_score": 765.96
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "source_xy_px_at_1024": [
+        112,
+        336
+      ],
+      "overlap_px": 128,
+      "edge_score": 212.652
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "source_xy_px_at_1024": [
+        368,
+        288
+      ],
+      "overlap_px": 128,
+      "edge_score": 507.181
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "source_xy_px_at_1024": [
+        48,
+        160
+      ],
+      "overlap_px": 128,
+      "edge_score": 442.52
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "source_xy_px_at_1024": [
+        112,
+        160
+      ],
+      "overlap_px": 128,
+      "edge_score": 526.385
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "source_xy_px_at_1024": [
+        336,
+        256
+      ],
+      "overlap_px": 128,
+      "edge_score": 503.043
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "source_xy_px_at_1024": [
+        64,
+        352
+      ],
+      "overlap_px": 128,
+      "edge_score": 462.0
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "source_xy_px_at_1024": [
+        336,
+        304
+      ],
+      "overlap_px": 128,
+      "edge_score": 589.356
+    },
+    {
+      "row": 2,
+      "col": 7,
+      "source_xy_px_at_1024": [
+        384,
+        240
+      ],
+      "overlap_px": 128,
+      "edge_score": 717.63
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "source_xy_px_at_1024": [
+        64,
+        336
+      ],
+      "overlap_px": 128,
+      "edge_score": 202.334
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "source_xy_px_at_1024": [
+        128,
+        336
+      ],
+      "overlap_px": 128,
+      "edge_score": 559.627
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "source_xy_px_at_1024": [
+        384,
+        112
+      ],
+      "overlap_px": 128,
+      "edge_score": 492.808
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "source_xy_px_at_1024": [
+        64,
+        192
+      ],
+      "overlap_px": 128,
+      "edge_score": 468.287
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "source_xy_px_at_1024": [
+        320,
+        304
+      ],
+      "overlap_px": 128,
+      "edge_score": 519.198
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "source_xy_px_at_1024": [
+        48,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 517.993
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "source_xy_px_at_1024": [
+        304,
+        240
+      ],
+      "overlap_px": 128,
+      "edge_score": 543.996
+    },
+    {
+      "row": 3,
+      "col": 7,
+      "source_xy_px_at_1024": [
+        384,
+        256
+      ],
+      "overlap_px": 128,
+      "edge_score": 679.443
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "source_xy_px_at_1024": [
+        16,
+        224
+      ],
+      "overlap_px": 128,
+      "edge_score": 204.971
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "source_xy_px_at_1024": [
+        80,
+        256
+      ],
+      "overlap_px": 128,
+      "edge_score": 471.08
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "source_xy_px_at_1024": [
+        144,
+        320
+      ],
+      "overlap_px": 128,
+      "edge_score": 522.146
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "source_xy_px_at_1024": [
+        368,
+        112
+      ],
+      "overlap_px": 128,
+      "edge_score": 475.258
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "source_xy_px_at_1024": [
+        288,
+        288
+      ],
+      "overlap_px": 128,
+      "edge_score": 452.845
+    },
+    {
+      "row": 4,
+      "col": 5,
+      "source_xy_px_at_1024": [
+        16,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 474.36
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "source_xy_px_at_1024": [
+        64,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 495.645
+    },
+    {
+      "row": 4,
+      "col": 7,
+      "source_xy_px_at_1024": [
+        128,
+        176
+      ],
+      "overlap_px": 128,
+      "edge_score": 748.255
+    },
+    {
+      "row": 5,
+      "col": 0,
+      "source_xy_px_at_1024": [
+        32,
+        256
+      ],
+      "overlap_px": 128,
+      "edge_score": 210.782
+    },
+    {
+      "row": 5,
+      "col": 1,
+      "source_xy_px_at_1024": [
+        32,
+        160
+      ],
+      "overlap_px": 128,
+      "edge_score": 452.396
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "source_xy_px_at_1024": [
+        112,
+        256
+      ],
+      "overlap_px": 128,
+      "edge_score": 492.158
+    },
+    {
+      "row": 5,
+      "col": 3,
+      "source_xy_px_at_1024": [
+        336,
+        208
+      ],
+      "overlap_px": 128,
+      "edge_score": 511.453
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "source_xy_px_at_1024": [
+        80,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 450.259
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "source_xy_px_at_1024": [
+        160,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 452.233
+    },
+    {
+      "row": 5,
+      "col": 6,
+      "source_xy_px_at_1024": [
+        384,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 427.07
+    },
+    {
+      "row": 5,
+      "col": 7,
+      "source_xy_px_at_1024": [
+        352,
+        336
+      ],
+      "overlap_px": 128,
+      "edge_score": 685.649
+    },
+    {
+      "row": 6,
+      "col": 0,
+      "source_xy_px_at_1024": [
+        272,
+        240
+      ],
+      "overlap_px": 128,
+      "edge_score": 201.633
+    },
+    {
+      "row": 6,
+      "col": 1,
+      "source_xy_px_at_1024": [
+        384,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 445.677
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "source_xy_px_at_1024": [
+        64,
+        176
+      ],
+      "overlap_px": 128,
+      "edge_score": 450.28
+    },
+    {
+      "row": 6,
+      "col": 3,
+      "source_xy_px_at_1024": [
+        128,
+        256
+      ],
+      "overlap_px": 128,
+      "edge_score": 578.262
+    },
+    {
+      "row": 6,
+      "col": 4,
+      "source_xy_px_at_1024": [
+        0,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 455.688
+    },
+    {
+      "row": 6,
+      "col": 5,
+      "source_xy_px_at_1024": [
+        48,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 482.662
+    },
+    {
+      "row": 6,
+      "col": 6,
+      "source_xy_px_at_1024": [
+        112,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 485.89
+    },
+    {
+      "row": 6,
+      "col": 7,
+      "source_xy_px_at_1024": [
+        32,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 680.025
+    },
+    {
+      "row": 7,
+      "col": 0,
+      "source_xy_px_at_1024": [
+        80,
+        336
+      ],
+      "overlap_px": 128,
+      "edge_score": 422.473
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "source_xy_px_at_1024": [
+        384,
+        160
+      ],
+      "overlap_px": 128,
+      "edge_score": 762.78
+    },
+    {
+      "row": 7,
+      "col": 2,
+      "source_xy_px_at_1024": [
+        48,
+        160
+      ],
+      "overlap_px": 128,
+      "edge_score": 588.237
+    },
+    {
+      "row": 7,
+      "col": 3,
+      "source_xy_px_at_1024": [
+        128,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 752.24
+    },
+    {
+      "row": 7,
+      "col": 4,
+      "source_xy_px_at_1024": [
+        384,
+        256
+      ],
+      "overlap_px": 128,
+      "edge_score": 583.284
+    },
+    {
+      "row": 7,
+      "col": 5,
+      "source_xy_px_at_1024": [
+        16,
+        224
+      ],
+      "overlap_px": 128,
+      "edge_score": 635.4
+    },
+    {
+      "row": 7,
+      "col": 6,
+      "source_xy_px_at_1024": [
+        48,
+        144
+      ],
+      "overlap_px": 128,
+      "edge_score": 638.087
+    },
+    {
+      "row": 7,
+      "col": 7,
+      "source_xy_px_at_1024": [
+        384,
+        112
+      ],
+      "overlap_px": 128,
+      "edge_score": 913.159
+    }
+  ],
+  "outputs": {
+    "Diffuse": {
+      "file": "T_NyaagyuPathQuilt_Albedo.jpg",
+      "sha256": "85072608ac692e578b03e721c80f36f768f5c8506ce7fb79ddf845281caad246",
+      "bytes": 8715908
+    },
+    "nor_dx": {
+      "file": "T_NyaagyuPathQuilt_NormalDX.png",
+      "sha256": "394c495528560f7f1de9ee721451a767bba96c089878bed0d59d7b182b1a7954",
+      "bytes": 25506203
+    },
+    "arm": {
+      "file": "T_NyaagyuPathQuilt_ARM.png",
+      "sha256": "998920507528a44595f97112bd93d21c6b17cebb957b07e0c37ee706ebcc76d8",
+      "bytes": 20749157
+    },
+    "disp": {
+      "file": "T_NyaagyuPathQuilt_Height.png",
+      "sha256": "478928e82f9173238d37770d454824273be05a88f417c754a0015ca774076b85",
+      "bytes": 22205949
+    }
+  },
+  "review": {
+    "file": "Nyaagyu_PathQuilt_Review.jpg",
+    "sha256": "24352b35025b55e8faea025615ae430bdc5c334e221e53a7df7078e4acf29cbe"
+  },
+  "limitations": "One licensed 1.8 m photograph synthesized into a larger 7.2 m atlas; some photographed stone identities recur, and final quality requires an eye-height packaged Unreal comparison. No collision, 5.8.2, Nanite, or performance claim."
+}
