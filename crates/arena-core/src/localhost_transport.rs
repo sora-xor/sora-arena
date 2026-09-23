@@ -561,7 +561,7 @@ mod tests {
 
     use crate::{
         protocol::{CommitmentSet, input_commitment, sign_commitment_set},
-        simulation::{Config, Input, Mode, Participant},
+        simulation::{Config, FIRE, Input, Mode, Participant, World},
     };
 
     static NEXT_ROOT: AtomicU64 = AtomicU64::new(0);
@@ -585,19 +585,6 @@ mod tests {
     }
 
     fn setup(players: usize) -> (TestRoot, LocalhostPeer, LocalhostPeer, Vec<SigningKey>) {
-        let root = TestRoot::new();
-        let keys = (1..=players)
-            .map(|n| SigningKey::from_bytes(&[n as u8; 32]))
-            .collect::<Vec<_>>();
-        let context = Context {
-            network: [61; 32],
-            session: [62; 32],
-            manifest: [63; 32],
-            roster: keys
-                .iter()
-                .map(|key| key.verifying_key().to_bytes())
-                .collect(),
-        };
         let config = Config {
             mode: Mode::Control,
             map: 0,
@@ -614,18 +601,38 @@ mod tests {
                 special_entitled: false,
             })
             .collect::<Vec<_>>();
+        setup_with(config, &participants)
+    }
+
+    fn setup_with(
+        config: Config,
+        participants: &[Participant],
+    ) -> (TestRoot, LocalhostPeer, LocalhostPeer, Vec<SigningKey>) {
+        let root = TestRoot::new();
+        let keys = (1..=participants.len())
+            .map(|n| SigningKey::from_bytes(&[n as u8; 32]))
+            .collect::<Vec<_>>();
+        let context = Context {
+            network: [61; 32],
+            session: [62; 32],
+            manifest: [63; 32],
+            roster: keys
+                .iter()
+                .map(|key| key.verifying_key().to_bytes())
+                .collect(),
+        };
         let initiator_journal = DurableSession::create(
             &root.0.join("initiator.journal"),
             context.clone(),
             config.clone(),
-            &participants,
+            participants,
         )
         .unwrap();
         let responder_journal = DurableSession::create(
             &root.0.join("responder.journal"),
             context,
             config,
-            &participants,
+            participants,
         )
         .unwrap();
         let initiator_socket = UdpSocket::bind("127.0.0.1:0").unwrap();
@@ -767,6 +774,176 @@ mod tests {
         );
         assert_eq!(initiator.journal().session().evidence().next_tick, 2);
         assert_eq!(responder.journal().session().evidence().next_tick, 2);
+    }
+
+    #[test]
+    fn two_peer_gun_match_replays_accepted_batches_and_rejects_tampering_and_replay() {
+        // Offline admission deliberately has no bond, wallet, NFT, or ledger.
+        let config = Config {
+            mode: Mode::FreeForAll,
+            map: 0,
+            max_ticks: 120,
+            base_bond: 0,
+            offline: true,
+        };
+        let participants = [
+            Participant {
+                team: 0,
+                class: 0,
+                weapon: 1,
+                bond: 0,
+                special_entitled: false,
+            },
+            Participant {
+                team: 1,
+                class: 0,
+                weapon: 1,
+                bond: 0,
+                special_entitled: false,
+            },
+        ];
+        let (_root, mut first, mut second, keys) = setup_with(config.clone(), &participants);
+        let mut reference = World::new(config, &participants).unwrap();
+        let initial_hash = reference.state_hash();
+        let mut shots = 0;
+
+        for batch in 0..8u32 {
+            let evidence = first.journal().session().evidence();
+            let other = second.journal().session().evidence();
+            assert_eq!(evidence.root, other.root);
+            assert_eq!(evidence.next_tick, batch * 2);
+            let reveals = (0..2)
+                .map(|slot| Reveal {
+                    slot,
+                    inputs: (0..2)
+                        .map(|offset| {
+                            let tick = batch * 2 + offset;
+                            Input {
+                                buttons: if tick.is_multiple_of(3) { FIRE } else { 0 },
+                                move_y: 48,
+                                yaw: if slot == 0 { 32768 } else { 0 },
+                                ..Input::default()
+                            }
+                        })
+                        .collect(),
+                    salt: [(batch * 2 + slot as u32) as u8; 32],
+                })
+                .collect::<Vec<_>>();
+            let set = CommitmentSet {
+                epoch: evidence.epoch,
+                start_tick: evidence.next_tick,
+                parent: evidence.root,
+                commitments: reveals
+                    .iter()
+                    .map(|reveal| {
+                        input_commitment(
+                            &evidence.context,
+                            evidence.epoch,
+                            evidence.next_tick,
+                            evidence.root,
+                            reveal.slot,
+                            &reveal.inputs,
+                            reveal.salt,
+                        )
+                        .unwrap()
+                    })
+                    .collect(),
+            };
+            let mut certificate = certificate(&first, &keys, &set);
+            certificate.sequence = u64::from(batch) * 2;
+            let certificate_packet = first.prepare(&certificate).unwrap();
+            first.transmit(&certificate_packet).unwrap();
+            assert_eq!(second.receive().unwrap(), certificate);
+
+            let remote_reveal = WireFrame {
+                sender: 1,
+                sequence: u64::from(batch),
+                message: WireMessage::Reveal {
+                    set: set.clone(),
+                    reveal: reveals[1].clone(),
+                },
+            };
+            let remote_packet = second.prepare(&remote_reveal).unwrap();
+            if batch == 1 {
+                // Alter the authenticated ciphertext fragment in flight. No
+                // receipt or combat tick may advance before exact retry.
+                let retained = first.journal().receipt();
+                let mut corrupted = remote_packet.fragments[0].clone();
+                *corrupted.last_mut().unwrap() ^= 1;
+                send_datagram(&second.socket, second.remote, &corrupted).unwrap();
+                assert!(matches!(first.receive(), Err(TransportError::Evidence(_))));
+                assert_eq!(first.journal().receipt(), retained);
+                assert_eq!(first.journal().session().confirmed().tick, batch * 2);
+            }
+            second.transmit(&remote_packet).unwrap();
+            assert_eq!(first.receive().unwrap(), remote_reveal);
+
+            let local_reveal = WireFrame {
+                sender: 0,
+                sequence: u64::from(batch) * 2 + 1,
+                message: WireMessage::Reveal {
+                    set,
+                    reveal: reveals[0].clone(),
+                },
+            };
+            let local_packet = first.prepare(&local_reveal).unwrap();
+            first.transmit(&local_packet).unwrap();
+            assert_eq!(second.receive().unwrap(), local_reveal);
+
+            for offset in 0..2 {
+                reference
+                    .step(&[reveals[0].inputs[offset], reveals[1].inputs[offset]])
+                    .unwrap();
+                shots += reference
+                    .events
+                    .iter()
+                    .filter(|event| matches!(event, crate::simulation::Event::Shot { .. }))
+                    .count();
+            }
+            let expected = reference.state_hash();
+            assert_eq!(first.journal().session().confirmed().state_hash(), expected);
+            assert_eq!(
+                second.journal().session().confirmed().state_hash(),
+                expected
+            );
+            assert_eq!(
+                first.journal().session().evidence().next_tick,
+                batch * 2 + 2
+            );
+            assert_eq!(
+                second.journal().session().evidence().next_tick,
+                batch * 2 + 2
+            );
+            assert_eq!(
+                first.journal().session().evidence().root,
+                second.journal().session().evidence().root
+            );
+
+            if batch == 1 {
+                // The original authenticated reveal is re-ACKed but must not
+                // enter either journal or execute a second time.
+                let retained = first.journal().receipt();
+                second.transmit(&remote_packet).unwrap();
+                first
+                    .socket
+                    .set_read_timeout(Some(Duration::from_millis(25)))
+                    .unwrap();
+                assert!(matches!(first.receive(), Err(TransportError::Timeout)));
+                first
+                    .socket
+                    .set_read_timeout(Some(Duration::from_secs(2)))
+                    .unwrap();
+                assert_eq!(first.journal().receipt(), retained);
+                assert_eq!(first.journal().session().confirmed().state_hash(), expected);
+            }
+        }
+        assert_eq!(reference.tick, 16);
+        assert_ne!(reference.state_hash(), initial_hash);
+        assert!(
+            shots >= 2,
+            "accepted controls must fire the actual gun kernel"
+        );
+        assert!(reference.players.iter().all(|player| player.ammo < 24));
     }
 
     #[test]
