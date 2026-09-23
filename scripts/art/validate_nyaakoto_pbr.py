@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +17,15 @@ assert record["source_license"].startswith("Project-owned")
 assert {group["name"] for group in record["maps"]} == {
     "fur_grey", "fur_white", "fur_charcoal", "silk_indigo", "lacquer_oxblood", "neutral"}
 assert len(record["material_slots"]) == 23
+assert {item["surface"] for item in record["fur_sources"]} == {
+    "fur_grey", "fur_white", "fur_charcoal"}
+for source in record["fur_sources"]:
+    path = SOURCE / source["file"]
+    assert path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == source["sha256"]
+    assert source["origin"].startswith("Built-in OpenAI image_gen.imagegen")
+    assert source["origin_output_id"].startswith("exec-")
+    assert source["source_url"] is None and len(source["prompt"]) > 400
+    assert source["rights_url"] == "https://openai.com/policies/row-terms-of-use/"
 
 for group in record["maps"]:
     assert {item["channel"] for item in group["maps"]} == {"Albedo", "NormalDX", "ORM"}
@@ -44,8 +54,13 @@ for slot_name, surface in record["material_slots"].items():
     assert 0 < surface["roughness_scale"] <= 2
     assert 0 <= surface["metallic_scale"] <= 1
 
-skin = json.loads((SOURCE.parent / "runtime_skin_manifest.json").read_text())
-assert skin["source_parts"] == 351 and skin["skeleton_bones"]
+if "--maps-only" not in sys.argv:
+    # Keep the full source/runtime check separate from the map-only gate so
+    # material work can be validated while another artist regenerates FBXs.
+    skin = json.loads((SOURCE.parent / "runtime_skin_manifest.json").read_text())
+    hero = json.loads((SOURCE.parent / "manifest.json").read_text())
+    assert skin["source_parts"] == hero["source_parts"] and len(skin["skeleton_bones"]) == 20
 assert "M_Hero_GreyTabbyFur" in record["material_slots"]
 assert "M_Hero_SORAResistanceRed" in record["material_slots"]
-print("NYAAKOTO_PBR_VALID: 6 texture sets, 23 runtime materials, exact tile seams")
+print("NYAAKOTO_PBR_VALID: 6 texture sets, 23 runtime materials, exact tile seams",
+      "maps only" if "--maps-only" in sys.argv else "full")

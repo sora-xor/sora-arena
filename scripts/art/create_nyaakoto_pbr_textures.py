@@ -19,6 +19,117 @@ DEST = ROOT / "Content/SourceArt/Characters/Hero/PBR"
 DEST.mkdir(parents=True, exist_ok=True)
 SIZE = 2048
 SEED = 270426
+FUR_SOURCES = {
+    "fur_grey": "Nyaakoto_GreyFur_ImageGen_v1.png",
+    "fur_white": "Nyaakoto_WhiteFur_ImageGen_v1.png",
+    "fur_charcoal": "Nyaakoto_CharcoalFur_ImageGen_v1.png",
+}
+FUR_GENERATION_IDS = {
+    "fur_grey": "exec-67dc9aa3-fbdb-4fc7-b195-336e6edf1fba",
+    "fur_white": "exec-e08190d3-bb7f-4545-be43-f53aad717117",
+    "fur_charcoal": "exec-eaaaa9f4-9353-437f-ba30-cd03fa217db1",
+}
+FUR_PROMPTS = {
+    "fur_grey": (
+        "Use case: photorealistic-natural. Asset type: repeatable PBR fur albedo "
+        "reference for an Unreal Engine feline samurai character. Create a square, "
+        "perfectly top-down orthographic macro photograph-like texture swatch of "
+        "dense short-haired grey tabby cat coat, with fine distinct guard hairs "
+        "and undercoat; subtle warm grey, charcoal, beige agouti variation and "
+        "non-regular faint tabby mottling. Every part of the frame is fur at the "
+        "same scale. Broad even diffused lighting so the image can serve as albedo, "
+        "with no cast shadows, no specular hotspots, no vignette. The texture must "
+        "be visually seamless across opposite edges for tiling. No cat anatomy, "
+        "no eyes, no nose, no ears, no background, no text, no logo, no watermark."
+    ),
+    "fur_white": (
+        "Use case: photorealistic-natural. Asset type: PBR albedo source swatch "
+        "for a feline samurai game character. Square, top-down orthographic macro "
+        "photograph-like texture of dense short creamy-white domestic cat fur, "
+        "with thousands of fine individual guard hairs and undercoat, subtle "
+        "ivory, cream and pale grey color variation, 4–8 mm directional fibers, "
+        "same scale everywhere. Broad even diffused lighting with no directional "
+        "shadow or highlight so it can be used as material albedo. Fur fills the "
+        "entire frame. Visually seamless tiling across opposite edges. No cat "
+        "anatomy, no skin, no eye, no nose, no ear, no background, no text or "
+        "watermark."
+    ),
+    "fur_charcoal": (
+        "Use case: photorealistic-natural. Asset type: PBR albedo source swatch "
+        "for dark tabby markings on a feline game character. Square top-down "
+        "orthographic macro photograph-like texture of dense short charcoal and "
+        "smoky-brown cat fur, fine individual guard hairs and undercoat, natural "
+        "directional 4–8 mm fibers, subtle warm grey variation, low contrast dark "
+        "markings with no large stripes. Every frame area is the same-scale fur. "
+        "Broad even neutral diffuse light for albedo capture, without cast shadows, "
+        "specular highlights or vignette. Visually seamless opposite edges for "
+        "tiling. No anatomy, no skin, no eye, no nose, no ear, no background, no "
+        "text, no watermark."
+    ),
+}
+RIGHTS_URL = "https://openai.com/policies/row-terms-of-use/"
+
+
+def exact_wrap(pixels: np.ndarray) -> np.ndarray:
+    """Give all output channels identical opposite edge texels."""
+    pixels = pixels.copy()
+    row = ((pixels[0].astype(np.uint16) + pixels[-1].astype(np.uint16)) // 2).astype(np.uint8)
+    pixels[0] = row
+    pixels[-1] = row
+    column = ((pixels[:, 0].astype(np.uint16) + pixels[:, -1].astype(np.uint16)) // 2).astype(np.uint8)
+    pixels[:, 0] = column
+    pixels[:, -1] = column
+    return pixels
+
+
+def periodic_photo(photo: np.ndarray) -> np.ndarray:
+    """Remove broad edge mismatch without mirroring the animal's coat pattern.
+
+    The periodic-plus-smooth decomposition keeps the photographed high-frequency
+    fibers while distributing boundary correction across the tile. The final
+    byte-for-byte wrap is handled by exact_wrap after quantization.
+    """
+    height, width = photo.shape[:2]
+    edge = np.zeros_like(photo)
+    edge[:, 0] += photo[:, -1] - photo[:, 0]
+    edge[:, -1] += photo[:, 0] - photo[:, -1]
+    edge[0] += photo[-1] - photo[0]
+    edge[-1] += photo[0] - photo[-1]
+    y = 2 * np.cos(2 * np.pi * np.arange(height) / height)[:, None]
+    x = 2 * np.cos(2 * np.pi * np.arange(width) / width)[None, :]
+    divisor = y + x - 4
+    divisor[0, 0] = 1
+    smooth = np.fft.ifft2(
+        np.fft.fft2(edge, axes=(0, 1)) / divisor[:, :, None], axes=(0, 1)
+    ).real
+    return np.clip(photo - smooth, 0, 1).astype(np.float32)
+
+
+def photo_fur_fields(kind: str):
+    """Build albedo and conservative micro-normal/ORM from generated swatches.
+
+    The swatches supply coat color and visible hair pattern only. Height is a
+    high-pass estimate for small fiber relief, not a photogrammetry measurement.
+    """
+    source = DEST / "Source" / FUR_SOURCES[kind]
+    photo = Image.open(source).convert("RGB").resize((SIZE, SIZE), Image.Resampling.LANCZOS)
+    color = periodic_photo(np.asarray(photo, dtype=np.float32) / 255)
+    albedo = exact_wrap(np.uint8(np.clip(color * 255, 0, 255)))
+    luminance = color[:, :, 0] * .2126 + color[:, :, 1] * .7152 + color[:, :, 2] * .0722
+    # Remove swatch-scale light/dark mottling before estimating hair relief;
+    # broad photographic lighting must not become a normal-map ridge.
+    broad = periodic_blur(periodic_blur(luminance, 6, 0), 6, 1)
+    hair = np.clip(luminance - broad, -.09, .09)
+    dx = (np.roll(hair, -1, 1) - np.roll(hair, 1, 1)) * .5
+    dy = (np.roll(hair, -1, 0) - np.roll(hair, 1, 0)) * .5
+    normal = np.stack((-dx * 3.5, dy * 3.5, np.ones_like(dx)), 2)
+    normal /= np.linalg.norm(normal, axis=2, keepdims=True)
+    normal_rgb = exact_wrap(np.uint8(np.clip((normal * .5 + .5) * 255, 0, 255)))
+    base_roughness = {"fur_grey": .83, "fur_white": .86, "fur_charcoal": .87}[kind]
+    roughness = np.uint8(np.clip((base_roughness - hair * .32) * 255, 0, 255))
+    occlusion = np.uint8(np.clip((1 - np.maximum(-hair, 0) * .52) * 255, 0, 255))
+    orm = exact_wrap(np.stack((occlusion, roughness, np.zeros_like(roughness)), 2))
+    return albedo, normal_rgb, orm
 
 
 def periodic_blur(field: np.ndarray, radius: int, axis: int) -> np.ndarray:
@@ -89,7 +200,10 @@ def save(name: str, channel: str, pixels: np.ndarray):
 profiles = ["fur_grey", "fur_white", "fur_charcoal", "silk_indigo", "lacquer_oxblood"]
 sets = []
 for index, kind in enumerate(profiles):
-    albedo, normal, orm = map_fields(kind, SEED + index * 377)
+    if kind in FUR_SOURCES:
+        albedo, normal, orm = photo_fur_fields(kind)
+    else:
+        albedo, normal, orm = map_fields(kind, SEED + index * 377)
     sets.append({"name": kind, "resolution": [SIZE, SIZE],
                  "maps": [save(kind, "Albedo", albedo), save(kind, "NormalDX", normal),
                           save(kind, "ORM", orm)]})
@@ -110,12 +224,12 @@ slots = {
     "BlackenedIron": ("neutral", (.052, .057, .06), .35, .9),
     "BlackUrushi": ("lacquer_oxblood", (.022, .021, .021), .95, 0),
     "BlueEye": ("neutral", (.095, .35, .64), .15, 0),
-    "CharcoalStripeFur": ("fur_charcoal", (.045, .053, .063), 1, 0),
+    "CharcoalStripeFur": ("fur_charcoal", (.75, .76, .78), 1, 0),
     "EarSkin": ("neutral", (.4, .17, .17), .82, 0),
     "EyeGlint": ("neutral", (.83, .78, .61), .15, 0),
     "EyePupil": ("neutral", (.008, .012, .013), .19, 0),
     "FoldedIndigo": ("silk_indigo", (.03, .041, .068), 1.30, 0),
-    "GreyTabbyFur": ("fur_grey", (.18, .21, .245), 1, 0),
+    "GreyTabbyFur": ("fur_grey", (.76, .78, .80), 1, 0),
     "IndigoSilk": ("silk_indigo", (.016, .023, .045), 1, 0),
     "IvoryClaw": ("neutral", (.63, .59, .48), .43, 0),
     "JadeCircuit": ("neutral", (.016, .4, .34), .25, .19),
@@ -125,15 +239,26 @@ slots = {
     "ScarletSash": ("silk_indigo", (.23, .011, .024), 1.34, 0),
     "SORAResistanceRed": ("neutral", (.72, .036, .065), .48, 0),
     "UndyedLinen": ("silk_indigo", (.42, .37, .31), 1.50, 0),
-    "WhiteFur": ("fur_white", (.77, .8, .79), 1, 0),
+    "WhiteFur": ("fur_white", (.92, .93, .94), 1, 0),
     "YumiLaminatedBamboo": ("neutral", (.27, .15, .065), .56, 0),
     "YumiSilkString": ("silk_indigo", (.7, .66, .53), 1.4, 0),
 }
 manifest = {
     "schema_version": 1,
     "generator": "scripts/art/create_nyaakoto_pbr_textures.py",
-    "source_license": "Project-owned procedurally authored maps; no external texture asset",
+    "source_license": "Project-owned OpenAI image-generation output and procedural PBR conversion; no external stock texture. Output ownership is assigned to the user under the OpenAI Terms of Use, subject to those terms.",
     "seed": SEED,
+    "fur_sources": [
+        {"surface": kind, "file": "Source/" + filename,
+         "sha256": hashlib.sha256((DEST / "Source" / filename).read_bytes()).hexdigest(),
+         "origin": "Built-in OpenAI image_gen.imagegen, text-only prompt, 2026-09-24",
+         "origin_output_id": FUR_GENERATION_IDS[kind],
+         "source_url": None,
+         "prompt": FUR_PROMPTS[kind],
+         "commercial_use_rights_basis": "OpenAI Terms of Use, Content ownership assignment; subject to the Terms",
+         "rights_url": RIGHTS_URL}
+        for kind, filename in FUR_SOURCES.items()
+    ],
     "maps": sets,
     "material_slots": {"M_Hero_" + key: {"surface": surface, "tint": tint,
                                          "roughness_scale": rough, "metallic_scale": metal}

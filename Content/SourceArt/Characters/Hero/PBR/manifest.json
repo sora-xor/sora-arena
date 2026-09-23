@@ -1,8 +1,43 @@
 {
   "schema_version": 1,
   "generator": "scripts/art/create_nyaakoto_pbr_textures.py",
-  "source_license": "Project-owned procedurally authored maps; no external texture asset",
+  "source_license": "Project-owned OpenAI image-generation output and procedural PBR conversion; no external stock texture. Output ownership is assigned to the user under the OpenAI Terms of Use, subject to those terms.",
   "seed": 270426,
+  "fur_sources": [
+    {
+      "surface": "fur_grey",
+      "file": "Source/Nyaakoto_GreyFur_ImageGen_v1.png",
+      "sha256": "5b72d6113d825176bafc249a5580a5b50146092c4847791e74f167b3c607ef8c",
+      "origin": "Built-in OpenAI image_gen.imagegen, text-only prompt, 2026-09-24",
+      "origin_output_id": "exec-67dc9aa3-fbdb-4fc7-b195-336e6edf1fba",
+      "source_url": null,
+      "prompt": "Use case: photorealistic-natural. Asset type: repeatable PBR fur albedo reference for an Unreal Engine feline samurai character. Create a square, perfectly top-down orthographic macro photograph-like texture swatch of dense short-haired grey tabby cat coat, with fine distinct guard hairs and undercoat; subtle warm grey, charcoal, beige agouti variation and non-regular faint tabby mottling. Every part of the frame is fur at the same scale. Broad even diffused lighting so the image can serve as albedo, with no cast shadows, no specular hotspots, no vignette. The texture must be visually seamless across opposite edges for tiling. No cat anatomy, no eyes, no nose, no ears, no background, no text, no logo, no watermark.",
+      "commercial_use_rights_basis": "OpenAI Terms of Use, Content ownership assignment; subject to the Terms",
+      "rights_url": "https://openai.com/policies/row-terms-of-use/"
+    },
+    {
+      "surface": "fur_white",
+      "file": "Source/Nyaakoto_WhiteFur_ImageGen_v1.png",
+      "sha256": "4b275f4259875e88abd747468d358d133f8b372c66c18b5628c4e305b273e9a7",
+      "origin": "Built-in OpenAI image_gen.imagegen, text-only prompt, 2026-09-24",
+      "origin_output_id": "exec-e08190d3-bb7f-4545-be43-f53aad717117",
+      "source_url": null,
+      "prompt": "Use case: photorealistic-natural. Asset type: PBR albedo source swatch for a feline samurai game character. Square, top-down orthographic macro photograph-like texture of dense short creamy-white domestic cat fur, with thousands of fine individual guard hairs and undercoat, subtle ivory, cream and pale grey color variation, 4\u20138 mm directional fibers, same scale everywhere. Broad even diffused lighting with no directional shadow or highlight so it can be used as material albedo. Fur fills the entire frame. Visually seamless tiling across opposite edges. No cat anatomy, no skin, no eye, no nose, no ear, no background, no text or watermark.",
+      "commercial_use_rights_basis": "OpenAI Terms of Use, Content ownership assignment; subject to the Terms",
+      "rights_url": "https://openai.com/policies/row-terms-of-use/"
+    },
+    {
+      "surface": "fur_charcoal",
+      "file": "Source/Nyaakoto_CharcoalFur_ImageGen_v1.png",
+      "sha256": "3789eee81a2da757f88c80da1c3cb98b7e8f2a667e29f75cf636a13093000b80",
+      "origin": "Built-in OpenAI image_gen.imagegen, text-only prompt, 2026-09-24",
+      "origin_output_id": "exec-eaaaa9f4-9353-437f-ba30-cd03fa217db1",
+      "source_url": null,
+      "prompt": "Use case: photorealistic-natural. Asset type: PBR albedo source swatch for dark tabby markings on a feline game character. Square top-down orthographic macro photograph-like texture of dense short charcoal and smoky-brown cat fur, fine individual guard hairs and undercoat, natural directional 4\u20138 mm fibers, subtle warm grey variation, low contrast dark markings with no large stripes. Every frame area is the same-scale fur. Broad even neutral diffuse light for albedo capture, without cast shadows, specular highlights or vignette. Visually seamless opposite edges for tiling. No anatomy, no skin, no eye, no nose, no ear, no background, no text, no watermark.",
+      "commercial_use_rights_basis": "OpenAI Terms of Use, Content ownership assignment; subject to the Terms",
+      "rights_url": "https://openai.com/policies/row-terms-of-use/"
+    }
+  ],
   "maps": [
     {
       "name": "fur_grey",
@@ -14,17 +49,17 @@
         {
           "channel": "Albedo",
           "file": "T_Nyaakoto_fur_grey_Albedo.png",
-          "sha256": "7f94e02ebd33347f05ce2a132d9849cb25376116af6a23bd0f66d2a0fe53426e"
+          "sha256": "4132878e71b04f52eafd69cd6196fe1de5011ac783225f45a275f4458e9cdca8"
         },
         {
           "channel": "NormalDX",
           "file": "T_Nyaakoto_fur_grey_NormalDX.png",
-          "sha256": "c8f860b18630b447691521045fc6befb251cd952d380736f8f3c0f57e9b21e95"
+          "sha256": "0b5bae70d465992aeb6a97870e162106c4ab532ac5c0e562cc43cfea60c76a9a"
         },
         {
           "channel": "ORM",
           "file": "T_Nyaakoto_fur_grey_ORM.png",
-          "sha256": "df17de232a03e516bd0b19a7828bd52d46c23f3090c630ff50f024ff3e1f09e6"
+          "sha256": "f8f559bcdf3ac2700625d3c7d61e99c968832bd25af0484593189f48a10e1a0c"
         }
       ]
     },
@@ -38,17 +73,17 @@
         {
           "channel": "Albedo",
           "file": "T_Nyaakoto_fur_white_Albedo.png",
-          "sha256": "bd9663bb66bc1936f40c45324cb9f883cbe9a7e3b3f7df5e9d16ab546e5515d3"
+          "sha256": "1e24595b1fa77b77f6a02c8a4d26c7b0e2ddeecda771acd2fb50f2426288039c"
         },
         {
           "channel": "NormalDX",
           "file": "T_Nyaakoto_fur_white_NormalDX.png",
-          "sha256": "3941ab33f481e96066c0d9cf37880011c2d56d88bbb5612957e541bea05d19c3"
+          "sha256": "167d49ecca5780cd0b9937f67e6e0a5f8a3ef025f97f2f6b51a7b9bac0cbaa37"
         },
         {
           "channel": "ORM",
           "file": "T_Nyaakoto_fur_white_ORM.png",
-          "sha256": "22114ce689b173ec8712eb8af3f8ec8695166956dcebcde1ed0282f293999500"
+          "sha256": "d67e8a7cb4d13b6bc954bf1dd1d7834b4cb3bb9558efc7dbc23ba2d85a85bc1a"
         }
       ]
     },
@@ -62,17 +97,17 @@
         {
           "channel": "Albedo",
           "file": "T_Nyaakoto_fur_charcoal_Albedo.png",
-          "sha256": "8b1c5a7f743d1ad01bd17553b773ed6998830eecae5a383a5b1e6312b8daf94d"
+          "sha256": "7d055b6d357e482bf1d864a6cf4118d922aed9321e9db4c14da78d2d861980e6"
         },
         {
           "channel": "NormalDX",
           "file": "T_Nyaakoto_fur_charcoal_NormalDX.png",
-          "sha256": "76a8f1acc331a2c4d0e67d5afdb9869b474b9f3d85c7b04f9a61cd89ba2ffc37"
+          "sha256": "6111c25fb40adc3808d2ed95d4f910262fda3387c246ee9d9be763e096d99914"
         },
         {
           "channel": "ORM",
           "file": "T_Nyaakoto_fur_charcoal_ORM.png",
-          "sha256": "06975d05d9ff9cbf0494d5686cf68fde7b440f8a0da5ec9e60c2b6f015d26df9"
+          "sha256": "9aa3074e7a29c301d5f138b0abff04dfe44ae40f8575fe313148d4a9ab8757db"
         }
       ]
     },
@@ -203,9 +238,9 @@
     "M_Hero_CharcoalStripeFur": {
       "surface": "fur_charcoal",
       "tint": [
-        0.045,
-        0.053,
-        0.063
+        0.75,
+        0.76,
+        0.78
       ],
       "roughness_scale": 1,
       "metallic_scale": 0
@@ -253,9 +288,9 @@
     "M_Hero_GreyTabbyFur": {
       "surface": "fur_grey",
       "tint": [
-        0.18,
-        0.21,
-        0.245
+        0.76,
+        0.78,
+        0.8
       ],
       "roughness_scale": 1,
       "metallic_scale": 0
@@ -353,9 +388,9 @@
     "M_Hero_WhiteFur": {
       "surface": "fur_white",
       "tint": [
-        0.77,
-        0.8,
-        0.79
+        0.92,
+        0.93,
+        0.94
       ],
       "roughness_scale": 1,
       "metallic_scale": 0
