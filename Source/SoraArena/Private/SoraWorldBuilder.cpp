@@ -213,6 +213,10 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
             Box(FString::Printf(TEXT("Furnace%d"),I),P+FVector(0,0,255),FVector(280,250,290),FLinearColor(.19f,.21f,.24f),true,FRotator::ZeroRotator,TEXT("Stone"));
             SiteEffects[I]=Box(FString::Printf(TEXT("ForgeMouth%d"),I),P+FVector(0,-130,220),FVector(125,20,100),FLinearColor(.12f,.05f,.03f),false);
             Box(FString::Printf(TEXT("ForgeStack%d"),I),P+FVector(80,70,475),FVector(80,80,220),FLinearColor(.14f,.16f,.18f),true,FRotator::ZeroRotator,TEXT("Metal"));
+            // The original silk loom is decorative beside the Silk Foundry
+            // production station. Its meter and operator face the approach;
+            // the established simple boxes retain gameplay collision.
+            if(MapId==2) ImportedProp(TEXT("SM_SilkFoundry_LevyLoom"),P+FVector(-100,-450,0),FRotator::ZeroRotator);
         }
         else if(Kind==TEXT("ledger")||Kind==TEXT("debt_seal"))
         {
