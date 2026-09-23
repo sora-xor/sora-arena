@@ -3,7 +3,7 @@
   "generator": "scripts/art/create_nyaagyu_torii_foot_study.py",
   "source_blend": "Nyaagyu_ToriiFoot_Study.blend",
   "fbx": "SM_Nyaagyu_ToriiFoot_Study.fbx",
-  "fbx_sha256": "c28d0363de054e69294949e5e1fa708e52a0526dec6763d422545fceb9801a7c",
+  "fbx_sha256": "2a78720eed3c5e8e5f36e144dd69db53463ec7502d83636cc651fe47b8ccafe6",
   "editable_parts": 26,
   "source_triangles": 9688,
   "material_slots": [

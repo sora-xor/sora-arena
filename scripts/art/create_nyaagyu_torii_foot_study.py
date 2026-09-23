@@ -74,7 +74,6 @@ def scan_material():
         if channel == "displacement":
             continue
         image = bpy.data.images.load(str(SCAN / file_name), check_existing=True)
-        image.filepath = bpy.path.relpath(str(SCAN / file_name))
         image.colorspace_settings.name = "sRGB" if channel == "diffuse" else "Non-Color"
         tex = nodes.new("ShaderNodeTexImage")
         tex.name = channel
@@ -107,7 +106,6 @@ def scan_material():
 
 STONE = scan_material()
 displacement_image = bpy.data.images.load(str(SCAN / SCAN_FILES["displacement"]), check_existing=True)
-displacement_image.filepath = bpy.path.relpath(str(SCAN / SCAN_FILES["displacement"]))
 displacement_image.colorspace_settings.name = "Non-Color"
 
 
@@ -318,6 +316,9 @@ scene.render.filepath=str(OUT/"ToriiFoot_After_Blender.png")
 bpy.ops.render.render(write_still=True)
 
 blend_path=OUT/"Nyaagyu_ToriiFoot_Study.blend"
+for image in bpy.data.images:
+    if image.source == "FILE" and Path(bpy.path.abspath(image.filepath)).parent == SCAN:
+        image.filepath = "//MossyRock/" + Path(bpy.path.abspath(image.filepath)).name
 bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
 manifest={
     "schema_version":1,

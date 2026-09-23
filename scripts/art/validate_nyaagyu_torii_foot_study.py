@@ -21,6 +21,10 @@ assert manifest["generator"] == "scripts/art/create_nyaagyu_torii_foot_study.py"
 assert manifest["material_slots"] == ["M_ToriiFoot_MossyRock_CC0"]
 assert manifest["scan_asset"] == "https://polyhaven.com/a/mossy_rock"
 assert manifest["scan_license"] == "CC0"
+for image in bpy.data.images:
+    if image.source == "FILE":
+        assert image.filepath.startswith("//MossyRock/"), image.filepath
+        assert Path(bpy.path.abspath(image.filepath)).is_file(), image.filepath
 for channel, entry in manifest["scan_files"].items():
     scan = OUT / "MossyRock" / entry["file"]
     assert scan.is_file() and hashlib.sha256(scan.read_bytes()).hexdigest() == entry["sha256"], channel
