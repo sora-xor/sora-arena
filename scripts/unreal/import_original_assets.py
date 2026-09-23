@@ -499,6 +499,11 @@ for name in manifest.get("skeletal_characters", []):
     options.import_mesh=True;options.import_as_skeletal=True;options.import_animations=True
     options.import_materials=True;options.import_textures=False;options.create_physics_asset=False
     options.mesh_type_to_import=unreal.FBXImportType.FBXIT_SKELETAL_MESH
+    # The hero's authored vertex colors mask the transition between grey and
+    # white fur. Persist Replace on the base mesh's FBX import data: Unreal's
+    # skeletal LOD importer inherits that setting for authored LOD1/LOD2.
+    options.skeletal_mesh_import_data.set_editor_property(
+        "vertex_color_import_option", unreal.VertexColorImportOption.REPLACE)
     task.options=options;tools.import_asset_tasks([task])
     mesh=assets.load_asset(f"/Game/Generated/Meshes/{name}")
     if not isinstance(mesh,unreal.SkeletalMesh):raise RuntimeError(f"Missing skeletal mesh {name}")
