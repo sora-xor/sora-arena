@@ -238,9 +238,11 @@ existing test-network behavior.
 An additional portable C++17 Join/Buy preflight now compares exact supplied
 session, bond, equipment, offer, custody and expiry terms, with Japanese-first
 status text and English subtitles. Its Mac host driver and Windows compiler
-syntax check pass. This is deliberately non-authorizing: no authenticated
-ledger snapshot or final fee quote is wired to it, and the Join/Buy wallet
-signing block remains in place.
+syntax check pass. It enforces B for ordinary equipment, 2B for a cataloged
+special without its NFT, or B with one exact owned and reservable cataloged
+NFT, plus exact ten-way death losses. This is deliberately non-authorizing:
+no authenticated ledger snapshot or final fee quote is wired to it, and the
+Join/Buy wallet signing block remains in place.
 
 The Windows GNU Connect bridge also passed a source-sealed static cross-build:
 its PE x86-64 DLL has 175 exports exactly matching the native C header and
