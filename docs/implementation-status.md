@@ -136,6 +136,11 @@ join, bond and NFT purchase terms still need a game-facing review flow: the
 current native inspection has transaction fields, but the game lacks a
 verified session/offer snapshot and a separate pre-sign confirmation. See
 [Connect review gap](connect.md#exact-game-facing-review-gap).
+Join and NFT purchase signing now fail closed in the game before a wallet
+request until that review exists. A non-authorizing typed Join inspector is
+being added to the native bridge; it cannot substitute for the missing
+authenticated session quote. Open and payout-claim scaffolds retain their
+existing test-network behavior.
 The Iroha JavaScript native addon now builds and publishes with the project-specific
 Xcode 26.1.1 linker; 29 focused allocation, equipment, resource and racing SDK
 tests pass. This does not exercise Unreal or a live validator network.
