@@ -15,6 +15,11 @@ from pathlib import Path
 import bpy
 from mathutils import Vector
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_kamon_validation import (PINNED_SVG_SHA256, assert_path_objects,
+                                   assert_paths_embedded, expected_paths,
+                                   reference_paths)
+
 
 validated = False
 
@@ -43,6 +48,8 @@ assert manifest["mesh_origin_m"] == [0, 0, 0]
 assert manifest["grip_web_m"] == [-.11, 0, -.05]
 assert manifest["grip_palm_center_m"] == [-.11, 0, -.12]
 assert manifest["palette_asset_ids"] == ["wood_planks_dirt", "rusty_metal_02"]
+assert manifest["sora_kamon_svg_sha256"] == PINNED_SVG_SHA256
+assert manifest["sora_kamon_placements"] == ["receiver_-1", "receiver_1"]
 assert "Original project-owned geometry" in manifest["license"]
 assert "CC0 Poly Haven" in manifest["license"]
 assert 3000 < manifest["source_triangles"] < 30000
@@ -81,6 +88,14 @@ assert any(obj.name.startswith("CopperInductionCoil_") for obj in parts)
 assert any(obj.name == "PistolGrip_OakCore" for obj in parts)
 assert any(obj.name == "MuzzleEmitter" for obj in parts)
 assert not any(obj.name == name for obj in collection.objects)
+assert not any(obj.name.startswith(("Crest_Whisker_", "Crest_Nose_")) for obj in parts)
+source_paths = reference_paths(root)
+kamon = {}
+for side in (-1, 1):
+    placement = f"receiver_{side}"
+    expected = expected_paths(source_paths, (-.009, side*.060, .030), .054, "XZ")
+    assert_path_objects(parts, placement, expected)
+    kamon[placement] = expected
 
 fbx = out / manifest["fbx"]
 assert fbx.read_bytes().startswith(b"Kaydara FBX Binary")
@@ -96,6 +111,7 @@ for axis in range(3):
     assert abs(max(point[axis] for point in corners) - manifest["bounds_m"]["max"][axis]) < .02
 assert sum(len(face.vertices)-2 for face in render.data.polygons) == manifest["source_triangles"]
 assert len(render.data.uv_layers) >= 1
+assert_paths_embedded((render.matrix_world @ vertex.co for vertex in render.data.vertices), kamon)
 slots = {slot.material.name.split(".", 1)[0] for slot in render.material_slots if slot.material}
 assert {"M_Arc_OxbloodUrushi", "M_Arc_Gunmetal", "M_Arc_AgedBronze",
         "M_Arc_CoilCopper", "M_Arc_IonJade", "M_Arc_Timber",

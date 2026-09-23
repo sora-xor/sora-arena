@@ -1,5 +1,5 @@
 {
-  "provenance": "Original procedural meshes authored for SORA Arena. No external source assets.",
+  "provenance": "Original procedural meshes authored for SORA Arena; kamon uses the user-supplied SORA SVG. No purchased assets.",
   "units": "meters in Blender; FBX unit metadata converts to Unreal centimeters",
   "characters": [
     "SM_NyaagyuSamurai",
@@ -24,6 +24,11 @@
     "SM_Weapon_15",
     "SM_Weapon_16",
     "SM_Weapon_17"
+  ],
+  "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "sora_kamon_placements": [
+    "headband",
+    "chest"
   ],
   "limitations": [
     "Prototype anatomy and short geometric fur cards, not production grooming",

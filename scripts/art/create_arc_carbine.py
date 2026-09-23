@@ -21,6 +21,10 @@ from mathutils import Vector
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Content/SourceArt/Weapons/Original"
 PALETTE = ROOT / "Content/SourceArt/Environment/PolyHaven"
+SORA_SVG = ROOT / "Content/SourceArt/UI/sora_logo_NOtext2.svg"
+SORA_SVG_SHA256 = "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910"
+assert hashlib.sha256(SORA_SVG.read_bytes()).hexdigest() == SORA_SVG_SHA256
+assert json.loads((SORA_SVG.parent / "sora_logo_manifest.json").read_text())["source_sha256"] == SORA_SVG_SHA256
 NAME = "SM_Nyaagyu_ArcCarbine"
 BLEND = OUT / "Nyaagyu_ArcCarbine.blend"
 FBX = OUT / (NAME + ".fbx")
@@ -205,6 +209,41 @@ def wedge(name, xz, half_width, mat):
     return bevel(obj, .0015)
 
 
+def sora_kamon(name, center, diameter, mat):
+    """Emboss the two exact SORA SVG paths on a carbine receiver cheek."""
+    before = set(bpy.data.objects)
+    bpy.ops.import_curve.svg(filepath=str(SORA_SVG))
+    curves = [obj for obj in set(bpy.data.objects) - before if obj.type == "CURVE"]
+    assert len(curves) == 2, [obj.name for obj in curves]
+    corners = [obj.matrix_world @ Vector(corner) for obj in curves for corner in obj.bound_box]
+    svg_x = (min(p.x for p in corners) + max(p.x for p in corners)) / 2
+    svg_y = (min(p.y for p in corners) + max(p.y for p in corners)) / 2
+    size = max(max(p.x for p in corners)-min(p.x for p in corners),
+               max(p.y for p in corners)-min(p.y for p in corners))
+    assert size > 0
+    for index, obj in enumerate(curves):
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.convert(target="MESH")
+        obj = bpy.context.object
+        for vert in obj.data.vertices:
+            p = obj.matrix_world @ vert.co
+            vert.co = (center[0] + (p.x-svg_x)*diameter/size,
+                       center[1], center[2] + (p.y-svg_y)*diameter/size)
+        obj.matrix_world.identity()
+        for collection in tuple(obj.users_collection):
+            collection.objects.unlink(obj)
+        asset.objects.link(obj)
+        obj.name = f"UserSupplied_SORAKamon_{name}_Path_{index}"
+        obj.data.materials.clear()
+        obj.data.materials.append(mat)
+        obj["author"] = "Original SORA Arena Arc carbine source geometry"
+        obj["source_svg_sha256"] = SORA_SVG_SHA256
+        obj["kamon_placement"] = name
+        obj["kamon_path_index"] = index
+
+
 # Stock and receiver: a compact shoulder-fired carbine, lacquer inset over
 # believable bronze/iron structure rather than a floating sci-fi outline.
 wedge("ForgedReceiverCore", [(-.22,-.032),(.16,-.032),(.22,.020),(.15,.094),(-.17,.092),(-.23,.051)], .047, IRON)
@@ -265,15 +304,14 @@ cylinder("MuzzleBore", (.514,0,.026), .021,.020,IRON,24)
 cylinder("MuzzleEmitter", (.526,0,.026), .013,.003,JADE,20)
 torus("MuzzleBrightLip", .518, .026, .0026, EDGE)
 
-# Sighting line is mechanically offset above the bore. The small cyan glass
-# and crescent crest read up close but cannot obscure a competitive sightline.
+# Sighting line is mechanically offset above the bore. The clan kamon stays on
+# the receiver cheeks, clear of the sights and the competitive sightline.
 box("RearSightBracket", (-.105,0,.139), (.060,.060,.052), BRONZE, .003)
 box("RearSightGlass", (-.098,0,.169), (.033,.037,.010), GLASS, .001)
 box("FrontSightBlade", (.444,0,.105), (.012,.008,.047), BRONZE, .001)
 box("FrontSightPip", (.444,0,.130), (.005,.009,.004), JADE, .0005)
 for side in (-1,1):
-    box(f"Crest_Whisker_{side}", (-.009,side*.060,.031), (.073,.002,.0025), EDGE, .0003)
-    box(f"Crest_Nose_{side}", (.030,side*.060,.026), (.011,.003,.010), EDGE, .0003)
+    sora_kamon(f"receiver_{side}", (-.009,side*.060,.030), .054, EDGE)
 
 
 parts = [obj for obj in asset.objects if obj.type == "MESH"]
@@ -387,6 +425,8 @@ manifest = {
     "texture_dependency": "../../Environment/PolyHaven/manifest.json; project-relative links in .blend, no FBX texture paths",
     "palette_asset_ids": ["wood_planks_dirt", "rusty_metal_02"],
     "palette_manifest_sha256": hashlib.sha256((PALETTE / "manifest.json").read_bytes()).hexdigest(),
+    "sora_kamon_svg_sha256": SORA_SVG_SHA256,
+    "sora_kamon_placements": ["receiver_-1", "receiver_1"],
     "units": "Blender meters; Unreal FBX import converts to centimeters",
     "scope": "Visual standard weapon ID 1 only. No gameplay/stat changes. Blender review only; UE import, material fidelity and runtime frame rate unverified.",
     "blend_sha256": hashlib.sha256(BLEND.read_bytes()).hexdigest(),

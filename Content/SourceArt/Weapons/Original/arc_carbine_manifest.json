@@ -8,7 +8,7 @@
   "preview": "Nyaagyu_ArcCarbine_Blender.png",
   "unreal_asset": "/Game/Generated/Meshes/SM_Nyaagyu_ArcCarbine.SM_Nyaagyu_ArcCarbine",
   "source_parts": 84,
-  "source_triangles": 12532,
+  "source_triangles": 12292,
   "bounds_m": {
     "min": [
       -0.4295,
@@ -49,9 +49,14 @@
     "rusty_metal_02"
   ],
   "palette_manifest_sha256": "d21c351a0ca82165f885d9fc4cbcff652009fee0b9336ae9367b2ccd667cdd0b",
+  "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "sora_kamon_placements": [
+    "receiver_-1",
+    "receiver_1"
+  ],
   "units": "Blender meters; Unreal FBX import converts to centimeters",
   "scope": "Visual standard weapon ID 1 only. No gameplay/stat changes. Blender review only; UE import, material fidelity and runtime frame rate unverified.",
-  "blend_sha256": "a31400a62eff0a8910b4bb1943e05200f416bdf6a8f3f1e6b2000ec0a5141bf4",
-  "fbx_sha256": "977937dfee0f67429700c7a39ae0e1f822e6bd8a4b18999c91d4dc26758144da",
-  "preview_sha256": "61483ce03c15a73073cd3fb4f7aafc45b652c5e501bef6508f71d6a32da4525c"
+  "blend_sha256": "a3747c1174d1d0ec7392a090f217bc35956d9c612692ee5606743bc073112cc0",
+  "fbx_sha256": "c84021eba794920116561442f006b9524798e4bafbe3dd1a52b86ff474af1bd9",
+  "preview_sha256": "f0a47ce37165a901067cd4faca8c908aa4fa8ebceec63cb7b6d6ef1071976ab5"
 }

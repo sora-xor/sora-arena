@@ -5,6 +5,7 @@ Unreal import is a separate explicit editor operation. These are prototype meshe
 not a claim of finished photorealistic characters, grooming, or motion capture.
 """
 import argparse
+import hashlib
 import json
 import math
 import random
@@ -21,6 +22,11 @@ parser.add_argument("--render", action="store_true")
 options = parser.parse_args(args)
 OUT = options.output.resolve()
 OUT.mkdir(parents=True, exist_ok=True)
+ROOT = Path(__file__).resolve().parents[2]
+SORA_SVG = ROOT / "Content/SourceArt/UI/sora_logo_NOtext2.svg"
+SORA_SVG_SHA256 = "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910"
+assert hashlib.sha256(SORA_SVG.read_bytes()).hexdigest() == SORA_SVG_SHA256
+assert json.loads((SORA_SVG.parent / "sora_logo_manifest.json").read_text())["source_sha256"] == SORA_SVG_SHA256
 bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.object.select_all(action="SELECT")
 bpy.ops.object.delete(use_global=False)
@@ -159,6 +165,37 @@ def lapel(name, a, b, width, mat):
     return obj
 
 
+def sora_kamon(name, center, diameter, mat):
+    """Place both unmodified paths of the user-supplied mark on a +X-facing plane."""
+    before = set(bpy.data.objects)
+    bpy.ops.import_curve.svg(filepath=str(SORA_SVG))
+    curves = [obj for obj in set(bpy.data.objects) - before if obj.type == "CURVE"]
+    assert len(curves) == 2, [obj.name for obj in curves]
+    corners = [obj.matrix_world @ Vector(corner) for obj in curves for corner in obj.bound_box]
+    origin_y = (min(p.x for p in corners) + max(p.x for p in corners)) / 2
+    origin_z = (min(p.y for p in corners) + max(p.y for p in corners)) / 2
+    size = max(max(p.x for p in corners) - min(p.x for p in corners),
+               max(p.y for p in corners) - min(p.y for p in corners))
+    assert size > 0
+    for index, obj in enumerate(curves):
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.convert(target="MESH")
+        obj = bpy.context.object
+        for vert in obj.data.vertices:
+            p = obj.matrix_world @ vert.co
+            vert.co = (center[0], center[1] + (p.x - origin_y) * diameter / size,
+                       center[2] + (p.y - origin_z) * diameter / size)
+        obj.matrix_world.identity()
+        obj.name = f"UserSupplied_SORAKamon_{name}_Path_{index}"
+        obj.data.materials.clear()
+        obj.data.materials.append(mat)
+        obj["source_svg_sha256"] = SORA_SVG_SHA256
+        obj["kamon_placement"] = name
+        obj["kamon_path_index"] = index
+
+
 def export_joined(name, objects):
     bpy.ops.object.select_all(action="DESELECT")
     for obj in objects:
@@ -227,9 +264,16 @@ def cat(name, alien=False):
     else:
         sphere("Topknot",(-.08,0,1.727),(.05,.06,.07),BLACK)
         box("Headband",(.095,0,1.71),(.024,.32,.036),NAVY,.006)
-        sphere("Clan_mon",(.11,0,1.71),(.008,.023,.018),GOLD)
+        sora_kamon("headband",(.111,0,1.71),.032,GOLD)
+        # The larger chest placement remains legible beyond first-person range.
+        sphere("SORA_Kamon_Backing",(.236,0,1.085),(.010,.051,.051),WOOD)
+        sora_kamon("chest",(.249,0,1.085),.074,GOLD)
         tube("Scabbard",(-.09,-.33,.92),(-.49,-.32,.30),.028,WOOD)
-    return export_joined(name,list(set(bpy.data.objects)-start))
+    joined = export_joined(name,list(set(bpy.data.objects)-start))
+    if not alien:
+        joined["sora_kamon_svg_sha256"] = SORA_SVG_SHA256
+        joined["sora_kamon_placements"] = "headband,chest"
+    return joined
 
 
 hero = cat("SM_NyaagyuSamurai")
@@ -293,13 +337,21 @@ enemy.hide_set(False)
 hero.location=(0,-.6,0)
 enemy.location=(0,.7,0)
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT / "SoraArena_OriginalAssets.blend"))
-(OUT / "manifest.json").write_text(json.dumps({
-    "provenance":"Original procedural meshes authored for SORA Arena. No external source assets.",
+previous_manifest = json.loads((OUT / "manifest.json").read_text()) if (OUT / "manifest.json").exists() else {}
+manifest = {
+    "provenance":"Original procedural meshes authored for SORA Arena; kamon uses the user-supplied SORA SVG. No purchased assets.",
     "units":"meters in Blender; FBX unit metadata converts to Unreal centimeters",
     "characters":["SM_NyaagyuSamurai","SM_AlienBanker"],
     "weapons":[f"SM_Weapon_{i:02d}" for i in range(18)],
+    "sora_kamon_svg_sha256":SORA_SVG_SHA256,
+    "sora_kamon_placements":["headband","chest"],
     "limitations":["Static prototype meshes, no production rig or groom", "Procedural Blender materials require Unreal material authoring", "No photorealism or performance qualification"]
-},indent=2)+"\n")
+}
+# The rig and hero-katana generators own these addenda to the shared manifest.
+for key in ("skeletal_characters", "walk_animations", "rig_status", "hero_katana"):
+    if key in previous_manifest:
+        manifest[key] = previous_manifest[key]
+(OUT / "manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
 
 if options.render:
     for obj in bpy.data.objects:
