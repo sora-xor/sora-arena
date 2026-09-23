@@ -872,8 +872,9 @@ def validate_loaded_assets(unreal, specs):
     require(bool(master.get_editor_property("used_with_skeletal_mesh")),
             "Nyaakoto PBR master must compile a skeletal-mesh shader permutation")
     require({str(name) for name in material_lib.get_texture_parameter_names(master)} ==
-            {"AlbedoMap", "NormalMap", "ORMMap"},
-            "Nyaakoto PBR master lost its three texture parameters")
+            {"AlbedoMap", "NormalMap", "ORMMap", "WhiteFurAlbedoMap",
+             "WhiteFurNormalMap", "WhiteFurORMMap"},
+            "Nyaakoto PBR master lost a coat-blend texture parameter")
     for group in pbr["maps"]:
         for item in group["maps"]:
             name = Path(item["file"]).stem
@@ -910,6 +911,27 @@ def validate_loaded_assets(unreal, specs):
             bound = material_lib.get_material_instance_texture_parameter_value(instance, parameter)
             require(bound is not None and bound.get_path_name() == expected_path,
                     f"Nyaakoto material {name} lost its {parameter} map binding")
+        coat_enabled = float(slot == "M_Hero_GreyTabbyFur")
+        actual_coat_enabled = material_lib.get_material_instance_scalar_parameter_value(
+            instance, "CoatBlendEnabled")
+        require(abs(actual_coat_enabled - coat_enabled) < 1e-5,
+                f"Nyaakoto material {name} changed its coat-mask selector")
+        if coat_enabled:
+            for parameter, channel in (("WhiteFurAlbedoMap", "Albedo"),
+                                       ("WhiteFurNormalMap", "NormalDX"),
+                                       ("WhiteFurORMMap", "ORM")):
+                texture_name = f"T_Nyaakoto_fur_white_{channel}"
+                expected_path = f"{NYAAKOTO}/Textures/{texture_name}.{texture_name}"
+                bound = material_lib.get_material_instance_texture_parameter_value(
+                    instance, parameter)
+                require(bound is not None and bound.get_path_name() == expected_path,
+                        f"Nyaakoto material {name} lost its {parameter} coat map")
+            expected_tint = pbr["material_slots"]["M_Hero_WhiteFur"]["tint"]
+            white_tint = material_lib.get_material_instance_vector_parameter_value(
+                instance, "WhiteFurTint")
+            require(all(abs(getattr(white_tint, channel) - value) < 1e-5
+                        for channel, value in zip("rgb", expected_tint)),
+                    "Nyaakoto grey-fur instance changed its white-coat tint")
         for parameter, value in (("RoughnessScale", surface["roughness_scale"]),
                                  ("MetallicScale", surface["metallic_scale"])):
             bound = material_lib.get_material_instance_scalar_parameter_value(instance, parameter)
