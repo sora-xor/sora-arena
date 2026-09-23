@@ -261,16 +261,27 @@ remain prerequisites for a real join review.
 
 `SoraQuotePreflight.h` now contains a host-tested, non-authorizing comparison
 for future Join and Buy reviews. The Join comparison requires the exact
-network, session, manifest, asset, total bond, session revision, open join
-deadline, and any NFT identity, metadata, role, and owner to match supplied
-snapshot terms. It rejects a bond unless ten identical death losses exactly
-exhaust it and the maximum loss equals the initial deposit. The Buy comparison
+network, session, manifest, asset, session revision, open join deadline, and a
+weapon selected from the supplied compiled Arena profile. Ordinary equipment
+requires base bond `B`. One selected special requires `2B` without an NFT, or
+`B` with exactly one NFT reservation. That reservation must match an approved,
+published publisher catalog's network, profile, role, collection, exact NFT
+identity and complete metadata hash, plus the original owner's available
+equipment read. Arbitrary NFT metadata cannot supply a weapon role. The
+comparison rejects bonds outside unsigned 128-bit atomic units, a base bond
+not divisible by ten, unequal requested/derived deposits, a per-death loss
+other than exactly 10% of the initial deposit, or a maximum loss different
+from that deposit. The Buy comparison
 requires the complete offer terms, retained commitment, open status, sale
 custody, authorized buyer, and unexpired height to match. Japanese-first
 messages have English subtitle text. Run
 `python3 scripts/connect/test_quote_preflight.py` for the adversarial host
 fixtures. This component neither authenticates its supplied snapshots nor
-reads the chain, and is not wired to wallet signing.
+reads the chain, and is not wired to wallet signing. Its atomic-unit inputs
+must later be converted exactly from native `Quantity` and the asset scale;
+display decimal strings or floating-point conversions are insufficient. The
+host checks include a Mac C++17 execution and a MinGW Windows syntax pass,
+not a UE or MSVC build.
 
 The missing Join source is an authenticated `FindGameSessionById` result plus
 a qualified Arena execution profile that resolves each participant's exact

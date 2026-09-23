@@ -7,48 +7,160 @@ using namespace SoraQuotePreflight;
 
 int main()
 {
-    const FJoinIntent Joined{
-        "network-a", "cat-account", "session-7", "manifest-a", "xor-asset", "2000",
-        "blade-nft", "metadata-a", "catalog-role-a", 4
+    const FJoinIntent NftSpecial{
+        "network-a", "cat-account", "session-7", "manifest-a", "xor-asset", "1000",
+        "special-blade", 1, 1, "blade-nft", "metadata-a", "catalog-role-a", 4
     };
-    const FArenaSessionQuote Session{
-        "network-a", "session-7", "manifest-a", "xor-asset", "2000",
-        "200", "2000", 4, 90, 100, true
+    const FArenaSessionQuote NftSession{
+        "network-a", "session-7", "manifest-a", "xor-asset", "profile-a",
+        "1000", "1000", "100", "1000", 4, 90, 100, true
+    };
+    const FCompiledWeaponRule SpecialRule{
+        "special-blade", "profile-a", "catalog-role-a", "catalog-a", "publisher-a",
+        "collection-a", true
+    };
+    const FPublisherCatalogRead Catalog{
+        "network-a", "profile-a", "catalog-role-a", "catalog-a", "publisher-a",
+        "collection-a", "blade-nft", "metadata-a", true, true, true
     };
     const FEquipmentRead Equipment{
         "blade-nft", "metadata-a", "catalog-role-a", "cat-account", true
     };
-    assert(CheckJoin(Joined, Session, Equipment) == EResult::MatchesSuppliedSnapshot);
-    auto ChangedJoin = Joined;
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, Catalog, Equipment) ==
+           EResult::MatchesSuppliedSnapshot);
+
+    auto NonownerSpecial = NftSpecial;
+    NonownerSpecial.TotalBondAtomic = "2000";
+    NonownerSpecial.NftReservationCount = 0;
+    NonownerSpecial.NftId = "";
+    NonownerSpecial.NftMetadataHash = "";
+    NonownerSpecial.NftRoleId = "";
+    auto NonownerSession = NftSession;
+    NonownerSession.TotalBondAtomic = "2000";
+    NonownerSession.PerDeathLossAtomic = "200";
+    NonownerSession.MaximumLossAtomic = "2000";
+    assert(CheckJoin(NonownerSpecial, NonownerSession, SpecialRule, Catalog, {}) ==
+           EResult::MatchesSuppliedSnapshot);
+
+    auto Ordinary = NonownerSpecial;
+    Ordinary.SelectedWeaponId = "ordinary-katana";
+    Ordinary.SelectedSpecialCount = 0;
+    Ordinary.TotalBondAtomic = "1000";
+    const FCompiledWeaponRule OrdinaryRule{
+        "ordinary-katana", "profile-a", "", "", "", "", false
+    };
+    assert(CheckJoin(Ordinary, NftSession, OrdinaryRule, {}, {}) ==
+           EResult::MatchesSuppliedSnapshot);
+
+    auto ChangedJoin = NftSpecial;
     ChangedJoin.ManifestHash = "manifest-b";
-    assert(CheckJoin(ChangedJoin, Session, Equipment) == EResult::DifferentTerms);
-    ChangedJoin = Joined;
+    assert(CheckJoin(ChangedJoin, NftSession, SpecialRule, Catalog, Equipment) ==
+           EResult::DifferentTerms);
+    ChangedJoin = NftSpecial;
     ChangedJoin.QuotedSessionRevision = 3;
-    assert(CheckJoin(ChangedJoin, Session, Equipment) == EResult::Stale);
-    auto ChangedSession = Session;
+    assert(CheckJoin(ChangedJoin, NftSession, SpecialRule, Catalog, Equipment) == EResult::Stale);
+    auto ChangedSession = NftSession;
     ChangedSession.ObservedHeight = 101;
-    assert(CheckJoin(Joined, ChangedSession, Equipment) == EResult::Stale);
-    ChangedSession = Session;
-    ChangedSession.PerDeathLossAtomic = "201";
-    assert(CheckJoin(Joined, ChangedSession, Equipment) == EResult::InvalidBond);
-    ChangedSession = Session;
-    ChangedSession.TotalBondAtomic = "2001";
-    ChangedJoin = Joined;
-    ChangedJoin.TotalBondAtomic = "2001";
-    assert(CheckJoin(ChangedJoin, ChangedSession, Equipment) == EResult::InvalidBond);
+    assert(CheckJoin(NftSpecial, ChangedSession, SpecialRule, Catalog, Equipment) == EResult::Stale);
+    ChangedSession = NftSession;
+    ChangedSession.PerDeathLossAtomic = "101";
+    assert(CheckJoin(NftSpecial, ChangedSession, SpecialRule, Catalog, Equipment) ==
+           EResult::InvalidBond);
+    ChangedSession = NftSession;
+    ChangedSession.MaximumLossAtomic = "999";
+    assert(CheckJoin(NftSpecial, ChangedSession, SpecialRule, Catalog, Equipment) ==
+           EResult::InvalidBond);
+    ChangedSession = NftSession;
+    ChangedSession.BaseBondAtomic = "5";
+    assert(CheckJoin(NftSpecial, ChangedSession, SpecialRule, Catalog, Equipment) ==
+           EResult::InvalidBond);
+    ChangedSession = NonownerSession;
+    ChangedSession.BaseBondAtomic = "340282366920938463463374607431768211450";
+    assert(CheckJoin(NonownerSpecial, ChangedSession, SpecialRule, Catalog, {}) ==
+           EResult::InvalidBond);
+
+    ChangedJoin = NonownerSpecial;
+    ChangedJoin.TotalBondAtomic = "1000";
+    assert(CheckJoin(ChangedJoin, NftSession, SpecialRule, Catalog, {}) !=
+           EResult::MatchesSuppliedSnapshot);
+    ChangedJoin = NftSpecial;
+    ChangedJoin.TotalBondAtomic = "2000";
+    assert(CheckJoin(ChangedJoin, NonownerSession, SpecialRule, Catalog, Equipment) ==
+           EResult::InvalidBond);
+    auto ChangedOrdinary = Ordinary;
+    ChangedOrdinary.TotalBondAtomic = "2000";
+    assert(CheckJoin(ChangedOrdinary, NonownerSession, OrdinaryRule, {}, {}) ==
+           EResult::InvalidBond);
+    ChangedJoin = NftSpecial;
+    ChangedJoin.SelectedSpecialCount = 2;
+    assert(CheckJoin(ChangedJoin, NftSession, SpecialRule, Catalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+    ChangedJoin = NftSpecial;
+    ChangedJoin.NftReservationCount = 2;
+    assert(CheckJoin(ChangedJoin, NftSession, SpecialRule, Catalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+    ChangedJoin = NftSpecial;
+    ChangedJoin.SelectedWeaponId = "unknown-special";
+    assert(CheckJoin(ChangedJoin, NftSession, SpecialRule, Catalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+    ChangedJoin = Ordinary;
+    ChangedJoin.NftReservationCount = 1;
+    ChangedJoin.NftId = "blade-nft";
+    ChangedJoin.NftMetadataHash = "metadata-a";
+    ChangedJoin.NftRoleId = "catalog-role-a";
+    assert(CheckJoin(ChangedJoin, NftSession, OrdinaryRule, Catalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+
+    auto ChangedCatalog = Catalog;
+    ChangedCatalog.SignedGenesisApproved = false;
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, ChangedCatalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+    ChangedCatalog = Catalog;
+    ChangedCatalog.PublisherId = "attacker-publisher";
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, ChangedCatalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+    ChangedCatalog = Catalog;
+    ChangedCatalog.Published = false;
+    assert(CheckJoin(NonownerSpecial, NonownerSession, SpecialRule, ChangedCatalog, {}) ==
+           EResult::UnapprovedWeapon);
+    ChangedCatalog = Catalog;
+    ChangedCatalog.ProfileId = "other-profile";
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, ChangedCatalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+    ChangedCatalog = Catalog;
+    ChangedCatalog.RoleId = "attacker-role";
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, ChangedCatalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+    ChangedCatalog = Catalog;
+    ChangedCatalog.ReturnToOriginalOwner = false;
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, ChangedCatalog, Equipment) ==
+           EResult::UnapprovedWeapon);
+    ChangedCatalog = Catalog;
+    ChangedCatalog.MemberMetadataHash = "attacker-metadata";
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, ChangedCatalog, Equipment) ==
+           EResult::UnavailableNft);
+    ChangedCatalog = Catalog;
+    ChangedCatalog.MemberNftId = "attacker-nft";
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, ChangedCatalog, Equipment) ==
+           EResult::UnavailableNft);
+    ChangedJoin = NftSpecial;
+    ChangedJoin.NftRoleId = "attacker-role";
+    assert(CheckJoin(ChangedJoin, NftSession, SpecialRule, Catalog, Equipment) ==
+           EResult::UnavailableNft);
     auto ChangedEquipment = Equipment;
     ChangedEquipment.OwnerAccount = "other-cat";
-    assert(CheckJoin(Joined, Session, ChangedEquipment) == EResult::UnavailableNft);
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, Catalog, ChangedEquipment) ==
+           EResult::UnavailableNft);
     ChangedEquipment = Equipment;
-    ChangedEquipment.MetadataHash = "metadata-b";
-    assert(CheckJoin(Joined, Session, ChangedEquipment) == EResult::UnavailableNft);
-    ChangedJoin = Joined;
-    ChangedJoin.NftId = "";
-    ChangedJoin.NftMetadataHash = "";
-    ChangedJoin.NftRoleId = "";
-    assert(CheckJoin(ChangedJoin, Session, {}) == EResult::MatchesSuppliedSnapshot);
-    ChangedJoin.NftMetadataHash = "metadata-a";
-    assert(CheckJoin(ChangedJoin, Session, {}) == EResult::Incomplete);
+    ChangedEquipment.AvailableForReservation = false;
+    assert(CheckJoin(NftSpecial, NftSession, SpecialRule, Catalog, ChangedEquipment) ==
+           EResult::UnavailableNft);
+    ChangedJoin = NonownerSpecial;
+    ChangedJoin.NftMetadataHash = "attacker-metadata";
+    assert(CheckJoin(ChangedJoin, NonownerSession, SpecialRule, Catalog, {}) ==
+           EResult::UnavailableNft);
+    assert(!Atomic("340282366920938463463374607431768211456"));
+    assert(DoubleAtomic("170141183460469231731687303715884105728").empty());
 
     const FOfferTerms Offer{
         "network-a", "offer-5", "blade-nft", "seller-cat", "xor-asset", "700",
@@ -86,5 +198,5 @@ int main()
     assert(CheckBuy(ChangedBuy, Read) == EResult::Incomplete);
     assert(!JapaneseCopy(EResult::Stale).empty());
     assert(!EnglishSubtitle(EResult::Stale).empty());
-    std::cout << "Join and Buy supplied-snapshot preflight passed; no authorization\n";
+    std::cout << "Join bond/equipment and Buy snapshot preflight passed; no authorization\n";
 }

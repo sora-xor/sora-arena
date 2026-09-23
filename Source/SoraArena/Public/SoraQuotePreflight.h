@@ -4,6 +4,7 @@
 // These structs are deliberately not a source of chain state or a wallet
 // authorization decision. Join/Buy signing remains blocked in the subsystem.
 #include <cstdint>
+#include <string>
 #include <string_view>
 
 namespace SoraQuotePreflight
@@ -17,6 +18,7 @@ enum class EResult
     Stale,
     DifferentTerms,
     InvalidBond,
+    UnapprovedWeapon,
     UnavailableNft,
 };
 
@@ -30,6 +32,7 @@ inline Text JapaneseCopy(EResult Result)
     case EResult::Stale: return "条件が期限切れか、台帳状態が変わりました。";
     case EResult::DifferentTerms: return "申請と照合用データの条件が一致しません。";
     case EResult::InvalidBond: return "入金額と死亡時の固定損失額が一致しません。";
+    case EResult::UnapprovedWeapon: return "武器または発行元の承認を確認できません。";
     case EResult::UnavailableNft: return "NFT の所有者または予約状態を確認できません。";
     }
     return "条件を確認できません。";
@@ -45,6 +48,7 @@ inline Text EnglishSubtitle(EResult Result)
     case EResult::Stale: return "Terms expired or chain state changed.";
     case EResult::DifferentTerms: return "Requested and supplied terms differ.";
     case EResult::InvalidBond: return "Bond and fixed death loss differ.";
+    case EResult::UnapprovedWeapon: return "Weapon or publisher approval is unavailable.";
     case EResult::UnavailableNft: return "NFT ownership or reservation is unavailable.";
     }
     return "Terms could not be checked.";
@@ -60,11 +64,28 @@ inline bool Bounded(Text Value)
 
 inline bool Atomic(Text Value)
 {
-    if (Value.empty() || Value.size() > 39 || (Value.size() > 1 && Value.front() == '0'))
+    constexpr Text Maximum = "340282366920938463463374607431768211455"; // u128
+    if (Value.empty() || Value.size() > Maximum.size() ||
+        (Value.size() > 1 && Value.front() == '0'))
         return false;
     for (const char Character : Value)
         if (Character < '0' || Character > '9') return false;
-    return true;
+    return Value.size() < Maximum.size() || Value <= Maximum;
+}
+
+inline std::string DoubleAtomic(Text Value)
+{
+    if (!Atomic(Value) || Value == "0") return {};
+    std::string Doubled(Value.size(), '0');
+    unsigned Carry = 0;
+    for (std::size_t Index = Value.size(); Index != 0; --Index)
+    {
+        const unsigned Digit = unsigned(Value[Index - 1] - '0') * 2 + Carry;
+        Doubled[Index - 1] = char('0' + Digit % 10);
+        Carry = Digit / 10;
+    }
+    if (Carry) Doubled.insert(Doubled.begin(), char('0' + Carry));
+    return Atomic(Doubled) ? Doubled : std::string{};
 }
 
 inline bool TenEqualLosses(Text Total, Text PerDeath)
@@ -80,13 +101,17 @@ inline bool TenEqualLosses(Text Total, Text PerDeath)
 struct FJoinIntent
 {
     Text Network, Account, SessionId, ManifestHash, AssetId, TotalBondAtomic;
+    // From a future typed Arena application-data decoder; never infer from NFT metadata.
+    Text SelectedWeaponId;
+    unsigned SelectedSpecialCount, NftReservationCount;
     Text NftId, NftMetadataHash, NftRoleId;
     std::uint64_t QuotedSessionRevision;
 };
 
 struct FArenaSessionQuote
 {
-    Text Network, SessionId, ManifestHash, AssetId, TotalBondAtomic;
+    Text Network, SessionId, ManifestHash, AssetId, ProfileId;
+    Text BaseBondAtomic, TotalBondAtomic;
     Text PerDeathLossAtomic, MaximumLossAtomic;
     std::uint64_t Revision, ObservedHeight, JoinDeadlineHeight;
     bool AcceptingJoins;
@@ -98,14 +123,35 @@ struct FEquipmentRead
     bool AvailableForReservation;
 };
 
+// Must be decoded from a qualified, immutable Arena execution profile. An
+// arbitrary weapon name or NFT field cannot create a catalog role.
+struct FCompiledWeaponRule
+{
+    Text WeaponId, ProfileId, RoleId, CatalogId, PublisherId, CollectionId;
+    bool IsSpecial;
+};
+
+// Mirrors the signed-genesis publisher scope and retained catalog member.
+// The caller must authenticate this read; the bools do not prove chain state.
+struct FPublisherCatalogRead
+{
+    Text Network, ProfileId, RoleId, CatalogId, PublisherId, CollectionId;
+    Text MemberNftId, MemberMetadataHash;
+    bool SignedGenesisApproved, Published, ReturnToOriginalOwner;
+};
+
 inline EResult CheckJoin(const FJoinIntent& Intent, const FArenaSessionQuote& Quote,
+                        const FCompiledWeaponRule& Weapon,
+                        const FPublisherCatalogRead& Catalog,
                         const FEquipmentRead& Equipment)
 {
     if (!Bounded(Intent.Network) || !Bounded(Intent.Account) ||
         !Bounded(Intent.SessionId) || !Bounded(Intent.ManifestHash) ||
         !Bounded(Intent.AssetId) || !Atomic(Intent.TotalBondAtomic) ||
+        !Bounded(Intent.SelectedWeaponId) ||
         !Bounded(Quote.Network) || !Bounded(Quote.SessionId) ||
         !Bounded(Quote.ManifestHash) || !Bounded(Quote.AssetId) ||
+        !Bounded(Quote.ProfileId) || !Atomic(Quote.BaseBondAtomic) ||
         !Atomic(Quote.TotalBondAtomic) || !Atomic(Quote.PerDeathLossAtomic) ||
         !Atomic(Quote.MaximumLossAtomic)) return EResult::Incomplete;
     if (!Quote.AcceptingJoins || Quote.ObservedHeight > Quote.JoinDeadlineHeight ||
@@ -113,14 +159,56 @@ inline EResult CheckJoin(const FJoinIntent& Intent, const FArenaSessionQuote& Qu
     if (Intent.Network != Quote.Network || Intent.SessionId != Quote.SessionId ||
         Intent.ManifestHash != Quote.ManifestHash || Intent.AssetId != Quote.AssetId ||
         Intent.TotalBondAtomic != Quote.TotalBondAtomic) return EResult::DifferentTerms;
-    if (!TenEqualLosses(Quote.TotalBondAtomic, Quote.PerDeathLossAtomic) ||
-        Quote.MaximumLossAtomic != Quote.TotalBondAtomic) return EResult::InvalidBond;
-    if (Intent.NftId.empty())
-        return Intent.NftMetadataHash.empty() && Intent.NftRoleId.empty()
-            ? EResult::MatchesSuppliedSnapshot : EResult::Incomplete;
+    if (!Bounded(Weapon.WeaponId) || !Bounded(Weapon.ProfileId) ||
+        Intent.SelectedWeaponId != Weapon.WeaponId ||
+        Quote.ProfileId != Weapon.ProfileId ||
+        Intent.SelectedSpecialCount != unsigned(Weapon.IsSpecial) ||
+        Intent.SelectedSpecialCount > 1 || Intent.NftReservationCount > 1)
+        return EResult::UnapprovedWeapon;
+    if (Quote.BaseBondAtomic == "0" || Quote.BaseBondAtomic.back() != '0')
+        return EResult::InvalidBond;
+
+    const bool HasNft = Intent.NftReservationCount == 1;
+    if (!Weapon.IsSpecial)
+    {
+        if (HasNft || !Intent.NftId.empty() || !Intent.NftMetadataHash.empty() ||
+            !Intent.NftRoleId.empty() || !Weapon.RoleId.empty() ||
+            !Weapon.CatalogId.empty() || !Weapon.PublisherId.empty() ||
+            !Weapon.CollectionId.empty()) return EResult::UnapprovedWeapon;
+    }
+    else
+    {
+        if (!Bounded(Weapon.RoleId) || !Bounded(Weapon.CatalogId) ||
+            !Bounded(Weapon.PublisherId) || !Bounded(Weapon.CollectionId) ||
+            !Catalog.SignedGenesisApproved || !Catalog.Published ||
+            !Catalog.ReturnToOriginalOwner ||
+            Catalog.Network != Quote.Network ||
+            Catalog.ProfileId != Quote.ProfileId ||
+            Catalog.RoleId != Weapon.RoleId ||
+            Catalog.CatalogId != Weapon.CatalogId ||
+            Catalog.PublisherId != Weapon.PublisherId ||
+            Catalog.CollectionId != Weapon.CollectionId)
+            return EResult::UnapprovedWeapon;
+    }
+
+    const std::string Doubled = Weapon.IsSpecial && !HasNft
+        ? DoubleAtomic(Quote.BaseBondAtomic) : std::string{};
+    const Text RequiredBond = Weapon.IsSpecial && !HasNft
+        ? Text(Doubled) : Quote.BaseBondAtomic;
+    if (!Atomic(RequiredBond) || RequiredBond != Quote.TotalBondAtomic ||
+        !TenEqualLosses(RequiredBond, Quote.PerDeathLossAtomic) ||
+        Quote.MaximumLossAtomic != RequiredBond) return EResult::InvalidBond;
+
+    if (!HasNft)
+        return Intent.NftId.empty() && Intent.NftMetadataHash.empty() &&
+            Intent.NftRoleId.empty()
+            ? EResult::MatchesSuppliedSnapshot : EResult::UnavailableNft;
     if (!Bounded(Intent.NftId) || !Bounded(Intent.NftMetadataHash) ||
         !Bounded(Intent.NftRoleId)) return EResult::Incomplete;
-    if (!Equipment.AvailableForReservation ||
+    if (Intent.NftRoleId != Weapon.RoleId ||
+        Catalog.MemberNftId != Intent.NftId ||
+        Catalog.MemberMetadataHash != Intent.NftMetadataHash ||
+        !Equipment.AvailableForReservation ||
         Equipment.NftId != Intent.NftId ||
         Equipment.MetadataHash != Intent.NftMetadataHash ||
         Equipment.RoleId != Intent.NftRoleId ||
