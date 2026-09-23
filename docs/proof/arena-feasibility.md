@@ -104,6 +104,17 @@ NFT admission, terminal settlement, or any complete match. The source-sealed
 record is `../iroha-arena/docs/source/arena_kill_research_v1.md`; the wider
 `iroha_core --lib` test build remains broken by unrelated fixture drift.
 
+A separate host-side audit now frames those 25 signed controls as thirteen
+contiguous two-tick P2P batches, with an exact idle 26th frame. Both focused
+tests pass: parent roots, commitment openings, three signatures per batch,
+tick indices, flattened kill controls, and twelve projected state links agree;
+parent, tick, signature, reveal, slot, network, and lethal-control mutations
+reject. The transcript root is
+`3720c3b754599ebf66109afb8375c1148a15c4254110cf0ad8ba974ff47cef0c`.
+This history is **not bound into the saved STARK** or selected by consensus; it
+does not close the ledger-history, proof-composition, or settlement gates. The
+source-mirror record is `../iroha-arena/docs/source/arena_kill_two_tick_history_research_v1.md`.
+
 For scale only, naively proving all 18,000 two-tick slices at the measured
 fixed-scene hit cost would take 2,414,664 seconds (about 28 days) of serial
 proving and produce 44,492,544,000 bytes of separate proofs. This is **not** a

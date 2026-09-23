@@ -277,6 +277,11 @@ The fixture hardcodes one scene and uses a 25-tick research batch, not the
 production two-tick P2P protocol; it cannot authorize any chain payout or
 establish full-match proof feasibility. See
 [the native research record](iroha-integration.md#measured-native-proof-research).
+An independent host-side audit now reconstructs the same 25 controls from
+thirteen signed two-tick P2P-shaped batches plus one exact idle pad frame. Its
+two focused tests pass transcript chaining, input/kill-row agreement and
+adversarial mutations. The saved STARK does not bind that transcript, and
+Iroha has not selected it as canonical session history.
 An unregistered Iroha research preflight separately measured an 18,000-batch,
 twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
 4 MiB proof envelope before the rest of a complete combat witness. Repeated

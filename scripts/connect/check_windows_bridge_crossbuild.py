@@ -80,7 +80,20 @@ def main():
         raise SystemExit(f"Unexpected compiler: {rustc}")
     before = source_seal()
     env = os.environ.copy()
+    # Rust host build scripts are macOS binaries even for a Windows target.
+    # Pin their SDK and linker explicitly: the system Command Line Tools may
+    # point at a newer SDK that this project's compiler cannot parse.
+    env["DEVELOPER_DIR"] = os.path.expanduser(
+        env.get("DEVELOPER_DIR", "~/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer")
+    )
+    env["SDKROOT"] = run("xcrun", "--sdk", "macosx", "--show-sdk-path", env=env).stdout.strip()
+    env["CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER"] = run(
+        "xcrun", "--find", "clang", env=env
+    ).stdout.strip()
     env["CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER"] = "x86_64-w64-mingw32-gcc"
+    env["CC_x86_64_pc_windows_gnu"] = "x86_64-w64-mingw32-gcc"
+    env["CXX_x86_64_pc_windows_gnu"] = "x86_64-w64-mingw32-g++"
+    env["AR_x86_64_pc_windows_gnu"] = "x86_64-w64-mingw32-ar"
     env["CARGO_TARGET_DIR"] = str(TARGET_DIR)
     build = run("cargo", f"+{TOOLCHAIN}", "build", "--locked", "--release", "-j2",
                 "--target", TARGET, "-p", "connect_norito_bridge", "--lib", env=env)
