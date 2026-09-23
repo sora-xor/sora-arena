@@ -45,7 +45,8 @@ assert "user-supplied SORA insignia" in manifest["license"]
 for filename,field in ((manifest["source_blend"],"blend_sha256"),
                        (manifest["fbx"],"fbx_sha256"),
                        (manifest["preview"],"preview_sha256"),
-                       (manifest["detail_preview"],"detail_preview_sha256")):
+                       (manifest["detail_preview"],"detail_preview_sha256"),
+                       (manifest["eye_macro"],"eye_macro_sha256")):
     path=out/filename
     assert path.stat().st_size>1000,path
     assert hashlib.sha256(path.read_bytes()).hexdigest()==manifest[field],path
@@ -53,7 +54,15 @@ logo=(out/manifest["insignia_source"]).resolve()
 logo_record=json.loads((logo.parent/"sora_logo_manifest.json").read_text())
 assert manifest["insignia_sha256"]==logo_record["source_sha256"]
 assert hashlib.sha256(logo.read_bytes()).hexdigest()==manifest["insignia_sha256"]
-assert not [image for image in bpy.data.images if image.source=="FILE"]
+assert len(manifest["generated_textures"])==1
+iris_record=manifest["generated_textures"][0]
+assert iris_record["path"]=="EyeStudy/T_Nyaakoto_Iris_Albedo.png"
+iris_file=out/iris_record["path"]
+assert iris_file.stat().st_size>10000
+assert hashlib.sha256(iris_file.read_bytes()).hexdigest()==iris_record["sha256"]
+source_images=[image for image in bpy.data.images if image.source=="FILE"]
+assert len(source_images)==1 and source_images[0].packed_file is not None
+assert Path(bpy.path.abspath(source_images[0].filepath)).resolve()==iris_file.resolve()
 collection=bpy.data.collections.get("NyaagyuHero_Editable")
 assert collection is not None
 parts=[o for o in collection.objects if o.type=="MESH"]
@@ -70,6 +79,13 @@ for placement in manifest["sora_kamon_placements"]:
     assert {o["source_svg_sha256"] for o in paths}=={manifest["insignia_sha256"]}
 assert not any(o.name.startswith("Clan_mon_ray_") for o in parts)
 assert any(o.name=="Skull" for o in parts)
+for side in (-1,1):
+    iris=bpy.data.objects[f"Eye_iris_{side}"]
+    assert iris.data.uv_layers.get("Iris_Pigment_UV") is not None
+    assert len(iris.data.polygons)>800
+    assert bpy.data.objects.get(f"Corneal_glint_{side}") is not None
+    assert bpy.data.objects.get(f"Eye_upper_tarsal_margin_{side}") is not None
+assert bpy.data.materials["M_Hero_EyeGlint"].node_tree.nodes.get("Principled BSDF").inputs["Transmission Weight"].default_value==0.0
 assert any(o.name=="Tail_arched" for o in parts)
 assert any(o.name=="Saya_lacquer" for o in parts)
 assert any(o.name=="Katana_tsuka_sheathed" for o in parts)

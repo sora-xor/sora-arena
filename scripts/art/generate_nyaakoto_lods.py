@@ -37,6 +37,12 @@ assert len(parts) == source_manifest["source_parts"]
 rig = bpy.data.objects["RIG_NyaagyuSamurai"]
 assert len(rig.data.bones) == 20
 rig.animation_data.action = None
+# The editable runtime blend retains its packed eye painting. Exported FBXs
+# retain the material identity/UVs but must not contain a local image path.
+iris_nodes = bpy.data.materials["M_Hero_BlueEye"].node_tree.nodes
+iris_node = iris_nodes.get("Painted radial iris pigment")
+assert iris_node is not None
+iris_nodes.remove(iris_node)
 
 
 def rig_bone(name: str, p: Vector) -> str:
@@ -177,7 +183,7 @@ for level in (1, 2):
         filepath=str(path), use_selection=True,
         object_types={"MESH", "ARMATURE"}, axis_forward="-Y", axis_up="Z",
         apply_unit_scale=True, add_leaf_bones=False, use_armature_deform_only=True,
-        bake_anim=False)
+        bake_anim=False, path_mode="STRIP")
     records.append({
         "level": level,
         "fbx": filename,

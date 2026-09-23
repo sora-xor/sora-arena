@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "generator": "scripts/art/generate_nyaakoto_lods.py",
-  "source_blend_sha256": "d2d6b2ad518e82760235d528794a129212f76941bee6d20dadd67d3a1f046e52",
-  "lod0_fbx_sha256": "b1380e5b67bc5adf9e5b5d1bc6c8c36cbddc82a34ed3c7cb9b322adc0af6bb23",
+  "source_blend_sha256": "2eb1c09b1869b9d520d4f50fd198903ef4a6f6c7901d734ae0fd727621f27483",
+  "lod0_fbx_sha256": "09711e2602cf459800ecfec3c40e434fe75f2ef37debbaf77df26713c848d993",
   "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
   "lods": [
     {
       "level": 1,
       "fbx": "SK_NyaagyuSamurai_LOD1.fbx",
-      "sha256": "cb0699649cef1d7212cbc64f2414e43d2e340dcee8f2b7d43d4446a5161ac911",
-      "source_parts": 389,
-      "vertices": 48137,
-      "triangles": 60089,
+      "sha256": "113566339451660f8ead5109b73c1b7a963c573fd9f339d5e1a3c5a612f65a8e",
+      "source_parts": 393,
+      "vertices": 54849,
+      "triangles": 73169,
       "bounds_m": {
         "x": [
           -0.6542,
@@ -78,10 +78,10 @@
     {
       "level": 2,
       "fbx": "SK_NyaagyuSamurai_LOD2.fbx",
-      "sha256": "195d2033a7545ba561a16a1968a5db59f73874a7452d59da2b3714768f0fad6f",
-      "source_parts": 191,
-      "vertices": 15298,
-      "triangles": 29020,
+      "sha256": "7dd30967e0be78d294c3f8930331aed43f8b3cd41405eebe15101134e2908e88",
+      "source_parts": 199,
+      "vertices": 19687,
+      "triangles": 37390,
       "bounds_m": {
         "x": [
           -0.6542,

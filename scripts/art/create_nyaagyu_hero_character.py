@@ -18,6 +18,7 @@ import random
 from pathlib import Path
 
 import bpy
+import numpy as np
 from mathutils import Matrix, Vector
 
 
@@ -29,7 +30,11 @@ FBX = OUT / f"{NAME}.fbx"
 PREVIEW = OUT / "Nyaagyu_HeroCharacter_Blender.png"
 DETAIL = OUT / "Nyaagyu_HeroFace_Blender.png"
 MANIFEST = OUT / "manifest.json"
+EYE_DIR = OUT / "EyeStudy"
+EYE_CLOSEUP = EYE_DIR / "Nyaakoto_Eye_Macro_Blender.png"
+IRIS_TEXTURE = EYE_DIR / "T_Nyaakoto_Iris_Albedo.png"
 OUT.mkdir(parents=True, exist_ok=True)
+EYE_DIR.mkdir(parents=True, exist_ok=True)
 bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.object.select_all(action="SELECT")
 bpy.ops.object.delete(use_global=False)
@@ -86,8 +91,8 @@ FUR_DARK = mat("M_Hero_CharcoalStripeFur", (.045,.053,.063), rough=.92, noise=13
 FUR_LIGHT = mat("M_Hero_WhiteFur", (.77,.80,.79), rough=.91, noise=112, bump=.00018)
 EAR_INNER = mat("M_Hero_EarSkin", (.40,.17,.17), rough=.82, noise=83, bump=.00006)
 NOSE = mat("M_Hero_RoseNose", (.42,.17,.18), rough=.47)
-EYE = mat("M_Hero_BlueEye", (.16,.31,.43), rough=.16, coat=.38)
-EYE_DARK = mat("M_Hero_EyePupil", (.008,.012,.013), rough=.19, coat=.28)
+EYE = mat("M_Hero_BlueEye", (.16,.31,.43), rough=.36, coat=.12)
+EYE_DARK = mat("M_Hero_EyePupil", (.008,.012,.013), rough=.12, coat=.38)
 EYE_WHITE = mat("M_Hero_EyeGlint", (.83,.78,.61), rough=.15)
 INDIGO = mat("M_Hero_IndigoSilk", (.016,.023,.045), rough=.80, noise=185, bump=.00013)
 INDIGO_LIGHT = mat("M_Hero_FoldedIndigo", (.030,.041,.068), rough=.84, noise=190, bump=.00013)
@@ -105,6 +110,59 @@ BAMBOO = mat("M_Hero_YumiLaminatedBamboo", (.27,.15,.065), rough=.56, noise=93, 
 ARROW = mat("M_Hero_BambooArrowShaft", (.48,.32,.17), rough=.72, noise=111, bump=.00008)
 FLETCH = mat("M_Hero_RedArrowFletch", (.66,.050,.055), rough=.88, noise=118, bump=.00004)
 STRING = mat("M_Hero_YumiSilkString", (.70,.66,.53), rough=.82)
+
+
+def build_iris_texture():
+    """Paint an original radial iris atlas rather than using a flat blue disc.
+
+    The slight angular phase drift and broken fibres keep the iris legible at
+    close review distance. The pupil and corneal bulge remain actual geometry.
+    """
+    size = 1024
+    yy, xx = np.mgrid[0:size, 0:size].astype(np.float32)
+    xx = (xx - (size - 1) * .5) / (size * .48)
+    yy = (yy - (size - 1) * .5) / (size * .48)
+    radius = np.sqrt(xx * xx + yy * yy)
+    angle = np.arctan2(yy, xx)
+    drift = angle + .018 * np.sin(33 * angle + radius * 19)
+    fine = .5 + .5 * np.sin(173 * drift + 9 * radius + 1.5 * np.sin(31 * angle))
+    broad = .5 + .5 * np.sin(61 * drift - 11 * radius + .8 * np.sin(13 * angle))
+    ring = .5 + .5 * np.sin(78 * radius + 4 * np.sin(15 * angle))
+    rng = np.random.default_rng(290419)
+    grain = rng.random((size, size), dtype=np.float32) - .5
+    texture = np.empty((size, size, 4), dtype=np.float32)
+    base = np.asarray((.095, .272, .355), dtype=np.float32)
+    tone = (.69 + .27 * fine + .14 * broad + .045 * ring + .055 * grain)[..., None]
+    color = base * tone
+    blue_fibres = np.asarray((.095, .18, .22), dtype=np.float32)
+    color += blue_fibres * np.clip((fine - .56) * 1.45, 0, 1)[..., None]
+    inner = np.clip((.34 - radius) / .17, 0, 1)[..., None]
+    color = color * (1 - inner * .47) + np.asarray((.19, .15, .08), dtype=np.float32) * inner * .47
+    limbal = np.clip((radius - .78) / .18, 0, 1)[..., None]
+    color = color * (1 - limbal * .86) + np.asarray((.012, .020, .027), dtype=np.float32) * limbal * .86
+    texture[:, :, :3] = np.clip(color, 0, 1)
+    texture[:, :, 3] = 1
+    image = bpy.data.images.new("Nyaakoto_Iris_Painted_1024", width=size, height=size, alpha=True)
+    image.pixels.foreach_set(texture.ravel())
+    image.filepath_raw = str(IRIS_TEXTURE)
+    image.file_format = "PNG"
+    image.save()
+    image.pack()
+    nodes, links = EYE.node_tree.nodes, EYE.node_tree.links
+    pigment = nodes.new("ShaderNodeTexImage")
+    pigment.name = "Painted radial iris pigment"
+    pigment.image = image
+    pigment.interpolation = "Linear"
+    bsdf = nodes.get("Principled BSDF")
+    links.new(pigment.outputs["Color"], bsdf.inputs["Base Color"])
+    relief = nodes.new("ShaderNodeBump")
+    relief.inputs["Strength"].default_value = .15
+    relief.inputs["Distance"].default_value = .00005
+    links.new(pigment.outputs["Color"], relief.inputs["Height"])
+    links.new(relief.outputs["Normal"], bsdf.inputs["Normal"])
+
+
+build_iris_texture()
 
 
 def keep(obj, name, material):
@@ -195,6 +253,57 @@ def surface(name, vertices, faces, material, thickness=.0):
         bpy.context.view_layer.objects.active = o
         bpy.ops.object.modifier_apply(modifier=mod.name)
     return o
+
+
+def eye_basis(sign):
+    """Face-forward eye tangent with a modest outward gaze for each cheek."""
+    vertical = Vector((0, 0, 1))
+    horizontal = Vector((-sign * .18, .984, 0)).normalized()
+    normal = horizontal.cross(vertical).normalized()
+    origin = Vector((.205, sign * .084, 1.672))
+    return origin, horizontal, vertical, normal
+
+
+def eye_patch(name, sign, width, height, depth, crown, material,
+              rings=10, segments=96, thickness=0):
+    """UV-mapped convex ocular disc seated on the anatomical eyeball."""
+    origin, horizontal, vertical, normal = eye_basis(sign)
+    vertices = [origin + normal * (depth + crown)]
+    coordinates = [(0.5, 0.5)]
+    faces = []
+    for ring in range(1, rings + 1):
+        radius = ring / rings
+        for angle_index in range(segments):
+            angle = math.tau * angle_index / segments
+            u, v = radius * math.cos(angle), radius * math.sin(angle)
+            point = (origin + horizontal * (width * u) + vertical * (height * v)
+                     + normal * (depth + crown * (1 - radius * radius)))
+            vertices.append(point)
+            coordinates.append((.5 + .48 * u, .5 + .48 * v))
+    for index in range(segments):
+        faces.append((0, 1 + index, 1 + (index + 1) % segments))
+    for ring in range(rings - 1):
+        lo = 1 + ring * segments
+        hi = lo + segments
+        for index in range(segments):
+            j = (index + 1) % segments
+            faces.append((lo + index, hi + index, hi + j, lo + j))
+    obj = smooth(surface(name, vertices, faces, material, thickness=thickness))
+    uv = obj.data.uv_layers.new(name="Iris_Pigment_UV")
+    for loop in obj.data.loops:
+        uv.data[loop.index].uv = coordinates[loop.vertex_index]
+    return obj
+
+
+def eye_lid(name, sign, upper, material, radius):
+    origin, horizontal, vertical, normal = eye_basis(sign)
+    points = []
+    for u in (-1.0, -.7, -.35, 0.0, .35, .7, 1.0):
+        arch = max(0.0, 1.0 - u * u) ** .72
+        z = (.015 if upper else -.012) * arch + .0015 * u
+        points.append(origin + horizontal * (.026 * u) + vertical * z
+                      + normal * (.008 - .002 * u * u))
+    return line(name, points, radius, material, 3)
 
 
 def ring_loft(name, rings, material, sides=32, pleats=0):
@@ -387,7 +496,7 @@ for sign in (-1,1):
 # These are still rigid source pieces; a final hero would need a continuous
 # sculpt, hand-painted region masks, groom and facial deformation rig.
 head_start=set(parts.objects)
-skull=sphere("Skull",(.037,0,1.642),(.187,.196,.188),FUR,64,40)
+skull=sphere("Skull",(.037,0,1.642),(.187,.196,.188),FUR,112,72)
 for vertex in skull.data.vertices:
     p=vertex.co
     # The front plane is flatter at the brow, broadens at the zygomatic arches
@@ -396,6 +505,12 @@ for vertex in skull.data.vertices:
     p.y *= 1+.105*cheek-.11*max(0,-p.z/.19)
     p.x += .008*math.exp(-((p.z-.060)/.042)**2)
     p.x -= .015*max(0,-p.z/.19)
+    # Seat each globe into a shallow orbital depression in the continuous head
+    # mass; the dark tarsal margins below will cover the remaining join.
+    for eye_sign in (-1, 1):
+        orbital = math.exp(-(((p.y-eye_sign*.084)/.041)**2
+                             + ((p.z-.030)/.029)**2)*1.4)
+        p.x -= .008*orbital*max(0,min(1,(p.x-.08)/.10))
 def tabby_fiber_patches():
     """Layer charcoal fibers along the skull, avoiding blocky polygon markings."""
     rng=random.Random(1897)
@@ -441,16 +556,20 @@ for sign in (-1,1):
     # The white muzzle is a shallow paired pad, with the bridge and jaw tucked
     # behind it.  Individual follicles and divergent whiskers carry the edge.
     sphere(f"Muzzle_pad_{sign}",(.215,sign*.039,1.560),(.044,.048,.028),FUR_LIGHT,40,24)
-    sphere(f"Eye_socket_{sign}",(.204,sign*.084,1.672),(.006,.033,.022),FUR_DARK,40,24)
-    sphere(f"Eye_iris_{sign}",(.209,sign*.084,1.672),(.004,.024,.017),EYE,40,24)
-    sphere(f"Vertical_pupil_{sign}",(.213,sign*.084,1.672),(.0019,.004,.013),EYE_DARK,24,16)
-    sphere(f"Corneal_glint_{sign}",(.216,sign*.073,1.680),(.001,.002,.0025),EYE_WHITE,12,8)
-    line(f"Eye_upper_lid_{sign}",[(.207,sign*.051,1.682),(.211,sign*.076,1.691),
-                                   (.208,sign*.103,1.686),(.199,sign*.117,1.674)],.0018,FUR_DARK,2)
-    line(f"Eye_lower_lid_{sign}",[(.207,sign*.051,1.665),(.211,sign*.081,1.655),
-                                   (.202,sign*.111,1.665)],.0013,FUR_DARK,2)
+    sphere(f"Eye_socket_{sign}",(.204,sign*.084,1.672),(.003,.026,.017),EYE_DARK,56,36)
+    eye_patch(f"Eye_iris_{sign}",sign,.022,.015,.008,.0015,EYE)
+    eye_patch(f"Eye_vertical_pupil_{sign}",sign,.0031,.011,.010,.001,EYE_DARK,6,48)
+    # The current UE master is opaque. Keep this a small highlight until a
+    # dedicated transparent cornea can be authored and qualified on both GPUs.
+    sphere(f"Corneal_glint_{sign}",(.216,sign*.073,1.680),
+           (.001,.002,.0025),EYE_WHITE,12,8)
+    eye_lid(f"Eye_upper_tarsal_margin_{sign}",sign,True,FUR_DARK,.00175)
+    eye_lid(f"Eye_lower_tarsal_margin_{sign}",sign,False,FUR_DARK,.0014)
+    eye_lid(f"Eye_upper_wetline_{sign}",sign,True,EYE_WHITE,.00042)
+    sphere(f"Eye_lacrimal_corner_{sign}",(.211,sign*.056,1.670),
+           (.0025,.0032,.0026),EAR_INNER,16,12)
     line(f"Angular_brow_{sign}",[(.174,sign*.044,1.724),(.184,sign*.086,1.729),
-                                  (.168,sign*.127,1.716)],.0024,FUR_DARK,2)
+                                  (.168,sign*.127,1.716)],.0014,FUR_DARK,2)
     for dot in range(5):
         row=dot//3;col=dot%3
         sphere(f"Muzzle_follicle_{sign}_{dot}",
@@ -573,9 +692,20 @@ joined=bpy.context.object
 joined.name=NAME
 scene.cursor.location=(0,0,0)
 bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+# FBX carries native material slots into Unreal, while its absolute image paths
+# would leak a workstation directory. The project-owned atlas is packed in the
+# editable .blend and imported to UE separately; omit its node for this export.
+iris_nodes, iris_links = EYE.node_tree.nodes, EYE.node_tree.links
+iris_node = iris_nodes["Painted radial iris pigment"]
+iris_nodes.remove(iris_node)
 bpy.ops.export_scene.fbx(filepath=str(FBX),use_selection=True,object_types={"MESH"},
                          apply_unit_scale=True,global_scale=1.0,axis_forward="-Y",
-                         axis_up="Z",add_leaf_bones=False,bake_anim=False)
+                         axis_up="Z",path_mode="STRIP",add_leaf_bones=False,bake_anim=False)
+iris_node = iris_nodes.new("ShaderNodeTexImage")
+iris_node.name = "Painted radial iris pigment"
+iris_node.image = bpy.data.images["Nyaakoto_Iris_Painted_1024"]
+iris_links.new(iris_node.outputs["Color"], iris_nodes["Principled BSDF"].inputs["Base Color"])
+iris_links.new(iris_node.outputs["Color"], iris_nodes["Bump"].inputs["Height"])
 corners=[joined.matrix_world @ Vector(v) for v in joined.bound_box]
 bounds={"min":[round(min(p[a] for p in corners),4) for a in range(3)],
         "max":[round(max(p[a] for p in corners),4) for a in range(3)]}
@@ -628,6 +758,12 @@ camera_data.ortho_scale=.75
 scene.render.resolution_x=1250;scene.render.resolution_y=1000
 scene.render.filepath=str(DETAIL)
 bpy.ops.render.render(write_still=True)
+camera.location=(.50,-.33,1.79)
+camera.rotation_euler=(Vector((.180,-.071,1.665))-camera.location).to_track_quat("-Z","Y").to_euler()
+camera_data.ortho_scale=.24
+scene.render.resolution_x=1200;scene.render.resolution_y=900
+scene.render.filepath=str(EYE_CLOSEUP)
+bpy.ops.render.render(write_still=True)
 camera_data.ortho_scale=2.45
 camera.location=(3.0,-4.4,2.44)
 camera.rotation_euler=(Vector((0,0,1.02))-camera.location).to_track_quat("-Z","Y").to_euler()
@@ -648,6 +784,8 @@ manifest={
     "fbx":FBX.name,"fbx_sha256":sha(FBX),
     "preview":PREVIEW.name,"preview_sha256":sha(PREVIEW),
     "detail_preview":DETAIL.name,"detail_preview_sha256":sha(DETAIL),
+    "eye_macro":str(EYE_CLOSEUP.relative_to(OUT)),"eye_macro_sha256":sha(EYE_CLOSEUP),
+    "generated_textures":[{"path":str(IRIS_TEXTURE.relative_to(OUT)),"sha256":sha(IRIS_TEXTURE)}],
     "unreal_asset":f"/Game/ArtReview/Characters/{NAME}.{NAME}",
     "source_parts":len(source_parts),"source_triangles":source_tris,
     "bounds_m":bounds,"local_forward":"+X face-forward; +Z up",

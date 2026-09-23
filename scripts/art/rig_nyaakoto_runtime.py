@@ -147,6 +147,14 @@ modifier.object = rig
 mesh.parent = rig
 rig.animation_data_create()
 actions = {}
+# Keep the painted iris packed in the editable runtime .blend, but omit its
+# image node while exporting FBX. Blender otherwise embeds the artist's
+# absolute workstation path even with path_mode="STRIP".
+iris_nodes = bpy.data.materials["M_Hero_BlueEye"].node_tree.nodes
+iris_links = bpy.data.materials["M_Hero_BlueEye"].node_tree.links
+iris_node = iris_nodes["Painted radial iris pigment"]
+iris_image = iris_node.image
+iris_nodes.remove(iris_node)
 for clip, frames in (("Idle", 96), ("Walk", 32)):
     action = bpy.data.actions.new(rig.name + "_" + clip)
     action.use_fake_user = True
@@ -181,7 +189,13 @@ for clip, frames in (("Idle", 96), ("Walk", 32)):
         object_types={"MESH", "ARMATURE"}, axis_forward="-Y", axis_up="Z",
         apply_unit_scale=True, add_leaf_bones=False, use_armature_deform_only=True,
         bake_anim=True, bake_anim_use_nla_strips=False,
-        bake_anim_use_all_actions=False, bake_anim_simplify_factor=0)
+        bake_anim_use_all_actions=False, bake_anim_simplify_factor=0,
+        path_mode="STRIP")
+iris_node = iris_nodes.new("ShaderNodeTexImage")
+iris_node.name = "Painted radial iris pigment"
+iris_node.image = iris_image
+iris_links.new(iris_node.outputs["Color"], iris_nodes["Principled BSDF"].inputs["Base Color"])
+iris_links.new(iris_node.outputs["Color"], iris_nodes["Bump"].inputs["Height"])
 rig.animation_data.action = actions["Idle"]
 bpy.context.scene.frame_set(1)
 for src in parts:

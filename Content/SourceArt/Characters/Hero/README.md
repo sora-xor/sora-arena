@@ -15,6 +15,18 @@ user-supplied `Content/SourceArt/UI/sora_logo_NOtext2.svg`; the original SVG is
 left unchanged. The earlier invented ray motif on the waist was removed.
 `manifest.json` pins every output and the insignia source by SHA-256.
 
+The eye study now has a shallow orbital seat, UV-mapped iris discs, narrow
+vertical pupils, curved eyelid margins and a small modeled catchlight. Its original
+1024 px blue-grey radial pigment map is in `EyeStudy/` and packed into the
+editable `.blend`. The close-up Blender review is
+`EyeStudy/Nyaakoto_Eye_Macro_Blender.png`. This replaces the previous flat blue
+eye spheres without adding material slots to the runtime's 23-slot contract.
+It improves iris readability, but the skull, lids, fur and muzzle remain
+stylized. The review render does not establish photoreal quality or in-game
+appearance; the material and deformation need Unreal and animation review. A
+full transparent cornea needs a separate UE material path before it can be
+added without obscuring the iris in the current opaque runtime master.
+
 The bow is about 2.19 m along its centerline, with the grip about one-third of
 the way up from the lower tip. The open ebira, bamboo arrow shafts and
 feathered ends follow the [British Museum samurai exhibit](https://www.britishmuseum.org/exhibitions/samurai/samurai-large-print-guide).
@@ -35,7 +47,7 @@ python3 scripts/unreal/validate_content.py
 
 The original `Nyaagyu_HeroCharacter.blend` stays an unrigged, editable design
 source and its static FBX remains in `/Game/ArtReview/Characters`. The separate
-`Nyaakoto_RuntimeSkin.blend` binds its 351 authored parts to the established
+`Nyaakoto_RuntimeSkin.blend` binds its 393 authored parts to the established
 20-bone samurai skeleton. Its `SK_NyaagyuSamurai.fbx` and
 `A_NyaagyuSamurai_Walk.fbx` replace the orange prototype's runtime exports
 under `/Game/Generated`; armor, yumi, arrows, sheathed katana and exact kamon
