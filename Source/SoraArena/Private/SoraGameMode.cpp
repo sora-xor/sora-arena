@@ -1,4 +1,5 @@
 #include "SoraGameMode.h"
+#include "SoraCampaignRules.h"
 #include "SoraCharacter.h"
 #include "SoraCatalog.h"
 #include "SoraWorldBuilder.h"
@@ -54,12 +55,13 @@ void ASoraGameMode::ResetRound()
     if(bHasCheckpoint)
     {
         const int32 Mask=Save->CheckpointNodesMask;
-        bool bValid=Save->CheckpointKills>=0&&Save->CheckpointKills<=KillsNeeded&&(Mask&~7)==0;
         const auto& Sites=FSoraCatalog::Get().Chapter(ChapterId).Sites;
-        for(int32 I=0;bValid&&I<Sites.Num();++I)
-            if((Mask&(1<<I))!=0)
-                bValid=Save->CheckpointKills>=Sites[I].RequiredKills&&
-                    (Mask&Sites[I].RequiredSitesMask)==Sites[I].RequiredSitesMask;
+        SoraCampaignRules::FSite SiteRules[3];
+        for(int32 I=0;I<FMath::Min(Sites.Num(),3);++I)
+            SiteRules[I]={Sites[I].RequiredKills,static_cast<unsigned>(Sites[I].RequiredSitesMask)};
+        const SoraCampaignRules::FCheckpoint Checkpoint{
+            Save->CheckpointKills,static_cast<unsigned>(Mask),Save->CheckpointComplete};
+        const bool bValid=Sites.Num()==3&&SoraCampaignRules::CheckpointValid(Checkpoint,KillsNeeded,SiteRules,Sites.Num());
         if(bValid)
         {
             Kills=Save->CheckpointKills;
@@ -124,10 +126,10 @@ void ASoraGameMode::ResetRound()
 void ASoraGameMode::SpawnEnemy()
 {
     if(!WorldBuilder||Spawned>=KillsNeeded) return;
-    const bool bFinalBoss=bCampaign&&ChapterId==7&&Spawned==KillsNeeded-1;
+    const bool bFinalBoss=bCampaign&&SoraCampaignRules::IsFinalBossSlot(ChapterId,Spawned,KillsNeeded);
     // The collector arrives only after all seventeen guards have fallen. A
     // restored checkpoint at that milestone follows the same spawn path.
-    if(bFinalBoss&&Kills!=KillsNeeded-1) return;
+    if(bFinalBoss&&!SoraCampaignRules::CanSpawnFinalBoss(ChapterId,Kills,Spawned,KillsNeeded)) return;
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
     auto* Enemy=GetWorld()->SpawnActor<ASoraCharacter>(WorldBuilder->SpawnPoint(Spawned),FRotator(0,180,0),Params);
     if(!Enemy) return;
@@ -191,8 +193,9 @@ void ASoraGameMode::BeginRound()
     }
     if(bChapterComplete)
     {
-        if(bCampaign&&ChapterId<7) { ++ChapterId; MapId=FSoraCatalog::Get().Chapter(ChapterId).Map; ClearCheckpoint(); SaveProgress(); }
-        else if(bCampaign) { bCampaignComplete=true; ClearCheckpoint(); SaveProgress(); bMenu=true; return; }
+        const int32 NextChapter=SoraCampaignRules::AdvanceChapter(ChapterId,7,bChapterComplete);
+        if(bCampaign&&NextChapter!=ChapterId) { ChapterId=NextChapter; MapId=FSoraCatalog::Get().Chapter(ChapterId).Map; ClearCheckpoint(); SaveProgress(); }
+        else if(bCampaign) { bCampaignComplete=SoraCampaignRules::CampaignLiberated(ChapterId,7,bChapterComplete); ClearCheckpoint(); SaveProgress(); bMenu=true; return; }
         ResetRound();
     }
     else if(bDefeated) ResetRound();
@@ -243,7 +246,8 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
                 NoticeEnglish=TEXT("Restore ")+Dependency.NameEnglish+TEXT(" first.");
                 NoticeTime=5.f; return;
             }
-            if(Kills<Site.RequiredKills)
+            if(!SoraCampaignRules::CanRestoreSite(Kills,static_cast<unsigned>(WorldBuilder->ActivatedMask()),
+                {Site.RequiredKills,static_cast<unsigned>(Site.RequiredSitesMask)}))
             {
                 Notice=bCampaign&&ChapterId==0
                     ?FString::Printf(TEXT("%sの前に、門弟とあと %d 回立ち合おう。"),*Site.Name,Site.RequiredKills-Kills)
@@ -254,7 +258,11 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
                 NoticeTime=5.f; return;
             }
         }
-        if(WorldBuilder->ActivateNearest(Player->GetActorLocation()))
+        SoraCampaignRules::FCheckpoint SiteProgress{Kills,static_cast<unsigned>(WorldBuilder->ActivatedMask()),bChapterComplete};
+        const bool bAllowed=!bCampaign||SoraCampaignRules::RestoreSite(SiteProgress,SiteId,
+            {FSoraCatalog::Get().Chapter(ChapterId).Sites[SiteId].RequiredKills,
+             static_cast<unsigned>(FSoraCatalog::Get().Chapter(ChapterId).Sites[SiteId].RequiredSitesMask)},3);
+        if(bAllowed&&WorldBuilder->ActivateNearest(Player->GetActorLocation()))
         {
             Player->Heal(22.f);
             if(bCampaign)
@@ -274,10 +282,11 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
     }
     if(FVector::Dist2D(Player->GetActorLocation(),WorldBuilder->ExitPoint())<270.f)
     {
-        if(Kills>=KillsNeeded&&WorldBuilder->ActiveNodes()==3)
+        SoraCampaignRules::FCheckpoint ExitProgress{Kills,static_cast<unsigned>(WorldBuilder->ActivatedMask()),bChapterComplete};
+        if(SoraCampaignRules::CompleteChapter(ExitProgress,KillsNeeded,3))
         {
-            bChapterComplete=true;
-            if(bCampaign) { Save->HighestChapter=FMath::Max(Save->HighestChapter,FMath::Min(7,ChapterId+1)); if(ChapterId==7) bCampaignComplete=true; }
+            bChapterComplete=ExitProgress.Complete;
+            if(bCampaign) { Save->HighestChapter=FMath::Max(Save->HighestChapter,FMath::Min(7,ChapterId+1)); if(SoraCampaignRules::CampaignLiberated(ChapterId,7,bChapterComplete)) bCampaignComplete=true; }
             Notice=ChapterId==7&&bCampaign?TEXT("猫柳生は自由だ。生み出す力は、民の手にある。")
                 :bCampaign&&ChapterId==0?TEXT("道場の修行を終えた。Enter で物語を進めよう。")
                 :TEXT("街区を解放した。Enter で次の戦いへ。");
@@ -301,9 +310,12 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
 void ASoraGameMode::OpponentDefeated(ASoraCharacter* Opponent)
 {
     if(bDeterministicPractice) return;
+    SoraCampaignRules::FCheckpoint Progress{Kills,
+        WorldBuilder?static_cast<unsigned>(WorldBuilder->ActivatedMask()):0u,bChapterComplete};
+    if(!SoraCampaignRules::RecordDefeat(Progress,KillsNeeded)) return;
     const bool bDefeatedBoss=Opponent&&Opponent->IsCampaignBoss();
     if(bDefeatedBoss) BossActor=nullptr;
-    ++Kills; if(auto* Player=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0))) Player->Heal(8.f);
+    Kills=Progress.Kills; if(auto* Player=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0))) Player->Heal(8.f);
     if(Spawned<KillsNeeded) SpawnEnemy();
     if(Kills>=KillsNeeded)
     {
