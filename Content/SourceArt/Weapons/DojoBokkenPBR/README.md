@@ -29,3 +29,17 @@ blender -b --factory-startup --python scripts/art/audit_fbx_primary_uv.py -- \
   Content/SourceArt/Weapons/DojoBokkenPBR/SM_Nyaagyu_DojoBokken_PBRStudy.fbx
 blender -b --factory-startup --python scripts/art/render_dojo_bokken_pbr_comparison.py
 ```
+
+The [strict ArtReview importer](../../../../scripts/unreal/import_dojo_bokken_pbr_art_review.py)
+requires the pinned UE 5.8.2 editor. It verifies the current source and map
+hashes, imported UV/triangle/material-slot contract, and four PBR instance
+bindings. Run it only after the source validator passes:
+
+```sh
+"$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd" "$PWD/SoraArena.uproject" \
+  -ExecutePythonScript="$PWD/scripts/unreal/import_dojo_bokken_pbr_art_review.py" \
+  -Unattended -NullRHI -NoSplash -NoSound
+```
+
+It writes under `/Game/Generated/ArtReview/DojoBokkenPBR` and does not modify
+the playable bokken. UE 5.8.2 packaged visual admission is still pending.
