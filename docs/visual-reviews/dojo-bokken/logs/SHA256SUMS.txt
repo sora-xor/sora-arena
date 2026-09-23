@@ -1,0 +1,30 @@
+# SHA-256 of uncompressed source logs and archived files
+# Gzip streams use mtime=0 and have no embedded original filename.
+688824270a0e0cd240d9b609e4c51559892701c2a21d175d259d23cc27eb6c83  /tmp/sora-dojo-bokken-pbr-source-validator.log
+986400106434b63b13c841b05cf34b1b95a0ac6d1130433732a79045baefbf6c  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-source-validator.log.gz
+c65f2f45acae548fd96610e846ee92c994d6f245ad2fd9cf0135981a5e7c5393  /tmp/sora-dojo-bokken-pbr-uv-audit.log
+b140af1e465ee9c5d73ad8d91732d379cdaa0e05f8e375531bb6ef973c666802  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-uv-audit.log.gz
+c2e6b56cc93983a10a7b402179b83c6b3e74b1649aca121588488c87f07d9e2d  /tmp/sora-dojo-bokken-pbr-import.log
+cc2cd234c7dd45534804a33b7bce6d6f611a76129b9f3ef44309f1eacb3b0339  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-import.log.gz
+456cf6a14ebcc5a8d4f6246da698e1eed910d6f744a71e856e0cb8a91edf2531  /tmp/sora-bokken-fallback-query.log
+2850f49e256fd51f78c36131dd834409130553575e19e16b1bf325172b474f0d  docs/visual-reviews/dojo-bokken/logs/sora-bokken-fallback-query.log.gz
+b1627b0c9e8abb1473a36a88349eb3782aa48560bb6f4fe803d41d3f005c7771  /tmp/sora-dojo-bokken-pbr-import-fixed.log
+eb68e4fa2560699bf419ef5735598e75169373acf4a6324c5a435b44d2033cf7  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-import-fixed.log.gz
+d1b0608cc257ca86e51202996ef441b9d4e2d84c26460bb0fab82be40f341cda  /tmp/sora-bokken-comparison-query.log
+9f19a31c1410e91afc799a4df71fe208b60e208fd15457664234428d02fc661f  docs/visual-reviews/dojo-bokken/logs/sora-bokken-comparison-query.log.gz
+957459307f1f8b4d7ae4634a2629db5e86446e5c405791990541aa82df1ac2ba  /tmp/sora-dojo-bokken-pbr-build.log
+54f13a967523ddcd92b9d4e6cc724391d465181035017498a9ff7d43f7c211d3  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-build.log.gz
+dc5711c8e6ca0e8c23fc2ac3017c01010b0e2a06c8cc2b2f3530376d7b7357b0  /tmp/sora-dojo-bokken-pbr-cook.log
+fe0cd0a534b3619c88a2f7e660cb418908baf4202a6fbc4dd755c878e1d4aa3b  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-cook.log.gz
+e34eeba4d0707917b0e27e9a4a6443515813e836e3384dfb50b5a3a1eb6e8ed7  /tmp/sora-bokken-cook-hang.sample
+9f13b037603dbc97f3bb5ff470478ebe221d239fd5c2b3a15a36be66b8cc1a59  docs/visual-reviews/dojo-bokken/logs/sora-bokken-cook-hang.sample.gz
+74009dbf1cc0dc2274c86d771b6cf288e23dc2b895b3dbd24ab126c0fccfd636  /tmp/sora-dojo-bokken-pbr-cook-retry.log
+365c39827f97b6afc9313b153e0a12270d7a9bbb2c5660b5b7e9400add942f17  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-cook-retry.log.gz
+3e5af1e90763c833dbc95178ce3c2b59fc15501e406de6a281eb0d6da025b29b  /tmp/sora-dojo-bokken-pbr-stage.log
+4d32f4e6f27abaf7f0f9a3f9af3c6e2d5e2aadd55817126e1e397019a96b9927  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-stage.log.gz
+f9ae91c56314c96acede27dbd1ca77a49cdeed0b54704c2aeaca9d76efc06a34  /tmp/sora-dojo-bokken-pbr-run.log
+71a9dbc31a38847f809d7a37ce0d545cbda67762582b0501f32c7830290aaf1b  docs/visual-reviews/dojo-bokken/logs/sora-dojo-bokken-pbr-run.log.gz
+6a641a98d8db8deb92b887629e008c0a8ed27345d2da6e851b72f2d912a754e0  docs/visual-reviews/dojo-bokken/UE583_DojoBokken_Close_Original.png
+08d8434220f44606ced5b9b59ee147776f411d05dccf65ba140b41622bdc7661  docs/visual-reviews/dojo-bokken/UE583_DojoBokken_Close_PBRStudy.png
+9b408855ab37da09f66869b06633f20ee016397401c8b1fd0025a0f755cdb80d  docs/visual-reviews/dojo-bokken/UE583_DojoBokken_Default_Original.png
+454dba33589cbdfc16b0a691d1eb686f4a7e9b56a9849ef5d85f6911ffc21978  docs/visual-reviews/dojo-bokken/UE583_DojoBokken_Default_PBRStudy.png
