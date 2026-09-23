@@ -55,6 +55,7 @@ public:
     float NoticeTime = 0;
     float RoundTime = 0;
     FString ObjectiveText() const;
+    FString ObjectiveTextEnglish() const;
     FString DojoLessonText(bool bEnglish) const;
     const FSoraDialogueCue* CurrentDialogueCue() const;
     ASoraWorldBuilder* Arena() const { return WorldBuilder; }

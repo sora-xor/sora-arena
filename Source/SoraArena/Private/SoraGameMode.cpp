@@ -448,6 +448,38 @@ FString ASoraGameMode::ObjectiveText() const
     }
     return FString::Printf(TEXT("生産の復旧 %d / 3    |    侵略者 %d / %d    |    出口：東の鳥居"),WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
 }
+FString ASoraGameMode::ObjectiveTextEnglish() const
+{
+    if(bDeterministicPractice)
+    {
+        const auto* K=Kernel();
+        if(K&&K->PracticePlayers.Num()>0)
+        {
+            const auto& P=K->PracticePlayers[0];
+            const int32 Seconds=FMath::Max(0,36000-static_cast<int32>(K->PracticeTick)+59)/60;
+            return FString::Printf(TEXT("Practice / Kills %d  Deaths %d / %02d:%02d left"),
+                P.Kills,P.Deaths,Seconds/60,Seconds%60);
+        }
+        return TEXT("Preparing practice...");
+    }
+    if(!WorldBuilder) return TEXT("Preparing the stage...");
+    if(bCampaign)
+    {
+        const auto& Chapter=FSoraCatalog::Get().Chapter(ChapterId);
+        if(ChapterId==0&&DojoLessonStage()<4)
+            return FString::Printf(TEXT("Nyaagyushinkageryuu / Form %d of 4"),DojoLessonStage()+1);
+        FString Next=TEXT("Eastern torii gate");
+        for(int32 I=0;I<Chapter.Sites.Num();++I)
+            if((WorldBuilder->ActivatedMask()&(1<<I))==0) { Next=Chapter.Sites[I].NameEnglish; break; }
+        if(ChapterId==0)
+            return FString::Printf(TEXT("%s / Dojo sites %d of 3 / Sparring bouts %d of %d"),
+                *Next,WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
+        return FString::Printf(TEXT("%s / Sites %d of 3 / Invaders %d of %d"),
+            *Next,WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
+    }
+    return FString::Printf(TEXT("Production sites %d of 3 / Invaders %d of %d / Exit: eastern torii gate"),
+        WorldBuilder->ActiveNodes(),Kills,KillsNeeded);
+}
 FString ASoraGameMode::DojoLessonText(bool bEnglish) const
 {
     if(!bCampaign||ChapterId!=0||DojoLessonStage()>=4) return FString();

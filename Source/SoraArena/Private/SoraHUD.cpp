@@ -206,16 +206,22 @@ void ASoraHUD::DrawHUD()
     }
     Label(G->bCampaign?FSoraCatalog::Get().Chapter(G->ChapterId).Title:FSoraCatalog::Get().Map(G->MapId).Name,30*S,95*S,.82*S,Ivory);
     Label(G->ObjectiveText(),30*S,137*S,.52*S,Teal);
+    if(G->bEnglishSubtitles)
+        WrappedLabel(G->ObjectiveTextEnglish(),30*S,164*S,EnglishSubtitleScale,Muted,
+            W-60*S,EnglishSubtitleLineHeight,2);
     if(G->bCampaign&&G->ChapterId==0&&G->DojoLessonStage()<4)
     {
-        Panel(25*S,169*S,720*S,G->bEnglishSubtitles?72*S:47*S,FLinearColor(.013,.027,.033,.88f));
-        Label(G->DojoLessonText(false),40*S,175*S,.46*S,Ivory);
-        if(G->bEnglishSubtitles) Label(G->DojoLessonText(true),40*S,205*S,.34*S,Muted);
+        const float LessonTop=G->bEnglishSubtitles
+            ?FMath::Max(217*S,164*S+2*EnglishSubtitleLineHeight+8*S):169*S;
+        Panel(25*S,LessonTop,720*S,G->bEnglishSubtitles?72*S:47*S,FLinearColor(.013,.027,.033,.88f));
+        Label(G->DojoLessonText(false),40*S,LessonTop+6*S,.46*S,Ivory);
+        if(G->bEnglishSubtitles) Label(G->DojoLessonText(true),40*S,LessonTop+36*S,.34*S,Muted);
     }
     if(const ASoraCharacter* Boss=G->CampaignBoss())
     {
         const float BossWidth=FMath::Min(W-20.f,FMath::Max(560.f*S,470.f));
-        const float BossX=(W-BossWidth)*.5f,BossY=FMath::Max(178.f*S,165.f);
+        const float BossX=(W-BossWidth)*.5f,
+            BossY=FMath::Max(G->bEnglishSubtitles?222.f*S:178.f*S,165.f);
         Panel(BossX,BossY,BossWidth,114.f,FLinearColor(.013f,.027f,.033f,.91f));
         Label(TEXT("異星の徴収官"),BossX+17.f,BossY+7.f,JapaneseSubtitleScale,Gold);
         if(G->bEnglishSubtitles) Label(TEXT("ALIEN COLLECTOR"),BossX+BossWidth-185.f,BossY+9.f,EnglishSubtitleScale,Muted);
