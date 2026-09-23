@@ -50,3 +50,13 @@ temporary geometry and have not passed visual, animation, controller feel or
 historian review. The dojo currently uses an original wooden practice sword;
 the fictional school should not be marketed as a demonstration of an authentic
 Yagyū training practice.
+
+In post-dojo offline encounters, one in six alien retainers carries a katana.
+The retainer closes outside useful distance, withdraws when crowded, fixes its
+attack direction during a 420 ms warning, and must recover before the next
+attempt. Nyaakoto can parry a frontal strike shortly after raising a blade or
+guard at a stamina cost; a held guard absorbs only part of a later strike and
+can be exhausted. These timings and reserves are readable gameplay choices,
+not measurements of historical sword combat. The retainer and player share
+distance/facing bounds, so stepping out of *maai* or around the fixed line is
+also a valid defense.

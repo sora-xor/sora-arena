@@ -49,6 +49,13 @@ bool FSoraHistoricalArmsCatalogTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("Crowded spear thrust cannot score"),CanStrike(EForm::Yari,80.f,1.f));
     TestFalse(TEXT("Sideways spear thrust cannot score"),CanStrike(EForm::Yari,260.f,.7f));
     TestFalse(TEXT("Long poleblade cut cannot score behind"),CanStrike(EForm::Naginata,245.f,-.8f));
+    TestTrue(TEXT("Timed frontal parry"),DefendBlade(true,.9f,180,35.f)==EDefense::Parry);
+    TestTrue(TEXT("Sustained guard"),DefendBlade(true,.9f,500,35.f)==EDefense::Guard);
+    TestTrue(TEXT("Guard fails behind"),DefendBlade(true,-.9f,180,35.f)==EDefense::Exposed);
+    TestTrue(TEXT("Spent guard fails"),DefendBlade(true,.9f,180,10.f)==EDefense::Exposed);
+    TestTrue(TEXT("Sword retainer withdraws when crowded"),RetainerFootwork(50.f)==EFootwork::Withdraw);
+    TestTrue(TEXT("Sword retainer closes outside maai"),RetainerFootwork(220.f)==EFootwork::Close);
+    TestTrue(TEXT("Sword retainer retains a telegraphed opening"),RetainerWindupSeconds>Sword.WindupSeconds);
     UE_LOG(LogTemp,Display,TEXT("SORA_HISTORICAL_ARMS_CATALOG_OK: hero=%s arms=katana/yumi/yari/naginata arena_weapons=%d"),
         *Hero.NameEnglish,Catalog.Weapons.Num());
     return !HasAnyErrors();

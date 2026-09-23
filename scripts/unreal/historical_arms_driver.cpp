@@ -27,4 +27,14 @@ int main()
     assert(Katana.WindupSeconds > 0.f && Katana.RecoverySeconds > Katana.WindupSeconds);
     assert(Yari.WindupSeconds > Katana.WindupSeconds);
     assert(Naginata.RecoverySeconds > Yari.RecoverySeconds);
+    assert(DefendBlade(true, .9f, 180, 35.f) == EDefense::Parry);
+    assert(DefendBlade(true, .9f, 500, 35.f) == EDefense::Guard);
+    assert(DefendBlade(true, -.9f, 180, 35.f) == EDefense::Exposed);
+    assert(DefendBlade(true, .9f, 180, 10.f) == EDefense::Exposed);
+    assert(DefendBlade(false, .9f, 180, 35.f) == EDefense::Exposed);
+    assert(RetainerFootwork(50.f) == EFootwork::Withdraw);
+    assert(RetainerFootwork(130.f) == EFootwork::Hold);
+    assert(RetainerFootwork(220.f) == EFootwork::Close);
+    assert(RetainerWindupSeconds > Katana.WindupSeconds);
+    assert(RetainerRecoverySeconds > Katana.RecoverySeconds);
 }

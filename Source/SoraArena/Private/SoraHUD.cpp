@@ -299,6 +299,12 @@ void ASoraHUD::DrawHUD()
                 Panel(W-365*S,H-122*S,320*S,4*S,FLinearColor(.12,.19,.21));
                 Panel(W-365*S,H-122*S,320*S*Progress,4*S,Gold);
             }
+            if(G->bCampaign&&G->ChapterId>0&&
+                (P->WeaponId==0||P->WeaponId==19||P->WeaponId==20))
+            {
+                Panel(W-365*S,H-35*S,320*S,3*S,FLinearColor(.12,.19,.21));
+                Panel(W-365*S,H-35*S,320*S*FMath::Clamp(P->GuardReserve()/100.f,0.f,1.f),3*S,Teal);
+            }
         }
         if(G->Arena()&&!G->bDeterministicPractice)
         {

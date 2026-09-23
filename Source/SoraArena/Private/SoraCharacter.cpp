@@ -58,20 +58,24 @@ void ASoraCharacter::ApplyClass(int32 Id)
     MaxHealth=C.Health; Health=MaxHealth; GetCharacterMovement()->MaxWalkSpeed=C.Speed;
     WeaponId=C.Weapons[1]; Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine;
     AmmoByWeapon.SetNum(21); for(int32 I=0;I<21;++I) AmmoByWeapon[I]=FSoraCatalog::Get().Weapon(I).Magazine;
-    bReloading=false; NextShot=0; bFireHeld=false; bBowDrawing=false;
+    bReloading=false; NextShot=0; bFireHeld=false; bBowDrawing=false; GuardStamina=100.f;
     bCommittedStrike=false; bHistoricalRecovery=false; CommittedWeaponId=INDEX_NONE; BuildWeapon();
 }
 void ASoraCharacter::MakeEnemy(int32 Id)
 {
-    bEnemy=true; bDojoPupil=false; bDojoTraining=false; bCampaignBoss=false; EnemyIndex=Id; bUseControllerRotationYaw=false;
+    bEnemy=true; bDojoPupil=false; bDojoTraining=false; bCampaignBoss=false;
+    bBladeRetainer=Id%6==0; bDuelWindup=false; EnemyIndex=Id; bUseControllerRotationYaw=false;
     GetCharacterMovement()->bOrientRotationToMovement=false;
-    ApplyClass(Id%6); BuildCat();
+    ApplyClass(Id%6);
+    if(bBladeRetainer) { WeaponId=0; Ammo=1; BuildWeapon(); }
+    BuildCat();
 }
 void ASoraCharacter::MakeCampaignBoss(int32 Id)
 {
     // The final chapter reuses the alien banker cat prototype. This encounter
     // is entirely local; it never enters the multiplayer combat kernel.
     MakeEnemy(Id);
+    bBladeRetainer=false; bDuelWindup=false;
     bCampaignBoss=true;
     MaxHealth=300.f; Health=MaxHealth;
     GetCharacterMovement()->MaxWalkSpeed=280.f;
@@ -126,7 +130,8 @@ void ASoraCharacter::SuspendDojoAction()
 }
 void ASoraCharacter::MakeDojoPupil(int32 Id)
 {
-    bEnemy=true; bDojoPupil=true; EnemyIndex=Id; bUseControllerRotationYaw=false;
+    bEnemy=true; bDojoPupil=true; bBladeRetainer=false; bDuelWindup=false;
+    EnemyIndex=Id; bUseControllerRotationYaw=false;
     bPupilWindup=false; NextEnemyShot=GetWorld()->GetTimeSeconds()+1.4f+Id*.35f;
     GetCharacterMovement()->bOrientRotationToMovement=false;
     ApplyClass(0); SetDojoTraining(true); BuildCat();
@@ -286,7 +291,7 @@ void ASoraCharacter::BuildWeapon()
     UStaticMesh* AuthoredMesh=nullptr;
     if(bDojoTraining)
         AuthoredMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_DojoBokken.SM_Nyaagyu_DojoBokken"));
-    else if(WeaponId==0)
+    else if(WeaponId==0&&!bEnemy)
         AuthoredMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_HeroKatana.SM_Nyaagyu_HeroKatana"));
     else if(WeaponId==1)
         AuthoredMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_ArcCarbine.SM_Nyaagyu_ArcCarbine"));
@@ -368,8 +373,19 @@ void ASoraCharacter::Tick(float Dt)
 {
     Super::Tick(Dt); LifeTime+=Dt; DamageFlash=FMath::Max(0.f,DamageFlash-Dt); HitMarkerTime=FMath::Max(0.f,HitMarkerTime-Dt);
     if(bKernelDriven) return;
-    if(!FSoraCatalog::Get().IsReady()||!CanPlay()) return;
+    if(!FSoraCatalog::Get().IsReady()) return;
+    if(!CanPlay())
+    {
+        bBowDrawing=false; bCommittedStrike=false; bFireHeld=false; bOfflineGuardHeld=false;
+        bDuelWindup=false;
+        return;
+    }
     if(bEnemy) { BotTick(Dt); return; }
+    if(!bDojoTraining)
+    {
+        GuardStamina=FMath::Clamp(GuardStamina+(bOfflineGuardHeld?-28.f:21.f)*Dt,0.f,100.f);
+        if(GuardStamina<18.f) bOfflineGuardHeld=false;
+    }
     if(bDojoTraining)
     {
         if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)))
@@ -392,7 +408,7 @@ void ASoraCharacter::Tick(float Dt)
     if(bReloading&&Now>=ReloadEnd) { Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine; bReloading=false; }
     if(bFireHeld) Fire();
     GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*
-        (bCommittedStrike?.35f:bHistoricalRecovery?.65f:bBowDrawing?.55f:bSprint?1.35f:1.f);
+        (bCommittedStrike?.35f:bHistoricalRecovery?.65f:bBowDrawing?.55f:bOfflineGuardHeld?.50f:bSprint?1.35f:1.f);
     const float Moving=FMath::Clamp(GetVelocity().Size2D()/500.f,0.f,1.f);
     WeaponRoot->SetRelativeLocation(FVector(40,18+FMath::Sin(LifeTime*8)*Moving*.7,-18+FMath::Cos(LifeTime*16)*Moving*.6));
     WeaponRoot->SetRelativeRotation(FRotator(bReloading?-30.f:bCommittedStrike?25.f:bBowDrawing?-15.f:0.f,0,bSprint?-15.f:0.f));
@@ -468,7 +484,8 @@ void ASoraCharacter::Fire()
 void ASoraCharacter::Melee()
 {
     if(bKernelDriven) { if(CanPlay()) KernelHeldButtons|=2; return; }
-    if(!CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading||bCommittedStrike||bBowDrawing) return;
+    if(!CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading||bCommittedStrike||bBowDrawing||
+        (bOfflineGuardHeld&&!bDojoTraining)) return;
     const int32 MeleeId=FSoraCatalog::Get().Weapon(WeaponId).Kind==TEXT("melee")?WeaponId:FSoraCatalog::Get().Class(ClassId).Weapons[0];
     const auto& W=FSoraCatalog::Get().Weapon(MeleeId);
     if(!bDojoTraining&&(MeleeId==0||MeleeId==19||MeleeId==20))
@@ -610,6 +627,28 @@ float ASoraCharacter::TakeDamage(float Damage,const FDamageEvent& Event,AControl
             }
         }
     }
+    if(!bDojoTraining&&bCampaignHero&&bOfflineGuardHeld&&!bCommittedStrike&&
+        (WeaponId==0||WeaponId==19||WeaponId==20))
+    {
+        if(auto* Retainer=Cast<ASoraCharacter>(Causer); Retainer&&Retainer->bBladeRetainer)
+        {
+            const FVector ToAttacker=(Retainer->GetActorLocation()-GetActorLocation()).GetSafeNormal2D();
+            const float Facing=FVector::DotProduct(GetActorForwardVector(),ToAttacker);
+            const int32 HeldMs=FMath::RoundToInt((GetWorld()->GetTimeSeconds()-OfflineGuardPressedAt)*1000.f);
+            switch(SoraHistoricalArms::DefendBlade(true,Facing,HeldMs,GuardStamina))
+            {
+            case SoraHistoricalArms::EDefense::Parry:
+                GuardStamina=FMath::Max(0.f,GuardStamina-18.f);
+                Retainer->NextEnemyShot+=.65f;
+                return 0.f;
+            case SoraHistoricalArms::EDefense::Guard:
+                GuardStamina=FMath::Max(0.f,GuardStamina-30.f);
+                Damage*=.25f;
+                break;
+            case SoraHistoricalArms::EDefense::Exposed: break;
+            }
+        }
+    }
     const float Applied=FMath::Min(Health,Damage); Health-=Applied; DamageFlash=.3f;
     if(Health<=0)
     {
@@ -647,14 +686,24 @@ void ASoraCharacter::BotTick(float Dt)
     auto* Target=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0)); if(!Target||!Target->IsAlive()) return;
     if(bCampaignBoss) { BossTick(Dt,Target); return; }
     FVector Delta=Target->GetActorLocation()-GetActorLocation(); const float Dist=Delta.Size2D(); Delta.Z=0;
-    SetActorRotation(FMath::RInterpTo(GetActorRotation(),Delta.Rotation(),Dt,4.f));
+    if(!bDuelWindup) SetActorRotation(FMath::RInterpTo(GetActorRotation(),Delta.Rotation(),Dt,4.f));
     FVector Move=Delta.GetSafeNormal();
     FHitResult Ahead; FCollisionQueryParams P(SCENE_QUERY_STAT(BotNavigation),false,this);
     if(GetWorld()->LineTraceSingleByChannel(Ahead,GetActorLocation(),GetActorLocation()+Move*180,ECC_Visibility,P)&&Ahead.GetActor()!=Target)
         Move=FVector(-Move.Y,Move.X,0)*(EnemyIndex%2?1:-1);
-    if(!bDojoPupil||!bPupilWindup)
+    if((!bDojoPupil||!bPupilWindup)&&(!bBladeRetainer||!bDuelWindup))
     {
-        if(Dist>(bDojoPupil?160.f:650.f)) AddMovementInput(Move,.55f);
+        if(bBladeRetainer)
+        {
+            switch(SoraHistoricalArms::RetainerFootwork(Dist))
+            {
+            case SoraHistoricalArms::EFootwork::Close: AddMovementInput(Move,.55f); break;
+            case SoraHistoricalArms::EFootwork::Withdraw: AddMovementInput(-Move,.55f); break;
+            case SoraHistoricalArms::EFootwork::Hold:
+                AddMovementInput(GetActorRightVector(),FMath::Sin(LifeTime+EnemyIndex)*.2f); break;
+            }
+        }
+        else if(Dist>(bDojoPupil?160.f:650.f)) AddMovementInput(Move,.55f);
         else AddMovementInput(GetActorRightVector(),FMath::Sin(LifeTime+EnemyIndex)*.2f);
     }
     if(bDojoPupil)
@@ -677,6 +726,36 @@ void ASoraCharacter::BotTick(float Dt)
         bPupilWindup=true; PupilWindupEndsAt=Now+.55f; NextEnemyShot=PupilWindupEndsAt+1.45f;
         PupilLockedDirection=(Target->GetActorLocation()+FVector(0,0,50)-From).GetSafeNormal();
         Beam(GetWorld(),From,From+PupilLockedDirection*200.f,FLinearColor(1.f,.68f,.16f),2.f,.55f);
+        return;
+    }
+    if(bBladeRetainer)
+    {
+        const float Now=GetWorld()->GetTimeSeconds();
+        const FVector From=GetActorLocation()+FVector(0,0,52);
+        const auto Profile=SoraHistoricalArms::Profile(SoraHistoricalArms::EForm::Katana);
+        if(bDuelWindup)
+        {
+            if(Now<DuelStrikeAt) return;
+            bDuelWindup=false;
+            const FVector To=From+DuelLockedDirection*Profile.MaximumDistanceCm;
+            FHitResult Hit; FCollisionQueryParams DuelTrace(SCENE_QUERY_STAT(BladeRetainer),false,this);
+            GetWorld()->LineTraceSingleByChannel(Hit,From,To,ECC_Visibility,DuelTrace);
+            Beam(GetWorld(),From,Hit.bBlockingHit?Hit.ImpactPoint:To,FLinearColor(.75f,.82f,.87f),2.f,.13f);
+            const FVector ToHero=Target->GetActorLocation()-GetActorLocation();
+            const float Facing=FVector::DotProduct(DuelLockedDirection.GetSafeNormal2D(),ToHero.GetSafeNormal2D());
+            if(Hit.GetActor()==Target&&
+                SoraHistoricalArms::CanStrike(SoraHistoricalArms::EForm::Katana,ToHero.Size2D(),Facing))
+                UGameplayStatics::ApplyPointDamage(Target,18.f,DuelLockedDirection,Hit,
+                    GetController(),this,UDamageType::StaticClass());
+            return;
+        }
+        if(Now<NextEnemyShot||Dist>Profile.MaximumDistanceCm||Dist<Profile.MinimumDistanceCm) return;
+        bDuelWindup=true;
+        DuelStrikeAt=Now+SoraHistoricalArms::RetainerWindupSeconds;
+        NextEnemyShot=DuelStrikeAt+SoraHistoricalArms::RetainerRecoverySeconds;
+        DuelLockedDirection=(Target->GetActorLocation()+FVector(0,0,52)-From).GetSafeNormal();
+        Beam(GetWorld(),From,From+DuelLockedDirection*Profile.MaximumDistanceCm,
+            FLinearColor(1.f,.68f,.16f),2.f,SoraHistoricalArms::RetainerWindupSeconds);
         return;
     }
     if(GetWorld()->GetTimeSeconds()<NextEnemyShot||Dist>2100) return;
@@ -794,7 +873,10 @@ void ASoraCharacter::BlockDown()
 {
     if(!CanPlay()) return;
     if(bKernelDriven) { KernelHeldButtons|=4; return; }
-    if(bDojoTraining&&!bOfflineGuardHeld)
+    const bool bCampaignBlade=bCampaignHero&&(WeaponId==0||WeaponId==19||WeaponId==20)&&
+        !bCommittedStrike&&!(bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)&&
+        GuardStamina>=18.f;
+    if((bDojoTraining||bCampaignBlade)&&!bOfflineGuardHeld)
     {
         bOfflineGuardHeld=true;
         OfflineGuardPressedAt=GetWorld()->GetTimeSeconds();
@@ -828,7 +910,7 @@ void ASoraCharacter::Equip(int32 Slot)
     if(!CanPlay()||bReloading||bCommittedStrike||
         (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
         (bDojoTraining&&Slot!=0)) return;
-    bBowDrawing=false; bFireHeld=false;
+    bBowDrawing=false; bFireHeld=false; bOfflineGuardHeld=false;
     AmmoByWeapon[WeaponId]=Ammo; WeaponId=FSoraCatalog::Get().Class(ClassId).Weapons[Slot];
     Ammo=AmmoByWeapon[WeaponId]; NextShot=GetWorld()->GetTimeSeconds()+.25f; BuildWeapon();
 }
@@ -840,7 +922,7 @@ void ASoraCharacter::EquipCampaignWeapon(int32 NewWeaponId)
         !CanPlay()||bReloading||bCommittedStrike||
         (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
         NewWeaponId<18||NewWeaponId>20||ClassId!=0) return;
-    bBowDrawing=false; bFireHeld=false;
+    bBowDrawing=false; bFireHeld=false; bOfflineGuardHeld=false;
     AmmoByWeapon[WeaponId]=Ammo;
     WeaponId=NewWeaponId; Ammo=AmmoByWeapon[WeaponId];
     NextShot=GetWorld()->GetTimeSeconds()+.25f; BuildWeapon();

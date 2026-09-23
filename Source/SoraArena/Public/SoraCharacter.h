@@ -38,6 +38,7 @@ public:
     float BowDrawProgress() const;
     bool IsCommittedStrike() const { return bCommittedStrike; }
     float StrikeWindupProgress() const;
+    float GuardReserve() const { return GuardStamina; }
     float BossWarningSeconds() const { return BossPhaseTimer; }
     float BossWarningProgress() const { return BossWindupDuration > 0.f ? FMath::Clamp(1.f-BossPhaseTimer/BossWindupDuration,0.f,1.f) : 0.f; }
     float Health = 120.f;
@@ -72,9 +73,14 @@ private:
     bool bWalkingVisual = false;
     bool bEnemy = false;
     bool bDojoPupil = false;
+    bool bBladeRetainer = false;
+    bool bDuelWindup = false;
+    float DuelStrikeAt = 0.f;
+    FVector DuelLockedDirection = FVector::ForwardVector;
     bool bDojoTraining = false;
     bool bCampaignHero = false;
     bool bOfflineGuardHeld = false;
+    float GuardStamina = 100.f;
     bool bDojoRecoveryPending = false;
     bool bPupilWindup = false;
     float OfflineGuardPressedAt = 0.f;

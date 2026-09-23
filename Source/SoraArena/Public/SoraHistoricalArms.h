@@ -6,6 +6,10 @@
 namespace SoraHistoricalArms
 {
 enum class EForm { Katana, Yari, Naginata };
+enum class EDefense { Exposed, Guard, Parry };
+enum class EFootwork { Close, Hold, Withdraw };
+constexpr float RetainerWindupSeconds = .42f;
+constexpr float RetainerRecoverySeconds = 1.25f;
 
 struct FProfile
 {
@@ -32,5 +36,18 @@ constexpr bool CanStrike(EForm Form, float DistanceCm, float FacingDot)
     const FProfile P = Profile(Form);
     return DistanceCm >= P.MinimumDistanceCm && DistanceCm <= P.MaximumDistanceCm &&
         FacingDot >= P.MinimumFacingDot;
+}
+
+constexpr EDefense DefendBlade(bool GuardHeld, float FacingDot, int HeldMilliseconds, float Stamina)
+{
+    if(!GuardHeld || FacingDot < .50f || HeldMilliseconds < 0 || Stamina < 18.f)
+        return EDefense::Exposed;
+    return HeldMilliseconds <= 260 ? EDefense::Parry : EDefense::Guard;
+}
+
+constexpr EFootwork RetainerFootwork(float DistanceCm)
+{
+    return DistanceCm < 90.f ? EFootwork::Withdraw :
+        DistanceCm > 165.f ? EFootwork::Close : EFootwork::Hold;
 }
 } // namespace SoraHistoricalArms
