@@ -333,6 +333,9 @@ for channel, entry in torii_pbr["maps"].items():
     assert entry["resolution"] == [2048, 2048]
     assert hashlib.sha256(path.read_bytes()).hexdigest() == entry["sha256"]
 assert "import_torii_lacquer_pbr.py" in (ROOT / "scripts/unreal/import_environment_palette.py").read_text()
+assert "import_nyaagyu_road_scan_variation.py" in (
+    ROOT / "scripts/unreal/import_environment_palette.py").read_text()
+assert (ROOT / "scripts/unreal/import_nyaagyu_road_scan_variation.py").is_file()
 assert "import_nyaagyu_cargo_stack.py" in import_script
 assert 'if(MapId==0 && ImportedProp(TEXT("SM_Nyaagyu_CargoStack")' in world_builder
 assert "Cover->SetVisibility(false)" in world_builder

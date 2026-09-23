@@ -211,6 +211,10 @@ for parameter,channel in [('AlbedoMap','Diffuse'),('NormalMap','nor_dx'),('ARMMa
 size=pathway['tile_size_cm']
 lib.set_material_instance_vector_parameter_value(terrain_stone,'TileSize',unreal.LinearColor(size,size,size,1))
 assets.save_loaded_asset(terrain_stone)
+# The Estate's runtime path uses the same pinned scan with height-guided,
+# coherent UV variation. The original terrain instance remains for review
+# comparisons and does not affect architecture or gameplay collision.
+runpy.run_path(str(ROOT/'scripts/unreal/import_nyaagyu_road_scan_variation.py'),run_name='__main__')
 
 sky=create_material('M_Nyaagyu_Sky')
 sky.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_UNLIT)

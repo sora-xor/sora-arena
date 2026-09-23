@@ -663,6 +663,8 @@ def expected_assets(project_root):
     for role in ("Soil", "Stone"):
         name = f"MI_Nyaagyu_Terrain{role}"
         add(specs, f"{PALETTE}/{name}.{name}", "MaterialInstanceConstant")
+    add(specs, f"{PALETTE}/M_NyaagyuRoadScanVariation_PBR.M_NyaagyuRoadScanVariation_PBR",
+        "Material")
 
     tree_root = source_root / "Environment/PolyHaven/TreeSmall02"
     tree = read_manifest(tree_root / "manifest.json")
@@ -1167,6 +1169,45 @@ def validate_loaded_assets(unreal, specs):
     require(all(abs(getattr(pathway_size, channel) - 180.0) < 1e-5
                 for channel in "rgb"),
             "Estate pathway projection lost its measured 1.8-metre scale")
+    road = asset_library.load_asset(
+        f"{PALETTE}/M_NyaagyuRoadScanVariation_PBR.M_NyaagyuRoadScanVariation_PBR")
+    expressions = material_lib.get_material_expressions(road)
+    functions = set()
+    samples = {}
+    scalars = {}
+    has_vertex_color = False
+    for expression in expressions:
+        if isinstance(expression, unreal.MaterialExpressionMaterialFunctionCall):
+            function = expression.get_editor_property("material_function")
+            require(function is not None, "Estate road variation has an unbound function")
+            functions.add(function.get_name())
+        elif isinstance(expression, unreal.MaterialExpressionTextureSampleParameter2D):
+            samples[str(expression.get_editor_property("parameter_name"))] = expression
+        elif isinstance(expression, unreal.MaterialExpressionTextureObjectParameter):
+            samples[str(expression.get_editor_property("parameter_name"))] = expression
+        elif isinstance(expression, unreal.MaterialExpressionScalarParameter):
+            scalars[str(expression.get_editor_property("parameter_name"))] = float(
+                expression.get_editor_property("default_value"))
+        elif isinstance(expression, unreal.MaterialExpressionVertexColor):
+            has_vertex_color = True
+    require(functions == {"TextureVariation", "TextureVariation_RotateNormals"}
+            and set(samples) == {"Heightmap", "AlbedoMap", "NormalMap", "ARMMap"}
+            and has_vertex_color,
+            "Estate road lost coherent scan variation, PBR maps, or vertex macro tint")
+    for parameter, channel in (("Heightmap", "disp"), ("AlbedoMap", "Diffuse"),
+                               ("NormalMap", "nor_dx"), ("ARMMap", "arm")):
+        name = "T_TerrainGreyStonePath_" + channel
+        texture = samples[parameter].get_editor_property("texture")
+        require(texture is not None and texture.get_path_name() ==
+                f"{PALETTE}/Textures/{name}.{name}",
+                f"Estate road {parameter} lost its matched scan")
+        if parameter != "Heightmap":
+            require(samples[parameter].get_editor_property("mip_value_mode") ==
+                    unreal.TextureMipValueMode.TMVM_DERIVATIVE,
+                    f"Estate road {parameter} lost shifted-UV mip derivatives")
+    require(abs(scalars.get("ScanWidthCm", -1) - 180.0) < 1e-5
+            and abs(scalars.get("TerrainDampRoughness", -1) - .30) < 1e-5,
+            "Estate road lost measured scan scale or original wet roughness")
     roof_instance = asset_library.load_asset(f"{PALETTE}/MI_Nyaagyu_Kawara.MI_Nyaagyu_Kawara")
     for parameter, channel in (("AlbedoMap", "Diffuse"),
                                ("NormalMap", "nor_dx"), ("ARMMap", "arm")):

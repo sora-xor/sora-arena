@@ -169,9 +169,9 @@ void ASoraWorldBuilder::NyaagyuTerrain()
     const TCHAR* Tier=TEXT("HI");
 #endif
     auto* Soil=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_TerrainSoil.MI_Nyaagyu_TerrainSoil"),nullptr,LOAD_NoWarn);
-    auto* Stone=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_TerrainStone.MI_Nyaagyu_TerrainStone"),nullptr,LOAD_NoWarn);
+    auto* Stone=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/M_NyaagyuRoadScanVariation_PBR.M_NyaagyuRoadScanVariation_PBR"),nullptr,LOAD_NoWarn);
     if (!Soil || !Stone)
-        UE_LOG(LogTemp,Error,TEXT("SORA estate terrain needs the pinned CC0 soil and stone PBR materials"));
+        UE_LOG(LogTemp,Error,TEXT("SORA estate terrain needs the pinned CC0 soil and varied stone-scan PBR materials"));
     for(int32 Y=0;Y<4;++Y)
     for(int32 X=0;X<4;++X)
     {

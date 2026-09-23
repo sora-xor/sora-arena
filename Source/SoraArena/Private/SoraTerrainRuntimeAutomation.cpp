@@ -123,12 +123,13 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         for (int32 SlotIndex = 0; SlotIndex < Mesh->GetStaticMaterials().Num(); ++SlotIndex)
         {
             const FString Slot = Mesh->GetStaticMaterials()[SlotIndex].MaterialSlotName.ToString();
-            const FString Role = Slot.Contains(TEXT("M_Terrain_Soil")) ? TEXT("Soil") : TEXT("Stone");
-            const FString MaterialName = TEXT("MI_Nyaagyu_Terrain") + Role;
+            const FString MaterialName = Slot.Contains(TEXT("M_Terrain_Soil"))
+                ? TEXT("MI_Nyaagyu_TerrainSoil")
+                : TEXT("M_NyaagyuRoadScanVariation_PBR");
             const UMaterialInterface* Bound = Component->GetMaterial(SlotIndex);
             TestNotNull(*FString::Printf(TEXT("Terrain %s material %d is bound"), *Name, SlotIndex), Bound);
             if (Bound)
-                TestEqual(*FString::Printf(TEXT("Terrain %s material %d uses macro-tint instance"), *Name, SlotIndex),
+                TestEqual(*FString::Printf(TEXT("Terrain %s material %d uses the production scan material"), *Name, SlotIndex),
                     Bound->GetPathName(), FString::Printf(TEXT("/Game/Generated/Environment/%s.%s"), *MaterialName, *MaterialName));
         }
 #if WITH_EDITORONLY_DATA
