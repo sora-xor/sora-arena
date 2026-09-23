@@ -39,6 +39,17 @@ renderer/RHI/shader platform, screenshot request, and any failure in
 Do not add such a hook to the release runtime. A failed or blank mode must be
 reported as missing evidence; do not substitute a Lit frame.
 
+For a Development package that already has a fixed Estate screenshot hook,
+first try separate, otherwise identical launches using Unreal's deferred
+`-ExecCmds`: `r.Lumen.Visualize 1` (Overview), `r.Lumen.Visualize 3` (Lumen
+Scene), `r.Lumen.Visualize 5` (Surface Cache), and
+`r.Lumen.Visualize.CardPlacement 1` (cards over Lit). The numeric modes are
+defined in UE 5.8's `LumenVisualize.cpp` and do not require changing content.
+`show VisualizeMeshDistanceFields` and `show VisualizeGlobalDistanceField`
+toggle the respective viewport flags. Verify that the runtime log accepted
+each command and that the captured pixels actually show the intended mode;
+an accepted command alone is not evidence of rendered coverage.
+
 Capture these **Mac software-Lumen/fallback** modes. Use the Level Viewport
 View Modes and Show > Visualize menus where available. The equivalent 5.8
 console commands are included for a disposable packaged capture hook:
