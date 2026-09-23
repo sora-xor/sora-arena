@@ -507,6 +507,8 @@ for name in manifest.get("skeletal_characters", []):
     task.options=options;tools.import_asset_tasks([task])
     mesh=assets.load_asset(f"/Game/Generated/Meshes/{name}")
     if not isinstance(mesh,unreal.SkeletalMesh):raise RuntimeError(f"Missing skeletal mesh {name}")
+    if name == "SK_NyaagyuSamurai" and not mesh.has_vertex_colors():
+        raise RuntimeError("Nyaakoto imported without the authored coat-blend vertex colors")
     idle_target=f"/Game/Generated/Animations/A_{short}_Idle"
     for path in task.imported_object_paths:
         if isinstance(assets.load_asset(path),unreal.AnimSequence):
