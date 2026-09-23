@@ -551,8 +551,45 @@ studies now test a full [integrated gravel-and-stone road](../Content/SourceArt/
 a [weathered kura frontage](../Content/SourceArt/Environment/NyaagyuKuraFront/README.md),
 and [scan-backed gate footings](../Content/SourceArt/Environment/NyaagyuToriiFootStudy/README.md).
 Their Blender and FBX validations establish editable geometry and texture
-provenance, not in-game quality. Main WorldBuilder placement awaits unedited
-packaged A/B review at the player camera; none is a photoreal AAA+ claim.
+provenance, not in-game quality. The [packaged Kura facade review](visual-reviews/kura-front/README.md)
+exposed a misplaced UV channel, which was fixed in the study; its corrected
+wood grain is visible at close range, but the repetitive frontage still fails
+the entrance composition gate. The [torii foot review](visual-reviews/torii-foot/README.md)
+shows a more irregular stone outline with conspicuous green striping, so both
+studies remain source-only. The existing Kura and Dojo facades were reoriented
+toward the road in the main Estate without changing gameplay collision.
+
+The original stone scan also repeated visibly across the road. An isolated
+[UE 5.8.3 packaged A/B](visual-reviews/road-variation-study/README.md) at fixed
+entrance and close cameras found that height-guided UV variation reduces that
+repeat while retaining photographed color and terrain dampness. The material
+was admitted as an incremental Estate-only visual improvement; the original
+map mesh/collision remain intact. Eleven seconds of 1080p frame-counter
+observation is not a combat benchmark, and the Estate still fails the AAA+
+composition and hero-character art target. A separate editable
+[bokuto form study](../Content/SourceArt/Weapons/DojoBokutoForm/README.md) now
+tests a curved, faceted, blunt white-oak training sword with modern AJKF jodo
+proportions and a leather guard. Blender/FBX orientation, UV, dimensions,
+texture provenance and render checks pass. It has not replaced the playable
+first-person bokken, and its material/hand fit await packaged review.
+
+An earlier [first-person bokken PBR A/B](visual-reviews/dojo-bokken/README.md)
+used the same UE 5.8.3 Mac package and fixed camera. Its wood grain improved
+some close detail, but the straight, bright blade still read as a baton; the
+candidate failed the visual gate and the playable asset was left unchanged.
+The new curved bokuto study is a separate geometry-and-scan experiment, not a
+retroactive pass for that earlier material test.
+
+The [raw Estate renderer diagnostic](render-qualification/estate-ue583-m1-20260924/README.md)
+captured seven unedited 1280×720 entrance frames and original logs on the M1
+Ultra software-Lumen path. Its Surface Cache view shows pink missing coverage
+at visible upper roof/eave edges and high foliage/props. The Scene, card and
+distance-field modes rendered, but the fixed close-foot view was unavailable,
+so the evidence archive is explicitly incomplete. The two imported building
+meshes each combine hundreds of parts and thin tile sheets; a diagnostic-only
+card-count A/B is planned before any source change to their modular geometry.
+The current Estate does not pass a Lumen coverage gate, Windows Nanite coverage
+is unmeasured, and these captures establish no AAA+ or frame-rate result.
 
 ## Workstreams
 
