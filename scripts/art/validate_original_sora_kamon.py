@@ -1,4 +1,4 @@
-"""Check the skinned runtime samurai and exported static FBX use the exact SORA kamon.
+"""Check the legacy source prototype's static FBX uses the exact SORA kamon.
 
 Run: blender -b Content/SourceArt/SoraArena_OriginalAssets.blend \
   --python scripts/art/validate_original_sora_kamon.py
@@ -55,13 +55,9 @@ bpy.ops.import_scene.fbx(filepath=str(fbx))
 imported = [obj for obj in set(bpy.data.objects)-before if obj.type == "MESH"]
 assert len(imported) == 1 and imported[0].name.startswith("SM_NyaagyuSamurai"), [obj.name for obj in imported]
 assert_paths_embedded((imported[0].matrix_world @ vertex.co for vertex in imported[0].data.vertices), kamon)
-skinned_fbx = out / "SK_NyaagyuSamurai.fbx"
-assert skinned_fbx.read_bytes().startswith(b"Kaydara FBX Binary")
-before = set(bpy.data.objects)
-bpy.ops.import_scene.fbx(filepath=str(skinned_fbx))
-skinned = [obj for obj in set(bpy.data.objects)-before if obj.type == "MESH"]
-assert len(skinned) == 1, [obj.name for obj in skinned]
-assert_paths_embedded((vertex.co for vertex in skinned[0].data.vertices), kamon)
+# The gameplay SK asset is now skinned from the more detailed grey-tabby
+# Nyaakoto source and has four crest placements. Its separate validator checks
+# both the source SVG geometry and the skinned FBX round-trip.
 print("ORIGINAL_SORA_KAMON_PASS", PINNED_SVG_SHA256, len(source_paths),
       {name: sum(len(path) for path in paths) for name, paths in kamon.items()})
 validated = True

@@ -162,6 +162,23 @@ assert naginata["name"] in (ROOT / "scripts/unreal/import_original_assets.py").r
 assert naginata["name"] not in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
 hero_character_root = content / "SourceArt/Characters/Hero"
 hero_character = json.loads((hero_character_root / "manifest.json").read_text())
+runtime_skin = json.loads((hero_character_root / "runtime_skin_manifest.json").read_text())
+assert runtime_skin["schema_version"] == 1
+assert runtime_skin["generator"] == "scripts/art/rig_nyaakoto_runtime.py"
+assert runtime_skin["source_blend_sha256"] == hero_character["blend_sha256"]
+assert runtime_skin["sora_kamon_svg_sha256"] == hero_character["insignia_sha256"]
+assert runtime_skin["sora_kamon_placements"] == hero_character["sora_kamon_placements"]
+assert len(runtime_skin["skeleton_bones"]) == 20
+for filename, digest in ((runtime_skin["runtime_blend"], "runtime_blend_sha256"),
+                         (runtime_skin["runtime_preview"], "runtime_preview_sha256")):
+    path = hero_character_root / filename
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == runtime_skin[digest]
+for filename, digest in ((runtime_skin["skeletal_fbx"], "skeletal_fbx_sha256"),
+                         (runtime_skin["walk_fbx"], "walk_fbx_sha256")):
+    path = content / "SourceArt" / filename
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == runtime_skin[digest]
 assert hero_character["schema_version"] == 2
 assert hero_character["name"] == "SM_Nyaagyu_HeroCharacter"
 assert hero_character["character_name_ja"] == "ニャーコト"

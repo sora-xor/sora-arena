@@ -262,7 +262,10 @@ void ASoraCharacter::BuildHeroQuiver()
 {
     // Nyaakoto's red-fletched quiver is visible on the world model, while
     // first-person arms and the camera remain clear of the back-mounted prop.
-    if(!bCampaignHero||bEnemy) return;
+    // The authored Nyaakoto skeletal mesh carries its own open ebira and
+    // red-fletched arrows. Keep the primitive quiver only as a missing-asset
+    // fallback so a successful import does not draw a second one through it.
+    if(!bCampaignHero||bEnemy||bSkeletalVisual) return;
     auto Add=[&](const TCHAR* Name,const TCHAR* Mesh,FVector Location,FVector Scale,FLinearColor Color)
     {
         auto* Piece=ASoraWorldBuilder::Shape(this,GetCapsuleComponent(),Name,Mesh,Location,Scale,Color);

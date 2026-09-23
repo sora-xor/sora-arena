@@ -28,14 +28,23 @@ Regenerate and validate with Blender 5.2.2 LTS from the repository root:
 blender -b --factory-startup --python scripts/art/create_nyaagyu_hero_character.py
 blender -b Content/SourceArt/Characters/Hero/Nyaagyu_HeroCharacter.blend \
   --python scripts/art/validate_nyaagyu_hero_character.py
+blender -b --factory-startup --python scripts/art/rig_nyaakoto_runtime.py
+blender -b --factory-startup --python scripts/art/validate_nyaakoto_runtime_skin.py
 python3 scripts/unreal/validate_content.py
 ```
 
-The two PNGs are Blender source-art review renders. The mesh is unrigged and
-has no authored combat animations, fur groom, cloth simulation, or Unreal
-runtime material pass. It is deliberately imported as a static visual asset
-under `/Game/ArtReview/Characters/SM_Nyaagyu_HeroCharacter`; it is not yet the
-runtime player character or a photoreal final design. This review folder is
-outside the project's always-cooked `/Game/Generated` runtime content.
-Unreal 5.8.2 import, visual quality, animation,
-and performance require editor and gameplay review.
+The original `Nyaagyu_HeroCharacter.blend` stays an unrigged, editable design
+source and its static FBX remains in `/Game/ArtReview/Characters`. The separate
+`Nyaakoto_RuntimeSkin.blend` binds its 351 authored parts to the established
+20-bone samurai skeleton. Its `SK_NyaagyuSamurai.fbx` and
+`A_NyaagyuSamurai_Walk.fbx` replace the orange prototype's runtime exports
+under `/Game/Generated`; armor, yumi, arrows, sheathed katana and exact kamon
+are rigidly weighted to appropriate bones. The campaign's proxy quiver is
+shown only when the skeletal import is unavailable, avoiding a duplicate.
+
+All PNGs are Blender art-review renders. This first skin has only idle/walk
+cycles and per-part rigid weights; it still lacks production facial and combat
+animation, cloth, strand groom, and an Unreal material pass. The result is
+visibly closer to the supplied grey-tabby reference, but remains stylized
+source art rather than a qualified photoreal shipping character. Unreal 5.8.2
+import, gameplay appearance and frame rate still require review.
