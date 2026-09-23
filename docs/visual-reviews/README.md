@@ -98,3 +98,19 @@ regular walls, simple characters, and flat terrain still fail the AAA
 photoreal art gate. The package used UE 5.8.3 only for a diagnostic on M1
 Ultra. SHA-256:
 `dfb0b9d2439b5e2f3288a631bb8fa3b19e92bb0e956bc48871d930128b504a37`.
+
+`UE583_Nyaakoto_CoatBlend_Body_Diagnostic.png` and
+`UE583_Nyaakoto_CoatBlend_Face_Diagnostic.png` are unedited frames from an
+offscreen packaged UE 5.8.3/METAL_SM5 Mac game. A diagnostic-only command-line
+capture entered the first campaign chapter, hid the HUD, and moved the camera
+for fixed body and face reviews without touching a player's save. The
+six-texture grey/white fur master compiled and the imported skeletal mesh
+retained vertex colors and all three authored LODs; the package cooked 898
+packages with zero errors and warnings. These frames nevertheless **fail the
+photoreal character art gate**: the head is still round and toy-like, the
+ears and eyes are flat, the white throat meets a hard seam, the armor is rigid,
+and the fur lacks a convincing silhouette. Shader validity is not visual
+quality. The photos also do not establish the exact UE 5.8.2 or Windows gates.
+SHA-256 values, in filename order:
+`8088a847bd4c23ef59d225041eb3b256c899edf01372065141c7c1d59b234b1d`,
+`95f34a2f3bf678b84c8c2406d0207331462f6e705076ecc11fef779178c222ed`.
