@@ -22,12 +22,18 @@ public:
     void ApplyClass(int32 Id);
     void MakeEnemy(int32 Id);
     void MakeDojoPupil(int32 Id);
+    void MakeCampaignBoss(int32 Id);
     void SetDojoTraining(bool Enabled);
     void SetKernelDriven(bool Enabled, const FSoraPracticeMap* Map = nullptr);
     void ApplyKernelPlayer(const FSoraPracticePlayer& State);
     FSoraPracticeInput ConsumeKernelInput();
     bool IsEnemy() const { return bEnemy; }
     bool IsAlive() const { return Health > 0; }
+    bool IsCampaignBoss() const { return bCampaignBoss; }
+    bool IsBossTelegraphing() const { return bCampaignBoss && bBossWindup && IsAlive(); }
+    bool IsBossBeamWindup() const { return bBossBeam; }
+    float BossWarningSeconds() const { return BossPhaseTimer; }
+    float BossWarningProgress() const { return BossWindupDuration > 0.f ? FMath::Clamp(1.f-BossPhaseTimer/BossWindupDuration,0.f,1.f) : 0.f; }
     float Health = 120.f;
     float MaxHealth = 120.f;
     int32 ClassId = 0;
@@ -60,6 +66,15 @@ private:
     bool bEnemy = false;
     bool bDojoPupil = false;
     bool bDojoTraining = false;
+    bool bCampaignBoss = false;
+    bool bBossWindup = false;
+    bool bBossRecovery = false;
+    bool bBossBeam = true;
+    int32 BossAttackNumber = 0;
+    float BossPhaseTimer = 0.f;
+    float BossWindupDuration = 0.f;
+    float BossVisualTimer = 0.f;
+    FVector BossLockedDirection = FVector::ForwardVector;
     bool bKernelDriven = false;
     FVector KernelPreviousFeet = FVector::ZeroVector;
     float InputForward = 0.f, InputRight = 0.f;
@@ -78,6 +93,9 @@ private:
     void BuildCat();
     void BuildWeapon();
     void BotTick(float Dt);
+    void BossTick(float Dt, ASoraCharacter* Target);
+    void BossStrike(ASoraCharacter* Target);
+    void BossTelegraph();
     bool CanPlay() const;
     void Forward(float Value); void Strafe(float Value); void Yaw(float Value); void Pitch(float Value);
     void GamepadYaw(float Value); void GamepadPitch(float Value);

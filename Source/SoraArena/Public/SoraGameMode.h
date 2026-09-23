@@ -52,10 +52,12 @@ public:
     FString ObjectiveText() const;
     const FSoraDialogueCue* CurrentDialogueCue() const;
     ASoraWorldBuilder* Arena() const { return WorldBuilder; }
+    const ASoraCharacter* CampaignBoss() const;
 private:
     UPROPERTY() TObjectPtr<ASoraWorldBuilder> WorldBuilder;
     UPROPERTY() TObjectPtr<USoraSaveGame> Save;
     UPROPERTY() TArray<TObjectPtr<ASoraCharacter>> Enemies;
+    UPROPERTY() TObjectPtr<ASoraCharacter> BossActor;
     int32 Spawned = 0;
     FSoraPracticeClock PracticeClock;
     bool bPlayChapterDialogue = false;

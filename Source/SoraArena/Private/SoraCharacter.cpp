@@ -61,9 +61,21 @@ void ASoraCharacter::ApplyClass(int32 Id)
 }
 void ASoraCharacter::MakeEnemy(int32 Id)
 {
-    bEnemy=true; bDojoPupil=false; bDojoTraining=false; EnemyIndex=Id; bUseControllerRotationYaw=false;
+    bEnemy=true; bDojoPupil=false; bDojoTraining=false; bCampaignBoss=false; EnemyIndex=Id; bUseControllerRotationYaw=false;
     GetCharacterMovement()->bOrientRotationToMovement=false;
     ApplyClass(Id%6); BuildCat();
+}
+void ASoraCharacter::MakeCampaignBoss(int32 Id)
+{
+    // The final chapter reuses the alien banker cat prototype. This encounter
+    // is entirely local; it never enters the multiplayer combat kernel.
+    MakeEnemy(Id);
+    bCampaignBoss=true;
+    MaxHealth=300.f; Health=MaxHealth;
+    GetCharacterMovement()->MaxWalkSpeed=280.f;
+    SetActorScale3D(FVector(1.25f));
+    bBossWindup=false; bBossRecovery=false; bBossBeam=true;
+    BossAttackNumber=0; BossPhaseTimer=0.f; BossVisualTimer=0.f;
 }
 void ASoraCharacter::SetDojoTraining(bool Enabled)
 {
@@ -387,6 +399,7 @@ void ASoraCharacter::BotTick(float Dt)
         }
     }
     auto* Target=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0)); if(!Target||!Target->IsAlive()) return;
+    if(bCampaignBoss) { BossTick(Dt,Target); return; }
     FVector Delta=Target->GetActorLocation()-GetActorLocation(); const float Dist=Delta.Size2D(); Delta.Z=0;
     SetActorRotation(FMath::RInterpTo(GetActorRotation(),Delta.Rotation(),Dt,4.f));
     FVector Move=Delta.GetSafeNormal();
@@ -415,6 +428,92 @@ void ASoraCharacter::BotTick(float Dt)
         Beam(GetWorld(),From,To+(bMiss?FVector(0,80,60):FVector::ZeroVector),FLinearColor(1,.12,.3),1.7);
         if(!bMiss) UGameplayStatics::ApplyPointDamage(Target,7.f,(To-From).GetSafeNormal(),Hit,GetController(),this,UDamageType::StaticClass());
     }
+}
+void ASoraCharacter::BossTelegraph()
+{
+    const FVector From=GetActorLocation()+FVector(0,0,55);
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(BossWarning),false,this);
+    if(bBossBeam)
+    {
+        const FVector End=From+BossLockedDirection*1500.f;
+        FHitResult Hit;
+        GetWorld()->LineTraceSingleByChannel(Hit,From,End,ECC_Visibility,Query);
+        Beam(GetWorld(),From,Hit.bBlockingHit?Hit.ImpactPoint:End,FLinearColor(.04f,.85f,.95f),3.f,.18f);
+    }
+    else
+    {
+        for(int32 Side:{-1,1})
+            Beam(GetWorld(),From,From+BossLockedDirection.RotateAngleAxis(Side*28.f,FVector::UpVector)*330.f,
+                FLinearColor(1.f,.52f,.08f),3.5f,.18f);
+    }
+}
+void ASoraCharacter::BossStrike(ASoraCharacter* Target)
+{
+    const FVector From=GetActorLocation()+FVector(0,0,55);
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(BossStrike),false,this);
+    FHitResult Hit;
+    if(bBossBeam)
+    {
+        const FVector End=From+BossLockedDirection*1500.f;
+        GetWorld()->LineTraceSingleByChannel(Hit,From,End,ECC_Visibility,Query);
+        Beam(GetWorld(),From,Hit.bBlockingHit?Hit.ImpactPoint:End,FLinearColor(.12f,1.f,1.f),8.f,.22f);
+        if(Hit.GetActor()==Target)
+            UGameplayStatics::ApplyPointDamage(Target,22.f,BossLockedDirection,Hit,GetController(),this,UDamageType::StaticClass());
+    }
+    else
+    {
+        const FVector To=Target->GetActorLocation()+FVector(0,0,35);
+        const FVector Delta=To-From;
+        GetWorld()->LineTraceSingleByChannel(Hit,From,To,ECC_Visibility,Query);
+        for(int32 Side:{-1,1})
+            Beam(GetWorld(),From,From+BossLockedDirection.RotateAngleAxis(Side*28.f,FVector::UpVector)*330.f,
+                FLinearColor(1.f,.80f,.24f),8.f,.22f);
+        if(Delta.Size2D()<=330.f && FVector::DotProduct(Delta.GetSafeNormal2D(),BossLockedDirection)>=.88f && Hit.GetActor()==Target)
+            UGameplayStatics::ApplyPointDamage(Target,30.f,BossLockedDirection,Hit,GetController(),this,UDamageType::StaticClass());
+    }
+}
+void ASoraCharacter::BossTick(float Dt,ASoraCharacter* Target)
+{
+    // Fixed attack order, locked aim, explicit warning, and recovery make the
+    // offline encounter readable. No random damage or hidden hit timestamp.
+    if(bBossWindup)
+    {
+        BossPhaseTimer=FMath::Max(0.f,BossPhaseTimer-Dt);
+        BossVisualTimer-=Dt;
+        if(BossVisualTimer<=0.f) { BossTelegraph(); BossVisualTimer=.13f; }
+        if(BossPhaseTimer<=0.f)
+        {
+            BossStrike(Target);
+            bBossWindup=false; bBossRecovery=true;
+            BossPhaseTimer=Health<=MaxHealth*.5f ? .90f : 1.15f;
+        }
+        return;
+    }
+    if(bBossRecovery)
+    {
+        BossPhaseTimer=FMath::Max(0.f,BossPhaseTimer-Dt);
+        if(BossPhaseTimer<=0.f) bBossRecovery=false;
+        return;
+    }
+    FVector Delta=Target->GetActorLocation()-GetActorLocation(); Delta.Z=0.f;
+    const float Distance=Delta.Size2D();
+    if(Distance>740.f)
+    {
+        const FVector Move=Delta.GetSafeNormal2D();
+        SetActorRotation(FMath::RInterpTo(GetActorRotation(),Move.Rotation(),Dt,3.f));
+        AddMovementInput(Move,.72f);
+        return;
+    }
+    bBossBeam=Distance>340.f||(BossAttackNumber%2)==0;
+    ++BossAttackNumber;
+    BossLockedDirection=Delta.GetSafeNormal2D();
+    if(BossLockedDirection.IsNearlyZero()) BossLockedDirection=GetActorForwardVector().GetSafeNormal2D();
+    SetActorRotation(BossLockedDirection.Rotation());
+    GetCharacterMovement()->StopMovementImmediately();
+    bBossWindup=true;
+    BossWindupDuration=bBossBeam?1.45f:1.2f;
+    BossPhaseTimer=BossWindupDuration;
+    BossVisualTimer=0.f;
 }
 void ASoraCharacter::Interact() { if(CanPlay()) if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->Interact(this); }
 void ASoraCharacter::Menu()

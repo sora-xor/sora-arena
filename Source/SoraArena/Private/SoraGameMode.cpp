@@ -24,11 +24,11 @@ void ASoraGameMode::BeginPlay()
     Super::BeginPlay();
     if(!FSoraCatalog::Get().Load()) { Notice=FSoraCatalog::Get().Error; return; }
     Save=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("SoraSoloCampaign"),0));
-    if(!Save||Save->SaveSchema!=3)
+    if(!Save||Save->SaveSchema!=4)
     {
         Save=Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
         if(!Save) return;
-        Save->SaveSchema=3;
+        Save->SaveSchema=4;
     }
     ChapterId=FMath::Clamp(Save->CurrentChapter,0,7); SelectedClass=FMath::Clamp(Save->SelectedClass,0,5);
     bEnglishSubtitles=Save->EnglishSubtitles;
@@ -42,7 +42,8 @@ void ASoraGameMode::ResetRound()
     if(bDeterministicPractice) { ResetPractice(); return; }
     ClearPractice();
     if(!WorldBuilder||!FSoraCatalog::Get().IsReady()) return;
-    for(const auto& E:Enemies) if(IsValid(E)) E->Destroy(); Enemies.Reset();
+    for(const auto& E:Enemies) if(IsValid(E)) E->Destroy();
+    Enemies.Reset(); BossActor=nullptr;
     Kills=0; Spawned=0; RoundTime=0; bDefeated=false; bChapterComplete=false;
     KillsNeeded=bCampaign?FSoraCatalog::Get().Chapter(ChapterId).Kills:12;
     WorldBuilder->Build(MapId,bCampaign?&FSoraCatalog::Get().Chapter(ChapterId):nullptr);
@@ -61,6 +62,9 @@ void ASoraGameMode::ResetRound()
             Kills=Save->CheckpointKills;
             WorldBuilder->RestoreActivatedMask(Mask);
             bChapterComplete=Save->CheckpointComplete&&Kills==KillsNeeded&&WorldBuilder->ActiveNodes()==3;
+            // At seventeen final-chapter defeats, restoring a checkpoint
+            // respawns the unique boss at full health. Partial boss damage is
+            // never saved as a completed objective.
             Spawned=Kills;
         }
         else ClearCheckpoint();
@@ -98,10 +102,12 @@ void ASoraGameMode::ResetRound()
     }
     else if(bResumed)
     {
-        Notice=bChapterComplete?TEXT("出口の封印は解かれた。Enter で物語を進めよう。")
+        Notice=bCampaign&&ChapterId==7&&Kills==KillsNeeded-1?TEXT("最後の徴収官との決戦から再開した。構えを見て、刃をかわそう。")
+            :bChapterComplete?TEXT("出口の封印は解かれた。Enter で物語を進めよう。")
             :bCampaign&&ChapterId==0?TEXT("稽古の記録から再開した。残る立合いと道場の仕事を確かめよう。")
             :TEXT("復旧記録から再開した。残る拠点と侵略者を確認しよう。");
-        NoticeEnglish=bChapterComplete?TEXT("The exit is open. Press Enter to continue the story.")
+        NoticeEnglish=bCampaign&&ChapterId==7&&Kills==KillsNeeded-1?TEXT("The final collector awaits. Watch the telegraph and evade the strike.")
+            :bChapterComplete?TEXT("The exit is open. Press Enter to continue the story.")
             :bCampaign&&ChapterId==0?TEXT("Training checkpoint restored. Check the remaining bouts and dojo tasks.")
             :TEXT("Checkpoint restored. Check the remaining sites and invaders.");
     }
@@ -115,11 +121,28 @@ void ASoraGameMode::ResetRound()
 void ASoraGameMode::SpawnEnemy()
 {
     if(!WorldBuilder||Spawned>=KillsNeeded) return;
+    const bool bFinalBoss=bCampaign&&ChapterId==7&&Spawned==KillsNeeded-1;
+    // The collector arrives only after all seventeen guards have fallen. A
+    // restored checkpoint at that milestone follows the same spawn path.
+    if(bFinalBoss&&Kills!=KillsNeeded-1) return;
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
     auto* Enemy=GetWorld()->SpawnActor<ASoraCharacter>(WorldBuilder->SpawnPoint(Spawned),FRotator(0,180,0),Params);
+    if(!Enemy) return;
     if(bCampaign&&ChapterId==0) Enemy->MakeDojoPupil(Spawned);
+    else if(bFinalBoss)
+    {
+        Enemy->MakeCampaignBoss(Spawned);
+        BossActor=Enemy;
+        Notice=TEXT("徴収官『この街の息さえ、利子として差し押さえる』");
+        NoticeEnglish=TEXT("Collector: Even this city's breath is collateral for interest.");
+        NoticeTime=7.f;
+    }
     else Enemy->MakeEnemy(Spawned);
     Enemies.Add(Enemy); ++Spawned;
+}
+const ASoraCharacter* ASoraGameMode::CampaignBoss() const
+{
+    return IsValid(BossActor)&&BossActor->IsAlive() ? BossActor.Get() : nullptr;
 }
 void ASoraGameMode::Tick(float Dt)
 {
@@ -262,21 +285,31 @@ void ASoraGameMode::Interact(ASoraCharacter* Player)
         }
         else
         {
-            Notice=bCampaign&&ChapterId==0?TEXT("残る立合いと道場の仕事を終えよう。"):TEXT("残る拠点の仕事を終え、侵略者を退けよう。");
-            NoticeEnglish=bCampaign&&ChapterId==0?TEXT("Finish the remaining sparring and dojo tasks first."):TEXT("Finish the remaining site tasks and defeat the invaders first.");
+            Notice=bCampaign&&ChapterId==7&&CampaignBoss()?TEXT("徴収官を退け、最後の記録台を民に返そう。")
+                :bCampaign&&ChapterId==0?TEXT("残る立合いと道場の仕事を終えよう。")
+                :TEXT("残る拠点の仕事を終え、侵略者を退けよう。");
+            NoticeEnglish=bCampaign&&ChapterId==7&&CampaignBoss()?TEXT("Defeat the collector and return the final ledger to the people.")
+                :bCampaign&&ChapterId==0?TEXT("Finish the remaining sparring and dojo tasks first.")
+                :TEXT("Finish the remaining site tasks and defeat the invaders first.");
             NoticeTime=5.f;
         }
     }
 }
-void ASoraGameMode::OpponentDefeated(ASoraCharacter* /*Opponent*/)
+void ASoraGameMode::OpponentDefeated(ASoraCharacter* Opponent)
 {
     if(bDeterministicPractice) return;
+    const bool bDefeatedBoss=Opponent&&Opponent->IsCampaignBoss();
+    if(bDefeatedBoss) BossActor=nullptr;
     ++Kills; if(auto* Player=Cast<ASoraCharacter>(UGameplayStatics::GetPlayerPawn(this,0))) Player->Heal(8.f);
     if(Spawned<KillsNeeded) SpawnEnemy();
     if(Kills>=KillsNeeded)
     {
-        Notice=bCampaign&&ChapterId==0?TEXT("門弟との立合いを終えた。道場の鍛冶場を直し、東の鳥居へ向かおう。"):TEXT("侵略者を退けた。残る生産拠点を取り戻し、東の鳥居へ向かおう。");
-        NoticeEnglish=bCampaign&&ChapterId==0?TEXT("Sparring complete. Restore the dojo smithy, then reach the eastern torii gate."):TEXT("Invaders cleared. Restore the remaining production sites, then reach the eastern torii gate.");
+        Notice=bDefeatedBoss?TEXT("侍『帳簿を閉じろ。田畑も工房も、働く者の手に戻す』")
+            :bCampaign&&ChapterId==0?TEXT("門弟との立合いを終えた。道場の鍛冶場を直し、東の鳥居へ向かおう。")
+            :TEXT("侵略者を退けた。残る生産拠点を取り戻し、東の鳥居へ向かおう。");
+        NoticeEnglish=bDefeatedBoss?TEXT("Samurai: Close the ledger. Fields and workshops return to those who work them.")
+            :bCampaign&&ChapterId==0?TEXT("Sparring complete. Restore the dojo smithy, then reach the eastern torii gate.")
+            :TEXT("Invaders cleared. Restore the remaining production sites, then reach the eastern torii gate.");
         NoticeTime=7.f;
     }
     if(bCampaign) SaveCheckpoint();

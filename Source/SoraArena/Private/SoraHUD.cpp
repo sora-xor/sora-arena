@@ -180,6 +180,27 @@ void ASoraHUD::DrawHUD()
     }
     Label(G->bCampaign?FSoraCatalog::Get().Chapter(G->ChapterId).Title:FSoraCatalog::Get().Map(G->MapId).Name,30*S,95*S,.82*S,Ivory);
     Label(G->ObjectiveText(),30*S,137*S,.52*S,Teal);
+    if(const ASoraCharacter* Boss=G->CampaignBoss())
+    {
+        const float BossWidth=FMath::Min(W-20.f,FMath::Max(560.f*S,470.f));
+        const float BossX=(W-BossWidth)*.5f,BossY=FMath::Max(178.f*S,165.f);
+        Panel(BossX,BossY,BossWidth,114.f,FLinearColor(.013f,.027f,.033f,.91f));
+        Label(TEXT("異星の徴収官"),BossX+17.f,BossY+7.f,JapaneseSubtitleScale,Gold);
+        if(G->bEnglishSubtitles) Label(TEXT("ALIEN COLLECTOR"),BossX+BossWidth-185.f,BossY+9.f,EnglishSubtitleScale,Muted);
+        Panel(BossX+17.f,BossY+36.f,BossWidth-34.f,7.f,FLinearColor(.15f,.18f,.20f));
+        Panel(BossX+17.f,BossY+36.f,(BossWidth-34.f)*FMath::Clamp(Boss->Health/Boss->MaxHealth,0.f,1.f),7.f,Gold);
+        if(Boss->IsBossTelegraphing())
+        {
+            Label(Boss->IsBossBeamWindup()?TEXT("債務光線の予兆 ― 線から離れよ"):TEXT("斬撃の予兆 ― 間合いから離れよ"),
+                BossX+17.f,BossY+51.f,JapaneseSubtitleScale,Ivory);
+            if(G->bEnglishSubtitles)
+                Label(Boss->IsBossBeamWindup()?TEXT("DEBT BEAM: evade the line"):TEXT("CLEAVE: leave the arc"),
+                    BossX+17.f,BossY+78.f,EnglishSubtitleScale,Muted);
+            Label(FString::Printf(TEXT("%.1f s"),Boss->BossWarningSeconds()),BossX+BossWidth-88.f,BossY+76.f,.48f,Gold);
+            Panel(BossX+BossWidth-108.f,BossY+101.f,90.f,4.f,FLinearColor(.15f,.18f,.20f));
+            Panel(BossX+BossWidth-108.f,BossY+101.f,90.f*Boss->BossWarningProgress(),4.f,Teal);
+        }
+    }
     if(P)
     {
         if(P->DamageFlash>0) { Panel(0,0,12*S,H,FLinearColor(.8,0,0,.65)); Panel(W-12*S,0,12*S,H,FLinearColor(.8,0,0,.65)); }

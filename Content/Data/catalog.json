@@ -543,7 +543,8 @@
       "dialogue": [
         { "speaker": "artisan", "start_s": 0.8, "duration_s": 4.8, "ja": "工房も田畑も、また動き始めた。", "en": "The workshops and fields are working again." },
         { "speaker": "samurai", "start_s": 6.2, "duration_s": 4.8, "ja": "あとはこの街だ。誰も借りに縛られぬように。", "en": "Only this ward remains. No one will be bound by debt again." },
-        { "speaker": "scout", "start_s": 11.6, "duration_s": 4.8, "ja": "東の鳥居で待つ。皆で新しい朝を迎えよう。", "en": "We will wait at the eastern torii. Let us greet a new morning together." }
+        { "speaker": "banker", "start_s": 11.6, "duration_s": 4.8, "ja": "最後の帳簿は私が守る。街の未来まで担保に取ろう。", "en": "I guard the final ledger. Even this city's future is collateral." },
+        { "speaker": "scout", "start_s": 17.0, "duration_s": 4.8, "ja": "東の鳥居で待つ。皆で新しい朝を迎えよう。", "en": "We will wait at the eastern torii. Let us greet a new morning together." }
       ]
     }
   ],
