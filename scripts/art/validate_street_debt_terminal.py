@@ -42,7 +42,9 @@ assert "Original project-owned geometry" in manifest["license"]
 assert "SIL OFL" in manifest["license"] and "CC0 Poly Haven" in manifest["license"]
 for filename, field in ((manifest["source_blend"], "blend_sha256"),
                         (manifest["fbx"], "fbx_sha256"),
-                        (manifest["preview"], "preview_sha256")):
+                        (manifest["preview"], "preview_sha256"),
+                        (manifest["blockout_preview"], "blockout_sha256"),
+                        (manifest["comparison_preview"], "comparison_sha256")):
     path = out / filename
     assert path.stat().st_size > 1000
     assert hashlib.sha256(path.read_bytes()).hexdigest() == manifest[field]
@@ -50,6 +52,27 @@ for filename, field in ((manifest["source_blend"], "blend_sha256"),
 font = root / "Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 assert hashlib.sha256(font.read_bytes()).hexdigest() == manifest["font_sha256"]
 assert "SIL OPEN FONT LICENSE" in (font.parent / "OFL.txt").read_text()
+palette = root / "Content/SourceArt/Environment/PolyHaven"
+palette_file = palette / "manifest.json"
+assert hashlib.sha256(palette_file.read_bytes()).hexdigest() == manifest["palette_manifest_sha256"]
+palette_manifest = json.loads(palette_file.read_text())
+assert palette_manifest["asset_license"] == "CC0-1.0"
+assert manifest["palette_asset_ids"] == ["wood_planks_dirt", "rusty_metal_02", "stone_floor"]
+records = {record["asset_id"]: record for record in palette_manifest["assets"]}
+expected_images = set()
+for asset_id in manifest["palette_asset_ids"]:
+    record = records[asset_id]
+    assert record["license"] == "CC0-1.0"
+    assert {item["channel"].lower() for item in record["files"]} == {"diffuse", "nor_dx", "arm"}
+    for item in record["files"]:
+        path = palette / item["file"]
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"]
+        expected_images.add(path.resolve())
+linked_images = {Path(bpy.path.abspath(image.filepath)).resolve()
+                 for image in bpy.data.images if image.source == "FILE"}
+assert linked_images == expected_images, (linked_images, expected_images)
+assert all(image.filepath.startswith("//../PolyHaven/")
+           for image in bpy.data.images if image.source == "FILE")
 for font_data in bpy.data.fonts:
     if "NotoSansCJKjp-Regular" in font_data.name:
         assert Path(bpy.path.abspath(font_data.filepath)).resolve() == font.resolve()
@@ -80,5 +103,6 @@ assert {"M_Env_Timber", "M_Env_Metal", "M_Env_Stone",
         "M_StreetTerminal_ColdLienSeal", "M_StreetTerminal_DebtTally"} <= slots
 assert sum(len(poly.vertices)-2 for poly in render[0].data.polygons) == manifest["source_triangles"]
 print("STREET_DEBT_TERMINAL_VALIDATED", manifest["source_triangles"],
-      manifest["bounds_m"], len(slots), "slots", len(proxies), "UCX")
+      manifest["bounds_m"], len(slots), "slots", len(proxies), "UCX",
+      len(expected_images), "CC0 PBR maps, flat/PBR/comparison preview digests")
 validated = True

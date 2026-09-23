@@ -16,12 +16,15 @@ from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Content/SourceArt/Environment/StreetDebtTerminal"
+PALETTE = ROOT / "Content/SourceArt/Environment/PolyHaven"
 OUT.mkdir(parents=True, exist_ok=True)
 FONT = ROOT / "Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 NAME = "SM_Alien_StreetDebtTerminal"
 FBX = OUT / (NAME + ".fbx")
 BLEND = OUT / "Alien_StreetDebtTerminal.blend"
 PREVIEW = OUT / "Alien_StreetDebtTerminal_Blender.png"
+BLOCKOUT = OUT / "Alien_StreetDebtTerminal_Blockout_Blender.png"
+COMPARISON = OUT / "Alien_StreetDebtTerminal_MaterialComparison_Blender.png"
 
 bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.object.select_all(action="SELECT")
@@ -58,6 +61,94 @@ DISPLAY = material("M_StreetTerminal_ObsidianScreen", (.016, .027, .035), .26, .
 CYAN = material("M_StreetTerminal_ColdLienSeal", (.012, .28, .36), .18, .26, 2.1)
 RED = material("M_StreetTerminal_DebtTally", (.56, .035, .029), .13, .28, 2.5)
 WASHI = material("M_StreetTerminal_PaperNotice", (.61, .48, .30), 0, .73)
+
+
+def palette_surface(mat, asset_id, tile, tint=None):
+    """Link retained, digest-verified CC0 albedo/normal/ARM as a box projection."""
+    palette_manifest = json.loads((PALETTE / "manifest.json").read_text())
+    assert palette_manifest["asset_license"] == "CC0-1.0"
+    entry = next(entry for entry in palette_manifest["assets"] if entry["asset_id"] == asset_id)
+    files = {item["channel"].lower(): item for item in entry["files"]}
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    coords = nodes.new("ShaderNodeTexCoord")
+    mapping = nodes.new("ShaderNodeMapping")
+    mapping.inputs["Scale"].default_value = (tile, tile, tile)
+    links.new(coords.outputs["Object"], mapping.inputs["Vector"])
+    images = {}
+    for channel in ("diffuse", "nor_dx", "arm"):
+        record = files[channel]
+        path = PALETTE / record["file"]
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == record["sha256"], path
+        image = bpy.data.images.load(str(path), check_existing=True)
+        image.colorspace_settings.name = "sRGB" if channel == "diffuse" else "Non-Color"
+        texture = nodes.new("ShaderNodeTexImage")
+        texture.name = channel
+        texture.image = image
+        texture.projection = "BOX"
+        texture.projection_blend = .18
+        links.new(mapping.outputs["Vector"], texture.inputs["Vector"])
+        images[channel] = texture
+    if tint is None:
+        links.new(images["diffuse"].outputs["Color"], shader.inputs["Base Color"])
+    else:
+        # The retained rusty metal map has a pale bare-steel substrate. A
+        # cold iron tint keeps the occupation silhouette readable while
+        # retaining its actual rust, scratches and photographic variation.
+        multiply = nodes.new("ShaderNodeMixRGB")
+        multiply.blend_type = "MULTIPLY"
+        multiply.inputs[0].default_value = 1
+        multiply.inputs[2].default_value = (*tint, 1)
+        links.new(images["diffuse"].outputs["Color"], multiply.inputs[1])
+        links.new(multiply.outputs[0], shader.inputs["Base Color"])
+    channels = nodes.new("ShaderNodeSeparateColor")
+    links.new(images["arm"].outputs["Color"], channels.inputs["Color"])
+    links.new(channels.outputs["Green"], shader.inputs["Roughness"])
+    links.new(channels.outputs["Blue"], shader.inputs["Metallic"])
+    # Poly Haven supplies DirectX normals. Blender's tangent convention needs
+    # the green channel flipped; Unreal uses its native DX source files.
+    normal_channels = nodes.new("ShaderNodeSeparateColor")
+    links.new(images["nor_dx"].outputs["Color"], normal_channels.inputs["Color"])
+    flip_green = nodes.new("ShaderNodeMath")
+    flip_green.operation = "SUBTRACT"
+    flip_green.inputs[0].default_value = 1
+    links.new(normal_channels.outputs["Green"], flip_green.inputs[1])
+    rgb = nodes.new("ShaderNodeCombineColor")
+    links.new(normal_channels.outputs["Red"], rgb.inputs["Red"])
+    links.new(flip_green.outputs[0], rgb.inputs["Green"])
+    links.new(normal_channels.outputs["Blue"], rgb.inputs["Blue"])
+    normal_map = nodes.new("ShaderNodeNormalMap")
+    normal_map.inputs["Strength"].default_value = .65
+    links.new(rgb.outputs["Color"], normal_map.inputs["Color"])
+    links.new(normal_map.outputs["Normal"], shader.inputs["Normal"])
+
+
+def original_surface_wear(mat, dark, light, scale, bump_distance):
+    """Subtle oxidization and micro-roughness on original non-Palette parts."""
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = scale
+    noise.inputs["Detail"].default_value = 3
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = .24
+    ramp.color_ramp.elements[0].color = (*dark, 1)
+    ramp.color_ramp.elements[1].position = .77
+    ramp.color_ramp.elements[1].color = (*light, 1)
+    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], shader.inputs["Base Color"])
+    roughness = nodes.new("ShaderNodeMapRange")
+    roughness.inputs["To Min"].default_value = .28
+    roughness.inputs["To Max"].default_value = .64
+    links.new(noise.outputs["Fac"], roughness.inputs["Value"])
+    links.new(roughness.outputs["Result"], shader.inputs["Roughness"])
+    bump = nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = .12
+    bump.inputs["Distance"].default_value = bump_distance
+    links.new(noise.outputs["Fac"], bump.inputs["Height"])
+    links.new(bump.outputs["Normal"], shader.inputs["Normal"])
 
 
 def keep(obj, name, mat):
@@ -265,11 +356,103 @@ scene.render.resolution_x = 1200
 scene.render.resolution_y = 1500
 scene.render.resolution_percentage = 100
 scene.render.image_settings.file_format = "PNG"
-scene.render.filepath = str(PREVIEW)
+scene.render.filepath = str(BLOCKOUT)
 scene.world.color = (.02, .025, .035)
 scene.view_settings.view_transform = "AgX"
 scene.view_settings.exposure = -.5
 bpy.ops.render.render(write_still=True)
+
+# Retain the exact old flat treatment for a controlled material comparison.
+flat_mats = {mat: mat.copy() for mat in
+             (TIMBER, METAL, STONE, BRASS, ENAMEL, DISPLAY, CYAN, RED, WASHI)}
+for old, flat in flat_mats.items():
+    flat.name = "M_ComparisonFlat_" + old.name
+palette_surface(TIMBER, "wood_planks_dirt", 1.6)
+palette_surface(METAL, "rusty_metal_02", 1.2, (.27, .34, .40))
+palette_surface(STONE, "stone_floor", 1.1)
+original_surface_wear(BRASS, (.16, .18, .11), (.43, .33, .14), 7, .00022)
+original_surface_wear(ENAMEL, (.012, .021, .036), (.034, .07, .09), 25, .00007)
+original_surface_wear(DISPLAY, (.008, .013, .019), (.024, .041, .048), 47, .00002)
+scene.render.filepath = str(PREVIEW)
+bpy.ops.render.render(write_still=True)
+
+# This second source-art render uses identical neutral lighting on both
+# versions. Comparison copies are discarded before the editable blend saves.
+comparison = bpy.data.collections.new("Temporary_FlatVsPBR_Review")
+scene.collection.children.link(comparison)
+for source in parts:
+    source.hide_render = True
+    for side, title in ((-1, "Flat"), (1, "PBR")):
+        copy = source.copy()
+        copy.data = source.data.copy()
+        copy.name = "Comparison_" + title + "_" + source.name
+        copy.location.x += side*1.65
+        copy.hide_render = False
+        comparison.objects.link(copy)
+        if side < 0:
+            for slot in copy.material_slots:
+                if slot.material in flat_mats:
+                    slot.material = flat_mats[slot.material]
+for side, title in ((-1, "FLAT BLOCKOUT"), (1, "PBR MATERIALS")):
+    bpy.ops.object.text_add(location=(side*1.65, -.67, 2.92),
+                            rotation=(math.pi/2, 0, 0))
+    text_obj = bpy.context.object
+    text_obj.name = "Comparison_Title_" + title
+    text_obj.data.body = title
+    text_obj.data.align_x = "CENTER"
+    text_obj.data.size = .145
+    text_obj.data.materials.append(WASHI)
+    for col in tuple(text_obj.users_collection):
+        col.objects.unlink(text_obj)
+    comparison.objects.link(text_obj)
+
+lights = [bpy.data.objects[name] for name in
+          ("Lantern_WarmKey", "Alien_CoolRim", "Readable_FrontFill")]
+light_state = [(obj.location.copy(), obj.rotation_euler.copy(),
+                tuple(obj.data.color), obj.data.energy, obj.data.size)
+               for obj in lights]
+for obj in lights:
+    obj.data.energy = 0
+neutral = lights[0]
+neutral.location = (0, -3.6, 4.5)
+neutral.data.color = (1, 1, 1)
+neutral.data.energy = 620
+neutral.data.size = 5.2
+neutral.rotation_euler = (Vector((0, 0, 1.3))-neutral.location).to_track_quat("-Z", "Y").to_euler()
+bpy.ops.object.camera_add(location=(0, -7, 3.3))
+comparison_camera = bpy.context.object
+comparison_camera.name = "Temporary_MaterialComparisonCamera"
+comparison_camera.rotation_euler = (Vector((0, 0, 1.18))-comparison_camera.location).to_track_quat("-Z", "Y").to_euler()
+comparison_camera.data.type = "ORTHO"
+comparison_camera.data.ortho_scale = 5.6
+scene.camera = comparison_camera
+scene.render.resolution_x = 1800
+scene.render.resolution_y = 1200
+scene.render.filepath = str(COMPARISON)
+bpy.ops.render.render(write_still=True)
+
+for obj, state in zip(lights, light_state):
+    location, rotation, color, energy, size = state
+    obj.location = location
+    obj.rotation_euler = rotation
+    obj.data.color = color
+    obj.data.energy = energy
+    obj.data.size = size
+for obj in list(comparison.objects):
+    bpy.data.objects.remove(obj, do_unlink=True)
+bpy.data.collections.remove(comparison)
+bpy.data.objects.remove(comparison_camera, do_unlink=True)
+for source in parts:
+    source.hide_render = False
+scene.camera = camera
+scene.render.resolution_x = 1200
+scene.render.resolution_y = 1500
+scene.render.filepath = str(PREVIEW)
+for image in bpy.data.images:
+    if image.source == "FILE":
+        path = Path(bpy.path.abspath(image.filepath)).resolve()
+        if path.is_relative_to(PALETTE):
+            image.filepath = "//../PolyHaven/" + path.relative_to(PALETTE).as_posix()
 for font in bpy.data.fonts:
     if Path(bpy.path.abspath(font.filepath)).resolve() == FONT.resolve():
         font.filepath = "//../../Fonts/NotoSansCJKjp-Regular.otf"
@@ -279,22 +462,28 @@ manifest = {
     "schema_version": 1,
     "name": NAME,
     "generator": "scripts/art/create_street_debt_terminal.py",
-    "authorship": "Original project-owned geometry and source materials; Japanese glyph geometry from the bundled SIL OFL font",
-    "license": "Original project-owned geometry; no purchased assets. Bundled Noto Japanese font is SIL OFL; runtime palette uses separately pinned CC0 Poly Haven materials.",
+    "authorship": "Original project-owned geometry and authored wear; Japanese glyph geometry from the bundled SIL OFL font; retained Poly Haven PBR surface maps",
+    "license": "Original project-owned geometry; no purchased assets. Bundled Noto Japanese font is SIL OFL; source and runtime palettes use separately pinned CC0 Poly Haven materials.",
     "source_blend": BLEND.name,
     "fbx": FBX.name,
     "preview": PREVIEW.name,
+    "blockout_preview": BLOCKOUT.name,
+    "comparison_preview": COMPARISON.name,
     "fbx_sha256": hashlib.sha256(FBX.read_bytes()).hexdigest(),
     "blend_sha256": hashlib.sha256(BLEND.read_bytes()).hexdigest(),
     "preview_sha256": hashlib.sha256(PREVIEW.read_bytes()).hexdigest(),
+    "blockout_sha256": hashlib.sha256(BLOCKOUT.read_bytes()).hexdigest(),
+    "comparison_sha256": hashlib.sha256(COMPARISON.read_bytes()).hexdigest(),
     "font_sha256": hashlib.sha256(FONT.read_bytes()).hexdigest(),
+    "palette_manifest_sha256": hashlib.sha256((PALETTE / "manifest.json").read_bytes()).hexdigest(),
+    "palette_asset_ids": ["wood_planks_dirt", "rusty_metal_02", "stone_floor"],
     "source_parts": len(parts),
     "source_triangles": triangles,
     "collision_boxes": 1,
     "bounds_m": {"min": minimum, "max": maximum},
     "unreal_asset": f"/Game/Generated/Environment/Props/{NAME}.{NAME}",
     "placement": "Ground plane at origin; local -Y front faces the Lantern Ward road",
-    "scope": "Decorative campaign prop with established simple collision proxy. UE 5.8.2 import, shader translation, lighting and performance unverified.",
+    "scope": "Decorative campaign prop with source PBR review and established simple collision proxy. UE 5.8.2 import, shader translation, lighting and performance unverified.",
 }
 (OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+"\n")
 print("STREET_DEBT_TERMINAL_READY", len(parts), triangles, minimum, maximum, FBX)
