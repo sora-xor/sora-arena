@@ -3,13 +3,13 @@
   "name": "SM_Nyaagyu_BokutoForm",
   "generator": "scripts/art/create_dojo_bokuto_form_study.py",
   "source_blend": "Nyaagyu_BokutoForm.blend",
-  "blend_sha256": "eb340aa6b1b67d9cd8602e643b096586717a52ae1272a9b34aa07e656699528b",
+  "blend_sha256": "9f823a073d8c24d3e324f767b465fac9b62511a9fda2ea852ce3680c83b603fc",
   "fbx": "SM_Nyaagyu_BokutoForm.fbx",
-  "fbx_sha256": "fe5cb746dbf0d9eae198631accacc5e24d16a49b6e765ff8b39748fd519901cd",
+  "fbx_sha256": "4cdcdb481aec6f8d67ca6d0fcffd91af6d922247abe69bd335fc1744be342c79",
   "preview": "Nyaagyu_BokutoForm_Blender.png",
-  "preview_sha256": "3e58afbb8d4fadb4a94802c3b59d1de33bee9ef199bd36d4450712db35c61501",
+  "preview_sha256": "593e8950fd037aae4bb4b2c254b50c3fa8c2af20edf5092438afd852ac2bd57b",
   "detail_preview": "Nyaagyu_BokutoForm_Detail_Blender.png",
-  "detail_preview_sha256": "ae799e41b5fc87ee15849bc643144d64dc6b58447752851ecd3386f5fe4f0346",
+  "detail_preview_sha256": "97bf981cadcfb498dc0f279e6f3429878901b4025e4bcd2b1e5809cccdad26ce",
   "parts": 4,
   "triangles": 5332,
   "bounds_m": {
@@ -23,11 +23,11 @@
   },
   "materials": [
     "M_Bokuto_HandOiledOakGrip",
-    "M_Bokuto_QuarterSawnWhiteOak",
+    "M_Bokuto_PhotographedWhiteOak",
     "M_Bokuto_DarkLeatherTsuba",
     "M_Bokuto_DarkLeatherTsuba"
   ],
-  "source_texture_manifest_sha256": "500f3fae81e8e9bafe84fe521f10162fb3658614b20acf042be39f273d392fdf",
+  "source_texture_manifest_sha256": "9de4f83b0d850ab2fd16993ce09a69fc3b470c187abec7242bd8e2bd282bdf3a",
   "leather_source_manifest_sha256": "a0ef20a5f198b1202a09d81ab1d8a1c9adb766b596547fbaa4eb226f9cc1fa45",
   "proportion_reference": "https://www.kendo.or.jp/wp/wp-content/uploads/2023/07/jodo-shiai_regulations.pdf",
   "scope": "Source-only modern jodo-proportioned bokuto study. No historic Edo attribution, Unreal import, combat geometry, collision, or animation change."

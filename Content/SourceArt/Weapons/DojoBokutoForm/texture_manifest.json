@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "asset_id": "white_oak_veneer",
+  "source_url": "https://polyhaven.com/a/white_oak_veneer",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "author": "Jenelle van Heerden",
+  "source_description": "Photographed white-oak veneer surface; used as a material reference on an original solid-wood bokuto mesh, not a claim that a historical sword was made of veneer.",
+  "resolution": [2048, 2048],
+  "maps": {
+    "Albedo": {
+      "file": "Textures/white_oak_veneer_diff_2k.jpg",
+      "sha256": "00e09e2f901fb76c6d206e7a0197f257f8a9d5f662d3cd863c2258c9b287131e",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_oak_veneer/white_oak_veneer_diff_2k.jpg"
+    },
+    "NormalDX": {
+      "file": "Textures/white_oak_veneer_nor_dx_2k.png",
+      "sha256": "de4da71ed2e09c3a0e3fd4905db96eecded73d3a0fa65acd458cfc3915d995bd",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_oak_veneer/white_oak_veneer_nor_dx_2k.png"
+    },
+    "ARM": {
+      "file": "Textures/white_oak_veneer_arm_2k.png",
+      "sha256": "12268183ce5ba79a58b7b2a3003c5ac498add4dbbb958178c51808b67253c7dd",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_oak_veneer/white_oak_veneer_arm_2k.png"
+    }
+  }
+}

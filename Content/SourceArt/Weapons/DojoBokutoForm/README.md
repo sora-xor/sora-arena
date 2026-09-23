@@ -3,10 +3,12 @@
 This is an editable **source-only** response to the playable chapter-one bokken's
 straight, baton-like silhouette. The four-piece mesh has an oval hand-planed
 grip, shallow blade curvature, carved mune/shinogi/ha facets, a blunt tip, and
-a dark leather tsuba held by a fitted retainer. Its single primary UV channel samples the
-project's white-oak albedo/normal/ORM and a pinned CC0 brown-leather scan.
-The oak albedo is the project's ImageGen wood study; its 2K normal and roughness
-were estimated from that color image, not measured from scanned wood.
+a dark leather tsuba held by a fitted retainer. Its single primary UV channel
+samples the CC0 [Poly Haven White Oak Veneer](https://polyhaven.com/a/white_oak_veneer)
+photographed albedo, DirectX normal and ARM maps at 2K, plus a pinned CC0
+brown-leather scan. The scanned veneer supplies *surface detail* on an original
+solid-wood mesh; no veneer construction is asserted for historical bokuto.
+The [texture manifest](texture_manifest.json) pins every source URL and hash.
 
 The [All Japan Kendo Federation's 2023 jodo regulations](https://www.kendo.or.jp/wp/wp-content/uploads/2023/07/jodo-shiai_regulations.pdf)
 specify a modern wooden tachi at 101.5 cm overall, 24.2 cm tsuka and 1.5 cm
@@ -18,7 +20,8 @@ prop and first-person handling before production admission.
 
 The [full source render](Nyaagyu_BokutoForm_Blender.png) and
 [facet detail](Nyaagyu_BokutoForm_Detail_Blender.png) show a more legible
-curve/profile than the inherited mesh. The wood remains too clean and the
+curve/profile and photographed grain than the inherited mesh. The wood remains
+too clean and the
 first-person silhouette, grip fit, and collision are unverified in Unreal.
 The original playable bokken remains unchanged. This model is not an AAA
 photoreal quality claim.

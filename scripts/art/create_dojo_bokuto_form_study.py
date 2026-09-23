@@ -18,7 +18,7 @@ from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Content/SourceArt/Weapons/DojoBokutoForm"
-PBR = ROOT / "Content/SourceArt/Weapons/DojoBokkenPBR"
+TEXTURE_MANIFEST = OUT / "texture_manifest.json"
 LEATHER = ROOT / "Content/SourceArt/Weapons/NyaagyuYumi/Textures"
 OUT.mkdir(parents=True, exist_ok=True)
 BLEND = OUT / "Nyaagyu_BokutoForm.blend"
@@ -32,9 +32,14 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-texture_manifest = json.loads((PBR / "texture_manifest.json").read_text())
+texture_manifest = json.loads(TEXTURE_MANIFEST.read_text())
+assert (texture_manifest["schema_version"] == 1
+        and texture_manifest["asset_id"] == "white_oak_veneer"
+        and texture_manifest["source_url"] == "https://polyhaven.com/a/white_oak_veneer"
+        and texture_manifest["license"] == "CC0-1.0"
+        and texture_manifest["resolution"] == [2048, 2048])
 for entry in texture_manifest["maps"].values():
-    path = PBR / entry["file"]
+    path = OUT / entry["file"]
     assert sha(path) == entry["sha256"], path
 leather_manifest = json.loads(
     (ROOT / "Content/SourceArt/Weapons/NyaagyuYumi/manifest.json").read_text())
@@ -110,18 +115,18 @@ def material(name, base, normal, orm, tint, rough_scale=1):
 
 
 oak = material(
-    "M_Bokuto_QuarterSawnWhiteOak",
-    PBR / texture_manifest["maps"]["Albedo"]["file"],
-    PBR / texture_manifest["maps"]["NormalDX"]["file"],
-    PBR / texture_manifest["maps"]["ORM"]["file"],
-    (.55, .48, .41),
+    "M_Bokuto_PhotographedWhiteOak",
+    OUT / texture_manifest["maps"]["Albedo"]["file"],
+    OUT / texture_manifest["maps"]["NormalDX"]["file"],
+    OUT / texture_manifest["maps"]["ARM"]["file"],
+    (.66, .60, .52),
 )
 oiled = material(
     "M_Bokuto_HandOiledOakGrip",
-    PBR / texture_manifest["maps"]["Albedo"]["file"],
-    PBR / texture_manifest["maps"]["NormalDX"]["file"],
-    PBR / texture_manifest["maps"]["ORM"]["file"],
-    (.42, .34, .27), .83,
+    OUT / texture_manifest["maps"]["Albedo"]["file"],
+    OUT / texture_manifest["maps"]["NormalDX"]["file"],
+    OUT / texture_manifest["maps"]["ARM"]["file"],
+    (.50, .42, .33), .83,
 )
 leather = material(
     "M_Bokuto_DarkLeatherTsuba",
@@ -359,7 +364,7 @@ MANIFEST.write_text(json.dumps({
     "bounds_m": {"min_x": -.242, "max_x": .773},
     "dimensions_cm": {"total": 101.5, "grip": 24.2, "sori": 1.5},
     "materials": [o.data.materials[0].name for o in parts],
-    "source_texture_manifest_sha256": sha(PBR / "texture_manifest.json"),
+    "source_texture_manifest_sha256": sha(TEXTURE_MANIFEST),
     "leather_source_manifest_sha256": sha(ROOT / "Content/SourceArt/Weapons/NyaagyuYumi/manifest.json"),
     "proportion_reference": "https://www.kendo.or.jp/wp/wp-content/uploads/2023/07/jodo-shiai_regulations.pdf",
     "scope": "Source-only modern jodo-proportioned bokuto study. No historic Edo attribution, Unreal import, combat geometry, collision, or animation change.",

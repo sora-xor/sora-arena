@@ -32,7 +32,13 @@ for file_field, hash_field in (
         ("preview", "preview_sha256"),
         ("detail_preview", "detail_preview_sha256")):
     assert sha(OUT / record[file_field]) == record[hash_field], file_field
-assert sha(ROOT / "Content/SourceArt/Weapons/DojoBokkenPBR/texture_manifest.json") == record["source_texture_manifest_sha256"]
+scan = json.loads((OUT / "texture_manifest.json").read_text())
+assert scan["asset_id"] == "white_oak_veneer" and scan["license"] == "CC0-1.0"
+assert scan["resolution"] == [2048, 2048]
+assert set(scan["maps"]) == {"Albedo", "NormalDX", "ARM"}
+assert sha(OUT / "texture_manifest.json") == record["source_texture_manifest_sha256"]
+for entry in scan["maps"].values():
+    assert sha(OUT / entry["file"]) == entry["sha256"]
 assert sha(ROOT / "Content/SourceArt/Weapons/NyaagyuYumi/manifest.json") == record["leather_source_manifest_sha256"]
 
 

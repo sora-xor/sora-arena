@@ -119,6 +119,14 @@ assert form["generator"] == "scripts/art/create_dojo_bokuto_form_study.py"
 assert form["dimensions_cm"] == {"total": 101.5, "grip": 24.2, "sori": 1.5}
 assert form["parts"] == 4 and form["triangles"] == 5332
 assert form["scope"].startswith("Source-only")
+form_scan = json.loads((form_root / "texture_manifest.json").read_text())
+assert form_scan["asset_id"] == "white_oak_veneer"
+assert form_scan["source_url"] == "https://polyhaven.com/a/white_oak_veneer"
+assert form_scan["license"] == "CC0-1.0" and form_scan["resolution"] == [2048, 2048]
+assert set(form_scan["maps"]) == {"Albedo", "NormalDX", "ARM"}
+assert hashlib.sha256((form_root / "texture_manifest.json").read_bytes()).hexdigest() == form["source_texture_manifest_sha256"]
+for item in form_scan["maps"].values():
+    assert hashlib.sha256((form_root / item["file"]).read_bytes()).hexdigest() == item["sha256"]
 for filename, key in ((form["source_blend"], "blend_sha256"),
                       (form["fbx"], "fbx_sha256"),
                       (form["preview"], "preview_sha256"),
