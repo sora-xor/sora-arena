@@ -659,6 +659,8 @@ def validate_loaded_assets(unreal, specs):
     material_lib = unreal.MaterialEditingLibrary
     master_path = f"{NYAAKOTO}/M_Nyaakoto_PBR.M_Nyaakoto_PBR"
     master = asset_library.load_asset(master_path)
+    require(bool(master.get_editor_property("used_with_skeletal_mesh")),
+            "Nyaakoto PBR master must compile a skeletal-mesh shader permutation")
     require({str(name) for name in material_lib.get_texture_parameter_names(master)} ==
             {"AlbedoMap", "NormalMap", "ORMMap"},
             "Nyaakoto PBR master lost its three texture parameters")
