@@ -358,9 +358,6 @@ impl LocalhostPeer {
                     Err(TransportError::Timeout) => break,
                     Err(error) => return Err(error),
                 };
-                if self.queued.len() == MAX_QUEUED_FRAMES && !datagram.starts_with(ACK_MAGIC) {
-                    return Err(TransportError::InboxFull);
-                }
                 match self.process_datagram(&datagram)? {
                     ReceivedDatagram::Ack(sequence) if sequence == packet.sequence => return Ok(()),
                     ReceivedDatagram::Evidence(frame) => self.queued.push_back(frame),
@@ -402,7 +399,14 @@ impl LocalhostPeer {
             .pending
             .as_ref()
             .map(|(set, _)| set);
-        match self.receiver.open_fragment_or_replay(datagram, pending)? {
+        // At capacity, authenticate enough of the fragment to distinguish a
+        // previously persisted replay from new evidence. The latter must not
+        // advance the receiver floor or receive a durable-delivery ACK.
+        let accept_new = self.queued.len() < MAX_QUEUED_FRAMES;
+        match self
+            .receiver
+            .open_fragment_or_replay_with_capacity(datagram, pending, accept_new)?
+        {
             FragmentDelivery::Pending => Ok(ReceivedDatagram::Incomplete),
             FragmentDelivery::AcceptedReplay(sequence) => {
                 // The evidence was already persisted. An ACK write failure
@@ -410,6 +414,7 @@ impl LocalhostPeer {
                 let _ = self.send_ack(sequence);
                 Ok(ReceivedDatagram::Incomplete)
             }
+            FragmentDelivery::AtCapacity => Err(TransportError::InboxFull),
             FragmentDelivery::Frame(frame) => {
                 let receipt = match append_message(&mut self.journal, &frame.message) {
                     Ok(receipt) => receipt,
@@ -869,6 +874,133 @@ mod tests {
         assert_eq!(outgoing.fragments, exact);
         assert_eq!(initiator.journal().receipt().records, 1);
         assert_eq!(responder.journal().receipt().records, 2);
+    }
+
+    #[test]
+    fn full_reliable_inbox_reacks_a_persisted_replay() {
+        let (_root, mut initiator, mut responder, keys) = setup(2);
+        let (set, reveals) = frontier(&initiator, &keys);
+        let certified = certificate(&initiator, &keys, &set);
+        let certified_packet = initiator.prepare(&certified).unwrap();
+        initiator.transmit(&certified_packet).unwrap();
+        assert_eq!(responder.receive().unwrap(), certified);
+        let original_ack = read_datagram(&initiator.socket, initiator.remote).unwrap();
+        assert_eq!(
+            decode_ack(&original_ack, initiator.local_slot, &initiator.sender).unwrap(),
+            certified.sequence
+        );
+
+        responder.queued = std::iter::repeat_n(certified.clone(), MAX_QUEUED_FRAMES).collect();
+        let own_reveal = WireFrame {
+            sender: 1,
+            sequence: 0,
+            message: WireMessage::Reveal {
+                set,
+                reveal: reveals[1].clone(),
+            },
+        };
+        let own_packet = responder.prepare(&own_reveal).unwrap();
+        let durable = responder.journal().receipt();
+        responder.timeout = Duration::from_millis(15);
+        initiator.transmit(&certified_packet).unwrap();
+
+        // No one reads the outbound reveal, so the ACK wait times out. The
+        // full inbox must not terminate it early with InboxFull on the replay.
+        assert!(matches!(
+            responder.transmit_reliably(&own_packet),
+            Err(TransportError::Timeout)
+        ));
+        assert_eq!(responder.queued.len(), MAX_QUEUED_FRAMES);
+        assert_eq!(responder.journal().receipt(), durable);
+        assert_eq!(
+            responder.receiver.sequence_floor(),
+            Some(certified.sequence)
+        );
+
+        initiator
+            .socket
+            .set_read_timeout(Some(Duration::from_millis(25)))
+            .unwrap();
+        let mut replay_acknowledged = false;
+        for _ in 0..=MAX_SEND_ATTEMPTS {
+            match read_datagram(&initiator.socket, initiator.remote) {
+                Ok(datagram) if datagram.starts_with(ACK_MAGIC) => {
+                    assert_eq!(
+                        decode_ack(&datagram, initiator.local_slot, &initiator.sender).unwrap(),
+                        certified.sequence
+                    );
+                    replay_acknowledged = true;
+                    break;
+                }
+                Ok(_) => {}
+                Err(TransportError::Timeout) => break,
+                Err(error) => panic!("unexpected datagram error: {error}"),
+            }
+        }
+        assert!(replay_acknowledged);
+    }
+
+    #[test]
+    fn full_reliable_inbox_rejects_new_evidence_without_ack_or_state_change() {
+        let (_root, mut initiator, mut responder, keys) = setup(2);
+        let (set, reveals) = frontier(&initiator, &keys);
+        let certified = certificate(&initiator, &keys, &set);
+        let certified_packet = initiator.prepare(&certified).unwrap();
+        initiator.transmit(&certified_packet).unwrap();
+        assert_eq!(responder.receive().unwrap(), certified);
+        let _original_ack = read_datagram(&initiator.socket, initiator.remote).unwrap();
+        responder.queued = std::iter::repeat_n(certified, MAX_QUEUED_FRAMES).collect();
+
+        let mut forged_replay = certified_packet.fragments[0].clone();
+        *forged_replay.last_mut().unwrap() ^= 1;
+        assert!(matches!(
+            responder.process_datagram(&forged_replay),
+            Err(TransportError::Evidence(_))
+        ));
+
+        let new_reveal = WireFrame {
+            sender: 0,
+            sequence: 1,
+            message: WireMessage::Reveal {
+                set,
+                reveal: reveals[0].clone(),
+            },
+        };
+        let new_packet = initiator.prepare(&new_reveal).unwrap();
+        assert_eq!(new_packet.fragment_count(), 1);
+        let durable = responder.journal().receipt();
+        let floor = responder.receiver.sequence_floor();
+        assert!(matches!(
+            responder.process_datagram(&new_packet.fragments[0]),
+            Err(TransportError::InboxFull)
+        ));
+        assert_eq!(responder.queued.len(), MAX_QUEUED_FRAMES);
+        assert_eq!(responder.journal().receipt(), durable);
+        assert_eq!(responder.receiver.sequence_floor(), floor);
+        initiator
+            .socket
+            .set_read_timeout(Some(Duration::from_millis(25)))
+            .unwrap();
+        assert!(matches!(
+            read_datagram(&initiator.socket, initiator.remote),
+            Err(TransportError::Timeout)
+        ));
+
+        responder.queued.clear();
+        assert!(matches!(
+            responder.process_datagram(&new_packet.fragments[0]).unwrap(),
+            ReceivedDatagram::Evidence(frame) if frame == new_reveal
+        ));
+        assert_eq!(responder.journal().receipt().records, durable.records + 1);
+        assert_eq!(
+            responder.receiver.sequence_floor(),
+            Some(new_reveal.sequence)
+        );
+        let ack = read_datagram(&initiator.socket, initiator.remote).unwrap();
+        assert_eq!(
+            decode_ack(&ack, initiator.local_slot, &initiator.sender).unwrap(),
+            new_reveal.sequence
+        );
     }
 
     #[test]

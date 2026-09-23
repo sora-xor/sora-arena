@@ -215,6 +215,7 @@ pub(crate) enum FragmentDelivery {
     Pending,
     Frame(WireFrame),
     AcceptedReplay(u64),
+    AtCapacity,
 }
 
 const MAX_RECENT_ACCEPTED: usize = 4;
@@ -344,6 +345,7 @@ impl EncryptedReceiver {
             FragmentDelivery::AcceptedReplay(_) => {
                 Err(Error::InvalidEvidence("fragment replay or reordering"))
             }
+            FragmentDelivery::AtCapacity => unreachable!("unbounded fragment receive"),
         }
     }
 
@@ -352,17 +354,28 @@ impl EncryptedReceiver {
         fragment: &[u8],
         pending: Option<&CommitmentSet>,
     ) -> Result<FragmentDelivery, Error> {
+        self.open_fragment_or_replay_with_capacity(fragment, pending, true)
+    }
+
+    pub(crate) fn open_fragment_or_replay_with_capacity(
+        &mut self,
+        fragment: &[u8],
+        pending: Option<&CommitmentSet>,
+        accept_new: bool,
+    ) -> Result<FragmentDelivery, Error> {
         match self.fragments.push(
             fragment,
             self.expected_sender,
             self.sequence_floor(),
             &self.key,
             self.accepted.make_contiguous(),
+            accept_new,
         )? {
             FragmentResult::Pending => Ok(FragmentDelivery::Pending),
             FragmentResult::AcceptedReplay(sequence) => {
                 Ok(FragmentDelivery::AcceptedReplay(sequence))
             }
+            FragmentResult::AtCapacity => Ok(FragmentDelivery::AtCapacity),
             FragmentResult::Complete(packet) => {
                 self.open(&packet, pending).map(FragmentDelivery::Frame)
             }
