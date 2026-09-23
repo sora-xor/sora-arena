@@ -64,12 +64,18 @@ roof_manifest = palette / "GreyRoofTiles/manifest.json"
 assert hashlib.sha256(roof_manifest.read_bytes()).hexdigest() == record["roof_manifest_sha256"]
 roof = json.loads(roof_manifest.read_text())
 assert roof["asset_id"] == "grey_roof_tiles" and roof["license"] == "CC0-1.0"
-assert record["palette_asset_ids"] == ["wood_planks_dirt","stone_floor","grey_roof_tiles"]
+plaster_manifest = palette / "WhitePlaster02/manifest.json"
+assert hashlib.sha256(plaster_manifest.read_bytes()).hexdigest() == record["plaster_manifest_sha256"]
+plaster = json.loads(plaster_manifest.read_text())
+assert plaster["asset_id"] == "white_plaster_02" and plaster["license"] == "CC0-1.0"
+assert record["palette_asset_ids"] == ["wood_planks_dirt","stone_floor","grey_roof_tiles","white_plaster_02"]
 palette_records = {item["asset_id"]:item for item in json.loads((palette/"manifest.json").read_text())["assets"]}
 expected_images = set()
 for asset_id in record["palette_asset_ids"]:
-    source = roof if asset_id == "grey_roof_tiles" else palette_records[asset_id]
-    base = palette/"GreyRoofTiles" if asset_id == "grey_roof_tiles" else palette
+    source = (roof if asset_id == "grey_roof_tiles" else
+              plaster if asset_id == "white_plaster_02" else palette_records[asset_id])
+    base = (palette/"GreyRoofTiles" if asset_id == "grey_roof_tiles" else
+            palette/"WhitePlaster02" if asset_id == "white_plaster_02" else palette)
     for item in source["files"]:
         path = base / item["file"]
         assert hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"]

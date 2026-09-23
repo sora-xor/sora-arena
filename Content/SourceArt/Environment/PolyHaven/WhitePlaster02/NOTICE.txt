@@ -1,0 +1,7 @@
+Powered by Poly Haven — https://polyhaven.com
+
+White Plaster 02 by Rob Tuytel is provided under CC0 1.0 Universal.
+Commercial use and redistribution are allowed. Exact source files and
+SHA-256 checksums are recorded in manifest.json.
+License: https://polyhaven.com/license
+Legal code: https://creativecommons.org/publicdomain/zero/1.0/legalcode

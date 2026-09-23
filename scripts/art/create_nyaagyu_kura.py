@@ -96,7 +96,16 @@ def pinned_pbr(name, folder, tile):
 TIMBER = pinned_pbr("M_Env_Timber",PALETTE/"wood_planks_dirt",2.4)
 STONE = pinned_pbr("M_Env_Stone",PALETTE/"stone_floor",1.45)
 KAWARA = pinned_pbr("M_Kura_Kawara",PALETTE/"GreyRoofTiles",1.55)
-PLASTER = basic("M_Kura_LimePlaster",(.70,.68,.61),rough=.91)
+PLASTER = pinned_pbr("M_Kura_LimePlaster",PALETTE/"WhitePlaster02",1.15)
+for plaster_node in PLASTER.node_tree.nodes:
+    if plaster_node.type == "NORMAL_MAP":
+        plaster_node.inputs["Strength"].default_value = .18
+    elif plaster_node.type == "TEX_IMAGE":
+        # Generated XY sampling collapses onto one scanline on Y-facing thin
+        # walls. Box projection gives the editable review source a true planar
+        # surface sample, matching the Unreal world-aligned material path.
+        plaster_node.projection = "BOX"
+        plaster_node.projection_blend = .18
 CHAR = basic("M_Kura_CharredCedar",(.055,.052,.049),rough=.74)
 IRON = basic("M_Kura_BlackIron",(.032,.037,.039),metal=.75,rough=.53)
 WASHI = basic("M_Kura_WashiVent",(.62,.58,.48),rough=.84)
@@ -359,7 +368,7 @@ triangles=sum(len(poly.vertices)-2 for ob in parts for poly in ob.data.polygons)
 corners=[ob.matrix_world @ Vector(corner) for ob in parts for corner in ob.bound_box]
 bounds={"min":[round(min(p[a] for p in corners),3) for a in range(3)],
         "max":[round(max(p[a] for p in corners),3) for a in range(3)]}
-linked=[(node,node.image) for mat in (TIMBER,STONE,KAWARA)
+linked=[(node,node.image) for mat in (TIMBER,STONE,KAWARA,PLASTER)
         for node in mat.node_tree.nodes if node.type=="TEX_IMAGE"]
 for node,_ in linked:node.image=None
 bpy.ops.object.select_all(action="DESELECT")
@@ -440,6 +449,7 @@ blend=OUT/"Nyaagyu_ProvisionKura.blend"
 bpy.ops.wm.save_as_mainfile(filepath=str(blend))
 palette_manifest=PALETTE/"manifest.json"
 roof_manifest=PALETTE/"GreyRoofTiles/manifest.json"
+plaster_manifest=PALETTE/"WhitePlaster02/manifest.json"
 manifest={
     "schema_version":1,"name":NAME,
     "generator":"scripts/art/create_nyaagyu_kura.py",
@@ -450,9 +460,10 @@ manifest={
     "preview_sha256":hashlib.sha256(preview.read_bytes()).hexdigest(),
     "palette_manifest_sha256":hashlib.sha256(palette_manifest.read_bytes()).hexdigest(),
     "roof_manifest_sha256":hashlib.sha256(roof_manifest.read_bytes()).hexdigest(),
+    "plaster_manifest_sha256":hashlib.sha256(plaster_manifest.read_bytes()).hexdigest(),
     "font_sha256":hashlib.sha256(FONT.read_bytes()).hexdigest(),
     "sora_kamon_svg_sha256":SVG_RECORD["source_sha256"],
-    "palette_asset_ids":["wood_planks_dirt","stone_floor","grey_roof_tiles"],
+    "palette_asset_ids":["wood_planks_dirt","stone_floor","grey_roof_tiles","white_plaster_02"],
     "unreal_asset":f"/Game/Generated/Environment/Props/{NAME}.{NAME}",
     "source_parts":len(parts),"source_triangles":triangles,
     "roof_tile_count":600,"shutter_count":4,"collision_boxes":3,
@@ -460,7 +471,7 @@ manifest={
     "placement_origin":"Ground center; local -Y front/loading doors face estate road",
     "placement_cm":"Use for four of the ten MapId 0 row buildings at existing P with yaw 0 on north row and 180 on south row, preserving all Building() collision pieces.",
     "collision_guidance":"UCX proxies in FBX are art-review only. In campaign, hidden original WorldBuilder building components retain collision. Practice map uses none of this mesh.",
-    "license":"Original project-owned geometry and review render. Exact user-supplied SORA SVG retains user-provided provenance. Linked timber, stone, and grey roof tile PBR maps are CC0 Poly Haven; Noto Japanese font is SIL OFL. No purchased assets.",
+    "license":"Original project-owned geometry and review render. Exact user-supplied SORA SVG retains user-provided provenance. Linked timber, stone, grey roof tile, and white plaster PBR maps are CC0 Poly Haven; Noto Japanese font is SIL OFL. No purchased assets.",
     "history_reference":[{"url":"https://japan-heritage.bunka.go.jp/ja/special/145/","note":"Agency for Cultural Affairs heritage overview of white kura walls, protected storage, and Edo-period shop-house design. This production storehouse is fictional, not a reconstruction."}],
     "scope":"Original editable source, FBX, and Blender review render. Unreal import, in-game photorealism, historical reconstruction, and performance require separate qualification."
 }

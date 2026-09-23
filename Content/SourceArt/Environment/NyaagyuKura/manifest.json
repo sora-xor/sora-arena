@@ -6,17 +6,19 @@
   "source_blend": "Nyaagyu_ProvisionKura.blend",
   "fbx": "SM_Nyaagyu_ProvisionKura.fbx",
   "preview": "Nyaagyu_ProvisionKura_Blender.png",
-  "blend_sha256": "e4c45adb4e1623ced6968df197d3b98c67561674f9d4f1716fa5f8cf9eebc627",
-  "fbx_sha256": "03482bb62621034352cfeac330f9c06947c6f7fb14fd0b202ad7a8859bb65235",
-  "preview_sha256": "31db9e5d7439feb549f5fa315c946ce8f9538b7948bf934e16840e3842ae03d1",
+  "blend_sha256": "8354c7cdc8a648863e9aced8b20f59729efcc31ea4d8a15675f6b33d374afc28",
+  "fbx_sha256": "f5d759cc402c2d213cf5f494a6caf7a482a4e13a79610f8acf196a8bd5e453a1",
+  "preview_sha256": "22400d65692d5174f5331a4336b82fec5ae03cc8354e786bb5db8fa06392ec67",
   "palette_manifest_sha256": "d21c351a0ca82165f885d9fc4cbcff652009fee0b9336ae9367b2ccd667cdd0b",
   "roof_manifest_sha256": "81343d5cdad492e3c740daf309232c6c5f5587ea18d58d99854c7aacefed0acf",
+  "plaster_manifest_sha256": "bad34b2165b2666b0fabc63260461b1de3a7bd796dc2564a08d8defed27026e6",
   "font_sha256": "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5",
   "sora_kamon_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
   "palette_asset_ids": [
     "wood_planks_dirt",
     "stone_floor",
-    "grey_roof_tiles"
+    "grey_roof_tiles",
+    "white_plaster_02"
   ],
   "unreal_asset": "/Game/Generated/Environment/Props/SM_Nyaagyu_ProvisionKura.SM_Nyaagyu_ProvisionKura",
   "source_parts": 367,
@@ -39,7 +41,7 @@
   "placement_origin": "Ground center; local -Y front/loading doors face estate road",
   "placement_cm": "Use for four of the ten MapId 0 row buildings at existing P with yaw 0 on north row and 180 on south row, preserving all Building() collision pieces.",
   "collision_guidance": "UCX proxies in FBX are art-review only. In campaign, hidden original WorldBuilder building components retain collision. Practice map uses none of this mesh.",
-  "license": "Original project-owned geometry and review render. Exact user-supplied SORA SVG retains user-provided provenance. Linked timber, stone, and grey roof tile PBR maps are CC0 Poly Haven; Noto Japanese font is SIL OFL. No purchased assets.",
+  "license": "Original project-owned geometry and review render. Exact user-supplied SORA SVG retains user-provided provenance. Linked timber, stone, grey roof tile, and white plaster PBR maps are CC0 Poly Haven; Noto Japanese font is SIL OFL. No purchased assets.",
   "history_reference": [
     {
       "url": "https://japan-heritage.bunka.go.jp/ja/special/145/",

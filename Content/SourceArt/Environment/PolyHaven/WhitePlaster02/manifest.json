@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "asset_id": "white_plaster_02",
+  "name": "White Plaster 02",
+  "role": "plaster",
+  "asset_url": "https://polyhaven.com/a/white_plaster_02",
+  "metadata_url": "https://api.polyhaven.com/files/white_plaster_02",
+  "info_url": "https://api.polyhaven.com/info/white_plaster_02",
+  "authors": {
+    "Rob Tuytel": "All"
+  },
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+  "resolution": "2k",
+  "source_dimensions_mm": [
+    1000,
+    1000
+  ],
+  "tile_size_cm": 100.0,
+  "unreal_instance": "/Game/Generated/Environment/MI_Nyaagyu_Plaster.MI_Nyaagyu_Plaster",
+  "application": "World-aligned smooth weathered plaster color, micro-normal, and AO/roughness/metallic on original project-authored kura walls. This is a surface scan, not a historical reconstruction.",
+  "files": [
+    {
+      "channel": "Diffuse",
+      "file": "white_plaster_02_diff_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_diff_2k.jpg",
+      "format": "jpg",
+      "bytes": 2568315,
+      "upstream_md5": "35f9c96c16aa0d934da7884b232f6d07",
+      "sha256": "0ca5245ba70777d3e41ff4566c9f8d363855461891802c55cb7dc0f6f85f084e"
+    },
+    {
+      "channel": "nor_dx",
+      "file": "white_plaster_02_nor_dx_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_nor_dx_2k.png",
+      "format": "png",
+      "bytes": 24664322,
+      "upstream_md5": "3b0839a30985ec8ba67130ff52358283",
+      "sha256": "3c5bef5be1d0871848bb1d59aa770933cd626dc514b5f833f79fb9b1e71ead4b"
+    },
+    {
+      "channel": "arm",
+      "file": "white_plaster_02_arm_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_arm_2k.jpg",
+      "format": "jpg",
+      "bytes": 894383,
+      "upstream_md5": "8037fca09e797a6664834a00adbe05aa",
+      "sha256": "acdb65bfabb3613812bdad9156021400e518bdf4998c011921ce43695a5e24d4"
+    }
+  ]
+}
