@@ -128,6 +128,28 @@ for entry in environment["assets"]:
     assert len(entry["bounds_m"]["min"]) == len(entry["bounds_m"]["max"]) == 3
     assert entry["bounds_m"]["min"][2] >= -0.01
     assert entry["bounds_m"]["max"][2] >= 2.2
+street_root = content / "SourceArt/Environment/StreetDebtTerminal"
+street = json.loads((street_root / "manifest.json").read_text())
+assert street["schema_version"] == 1
+assert street["name"] == "SM_Alien_StreetDebtTerminal"
+assert street["generator"] == "scripts/art/create_street_debt_terminal.py"
+assert street["unreal_asset"] == "/Game/Generated/Environment/Props/SM_Alien_StreetDebtTerminal.SM_Alien_StreetDebtTerminal"
+assert street["fbx"] == street["name"] + ".fbx"
+assert street["source_parts"] == 31 and 3000 < street["source_triangles"] < 5000
+assert street["collision_boxes"] == 1
+assert "Original project-owned geometry" in street["license"] and "CC0 Poly Haven" in street["license"]
+assert street["bounds_m"]["min"][2] == 0 and 2.2 < street["bounds_m"]["max"][2] < 2.5
+for name, digest in ((street["source_blend"], "blend_sha256"),
+                     (street["fbx"], "fbx_sha256"),
+                     (street["preview"], "preview_sha256")):
+    path = street_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == street[digest]
+street_fbx = (street_root / street["fbx"]).read_bytes()
+assert street_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in street_fbx
+assert street["name"] in world_builder and street["name"] in import_script
+assert 'if(MapId==1)' in world_builder and 'StreetDebtTerminalCollision' in world_builder
+assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())
 assert logo_manifest["source_svg"] == "sora_logo_NOtext2.svg"
@@ -142,6 +164,7 @@ assert struct.unpack(">II", logo_png[16:24]) == (1024, 1024)
 assert logo_png[24:26] == b"\x08\x06"  # 8-bit RGBA; the full bytes are hash-pinned above.
 assert "T_SoraResistanceLogo.T_SoraResistanceLogo" in (ROOT / "Source/SoraArena/Private/SoraHUD.cpp").read_text()
 assert hashlib.sha256(font.read_bytes()).hexdigest() == "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5"
+assert hashlib.sha256(font.read_bytes()).hexdigest() == street["font_sha256"]
 assert "SIL OPEN FONT LICENSE" in (font.parent / "OFL.txt").read_text()
 from fontTools.ttLib import TTFont
 cmap = TTFont(font).getBestCmap()
@@ -150,4 +173,4 @@ text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 29 FBX source assets including a dojo bokken and 3 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, 30 FBX source assets including a dojo bokken and 4 original environment props, licensed Japanese font, hash-verified SORA logo.")

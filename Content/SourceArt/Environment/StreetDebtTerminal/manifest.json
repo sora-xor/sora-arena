@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "name": "SM_Alien_StreetDebtTerminal",
+  "generator": "scripts/art/create_street_debt_terminal.py",
+  "authorship": "Original project-owned geometry and source materials; Japanese glyph geometry from the bundled SIL OFL font",
+  "license": "Original project-owned geometry; no purchased assets. Bundled Noto Japanese font is SIL OFL; runtime palette uses separately pinned CC0 Poly Haven materials.",
+  "source_blend": "Alien_StreetDebtTerminal.blend",
+  "fbx": "SM_Alien_StreetDebtTerminal.fbx",
+  "preview": "Alien_StreetDebtTerminal_Blender.png",
+  "fbx_sha256": "1f3a16a65db7735b55b7fe8c87a11ebd5d2447b6c2ee59c5c8fa2425d780c26d",
+  "blend_sha256": "5c0ef700ff4c74f39d1db886716475bb84f667d745469f25bc0acb3399e6326d",
+  "preview_sha256": "fc6e8ccee9b4fff5b5541bc55dcc821058415bff8ca91ef1b7d6e64cc7afb1df",
+  "font_sha256": "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5",
+  "source_parts": 31,
+  "source_triangles": 4248,
+  "collision_boxes": 1,
+  "bounds_m": {
+    "min": [
+      -0.7,
+      -0.33,
+      0.0
+    ],
+    "max": [
+      0.7,
+      0.41,
+      2.415
+    ]
+  },
+  "unreal_asset": "/Game/Generated/Environment/Props/SM_Alien_StreetDebtTerminal.SM_Alien_StreetDebtTerminal",
+  "placement": "Ground plane at origin; local -Y front faces the Lantern Ward road",
+  "scope": "Decorative campaign prop with established simple collision proxy. UE 5.8.2 import, shader translation, lighting and performance unverified."
+}

@@ -243,6 +243,16 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
         }
     }
     if(MapId==3) ImportedProp(TEXT("SM_Alien_DebtKiosk"),NodePositions[1]+FVector(315,0,0),FRotator(0,90,0));
+    if(MapId==1)
+    {
+        // The occupied street faces the road at local -Y. Use the same simple
+        // campaign collision whether the authored mesh imported or not.
+        const FVector StreetTerminal(-730,460,0);
+        const bool HasStreetTerminal=ImportedProp(TEXT("SM_Alien_StreetDebtTerminal"),StreetTerminal,FRotator::ZeroRotator);
+        auto* Proxy=Box(TEXT("StreetDebtTerminalCollision"),StreetTerminal+FVector(0,0,121),
+            FVector(140,74,242),FLinearColor(.10f,.15f,.20f),true);
+        if(HasStreetTerminal) Proxy->SetVisibility(false);
+    }
     for(int32 I=0;I<10;++I)
     {
         FVector P(-2250+(I%5)*1125,(I<5?-1:1)*470,0);

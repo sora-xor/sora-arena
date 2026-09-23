@@ -117,10 +117,19 @@ environment_names = ["SM_Edo_LanternPost", "SM_Nyaagyu_ToriiGate", "SM_Alien_Deb
 if ([entry["name"] for entry in environment_manifest["assets"]] != environment_names
         or environment_manifest["generator"] != "scripts/art/create_edo_environment_props.py"):
     raise RuntimeError("The original environment prop identities changed")
+street_source = source / "Environment/StreetDebtTerminal"
+street_terminal = json.loads((street_source / "manifest.json").read_text())
+street_name = "SM_Alien_StreetDebtTerminal"
+if (street_terminal["schema_version"] != 1 or street_terminal["name"] != street_name
+        or street_terminal["generator"] != "scripts/art/create_street_debt_terminal.py"
+        or street_terminal["unreal_asset"] != f"/Game/Generated/Environment/Props/{street_name}.{street_name}"):
+    raise RuntimeError("The original street debt terminal identity changed")
 assets.make_directory("/Game/Generated/Environment/Props")
 environment_tasks = []
-for entry in environment_manifest["assets"]:
-    fbx = environment_source / entry["fbx"]
+environment_entries = ([(environment_source, entry) for entry in environment_manifest["assets"]]
+                       + [(street_source, street_terminal)])
+for entry_root, entry in environment_entries:
+    fbx = entry_root / entry["fbx"]
     if (entry["fbx"] != entry["name"] + ".fbx" or not fbx.is_file()
             or hashlib.sha256(fbx.read_bytes()).hexdigest() != entry["fbx_sha256"]):
         raise RuntimeError(f"The original environment prop is missing or changed: {fbx}")
@@ -143,7 +152,7 @@ for entry in environment_manifest["assets"]:
     task.options = options
     environment_tasks.append(task)
 tools.import_asset_tasks(environment_tasks)
-for name in environment_names:
+for name in environment_names + [street_name]:
     mesh = assets.load_asset(f"/Game/Generated/Environment/Props/{name}")
     if not isinstance(mesh, unreal.StaticMesh):
         raise RuntimeError(f"Unreal import did not create the original environment prop: {name}")
