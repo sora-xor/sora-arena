@@ -107,11 +107,20 @@ after inspection. These tests do not constitute a native FPS proof.
 `arena_core::encrypted_wire` wraps a signed `WireFrame` in a versioned,
 length-bounded ChaCha20-Poly1305 datagram. It does not change the canonical
 inner wire bytes or their Ed25519 checks. Each instance is one pairwise,
-unidirectional sender-to-receiver channel. The caller supplies a secret 256-bit
-key and a 32-byte authenticated channel binding obtained from an external peer
-handshake. A key must be fresh for this sender, receiver, channel and direction;
-it must never be shared across directions or sessions. Associated data binds
-the protocol version, sender, sequence, 96-bit OS-random nonce, exact ciphertext
+unidirectional sender-to-receiver channel. The
+`arena_core::handshake` module can establish its key and 32-byte channel
+binding after both peers have the same authenticated admission `Context`.
+The initiator signs a fixed-length X25519 offer with its admitted Ed25519
+gameplay key. The responder verifies it, signs a fixed-length response
+including the exact offer digest, and both sides derive separate directional
+keys and a channel binding with HKDF-SHA256 over the shared secret and full
+signed transcript. The transcript includes the network, session, manifest,
+ordered roster and initiator/responder slots. Non-contributory public keys,
+malformed lengths, invalid signatures and changed contexts are rejected.
+X25519 secrets and channel key buffers use zeroizing types. A key is fresh for this
+sender, receiver, channel and direction; it is never shared across directions
+or sessions. Associated data binds the protocol version, sender, sequence,
+96-bit OS-random nonce, exact ciphertext
 length, channel binding and independently authenticated admission context.
 
 The sender refuses a sequence at or below its current floor. The receiver
@@ -136,12 +145,24 @@ malformed fragments, and checks the complete packet's
 SHA-256 digest before the ordinary AEAD and Ed25519 checks. Duplicate fragments
 do not advance the replay floor. A receiver must call `open_fragment` on the
 same channel instance and persist its accepted sequence floor as above. This
-framing does not supply retransmission, congestion control, NAT traversal or
-the peer handshake.
+framing does not supply retransmission, congestion control, NAT traversal,
+peer discovery or a network transport.
 
-This layer provides confidentiality and datagram authentication only after
-the external handshake has authenticated the peer and delivered the correct
-pairwise key. It does not implement or claim key agreement, peer discovery,
-NAT traversal, packet relays, congestion control, retransmission, ordered
-delivery, or a live network transport. It is not an execution proof or a
-substitute for the certified commitment frontier and durable evidence journal.
+The responder's `OfferReplayGuard` rejects an already accepted signed
+offer, including when it could generate a fresh local ephemeral secret. Its
+accepted offer digests must be persisted with the match evidence before the
+caller sends the returned response or uses the keys, then restored across
+reconnects. The guard retains at most 1,024 accepted offers per match and
+rejects further offers when full; recovery must preserve the current channel
+or end the match under the certified disconnect rules. The initiator
+keeps its one-use secret in memory only; an old response cannot complete a new
+local offer. After a restart the initiator generates a new offer. The signed
+handshake does not establish that the remote human is honest or that an
+admission context was selected correctly; those are separate qualification
+requirements.
+
+This code implements local key agreement and authenticated datagram
+primitives only. It does not implement peer discovery, NAT traversal, packet
+relays, congestion control, retransmission, ordered delivery, or a live
+network transport. It is not an execution proof or a substitute for the
+certified commitment frontier and durable evidence journal.

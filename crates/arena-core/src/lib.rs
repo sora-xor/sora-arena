@@ -9,6 +9,7 @@ pub mod catalog;
 pub mod economy;
 pub mod encrypted_wire;
 mod fragmented_wire;
+pub mod handshake;
 pub mod math;
 pub mod protocol;
 pub mod recovery;
