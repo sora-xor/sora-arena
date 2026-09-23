@@ -54,7 +54,7 @@ def expected_meta() -> bytes:
             unreal_string("ja/Game.locres"),
             struct.pack("<i", 1),
             unreal_string("ja"),
-            b"\x00",  # not user-generated content
+            struct.pack("<I", 0),  # FArchive serializes bool as a 32-bit UBOOL
         ]
     )
 
