@@ -61,6 +61,9 @@ its exact hash against ledger-state status. HTTP acceptance is not treated as
 finality, and ambiguous submissions are never retried. Static C ABI checking
 passes; an Unreal editor build, live pairing, submission and recovery run remain
 outstanding. Shipping builds keep submission disabled.
+The Iroha JavaScript native addon now builds and publishes with the project-specific
+Xcode 26.1.1 linker; 29 focused allocation, equipment, resource and racing SDK
+tests pass. This does not exercise Unreal or a live validator network.
 
 A research adapter has also produced and independently verified a native STARK
 for one fixed public damage/parry transition, rejecting seven tampering cases.
