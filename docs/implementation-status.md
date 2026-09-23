@@ -504,6 +504,26 @@ the study needs period-art review, a driven draw/string/arrow rig, correct paw
 contact and a packaged UE 5.8.2 visual pass. The source renders do not yet pass
 the AAA photoreal gate.
 
+A full water-court and bamboo/rill subset were modeled with editable geometry,
+PBR source maps and conventional Mac/Nanite candidate exports. The isolated
+5.8.3 package imported and cooked the subset, but the [fixed entrance and path
+captures](visual-reviews/bamboo-rill/README.md) show that the proposed
+placement is hidden by existing buildings and cover. It was removed from the
+diagnostic world; no main-world placement occurred. Source geometry validation
+passes, but the gameplay visual gate fails.
+
+The later [Nyaakoto coat/head V3](../Content/SourceArt/Characters/NyaakotoCoatV3/README.md)
+has an editable sculpt, unique-UV 2K PBR maps and authored directional fur.
+Its fixed-view renders still have a rounded cranium, exposed mechanical-looking
+eyes, flat ear presentation and a hard muzzle silhouette; it is source-only.
+The [formed-dō armor study](../Content/SourceArt/Characters/NyaakotoDoStudy/README.md)
+replaces rectangular chest plates with fitted curved bands, modeled odoshi and
+kusazuri, plus project-owned lacquer albedo/normal/ORM maps. Its controlled
+Blender comparison and FBX validation pass, but the plate wear and lacing are
+too regular, carried weapon pieces intersect the shell, and the surrounding
+body remains stylized. It is also source-only. Neither study is a photoreal
+character upgrade or evidence of a shippable animated rig.
+
 ## Workstreams
 
 - Deterministic Rust combat/economics, replay, P2P evidence and Unreal C ABI.
