@@ -65,7 +65,7 @@ readability, combat balance and save recovery still require an in-engine run.
 The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
 the six-class selector is available in offline arena practice. This source
 behavior still needs an Unreal menu and save/reload check.
-Five original Edo/alien environment props now have editable Blender source,
+Six original Edo/alien environment props now have editable Blender source,
 FBX exports, metric collision/bounds checks, and campaign placement source.
 The Lantern Ward debt terminal has a retained flat blockout and a licensed CC0
 PBR material comparison; its geometry still reads as a prototype. Blender
@@ -75,6 +75,12 @@ An original irrigation sluice now adds a hand-cranked timber/stone gate and
 alien meter to the agricultural liberation chapter's Estate sites. Its editable
 Blender source, FBX, collision-box round trip, material provenance and hashes
 pass local checks; it is decorative campaign geometry pending the same UE pass.
+An original 319 × 195 × 226 cm Silk Foundry loom with 268 editable source parts,
+indigo textile and an alien levy meter is placed beside the foundry station.
+Its FBX has one 18,376-triangle render mesh and four UCX boxes; Blender
+round-trip, hashes, license checks, and static import validation pass. Existing
+combat collision remains unchanged. Unreal import, material translation, visual
+quality, and frame rate have not been measured.
 
 The provisional first-release balance correction changed Arc carbine and
 Clockwork repeater attack cooldowns from 10 to 12 simulation ticks. A clean-lane
