@@ -109,6 +109,50 @@ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRot
     Mesh->RegisterComponent(); AddInstanceComponent(Mesh); Pieces.Add(Mesh);
     return true;
 }
+void ASoraWorldBuilder::NyaagyuTerrain()
+{
+#if PLATFORM_MAC
+    // M1 uses authored conventional meshes; Nanite is disabled by MacEngine.ini.
+    const TCHAR* Tier=TEXT("MAC");
+#else
+    const TCHAR* Tier=TEXT("HI");
+#endif
+    auto* Soil=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_Soil.MI_Nyaagyu_Soil"),nullptr,LOAD_NoWarn);
+    auto* Stone=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_Stone.MI_Nyaagyu_Stone"),nullptr,LOAD_NoWarn);
+    if (!Soil || !Stone)
+        UE_LOG(LogTemp,Error,TEXT("SORA estate terrain needs the pinned CC0 soil and stone PBR materials"));
+    for(int32 Y=0;Y<4;++Y)
+    for(int32 X=0;X<4;++X)
+    {
+        const FString Name=FString::Printf(TEXT("SM_NyaagyuTerrain_%s_X%d_Y%d"),Tier,X,Y);
+        const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Terrain/%s.%s"),*Name,*Name);
+        auto* Asset=LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
+        if(!Asset)
+        {
+            UE_LOG(LogTemp,Error,TEXT("SORA authored estate terrain tile missing: %s"),*Path);
+            continue;
+        }
+        auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
+        Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
+        Mesh->SetRelativeLocation(FVector(-2400+X*1600,-1950+Y*1300,0));
+        // This relief is visual only. The offline campaign retains its flat
+        // gameplay ground, and the P2P kernel map never loads these tiles.
+        Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        Mesh->SetCastShadow(true);
+        // Static-mesh distance fields feed software Lumen on the M1 path;
+        // supported Windows hardware can include the tile in ray tracing.
+        Mesh->SetAffectDistanceFieldLighting(true);
+        Mesh->SetAffectDynamicIndirectLighting(true);
+        Mesh->SetVisibleInRayTracing(true);
+        for(int32 Index=0;Index<Asset->GetStaticMaterials().Num();++Index)
+        {
+            const FString Slot=Asset->GetStaticMaterials()[Index].MaterialSlotName.ToString();
+            if(Slot.Contains(TEXT("M_Terrain_Soil")) && Soil) Mesh->SetMaterial(Index,Soil);
+            else if(Slot.Contains(TEXT("M_Terrain_Stone")) && Stone) Mesh->SetMaterial(Index,Stone);
+        }
+        Mesh->RegisterComponent(); AddInstanceComponent(Mesh); Pieces.Add(Mesh);
+    }
+}
 void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 {
     const FRotator R(0,Yaw,0); const FVector Side=R.RotateVector(FVector(0,1,0));
@@ -163,6 +207,7 @@ void ASoraWorldBuilder::Build(int32 MapId,const FSoraChapter* Chapter)
     ClearArena();
     const FLinearColor Accent=FSoraCatalog::Get().Map(MapId).Accent;
     Box(TEXT("Ground"),FVector(0,0,-50),FVector(6400,5200,100),FLinearColor(.14f,.16f,.13f),true,FRotator::ZeroRotator,TEXT("Soil"));
+    if(MapId==0) NyaagyuTerrain();
     Box(TEXT("CentralRoad"),FVector(0,0,2),FVector(5600,660,5),FLinearColor(.29f,.30f,.28f),false,FRotator::ZeroRotator,TEXT("Stone"));
     for(int32 S:{-1,1})
     {

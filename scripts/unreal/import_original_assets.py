@@ -251,6 +251,65 @@ for name in environment_names + [street_name, sluice_name, loom_name]:
     if not isinstance(mesh, unreal.StaticMesh):
         raise RuntimeError(f"Unreal import did not create the original environment prop: {name}")
 
+# Modular estate relief is campaign presentation only. The HI tiles build
+# Nanite data for supported Windows GPUs; MAC tiles are independent conventional
+# meshes for the M1 path. Neither changes the kernel's collision surface.
+terrain_root = source / "Environment/NyaagyuTerrain"
+terrain = json.loads((terrain_root / "manifest.json").read_text())
+if (terrain["schema_version"] != 1
+        or terrain["generator"] != "scripts/art/create_nyaagyu_mesh_terrain.py"
+        or terrain["tile_layout"] != [4, 4]
+        or terrain["tile_size_cm"] != [1600, 1300]
+        or terrain["world_xy_cm"] != [-3200, -2600, 3200, 2600]
+        or terrain["max_visual_collision_delta_cm"] > 5
+        or terrain["material_slots"] != ["M_Terrain_Soil_PolyHaven", "M_Terrain_Stone_PolyHaven"]
+        or len(terrain["tiles"]) != 32):
+    raise RuntimeError("The source-authored estate terrain identity or collision tolerance changed")
+assets.make_directory("/Game/Generated/Environment/Terrain")
+terrain_tasks = []
+for tier in ("hi", "mac"):
+    for y in range(4):
+        for x in range(4):
+            record = next((tile for tile in terrain["tiles"]
+                           if tile["tier"] == tier and tile["index"] == [x, y]), None)
+            name = f"SM_NyaagyuTerrain_{tier.upper()}_X{x}_Y{y}"
+            if (record is None or record["name"] != name
+                    or record["fbx"] != name + ".fbx"
+                    or record["placement_center_cm"] != [-2400 + 1600*x, -1950 + 1300*y, 0]):
+                raise RuntimeError(f"Estate terrain tile identity changed: {name}")
+            fbx = terrain_root / record["fbx"]
+            if (not fbx.is_file()
+                    or hashlib.sha256(fbx.read_bytes()).hexdigest() != record["fbx_sha256"]):
+                raise RuntimeError(f"Estate terrain tile is missing or changed: {fbx}")
+            task = unreal.AssetImportTask()
+            task.filename = str(fbx)
+            task.destination_path = "/Game/Generated/Environment/Terrain"
+            task.destination_name = name
+            task.automated = True
+            task.replace_existing = True
+            task.save = True
+            options = unreal.FbxImportUI()
+            options.import_mesh = True
+            options.import_materials = True
+            options.import_textures = False
+            options.import_as_skeletal = False
+            options.mesh_type_to_import = unreal.FBXImportType.FBXIT_STATIC_MESH
+            options.static_mesh_import_data.combine_meshes = True
+            options.static_mesh_import_data.generate_lightmap_u_vs = False
+            options.static_mesh_import_data.auto_generate_collision = False
+            options.static_mesh_import_data.set_editor_property("build_nanite", tier == "hi")
+            task.options = options
+            terrain_tasks.append(task)
+tools.import_asset_tasks(terrain_tasks)
+for task in terrain_tasks:
+    path = f"{task.destination_path}/{task.destination_name}"
+    mesh = assets.load_asset(path)
+    if not isinstance(mesh, unreal.StaticMesh):
+        raise RuntimeError(f"Unreal import did not create estate terrain: {path}")
+    nanite_enabled = bool(mesh.get_editor_property("nanite_settings").get_editor_property("enabled"))
+    if nanite_enabled != ("_HI_" in task.destination_name):
+        raise RuntimeError(f"Unreal terrain Nanite setting did not match its tier: {path}")
+
 for name in manifest.get("skeletal_characters", []):
     short=name.removeprefix("SK_")
     task=unreal.AssetImportTask()
@@ -312,4 +371,4 @@ if not font.is_file() or not (source / "Fonts/OFL.txt").is_file():
     raise RuntimeError("Japanese runtime font and its redistribution license are required")
 
 assets.save_directory("/Game/Generated", only_if_is_dirty=False, recursive=True)
-unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon/horse meshes, {len(environment_tasks)} source-authored environment props; Japanese font staged separately")
+unreal.log(f"SORA_ASSET_IMPORT_COMPLETE: {len(tasks)} character/weapon/horse meshes, {len(environment_tasks)} source-authored environment props, {len(terrain_tasks)} mesh terrain tiles; Japanese font staged separately")

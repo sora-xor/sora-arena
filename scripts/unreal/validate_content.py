@@ -261,6 +261,44 @@ for entry in environment["assets"]:
     assert len(entry["bounds_m"]["min"]) == len(entry["bounds_m"]["max"]) == 3
     assert entry["bounds_m"]["min"][2] >= -0.01
     assert entry["bounds_m"]["max"][2] >= 2.2
+terrain_root = content / "SourceArt/Environment/NyaagyuTerrain"
+terrain = json.loads((terrain_root / "manifest.json").read_text())
+assert terrain["schema_version"] == 1
+assert terrain["generator"] == "scripts/art/create_nyaagyu_mesh_terrain.py"
+assert terrain["validator"] == "scripts/art/validate_nyaagyu_mesh_terrain.py"
+assert terrain["world_xy_cm"] == [-3200, -2600, 3200, 2600]
+assert terrain["tile_layout"] == [4, 4] and terrain["tile_size_cm"] == [1600, 1300]
+assert terrain["max_visual_collision_delta_cm"] <= 5
+assert terrain["material_slots"] == ["M_Terrain_Soil_PolyHaven", "M_Terrain_Stone_PolyHaven"]
+assert terrain["palette_license"] == "CC0-1.0; https://polyhaven.com/license"
+assert len(terrain["tiles"]) == 32 and len(terrain["palette_files"]) == 6
+assert "if(MapId==0) NyaagyuTerrain();" in world_builder
+assert "NyaagyuTerrain()" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "SetCollisionEnabled(ECollisionEnabled::NoCollision)" in world_builder
+for name, digest in ((terrain["source_blend"], terrain["source_blend_sha256"]),
+                     (terrain["preview"], terrain["preview_sha256"])):
+    path = terrain_root / name
+    assert path.stat().st_size > 1000
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
+for entry in terrain["palette_files"]:
+    path = ROOT / entry["path"]
+    assert path.stat().st_size == entry["bytes"]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == entry["sha256"]
+for tier in ("hi", "mac"):
+    for y in range(4):
+        for x in range(4):
+            records = [record for record in terrain["tiles"]
+                       if record["tier"] == tier and record["index"] == [x, y]]
+            assert len(records) == 1
+            record = records[0]
+            name = f"SM_NyaagyuTerrain_{tier.upper()}_X{x}_Y{y}"
+            assert record["name"] == name and record["fbx"] == name + ".fbx"
+            assert record["placement_center_cm"] == [-2400 + 1600*x, -1950 + 1300*y, 0]
+            assert max(record["z_range_cm"]) <= terrain["max_visual_collision_delta_cm"]
+            fbx = terrain_root / record["fbx"]
+            assert fbx.read_bytes().startswith(b"Kaydara FBX Binary")
+            assert b"/Users/" not in fbx.read_bytes()
+            assert hashlib.sha256(fbx.read_bytes()).hexdigest() == record["fbx_sha256"]
 street_root = content / "SourceArt/Environment/StreetDebtTerminal"
 street = json.loads((street_root / "manifest.json").read_text())
 assert street["schema_version"] == 1
@@ -347,4 +385,4 @@ absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 6 original environment props, licensed Japanese font, hash-verified SORA logo.")

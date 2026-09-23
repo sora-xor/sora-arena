@@ -16,6 +16,7 @@ RELEASE_VERSION = "5.8.2"
 MESHES = "/Game/Generated/Meshes"
 PROPS = "/Game/Generated/Environment/Props"
 PALETTE = "/Game/Generated/Environment"
+TERRAIN = "/Game/Generated/Environment/Terrain"
 
 
 def require(condition, message):
@@ -130,6 +131,36 @@ def expected_assets(project_root):
         named_mesh(source_root, specs, f"Environment/{folder}", "manifest.json",
                    name, PROPS)
 
+    terrain_root = source_root / "Environment/NyaagyuTerrain"
+    terrain = read_manifest(terrain_root / "manifest.json")
+    require(terrain.get("schema_version") == 1
+            and terrain.get("generator") == "scripts/art/create_nyaagyu_mesh_terrain.py"
+            and terrain.get("tile_layout") == [4, 4]
+            and terrain.get("tile_size_cm") == [1600, 1300]
+            and terrain.get("world_xy_cm") == [-3200, -2600, 3200, 2600]
+            and terrain.get("max_visual_collision_delta_cm", 100) <= 5
+            and terrain.get("material_slots") ==
+            ["M_Terrain_Soil_PolyHaven", "M_Terrain_Stone_PolyHaven"]
+            and len(terrain.get("tiles", [])) == 32,
+            "The modular estate terrain identity changed")
+    for tier in ("hi", "mac"):
+        for y in range(4):
+            for x in range(4):
+                matching = [tile for tile in terrain["tiles"]
+                            if tile.get("tier") == tier and tile.get("index") == [x, y]]
+                require(len(matching) == 1, f"Missing or duplicate terrain tile: {tier} {x},{y}")
+                tile = matching[0]
+                name = f"SM_NyaagyuTerrain_{tier.upper()}_X{x}_Y{y}"
+                require(tile.get("name") == name
+                        and tile.get("fbx") == f"{name}.fbx"
+                        and tile.get("placement_center_cm") ==
+                        [-2400 + 1600*x, -1950 + 1300*y, 0],
+                        f"Estate terrain tile identity changed: {name}")
+                fbx = source_file(terrain_root, tile["fbx"])
+                require(hashlib.sha256(fbx.read_bytes()).hexdigest() == tile.get("fbx_sha256"),
+                        f"Estate terrain source changed: {fbx}")
+                add(specs, f"{TERRAIN}/{name}.{name}", "StaticMesh")
+
     logo_root = source_root / "UI"
     logo = read_manifest(logo_root / "sora_logo_manifest.json")
     require(logo.get("unreal_asset") ==
@@ -188,6 +219,15 @@ def validate_loaded_assets(unreal, specs):
         parent = asset_library.load_asset(path).get_editor_property("parent")
         require(parent is not None and parent.get_path_name() == base_path,
                 f"Palette instance has the wrong PBR parent: {path}")
+    for tier in ("HI", "MAC"):
+        for y in range(4):
+            for x in range(4):
+                name = f"SM_NyaagyuTerrain_{tier}_X{x}_Y{y}"
+                path = f"{TERRAIN}/{name}.{name}"
+                mesh = asset_library.load_asset(path)
+                settings = mesh.get_editor_property("nanite_settings")
+                require(bool(settings.get_editor_property("enabled")) == (tier == "HI"),
+                        f"Estate terrain Nanite tier mismatch: {path}")
     return len(specs)
 
 
