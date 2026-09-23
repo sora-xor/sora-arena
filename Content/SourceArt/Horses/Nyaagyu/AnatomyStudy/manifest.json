@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_horse_anatomy_study.py",
+  "validator": "scripts/art/validate_nyaagyu_horse_anatomy_study.py",
+  "baseline_blend": "Content/SourceArt/Horses/Nyaagyu/PBR/Nyaagyu_HorseAndTack_PBR.blend",
+  "baseline_blend_sha256": "4cce0174938d550a8a697382715ffbabac85354a44ef6d66080654bbad94b99e",
+  "texture_manifest_sha256": "463923a7f06d3bfe0b0fcd48e8641faabc7876be8769e7612b7d1139df6e2e5f",
+  "source_blend": "Nyaagyu_Horse_AnatomyStudy.blend",
+  "source_blend_sha256": "77f90460f51fe203f088aa58f80e9c8178e57b0f213dad098139cf04e00fb7a9",
+  "fbx": "SM_Nyaagyu_Horse_AnatomyStudy.fbx",
+  "fbx_sha256": "8c93e7344f13c335c27d6bb2d11177db54c04e787a9adb70837b4dabfdda558f",
+  "preview_files": [
+    {
+      "file": "Nyaagyu_Horse_Anatomy_ThreeQuarter.png",
+      "sha256": "e0eb6d43c70fa25fa3c7108f6a49ea535c8d221e28d1e483cdf6f37fa8cb65f2"
+    },
+    {
+      "file": "Nyaagyu_Horse_Anatomy_Profile.png",
+      "sha256": "703a9408e101e54b515bc7531aec933d2c3956c0b4e27ea394cf1b625b0199a6"
+    },
+    {
+      "file": "Nyaagyu_Horse_Tack_Detail.png",
+      "sha256": "c6f50126fff32f2cdd11bc817d923c254a667b435e14e79b670d8e85019501ca"
+    }
+  ],
+  "editable_mesh_parts": 89,
+  "triangles": 231076,
+  "anatomical_core_vertices": 75892,
+  "source_dimensions_m": {
+    "min": [
+      -1.0723,
+      -0.4991,
+      0.005
+    ],
+    "max": [
+      1.1774,
+      0.4991,
+      1.8286
+    ]
+  },
+  "withers_visual_estimate_m": 1.421,
+  "hoof_ground_z_m": 0.005,
+  "sora_logo_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "exact_sora_kamon_objects": [
+    "SORA_kamon_exact_svg_abumi_-1_0",
+    "SORA_kamon_exact_svg_abumi_-1_1",
+    "SORA_kamon_exact_svg_abumi_1_0",
+    "SORA_kamon_exact_svg_abumi_1_1",
+    "SORA_kamon_exact_svg_aori_-1_0",
+    "SORA_kamon_exact_svg_aori_-1_1",
+    "SORA_kamon_exact_svg_aori_1_0",
+    "SORA_kamon_exact_svg_aori_1_1"
+  ],
+  "texture_slots": {
+    "M_Horse_SealBrownCoat": "coat_study",
+    "M_Horse_HoofHorn": "hoof_horn_study",
+    "M_Tack_OxbloodUrushi": "oxblood_urushi_study"
+  },
+  "base_tack_preserved_except_kura": true,
+  "kura_crosspiece_reference": "https://www.metmuseum.org/art/collection/search/26572",
+  "source_only": true,
+  "license": "Original project-owned modeling and procedural texture variation over project-owned source; no third-party source mesh or museum image used.",
+  "limitations": "Static anatomical and PBR study, not a production horse. No scanned hide, calibrated groom, facial rig, correct tack load path, rider-fit test, gait biomechanics signoff, UE import or in-game performance qualification."
+}

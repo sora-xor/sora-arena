@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_horse_anatomy_textures.py",
+  "base_coat_albedo": "Content/SourceArt/Horses/Nyaagyu/PBR/T_Nyaagyu_horse_coat_Albedo.png",
+  "base_coat_albedo_sha256": "3bb37bf3176d30271935282f1724e7b4bd153a2141da54b9ff0d4b4e842fac1c",
+  "provenance": "Original project-authored variation over a first-party image-generation coat swatch; procedural horn and lacquer maps. No museum photograph or third-party texture copied.",
+  "sets": {
+    "coat_study": [
+      {
+        "channel": "Albedo",
+        "file": "T_Nyaagyu_coat_study_Albedo.png",
+        "sha256": "29a65b4f5b687f1f10a5fdf5d754ba25ce8f2133ffc82779ab44277e7dc2830f",
+        "resolution": [
+          2048,
+          2048
+        ]
+      },
+      {
+        "channel": "NormalDX",
+        "file": "T_Nyaagyu_coat_study_NormalDX.png",
+        "sha256": "80a9d5d9a133494f602c964a83d4bb8d1744a605210af5ff5cd654a2bc0b5430",
+        "resolution": [
+          2048,
+          2048
+        ]
+      },
+      {
+        "channel": "ORM",
+        "file": "T_Nyaagyu_coat_study_ORM.png",
+        "sha256": "6856cb50611cb8b80a5eb588922b35caa28a5c2d383dc18912cac34df580c8d6",
+        "resolution": [
+          2048,
+          2048
+        ]
+      }
+    ],
+    "hoof_horn_study": [
+      {
+        "channel": "Albedo",
+        "file": "T_Nyaagyu_hoof_horn_study_Albedo.png",
+        "sha256": "a2f931c66609ed790c76a877c8818fbbf4b38d7c6142ce57994bfa21bb85ca23",
+        "resolution": [
+          2048,
+          2048
+        ]
+      },
+      {
+        "channel": "NormalDX",
+        "file": "T_Nyaagyu_hoof_horn_study_NormalDX.png",
+        "sha256": "4af62c35ffd1264ef1e32fba9cd73e4c3053bff2026eb97a246532545c420cfb",
+        "resolution": [
+          2048,
+          2048
+        ]
+      },
+      {
+        "channel": "ORM",
+        "file": "T_Nyaagyu_hoof_horn_study_ORM.png",
+        "sha256": "fba509b247f64031cf4098cc9f063981ab9a6e2646c2a1adfe38230fdbc141dc",
+        "resolution": [
+          2048,
+          2048
+        ]
+      }
+    ],
+    "oxblood_urushi_study": [
+      {
+        "channel": "Albedo",
+        "file": "T_Nyaagyu_oxblood_urushi_study_Albedo.png",
+        "sha256": "5807bbc4a285a5a374c53b1c51853baf3f52204224a489aa15ca258729ac62e1",
+        "resolution": [
+          2048,
+          2048
+        ]
+      },
+      {
+        "channel": "NormalDX",
+        "file": "T_Nyaagyu_oxblood_urushi_study_NormalDX.png",
+        "sha256": "511d736be8272cf5c2b563b59855379a2cc3fabb4e3853acc84903b0650bcb4d",
+        "resolution": [
+          2048,
+          2048
+        ]
+      },
+      {
+        "channel": "ORM",
+        "file": "T_Nyaagyu_oxblood_urushi_study_ORM.png",
+        "sha256": "8bb90de47b0151b44a756630f31268d26407e2261b33918918eecd942d8001b1",
+        "resolution": [
+          2048,
+          2048
+        ]
+      }
+    ]
+  },
+  "limitations": "Artist-estimated surface maps; not calibrated scans or directional-groom capture. PBR response requires review under neutral HDRI and UE project lighting."
+}
