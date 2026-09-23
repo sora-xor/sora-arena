@@ -4,7 +4,7 @@
 packaged macOS **UE 5.8.3 diagnostic** build, captured on 2026-09-24 JST with
 the camera held level at the Nyaagyu Estate campaign entrance. The review
 build used a diagnostic-only 25-lux Estate sun override, hid the HUD for this
-frame, and retained the shipped scene assets. It is **gameplay rendering**, not
+frame, and retained the imported prototype scene assets. It is **gameplay rendering**, not
 the separate generated menu key art or a Blender source preview. The package
 log reported `METAL_SM5` on the available M1 Ultra; the release pin remains
 UE 5.8.2. Image SHA-256:

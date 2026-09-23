@@ -183,7 +183,20 @@ pbr_root = hero_character_root / "PBR"
 pbr = json.loads((pbr_root / "manifest.json").read_text())
 assert pbr["schema_version"] == 1
 assert pbr["generator"] == "scripts/art/create_nyaakoto_pbr_textures.py"
-assert pbr["source_license"] == "Project-owned procedurally authored maps; no external texture asset"
+assert pbr["source_license"] == (
+    "Project-owned OpenAI image-generation output and procedural PBR conversion; "
+    "no external stock texture. Output ownership is assigned to the user under "
+    "the OpenAI Terms of Use, subject to those terms.")
+assert [source["surface"] for source in pbr["fur_sources"]] == [
+    "fur_grey", "fur_white", "fur_charcoal"]
+for source in pbr["fur_sources"]:
+    filename = f"Source/Nyaakoto_{source['surface'].split('_')[1].capitalize()}Fur_ImageGen_v1.png"
+    assert source["file"] == filename
+    assert hashlib.sha256((pbr_root / filename).read_bytes()).hexdigest() == source["sha256"]
+    assert source["origin"].startswith("Built-in OpenAI image_gen.imagegen, text-only prompt")
+    assert re.fullmatch(r"exec-[0-9a-f-]{36}", source["origin_output_id"])
+    assert source["source_url"] is None and len(source["prompt"]) > 200
+    assert source["rights_url"] == "https://openai.com/policies/row-terms-of-use/"
 assert [group["name"] for group in pbr["maps"]] == [
     "fur_grey", "fur_white", "fur_charcoal", "silk_indigo", "lacquer_oxblood", "neutral"]
 for group in pbr["maps"]:
@@ -220,7 +233,7 @@ assert hero_character["unreal_asset"] == "/Game/ArtReview/Characters/SM_Nyaagyu_
 assert hero_character["world_origin_m"] == [0, 0, 0]
 assert hero_character["local_forward"] == "+X face-forward; +Z up"
 assert hero_character["rigged"] is False and hero_character["external_images"] == []
-assert hero_character["source_parts"] >= 250 and 40000 <= hero_character["source_triangles"] < 100000
+assert hero_character["source_parts"] >= 390 and 100000 <= hero_character["source_triangles"] < 130000
 assert hero_character["bounds_m"]["min"][2] < .01
 assert 2.15 < hero_character["bounds_m"]["max"][2] < 2.22
 assert "Original project-owned character geometry" in hero_character["license"]
@@ -315,7 +328,11 @@ assert terrain["tile_layout"] == [4, 4] and terrain["tile_size_cm"] == [1600, 13
 assert terrain["max_visual_collision_delta_cm"] <= 5
 assert terrain["material_slots"] == ["M_Terrain_Soil_PolyHaven", "M_Terrain_Stone_PolyHaven"]
 assert terrain["palette_license"] == "CC0-1.0; https://polyhaven.com/license"
-assert len(terrain["tiles"]) == 32 and len(terrain["palette_files"]) == 6
+assert len(terrain["tiles"]) == 32
+assert [(entry["role"], entry["channel"]) for entry in terrain["palette_files"]] == [
+    ("soil", "diffuse"), ("soil", "normal"), ("soil", "arm"),
+    ("stone", "diffuse"), ("stone", "normal"), ("stone", "arm"),
+    ("stone", "displacement")]
 assert "if(MapId==0) NyaagyuTerrain();" in world_builder
 assert "NyaagyuTerrain()" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
 assert "SetCollisionEnabled(ECollisionEnabled::NoCollision)" in world_builder
