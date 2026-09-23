@@ -24,6 +24,7 @@ public:
     void MakeDojoPupil(int32 Id);
     void MakeCampaignBoss(int32 Id);
     void SetDojoTraining(bool Enabled);
+    void SetCampaignHeroLoadout(bool Enabled);
     void SuspendDojoAction();
     void SetKernelDriven(bool Enabled, const FSoraPracticeMap* Map = nullptr);
     void ApplyKernelPlayer(const FSoraPracticePlayer& State);
@@ -33,6 +34,10 @@ public:
     bool IsCampaignBoss() const { return bCampaignBoss; }
     bool IsBossTelegraphing() const { return bCampaignBoss && bBossWindup && IsAlive(); }
     bool IsBossBeamWindup() const { return bBossBeam; }
+    bool IsBowDrawing() const { return bBowDrawing; }
+    float BowDrawProgress() const;
+    bool IsCommittedStrike() const { return bCommittedStrike; }
+    float StrikeWindupProgress() const;
     float BossWarningSeconds() const { return BossPhaseTimer; }
     float BossWarningProgress() const { return BossWindupDuration > 0.f ? FMath::Clamp(1.f-BossPhaseTimer/BossWindupDuration,0.f,1.f) : 0.f; }
     float Health = 120.f;
@@ -57,6 +62,7 @@ public:
 private:
     UPROPERTY() TObjectPtr<UCameraComponent> Camera;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> BodyParts;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> QuiverParts;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WeaponParts;
     UPROPERTY() TObjectPtr<USceneComponent> WeaponRoot;
     UPROPERTY() TObjectPtr<class UAnimationAsset> IdleAnimation;
@@ -67,6 +73,7 @@ private:
     bool bEnemy = false;
     bool bDojoPupil = false;
     bool bDojoTraining = false;
+    bool bCampaignHero = false;
     bool bOfflineGuardHeld = false;
     bool bDojoRecoveryPending = false;
     bool bPupilWindup = false;
@@ -94,6 +101,13 @@ private:
     bool bRestoringControlProfile = false;
     uint32 KernelHeldButtons = 0, KernelQueuedButtons = 0;
     bool bFireHeld = false;
+    bool bBowDrawing = false;
+    float BowDrawStartedAt = 0.f;
+    bool bCommittedStrike = false;
+    bool bHistoricalRecovery = false;
+    int32 CommittedWeaponId = INDEX_NONE;
+    float CommittedStrikeAt = 0.f;
+    FVector CommittedDirection = FVector::ForwardVector;
     bool bSprint = false;
     float NextShot = 0.f;
     float ReloadEnd = 0.f;
@@ -101,6 +115,7 @@ private:
     float LifeTime = 0.f;
     int32 EnemyIndex = 0;
     void BuildCat();
+    void BuildHeroQuiver();
     void BuildWeapon();
     void BotTick(float Dt);
     void BossTick(float Dt, ASoraCharacter* Target);
@@ -110,6 +125,7 @@ private:
     void Forward(float Value); void Strafe(float Value); void Yaw(float Value); void Pitch(float Value);
     void GamepadYaw(float Value); void GamepadPitch(float Value);
     void FireDown(); void FireUp(); void Fire(); void Melee(); void Reload(); void Interact();
+    void ReleaseBow(); void ResolveCommittedStrike();
     void SprintDown(); void SprintUp(); void JumpDown(); void JumpUp();
     void Menu(); void Enter(); void NextMap(); void NewCampaign(); void ReturnCampaign();
     void Practice(); void BlockDown(); void BlockUp(); void Ability(); void MeleeUp();
@@ -117,6 +133,8 @@ private:
     void PairWallet(); void OpenWallet(); void DisconnectWallet();
     TArray<int32> AmmoByWeapon;
     void WeaponOne(); void WeaponTwo(); void WeaponThree(); void Equip(int32 Slot);
+    void WeaponFour(); void WeaponFive(); void WeaponSix(); void CampaignWeaponNext();
+    void EquipCampaignWeapon(int32 WeaponId);
     void ClassOne(); void ClassTwo(); void ClassThree(); void ClassFour(); void ClassFive(); void ClassSix();
     void ClassPrevious(); void ClassNext();
     void ChooseClass(int32 Id);

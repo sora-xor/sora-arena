@@ -22,6 +22,7 @@
 #include "Animation/AnimationAsset.h"
 #include "ArenaKernelSubsystem.h"
 #include "SoraControlSaveGame.h"
+#include "SoraHistoricalArms.h"
 
 ASoraCharacter::ASoraCharacter()
 {
@@ -56,8 +57,9 @@ void ASoraCharacter::ApplyClass(int32 Id)
     ClassId=FMath::Clamp(Id,0,5); const auto& C=FSoraCatalog::Get().Class(ClassId);
     MaxHealth=C.Health; Health=MaxHealth; GetCharacterMovement()->MaxWalkSpeed=C.Speed;
     WeaponId=C.Weapons[1]; Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine;
-    AmmoByWeapon.SetNum(18); for(int32 I=0;I<18;++I) AmmoByWeapon[I]=FSoraCatalog::Get().Weapon(I).Magazine;
-    bReloading=false; NextShot=0; bFireHeld=false; BuildWeapon();
+    AmmoByWeapon.SetNum(21); for(int32 I=0;I<21;++I) AmmoByWeapon[I]=FSoraCatalog::Get().Weapon(I).Magazine;
+    bReloading=false; NextShot=0; bFireHeld=false; bBowDrawing=false;
+    bCommittedStrike=false; bHistoricalRecovery=false; CommittedWeaponId=INDEX_NONE; BuildWeapon();
 }
 void ASoraCharacter::MakeEnemy(int32 Id)
 {
@@ -82,6 +84,7 @@ void ASoraCharacter::SetDojoTraining(bool Enabled)
     const bool bChanged=bDojoTraining!=Enabled;
     bDojoTraining=Enabled;
     bOfflineGuardHeld=false; bDojoRecoveryPending=false;
+    bBowDrawing=false; bCommittedStrike=false; bHistoricalRecovery=false;
     if(Enabled&&FSoraCatalog::Get().IsReady())
     {
         WeaponId=FSoraCatalog::Get().Class(0).Weapons[0];
@@ -89,6 +92,24 @@ void ASoraCharacter::SetDojoTraining(bool Enabled)
         BuildWeapon();
     }
     else if(bChanged) BuildWeapon();
+}
+void ASoraCharacter::SetCampaignHeroLoadout(bool Enabled)
+{
+    if(!FSoraCatalog::Get().IsReady()) return;
+    const bool bChanged=bCampaignHero!=Enabled;
+    bCampaignHero=Enabled;
+    if(!Enabled)
+    {
+        for(const auto& Piece:QuiverParts) if(Piece) { BodyParts.Remove(Piece); Piece->DestroyComponent(); }
+        QuiverParts.Reset();
+        return;
+    }
+    const auto& Hero=FSoraCatalog::Get().Hero();
+    WeaponId=Hero.KatanaId;
+    Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine;
+    AmmoByWeapon[Hero.YumiId]=Hero.QuiverArrows;
+    BuildWeapon();
+    if(bChanged) BuildHeroQuiver();
 }
 void ASoraCharacter::SuspendDojoAction()
 {
@@ -185,6 +206,7 @@ void ASoraCharacter::ApplyKernelPlayer(const FSoraPracticePlayer& State)
 void ASoraCharacter::BuildCat()
 {
     for(const auto& P:BodyParts) if(P) P->DestroyComponent(); BodyParts.Reset();
+    QuiverParts.Reset();
     bSkeletalVisual=false; GetMesh()->SetSkeletalMesh(nullptr);
     const bool bAlien=bEnemy&&!bDojoPupil;
     const FString CatName=bAlien?TEXT("AlienBanker"):TEXT("NyaagyuSamurai");
@@ -231,6 +253,29 @@ void ASoraCharacter::BuildCat()
     for(int32 I=0;I<5;++I) Add(FString::Printf(TEXT("Tail%d"),I),Sphere,FVector(-22-I*9,0,-38+I*11),FVector(.22,.20,.28),Fur);
     Add(TEXT("Obi"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),FVector(0,0,-28),FVector(.71,.74,.15),FLinearColor(.5,.15,.045));
 }
+void ASoraCharacter::BuildHeroQuiver()
+{
+    // Nyaakoto's red-fletched quiver is visible on the world model, while
+    // first-person arms and the camera remain clear of the back-mounted prop.
+    if(!bCampaignHero||bEnemy) return;
+    auto Add=[&](const TCHAR* Name,const TCHAR* Mesh,FVector Location,FVector Scale,FLinearColor Color)
+    {
+        auto* Piece=ASoraWorldBuilder::Shape(this,GetCapsuleComponent(),Name,Mesh,Location,Scale,Color);
+        Piece->SetOwnerNoSee(true); BodyParts.Add(Piece); QuiverParts.Add(Piece); return Piece;
+    };
+    Add(TEXT("NyaakotoQuiver"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
+        FVector(-23,25,28),FVector(.13f,.13f,.53f),FLinearColor(.18f,.08f,.045f))->SetRelativeRotation(FRotator(-14,0,0));
+    Add(TEXT("NyaakotoQuiverRim"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
+        FVector(-12,25,58),FVector(.145f,.145f,.05f),FLinearColor(.37f,.24f,.11f));
+    for(int32 Index=0;Index<5;++Index)
+    {
+        const float Lateral=17.f+Index*4.f;
+        Add(*FString::Printf(TEXT("NyaakotoArrow%d"),Index),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
+            FVector(-10+Index%2*3,Lateral,77),FVector(.008f,.008f,.46f),FLinearColor(.45f,.23f,.09f));
+        Add(*FString::Printf(TEXT("NyaakotoFletching%d"),Index),TEXT("/Engine/BasicShapes/Cone.Cone"),
+            FVector(-10+Index%2*3,Lateral,98),FVector(.035f,.035f,.10f),FLinearColor(.70f,.095f,.055f));
+    }
+}
 void ASoraCharacter::BuildWeapon()
 {
     for(const auto& P:WeaponParts) if(P) P->DestroyComponent(); WeaponParts.Reset();
@@ -245,7 +290,7 @@ void ASoraCharacter::BuildWeapon()
         AuthoredMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_HeroKatana.SM_Nyaagyu_HeroKatana"));
     else if(WeaponId==1)
         AuthoredMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Generated/Meshes/SM_Nyaagyu_ArcCarbine.SM_Nyaagyu_ArcCarbine"));
-    if(!AuthoredMesh&&!bDojoTraining)
+    if(!AuthoredMesh&&!bDojoTraining&&WeaponId<18)
     {
         const FString Asset=FString::Printf(TEXT("/Game/Generated/Meshes/SM_Weapon_%02d.SM_Weapon_%02d"),WeaponId,WeaponId);
         AuthoredMesh=LoadObject<UStaticMesh>(nullptr,*Asset);
@@ -264,7 +309,29 @@ void ASoraCharacter::BuildWeapon()
         if(!bEnemy) M->SetFirstPersonPrimitiveType(EFirstPersonPrimitiveType::FirstPerson);
         M->SetOnlyOwnerSee(!bEnemy); M->SetVisibility(true); WeaponParts.Add(M); return M;
     };
-    if(W.Kind==TEXT("melee"))
+    if(WeaponId==18)
+    {
+        // Yumi: an asymmetric stave, with the grip below its midpoint. This
+        // source-only silhouette is awaiting a rigged, material-finished bow.
+        const FLinearColor Wood(.31f,.14f,.055f), String(.79f,.72f,.55f);
+        Add(TEXT("YumiLower"),FVector(5,0,-39),FVector(.045,.045,.75),Wood)->SetRelativeRotation(FRotator(-6,0,0));
+        Add(TEXT("YumiUpper"),FVector(12,0,72),FVector(.045,.045,1.45),Wood)->SetRelativeRotation(FRotator(5,0,0));
+        Add(TEXT("YumiGrip"),FVector(7,0,-5),FVector(.09,.07,.22),FLinearColor(.09f,.055f,.03f));
+        Add(TEXT("YumiString"),FVector(-13,0,34),FVector(.008,.008,2.15),String);
+        Add(TEXT("NockedArrow"),FVector(34,0,2),FVector(.48,.012,.012),FLinearColor(.64f,.38f,.13f));
+        Add(TEXT("Arrowhead"),FVector(83,0,2),FVector(.055,.025,.025),FLinearColor(.66f,.70f,.74f));
+    }
+    else if(WeaponId==19 || WeaponId==20)
+    {
+        const bool bYari=WeaponId==19;
+        Add(TEXT("LacqueredShaft"),FVector(50,0,2),FVector(2.f,.035f,.035f),FLinearColor(.19f,.095f,.035f));
+        Add(TEXT("IronFerrule"),FVector(145,0,2),FVector(.085f,.045f,.045f),FLinearColor(.35f,.38f,.40f));
+        auto* Blade=Add(bYari?TEXT("StraightSpearhead"):TEXT("CurvedNaginataBlade"),
+            FVector(bYari?172:178,0,bYari?2:7),FVector(bYari?.30f:.42f,.02f,bYari?.035f:.065f),
+            FLinearColor(.68f,.75f,.79f));
+        if(!bYari) Blade->SetRelativeRotation(FRotator(0,-10.f,0));
+    }
+    else if(W.Kind==TEXT("melee"))
     {
         Add(TEXT("Blade"),FVector(30,0,10),FVector(.9,.025,.07),bDojoTraining?FLinearColor(.46,.27,.11):FLinearColor(.72,.80,.84));
         Add(TEXT("Tsuka"),FVector(-24,0,10),FVector(.22,.055,.075),FLinearColor(.15,.06,.025));
@@ -284,6 +351,18 @@ bool ASoraCharacter::CanPlay() const
 {
     const auto* GM=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
     return IsAlive()&&GM&&!GM->bMenu&&!GM->bDefeated&&!GM->bChapterComplete;
+}
+float ASoraCharacter::BowDrawProgress() const
+{
+    return bBowDrawing&&GetWorld()?FMath::Clamp((GetWorld()->GetTimeSeconds()-BowDrawStartedAt)/.65f,0.f,1.f):0.f;
+}
+float ASoraCharacter::StrikeWindupProgress() const
+{
+    if(!bCommittedStrike||!GetWorld()||CommittedWeaponId==INDEX_NONE) return 0.f;
+    const auto Form=CommittedWeaponId==19?SoraHistoricalArms::EForm::Yari:
+        CommittedWeaponId==20?SoraHistoricalArms::EForm::Naginata:SoraHistoricalArms::EForm::Katana;
+    const float Windup=SoraHistoricalArms::Profile(Form).WindupSeconds;
+    return FMath::Clamp(1.f-(CommittedStrikeAt-GetWorld()->GetTimeSeconds())/Windup,0.f,1.f);
 }
 void ASoraCharacter::Tick(float Dt)
 {
@@ -307,12 +386,16 @@ void ASoraCharacter::Tick(float Dt)
             }
         }
     }
-    if(bReloading&&GetWorld()->GetTimeSeconds()>=ReloadEnd) { Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine; bReloading=false; }
+    const float Now=GetWorld()->GetTimeSeconds();
+    if(bCommittedStrike&&Now>=CommittedStrikeAt) ResolveCommittedStrike();
+    if(bHistoricalRecovery&&Now>=NextShot) bHistoricalRecovery=false;
+    if(bReloading&&Now>=ReloadEnd) { Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine; bReloading=false; }
     if(bFireHeld) Fire();
-    GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*(bSprint?1.35f:1.f);
+    GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*
+        (bCommittedStrike?.35f:bHistoricalRecovery?.65f:bBowDrawing?.55f:bSprint?1.35f:1.f);
     const float Moving=FMath::Clamp(GetVelocity().Size2D()/500.f,0.f,1.f);
     WeaponRoot->SetRelativeLocation(FVector(40,18+FMath::Sin(LifeTime*8)*Moving*.7,-18+FMath::Cos(LifeTime*16)*Moving*.6));
-    WeaponRoot->SetRelativeRotation(FRotator(bReloading?-30.f:0.f,0,bSprint?-15.f:0.f));
+    WeaponRoot->SetRelativeRotation(FRotator(bReloading?-30.f:bCommittedStrike?25.f:bBowDrawing?-15.f:0.f,0,bSprint?-15.f:0.f));
 }
 void ASoraCharacter::Forward(float V) { if(bKernelDriven) { InputForward=V; return; } if(CanPlay()) AddMovementInput(GetActorForwardVector(),V); }
 void ASoraCharacter::Strafe(float V) { if(bKernelDriven) { InputRight=V; return; } if(CanPlay()) AddMovementInput(GetActorRightVector(),V); }
@@ -332,11 +415,19 @@ void ASoraCharacter::FireDown()
     // into resumed combat if it was first pressed outside gameplay.
     if(!CanPlay()) return;
     if(bKernelDriven) { KernelHeldButtons|=1; return; }
+    const auto& W=FSoraCatalog::Get().Weapon(WeaponId);
+    if(W.Kind==TEXT("bow"))
+    {
+        if(!bBowDrawing&&!bReloading&&!bSprint&&Ammo>0&&GetWorld()->GetTimeSeconds()>=NextShot)
+        { bBowDrawing=true; BowDrawStartedAt=GetWorld()->GetTimeSeconds(); }
+        return;
+    }
+    if(!bDojoTraining&&(WeaponId==0||WeaponId==19||WeaponId==20)) { Fire(); return; }
     bFireHeld=true; Fire();
 }
-void ASoraCharacter::FireUp() { bFireHeld=false; KernelHeldButtons&=~1u; }
-void ASoraCharacter::SprintDown() { if(CanPlay()) bSprint=true; } void ASoraCharacter::SprintUp() { bSprint=false; }
-void ASoraCharacter::JumpDown() { if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; } if(CanPlay()) Jump(); }
+void ASoraCharacter::FireUp() { bFireHeld=false; KernelHeldButtons&=~1u; if(bBowDrawing) ReleaseBow(); }
+void ASoraCharacter::SprintDown() { if(CanPlay()&&!bCommittedStrike&&!bBowDrawing) bSprint=true; } void ASoraCharacter::SprintUp() { bSprint=false; }
+void ASoraCharacter::JumpDown() { if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; } if(CanPlay()&&!bCommittedStrike&&!bBowDrawing) Jump(); }
 void ASoraCharacter::JumpUp() { StopJumping(); }
 void ASoraCharacter::Beam(UWorld* World,FVector A,FVector B,FLinearColor Color,float Radius,float Life)
 {
@@ -347,9 +438,10 @@ void ASoraCharacter::Beam(UWorld* World,FVector A,FVector B,FLinearColor Color,f
 void ASoraCharacter::Fire()
 {
     if(bKernelDriven) return;
-    if(!CanPlay()||bReloading||bSprint||GetWorld()->GetTimeSeconds()<NextShot) return;
+    if(!CanPlay()||bReloading||bSprint||bBowDrawing||bCommittedStrike||GetWorld()->GetTimeSeconds()<NextShot) return;
     const auto& W=FSoraCatalog::Get().Weapon(WeaponId);
     if(W.Kind==TEXT("melee")) { Melee(); return; }
+    if(W.Kind==TEXT("bow")) return;
     if(Ammo<=0) { Reload(); return; }
     --Ammo; NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
     const FVector Start=Camera->GetComponentLocation(); const FVector Dir=Camera->GetForwardVector();
@@ -376,9 +468,22 @@ void ASoraCharacter::Fire()
 void ASoraCharacter::Melee()
 {
     if(bKernelDriven) { if(CanPlay()) KernelHeldButtons|=2; return; }
-    if(!CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading) return;
+    if(!CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading||bCommittedStrike||bBowDrawing) return;
     const int32 MeleeId=FSoraCatalog::Get().Weapon(WeaponId).Kind==TEXT("melee")?WeaponId:FSoraCatalog::Get().Class(ClassId).Weapons[0];
-    const auto& W=FSoraCatalog::Get().Weapon(MeleeId); NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
+    const auto& W=FSoraCatalog::Get().Weapon(MeleeId);
+    if(!bDojoTraining&&(MeleeId==0||MeleeId==19||MeleeId==20))
+    {
+        const auto Form=MeleeId==19?SoraHistoricalArms::EForm::Yari:
+            MeleeId==20?SoraHistoricalArms::EForm::Naginata:SoraHistoricalArms::EForm::Katana;
+        const auto Profile=SoraHistoricalArms::Profile(Form);
+        const float Now=GetWorld()->GetTimeSeconds();
+        bCommittedStrike=true; bHistoricalRecovery=true; bSprint=false;
+        CommittedWeaponId=MeleeId; CommittedDirection=Camera->GetForwardVector();
+        CommittedStrikeAt=Now+Profile.WindupSeconds;
+        NextShot=CommittedStrikeAt+Profile.RecoverySeconds;
+        return;
+    }
+    NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
     if(bDojoTraining)
     {
         if(const auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)))
@@ -405,6 +510,68 @@ void ASoraCharacter::Melee()
         if(Applied>0&&Cast<ASoraCharacter>(H.GetActor())) HitMarkerTime=.18f;
     }
     Beam(GetWorld(),Start+Dir*50-Camera->GetRightVector()*40,Start+Dir*125+Camera->GetRightVector()*55,FLinearColor(.55,.9,1),2.5,.12);
+}
+void ASoraCharacter::ResolveCommittedStrike()
+{
+    bCommittedStrike=false;
+    if(!CanPlay()||CommittedWeaponId==INDEX_NONE) return;
+    const int32 StrikeWeapon=CommittedWeaponId;
+    CommittedWeaponId=INDEX_NONE;
+    const auto Form=StrikeWeapon==19?SoraHistoricalArms::EForm::Yari:
+        StrikeWeapon==20?SoraHistoricalArms::EForm::Naginata:SoraHistoricalArms::EForm::Katana;
+    const auto Profile=SoraHistoricalArms::Profile(Form);
+    // The attack direction is fixed at commitment. A turn cannot turn a
+    // threatened cut into an instantaneous hit behind the defender.
+    if(FVector::DotProduct(Camera->GetForwardVector(),CommittedDirection)<.70f) return;
+    const FVector Start=Camera->GetComponentLocation();
+    const FVector End=Start+CommittedDirection*Profile.MaximumDistanceCm;
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(HistoricalMelee),false,this);
+    TArray<FHitResult> Hits;
+    GetWorld()->SweepMultiByChannel(Hits,Start,End,FQuat::Identity,ECC_Pawn,
+        FCollisionShape::MakeSphere(StrikeWeapon==19?16.f:36.f),Params);
+    AActor* TargetActor=nullptr;
+    FHitResult TargetHit;
+    float BestDistance=MAX_flt;
+    for(const FHitResult& Hit:Hits)
+    {
+        AActor* Candidate=Hit.GetActor();
+        if(!Candidate||Candidate==this) continue;
+        const FVector Delta=Candidate->GetActorLocation()-GetActorLocation();
+        const float Distance=Delta.Size2D();
+        const float Facing=FVector::DotProduct(CommittedDirection.GetSafeNormal2D(),Delta.GetSafeNormal2D());
+        if(!SoraHistoricalArms::CanStrike(Form,Distance,Facing)||Distance>=BestDistance) continue;
+        FHitResult Visibility;
+        GetWorld()->LineTraceSingleByChannel(Visibility,Start,Hit.ImpactPoint,ECC_Visibility,Params);
+        if(Visibility.bBlockingHit&&Visibility.GetActor()!=Candidate) continue;
+        BestDistance=Distance; TargetActor=Candidate; TargetHit=Hit;
+    }
+    // One intentional contact, followed by recovery, instead of a full-body
+    multi-hit spin. Yari remains a narrow thrust; naginata has a wider cut.
+    if(TargetActor)
+    {
+        const float Applied=UGameplayStatics::ApplyPointDamage(TargetActor,
+            FSoraCatalog::Get().Weapon(StrikeWeapon).Damage,CommittedDirection,TargetHit,
+            GetController(),this,UDamageType::StaticClass());
+        if(Applied>0&&Cast<ASoraCharacter>(TargetActor)) HitMarkerTime=.18f;
+    }
+    Beam(GetWorld(),Start+CommittedDirection*40.f,End,
+        StrikeWeapon==19?FLinearColor(.73f,.78f,.82f):FLinearColor(.55f,.75f,.82f),1.4f,.11f);
+}
+void ASoraCharacter::ReleaseBow()
+{
+    bBowDrawing=false;
+    if(!CanPlay()||WeaponId!=18||bReloading||bSprint||Ammo<=0||
+        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<.65f) return;
+    const auto& W=FSoraCatalog::Get().Weapon(18);
+    const FVector Direction=Camera->GetForwardVector();
+    const FVector Origin=Camera->GetComponentLocation()+Direction*65.f;
+    FActorSpawnParameters Params; Params.Owner=this; Params.Instigator=this;
+    auto* Arrow=GetWorld()->SpawnActorDeferred<ASoraProjectile>(ASoraProjectile::StaticClass(),
+        FTransform(Direction.Rotation(),Origin),this,this,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+    if(!Arrow) return;
+    Arrow->bArrow=true; Arrow->Damage=W.Damage; Arrow->Velocity=Direction*W.ProjectileSpeed;
+    UGameplayStatics::FinishSpawningActor(Arrow,Arrow->GetActorTransform());
+    --Ammo; NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
 }
 void ASoraCharacter::Reload()
 {
@@ -658,11 +825,33 @@ void ASoraCharacter::ChooseClass(int32 Id) { if(auto* G=Cast<ASoraGameMode>(UGam
 void ASoraCharacter::Equip(int32 Slot)
 {
     if(bKernelDriven) { if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->SelectPracticeWeapon(Slot); return; }
-    if(!CanPlay()||bReloading||(bDojoTraining&&Slot!=0)) return;
+    if(!CanPlay()||bReloading||bCommittedStrike||
+        (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
+        (bDojoTraining&&Slot!=0)) return;
+    bBowDrawing=false; bFireHeld=false;
     AmmoByWeapon[WeaponId]=Ammo; WeaponId=FSoraCatalog::Get().Class(ClassId).Weapons[Slot];
     Ammo=AmmoByWeapon[WeaponId]; NextShot=GetWorld()->GetTimeSeconds()+.25f; BuildWeapon();
 }
 void ASoraCharacter::WeaponOne(){Equip(1);} void ASoraCharacter::WeaponTwo(){Equip(0);} void ASoraCharacter::WeaponThree(){Equip(2);}
+void ASoraCharacter::EquipCampaignWeapon(int32 NewWeaponId)
+{
+    const auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
+    if(!G||!G->bCampaign||G->ChapterId==0||bKernelDriven||bDojoTraining||
+        !CanPlay()||bReloading||bCommittedStrike||
+        (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
+        NewWeaponId<18||NewWeaponId>20||ClassId!=0) return;
+    bBowDrawing=false; bFireHeld=false;
+    AmmoByWeapon[WeaponId]=Ammo;
+    WeaponId=NewWeaponId; Ammo=AmmoByWeapon[WeaponId];
+    NextShot=GetWorld()->GetTimeSeconds()+.25f; BuildWeapon();
+}
+void ASoraCharacter::WeaponFour(){EquipCampaignWeapon(18);}
+void ASoraCharacter::WeaponFive(){EquipCampaignWeapon(19);}
+void ASoraCharacter::WeaponSix(){EquipCampaignWeapon(20);}
+void ASoraCharacter::CampaignWeaponNext()
+{
+    EquipCampaignWeapon(WeaponId>=18&&WeaponId<20?WeaponId+1:18);
+}
 void ASoraCharacter::ClassOne(){ChooseClass(0);} void ASoraCharacter::ClassTwo(){ChooseClass(1);} void ASoraCharacter::ClassThree(){ChooseClass(2);}
 void ASoraCharacter::ClassFour(){ChooseClass(3);} void ASoraCharacter::ClassFive(){ChooseClass(4);} void ASoraCharacter::ClassSix(){ChooseClass(5);}
 void ASoraCharacter::ClassPrevious()
@@ -703,7 +892,8 @@ bool ASoraCharacter::ApplyCombatActionMapping(FName ActionName,FKey NewKey,bool 
     // Never permit wallet, menu, or campaign commands to be rebound by combat UI.
     static const TSet<FName> Allowed={
         TEXT("Fire"),TEXT("Melee"),TEXT("Jump"),TEXT("Sprint"),TEXT("Reload"),TEXT("Interact"),
-        TEXT("Block"),TEXT("Ability"),TEXT("WeaponOne"),TEXT("WeaponTwo"),TEXT("WeaponThree")};
+        TEXT("Block"),TEXT("Ability"),TEXT("WeaponOne"),TEXT("WeaponTwo"),TEXT("WeaponThree"),
+        TEXT("WeaponFour"),TEXT("WeaponFive"),TEXT("WeaponSix"),TEXT("CampaignWeaponNext")};
     const auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
     auto* PC=Cast<APlayerController>(GetController());
     if((bRequireMenu&&(!G||!G->bMenu))||!Allowed.Contains(ActionName)||!NewKey.IsValid()||!NewKey.IsBindableToActions()||!PC||!PC->PlayerInput) return false;
@@ -783,9 +973,9 @@ void ASoraCharacter::LoadControlProfile()
     SetInvertedLook(ControlProfile->InvertedLook);
     const TArray<FSoraControlBinding> StoredBindings=ControlProfile->Bindings;
     ControlProfile->Bindings.Reset();
-    // Eleven approved combat actions can each have one keyboard, mouse, and pad key.
+    // Fifteen approved combat actions can each have one keyboard, mouse, and pad key.
     // A malformed local save cannot replay an unbounded series of key-map edits.
-    if(StoredBindings.Num()<=33) for(const FSoraControlBinding& Binding:StoredBindings)
+    if(StoredBindings.Num()<=45) for(const FSoraControlBinding& Binding:StoredBindings)
     {
         if(ApplyCombatActionMapping(Binding.ActionName,Binding.Key,false))
             ControlProfile->Bindings.Add(Binding);
@@ -819,6 +1009,8 @@ void ASoraCharacter::SetupPlayerInputComponent(UInputComponent* I)
     I->BindAction(TEXT("Subtitles"),IE_Pressed,this,&ASoraCharacter::Subtitles);
     I->BindAction(TEXT("PairWallet"),IE_Pressed,this,&ASoraCharacter::PairWallet); I->BindAction(TEXT("OpenWallet"),IE_Pressed,this,&ASoraCharacter::OpenWallet); I->BindAction(TEXT("DisconnectWallet"),IE_Pressed,this,&ASoraCharacter::DisconnectWallet);
     I->BindAction(TEXT("WeaponOne"),IE_Pressed,this,&ASoraCharacter::WeaponOne); I->BindAction(TEXT("WeaponTwo"),IE_Pressed,this,&ASoraCharacter::WeaponTwo); I->BindAction(TEXT("WeaponThree"),IE_Pressed,this,&ASoraCharacter::WeaponThree);
+    I->BindAction(TEXT("WeaponFour"),IE_Pressed,this,&ASoraCharacter::WeaponFour); I->BindAction(TEXT("WeaponFive"),IE_Pressed,this,&ASoraCharacter::WeaponFive); I->BindAction(TEXT("WeaponSix"),IE_Pressed,this,&ASoraCharacter::WeaponSix);
+    I->BindAction(TEXT("CampaignWeaponNext"),IE_Pressed,this,&ASoraCharacter::CampaignWeaponNext);
     I->BindAction(TEXT("ClassOne"),IE_Pressed,this,&ASoraCharacter::ClassOne); I->BindAction(TEXT("ClassTwo"),IE_Pressed,this,&ASoraCharacter::ClassTwo); I->BindAction(TEXT("ClassThree"),IE_Pressed,this,&ASoraCharacter::ClassThree);
     I->BindAction(TEXT("ClassFour"),IE_Pressed,this,&ASoraCharacter::ClassFour); I->BindAction(TEXT("ClassFive"),IE_Pressed,this,&ASoraCharacter::ClassFive); I->BindAction(TEXT("ClassSix"),IE_Pressed,this,&ASoraCharacter::ClassSix);
     I->BindAction(TEXT("ClassPrevious"),IE_Pressed,this,&ASoraCharacter::ClassPrevious); I->BindAction(TEXT("ClassNext"),IE_Pressed,this,&ASoraCharacter::ClassNext);

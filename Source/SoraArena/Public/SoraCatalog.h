@@ -6,6 +6,7 @@ struct FSoraWeapon
     int32 Id = 0;
     int32 ClassId = 0;
     FString Name;
+    FString NameEnglish;
     FString Kind;
     FString Tradeoff;
     float Damage = 25.f;
@@ -30,6 +31,14 @@ struct FSoraDialogueSpeaker
 {
     FString Japanese;
     FString English;
+};
+struct FSoraHero
+{
+    FString NameJapanese;
+    FString NameEnglish;
+    int32 KatanaId = 0;
+    int32 YumiId = 18;
+    int32 QuiverArrows = 12;
 };
 struct FSoraDialogueCue
 {
@@ -76,13 +85,16 @@ public:
     const FSoraClass& Class(int32 Id) const;
     const FSoraChapter& Chapter(int32 Id) const;
     const FSoraDialogueSpeaker* DialogueSpeaker(const FString& Id) const;
+    const FSoraHero& Hero() const { check(bReady); return HeroData; }
     const FSoraMap& Map(int32 Id) const;
     bool IsReady() const { return bReady; }
     FString Error;
     TArray<FSoraWeapon> Weapons;
+    TArray<FSoraWeapon> CampaignWeapons;
     TArray<FSoraClass> Classes;
     TArray<FSoraChapter> Chapters;
     TMap<FString, FSoraDialogueSpeaker> DialogueSpeakers;
+    FSoraHero HeroData;
     TArray<FSoraMap> Maps;
 private:
     bool bReady = false;

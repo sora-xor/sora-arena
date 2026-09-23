@@ -95,10 +95,11 @@ void ASoraGameMode::ResetRound()
         Player->GetCharacterMovement()->StopMovementImmediately();
         Player->SetActorLocation(WorldBuilder->PlayerStart(),false,nullptr,ETeleportType::TeleportPhysics);
         Player->SetActorRotation(FRotator::ZeroRotator); if(Player->GetController()) Player->GetController()->SetControlRotation(FRotator::ZeroRotator);
-        // The campaign follows one Nyaagyu samurai. The six-class selection is
-        // for arena practice and does not rewrite the story protagonist.
+        // The campaign follows Nyaakoto. The six-class selection is for Arena
+        // practice and cannot rewrite the offline protagonist's loadout.
         Player->ApplyClass(bCampaign?0:SelectedClass);
         Player->SetDojoTraining(bCampaign&&ChapterId==0);
+        Player->SetCampaignHeroLoadout(bCampaign&&ChapterId>0);
     }
     if(!bChapterComplete) for(int32 I=0;I<FMath::Min(4,KillsNeeded-Kills);++I) SpawnEnemy();
     const bool bResumed=bRestoredVictory||(bHasCheckpoint&&(Kills>0||WorldBuilder->ActiveNodes()>0||bChapterComplete||DojoLessonMask!=0u));

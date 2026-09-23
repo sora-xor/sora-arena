@@ -14,6 +14,7 @@ public:
     FVector Velocity = FVector::ZeroVector;
     float Damage = 55.f;
     float Radius = 320.f;
+    bool bArrow = false;
 private:
     UPROPERTY() TObjectPtr<USphereComponent> Collision;
     float Age = 0.f;

@@ -14,6 +14,9 @@ assert catalog["default_language"] == "ja" and catalog["english_subtitles_defaul
 speakers = catalog["dialogue_speakers"]
 speaker_ids = {speaker["id"] for speaker in speakers}
 assert len(speakers) >= 2 and len(speaker_ids) == len(speakers)
+assert catalog["hero"] == {"name_ja": "ニャーコト", "name_en": "Nyaakoto",
+                            "katana_id": 0, "yumi_id": 18, "quiver_arrows": 12}
+assert next(speaker for speaker in speakers if speaker["id"] == "samurai")["ja"] == catalog["hero"]["name_ja"]
 for speaker in speakers:
     assert re.fullmatch(r"[a-z][a-z0-9_]*", speaker["id"])
     assert re.search(r"[\u3040-\u9fff]", speaker["ja"])
@@ -28,6 +31,13 @@ validate_source()
 assert META.read_bytes() == expected_meta()
 assert RESOURCE.read_bytes() == expected_resource()
 assert len(catalog["classes"]) == 6 and len(catalog["weapons"]) == 18
+assert [arm["id"] for arm in catalog["campaign_weapons"]] == [18, 19, 20]
+assert [(arm["name_en"], arm["kind"]) for arm in catalog["campaign_weapons"]] == [
+    ("Yumi", "bow"), ("Yari", "melee"), ("Naginata", "melee")]
+assert all(arm["class"] == 0 and arm["special"] is False and arm["blast_radius"] == 0
+           for arm in catalog["campaign_weapons"])
+assert catalog["campaign_weapons"][0]["projectile_speed"] > 0
+assert all(arm["projectile_speed"] == 0 for arm in catalog["campaign_weapons"][1:])
 assert len(catalog["chapters"]) == 8 and len(catalog["maps"]) == 4
 assert [w["id"] for w in catalog["weapons"]] == list(range(18))
 assert [c["id"] for c in catalog["classes"]] == list(range(6))

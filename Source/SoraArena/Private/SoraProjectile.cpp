@@ -17,13 +17,34 @@ ASoraProjectile::ASoraProjectile()
 void ASoraProjectile::BeginPlay()
 {
     Super::BeginPlay(); Collision->IgnoreActorWhenMoving(GetOwner(),true);
-    ASoraWorldBuilder::Shape(this,RootComponent,TEXT("Shell"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector::ZeroVector,FVector(.18),FLinearColor(1,.32,.04));
+    if(bArrow) Collision->SetSphereRadius(2.f);
+    if(bArrow)
+    {
+        ASoraWorldBuilder::Shape(this,RootComponent,TEXT("ArrowShaft"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
+            FVector(-21,0,0),FVector(.012f,.012f,.52f),FLinearColor(.45f,.23f,.07f))->SetRelativeRotation(FRotator(90,0,0));
+        ASoraWorldBuilder::Shape(this,RootComponent,TEXT("ArrowHead"),TEXT("/Engine/BasicShapes/Cone.Cone"),
+            FVector(10,0,0),FVector(.055f,.055f,.11f),FLinearColor(.66f,.70f,.74f))->SetRelativeRotation(FRotator(90,0,0));
+    }
+    else
+        ASoraWorldBuilder::Shape(this,RootComponent,TEXT("Shell"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector::ZeroVector,FVector(.18),FLinearColor(1,.32,.04));
 }
 void ASoraProjectile::Tick(float Dt)
 {
-    Super::Tick(Dt); Age+=Dt; Velocity.Z-=420.f*Dt;
+    Super::Tick(Dt); Age+=Dt; Velocity.Z-=(bArrow?980.f:420.f)*Dt;
+    if(bArrow) SetActorRotation(Velocity.Rotation());
     FHitResult Hit; AddActorWorldOffset(Velocity*Dt,true,&Hit);
-    if(Hit.bBlockingHit||Age>4.f) Detonate();
+    if(bArrow)
+    {
+        if(Hit.bBlockingHit)
+        {
+            if(Hit.GetActor()&&Hit.GetActor()!=GetOwner())
+                UGameplayStatics::ApplyPointDamage(Hit.GetActor(),Damage,Velocity.GetSafeNormal(),Hit,
+                    GetInstigatorController(),this,UDamageType::StaticClass());
+            Destroy();
+        }
+        else if(Age>2.f) Destroy();
+    }
+    else if(Hit.bBlockingHit||Age>4.f) Detonate();
 }
 void ASoraProjectile::Detonate()
 {

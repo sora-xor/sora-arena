@@ -16,7 +16,7 @@ bool FSoraCatalog::Load()
     double SchemaVersion = 0;
     if (!Root->TryGetNumberField(TEXT("schema_version"), SchemaVersion) || SchemaVersion != 3)
     { Error = TEXT("Unsupported offline catalog schema"); return false; }
-    Weapons.Reset(); Classes.Reset(); Chapters.Reset(); Maps.Reset(); DialogueSpeakers.Reset();
+    Weapons.Reset(); CampaignWeapons.Reset(); Classes.Reset(); Chapters.Reset(); Maps.Reset(); DialogueSpeakers.Reset();
     const TArray<TSharedPtr<FJsonValue>>* Rows = nullptr;
     if (!Root->TryGetArrayField(TEXT("dialogue_speakers"), Rows)) { Error = TEXT("Catalog lacks dialogue speakers"); return false; }
     for (const auto& Row : *Rows)
@@ -30,6 +30,19 @@ bool FSoraCatalog::Load()
         DialogueSpeakers.Add(Id, MoveTemp(Speaker));
     }
     if (DialogueSpeakers.IsEmpty()) { Error = TEXT("Catalog lacks dialogue speakers"); return false; }
+    const FSoraDialogueSpeaker* HeroSpeaker = DialogueSpeakers.Find(TEXT("samurai"));
+    const TSharedPtr<FJsonObject>* HeroObject = nullptr;
+    if (!HeroSpeaker || !Root->TryGetObjectField(TEXT("hero"), HeroObject) || !HeroObject || !HeroObject->IsValid() ||
+        !(*HeroObject)->TryGetStringField(TEXT("name_ja"), HeroData.NameJapanese) ||
+        !(*HeroObject)->TryGetStringField(TEXT("name_en"), HeroData.NameEnglish) ||
+        !(*HeroObject)->TryGetNumberField(TEXT("katana_id"), HeroData.KatanaId) ||
+        !(*HeroObject)->TryGetNumberField(TEXT("yumi_id"), HeroData.YumiId) ||
+        !(*HeroObject)->TryGetNumberField(TEXT("quiver_arrows"), HeroData.QuiverArrows) ||
+        HeroData.NameJapanese.IsEmpty() || HeroData.NameEnglish.IsEmpty() ||
+        HeroData.KatanaId != 0 || HeroData.YumiId != 18 || HeroData.QuiverArrows != 12 ||
+        HeroSpeaker->Japanese != HeroData.NameJapanese ||
+        HeroSpeaker->English != HeroData.NameEnglish)
+    { Error = TEXT("Invalid Nyaakoto hero identity or initial arms"); return false; }
     if (!Root->TryGetArrayField(TEXT("weapons"), Rows)) { Error = TEXT("Catalog lacks weapons"); return false; }
     for (const auto& Row : *Rows)
     {
@@ -43,6 +56,31 @@ bool FSoraCatalog::Load()
         W.ProjectileSpeed = O->GetNumberField(TEXT("projectile_speed")); W.Special = O->GetBoolField(TEXT("special"));
         if (W.Id != Weapons.Num() || W.ClassId < 0 || W.ClassId >= 6 || W.Cooldown <= 0 || W.Magazine < 1 || W.Damage <= 0) { Error = TEXT("Invalid weapon catalog"); return false; }
         Weapons.Add(W);
+    }
+    // These three arms exist only in the offline campaign. Arena admission and
+    // its compiled 18-weapon rules profile cannot select their IDs.
+    if (!Root->TryGetArrayField(TEXT("campaign_weapons"), Rows) || Rows->Num() != 3)
+    { Error = TEXT("Catalog needs three campaign-only historical arms"); return false; }
+    static const TCHAR* HistoricalKinds[] = { TEXT("bow"), TEXT("melee"), TEXT("melee") };
+    for (const auto& Row : *Rows)
+    {
+        const auto O = Row->AsObject(); if (!O.IsValid()) return false;
+        FSoraWeapon W;
+        if (!O->TryGetStringField(TEXT("name"), W.Name) || !O->TryGetStringField(TEXT("name_en"), W.NameEnglish) ||
+            !O->TryGetStringField(TEXT("kind"), W.Kind) || !O->TryGetStringField(TEXT("tradeoff"), W.Tradeoff)) return false;
+        W.Id = O->GetIntegerField(TEXT("id")); W.ClassId = O->GetIntegerField(TEXT("class"));
+        W.Damage = O->GetNumberField(TEXT("damage")); W.Cooldown = O->GetNumberField(TEXT("cooldown"));
+        W.Range = O->GetNumberField(TEXT("range")); W.Reload = O->GetNumberField(TEXT("reload"));
+        W.Magazine = O->GetIntegerField(TEXT("magazine")); W.BlastRadius = O->GetNumberField(TEXT("blast_radius"));
+        W.ProjectileSpeed = O->GetNumberField(TEXT("projectile_speed")); W.Special = O->GetBoolField(TEXT("special"));
+        const int32 Index = CampaignWeapons.Num();
+        if (W.Id != 18 + Index || W.ClassId != 0 || W.Kind != HistoricalKinds[Index] ||
+            W.Name.IsEmpty() || W.NameEnglish.IsEmpty() || W.Tradeoff.IsEmpty() || W.Special ||
+            W.Damage <= 0 || W.Cooldown <= 0 || W.Range <= 0 || W.Reload <= 0 || W.Magazine < 1 ||
+            W.BlastRadius != 0 || (Index == 0 && W.ProjectileSpeed <= 0) ||
+            (Index > 0 && W.ProjectileSpeed != 0))
+        { Error = TEXT("Invalid campaign-only arm"); return false; }
+        CampaignWeapons.Add(MoveTemp(W));
     }
     if (!Root->TryGetArrayField(TEXT("classes"), Rows)) return false;
     for (const auto& Row : *Rows)
@@ -129,12 +167,18 @@ bool FSoraCatalog::Load()
         if (A.Num() != 3) return false;
         M.Accent = FLinearColor(A[0]->AsNumber(), A[1]->AsNumber(), A[2]->AsNumber()); Maps.Add(M);
     }
-    bReady = Weapons.Num() == 18 && Classes.Num() == 6 && Chapters.Num() == 8 && Maps.Num() == 4;
+    bReady = Weapons.Num() == 18 && CampaignWeapons.Num() == 3 && Classes.Num() == 6 && Chapters.Num() == 8 && Maps.Num() == 4;
     for (const auto& C : Chapters) bReady &= Maps.IsValidIndex(C.Map) && C.Kills > 0;
     if (!bReady) Error = TEXT("Catalog must contain 6 classes, 18 weapons, 8 chapters, and 4 maps");
     return bReady;
 }
-const FSoraWeapon& FSoraCatalog::Weapon(int32 Id) const { check(bReady); return Weapons[FMath::Clamp(Id,0,Weapons.Num()-1)]; }
+const FSoraWeapon& FSoraCatalog::Weapon(int32 Id) const
+{
+    check(bReady);
+    if (Id >= 18 && Id < 18 + CampaignWeapons.Num()) return CampaignWeapons[Id - 18];
+    check(Weapons.IsValidIndex(Id));
+    return Weapons[Id];
+}
 const FSoraClass& FSoraCatalog::Class(int32 Id) const { check(bReady); return Classes[FMath::Clamp(Id,0,Classes.Num()-1)]; }
 const FSoraChapter& FSoraCatalog::Chapter(int32 Id) const { check(bReady); return Chapters[FMath::Clamp(Id,0,Chapters.Num()-1)]; }
 const FSoraDialogueSpeaker* FSoraCatalog::DialogueSpeaker(const FString& Id) const { return DialogueSpeakers.Find(Id); }

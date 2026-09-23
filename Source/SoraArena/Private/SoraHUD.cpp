@@ -103,9 +103,9 @@ void ASoraHUD::DrawHUD()
         Label(G->bCampaignComplete&&G->bCampaign?TEXT("物語は完結した。N はじめから   P 武芸稽古   M マップ変更"):TEXT("ENTER 続ける   B 保存した物語へ   N はじめから   P 武芸稽古   M マップ変更"),L,397*S,.52*S,Ivory);
         if(G->bCampaign)
         {
-            Label(TEXT("主人公  /  猫柳生の侍"),L,465*S,.65*S,Gold);
+            Label(TEXT("主人公  /  ニャーコト"),L,465*S,.65*S,Gold);
             Label(TEXT("猫柳生新陰流の剣を学び、生産を奪われた民とともに戦う。"),L,518*S,.55*S,Ivory);
-            if(G->bEnglishSubtitles) Label(TEXT("A Nyaagyu samurai fights beside the people who restore production."),L,554*S,EnglishSubtitleScale,Muted);
+            if(G->bEnglishSubtitles) Label(TEXT("Nyaakoto fights beside the people who restore production."),L,554*S,EnglishSubtitleScale,Muted);
             Label(TEXT("六つの対戦流儀は P 武芸稽古で試せます。"),L,610*S,.46*S,Teal);
         }
         else
@@ -131,7 +131,11 @@ void ASoraHUD::DrawHUD()
         else
         {
             Label(TEXT("WASD 移動   マウス 照準   左クリック 射撃   右クリック 斬撃   Ctrl 防御   Shift 疾走   Space 跳躍"),L,725*S,.49*S,Ivory);
-            Label(TEXT("1 主武器   2 近接武器   3 特殊武器の試用   R 装填   E 調べる   Esc メニュー   F10 英語字幕"),L,763*S,.55*S,Ivory);
+            Label(G->bCampaign&&G->ChapterId>0?
+                TEXT("1 銃   2 刀   3 特殊   4 和弓   5 槍   6 薙刀   R 装填   E 調べる   F10 英語字幕"):
+                TEXT("1 主武器   2 近接武器   3 特殊武器の試用   R 装填   E 調べる   Esc メニュー   F10 英語字幕"),L,763*S,.55*S,Ivory);
+            if(G->bCampaign&&G->ChapterId>0&&G->bEnglishSubtitles)
+                Label(TEXT("Campaign: 4 yumi, 5 yari, 6 naginata. Hold and release to draw the yumi."),L,787*S,.43*S,Muted);
         }
         Label(TEXT("IROHA CONNECT  /  C 接続を開始   L ウォレットを開く   X 接続を解除"),L,815*S,.52*S,Gold);
         if(const UArenaWalletSubsystem* Wallet=MenuWallet)
@@ -280,7 +284,22 @@ void ASoraHUD::DrawHUD()
                 if(G->bPracticeSlowed) Label(TEXT("処理負荷により、稽古時間を減速しています"),30*S,200*S,.4*S,Gold);
             }
         }
-        else Label(P->bReloading?TEXT("装填中"):Weapon.Kind==TEXT("melee")?TEXT("剣術 / 右クリック"):FString::Printf(TEXT("%02d / %02d   R 装填"),P->Ammo,Weapon.Magazine),W-365*S,H-59*S,.54*S,Gold);
+        else
+        {
+            Label(P->bReloading?TEXT("装填中"):Weapon.Kind==TEXT("melee")?TEXT("間合い / 斬突と残心"):
+                Weapon.Kind==TEXT("bow")?FString::Printf(TEXT("矢 %02d / %02d   長押し→離して射る"),P->Ammo,Weapon.Magazine):
+                FString::Printf(TEXT("%02d / %02d   R 装填"),P->Ammo,Weapon.Magazine),W-365*S,H-59*S,.54*S,Gold);
+            if(P->IsBowDrawing()||P->IsCommittedStrike())
+            {
+                const bool bDraw=P->IsBowDrawing();
+                const float Progress=bDraw?P->BowDrawProgress():P->StrikeWindupProgress();
+                Panel(W-390*S,H-145*S,365*S,29*S,FLinearColor(.015,.035,.05,.92));
+                Label(bDraw?TEXT("会 / 引き分け"):TEXT("打突の構え"),W-365*S,H-142*S,.37*S,Gold);
+                if(G->bEnglishSubtitles) Label(bDraw?TEXT("DRAW / RELEASE"):TEXT("COMMITTED STRIKE"),W-160*S,H-141*S,.28*S,Muted);
+                Panel(W-365*S,H-122*S,320*S,4*S,FLinearColor(.12,.19,.21));
+                Panel(W-365*S,H-122*S,320*S*Progress,4*S,Gold);
+            }
+        }
         if(G->Arena()&&!G->bDeterministicPractice)
         {
             for(int32 I=0;I<G->Arena()->NodePositions.Num();++I)

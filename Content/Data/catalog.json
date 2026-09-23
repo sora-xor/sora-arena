@@ -3,12 +3,19 @@
   "rules_scope": "Unreal offline prototype only; not a proof-qualified multiplayer ruleset.",
   "dialogue_speakers": [
     { "id": "mentor", "ja": "師範", "en": "Master" },
-    { "id": "samurai", "ja": "猫柳生の侍", "en": "Nyaagyu Samurai" },
+    { "id": "samurai", "ja": "ニャーコト", "en": "Nyaakoto" },
     { "id": "scout", "ja": "斥候", "en": "Scout" },
     { "id": "farmer", "ja": "農家", "en": "Farmer" },
     { "id": "artisan", "ja": "職人", "en": "Artisan" },
     { "id": "banker", "ja": "異星の徴収官", "en": "Alien Collector" }
   ],
+  "hero": {
+    "name_ja": "ニャーコト",
+    "name_en": "Nyaakoto",
+    "katana_id": 0,
+    "yumi_id": 18,
+    "quiver_arrows": 12
+  },
   "classes": [
     {
       "id": 0,
@@ -102,14 +109,14 @@
       "class": 0,
       "kind": "melee",
       "damage": 52,
-      "cooldown": 0.65,
+      "cooldown": 0.75,
       "range": 195,
       "reload": 1,
       "magazine": 1,
       "blast_radius": 0,
       "projectile_speed": 0,
       "special": false,
-      "tradeoff": "Fast precise cuts; requires closing distance.",
+      "tradeoff": "Committed cut, deliberate distance and recovery; weak at grappling distance.",
       "name_en": "Katana"
     },
     {
@@ -385,15 +392,65 @@
       "name_en": "Healing Lance"
     }
   ],
+  "campaign_weapons": [
+    {
+      "id": 18,
+      "name": "和弓",
+      "name_en": "Yumi",
+      "class": 0,
+      "kind": "bow",
+      "damage": 52,
+      "cooldown": 1.1,
+      "range": 6000,
+      "reload": 1.35,
+      "magazine": 12,
+      "blast_radius": 0,
+      "projectile_speed": 6500,
+      "special": false,
+      "tradeoff": "Deliberate draw and visible arrow travel; cannot fire while sprinting."
+    },
+    {
+      "id": 19,
+      "name": "槍",
+      "name_en": "Yari",
+      "class": 0,
+      "kind": "melee",
+      "damage": 49,
+      "cooldown": 1.04,
+      "range": 285,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Long forward thrust; weak inside the shaft's useful distance."
+    },
+    {
+      "id": 20,
+      "name": "薙刀",
+      "name_en": "Naginata",
+      "class": 0,
+      "kind": "melee",
+      "damage": 57,
+      "cooldown": 1.24,
+      "range": 260,
+      "reload": 1,
+      "magazine": 1,
+      "blast_radius": 0,
+      "projectile_speed": 0,
+      "special": false,
+      "tradeoff": "Reach and broad committed cut; slower recovery and reduced inside control."
+    }
+  ],
   "chapters": [
     {
       "title": "道場の修行",
       "map": 0,
       "kills": 4,
-      "narrative": "猫柳生（ニャーギュウ）の道場。師は猫柳生新陰流（ニャーギュウシンカゲリュウ）を伝える。「間合いを知り、命を守れ。剣は民のためにある。」",
+      "narrative": "猫柳生（ニャーギュウ）の道場。若き侍ニャーコトは猫柳生新陰流（ニャーギュウシンカゲリュウ）を学ぶ。「間合いを知り、命を守れ。剣は民のためにある。」",
       "objective": "門弟と木刀で立ち合い、道場の鍛冶場を直す",
       "title_en": "Dojo Apprenticeship",
-      "narrative_en": "At the Nyaagyu dojo, your teacher introduces Nyaagyū Shinkage-ryū: protect life, master distance, and act with purpose.",
+      "narrative_en": "At the Nyaagyu dojo, the young samurai Nyaakoto studies Nyaagyū Shinkage-ryū: protect life, master distance, and act with purpose.",
       "objective_en": "Spar with the pupils using wooden swords, then restore the dojo smithy.",
       "sites": [
         {"name":"間合いの稽古場","name_en":"Distance training ground","kind":"training","requires_kills":0,"requires_sites":[],"restored":"師の教えに従い、間合いと守りの型を確かめた。","restored_en":"You practiced distance and defense under your master's guidance."},
