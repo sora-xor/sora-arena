@@ -7,6 +7,7 @@ exact FBX slot identity in ASoraCharacter; the wallet and combat are unaffected.
 from pathlib import Path
 import hashlib
 import json
+import struct
 import unreal
 
 if not unreal.SystemLibrary.get_engine_version().startswith("5.8.2"):
@@ -19,6 +20,21 @@ if (record["schema_version"] != 1
         or record["generator"] != "scripts/art/create_nyaakoto_pbr_textures.py"
         or len(record["material_slots"]) != 23):
     raise RuntimeError("Nyaakoto PBR manifest identity is incomplete")
+hero_source = source.parent
+hero_record = json.loads((hero_source / "manifest.json").read_text())
+eye_maps = hero_record.get("generated_textures", [])
+if (hero_record.get("schema_version") != 2 or len(eye_maps) != 1
+        or eye_maps[0].get("path") != "EyeStudy/T_Nyaakoto_Iris_Albedo.png"
+        or record["material_slots"]["M_Hero_BlueEye"]["tint"] != [1, 1, 1]):
+    raise RuntimeError("Nyaakoto painted iris source or material identity changed")
+iris_path = (hero_source / eye_maps[0]["path"]).resolve()
+if not iris_path.is_relative_to(hero_source.resolve()):
+    raise RuntimeError("Nyaakoto iris source escaped the hero art directory")
+iris_bytes = iris_path.read_bytes()
+if (hashlib.sha256(iris_bytes).hexdigest() != eye_maps[0]["sha256"]
+        or iris_bytes[:16] != b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+        or struct.unpack(">II", iris_bytes[16:24]) != (1024, 1024)):
+    raise RuntimeError("Nyaakoto painted iris differs from its authored source")
 
 tools = unreal.AssetToolsHelpers.get_asset_tools()
 assets = unreal.EditorAssetLibrary
@@ -57,6 +73,22 @@ for material_set in record["maps"]:
         texture.set_editor_property("max_texture_size", material_set["resolution"][0])
         assets.save_loaded_asset(texture)
         textures[name][item["channel"]] = texture
+
+iris_name = "T_Nyaakoto_Iris_Albedo"
+iris_task = unreal.AssetImportTask()
+iris_task.filename = str(iris_path)
+iris_task.destination_path = destination + "/Textures"
+iris_task.destination_name = iris_name
+iris_task.automated = True
+iris_task.replace_existing = True
+iris_task.save = True
+tools.import_asset_tasks([iris_task])
+iris_texture = assets.load_asset(destination + "/Textures/" + iris_name)
+if not isinstance(iris_texture, unreal.Texture2D):
+    raise RuntimeError("Nyaakoto painted iris failed UE import")
+iris_texture.set_editor_property("srgb", True)
+iris_texture.set_editor_property("max_texture_size", 1024)
+assets.save_loaded_asset(iris_texture)
 
 
 def node(material, expression_class, x, y, **properties):
@@ -127,7 +159,8 @@ for slot_name, surface in record["material_slots"].items():
         name, destination, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
     lib.set_material_instance_parent(instance, master)
     for parameter, channel in (("AlbedoMap", "Albedo"), ("NormalMap", "NormalDX"), ("ORMMap", "ORM")):
-        expected = textures[surface["surface"]][channel]
+        expected = (iris_texture if slot_name == "M_Hero_BlueEye" and parameter == "AlbedoMap"
+                    else textures[surface["surface"]][channel])
         lib.set_material_instance_texture_parameter_value(instance, parameter, expected)
         bound = lib.get_material_instance_texture_parameter_value(instance, parameter)
         if not bound or bound.get_path_name() != expected.get_path_name():

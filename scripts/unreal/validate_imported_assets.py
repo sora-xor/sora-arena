@@ -72,11 +72,28 @@ def nyaakoto_pbr_source(source_root):
     require(record.get("schema_version") == 1
             and record.get("generator") == "scripts/art/create_nyaakoto_pbr_textures.py"
             and record.get("source_license") ==
-            "Project-owned procedurally authored maps; no external texture asset"
+            "Project-owned OpenAI image-generation output and procedural PBR conversion; "
+            "no external stock texture. Output ownership is assigned to the user under "
+            "the OpenAI Terms of Use, subject to those terms."
+            and [source.get("surface") for source in record.get("fur_sources", [])] ==
+            ["fur_grey", "fur_white", "fur_charcoal"]
             and [group.get("name") for group in record.get("maps", [])] ==
             ["fur_grey", "fur_white", "fur_charcoal", "silk_indigo", "lacquer_oxblood", "neutral"]
             and len(record.get("material_slots", {})) == 23,
             "The Nyaakoto PBR source identity changed")
+    for source in record["fur_sources"]:
+        fur_name = source["surface"].split("_", 1)[1].capitalize()
+        filename = f"Source/Nyaakoto_{fur_name}Fur_ImageGen_v1.png"
+        path = source_file(art_root, filename)
+        require(source.get("file") == filename
+                and hashlib.sha256(path.read_bytes()).hexdigest() == source.get("sha256")
+                and source.get("origin", "").startswith(
+                    "Built-in OpenAI image_gen.imagegen, text-only prompt")
+                and re.fullmatch(r"exec-[0-9a-f-]{36}", source.get("origin_output_id", "")) is not None
+                and source.get("source_url") is None
+                and len(source.get("prompt", "")) > 200
+                and source.get("rights_url") == "https://openai.com/policies/row-terms-of-use/",
+                f"Nyaakoto fur source provenance changed: {filename}")
     groups = {group["name"]: group for group in record["maps"]}
     for name, group in groups.items():
         require(group.get("resolution") == ([4, 4] if name == "neutral" else [2048, 2048])
@@ -232,6 +249,25 @@ def nyaakoto_lod_source(source_root):
     return record
 
 
+def nyaakoto_iris_source(source_root):
+    """Resolve the one painted iris map from Nyaakoto's hashed source art."""
+    hero_root = source_root / "Characters/Hero"
+    record = read_manifest(hero_root / "manifest.json")
+    entries = record.get("generated_textures", [])
+    require(record.get("schema_version") == 2
+            and len(entries) == 1
+            and entries[0].get("path") == "EyeStudy/T_Nyaakoto_Iris_Albedo.png",
+            "The Nyaakoto painted iris identity changed")
+    path = source_file(hero_root, entries[0]["path"])
+    data = path.read_bytes()
+    require(hashlib.sha256(data).hexdigest() == entries[0].get("sha256")
+            and data[:16] == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+            and tuple(int.from_bytes(data[offset:offset + 4], "big")
+                      for offset in (16, 20)) == (1024, 1024),
+            "The Nyaakoto painted iris source changed")
+    return path.stem
+
+
 def expected_assets(project_root):
     """Return exact package/class expectations from the pinned source manifests."""
     source_root = project_root / "Content/SourceArt"
@@ -277,6 +313,10 @@ def expected_assets(project_root):
         for item in group["maps"]:
             name = Path(item["file"]).stem
             add(specs, f"{NYAAKOTO}/Textures/{name}.{name}", "Texture2D")
+    iris_name = nyaakoto_iris_source(source_root)
+    require(pbr["material_slots"]["M_Hero_BlueEye"]["tint"] == [1, 1, 1],
+            "The painted iris must retain its neutral Unreal tint")
+    add(specs, f"{NYAAKOTO}/Textures/{iris_name}.{iris_name}", "Texture2D")
     add(specs, f"{NYAAKOTO}/M_Nyaakoto_PBR.M_Nyaakoto_PBR", "Material")
     for slot in pbr["material_slots"]:
         name = "MI_Nyaakoto_" + slot.removeprefix("M_Hero_")
@@ -576,6 +616,7 @@ def validate_loaded_assets(unreal, specs):
                 f"got {type(asset).__name__}")
     validate_hero_katana_loaded(unreal, asset_library)
     pbr = nyaakoto_pbr_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
+    iris_name = nyaakoto_iris_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
     hero = asset_library.load_asset(f"{MESHES}/SK_NyaagyuSamurai.SK_NyaagyuSamurai")
     slots = [str(entry.get_editor_property("material_slot_name"))
              for entry in hero.get_editor_property("materials")]
@@ -609,6 +650,11 @@ def validate_loaded_assets(unreal, specs):
                 require(texture.get_editor_property("compression_settings") ==
                         unreal.TextureCompressionSettings.TC_MASKS,
                         f"Nyaakoto ORM mask compression changed: {name}")
+    iris_path = f"{NYAAKOTO}/Textures/{iris_name}.{iris_name}"
+    iris_texture = asset_library.load_asset(iris_path)
+    require(bool(iris_texture.get_editor_property("srgb"))
+            and iris_texture.get_editor_property("max_texture_size") == 1024,
+            "Nyaakoto painted iris color space or size changed")
     for slot, surface in pbr["material_slots"].items():
         name = "MI_Nyaakoto_" + slot.removeprefix("M_Hero_")
         path = f"{NYAAKOTO}/{name}.{name}"
@@ -620,6 +666,8 @@ def validate_loaded_assets(unreal, specs):
                                    ("NormalMap", "NormalDX"), ("ORMMap", "ORM")):
             texture_name = f"T_Nyaakoto_{surface['surface']}_{channel}"
             expected_path = f"{NYAAKOTO}/Textures/{texture_name}.{texture_name}"
+            if slot == "M_Hero_BlueEye" and parameter == "AlbedoMap":
+                expected_path = iris_path
             bound = material_lib.get_material_instance_texture_parameter_value(instance, parameter)
             require(bound is not None and bound.get_path_name() == expected_path,
                     f"Nyaakoto material {name} lost its {parameter} map binding")

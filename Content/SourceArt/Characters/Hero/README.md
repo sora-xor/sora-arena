@@ -21,6 +21,10 @@ vertical pupils, curved eyelid margins and a small modeled catchlight. Its origi
 editable `.blend`. The close-up Blender review is
 `EyeStudy/Nyaakoto_Eye_Macro_Blender.png`. This replaces the previous flat blue
 eye spheres without adding material slots to the runtime's 23-slot contract.
+`scripts/unreal/import_nyaakoto_pbr.py` verifies the atlas hash and binds it
+as `MI_Nyaakoto_BlueEye.AlbedoMap`; the eye slot uses a neutral tint so its
+painted pigment survives Unreal's material multiplication. The other 22
+material identities and both authored skeletal LODs stay unchanged.
 It improves iris readability, but the skull, lids, fur and muzzle remain
 stylized. The review render does not establish photoreal quality or in-game
 appearance; the material and deformation need Unreal and animation review. A

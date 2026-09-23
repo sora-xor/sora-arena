@@ -223,7 +223,9 @@ slots = {
     "BambooArrowShaft": ("neutral", (.48, .32, .17), .72, 0),
     "BlackenedIron": ("neutral", (.052, .057, .06), .35, .9),
     "BlackUrushi": ("lacquer_oxblood", (.022, .021, .021), .95, 0),
-    "BlueEye": ("neutral", (.095, .35, .64), .15, 0),
+    # The iris has a separately painted blue-grey albedo; tinting it blue again
+    # discards the pigment variation and darkens the limbal fibers in Unreal.
+    "BlueEye": ("neutral", (1, 1, 1), .15, 0),
     "CharcoalStripeFur": ("fur_charcoal", (.75, .76, .78), 1, 0),
     "EarSkin": ("neutral", (.4, .17, .17), .82, 0),
     "EyeGlint": ("neutral", (.83, .78, .61), .15, 0),
