@@ -317,6 +317,14 @@ fingerprint. Its focused test passes. This catches game-kernel drift in the
 fixed research scene; the fingerprint is not a cryptographic binding in the
 Iroha proof or a general live-match execution relation. See the
 [kernel parity fixture](proof/arena-kill-history-v2-kernel-parity.md).
+The corresponding unregistered Iroha 26-tick research relation now binds all
+13 signed two-tick batches in one public statement and proves the fixed
+projected death, 100-unit loss, 20/80 credits and final idle-tick transition.
+Its 2,772,064-byte STARK passed fresh-process verification and four saved-proof
+tamper checks; the conservative complete envelope bound is 2,946,649 bytes,
+below 4 MiB. Proving took 169.685 seconds and 768,720,896 bytes peak RSS on
+the M1 Ultra. This manually fixed scene is not a registered `ArenaV1` profile,
+ledger-selected history, general live-kernel relation, or settlement authority.
 An unregistered Iroha research preflight separately measured an 18,000-batch,
 twelve-slot history as 6,030,008 canonical Norito bytes, exceeding the current
 4 MiB proof envelope before the rest of a complete combat witness. Repeated
