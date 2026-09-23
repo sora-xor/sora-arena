@@ -62,7 +62,11 @@ The offline campaign now has 24 authored Japanese production-site tasks with
 English subtitle text. Each task has a combat threshold and earlier-site
 requirements; prototype props vary by task type and change appearance on
 activation. The first dojo encounter uses nonlethal wooden-sword sparring
-rather than pre-invasion alien enemies. It persists defeated opponents,
+rather than pre-invasion alien enemies. Nyaagyushinkageryuu apprenticeship
+now requires a held stance, front-facing guard, fresh timed parry against a
+telegraphed pupil swing, and full wooden-sword recovery before sparring damage
+can score. Its prefix-complete lesson mask is validated on reload. The campaign
+also persists defeated opponents,
 restored sites, and exit completion to a local SaveGame checkpoint, rejecting
 inconsistent site progress on load. Round resets now destroy live explosive
 shells before restoring an encounter, so a previous attempt cannot damage new
@@ -77,7 +81,7 @@ test Unreal save slots, played combat, subtitle rendering or campaign length.
 The final chapter now reserves its eighteenth opponent for a distinct alien
 collector boss with locked-aim cyan beam and amber cleave warnings, recovery,
 bilingual HUD/dialogue and a local checkpoint that respawns the boss at full
-health after seventeen guards. The prototype save schema advances to 4 so a
+health after seventeen guards. The prototype save schema advances to 5 so a
 pre-boss checkpoint cannot skip the encounter; no compatibility decoder is
 included. Content validation passes 25 timed bilingual cues, but UE compilation,
 readability, combat balance and save recovery still require an in-engine run.
@@ -241,8 +245,8 @@ Xcode 26.1.1 linker; 29 focused allocation, equipment, resource and racing SDK
 tests pass. This does not exercise Unreal or a live validator network.
 The focused native equipment integration suite also passes all five tests,
 including rejection of a snapshot missing authoritative custody maps. A broad
-`iroha_core --lib` test build remains blocked by unrelated Kagemusha and
-consensus test-fixture API errors; the focused result does not qualify the node.
+`iroha_core --lib` test build still has 284 compiler errors, predominantly
+Kagemusha test-fixture API drift; the focused result does not qualify the node.
 The generic native genesis API now accepts the immutable admission body and
 validates it before Race root derivation; one focused integration test passes
 and rejects malformed version, skin, duplicate input key, and missing slot.
