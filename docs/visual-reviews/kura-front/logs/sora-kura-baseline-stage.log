@@ -1,0 +1,563 @@
+INTERIM UE 5.8.3 STAGE DIAGNOSTIC ONLY; UE 5.8.2 release prerequisites remain unmet.
+
+Running AutomationTool...
+
+Setting up bundled DotNet SDK
+/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/ThirdParty/DotNet/10.0/mac-arm64
+Start UAT Interactively: dotnet AutomationTool.dll BuildCookRun -project=/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject -platform=Mac -clientconfig=Development -skipbuild -skipcook -stage -pak -package -archive -archivedirectory=/private/tmp/sora-arena-mac-kura-front-baseline -unattended -noP4
+/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/ThirdParty/DotNet/10.0/mac-arm64/dotnet
+Starting AutomationTool...
+Parsing command line: BuildCookRun -project=/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject -platform=Mac -clientconfig=Development -skipbuild -skipcook -stage -pak -package -archive -archivedirectory=/private/tmp/sora-arena-mac-kura-front-baseline -unattended -noP4
+Initializing script modules...
+Total script module initialization time: 0.38 s.
+Using /Users/Shared/Epic Games/UE_5.8/Engine/Binaries/ThirdParty/DotNet/10.0/mac-arm64/dotnet
+Executing commands...
+Setting up ProjectParams for /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject
+********** STAGE COMMAND STARTED **********
+Creating UECommandLine.txt
+Creating Staging Manifest...
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/Keywords.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/Engine.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseEditorSettings.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseEditor.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseEditorPerProjectUserSettings.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseLightmass.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseEditorKeyBindings.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BasePakFileRules.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/RepairData.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseSourceControlSettings.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseUnrealInsightsSettings.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/PortableObjectImport.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/PortableObjectExport.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/ToolTips.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/Category.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Mac/MacEditorPerProjectUserSettings.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/WordCount.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/PropertyNames.ini
+Excluding config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Localization/Editor.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/ConsoleVariables.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseCompat.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Mac/MacGame.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Mac/BaseMacEngine.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Mac/BaseMacInput.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseInstallBundle.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseInput.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Base.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseScalability.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseGameUserSettings.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseGame.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseRuntimeOptions.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseHardware.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseDeviceProfiles.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseMaterialExpressions.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Layouts/UE4ClassicLayout.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Layouts/DefaultLayout.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/Mac/DataDrivenPlatformInfo.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/VulkanPC/DataDrivenPlatformInfo.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/PluginBase.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/BaseEngine.ini
+Including config file /Users/Shared/Epic Games/UE_5.8/Engine/Config/ConfigRedirects.ini
+Including config file /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Config/Mac/MacEngine.ini
+Including config file /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Config/DefaultInput.ini
+Including config file /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Config/DefaultEngine.ini
+Including config file /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Config/DefaultScalability.ini
+Including config file /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Config/DefaultGame.ini
+Reading oplog from Zen...
+Running UnrealPak with arguments: "/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject" IoStore -StartZenServerForStage -SponsorProcessID=18570 -ProjectStore="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/ue.projectstore" -unattended
+Running: /Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealPak "/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject" IoStore -StartZenServerForStage -SponsorProcessID=18570 -ProjectStore="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/ue.projectstore" -unattended
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+LogPakFile: Display: ProjectDir: ../../../../../../takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/
+LogIoStore: Display: ==================== IoStore Utils ====================
+LogIoStore: Display: Using command line for crypto configuration
+LogZenServiceInstance: Display: Launching zen utility '/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/zen service status'.
+LogZenServiceInstance: Display: Writing plugin version info to '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+LogZenServiceInstance: Display: Read zen version cache file from '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190511-macosx-arm64-release-094f62c'
+LogZenServiceInstance: Display: Read zen version cache file from '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190511-macosx-arm64-release-094f62c'
+LogZenServiceInstance: Display: Installed service at '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zenserver' is up to date
+LogZenServiceInstance: Display: Launching executable '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zenserver', working dir '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install', data dir '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Data', args '--port 8558 --data-dir "/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Data" --http asio --gc-cache-duration-seconds 1209600 --gc-interval-seconds 21600 --gc-low-diskspace-threshold 2147483648 --cache-bucket-limit-overwrites --quiet --restrict-content-types --allow-external-oidctoken-exe=false --plugins-config "/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zen_plugins_v1.json" --security-config-path "/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/security-config.json" --owner-pid 18964  --child-id Zen_18964_Startup --detach'
+LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+LogPakFile: Display: UnrealPak executed in 1.404556 seconds
+Took 2.65s to run UnrealPak, ExitCode=0
+Reading oplog from http://[::1]:8558/prj/SoraArena.5340eaec/oplog/Mac/entries?trim_by_referencedset=true
+Parsed 982 package entries from oplog.
+Cleaning Stage Directory: /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac
+Creating pak using staging manifest.
+DumpManifest: /Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/PrePak_Mac_NonUFSFiles.txt, NumItems: 30
+DumpManifest: /Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/PrePak_Mac_NonUFSFilesDebug.txt, NumItems: 5
+DumpManifest: /Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/PrePak_Mac_UFSFiles.txt, NumItems: 3519
+No matching platform for PakFileRules for Section ExcludeContentForMobile : Mac
+Using 0 pak order files:
+Running UnrealPak with arguments: "/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject"  -cryptokeys="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Metadata/Crypto.json" -unattended -compressionformats=Oodle -compresslevel=4 -compressmethod=Kraken  -ProjectStore="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/ue.projectstore" -platform=Mac  -CreateMultiple="/Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/PakCommands.txt"
+Running: /Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealPak "/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject"  -cryptokeys="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Metadata/Crypto.json" -unattended -compressionformats=Oodle -compresslevel=4 -compressmethod=Kraken  -ProjectStore="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/ue.projectstore" -platform=Mac  -CreateMultiple="/Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/PakCommands.txt"
+LogTrace: Display: Control listening on port 37899
+OodleDataCompression: Display: Oodle v2.9.16 format for pak/iostore with method=Kraken, level=4=Normal
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+LogPakFile: Display: ProjectDir: ../../../../../../takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/
+LogPakFile: Display: Parsing crypto keys from a crypto key cache file
+LogPakFile: Display: CompressionFormats in priority order: Oodle, Zlib
+LogZenServiceInstance: Display: Launching zen utility '/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/zen service status'.
+LogZenServiceInstance: Display: Writing plugin version info to '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+LogZenServiceInstance: Display: Read zen version cache file from '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190511-macosx-arm64-release-094f62c'
+LogZenServiceInstance: Display: Read zen version cache file from '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190511-macosx-arm64-release-094f62c'
+LogZenServiceInstance: Display: Installed service at '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zenserver' is up to date
+LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+LogZenStore: Display: Opening oplog SoraArena.5340eaec / Mac
+LogIoStore: Display: Fetched 983 oplog items from Zen in 0.91 seconds
+LogIoStore: Display: Parsed 983 oplog items 0.01 seconds, 4574 chunks
+LogIoStore: Display: Loaded 1342 chunk hashes from Zen in 0.03 seconds, 1342 hashes updated in 0.00 seconds
+LogPakFile: Display: Oodle enabled on 'NoPluginCompression' files
+LogPakFile: Display: Loading response file /Users/Shared/Epic Games/UE_5.8/Engine/Programs/AutomationTool/Saved/ResponseFiles/PakList_SoraArena-Mac.txt
+LogPakFile: Display: Added 2173 entries to add to pak file.
+LogPakFile: Display: Collecting files to add to pak file...
+LogPakFile: Display: Collected 2173 files in 0.01s.
+LogPakFile: Display: Creating pak /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena/Content/Paks/SoraArena-Mac.pak.
+LogPakFile: Display: Created pak file: /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena/Content/Paks/SoraArena-Mac.pak
+LogPakFile: Display: CompressionFormat 0 [Oodle] : 493 files, 39323796 -> 14589357 bytes
+LogPakFile: Display: CompressionFormat 2 [None] : 1680 files, 841706 -> 841706 bytes
+LogPakFile: Display: Added 2173 files, 15727582 bytes total
+LogPakFile: Display: PrimaryIndex size: 30406 bytes
+LogPakFile: Display: PathHashIndex size: 67273 bytes
+LogPakFile: Display: FullDirectoryIndex size: 65286 bytes
+LogPakFile: Display: Compression summary: 37.10% of original size. Compressed Size 14589357 bytes, Original Size 39323796 bytes.
+LogPakFile: Display: Encryption - DISABLED
+LogPakFile: Display:
+LogPakFile: Display: Writer and Compression Threads exited.
+LogPakFile: Display: UnrealPak executed in 1.181992 seconds
+Took 1.79s to run UnrealPak, ExitCode=0
+Running UnrealPak with arguments: "/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject" /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject -CreateGlobalContainer="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena/Content/Paks/global.utoc" -ProjectStore="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/ue.projectstore" -CookedDirectory="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac" -Commands="/Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/IoStoreCommands.txt" -compressionformats=Oodle -compresslevel=4 -compressmethod=Kraken   -cryptokeys="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Metadata/Crypto.json" -compressionMinBytesSaved=1024 -compressionMinPercentSaved=5 -WriteBackMetadataToAssetRegistry=Disabled -platform=Mac  -unattended
+Running: /Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealPak "/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject" /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/SoraArena.uproject -CreateGlobalContainer="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena/Content/Paks/global.utoc" -ProjectStore="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/ue.projectstore" -CookedDirectory="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac" -Commands="/Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/IoStoreCommands.txt" -compressionformats=Oodle -compresslevel=4 -compressmethod=Kraken   -cryptokeys="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Metadata/Crypto.json" -compressionMinBytesSaved=1024 -compressionMinPercentSaved=5 -WriteBackMetadataToAssetRegistry=Disabled -platform=Mac  -unattended
+OodleDataCompression: Display: Oodle v2.9.16 format for pak/iostore with method=Kraken, level=4=Normal
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+LogPakFile: Display: ProjectDir: ../../../../../../takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/
+LogIoStore: Display: ==================== IoStore Utils ====================
+LogIoStore: Display: Parsing crypto keys from a crypto key cache file '/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Metadata/Crypto.json'
+LogIoStore: Display: Container signing - DISABLED
+LogIoStore: Display: Directory index - ENABLED
+LogIoStore: Display: Using compression format 'Oodle'
+LogConfig: Display: Read in platform Mac ini files took 0.01 seconds
+LogIoStore: Display: Using memory mapping alignment '16384'
+LogIoStore: Display: Using compression block size '65536'
+LogIoStore: Display: Using compression block alignment '65536'
+LogIoStore: Display: Using compression min bytes saved '1024'
+LogIoStore: Display: Using compression min percent saved '5'
+LogIoStore: Display: Using max partition size '0'
+LogIoStore: Display: Not using DDC for compression
+LogIoStore: Display: Container metadata disabled
+LogIoStore: Display: Using command list file: '/Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/IoStoreCommands.txt'
+LogIoStore: Display: Selected Oodle level 4 (Normal) from command line for shaders
+LogZenServiceInstance: Display: Launching zen utility '/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/zen service status'.
+LogZenServiceInstance: Display: Writing plugin version info to '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+LogZenServiceInstance: Display: Read zen version cache file from '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190511-macosx-arm64-release-094f62c'
+LogZenServiceInstance: Display: Read zen version cache file from '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190511-macosx-arm64-release-094f62c'
+LogZenServiceInstance: Display: Installed service at '/Users/takemiyamakoto/Library/Application Support/Epic/UnrealEngine/Common/Zen/Install/zenserver' is up to date
+LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+LogZenStore: Display: Opening oplog SoraArena.5340eaec / Mac
+LogIoStore: Display: Fetched 983 oplog items from Zen in 1.24 seconds
+LogIoStore: Display: Parsed 983 oplog items 0.01 seconds, 4574 chunks
+LogIoStore: Display: Loaded 1342 chunk hashes from Zen in 0.01 seconds, 1342 hashes updated in 0.00 seconds
+LogIoStore: Display: Searching for cooked assets in folder '/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac'
+LogIoStore: Display: Found '8' files
+LogIoStore: Display: Creating container targets...
+LogIoStore: Display: Processing shader libraries, compressing with Oodle Mermaid, level 4 (Normal)
+LogIoStore: Display: Shader library chunk override is disabled
+LogShaderLibrary: Display: Created IoStoreShaderArchive header: shaders grouped in 200 groups (72 of them didn't need new indices), average uncompressed size 55927 bytes, min 3219 bytes, max 980408 bytes (r.ShaderCodeLibrary.MaxShaderGroupSize=1048576)
+LogIoStore: Display: SoraArena-SF_METAL_SM5(METAL_SM5): Recompressed 976 shaders as 200 groups. Library size changed from 8392 KB (1.30 : 1 ratio) to 4964 KB (2.20 : 1 ratio), 59.15% of previous.
+LogIoStore: Display: Save IoStoreShaderCodeArchive 'SoraArena-SF_METAL_SM5-METAL_SM5' with ChunkId '510d587b0eefb65f00000008' for target file '/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Content/ShaderArchive-SoraArena-SF_METAL_SM5-METAL_SM5.ushaderbytecode'
+LogShaderLibrary: Display: Created IoStoreShaderArchive header: shaders grouped in 425 groups (158 of them didn't need new indices), average uncompressed size 217166 bytes, min 3235 bytes, max 1044559 bytes (r.ShaderCodeLibrary.MaxShaderGroupSize=1048576)
+LogIoStore: Display: Global-SF_METAL_SM5(METAL_SM5): Recompressed 5919 shaders as 425 groups. Library size changed from 67357 KB (1.34 : 1 ratio) to 31368 KB (2.87 : 1 ratio), 46.57% of previous.
+LogIoStore: Display: Save IoStoreShaderCodeArchive 'Global-SF_METAL_SM5-METAL_SM5' with ChunkId 'e3aad1ffc91986a400000008' for target file '/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Content/ShaderArchive-Global-SF_METAL_SM5-METAL_SM5.ushaderbytecode'
+LogShaderLibrary: Display: Created IoStoreShaderArchive header: shaders grouped in 218 groups (74 of them didn't need new indices), average uncompressed size 119939 bytes, min 6083 bytes, max 1042812 bytes (r.ShaderCodeLibrary.MaxShaderGroupSize=1048576)
+LogIoStore: Display: SoraArena-SF_METAL_SM6(METAL_SM6): Recompressed 1558 shaders as 218 groups. Library size changed from 17880 KB (1.43 : 1 ratio) to 11115 KB (2.30 : 1 ratio), 62.16% of previous.
+LogIoStore: Display: Save IoStoreShaderCodeArchive 'SoraArena-SF_METAL_SM6-METAL_SM6' with ChunkId '40783420e0e8d69b00000008' for target file '/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Content/ShaderArchive-SoraArena-SF_METAL_SM6-METAL_SM6.ushaderbytecode'
+LogShaderLibrary: Display: Created IoStoreShaderArchive header: shaders grouped in 588 groups (175 of them didn't need new indices), average uncompressed size 306316 bytes, min 3871 bytes, max 1048184 bytes (r.ShaderCodeLibrary.MaxShaderGroupSize=1048576)
+LogIoStore: Display: Global-SF_METAL_SM6(METAL_SM6): Recompressed 8744 shaders as 588 groups. Library size changed from 125344 KB (1.40 : 1 ratio) to 71884 KB (2.45 : 1 ratio), 57.35% of previous.
+LogIoStore: Display: Save IoStoreShaderCodeArchive 'Global-SF_METAL_SM6-METAL_SM6' with ChunkId 'f150c46002ec7d9b00000008' for target file '/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/Cooked/Mac/SoraArena/Content/ShaderArchive-Global-SF_METAL_SM6-METAL_SM6.ushaderbytecode'
+LogIoStore: Display: Shaders processed in 0.71 seconds
+LogIoStore: Display: Initialized WriteRequestManager with MaxConcurrentSourceReads=10 (20 cores), MaxSourceBufferMemory=3072MiB
+LogIoStore: Display: Processing redirects...
+LogIoStore: Display: Creating disk layout...
+LogIoStore: Display: Ordered 980 packages using fallback bundle order
+LogIoStore: Display: Disabled WriteRequestManager memory throttling, MaxConcurrentSourceReads=10 (20 cores)
+LogIoStore: Display: Writing container(s)...
+LogIoStore: Display: Writing chunks 2409/2779... [979 compressed] [896 compression tasks] [Scheduled: 703 MiB] [Physical: 1170 MiB, Virtual: 481817 MiB]
+LogIoStore: Display: Writing chunks 2468/2779... [1036 compressed] [1884 compression tasks] [Scheduled: 430 MiB] [Physical: 1549 MiB, Virtual: 482068 MiB]
+LogIoStore: Display: Writing chunks 2622/2779... [1188 compressed] [724 compression tasks] [Scheduled: 156 MiB] [Physical: 1495 MiB, Virtual: 481912 MiB]
+LogIoStore: Display: Writing and compressing took 7.20 seconds, writes to disk took 0.56 seconds for 796,184,768 bytes @ 1,410,667,456 bytes per second.
+LogIoStore: Display: global: Found perfect hashmap for 1 items.
+LogIoStore: Display: SoraArena-Mac: Found perfect hashmap for 2778 items.
+LogIoStore: Display: Finalize took 0.0 seconds for 2 writers to write 432,615 bytes, 10,801,087 bytes per second
+LogIoStore: Display: Writing tocs... [Physical: 1486 MiB, Virtual: 481823 MiB]
+LogIoStore: Display: 1,342 / 2,779 hashes were loaded from the hash database, by type:
+LogIoStore: Display:     ExportBundleData           980
+LogIoStore: Display:     BulkData                   362
+LogIoStore: Display: 1,342 / 2,779 chunks attempted to compress, by type:
+LogIoStore: Display:     ExportBundleData           980 / 980
+LogIoStore: Display:     BulkData                   362 / 362
+LogIoStore: Display:     ScriptObjects              0 / 1
+LogIoStore: Display:     ContainerHeader            0 / 1
+LogIoStore: Display:     ShaderCodeLibrary          0 / 4
+LogIoStore: Display:     ShaderCode                 0 / 1,431
+LogIoStore: Display: Source bytes read:
+LogIoStore: Display:     Zen:                      1,011,505,118
+LogIoStore: Display:         ExportBundleData        285,971,550 bytes over 980 reads
+LogIoStore: Display:         BulkData                725,533,568 bytes over 362 reads
+LogIoStore: Display:     Loose File:                           0
+LogIoStore: Display:     Memory:                     245,339,022
+LogIoStore: Display:         ShaderCodeLibrary           947,512 bytes over 8 reads
+LogIoStore: Display:         ShaderCode              244,391,510 bytes over 2,862 reads
+LogIoStore: Display: Calculating stats...
+LogIoStore: Display:
+LogIoStore: Display: Container Summary
+LogIoStore: Display: ==================
+LogIoStore: Display:
+LogIoStore: Display:            Container      Flags      Chunk(s) #       TOC (KiB)       Raw Size (MiB)           Size (MiB)
+LogIoStore: Display: ---------------------------------------------------------------------------------------------------------
+LogIoStore: Display:               global  -/-/-/-/-               1            0.78                 3.07                 3.07 -
+LogIoStore: Display:        SoraArena-Mac  C/-/-/I/-            2778          421.70              1105.78               756.24 (31.61% Oodle)
+LogIoStore: Display: ---------------------------------------------------------------------------------------------------------
+LogIoStore: Display:                Total                       2779          422.48              1108.85               759.30
+LogIoStore: Display:
+LogIoStore: Display: ** Flags: (C)ompressed / (E)ncrypted / (S)igned) / (I)ndexed) / (O)nDemand **
+LogIoStore: Display:
+LogIoStore: Display: Compression block padding:    24.11 MiB
+LogIoStore: Display:
+LogIoStore: Display: Container Directory Index
+LogIoStore: Display: ==========================
+LogIoStore: Display:
+LogIoStore: Display:            Container      Size (KiB)
+LogIoStore: Display: ------------------------------------
+LogIoStore: Display:               global            0.00
+LogIoStore: Display:        SoraArena-Mac           64.33
+LogIoStore: Display:
+LogIoStore: Display: Container Patch Report
+LogIoStore: Display: ========================
+LogIoStore: Display:
+LogIoStore: Display:            Container          Total #       Modified #          Added #   Modified (MiB)      Added (MiB)
+LogIoStore: Display: ---------------------------------------------------------------------------------------------------------
+LogIoStore: Display:               global                1                0                0             0.00             0.00
+LogIoStore: Display:        SoraArena-Mac             2778                0             2778             0.00           732.12
+LogIoStore: Display: ---------------------------------------------------------------------------------------------------------
+LogIoStore: Display:
+LogIoStore: Display: PackageStore
+LogIoStore: Display: =============
+LogIoStore: Display:
+LogIoStore: Display:            Container      Size (KiB)      Packages #     Localized #
+LogIoStore: Display: --------------------------------------------------------------------
+LogIoStore: Display:        SoraArena-Mac              28             980               0
+LogIoStore: Display: --------------------------------------------------------------------
+LogIoStore: Display:                Total              28             980               0
+LogIoStore: Display:
+LogIoStore: Display:
+LogIoStore: Display: Input:       980 Packages
+LogIoStore: Display: Input:         0   B UExp
+LogIoStore: Display: Input:    272.72 MiB UAsset
+LogIoStore: Display: Input:    691.92 MiB UBulk
+LogIoStore: Display: Input:    100.83 MiB for 1013 Global shaders
+LogIoStore: Display: Input:      2.56 MiB for 179 Shared shaders
+LogIoStore: Display: Input:         0   B for 0 Unique shaders
+LogIoStore: Display: Input:     13.14 MiB for 239 Inline shaders
+LogIoStore: Display:
+LogIoStore: Display: Output:     1390 Imported package entries
+LogIoStore: Display: Output:      471 Packages without imports
+LogIoStore: Display: Output:        0 Public runtime script objects
+LogIoStore: Display: Output:     3.07 MiB InitialLoadData
+LogIoStore: Display:
+LogIoStore: Display: Success
+LogPakFile: Display: UnrealPak executed in 9.340278 seconds
+Took 9.87s to run UnrealPak, ExitCode=0
+DumpManifest: /Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/FinalCopyMac_UFSFiles.txt, NumItems: 3520
+DumpManifest: /Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/FinalCopyMac_NonUFSFiles.txt, NumItems: 30
+DumpManifest: /Users/takemiyamakoto/Library/Logs/Unreal Engine/LocalBuildLogs/FinalCopyMac_NonUFSFilesDebug.txt, NumItems: 5
+Copying NonUFSFiles to staging directory: /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac
+Copying DebugFiles to staging directory: /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac
+Discovering modules, targets and source code for project...
+Adding projects for all targets...
+Adding projects for all targets took 0.00s
+Adding projects for all game projects took 0.00s
+Adding projects for all modules took 0.00s
+/Users/Shared/Epic Games/UE_5.8/Engine/Source/ThirdParty/Apple/MetalShaderConverter/MetalShaderConverter.build.cs: warning: Referenced directory '/Users/Shared/Epic Games/UE_5.8/Engine/Source/ThirdParty/Apple/MetalShaderConverter/include/metal_irconverter_ext' does not exist.
+Compiling with non-standard Xcode: /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer
+Compiling with Mac SDK 26.1, minimum Target OS version 14.00
+Adding additional Xcode project info took 0.00s
+Writing project files...
+Writing xcode workspace /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFiles/SoraArena_Mac_SoraArena.xcworkspace
+Writing project files... 100%
+Writing project files took 0.00s
+No certs of truth reported, skipping certificate verification...
+Known Apple certificate for this team is installed!
+params: UBT_NO_POST_DEPLOY=true /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/usr/bin/xcodebuild build -workspace "/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFiles/SoraArena_Mac_SoraArena.xcworkspace" -scheme "SoraArena" -configuration "Development" -destination generic/platform="macOS" CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION=YES SYMROOT="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds" EFFECTIVE_PLATFORM_NAME=Mac UE_OVERRIDE_STAGE_DIR="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac" -allowProvisioningUpdates UE_XCODE_BUILD_MODE=Stage -hideShellScriptEnvironment
+Command line invocation:
+    /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/usr/bin/xcodebuild build -workspace /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFiles/SoraArena_Mac_SoraArena.xcworkspace -scheme SoraArena -configuration Development -destination generic/platform=macOS CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION=YES SYMROOT=/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds EFFECTIVE_PLATFORM_NAME=Mac UE_OVERRIDE_STAGE_DIR=/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac -allowProvisioningUpdates UE_XCODE_BUILD_MODE=Stage -hideShellScriptEnvironment
+
+Build settings from command line:
+    CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES
+    EFFECTIVE_PLATFORM_NAME = Mac
+    SYMROOT = /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds
+    UE_OVERRIDE_STAGE_DIR = /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac
+    UE_XCODE_BUILD_MODE = Stage
+
+Run pre-actions
+
+SchemeAction Touch\ UBT\ generated\ tiles /var/folders/pb/bkm6hkln49l5c6fkpdv03bhm0000gn/T/SchemeScriptAction-Jihyht.sh
+    cd /var/folders/pb/bkm6hkln49l5c6fkpdv03bhm0000gn/T/
+    /bin/sh -c /var/folders/pb/bkm6hkln49l5c6fkpdv03bhm0000gn/T/SchemeScriptAction-Jihyht.sh
+
+ComputePackagePrebuildTargetDependencyGraph
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'SoraArena' in project 'SoraArena (Mac)' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+Build description signature: 12cfd9982291a7a649f2e650ea572cfd
+Build description path: /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/XCBuildData/12cfd9982291a7a649f2e650ea572cfd.xcbuilddata
+MkDir /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /bin/mkdir -p /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents
+
+MkDir /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Resources (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /bin/mkdir -p /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Resources
+
+ProcessProductPackaging /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Sandbox.Server.entitlements /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+
+    Entitlements:
+
+    {
+}
+
+    builtin-productPackagingUtility /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Sandbox.Server.entitlements -entitlements -format xml -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent
+
+ProcessProductPackagingDER /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent.der (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /usr/bin/derq query -f xml -i /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent.der --raw
+
+ProcessProductPackaging /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Sandbox.Server.entitlements /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app.xcent (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+
+    Entitlements:
+
+    {
+    "com.apple.security.app-sandbox" = 1;
+    "com.apple.security.get-task-allow" = 1;
+    "com.apple.security.network.client" = 1;
+    "com.apple.security.network.server" = 1;
+}
+
+    builtin-productPackagingUtility /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Sandbox.Server.entitlements -entitlements -format xml -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app.xcent
+
+ProcessProductPackagingDER /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app.xcent /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app.xcent.der (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /usr/bin/derq query -f xml -i /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app.xcent -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app.xcent.der --raw
+
+CpResource /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Resources/UEMetadata /Users/Shared/Epic\ Games/UE_5.8/Engine/Build/Mac/Resources/UEMetadata (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Users/Shared/Epic\ Games/UE_5.8/Engine/Build/Mac/Resources/UEMetadata /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Resources
+
+LinkAssetCatalog /Users/Shared/Epic\ Games/UE_5.8/Engine/Build/Mac/Resources/Assets.xcassets (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-linkAssetCatalog --thinned /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_output/thinned --thinned-dependencies /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist_unthinned --output /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Resources --plist-output /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist
+note: Emplaced /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Resources/AppIcon.icns (in target 'SoraArena' from project 'SoraArena (Mac)')
+note: Emplaced /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Resources/Assets.car (in target 'SoraArena' from project 'SoraArena (Mac)')
+
+ProcessInfoPlistFile /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Info.plist /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Info.Template.plist (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-infoPlistUtility /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Info.Template.plist -producttype com.apple.product-type.application -genpkginfo /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/PkgInfo -expandbuildsettings -format xml -platform macosx -additionalcontentfile /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/Info.plist
+
+PhaseScriptExecution Copy\ Executable\ and\ Staged\ Data\ into\ .app /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ (Mac).build/Mac/SoraArena.build/Script-F73DB729D27BF46E3E55DBD5.sh (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /bin/sh -c /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\\\ \\\(Mac\\\).build/Mac/SoraArena.build/Script-F73DB729D27BF46E3E55DBD5.sh
+Copying executable and any standalone dylibs into /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/MacOS but do not overwrite unless src is newer
+Syncing /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac to /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app/Contents/UE
+
+CodeSign /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+
+    Signing Identity:     "Sign to Run Locally"
+
+    /usr/bin/codesign --force --sign - --entitlements /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app.xcent --timestamp\=none --generate-entitlement-der /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app
+/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app: replacing existing signature
+
+Validate /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-validationUtility /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app -no-validate-extension -infoplist-subpath Contents/Info.plist
+
+RegisterWithLaunchServices /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister -f -R -trusted /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac/SoraArena.app
+
+** BUILD SUCCEEDED **
+
+Stage command time: 81.04 s
+********** STAGE COMMAND COMPLETED **********
+********** PACKAGE COMMAND STARTED **********
+Discovering modules, targets and source code for project...
+Adding projects for all targets...
+Adding projects for all targets took 0.00s
+Adding projects for all game projects took 0.00s
+Adding projects for all modules took 0.00s
+/Users/Shared/Epic Games/UE_5.8/Engine/Source/ThirdParty/Apple/MetalShaderConverter/MetalShaderConverter.build.cs: warning: Referenced directory '/Users/Shared/Epic Games/UE_5.8/Engine/Source/ThirdParty/Apple/MetalShaderConverter/include/metal_irconverter_ext' does not exist.
+Adding additional Xcode project info took 0.00s
+Writing project files...
+Writing xcode workspace /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFiles/SoraArena_Mac_SoraArena.xcworkspace
+Writing project files... 100%
+Writing project files took 0.00s
+params: UBT_NO_POST_DEPLOY=true /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/usr/bin/xcodebuild build -workspace "/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFiles/SoraArena_Mac_SoraArena.xcworkspace" -scheme "SoraArena" -configuration "Development" -destination generic/platform="macOS" CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION=YES UE_OVERRIDE_STAGE_DIR="/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac" -allowProvisioningUpdates UE_XCODE_BUILD_MODE=Package -hideShellScriptEnvironment
+Command line invocation:
+    /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/usr/bin/xcodebuild build -workspace /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFiles/SoraArena_Mac_SoraArena.xcworkspace -scheme SoraArena -configuration Development -destination generic/platform=macOS CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION=YES UE_OVERRIDE_STAGE_DIR=/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac -allowProvisioningUpdates UE_XCODE_BUILD_MODE=Package -hideShellScriptEnvironment
+
+Build settings from command line:
+    CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES
+    UE_OVERRIDE_STAGE_DIR = /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac
+    UE_XCODE_BUILD_MODE = Package
+
+Run pre-actions
+
+SchemeAction Touch\ UBT\ generated\ tiles /var/folders/pb/bkm6hkln49l5c6fkpdv03bhm0000gn/T/SchemeScriptAction-lbLY4a.sh
+    cd /var/folders/pb/bkm6hkln49l5c6fkpdv03bhm0000gn/T/
+    /bin/sh -c /var/folders/pb/bkm6hkln49l5c6fkpdv03bhm0000gn/T/SchemeScriptAction-lbLY4a.sh
+
+ComputePackagePrebuildTargetDependencyGraph
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'SoraArena' in project 'SoraArena (Mac)' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+Build description signature: 0c065208df52fbc8458e8b8a551aa729
+Build description path: /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac/build/XCBuildData/0c065208df52fbc8458e8b8a551aa729.xcbuilddata
+ProcessProductPackaging /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Sandbox.Server.entitlements /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+
+    Entitlements:
+
+    {
+}
+
+    builtin-productPackagingUtility /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Sandbox.Server.entitlements -entitlements -format xml -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent
+
+ProcessProductPackaging /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Sandbox.Server.entitlements /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app.xcent (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+
+    Entitlements:
+
+    {
+    "com.apple.security.app-sandbox" = 1;
+    "com.apple.security.get-task-allow" = 1;
+    "com.apple.security.network.client" = 1;
+    "com.apple.security.network.server" = 1;
+}
+
+    builtin-productPackagingUtility /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Sandbox.Server.entitlements -entitlements -format xml -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app.xcent
+
+ProcessProductPackagingDER /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent.der (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /usr/bin/derq query -f xml -i /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app-Simulated.xcent.der --raw
+
+ProcessProductPackagingDER /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app.xcent /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ (Mac).build/Mac/SoraArena.build/SoraArena.app.xcent.der (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /usr/bin/derq query -f xml -i /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app.xcent -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app.xcent.der --raw
+
+CompileAssetCatalogVariant thinned /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/Resources /Users/Shared/Epic\ Games/UE_5.8/Engine/Build/Mac/Resources/Assets.xcassets (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/usr/bin/actool /Users/Shared/Epic\ Games/UE_5.8/Engine/Build/Mac/Resources/Assets.xcassets --compile /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --enable-on-demand-resources NO --development-region English --target-device mac --minimum-deployment-target 14.00 --platform macosx
+/* com.apple.actool.compilation-results */
+/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena (Mac).build/Mac/SoraArena.build/assetcatalog_generated_info.plist_thinned
+/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena (Mac).build/Mac/SoraArena.build/assetcatalog_output/thinned/AppIcon.icns
+/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena (Mac).build/Mac/SoraArena.build/assetcatalog_output/thinned/Assets.car
+
+
+LinkAssetCatalog /Users/Shared/Epic\ Games/UE_5.8/Engine/Build/Mac/Resources/Assets.xcassets (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-linkAssetCatalog --thinned /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_output/thinned --thinned-dependencies /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist_unthinned --output /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/Resources --plist-output /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist
+note: Emplaced /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/Resources/AppIcon.icns (in target 'SoraArena' from project 'SoraArena (Mac)')
+note: Emplaced /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/Resources/Assets.car (in target 'SoraArena' from project 'SoraArena (Mac)')
+
+CpResource /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/Resources/UEMetadata /Users/Shared/Epic\ Games/UE_5.8/Engine/Build/Mac/Resources/UEMetadata (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -strip-unsigned-binaries -strip-deterministic -strip-tool /Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip -resolve-src-symlinks /Users/Shared/Epic\ Games/UE_5.8/Engine/Build/Mac/Resources/UEMetadata /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/Resources
+
+ProcessInfoPlistFile /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/Info.plist /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Info.Template.plist (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-infoPlistUtility /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Build/Mac/Resources/Info.Template.plist -producttype com.apple.product-type.application -genpkginfo /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/PkgInfo -expandbuildsettings -format xml -platform macosx -additionalcontentfile /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/assetcatalog_generated_info.plist -o /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/Info.plist
+
+PhaseScriptExecution Copy\ Executable\ and\ Staged\ Data\ into\ .app /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ (Mac).build/Mac/SoraArena.build/Script-54113D0CCF7A7E5C4633D9FC.sh (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /bin/sh -c /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\\\ \\\(Mac\\\).build/Mac/SoraArena.build/Script-54113D0CCF7A7E5C4633D9FC.sh
+Copying executable and any standalone dylibs into /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/MacOS but do not overwrite unless src is newer
+Syncing /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Saved/StagedBuilds/Mac to /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app/Contents/UE
+
+CodeSign /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+
+    Signing Identity:     "Sign to Run Locally"
+
+    /usr/bin/codesign --force --sign - --entitlements /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/SoraArena\ \(Mac\).build/Mac/SoraArena.build/SoraArena.app.xcent --timestamp\=none --generate-entitlement-der /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app
+/Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app: replacing existing signature
+
+RegisterExecutionPolicyException /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-RegisterExecutionPolicyException /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app
+
+Validate /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    builtin-validationUtility /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app -no-validate-extension -infoplist-subpath Contents/Info.plist
+
+Touch /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /usr/bin/touch -c /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app
+
+RegisterWithLaunchServices /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app (in target 'SoraArena' from project 'SoraArena (Mac)')
+    cd /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Intermediate/ProjectFilesMac
+    /System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister -f -R -trusted /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app
+
+** BUILD SUCCEEDED **
+
+==================================================================================================================================================
+Finalized /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app for running fully self-contained
+==================================================================================================================================================
+Package command time: 20.18 s
+********** PACKAGE COMMAND COMPLETED **********
+********** ARCHIVE COMMAND STARTED **********
+Archiving to /private/tmp/sora-arena-mac-kura-front-baseline
+staging targets: 'SoraArena', 'Development'
+==================================================================================================================================================
+Copying Development package /Users/takemiyamakoto/.codex/worktrees/ue583-diagnostic/sora-arena/Binaries/Mac/SoraArena.app to archive directory /private/tmp/sora-arena-mac-kura-front-baseline/Mac/SoraArena.app
+==================================================================================================================================================
+Archive command time: 0.05 s
+********** ARCHIVE COMMAND COMPLETED **********
+BuildCookRun time: 102.50 s
+BUILD SUCCESSFUL
+AutomationTool executed for 0h 1m 43s
+AutomationTool exiting with ExitCode=0 (Success)
+Verified Mac bundle identifier: org.sora.soraarena

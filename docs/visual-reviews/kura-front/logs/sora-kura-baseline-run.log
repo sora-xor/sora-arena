@@ -1,0 +1,210 @@
+sandbox_extension_issue_file_to_process failed for /tmp/sora-arena-mac-kura-front-baseline/Mac/SoraArena.app: 1 (Operation not permitted)
+LogIoDispatcher: Display: Mounted container '../../../SoraArena/Content/Paks/global.utoc', Id='ffffffffffffffff', Order=0, Slot=0, Options=(None), Flags=(), HasSoftRefs=False
+LogPakFile: Display: Initialized I/O dispatcher file backend. Mounted the global container: ../../../SoraArena/Content/Paks/global.utoc
+LogPakFile: Display: Found Pak file ../../../SoraArena/Content/Paks/SoraArena-Mac.pak attempting to mount.
+LogPakFile: Display: Mounting pak file ../../../SoraArena/Content/Paks/SoraArena-Mac.pak.
+LogIoDispatcher: Display: Mounted container '../../../SoraArena/Content/Paks/SoraArena-Mac.utoc', Id='9dc7f952ec7790ed', Order=4, Slot=0, Options=(None), Flags=(Compressed|Indexed), HasSoftRefs=False
+LogPakFile: Display: Mounted IoStore container "../../../SoraArena/Content/Paks/SoraArena-Mac.utoc"
+LogPakFile: Display: Mounted Pak file '../../../SoraArena/Content/Paks/SoraArena-Mac.pak', mount point: '../../../'
+LogCsvProfiler: Display: Metadata set : zenstreaming="0"
+LogCsvProfiler: Display: Metadata set : systemresolution.resx="1280"
+LogCsvProfiler: Display: Metadata set : systemresolution.resy="720"
+LogAudio: Display: Pre-Initializing Audio Device Manager...
+LogAudio: Display: AudioInfo: 'OPUS' Registered
+LogAudio: Display: AudioInfo: 'OGG' Registered
+LogAudio: Display: AudioInfo: 'ADPCM' Registered
+LogAudio: Display: AudioInfo: 'PCM' Registered
+LogAudio: Display: AudioInfo: 'BINKA' Registered
+LogAudio: Display: AudioInfo: 'RADA' Registered
+LogAudio: Display: Audio Device Manager Pre-Initialized
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: true, Async Post Load: true, Multithreaded: false
+LogHAL: Display: Platform has ~ 128 GB [137438953472 / 137438953472 / 128], which maps to Largest [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+LogObj: Display: Attempting to load config data for Default__SlateThemeManager before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+LogMetal: Warning: To use SM6 on this system, please ensure you are running Mac OS 15. Falling back to SM5
+LogMetal: Display:       Vendor ID: 4203
+LogMetal: Display:       Device ID: 892810058
+LogMetal: Display:       VRAM (MB): 98304
+LogCsvProfiler: Display: Metadata set : verbatimrhiname="Metal"
+LogCsvProfiler: Display: Metadata set : rhiname="Metal"
+LogCsvProfiler: Display: Metadata set : rhifeaturelevel="SM5"
+LogCsvProfiler: Display: Metadata set : shaderplatform="METAL_SM5"
+LogCsvProfiler: Display: Metadata set : gpu="Apple M1 Ultra"
+LogCsvProfiler: Display: Metadata set : gpudriver=""
+LogMetal: Display: No .metalmap file found for global_sf_metal_sm5-metal_sm5!
+LogShaderLibrary: Display: Using IoDispatcher for shader code library Global. Total 5919 unique shaders.
+LogShaderLibrary: Display: Cooked Context: Loaded Shared Shader Library Global
+LogShaderLibrary: Display: Logical shader library 'Global' has been created as a monolithic library, components 1
+LogMetal: Display: No .metalmap file found for global_sc_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for global_sc_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for paper2d_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for aclplugin_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for controlrig_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for animatorkit_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for physicscontrol_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for audiomodulationinsights_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for riglogic_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for basematerial_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for skeletalmeshmodelingtools_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for tweeningutils_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for bridge_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for audioinsights_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for gameplaycameras_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for audioinsightsruntime_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for chaosvd_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for blueprintheaderview_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for dataflow_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for consolevariables_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for materialassetwizard_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for geometrymode_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for lightmixer_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for speedtreeimporter_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for objectmixer_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for umgwidgetpreview_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for datasmithcontent_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for uveditor_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for gltfexporter_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for buoyancy_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for scribble_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for chaoscaching_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for chaossolverplugin_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for chaosniagara_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for controlrigphysics_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for editordatastoragefeatures_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for editordatastorage_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for editortrsgizmo_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for geometrycollectionplugin_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for fullbodyik_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for geometrydataflow_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for landmass_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for interchangeaxfassets_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for pythonscriptplugin_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for water_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for toolpresets_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for cascade_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for niagarapreviewcontent_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for niagara_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for niagarasimcaching_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for interchangeassets_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for fab_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for interchange_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for mediaplate_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for mediacompositing_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for animationsharing_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for mutable_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for metahumansdk_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for nnedenoiser_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for sequencerscripting_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for pcg_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for automatedperftesttools_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for geometryprocessing_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for concertsyncclient_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for hairstrands_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for namingtokens_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for deformergraph_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for metasound_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for audiosynesthesia_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for easecurvetool_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for audiowidgets_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for meshmodelingtoolset_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for rigvm_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for propertybindingutils_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for statetree_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for controlrigmodules_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for synthesis_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for controlrigspline_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for resonanceaudio_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for ikrig_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for wavetable_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for traceutilities_sf_metal_sm5-metal_sm5!
+LogMetal: Display: No .metalmap file found for takes_sf_metal_sm5-metal_sm5!
+LogTemp: Display: Clearing the OS Cache
+LogMetal: Display: No .metalmap file found for soraarena_sf_metal_sm5-metal_sm5!
+LogShaderLibrary: Display: Using IoDispatcher for shader code library SoraArena. Total 976 unique shaders.
+LogShaderLibrary: Display: Cooked Context: Loaded Shared Shader Library SoraArena
+LogShaderLibrary: Display: Logical shader library 'SoraArena' has been created as a monolithic library, components 1
+LogShaderLibrary: Display: Tried to open again shader library 'SoraArena', but could not find new components for it (existing components: 1).
+LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+LogCsvProfiler: Display: Metadata set : deviceprofile="Mac"
+LogStreaming: Display: FlushAsyncLoading(8): 8 QueuedPackages, 0 AsyncPackages
+LogStreaming: Display: Partially loaded package /Engine/EngineMaterials/WorldGridMaterial (state: WaitingForIo) to avoid deadlock when it was recursively flushed by package /Engine/EngineMaterials/DefaultTextMaterialOpaque (state: PostLoad). UniqueCallstack(-1).
+LogStreaming: Display: Partially loaded package /Engine/EngineMaterials/DefaultDeferredDecalMaterial (state: WaitingForIo) to avoid deadlock when it was recursively flushed by package /Engine/EngineMaterials/DefaultTextMaterialOpaque (state: PostLoad). UniqueCallstack(-1).
+LogStreaming: Display: Partially loaded package /Engine/EngineMaterials/DefaultLightFunctionMaterial (state: WaitingForIo) to avoid deadlock when it was recursively flushed by package /Engine/EngineMaterials/DefaultTextMaterialOpaque (state: PostLoad). UniqueCallstack(-1).
+LogStreaming: Display: Partially loaded package /Engine/EngineMaterials/DefaultPostProcessMaterial (state: WaitingForIo) to avoid deadlock when it was recursively flushed by package /Engine/EngineMaterials/DefaultTextMaterialOpaque (state: PostLoad). UniqueCallstack(-1).
+LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+LogAudio: Display: Registering Engine Module Parameter Interfaces...
+LogAudio: Display: Initializing Audio Device Manager...
+LogAudio: Display: Loading Default Audio Settings Objects...
+LogAudio: Display: No default SoundConcurrencyObject specified (or failed to load).
+LogAudio: Display: Audio Device Manager Initialized
+LogAudio: Display: Creating Audio Device:                 Id: 1, Scope: Shared, Realtime: True
+LogAudioMixer: Display: bUseRenderScheduler set to true.
+LogAudioMixer: Display: Audio Mixer Platform Settings:
+LogAudioMixer: Display: 	Sample Rate:						  48000
+LogAudioMixer: Display: 	Callback Buffer Frame Size Requested: 1024
+LogAudioMixer: Display: 	Callback Buffer Frame Size To Use:	  1024
+LogAudioMixer: Display: 	Number of buffers to queue:			  2
+LogAudioMixer: Display: 	Max Channels (voices):				  32
+LogAudioMixer: Display: 	Number of Async Source Workers:		  0
+LogAudio: Display: AudioDevice MaxSources: 32
+LogAudio: Display: Audio Spatialization Plugin: None (built-in).
+LogAudio: Display: Audio Reverb Plugin: None (built-in).
+LogAudio: Display: Audio Occlusion Plugin: None (built-in).
+LogAudioMixerAudioUnit: Display: Bytes per submitted buffer: 8192
+LogAudioMixerAudioUnit: Warning: Error querying Sample Rate: 2003332927
+LogAudioMixer: Display: Initializing audio mixer using platform API: 'CoreAudio'
+LogAudioMixer: Display: Using Audio Hardware Device Unknown
+LogAudioMixer: Display: Initializing Sound Submixes...
+LogAudioMixer: Display: Creating Master Submix 'MasterSubmixDefault'
+LogAudioMixer: Display: Creating Master Submix 'MasterReverbSubmixDefault'
+LogAudioMixer: Display: Output buffers initialized: Frames=1024, Channels=2, Samples=2048, InstanceID=1
+LogAudioMixer: Display: Starting AudioMixerPlatformInterface::RunInternal(), InstanceID=1
+LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+LogAudio: Display: Audio Device (ID: 1) registered with world 'Untitled'.
+LogInit: Display: Game Engine Initialized.
+LogCsvProfiler: Display: Metadata set : raytracing="0"
+LogInit: Display: Starting Game.
+LogAudio: Display: Audio Device unregistered from world 'Untitled'.
+LogAudio: Display: Audio Device (ID: 1) registered with world 'Entry'.
+LogStreaming: Warning: Failed to read file '/Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/SaveGames/SoraControlsV1.sav' error.
+LogViewport: Display: Viewport MouseLockMode Changed, DoNotLock -> LockOnCapture
+LogViewport: Display: Viewport MouseCaptureMode Changed, CapturePermanently_IncludingInitialMouseDown -> CapturePermanently
+LogSlate: Display: Synchronously lazy loading font file '../../../SoraArena/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf' with subface index 0 in Game thread.
+LogSlate: Display: Took 0.002608 seconds to synchronously load lazily loaded font '../../../SoraArena/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf' (16082K) on Game thread.
+LogSlate: Display: Freetype font face in memory successfully created with synchronously loaded raw font file '../../../SoraArena/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf' subface 0 in Game thread.
+LogSlate: Display: Font face '../../../SoraArena/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf' subface index 0 successfully added to font face map in Game thread.
+LogSlate: Display: Synchronously lazy loading font file '../../../Engine/Content/Slate/Fonts/Roboto-Regular.ttf' with subface index 0 in Game thread.
+LogSlate: Display: Took 0.000225 seconds to synchronously load lazily loaded font '../../../Engine/Content/Slate/Fonts/Roboto-Regular.ttf' (155K) on Game thread.
+LogSlate: Display: Freetype font face in memory successfully created with synchronously loaded raw font file '../../../Engine/Content/Slate/Fonts/Roboto-Regular.ttf' subface 0 in Game thread.
+LogSlate: Display: Font face '../../../Engine/Content/Slate/Fonts/Roboto-Regular.ttf' subface index 0 successfully added to font face map in Game thread.
+LogRHI: Display: ShaderPipelineCache: Paused Batching. 1
+LogRHI: Display: ShaderPipelineCache: Resumed Batching. 0
+LogRHI: Display: ShaderPipelineCache: Batching Resumed.
+LogInit: Display: Engine is initialized. Leaving FEngineLoop::Init()
+LogCsvProfiler: Display: Metadata set : streamingpoolsizemb="1000"
+LogTrace: Display: Control listening on port 36513
+LogTemp: Display: SORA_ART_VIEW: camera=X=-2696.000 Y=0.000 Z=154.150 rotation=P=0.000000 Y=0.000000 R=0.000000 pawn=X=-2700.000 Y=0.000 Z=90.150
+LogTemp: Display: SORA_ART_REVIEW_REQUEST: /Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/Screenshots/Mac/SoraArtReview_Estate_Entrance_HUD.png
+LogTemp: Display: SORA_ART_REVIEW_REQUEST: /Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/Screenshots/Mac/SoraArtReview_Estate_Entrance_NoHUD.png
+LogStreaming: Display: FlushAsyncLoading(146): 1 QueuedPackages, 0 AsyncPackages
+LogTemp: Display: FERN_GROUND_ART_REVIEW_SPAWNED: one visual-only contacted cluster on north shoulder
+LogTemp: Display: SORA_ART_REVIEW_REQUEST: /Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/Screenshots/Mac/SoraArtReview_Estate_FernShoulder_NoHUD.png
+LogTemp: Display: SORA_ART_REVIEW_REQUEST: /Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/Screenshots/Mac/SoraArtReview_Estate_FernShoulder_Close.png
+LogTemp: Display: SORA_ART_REVIEW_REQUEST: /Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/Screenshots/Mac/SoraArtReview_Estate_FernShoulder_CloseBaseline.png
+LogTemp: Display: SORA_ART_REVIEW_REQUEST: /Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/Screenshots/Mac/SoraArtReview_Estate_KuraFront_Close.png
+LogTemp: Display: SORA_ART_REVIEW_REQUEST: /Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/Screenshots/Mac/SoraArtReview_Nyaakoto_Body.png
+LogTemp: Display: SORA_ART_REVIEW_REQUEST: /Users/takemiyamakoto/Library/Containers/org.sora.soraarena/Data/Library/Application Support/Epic/SoraArena/Saved/Screenshots/Mac/SoraArtReview_Nyaakoto_Face.png
+LogInit: Display: PreExit Game.
+LogAudio: Display: Beginning Audio Device Manager Shutdown (Module: AudioMixerCoreAudio)...
+LogAudio: Display: Destroying 1 Remaining Audio Device(s)...
+LogAudio: Display: Audio Device unregistered from world 'Entry'.
+LogAudio: Display: Shutting down audio device while 1 references to it are still alive. For more information, compile with INSTRUMENT_AUDIODEVICE_HANDLES.
+LogAudio: Display: Audio Device Manager Shutdown
+LogShaderLibrary: Display: Closing logical shader library 'Global' with 1 components
+LogShaderLibrary: Display: Closing logical shader library 'SoraArena' with 1 components

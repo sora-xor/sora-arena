@@ -42,3 +42,8 @@ they were rejected as frontage A/B cameras. The diagnostic checkout's temporary
 WorldBuilder and GameMode changes were restored byte-for-byte after capture;
 generated ArtReview assets remain unreferenced there. Main runtime files were
 never changed for this review.
+
+The raw diagnostic [baseline, UV-corrected, and final yaw-review logs](logs/)
+are archived with [SHA-256 checksums](logs/SHA256SUMS). They record the import,
+Mac cook, stage/package, and packaged capture evidence retained before the
+reproducible `/tmp` app archives were cleared for disk space.
