@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_cargo_pbr.py",
+  "generator_sha256": "04522759fd5248c1a185440dc91436d314ab36014c9a39ccaa88750aec93f7b1",
+  "origin": "Original project-authored deterministic procedural pixels; no external texture inputs",
+  "license": "Original project-owned procedural texture output; no third-party image or paid asset",
+  "seed": 416819,
+  "sets": [
+    {
+      "name": "Wood",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "roughness": 0.74,
+      "metallic": 0,
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_NyaagyuCargo_Wood_Albedo.png",
+          "sha256": "50afbc9f001b75fce8e3bd0483ebe3e139b6324899e6f85598c7eef297295d5a"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_NyaagyuCargo_Wood_NormalDX.png",
+          "sha256": "a03e7ad474073452214fa1f8f9f7a7d1d82c2f4c10090d10230adcfcc7d74a7c"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_NyaagyuCargo_Wood_ORM.png",
+          "sha256": "88762c5d644bbcf561fce42a045bf829996e5309121756c8c7a505531ffa3c11"
+        }
+      ]
+    },
+    {
+      "name": "Straw",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "roughness": 0.91,
+      "metallic": 0,
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_NyaagyuCargo_Straw_Albedo.png",
+          "sha256": "a8e374d1a5f4b991c6737b3cce1af350f898d2b7931aafcdf38170d37086570a"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_NyaagyuCargo_Straw_NormalDX.png",
+          "sha256": "9de02d0ee53a831f3bbc1220345e5ebd1574fad6c5c8ee4b12d936c32cf34918"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_NyaagyuCargo_Straw_ORM.png",
+          "sha256": "ffd6a94d8498a813e0c975aba4ed0b38575326d7a5c4b2e9dc37cd9482848b45"
+        }
+      ]
+    },
+    {
+      "name": "IndigoCloth",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "roughness": 0.83,
+      "metallic": 0,
+      "maps": [
+        {
+          "channel": "Albedo",
+          "file": "T_NyaagyuCargo_IndigoCloth_Albedo.png",
+          "sha256": "2f4b703d529141cb94dad035fc794a2cfc632fa73d9f44ee9022c763ea61c222"
+        },
+        {
+          "channel": "NormalDX",
+          "file": "T_NyaagyuCargo_IndigoCloth_NormalDX.png",
+          "sha256": "e5cba59ebc02d4599f09c72ca2d24188aba1e2203125984a8ff68742934cca89"
+        },
+        {
+          "channel": "ORM",
+          "file": "T_NyaagyuCargo_IndigoCloth_ORM.png",
+          "sha256": "605482905c4bd0de289464aaac5a9ffa0cccee0b2c0d767530d510239949fa9b"
+        }
+      ]
+    }
+  ],
+  "material_slots": {
+    "M_Cargo_AgedTimber": {
+      "surface": "Wood",
+      "tint": [
+        1,
+        1,
+        1
+      ]
+    },
+    "M_Cargo_DarkInterior": {
+      "surface": "Wood",
+      "tint": [
+        0.42,
+        0.42,
+        0.42
+      ]
+    },
+    "M_Cargo_WornEdge": {
+      "surface": "Wood",
+      "tint": [
+        1.21,
+        1.17,
+        1.08
+      ]
+    },
+    "M_Cargo_StrawWrap": {
+      "surface": "Straw",
+      "tint": [
+        1,
+        1,
+        1
+      ]
+    },
+    "M_Cargo_HempRope": {
+      "surface": "Straw",
+      "tint": [
+        0.77,
+        0.72,
+        0.62
+      ]
+    },
+    "M_Cargo_IndigoCloth": {
+      "surface": "IndigoCloth",
+      "tint": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "limitations": "Authored procedural maps are not measured scans. Normal and roughness response are art estimates; no actual fiber geometry is baked into these maps."
+}

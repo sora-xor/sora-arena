@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "name": "SM_Nyaagyu_CargoStack",
+  "generator": "scripts/art/create_nyaagyu_cargo_stack.py",
+  "source_blend": "Nyaagyu_CargoStack.blend",
+  "blend_sha256": "aae11ec1853fdf4955219596ca09fae6c74ed87793c5419428e304c14b6254d6",
+  "fbx": "SM_Nyaagyu_CargoStack.fbx",
+  "fbx_sha256": "cb8ebfbd8d8b33ac2598479bce3fc013e61582bfeafccd99be513aabfc149c4d",
+  "review_before": "Nyaagyu_CoverProxy_Before_Blender.png",
+  "review_before_sha256": "201a5b384553b78df3218842ed366a67380ca8ad48194bfe3116fd51f6118f65",
+  "review_after": "Nyaagyu_CargoStack_Blender.png",
+  "review_after_sha256": "084d3c8cb5de468b5e503205b84f6f2373282abf1032238787f455357789e13b",
+  "source_parts": 159,
+  "source_triangles": 23804,
+  "bounds_m": {
+    "min": [
+      -1.1175,
+      -0.87,
+      0.0
+    ],
+    "max": [
+      1.1175,
+      0.86,
+      1.3856
+    ]
+  },
+  "collision_envelope_m": [
+    2.3,
+    1.8,
+    1.4
+  ],
+  "collision": "Visual only; existing C++ cube remains the gameplay collision proxy",
+  "nanite_windows": true,
+  "mac_conventional_fallback": {
+    "source_fbx": "SM_Nyaagyu_CargoStack.fbx",
+    "fallback_percent_triangles": 1.0,
+    "fallback_target": "PercentTriangles",
+    "generate_fallback": "Enabled",
+    "render_config": "Config/Mac/MacEngine.ini"
+  },
+  "material_slots": [
+    "M_Cargo_AgedTimber",
+    "M_Cargo_BlackIron",
+    "M_Cargo_DarkInterior",
+    "M_Cargo_HempRope",
+    "M_Cargo_IndigoCloth",
+    "M_Cargo_SORA_Red",
+    "M_Cargo_StrawWrap",
+    "M_Cargo_WornEdge"
+  ],
+  "pbr_manifest_sha256": "889ba49a54e7316ed1c0250c405010b0ec3a3e451469fc782c802c9f41b4aaf2",
+  "insignia_source": "../../UI/sora_logo_NOtext2.svg",
+  "insignia_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "exact_sora_kamon_objects": [
+    "SORA_kamon_exact_svg_cargo_0",
+    "SORA_kamon_exact_svg_cargo_1"
+  ],
+  "unreal_asset": "/Game/Generated/Environment/Props/SM_Nyaagyu_CargoStack.SM_Nyaagyu_CargoStack",
+  "license": "Original project-owned geometry, deterministic project-generated PBR textures, and user-supplied exact SORA SVG relief; no paid or third-party texture assets",
+  "reference_notes": [
+    {
+      "url": "https://www.metmuseum.org/art/collection/search/44674",
+      "use": "Edo farming screen depicts baled rice and warehouse storage; no geometry copied"
+    },
+    {
+      "url": "https://www.britishmuseum.org/blog/historical-city-travel-guide-osaka-early-19th-century",
+      "use": "Edo Osaka grain storage and straw bags context; fictional workshop cargo interpretation"
+    }
+  ],
+  "limitations": "Static visual replacement art study, not a documented reconstruction of one Edo chest or bale. Rope tension, cloth deformation, weathering, game placement and UE 5.8.2 runtime performance remain unqualified."
+}
