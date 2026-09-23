@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "identity": "Nyaakoto / ニャーコト anatomical head V4 source-only study",
+  "production_status": "SOURCE_REVIEW_ONLY; no Unreal/runtime integration or photoreal qualification",
+  "base_v3_blend_sha256": "9563f2521fe272b4dbf969e7a1d3e99b22f17dbcb6f6e3ab683f89eb093b9e98",
+  "user_reference_sha256": "c9f7a4bbe6ba529b2bbdb629db3ba09858c11b563c334e31593876455a550801",
+  "user_reference_embedded": false,
+  "source_license": "Original project work, revised from project-owned V3. No external scans or paid assets.",
+  "texture_provenance": "Project-owned V3 unique-UV atlas transformed and normal/ORM artist-derived; no measured scan or AO bake",
+  "units": "meters; +X face forward; +Z up",
+  "groom_strands": 18664,
+  "files_sha256": {
+    "Nyaakoto_HeadAnatomy_V4_Study.blend": "3962b343f35e55c61f387c14ad0ab21468a88d2849e2772225ecc83145a85021",
+    "Nyaakoto_HeadV4_Front.png": "bd4139536909183f0ab687a5b5a6fa4d02a2d389289f243368b446ce2a8c2ce7",
+    "Nyaakoto_HeadV4_Profile.png": "537449e9fd4ced35fae513761feae4bd297e5cd0099eb95e09a8f897f979989a",
+    "Nyaakoto_HeadV4_ThreeQuarter.png": "5962f0644fa1b75c271f15ab1d735f84ae18c65efdc6912c9afa1a055d54ea95",
+    "SM_Nyaakoto_HeadAnatomy_V4_Study.fbx": "0798b326c0569c068289ecc5de329fa98354092e0beda08725d30ecef0eb8f8a",
+    "T_Nyaakoto_HeadV4_Albedo.png": "c879d04a588d524efaebdca06c2edade758628403da47c6539b3a3256e6c6204",
+    "T_Nyaakoto_HeadV4_NormalDX.png": "3a1947b646f880d44f6d5babfea4093add94cf6d45885119f847efca2b61cc00",
+    "T_Nyaakoto_HeadV4_NormalGL.png": "e0f65dda1d0e7126d56865c0bb694d40456b9b60163c4240da9fafe9b11642ed",
+    "T_Nyaakoto_HeadV4_ORM.png": "486613d21e75285432cacd0f43906d35ba4a5287a3973eeda3a426db7ec710a6"
+  }
+}
