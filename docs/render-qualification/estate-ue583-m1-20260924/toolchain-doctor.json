@@ -1,0 +1,99 @@
+{
+  "build_ready": true,
+  "cook_ready": true,
+  "release_prerequisites_ready": false,
+  "interim_compile_prerequisites_ready": true,
+  "engine_mode": "interim_compile_diagnostic",
+  "selected_engine_version": "5.8.3",
+  "release_engine_version": "5.8.2",
+  "all_checks_pass": false,
+  "engine_root": "/Users/Shared/Epic Games/UE_5.8",
+  "developer_dir": "/Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer",
+  "checks": [
+    {
+      "name": "host",
+      "actual": "macOS-27.0-arm64-arm-64bit",
+      "expected": "macOS for these build scripts",
+      "ok": true
+    },
+    {
+      "name": "engine_selection",
+      "actual": "5.8.3",
+      "expected": "unset (release) or exactly 5.8.3 (compile diagnostic)",
+      "ok": true
+    },
+    {
+      "name": "unreal",
+      "actual": "5.8.3",
+      "expected": "5.8.3",
+      "ok": true,
+      "detail": "/Users/Shared/Epic Games/UE_5.8"
+    },
+    {
+      "name": "xcode",
+      "actual": "26.1.1",
+      "expected": "26.1.1",
+      "ok": true,
+      "detail": "/Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer"
+    },
+    {
+      "name": "macos_sdk",
+      "actual": "/Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+      "expected": "available through selected Xcode",
+      "ok": true
+    },
+    {
+      "name": "xcode_first_launch",
+      "actual": "complete",
+      "expected": "setup already complete",
+      "ok": true
+    },
+    {
+      "name": "metal_toolchain",
+      "actual": "available",
+      "expected": "Metal compiler executable through selected Xcode",
+      "ok": true
+    },
+    {
+      "name": "blender",
+      "actual": "5.2.2",
+      "expected": "5.2.2",
+      "ok": true,
+      "detail": "/opt/homebrew/bin/blender"
+    },
+    {
+      "name": "git_lfs",
+      "actual": "3.8.0",
+      "expected": "3.8.0",
+      "ok": true
+    },
+    {
+      "name": "git_lfs_repository",
+      "actual": "git-lfs filter-process",
+      "expected": "git-lfs filter-process",
+      "ok": true
+    },
+    {
+      "name": "project",
+      "actual": [
+        "SoraArena.uproject"
+      ],
+      "expected": "one root .uproject",
+      "ok": true
+    },
+    {
+      "name": "editor_binary",
+      "actual": "/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor",
+      "expected": "UnrealEditor executable",
+      "ok": true
+    },
+    {
+      "name": "free_disk_gib",
+      "actual": 44.3,
+      "expected": "at least 100 GiB before engine installation/build",
+      "ok": false
+    }
+  ],
+  "sdk_root": "/Users/takemiyamakoto/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.1.sdk",
+  "note": "Interim UE 5.8.3 build/cook/stage diagnostics only; the 5.8.2 release pin and source-revision/packaging/runtime acceptance remain unmet."
+}

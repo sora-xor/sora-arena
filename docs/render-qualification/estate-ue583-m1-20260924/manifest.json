@@ -1,0 +1,186 @@
+{
+  "archive_created_utc": "2026-09-23T23:35:27.009376+00:00",
+  "cameras": {
+    "Entrance": {
+      "horizontal_fov_deg": 94,
+      "location_cm": [
+        -2696,
+        0,
+        154.15
+      ],
+      "rotation_deg": [
+        0,
+        0,
+        0
+      ]
+    },
+    "ToriiFoot": {
+      "horizontal_fov_deg": 65,
+      "location_cm": [
+        -2500,
+        235,
+        90.15
+      ],
+      "rotation_deg": [
+        -28,
+        0,
+        0
+      ]
+    }
+  },
+  "capture_complete": false,
+  "capture_platform": "mac",
+  "captures": [
+    {
+      "bytes": 1410158,
+      "filename": "Estate_Entrance_Lit.png",
+      "height": 720,
+      "sha256": "b000c770414942d88625e7771eb5cad2eeb63907a93f99c14a8468b0d435c750",
+      "status": "captured",
+      "width": 1280
+    },
+    {
+      "bytes": 1334633,
+      "filename": "Estate_Entrance_LumenOverview.png",
+      "height": 720,
+      "sha256": "35cb2dca843cf549fef0fb08da4860f46e5dd66803a29284cb192442ba48c134",
+      "status": "captured",
+      "width": 1280
+    },
+    {
+      "bytes": 1013753,
+      "filename": "Estate_Entrance_LumenScene.png",
+      "height": 720,
+      "sha256": "aa6d7dd1111d372f338438f06c92857137e6a4c470a4d37c3e1431d13d12a7ae",
+      "status": "captured",
+      "width": 1280
+    },
+    {
+      "bytes": 1022693,
+      "filename": "Estate_Entrance_LumenSurfaceCache.png",
+      "height": 720,
+      "sha256": "b68b619ac483596c9cb3d37b68d59b563eb43e6af0f1db6ce86bd438bbc20733",
+      "status": "captured",
+      "width": 1280
+    },
+    {
+      "bytes": 1435998,
+      "filename": "Estate_Entrance_LumenCardPlacement.png",
+      "height": 720,
+      "sha256": "64ba4cff0e982db9ae9c79b93e2516ccca6ca170bb3524886e86f4579a4f9d20",
+      "status": "captured",
+      "width": 1280
+    },
+    {
+      "filename": "Estate_ToriiFoot_Lit.png",
+      "status": "missing"
+    },
+    {
+      "filename": "Estate_ToriiFoot_LumenSurfaceCache.png",
+      "status": "missing"
+    },
+    {
+      "filename": "Estate_ToriiFoot_LumenCardPlacement.png",
+      "status": "missing"
+    },
+    {
+      "bytes": 981402,
+      "filename": "Estate_Entrance_MeshDistanceFields.png",
+      "height": 720,
+      "sha256": "4395521986cc6ba5c15ffed58d8bfdc2148130d152adcc7e253fb71629ac3f93",
+      "status": "captured",
+      "width": 1280
+    },
+    {
+      "bytes": 927953,
+      "filename": "Estate_Entrance_GlobalDistanceField.png",
+      "height": 720,
+      "sha256": "10f14a84d19733131d9130b1525c1de83cb0e0e4c304449ad31c8db1455810ef",
+      "status": "captured",
+      "width": 1280
+    }
+  ],
+  "engine": {
+    "build_version": {
+      "BranchName": "++UE5+Release-5.8",
+      "Changelist": 58210709,
+      "CompatibleChangelist": 55116800,
+      "IsLicenseeVersion": 0,
+      "IsPromotedBuild": 1,
+      "MajorVersion": 5,
+      "MinorVersion": 8,
+      "PatchVersion": 3
+    },
+    "build_version_sha256": "eab58750e84719489f3ee0d42d05a533ceb357eb3ee511777e9408d27a85f43c",
+    "classification": "interim_diagnostic_only",
+    "release_source_commit_pin": null,
+    "root": "/Users/Shared/Epic Games/UE_5.8",
+    "version": "5.8.3"
+  },
+  "hardware_label": "Mac Studio / Apple M1 Ultra / macOS 27.0 / METAL_SM5",
+  "host": "macOS-27.0-arm64-arm-64bit",
+  "limitations": [
+    "A 5.8.3 capture is an interim diagnostic, never UE 5.8.2 release acceptance.",
+    "The release source commit is unpinned; version alone is not an exact engine revision.",
+    "M1 Ultra Mac fallback captures cannot qualify Windows Nanite or RTX performance."
+  ],
+  "project": {
+    "default_engine_ini_sha256": "525bc8a9cc0560939835ee253e7c1238ee22c740d9821e31d7982aa4fb9637f9",
+    "head": "6dadd1078424628cd8722ffd6ab26edd98c44d85",
+    "mac_engine_ini_sha256": "28712f7943eee7272820cee9f0591dd01dc2c7fd61e3665dde989b6af00e1f1c",
+    "project": "SoraArena.uproject",
+    "project_sha256": "9423e693446217bd9d6fff4a80a257faad4cb551894e540cb09cf06cb4a4bc49",
+    "worktree_dirty": true
+  },
+  "raw_logs": {
+    "commands.txt": {
+      "bytes": 3359,
+      "sha256": "0c3ecbf853b84d29f22704ea402d75271d2575cf3490bbdd016522f068e5a907"
+    },
+    "logs/run-01.log": {
+      "bytes": 18514,
+      "sha256": "fbc25a7a6b670c646c7c19a9c27ab6e430a70e7e6c42962020f1d81699097b9e"
+    },
+    "logs/run-02.log": {
+      "bytes": 18997,
+      "sha256": "2b7e72d921bd900c594ae74daf2f57f8af5b218ff7912d3c0397702fcc45ce6d"
+    },
+    "logs/run-03.log": {
+      "bytes": 18331,
+      "sha256": "b1d2220b56b4e9f29d995be1af0d834422dccf4f1741211ba359fa8d97dadd26"
+    },
+    "logs/run-04.log": {
+      "bytes": 19180,
+      "sha256": "a708ea397233a6c1d3b79774b03f95b08e5bd01d8596da757fbe66e378cb9580"
+    },
+    "logs/run-05.log": {
+      "bytes": 18514,
+      "sha256": "8389a81a19d93933b50e3c7362c09973a4c2964cdadf23c355a4756164c09d79"
+    },
+    "logs/run-06.log": {
+      "bytes": 18514,
+      "sha256": "f0500c5697a8b31a8c112c91272af9ddd35edc8a74eeee00755c5686cd5e0375"
+    },
+    "logs/run-07.log": {
+      "bytes": 18514,
+      "sha256": "087b3a5be4a6d3491eb36b6cbbd5bd295a81be266d2e3bb4be84bde78505f6a9"
+    }
+  },
+  "required_captures": [
+    "Estate_Entrance_Lit.png",
+    "Estate_Entrance_LumenOverview.png",
+    "Estate_Entrance_LumenScene.png",
+    "Estate_Entrance_LumenSurfaceCache.png",
+    "Estate_Entrance_LumenCardPlacement.png",
+    "Estate_ToriiFoot_Lit.png",
+    "Estate_ToriiFoot_LumenSurfaceCache.png",
+    "Estate_ToriiFoot_LumenCardPlacement.png",
+    "Estate_Entrance_MeshDistanceFields.png",
+    "Estate_Entrance_GlobalDistanceField.png"
+  ],
+  "schema": 1,
+  "viewport_px": [
+    1280,
+    720
+  ]
+}

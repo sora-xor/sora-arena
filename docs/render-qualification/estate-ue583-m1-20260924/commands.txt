@@ -1,0 +1,39 @@
+Estate read-only UE 5.8.3 packaged Mac visualization transcript
+Bundle: org.sora.soraarena
+Binary SHA256: 1f5e5675cb8a32087ffa39f6f283faddd8bf4ed8ca239510a794e1e216d29861
+Host: Mac Studio / Apple M1 Ultra / macOS 27.0 (26A428)
+Package: /tmp/sora-arena-mac-dojo-bokken-pbr-review/Mac/SoraArena.app
+Every run used a fresh process; existing -SoraArtReview in-memory save and fixed entrance screenshot hook.
+Unedited screenshot bytes copied from sandboxed SoraArtReview_Estate_Entrance_NoHUD.png immediately after each run.
+Runtime log in each run contains SORA_ART_VIEW: camera X=-2696 Y=0 Z=154.150 rotation P=0 Y=0 R=0 and shaderplatform=METAL_SM5.
+Each process was terminated after its new entrance screenshot was flushed; raw stdout/stderr was retained.
+The two distance-field runs also submitted r.DistanceFields.LogAtlasStats 1; no atlas-stat line was observed in their saved logs.
+No ToriiFoot fixed-camera captures were available from this prebuilt, read-only hook.
+
+Capture: Estate_Entrance_Lit.png
+Original run log: estate-lit-package-run.log
+Command: /tmp/sora-arena-mac-dojo-bokken-pbr-review/Mac/SoraArena.app/Contents/MacOS/SoraArena -game -RenderOffscreen -SoraArtReview -ResX=1280 -ResY=720 -windowed -unattended -nop4 -nosplash -log
+
+Capture: Estate_Entrance_LumenOverview.png
+Original run log: estate-lumen-overview-package-run.log
+Command: /tmp/sora-arena-mac-dojo-bokken-pbr-review/Mac/SoraArena.app/Contents/MacOS/SoraArena -game -RenderOffscreen -SoraArtReview -ResX=1280 -ResY=720 -windowed -unattended -nop4 -nosplash -log "-ExecCmds=r.Lumen.Visualize 1"
+
+Capture: Estate_Entrance_LumenScene.png
+Original run log: estate-lumenscene-package-run.log
+Command: /tmp/sora-arena-mac-dojo-bokken-pbr-review/Mac/SoraArena.app/Contents/MacOS/SoraArena -game -RenderOffscreen -SoraArtReview -ResX=1280 -ResY=720 -windowed -unattended -nop4 -nosplash -log "-ExecCmds=r.Lumen.Visualize 3"
+
+Capture: Estate_Entrance_LumenSurfaceCache.png
+Original run log: estate-lumen-surface-cache-package-run.log
+Command: /tmp/sora-arena-mac-dojo-bokken-pbr-review/Mac/SoraArena.app/Contents/MacOS/SoraArena -game -RenderOffscreen -SoraArtReview -ResX=1280 -ResY=720 -windowed -unattended -nop4 -nosplash -log "-ExecCmds=r.Lumen.Visualize 5"
+
+Capture: Estate_Entrance_LumenCardPlacement.png
+Original run log: estate-lumencardplacement-package-run.log
+Command: /tmp/sora-arena-mac-dojo-bokken-pbr-review/Mac/SoraArena.app/Contents/MacOS/SoraArena -game -RenderOffscreen -SoraArtReview -ResX=1280 -ResY=720 -windowed -unattended -nop4 -nosplash -log "-ExecCmds=r.Lumen.Visualize.CardPlacement 1"
+
+Capture: Estate_Entrance_MeshDistanceFields.png
+Original run log: estate-meshdistancefields-package-run.log
+Command: /tmp/sora-arena-mac-dojo-bokken-pbr-review/Mac/SoraArena.app/Contents/MacOS/SoraArena -game -RenderOffscreen -SoraArtReview -ResX=1280 -ResY=720 -windowed -unattended -nop4 -nosplash -log "-ExecCmds=show VisualizeMeshDistanceFields,r.DistanceFields.LogAtlasStats 1"
+
+Capture: Estate_Entrance_GlobalDistanceField.png
+Original run log: estate-globaldistancefield-package-run.log
+Command: /tmp/sora-arena-mac-dojo-bokken-pbr-review/Mac/SoraArena.app/Contents/MacOS/SoraArena -game -RenderOffscreen -SoraArtReview -ResX=1280 -ResY=720 -windowed -unattended -nop4 -nosplash -log "-ExecCmds=show VisualizeGlobalDistanceField,r.DistanceFields.LogAtlasStats 1"
