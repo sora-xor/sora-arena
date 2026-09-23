@@ -88,3 +88,13 @@ connected and textured, yet the eyes, ears, neck, mouth, and armor still read
 as stylized. The sparse courtyard and regular wall sections also miss the
 photoreal target. These frames are art diagnostics, not acceptance evidence
 for the stated AAA, performance, Nanite, or exact UE 5.8.2 release gates.
+
+`UE583_Estate_RoadsideDressing_Diagnostic.png` is an unedited packaged Mac
+frame after seven collision-free placements from the original ground-dressing
+mesh were added beside the route. The limited patch is visible on the right
+side of the approach. It adds close-scale stone and silt variation but does
+not materially change the broad, sparse composition; the repeated path,
+regular walls, simple characters, and flat terrain still fail the AAA
+photoreal art gate. The package used UE 5.8.3 only for a diagnostic on M1
+Ultra. SHA-256:
+`dfb0b9d2439b5e2f3288a631bb8fa3b19e92bb0e956bc48871d930128b504a37`.
