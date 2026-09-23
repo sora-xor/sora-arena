@@ -97,6 +97,10 @@ outstanding. Shipping builds keep submission disabled.
 The Iroha JavaScript native addon now builds and publishes with the project-specific
 Xcode 26.1.1 linker; 29 focused allocation, equipment, resource and racing SDK
 tests pass. This does not exercise Unreal or a live validator network.
+The focused native equipment integration suite also passes all five tests,
+including rejection of a snapshot missing authoritative custody maps. A broad
+`iroha_core --lib` test build remains blocked by unrelated Kagemusha and
+consensus test-fixture API errors; the focused result does not qualify the node.
 
 A research adapter has also produced and independently verified a native STARK
 for one fixed public damage/parry transition, rejecting seven tampering cases.

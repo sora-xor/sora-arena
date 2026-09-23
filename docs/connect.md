@@ -39,11 +39,12 @@ status text. Offline play does not require this library.
    Emit the resulting signed transaction bytes only after that verification.
 
 The subsystem never fabricates approvals, bond balances, kills, payouts,
-transaction inclusion, or chain finality. It does **not** broadcast the signed
-transaction. A separate submission and authenticated chain-state/receipt path
-must verify inclusion, the relevant funded game session, and finality before
-enabling value-bearing multiplayer. The `Signed` state means signature verified,
-not transaction submitted or settled.
+transaction inclusion, or chain finality. Signing does not broadcast a
+transaction; a separate explicit loopback-only test submission is described
+below. An authenticated chain-state/receipt path must verify inclusion, the
+relevant funded game session, and finality before enabling value-bearing
+multiplayer. The `Signed` state means signature verified, not transaction
+submitted or settled.
 
 Supported native instructions are `OpenGameSessionV1`, `JoinGameSessionV1`,
 `ClaimGamePayoutV1`, `OfferNftV1`, `BuyNftV1`, and
