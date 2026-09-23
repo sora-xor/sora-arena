@@ -38,9 +38,14 @@ practice source and its native presentation queries are implemented. A real
 macOS library passes 73 checked-in replay cases / 44,100 canonical ticks; Windows
 has not run that fixture. A pinned Windows GNU cross-build now produces a PE
 x86-64 kernel DLL with all fifteen header exports and matching sizes/alignments
-for eleven C ABI structs; it cannot establish Windows runtime parity. Actual
-UE compilation and runtime testing are still
-required before claiming the Unreal integration works. A separate headless test
+for eleven C ABI structs; it cannot establish Windows runtime parity. The Mac
+editor target compiled in an isolated UE **5.8.3** diagnostic worktree (installed
+changelist **58210709**). This checks source/API compatibility in that hotfix;
+the pinned 5.8.2 build and actual Unreal gameplay integration remain unverified.
+The same isolated 5.8.3 checkout loaded `/Engine/Maps/Entry` with
+`SoraGameMode` in a headless Mac game startup and exited cleanly. This is a
+startup smoke check, not a played campaign or rendered performance test.
+A separate headless test
 runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
 checks deterministic terminal state and XOR conservation; it does not measure
 networking, combat load, rendering, or proving.
@@ -70,8 +75,10 @@ also persists defeated opponents,
 restored sites, and exit completion to a local SaveGame checkpoint, rejecting
 inconsistent site progress on load. Round resets now destroy live explosive
 shells before restoring an encounter, so a previous attempt cannot damage new
-opponents or advance their saved kill count. This still needs an editor build and an
-in-game save/reload test; the shared encounter layouts do not meet the
+opponents or advance their saved kill count. The `SoraArena.Campaign.SaveRoundTrip`
+automation passed inside UE 5.8.3, covering `USoraSaveGame` memory serialization
+and restoration of all checkpoint fields. Disk slot teardown/reload and an
+in-game save/reload test remain open; the shared encounter layouts do not meet the
 six-to-eight-hour campaign target.
 The [host campaign acceptance driver](campaign/offline-acceptance.md) exercises
 the same extracted GameMode progression rules across all eight catalog
@@ -83,8 +90,9 @@ collector boss with locked-aim cyan beam and amber cleave warnings, recovery,
 bilingual HUD/dialogue and a local checkpoint that respawns the boss at full
 health after seventeen guards. The prototype save schema advances to 5 so a
 pre-boss checkpoint cannot skip the encounter; no compatibility decoder is
-included. Content validation passes 25 timed bilingual cues, but UE compilation,
-readability, combat balance and save recovery still require an in-engine run.
+included. Content validation passes 25 timed bilingual cues. The interim
+UE 5.8.3 editor compile and memory SaveGame automation do not verify subtitle
+readability, combat balance, disk save recovery or the pinned 5.8.2 build.
 The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
 the six-class selector is available in offline arena practice. This source
 behavior still needs an Unreal menu and save/reload check.
@@ -92,8 +100,11 @@ Six original Edo/alien environment props now have editable Blender source,
 FBX exports, metric collision/bounds checks, and campaign placement source.
 The Lantern Ward debt terminal has a retained flat blockout and a licensed CC0
 PBR material comparison; its geometry still reads as a prototype. Blender
-review renders and import manifests do not establish in-engine appearance; the
-UE 5.8.2 import and visual pass remain open.
+review renders and import manifests do not establish in-engine appearance. An
+isolated UE 5.8.3 editor diagnostic imported 25 character/weapon meshes, six
+environment props, the SORA insignia and the pinned CC0 palette. Its follow-up
+validator loaded 59 expected packages with their declared Unreal types. The
+UE 5.8.2 release import, in-game visual pass, and measured frame rate remain open.
 An original irrigation sluice now adds a hand-cranked timber/stone gate and
 alien meter to the agricultural liberation chapter's Estate sites. Its editable
 Blender source, FBX, collision-box round trip, material provenance and hashes

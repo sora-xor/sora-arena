@@ -14,10 +14,10 @@ been compiled. Run the doctor to inspect the actual machine.
 | Git LFS | **3.8.0**, installed; LFS filters and hooks initialized for this repository only |
 | Epic Games Launcher | **20.3.2**, installed at `~/Applications/SORAToolchain/Epic Games Launcher.app`; bundle version and arm64 executable verified |
 | Existing Epic launcher | The older `/Applications` copy self-updated to 18.1.2 during inspection; it was preserved |
-| Unreal Engine | **5.2.0** exists at `/Users/Shared/Epic Games/UE_5.2`; the Launcher is downloading **5.8.3**; **5.8.2 is not installed** |
+| Unreal Engine | **5.2.0** exists at `/Users/Shared/Epic Games/UE_5.2`; the Launcher installed **5.8.3** at `/Users/Shared/Epic Games/UE_5.8`; **5.8.2 is not installed** |
 | Xcode | **26.1.1, build 17B100**, installed at `~/Applications/SORAToolchain/Xcode_26.1.1.app`; full Apple code-signature verification passed, SDK **26.1** found, and first-launch status reports complete. Existing **27.0** is preserved |
-| Engine source commit | Not acquired or verified; `source_commit` remains `null` |
-| UE 5.8 compilation / packaging / runtime | **Not performed: 5.8.2 is absent and the 5.8.3 interim download is incomplete** |
+| Engine revision | The installed 5.8.3 `Build.version` reports promoted build changelist **58210709** on `++UE5+Release-5.8`; the exact 5.8.2 source commit has not been acquired, so release `source_commit` remains `null` |
+| UE 5.8 compilation / packaging / runtime | The project Mac editor target **compiled in 5.8.3** in an isolated diagnostic worktree after source API fixes. The SaveGame and Connect automation cases passed. Original art and the CC0 palette imported there, and 59 expected packages loaded with their declared Unreal types. The 5.8.2 release build, packaged builds, visual quality and gameplay qualification have not run |
 
 The machine's global `xcode-select` remains pointed at Command Line Tools. These
 scripts select Xcode and its matching `SDKROOT` only for their own process; they
@@ -32,18 +32,18 @@ Xcode 27 is a pin mismatch, not a claim that every use with UE 5.8 is impossible
   noninteractively. The private source repository must become accessible before
   an engine source build can be downloaded or its exact revision pinned.
 - The current Launcher Library shows a **5.8.3** tile and no 5.8.2 choice
-  in its version selector. The signed-in Epic account is downloading 5.8.3;
-  installation and `Build.version` validation are still pending. Exact 5.8.2
-  needs Epic's private source access or an existing licensed installation; the local GitHub account still
-  receives HTTP 404 for that repository. No engine files or source revision
-  have been verified. Epic released 5.8.3 on 2026-09-22, so the original
+  in its version selector. The signed-in Epic account installed 5.8.3 and its
+  `Build.version` reports changelist 58210709. Exact 5.8.2 needs Epic's
+  private source access or an existing licensed installation; the local GitHub
+  account still receives HTTP 404 for that repository. Epic released 5.8.3 on 2026-09-22, so the original
   description of 5.8.2 as the latest hotfix is stale. The release engine pin
   remains 5.8.2 until the requested version choice is resolved.
 - Epic's offline macOS installer is restricted to eligible Developer Portal
   organizations; it is not an account-free route to the historical hotfix.
-- The Mac is unlocked and the Launcher download is active. A 5.8.3 compile
-  diagnostic may run only after installation and an explicit opt-in; it does
-  not satisfy the 5.8.2 release pin.
+- The Mac editor target compiled with the exact 5.8.3 diagnostic opt-in in an
+  isolated worktree. Its source art and palette imports are also isolated there.
+  This does not satisfy the 5.8.2 release pin or establish played gameplay,
+  rendered art quality, Windows parity, or packaging.
 - Direct command-line expansion of the Apple download was denied by OS file
   permissions. Normal Finder/Archive Utility extraction succeeded, and Apple's
   complete app signature verified. Moving into `/Applications` was also denied,
@@ -82,8 +82,8 @@ the doctor and Mac build script strictly require **5.8.2**.
 
 ### Opt-in 5.8.3 compile diagnostic
 
-After the Launcher finishes installing 5.8.3, the following checks that
-installation and allows **only Mac editor compile and launch diagnostics**:
+The following checks the installed 5.8.3 and allows **only Mac editor compile
+and launch diagnostics**:
 
 ```sh
 export UE_ROOT='/Users/Shared/Epic Games/UE_5.8'
@@ -100,8 +100,8 @@ not change `versions.json`'s **5.8.2 release pin**, the `.uproject` association,
 Windows build policy, or asset import scripts. Without the exact override,
 `run-editor.sh` still requires 5.8.2. A passing interim compile or editor launch
 will not qualify a release, prove gameplay/rendering, or supply
-an exact 5.8.2 source revision. The Launcher build's source revision is not yet
-recorded. `python3 scripts/toolchain/test_doctor_interim.py` runs host-only
+an exact 5.8.2 source revision. The installed 5.8.3 build reports changelist
+58210709, not an exact 5.8.2 source commit. `python3 scripts/toolchain/test_doctor_interim.py` runs host-only
 fake-engine tests for the strict default, exact opt-in and rejected values;
 it never invokes Unreal.
 

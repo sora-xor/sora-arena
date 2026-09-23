@@ -370,8 +370,10 @@ status observation never by itself unlocks a bond or weapon entitlement.
   checksum and origin validation, node/session/role substitution, duplicate URI
   fields, extra fields, fragments, substituted URI schemes, rejection of NFT
   wagering/unrelated transfers, and exact transaction status interpretation.
-  These require an
-  installed matching engine and have not yet run.
+  The test passed in the isolated **UE 5.8.3** Mac editor diagnostic on
+  2026-09-23 after the engine run exposed a case-insensitive checksum comparison
+  and the parser was fixed to require exact uppercase CRC text. It has not run
+  in the pinned 5.8.2 release build or against a live wallet.
 - `scripts/connect/verify-qr.py` checks the vendored encoder's source hashes,
   compiles it as C99 with warnings treated as errors, encodes synthetic local
   launch links, and uses the independent macOS Vision QR decoder to compare the
@@ -389,7 +391,8 @@ status observation never by itself unlocks a bond or weapon entitlement.
   Unsupported unsolicited controls fail closed. Reconnection/resumption,
   offline signing queues, multiple simultaneous wallets, non-Ed25519 signing,
   and account proof extensions are outside this initial integration.
-- As of this implementation, UE 5.8 compilation, live Torii/wallet pairing,
+- As of this implementation, the UE 5.8.3 Mac editor target compiles, but the
+  pinned 5.8.2 release build, live Torii/wallet pairing,
   wallet transaction approval, test-chain submission/finality, and multi-node
   independent finality are **not yet verified**. Their absence must remain
   visible in product and build claims.

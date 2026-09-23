@@ -1,6 +1,6 @@
 # Unreal offline slice
 
-The project targets **Unreal Engine 5.8.2**, Windows and macOS. An offline prototype is in source, but Unreal compilation, asset import and play verification are still blocked by the unavailable 5.8.2 installation. Xcode 26.1.1 is installed for macOS; the Windows toolchain and packaged build remain unverified. A diagnostic attempt using an existing 5.2 installation stopped at SDK validation before compiling source; it is not a supported substitute.
+The project targets **Unreal Engine 5.8.2**, Windows and macOS. An offline prototype is in source. The Mac editor target compiled with installed **5.8.3**, changelist **58210709**, in an isolated diagnostic worktree after adapting the source to its APIs. The original art and CC0 palette imported in that isolated checkout, and an editor validator loaded 59 manifest-declared packages with their expected Unreal types. This is an import/type check; play, rendered art quality, packaging, and the exact 5.8.2 release build remain open. Xcode 26.1.1 is installed for macOS; the Windows toolchain and packaged build remain unverified. An earlier diagnostic attempt using 5.2 stopped at SDK validation before compiling source.
 
 ## Rendering configuration and acceptance gate
 
