@@ -72,7 +72,9 @@ subsequent health snapshot, but has no dedicated heal effect event.
 
 Ammunition, reload, and weapon-bound charge state are included in the canonical state hash and must be
 constrained by the complete future FPS execution relation. The current damage
-proof experiment does not cover these rules. The native presentation ABI is
+proof experiment does not cover these rules; a later fixed-scene kill proof
+constrains one Arc-carbine cooldown/ammunition sequence but no general weapon
+transition. The native presentation ABI is
 exactly 3; callers reject earlier development layouts before accessing buffers.
 No compatibility decoder, fallback, or alias is provided.
 

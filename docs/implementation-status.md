@@ -158,7 +158,10 @@ queues incoming evidence during an ACK wait. Drop, reorder, forged ACK, retry
 exhaustion and fresh-key restart tests pass. A full local receive queue now
 authenticates and re-ACKs only previously journaled replays; new evidence is
 refused before state mutation or ACK, then accepted when capacity returns.
-Focused regressions and the arena-core suite pass. It remains a zero-bond localhost
+An eight-batch, 16-tick two-peer Arc-carbine diagnostic now checks identical
+accepted combat hashes/history roots against independent `World` replay and
+rejects a tampered or duplicate reveal. Focused regressions and the arena-core
+suite pass. It remains a zero-bond localhost
 research path without production NAT/relay transport or settlement authority.
 
 The Unreal wallet source can prepare allowlisted native transactions, verify a

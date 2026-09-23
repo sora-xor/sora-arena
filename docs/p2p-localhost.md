@@ -9,3 +9,12 @@ The receiver sends an ACK only after both the journal append and external receip
 `ReceiptFiles` writes one synced file per journal receipt outside the journal. This is a **test harness artifact**, not an independently trusted rollback anchor: a party able to roll back both files can still hide a complete suffix. Before a real reconnect, an independent peer or ledger must supply the latest trusted receipt to `DurableSession::restore`. The transport never restores an old AEAD channel; it requires a new handshake and fresh keys. A persistence failure closes the transport handle before it sends or returns evidence.
 
 The focused tests exercise a two-peer certificate/reveal exchange through loopback UDP, dropped data and ACKs, exact retransmission, ACK-send failure after persistence, full-queue replay re-ACK without duplicate delivery, full-queue new-evidence rejection without an ACK or state change, out-of-order and duplicate fragments for a twelve-participant certificate, bounded retry exhaustion, and journal restore with fresh keys that reject stale ACKs and ciphertext. This slice has no NAT traversal, peer discovery, deadline consensus, execution proof, or ledger settlement. Real-value admission remains disabled until the full proof and validator qualification gates pass.
+
+A further offline diagnostic now drives two Arc-carbine peers through eight
+certified two-tick batches over this encrypted UDP path. After each accepted
+batch, both durable journals agree on the next tick, history root and combat
+state hash, and match an independently stepped `World` fixture. A corrupted
+reveal fragment cannot advance the receipt or combat state; exact retry works,
+and replay of an already accepted reveal does not execute twice. This covers
+16 local combat ticks with zero bond, not internet transport, adversarial
+consensus or a cryptographic execution proof.
