@@ -363,13 +363,15 @@ for side in (-1,1):
 
 # Eye set into an orbital fold rather than a separate toy-like glossy bead.
 for side in (-1,1):
-    ellipsoid(f"HorseStudy_orbital_fold_{side}",(.866,side*.117,1.585),
-              (.049,.013,.033),COAT,32,18)
-    ellipsoid(f"HorseStudy_eye_{side}",(.871,side*.128,1.587),
-              (.028,.008,.017),EYE,32,18)
-    tube(f"HorseStudy_upper_lid_{side}",[(.839,side*.135,1.588),
-         (.857,side*.139,1.606),(.881,side*.140,1.605),
-         (.902,side*.133,1.584)],.0035,EYE_RIM)
+    ellipsoid(f"HorseStudy_orbital_fold_{side}",(.866,side*.115,1.585),
+              (.037,.009,.023),COAT,32,18)
+    ellipsoid(f"HorseStudy_eye_{side}",(.869,side*.125,1.586),
+              (.020,.006,.011),EYE,32,18)
+    tube(f"HorseStudy_upper_lid_{side}",[(.846,side*.131,1.585),
+         (.857,side*.134,1.600),(.878,side*.134,1.598),
+         (.890,side*.129,1.584)],.0025,EYE_RIM)
+    tube(f"HorseStudy_lower_lid_{side}",[(.848,side*.130,1.580),
+         (.868,side*.132,1.576),(.887,side*.129,1.582)],.0018,EYE_RIM)
     ellipsoid(f"HorseStudy_nostril_shadow_{side}",
               (1.143,side*.091,1.360),(.027,.005,.018),DARK,32,16)
     tube(f"HorseStudy_nostril_lip_{side}",[
@@ -419,7 +421,9 @@ mane=[]
 for i in range(650):
     t=rng.random()
     x=.365+.40*t
-    z=1.335+.347*t-.021*math.sin(math.pi*t)
+    # Root follows the neck crest. The previous 1.335 m base placed much of
+    # the fine mane inside the anatomical shell and hid it in profile.
+    z=1.482+.268*t-.010*math.sin(math.pi*t)
     side=1 if rng.random()>.5 else -1
     y=side*rng.uniform(.006,.060)
     length=rng.uniform(.050,.160)
@@ -434,7 +438,7 @@ outer_mane=[]
 for i in range(138):
     t=(i+.35*rng.random())/138
     x=.386+.363*t
-    z=1.358+.320*t
+    z=1.497+.258*t
     side=1 if i%2 else -1
     y=side*rng.uniform(.030,.065)
     length=rng.uniform(.085,.175)

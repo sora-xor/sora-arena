@@ -34,6 +34,12 @@ SORA SVG relief remain in their source locations. The stirrup's broad toe
 enclosure is based on the dimensions in the existing tack reference, but
 its load path and rider clearance still need validation.
 
+A [fixed-view CC0 horse comparison](ReferenceReview/README.md) found that the
+original fine mane was buried in the neck and the eye sat too proud of the
+head. This second source pass raises the first-party mane fibres above the
+crest and reduces the eye/fold. Eight clay turntable angles and measured
+kura/abumi bounds are pinned with that review; the source remains offline art.
+
 The material graph in the Blender source uses the nine maps and packs them
 into the `.blend`. The FBX intentionally contains geometry, UV0, vertex color
 and material names. For Unreal, wire each manifest texture set to its named

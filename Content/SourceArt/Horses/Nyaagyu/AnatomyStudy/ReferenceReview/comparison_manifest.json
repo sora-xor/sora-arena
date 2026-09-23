@@ -1,0 +1,77 @@
+{
+  "archive_url": "https://opengameart.org/sites/default/files/horse.zip",
+  "archive_sha256": "469704f523c97b18627c14d47dcda69271357f2bb2787309f461b310a0043d27",
+  "source_page": "https://opengameart.org/content/realtime-ranchers-3d-model-pack",
+  "page_license": "CC0 1.0 (OpenGameArt author lyndon; archive has no separate license file)",
+  "archive_entries": [
+    "horse/Hair12Main2k.png",
+    "horse/Hair12Main2kNorm.png",
+    "horse/HorseMain2k00.png",
+    "horse/HorseMain2k00AO00.png",
+    "horse/HorseMain2k00Norm00.png",
+    "horse/LD_HorseRtime02.mtl",
+    "horse/LD_HorseRtime02.obj",
+    "horse/eye_texture.png"
+  ],
+  "rancher_source_triangles": 14986,
+  "normalization": "Both renders share ground Z=0 and approximately 1.83 m full ear height; reference size is an arbitrary comparison scale, not historical evidence.",
+  "views": {
+    "rancher_cc0": {
+      "profile": "557eb850e6c823fdb9eec0074c0204ad646e5f27d1595bea65e89cb36c3d6f68",
+      "front": "699e6485008014bcd857d7ef2b725a40a82c3b88fbcc54368f435e8f937d3796"
+    },
+    "nyaagyu_anatomy_bare": {
+      "profile": "45b8b234553d5efd041fcca4eb50e4e271a11466cefce5e7517fb3de247dec3b",
+      "front": "a5fe0b5ec09e49beb75e22af0441ffdfc530e48ed624cd41ed85308b732c13f7"
+    },
+    "nyaagyu_study_saddled": {
+      "profile": "4e45935566f8d71e4c7933abf15f4a0a71152e51d0ddafac6881f847d993ba02",
+      "front": "05c22efb43779c5f735aa142871de9a2615b83f0f503960166290dfdae5444a6"
+    }
+  },
+  "turntable_sha256": {
+    "0": "4036ba4e97f1c42d8f04885885f01d9a3f37375738123d9b4f2abd37051abc6e",
+    "45": "8b2721a52cbd9c54b5454c7fbb5fedca6c6731b4f8b6f346bb95edc6e432cad7",
+    "90": "5e8f6b087c11ca7a1dfd76dbe05b2cc9aa4e2e86d4902c7a0136e9d22f731cf5",
+    "135": "623f6744b4b104e879df5936a1daa61b7dd69cf7bceae7497bf36821ae89dcb6",
+    "180": "2f104f1443b1c9524c092a38afca58423728f5f53a86431348a9e0eceadac37b",
+    "225": "c136ccace41d79c08c7d177acced0fed4dd31e53370c3370655ee3c782dafc19",
+    "270": "b4daa785144026c58369d7755dfeabc151a8981fe580f7a023b730b5c53121d3",
+    "315": "5990beeb00e5bbfa75f74ea519531b06be5e64200f2be544a89090b17f491a37"
+  },
+  "kura_structural_bounds": {
+    "min_m": [
+      -0.228,
+      -0.1891,
+      1.3586
+    ],
+    "max_m": [
+      0.172,
+      0.19,
+      1.644
+    ],
+    "extent_m": [
+      0.4,
+      0.3791,
+      0.2854
+    ]
+  },
+  "abumi_left_toe_bounds": {
+    "min_m": [
+      -0.155,
+      -0.4991,
+      0.843
+    ],
+    "max_m": [
+      0.1449,
+      -0.3649,
+      1.1074
+    ],
+    "extent_m": [
+      0.2999,
+      0.1341,
+      0.2644
+    ]
+  },
+  "reference_mesh_in_game": false
+}

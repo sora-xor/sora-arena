@@ -6,25 +6,25 @@
   "baseline_blend_sha256": "4cce0174938d550a8a697382715ffbabac85354a44ef6d66080654bbad94b99e",
   "texture_manifest_sha256": "463923a7f06d3bfe0b0fcd48e8641faabc7876be8769e7612b7d1139df6e2e5f",
   "source_blend": "Nyaagyu_Horse_AnatomyStudy.blend",
-  "source_blend_sha256": "77f90460f51fe203f088aa58f80e9c8178e57b0f213dad098139cf04e00fb7a9",
+  "source_blend_sha256": "ed521728721c8ba8a645be4ab9d19351da0a83e70f97b92d4da8429a8fd38049",
   "fbx": "SM_Nyaagyu_Horse_AnatomyStudy.fbx",
-  "fbx_sha256": "8c93e7344f13c335c27d6bb2d11177db54c04e787a9adb70837b4dabfdda558f",
+  "fbx_sha256": "cd6117d8d1f6a01c6f8cdfcb636176476315b81416511e00720fe69e16fb1725",
   "preview_files": [
     {
       "file": "Nyaagyu_Horse_Anatomy_ThreeQuarter.png",
-      "sha256": "e0eb6d43c70fa25fa3c7108f6a49ea535c8d221e28d1e483cdf6f37fa8cb65f2"
+      "sha256": "fbc045a99f0fd8bd1076b3adcce422f767a7e31f2431b4c99290e89cea44bee3"
     },
     {
       "file": "Nyaagyu_Horse_Anatomy_Profile.png",
-      "sha256": "703a9408e101e54b515bc7531aec933d2c3956c0b4e27ea394cf1b625b0199a6"
+      "sha256": "487c4bf88729ba52603387f4d2b3d1f4180d6bb51283b559007e0888dc5c56f6"
     },
     {
       "file": "Nyaagyu_Horse_Tack_Detail.png",
-      "sha256": "c6f50126fff32f2cdd11bc817d923c254a667b435e14e79b670d8e85019501ca"
+      "sha256": "00bd094dc6505c3eb209a45f37f60e4a9b921ceb13064518abc53dea0849cf65"
     }
   ],
-  "editable_mesh_parts": 89,
-  "triangles": 231076,
+  "editable_mesh_parts": 91,
+  "triangles": 231844,
   "anatomical_core_vertices": 75892,
   "source_dimensions_m": {
     "min": [
