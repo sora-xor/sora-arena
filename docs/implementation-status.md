@@ -54,11 +54,12 @@ The same isolated 5.8.3 checkout loaded `/Engine/Maps/Entry` with
 `SoraGameMode` in a headless Mac game startup and exited cleanly. This is a
 startup smoke check, not a played campaign or rendered performance test.
 With Apple's separate Metal Toolchain installed, a Mac UE 5.8.3 diagnostic
-cook exited successfully: 630 packages cooked and seven skipped by platform.
-The cooked content and a pre-historical-arms game target then staged and
-archived through UAT. The 1.0 GiB Mac app has pak/IoStore content, a valid
-local code signature and an exit-0 headless packaged startup. This is not a
-5.8.2 release cook, distribution signature, played session, or frame-rate test.
+cook exited successfully. The latest post-terrain run reported 671 cooked
+packages, and UAT staged and archived the updated game target. The 1.0 GiB
+Mac app contains all 32 authored estate terrain tile packages in IoStore,
+has a valid local code signature, and passed an exit-0 headless packaged
+startup. This is not a 5.8.2 release cook, distribution signature, played
+session, or frame-rate test.
 A separate headless test
 runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
 checks deterministic terminal state and XOR conservation; it does not measure
@@ -117,35 +118,55 @@ FBX exports, metric collision/bounds checks, and campaign placement source.
 The Lantern Ward debt terminal has a retained flat blockout and a licensed CC0
 PBR material comparison; its geometry still reads as a prototype. Blender
 review renders and import manifests do not establish in-engine appearance. An
-isolated UE 5.8.3 editor diagnostic imported 25 character/weapon meshes, six
-environment props, the SORA insignia and the pinned CC0 palette. Its follow-up
-validator loaded 59 expected packages with their declared Unreal types. The
+isolated UE 5.8.3 editor diagnostic imported 26 character/weapon/horse meshes,
+six environment props, 32 modular estate terrain tiles, the SORA insignia and
+the pinned CC0 palette. Its follow-up validator loaded 92 expected packages
+with their declared Unreal types, including the high-tier Nanite-enabled and
+Mac-tier conventional terrain assets. The
 UE 5.8.2 release import, in-game visual pass, and measured frame rate remain open.
 An original irrigation sluice now adds a hand-cranked timber/stone gate and
 alien meter to the agricultural liberation chapter's Estate sites. Its editable
 Blender source, FBX, collision-box round trip, material provenance and hashes
-pass local checks; it is decorative campaign geometry pending the same UE pass.
+pass local checks; it is decorative campaign geometry. Its Unreal import type
+passes in the 5.8.3 diagnostic editor; in-world appearance still needs review.
 An original 319 × 195 × 226 cm Silk Foundry loom with 268 editable source parts,
 indigo textile and an alien levy meter is placed beside the foundry station.
 Its FBX has one 18,376-triangle render mesh and four UCX boxes; Blender
 round-trip, hashes, license checks, and static import validation pass. Existing
-combat collision remains unchanged. Unreal import, material translation, visual
-quality, and frame rate have not been measured.
+combat collision remains unchanged. Unreal 5.8.3 imported its mesh, but material
+translation, visual quality, and frame rate have not been measured.
 The standard Arc carbine (weapon ID 1) now selects an original Edo/sci-fi
 hero mesh in the first-person presentation path. Its 84-part editable Blender
-source and 12,532-triangle UV-mapped FBX pass material/license, hash, metric
+source and 12,292-triangle UV-mapped FBX pass material/license, hash, metric
 bounds and Blender round-trip checks; the muzzle faces local +X from a
 receiver-centered origin. The current 0.75 weapon-root scale is an initial
-placement only. Unreal import, paw grip, materials, visual quality and combat
-frame time still need an engine run.
-The Nyaagyu hero now has an editable 1.849 m Blender static-character
-blockout with 293 parts, 51,463 source triangles and an exact SVG-derived
-SORA chest mark. Its FBX round-trip and import-source checks pass, but the
+placement only. Unreal 5.8.3 imports it, but paw grip, materials, visual
+quality and combat frame time still need an in-game check.
+The Nyaakoto art-review hero now has an editable 2.195 m Blender static-character
+blockout with 351 parts, 56,091 source triangles, yumi and arrows, katana, and
+four exact SVG-derived SORA kamon placements. Its FBX round-trip and Unreal
+5.8.3 import checks pass, but the
 render remains stylized; it has no rig, animation, groom or runtime character
 wiring. Its editor import targets `/Game/ArtReview/Characters`, outside the
 always-cooked runtime asset folder. A separate generated photoreal concept
 image provides an art-direction target for fur, cloth, armor and lighting.
 It is a 2D reference, not a game mesh or evidence of in-engine visual quality.
+An original 1.821 m horse and Edo tack study has paired broad iron abumi,
+tazuna rein grips, kura saddle and exact SORA kamon. Its 135-part, 69,392-triangle
+unrigged source passed Blender FBX round-trip and UE 5.8.3 static import. It is
+an art-review model, not a mounted or animated runtime character.
+Nyaagyu Estate has 16 high-density tiles and 16 conventional Mac tiles with
+seam-matched local geometry, exact placement centers, and pinned CC0 soil/stone
+textures. The campaign runtime chooses the Mac tier on M1 and the high tier
+otherwise, explicitly enables distance-field lighting/dynamic indirect light
+and ray-tracing visibility, and leaves the flat gameplay collision unchanged.
+The Windows-tier import builds Nanite data; the Mac tier does not. This is a
+regular static-mesh terrain presentation path. Epic's experimental Mesh Terrain
+plugin, World Partition conversion, compiled runtime sections and the special
+Mesh Partition Lumen-heightfield path have not yet been integrated or qualified.
+The 5.8.3 import/cook/stage checks do not prove Lumen card/probe coverage,
+photoreal appearance, Windows rendering, or 60 fps. See
+[terrain source and integration record](mesh-terrain-nyaagyu.md).
 An additional unrigged Nyaagyu bust study has editable Blender source and a
 102,071-triangle FBX with 32,155 fur-card triangles. Its Blender round-trip,
 source hashes, bounds and material-slot checks pass. Its render is still visibly
