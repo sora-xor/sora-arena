@@ -138,7 +138,9 @@ verified session/offer snapshot and a separate pre-sign confirmation. See
 [Connect review gap](connect.md#exact-game-facing-review-gap).
 Join and NFT purchase signing now fail closed in the game before a wallet
 request until that review exists. A non-authorizing typed Join inspector is
-being added to the native bridge; it cannot substitute for the missing
+implemented in the native bridge and its two focused Rust tests pass. It
+remains uncommitted under Iroha's signed-commit rule and is absent from the
+currently staged game library. It cannot substitute for the missing
 authenticated session quote. Open and payout-claim scaffolds retain their
 existing test-network behavior.
 The Iroha JavaScript native addon now builds and publishes with the project-specific
