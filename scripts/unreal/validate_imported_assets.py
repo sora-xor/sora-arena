@@ -42,16 +42,22 @@ def add(specs, object_path, class_name):
     specs[object_path] = class_name
 
 
-def named_mesh(source_root, specs, folder, manifest_name, expected_name, package):
+def named_mesh(source_root, specs, folder, manifest_name, expected_name, package,
+               *, schema_version=1, rigged=None):
     art_root = source_root / folder
     record = read_manifest(art_root / manifest_name)
     path = f"{package}/{expected_name}.{expected_name}"
-    require(record.get("schema_version") == 1
+    require(record.get("schema_version") == schema_version
             and record.get("name") == expected_name
             and record.get("fbx") == f"{expected_name}.fbx"
             and record.get("unreal_asset") == path,
             f"Unexpected original mesh identity: {art_root / manifest_name}")
-    source_file(art_root, record["fbx"])
+    if rigged is not None:
+        require(record.get("rigged") is rigged,
+                f"Unexpected rig state: {art_root / manifest_name}")
+    fbx = source_file(art_root, record["fbx"])
+    require(hashlib.sha256(fbx.read_bytes()).hexdigest() == record.get("fbx_sha256"),
+            f"Original mesh hash changed: {fbx}")
     add(specs, path, "StaticMesh")
 
 
@@ -92,19 +98,26 @@ def expected_assets(project_root):
     named_mesh(source_root, specs, "Weapons/Original", "arc_carbine_manifest.json",
                "SM_Nyaagyu_ArcCarbine", MESHES)
     named_mesh(source_root, specs, "Characters/Hero", "manifest.json",
-               "SM_Nyaagyu_HeroCharacter", "/Game/ArtReview/Characters")
+               "SM_Nyaagyu_HeroCharacter", "/Game/ArtReview/Characters",
+               schema_version=2, rigged=False)
     named_mesh(source_root, specs, "Weapons/MonofilamentNaginata", "manifest.json",
                "SM_Nyaagyu_MonofilamentNaginata", "/Game/ArtReview/Weapons")
 
     original = read_manifest(source_root / "Environment/Original/manifest.json")
-    require(original.get("schema_version") == 1
+    require(original.get("schema_version") == 2
             and [entry.get("name") for entry in original.get("assets", [])] ==
             ["SM_Edo_LanternPost", "SM_Nyaagyu_ToriiGate", "SM_Alien_DebtKiosk"],
             "The original environment prop manifest changed")
+    logo_svg = source_file(source_root / "UI", "sora_logo_NOtext2.svg")
+    require(hashlib.sha256(logo_svg.read_bytes()).hexdigest() ==
+            original.get("sora_kamon_svg_sha256"),
+            "The gate kamon does not match the supplied SORA logo")
     for entry in original["assets"]:
         name = entry["name"]
         require(entry.get("fbx") == f"{name}.fbx", f"Invalid prop FBX: {name}")
-        source_file(source_root / "Environment/Original", entry["fbx"])
+        fbx = source_file(source_root / "Environment/Original", entry["fbx"])
+        require(hashlib.sha256(fbx.read_bytes()).hexdigest() == entry.get("fbx_sha256"),
+                f"Original environment mesh hash changed: {fbx}")
         add(specs, f"{PROPS}/{name}.{name}", "StaticMesh")
     for folder, name in (
         ("StreetDebtTerminal", "SM_Alien_StreetDebtTerminal"),
