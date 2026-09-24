@@ -1,0 +1,84 @@
+diff --git a/Source/SoraArena/Private/SoraGameMode.cpp b/Source/SoraArena/Private/SoraGameMode.cpp
+--- a/Source/SoraArena/Private/SoraGameMode.cpp
++++ b/Source/SoraArena/Private/SoraGameMode.cpp
+@@ -184,6 +184,49 @@
+             }
+         }),8.f,false);
+     }
++    if(bArtReview && FParse::Param(FCommandLine::Get(),TEXT("SoraDojoFrontageReview")))
++    {
++        // The existing Estate review completes its camera moves by ~21 s.
++        // Use identical near-dojo cameras for the current/flip package runs.
++        FTimerHandle DojoFrontageTimer;
++        GetWorldTimerManager().SetTimer(DojoFrontageTimer,FTimerDelegate::CreateLambda([this]()
++        {
++            auto* Controller=UGameplayStatics::GetPlayerController(this,0);
++            auto* Player=Controller?Cast<ASoraCharacter>(Controller->GetPawn()):nullptr;
++            if(!WorldBuilder||!Player) return;
++            bMenu=true;
++            Player->GetCharacterMovement()->StopMovementImmediately();
++            Controller->ConsoleCommand(TEXT("showhud 0"));
++            if(UCameraComponent* Camera=Player->FindComponentByClass<UCameraComponent>())
++                Camera->SetFieldOfView(65.f);
++            Player->SetActorLocation(FVector(-2000,650,90.15f),false,nullptr,ETeleportType::TeleportPhysics);
++            Controller->SetControlRotation(FRotator(12.f,90.f,0.f));
++            FTimerHandle NorthTimer;
++            GetWorldTimerManager().SetTimer(NorthTimer,FTimerDelegate::CreateLambda([this,Controller,Player]()
++            {
++                FVector Location; FRotator Rotation;
++                Controller->GetPlayerViewPoint(Location,Rotation);
++                UE_LOG(LogTemp,Display,TEXT("SORA_DOJO_FRONTAGE_VIEW: north camera=%s rotation=%s"),
++                    *Location.ToString(),*Rotation.ToString());
++                CaptureSoraArtReview(TEXT("Dojo_NorthFrontage_NoHUD"));
++                FTimerHandle SouthMoveTimer;
++                GetWorldTimerManager().SetTimer(SouthMoveTimer,FTimerDelegate::CreateLambda([this,Controller,Player]()
++                {
++                    Player->SetActorLocation(FVector(-2000,-650,90.15f),false,nullptr,ETeleportType::TeleportPhysics);
++                    Controller->SetControlRotation(FRotator(12.f,-90.f,0.f));
++                    FTimerHandle SouthTimer;
++                    GetWorldTimerManager().SetTimer(SouthTimer,FTimerDelegate::CreateLambda([Controller]()
++                    {
++                        FVector Location; FRotator Rotation;
++                        Controller->GetPlayerViewPoint(Location,Rotation);
++                        UE_LOG(LogTemp,Display,TEXT("SORA_DOJO_FRONTAGE_VIEW: south camera=%s rotation=%s"),
++                            *Location.ToString(),*Rotation.ToString());
++                        CaptureSoraArtReview(TEXT("Dojo_SouthFrontage_NoHUD"));
++                    }),1.f,false);
++                }),1.2f,false);
++            }),1.f,false);
++        }),23.f,false);
++    }
+     WorldBuilder=GetWorld()->SpawnActor<ASoraWorldBuilder>();
+     GetWorldTimerManager().SetTimerForNextTick(this,&ASoraGameMode::ResetRound);
+     if(auto* PC=UGameplayStatics::GetPlayerController(this,0))
+diff --git a/Source/SoraArena/Private/SoraWorldBuilder.cpp b/Source/SoraArena/Private/SoraWorldBuilder.cpp
+--- a/Source/SoraArena/Private/SoraWorldBuilder.cpp
++++ b/Source/SoraArena/Private/SoraWorldBuilder.cpp
+@@ -17,4 +17,6 @@
+ #include "Engine/StaticMesh.h"
+ #include "Engine/World.h"
++#include "Misc/CommandLine.h"
++#include "Misc/Parse.h"
+ #include "Engine/TextureCube.h"
+ #include "ArenaKernelSubsystem.h"
+@@ -353,7 +355,19 @@
+                 // These visual meshes never enter the P2P practice map.
+                 const TCHAR* VisualAsset=(I==1||I==3)
+                     ?TEXT("SM_Nyaagyu_ProvisionKura"):TEXT("SM_Nyaagyu_EstateDojo");
+-                if(ImportedProp(VisualAsset,P,FRotator(0,S>0?0.f:180.f,0)))
++                float VisualYaw=S>0?0.f:180.f;
++#if !UE_BUILD_SHIPPING
++                if(I!=1 && I!=3 && FParse::Param(FCommandLine::Get(),TEXT("SoraDojoFrontageReview")))
++                {
++                    // The control reproduces current release yaw; the test
++                    // flips only dojo art. Existing blockout collision stays.
++                    const bool bFlip=FParse::Param(FCommandLine::Get(),TEXT("SoraDojoFrontageFlip"));
++                    VisualYaw=S>0?(bFlip?0.f:180.f):(bFlip?180.f:0.f);
++                    UE_LOG(LogTemp,Display,TEXT("SORA_DOJO_FRONTAGE_YAW: row=%d index=%d yaw=%.0f flip=%d"),
++                        S,I,VisualYaw,bFlip?1:0);
++                }
++#endif
++                if(ImportedProp(VisualAsset,P,FRotator(0,VisualYaw,0)))
+                     for(int32 Piece=BuildingStart;Piece<Pieces.Num()-1;++Piece)
+                         if(Pieces[Piece]) Pieces[Piece]->SetVisibility(false);
+                 const float TreeScale=.90f+.05f*((I+3*(S+1))%5);
