@@ -1,0 +1,25 @@
+{
+  "status": "source-only authored PBR estimates; no measured ceramic capture",
+  "generator": "scripts/art/build_nyaagyu_sora_eave_cap_maps.py",
+  "seed": 175501,
+  "size": [
+    1024,
+    1024
+  ],
+  "normal_convention": "OpenGL/tangent +Y; invert green on DirectX import",
+  "channels": "ORM R=AO estimate (white), G=roughness estimate, B=metallic (zero)",
+  "files": {
+    "albedo": {
+      "file": "T_SoraEaveCap_Albedo.png",
+      "sha256": "6050105e231e14c7c32e29aaf91f890bdf6475dcd40d6a7f96761bcd32a8c0c3"
+    },
+    "normal_gl": {
+      "file": "T_SoraEaveCap_NormalGL.png",
+      "sha256": "031c299d9622311a95ff6c0fe93f8842a154f36feaba147dac1e4264375c1d15"
+    },
+    "orm": {
+      "file": "T_SoraEaveCap_ORM.png",
+      "sha256": "3d7df02a9f7c82ecd7c22c7c4b0603d6ad62263af53e1c809adad8bcb6a9ef4e"
+    }
+  }
+}

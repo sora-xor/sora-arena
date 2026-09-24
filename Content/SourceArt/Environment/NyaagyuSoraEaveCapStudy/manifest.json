@@ -1,0 +1,48 @@
+{
+  "status": "source-only ceramic detail, not approved for runtime",
+  "generator": "scripts/art/create_nyaagyu_sora_eave_cap_study.py",
+  "blender_version": "5.2.2 LTS",
+  "source_svg": "Content/SourceArt/UI/sora_logo_NOtext2.svg",
+  "source_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "crest_path_meshes": [
+    {
+      "mesh": "SORA_ExactSVG_ClayRelief_Path_0",
+      "vertex_count": 1144,
+      "triangle_count": 2284
+    },
+    {
+      "mesh": "SORA_ExactSVG_ClayRelief_Path_1",
+      "vertex_count": 632,
+      "triangle_count": 1260
+    }
+  ],
+  "nominal_dimensions_m": {
+    "cap_diameter": 0.13,
+    "crest_diameter": 0.093,
+    "cover_section_length": 0.224
+  },
+  "review": {
+    "camera_location_m": [
+      0.12600000202655792,
+      -0.29600000381469727,
+      0.16200000047683716
+    ],
+    "camera_target_m": [
+      0.0,
+      0.054999999701976776,
+      0.05299999937415123
+    ],
+    "camera_ortho_scale_m": 0.3199999928474426,
+    "engine": "BLENDER_EEVEE",
+    "resolution": [
+      900,
+      900
+    ]
+  },
+  "material_note": "Authored clay estimates; not measured or historically authenticated.",
+  "outputs": {
+    "Nyaagyu_SORA_EaveCap.blend": "8f4f8f363820636fb0d9ef18a73bd3addda6a00ff6aec00bdfa5a13f31cca5b4",
+    "SM_Nyaagyu_SORA_EaveCap.fbx": "8c90a53ef92a11159eccf3b8cf992cc2426fbbb7c7d870455666b58754088573",
+    "Nyaagyu_SORA_EaveCap_FixedReview.png": "13c2480081d929e0fd70cfb4751febd7cc23a6afaca5b956d406d3ef0ecb7eaf"
+  }
+}
