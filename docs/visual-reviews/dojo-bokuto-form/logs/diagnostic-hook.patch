@@ -1,0 +1,95 @@
+--- SoraGameMode.before.cpp
++++ SoraGameMode.bokuto-art-review.cpp
+@@ -9,6 +9,7 @@
+ #include "GameFramework/CharacterMovementComponent.h"
+ #include "GameFramework/PlayerController.h"
+ #include "Camera/CameraComponent.h"
++#include "Components/SceneComponent.h"
+ #include "TimerManager.h"
+ #include "Engine/World.h"
+ #include "Engine/StaticMeshActor.h"
+@@ -92,6 +93,84 @@
+             // the actual campaign only after its Estate mesh/materials exist.
+             if(!WorldBuilder) return;
+             BeginRound();
++            if(FParse::Param(FCommandLine::Get(),TEXT("SoraBokutoFormReview")))
++            {
++                APlayerController* Controller=UGameplayStatics::GetPlayerController(this,0);
++                ASoraCharacter* Player=Controller?Cast<ASoraCharacter>(Controller->GetPawn()):nullptr;
++                if(!Controller||!Player) { UE_LOG(LogTemp,Error,TEXT("BOKUTO_FORM_REVIEW_PLAYER_MISSING")); return; }
++                TArray<UStaticMeshComponent*> Meshes;
++                Player->GetComponents<UStaticMeshComponent>(Meshes);
++                UStaticMeshComponent* Weapon=nullptr;
++                int32 PawComponents=0;
++                for(UStaticMeshComponent* Mesh:Meshes)
++                {
++                    if(Mesh->GetName().StartsWith(TEXT("OriginalWeaponMesh"))) Weapon=Mesh;
++                    if(Mesh->GetName().Contains(TEXT("FurPaw"))) ++PawComponents;
++                }
++                UStaticMesh* Candidate=LoadObject<UStaticMesh>(nullptr,
++                    TEXT("/Game/Generated/ArtReview/DojoBokutoForm/SM_Nyaagyu_BokutoForm.SM_Nyaagyu_BokutoForm"));
++                const FString ExpectedOriginal=TEXT("/Game/Generated/Meshes/SM_Nyaagyu_DojoBokken.SM_Nyaagyu_DojoBokken");
++                if(!Weapon||!Candidate||!Weapon->GetStaticMesh()||
++                    Weapon->GetStaticMesh()->GetPathName()!=ExpectedOriginal||!Weapon->GetAttachParent())
++                {
++                    UE_LOG(LogTemp,Error,TEXT("BOKUTO_FORM_REVIEW_ASSET_OR_ATTACH_MISSING weapon=%s candidate=%s"),
++                        Weapon&&Weapon->GetStaticMesh()?*Weapon->GetStaticMesh()->GetPathName():TEXT("none"),
++                        Candidate?*Candidate->GetPathName():TEXT("none"));
++                    return;
++                }
++                UStaticMesh* Original=Weapon->GetStaticMesh();
++                USceneComponent* ReviewRoot=Weapon->GetAttachParent();
++                bMenu=true;
++                Player->GetCharacterMovement()->StopMovementImmediately();
++                Player->SetActorTickEnabled(false);
++                Player->SetActorLocation(FVector(-1800,-1050,90.15f),false,nullptr,ETeleportType::TeleportPhysics);
++                Controller->SetControlRotation(FRotator(-2.f,-105.f,0.f));
++                Controller->ConsoleCommand(TEXT("showhud 0"));
++                if(UCameraComponent* ReviewCamera=Player->FindComponentByClass<UCameraComponent>())
++                    ReviewCamera->SetFieldOfView(65.f);
++                Weapon->SetMobility(EComponentMobility::Movable);
++                UE_LOG(LogTemp,Display,TEXT("BOKUTO_FORM_REVIEW_READY: original=%s candidate=%s original_tri=%d candidate_tri=%d original_uv=%d candidate_uv=%d paw_components=%d camera=(-1800,-1050,90.15) yaw=-105 pitch=-2 FOV=65 root=%s"),
++                    *Original->GetPathName(),*Candidate->GetPathName(),
++                    Original->GetNumTriangles(0),Candidate->GetNumTriangles(0),
++                    Original->GetNumTexCoords(0),Candidate->GetNumTexCoords(0),
++                    PawComponents,*ReviewRoot->GetRelativeTransform().ToHumanReadableString());
++                CaptureSoraArtReview(TEXT("DojoBokutoForm_Default_Original"));
++                FTimerHandle CandidateDefault;
++                GetWorldTimerManager().SetTimer(CandidateDefault,FTimerDelegate::CreateLambda([this,Weapon,Candidate,Original,ReviewRoot]()
++                {
++                    const bool bAssigned=Weapon->SetStaticMesh(Candidate);
++                    UE_LOG(LogTemp,Display,TEXT("BOKUTO_FORM_DEFAULT_ASSIGN: ok=%d mesh=%s"),
++                        bAssigned,Weapon->GetStaticMesh()?*Weapon->GetStaticMesh()->GetPathName():TEXT("none"));
++                    FTimerHandle SettledDefault;
++                    GetWorldTimerManager().SetTimer(SettledDefault,FTimerDelegate::CreateLambda([this,Weapon,Original,Candidate,ReviewRoot]()
++                    {
++                        CaptureSoraArtReview(TEXT("DojoBokutoForm_Default_Candidate"));
++                        FTimerHandle OriginalClose;
++                        GetWorldTimerManager().SetTimer(OriginalClose,FTimerDelegate::CreateLambda([this,Weapon,Original,Candidate,ReviewRoot]()
++                        {
++                            // Side-on close inspection uses the same artificial pose
++                            // for both meshes; the default pair is the gameplay grip.
++                            ReviewRoot->SetRelativeLocation(FVector(35,-4,-7));
++                            ReviewRoot->SetRelativeRotation(FRotator(0,35,0));
++                            Weapon->SetStaticMesh(Original);
++                            CaptureSoraArtReview(TEXT("DojoBokutoForm_Close_Original"));
++                            FTimerHandle CandidateClose;
++                            GetWorldTimerManager().SetTimer(CandidateClose,FTimerDelegate::CreateLambda([this,Weapon,Candidate]()
++                            {
++                                const bool bAssignedClose=Weapon->SetStaticMesh(Candidate);
++                                UE_LOG(LogTemp,Display,TEXT("BOKUTO_FORM_CLOSE_ASSIGN: ok=%d mesh=%s"),
++                                    bAssignedClose,Weapon->GetStaticMesh()?*Weapon->GetStaticMesh()->GetPathName():TEXT("none"));
++                                FTimerHandle SettledClose;
++                                GetWorldTimerManager().SetTimer(SettledClose,FTimerDelegate::CreateLambda([]()
++                                {
++                                    CaptureSoraArtReview(TEXT("DojoBokutoForm_Close_Candidate"));
++                                }),1.f,false);
++                            }),1.f,false);
++                        }),1.f,false);
++                    }),1.f,false);
++                }),1.f,false);
++                return;
++            }
+             if(APlayerController* Controller=UGameplayStatics::GetPlayerController(this,0))
+             {
+                 FVector ViewLocation; FRotator ViewRotation;
