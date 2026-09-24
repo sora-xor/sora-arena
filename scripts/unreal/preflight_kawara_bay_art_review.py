@@ -140,8 +140,7 @@ def main() -> None:
             (args.allow_diagnostic_5_8_3 and version == "5.8.3"),
             f"UE {version} is not the pinned release engine; 5.8.3 is diagnostic-only")
     if version == "5.8.3":
-        require(project != Path(__file__).resolve().parents[2] and
-                (project / ".git").is_file(),
+        require((project / ".git").is_file(),
                 "UE 5.8.3 diagnostic import requires a separate Git worktree")
     available = shutil.disk_usage(project).free
     require(available >= MIN_FREE_BYTES,
