@@ -593,7 +593,12 @@ at visible upper roof/eave edges and high foliage/props. The Scene, card and
 distance-field modes rendered, but the fixed close-foot view was unavailable,
 so the evidence archive is explicitly incomplete. The two imported building
 meshes each combine hundreds of parts and thin tile sheets; a diagnostic-only
-card-count A/B is planned before any source change to their modular geometry.
+card-count A/B was attempted before any source change to their modular
+geometry. Both the initial duplicate and a [paired 12/32-card rebuild](render-qualification/estate-lumen-cards32-ue583-m1-20260924/PAIRED-REBUILD.md)
+failed the geometry-equality gate: the persisted Dojo clones have 14,966
+versus 14,884 LOD0 triangles and different bounds. No visual comparison or
+runtime card-count change was made. A different isolation method or modular
+roof/body geometry is needed before attributing the pink gaps to card count.
 The current Estate does not pass a Lumen coverage gate, Windows Nanite coverage
 is unmeasured, and these captures establish no AAA+ or frame-rate result.
 

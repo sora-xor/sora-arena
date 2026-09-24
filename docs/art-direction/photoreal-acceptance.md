@@ -24,6 +24,11 @@ approval. Historical weapon, tack and architectural claims require review by
 qualified Japanese-material-culture and practice experts; the current modern
 jōdō proportions for the bokutō are a design benchmark, not Edo-period proof.
 
+The [paired Lumen card study](../render-qualification/estate-lumen-cards32-ue583-m1-20260924/PAIRED-REBUILD.md)
+stopped before rendering because changing the card setting also changed saved
+Dojo triangles and bounds. Its 12/32 images cannot be treated as a controlled
+lighting comparison, and the visible Surface Cache gaps remain unresolved.
+
 The [real-cat scan acquisition note](../art-research/nyaakoto-real-cat-scan-acquisition.md)
 provides an attributed animal-anatomy reference. Its raw unrigged scan is not a
 playable Nyaakoto mesh. Figma may support later interface layout, but this
