@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "name": "SK_Nyaakoto_BokutoPaws_SourceOnly",
+  "status": "source-only; no gameplay component, animation, or runtime admission",
+  "generator": "scripts/art/create_nyaakoto_bokuto_viewmodel.py",
+  "units": "metres",
+  "rig_bones": [
+    "L_Digit_1",
+    "L_Digit_2",
+    "L_Digit_3",
+    "L_Digit_4",
+    "L_Forearm",
+    "L_Thumb",
+    "L_Wrist",
+    "R_Digit_1",
+    "R_Digit_2",
+    "R_Digit_3",
+    "R_Digit_4",
+    "R_Forearm",
+    "R_Thumb",
+    "R_Wrist",
+    "WeaponRoot"
+  ],
+  "mesh_count": 91,
+  "mesh_triangles": 12520,
+  "digit_mesh_count": 8,
+  "digital_pad_count": 8,
+  "grip_axis": "+X",
+  "contact_pad_centres_m": [
+    [
+      -0.087,
+      -0.0224,
+      0.0
+    ],
+    [
+      -0.067,
+      -0.0207,
+      0.0
+    ],
+    [
+      -0.047,
+      -0.019,
+      0.0
+    ],
+    [
+      -0.027000000000000003,
+      -0.0178,
+      0.0
+    ],
+    [
+      -0.20199999999999999,
+      0.0224,
+      0.0
+    ],
+    [
+      -0.182,
+      0.0207,
+      0.0
+    ],
+    [
+      -0.16199999999999998,
+      0.019,
+      0.0
+    ],
+    [
+      -0.142,
+      0.0178,
+      0.0
+    ]
+  ],
+  "idle_review_transform": {
+    "weapon_root_location_cm": [
+      40,
+      18,
+      -18
+    ],
+    "mesh_scale": 0.75,
+    "camera_horizontal_fov_degrees": 70
+  },
+  "review_prop": "Content/SourceArt/Weapons/DojoBokutoForm/Nyaagyu_BokutoForm.blend",
+  "review_prop_sha256": "9f823a073d8c24d3e324f767b465fac9b62511a9fda2ea852ce3680c83b603fc",
+  "material_rights": {
+    "fur_cloth_lacquer": "Project-owned OpenAI image-generation output and procedural maps; source and terms in Content/SourceArt/Characters/Hero/PBR/manifest.json",
+    "paw_pads": "Original project-owned procedural texture; no third-party data",
+    "solid_lacing_iron_claws": "Original procedural material parameters",
+    "bokuto_review_only": "Poly Haven white_oak_veneer CC0 maps and original mesh, pinned in Content/SourceArt/Weapons/DojoBokutoForm/manifest.json",
+    "SORA_kamon": "Exact project-held SORA SVG raster from Content/SourceArt/UI/sora_logo_manifest.json, mounted on a raised kote disk",
+    "user_character_image": "Visual design reference only; not copied into mesh or texture"
+  },
+  "user_character_reference_sha256": "c9f7a4bbe6ba529b2bbdb629db3ba09858c11b563c334e31593876455a550801",
+  "source_manifests": {
+    "Content/SourceArt/Characters/Hero/PBR/manifest.json": "01705c5eed258510416eec2057cb156ddad728731a6a8f5531103752fd5d9488",
+    "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/manifest.json": "4eb7c3b8f886f5e3cea16e00676190e24b223c2a5ef7f7381864ea8642461870",
+    "Content/SourceArt/Weapons/DojoBokutoForm/manifest.json": "cb5ea374abc79c913414b76630a0e0765ac55148ecd7d79f2470725532b1afef"
+  },
+  "sora_logo_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "sora_logo_png_sha256": "f6d9573096e7e044e9e4a84d739bf724281c4f394131812e1a6eeac915c8a39d",
+  "source_texture_hashes": {
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_white_Albedo.png": "1e24595b1fa77b77f6a02c8a4d26c7b0e2ddeecda771acd2fb50f2426288039c",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_white_NormalDX.png": "167d49ecca5780cd0b9937f67e6e0a5f8a3ef025f97f2f6b51a7b9bac0cbaa37",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_white_ORM.png": "d67e8a7cb4d13b6bc954bf1dd1d7834b4cb3bb9558efc7dbc23ba2d85a85bc1a",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_grey_Albedo.png": "4132878e71b04f52eafd69cd6196fe1de5011ac783225f45a275f4458e9cdca8",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_grey_NormalDX.png": "0b5bae70d465992aeb6a97870e162106c4ab532ac5c0e562cc43cfea60c76a9a",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_fur_grey_ORM.png": "f8f559bcdf3ac2700625d3c7d61e99c968832bd25af0484593189f48a10e1a0c",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_silk_indigo_Albedo.png": "a7866f1ed77c57420266280c5fc751db5e0c688a54da1ecb88003c5da76d969c",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_silk_indigo_NormalDX.png": "c918e776469b1c69458a8fcd9a58a10ef67f08d0cd3e3f50c14056bcb81e852b",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_silk_indigo_ORM.png": "dae41cb5c3390346bd8600923c19336d67e83c6eb7cf05d990489a8dcee6c09b",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_lacquer_oxblood_Albedo.png": "032c7eb261cb3fefc6dd31d74ed36e52926dc79caec3fe8b644068f9f8505c28",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_lacquer_oxblood_NormalDX.png": "f898794445f8ab64d565600a5416672253e716a1611705710ed098f67709243c",
+    "Content/SourceArt/Characters/Hero/PBR/T_Nyaakoto_lacquer_oxblood_ORM.png": "df48804d2c84479ca061d59c65da93ab1cfa06af84fa11f0a1758b0b8ba8caf6",
+    "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/T_Nyaakoto_PawPad_Albedo.png": "e58646805aac491cd10e53b713b0b284f7f78ab89be971b1a4e3a901f9773f56",
+    "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/T_Nyaakoto_PawPad_NormalDX.png": "8962c4a0891bb2dca1f657f9579e12bf7b25fd4db11aa8b42d0ece46a5ae102d",
+    "Content/SourceArt/Characters/NyaakotoFirstPersonPaws/Textures/T_Nyaakoto_PawPad_ORM.png": "7b40c526cfd67e8e9ec0a2924bc4c736a32ba66f0f41f9c07276ee2b5ac4facb"
+  },
+  "outputs": {
+    "Nyaakoto_BokutoPaws.blend": {
+      "sha256": "07eae06af3cd8e3c15245dcc1e361e6f668a310d55f2289df182b38ae1a070c2",
+      "bytes": 57780897
+    },
+    "SK_Nyaakoto_BokutoPaws_SourceOnly.fbx": {
+      "sha256": "e833c9689b791789d3c5f7b9088b6b01da242fc09f119bc5d176c077474ad43d",
+      "bytes": 1938668
+    },
+    "IdlePose_BokutoAndPaws.png": {
+      "sha256": "0749643f2673d17989707c241071cf3c563f53b42ac8b7f66624f9e089a31aa2",
+      "bytes": 1143607
+    },
+    "IdlePose_BokutoOnly.png": {
+      "sha256": "f2abe4ee52e8978fd443e3e2590eafe3fb562a4021a0fe6f455369b8b92492a3",
+      "bytes": 1143969
+    },
+    "GripDetail_BokutoAndPaws.png": {
+      "sha256": "0e06ea75edc7b8923eb416b8ea09e8e888e4d95a0f1e3da81877395f184ac6ec",
+      "bytes": 1298226
+    },
+    "GripDetail_BokutoOnly.png": {
+      "sha256": "15c2e069cf6c8d0f553216d3ff51e460515754dc7e8b26c12850bc6a37406318",
+      "bytes": 1183257
+    }
+  }
+}
