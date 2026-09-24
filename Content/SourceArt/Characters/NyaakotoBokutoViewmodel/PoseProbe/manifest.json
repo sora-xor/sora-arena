@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "status": "source-only pose probe; Blender camera does not implement Unreal FirstPersonScale",
+  "source_blend_sha256": "07eae06af3cd8e3c15245dcc1e361e6f668a310d55f2289df182b38ae1a070c2",
+  "source_manifest_sha256": "f366899e33e053791907128ce80b084bb9eb9c9d76671038546a99ad38b52f2a",
+  "camera": "Camera_NormalIdlePose_FOV70",
+  "horizontal_fov_degrees": 70,
+  "resolution": [
+    1600,
+    900
+  ],
+  "mesh_scale": 0.75,
+  "current_root_cm": [
+    40,
+    18,
+    -18
+  ],
+  "proposed_root_cm": [
+    40,
+    8,
+    -7
+  ],
+  "rotation_degrees": [
+    0,
+    0,
+    0
+  ],
+  "geometry_materials_camera_lights": "identical in both poses",
+  "outputs": {
+    "Empty_SameCameraAndLight.png": {
+      "sha256": "3dc992f293b55d5ca8c478d77f4ad001d04eb677403ff5ca38ede28862c583f6",
+      "bytes": 1118280
+    },
+    "Current_Full.png": {
+      "sha256": "6420c5037e2cb66c36c003d7f4c1b83010b30b9f3bf726d4ad1b31ff9c64cd5c",
+      "bytes": 1143607
+    },
+    "Current_BokutoOnly.png": {
+      "sha256": "bf21c8fd7eb08b9db108c10071d265b0ba7cc18f2db54f06af73881cde37ae3d",
+      "bytes": 1143969
+    },
+    "Current_GripOnly.png": {
+      "sha256": "9344415ac5c20567fd808a3886cbf3104907e615266c790c596f846719122819",
+      "bytes": 1118280
+    },
+    "Current_PawsOnly.png": {
+      "sha256": "a4552a3e5376407c4d057d1c3b6421892fe768831fa3353e6860e874c095cc8c",
+      "bytes": 1118280
+    },
+    "Proposed_Full.png": {
+      "sha256": "ff12d3f3afdf13ab39e3d2e475022be5e0a9543bb3bac0ddb6ddaa7ae58bed3c",
+      "bytes": 1235371
+    },
+    "Proposed_BokutoOnly.png": {
+      "sha256": "635f53e9c5baf4c0facd41515337f183cd3f6b8af701b7f07a8f3399a1ac9e5d",
+      "bytes": 1175386
+    },
+    "Proposed_GripOnly.png": {
+      "sha256": "92dc5eb81de58df8bcaa54379cfc61b92bbe607b87387db9d02f4ddaafde7c23",
+      "bytes": 1146645
+    },
+    "Proposed_PawsOnly.png": {
+      "sha256": "aa0c79e73ef6a43785abbd170acef510c7e98b9fe8bbf591ba125e13ee4f696c",
+      "bytes": 1216808
+    }
+  }
+}

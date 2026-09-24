@@ -50,6 +50,11 @@ measured in Unreal for reticle clearance, collision, motion, and 65–70° nativ
 FOV before any playable placement. No historical authenticity or AAA visual
 quality is claimed by these Blender renders.
 
+The reproducible source-only test of that translation is in
+[`PoseProbe/README.md`](PoseProbe/README.md). It confirms the grip/paws enter
+the fixed Blender frame and the static reticle disc stays clear, while leaving
+the runtime and photoreal gate failed.
+
 Rebuild and independently validate from the repository root:
 
 ```sh

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "threshold_per_channel_8_of_255": 8,
+  "reticle_center_px": [
+    800,
+    450
+  ],
+  "poses": {
+    "Current": {
+      "full_vs_empty": {
+        "changed_pixels_gt8_of_255": 14446,
+        "fraction": 0.010031944444444444,
+        "bbox_xyxy": [
+          258,
+          651,
+          599,
+          900
+        ],
+        "reticle_disc_radius_px": 80,
+        "reticle_disc_changed_pixels": 0,
+        "nearest_changed_pixel_to_reticle_px": 288.4995667241114
+      },
+      "grip_only_vs_empty": {
+        "changed_pixels_gt8_of_255": 0,
+        "fraction": 0.0,
+        "bbox_xyxy": null,
+        "reticle_disc_radius_px": 80,
+        "reticle_disc_changed_pixels": 0,
+        "nearest_changed_pixel_to_reticle_px": null
+      },
+      "paws_only_vs_empty": {
+        "changed_pixels_gt8_of_255": 0,
+        "fraction": 0.0,
+        "bbox_xyxy": null,
+        "reticle_disc_radius_px": 80,
+        "reticle_disc_changed_pixels": 0,
+        "nearest_changed_pixel_to_reticle_px": null
+      },
+      "paws_effect_in_full_vs_bokuto_only": {
+        "changed_pixels_gt8_of_255": 0,
+        "fraction": 0.0,
+        "bbox_xyxy": null,
+        "reticle_disc_radius_px": 80,
+        "reticle_disc_changed_pixels": 0,
+        "nearest_changed_pixel_to_reticle_px": null
+      }
+    },
+    "Proposed": {
+      "full_vs_empty": {
+        "changed_pixels_gt8_of_255": 109184,
+        "fraction": 0.07582222222222222,
+        "bbox_xyxy": [
+          37,
+          521,
+          821,
+          900
+        ],
+        "reticle_disc_radius_px": 80,
+        "reticle_disc_changed_pixels": 0,
+        "nearest_changed_pixel_to_reticle_px": 114.21471008587291
+      },
+      "grip_only_vs_empty": {
+        "changed_pixels_gt8_of_255": 28448,
+        "fraction": 0.019755555555555554,
+        "bbox_xyxy": [
+          322,
+          622,
+          605,
+          866
+        ],
+        "reticle_disc_radius_px": 80,
+        "reticle_disc_changed_pixels": 0,
+        "nearest_changed_pixel_to_reticle_px": 273.17759791022394
+      },
+      "paws_only_vs_empty": {
+        "changed_pixels_gt8_of_255": 94592,
+        "fraction": 0.0656888888888889,
+        "bbox_xyxy": [
+          37,
+          608,
+          821,
+          900
+        ],
+        "reticle_disc_radius_px": 80,
+        "reticle_disc_changed_pixels": 0,
+        "nearest_changed_pixel_to_reticle_px": 268.1063221932672
+      },
+      "paws_effect_in_full_vs_bokuto_only": {
+        "changed_pixels_gt8_of_255": 90769,
+        "fraction": 0.06303402777777778,
+        "bbox_xyxy": [
+          37,
+          583,
+          821,
+          900
+        ],
+        "reticle_disc_radius_px": 80,
+        "reticle_disc_changed_pixels": 0,
+        "nearest_changed_pixel_to_reticle_px": 228.39658491317246
+      }
+    }
+  }
+}
