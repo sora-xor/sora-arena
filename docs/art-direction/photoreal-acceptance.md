@@ -29,6 +29,24 @@ stopped before rendering because changing the card setting also changed saved
 Dojo triangles and bounds. Its 12/32 images cannot be treated as a controlled
 lighting comparison, and the visible Surface Cache gaps remain unresolved.
 
+The [source-only modular Dojo split](../../Content/SourceArt/Environment/NyaagyuDojo/LumenModules/README.md)
+partitions its 424 editable parts into roof, eaves, body and shōji FBXs while
+preserving the original pre-export world triangle/material set. FBX reimport
+holds vertices within 2 µm. The thin, open roof geometry still needs actual
+Lumen Surface Cache coverage testing; the split alone is not an approved fix.
+The [shōji fiber study](../../Content/SourceArt/Environment/ShojiPaperArtReview/README.md)
+uses licensed CC0 procedural paper maps and eight controlled source renders.
+Repeated vertical fibers and unmeasured transmission fail its photoreal gate,
+so it was not assigned to the playable Dojo.
+
+An original [concave/convex kawara bay study](../../Content/SourceArt/Environment/NyaagyuKawaraBay/README.md)
+models five overlapping courses, with a user-supplied SORA eave mark. Its
+source render compares deterministic ceramic color against a generated
+granular color reference. The latter reads better at the fixed camera, but
+regular shape/wear, estimated normals and reflectance, and missing UE and
+historical review keep it source-only. The existing roof scan and in-game
+roof remain unchanged.
+
 The [real-cat scan acquisition note](../art-research/nyaakoto-real-cat-scan-acquisition.md)
 provides an attributed animal-anatomy reference. Its raw unrigged scan is not a
 playable Nyaakoto mesh. Figma may support later interface layout, but this

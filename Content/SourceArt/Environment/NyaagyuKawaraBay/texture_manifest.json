@@ -1,0 +1,171 @@
+{
+  "author": "SORA Arena original deterministic ceramic surface study",
+  "generator": "scripts/art/build_nyaagyu_kawara_pbr.py",
+  "source_type": "algorithmically painted; no third-party pixels",
+  "status": "source-only; not measured ceramic or approved game art",
+  "size": [
+    2048,
+    2048
+  ],
+  "layout": "4x4",
+  "files": {
+    "Albedo": {
+      "file": "T_NyaagyuKawara_Albedo.png",
+      "sha256": "03828f130db3c50d0200d45ab76953f201f3770c74680b05497571cea9512732"
+    },
+    "NormalDX": {
+      "file": "T_NyaagyuKawara_NormalDX.png",
+      "sha256": "195163777e6f711479c77c3471f87104b397b5781a0a1f5f5de195ddc56f35e2"
+    },
+    "ORM": {
+      "file": "T_NyaagyuKawara_ORM.png",
+      "sha256": "39edfc539bb9a6534b24195b512f437daca076dd2dbc95fe04c690bf99586d90"
+    }
+  },
+  "cells": [
+    {
+      "cell": 0,
+      "mean_roughness": 0.7144,
+      "mean_albedo": [
+        0.2428,
+        0.2585,
+        0.2643
+      ]
+    },
+    {
+      "cell": 1,
+      "mean_roughness": 0.7144,
+      "mean_albedo": [
+        0.2427,
+        0.2585,
+        0.2644
+      ]
+    },
+    {
+      "cell": 2,
+      "mean_roughness": 0.7143,
+      "mean_albedo": [
+        0.2437,
+        0.2591,
+        0.2646
+      ]
+    },
+    {
+      "cell": 3,
+      "mean_roughness": 0.7135,
+      "mean_albedo": [
+        0.2488,
+        0.2639,
+        0.269
+      ]
+    },
+    {
+      "cell": 4,
+      "mean_roughness": 0.7139,
+      "mean_albedo": [
+        0.2301,
+        0.2451,
+        0.2502
+      ]
+    },
+    {
+      "cell": 5,
+      "mean_roughness": 0.7148,
+      "mean_albedo": [
+        0.229,
+        0.2443,
+        0.2497
+      ]
+    },
+    {
+      "cell": 6,
+      "mean_roughness": 0.7144,
+      "mean_albedo": [
+        0.2415,
+        0.2571,
+        0.2627
+      ]
+    },
+    {
+      "cell": 7,
+      "mean_roughness": 0.7148,
+      "mean_albedo": [
+        0.2522,
+        0.2678,
+        0.2735
+      ]
+    },
+    {
+      "cell": 8,
+      "mean_roughness": 0.7133,
+      "mean_albedo": [
+        0.2553,
+        0.2706,
+        0.2764
+      ]
+    },
+    {
+      "cell": 9,
+      "mean_roughness": 0.7149,
+      "mean_albedo": [
+        0.2217,
+        0.2372,
+        0.2428
+      ]
+    },
+    {
+      "cell": 10,
+      "mean_roughness": 0.7137,
+      "mean_albedo": [
+        0.2405,
+        0.2557,
+        0.2611
+      ]
+    },
+    {
+      "cell": 11,
+      "mean_roughness": 0.7137,
+      "mean_albedo": [
+        0.2535,
+        0.2689,
+        0.2747
+      ]
+    },
+    {
+      "cell": 12,
+      "mean_roughness": 0.7145,
+      "mean_albedo": [
+        0.2311,
+        0.2461,
+        0.2517
+      ]
+    },
+    {
+      "cell": 13,
+      "mean_roughness": 0.7144,
+      "mean_albedo": [
+        0.2453,
+        0.2609,
+        0.2671
+      ]
+    },
+    {
+      "cell": 14,
+      "mean_roughness": 0.7141,
+      "mean_albedo": [
+        0.2534,
+        0.2695,
+        0.2756
+      ]
+    },
+    {
+      "cell": 15,
+      "mean_roughness": 0.7141,
+      "mean_albedo": [
+        0.2214,
+        0.2374,
+        0.2432
+      ]
+    }
+  ]
+}

@@ -617,6 +617,16 @@ camera on both Estate rows. Current yaw shows the modeled shōji lattice and
 steps; the flip exposes the plain rear plaster. Existing placement is correct,
 so no production rotation change was made. Both views still expose repetitive
 roof detailing and stylized materials.
+The next source-art pass [split the Dojo into four FBX modules](../Content/SourceArt/Environment/NyaagyuDojo/LumenModules/README.md)
+with exact pre-export triangle/material parity and a sub-2 µm FBX reimport
+bound. This provides a candidate for a controlled roof/eaves Surface Cache
+study; it has not been imported or evaluated in Unreal. A
+[CC0 shōji-paper A/B](../Content/SourceArt/Environment/ShojiPaperArtReview/README.md)
+failed at 1 m and 3 m because the fibers repeat conspicuously. A separate
+[modeled concave/convex roof-bay study](../Content/SourceArt/Environment/NyaagyuKawaraBay/README.md)
+adds individually overlapping ceramic forms and a color-material A/B; its
+estimated material response and regular course wear also remain below the
+AAA+ art threshold. Neither source candidate changes the playable Estate.
 The current Estate does not pass a Lumen coverage gate, Windows Nanite coverage
 is unmeasured, and these captures establish no AAA+ or frame-rate result.
 

@@ -1,0 +1,29 @@
+{
+  "status": "source-only form/material study; not approved for Unreal runtime",
+  "generator": "scripts/art/create_nyaagyu_kawara_bay.py",
+  "tile_count": {
+    "pan": 30,
+    "cover": 25
+  },
+  "nominal_dimensions_m": {
+    "tile_width": 0.24,
+    "tile_length": 0.303,
+    "course": 0.229,
+    "roof_bay_width": 1.44
+  },
+  "design_reference": "https://eishiro.co.jp/english/products/honbuki/index.html",
+  "reference_note": "Modern honbuki concave/convex arrangement informs the form. Pan width 240 mm and length 303 mm are independent study choices from different listed sizes; the 87 mm seam-cover width and overlap are artistic approximations, not a historical or product match.",
+  "sora_logo_raster_sha256": "f6d9573096e7e044e9e4a84d739bf724281c4f394131812e1a6eeac915c8a39d",
+  "generated_albedo": {
+    "file": "T_NyaagyuKawara_ImageGenAlbedo_v1.png",
+    "sha256": "3188da9849a16b22d21b866481165cb4f4ea25c49dc16022a0e8c438ff160773",
+    "generation_id": "exec-2c249455-3d4c-4d61-ba66-851b7bc735b0",
+    "role": "source-only color reference; not a measured ceramic or PBR capture"
+  },
+  "outputs": {
+    "SM_Nyaagyu_KawaraBay.fbx": "20c06d8162b90c03b395f62916f9e5f05793e3a087c9766a2690f53b0c40b63f",
+    "Nyaagyu_KawaraBay.blend": "38f372cfae3ed04d38777ab9b7e2fe15cfeef91c90cb1d9d4187e5f26033dac1",
+    "Nyaagyu_KawaraBay_ProceduralReview.png": "1d0546be923d6bd0fc04f1b5fa5c0b9ca2782a1480d846d332c42a241e8fda0a",
+    "Nyaagyu_KawaraBay_ImageGenReview.png": "2322e873fa534aaf24c10f91f3c4d32d2b76cc89a30c9fb16acc3ad4a49a56f6"
+  }
+}
