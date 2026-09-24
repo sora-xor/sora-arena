@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "scope": "display-referred raw-render ROI, not physical validation",
+  "paper_only_rectangles_xyxy": {
+    "1m": [
+      400,
+      120,
+      600,
+      240
+    ],
+    "3m": [
+      680,
+      230,
+      720,
+      270
+    ]
+  },
+  "conditions": {
+    "1m_Sun": {
+      "Baseline": {
+        "mean_display_luma_0_255": 122.66,
+        "std_display_luma_0_255": 0.444
+      },
+      "Candidate": {
+        "mean_display_luma_0_255": 104.69,
+        "std_display_luma_0_255": 1.879
+      }
+    },
+    "1m_Backlit": {
+      "Baseline": {
+        "mean_display_luma_0_255": 49.398,
+        "std_display_luma_0_255": 0.905
+      },
+      "Candidate": {
+        "mean_display_luma_0_255": 179.264,
+        "std_display_luma_0_255": 3.306
+      }
+    },
+    "3m_Sun": {
+      "Baseline": {
+        "mean_display_luma_0_255": 122.481,
+        "std_display_luma_0_255": 0.413
+      },
+      "Candidate": {
+        "mean_display_luma_0_255": 104.598,
+        "std_display_luma_0_255": 1.735
+      }
+    },
+    "3m_Backlit": {
+      "Baseline": {
+        "mean_display_luma_0_255": 49.958,
+        "std_display_luma_0_255": 0.519
+      },
+      "Candidate": {
+        "mean_display_luma_0_255": 172.93,
+        "std_display_luma_0_255": 3.326
+      }
+    }
+  }
+}
