@@ -26,6 +26,12 @@ first-person silhouette, grip fit, and collision are unverified in Unreal.
 The original playable bokken remains unchanged. This model is not an AAA
 photoreal quality claim.
 
+The strict [UE 5.8.2 ArtReview importer](../../../../scripts/unreal/import_dojo_bokuto_form_art_review.py)
+verifies source hashes, scan rights, image dimensions, UV0, material slots, and
+the full conventional Nanite fallback. It creates review-only assets under
+`/Game/Generated/ArtReview/DojoBokutoForm` and does not replace the playable
+mesh.
+
 Regenerate and independently validate with Blender 5.2.2 LTS:
 
 ```sh
