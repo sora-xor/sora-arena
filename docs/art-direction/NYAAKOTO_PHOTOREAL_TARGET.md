@@ -10,6 +10,10 @@ SVG, rather than a generated approximation, defines all finished kamon.
 The earlier [facial study](../../Content/SourceArt/Characters/Hero/Reference/Nyaagyu_Photoreal_Concept_v1.png)
 remains a separate anatomy reference; this plate adds full-body armor and weapon
 direction.
+The newer [four-view photoreal concept](../../Content/SourceArt/Characters/Hero/Reference/Nyaakoto_PhotorealTurnaround_v2.png)
+adds front, side and back material/silhouette cues. It is generated art rather
+than measured anatomy or a shippable asset; its short yumi and fittings must
+not override the separately researched and modeled weapon sources.
 
 The current Blender and packaged UE character remains visibly stylized. Closing
 the gap requires original source-asset work, followed by repeatable in-engine

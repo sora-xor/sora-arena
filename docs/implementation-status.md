@@ -578,6 +578,13 @@ blade strip remains visible, with grip and guard offscreen. The current authored
 weapon path also renders **no first-person paw**; its component count is zero.
 The candidate remains source-only pending a fitted hand viewmodel, usable pose,
 material calibration, animation and historical review.
+The subsequent [two-paw bokutō viewmodel study](../Content/SourceArt/Characters/NyaakotoBokutoViewmodel/README.md)
+has an editable 15-bone source rig, four separately posed digits per paw, UV0
+and PBR bindings, and an exact SORA-kamon kote detail. Its paired normal-idle
+Blender renders differ by **zero visible pixels** because both paws remain
+outside the current first-person frustum. The detail camera shows a grasp but
+the forms still look glove-like. It is not bound to the runtime. A measured
+pose change and packaged Unreal A/B must come before any admission.
 
 An earlier [first-person bokken PBR A/B](visual-reviews/dojo-bokken/README.md)
 used the same UE 5.8.3 Mac package and fixed camera. Its wood grain improved
@@ -608,6 +615,13 @@ unique PBR maps. Its same-camera Blender front/profile/three-quarter views
 still read as an oversized round skull with puffy muzzle, obvious ear-root
 joins and an unfinished neck. It failed the photoreal face gate and was not
 imported or bound to the playable character.
+A [V5 anatomy correction](../Content/SourceArt/Characters/NyaakotoHeadV5/README.md)
+passed editable-mesh/FBX checks but still fails the same-light front and
+profile visual gate: cheek and brow volumes, bridge plane and ear-root seams
+remain toy-like. It is also source-only. A newer
+[photoreal four-view reference](../Content/SourceArt/Characters/Hero/Reference/Nyaakoto_PhotorealTurnaround_v2.png)
+helps define coat and costume direction; it is a generated picture, not a
+shippable mesh, historically verified weapon reference, or Unreal screenshot.
 
 ## Workstreams
 
