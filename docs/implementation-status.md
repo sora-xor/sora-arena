@@ -585,6 +585,11 @@ Blender renders differ by **zero visible pixels** because both paws remain
 outside the current first-person frustum. The detail camera shows a grasp but
 the forms still look glove-like. It is not bound to the runtime. A measured
 pose change and packaged Unreal A/B must come before any admission.
+A [source-only pose probe](../Content/SourceArt/Characters/NyaakotoBokutoViewmodel/PoseProbe/README.md)
+moving WeaponRoot from `(40,18,−18)` to `(40,8,−7)` cm makes 28,448 grip
+pixels and 94,592 paw pixels visible in the fixed 70° Blender camera while
+the tested 80-pixel reticle disc stays clear. The oversized glove-like forms,
+different Unreal first-person projection and untested motion still block use.
 
 An earlier [first-person bokken PBR A/B](visual-reviews/dojo-bokken/README.md)
 used the same UE 5.8.3 Mac package and fixed camera. Its wood grain improved
@@ -606,6 +611,12 @@ failed the geometry-equality gate: the persisted Dojo clones have 14,966
 versus 14,884 LOD0 triangles and different bounds. No visual comparison or
 runtime card-count change was made. A different isolation method or modular
 roof/body geometry is needed before attributing the pink gaps to card count.
+The independent [packaged Dojo frontage A/B](visual-reviews/dojo-frontage-yaw/README.md)
+compared the current main visual yaw against a 180° flip at the same near
+camera on both Estate rows. Current yaw shows the modeled shōji lattice and
+steps; the flip exposes the plain rear plaster. Existing placement is correct,
+so no production rotation change was made. Both views still expose repetitive
+roof detailing and stylized materials.
 The current Estate does not pass a Lumen coverage gate, Windows Nanite coverage
 is unmeasured, and these captures establish no AAA+ or frame-rate result.
 
