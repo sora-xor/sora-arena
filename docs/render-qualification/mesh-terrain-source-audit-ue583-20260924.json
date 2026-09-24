@@ -1,0 +1,43 @@
+{
+  "assessment": {
+    "mesh_terrain_rendering_qualified": false,
+    "reason": "Source flags and build defaults do not prove cooked compiled sections, Lumen Surface Cache coverage, software distance-field representation, Nanite rendering, or frame rate.",
+    "release_engine_pin_met": false
+  },
+  "engine": {
+    "build_version_sha256": "eab58750e84719489f3ee0d42d05a533ceb357eb3ee511777e9408d27a85f43c",
+    "changelist": 58210709,
+    "version": "5.8.3"
+  },
+  "epic_experimental_plugins": {
+    "MeshPartition": "Engine/Plugins/Experimental/MeshPartition/MeshPartition.uplugin",
+    "MeshPartitionWater": "Engine/Plugins/Experimental/MeshPartitionWater/MeshPartitionWater.uplugin",
+    "MeshTerrainMode": "Engine/Plugins/Experimental/MeshTerrainMode/MeshTerrainMode.uplugin",
+    "PCGMeshPartitionInterop": "Engine/Plugins/Experimental/PCGMeshPartitionInterop/PCGMeshPartitionInterop.uplugin"
+  },
+  "installed_source_capabilities": {
+    "compiled_static_mesh_build_defaults": {
+      "MeshPartitionEditorUtils.cpp": {
+        "distance_field_resolution_scale": 0.0,
+        "max_lumen_mesh_cards": 4,
+        "source_path": "Engine/Plugins/Experimental/MeshPartition/Source/MeshPartitionEditor/Private/MeshPartitionEditorUtils.cpp",
+        "source_sha256": "c7e0ef5ec12eed40ee4356f0abe561fd9baac489b7cee379bf3591effcc160ad"
+      },
+      "MeshPartitionStaticMeshTransformer.cpp": {
+        "distance_field_resolution_scale": 0.0,
+        "max_lumen_mesh_cards": 4,
+        "source_path": "Engine/Plugins/Experimental/MeshPartition/Source/MeshPartitionEditor/Private/MeshPartitionStaticMeshTransformer.cpp",
+        "source_sha256": "b635ce05a1796ec5f1a579724e698663ef23eeab2b44bb94a66bb328a18332e5"
+      }
+    },
+    "lumen_scene_classifies_that_flag_as_heightfield": true,
+    "mesh_partition_component_lumen_heightfield_flag": true,
+    "static_mesh_transformer_nanite_default": true,
+    "zero_distance_field_scale_skips_signed_mesh_distance_field_build": true
+  },
+  "project": {
+    "m1_nanite_disabled": true,
+    "research_plugin_enabled_in_release_descriptor": false
+  },
+  "schema_version": 1
+}
