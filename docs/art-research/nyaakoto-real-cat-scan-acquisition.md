@@ -2,6 +2,8 @@
 
 This is an acquisition and anatomy-reference check for Nyaakoto. It does not approve any scan as the character, a rig, a groom, or a photoreal game asset. No third-party GLB or preview image is checked into this repository.
 
+A [follow-on open-eye source check](nyaakoto-open-eye-cat-source-gate.md) found an awake-cat CC BY GLB with vertex colors, but its damaged ears and soft eyes fail the hero-head quality gate. The sleeping-cat ranking below describes this earlier search, not the complete set of public sources found afterward.
+
 ## Usable no-purchase download path
 
 The strongest **directly accessible** original-animal scan found was [Cat (Take 2) by Neo_minigan](https://sketchfab.com/3d-models/cat-take-2-2996f59c517245aa91cf513a5624935e), a photogrammetry capture of the creator's real tabby cat. [Sketchfab's current public model API record](https://api.sketchfab.com/v3/models/2996f59c517245aa91cf513a5624935e) reports `isDownloadable: true` and `license.slug: by`, with the requirement “Author must be credited. Commercial use is allowed.” [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) permits commercial adaptation with creator credit, source/license links, and an indication of changes. The [Objaverse 1.0 dataset](https://objaverse.allenai.org/docs/objaverse-1.0/) provides a public, standardized GLB mirror:
