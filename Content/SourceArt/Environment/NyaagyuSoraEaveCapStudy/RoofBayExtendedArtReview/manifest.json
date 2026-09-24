@@ -1,0 +1,37 @@
+{
+  "status": "derived source-only 80 mm rear-shank extension and fictional clay-color review",
+  "generator": "scripts/art/create_nyaagyu_sora_eave_extended_review.py",
+  "baseline_blend_sha256": "dcefec0a03c9787473c607db93fcc2731da614ad40010bab751d9d84253dc810",
+  "extension": {
+    "rear_only_m": 0.08,
+    "start_row": 4,
+    "source_row_count": 14,
+    "front_rows_preserved": 4,
+    "first_four_rows_exact": true,
+    "crest_geometry_unchanged": true,
+    "manifold_positive_volume": true
+  },
+  "joint": {
+    "gap_to_next_cover_mm": -9.223029017448425,
+    "hidden_joint_gate_pass": true,
+    "surface_clearance": {
+      "count": 392,
+      "min_mm": -2.224838198139345,
+      "max_mm": 3.7785384011225776,
+      "mean_mm": 1.0792542777000529,
+      "rms_from_1p5mm_mm": 1.323845913224781
+    },
+    "surface_alignment_gate_pass": true,
+    "geometry_gate_pass": true
+  },
+  "fictional_ornament_material": {
+    "body": "smoked ibushi color estimate",
+    "relief": "iron-oxide tinted molded clay, not a decal",
+    "historical_claim": false
+  },
+  "review_camera_lights_unchanged": true,
+  "outputs": {
+    "Nyaagyu_SORA_Extended_FitReview.blend": "263776f89b0d1efc18d2f2e9eb2f34574d406d333be2ee8daa00fbc906014489",
+    "Nyaagyu_SORA_Extended_FixedReview.png": "acf26e4b278a7d7a230cef50dfd540f1653b10449a2b69cce3202df8fea1465f"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "status": "derived source-only art review; never a playable or parent-roof change",
+  "generator": "scripts/art/create_nyaagyu_sora_eave_roof_fit_review.py",
+  "inputs": {
+    "roof_blend_sha256": "4f4b016779433e67b2726037f7a4e5097e283d88015c1408d263d26befb906f8",
+    "roof_fbx_sha256": "b3c8b4d18552fb0957915e5c6951a3550833530ea0954619ad724841922f8877",
+    "cap_blend_sha256": "8f4f8f363820636fb0d9ef18a73bd3addda6a00ff6aec00bdfa5a13f31cca5b4",
+    "cap_fbx_sha256": "8c90a53ef92a11159eccf3b8cf992cc2426fbbb7c7d870455666b58754088573",
+    "sora_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910"
+  },
+  "removed_old_review_badge_only": [
+    "SORA_Kamon_EaveCap",
+    "Kamon_Brass_Ring",
+    "SORA_Kamon_UserSuppliedLogo"
+  ],
+  "fit": {
+    "nominal_cover_width_m": 0.087,
+    "measured_cap_shank_front_width_m": 0.0980917252600193,
+    "uniform_scale": 0.8869249650710331,
+    "pitch_degrees": 11.172677005051053,
+    "source_anchor_m": [
+      0.0006483717588707805,
+      0.0020000000949949026,
+      0.08479999750852585
+    ],
+    "target_anchor_m": [
+      0.23999999463558197,
+      -0.03,
+      0.48921774879629076
+    ],
+    "transform_rows": [
+      [
+        0.8869249820709229,
+        0.0,
+        0.0,
+        0.2394249439239502
+      ],
+      [
+        0.0,
+        0.8701156973838806,
+        -0.1718563288450241,
+        -0.01716681383550167
+      ],
+      [
+        0.0,
+        0.1718563288450241,
+        0.8701156973838806,
+        0.4150882363319397
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "roof_clearance_mm": {
+      "sample_count": 394,
+      "mean_clearance_mm": 1.566,
+      "min_clearance_mm": -1.448,
+      "max_clearance_mm": 4.273,
+      "rms_from_intended_clearance_mm": 1.127
+    },
+    "surface_alignment_gate_pass": true,
+    "exposed_gap_to_next_cover_mm": 60.38624048233032,
+    "hidden_joint_requires_overlap_mm": 5.0,
+    "hidden_joint_gate_pass": false,
+    "geometry_gate_pass": false,
+    "gate_note": "FAILED: source shank ends before next cover; surface clearance alone is insufficient. No historical, Lumen/Nanite, or visual AAA approval."
+  },
+  "fixed_camera_visual_review": {
+    "status": "failed source-only art review",
+    "findings": [
+      "exposed shank butt seam before the next course",
+      "cap clay finish visibly differs from the surrounding ibushi roof",
+      "SORA molded crest has weak contrast and is small at this roof camera distance"
+    ]
+  },
+  "review_camera_unchanged": true,
+  "review_lights_unchanged": true,
+  "render_engine": "CYCLES",
+  "render_resolution": [
+    1360,
+    900
+  ],
+  "outputs": {
+    "Nyaagyu_KawaraBay_SORA_Cap_FitReview.blend": "dcefec0a03c9787473c607db93fcc2731da614ad40010bab751d9d84253dc810",
+    "Nyaagyu_KawaraBay_SORA_Cap_FixedReview.png": "f71a0438692acc60b4aa63610edb55430981a3ea7f4677cc2f155c8bef9d9539"
+  }
+}
