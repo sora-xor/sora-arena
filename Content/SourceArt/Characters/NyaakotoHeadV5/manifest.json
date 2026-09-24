@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "identity": "Nyaakoto / ニャーコト V5 adult domestic-cat anatomical source study",
+  "production_status": "SOURCE_REVIEW_ONLY; no runtime integration, rig, or photoreal qualification",
+  "base_v4_blend_sha256": "3962b343f35e55c61f387c14ad0ab21468a88d2849e2772225ecc83145a85021",
+  "user_reference_sha256": "c9f7a4bbe6ba529b2bbdb629db3ba09858c11b563c334e31593876455a550801",
+  "real_cat_reference": "Neo_minigan / Cat (Take 2), CC BY 4.0; visually consulted only; no source mesh/texture included or read by generator",
+  "real_cat_reference_url": "https://sketchfab.com/3d-models/cat-take-2-2996f59c517245aa91cf513a5624935e",
+  "real_cat_reference_glb_sha256": "b2c2cad76dbad62d3eb41c99a20292de31f5b55163eb6d7ca84c11b7dccb444c",
+  "texture_provenance": "Project-owned V4 atlas graded; original V4 artist-derived normal and ORM packed into blend, reused for FBX companion maps",
+  "units": "meters; +X face forward; +Z up",
+  "files_sha256": {
+    "Nyaakoto_AdultCatHead_V5_Study.blend": "f749900fdc5d22791d70859abe01cc8f360a233e701db9392993888b9ec07916",
+    "Nyaakoto_HeadV5_Front.png": "76d80ff7dde72e0c772e5071c3678fb2dc3ead1b88264588c7a828cd50b852ea",
+    "Nyaakoto_HeadV5_Profile.png": "7702251535a346a3cd48b5a796e30b5569eeab00af673f8ac17fa1b8845095b0",
+    "Nyaakoto_HeadV5_ThreeQuarter.png": "cc031e7909d8b8b917596cd12e883eb017588036942194af7ae38f3d98ba5b73",
+    "SM_Nyaakoto_AdultCatHead_V5_Study.fbx": "53b7df0959a1f6f571d13e92fddec2be38b9e0552f039e4225317483fd2e4478",
+    "T_Nyaakoto_HeadV5_Albedo.png": "d48230e4df63c6b4199d09ca7fb23d088e6215cfcf735c596706611136281dfe"
+  }
+}
