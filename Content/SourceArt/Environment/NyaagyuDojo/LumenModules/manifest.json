@@ -1,0 +1,2344 @@
+{
+  "schema_version": 1,
+  "scope": "Source-only modular Lumen coverage experiment; no Unreal import, card capture, or release change",
+  "generator": "scripts/art/create_nyaagyu_dojo_lumen_modules.py",
+  "generator_sha256": "dc81e5a2c5837b8f0d5c4d8d8825334f5333e371f4380a734b0154d918f31f85",
+  "classification": "scripts/art/nyaagyu_dojo_module_common.py",
+  "classification_sha256": "7dedafb8a073891f1e70f0e7451a206ec363787c8cf27ef2de36af410340c684",
+  "source_blend": "Content/SourceArt/Environment/NyaagyuDojo/Nyaagyu_EstateDojo.blend",
+  "source_blend_sha256": "1c885ba09f31a2a5a7979da0414b50feed55df1a3185f281afbfe3f64058b0f1",
+  "source_combined_fbx": "Content/SourceArt/Environment/NyaagyuDojo/SM_Nyaagyu_EstateDojo.fbx",
+  "source_combined_fbx_sha256": "6882d5a28fbf3193f1519bfd1470dfc07d72fbc801289a956d16bbb9ac8fb9ab",
+  "source_parts": 424,
+  "source_triangles": 73946,
+  "source_world_bounds_m": {
+    "min": [
+      -3.63,
+      -4.1,
+      -0.0025
+    ],
+    "max": [
+      3.704,
+      3.758287,
+      5.245
+    ]
+  },
+  "source_world_triangle_sha256": "ef35aca16e01399063094d958030d94577c72d3aa4814d895b772375b5f9c269",
+  "source_material_triangle_counts": {
+    "M_Dojo_AgedBrass": 25376,
+    "M_Dojo_BlackenedIron": 488,
+    "M_Dojo_CharredCedar": 6312,
+    "M_Dojo_Kawara_0": 10732,
+    "M_Dojo_Kawara_1": 2572,
+    "M_Dojo_Kawara_2": 1488,
+    "M_Dojo_LanternWashi": 216,
+    "M_Dojo_LimePlaster": 1082,
+    "M_Dojo_Washi": 48,
+    "M_Env_Stone": 10908,
+    "M_Env_Timber": 14724
+  },
+  "export_axis_forward": "-Y",
+  "export_axis_up": "Z",
+  "placement": "Future Unreal import must enable Combine Meshes for each FBX, disable auto collision, and attach all four resulting visual meshes at the same existing Dojo origin, yaw and scale; not yet implemented",
+  "license": "Original project-owned geometry; exact user-supplied SORA SVG crest retains user-provided provenance. Linked timber and stone maps are CC0 Poly Haven, and Japanese Noto font is SIL OFL. No purchased assets.",
+  "risks": [
+    "Thin and open curved tile courses remain open after splitting; software Lumen distance fields may still be unreliable",
+    "Each FBX contains unchanged source objects and transforms rather than a Blender-joined mesh, avoiding join/apply float drift; future Unreal Combine Meshes needs an independent exact-placement check",
+    "Additional meshes can increase draw calls and do not guarantee Surface Cache roof coverage",
+    "No module has been imported, cooked or profiled in UE 5.8.2 or 5.8.3"
+  ],
+  "modules": [
+    {
+      "name": "SM_Nyaagyu_EstateDojo_Roof",
+      "fbx": "SM_Nyaagyu_EstateDojo_Roof.fbx",
+      "fbx_sha256": "c392192625bfeafed9b9aa4b00b1f8849d654b0d68c87f4ac943532634b81c85",
+      "fbx_bytes": 369068,
+      "parts": 67,
+      "part_names": [
+        "Gable_PlasterTriangle_-1",
+        "Gable_PlasterTriangle_1",
+        "Gable_TimberDiagonal_-1_-1",
+        "Gable_TimberDiagonal_-1_1",
+        "Gable_TimberDiagonal_1_-1",
+        "Gable_TimberDiagonal_1_1",
+        "Gable_Vergebord_-1_-1",
+        "Gable_Vergebord_-1_1",
+        "Gable_Vergebord_1_-1",
+        "Gable_Vergebord_1_1",
+        "Kawara_CurvedTileCourses",
+        "Kawara_Overlap_-1_0",
+        "Kawara_Overlap_-1_1",
+        "Kawara_Overlap_-1_10",
+        "Kawara_Overlap_-1_2",
+        "Kawara_Overlap_-1_3",
+        "Kawara_Overlap_-1_4",
+        "Kawara_Overlap_-1_5",
+        "Kawara_Overlap_-1_6",
+        "Kawara_Overlap_-1_7",
+        "Kawara_Overlap_-1_8",
+        "Kawara_Overlap_-1_9",
+        "Kawara_Overlap_1_0",
+        "Kawara_Overlap_1_1",
+        "Kawara_Overlap_1_10",
+        "Kawara_Overlap_1_2",
+        "Kawara_Overlap_1_3",
+        "Kawara_Overlap_1_4",
+        "Kawara_Overlap_1_5",
+        "Kawara_Overlap_1_6",
+        "Kawara_Overlap_1_7",
+        "Kawara_Overlap_1_8",
+        "Kawara_Overlap_1_9",
+        "Ridge_RoundCap_0",
+        "Ridge_RoundCap_1",
+        "Ridge_RoundCap_10",
+        "Ridge_RoundCap_11",
+        "Ridge_RoundCap_12",
+        "Ridge_RoundCap_13",
+        "Ridge_RoundCap_14",
+        "Ridge_RoundCap_15",
+        "Ridge_RoundCap_16",
+        "Ridge_RoundCap_17",
+        "Ridge_RoundCap_18",
+        "Ridge_RoundCap_19",
+        "Ridge_RoundCap_2",
+        "Ridge_RoundCap_20",
+        "Ridge_RoundCap_21",
+        "Ridge_RoundCap_22",
+        "Ridge_RoundCap_23",
+        "Ridge_RoundCap_24",
+        "Ridge_RoundCap_25",
+        "Ridge_RoundCap_26",
+        "Ridge_RoundCap_27",
+        "Ridge_RoundCap_28",
+        "Ridge_RoundCap_29",
+        "Ridge_RoundCap_3",
+        "Ridge_RoundCap_30",
+        "Ridge_RoundCap_31",
+        "Ridge_RoundCap_32",
+        "Ridge_RoundCap_33",
+        "Ridge_RoundCap_4",
+        "Ridge_RoundCap_5",
+        "Ridge_RoundCap_6",
+        "Ridge_RoundCap_7",
+        "Ridge_RoundCap_8",
+        "Ridge_RoundCap_9"
+      ],
+      "export_object_names": {
+        "Gable_PlasterTriangle_-1": "DM_Roof_000",
+        "Gable_PlasterTriangle_1": "DM_Roof_001",
+        "Gable_TimberDiagonal_-1_-1": "DM_Roof_002",
+        "Gable_TimberDiagonal_-1_1": "DM_Roof_003",
+        "Gable_TimberDiagonal_1_-1": "DM_Roof_004",
+        "Gable_TimberDiagonal_1_1": "DM_Roof_005",
+        "Gable_Vergebord_-1_-1": "DM_Roof_006",
+        "Gable_Vergebord_-1_1": "DM_Roof_007",
+        "Gable_Vergebord_1_-1": "DM_Roof_008",
+        "Gable_Vergebord_1_1": "DM_Roof_009",
+        "Kawara_CurvedTileCourses": "DM_Roof_010",
+        "Kawara_Overlap_-1_0": "DM_Roof_011",
+        "Kawara_Overlap_-1_1": "DM_Roof_012",
+        "Kawara_Overlap_-1_10": "DM_Roof_013",
+        "Kawara_Overlap_-1_2": "DM_Roof_014",
+        "Kawara_Overlap_-1_3": "DM_Roof_015",
+        "Kawara_Overlap_-1_4": "DM_Roof_016",
+        "Kawara_Overlap_-1_5": "DM_Roof_017",
+        "Kawara_Overlap_-1_6": "DM_Roof_018",
+        "Kawara_Overlap_-1_7": "DM_Roof_019",
+        "Kawara_Overlap_-1_8": "DM_Roof_020",
+        "Kawara_Overlap_-1_9": "DM_Roof_021",
+        "Kawara_Overlap_1_0": "DM_Roof_022",
+        "Kawara_Overlap_1_1": "DM_Roof_023",
+        "Kawara_Overlap_1_10": "DM_Roof_024",
+        "Kawara_Overlap_1_2": "DM_Roof_025",
+        "Kawara_Overlap_1_3": "DM_Roof_026",
+        "Kawara_Overlap_1_4": "DM_Roof_027",
+        "Kawara_Overlap_1_5": "DM_Roof_028",
+        "Kawara_Overlap_1_6": "DM_Roof_029",
+        "Kawara_Overlap_1_7": "DM_Roof_030",
+        "Kawara_Overlap_1_8": "DM_Roof_031",
+        "Kawara_Overlap_1_9": "DM_Roof_032",
+        "Ridge_RoundCap_0": "DM_Roof_033",
+        "Ridge_RoundCap_1": "DM_Roof_034",
+        "Ridge_RoundCap_10": "DM_Roof_035",
+        "Ridge_RoundCap_11": "DM_Roof_036",
+        "Ridge_RoundCap_12": "DM_Roof_037",
+        "Ridge_RoundCap_13": "DM_Roof_038",
+        "Ridge_RoundCap_14": "DM_Roof_039",
+        "Ridge_RoundCap_15": "DM_Roof_040",
+        "Ridge_RoundCap_16": "DM_Roof_041",
+        "Ridge_RoundCap_17": "DM_Roof_042",
+        "Ridge_RoundCap_18": "DM_Roof_043",
+        "Ridge_RoundCap_19": "DM_Roof_044",
+        "Ridge_RoundCap_2": "DM_Roof_045",
+        "Ridge_RoundCap_20": "DM_Roof_046",
+        "Ridge_RoundCap_21": "DM_Roof_047",
+        "Ridge_RoundCap_22": "DM_Roof_048",
+        "Ridge_RoundCap_23": "DM_Roof_049",
+        "Ridge_RoundCap_24": "DM_Roof_050",
+        "Ridge_RoundCap_25": "DM_Roof_051",
+        "Ridge_RoundCap_26": "DM_Roof_052",
+        "Ridge_RoundCap_27": "DM_Roof_053",
+        "Ridge_RoundCap_28": "DM_Roof_054",
+        "Ridge_RoundCap_29": "DM_Roof_055",
+        "Ridge_RoundCap_3": "DM_Roof_056",
+        "Ridge_RoundCap_30": "DM_Roof_057",
+        "Ridge_RoundCap_31": "DM_Roof_058",
+        "Ridge_RoundCap_32": "DM_Roof_059",
+        "Ridge_RoundCap_33": "DM_Roof_060",
+        "Ridge_RoundCap_4": "DM_Roof_061",
+        "Ridge_RoundCap_5": "DM_Roof_062",
+        "Ridge_RoundCap_6": "DM_Roof_063",
+        "Ridge_RoundCap_7": "DM_Roof_064",
+        "Ridge_RoundCap_8": "DM_Roof_065",
+        "Ridge_RoundCap_9": "DM_Roof_066"
+      },
+      "part_material_slots": {
+        "Gable_PlasterTriangle_-1": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Gable_PlasterTriangle_1": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Gable_TimberDiagonal_-1_-1": [
+          "M_Env_Timber"
+        ],
+        "Gable_TimberDiagonal_-1_1": [
+          "M_Env_Timber"
+        ],
+        "Gable_TimberDiagonal_1_-1": [
+          "M_Env_Timber"
+        ],
+        "Gable_TimberDiagonal_1_1": [
+          "M_Env_Timber"
+        ],
+        "Gable_Vergebord_-1_-1": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Gable_Vergebord_-1_1": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Gable_Vergebord_1_-1": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Gable_Vergebord_1_1": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_CurvedTileCourses": [
+          "M_Dojo_Kawara_0",
+          "M_Dojo_Kawara_1",
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_0": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_1": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_10": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_2": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_3": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_4": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_5": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_6": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_7": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_8": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_-1_9": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_0": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_1": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_10": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_2": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_3": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_4": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_5": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_6": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_7": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_8": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Kawara_Overlap_1_9": [
+          "M_Dojo_Kawara_2"
+        ],
+        "Ridge_RoundCap_0": [
+          "M_Dojo_Kawara_1"
+        ],
+        "Ridge_RoundCap_1": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_10": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_11": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_12": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_13": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_14": [
+          "M_Dojo_Kawara_1"
+        ],
+        "Ridge_RoundCap_15": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_16": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_17": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_18": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_19": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_2": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_20": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_21": [
+          "M_Dojo_Kawara_1"
+        ],
+        "Ridge_RoundCap_22": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_23": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_24": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_25": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_26": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_27": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_28": [
+          "M_Dojo_Kawara_1"
+        ],
+        "Ridge_RoundCap_29": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_3": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_30": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_31": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_32": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_33": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_4": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_5": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_6": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_7": [
+          "M_Dojo_Kawara_1"
+        ],
+        "Ridge_RoundCap_8": [
+          "M_Dojo_Kawara_0"
+        ],
+        "Ridge_RoundCap_9": [
+          "M_Dojo_Kawara_0"
+        ]
+      },
+      "triangles": 15226,
+      "world_bounds_m": {
+        "min": [
+          -3.63,
+          -3.758287,
+          3.48795
+        ],
+        "max": [
+          3.704,
+          3.758287,
+          5.245
+        ]
+      },
+      "world_triangle_sha256": "0b984c9d8621f48d8dfad077db97a655df3e4189dd6e6a0030bef7bb4c4ec1ea",
+      "material_slots": [
+        "M_Dojo_Kawara_0",
+        "M_Dojo_Kawara_1",
+        "M_Dojo_Kawara_2",
+        "M_Dojo_LimePlaster",
+        "M_Env_Timber"
+      ],
+      "material_triangle_counts": {
+        "M_Dojo_Kawara_0": 10732,
+        "M_Dojo_Kawara_1": 2572,
+        "M_Dojo_Kawara_2": 1488,
+        "M_Dojo_LimePlaster": 2,
+        "M_Env_Timber": 432
+      },
+      "open_boundary_edges_per_part_sum": 9334,
+      "nonmanifold_edges_per_part_sum": 9334,
+      "export_object_count": 67
+    },
+    {
+      "name": "SM_Nyaagyu_EstateDojo_Eaves",
+      "fbx": "SM_Nyaagyu_EstateDojo_Eaves.fbx",
+      "fbx_sha256": "20a25808ca1e66c2ae64bbea61c61eadb17c7cb13c53a3534dc3018dc92d32b6",
+      "fbx_bytes": 226332,
+      "parts": 49,
+      "part_names": [
+        "Eave_Bracket_-1_0",
+        "Eave_Bracket_-1_1",
+        "Eave_Bracket_-1_10",
+        "Eave_Bracket_-1_11",
+        "Eave_Bracket_-1_12",
+        "Eave_Bracket_-1_13",
+        "Eave_Bracket_-1_2",
+        "Eave_Bracket_-1_3",
+        "Eave_Bracket_-1_4",
+        "Eave_Bracket_-1_5",
+        "Eave_Bracket_-1_6",
+        "Eave_Bracket_-1_7",
+        "Eave_Bracket_-1_8",
+        "Eave_Bracket_-1_9",
+        "Eave_Bracket_1_0",
+        "Eave_Bracket_1_1",
+        "Eave_Bracket_1_10",
+        "Eave_Bracket_1_11",
+        "Eave_Bracket_1_12",
+        "Eave_Bracket_1_13",
+        "Eave_Bracket_1_2",
+        "Eave_Bracket_1_3",
+        "Eave_Bracket_1_4",
+        "Eave_Bracket_1_5",
+        "Eave_Bracket_1_6",
+        "Eave_Bracket_1_7",
+        "Eave_Bracket_1_8",
+        "Eave_Bracket_1_9",
+        "Eave_Fascia_-1",
+        "Eave_Fascia_1",
+        "Exposed_Rafter_-0.78_-1",
+        "Exposed_Rafter_-0.78_1",
+        "Exposed_Rafter_-1.56_-1",
+        "Exposed_Rafter_-1.56_1",
+        "Exposed_Rafter_-2.34_-1",
+        "Exposed_Rafter_-2.34_1",
+        "Exposed_Rafter_-3.12_-1",
+        "Exposed_Rafter_-3.12_1",
+        "Exposed_Rafter_0.78_-1",
+        "Exposed_Rafter_0.78_1",
+        "Exposed_Rafter_0_-1",
+        "Exposed_Rafter_0_1",
+        "Exposed_Rafter_1.56_-1",
+        "Exposed_Rafter_1.56_1",
+        "Exposed_Rafter_2.34_-1",
+        "Exposed_Rafter_2.34_1",
+        "Exposed_Rafter_3.12_-1",
+        "Exposed_Rafter_3.12_1",
+        "Roof_Ceiling"
+      ],
+      "export_object_names": {
+        "Eave_Bracket_-1_0": "DM_Eaves_000",
+        "Eave_Bracket_-1_1": "DM_Eaves_001",
+        "Eave_Bracket_-1_10": "DM_Eaves_002",
+        "Eave_Bracket_-1_11": "DM_Eaves_003",
+        "Eave_Bracket_-1_12": "DM_Eaves_004",
+        "Eave_Bracket_-1_13": "DM_Eaves_005",
+        "Eave_Bracket_-1_2": "DM_Eaves_006",
+        "Eave_Bracket_-1_3": "DM_Eaves_007",
+        "Eave_Bracket_-1_4": "DM_Eaves_008",
+        "Eave_Bracket_-1_5": "DM_Eaves_009",
+        "Eave_Bracket_-1_6": "DM_Eaves_010",
+        "Eave_Bracket_-1_7": "DM_Eaves_011",
+        "Eave_Bracket_-1_8": "DM_Eaves_012",
+        "Eave_Bracket_-1_9": "DM_Eaves_013",
+        "Eave_Bracket_1_0": "DM_Eaves_014",
+        "Eave_Bracket_1_1": "DM_Eaves_015",
+        "Eave_Bracket_1_10": "DM_Eaves_016",
+        "Eave_Bracket_1_11": "DM_Eaves_017",
+        "Eave_Bracket_1_12": "DM_Eaves_018",
+        "Eave_Bracket_1_13": "DM_Eaves_019",
+        "Eave_Bracket_1_2": "DM_Eaves_020",
+        "Eave_Bracket_1_3": "DM_Eaves_021",
+        "Eave_Bracket_1_4": "DM_Eaves_022",
+        "Eave_Bracket_1_5": "DM_Eaves_023",
+        "Eave_Bracket_1_6": "DM_Eaves_024",
+        "Eave_Bracket_1_7": "DM_Eaves_025",
+        "Eave_Bracket_1_8": "DM_Eaves_026",
+        "Eave_Bracket_1_9": "DM_Eaves_027",
+        "Eave_Fascia_-1": "DM_Eaves_028",
+        "Eave_Fascia_1": "DM_Eaves_029",
+        "Exposed_Rafter_-0.78_-1": "DM_Eaves_030",
+        "Exposed_Rafter_-0.78_1": "DM_Eaves_031",
+        "Exposed_Rafter_-1.56_-1": "DM_Eaves_032",
+        "Exposed_Rafter_-1.56_1": "DM_Eaves_033",
+        "Exposed_Rafter_-2.34_-1": "DM_Eaves_034",
+        "Exposed_Rafter_-2.34_1": "DM_Eaves_035",
+        "Exposed_Rafter_-3.12_-1": "DM_Eaves_036",
+        "Exposed_Rafter_-3.12_1": "DM_Eaves_037",
+        "Exposed_Rafter_0.78_-1": "DM_Eaves_038",
+        "Exposed_Rafter_0.78_1": "DM_Eaves_039",
+        "Exposed_Rafter_0_-1": "DM_Eaves_040",
+        "Exposed_Rafter_0_1": "DM_Eaves_041",
+        "Exposed_Rafter_1.56_-1": "DM_Eaves_042",
+        "Exposed_Rafter_1.56_1": "DM_Eaves_043",
+        "Exposed_Rafter_2.34_-1": "DM_Eaves_044",
+        "Exposed_Rafter_2.34_1": "DM_Eaves_045",
+        "Exposed_Rafter_3.12_-1": "DM_Eaves_046",
+        "Exposed_Rafter_3.12_1": "DM_Eaves_047",
+        "Roof_Ceiling": "DM_Eaves_048"
+      },
+      "part_material_slots": {
+        "Eave_Bracket_-1_0": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_1": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_10": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_11": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_12": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_13": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_2": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_3": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_4": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_5": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_6": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_7": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_8": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_-1_9": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_0": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_1": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_10": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_11": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_12": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_13": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_2": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_3": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_4": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_5": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_6": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_7": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_8": [
+          "M_Env_Timber"
+        ],
+        "Eave_Bracket_1_9": [
+          "M_Env_Timber"
+        ],
+        "Eave_Fascia_-1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Eave_Fascia_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Exposed_Rafter_-0.78_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_-0.78_1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_-1.56_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_-1.56_1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_-2.34_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_-2.34_1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_-3.12_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_-3.12_1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_0.78_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_0.78_1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_0_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_0_1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_1.56_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_1.56_1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_2.34_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_2.34_1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_3.12_-1": [
+          "M_Env_Timber"
+        ],
+        "Exposed_Rafter_3.12_1": [
+          "M_Env_Timber"
+        ],
+        "Roof_Ceiling": [
+          "M_Dojo_CharredCedar"
+        ]
+      },
+      "triangles": 5292,
+      "world_bounds_m": {
+        "min": [
+          -3.515,
+          -3.755,
+          3.345
+        ],
+        "max": [
+          3.515,
+          3.755,
+          4.908197
+        ]
+      },
+      "world_triangle_sha256": "8b7c85a5cabfe646475935f2132567321b7273eac6c8004bc83566b35208ae0e",
+      "material_slots": [
+        "M_Dojo_CharredCedar",
+        "M_Env_Timber"
+      ],
+      "material_triangle_counts": {
+        "M_Dojo_CharredCedar": 324,
+        "M_Env_Timber": 4968
+      },
+      "open_boundary_edges_per_part_sum": 0,
+      "nonmanifold_edges_per_part_sum": 0,
+      "export_object_count": 49
+    },
+    {
+      "name": "SM_Nyaagyu_EstateDojo_Body",
+      "fbx": "SM_Nyaagyu_EstateDojo_Body.fbx",
+      "fbx_sha256": "8372a430b658b716a6bba6700a55543710b97f11b1065944266e5adee41960c9",
+      "fbx_bytes": 846716,
+      "parts": 202,
+      "part_names": [
+        "Cedar_Post_-1_-1.42",
+        "Cedar_Post_-1_-2.84",
+        "Cedar_Post_-1_0",
+        "Cedar_Post_-1_1.42",
+        "Cedar_Post_-1_2.84",
+        "Cedar_Post_1_-1.42",
+        "Cedar_Post_1_-2.84",
+        "Cedar_Post_1_0",
+        "Cedar_Post_1_1.42",
+        "Cedar_Post_1_2.84",
+        "Floor_Joist_-1.39",
+        "Floor_Joist_-2.78",
+        "Floor_Joist_0",
+        "Floor_Joist_1.39",
+        "Floor_Joist_2.78",
+        "Foundation_Core",
+        "FrontBack_Quoin_-1_0_0",
+        "FrontBack_Quoin_-1_0_1",
+        "FrontBack_Quoin_-1_0_10",
+        "FrontBack_Quoin_-1_0_11",
+        "FrontBack_Quoin_-1_0_12",
+        "FrontBack_Quoin_-1_0_2",
+        "FrontBack_Quoin_-1_0_3",
+        "FrontBack_Quoin_-1_0_4",
+        "FrontBack_Quoin_-1_0_5",
+        "FrontBack_Quoin_-1_0_6",
+        "FrontBack_Quoin_-1_0_7",
+        "FrontBack_Quoin_-1_0_8",
+        "FrontBack_Quoin_-1_0_9",
+        "FrontBack_Quoin_-1_1_0",
+        "FrontBack_Quoin_-1_1_1",
+        "FrontBack_Quoin_-1_1_10",
+        "FrontBack_Quoin_-1_1_11",
+        "FrontBack_Quoin_-1_1_2",
+        "FrontBack_Quoin_-1_1_3",
+        "FrontBack_Quoin_-1_1_4",
+        "FrontBack_Quoin_-1_1_5",
+        "FrontBack_Quoin_-1_1_6",
+        "FrontBack_Quoin_-1_1_7",
+        "FrontBack_Quoin_-1_1_8",
+        "FrontBack_Quoin_-1_1_9",
+        "FrontBack_Quoin_1_0_0",
+        "FrontBack_Quoin_1_0_1",
+        "FrontBack_Quoin_1_0_10",
+        "FrontBack_Quoin_1_0_11",
+        "FrontBack_Quoin_1_0_12",
+        "FrontBack_Quoin_1_0_2",
+        "FrontBack_Quoin_1_0_3",
+        "FrontBack_Quoin_1_0_4",
+        "FrontBack_Quoin_1_0_5",
+        "FrontBack_Quoin_1_0_6",
+        "FrontBack_Quoin_1_0_7",
+        "FrontBack_Quoin_1_0_8",
+        "FrontBack_Quoin_1_0_9",
+        "FrontBack_Quoin_1_1_0",
+        "FrontBack_Quoin_1_1_1",
+        "FrontBack_Quoin_1_1_10",
+        "FrontBack_Quoin_1_1_11",
+        "FrontBack_Quoin_1_1_2",
+        "FrontBack_Quoin_1_1_3",
+        "FrontBack_Quoin_1_1_4",
+        "FrontBack_Quoin_1_1_5",
+        "FrontBack_Quoin_1_1_6",
+        "FrontBack_Quoin_1_1_7",
+        "FrontBack_Quoin_1_1_8",
+        "FrontBack_Quoin_1_1_9",
+        "Gable_Nuki_-1_1.11",
+        "Gable_Nuki_-1_3.24",
+        "Gable_Nuki_-1_3.49",
+        "Gable_Nuki_1_1.11",
+        "Gable_Nuki_1_3.24",
+        "Gable_Nuki_1_3.49",
+        "Gable_Plaster_-1_0",
+        "Gable_Plaster_-1_1",
+        "Gable_Plaster_-1_2",
+        "Gable_Plaster_1_0",
+        "Gable_Plaster_1_1",
+        "Gable_Plaster_1_2",
+        "Gable_Post_-1_-0.9",
+        "Gable_Post_-1_-2.7",
+        "Gable_Post_-1_0.9",
+        "Gable_Post_-1_2.7",
+        "Gable_Post_1_-0.9",
+        "Gable_Post_1_-2.7",
+        "Gable_Post_1_0.9",
+        "Gable_Post_1_2.7",
+        "Gable_Quoin_-1_0_0",
+        "Gable_Quoin_-1_0_1",
+        "Gable_Quoin_-1_0_10",
+        "Gable_Quoin_-1_0_11",
+        "Gable_Quoin_-1_0_12",
+        "Gable_Quoin_-1_0_2",
+        "Gable_Quoin_-1_0_3",
+        "Gable_Quoin_-1_0_4",
+        "Gable_Quoin_-1_0_5",
+        "Gable_Quoin_-1_0_6",
+        "Gable_Quoin_-1_0_7",
+        "Gable_Quoin_-1_0_8",
+        "Gable_Quoin_-1_0_9",
+        "Gable_Quoin_-1_1_0",
+        "Gable_Quoin_-1_1_1",
+        "Gable_Quoin_-1_1_10",
+        "Gable_Quoin_-1_1_11",
+        "Gable_Quoin_-1_1_2",
+        "Gable_Quoin_-1_1_3",
+        "Gable_Quoin_-1_1_4",
+        "Gable_Quoin_-1_1_5",
+        "Gable_Quoin_-1_1_6",
+        "Gable_Quoin_-1_1_7",
+        "Gable_Quoin_-1_1_8",
+        "Gable_Quoin_-1_1_9",
+        "Gable_Quoin_1_0_0",
+        "Gable_Quoin_1_0_1",
+        "Gable_Quoin_1_0_10",
+        "Gable_Quoin_1_0_11",
+        "Gable_Quoin_1_0_12",
+        "Gable_Quoin_1_0_2",
+        "Gable_Quoin_1_0_3",
+        "Gable_Quoin_1_0_4",
+        "Gable_Quoin_1_0_5",
+        "Gable_Quoin_1_0_6",
+        "Gable_Quoin_1_0_7",
+        "Gable_Quoin_1_0_8",
+        "Gable_Quoin_1_0_9",
+        "Gable_Quoin_1_1_0",
+        "Gable_Quoin_1_1_1",
+        "Gable_Quoin_1_1_10",
+        "Gable_Quoin_1_1_11",
+        "Gable_Quoin_1_1_2",
+        "Gable_Quoin_1_1_3",
+        "Gable_Quoin_1_1_4",
+        "Gable_Quoin_1_1_5",
+        "Gable_Quoin_1_1_6",
+        "Gable_Quoin_1_1_7",
+        "Gable_Quoin_1_1_8",
+        "Gable_Quoin_1_1_9",
+        "Gable_WainscotSeam_-1_0_0",
+        "Gable_WainscotSeam_-1_0_1",
+        "Gable_WainscotSeam_-1_0_2",
+        "Gable_WainscotSeam_-1_0_3",
+        "Gable_WainscotSeam_-1_0_4",
+        "Gable_WainscotSeam_-1_1_0",
+        "Gable_WainscotSeam_-1_1_1",
+        "Gable_WainscotSeam_-1_1_2",
+        "Gable_WainscotSeam_-1_1_3",
+        "Gable_WainscotSeam_-1_1_4",
+        "Gable_WainscotSeam_-1_2_0",
+        "Gable_WainscotSeam_-1_2_1",
+        "Gable_WainscotSeam_-1_2_2",
+        "Gable_WainscotSeam_-1_2_3",
+        "Gable_WainscotSeam_-1_2_4",
+        "Gable_WainscotSeam_1_0_0",
+        "Gable_WainscotSeam_1_0_1",
+        "Gable_WainscotSeam_1_0_2",
+        "Gable_WainscotSeam_1_0_3",
+        "Gable_WainscotSeam_1_0_4",
+        "Gable_WainscotSeam_1_1_0",
+        "Gable_WainscotSeam_1_1_1",
+        "Gable_WainscotSeam_1_1_2",
+        "Gable_WainscotSeam_1_1_3",
+        "Gable_WainscotSeam_1_1_4",
+        "Gable_WainscotSeam_1_2_0",
+        "Gable_WainscotSeam_1_2_1",
+        "Gable_WainscotSeam_1_2_2",
+        "Gable_WainscotSeam_1_2_3",
+        "Gable_WainscotSeam_1_2_4",
+        "Gable_Wainscot_-1_0",
+        "Gable_Wainscot_-1_1",
+        "Gable_Wainscot_-1_2",
+        "Gable_Wainscot_1_0",
+        "Gable_Wainscot_1_1",
+        "Gable_Wainscot_1_2",
+        "Nuki_FrontBack_-1_1.03",
+        "Nuki_FrontBack_-1_3.24",
+        "Nuki_FrontBack_-1_3.49",
+        "Nuki_FrontBack_1_1.03",
+        "Nuki_FrontBack_1_3.24",
+        "Nuki_FrontBack_1_3.49",
+        "Raised_Timber_Floor",
+        "Rear_Plaster_0",
+        "Rear_Plaster_1",
+        "Rear_Plaster_2",
+        "Rear_Plaster_3",
+        "Rear_Wainscot_0",
+        "Rear_Wainscot_1",
+        "Rear_Wainscot_2",
+        "Rear_Wainscot_3",
+        "Underfloor_Pier_-1.38_-2.64",
+        "Underfloor_Pier_-1.38_0",
+        "Underfloor_Pier_-1.38_2.64",
+        "Underfloor_Pier_-2.76_-2.64",
+        "Underfloor_Pier_-2.76_0",
+        "Underfloor_Pier_-2.76_2.64",
+        "Underfloor_Pier_0_-2.64",
+        "Underfloor_Pier_0_0",
+        "Underfloor_Pier_0_2.64",
+        "Underfloor_Pier_1.38_-2.64",
+        "Underfloor_Pier_1.38_0",
+        "Underfloor_Pier_1.38_2.64",
+        "Underfloor_Pier_2.76_-2.64",
+        "Underfloor_Pier_2.76_0",
+        "Underfloor_Pier_2.76_2.64"
+      ],
+      "export_object_names": {
+        "Cedar_Post_-1_-1.42": "DM_Body_000",
+        "Cedar_Post_-1_-2.84": "DM_Body_001",
+        "Cedar_Post_-1_0": "DM_Body_002",
+        "Cedar_Post_-1_1.42": "DM_Body_003",
+        "Cedar_Post_-1_2.84": "DM_Body_004",
+        "Cedar_Post_1_-1.42": "DM_Body_005",
+        "Cedar_Post_1_-2.84": "DM_Body_006",
+        "Cedar_Post_1_0": "DM_Body_007",
+        "Cedar_Post_1_1.42": "DM_Body_008",
+        "Cedar_Post_1_2.84": "DM_Body_009",
+        "Floor_Joist_-1.39": "DM_Body_010",
+        "Floor_Joist_-2.78": "DM_Body_011",
+        "Floor_Joist_0": "DM_Body_012",
+        "Floor_Joist_1.39": "DM_Body_013",
+        "Floor_Joist_2.78": "DM_Body_014",
+        "Foundation_Core": "DM_Body_015",
+        "FrontBack_Quoin_-1_0_0": "DM_Body_016",
+        "FrontBack_Quoin_-1_0_1": "DM_Body_017",
+        "FrontBack_Quoin_-1_0_10": "DM_Body_018",
+        "FrontBack_Quoin_-1_0_11": "DM_Body_019",
+        "FrontBack_Quoin_-1_0_12": "DM_Body_020",
+        "FrontBack_Quoin_-1_0_2": "DM_Body_021",
+        "FrontBack_Quoin_-1_0_3": "DM_Body_022",
+        "FrontBack_Quoin_-1_0_4": "DM_Body_023",
+        "FrontBack_Quoin_-1_0_5": "DM_Body_024",
+        "FrontBack_Quoin_-1_0_6": "DM_Body_025",
+        "FrontBack_Quoin_-1_0_7": "DM_Body_026",
+        "FrontBack_Quoin_-1_0_8": "DM_Body_027",
+        "FrontBack_Quoin_-1_0_9": "DM_Body_028",
+        "FrontBack_Quoin_-1_1_0": "DM_Body_029",
+        "FrontBack_Quoin_-1_1_1": "DM_Body_030",
+        "FrontBack_Quoin_-1_1_10": "DM_Body_031",
+        "FrontBack_Quoin_-1_1_11": "DM_Body_032",
+        "FrontBack_Quoin_-1_1_2": "DM_Body_033",
+        "FrontBack_Quoin_-1_1_3": "DM_Body_034",
+        "FrontBack_Quoin_-1_1_4": "DM_Body_035",
+        "FrontBack_Quoin_-1_1_5": "DM_Body_036",
+        "FrontBack_Quoin_-1_1_6": "DM_Body_037",
+        "FrontBack_Quoin_-1_1_7": "DM_Body_038",
+        "FrontBack_Quoin_-1_1_8": "DM_Body_039",
+        "FrontBack_Quoin_-1_1_9": "DM_Body_040",
+        "FrontBack_Quoin_1_0_0": "DM_Body_041",
+        "FrontBack_Quoin_1_0_1": "DM_Body_042",
+        "FrontBack_Quoin_1_0_10": "DM_Body_043",
+        "FrontBack_Quoin_1_0_11": "DM_Body_044",
+        "FrontBack_Quoin_1_0_12": "DM_Body_045",
+        "FrontBack_Quoin_1_0_2": "DM_Body_046",
+        "FrontBack_Quoin_1_0_3": "DM_Body_047",
+        "FrontBack_Quoin_1_0_4": "DM_Body_048",
+        "FrontBack_Quoin_1_0_5": "DM_Body_049",
+        "FrontBack_Quoin_1_0_6": "DM_Body_050",
+        "FrontBack_Quoin_1_0_7": "DM_Body_051",
+        "FrontBack_Quoin_1_0_8": "DM_Body_052",
+        "FrontBack_Quoin_1_0_9": "DM_Body_053",
+        "FrontBack_Quoin_1_1_0": "DM_Body_054",
+        "FrontBack_Quoin_1_1_1": "DM_Body_055",
+        "FrontBack_Quoin_1_1_10": "DM_Body_056",
+        "FrontBack_Quoin_1_1_11": "DM_Body_057",
+        "FrontBack_Quoin_1_1_2": "DM_Body_058",
+        "FrontBack_Quoin_1_1_3": "DM_Body_059",
+        "FrontBack_Quoin_1_1_4": "DM_Body_060",
+        "FrontBack_Quoin_1_1_5": "DM_Body_061",
+        "FrontBack_Quoin_1_1_6": "DM_Body_062",
+        "FrontBack_Quoin_1_1_7": "DM_Body_063",
+        "FrontBack_Quoin_1_1_8": "DM_Body_064",
+        "FrontBack_Quoin_1_1_9": "DM_Body_065",
+        "Gable_Nuki_-1_1.11": "DM_Body_066",
+        "Gable_Nuki_-1_3.24": "DM_Body_067",
+        "Gable_Nuki_-1_3.49": "DM_Body_068",
+        "Gable_Nuki_1_1.11": "DM_Body_069",
+        "Gable_Nuki_1_3.24": "DM_Body_070",
+        "Gable_Nuki_1_3.49": "DM_Body_071",
+        "Gable_Plaster_-1_0": "DM_Body_072",
+        "Gable_Plaster_-1_1": "DM_Body_073",
+        "Gable_Plaster_-1_2": "DM_Body_074",
+        "Gable_Plaster_1_0": "DM_Body_075",
+        "Gable_Plaster_1_1": "DM_Body_076",
+        "Gable_Plaster_1_2": "DM_Body_077",
+        "Gable_Post_-1_-0.9": "DM_Body_078",
+        "Gable_Post_-1_-2.7": "DM_Body_079",
+        "Gable_Post_-1_0.9": "DM_Body_080",
+        "Gable_Post_-1_2.7": "DM_Body_081",
+        "Gable_Post_1_-0.9": "DM_Body_082",
+        "Gable_Post_1_-2.7": "DM_Body_083",
+        "Gable_Post_1_0.9": "DM_Body_084",
+        "Gable_Post_1_2.7": "DM_Body_085",
+        "Gable_Quoin_-1_0_0": "DM_Body_086",
+        "Gable_Quoin_-1_0_1": "DM_Body_087",
+        "Gable_Quoin_-1_0_10": "DM_Body_088",
+        "Gable_Quoin_-1_0_11": "DM_Body_089",
+        "Gable_Quoin_-1_0_12": "DM_Body_090",
+        "Gable_Quoin_-1_0_2": "DM_Body_091",
+        "Gable_Quoin_-1_0_3": "DM_Body_092",
+        "Gable_Quoin_-1_0_4": "DM_Body_093",
+        "Gable_Quoin_-1_0_5": "DM_Body_094",
+        "Gable_Quoin_-1_0_6": "DM_Body_095",
+        "Gable_Quoin_-1_0_7": "DM_Body_096",
+        "Gable_Quoin_-1_0_8": "DM_Body_097",
+        "Gable_Quoin_-1_0_9": "DM_Body_098",
+        "Gable_Quoin_-1_1_0": "DM_Body_099",
+        "Gable_Quoin_-1_1_1": "DM_Body_100",
+        "Gable_Quoin_-1_1_10": "DM_Body_101",
+        "Gable_Quoin_-1_1_11": "DM_Body_102",
+        "Gable_Quoin_-1_1_2": "DM_Body_103",
+        "Gable_Quoin_-1_1_3": "DM_Body_104",
+        "Gable_Quoin_-1_1_4": "DM_Body_105",
+        "Gable_Quoin_-1_1_5": "DM_Body_106",
+        "Gable_Quoin_-1_1_6": "DM_Body_107",
+        "Gable_Quoin_-1_1_7": "DM_Body_108",
+        "Gable_Quoin_-1_1_8": "DM_Body_109",
+        "Gable_Quoin_-1_1_9": "DM_Body_110",
+        "Gable_Quoin_1_0_0": "DM_Body_111",
+        "Gable_Quoin_1_0_1": "DM_Body_112",
+        "Gable_Quoin_1_0_10": "DM_Body_113",
+        "Gable_Quoin_1_0_11": "DM_Body_114",
+        "Gable_Quoin_1_0_12": "DM_Body_115",
+        "Gable_Quoin_1_0_2": "DM_Body_116",
+        "Gable_Quoin_1_0_3": "DM_Body_117",
+        "Gable_Quoin_1_0_4": "DM_Body_118",
+        "Gable_Quoin_1_0_5": "DM_Body_119",
+        "Gable_Quoin_1_0_6": "DM_Body_120",
+        "Gable_Quoin_1_0_7": "DM_Body_121",
+        "Gable_Quoin_1_0_8": "DM_Body_122",
+        "Gable_Quoin_1_0_9": "DM_Body_123",
+        "Gable_Quoin_1_1_0": "DM_Body_124",
+        "Gable_Quoin_1_1_1": "DM_Body_125",
+        "Gable_Quoin_1_1_10": "DM_Body_126",
+        "Gable_Quoin_1_1_11": "DM_Body_127",
+        "Gable_Quoin_1_1_2": "DM_Body_128",
+        "Gable_Quoin_1_1_3": "DM_Body_129",
+        "Gable_Quoin_1_1_4": "DM_Body_130",
+        "Gable_Quoin_1_1_5": "DM_Body_131",
+        "Gable_Quoin_1_1_6": "DM_Body_132",
+        "Gable_Quoin_1_1_7": "DM_Body_133",
+        "Gable_Quoin_1_1_8": "DM_Body_134",
+        "Gable_Quoin_1_1_9": "DM_Body_135",
+        "Gable_WainscotSeam_-1_0_0": "DM_Body_136",
+        "Gable_WainscotSeam_-1_0_1": "DM_Body_137",
+        "Gable_WainscotSeam_-1_0_2": "DM_Body_138",
+        "Gable_WainscotSeam_-1_0_3": "DM_Body_139",
+        "Gable_WainscotSeam_-1_0_4": "DM_Body_140",
+        "Gable_WainscotSeam_-1_1_0": "DM_Body_141",
+        "Gable_WainscotSeam_-1_1_1": "DM_Body_142",
+        "Gable_WainscotSeam_-1_1_2": "DM_Body_143",
+        "Gable_WainscotSeam_-1_1_3": "DM_Body_144",
+        "Gable_WainscotSeam_-1_1_4": "DM_Body_145",
+        "Gable_WainscotSeam_-1_2_0": "DM_Body_146",
+        "Gable_WainscotSeam_-1_2_1": "DM_Body_147",
+        "Gable_WainscotSeam_-1_2_2": "DM_Body_148",
+        "Gable_WainscotSeam_-1_2_3": "DM_Body_149",
+        "Gable_WainscotSeam_-1_2_4": "DM_Body_150",
+        "Gable_WainscotSeam_1_0_0": "DM_Body_151",
+        "Gable_WainscotSeam_1_0_1": "DM_Body_152",
+        "Gable_WainscotSeam_1_0_2": "DM_Body_153",
+        "Gable_WainscotSeam_1_0_3": "DM_Body_154",
+        "Gable_WainscotSeam_1_0_4": "DM_Body_155",
+        "Gable_WainscotSeam_1_1_0": "DM_Body_156",
+        "Gable_WainscotSeam_1_1_1": "DM_Body_157",
+        "Gable_WainscotSeam_1_1_2": "DM_Body_158",
+        "Gable_WainscotSeam_1_1_3": "DM_Body_159",
+        "Gable_WainscotSeam_1_1_4": "DM_Body_160",
+        "Gable_WainscotSeam_1_2_0": "DM_Body_161",
+        "Gable_WainscotSeam_1_2_1": "DM_Body_162",
+        "Gable_WainscotSeam_1_2_2": "DM_Body_163",
+        "Gable_WainscotSeam_1_2_3": "DM_Body_164",
+        "Gable_WainscotSeam_1_2_4": "DM_Body_165",
+        "Gable_Wainscot_-1_0": "DM_Body_166",
+        "Gable_Wainscot_-1_1": "DM_Body_167",
+        "Gable_Wainscot_-1_2": "DM_Body_168",
+        "Gable_Wainscot_1_0": "DM_Body_169",
+        "Gable_Wainscot_1_1": "DM_Body_170",
+        "Gable_Wainscot_1_2": "DM_Body_171",
+        "Nuki_FrontBack_-1_1.03": "DM_Body_172",
+        "Nuki_FrontBack_-1_3.24": "DM_Body_173",
+        "Nuki_FrontBack_-1_3.49": "DM_Body_174",
+        "Nuki_FrontBack_1_1.03": "DM_Body_175",
+        "Nuki_FrontBack_1_3.24": "DM_Body_176",
+        "Nuki_FrontBack_1_3.49": "DM_Body_177",
+        "Raised_Timber_Floor": "DM_Body_178",
+        "Rear_Plaster_0": "DM_Body_179",
+        "Rear_Plaster_1": "DM_Body_180",
+        "Rear_Plaster_2": "DM_Body_181",
+        "Rear_Plaster_3": "DM_Body_182",
+        "Rear_Wainscot_0": "DM_Body_183",
+        "Rear_Wainscot_1": "DM_Body_184",
+        "Rear_Wainscot_2": "DM_Body_185",
+        "Rear_Wainscot_3": "DM_Body_186",
+        "Underfloor_Pier_-1.38_-2.64": "DM_Body_187",
+        "Underfloor_Pier_-1.38_0": "DM_Body_188",
+        "Underfloor_Pier_-1.38_2.64": "DM_Body_189",
+        "Underfloor_Pier_-2.76_-2.64": "DM_Body_190",
+        "Underfloor_Pier_-2.76_0": "DM_Body_191",
+        "Underfloor_Pier_-2.76_2.64": "DM_Body_192",
+        "Underfloor_Pier_0_-2.64": "DM_Body_193",
+        "Underfloor_Pier_0_0": "DM_Body_194",
+        "Underfloor_Pier_0_2.64": "DM_Body_195",
+        "Underfloor_Pier_1.38_-2.64": "DM_Body_196",
+        "Underfloor_Pier_1.38_0": "DM_Body_197",
+        "Underfloor_Pier_1.38_2.64": "DM_Body_198",
+        "Underfloor_Pier_2.76_-2.64": "DM_Body_199",
+        "Underfloor_Pier_2.76_0": "DM_Body_200",
+        "Underfloor_Pier_2.76_2.64": "DM_Body_201"
+      },
+      "part_material_slots": {
+        "Cedar_Post_-1_-1.42": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_-1_-2.84": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_-1_0": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_-1_1.42": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_-1_2.84": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_1_-1.42": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_1_-2.84": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_1_0": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_1_1.42": [
+          "M_Env_Timber"
+        ],
+        "Cedar_Post_1_2.84": [
+          "M_Env_Timber"
+        ],
+        "Floor_Joist_-1.39": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Floor_Joist_-2.78": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Floor_Joist_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Floor_Joist_1.39": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Floor_Joist_2.78": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Foundation_Core": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_0": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_1": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_10": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_11": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_12": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_2": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_3": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_4": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_5": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_6": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_7": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_8": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_0_9": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_0": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_1": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_10": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_11": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_2": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_3": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_4": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_5": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_6": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_7": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_8": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_-1_1_9": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_0": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_1": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_10": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_11": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_12": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_2": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_3": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_4": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_5": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_6": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_7": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_8": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_0_9": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_0": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_1": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_10": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_11": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_2": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_3": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_4": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_5": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_6": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_7": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_8": [
+          "M_Env_Stone"
+        ],
+        "FrontBack_Quoin_1_1_9": [
+          "M_Env_Stone"
+        ],
+        "Gable_Nuki_-1_1.11": [
+          "M_Env_Timber"
+        ],
+        "Gable_Nuki_-1_3.24": [
+          "M_Env_Timber"
+        ],
+        "Gable_Nuki_-1_3.49": [
+          "M_Env_Timber"
+        ],
+        "Gable_Nuki_1_1.11": [
+          "M_Env_Timber"
+        ],
+        "Gable_Nuki_1_3.24": [
+          "M_Env_Timber"
+        ],
+        "Gable_Nuki_1_3.49": [
+          "M_Env_Timber"
+        ],
+        "Gable_Plaster_-1_0": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Gable_Plaster_-1_1": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Gable_Plaster_-1_2": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Gable_Plaster_1_0": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Gable_Plaster_1_1": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Gable_Plaster_1_2": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Gable_Post_-1_-0.9": [
+          "M_Env_Timber"
+        ],
+        "Gable_Post_-1_-2.7": [
+          "M_Env_Timber"
+        ],
+        "Gable_Post_-1_0.9": [
+          "M_Env_Timber"
+        ],
+        "Gable_Post_-1_2.7": [
+          "M_Env_Timber"
+        ],
+        "Gable_Post_1_-0.9": [
+          "M_Env_Timber"
+        ],
+        "Gable_Post_1_-2.7": [
+          "M_Env_Timber"
+        ],
+        "Gable_Post_1_0.9": [
+          "M_Env_Timber"
+        ],
+        "Gable_Post_1_2.7": [
+          "M_Env_Timber"
+        ],
+        "Gable_Quoin_-1_0_0": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_1": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_10": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_11": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_12": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_2": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_3": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_4": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_5": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_6": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_7": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_8": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_0_9": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_0": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_1": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_10": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_11": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_2": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_3": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_4": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_5": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_6": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_7": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_8": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_-1_1_9": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_0": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_1": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_10": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_11": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_12": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_2": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_3": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_4": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_5": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_6": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_7": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_8": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_0_9": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_0": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_1": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_10": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_11": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_2": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_3": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_4": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_5": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_6": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_7": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_8": [
+          "M_Env_Stone"
+        ],
+        "Gable_Quoin_1_1_9": [
+          "M_Env_Stone"
+        ],
+        "Gable_WainscotSeam_-1_0_0": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_0_1": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_0_2": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_0_3": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_0_4": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_1_0": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_1_1": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_1_2": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_1_3": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_1_4": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_2_0": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_2_1": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_2_2": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_2_3": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_-1_2_4": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_0_0": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_0_1": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_0_2": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_0_3": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_0_4": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_1_0": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_1_1": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_1_2": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_1_3": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_1_4": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_2_0": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_2_1": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_2_2": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_2_3": [
+          "M_Env_Timber"
+        ],
+        "Gable_WainscotSeam_1_2_4": [
+          "M_Env_Timber"
+        ],
+        "Gable_Wainscot_-1_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Gable_Wainscot_-1_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Gable_Wainscot_-1_2": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Gable_Wainscot_1_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Gable_Wainscot_1_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Gable_Wainscot_1_2": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Nuki_FrontBack_-1_1.03": [
+          "M_Env_Timber"
+        ],
+        "Nuki_FrontBack_-1_3.24": [
+          "M_Env_Timber"
+        ],
+        "Nuki_FrontBack_-1_3.49": [
+          "M_Env_Timber"
+        ],
+        "Nuki_FrontBack_1_1.03": [
+          "M_Env_Timber"
+        ],
+        "Nuki_FrontBack_1_3.24": [
+          "M_Env_Timber"
+        ],
+        "Nuki_FrontBack_1_3.49": [
+          "M_Env_Timber"
+        ],
+        "Raised_Timber_Floor": [
+          "M_Env_Timber"
+        ],
+        "Rear_Plaster_0": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Rear_Plaster_1": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Rear_Plaster_2": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Rear_Plaster_3": [
+          "M_Dojo_LimePlaster"
+        ],
+        "Rear_Wainscot_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Rear_Wainscot_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Rear_Wainscot_2": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Rear_Wainscot_3": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_-1.38_-2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_-1.38_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_-1.38_2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_-2.76_-2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_-2.76_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_-2.76_2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_0_-2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_0_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_0_2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_1.38_-2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_1.38_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_1.38_2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_2.76_-2.64": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_2.76_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Underfloor_Pier_2.76_2.64": [
+          "M_Dojo_CharredCedar"
+        ]
+      },
+      "triangles": 18936,
+      "world_bounds_m": {
+        "min": [
+          -3.185,
+          -3.185,
+          -0.0025
+        ],
+        "max": [
+          3.185,
+          3.185,
+          3.56
+        ]
+      },
+      "world_triangle_sha256": "c3c0422442fdb1cb80a90a9c605ed324924efc149bfe7573654f41613b2b091b",
+      "material_slots": [
+        "M_Dojo_CharredCedar",
+        "M_Dojo_LimePlaster",
+        "M_Env_Stone",
+        "M_Env_Timber"
+      ],
+      "material_triangle_counts": {
+        "M_Dojo_CharredCedar": 3240,
+        "M_Dojo_LimePlaster": 1080,
+        "M_Env_Stone": 10908,
+        "M_Env_Timber": 3708
+      },
+      "open_boundary_edges_per_part_sum": 0,
+      "nonmanifold_edges_per_part_sum": 0,
+      "export_object_count": 202
+    },
+    {
+      "name": "SM_Nyaagyu_EstateDojo_Shoji",
+      "fbx": "SM_Nyaagyu_EstateDojo_Shoji.fbx",
+      "fbx_sha256": "a88ca82a9e2d7bcdfa68c7df50395e4c150f563cbdfc264d99f80dc342703da0",
+      "fbx_bytes": 970300,
+      "parts": 106,
+      "part_names": [
+        "Dojo_FrontSign",
+        "Dojo_JapaneseSign",
+        "Engawa_Board_Seam_00",
+        "Engawa_Board_Seam_01",
+        "Engawa_Board_Seam_02",
+        "Engawa_Board_Seam_03",
+        "Engawa_Board_Seam_04",
+        "Engawa_Board_Seam_05",
+        "Engawa_Board_Seam_06",
+        "Engawa_Board_Seam_07",
+        "Engawa_Board_Seam_08",
+        "Engawa_Board_Seam_09",
+        "Engawa_Board_Seam_10",
+        "Engawa_Board_Seam_11",
+        "Engawa_Board_Seam_12",
+        "Engawa_Foot_-2.55",
+        "Engawa_Foot_0",
+        "Engawa_Foot_2.55",
+        "Front_Engawa",
+        "Kamon_Disc_-1.12",
+        "Kamon_Disc_1.12",
+        "Lantern_Bracket_-2.6",
+        "Lantern_Bracket_2.6",
+        "Lantern_Frame_-2.6",
+        "Lantern_Frame_2.6",
+        "Lantern_Glow_-2.6",
+        "Lantern_Glow_2.6",
+        "Lantern_Horiz_-2.6_2.77",
+        "Lantern_Horiz_-2.6_2.98",
+        "Lantern_Horiz_2.6_2.77",
+        "Lantern_Horiz_2.6_2.98",
+        "Lantern_Vert_-2.6_-1",
+        "Lantern_Vert_-2.6_1",
+        "Lantern_Vert_2.6_-1",
+        "Lantern_Vert_2.6_1",
+        "Shikidai_Step_0",
+        "Shikidai_Step_1",
+        "Shikidai_Step_2",
+        "Shoji_Jamb_0_-1",
+        "Shoji_Jamb_0_1",
+        "Shoji_Jamb_1_-1",
+        "Shoji_Jamb_1_1",
+        "Shoji_Jamb_2_-1",
+        "Shoji_Jamb_2_1",
+        "Shoji_Jamb_3_-1",
+        "Shoji_Jamb_3_1",
+        "Shoji_KumikoH_0_1",
+        "Shoji_KumikoH_0_2",
+        "Shoji_KumikoH_0_3",
+        "Shoji_KumikoH_0_4",
+        "Shoji_KumikoH_0_5",
+        "Shoji_KumikoH_0_6",
+        "Shoji_KumikoH_0_7",
+        "Shoji_KumikoH_0_8",
+        "Shoji_KumikoH_1_1",
+        "Shoji_KumikoH_1_2",
+        "Shoji_KumikoH_1_3",
+        "Shoji_KumikoH_1_4",
+        "Shoji_KumikoH_1_5",
+        "Shoji_KumikoH_1_6",
+        "Shoji_KumikoH_1_7",
+        "Shoji_KumikoH_1_8",
+        "Shoji_KumikoH_2_1",
+        "Shoji_KumikoH_2_2",
+        "Shoji_KumikoH_2_3",
+        "Shoji_KumikoH_2_4",
+        "Shoji_KumikoH_2_5",
+        "Shoji_KumikoH_2_6",
+        "Shoji_KumikoH_2_7",
+        "Shoji_KumikoH_2_8",
+        "Shoji_KumikoH_3_1",
+        "Shoji_KumikoH_3_2",
+        "Shoji_KumikoH_3_3",
+        "Shoji_KumikoH_3_4",
+        "Shoji_KumikoH_3_5",
+        "Shoji_KumikoH_3_6",
+        "Shoji_KumikoH_3_7",
+        "Shoji_KumikoH_3_8",
+        "Shoji_KumikoV_0_1",
+        "Shoji_KumikoV_0_2",
+        "Shoji_KumikoV_0_3",
+        "Shoji_KumikoV_0_4",
+        "Shoji_KumikoV_1_1",
+        "Shoji_KumikoV_1_2",
+        "Shoji_KumikoV_1_3",
+        "Shoji_KumikoV_1_4",
+        "Shoji_KumikoV_2_1",
+        "Shoji_KumikoV_2_2",
+        "Shoji_KumikoV_2_3",
+        "Shoji_KumikoV_2_4",
+        "Shoji_KumikoV_3_1",
+        "Shoji_KumikoV_3_2",
+        "Shoji_KumikoV_3_3",
+        "Shoji_KumikoV_3_4",
+        "Shoji_Paper_0",
+        "Shoji_Paper_1",
+        "Shoji_Paper_2",
+        "Shoji_Paper_3",
+        "Shoji_Pull_0",
+        "Shoji_Pull_1",
+        "Shoji_Pull_2",
+        "Shoji_Pull_3",
+        "UserSupplied_SORAKamon_dojo_left_Path_0",
+        "UserSupplied_SORAKamon_dojo_left_Path_1",
+        "UserSupplied_SORAKamon_dojo_right_Path_0",
+        "UserSupplied_SORAKamon_dojo_right_Path_1"
+      ],
+      "export_object_names": {
+        "Dojo_FrontSign": "DM_Shoji_000",
+        "Dojo_JapaneseSign": "DM_Shoji_001",
+        "Engawa_Board_Seam_00": "DM_Shoji_002",
+        "Engawa_Board_Seam_01": "DM_Shoji_003",
+        "Engawa_Board_Seam_02": "DM_Shoji_004",
+        "Engawa_Board_Seam_03": "DM_Shoji_005",
+        "Engawa_Board_Seam_04": "DM_Shoji_006",
+        "Engawa_Board_Seam_05": "DM_Shoji_007",
+        "Engawa_Board_Seam_06": "DM_Shoji_008",
+        "Engawa_Board_Seam_07": "DM_Shoji_009",
+        "Engawa_Board_Seam_08": "DM_Shoji_010",
+        "Engawa_Board_Seam_09": "DM_Shoji_011",
+        "Engawa_Board_Seam_10": "DM_Shoji_012",
+        "Engawa_Board_Seam_11": "DM_Shoji_013",
+        "Engawa_Board_Seam_12": "DM_Shoji_014",
+        "Engawa_Foot_-2.55": "DM_Shoji_015",
+        "Engawa_Foot_0": "DM_Shoji_016",
+        "Engawa_Foot_2.55": "DM_Shoji_017",
+        "Front_Engawa": "DM_Shoji_018",
+        "Kamon_Disc_-1.12": "DM_Shoji_019",
+        "Kamon_Disc_1.12": "DM_Shoji_020",
+        "Lantern_Bracket_-2.6": "DM_Shoji_021",
+        "Lantern_Bracket_2.6": "DM_Shoji_022",
+        "Lantern_Frame_-2.6": "DM_Shoji_023",
+        "Lantern_Frame_2.6": "DM_Shoji_024",
+        "Lantern_Glow_-2.6": "DM_Shoji_025",
+        "Lantern_Glow_2.6": "DM_Shoji_026",
+        "Lantern_Horiz_-2.6_2.77": "DM_Shoji_027",
+        "Lantern_Horiz_-2.6_2.98": "DM_Shoji_028",
+        "Lantern_Horiz_2.6_2.77": "DM_Shoji_029",
+        "Lantern_Horiz_2.6_2.98": "DM_Shoji_030",
+        "Lantern_Vert_-2.6_-1": "DM_Shoji_031",
+        "Lantern_Vert_-2.6_1": "DM_Shoji_032",
+        "Lantern_Vert_2.6_-1": "DM_Shoji_033",
+        "Lantern_Vert_2.6_1": "DM_Shoji_034",
+        "Shikidai_Step_0": "DM_Shoji_035",
+        "Shikidai_Step_1": "DM_Shoji_036",
+        "Shikidai_Step_2": "DM_Shoji_037",
+        "Shoji_Jamb_0_-1": "DM_Shoji_038",
+        "Shoji_Jamb_0_1": "DM_Shoji_039",
+        "Shoji_Jamb_1_-1": "DM_Shoji_040",
+        "Shoji_Jamb_1_1": "DM_Shoji_041",
+        "Shoji_Jamb_2_-1": "DM_Shoji_042",
+        "Shoji_Jamb_2_1": "DM_Shoji_043",
+        "Shoji_Jamb_3_-1": "DM_Shoji_044",
+        "Shoji_Jamb_3_1": "DM_Shoji_045",
+        "Shoji_KumikoH_0_1": "DM_Shoji_046",
+        "Shoji_KumikoH_0_2": "DM_Shoji_047",
+        "Shoji_KumikoH_0_3": "DM_Shoji_048",
+        "Shoji_KumikoH_0_4": "DM_Shoji_049",
+        "Shoji_KumikoH_0_5": "DM_Shoji_050",
+        "Shoji_KumikoH_0_6": "DM_Shoji_051",
+        "Shoji_KumikoH_0_7": "DM_Shoji_052",
+        "Shoji_KumikoH_0_8": "DM_Shoji_053",
+        "Shoji_KumikoH_1_1": "DM_Shoji_054",
+        "Shoji_KumikoH_1_2": "DM_Shoji_055",
+        "Shoji_KumikoH_1_3": "DM_Shoji_056",
+        "Shoji_KumikoH_1_4": "DM_Shoji_057",
+        "Shoji_KumikoH_1_5": "DM_Shoji_058",
+        "Shoji_KumikoH_1_6": "DM_Shoji_059",
+        "Shoji_KumikoH_1_7": "DM_Shoji_060",
+        "Shoji_KumikoH_1_8": "DM_Shoji_061",
+        "Shoji_KumikoH_2_1": "DM_Shoji_062",
+        "Shoji_KumikoH_2_2": "DM_Shoji_063",
+        "Shoji_KumikoH_2_3": "DM_Shoji_064",
+        "Shoji_KumikoH_2_4": "DM_Shoji_065",
+        "Shoji_KumikoH_2_5": "DM_Shoji_066",
+        "Shoji_KumikoH_2_6": "DM_Shoji_067",
+        "Shoji_KumikoH_2_7": "DM_Shoji_068",
+        "Shoji_KumikoH_2_8": "DM_Shoji_069",
+        "Shoji_KumikoH_3_1": "DM_Shoji_070",
+        "Shoji_KumikoH_3_2": "DM_Shoji_071",
+        "Shoji_KumikoH_3_3": "DM_Shoji_072",
+        "Shoji_KumikoH_3_4": "DM_Shoji_073",
+        "Shoji_KumikoH_3_5": "DM_Shoji_074",
+        "Shoji_KumikoH_3_6": "DM_Shoji_075",
+        "Shoji_KumikoH_3_7": "DM_Shoji_076",
+        "Shoji_KumikoH_3_8": "DM_Shoji_077",
+        "Shoji_KumikoV_0_1": "DM_Shoji_078",
+        "Shoji_KumikoV_0_2": "DM_Shoji_079",
+        "Shoji_KumikoV_0_3": "DM_Shoji_080",
+        "Shoji_KumikoV_0_4": "DM_Shoji_081",
+        "Shoji_KumikoV_1_1": "DM_Shoji_082",
+        "Shoji_KumikoV_1_2": "DM_Shoji_083",
+        "Shoji_KumikoV_1_3": "DM_Shoji_084",
+        "Shoji_KumikoV_1_4": "DM_Shoji_085",
+        "Shoji_KumikoV_2_1": "DM_Shoji_086",
+        "Shoji_KumikoV_2_2": "DM_Shoji_087",
+        "Shoji_KumikoV_2_3": "DM_Shoji_088",
+        "Shoji_KumikoV_2_4": "DM_Shoji_089",
+        "Shoji_KumikoV_3_1": "DM_Shoji_090",
+        "Shoji_KumikoV_3_2": "DM_Shoji_091",
+        "Shoji_KumikoV_3_3": "DM_Shoji_092",
+        "Shoji_KumikoV_3_4": "DM_Shoji_093",
+        "Shoji_Paper_0": "DM_Shoji_094",
+        "Shoji_Paper_1": "DM_Shoji_095",
+        "Shoji_Paper_2": "DM_Shoji_096",
+        "Shoji_Paper_3": "DM_Shoji_097",
+        "Shoji_Pull_0": "DM_Shoji_098",
+        "Shoji_Pull_1": "DM_Shoji_099",
+        "Shoji_Pull_2": "DM_Shoji_100",
+        "Shoji_Pull_3": "DM_Shoji_101",
+        "UserSupplied_SORAKamon_dojo_left_Path_0": "DM_Shoji_102",
+        "UserSupplied_SORAKamon_dojo_left_Path_1": "DM_Shoji_103",
+        "UserSupplied_SORAKamon_dojo_right_Path_0": "DM_Shoji_104",
+        "UserSupplied_SORAKamon_dojo_right_Path_1": "DM_Shoji_105"
+      },
+      "part_material_slots": {
+        "Dojo_FrontSign": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Dojo_JapaneseSign": [
+          "M_Dojo_AgedBrass"
+        ],
+        "Engawa_Board_Seam_00": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_01": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_02": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_03": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_04": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_05": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_06": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_07": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_08": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_09": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_10": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_11": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Board_Seam_12": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Foot_-2.55": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Foot_0": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Engawa_Foot_2.55": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Front_Engawa": [
+          "M_Env_Timber"
+        ],
+        "Kamon_Disc_-1.12": [
+          "M_Dojo_BlackenedIron"
+        ],
+        "Kamon_Disc_1.12": [
+          "M_Dojo_BlackenedIron"
+        ],
+        "Lantern_Bracket_-2.6": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Bracket_2.6": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Frame_-2.6": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Frame_2.6": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Glow_-2.6": [
+          "M_Dojo_LanternWashi"
+        ],
+        "Lantern_Glow_2.6": [
+          "M_Dojo_LanternWashi"
+        ],
+        "Lantern_Horiz_-2.6_2.77": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Horiz_-2.6_2.98": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Horiz_2.6_2.77": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Horiz_2.6_2.98": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Vert_-2.6_-1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Vert_-2.6_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Vert_2.6_-1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Lantern_Vert_2.6_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shikidai_Step_0": [
+          "M_Env_Timber"
+        ],
+        "Shikidai_Step_1": [
+          "M_Env_Timber"
+        ],
+        "Shikidai_Step_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_Jamb_0_-1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shoji_Jamb_0_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shoji_Jamb_1_-1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shoji_Jamb_1_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shoji_Jamb_2_-1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shoji_Jamb_2_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shoji_Jamb_3_-1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shoji_Jamb_3_1": [
+          "M_Dojo_CharredCedar"
+        ],
+        "Shoji_KumikoH_0_1": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_0_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_0_3": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_0_4": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_0_5": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_0_6": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_0_7": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_0_8": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_1_1": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_1_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_1_3": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_1_4": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_1_5": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_1_6": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_1_7": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_1_8": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_2_1": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_2_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_2_3": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_2_4": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_2_5": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_2_6": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_2_7": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_2_8": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_3_1": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_3_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_3_3": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_3_4": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_3_5": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_3_6": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_3_7": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoH_3_8": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_0_1": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_0_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_0_3": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_0_4": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_1_1": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_1_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_1_3": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_1_4": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_2_1": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_2_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_2_3": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_2_4": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_3_1": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_3_2": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_3_3": [
+          "M_Env_Timber"
+        ],
+        "Shoji_KumikoV_3_4": [
+          "M_Env_Timber"
+        ],
+        "Shoji_Paper_0": [
+          "M_Dojo_Washi"
+        ],
+        "Shoji_Paper_1": [
+          "M_Dojo_Washi"
+        ],
+        "Shoji_Paper_2": [
+          "M_Dojo_Washi"
+        ],
+        "Shoji_Paper_3": [
+          "M_Dojo_Washi"
+        ],
+        "Shoji_Pull_0": [
+          "M_Dojo_BlackenedIron"
+        ],
+        "Shoji_Pull_1": [
+          "M_Dojo_BlackenedIron"
+        ],
+        "Shoji_Pull_2": [
+          "M_Dojo_BlackenedIron"
+        ],
+        "Shoji_Pull_3": [
+          "M_Dojo_BlackenedIron"
+        ],
+        "UserSupplied_SORAKamon_dojo_left_Path_0": [
+          "M_Dojo_AgedBrass"
+        ],
+        "UserSupplied_SORAKamon_dojo_left_Path_1": [
+          "M_Dojo_AgedBrass"
+        ],
+        "UserSupplied_SORAKamon_dojo_right_Path_0": [
+          "M_Dojo_AgedBrass"
+        ],
+        "UserSupplied_SORAKamon_dojo_right_Path_1": [
+          "M_Dojo_AgedBrass"
+        ]
+      },
+      "triangles": 34492,
+      "world_bounds_m": {
+        "min": [
+          -3.04,
+          -4.1,
+          0.295
+        ],
+        "max": [
+          3.04,
+          -2.51,
+          3.615
+        ]
+      },
+      "world_triangle_sha256": "40923ba0b9efa5b131c568582b15a4d5e3e6f4091bf1f7f19542bc5f4cb38b33",
+      "material_slots": [
+        "M_Dojo_AgedBrass",
+        "M_Dojo_BlackenedIron",
+        "M_Dojo_CharredCedar",
+        "M_Dojo_LanternWashi",
+        "M_Dojo_Washi",
+        "M_Env_Timber"
+      ],
+      "material_triangle_counts": {
+        "M_Dojo_AgedBrass": 25376,
+        "M_Dojo_BlackenedIron": 488,
+        "M_Dojo_CharredCedar": 2748,
+        "M_Dojo_LanternWashi": 216,
+        "M_Dojo_Washi": 48,
+        "M_Env_Timber": 5616
+      },
+      "open_boundary_edges_per_part_sum": 4400,
+      "nonmanifold_edges_per_part_sum": 4400,
+      "export_object_count": 106
+    }
+  ]
+}
