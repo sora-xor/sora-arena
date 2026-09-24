@@ -1,0 +1,11 @@
+{
+  "generator": "build_textures.py",
+  "seed": 7199,
+  "map_size": [
+    2048,
+    2048
+  ],
+  "maps": "five original Albedo / ORM / DirectX normal sets",
+  "source": "project-authored procedural color, grain, scratches, and height only",
+  "limits": "art-estimated PBR values; not measured material scans or photoreal approval"
+}

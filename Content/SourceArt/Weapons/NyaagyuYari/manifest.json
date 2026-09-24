@@ -1,0 +1,49 @@
+{
+  "asset_status": "source-only, not imported into Unreal gameplay",
+  "museum_anchor": {
+    "institution": "The British Museum",
+    "accession": "OA+.7199",
+    "url": "https://www.britishmuseum.org/collection/object/A_OA-7199",
+    "catalog_period": "Edo Period (middle), 18th-19th century",
+    "catalog_measurements_m": {
+      "overall": 1.93,
+      "blade": 0.18,
+      "tang": 0.48
+    },
+    "catalog_material_record": "steel"
+  },
+  "authored_interpretation": [
+    "eight-facet diamond blade section and 25.6 mm maximum blade width",
+    "ash-colored wood shaft, black urushi finish, steel ferrule/shoe, russet cord",
+    "haft diameter and mounting details are art estimates"
+  ],
+  "geometry_m": {
+    "overall_envelope": 1.93,
+    "blade": 0.18,
+    "modeled_internal_tang": 0.48
+  },
+  "texture_source": "original project-authored procedural maps; no external bitmap copied",
+  "textures_sha256": {
+    "T_Yari_AshWood_Albedo.png": "f7b4defc59399aac9ffcca301303c6f1c21d7a7f20dbcc73dc38cb93676fd9ad",
+    "T_Yari_AshWood_NormalDX.png": "cda413231c17e2f6184b3c18cf1ba3656a8fa3ad25f9c0750c744bbbe406a6eb",
+    "T_Yari_AshWood_ORM.png": "bcb111f9fc5d953a6eec10850b4e980d20f7221e7b227e44b95247b37f7c0b69",
+    "T_Yari_BlackUrushi_Albedo.png": "58920fd27a57071941dca20e6e6fc5d9dbb62484b18b34bc75236618a55c4fdd",
+    "T_Yari_BlackUrushi_NormalDX.png": "469bf441b79b4c54a0b58bb029ab2547b98d0c5019b53ca5af209da98e2a204f",
+    "T_Yari_BlackUrushi_ORM.png": "91a0511fb61fba1ea28a87fc22b1e31cfd40d84e0a68ab5fb36ada03c2ba3304",
+    "T_Yari_ForgedSteel_Albedo.png": "ac6004979faf92d81742aa80d6f709a18065d3d9b60a0e8e03c400f23b0c2e68",
+    "T_Yari_ForgedSteel_NormalDX.png": "9a47e7bc8131941af54927e399a4c6049b63f225772c082a2ec83eba637ce3c3",
+    "T_Yari_ForgedSteel_ORM.png": "60ed60e65114bf562419546abdeb23f0026fa07fb3302c60efd0d6aa65ec5158",
+    "T_Yari_PatinatedIron_Albedo.png": "5904110c923647f26aeaedbb62b036f4f985ddf0781262ad66b949c2fdcc3f6e",
+    "T_Yari_PatinatedIron_NormalDX.png": "1f1fa594fd7c464fb0052b0244e51dbc5b940215aa32ad160e20cdd3c2ebf228",
+    "T_Yari_PatinatedIron_ORM.png": "3b90e66f31605e77d662e2ce80e0fc7cabf2e35f82729b0e2cdf9bf7bb1b6437",
+    "T_Yari_RussetCord_Albedo.png": "4a30978718d0748817e13366a0c6b0b12f3817ca5f683e34f6ebdaa1b90ef2b0",
+    "T_Yari_RussetCord_NormalDX.png": "e70a034fdec6d4e7b7c1a46c6c416e305b980717606eb690d049f8efafa0bb62",
+    "T_Yari_RussetCord_ORM.png": "5e1337c9e6ce4901dfa26ed401204b75475bacc1e3989ab00dd4cbfef845be5d"
+  },
+  "fbx_sha256": "65aa2b020712e359b56407d16638f8f8da26adce139d9091459d3cb71a6303ff",
+  "renders": [
+    "Nyaagyu_Suyari_Full.png",
+    "Nyaagyu_Suyari_BladeJoin.png"
+  ],
+  "limitations": "not historical reconstruction, Japanese-arms-reviewed, AAA-approved, or runtime-tested"
+}
