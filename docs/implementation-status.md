@@ -570,8 +570,14 @@ composition and hero-character art target. A separate editable
 [bokuto form study](../Content/SourceArt/Weapons/DojoBokutoForm/README.md) now
 tests a curved, faceted, blunt white-oak training sword with modern AJKF jodo
 proportions and a leather guard. Blender/FBX orientation, UV, dimensions,
-texture provenance and render checks pass. It has not replaced the playable
-first-person bokken, and its material/hand fit await packaged review.
+texture provenance and render checks pass. The later
+[packaged UE 5.8.3 bokuto A/B](visual-reviews/dojo-bokuto-form/README.md)
+confirms a better curve, blunt tip, guard and photographed grain from a
+test-only side-on view. In the actual first-person pose, only a narrow pale
+blade strip remains visible, with grip and guard offscreen. The current authored
+weapon path also renders **no first-person paw**; its component count is zero.
+The candidate remains source-only pending a fitted hand viewmodel, usable pose,
+material calibration, animation and historical review.
 
 An earlier [first-person bokken PBR A/B](visual-reviews/dojo-bokken/README.md)
 used the same UE 5.8.3 Mac package and fixed camera. Its wood grain improved
@@ -590,6 +596,13 @@ meshes each combine hundreds of parts and thin tile sheets; a diagnostic-only
 card-count A/B is planned before any source change to their modular geometry.
 The current Estate does not pass a Lumen coverage gate, Windows Nanite coverage
 is unmeasured, and these captures establish no AAA+ or frame-rate result.
+
+A separate [Nyaakoto V4 head study](../Content/SourceArt/Characters/NyaakotoHeadV4/README.md)
+adds an editable connected shell, eyelid and ear geometry, groom curves and
+unique PBR maps. Its same-camera Blender front/profile/three-quarter views
+still read as an oversized round skull with puffy muzzle, obvious ear-root
+joins and an unfinished neck. It failed the photoreal face gate and was not
+imported or bound to the playable character.
 
 ## Workstreams
 
