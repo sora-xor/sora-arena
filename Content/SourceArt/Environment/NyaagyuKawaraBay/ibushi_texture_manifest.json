@@ -1,0 +1,173 @@
+{
+  "author": "SORA Arena original procedural material study",
+  "generator": "scripts/art/build_nyaagyu_ibushi_surface.py",
+  "source_type": "algorithmically painted; no third-party pixels",
+  "reference": "https://koyoibushi.jp/en/",
+  "reference_scope": "Published material/process description only; no sampled pixels or measured reflectance",
+  "status": "source-only; artistic PBR estimate and not approved game art",
+  "size": [
+    2048,
+    2048
+  ],
+  "layout": "4x4",
+  "files": {
+    "Albedo": {
+      "file": "T_NyaagyuIbushi_Albedo.png",
+      "sha256": "20b9688e3723a7efa94e3681aeb4669ecbd6b9478c7f0b46263e10ca07465d48"
+    },
+    "NormalDX": {
+      "file": "T_NyaagyuIbushi_NormalDX.png",
+      "sha256": "b262cebb06ed249da41957d100cc7942058d52301b8357db8cd0f71b57d26882"
+    },
+    "ORM": {
+      "file": "T_NyaagyuIbushi_ORM.png",
+      "sha256": "b2f1b195a5430d642cce4a16ba24c8234527df2c73481aea7cd2db55c7518967"
+    }
+  },
+  "cells": [
+    {
+      "cell": 0,
+      "mean_albedo": [
+        0.2113,
+        0.216,
+        0.2217
+      ],
+      "mean_roughness": 0.5189
+    },
+    {
+      "cell": 1,
+      "mean_albedo": [
+        0.2229,
+        0.2279,
+        0.2339
+      ],
+      "mean_roughness": 0.5195
+    },
+    {
+      "cell": 2,
+      "mean_albedo": [
+        0.1994,
+        0.2038,
+        0.2092
+      ],
+      "mean_roughness": 0.5184
+    },
+    {
+      "cell": 3,
+      "mean_albedo": [
+        0.212,
+        0.2166,
+        0.2223
+      ],
+      "mean_roughness": 0.52
+    },
+    {
+      "cell": 4,
+      "mean_albedo": [
+        0.2264,
+        0.2315,
+        0.2377
+      ],
+      "mean_roughness": 0.5187
+    },
+    {
+      "cell": 5,
+      "mean_albedo": [
+        0.1992,
+        0.2036,
+        0.2088
+      ],
+      "mean_roughness": 0.5203
+    },
+    {
+      "cell": 6,
+      "mean_albedo": [
+        0.2116,
+        0.2163,
+        0.222
+      ],
+      "mean_roughness": 0.5194
+    },
+    {
+      "cell": 7,
+      "mean_albedo": [
+        0.2273,
+        0.2324,
+        0.2385
+      ],
+      "mean_roughness": 0.52
+    },
+    {
+      "cell": 8,
+      "mean_albedo": [
+        0.2273,
+        0.2325,
+        0.2388
+      ],
+      "mean_roughness": 0.5182
+    },
+    {
+      "cell": 9,
+      "mean_albedo": [
+        0.2297,
+        0.2349,
+        0.2412
+      ],
+      "mean_roughness": 0.5192
+    },
+    {
+      "cell": 10,
+      "mean_albedo": [
+        0.2002,
+        0.2046,
+        0.2099
+      ],
+      "mean_roughness": 0.5203
+    },
+    {
+      "cell": 11,
+      "mean_albedo": [
+        0.2137,
+        0.2184,
+        0.2242
+      ],
+      "mean_roughness": 0.52
+    },
+    {
+      "cell": 12,
+      "mean_albedo": [
+        0.2136,
+        0.2184,
+        0.2241
+      ],
+      "mean_roughness": 0.5192
+    },
+    {
+      "cell": 13,
+      "mean_albedo": [
+        0.2147,
+        0.2195,
+        0.2253
+      ],
+      "mean_roughness": 0.5197
+    },
+    {
+      "cell": 14,
+      "mean_albedo": [
+        0.2101,
+        0.2148,
+        0.2205
+      ],
+      "mean_roughness": 0.5184
+    },
+    {
+      "cell": 15,
+      "mean_albedo": [
+        0.24,
+        0.2453,
+        0.2519
+      ],
+      "mean_roughness": 0.5208
+    }
+  ]
+}

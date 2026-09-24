@@ -624,9 +624,15 @@ study; it has not been imported or evaluated in Unreal. A
 [CC0 shōji-paper A/B](../Content/SourceArt/Environment/ShojiPaperArtReview/README.md)
 failed at 1 m and 3 m because the fibers repeat conspicuously. A separate
 [modeled concave/convex roof-bay study](../Content/SourceArt/Environment/NyaagyuKawaraBay/README.md)
-adds individually overlapping ceramic forms and three fixed-camera material
-renders; its estimated material response and regular course wear remain below the
-AAA+ art threshold. Neither source candidate changes the playable Estate.
+adds individually overlapping ceramic forms and four fixed-camera material
+renders. The latest variation raises the convex covers and authors a coherent
+polished ibushi-inspired color/normal/ORM set, but its estimated reflectance and
+regular course wear remain below the AAA+ art threshold. A separate
+[modeled SORA relief cap](../Content/SourceArt/Environment/NyaagyuSoraEaveCapStudy/README.md)
+passes source/FBX checks but does not yet fit the bay. A hash-verified
+[isolated UE ArtReview import path](visual-reviews/kawara-bay/README.md)
+passes static preflight; Unreal Lit/Lumen import was held when free disk fell
+below the 30 GiB heavy-run gate. These source candidates do not change the playable Estate.
 The current Estate does not pass a Lumen coverage gate, Windows Nanite coverage
 is unmeasured, and these captures establish no AAA+ or frame-rate result.
 

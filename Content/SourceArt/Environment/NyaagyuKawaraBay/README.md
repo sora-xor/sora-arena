@@ -18,9 +18,11 @@ that these exact tiles, joinery, support members, or SORA-decorated end cap repr
 samurai household. A Japanese architectural historian/roofer must review the
 final design before historical-accuracy claims.
 
-Three fixed-camera, fixed-light source renders show two controlled material
-changes on identical bay geometry. Width, curvature and lower-lip height have
-small per-tile kiln variation; the courses still read too uniformly overall:
+Four fixed-camera, fixed-light source renders compare material candidates on
+identical bay geometry. The convex covers now rise above the pan rims so their
+individual ceramic forms are clearer. Width, curvature and lower-lip height
+have small per-tile kiln variation; the courses still read too uniformly
+overall:
 
 - [Original generated-parameter ceramic atlas](Nyaagyu_KawaraBay_ProceduralReview.png)
   has pronounced, artificial camouflage-like blotches.
@@ -31,6 +33,13 @@ small per-tile kiln variation; the courses still read too uniformly overall:
   ties a shallow shader bump and estimated roughness to the generated swatch
   luminance. It has stronger form and material detail, but remains an art
   approximation of fired ceramic.
+- [Polished ibushi-inspired candidate](Nyaagyu_KawaraBay_IbushiReview.png)
+  uses a separately authored 16-cell albedo/DirectX normal/ORM atlas and a
+  subdued surface coat. Each cell has its own firing tone, very fine polishing
+  marks, restrained gravity-side deposits and edge wear. The three maps derive
+  from one procedural finish model, so the relief and roughness no longer
+  contradict the color field. This reads less like gritty concrete at roof
+  distance, but its regular courses and estimated finish still need work.
 
 The image-generated swatch is a **generated color reference**, not a photograph
 or measured ceramic capture. Its exact prompt is in
@@ -47,11 +56,25 @@ Each UV island is inset 5% from its atlas cell; V is inverted to match the
 top-down row order recorded in `texture_manifest.json`. Distance mips and
 Unreal texture filtering have not been inspected.
 
+The ibushi study follows [Koyo Seiga's published process description](https://koyoibushi.jp/en/):
+the finish is a polished clay surface with a smoke-deposited carbon layer,
+which creates a restrained silver luster without applied metal. This is
+**material direction, not a measured reflectance profile**. Every pixel in
+`T_NyaagyuIbushi_*` is original procedural art; no manufacturer photograph
+was copied. The shader uses artistic roughness and coat values, so production
+material calibration remains open.
+
+The separate [molded SORA eave-cap source study](../NyaagyuSoraEaveCapStudy/README.md)
+uses real SVG-derived ceramic relief and fixes the earlier flat-decal
+concept, but its 130 mm face and 98 mm cover do not fit this bay's 87 mm cover
+yet. The bay still displays the old red test badge; neither asset is in the
+playable Estate.
+
 **Art verdict: source candidate, photoreal AAA+ gate not passed.** Roof courses
-and grain now read as real geometry rather than a repeated slate photograph,
-but the shapes and wear remain too regular, the ceramic reflectance is
-unmeasured, the red SORA eave cap reads as a flat badge, and the support/eave
-transition remains a simplified prototype. No same-camera
+now read as real geometry rather than a repeated slate photograph, and the
+smoother ceramic material is more plausible at this camera. Shapes and wear
+remain too regular, reflectance is unmeasured, and the support/eave transition
+remains simplified. No same-camera
 Unreal Lit/Lumen Surface Cache/Nanite-Mac fallback comparison, historical
 review, or target-platform frame-time test has been run. The existing Dojo's
 road-facing façade and playable collision are unchanged.
@@ -60,11 +83,15 @@ Rebuild from the repository root with the pinned Blender 5.2.2 LTS:
 
 ```sh
 python3 scripts/art/build_nyaagyu_kawara_pbr.py
+python3 scripts/art/build_nyaagyu_ibushi_surface.py
+python3 scripts/art/validate_nyaagyu_ibushi_surface.py
 blender -b --factory-startup --python scripts/art/create_nyaagyu_kawara_bay.py
 blender -b --factory-startup --python scripts/art/validate_nyaagyu_kawara_bay.py
 ```
 
-The independent validator checks all manifest texture/output hashes, all 55
+The ibushi-map validator checks hashes, color and roughness ranges, sixteen
+distinct cells, shallow normal relief, and zero metal content. The independent
+Blender validator checks all manifest texture/output hashes, all 55
 tile UV islands and 16 atlas cells, concave/convex cross sections, outward
 side normals, positive signed volume, closed manifold edges, material face
 slots, and all 64 parts after FBX reimport. Maximum measured world-space

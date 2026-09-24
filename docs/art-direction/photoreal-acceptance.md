@@ -42,10 +42,17 @@ so it was not assigned to the playable Dojo.
 An original [concave/convex kawara bay study](../../Content/SourceArt/Environment/NyaagyuKawaraBay/README.md)
 models five overlapping courses, with a user-supplied SORA eave mark. Its
 source render compares deterministic ceramic color, generated granular color,
-and a darker color-correlated bump/roughness estimate. The third has better
-surface definition, but regular shape/wear, unmeasured reflectance, and missing
-UE and historical review keep it source-only. The existing roof scan and in-game
-roof remain unchanged.
+and a darker color-correlated bump/roughness estimate. A fourth version uses
+an original polished ibushi-inspired atlas with correlated color/normal/ORM
+and more distinct convex covers. A separate
+[raised-ceramic SORA crest](../../Content/SourceArt/Environment/NyaagyuSoraEaveCapStudy/README.md)
+removes the flat badge in its own isolated source study, but does not yet fit
+the bay. Regular shape/wear, unmeasured reflectance, and missing UE and
+historical review keep both source-only. An
+[isolated art-review import path](../visual-reviews/kawara-bay/README.md)
+passes static preflight, but was not run because disk fell below the safe
+headroom gate while other builds were active. The existing roof scan and
+in-game roof remain unchanged.
 
 The [real-cat scan acquisition note](../art-research/nyaakoto-real-cat-scan-acquisition.md)
 provides an attributed animal-anatomy reference. Its raw unrigged scan is not a

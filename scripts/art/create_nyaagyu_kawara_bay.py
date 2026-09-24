@@ -1,6 +1,7 @@
 """Model a one-bay honbuki-inspired concave/convex roof study in Blender.
 
-Run build_nyaagyu_kawara_pbr.py first, then:
+Run build_nyaagyu_kawara_pbr.py and build_nyaagyu_ibushi_surface.py first,
+then:
   blender -b --factory-startup --python scripts/art/create_nyaagyu_kawara_bay.py
 This is a source-only form/material test, not an Edo-period reconstruction.
 """
@@ -19,9 +20,11 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Content/SourceArt/Environment/NyaagyuKawaraBay"
 LOGO = ROOT / "Content/SourceArt/UI/SORA_Resistance_Logo.png"
 ALBEDO_GENERATED = OUT / "T_NyaagyuKawara_ImageGenAlbedo_v1.png"
+IBUSHI_MANIFEST_PATH = OUT / "ibushi_texture_manifest.json"
 LOGO_MANIFEST = json.loads((LOGO.parent / "sora_logo_manifest.json").read_text())
 assert hashlib.sha256(LOGO.read_bytes()).hexdigest() == LOGO_MANIFEST["runtime_sha256"]
 assert ALBEDO_GENERATED.exists(), ALBEDO_GENERATED
+assert IBUSHI_MANIFEST_PATH.exists(), IBUSHI_MANIFEST_PATH
 OUT.mkdir(parents=True, exist_ok=True)
 bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.object.select_all(action="SELECT")
@@ -132,7 +135,7 @@ def tile(name, cx, y0, width, length, cover, variant, warp):
                 lip = .0035*math.sin(math.pi*v)*math.sin(math.pi*u)
                 form = 1 + .09*math.sin(cx*23 + y0*41)
                 section = ((.038*form)*signed*signed if not cover
-                           else .038*form-(.021*form)*signed*signed)
+                           else .058*form-(.042*form)*signed*signed)
                 # The raised down-slope nose is what makes one course visibly
                 # lap over the course below; coplanar sheets z-fight in Lumen.
                 course_lift = (.017+.002*math.sin(cx*17+y0*31))*(1-v)**2
@@ -297,6 +300,46 @@ links.new(micro_rough.outputs["Result"], bsdf.inputs["Roughness"])
 scene.render.filepath=str(OUT/"Nyaagyu_KawaraBay_CorrelatedReview.png")
 bpy.ops.render.render(write_still=True)
 
+# Fourth fixed-scene candidate: a smoother polished-clay/carbon-film surface.
+# Color, normal and roughness are authored from one deterministic height/finish
+# model, unlike the image-generated sample plus unrelated first PBR maps. This
+# remains an artistic estimate; Koyo's process description has no measured
+# reflectance values and these pixels contain no source photography.
+ibushi_manifest = json.loads(IBUSHI_MANIFEST_PATH.read_text())
+ibushi_tex = {}
+for channel in ("Albedo", "NormalDX", "ORM"):
+    path = OUT / ibushi_manifest["files"][channel]["file"]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == ibushi_manifest["files"][channel]["sha256"]
+    node = nodes.new("ShaderNodeTexImage")
+    node.name = f"Ibushi {channel} artist estimate"
+    node.image = bpy.data.images.load(str(path), check_existing=True)
+    node.image.colorspace_settings.name = "sRGB" if channel == "Albedo" else "Non-Color"
+    links.new(uv.outputs["UV"], node.inputs["Vector"])
+    ibushi_tex[channel] = node
+links.new(ibushi_tex["Albedo"].outputs["Color"], bsdf.inputs["Base Color"])
+ibushi_orm = nodes.new("ShaderNodeSeparateColor")
+links.new(ibushi_tex["ORM"].outputs["Color"], ibushi_orm.inputs["Color"])
+links.new(ibushi_orm.outputs["Green"], bsdf.inputs["Roughness"])
+ibushi_split = nodes.new("ShaderNodeSeparateColor")
+links.new(ibushi_tex["NormalDX"].outputs["Color"], ibushi_split.inputs["Color"])
+ibushi_flip = nodes.new("ShaderNodeMath")
+ibushi_flip.operation = "SUBTRACT"
+ibushi_flip.inputs[0].default_value = 1
+links.new(ibushi_split.outputs["Green"], ibushi_flip.inputs[1])
+ibushi_join = nodes.new("ShaderNodeCombineColor")
+links.new(ibushi_split.outputs["Red"], ibushi_join.inputs["Red"])
+links.new(ibushi_flip.outputs[0], ibushi_join.inputs["Green"])
+links.new(ibushi_split.outputs["Blue"], ibushi_join.inputs["Blue"])
+ibushi_normal = nodes.new("ShaderNodeNormalMap")
+ibushi_normal.inputs["Strength"].default_value = .6
+links.new(ibushi_join.outputs["Color"], ibushi_normal.inputs["Color"])
+links.new(ibushi_normal.outputs["Normal"], bsdf.inputs["Normal"])
+if "Coat Weight" in bsdf.inputs:
+    bsdf.inputs["Coat Weight"].default_value = .045
+    bsdf.inputs["Coat Roughness"].default_value = .44
+scene.render.filepath=str(OUT/"Nyaagyu_KawaraBay_IbushiReview.png")
+bpy.ops.render.render(write_still=True)
+
 for image in bpy.data.images:
     if image.source=='FILE' and image.filepath:
         image.pack()
@@ -315,17 +358,22 @@ manifest={
     "nominal_dimensions_m":{"tile_width":width,"tile_length":length,
                             "course":course,"roof_bay_width":cols*width},
     "design_reference":"https://eishiro.co.jp/english/products/honbuki/index.html",
+    "material_reference":"https://koyoibushi.jp/en/",
     "reference_note":"Modern honbuki concave/convex arrangement informs the form. Pan width 240 mm and length 303 mm are independent study choices from different listed sizes; the 87 mm seam-cover width and overlap are artistic approximations, not a historical or product match.",
     "sora_logo_raster_sha256":hashlib.sha256(LOGO.read_bytes()).hexdigest(),
     "generated_albedo":{"file":ALBEDO_GENERATED.name,
       "sha256":hashlib.sha256(ALBEDO_GENERATED.read_bytes()).hexdigest(),
       "generation_id":"exec-2c249455-3d4c-4d61-ba66-851b7bc735b0",
       "role":"source-only color reference; not a measured ceramic or PBR capture"},
+    "ibushi_surface":{"manifest":IBUSHI_MANIFEST_PATH.name,
+      "sha256":hashlib.sha256(IBUSHI_MANIFEST_PATH.read_bytes()).hexdigest(),
+      "role":"original correlated color/normal/ORM procedural art; not measured ceramic"},
     "outputs":{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in
                (OUT/"SM_Nyaagyu_KawaraBay.fbx",OUT/"Nyaagyu_KawaraBay.blend",
                 OUT/"Nyaagyu_KawaraBay_ProceduralReview.png",
                 OUT/"Nyaagyu_KawaraBay_ImageGenReview.png",
-                OUT/"Nyaagyu_KawaraBay_CorrelatedReview.png")},
+                OUT/"Nyaagyu_KawaraBay_CorrelatedReview.png",
+                OUT/"Nyaagyu_KawaraBay_IbushiReview.png")},
 }
 (OUT/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
 print(json.dumps(manifest,indent=2))

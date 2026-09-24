@@ -18,9 +18,13 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Content/SourceArt/Environment/NyaagyuKawaraBay"
 manifest = json.loads((OUT / "manifest.json").read_text())
 tex_manifest = json.loads((OUT / "texture_manifest.json").read_text())
+ibushi_manifest = json.loads((OUT / "ibushi_texture_manifest.json").read_text())
 for filename, expected in manifest["outputs"].items():
     assert hashlib.sha256((OUT / filename).read_bytes()).hexdigest() == expected, filename
 for channel, record in tex_manifest["files"].items():
+    assert hashlib.sha256((OUT / record["file"]).read_bytes()).hexdigest() == record["sha256"], channel
+assert hashlib.sha256((OUT / manifest["ibushi_surface"]["manifest"]).read_bytes()).hexdigest() == manifest["ibushi_surface"]["sha256"]
+for channel, record in ibushi_manifest["files"].items():
     assert hashlib.sha256((OUT / record["file"]).read_bytes()).hexdigest() == record["sha256"], channel
 assert hashlib.sha256((OUT / manifest["generated_albedo"]["file"]).read_bytes()).hexdigest() == manifest["generated_albedo"]["sha256"]
 
@@ -68,7 +72,7 @@ def top_row_shape(obj):
     return zmid-(z0+zend)/2
 
 assert top_row_shape(pans[0]) < -.03, top_row_shape(pans[0])
-assert top_row_shape(covers[0]) > .018, top_row_shape(covers[0])
+assert top_row_shape(covers[0]) > .035, top_row_shape(covers[0])
 
 source_meshes={o.name:o for o in asset.objects if o.type=="MESH"}
 source_counts={name:len(o.data.polygons) for name,o in source_meshes.items()}

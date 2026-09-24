@@ -12,6 +12,7 @@
     "roof_bay_width": 1.44
   },
   "design_reference": "https://eishiro.co.jp/english/products/honbuki/index.html",
+  "material_reference": "https://koyoibushi.jp/en/",
   "reference_note": "Modern honbuki concave/convex arrangement informs the form. Pan width 240 mm and length 303 mm are independent study choices from different listed sizes; the 87 mm seam-cover width and overlap are artistic approximations, not a historical or product match.",
   "sora_logo_raster_sha256": "f6d9573096e7e044e9e4a84d739bf724281c4f394131812e1a6eeac915c8a39d",
   "generated_albedo": {
@@ -20,11 +21,17 @@
     "generation_id": "exec-2c249455-3d4c-4d61-ba66-851b7bc735b0",
     "role": "source-only color reference; not a measured ceramic or PBR capture"
   },
+  "ibushi_surface": {
+    "manifest": "ibushi_texture_manifest.json",
+    "sha256": "cc3c2e35048e25331a964d3eac46a3dfe5a149273e27e09dac4b4a37cdd50103",
+    "role": "original correlated color/normal/ORM procedural art; not measured ceramic"
+  },
   "outputs": {
-    "SM_Nyaagyu_KawaraBay.fbx": "9f6be1abbcf8a1e8aaa3ebcafc6b5089bd3b89a3d7391c24d96d9ecfff430ed2",
-    "Nyaagyu_KawaraBay.blend": "e0209d8155c84e41f8fd8e0d2322322cf396a58d5ac1507d2fcae04a541211f7",
-    "Nyaagyu_KawaraBay_ProceduralReview.png": "72c430f22ae147179853f55c5cffc7ab28d51875858b4436d1439b7e6400320f",
-    "Nyaagyu_KawaraBay_ImageGenReview.png": "5dde73c4b8ffc6e6912518d1b93ebb1c8ff556b1b5d58062f49a68df19f7ae07",
-    "Nyaagyu_KawaraBay_CorrelatedReview.png": "869c4d2f18bebcb858c03b365cf8642c69da3245a24f46b6839d61d4c00726bf"
+    "SM_Nyaagyu_KawaraBay.fbx": "b3c8b4d18552fb0957915e5c6951a3550833530ea0954619ad724841922f8877",
+    "Nyaagyu_KawaraBay.blend": "4f4b016779433e67b2726037f7a4e5097e283d88015c1408d263d26befb906f8",
+    "Nyaagyu_KawaraBay_ProceduralReview.png": "f44f6aa43ccb4759677a6347324a4e01f30ed03cae1acdb0c35e3c8d77da0f3f",
+    "Nyaagyu_KawaraBay_ImageGenReview.png": "2bea50cd243da553c5f619d68dae9848cc1b9d96060a48c6812bbda062414a80",
+    "Nyaagyu_KawaraBay_CorrelatedReview.png": "b6c707c1433284857c275b24347e777d78f1ca818c1ce6b2b028da93112a010a",
+    "Nyaagyu_KawaraBay_IbushiReview.png": "729b17bea05e1a5e0ab3dc3c13257ded123dd0aa92e8bca7fbdd81349df6f5ad"
   }
 }
