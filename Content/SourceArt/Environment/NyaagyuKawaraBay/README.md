@@ -66,8 +66,11 @@ material calibration remains open.
 
 The separate [molded SORA eave-cap source study](../NyaagyuSoraEaveCapStudy/README.md)
 uses real SVG-derived ceramic relief and fixes the earlier flat-decal
-concept, but its 130 mm face and 98 mm cover do not fit this bay's 87 mm cover
-yet. The bay still displays the old red test badge; neither asset is in the
+concept. Its unmodified cover leaves a 60.386 mm exposed rear gap in the
+[fixed roof fit](../NyaagyuSoraEaveCapStudy/RoofBayArtReview/README.md). A
+[rear-only socket extension](../NyaagyuSoraEaveCapStudy/RoofBayExtendedArtReview/README.md)
+tucks under the next course without changing the molded SORA face. The base
+bay still displays the old red test badge; neither derivative is in the
 playable Estate.
 
 **Art verdict: source candidate, photoreal AAA+ gate not passed.** Roof courses

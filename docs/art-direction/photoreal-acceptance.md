@@ -46,8 +46,14 @@ and a darker color-correlated bump/roughness estimate. A fourth version uses
 an original polished ibushi-inspired atlas with correlated color/normal/ORM
 and more distinct convex covers. A separate
 [raised-ceramic SORA crest](../../Content/SourceArt/Environment/NyaagyuSoraEaveCapStudy/README.md)
-removes the flat badge in its own isolated source study, but does not yet fit
-the bay. Regular shape/wear, unmeasured reflectance, and missing UE and
+removes the flat badge in its own isolated source study. The
+[fixed roof fit](../../Content/SourceArt/Environment/NyaagyuSoraEaveCapStudy/RoofBayArtReview/README.md)
+shows that its shank ends 60.386 mm before the next course. A
+[rear-only extension](../../Content/SourceArt/Environment/NyaagyuSoraEaveCapStudy/RoofBayExtendedArtReview/README.md)
+has 9.223 mm of cover under the next tile and preserves the SVG-derived molded
+crest. Its contrast reads better at the fixed source camera, but the front
+collar and roof course remain visibly simple. Regular shape/wear, unmeasured
+reflectance, and missing UE and
 historical review keep both source-only. An
 [isolated art-review import path](../visual-reviews/kawara-bay/README.md)
 passes static preflight, but was not run because disk fell below the safe
