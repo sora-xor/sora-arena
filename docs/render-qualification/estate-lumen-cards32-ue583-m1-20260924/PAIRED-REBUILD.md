@@ -1,0 +1,16 @@
+# Paired 12/32-card ArtReview probe — geometry gate failed
+
+The revised UE **5.8.3** Mac diagnostic called `StaticMeshEditorSubsystem.set_lod_build_settings` on two fresh duplicates of the **same** original Dojo mesh, setting one to 12 and one to 32 LOD0 `MaxLumenMeshCards`. It saved both, checked their in-process readbacks, then opened them in a **new editor process** for independent saved-asset readback. The source assets and project runtime were not changed.
+
+| Saved Dojo duplicate | LOD0 cards | LOD0 triangles | Bounds origin `(x,y,z)` cm | Bounds extent `(x,y,z)` cm | Sphere radius cm |
+|---|---:|---:|---|---|---:|
+| 12-card control | 12 | 14,966 | `(1.113266, −14.270233, 259.446167)` | `(373.423950, 456.472015, 268.812927)` | 774.652222 |
+| 32-card candidate | 32 | 14,884 | `(−61.728271, 15.881638, 257.233856)` | `(438.263977, 410.000000, 270.392181)` | 814.677368 |
+
+Both saved assets have the same ordered 11 material slot bindings and the same full `MeshNaniteSettings` tuple. The triangle and bounds differences are substantial and persisted across editor processes. The 32-card build logged degenerate tangent bases and near-zero binormals; those warnings do not establish the cause. The 12-card setter was invoked, but a no-op optimization when its value already equals 12 remains possible. In any case, the strict geometry-equivalence gate fails. The importer raised before Kura; the required `SORA_LUMEN_CARDS_PAIRED_READY` marker was absent. UnrealEditor-Cmd returned process code 0 despite the Python exception, so logs and marker checks are mandatory.
+
+The original Dojo and Kura asset SHA-256 values remained `42ab357403e73628a800533c309812af8860e5a856d5556684fab88a2c49ea3b` and `7b7df8876b5488e9923ec775003886e819d59c890f6c2f60a721e8bba874d04a`. The temporary 12/32 Dojo duplicate package hashes, before cleanup, were `74b0b3b992b4cfe0b8a3785c898774d74c0bc917cbf84e6a650ffab34275d2ec` and `0c88c836370b9048114de138f192f04acb54b85d938720ca6164a866c9540a6f`. Diagnostic `SoraGameMode.cpp` and `SoraWorldBuilder.cpp` retained their handoff SHA-256 values `81e89c34f0040ebd285b8ea7c7ae70c0eb2e5cc94029458824662a1276fa4e86` and `37cfae6afa1f1e4bdefe94ec89fe80288b53efa6f92c80dcba91dfbfed2c0421`. The runtime patch was not applied.
+
+The unedited [import log](logs/paired-import.log.gz) has SHA-256 `3ad826ee8526601eeb703f4a613e4f8accfeae66e9a0d6d354cd5b8d752fb208`; the unedited [independent readback log](logs/paired-readback.log.gz) has SHA-256 `06921b768b420717d5839df78293986ea9ed251ed93b7bee996881d679afeedd`. Import used the source script `scripts/unreal/diagnostics/import_lumen_cards32_art_review.py` via `UnrealEditor-Cmd -ExecutePythonScript`, with `-unattended -nop4 -nosplash -NullRHI -stdout -FullStdOutLogOutput`; readback used a separate process loading the two saved Dojo assets and reporting cards, triangles, numeric bounds, Nanite settings, and ordered material bindings.
+
+No build, cook, stage, packaged A/B, roof magenta ROI count, or performance measurement followed. The card-budget hypothesis therefore remains untested visually, and no higher card setting should be promoted from this probe. A later test would need geometry-identical clones proven after reload or a different bounded roof-module approach.
