@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 
 import bpy
+import bmesh
+from mathutils.kdtree import KDTree
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "Content/SourceArt/Environment/NyaagyuKawaraBay"
@@ -36,15 +38,26 @@ for obj in pans+covers:
     assert all(len(poly.vertices)==4 for poly in obj.data.polygons)
     variants.add(obj["tile_variant"])
     tile_type=obj["tile_type"]
-    assert tile_type in ("hira-gawara pan","mune-maru cover")
+    assert tile_type in ("hira-gawara pan","maru-gawara cover")
     cell=obj["tile_variant"]
     lo_u, hi_u=(cell%4)/4,(cell%4+1)/4
-    lo_v, hi_v=(cell//4)/4,(cell//4+1)/4
+    lo_v, hi_v=(3-cell//4)/4,(4-cell//4)/4
     for loop in obj.data.uv_layers.active.data:
         u,v=loop.uv
-        assert lo_u+0.003 <= u <= hi_u-0.003, (obj.name,u)
-        assert lo_v+0.003 <= v <= hi_v-0.003, (obj.name,v)
+        assert lo_u+0.012 <= u <= hi_u-0.012, (obj.name,u)
+        assert lo_v+0.012 <= v <= hi_v-0.012, (obj.name,v)
     triangles += 2*len(obj.data.polygons)
+    bm=bmesh.new()
+    bm.from_mesh(obj.data)
+    assert all(edge.is_manifold for edge in bm.edges), obj.name
+    assert bm.calc_volume(signed=True) > 0, obj.name
+    bm.free()
+    # First x-side pair and first y-end pair expose the four cap windings.
+    nx,ny=12,8
+    assert obj.data.polygons[2*nx*ny].normal.x < -.5, obj.name
+    assert obj.data.polygons[2*nx*ny+1].normal.x > .5, obj.name
+    assert obj.data.polygons[2*nx*ny+2*ny].normal.y < -.5, obj.name
+    assert obj.data.polygons[2*nx*ny+2*ny+1].normal.y > .5, obj.name
 assert variants == set(range(16))
 
 def top_row_shape(obj):
@@ -59,14 +72,46 @@ assert top_row_shape(covers[0]) > .018, top_row_shape(covers[0])
 
 source_meshes={o.name:o for o in asset.objects if o.type=="MESH"}
 source_counts={name:len(o.data.polygons) for name,o in source_meshes.items()}
+source_world={name:[o.matrix_world @ v.co for v in o.data.vertices]
+              for name,o in source_meshes.items()}
+source_materials={name:[m.name for m in o.data.materials]
+                  for name,o in source_meshes.items()}
+source_face_slots={name:[p.material_index for p in o.data.polygons]
+                   for name,o in source_meshes.items()}
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=str(OUT/"SM_Nyaagyu_KawaraBay.fbx"))
 imported={o.name:o for o in bpy.context.scene.objects if o.type=="MESH"}
 assert set(imported)==set(source_meshes), (set(imported)-set(source_meshes),set(source_meshes)-set(imported))
+max_world_error=0.0
 for name,obj in imported.items():
     assert len(obj.data.polygons)==source_counts[name], name
+    assert [m.name for m in obj.data.materials]==source_materials[name], name
+    assert [p.material_index for p in obj.data.polygons]==source_face_slots[name], name
+    original=source_world[name]
+    assert len(obj.data.vertices)==len(original), name
+    source_tree=KDTree(len(original))
+    for index,point in enumerate(original): source_tree.insert(point,index)
+    source_tree.balance()
+    imported_world=[obj.matrix_world @ vertex.co for vertex in obj.data.vertices]
+    imported_tree=KDTree(len(imported_world))
+    for index,point in enumerate(imported_world): imported_tree.insert(point,index)
+    imported_tree.balance()
+    for point in imported_world:
+        _,_,distance=source_tree.find(point)
+        max_world_error=max(max_world_error,distance)
+        assert distance < 2e-6, (name,distance)
+    for point in original:
+        _,_,distance=imported_tree.find(point)
+        max_world_error=max(max_world_error,distance)
+        assert distance < 2e-6, (name,distance)
     if name.startswith(("HiraGawara","MaruGawara")):
         assert obj.data.uv_layers.active is not None, name
+        bm=bmesh.new()
+        bm.from_mesh(obj.data)
+        assert all(edge.is_manifold for edge in bm.edges), name
+        assert bm.calc_volume(signed=True) > 0, name
+        bm.free()
 print(json.dumps({"status":"passed source/FBX checks; not UE art approval",
                   "tile_count":len(pans)+len(covers),"tile_triangles":triangles,
-                  "atlas_variants":len(variants),"fbx_meshes":len(imported)},indent=2))
+                  "atlas_variants":len(variants),"fbx_meshes":len(imported),
+                  "max_fbx_world_vertex_error_um":round(max_world_error*1e6,3)},indent=2))

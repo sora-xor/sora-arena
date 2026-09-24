@@ -41,10 +41,10 @@ so it was not assigned to the playable Dojo.
 
 An original [concave/convex kawara bay study](../../Content/SourceArt/Environment/NyaagyuKawaraBay/README.md)
 models five overlapping courses, with a user-supplied SORA eave mark. Its
-source render compares deterministic ceramic color against a generated
-granular color reference. The latter reads better at the fixed camera, but
-regular shape/wear, estimated normals and reflectance, and missing UE and
-historical review keep it source-only. The existing roof scan and in-game
+source render compares deterministic ceramic color, generated granular color,
+and a darker color-correlated bump/roughness estimate. The third has better
+surface definition, but regular shape/wear, unmeasured reflectance, and missing
+UE and historical review keep it source-only. The existing roof scan and in-game
 roof remain unchanged.
 
 The [real-cat scan acquisition note](../art-research/nyaakoto-real-cat-scan-acquisition.md)

@@ -624,8 +624,8 @@ study; it has not been imported or evaluated in Unreal. A
 [CC0 shōji-paper A/B](../Content/SourceArt/Environment/ShojiPaperArtReview/README.md)
 failed at 1 m and 3 m because the fibers repeat conspicuously. A separate
 [modeled concave/convex roof-bay study](../Content/SourceArt/Environment/NyaagyuKawaraBay/README.md)
-adds individually overlapping ceramic forms and a color-material A/B; its
-estimated material response and regular course wear also remain below the
+adds individually overlapping ceramic forms and three fixed-camera material
+renders; its estimated material response and regular course wear remain below the
 AAA+ art threshold. Neither source candidate changes the playable Estate.
 The current Estate does not pass a Lumen coverage gate, Windows Nanite coverage
 is unmeasured, and these captures establish no AAA+ or frame-rate result.

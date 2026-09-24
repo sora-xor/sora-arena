@@ -125,14 +125,17 @@ def tile(name, cx, y0, width, length, cover, variant, warp):
             for ix in range(nx+1):
                 u = ix/nx
                 signed = 2*u-1
-                xx = cx + signed*width*.5
+                kiln_taper = 1 + .011*math.sin(variant*1.7 + v*2.9)
+                xx = cx + signed*width*.5*kiln_taper
                 # Kiln twist and slightly rounded, individually varied lip.
                 twist = warp * math.sin(math.pi*v) * signed
                 lip = .0035*math.sin(math.pi*v)*math.sin(math.pi*u)
-                section = (.038*signed*signed if not cover else .038-.021*signed*signed)
+                form = 1 + .09*math.sin(cx*23 + y0*41)
+                section = ((.038*form)*signed*signed if not cover
+                           else .038*form-(.021*form)*signed*signed)
                 # The raised down-slope nose is what makes one course visibly
                 # lap over the course below; coplanar sheets z-fight in Lumen.
-                course_lift = .014*(1-v)**2
+                course_lift = (.017+.002*math.sin(cx*17+y0*31))*(1-v)**2
                 top = roof_z(yy) + .024 + section + twist + lip + course_lift
                 verts.append((xx, yy, top - skin*thickness))
     stride = (nx+1)*(ny+1)
@@ -147,13 +150,19 @@ def tile(name, cx, y0, width, length, cover, variant, warp):
     for iy in range(ny):
         for ix in (0,nx):
             a=iy*(nx+1)+ix; b=(iy+1)*(nx+1)+ix
-            faces.append((a,b,b+stride,a+stride))
-            uv_faces.append(((0,iy/ny),(1,iy/ny),(1,(iy+1)/ny),(0,(iy+1)/ny)))
+            quad=(a,b,b+stride,a+stride)
+            corners=((0,iy/ny),(1,iy/ny),(1,(iy+1)/ny),(0,(iy+1)/ny))
+            # Right wall faces +X; left wall faces -X.
+            faces.append(quad if ix==0 else tuple(reversed(quad)))
+            uv_faces.append(corners if ix==0 else tuple(reversed(corners)))
     for ix in range(nx):
         for iy in (0,ny):
             a=iy*(nx+1)+ix; b=a+1
-            faces.append((a,b,b+stride,a+stride))
-            uv_faces.append(((ix/nx,0),((ix+1)/nx,0),((ix+1)/nx,1),(ix/nx,1)))
+            quad=(a,b,b+stride,a+stride)
+            corners=((ix/nx,0),((ix+1)/nx,0),((ix+1)/nx,1),(ix/nx,1))
+            # The downslope front faces -Y; the upslope back faces +Y.
+            faces.append(tuple(reversed(quad)) if iy==0 else quad)
+            uv_faces.append(tuple(reversed(corners)) if iy==0 else corners)
     mesh=bpy.data.meshes.new(name)
     mesh.from_pydata(verts, [], faces)
     mesh.update()
@@ -163,11 +172,12 @@ def tile(name, cx, y0, width, length, cover, variant, warp):
     layer=mesh.uv_layers.new(name="UVMap")
     for poly, corners in zip(mesh.polygons, uv_faces):
         for loop_index, (u,v) in zip(poly.loop_indices, corners):
-            # 1.5% atlas padding prevents mip bleed between tile faces.
-            layer.data[loop_index].uv=((variant%4 + .015 + .970*u)/4,
-                                       (variant//4 + .015 + .970*v)/4)
+            # 5% inset supplies ~15 source pixels even in the 1254px
+            # generated swatch; UV rows invert PIL's top-down atlas order.
+            layer.data[loop_index].uv=((variant%4 + .05 + .90*u)/4,
+                                       (3-variant//4 + .05 + .90*v)/4)
         poly.use_smooth = True
-    obj["tile_type"]="mune-maru cover" if cover else "hira-gawara pan"
+    obj["tile_type"]="maru-gawara cover" if cover else "hira-gawara pan"
     obj["tile_variant"] = variant
     return obj
 
@@ -258,6 +268,35 @@ links.new(generated.outputs["Color"], bsdf.inputs["Base Color"])
 scene.render.filepath=str(OUT/"Nyaagyu_KawaraBay_ImageGenReview.png")
 bpy.ops.render.render(write_still=True)
 
+# Third fixed-camera material candidate: darken the generated color and tie
+# microscopic relief/roughness to its luminance. These are artistic estimates,
+# not measured maps; Unreal needs separately authored/baked production maps.
+tint = nodes.new("ShaderNodeMixRGB")
+tint.name = "Smoked silver ceramic tint"
+tint.blend_type = "MULTIPLY"
+tint.inputs[0].default_value = 1
+tint.inputs[2].default_value = (.59,.63,.67,1)
+links.new(generated.outputs["Color"], tint.inputs[1])
+links.new(tint.outputs["Color"], bsdf.inputs["Base Color"])
+grey = nodes.new("ShaderNodeRGBToBW")
+links.new(generated.outputs["Color"], grey.inputs["Color"])
+micro_bump = nodes.new("ShaderNodeBump")
+micro_bump.name = "Image-correlated ceramic pores (estimated 0.3 mm)"
+micro_bump.inputs["Strength"].default_value = .19
+micro_bump.inputs["Distance"].default_value = .0003
+links.new(grey.outputs["Val"], micro_bump.inputs["Height"])
+links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
+micro_rough = nodes.new("ShaderNodeMapRange")
+micro_rough.name = "Image-correlated roughness estimate"
+micro_rough.inputs["From Min"].default_value = .07
+micro_rough.inputs["From Max"].default_value = .29
+micro_rough.inputs["To Min"].default_value = .80
+micro_rough.inputs["To Max"].default_value = .65
+links.new(grey.outputs["Val"], micro_rough.inputs["Value"])
+links.new(micro_rough.outputs["Result"], bsdf.inputs["Roughness"])
+scene.render.filepath=str(OUT/"Nyaagyu_KawaraBay_CorrelatedReview.png")
+bpy.ops.render.render(write_still=True)
+
 for image in bpy.data.images:
     if image.source=='FILE' and image.filepath:
         image.pack()
@@ -285,7 +324,8 @@ manifest={
     "outputs":{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in
                (OUT/"SM_Nyaagyu_KawaraBay.fbx",OUT/"Nyaagyu_KawaraBay.blend",
                 OUT/"Nyaagyu_KawaraBay_ProceduralReview.png",
-                OUT/"Nyaagyu_KawaraBay_ImageGenReview.png")},
+                OUT/"Nyaagyu_KawaraBay_ImageGenReview.png",
+                OUT/"Nyaagyu_KawaraBay_CorrelatedReview.png")},
 }
 (OUT/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
 print(json.dumps(manifest,indent=2))

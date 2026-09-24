@@ -21,9 +21,10 @@
     "role": "source-only color reference; not a measured ceramic or PBR capture"
   },
   "outputs": {
-    "SM_Nyaagyu_KawaraBay.fbx": "20c06d8162b90c03b395f62916f9e5f05793e3a087c9766a2690f53b0c40b63f",
-    "Nyaagyu_KawaraBay.blend": "38f372cfae3ed04d38777ab9b7e2fe15cfeef91c90cb1d9d4187e5f26033dac1",
-    "Nyaagyu_KawaraBay_ProceduralReview.png": "1d0546be923d6bd0fc04f1b5fa5c0b9ca2782a1480d846d332c42a241e8fda0a",
-    "Nyaagyu_KawaraBay_ImageGenReview.png": "2322e873fa534aaf24c10f91f3c4d32d2b76cc89a30c9fb16acc3ad4a49a56f6"
+    "SM_Nyaagyu_KawaraBay.fbx": "9f6be1abbcf8a1e8aaa3ebcafc6b5089bd3b89a3d7391c24d96d9ecfff430ed2",
+    "Nyaagyu_KawaraBay.blend": "e0209d8155c84e41f8fd8e0d2322322cf396a58d5ac1507d2fcae04a541211f7",
+    "Nyaagyu_KawaraBay_ProceduralReview.png": "72c430f22ae147179853f55c5cffc7ab28d51875858b4436d1439b7e6400320f",
+    "Nyaagyu_KawaraBay_ImageGenReview.png": "5dde73c4b8ffc6e6912518d1b93ebb1c8ff556b1b5d58062f49a68df19f7ae07",
+    "Nyaagyu_KawaraBay_CorrelatedReview.png": "869c4d2f18bebcb858c03b365cf8642c69da3245a24f46b6839d61d4c00726bf"
   }
 }
