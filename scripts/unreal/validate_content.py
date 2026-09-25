@@ -8,6 +8,16 @@ import struct
 
 ROOT = Path(__file__).resolve().parents[2]
 content = ROOT / "Content"
+private_source = ROOT / "Source/SoraArena/Private"
+# Characters, their weapon models and equipment live under Private/Characters.
+character_source = "".join(path.read_text() for path in sorted((private_source / "Characters").glob("*.cpp")))
+# The world builder is a shared core, one file per map, lighting and the
+# kernel-defined practice map, which must never load campaign art.
+world_sources = {path.name: path.read_text() for path in sorted((private_source / "World").glob("*.cpp"))}
+practice_builder = world_sources.pop("SoraWorldBuilderPractice.cpp")
+assert "void ASoraWorldBuilder::BuildPractice(" in practice_builder
+world_builder = "".join(world_sources.values())
+estate_builder = world_sources["SoraMapNyaagyuEstate.cpp"]
 catalog = json.loads((content / "Data/catalog.json").read_text())
 assert catalog["schema_version"] == 3
 assert catalog["default_language"] == "ja" and catalog["english_subtitles_default"] is True
@@ -26,6 +36,9 @@ assert "[Internationalization]\nCulture=ja" in game_config
 assert "InternationalizationPreset=EFIGSCJK" in game_config
 assert "!CulturesToStage=ClearArray" in game_config
 assert set(re.findall(r"^\+CulturesToStage=(\S+)$", game_config, re.MULTILINE)) == {"ja", "en"}
+# No key may trigger a menu action and a combat action in the same game state.
+from check_input_conflicts import check_project as check_input_conflicts
+input_summary = check_input_conflicts()
 from native_japanese_localization import validate_source, expected_meta, expected_resource, META, RESOURCE
 validate_source()
 assert META.read_bytes() == expected_meta()
@@ -45,13 +58,16 @@ for c in catalog["classes"]:
     assert c["weapons"] == [2*c["id"],2*c["id"]+1,12+c["id"]]
     assert c["health"] > 0 and c["speed"] > 0
     assert re.search(r"[\u3040-\u9fff]",c["name"])
+    assert c["name_en"].strip() and c["role_en"].strip()
     assert all(catalog["weapons"][i]["class"] == c["id"] for i in c["weapons"])
 for w in catalog["weapons"]:
+    assert w["name_en"].strip()
     assert w["damage"] > 0 and w["cooldown"] > 0 and w["range"] > 0
     assert w["magazine"] > 0 and w["reload"] > 0
     assert w["special"] == (w["id"] >= 12)
     assert w["kind"] in ("melee","hitscan","explosive","healing")
     if w["kind"] == "explosive": assert w["blast_radius"] > 0 and w["projectile_speed"] > 0
+assert all(m["name_en"].strip() and re.search(r"[\u3040-\u9fff]", m["name"]) for m in catalog["maps"])
 site_kinds = {"training", "debt_seal", "irrigation", "workshop", "foundry", "ledger", "power", "supplies"}
 for chapter in catalog["chapters"]:
     assert 0 <= chapter["map"] < 4 and chapter["kills"] > 0
@@ -110,7 +126,7 @@ for name, key in ((bokken["fbx"], "fbx_sha256"),
     assert hashlib.sha256(path.read_bytes()).hexdigest() == bokken[key]
 assert (bokken_root / bokken["fbx"]).read_bytes().startswith(b"Kaydara FBX Binary")
 assert b"/Users/" not in (bokken_root / bokken["fbx"]).read_bytes()
-assert bokken["unreal_asset"] in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+assert bokken["unreal_asset"] in character_source
 assert bokken["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
 form_root = content / "SourceArt/Weapons/DojoBokutoForm"
 form = json.loads((form_root / "manifest.json").read_text())
@@ -162,7 +178,7 @@ for name, digest in ((arc["source_blend"], "blend_sha256"),
 arc_fbx = (bokken_root / arc["fbx"]).read_bytes()
 assert arc_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in arc_fbx
 assert arc["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
-assert arc["unreal_asset"] in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+assert arc["unreal_asset"] in character_source
 naginata_root = content / "SourceArt/Weapons/MonofilamentNaginata"
 naginata = json.loads((naginata_root / "manifest.json").read_text())
 assert naginata["schema_version"] == 1 and naginata["name"] == "SM_Nyaagyu_MonofilamentNaginata"
@@ -183,7 +199,7 @@ for filename, key in ((naginata["source_blend"], "blend_sha256"),
     assert hashlib.sha256(path.read_bytes()).hexdigest() == naginata[key]
 assert (naginata_root / naginata["fbx"]).read_bytes().startswith(b"Kaydara FBX Binary")
 assert naginata["name"] in (ROOT / "scripts/unreal/import_original_assets.py").read_text()
-assert naginata["name"] not in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+assert naginata["name"] not in character_source
 hero_character_root = content / "SourceArt/Characters/Hero"
 hero_character = json.loads((hero_character_root / "manifest.json").read_text())
 runtime_skin = json.loads((hero_character_root / "runtime_skin_manifest.json").read_text())
@@ -242,7 +258,7 @@ for slot, surface in pbr["material_slots"].items():
     assert len(surface["tint"]) == 3 and all(0 <= value <= 1 for value in surface["tint"])
     assert 0 < surface["roughness_scale"] <= 2
     assert 0 <= surface["metallic_scale"] <= 1
-assert "MI_Nyaakoto_" in (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+assert "MI_Nyaakoto_" in character_source
 assert hero_character["schema_version"] == 2
 assert hero_character["name"] == "SM_Nyaagyu_HeroCharacter"
 assert hero_character["character_name_ja"] == "ニャーコト"
@@ -323,13 +339,12 @@ for name in (environment["source_blend"], environment["preview"], environment["d
     assert (environment_root / name).stat().st_size > 1000
 environment_names = ["SM_Edo_LanternPost", "SM_Nyaagyu_ToriiGate", "SM_Alien_DebtKiosk"]
 assert [entry["name"] for entry in environment["assets"]] == environment_names
-world_builder = (ROOT / "Source/SoraArena/Private/SoraWorldBuilder.cpp").read_text()
 import_script = (ROOT / "scripts/unreal/import_original_assets.py").read_text()
 assert all(name in world_builder and name in import_script for name in environment_names)
 assert "Yaw+90.f" in world_builder and "HasAuthoredLantern?252.f:350.f" in world_builder
 assert 'SM_Alien_DebtKiosk"),NodePositions[1]+FVector(315,0,0),FRotator(0,90,0)' in world_builder
 assert "SORA authored environment prop" in world_builder
-assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "ImportedProp" not in practice_builder
 for entry in environment["assets"]:
     fbx = environment_root / entry["fbx"]
     assert entry["fbx"] == entry["name"] + ".fbx"
@@ -361,19 +376,17 @@ assert "import_nyaagyu_road_scan_variation.py" in (
     ROOT / "scripts/unreal/import_environment_palette.py").read_text()
 assert (ROOT / "scripts/unreal/import_nyaagyu_road_scan_variation.py").is_file()
 assert "import_nyaagyu_cargo_stack.py" in import_script
-assert 'if(MapId==0 && ImportedProp(TEXT("SM_Nyaagyu_CargoStack")' in world_builder
+assert "if(MapId==0) EstateCargo(I,FVector(X,Y,0),Cover);" in world_builder
+assert 'ImportedProp(TEXT("SM_Nyaagyu_CargoStack")' in estate_builder
 assert "Cover->SetVisibility(false)" in world_builder
-assert "SM_Nyaagyu_CargoStack" not in world_builder.split(
-    "void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "SM_Nyaagyu_CargoStack" not in practice_builder
 assert "import_nyaagyu_estate_wall.py" in import_script
 assert 'ImportedProp(TEXT("SM_Nyaagyu_EstateWall_4m")' in world_builder
 assert "WallX->SetVisibility(false)" in world_builder and "WallY->SetVisibility(false)" in world_builder
-assert "SM_Nyaagyu_EstateWall_4m" not in world_builder.split(
-    "void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "SM_Nyaagyu_EstateWall_4m" not in practice_builder
 assert "import_nyaagyu_ground_dressing.py" in import_script
 assert 'ImportedProp(TEXT("SM_Nyaagyu_RoadsideLeafSilt_4m")' in world_builder
-assert "SM_Nyaagyu_RoadsideLeafSilt_4m" not in world_builder.split(
-    "void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "SM_Nyaagyu_RoadsideLeafSilt_4m" not in practice_builder
 ground_dressing_root = content / "SourceArt/Environment/NyaagyuGroundDressing"
 ground_dressing = json.loads((ground_dressing_root / "manifest.json").read_text())
 assert ground_dressing["schema_version"] == 1
@@ -413,7 +426,7 @@ assert len(terrain["tiles"]) == 32
 assert [(entry["role"], entry["channel"]) for entry in terrain["palette_files"]] == [
     ("soil", "diffuse"), ("soil", "normal"), ("soil", "arm")]
 assert "if(MapId==0) NyaagyuTerrain();" in world_builder
-assert "NyaagyuTerrain()" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "NyaagyuTerrain()" not in practice_builder
 assert "SetCollisionEnabled(ECollisionEnabled::NoCollision)" in world_builder
 for name, digest in ((terrain["source_blend"], terrain["source_blend_sha256"]),
                      (terrain["preview"], terrain["preview_sha256"])):
@@ -448,7 +461,7 @@ assert len(tree["upstream_files"]) == 11 and len(tree["texture_files"]) == 10
 assert [(record["tier"], record["nanite"]) for record in tree["meshes"]] == [("hi", True), ("mac", False)]
 assert "NyaagyuTree(P+FVector(450,-S*250,0)" in world_builder
 assert "Bloom%d%d%d" not in world_builder
-assert "NyaagyuTree(" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "NyaagyuTree(" not in practice_builder
 pine_root = content / "SourceArt/Environment/PolyHaven/PineSaplingSmall"
 pine = json.loads((pine_root / "manifest.json").read_text())
 assert pine["schema_version"] == 1 and pine["asset_id"] == "pine_sapling_small"
@@ -457,7 +470,7 @@ assert pine["gameplay_collision"] is False and pine["instances_in_nyaagyu_estate
 assert len(pine["upstream_files"]) == 8 and len(pine["texture_files"]) == 8
 assert len(pine["meshes"]) == 6
 assert "NyaagyuPine(FVector(X,Y,0)" in world_builder
-assert "NyaagyuPine(" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "NyaagyuPine(" not in practice_builder
 for record in tree["upstream_files"] + tree["texture_files"]:
     path = tree_root / record["path"]
     assert path.stat().st_size == record["bytes"]
@@ -488,7 +501,7 @@ street_fbx = (street_root / street["fbx"]).read_bytes()
 assert street_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in street_fbx
 assert street["name"] in world_builder and street["name"] in import_script
 assert 'if(MapId==1)' in world_builder and 'StreetDebtTerminalCollision' in world_builder
-assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "ImportedProp" not in practice_builder
 sluice_root = content / "SourceArt/Environment/NyaagyuSluice"
 sluice = json.loads((sluice_root / "manifest.json").read_text())
 assert sluice["schema_version"] == 1
@@ -504,8 +517,9 @@ for name, digest in ((sluice["source_blend"], "blend_sha256"),
     assert path.stat().st_size > 1000
     assert hashlib.sha256(path.read_bytes()).hexdigest() == sluice[digest]
 assert sluice["name"] in world_builder and sluice["name"] in import_script
-assert 'if(MapId==0) ImportedProp(TEXT("SM_Nyaagyu_IrrigationSluice")' in world_builder
-assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "if(MapId==0) EstateSluice(P);" in world_builder
+assert 'ImportedProp(TEXT("SM_Nyaagyu_IrrigationSluice")' in estate_builder
+assert "ImportedProp" not in practice_builder
 loom_root = content / "SourceArt/Environment/SilkFoundryLoom"
 loom = json.loads((loom_root / "manifest.json").read_text())
 assert loom["schema_version"] == 1
@@ -526,7 +540,7 @@ for name, digest in ((loom["source_blend"], "blend_sha256"),
 loom_fbx = (loom_root / loom["fbx"]).read_bytes()
 assert loom_fbx.startswith(b"Kaydara FBX Binary") and b"/Users/" not in loom_fbx
 assert loom["name"] in world_builder and loom["name"] in import_script
-assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "ImportedProp" not in practice_builder
 dojo_root = content / "SourceArt/Environment/NyaagyuDojo"
 dojo = json.loads((dojo_root / "manifest.json").read_text())
 assert dojo["schema_version"] == 1
@@ -604,7 +618,7 @@ for item in plaster["files"]:
     assert hashlib.sha256(data).hexdigest() == item["sha256"]
 assert 'Role=TEXT("Plaster"); TileSizeCm=100.f;' in world_builder
 assert "MI_Nyaagyu_Plaster" in (ROOT / "scripts/unreal/validate_imported_assets.py").read_text()
-assert "ImportedProp" not in world_builder.split("void ASoraWorldBuilder::BuildPractice", 1)[1].split("void ASoraWorldBuilder::Build(", 1)[0]
+assert "ImportedProp" not in practice_builder
 font = content / "SourceArt/Fonts/NotoSansCJKjp-Regular.otf"
 logo_manifest = json.loads((content / "SourceArt/UI/sora_logo_manifest.json").read_text())
 assert hero_character["insignia_sha256"] == logo_manifest["source_sha256"]
@@ -619,7 +633,7 @@ logo_png = (content / "SourceArt/UI" / logo_manifest["runtime_png"]).read_bytes(
 assert logo_png[:16] == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
 assert struct.unpack(">II", logo_png[16:24]) == (1024, 1024)
 assert logo_png[24:26] == b"\x08\x06"  # 8-bit RGBA; the full bytes are hash-pinned above.
-assert "T_SoraResistanceLogo.T_SoraResistanceLogo" in (ROOT / "Source/SoraArena/Private/SoraHUD.cpp").read_text()
+assert "T_SoraResistanceLogo.T_SoraResistanceLogo" in (private_source / "HUD/SoraHUD.cpp").read_text()
 assert hashlib.sha256(font.read_bytes()).hexdigest() == "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5"
 assert hashlib.sha256(font.read_bytes()).hexdigest() == street["font_sha256"]
 assert "SIL OPEN FONT LICENSE" in (font.parent / "OFL.txt").read_text()
@@ -631,4 +645,5 @@ absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
 cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
+print(input_summary)
 print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 10 original environment props, 18 hash-pinned Nyaakoto PBR maps for 23 runtime materials, licensed Japanese font, hash-verified SORA logo.")

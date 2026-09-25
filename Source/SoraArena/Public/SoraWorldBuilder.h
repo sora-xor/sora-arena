@@ -6,6 +6,13 @@ class UStaticMeshComponent;
 class UMaterialInterface;
 struct FSoraPracticeMap;
 struct FSoraChapter;
+
+// Builds the procedural arena at runtime. The shared layout (ground, walls,
+// building rows, cover, torii, production sites and lanterns) lives in
+// Private/World/SoraWorldBuilder.cpp; each map's dressing lives in its own
+// Private/World/SoraMap*.cpp file, lighting in SoraWorldBuilderLighting.cpp and
+// the kernel-defined practice map in SoraWorldBuilderPractice.cpp. Authored
+// props are visual only; the primitive boxes remain the gameplay collision.
 UCLASS()
 class SORAARENA_API ASoraWorldBuilder : public AActor
 {
@@ -35,13 +42,29 @@ private:
     TArray<FLinearColor> SiteRestoredColors;
     UPROPERTY() TArray<TObjectPtr<AActor>> DecorActors;
     TSet<int32> Activated;
+    // Shared layout (SoraWorldBuilder.cpp).
     UStaticMeshComponent* Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision = true, FRotator Rotation = FRotator::ZeroRotator, const FString& SurfaceRole = TEXT(""));
     void Building(FVector Location, FVector Size, FLinearColor Wall, bool HighTech);
     bool ImportedProp(const FString& Name, FVector Location, FRotator Rotation, float Scale = 1.f);
+    void Torii(FVector Location, float Yaw);
+    void ProductionSites(int32 MapId, const FSoraChapter* Chapter, FLinearColor Accent);
+    void Lanterns();
+    void ClearArena();
+    // Sun, sky, fog and grade per map (SoraWorldBuilderLighting.cpp).
+    void Lighting(int32 MapId);
+    // Nyaagyu Estate, map 0 (SoraMapNyaagyuEstate.cpp).
     void NyaagyuTerrain();
     void NyaagyuTree(FVector Location, FRotator Rotation, float Scale);
     void NyaagyuPine(FVector Location, FRotator Rotation, float Scale, int32 Variant);
-    void Torii(FVector Location, float Yaw);
-    void ClearArena();
-    void Lighting(int32 MapId);
+    void EstatePerimeter(int32 S, UStaticMeshComponent* WallX, UStaticMeshComponent* WallY);
+    void EstateHall(int32 I, int32 S, FVector P, int32 BuildingStart);
+    void EstateGrounds();
+    void EstateCargo(int32 I, FVector Location, UStaticMeshComponent* Cover);
+    void EstateSluice(FVector P);
+    // Lantern Ward, map 1 (SoraMapLanternWard.cpp).
+    void LanternWardTerminal();
+    // Silk Foundry, map 2 (SoraMapSilkFoundry.cpp).
+    void SilkFoundryLoom(FVector P);
+    // Debt Citadel, map 3 (SoraMapDebtCitadel.cpp).
+    void DebtCitadelKiosk();
 };

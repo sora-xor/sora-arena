@@ -55,6 +55,7 @@ bool FSoraCatalog::Load()
         W.Magazine = O->GetIntegerField(TEXT("magazine")); W.BlastRadius = O->GetNumberField(TEXT("blast_radius"));
         W.ProjectileSpeed = O->GetNumberField(TEXT("projectile_speed")); W.Special = O->GetBoolField(TEXT("special"));
         if (W.Id != Weapons.Num() || W.ClassId < 0 || W.ClassId >= 6 || W.Cooldown <= 0 || W.Magazine < 1 || W.Damage <= 0) { Error = TEXT("Invalid weapon catalog"); return false; }
+        if (!O->TryGetStringField(TEXT("name_en"), W.NameEnglish) || W.NameEnglish.IsEmpty()) { Error = TEXT("Weapon lacks its English name"); return false; }
         Weapons.Add(W);
     }
     // These three arms exist only in the offline campaign. Arena admission and
@@ -88,6 +89,9 @@ bool FSoraCatalog::Load()
         const auto O = Row->AsObject(); if (!O.IsValid()) return false;
         FSoraClass C; C.Id = O->GetIntegerField(TEXT("id")); C.Name = O->GetStringField(TEXT("name")); C.Role = O->GetStringField(TEXT("role"));
         C.Health = O->GetNumberField(TEXT("health")); C.Speed = O->GetNumberField(TEXT("speed"));
+        if (!O->TryGetStringField(TEXT("name_en"), C.NameEnglish) || !O->TryGetStringField(TEXT("role_en"), C.RoleEnglish) ||
+            C.NameEnglish.IsEmpty() || C.RoleEnglish.IsEmpty())
+        { Error = TEXT("Class lacks its English name or role"); return false; }
         for (const auto& V : O->GetArrayField(TEXT("weapons"))) { const int32 Id = V->AsNumber(); if (!Weapons.IsValidIndex(Id) || Weapons[Id].ClassId != C.Id) return false; C.Weapons.Add(Id); }
         if (C.Id != Classes.Num() || C.Weapons.Num() != 3 || C.Health <= 0 || C.Speed <= 0) return false;
         Classes.Add(C);
@@ -98,6 +102,11 @@ bool FSoraCatalog::Load()
         const auto O = Row->AsObject(); if (!O.IsValid()) return false;
         FSoraChapter C; C.Title = O->GetStringField(TEXT("title")); C.Narrative = O->GetStringField(TEXT("narrative")); C.Objective = O->GetStringField(TEXT("objective"));
         C.NarrativeEnglish = O->GetStringField(TEXT("narrative_en"));
+        // English subtitles cover the chapter title card: title, narrative and objective.
+        if (!O->TryGetStringField(TEXT("title_en"), C.TitleEnglish) || !O->TryGetStringField(TEXT("objective_en"), C.ObjectiveEnglish) ||
+            C.Title.IsEmpty() || C.TitleEnglish.IsEmpty() || C.Narrative.IsEmpty() || C.NarrativeEnglish.IsEmpty() ||
+            C.Objective.IsEmpty() || C.ObjectiveEnglish.IsEmpty())
+        { Error = TEXT("Chapter lacks its bilingual title, narrative or objective"); return false; }
         C.Map = O->GetIntegerField(TEXT("map")); C.Kills = O->GetIntegerField(TEXT("kills"));
         const TArray<TSharedPtr<FJsonValue>>* SiteRows = nullptr;
         if (!O->TryGetArrayField(TEXT("sites"), SiteRows) || SiteRows->Num() != 3)
@@ -165,6 +174,8 @@ bool FSoraCatalog::Load()
         const auto O = Row->AsObject(); if (!O.IsValid()) return false;
         FSoraMap M; M.Name = O->GetStringField(TEXT("name")); const auto& A = O->GetArrayField(TEXT("accent"));
         if (A.Num() != 3) return false;
+        if (!O->TryGetStringField(TEXT("name_en"), M.NameEnglish) || M.Name.IsEmpty() || M.NameEnglish.IsEmpty())
+        { Error = TEXT("Map lacks its English name"); return false; }
         M.Accent = FLinearColor(A[0]->AsNumber(), A[1]->AsNumber(), A[2]->AsNumber()); Maps.Add(M);
     }
     bReady = Weapons.Num() == 18 && CampaignWeapons.Num() == 3 && Classes.Num() == 6 && Chapters.Num() == 8 && Maps.Num() == 4;

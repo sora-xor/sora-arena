@@ -45,7 +45,7 @@ for role, item in texture_manifest["atlas_files"].items():
 assert texture_manifest["board_count"] == manifest["door_board_count"] == 14
 assert texture_manifest["normal_convention"].startswith("DirectX")
 assert "collision" in manifest and "Visual only" in manifest["collision"]
-world = (ROOT / "Source/SoraArena/Private/SoraWorldBuilder.cpp").read_text()
+world = "".join(path.read_text() for path in sorted((ROOT / "Source/SoraArena/Private/World").glob("*.cpp")))
 assert manifest["name"] not in world, "Candidate was admitted to runtime unexpectedly"
 
 bpy.ops.wm.open_mainfile(filepath=str(OUT / manifest["source_blend"]))

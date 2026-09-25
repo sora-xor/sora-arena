@@ -1,13 +1,16 @@
-diff --git a/Source/SoraArena/Private/SoraWorldBuilder.cpp b/Source/SoraArena/Private/SoraWorldBuilder.cpp
---- a/Source/SoraArena/Private/SoraWorldBuilder.cpp
-+++ b/Source/SoraArena/Private/SoraWorldBuilder.cpp
-@@ -18,3 +18,5 @@
+diff --git a/Source/SoraArena/Private/World/SoraWorldBuilder.cpp b/Source/SoraArena/Private/World/SoraWorldBuilder.cpp
+--- a/Source/SoraArena/Private/World/SoraWorldBuilder.cpp
++++ b/Source/SoraArena/Private/World/SoraWorldBuilder.cpp
+@@ -6,6 +6,8 @@
+ #include "Engine/PointLight.h"
+ #include "Engine/StaticMesh.h"
  #include "Engine/World.h"
 +#include "Misc/CommandLine.h"
 +#include "Misc/Parse.h"
- #include "Engine/TextureCube.h"
- #include "ArenaKernelSubsystem.h"
-@@ -81,7 +83,26 @@ void ASoraWorldBuilder::Building(FVector L, FVector Size, FLinearColor Wall, bool HighTech)
+ #include "Materials/MaterialInstanceDynamic.h"
+ #include "Materials/MaterialInterface.h"
+ 
+@@ -71,7 +73,26 @@ void ASoraWorldBuilder::Building(FVector L, FVector Size, FLinearColor Wall, boo
  }
  bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRotator Rotation, float Scale)
  {

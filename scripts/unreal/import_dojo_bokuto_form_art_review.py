@@ -137,9 +137,9 @@ fbx_bytes = (source / record["fbx"]).read_bytes()
 if (not fbx_bytes.startswith(b"Kaydara FBX Binary") or b"UV0" not in fbx_bytes
         or b"/Users/" in fbx_bytes):
     raise RuntimeError("Bokuto FBX header, UV0, or portability contract changed")
-for runtime_file in ("SoraCharacter.cpp", "SoraWorldBuilder.cpp"):
-    if MESH_NAME in (root / "Source/SoraArena/Private" / runtime_file).read_text():
-        raise RuntimeError(f"Review-only bokuto appears in {runtime_file}")
+for runtime_file in sorted((root / "Source/SoraArena").rglob("*.cpp")):
+    if MESH_NAME in runtime_file.read_text():
+        raise RuntimeError(f"Review-only bokuto appears in {runtime_file.name}")
 
 assets = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()

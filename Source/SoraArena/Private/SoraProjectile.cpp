@@ -1,4 +1,5 @@
 #include "SoraProjectile.h"
+#include "SoraGameEvents.h"
 #include "SoraWorldBuilder.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -49,6 +50,12 @@ void ASoraProjectile::Tick(float Dt)
 void ASoraProjectile::Detonate()
 {
     TArray<AActor*> Ignore;
+    if(auto* Events=USoraGameEvents::Get(this))
+    {
+        FSoraDetonatedEvent Detonated;
+        Detonated.Instigator=GetInstigator(); Detonated.Location=GetActorLocation(); Detonated.Radius=Radius; Detonated.Damage=Damage;
+        Events->OnDetonated.Broadcast(Detonated);
+    }
     UGameplayStatics::ApplyRadialDamage(this,Damage,GetActorLocation(),Radius,UDamageType::StaticClass(),Ignore,this,GetInstigatorController(),false,ECC_Visibility);
     auto* Effect=GetWorld()->SpawnActor<AActor>(GetActorLocation(),FRotator::ZeroRotator);
     auto* Sphere=ASoraWorldBuilder::Shape(Effect,nullptr,TEXT("Blast"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector::ZeroVector,FVector(Radius/110.f),FLinearColor(1,.22,.025));

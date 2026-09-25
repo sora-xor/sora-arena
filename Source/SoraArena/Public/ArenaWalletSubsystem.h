@@ -103,6 +103,9 @@ private:
     double NextStatusPollAt = 0;
     int32 StatusPollCount = 0;
     bool bIgnoreCancelledSignatureResult = false;
+    // A cancelled request keeps its own signing deadline; a late wallet reply is
+    // absorbed until then, after which new requests may be signed again.
+    double CancelledSignatureDeadline = 0;
     bool bRecoveryBlocked = false;
     FString Origin, NetworkLiteral, ExpectedAccountLiteral, RelayToken;
     FString SubmissionOrigin, SubmissionNetworkLiteral, LastEntrypointHash;
@@ -129,4 +132,7 @@ private:
     void ReceiveFrame(const TArray<uint8>& Frame);
     void AcceptApproval(const TArray<uint8>& Frame);
     void ReceiveEncrypted(const TArray<uint8>& Frame, uint64 Sequence);
+#if WITH_DEV_AUTOMATION_TESTS
+    friend class FArenaCancelledSignatureLatchTest;
+#endif
 };

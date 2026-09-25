@@ -22,7 +22,9 @@ struct FSoraClass
 {
     int32 Id = 0;
     FString Name;
+    FString NameEnglish;
     FString Role;
+    FString RoleEnglish;
     float Health = 120.f;
     float Speed = 560.f;
     TArray<int32> Weapons;
@@ -61,9 +63,11 @@ struct FSoraProductionSite
 struct FSoraChapter
 {
     FString Title;
+    FString TitleEnglish;
     FString Narrative;
     FString NarrativeEnglish;
     FString Objective;
+    FString ObjectiveEnglish;
     int32 Map = 0;
     int32 Kills = 6;
     TArray<FSoraDialogueCue> Dialogue;
@@ -72,6 +76,7 @@ struct FSoraChapter
 struct FSoraMap
 {
     FString Name;
+    FString NameEnglish;
     FLinearColor Accent = FLinearColor(.1f,.6f,.6f);
 };
 

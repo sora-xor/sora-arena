@@ -91,7 +91,8 @@ def validate_source() -> None:
         raise SystemExit("DefaultGame.ini must request native Japanese")
     if set(re.findall(r"^\+CulturesToStage=(\S+)$", game_config, re.MULTILINE)) != {"ja", "en"}:
         raise SystemExit("the package must stage Japanese and English cultures")
-    hud_source = (ROOT / "Source/SoraArena/Private/SoraHUD.cpp").read_text()
+    # The HUD draws its panels from Source/SoraArena/Private/HUD.
+    hud_source = "".join(path.read_text() for path in sorted((ROOT / "Source/SoraArena/Private/HUD").glob("*.cpp")))
     if 'NSLOCTEXT("SoraArena", "MenuTitle", "猫柳生")' not in hud_source:
         raise SystemExit("the HUD's native FText title no longer matches Game.locres")
 

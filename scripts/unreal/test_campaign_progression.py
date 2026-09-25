@@ -1,6 +1,7 @@
-"""Host-only acceptance of the same chapter gates used by ASoraGameMode.
+"""Host-only acceptance of the same chapter gates USoraCampaignDirector uses.
 
-This cannot replace a UE 5.8.2 campaign clear or SaveGameToSlot test.
+It complements, and cannot replace, the in-editor SoraArena.Campaign.Playthrough
+automation test, which clears the campaign and reads every checkpoint from disk.
 """
 
 import json
@@ -31,20 +32,20 @@ for chapter in chapters:
 assert chapters[-1]["kills"] == 18
 assert chapters[-1]["sites"][-1]["requires_kills"] == 18
 assert any(cue["speaker"] == "banker" for cue in chapters[-1]["dialogue"])
-game_mode = (ROOT / "Source/SoraArena/Private/SoraGameMode.cpp").read_text()
+campaign = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignDirector.cpp").read_text()
 for gate in ("CheckpointValid", "RecordDefeat", "RestoreSite", "CompleteChapter",
              "CanSpawnFinalBoss", "AdvanceChapter", "CampaignLiberated"):
-    assert f"SoraCampaignRules::{gate}" in game_mode, f"GameMode no longer uses tested {gate} gate"
+    assert f"SoraCampaignRules::{gate}" in campaign, f"The campaign director no longer uses tested {gate} gate"
 for gate in ("Record", "CheckpointValid", "CanScoreBout"):
-    assert f"SoraDojoRules::{gate}" in game_mode, f"GameMode no longer uses tested dojo {gate} gate"
-character = (ROOT / "Source/SoraArena/Private/SoraCharacter.cpp").read_text()
+    assert f"SoraDojoRules::{gate}" in campaign, f"The campaign director no longer uses tested dojo {gate} gate"
+character = (ROOT / "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp").read_text()
 assert "SoraDojoRules::EAction::Stance" in character
 assert "SoraDojoRules::EAction::Guard" in character
 assert "SoraDojoRules::EAction::Parry" in character
 assert "SoraDojoRules::EAction::Recovery" in character
 save_header = (ROOT / "Source/SoraArena/Public/SoraSaveGame.h").read_text()
 assert "UPROPERTY(SaveGame) int32 CheckpointDojoLessonMask" in save_header
-assert "Save->SaveSchema=5" in game_mode
+assert "Save->SaveSchema=5" in campaign
 
 lines = ["static constexpr FChapterFixture Chapters[] = {"]
 for chapter in chapters:

@@ -1,7 +1,7 @@
 """Import Nyaakoto's project-owned fur, woven cloth and lacquer PBR maps.
 
 Called after the skeletal FBX import. Runtime material instances are bound by
-exact FBX slot identity in ASoraCharacter; the wallet and combat are unaffected.
+exact FBX slot identity in ASoraCharacterBase; the wallet and combat are unaffected.
 """
 
 from pathlib import Path

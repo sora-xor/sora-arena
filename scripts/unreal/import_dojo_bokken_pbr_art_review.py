@@ -98,8 +98,9 @@ fbx_bytes = (source / record["fbx"]).read_bytes()
 if (not fbx_bytes.startswith(b"Kaydara FBX Binary") or b"/Users/" in fbx_bytes
         or b"UV0" not in fbx_bytes):
     raise RuntimeError("Dojo bokken FBX header, portability, or UV0 declaration changed")
-if MESH_NAME in (root / "Source/SoraArena/Private/SoraCharacter.cpp").read_text():
-    raise RuntimeError("Review-only bokken candidate unexpectedly appears in playable source")
+for runtime_file in sorted((root / "Source/SoraArena").rglob("*.cpp")):
+    if MESH_NAME in runtime_file.read_text():
+        raise RuntimeError(f"Review-only bokken candidate unexpectedly appears in {runtime_file.name}")
 
 assets = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
