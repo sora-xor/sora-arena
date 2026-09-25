@@ -16,8 +16,9 @@
 // kills on a hold and only ever strikes a conscript with the back of the
 // blade; a found body sends the whole zone searching without detecting the
 // hero, and a body can be dragged out of sight; an auditor raises the zone's
-// alarm only at a lectern; and detection is announced once with the zone's
-// answer on its difficulty, with the HUD's readout following the guards.
+// alarm only at a lectern; detection is announced once with the zone's
+// answer on its difficulty, with the HUD's readout following the guards; and
+// a zone that closes or restarts mid-takedown lets its guard go unalarmed.
 namespace SoraStealthAutomation
 {
 using SoraEnemyTest::FArena;
@@ -610,6 +611,85 @@ bool FSoraStealthDetectionTest::RunTest(const FString& Parameters)
         return false;
     TestTrue(TEXT("A hunter is not a guard"), Hunter && !FArena::Brain(Hunter)->IsGuard());
     TestFalse(TEXT("A hunter's alert is not a detection"), Zone->IsDetected());
+    return Tick(Arena, 2, Keep);
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraStealthZoneEndReleasesTakedownTest,
+    "SoraArena.Stealth.ZoneEndReleasesTakedown",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraStealthZoneEndReleasesTakedownTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraStealthAutomation;
+    if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
+        return false;
+    FArena Arena(*this, TEXT("StealthZoneEnd"));
+    if (!Arena.Start())
+        return false;
+    USoraStealth* Zone = USoraStealth::Get(Arena.Get());
+    if (!TestNotNull(TEXT("The stealth zone exists in a game world"), Zone))
+        return false;
+    const TSharedRef<FRecord> Log = Record(Arena.Get());
+    FSoraStealthZone Rules;
+    Rules.bRearTakedowns = true;
+    Rules.OnDetected = SoraStealthRules::EOnDetected::Restart;
+    Zone->BeginZone(Rules);
+    ASoraPlayerCharacter* Hero = Arena.Hero();
+    // A guard with a comrade within a shout of it; the hero steps in behind the first.
+    ASoraEnemy* Victim = Guard(Arena, TEXT("enforcer_rifle"), 70, FVector::ZeroVector, 0.f);
+    ASoraEnemy* Comrade = Guard(Arena, TEXT("enforcer_rifle"), 71, FVector(0.f, 400.f, 0.f), 0.f);
+    TArray<ASoraEnemy*> Keep{Victim, Comrade};
+    if (!TestTrue(TEXT("Two guards spawn"), Victim && Comrade) || !Tick(Arena, 2, Keep))
+        return false;
+    const auto Calm = [&]()
+    {
+        return FArena::Brain(Victim)->State() == EState::Unaware && FArena::Brain(Comrade)->State() == EState::Unaware;
+    };
+    // The beat ends inside the takedown's 400 ms hold: the zone that closes
+    // detects nobody, and the guard it lets go does not shout.
+    for (const bool bRestart : {false, true})
+    {
+        const TCHAR* How = bRestart ? TEXT("A checkpoint restart") : TEXT("The zone's end");
+        Arena.PlaceHero(FVector(-120.f, 0.f, 0.f), 0.f);
+        if (!TestTrue(TEXT("Behind the guard, the takedown is offered"), Zone->TakedownTarget(*Hero) == Victim) ||
+            !Press(Arena, EKeys::RightMouseButton, true) || !Tick(Arena, 6, Keep))
+            return false;
+        TestTrue(TEXT("The hold has seized the guard"), Zone->IsHeroBusy() && Victim->IsSeized());
+        if (bRestart)
+            Zone->BeginZone(Rules);
+        else
+            Zone->EndZone();
+        if (!Press(Arena, EKeys::RightMouseButton, false) || !Tick(Arena, 30, Keep))
+            return false;
+        AddInfo(FString::Printf(TEXT("%s: the guard is %s, its comrade %s"), How, Name(FArena::Brain(Victim)->State()),
+            Name(FArena::Brain(Comrade)->State())));
+        TestEqual(*FString::Printf(TEXT("%s detects nobody"), How), Log->Detected.Num(), 0);
+        TestTrue(*FString::Printf(TEXT("%s lets the guard go unalarmed, and nobody is called"), How), Calm());
+        TestTrue(*FString::Printf(TEXT("%s frees both"), How), !Victim->IsSeized() && !Zone->IsHeroBusy() && Victim->IsAlive());
+        const FVector From = Hero->GetActorLocation();
+        if (!Press(Arena, EKeys::S, true) || !Tick(Arena, 20, Keep) || !Press(Arena, EKeys::S, false))
+            return false;
+        TestTrue(*FString::Printf(TEXT("%s gives the hero his feet back"), How), FVector::Dist2D(Hero->GetActorLocation(), From) > 30.f);
+        if (!bRestart)
+            Zone->BeginZone(Rules);
+        if (!Tick(Arena, 2, Keep))
+            return false;
+    }
+    // In play, a takedown interrupted by the hero going down still rouses
+    // the guard that felt the grab.
+    Arena.PlaceHero(FVector(-120.f, 0.f, 0.f), 0.f);
+    if (!TestTrue(TEXT("The takedown is offered again"), Zone->TakedownTarget(*Hero) == Victim) ||
+        !Press(Arena, EKeys::RightMouseButton, true) || !Tick(Arena, 6, Keep))
+        return false;
+    Hero->Health = 0.f;
+    const bool bTicked = Tick(Arena, 2, Keep);
+    Hero->Health = Hero->MaxHealth;
+    if (!bTicked || !Press(Arena, EKeys::RightMouseButton, false))
+        return false;
+    TestFalse(TEXT("A takedown the round interrupts ends"), Zone->IsHeroBusy());
+    TestTrue(TEXT("and the guard that felt the grab is roused"), FArena::Brain(Victim)->State() != EState::Unaware);
     return Tick(Arena, 2, Keep);
 }
 #endif

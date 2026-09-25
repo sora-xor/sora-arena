@@ -1,5 +1,6 @@
 #include "Combat/SoraDefense.h"
 #include "Combat/SoraDamage.h"
+#include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraDojoRules.h"
 #include "SoraEnemy.h"
@@ -8,6 +9,8 @@
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 namespace Rules = SoraCombatRules;
@@ -52,7 +55,10 @@ bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit&
         const bool bParried = HeldMs >= 0 && HeldMs <= SoraDojoRules::ParryWindowMs;
         Hit.Defense = bParried ? Rules::EDefense::Parry : Rules::EDefense::Guard;
         if (bParried)
+        {
             Opponent->Stagger(Hit.ParryStaggerMs);
+            Kit->NoteAwase(Opponent);
+        }
         Announce(Events, bParried, Hero, Causer, HeldMs, 0.f, true);
         return false;
     }
@@ -76,7 +82,10 @@ bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit&
     {
         Kit->SpendGuard(Outcome.Stamina);
         if (Outcome.Defense == Rules::EDefense::Parry && Opponent)
+        {
             Opponent->Parried(Outcome.AttackerStaggerMs);
+            Kit->NoteAwase(Opponent);
+        }
         Announce(Events, Outcome.Defense == Rules::EDefense::Parry, Hero, Causer, HeldMs, Outcome.Damage, false);
         if (Outcome.GuardBroken)
             Kit->Stagger(Rules::GuardBreakMs / 1000.f);
@@ -94,4 +103,69 @@ bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit&
     }
     Damage = Outcome.Damage;
     return Outcome.Damage > 0;
+}
+
+ASoraEnemy* SoraDefense::MarobashiTarget(const ASoraPlayerCharacter& Hero, bool* bAfterAwase)
+{
+    UWorld* World = Hero.GetWorld();
+    if (!World)
+        return nullptr;
+    // A blow about to land whose windup allows the step, the nearest first.
+    ASoraEnemy* Target = nullptr;
+    float Nearest = MAX_flt;
+    for (TActorIterator<ASoraBoss> It(World); It; ++It)
+    {
+        const float Distance = FVector::Dist2D(It->GetActorLocation(), Hero.GetActorLocation());
+        if (It->IsAlive() && Distance < Nearest && Rules::MarobashiOpen(-1, It->MarobashiUntilLandsMs(), It->MarobashiWindowMs()))
+        {
+            Target = *It;
+            Nearest = Distance;
+        }
+    }
+    if (bAfterAwase)
+        *bAfterAwase = false;
+    if (Target)
+        return Target;
+    // Else the opponent he has just met with awase.
+    int32 SinceMs = -1;
+    ASoraEnemy* Met = Hero.GetEquipment()->AwaseOpponent(SinceMs);
+    if (!Met || !Met->IsAlive() || !Rules::MarobashiOpen(SinceMs, -1, 0))
+        return nullptr;
+    if (bAfterAwase)
+        *bAfterAwase = true;
+    return Met;
+}
+
+bool SoraDefense::Marobashi(ASoraPlayerCharacter& Hero, float Side)
+{
+    USoraEquipmentComponent* Kit = Hero.GetEquipment();
+    if (FMath::Abs(Side) < .5f || !Hero.CanPlay() || Hero.IsKernelDriven() || Kit->IsStepping() || Kit->IsStaggered() ||
+        Kit->IsCommittedStrike() || Hero.GetCharacterMovement()->IsFalling())
+        return false;
+    bool bAfterAwase = false;
+    ASoraEnemy* Opponent = MarobashiTarget(Hero, &bAfterAwase);
+    if (!Opponent)
+        return false;
+    // Round the opponent toward the side pressed: the full arc at sword
+    // distance, a sidestep of at most MarobashiStepCm farther out.
+    const FVector Center = Opponent->GetActorLocation();
+    FVector Radius = Hero.GetActorLocation() - Center;
+    Radius.Z = 0.f;
+    if (Radius.Size() < 1.f)
+        Radius = -Opponent->GetActorForwardVector().GetSafeNormal2D() * 100.f;
+    const float Distance = Radius.Size();
+    const float Widest = 2.f * FMath::RadiansToDegrees(FMath::Asin(FMath::Min(1.f, Rules::MarobashiStepCm * .5f / Distance)));
+    float Arc = FMath::Min(static_cast<float>(Rules::MarobashiArcDeg), Widest);
+    const FVector Toward = Hero.GetActorRightVector().GetSafeNormal2D() * FMath::Sign(Side);
+    if (FVector::DotProduct(Radius.RotateAngleAxis(Arc, FVector::UpVector) - Radius, Toward) < 0.f)
+        Arc = -Arc;
+    Kit->BeginStep(Center, Radius, Arc);
+    Opponent->Outflanked(Rules::MarobashiTurnLagMs);
+    if (USoraGameEvents* Events = USoraGameEvents::Get(&Hero))
+    {
+        FSoraMarobashiEvent Stepped;
+        Stepped.Hero = &Hero; Stepped.Opponent = Opponent; Stepped.bAfterAwase = bAfterAwase;
+        Events->OnMarobashi.Broadcast(Stepped);
+    }
+    return true;
 }

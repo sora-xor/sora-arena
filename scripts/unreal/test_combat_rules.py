@@ -71,4 +71,5 @@ with tempfile.TemporaryDirectory(prefix="sora-combat-rules-") as temp:
     subprocess.run([str(binary)], check=True, env=env)
 print(f"Combat rules pass: guard and parry against all {count} melee attacks in enemies.json and the collector's cleave; "
       "ranged and blast chip; hit-stop; stagger, poise and immunity; shields, rears and barriers; "
-      f"arming at the kernel's {arming[7]} and {arming[15]} mm; self-damage; subdue and seal-cut; fixed miss pattern")
+      f"arming at the kernel's {arming[7]} and {arming[15]} mm; self-damage; subdue and seal-cut; fixed miss pattern; "
+      "mutō-dori, marobashi, zanshin and the maai ring")

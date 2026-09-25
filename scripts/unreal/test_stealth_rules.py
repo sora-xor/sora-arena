@@ -21,8 +21,11 @@ if platform.system() == "Darwin":
 assert compiler, "A C++ compiler is required to test the stealth rules"
 with tempfile.TemporaryDirectory(prefix="sora-stealth-rules-") as temp:
     binary = Path(temp) / "stealth-rules"
-    # Asserts must stay live: the driver is nothing but asserts.
-    subprocess.run([compiler, "-std=c++20", "-UNDEBUG", "-Wall", "-Werror", *sdk_flags,
+    # Asserts must stay live: the driver is nothing but asserts. It is built
+    # optimized as the editor builds the rules, with undefined behaviour
+    # (a wrapped clock, say) trapping instead of silently miscomparing.
+    subprocess.run([compiler, "-std=c++20", "-UNDEBUG", "-O2", "-fsanitize=undefined", "-fsanitize-trap=undefined",
+                    "-Wall", "-Werror", *sdk_flags,
                     "-I", str(ROOT / "Source/SoraArena/Public"),
                     str(ROOT / "scripts/unreal/stealth_rules_driver.cpp"), "-o", str(binary)],
                    check=True, env=env)
@@ -30,4 +33,4 @@ with tempfile.TemporaryDirectory(prefix="sora-stealth-rules-") as temp:
 print("Stealth rules pass: view cone, line of sight, exposure, stance, range and light; hearing by stance "
       "and floor; unaware/suspicious/alert/search/combat/retreat transitions; zone vigilance, difficulty, "
       "search decay and wariness; detection, carryover, alarms and found bodies; work under guard; "
-      "rear takedowns; slot roles and cover preference")
+      "rear takedowns; slot roles and cover preference; the stuck clock")

@@ -564,10 +564,11 @@ def validate_bosses(data, enemies):
                             f"{where}.{aid}: an unparryable blow has no parried hit")
                     if kind in ("cut", "thrust"):
                         require(not g["parry"] or g["parry_stagger_ms"] > 0 or spec["on_parry"] != "none" or spec["marobashi_ms"] > 0,
-                                f"{where}.{aid}: a parry staggers, answers or opens a 転 step")
+                                f"{where}.{aid}: a parry staggers or answers, or 転 answers the blow (marobashi_ms)")
                     else:
                         require(not g["parry"], f"{where}.{aid}: only blows are parried")
             if kind in ("cut", "thrust"):
+                require(0 <= spec["marobashi_ms"] <= attack["windup_ms"], f"{where}.{aid}: the 転 stretch is the end of the windup")
                 require(not spec["muto"] or (muto_fight and kind == "cut" and spec["guard"]["parry"]),
                         f"{where}.{aid}: mutō-dori only on a parryable cut in a fight it may end (rule 4)")
                 require((spec["hits"] > 1) == (spec["gap_ms"] > 0), f"{where}.{aid}: multi-hit gaps")
@@ -681,6 +682,8 @@ def boss_mutations(data):
     yield edit("wrong speaker", lambda d: attack(d, "boss_tarifa", "rod_sweep").__setitem__("bark", "ch05.b16.kozo.008"))
     yield edit("lost voice telegraph", lambda d: attack(d, "boss_penalta", "hammer_slam").__setitem__("bark", "ch03.b17.penalta.003"))
     yield edit("muto outside its fights", lambda d: attack(d, "boss_dunark", "heavy_overhead")["cut"].__setitem__("muto", True))
+    yield edit("転 beyond the windup", lambda d: attack(d, "boss_dunark", "thrust")["thrust"].__setitem__("marobashi_ms", 701))
+    yield edit("idle parry", lambda d: attack(d, "boss_penalta", "shield_bash")["cut"].__setitem__("marobashi_ms", 0))
     yield edit("unknown add", lambda d: boss(d, "boss_tarifa")["adds"][0].__setitem__("archetype", "oni"))
     yield edit("uneven health", lambda d: boss(d, "boss_eskro")["health"].__setitem__("hard", 1999))
     yield edit("unreachable attack", lambda d: boss(d, "boss_penalta")["phases"][0]["pattern"]["attacks"].remove("shield_bash"))

@@ -105,6 +105,10 @@ public:
     virtual void Stagger(int32 Milliseconds);
     // A parry met its blow (SoraDefense): staggered for StaggerMs.
     virtual void Parried(int32 StaggerMs) { Stagger(StaggerMs); }
+    // 転 (SoraDefense::Marobashi): the hero rolled to its flank. For
+    // Milliseconds it cannot turn after him or start an attack.
+    virtual void Outflanked(int32 Milliseconds);
+    bool IsTurnLocked() const;
     // 無刀取り took this opponent's blade (SoraDefense). True when its fight
     // allows it; only a boss or rival duellist with that finisher does.
     virtual bool Disarm(AActor* By) { return false; }
@@ -193,6 +197,7 @@ private:
     int32 ShotsSinceRelocation = 0;
     // Defenses.
     float StaggerUntil = -1.f;
+    float TurnLockedUntil = -1.f;
     float StrikeStaggerImmuneUntil = -1.f;
     float ShieldOpenUntil = -1.f;
     int32 BarrierMilli = 0;

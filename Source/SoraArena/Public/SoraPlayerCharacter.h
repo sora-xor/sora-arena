@@ -93,6 +93,8 @@ private:
     void FireDown(); void FireUp(); void Melee(); void Reload(); void Interact(); void InteractUp();
     // A toggle between standing and crouch-walking (SoraStealthRules).
     void CrouchPressed();
+    // 納刀 and 抜刀 on one key: the blade goes into its scabbard, or out again.
+    void SheathePressed();
     void SprintDown(); void SprintUp(); void JumpDown(); void JumpUp();
     void Menu(); void Enter(); void NextMap(); void NewCampaign(); void ReturnCampaign();
     void Practice(); void BlockDown(); void BlockUp(); void Ability(); void MeleeUp();

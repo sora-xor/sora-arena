@@ -3760,7 +3760,7 @@
               "parry_hit": 0,
               "parry_stagger_ms": 1200
             },
-            "marobashi_ms": 400,
+            "marobashi_ms": 0,
             "muto": false,
             "on_parry": "none",
             "if_guard_held_ms": 0
@@ -3832,7 +3832,7 @@
               "parry_hit": 0,
               "parry_stagger_ms": 1200
             },
-            "marobashi_ms": 400,
+            "marobashi_ms": 0,
             "muto": false,
             "on_parry": "none",
             "if_guard_held_ms": 0

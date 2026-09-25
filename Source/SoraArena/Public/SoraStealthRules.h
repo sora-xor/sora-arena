@@ -1,7 +1,8 @@
 #pragma once
 
 // Offline opponent awareness rules shared by ASoraEnemyController, the stealth
-// zone (USoraStealth) and a host-compiled acceptance driver. Distances are
+// zone (USoraStealth) and a host-compiled acceptance driver, with the combat
+// roles and the stuck clock the same brain walks by. Distances are
 // integer centimetres, view angles are cosines in thousandths, light is a
 // permille proxy and time is integer milliseconds, so what an opponent notices
 // never depends on a dice roll or on a floating-point frame boundary.
@@ -619,5 +620,40 @@ constexpr int CoverScore(int TravelCm, int TargetCm)
 constexpr int RetreatScore(int TravelCm, int TargetCm)
 {
     return TravelCm < 0 || TargetCm < 1200 ? -1 : TravelCm;
+}
+
+// Progress on a walk. An opponent asked to move every frame that stays within
+// StuckCm of where its clock started for StuckMs gives up on that goal
+// (Stuck). The clock starts afresh (Restarted) on the first request, after
+// a gap of more than AskGapMs without one (a pause, a stagger), after it
+// has moved StuckCm, and on the request after it gave up, so one blocked
+// walk never blocks the next.
+enum class EProgress { Restarted, Walking, Stuck };
+constexpr int StuckMs = 2000;
+constexpr int StuckCm = 40;
+constexpr int AskGapMs = 100;
+
+struct FProgress
+{
+    bool Running = false;
+    int AskedMs = 0;
+    int SinceMs = 0;
+};
+
+// MovedCm is the distance from where the clock last started.
+constexpr EProgress Progress(FProgress& Clock, int NowMs, int MovedCm)
+{
+    if (!Clock.Running || NowMs - Clock.AskedMs > AskGapMs || MovedCm > StuckCm)
+    {
+        Clock = {true, NowMs, NowMs};
+        return EProgress::Restarted;
+    }
+    if (NowMs - Clock.SinceMs > StuckMs)
+    {
+        Clock.Running = false;
+        return EProgress::Stuck;
+    }
+    Clock.AskedMs = NowMs;
+    return EProgress::Walking;
 }
 } // namespace SoraStealthRules

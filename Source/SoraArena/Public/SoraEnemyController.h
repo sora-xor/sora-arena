@@ -122,6 +122,9 @@ private:
     bool Claimed(const FVector& Spot) const;
     EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
     EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
+    // One move request at Here: true once the walk has made no progress for
+    // SoraStealthRules::StuckMs; the next request starts a fresh clock.
+    bool Stuck(const FVector& Here, int32 NowMs);
     void ClearPath();
     void Face(ASoraEnemy& Enemy, const FVector& Direction, float DeltaSeconds, float Rate) const;
     void LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float DeltaSeconds, int32 NowMs) const;
@@ -161,9 +164,9 @@ private:
     bool bPathValid = false;
     int32 RepathAtMs = 0;
     FVector Heading = FVector::ForwardVector;
+    // The stuck clock (SoraStealthRules::Progress) and where it last started.
+    SoraStealthRules::FProgress Walked;
     FVector StuckFrom = FVector::ZeroVector;
-    int32 StuckSinceMs = 0;
-    int32 LastMovingMs = MIN_int32;
     // Combat and retreat positions: a cover spot (its box and the face's
     // outward normal) or an open flank or fallback point.
     bool bHasPosition = false;

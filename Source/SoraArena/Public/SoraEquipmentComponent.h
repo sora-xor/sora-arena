@@ -2,14 +2,16 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "SoraEquipmentComponent.generated.h"
+class ASoraEnemy;
 class ASoraPlayerCharacter;
 
 // Nyaakoto's weapons in the offline campaign and training arena: ammunition
 // per weapon, reloads, cooldowns, gunfire and shells, the yumi draw, committed
-// strikes with every melee arm (the dojo bokken's swing is swept), and the
-// blade guard. The held weapon's ID lives on the character so its visual and
-// the HUD can read it. Kernel practice does not use this component; its
-// counters come from kernel snapshots.
+// strikes with every melee arm (the dojo bokken's swing is swept), the blade
+// guard, and the sword school's sheathed hand, 転 step, 残心 and 水月 read
+// (SoraCombatRules). The held weapon's ID lives on the character so its
+// visual and the HUD can read it. Kernel practice does not use this
+// component; its counters come from kernel snapshots.
 UCLASS(ClassGroup=(Sora))
 class SORAARENA_API USoraEquipmentComponent : public UActorComponent
 {
@@ -34,17 +36,33 @@ public:
     void GuardUp() { bGuardHeld = false; }
     // 納刀: a held blade goes back into its scabbard over
     // SoraCombatRules::SheatheMs, or is drawn again. Sheathed, nothing is cut
-    // or fired, and a guard press is a mutō-dori attempt (SoraDefense).
+    // or fired (an attack press draws instead), and a guard press is a
+    // mutō-dori attempt (SoraDefense).
     void Sheathe(bool bSheathe);
     bool IsSheathing() const { return bSheathed; }
     bool IsSheathed() const;
     void ReleaseTrigger() { bFireHeld = false; }
     bool EquipClassSlot(int32 Slot);
     bool EquipCampaignWeapon(int32 WeaponId);
-    // Guard reserve drains while held and recovers otherwise (not in the dojo).
+    // Guard reserve drains while held and recovers otherwise (not in the dojo);
+    // a 残心 hold after a defeat restores it instead.
     void TickGuard(float DeltaSeconds);
-    // Strike resolution, recovery, reload completion and held fire.
+    // The 転 step, strike resolution, recovery, reload completion and held fire.
     void TickWeapon();
+    // 合わせ met Opponent's blow (SoraDefense): the 転 window after it opens.
+    void NoteAwase(ASoraEnemy* Opponent);
+    // The opponent last met with awase and how long ago, or null.
+    ASoraEnemy* AwaseOpponent(int32& SinceMs) const;
+    // 転 (SoraDefense::Marobashi): rounds Center by ArcDegrees from Center +
+    // Radius over SoraCombatRules::MarobashiStepMs, the view turning with it.
+    void BeginStep(const FVector& Center, const FVector& Radius, float ArcDegrees);
+    bool IsStepping() const { return bStepping; }
+    // The hero felled an opponent (SoraDamage::Resolve): a 残心 hold is due.
+    void NoteDefeat();
+    float LastZanshinAt() const { return ZanshinAt; }
+    // 水月: a melee arm is drawn and the opponent it points at stands in its
+    // maai (SoraCombatRules::InMaai).
+    bool InMaai() const;
     // Walking speed scale for committed, recovering, drawing, guarding or sprinting.
     float MoveScale(bool bSprinting) const;
     bool IsBowDrawing() const { return bBowDrawing; }
@@ -68,6 +86,7 @@ private:
     ASoraPlayerCharacter* Hero() const;
     void Fire();
     void ReleaseBow();
+    void TickStep();
     void ResolveCommittedStrike();
     bool bFireHeld = false;
     bool bBowDrawing = false;
@@ -85,4 +104,15 @@ private:
     float StaggeredUntil = -1.f;
     bool bSheathed = false;
     float SheathedAt = 0.f;
+    TWeakObjectPtr<ASoraEnemy> Awased;
+    float AwaseAt = -1000.f;
+    bool bStepping = false;
+    float StepStartedAt = 0.f;
+    FVector StepCenter = FVector::ZeroVector;
+    FVector StepRadius = FVector::ZeroVector;
+    float StepArc = 0.f;
+    float StepTurned = 0.f;
+    bool bZanshinDue = false;
+    float DefeatAt = -1000.f;
+    float ZanshinAt = -1000.f;
 };

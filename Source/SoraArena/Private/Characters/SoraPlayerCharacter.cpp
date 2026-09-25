@@ -261,7 +261,9 @@ void ASoraPlayerCharacter::SprintUp() { bSprint=false; }
 void ASoraPlayerCharacter::JumpDown()
 {
     if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; }
-    if(CanPlay()&&!Equipment->IsCommittedStrike()&&!Equipment->IsBowDrawing()) Jump();
+    // Left or Right with Jump inside a 転 window rolls to the opponent's flank instead.
+    if(CanPlay()&&SoraDefense::Marobashi(*this,GetInputAxisValue(TEXT("MoveRight")))) return;
+    if(CanPlay()&&!Equipment->IsCommittedStrike()&&!Equipment->IsBowDrawing()&&!Equipment->IsStepping()) Jump();
 }
 void ASoraPlayerCharacter::JumpUp() { StopJumping(); }
 void ASoraPlayerCharacter::Melee()
@@ -290,6 +292,12 @@ void ASoraPlayerCharacter::CrouchPressed()
     // The wish, not the stance: under a low ceiling the stand waits for headroom.
     if(GetCharacterMovement()->bWantsToCrouch) { UnCrouch(); return; }
     bSprint=false; Crouch();
+}
+void ASoraPlayerCharacter::SheathePressed()
+{
+    if(bKernelDriven||!CanPlay()) return;
+    if(const USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->IsHeroBusy()) return;
+    Equipment->Sheathe(!Equipment->IsSheathing());
 }
 void ASoraPlayerCharacter::Menu()
 {
@@ -542,6 +550,7 @@ void ASoraPlayerCharacter::SetupPlayerInputComponent(UInputComponent* I)
     BindPress(I,TEXT("Sprint"),&ASoraPlayerCharacter::SprintDown); BindRelease(I,TEXT("Sprint"),&ASoraPlayerCharacter::SprintUp);
     BindPress(I,TEXT("Reload"),&ASoraPlayerCharacter::Reload); BindPress(I,TEXT("Interact"),&ASoraPlayerCharacter::Interact);
     BindRelease(I,TEXT("Interact"),&ASoraPlayerCharacter::InteractUp); BindPress(I,TEXT("Crouch"),&ASoraPlayerCharacter::CrouchPressed);
+    BindPress(I,TEXT("Sheathe"),&ASoraPlayerCharacter::SheathePressed);
     BindPress(I,TEXT("Menu"),&ASoraPlayerCharacter::Menu); BindPress(I,TEXT("Enter"),&ASoraPlayerCharacter::Enter);
     BindPress(I,TEXT("Map"),&ASoraPlayerCharacter::NextMap); BindPress(I,TEXT("NewCampaign"),&ASoraPlayerCharacter::NewCampaign);
     BindPress(I,TEXT("ReturnCampaign"),&ASoraPlayerCharacter::ReturnCampaign);

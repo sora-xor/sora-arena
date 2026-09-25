@@ -396,4 +396,25 @@ int main()
     assert(TakedownMs(ETakedown::Lethal) == 2200 && TakedownMs(ETakedown::Knockout) == 1500 && TakedownMs(ETakedown::Subdue) == 1500);
     assert(TakedownHoldMs < TakedownMs(ETakedown::Knockout));
     assert(DragSpeedPermille == 500 && CrouchSpeedPermille < 1000);
+
+    // A walk that makes no progress gives up after two seconds of requests.
+    // The request after that starts a fresh clock rather than giving up at
+    // once, so a guard body-blocked for a moment walks on to its next goal.
+    FProgress Clock;
+    assert(Progress(Clock, 5000, 0) == EProgress::Restarted);
+    int Now = 5016;
+    EProgress Last = EProgress::Walking;
+    for (; Last == EProgress::Walking; Now += 16)
+        Last = Progress(Clock, Now, 10);
+    const int StuckAt = Now - 16;
+    assert(Last == EProgress::Stuck && StuckAt - 5000 > StuckMs && StuckAt - 5000 <= StuckMs + 16);
+    assert(Progress(Clock, StuckAt + 16, 10) == EProgress::Restarted);
+    assert(Progress(Clock, StuckAt + 32, 10) == EProgress::Walking);
+    // A pause between requests, or moving away, restarts the clock too.
+    assert(Progress(Clock, StuckAt + 32 + AskGapMs + 1, 10) == EProgress::Restarted);
+    assert(Progress(Clock, StuckAt + 160, StuckCm + 1) == EProgress::Restarted);
+    assert(Progress(Clock, StuckAt + 176, StuckCm) == EProgress::Walking);
+    // The first request of a late-spawned walker is never stuck, wherever it stands.
+    FProgress Late;
+    assert(Progress(Late, 2000000000, 0) == EProgress::Restarted && Progress(Late, 2000000016, 0) == EProgress::Walking);
 }

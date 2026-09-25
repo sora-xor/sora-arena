@@ -80,8 +80,12 @@ bool ReadBlow(const FReader& R, const FJsonObject& O, FSoraBossAttack& A, bool b
     A.ArcMilli = bThrust ? 1000 : HalfArcMilli(Arc);
     if ((A.Hits > 1) != (A.GapMs > 0))
         return R.Fail(TEXT("gap_ms"), TEXT("a multi-hit blow spaces its hits, and only it"));
+    if (A.MarobashiMs > A.WindupMs)
+        return R.Fail(TEXT("marobashi_ms"), TEXT("the 転 stretch is the end of the windup"));
+    // A parry that neither staggers nor answers still spares the blow and
+    // opens the 転 step after it; such a blow must also allow 転 in its windup.
     if (A.Guard.bParry && A.Guard.ParryStaggerMs == 0 && A.OnParry == ESoraBossParry::None && A.MarobashiMs == 0)
-        return R.Fail(TEXT("guard"), TEXT("a parry staggers the attacker, answers with an effect or opens a 転 step"));
+        return R.Fail(TEXT("guard"), TEXT("a parry staggers the attacker or answers with an effect, or 転 answers the blow (marobashi_ms)"));
     if (!A.Guard.bParry && A.OnParry != ESoraBossParry::None)
         return R.Fail(TEXT("on_parry"), TEXT("only a parryable blow answers a parry"));
     if (A.bMuto && (!A.Guard.bParry || bThrust))

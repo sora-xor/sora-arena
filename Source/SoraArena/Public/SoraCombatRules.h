@@ -4,9 +4,10 @@
 // Offline campaign combat rules shared by the Unreal damage path
 // (Source/SoraArena/Private/Combat) and a host-compiled acceptance driver:
 // how a hit meets a raised guard, what staggers and for how long, how long a
-// contact holds the world still, when a shell arms and whom its blast reaches,
-// how an opponent's shield or barrier takes a hit, and how a debt-bound
-// conscript is subdued instead of killed. Damage is whole points, time is
+// contact holds the world still, the sword school's mutō-dori, 転, 残心 and
+// 水月, when a shell arms and whom its blast reaches, how an opponent's
+// shield or barrier takes a hit, and how a debt-bound conscript is subdued
+// instead of killed. Damage is whole points, time is
 // integer milliseconds and angles are cosines in thousandths, so no outcome
 // depends on a dice roll or a floating-point frame boundary. These are the
 // campaign's rules; the multiplayer kernel's are docs/combat-rules.md.
@@ -140,6 +141,54 @@ constexpr int MutoWindowMs = 180;
 constexpr bool MutoDori(bool Eligible, bool Sheathed, bool Pressed, int PressedMs, int WindowMs, int FacingMilli)
 {
     return Eligible && Sheathed && Pressed && PressedMs >= 0 && PressedMs <= WindowMs && FacingMilli >= FrontMilli;
+}
+
+// 転 (marobashi): a sideways step that rolls around an opponent to its flank
+// (story bible §3.2). It answers the opponent within MarobashiWindowMs after
+// the hero's awase on it, or in the last stretch of a blow whose windup
+// allows it (bosses.json marobashi_ms, scaled like the windup). The hero
+// travels MarobashiArcDeg around the opponent over MarobashiStepMs (the full
+// arc out to a spear's distance; farther out a sidestep of MarobashiStepCm);
+// the blow he stepped from misses him, and the opponent cannot turn after
+// him for MarobashiTurnLagMs.
+constexpr int MarobashiWindowMs = 400;
+constexpr int MarobashiArcDeg = 70;
+constexpr int MarobashiStepCm = 300;
+constexpr int MarobashiStepMs = 200;
+constexpr int MarobashiTurnLagMs = 800;
+
+// SinceAwaseMs is negative without an awase on this opponent, UntilLandsMs
+// negative without a blow under way.
+constexpr bool MarobashiOpen(int SinceAwaseMs, int UntilLandsMs, int WindowMs)
+{
+    return (SinceAwaseMs >= 0 && SinceAwaseMs <= MarobashiWindowMs) ||
+        (WindowMs > 0 && UntilLandsMs >= 0 && UntilLandsMs <= WindowMs);
+}
+
+// 残心 (zanshin): the mind stays on the fallen. A guard held ZanshinHoldMs
+// after the hero defeats an opponent restores ZanshinStamina to it, once,
+// when the hold is complete within ZanshinWindowMs of the defeat; the hold
+// itself costs no guard stamina. HeldMs counts the hold from the defeat at
+// the earliest, and is negative while the guard is down.
+constexpr int ZanshinHoldMs = 500;
+constexpr int ZanshinWindowMs = 2500;
+constexpr int ZanshinStamina = 15;
+
+constexpr bool Zanshin(int SinceDefeatMs, int HeldMs)
+{
+    return SinceDefeatMs >= 0 && SinceDefeatMs <= ZanshinWindowMs && HeldMs >= ZanshinHoldMs;
+}
+
+// 水月 (suigetsu), the distance read: the reticle's ring shows while the
+// opponent before the hero stands in the outer MaaiBandPermille of his melee
+// arm's reach, where his committed cut lands and a shorter blade does not
+// reach him. (The bible proposes reach ±15%; the ring stops at the reach, so
+// it never lights where the cut would fall short.)
+constexpr int MaaiBandPermille = 150;
+
+constexpr bool InMaai(int DistanceCm, int ReachCm)
+{
+    return ReachCm > 0 && DistanceCm <= ReachCm && DistanceCm * 1000 >= ReachCm * (1000 - MaaiBandPermille);
 }
 
 // Stagger. A staggered opponent drops its windup and cannot act, and every

@@ -2,7 +2,9 @@
 #include "Combat/SoraCombatEffects.h"
 #include "SoraCharacterBase.h"
 #include "SoraEnemy.h"
+#include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
+#include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -101,6 +103,10 @@ float SoraDamage::Resolve(ASoraCharacterBase& Victim,float Damage,const FDamageE
     }
     if(Victim.Health<=0)
     {
+        // 残心: an opponent the hero fells, or knocks down, starts his lingering guard.
+        ASoraPlayerCharacter* Hero=Cast<ASoraPlayerCharacter>(Causer);
+        if(!Hero&&Causer) Hero=Cast<ASoraPlayerCharacter>(Causer->GetInstigator());
+        if(Hero&&Hero!=&Victim&&Victim.IsEnemy()) Hero->GetEquipment()->NoteDefeat();
         // 活人剣: a debt-bound conscript is knocked down, never killed.
         if(auto* Conscript=Cast<ASoraEnemy>(&Victim); Conscript&&Conscript->IsNonlethal())
         {

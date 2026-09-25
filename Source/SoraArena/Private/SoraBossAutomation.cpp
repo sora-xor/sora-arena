@@ -5,6 +5,7 @@
 #include "Combat/SoraBossHazard.h"
 #include "Combat/SoraCombatEffects.h"
 #include "Combat/SoraDamage.h"
+#include "Combat/SoraDefense.h"
 #include "SoraBoss.h"
 #include "SoraBossRules.h"
 #include "SoraCatalog.h"
@@ -21,10 +22,11 @@
 // its whole telegraph after its windup began (and every hurt it deals is
 // announced as such a strike), that its phases change exactly at their
 // thresholds with the chapter's pattern table and voice line, that guards,
-// parries and mutō-dori meet its attacks as the story bible and chapter
+// parries, 転 and mutō-dori meet its attacks as the story bible and chapter
 // scripts say, and that it falls to its documented counterplay. The hero's
-// guards and parries are real key presses; his landed blows are delivered
-// through SoraDamage::Strike from where he stands, as his weapons deliver them.
+// guards, parries, 転 steps and sheathing are real key presses; his landed
+// blows are delivered through SoraDamage::Strike from where he stands, as his
+// weapons deliver them.
 namespace SoraBossAutomation
 {
 using SoraEnemyTest::FArena;
@@ -339,7 +341,8 @@ bool Meet(FArena& Arena, FLog& Log, ASoraBoss& Boss, FName Attack, EStance Stanc
             if (Log.Boss[Entry].Event.Boss == &Boss && Log.Boss[Entry].Event.Serial == Serial &&
                 Log.Boss[Entry].Event.Phase == ESoraBossPhase::Recovery)
                 return true;
-        return Boss.IsDefeated();
+        // A parry's stagger between a repeated blow's strikes ends the run with no recovery.
+        return Boss.IsDefeated() || (Boss.AttackSerial() != Serial && Boss.IsStaggered() && Log.ParriedBy(&Boss) > Parried);
     };
     for (int32 Frame = 0; Frame < 900 && !Recovered(); ++Frame)
     {
@@ -361,6 +364,79 @@ bool Meet(FArena& Arena, FLog& Log, ASoraBoss& Boss, FName Attack, EStance Stanc
     Out.Guarded = Log.GuardedBy(&Boss) - Guarded;
     Out.bStaggered = Boss.IsStaggered();
     return (!bPressed || Press(Arena, EKeys::LeftControl, false)) && Arena.Tick(1);
+}
+
+// 転: Right with Jump in one frame, through the key mappings.
+bool Roll(FArena& Arena)
+{
+    return Press(Arena, EKeys::D, true) && Press(Arena, EKeys::SpaceBar, true) && Arena.Tick(1) &&
+        Press(Arena, EKeys::SpaceBar, false) && Press(Arena, EKeys::D, false);
+}
+
+// 納刀 or 抜刀 by the Sheathe key.
+bool SheatheKey(FArena& Arena)
+{
+    return Press(Arena, EKeys::V, true) && Press(Arena, EKeys::V, false) && Arena.Tick(1);
+}
+
+// Forces Attack and rolls LeadMs before it lands. Returns once its recovery
+// has begun, with what it dealt the hero and whether a 転 was announced.
+struct FRolled
+{
+    bool bRolled = false;
+    float HeroDamage = 0.f;
+    bool bTurnLocked = false;
+    FVector From = FVector::ZeroVector;
+};
+
+bool RollFrom(FArena& Arena, FLog& Log, ASoraBoss& Boss, FName Attack, double LeadMs, FRolled& Out)
+{
+    ASoraPlayerCharacter* Hero = Arena.Hero();
+    if (!Until(Arena, 900, [&]() { return Boss.BossAttackIndex() == INDEX_NONE && !Boss.IsStaggered() && !Boss.IsInvulnerable(); }))
+        return false;
+    const int32 Mark = Log.Boss.Num();
+    if (!Boss.ForceAttack(Attack))
+        return false;
+    const FStamped* Windup = nullptr;
+    if (!Until(Arena, 1200, [&]()
+        {
+            for (int32 Entry = Mark; Entry < Log.Boss.Num(); ++Entry)
+                if (Log.Boss[Entry].Event.Phase == ESoraBossPhase::Windup && Log.Boss[Entry].Event.Detail == Attack)
+                    Windup = &Log.Boss[Entry];
+            return Windup != nullptr;
+        }))
+        return false;
+    const int32 Serial = Windup->Event.Serial;
+    const double LandsAt = Windup->Ms + Windup->Event.WindupMs;
+    const int32 Hurts = Log.Damaged.Num();
+    const int32 Rolls = Log.Count(ESoraBossPhase::Event, TEXT("marobashi"));
+    if (!Until(Arena, 300, [&]() { return Log.Now() >= LandsAt - LeadMs; }))
+        return false;
+    Out.From = Hero->GetActorLocation();
+    if (!Roll(Arena))
+        return false;
+    Out.bTurnLocked = Boss.IsTurnLocked();
+    const auto Recovered = [&]()
+    {
+        for (int32 Entry = Mark; Entry < Log.Boss.Num(); ++Entry)
+            if (Log.Boss[Entry].Event.Serial == Serial && Log.Boss[Entry].Event.Phase == ESoraBossPhase::Recovery)
+                return true;
+        return false;
+    };
+    if (!Until(Arena, 900, Recovered))
+        return false;
+    for (int32 Entry = Hurts; Entry < Log.Damaged.Num(); ++Entry)
+        if (Log.Damaged[Entry].Key.Victim == Hero && Log.Damaged[Entry].Key.Causer == &Boss)
+            Out.HeroDamage += Log.Damaged[Entry].Key.Amount;
+    Out.bRolled = Log.Count(ESoraBossPhase::Event, TEXT("marobashi")) > Rolls;
+    return Until(Arena, 60, [Hero]() { return !Hero->GetEquipment()->IsStepping() && !Hero->GetCharacterMovement()->IsFalling(); });
+}
+
+// The angle, in degrees, the hero stands off the boss's facing.
+float OffFacing(const ASoraBoss& Boss, const FVector& At)
+{
+    return FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(
+        FVector::DotProduct(Boss.GetActorForwardVector().GetSafeNormal2D(), (At - Boss.GetActorLocation()).GetSafeNormal2D()), -1.f, 1.f)));
 }
 
 // The guard rests to full between cases, so no case decides the next.
@@ -586,6 +662,33 @@ bool FSoraBossDunarkTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("and the thrust breaks the guard"), Hero->GetEquipment()->IsStaggered());
     const FStamped* Thrusted = Log.Last(ESoraBossPhase::Windup, TEXT("thrust"));
     TestTrue(TEXT("The thrust barks 「一括。」"), Thrusted && Thrusted->Event.Line == FName(TEXT("ch02.b15.dunark.008")));
+    // 転 around the thrust: Right with Jump in its last 400 ms rolls the hero
+    // to his flank. The thrust misses, he cannot turn after him, and a cut
+    // from there does half again.
+    if (!Rest(Arena))
+        return Stopped(*this, __LINE__);
+    Stand(Arena, *Boss, 200.f);
+    FRolled Rolled;
+    if (!RollFrom(Arena, Log, *Boss, TEXT("thrust"), 250.0, Rolled))
+        return Stopped(*this, __LINE__);
+    const float Flank = OffFacing(*Boss, Hero->GetActorLocation());
+    AddInfo(FString::Printf(TEXT("After 転 the hero stands %.0f degrees off Dunark's facing, %.0f cm from where he stood"), Flank,
+        FVector::Dist2D(Rolled.From, Hero->GetActorLocation())));
+    TestTrue(TEXT("Right with Jump in the thrust's last stretch is 転"), Rolled.bRolled);
+    TestTrue(TEXT("Dunark cannot turn after him"), Rolled.bTurnLocked);
+    TestEqual(TEXT("The thrust misses the hero who rolled"), Rolled.HeroDamage, 0.f);
+    TestTrue(TEXT("The hero stands at his flank"), Flank >= 60.f && Flank <= 90.f);
+    TestEqual(TEXT("A cut from the flank does half again"),
+        Hit(*Boss, *Hero, 60.f, CombatRules::EHit::Melee, Hero->GetActorLocation()), 90.f);
+    // Too early: 600 ms before it lands the step is only a jump, and the thrust lands.
+    if (!Rest(Arena))
+        return Stopped(*this, __LINE__);
+    Stand(Arena, *Boss, 200.f);
+    FRolled Early;
+    if (!RollFrom(Arena, Log, *Boss, TEXT("thrust"), 600.0, Early))
+        return Stopped(*this, __LINE__);
+    TestFalse(TEXT("Before the thrust's last 400 ms there is no 転"), Early.bRolled);
+    TestEqual(TEXT("and the thrust lands whole"), Early.HeroDamage, 40.f);
     // Between measures he turns frontal arrows aside; from his flank they land.
     if (!Rest(Arena) || !Until(Arena, 400, [&]() { return Boss->BossAttackIndex() == INDEX_NONE; }))
         return Stopped(*this, __LINE__);
@@ -750,6 +853,32 @@ bool FSoraBossPenaltaTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("The bash is met with awase"), Bash.Parried, 1);
     TestEqual(TEXT("and does no damage"), Bash.HeroDamage, 0.f);
     TestFalse(TEXT("but does not stagger him"), Bash.bStaggered);
+    // 転 after the awase: Right with Jump rolls past the shield's edge, and a
+    // cut from there lands.
+    Boss->Hold(60000);
+    Face(Arena, *Boss);
+    TestEqual(TEXT("From the front the shield still stops a cut"),
+        Hit(*Boss, *Hero, 60.f, CombatRules::EHit::Melee, Hero->GetActorLocation()), 0.f);
+    if (!Rest(Arena))
+        return Stopped(*this, __LINE__);
+    Boss->Hold(0);
+    Stand(Arena, *Boss, 200.f);
+    FBlow Again;
+    const int32 Rolls = Log.Count(ESoraBossPhase::Event, TEXT("marobashi"));
+    FVector Before = FVector::ZeroVector;
+    if (!Meet(Arena, Log, *Boss, TEXT("shield_bash"), EStance::Parry, Again) || !TestEqual(TEXT("The bash is met again"), Again.Parried, 1))
+        return Stopped(*this, __LINE__);
+    TestTrue(TEXT("The awase opens 転"), SoraDefense::MarobashiTarget(*Hero) == Boss);
+    Before = Hero->GetActorLocation();
+    if (!Roll(Arena) || !Until(Arena, 60, [Hero]() { return !Hero->GetEquipment()->IsStepping(); }))
+        return Stopped(*this, __LINE__);
+    Boss->Hold(60000);
+    const float PastShield = OffFacing(*Boss, Hero->GetActorLocation());
+    AddInfo(FString::Printf(TEXT("After 転 the hero stands %.0f degrees off Penalta's facing"), PastShield));
+    TestEqual(TEXT("A 転 after an awase is not a windup's"), Log.Count(ESoraBossPhase::Event, TEXT("marobashi")), Rolls);
+    TestTrue(TEXT("The hero rolled past the shield's edge"), PastShield > 60.f && FVector::Dist2D(Before, Hero->GetActorLocation()) > 100.f);
+    TestEqual(TEXT("From there a cut lands whole"), Hit(*Boss, *Hero, 60.f, CombatRules::EHit::Melee, Hero->GetActorLocation()), 60.f);
+    Boss->Hold(0);
     // The hammer slam: leave the inner ring and take only its edge; then the vents glow.
     if (!Rest(Arena))
         return Stopped(*this, __LINE__);
@@ -998,6 +1127,21 @@ bool FSoraBossTarifaTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("The first blow lands whole"), Sweep.HeroDamage, 28.f);
     TestEqual(TEXT("The second is met with awase"), Sweep.Parried, 1);
     TestTrue(TEXT("and staggers her"), Sweep.bStaggered);
+    // The double lash: awase on its first lash snaps the cable. Nothing
+    // drags the hero, and no second lash follows.
+    if (!Rest(Arena) || !Until(Arena, 300, [&]() { return !Boss->IsStaggered(); }))
+        return Stopped(*this, __LINE__);
+    Stand(Arena, *Boss, 600.f);
+    FBlow Double;
+    const FVector Stood = Hero->GetActorLocation();
+    const int32 Lashes = Log.Count(ESoraBossPhase::Strike, TEXT("double_lash"));
+    if (!Meet(Arena, Log, *Boss, TEXT("double_lash"), EStance::Parry, Double) || !Wait(Arena, Log, 600.0))
+        return Stopped(*this, __LINE__);
+    AddInfo(FString::Printf(TEXT("After the parried double lash the hero moved %.0f cm"), FVector::Dist2D(Stood, Hero->GetActorLocation())));
+    TestEqual(TEXT("The first lash is met with awase"), Double.Parried, 1);
+    TestEqual(TEXT("and nothing lands"), Double.HeroDamage, 0.f);
+    TestTrue(TEXT("The snapped cable drags nobody toward the heat"), FVector::Dist2D(Stood, Hero->GetActorLocation()) < 30.f);
+    TestEqual(TEXT("and no second lash follows"), Log.Count(ESoraBossPhase::Strike, TEXT("double_lash")) - Lashes, 1);
     // A channel opens on the side: the glow first, then the heat, every second.
     Boss->Hold(60000);
     Arena.PlaceHero(FVector(0.f, 900.f, 0.f), 0.f);
@@ -1376,11 +1520,10 @@ bool FSoraBossValAmortTest::RunTest(const FString& Parameters)
     if (!Meet(Arena, Log, *Third, TEXT("amort_final_foreclosure"), EStance::Guard, Held))
         return Stopped(*this, __LINE__);
     TestEqual(TEXT("The final foreclosure goes through a held guard"), Held.HeroDamage, 45.f);
-    // Sheathed but mistimed: the whole blow lands.
-    if (!Rest(Arena))
+    // Sheathed (the Sheathe key) but mistimed: the whole blow lands.
+    if (!Rest(Arena) || !SheatheKey(Arena))
         return Stopped(*this, __LINE__);
-    Kit->Sheathe(true);
-    if (!Wait(Arena, Log, CombatRules::SheatheMs + 50.0) || !TestTrue(TEXT("The blade is sheathed"), Kit->IsSheathed()))
+    if (!Wait(Arena, Log, CombatRules::SheatheMs + 50.0) || !TestTrue(TEXT("The Sheathe key sheathes the blade"), Kit->IsSheathed()))
         return Stopped(*this, __LINE__);
     FBlow Early;
     if (!Meet(Arena, Log, *Third, TEXT("amort_final_foreclosure"), EStance::Guard, Early))
@@ -1388,9 +1531,8 @@ bool FSoraBossValAmortTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("A mistimed mutō-dori takes the whole blow"), Early.HeroDamage, 45.f);
     TestTrue(TEXT("and takes nothing from him"), Third->IsAlive());
     // 無刀取り: sheathed, a guard pressed just before the foreclosure lands.
-    if (!Rest(Arena))
+    if (!Rest(Arena) || !TestTrue(TEXT("The blade stays sheathed"), Kit->IsSheathed()))
         return Stopped(*this, __LINE__);
-    Kit->Sheathe(true);
     FBlow Muto;
     const int32 Hurts = Log.Damaged.Num();
     if (!Meet(Arena, Log, *Third, TEXT("amort_final_foreclosure"), EStance::Parry, Muto))
@@ -1401,7 +1543,8 @@ bool FSoraBossValAmortTest::RunTest(const FString& Parameters)
                 *GetNameSafe(Log.Damaged[Index].Key.Causer), Log.Damaged[Index].Value));
     const FStamped* Taken = Log.Last(ESoraBossPhase::Defeated);
     TestTrue(TEXT("「……計算に、ありません。」"), Taken && Taken->Event.Line == FName(TEXT("ch08.b14.valamort.009")));
-    Kit->Sheathe(false);
+    if (!SheatheKey(Arena) || !TestFalse(TEXT("The Sheathe key draws again"), Kit->IsSheathing()))
+        return Stopped(*this, __LINE__);
     if (!Defeated(*this, Log, *Third, TEXT("muto_dori")))
         return Stopped(*this, __LINE__);
     CheckTelegraphs(*this, Log, *Third);
@@ -1475,8 +1618,8 @@ bool FSoraBossToranosukeSteelTest::RunTest(const FString& Parameters)
     if (!Rest(Arena))
         return Stopped(*this, __LINE__);
     Stand(Arena, *Rival, 200.f);
-    Kit->Sheathe(true);
-    if (!Wait(Arena, Log, CombatRules::SheatheMs + 50.0))
+    if (!SheatheKey(Arena) || !Wait(Arena, Log, CombatRules::SheatheMs + 50.0) ||
+        !TestTrue(TEXT("The Sheathe key sheathes the blade"), Kit->IsSheathed()))
         return Stopped(*this, __LINE__);
     FBlow Muto;
     if (!Meet(Arena, Log, *Rival, TEXT("makko_giri"), EStance::Parry, Muto))
@@ -1486,7 +1629,8 @@ bool FSoraBossToranosukeSteelTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("His first vertical cut cries 「全部、払ったんだ！」"), Cry && Cry->Event.Line == FName(TEXT("ch06.b09.toranosuke.008")));
     if (Log.Count(ESoraBossPhase::Windup, TEXT("makko_giri")) > 1)
         TestEqual(TEXT("and only the first"), Log.Last(ESoraBossPhase::Windup, TEXT("makko_giri"))->Event.Line, FName());
-    Kit->Sheathe(false);
+    if (!SheatheKey(Arena))
+        return Stopped(*this, __LINE__);
     if (!Defeated(*this, Log, *Rival, TEXT("muto_dori")))
         return Stopped(*this, __LINE__);
     CheckTelegraphs(*this, Log, *Rival);

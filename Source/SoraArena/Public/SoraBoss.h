@@ -51,7 +51,9 @@ struct FSoraBossIntent
 // mantle, wards that intercept ranged fire, an idle fencer's deflection,
 // weak points that its own acts expose, a floor that only mutō-dori passes
 // and invulnerability while its adds live. A parry staggers it (or answers
-// with a measure reset or a snapped cable); a stagger drops its windup. A
+// with a measure reset or a snapped cable); a stagger drops its windup; a 転
+// step in a blow's last stretch leaves the blow to miss, and the boss cannot
+// turn after the hero or start another attack until its turn lag passes. A
 // blind boss acts on what it hears. It locks its arena until it falls, and
 // is killed, disarmed, captured or broken as its fight says. It never
 // enters the multiplayer kernel, and nothing it does is random.
@@ -102,6 +104,11 @@ public:
     int32 ReachFor(int32 Index) const;
     int32 RootFor(int32 Index) const;
     int32 MutoWindowMs() const;
+    // A blow in its windup that a 転 step answers: the stretch before it
+    // lands that allows the step, after difficulty (zero: none), and how long
+    // until it lands (negative: no windup under way).
+    int32 MarobashiWindowMs() const;
+    int32 MarobashiUntilLandsMs() const;
     bool IsInvulnerable() const;
     bool IsStunned() const;
     bool IsShieldUp() const;
@@ -139,6 +146,9 @@ public:
 
     virtual void Stagger(int32 Milliseconds) override;
     virtual void Parried(int32 StaggerMs) override;
+    // A step inside a blow's 転 stretch takes the hero off its line: that
+    // blow misses him.
+    virtual void Outflanked(int32 Milliseconds) override;
     virtual bool Disarm(AActor* By) override;
     virtual bool AdmitDamage(float& Damage, FSoraHit& Hit, AActor* Causer) override;
     virtual void OnDefeated(AActor* Causer) override;
@@ -281,6 +291,9 @@ private:
     int32 StunUntilMs = 0;
     int32 StunTakenPermille = 1000;
     int32 StrikeImmuneUntilMs = 0;
+    // The serial of the last blow a parry met, and of the last one a 転 step left.
+    int32 ParriedSerial = 0;
+    int32 EvadedSerial = 0;
     int32 NextPushMs = 0;
     TArray<int32> PointHealth;
     TArray<int32> PointOpenUntilMs;

@@ -30,7 +30,6 @@ constexpr float HuntSpeed = .6f;
 constexpr float CombatSpeed = .55f;
 constexpr float RetreatSpeed = .75f;
 constexpr int32 RepathMs = 500;
-constexpr int32 StuckMs = 2000;
 constexpr int32 SearchPauseMs = 800;
 // Blade footwork takes over from pathing within this distance of a seen hero.
 constexpr float FootworkRangeCm = 400.f;
@@ -892,18 +891,11 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
             Direction = FVector(-Direction.Y, Direction.X, 0.f) * (Slot % 2 ? 1.f : -1.f);
     }
     // No progress for two seconds of moving means the goal cannot be reached.
-    if (NowMs - LastMovingMs > 100 || FVector::Dist2D(Here, StuckFrom) > 40.f)
-    {
-        StuckFrom = Here;
-        StuckSinceMs = NowMs;
-    }
-    else if (NowMs - StuckSinceMs > SoraEnemyBrain::StuckMs)
+    if (Stuck(Here, NowMs))
     {
         ClearPath();
-        LastMovingMs = MIN_int32;
         return EMove::Blocked;
     }
-    LastMovingMs = NowMs;
     Heading = Direction;
     Enemy.AddMovementInput(Direction, Speed);
     return EMove::Moving;
@@ -930,20 +922,27 @@ ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const
         Climb = FMath::Clamp((Ground.ImpactPoint.Z + Height - Here.Z) / 100.f, -1.f, 1.f);
     }
     // No progress for two seconds of flying means the goal cannot be reached.
-    if (NowMs - LastMovingMs > 100 || FVector::Dist2D(Here, StuckFrom) > 40.f)
-    {
-        StuckFrom = Here;
-        StuckSinceMs = NowMs;
-    }
-    else if (NowMs - StuckSinceMs > SoraEnemyBrain::StuckMs)
-    {
-        LastMovingMs = MIN_int32;
+    if (Stuck(Here, NowMs))
         return EMove::Blocked;
-    }
-    LastMovingMs = NowMs;
     Heading = Direction;
     Enemy.AddMovementInput((Direction + FVector(0.f, 0.f, Climb)).GetClampedToMaxSize(1.f), Speed);
     return EMove::Moving;
+}
+
+bool ASoraEnemyController::Stuck(const FVector& Here, int32 NowMs)
+{
+    const int32 Moved = FMath::RoundToInt32(FVector::Dist2D(Here, StuckFrom));
+    switch (Stealth::Progress(Walked, NowMs, Moved))
+    {
+    case Stealth::EProgress::Restarted:
+        StuckFrom = Here;
+        return false;
+    case Stealth::EProgress::Walking:
+        return false;
+    case Stealth::EProgress::Stuck:
+        return true;
+    }
+    return false;
 }
 
 void ASoraEnemyController::ClearPath()
@@ -957,7 +956,8 @@ void ASoraEnemyController::ClearPath()
 void ASoraEnemyController::Face(ASoraEnemy& Enemy, const FVector& Direction, float Dt, float Rate) const
 {
     const FVector Flat(Direction.X, Direction.Y, 0.f);
-    if (Flat.IsNearlyZero())
+    // A body the hero has just rolled past (転) cannot turn after him yet.
+    if (Flat.IsNearlyZero() || Enemy.IsTurnLocked())
         return;
     // Heavy bodies turn at their own fixed rate, so a flank can outpace them.
     const FSoraEnemyArchetype* Kind = Enemy.Archetype();
@@ -1075,8 +1075,8 @@ void ASoraEnemyController::DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Tar
 {
     // The chapter-one drill: face the hero, close to bokken distance around the
     // obstacle ahead, and strike on the pupil's own rhythm.
-    // A pupil staggered by a meeting cut stands where it is.
-    if (Enemy.IsStaggered())
+    // A pupil staggered by a meeting cut, or rolled past (転), stands where it is.
+    if (Enemy.IsStaggered() || Enemy.IsTurnLocked())
         return;
     FVector Delta = Target.GetActorLocation() - Enemy.GetActorLocation();
     const float Distance = Delta.Size2D();
@@ -1115,6 +1115,6 @@ void ASoraEnemyController::DriveBoss(ASoraBoss& Boss, ASoraCharacterBase& Target
         ClearPath();
     const FVector Flat(Intent.Facing.X, Intent.Facing.Y, 0.f);
     // A heavy boss turns at its phase's rate, so a flank can outpace it.
-    if (Intent.bFace && !Flat.IsNearlyZero())
+    if (Intent.bFace && !Flat.IsNearlyZero() && !Boss.IsTurnLocked())
         Boss.SetActorRotation(FMath::RInterpConstantTo(Boss.GetActorRotation(), Flat.Rotation(), Dt, Intent.TurnDegreesPerSecond));
 }

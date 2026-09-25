@@ -53,7 +53,7 @@ double USoraStealth::Now() const
 
 void USoraStealth::BeginZone(const FSoraStealthZone& Zone)
 {
-    AbortTakedown();
+    AbortTakedown(false);
     EndDrag();
     ZoneRules = Zone;
     bZoneActive = true;
@@ -70,7 +70,7 @@ void USoraStealth::BeginZone(const FSoraStealthZone& Zone)
 
 void USoraStealth::EndZone()
 {
-    AbortTakedown();
+    AbortTakedown(false);
     EndDrag();
     bZoneActive = false;
     ZoneRules = FSoraStealthZone();
@@ -293,7 +293,7 @@ void USoraStealth::TickTakedown()
     ASoraPlayerCharacter* Hero = Taker.Get();
     if (!Hero || !Hero->CanPlay())
     {
-        AbortTakedown();
+        AbortTakedown(true);
         return;
     }
     const int32 ElapsedMs = FMath::FloorToInt32((Now() - TakedownStartedAt) * 1000.0);
@@ -302,7 +302,7 @@ void USoraStealth::TickTakedown()
         ASoraEnemy* Target = Victim.Get();
         if (!Target || !Target->IsAlive())
         {
-            AbortTakedown();
+            AbortTakedown(true);
             return;
         }
         bTakedownDecided = true;
@@ -338,16 +338,17 @@ void USoraStealth::FinishTakedown(ASoraEnemy& Target, ASoraPlayerCharacter& Hero
     MakeNoise(StealthRules::ENoise::Takedown, Target.GetActorLocation(), Hero.GetActorLocation(), &Hero);
 }
 
-void USoraStealth::AbortTakedown()
+void USoraStealth::AbortTakedown(bool bRouse)
 {
     if (!bTakedownActive)
         return;
-    // A takedown the round interrupts lets go; the guard felt the grab.
+    // A takedown the round interrupts lets go; the guard felt the grab. One
+    // the zone's end or restart interrupts lets go quietly.
     ASoraEnemy* Target = Victim.Get();
     if (Target && !bTakedownDecided)
     {
         Target->Seize(false);
-        if (auto* Brain = Cast<ASoraEnemyController>(Target->GetController()); Brain && Taker.IsValid())
+        if (auto* Brain = Cast<ASoraEnemyController>(Target->GetController()); bRouse && Brain && Taker.IsValid())
             Brain->Rouse(Taker->GetActorLocation());
     }
     UnlockHero();

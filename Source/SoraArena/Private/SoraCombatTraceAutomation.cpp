@@ -2,6 +2,7 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
+#include "Combat/SoraBossCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
@@ -144,12 +145,16 @@ struct FEventLog
         {
             Lines.Add(FString::Printf(TEXT("Kernel kind=%u tick=%u"), E.Kind, Tick));
         }));
+        Handles.Add(Bus->OnMarobashi.AddLambda([this](const FSoraMarobashiEvent& E)
+        {
+            Lines.Add(FString::Printf(TEXT("Marobashi hero=%s opponent=%s awase=%d"), *Who(E.Hero), *Who(E.Opponent), E.bAfterAwase));
+        }));
         return true;
     }
     void Detach()
     {
         USoraGameEvents* Bus = Events.Get();
-        if (Bus && Handles.Num() == 13)
+        if (Bus && Handles.Num() == 14)
         {
             Bus->OnWeaponFired.Remove(Handles[0]); Bus->OnMeleeCommitted.Remove(Handles[1]);
             Bus->OnStrikeResolved.Remove(Handles[2]); Bus->OnGuarded.Remove(Handles[3]);
@@ -157,7 +162,7 @@ struct FEventLog
             Bus->OnDied.Remove(Handles[6]); Bus->OnDetonated.Remove(Handles[7]);
             Bus->OnSiteRestored.Remove(Handles[8]); Bus->OnChapterStarted.Remove(Handles[9]);
             Bus->OnChapterCompleted.Remove(Handles[10]); Bus->OnBossPhase.Remove(Handles[11]);
-            Bus->OnKernelEvent.Remove(Handles[12]);
+            Bus->OnKernelEvent.Remove(Handles[12]); Bus->OnMarobashi.Remove(Handles[13]);
         }
         Handles.Reset();
         Events.Reset();
@@ -426,8 +431,12 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 }
 
 // The final chapter restored at seventeen defeats: the collector (High
-// Collector Val Amort) with his beam and cleave, carbine fire his ledger
-// shards intercept, his capture, the last site and the liberating exit.
+// Collector Val Amort) with his beam and cleave, and carbine fire his ledger
+// shards intercept. The story's blow then brings him to his cane phase (the
+// phases between are SoraArena.Boss.ValAmort's), where no weapon finishes
+// him: the katana goes into its scabbard on the Sheathe key, and a guard
+// pressed just before his final foreclosure lands takes his cane
+// (mutō-dori). Then the last site and the liberating exit.
 FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Collector"), Log);
@@ -437,40 +446,87 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         !Test.TestNotNull(TEXT("The collector waits at seventeen defeats"), Run.Mode()->Campaign()->CampaignBoss()) ||
         !Run.Place(Run.Foe(17), FVector(600, 0, 0)))
         return FString();
-    const bool bOk = Run.Play(420, [](FRun& R, int32 F)
+    int32 TakenAt = INDEX_NONE, GuardAt = INDEX_NONE, Attempts = 0;
+    const bool bOk = Run.Play(900, [&](FRun& R, int32 F)
     {
+        // Captured: the last site, then the exit.
+        if (TakenAt != INDEX_NONE)
+        {
+            if (F == TakenAt + 10)
+            {
+                const FVector Site = R.Mode()->Arena()->NodePositions[2];
+                R.Hero()->SetActorLocation(FVector(Site.X, Site.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+                return R.Tap(EKeys::E);
+            }
+            if (F == TakenAt + 30)
+            {
+                const FVector Exit = R.Mode()->Arena()->ExitPoint();
+                R.Hero()->SetActorLocation(FVector(Exit.X, Exit.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+                return R.Tap(EKeys::E);
+            }
+            return true;
+        }
+        FFoe* Foe = R.Foe(17);
+        const ASoraBoss* Boss = Cast<ASoraBoss>(Foe);
+        if (F > 330 && (!Boss || Boss->IsDefeated()))
+        {
+            if (!Boss)
+                return R.Fail(TEXT("The collector is gone before his capture"));
+            TakenAt = F;
+            return R.Up(EKeys::LeftControl);
+        }
         switch (F)
         {
         case 5: return R.Tap(EKeys::One);
         case 20: return R.Down(EKeys::D);
         case 60: return R.Up(EKeys::D);
-        case 150: return R.Place(R.Foe(17), FVector(250, 0, 0)) && R.Aim(R.Foe(17));
+        case 150: return R.Place(Foe, FVector(250, 0, 0)) && R.Aim(Foe);
         case 160: return R.Down(EKeys::LeftMouseButton);
         case 300: return R.Up(EKeys::LeftMouseButton);
         case 330:
-        {
-            FFoe* Boss = R.Foe(17);
-            if (!Boss)
-                return R.Fail(TEXT("The collector is gone before its defeat"));
-            UGameplayStatics::ApplyDamage(Boss, Boss->Health, R.Controller(), R.Hero(), UDamageType::StaticClass());
+            if (!Foe)
+                return R.Fail(TEXT("The collector is gone before his cane phase"));
+            UGameplayStatics::ApplyDamage(Foe, Foe->Health - Foe->MaxHealth * .4f, R.Controller(), R.Hero(), UDamageType::StaticClass());
             return true;
-        }
-        case 340:
+        case 332: return R.Tap(EKeys::Two);
+        case 334:
         {
-            const FVector Site = R.Mode()->Arena()->NodePositions[2];
-            R.Hero()->SetActorLocation(FVector(Site.X, Site.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-            return R.Tap(EKeys::E);
+            // The cane phase is fought inside his arena, on the open road
+            // that crosses it: he stands on it, the hero two metres off, facing him.
+            if (!Boss)
+                return R.Fail(TEXT("The collector is gone before his cane phase"));
+            const FVector Stand(Boss->ArenaCenter().X, 0.f, Foe->GetActorLocation().Z);
+            const FVector Hero(Stand.X - 220.f, 0.f, R.Hero()->GetActorLocation().Z);
+            if (FVector::Dist2D(Hero, Boss->ArenaCenter()) >= Boss->ArenaRadius())
+                return R.Fail(TEXT("The road does not cross the collector's arena"));
+            Foe->SetActorLocation(Stand, false, nullptr, ETeleportType::TeleportPhysics);
+            R.Hero()->SetActorLocation(Hero, false, nullptr, ETeleportType::TeleportPhysics);
+            return R.Aim(Foe);
         }
-        case 360:
+        case 340: return R.Tap(EKeys::V);
+        default: break;
+        }
+        if (F <= 340 || !Boss)
+            return true;
+        // Sheathed and facing him, a guard pressed in the foreclosure's last
+        // 100 ms; released after it, ready for the next if one is needed.
+        const FSoraBossAttack* Attack = Boss->BossAttack();
+        if (GuardAt == INDEX_NONE && Attack && Attack->bMuto && Boss->IsBossTelegraphing() && Boss->BossWarningSeconds() <= .1f &&
+            R.Hero()->GetEquipment()->IsSheathed())
         {
-            const FVector Exit = R.Mode()->Arena()->ExitPoint();
-            R.Hero()->SetActorLocation(FVector(Exit.X, Exit.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-            return R.Tap(EKeys::E);
+            GuardAt = F;
+            ++Attempts;
+            return R.Aim(Foe) && R.Down(EKeys::LeftControl);
         }
-        default: return true;
+        if (GuardAt != INDEX_NONE && F >= GuardAt + 20)
+        {
+            GuardAt = INDEX_NONE;
+            return R.Up(EKeys::LeftControl);
         }
+        return R.Aim(Foe);
     });
     const FString Hash = Run.Finish();
+    Run.Expect(TEXT("the collector is taken by mutō-dori on the first foreclosure"), TakenAt != INDEX_NONE && Attempts == 1);
     Run.Expect(TEXT("the collector falls, the last site is restored and Nyaagyu is liberated"),
         bOk && Run.Mode()->Campaign()->Kills == 18 && Run.Mode()->bChapterComplete && Run.Mode()->Campaign()->bCampaignComplete);
     return bOk ? Hash : FString();
@@ -624,10 +680,16 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, CollectorLog, Scenario, TEXT("Fired shooter=Boss weapon=-1 kind=Beam"));
     Expect(*this, CollectorLog, Scenario, TEXT("Resolved attacker=Boss target=Hero weapon=-1 hit=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Hero causer=Boss"));
-    // His ledger shards take the carbine's rounds; the last blow is the story's.
+    // His ledger shards take the carbine's rounds; the story's blow takes him
+    // to his cane phase, and mutō-dori, not a blow, takes him.
     Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=Event boss=Boss detail=ward_blocked"));
     Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Boss causer=Hero"));
+    Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=PhaseChanged boss=Boss detail=amort_p3_cane"));
+    Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=Windup boss=Boss detail=amort_final_foreclosure"));
     TestEqual(TEXT("The collector falls once"), CollectorLog.Count(TEXT("Boss phase=Defeated boss=Boss")), 1);
+    Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=Defeated boss=Boss detail=muto_dori"));
+    TestEqual(TEXT("The foreclosure is taken, not guarded or parried"),
+        CollectorLog.Count(TEXT("Guarded defender=Hero attacker=Boss")) + CollectorLog.Count(TEXT("Parried defender=Hero attacker=Boss")), 0);
     // High Collector Val Amort is taken, never killed (katsujinken).
     Expect(*this, CollectorLog, Scenario, TEXT("Died victim=Boss killer=Hero sparring=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("SiteRestored chapter=7 site=2 campaign=1"));

@@ -93,9 +93,12 @@ public:
 
     // Opens a zone: bodies, detection and the alarm start clear, and guards
     // already posted take the zone's start (carryover). A checkpoint that
-    // restores the beat opens it again.
+    // restores the beat opens it again. A takedown still being decided lets
+    // its guard go unalarmed.
     void BeginZone(const FSoraStealthZone& Zone);
-    // Closes the zone and forgets its surfaces, lecterns and bodies.
+    // Closes the zone and forgets its surfaces, lecterns and bodies. A
+    // takedown still being decided lets its guard go: the beat is over, so
+    // nobody is detected and nobody is called.
     void EndZone();
     bool IsZoneActive() const { return bZoneActive; }
     const FSoraStealthZone& Zone() const { return ZoneRules; }
@@ -167,7 +170,9 @@ private:
     };
     void TickTakedown();
     void TickDrag();
-    void AbortTakedown();
+    // Lets go of the takedown under way. An undecided victim is roused (it
+    // felt the grab) unless the zone itself is closing or restarting.
+    void AbortTakedown(bool bRouse);
     void FinishTakedown(ASoraEnemy& Target, ASoraPlayerCharacter& Hero);
     void UnlockHero();
     double Now() const;

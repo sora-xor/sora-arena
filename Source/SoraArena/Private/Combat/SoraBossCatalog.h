@@ -80,7 +80,8 @@ struct FSoraBossAttack
     int32 KnockbackCm = 0;
     int32 HeroStaggerMs = 0;
     FSoraBossGuard Guard;
-    // A 転 (marobashi) step in this last stretch of the windup reaches the flank.
+    // A 転 (marobashi) step in this last stretch of the windup reaches the
+    // flank, and the blow misses (SoraDefense::Marobashi).
     int32 MarobashiMs = 0;
     bool bMuto = false;
     ESoraBossParry OnParry = ESoraBossParry::None;

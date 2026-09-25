@@ -148,4 +148,25 @@ int main()
         assert(Misses == 10);
     }
     assert(RoundMisses(1, 2) && RoundMisses(2, 1) && RoundMisses(3, 0));
+
+    // 無刀取り: sheathed, facing, a guard pressed no more than the window
+    // before an eligible cut lands.
+    assert(MutoDori(true, true, true, 0, MutoWindowMs, 1000) && MutoDori(true, true, true, MutoWindowMs, MutoWindowMs, FrontMilli));
+    assert(!MutoDori(true, true, true, MutoWindowMs + 1, MutoWindowMs, 1000) && !MutoDori(true, false, true, 100, MutoWindowMs, 1000));
+    assert(!MutoDori(false, true, true, 100, MutoWindowMs, 1000) && !MutoDori(true, true, true, 100, MutoWindowMs, FrontMilli - 1));
+    assert(!MutoDori(true, true, false, 100, MutoWindowMs, 1000) && !MutoDori(true, true, true, -1, MutoWindowMs, 1000));
+    // 転: within 400 ms of an awase, or in the last marobashi_ms of a windup that allows it.
+    assert(MarobashiOpen(0, -1, 0) && MarobashiOpen(MarobashiWindowMs, -1, 0) && !MarobashiOpen(MarobashiWindowMs + 1, -1, 0));
+    assert(MarobashiOpen(-1, 0, 400) && MarobashiOpen(-1, 400, 400) && !MarobashiOpen(-1, 401, 400));
+    assert(!MarobashiOpen(-1, 100, 0) && !MarobashiOpen(-1, -1, 400));
+    // The arc ends outside the front 120 degrees, where a flank cut lands and a
+    // shield's rim does not reach; the lag outlasts the step.
+    assert(MarobashiArcDeg > 60 && MarobashiArcDeg < 90 && MarobashiTurnLagMs > MarobashiStepMs);
+    // 残心: half a second of guard within the window after a defeat, once.
+    assert(Zanshin(500, 500) && Zanshin(ZanshinWindowMs, ZanshinHoldMs) && !Zanshin(ZanshinWindowMs + 1, 2000));
+    assert(!Zanshin(400, ZanshinHoldMs - 1) && !Zanshin(900, -1) && !Zanshin(-1, 600));
+    assert(ZanshinStamina == 15 && ZanshinHoldMs == 500 && ZanshinHoldMs < ZanshinWindowMs);
+    // 水月: the outer fifteen percent of the reach, never beyond it.
+    assert(InMaai(195, 195) && InMaai(166, 195) && !InMaai(165, 195) && !InMaai(196, 195));
+    assert(!InMaai(100, 0) && InMaai(285, 285) && !InMaai(120, 285) && !InMaai(-1, 195));
 }

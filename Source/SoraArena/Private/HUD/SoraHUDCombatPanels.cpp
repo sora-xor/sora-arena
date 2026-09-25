@@ -1,9 +1,11 @@
 #include "HUD/SoraHUDPanels.h"
 #include "ArenaKernelSubsystem.h"
 #include "Combat/SoraBossCatalog.h"
+#include "Combat/SoraDefense.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
+#include "SoraCombatRules.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraGameMode.h"
 #include "SoraHUD.h"
@@ -63,7 +65,31 @@ void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
     const float BossX=(W-BossWidth)*.5f,
         BossY=FMath::Max(G->bEnglishSubtitles?222.f*S:178.f*S,165.f);
     const bool bEnglish=G->bEnglishSubtitles;
-    HUD.Panel(BossX,BossY,BossWidth,bEnglish?142.f:116.f,FLinearColor(.013f,.027f,.033f,.91f));
+    // The answer the attack under way allows, by the actions that give it:
+    // mutō-dori from a sheathed hand, or 転 in its last stretch.
+    const FSoraBossAttack* Attack=Boss->BossAttack();
+    const auto* Hero=Cast<ASoraPlayerCharacter>(HUD.GetOwningPawn());
+    FString HintJapanese,HintEnglish;
+    if(Attack&&Boss->IsBossTelegraphing()&&Attack->bMuto&&Info->bMutoFinisher)
+    {
+        const bool bSheathed=Hero&&Hero->GetEquipment()->IsSheathing();
+        HintJapanese=bSheathed?TEXT("納刀済 ― 斬撃の寸前に［防御］で無刀取り"):TEXT("［納刀］で納め、斬撃の寸前に［防御］で無刀取り");
+        HintEnglish=bSheathed?TEXT("Sheathed: [Guard] just before the cut lands for mutō-dori"):
+            TEXT("[Sheathe], then [Guard] just before the cut lands for mutō-dori");
+    }
+    else if(Attack&&Boss->IsBossTelegraphing()&&Attack->MarobashiMs>0)
+    {
+        HintJapanese=TEXT("転 ― 着く寸前に 左右＋［跳躍］で脇へ");
+        HintEnglish=TEXT("Marobashi: Left/Right + [Jump] just before it lands to reach the flank");
+    }
+    const float Base=bEnglish?142.f:116.f;
+    const float Hints=HintJapanese.IsEmpty()?0.f:bEnglish?40.f:22.f;
+    HUD.Panel(BossX,BossY,BossWidth,Base+Hints,FLinearColor(.013f,.027f,.033f,.91f));
+    if(!HintJapanese.IsEmpty())
+    {
+        HUD.Label(HintJapanese,BossX+17.f,BossY+Base,.36f,Gold);
+        if(bEnglish) HUD.Label(HintEnglish,BossX+17.f,BossY+Base+19.f,.32f,Muted);
+    }
     HUD.Label(Info->NameJapanese,BossX+17.f,BossY+7.f,JapaneseSubtitleScale,Gold);
     if(bEnglish) HUD.Label(Info->NameEnglish,BossX+BossWidth-17.f-HUD.LabelWidth(Info->NameEnglish,EnglishSubtitleScale),BossY+9.f,EnglishSubtitleScale,Muted);
     const float BarX=BossX+17.f,BarW=BossWidth-34.f,BarY=BossY+36.f;
@@ -92,17 +118,16 @@ void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
         Japanese.Add(FString::Printf(TEXT("%s ×%d"),*Ward.NameJapanese,Boss->LiveWards()));
         English.Add(FString::Printf(TEXT("%s x%d"),*Ward.NameEnglish,Boss->LiveWards()));
     }
-    for(const FSoraBossAttack& Attack:Info->Attacks)
-        if(Attack.EventLimit>0)
+    for(const FSoraBossAttack& Limited:Info->Attacks)
+        if(Limited.EventLimit>0)
         {
-            Japanese.Add(FString::Printf(TEXT("差押え %d / %d"),Boss->Seals(),Attack.EventLimit));
-            English.Add(FString::Printf(TEXT("SEIZED %d / %d"),Boss->Seals(),Attack.EventLimit));
+            Japanese.Add(FString::Printf(TEXT("差押え %d / %d"),Boss->Seals(),Limited.EventLimit));
+            English.Add(FString::Printf(TEXT("SEIZED %d / %d"),Boss->Seals(),Limited.EventLimit));
         }
     if(Japanese.Num())
         HUD.Label(FString::Join(Japanese,TEXT("　")),BarX,BarY+15.f,.34f,Teal);
     if(bEnglish&&English.Num())
         HUD.Label(FString::Join(English,TEXT("  ")),BarX+BarW*.5f,BarY+16.f,.3f,Muted);
-    const FSoraBossAttack* Attack=Boss->BossAttack();
     if(Attack&&Boss->IsBossTelegraphing())
     {
         const FLinearColor Warning=Attack->Telegraph==ESoraBossTelegraph::Cyan?Cyan:Amber;
@@ -129,6 +154,34 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
     if(P->DamageFlash>0) { HUD.Panel(0,0,12*S,H,FLinearColor(.8,0,0,.65)); HUD.Panel(W-12*S,0,12*S,H,FLinearColor(.8,0,0,.65)); }
     const float CX=W*.5f,CY=H*.5f; const FLinearColor Cross=P->HitMarkerTime>0?Gold:Ivory;
     HUD.DrawLine(CX-10,CY,CX-4,CY,Cross,1.5); HUD.DrawLine(CX+4,CY,CX+10,CY,Cross,1.5); HUD.DrawLine(CX,CY-10,CX,CY-4,Cross,1.5); HUD.DrawLine(CX,CY+4,CX,CY+10,Cross,1.5);
+    if(!G->bDeterministicPractice)
+    {
+        // 水月: a faint moon ring round the reticle while the opponent it
+        // points at stands in the drawn blade's maai.
+        if(Kit->InMaai())
+        {
+            const FLinearColor Moon(.78f,.86f,.95f,.6f);
+            constexpr int32 Segments=24;
+            const float Radius=22.f*S;
+            for(int32 I=0;I<Segments;++I)
+            {
+                const float A=2.f*PI*I/Segments,B=2.f*PI*(I+1)/Segments;
+                HUD.DrawLine(CX+Radius*FMath::Cos(A),CY+Radius*FMath::Sin(A),CX+Radius*FMath::Cos(B),CY+Radius*FMath::Sin(B),Moon,1.2f);
+            }
+        }
+        // 転: the step is open (after an awase, or in a blow's last stretch).
+        if(!Kit->IsStepping()&&SoraDefense::MarobashiTarget(Hero))
+        {
+            HUD.Label(TEXT("転 ― 左右＋［跳躍］"),CX-70*S,CY-72*S,.5*S,Gold);
+            if(G->bEnglishSubtitles) HUD.Label(TEXT("MAROBASHI: Left/Right + [Jump]"),CX-82*S,CY-48*S,.32*S,Muted);
+        }
+        // 残心: the lingering guard gave back its share.
+        if(P->GetWorld()->GetTimeSeconds()-Kit->LastZanshinAt()<1.2f)
+        {
+            HUD.Label(FString::Printf(TEXT("残心 ＋%d"),SoraCombatRules::ZanshinStamina),CX+30*S,CY+14*S,.42*S,Teal);
+            if(G->bEnglishSubtitles) HUD.Label(FString::Printf(TEXT("ZANSHIN +%d"),SoraCombatRules::ZanshinStamina),CX+30*S,CY+34*S,.3*S,Muted);
+        }
+    }
     HUD.Panel(25*S,H-110*S,340*S,80*S,FLinearColor(.015,.035,.05,.9));
     HUD.Label(FString::Printf(TEXT("%03d"),FMath::CeilToInt(P->Health)),45*S,H-103*S,1.5*S,Ivory);
     HUD.Label(FSoraCatalog::Get().Class(P->ClassId).Name,140*S,H-82*S,.65*S,Teal);
@@ -166,9 +219,17 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
     }
     else
     {
-        HUD.Label(Kit->bReloading?TEXT("装填中"):Weapon.Kind==TEXT("melee")?TEXT("間合い / 斬突と残心"):
-            Weapon.Kind==TEXT("bow")?FString::Printf(TEXT("矢 %02d / %02d   長押し→離して射る"),Kit->Ammo,Weapon.Magazine):
-            FString::Printf(TEXT("%02d / %02d   R 装填"),Kit->Ammo,Weapon.Magazine),W-365*S,H-59*S,.54*S,Gold);
+        if(Kit->IsSheathing())
+        {
+            // 納刀: the sheathed hand guards nothing; its guard press is mutō-dori.
+            HUD.Label(Kit->IsSheathed()?TEXT("納刀 ― 無刀の構え"):TEXT("納刀中…"),W-365*S,H-59*S,.54*S,Gold);
+            if(G->bEnglishSubtitles)
+                HUD.Label(Kit->IsSheathed()?TEXT("SHEATHED: mutō-dori stance"):TEXT("SHEATHING"),W-160*S,H-56*S,.28*S,Muted);
+        }
+        else
+            HUD.Label(Kit->bReloading?TEXT("装填中"):Weapon.Kind==TEXT("melee")?TEXT("間合い / 斬突と残心"):
+                Weapon.Kind==TEXT("bow")?FString::Printf(TEXT("矢 %02d / %02d   長押し→離して射る"),Kit->Ammo,Weapon.Magazine):
+                FString::Printf(TEXT("%02d / %02d   R 装填"),Kit->Ammo,Weapon.Magazine),W-365*S,H-59*S,.54*S,Gold);
         if(Kit->IsBowDrawing()||Kit->IsCommittedStrike())
         {
             const bool bDraw=Kit->IsBowDrawing();

@@ -14,6 +14,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
@@ -22,7 +23,8 @@
 
 // The offline opponents' brain in real game worlds: the runtime navigation mesh
 // takes a hunter around a wall placed during play, the view cone and line of
-// sight decide what a sentry sees, and a shot is heard where the cone cannot see.
+// sight decide what a sentry sees, a shot is heard where the cone cannot see,
+// and a walker held fast gives up on its waypoint and walks on once free.
 namespace SoraEnemyAI
 {
 using EState = SoraStealthRules::EState;
@@ -331,6 +333,93 @@ bool FSoraEnemyPatrolTest::RunTest(const FString& Parameters)
     AddInfo(FString::Printf(TEXT("Waypoints visited: %s"), *Order));
     TestTrue(TEXT("The guard walks its route in order and loops back"), Visits == TArray<int32>({0, 1, 2, 0}));
     TestEqual(TEXT("A guard that never sees or hears the hero stays unaware"), static_cast<int32>(Brain->State()), static_cast<int32>(EState::Unaware));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraEnemyBlockedWalksOnTest,
+    "SoraArena.AI.BlockedWalksOn",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraEnemyBlockedWalksOnTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraEnemyAI;
+    if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
+        return false;
+    FArena Arena(*this, TEXT("BlockedWalksOn"));
+    if (!Arena.Start())
+        return false;
+    // A walking guard and a patrol drone, each held where it stands for longer
+    // than the stuck clock (a body in a corridor, a net): each gives up on its
+    // waypoint, and once free walks or flies on to the next one instead of
+    // standing blocked for good. The walker starts on the world's origin,
+    // where a stale clock once blocked a first walk outright.
+    Arena.PlaceHero(FVector(-2900.f, 1000.f, 0.f), 90.f);
+    FSoraPatrolRoute Walk;
+    Walk.Points = {FVector(0.f, 0.f, 90.f), FVector(1500.f, 0.f, 90.f)};
+    Walk.PauseMs = 500;
+    // The drone flies the same road, above and beside the walker.
+    FSoraPatrolRoute Flight;
+    Flight.Points = {FVector(0.f, 300.f, 90.f), FVector(1500.f, 300.f, 90.f)};
+    Flight.PauseMs = 500;
+    ASoraEnemy* Guard = Arena.Spawn(3, FVector::ZeroVector, 0.f, &Walk);
+    ASoraEnemy* Drone = Arena.SpawnKind(TEXT("drone"), 4, FVector(0.f, 300.f, 0.f), 0.f, &Flight);
+    if (!TestNotNull(TEXT("A patrolling guard spawns with its brain"), FArena::Brain(Guard)) ||
+        !TestNotNull(TEXT("A patrolling drone spawns with its brain"), FArena::Brain(Drone)))
+        return false;
+    // Three seconds in, both are on their way along their routes.
+    const TArray<ASoraEnemy*> Walkers{Guard, Drone};
+    for (int32 Frame = 0; Frame < 180; ++Frame)
+    {
+        if (!Arena.Tick(1))
+            return false;
+        if (Frame % 30 == 29)
+            for (ASoraEnemy* Walker : Walkers)
+                AddInfo(FString::Printf(TEXT("%.1f s: %s at (%.0f, %.0f, %.0f), moving %.0f cm/s"), (Frame + 1) / 60.f,
+                    *Walker->ArchetypeId().ToString(), Walker->GetActorLocation().X, Walker->GetActorLocation().Y,
+                    Walker->GetActorLocation().Z, Walker->GetVelocity().Size2D()));
+    }
+    for (ASoraEnemy* Walker : Walkers)
+        TestTrue(*FString::Printf(TEXT("The %s is on its way along its route"), *Walker->ArchetypeId().ToString()),
+            Walker->GetVelocity().Size2D() > 50.f && Walker->GetActorLocation().X > 100.f);
+    // Held fast for three seconds: longer than the stuck clock, so each
+    // gives up on its waypoint and pauses.
+    TArray<TEnumAsByte<EMovementMode>> Modes;
+    TArray<FVector> Held;
+    for (ASoraEnemy* Walker : Walkers)
+    {
+        Modes.Add(Walker->GetCharacterMovement()->MovementMode);
+        Walker->GetCharacterMovement()->StopMovementImmediately();
+        Walker->GetCharacterMovement()->DisableMovement();
+        Held.Add(Walker->GetActorLocation());
+    }
+    if (!Arena.Tick(180))
+        return false;
+    for (int32 Index = 0; Index < Walkers.Num(); ++Index)
+    {
+        TestTrue(TEXT("Held, it stays put"), FVector::Dist2D(Walkers[Index]->GetActorLocation(), Held[Index]) < 5.f);
+        Walkers[Index]->GetCharacterMovement()->SetMovementMode(Modes[Index]);
+    }
+    // Free again: after its pause it walks on to its next waypoint.
+    TArray<float> Farthest;
+    Farthest.Init(0.f, Walkers.Num());
+    for (int32 Frame = 0; Frame < 240; ++Frame)
+    {
+        if (!Arena.Tick(1))
+            return false;
+        for (int32 Index = 0; Index < Walkers.Num(); ++Index)
+            Farthest[Index] = FMath::Max(Farthest[Index], static_cast<float>(FVector::Dist2D(Walkers[Index]->GetActorLocation(), Held[Index])));
+    }
+    for (int32 Index = 0; Index < Walkers.Num(); ++Index)
+    {
+        const FString What = Walkers[Index]->ArchetypeId().ToString();
+        AddInfo(FString::Printf(TEXT("In the four seconds after it was freed, the %s went as far as %.0f cm from where it was held"),
+            *What, Farthest[Index]));
+        TestTrue(*FString::Printf(TEXT("The freed %s walks on"), *What), Farthest[Index] > 200.f);
+        TestEqual(TEXT("It never noticed the hero"), static_cast<int32>(FArena::Brain(Walkers[Index])->State()),
+            static_cast<int32>(EState::Unaware));
+    }
     return true;
 }
 #endif

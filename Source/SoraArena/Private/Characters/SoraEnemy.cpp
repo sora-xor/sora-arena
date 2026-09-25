@@ -194,6 +194,12 @@ bool ASoraEnemy::CanBeTakenDown() const
     return Kind&&Kind->bRearTakedown&&IsAlive()&&!bInvulnerable&&!IsFreed()&&!bSeized&&!bKernelDriven;
 }
 bool ASoraEnemy::IsStaggered() const { return GetWorld()&&Now()<StaggerUntil; }
+void ASoraEnemy::Outflanked(int32 Ms)
+{
+    if(Ms<=0||!IsAlive()) return;
+    TurnLockedUntil=FMath::Max(TurnLockedUntil,Now()+Ms/1000.f);
+}
+bool ASoraEnemy::IsTurnLocked() const { return GetWorld()&&Now()<TurnLockedUntil; }
 bool ASoraEnemy::IsShieldOpen() const { return Kind&&Kind->bShield&&(Now()<ShieldOpenUntil||IsStaggered()); }
 const FSoraEnemyAttack* ASoraEnemy::CurrentAttack() const
 {
@@ -248,7 +254,7 @@ void ASoraEnemy::HaltActions()
 }
 bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
 {
-    if(!Kind||Phase!=EPhase::Idle||IsStaggered()||!Target.IsAlive()||Now()<NextAttackAt) return false;
+    if(!Kind||Phase!=EPhase::Idle||IsStaggered()||IsTurnLocked()||!Target.IsAlive()||Now()<NextAttackAt) return false;
     const int32 Facing=SoraDamage::FacingMilli(*this,Target.GetActorLocation());
     for(int32 Index=0;Index<Kind->Attacks.Num();++Index)
     {

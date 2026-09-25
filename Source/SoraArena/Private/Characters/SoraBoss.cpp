@@ -216,6 +216,18 @@ int32 ASoraBoss::MutoWindowMs() const
     const FSoraBossCatalog& Catalog = FSoraBossCatalog::Get();
     return BossRules::ForDifficulty(Rules::MutoWindowMs, Setup.Difficulty, Catalog.EasyWindupPermille, Catalog.HardWindupPermille);
 }
+int32 ASoraBoss::MarobashiWindowMs() const
+{
+    const FSoraBossAttack* Attack = BossAttack();
+    if (!Attack || Attack->MarobashiMs <= 0 || Run.Stage != EStage::Windup)
+        return 0;
+    const FSoraBossCatalog& Catalog = FSoraBossCatalog::Get();
+    return BossRules::ForDifficulty(Attack->MarobashiMs, Setup.Difficulty, Catalog.EasyWindupPermille, Catalog.HardWindupPermille);
+}
+int32 ASoraBoss::MarobashiUntilLandsMs() const
+{
+    return Run.Stage == EStage::Windup && GetWorld() ? FMath::Max(0, Run.StageEndsMs - NowMs()) : -1;
+}
 int32 ASoraBoss::FloorPermille() const
 {
     const FSoraBossPhase* Current = CurrentPhase();
@@ -591,7 +603,8 @@ FSoraBossIntent ASoraBoss::Drive(ASoraCharacterBase& Target, float)
     if (!Info || bDefeated || !bPhaseEntered)
         return Intent;
     const FSoraBossPhase& Current = Info->Phases[PhaseNow];
-    if (Run.Attack == INDEX_NONE && !IsStaggered() && NowMs() >= InvulnerableUntilMs)
+    // Outflanked by a 転 step, it neither starts an attack nor turns until it can turn again.
+    if (Run.Attack == INDEX_NONE && !IsStaggered() && !IsTurnLocked() && NowMs() >= InvulnerableUntilMs)
     {
         bool bPattern = false;
         int32 Next = INDEX_NONE;
@@ -625,7 +638,7 @@ FSoraBossIntent ASoraBoss::Drive(ASoraCharacterBase& Target, float)
     Delta.Z = 0.f;
     const float Distance = Delta.Size2D();
     Intent.TurnDegreesPerSecond = Current.TurnDegreesPerSecond;
-    Intent.bFace = bKnows && !Delta.IsNearlyZero();
+    Intent.bFace = bKnows && !Delta.IsNearlyZero() && !IsTurnLocked();
     Intent.Facing = Delta;
     switch (Current.Move)
     {
@@ -917,7 +930,7 @@ void ASoraBoss::Advance()
         return;
     }
     case EStage::Windup:
-        if (Attack.Kind == ESoraBossAttackKind::Beam && Target && Now - Run.StageStartMs < Attack.TrackMs)
+        if (Attack.Kind == ESoraBossAttackKind::Beam && Target && Now - Run.StageStartMs < Attack.TrackMs && !IsTurnLocked())
         {
             // The beam tracks, then locks for the rest of its windup.
             const FVector Direction = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal2D();
@@ -936,7 +949,7 @@ void ASoraBoss::Advance()
             Release(*Target);
         return;
     case EStage::Hold:
-        if (Now >= Run.StageEndsMs && Target)
+        if (Now >= Run.StageEndsMs && Target && !IsTurnLocked())
         {
             const int32 Then = Attack.Then;
             Commit(Then, *Target, Run.bFromPattern, AttackAt(Then).Repeat - 1);
@@ -992,7 +1005,8 @@ void ASoraBoss::Advance()
             AfterActive();
         return;
     case EStage::Gap:
-        if (Now >= Run.StageEndsMs && Target)
+        // The next repeat aims anew, once the boss can turn to it.
+        if (Now >= Run.StageEndsMs && Target && !IsTurnLocked())
             Commit(Run.Attack, *Target, Run.bFromPattern, Run.RepeatsLeft - 1);
         return;
     case EStage::Recovery:
@@ -1194,6 +1208,8 @@ void ASoraBoss::StrikeBlow(ASoraCharacterBase& Target)
     GetWorld()->LineTraceSingleByChannel(Line, EyePoint, Target.GetActorLocation() + FVector(0.f, 0.f, SoraBossBody::ChestHeight),
         ECC_Visibility, Query);
     bReach &= Line.GetActor() == &Target;
+    // The hero rolled off this blow's line (転).
+    bReach &= EvadedSerial != Serial;
     AnnounceStrike(Index, Serial);
     SoraDamage::Beam(GetWorld(), EyePoint, EyePoint + Run.LockedDirection * ReachFor(Index), SoraBossBody::Steel, 2.f, .13f);
     FSoraStrikeResolvedEvent Resolved;
@@ -1219,8 +1235,10 @@ void ASoraBoss::StrikeBlow(ASoraCharacterBase& Target)
         if (bDefeated)
             return;
         // A tether that was not cut drags the hero toward the heat (or its
-        // wielder); a guard halves the pull.
-        if (Attack.PullCm > 0 && !(Run.Serial == Serial && Run.bParried))
+        // wielder); a guard halves the pull. The parry's stagger may already
+        // have ended the run (a repeated lash between its blows), so the cut
+        // is known by the blow's own serial.
+        if (Attack.PullCm > 0 && ParriedSerial != Serial)
         {
             FVector Toward = GetActorLocation();
             float Best = MAX_flt;
@@ -1799,10 +1817,21 @@ void ASoraBoss::Stagger(int32 Milliseconds)
     Broadcast(ESoraBossPhase::Staggered, NAME_None, EventBark(TEXT("stagger")), 0, Milliseconds);
 }
 
+void ASoraBoss::Outflanked(int32 Milliseconds)
+{
+    if (Info && !bDefeated && Rules::MarobashiOpen(-1, MarobashiUntilLandsMs(), MarobashiWindowMs()))
+    {
+        EvadedSerial = Run.Serial;
+        Broadcast(ESoraBossPhase::Event, TEXT("marobashi"), NAME_None, Run.Serial);
+    }
+    ASoraEnemy::Outflanked(Milliseconds);
+}
+
 void ASoraBoss::Parried(int32 StaggerMs)
 {
     const FSoraBossAttack* Attack = BossAttack();
     Run.bParried = true;
+    ParriedSerial = Run.Serial;
     if (Attack && Attack->OnParry == ESoraBossParry::MeasureReset)
         Broadcast(ESoraBossPhase::Countered, Attack->Id, NAME_None, Run.Serial);
     if (Attack && Attack->OnParry == ESoraBossParry::MantleDown)
