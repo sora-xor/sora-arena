@@ -272,6 +272,9 @@
   "shield_break",
   "volley_command"
  ],
+ "story_flags": [
+  "nafudakake_marked"
+ ],
  "collectible_categories": [
   {
    "id": "scroll_fragment",

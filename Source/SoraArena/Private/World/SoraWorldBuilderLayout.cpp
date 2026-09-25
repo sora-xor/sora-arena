@@ -22,6 +22,13 @@ FVector ASoraWorldBuilder::BeatAnchor(int32 Beat,int32 Site) const
     // Three steps per beat: consecutive objectives sit about 12 m apart.
     return RoadAnchors[(FMath::Max(Beat,0)*3)%UE_ARRAY_COUNT(RoadAnchors)];
 }
+FVector ASoraWorldBuilder::TaskAnchor(int32 Beat,int32 Site,int32 Point) const
+{
+    if(Point<=0) return BeatAnchor(Beat,Site);
+    // Later points step two road anchors (about 8 m) at a time from the beat's own.
+    const int32 Count=UE_ARRAY_COUNT(RoadAnchors);
+    return RoadAnchors[((FMath::Max(Beat,0)*3)+Point*2+1)%Count];
+}
 FVector ASoraWorldBuilder::CacheAnchor(int32 Beat) const
 {
     return CacheAnchors[FMath::Max(Beat,0)%UE_ARRAY_COUNT(CacheAnchors)];

@@ -179,6 +179,18 @@ REGISTER_ALIASES = {
 LINE_KEYS = ("id", "speaker", "ja", "en", "register", "duration_s")
 # Line-level scheduling duplicates the beat's dialogue entries (§12.5) and is dropped.
 LINE_SCHEDULE_KEYS = ("beat", "on", "trigger")
+# Lesson gates that name a dojo form, in SoraDojoRules order.
+LESSON_FORMS = {"stance_hold": 0, "front_guard_survive": 1, "awase": 2, "recovery_complete": 3}
+# A lesson gate the runtime does not measure yet; its duel completes on its other gates.
+UNMEASURED_GATES = ("maai_step",)
+# `fail` events and the SoraBeatRules::EFail each one raises.
+FAIL_EVENTS = (
+    (r"player_died", "player_died"), (r"match_lost", "match_lost"), (r"target_destroyed", "target_destroyed"),
+    (r"npc_died:\w+", "escort_down"), (r"convoy_member_(seized|hp0)", "convoy_lost"),
+    (r"boss_event:\w+", "boss_event"),
+)
+# A dialogue trigger may wait for a collectible found or a story flag set.
+REQUIRES_FLAG = re.compile(r"(collectible:ch0[1-8]\.c0[1-6]|story:[a-z_]+)")
 
 
 class BuildError(ValueError):
@@ -431,6 +443,231 @@ def normalize_production(raw, context):
     return task, block
 
 
+def whole_ms(seconds, context):
+    """Seconds to integer milliseconds, refusing sub-millisecond data."""
+    expect(seconds, (int, float), context)
+    value = round(seconds * 1000)
+    if seconds < 0 or abs(seconds * 1000 - value) > 1e-6:
+        fail(context, f"{seconds!r} s is not a whole number of milliseconds")
+    return value
+
+
+def permille(fraction, context):
+    """A 0-1 fraction to integer permille, refusing finer data."""
+    expect(fraction, (int, float), context)
+    value = round(fraction * 1000)
+    if not 0 <= fraction <= 1 or abs(fraction * 1000 - value) > 1e-6:
+        fail(context, f"{fraction!r} is not a fraction in whole permille")
+    return value
+
+
+def task_wave(wave, nonlethal, context):
+    """A wave as SoraBeatRules reads it: trigger, value, and its spawn groups in order."""
+    trigger = wave["trigger"]
+    kind, _, argument = trigger.partition(":")
+    value, event = 0, None
+    if trigger in ("start", "prev_cleared"):
+        kind = trigger
+    elif kind == "alive_below" and argument.isdigit():
+        value = expect_int(int(argument), f"{context}.trigger", 1)
+    elif kind == "after_s" and argument:
+        value = whole_ms(float(argument), f"{context}.trigger")
+        kind = "after_ms"
+    elif kind == "progress_at" and argument:
+        value = permille(float(argument), f"{context}.trigger")
+    elif kind == "volume_enter" and argument:
+        kind, event = "volume", trigger
+    else:
+        # Alarms, detection and scripted events: a reinforcement that may never come.
+        kind, event = "event", trigger
+    members = [{"type": enemy["type"], "count": enemy["count"], "lethal": enemy["type"] not in nonlethal}
+               for enemy in wave["enemies"]]
+    return {"id": wave.get("id"), "trigger": kind, "value": value, "event": event, "members": members,
+            "lethal": sum(member["count"] for member in members if member["lethal"]),
+            "nonlethal": sum(member["count"] for member in members if not member["lethal"])}
+
+
+def ids_of(rows, context):
+    """Point ids from a list of ids or of {id: ...} rows."""
+    result = []
+    for index, row in enumerate(expect(rows, (list,), context)):
+        result.append(expect(row["id"] if isinstance(row, dict) else row, (str,), f"{context}[{index}]"))
+    if len(set(result)) != len(result):
+        fail(context, f"duplicate ids {result}")
+    return result
+
+
+def volume_event(volume):
+    return None if volume is None else f"volume_enter:{volume}"
+
+
+def normalize_task(beat):
+    """The beat's task in the integer units SoraBeatRules.h runs (§12.2).
+
+    Every beat gets the same keys; its goal says which of them matter. Times
+    are milliseconds, fractions permille and distances centimetres. The loader
+    in SoraCatalog.cpp reads this block and the host driver plays it."""
+    where, kind, params = beat["id"], beat["type"], beat["params"]
+    complete = params.get("complete") or {}
+    task = {
+        "type": kind, "task": params.get("task"), "goal": None, "count": 0, "duration_ms": 0, "skippable": False,
+        "anchor_after_lines": False, "clear_waves": False, "pause_when_seen": params.get("stealth") is True,
+        "max_alive": params.get("max_alive", 6), "waves": [], "phases": [1000], "lesson_mask": 0,
+        "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
+        "max_turn_ms": 0, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
+        "drop_on_hit": False, "steps": [], "targets": [], "on_detected": "combat", "reinforce_wave": -1,
+        "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
+        "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "opponent": None,
+        "sparring": False, "phase_events": [],
+    }
+    nonlethal = params.get("nonlethal_types", DEFAULT_NONLETHAL)
+    task["waves"] = [task_wave(wave, nonlethal, f"{where}.waves[{index}]")
+                     for index, wave in enumerate(params.get("waves") or [])]
+    task["clear_waves"] = bool(task["waves"]) and kind != "stealth_zone"
+
+    def objectives(*sources):
+        for source in sources:
+            if source:
+                return ids_of(source, f"{where}.objectives")
+        fail(where, "completion by objectives lists none")
+
+    if kind == "cinematic":
+        task.update(goal="elapsed", duration_ms=whole_ms(params["duration_s"], f"{where}.duration_s"),
+                    skippable=params["skippable"])
+    elif kind == "dialogue":
+        task.update(goal="lines", count=len(params["lines"]), lines_event=params["trigger"])
+        if not re.fullmatch(r"beat_start|(volume_enter|interact):\w+", params["trigger"]):
+            fail(where, f"dialogue trigger {params['trigger']!r}")
+        if complete:
+            closing = {"volume_enter": volume_event(complete.get("volume")),
+                       "event": f"event:{complete.get('event')}"}.get(complete["kind"])
+            if closing is None:
+                fail(where, f"dialogue completion {complete['kind']!r}")
+            task.update(anchor_after_lines=True, closing_event=closing)
+    elif kind == "combat_wave":
+        goals = {"all_waves_cleared": "waves_cleared", "objectives": "objectives", "survive_s": "survive"}
+        if complete["kind"] not in goals:
+            fail(where, f"combat completion {complete['kind']!r} has no runtime goal")
+        task["goal"] = goals[complete["kind"]]
+        if task["goal"] == "objectives":
+            task["objectives"] = objectives(complete.get("objectives"), params.get("objectives"))
+            task["count"] = len(task["objectives"])
+        if task["goal"] == "survive":
+            task["duration_ms"] = complete["seconds"] * 1000
+        task["sparring"] = params["target_kind"] != "enemy"
+    elif kind == "duel":
+        scoring, arms, loss = params["scoring"], params["weapons"], params["loss_policy"]
+        task.update(opponent=params["opponent"], sparring=arms.get("player") in ("bokuto", "fukuro_shinai"),
+                    loss="retry" if loss == "retry" else "continue_after",
+                    loss_limit=0 if loss == "retry" else int(loss.partition(":")[2]))
+        if scoring["mode"] == "points":
+            task.update(goal="points", count=scoring["first_to"])
+        elif scoring["mode"] == "lesson_gates":
+            task["goal"] = "lessons"
+            for gate in expect(params.get("lesson_gates"), (list,), f"{where}.lesson_gates"):
+                name = gate["gate"]
+                if name in LESSON_FORMS:
+                    task["lesson_mask"] |= 1 << LESSON_FORMS[name]
+                elif name == "marobashi_flank":
+                    # Flanking is scored as bouts against the pupil.
+                    task["count"] += expect_int(gate.get("count"), f"{where}.marobashi_flank", 1)
+                elif name not in UNMEASURED_GATES:
+                    fail(where, f"lesson gate {name!r}")
+            if not task["lesson_mask"] and not task["count"]:
+                fail(where, "a lesson duel teaches nothing the runtime measures")
+        else:
+            task["goal"] = "opponent_down"
+            for index, event in enumerate(params.get("events") or []):
+                task["phases"].append(permille(event["at_hp_pct"] / 100, f"{where}.events[{index}]"))
+                task["phase_events"].append(expect(event["id"], (str,), f"{where}.events[{index}].id"))
+    elif kind == "stealth_zone":
+        task["guards"] = [expect(guard["type"], (str,), f"{where}.guards") for guard in params["guards"]]
+        if complete["kind"] == "exit_reached":
+            task.update(goal="exit", exit_event=volume_event(complete.get("volume")))
+        elif complete["kind"] == "objectives":
+            task["objectives"] = objectives(complete.get("objectives"), params.get("objectives"))
+            task.update(goal="objectives", count=len(task["objectives"]))
+        else:
+            fail(where, f"stealth completion {complete['kind']!r}")
+        detected = params["on_detected"]
+        if detected == "restart_checkpoint":
+            task["on_detected"] = "restart"
+        elif detected.startswith("reinforce:"):
+            wave_ids = [wave["id"] for wave in task["waves"]]
+            if detected[10:] not in wave_ids:
+                fail(where, f"on_detected names no wave {detected[10:]!r}")
+            task.update(on_detected="reinforce", reinforce_wave=wave_ids.index(detected[10:]))
+    elif kind == "production_task":
+        name = params["task"]
+        block = params[name]
+        if name == "hold":
+            points = block.get("interact_points") or []
+            seconds = block["hold_s"] if "hold_s" in block else len(points) * block["per_point_s"]
+            task.update(goal="hold", duration_ms=whole_ms(seconds, f"{where}.hold"), contest=block["contest"],
+                        decay_permille=permille(block.get("decay_per_s", 0), f"{where}.hold.decay_per_s"))
+        elif name == "crank":
+            slowest, fastest = block["turn_rate_band"]
+            task.update(goal="turns", count=block["turns_required"], min_turn_ms=round(1000 / fastest),
+                        max_turn_ms=round(1000 / slowest),
+                        decay_permille=permille(block["progress_decay_per_s"], f"{where}.crank.progress_decay_per_s"))
+        elif name == "escort":
+            task.update(goal="escort", speed_cm_s=expect_int(block["speed_cm_s"], f"{where}.escort.speed_cm_s", 1),
+                        wait_cm=expect_int(block["wait_for_player_cm"], f"{where}.escort.wait_for_player_cm", 1),
+                        path_cm=round(block["path_length_m"] * 100) if "path_length_m" in block else 0)
+            if expect(block["fail_on_npc_death"], (bool,), f"{where}.escort.fail_on_npc_death"):
+                task["fail_checkpoint"].append("escort_down")
+        elif name == "carry":
+            drop = block.get("drop_on_hit", False)
+            # Per-difficulty drops follow Normal until difficulty settings land.
+            task.update(goal="deliveries", count=block["count"], pickups=ids_of(block["pickups"], f"{where}.pickups"),
+                        dropoffs=ids_of(block["dropoffs"], f"{where}.dropoffs"),
+                        drop_on_hit=drop if isinstance(drop, bool) else expect(drop.get("normal"), (bool,), where))
+        elif name == "manufacture":
+            for index, step in enumerate(block["steps"]):
+                timing = step.get("timing") or {}
+                spot = f"{where}.steps[{index}]"
+                task["steps"].append({
+                    "kind": expect(step["kind"], (str,), f"{spot}.kind"),
+                    "count": expect_int(step["count"], f"{spot}.count", 1),
+                    "beat_ms": expect_int(timing.get("beat_ms", 0), f"{spot}.beat_ms", 0),
+                    "tolerance_ms": expect_int(timing.get("tolerance_ms", 0), f"{spot}.tolerance_ms", 0)})
+            task["goal"] = "steps"
+        elif name == "defend":
+            task["targets"] = [{"id": expect(target["actor"], (str,), f"{where}.targets"),
+                                "hp": expect_int(target["hp"], f"{where}.targets", 1)} for target in block["targets"]]
+            if "duration_s" in block:
+                task.update(goal="survive", duration_ms=whole_ms(block["duration_s"], f"{where}.defend.duration_s"))
+            else:
+                task["goal"] = "waves_cleared"
+            if expect(block["fail_on_target_destroyed"], (bool,), f"{where}.defend.fail_on_target_destroyed"):
+                task["fail_checkpoint"].append("target_destroyed")
+    elif kind == "horseback_ride":
+        task["horse_down_retries"] = expect_enum(params.get("on_horse_down"), ("checkpoint", "dismount_continue"),
+                                                 f"{where}.on_horse_down") == "checkpoint"
+        if complete["kind"] in ("reach", "volume_enter"):
+            task.update(goal="exit", exit_event=volume_event(complete["volume"]))
+        elif complete["kind"] == "cargo_delivered":
+            task["dropoffs"] = ids_of(params["cargo"]["dropoffs"], f"{where}.cargo.dropoffs")
+            task.update(goal="deliveries", count=len(task["dropoffs"]))
+        else:
+            fail(where, f"ride completion {complete['kind']!r}")
+    elif kind == "boss":
+        task.update(goal="opponent_down", opponent=params["boss"],
+                    phases=[permille(phase["hp_pct_start"] / 100, f"{where}.phases") for phase in params["phases"]])
+    elif kind == "explore_optional":
+        task["goal"] = "cache"
+
+    for entry in beat["fail"]:
+        failure = next((name for pattern, name in FAIL_EVENTS if re.fullmatch(pattern, entry["on"])), None)
+        if failure is None or entry["to"] not in ("checkpoint", "phase_checkpoint", "retry") or \
+                (entry["to"] == "retry") != (failure == "match_lost"):
+            fail(where, f"fail {entry['on']} -> {entry['to']} has no runtime meaning")
+        task["fail_events"][entry["on"]] = failure
+        if entry["to"] != "retry" and failure not in task["fail_checkpoint"]:
+            task["fail_checkpoint"].append(failure)
+    return task
+
+
 def normalize_subtitles(subtitles, context):
     rows = []
     for index, entry in enumerate(expect(subtitles, (list,), context)):
@@ -518,6 +755,11 @@ def normalize_line(raw, context, chapter_prefix):
 
 
 def trigger_row(beat, event, mode, lines, source, context, repeatable=False, cooldown_s=None, at_ms=None, ext=None):
+    ext = dict(ext or {})
+    # A conditional line (ch08.b17's returned sword) names what must be found or set first.
+    requires = ext.pop("requires_flag", None)
+    if requires is not None and not REQUIRES_FLAG.fullmatch(expect(requires, (str,), f"{context}.requires_flag")):
+        fail(context, f"requires_flag {requires!r} is neither collectible:<id> nor story:<flag>")
     return {
         "beat": beat,
         "on": expect(event, (str,), f"{context}.on"),
@@ -527,7 +769,8 @@ def trigger_row(beat, event, mode, lines, source, context, repeatable=False, coo
         "repeatable": expect(repeatable, (bool,), f"{context}.repeatable"),
         "cooldown_s": expect(cooldown_s, (int, float, type(None)), f"{context}.cooldown_s"),
         "at_ms": at_ms,
-        "ext": ext or {},
+        "requires_flag": requires,
+        "ext": ext,
     }
 
 
@@ -576,6 +819,15 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
     grants = ext.pop("auto_grant_if_missing", [])
     for weapon in expect(grants, (list,), f"{beat_id}.auto_grant_if_missing"):
         expect_int(weapon, f"{beat_id}.auto_grant_if_missing", 0)
+    # A story flag the beat sets for a later chapter to read (ch07.b05's name board).
+    story_flags = []
+    story = ext.pop("story_flag", None)
+    if story is not None:
+        expect(story, (dict,), f"{beat_id}.story_flag")
+        if set(story) != {"set", "effect"}:
+            fail(beat_id, f"story_flag takes set and effect, got {sorted(story)}")
+        story_flags.append(expect(story["set"], (str,), f"{beat_id}.story_flag.set"))
+        ext["story_flag_effect"] = expect(story["effect"], (str,), f"{beat_id}.story_flag.effect")
     site = raw.get("site")
     if site is not None:
         expect_enum(expect_int(site, f"{beat_id}.site"), (0, 1, 2), f"{beat_id}.site")
@@ -598,7 +850,8 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
         "requires": list(requires),
         "optional": optional_beat,
         "site": site,
-        "unlocks": {"weapons": list(weapons), "mechanics": list(mechanics), "grants": list(grants)},
+        "unlocks": {"weapons": list(weapons), "mechanics": list(mechanics), "grants": list(grants),
+                    "story_flags": story_flags},
         "registry": registry,
         "music": expect(raw.get("music"), (str, type(None)), f"{beat_id}.music"),
         "fail": normalize_fail(raw.get("fail"), f"{beat_id}.fail"),
@@ -703,7 +956,8 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
     for key, event in (("intro_subtitles", "intro_cinematic"), ("outro_subtitles", "outro_cinematic")):
         if key in ext:
             triggers.append(trigger_row(beat_id, event, "cinematic", ext.pop(key), key, beat_id))
-    return beat
+    task = normalize_task(beat)
+    return {**{key: value for key, value in beat.items() if key != "ext"}, "task": task, "ext": beat["ext"]}
 
 
 def to_cm(value, scale, context):
@@ -1114,6 +1368,11 @@ def self_test():
             [(line["id"], 0), ("ch01.b01.nyaakoto.002", None)], [line, {**line, "id": "ch01.b01.nyaakoto.002"}], 60, "self-test"),
         "subtitle past its cinematic": lambda: place_subtitles(
             [(line["id"], None), ("ch01.b01.nyaakoto.002", None)], [line, {**line, "id": "ch01.b01.nyaakoto.002"}], 2, "self-test"),
+        "sub-millisecond cinematic": lambda: normalize_beat({**beat, "duration_s": 60.0004}, None, "ch01", 1, [], []),
+        "fail without a runtime meaning": lambda: normalize_beat(
+            {**beat, "fail": {"on": "lantern_lit", "to": "checkpoint"}}, None, "ch01", 1, [], []),
+        "unknown dialogue condition": lambda: trigger_row(
+            "ch01.b01", "beat_start", "ambient", [line["id"]], "dialogue", "self-test", ext={"requires_flag": "moon:full"}),
     }
     accepted = [name for name, action in cases.items() if not rejects(action)]
     if accepted or rejects(lambda: normalize_beat(beat, None, "ch01", 1, [], [])):

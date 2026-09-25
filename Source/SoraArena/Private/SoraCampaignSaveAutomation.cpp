@@ -19,10 +19,12 @@ void Copy(const USoraSaveGame& From, USoraSaveGame& To)
     To.SaveSchema = From.SaveSchema; To.CurrentChapter = From.CurrentChapter; To.HighestChapter = From.HighestChapter;
     To.SelectedClass = From.SelectedClass; To.CampaignComplete = From.CampaignComplete; To.EnglishSubtitles = From.EnglishSubtitles;
     To.ChapterEntryWeapons = From.ChapterEntryWeapons; To.ChapterEntryMechanics = From.ChapterEntryMechanics;
+    To.ChapterEntryFlags = From.ChapterEntryFlags;
     To.Collectibles = From.Collectibles; To.CheckpointChapter = From.CheckpointChapter; To.CheckpointBeat = From.CheckpointBeat;
     To.CheckpointPhase = From.CheckpointPhase; To.CheckpointBeatsMask = From.CheckpointBeatsMask;
     To.CheckpointSitesMask = From.CheckpointSitesMask; To.CheckpointWeapons = From.CheckpointWeapons;
-    To.CheckpointMechanics = From.CheckpointMechanics; To.CheckpointComplete = From.CheckpointComplete;
+    To.CheckpointMechanics = From.CheckpointMechanics; To.CheckpointFlags = From.CheckpointFlags;
+    To.CheckpointComplete = From.CheckpointComplete;
     To.CheckpointDojoLessonMask = From.CheckpointDojoLessonMask;
 }
 bool Same(FAutomationTestBase& Test, const FString& Context, const USoraSaveGame& A, const USoraSaveGame& B)
@@ -35,6 +37,7 @@ bool Same(FAutomationTestBase& Test, const FString& Context, const USoraSaveGame
     bOk &= Test.TestEqual(*(Context + TEXT(": English subtitles")), A.EnglishSubtitles, B.EnglishSubtitles);
     bOk &= Test.TestEqual(*(Context + TEXT(": entry weapons")), A.ChapterEntryWeapons, B.ChapterEntryWeapons);
     bOk &= Test.TestEqual(*(Context + TEXT(": entry mechanics")), A.ChapterEntryMechanics, B.ChapterEntryMechanics);
+    bOk &= Test.TestEqual(*(Context + TEXT(": entry story flags")), A.ChapterEntryFlags, B.ChapterEntryFlags);
     bOk &= Test.TestEqual(*(Context + TEXT(": collectibles")), A.Collectibles, B.Collectibles);
     bOk &= Test.TestEqual(*(Context + TEXT(": checkpoint chapter")), A.CheckpointChapter, B.CheckpointChapter);
     bOk &= Test.TestEqual(*(Context + TEXT(": checkpoint beat")), A.CheckpointBeat, B.CheckpointBeat);
@@ -43,6 +46,7 @@ bool Same(FAutomationTestBase& Test, const FString& Context, const USoraSaveGame
     bOk &= Test.TestEqual(*(Context + TEXT(": sites")), A.CheckpointSitesMask, B.CheckpointSitesMask);
     bOk &= Test.TestEqual(*(Context + TEXT(": weapons")), A.CheckpointWeapons, B.CheckpointWeapons);
     bOk &= Test.TestEqual(*(Context + TEXT(": mechanics")), A.CheckpointMechanics, B.CheckpointMechanics);
+    bOk &= Test.TestEqual(*(Context + TEXT(": story flags")), A.CheckpointFlags, B.CheckpointFlags);
     bOk &= Test.TestEqual(*(Context + TEXT(": completion")), A.CheckpointComplete, B.CheckpointComplete);
     bOk &= Test.TestEqual(*(Context + TEXT(": dojo lessons")), A.CheckpointDojoLessonMask, B.CheckpointDojoLessonMask);
     return bOk;
@@ -106,7 +110,7 @@ bool FSoraCampaignDiskSaveRecoveryTest::RunTest(const FString& Parameters)
         bool bEnglishSubtitles;
     };
     // The dojo smithy, an irrigation weir, a boss saved at its third phase,
-    // and the final chapter's last production task.
+    // and the final chapter's last production task (carrying ch07's story flag).
     const FDiskCheckpoint Cases[] = {
         {TEXT("Dojo smithy"), 0, 8, 0, false},
         {TEXT("Irrigation weir"), 3, 5, 0, true},
@@ -145,6 +149,8 @@ bool FSoraCampaignDiskSaveRecoveryTest::RunTest(const FString& Parameters)
                 continue;
             TestTrue(*(Name + TEXT(": new object from disk")), Restored != Original);
             SoraCampaignSaveTests::Same(*this, Name, *Restored, *Expected);
+            if (Case.Chapter == 7)
+                TestTrue(*(Name + TEXT(": the name board's story flag is carried")), Restored->CheckpointFlags != 0);
         }
     }
     TestTrue(TEXT("Disk test cleanup executed"), bCleanupAttempted);
@@ -159,9 +165,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 // Each save is written to an isolated slot and loaded by a real game world.
 // The director restores the valid checkpoints exactly and refuses every
-// forgery: a stale schema, or a chapter, unlock or collectible no route
-// reaches, starts a fresh campaign; an unearned checkpoint replays the saved
-// chapter from its opening.
+// forgery: a stale schema, or a chapter, unlock, story flag or collectible no
+// route reaches, starts a fresh campaign; an unearned checkpoint replays the
+// saved chapter from its opening.
 bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
 {
     (void)Parameters;
@@ -182,16 +188,21 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
     const TArray<FCase> Cases = {
         {TEXT("Valid ledger-vault checkpoint"), 5, 7, 0, [](USoraSaveGame&) {}, EOutcome::Restored},
         {TEXT("Valid boss phase"), 1, 14, 1, [](USoraSaveGame&) {}, EOutcome::Restored},
+        {TEXT("Valid final-chapter checkpoint with a story flag"), 7, 3, 0, [](USoraSaveGame&) {}, EOutcome::Restored},
         {TEXT("Schema-5 save"), 5, 7, 0, [](USoraSaveGame& Save) { Save.SaveSchema = 5; }, EOutcome::FreshCampaign},
         {TEXT("Entry weapon from a later chapter"), 2, 4, 0,
             [](USoraSaveGame& Save) { Save.ChapterEntryWeapons |= 1 << 17; }, EOutcome::FreshCampaign},
         {TEXT("Entry mechanic from a later chapter"), 2, 4, 0,
             [MutoDori](USoraSaveGame& Save) { Save.ChapterEntryMechanics |= 1 << MutoDori; }, EOutcome::FreshCampaign},
+        {TEXT("Story flag no earlier chapter sets"), 2, 4, 0,
+            [](USoraSaveGame& Save) { Save.ChapterEntryFlags |= 1; }, EOutcome::FreshCampaign},
         {TEXT("Collectible from an unreached chapter"), 2, 4, 0,
             [](USoraSaveGame& Save) { Save.Collectibles = static_cast<int64>(1ull << 40); }, EOutcome::FreshCampaign},
         {TEXT("Chapter beyond the reach"), 4, 3, 0, [](USoraSaveGame& Save) { Save.HighestChapter = 3; }, EOutcome::FreshCampaign},
         {TEXT("Unearned weapon at the checkpoint"), 5, 7, 0,
             [](USoraSaveGame& Save) { Save.CheckpointWeapons |= 1 << 12; }, EOutcome::ChapterStart},
+        {TEXT("Unearned story flag at the checkpoint"), 6, 3, 0,
+            [](USoraSaveGame& Save) { Save.CheckpointFlags |= 1; }, EOutcome::ChapterStart},
         {TEXT("Unearned site at the checkpoint"), 5, 7, 0,
             [](USoraSaveGame& Save) { Save.CheckpointSitesMask |= 4; }, EOutcome::ChapterStart},
         {TEXT("Beat saved without its requirements"), 5, 7, 0,
@@ -238,6 +249,7 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
             TestEqual(*(Name + TEXT(": phase")), Campaign->ActivePhase(), Case.Phase);
             TestEqual(*(Name + TEXT(": beats done")), static_cast<int32>(Campaign->Progress().CompletedMask), Seed->CheckpointBeatsMask);
             TestEqual(*(Name + TEXT(": weapons")), static_cast<int32>(Campaign->Progress().WeaponsMask), Seed->CheckpointWeapons);
+            TestEqual(*(Name + TEXT(": story flags")), static_cast<int32>(Campaign->Progress().FlagsMask), Seed->CheckpointFlags);
             TestEqual(*(Name + TEXT(": sites")), Mode->Arena()->ActivatedMask(), Seed->CheckpointSitesMask);
             break;
         case EOutcome::ChapterStart:
@@ -245,6 +257,7 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
             TestEqual(*(Name + TEXT(": replays from the opening")), Campaign->ActiveBeat(), 0);
             TestEqual(*(Name + TEXT(": no beats done")), static_cast<int32>(Campaign->Progress().CompletedMask), 0);
             TestEqual(*(Name + TEXT(": only the entry weapons")), static_cast<int32>(Campaign->Progress().WeaponsMask), Seed->ChapterEntryWeapons);
+            TestEqual(*(Name + TEXT(": only the entry story flags")), static_cast<int32>(Campaign->Progress().FlagsMask), Seed->ChapterEntryFlags);
             TestEqual(*(Name + TEXT(": no sites")), Mode->Arena()->ActivatedMask(), 0);
             break;
         case EOutcome::FreshCampaign:

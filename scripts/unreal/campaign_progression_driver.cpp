@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <string>
 
 using namespace SoraBeatRules;
 
@@ -16,13 +17,18 @@ struct FChapterFixture
 
 #include "campaign_chapters.generated.inc"
 
-static void Expect(bool Condition, const char* Message, int Chapter)
+static void Expect(bool Condition, const std::string& Message)
 {
     if (!Condition)
     {
-        std::cerr << "chapter " << Chapter + 1 << ": " << Message << '\n';
+        std::cerr << Message << '\n';
         std::exit(1);
     }
+}
+
+static void Expect(bool Condition, const char* Message, int Chapter)
+{
+    Expect(Condition, "chapter " + std::to_string(Chapter + 1) + ": " + Message);
 }
 
 static void TestDojoLessons()
@@ -96,22 +102,742 @@ static void TestCampaignRules()
     std::cout << "campaign advance, collectibles mask and training arena gates passed\n";
 }
 
+// ---------------------------------------------------------------------------
+// Beat tasks on hand-made parameters: every type's completion, advance,
+// failure, retry and checkpoint rules, and the parameters TaskValid refuses.
+// ---------------------------------------------------------------------------
+static FTask Make(EType Type, EGoal Goal, ETask Task = ETask::None)
+{
+    FTask Result{};
+    Result.Type = Type;
+    Result.Goal = Goal;
+    Result.Task = Task;
+    return Result;
+}
+
+static FTaskState Begin(const FTask& Task, const char* What)
+{
+    Expect(TaskValid(Task), std::string(What) + ": a valid task was refused");
+    FTaskState State = StartTask(Task, 0);
+    ReleaseWaves(State, Task);
+    Expect(!TaskComplete(State, Task), std::string(What) + ": complete before any play");
+    return State;
+}
+
+static FTick At(int DeltaMs, bool AtTask = false, bool Contested = false, bool Seen = false)
+{
+    FTick Step{};
+    Step.DeltaMs = DeltaMs;
+    Step.AtTask = AtTask;
+    Step.Contested = Contested;
+    Step.Seen = Seen;
+    return Step;
+}
+
+static void TestCinematicAndDialogue()
+{
+    FTask Card = Make(EType::Cinematic, EGoal::Elapsed);
+    Card.DurationMs = 3000;
+    Card.Skippable = true;
+    FTaskState State = Begin(Card, "cinematic");
+    Tick(State, Card, At(2999));
+    Expect(!TaskComplete(State, Card) && ProgressPermille(State, Card) == 999, "cinematic: ended before its clock");
+    Tick(State, Card, At(1));
+    Expect(TaskComplete(State, Card) && !Skip(State, Card), "cinematic: did not end on its clock");
+    State = Begin(Card, "cinematic");
+    Expect(Skip(State, Card) && TaskComplete(State, Card), "cinematic: Enter did not skip it");
+    FTask Fixed = Card;
+    Fixed.Skippable = false;
+    State = Begin(Fixed, "unskippable cinematic");
+    Expect(!Skip(State, Fixed) && !TaskComplete(State, Fixed), "cinematic: an unskippable one was skipped");
+    Expect(TaskCheckpointValid(Card, 0) && !TaskCheckpointValid(Card, 1), "cinematic: phase checkpoint accepted");
+    Expect(Fail(State, Card, EFail::PlayerDied) == ERetry::Checkpoint, "cinematic: a fall must restore the checkpoint");
+    FTask Bad = Card;
+    Bad.DurationMs = 0;
+    Expect(!TaskValid(Bad), "cinematic: zero-length accepted");
+    Bad = Card;
+    Bad.WaveCount = 1;
+    Bad.Waves[0] = {EWaveTrigger::Start, 0, 1, 0};
+    Expect(!TaskValid(Bad), "cinematic: waves accepted");
+
+    FTask Talk = Make(EType::Dialogue, EGoal::Lines);
+    Talk.Count = 3;
+    Talk.AnchorAfterLines = true;
+    State = Begin(Talk, "dialogue");
+    Expect(!Reach(State, Talk), "dialogue: its closing anchor counted before the lines");
+    Expect(FinishLines(State, Talk) && !TaskComplete(State, Talk) && !FinishLines(State, Talk),
+        "dialogue: lines ended it before its anchor, or finished twice");
+    Expect(Reach(State, Talk) && TaskComplete(State, Talk), "dialogue: the anchor after its lines did not end it");
+    Talk.AnchorAfterLines = false;
+    State = Begin(Talk, "dialogue");
+    Expect(FinishLines(State, Talk) && TaskComplete(State, Talk) && ProgressPermille(State, Talk) == Permille,
+        "dialogue: its lines did not end it");
+    Talk.Count = 0;
+    Expect(!TaskValid(Talk), "dialogue: a beat without lines accepted");
+    std::cout << "beat tasks: cinematic clock and skip, dialogue lines and closing anchor passed\n";
+}
+
+static void TestWaves()
+{
+    FTask Fight = Make(EType::CombatWave, EGoal::WavesCleared);
+    Fight.ClearWaves = true;
+    Fight.WaveCount = 5;
+    Fight.Waves[0] = {EWaveTrigger::Start, 0, 2, 0};
+    Fight.Waves[1] = {EWaveTrigger::PrevCleared, 0, 1, 2};
+    Fight.Waves[2] = {EWaveTrigger::AliveBelow, 2, 3, 0};
+    Fight.Waves[3] = {EWaveTrigger::Volume, 0, 1, 0};
+    Fight.Waves[4] = {EWaveTrigger::Event, 0, 2, 0};
+    FTaskState State = StartTask(Fight, 0);
+    Expect(TaskValid(Fight) && ReleaseWaves(State, Fight) == 1u, "waves: only the start wave comes with the beat");
+    Expect(!RecordDefeat(State, Fight, 1) && !ReleaseWave(State, Fight, 0), "waves: an unreleased wave was fought");
+    Expect(RecordDefeat(State, Fight, 0) && ReleaseWaves(State, Fight) == 0u, "waves: the next wave came early");
+    Expect(RecordDefeat(State, Fight, 0) && !RecordDefeat(State, Fight, 0), "waves: a wave lost more than it had");
+    // Clearing wave 0 releases wave 1; with one lethal standing, wave 2 follows at once.
+    Expect(ReleaseWaves(State, Fight) == 6u && Alive(State, Fight) == 4, "waves: prev_cleared and alive_below");
+    for (int Down = 0; Down < 3; ++Down)
+        Expect(RecordDefeat(State, Fight, 2), "waves: a released wave's defeat refused");
+    Expect(RecordDefeat(State, Fight, 1) && ReleasedCleared(State, Fight) && !TaskComplete(State, Fight),
+        "waves: a clearing fight ended before the hero entered its volume");
+    Expect(ReleaseWave(State, Fight, 3) && !ReleaseWave(State, Fight, 3) && !TaskComplete(State, Fight),
+        "waves: the volume wave did not come once");
+    Expect(RecordDefeat(State, Fight, 3) && TaskComplete(State, Fight), "waves: a reinforcement that never came blocked the end");
+    Expect(ProgressPermille(State, Fight) == Ratio(7, 9), "waves: progress is lethal defeats over all waves");
+
+    // Progress-triggered waves never leave an empty field behind them.
+    FTask Push = Make(EType::CombatWave, EGoal::WavesCleared);
+    Push.ClearWaves = true;
+    Push.WaveCount = 3;
+    Push.Waves[0] = {EWaveTrigger::Start, 0, 5, 0};
+    Push.Waves[1] = {EWaveTrigger::ProgressAt, 330, 4, 0};
+    Push.Waves[2] = {EWaveTrigger::ProgressAt, 660, 5, 0};
+    State = Begin(Push, "progress waves");
+    for (int Down = 0; Down < 5; ++Down)
+        RecordDefeat(State, Push, 0);
+    Expect(ReleaseWaves(State, Push) == 2u, "waves: a progress wave did not come at its mark");
+    for (int Down = 0; Down < 4; ++Down)
+        RecordDefeat(State, Push, 1);
+    Expect(ProgressPermille(State, Push) < 660 && ReleaseWaves(State, Push) == 4u,
+        "waves: a cleared field waited for progress only defeats can bring");
+    FTask Timed = Make(EType::ProductionTask, EGoal::Survive, ETask::Defend);
+    Timed.DurationMs = 150000;
+    Timed.ClearWaves = true;
+    Timed.WaveCount = 2;
+    Timed.Waves[0] = {EWaveTrigger::Start, 0, 1, 0};
+    Timed.Waves[1] = {EWaveTrigger::AfterMs, 45000, 2, 0};
+    State = Begin(Timed, "timed waves");
+    Tick(State, Timed, At(44999));
+    Expect(ReleaseWaves(State, Timed) == 0u, "waves: a timed wave came early");
+    Tick(State, Timed, At(1));
+    Expect(ReleaseWaves(State, Timed) == 2u, "waves: a timed wave did not come on time");
+
+    FTask Bad = Fight;
+    Bad.Waves[0] = {EWaveTrigger::PrevCleared, 0, 1, 0};
+    Expect(!TaskValid(Bad), "waves: prev_cleared on the first wave accepted");
+    Bad = Fight;
+    Bad.Waves[2].Value = 0;
+    Expect(!TaskValid(Bad), "waves: alive_below:0 accepted");
+    Bad = Push;
+    Bad.Waves[1].Value = 1001;
+    Expect(!TaskValid(Bad), "waves: progress past 1.0 accepted");
+    Bad = Fight;
+    Bad.Waves[1] = {EWaveTrigger::PrevCleared, 0, 0, 0};
+    Expect(!TaskValid(Bad), "waves: an empty wave accepted");
+    Bad = Fight;
+    Bad.ReinforceWave = 0;
+    Expect(!TaskValid(Bad), "waves: a start wave named as a reinforcement");
+    Bad = Fight;
+    Bad.MaxAlive = 0;
+    Expect(!TaskValid(Bad), "waves: max_alive 0 accepted");
+
+    FTask Sabotage = Make(EType::CombatWave, EGoal::Objectives);
+    Sabotage.Count = 2;
+    Sabotage.ClearWaves = true;
+    Sabotage.WaveCount = 1;
+    Sabotage.Waves[0] = {EWaveTrigger::Start, 0, 1, 0};
+    State = Begin(Sabotage, "combat objectives");
+    Expect(WorkObjective(State, Sabotage, 0) && !WorkObjective(State, Sabotage, 0) && !WorkObjective(State, Sabotage, 2),
+        "combat objectives: one objective counted twice or out of range");
+    Expect(WorkObjective(State, Sabotage, 1) && GoalMet(State, Sabotage) && !TaskComplete(State, Sabotage),
+        "combat objectives: finished with an opponent still standing");
+    Expect(RecordDefeat(State, Sabotage, 0) && TaskComplete(State, Sabotage), "combat objectives: did not finish");
+    FTask Stand = Make(EType::CombatWave, EGoal::Survive);
+    Stand.DurationMs = 10000;
+    Stand.WaveCount = 1;
+    Stand.Waves[0] = {EWaveTrigger::Start, 0, 3, 0};
+    State = Begin(Stand, "survival");
+    Tick(State, Stand, At(10000));
+    Expect(TaskComplete(State, Stand), "survival: did not end on its clock");
+    std::cout << "beat tasks: combat waves (start, prev_cleared, alive_below, after_s, progress_at, volume, "
+                 "reinforcement), objectives and survival passed\n";
+}
+
+static void TestDuels()
+{
+    // ch01.b11's shape: first to three, the story moves on after three lost matches.
+    FTask Match = Make(EType::Duel, EGoal::Points);
+    Match.Count = 3;
+    Match.Loss = ELoss::ContinueAfter;
+    Match.LossLimit = 3;
+    FTaskState State = Begin(Match, "sparring match");
+    Expect(ScorePoint(State, Match, true) == EPoint::Scored && ScorePoint(State, Match, true) == EPoint::Scored,
+        "sparring: a point was refused");
+    Expect(ScorePoint(State, Match, true) == EPoint::Won && TaskComplete(State, Match) &&
+        ScorePoint(State, Match, false) == EPoint::Refused, "sparring: three points did not win, or play went on");
+    State = Begin(Match, "sparring match");
+    for (int Loss = 1; Loss <= 3; ++Loss)
+    {
+        Expect(Fail(State, Match, EFail::MatchLost) == ERetry::None, "sparring: a match lost before the rival's third point");
+        Expect(Fail(State, Match, EFail::PlayerDied) == ERetry::Continue &&
+            Fail(State, Match, EFail::PlayerDied) == ERetry::Continue, "sparring: a lost bout ended the match early");
+        const ERetry Outcome = Fail(State, Match, EFail::PlayerDied);
+        Expect(State.Losses == Loss, "sparring: the lost match was not counted");
+        if (Loss < 3)
+        {
+            Expect(Outcome == ERetry::RetryBeat && !TaskComplete(State, Match), "sparring: a lost match was not retried");
+            State = RetryTask(State, Match);
+            Expect(State.Losses == Loss && State.RivalPoints == 0 && State.Done == 0, "sparring: the retry kept its points");
+        }
+        else
+            Expect(Outcome == ERetry::Advance && TaskComplete(State, Match) && !GoalMet(State, Match),
+                "sparring: the third loss did not move the story on its loss branch");
+    }
+    Match.Loss = ELoss::Retry;
+    State = Begin(Match, "retried match");
+    for (int Loss = 0; Loss < 10; ++Loss)
+    {
+        for (int Point = 0; Point < 2; ++Point)
+            Fail(State, Match, EFail::PlayerDied);
+        Expect(Fail(State, Match, EFail::PlayerDied) == ERetry::RetryBeat, "sparring: a retry policy conceded");
+        State = RetryTask(State, Match);
+    }
+    Match.Loss = ELoss::ContinueAfter;
+    Match.LossLimit = 0;
+    Expect(!TaskValid(Match), "sparring: continue_after:0 accepted");
+
+    FTask Lesson = Make(EType::Duel, EGoal::Lessons);
+    Lesson.LessonMask = 0x6u;
+    Lesson.Count = 2;
+    Lesson.Loss = ELoss::Retry;
+    State = Begin(Lesson, "lesson duel");
+    Expect(ScorePoint(State, Lesson, true) == EPoint::Refused, "lesson: a bout scored before its forms");
+    Expect(RecordForms(State, Lesson, 0x2u) && !RecordForms(State, Lesson, 0x2u) && !RecordForms(State, Lesson, 0x1u),
+        "lesson: forms outside the lesson, or twice, were recorded");
+    Expect(ScorePoint(State, Lesson, true) == EPoint::Refused, "lesson: a bout scored with a form missing");
+    Expect(RecordForms(State, Lesson, 0xfu) && State.Forms == 0x6u, "lesson: only the lesson's own forms count");
+    Expect(Fail(State, Lesson, EFail::PlayerDied) == ERetry::RetryBeat, "lesson: a lost bout did not retry in place");
+    State = RetryTask(State, Lesson);
+    Expect(State.Forms == 0x6u && ScorePoint(State, Lesson, false) == EPoint::Refused, "lesson: the retry forgot its forms");
+    Expect(ScorePoint(State, Lesson, true) == EPoint::Scored && ScorePoint(State, Lesson, true) == EPoint::Won &&
+        TaskComplete(State, Lesson), "lesson: forms and bouts did not complete it");
+    FTask Bad = Lesson;
+    Bad.LessonMask = 0x10u;
+    Expect(!TaskValid(Bad), "lesson: a fifth form accepted");
+    Bad.LessonMask = 0u;
+    Bad.Count = 0;
+    Expect(!TaskValid(Bad), "lesson: a lesson that teaches nothing accepted");
+
+    // ch06.b09's shape: fought to its end, with a family-page event (and checkpoint) at half health.
+    FTask Bout = Make(EType::Duel, EGoal::OpponentDown);
+    Bout.PhaseCount = 2;
+    Bout.PhaseStart[1] = 500;
+    State = Begin(Bout, "duel to the end");
+    Expect(!OpponentHealth(State, Bout, 700) && State.Phase == 0, "duel: a phase began early");
+    Expect(OpponentHealth(State, Bout, 500) && State.Phase == 1, "duel: the half-health event did not begin");
+    Expect(!OpponentHealth(State, Bout, 800) && State.OpponentPermille == 500, "duel: the opponent healed");
+    Expect(!OpponentHealth(State, Bout, -5) && TaskComplete(State, Bout), "duel: did not end at zero health");
+    Expect(TaskCheckpointValid(Bout, 1) && !TaskCheckpointValid(Bout, 2), "duel: phase checkpoints");
+    State = StartTask(Bout, 1);
+    Expect(State.Phase == 1 && State.OpponentPermille == 500 && PhaseStartPermille(Bout, 1) == 500,
+        "duel: a restored phase did not return at its health");
+    State = StartTask(Bout, 5);
+    Expect(State.Phase == 0 && State.OpponentPermille == Permille, "duel: a phase beyond the fight was restored");
+    Expect(Fail(State, Bout, EFail::PlayerDied) == ERetry::Checkpoint, "duel: a fall in a duel to the end must reload");
+    std::cout << "beat tasks: sparring points and loss policies, lesson forms and bouts, phased duel passed\n";
+}
+
+static void TestBossAndStealth()
+{
+    FTask Boss = Make(EType::Boss, EGoal::OpponentDown);
+    Boss.PhaseCount = 3;
+    Boss.PhaseStart[1] = 600;
+    Boss.PhaseStart[2] = 250;
+    Boss.FailMask = FailBit(EFail::PlayerDied) | FailBit(EFail::BossEvent);
+    FTaskState State = Begin(Boss, "boss");
+    Expect(OpponentHealth(State, Boss, 100) && State.Phase == 2, "boss: a blow through two phases did not reach the third");
+    Expect(ProgressPermille(State, Boss) == 900 && !TaskComplete(State, Boss), "boss: progress is health lost");
+    Expect(Fail(State, Boss, EFail::BossEvent) == ERetry::Checkpoint && Fail(State, Boss, EFail::Detected) == ERetry::None &&
+        Fail(State, Boss, EFail::HorseDown) == ERetry::None, "boss: failures outside its rows");
+    Expect(TaskCheckpointValid(Boss, 2) && !TaskCheckpointValid(Boss, 3), "boss: phase checkpoints");
+    FTask Bad = Boss;
+    Bad.PhaseStart[2] = 700;
+    Expect(!TaskValid(Bad), "boss: rising phase health accepted");
+    Bad = Boss;
+    Bad.PhaseStart[0] = 900;
+    Expect(!TaskValid(Bad), "boss: a first phase below full health accepted");
+    Bad = Make(EType::Duel, EGoal::Points);
+    Bad.Count = 3;
+    Bad.PhaseCount = 2;
+    Bad.PhaseStart[1] = 500;
+    Expect(!TaskValid(Bad), "boss: phases on a points match accepted");
+
+    FTask Zone = Make(EType::StealthZone, EGoal::Exit);
+    Zone.WaveCount = 1;
+    Zone.Waves[0] = {EWaveTrigger::Event, 0, 3, 0};
+    Zone.OnDetected = EDetected::Reinforce;
+    Zone.ReinforceWave = 0;
+    State = Begin(Zone, "stealth zone");
+    Expect(State.Released == 0u, "stealth: the alarm wave came without an alarm");
+    Expect(Fail(State, Zone, EFail::Detected) == ERetry::Continue && Released(State, 0),
+        "stealth: detection did not call the reinforcements");
+    Expect(Reach(State, Zone) && TaskComplete(State, Zone), "stealth: the exit waited for the reinforcements to fall");
+    Zone.OnDetected = EDetected::Restart;
+    Zone.ReinforceWave = -1;
+    State = Begin(Zone, "stealth restart");
+    Expect(Fail(State, Zone, EFail::Detected) == ERetry::Checkpoint, "stealth: restart_checkpoint did not restart");
+    Zone.OnDetected = EDetected::Combat;
+    State = Begin(Zone, "stealth combat");
+    Expect(Fail(State, Zone, EFail::Detected) == ERetry::Continue && State.Released == 0u, "stealth: combat detection");
+    FTask Plant = Make(EType::StealthZone, EGoal::Objectives);
+    Plant.Count = 3;
+    State = Begin(Plant, "stealth objectives");
+    for (int Objective = 0; Objective < 3; ++Objective)
+        Expect(!TaskComplete(State, Plant) && WorkObjective(State, Plant, Objective), "stealth: an objective refused");
+    Expect(TaskComplete(State, Plant), "stealth: its objectives did not end it");
+    Bad = Zone;
+    Bad.ClearWaves = true;
+    Expect(!TaskValid(Bad), "stealth: a zone that waits for its alarms accepted");
+    std::cout << "beat tasks: boss phases and failures, stealth exit, objectives and detection passed\n";
+}
+
+static void TestProduction()
+{
+    FTask Hold = Make(EType::ProductionTask, EGoal::Hold, ETask::Hold);
+    Hold.DurationMs = 10000;
+    Hold.Contest = EContest::Pause;
+    Hold.PauseWhenSeen = true;
+    FTaskState State = Begin(Hold, "hold");
+    Tick(State, Hold, At(5000));
+    Expect(State.Progress == 0, "hold: filled with the hero away");
+    Tick(State, Hold, At(4000, true));
+    Tick(State, Hold, At(2000, true, true));
+    Tick(State, Hold, At(2000, true, false, true));
+    Expect(State.Progress == 4000, "hold: filled while contested or seen");
+    Tick(State, Hold, At(6000, true));
+    Expect(TaskComplete(State, Hold) && ProgressPermille(State, Hold) == Permille, "hold: did not fill");
+    Hold.Contest = EContest::Decay;
+    Hold.DecayPermille = 100;
+    State = Begin(Hold, "decaying hold");
+    Tick(State, Hold, At(5000, true));
+    Tick(State, Hold, At(1000, true, true));
+    Expect(State.Progress == 4000, "hold: a contested decaying hold lost other than a tenth per second");
+
+    FTask Crank = Make(EType::ProductionTask, EGoal::Turns, ETask::Crank);
+    Crank.Count = 3;
+    Crank.MinTurnMs = 800;
+    Crank.MaxTurnMs = 2500;
+    Crank.DecayPermille = 100;
+    State = Begin(Crank, "crank");
+    Expect(Turn(State, Crank) == ETurn::InBand && State.Done == 1, "crank: the first turn");
+    Tick(State, Crank, At(500));
+    Expect(Turn(State, Crank) == ETurn::TooFast && State.Done == 1, "crank: a hurried turn counted");
+    Tick(State, Crank, At(700));
+    Expect(Turn(State, Crank) == ETurn::TooFast, "crank: hammering the crank found the rhythm");
+    Tick(State, Crank, At(900));
+    Expect(Turn(State, Crank) == ETurn::InBand && State.Progress == 2000 && !CrankSlipping(State, Crank), "crank: an in-band turn");
+    Tick(State, Crank, At(3000));
+    Expect(CrankSlipping(State, Crank) && State.Progress == 1100, "crank: a slack crank did not slip back");
+    Expect(Turn(State, Crank) == ETurn::Slow && State.Progress == 2100, "crank: a slow turn");
+    Tick(State, Crank, At(1000));
+    Expect(Turn(State, Crank) == ETurn::InBand && TaskComplete(State, Crank) && Turn(State, Crank) == ETurn::Refused,
+        "crank: three turns' worth did not finish it");
+    FTask Bad = Crank;
+    Bad.MinTurnMs = 3000;
+    Expect(!TaskValid(Bad), "crank: an inverted rate band accepted");
+
+    FTask Escort = Make(EType::ProductionTask, EGoal::Escort, ETask::Escort);
+    Escort.SpeedCmS = 200;
+    Escort.WaitCm = 800;
+    Escort.PathCm = 1000;
+    Escort.FailMask = FailBit(EFail::EscortDown);
+    State = Begin(Escort, "escort");
+    Tick(State, Escort, At(4000));
+    Expect(State.Progress == 0, "escort: the party walked on without the hero");
+    Tick(State, Escort, At(2500, true));
+    Expect(ProgressPermille(State, Escort) == 500, "escort: the party's pace");
+    Expect(Fail(State, Escort, EFail::EscortDown) == ERetry::Checkpoint, "escort: a fallen escort did not fail it");
+    Tick(State, Escort, At(5000, true));
+    Expect(TaskComplete(State, Escort), "escort: the party did not arrive");
+    Escort.PathCm = 0;
+    State = Begin(Escort, "unrouted escort");
+    Tick(State, Escort, At(60000, true));
+    Expect(!TaskComplete(State, Escort), "escort: arrived without a route");
+    Escort.FailMask = 0u;
+    Expect(Fail(State, Escort, EFail::EscortDown) == ERetry::None, "escort: failed on a death its rows allow");
+
+    FTask Carry = Make(EType::ProductionTask, EGoal::Deliveries, ETask::Carry);
+    Carry.Count = 4;
+    Carry.Pickups = 1;
+    Carry.Dropoffs = 2;
+    Carry.DropOnHit = true;
+    State = Begin(Carry, "carry");
+    Expect(!Deliver(State, Carry, 0) && Pickup(State, Carry, 0) && !Pickup(State, Carry, 0), "carry: two items at once");
+    Expect(Deliver(State, Carry, 1) && Pickup(State, Carry, 0), "carry: the store could not be revisited");
+    Expect(DropCarried(State, Carry) && !Deliver(State, Carry, 1), "carry: a dropped item was delivered");
+    Expect(Pickup(State, Carry, 0) && Deliver(State, Carry, 1) && Pickup(State, Carry, 0), "carry: a second delivery");
+    Expect(!Deliver(State, Carry, 1) && Deliver(State, Carry, 0), "carry: one drop-off took more than its share");
+    Expect(Pickup(State, Carry, 0) && Deliver(State, Carry, 0) && TaskComplete(State, Carry) && !Pickup(State, Carry, 0),
+        "carry: four deliveries did not finish it");
+    Carry.Count = 2;
+    Carry.Pickups = 3;
+    Carry.Dropoffs = 1;
+    State = Begin(Carry, "distinct goods");
+    Expect(Pickup(State, Carry, 0) && Deliver(State, Carry, 0) && !Pickup(State, Carry, 0), "carry: distinct goods taken twice");
+    Expect(Pickup(State, Carry, 2) && DropCarried(State, Carry) && Pickup(State, Carry, 2), "carry: a dropped good did not return");
+    Expect(Deliver(State, Carry, 0) && TaskComplete(State, Carry), "carry: distinct goods did not finish it");
+    Carry.DropOnHit = false;
+    State = Begin(Carry, "sure-footed carry");
+    Expect(Pickup(State, Carry, 1) && !DropCarried(State, Carry), "carry: dropped an item a hit cannot knock loose");
+
+    FTask Forge = Make(EType::ProductionTask, EGoal::Steps, ETask::Manufacture);
+    Forge.StepCount = 3;
+    Forge.Steps[0] = {1, 0, 0};
+    Forge.Steps[1] = {3, 700, 150};
+    Forge.Steps[2] = {1, 0, 0};
+    State = Begin(Forge, "manufacture");
+    Expect(Stroke(State, Forge) == EStroke::StepDone && Stroke(State, Forge) == EStroke::Counted, "manufacture: first strokes");
+    Tick(State, Forge, At(700));
+    Expect(Stroke(State, Forge) == EStroke::Counted && State.StepDone == 2, "manufacture: an on-beat stroke");
+    Tick(State, Forge, At(900));
+    Expect(Stroke(State, Forge) == EStroke::Missed && State.StepDone == 1 && State.Done == 2,
+        "manufacture: an off-beat stroke counted");
+    Tick(State, Forge, At(560));
+    Expect(Stroke(State, Forge) == EStroke::Counted, "manufacture: a stroke inside the tolerance missed");
+    Tick(State, Forge, At(849));
+    Expect(Stroke(State, Forge) == EStroke::StepDone && !TaskComplete(State, Forge), "manufacture: the rhythm step");
+    Expect(Stroke(State, Forge) == EStroke::Finished && TaskComplete(State, Forge) && State.Done == TotalStrokes(Forge) &&
+        Stroke(State, Forge) == EStroke::Refused, "manufacture: did not finish in order");
+    Bad = Forge;
+    Bad.Steps[1].ToleranceMs = 700;
+    Expect(!TaskValid(Bad), "manufacture: a tolerance as wide as the beat accepted");
+    Bad = Forge;
+    Bad.Steps[0].ToleranceMs = 10;
+    Expect(!TaskValid(Bad), "manufacture: a tolerance without a beat accepted");
+
+    FTask Defend = Make(EType::ProductionTask, EGoal::Survive, ETask::Defend);
+    Defend.DurationMs = 5000;
+    Defend.TargetCount = 2;
+    Defend.TargetHp[0] = 400;
+    Defend.TargetHp[1] = 300;
+    Defend.FailMask = FailBit(EFail::PlayerDied) | FailBit(EFail::TargetDestroyed);
+    State = Begin(Defend, "defend");
+    Expect(!DamageTarget(State, Defend, 0, 100) && RepairTarget(State, Defend, 0, 50) && State.TargetHp[0] == 350,
+        "defend: damage and repair");
+    Expect(RepairTarget(State, Defend, 0, 100) && State.TargetHp[0] == 400 && !RepairTarget(State, Defend, 0, 1),
+        "defend: repair past the target's health");
+    Expect(DamageTarget(State, Defend, 1, 999) && !RepairTarget(State, Defend, 1, 50) && !DamageTarget(State, Defend, 1, 1),
+        "defend: a destroyed target was repaired or destroyed twice");
+    Expect(Fail(State, Defend, EFail::TargetDestroyed) == ERetry::Checkpoint, "defend: losing a target did not fail it");
+    Tick(State, Defend, At(5000));
+    Expect(TaskComplete(State, Defend), "defend: did not end on its clock");
+    Bad = Defend;
+    Bad.TargetHp[1] = 0;
+    Expect(!TaskValid(Bad), "defend: a target without health accepted");
+    Bad = Make(EType::CombatWave, EGoal::Hold, ETask::Hold);
+    Bad.DurationMs = 1000;
+    Expect(!TaskValid(Bad), "production: a hold on a combat beat accepted");
+    Bad = Make(EType::ProductionTask, EGoal::Hold);
+    Bad.DurationMs = 1000;
+    Expect(!TaskValid(Bad), "production: a task without its kind accepted");
+    std::cout << "beat tasks: hold (pause, decay, seen), crank band and slip, escort pace, carry and drops, "
+                 "manufacture rhythm, defended targets passed\n";
+}
+
+static void TestRideExploreCollectible()
+{
+    FTask Ride = Make(EType::HorsebackRide, EGoal::Exit);
+    Ride.HorseDownRetries = true;
+    Ride.ClearWaves = true;
+    Ride.WaveCount = 2;
+    Ride.Waves[0] = {EWaveTrigger::Start, 0, 1, 0};
+    Ride.Waves[1] = {EWaveTrigger::ProgressAt, 400, 2, 0};
+    Ride.FailMask = FailBit(EFail::PlayerDied) | FailBit(EFail::ConvoyLost);
+    FTaskState State = Begin(Ride, "ride");
+    // An ambush along the route comes when the rider passes its mark, not at the destination.
+    Expect(Travel(State, Ride, 399) && ReleaseWaves(State, Ride) == 0u && !Travel(State, Ride, 200) && State.Progress == 399,
+        "ride: the way fell back, or its ambush came early");
+    Expect(Travel(State, Ride, 1000) && State.Progress == 999 && ReleaseWaves(State, Ride) == 2u && !TaskComplete(State, Ride),
+        "ride: the way completed without arriving, or its ambush did not come");
+    Expect(RecordDefeat(State, Ride, 1) && RecordDefeat(State, Ride, 1), "ride: the ambush could not be fought");
+    Expect(Fail(State, Ride, EFail::HorseDown) == ERetry::Checkpoint && Fail(State, Ride, EFail::ConvoyLost) == ERetry::Checkpoint,
+        "ride: failures");
+    Expect(Reach(State, Ride) && !TaskComplete(State, Ride), "ride: arrived with its attackers standing");
+    Expect(RecordDefeat(State, Ride, 0) && TaskComplete(State, Ride), "ride: did not end at its destination");
+    Ride.HorseDownRetries = false;
+    Expect(Fail(State, Ride, EFail::HorseDown) == ERetry::Continue, "ride: dismount_continue reloaded");
+    FTask Cargo = Make(EType::HorsebackRide, EGoal::Deliveries);
+    Cargo.Count = 3;
+    Cargo.Dropoffs = 3;
+    State = Begin(Cargo, "cargo ride");
+    Expect(Deliver(State, Cargo, 0) && !Deliver(State, Cargo, 0) && Deliver(State, Cargo, 2) && !TaskComplete(State, Cargo),
+        "cargo: a hamlet took two loads");
+    Expect(Deliver(State, Cargo, 1) && TaskComplete(State, Cargo), "cargo: three hamlets did not finish it");
+    Cargo.Count = 2;
+    Expect(!TaskValid(Cargo), "cargo: loads that do not match the hamlets accepted");
+
+    FTask Cache = Make(EType::ExploreOptional, EGoal::Cache);
+    State = Begin(Cache, "explore");
+    Expect(OpenCache(State, Cache) && !OpenCache(State, Cache) && TaskComplete(State, Cache), "explore: the cache");
+    FTask Found = Make(EType::Collectible, EGoal::Found);
+    State = Begin(Found, "collectible");
+    Expect(!OpenCache(State, Found) && Find(State, Found) && !Find(State, Found) && TaskComplete(State, Found),
+        "collectible: the pickup");
+
+    // Chapter-level task rules: the opening cinematic, optional beats and phase saves.
+    FBeat Beats[4] = {{0u, 0, 0u, 0u, 0u, 0u, false, true, 0}, {1u, 1, 0u, 0u, 0u, 0u, false, true, 0},
+        {2u, 2, 0u, 0u, 0u, 0u, false, true, 0}, {4u, -1, 0u, 0u, 0u, 0u, false, false, 0}};
+    FTask Talk = Make(EType::Dialogue, EGoal::Lines);
+    Talk.Count = 1;
+    FTask Tasks[4] = {Make(EType::Cinematic, EGoal::Elapsed), Make(EType::Boss, EGoal::OpponentDown), Talk, Talk};
+    Tasks[0].DurationMs = 1000;
+    Tasks[1].PhaseCount = 2;
+    Tasks[1].PhaseStart[1] = 500;
+    Expect(TasksValid(Beats, Tasks, 4), "chapter tasks: a valid chapter refused");
+    Beats[1].PhaseCheckpoints = 1;
+    Expect(TasksValid(Beats, Tasks, 4), "chapter tasks: a boss's phase save refused");
+    Beats[1].PhaseCheckpoints = 2;
+    Expect(!TasksValid(Beats, Tasks, 4), "chapter tasks: a save past the boss's last phase accepted");
+    Beats[1].PhaseCheckpoints = 0;
+    Beats[2].PhaseCheckpoints = 1;
+    Expect(!TasksValid(Beats, Tasks, 4), "chapter tasks: a phase save in dialogue accepted");
+    Beats[2].PhaseCheckpoints = 0;
+    Beats[3].Optional = true;
+    Expect(ChapterValid(Beats, 4) && !TasksValid(Beats, Tasks, 4), "chapter tasks: optional dialogue accepted");
+    Tasks[3] = Cache;
+    Expect(TasksValid(Beats, Tasks, 4), "chapter tasks: an optional explore beat refused");
+    Beats[3].Optional = false;
+    Expect(!TasksValid(Beats, Tasks, 4), "chapter tasks: a required explore beat accepted");
+    Tasks[3] = Talk;
+    Tasks[0] = Talk;
+    Expect(!TasksValid(Beats, Tasks, 4), "chapter tasks: a chapter that does not open on a cinematic accepted");
+    std::cout << "beat tasks: rides, cargo, explore caches, collectibles and chapter task rules passed\n";
+}
+
+// ---------------------------------------------------------------------------
+// Every authored task, played by a hero who does everything right and then
+// through its failures.
+// ---------------------------------------------------------------------------
+static bool DefeatOne(FTaskState& State, const FTask& Task)
+{
+    for (int Wave = 0; Wave < Task.WaveCount; ++Wave)
+        if (Released(State, Wave) && State.Down[Wave] < Task.Waves[Wave].Lethal)
+            return RecordDefeat(State, Task, Wave);
+    return false;
+}
+
+static int FirstPendingVolume(const FTaskState& State, const FTask& Task)
+{
+    for (int Wave = 0; Wave < Task.WaveCount; ++Wave)
+        if (!Released(State, Wave) && Task.Waves[Wave].Trigger == EWaveTrigger::Volume)
+            return Wave;
+    return -1;
+}
+
+// One right action toward the goal; false when the goal offers none.
+static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
+{
+    switch (Task.Goal)
+    {
+    case EGoal::Elapsed: return Tick(State, Task, At(250));
+    case EGoal::Lines: return FinishLines(State, Task) || Reach(State, Task);
+    case EGoal::WavesCleared:
+    {
+        const int Volume = FirstPendingVolume(State, Task);
+        return (ReleasedCleared(State, Task) && Volume >= 0 && ReleaseWave(State, Task, Volume)) || Tick(State, Task, At(500));
+    }
+    case EGoal::Objectives:
+        for (int Objective = 0; Objective < Task.Count; ++Objective)
+            if (WorkObjective(State, Task, Objective))
+                return true;
+        return Tick(State, Task, At(500));
+    case EGoal::Survive: return Tick(State, Task, At(500));
+    case EGoal::Points: return ScorePoint(State, Task, true) != EPoint::Refused || Tick(State, Task, At(500));
+    case EGoal::Lessons:
+        return RecordForms(State, Task, 0x0fu) || ScorePoint(State, Task, true) != EPoint::Refused || Tick(State, Task, At(500));
+    case EGoal::OpponentDown:
+    {
+        const int Before = State.Phase;
+        const int Health = State.OpponentPermille - 50;
+        OpponentHealth(State, Task, Health);
+        // A phase begins exactly where its authored health says.
+        for (int Phase = Before + 1; Phase <= State.Phase; ++Phase)
+            Expect(Health <= Task.PhaseStart[Phase] && Health + 50 > Task.PhaseStart[Phase], Where + ": phase began off its mark");
+        return true;
+    }
+    // The hero rides or creeps a tenth of the way at a time, then arrives.
+    case EGoal::Exit:
+        return (State.Progress < 900 && Travel(State, Task, State.Progress + 100)) || Reach(State, Task) ||
+            Tick(State, Task, At(500));
+    case EGoal::Hold: return Tick(State, Task, At(500, true));
+    case EGoal::Turns:
+    {
+        Tick(State, Task, At((Task.MinTurnMs + Task.MaxTurnMs) / 2));
+        const ETurn Result = Turn(State, Task);
+        Expect(Result == ETurn::InBand || Result == ETurn::Refused, Where + ": an in-band turn was refused");
+        return true;
+    }
+    case EGoal::Escort: return Tick(State, Task, At(500, true));
+    case EGoal::Deliveries:
+        if (Task.Task == ETask::Carry && !State.Carrying)
+        {
+            for (int Point = 0; Point < Task.Pickups; ++Point)
+                if (Pickup(State, Task, Point))
+                    return true;
+            return Tick(State, Task, At(500));
+        }
+        for (int Point = 0; Point < Task.Dropoffs; ++Point)
+            if (Deliver(State, Task, Point))
+                return true;
+        return Tick(State, Task, At(500));
+    case EGoal::Steps:
+    {
+        if (GoalMet(State, Task))
+            return Tick(State, Task, At(500));
+        const FStep& Current = Task.Steps[State.Step];
+        Tick(State, Task, At(Current.BeatMs > 0 && State.StepDone > 0 ? Current.BeatMs : 400));
+        Expect(Stroke(State, Task) != EStroke::Missed, Where + ": an on-beat stroke missed");
+        return true;
+    }
+    case EGoal::Cache: return OpenCache(State, Task) || Tick(State, Task, At(500));
+    case EGoal::Found: return Find(State, Task) || Tick(State, Task, At(500));
+    }
+    return false;
+}
+
+// Plays the task from Phase to its end; returns the actions it took.
+static int PlayTask(const FTask& Task, int Phase, const std::string& Where)
+{
+    FTaskState State = StartTask(Task, Phase);
+    Expect(State.Phase == Phase && State.OpponentPermille == PhaseStartPermille(Task, Phase),
+        Where + ": the checkpoint did not restore its phase");
+    int Actions = 0;
+    for (; Actions < 100000 && !TaskComplete(State, Task); ++Actions)
+    {
+        ReleaseWaves(State, Task);
+        if (TaskComplete(State, Task) || DefeatOne(State, Task))
+            continue;
+        Expect(Act(State, Task, Where), Where + ": the hero had nothing to do");
+    }
+    Expect(TaskComplete(State, Task), Where + ": the task never completes (deadlocked waves or goal)");
+    Expect(GoalMet(State, Task) && !State.Conceded, Where + ": completed off its goal");
+    Expect(Task.Goal == EGoal::WavesCleared || ProgressPermille(State, Task) == Permille,
+        Where + ": completed short of full progress");
+    Expect(!Task.ClearWaves || Alive(State, Task) == 0, Where + ": completed with released opponents standing");
+    Expect(!Tick(State, Task, At(1000)) && ScorePoint(State, Task, true) == EPoint::Refused,
+        Where + ": play went on after completion");
+    return Actions;
+}
+
+static void TestAuthoredTasks(int Chapter, const FChapterFixture& Plan, const FTask* Tasks)
+{
+    Expect(TasksValid(Plan.Beats, Tasks, Plan.Count), "authored tasks violate the task rules", Chapter);
+    for (int Index = 0; Index < Plan.Count; ++Index)
+    {
+        FTask Task = Tasks[Index];
+        const std::string Where = BeatIds[Chapter][Index];
+        Expect(TaskValid(Task), Where + ": authored task invalid");
+        // Until the world lays an escort's route out, a 30 m walk stands in.
+        if (Task.Goal == EGoal::Escort && Task.PathCm == 0)
+            Task.PathCm = 3000;
+        PlayTask(Task, 0, Where);
+        // Each later phase a boss or duel saves at restores and plays to the end.
+        for (int Phase = 1; Phase <= Plan.Beats[Index].PhaseCheckpoints; ++Phase)
+        {
+            Expect(TaskCheckpointValid(Task, Phase), Where + ": a phase checkpoint the task refuses");
+            PlayTask(Task, Phase, Where + " (restored phase)");
+        }
+        Expect(!TaskCheckpointValid(Task, Task.PhaseCount), Where + ": a checkpoint past the last phase");
+
+        // Failures: a fall, the beat's own rows, a lost match, detection and a lost horse.
+        FTaskState State = StartTask(Task, 0);
+        const ERetry Fall = Fail(State, Task, EFail::PlayerDied);
+        const ERetry Expected = Task.Goal == EGoal::Points ? ERetry::Continue :
+            Task.Goal == EGoal::Lessons && Task.Loss == ELoss::Retry ? ERetry::RetryBeat : ERetry::Checkpoint;
+        Expect(Fall == Expected, Where + ": a fall did not follow the beat's policy");
+        for (EFail Event : {EFail::TargetDestroyed, EFail::EscortDown, EFail::ConvoyLost, EFail::BossEvent})
+        {
+            State = StartTask(Task, 0);
+            Expect(Fail(State, Task, Event) == ((Task.FailMask & FailBit(Event)) != 0u ? ERetry::Checkpoint : ERetry::None),
+                Where + ": a failure row disagrees with its mask");
+        }
+        if (Task.Goal == EGoal::Points)
+        {
+            State = StartTask(Task, 0);
+            for (int Match = 1; Match <= 12; ++Match)
+            {
+                ERetry Outcome = ERetry::Continue;
+                for (int Point = 0; Point < Task.Count; ++Point)
+                    Outcome = Fail(State, Task, EFail::PlayerDied);
+                if (Task.Loss == ELoss::ContinueAfter && Match == Task.LossLimit)
+                {
+                    Expect(Outcome == ERetry::Advance && TaskComplete(State, Task), Where + ": the story did not move on after its losses");
+                    break;
+                }
+                Expect(Outcome == ERetry::RetryBeat, Where + ": a lost match was not retried");
+                State = RetryTask(State, Task);
+            }
+        }
+        State = StartTask(Task, 0);
+        const ERetry Seen = Fail(State, Task, EFail::Detected);
+        if (Task.Type == EType::StealthZone)
+        {
+            Expect(Seen == (Task.OnDetected == EDetected::Restart ? ERetry::Checkpoint : ERetry::Continue),
+                Where + ": detection did not follow on_detected");
+            Expect(Task.OnDetected != EDetected::Reinforce || Released(State, Task.ReinforceWave),
+                Where + ": detection did not call its reinforcements");
+            Expect(!Task.ClearWaves, Where + ": a stealth zone waits for its alarms");
+        }
+        else if (!Task.PauseWhenSeen)
+            Expect(Seen == ERetry::None, Where + ": detection outside stealth");
+        State = StartTask(Task, 0);
+        const ERetry Thrown = Fail(State, Task, EFail::HorseDown);
+        Expect(Thrown == (Task.Type != EType::HorsebackRide ? ERetry::None :
+            Task.HorseDownRetries ? ERetry::Checkpoint : ERetry::Continue), Where + ": a lost horse");
+    }
+}
+
 static bool SameProgress(const FProgress& A, const FProgress& B)
 {
     return A.CompletedMask == B.CompletedMask && A.SitesMask == B.SitesMask && A.WeaponsMask == B.WeaponsMask &&
-        A.MechanicsMask == B.MechanicsMask && A.Complete == B.Complete;
+        A.MechanicsMask == B.MechanicsMask && A.FlagsMask == B.FlagsMask && A.Complete == B.Complete;
 }
+
+struct FEntry
+{
+    unsigned Weapons;
+    unsigned Mechanics;
+    unsigned Flags;
+};
+
+// Weapons in the order a route first holds them: {weapon, chapter, beat}.
+struct FUnlockLog
+{
+    int Rows[WeaponCount][3];
+    int Count;
+};
 
 // Plays one chapter from its entry masks, completing optional beats only when
 // asked, and checks every gate and checkpoint on the way. Returns the exit state.
-static FProgress PlayChapter(int Chapter, const FChapterFixture& Plan, unsigned EntryWeapons,
-    unsigned EntryMechanics, bool PlayOptional)
+static FProgress PlayChapter(int Chapter, const FChapterFixture& Plan, FEntry Entry, bool PlayOptional, FUnlockLog& Log)
 {
     const FBeat* Beats = Plan.Beats;
     const int Count = Plan.Count;
-    FProgress State{0u, 0u, EntryWeapons, EntryMechanics, false};
-    Expect(ProgressValid(State, Beats, Count, EntryWeapons, EntryMechanics), "new chapter invalid", Chapter);
+    FProgress State{0u, 0u, Entry.Weapons, Entry.Mechanics, Entry.Flags, false};
+    Expect(ProgressValid(State, Beats, Count, Entry.Weapons, Entry.Mechanics, Entry.Flags), "new chapter invalid", Chapter);
     Expect(!FinishChapter(State, Beats, Count), "exit opened before any beat", Chapter);
+    const auto Forged = [&](FProgress Forgery, const char* Message)
+    {
+        Expect(!ProgressValid(Forgery, Beats, Count, Entry.Weapons, Entry.Mechanics, Entry.Flags), Message, Chapter);
+    };
     for (int Index = 0; Index < Count; ++Index)
     {
         const FBeat& Beat = Beats[Index];
@@ -135,45 +861,55 @@ static FProgress PlayChapter(int Chapter, const FChapterFixture& Plan, unsigned 
         for (int Phase = 0; Phase <= Beat.PhaseCheckpoints + 1; ++Phase)
         {
             const bool Saves = Phase == 0 ? Beat.Checkpoint : Phase <= Beat.PhaseCheckpoints;
-            Expect(CheckpointValid(State, Beats, Count, EntryWeapons, EntryMechanics, Index, Phase) == Saves,
+            Expect(CheckpointValid(State, Beats, Count, Entry.Weapons, Entry.Mechanics, Entry.Flags, Index, Phase) == Saves,
                 "checkpoint validity disagrees with authored checkpoints", Chapter);
         }
-        // Forged saves: a site, weapon or mechanic this route has not earned, a
-        // beat completed without its requirements, or a premature completion.
+        // Forged saves: a site, weapon, mechanic or story flag this route has
+        // not earned, a beat completed without its requirements, or a premature completion.
         const unsigned MissingSite = AllSitesMask & ~State.SitesMask;
         if (MissingSite)
-            Expect(!ProgressValid({State.CompletedMask, State.SitesMask | (MissingSite & (0u - MissingSite)),
-                State.WeaponsMask, State.MechanicsMask, false}, Beats, Count, EntryWeapons, EntryMechanics),
-                "forged site accepted", Chapter);
+            Forged({State.CompletedMask, State.SitesMask | (MissingSite & (0u - MissingSite)), State.WeaponsMask,
+                State.MechanicsMask, State.FlagsMask, false}, "forged site accepted");
         const unsigned MissingWeapon = AllWeaponsMask & ~State.WeaponsMask;
         if (MissingWeapon)
-            Expect(!ProgressValid({State.CompletedMask, State.SitesMask, State.WeaponsMask |
-                (MissingWeapon & (0u - MissingWeapon)), State.MechanicsMask, false}, Beats, Count, EntryWeapons,
-                EntryMechanics), "forged weapon accepted", Chapter);
+            Forged({State.CompletedMask, State.SitesMask, State.WeaponsMask | (MissingWeapon & (0u - MissingWeapon)),
+                State.MechanicsMask, State.FlagsMask, false}, "forged weapon accepted");
         const unsigned MissingMechanic = AllMechanicsMask & ~State.MechanicsMask;
         if (MissingMechanic)
-            Expect(!ProgressValid({State.CompletedMask, State.SitesMask, State.WeaponsMask, State.MechanicsMask |
-                (MissingMechanic & (0u - MissingMechanic)), false}, Beats, Count, EntryWeapons, EntryMechanics),
-                "forged mechanic accepted", Chapter);
+            Forged({State.CompletedMask, State.SitesMask, State.WeaponsMask,
+                State.MechanicsMask | (MissingMechanic & (0u - MissingMechanic)), State.FlagsMask, false},
+                "forged mechanic accepted");
+        const unsigned MissingFlag = AllFlagsMask & ~State.FlagsMask;
+        Forged({State.CompletedMask, State.SitesMask, State.WeaponsMask, State.MechanicsMask,
+            State.FlagsMask | (MissingFlag & (0u - MissingFlag)), false}, "forged story flag accepted");
         if (Beat.RequiresMask != 0u)
-            Expect(!ProgressValid({BeatBit(Index), SiteBit(Beat.Site), EntryWeapons | Beat.WeaponsMask |
-                Beat.GrantsMask, EntryMechanics | Beat.MechanicsMask, false}, Beats, Count, EntryWeapons,
-                EntryMechanics), "beat saved without its requirements", Chapter);
-        Expect(!ProgressValid({State.CompletedMask, State.SitesMask, State.WeaponsMask, State.MechanicsMask, true},
-            Beats, Count, EntryWeapons, EntryMechanics), "forged chapter completion accepted", Chapter);
+            Forged({BeatBit(Index), SiteBit(Beat.Site), Entry.Weapons | Beat.WeaponsMask | Beat.GrantsMask,
+                Entry.Mechanics | Beat.MechanicsMask, Entry.Flags | Beat.FlagsMask, false},
+                "beat saved without its requirements");
+        Forged({State.CompletedMask, State.SitesMask, State.WeaponsMask, State.MechanicsMask, State.FlagsMask, true},
+            "forged chapter completion accepted");
 
+        const unsigned Before = State.WeaponsMask;
         Expect(CompleteBeat(State, Beats, Count, Index), "beat completion rejected", Chapter);
         Expect(!CompleteBeat(State, Beats, Count, Index), "beat completed twice", Chapter);
-        Expect(ProgressValid(State, Beats, Count, EntryWeapons, EntryMechanics), "state invalid after a beat", Chapter);
+        Expect(ProgressValid(State, Beats, Count, Entry.Weapons, Entry.Mechanics, Entry.Flags), "state invalid after a beat", Chapter);
+        for (int Weapon = 0; Weapon < WeaponCount; ++Weapon)
+            if ((State.WeaponsMask & ~Before & (1u << Weapon)) != 0u)
+            {
+                Expect(Log.Count < WeaponCount, "a weapon unlocked twice", Chapter);
+                Log.Rows[Log.Count][0] = Weapon;
+                Log.Rows[Log.Count][1] = Chapter;
+                Log.Rows[Log.Count][2] = Index;
+                ++Log.Count;
+            }
         if (NextBeat(State, Beats, Count) != -1)
             Expect(!FinishChapter(State, Beats, Count), "exit opened with beats left", Chapter);
     }
     Expect(NextBeat(State, Beats, Count) == -1 && State.SitesMask == AllSitesMask, "required beats left", Chapter);
-    Expect(!ProgressValid({State.CompletedMask | BeatBit(Count), State.SitesMask, State.WeaponsMask,
-        State.MechanicsMask, false}, Beats, Count, EntryWeapons, EntryMechanics), "beat beyond the chapter accepted",
-        Chapter);
+    Forged({State.CompletedMask | BeatBit(Count), State.SitesMask, State.WeaponsMask, State.MechanicsMask,
+        State.FlagsMask, false}, "beat beyond the chapter accepted");
     Expect(FinishChapter(State, Beats, Count), "completed beats did not open the exit", Chapter);
-    Expect(State.Complete && ProgressValid(State, Beats, Count, EntryWeapons, EntryMechanics),
+    Expect(State.Complete && ProgressValid(State, Beats, Count, Entry.Weapons, Entry.Mechanics, Entry.Flags),
         "complete chapter invalid", Chapter);
     Expect(!FinishChapter(State, Beats, Count), "chapter completed twice", Chapter);
     for (int Index = 0; Index < Count; ++Index)
@@ -181,37 +917,84 @@ static FProgress PlayChapter(int Chapter, const FChapterFixture& Plan, unsigned 
     return State;
 }
 
+// The completist holds each weapon at its §11 beat, in §11 order (weapons of
+// one beat in either order); the skipper differs only where an optional
+// pickup waits for its auto-grant.
+static void ExpectUnlockOrder(const FUnlockLog& Log, bool Completist)
+{
+    constexpr int Rows = static_cast<int>(sizeof(UnlockOrder) / sizeof(UnlockOrder[0]));
+    Expect(Rows == WeaponCount && Log.Count == WeaponCount, "the campaign does not unlock 21 weapons once each");
+    int Moved = 0;
+    for (int Row = 0; Row < WeaponCount; ++Row)
+    {
+        int Found = -1;
+        for (int Seen = 0; Seen < Log.Count; ++Seen)
+            if (Log.Rows[Seen][0] == UnlockOrder[Row][0])
+                Found = Seen;
+        Expect(Found >= 0, "weapon " + std::to_string(UnlockOrder[Row][0]) + " never unlocked");
+        const bool AtItsBeat = Log.Rows[Found][1] == UnlockOrder[Row][1] && Log.Rows[Found][2] == UnlockOrder[Row][2];
+        Moved += AtItsBeat ? 0 : 1;
+        Expect(AtItsBeat || !Completist, "weapon " + std::to_string(UnlockOrder[Row][0]) + " is not held at its §11 beat");
+    }
+    for (int Seen = 1; Seen < Log.Count; ++Seen)
+        Expect(Log.Rows[Seen - 1][1] < Log.Rows[Seen][1] ||
+            (Log.Rows[Seen - 1][1] == Log.Rows[Seen][1] && Log.Rows[Seen - 1][2] <= Log.Rows[Seen][2]),
+            "weapons are held out of beat order");
+    Expect(Completist ? Moved == 0 : Moved == 1, "the skipper's route moves other than the one optional pickup");
+}
+
 int main()
 {
     static_assert(sizeof(Chapters) / sizeof(Chapters[0]) == 8, "Eight chapters are required");
     TestDojoLessons();
     TestCampaignRules();
-    unsigned RouteMinimum = 0u, AllEarlier = 0u, MechanicsEarlier = 0u;
-    unsigned SkipperWeapons = 0u, SkipperMechanics = 0u, CompletistWeapons = 0u, CompletistMechanics = 0u;
+    TestCinematicAndDialogue();
+    TestWaves();
+    TestDuels();
+    TestBossAndStealth();
+    TestProduction();
+    TestRideExploreCollectible();
+    unsigned RouteMinimum = 0u, AllEarlier = 0u, MechanicsEarlier = 0u, FlagsEarlier = 0u;
+    FEntry Skipper{0u, 0u, 0u}, Completist{0u, 0u, 0u};
+    FUnlockLog SkipperLog{}, CompletistLog{};
+    int AuthoredBeats = 0;
     for (int Chapter = 0; Chapter < 8; ++Chapter)
     {
         const FChapterFixture& Plan = Chapters[Chapter];
+        FTask Tasks[MaxBeats] = {};
+        ChapterTasks[Chapter](Tasks);
         Expect(ChapterValid(Plan.Beats, Plan.Count), "authored chapter violates the beat rules", Chapter);
+        TestAuthoredTasks(Chapter, Plan, Tasks);
+        AuthoredBeats += Plan.Count;
         // A player who skips every optional beat and one who plays them all
         // carry different masks between chapters; both enter validly, and
         // chapter select's cumulative mask is the completist's.
-        Expect(EntryValid(SkipperWeapons, RouteMinimum, AllEarlier) &&
-            EntryValid(CompletistWeapons, RouteMinimum, AllEarlier) && CompletistWeapons == AllEarlier &&
-            SkipperMechanics == MechanicsEarlier && CompletistMechanics == MechanicsEarlier,
+        Expect(EntryValid(Skipper.Weapons, RouteMinimum, AllEarlier) &&
+            EntryValid(Completist.Weapons, RouteMinimum, AllEarlier) && Completist.Weapons == AllEarlier &&
+            Skipper.Mechanics == MechanicsEarlier && Completist.Mechanics == MechanicsEarlier &&
+            EntryValid(Skipper.Flags, 0u, FlagsEarlier) && Completist.Flags == FlagsEarlier,
             "chapter entry masks disagree with earlier chapters", Chapter);
-        const FProgress Skipper = PlayChapter(Chapter, Plan, SkipperWeapons, SkipperMechanics, false);
-        const FProgress Completist = PlayChapter(Chapter, Plan, CompletistWeapons, CompletistMechanics, true);
-        SkipperWeapons = Skipper.WeaponsMask; SkipperMechanics = Skipper.MechanicsMask;
-        CompletistWeapons = Completist.WeaponsMask; CompletistMechanics = Completist.MechanicsMask;
+        const FProgress SkipperExit = PlayChapter(Chapter, Plan, Skipper, false, SkipperLog);
+        const FProgress CompletistExit = PlayChapter(Chapter, Plan, Completist, true, CompletistLog);
+        Skipper = {SkipperExit.WeaponsMask, SkipperExit.MechanicsMask, SkipperExit.FlagsMask};
+        Completist = {CompletistExit.WeaponsMask, CompletistExit.MechanicsMask, CompletistExit.FlagsMask};
         RouteMinimum |= ChapterWeapons(Plan.Beats, Plan.Count, false);
         AllEarlier |= ChapterWeapons(Plan.Beats, Plan.Count, true);
         MechanicsEarlier |= ChapterMechanics(Plan.Beats, Plan.Count);
+        FlagsEarlier |= ChapterFlags(Plan.Beats, Plan.Count);
         std::cout << "chapter " << Chapter + 1 << ": " << Plan.Count
-                  << " beats, three sites, unlocks, checkpoints and exit gates passed on both routes\n";
+                  << " beat tasks played to completion and through their failures; sites, unlocks, checkpoints and "
+                     "exit gates passed on both routes\n";
     }
-    Expect(SkipperWeapons == AllWeaponsMask && CompletistWeapons == AllWeaponsMask,
+    Expect(Skipper.Weapons == AllWeaponsMask && Completist.Weapons == AllWeaponsMask,
         "the campaign does not end with all 21 weapons on every route", 7);
-    Expect(SkipperMechanics == AllMechanicsMask && CompletistMechanics == AllMechanicsMask,
+    Expect(Skipper.Mechanics == AllMechanicsMask && Completist.Mechanics == AllMechanicsMask,
         "the campaign does not end with every mechanic on every route", 7);
-    std::cout << "eight-chapter offline beat rules acceptance passed (host-only)\n";
+    Expect(Completist.Flags == FlagsEarlier && FlagsEarlier != 0u && Skipper.Flags == 0u,
+        "story flags: the completist sets every flag, the skipper (who skips their optional beats) none", 7);
+    ExpectUnlockOrder(CompletistLog, true);
+    ExpectUnlockOrder(SkipperLog, false);
+    std::cout << "weapon unlock order matches bible §11 on both routes; story flags carried between chapters\n";
+    std::cout << "eight-chapter offline beat rules acceptance passed (host-only): " << AuthoredBeats
+              << " authored beat tasks\n";
 }

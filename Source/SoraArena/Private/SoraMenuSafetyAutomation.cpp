@@ -467,7 +467,7 @@ bool FSoraChapterTitleCardTest::RunTest(const FString& Parameters)
     {
         return Trigger.Beat == 0 && Trigger.On == TEXT("subtitle");
     });
-    if (!TestTrue(TEXT("The chapter opens on a cinematic with subtitles"), Opening.Goal == ESoraBeatGoal::Cinematic && FirstSubtitle != nullptr))
+    if (!TestTrue(TEXT("The chapter opens on a cinematic with subtitles"), Opening.Is(SoraBeatRules::EType::Cinematic) && FirstSubtitle != nullptr))
         return false;
     FScope Scope(*this, TEXT("ChapterTitleCard"));
     if (!WriteSave(*this, Scope.Slot, ChapterId, ChapterId) || !Scope.Start())
@@ -489,7 +489,7 @@ bool FSoraChapterTitleCardTest::RunTest(const FString& Parameters)
     Scope.Frames(2 * FramesPerSecond);
     TestEqual(TEXT("The round timer waits for the card"), Mode->RoundTime, 0.f);
     TestNull(TEXT("No subtitle before its cue"), Mode->Campaign()->CurrentDialogueCue());
-    TestTrue(TEXT("The card counts down the cinematic"), Mode->TitleCardTime > 0.f && Mode->TitleCardTime < Opening.GoalSeconds - 1.9f);
+    TestTrue(TEXT("The card counts down the cinematic"), Mode->TitleCardTime > 0.f && Mode->TitleCardTime < Opening.Task.DurationMs / 1000.f - 1.9f);
     TestTrue(TEXT("The title card shows first"), Mode->Campaign()->CinematicElapsed() < ASoraGameMode::TitleCardSeconds);
     Scope.Frames(FMath::CeilToInt32((FirstSubtitle->AtMs / 1000.f - 2.f + .1f) * FramesPerSecond));
     TestTrue(TEXT("The first subtitle appears on its cue"),
@@ -497,7 +497,7 @@ bool FSoraChapterTitleCardTest::RunTest(const FString& Parameters)
 
     // Left alone, the cinematic closes by itself and the next beat's lines follow it.
     int32 Frames = 0;
-    while (Mode->TitleCardChapter() && Frames++ < FMath::CeilToInt32(Opening.GoalSeconds) * 4)
+    while (Mode->TitleCardChapter() && Frames++ < FMath::CeilToInt32(Opening.Task.DurationMs / 1000.f) * 4)
         Scope.Frames(1, .25f);
     if (!TestTrue(TEXT("The card closes on its own"), Mode->TitleCardChapter() == nullptr && Mode->IsPlaying()))
         return false;

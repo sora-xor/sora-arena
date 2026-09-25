@@ -36,8 +36,8 @@ void SoraHUDPanels::DrawTitleCard(const FSoraHUDFrame& Frame,const FSoraChapter&
     // Cinematics play on this card until Sequencer shots land: a letterboxed
     // in-engine frame with the cinematic's subtitles on its own clock. A
     // fresh chapter's opening cinematic shows the chapter's title card first.
-    const bool bCinematic=Beat&&Beat->Goal==ESoraBeatGoal::Cinematic;
-    const float Duration=bCinematic?Beat->GoalSeconds:ASoraGameMode::TitleCardSeconds;
+    const bool bCinematic=Beat&&Beat->Is(SoraBeatRules::EType::Cinematic);
+    const float Duration=bCinematic?Beat->Task.DurationMs/1000.f:ASoraGameMode::TitleCardSeconds;
     if(!bCinematic||(Campaign->IsChapterOpening()&&Campaign->CinematicElapsed()<ASoraGameMode::TitleCardSeconds))
     {
         UTexture2D* Logo=HUD.ResistanceLogo();
@@ -69,7 +69,7 @@ void SoraHUDPanels::DrawTitleCard(const FSoraHUDFrame& Frame,const FSoraChapter&
         if(G->bEnglishSubtitles) HUD.Label(Beat->TitleEnglish,40*S,136*S,.45*S,Muted);
     }
     if(const FSoraDialogueCue* Line=Campaign->CurrentDialogueCue()) DrawLine(Frame,*Line,H-330*S);
-    if(!bCinematic||Beat->bSkippable)
+    if(!bCinematic||Beat->Task.Skippable)
         HUD.Label(G->bEnglishSubtitles?TEXT("ENTER  とばす   Press Enter to skip"):TEXT("ENTER  とばす"),120*S,H-120*S,.55*S,Ivory);
     const float Remaining=FMath::Clamp(G->TitleCardTime/FMath::Max(Duration,1.f),0.f,1.f);
     HUD.Panel(120*S,H-78*S,W-240*S,4*S,FLinearColor(.12,.19,.21));
@@ -96,10 +96,7 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
             if(Screen.X>0&&Screen.X<W&&Screen.Y>170*S&&Screen.Y<H-120*S)
                 HUD.Label(FString::Printf(TEXT("目標 / %dm"),FMath::RoundToInt32(Metres)),Screen.X-60*S,Screen.Y,.42*S,Gold);
         }
-        const FSoraBeat* Beat=Campaign->ActiveBeatData();
-        const bool bWork=Beat&&(Beat->Goal==ESoraBeatGoal::Interact||
-            (Beat->Goal==ESoraBeatGoal::Lines&&Beat->bLinesOnInteract&&!Campaign->LinesStarted()));
-        if(bWork&&Metres<2.6f) HUD.Label(TEXT("E  作業する"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+        if(Campaign->AnchorTakesInteract()&&Metres<2.6f) HUD.Label(TEXT("E  作業する"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
     }
     if(Hero&&G->bCampaign&&!G->bDeterministicPractice)
         for(const int32 Cache:Campaign->AvailableCaches())

@@ -121,7 +121,8 @@
     17
    ],
    "mechanics": [],
-   "grants": []
+   "grants": [],
+   "story_flags": []
   },
   {
    "beat": "ch08.b03",
@@ -131,7 +132,8 @@
    "mechanics": [
     "volley_command"
    ],
-   "grants": []
+   "grants": [],
+   "story_flags": []
   },
   {
    "beat": "ch08.b06",
@@ -139,7 +141,8 @@
     6
    ],
    "mechanics": [],
-   "grants": []
+   "grants": [],
+   "story_flags": []
   }
  ],
  "beats": [
@@ -160,7 +163,8 @@
      17
     ],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_council",
@@ -187,6 +191,54 @@
      }
     }
    },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 150000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {}
   },
   {
@@ -205,7 +257,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_charge",
@@ -372,6 +425,175 @@
      "bound_conscript"
     ]
    },
+   "task": {
+    "type": "horseback_ride",
+    "task": null,
+    "goal": "exit",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": true,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 200,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 250,
+      "event": null,
+      "members": [
+       {
+        "type": "seizure_walker",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 1,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 350,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "lethal": true
+       }
+      ],
+      "lethal": 4,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 500,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 550,
+      "event": null,
+      "members": [
+       {
+        "type": "seizure_walker",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 1,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 650,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 850,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "lethal": true
+       }
+      ],
+      "lethal": 4,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": true,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": "volume_enter:vol_outer_koguchi",
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "route_length_m": 1750,
     "arcs_deg": {
@@ -433,7 +655,8 @@
     "mechanics": [
      "volley_command"
     ],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_siege",
@@ -542,6 +765,115 @@
     ],
     "target_kind": "enemy"
    },
+   "task": {
+    "type": "combat_wave",
+    "task": null,
+    "goal": "waves_cleared",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": true,
+    "pause_when_seen": false,
+    "max_alive": 8,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 6,
+        "lethal": true
+       },
+       {
+        "type": "marksman",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 7,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "alive_below",
+      "value": 3,
+      "event": null,
+      "members": [
+       {
+        "type": "shield_enforcer",
+        "count": 3,
+        "lethal": true
+       },
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "prev_cleared",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "seizure_walker",
+        "count": 1,
+        "lethal": true
+       },
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 4,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "volley_command": {
      "ranks": 3,
@@ -577,7 +909,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": {
     "item_ja": "修理した道具",
@@ -690,6 +1023,130 @@
      "bound_conscript"
     ]
    },
+   "task": {
+    "type": "production_task",
+    "task": "defend",
+    "goal": "survive",
+    "count": 0,
+    "duration_ms": 150000,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": true,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "lethal": true
+       }
+      ],
+      "lethal": 4,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "after_ms",
+      "value": 40000,
+      "event": null,
+      "members": [
+       {
+        "type": "grenadier",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 2,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "after_ms",
+      "value": 80000,
+      "event": null,
+      "members": [
+       {
+        "type": "blade_retainer",
+        "count": 3,
+        "lethal": true
+       },
+       {
+        "type": "drone",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "after_ms",
+      "value": 115000,
+      "event": null,
+      "members": [
+       {
+        "type": "bound_conscript",
+        "count": 4,
+        "lethal": false
+       }
+      ],
+      "lethal": 0,
+      "nonlethal": 4
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [
+     {
+      "id": "nokaji_forge",
+      "hp": 1200
+     },
+     {
+      "id": "aid_station",
+      "hp": 800
+     }
+    ],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "target_destroyed",
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "supply_point": "sp_nokaji"
    }
@@ -710,7 +1167,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": {
     "item_ja": "兵糧",
@@ -772,6 +1230,91 @@
      "bound_conscript"
     ]
    },
+   "task": {
+    "type": "production_task",
+    "task": "carry",
+    "goal": "deliveries",
+    "count": 3,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": true,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "marksman",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 2,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 340,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 2,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [
+     "pk_nokaji_rations"
+    ],
+    "dropoffs": [
+     "do_squad_west",
+     "do_squad_mid",
+     "do_squad_east"
+    ],
+    "drop_on_hit": true,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "scripted": {
      "do_squad_west": "squad west suppresses the western marksman (no fire for 20 s)",
@@ -798,7 +1341,8 @@
      6
     ],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_gate",
@@ -934,6 +1478,124 @@
     ],
     "target_kind": "enemy"
    },
+   "task": {
+    "type": "combat_wave",
+    "task": null,
+    "goal": "objectives",
+    "count": 3,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": true,
+    "pause_when_seen": false,
+    "max_alive": 7,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "lethal": true
+       },
+       {
+        "type": "grenadier",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 330,
+      "event": null,
+      "members": [
+       {
+        "type": "shield_enforcer",
+        "count": 2,
+        "lethal": true
+       },
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 4,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 660,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       },
+       {
+        "type": "grenadier",
+        "count": 1,
+        "lethal": true
+       },
+       {
+        "type": "marksman",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [
+     "anchor_1",
+     "anchor_2",
+     "anchor_3"
+    ],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "volley_command": {
      "ranks": 2,
@@ -963,7 +1625,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_cells",
@@ -1061,6 +1724,116 @@
      "bound_conscript"
     ]
    },
+   "task": {
+    "type": "production_task",
+    "task": "escort",
+    "goal": "escort",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": true,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       },
+       {
+        "type": "auditor",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 400,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 700,
+      "event": null,
+      "members": [
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "lethal": true
+       },
+       {
+        "type": "shield_enforcer",
+        "count": 1,
+        "lethal": true
+       },
+       {
+        "type": "bound_conscript",
+        "count": 3,
+        "lethal": false
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 3
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 260,
+    "wait_cm": 1200,
+    "path_cm": 18000,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "escort_down",
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "release": {
      "interact_points": [
@@ -1093,7 +1866,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_reunion",
@@ -1113,6 +1887,54 @@
      "equipped": "keep"
     }
    },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 120000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {}
   },
   {
@@ -1131,7 +1953,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_reunion_walk",
@@ -1158,6 +1981,54 @@
      "ch08.b09.sekireisai.005"
     ]
    },
+   "task": {
+    "type": "dialogue",
+    "task": null,
+    "goal": "lines",
+    "count": 5,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": true,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": "beat_start",
+    "closing_event": "volume_enter:vol_spire_entrance",
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {}
   },
   {
@@ -1176,7 +2047,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_spire",
@@ -1272,6 +2144,120 @@
     ],
     "target_kind": "enemy"
    },
+   "task": {
+    "type": "combat_wave",
+    "task": null,
+    "goal": "waves_cleared",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": true,
+    "pause_when_seen": false,
+    "max_alive": 7,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "lethal": true
+       },
+       {
+        "type": "marksman",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "alive_below",
+      "value": 2,
+      "event": null,
+      "members": [
+       {
+        "type": "shield_enforcer",
+        "count": 2,
+        "lethal": true
+       },
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 4,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "volume",
+      "value": 0,
+      "event": "volume_enter:vol_spire_L3",
+      "members": [
+       {
+        "type": "drone",
+        "count": 4,
+        "lethal": true
+       },
+       {
+        "type": "grenadier",
+        "count": 1,
+        "lethal": true
+       },
+       {
+        "type": "auditor",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 7,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "scripted": {
      "auditor_alarm": "an auditor at an alarm panel drops a shutter over the L3 shortcut (route gets longer, never a fail)"
@@ -1295,7 +2281,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_lift",
@@ -1384,6 +2371,105 @@
      "bound_conscript"
     ]
    },
+   "task": {
+    "type": "production_task",
+    "task": "crank",
+    "goal": "turns",
+    "count": 48,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": true,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 250,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 500,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 750,
+      "event": null,
+      "members": [
+       {
+        "type": "shield_enforcer",
+        "count": 1,
+        "lethal": true
+       },
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 10,
+    "min_turn_ms": 1000,
+    "max_turn_ms": 2500,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {}
   },
   {
@@ -1402,7 +2488,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_heirlooms",
@@ -1452,6 +2539,54 @@
     ],
     "exit_hint_after_s": 60
    },
+   "task": {
+    "type": "explore_optional",
+    "task": null,
+    "goal": "cache",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {}
   },
   {
@@ -1470,7 +2605,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_amort_intro",
@@ -1490,6 +2626,54 @@
      "equipped": "keep"
     }
    },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 120000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {}
   },
   {
@@ -1508,7 +2692,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_amort",
@@ -1554,6 +2739,56 @@
     },
     "finisher": "muto_dori"
    },
+   "task": {
+    "type": "boss",
+    "task": null,
+    "goal": "opponent_down",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000,
+     700,
+     400
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": "boss_val_amort",
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "lethal_finisher": false,
     "hp": {
@@ -1589,7 +2824,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_release",
@@ -1611,6 +2847,54 @@
      }
     }
    },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 150000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {}
   },
   {
@@ -1629,7 +2913,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_festival",
@@ -1664,6 +2949,58 @@
      "bound_conscript"
     ]
    },
+   "task": {
+    "type": "production_task",
+    "task": "carry",
+    "goal": "deliveries",
+    "count": 1,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [
+     "pk_registry_canal_steps"
+    ],
+    "dropoffs": [
+     "do_kosatsu_board"
+    ],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "combat": false,
     "crowd": {
@@ -1690,7 +3027,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "ch08_torii_dawn",
@@ -1721,6 +3059,54 @@
      "ch08.b17.sekireisai.009"
     ]
    },
+   "task": {
+    "type": "dialogue",
+    "task": null,
+    "goal": "lines",
+    "count": 9,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": true,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": "beat_start",
+    "closing_event": "event:plaque_rehang_done",
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
+   },
    "ext": {
     "blocking_max_s": 20
    }
@@ -1741,7 +3127,8 @@
    "unlocks": {
     "weapons": [],
     "mechanics": [],
-    "grants": []
+    "grants": [],
+    "story_flags": []
    },
    "registry": null,
    "music": "credits_main",
@@ -1761,6 +3148,54 @@
      "equipped": null,
      "next": "credits_full"
     }
+   },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 90000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "clear_waves": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "lesson_mask": 0,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": []
    },
    "ext": {}
   }
@@ -3879,6 +5314,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 8000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3892,6 +5328,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 15000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3905,6 +5342,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 25000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3918,6 +5356,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 34000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3931,6 +5370,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 44000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3944,6 +5384,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 50000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3957,6 +5398,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 56000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3970,6 +5412,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 66000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3983,6 +5426,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 80000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -3996,6 +5440,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 96000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4009,6 +5454,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 106000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4022,6 +5468,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 116000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4035,6 +5482,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4048,6 +5496,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4061,6 +5510,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4074,6 +5524,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4087,6 +5538,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4100,6 +5552,7 @@
    "repeatable": true,
    "cooldown_s": 30,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4113,6 +5566,7 @@
    "repeatable": true,
    "cooldown_s": 45,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4126,6 +5580,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4139,6 +5594,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4152,6 +5608,7 @@
    "repeatable": true,
    "cooldown_s": 120,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4165,6 +5622,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4178,6 +5636,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4191,6 +5650,7 @@
    "repeatable": true,
    "cooldown_s": 6,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4204,6 +5664,7 @@
    "repeatable": true,
    "cooldown_s": 2,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4217,6 +5678,7 @@
    "repeatable": true,
    "cooldown_s": 8,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4230,6 +5692,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4243,6 +5706,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4256,6 +5720,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4269,6 +5734,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4283,6 +5749,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4296,6 +5763,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4309,6 +5777,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4322,6 +5791,7 @@
    "repeatable": true,
    "cooldown_s": 40,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4335,6 +5805,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4348,6 +5819,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4362,6 +5834,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4375,6 +5848,7 @@
    "repeatable": true,
    "cooldown_s": 10,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4388,6 +5862,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4401,6 +5876,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4414,6 +5890,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4427,6 +5904,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4441,6 +5919,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4454,6 +5933,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4467,6 +5947,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4480,6 +5961,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4493,6 +5975,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4506,6 +5989,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4519,6 +6003,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4533,6 +6018,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4546,6 +6032,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4559,6 +6046,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4572,6 +6060,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4585,6 +6074,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4598,6 +6088,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4611,6 +6102,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4624,6 +6116,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 16000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4637,6 +6130,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 22000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4650,6 +6144,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 29000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4663,6 +6158,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 35000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4676,6 +6172,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 42000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4689,6 +6186,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 48000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4702,6 +6200,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 66000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4715,6 +6214,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 72000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4728,6 +6228,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 80000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4745,6 +6246,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4758,6 +6260,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4771,6 +6274,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4784,6 +6288,7 @@
    "repeatable": true,
    "cooldown_s": 30,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4797,6 +6302,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4810,6 +6316,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4823,6 +6330,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4836,6 +6344,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4849,6 +6358,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4862,6 +6372,7 @@
    "repeatable": true,
    "cooldown_s": 8,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4875,6 +6386,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4888,6 +6400,7 @@
    "repeatable": true,
    "cooldown_s": 45,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4901,6 +6414,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4914,6 +6428,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4927,6 +6442,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4940,6 +6456,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4953,6 +6470,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4966,6 +6484,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4979,6 +6498,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -4992,6 +6512,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5005,6 +6526,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 12000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5018,6 +6540,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 20000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5031,6 +6554,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 30000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5044,6 +6568,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 36000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5057,6 +6582,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 46000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5070,6 +6596,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 72000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5083,6 +6610,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 82000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5096,6 +6624,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 94000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5109,6 +6638,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5122,6 +6652,7 @@
    "repeatable": true,
    "cooldown_s": 0,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5135,6 +6666,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5148,6 +6680,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5161,6 +6694,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5174,6 +6708,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5187,6 +6722,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5200,6 +6736,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5213,6 +6750,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5226,6 +6764,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5239,6 +6778,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5252,6 +6792,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5265,6 +6806,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 14000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5278,6 +6820,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 21000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5291,6 +6834,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 30000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5304,6 +6848,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 56000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5317,6 +6862,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 72000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5330,6 +6876,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 88000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5343,6 +6890,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 128000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5356,6 +6904,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5369,6 +6918,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5382,6 +6932,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5395,6 +6946,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5408,6 +6960,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5422,6 +6975,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5435,6 +6989,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5448,6 +7003,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5461,6 +7017,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5476,9 +7033,8 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
-   "ext": {
-    "requires_flag": "collectible:ch08.c03"
-   }
+   "requires_flag": "collectible:ch08.c03",
+   "ext": {}
   },
   {
    "beat": "ch08.b17",
@@ -5494,6 +7050,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": null,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5507,6 +7064,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 40000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5520,6 +7078,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 45000,
+   "requires_flag": null,
    "ext": {}
   },
   {
@@ -5533,6 +7092,7 @@
    "repeatable": false,
    "cooldown_s": null,
    "at_ms": 52000,
+   "requires_flag": null,
    "ext": {}
   }
  ],

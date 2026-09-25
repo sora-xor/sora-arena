@@ -354,10 +354,11 @@ struct FRun
     }
 };
 
-// The flagship's drone deck (ch07.b10), four opponents at once: guard and parry
-// a blade retainer, cut it down with the katana, then carbine, reload, yumi,
-// yari, sprint and jump, with every arm the earlier chapters unlocked.
-constexpr int32 RetainerChapter = 6, RetainerBeat = 9;
+// The flagship's first deck fight (ch07.b08), four opponents at once (more
+// arrive once fewer than two stand): guard and parry a blade retainer, cut it
+// down with the katana, then carbine, reload, yumi, yari, sprint and jump,
+// with every arm the earlier chapters unlocked.
+constexpr int32 RetainerChapter = 6, RetainerBeat = 7;
 FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Retainer"), Log);
@@ -382,7 +383,7 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 460: return R.Aim(R.Foe(2)) && R.Down(EKeys::LeftMouseButton);
         case 510: return R.Up(EKeys::LeftMouseButton);
         case 530: return R.Tap(EKeys::Five);
-        case 545: return R.Place(R.Foe(4), FVector(200, 0, 0)) && R.Aim(R.Foe(4));
+        case 545: return R.Place(R.Foe(3), FVector(200, 0, 0)) && R.Aim(R.Foe(3));
         case 550: return R.Tap(EKeys::RightMouseButton);
         case 570: return R.Down(EKeys::LeftShift) && R.Down(EKeys::W);
         case 595: return R.Tap(EKeys::SpaceBar);
@@ -460,12 +461,15 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
             UGameplayStatics::ApplyDamage(Boss, Boss->Health, R.Controller(), R.Hero(), UDamageType::StaticClass());
             return true;
         }
-        // Enter skips the aftermath cinematic; the registry goes to the last site.
+        // Enter skips the aftermath cinematic; the registry box is carried from
+        // the canal steps to the notice board at the last site.
         case 340: return R.Tap(EKeys::Enter);
-        case 360:
+        case 360: case 370:
         {
-            const FVector Site = R.Mode()->Arena()->NodePositions[2];
-            R.Hero()->SetActorLocation(FVector(Site.X, Site.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+            FVector Point;
+            if (!R.Mode()->Campaign()->ObjectiveAnchor(Point))
+                return R.Fail(TEXT("The registry has no pickup or drop-off"));
+            R.Hero()->SetActorLocation(FVector(Point.X, Point.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
             return R.Tap(EKeys::E);
         }
         default: return true;
@@ -601,10 +605,10 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Collector fight is unchanged by listeners"), Collector(*this, &CollectorLog), Collector(*this));
     TestEqual(TEXT("Training fight is unchanged by listeners"), Training(*this, &TrainingLog), Training(*this));
 
-    const TCHAR* Scenario = TEXT("Flagship drone deck");
+    const TCHAR* Scenario = TEXT("Flagship deck");
     TestEqual(TEXT("The chapter starts once, at its checkpoint"), RetainerLog.Count(TEXT("ChapterStarted ")), 1);
     Expect(*this, RetainerLog, Scenario, TEXT("ChapterStarted chapter=6 resumed=1 liberated=0"));
-    Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=6 beat=ch07.b10 resumed=1 phase=0"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=6 beat=ch07.b08 resumed=1 phase=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Guarded defender=Hero attacker=Retainer0 dojo=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Parried defender=Hero attacker=Retainer0 dojo=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Committed attacker=Retainer0 weapon=0 windup=0.42"));
@@ -619,8 +623,8 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, RetainerLog, Scenario, TEXT("Fired shooter=Hero weapon=18 kind=Arrow"));
     Expect(*this, RetainerLog, Scenario, TEXT("Fired shooter=Invader"));
     Expect(*this, RetainerLog, Scenario, TEXT("Damaged victim=Hero causer=Invader"));
-    Expect(*this, RetainerLog, Scenario, TEXT("BeatCompleted chapter=6 beat=ch07.b10"));
-    Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=6 beat=ch07.b11 resumed=0 phase=0"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatCompleted chapter=6 beat=ch07.b08"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=6 beat=ch07.b09 resumed=0 phase=0"));
 
     Scenario = TEXT("Dojo");
     Expect(*this, DojoLog, Scenario, TEXT("ChapterStarted chapter=0 resumed=1 liberated=0"));

@@ -30,9 +30,13 @@ public:
     FVector SpawnPoint(int32 Index) const;
     // Campaign beat layout (SoraWorldBuilderLayout.cpp). A beat that restores a
     // production site stands at that site; every other beat's objective stands
-    // on the central road, spread so consecutive beats move the hero. Explore
-    // beats hide an unmarked cache off the road, found by its lantern glow.
+    // on the central road, spread so consecutive beats move the hero. A beat
+    // with several points (objectives, pickups and drop-offs, a dialogue's
+    // closing anchor, the volumes that release waves) finds point N > 0 further
+    // along the road. Explore beats hide an unmarked cache off the road, found
+    // by its lantern glow.
     FVector BeatAnchor(int32 Beat, int32 Site) const;
+    FVector TaskAnchor(int32 Beat, int32 Site, int32 Point) const;
     FVector CacheAnchor(int32 Beat) const;
     // Shows the marker over the active objective; nullptr hides it.
     void ShowObjective(const FVector* Location);

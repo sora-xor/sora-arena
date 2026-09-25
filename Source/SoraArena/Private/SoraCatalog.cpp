@@ -1,4 +1,5 @@
 #include "SoraCatalog.h"
+#include "SoraCampaignRules.h"
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -73,32 +74,168 @@ bool WeaponMask(const FJsonRows* Values, unsigned& Out)
     }
     return true;
 }
-// Lethal opponents over every wave; nonlethal types (bound conscripts) are freed, never defeated.
-bool WaveOpponents(const FJsonObject& Params, int32& Count, int32& MaxAlive)
+template <typename TEnum>
+bool Named(const FJsonObject& Object, const TCHAR* Key, const TMap<FString, TEnum>& Names, TEnum& Out)
 {
-    Count = 0; MaxAlive = 6;
-    TArray<FString> Nonlethal = {TEXT("bound_conscript")};
-    if (const FJsonRows* Types = Rows(Params, TEXT("nonlethal_types")))
+    FString Name;
+    const TEnum* Found = Str(Object, Key, Name) ? Names.Find(Name) : nullptr;
+    if (Found) Out = *Found;
+    return Found != nullptr;
+}
+// A non-empty string, or null (left empty).
+bool Nullable(const FJsonObject& Object, const TCHAR* Key, FString& Out)
+{
+    Out.Reset();
+    return IsNull(Object, Key) || Str(Object, Key, Out);
+}
+bool Points(const FJsonObject& Object, const TCHAR* Key, TArray<FString>& Out)
+{
+    return Strings(Rows(Object, Key), Out) && Out.Num() <= SoraBeatRules::MaxPoints;
+}
+
+// A beat's task block (build_campaign_data.py normalize_task): the goal and
+// its integer parameters for SoraBeatRules, and the names the director uses.
+// Every key is required; SoraBeatRules::TaskValid then checks the numbers.
+bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
+{
+    using namespace SoraBeatRules;
+    static const TMap<FString, EType> Types = {
+        {TEXT("cinematic"), EType::Cinematic}, {TEXT("dialogue"), EType::Dialogue}, {TEXT("combat_wave"), EType::CombatWave},
+        {TEXT("duel"), EType::Duel}, {TEXT("stealth_zone"), EType::StealthZone}, {TEXT("production_task"), EType::ProductionTask},
+        {TEXT("horseback_ride"), EType::HorsebackRide}, {TEXT("boss"), EType::Boss},
+        {TEXT("explore_optional"), EType::ExploreOptional}, {TEXT("collectible"), EType::Collectible}};
+    static const TMap<FString, ETask> Tasks = {
+        {TEXT("hold"), ETask::Hold}, {TEXT("crank"), ETask::Crank}, {TEXT("escort"), ETask::Escort},
+        {TEXT("carry"), ETask::Carry}, {TEXT("manufacture"), ETask::Manufacture}, {TEXT("defend"), ETask::Defend}};
+    static const TMap<FString, EGoal> Goals = {
+        {TEXT("elapsed"), EGoal::Elapsed}, {TEXT("lines"), EGoal::Lines}, {TEXT("waves_cleared"), EGoal::WavesCleared},
+        {TEXT("objectives"), EGoal::Objectives}, {TEXT("survive"), EGoal::Survive}, {TEXT("points"), EGoal::Points},
+        {TEXT("lessons"), EGoal::Lessons}, {TEXT("opponent_down"), EGoal::OpponentDown}, {TEXT("exit"), EGoal::Exit},
+        {TEXT("hold"), EGoal::Hold}, {TEXT("turns"), EGoal::Turns}, {TEXT("escort"), EGoal::Escort},
+        {TEXT("deliveries"), EGoal::Deliveries}, {TEXT("steps"), EGoal::Steps}, {TEXT("cache"), EGoal::Cache},
+        {TEXT("found"), EGoal::Found}};
+    static const TMap<FString, EWaveTrigger> Triggers = {
+        {TEXT("start"), EWaveTrigger::Start}, {TEXT("prev_cleared"), EWaveTrigger::PrevCleared},
+        {TEXT("alive_below"), EWaveTrigger::AliveBelow}, {TEXT("after_ms"), EWaveTrigger::AfterMs},
+        {TEXT("progress_at"), EWaveTrigger::ProgressAt}, {TEXT("volume"), EWaveTrigger::Volume}, {TEXT("event"), EWaveTrigger::Event}};
+    static const TMap<FString, EContest> Contests = {
+        {TEXT("none"), EContest::None}, {TEXT("pause"), EContest::Pause}, {TEXT("decay"), EContest::Decay}};
+    static const TMap<FString, ELoss> Losses = {
+        {TEXT("checkpoint"), ELoss::Checkpoint}, {TEXT("retry"), ELoss::Retry}, {TEXT("continue_after"), ELoss::ContinueAfter}};
+    static const TMap<FString, EDetected> Detections = {
+        {TEXT("combat"), EDetected::Combat}, {TEXT("restart"), EDetected::Restart}, {TEXT("reinforce"), EDetected::Reinforce}};
+    static const TMap<FString, EFail> Failures = {
+        {TEXT("player_died"), EFail::PlayerDied}, {TEXT("match_lost"), EFail::MatchLost},
+        {TEXT("target_destroyed"), EFail::TargetDestroyed}, {TEXT("escort_down"), EFail::EscortDown},
+        {TEXT("convoy_lost"), EFail::ConvoyLost}, {TEXT("detected"), EFail::Detected},
+        {TEXT("horse_down"), EFail::HorseDown}, {TEXT("boss_event"), EFail::BossEvent}};
+    FTask& T = Beat.Task;
+    FString Kind, TaskName, Opponent;
+    int32 LessonMask = 0;
+    if (!Str(O, TEXT("type"), Kind) || Kind != TypeName || !Named(O, TEXT("type"), Types, T.Type) ||
+        !Nullable(O, TEXT("task"), TaskName) || !Named(O, TEXT("goal"), Goals, T.Goal) ||
+        !Int(O, TEXT("count"), T.Count) || !Int(O, TEXT("duration_ms"), T.DurationMs) ||
+        !O.TryGetBoolField(TEXT("skippable"), T.Skippable) || !O.TryGetBoolField(TEXT("anchor_after_lines"), T.AnchorAfterLines) ||
+        !O.TryGetBoolField(TEXT("clear_waves"), T.ClearWaves) || !O.TryGetBoolField(TEXT("pause_when_seen"), T.PauseWhenSeen) ||
+        !Int(O, TEXT("max_alive"), T.MaxAlive) || !Int(O, TEXT("lesson_mask"), LessonMask) || LessonMask < 0 ||
+        !Named(O, TEXT("loss"), Losses, T.Loss) || !Int(O, TEXT("loss_limit"), T.LossLimit) ||
+        !Named(O, TEXT("contest"), Contests, T.Contest) || !Int(O, TEXT("decay_permille"), T.DecayPermille) ||
+        !Int(O, TEXT("min_turn_ms"), T.MinTurnMs) || !Int(O, TEXT("max_turn_ms"), T.MaxTurnMs) ||
+        !Int(O, TEXT("speed_cm_s"), T.SpeedCmS) || !Int(O, TEXT("wait_cm"), T.WaitCm) || !Int(O, TEXT("path_cm"), T.PathCm) ||
+        !O.TryGetBoolField(TEXT("drop_on_hit"), T.DropOnHit) || !Named(O, TEXT("on_detected"), Detections, T.OnDetected) ||
+        !Int(O, TEXT("reinforce_wave"), T.ReinforceWave) || !O.TryGetBoolField(TEXT("horse_down_retries"), T.HorseDownRetries) ||
+        !Points(O, TEXT("objectives"), Beat.Objectives) || !Points(O, TEXT("pickups"), Beat.Pickups) ||
+        !Points(O, TEXT("dropoffs"), Beat.Dropoffs) || !Nullable(O, TEXT("lines_event"), Beat.LinesEvent) ||
+        !Nullable(O, TEXT("closing_event"), Beat.ClosingEvent) || !Nullable(O, TEXT("exit_event"), Beat.ExitEvent) ||
+        !Nullable(O, TEXT("opponent"), Opponent) || !O.TryGetBoolField(TEXT("sparring"), Beat.bSparring) ||
+        !Strings(Rows(O, TEXT("phase_events")), Beat.PhaseEvents))
+        return false;
+    if (!TaskName.IsEmpty() && !Tasks.Contains(TaskName)) return false;
+    T.Task = TaskName.IsEmpty() ? ETask::None : Tasks[TaskName];
+    T.LessonMask = static_cast<unsigned>(LessonMask);
+    T.Pickups = Beat.Pickups.Num(); T.Dropoffs = Beat.Dropoffs.Num();
+    Beat.Opponent = Opponent.IsEmpty() ? NAME_None : FName(*Opponent);
+    TArray<FString> GuardTypes;
+    if (!Strings(Rows(O, TEXT("guards")), GuardTypes)) return false;
+    for (const FString& Guard : GuardTypes) Beat.Guards.Add(FName(*Guard));
+
+    const FJsonRows* WaveRows = Rows(O, TEXT("waves"));
+    if (!WaveRows || WaveRows->Num() > MaxWaves) return false;
+    T.WaveCount = WaveRows->Num();
+    for (int32 Index = 0; Index < WaveRows->Num(); ++Index)
     {
-        Nonlethal.Reset();
-        if (!Strings(Types, Nonlethal)) return false;
-    }
-    if (Params.HasField(TEXT("max_alive")) && (!Int(Params, TEXT("max_alive"), MaxAlive) || MaxAlive < 1)) return false;
-    const FJsonRows* Waves = Rows(Params, TEXT("waves"));
-    if (!Waves) return !Params.HasField(TEXT("waves"));
-    for (const auto& Wave : *Waves)
-    {
-        const TSharedPtr<FJsonObject> WaveObject = Wave.IsValid() ? Wave->AsObject() : nullptr;
-        const FJsonRows* Enemies = WaveObject ? Rows(*WaveObject, TEXT("enemies")) : nullptr;
-        if (!Enemies) return false;
-        for (const auto& Enemy : *Enemies)
+        const auto W = (*WaveRows)[Index].IsValid() ? (*WaveRows)[Index]->AsObject() : nullptr;
+        const FJsonRows* Groups = W ? Rows(*W, TEXT("members")) : nullptr;
+        FSoraWave Wave; FWave& Rule = T.Waves[Index];
+        if (!W || !Groups || !Nullable(*W, TEXT("id"), Wave.Id) || !Named(*W, TEXT("trigger"), Triggers, Rule.Trigger) ||
+            !Int(*W, TEXT("value"), Rule.Value) || !Nullable(*W, TEXT("event"), Wave.Event) ||
+            !Int(*W, TEXT("lethal"), Rule.Lethal) || !Int(*W, TEXT("nonlethal"), Rule.Nonlethal))
+            return false;
+        // Volume and event waves are released by their event; the others by the rules alone.
+        const bool bByEvent = Rule.Trigger == EWaveTrigger::Volume || Rule.Trigger == EWaveTrigger::Event;
+        if (bByEvent == Wave.Event.IsEmpty()) return false;
+        int32 Lethal = 0, Nonlethal = 0;
+        for (const auto& Row : *Groups)
         {
-            const TSharedPtr<FJsonObject> EnemyObject = Enemy.IsValid() ? Enemy->AsObject() : nullptr;
-            FString Type; int32 Number = 0;
-            if (!EnemyObject || !Str(*EnemyObject, TEXT("type"), Type) || !Int(*EnemyObject, TEXT("count"), Number) || Number < 1)
+            const auto G = Row.IsValid() ? Row->AsObject() : nullptr;
+            FSoraWaveGroup Group; FString Type;
+            if (!G || !Str(*G, TEXT("type"), Type) || !Int(*G, TEXT("count"), Group.Count) || Group.Count < 1 ||
+                !G->TryGetBoolField(TEXT("lethal"), Group.bLethal))
                 return false;
-            if (!Nonlethal.Contains(Type)) Count += Number;
+            Group.Type = FName(*Type);
+            (Group.bLethal ? Lethal : Nonlethal) += Group.Count;
+            Wave.Groups.Add(Group);
         }
+        if (Lethal != Rule.Lethal || Nonlethal != Rule.Nonlethal) return false;
+        Beat.Waves.Add(MoveTemp(Wave));
+    }
+    const FJsonRows* PhaseRows = Rows(O, TEXT("phases"));
+    if (!PhaseRows || PhaseRows->IsEmpty() || PhaseRows->Num() > MaxPhases) return false;
+    T.PhaseCount = PhaseRows->Num();
+    for (int32 Index = 0; Index < PhaseRows->Num(); ++Index)
+    {
+        double Number = 0;
+        if (!(*PhaseRows)[Index].IsValid() || !(*PhaseRows)[Index]->TryGetNumber(Number) || !Whole(Number, T.PhaseStart[Index]))
+            return false;
+    }
+    const FJsonRows* StepRows = Rows(O, TEXT("steps"));
+    if (!StepRows || StepRows->Num() > MaxSteps) return false;
+    T.StepCount = StepRows->Num();
+    for (int32 Index = 0; Index < StepRows->Num(); ++Index)
+    {
+        const auto S = (*StepRows)[Index].IsValid() ? (*StepRows)[Index]->AsObject() : nullptr;
+        FString StepKind; FStep& Step = T.Steps[Index];
+        if (!S || !Str(*S, TEXT("kind"), StepKind) || !Int(*S, TEXT("count"), Step.Count) ||
+            !Int(*S, TEXT("beat_ms"), Step.BeatMs) || !Int(*S, TEXT("tolerance_ms"), Step.ToleranceMs))
+            return false;
+        Beat.StepKinds.Add(StepKind);
+    }
+    const FJsonRows* TargetRows = Rows(O, TEXT("targets"));
+    if (!TargetRows || TargetRows->Num() > MaxPoints) return false;
+    T.TargetCount = TargetRows->Num();
+    for (int32 Index = 0; Index < TargetRows->Num(); ++Index)
+    {
+        const auto R = (*TargetRows)[Index].IsValid() ? (*TargetRows)[Index]->AsObject() : nullptr;
+        FString Target;
+        if (!R || !Str(*R, TEXT("id"), Target) || !Int(*R, TEXT("hp"), T.TargetHp[Index])) return false;
+        Beat.Targets.Add(Target);
+    }
+    TArray<FString> Checkpointed;
+    if (!Strings(Rows(O, TEXT("fail_checkpoint")), Checkpointed)) return false;
+    for (const FString& Name : Checkpointed)
+    {
+        const EFail* Failure = Failures.Find(Name);
+        if (!Failure) return false;
+        T.FailMask |= FailBit(*Failure);
+    }
+    const TSharedPtr<FJsonObject> FailEvents = Child(O, TEXT("fail_events"));
+    if (!FailEvents) return false;
+    for (const auto& Pair : FailEvents->Values)
+    {
+        FString Name;
+        const EFail* Failure = Pair.Value.IsValid() && Pair.Value->TryGetString(Name) ? Failures.Find(Name) : nullptr;
+        if (Pair.Key.IsEmpty() || !Failure) return false;
+        Beat.FailEvents.Add(FString(Pair.Key.ToView()), *Failure);
     }
     return true;
 }
@@ -129,7 +266,7 @@ bool FSoraCatalog::Load()
     if (!Int(*Root, TEXT("schema_version"), SchemaVersion) || SchemaVersion != 4 || Root->HasField(TEXT("chapters")))
         return Fail(TEXT("Unsupported offline catalog schema"));
     Weapons.Reset(); CampaignWeapons.Reset(); Classes.Reset(); Chapters.Reset(); Maps.Reset(); DialogueSpeakers.Reset();
-    Mechanics.Reset(); CollectibleCategories.Reset();
+    Mechanics.Reset(); StoryFlags.Reset(); CollectibleCategories.Reset();
     const FJsonRows* Rows = nullptr;
     if (!Root->TryGetArrayField(TEXT("dialogue_speakers"), Rows)) return Fail(TEXT("Catalog lacks dialogue speakers"));
     for (const auto& Row : *Rows)
@@ -242,6 +379,10 @@ bool FSoraCatalog::LoadCampaign()
         return Fail(TEXT("Campaign needs its nineteen mechanic flags"));
     for (int32 Index = 0; Index < Mechanics.Num(); ++Index)
         if (Mechanics.Find(Mechanics[Index]) != Index) return Fail(TEXT("Duplicate campaign mechanic flag"));
+    if (!Strings(Rows(*Campaign, TEXT("story_flags")), StoryFlags) || StoryFlags.Num() > SoraBeatRules::MaxStoryFlags)
+        return Fail(TEXT("Campaign story flags must be a list of at most sixteen names"));
+    for (int32 Index = 0; Index < StoryFlags.Num(); ++Index)
+        if (StoryFlags.Find(StoryFlags[Index]) != Index) return Fail(TEXT("Duplicate campaign story flag"));
     const FJsonRows* CategoryRows = Rows(*Campaign, TEXT("collectible_categories"));
     if (!CategoryRows) return Fail(TEXT("Campaign lacks collectible categories"));
     for (const auto& Row : *CategoryRows)
@@ -255,18 +396,11 @@ bool FSoraCatalog::LoadCampaign()
     }
     const FJsonRows* ChapterRows = Rows(*Campaign, TEXT("chapters"));
     if (!ChapterRows || ChapterRows->Num() != ChapterCount) return Fail(TEXT("Campaign needs eight chapters"));
-    static const TMap<FString, ESoraBeatType> BeatTypes = {
-        {TEXT("cinematic"), ESoraBeatType::Cinematic}, {TEXT("dialogue"), ESoraBeatType::Dialogue},
-        {TEXT("combat_wave"), ESoraBeatType::CombatWave}, {TEXT("duel"), ESoraBeatType::Duel},
-        {TEXT("stealth_zone"), ESoraBeatType::StealthZone}, {TEXT("production_task"), ESoraBeatType::ProductionTask},
-        {TEXT("horseback_ride"), ESoraBeatType::HorsebackRide}, {TEXT("boss"), ESoraBeatType::Boss},
-        {TEXT("explore_optional"), ESoraBeatType::ExploreOptional}};
     static const TSet<FString> SiteKinds = {
         TEXT("training"), TEXT("debt_seal"), TEXT("irrigation"), TEXT("workshop"),
         TEXT("foundry"), TEXT("ledger"), TEXT("power"), TEXT("supplies")};
-    // Lesson gates that name one of the four dojo forms, in SoraDojoRules order.
-    static const TMap<FString, int32> LessonGates = {
-        {TEXT("stance_hold"), 0}, {TEXT("front_guard_survive"), 1}, {TEXT("awase"), 2}, {TEXT("recovery_complete"), 3}};
+    // Collectibles found so far across the campaign, for conditional lines.
+    TMap<FString, unsigned long long> FoundBits;
     for (int32 ChapterIndex = 0; ChapterIndex < ChapterCount; ++ChapterIndex)
     {
         const auto Entry = (*ChapterRows)[ChapterIndex].IsValid() ? (*ChapterRows)[ChapterIndex]->AsObject() : nullptr;
@@ -366,6 +500,7 @@ bool FSoraCatalog::LoadCampaign()
                 Item.Beats.Add(BeatIds[Beat]);
             }
             CollectibleBits |= 1u << Item.MaskBit;
+            FoundBits.Add(Item.Id, SoraCampaignRules::CollectibleBit(ChapterIndex, Item.MaskBit));
             C.Collectibles.Add(MoveTemp(Item));
         }
 
@@ -393,20 +528,21 @@ bool FSoraCatalog::LoadCampaign()
         {
             const auto O = (*BeatRows)[BeatIndex]->AsObject();
             FSoraBeat Beat; FString TypeName;
-            SoraBeatRules::FBeat Rule{0u, -1, 0u, 0u, 0u, false, false, 0};
+            SoraBeatRules::FBeat Rule{0u, -1, 0u, 0u, 0u, 0u, false, false, 0};
             const TSharedPtr<FJsonObject> Unlocks = Child(*O, TEXT("unlocks"));
             const TSharedPtr<FJsonObject> Params = Child(*O, TEXT("params"));
-            TArray<FString> Requires, MechanicNames;
-            if (!Str(*O, TEXT("id"), Beat.Id) || !Str(*O, TEXT("type"), TypeName) || !BeatTypes.Contains(TypeName) || !Str(*O, TEXT("place"), Beat.Place) ||
+            const TSharedPtr<FJsonObject> Task = Child(*O, TEXT("task"));
+            TArray<FString> Requires, MechanicNames, FlagNames;
+            if (!Str(*O, TEXT("id"), Beat.Id) || !Str(*O, TEXT("type"), TypeName) || !Str(*O, TEXT("place"), Beat.Place) ||
                 !Str(*O, TEXT("title_ja"), Beat.Title) || !Str(*O, TEXT("title_en"), Beat.TitleEnglish) ||
                 !Int(*O, TEXT("target_s"), Beat.TargetSeconds) || Beat.TargetSeconds <= 0 ||
                 !O->TryGetBoolField(TEXT("checkpoint"), Rule.Checkpoint) || !O->TryGetBoolField(TEXT("optional"), Rule.Optional) ||
-                !Strings(Rows(*O, TEXT("requires")), Requires) || !Unlocks || !Params ||
+                !Strings(Rows(*O, TEXT("requires")), Requires) || !Unlocks || !Params || !Task ||
                 !WeaponMask(Rows(*Unlocks, TEXT("weapons")), Rule.WeaponsMask) ||
                 !WeaponMask(Rows(*Unlocks, TEXT("grants")), Rule.GrantsMask) ||
-                !Strings(Rows(*Unlocks, TEXT("mechanics")), MechanicNames))
+                !Strings(Rows(*Unlocks, TEXT("mechanics")), MechanicNames) ||
+                !Strings(Rows(*Unlocks, TEXT("story_flags")), FlagNames))
                 return Bad(FString::Printf(TEXT("beat %s lacks a required field"), *Beat.Id));
-            Beat.Type = BeatTypes[TypeName];
             for (const FString& Prior : Requires)
             {
                 if (!BeatIds.Contains(Prior) || BeatIds[Prior] >= BeatIndex) return Bad(FString::Printf(TEXT("beat %s requires a later beat"), *Beat.Id));
@@ -418,225 +554,41 @@ bool FSoraCatalog::LoadCampaign()
                 if (Bit == INDEX_NONE) return Bad(FString::Printf(TEXT("beat %s unlocks unknown mechanic %s"), *Beat.Id, *Name));
                 Rule.MechanicsMask |= 1u << Bit;
             }
+            for (const FString& Name : FlagNames)
+            {
+                const int32 Bit = StoryFlags.Find(Name);
+                if (Bit == INDEX_NONE) return Bad(FString::Printf(TEXT("beat %s sets unknown story flag %s"), *Beat.Id, *Name));
+                Rule.FlagsMask |= 1u << Bit;
+            }
             if (!IsNull(*O, TEXT("site")) && (!Int(*O, TEXT("site"), Rule.Site) || Rule.Site < 0 || Rule.Site >= SoraBeatRules::SiteCount))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid site"), *Beat.Id));
             if (StartCheckpoints[BeatIndex] != Rule.Checkpoint) return Bad(FString::Printf(TEXT("beat %s disagrees with its checkpoint rows"), *Beat.Id));
             Rule.PhaseCheckpoints = PhaseCheckpoints[BeatIndex];
-
-            const FJsonObject& P = *Params;
-            const TSharedPtr<FJsonObject> Complete = Child(P, TEXT("complete"));
-            FString CompleteKind;
-            if (Complete) Str(*Complete, TEXT("kind"), CompleteKind);
-            bool bValid = true;
-            switch (Beat.Type)
-            {
-            case ESoraBeatType::Cinematic:
-            {
-                double Duration = 0;
-                bValid = Num(P, TEXT("duration_s"), Duration) && Duration > 0 && P.TryGetBoolField(TEXT("skippable"), Beat.bSkippable);
-                Beat.Goal = ESoraBeatGoal::Cinematic; Beat.GoalSeconds = static_cast<float>(Duration);
-                break;
-            }
-            case ESoraBeatType::Dialogue:
-            {
-                FString Trigger;
-                bValid = LineRefs(Rows(P, TEXT("lines")), Beat.Lines) && Str(P, TEXT("trigger"), Trigger) &&
-                    (Trigger == TEXT("beat_start") || Trigger.StartsWith(TEXT("volume_enter:")) || Trigger.StartsWith(TEXT("interact:"))) &&
-                    (CompleteKind.IsEmpty() || CompleteKind == TEXT("volume_enter") || CompleteKind == TEXT("event"));
-                Beat.Goal = ESoraBeatGoal::Lines;
-                Beat.bLinesAtAnchor = Trigger != TEXT("beat_start");
-                Beat.bLinesOnInteract = Trigger.StartsWith(TEXT("interact:"));
-                Beat.bReachAfterLines = !CompleteKind.IsEmpty();
-                if (Beat.bLinesAtAnchor) Beat.AnchorEvent = Trigger;
-                break;
-            }
-            case ESoraBeatType::CombatWave:
-            {
-                FString Target = TEXT("enemy");
-                P.TryGetStringField(TEXT("target_kind"), Target);
-                bValid = WaveOpponents(P, Beat.Opponents, Beat.MaxAlive) && Beat.Opponents > 0 &&
-                    (Target == TEXT("enemy") || Target == TEXT("mato") || Target == TEXT("pupil"));
-                // Training targets stand in as sparring pupils until the AI lane's target actors land.
-                Beat.Opponent = Target == TEXT("enemy") ? ESoraOpponent::Invader : ESoraOpponent::Pupil;
-                if (CompleteKind == TEXT("all_waves_cleared")) { Beat.Goal = ESoraBeatGoal::Defeat; Beat.GoalCount = Beat.Opponents; }
-                else if (CompleteKind == TEXT("objectives"))
-                {
-                    const FJsonRows* Objectives = Rows(*Complete, TEXT("objectives"));
-                    Beat.Goal = ESoraBeatGoal::Interact; Beat.GoalCount = Objectives ? Objectives->Num() : 0;
-                }
-                else bValid = false;
-                break;
-            }
-            case ESoraBeatType::Duel:
-            {
-                const TSharedPtr<FJsonObject> Scoring = Child(P, TEXT("scoring"));
-                const TSharedPtr<FJsonObject> Arms = Child(P, TEXT("weapons"));
-                FString Mode, PlayerArms;
-                bValid = Scoring && Arms && Str(*Scoring, TEXT("mode"), Mode);
-                // Bokuto and fukuro shinai bouts are sparring; live blades duel a retainer.
-                Beat.Opponent = Arms && Arms->TryGetStringField(TEXT("player"), PlayerArms) &&
-                    (PlayerArms == TEXT("bokuto") || PlayerArms == TEXT("fukuro_shinai")) ? ESoraOpponent::Pupil : ESoraOpponent::Invader;
-                Beat.MaxAlive = 1;
-                if (Mode == TEXT("lesson_gates"))
-                {
-                    Beat.Goal = ESoraBeatGoal::Lessons;
-                    const FJsonRows* Gates = Rows(P, TEXT("lesson_gates"));
-                    bValid &= Gates && !Gates->IsEmpty();
-                    for (int32 Gate = 0; bValid && Gate < Gates->Num(); ++Gate)
-                    {
-                        const auto G = (*Gates)[Gate].IsValid() ? (*Gates)[Gate]->AsObject() : nullptr;
-                        FString Name; int32 Count = 0;
-                        if (!G || !Str(*G, TEXT("gate"), Name)) { bValid = false; break; }
-                        if (const int32* Lesson = LessonGates.Find(Name)) Beat.LessonMask |= 1u << *Lesson;
-                        // Flanking with marobashi is scored as bouts against the pupil.
-                        else if (Name == TEXT("marobashi_flank"))
-                        {
-                            bValid = Int(*G, TEXT("count"), Count) && Count > 0;
-                            Beat.GoalCount += Count;
-                        }
-                        // Stepping the maai ring has no measured rule yet; the stance gate carries its beat.
-                        else bValid = Name == TEXT("maai_step");
-                    }
-                    bValid &= Beat.LessonMask != 0u || Beat.GoalCount > 0;
-                    Beat.Opponents = FMath::Max(1, Beat.GoalCount);
-                }
-                else if (Mode == TEXT("points")) { Beat.Goal = ESoraBeatGoal::Defeat; bValid &= Int(*Scoring, TEXT("first_to"), Beat.GoalCount) && Beat.GoalCount > 0; Beat.Opponents = Beat.GoalCount; }
-                else if (Mode == TEXT("hp")) { Beat.Goal = ESoraBeatGoal::Defeat; Beat.GoalCount = 1; Beat.Opponents = 1; }
-                else bValid = false;
-                Beat.PhaseHealthPercent.Add(100);
-                if (const FJsonRows* Events = Rows(P, TEXT("events")))
-                    for (const auto& Event : *Events)
-                    {
-                        const auto E = Event.IsValid() ? Event->AsObject() : nullptr;
-                        int32 Percent = 0;
-                        bValid &= E && Int(*E, TEXT("at_hp_pct"), Percent) && Percent > 0 && Percent < Beat.PhaseHealthPercent.Last();
-                        Beat.PhaseHealthPercent.Add(Percent);
-                    }
-                break;
-            }
-            case ESoraBeatType::StealthZone:
-            {
-                // Guards and detection belong to the stealth AI; until it lands
-                // the zone is crossed to its exit or its objectives are worked.
-                if (CompleteKind == TEXT("exit_reached"))
-                {
-                    FString Volume;
-                    Beat.Goal = ESoraBeatGoal::Reach;
-                    if (Str(*Complete, TEXT("volume"), Volume)) Beat.AnchorEvent = TEXT("volume_enter:") + Volume;
-                }
-                else if (CompleteKind == TEXT("objectives"))
-                {
-                    const FJsonRows* Objectives = Rows(P, TEXT("objectives"));
-                    if (!Objectives) Objectives = Rows(*Complete, TEXT("objectives"));
-                    Beat.Goal = ESoraBeatGoal::Interact; Beat.GoalCount = Objectives ? Objectives->Num() : 0;
-                }
-                else bValid = false;
-                break;
-            }
-            case ESoraBeatType::ProductionTask:
-            {
-                FString Task;
-                bValid = Str(P, TEXT("task"), Task) && WaveOpponents(P, Beat.Opponents, Beat.MaxAlive);
-                const TSharedPtr<FJsonObject> Block = bValid ? Child(P, *Task) : nullptr;
-                bValid &= Block.IsValid();
-                Beat.Opponent = Beat.Opponents > 0 ? ESoraOpponent::Invader : ESoraOpponent::None;
-                if (!bValid) break;
-                double Seconds = 0;
-                if (Task == TEXT("hold"))
-                {
-                    const FJsonRows* Points = Rows(*Block, TEXT("interact_points"));
-                    if (!Num(*Block, TEXT("hold_s"), Seconds) && Points && Num(*Block, TEXT("per_point_s"), Seconds))
-                        Seconds *= Points->Num();
-                    Beat.Goal = ESoraBeatGoal::Hold; Beat.GoalSeconds = static_cast<float>(Seconds);
-                    bValid = Seconds > 0;
-                }
-                else if (Task == TEXT("escort")) Beat.Goal = ESoraBeatGoal::Reach;
-                else if (Task == TEXT("carry")) { Beat.Goal = ESoraBeatGoal::Interact; bValid = Int(*Block, TEXT("count"), Beat.GoalCount); }
-                else if (Task == TEXT("crank")) { Beat.Goal = ESoraBeatGoal::Interact; bValid = Int(*Block, TEXT("turns_required"), Beat.GoalCount); }
-                else if (Task == TEXT("manufacture"))
-                {
-                    Beat.Goal = ESoraBeatGoal::Interact;
-                    const FJsonRows* Steps = Rows(*Block, TEXT("steps"));
-                    bValid = Steps && !Steps->IsEmpty();
-                    for (int32 Step = 0; bValid && Step < Steps->Num(); ++Step)
-                    {
-                        const auto S = (*Steps)[Step].IsValid() ? (*Steps)[Step]->AsObject() : nullptr;
-                        int32 Count = 0;
-                        bValid = S && Int(*S, TEXT("count"), Count) && Count > 0;
-                        Beat.GoalCount += Count;
-                    }
-                }
-                else if (Task == TEXT("defend"))
-                {
-                    if (Num(*Block, TEXT("duration_s"), Seconds) && Seconds > 0) { Beat.Goal = ESoraBeatGoal::Hold; Beat.GoalSeconds = static_cast<float>(Seconds); }
-                    else { Beat.Goal = ESoraBeatGoal::Defeat; Beat.GoalCount = Beat.Opponents; bValid = Beat.Opponents > 0; }
-                }
-                else bValid = false;
-                if (Beat.Goal == ESoraBeatGoal::Interact) bValid &= Beat.GoalCount > 0;
-                break;
-            }
-            case ESoraBeatType::HorsebackRide:
-            {
-                bValid = WaveOpponents(P, Beat.Opponents, Beat.MaxAlive);
-                Beat.Opponent = Beat.Opponents > 0 ? ESoraOpponent::Invader : ESoraOpponent::None;
-                FString Volume;
-                if (CompleteKind == TEXT("reach") || CompleteKind == TEXT("volume_enter"))
-                {
-                    Beat.Goal = ESoraBeatGoal::Reach;
-                    bValid &= Str(*Complete, TEXT("volume"), Volume);
-                    Beat.AnchorEvent = TEXT("volume_enter:") + Volume;
-                }
-                else if (CompleteKind == TEXT("cargo_delivered"))
-                {
-                    const TSharedPtr<FJsonObject> Cargo = Child(P, TEXT("cargo"));
-                    const FJsonRows* Dropoffs = Cargo ? Rows(*Cargo, TEXT("dropoffs")) : nullptr;
-                    Beat.Goal = ESoraBeatGoal::Interact; Beat.GoalCount = Dropoffs ? Dropoffs->Num() : 0;
-                    bValid &= Beat.GoalCount > 0;
-                }
-                else bValid = false;
-                break;
-            }
-            case ESoraBeatType::Boss:
-            {
-                const FJsonRows* Phases = Rows(P, TEXT("phases"));
-                FString Boss, Defeat;
-                bValid = Phases && !Phases->IsEmpty() && Str(P, TEXT("boss"), Boss) && Str(P, TEXT("defeat"), Defeat);
-                for (int32 Phase = 0; bValid && Phase < Phases->Num(); ++Phase)
-                {
-                    const auto Row = (*Phases)[Phase].IsValid() ? (*Phases)[Phase]->AsObject() : nullptr;
-                    int32 Percent = 0;
-                    bValid = Row && Int(*Row, TEXT("hp_pct_start"), Percent) &&
-                        (Phase == 0 ? Percent == 100 : Percent > 0 && Percent < Beat.PhaseHealthPercent.Last());
-                    Beat.PhaseHealthPercent.Add(Percent);
-                }
-                Beat.Goal = ESoraBeatGoal::Defeat; Beat.GoalCount = 1;
-                Beat.Opponent = ESoraOpponent::Boss; Beat.Opponents = 1; Beat.MaxAlive = 1;
-                break;
-            }
-            case ESoraBeatType::ExploreOptional:
+            if (!ReadTask(*Task, TypeName, Beat) || !SoraBeatRules::TaskValid(Beat.Task))
+                return Bad(FString::Printf(TEXT("beat %s has an invalid %s task"), *Beat.Id, *TypeName));
+            // A dialogue beat's lines, and an explore beat's rewards, stay in its parameters.
+            if (Beat.Is(SoraBeatRules::EType::Dialogue) &&
+                (!LineRefs(Rows(*Params, TEXT("lines")), Beat.Lines) || Beat.Lines.Num() != Beat.Task.Count || Beat.LinesEvent.IsEmpty()))
+                return Bad(FString::Printf(TEXT("beat %s has invalid dialogue lines"), *Beat.Id));
+            if (Beat.Is(SoraBeatRules::EType::ExploreOptional))
             {
                 TArray<FString> Rewards;
-                bValid = Strings(Rows(P, TEXT("rewards")), Rewards);
-                Beat.Goal = ESoraBeatGoal::Explore;
+                if (!Strings(Rows(*Params, TEXT("rewards")), Rewards)) return Bad(FString::Printf(TEXT("beat %s has invalid rewards"), *Beat.Id));
                 // Arrows and other pickups refill at the cache; collectibles enter the codex.
                 for (const FString& Reward : Rewards)
                 {
                     const int32 Item = C.Collectibles.IndexOfByPredicate([&](const FSoraCollectible& Candidate) { return Candidate.Id == Reward; });
                     if (Item != INDEX_NONE) Beat.Rewards.Add(Item);
                 }
-                bValid &= Rule.Optional;
-                break;
             }
-            }
-            // Only boss and duel phases save inside a beat, one per later phase.
-            if (Rule.PhaseCheckpoints > 0 && Rule.PhaseCheckpoints >= Beat.PhaseHealthPercent.Num()) bValid = false;
-            if (!bValid) return Bad(FString::Printf(TEXT("beat %s has invalid %s parameters"), *Beat.Id, *TypeName));
-            C.Beats.Add(MoveTemp(Beat));
             C.Rules.Add(Rule);
+            C.Tasks.Add(Beat.Task);
+            C.Beats.Add(MoveTemp(Beat));
         }
-        if (!SoraBeatRules::ChapterValid(C.Rules.GetData(), C.Rules.Num())) return Bad(TEXT("beats violate SoraBeatRules"));
-        // The opening cinematic carries the chapter's title card.
-        if (C.Beats[0].Goal != ESoraBeatGoal::Cinematic) return Bad(TEXT("does not open on a cinematic"));
+        if (!SoraBeatRules::ChapterValid(C.Rules.GetData(), C.Rules.Num())) return Bad(TEXT("beats violate the chapter gates"));
+        // Every task valid, the chapter opens on a cinematic (its title card),
+        // only explore beats are optional and only bosses and duels save per phase.
+        if (!SoraBeatRules::TasksValid(C.Rules.GetData(), C.Tasks.GetData(), C.Rules.Num())) return Bad(TEXT("beat tasks violate SoraBeatRules"));
         // A collectible without beats lies in its explore beat's cache or, when
         // no cache holds it, along the beats played at its place.
         for (int32 Item = 0; Item < C.Collectibles.Num(); ++Item)
@@ -676,14 +628,31 @@ bool FSoraCatalog::LoadCampaign()
         for (const auto& Row : *TriggerRows)
         {
             const auto O = Row.IsValid() ? Row->AsObject() : nullptr;
-            FSoraDialogueTrigger Trigger;
+            FSoraDialogueTrigger Trigger; FString Condition; double Cooldown = 0;
             if (!O || !BeatRef(*O, Trigger.Beat) || !Str(*O, TEXT("on"), Trigger.On) || !LineRefs(Rows(*O, TEXT("lines")), Trigger.Lines) ||
-                !O->TryGetBoolField(TEXT("repeatable"), Trigger.bRepeatable) ||
+                !Str(*O, TEXT("mode"), Trigger.Mode) || !O->TryGetBoolField(TEXT("repeatable"), Trigger.bRepeatable) ||
+                (!IsNull(*O, TEXT("cooldown_s")) && (!Num(*O, TEXT("cooldown_s"), Cooldown) || Cooldown < 0)) ||
+                !Nullable(*O, TEXT("requires_flag"), Condition) ||
                 (!IsNull(*O, TEXT("at_ms")) && (!Int(*O, TEXT("at_ms"), Trigger.AtMs) || Trigger.AtMs < 0)))
                 return Bad(TEXT("invalid trigger row"));
+            Trigger.CooldownSeconds = static_cast<float>(Cooldown);
+            // A conditional line waits for a collectible found here or earlier, or a story flag.
+            if (Condition.StartsWith(TEXT("collectible:")))
+            {
+                const unsigned long long* Bit = FoundBits.Find(Condition.RightChop(12));
+                if (!Bit) return Bad(FString::Printf(TEXT("trigger requires unknown %s"), *Condition));
+                Trigger.RequiresCollectible = *Bit;
+            }
+            else if (Condition.StartsWith(TEXT("story:")))
+            {
+                const int32 Bit = StoryFlags.Find(Condition.RightChop(6));
+                if (Bit == INDEX_NONE) return Bad(FString::Printf(TEXT("trigger requires unknown %s"), *Condition));
+                Trigger.RequiresFlags = 1u << Bit;
+            }
+            else if (!Condition.IsEmpty()) return Bad(FString::Printf(TEXT("trigger requires %s"), *Condition));
             // A cinematic subtitle is placed on the cinematic's own clock.
             if (Trigger.On == TEXT("subtitle") &&
-                (Trigger.AtMs < 0 || Trigger.Beat == INDEX_NONE || C.Beats[Trigger.Beat].Goal != ESoraBeatGoal::Cinematic))
+                (Trigger.AtMs < 0 || Trigger.Beat == INDEX_NONE || !C.Beats[Trigger.Beat].Is(SoraBeatRules::EType::Cinematic)))
                 return Bad(TEXT("subtitle outside a cinematic"));
             C.Triggers.Add(MoveTemp(Trigger));
         }
@@ -725,6 +694,13 @@ unsigned FSoraCatalog::EarlierWeapons(int32 Chapter) const
     unsigned Mask = 0u;
     for (int32 Index = 0; Index < Chapter && Chapters.IsValidIndex(Index); ++Index)
         Mask |= SoraBeatRules::ChapterWeapons(Chapters[Index].Rules.GetData(), Chapters[Index].Rules.Num(), true);
+    return Mask;
+}
+unsigned FSoraCatalog::EarlierFlags(int32 Chapter) const
+{
+    unsigned Mask = 0u;
+    for (int32 Index = 0; Index < Chapter && Chapters.IsValidIndex(Index); ++Index)
+        Mask |= SoraBeatRules::ChapterFlags(Chapters[Index].Rules.GetData(), Chapters[Index].Rules.Num());
     return Mask;
 }
 unsigned FSoraCatalog::EarlierMechanics(int32 Chapter) const

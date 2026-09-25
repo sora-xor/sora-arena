@@ -58,13 +58,19 @@ struct FSoraDialogueCue
 };
 // A row of the chapter's event-keyed trigger table: "beat_start",
 // "boss_phase:2", "site_restored:0", or "subtitle" (a cinematic line at AtMs).
+// A conditional row plays only once its collectible is found or its story
+// flag is set.
 struct FSoraDialogueTrigger
 {
     int32 Beat = INDEX_NONE;
     FString On;
+    FString Mode;
     TArray<int32> Lines;
     int32 AtMs = INDEX_NONE;
     bool bRepeatable = false;
+    float CooldownSeconds = 0.f;
+    unsigned long long RequiresCollectible = 0ull;
+    unsigned RequiresFlags = 0u;
 };
 struct FSoraProductionSite
 {
@@ -98,59 +104,63 @@ struct FSoraPrompt
     FString English;
 };
 
-enum class ESoraBeatType : uint8
+// One spawn group of a wave: its enemy type (bible §7, Content/Data/enemies.json
+// once the AI lane lands it), how many, and whether they count toward the wave.
+struct FSoraWaveGroup
 {
-    Cinematic, Dialogue, CombatWave, Duel, StealthZone, ProductionTask, HorsebackRide, Boss, ExploreOptional
+    FName Type;
+    int32 Count = 0;
+    bool bLethal = true;
 };
-// What completes a beat in the offline runtime. Each type's parameters reduce
-// to one of these until the stealth AI, mounts and Sequencer cinematics that
-// specialise them arrive.
-enum class ESoraBeatGoal : uint8
+struct FSoraWave
 {
-    Cinematic, // the letterboxed card for GoalSeconds; Enter skips it
-    Lines,     // the beat's lines, in order
-    Defeat,    // GoalCount defeated opponents
-    Lessons,   // LessonMask's dojo forms, then GoalCount scored bouts
-    Interact,  // GoalCount interactions at the beat's anchor
-    Hold,      // GoalSeconds spent at the anchor
-    Reach,     // the anchor reached
-    Explore,   // an optional beat, completed at its unmarked cache
+    FString Id;
+    // The event that releases a volume or event wave ("volume_enter:vol_x",
+    // "alert_state:alert"); empty for the waves the beat's own rules release.
+    FString Event;
+    TArray<FSoraWaveGroup> Groups;
 };
-enum class ESoraOpponent : uint8 { None, Invader, Pupil, Boss };
 
+// A beat of a chapter. Its task (SoraBeatRules.h) decides what completes it,
+// which waves it releases, its phases and what a failure does; the rest names
+// the lines, points and opponents the director puts in the world.
 struct FSoraBeat
 {
     FString Id;
-    ESoraBeatType Type = ESoraBeatType::Cinematic;
     FString Place;
     FString Title;
     FString TitleEnglish;
     int32 TargetSeconds = 0;
-    ESoraBeatGoal Goal = ESoraBeatGoal::Cinematic;
-    int32 GoalCount = 0;
-    float GoalSeconds = 0.f;
-    bool bSkippable = false;
-    // Dialogue beats: whether the lines wait for the anchor (a volume, or an
-    // interaction there), and whether the beat then ends at the anchor.
-    bool bLinesAtAnchor = false;
-    bool bLinesOnInteract = false;
-    bool bReachAfterLines = false;
+    SoraBeatRules::FTask Task;
+    TArray<FSoraWave> Waves;
+    // Dialogue: its lines, the event that starts them ("beat_start",
+    // "volume_enter:<id>", "interact:<id>") and, for one that ends at an
+    // anchor, the event that ends it.
     TArray<int32> Lines;
-    // The trigger event raised when the hero reaches or works the anchor
-    // ("volume_enter:vol_back_gate", "interact:crate_iota"), if any.
-    FString AnchorEvent;
-    // Opponents: their kind, the lethal count over every wave (nonlethal
-    // types excluded) and how many stand at once. A points duel respawns its
-    // single opponent until GoalCount bouts are won.
-    ESoraOpponent Opponent = ESoraOpponent::None;
-    int32 Opponents = 0;
-    int32 MaxAlive = 0;
-    // Dojo forms (SoraDojoRules order) named by a lesson duel's gates.
-    unsigned LessonMask = 0u;
-    // Health percent at which each boss or duel phase begins, phase 0 first.
-    TArray<int32> PhaseHealthPercent;
+    FString LinesEvent;
+    FString ClosingEvent;
+    // A stealth zone's exit or a ride's destination ("volume_enter:<id>"), if named.
+    FString ExitEvent;
+    // Named points, for the events they raise: objectives, pickups, drop-offs,
+    // defended targets and the kinds of the manufacturing steps.
+    TArray<FString> Objectives;
+    TArray<FString> Pickups;
+    TArray<FString> Dropoffs;
+    TArray<FString> Targets;
+    TArray<FString> StepKinds;
+    // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.
+    FName Opponent;
+    bool bSparring = false;
+    // A stealth zone's guards, by enemy type.
+    TArray<FName> Guards;
+    // A duel's scripted events, one per later phase.
+    TArray<FString> PhaseEvents;
+    // The beat's `fail` rows by event.
+    TMap<FString, SoraBeatRules::EFail> FailEvents;
     // Collectibles in an explore beat's cache.
     TArray<int32> Rewards;
+    bool Is(SoraBeatRules::EType Type) const { return Task.Type == Type; }
+    bool Has(SoraBeatRules::EGoal Goal) const { return Task.Goal == Goal; }
 };
 struct FSoraChapter
 {
@@ -165,8 +175,9 @@ struct FSoraChapter
     int32 TargetSeconds = 0;
     TArray<FSoraProductionSite> Sites;
     TArray<FSoraBeat> Beats;
-    // Beats[I]'s gates, contiguous for SoraBeatRules.
+    // Beats[I]'s gates and tasks, contiguous for SoraBeatRules.
     TArray<SoraBeatRules::FBeat> Rules;
+    TArray<SoraBeatRules::FTask> Tasks;
     TArray<FSoraDialogueCue> Dialogue;
     TArray<FSoraDialogueTrigger> Triggers;
     TArray<FSoraCollectible> Collectibles;
@@ -192,10 +203,10 @@ struct FSoraCollectibleCategory
  * Offline authored content, loaded fail-closed: Content/Data/catalog.json
  * (schema 4) for weapons, classes, maps, the hero and the dialogue speakers;
  * Content/Data/campaign/campaign.json for the chapter index, title cards, site
- * labels and mechanic flags; and campaign/chapter_0N.json, generated by
- * scripts/unreal/build_campaign_data.py, for beats, lines, triggers,
- * checkpoints, unlocks, collectibles and prompts. Financial rules are
- * deliberately absent.
+ * labels, mechanic flags and story flags; and campaign/chapter_0N.json,
+ * generated by scripts/unreal/build_campaign_data.py, for beats and their
+ * tasks, lines, triggers, checkpoints, unlocks, collectibles and prompts.
+ * Financial rules are deliberately absent.
  */
 class SORAARENA_API FSoraCatalog
 {
@@ -217,6 +228,8 @@ public:
     unsigned RouteMinimumWeapons(int32 Chapter) const;
     unsigned EarlierWeapons(int32 Chapter) const;
     unsigned EarlierMechanics(int32 Chapter) const;
+    // Story flags the earlier chapters can set (optional beats included).
+    unsigned EarlierFlags(int32 Chapter) const;
     FString Error;
     TArray<FSoraWeapon> Weapons;
     TArray<FSoraWeapon> CampaignWeapons;
@@ -225,8 +238,9 @@ public:
     TMap<FString, FSoraDialogueSpeaker> DialogueSpeakers;
     FSoraHero HeroData;
     TArray<FSoraMap> Maps;
-    // Mechanic flags in bit order.
+    // Mechanic flags and story flags in bit order.
     TArray<FString> Mechanics;
+    TArray<FString> StoryFlags;
     TArray<FSoraCollectibleCategory> CollectibleCategories;
 private:
     bool LoadCampaign();

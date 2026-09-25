@@ -167,6 +167,11 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
     known_bosses = set(BOSSES) if bosses is None else set(BOSSES) & boss_ids(bosses)
     require(known_bosses == set(BOSSES), f"bosses.json lacks {sorted(set(BOSSES) - known_bosses)}")
 
+    # Story flags: set once each by a beat, read by a later chapter's conditional lines.
+    flags = campaign["story_flags"]
+    require(isinstance(flags, list) and len(flags) == len(set(flags)) and len(flags) <= 16 and
+            all(re.fullmatch(r"[a-z_]+", str(flag)) for flag in flags), "campaign story_flags must be unique names")
+    flags_set, collectibles_seen = {}, set()
     campaign_total, unlocks, mechanics, line_ids = 0, [], [], set()
     optional_unlocks, grants = {}, {}
     category_counts = {name: 0 for name in categories}
@@ -235,6 +240,9 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
                 optional_unlocks[beat["id"]] = (set(beat["unlocks"]["weapons"]), beat["ext"].get("auto_grant_if_missed"))
             if beat["unlocks"]["grants"]:
                 grants[beat["id"]] = set(beat["unlocks"]["grants"])
+            for flag in beat["unlocks"]["story_flags"]:
+                require(flag in flags and flag not in flags_set, f"{beat['id']}: story flag {flag!r} unknown or set twice")
+                flags_set[flag] = beat["id"]
             params = beat["params"]
             if beat["registry"] is not None:
                 require(beat["type"] == "production_task" or
@@ -257,6 +265,11 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
                         require(kind in params["nonlethal_types"], f"{beat['id']}: conscripts must be nonlethal")
                     if kind not in params.get("nonlethal_types", []):
                         lethal += enemy["count"]
+            task = beat["task"]
+            require(task["type"] == beat["type"] and task["goal"] is not None, f"{beat['id']}: the task has no goal")
+            require(sum(wave["lethal"] for wave in task["waves"]) == lethal,
+                    f"{beat['id']}: the task counts {sum(wave['lethal'] for wave in task['waves'])} lethal opponents, "
+                    f"its waves {lethal}")
             complete = params.get("complete") or {}
             if complete.get("kind") == "defeat_count":
                 require(complete["count"] <= lethal,
@@ -306,6 +319,12 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
             if row["mode"] == "blocking":
                 total = sum(lines[line]["duration_s"] for line in row["lines"])
                 require(total <= BLOCKING_MAX_S, f"{context}: blocking dialogue runs {total:g} s")
+            condition = row["requires_flag"]
+            if condition is not None:
+                kind, _, name = condition.partition(":")
+                known = {prefix + ".c%02d" % number for number in range(1, 7)} | collectibles_seen \
+                    if kind == "collectible" else set(flags_set)
+                require(name in known, f"{context}: requires {condition!r}, which no earlier beat or find provides")
             if row["at_ms"] is not None:
                 beat = by_id[row["beat"]]
                 require(beat["type"] == "cinematic" and 0 <= row["at_ms"] <= beat["params"]["duration_s"] * 1000,
@@ -324,6 +343,7 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
             require(item["place"] in {place["id"] for place in chapter["places"]}, f"{item['id']}: unknown place")
             require(all(beat in by_id for beat in item["beats"]), f"{item['id']}: unknown beat")
             require(JAPANESE.search(item["codex"]["ja"]) and item["codex"]["en"].strip(), f"{item['id']}: codex")
+        collectibles_seen |= {item["id"] for item in collectibles}
         rewards = {reward for beat in beats if beat["type"] == "explore_optional"
                    for reward in beat["params"].get("rewards", []) if re.fullmatch(r"ch\d\d\.c\d\d", str(reward))}
         require(rewards <= {item["id"] for item in collectibles}, f"{where}: explore rewards name unknown collectibles")
@@ -345,6 +365,7 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
     require(order == sorted(order) and [beat for _, beat in WEAPON_UNLOCKS] == sorted(order),
             "weapon unlocks are out of §11 order")
     require(sorted(mechanics) == sorted(MECHANICS), f"mechanic flags must each unlock once: {sorted(mechanics)}")
+    require(set(flags_set) == set(flags), f"story flags no beat sets: {sorted(set(flags) - set(flags_set))}")
     # A missed optional pickup is granted at a later beat, so every route ends
     # with the same mask; the grant is not a second unlock.
     covered = {}
@@ -437,6 +458,12 @@ def self_test(catalog, campaign, chapters, legacy):
     def optional_site(data):
         beat(data, "ch01.b08")["site"], beat(data, "ch01.b09")["site"] = 2, None
 
+    def story_flag_twice(data):
+        beat(data, "ch07.b06")["unlocks"]["story_flags"] = ["nafudakake_marked"]
+
+    def unmet_condition(data):
+        next(row for row in data[2][7]["triggers"] if row["requires_flag"])["requires_flag"] = "story:festival_lit"
+
     def blocking_speech(data):
         row = next(row for row in data[2][1]["triggers"] if row["mode"] == "blocking")
         row["lines"] = [line["id"] for line in data[2][1]["lines"][:12]]
@@ -444,7 +471,7 @@ def self_test(catalog, campaign, chapters, legacy):
     validate(*copy.deepcopy((catalog, campaign, chapters, legacy)))
     mutations = (swap_unlock, fast_line, long_gap, gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,
-                 lost_pickup, unknown_boss, optional_site, blocking_speech)
+                 lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition)
     for mutate in mutations:
         data = copy.deepcopy((catalog, campaign, chapters, legacy))
         mutate(data)
