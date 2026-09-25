@@ -1,0 +1,230 @@
+{
+ "description": "The 25 timed dialogue cues of catalog schema 3, frozen when the campaign moved to schema 4. Story bible §20 places each one; validate_content.py requires every one verbatim in its chapter, spoken by the listed schema-4 speaker.",
+ "lines": [
+  {
+   "chapter": "ch01_dojo",
+   "index": 1,
+   "schema3_speaker": "mentor",
+   "ja": "刃を急がせるな。相手の足音を聞け。",
+   "en": "Do not hurry your blade. Listen to your opponent's footing.",
+   "line": "ch01.b02.sekireisai.001",
+   "speaker": "mentor"
+  },
+  {
+   "chapter": "ch01_dojo",
+   "index": 2,
+   "schema3_speaker": "samurai",
+   "ja": "間合いを測り、命を守ります。",
+   "en": "I will measure the distance and protect life.",
+   "line": "ch01.b12.nyaakoto.005",
+   "speaker": "samurai"
+  },
+  {
+   "chapter": "ch01_dojo",
+   "index": 3,
+   "schema3_speaker": "mentor",
+   "ja": "それが猫柳生新陰流。剣は民のためにある。",
+   "en": "That is Nyaagyū Shinkage-ryū. The sword serves the people.",
+   "line": "ch01.b12.sekireisai.006",
+   "speaker": "mentor"
+  },
+  {
+   "chapter": "ch02_invasion",
+   "index": 1,
+   "schema3_speaker": "scout",
+   "ja": "空から船が来た。蔵に見知らぬ封印が！",
+   "en": "Ships came from the sky. Strange seals cover the granaries!",
+   "line": "ch02.b01.kohagi.001",
+   "speaker": "scout"
+  },
+  {
+   "chapter": "ch02_invasion",
+   "index": 2,
+   "schema3_speaker": "banker",
+   "ja": "今日から、その収穫も労働も我らへの負債だ。",
+   "en": "From today, your harvest and labor are debts owed to us.",
+   "line": "ch02.b16.valamort.002",
+   "speaker": "banker"
+  },
+  {
+   "chapter": "ch02_invasion",
+   "index": 3,
+   "schema3_speaker": "samurai",
+   "ja": "民の手を縛る帳簿なら、ここで断つ。",
+   "en": "If your ledger binds their hands, I will break its hold here.",
+   "line": "ch02.b15.nyaakoto.003",
+   "speaker": "samurai"
+  },
+  {
+   "chapter": "ch03_lantern_ward",
+   "index": 1,
+   "schema3_speaker": "scout",
+   "ja": "提灯街の工房は三つとも止められた。",
+   "en": "All three workshops in Lantern Ward have been shut down.",
+   "line": "ch03.b02.kohagi.001",
+   "speaker": "scout"
+  },
+  {
+   "chapter": "ch03_lantern_ward",
+   "index": 2,
+   "schema3_speaker": "artisan",
+   "ja": "道具は隠した。火さえ戻れば、また作れる。",
+   "en": "We hid the tools. Restore the fires, and we can make things again.",
+   "line": "ch03.b06.tokichi.001",
+   "speaker": "lantern_maker"
+  },
+  {
+   "chapter": "ch03_lantern_ward",
+   "index": 3,
+   "schema3_speaker": "samurai",
+   "ja": "火を灯そう。街の明かりは民のものだ。",
+   "en": "Then let us light them. This ward's lanterns belong to its people.",
+   "line": "ch03.b18.nyaakoto.002",
+   "speaker": "samurai"
+  },
+  {
+   "chapter": "ch04_irrigation",
+   "index": 1,
+   "schema3_speaker": "farmer",
+   "ja": "水車を奪われた。稲はまだ芽も出ていないのに。",
+   "en": "They took the pumps before the rice had even sprouted.",
+   "line": "ch04.b01.taemon.001",
+   "speaker": "farmer"
+  },
+  {
+   "chapter": "ch04_irrigation",
+   "index": 2,
+   "schema3_speaker": "samurai",
+   "ja": "水を戻す。収穫は育てた者に渡そう。",
+   "en": "We will restore the water. The harvest will go to those who grew it.",
+   "line": "ch04.b06.nyaakoto.003",
+   "speaker": "samurai"
+  },
+  {
+   "chapter": "ch04_irrigation",
+   "index": 3,
+   "schema3_speaker": "farmer",
+   "ja": "ならば、皆で食べられるだけ作ろう。",
+   "en": "Then we will grow enough for everyone to eat.",
+   "line": "ch04.b17.taemon.004",
+   "speaker": "farmer"
+  },
+  {
+   "chapter": "ch05_silk_foundry",
+   "index": 1,
+   "schema3_speaker": "artisan",
+   "ja": "絹も鋼も、作ったのはこの手だ。",
+   "en": "Silk and steel were made by these hands.",
+   "line": "ch05.b04.okinu.005",
+   "speaker": "weaver"
+  },
+  {
+   "chapter": "ch05_silk_foundry",
+   "index": 2,
+   "schema3_speaker": "scout",
+   "ja": "生産を記録し、民の新しい通貨にしよう。",
+   "en": "Let us record our production as the basis for a new currency.",
+   "line": "ch05.b12.oyuki.013",
+   "speaker": "leader"
+  },
+  {
+   "chapter": "ch05_silk_foundry",
+   "index": 3,
+   "schema3_speaker": "samurai",
+   "ja": "SORA XOR。ここで生まれた価値を、ここへ返す。",
+   "en": "SORA XOR. Value made here will return to the people here.",
+   "line": "ch05.b12.nyaakoto.014",
+   "speaker": "samurai"
+  },
+  {
+   "chapter": "ch06_ledger_vault",
+   "index": 1,
+   "schema3_speaker": "scout",
+   "ja": "金庫の奥に、街を縛る装置がある。",
+   "en": "The machine binding the city lies deep inside the vault.",
+   "line": "ch06.b01.kohagi.001",
+   "speaker": "scout"
+  },
+  {
+   "chapter": "ch06_ledger_vault",
+   "index": 2,
+   "schema3_speaker": "banker",
+   "ja": "契約は永遠だ。誰も帳簿からは逃れられぬ。",
+   "en": "The contract is eternal. No one escapes the ledger.",
+   "line": "ch06.b12.valamort.001",
+   "speaker": "banker"
+  },
+  {
+   "chapter": "ch06_ledger_vault",
+   "index": 3,
+   "schema3_speaker": "samurai",
+   "ja": "人を縛る文字より、人が作る明日を選ぶ。",
+   "en": "I choose the future people build over the words that bind them.",
+   "line": "ch06.b15.nyaakoto.001",
+   "speaker": "samurai"
+  },
+  {
+   "chapter": "ch07_flagship",
+   "index": 1,
+   "schema3_speaker": "scout",
+   "ja": "旗艦が城塞から最後の力を吸い上げている。",
+   "en": "The flagship is drawing the last power from the citadel.",
+   "line": "ch07.b01.kohagi.001",
+   "speaker": "scout"
+  },
+  {
+   "chapter": "ch07_flagship",
+   "index": 2,
+   "schema3_speaker": "banker",
+   "ja": "従えば、生き残るための融資をやろう。",
+   "en": "Submit, and we may lend you enough to survive.",
+   "line": "ch07.b12.collatera.003",
+   "speaker": "boss_collatera"
+  },
+  {
+   "chapter": "ch07_flagship",
+   "index": 3,
+   "schema3_speaker": "samurai",
+   "ja": "借りる必要はない。私たちは作れる。",
+   "en": "We need no loan. We can make what we need.",
+   "line": "ch07.b12.nyaakoto.004",
+   "speaker": "samurai"
+  },
+  {
+   "chapter": "ch08_debt_citadel",
+   "index": 1,
+   "schema3_speaker": "artisan",
+   "ja": "工房も田畑も、また動き始めた。",
+   "en": "The workshops and fields are working again.",
+   "line": "ch08.b01.kozo.005",
+   "speaker": "foundry_master"
+  },
+  {
+   "chapter": "ch08_debt_citadel",
+   "index": 2,
+   "schema3_speaker": "samurai",
+   "ja": "あとはこの街だ。誰も借りに縛られぬように。",
+   "en": "Only this ward remains. No one will be bound by debt again.",
+   "line": "ch08.b15.nyaakoto.007",
+   "speaker": "samurai"
+  },
+  {
+   "chapter": "ch08_debt_citadel",
+   "index": 3,
+   "schema3_speaker": "banker",
+   "ja": "最後の帳簿は私が守る。街の未来まで担保に取ろう。",
+   "en": "I guard the final ledger. Even this city's future is collateral.",
+   "line": "ch08.b13.valamort.004",
+   "speaker": "banker"
+  },
+  {
+   "chapter": "ch08_debt_citadel",
+   "index": 4,
+   "schema3_speaker": "scout",
+   "ja": "東の鳥居で待つ。皆で新しい朝を迎えよう。",
+   "en": "We will wait at the eastern torii. Let us greet a new morning together.",
+   "line": "ch08.b17.kohagi.001",
+   "speaker": "scout"
+  }
+ ]
+}

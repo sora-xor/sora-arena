@@ -2429,5 +2429,5 @@ ui_prompts:
   - {id: ui.ch07.tip.wind, ja: "矢は風に流される。風上を狙え", en: "Arrows drift. Aim into the wind.", beat: ch07.b10}
   - {id: ui.ch07.tip.lee, ja: "肋材や鰭の陰は風を防ぐ", en: "Ribs and fins block the wind", beat: ch07.b10}
   - {id: ui.ch07.tip.reload_window, ja: "装填中は障壁が消える", en: "Her shield drops while reloading", beat: ch07.b13}
-  - {id: ui.ch07.registry.note, ja: "返還のみ記帳・札は切らず", en: "Recorded as returned. No tally cut.", beat: ch07.chapter end}
+  - {id: ui.ch07.registry.note, ja: "返還のみ記帳・札は切らず", en: "Recorded as returned. No tally cut.", beat: ch07.b16, "on": beat_complete}
 ```

@@ -1,7 +1,16 @@
-"""Host-only acceptance of the same chapter gates USoraCampaignDirector uses.
+"""Host-only acceptance of the schema-4 chapter beat gates in SoraBeatRules.h.
+
+Reads the eight generated chapter files in Content/Data/campaign, writes a
+temporary C++ fixture of each chapter's beats (requirements, production site,
+weapon and mechanic unlocks, auto-grants, checkpoints) and compiles
+campaign_progression_driver.cpp against SoraBeatRules.h. The driver plays
+every chapter on two routes, skipping or playing the optional beats, and
+checks the gates, checkpoints, forged saves and final unlocks. It also keeps
+the chapter-one dojo lesson test of SoraDojoRules.h.
 
 It complements, and cannot replace, the in-editor SoraArena.Campaign.Playthrough
-automation test, which clears the campaign and reads every checkpoint from disk.
+automation test, which plays the campaign in a real world and reads every
+checkpoint from disk.
 """
 
 import json
@@ -14,46 +23,69 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
-catalog = json.loads((ROOT / "Content/Data/catalog.json").read_text())
-chapters = catalog["chapters"]
+DATA = ROOT / "Content/Data"
+catalog = json.loads((DATA / "catalog.json").read_text())
+campaign = json.loads((DATA / "campaign/campaign.json").read_text())
+chapters = [json.loads((DATA / entry["file"]).read_text()) for entry in campaign["chapters"]]
 speakers = {entry["id"]: entry for entry in catalog["dialogue_speakers"]}
-assert len(chapters) == 8
+mechanic_bits = {name: bit for bit, name in enumerate(campaign["mechanics"])}
+assert catalog["schema_version"] == 4 and campaign["schema_version"] == 4 and len(chapters) == 8
 assert catalog["default_language"] == "ja"
 assert catalog["english_subtitles_default"] is True
-assert all(re.search(r"[\u3040-\u9fff]", speaker["ja"]) and speaker["en"].strip()
+assert len(mechanic_bits) == 19
+assert all(re.search(r"[぀-鿿]", speaker["ja"]) and speaker["en"].strip()
            for speaker in speakers.values())
 for chapter in chapters:
-    assert chapter["dialogue"]
-    for cue in chapter["dialogue"]:
-        assert cue["speaker"] in speakers
-        assert re.search(r"[\u3040-\u9fff]", cue["ja"])
-        assert cue["en"].strip()
-    assert len(chapter["sites"]) == 3
-assert chapters[-1]["kills"] == 18
-assert chapters[-1]["sites"][-1]["requires_kills"] == 18
-assert any(cue["speaker"] == "banker" for cue in chapters[-1]["dialogue"])
-campaign = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignDirector.cpp").read_text()
-for gate in ("CheckpointValid", "RecordDefeat", "RestoreSite", "CompleteChapter",
-             "CanSpawnFinalBoss", "AdvanceChapter", "CampaignLiberated"):
-    assert f"SoraCampaignRules::{gate}" in campaign, f"The campaign director no longer uses tested {gate} gate"
+    assert chapter["lines"] and chapter["triggers"]
+    for line in chapter["lines"]:
+        assert line["speaker"] in speakers
+        assert re.search(r"[぀-鿿]", line["ja"])
+        assert line["en"].strip()
+assert chapters[-1]["beats"][-1]["id"] == "ch08.b18"
+assert any(line["speaker"] == "banker" for line in chapters[-1]["lines"])
+assert any(beat["type"] == "boss" and beat["params"]["boss"] == "boss_val_amort" for beat in chapters[-1]["beats"])
+# The director still runs the chapter-one dojo lessons through the tested gates.
+director = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignDirector.cpp").read_text()
 for gate in ("Record", "CheckpointValid", "CanScoreBout"):
-    assert f"SoraDojoRules::{gate}" in campaign, f"The campaign director no longer uses tested dojo {gate} gate"
+    assert f"SoraDojoRules::{gate}" in director, f"The campaign director no longer uses tested dojo {gate} gate"
 character = (ROOT / "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp").read_text()
-assert "SoraDojoRules::EAction::Stance" in character
-assert "SoraDojoRules::EAction::Guard" in character
-assert "SoraDojoRules::EAction::Parry" in character
-assert "SoraDojoRules::EAction::Recovery" in character
-save_header = (ROOT / "Source/SoraArena/Public/SoraSaveGame.h").read_text()
-assert "UPROPERTY(SaveGame) int32 CheckpointDojoLessonMask" in save_header
-assert "Save->SaveSchema=5" in campaign
+for action in ("Stance", "Guard", "Parry", "Recovery"):
+    assert f"SoraDojoRules::EAction::{action}" in character
+
+
+def mask(bits):
+    value = 0
+    for bit in bits:
+        assert 0 <= bit < 32 and not value & (1 << bit)
+        value |= 1 << bit
+    return value
+
+
+def phase_checkpoints(chapter, beat):
+    return sum(1 for row in chapter["checkpoints"] if row["beat"] == beat["id"] and row["phase"] > 0)
+
 
 lines = ["static constexpr FChapterFixture Chapters[] = {"]
 for chapter in chapters:
-    sites = []
-    for site in chapter["sites"]:
-        mask = sum(1 << prior for prior in site["requires_sites"])
-        sites.append("{" + f'{site["requires_kills"]}, {mask}u' + "}")
-    lines.append("    {" + f'{chapter["kills"]}, ' + "{" + ", ".join(sites) + "}},")
+    index = {beat["id"]: position for position, beat in enumerate(chapter["beats"])}
+    assert len(index) <= 32
+    rows = []
+    for beat in chapter["beats"]:
+        unlocks = beat["unlocks"]
+        fields = (
+            f'{mask(index[prior] for prior in beat["requires"])}u',
+            str(-1 if beat["site"] is None else beat["site"]),
+            f'{mask(unlocks["weapons"])}u',
+            f'{mask(unlocks["grants"])}u',
+            f'{mask(mechanic_bits[name] for name in unlocks["mechanics"])}u',
+            "true" if beat["optional"] else "false",
+            "true" if beat["checkpoint"] else "false",
+            str(phase_checkpoints(chapter, beat)),
+        )
+        rows.append("        {" + ", ".join(fields) + "},  // " + beat["id"] + " " + beat["type"])
+    lines.append("    {" + str(len(rows)) + ", {")
+    lines.extend(rows)
+    lines.append("    }},")
 lines.append("};")
 
 build_env = os.environ.copy()
@@ -84,4 +116,5 @@ with tempfile.TemporaryDirectory(prefix="sora-campaign-acceptance-") as director
     ], check=True, env=build_env)
     subprocess.run([str(binary)], check=True)
 
-print(f"Japanese cues with English counterparts: {sum(len(chapter['dialogue']) for chapter in chapters)}")
+print(f"Bilingual lines with speakers: {sum(len(chapter['lines']) for chapter in chapters)}; "
+      f"beats: {sum(len(chapter['beats']) for chapter in chapters)}")

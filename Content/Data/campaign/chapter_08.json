@@ -1,0 +1,6071 @@
+{
+ "schema_version": 4,
+ "id": "ch08_debt_citadel",
+ "index": 7,
+ "source": "docs/campaign/chapter-08.md",
+ "title_ja": "最後の解放",
+ "title_en": "Final Liberation",
+ "map": 3,
+ "secondary_maps": [
+  1
+ ],
+ "target_s": 3300,
+ "sites": [
+  {
+   "index": 0,
+   "beat": "ch08.b07",
+   "requires_sites": [
+    1
+   ]
+  },
+  {
+   "index": 1,
+   "beat": "ch08.b04",
+   "requires_sites": []
+  },
+  {
+   "index": 2,
+   "beat": "ch08.b16",
+   "requires_sites": [
+    0
+   ]
+  }
+ ],
+ "checkpoints": [
+  {
+   "beat": "ch08.b01",
+   "phase": 0,
+   "at_cs": 0
+  },
+  {
+   "beat": "ch08.b02",
+   "phase": 0,
+   "at_cs": 15000
+  },
+  {
+   "beat": "ch08.b03",
+   "phase": 0,
+   "at_cs": 45000
+  },
+  {
+   "beat": "ch08.b04",
+   "phase": 0,
+   "at_cs": 69000
+  },
+  {
+   "beat": "ch08.b05",
+   "phase": 0,
+   "at_cs": 87000
+  },
+  {
+   "beat": "ch08.b06",
+   "phase": 0,
+   "at_cs": 99000
+  },
+  {
+   "beat": "ch08.b07",
+   "phase": 0,
+   "at_cs": 123000
+  },
+  {
+   "beat": "ch08.b08",
+   "phase": 0,
+   "at_cs": 147000
+  },
+  {
+   "beat": "ch08.b10",
+   "phase": 0,
+   "at_cs": 165000
+  },
+  {
+   "beat": "ch08.b11",
+   "phase": 0,
+   "at_cs": 189000
+  },
+  {
+   "beat": "ch08.b13",
+   "phase": 0,
+   "at_cs": 219000
+  },
+  {
+   "beat": "ch08.b14",
+   "phase": 0,
+   "at_cs": 231000
+  },
+  {
+   "beat": "ch08.b14",
+   "phase": 1,
+   "at_cs": 246000
+  },
+  {
+   "beat": "ch08.b14",
+   "phase": 2,
+   "at_cs": 264000
+  },
+  {
+   "beat": "ch08.b15",
+   "phase": 0,
+   "at_cs": 285000
+  },
+  {
+   "beat": "ch08.b16",
+   "phase": 0,
+   "at_cs": 300000
+  }
+ ],
+ "unlocks": [
+  {
+   "beat": "ch08.b01",
+   "weapons": [
+    12,
+    17
+   ],
+   "mechanics": [],
+   "grants": []
+  },
+  {
+   "beat": "ch08.b03",
+   "weapons": [
+    15
+   ],
+   "mechanics": [
+    "volley_command"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch08.b06",
+   "weapons": [
+    6
+   ],
+   "mechanics": [],
+   "grants": []
+  }
+ ],
+ "beats": [
+  {
+   "id": "ch08.b01",
+   "type": "cinematic",
+   "place": "pl_kakuredani",
+   "title_ja": "夜明け前の軍議",
+   "title_en": "War council before dawn",
+   "target_s": 150,
+   "checkpoint": true,
+   "requires": [],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     12,
+     17
+    ],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_council",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch08/Cinematics/LS_Ch08_B01_Council",
+    "duration_s": 150,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_ch08_causeway_start",
+     "mounted": "kurimaru",
+     "equipped": {
+      "hip": 0,
+      "back": 18,
+      "polearm": 19,
+      "side": "keep",
+      "firearm": "keep"
+     }
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02",
+   "type": "horseback_ride",
+   "place": "pl_causeway",
+   "title_ja": "土手道を突破せよ",
+   "title_en": "Break through on the causeway",
+   "target_s": 300,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b01"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_charge",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "horse": "kurimaru",
+    "mode": "charge",
+    "route": "spl_ch08_causeway_charge",
+    "complete": {
+     "kind": "volume_enter",
+     "volume": "vol_outer_koguchi"
+    },
+    "gaits": [
+     "walk",
+     "trot",
+     "canter",
+     "gallop"
+    ],
+    "weapons": [
+     19,
+     18,
+     0
+    ],
+    "fear": {
+     "spook_radius_cm": 900,
+     "recover_s": 2.5
+    },
+    "horse_stamina": {
+     "max": 100,
+     "gallop_drain_per_s": 6,
+     "canter_regen_per_s": 3,
+     "trot_regen_per_s": 8
+    },
+    "auto_steer": "setting",
+    "dismount_allowed": false,
+    "on_horse_down": "checkpoint",
+    "objectives": [
+     {
+      "id": "pylon_1",
+      "kind": "destroy",
+      "actor": "seal_stake_01",
+      "volume": "vol_pylon_1",
+      "breaks_on": [
+       "yari_thrust_canter_or_faster",
+       "arrow_x2"
+      ],
+      "optional": true
+     },
+     {
+      "id": "pylon_2",
+      "kind": "destroy",
+      "actor": "seal_stake_02",
+      "volume": "vol_pylon_2",
+      "breaks_on": [
+       "yari_thrust_canter_or_faster",
+       "arrow_x2"
+      ],
+      "optional": true
+     },
+     {
+      "id": "pylon_3",
+      "kind": "destroy",
+      "actor": "seal_stake_03",
+      "volume": "vol_pylon_3",
+      "breaks_on": [
+       "yari_thrust_canter_or_faster",
+       "arrow_x2"
+      ],
+      "optional": true
+     }
+    ],
+    "waves": [
+     {
+      "trigger": "start",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_cw_barricade_1"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.2",
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_cw_air_1"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.25",
+      "enemies": [
+       {
+        "type": "seizure_walker",
+        "count": 1,
+        "spawn": "sp_cw_paddy_left",
+        "invulnerable": true,
+        "script": "sweep_only"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.35",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "spawn": "sp_cw_barricade_2"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.5",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_cw_west_dike"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.55",
+      "enemies": [
+       {
+        "type": "seizure_walker",
+        "count": 1,
+        "spawn": "sp_cw_paddy_right",
+        "invulnerable": true,
+        "script": "sweep_only"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.65",
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_cw_air_2"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.85",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "spawn": "sp_cw_moat_bridge"
+       }
+      ]
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "route_length_m": 1750,
+    "arcs_deg": {
+     "19": [
+      -10,
+      90
+     ],
+     "18": [
+      -170,
+      15
+     ],
+     "0": [
+      20,
+      110
+     ]
+    },
+    "charge": {
+     "riders": 20,
+     "rival": {
+      "npc": "toranosuke",
+      "horse": "arashi",
+      "slot": "right"
+     },
+     "formation": "column_of_twos",
+     "lance_bonus_gallop": 1.5,
+     "catch_up_cm_s": 150,
+     "riders_break_missed_pylon_after_s": 8
+    },
+    "scripted": {
+     "walker_sweep_beam": {
+      "telegraph": "cyan ground line across the causeway",
+      "windup_ms": 1100,
+      "beam_s": 1.5,
+      "width_cm": 300,
+      "damage": 30,
+      "spooks_horse": true
+     },
+     "outro": "Tamakichi's siege mortars fell walker_right and breach the outer 冠木門; walker_left withdraws into the bailey (returns in b03 wave 3)."
+    }
+   }
+  },
+  {
+   "id": "ch08.b03",
+   "type": "combat_wave",
+   "place": "pl_outer_bailey",
+   "title_ja": "輪番撃ちで外郭を制せよ",
+   "title_en": "Take the outer bailey with rotating volleys",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b02"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     15
+    ],
+    "mechanics": [
+     "volley_command"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_siege",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "bounds": "vol_outer_bailey",
+    "waves": [
+     {
+      "trigger": "start",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 6,
+        "spawn": "sp_ob_barricade"
+       },
+       {
+        "type": "marksman",
+        "count": 1,
+        "spawn": "sp_ob_tamon_turret"
+       }
+      ]
+     },
+     {
+      "trigger": "alive_below:3",
+      "enemies": [
+       {
+        "type": "shield_enforcer",
+        "count": 3,
+        "spawn": "sp_ob_sally_port"
+       },
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "spawn": "sp_ob_sally_port"
+       }
+      ]
+     },
+     {
+      "trigger": "prev_cleared",
+      "enemies": [
+       {
+        "type": "seizure_walker",
+        "count": 1,
+        "spawn": "sp_ob_north_turret"
+       },
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_ob_air"
+       }
+      ]
+     }
+    ],
+    "complete": {
+     "kind": "all_waves_cleared"
+    },
+    "max_alive": 8,
+    "allies": [
+     {
+      "npc": "league_teppo_rank_a",
+      "role": "volley_rank",
+      "count": 4,
+      "downable": true
+     },
+     {
+      "npc": "league_teppo_rank_b",
+      "role": "volley_rank",
+      "count": 4,
+      "downable": true
+     },
+     {
+      "npc": "league_teppo_rank_c",
+      "role": "volley_rank",
+      "count": 4,
+      "downable": true
+     },
+     {
+      "npc": "toranosuke",
+      "role": "melee_flank",
+      "downable": true
+     },
+     {
+      "npc": "league_yari",
+      "role": "hold_line",
+      "count": 6,
+      "downable": true
+     },
+     {
+      "npc": "tamakichi",
+      "role": "mortar_crew",
+      "downable": false
+     },
+     {
+      "npc": "oyuki",
+      "role": "noncombat",
+      "downable": false
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ],
+    "target_kind": "enemy"
+   },
+   "ext": {
+    "volley_command": {
+     "ranks": 3,
+     "gunners_per_rank": 4,
+     "weapon": 5,
+     "order_delay_ms": 800,
+     "rank_cycle_s": 9.0,
+     "target_radius_cm": 400,
+     "max_range_cm": 6000,
+     "effect": {
+      "unshielded": "288 damage split across up to 4 targets in the ring, fixed order nearest-first",
+      "shield_enforcer": "shield stagger 2.0 s",
+      "seizure_walker": "8% max HP and a 1.0 s leg stagger"
+     },
+     "smoke_obscure_s": 4.0,
+     "easy_auto_order": true
+    }
+   }
+  },
+  {
+   "id": "ch08.b04",
+   "type": "production_task",
+   "place": "pl_outer_bailey",
+   "title_ja": "野鍛冶と手当所を守れ",
+   "title_en": "Defend the field forge and aid station",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b03"
+   ],
+   "optional": false,
+   "site": 1,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": {
+    "item_ja": "修理した道具",
+    "item_en": "Tools repaired",
+    "qty": 36,
+    "unit_ja": "点",
+    "unit_en": "items"
+   },
+   "music": "ch08_forge",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "defend",
+    "defend": {
+     "targets": [
+      {
+       "actor": "nokaji_forge",
+       "hp": 1200
+      },
+      {
+       "actor": "aid_station",
+       "hp": 800
+      }
+     ],
+     "duration_s": 150,
+     "fail_on_target_destroyed": true,
+     "repair_interact": {
+      "actor": "nokaji_anvil_net",
+      "hold_s": 2.0,
+      "rule": "a drone net on the anvil pauses repairs and the progress bar until cut"
+     }
+    },
+    "waves": [
+     {
+      "trigger": "start",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "spawn": "sp_ob_sally_port"
+       }
+      ]
+     },
+     {
+      "trigger": "after_s:40",
+      "enemies": [
+       {
+        "type": "grenadier",
+        "count": 2,
+        "spawn": "sp_ob_wall_nw",
+        "focus_target": "nokaji_forge"
+       }
+      ]
+     },
+     {
+      "trigger": "after_s:80",
+      "enemies": [
+       {
+        "type": "blade_retainer",
+        "count": 3,
+        "spawn": "sp_ob_sally_port"
+       },
+       {
+        "type": "drone",
+        "count": 2,
+        "spawn": "sp_ob_air",
+        "behavior": "net_anvil"
+       }
+      ]
+     },
+     {
+      "trigger": "after_s:115",
+      "enemies": [
+       {
+        "type": "bound_conscript",
+        "count": 4,
+        "spawn": "sp_ob_sally_port"
+       }
+      ]
+     }
+    ],
+    "allies": [
+     {
+      "npc": "kozo",
+      "role": "noncombat",
+      "downable": false
+     },
+     {
+      "npc": "tetsugoro",
+      "role": "noncombat",
+      "downable": false
+     },
+     {
+      "npc": "okuzu",
+      "role": "noncombat",
+      "downable": false
+     },
+     {
+      "npc": "league_yari",
+      "role": "hold_line",
+      "count": 4,
+      "downable": true
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "supply_point": "sp_nokaji"
+   }
+  },
+  {
+   "id": "ch08.b05",
+   "type": "production_task",
+   "place": "pl_outer_bailey",
+   "title_ja": "兵糧と早合を三つの組へ",
+   "title_en": "Bring rations and cartridges to three squads",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b04"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": {
+    "item_ja": "兵糧",
+    "item_en": "Rations",
+    "qty": 36,
+    "unit_ja": "食",
+    "unit_en": "meals"
+   },
+   "music": "ch08_siege_low",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "carry",
+    "carry": {
+     "item": "ration_bundle",
+     "count": 3,
+     "pickups": [
+      "pk_nokaji_rations"
+     ],
+     "dropoffs": [
+      "do_squad_west",
+      "do_squad_mid",
+      "do_squad_east"
+     ],
+     "loadout_while_carrying": [
+      "katana_one_hand"
+     ],
+     "move_speed_mult": 0.8,
+     "drop_on_hit": true,
+     "dropped_item_returns_after_s": 20
+    },
+    "waves": [
+     {
+      "trigger": "start",
+      "enemies": [
+       {
+        "type": "marksman",
+        "count": 2,
+        "spawn": "sp_ob_tamon_loophole"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.34",
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 2,
+        "spawn": "sp_ob_air"
+       }
+      ]
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "scripted": {
+     "do_squad_west": "squad west suppresses the western marksman (no fire for 20 s)",
+     "do_squad_mid": "squad mid's volley kills the eastern marksman",
+     "do_squad_east": "all three squads open fire on the 多聞櫓 loopholes (b06 set-up)"
+    }
+   }
+  },
+  {
+   "id": "ch08.b06",
+   "type": "combat_wave",
+   "place": "pl_otemon",
+   "title_ja": "大手門の封印錨を砕け",
+   "title_en": "Smash the main gate's seal anchors",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b05"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     6
+    ],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_gate",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "bounds": "vol_masugata",
+    "waves": [
+     {
+      "trigger": "start",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "spawn": "sp_ms_tamon_wall"
+       },
+       {
+        "type": "grenadier",
+        "count": 1,
+        "spawn": "sp_ms_yaguramon_top"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.33",
+      "enemies": [
+       {
+        "type": "shield_enforcer",
+        "count": 2,
+        "spawn": "sp_ms_kuguri_door"
+       },
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "spawn": "sp_ms_kuguri_door"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.66",
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_ms_air"
+       },
+       {
+        "type": "grenadier",
+        "count": 1,
+        "spawn": "sp_ms_yaguramon_top"
+       },
+       {
+        "type": "marksman",
+        "count": 1,
+        "spawn": "sp_ms_tamon_wall_e"
+       }
+      ]
+     }
+    ],
+    "complete": {
+     "kind": "objectives",
+     "objectives": [
+      {
+       "id": "anchor_1",
+       "kind": "destroy",
+       "actor": "seal_anchor_left",
+       "plates": 3,
+       "damage_filter": {
+        "6": 1,
+        "8": 0.5,
+        "15": 1
+       },
+       "overload_s": 2.0
+      },
+      {
+       "id": "anchor_2",
+       "kind": "destroy",
+       "actor": "seal_anchor_right",
+       "plates": 3,
+       "damage_filter": {
+        "6": 1,
+        "8": 0.5,
+        "15": 1
+       },
+       "overload_s": 2.0
+      },
+      {
+       "id": "anchor_3",
+       "kind": "destroy",
+       "actor": "seal_anchor_wallwalk",
+       "plates": 3,
+       "damage_filter": {
+        "6": 1,
+        "8": 0.5,
+        "15": 1
+       },
+       "overload_s": 2.0
+      }
+     ]
+    },
+    "max_alive": 7,
+    "allies": [
+     {
+      "npc": "toranosuke",
+      "role": "melee_flank",
+      "downable": true
+     },
+     {
+      "npc": "league_teppo_rank_a",
+      "role": "volley_rank",
+      "count": 4,
+      "downable": true
+     },
+     {
+      "npc": "league_teppo_rank_b",
+      "role": "volley_rank",
+      "count": 4,
+      "downable": true
+     },
+     {
+      "npc": "league_yari",
+      "role": "mantlet_bearer",
+      "count": 4,
+      "downable": true
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ],
+    "target_kind": "enemy"
+   },
+   "ext": {
+    "volley_command": {
+     "ranks": 2,
+     "gunners_per_rank": 4,
+     "weapon": 5,
+     "order_delay_ms": 800,
+     "rank_cycle_s": 9.0,
+     "target_radius_cm": 400,
+     "max_range_cm": 4000,
+     "note": "same rules as b03; two ranks at the 高麗門"
+    }
+   }
+  },
+  {
+   "id": "ch08.b07",
+   "type": "production_task",
+   "place": "pl_collateral_cells",
+   "title_ja": "担保牢の民を避難所へ",
+   "title_en": "Lead the prisoners to the refuge",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b06"
+   ],
+   "optional": false,
+   "site": 0,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_cells",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "escort",
+    "escort": {
+     "npcs": [
+      {
+       "group": "prisoners_a",
+       "count": 4
+      },
+      {
+       "group": "prisoners_b",
+       "count": 4
+      },
+      {
+       "group": "prisoners_c",
+       "count": 3,
+       "includes": [
+        "takemaru"
+       ]
+      },
+      {
+       "group": "child_1",
+       "count": 1
+      }
+     ],
+     "path": "spl_cells_to_refuge",
+     "path_length_m": 180,
+     "speed_cm_s": 260,
+     "wait_for_player_cm": 1200,
+     "fail_on_npc_death": true,
+     "hide_on_signal": true,
+     "npc_health": 150,
+     "down_revive_s": 3,
+     "bleedout_s": 30,
+     "healing_lance_revive_s": 1.0
+    },
+    "waves": [
+     {
+      "trigger": "start",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_cells_guard"
+       },
+       {
+        "type": "auditor",
+        "count": 2,
+        "spawn": "sp_cells_office"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.4",
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_cells_air",
+        "behavior": "net_npc",
+        "net_cut_s": 1.5
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.7",
+      "enemies": [
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "spawn": "sp_ramp_top"
+       },
+       {
+        "type": "shield_enforcer",
+        "count": 1,
+        "spawn": "sp_ramp_top"
+       },
+       {
+        "type": "bound_conscript",
+        "count": 3,
+        "spawn": "sp_ramp_top"
+       }
+      ]
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "release": {
+     "interact_points": [
+      "cell_door_1",
+      "cell_door_2",
+      "cell_door_3",
+      "cell_door_4"
+     ],
+     "per_point_s": 2.0,
+     "action": "seal_cut"
+    },
+    "scripted": {
+     "auditor_alarm": "an auditor who reaches the office bell triggers wave 2 immediately"
+    }
+   }
+  },
+  {
+   "id": "ch08.b08",
+   "type": "cinematic",
+   "place": "pl_collateral_cells",
+   "title_ja": "一番奥の蔵",
+   "title_en": "The last storehouse",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b07"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_reunion",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch08/Cinematics/LS_Ch08_B08_LastStorehouse",
+    "duration_s": 120,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_deep_kura_door",
+     "equipped": "keep"
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch08.b09",
+   "type": "dialogue",
+   "place": "pl_collateral_cells",
+   "title_ja": "塔へ向かえ",
+   "title_en": "Head for the spire",
+   "target_s": 60,
+   "checkpoint": false,
+   "requires": [
+    "ch08.b08"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_reunion_walk",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "beat_start",
+    "mode": "ambient",
+    "interrupt": "queue",
+    "camera": "soft_lookat",
+    "complete": {
+     "kind": "volume_enter",
+     "volume": "vol_spire_entrance"
+    },
+    "lines": [
+     "ch08.b09.nyaakoto.001",
+     "ch08.b09.sekireisai.002",
+     "ch08.b09.sekireisai.003",
+     "ch08.b09.nyaakoto.004",
+     "ch08.b09.sekireisai.005"
+    ]
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch08.b10",
+   "type": "combat_wave",
+   "place": "pl_ledger_spire",
+   "title_ja": "帳簿塔を登れ",
+   "title_en": "Climb the Ledger Spire",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b09"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_spire",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "bounds": "vol_spire_L1_L4",
+    "waves": [
+     {
+      "trigger": "start",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "spawn": "sp_sp_L2_ramp"
+       },
+       {
+        "type": "marksman",
+        "count": 1,
+        "spawn": "sp_sp_L2_gantry_far"
+       }
+      ]
+     },
+     {
+      "trigger": "alive_below:2",
+      "enemies": [
+       {
+        "type": "shield_enforcer",
+        "count": 2,
+        "spawn": "sp_sp_L3_ramp_down"
+       },
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "spawn": "sp_sp_L3_ramp_down"
+       }
+      ]
+     },
+     {
+      "trigger": "volume_enter:vol_spire_L3",
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 4,
+        "spawn": "sp_sp_void_air"
+       },
+       {
+        "type": "grenadier",
+        "count": 1,
+        "spawn": "sp_sp_L4_gantry"
+       },
+       {
+        "type": "auditor",
+        "count": 2,
+        "spawn": "sp_sp_L4_office"
+       }
+      ]
+     }
+    ],
+    "complete": {
+     "kind": "all_waves_cleared"
+    },
+    "max_alive": 7,
+    "allies": [
+     {
+      "npc": "kohagi",
+      "role": "skirmisher",
+      "downable": true
+     },
+     {
+      "npc": "toranosuke",
+      "role": "melee_flank",
+      "downable": true
+     },
+     {
+      "npc": "tetsugoro",
+      "role": "noncombat_follow",
+      "downable": false
+     },
+     {
+      "npc": "league_engineer",
+      "role": "noncombat_follow",
+      "count": 2,
+      "downable": false
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ],
+    "target_kind": "enemy"
+   },
+   "ext": {
+    "scripted": {
+     "auditor_alarm": "an auditor at an alarm panel drops a shutter over the L3 shortcut (route gets longer, never a fail)"
+    },
+    "supply_point": "sp_spire_base"
+   }
+  },
+  {
+   "id": "ch08.b11",
+   "type": "production_task",
+   "place": "pl_ledger_spire",
+   "title_ja": "轆轤を回して昇れ",
+   "title_en": "Crank the capstan to rise",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b10"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_lift",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "crank",
+    "crank": {
+     "actor": "lift_capstan_01",
+     "turns_required": 48,
+     "turn_rate_band": [
+      0.4,
+      1.0
+     ],
+     "progress_decay_per_s": 0.01,
+     "stamina_per_turn": 5,
+     "interruptible": true,
+     "coop_npc": {
+      "npcs": [
+       "tetsugoro",
+       "league_engineer_1",
+       "league_engineer_2"
+      ],
+      "turns_per_s": 0.15
+     },
+     "moving_platform": {
+      "actor": "freight_lift_platform",
+      "size_cm": [
+       600,
+       600
+      ],
+      "travel_cm": 11500,
+      "from": "L4_27m",
+      "to": "hall_142m"
+     },
+     "rope_hazard": {
+      "rule": "while a drone's cutter touches the hawser, decay x3",
+      "cut_drone_to_clear": true
+     }
+    },
+    "waves": [
+     {
+      "trigger": "progress_at:0.25",
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_lift_gantry_50m",
+        "behavior": "cut_rope"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.5",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_lift_gantry_75m"
+       }
+      ]
+     },
+     {
+      "trigger": "progress_at:0.75",
+      "enemies": [
+       {
+        "type": "shield_enforcer",
+        "count": 1,
+        "spawn": "sp_lift_gantry_100m",
+        "behavior": "board_platform"
+       },
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "spawn": "sp_lift_gantry_100m",
+        "behavior": "board_platform"
+       }
+      ]
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch08.b12",
+   "type": "explore_optional",
+   "place": "pl_ledger_spire",
+   "title_ja": "押収品を調べる",
+   "title_en": "Search the seized goods",
+   "target_s": 120,
+   "checkpoint": false,
+   "requires": [
+    "ch08.b11"
+   ],
+   "optional": true,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_heirlooms",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "volume": "vol_heirloom_hall",
+    "pois": [
+     {
+      "id": "poi_child_toy",
+      "kind": "lore"
+     },
+     {
+      "id": "poi_washio_sword",
+      "kind": "cache",
+      "collectible": "ch08.c03"
+     },
+     {
+      "id": "poi_tamakichi_mortar",
+      "kind": "lore",
+      "collectible": "ch08.c04"
+     },
+     {
+      "id": "poi_scroll_case",
+      "kind": "lore",
+      "collectible": "ch08.c05"
+     },
+     {
+      "id": "poi_covered_mon",
+      "kind": "lore",
+      "interact": "tear the seizure label off the Nyaagyu 陣羽織"
+     },
+     {
+      "id": "poi_cloud_window",
+      "kind": "vista"
+     }
+    ],
+    "rewards": [
+     "ch08.c03",
+     "ch08.c04",
+     "ch08.c05",
+     "arrows_12"
+    ],
+    "exit_hint_after_s": 60
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13",
+   "type": "cinematic",
+   "place": "pl_ledger_engine",
+   "title_ja": "帳簿機関",
+   "title_en": "The Ledger Engine",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b11"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_amort_intro",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch08/Cinematics/LS_Ch08_B13_Restructuring",
+    "duration_s": 120,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_engine_disc_south",
+     "equipped": "keep"
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14",
+   "type": "boss",
+   "place": "pl_ledger_engine",
+   "title_ja": "大徴収官を捕らえよ",
+   "title_en": "Capture the High Collector",
+   "target_s": 540,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b13"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_amort",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "boss": "boss_val_amort",
+    "arena": {
+     "volume": "vol_engine_disc",
+     "lock": true
+    },
+    "phases": [
+     {
+      "hp_pct_start": 100,
+      "pattern_table": "amort_p1_collector",
+      "target_s": 150
+     },
+     {
+      "hp_pct_start": 70,
+      "pattern_table": "amort_p2_seizure",
+      "adds": "collateral_constructs",
+      "arena_mod": "seizure_tiles",
+      "target_s": 180
+     },
+     {
+      "hp_pct_start": 40,
+      "pattern_table": "amort_p3_cane",
+      "arena_mod": "field_off",
+      "target_s": 210
+     }
+    ],
+    "defeat": "capture",
+    "intro_cinematic": "ch08.b13",
+    "outro_cinematic": "ch08.b15",
+    "checkpoint_per_phase": true,
+    "telegraph": {
+     "palette": "default",
+     "min_windup_ms": 500
+    },
+    "finisher": "muto_dori"
+   },
+   "ext": {
+    "lethal_finisher": false,
+    "hp": {
+     "normal": 2400,
+     "easy": 1900,
+     "hard": 2800
+    },
+    "post_defeat": {
+     "interact": "engine_spine",
+     "hold_s": 1.5,
+     "animation": "nukitsuke_draw_cut"
+    },
+    "pattern_tables": [
+     "amort_p1_collector",
+     "amort_p2_seizure",
+     "amort_p3_cane"
+    ]
+   }
+  },
+  {
+   "id": "ch08.b15",
+   "type": "cinematic",
+   "place": "pl_ledger_engine",
+   "title_ja": "封印、消ゆ",
+   "title_en": "The seals go dark",
+   "target_s": 150,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b14"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_release",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch08/Cinematics/LS_Ch08_B15_SealsDark",
+    "duration_s": 150,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_festival_canal_steps",
+     "equipped": {
+      "all": "stowed"
+     }
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16",
+   "type": "production_task",
+   "place": "pl_lantern_ward_festival",
+   "title_ja": "生産改帳を掲げよ",
+   "title_en": "Post the production registry",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [
+    "ch08.b15"
+   ],
+   "optional": false,
+   "site": 2,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_festival",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "carry",
+    "carry": {
+     "item": "public_registry_box",
+     "count": 1,
+     "pickups": [
+      "pk_registry_canal_steps"
+     ],
+     "dropoffs": [
+      "do_kosatsu_board"
+     ],
+     "loadout_while_carrying": [],
+     "move_speed_mult": 0.7,
+     "drop_on_hit": false,
+     "post_interact": {
+      "actor": "kosatsu_board",
+      "hold_s": 3.0,
+      "action": "paste_pages"
+     }
+    },
+    "waves": [],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "combat": false,
+    "crowd": {
+     "windows_visible": 120,
+     "mac_visible": 60,
+     "path_clearance_cm": 180,
+     "no_markers": false
+    }
+   }
+  },
+  {
+   "id": "ch08.b17",
+   "type": "dialogue",
+   "place": "pl_higashi_torii",
+   "title_ja": "東の鳥居へ",
+   "title_en": "To the Eastern Torii",
+   "target_s": 90,
+   "checkpoint": false,
+   "requires": [
+    "ch08.b16"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch08_torii_dawn",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "beat_start",
+    "mode": "ambient",
+    "interrupt": "queue",
+    "camera": "soft_lookat",
+    "complete": {
+     "kind": "event",
+     "event": "plaque_rehang_done"
+    },
+    "lines": [
+     "ch08.b17.kohagi.001",
+     "ch08.b17.iota.002",
+     "ch08.b17.nyaakoto.003",
+     "ch08.b17.toranosuke.004",
+     "ch08.b17.nyaakoto.005",
+     "ch08.b17.sekireisai.006",
+     "ch08.b17.sekireisai.007",
+     "ch08.b17.nyaakoto.008",
+     "ch08.b17.sekireisai.009"
+    ]
+   },
+   "ext": {
+    "blocking_max_s": 20
+   }
+  },
+  {
+   "id": "ch08.b18",
+   "type": "cinematic",
+   "place": "pl_higashi_torii",
+   "title_ja": "一束",
+   "title_en": "One sheaf",
+   "target_s": 90,
+   "checkpoint": false,
+   "requires": [
+    "ch08.b17"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "credits_main",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch08/Cinematics/LS_Ch08_B18_Epilogue",
+    "duration_s": 90,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": null,
+     "equipped": null,
+     "next": "credits_full"
+    }
+   },
+   "ext": {}
+  }
+ ],
+ "lines": [
+  {
+   "id": "ch08.b01.iota.001",
+   "beat": "ch08.b01",
+   "speaker": "clerk",
+   "ja": "大徴収官が、期限の利益の喪失を宣言されました。",
+   "en": "The High Collector has declared acceleration. Every loan is called.",
+   "duration_s": 5.0,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "大徴収官=だいちょうしゅうかん; 期限の利益=きげんのりえき; 喪失=そうしつ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.iota.002",
+   "beat": "ch08.b01",
+   "speaker": "clerk",
+   "ja": "正午までに未払いの場合、家も道具も……人も、回収です。",
+   "en": "If unpaid by noon, homes, tools… and people are collected.",
+   "duration_s": 5.6,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "未払い=みはらい; 回収=かいしゅう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.oyuki.003",
+   "beat": "ch08.b01",
+   "speaker": "leader",
+   "ja": "騎馬二十一、鉄砲三十六。正午まで、あと四刻でございます。",
+   "en": "Twenty-one riders. Thirty-six guns. Eight hours to noon.",
+   "duration_s": 6.1,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "騎馬=きば; 四刻=よとき",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.kohagi.004",
+   "beat": "ch08.b01",
+   "speaker": "scout",
+   "ja": "土手道に柵が四つ、差押機が二。門に錨が三。",
+   "en": "Causeway: four barricades, two walkers. Gate: three anchors.",
+   "duration_s": 4.9,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "土手道=どてみち; 差押機=さしおさえき; 錨=いかり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.kozo.005",
+   "beat": "ch08.b01",
+   "speaker": "foundry_master",
+   "ja": "工房も田畑も、また動き始めた。",
+   "en": "The workshops and fields are working again.",
+   "duration_s": 3.1,
+   "register": "yamato_gruff",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "田畑=たはた",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.kozo.006",
+   "beat": "ch08.b01",
+   "speaker": "foundry_master",
+   "ja": "……これは、その礼や。持っていき。",
+   "en": "…This is our thanks. Take it.",
+   "duration_s": 3.0,
+   "register": "yamato_gruff",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.okinu.007",
+   "beat": "ch08.b01",
+   "speaker": "weaver",
+   "ja": "異星の糸を、玉鋼に巻き留めましたえ。ほどけしまへん。",
+   "en": "I bound the alien thread to tamahagane. It will not come loose.",
+   "duration_s": 4.9,
+   "register": "kyoto_soft",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "異星=いせい; 玉鋼=たまはがね; 巻き留め=まきとめ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.okuzu.008",
+   "beat": "ch08.b01",
+   "speaker": "apothecary",
+   "ja": "こちらは、斬るより繋ぐ槍です。倒れた人に向けなさい。",
+   "en": "This lance mends more than it cuts. Aim it at the fallen.",
+   "duration_s": 4.7,
+   "register": "calm_maternal",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "繋ぐ=つなぐ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.toranosuke.009",
+   "beat": "ch08.b01",
+   "speaker": "rival",
+   "ja": "この羽織は燃やす。……灰なら、もう数えられまい。",
+   "en": "This haori goes in the fire. …Ash cannot be counted.",
+   "duration_s": 4.4,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "羽織=はおり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.nyaakoto.010",
+   "beat": "ch08.b01",
+   "speaker": "samurai",
+   "ja": "数えました。田が三百十二枚、機が四十、提灯が千。",
+   "en": "I have counted. Three hundred twelve paddies, forty looms, a thousand lanterns.",
+   "duration_s": 5.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "機=はた; 提灯=ちょうちん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.nyaakoto.011",
+   "beat": "ch08.b01",
+   "speaker": "samurai",
+   "ja": "……それと、先生が、お一人。",
+   "en": "…And one master.",
+   "duration_s": 2.8,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b01.oyuki.012",
+   "beat": "ch08.b01",
+   "speaker": "leader",
+   "ja": "では、参りましょう。帳尻を、合わせに。",
+   "en": "Then let us go and balance the books.",
+   "duration_s": 3.4,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "帳尻=ちょうじり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.toranosuke.001",
+   "beat": "ch08.b02",
+   "speaker": "rival",
+   "ja": "前は譲る。右は俺が持つ。行くぞ！",
+   "en": "The front is yours. I hold your right. Ride!",
+   "duration_s": 3.4,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "譲る=ゆずる",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.toranosuke.002",
+   "beat": "ch08.b02",
+   "speaker": "rival",
+   "ja": "槍は右へ突け、弓は左だ！",
+   "en": "Spear to the right! Bow to the left!",
+   "duration_s": 2.6,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.enforcer.003",
+   "beat": "ch08.b02",
+   "speaker": "enforcer",
+   "ja": "未登録の騎馬を確認。与信を否認します。",
+   "en": "Unregistered cavalry detected. Credit denied.",
+   "duration_s": 4.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "与信=よしん; 否認=ひにん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.iota.004",
+   "beat": "ch08.b02",
+   "speaker": "clerk",
+   "ja": "差押機の照準線です！　あの線の上に、いてはいけません！",
+   "en": "The walker's aiming line! Do not stay on that line!",
+   "duration_s": 4.9,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "照準線=しょうじゅんせん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.toranosuke.005",
+   "beat": "ch08.b02",
+   "speaker": "rival",
+   "ja": "杭だ！　すれ違いざまに突け！",
+   "en": "A seal stake! Thrust as you pass!",
+   "duration_s": 2.5,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "杭=くい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.nyaakoto.006",
+   "beat": "ch08.b02",
+   "speaker": "samurai",
+   "ja": "栗丸、こらえよ。",
+   "en": "Steady, Kurimaru.",
+   "duration_s": 1.7,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "栗丸=くりまる",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.enforcer.007",
+   "beat": "ch08.b02",
+   "speaker": "enforcer",
+   "ja": "損切りいたします。後退します。",
+   "en": "Cutting losses. Withdrawing.",
+   "duration_s": 3.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "損切り=そんぎり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.toranosuke.008",
+   "beat": "ch08.b02",
+   "speaker": "rival",
+   "ja": "見ろ、城だ。あそこに先生がいる。",
+   "en": "Look—the castle. Sensei is in there.",
+   "duration_s": 3.1,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.tamakichi.009",
+   "beat": "ch08.b02",
+   "speaker": "fireworks",
+   "ja": "どいてや！　門、吹っ飛ばしたるで！",
+   "en": "Make way! I'm blowing that gate wide open!",
+   "duration_s": 3.0,
+   "register": "kamigata_cheerful",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b02.toranosuke.010",
+   "beat": "ch08.b02",
+   "speaker": "rival",
+   "ja": "立て、ニャーコト！　まだ終わっておらん！",
+   "en": "Up, Nyaakoto! This is not finished!",
+   "duration_s": 3.0,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.tetsugoro.001",
+   "beat": "ch08.b03",
+   "speaker": "gunsmith",
+   "ja": "鉄砲衆、三列！　撃ったら下がれ、込めたら出ろ！",
+   "en": "Gunners, three ranks! Fire, fall back. Loaded, step up!",
+   "duration_s": 4.5,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "鉄砲衆=てっぽうしゅう; 込め=こめ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.oyuki.002",
+   "beat": "ch08.b03",
+   "speaker": "leader",
+   "ja": "号令は、ニャーコト殿に。的を示して『放て』と。",
+   "en": "The command is yours, Nyaakoto. Mark the target, then call 'Fire.'",
+   "duration_s": 4.6,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "号令=ごうれい; 的=まと; 放て=はなて",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.ashigaru.003",
+   "beat": "ch08.b03",
+   "speaker": "league_ashigaru",
+   "ja": "前の組、構え！",
+   "en": "Front rank, ready!",
+   "duration_s": 1.6,
+   "register": "ashigaru",
+   "delivery": "shout",
+   "mode": null,
+   "repeatable": false,
+   "readings": "構え=かまえ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.nyaakoto.004",
+   "beat": "ch08.b03",
+   "speaker": "samurai",
+   "ja": "放て！",
+   "en": "Fire!",
+   "duration_s": 1.2,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "放て=はなて",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.ashigaru.005",
+   "beat": "ch08.b03",
+   "speaker": "league_ashigaru",
+   "ja": "下がって込めろ！　次の組、前へ！",
+   "en": "Fall back and load! Next rank, forward!",
+   "duration_s": 3.0,
+   "register": "ashigaru",
+   "delivery": "shout",
+   "mode": null,
+   "repeatable": false,
+   "readings": "込めろ=こめろ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.oyuki.006",
+   "beat": "ch08.b03",
+   "speaker": "leader",
+   "ja": "一斉射ごとに、玉を数えております。",
+   "en": "I am counting every round, volley by volley.",
+   "duration_s": 3.3,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "一斉射=いっせいしゃ; 玉=たま",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.enforcer.007",
+   "beat": "ch08.b03",
+   "speaker": "enforcer",
+   "ja": "盾列、前進。債権を保全します。",
+   "en": "Shield line, advance. Secure the claim.",
+   "duration_s": 3.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "盾列=たてれつ; 債権=さいけん; 保全=ほぜん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.tamakichi.008",
+   "beat": "ch08.b03",
+   "speaker": "fireworks",
+   "ja": "迫撃の筒や！　落ちる所を見て撃ちや。足元はあかんで！",
+   "en": "Mortar! Watch where it lands. Not at your own feet!",
+   "duration_s": 5.0,
+   "register": "kamigata_cheerful",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "迫撃=はくげき; 筒=つつ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b03.oyuki.009",
+   "beat": "ch08.b03",
+   "speaker": "leader",
+   "ja": "外郭、確保。手負いは七名。手当てを急ぎます。",
+   "en": "Outer bailey secured. Seven wounded. We treat them now.",
+   "duration_s": 5.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "外郭=がいかく; 手負い=ておい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b04.kozo.001",
+   "beat": "ch08.b04",
+   "speaker": "foundry_master",
+   "ja": "火床が熾った。鍬も鋸も、ここで直す。",
+   "en": "The fire's up. Hoes, saws—we mend them here.",
+   "duration_s": 3.6,
+   "register": "yamato_gruff",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "火床=ほど; 熾った=おこった; 鍬=くわ; 鋸=のこぎり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b04.okuzu.002",
+   "beat": "ch08.b04",
+   "speaker": "apothecary",
+   "ja": "手負いはこちらへ。急がず、止まらず。",
+   "en": "Wounded, this way. Don't rush. Don't stop.",
+   "duration_s": 3.4,
+   "register": "calm_maternal",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "手負い=ておい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b04.kohagi.003",
+   "beat": "ch08.b04",
+   "speaker": "scout",
+   "ja": "擲弾兵、二。北西、塀の上。",
+   "en": "Two grenadiers. Northwest, on the wall.",
+   "duration_s": 3.3,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "擲弾兵=てきだんへい; 塀=へい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b04.enforcer.004",
+   "beat": "ch08.b04",
+   "speaker": "enforcer",
+   "ja": "設備の差押えを執行します。",
+   "en": "Executing seizure of equipment.",
+   "duration_s": 2.9,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "差押え=さしおさえ; 執行=しっこう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b04.kozo.005",
+   "beat": "ch08.b04",
+   "speaker": "foundry_master",
+   "ja": "網や！　金床にかかった、切れ！",
+   "en": "A net! On the anvil—cut it!",
+   "duration_s": 2.8,
+   "register": "yamato_gruff",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "金床=かなとこ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b04.conscript.006",
+   "beat": "ch08.b04",
+   "speaker": "conscript",
+   "ja": "すまん……体が、勝手に……！",
+   "en": "Sorry… my body won't stop…!",
+   "duration_s": 2.6,
+   "register": "yamato_rural",
+   "delivery": "distressed",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b04.kozo.007",
+   "beat": "ch08.b04",
+   "speaker": "foundry_master",
+   "ja": "……直った。三十六や。",
+   "en": "…Mended. Thirty-six.",
+   "duration_s": 2.5,
+   "register": "yamato_gruff",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b05.okuzu.001",
+   "beat": "ch08.b05",
+   "speaker": "apothecary",
+   "ja": "兵糧と早合を、三つの組へ。生きて届けなさい。",
+   "en": "Rations and cartridges to three squads. Arrive alive.",
+   "duration_s": 4.5,
+   "register": "calm_maternal",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "兵糧=ひょうろう; 早合=はやごう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b05.kohagi.002",
+   "beat": "ch08.b05",
+   "speaker": "scout",
+   "ja": "櫓に狙い手、二。光ったら、伏せて。",
+   "en": "Two marksmen in the turret. If it glints, get down.",
+   "duration_s": 3.6,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "櫓=やぐら; 狙い手=ねらいて",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b05.enforcer.003",
+   "beat": "ch08.b05",
+   "speaker": "enforcer",
+   "ja": "照準、確定。",
+   "en": "Aim locked.",
+   "duration_s": 1.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "照準=しょうじゅん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b05.ashigaru.004",
+   "beat": "ch08.b05",
+   "speaker": "league_ashigaru",
+   "ja": "来てくれたか！　玉が尽きかけとった。",
+   "en": "You came! We were nearly out.",
+   "duration_s": 3.1,
+   "register": "ashigaru",
+   "delivery": "shout",
+   "mode": null,
+   "repeatable": false,
+   "readings": "尽き=つき",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b05.ashigaru.005",
+   "beat": "ch08.b05",
+   "speaker": "league_ashigaru",
+   "ja": "握り飯や……ありがたい。",
+   "en": "Rice balls… Bless you.",
+   "duration_s": 2.2,
+   "register": "ashigaru",
+   "delivery": "shout",
+   "mode": null,
+   "repeatable": false,
+   "readings": "握り飯=にぎりめし",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b05.oyuki.006",
+   "beat": "ch08.b05",
+   "speaker": "leader",
+   "ja": "兵糧三十六食、届きました。",
+   "en": "Thirty-six rations, delivered.",
+   "duration_s": 3.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "三十六食=さんじゅうろくしょく",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b06.kozo.001",
+   "beat": "ch08.b06",
+   "speaker": "foundry_master",
+   "ja": "門を割るなら、これや。振りかぶったら、迷うな。",
+   "en": "For breaking gates, this. Once it's up, don't hesitate.",
+   "duration_s": 4.1,
+   "register": "yamato_gruff",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "割る=わる",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b06.toranosuke.002",
+   "beat": "ch08.b06",
+   "speaker": "rival",
+   "ja": "枡形だ。三方から撃たれる。止まるな！",
+   "en": "A masugata. Fire from three sides. Keep moving!",
+   "duration_s": 3.7,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "枡形=ますがた",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b06.kohagi.003",
+   "beat": "ch08.b06",
+   "speaker": "scout",
+   "ja": "錨は三。左の柱、右の柱、雁木の上。",
+   "en": "Three anchors. Left post, right post, top of the steps.",
+   "duration_s": 3.9,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "錨=いかり; 雁木=がんぎ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b06.enforcer.004",
+   "beat": "ch08.b06",
+   "speaker": "enforcer",
+   "ja": "侵入者、枡形内。十字射撃を開始します。",
+   "en": "Intruders in the masugata. Commencing crossfire.",
+   "duration_s": 4.6,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "十字射撃=じゅうじしゃげき",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b06.iota.005",
+   "beat": "ch08.b06",
+   "speaker": "clerk",
+   "ja": "錨は三つとも、独立採算でございます。一つずつ、お願いいたします。",
+   "en": "Each anchor is accounted separately. One at a time, please.",
+   "duration_s": 5.8,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "独立採算=どくりつさいさん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b06.enforcer.006",
+   "beat": "ch08.b06",
+   "speaker": "enforcer",
+   "ja": "第二錨、毀損。損害を計上します。",
+   "en": "Anchor two damaged. Loss recorded.",
+   "duration_s": 3.8,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "毀損=きそん; 計上=けいじょう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b06.enforcer.007",
+   "beat": "ch08.b06",
+   "speaker": "enforcer",
+   "ja": "門の維持は、不採算です。撤収。",
+   "en": "Holding the gate is unprofitable. Withdraw.",
+   "duration_s": 3.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "不採算=ふさいさん; 撤収=てっしゅう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b06.ashigaru.008",
+   "beat": "ch08.b06",
+   "speaker": "league_ashigaru",
+   "ja": "大手門、開いたぞぉ！",
+   "en": "The main gate is open!",
+   "duration_s": 2.0,
+   "register": "ashigaru",
+   "delivery": "shout",
+   "mode": null,
+   "repeatable": false,
+   "readings": "大手門=おおてもん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.kohagi.001",
+   "beat": "ch08.b07",
+   "speaker": "scout",
+   "ja": "蔵が四つ。中の人に、札が付いてる。",
+   "en": "Four storehouses. The people inside are tagged.",
+   "duration_s": 3.5,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "札=ふだ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.villager.002",
+   "beat": "ch08.b07",
+   "speaker": "villager",
+   "ja": "……外か？　本当に、外なのか？",
+   "en": "…Outside? Truly outside?",
+   "duration_s": 2.8,
+   "register": "yamato_rural",
+   "delivery": "weak",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.nyaakoto.003",
+   "beat": "ch08.b07",
+   "speaker": "samurai",
+   "ja": "猫柳生の者だ。門まで、私が守る。",
+   "en": "I am of Nyaagyu. I will guard you to the gate.",
+   "duration_s": 3.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "猫柳生=ニャーギュウ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.child.004",
+   "beat": "ch08.b07",
+   "speaker": "child",
+   "ja": "空の紋だ！　お侍さま、空の紋だよ！",
+   "en": "The sky crest! Look, sir—the sky crest!",
+   "duration_s": 3.2,
+   "register": "child",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "紋=もん; 侍=さむらい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.takemaru.005",
+   "beat": "ch08.b07",
+   "speaker": "pupil_takemaru",
+   "ja": "ニャーコト殿！　先生は、一番奥の蔵に……！",
+   "en": "Nyaakoto! Sensei is in the last storehouse…!",
+   "duration_s": 3.9,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.nyaakoto.006",
+   "beat": "ch08.b07",
+   "speaker": "samurai",
+   "ja": "伏せて。合図まで、動くな。",
+   "en": "Get down. Do not move until I signal.",
+   "duration_s": 2.7,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "合図=あいず",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.taemon.007",
+   "beat": "ch08.b07",
+   "speaker": "farmer",
+   "ja": "下村の衆や……よう生きとった。",
+   "en": "Lower-village folk… You're alive.",
+   "duration_s": 2.9,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "下村=しもむら; 衆=しゅう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.oyuki.008",
+   "beat": "ch08.b07",
+   "speaker": "leader",
+   "ja": "避難所を開きました。十二名、全員です。",
+   "en": "The refuge is open. Twelve people. All of them.",
+   "duration_s": 4.2,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "避難所=ひなんじょ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b07.takemaru.009",
+   "beat": "ch08.b07",
+   "speaker": "pupil_takemaru",
+   "ja": "一番奥です。……お一人で、行ってください。",
+   "en": "The very last one. …Go alone.",
+   "duration_s": 4.1,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.nyaakoto.001",
+   "beat": "ch08.b08",
+   "speaker": "samurai",
+   "ja": "先生。",
+   "en": "Sensei.",
+   "duration_s": 1.2,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.sekireisai.002",
+   "beat": "ch08.b08",
+   "speaker": "mentor",
+   "ja": "遅かったのう。",
+   "en": "You came late.",
+   "duration_s": 1.4,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.nyaakoto.003",
+   "beat": "ch08.b08",
+   "speaker": "samurai",
+   "ja": "……申し訳ございません。",
+   "en": "…Forgive me.",
+   "duration_s": 2.2,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.sekireisai.004",
+   "beat": "ch08.b08",
+   "speaker": "mentor",
+   "ja": "よい。道草も修行のうちじゃ。",
+   "en": "No matter. Detours are training too.",
+   "duration_s": 2.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "道草=みちくさ; 修行=しゅぎょう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.sekireisai.005",
+   "beat": "ch08.b08",
+   "speaker": "mentor",
+   "ja": "して、何を数えてきた。",
+   "en": "So. What have you counted?",
+   "duration_s": 2.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.nyaakoto.006",
+   "beat": "ch08.b08",
+   "speaker": "samurai",
+   "ja": "守るものを。田と、炉と、灯と……人を。",
+   "en": "What we protect. Fields, forges, lamps… and people.",
+   "duration_s": 3.7,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "炉=ろ; 灯=あかり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.sekireisai.007",
+   "beat": "ch08.b08",
+   "speaker": "mentor",
+   "ja": "虎之介。",
+   "en": "Toranosuke.",
+   "duration_s": 1.2,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "虎之介=とらのすけ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.toranosuke.008",
+   "beat": "ch08.b08",
+   "speaker": "rival",
+   "ja": "……合わせる顔が、ございません。",
+   "en": "…I cannot face you.",
+   "duration_s": 2.8,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b08.sekireisai.009",
+   "beat": "ch08.b08",
+   "speaker": "mentor",
+   "ja": "顔はそこにある。上げよ。",
+   "en": "Your face is right there. Raise it.",
+   "duration_s": 2.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b09.nyaakoto.001",
+   "beat": "ch08.b09",
+   "speaker": "samurai",
+   "ja": "先生、せめてこれを。",
+   "en": "Sensei, at least take this.",
+   "duration_s": 2.0,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b09.sekireisai.002",
+   "beat": "ch08.b09",
+   "speaker": "mentor",
+   "ja": "要らぬ。民の前に立つには、手が空いておるほうがよい。",
+   "en": "No need. To stand before the people, empty hands are better.",
+   "duration_s": 4.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "要らぬ=いらぬ; 民=たみ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b09.sekireisai.003",
+   "beat": "ch08.b09",
+   "speaker": "mentor",
+   "ja": "上の者は、最後に大きく振りかぶる。その時、刀は鞘の内に置け。",
+   "en": "At the end, he will raise his blade high. Then keep yours in its sheath.",
+   "duration_s": 5.9,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "鞘=さや",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b09.nyaakoto.004",
+   "beat": "ch08.b09",
+   "speaker": "samurai",
+   "ja": "無刀取りは……一人で覚えました。",
+   "en": "Mutō-dori… I learned it alone.",
+   "duration_s": 3.3,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "無刀取り=むとうどり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b09.sekireisai.005",
+   "beat": "ch08.b09",
+   "speaker": "mentor",
+   "ja": "一人で覚えたなら、本物じゃ。行け。",
+   "en": "If you learned it alone, it is real. Go.",
+   "duration_s": 3.4,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "本物=ほんもの",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b10.kohagi.001",
+   "beat": "ch08.b10",
+   "speaker": "scout",
+   "ja": "上に四。橋の向こうに、狙い手が一。",
+   "en": "Four above. One marksman across the bridge.",
+   "duration_s": 3.6,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "狙い手=ねらいて",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b10.enforcer.002",
+   "beat": "ch08.b10",
+   "speaker": "enforcer",
+   "ja": "帳簿塔への無断立入りを検知。",
+   "en": "Unauthorized entry to the Ledger Spire detected.",
+   "duration_s": 3.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "帳簿塔=ちょうぼとう; 無断立入り=むだんたちいり; 検知=けんち",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b10.enforcer.003",
+   "beat": "ch08.b10",
+   "speaker": "enforcer",
+   "ja": "対象を見失いました。直近の取引を照会します。",
+   "en": "Target lost. Querying recent transactions.",
+   "duration_s": 4.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "直近=ちょっきん; 照会=しょうかい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b10.toranosuke.004",
+   "beat": "ch08.b10",
+   "speaker": "rival",
+   "ja": "吹き抜けに落ちるなよ。拾いには行けん。",
+   "en": "Do not fall into the shaft. I cannot fetch you.",
+   "duration_s": 3.6,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "吹き抜け=ふきぬけ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b10.iota.005",
+   "beat": "ch08.b10",
+   "speaker": "clerk",
+   "ja": "この塔は、一階ごとに、債務の桁が一つ上がります。",
+   "en": "Each floor of this tower adds a digit to the debt.",
+   "duration_s": 4.6,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "桁=けた",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b10.tetsugoro.006",
+   "beat": "ch08.b10",
+   "speaker": "gunsmith",
+   "ja": "あの吊り台は止まっとる。轆轤を噛ませる、時間くれ。",
+   "en": "The lift's dead. I'll rig a capstan. Buy me time.",
+   "duration_s": 4.9,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "吊り台=つりだい; 轆轤=ろくろ; 噛ませる=かませる",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b10.enforcer.007",
+   "beat": "ch08.b10",
+   "speaker": "enforcer",
+   "ja": "損失が許容範囲を超過。上層へ移管します。",
+   "en": "Losses exceed tolerance. Transferring upstairs.",
+   "duration_s": 4.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "許容範囲=きょようはんい; 超過=ちょうか; 移管=いかん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b11.tetsugoro.001",
+   "beat": "ch08.b11",
+   "speaker": "gunsmith",
+   "ja": "押して回せ。速すぎりゃ綱が焼ける、遅けりゃ下がる。",
+   "en": "Push it round. Too fast burns the rope. Too slow, we sink.",
+   "duration_s": 4.5,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "綱=つな",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b11.ashigaru.002",
+   "beat": "ch08.b11",
+   "speaker": "league_ashigaru",
+   "ja": "せーの！",
+   "en": "Heave!",
+   "duration_s": 1.2,
+   "register": "ashigaru",
+   "delivery": "shout",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b11.kohagi.003",
+   "beat": "ch08.b11",
+   "speaker": "scout",
+   "ja": "上の橋から、目録が三。",
+   "en": "Three drones, off the upper bridge.",
+   "duration_s": 2.5,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "目録=もくろく",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b11.tetsugoro.004",
+   "beat": "ch08.b11",
+   "speaker": "gunsmith",
+   "ja": "おれらだけじゃ遅い！　早う戻れ！",
+   "en": "Too slow without you! Get back here!",
+   "duration_s": 2.6,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b11.enforcer.005",
+   "beat": "ch08.b11",
+   "speaker": "enforcer",
+   "ja": "昇降機の無断使用。料金を請求します。",
+   "en": "Unauthorized use of the lift. You will be charged.",
+   "duration_s": 4.3,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "昇降機=しょうこうき; 請求=せいきゅう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b11.iota.006",
+   "beat": "ch08.b11",
+   "speaker": "clerk",
+   "ja": "頂上の機関が、正午の一括請求を準備中でございます。",
+   "en": "The summit engine is preparing the noon collection.",
+   "duration_s": 5.4,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "機関=きかん; 一括請求=いっかつせいきゅう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b11.toranosuke.007",
+   "beat": "ch08.b11",
+   "speaker": "rival",
+   "ja": "ここから先は、お前一人だ。下は俺たちが守る。",
+   "en": "From here, you go alone. We hold below.",
+   "duration_s": 4.3,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b12.iota.001",
+   "beat": "ch08.b12",
+   "speaker": "clerk",
+   "ja": "押収品の陳列室でございます。どれにも、評価額が。",
+   "en": "The seized-goods gallery. Every item has a valuation.",
+   "duration_s": 4.9,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "押収品=おうしゅうひん; 陳列室=ちんれつしつ; 評価額=ひょうかがく",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b12.nyaakoto.002",
+   "beat": "ch08.b12",
+   "speaker": "samurai",
+   "ja": "……子どもの張子に、三文か。",
+   "en": "…A child's paper toy. Three coppers.",
+   "duration_s": 2.9,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "張子=はりこ; 三文=さんもん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b12.nyaakoto.003",
+   "beat": "ch08.b12",
+   "speaker": "samurai",
+   "ja": "鷲尾家の刀……虎之介に、返さねば。",
+   "en": "The Washio sword… This goes back to Toranosuke.",
+   "duration_s": 3.7,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "鷲尾家=わしおけ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b12.sekireisai.004",
+   "beat": "ch08.b12",
+   "speaker": "mentor",
+   "ja": "活人剣とは、斬らぬ剣にあらず。斬るべき一つを、見定めた剣じゃ。",
+   "en": "The life-giving sword does not refuse to cut. It finds the one thing to cut.",
+   "duration_s": 5.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "活人剣=かつにんけん; 見定めた=みさだめた",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b12.iota.005",
+   "beat": "ch08.b12",
+   "speaker": "clerk",
+   "ja": "上へは、北の階段でございます。",
+   "en": "The way up is the north stair.",
+   "duration_s": 2.9,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13.valamort.001",
+   "beat": "ch08.b13",
+   "speaker": "banker",
+   "ja": "ようこそ、債務者番号七〇三一。お掛けください。",
+   "en": "Welcome, debtor seven-zero-three-one. Please, be seated.",
+   "duration_s": 4.9,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "債務者番号=さいむしゃばんごう; 七〇三一=ななまるさんいち",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13.valamort.002",
+   "beat": "ch08.b13",
+   "speaker": "banker",
+   "ja": "ご提案です。返済条件の変更——金利は据え置き、期間は永久。",
+   "en": "A proposal. Restructured terms: the rate unchanged, the term perpetual.",
+   "duration_s": 6.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "返済=へんさい; 据え置き=すえおき; 永久=えいきゅう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13.nyaakoto.003",
+   "beat": "ch08.b13",
+   "speaker": "samurai",
+   "ja": "……永久。",
+   "en": "…Perpetual.",
+   "duration_s": 1.3,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "永久=えいきゅう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13.valamort.004",
+   "beat": "ch08.b13",
+   "speaker": "banker",
+   "ja": "最後の帳簿は私が守る。街の未来まで担保に取ろう。",
+   "en": "I guard the final ledger. Even this city's future is collateral.",
+   "duration_s": 5.2,
+   "register": "alien_corporate_keigo",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": "担保=たんぽ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13.valamort.005",
+   "beat": "ch08.b13",
+   "speaker": "banker",
+   "ja": "署名を。硯は用意してございます。……貴殿の師のものですが。",
+   "en": "Your signature. An inkstone is provided. It was your master's.",
+   "duration_s": 5.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "署名=しょめい; 硯=すずり; 貴殿=きでん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13.valamort.006",
+   "beat": "ch08.b13",
+   "speaker": "banker",
+   "ja": "……備品の毀損として、計上いたします。",
+   "en": "…Recorded as damage to fixtures.",
+   "duration_s": 3.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "備品=びひん; 毀損=きそん; 計上=けいじょう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13.nyaakoto.007",
+   "beat": "ch08.b13",
+   "speaker": "samurai",
+   "ja": "記せ。それが、お前の最後の一行だ。",
+   "en": "Write it down. It is your last line.",
+   "duration_s": 3.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "記せ=しるせ; 一行=いちぎょう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b13.valamort.008",
+   "beat": "ch08.b13",
+   "speaker": "banker",
+   "ja": "交渉は決裂。元本を、回収いたします。",
+   "en": "Negotiations have failed. The principal will be recovered.",
+   "duration_s": 4.1,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "交渉=こうしょう; 決裂=けつれつ; 元本=がんぽん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.001",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "元本、回収。",
+   "en": "Recovering the principal.",
+   "duration_s": 1.9,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "元本=がんぽん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.002",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "償却。",
+   "en": "Write-off.",
+   "duration_s": 1.2,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "償却=しょうきゃく",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.003",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "残高照会。",
+   "en": "Balance inquiry.",
+   "duration_s": 1.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "残高照会=ざんだかしょうかい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.004",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "差押えを執行いたします。",
+   "en": "Executing seizure.",
+   "duration_s": 2.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "差押え=さしおさえ; 執行=しっこう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.005",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "担保物件、稼働。",
+   "en": "Collateral assets: activate.",
+   "duration_s": 2.2,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "担保物件=たんぽぶっけん; 稼働=かどう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.006",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "剣は非効率です。ですが、確実です。",
+   "en": "The sword is inefficient. But it is certain.",
+   "duration_s": 3.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "非効率=ひこうりつ; 確実=かくじつ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.007",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "最終、抵当権実行。",
+   "en": "Final foreclosure.",
+   "duration_s": 2.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "抵当権=ていとうけん; 実行=じっこう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.008",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "延滞として、処理いたします。",
+   "en": "Processed as delinquent.",
+   "duration_s": 2.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "延滞=えんたい; 処理=しょり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.valamort.009",
+   "beat": "ch08.b14",
+   "speaker": "banker",
+   "ja": "……計算に、ありません。",
+   "en": "…This is not in the calculation.",
+   "duration_s": 2.3,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.nyaakoto.010",
+   "beat": "ch08.b14",
+   "speaker": "samurai",
+   "ja": "お前は、無いものを数えた。",
+   "en": "You counted what did not exist.",
+   "duration_s": 2.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b14.nyaakoto.011",
+   "beat": "ch08.b14",
+   "speaker": "samurai",
+   "ja": "一太刀で、足りる。",
+   "en": "One cut is enough.",
+   "duration_s": 2.1,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "一太刀=ひとたち",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b15.valamort.001",
+   "beat": "ch08.b15",
+   "speaker": "banker",
+   "ja": "帳簿なくして、この谷に秩序はございません。",
+   "en": "Without the ledger, this valley has no order.",
+   "duration_s": 3.8,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "秩序=ちつじょ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b15.oyuki.002",
+   "beat": "ch08.b15",
+   "speaker": "leader",
+   "ja": "帳簿なら、ございます。わたくしどもの帳簿が。",
+   "en": "There is a ledger. Ours.",
+   "duration_s": 3.9,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b15.toranosuke.003",
+   "beat": "ch08.b15",
+   "speaker": "rival",
+   "ja": "縄目の恥とは言わせん。生きて、数えろ。",
+   "en": "This rope is no disgrace. Live. And count.",
+   "duration_s": 3.8,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "縄目=なわめ; 恥=はじ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b15.taemon.004",
+   "beat": "ch08.b15",
+   "speaker": "farmer",
+   "ja": "……封が、消えよった。",
+   "en": "…The seal. It's gone dark.",
+   "duration_s": 2.1,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "封=ふう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b15.okinu.005",
+   "beat": "ch08.b15",
+   "speaker": "weaver",
+   "ja": "取り立ての目盛りが、消えましたえ。",
+   "en": "The levy gauges have gone dark.",
+   "duration_s": 3.3,
+   "register": "kyoto_soft",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "取り立て=とりたて; 目盛り=めもり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b15.tokichi.006",
+   "beat": "ch08.b15",
+   "speaker": "lantern_maker",
+   "ja": "戸の数字が……消えた。",
+   "en": "The numbers on the doors… gone.",
+   "duration_s": 2.4,
+   "register": "artisan_gentle",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "戸=と",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b15.nyaakoto.007",
+   "beat": "ch08.b15",
+   "speaker": "samurai",
+   "ja": "あとはこの街だ。誰も借りに縛られぬように。",
+   "en": "Only this ward remains. No one will be bound by debt again.",
+   "duration_s": 4.1,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "縛られぬ=しばられぬ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16.oyuki.001",
+   "beat": "ch08.b16",
+   "speaker": "leader",
+   "ja": "改帳を集会所へ。皆の前で、貼り出します。",
+   "en": "Take the registry to the assembly. We post it before everyone.",
+   "duration_s": 4.3,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "改帳=かいちょう; 集会所=しゅうかいじょ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16.resident.002",
+   "beat": "ch08.b16",
+   "speaker": "resident",
+   "ja": "うちの鍋、戻ってきたんよ。差押えの札付きで。",
+   "en": "Our pot came back. Seizure tag and all.",
+   "duration_s": 4.2,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "差押え=さしおさえ; 札=ふだ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16.tokichi.003",
+   "beat": "ch08.b16",
+   "speaker": "lantern_maker",
+   "ja": "千張り、灯しました。一つも、借りた灯ではございません。",
+   "en": "A thousand lanterns lit. Not one of them borrowed.",
+   "duration_s": 4.9,
+   "register": "artisan_gentle",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "千張り=せんはり; 灯し=ともし; 灯=ひ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16.otane.004",
+   "beat": "ch08.b16",
+   "speaker": "farmer_young",
+   "ja": "新米や！　今年は全部、うちらの米やで！",
+   "en": "New rice! This year, every grain is ours!",
+   "duration_s": 3.7,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "新米=しんまい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16.taemon.005",
+   "beat": "ch08.b16",
+   "speaker": "farmer",
+   "ja": "紙は紙や、言うたけどな。この紙は、ええ紙や。",
+   "en": "I said paper is paper. But this is good paper.",
+   "duration_s": 4.1,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16.tamakichi.006",
+   "beat": "ch08.b16",
+   "speaker": "fireworks",
+   "ja": "花火、上げてもええか？",
+   "en": "Can I set off the fireworks now?",
+   "duration_s": 2.3,
+   "register": "kamigata_cheerful",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "花火=はなび",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16.oyuki.007",
+   "beat": "ch08.b16",
+   "speaker": "leader",
+   "ja": "帳面に載せてからです。",
+   "en": "Once they are in the ledger.",
+   "duration_s": 2.2,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "帳面=ちょうめん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b16.oyuki.008",
+   "beat": "ch08.b16",
+   "speaker": "leader",
+   "ja": "生産改帳、ここに掲げます。明日からの帳は、皆さまの手で。",
+   "en": "The production registry is posted. From tomorrow, you keep the books.",
+   "duration_s": 5.5,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "生産改帳=せいさんかいちょう; 掲げ=かかげ; 帳=ちょう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.kohagi.001",
+   "beat": "ch08.b17",
+   "speaker": "scout",
+   "ja": "東の鳥居で待つ。皆で新しい朝を迎えよう。",
+   "en": "We will wait at the eastern torii. Let us greet a new morning together.",
+   "duration_s": 4.9,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "鳥居=とりい",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.iota.002",
+   "beat": "ch08.b17",
+   "speaker": "clerk",
+   "ja": "朝というものは……無償で来るのですね。",
+   "en": "So morning… comes free of charge.",
+   "duration_s": 3.4,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "無償=むしょう",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.nyaakoto.003",
+   "beat": "ch08.b17",
+   "speaker": "samurai",
+   "ja": "鷲尾の刀だ。上で見つけた。",
+   "en": "Your house's sword. I found it up there.",
+   "duration_s": 2.9,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": "鷲尾=わしお",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.toranosuke.004",
+   "beat": "ch08.b17",
+   "speaker": "rival",
+   "ja": "……借りが、できたな。",
+   "en": "…Now I owe you.",
+   "duration_s": 2.0,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "借り=かり",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.nyaakoto.005",
+   "beat": "ch08.b17",
+   "speaker": "samurai",
+   "ja": "貸しではない。",
+   "en": "It is not a loan.",
+   "duration_s": 1.4,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": "貸し=かし",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.sekireisai.006",
+   "beat": "ch08.b17",
+   "speaker": "mentor",
+   "ja": "虎之介の札は、ここじゃ。",
+   "en": "Toranosuke's plaque goes here.",
+   "duration_s": 2.3,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "札=ふだ",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.sekireisai.007",
+   "beat": "ch08.b17",
+   "speaker": "mentor",
+   "ja": "ニャーコト。おぬしの札は……ここじゃな。",
+   "en": "Nyaakoto. Yours goes… here.",
+   "duration_s": 3.0,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.nyaakoto.008",
+   "beat": "ch08.b17",
+   "speaker": "samurai",
+   "ja": "剣は、作る手を守るためにある。",
+   "en": "The sword exists to protect the hands that make.",
+   "duration_s": 3.4,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "剣=けん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b17.sekireisai.009",
+   "beat": "ch08.b17",
+   "speaker": "mentor",
+   "ja": "……ようやく、一本じゃ。",
+   "en": "…At last, a point.",
+   "duration_s": 2.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "一本=いっぽん",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b18.valamort.001",
+   "beat": "ch08.b18",
+   "speaker": "banker",
+   "ja": "……一束。",
+   "en": "…One sheaf.",
+   "duration_s": 1.3,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "一束=ひとたば",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b18.iota.002",
+   "beat": "ch08.b18",
+   "speaker": "clerk",
+   "ja": "はい。一束、確かに在ります。",
+   "en": "Yes. One sheaf. It truly exists.",
+   "duration_s": 2.9,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "在ります=あります",
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch08.b18.taemon.003",
+   "beat": "ch08.b18",
+   "speaker": "farmer",
+   "ja": "数え終わったら、蒔きに行くで。麦は秋に蒔くんや。",
+   "en": "Done counting? Then we sow. Barley goes in come autumn.",
+   "duration_s": 4.6,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": "蒔き=まき",
+   "voice_variant": null,
+   "ext": {}
+  }
+ ],
+ "triggers": [
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.iota.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 8000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.iota.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 15000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.oyuki.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 25000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.kohagi.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 34000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.kozo.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 44000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.kozo.006"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 50000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.okinu.007"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 56000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.okuzu.008"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 66000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.toranosuke.009"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 80000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.nyaakoto.010"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 96000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.nyaakoto.011"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 106000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b01.oyuki.012"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 116000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b02.toranosuke.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "progress_at:0.05",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b02.toranosuke.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch08.b02.enforcer.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "pattern:walker_sweep_beam",
+   "mode": "radio",
+   "lines": [
+    "ch08.b02.iota.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "volume_enter:vol_pylon_1",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b02.toranosuke.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "event:horse_spooked",
+   "mode": "bark",
+   "lines": [
+    "ch08.b02.nyaakoto.006"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 30,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "event:enemy_retreat",
+   "mode": "bark",
+   "lines": [
+    "ch08.b02.enforcer.007"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 45,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "progress_at:0.55",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b02.toranosuke.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "progress_at:0.95",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b02.tamakichi.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b02",
+   "on": "player_died",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b02.toranosuke.010"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 120,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b03.tetsugoro.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "event:volley_tutorial",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b03.oyuki.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "event:volley_ready",
+   "mode": "bark",
+   "lines": [
+    "ch08.b03.ashigaru.003"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 6,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "event:volley_ordered",
+   "mode": "bark",
+   "lines": [
+    "ch08.b03.nyaakoto.004"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 2,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "event:volley_rotate",
+   "mode": "bark",
+   "lines": [
+    "ch08.b03.ashigaru.005"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 8,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "event:volley_ordered_3",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b03.oyuki.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "event:wave_start_2",
+   "mode": "bark",
+   "lines": [
+    "ch08.b03.enforcer.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "event:wave_start_3",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b03.tamakichi.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b03",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b03.oyuki.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b04",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b04.kozo.001",
+    "ch08.b04.okuzu.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b04",
+   "on": "progress_at:0.25",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b04.kohagi.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b04",
+   "on": "progress_at:0.3",
+   "mode": "bark",
+   "lines": [
+    "ch08.b04.enforcer.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b04",
+   "on": "event:net_on_anvil",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b04.kozo.005"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 40,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b04",
+   "on": "event:wave_start_4",
+   "mode": "bark",
+   "lines": [
+    "ch08.b04.conscript.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b04",
+   "on": "site_restored:1",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b04.kozo.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b05",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b05.okuzu.001",
+    "ch08.b05.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b05",
+   "on": "pattern:marksman_lock",
+   "mode": "bark",
+   "lines": [
+    "ch08.b05.enforcer.003"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 10,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b05",
+   "on": "item_delivered:do_squad_west",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b05.ashigaru.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b05",
+   "on": "item_delivered:do_squad_east",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b05.ashigaru.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b05",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b05.oyuki.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b06",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b06.kozo.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b06",
+   "on": "volume_enter:vol_masugata",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b06.toranosuke.002",
+    "ch08.b06.kohagi.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b06",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch08.b06.enforcer.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b06",
+   "on": "event:objective_done_anchor_1",
+   "mode": "radio",
+   "lines": [
+    "ch08.b06.iota.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b06",
+   "on": "event:objective_done_anchor_2",
+   "mode": "bark",
+   "lines": [
+    "ch08.b06.enforcer.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b06",
+   "on": "event:enemy_retreat",
+   "mode": "bark",
+   "lines": [
+    "ch08.b06.enforcer.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b06",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b06.ashigaru.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b07",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b07.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b07",
+   "on": "event:door_1_open",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b07.villager.002",
+    "ch08.b07.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b07",
+   "on": "event:door_2_open",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b07.child.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b07",
+   "on": "event:door_3_open",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b07.takemaru.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b07",
+   "on": "event:first_hide_signal",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b07.nyaakoto.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b07",
+   "on": "volume_enter:vol_refuge",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b07.taemon.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b07",
+   "on": "site_restored:0",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b07.oyuki.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b07",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b07.takemaru.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.nyaakoto.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 16000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.sekireisai.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 22000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.nyaakoto.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 29000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.sekireisai.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 35000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.sekireisai.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 42000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.nyaakoto.006"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 48000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.sekireisai.007"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 66000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.toranosuke.008"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 72000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b08.sekireisai.009"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 80000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b09",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b09.nyaakoto.001",
+    "ch08.b09.sekireisai.002",
+    "ch08.b09.sekireisai.003",
+    "ch08.b09.nyaakoto.004",
+    "ch08.b09.sekireisai.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b10",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b10.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b10",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch08.b10.enforcer.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b10",
+   "on": "alert_state:search",
+   "mode": "bark",
+   "lines": [
+    "ch08.b10.enforcer.003"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 30,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b10",
+   "on": "volume_enter:vol_spire_void_edge",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b10.toranosuke.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b10",
+   "on": "volume_enter:vol_spire_L3",
+   "mode": "radio",
+   "lines": [
+    "ch08.b10.iota.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b10",
+   "on": "event:wave_start_3",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b10.tetsugoro.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b10",
+   "on": "event:enemy_retreat",
+   "mode": "bark",
+   "lines": [
+    "ch08.b10.enforcer.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b11",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b11.tetsugoro.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b11",
+   "on": "event:crank_turn_6",
+   "mode": "bark",
+   "lines": [
+    "ch08.b11.ashigaru.002"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 8,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b11",
+   "on": "progress_at:0.25",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b11.kohagi.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b11",
+   "on": "event:player_left_capstan",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b11.tetsugoro.004"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 45,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b11",
+   "on": "progress_at:0.5",
+   "mode": "bark",
+   "lines": [
+    "ch08.b11.enforcer.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b11",
+   "on": "progress_at:0.75",
+   "mode": "radio",
+   "lines": [
+    "ch08.b11.iota.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b11",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b11.toranosuke.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b12",
+   "on": "volume_enter:vol_heirloom_hall",
+   "mode": "radio",
+   "lines": [
+    "ch08.b12.iota.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b12",
+   "on": "event:poi_child_toy",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b12.nyaakoto.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b12",
+   "on": "event:collectible_ch08_c03",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b12.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b12",
+   "on": "event:collectible_ch08_c05",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b12.sekireisai.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b12",
+   "on": "idle_s:60",
+   "mode": "radio",
+   "lines": [
+    "ch08.b12.iota.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b13.valamort.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 12000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b13.valamort.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 20000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b13.nyaakoto.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 30000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b13.valamort.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 36000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b13.valamort.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 46000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b13.valamort.006"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 72000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b13.nyaakoto.007"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 82000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b13.valamort.008"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 94000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "boss_phase:3",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "player_died",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.008"
+   ],
+   "source": "dialogue",
+   "repeatable": true,
+   "cooldown_s": 0,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "event:muto_dori_success",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "event:muto_dori_success",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b14.nyaakoto.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "event:spine_prompt",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b14.nyaakoto.011"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "event:first_foreclosure",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b09.sekireisai.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "pattern:amort_ledger_beam",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.001"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "pattern:amort_cleave",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.002"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "pattern:amort_shards",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.003"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "pattern:amort_seizure_field",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.004"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "pattern:construct_spawn",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.005"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b14",
+   "on": "pattern:amort_final_foreclosure",
+   "mode": "bark",
+   "lines": [
+    "ch08.b14.valamort.007"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b15.valamort.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 14000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b15.oyuki.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 21000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b15.toranosuke.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 30000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b15.taemon.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 56000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b15.okinu.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 72000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b15.tokichi.006"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 88000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b15.nyaakoto.007"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 128000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b16",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b16.oyuki.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b16",
+   "on": "volume_enter:vol_fest_a",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b16.resident.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b16",
+   "on": "volume_enter:vol_fest_b",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b16.tokichi.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b16",
+   "on": "volume_enter:vol_fest_c",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b16.otane.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b16",
+   "on": "volume_enter:vol_fest_d",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b16.taemon.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b16",
+   "on": "volume_enter:vol_assembly",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b16.tamakichi.006",
+    "ch08.b16.oyuki.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b16",
+   "on": "site_restored:2",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b16.oyuki.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b17",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b17.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b17",
+   "on": "volume_enter:vol_torii",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b17.iota.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b17",
+   "on": "event:washio_sword_return",
+   "mode": "ambient",
+   "lines": [
+    "ch08.b17.nyaakoto.003",
+    "ch08.b17.toranosuke.004",
+    "ch08.b17.nyaakoto.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "requires_flag": "collectible:ch08.c03"
+   }
+  },
+  {
+   "beat": "ch08.b17",
+   "on": "event:plaque_rehang",
+   "mode": "blocking",
+   "lines": [
+    "ch08.b17.sekireisai.006",
+    "ch08.b17.sekireisai.007",
+    "ch08.b17.nyaakoto.008",
+    "ch08.b17.sekireisai.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b18",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b18.valamort.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 40000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b18",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b18.iota.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 45000,
+   "ext": {}
+  },
+  {
+   "beat": "ch08.b18",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch08.b18.taemon.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 52000,
+   "ext": {}
+  }
+ ],
+ "collectibles": [
+  {
+   "id": "ch08.c01",
+   "category": "league_mark",
+   "place": "pl_collateral_cells",
+   "mask_bit": 0,
+   "beats": [
+    "ch08.b07"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "担保牢の壁に、爪で刻まれた空紋。日を数える線ではない。待つための印。",
+    "en": "A Sora crest scratched into a cell wall. Not a tally of days: a sign of waiting."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch08.c02",
+   "category": "seizure_notice",
+   "place": "pl_otemon",
+   "mask_bit": 1,
+   "beats": [
+    "ch08.b06"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "期限の利益喪失通知。本日午の刻をもって、全残高を一括請求する。",
+    "en": "Notice of acceleration: at noon today, every balance falls due in full."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch08.c03",
+   "category": "heirloom",
+   "place": "pl_ledger_spire",
+   "mask_bit": 2,
+   "beats": [
+    "ch08.b12"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "鷲尾家伝来の打刀。評価札には「代物弁済」とある。",
+    "en": "The Washio house sword. Its tag reads \"payment in kind.\""
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": "collectible:ch08.c03",
+   "location_en": null
+  },
+  {
+   "id": "ch08.c04",
+   "category": "heirloom",
+   "place": "pl_ledger_spire",
+   "mask_bit": 3,
+   "beats": [
+    "ch08.b12"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "玉吉の師匠の打ち上げ筒。祭りの夜にだけ火を入れた。評価額、零。",
+    "en": "Tamakichi's master's festival mortar, fired only on festival nights. Valuation: zero."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch08.c05",
+   "category": "scroll_fragment",
+   "place": "pl_ledger_spire",
+   "mask_bit": 4,
+   "beats": [
+    "ch08.b12"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "活人剣とは、斬らぬ剣にあらず。斬るべき一つを、見定めた剣じゃ。",
+    "en": "The life-giving sword does not refuse to cut. It finds the one thing to cut."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch08.c06",
+   "category": "registry_page",
+   "place": "pl_lantern_ward_festival",
+   "mask_bit": 5,
+   "beats": [
+    "ch08.b16"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "提灯街の一頁。提灯四十張。三者の印と、割符の片方。",
+    "en": "A Lantern Ward page. Lanterns: forty. Three seals and one half of a tally."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  }
+ ],
+ "ui_prompts": [
+  {
+   "id": "ch08.b01.prompt.001",
+   "beats": [
+    "ch08.b01"
+   ],
+   "on": "beat_complete",
+   "ja": "新たな武具：単分子薙刀・治癒の槍",
+   "en": "New arms: Monofilament Naginata, Healing Lance",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b02.prompt.001",
+   "beats": [
+    "ch08.b02"
+   ],
+   "on": "beat_start",
+   "ja": "馬上の槍：前と右へ突く",
+   "en": "Mounted yari: thrust forward and to the right",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b02.prompt.002",
+   "beats": [
+    "ch08.b02"
+   ],
+   "on": "progress_at:0.05",
+   "ja": "馬上の弓：左側にだけ射てる",
+   "en": "Mounted yumi: you can shoot to the left only",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b02.prompt.003",
+   "beats": [
+    "ch08.b02"
+   ],
+   "on": "pattern:walker_sweep_beam",
+   "ja": "手綱を引くと速度が落ちる",
+   "en": "Pull the reins to slow down",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b03.prompt.001",
+   "beats": [
+    "ch08.b03"
+   ],
+   "on": "event:volley_tutorial",
+   "ja": "長押しで的を示し、離すと斉射",
+   "en": "Hold to mark a target, release to fire a volley",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b03.prompt.002",
+   "beats": [
+    "ch08.b03"
+   ],
+   "on": "event:wave_start_3",
+   "ja": "迫撃砲：弧の落下点を見て撃つ",
+   "en": "Micro-Mortar: check where the arc lands",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b06.prompt.001",
+   "beats": [
+    "ch08.b06"
+   ],
+   "on": "beat_start",
+   "ja": "金棒：攻撃を押し続けると振り下ろす",
+   "en": "Kanabō: keep holding attack to bring it down",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b07.prompt.001",
+   "beats": [
+    "ch08.b07"
+   ],
+   "on": "event:first_hide_signal",
+   "ja": "合図で民を隠す／進ませる",
+   "en": "Signal the people to hide or to move",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b07.prompt.002",
+   "beats": [
+    "ch08.b07"
+   ],
+   "on": "npc_downed:any",
+   "ja": "治癒の槍：倒れた味方を撃つと早く起きる",
+   "en": "Healing Lance: shoot a downed ally to revive faster",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b11.prompt.001",
+   "beats": [
+    "ch08.b11"
+   ],
+   "on": "beat_start",
+   "ja": "轆轤：同じ速さで回し続ける",
+   "en": "Capstan: keep turning at a steady pace",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b14.prompt.001",
+   "beats": [
+    "ch08.b14"
+   ],
+   "on": "boss_phase:2",
+   "ja": "琥珀の縁の床は、まもなく消える",
+   "en": "Amber-edged tiles are about to fall away",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b14.prompt.002",
+   "beats": [
+    "ch08.b14"
+   ],
+   "on": "event:first_foreclosure",
+   "ja": "納刀して待ち、振り下ろしを無刀取り",
+   "en": "Sheathe, wait, then take the overhead: mutō-dori",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b14.prompt.003",
+   "beats": [
+    "ch08.b14"
+   ],
+   "on": "event:spine_prompt",
+   "ja": "機関の背骨を断て",
+   "en": "Cut the engine's spine",
+   "shown_en": null
+  },
+  {
+   "id": "ch08.b16.prompt.001",
+   "beats": [
+    "ch08.b16"
+   ],
+   "on": "beat_start",
+   "ja": "改帳を高札場まで運ぶ",
+   "en": "Carry the registry to the notice board",
+   "shown_en": null
+  }
+ ],
+ "places": [
+  {
+   "id": "pl_kakuredani",
+   "chapter": 2,
+   "ja": "隠れ谷",
+   "reading": "かくれだに",
+   "en": "Hidden Valley",
+   "arena": null,
+   "source": "New hub"
+  },
+  {
+   "id": "pl_causeway",
+   "chapter": 8,
+   "ja": "猫山の土手道",
+   "reading": "ねこやまのどてみち",
+   "en": "Nekoyama causeway",
+   "arena": null,
+   "source": "New ride space"
+  },
+  {
+   "id": "pl_outer_bailey",
+   "chapter": 8,
+   "ja": "外郭",
+   "reading": "がいかく",
+   "en": "Outer bailey",
+   "arena": 3,
+   "source": "Arena 3"
+  },
+  {
+   "id": "pl_otemon",
+   "chapter": 8,
+   "ja": "大手門",
+   "reading": "おおてもん",
+   "en": "Main gate",
+   "arena": 3,
+   "source": "Arena 3"
+  },
+  {
+   "id": "pl_collateral_cells",
+   "chapter": 8,
+   "ja": "担保牢",
+   "reading": "たんぽろう",
+   "en": "Collateral cells",
+   "arena": null,
+   "source": "New"
+  },
+  {
+   "id": "pl_ledger_spire",
+   "chapter": 8,
+   "ja": "帳簿塔",
+   "reading": "ちょうぼとう",
+   "en": "Ledger Spire",
+   "arena": null,
+   "source": "New vertical"
+  },
+  {
+   "id": "pl_ledger_engine",
+   "chapter": 8,
+   "ja": "帳簿機関",
+   "reading": "ちょうぼきかん",
+   "en": "Ledger Engine summit",
+   "arena": null,
+   "source": "New"
+  },
+  {
+   "id": "pl_lantern_ward_festival",
+   "chapter": 8,
+   "ja": "提灯街・秋祭り",
+   "reading": null,
+   "en": "Lantern Ward, harvest festival",
+   "arena": 1,
+   "source": "Arena 1 (festival variant)"
+  },
+  {
+   "id": "pl_higashi_torii",
+   "chapter": 8,
+   "ja": "東の鳥居",
+   "reading": "ひがしのとりい",
+   "en": "Eastern Torii",
+   "arena": 1,
+   "source": "Arena 1 edge"
+  }
+ ],
+ "layout": {
+  "frames": [],
+  "volumes": [],
+  "points": [],
+  "splines": [],
+  "patrols": [],
+  "ext": {}
+ },
+ "ext": {
+  "objective_ja": "債務の城塞を落とし、帳簿機関を断て",
+  "objective_en": "Take the Debt Citadel and cut the Ledger Engine.",
+  "mix_min": {
+   "C": 21.0,
+   "E": 2.0,
+   "S": 0.0,
+   "P": 14.0,
+   "M": 5.0,
+   "Cin": 13.0
+  },
+  "unlock_order": [
+   12,
+   17,
+   15,
+   6
+  ],
+  "extensions_proposed": [
+   "event:<id> dialogue trigger (scripted beat events) and requires_flag on a dialogue group",
+   "cine@<s> is written as subtitles[].at_s",
+   "horseback_ride: charge{}, objectives[], waves[], arcs_deg{}, route_length_m, horse_stamina{} as object",
+   "combat_wave: complete.objectives[] (same shape as stealth_zone), volley_command{}, scripted{}",
+   "production_task: release{} (pre-escort seal-cuts), escort.bleedout_s, escort.healing_lance_revive_s, escort.path_length_m",
+   "production_task.crank: moving_platform{}, rope_hazard{}; coop_npc as {npcs, turns_per_s}",
+   "production_task.carry: dropped_item_returns_after_s, post_interact{}; beat-level crowd{}, combat:false",
+   "supply_point on beats that host a League 補給所",
+   "boss: hp{}, finisher, lethal_finisher, post_defeat{}, phases[].target_s, pattern_tables (L3 owns the table content)",
+   "cinematic end_state.mounted and end_state.next"
+  ],
+  "pattern_tables": {
+   "amort_p1_collector": {
+    "selection": "deterministic: approach at 0.72 move scale until <= 740 cm; beam if distance > 340 cm or attack_index is even, else cleave (existing prototype rule)",
+    "attacks": [
+     {
+      "id": "amort_ledger_beam",
+      "color": "cyan",
+      "windup_ms": 1450,
+      "track_ms": 550,
+      "lock_ms": 900,
+      "length_cm": 1500,
+      "damage": 22,
+      "guard": "front guard absorbs 70%",
+      "parry": false,
+      "counter": "sidestep out of the locked line",
+      "recovery_ms": 1150,
+      "bark_at": "lock_start"
+     },
+     {
+      "id": "amort_cleave",
+      "color": "amber",
+      "windup_ms": 1200,
+      "reach_cm": 330,
+      "arc_deg": 28,
+      "damage": 30,
+      "guard": true,
+      "parry": "awase within 260 ms -> 1.2 s stagger",
+      "recovery_ms": 1150,
+      "bark_at": "windup_start"
+     },
+     {
+      "id": "amort_shards",
+      "color": "cyan",
+      "count": 3,
+      "orbit_radius_cm": 250,
+      "orbit_period_s": 4.0,
+      "shard_hp": 104,
+      "intercepts": [
+       "arrows",
+       "bullets",
+       "mortar_shells"
+      ],
+      "respawn_s": 20,
+      "all_broken": "reconcile_stagger 3000 ms, damage taken x1.5",
+      "bark_at": "spawn"
+     }
+    ]
+   },
+   "amort_p2_seizure": {
+    "boss_state": "on the dais behind a seizure shield while any construct is alive; shield drops for 10 s when none are alive; uses ledger_beam (recovery 900 ms) and cleave (recovery 900 ms) while exposed",
+    "attacks": [
+     {
+      "id": "amort_seizure_field",
+      "color": "amber",
+      "windup_ms": 1500,
+      "damage": "25 on a fall",
+      "tile_cm": 300,
+      "mark_ms": 1500,
+      "void_ms": 5000,
+      "restore_ms": 1000,
+      "cadence_ms": 9000,
+      "patterns_in_order": [
+       "checker_third",
+       "ring_band_800_1200cm",
+       "tally_lines_3_through_player"
+      ],
+      "fall": "respawn at nearest intact edge tile, 25 damage, 1 s invulnerable (no instant death)",
+      "bark_at": "mark"
+     },
+     {
+      "id": "construct_spawn",
+      "adds": "collateral_construct",
+      "count": 2,
+      "at": [
+       "phase_start",
+       "hp_pct:55"
+      ],
+      "max_alive": 3,
+      "bark_at": "spawn"
+     }
+    ],
+    "adds": {
+     "collateral_construct": {
+      "hp": 260,
+      "slam": {
+       "color": "amber",
+       "windup_ms": 900,
+       "radius_cm": 250,
+       "damage": 25,
+       "recovery_ms": 1400
+      },
+      "core": "exposed during slam recovery; seal-cut 1.0 s or 2 heavy hits",
+      "on_defeat": "goods settle gently to the floor (release, not destruction)"
+     }
+    }
+   },
+   "amort_p3_cane": {
+    "order": [
+     "amort_final_foreclosure",
+     "amort_cane_pair",
+     "amort_cane_thrust",
+     "amort_cane_pair",
+     "amort_final_foreclosure",
+     "repeat_from_index_1"
+    ],
+    "hp_floor_pct": 1,
+    "at_floor": "repeat amort_final_foreclosure every 4000 ms; show prompt ch08.b14.prompt.002",
+    "attacks": [
+     {
+      "id": "amort_cane_pair",
+      "color": "amber",
+      "hits": 2,
+      "windup_ms": 500,
+      "damage_each": 18,
+      "guard": true,
+      "parry": true,
+      "recovery_ms": 700
+     },
+     {
+      "id": "amort_cane_thrust",
+      "color": "cyan",
+      "windup_ms": 600,
+      "damage": 28,
+      "guard": "front guard absorbs 50%",
+      "parry": false,
+      "counter": "marobashi (転) around the locked line, flank cut",
+      "recovery_ms": 900
+     },
+     {
+      "id": "amort_final_foreclosure",
+      "color": "amber",
+      "windup_ms": 1000,
+      "damage": 45,
+      "guard": false,
+      "parry": "blade drawn: awase -> 1.2 s stagger",
+      "muto_eligible": true,
+      "muto_window_ms": {
+       "easy": 234,
+       "normal": 180,
+       "hard": 153
+      },
+      "on_muto": "disarm -> defeat:capture (any HP in P3)",
+      "recovery_ms": 1300,
+      "bark_at": "windup_start"
+     }
+    ]
+   },
+   "difficulty": {
+    "easy_windup_mult": 1.3,
+    "hard_windup_mult": 0.85,
+    "note": "bible §8; mutō-dori window scaled by the same factor (proposal)"
+   }
+  }
+ }
+}

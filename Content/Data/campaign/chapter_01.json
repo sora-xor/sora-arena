@@ -1,0 +1,5518 @@
+{
+ "schema_version": 4,
+ "id": "ch01_dojo",
+ "index": 0,
+ "source": "docs/campaign/chapter-01.md",
+ "title_ja": "道場の修行",
+ "title_en": "Dojo Apprenticeship",
+ "map": 0,
+ "secondary_maps": [],
+ "target_s": 2400,
+ "sites": [
+  {
+   "index": 0,
+   "beat": "ch01.b02",
+   "requires_sites": []
+  },
+  {
+   "index": 1,
+   "beat": "ch01.b03",
+   "requires_sites": [
+    0
+   ]
+  },
+  {
+   "index": 2,
+   "beat": "ch01.b09",
+   "requires_sites": [
+    1
+   ]
+  }
+ ],
+ "checkpoints": [
+  {
+   "beat": "ch01.b01",
+   "phase": 0,
+   "at_cs": 0
+  },
+  {
+   "beat": "ch01.b02",
+   "phase": 0,
+   "at_cs": 12000
+  },
+  {
+   "beat": "ch01.b03",
+   "phase": 0,
+   "at_cs": 36000
+  },
+  {
+   "beat": "ch01.b04",
+   "phase": 0,
+   "at_cs": 60000
+  },
+  {
+   "beat": "ch01.b06",
+   "phase": 0,
+   "at_cs": 87000
+  },
+  {
+   "beat": "ch01.b07",
+   "phase": 0,
+   "at_cs": 105000
+  },
+  {
+   "beat": "ch01.b08",
+   "phase": 0,
+   "at_cs": 135000
+  },
+  {
+   "beat": "ch01.b09",
+   "phase": 0,
+   "at_cs": 159000
+  },
+  {
+   "beat": "ch01.b11",
+   "phase": 0,
+   "at_cs": 186000
+  },
+  {
+   "beat": "ch01.b12",
+   "phase": 0,
+   "at_cs": 222000
+  }
+ ],
+ "unlocks": [
+  {
+   "beat": "ch01.b02",
+   "weapons": [],
+   "mechanics": [
+    "kamae",
+    "maai_ring"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch01.b03",
+   "weapons": [],
+   "mechanics": [
+    "awase"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch01.b04",
+   "weapons": [],
+   "mechanics": [
+    "marobashi"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch01.b06",
+   "weapons": [],
+   "mechanics": [
+    "mount"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch01.b07",
+   "weapons": [
+    18
+   ],
+   "mechanics": [
+    "yumi"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch01.b09",
+   "weapons": [],
+   "mechanics": [
+    "manufacture"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch01.b12",
+   "weapons": [
+    0
+   ],
+   "mechanics": [],
+   "grants": []
+  }
+ ],
+ "beats": [
+  {
+   "id": "ch01.b01",
+   "type": "cinematic",
+   "place": "pl_tsumagizaka_dojo",
+   "title_ja": "夜明けの素振り",
+   "title_en": "Dawn practice",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_dawn",
+   "fail": [],
+   "params": {
+    "sequence": "/Game/Campaign/Ch01/Sequences/LS_Ch01_B01_DawnSuburi",
+    "duration_s": 120,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_ch01_lesson_mark",
+     "equipped": "bokuto"
+    }
+   },
+   "ext": {
+    "title_card": {
+     "ja": "第一章 道場の修行",
+     "en": "Chapter 1: Dojo Apprenticeship",
+     "seal": "sora_mon_shuin",
+     "in_s": 96,
+     "out_s": 110
+    }
+   }
+  },
+  {
+   "id": "ch01.b02",
+   "type": "duel",
+   "place": "pl_tsumagizaka_dojo",
+   "title_ja": "正眼に構え、間合いを読め",
+   "title_en": "Take seigan and read the distance",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b01"
+   ],
+   "optional": false,
+   "site": 0,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "kamae",
+     "maai_ring"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_keiko",
+   "fail": [],
+   "params": {
+    "opponent": "npc_sekireisai",
+    "weapons": {
+     "player": "bokuto",
+     "opponent": "bokuto"
+    },
+    "lethal": false,
+    "scoring": {
+     "mode": "lesson_gates"
+    },
+    "ring": "vol_ch01_dojo_floor",
+    "lesson_gates": [
+     {
+      "gate": "stance_hold",
+      "ms": 600
+     },
+     {
+      "gate": "maai_step",
+      "count": 3
+     }
+    ],
+    "finisher": "none",
+    "loss_policy": "retry",
+    "checkpoint_per_phase": false
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b02.prompt.01",
+     "ch01.b02.prompt.02"
+    ],
+    "maai": {
+     "weapon_range_cm": 195,
+     "ring_inner_cm": 166,
+     "ring_outer_cm": 224,
+     "hold_ms": 500,
+     "facing_dot_min": 0.7,
+     "hint_after_s": 6.0,
+     "mentor_moves": [
+      {
+       "step": 1,
+       "move": "back",
+       "cm": 120
+      },
+      {
+       "step": 2,
+       "move": "left",
+       "cm": 150
+      },
+      {
+       "step": 3,
+       "move": "forward",
+       "cm": 80
+      }
+     ]
+    },
+    "dojo_rules": {
+     "lesson_bits": [
+      0
+     ],
+     "actions": [
+      "Stance"
+     ],
+     "scored_bouts": 0
+    }
+   }
+  },
+  {
+   "id": "ch01.b03",
+   "type": "duel",
+   "place": "pl_tsumagizaka_dojo",
+   "title_ja": "受けて、合わせよ",
+   "title_en": "Receive the cut, then meet it",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b02"
+   ],
+   "optional": false,
+   "site": 1,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "awase"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_keiko",
+   "fail": [],
+   "params": {
+    "opponent": "npc_matsukichi",
+    "weapons": {
+     "player": "bokuto",
+     "opponent": "bokuto"
+    },
+    "lethal": false,
+    "scoring": {
+     "mode": "lesson_gates"
+    },
+    "ring": "vol_ch01_dojo_floor",
+    "lesson_gates": [
+     {
+      "gate": "front_guard_survive",
+      "after_ms": 350
+     },
+     {
+      "gate": "awase",
+      "window_ms": 260,
+      "count": 2
+     },
+     {
+      "gate": "recovery_complete"
+     }
+    ],
+    "finisher": "none",
+    "loss_policy": "retry",
+    "checkpoint_per_phase": false
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b03.prompt.01",
+     "ch01.b03.prompt.02",
+     "ch01.b03.prompt.03",
+     "ch01.b03.prompt.04"
+    ],
+    "opponent_rotation": [
+     {
+      "npc": "npc_takemaru",
+      "on": "bout_scored:1"
+     }
+    ],
+    "opponent_pattern": {
+     "id": "pupil_men",
+     "windup_ms": 550,
+     "repeat_s": 1.45,
+     "telegraph": "amber_edge",
+     "stagger_on_awase_s": 1.2
+    },
+    "scored_bouts": {
+     "count": 2,
+     "opponents": [
+      "npc_matsukichi",
+      "npc_takemaru"
+     ],
+     "rule": "awase, then a cut that lands in the stagger after blade recovery",
+     "counts_toward": "catalog requires_kills"
+    },
+    "dojo_rules": {
+     "lesson_bits": [
+      1,
+      2,
+      3
+     ],
+     "actions": [
+      "Guard",
+      "Parry",
+      "Recovery"
+     ],
+     "scored_bouts_after": 2
+    }
+   }
+  },
+  {
+   "id": "ch01.b04",
+   "type": "duel",
+   "place": "pl_tsumagizaka_dojo",
+   "title_ja": "転（まろばし）",
+   "title_en": "Marobashi: roll with the flood",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b03"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "marobashi"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_keiko",
+   "fail": [],
+   "params": {
+    "opponent": "npc_matsukichi",
+    "weapons": {
+     "player": "bokuto",
+     "opponent": "bokuto"
+    },
+    "lethal": false,
+    "scoring": {
+     "mode": "lesson_gates"
+    },
+    "ring": "vol_ch01_dojo_yard",
+    "lesson_gates": [
+     {
+      "gate": "marobashi_flank",
+      "count": 2
+     }
+    ],
+    "finisher": "none",
+    "loss_policy": "retry",
+    "checkpoint_per_phase": false
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b04.prompt.01"
+    ],
+    "opponent_rotation": [
+     {
+      "npc": "npc_takemaru",
+      "on": "bout_scored:3"
+     }
+    ],
+    "opponent_pattern": {
+     "id": "pupil_kesa",
+     "windup_ms": 600,
+     "recovery_ms": 1000,
+     "telegraph": "amber_edge_diagonal"
+    },
+    "marobashi": {
+     "input_window_ms": 400,
+     "lateral_step_cm": 120,
+     "arc_deg": 70,
+     "opponent_turn_lag_s": 0.8,
+     "clearance_cm": 150
+    },
+    "scored_bouts": {
+     "count": 2,
+     "opponents": [
+      "npc_matsukichi",
+      "npc_takemaru"
+     ],
+     "counts_toward": "catalog requires_kills",
+     "running_total": 4
+    }
+   }
+  },
+  {
+   "id": "ch01.b05",
+   "type": "dialogue",
+   "place": "pl_tsumagizaka_dojo",
+   "title_ja": "縁側の陽だまり",
+   "title_en": "The sunbeam on the veranda",
+   "target_s": 90,
+   "checkpoint": false,
+   "requires": [
+    "ch01.b04"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_veranda",
+   "fail": [],
+   "params": {
+    "trigger": "beat_start",
+    "mode": "ambient",
+    "priority": 2,
+    "interrupt": "queue",
+    "camera": "soft_lookat",
+    "lines": [
+     "ch01.b05.takemaru.001",
+     "ch01.b05.matsukichi.002",
+     "ch01.b05.toranosuke.003",
+     "ch01.b05.toranosuke.004",
+     "ch01.b05.nyaakoto.005",
+     "ch01.b05.toranosuke.006",
+     "ch01.b05.sekireisai.007"
+    ]
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b05.prompt.01"
+    ],
+    "ambient_actions": [
+     "baio_asleep_in_sunbeam",
+     "pupils_bow_around_baio",
+     "toranosuke_dismounts_hands_arashi_to_takemaru",
+     "toranosuke_bows_around_baio"
+    ],
+    "complete": {
+     "volume_enter": "vol_ch01_umaya"
+    }
+   }
+  },
+  {
+   "id": "ch01.b06",
+   "type": "horseback_ride",
+   "place": "pl_umaya",
+   "title_ja": "栗丸に鞍を置き、的場へ",
+   "title_en": "Tack up Kurimaru and ride to the range",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b05"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "mount"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_ride",
+   "fail": [],
+   "params": {
+    "horse": "kurimaru",
+    "mode": "travel",
+    "route": "spl_ch01_umaba_lane",
+    "complete": {
+     "kind": "reach",
+     "volume": "vol_ch01_matoba_hitch",
+     "dismount": true
+    },
+    "gaits": [
+     "walk",
+     "trot"
+    ],
+    "weapons": [],
+    "fear": {
+     "spook_radius_cm": 600,
+     "recover_s": 1.5
+    },
+    "auto_steer": "setting",
+    "dismount_allowed": true,
+    "on_horse_down": "checkpoint"
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b06.prompt.01",
+     "ch01.b06.prompt.02",
+     "ch01.b06.prompt.03",
+     "ch01.b06.prompt.04",
+     "ch01.b06.prompt.05"
+    ],
+    "tack_up": {
+     "order": "fixed",
+     "interact_points": [
+      {
+       "id": "ip_ch01_kura",
+       "part": "kura",
+       "action": "set saddle over the under-pad",
+       "hold_s": 1.5
+      },
+      {
+       "id": "ip_ch01_haruobi",
+       "part": "haruobi",
+       "action": "tighten girth twice (she bloats)",
+       "hold_s": 1.0
+      },
+      {
+       "id": "ip_ch01_abumi",
+       "part": "abumi",
+       "action": "hang both stirrups on the chikaragawa",
+       "hold_s": 1.0
+      },
+      {
+       "id": "ip_ch01_kutsuwa",
+       "part": "kutsuwa",
+       "action": "bit and omogai; refused twice until barley",
+       "hold_s": 1.0,
+       "refusals": 2,
+       "unlock_item": "barley_ear"
+      }
+     ],
+     "mount_side": "right",
+     "mount_point": "ps_ch01_tie_rail"
+    },
+    "gait_zones": [
+     {
+      "from_m": 0,
+      "to_m": 70,
+      "gait": "walk"
+     },
+     {
+      "from_m": 70,
+      "to_m": 240,
+      "gait": "trot",
+      "volume": "vol_ch01_lane_trot"
+     },
+     {
+      "from_m": 240,
+      "to_m": 300,
+      "gait": "walk"
+     }
+    ],
+    "speeds_cm_s": {
+     "walk": 160,
+     "trot": 360
+    },
+    "scripted_spook": {
+     "volume": "vol_ch01_lane_pheasant",
+     "at_m": 150,
+     "cause": "pheasant_flush"
+    }
+   }
+  },
+  {
+   "id": "ch01.b07",
+   "type": "combat_wave",
+   "place": "pl_matoba",
+   "title_ja": "的場で弓を引け",
+   "title_en": "Draw the bow at the range",
+   "target_s": 300,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b06"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     18
+    ],
+    "mechanics": [
+     "yumi"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_matoba",
+   "fail": [],
+   "params": {
+    "bounds": "vol_ch01_matoba",
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "mato_kinteki",
+        "count": 1,
+        "spawn": "sp_ch01_kinteki_a"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "mato_tsuri",
+        "count": 3,
+        "spawn": "sp_ch01_tsuri_frames"
+       }
+      ],
+      "trigger": "prev_cleared"
+     }
+    ],
+    "complete": {
+     "kind": "all_waves_cleared"
+    },
+    "max_alive": 3,
+    "allies": [
+     {
+      "npc": "npc_baio",
+      "role": "instructor",
+      "downable": false
+     },
+     {
+      "npc": "npc_matsukichi",
+      "role": "kanteki_target_keeper",
+      "downable": false
+     }
+    ],
+    "target_kind": "mato",
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b07.prompt.01",
+     "ch01.b07.prompt.02"
+    ],
+    "unlock_at": "beat_start",
+    "mato_rules": {
+     "distance_m": 28,
+     "target_cm": 36,
+     "shots_per_set": 6,
+     "hits_required": 4,
+     "hit_collider_radius_cm": {
+      "easy": 25,
+      "normal": 21,
+      "hard": 18
+     },
+     "between_sets": "yatori_arrow_fetch_8s",
+     "ammo": "own_quiver_12"
+    },
+    "tsuri": {
+     "distances_m": [
+      40,
+      50,
+      60
+     ],
+     "hits_each": 1,
+     "swing_amplitude_cm": 150,
+     "period_s": 3.2,
+     "target_cm": 45
+    },
+    "shaho": {
+     "draw_ms": 650,
+     "hold_sway_after_s": 4.0,
+     "no_fire_while_sprinting": true,
+     "arrow_rest": "right_of_bow",
+     "yugaeri_anim": true
+    },
+    "quiver_after": {
+     "usable": 6,
+     "bent": 6,
+     "reason": "stone in the azuchi"
+    }
+   }
+  },
+  {
+   "id": "ch01.b08",
+   "type": "explore_optional",
+   "place": "pl_issoseki_wood",
+   "title_ja": "一爪石の森",
+   "title_en": "The One-Claw Stone Wood",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b07"
+   ],
+   "optional": true,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_wood",
+   "fail": [],
+   "params": {
+    "volume": "vol_ch01_wood",
+    "pois": [
+     {
+      "id": "poi_ch01_issoseki",
+      "kind": "lore"
+     },
+     {
+      "id": "poi_ch01_vista",
+      "kind": "vista"
+     },
+     {
+      "id": "poi_ch01_sakaiishi",
+      "kind": "lore"
+     },
+     {
+      "id": "poi_ch01_hokora",
+      "kind": "lore"
+     },
+     {
+      "id": "poi_ch01_naruko",
+      "kind": "challenge"
+     }
+    ],
+    "rewards": [
+     "ch01.c01",
+     "ch01.c02"
+    ],
+    "exit_hint_after_s": 180
+   },
+   "ext": {
+    "complete": {
+     "volume_enter": "vol_ch01_wood_exit"
+    },
+    "main_trail": {
+     "spline": "spl_ch01_wood_trail",
+     "length_m": 170,
+     "straight_through_s": 60
+    },
+    "challenge": {
+     "id": "poi_ch01_naruko",
+     "distance_m": 45,
+     "reward": "codex_toshiya"
+    }
+   }
+  },
+  {
+   "id": "ch01.b09",
+   "type": "production_task",
+   "place": "pl_dojo_smithy",
+   "title_ja": "矢を矯め、羽を付け直せ",
+   "title_en": "Straighten and refletch the arrows",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b07"
+   ],
+   "optional": false,
+   "site": 2,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "manufacture"
+    ],
+    "grants": []
+   },
+   "registry": {
+    "item_ja": "矢",
+    "item_en": "Arrows",
+    "qty": 12,
+    "unit_ja": "本",
+    "unit_en": "arrows"
+   },
+   "music": "ch01_smithy",
+   "fail": [],
+   "params": {
+    "task": "manufacture",
+    "manufacture": {
+     "recipe": "ya_repair",
+     "stations": [
+      "st_ch01_fuigo",
+      "st_ch01_hibachi",
+      "st_ch01_tamegi",
+      "st_ch01_hagi_dai"
+     ],
+     "steps": [
+      {
+       "kind": "heat",
+       "count": 1,
+       "station": "st_ch01_fuigo",
+       "label": "rekindle_hodo"
+      },
+      {
+       "kind": "heat",
+       "count": 6,
+       "station": "st_ch01_hibachi",
+       "timing": {
+        "beat_ms": 2000,
+        "tolerance_ms": 500
+       }
+      },
+      {
+       "kind": "bend",
+       "count": 6,
+       "station": "st_ch01_tamegi",
+       "timing": {
+        "beat_ms": 700,
+        "tolerance_ms": 150
+       }
+      },
+      {
+       "kind": "paste",
+       "count": 1,
+       "station": "st_ch01_hagi_dai"
+      },
+      {
+       "kind": "assemble",
+       "count": 1,
+       "station": "st_ch01_hagi_dai"
+      },
+      {
+       "kind": "inspect",
+       "count": 1,
+       "station": "st_ch01_hagi_dai"
+      }
+     ],
+     "output": {
+      "item": "ya",
+      "qty": 12
+     }
+    }
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b09.prompt.01",
+     "ch01.b09.prompt.02",
+     "ch01.b09.prompt.03",
+     "ch01.b09.prompt.04"
+    ],
+    "tolerance_by_difficulty_ms": {
+     "easy": 200,
+     "normal": 150,
+     "hard": 120
+    },
+    "failure": "a failed step repeats in place; there is no quality grade",
+    "quiver_after": {
+     "usable": 12
+    }
+   }
+  },
+  {
+   "id": "ch01.b10",
+   "type": "dialogue",
+   "place": "pl_estate_day",
+   "title_ja": "殺人刀と活人剣",
+   "title_en": "The sword that kills, the sword that gives life",
+   "target_s": 90,
+   "checkpoint": false,
+   "requires": [
+    "ch01.b09"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_veranda",
+   "fail": [],
+   "params": {
+    "trigger": "volume_enter:vol_ch01_estate_engawa",
+    "mode": "ambient",
+    "priority": 3,
+    "interrupt": "queue",
+    "camera": "soft_lookat",
+    "lines": [
+     "ch01.b10.household.001",
+     "ch01.b10.sekireisai.002",
+     "ch01.b10.nyaakoto.003",
+     "ch01.b10.sekireisai.004",
+     "ch01.b10.sekireisai.005",
+     "ch01.b10.sekireisai.006",
+     "ch01.b10.toranosuke.007",
+     "ch01.b10.toranosuke.008",
+     "ch01.b10.sekireisai.009",
+     "ch01.b10.toranosuke.010",
+     "ch01.b10.sekireisai.011"
+    ]
+   },
+   "ext": {
+    "entry": {
+     "transition": "vol_ch01_ura_mon",
+     "spawn": "ps_ch01_estate_entry",
+     "fade_s": 1.2
+    }
+   }
+  },
+  {
+   "id": "ch01.b11",
+   "type": "duel",
+   "place": "pl_estate_day",
+   "title_ja": "袋竹刀で虎之介と立ち合う",
+   "title_en": "Fukuro-shinai bout with Toranosuke",
+   "target_s": 360,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b10"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_duel_rival",
+   "fail": [
+    {
+     "on": "match_lost",
+     "to": "retry"
+    }
+   ],
+   "params": {
+    "opponent": "npc_toranosuke",
+    "weapons": {
+     "player": "fukuro_shinai",
+     "opponent": "fukuro_shinai"
+    },
+    "lethal": false,
+    "scoring": {
+     "mode": "points",
+     "first_to": 3
+    },
+    "ring": "vol_ch01_duel_ring",
+    "finisher": "none",
+    "loss_policy": "continue_after:3",
+    "checkpoint_per_phase": false
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b11.prompt.01",
+     "ch01.b11.prompt.02"
+    ],
+    "point_rules": {
+     "targets": [
+      "men",
+      "kote",
+      "do"
+     ],
+     "clean_hit": "lands outside own recovery, unguarded",
+     "aiuchi_window_ms": 150,
+     "reset_s": 3.0,
+     "start_gap_cm": 400,
+     "ring_out": "reset_no_point"
+    },
+    "pattern_table": "tora_fukuro",
+    "score_states": [
+     {
+      "state": "even_or_rival_leads",
+      "interval_s": [
+       1.6,
+       2.4
+      ],
+      "weights": {
+       "tora_men": 35,
+       "tora_kote": 25,
+       "tora_kesa": 25,
+       "tora_feint": 15
+      }
+     },
+     {
+      "state": "player_leads_1",
+      "interval_s": [
+       1.3,
+       2.0
+      ],
+      "weights": {
+       "tora_men": 25,
+       "tora_kote": 20,
+       "tora_kesa": 10,
+       "tora_feint": 25,
+       "tora_nidan": 20
+      }
+     },
+     {
+      "state": "player_leads_2",
+      "interval_s": [
+       1.0,
+       1.6
+      ],
+      "recovery_bonus_ms": 150,
+      "weights": {
+       "tora_men": 20,
+       "tora_feint": 30,
+       "tora_nidan": 35,
+       "tora_seme": 15
+      }
+     }
+    ],
+    "branches": {
+     "win": "b11_win",
+     "loss": "b11_loss",
+     "save_flag": "ch01_duel_result"
+    }
+   }
+  },
+  {
+   "id": "ch01.b12",
+   "type": "dialogue",
+   "place": "pl_estate_day",
+   "title_ja": "刀を預かる",
+   "title_en": "The blade held in trust",
+   "target_s": 60,
+   "checkpoint": true,
+   "requires": [
+    "ch01.b11"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     0
+    ],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_katana",
+   "fail": [],
+   "params": {
+    "trigger": "interact:ip_ch01_katana",
+    "mode": "blocking",
+    "priority": 5,
+    "interrupt": "queue",
+    "camera": "soft_lookat",
+    "lines": [
+     "ch01.b12.sekireisai.001",
+     "ch01.b12.sekireisai.002",
+     "ch01.b12.sekireisai.003",
+     "ch01.b12.sekireisai.004",
+     "ch01.b12.nyaakoto.005",
+     "ch01.b12.sekireisai.006",
+     "ch01.b12.sekireisai.007"
+    ]
+   },
+   "ext": {
+    "prompts": [
+     "ch01.b12.prompt.01"
+    ],
+    "blocking_lines": [
+     "ch01.b12.sekireisai.003",
+     "ch01.b12.sekireisai.004",
+     "ch01.b12.nyaakoto.005",
+     "ch01.b12.sekireisai.006"
+    ],
+    "blocking_max_s": 20,
+    "complete": {
+     "on": "sheathe_or_after_s",
+     "after_s": 20
+    }
+   }
+  },
+  {
+   "id": "ch01.b13",
+   "type": "cinematic",
+   "place": "pl_estate_day",
+   "title_ja": "空が裂ける",
+   "title_en": "The sky splits",
+   "target_s": 120,
+   "checkpoint": false,
+   "requires": [
+    "ch01.b12"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch01_sky_splits",
+   "fail": [],
+   "params": {
+    "sequence": "/Game/Campaign/Ch01/Sequences/LS_Ch01_B13_SkySplits",
+    "duration_s": 120,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_ch01_b13_end",
+     "equipped": "katana_sheathed"
+    }
+   },
+   "ext": {
+    "next": "ch02_invasion/ch02.b01",
+    "chapter_complete": {
+     "registry_page": [
+      "ch01.b09"
+     ],
+     "restored_sites": [
+      0,
+      1,
+      2
+     ]
+    }
+   }
+  }
+ ],
+ "lines": [
+  {
+   "id": "ch01.b01.sekireisai.001",
+   "beat": "ch01.b01",
+   "speaker": "mentor",
+   "ja": "止め。",
+   "en": "Stop.",
+   "duration_s": 1.0,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 60.0
+   }
+  },
+  {
+   "id": "ch01.b01.sekireisai.002",
+   "beat": "ch01.b01",
+   "speaker": "mentor",
+   "ja": "百本振って、おぬしの剣は何本あった。",
+   "en": "A hundred swings. How many were truly yours?",
+   "duration_s": 3.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 61.6
+   }
+  },
+  {
+   "id": "ch01.b01.nyaakoto.003",
+   "beat": "ch01.b01",
+   "speaker": "samurai",
+   "ja": "……六十本ほどかと。",
+   "en": "…Sixty, perhaps.",
+   "duration_s": 2.3,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 65.9
+   }
+  },
+  {
+   "id": "ch01.b01.sekireisai.004",
+   "beat": "ch01.b01",
+   "speaker": "mentor",
+   "ja": "正直でよい。残りの四十は、稽古で取り戻せ。",
+   "en": "Honest. Win back the other forty in practice.",
+   "duration_s": 4.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 68.8
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.001",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "刃を急がせるな。相手の足音を聞け。",
+   "en": "Do not hurry your blade. Listen to your opponent's footing.",
+   "duration_s": 4.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "anchor": "catalog ch01 line 1"
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.002",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "正眼に構えよ。切っ先は、わしの喉へ。",
+   "en": "Take seigan. Point your tip at my throat.",
+   "duration_s": 3.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "正眼（せいがん）・切っ先（きっさき）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.003",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "水に映る月を思え。",
+   "en": "Think of the moon upon the water.",
+   "duration_s": 2.2,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "水月（すいげつ）の教え",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.004",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "わしの太刀は届かず、おぬしの太刀は届く。そこに立て。",
+   "en": "Stand where my sword cannot reach, and yours can.",
+   "duration_s": 5.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "太刀（たち）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b02.nyaakoto.005",
+   "beat": "ch01.b02",
+   "speaker": "samurai",
+   "ja": "木刀の長さは、同じでございますが。",
+   "en": "But our swords are the same length, Sensei.",
+   "duration_s": 3.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "木刀（ぼくとう）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.006",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "長さは同じ。心の長さが違う。",
+   "en": "The length is the same. The reach of the mind is not.",
+   "duration_s": 3.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.007",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "うむ。",
+   "en": "Good.",
+   "duration_s": 1.0,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.008",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "……三つ。よし。",
+   "en": "…Three. Good.",
+   "duration_s": 1.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.009",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "近い。それでは互いに斬られる。",
+   "en": "Too close. There, we would both be cut.",
+   "duration_s": 3.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b02.sekireisai.010",
+   "beat": "ch01.b02",
+   "speaker": "mentor",
+   "ja": "間合いは、剣の半分じゃ。",
+   "en": "Distance is half the art of the sword.",
+   "duration_s": 2.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "間合い（まあい）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.001",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "松吉、打ち込め。ニャーコトは受けよ。",
+   "en": "Matsukichi, attack. Nyaakoto, receive.",
+   "duration_s": 3.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.002",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "受けは壁ではない。柳じゃ。",
+   "en": "A guard is no wall. It is a willow.",
+   "duration_s": 2.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "受け（うけ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.003",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "次は合わせ。打たれる刹那に、こちらから迎えに行け。",
+   "en": "Now, awase. The instant he cuts, go out to meet it.",
+   "duration_s": 4.9,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "合わせ（あわせ）・刹那（せつな）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.004",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "そうじゃ。太刀と太刀が、言葉を交わしたろう。",
+   "en": "Yes. Did you hear the swords speak?",
+   "duration_s": 3.9,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.005",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "早い。相手の太刀を待て。",
+   "en": "Too early. Wait for his sword.",
+   "duration_s": 2.4,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.006",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "遅い。見てから動いては、間に合わぬ。",
+   "en": "Too late. Move after you see it, and you are late.",
+   "duration_s": 3.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.007",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "打ったら、刃の戻りを待て。二の太刀を急ぐな。",
+   "en": "After a cut, wait for the blade to return. Do not rush the next.",
+   "duration_s": 4.3,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "二の太刀（にのたち）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.008",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "それが残心の始まりじゃ。",
+   "en": "That is where zanshin begins.",
+   "duration_s": 2.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "残心（ざんしん）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.matsukichi.009",
+   "beat": "ch01.b03",
+   "speaker": "pupil_matsukichi",
+   "ja": "……一本。参りました。",
+   "en": "…A clean point. I yield.",
+   "duration_s": 2.3,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "一本（いっぽん）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.010",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "竹丸、代われ。",
+   "en": "Takemaru, take his place.",
+   "duration_s": 1.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b03.sekireisai.011",
+   "beat": "ch01.b03",
+   "speaker": "mentor",
+   "ja": "二人とも、よう打った。よう打たれた。",
+   "en": "Both of you struck well. And were struck well.",
+   "duration_s": 3.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b04.sekireisai.001",
+   "beat": "ch01.b04",
+   "speaker": "mentor",
+   "ja": "外へ出よ。転を教える。",
+   "en": "Outside. I will teach you marobashi.",
+   "duration_s": 2.4,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "転（まろばし）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b04.sekireisai.002",
+   "beat": "ch01.b04",
+   "speaker": "mentor",
+   "ja": "濁流に逆らうな。流れと共に、転がれ。",
+   "en": "Do not stand against the flood. Roll with it.",
+   "duration_s": 3.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "濁流（だくりゅう）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b04.sekireisai.003",
+   "beat": "ch01.b04",
+   "speaker": "mentor",
+   "ja": "止まるな。合わせたら、もう転がっておれ。",
+   "en": "Do not stop. Once you meet the cut, be rolling already.",
+   "duration_s": 3.9,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b04.matsukichi.004",
+   "beat": "ch01.b04",
+   "speaker": "pupil_matsukichi",
+   "ja": "竹丸、さっきの試合、足がもつれてたぞ。",
+   "en": "Takemaru, your feet were tangled in that last bout.",
+   "duration_s": 3.7,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b04.takemaru.005",
+   "beat": "ch01.b04",
+   "speaker": "pupil_takemaru",
+   "ja": "松吉さんこそ。",
+   "en": "So were yours.",
+   "duration_s": 1.6,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b04.sekireisai.006",
+   "beat": "ch01.b04",
+   "speaker": "mentor",
+   "ja": "相手が強いほど、よう転がる。覚えておけ。",
+   "en": "The stronger the opponent, the better you roll. Remember it.",
+   "duration_s": 4.0,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b05.takemaru.001",
+   "beat": "ch01.b05",
+   "speaker": "pupil_takemaru",
+   "ja": "虎之介さまだ。また朝稽古に遅れて……。",
+   "en": "It is Lord Toranosuke. Late for morning practice again…",
+   "duration_s": 3.9,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b05.matsukichi.002",
+   "beat": "ch01.b05",
+   "speaker": "pupil_matsukichi",
+   "ja": "また大坂の使いと会っていたらしい。",
+   "en": "They say he met the man from Osaka again.",
+   "duration_s": 3.7,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b05.toranosuke.003",
+   "beat": "ch01.b05",
+   "speaker": "rival",
+   "ja": "先生の相手をしたそうだな。『刃を急がせるな』か。",
+   "en": "I hear you faced Sensei. 'Do not hurry your blade,' was it?",
+   "duration_s": 4.5,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b05.toranosuke.004",
+   "beat": "ch01.b05",
+   "speaker": "rival",
+   "ja": "俺は急ぐ。急がねば、間に合わぬこともある。",
+   "en": "I hurry. Some things will not wait.",
+   "duration_s": 4.1,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b05.nyaakoto.005",
+   "beat": "ch01.b05",
+   "speaker": "samurai",
+   "ja": "……何があった、虎之介。",
+   "en": "…What happened, Toranosuke?",
+   "duration_s": 2.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b05.toranosuke.006",
+   "beat": "ch01.b05",
+   "speaker": "rival",
+   "ja": "何も。稽古の話だ。",
+   "en": "Nothing. This is about practice.",
+   "duration_s": 2.2,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b05.sekireisai.007",
+   "beat": "ch01.b05",
+   "speaker": "mentor",
+   "ja": "厩へ行け。栗丸が退屈しておる。弓も引いてこい。",
+   "en": "Go to the stable. Kurimaru is bored. Then draw your bow.",
+   "duration_s": 4.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b06.takemaru.001",
+   "beat": "ch01.b06",
+   "speaker": "pupil_takemaru",
+   "ja": "鞍はそこに。下鞍を敷いてから置いてください。",
+   "en": "The saddle is there. Lay the pad first, then set it.",
+   "duration_s": 4.5,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "鞍（くら）・下鞍（したぐら）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.takemaru.002",
+   "beat": "ch01.b06",
+   "speaker": "pupil_takemaru",
+   "ja": "腹帯を締めて。……栗丸、また腹をふくらませてます。",
+   "en": "Tighten the girth. …She is puffing out her belly again.",
+   "duration_s": 5.0,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "腹帯（はるび）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.takemaru.003",
+   "beat": "ch01.b06",
+   "speaker": "pupil_takemaru",
+   "ja": "鐙は力革に。左右の長さをそろえて。",
+   "en": "Stirrups on the leathers. Match the two sides.",
+   "duration_s": 3.5,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "鐙（あぶみ）・力革（ちからがわ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.takemaru.004",
+   "beat": "ch01.b06",
+   "speaker": "pupil_takemaru",
+   "ja": "次は轡を……あ、またそっぽを向いた。",
+   "en": "Now the bit… ah, she has turned her head away again.",
+   "duration_s": 3.7,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "轡（くつわ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.nyaakoto.005",
+   "beat": "ch01.b06",
+   "speaker": "samurai",
+   "ja": "……栗丸。",
+   "en": "…Kurimaru.",
+   "duration_s": 1.2,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.takemaru.006",
+   "beat": "ch01.b06",
+   "speaker": "pupil_takemaru",
+   "ja": "大麦の穂、袖に入れてたでしょう。",
+   "en": "You have an ear of barley in your sleeve, do you not?",
+   "duration_s": 3.6,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "大麦（おおむぎ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.takemaru.007",
+   "beat": "ch01.b06",
+   "speaker": "pupil_takemaru",
+   "ja": "……毎朝、これです。",
+   "en": "…Every morning, this.",
+   "duration_s": 2.0,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.takemaru.008",
+   "beat": "ch01.b06",
+   "speaker": "pupil_takemaru",
+   "ja": "面繋よし、轡よし。手綱を取って、乗ってください。",
+   "en": "Headstall, bit, all good. Take the reins and mount.",
+   "duration_s": 4.5,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "面繋（おもがい）・手綱（たづな）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.takemaru.009",
+   "beat": "ch01.b06",
+   "speaker": "pupil_takemaru",
+   "ja": "嵐には近づかないで。袖を噛みますから。",
+   "en": "Keep clear of Arashi. He bites sleeves.",
+   "duration_s": 3.9,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "嵐（あらし）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b06.nyaakoto.010",
+   "beat": "ch01.b06",
+   "speaker": "samurai",
+   "ja": "どう、どう……。雉だ。ただの雉だ。",
+   "en": "Easy, easy… A pheasant. Only a pheasant.",
+   "duration_s": 3.1,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "雉（きじ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b07.baio.001",
+   "beat": "ch01.b07",
+   "speaker": "pupil_baio",
+   "ja": "来なされたか。弓は、ここに。",
+   "en": "So you have come. Your bow is here.",
+   "duration_s": 2.6,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b07.baio.002",
+   "beat": "ch01.b07",
+   "speaker": "pupil_baio",
+   "ja": "弓構え。……打起し。",
+   "en": "Ready the bow. …Raise it.",
+   "duration_s": 2.0,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "弓構え（ゆがまえ）・打起し（うちおこし）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b07.baio.003",
+   "beat": "ch01.b07",
+   "speaker": "pupil_baio",
+   "ja": "引分けて……会。息を止めず、満ちるのを待ちなされ。",
+   "en": "Draw… and hold. Keep breathing. Let the draw fill.",
+   "duration_s": 5.0,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "引分け（ひきわけ）・会（かい）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b07.baio.004",
+   "beat": "ch01.b07",
+   "speaker": "pupil_baio",
+   "ja": "離れたら、弓を追うな。残心。",
+   "en": "After the release, do not chase the bow. Zanshin.",
+   "duration_s": 3.3,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "離れ（はなれ）・残心（ざんしん）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b07.matsukichi.005",
+   "beat": "ch01.b07",
+   "speaker": "pupil_matsukichi",
+   "ja": "中り！",
+   "en": "Hit!",
+   "duration_s": 1.0,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "中り（あたり）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark"
+   }
+  },
+  {
+   "id": "ch01.b07.matsukichi.006",
+   "beat": "ch01.b07",
+   "speaker": "pupil_matsukichi",
+   "ja": "外れ！",
+   "en": "Miss!",
+   "duration_s": 1.0,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "外れ（はずれ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark"
+   }
+  },
+  {
+   "id": "ch01.b07.baio.007",
+   "beat": "ch01.b07",
+   "speaker": "pupil_baio",
+   "ja": "矢取りを待ちなされ。もう一度、六本。",
+   "en": "Wait while the arrows are fetched. Six more.",
+   "duration_s": 3.5,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "矢取り（やとり）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b07.baio.008",
+   "beat": "ch01.b07",
+   "speaker": "pupil_baio",
+   "ja": "よろしい。次は吊り的。揺れる的は、行く先を射なされ。",
+   "en": "Good. Now the hanging marks. Shoot where a swinging mark is going.",
+   "duration_s": 4.9,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "吊り的（つりまと）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b07.baio.009",
+   "beat": "ch01.b07",
+   "speaker": "pupil_baio",
+   "ja": "……よい弓を引かれるようになった。",
+   "en": "…You draw a good bow now.",
+   "duration_s": 2.3,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b07.matsukichi.010",
+   "beat": "ch01.b07",
+   "speaker": "pupil_matsukichi",
+   "ja": "六本、安土の石で曲がってます。鍛冶場へどうぞ。",
+   "en": "Six shafts bent on a stone in the azuchi. The smithy can fix them.",
+   "duration_s": 4.5,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "安土（あづち）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b08.nyaakoto.001",
+   "beat": "ch01.b08",
+   "speaker": "samurai",
+   "ja": "一爪石……。初代さまが、爪一本で割ったという。",
+   "en": "The One-Claw Stone… The founder split it with one claw, they say.",
+   "duration_s": 4.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "一爪石（いっそうせき）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b08.nyaakoto.002",
+   "beat": "ch01.b08",
+   "speaker": "samurai",
+   "ja": "割れた石より、割った心を見よ……か。",
+   "en": "'Look not at the split stone, but the mind that split it.'",
+   "duration_s": 3.9,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b08.nyaakoto.003",
+   "beat": "ch01.b08",
+   "speaker": "samurai",
+   "ja": "猫山まで二里。今日は城がよく見える。",
+   "en": "Two ri to Nekoyama. The castle is clear today.",
+   "duration_s": 3.7,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "猫山（ねこやま）・二里（にり）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b08.nyaakoto.004",
+   "beat": "ch01.b08",
+   "speaker": "samurai",
+   "ja": "家の紋……。誰が刻んだのだろう。",
+   "en": "The house mon… I wonder who carved it.",
+   "duration_s": 3.3,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "紋（もん）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b08.nyaakoto.005",
+   "beat": "ch01.b08",
+   "speaker": "samurai",
+   "ja": "槌の音……鍛冶場はあちらか。",
+   "en": "A hammer… The smithy is that way.",
+   "duration_s": 3.1,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "槌（つち）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.001",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "矢を曲げてきたな。六本か。",
+   "en": "Bent some arrows, did you? Six?",
+   "duration_s": 2.6,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.002",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "火を起こせ。竹は熱で素直になる。",
+   "en": "Wake the fire. Heat makes bamboo honest.",
+   "duration_s": 3.3,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.003",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "焦がすな。竹が泣く。冷まして、もう一度。",
+   "en": "Don't scorch it. Bamboo weeps. Let it cool, then again.",
+   "duration_s": 3.7,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.004",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "曲がった矢は、嘘をつく。",
+   "en": "A bent arrow lies.",
+   "duration_s": 2.4,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.005",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "膠は薄く。羽は三枚、向きをそろえろ。",
+   "en": "Thin glue. Three feathers, all facing the same way.",
+   "duration_s": 3.5,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "膠（にかわ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.006",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "糸で巻いて締めろ。……赤羽か。遠目にもよく見える。",
+   "en": "Bind it tight. …Red feathers. Easy to find from afar.",
+   "duration_s": 5.0,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "赤羽（あかばね）・遠目（とおめ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.007",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "数えろ。",
+   "en": "Count them.",
+   "duration_s": 1.0,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.nyaakoto.008",
+   "beat": "ch01.b09",
+   "speaker": "samurai",
+   "ja": "十二本。",
+   "en": "Twelve.",
+   "duration_s": 1.0,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.009",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "帳面に書いとけ。作ったもんは数えて残す。それがここの決まりだ。",
+   "en": "Write it in the book. What you make, you count and keep. That's the rule here.",
+   "duration_s": 6.2,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "帳面（ちょうめん）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.tetsugoro.010",
+   "beat": "ch01.b09",
+   "speaker": "gunsmith",
+   "ja": "……雨が続くと火縄が死ぬ。何か手はないもんか。",
+   "en": "…When the rain keeps on, the match dies. There must be a way.",
+   "duration_s": 4.8,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "火縄（ひなわ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b09.takemaru.011",
+   "beat": "ch01.b09",
+   "speaker": "pupil_takemaru",
+   "ja": "ニャーコト殿！　先生がお呼びです。表の縁側へ。",
+   "en": "Nyaakoto! Sensei is asking for you. The front veranda.",
+   "duration_s": 4.3,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "縁側（えんがわ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b10.household.001",
+   "beat": "ch01.b10",
+   "speaker": "household",
+   "ja": "先生が縁側におられるうちは、この屋敷は安泰や。",
+   "en": "While Sensei sits on that veranda, this house is safe.",
+   "duration_s": 4.7,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.sekireisai.002",
+   "beat": "ch01.b10",
+   "speaker": "mentor",
+   "ja": "殺人刀、活人剣。聞いたことはあるな。",
+   "en": "Setsunintō and katsujinken. You have heard the words.",
+   "duration_s": 3.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.nyaakoto.003",
+   "beat": "ch01.b10",
+   "speaker": "samurai",
+   "ja": "人を斬る刀と、人を活かす剣、と。",
+   "en": "A blade that kills, and a sword that gives life.",
+   "duration_s": 3.2,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.sekireisai.004",
+   "beat": "ch01.b10",
+   "speaker": "mentor",
+   "ja": "違う。同じ一振りの話じゃ。",
+   "en": "No. They are one and the same blade.",
+   "duration_s": 2.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.sekireisai.005",
+   "beat": "ch01.b10",
+   "speaker": "mentor",
+   "ja": "一人の悪を斬り、万人を活かす。刀が許されるのは、そこまでじゃ。",
+   "en": "Cut one evil so ten thousand may live. A blade is forgiven that far, no further.",
+   "duration_s": 6.0,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.sekireisai.006",
+   "beat": "ch01.b10",
+   "speaker": "mentor",
+   "ja": "だが斬る前に、何を活かすかを数えよ。",
+   "en": "But before you cut, count what you mean to keep alive.",
+   "duration_s": 3.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.toranosuke.007",
+   "beat": "ch01.b10",
+   "speaker": "rival",
+   "ja": "先生、御免。……ニャーコト、表で立ち合え。袋竹刀でいい。",
+   "en": "Pardon me, Sensei. …Nyaakoto, face me outside. Fukuro-shinai will do.",
+   "duration_s": 5.2,
+   "register": "brash_samurai",
+   "delivery": "formal",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.toranosuke.008",
+   "beat": "ch01.b10",
+   "speaker": "rival",
+   "ja": "今日しかない。……明日、大坂から使いが来る。",
+   "en": "Today is all I have. …Tomorrow, a man comes from Osaka.",
+   "duration_s": 4.3,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.sekireisai.009",
+   "beat": "ch01.b10",
+   "speaker": "mentor",
+   "ja": "鷲尾。勝って、何を得る。",
+   "en": "Washio. If you win, what do you gain?",
+   "duration_s": 2.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.toranosuke.010",
+   "beat": "ch01.b10",
+   "speaker": "rival",
+   "ja": "名にございます。鷲尾の名が、まだ折れておらぬ証を。",
+   "en": "A name, Sensei. Proof that the Washio name is not yet broken.",
+   "duration_s": 4.9,
+   "register": "brash_samurai",
+   "delivery": "formal",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b10.sekireisai.011",
+   "beat": "ch01.b10",
+   "speaker": "mentor",
+   "ja": "……よかろう。先に三本じゃ。ニャーコト、受けよ。",
+   "en": "…Very well. First to three. Nyaakoto, accept.",
+   "duration_s": 4.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b11.sekireisai.001",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "両者、礼。",
+   "en": "Both of you, bow.",
+   "duration_s": 1.2,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "礼（れい）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b11.toranosuke.002",
+   "beat": "ch01.b11",
+   "speaker": "rival",
+   "ja": "礼はいい。来い、ニャーコト。今日こそ一本取る。",
+   "en": "Skip the bow. Come, Nyaakoto. Today I take a point.",
+   "duration_s": 4.3,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "anchor": "bible §6.5 register sample"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.003",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "礼はせよ。……構えて、始め！",
+   "en": "You will bow. …Kamae. Begin!",
+   "duration_s": 2.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "構え（かまえ）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.004",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "一本。ニャーコト。",
+   "en": "Point. Nyaakoto.",
+   "duration_s": 1.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.005",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "一本。鷲尾。",
+   "en": "Point. Washio.",
+   "duration_s": 1.2,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.006",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "縄を出たぞ。戻れ。",
+   "en": "Out of the ring. Return.",
+   "duration_s": 1.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "場外（じょうがい）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark"
+   }
+  },
+  {
+   "id": "ch01.b11.toranosuke.007",
+   "beat": "ch01.b11",
+   "speaker": "rival",
+   "ja": "どうした。先生の教えは、それだけか。",
+   "en": "What is wrong? Is that all Sensei taught you?",
+   "duration_s": 3.5,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.008",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "目を見るな、足を見よ。蹴らぬ足は、打たぬ足じゃ。",
+   "en": "Do not watch his eyes. Watch his feet. A foot that does not push does not strike.",
+   "duration_s": 5.4,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "蹴る（ける）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b11.toranosuke.009",
+   "beat": "ch01.b11",
+   "speaker": "rival",
+   "ja": "くそっ……急げ、急げ……！",
+   "en": "Damn it… Faster. Faster…!",
+   "duration_s": 2.7,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.010",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "それまで。三本、ニャーコト。",
+   "en": "Enough. Three points to Nyaakoto.",
+   "duration_s": 2.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "branch": "win"
+   }
+  },
+  {
+   "id": "ch01.b11.toranosuke.011",
+   "beat": "ch01.b11",
+   "speaker": "rival",
+   "ja": "……もう一度だ。",
+   "en": "…Again.",
+   "duration_s": 1.8,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "branch": "win"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.012",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "今日の一本は、今日かぎりじゃ。",
+   "en": "Today's point belongs to today alone.",
+   "duration_s": 3.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "branch": "win"
+   }
+  },
+  {
+   "id": "ch01.b11.toranosuke.013",
+   "beat": "ch01.b11",
+   "speaker": "rival",
+   "ja": "……失礼いたす。",
+   "en": "…By your leave.",
+   "duration_s": 1.8,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "branch": "win"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.014",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "それまで。三本、鷲尾。",
+   "en": "Enough. Three points to Washio.",
+   "duration_s": 2.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "branch": "loss"
+   }
+  },
+  {
+   "id": "ch01.b11.toranosuke.015",
+   "beat": "ch01.b11",
+   "speaker": "rival",
+   "ja": "……勝った。勝ったぞ。",
+   "en": "…I won. I won.",
+   "duration_s": 2.3,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "branch": "loss"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.016",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "勝ちを急いだな、虎之介。",
+   "en": "You hurried to win, Toranosuke.",
+   "duration_s": 2.4,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "branch": "loss"
+   }
+  },
+  {
+   "id": "ch01.b11.toranosuke.017",
+   "beat": "ch01.b11",
+   "speaker": "rival",
+   "ja": "急がねば、間に合わぬのです。",
+   "en": "If I do not hurry, I will be too late.",
+   "duration_s": 2.8,
+   "register": "brash_samurai",
+   "delivery": "formal",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo",
+    "branch": "loss"
+   }
+  },
+  {
+   "id": "ch01.b11.sekireisai.018",
+   "beat": "ch01.b11",
+   "speaker": "mentor",
+   "ja": "もう一度。今度は、あやつの急ぎを使え。",
+   "en": "Again. This time, use his haste.",
+   "duration_s": 3.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "vo"
+   }
+  },
+  {
+   "id": "ch01.b12.sekireisai.001",
+   "beat": "ch01.b12",
+   "speaker": "mentor",
+   "ja": "負けて受け取る刀は、重いか。",
+   "en": "Is a blade heavy, when taken after a loss?",
+   "duration_s": 2.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b12.sekireisai.002",
+   "beat": "ch01.b12",
+   "speaker": "mentor",
+   "ja": "重さを知る者にしか、刀は預けられぬ。",
+   "en": "Only one who feels its weight can be trusted with it.",
+   "duration_s": 3.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b12.sekireisai.003",
+   "beat": "ch01.b12",
+   "speaker": "mentor",
+   "ja": "おぬしの刀じゃ。研ぎから戻った。",
+   "en": "Your blade. It is back from the polisher.",
+   "duration_s": 3.3,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b12.sekireisai.004",
+   "beat": "ch01.b12",
+   "speaker": "mentor",
+   "ja": "刀は民から預かるものじゃ。",
+   "en": "A blade is held in trust from the people.",
+   "duration_s": 2.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b12.nyaakoto.005",
+   "beat": "ch01.b12",
+   "speaker": "samurai",
+   "ja": "間合いを測り、命を守ります。",
+   "en": "I will measure the distance and protect life.",
+   "duration_s": 4.8,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b12.sekireisai.006",
+   "beat": "ch01.b12",
+   "speaker": "mentor",
+   "ja": "それが猫柳生新陰流。剣は民のためにある。",
+   "en": "That is Nyaagyū Shinkage-ryū. The sword serves the people.",
+   "duration_s": 4.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b12.sekireisai.007",
+   "beat": "ch01.b12",
+   "speaker": "mentor",
+   "ja": "夕餉まで、刀と語らっておけ。",
+   "en": "Until supper, keep company with your sword.",
+   "duration_s": 2.9,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch01.b13.takemaru.001",
+   "beat": "ch01.b13",
+   "speaker": "pupil_takemaru",
+   "ja": "先生……空が……。",
+   "en": "Sensei… the sky…",
+   "duration_s": 2.1,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 31.0
+   }
+  },
+  {
+   "id": "ch01.b13.household.002",
+   "beat": "ch01.b13",
+   "speaker": "household",
+   "ja": "火事か……いや、空や！　空が割れとる！",
+   "en": "A fire? No, the sky! The sky's splitting!",
+   "duration_s": 3.5,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 33.7
+   }
+  },
+  {
+   "id": "ch01.b13.toranosuke.003",
+   "beat": "ch01.b13",
+   "speaker": "rival",
+   "ja": "なんだ……あれは。",
+   "en": "What… is that?",
+   "duration_s": 2.0,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 46.0
+   }
+  },
+  {
+   "id": "ch01.b13.sekireisai.004",
+   "beat": "ch01.b13",
+   "speaker": "mentor",
+   "ja": "梅翁、鐘を打て。",
+   "en": "Baiō. Ring the bell.",
+   "duration_s": 1.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "梅翁（ばいおう）",
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 58.0
+   }
+  },
+  {
+   "id": "ch01.b13.baio.005",
+   "beat": "ch01.b13",
+   "speaker": "pupil_baio",
+   "ja": "……承知。",
+   "en": "…At once.",
+   "duration_s": 1.2,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 60.2
+   }
+  },
+  {
+   "id": "ch01.b13.sekireisai.006",
+   "beat": "ch01.b13",
+   "speaker": "mentor",
+   "ja": "ニャーコト。預けたものを、忘れるな。",
+   "en": "Nyaakoto. Do not forget what you hold in trust.",
+   "duration_s": 3.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 88.0
+   }
+  },
+  {
+   "id": "ch01.b13.nyaakoto.007",
+   "beat": "ch01.b13",
+   "speaker": "samurai",
+   "ja": "……はい、先生。",
+   "en": "…Yes, Sensei.",
+   "duration_s": 1.6,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "cinematic",
+    "t_s": 92.1
+   }
+  }
+ ],
+ "triggers": [
+  {
+   "beat": "ch01.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b01.sekireisai.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 60000,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b01.sekireisai.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 61600,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b01.nyaakoto.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 65900,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b01.sekireisai.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 68800,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b02",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b02.sekireisai.001",
+    "ch01.b02.sekireisai.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b02",
+   "on": "gate_complete:stance_hold",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b02.sekireisai.003",
+    "ch01.b02.sekireisai.004",
+    "ch01.b02.nyaakoto.005",
+    "ch01.b02.sekireisai.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b02",
+   "on": "maai_step_ok",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b02.sekireisai.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b02",
+   "on": "gate_complete:maai_step",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b02.sekireisai.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b02",
+   "on": "gate_retry:maai_step",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b02.sekireisai.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b02",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b02.sekireisai.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "gate_complete:front_guard_survive",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "gate_start:awase",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "awase_success:1",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "awase_fail:early",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "awase_fail:late",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "gate_start:recovery_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "gate_complete:recovery_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "bout_scored:1",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.matsukichi.009",
+    "ch01.b03.sekireisai.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b03",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b03.sekireisai.011"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b04",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b04.sekireisai.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b04",
+   "on": "volume_enter:vol_ch01_dojo_yard",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b04.sekireisai.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b04",
+   "on": "marobashi_miss",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b04.sekireisai.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b04",
+   "on": "bout_scored:3",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b04.matsukichi.004",
+    "ch01.b04.takemaru.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b04",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b04.sekireisai.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b05",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b05.takemaru.001",
+    "ch01.b05.matsukichi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b05",
+   "on": "volume_enter:vol_ch01_engawa_east",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b05.toranosuke.003",
+    "ch01.b05.toranosuke.004",
+    "ch01.b05.nyaakoto.005",
+    "ch01.b05.toranosuke.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b05",
+   "on": "volume_enter:vol_ch01_engawa_mentor",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b05.sekireisai.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.takemaru.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "interact:ip_ch01_kura",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.takemaru.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "interact:ip_ch01_haruobi",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.takemaru.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "interact:ip_ch01_abumi",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.takemaru.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "interact_refused:ip_ch01_kutsuwa:1",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.nyaakoto.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "interact_refused:ip_ch01_kutsuwa:2",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.takemaru.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "item_given:barley_ear",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.takemaru.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "interact:ip_ch01_kutsuwa",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.takemaru.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "mount",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.takemaru.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b06",
+   "on": "volume_enter:vol_ch01_lane_pheasant",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b06.nyaakoto.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.baio.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "equip:18",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.baio.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "draw_complete:first",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.baio.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "release:first",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.baio.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "mato_hit",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.matsukichi.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "mato_miss",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.matsukichi.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "set_failed",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.baio.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "wave_start:2",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.baio.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b07",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b07.baio.009",
+    "ch01.b07.matsukichi.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b08",
+   "on": "interact:poi_ch01_issoseki",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b08.nyaakoto.001",
+    "ch01.b08.nyaakoto.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b08",
+   "on": "interact:poi_ch01_vista",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b08.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b08",
+   "on": "interact:poi_ch01_sakaiishi",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b08.nyaakoto.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b08",
+   "on": "idle_s:180",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b08.nyaakoto.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.tetsugoro.001",
+    "ch01.b09.tetsugoro.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "step_failed:heat",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.tetsugoro.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "step_complete:bend:3",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.tetsugoro.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "step_start:paste",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.tetsugoro.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "step_start:assemble",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.tetsugoro.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "step_start:inspect",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.tetsugoro.007",
+    "ch01.b09.nyaakoto.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "output_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.tetsugoro.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "site_restored:2",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.tetsugoro.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b09",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b09.takemaru.011"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b10",
+   "on": "volume_enter:vol_ch01_estate_north_gate",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b10.household.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b10",
+   "on": "volume_enter:vol_ch01_estate_engawa",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b10.sekireisai.002",
+    "ch01.b10.nyaakoto.003",
+    "ch01.b10.sekireisai.004",
+    "ch01.b10.sekireisai.005",
+    "ch01.b10.sekireisai.006",
+    "ch01.b10.toranosuke.007",
+    "ch01.b10.toranosuke.008",
+    "ch01.b10.sekireisai.009",
+    "ch01.b10.toranosuke.010",
+    "ch01.b10.sekireisai.011"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.sekireisai.001",
+    "ch01.b11.toranosuke.002",
+    "ch01.b11.sekireisai.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "point:player",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.sekireisai.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "point:rival",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.sekireisai.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "ring_out",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.sekireisai.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "point:rival:first",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.toranosuke.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "feint_landed:first",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.sekireisai.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "score:player_leads_2",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.toranosuke.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "duel_won",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.sekireisai.010",
+    "ch01.b11.toranosuke.011",
+    "ch01.b11.sekireisai.012",
+    "ch01.b11.toranosuke.013"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "loss_continue",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.sekireisai.014",
+    "ch01.b11.toranosuke.015",
+    "ch01.b11.sekireisai.016",
+    "ch01.b11.toranosuke.017"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b11",
+   "on": "match_lost",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b11.sekireisai.018"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b12",
+   "on": "branch:b11_loss",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b12.sekireisai.001",
+    "ch01.b12.sekireisai.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b12",
+   "on": "interact:ip_ch01_katana",
+   "mode": "blocking",
+   "lines": [
+    "ch01.b12.sekireisai.003",
+    "ch01.b12.sekireisai.004",
+    "ch01.b12.nyaakoto.005",
+    "ch01.b12.sekireisai.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b12",
+   "on": "blocking_end",
+   "mode": "ambient",
+   "lines": [
+    "ch01.b12.sekireisai.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b13.takemaru.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 31000,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b13.household.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 33700,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b13.toranosuke.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 46000,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b13.sekireisai.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 58000,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b13.baio.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 60200,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b13.sekireisai.006"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 88000,
+   "ext": {}
+  },
+  {
+   "beat": "ch01.b13",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch01.b13.nyaakoto.007"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 92100,
+   "ext": {}
+  }
+ ],
+ "collectibles": [
+  {
+   "id": "ch01.c01",
+   "category": "scroll_fragment",
+   "place": "pl_issoseki_wood",
+   "mask_bit": 0,
+   "beats": [
+    "ch01.b08"
+   ],
+   "title_ja": "伝書の断簡 其の一",
+   "title_en": "Scroll fragment I",
+   "codex": {
+    "ja": "間合いは刀の長さにあらず。心の届く所なり。――石鈴斎",
+    "en": "Distance is not the length of the sword. It is how far the mind reaches. —Sekireisai"
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": "wooden plaque tied to the shimenawa post at the One-Claw Stone"
+  },
+  {
+   "id": "ch01.c02",
+   "category": "league_mark",
+   "place": "pl_issoseki_wood",
+   "mask_bit": 1,
+   "beats": [
+    "ch01.b08"
+   ],
+   "title_ja": "空紋の目印 其の一",
+   "title_en": "League mark I",
+   "codex": {
+    "ja": "猫柳生の境石。空の紋が刻まれている。いつ誰が刻んだかは伝わらない。",
+    "en": "A Nyaagyu boundary stone carved with the sky mon. No one remembers who carved it, or when."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": "boundary stone carved with the house mon, south-east of the wood"
+  },
+  {
+   "id": "ch01.c03",
+   "category": "heirloom",
+   "place": "pl_tsumagizaka_dojo",
+   "mask_bit": 2,
+   "beats": [
+    "ch01.b04",
+    "ch01.b05"
+   ],
+   "title_ja": "家宝 門弟起請文の巻",
+   "title_en": "Heirloom: the pupils' oath roll",
+   "codex": {
+    "ja": "入門の誓いを綴じた巻物。『猫琴』の名と花押、小さな血判がある。",
+    "en": "A roll of the pupils' entry oaths. One is signed with Nyaakoto's formal name, 猫琴, beside a monogram and a small blood seal."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": "lacquered box on the kamiza, dojo interior"
+  },
+  {
+   "id": "ch01.c04",
+   "category": "heirloom",
+   "place": "pl_dojo_smithy",
+   "mask_bit": 3,
+   "beats": [
+    "ch01.b09"
+   ],
+   "title_ja": "家宝 初代の鐔",
+   "title_en": "Heirloom: the founder's tsuba",
+   "codex": {
+    "ja": "猫柳生初代の鉄鐔。空の紋を透かしに彫る。年に一度、鍛冶場で錆を落とす。",
+    "en": "The first Nyaagyu lord's iron tsuba, pierced in the shape of the sky mon. Once a year the forge cleans off its rust."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": "hanging on a peg above the anvil, waiting for its yearly cleaning"
+  },
+  {
+   "id": "ch01.c05",
+   "category": "registry_page",
+   "place": "pl_dojo_smithy",
+   "mask_bit": 4,
+   "beats": [
+    "ch01.b09"
+   ],
+   "title_ja": "生産の記録 先代の控え帳",
+   "title_en": "Registry page: the old smith's day-book",
+   "codex": {
+    "ja": "先代の鍛冶の控え帳。鍬四十、鎌百二十、鋤十二。作った物だけが書いてある。",
+    "en": "An old smith's day-book. Forty hoes, a hundred and twenty sickles, twelve spades. Only what was made is written here."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": "loft shelf above the tool rack"
+  },
+  {
+   "id": "ch01.c06",
+   "category": "league_mark",
+   "place": "pl_matoba",
+   "mask_bit": 5,
+   "beats": [
+    "ch01.b07",
+    "ch01.b08"
+   ],
+   "title_ja": "空紋の目印 其の二",
+   "title_en": "League mark II",
+   "codex": {
+    "ja": "射場の板壁に炭で描いた空の紋。横に中りを数えた線が並ぶ。",
+    "en": "The sky mon drawn in charcoal on the range wall, with rows of strokes counting hits beside it."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": "charcoal drawing on the inside wall of the shajo"
+  }
+ ],
+ "ui_prompts": [
+  {
+   "id": "ch01.b02.prompt.01",
+   "beats": [
+    "ch01.b02"
+   ],
+   "on": "beat_start",
+   "ja": "［防御］長押しで正眼に構える（0.6秒）",
+   "en": "Hold [Guard] to take seigan (0.6 s).",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b02.prompt.02",
+   "beats": [
+    "ch01.b02"
+   ],
+   "on": "gate_start:maai_step",
+   "ja": "水月の輪が浮かぶ間合いで止まり、師に向く",
+   "en": "Stop where the moon ring appears, facing Sensei.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b03.prompt.01",
+   "beats": [
+    "ch01.b03"
+   ],
+   "on": "beat_start",
+   "ja": "相手に向き、［防御］を保って一撃を受ける",
+   "en": "Face him and hold [Guard] through the strike.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b03.prompt.02",
+   "beats": [
+    "ch01.b03"
+   ],
+   "on": "gate_start:awase",
+   "ja": "金色の予兆に合わせて［防御］を押す",
+   "en": "Press [Guard] as the gold warning flashes.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b03.prompt.03",
+   "beats": [
+    "ch01.b03"
+   ],
+   "on": "gate_start:recovery_complete",
+   "ja": "一度振り、［攻撃］を離して刃の戻りを待つ",
+   "en": "Swing once, release [Attack], and wait for the blade to return.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b03.prompt.04",
+   "beats": [
+    "ch01.b03"
+   ],
+   "on": "bout_start:1",
+   "ja": "合わせて崩し、その隙に打って一本を取る",
+   "en": "Meet his cut, then strike the opening to score.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b04.prompt.01",
+   "beats": [
+    "ch01.b04"
+   ],
+   "on": "volume_enter:vol_ch01_dojo_yard",
+   "ja": "合わせた直後（0.4秒以内）に 左右＋［踏み込み］",
+   "en": "Within 0.4 s of an awase: Left/Right + [Step].",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b05.prompt.01",
+   "beats": [
+    "ch01.b05"
+   ],
+   "on": "volume_enter:vol_ch01_engawa_sunbeam",
+   "ja": "［調べる］で一礼（任意）",
+   "en": "[Interact] to bow (optional).",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b06.prompt.01",
+   "beats": [
+    "ch01.b06"
+   ],
+   "on": "beat_start",
+   "ja": "光る馬具で［調べる］：鞍・腹帯・鐙・轡の順",
+   "en": "[Interact] at each tack piece: saddle, girth, stirrups, bit.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b06.prompt.02",
+   "beats": [
+    "ch01.b06"
+   ],
+   "on": "interact_refused:ip_ch01_kutsuwa:2",
+   "ja": "［調べる］長押しで大麦の穂を与える",
+   "en": "Hold [Interact] to offer the ear of barley.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b06.prompt.03",
+   "beats": [
+    "ch01.b06"
+   ],
+   "on": "interact:ip_ch01_kutsuwa",
+   "ja": "［調べる］で栗丸に乗る（右から）",
+   "en": "[Interact] to mount Kurimaru (from the right).",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b06.prompt.04",
+   "beats": [
+    "ch01.b06"
+   ],
+   "on": "mount",
+   "ja": "前進で常歩、［速歩］で速歩",
+   "en": "Move forward to walk. Press [Trot] to trot.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b06.prompt.05",
+   "beats": [
+    "ch01.b06"
+   ],
+   "on": "horse_spooked",
+   "ja": "馬が驚いた。手綱を引かず、落ち着くのを待つ",
+   "en": "She is spooked. Ease the reins and let her settle.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b07.prompt.01",
+   "beats": [
+    "ch01.b07"
+   ],
+   "on": "equip:18",
+   "ja": "［攻撃］長押しで引分け（0.65秒）。会で狙い、離して放つ",
+   "en": "Hold [Attack] to draw (0.65 s). Aim at full draw; release to loose.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b07.prompt.02",
+   "beats": [
+    "ch01.b07"
+   ],
+   "on": "wave_start:2",
+   "ja": "遠い的ほど矢は落ちる。揺れの先を狙う",
+   "en": "Arrows drop over distance. Lead the swing.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b09.prompt.01",
+   "beats": [
+    "ch01.b09"
+   ],
+   "on": "beat_start",
+   "ja": "［調べる］長押しで鞴を押し、火床を起こす",
+   "en": "Hold [Interact] to work the bellows and wake the hearth.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b09.prompt.02",
+   "beats": [
+    "ch01.b09"
+   ],
+   "on": "step_start:heat",
+   "ja": "矢を炭にかざし、艶が出たら離す",
+   "en": "Warm the shaft over the coals; lift it when it gleams.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b09.prompt.03",
+   "beats": [
+    "ch01.b09"
+   ],
+   "on": "step_start:bend",
+   "ja": "矯め木で押し、筋がまっすぐになったら離す",
+   "en": "Press it in the tamegi; release when the line runs true.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b09.prompt.04",
+   "beats": [
+    "ch01.b09"
+   ],
+   "on": "step_start:paste",
+   "ja": "［調べる］で膠を引き、羽を付ける",
+   "en": "[Interact] to spread glue and set the feathers.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b11.prompt.01",
+   "beats": [
+    "ch01.b11"
+   ],
+   "on": "beat_start",
+   "ja": "三本先取。面・小手・胴への一撃で一本",
+   "en": "First to three. A clean hit to head, wrist or body scores.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b11.prompt.02",
+   "beats": [
+    "ch01.b11"
+   ],
+   "on": "beat_start",
+   "ja": "輪の外へ出ると仕切り直し",
+   "en": "Step out of the ring and the exchange resets.",
+   "shown_en": null
+  },
+  {
+   "id": "ch01.b12.prompt.01",
+   "beats": [
+    "ch01.b12"
+   ],
+   "on": "blocking_end",
+   "ja": "［抜刀］で抜き、［納刀］で納める",
+   "en": "[Draw] to unsheathe. [Sheathe] to put it away.",
+   "shown_en": null
+  }
+ ],
+ "places": [
+  {
+   "id": "pl_tsumagizaka_dojo",
+   "chapter": 1,
+   "ja": "爪木坂道場",
+   "reading": "つまぎざかどうじょう",
+   "en": "Tsumagizaka Dōjō",
+   "arena": null,
+   "source": "Estate sublevel (existing NyaagyuDojo source)"
+  },
+  {
+   "id": "pl_estate_day",
+   "chapter": 1,
+   "ja": "猫柳生の屋敷・昼",
+   "reading": "ニャーギュウのやしき",
+   "en": "Nyaagyu Estate, day",
+   "arena": 0,
+   "source": "Arena 0"
+  },
+  {
+   "id": "pl_umaya",
+   "chapter": 1,
+   "ja": "厩",
+   "reading": "うまや",
+   "en": "Stable",
+   "arena": null,
+   "source": "Estate sublevel"
+  },
+  {
+   "id": "pl_matoba",
+   "chapter": 1,
+   "ja": "的場・安土",
+   "reading": "まとば・あづち",
+   "en": "Archery range",
+   "arena": null,
+   "source": "New, small"
+  },
+  {
+   "id": "pl_issoseki_wood",
+   "chapter": 1,
+   "ja": "一爪石の森",
+   "reading": "いっそうせきのもり",
+   "en": "One-Claw Stone Wood",
+   "arena": null,
+   "source": "New, small"
+  },
+  {
+   "id": "pl_dojo_smithy",
+   "chapter": 1,
+   "ja": "道場の鍛冶場",
+   "reading": "どうじょうのかじば",
+   "en": "Dojo smithy",
+   "arena": null,
+   "source": "Estate sublevel"
+  }
+ ],
+ "layout": {
+  "frames": [
+   {
+    "id": "ch01",
+    "place": null,
+    "text": "metres; origin = Arena 0 centre; +X east, +Y north, Z up (courtyard grade = 0); yaw 0 = +X, 90 = +Y",
+    "source_units": "m"
+   }
+  ],
+  "volumes": [
+   {
+    "id": "vol_ch01_dojo_floor",
+    "frame": "ch01",
+    "place": "pl_tsumagizaka_dojo",
+    "shape": "box",
+    "center_cm": [
+     0,
+     6075,
+     810
+    ],
+    "size_cm": [
+     1090,
+     730,
+     300
+    ],
+    "ext": {
+     "use": "b02-b03 lesson ring (hinoki training floor)"
+    }
+   },
+   {
+    "id": "vol_ch01_dojo_yard",
+    "frame": "ch01",
+    "place": "pl_tsumagizaka_dojo",
+    "shape": "box",
+    "center_cm": [
+     0,
+     4990,
+     750
+    ],
+    "size_cm": [
+     1600,
+     1200,
+     300
+    ],
+    "ext": {
+     "use": "b04 marobashi ring; flood line"
+    }
+   },
+   {
+    "id": "vol_ch01_engawa_sunbeam",
+    "frame": "ch01",
+    "place": "pl_tsumagizaka_dojo",
+    "shape": "box",
+    "center_cm": [
+     460,
+     5650,
+     760
+    ],
+    "size_cm": [
+     200,
+     120,
+     200
+    ],
+    "ext": {
+     "use": "b05 Baiō asleep; optional bow prompt"
+    }
+   },
+   {
+    "id": "vol_ch01_engawa_east",
+    "frame": "ch01",
+    "place": "pl_tsumagizaka_dojo",
+    "shape": "box",
+    "center_cm": [
+     750,
+     5600,
+     700
+    ],
+    "size_cm": [
+     400,
+     500,
+     250
+    ],
+    "ext": {
+     "use": "b05 Toranosuke exchange"
+    }
+   },
+   {
+    "id": "vol_ch01_engawa_mentor",
+    "frame": "ch01",
+    "place": "pl_tsumagizaka_dojo",
+    "shape": "box",
+    "center_cm": [
+     -300,
+     5650,
+     760
+    ],
+    "size_cm": [
+     400,
+     240,
+     200
+    ],
+    "ext": {
+     "use": "b05 objective from Sekireisai"
+    }
+   },
+   {
+    "id": "vol_ch01_umaya",
+    "frame": "ch01",
+    "place": "pl_umaya",
+    "shape": "box",
+    "center_cm": [
+     2500,
+     5800,
+     750
+    ],
+    "size_cm": [
+     1400,
+     900,
+     300
+    ],
+    "ext": {
+     "use": "completes b05; starts b06"
+    }
+   },
+   {
+    "id": "vol_ch01_lane_trot",
+    "frame": "ch01",
+    "place": "pl_umaya",
+    "shape": "spline_band",
+    "spline": "spl_ch01_umaba_lane",
+    "from_m": 70,
+    "to_m": 240,
+    "width_cm": 600,
+    "ext": {
+     "use": "b06 trot prompt zone"
+    }
+   },
+   {
+    "id": "vol_ch01_lane_pheasant",
+    "frame": "ch01",
+    "place": "pl_umaya",
+    "shape": "spline_band",
+    "spline": "spl_ch01_umaba_lane",
+    "from_m": 146,
+    "to_m": 154,
+    "width_cm": 600,
+    "ext": {
+     "use": "b06 scripted spook"
+    }
+   },
+   {
+    "id": "vol_ch01_matoba_hitch",
+    "frame": "ch01",
+    "place": "pl_matoba",
+    "shape": "box",
+    "center_cm": [
+     -16300,
+     2200,
+     900
+    ],
+    "size_cm": [
+     600,
+     600,
+     300
+    ],
+    "ext": {
+     "use": "b06 complete (dismount at the hitching post)"
+    }
+   },
+   {
+    "id": "vol_ch01_matoba",
+    "frame": "ch01",
+    "place": "pl_matoba",
+    "shape": "box",
+    "center_cm": [
+     -17600,
+     5000,
+     1000
+    ],
+    "size_cm": [
+     2400,
+     7000,
+     800
+    ],
+    "ext": {
+     "use": "b07 bounds; arrow corridor"
+    }
+   },
+   {
+    "id": "vol_ch01_shajo_line",
+    "frame": "ch01",
+    "place": "pl_matoba",
+    "shape": "box",
+    "center_cm": [
+     -17800,
+     1950,
+     900
+    ],
+    "size_cm": [
+     1200,
+     150,
+     300
+    ],
+    "ext": {
+     "use": "b07 shooting line (bow draws only here)"
+    }
+   },
+   {
+    "id": "vol_ch01_wood",
+    "frame": "ch01",
+    "place": "pl_issoseki_wood",
+    "shape": "box",
+    "center_cm": [
+     -9500,
+     6750,
+     1200
+    ],
+    "size_cm": [
+     11000,
+     8500,
+     2000
+    ],
+    "ext": {
+     "use": "b08 bounds"
+    }
+   },
+   {
+    "id": "vol_ch01_wood_exit",
+    "frame": "ch01",
+    "place": "pl_issoseki_wood",
+    "shape": "box",
+    "center_cm": [
+     -3600,
+     5450,
+     750
+    ],
+    "size_cm": [
+     400,
+     400,
+     300
+    ],
+    "ext": {
+     "use": "b08 complete; smithy back gate"
+    }
+   },
+   {
+    "id": "vol_ch01_smithy",
+    "frame": "ch01",
+    "place": "pl_dojo_smithy",
+    "shape": "box",
+    "center_cm": [
+     -2800,
+     5200,
+     750
+    ],
+    "size_cm": [
+     900,
+     800,
+     300
+    ],
+    "ext": {
+     "use": "b09 start (also reachable by the terrace path)"
+    }
+   },
+   {
+    "id": "vol_ch01_ura_mon",
+    "frame": "ch01",
+    "place": "pl_estate_day",
+    "shape": "box",
+    "center_cm": [
+     450,
+     2750,
+     150
+    ],
+    "size_cm": [
+     300,
+     200,
+     300
+    ],
+    "ext": {
+     "use": "fade into Arena 0; outside the north wall, no collision change"
+    }
+   },
+   {
+    "id": "vol_ch01_estate_north_gate",
+    "frame": "ch01",
+    "place": "pl_estate_day",
+    "shape": "box",
+    "center_cm": [
+     480,
+     2250,
+     150
+    ],
+    "size_cm": [
+     300,
+     300,
+     300
+    ],
+    "ext": {
+     "use": "b10 household chatter"
+    }
+   },
+   {
+    "id": "vol_ch01_estate_engawa",
+    "frame": "ch01",
+    "place": "pl_estate_day",
+    "shape": "cylinder",
+    "center_cm": [
+     0,
+     1250,
+     150
+    ],
+    "radius_cm": 400,
+    "height_cm": null,
+    "ext": {
+     "use": "b10 and b12 veranda talk; katana hand-over"
+    }
+   },
+   {
+    "id": "vol_ch01_duel_ring",
+    "frame": "ch01",
+    "place": "pl_estate_day",
+    "shape": "cylinder",
+    "center_cm": [
+     0,
+     0,
+     150
+    ],
+    "radius_cm": 500,
+    "height_cm": 300,
+    "ext": {
+     "use": "b11 ring; leaving it resets the exchange"
+    }
+   }
+  ],
+  "points": [
+   {
+    "id": "ps_ch01_lesson_mark",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      0,
+      5860,
+      660
+     ]
+    ],
+    "yaw_deg": 90,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_mentor_mark",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      0,
+      6160,
+      660
+     ]
+    ],
+    "yaw_deg": 270,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_yard_mark",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      0,
+      4800,
+      600
+     ]
+    ],
+    "yaw_deg": 90,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_tie_rail",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      2180,
+      5650,
+      600
+     ]
+    ],
+    "yaw_deg": 270,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_shajo_kinteki",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -17400,
+      2000,
+      800
+     ]
+    ],
+    "yaw_deg": 90,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_shajo_enteki",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -18200,
+      2000,
+      800
+     ]
+    ],
+    "yaw_deg": 90,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_ch01_kinteki_a",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -17400,
+      4800,
+      840
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_ch01_tsuri_frames",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -18200,
+      6000,
+      950
+     ],
+     [
+      -18200,
+      7000,
+      950
+     ],
+     [
+      -18200,
+      8000,
+      950
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_kanteki_hut",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -16700,
+      5000,
+      800
+     ]
+    ],
+    "yaw_deg": 180,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "st_ch01_fuigo",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -2980,
+      5240,
+      600
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "st_ch01_hibachi",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -2600,
+      5060,
+      600
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "st_ch01_tamegi",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -2540,
+      5140,
+      600
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "st_ch01_hagi_dai",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -2680,
+      4990,
+      600
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ip_ch01_katana",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      0,
+      1400,
+      60
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_estate_entry",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      480,
+      2360,
+      0
+     ]
+    ],
+    "yaw_deg": 270,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_duel_player",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      0,
+      200,
+      0
+     ]
+    ],
+    "yaw_deg": 270,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_duel_rival",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      0,
+      -200,
+      0
+     ]
+    ],
+    "yaw_deg": 90,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_judge",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      -580,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": 0,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_ch01_b13_end",
+    "frame": "ch01",
+    "place": null,
+    "positions_cm": [
+     [
+      0,
+      600,
+      0
+     ]
+    ],
+    "yaw_deg": 180,
+    "chainage_m": null,
+    "offset_m": null
+   }
+  ],
+  "splines": [
+   {
+    "id": "spl_ch01_umaba_lane",
+    "frame": "ch01",
+    "place": null,
+    "nodes_cm": [
+     [
+      2180,
+      5500,
+      600
+     ],
+     [
+      3400,
+      7200,
+      900
+     ],
+     [
+      2200,
+      10200,
+      1400
+     ],
+     [
+      -6000,
+      11800,
+      1300
+     ],
+     [
+      -15000,
+      9600,
+      1000
+     ],
+     [
+      -15800,
+      4000,
+      800
+     ],
+     [
+      -16300,
+      2200,
+      800
+     ]
+    ],
+    "length_m": 300,
+    "ext": {}
+   },
+   {
+    "id": "spl_ch01_wood_trail",
+    "frame": "ch01",
+    "place": null,
+    "nodes_cm": [
+     [
+      -15200,
+      3000,
+      800
+     ],
+     [
+      -13000,
+      5500,
+      900
+     ],
+     [
+      -10500,
+      8000,
+      850
+     ],
+     [
+      -8000,
+      7000,
+      800
+     ],
+     [
+      -5800,
+      5800,
+      700
+     ],
+     [
+      -3600,
+      5450,
+      600
+     ]
+    ],
+    "length_m": 170,
+    "ext": {}
+   },
+   {
+    "id": "spl_ch01_rival_exit",
+    "frame": "ch01",
+    "place": null,
+    "nodes_cm": [
+     [
+      200,
+      -300,
+      0
+     ],
+     [
+      1200,
+      -200,
+      0
+     ],
+     [
+      2300,
+      0,
+      0
+     ]
+    ],
+    "length_m": 30,
+    "ext": {}
+   }
+  ],
+  "patrols": [],
+  "ext": {}
+ },
+ "ext": {
+  "season": "Genna 9 (1623), late spring; dawn to dusk; overcast morning clearing to a golden evening",
+  "category_minutes": {
+   "C": 22,
+   "E": 4,
+   "S": 0,
+   "P": 3,
+   "M": 3,
+   "Cin": 8
+  },
+  "music_states": [
+   {
+    "id": "ch01_dawn",
+    "beats": [
+     "ch01.b01"
+    ]
+   },
+   {
+    "id": "ch01_keiko",
+    "beats": [
+     "ch01.b02",
+     "ch01.b03",
+     "ch01.b04"
+    ]
+   },
+   {
+    "id": "ch01_veranda",
+    "beats": [
+     "ch01.b05",
+     "ch01.b10"
+    ]
+   },
+   {
+    "id": "ch01_ride",
+    "beats": [
+     "ch01.b06"
+    ]
+   },
+   {
+    "id": "ch01_matoba",
+    "beats": [
+     "ch01.b07"
+    ]
+   },
+   {
+    "id": "ch01_wood",
+    "beats": [
+     "ch01.b08"
+    ]
+   },
+   {
+    "id": "ch01_smithy",
+    "beats": [
+     "ch01.b09"
+    ]
+   },
+   {
+    "id": "ch01_duel_rival",
+    "beats": [
+     "ch01.b11"
+    ]
+   },
+   {
+    "id": "ch01_katana",
+    "beats": [
+     "ch01.b12"
+    ]
+   },
+   {
+    "id": "ch01_sky_splits",
+    "beats": [
+     "ch01.b13"
+    ]
+   }
+  ],
+  "patterns": [
+   {
+    "id": "tora_fukuro",
+    "owner": "L2 (duel opponent; not a bosses.json boss)",
+    "difficulty_windup_scale": {
+     "easy": 1.3,
+     "normal": 1.0,
+     "hard": 0.85
+    },
+    "attacks": [
+     {
+      "id": "tora_men",
+      "ja": "面打ち",
+      "windup_ms": 500,
+      "recovery_ms": 900,
+      "telegraph": "amber_solid",
+      "guard": true,
+      "awase": true,
+      "marobashi_after_awase": false
+     },
+     {
+      "id": "tora_kote",
+      "ja": "小手打ち",
+      "windup_ms": 380,
+      "recovery_ms": 700,
+      "telegraph": "amber_solid",
+      "guard": true,
+      "awase": true,
+      "marobashi_after_awase": false
+     },
+     {
+      "id": "tora_kesa",
+      "ja": "袈裟",
+      "windup_ms": 600,
+      "recovery_ms": 1000,
+      "telegraph": "amber_diagonal",
+      "guard": true,
+      "awase": true,
+      "marobashi_after_awase": true
+     },
+     {
+      "id": "tora_feint",
+      "ja": "誘い（面から小手）",
+      "windup_ms": 630,
+      "fake_phase_ms": 250,
+      "recovery_ms": 700,
+      "telegraph": "amber_hollow_then_solid",
+      "tell": "rear foot does not drive during the fake",
+      "guard": true,
+      "awase": "on the real kote only",
+      "marobashi_after_awase": false
+     },
+     {
+      "id": "tora_nidan",
+      "ja": "二段（小手から面）",
+      "windup_ms": 380,
+      "second_gap_ms": 450,
+      "recovery_ms": 1100,
+      "telegraph": "amber_solid_x2",
+      "guard": true,
+      "awase": "either cut",
+      "marobashi_after_awase": true
+     },
+     {
+      "id": "tora_seme",
+      "ja": "攻め（押し込み）",
+      "windup_ms": 0,
+      "duration_ms": 1200,
+      "recovery_ms": 0,
+      "telegraph": "none",
+      "effect": "steps in 120 cm to crowd the player toward the ring edge"
+     }
+    ]
+   }
+  ]
+ }
+}

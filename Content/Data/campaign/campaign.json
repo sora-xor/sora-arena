@@ -1,0 +1,307 @@
+{
+ "schema_version": 4,
+ "rules_scope": "Offline campaign only. Unlocks never grant multiplayer entitlement and the campaign never contacts a wallet.",
+ "chapters": [
+  {
+   "id": "ch01_dojo",
+   "file": "campaign/chapter_01.json",
+   "narrative_ja": "猫柳生（ニャーギュウ）の道場。若き侍ニャーコトは猫柳生新陰流（ニャーギュウシンカゲリュウ）を学ぶ。「間合いを知り、命を守れ。剣は民のためにある。」",
+   "narrative_en": "At the Nyaagyu dojo, the young samurai Nyaakoto studies Nyaagyū Shinkage-ryū: protect life, master distance, and act with purpose.",
+   "objective_ja": "門弟と木刀で立ち合い、道場の鍛冶場を直す",
+   "objective_en": "Spar with the pupils using wooden swords, then restore the dojo smithy.",
+   "sites": [
+    {
+     "kind": "training",
+     "name_ja": "間合いの稽古場",
+     "name_en": "Distance training ground",
+     "restored_ja": "師の教えに従い、間合いと守りの型を確かめた。",
+     "restored_en": "You practiced distance and defense under your master's guidance."
+    },
+    {
+     "kind": "training",
+     "name_ja": "木刀の試合場",
+     "name_en": "Wooden-sword sparring ring",
+     "restored_ja": "二人の門弟を相手に、刃を急がせず立ち合った。",
+     "restored_en": "You sparred with two pupils without rushing the blade."
+    },
+    {
+     "kind": "workshop",
+     "name_ja": "道場の鍛冶場",
+     "name_en": "Dojo smithy",
+     "restored_ja": "稽古を終え、道具を直す鍛冶場に火を戻した。",
+     "restored_en": "Training complete, you rekindled the forge that repairs the dojo's tools."
+    }
+   ]
+  },
+  {
+   "id": "ch02_invasion",
+   "file": "campaign/chapter_02.json",
+   "narrative_ja": "夕空を裂き、異星の銀行猫たちが降り立つ。債務の封印が蔵を閉ざし、工房から火を奪った。",
+   "narrative_en": "Alien banker cats descend through the evening sky. Their debt seals seize the granaries and silence the workshops.",
+   "objective_ja": "猫柳生の屋敷を占領から解放する",
+   "objective_en": "Break the occupation of the Nyaagyu estate.",
+   "sites": [
+    {
+     "kind": "debt_seal",
+     "name_ja": "蔵の債務封印",
+     "name_en": "Granary debt seal",
+     "restored_ja": "債務の封印を断ち、蔵を民に開いた。",
+     "restored_en": "You broke the debt seal and reopened the granary to its people."
+    },
+    {
+     "kind": "supplies",
+     "name_ja": "食糧の配給所",
+     "name_en": "Food distribution point",
+     "restored_ja": "隠されていた食糧を取り戻し、住民に分けた。",
+     "restored_en": "Recovered food was distributed among the residents."
+    },
+    {
+     "kind": "workshop",
+     "name_ja": "屋敷の工房",
+     "name_en": "Estate workshop",
+     "restored_ja": "屋敷の工房に職人が戻り、修理を始めた。",
+     "restored_en": "Craftspeople returned to the estate workshop and began repairs."
+    }
+   ]
+  },
+  {
+   "id": "ch03_lantern_ward",
+   "file": "campaign/chapter_03.json",
+   "narrative_ja": "提灯街では、働く前から借りが生まれる。住民は道具と食糧、そして希望を隠し、反撃の時を待っていた。",
+   "narrative_en": "The Lantern Ward trades under compulsory debt. Neighbors hide tools, food, and hope behind paper walls.",
+   "objective_ja": "三つの生産拠点を取り戻す",
+   "objective_en": "Reopen three neighborhood production sites.",
+   "sites": [
+    {
+     "kind": "supplies",
+     "name_ja": "道具の隠し場",
+     "name_en": "Hidden tool cache",
+     "restored_ja": "住民が守り抜いた道具を見つけ、職人へ返した。",
+     "restored_en": "You found the tools neighbors had hidden and returned them to the makers."
+    },
+    {
+     "kind": "workshop",
+     "name_ja": "提灯の工房",
+     "name_en": "Lantern workshop",
+     "restored_ja": "工房に灯が戻り、街の提灯が再び作られる。",
+     "restored_en": "The workshop fires returned, and the ward began making lanterns again."
+    },
+    {
+     "kind": "supplies",
+     "name_ja": "共同の炊き出し",
+     "name_en": "Communal kitchen",
+     "restored_ja": "作られた食糧を街の皆で分け合った。",
+     "restored_en": "The neighborhood shared its prepared food."
+    }
+   ]
+  },
+  {
+   "id": "ch04_irrigation",
+   "file": "campaign/chapter_04.json",
+   "narrative_ja": "実りは十分にある。それでも侵略者は、まだ育たぬ稲まで取り立てる。田畑を守り、農具を民の手に返せ。",
+   "narrative_en": "The fields can feed everyone, but the invaders claim every harvest before it grows. Protect the farmers and reclaim their machinery.",
+   "objective_ja": "農業用の装置を直し、徴収部隊を退ける",
+   "objective_en": "Restore the agricultural pumps and defeat the collection patrol.",
+   "sites": [
+    {
+     "kind": "irrigation",
+     "name_ja": "水路の取水口",
+     "name_en": "Irrigation intake",
+     "restored_ja": "せき止められた水を田へ戻した。",
+     "restored_en": "Water flowed back to the fields through the reopened intake."
+    },
+    {
+     "kind": "irrigation",
+     "name_ja": "田畑の水車",
+     "name_en": "Field waterwheel",
+     "restored_ja": "水車を修理し、畑へ水を送った。",
+     "restored_en": "The repaired waterwheel began carrying water to the fields."
+    },
+    {
+     "kind": "supplies",
+     "name_ja": "収穫の分配所",
+     "name_en": "Harvest distribution point",
+     "restored_ja": "収穫を記録し、育てた者と地域に渡した。",
+     "restored_en": "The harvest was recorded and shared with its growers and community."
+    }
+   ]
+  },
+  {
+   "id": "ch05_silk_foundry",
+   "file": "campaign/chapter_05.json",
+   "narrative_ja": "絹の工房で、職人たちが立ち上がる。共に生み出した価値を、新たな通貨 SORA XOR の礎とするために。",
+   "narrative_en": "At the Silk Foundry, craftspeople join the resistance. Their shared production becomes the basis of a new local currency: SORA XOR.",
+   "objective_ja": "工房を解放し、生産を再開する",
+   "objective_en": "Liberate the foundry and restart its production.",
+   "sites": [
+    {
+     "kind": "supplies",
+     "name_ja": "職人の避難所",
+     "name_en": "Artisans' refuge",
+     "restored_ja": "捕らわれた職人たちを救い、安全な作業場へ導いた。",
+     "restored_en": "You freed the craftspeople and guided them to a safe workspace."
+    },
+    {
+     "kind": "foundry",
+     "name_ja": "絹と鋼の炉",
+     "name_en": "Silk and steel furnace",
+     "restored_ja": "職人たちが炉を再点火し、必要な品を作り始めた。",
+     "restored_en": "The craftspeople relit the furnace and began making needed supplies."
+    },
+    {
+     "kind": "ledger",
+     "name_ja": "生産の記録台",
+     "name_en": "Production record station",
+     "restored_ja": "完成品の数量を確かめ、架空の生産本位 SORA XOR の記録に刻んだ。",
+     "restored_en": "Finished goods were counted in the story's fictional production-backed SORA XOR records."
+    }
+   ]
+  },
+  {
+   "id": "ch06_ledger_vault",
+   "file": "campaign/chapter_06.json",
+   "narrative_ja": "債務の城塞には、猫柳生を縛る契約が眠る。その支配を動かす装置を止め、奪われた工房を取り戻せ。",
+   "narrative_en": "Inside the Debt Citadel, the occupiers keep the contracts that bind Nyaagyu. The resistance seeks the machines controlling them.",
+   "objective_ja": "金庫区画の支配を止める",
+   "objective_en": "Disable the vault district and restore its workshops.",
+   "sites": [
+    {
+     "kind": "power",
+     "name_ja": "監視の中継器",
+     "name_en": "Surveillance relay",
+     "restored_ja": "監視の中継器を止め、潜入路を開いた。",
+     "restored_en": "You disabled the surveillance relay and opened an infiltration route."
+    },
+    {
+     "kind": "ledger",
+     "name_ja": "債務の帳簿",
+     "name_en": "Debt ledger vault",
+     "restored_ja": "人々を縛る債務の記録を解放した。",
+     "restored_en": "You freed the records used to bind the people in debt."
+    },
+    {
+     "kind": "workshop",
+     "name_ja": "金庫の印刷機",
+     "name_en": "Vault printing press",
+     "restored_ja": "印刷機を止め、民の修理道具へ作り替えた。",
+     "restored_en": "The seized press was dismantled and repurposed for community repairs."
+    }
+   ]
+  },
+  {
+   "id": "ch07_flagship",
+   "file": "campaign/chapter_07.json",
+   "narrative_ja": "異星の旗艦は城塞から力を吸い上げる。最後の収奪が始まる前に、地上の支配網を断ち切れ。",
+   "narrative_en": "The alien flagship draws power from the citadel below. Cut its occupation network before the final extraction.",
+   "objective_ja": "旗艦を支える地上網を断つ",
+   "objective_en": "Sever the flagship support network.",
+   "sites": [
+    {
+     "kind": "power",
+     "name_ja": "地上の通信塔",
+     "name_en": "Ground signal relay",
+     "restored_ja": "旗艦に命令を送る通信塔を切り離した。",
+     "restored_en": "The ground relay no longer sent commands to the flagship."
+    },
+    {
+     "kind": "foundry",
+     "name_ja": "収奪の動力炉",
+     "name_en": "Extraction power core",
+     "restored_ja": "収奪の動力炉を止め、地上へ力を返した。",
+     "restored_en": "You stopped the extraction core and restored power to the ground."
+    },
+    {
+     "kind": "power",
+     "name_ja": "脱出の信号機",
+     "name_en": "Evacuation beacon",
+     "restored_ja": "住民に安全な脱出路を知らせた。",
+     "restored_en": "The beacon marked a safe evacuation route for residents."
+    }
+   ]
+  },
+  {
+   "id": "ch08_debt_citadel",
+   "file": "campaign/chapter_08.json",
+   "narrative_ja": "工房と田畑は民の手へ戻った。生産に根ざす SORA XOR と共に、猫柳生は借りに縛られぬ明日を選ぶ。",
+   "narrative_en": "The clans reclaim their workshops and govern the fruits of their labor. Nyaagyu chooses production-backed SORA XOR and a future beyond the debt empire.",
+   "objective_ja": "債務の城塞を落とし、帳簿機関を断て",
+   "objective_en": "Take the Debt Citadel and cut the Ledger Engine.",
+   "sites": [
+    {
+     "kind": "supplies",
+     "name_ja": "住民の避難所",
+     "name_en": "Civilian refuge",
+     "restored_ja": "残された家族を助け、避難所を開いた。",
+     "restored_en": "You rescued the remaining families and opened the refuge."
+    },
+    {
+     "kind": "workshop",
+     "name_ja": "共同の修理工房",
+     "name_en": "Communal repair workshop",
+     "restored_ja": "職人が道具を直し、街の再建を始めた。",
+     "restored_en": "Craftspeople repaired tools and began rebuilding the ward."
+    },
+    {
+     "kind": "ledger",
+     "name_ja": "解放の集会所",
+     "name_en": "Liberation assembly",
+     "restored_ja": "住民が生産と分配の記録を自分たちで引き受けた。",
+     "restored_en": "Residents took charge of their own production and distribution records."
+    }
+   ]
+  }
+ ],
+ "mechanics": [
+  "kamae",
+  "maai_ring",
+  "awase",
+  "marobashi",
+  "yumi",
+  "mount",
+  "mounted_archery",
+  "yari",
+  "carry",
+  "stealth",
+  "takedown",
+  "seal_cut",
+  "hayago_reload",
+  "crank",
+  "manufacture",
+  "tsubute",
+  "muto_dori",
+  "shield_break",
+  "volley_command"
+ ],
+ "collectible_categories": [
+  {
+   "id": "scroll_fragment",
+   "ja": "伝書の断簡",
+   "en": "Scroll fragment",
+   "count": 8
+  },
+  {
+   "id": "seizure_notice",
+   "ja": "差押状",
+   "en": "Seizure notice",
+   "count": 11
+  },
+  {
+   "id": "league_mark",
+   "ja": "空紋の目印",
+   "en": "League mark",
+   "count": 10
+  },
+  {
+   "id": "heirloom",
+   "ja": "家宝",
+   "en": "Heirloom",
+   "count": 11
+  },
+  {
+   "id": "registry_page",
+   "ja": "生産の記録",
+   "en": "Registry page",
+   "count": 8
+  }
+ ]
+}

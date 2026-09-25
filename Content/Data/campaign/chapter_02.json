@@ -1,0 +1,6301 @@
+{
+ "schema_version": 4,
+ "id": "ch02_invasion",
+ "index": 1,
+ "source": "docs/campaign/chapter-02.md",
+ "title_ja": "異星からの侵略",
+ "title_en": "The Invasion",
+ "map": 0,
+ "secondary_maps": [],
+ "target_s": 2700,
+ "sites": [
+  {
+   "index": 0,
+   "beat": "ch02.b05",
+   "requires_sites": []
+  },
+  {
+   "index": 1,
+   "beat": "ch02.b11",
+   "requires_sites": [
+    0
+   ]
+  },
+  {
+   "index": 2,
+   "beat": "ch02.b16",
+   "requires_sites": [
+    1
+   ]
+  }
+ ],
+ "checkpoints": [
+  {
+   "beat": "ch02.b01",
+   "phase": 0,
+   "at_cs": 0
+  },
+  {
+   "beat": "ch02.b02",
+   "phase": 0,
+   "at_cs": 12000
+  },
+  {
+   "beat": "ch02.b03",
+   "phase": 0,
+   "at_cs": 36000
+  },
+  {
+   "beat": "ch02.b05",
+   "phase": 0,
+   "at_cs": 60000
+  },
+  {
+   "beat": "ch02.b06",
+   "phase": 0,
+   "at_cs": 84000
+  },
+  {
+   "beat": "ch02.b08",
+   "phase": 0,
+   "at_cs": 108000
+  },
+  {
+   "beat": "ch02.b09",
+   "phase": 0,
+   "at_cs": 144000
+  },
+  {
+   "beat": "ch02.b10",
+   "phase": 0,
+   "at_cs": 168000
+  },
+  {
+   "beat": "ch02.b11",
+   "phase": 0,
+   "at_cs": 180000
+  },
+  {
+   "beat": "ch02.b13",
+   "phase": 0,
+   "at_cs": 198000
+  },
+  {
+   "beat": "ch02.b14",
+   "phase": 0,
+   "at_cs": 207000
+  },
+  {
+   "beat": "ch02.b15",
+   "phase": 0,
+   "at_cs": 219000
+  },
+  {
+   "beat": "ch02.b15",
+   "phase": 1,
+   "at_cs": 233400
+  },
+  {
+   "beat": "ch02.b15",
+   "phase": 2,
+   "at_cs": 246000
+  },
+  {
+   "beat": "ch02.b16",
+   "phase": 0,
+   "at_cs": 255000
+  }
+ ],
+ "unlocks": [
+  {
+   "beat": "ch02.b03",
+   "weapons": [
+    19
+   ],
+   "mechanics": [
+    "yari"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch02.b05",
+   "weapons": [],
+   "mechanics": [
+    "carry"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch02.b08",
+   "weapons": [],
+   "mechanics": [
+    "mounted_archery"
+   ],
+   "grants": []
+  }
+ ],
+ "beats": [
+  {
+   "id": "ch02.b01",
+   "type": "cinematic",
+   "place": "pl_estate_night",
+   "title_ja": "空が裂けた夜",
+   "title_en": "The Night the Sky Split",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_descent",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch02/Cinematics/LS_ch02_b01_Descent",
+    "duration_s": 120,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_gate_yard_start",
+     "equipped": [
+      0,
+      18
+     ]
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch02.b02",
+   "type": "combat_wave",
+   "place": "pl_estate_night",
+   "title_ja": "長屋門を守れ",
+   "title_en": "Hold the Nagaya Gate",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b01"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_combat_estate",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "bounds": "vol_gate_yard",
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_nagayamon_roof"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_wicket_breach"
+       }
+      ],
+      "trigger": "prev_cleared"
+     },
+     {
+      "enemies": [
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "spawn": "sp_gate_leaves"
+       }
+      ],
+      "trigger": "prev_cleared"
+     }
+    ],
+    "complete": {
+     "kind": "all_waves_cleared"
+    },
+    "max_alive": 4,
+    "allies": [
+     {
+      "npc": "pupil_matsukichi",
+      "role": "hold_wicket_side",
+      "downable": true,
+      "revive_s": 3.0
+     },
+     {
+      "npc": "pupil_takemaru",
+      "role": "hold_north_side",
+      "downable": true,
+      "revive_s": 3.0
+     },
+     {
+      "npc": "pupil_baio",
+      "role": "brace_gate_bar",
+      "downable": false
+     }
+    ],
+    "target_kind": "enemy",
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch02.b03",
+   "type": "combat_wave",
+   "place": "pl_bugugura",
+   "title_ja": "武具蔵の槍",
+   "title_en": "Spears from the Armory",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b02"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     19
+    ],
+    "mechanics": [
+     "yari"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_combat_estate",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "bounds": "vol_bugugura_yard",
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "shield_enforcer",
+        "count": 2,
+        "spawn": "sp_pod_crater"
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 1,
+        "spawn": "sp_yard_west_breach"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_yard_west_breach"
+       }
+      ],
+      "trigger": "alive_below:2"
+     }
+    ],
+    "complete": {
+     "kind": "all_waves_cleared"
+    },
+    "max_alive": 4,
+    "target_kind": "enemy",
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "unlock_at": "beat_start",
+    "pickup": {
+     "actor": "rack_suyari_01",
+     "interact_s": 0.8,
+     "grants_weapon": 19,
+     "slot": "polearm"
+    }
+   }
+  },
+  {
+   "id": "ch02.b04",
+   "type": "dialogue",
+   "place": "pl_estate_night",
+   "title_ja": "種は明日の田",
+   "title_en": "Seed Is Tomorrow's Field",
+   "target_s": 60,
+   "checkpoint": false,
+   "requires": [
+    "ch02.b03"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_resolve",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "volume_enter:vol_courtyard_west",
+    "mode": "blocking",
+    "priority": 10,
+    "interrupt": "queue",
+    "camera": "soft_lookat",
+    "lines": [
+     "ch02.b04.sekireisai.003",
+     "ch02.b04.nyaakoto.004",
+     "ch02.b04.sekireisai.005",
+     "ch02.b04.nyaakoto.006",
+     "ch02.b04.sekireisai.007"
+    ]
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch02.b05",
+   "type": "production_task",
+   "place": "pl_estate_night",
+   "title_ja": "種籾を運び出せ",
+   "title_en": "Carry Out the Seed Rice",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b04"
+   ],
+   "optional": false,
+   "site": 0,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "carry"
+    ],
+    "grants": []
+   },
+   "registry": {
+    "item_ja": "種籾",
+    "item_en": "Seed rice",
+    "qty": 4,
+    "unit_ja": "俵",
+    "unit_en": "bales"
+   },
+   "music": "ch02_combat_estate",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "carry",
+    "carry": {
+     "item": "tanemomi_hyo",
+     "count": 4,
+     "pickups": [
+      "pk_kura_sw_door"
+     ],
+     "dropoffs": [
+      "pack_horse_a",
+      "pack_horse_b"
+     ],
+     "x_dropoff_capacity": {
+      "pack_horse_a": 2,
+      "pack_horse_b": 2
+     },
+     "loadout_while_carrying": [
+      "katana_one_hand"
+     ],
+     "move_speed_mult": 0.8,
+     "drop_on_hit": {
+      "easy": false,
+      "normal": false,
+      "hard": true
+     }
+    },
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_court_north_veranda"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 1,
+        "spawn": "sp_west_torii"
+       },
+       {
+        "type": "blade_retainer",
+        "count": 1,
+        "spawn": "sp_west_torii"
+       }
+      ],
+      "trigger": "progress_at:0.5"
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "gate_interact": {
+     "interact_points": [
+      "seal_kura_sw"
+     ],
+     "per_point_s": 3.0,
+     "contest": "pause",
+     "tool": "yari_ishizuki",
+     "note": "hold interact-point shape (§12.2 hold) used as a pre-step"
+    }
+   }
+  },
+  {
+   "id": "ch02.b06",
+   "type": "production_task",
+   "place": "pl_estate_night",
+   "title_ja": "荷馬を守れ",
+   "title_en": "Protect the Pack Horses",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b05"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_combat_estate",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    },
+    {
+     "on": "target_destroyed",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "defend",
+    "defend": {
+     "targets": [
+      {
+       "actor": "pack_horse_a",
+       "hp": 400
+      },
+      {
+       "actor": "pack_horse_b",
+       "hp": 400
+      }
+     ],
+     "duration_s": 150,
+     "fail_on_target_destroyed": true,
+     "repair_interact": {
+      "kind": "treat_horse",
+      "hold_s": 2.0,
+      "heal": 60,
+      "cooldown_s": 20
+     }
+    },
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_pod_a_road"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_pod_b_north"
+       },
+       {
+        "type": "grenadier",
+        "count": 1,
+        "spawn": "sp_pod_b_north"
+       }
+      ],
+      "trigger": "after_s:45"
+     },
+     {
+      "enemies": [
+       {
+        "type": "blade_retainer",
+        "count": 1,
+        "spawn": "sp_pod_c_west"
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_pod_c_west"
+       }
+      ],
+      "trigger": "after_s:95"
+     }
+    ],
+    "max_alive": 6,
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "hazards": [
+     {
+      "kind": "drop_pod_impact",
+      "telegraph": "amber_ring",
+      "radius_cm": 350,
+      "windup_ms": 2500,
+      "damage": 60,
+      "hits_allies": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch02.b07",
+   "type": "cinematic",
+   "place": "pl_estate_night",
+   "title_ja": "裏門",
+   "title_en": "The Back Gate",
+   "target_s": 60,
+   "checkpoint": false,
+   "requires": [
+    "ch02.b06"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_ride",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch02/Cinematics/LS_ch02_b07_BackGate",
+    "duration_s": 60,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "pl_kaido/ps_kaido_ch0000_mounted",
+     "mounted": "kurimaru",
+     "equipped": [
+      18
+     ]
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch02.b08",
+   "type": "horseback_ride",
+   "place": "pl_kaido",
+   "title_ja": "荷駄を守って街道を行け",
+   "title_en": "Escort the Pack Train",
+   "target_s": 360,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b07"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "mounted_archery"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_ride",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    },
+    {
+     "on": "convoy_member_seized",
+     "to": "checkpoint"
+    },
+    {
+     "on": "convoy_member_hp0",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "horse": "kurimaru",
+    "mode": "escort_convoy",
+    "route": "spl_kaido_convoy",
+    "complete": {
+     "kind": "volume_enter",
+     "volume": "vol_bridge_bend"
+    },
+    "gaits": [
+     "walk",
+     "trot",
+     "canter",
+     "gallop"
+    ],
+    "weapons": [
+     0,
+     18,
+     19
+    ],
+    "convoy": {
+     "npcs": [
+      "pack_horse_c",
+      "pack_horse_a",
+      "pack_horse_b"
+     ],
+     "riders": {
+      "pack_horse_c": "groom (乗掛: rider on a futon over a light load)"
+     },
+     "string": "tied nose-to-tail; a net on any horse halts the string",
+     "loads": {
+      "pack_horse_c": "3 kamasu of rice + spare ebira (24 arrows)",
+      "pack_horse_a": "2 tanemomi_hyo (一駄)",
+      "pack_horse_b": "2 tanemomi_hyo (一駄)"
+     },
+     "speed_cm_s": 450,
+     "hp": 400,
+     "spacing_cm": 450,
+     "player_slot": "left_flank",
+     "halt_when_netted": true
+    },
+    "fear": {
+     "spook_radius_cm": 900,
+     "recover_s": 2.5,
+     "sources": [
+      "searchlight_footprint",
+      "net_impact",
+      "drone_pass_below_400cm"
+     ]
+    },
+    "horse_stamina": {
+     "max": 100,
+     "gallop_drain_per_s": 8,
+     "canter_drain_per_s": 2,
+     "recover_per_s": 6
+    },
+    "auto_steer": "setting",
+    "dismount_allowed": true,
+    "on_horse_down": "dismount_continue"
+   },
+   "ext": {
+    "route_length_m": 1200,
+    "gait_speeds_cm_s": {
+     "walk": 170,
+     "trot": 380,
+     "canter": 600,
+     "gallop": 850
+    },
+    "arcs_deg": {
+     "18": [
+      -170,
+      15
+     ],
+     "0": [
+      30,
+      150
+     ],
+     "19": [
+      -10,
+      60
+     ]
+    },
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 2,
+        "spawn": "sp_kaido_g1_left"
+       }
+      ],
+      "trigger": "progress_at:0.10",
+      "behavior": "scout_only"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_kaido_g2_ravine"
+       }
+      ],
+      "trigger": "progress_at:0.33",
+      "behavior": "net_convoy"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 2,
+        "spawn": "sp_kaido_g3_left"
+       }
+      ],
+      "trigger": "progress_at:0.55",
+      "behavior": "net_convoy",
+      "with": "ship_searchlight_sweep"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_kaido_g4_left"
+       }
+      ],
+      "trigger": "progress_at:0.75",
+      "behavior": "net_convoy",
+      "one_crosses_right_at_m": 1020
+     }
+    ],
+    "seizure": {
+     "net_windup_ms": 800,
+     "telegraph": "cyan_lock_ring",
+     "lift_timer_s": 15,
+     "cut": {
+      "mounted_weapon": 0,
+      "side": "right",
+      "dismounted_interact_s": 1.0
+     },
+     "kill_tether_drone_cancels": true
+    },
+    "resupply": {
+     "actor": "pack_horse_c",
+     "reserve_arrows": 24,
+     "radius_cm": 300,
+     "refill_to": 12,
+     "cooldown_s": 20
+    }
+   }
+  },
+  {
+   "id": "ch02.b09",
+   "type": "combat_wave",
+   "place": "pl_ishibashi",
+   "title_ja": "石橋の関を破れ",
+   "title_en": "Break the Stone Bridge Checkpoint",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b08"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_combat_bridge",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "bounds": "vol_ishibashi",
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 4,
+        "spawn": "sp_barrier_line"
+       },
+       {
+        "type": "grenadier",
+        "count": 1,
+        "spawn": "sp_scan_gate"
+       },
+       {
+        "type": "marksman",
+        "count": 1,
+        "spawn": "sp_outcrop_platform"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_far_road_east"
+       }
+      ],
+      "trigger": "alive_below:3"
+     }
+    ],
+    "complete": {
+     "kind": "all_waves_cleared"
+    },
+    "max_alive": 6,
+    "target_kind": "enemy",
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "wave2_fallback_trigger": "after_s:120",
+    "movement_volumes": [
+     {
+      "volume": "vol_ford",
+      "move_speed_mult": 0.7,
+      "surface": "running_water"
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch02.b10",
+   "type": "horseback_ride",
+   "place": "pl_kaido",
+   "title_ja": "夜明け前の道",
+   "title_en": "The Road Before Dawn",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b09"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_dawn_quiet",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "horse": "kurimaru",
+    "mode": "travel",
+    "route": "spl_kaido_dawn",
+    "complete": {
+     "kind": "volume_enter",
+     "volume": "vol_kakuredani_mouth"
+    },
+    "gaits": [
+     "walk",
+     "trot"
+    ],
+    "weapons": [],
+    "convoy": {
+     "npcs": [
+      "pack_horse_c",
+      "pack_horse_a",
+      "pack_horse_b"
+     ],
+     "speed_cm_s": 250,
+     "hp": 400
+    },
+    "auto_steer": "setting",
+    "dismount_allowed": true,
+    "on_horse_down": "dismount_continue"
+   },
+   "ext": {
+    "route_length_m": 465,
+    "optional_interacts": [
+     {
+      "actor": "jizo_group_1500",
+      "kind": "bow",
+      "interact_s": 1.5
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch02.b11",
+   "type": "production_task",
+   "place": "pl_kakuredani",
+   "title_ja": "米を配れ",
+   "title_en": "Hand Out the Rice",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b10"
+   ],
+   "optional": false,
+   "site": 1,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": {
+    "item_ja": "食糧",
+    "item_en": "Food",
+    "qty": 36,
+    "unit_ja": "食",
+    "unit_en": "meals"
+   },
+   "music": "ch02_dawn_quiet",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "carry",
+    "carry": {
+     "item": "kamasu_rice",
+     "count": 3,
+     "pickups": [
+      "pack_horse_c"
+     ],
+     "dropoffs": [
+      "shelter_1",
+      "shelter_2",
+      "shelter_3"
+     ],
+     "loadout_while_carrying": [
+      "katana_one_hand"
+     ],
+     "move_speed_mult": 0.8,
+     "drop_on_hit": false
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch02.b12",
+   "type": "dialogue",
+   "place": "pl_kakuredani",
+   "title_ja": "屋敷が燃えている",
+   "title_en": "The Estate Is Burning",
+   "target_s": 60,
+   "checkpoint": false,
+   "requires": [
+    "ch02.b11"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_dread",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "volume_enter:vol_kohagi_arrives",
+    "mode": "blocking",
+    "priority": 10,
+    "interrupt": "cut",
+    "camera": "soft_lookat",
+    "lines": [
+     "ch02.b12.kohagi.001",
+     "ch02.b12.nyaakoto.002",
+     "ch02.b12.kohagi.003",
+     "ch02.b12.kohagi.004",
+     "ch02.b12.nyaakoto.005"
+    ]
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch02.b13",
+   "type": "horseback_ride",
+   "place": "pl_kaido",
+   "title_ja": "尾根道を駆け戻れ",
+   "title_en": "Ride Back by the Ridge Road",
+   "target_s": 90,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b12"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_ride_return",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "horse": "kurimaru",
+    "mode": "travel",
+    "route": "spl_onemichi",
+    "complete": {
+     "kind": "volume_enter",
+     "volume": "vol_back_gate"
+    },
+    "gaits": [
+     "trot",
+     "canter",
+     "gallop"
+    ],
+    "weapons": [],
+    "horse_stamina": {
+     "max": 100,
+     "gallop_drain_per_s": 4,
+     "canter_drain_per_s": 0,
+     "recover_per_s": 6
+    },
+    "auto_steer": "setting",
+    "dismount_allowed": false,
+    "on_horse_down": "checkpoint"
+   },
+   "ext": {
+    "route_length_m": 750,
+    "forced_gait_volumes": [
+     {
+      "volume": "vol_sando_planks",
+      "gait": "walk",
+      "length_m": 30
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch02.b14",
+   "type": "explore_optional",
+   "place": "pl_estate_night",
+   "title_ja": "燃える屋敷",
+   "title_en": "The Burning Wings",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b13"
+   ],
+   "optional": true,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_estate_burning",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "volume": "vol_burning_wings",
+    "pois": [
+     {
+      "id": "poi_takemaru",
+      "kind": "npc",
+      "interact": "beam_takemaru",
+      "interact_s": 2.0
+     },
+     {
+      "id": "poi_dojo_pillar_notice",
+      "kind": "lore",
+      "collectible": "ch02.c03"
+     },
+     {
+      "id": "poi_dojo_veranda_scroll",
+      "kind": "lore",
+      "collectible": "ch02.c01"
+     },
+     {
+      "id": "poi_chashitsu",
+      "kind": "cache",
+      "collectible": "ch02.c04"
+     },
+     {
+      "id": "poi_ember_arrows",
+      "kind": "cache",
+      "reward": "arrows_refill_12"
+     }
+    ],
+    "rewards": [
+     "ch02.c01",
+     "ch02.c03",
+     "ch02.c04",
+     "arrows_refill_12"
+    ],
+    "exit_hint_after_s": 90
+   },
+   "ext": {
+    "hazards": [
+     {
+      "kind": "fire_volume",
+      "damage_per_s": 8,
+      "telegraph": "visible_flame+amber_edge_decal"
+     }
+    ],
+    "exit_hint": "audio: Dunark's tally-clicks and the seizure-field hum from the courtyard",
+    "skip_rule": "entering vol_boss_courtyard starts ch02.b15; b14 is then marked skipped"
+   }
+  },
+  {
+   "id": "ch02.b15",
+   "type": "boss",
+   "place": "pl_estate_night",
+   "title_ja": "上陸指揮官ドゥナークを討て",
+   "title_en": "Defeat Landing Commander Dunark",
+   "target_s": 360,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b13"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_boss_dunark",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "phase_checkpoint"
+    }
+   ],
+   "params": {
+    "boss": "boss_dunark",
+    "arena": {
+     "volume": "vol_boss_courtyard",
+     "lock": true
+    },
+    "phases": [
+     {
+      "hp_pct_start": 100,
+      "pattern_table": "dunark_p1_notice"
+     },
+     {
+      "hp_pct_start": 60,
+      "pattern_table": "dunark_p2_notice",
+      "arena_mod": "beam_fall_nw"
+     },
+     {
+      "hp_pct_start": 25,
+      "pattern_table": "dunark_p3_final",
+      "adds": "shield_drone_1"
+     }
+    ],
+    "defeat": "kill",
+    "intro_cinematic": "/Game/Campaign/Ch02/Cinematics/LS_ch02_b15_DunarkIntro",
+    "outro_cinematic": "/Game/Campaign/Ch02/Cinematics/LS_ch02_b15_DunarkOutro",
+    "checkpoint_per_phase": true,
+    "telegraph": {
+     "palette": "standard",
+     "min_windup_ms": 500
+    },
+    "trigger": "volume_enter:vol_boss_courtyard",
+    "finisher": "none"
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch02.b16",
+   "type": "cinematic",
+   "place": "pl_estate_night",
+   "title_ja": "担保",
+   "title_en": "Collateral",
+   "target_s": 150,
+   "checkpoint": true,
+   "requires": [
+    "ch02.b15"
+   ],
+   "optional": false,
+   "site": 2,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch02_collateral_lament",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch02/Cinematics/LS_ch02_b16_Collateral",
+    "duration_s": 150,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "pl_kakuredani/ps_workshop_lean_to",
+     "equipped": [
+      0,
+      18,
+      19
+     ],
+     "then": "chapter_complete_registry_page"
+    }
+   },
+   "ext": {
+    "site_note": "site 2 (屋敷の工房) is restored at the dawn cut, relocated to pl_kakuredani in fiction"
+   }
+  }
+ ],
+ "lines": [
+  {
+   "id": "ch02.b01.kohagi.001",
+   "beat": "ch02.b01",
+   "speaker": "scout",
+   "ja": "空から船が来た。蔵に見知らぬ封印が！",
+   "en": "Ships came from the sky. Strange seals cover the granaries!",
+   "duration_s": 4.6,
+   "register": "terse",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "canon": "catalog ch02 line 1"
+   }
+  },
+  {
+   "id": "ch02.b01.sekireisai.002",
+   "beat": "ch02.b01",
+   "speaker": "mentor",
+   "ja": "落ち着け。数を言え。",
+   "en": "Steady. Give me numbers.",
+   "duration_s": 3.2,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b01.kohagi.003",
+   "beat": "ch02.b01",
+   "speaker": "scout",
+   "ja": "船、三つ。蔵に一つずつ、青い錠。",
+   "en": "Three ships. A blue lock on every granary.",
+   "duration_s": 4.0,
+   "register": "terse",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b01.valamort.004",
+   "beat": "ch02.b01",
+   "speaker": "banker",
+   "ja": "告知いたします。本日より、猫柳生の地は当院の管理下となりました。",
+   "en": "Notice. As of today, the Nyaagyu lands are managed by this House.",
+   "duration_s": 8.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "当院(とういん)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b01.valamort.005",
+   "beat": "ch02.b01",
+   "speaker": "banker",
+   "ja": "蔵、田畑、工房は、未払い債務の担保として差し押さえました。",
+   "en": "Granaries, fields and workshops are seized as collateral for unpaid debt.",
+   "duration_s": 7.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "担保(たんぽ)・差し押さえ(さしおさえ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b01.valamort.006",
+   "beat": "ch02.b01",
+   "speaker": "banker",
+   "ja": "抵抗は延滞とみなされ、利息が発生いたします。",
+   "en": "Resistance will be treated as delinquency. Interest will accrue.",
+   "duration_s": 5.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "延滞(えんたい)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b01.nyaakoto.007",
+   "beat": "ch02.b01",
+   "speaker": "samurai",
+   "ja": "借りた覚えは、ない。",
+   "en": "We never borrowed a thing.",
+   "duration_s": 2.4,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b01.sekireisai.008",
+   "beat": "ch02.b01",
+   "speaker": "mentor",
+   "ja": "借りは向こうが書くものらしいのう。……門を閉めよ。",
+   "en": "It seems they write the debt themselves. …Close the gate.",
+   "duration_s": 6.3,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b02.sekireisai.001",
+   "beat": "ch02.b02",
+   "speaker": "mentor",
+   "ja": "門を守れ。一歩も入れるな。",
+   "en": "Hold the gate. Not one step inside.",
+   "duration_s": 3.9,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b02.nyaakoto.002",
+   "beat": "ch02.b02",
+   "speaker": "samurai",
+   "ja": "松吉は右、竹丸は左。屋根の者は私が射る。",
+   "en": "Matsukichi, right. Takemaru, left. I will take the roof.",
+   "duration_s": 5.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b02.sekireisai.001"
+   }
+  },
+  {
+   "id": "ch02.b02.enforcer.003",
+   "beat": "ch02.b02",
+   "speaker": "enforcer",
+   "ja": "債務者の抵抗を確認。制圧いたします。",
+   "en": "Debtor resistance confirmed. Suppressing.",
+   "duration_s": 4.4,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "債務者(さいむしゃ)",
+   "voice_variant": "rifle",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 12
+   }
+  },
+  {
+   "id": "ch02.b02.enforcer.004",
+   "beat": "ch02.b02",
+   "speaker": "enforcer",
+   "ja": "側面より回収いたします。",
+   "en": "Collecting from the flank.",
+   "duration_s": 2.7,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": "rifle",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 15
+   }
+  },
+  {
+   "id": "ch02.b02.matsukichi.005",
+   "beat": "ch02.b02",
+   "speaker": "pupil_matsukichi",
+   "ja": "潜り戸が破られた！",
+   "en": "The wicket is breached!",
+   "duration_s": 2.3,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "潜り戸(くぐりど)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b02.matsukichi.006",
+   "beat": "ch02.b02",
+   "speaker": "pupil_matsukichi",
+   "ja": "くっ……足を、やられた。",
+   "en": "My leg… they got my leg.",
+   "duration_s": 2.6,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "cooldown_s": 30
+   }
+  },
+  {
+   "id": "ch02.b02.baio.007",
+   "beat": "ch02.b02",
+   "speaker": "pupil_baio",
+   "ja": "閂が持たぬ！　門が開くぞ！",
+   "en": "The bar will not hold! The gate is opening!",
+   "duration_s": 3.2,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "閂(かんぬき)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b02.retainer.008",
+   "beat": "ch02.b02",
+   "speaker": "enforcer",
+   "ja": "取り立てに参りました。",
+   "en": "We have come to collect.",
+   "duration_s": 2.5,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "取り立て(とりたて)",
+   "voice_variant": "blade retainer",
+   "ext": {
+    "kind": "bark",
+    "queue_after": "ch02.b02.baio.007",
+    "cooldown_s": 20
+   }
+  },
+  {
+   "id": "ch02.b02.enforcer.009",
+   "beat": "ch02.b02",
+   "speaker": "enforcer",
+   "ja": "損耗率、許容値を超過。後退いたします。",
+   "en": "Losses exceed tolerance. Withdrawing.",
+   "duration_s": 4.6,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "損耗率(そんもうりつ)",
+   "voice_variant": "rifle",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 20
+   }
+  },
+  {
+   "id": "ch02.b02.sekireisai.010",
+   "beat": "ch02.b02",
+   "speaker": "mentor",
+   "ja": "武具蔵に盾の者が入った。槍を取れ。刀では届かぬ。",
+   "en": "Shield-bearers are in the armory. Take a spear. A sword will not reach.",
+   "duration_s": 7.0,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "武具蔵(ぶぐぐら)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b03.nyaakoto.001",
+   "beat": "ch02.b03",
+   "speaker": "samurai",
+   "ja": "先生、一本お借りします。",
+   "en": "Sensei, I will borrow one.",
+   "duration_s": 3.2,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b03.sekireisai.002",
+   "beat": "ch02.b03",
+   "speaker": "mentor",
+   "ja": "盾の縁を突け。正面は鉄じゃ。",
+   "en": "Thrust at the shield's edge. Its face is iron.",
+   "duration_s": 4.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "radio",
+   "repeatable": false,
+   "readings": "縁(ふち)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b03.nyaakoto.001"
+   }
+  },
+  {
+   "id": "ch02.b03.shield.003",
+   "beat": "ch02.b03",
+   "speaker": "enforcer",
+   "ja": "前進。資産を保全いたします。",
+   "en": "Advancing. Securing assets.",
+   "duration_s": 3.4,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "保全(ほぜん)",
+   "voice_variant": "shield",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 15
+   }
+  },
+  {
+   "id": "ch02.b03.shield.004",
+   "beat": "ch02.b03",
+   "speaker": "enforcer",
+   "ja": "盾、姿勢を喪失。",
+   "en": "Shield displaced.",
+   "duration_s": 2.3,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "喪失(そうしつ)",
+   "voice_variant": "shield",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 10
+   }
+  },
+  {
+   "id": "ch02.b03.sekireisai.005",
+   "beat": "ch02.b03",
+   "speaker": "mentor",
+   "ja": "懐に入られたら槍は死ぬ。退いて間を取れ。",
+   "en": "Let him inside and the spear is dead. Step back. Take distance.",
+   "duration_s": 5.6,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "radio",
+   "repeatable": false,
+   "readings": "懐(ふところ)・間(ま)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b04.sekireisai.001",
+   "beat": "ch02.b04",
+   "speaker": "mentor",
+   "ja": "ニャーコト。蔵の種籾を、隠れ谷へ運べ。",
+   "en": "Nyaakoto. Take the seed rice to the Hidden Valley.",
+   "duration_s": 5.0,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "種籾(たねもみ)・隠れ谷(かくれだに)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b04.nyaakoto.002",
+   "beat": "ch02.b04",
+   "speaker": "samurai",
+   "ja": "先生は。",
+   "en": "And you, Sensei?",
+   "duration_s": 1.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b04.sekireisai.001"
+   }
+  },
+  {
+   "id": "ch02.b04.sekireisai.003",
+   "beat": "ch02.b04",
+   "speaker": "mentor",
+   "ja": "わしは残る。年寄りの足では荷の邪魔じゃ。",
+   "en": "I stay. Old legs would only slow the load.",
+   "duration_s": 5.4,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b04.nyaakoto.004",
+   "beat": "ch02.b04",
+   "speaker": "samurai",
+   "ja": "しかし——",
+   "en": "But—",
+   "duration_s": 1.3,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b04.sekireisai.005",
+   "beat": "ch02.b04",
+   "speaker": "mentor",
+   "ja": "種は明日の田じゃ。刀は、何のためにある。",
+   "en": "Seed is tomorrow's field. What is the sword for?",
+   "duration_s": 5.2,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "canon": "bible §9 key line 「種は明日の田じゃ」"
+   }
+  },
+  {
+   "id": "ch02.b04.nyaakoto.006",
+   "beat": "ch02.b04",
+   "speaker": "samurai",
+   "ja": "……民から、預かるもの。",
+   "en": "…It is held in trust from the people.",
+   "duration_s": 2.8,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b04.sekireisai.007",
+   "beat": "ch02.b04",
+   "speaker": "mentor",
+   "ja": "ならば行け。",
+   "en": "Then go.",
+   "duration_s": 1.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b04.sekireisai.008",
+   "beat": "ch02.b04",
+   "speaker": "mentor",
+   "ja": "竹丸、ついて参れ。道場にまだ人がおる。",
+   "en": "Takemaru, with me. There are still people in the dojo.",
+   "duration_s": 5.2,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b04.baio.009",
+   "beat": "ch02.b04",
+   "speaker": "pupil_baio",
+   "ja": "皆、裏山の杣道へ。子らを先に。",
+   "en": "Everyone, to the woodcutters' path. Children first.",
+   "duration_s": 3.9,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "杣道(そまみち)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b04.sekireisai.008"
+   }
+  },
+  {
+   "id": "ch02.b05.groom.001",
+   "beat": "ch02.b05",
+   "speaker": "groom",
+   "ja": "ニャーコト様、馬は二頭。一頭に二俵ずつ！",
+   "en": "Sir, two horses. Two bales on each!",
+   "duration_s": 4.7,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "二俵(にひょう)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b05.system.002",
+   "beat": "ch02.b05",
+   "speaker": "credit_system",
+   "ja": "封印への接触を検知。延滞として記録いたします。",
+   "en": "Seal contact detected. Recorded as delinquency.",
+   "duration_s": 5.2,
+   "register": "alien_device_pa",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 8
+   }
+  },
+  {
+   "id": "ch02.b05.enforcer.003",
+   "beat": "ch02.b05",
+   "speaker": "enforcer",
+   "ja": "差押物件の搬出を確認。阻止いたします。",
+   "en": "Removal of seized property detected. Intercepting.",
+   "duration_s": 4.6,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "差押物件(さしおさえぶっけん)・搬出(はんしゅつ)",
+   "voice_variant": "rifle",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 20
+   }
+  },
+  {
+   "id": "ch02.b05.groom.004",
+   "beat": "ch02.b05",
+   "speaker": "groom",
+   "ja": "一駄、積んだ！",
+   "en": "One load is on!",
+   "duration_s": 2.0,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "一駄(いちだ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b05.groom.005",
+   "beat": "ch02.b05",
+   "speaker": "groom",
+   "ja": "二駄目も積みました！　行けます！",
+   "en": "Second load on! We can go!",
+   "duration_s": 3.8,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "二駄目(にだめ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b06.kohagi.001",
+   "beat": "ch02.b06",
+   "speaker": "scout",
+   "ja": "上。落ちてくる。三つ。",
+   "en": "Above. Falling. Three.",
+   "duration_s": 3.0,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b06.system.002",
+   "beat": "ch02.b06",
+   "speaker": "credit_system",
+   "ja": "回収班、降下いたします。",
+   "en": "Collection team, descending.",
+   "duration_s": 2.8,
+   "register": "alien_device_pa",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 30
+   }
+  },
+  {
+   "id": "ch02.b06.grenadier.003",
+   "beat": "ch02.b06",
+   "speaker": "enforcer",
+   "ja": "曲射、開始。",
+   "en": "Arcing fire, commencing.",
+   "duration_s": 1.9,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "曲射(きょくしゃ)",
+   "voice_variant": "grenadier",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 12
+   }
+  },
+  {
+   "id": "ch02.b06.groom.004",
+   "beat": "ch02.b06",
+   "speaker": "groom",
+   "ja": "馬が怯えとる！　これ以上はあかん！",
+   "en": "The horses are panicking! They can't take more!",
+   "duration_s": 3.8,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "怯え(おびえ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b06.sekireisai.005",
+   "beat": "ch02.b06",
+   "speaker": "mentor",
+   "ja": "ニャーコト、急げ！　長くは持たぬ！",
+   "en": "Nyaakoto, hurry! We cannot hold long!",
+   "duration_s": 4.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "radio",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b06.kohagi.006",
+   "beat": "ch02.b06",
+   "speaker": "scout",
+   "ja": "裏門、空いた。今。",
+   "en": "Back gate's clear. Now.",
+   "duration_s": 2.6,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "裏門(うらもん)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b07.kohagi.001",
+   "beat": "ch02.b07",
+   "speaker": "scout",
+   "ja": "道は、あたしが先に見る。",
+   "en": "I'll scout the road ahead.",
+   "duration_s": 2.8,
+   "register": "terse",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b07.groom.002",
+   "beat": "ch02.b07",
+   "speaker": "groom",
+   "ja": "乗掛で参ります。遅れたら、置いていってくだされ。",
+   "en": "I'll ride atop the load. If I fall behind, leave me.",
+   "duration_s": 5.1,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "乗掛(のりかけ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b07.nyaakoto.003",
+   "beat": "ch02.b07",
+   "speaker": "samurai",
+   "ja": "誰も置いていかない。",
+   "en": "I leave no one behind.",
+   "duration_s": 2.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b07.nyaakoto.004",
+   "beat": "ch02.b07",
+   "speaker": "samurai",
+   "ja": "栗丸。今夜は、走ってくれ。",
+   "en": "Kurimaru. Tonight, run for me.",
+   "duration_s": 3.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "栗丸(くりまる)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b08.drone.001",
+   "beat": "ch02.b08",
+   "speaker": "drone",
+   "ja": "目録に記載。動産、馬三頭。",
+   "en": "Entered into inventory. Movables: three horses.",
+   "duration_s": 3.7,
+   "register": "alien_device",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "目録(もくろく)・動産(どうさん)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 60
+   }
+  },
+  {
+   "id": "ch02.b08.drone.002",
+   "beat": "ch02.b08",
+   "speaker": "drone",
+   "ja": "差押網、投下いたします。",
+   "en": "Seizure net, deploying.",
+   "duration_s": 2.8,
+   "register": "alien_device",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "差押網(さしおさえあみ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 10
+   }
+  },
+  {
+   "id": "ch02.b08.groom.003",
+   "beat": "ch02.b08",
+   "speaker": "groom",
+   "ja": "網や！　網が掛かった！",
+   "en": "A net! They've netted us!",
+   "duration_s": 2.8,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "cooldown_s": 20
+   }
+  },
+  {
+   "id": "ch02.b08.nyaakoto.004",
+   "beat": "ch02.b08",
+   "speaker": "samurai",
+   "ja": "右に寄せろ。切る。",
+   "en": "Pull right. I will cut it.",
+   "duration_s": 2.6,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b08.groom.003",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b08.system.005",
+   "beat": "ch02.b08",
+   "speaker": "credit_system",
+   "ja": "照合中。……照合中。",
+   "en": "Verifying. …Verifying.",
+   "duration_s": 3.0,
+   "register": "alien_device_pa",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "照合(しょうごう)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 25
+   }
+  },
+  {
+   "id": "ch02.b08.groom.006",
+   "beat": "ch02.b08",
+   "speaker": "groom",
+   "ja": "光や！　馬を下げなされ！",
+   "en": "The light! Pull the horses back!",
+   "duration_s": 2.9,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b08.nyaakoto.007",
+   "beat": "ch02.b08",
+   "speaker": "samurai",
+   "ja": "どう、どう……栗丸、大丈夫だ。",
+   "en": "Easy, easy… Kurimaru, you are all right.",
+   "duration_s": 3.7,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b08.nyaakoto.008",
+   "beat": "ch02.b08",
+   "speaker": "samurai",
+   "ja": "右に回った……下がって取る。",
+   "en": "It went right… I will drop back and take it.",
+   "duration_s": 3.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b08.kohagi.009",
+   "beat": "ch02.b08",
+   "speaker": "scout",
+   "ja": "橋に関所。兵が六、擲弾が一。向こう岸の上に、光る目が一。",
+   "en": "Bridge checkpoint. Six troops, one grenadier. A glinting eye on the far bank.",
+   "duration_s": 7.0,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "関所(せきしょ)・擲弾(てきだん)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b09.nyaakoto.001",
+   "beat": "ch02.b09",
+   "speaker": "samurai",
+   "ja": "馬を頼む。ここで待て。",
+   "en": "Watch the horses. Wait here.",
+   "duration_s": 2.9,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b09.kohagi.002",
+   "beat": "ch02.b09",
+   "speaker": "scout",
+   "ja": "浅瀬がある。下流に五十歩。",
+   "en": "There's a ford. Fifty paces downstream.",
+   "duration_s": 3.6,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "浅瀬(あさせ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b09.nyaakoto.001"
+   }
+  },
+  {
+   "id": "ch02.b09.marksman.003",
+   "beat": "ch02.b09",
+   "speaker": "enforcer",
+   "ja": "照準、査定中。",
+   "en": "Sighting. Assessing.",
+   "duration_s": 2.1,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "査定(さてい)",
+   "voice_variant": "marksman",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 6
+   }
+  },
+  {
+   "id": "ch02.b09.enforcer.004",
+   "beat": "ch02.b09",
+   "speaker": "enforcer",
+   "ja": "未登録の債務者を確認。",
+   "en": "Unregistered debtor sighted.",
+   "duration_s": 3.0,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": "rifle",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 15
+   }
+  },
+  {
+   "id": "ch02.b09.enforcer.005",
+   "beat": "ch02.b09",
+   "speaker": "enforcer",
+   "ja": "対象を見失いました。探索に移行します。",
+   "en": "Target lost. Beginning search.",
+   "duration_s": 4.4,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": "rifle",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 15
+   }
+  },
+  {
+   "id": "ch02.b09.kohagi.006",
+   "beat": "ch02.b09",
+   "speaker": "scout",
+   "ja": "目、潰れた。",
+   "en": "The eye's out.",
+   "duration_s": 1.7,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "潰れた(つぶれた)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b09.enforcer.007",
+   "beat": "ch02.b09",
+   "speaker": "enforcer",
+   "ja": "検問所に増援を要請。至急。",
+   "en": "Requesting reinforcement at the checkpoint. Urgent.",
+   "duration_s": 3.7,
+   "register": "alien_corporate_keigo",
+   "delivery": "bark",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "検問所(けんもんじょ)",
+   "voice_variant": "rifle",
+   "ext": {
+    "kind": "bark",
+    "cooldown_s": 60
+   }
+  },
+  {
+   "id": "ch02.b10.kohagi.001",
+   "beat": "ch02.b10",
+   "speaker": "scout",
+   "ja": "あたしは後ろを見てくる。はぐれた人がいるかも。",
+   "en": "I'll check behind us. There may be stragglers.",
+   "duration_s": 4.7,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b10.groom.002",
+   "beat": "ch02.b10",
+   "speaker": "groom",
+   "ja": "……先生は、ご無事でしょうか。",
+   "en": "…Do you think Sensei is safe?",
+   "duration_s": 3.3,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b10.nyaakoto.003",
+   "beat": "ch02.b10",
+   "speaker": "samurai",
+   "ja": "先生は、猫柳生で一番強い。",
+   "en": "Sensei is the strongest in Nyaagyu.",
+   "duration_s": 3.7,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b10.groom.002"
+   }
+  },
+  {
+   "id": "ch02.b10.nyaakoto.004",
+   "beat": "ch02.b10",
+   "speaker": "samurai",
+   "ja": "……道中、お守りください。",
+   "en": "…Watch over the road.",
+   "duration_s": 3.1,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b11.villager.001",
+   "beat": "ch02.b11",
+   "speaker": "villager",
+   "ja": "ありがたや……子らが朝から何も。",
+   "en": "Bless you… The children haven't eaten since morning.",
+   "duration_s": 3.5,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b11.child.002",
+   "beat": "ch02.b11",
+   "speaker": "child",
+   "ja": "このお米、借り？　返さなあかんの？",
+   "en": "Is this rice a loan? Do we have to pay it back?",
+   "duration_s": 3.7,
+   "register": "child",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b11.nyaakoto.003",
+   "beat": "ch02.b11",
+   "speaker": "samurai",
+   "ja": "借りではない。田で育ったものだ。",
+   "en": "It is not a loan. It grew in our fields.",
+   "duration_s": 3.8,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b11.child.002"
+   }
+  },
+  {
+   "id": "ch02.b11.nyaakoto.004",
+   "beat": "ch02.b11",
+   "speaker": "samurai",
+   "ja": "種籾には手をつけるな。あれは来年の田だ。",
+   "en": "Do not touch the seed rice. That is next year's field.",
+   "duration_s": 4.8,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "種籾(たねもみ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b12.kohagi.001",
+   "beat": "ch02.b12",
+   "speaker": "scout",
+   "ja": "屋敷が燃えてる。",
+   "en": "The estate is burning.",
+   "duration_s": 2.2,
+   "register": "terse",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b12.nyaakoto.002",
+   "beat": "ch02.b12",
+   "speaker": "samurai",
+   "ja": "先生は。",
+   "en": "Sensei?",
+   "duration_s": 1.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b12.kohagi.003",
+   "beat": "ch02.b12",
+   "speaker": "scout",
+   "ja": "残ってる。道場の上に、青い光が集まってた。",
+   "en": "Still there. Blue light was gathering over the dojo.",
+   "duration_s": 4.9,
+   "register": "terse",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b12.kohagi.004",
+   "beat": "ch02.b12",
+   "speaker": "scout",
+   "ja": "尾根道なら、半分で着く。馬一頭なら通れる。",
+   "en": "The ridge road is half the distance. One horse can pass.",
+   "duration_s": 5.3,
+   "register": "terse",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": "尾根道(おねみち)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b12.nyaakoto.005",
+   "beat": "ch02.b12",
+   "speaker": "samurai",
+   "ja": "種は届いた。次は、先生だ。",
+   "en": "The seed is safe. Now, Sensei.",
+   "duration_s": 3.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b13.nyaakoto.001",
+   "beat": "ch02.b13",
+   "speaker": "samurai",
+   "ja": "走れ、栗丸……！",
+   "en": "Run, Kurimaru…!",
+   "duration_s": 2.3,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b13.system.002",
+   "beat": "ch02.b13",
+   "speaker": "credit_system",
+   "ja": "告知。猫柳生家の資産評価を開始いたします。",
+   "en": "Notice. Asset appraisal of House Nyaagyu has begun.",
+   "duration_s": 5.5,
+   "register": "alien_device_pa",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "資産評価(しさんひょうか)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b14.takemaru.001",
+   "beat": "ch02.b14",
+   "speaker": "pupil_takemaru",
+   "ja": "誰か……！　ここだ！",
+   "en": "Someone…! Over here!",
+   "duration_s": 2.5,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "cooldown_s": 15
+   }
+  },
+  {
+   "id": "ch02.b14.takemaru.002",
+   "beat": "ch02.b14",
+   "speaker": "pupil_takemaru",
+   "ja": "先生が……俺たちを出す代わりに、刀を置かれた。",
+   "en": "Sensei… He laid down his sword so they would let us out.",
+   "duration_s": 5.1,
+   "register": "young_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b14.nyaakoto.003",
+   "beat": "ch02.b14",
+   "speaker": "samurai",
+   "ja": "裏門から谷へ行け。道は開いている。",
+   "en": "Take the back gate to the valley. The road is open.",
+   "duration_s": 4.3,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b14.takemaru.002"
+   }
+  },
+  {
+   "id": "ch02.b14.nyaakoto.004",
+   "beat": "ch02.b14",
+   "speaker": "samurai",
+   "ja": "名札掛けまで……差し押さえたのか。",
+   "en": "Even the name board… They seized that too.",
+   "duration_s": 4.1,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "名札掛け(なふだかけ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.001",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "猫柳生石鈴斎様は、ご自身を担保として差し入れられました。",
+   "en": "Nyaagyu Sekireisai has pledged himself as collateral.",
+   "duration_s": 7.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "石鈴斎(せきれいさい)・差し入れ(さしいれ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.002",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "引き換えに、道場内の人員は解放いたしました。",
+   "en": "In exchange, the personnel in the dojo were released.",
+   "duration_s": 5.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "人員(じんいん)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b15.nyaakoto.003",
+   "beat": "ch02.b15",
+   "speaker": "samurai",
+   "ja": "民の手を縛る帳簿なら、ここで断つ。",
+   "en": "If your ledger binds their hands, I will break its hold here.",
+   "duration_s": 4.2,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "帳簿(ちょうぼ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "canon": "catalog ch02 line 3"
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.004",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "上陸指揮官ドゥナーク。督促手続きを開始いたします。",
+   "en": "Landing Commander Dunark. Commencing dunning procedure.",
+   "duration_s": 6.6,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "督促(とくそく)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.005",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "督促、第一回。",
+   "en": "First notice.",
+   "duration_s": 2.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "督促(とくそく)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "telegraph",
+    "canon": "bible §8 voice telegraph"
+   }
+  },
+  {
+   "id": "ch02.b15.sekireisai.006",
+   "beat": "ch02.b15",
+   "speaker": "mentor",
+   "ja": "勝とうとするな。相手の太刀が、おぬしの道を教えてくれる。",
+   "en": "Do not try to win. His sword will show you your path.",
+   "duration_s": 7.1,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "太刀(たち)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b15.dunark.005",
+    "canon": "bible §6.5 register sample"
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.007",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "第二回。",
+   "en": "Second notice.",
+   "duration_s": 1.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "telegraph",
+    "canon": "bible §8 voice telegraph"
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.008",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "一括。",
+   "en": "In full.",
+   "duration_s": 1.3,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "一括(いっかつ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "telegraph",
+    "cooldown_s": 0
+   }
+  },
+  {
+   "id": "ch02.b15.sekireisai.009",
+   "beat": "ch02.b15",
+   "speaker": "mentor",
+   "ja": "突きは受けるな。転じて横を取れ。",
+   "en": "Do not meet the thrust. Roll aside and take his flank.",
+   "duration_s": 4.5,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "転じて(てんじて; 転(まろばし)の教え)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b15.dunark.007"
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.010",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "最終督促。",
+   "en": "Final notice.",
+   "duration_s": 2.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "telegraph",
+    "canon": "bible §8 voice telegraph"
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.011",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "保全措置。",
+   "en": "Protective measure.",
+   "duration_s": 2.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "telegraph",
+    "once": true
+   }
+  },
+  {
+   "id": "ch02.b15.sekireisai.012",
+   "beat": "ch02.b15",
+   "speaker": "mentor",
+   "ja": "刃の傾きを見よ。偽りは肩に出る。",
+   "en": "Watch the tilt of his blade. A lie shows in the shoulder.",
+   "duration_s": 4.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": "偽り(いつわり)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "queue_after": "ch02.b15.dunark.010"
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.013",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "……計算外。",
+   "en": "…Unaccounted for.",
+   "duration_s": 2.1,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "telegraph",
+    "cooldown_s": 20
+   }
+  },
+  {
+   "id": "ch02.b15.sekireisai.014",
+   "beat": "ch02.b15",
+   "speaker": "mentor",
+   "ja": "立て。拍子に乗るな。拍子を読め。",
+   "en": "Stand. Do not ride his rhythm. Read it.",
+   "duration_s": 5.0,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": "拍子(ひょうし)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "cooldown_s": 0
+   }
+  },
+  {
+   "id": "ch02.b15.dunark.015",
+   "beat": "ch02.b15",
+   "speaker": "boss_dunark",
+   "ja": "未回収の……まま、とは。",
+   "en": "To fall… with the account still open.",
+   "duration_s": 3.1,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "未回収(みかいしゅう)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.valamort.001",
+   "beat": "ch02.b16",
+   "speaker": "banker",
+   "ja": "上陸指揮官ドゥナーク。損失として、償却いたします。",
+   "en": "Landing Commander Dunark. Written off as a loss.",
+   "duration_s": 6.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "償却(しょうきゃく)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.valamort.002",
+   "beat": "ch02.b16",
+   "speaker": "banker",
+   "ja": "今日から、その収穫も労働も我らへの負債だ。",
+   "en": "From today, your harvest and labor are debts owed to us.",
+   "duration_s": 5.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "負債(ふさい)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "canon": "catalog ch02 line 2"
+   }
+  },
+  {
+   "id": "ch02.b16.valamort.003",
+   "beat": "ch02.b16",
+   "speaker": "banker",
+   "ja": "債務者番号〇〇〇一。石鈴斎様を、担保としてお預かりいたします。",
+   "en": "Debtor zero-zero-zero-one. The honorable Sekireisai is held as collateral.",
+   "duration_s": 8.9,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "〇〇〇一(まる・まる・まる・いち; B7 to confirm)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.nyaakoto.004",
+   "beat": "ch02.b16",
+   "speaker": "samurai",
+   "ja": "先生！",
+   "en": "Sensei!",
+   "duration_s": 1.3,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.sekireisai.005",
+   "beat": "ch02.b16",
+   "speaker": "mentor",
+   "ja": "来るな。……種は、届いたか。",
+   "en": "Stay back. …Did the seed arrive?",
+   "duration_s": 3.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.nyaakoto.006",
+   "beat": "ch02.b16",
+   "speaker": "samurai",
+   "ja": "……届きました。",
+   "en": "…It arrived.",
+   "duration_s": 2.1,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.sekireisai.007",
+   "beat": "ch02.b16",
+   "speaker": "mentor",
+   "ja": "ならば、よい。",
+   "en": "Then it is well.",
+   "duration_s": 1.8,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.valamort.008",
+   "beat": "ch02.b16",
+   "speaker": "banker",
+   "ja": "ご安心を。利息は毎晩、きちんと計上いたします。",
+   "en": "Rest assured. Interest will be booked faithfully every night.",
+   "duration_s": 6.1,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "計上(けいじょう)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.tetsugoro.009",
+   "beat": "ch02.b16",
+   "speaker": "gunsmith",
+   "ja": "鞴も金床も担いできた。道具さえありゃ、どこでも鍛冶場や。",
+   "en": "We carried the bellows and the anvil. With tools, anywhere is a smithy.",
+   "duration_s": 6.1,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "鞴(ふいご)・金床(かなとこ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.nyaakoto.010",
+   "beat": "ch02.b16",
+   "speaker": "samurai",
+   "ja": "斬るのは最後だ。まず、守るものを数える。",
+   "en": "Cutting comes last. First, count what we protect.",
+   "duration_s": 4.7,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story",
+    "canon": "bible §6.5 register sample"
+   }
+  },
+  {
+   "id": "ch02.b16.baio.011",
+   "beat": "ch02.b16",
+   "speaker": "pupil_baio",
+   "ja": "女子供が十九、年寄りが七。門弟は、わしと松吉と竹丸。",
+   "en": "Nineteen women and children, seven elders. Pupils: Matsukichi, Takemaru and I.",
+   "duration_s": 6.5,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "門弟(もんてい)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.nyaakoto.012",
+   "beat": "ch02.b16",
+   "speaker": "samurai",
+   "ja": "虎之介は。",
+   "en": "And Toranosuke?",
+   "duration_s": 1.8,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "虎之介(とらのすけ)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.baio.013",
+   "beat": "ch02.b16",
+   "speaker": "pupil_baio",
+   "ja": "鐘と同時に、鷲尾の家へ走ったきりじゃ。",
+   "en": "He ran for the Washio house at the first bell. Nothing since.",
+   "duration_s": 4.2,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": "鷲尾(わしお)",
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.baio.014",
+   "beat": "ch02.b16",
+   "speaker": "pupil_baio",
+   "ja": "先生のお席は、空けておこう。",
+   "en": "We will keep Sensei's seat empty.",
+   "duration_s": 3.2,
+   "register": "elder_samurai",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  },
+  {
+   "id": "ch02.b16.nyaakoto.015",
+   "beat": "ch02.b16",
+   "speaker": "samurai",
+   "ja": "取り返す。先生も、蔵も、田も。",
+   "en": "I will take it all back. Sensei, the granaries, the fields.",
+   "duration_s": 4.0,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "kind": "story"
+   }
+  }
+ ],
+ "triggers": [
+  {
+   "beat": "ch02.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b01.kohagi.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 8000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b01.sekireisai.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 13000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b01.kohagi.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 16600,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b01.valamort.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 24000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b01.valamort.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 32900,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b01.valamort.006"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 41000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b01.nyaakoto.007"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 47100,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b01.sekireisai.008"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 50000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b02",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.sekireisai.001",
+    "ch02.b02.nyaakoto.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b02",
+   "on": "alert_state:alert",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.enforcer.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b02",
+   "on": "ai:flank",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.enforcer.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b02",
+   "on": "wave_start:2",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.matsukichi.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b02",
+   "on": "npc_downed:pupil_matsukichi",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.matsukichi.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b02",
+   "on": "wave_start:3",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.baio.007",
+    "ch02.b02.retainer.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b02",
+   "on": "ai:retreat",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.enforcer.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b02",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b02.sekireisai.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b03",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b03.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b03",
+   "on": "beat_start",
+   "mode": "radio",
+   "lines": [
+    "ch02.b03.sekireisai.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b03",
+   "on": "alert_state:alert",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b03.shield.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b03",
+   "on": "ai:shield_turned",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b03.shield.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b03",
+   "on": "ai:player_inside_polearm_min",
+   "mode": "radio",
+   "lines": [
+    "ch02.b03.sekireisai.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b04",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b04.sekireisai.001",
+    "ch02.b04.nyaakoto.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b04",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b04.sekireisai.008",
+    "ch02.b04.baio.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b04",
+   "on": "volume_enter:vol_courtyard_west",
+   "mode": "blocking",
+   "lines": [
+    "ch02.b04.sekireisai.003",
+    "ch02.b04.nyaakoto.004",
+    "ch02.b04.sekireisai.005",
+    "ch02.b04.nyaakoto.006",
+    "ch02.b04.sekireisai.007"
+   ],
+   "source": "dialogue_beat",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b05",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b05.groom.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b05",
+   "on": "interact_start:seal_kura_sw",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b05.system.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b05",
+   "on": "ai:carry_spotted",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b05.enforcer.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b05",
+   "on": "progress_at:0.5",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b05.groom.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b05",
+   "on": "progress_at:1.0",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b05.groom.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b06",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b06.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b06",
+   "on": "ai:drop_pod_launch",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b06.system.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b06",
+   "on": "ai:grenadier_fire",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b06.grenadier.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b06",
+   "on": "target_hp_below:any:0.5",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b06.groom.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b06",
+   "on": "progress_at:0.5",
+   "mode": "radio",
+   "lines": [
+    "ch02.b06.sekireisai.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b06",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b06.kohagi.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b07",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b07.kohagi.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 9000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b07",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b07.groom.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 18000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b07",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b07.nyaakoto.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 24000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b07",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b07.nyaakoto.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 40000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b08",
+   "on": "wave_start:1",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b08.drone.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b08",
+   "on": "ai:net_windup",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b08.drone.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b08",
+   "on": "ai:convoy_netted",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b08.groom.003",
+    "ch02.b08.nyaakoto.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b08",
+   "on": "wave_start:3",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b08.system.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b08",
+   "on": "ai:horse_spooked:convoy",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b08.groom.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b08",
+   "on": "ai:horse_spooked:kurimaru",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b08.nyaakoto.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b08",
+   "on": "ai:drone_crossed_right",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b08.nyaakoto.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b08",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b08.kohagi.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b09",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b09.nyaakoto.001",
+    "ch02.b09.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b09",
+   "on": "ai:marksman_lock",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b09.marksman.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b09",
+   "on": "alert_state:alert",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b09.enforcer.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b09",
+   "on": "alert_state:search",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b09.enforcer.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b09",
+   "on": "enemy_killed:marksman",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b09.kohagi.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b09",
+   "on": "wave_start:2",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b09.enforcer.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b10",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b10.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b10",
+   "on": "progress_at:0.3",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b10.groom.002",
+    "ch02.b10.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b10",
+   "on": "interact:jizo_bow",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b10.nyaakoto.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b11",
+   "on": "item_delivered:shelter_1",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b11.villager.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b11",
+   "on": "item_delivered:shelter_2",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b11.child.002",
+    "ch02.b11.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b11",
+   "on": "site_restored:1",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b11.nyaakoto.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b12",
+   "on": "volume_enter:vol_kohagi_arrives",
+   "mode": "blocking",
+   "lines": [
+    "ch02.b12.kohagi.001",
+    "ch02.b12.nyaakoto.002",
+    "ch02.b12.kohagi.003",
+    "ch02.b12.kohagi.004",
+    "ch02.b12.nyaakoto.005"
+   ],
+   "source": "dialogue_beat",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b13",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b13.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b13",
+   "on": "progress_at:0.6",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b13.system.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b14",
+   "on": "volume_enter:vol_dojo_east_veranda",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b14.takemaru.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b14",
+   "on": "interact_complete:beam_takemaru",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b14.takemaru.002",
+    "ch02.b14.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b14",
+   "on": "collectible:ch02.c03",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b14.nyaakoto.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "intro@6.0",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b15.dunark.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "intro@13.8",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b15.dunark.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "intro@19.9",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b15.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "intro@24.5",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b15.dunark.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "boss_phase:1",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b15.dunark.005",
+    "ch02.b15.sekireisai.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "boss_phase:2",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b15.dunark.007",
+    "ch02.b15.sekireisai.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "pattern:thrust",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b15.dunark.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "boss_phase:3",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b15.dunark.010",
+    "ch02.b15.sekireisai.012"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "pattern:shield_drone",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b15.dunark.011"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "pattern:stagger",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b15.dunark.013"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "player_died",
+   "mode": "ambient",
+   "lines": [
+    "ch02.b15.sekireisai.014"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "outro@3.0",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b15.dunark.015"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "boss_phase:1",
+   "mode": "bark",
+   "lines": [
+    "ch02.b15.dunark.005"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "boss_phase:2",
+   "mode": "bark",
+   "lines": [
+    "ch02.b15.dunark.007"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "pattern:thrust",
+   "mode": "bark",
+   "lines": [
+    "ch02.b15.dunark.008"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "boss_phase:3",
+   "mode": "bark",
+   "lines": [
+    "ch02.b15.dunark.010"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "pattern:shield_drone",
+   "mode": "bark",
+   "lines": [
+    "ch02.b15.dunark.011"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b15",
+   "on": "pattern:stagger",
+   "mode": "bark",
+   "lines": [
+    "ch02.b15.dunark.013"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.valamort.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 14000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.valamort.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 21000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.valamort.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 28000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.nyaakoto.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 37300,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.sekireisai.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 39000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.nyaakoto.006"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 43200,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.sekireisai.007"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 46000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.valamort.008"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 52000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.tetsugoro.009"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 82000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.nyaakoto.010"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 95000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.baio.011"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 101000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.nyaakoto.012"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 108000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.baio.013"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 110200,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.baio.014"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 118000,
+   "ext": {}
+  },
+  {
+   "beat": "ch02.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch02.b16.nyaakoto.015"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 128000,
+   "ext": {}
+  }
+ ],
+ "collectibles": [
+  {
+   "id": "ch02.c01",
+   "category": "scroll_fragment",
+   "place": "pl_estate_night",
+   "mask_bit": 0,
+   "beats": [
+    "ch02.b14"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "伝書の断簡（二）――「刀を抜くは易し。納むるは難し。」石鈴斎の筆。端が焦げている。",
+    "en": "Scroll fragment II: \"Drawing the sword is easy. Sheathing it is hard.\" In Sekireisai's hand; the edge is scorched."
+   },
+   "volume": null,
+   "actor": "col_dojo_veranda_scroll",
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch02.c02",
+   "category": "seizure_notice",
+   "place": "pl_estate_night",
+   "mask_bit": 1,
+   "beats": [
+    "ch02.b05"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "差押状――猫柳生家 蔵 壱番。種籾 四俵 ほか一式。担保として保全。異議の申立ては延滞とみなす。",
+    "en": "Seizure notice: House Nyaagyu, Granary No. 1. Seed rice, four bales, and all contents. Held as collateral. Objections count as delinquency."
+   },
+   "volume": null,
+   "actor": "col_kura_sw_notice",
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch02.c03",
+   "category": "seizure_notice",
+   "place": "pl_estate_night",
+   "mask_bit": 2,
+   "beats": [
+    "ch02.b14"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "差押状――爪木坂道場。名札掛け 一式、刀掛け 三基、木刀 四十振。評価額は後日通知。",
+    "en": "Seizure notice: Tsumagizaka Dōjō. One name board, three sword racks, forty bokutō. Valuation to follow."
+   },
+   "volume": null,
+   "actor": "col_dojo_pillar_notice",
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch02.c04",
+   "category": "heirloom",
+   "place": "pl_estate_night",
+   "mask_bit": 3,
+   "beats": [
+    "ch02.b14"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "家宝：肩衝茶入 銘「猫柳」。石鈴斎が茶室の炉脇に置いていた。仕覆（袋）ごと煤けている。",
+    "en": "Heirloom: katatsuki tea caddy named \"Pussy Willow.\" Sekireisai kept it by the tea-room hearth; its silk pouch is sooted."
+   },
+   "volume": null,
+   "actor": "col_chashitsu_chaire",
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch02.c05",
+   "category": "league_mark",
+   "place": "pl_kakuredani",
+   "mask_bit": 4,
+   "beats": [
+    "ch02.b10"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "空紋の目印（最初の一つ）――谷口の岩に炭で描かれた空紋。梅翁が逃げる者の道しるべに描いた。",
+    "en": "League mark, the first: the SORA mon drawn in charcoal on a rock at the valley mouth. Baiō drew it to guide those fleeing."
+   },
+   "volume": null,
+   "actor": "col_valley_mouth_mark",
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch02.c06",
+   "category": "registry_page",
+   "place": "pl_ishibashi",
+   "mask_bit": 5,
+   "beats": [
+    "ch02.b09"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "生産の記録：猫柳生家の蔵の出入帳、元和八年の頁。収めた俵と出した俵が、一俵の狂いもなく並ぶ。",
+    "en": "Registry page: the estate granary's in-and-out book, Genna 8. Bales stored and bales issued, every one accounted for."
+   },
+   "volume": null,
+   "actor": "col_checkpoint_seized_docs",
+   "sets_flag": null,
+   "location_en": null
+  }
+ ],
+ "ui_prompts": [
+  {
+   "id": "ch02.b02.tut.001",
+   "beats": [
+    "ch02.b02"
+   ],
+   "on": "npc_downed:any",
+   "ja": "倒れた門弟のそばで{Interact}長押し：助け起こす。",
+   "en": "Hold {Interact} beside a downed pupil to help them up.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b03.tut.002",
+   "beats": [
+    "ch02.b03"
+   ],
+   "on": "beat_start",
+   "ja": "槍を得た。{Polearm}で持ち替え。",
+   "en": "Yari acquired. Press {Polearm} to switch.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b03.tut.003",
+   "beats": [
+    "ch02.b03"
+   ],
+   "on": "volume_enter:vol_bugugura_yard",
+   "ja": "盾の縁を槍で突けば、構えが崩れる。",
+   "en": "Thrust at a shield's edge to break its guard.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b03.tut.004",
+   "beats": [
+    "ch02.b03"
+   ],
+   "on": "ai:player_inside_polearm_min",
+   "ja": "懐では槍は弱い。退いて間合いを取れ。",
+   "en": "The yari is weak up close. Step back to regain distance.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b05.tut.005",
+   "beats": [
+    "ch02.b05"
+   ],
+   "on": "volume_enter:vol_kura_sw_door",
+   "ja": "{Interact}長押し：石突で封印をこじ開ける。",
+   "en": "Hold {Interact}: pry the seal off with the spear butt.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b05.tut.006",
+   "beats": [
+    "ch02.b05"
+   ],
+   "on": "event:first_pickup",
+   "ja": "俵を担ぐ間は片手の刀のみ。弓は使えず、走れない。",
+   "en": "Carrying a bale: one-handed katana only. No bow, no sprint.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b05.tut.007",
+   "beats": [
+    "ch02.b05"
+   ],
+   "on": "event:first_pickup+4s",
+   "ja": "{Interact}で俵を下ろせる。後で拾い直せる。",
+   "en": "Press {Interact} to set a bale down. Pick it up again later.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b06.tut.008",
+   "beats": [
+    "ch02.b06"
+   ],
+   "on": "beat_start",
+   "ja": "荷馬を守れ。そばで{Interact}長押し：傷の手当て。",
+   "en": "Protect the pack horses. Hold {Interact} beside one to treat it.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b06.tut.009",
+   "beats": [
+    "ch02.b06"
+   ],
+   "on": "ai:drop_pod_launch@1",
+   "ja": "橙の輪は降下ポッドの着弾点。輪から離れよ。",
+   "en": "Amber rings mark where pods will land. Get clear.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b08.tut.010",
+   "beats": [
+    "ch02.b08"
+   ],
+   "on": "beat_start",
+   "ja": "手綱を結び{Aim}で引き分け。馬上の弓は左（弓手）のみ。",
+   "en": "Reins knotted. Hold {Aim} to draw. In the saddle, the bow shoots left only.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b08.tut.011",
+   "beats": [
+    "ch02.b08"
+   ],
+   "on": "beat_start+6s",
+   "ja": "{GaitUp}／{GaitDown}で歩度を変え、荷馬の速さに合わせよ。",
+   "en": "Use {GaitUp} and {GaitDown} to change gait. Keep pace with the pack train.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b08.tut.012",
+   "beats": [
+    "ch02.b08"
+   ],
+   "on": "ai:convoy_netted@1",
+   "ja": "網の掛かった荷馬の左に並び、右へ斬って網を切れ。",
+   "en": "Ride on a netted horse's left and cut to your right to free it.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b08.tut.013",
+   "beats": [
+    "ch02.b08"
+   ],
+   "on": "event:arrows_below:4",
+   "ja": "先頭の荷馬に並ぶと、予備の箙から矢を補える。",
+   "en": "Ride beside the lead pack horse to refill arrows from its spare quiver.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b13.tut.014",
+   "beats": [
+    "ch02.b13"
+   ],
+   "on": "beat_start",
+   "ja": "襲歩は馬の息を使う。尽きる前に駈歩へ落とせ。",
+   "en": "The gallop spends the horse's wind. Ease to a canter before it runs out.",
+   "shown_en": null
+  },
+  {
+   "id": "ch02.b15.tut.015",
+   "beats": [
+    "ch02.b15"
+   ],
+   "on": "pattern:thrust@1",
+   "ja": "突きは合わせられない。構えの終わりに横へ踏め（転）。",
+   "en": "The thrust cannot be parried. Step aside just before it lands (marobashi).",
+   "shown_en": null
+  }
+ ],
+ "places": [
+  {
+   "id": "pl_estate_night",
+   "chapter": 2,
+   "ja": "猫柳生の屋敷・夜",
+   "reading": null,
+   "en": "Nyaagyu Estate, night/fire",
+   "arena": 0,
+   "source": "Arena 0 (lighting variant)"
+  },
+  {
+   "id": "pl_bugugura",
+   "chapter": 2,
+   "ja": "武具蔵",
+   "reading": "ぶぐぐら",
+   "en": "Armory yard",
+   "arena": null,
+   "source": "Estate sublevel"
+  },
+  {
+   "id": "pl_kaido",
+   "chapter": 2,
+   "ja": "猫柳生街道",
+   "reading": "ニャーギュウかいどう",
+   "en": "Nyaagyu Highway",
+   "arena": null,
+   "source": "New linear, about 1.5 km"
+  },
+  {
+   "id": "pl_ishibashi",
+   "chapter": 2,
+   "ja": "石橋の関",
+   "reading": "いしばしのせき",
+   "en": "Stone Bridge Checkpoint",
+   "arena": null,
+   "source": "New"
+  },
+  {
+   "id": "pl_kakuredani",
+   "chapter": 2,
+   "ja": "隠れ谷",
+   "reading": "かくれだに",
+   "en": "Hidden Valley",
+   "arena": null,
+   "source": "New hub"
+  }
+ ],
+ "layout": {
+  "frames": [
+   {
+    "id": "pl_estate_night",
+    "place": "pl_estate_night",
+    "text": "Arena 0 (Nyaagyu Estate) + campaign-only sublevels; world cm, arena axes as built by SoraWorldBuilder",
+    "source_units": "cm"
+   },
+   {
+    "id": "pl_bugugura",
+    "place": "pl_bugugura",
+    "text": "estate sublevel north of the arena wall; local cm, origin = wicket centre at arena (-1000, 2550), same axes",
+    "source_units": "cm"
+   },
+   {
+    "id": "pl_kaido",
+    "place": "pl_kaido",
+    "text": "new linear level (~1.5 km) + 750 m ridge-road branch; chainage in metres from the estate back gate",
+    "source_units": "cm"
+   },
+   {
+    "id": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "text": "new; local cm, origin = west abutment centre, +X east along the road, +Y upstream (north)",
+    "source_units": "cm"
+   },
+   {
+    "id": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "text": "new hub; local cm, origin = valley-mouth log bridge, +Y up-valley",
+    "source_units": "cm"
+   }
+  ],
+  "volumes": [
+   {
+    "id": "vol_gate_yard",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     -2475,
+     0,
+     400
+    ],
+    "size_cm": [
+     1350,
+     2600,
+     800
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_courtyard_west",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     -1600,
+     0,
+     200
+    ],
+    "size_cm": [
+     1200,
+     1000,
+     400
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_kura_front",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     0,
+     -1150,
+     200
+    ],
+    "size_cm": [
+     3200,
+     700,
+     400
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_kura_sw_door",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     -1000,
+     -1400,
+     150
+    ],
+    "size_cm": [
+     400,
+     200,
+     300
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_back_gate",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     2900,
+     0,
+     200
+    ],
+    "size_cm": [
+     500,
+     800,
+     400
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_burning_wings",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     0,
+     1750,
+     300
+    ],
+    "size_cm": [
+     6200,
+     1500,
+     600
+    ],
+    "ext": {
+     "exclude": "building footprints"
+    }
+   },
+   {
+    "id": "vol_dojo_east_veranda",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     500,
+     1800,
+     150
+    ],
+    "size_cm": [
+     350,
+     700,
+     300
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_boss_courtyard",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     100,
+     0,
+     400
+    ],
+    "size_cm": [
+     2600,
+     2200,
+     800
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_fire_nw_p2",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     -900,
+     800,
+     150
+    ],
+    "size_cm": [
+     600,
+     600,
+     300
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_seizure_field",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "shape": "box",
+    "center_cm": [
+     0,
+     1300,
+     150
+    ],
+    "size_cm": [
+     300,
+     300,
+     400
+    ],
+    "ext": {
+     "collides": true
+    }
+   },
+   {
+    "id": "vol_bugugura_yard",
+    "frame": "pl_bugugura",
+    "place": "pl_bugugura",
+    "shape": "box",
+    "center_cm": [
+     0,
+     700,
+     400
+    ],
+    "size_cm": [
+     1800,
+     1400,
+     800
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_spear_rack",
+    "frame": "pl_bugugura",
+    "place": "pl_bugugura",
+    "shape": "box",
+    "center_cm": [
+     -250,
+     80,
+     150
+    ],
+    "size_cm": [
+     200,
+     120,
+     300
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_bridge_bend",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "shape": "chainage",
+    "chainage_m": [
+     1140,
+     1160
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_sando_planks",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "shape": "chainage",
+    "chainage_m": [
+     410,
+     440
+    ],
+    "ext": {
+     "route": "spl_onemichi"
+    }
+   },
+   {
+    "id": "vol_ishibashi",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "shape": "box",
+    "center_cm": [
+     1500,
+     -1500,
+     500
+    ],
+    "size_cm": [
+     12000,
+     8000,
+     1500
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_ford",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "shape": "box",
+    "center_cm": [
+     700,
+     -4500,
+     0
+    ],
+    "size_cm": [
+     2000,
+     1200,
+     200
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_outcrop_top",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "shape": "box",
+    "center_cm": [
+     2200,
+     -2000,
+     650
+    ],
+    "size_cm": [
+     400,
+     400,
+     300
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_bridge_deck",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "shape": "box",
+    "center_cm": [
+     720,
+     0,
+     200
+    ],
+    "size_cm": [
+     1440,
+     270,
+     300
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_checkpoint_rear",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "shape": "box",
+    "center_cm": [
+     2900,
+     -300,
+     200
+    ],
+    "size_cm": [
+     900,
+     2400,
+     400
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_kakuredani_mouth",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "shape": "box",
+    "center_cm": [
+     0,
+     600,
+     200
+    ],
+    "size_cm": [
+     800,
+     800,
+     400
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_clearing",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "shape": "box",
+    "center_cm": [
+     0,
+     9000,
+     300
+    ],
+    "size_cm": [
+     4000,
+     3000,
+     600
+    ],
+    "ext": {}
+   },
+   {
+    "id": "vol_kohagi_arrives",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "shape": "box",
+    "center_cm": [
+     0,
+     9000,
+     300
+    ],
+    "size_cm": [
+     4000,
+     3000,
+     600
+    ],
+    "ext": {
+     "gate": "after site_restored:1"
+    }
+   },
+   {
+    "id": "vol_ridge_trailhead",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "shape": "box",
+    "center_cm": [
+     -2500,
+     6000,
+     200
+    ],
+    "size_cm": [
+     600,
+     600,
+     400
+    ],
+    "ext": {}
+   }
+  ],
+  "points": [
+   {
+    "id": "ps_gate_yard_start",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -2300,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_nagayamon_roof",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -3450,
+      -600,
+      550
+     ],
+     [
+      -3450,
+      0,
+      600
+     ],
+     [
+      -3450,
+      600,
+      550
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_wicket_breach",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -3450,
+      -450,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_gate_leaves",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -3450,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_court_north_veranda",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -500,
+      1350,
+      0
+     ],
+     [
+      500,
+      1350,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_west_torii",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -2250,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_pod_a_road",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -200,
+      200,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_pod_b_north",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -600,
+      1100,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_pod_c_west",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -1900,
+      -300,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "pk_kura_sw_door",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -1000,
+      -1420,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "pack_horse_a",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      800,
+      -1050,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "pack_horse_b",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      1200,
+      -1050,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ally_matsukichi",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -2700,
+      -450,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ally_takemaru",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -2700,
+      450,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ally_baio",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -3050,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "mentor_seizure_field",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      0,
+      1300,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "col_kura_sw_notice",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -1150,
+      -1440,
+      160
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "col_dojo_pillar_notice",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      -300,
+      1440,
+      170
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "col_dojo_veranda_scroll",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      250,
+      1500,
+      60
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "col_chashitsu_chaire",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      2750,
+      1900,
+      40
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "beam_takemaru",
+    "frame": "pl_estate_night",
+    "place": "pl_estate_night",
+    "positions_cm": [
+     [
+      520,
+      1750,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "rack_suyari_01",
+    "frame": "pl_bugugura",
+    "place": "pl_bugugura",
+    "positions_cm": [
+     [
+      -250,
+      60,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_pod_crater",
+    "frame": "pl_bugugura",
+    "place": "pl_bugugura",
+    "positions_cm": [
+     [
+      -300,
+      650,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_yard_west_breach",
+    "frame": "pl_bugugura",
+    "place": "pl_bugugura",
+    "positions_cm": [
+     [
+      -900,
+      700,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_kaido_g1_left",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "positions_cm": null,
+    "yaw_deg": null,
+    "chainage_m": 180,
+    "offset_m": [
+     -35,
+     12
+    ]
+   },
+   {
+    "id": "sp_kaido_g2_ravine",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "positions_cm": null,
+    "yaw_deg": null,
+    "chainage_m": 460,
+    "offset_m": [
+     -25,
+     -20
+    ]
+   },
+   {
+    "id": "sp_kaido_g3_left",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "positions_cm": null,
+    "yaw_deg": null,
+    "chainage_m": 700,
+    "offset_m": [
+     -30,
+     15
+    ]
+   },
+   {
+    "id": "sp_kaido_g4_left",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "positions_cm": null,
+    "yaw_deg": null,
+    "chainage_m": 950,
+    "offset_m": [
+     -30,
+     12
+    ]
+   },
+   {
+    "id": "ship_searchlight",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "positions_cm": null,
+    "yaw_deg": null,
+    "chainage_m": [
+     640,
+     800
+    ],
+    "offset_m": [
+     -400,
+     150
+    ]
+   },
+   {
+    "id": "ps_near_bank_start",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "positions_cm": [
+     [
+      -4000,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_barrier_line",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "positions_cm": [
+     [
+      1800,
+      -600,
+      0
+     ],
+     [
+      1900,
+      200,
+      0
+     ],
+     [
+      2150,
+      700,
+      0
+     ],
+     [
+      2300,
+      -200,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_scan_gate",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "positions_cm": [
+     [
+      1600,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_outcrop_platform",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "positions_cm": [
+     [
+      2200,
+      -2000,
+      600
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "sp_far_road_east",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "positions_cm": [
+     [
+      8000,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "convoy_hold",
+    "frame": "pl_ishibashi",
+    "place": "pl_ishibashi",
+    "positions_cm": [
+     [
+      -6000,
+      0,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "pack_horse_c_unload",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "positions_cm": [
+     [
+      0,
+      8500,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "shelter_1",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "positions_cm": [
+     [
+      -1800,
+      10800,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "shelter_2",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "positions_cm": [
+     [
+      1400,
+      12900,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "shelter_3",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "positions_cm": [
+     [
+      500,
+      15900,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "kiln",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "positions_cm": [
+     [
+      -900,
+      12000,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "ps_workshop_lean_to",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "positions_cm": [
+     [
+      -500,
+      11500,
+      0
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   },
+   {
+    "id": "col_valley_mouth_mark",
+    "frame": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "positions_cm": [
+     [
+      -300,
+      800,
+      120
+     ]
+    ],
+    "yaw_deg": null,
+    "chainage_m": null,
+    "offset_m": null
+   }
+  ],
+  "splines": [
+   {
+    "id": "spl_kaido_convoy",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "nodes_cm": null,
+    "length_m": null,
+    "ext": {
+     "from_m": 0,
+     "to_m": 1200
+    }
+   },
+   {
+    "id": "spl_kaido_dawn",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "nodes_cm": null,
+    "length_m": null,
+    "ext": {
+     "from_m": 1215,
+     "to_m": 1500,
+     "then": "valley trail 180 m"
+    }
+   },
+   {
+    "id": "spl_onemichi",
+    "frame": "pl_kaido",
+    "place": "pl_kaido",
+    "nodes_cm": null,
+    "length_m": 750,
+    "ext": {
+     "from": "pl_kakuredani ridge trailhead",
+     "to": "estate back gate"
+    }
+   }
+  ],
+  "patrols": [],
+  "ext": {
+   "pl_estate_night": {
+    "practice_mp_collision_unchanged": true,
+    "campaign_only_openings": [
+     {
+      "id": "opening_nagayamon",
+      "wall": "west (X=-3150)",
+      "y_range_cm": [
+       -180,
+       180
+      ],
+      "note": "gate leaves; closed until wave 3"
+     },
+     {
+      "id": "opening_wicket_west",
+      "wall": "west (X=-3150)",
+      "y_range_cm": [
+       -500,
+       -400
+      ],
+      "note": "潜り戸, breached at wave 2"
+     },
+     {
+      "id": "opening_bugugura_wicket",
+      "wall": "north (Y=+2550)",
+      "x_range_cm": [
+       -1060,
+       -940
+      ],
+      "note": "埋門 to pl_bugugura"
+     },
+     {
+      "id": "opening_back_gate",
+      "wall": "east (X=+3150)",
+      "y_range_cm": [
+       -180,
+       180
+      ],
+      "note": "裏門; cinematic and b13 arrival only"
+     }
+    ]
+   },
+   "pl_bugugura": {
+    "size_m": [
+     18,
+     14
+    ],
+    "cover": {
+     "well": [
+      450,
+      500
+     ],
+     "woodpile": [
+      650,
+      1000
+     ],
+     "armor_chests": [
+      [
+       -600,
+       350
+      ],
+      [
+       -650,
+       450
+      ]
+     ],
+     "taketaba_rack": [
+      200,
+      1250
+     ],
+     "pod": [
+      -300,
+      650
+     ]
+    }
+   },
+   "pl_kaido": {
+    "road": {
+     "width_m": 3.6,
+     "surface": "packed earth + gravel; stone paving only on grades > 8% and in the cutting"
+    }
+   },
+   "pl_ishibashi": {
+    "size_m": [
+     120,
+     80
+    ],
+    "bridge": {
+     "type": "granite slab-beam (石桁橋), 4 spans",
+     "deck_cm": {
+      "x": [
+       0,
+       1440
+      ],
+      "y": [
+       -135,
+       135
+      ],
+      "z": 150
+     }
+    }
+   },
+   "pl_kakuredani": {
+    "size_m": [
+     70,
+     220
+    ]
+   }
+  }
+ },
+ "ext": {
+  "pacing_min": {
+   "C": 17.0,
+   "E": 2.0,
+   "S": 0,
+   "P": 9.0,
+   "M": 9.5,
+   "Cin": 7.5
+  },
+  "unlocked_weapons_at_start": [
+   0,
+   18
+  ],
+  "unlocked_weapons_at_end": [
+   0,
+   18,
+   19
+  ],
+  "boss": {
+   "id": "boss_dunark",
+   "hp_normal": 1400,
+   "difficulty_windup_scale": {
+    "easy": 1.3,
+    "normal": 1.0,
+    "hard": 0.85
+   },
+   "stagger_damage_mult": 1.25,
+   "flank_damage_mult": 1.5,
+   "pattern_tables": {
+    "dunark_p1_notice": {
+     "beat_ms": 1300,
+     "measure": [
+      "quick_cut",
+      "quick_cut",
+      "heavy_overhead"
+     ],
+     "pause_ms": 1500,
+     "attacks": {
+      "quick_cut": {
+       "windup_ms": 500,
+       "active_ms": 120,
+       "recovery_ms": 350,
+       "damage": 18,
+       "telegraph": "blade_raise+tally_click",
+       "on_awase": "measure_reset",
+       "guard_stamina": 12
+      },
+      "heavy_overhead": {
+       "windup_ms": 900,
+       "active_ms": 150,
+       "recovery_ms": 1100,
+       "damage": 45,
+       "telegraph": "amber_blade_edge+double_click",
+       "on_awase": "stagger_1200ms",
+       "guard_chip": 12,
+       "guard_stamina": 40
+      }
+     },
+     "pause_rule": "frontal arrows deflected; arrows from > 45 deg off his facing and yari thrusts land"
+    },
+    "dunark_p2_notice": {
+     "beat_ms": 1100,
+     "measures": {
+      "A": [
+       "quick_cut",
+       "quick_cut",
+       "heavy_overhead"
+      ],
+      "B": [
+       "quick_cut",
+       "thrust",
+       "heavy_overhead"
+      ]
+     },
+     "sequence": [
+      "B",
+      "A",
+      "B",
+      "B"
+     ],
+     "pause_ms": 1200,
+     "attacks": {
+      "thrust": {
+       "windup_ms": 700,
+       "active_ms": 150,
+       "recovery_ms": 900,
+       "damage": 40,
+       "lunge_cm": 400,
+       "parryable": false,
+       "guard_chip": 20,
+       "guard_break": true,
+       "telegraph": "amber_tip_flare+bark",
+       "bark": "ch02.b15.dunark.008",
+       "marobashi_window_ms": 400,
+       "turn_lag_ms": 800
+      }
+     },
+     "arena_mod": {
+      "beam_fall_nw": {
+       "volume": "vol_fire_nw_p2",
+       "damage_per_s": 8,
+       "at": "phase_start",
+       "telegraph_ms": 1500
+      }
+     }
+    },
+    "dunark_p3_final": {
+     "beat_ms": 1000,
+     "measures": {
+      "C": [
+       "quick_cut",
+       "heavy_or_feint",
+       "quick_cut"
+      ],
+      "B": [
+       "quick_cut",
+       "thrust",
+       "heavy_overhead"
+      ]
+     },
+     "sequence": [
+      "C",
+      "C",
+      "B"
+     ],
+     "pause_ms": 1000,
+     "feint_rule": "every 2nd heavy is a feint (deterministic): blade tilts 15 deg, edge turned out, left shoulder does not drop; after the 900 ms windup he holds 400 ms then a quick_cut (500 ms)",
+     "adds": {
+      "shield_drone_1": {
+       "hp": 40,
+       "orbit_radius_cm": 300,
+       "blocks": "arrows toward Dunark",
+       "reindex_every_s": 8,
+       "reindex_window_ms": 1200,
+       "window_after_block_ms": 1200,
+       "respawn": false,
+       "bark": "ch02.b15.dunark.011"
+      }
+     }
+    }
+   },
+   "checkpoint_per_phase": true,
+   "defeat": "kill; outro cuts his ledger-plate through"
+  },
+  "enemy_baseline": {
+   "enforcer_rifle": {
+    "hp": 100,
+    "weapon": "levy carbine",
+    "burst": "3 rounds x 9 dmg, 350 ms apart",
+    "tell": "600 ms shoulder-and-stock raise",
+    "misses": "fixed pattern hit/miss/hit (W0.4), never random"
+   },
+   "blade_retainer": {
+    "hp": 120,
+    "cut_damage": 22,
+    "warning_ms": 420,
+    "rule": "fixed-direction warning; withdraws when crowded (existing)"
+   },
+   "shield_enforcer": {
+    "hp": 160,
+    "front_block_deg": 120,
+    "baton": {
+     "windup_ms": 600,
+     "damage": 16
+    },
+    "bash": {
+     "windup_ms": 450,
+     "damage": 10,
+     "knockback_cm": 150
+    },
+    "edge_thrust": "yari thrust to the shield rim: shield turns, 1000 ms opening"
+   },
+   "grenadier": {
+    "hp": 110,
+    "shell": {
+     "damage": 35,
+     "radius_cm": 300,
+     "arc_decal_ms": 1400,
+     "interval_s": 6
+    }
+   },
+   "marksman": {
+    "hp": 80,
+    "lock_ms": 900,
+    "lock_telegraph": "cyan glint + laser line",
+    "damage": 40,
+    "relocate_after_shots": 2
+   },
+   "drone": {
+    "hp": 40,
+    "net": {
+     "windup_ms": 800,
+     "telegraph": "cyan lock ring"
+    },
+    "scan": "cyan cone marks target",
+    "note": "one yumi arrow (52) destroys"
+   }
+  }
+ }
+}

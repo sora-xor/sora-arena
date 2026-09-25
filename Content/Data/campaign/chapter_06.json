@@ -1,0 +1,6706 @@
+{
+ "schema_version": 4,
+ "id": "ch06_ledger_vault",
+ "index": 5,
+ "source": "docs/campaign/chapter-06.md",
+ "title_ja": "債務金庫への潜入",
+ "title_en": "Ledger-Vault Infiltration",
+ "map": 3,
+ "secondary_maps": [
+  1
+ ],
+ "target_s": 3300,
+ "sites": [
+  {
+   "index": 0,
+   "beat": "ch06.b04",
+   "requires_sites": []
+  },
+  {
+   "index": 1,
+   "beat": "ch06.b08",
+   "requires_sites": [
+    0
+   ]
+  },
+  {
+   "index": 2,
+   "beat": "ch06.b11",
+   "requires_sites": [
+    1
+   ]
+  }
+ ],
+ "checkpoints": [
+  {
+   "beat": "ch06.b01",
+   "phase": 0,
+   "at_cs": 0
+  },
+  {
+   "beat": "ch06.b02",
+   "phase": 0,
+   "at_cs": 12000
+  },
+  {
+   "beat": "ch06.b03",
+   "phase": 0,
+   "at_cs": 36000
+  },
+  {
+   "beat": "ch06.b04",
+   "phase": 0,
+   "at_cs": 54000
+  },
+  {
+   "beat": "ch06.b05",
+   "phase": 0,
+   "at_cs": 78000
+  },
+  {
+   "beat": "ch06.b06",
+   "phase": 0,
+   "at_cs": 90000
+  },
+  {
+   "beat": "ch06.b07",
+   "phase": 0,
+   "at_cs": 126000
+  },
+  {
+   "beat": "ch06.b08",
+   "phase": 0,
+   "at_cs": 144000
+  },
+  {
+   "beat": "ch06.b09",
+   "phase": 0,
+   "at_cs": 168000
+  },
+  {
+   "beat": "ch06.b09",
+   "phase": 1,
+   "at_cs": 189000
+  },
+  {
+   "beat": "ch06.b10",
+   "phase": 0,
+   "at_cs": 210000
+  },
+  {
+   "beat": "ch06.b11",
+   "phase": 0,
+   "at_cs": 219000
+  },
+  {
+   "beat": "ch06.b13",
+   "phase": 0,
+   "at_cs": 252000
+  },
+  {
+   "beat": "ch06.b13",
+   "phase": 1,
+   "at_cs": 268800
+  },
+  {
+   "beat": "ch06.b13",
+   "phase": 2,
+   "at_cs": 283500
+  },
+  {
+   "beat": "ch06.b14",
+   "phase": 0,
+   "at_cs": 294000
+  },
+  {
+   "beat": "ch06.b15",
+   "phase": 0,
+   "at_cs": 312000
+  }
+ ],
+ "unlocks": [
+  {
+   "beat": "ch06.b05",
+   "weapons": [
+    3
+   ],
+   "mechanics": [],
+   "grants": []
+  },
+  {
+   "beat": "ch06.b06",
+   "weapons": [],
+   "mechanics": [
+    "tsubute"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch06.b07",
+   "weapons": [
+    13
+   ],
+   "mechanics": [],
+   "grants": []
+  },
+  {
+   "beat": "ch06.b09",
+   "weapons": [],
+   "mechanics": [
+    "muto_dori"
+   ],
+   "grants": []
+  },
+  {
+   "beat": "ch06.b10",
+   "weapons": [
+    10
+   ],
+   "mechanics": [],
+   "grants": []
+  }
+ ],
+ "beats": [
+  {
+   "id": "ch06.b01",
+   "type": "cinematic",
+   "place": "pl_citadel_moat",
+   "title_ja": "燃やさず、写せ",
+   "title_en": "Copy it. Do not burn it.",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_briefing",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch06/Sequences/LS_Ch06_B01_MoatBriefing",
+    "duration_s": 110,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_moat_reeds",
+     "equipped": "swim_stowed"
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch06.b02",
+   "type": "stealth_zone",
+   "place": "pl_citadel_moat",
+   "title_ja": "堀を泳ぎ、旧水門へ",
+   "title_en": "Swim the moat to the old water gate",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b01"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_moat_stealth",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "zone": "vol_moat_stealth",
+    "guards": [
+     {
+      "id": "g_moat_parapet_a",
+      "type": "enforcer_rifle",
+      "patrol": "spl_moat_parapet_a",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 3500,
+       "dark_range_cm": 1200
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_moat_parapet_b",
+      "type": "enforcer_rifle",
+      "patrol": "spl_moat_parapet_b",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 3500,
+       "dark_range_cm": 1200
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_moat_drone",
+      "type": "drone",
+      "patrol": "spl_moat_drone_fig8",
+      "sight": {
+       "cone_deg": 50,
+       "range_cm": 1200,
+       "dark_range_cm": 1000
+      },
+      "hearing_cm": 600
+     }
+    ],
+    "on_detected": "reinforce:w_moat_alarm",
+    "complete": {
+     "kind": "exit_reached",
+     "volume": null
+    },
+    "detection": {
+     "suspicion_rate": 0.8,
+     "suspicious_at": 0.35,
+     "alert_threshold": 1.0,
+     "search_s": 20
+    },
+    "noise_surfaces": [
+     {
+      "kind": "water_swim",
+      "volume": "vol_moat_stealth"
+     }
+    ],
+    "waves": [
+     {
+      "id": "w_moat_alarm",
+      "trigger": "alert_state:alert",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_moat_parapet_c"
+       }
+      ],
+      "effects": [
+       "searchlights_lock_last_seen_6s",
+       "drone_descend_to_300cm"
+      ]
+     }
+    ],
+    "allies": [
+     {
+      "npc": "npc_kohagi",
+      "role": "swim_lead",
+      "detectable": false
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "traversal": {
+     "mode": "swim",
+     "surface_speed_cm_s": 180,
+     "dive_speed_cm_s": 140,
+     "dive_max_s": 8,
+     "breath_recover_s": 3,
+     "drown_dps": 10,
+     "surface_noise_cm": 500,
+     "dive_noise_cm": 0,
+     "weapons_usable": false
+    },
+    "sensors": [
+     {
+      "id": "s_searchlight_1",
+      "kind": "searchlight",
+      "mount": "yagura_s1",
+      "sweep_deg": 70,
+      "period_s": 10,
+      "spot_radius_cm": 400,
+      "suspicious_after_s": 0.5,
+      "alert_after_s": 1.5
+     },
+     {
+      "id": "s_searchlight_2",
+      "kind": "searchlight",
+      "mount": "yagura_s2",
+      "sweep_deg": 70,
+      "period_s": 10,
+      "spot_radius_cm": 400,
+      "suspicious_after_s": 0.5,
+      "alert_after_s": 1.5
+     },
+     {
+      "id": "s_float_line",
+      "kind": "float_line",
+      "volume": "vol_moat_boom",
+      "touch_noise_cm": 1400,
+      "clear_depth_cm": 80
+     }
+    ],
+    "cover": [
+     "vol_moat_reeds",
+     "vol_moat_lotus_1",
+     "vol_moat_lotus_2",
+     "vol_moat_lotus_3",
+     "vol_moat_pilings",
+     "vol_moat_boats"
+    ],
+    "exit": "vol_water_gate_inner"
+   }
+  },
+  {
+   "id": "ch06.b03",
+   "type": "stealth_zone",
+   "place": "pl_ishigaki",
+   "title_ja": "算木積みの隅を登れ",
+   "title_en": "Climb the corner stones",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b02"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_moat_stealth",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "zone": "vol_obiguruwa_climb",
+    "guards": [
+     {
+      "id": "g_yagura_sentry",
+      "type": "enforcer_rifle",
+      "patrol": "spl_yagura_parapet",
+      "lookdown": {
+       "at": "ishiotoshi_1",
+       "every_s": 20,
+       "hold_s": 4
+      },
+      "sight": {
+       "cone_deg": 60,
+       "range_cm": 1800,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1000
+     }
+    ],
+    "on_detected": "combat",
+    "complete": {
+     "kind": "exit_reached",
+     "volume": null
+    },
+    "detection": {
+     "suspicion_rate": 1.0,
+     "suspicious_at": 0.35,
+     "alert_threshold": 1.0,
+     "search_s": 25
+    },
+    "light_sources": [
+     {
+      "id": "l_sentry_lamp",
+      "carried_by": "g_yagura_sentry",
+      "extinguishable": false
+     },
+     {
+      "id": "l_extrusion_strip",
+      "kind": "cyan_ledger_strip",
+      "extinguishable": false
+     }
+    ],
+    "allies": [
+     {
+      "npc": "npc_kohagi",
+      "role": "climb_guide",
+      "detectable": false
+     }
+    ]
+   },
+   "ext": {
+    "setup": {
+     "string_bow_at_start": true,
+     "string_anim_s": 3
+    },
+    "traversal": {
+     "mode": "climb",
+     "route": "spl_climb_corner",
+     "holds": 14,
+     "alt_route": "spl_climb_extrusion",
+     "alt_holds": 8,
+     "rest_ledges": [
+      "vol_rest_ledge_1",
+      "vol_rest_ledge_2"
+     ],
+     "grip_max": 100,
+     "grip_per_move": 6,
+     "grip_regen_on_ledge_per_s": 25,
+     "fall_damage": {
+      "over_cm": 400,
+      "damage": 30,
+      "lethal_over_cm": 800
+     }
+    },
+    "exit": "vol_climb_top"
+   }
+  },
+  {
+   "id": "ch06.b04",
+   "type": "stealth_zone",
+   "place": "pl_relay_room",
+   "title_ja": "監視の中継器を止めよ",
+   "title_en": "Disable the surveillance relay",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b03"
+   ],
+   "optional": false,
+   "site": 0,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_vault_stealth",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "zone": "vol_relay_room",
+    "guards": [
+     {
+      "id": "g_relay_1f",
+      "type": "enforcer_rifle",
+      "patrol": "spl_relay_1f_loop_50s",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_relay_2f",
+      "type": "enforcer_rifle",
+      "patrol": "spl_relay_2f_loop_40s",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_relay_auditor",
+      "type": "auditor",
+      "post": "post_relay_mitai",
+      "investigates": "dark_node",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_relay_drone",
+      "type": "drone",
+      "patrol": "spl_relay_orbit_30s",
+      "sight": {
+       "cone_deg": 60,
+       "range_cm": 1500,
+       "dark_range_cm": 1000
+      },
+      "hearing_cm": 600
+     }
+    ],
+    "on_detected": "reinforce:w_relay",
+    "complete": {
+     "kind": "objectives"
+    },
+    "detection": {
+     "suspicion_rate": 1.0,
+     "suspicious_at": 0.35,
+     "alert_threshold": 1.0,
+     "search_s": 25
+    },
+    "takedowns": {
+     "rear": true,
+     "lethal_default": false
+    },
+    "light_sources": [
+     {
+      "id": "l_worklamp_se",
+      "extinguishable": true,
+      "suspicion_delay_s": 5
+     },
+     {
+      "id": "l_worklamp_nw",
+      "extinguishable": true,
+      "suspicion_delay_s": 5
+     }
+    ],
+    "noise_surfaces": [
+     {
+      "kind": "gravel",
+      "volume": "vol_bell_clappers_1"
+     },
+     {
+      "kind": "gravel",
+      "volume": "vol_bell_clappers_2"
+     }
+    ],
+    "objectives": [
+     {
+      "id": "node_w",
+      "interact_s": 3,
+      "at": "relay_node_w"
+     },
+     {
+      "id": "node_e",
+      "interact_s": 3,
+      "at": "relay_node_e"
+     },
+     {
+      "id": "node_n",
+      "interact_s": 3,
+      "at": "relay_node_n"
+     },
+     {
+      "id": "exit",
+      "volume": "vol_relay_exit_east"
+     }
+    ],
+    "waves": [
+     {
+      "id": "w_relay",
+      "trigger": "alert_state:alert",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_relay_east_door",
+        "delay_s": 8
+       }
+      ],
+      "effects": [
+       "relay_nodes_locked_30s"
+      ]
+     }
+    ],
+    "allies": [
+     {
+      "npc": "npc_kohagi",
+      "role": "lookout_roof",
+      "detectable": false
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "sensors": [
+     {
+      "id": "s_relay_fan",
+      "kind": "rotating_scan",
+      "period_s": 12,
+      "exposed_s": 8,
+      "gap_s": 4,
+      "on_interact_exposed": {
+       "suspicion_add": 0.6,
+       "fan_lock_s": 2
+      }
+     }
+    ],
+    "bodies": {
+     "discoverable": true,
+     "drag": true,
+     "drag_speed_mult": 0.5
+    },
+    "on_complete_effects": [
+     "drone_marks_local_only_20m",
+     "moat_searchlights_fixed"
+    ]
+   }
+  },
+  {
+   "id": "ch06.b05",
+   "type": "dialogue",
+   "place": "pl_ledger_corridors",
+   "title_ja": "会計補イオタを探せ",
+   "title_en": "Find Junior Auditor Iota",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b04"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     3
+    ],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_iota",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "interact:crate_iota",
+    "mode": "ambient",
+    "camera": "soft_lookat",
+    "volume": "vol_archive_annex",
+    "lines": [
+     "ch06.b05.nyaakoto.001",
+     "ch06.b05.iota.001",
+     "ch06.b05.nyaakoto.002",
+     "ch06.b05.iota.002",
+     "ch06.b05.nyaakoto.003",
+     "ch06.b05.iota.003",
+     "ch06.b05.iota.004",
+     "ch06.b05.iota.005",
+     "ch06.b05.iota.006",
+     "ch06.b05.iota.007",
+     "ch06.b05.nyaakoto.004",
+     "ch06.b05.iota.008"
+    ]
+   },
+   "ext": {
+    "max_blocking_s": 20,
+    "grants": [
+     "key_slate"
+    ]
+   }
+  },
+  {
+   "id": "ch06.b06",
+   "type": "stealth_zone",
+   "place": "pl_ledger_corridors",
+   "title_ja": "帳簿回廊と鶯張りを抜けよ",
+   "title_en": "Cross the ledger aisles and the nightingale floor",
+   "target_s": 360,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b05"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "tsubute"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_vault_stealth",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "zone": [
+     "vol_ledger_aisles",
+     "vol_uguisu_corridor",
+     "vol_uguisu_garden"
+    ],
+    "guards": [
+     {
+      "id": "g_aisle_aud_1",
+      "type": "auditor",
+      "patrol": "spl_aisle_a1",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_aisle_aud_2",
+      "type": "auditor",
+      "patrol": "spl_aisle_a2",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_aisle_aud_3",
+      "type": "auditor",
+      "patrol": "spl_aisle_a4",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_aisle_aud_4",
+      "type": "auditor",
+      "patrol": "spl_aisle_a5",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_aisle_enf_c2",
+      "type": "enforcer_rifle",
+      "post": "post_c2",
+      "scan": {
+       "sweep_deg": 90,
+       "every_s": 8
+      },
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_aisle_enf_c4",
+      "type": "enforcer_rifle",
+      "post": "post_c4",
+      "scan": {
+       "sweep_deg": 90,
+       "every_s": 8
+      },
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_aisle_drone_a",
+      "type": "drone",
+      "patrol": "spl_shelf_top_a",
+      "sight": {
+       "cone_deg": 60,
+       "range_cm": 1500,
+       "dark_range_cm": 1000
+      },
+      "hearing_cm": 600
+     },
+     {
+      "id": "g_aisle_drone_b",
+      "type": "drone",
+      "patrol": "spl_shelf_top_b",
+      "sight": {
+       "cone_deg": 60,
+       "range_cm": 1500,
+       "dark_range_cm": 1000
+      },
+      "hearing_cm": 600
+     },
+     {
+      "id": "g_uguisu_aud_corner",
+      "type": "auditor",
+      "post": "post_uguisu_corner",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_uguisu_aud_legb",
+      "type": "auditor",
+      "patrol": "spl_uguisu_legb",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_uguisu_enf_lega",
+      "type": "enforcer_rifle",
+      "patrol": "spl_uguisu_lega",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_uguisu_enf_door",
+      "type": "enforcer_rifle",
+      "post": "post_sugido",
+      "lure_to": "vol_garden_edge",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     }
+    ],
+    "on_detected": "reinforce:w_lockdown",
+    "complete": {
+     "kind": "exit_reached",
+     "volume": null
+    },
+    "detection": {
+     "suspicion_rate": 1.0,
+     "suspicious_at": 0.35,
+     "alert_threshold": 1.0,
+     "search_s": 25,
+     "wary_after_search": {
+      "suspicion_rate_mult": 1.2
+     }
+    },
+    "takedowns": {
+     "rear": true,
+     "lethal_default": false
+    },
+    "noise_surfaces": [
+     {
+      "kind": "nightingale_floor",
+      "volume": "vol_uguisu_corridor",
+      "edge_strip": "vol_uguisu_edge",
+      "walk_cm": 1800,
+      "crouch_cm": 900,
+      "edge_crouch_cm": 0
+     },
+     {
+      "kind": "gravel",
+      "volume": "vol_uguisu_garden",
+      "mult": 1.5
+     },
+     {
+      "kind": "puddle",
+      "volume": "vol_aisle_condensation",
+      "mult": 1.5
+     },
+     {
+      "kind": "tatami",
+      "volume": "vol_uguisu_rooms",
+      "mult": 0.5,
+      "fusuma_slide_cm": 400
+     }
+    ],
+    "lures": {
+     "tsubute": {
+      "max_carried": 3,
+      "pickups": [
+       "vol_rubble_c1",
+       "vol_rubble_c3",
+       "vol_rubble_c4"
+      ],
+      "impact_noise_cm": 1400,
+      "investigate_s": 8
+     }
+    },
+    "waves": [
+     {
+      "id": "w_lockdown",
+      "trigger": "ai_event:alarm_raised",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_aisle_north_door"
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_aisle_south_door"
+       }
+      ],
+      "effects": [
+       "shutter_c3_closed_30s"
+      ]
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "places_also": [
+     "pl_uguisu_hall"
+    ],
+    "alarm_points": [
+     {
+      "id": "alarm_c2_a1",
+      "run_s": 4
+     },
+     {
+      "id": "alarm_c3_a5",
+      "run_s": 4
+     }
+    ],
+    "bodies": {
+     "discoverable": true,
+     "drag": true,
+     "drag_speed_mult": 0.5
+    },
+    "exit": "vol_sugido"
+   }
+  },
+  {
+   "id": "ch06.b07",
+   "type": "explore_optional",
+   "place": "pl_uguisu_hall",
+   "title_ja": "押収品庫を調べる（任意）",
+   "title_en": "Search the seized-goods store (optional)",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b06"
+   ],
+   "optional": true,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     13
+    ],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_vault_stealth",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "volume": "vol_vault_armory",
+    "pois": [
+     {
+      "id": "poi_phantom_locker",
+      "kind": "cache"
+     },
+     {
+      "id": "poi_contraband",
+      "kind": "lore"
+     },
+     {
+      "id": "poi_heirloom_map",
+      "kind": "lore"
+     },
+     {
+      "id": "poi_heirloom_shuttle",
+      "kind": "lore"
+     },
+     {
+      "id": "poi_arrow_cache",
+      "kind": "cache"
+     },
+     {
+      "id": "poi_vista",
+      "kind": "vista"
+     }
+    ],
+    "rewards": [
+     "ch06.c03",
+     "ch06.c04",
+     "arrows:6"
+    ],
+    "exit_hint_after_s": 150
+   },
+   "ext": {
+    "auto_grant_if_missed": "ch07.b01"
+   }
+  },
+  {
+   "id": "ch06.b08",
+   "type": "production_task",
+   "place": "pl_uguisu_hall",
+   "title_ja": "三つの帳台で総高を写せ",
+   "title_en": "Copy the totals at three desks",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b06"
+   ],
+   "optional": false,
+   "site": 1,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": {
+    "item_ja": "債務帳の写し",
+    "item_en": "Ledger copy",
+    "qty": 3,
+    "unit_ja": "冊",
+    "unit_en": "volumes"
+   },
+   "music": "ch06_copy",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "hold",
+    "hold": {
+     "volume": "vol_ohiroma_kicho",
+     "interact_points": [
+      "desk_tagata",
+      "desk_machikata",
+      "desk_shokukata"
+     ],
+     "per_point_s": 30,
+     "contest": "pause"
+    },
+    "stealth": true,
+    "detection": {
+     "suspicion_rate": 1.0,
+     "suspicious_at": 0.35,
+     "alert_threshold": 1.0,
+     "search_s": 25
+    },
+    "takedowns": {
+     "rear": true,
+     "lethal_default": false
+    },
+    "waves": [
+     {
+      "id": "w_kicho_patrol",
+      "trigger": "start",
+      "enemies": [
+       {
+        "type": "auditor",
+        "count": 3,
+        "spawn": "sp_kicho_aud",
+        "patrol": [
+         "spl_kicho_a",
+         "spl_kicho_b",
+         "spl_kicho_c"
+        ]
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 1,
+        "spawn": "sp_kicho_enf",
+        "patrol": "spl_kicho_irigawa"
+       },
+       {
+        "type": "drone",
+        "count": 1,
+        "spawn": "sp_kicho_air",
+        "patrol": "spl_kicho_air"
+       }
+      ]
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "light_carried": {
+     "item": "teshoku_candle",
+     "radius_cm": 350,
+     "visibility_mult": 2.0,
+     "cupped": {
+      "visibility_mult": 1.2,
+      "progress_mult": 0.5
+     }
+    },
+    "bodies": {
+     "discoverable": true,
+     "drag": true,
+     "drag_speed_mult": 0.5
+    }
+   }
+  },
+  {
+   "id": "ch06.b09",
+   "type": "duel",
+   "place": "pl_archive",
+   "title_ja": "虎之介と立ち合え",
+   "title_en": "Face Toranosuke",
+   "target_s": 420,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b08"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "muto_dori"
+    ],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_duel_toranosuke",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "opponent": "npc_toranosuke",
+    "weapons": {
+     "player": [
+      0
+     ],
+     "opponent": "katana"
+    },
+    "lethal": false,
+    "scoring": {
+     "mode": "hp"
+    },
+    "ring": "vol_archive_ring",
+    "finisher": "muto_dori",
+    "events": [
+     {
+      "at_hp_pct": 50,
+      "id": "family_page",
+      "cinematic": "LS_Ch06_B09_FamilyPage",
+      "max_s": 20,
+      "checkpoint": true
+     }
+    ],
+    "loss_policy": "retry",
+    "checkpoint_per_phase": true
+   },
+   "ext": {
+    "opponent_hp": 600,
+    "hp_floor_pct": 10,
+    "pattern_tables": [
+     {
+      "from_hp_pct": 100,
+      "table": "toranosuke_steel_p1"
+     },
+     {
+      "from_hp_pct": 50,
+      "table": "toranosuke_steel_p2"
+     }
+    ],
+    "muto": {
+     "requires_sheathed": true,
+     "sheathe_ms": 700,
+     "window_ms": 180,
+     "window_ms_easy": 234,
+     "window_ms_hard": 153,
+     "eligible": [
+      "makko_giri",
+      "kiriotoshi_rush",
+      "nidan_makko"
+     ],
+     "miss_takes_hit": true
+    }
+   }
+  },
+  {
+   "id": "ch06.b10",
+   "type": "dialogue",
+   "place": "pl_archive",
+   "title_ja": "誓い",
+   "title_en": "The pledge",
+   "target_s": 90,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b09"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     10
+    ],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_pledge",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "beat_start",
+    "mode": "ambient",
+    "camera": "soft_lookat",
+    "lines": [
+     "ch06.b10.toranosuke.001",
+     "ch06.b10.toranosuke.002",
+     "ch06.b10.nyaakoto.001",
+     "ch06.b10.toranosuke.003",
+     "ch06.b10.nyaakoto.002",
+     "ch06.b10.toranosuke.004",
+     "ch06.b10.nyaakoto.003",
+     "ch06.b10.toranosuke.005",
+     "ch06.b10.nyaakoto.004",
+     "ch06.b10.toranosuke.006"
+    ]
+   },
+   "ext": {
+    "max_blocking_s": 20
+   }
+  },
+  {
+   "id": "ch06.b11",
+   "type": "stealth_zone",
+   "place": "pl_press_hall",
+   "title_ja": "親機三台を止めよ",
+   "title_en": "Jam the three master presses",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b10"
+   ],
+   "optional": false,
+   "site": 2,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_press",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "zone": "vol_press_hall",
+    "guards": [
+     {
+      "id": "g_press_aud_1",
+      "type": "auditor",
+      "patrol": "spl_press_inspect_a",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_press_aud_2",
+      "type": "auditor",
+      "patrol": "spl_press_inspect_b",
+      "sight": {
+       "cone_deg": 70,
+       "range_cm": 1800,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 900
+     },
+     {
+      "id": "g_press_enf_1",
+      "type": "enforcer_rifle",
+      "patrol": "spl_press_floor_ab",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_press_enf_2",
+      "type": "enforcer_rifle",
+      "patrol": "spl_press_floor_bc",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_press_enf_3",
+      "type": "enforcer_rifle",
+      "patrol": "spl_press_catwalk",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 3000,
+       "dark_range_cm": 1000
+      },
+      "hearing_cm": 1000
+     },
+     {
+      "id": "g_press_drone",
+      "type": "drone",
+      "patrol": "spl_press_air_30s",
+      "sight": {
+       "cone_deg": 60,
+       "range_cm": 1500,
+       "dark_range_cm": 1000
+      },
+      "hearing_cm": 600
+     }
+    ],
+    "on_detected": "reinforce:w_press",
+    "complete": {
+     "kind": "objectives"
+    },
+    "detection": {
+     "suspicion_rate": 1.0,
+     "suspicious_at": 0.35,
+     "alert_threshold": 1.0,
+     "search_s": 25
+    },
+    "takedowns": {
+     "rear": true,
+     "lethal_default": false
+    },
+    "light_sources": [
+     {
+      "id": "l_die_lamp_a2",
+      "extinguishable": "arrow",
+      "suspicion_delay_s": 5
+     },
+     {
+      "id": "l_die_lamp_b2",
+      "extinguishable": "arrow",
+      "suspicion_delay_s": 5
+     },
+     {
+      "id": "l_die_lamp_c1",
+      "extinguishable": "arrow",
+      "suspicion_delay_s": 5
+     }
+    ],
+    "noise_surfaces": [
+     {
+      "kind": "gravel",
+      "volume": "vol_press_slugs_1"
+     },
+     {
+      "kind": "gravel",
+      "volume": "vol_press_slugs_2"
+     }
+    ],
+    "objectives": [
+     {
+      "id": "press_a2",
+      "interact_s": 4,
+      "at": "press_a2"
+     },
+     {
+      "id": "press_b2",
+      "interact_s": 4,
+      "at": "press_b2"
+     },
+     {
+      "id": "press_c1",
+      "interact_s": 4,
+      "at": "press_c1"
+     },
+     {
+      "id": "exit",
+      "volume": "vol_press_lift"
+     }
+    ],
+    "waves": [
+     {
+      "id": "w_press",
+      "trigger": "alert_state:alert",
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_press_lift",
+        "delay_s": 10
+       }
+      ]
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "ext": {
+    "noise_mask": {
+     "source": "press_stamp",
+     "period_ms": 1600,
+     "window_ms": 500,
+     "radius_cm": 800,
+     "player_noise_mult": 0.2
+    },
+    "press_silent_inspection": {
+     "auditor_investigates_within_s": 20
+    },
+    "bodies": {
+     "discoverable": true,
+     "drag": true,
+     "drag_speed_mult": 0.5
+    }
+   }
+  },
+  {
+   "id": "ch06.b12",
+   "type": "cinematic",
+   "place": "pl_vault_core",
+   "title_ja": "停電",
+   "title_en": "Blackout",
+   "target_s": 90,
+   "checkpoint": false,
+   "requires": [
+    "ch06.b11"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_boss_eskro_intro",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch06/Sequences/LS_Ch06_B12_Blackout",
+    "duration_s": 80,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_vault_core_lift",
+     "equipped": [
+      0
+     ]
+    }
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13",
+   "type": "boss",
+   "place": "pl_vault_core",
+   "title_ja": "金庫番エスクロを封じよ",
+   "title_en": "Seal away Vault Warden Eskro",
+   "target_s": 420,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b12"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_boss_eskro",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "boss": "boss_eskro",
+    "arena": {
+     "volume": "vol_vault_core",
+     "lock": true
+    },
+    "phases": [
+     {
+      "hp_pct_start": 100,
+      "pattern_table": "eskro_hunt"
+     },
+     {
+      "hp_pct_start": 60,
+      "pattern_table": "eskro_flood",
+      "arena_mod": "flood_25cm"
+     },
+     {
+      "hp_pct_start": 25,
+      "pattern_table": "eskro_frenzy",
+      "adds": "audit_hound_pair"
+     }
+    ],
+    "defeat": "capture",
+    "intro_cinematic": "ch06.b12",
+    "outro_cinematic": "LS_Ch06_B13_Sealed",
+    "checkpoint_per_phase": true,
+    "telegraph": {
+     "palette": "default",
+     "min_windup_ms": 500
+    },
+    "finisher": "none"
+   },
+   "ext": {
+    "boss_hp": 1800,
+    "defeat_interact": {
+     "id": "bulkhead_lever",
+     "hold_s": 2
+    },
+    "arena_props": {
+     "tsubute_piles": [
+      "vol_core_rubble_090",
+      "vol_core_rubble_210",
+      "vol_core_rubble_330"
+     ],
+     "shelves": 8,
+     "candle_placeable": true
+    }
+   }
+  },
+  {
+   "id": "ch06.b14",
+   "type": "stealth_zone",
+   "place": "pl_citadel_moat",
+   "title_ja": "満ちる暗渠を抜けよ",
+   "title_en": "Escape through the flooding culvert",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b13"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_exfil",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "zone": [
+     "vol_ankyo_conduit",
+     "vol_moat_exfil"
+    ],
+    "guards": [
+     {
+      "id": "g_grate_1",
+      "type": "enforcer_rifle",
+      "post": "post_grate_1",
+      "lamp_beam": "vol_grate_beam_1",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_grate_2",
+      "type": "enforcer_rifle",
+      "post": "post_grate_2",
+      "lamp_beam": "vol_grate_beam_2",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_grate_3",
+      "type": "enforcer_rifle",
+      "patrol": "spl_obiguruwa_search",
+      "lamp_beam": "vol_grate_beam_3",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_gate_drone",
+      "type": "drone",
+      "patrol": "spl_gate_drone",
+      "sight": {
+       "cone_deg": 60,
+       "range_cm": 1500,
+       "dark_range_cm": 1000
+      },
+      "hearing_cm": 600
+     },
+     {
+      "id": "g_boat_1",
+      "type": "enforcer_rifle",
+      "patrol": "spl_moat_boat_60s",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     },
+     {
+      "id": "g_boat_2",
+      "type": "enforcer_rifle",
+      "patrol": "spl_moat_boat_60s",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 2400,
+       "dark_range_cm": 900
+      },
+      "hearing_cm": 1200
+     }
+    ],
+    "on_detected": "combat",
+    "complete": {
+     "kind": "exit_reached",
+     "volume": null
+    },
+    "detection": {
+     "suspicion_rate": 0.9,
+     "suspicious_at": 0.35,
+     "alert_threshold": 1.0,
+     "search_s": 20
+    },
+    "noise_surfaces": [
+     {
+      "kind": "running_water",
+      "volume": "vol_ankyo_conduit",
+      "mult": 0.5
+     },
+     {
+      "kind": "water_swim",
+      "volume": "vol_moat_exfil"
+     }
+    ],
+    "allies": [
+     {
+      "npc": "npc_toranosuke",
+      "role": "follow",
+      "detectable": false
+     },
+     {
+      "npc": "npc_iota",
+      "role": "follow",
+      "carried_after": "vol_ankyo_deep",
+      "detectable": false
+     },
+     {
+      "npc": "npc_kohagi",
+      "role": "gate_winch",
+      "detectable": false
+     }
+    ]
+   },
+   "ext": {
+    "hazard": {
+     "kind": "rising_water",
+     "from_cm": 40,
+     "to_cm": 160,
+     "over_s": 150,
+     "deep_volume": "vol_ankyo_deep"
+    },
+    "traversal": {
+     "mode": "wade_swim",
+     "wade_noise_mult": 2.0,
+     "dive_max_s": 8
+    },
+    "exit": "vol_moat_outer_bank"
+   }
+  },
+  {
+   "id": "ch06.b15",
+   "type": "dialogue",
+   "place": "pl_citadel_moat",
+   "title_ja": "数字を読む",
+   "title_en": "Reading the numbers",
+   "target_s": 60,
+   "checkpoint": true,
+   "requires": [
+    "ch06.b14"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_numbers",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "beat_start",
+    "mode": "ambient",
+    "camera": "soft_lookat",
+    "volume": "vol_moat_outer_bank",
+    "lines": [
+     "ch06.b15.oyuki.001",
+     "ch06.b15.oyuki.002",
+     "ch06.b15.oyuki.003",
+     "ch06.b15.iota.001",
+     "ch06.b15.toranosuke.001",
+     "ch06.b15.oyuki.004",
+     "ch06.b15.nyaakoto.001"
+    ]
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch06.b16",
+   "type": "cinematic",
+   "place": "pl_kosatsuba",
+   "title_ja": "帳は民の前に",
+   "title_en": "The ledger before the people",
+   "target_s": 120,
+   "checkpoint": false,
+   "requires": [
+    "ch06.b15"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": []
+   },
+   "registry": null,
+   "music": "ch06_dawn_kosatsu",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch06/Sequences/LS_Ch06_B16_KosatsuDawn",
+    "duration_s": 115,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "chapter_complete": true,
+     "registry_page": "ch06"
+    }
+   },
+   "ext": {}
+  }
+ ],
+ "lines": [
+  {
+   "id": "ch06.b01.iota.001",
+   "beat": "ch06.b01",
+   "speaker": "clerk",
+   "ja": "水門の格子は、水の下で外してございます。",
+   "en": "The water-gate grille is unfastened below the waterline.",
+   "duration_s": 3.8,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b01.kohagi.001",
+   "beat": "ch06.b01",
+   "speaker": "scout",
+   "ja": "金庫の奥に、街を縛る装置がある。",
+   "en": "The machine binding the city lies deep inside the vault.",
+   "duration_s": 4.8,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "catalog_anchor": 1
+   }
+  },
+  {
+   "id": "ch06.b01.oyuki.001",
+   "beat": "ch06.b01",
+   "speaker": "leader",
+   "ja": "燃やさず、写しなさい。",
+   "en": "Copy it. Do not burn it.",
+   "duration_s": 1.9,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b01.nyaakoto.001",
+   "beat": "ch06.b01",
+   "speaker": "samurai",
+   "ja": "燃やせば早い。なぜ写すのですか。",
+   "en": "Burning is faster. Why copy it?",
+   "duration_s": 2.8,
+   "register": "samurai_restrained",
+   "delivery": "polite",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b01.oyuki.002",
+   "beat": "ch06.b01",
+   "speaker": "leader",
+   "ja": "燃やせば、彼らは「失われた」と言って、書き直すだけです。",
+   "en": "Burn it, and they call it lost and simply write it again.",
+   "duration_s": 4.5,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b01.oyuki.003",
+   "beat": "ch06.b01",
+   "speaker": "leader",
+   "ja": "写せば、民が自分の数字を読めます。",
+   "en": "Copy it, and people can read their own numbers.",
+   "duration_s": 3.4,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b01.oyuki.004",
+   "beat": "ch06.b01",
+   "speaker": "leader",
+   "ja": "総高と利率だけで足ります。欲張らぬように。",
+   "en": "Totals and rates are enough. Do not be greedy.",
+   "duration_s": 4.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b01.kohagi.002",
+   "beat": "ch06.b01",
+   "speaker": "scout",
+   "ja": "弦は、あたしが濡らさず運ぶ。",
+   "en": "I'll carry your bowstring. It stays dry.",
+   "duration_s": 2.7,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b01.kohagi.003",
+   "beat": "ch06.b01",
+   "speaker": "scout",
+   "ja": "泳ぐよ。",
+   "en": "We swim.",
+   "duration_s": 1.5,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b01.nyaakoto.002",
+   "beat": "ch06.b01",
+   "speaker": "samurai",
+   "ja": "……泳ぐ。",
+   "en": "…We swim.",
+   "duration_s": 1.5,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b02.kohagi.001",
+   "beat": "ch06.b02",
+   "speaker": "scout",
+   "ja": "息は八つまで。潜って、灯りをやり過ごす。",
+   "en": "Eight counts of breath. Dive, and let the light pass.",
+   "duration_s": 3.6,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b02.iota.001",
+   "beat": "ch06.b02",
+   "speaker": "clerk",
+   "ja": "探照灯様の周期は十秒。本日も定刻どおりでございます。",
+   "en": "The searchlights sweep every ten seconds. Punctual as ever.",
+   "duration_s": 5.3,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b02.kohagi.002",
+   "beat": "ch06.b02",
+   "speaker": "scout",
+   "ja": "浮きの綱。触ると鳴る。下をくぐって。",
+   "en": "A float line. It rings if touched. Go under.",
+   "duration_s": 3.5,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b02.kohagi.003",
+   "beat": "ch06.b02",
+   "speaker": "scout",
+   "ja": "灯台下暗し。壁際を行く。",
+   "en": "Darkest under the lamp. We hug the wall.",
+   "duration_s": 2.8,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b02.enforcer.001",
+   "beat": "ch06.b02",
+   "speaker": "enforcer",
+   "ja": "水面に波紋。……魚類と推定いたします。",
+   "en": "Ripples on the water. Presumed to be fish.",
+   "duration_s": 4.1,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b02.enforcer.002",
+   "beat": "ch06.b02",
+   "speaker": "enforcer",
+   "ja": "侵入者を確認。照射を集中いたします。",
+   "en": "Intruder confirmed. Concentrating the beams.",
+   "duration_s": 3.9,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b02.enforcer.003",
+   "beat": "ch06.b02",
+   "speaker": "enforcer",
+   "ja": "潜水中と推定。浮上をお待ちいたします。",
+   "en": "Presumed submerged. We will await surfacing.",
+   "duration_s": 3.9,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b03.kohagi.001",
+   "beat": "ch06.b03",
+   "speaker": "scout",
+   "ja": "弦。張って。",
+   "en": "Your string. String the bow.",
+   "duration_s": 1.9,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b03.kohagi.002",
+   "beat": "ch06.b03",
+   "speaker": "scout",
+   "ja": "角の石は長短の互い違い。そこが手掛かり。",
+   "en": "The corner stones alternate long and short. Those are your holds.",
+   "duration_s": 4.4,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b03.kohagi.003",
+   "beat": "ch06.b03",
+   "speaker": "scout",
+   "ja": "上、石落とし。……止まって。",
+   "en": "Drop-bay above. …Freeze.",
+   "duration_s": 2.9,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b03.enforcer.001",
+   "beat": "ch06.b03",
+   "speaker": "enforcer",
+   "ja": "壁面に債務者。落下による回収を試みます。",
+   "en": "Debtor on the wall. Attempting recovery by fall.",
+   "duration_s": 4.3,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b03.kohagi.004",
+   "beat": "ch06.b03",
+   "speaker": "scout",
+   "ja": "あたしは屋根に回る。中は、あんたが。",
+   "en": "I'll take the roof. Inside is yours.",
+   "duration_s": 3.2,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.iota.001",
+   "beat": "ch06.b04",
+   "speaker": "clerk",
+   "ja": "申し訳ございません、ただいま監査が——",
+   "en": "My apologies. An audit is under way—",
+   "duration_s": 3.1,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.kohagi.001",
+   "beat": "ch06.b04",
+   "speaker": "scout",
+   "ja": "窓から見てる。光る柱の目が、回ってる。",
+   "en": "I'm at the window. The glowing pillar's eye is turning.",
+   "duration_s": 3.7,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.kohagi.002",
+   "beat": "ch06.b04",
+   "speaker": "scout",
+   "ja": "目が背を向けたら、節を抜いて。三つ。",
+   "en": "When the eye turns away, pull a node. Three.",
+   "duration_s": 3.5,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.kohagi.003",
+   "beat": "ch06.b04",
+   "speaker": "scout",
+   "ja": "首を傾げたら、怪しんでる。まだ間に合う。",
+   "en": "A tilted head means suspicion. You still have time.",
+   "duration_s": 3.6,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.auditor.001",
+   "beat": "ch06.b04",
+   "speaker": "auditor",
+   "ja": "第一節、応答なし。……記載漏れでしょうか。",
+   "en": "Node one, no response. …An omission in the record?",
+   "duration_s": 4.2,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.auditor.002",
+   "beat": "ch06.b04",
+   "speaker": "auditor",
+   "ja": "……おや。帳尻が合いませんね。",
+   "en": "Hm. The figures do not reconcile.",
+   "duration_s": 2.9,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.auditor.003",
+   "beat": "ch06.b04",
+   "speaker": "auditor",
+   "ja": "警報を、起票いたします！",
+   "en": "Filing an alarm!",
+   "duration_s": 2.3,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.enforcer.001",
+   "beat": "ch06.b04",
+   "speaker": "enforcer",
+   "ja": "音源、未登録。確認いたします。",
+   "en": "Unregistered sound. Verifying.",
+   "duration_s": 3.2,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.enforcer.002",
+   "beat": "ch06.b04",
+   "speaker": "enforcer",
+   "ja": "延滞者を発見。回収に移ります。",
+   "en": "Delinquent located. Proceeding to collection.",
+   "duration_s": 3.3,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.enforcer.003",
+   "beat": "ch06.b04",
+   "speaker": "enforcer",
+   "ja": "勘定を、再照合いたします。",
+   "en": "Re-reconciling the count.",
+   "duration_s": 2.6,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.enforcer.004",
+   "beat": "ch06.b04",
+   "speaker": "enforcer",
+   "ja": "誤差として処理いたします。",
+   "en": "Recording it as a rounding error.",
+   "duration_s": 2.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.enforcer.005",
+   "beat": "ch06.b04",
+   "speaker": "enforcer",
+   "ja": "損切りいたします。後退。",
+   "en": "Cutting losses. Withdrawing.",
+   "duration_s": 2.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.enforcer.006",
+   "beat": "ch06.b04",
+   "speaker": "enforcer",
+   "ja": "職員一名、未稼働。監査を要請いたします。",
+   "en": "One staff member non-performing. Requesting an audit.",
+   "duration_s": 4.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b04.kohagi.004",
+   "beat": "ch06.b04",
+   "speaker": "scout",
+   "ja": "石板、借りる。水門で帰り道を守る。",
+   "en": "I'll take the slate. I'll hold the gate for the way home.",
+   "duration_s": 3.8,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.nyaakoto.001",
+   "beat": "ch06.b05",
+   "speaker": "samurai",
+   "ja": "……イオタ殿か。",
+   "en": "…Are you Iota?",
+   "duration_s": 1.5,
+   "register": "samurai_restrained",
+   "delivery": "polite",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.iota.001",
+   "beat": "ch06.b05",
+   "speaker": "clerk",
+   "ja": "は、はい。会計補イオタでございます。",
+   "en": "Y-yes. Junior Auditor Iota, at your service.",
+   "duration_s": 3.1,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.nyaakoto.002",
+   "beat": "ch06.b05",
+   "speaker": "samurai",
+   "ja": "箱の中に、いたのか。",
+   "en": "You were in the crate?",
+   "duration_s": 1.8,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.iota.002",
+   "beat": "ch06.b05",
+   "speaker": "clerk",
+   "ja": "……大変、快適でございました。",
+   "en": "It was… comfortable.",
+   "duration_s": 2.9,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.nyaakoto.003",
+   "beat": "ch06.b05",
+   "speaker": "samurai",
+   "ja": "なぜ、我らに文を寄こした。",
+   "en": "Why did you send us word?",
+   "duration_s": 2.3,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.iota.003",
+   "beat": "ch06.b05",
+   "speaker": "clerk",
+   "ja": "計算しました。四百年分。",
+   "en": "I ran the numbers. Four hundred years' worth.",
+   "duration_s": 3.0,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.iota.004",
+   "beat": "ch06.b05",
+   "speaker": "clerk",
+   "ja": "閉じない帳簿は、帳簿ではございません。……判決でございます。",
+   "en": "A ledger that never closes is not a ledger. It is a sentence.",
+   "duration_s": 5.4,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.iota.005",
+   "beat": "ch06.b05",
+   "speaker": "clerk",
+   "ja": "鍵板様と、護身の針銃を。一度も撃っておりません。",
+   "en": "The honored key-slate, and my needle gun. Never once fired.",
+   "duration_s": 4.8,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.iota.006",
+   "beat": "ch06.b05",
+   "speaker": "clerk",
+   "ja": "金庫番エスクロ様には、目がございません。耳で帳尻を合わせます。",
+   "en": "Vault Warden Eskro has no eyes. He balances the books by ear.",
+   "duration_s": 5.6,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.iota.007",
+   "beat": "ch06.b05",
+   "speaker": "clerk",
+   "ja": "それと……記録庫の番は土地のお侍様。鷲尾様と申されます。",
+   "en": "Also… the archive guard is a local samurai. A Washio.",
+   "duration_s": 5.8,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.nyaakoto.004",
+   "beat": "ch06.b05",
+   "speaker": "samurai",
+   "ja": "……虎之介。",
+   "en": "…Toranosuke.",
+   "duration_s": 1.5,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b05.iota.008",
+   "beat": "ch06.b05",
+   "speaker": "clerk",
+   "ja": "わたくしはここで照合盤を見て、巡回をお知らせいたします。",
+   "en": "I will watch the reconciliation board here and report the patrols.",
+   "duration_s": 4.9,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.iota.001",
+   "beat": "ch06.b06",
+   "speaker": "clerk",
+   "ja": "回廊に監査官様が四名、執行兵が二名。棚の上に目録が二機。",
+   "en": "Aisles: four auditors, two enforcers. Two drones over the shelves.",
+   "duration_s": 6.6,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.iota.002",
+   "beat": "ch06.b06",
+   "speaker": "clerk",
+   "ja": "監査官様は戦えませんが、警報台へ走られます。",
+   "en": "Auditors cannot fight, but they will run for the alarm.",
+   "duration_s": 4.3,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.nyaakoto.001",
+   "beat": "ch06.b06",
+   "speaker": "samurai",
+   "ja": "石垣の崩れか。……礫になる。",
+   "en": "Broken rampart stone. …These will do for throwing.",
+   "duration_s": 3.4,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.kohagi.001",
+   "beat": "ch06.b06",
+   "speaker": "scout",
+   "ja": "礫を投げて。音のした方を、あいつら見に行く。",
+   "en": "Throw a stone. They'll go and look where it lands.",
+   "duration_s": 4.0,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.auditor.001",
+   "beat": "ch06.b06",
+   "speaker": "auditor",
+   "ja": "会計補イオタ、本日無断欠勤。減給処理いたします。",
+   "en": "Junior Auditor Iota, absent without notice. Processing a pay cut.",
+   "duration_s": 5.2,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.auditor.002",
+   "beat": "ch06.b06",
+   "speaker": "auditor",
+   "ja": "金庫番様が、今夜はお目覚めです。筆の音も、お控えを。",
+   "en": "The Warden is awake tonight. Keep even your brushstrokes quiet.",
+   "duration_s": 5.2,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.auditor.003",
+   "beat": "ch06.b06",
+   "speaker": "auditor",
+   "ja": "物音、一件。記録いたします。",
+   "en": "One noise. Logging it.",
+   "duration_s": 3.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.kohagi.002",
+   "beat": "ch06.b06",
+   "speaker": "scout",
+   "ja": "鳴く床。真ん中は鳴る。壁際の端だけ、黙ってる。",
+   "en": "A singing floor. The middle chirps. Only the wall edge is silent.",
+   "duration_s": 4.7,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.auditor.004",
+   "beat": "ch06.b06",
+   "speaker": "auditor",
+   "ja": "……鶯？　夜に、でございますか。",
+   "en": "…A nightingale? At night?",
+   "duration_s": 2.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b06.iota.003",
+   "beat": "ch06.b06",
+   "speaker": "clerk",
+   "ja": "その杉戸の先に、記帳の間と記録庫。……鷲尾様も、そちらに。",
+   "en": "Past that cedar door: the Registry Hall and the archive. …Washio too.",
+   "duration_s": 6.0,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b07.iota.001",
+   "beat": "ch06.b07",
+   "speaker": "clerk",
+   "ja": "押収品庫でございます。鍵板様をかざせば、棚が開きます。",
+   "en": "The seized-goods store. Raise the key-slate and the lockers open.",
+   "duration_s": 5.1,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b07.nyaakoto.001",
+   "beat": "ch06.b07",
+   "speaker": "samurai",
+   "ja": "空紋の扇……子どもの物まで、禁制品か。",
+   "en": "A Sora-mon fan… Even a child's toy is contraband.",
+   "duration_s": 4.0,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b07.nyaakoto.002",
+   "beat": "ch06.b07",
+   "speaker": "samurai",
+   "ja": "田右衛門殿の水利絵図……谷へ返す。",
+   "en": "Headman Taemon's water-rights map. It goes back to the valley.",
+   "duration_s": 4.2,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b07.nyaakoto.003",
+   "beat": "ch06.b07",
+   "speaker": "samurai",
+   "ja": "提灯街だけが、温かい色をしている。",
+   "en": "Only the Lantern Ward still glows warm.",
+   "duration_s": 3.1,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b08.iota.001",
+   "beat": "ch06.b08",
+   "speaker": "clerk",
+   "ja": "記帳の間でございます。帳台は三つ。田方、町方、職方。",
+   "en": "The Registry Hall. Three desks: fields, town and crafts.",
+   "duration_s": 5.5,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b08.kohagi.001",
+   "beat": "ch06.b08",
+   "speaker": "scout",
+   "ja": "蝋燭は手で覆って。遅くなるけど、見えにくい。",
+   "en": "Cup the candle. It's slower, but harder to see.",
+   "duration_s": 4.0,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b08.nyaakoto.001",
+   "beat": "ch06.b08",
+   "speaker": "samurai",
+   "ja": "雁皮紙を重ねて、透かし写す。",
+   "en": "Thin gampi paper over the page. I trace it through.",
+   "duration_s": 3.4,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b08.iota.002",
+   "beat": "ch06.b08",
+   "speaker": "clerk",
+   "ja": "利率は年五割。夜ごとに、利が付きます。",
+   "en": "The rate is fifty percent a year, added nightly.",
+   "duration_s": 3.9,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b08.iota.003",
+   "beat": "ch06.b08",
+   "speaker": "clerk",
+   "ja": "恐れ入りますが、この帳簿は、閉じない仕様でございます。",
+   "en": "Pardon me, but this ledger is designed never to close.",
+   "duration_s": 4.7,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b08.auditor.001",
+   "beat": "ch06.b08",
+   "speaker": "auditor",
+   "ja": "町方帳、本日分の利を加算。……美しい曲線です。",
+   "en": "Town ledger: today's interest added. …A beautiful curve.",
+   "duration_s": 5.1,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b08.auditor.002",
+   "beat": "ch06.b08",
+   "speaker": "auditor",
+   "ja": "右肩上がりは、秩序の証でございます。",
+   "en": "A rising line is proof of order.",
+   "duration_s": 3.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b08.auditor.003",
+   "beat": "ch06.b08",
+   "speaker": "auditor",
+   "ja": "……灯り？　温かい色の灯りは、支給しておりません。",
+   "en": "…A light? Warm lights are not standard issue.",
+   "duration_s": 4.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.001",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "来ると思っていた。お前は、退くことを知らん。",
+   "en": "I knew you would come. You never learned to stay away.",
+   "duration_s": 3.9,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.nyaakoto.001",
+   "beat": "ch06.b09",
+   "speaker": "samurai",
+   "ja": "虎之介。そこを退いてくれ。",
+   "en": "Toranosuke. Stand aside.",
+   "duration_s": 2.5,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.002",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "退けば、鷲尾の家が潰れる。",
+   "en": "If I stand aside, the House of Washio falls.",
+   "duration_s": 3.0,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.003",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "礼はいい。抜け、ニャーコト。今度は竹じゃない。",
+   "en": "Skip the bow. Draw, Nyaakoto. This time it is not bamboo.",
+   "duration_s": 3.9,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.004",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "遅い！",
+   "en": "Too slow!",
+   "duration_s": 1.5,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.005",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "……鷲尾家。これは……。",
+   "en": "…House of Washio. This is…",
+   "duration_s": 2.6,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.nyaakoto.002",
+   "beat": "ch06.b09",
+   "speaker": "samurai",
+   "ja": "元本百二十石。返済四十石。残高、百九十石。",
+   "en": "Principal 120 koku. Paid 40. Still owed: 190.",
+   "duration_s": 5.5,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.nyaakoto.003",
+   "beat": "ch06.b09",
+   "speaker": "samurai",
+   "ja": "買取は三十石。……彼らは、三十石で買っている。",
+   "en": "Bought at thirty. …They paid thirty koku for your debt.",
+   "duration_s": 4.9,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.006",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "黙れ！　黙って、構えろ！",
+   "en": "Quiet! Quiet, and take your stance!",
+   "duration_s": 2.4,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.sekireisai.001",
+   "beat": "ch06.b09",
+   "speaker": "mentor",
+   "ja": "刀なき時こそ、手の内を見よ。",
+   "en": "When you have no sword, watch his hands.",
+   "duration_s": 2.7,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.sekireisai.002",
+   "beat": "ch06.b09",
+   "speaker": "mentor",
+   "ja": "無刀とは、奪う芸にあらず。斬られぬための心得じゃ。",
+   "en": "No-sword is not an art of taking. It is how one is not cut.",
+   "duration_s": 4.4,
+   "register": "archaic_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.007",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "刀を納めるだと？　俺を、侮るな！",
+   "en": "You sheathe your sword? Do not mock me!",
+   "duration_s": 2.8,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.008",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "全部、払ったんだ！",
+   "en": "I paid all of it!",
+   "duration_s": 1.8,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.009",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "なのに、なぜ減らん！",
+   "en": "Then why will it not shrink?!",
+   "duration_s": 1.8,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b09.toranosuke.010",
+   "beat": "ch06.b09",
+   "speaker": "rival",
+   "ja": "……立て。こんな終わり方は、させん。",
+   "en": "…Get up. I will not let it end like this.",
+   "duration_s": 3.3,
+   "register": "brash_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.toranosuke.001",
+   "beat": "ch06.b10",
+   "speaker": "rival",
+   "ja": "毎月払った。増えた。",
+   "en": "I paid every month. It grew.",
+   "duration_s": 2.1,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.toranosuke.002",
+   "beat": "ch06.b10",
+   "speaker": "rival",
+   "ja": "払うほど、利が肥える。……俺は、何を守っていた。",
+   "en": "The more I paid, the fatter it grew. …What was I guarding?",
+   "duration_s": 4.5,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.nyaakoto.001",
+   "beat": "ch06.b10",
+   "speaker": "samurai",
+   "ja": "刀は、民から預かるものだ。……先生の言葉だ。",
+   "en": "A blade is held in trust from the people. …Sensei's words.",
+   "duration_s": 4.4,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.toranosuke.003",
+   "beat": "ch06.b10",
+   "speaker": "rival",
+   "ja": "……受け取れん。負けた者の刀だ。",
+   "en": "…I cannot take it. It is a beaten man's sword.",
+   "duration_s": 3.3,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.nyaakoto.002",
+   "beat": "ch06.b10",
+   "speaker": "samurai",
+   "ja": "なら、預ける。民のために抜け。",
+   "en": "Then I entrust it to you. Draw it for the people.",
+   "duration_s": 3.3,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.toranosuke.004",
+   "beat": "ch06.b10",
+   "speaker": "rival",
+   "ja": "これを。鷲尾虎之介、誓いの証だ。",
+   "en": "Take this. My pledge, as Washio Toranosuke.",
+   "duration_s": 3.4,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.nyaakoto.003",
+   "beat": "ch06.b10",
+   "speaker": "samurai",
+   "ja": "確かに、預かった。",
+   "en": "I will hold it in trust.",
+   "duration_s": 1.6,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.toranosuke.005",
+   "beat": "ch06.b10",
+   "speaker": "rival",
+   "ja": "この羽織、まだ使える。イオタは俺が水門まで「連行」する。",
+   "en": "This haori still has its uses. I will 'escort' Iota to the gate.",
+   "duration_s": 4.8,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.nyaakoto.004",
+   "beat": "ch06.b10",
+   "speaker": "samurai",
+   "ja": "印刷所は、私が止める。",
+   "en": "I will stop the presses.",
+   "duration_s": 2.3,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b10.toranosuke.006",
+   "beat": "ch06.b10",
+   "speaker": "rival",
+   "ja": "……死ぬなよ、弟弟子。",
+   "en": "…Do not die, little brother.",
+   "duration_s": 2.4,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b11.kohagi.001",
+   "beat": "ch06.b11",
+   "speaker": "scout",
+   "ja": "虎之介とイオタ、水門に着いた。",
+   "en": "Toranosuke and Iota reached the gate.",
+   "duration_s": 3.0,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b11.iota.001",
+   "beat": "ch06.b11",
+   "speaker": "clerk",
+   "ja": "親機は三台。吊られた灯りが目印でございます。",
+   "en": "Three master presses. Look for the hanging lamps.",
+   "duration_s": 4.3,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b11.kohagi.002",
+   "beat": "ch06.b11",
+   "speaker": "scout",
+   "ja": "槌が落ちる音に、足音を隠して。",
+   "en": "Move when the press slams. It hides your steps.",
+   "duration_s": 3.2,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b11.nyaakoto.001",
+   "beat": "ch06.b11",
+   "speaker": "samurai",
+   "ja": "鋼蔵殿の楔、三本。ちょうどだ。",
+   "en": "Kōzō's wedges. Three. Just enough.",
+   "duration_s": 3.0,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b11.auditor.001",
+   "beat": "ch06.b11",
+   "speaker": "auditor",
+   "ja": "本日の督促状、四千二百枚。紙が足りません。",
+   "en": "Dunning notices today: four thousand two hundred. Paper is short.",
+   "duration_s": 4.7,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b11.auditor.002",
+   "beat": "ch06.b11",
+   "speaker": "auditor",
+   "ja": "提灯街から、また和紙を差し押さえましょう。",
+   "en": "We will seize more washi from the Lantern Ward.",
+   "duration_s": 3.8,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b11.auditor.003",
+   "beat": "ch06.b11",
+   "speaker": "auditor",
+   "ja": "親機、停止。……点検いたします。",
+   "en": "Master press stopped. …Inspecting.",
+   "duration_s": 3.4,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b11.enforcer.001",
+   "beat": "ch06.b11",
+   "speaker": "enforcer",
+   "ja": "印刷妨害を確認。債務に上乗せいたします。",
+   "en": "Press sabotage confirmed. It will be added to your debt.",
+   "duration_s": 4.3,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b12.iota.001",
+   "beat": "ch06.b12",
+   "speaker": "clerk",
+   "ja": "い、いけません。印刷機と金庫核は、同じ流れに——",
+   "en": "N-no. The presses share a current with the vault core—",
+   "duration_s": 4.4,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b12.valamort.001",
+   "beat": "ch06.b12",
+   "speaker": "banker",
+   "ja": "契約は永遠だ。誰も帳簿からは逃れられぬ。",
+   "en": "The contract is eternal. No one escapes the ledger.",
+   "duration_s": 4.8,
+   "register": "inscription",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "catalog_anchor": 2
+   }
+  },
+  {
+   "id": "ch06.b12.nyaakoto.001",
+   "beat": "ch06.b12",
+   "speaker": "samurai",
+   "ja": "……アモルトの声か。",
+   "en": "…Amort's voice.",
+   "duration_s": 1.8,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b12.eskro.001",
+   "beat": "ch06.b12",
+   "speaker": "boss_eskro",
+   "ja": "停電を記録。……照合を、開始いたします。",
+   "en": "Outage recorded. …Commencing reconciliation.",
+   "duration_s": 4.2,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b12.kohagi.001",
+   "beat": "ch06.b12",
+   "speaker": "scout",
+   "ja": "ニャーコト、聞こえる？　下は真っ暗——",
+   "en": "Nyaakoto, can you hear me? It's pitch black down—",
+   "duration_s": 3.3,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.kohagi.001",
+   "beat": "ch06.b13",
+   "speaker": "scout",
+   "ja": "目がないなら、音を消して。動くのは、鳴いた後。",
+   "en": "It has no eyes. Kill your sound. Move after it chirps.",
+   "duration_s": 4.2,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.nyaakoto.001",
+   "beat": "ch06.b13",
+   "speaker": "samurai",
+   "ja": "……見えぬ相手か。なら、灯りは使える。",
+   "en": "…He cannot see. Then the flame is safe.",
+   "duration_s": 3.7,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.002",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "照合。",
+   "en": "Reconciling.",
+   "duration_s": 1.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.003",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "……不一致。",
+   "en": "…Mismatch.",
+   "duration_s": 1.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.004",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "……誤差。",
+   "en": "…A rounding error.",
+   "duration_s": 1.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.nyaakoto.002",
+   "beat": "ch06.b13",
+   "speaker": "samurai",
+   "ja": "跳んだ後が、隙だ。",
+   "en": "After the leap, he is open.",
+   "duration_s": 1.8,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.005",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "端数、切り捨て。",
+   "en": "Fractions: discarded.",
+   "duration_s": 1.8,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.006",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "水は、帳尻を誤魔化しません。",
+   "en": "Water does not cook the books.",
+   "duration_s": 2.8,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.007",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "棚卸し。",
+   "en": "Stocktaking.",
+   "duration_s": 1.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.008",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "取り立て。",
+   "en": "Collection.",
+   "duration_s": 1.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.009",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "全件照合。猟犬を、放ちます。",
+   "en": "Full reconciliation. Releasing the hounds.",
+   "duration_s": 3.1,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.kohagi.002",
+   "beat": "ch06.b13",
+   "speaker": "scout",
+   "ja": "小さいのが二つ。先に落として。灯りも見られる。",
+   "en": "Two small ones. Drop them first. They can see your flame.",
+   "duration_s": 4.3,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.eskro.010",
+   "beat": "ch06.b13",
+   "speaker": "boss_eskro",
+   "ja": "……照合、不能。",
+   "en": "…Unable to reconcile.",
+   "duration_s": 2.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b13.nyaakoto.003",
+   "beat": "ch06.b13",
+   "speaker": "samurai",
+   "ja": "その帳簿は、ここで閉じる。",
+   "en": "This ledger closes here.",
+   "duration_s": 2.3,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b14.toranosuke.001",
+   "beat": "ch06.b14",
+   "speaker": "rival",
+   "ja": "遅いぞ。水が上がってる。",
+   "en": "You are late. The water is rising.",
+   "duration_s": 2.3,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b14.iota.001",
+   "beat": "ch06.b14",
+   "speaker": "clerk",
+   "ja": "わたくし、泳いだことが……ございません。",
+   "en": "I have never… swum before.",
+   "duration_s": 3.2,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b14.toranosuke.002",
+   "beat": "ch06.b14",
+   "speaker": "rival",
+   "ja": "背に乗れ。しっかり掴まってろ。",
+   "en": "Get on my back. Hold on tight.",
+   "duration_s": 2.7,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b14.kohagi.001",
+   "beat": "ch06.b14",
+   "speaker": "scout",
+   "ja": "水門、半分まで上げた。これ以上は音が出る。",
+   "en": "Gate's half up. Any higher and it'll make noise.",
+   "duration_s": 4.3,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b14.enforcer.001",
+   "beat": "ch06.b14",
+   "speaker": "enforcer",
+   "ja": "停電につき、手作業で捜索いたします。",
+   "en": "Owing to the outage, we are searching by hand.",
+   "duration_s": 3.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b14.nyaakoto.001",
+   "beat": "ch06.b14",
+   "speaker": "samurai",
+   "ja": "ここから潜る。八つ、数えろ。",
+   "en": "We dive from here. Count to eight.",
+   "duration_s": 2.6,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b14.kohagi.002",
+   "beat": "ch06.b14",
+   "speaker": "scout",
+   "ja": "抜けた。舟は葦の陰。右に灯りの舟が一艘。",
+   "en": "You're out. Our boat's in the reeds. A lamp boat to the right.",
+   "duration_s": 4.3,
+   "register": "terse",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b15.oyuki.001",
+   "beat": "ch06.b15",
+   "speaker": "leader",
+   "ja": "お帰りなさいませ。……写しを、拝見いたします。",
+   "en": "Welcome back. …May I see the copies?",
+   "duration_s": 4.1,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b15.oyuki.002",
+   "beat": "ch06.b15",
+   "speaker": "leader",
+   "ja": "元本、一万八千石。年五割。期限は十四年。",
+   "en": "Principal: eighteen thousand koku. Fifty percent a year. Fourteen years.",
+   "duration_s": 5.1,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b15.oyuki.003",
+   "beat": "ch06.b15",
+   "speaker": "leader",
+   "ja": "期限の日には五百二十五万石。谷の、四百年分でございます。",
+   "en": "At term: 5.25 million koku. Four hundred years of our valley.",
+   "duration_s": 6.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b15.iota.001",
+   "beat": "ch06.b15",
+   "speaker": "clerk",
+   "ja": "わたくしの計算と、一致いたしました。",
+   "en": "That matches my calculation.",
+   "duration_s": 3.1,
+   "register": "manual_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b15.toranosuke.001",
+   "beat": "ch06.b15",
+   "speaker": "rival",
+   "ja": "……俺の家の分も、そこに入っているのか。",
+   "en": "…My house's page is in there too?",
+   "duration_s": 3.6,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b15.oyuki.004",
+   "beat": "ch06.b15",
+   "speaker": "leader",
+   "ja": "はい。皆の分が。だから、皆の前に貼るのです。",
+   "en": "Yes. Everyone's is. That is why we post it before everyone.",
+   "duration_s": 4.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b15.nyaakoto.001",
+   "beat": "ch06.b15",
+   "speaker": "samurai",
+   "ja": "人を縛る文字より、人が作る明日を選ぶ。",
+   "en": "I choose the future people build over the words that bind them.",
+   "duration_s": 4.8,
+   "register": "samurai_restrained",
+   "delivery": "polite",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {
+    "catalog_anchor": 3
+   }
+  },
+  {
+   "id": "ch06.b16.resident.001",
+   "beat": "ch06.b16",
+   "speaker": "resident",
+   "ja": "……うちの借り、元はたった二俵やで。",
+   "en": "…Our debt started at just two bales.",
+   "duration_s": 3.3,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b16.resident.002",
+   "beat": "ch06.b16",
+   "speaker": "resident",
+   "ja": "字ぃ読めへん。誰か、読んでくれ。",
+   "en": "I can't read. Someone read it for me.",
+   "duration_s": 2.8,
+   "register": "kamigata_commoner",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b16.tokichi.001",
+   "beat": "ch06.b16",
+   "speaker": "lantern_maker",
+   "ja": "どれ、わしが読もう。……おまえさんの家は、ここや。",
+   "en": "Here, let me read it. …Your house is this line.",
+   "duration_s": 4.1,
+   "register": "artisan_gentle",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b16.oyuki.001",
+   "beat": "ch06.b16",
+   "speaker": "leader",
+   "ja": "帳は、民の前に。五箇条の五でございます。",
+   "en": "The ledger belongs before the people. Article five.",
+   "duration_s": 3.9,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b16.tetsugoro.001",
+   "beat": "ch06.b16",
+   "speaker": "gunsmith",
+   "ja": "ええ鉄や。鍬になる。",
+   "en": "Good iron. It'll make hoes.",
+   "duration_s": 1.9,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b16.toranosuke.001",
+   "beat": "ch06.b16",
+   "speaker": "rival",
+   "ja": "旗艦だ。谷の物を、あれに積んでいる。",
+   "en": "The flagship. They are loading the valley's goods onto it.",
+   "duration_s": 3.8,
+   "register": "humbled_samurai",
+   "delivery": null,
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch06.b16.nyaakoto.001",
+   "beat": "ch06.b16",
+   "speaker": "samurai",
+   "ja": "なら、取り返しに行く。",
+   "en": "Then we go and take them back.",
+   "duration_s": 2.0,
+   "register": "samurai_restrained",
+   "delivery": "plain",
+   "mode": null,
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  }
+ ],
+ "triggers": [
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.iota.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.kohagi.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.oyuki.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.nyaakoto.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.oyuki.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.oyuki.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.oyuki.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.kohagi.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.kohagi.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b01.nyaakoto.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b02",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b02.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b02",
+   "on": "volume_enter:vol_moat_pilings",
+   "mode": "radio",
+   "lines": [
+    "ch06.b02.iota.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b02",
+   "on": "volume_enter:vol_moat_boom",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b02.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b02",
+   "on": "volume_enter:vol_moat_wallbase",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b02.kohagi.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b02",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b02.enforcer.001"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_moat"
+   }
+  },
+  {
+   "beat": "ch06.b02",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch06.b02.enforcer.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_moat"
+   }
+  },
+  {
+   "beat": "ch06.b02",
+   "on": "alert_state:search",
+   "mode": "bark",
+   "lines": [
+    "ch06.b02.enforcer.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_moat"
+   }
+  },
+  {
+   "beat": "ch06.b02",
+   "on": "alert_state:unaware",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.004"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_moat"
+   }
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b03.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "volume_enter:vol_climb_start",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b03.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "ai_event:sentry_lookdown",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b03.kohagi.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "alert_state:alert",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b03.enforcer.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "volume_enter:vol_climb_top",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b03.kohagi.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.001"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "alert_state:search",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "alert_state:unaware",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.004"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "ai_event:retreat",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.005"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b03",
+   "on": "ai_event:body_found",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.006"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "beat_start",
+   "mode": "radio",
+   "lines": [
+    "ch06.b04.iota.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "volume_enter:vol_relay_entry",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b04.kohagi.001",
+    "ch06.b04.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "alert_state:suspicious",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b04.kohagi.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "ai_event:node_dark",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b04.auditor.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b04.kohagi.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.001"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "alert_state:search",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "alert_state:unaware",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.004"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "ai_event:retreat",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.005"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "ai_event:body_found",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.006"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.auditor.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "ai_event:alarm_run",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.auditor.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b04",
+   "on": "ai_event:lure_heard",
+   "mode": "bark",
+   "lines": [
+    "ch06.b06.auditor.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b05",
+   "on": "interact:crate_iota",
+   "mode": "blocking",
+   "lines": [
+    "ch06.b05.nyaakoto.001",
+    "ch06.b05.iota.001",
+    "ch06.b05.nyaakoto.002",
+    "ch06.b05.iota.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b05",
+   "on": "lines_done:ch06.b05.iota.002",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b05.nyaakoto.003",
+    "ch06.b05.iota.003",
+    "ch06.b05.iota.004",
+    "ch06.b05.iota.005",
+    "ch06.b05.iota.006",
+    "ch06.b05.iota.007",
+    "ch06.b05.nyaakoto.004",
+    "ch06.b05.iota.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "beat_start",
+   "mode": "radio",
+   "lines": [
+    "ch06.b06.iota.001",
+    "ch06.b06.iota.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "volume_enter:vol_rubble_c1",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b06.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "volume_enter:vol_rubble_c1",
+   "mode": "radio",
+   "lines": [
+    "ch06.b06.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "volume_enter:vol_aisle_c2",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b06.auditor.001",
+    "ch06.b06.auditor.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "volume_enter:vol_uguisu_entry",
+   "mode": "radio",
+   "lines": [
+    "ch06.b06.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "ai_event:floor_chirp",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b06.auditor.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "volume_enter:vol_sugido",
+   "mode": "radio",
+   "lines": [
+    "ch06.b06.iota.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.001"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "alert_state:search",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "alert_state:unaware",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.004"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "ai_event:retreat",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.005"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "ai_event:body_found",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.006"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.auditor.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "ai_event:alarm_run",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.auditor.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b06",
+   "on": "ai_event:lure_heard",
+   "mode": "bark",
+   "lines": [
+    "ch06.b06.auditor.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b07",
+   "on": "volume_enter:vol_vault_armory",
+   "mode": "radio",
+   "lines": [
+    "ch06.b07.iota.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b07",
+   "on": "volume_enter:vol_poi_contraband",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b07.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b07",
+   "on": "volume_enter:vol_poi_heirloom_map",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b07.nyaakoto.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b07",
+   "on": "volume_enter:vol_poi_vista",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b07.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "beat_start",
+   "mode": "radio",
+   "lines": [
+    "ch06.b08.iota.001",
+    "ch06.b08.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "interact:desk_tagata",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b08.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "progress_at:0.33",
+   "mode": "radio",
+   "lines": [
+    "ch06.b08.iota.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "progress_at:0.66",
+   "mode": "radio",
+   "lines": [
+    "ch06.b08.iota.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "volume_enter:vol_kicho_chudan",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b08.auditor.001",
+    "ch06.b08.auditor.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "ai_event:light_seen",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b08.auditor.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.001"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "alert_state:search",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "alert_state:unaware",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.004"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "ai_event:retreat",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.005"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "ai_event:body_found",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.006"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.auditor.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "ai_event:alarm_run",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.auditor.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b08",
+   "on": "ai_event:lure_heard",
+   "mode": "bark",
+   "lines": [
+    "ch06.b06.auditor.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b09",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b09.toranosuke.001",
+    "ch06.b09.nyaakoto.001",
+    "ch06.b09.toranosuke.002",
+    "ch06.b09.toranosuke.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b09",
+   "on": "duel_event:family_page",
+   "mode": "blocking",
+   "lines": [
+    "ch06.b09.toranosuke.005",
+    "ch06.b09.nyaakoto.002",
+    "ch06.b09.nyaakoto.003",
+    "ch06.b09.toranosuke.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b09",
+   "on": "duel_phase:2",
+   "mode": "radio",
+   "lines": [
+    "ch06.b09.sekireisai.001",
+    "ch06.b09.sekireisai.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "fx": "memory_reverb"
+   }
+  },
+  {
+   "beat": "ch06.b09",
+   "on": "ai_event:player_sheathed",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b09.toranosuke.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b09",
+   "on": "player_died",
+   "mode": "blocking",
+   "lines": [
+    "ch06.b09.toranosuke.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b09",
+   "on": "pattern:kesa_combo",
+   "mode": "bark",
+   "lines": [
+    "ch06.b09.toranosuke.004"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b09",
+   "on": "pattern:makko_giri",
+   "mode": "bark",
+   "lines": [
+    "ch06.b09.toranosuke.008"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b09",
+   "on": "pattern:kiriotoshi_rush",
+   "mode": "bark",
+   "lines": [
+    "ch06.b09.toranosuke.009"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b10",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b10.toranosuke.001",
+    "ch06.b10.toranosuke.002",
+    "ch06.b10.nyaakoto.001",
+    "ch06.b10.toranosuke.003",
+    "ch06.b10.nyaakoto.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b10",
+   "on": "lines_done:ch06.b10.nyaakoto.002",
+   "mode": "blocking",
+   "lines": [
+    "ch06.b10.toranosuke.004",
+    "ch06.b10.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b10",
+   "on": "lines_done:ch06.b10.nyaakoto.003",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b10.toranosuke.005",
+    "ch06.b10.nyaakoto.004",
+    "ch06.b10.toranosuke.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "beat_start",
+   "mode": "radio",
+   "lines": [
+    "ch06.b11.kohagi.001",
+    "ch06.b11.iota.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "volume_enter:vol_press_floor",
+   "mode": "radio",
+   "lines": [
+    "ch06.b11.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "interact:press_any_first",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b11.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "volume_enter:vol_press_binding",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b11.auditor.001",
+    "ch06.b11.auditor.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "ai_event:press_silent",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b11.auditor.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "alert_state:alert",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b11.enforcer.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.001"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "alert_state:search",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "alert_state:unaware",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.004"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "ai_event:retreat",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.005"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "ai_event:body_found",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.006"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.auditor.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "ai_event:alarm_run",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.auditor.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b11",
+   "on": "ai_event:lure_heard",
+   "mode": "bark",
+   "lines": [
+    "ch06.b06.auditor.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_auditor"
+   }
+  },
+  {
+   "beat": "ch06.b12",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b12.iota.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b12",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b12.valamort.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b12",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b12.nyaakoto.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b12",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b12.eskro.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b12",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b12.kohagi.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "beat_start",
+   "mode": "radio",
+   "lines": [
+    "ch06.b13.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b13.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "pattern:pounce_miss",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b13.nyaakoto.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "boss_phase:3",
+   "mode": "radio",
+   "lines": [
+    "ch06.b13.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "ai_event:boss_hp_zero",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b13.eskro.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "interact:bulkhead_lever",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b13.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "pattern:reconcile_pulse",
+   "mode": "bark",
+   "lines": [
+    "ch06.b13.eskro.002"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "pattern:pounce",
+   "mode": "bark",
+   "lines": [
+    "ch06.b13.eskro.003"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "pattern:pounce_miss",
+   "mode": "bark",
+   "lines": [
+    "ch06.b13.eskro.004"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "pattern:claw_flurry",
+   "mode": "bark",
+   "lines": [
+    "ch06.b13.eskro.005"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "boss_phase:2",
+   "mode": "bark",
+   "lines": [
+    "ch06.b13.eskro.006"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "pattern:shelf_rake",
+   "mode": "bark",
+   "lines": [
+    "ch06.b13.eskro.007"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "pattern:wade_charge",
+   "mode": "bark",
+   "lines": [
+    "ch06.b13.eskro.008"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b13",
+   "on": "boss_phase:3",
+   "mode": "bark",
+   "lines": [
+    "ch06.b13.eskro.009"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "volume_enter:vol_ankyo_start",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b14.toranosuke.001",
+    "ch06.b14.iota.001",
+    "ch06.b14.toranosuke.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "volume_enter:vol_ankyo_grate_1",
+   "mode": "radio",
+   "lines": [
+    "ch06.b14.kohagi.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "volume_enter:vol_ankyo_grate_1",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b14.enforcer.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "volume_enter:vol_ankyo_deep",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b14.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "volume_enter:vol_water_gate_exit",
+   "mode": "radio",
+   "lines": [
+    "ch06.b14.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "alert_state:suspicious",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.001"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "alert_state:alert",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.002"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "alert_state:search",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.003"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "alert_state:unaware",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.004"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "ai_event:retreat",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.005"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b14",
+   "on": "ai_event:body_found",
+   "mode": "bark",
+   "lines": [
+    "ch06.b04.enforcer.006"
+   ],
+   "source": "bark_set",
+   "repeatable": true,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {
+    "set": "ch06_enforcer"
+   }
+  },
+  {
+   "beat": "ch06.b15",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch06.b15.oyuki.001",
+    "ch06.b15.oyuki.002",
+    "ch06.b15.oyuki.003",
+    "ch06.b15.iota.001",
+    "ch06.b15.toranosuke.001",
+    "ch06.b15.oyuki.004",
+    "ch06.b15.nyaakoto.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b16.resident.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b16.resident.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b16.tokichi.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b16.oyuki.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b16.tetsugoro.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b16.toranosuke.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch06.b16",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch06.b16.nyaakoto.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "ext": {}
+  }
+ ],
+ "collectibles": [
+  {
+   "id": "ch06.c01",
+   "category": "league_mark",
+   "place": "pl_citadel_moat",
+   "mask_bit": 0,
+   "beats": [
+    "ch06.b02"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "水門の水位目盛りの横に、小萩が先月残した小さな空紋。",
+    "en": "A small Sora mark Kohagi left last month beside the gate's water gauge."
+   },
+   "volume": "vol_water_gate_outer",
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch06.c02",
+   "category": "seizure_notice",
+   "place": "pl_relay_room",
+   "mask_bit": 1,
+   "beats": [
+    "ch06.b04"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "差押状：猫柳生谷の半鐘、四十二口。理由：無許可の警報は与信を損なうため。",
+    "en": "Seizure notice: 42 alarm bells, Nyaagyu valley. Reason: unlicensed alarms damage creditworthiness."
+   },
+   "volume": "vol_bell_pile_w",
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch06.c03",
+   "category": "heirloom",
+   "place": "pl_uguisu_hall",
+   "mask_bit": 2,
+   "beats": [
+    "ch06.b07"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "庄屋田右衛門家の水利絵図。堰と水路ごとに、どの田へ何日水を回すかが描かれている。",
+    "en": "Headman Taemon's water-rights map: which paddy gets water from which channel, and for how many days."
+   },
+   "volume": "vol_poi_heirloom_map",
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch06.c04",
+   "category": "heirloom",
+   "place": "pl_uguisu_hall",
+   "mask_bit": 3,
+   "beats": [
+    "ch06.b07"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "お絹の母の黄楊の杼。手の脂で飴色に光る。",
+    "en": "Okinu's mother's boxwood shuttle, polished amber by years of hands."
+   },
+   "volume": "vol_poi_heirloom_shuttle",
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch06.c05",
+   "category": "scroll_fragment",
+   "place": "pl_ledger_corridors",
+   "mask_bit": 4,
+   "beats": [
+    "ch06.b05"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "無刀とは、人の刀を取る芸にあらず。わが手の内を知り、斬られぬことなり。――石鈴斎",
+    "en": "No-sword is not the art of taking another's blade. It is knowing your own hands, and not being cut. (Sekireisai)"
+   },
+   "volume": "vol_archive_annex",
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch06.c06",
+   "category": "seizure_notice",
+   "place": "pl_press_hall",
+   "mask_bit": 5,
+   "beats": [
+    "ch06.b11"
+   ],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "担保受領書 第一号：猫柳生石鈴斎（隠居）一名。保管先、担保牢。状態、良好。",
+    "en": "Collateral Receipt No. 1: Nyaagyu Sekireisai (retired), one. Held in the collateral cells. Condition: good."
+   },
+   "volume": "vol_press_binding",
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  }
+ ],
+ "ui_prompts": [
+  {
+   "id": "hud.ch06.swim_dive",
+   "beats": [
+    "ch06.b02"
+   ],
+   "on": "beat_start",
+   "ja": "潜る：［しゃがみ］　息は8秒まで",
+   "en": "Dive: [Crouch]. Breath lasts 8 s.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.surface_cover",
+   "beats": [
+    "ch06.b02"
+   ],
+   "on": "volume_enter:vol_moat_lotus_1",
+   "ja": "蓮と葦の陰なら、浮いても見つかりにくい",
+   "en": "Lotus and reeds hide you at the surface.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.float_line",
+   "beats": [
+    "ch06.b02"
+   ],
+   "on": "volume_enter:vol_moat_boom",
+   "ja": "浮き綱に触れると鳴る。下を潜る",
+   "en": "The float line rings if touched. Dive under it.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.climb",
+   "beats": [
+    "ch06.b03"
+   ],
+   "on": "volume_enter:vol_climb_start",
+   "ja": "手掛かりへ：［移動］　握力に注意",
+   "en": "Reach for holds: [Move]. Watch your grip.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.climb_rest",
+   "beats": [
+    "ch06.b03"
+   ],
+   "on": "volume_enter:vol_rest_ledge_1",
+   "ja": "足場で握力が戻る",
+   "en": "Ledges restore grip.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.ai_states",
+   "beats": [
+    "ch06.b04"
+   ],
+   "on": "alert_state:suspicious",
+   "ja": "頭上の印：不審・警戒・捜索",
+   "en": "Marks above heads: Suspicious, Alert, Search.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.sweep_gap",
+   "beats": [
+    "ch06.b04"
+   ],
+   "on": "volume_enter:vol_relay_entry",
+   "ja": "柱の目が背を向けた隙に、節を抜く［長押し］",
+   "en": "Pull a node while the eye faces away [Hold].",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.takedown",
+   "beats": [
+    "ch06.b04"
+   ],
+   "on": "ai_event:first_rear_reach",
+   "ja": "背後から当て身：［近接］（殺さない）",
+   "en": "Rear takedown: [Melee]. Non-lethal.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.drag",
+   "beats": [
+    "ch06.b04"
+   ],
+   "on": "ai_event:first_takedown",
+   "ja": "倒れた者を引きずる：［調べる］長押し",
+   "en": "Drag a body: hold [Interact].",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.tsubute",
+   "beats": [
+    "ch06.b06"
+   ],
+   "on": "volume_enter:vol_rubble_c1",
+   "ja": "礫：拾って［投擲］。音で誘う",
+   "en": "Tsubute: pick up, then [Throw] to lure.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.nightingale",
+   "beats": [
+    "ch06.b06"
+   ],
+   "on": "volume_enter:vol_uguisu_entry",
+   "ja": "鶯張り：しゃがんで壁際の端を歩く",
+   "en": "Nightingale floor: crouch along the wall edge.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.candle",
+   "beats": [
+    "ch06.b08"
+   ],
+   "on": "beat_start",
+   "ja": "蝋燭を覆う：［ガード］長押し　写しは半速",
+   "en": "Cup the candle: hold [Guard]. Copying slows.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.copy_pause",
+   "beats": [
+    "ch06.b08"
+   ],
+   "on": "ai_event:copy_paused",
+   "ja": "見られている間は、写しが止まる",
+   "en": "Copying pauses while you are seen.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.sheathe",
+   "beats": [
+    "ch06.b09"
+   ],
+   "on": "duel_phase:2",
+   "ja": "納刀：［武器切替］長押し",
+   "en": "Sheathe: hold [Weapon Switch].",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.muto",
+   "beats": [
+    "ch06.b09"
+   ],
+   "on": "ai_event:player_sheathed",
+   "ja": "無刀取り：納刀中、真っ向斬りに踏み込み［受け］",
+   "en": "Mutō-dori: while sheathed, step into a vertical cut with [Guard].",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.press_mask",
+   "beats": [
+    "ch06.b11"
+   ],
+   "on": "volume_enter:vol_press_floor",
+   "ja": "印刷機の打音が足音を隠す",
+   "en": "Press slams mask your footsteps.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.pulse",
+   "beats": [
+    "ch06.b13"
+   ],
+   "on": "beat_start",
+   "ja": "脈動の間は動かない",
+   "en": "Stay still while the pulse passes.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.flood",
+   "beats": [
+    "ch06.b13"
+   ],
+   "on": "boss_phase:2",
+   "ja": "水の中は音が大きい。棚の上は静か",
+   "en": "Water is loud. Shelf tops are silent.",
+   "shown_en": null
+  },
+  {
+   "id": "hud.ch06.bulkhead",
+   "beats": [
+    "ch06.b13"
+   ],
+   "on": "ai_event:boss_hp_zero",
+   "ja": "隔壁を落とす：［調べる］長押し",
+   "en": "Drop the bulkhead: hold [Interact].",
+   "shown_en": null
+  }
+ ],
+ "places": [
+  {
+   "id": "pl_kosatsuba",
+   "chapter": 3,
+   "ja": "高札場",
+   "reading": "こうさつば",
+   "en": "Notice-board square",
+   "arena": 1,
+   "source": "Arena 1 centre"
+  },
+  {
+   "id": "pl_citadel_moat",
+   "chapter": 6,
+   "ja": "堀と水門",
+   "reading": "ほりとすいもん",
+   "en": "Moat and water gate",
+   "arena": 3,
+   "source": "Arena 3 exterior, fog"
+  },
+  {
+   "id": "pl_ishigaki",
+   "chapter": 6,
+   "ja": "石垣",
+   "reading": "いしがき",
+   "en": "Castle ramparts",
+   "arena": 3,
+   "source": "Arena 3 exterior"
+  },
+  {
+   "id": "pl_relay_room",
+   "chapter": 6,
+   "ja": "中継器室",
+   "reading": "ちゅうけいきしつ",
+   "en": "Relay room",
+   "arena": null,
+   "source": "New (C3 vault kit)"
+  },
+  {
+   "id": "pl_ledger_corridors",
+   "chapter": 6,
+   "ja": "帳簿回廊",
+   "reading": "ちょうぼかいろう",
+   "en": "Ledger corridors",
+   "arena": null,
+   "source": "New (C3 vault kit)"
+  },
+  {
+   "id": "pl_uguisu_hall",
+   "chapter": 6,
+   "ja": "鶯張りの廊下",
+   "reading": "うぐいすばりのろうか",
+   "en": "Nightingale-floor hall",
+   "arena": null,
+   "source": "New"
+  },
+  {
+   "id": "pl_archive",
+   "chapter": 6,
+   "ja": "記録庫",
+   "reading": "きろくこ",
+   "en": "Archive",
+   "arena": null,
+   "source": "New"
+  },
+  {
+   "id": "pl_press_hall",
+   "chapter": 6,
+   "ja": "印刷所",
+   "reading": "いんさつじょ",
+   "en": "Press hall",
+   "arena": null,
+   "source": "New"
+  },
+  {
+   "id": "pl_vault_core",
+   "chapter": 6,
+   "ja": "金庫核",
+   "reading": "きんこかく",
+   "en": "Vault core",
+   "arena": null,
+   "source": "New"
+  }
+ ],
+ "layout": {
+  "frames": [],
+  "volumes": [],
+  "points": [],
+  "splines": [],
+  "patrols": [],
+  "ext": {}
+ },
+ "ext": {
+  "mix_min": {
+   "C": 14,
+   "E": 3,
+   "S": 24,
+   "P": 4,
+   "M": 0,
+   "Cin": 10
+  },
+  "start_loadout": {
+   "hip": 0,
+   "side": 4,
+   "back": 18,
+   "back_strung_at": "ch06.b03",
+   "polearm": null,
+   "firearm": null,
+   "quiver_arrows": 12,
+   "armor": "none_infiltration_dress"
+  },
+  "stealth_defaults": {
+   "detection": {
+    "suspicion_rate": 1.0,
+    "suspicious_at": 0.35,
+    "alert_threshold": 1.0,
+    "search_s": 25
+   },
+   "player_noise_cm": {
+    "sprint": 1500,
+    "walk": 600,
+    "crouch_walk": 250,
+    "still": 0,
+    "swim_surface": 500,
+    "dive": 0,
+    "tsubute_impact": 1400,
+    "needle_smg_shot": 1500,
+    "yumi_release": 300,
+    "takedown": 300,
+    "fusuma_slide": 400
+   },
+   "surface_mult": {
+    "puddle": 1.5,
+    "gravel": 1.5,
+    "tatami": 0.5,
+    "running_water": 0.5,
+    "wading": 2.0
+   },
+   "nightingale_floor_cm": {
+    "walk": 1800,
+    "crouch_walk": 900,
+    "edge_strip_crouch": 0
+   },
+   "visibility_mult": {
+    "dark": 0.4,
+    "cyan_slate_light": 1.0,
+    "candle_lit": 2.0,
+    "candle_cupped": 1.2
+   },
+   "difficulty": {
+    "easy": {
+     "suspicion_rate_mult": 0.7,
+     "search_s_mult": 0.8,
+     "on_detected": "combat"
+    },
+    "hard": {
+     "suspicion_rate_mult": 1.25,
+     "search_s_mult": 1.2
+    }
+   },
+   "takedowns": {
+    "rear": true,
+    "lethal_default": false
+   },
+   "kills_required": 0
+  },
+  "event_proposals": [
+   "ai_event:<name>",
+   "interact:<id>",
+   "lines_done:<line id>",
+   "duel_event:<id>",
+   "duel_phase:<n>",
+   "pattern:<id>",
+   "seq"
+  ],
+  "pattern_tables": {
+   "toranosuke_steel_p1": [
+    {
+     "id": "kesa_combo",
+     "ja": "袈裟連撃",
+     "windup_ms": 450,
+     "hits": 3,
+     "gap_ms": 300,
+     "damage_each": 22,
+     "parry": "awase_260ms",
+     "on_parry": "stagger_1.2s",
+     "recovery_ms": 700,
+     "muto_eligible": false
+    },
+    {
+     "id": "morote_tsuki",
+     "ja": "諸手突き",
+     "windup_ms": 600,
+     "damage": 30,
+     "parry": "none",
+     "guard": "50pct_plus_40_stamina",
+     "counter": "marobashi_400ms_flank_0.8s",
+     "recovery_ms": 900,
+     "muto_eligible": false
+    },
+    {
+     "id": "feint_jodan",
+     "ja": "見せ上段",
+     "tell_ms": 300,
+     "windup_ms": 500,
+     "damage": 26,
+     "note": "raises to jodan, switches to a low do cut",
+     "recovery_ms": 700,
+     "muto_eligible": false
+    },
+    {
+     "id": "taiatari",
+     "ja": "体当たり",
+     "trigger": "player_guard_held_over_1.5s",
+     "windup_ms": 400,
+     "damage": 10,
+     "knockback_cm": 150,
+     "stamina": -25,
+     "recovery_ms": 600,
+     "muto_eligible": false
+    }
+   ],
+   "toranosuke_steel_p2": [
+    {
+     "id": "makko_giri",
+     "ja": "真っ向斬り",
+     "windup_ms": 800,
+     "damage": 40,
+     "telegraph": "amber_blade_edge",
+     "recovery_ms": 1100,
+     "muto_eligible": true
+    },
+    {
+     "id": "kiriotoshi_rush",
+     "ja": "踏込み斬り落とし",
+     "dash_cm": 300,
+     "windup_ms": 700,
+     "damage": 38,
+     "telegraph": "amber_blade_edge",
+     "recovery_ms": 1200,
+     "muto_eligible": true
+    },
+    {
+     "id": "nidan_makko",
+     "ja": "二段真っ向",
+     "windup_ms": [
+      800,
+      500
+     ],
+     "damage_each": 34,
+     "telegraph": "amber_blade_edge",
+     "recovery_ms": 1300,
+     "muto_eligible": true
+    }
+   ],
+   "eskro_hunt": [
+    {
+     "id": "reconcile_pulse",
+     "ja": "照合",
+     "windup_ms": 700,
+     "period_s": 8,
+     "radius_cm": 1800,
+     "expand_ms": 720,
+     "reveal_if": {
+      "speed_over_cm_s": 120,
+      "noise_event": true
+     },
+     "damage": 0,
+     "telegraph": "audio_chirp_and_refractive_ring",
+     "bark": "ch06.b13.eskro.002"
+    },
+    {
+     "id": "listen",
+     "ja": "聴取",
+     "duration_s": [
+      2,
+      4
+     ],
+     "hearing_cm": {
+      "walk": 1200,
+      "crouch_walk": 600
+     }
+    },
+    {
+     "id": "pounce",
+     "ja": "飛掛り",
+     "windup_ms": 600,
+     "range_cm": 1500,
+     "radius_cm": 250,
+     "damage": 45,
+     "target": "last_noise",
+     "recovery_hit_ms": 800,
+     "recovery_miss_ms": 1500,
+     "telegraph": "amber_landing_decal",
+     "bark": "ch06.b13.eskro.003",
+     "miss_bark": "ch06.b13.eskro.004"
+    },
+    {
+     "id": "claw_flurry",
+     "ja": "連爪",
+     "trigger": "revealed_within_300cm",
+     "windup_ms": 500,
+     "hits": 3,
+     "span_ms": 900,
+     "damage_each": 18,
+     "arc_deg": 120,
+     "range_cm": 300,
+     "guardable": true,
+     "awase_on_hit": 3,
+     "on_parry": "stagger_1.2s",
+     "recovery_ms": 900,
+     "bark": "ch06.b13.eskro.005"
+    }
+   ],
+   "eskro_flood": [
+    {
+     "inherits": "eskro_hunt"
+    },
+    {
+     "id": "shelf_rake",
+     "ja": "棚払い",
+     "windup_ms": 900,
+     "arc_deg": 120,
+     "range_cm": 450,
+     "damage": 35,
+     "knock_off_shelf": true,
+     "telegraph": "amber_arc",
+     "recovery_ms": 1200,
+     "bark": "ch06.b13.eskro.007"
+    },
+    {
+     "id": "wade_charge",
+     "ja": "水走り",
+     "windup_ms": 700,
+     "length_cm": 1200,
+     "damage": 40,
+     "self_noise": true,
+     "telegraph": "amber_lane",
+     "recovery_ms": 1000,
+     "bark": "ch06.b13.eskro.008"
+    }
+   ],
+   "eskro_frenzy": [
+    {
+     "inherits": "eskro_flood",
+     "override": {
+      "reconcile_pulse": {
+       "period_s": 4
+      }
+     }
+    },
+    {
+     "id": "double_pounce",
+     "ja": "二段飛掛り",
+     "windup_ms": [
+      600,
+      600
+     ],
+     "damage_each": 45,
+     "recovery_miss_ms": 1500,
+     "telegraph": "amber_landing_decal",
+     "bark": "ch06.b13.eskro.003"
+    },
+    {
+     "id": "adds_audit_hound",
+     "type": "drone",
+     "variant": "audit_hound",
+     "count": 2,
+     "hp": 60,
+     "sight": {
+      "cone_deg": 70,
+      "range_cm": 900,
+      "dark_range_cm": 900
+     },
+     "sees_light": true,
+     "chirp_windup_ms": 600,
+     "effect": "reveal_player_to_boss"
+    }
+   ],
+   "modifiers": [
+    {
+     "rear_damage_mult": 1.5,
+     "easy_windup_mult": 1.3,
+     "hard_windup_mult": 0.85,
+     "note": "Eskro is blind: light never reveals the player to him, only sound and the hounds"
+    }
+   ]
+  }
+ }
+}
