@@ -108,6 +108,8 @@ struct FSoraEnemyArchetype
     int32 RimOpeningMs = 0;
     int32 RearWeakPermille = 1000;
     int32 PoiseMs = 0;
+    // A rear takedown can start on it (a cat's nape, not a machine's hull).
+    bool bRearTakedown = false;
     int32 KeepDistanceCm = 0;
     int32 RelocateAfterShots = 0;
     int32 HoverCm = 0;

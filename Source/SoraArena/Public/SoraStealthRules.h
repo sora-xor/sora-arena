@@ -1,10 +1,10 @@
 #pragma once
 
-// Offline opponent awareness rules shared by ASoraEnemyController and a
-// host-compiled acceptance driver. Distances are integer centimetres, view
-// angles are cosines in thousandths, light is a permille proxy and time is
-// integer milliseconds, so what an opponent notices never depends on a dice
-// roll or on a floating-point frame boundary.
+// Offline opponent awareness rules shared by ASoraEnemyController, the stealth
+// zone (USoraStealth) and a host-compiled acceptance driver. Distances are
+// integer centimetres, view angles are cosines in thousandths, light is a
+// permille proxy and time is integer milliseconds, so what an opponent notices
+// never depends on a dice roll or on a floating-point frame boundary.
 namespace SoraStealthRules
 {
 // Unaware: on its patrol or at its post. Suspicious: turns toward something it
@@ -12,12 +12,17 @@ namespace SoraStealthRules
 // to the last place he was seen or heard. Search: checks around that place.
 // Combat: sees the hero and fights. Retreat: badly hurt, falls back to cover once.
 enum class EState { Unaware, Suspicious, Alert, Search, Combat, Retreat };
-// Footsteps and sprinting are heard for as long as they last; the others are
-// single events. A call-out is an ally shouting where the hero is.
-enum class ENoise { Footstep, Sprint, Melee, Shot, Explosion, Callout };
+// Footsteps (walking, sprinting or crouch-walking) are heard for as long as
+// they last; the others are single events. A call-out is an ally shouting
+// where the hero is; a takedown is the scuffle of one guard going down.
+enum class ENoise { Footstep, Sprint, Melee, Shot, Explosion, Callout, CrouchStep, Takedown };
 // Blades close in with footwork; cover shooters hold a box and peek to fire;
 // flankers circle to the hero's side before taking cover.
 enum class ERole { Blade, CoverShooter, Flanker };
+// The hero crouching lowers his outline and softens his steps.
+enum class EStance { Standing, Crouched };
+// The campaign difficulty as stealth sees it (Easy is the Story setting).
+enum class EDifficulty { Easy, Normal, Hard };
 
 // Awareness is kept in thousandths of a permille so slow, distant detection
 // still accumulates at a 60 Hz step. Permille values are the public scale.
@@ -34,6 +39,8 @@ constexpr int FocusConeMilli = 819;
 constexpr int ViewConeMilli = 342;
 // A silhouette in darkness is still noticed, only slowly.
 constexpr int DarkFloorPermille = 200;
+// A crouched figure shows a little over half the outline of a standing one.
+constexpr int CrouchedOutlinePermille = 550;
 
 constexpr int LookMs = 900;
 constexpr int CombatMemoryMs = 1500;
@@ -44,6 +51,9 @@ constexpr int RetreatMaxMs = 5000;
 // A hunting wave's relay repeats the hero's position this often while the
 // hunter cannot see him.
 constexpr int IntelMs = 1500;
+// A guard that has searched once, or heard an alarm, or found a body, stays
+// wary for the rest of its beat: evidence fills its meter this much faster.
+constexpr int WaryPermille = 1200;
 
 constexpr int Clamp(int Value, int Low, int High)
 {
@@ -55,12 +65,23 @@ struct FSight
     int DistanceCm;
     // Cosine between the observer's facing and the direction to the target, x1000.
     int FacingMilli;
-    // Nothing blocks a line from the observer's eye to the target's head or chest.
-    bool Clear;
+    // How much of the target's head, chest and hips a line from the eye
+    // reaches, x1000: zero is hidden (a crouch behind low cover), 1000 is in
+    // the open. See ExposurePermille.
+    int ExposurePermille;
     // 0 darkness to 1000 daylight where the target stands.
     int LightPermille;
     bool TargetMoving;
+    bool Crouched = false;
+    // What the target carries: a lit candle 2000, a cupped one 1200, nothing 1000.
+    int VisibilityPermille = 1000;
 };
+
+// The share of a body's sample points (head, chest, hips) with a clear line.
+constexpr int ExposurePermille(int Visible, int Samples)
+{
+    return Samples <= 0 ? 0 : Clamp(Visible, 0, Samples) * 1000 / Samples;
+}
 
 // What one kind of opponent perceives (Content/Data/enemies.json). Standard()
 // is the enforcers' reference and the values the constants above name.
@@ -96,13 +117,15 @@ constexpr int SightRangeAt(FPerception Perception, int LightPermille)
 
 constexpr bool InView(FSight Sight, FPerception Perception = Standard())
 {
-    return Sight.Clear && Sight.DistanceCm >= 0 && Sight.DistanceCm <= SightRangeAt(Perception, Sight.LightPermille) &&
-        Sight.FacingMilli >= Perception.ViewConeMilli;
+    return Sight.ExposurePermille > 0 && Sight.DistanceCm >= 0 &&
+        Sight.DistanceCm <= SightRangeAt(Perception, Sight.LightPermille) && Sight.FacingMilli >= Perception.ViewConeMilli;
 }
 
 // Awareness permille per second of unbroken view: fastest close and in the
 // focus cone, slower with distance, in the dark and at the edge of view, and
-// faster when the target moves.
+// faster when the target moves. Only the part of the body a line reaches
+// counts, a crouched outline is smaller, and a carried light gives the
+// target away.
 constexpr int SightGainPerSecond(FSight Sight, FPerception Perception = Standard())
 {
     if (!InView(Sight, Perception))
@@ -113,7 +136,9 @@ constexpr int SightGainPerSecond(FSight Sight, FPerception Perception = Standard
     const int Light = DarkFloorPermille + (1000 - DarkFloorPermille) * Clamp(Sight.LightPermille, 0, 1000) / 1000;
     const int Cone = Sight.FacingMilli >= Perception.FocusConeMilli ? 3 : 1;
     const int Motion = Sight.TargetMoving ? 3 : 2;
-    return Range * Light / 1000 * Cone / 3 * Motion / 2 * Perception.SuspicionPermille / 1000;
+    const int Outline = Sight.Crouched ? CrouchedOutlinePermille : 1000;
+    return Range * Light / 1000 * Cone / 3 * Motion / 2 * Perception.SuspicionPermille / 1000 *
+        Clamp(Sight.ExposurePermille, 0, 1000) / 1000 * Outline / 1000 * Clamp(Sight.VisibilityPermille, 0, 4000) / 1000;
 }
 
 // The light proxy: the key light's share of daylight from its illuminance in
@@ -136,6 +161,8 @@ constexpr int LightPermille(int Ambient, int Lamps)
     return Clamp(Ambient + Lamps, 0, 1000);
 }
 
+// The chapters' player noise (ch06: sprint 1500, walk 600, crouch-walk 250,
+// takedown 300) scaled to the standard listener's 1100 cm reference.
 constexpr int NoiseRadiusCm(ENoise Noise)
 {
     switch (Noise)
@@ -146,6 +173,8 @@ constexpr int NoiseRadiusCm(ENoise Noise)
     case ENoise::Shot: return 3500;
     case ENoise::Explosion: return 5000;
     case ENoise::Callout: return 1800;
+    case ENoise::CrouchStep: return 180;
+    case ENoise::Takedown: return 220;
     }
     return 0;
 }
@@ -156,31 +185,61 @@ constexpr int NoisePeakPermille(ENoise Noise)
     {
     case ENoise::Footstep: return 320;
     case ENoise::Sprint: return 500;
-    case ENoise::Melee: return 650;
+    case ENoise::Melee:
+    case ENoise::Takedown: return 650;
     case ENoise::Shot:
     case ENoise::Explosion:
     case ENoise::Callout: return 1000;
+    case ENoise::CrouchStep: return 200;
     }
     return 0;
 }
 
 constexpr bool IsContinuous(ENoise Noise)
 {
-    return Noise == ENoise::Footstep || Noise == ENoise::Sprint;
+    return Noise == ENoise::Footstep || Noise == ENoise::Sprint || Noise == ENoise::CrouchStep;
 }
 
-// How far this listener hears a noise.
-constexpr int HeardRadiusCm(ENoise Noise, FPerception Perception = Standard())
+// The steps the hero makes at his pace and stance; a sprint stands him up.
+constexpr ENoise Steps(bool Sprinting, EStance Stance)
 {
-    return NoiseRadiusCm(Noise) * Clamp(Perception.HearingCm, 0, 100000) / StandardHearingCm;
+    return Sprinting ? ENoise::Sprint : Stance == EStance::Crouched ? ENoise::CrouchStep : ENoise::Footstep;
+}
+
+// A floor's effect on footsteps, x1000 (a chapter's noise_surfaces): puddles
+// and gravel 1500, tatami and running water 500. A nightingale floor sings
+// under any step (walk 3000, crouch-walk 3600) except along its edge strip,
+// which is silent to a crouch-walk (0).
+struct FSurface
+{
+    int StepPermille;
+    int CrouchPermille;
+};
+
+constexpr FSurface Plain()
+{
+    return {1000, 1000};
+}
+
+constexpr int StepLoudnessPermille(ENoise Steps, FSurface Surface)
+{
+    return Clamp(Steps == ENoise::CrouchStep ? Surface.CrouchPermille : Surface.StepPermille, 0, 10000);
+}
+
+// How far this listener hears a noise made at Loudness (x1000).
+constexpr int HeardRadiusCm(ENoise Noise, FPerception Perception = Standard(), int LoudnessPermille = 1000)
+{
+    return NoiseRadiusCm(Noise) * Clamp(LoudnessPermille, 0, 10000) / 1000 * Clamp(Perception.HearingCm, 0, 100000) /
+        StandardHearingCm;
 }
 
 // Awareness permille a noise adds (per second for a continuous one): its peak
 // within half its radius, falling to two fifths of the peak at the edge. A
 // blocked path between the noise and the listener halves the radius.
-constexpr int HeardPermille(ENoise Noise, int DistanceCm, bool Occluded, FPerception Perception = Standard())
+constexpr int HeardPermille(ENoise Noise, int DistanceCm, bool Occluded, FPerception Perception = Standard(),
+    int LoudnessPermille = 1000)
 {
-    const int Full = HeardRadiusCm(Noise, Perception);
+    const int Full = HeardRadiusCm(Noise, Perception, LoudnessPermille);
     const int Radius = Occluded ? Full / 2 : Full;
     if (Radius <= 0 || DistanceCm < 0 || DistanceCm > Radius)
         return 0;
@@ -190,17 +249,60 @@ constexpr int HeardPermille(ENoise Noise, int DistanceCm, bool Occluded, FPercep
     return Level * Perception.SuspicionPermille / 1000;
 }
 
+// A stealth zone's detection block (story bible §12.2 `detection`) as the
+// guards apply it. Outside a zone, and for a hunting wave, Watchful() holds.
+struct FVigilance
+{
+    // How fast sight and continuous noise fill the meter, x1000 (suspicion_rate).
+    int RatePermille;
+    // Awareness (AwarenessScale units) at which an unaware guard becomes
+    // suspicious, and fresh evidence sends a searching one back on the hunt
+    // (suspicious_at). Alert is always the full meter (alert_threshold 1.0).
+    int SuspicionThreshold;
+    // How long a search lasts after contact is lost (search_s).
+    int SearchDurationMs;
+    // A wary guard's rate multiplier, x1000 (wary_after_search).
+    int WaryRatePermille;
+};
+
+constexpr FVigilance Watchful()
+{
+    return {1000, SuspiciousAt, SearchMs, WaryPermille};
+}
+
+// A zone's block from its data: suspicion_rate and suspicious_at in
+// thousandths, search_s in milliseconds.
+constexpr FVigilance Detection(int RatePermille, int SuspiciousAtPermille, int SearchDurationMs, int WaryRatePermille = WaryPermille)
+{
+    return {Clamp(RatePermille, 100, 4000), Clamp(SuspiciousAtPermille, 50, 950) * AwarenessScale,
+        Clamp(SearchDurationMs, 1000, 120000), Clamp(WaryRatePermille, 1000, 4000)};
+}
+
+// The difficulty's scaling (ch06 stealth_defaults.difficulty): Easy notices at
+// 0.7 of the rate and searches 0.8 as long; Hard 1.25 and 1.2.
+constexpr FVigilance OnDifficulty(FVigilance Zone, EDifficulty Difficulty)
+{
+    if (Difficulty == EDifficulty::Easy)
+        return {Zone.RatePermille * 700 / 1000, Zone.SuspicionThreshold, Zone.SearchDurationMs * 800 / 1000, Zone.WaryRatePermille};
+    if (Difficulty == EDifficulty::Hard)
+        return {Zone.RatePermille * 1250 / 1000, Zone.SuspicionThreshold, Zone.SearchDurationMs * 1200 / 1000, Zone.WaryRatePermille};
+    return Zone;
+}
+
 struct FMind
 {
     EState State;
     // AwarenessScale units. Unaware and Suspicious: the detection meter.
-    // Search: fresh evidence gathered since the search began. Otherwise full.
+    // Search: fresh evidence gathered since the search began, which fades
+    // when nothing new comes. Otherwise full.
     int Awareness;
     int StateMs;
     // Combat only: time since the target was last in view.
     int UnseenMs;
     // A retreat is taken once per life.
     bool Retreated;
+    // Wary for the rest of the beat (WaryPermille).
+    bool Wary;
 };
 
 struct FSenses
@@ -221,12 +323,12 @@ struct FSenses
 
 constexpr FMind Calm()
 {
-    return {EState::Unaware, 0, 0, 0, false};
+    return {EState::Unaware, 0, 0, 0, false, false};
 }
 
 constexpr FMind Hunting()
 {
-    return {EState::Alert, AwarenessMax, 0, 0, false};
+    return {EState::Alert, AwarenessMax, 0, 0, false, false};
 }
 
 constexpr FMind Enter(FMind Mind, EState State, int Awareness)
@@ -238,11 +340,28 @@ constexpr FMind Enter(FMind Mind, EState State, int Awareness)
     return Mind;
 }
 
+// A guard's first state in a zone. When the hero was detected in the zone
+// before (x_on_detected_carryover) it starts suspicious and wary.
+constexpr FMind Posted(bool CarriedOver)
+{
+    if (!CarriedOver)
+        return Calm();
+    FMind Mind = Enter(Calm(), EState::Suspicious, SuspiciousAt);
+    Mind.Wary = true;
+    return Mind;
+}
+
+constexpr int RatePermille(const FMind& Mind, FVigilance Vigilance)
+{
+    return Vigilance.RatePermille * (Mind.Wary ? Vigilance.WaryRatePermille : 1000) / 1000;
+}
+
 // One step of DtMs milliseconds.
-constexpr FMind Step(FMind Mind, FSenses Senses, int DtMs)
+constexpr FMind Step(FMind Mind, FSenses Senses, int DtMs, FVigilance Vigilance = Watchful())
 {
     const bool Sees = Senses.SightGain > 0;
-    const int Gain = (Senses.SightGain + Senses.NoisePerSecond) * DtMs + Senses.NoiseImpulse * AwarenessScale;
+    const int Gain = (Senses.SightGain + Senses.NoisePerSecond) * RatePermille(Mind, Vigilance) / 1000 * DtMs +
+        Senses.NoiseImpulse * AwarenessScale;
     Mind.StateMs += DtMs;
     switch (Mind.State)
     {
@@ -254,7 +373,7 @@ constexpr FMind Step(FMind Mind, FSenses Senses, int DtMs)
         Mind.Awareness = Clamp(Mind.Awareness + (Decays ? -DecayPermillePerSecond * DtMs : Gain), 0, AwarenessMax);
         if (Mind.Awareness >= AwarenessMax)
             return Enter(Mind, Sees ? EState::Combat : EState::Alert, AwarenessMax);
-        if (Mind.State == EState::Unaware && Mind.Awareness >= SuspiciousAt)
+        if (Mind.State == EState::Unaware && Mind.Awareness >= Vigilance.SuspicionThreshold)
             return Senses.Alarmist ? Enter(Mind, EState::Alert, AwarenessMax) : Enter(Mind, EState::Suspicious, Mind.Awareness);
         if (Mind.State == EState::Suspicious && Mind.Awareness <= 0)
             return Enter(Mind, EState::Unaware, 0);
@@ -281,11 +400,17 @@ constexpr FMind Step(FMind Mind, FSenses Senses, int DtMs)
     case EState::Search:
         if (Sees)
             return Enter(Mind, EState::Combat, AwarenessMax);
-        Mind.Awareness = Clamp(Mind.Awareness + Gain, 0, AwarenessMax);
-        if (Mind.Awareness >= SuspiciousAt)
+        // Faint evidence that stops coming fades, so scattered noises over a
+        // long search do not add up to a hunt.
+        Mind.Awareness = Clamp(Mind.Awareness + (Gain > 0 ? Gain : -DecayPermillePerSecond * DtMs), 0, AwarenessMax);
+        if (Mind.Awareness >= Vigilance.SuspicionThreshold)
             return Enter(Mind, EState::Alert, AwarenessMax);
-        if (Mind.StateMs >= SearchMs)
-            return Enter(Mind, EState::Unaware, 0);
+        if (Mind.StateMs >= Vigilance.SearchDurationMs)
+        {
+            Mind = Enter(Mind, EState::Unaware, 0);
+            Mind.Wary = true;
+            return Mind;
+        }
         return Mind;
     case EState::Retreat:
         if ((Senses.Reached && Mind.StateMs >= RetreatMinMs) || Mind.StateMs >= RetreatMaxMs)
@@ -294,6 +419,156 @@ constexpr FMind Step(FMind Mind, FSenses Senses, int DtMs)
     }
     return Mind;
 }
+
+// Detection: a guard that was calm (unaware, suspicious or searching) now
+// knows where the hero is. A search set off by a found body is not detection.
+constexpr bool IsCalm(EState State)
+{
+    return State == EState::Unaware || State == EState::Suspicious || State == EState::Search;
+}
+
+constexpr bool Detects(EState Previous, EState Next)
+{
+    return IsCalm(Previous) && (Next == EState::Alert || Next == EState::Combat);
+}
+
+// A zone's alarm (a lectern reached, a bell rung) reaches every guard in it:
+// calm guards go to where the alarm says the hero is, and all stay wary.
+constexpr FMind Alarmed(FMind Mind)
+{
+    Mind.Wary = true;
+    return IsCalm(Mind.State) ? Enter(Mind, EState::Alert, AwarenessMax) : Mind;
+}
+
+// A body found anywhere in a zone sends every unaware or suspicious guard to
+// search (the finder around the body, the others where they stand); all stay
+// wary for the rest of the beat. A guard already searching or hunting goes on.
+constexpr FMind BodyFound(FMind Mind)
+{
+    Mind.Wary = true;
+    return Mind.State == EState::Unaware || Mind.State == EState::Suspicious ? Enter(Mind, EState::Search, 0) : Mind;
+}
+
+// A calm guard gathers evidence of a body in view as it would of a still,
+// crouched figure (SightGainPerSecond at its rate); a body lost from view
+// starts over. It has found the body once the evidence reaches suspicion.
+constexpr int BodyEvidence(int Evidence, int GainPerSecond, int RatePermille, int DtMs)
+{
+    return GainPerSecond > 0 ? Clamp(Evidence + GainPerSecond * RatePermille / 1000 * DtMs, 0, AwarenessMax) : 0;
+}
+
+constexpr bool FindsBody(int Evidence, FVigilance Vigilance)
+{
+    return Evidence >= Vigilance.SuspicionThreshold;
+}
+
+// A shout carries NoiseRadiusCm(Callout), half as far through walls; an
+// auditor's alarm carries its own radius (AlarmRadiusCm > 0) through them.
+constexpr bool CalloutReaches(int DistanceCm, bool Occluded, int AlarmRadiusCm)
+{
+    if (AlarmRadiusCm > 0)
+        return DistanceCm >= 0 && DistanceCm <= AlarmRadiusCm;
+    const int Radius = NoiseRadiusCm(ENoise::Callout);
+    return DistanceCm >= 0 && DistanceCm <= (Occluded ? Radius / 2 : Radius);
+}
+
+// What a stealth zone does when the hero is detected (bible §12.2
+// on_detected): the guards simply fight, the checkpoint is restored, or a
+// reinforcement wave comes. On Easy every zone falls back to combat.
+enum class EOnDetected { Combat, Restart, Reinforce };
+
+constexpr EOnDetected Response(EOnDetected Zone, EDifficulty Difficulty)
+{
+    return Difficulty == EDifficulty::Easy ? EOnDetected::Combat : Zone;
+}
+
+// A zone that restarts from its checkpoint waits this long after detection,
+// so the player sees who saw him, before the checkpoint is restored.
+constexpr int RestartDelayMs = 2000;
+
+// Work under guard (a production task with stealth: true, ch06.b08) pauses
+// while any guard sees the hero, and stays paused while any guard is alert,
+// searching or fighting: it resumes once every guard is calm and unaware or
+// suspicious again, when the search times out or the guard is dealt with.
+constexpr bool WorkPaused(bool AnySees, EState MostAlarmed)
+{
+    return AnySees || !(MostAlarmed == EState::Unaware || MostAlarmed == EState::Suspicious);
+}
+
+// How alarmed a state is, for the most alarmed guard and the detection meter.
+constexpr int Severity(EState State)
+{
+    switch (State)
+    {
+    case EState::Unaware: return 0;
+    case EState::Suspicious: return 1;
+    case EState::Search: return 2;
+    case EState::Alert: return 3;
+    case EState::Retreat: return 3;
+    case EState::Combat: return 4;
+    }
+    return 0;
+}
+
+// The detection meter, x1000: an unaware or suspicious guard's fill toward
+// alert; a search's remaining time; full while it hunts or fights.
+constexpr int Meter(FMind Mind, FVigilance Vigilance)
+{
+    switch (Mind.State)
+    {
+    case EState::Unaware:
+    case EState::Suspicious: return Clamp(Mind.Awareness / AwarenessScale, 0, 1000);
+    case EState::Search:
+        return Clamp(1000 - Mind.StateMs * 1000 / (Vigilance.SearchDurationMs > 0 ? Vigilance.SearchDurationMs : 1), 0, 1000);
+    case EState::Alert:
+    case EState::Combat:
+    case EState::Retreat: return 1000;
+    }
+    return 0;
+}
+
+// Rear takedowns. The hero stands inside the victim's rear 120 degrees,
+// within reach, facing it; the victim has not placed him (unaware,
+// suspicious or searching). A tap does the zone's default (lethal_default);
+// the melee input held past TakedownHoldMs does the other. A debt-bound
+// conscript is always struck with the back of the blade (峰打ち).
+enum class ETakedown { Knockout, Lethal, Subdue };
+
+constexpr int TakedownReachCm = 170;
+// cos 120 degrees: the victim's facing to the hero; cos 60: the hero's to it.
+constexpr int TakedownRearMilli = -500;
+constexpr int TakedownAimMilli = 500;
+constexpr int TakedownHoldMs = 400;
+
+constexpr bool Unsuspecting(EState State)
+{
+    return IsCalm(State);
+}
+
+constexpr bool CanTakedown(bool ZoneAllows, bool Susceptible, EState VictimState, int DistanceCm, int VictimFacingMilli,
+    int HeroFacingMilli)
+{
+    return ZoneAllows && Susceptible && Unsuspecting(VictimState) && DistanceCm >= 0 && DistanceCm <= TakedownReachCm &&
+        VictimFacingMilli <= TakedownRearMilli && HeroFacingMilli >= TakedownAimMilli;
+}
+
+constexpr ETakedown Takedown(bool Nonlethal, bool LethalDefault, bool Held)
+{
+    return Nonlethal ? ETakedown::Subdue : LethalDefault != Held ? ETakedown::Lethal : ETakedown::Knockout;
+}
+
+// How long the hero is committed to each takedown from the press: a hilt
+// strike to the collar-node (当て身), the ch03 gorget thrust, a 峰打ち.
+constexpr int TakedownMs(ETakedown Kind)
+{
+    return Kind == ETakedown::Lethal ? 2200 : 1500;
+}
+
+// Moving a body: within reach and at half pace (ch06 bodies.drag_speed_mult).
+constexpr int DragReachCm = 160;
+constexpr int DragSpeedPermille = 500;
+// A crouch-walk's pace against the hero's walk.
+constexpr int CrouchSpeedPermille = 450;
 
 // Slots 1, 4, 7... flank; every other ranged slot takes cover.
 constexpr ERole Role(int Slot, bool Blade)

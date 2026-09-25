@@ -242,7 +242,8 @@ bool ReadArchetype(FString& Error, const FJsonObject& O, int32 Index, FSoraEnemy
         !R.Object(O, TEXT("defense"), Defense) || !R.Int(*Defense, TEXT("front_block_deg"), FrontBlock, 0, 360) ||
         !R.Int(*Defense, TEXT("rim_opening_ms"), E.RimOpeningMs, 0, 5000) ||
         !R.Int(*Defense, TEXT("rear_weak_permille"), E.RearWeakPermille, 1000, 5000) ||
-        !R.Int(*Defense, TEXT("poise_ms"), E.PoiseMs, 0, 10000) || !R.Object(O, TEXT("tactics"), Tactics) ||
+        !R.Int(*Defense, TEXT("poise_ms"), E.PoiseMs, 0, 10000) || !R.Flag(*Defense, TEXT("rear_takedown"), E.bRearTakedown) ||
+        !R.Object(O, TEXT("tactics"), Tactics) ||
         !R.Int(*Tactics, TEXT("keep_distance_cm"), E.KeepDistanceCm, 0, 5000) ||
         !R.Int(*Tactics, TEXT("relocate_after_shots"), E.RelocateAfterShots, 0, 20) ||
         !R.Int(*Tactics, TEXT("hover_cm"), E.HoverCm, 0, 3000) || !R.Int(*Tactics, TEXT("alarm_radius_cm"), E.AlarmRadiusCm, 0, 10000) ||
@@ -254,6 +255,8 @@ bool ReadArchetype(FString& Error, const FJsonObject& O, int32 Index, FSoraEnemy
     E.ShieldHalfArcMilli = E.bShield ? HalfArcMilli(FrontBlock) : 1000;
     if (E.bShield != (E.RimOpeningMs > 0))
         return R.Fail(TEXT("defense"), TEXT("a shield turns on its rim, and only a shield does"));
+    if (E.bRearTakedown != (E.Body == ESoraEnemyBody::Alien || E.Body == ESoraEnemyBody::Local))
+        return R.Fail(TEXT("defense.rear_takedown"), TEXT("cats, and only cats, can be taken down from behind"));
     if (!E.bLethal)
     {
         TSharedPtr<FJsonObject> Subdue;

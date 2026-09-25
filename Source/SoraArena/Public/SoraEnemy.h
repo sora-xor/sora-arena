@@ -32,7 +32,9 @@ struct FSoraEnemyTuning
 // its defenses (a tower shield, a personal barrier, a weak rear) and its
 // stagger; ASoraEnemyController decides from its own tick where it moves and
 // when an attack may start. A debt-bound conscript is never killed: a lethal
-// blow knocks it down, and cutting its collar frees it (SoraCombatRules).
+// blow knocks it down, and cutting its collar frees it (SoraCombatRules). In a
+// stealth zone (USoraStealth) a guard can be taken down from behind, and a
+// guard knocked out or killed stays down as a body for the others to find.
 UCLASS()
 class SORAARENA_API ASoraEnemy : public ASoraCharacterBase
 {
@@ -114,6 +116,20 @@ public:
     bool CutSeal(AActor* By);
     // How long Interact is held to cut a collar, from the archetype.
     int32 SealCutHoldMs() const;
+
+    // Stealth (USoraStealth). A body is an opponent down on the floor:
+    // knocked out, knocked down or dead, and left where it fell for the other
+    // guards to find. A combat wave's dead clear away instead.
+    bool IsBody() const;
+    bool IsUnconscious() const { return bUnconscious; }
+    // 当て身: a rear takedown's hilt strike. Out for the rest of the beat; it
+    // counts as defeated and leaves a body.
+    void KnockOut(AActor* By);
+    // A rear takedown may start on it: its archetype allows one and it can still fight.
+    bool CanBeTakenDown() const;
+    // Held by a takedown: it neither thinks, moves nor strikes.
+    void Seize(bool bHeld);
+    bool IsSeized() const { return bSeized; }
 protected:
     virtual void TickPlay(float DeltaSeconds) override;
     virtual void HaltActions() override;
@@ -139,6 +155,9 @@ private:
     void Telegraph(const FSoraEnemyAttack& Attack, float Life);
     void Announce(ESoraEnemyCue Cue, FName Detail) const;
     void Rise();
+    // Down where it fell and passed over. A body that stays down settles onto
+    // the floor, stops blocking sight and is left for the guards to find.
+    void LieDown(bool bBody);
     FVector Eye() const;
     FVector Feet(const ASoraCharacterBase& Body) const;
     const FSoraEnemyArchetype* Kind = nullptr;
@@ -173,6 +192,8 @@ private:
     // Nonlethal state.
     SoraCombatRules::EConscript Conscript = SoraCombatRules::EConscript::Standing;
     float DownAt = 0.f;
+    bool bUnconscious = false;
+    bool bSeized = false;
     // The sparring pupil's drill.
     bool bPupilWindup = false;
     float PupilWindupEndsAt = 0.f;

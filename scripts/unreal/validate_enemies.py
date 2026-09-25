@@ -36,7 +36,9 @@ ARCHETYPE_FIELDS = {"id", "name_ja", "reading", "name_en", "weapon_ja", "weapon_
                     "first_chapter", "health", "speed_cm_s", "turn_deg_s", "scale_permille", "lethal", "perception",
                     "defense", "tactics", "attacks", "variants"}
 PERCEPTION_FIELDS = {"sight_cm", "dark_sight_cm", "view_deg", "hearing_cm", "suspicion_permille", "alarmist"}
-DEFENSE_FIELDS = {"front_block_deg", "rim_opening_ms", "rear_weak_permille", "poise_ms"}
+DEFENSE_FIELDS = {"front_block_deg", "rim_opening_ms", "rear_weak_permille", "poise_ms", "rear_takedown"}
+# A rear takedown needs a nape to strike: cats, alien or local, never a machine.
+TAKEDOWN_BODIES = {"alien", "local"}
 TACTICS_FIELDS = {"keep_distance_cm", "relocate_after_shots", "hover_cm", "alarm_radius_cm", "static"}
 ATTACK_FIELDS = {"id", "cue", "name_ja", "name_en", "kind", "telegraph", "damage", "windup_ms", "recovery_ms",
                  "cooldown_ms", "range_cm"}
@@ -191,6 +193,9 @@ def validate(data, roster, grenade_arming_cm, references):
             require((d["front_block_deg"] > 0) == (a["behavior"] == "shield"), f"{where}: only a shield enforcer carries a tower shield")
             require(whole(d["rear_weak_permille"], 1000, 5000), f"{where}: rear_weak_permille out of range")
             require(whole(d["poise_ms"], 0, 10000), f"{where}: poise_ms out of range")
+            require(isinstance(d["rear_takedown"], bool), f"{where}: rear_takedown must be true or false")
+            require(d["rear_takedown"] == (a["body"] in TAKEDOWN_BODIES),
+                    f"{where}: cats, and only cats, can be taken down from behind")
         t = a["tactics"]
         if require(isinstance(t, dict) and set(t) == TACTICS_FIELDS, f"{where}: tactics fields"):
             for field in ("keep_distance_cm", "relocate_after_shots", "hover_cm", "alarm_radius_cm"):
@@ -314,6 +319,8 @@ def mutations(data):
     yield edit("amber beam", lambda d: by_id(d, "seizure_walker")["attacks"][0].__setitem__("telegraph", "amber"))
     yield edit("unknown field", lambda d: by_id(d, "drone").__setitem__("colour", "cyan"))
     yield edit("shield without rim", lambda d: by_id(d, "shield_enforcer")["defense"].__setitem__("rim_opening_ms", 0))
+    yield edit("drone takedown", lambda d: by_id(d, "drone")["defense"].__setitem__("rear_takedown", True))
+    yield edit("untakeable retainer", lambda d: by_id(d, "blade_retainer")["defense"].__setitem__("rear_takedown", False))
     yield edit("silent auditor", lambda d: by_id(d, "auditor")["perception"].__setitem__("alarmist", False))
     yield edit("unknown variant weapon", lambda d: by_id(d, "enforcer_rifle")["variants"][0]["barrier"]["weapon_permille"].__setitem__("99", 1000))
 

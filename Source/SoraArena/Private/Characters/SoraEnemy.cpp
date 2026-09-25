@@ -2,6 +2,7 @@
 #include "Combat/SoraCombatEffects.h"
 #include "Combat/SoraDamage.h"
 #include "Combat/SoraEnemyCatalog.h"
+#include "Combat/SoraStealth.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraEnemyController.h"
@@ -115,7 +116,7 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
     Phase=EPhase::Idle; AttackIndex=INDEX_NONE; AttackTarget=nullptr; NextAttackAt=0.f;
     AttackReadyAt.Init(0.f,Kind->Attacks.Num());
     StaggerUntil=-1.f; StrikeStaggerImmuneUntil=-1.f; ShieldOpenUntil=-1.f;
-    Conscript=Rules::EConscript::Standing;
+    Conscript=Rules::EConscript::Standing; bUnconscious=false; bSeized=false;
     SetActorScale3D(FVector(Kind->ScalePermille/1000.f));
     UCharacterMovementComponent* Movement=GetCharacterMovement();
     Movement->MaxWalkSpeed=Kind->SpeedCmPerSecond; Movement->MaxFlySpeed=Kind->SpeedCmPerSecond;
@@ -184,6 +185,11 @@ bool ASoraEnemy::UsesAlienBody() const { return Kind?Kind->Body!=ESoraEnemyBody:
 bool ASoraEnemy::RangedShotMisses(int32 Slot,int32 Shot) { return Rules::RoundMisses(Slot,Shot); }
 int32 ASoraEnemy::AttackDamage(int32 Index) const { return Kind&&Kind->Attacks.IsValidIndex(Index)?Kind->Attacks[Index].Damage:0; }
 int32 ASoraEnemy::SealCutHoldMs() const { return Kind?Kind->SealCutHoldMs:0; }
+bool ASoraEnemy::IsBody() const { return Kind&&!IsAlive()&&!IsFreed()&&!IsActorBeingDestroyed(); }
+bool ASoraEnemy::CanBeTakenDown() const
+{
+    return Kind&&Kind->bRearTakedown&&IsAlive()&&!bInvulnerable&&!IsFreed()&&!bSeized&&!bKernelDriven;
+}
 bool ASoraEnemy::IsStaggered() const { return GetWorld()&&Now()<StaggerUntil; }
 bool ASoraEnemy::IsShieldOpen() const { return Kind&&Kind->bShield&&(Now()<ShieldOpenUntil||IsStaggered()); }
 const FSoraEnemyAttack* ASoraEnemy::CurrentAttack() const
@@ -583,6 +589,14 @@ void ASoraEnemy::OnDefeated(AActor* Causer)
     // actor stands for a moment and cannot be scored a second time.
     CancelAttack();
     if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->Campaign()->OpponentDefeated(this);
+    // A guard's body stays where it fell for the others to find; a combat
+    // wave's fallen clear away.
+    const auto* Brain=Cast<ASoraEnemyController>(GetController());
+    if(Kind&&Brain&&Brain->IsGuard())
+    {
+        LieDown(true);
+        return;
+    }
     SetActorEnableCollision(false);
     if(bDojoPupil) SetActorTickEnabled(false);
     else SetActorRotation(FRotator(0,GetActorRotation().Yaw,85));
@@ -590,14 +604,41 @@ void ASoraEnemy::OnDefeated(AActor* Causer)
 }
 void ASoraEnemy::Subdue(AActor* Causer)
 {
-    // 峰打ち: down, not dead. It stays where it fell, and bodies pass over it.
-    Conscript=Rules::EConscript::Down; DownAt=Now(); Health=0.f;
+    // 峰打ち: down, not dead. It stays where it fell until its collar drags it
+    // up; a guard's comrades may find it meanwhile.
+    Conscript=Rules::EConscript::Down; DownAt=Now(); Health=0.f; bSeized=false;
+    LieDown(false);
+    const auto* Brain=Cast<ASoraEnemyController>(GetController());
+    if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Brain&&Brain->IsGuard()) Stealth->AddBody(*this);
+    Announce(ESoraEnemyCue::Subdued,NAME_None);
+}
+void ASoraEnemy::LieDown(bool bBody)
+{
     CancelAttack();
     GetCharacterMovement()->StopMovementImmediately();
     GetCharacterMovement()->DisableMovement();
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
     SetActorRotation(FRotator(0,GetActorRotation().Yaw,85));
-    Announce(ESoraEnemyCue::Subdued,NAME_None);
+    if(!bBody) return;
+    UCapsuleComponent* Capsule=GetCapsuleComponent();
+    Capsule->SetCollisionResponseToChannel(ECC_Visibility,ECR_Ignore);
+    AddActorWorldOffset(FVector(0.f,0.f,Capsule->GetScaledCapsuleRadius()-Capsule->GetScaledCapsuleHalfHeight()));
+    if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->AddBody(*this);
+}
+void ASoraEnemy::KnockOut(AActor* By)
+{
+    if(!Kind||!IsAlive()) return;
+    bSeized=false; bUnconscious=true; Health=0.f;
+    LieDown(true);
+    Announce(ESoraEnemyCue::KnockedOut,NAME_None);
+    if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->Campaign()->OpponentDefeated(this);
+}
+void ASoraEnemy::Seize(bool bHeld)
+{
+    bSeized=bHeld;
+    if(!bHeld) return;
+    CancelAttack();
+    GetCharacterMovement()->StopMovementImmediately();
 }
 bool ASoraEnemy::CanCutSeal() const
 {

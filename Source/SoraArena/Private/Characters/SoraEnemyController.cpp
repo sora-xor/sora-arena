@@ -1,5 +1,6 @@
 #include "SoraEnemyController.h"
 #include "Combat/SoraEnemyCatalog.h"
+#include "Combat/SoraStealth.h"
 #include "SoraBoss.h"
 #include "SoraCatalog.h"
 #include "SoraEnemy.h"
@@ -8,9 +9,6 @@
 #include "SoraPlayerCharacter.h"
 #include "World/SoraNavigation.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/DirectionalLightComponent.h"
-#include "Components/PointLightComponent.h"
-#include "Engine/Light.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -20,11 +18,10 @@ namespace Stealth = SoraStealthRules;
 
 namespace SoraEnemyBrain
 {
-// The eye sits where the opponents' attacks trace from; the hero is seen at
-// his head or chest.
+// The eye sits where the opponents' attacks trace from. The hero is looked for
+// at his head, chest and hips, placed on his capsule so a crouch lowers them.
 constexpr float EyeHeight = 50.f;
-constexpr float HeadHeight = 60.f;
-constexpr float ChestHeight = 10.f;
+constexpr float BodySamples[] = {.75f, .2f, -.4f};
 // Movement input scales: a patrol walk, a careful approach, a hunter's pace,
 // combat repositioning (the first invaders' pace) and a retreat.
 constexpr float PatrolSpeed = .35f;
@@ -43,6 +40,8 @@ constexpr float OpenFireRangeCm = 650.f;
 constexpr float HoldReachShare = .8f;
 // An auditor on the run shouts again this often.
 constexpr int32 AlarmRepeatMs = 2000;
+// A body is looked at a little above the floor it lies on.
+constexpr float BodySightHeight = 20.f;
 
 const TCHAR* StateName(SoraStealthRules::EState State)
 {
@@ -157,6 +156,60 @@ void ASoraEnemyController::Rouse(const FVector& Where)
         Enter(*Enemy, Previous, WorldMs());
 }
 
+void ASoraEnemyController::HearNoise(Stealth::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source)
+{
+    Heard.Add({Kind, Origin, Evidence, Source});
+}
+
+void ASoraEnemyController::HearAlarm(const FVector& Where)
+{
+    const Stealth::EState Previous = Mind.State;
+    Mind = Stealth::Alarmed(Mind);
+    if (Mind.State == Previous)
+        return;
+    LastKnown = Where;
+    if (ASoraEnemy* Enemy = GetPawn<ASoraEnemy>())
+        Enter(*Enemy, Previous, WorldMs());
+}
+
+void ASoraEnemyController::LearnOfBody(const FVector& Where, bool bFinder)
+{
+    ASoraEnemy* Enemy = GetPawn<ASoraEnemy>();
+    const Stealth::EState Previous = Mind.State;
+    Mind = Stealth::BodyFound(Mind);
+    // The finder searches around the body even if it was already searching.
+    if (bFinder && Mind.State == Stealth::EState::Search)
+        Mind = Stealth::Enter(Mind, Stealth::EState::Search, 0);
+    else if (Mind.State == Previous)
+        return;
+    LastKnown = bFinder || !Enemy ? Where : Enemy->GetActorLocation();
+    if (Enemy)
+        Enter(*Enemy, Previous, WorldMs());
+}
+
+void ASoraEnemyController::EnterZone(bool bCarriedOver)
+{
+    ASoraEnemy* Enemy = GetPawn<ASoraEnemy>();
+    if (bHunting || !Enemy || !Enemy->Archetype() || Mind.State != Stealth::EState::Unaware)
+        return;
+    const Stealth::EState Previous = Mind.State;
+    Mind = Stealth::Posted(bCarriedOver);
+    if (Mind.State != Previous)
+        Enter(*Enemy, Previous, WorldMs());
+}
+
+Stealth::FVigilance ASoraEnemyController::Vigilance() const
+{
+    // A hunting wave never obeys a zone.
+    const USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this);
+    return Zone ? Zone->Vigilance() : Stealth::Watchful();
+}
+
+int32 ASoraEnemyController::MeterPermille() const
+{
+    return Stealth::Meter(Mind, Vigilance());
+}
+
 void ASoraEnemyController::Prepare(bool bHunt)
 {
     const ASoraEnemy* Enemy = GetPawn<ASoraEnemy>();
@@ -181,6 +234,12 @@ void ASoraEnemyController::Prepare(bool bHunt)
     bCanPeek = false;
     bAvoidSpot = false;
     NextAlarmMs = 0;
+    Lectern = INDEX_NONE;
+    bLecternUnreachable = false;
+    bAlarmRaised = false;
+    bSeesHero = false;
+    BodyEvidence = 0;
+    BodyInView.Reset();
     ClearPath();
     NextIntelMs = WorldMs() + Stealth::IntelMs;
     CombatSinceMs = WorldMs();
@@ -200,6 +259,9 @@ void ASoraEnemyController::BeginPatrol(const FSoraPatrolRoute& InRoute)
     Route = InRoute;
     if (Route.Points.Num() == 1)
         Post = Route.Points[0];
+    // A guard posted into an open zone takes the zone's start.
+    if (const USoraStealth* Zone = USoraStealth::Get(this); Zone && Zone->IsZoneActive())
+        Mind = Stealth::Posted(Zone->Zone().bCarriedOver);
 }
 
 void ASoraEnemyController::Tick(float Dt)
@@ -212,9 +274,10 @@ void ASoraEnemyController::Tick(float Dt)
     // whose pawn is held still with its tick off does nothing, and noises made
     // meanwhile are forgotten.
     auto* Target = Cast<ASoraCharacterBase>(UGameplayStatics::GetPlayerPawn(this, 0));
-    if (!Enemy->IsActorTickEnabled() || !Enemy->CanPlay() || Enemy->IsFreed() || !Target || !Target->IsAlive())
+    if (!Enemy->IsActorTickEnabled() || !Enemy->CanPlay() || Enemy->IsFreed() || Enemy->IsSeized() || !Target || !Target->IsAlive())
     {
         Heard.Reset();
+        bSeesHero = false;
         return;
     }
     if (auto* Boss = Cast<ASoraBoss>(Enemy))
@@ -242,23 +305,30 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     const FVector Ear = Here + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
     const FVector There = Target.GetActorLocation();
     const Stealth::FPerception& Perception = Enemy.Perception();
+    USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this);
+    const Stealth::FVigilance Vigil = Vigilance();
 
     Stealth::FSenses Senses{};
     const Stealth::FSight Sight = Look(Enemy, Target);
     const bool bSees = Stealth::InView(Sight, Perception);
+    bSeesHero = bSees;
     Senses.SightGain = Stealth::SightGainPerSecond(Sight, Perception);
     bool bEvidence = bSees;
     FVector Evidence = There;
 
-    // The hero's footsteps are heard for as long as they last.
+    // The hero's footsteps are heard for as long as they last: softer when he
+    // crouch-walks, louder or silent on the zone's floors.
     const UCharacterMovementComponent* Walk = Target.GetCharacterMovement();
     if (Target.GetVelocity().Size2D() > 150.f && Walk && Walk->IsMovingOnGround())
     {
         const auto* Hero = Cast<ASoraPlayerCharacter>(&Target);
-        const Stealth::ENoise Steps = Hero && Hero->IsSprinting() ? Stealth::ENoise::Sprint : Stealth::ENoise::Footstep;
+        const Stealth::ENoise Steps = Stealth::Steps(Hero && Hero->IsSprinting(),
+            Target.IsCrouched() ? Stealth::EStance::Crouched : Stealth::EStance::Standing);
+        const FVector Feet = There - FVector(0.f, 0.f, Target.GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+        const int32 Loudness = Zone && Zone->IsZoneActive() ? Stealth::StepLoudnessPermille(Steps, Zone->SurfaceAt(Feet)) : 1000;
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(There, Ear));
-        if (Distance <= Stealth::HeardRadiusCm(Steps, Perception))
-            Senses.NoisePerSecond = Stealth::HeardPermille(Steps, Distance, Occluded(There, Ear, &Target), Perception);
+        if (Distance <= Stealth::HeardRadiusCm(Steps, Perception, Loudness))
+            Senses.NoisePerSecond = Stealth::HeardPermille(Steps, Distance, Occluded(There, Ear, &Target), Perception, Loudness);
         bEvidence |= Senses.NoisePerSecond > 0;
     }
     // The loudest single noise since the last tick.
@@ -296,9 +366,14 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     Senses.CanRetreat = Stealth::CanRetreat(Role) && SoraEnemyBrain::IsShooter(Enemy.Archetype());
     Senses.Alarmist = Perception.Alarmist;
     const Stealth::EState Previous = Mind.State;
-    Mind = Stealth::Step(Mind, Senses, DtMs);
+    Mind = Stealth::Step(Mind, Senses, DtMs, Vigil);
     if (Mind.State != Previous)
         Enter(Enemy, Previous, NowMs);
+    // A calm guard in a zone may come upon a body.
+    if (Zone && Zone->IsZoneActive() && Stealth::IsCalm(Mind.State))
+        LookForBodies(Enemy, DtMs);
+    else
+        BodyEvidence = 0;
     // A staggered opponent still notices, but neither moves nor strikes.
     if (Enemy.IsStaggered())
         return;
@@ -340,6 +415,8 @@ void ASoraEnemyController::Enter(ASoraEnemy& Enemy, Stealth::EState Previous, in
         break;
     }
     AnnounceState(Enemy);
+    if (USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this))
+        Zone->NoteState(Enemy, Previous, Mind.State);
     // An opponent that has just found the hero shouts to the allies near it.
     const bool bWasCalm = Previous == Stealth::EState::Unaware || Previous == Stealth::EState::Suspicious ||
         Previous == Stealth::EState::Search;
@@ -360,13 +437,22 @@ void ASoraEnemyController::AnnounceState(const ASoraEnemy& Enemy) const
 
 void ASoraEnemyController::CallOut(const ASoraEnemy& Enemy) const
 {
-    // An auditor's alarm carries farther than a trooper's shout.
-    const int32 Alarm = Enemy.Archetype() ? Enemy.Archetype()->AlarmRadiusCm : 0;
-    const float Radius = Alarm > 0 ? Alarm : Stealth::NoiseRadiusCm(Stealth::ENoise::Callout);
+    // An auditor's alarm carries farther than a trooper's shout, and through
+    // walls; a shout carries half as far through them. Where the zone has
+    // alarm lecterns, the auditor only shouts: the alarm is raised at a lectern.
+    const USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this);
+    const bool bLecterns = Zone && Zone->IsZoneActive() && !Zone->AlarmPoints().IsEmpty();
+    const int32 Alarm = Enemy.Archetype() && !bLecterns ? Enemy.Archetype()->AlarmRadiusCm : 0;
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
     {
         const APawn* Ally = It->GetPawn();
-        if (*It != this && Ally && FVector::Dist(Ally->GetActorLocation(), Enemy.GetActorLocation()) <= Radius)
+        if (*It == this || !Ally)
+            continue;
+        const int32 Distance = FMath::RoundToInt32(FVector::Dist(Ally->GetActorLocation(), Enemy.GetActorLocation()));
+        if (Distance > FMath::Max(Alarm, Stealth::NoiseRadiusCm(Stealth::ENoise::Callout)))
+            continue;
+        const bool bMuffled = Alarm <= 0 && Occluded(Enemy.GetActorLocation(), Ally->GetActorLocation(), Ally);
+        if (Stealth::CalloutReaches(Distance, bMuffled, Alarm))
             It->HearCallout(Enemy.GetActorLocation(), LastKnown, Alarm > 0);
     }
 }
@@ -571,6 +657,44 @@ void ASoraEnemyController::Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
 
 void ASoraEnemyController::AlarmRun(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, float Dt, int32 NowMs)
 {
+    // In a zone with alarm lecterns (ch06 alarm_points) the auditor runs to
+    // the nearest one and raises the zone's alarm there. Stopped on the way,
+    // it raises none; a lectern it cannot reach leaves it shouting as it flees.
+    USoraStealth* Zone = bHunting ? nullptr : USoraStealth::Get(this);
+    if (Zone && Zone->IsZoneActive() && !Zone->AlarmPoints().IsEmpty() && !bLecternUnreachable)
+    {
+        if (bAlarmRaised)
+        {
+            bGoalDone = true;
+            LookAround(Enemy, Enemy.GetActorRotation().Yaw, 60.f, Dt, NowMs);
+            return;
+        }
+        const TArray<FVector>& Lecterns = Zone->AlarmPoints();
+        if (!Lecterns.IsValidIndex(Lectern))
+        {
+            Lectern = 0;
+            for (int32 Index = 1; Index < Lecterns.Num(); ++Index)
+                if (FVector::Dist2D(Enemy.GetActorLocation(), Lecterns[Index]) < FVector::Dist2D(Enemy.GetActorLocation(), Lecterns[Lectern]))
+                    Lectern = Index;
+        }
+        const EMove Move = WalkTo(Enemy, Lecterns[Lectern], SoraEnemyBrain::RetreatSpeed, 90.f, NowMs);
+        Face(Enemy, Heading, Dt, 5.f);
+        if (Move == EMove::Arrived)
+        {
+            bAlarmRaised = true;
+            if (USoraGameEvents* Bus = USoraGameEvents::Get(this))
+            {
+                FSoraEnemyCueEvent Event;
+                Event.Enemy = &Enemy; Event.Archetype = Enemy.ArchetypeId(); Event.Cue = ESoraEnemyCue::Alarm;
+                Event.Detail = TEXT("lectern");
+                Bus->OnEnemyCue.Broadcast(Event);
+            }
+            Zone->RaiseAlarm(Enemy, LastKnown);
+        }
+        else if (Move == EMove::Blocked)
+            bLecternUnreachable = true;
+        return;
+    }
     if (NowMs >= NextAlarmMs)
     {
         NextAlarmMs = NowMs + SoraEnemyBrain::AlarmRepeatMs;
@@ -862,45 +986,77 @@ Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraC
     const FVector There = Target.GetActorLocation();
     const FVector Flat(There.X - Eye.X, There.Y - Eye.Y, 0.f);
     const Stealth::FPerception& Perception = Enemy.Perception();
+    const USoraStealth* Zone = USoraStealth::Get(this);
     Stealth::FSight Sight{};
     Sight.DistanceCm = FMath::RoundToInt32(Flat.Size());
     Sight.FacingMilli = FMath::RoundToInt32(FVector::DotProduct(Enemy.GetActorForwardVector().GetSafeNormal2D(), Flat.GetSafeNormal()) * 1000.f);
     Sight.TargetMoving = Target.GetVelocity().Size2D() > 30.f;
+    Sight.Crouched = Target.IsCrouched();
+    Sight.VisibilityPermille = Zone && Cast<ASoraPlayerCharacter>(&Target) ? Zone->HeroVisibility() : 1000;
     if (Sight.DistanceCm > Perception.SightRangeCm || Sight.FacingMilli < Perception.ViewConeMilli)
         return Sight;
+    // How much of the hero a line from the eye reaches: low cover hides a
+    // crouch but not a standing head.
     FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraSight), false, &Enemy);
-    for (const float Height : {SoraEnemyBrain::HeadHeight, SoraEnemyBrain::ChestHeight})
+    const float HalfHeight = Target.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    int32 Visible = 0;
+    for (const float Share : SoraEnemyBrain::BodySamples)
     {
         FHitResult Hit;
-        GetWorld()->LineTraceSingleByChannel(Hit, Eye, There + FVector(0.f, 0.f, Height), ECC_Visibility, Query);
-        if (Hit.GetActor() == &Target)
-        {
-            Sight.Clear = true;
-            break;
-        }
+        GetWorld()->LineTraceSingleByChannel(Hit, Eye, There + FVector(0.f, 0.f, Share * HalfHeight), ECC_Visibility, Query);
+        Visible += Hit.GetActor() == &Target ? 1 : 0;
     }
-    if (Sight.Clear)
-        Sight.LightPermille = LightAt(There);
+    Sight.ExposurePermille = Stealth::ExposurePermille(Visible, static_cast<int32>(UE_ARRAY_COUNT(SoraEnemyBrain::BodySamples)));
+    if (Sight.ExposurePermille > 0)
+        Sight.LightPermille = Zone ? Zone->LightAt(There) : 1000;
     return Sight;
 }
 
-int32 ASoraEnemyController::LightAt(const FVector& Location) const
+void ASoraEnemyController::LookForBodies(ASoraEnemy& Enemy, int32 DtMs)
 {
-    // The key light's illuminance and every lamp whose reach covers the spot.
-    int32 KeyDeciLux = 0;
-    int32 Lamps = 0;
-    for (TActorIterator<ALight> It(GetWorld()); It; ++It)
+    // The nearest unfound body in view: a still figure low on the floor, in
+    // whatever light falls on it. Evidence gathers while it stays in view.
+    USoraStealth* Zone = USoraStealth::Get(this);
+    const Stealth::FPerception& Perception = Enemy.Perception();
+    const FVector Eye = Enemy.GetActorLocation() + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
+    ASoraEnemy* Seen = nullptr;
+    int32 SeenGain = 0;
+    int32 SeenDistance = MAX_int32;
+    for (ASoraEnemy* Body : Zone->UnfoundBodies())
     {
-        const ULightComponent* Light = It->GetLightComponent();
-        if (!Light || !Light->IsVisible())
+        if (Body == &Enemy)
             continue;
-        if (const auto* Lamp = Cast<UPointLightComponent>(Light))
-            Lamps += Stealth::LampPermille(FMath::RoundToInt32(FVector::Dist(Location, Lamp->GetComponentLocation())),
-                FMath::RoundToInt32(Lamp->AttenuationRadius));
-        else if (Light->IsA<UDirectionalLightComponent>())
-            KeyDeciLux = FMath::Max(KeyDeciLux, FMath::RoundToInt32(Light->Intensity * 10.f));
+        const FVector At = Body->GetActorLocation() + FVector(0.f, 0.f, SoraEnemyBrain::BodySightHeight);
+        const FVector Flat(At.X - Eye.X, At.Y - Eye.Y, 0.f);
+        Stealth::FSight Sight{};
+        Sight.DistanceCm = FMath::RoundToInt32(Flat.Size());
+        Sight.FacingMilli = FMath::RoundToInt32(FVector::DotProduct(Enemy.GetActorForwardVector().GetSafeNormal2D(), Flat.GetSafeNormal()) * 1000.f);
+        Sight.Crouched = true;
+        if (Sight.DistanceCm >= SeenDistance || Sight.DistanceCm > Perception.SightRangeCm || Sight.FacingMilli < Perception.ViewConeMilli)
+            continue;
+        FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraBodySight), false, &Enemy);
+        Query.AddIgnoredActor(Body);
+        if (GetWorld()->LineTraceTestByChannel(Eye, At, ECC_Visibility, Query))
+            continue;
+        Sight.ExposurePermille = 1000;
+        Sight.LightPermille = Zone->LightAt(At);
+        const int32 Gain = Stealth::SightGainPerSecond(Sight, Perception);
+        if (Gain <= 0)
+            continue;
+        Seen = Body;
+        SeenGain = Gain;
+        SeenDistance = Sight.DistanceCm;
     }
-    return Stealth::LightPermille(Stealth::AmbientPermille(KeyDeciLux), Lamps);
+    if (Seen != BodyInView.Get())
+        BodyEvidence = 0;
+    BodyInView = Seen;
+    BodyEvidence = Stealth::BodyEvidence(BodyEvidence, SeenGain, Stealth::RatePermille(Mind, Vigilance()), DtMs);
+    if (Seen && Stealth::FindsBody(BodyEvidence, Vigilance()))
+    {
+        BodyEvidence = 0;
+        BodyInView.Reset();
+        Zone->FindBody(*Seen, Enemy);
+    }
 }
 
 bool ASoraEnemyController::Occluded(const FVector& From, const FVector& To, const AActor* Source) const

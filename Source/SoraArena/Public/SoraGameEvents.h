@@ -122,6 +122,10 @@ enum class ESoraEnemyCue : uint8
     Subdued,
     Freed,
     Risen,
+    // A rear takedown's hilt strike (当て身) put the opponent out.
+    KnockedOut,
+    // A guard found a body; Detail is unconscious, subdued or dead.
+    BodyFound,
 };
 
 USTRUCT()

@@ -19,7 +19,7 @@
       "scale_permille": 1000,
       "lethal": true,
       "perception": { "sight_cm": 2800, "dark_sight_cm": 2800, "view_deg": 140, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
       "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
       "attacks": [
         {
@@ -55,7 +55,7 @@
       "scale_permille": 1000,
       "lethal": true,
       "perception": { "sight_cm": 2800, "dark_sight_cm": 2800, "view_deg": 140, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
       "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
       "attacks": [
         {
@@ -84,7 +84,7 @@
       "scale_permille": 1000,
       "lethal": true,
       "perception": { "sight_cm": 2800, "dark_sight_cm": 2800, "view_deg": 140, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
-      "defense": { "front_block_deg": 120, "rim_opening_ms": 1200, "rear_weak_permille": 1000, "poise_ms": 300 },
+      "defense": { "front_block_deg": 120, "rim_opening_ms": 1200, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
       "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
       "attacks": [
         {
@@ -119,7 +119,7 @@
       "scale_permille": 1000,
       "lethal": true,
       "perception": { "sight_cm": 2800, "dark_sight_cm": 2800, "view_deg": 140, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
       "tactics": { "keep_distance_cm": 700, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
       "attacks": [
         {
@@ -147,7 +147,7 @@
       "scale_permille": 1000,
       "lethal": true,
       "perception": { "sight_cm": 4000, "dark_sight_cm": 4000, "view_deg": 120, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
       "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 2, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
       "attacks": [
         {
@@ -175,7 +175,7 @@
       "scale_permille": 600,
       "lethal": true,
       "perception": { "sight_cm": 2200, "dark_sight_cm": 2200, "view_deg": 60, "hearing_cm": 500, "suspicion_permille": 1000, "alarmist": false },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0, "rear_takedown": false },
       "tactics": { "keep_distance_cm": 600, "relocate_after_shots": 0, "hover_cm": 450, "alarm_radius_cm": 0, "static": false },
       "attacks": [
         {
@@ -209,7 +209,7 @@
       "lethal": false,
       "subdue": { "window_ms": 8000, "seal_cut_hold_ms": 1500, "rise_health_permille": 500 },
       "perception": { "sight_cm": 2000, "dark_sight_cm": 900, "view_deg": 120, "hearing_cm": 900, "suspicion_permille": 800, "alarmist": false },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0, "rear_takedown": true },
       "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
       "attacks": [
         {
@@ -238,7 +238,7 @@
       "scale_permille": 1000,
       "lethal": true,
       "perception": { "sight_cm": 1200, "dark_sight_cm": 500, "view_deg": 70, "hearing_cm": 1300, "suspicion_permille": 1000, "alarmist": true },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0, "rear_takedown": true },
       "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 3000, "static": false },
       "attacks": [],
       "variants": []
@@ -260,7 +260,7 @@
       "scale_permille": 1300,
       "lethal": true,
       "perception": { "sight_cm": 2000, "dark_sight_cm": 2000, "view_deg": 120, "hearing_cm": 800, "suspicion_permille": 1000, "alarmist": false },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 2000, "poise_ms": 450 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 2000, "poise_ms": 450, "rear_takedown": false },
       "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
       "attacks": [
         {
@@ -295,7 +295,7 @@
       "scale_permille": 2200,
       "lethal": true,
       "perception": { "sight_cm": 4000, "dark_sight_cm": 4000, "view_deg": 120, "hearing_cm": 1500, "suspicion_permille": 1000, "alarmist": false },
-      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 10000 },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 10000, "rear_takedown": false },
       "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": true },
       "attacks": [
         {

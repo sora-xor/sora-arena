@@ -13,13 +13,13 @@ FSenses Quiet()
 }
 
 // Steps until the state changes or Limit milliseconds pass; returns the time taken.
-int RunUntilChange(FMind& Mind, FSenses Senses, int Limit)
+int RunUntilChange(FMind& Mind, FSenses Senses, int Limit, FVigilance Vigilance = Watchful())
 {
     const EState Start = Mind.State;
     int Elapsed = 0;
     while (Mind.State == Start && Elapsed < Limit)
     {
-        Mind = Step(Mind, Senses, Frame);
+        Mind = Step(Mind, Senses, Frame, Vigilance);
         Elapsed += Frame;
     }
     return Elapsed;
@@ -29,20 +29,20 @@ int RunUntilChange(FMind& Mind, FSenses Senses, int Limit)
 int main()
 {
     // Sight: only in the view cone, within range and unobstructed.
-    const FSight Front{800, 1000, true, 1000, false};
+    const FSight Front{800, 1000, 1000, 1000, false};
     assert(InView(Front));
-    assert(!InView({800, 1000, false, 1000, false}));
-    assert(!InView({800, ViewConeMilli - 1, true, 1000, false}));
-    assert(!InView({800, -1000, true, 1000, false}));
-    assert(!InView({SightRangeCm + 1, 1000, true, 1000, false}));
-    assert(InView({SightRangeCm, ViewConeMilli, true, 1000, false}));
-    assert(SightGainPerSecond({800, 1000, false, 1000, true}) == 0);
+    assert(!InView({800, 1000, 0, 1000, false}));
+    assert(!InView({800, ViewConeMilli - 1, 1000, 1000, false}));
+    assert(!InView({800, -1000, 1000, 1000, false}));
+    assert(!InView({SightRangeCm + 1, 1000, 1000, 1000, false}));
+    assert(InView({SightRangeCm, ViewConeMilli, 1000, 1000, false}));
+    assert(SightGainPerSecond({800, 1000, 0, 1000, true}) == 0);
     // Nearer, brighter, centred and moving targets are noticed faster.
-    assert(SightGainPerSecond({400, 1000, true, 1000, false}) > SightGainPerSecond({2000, 1000, true, 1000, false}));
-    assert(SightGainPerSecond(Front) > SightGainPerSecond({800, 1000, true, 100, false}));
-    assert(SightGainPerSecond({800, 1000, true, 0, false}) > 0);
-    assert(SightGainPerSecond(Front) > SightGainPerSecond({800, 500, true, 1000, false}));
-    assert(SightGainPerSecond({800, 1000, true, 1000, true}) > SightGainPerSecond(Front));
+    assert(SightGainPerSecond({400, 1000, 1000, 1000, false}) > SightGainPerSecond({2000, 1000, 1000, 1000, false}));
+    assert(SightGainPerSecond(Front) > SightGainPerSecond({800, 1000, 1000, 100, false}));
+    assert(SightGainPerSecond({800, 1000, 1000, 0, false}) > 0);
+    assert(SightGainPerSecond(Front) > SightGainPerSecond({800, 500, 1000, 1000, false}));
+    assert(SightGainPerSecond({800, 1000, 1000, 1000, true}) > SightGainPerSecond(Front));
 
     // The light proxy: overcast day is full daylight, a dusk street is dark
     // except under its lanterns.
@@ -77,7 +77,7 @@ int main()
     // A dim, distant, peripheral glimpse takes seconds even to raise suspicion.
     FMind Distant = Calm();
     FSenses Glimpse = Quiet();
-    Glimpse.SightGain = SightGainPerSecond({2600, 400, true, 80, false});
+    Glimpse.SightGain = SightGainPerSecond({2600, 400, 1000, 80, false});
     assert(RunUntilChange(Distant, Glimpse, 60000) > 4000 && Distant.State == EState::Suspicious);
 
     // Nothing seen or heard: the guard stays unaware.
@@ -172,23 +172,23 @@ int main()
     // The standard perception is exactly the constants above.
     const FPerception Standard = SoraStealthRules::Standard();
     assert(StandardHearingCm == NoiseRadiusCm(ENoise::Sprint));
-    assert(InView({SightRangeCm, ViewConeMilli, true, 0, false}, Standard));
+    assert(InView({SightRangeCm, ViewConeMilli, 1000, 0, false}, Standard));
     assert(SightGainPerSecond(Front, Standard) == SightGainPerSecond(Front));
     assert(HeardPermille(ENoise::Shot, 2000, false, Standard) == HeardPermille(ENoise::Shot, 2000, false));
     // A dark range: a target in darkness is seen only close; light restores the range.
     FPerception Watch = Standard;
     Watch.DarkSightRangeCm = 800;
     assert(SightRangeAt(Watch, 0) == 800 && SightRangeAt(Watch, 1000) == SightRangeCm);
-    assert(!InView({1500, 1000, true, 0, false}, Watch) && InView({1500, 1000, true, 1000, false}, Watch));
-    assert(InView({700, 1000, true, 0, false}, Watch));
+    assert(!InView({1500, 1000, 1000, 0, false}, Watch) && InView({1500, 1000, 1000, 1000, false}, Watch));
+    assert(InView({700, 1000, 1000, 0, false}, Watch));
     // A narrow drone cone and a long marksman's eye.
     FPerception Drone = Standard;
     Drone.ViewConeMilli = 866;
     Drone.FocusConeMilli = 866;
-    assert(!InView({800, 800, true, 1000, false}, Drone) && InView({800, 900, true, 1000, false}, Drone));
+    assert(!InView({800, 800, 1000, 1000, false}, Drone) && InView({800, 900, 1000, 1000, false}, Drone));
     FPerception Marksman = Standard;
     Marksman.SightRangeCm = Marksman.DarkSightRangeCm = 4000;
-    assert(InView({3500, 1000, true, 1000, false}, Marksman) && !InView({3500, 1000, true, 1000, false}));
+    assert(InView({3500, 1000, 1000, 1000, false}, Marksman) && !InView({3500, 1000, 1000, 1000, false}));
     // Hearing scales every noise's reach; a deaf drone hears nothing.
     FPerception Keen = Standard;
     Keen.HearingCm = StandardHearingCm * 2;
@@ -215,4 +215,185 @@ int main()
     Noticed.NoisePerSecond = HeardPermille(ENoise::Footstep, 150, false);
     RunUntilChange(Auditor, Noticed, 5000);
     assert(Auditor.State == EState::Alert && Auditor.Awareness == AwarenessMax);
+
+    // Exposure: only the part of the hero a line reaches counts. A crouch
+    // behind low cover is hidden; a standing head above it is seen slowly.
+    assert(ExposurePermille(3, 3) == 1000 && ExposurePermille(1, 3) == 333 && ExposurePermille(0, 3) == 0);
+    assert(!InView({800, 1000, ExposurePermille(0, 3), 1000, false}));
+    const FSight Head{800, 1000, ExposurePermille(1, 3), 1000, false};
+    assert(InView(Head) && SightGainPerSecond(Head) > 0 && SightGainPerSecond(Head) * 3 <= SightGainPerSecond(Front) + 3);
+    // A crouched outline is seen more slowly; a lit candle gives the hero away,
+    // a cupped one less. The defaults are the standing, empty-handed hero.
+    FSight Crouched = Front;
+    Crouched.Crouched = true;
+    assert(SightGainPerSecond(Crouched) == SightGainPerSecond(Front) * CrouchedOutlinePermille / 1000);
+    FSight Candle = Front;
+    Candle.VisibilityPermille = 2000;
+    assert(SightGainPerSecond(Candle) == SightGainPerSecond(Front) * 2);
+    Candle.VisibilityPermille = 1200;
+    assert(SightGainPerSecond(Candle) > SightGainPerSecond(Front) && SightGainPerSecond(Candle) < SightGainPerSecond(Front) * 2);
+    // In the dark a crouch nearly doubles the time to suspicion, and past a
+    // tuned guard's dark range (ch06: 900 cm) a crouch in the dark is unseen.
+    FMind DimStanding = Calm(), DimCrouched = Calm();
+    FSenses DarkStand = Quiet(), DarkCrouch = Quiet();
+    DarkStand.SightGain = SightGainPerSecond({1000, 1000, 1000, 40, true});
+    DarkCrouch.SightGain = SightGainPerSecond({1000, 1000, 1000, 40, true, true});
+    const int StandMs = RunUntilChange(DimStanding, DarkStand, 60000);
+    const int CrouchMs = RunUntilChange(DimCrouched, DarkCrouch, 60000);
+    assert(DimCrouched.State == EState::Suspicious && CrouchMs * 1000 > StandMs * 1700);
+    FPerception Ch06Guard = SoraStealthRules::Standard();
+    Ch06Guard.SightRangeCm = 2400;
+    Ch06Guard.DarkSightRangeCm = 900;
+    assert(!InView({1000, 1000, 1000, 40, true, true}, Ch06Guard) && InView({1000, 1000, 1000, 1000, true, true}, Ch06Guard));
+
+    // Footsteps by stance: a sprint stands the hero up; crouch-walking is
+    // quieter than walking and unheard a few metres off.
+    assert(SoraStealthRules::Steps(true, EStance::Crouched) == ENoise::Sprint);
+    assert(SoraStealthRules::Steps(false, EStance::Crouched) == ENoise::CrouchStep && SoraStealthRules::Steps(false, EStance::Standing) == ENoise::Footstep);
+    assert(IsContinuous(ENoise::CrouchStep) && !IsContinuous(ENoise::Takedown));
+    assert(HeardRadiusCm(ENoise::CrouchStep) < HeardRadiusCm(ENoise::Footstep));
+    assert(HeardPermille(ENoise::CrouchStep, 300, false) == 0 && HeardPermille(ENoise::Footstep, 300, false) > 0);
+    assert(HeardPermille(ENoise::CrouchStep, 80, false) > 0 && HeardPermille(ENoise::CrouchStep, 80, false) < HeardPermille(ENoise::Footstep, 80, false));
+    // Floors: puddles carry half again as far; a nightingale floor sings even
+    // under a crouch, except along its silent edge strip. Loudness 1000 is plain ground.
+    const FSurface Puddle{1500, 1500}, Nightingale{3000, 3600}, EdgeStrip{3000, 0};
+    assert(StepLoudnessPermille(ENoise::Footstep, Plain()) == 1000 && StepLoudnessPermille(ENoise::CrouchStep, Plain()) == 1000);
+    assert(HeardRadiusCm(ENoise::Footstep, SoraStealthRules::Standard(), 1000) == HeardRadiusCm(ENoise::Footstep));
+    assert(HeardRadiusCm(ENoise::Footstep, SoraStealthRules::Standard(), StepLoudnessPermille(ENoise::Footstep, Puddle)) == NoiseRadiusCm(ENoise::Footstep) * 3 / 2);
+    assert(HeardRadiusCm(ENoise::Footstep, SoraStealthRules::Standard(), StepLoudnessPermille(ENoise::Footstep, Nightingale)) == NoiseRadiusCm(ENoise::Footstep) * 3);
+    assert(HeardPermille(ENoise::CrouchStep, 300, false, SoraStealthRules::Standard(), StepLoudnessPermille(ENoise::CrouchStep, Nightingale)) > 0);
+    assert(HeardPermille(ENoise::CrouchStep, 10, false, SoraStealthRules::Standard(), StepLoudnessPermille(ENoise::CrouchStep, EdgeStrip)) == 0);
+    assert(HeardPermille(ENoise::Footstep, 10, false, SoraStealthRules::Standard(), StepLoudnessPermille(ENoise::Footstep, EdgeStrip)) > 0);
+    // A takedown's scuffle makes a guard beside it wonder, and carries no farther than a couple of metres.
+    assert(HeardPermille(ENoise::Takedown, 100, false) * AwarenessScale >= SuspiciousAt);
+    assert(HeardPermille(ENoise::Takedown, NoiseRadiusCm(ENoise::Takedown) + 1, false) == 0);
+
+    // Vigilance. Outside a zone the standard guard is exactly as before.
+    FMind Plainly = Calm(), Watched = Calm();
+    for (int Elapsed = 0; Elapsed < 600; Elapsed += Frame)
+    {
+        Plainly = Step(Plainly, Seen, Frame);
+        Watched = Step(Watched, Seen, Frame, Watchful());
+    }
+    assert(Plainly.State == Watched.State && Plainly.Awareness == Watched.Awareness);
+    // A zone's detection block: ch06's suspicious_at 0.35 and 25 s search.
+    const FVigilance Ch06 = Detection(1000, 350, 25000);
+    assert(Ch06.SuspicionThreshold == 350 * AwarenessScale && Ch06.SearchDurationMs == 25000 && Ch06.WaryRatePermille == WaryPermille);
+    // A slower zone rate (the moat's 0.8) takes longer to raise suspicion.
+    FSenses Distant2 = Quiet();
+    Distant2.SightGain = SightGainPerSecond({2000, 1000, 1000, 100, false});
+    FMind Standard1 = Calm(), Moat = Calm();
+    const int AtStandard = RunUntilChange(Standard1, Distant2, 60000, Detection(1000, 250, 20000));
+    const int AtMoat = RunUntilChange(Moat, Distant2, 60000, Detection(800, 250, 20000));
+    assert(Standard1.State == EState::Suspicious && Moat.State == EState::Suspicious && AtMoat > AtStandard);
+    // Difficulty: Easy notices at 0.7 and searches 0.8 as long; Hard 1.25 and 1.2.
+    assert(OnDifficulty(Ch06, EDifficulty::Easy).RatePermille == 700 && OnDifficulty(Ch06, EDifficulty::Easy).SearchDurationMs == 20000);
+    assert(OnDifficulty(Ch06, EDifficulty::Hard).RatePermille == 1250 && OnDifficulty(Ch06, EDifficulty::Hard).SearchDurationMs == 30000);
+    assert(OnDifficulty(Ch06, EDifficulty::Normal).RatePermille == 1000 && OnDifficulty(Ch06, EDifficulty::Normal).SearchDurationMs == 25000);
+
+    // A search runs the zone's search_s, then the guard stands down wary for the rest of the beat.
+    FMind Sweep = Enter(Calm(), EState::Search, 0);
+    const int Swept = RunUntilChange(Sweep, Quiet(), 60000, Ch06);
+    assert(Sweep.State == EState::Unaware && Sweep.Wary && Swept >= 25000 && Swept < 25000 + Frame * 2);
+    assert(RatePermille(Sweep, Ch06) == WaryPermille && RatePermille(Calm(), Ch06) == 1000);
+    FMind Fresh = Calm();
+    FMind Wary = Sweep;
+    assert(RunUntilChange(Wary, Distant2, 60000, Ch06) < RunUntilChange(Fresh, Distant2, 60000, Ch06));
+    // Faint evidence in a search fades: two faint noises a second apart do not
+    // add up to a hunt, where together they would.
+    FMind Faded = Enter(Calm(), EState::Search, 0);
+    FSenses Faint = Quiet();
+    Faint.NoiseImpulse = 200;
+    Faded = Step(Faded, Faint, Frame, Ch06);
+    assert(Faded.State == EState::Search && Faded.Awareness == 200 * AwarenessScale);
+    for (int Elapsed = 0; Elapsed < 1000; Elapsed += Frame)
+        Faded = Step(Faded, Quiet(), Frame, Ch06);
+    assert(Faded.Awareness < 50 * AwarenessScale);
+    Faded = Step(Faded, Faint, Frame, Ch06);
+    assert(Faded.State == EState::Search);
+    FMind Doubled = Enter(Calm(), EState::Search, 0);
+    Doubled = Step(Doubled, Faint, Frame, Ch06);
+    Doubled = Step(Doubled, Faint, Frame, Ch06);
+    assert(Doubled.State == EState::Alert);
+
+    // Carryover: a zone entered after the hero was detected posts its guards
+    // suspicious and wary; otherwise they start calm.
+    assert(Posted(false).State == EState::Unaware && !Posted(false).Wary);
+    assert(Posted(true).State == EState::Suspicious && Posted(true).Wary && Posted(true).Awareness == SuspiciousAt);
+
+    // Detection: a calm guard that comes to know where the hero is. A search
+    // or suspicion is not detection, nor is a hunt that goes on.
+    assert(Detects(EState::Unaware, EState::Alert) && Detects(EState::Suspicious, EState::Combat) && Detects(EState::Search, EState::Alert));
+    assert(!Detects(EState::Unaware, EState::Suspicious) && !Detects(EState::Unaware, EState::Search));
+    assert(!Detects(EState::Alert, EState::Combat) && !Detects(EState::Combat, EState::Alert) && !Detects(EState::Retreat, EState::Combat));
+    // The zone's answer; on Easy every zone falls back to combat (bible §12.2).
+    assert(Response(EOnDetected::Restart, EDifficulty::Normal) == EOnDetected::Restart);
+    assert(Response(EOnDetected::Reinforce, EDifficulty::Hard) == EOnDetected::Reinforce);
+    assert(Response(EOnDetected::Combat, EDifficulty::Normal) == EOnDetected::Combat);
+    assert(Response(EOnDetected::Restart, EDifficulty::Easy) == EOnDetected::Combat && Response(EOnDetected::Reinforce, EDifficulty::Easy) == EOnDetected::Combat);
+    assert(RestartDelayMs >= 1000);
+
+    // The zone alarm: calm guards go to it, fighting ones fight on; all are wary.
+    assert(Alarmed(Calm()).State == EState::Alert && Alarmed(Calm()).Wary && Alarmed(Calm()).Awareness == AwarenessMax);
+    assert(Alarmed(Enter(Calm(), EState::Search, 0)).State == EState::Alert);
+    const FMind Fighting = Enter(Hunting(), EState::Combat, AwarenessMax);
+    assert(Alarmed(Fighting).State == EState::Combat && Alarmed(Fighting).Wary);
+    // A shout carries eighteen metres, half that through walls; an auditor's
+    // alarm carries its own radius through them.
+    assert(CalloutReaches(1800, false, 0) && !CalloutReaches(1801, false, 0));
+    assert(CalloutReaches(900, true, 0) && !CalloutReaches(901, true, 0));
+    assert(CalloutReaches(3000, true, 3000) && !CalloutReaches(3001, false, 3000));
+
+    // A body found: unaware and suspicious guards search, a hunt goes on; all are wary.
+    assert(BodyFound(Calm()).State == EState::Search && BodyFound(Calm()).Wary && BodyFound(Calm()).Awareness == 0);
+    assert(BodyFound(Enter(Calm(), EState::Suspicious, SuspiciousAt)).State == EState::Search);
+    assert(BodyFound(Hunting()).State == EState::Alert && BodyFound(Fighting).State == EState::Combat);
+    assert(!Detects(EState::Unaware, BodyFound(Calm()).State));
+    // Evidence of a body gathers while it stays in view and starts over when
+    // it is lost; a lit body is found at once, one in the dark takes longer.
+    const int LitBody = SightGainPerSecond({1000, 1000, 1000, 1000, false, true});
+    const int DarkBody = SightGainPerSecond({1000, 1000, 1000, 40, false, true});
+    assert(BodyEvidence(0, 0, 1000, Frame) == 0 && BodyEvidence(100000, 0, 1000, Frame) == 0);
+    assert(BodyEvidence(0, LitBody, 1000, Frame) == LitBody * Frame);
+    int LitMs = 0, DarkMs = 0;
+    for (int Evidence = 0; !FindsBody(Evidence, Ch06); LitMs += Frame)
+        Evidence = BodyEvidence(Evidence, LitBody, 1000, Frame);
+    for (int Evidence = 0; !FindsBody(Evidence, Ch06); DarkMs += Frame)
+        Evidence = BodyEvidence(Evidence, DarkBody, 1000, Frame);
+    assert(LitMs < 300 && DarkMs > LitMs * 3);
+
+    // Work under guard (ch06.b08) pauses while seen and while any guard is
+    // alert, searching or fighting; a merely suspicious guard lets it go on.
+    assert(!WorkPaused(false, EState::Unaware) && !WorkPaused(false, EState::Suspicious));
+    assert(WorkPaused(true, EState::Unaware) && WorkPaused(false, EState::Search) && WorkPaused(false, EState::Alert));
+    assert(WorkPaused(false, EState::Combat) && WorkPaused(false, EState::Retreat));
+
+    // The detection meter and the most alarmed guard.
+    assert(Meter(Enter(Calm(), EState::Suspicious, 500 * AwarenessScale), Ch06) == 500);
+    FMind HalfSearched = Enter(Calm(), EState::Search, 0);
+    HalfSearched.StateMs = 12500;
+    assert(Meter(HalfSearched, Ch06) == 500 && Meter(Hunting(), Ch06) == 1000 && Meter(Calm(), Ch06) == 0);
+    assert(Severity(EState::Unaware) < Severity(EState::Suspicious) && Severity(EState::Suspicious) < Severity(EState::Search));
+    assert(Severity(EState::Search) < Severity(EState::Alert) && Severity(EState::Alert) < Severity(EState::Combat));
+
+    // Rear takedowns: from within reach behind an unsuspecting guard of a kind
+    // that can be taken down, facing it, in a zone that allows them.
+    assert(CanTakedown(true, true, EState::Unaware, 120, -1000, 1000));
+    assert(CanTakedown(true, true, EState::Suspicious, TakedownReachCm, TakedownRearMilli, TakedownAimMilli));
+    assert(CanTakedown(true, true, EState::Search, 100, -900, 900));
+    assert(!CanTakedown(false, true, EState::Unaware, 120, -1000, 1000));
+    assert(!CanTakedown(true, false, EState::Unaware, 120, -1000, 1000));
+    assert(!CanTakedown(true, true, EState::Alert, 120, -1000, 1000) && !CanTakedown(true, true, EState::Combat, 120, -1000, 1000));
+    assert(!CanTakedown(true, true, EState::Unaware, TakedownReachCm + 1, -1000, 1000));
+    assert(!CanTakedown(true, true, EState::Unaware, 120, TakedownRearMilli + 1, 1000));
+    assert(!CanTakedown(true, true, EState::Unaware, 120, 1000, 1000));
+    assert(!CanTakedown(true, true, EState::Unaware, 120, -1000, TakedownAimMilli - 1));
+    // A tap does the zone's default, a hold the other; a debt-bound conscript
+    // is always struck with the back of the blade.
+    assert(Takedown(false, false, false) == ETakedown::Knockout && Takedown(false, false, true) == ETakedown::Lethal);
+    assert(Takedown(false, true, false) == ETakedown::Lethal && Takedown(false, true, true) == ETakedown::Knockout);
+    assert(Takedown(true, true, true) == ETakedown::Subdue && Takedown(true, false, false) == ETakedown::Subdue);
+    assert(TakedownMs(ETakedown::Lethal) == 2200 && TakedownMs(ETakedown::Knockout) == 1500 && TakedownMs(ETakedown::Subdue) == 1500);
+    assert(TakedownHoldMs < TakedownMs(ETakedown::Knockout));
+    assert(DragSpeedPermille == 500 && CrouchSpeedPermille < 1000);
 }

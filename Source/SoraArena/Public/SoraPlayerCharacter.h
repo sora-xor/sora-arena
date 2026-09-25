@@ -10,8 +10,10 @@ class USoraEquipmentComponent;
 struct FSoraPracticeInput;
 
 // Nyaakoto, the possessed first-person hero. Owns input (gated by
-// SoraInputStates.h), movement, dojo training, the campaign loadout and local
-// control preferences. Weapons live in USoraEquipmentComponent and the held
+// SoraInputStates.h), movement (standing or crouch-walking), dojo training,
+// the campaign loadout and local control preferences. In a stealth zone
+// (USoraStealth) Melee behind an unsuspecting guard is a rear takedown and
+// Interact held at a body drags it. Weapons live in USoraEquipmentComponent and the held
 // weapon's model in USoraViewmodelComponent. In deterministic practice the
 // same pawn packs its input for the Rust kernel instead of acting locally.
 UCLASS()
@@ -25,6 +27,9 @@ public:
     virtual bool AdmitDamage(float& Damage, FSoraHit& Hit, AActor* Causer) override;
     virtual void OnDefeated(AActor* Causer) override;
     virtual bool IsSparring() const override { return bDojoTraining; }
+    // Crouching keeps the feet on the floor and lowers the eye smoothly.
+    virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+    virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
     // Chapter one: the bokken, the four forms and nonlethal bouts.
     void SetDojoTraining(bool Enabled);
     // Later chapters: Nyaakoto's katana, yumi, quiver and saya.
@@ -85,7 +90,9 @@ private:
     void TickDojoLessons();
     void Forward(float Value); void Strafe(float Value); void Yaw(float Value); void Pitch(float Value);
     void GamepadYaw(float Value); void GamepadPitch(float Value);
-    void FireDown(); void FireUp(); void Melee(); void Reload(); void Interact();
+    void FireDown(); void FireUp(); void Melee(); void Reload(); void Interact(); void InteractUp();
+    // A toggle between standing and crouch-walking (SoraStealthRules).
+    void CrouchPressed();
     void SprintDown(); void SprintUp(); void JumpDown(); void JumpUp();
     void Menu(); void Enter(); void NextMap(); void NewCampaign(); void ReturnCampaign();
     void Practice(); void BlockDown(); void BlockUp(); void Ability(); void MeleeUp();

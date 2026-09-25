@@ -37,6 +37,7 @@ inline constexpr FAction Actions[] = {
     {TEXT("Sprint"), Play},
     {TEXT("Reload"), Play},
     {TEXT("Interact"), Play},
+    {TEXT("Crouch"), Play},
     {TEXT("Block"), Play},
     {TEXT("Ability"), Play},
     // Practice picks its loadout with 1/2/3 in the menu; campaign play equips.
