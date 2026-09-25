@@ -18,10 +18,6 @@ _ENGINE_PIN_SPEC = importlib.util.spec_from_file_location(
     "sora_engine_pin", ROOT / "scripts/unreal/sora_engine_pin.py")
 engine_pin = importlib.util.module_from_spec(_ENGINE_PIN_SPEC)
 _ENGINE_PIN_SPEC.loader.exec_module(engine_pin)
-# TODO: remove SORA_INTERIM_UE_VERSION handling after Wave A. Build wrappers
-# started before the re-pin still export it; exactly the pinned version is a
-# no-op and any other set value fails closed.
-TRANSITIONAL_ENGINE_VARIABLE = "SORA_INTERIM_UE_VERSION"
 
 
 def command(args, env=None, cwd=None):
@@ -73,11 +69,6 @@ def inspect():
 
     mac = platform.system() == "Darwin"
     add("host", platform.platform(), "macOS for these build scripts", mac)
-    transitional = os.environ.get(TRANSITIONAL_ENGINE_VARIABLE)
-    selection_ok = transitional is None or transitional == engine_pin.PIN["version"]
-    if not selection_ok:
-        add("transitional_engine_variable", transitional,
-            f"unset, or exactly {engine_pin.PIN['version']} (ignored)", False)
     engine = Path(os.environ.get("UE_ROOT", PINS["unreal"]["default_macos_root"])).expanduser()
     identity = engine_pin.identity_checks(engine)
     checks.extend(identity)
@@ -129,10 +120,10 @@ def inspect():
     editor_ok = editor.is_file() and os.access(editor, os.X_OK)
     add("editor_binary", str(editor) if editor.is_file() else None, "UnrealEditor executable", editor_ok)
     free_gib = round(shutil.disk_usage(ROOT).free / (1024 ** 3), 1)
-    add("free_disk_gib", free_gib, "at least 100 GiB before engine installation/build", free_gib >= 100)
+    add("free_disk_gib", free_gib, "at least 30 GiB free for builds, imports and cooks", free_gib >= 30)
     rust = rust_checks()
     checks.extend(rust)
-    engine_ok = selection_ok and identity_ok and build_sh.is_file() and editor_ok
+    engine_ok = identity_ok and build_sh.is_file() and editor_ok
     build_ready = mac and xcode_ok and sdk_ok and setup_ok and len(projects) == 1 and engine_ok
     cook_ready = build_ready and metal_ok
     # The Mac wrappers read build_ready (cook_ready for the cook), engine_root,

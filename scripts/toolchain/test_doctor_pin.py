@@ -54,10 +54,8 @@ class EnginePin(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps({"FileVersion": 3, "Version": version, "VersionName": version_name}))
 
-    def inspect(self, transitional=None, metal_available=True):
+    def inspect(self, metal_available=True):
         environment = {"UE_ROOT": str(self.engine), "SORA_DEVELOPER_DIR": str(self.developer)}
-        if transitional is not None:
-            environment["SORA_INTERIM_UE_VERSION"] = transitional
 
         def fake_command(args, env=None, cwd=None):
             self.calls.append(args)
@@ -163,15 +161,6 @@ class EnginePin(unittest.TestCase):
     def test_missing_editor_binary_fails(self):
         self.editor.unlink()
         self.assert_blocked(self.inspect(), "editor_binary")
-
-    # TODO: remove SORA_INTERIM_UE_VERSION handling after Wave A (these two tests too).
-    def test_transitional_variable_at_pin_is_a_no_op(self):
-        self.assertEqual(self.inspect("5.8.3"), self.inspect())
-
-    def test_transitional_variable_other_values_fail(self):
-        for value in ("", "5.8.2", "5.8.3 ", "5.8.4", "5.8"):
-            with self.subTest(value=value):
-                self.assert_blocked(self.inspect(value), "transitional_engine_variable")
 
     def test_missing_metal_blocks_cook_but_not_code_build(self):
         report = self.inspect(metal_available=False)

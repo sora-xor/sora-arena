@@ -154,14 +154,11 @@ scripts/toolchain/run-editor.sh
 ```
 
 Every wrapper first requires the doctor's `build_ready` (`cook_ready` for the
-cook). There is no engine-selection override. Transitional, for the build lane
-that was already running during the re-pin only: `SORA_INTERIM_UE_VERSION` set to
-exactly `5.8.3` is ignored, and any other set value (including an empty string
-or `5.8.2`) fails closed. It will be removed after Wave A. Compile, launch, cook
+cook). There is no engine-selection override. Compile, launch, cook
 or stage results do not by themselves qualify a release or prove gameplay or
 rendering. `python3 scripts/toolchain/test_doctor_pin.py` runs host-only
 fake-engine tests for the exact version/changelist/branch/promoted and licensee
-flags/distribution/plugin pin, the transitional variable and the Rust wiring; it never invokes Unreal.
+flags/distribution/plugin pin and the Rust wiring; it never invokes Unreal.
 
 On this Mac, UBT compiled and linked the game target but its nested Xcode
 post-build invocation failed at the generated `Touch UBT generated tiles`
