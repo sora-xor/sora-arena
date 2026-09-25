@@ -1,4 +1,5 @@
 #include "SoraCatalog.h"
+#include "SoraCombatRules.h"
 #include "SoraHistoricalArms.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -36,26 +37,39 @@ bool FSoraHistoricalArmsCatalogTest::RunTest(const FString& Parameters)
     }
 
     using namespace SoraHistoricalArms;
-    const FProfile Sword=Profile(EForm::Katana);
-    const FProfile Spear=Profile(EForm::Yari);
-    const FProfile Poleblade=Profile(EForm::Naginata);
-    TestTrue(TEXT("Katana catalog and committed timing agree"),
-        FMath::IsNearlyEqual(Catalog.Weapon(0).Cooldown,Sword.WindupSeconds+Sword.RecoverySeconds));
-    TestTrue(TEXT("Yari catalog and reach agree"),
-        FMath::IsNearlyEqual(Catalog.Weapon(19).Range,Spear.MaximumDistanceCm));
-    TestTrue(TEXT("Naginata catalog and reach agree"),
-        FMath::IsNearlyEqual(Catalog.Weapon(20).Range,Poleblade.MaximumDistanceCm));
+    // Every melee arm, Nyaakoto's and each class's, strikes with commitment:
+    // its windup and recovery make up its catalog cooldown, and its useful
+    // distance ends at its catalog range.
+    int32 MeleeArms=0;
+    for(int32 Id=0;Id<=20;++Id)
+    {
+        const FSoraWeapon& Arm=Catalog.Weapon(Id);
+        TestEqual(*FString::Printf(TEXT("Weapon %d is melee exactly when it strikes with commitment"),Id),
+            Arm.Kind==TEXT("melee"),IsMelee(Id));
+        if(!IsMelee(Id)) continue;
+        ++MeleeArms;
+        const FProfile Handling=Profile(FormFor(Id));
+        TestTrue(*FString::Printf(TEXT("Weapon %d catalog cooldown is its windup and recovery"),Id),
+            FMath::IsNearlyEqual(Arm.Cooldown,Handling.WindupSeconds+Handling.RecoverySeconds,.001f));
+        TestTrue(*FString::Printf(TEXT("Weapon %d catalog range is its useful distance"),Id),
+            FMath::IsNearlyEqual(Arm.Range,Handling.MaximumDistanceCm));
+        TestTrue(*FString::Printf(TEXT("Weapon %d has a windup, a recovery and a weight"),Id),
+            Handling.WindupSeconds>0.f&&Handling.RecoverySeconds>Handling.WindupSeconds&&Handling.StaggerMs>0&&
+            Handling.MinimumDistanceCm<Handling.MaximumDistanceCm);
+    }
+    TestEqual(TEXT("Six class blades, the monofilament naginata and Nyaakoto's yari and naginata"),MeleeArms,9);
     TestTrue(TEXT("Sword contact at useful distance"),CanStrike(EForm::Katana,110.f,1.f));
     TestFalse(TEXT("Crowded spear thrust cannot score"),CanStrike(EForm::Yari,80.f,1.f));
     TestFalse(TEXT("Sideways spear thrust cannot score"),CanStrike(EForm::Yari,260.f,.7f));
     TestFalse(TEXT("Long poleblade cut cannot score behind"),CanStrike(EForm::Naginata,245.f,-.8f));
-    TestTrue(TEXT("Timed frontal parry"),DefendBlade(true,.9f,180,35.f)==EDefense::Parry);
-    TestTrue(TEXT("Sustained guard"),DefendBlade(true,.9f,500,35.f)==EDefense::Guard);
-    TestTrue(TEXT("Guard fails behind"),DefendBlade(true,-.9f,180,35.f)==EDefense::Exposed);
-    TestTrue(TEXT("Spent guard fails"),DefendBlade(true,.9f,180,10.f)==EDefense::Exposed);
+    namespace Combat=SoraCombatRules;
+    const Combat::FAttack Cut{Combat::EHit::Melee,22,true,6,30,Combat::ParryStaggerMs,false};
+    TestTrue(TEXT("Timed frontal parry"),Combat::Defend({true,180,35,900},Cut).Defense==Combat::EDefense::Parry);
+    TestTrue(TEXT("Sustained guard"),Combat::Defend({true,500,35,900},Cut).Defense==Combat::EDefense::Guard);
+    TestTrue(TEXT("Guard fails behind"),Combat::Defend({true,180,35,-900},Cut).Defense==Combat::EDefense::Exposed);
+    TestTrue(TEXT("Spent guard fails"),Combat::Defend({true,180,10,900},Cut).Defense==Combat::EDefense::Exposed);
     TestTrue(TEXT("Sword retainer withdraws when crowded"),RetainerFootwork(50.f)==EFootwork::Withdraw);
     TestTrue(TEXT("Sword retainer closes outside maai"),RetainerFootwork(220.f)==EFootwork::Close);
-    TestTrue(TEXT("Sword retainer retains a telegraphed opening"),RetainerWindupSeconds>Sword.WindupSeconds);
     UE_LOG(LogTemp,Display,TEXT("SORA_HISTORICAL_ARMS_CATALOG_OK: hero=%s arms=katana/yumi/yari/naginata arena_weapons=%d"),
         *Hero.NameEnglish,Catalog.Weapons.Num());
     return !HasAnyErrors();

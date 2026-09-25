@@ -5,6 +5,7 @@
 class UAnimationAsset;
 class UStaticMeshComponent;
 class USoraViewmodelComponent;
+struct FSoraHit;
 struct FSoraPracticeMap;
 struct FSoraPracticePlayer;
 
@@ -35,9 +36,10 @@ public:
     virtual bool IsEnemy() const { return false; }
     // A dojo bout: the loser yields instead of dying.
     virtual bool IsSparring() const { return false; }
-    // Called by SoraDamage::Resolve. AdmitDamage may absorb or scale a blow and
-    // returns false when nothing reaches the body; OnDefeated follows health zero.
-    virtual bool AdmitDamage(float& Damage, AActor* Causer) { return true; }
+    // Called by SoraDamage::Resolve. AdmitDamage may absorb or scale a blow,
+    // records how its defenses met it in Hit.Defense, and returns false when
+    // nothing reaches the body; OnDefeated follows health zero.
+    virtual bool AdmitDamage(float& Damage, FSoraHit& Hit, AActor* Causer) { return true; }
     virtual void OnDefeated(AActor* Causer) {}
     USceneComponent* GetEye() const { return Eye; }
     USoraViewmodelComponent* GetViewmodel() const { return Viewmodel; }

@@ -4,7 +4,7 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraControlSaveGame.h"
-#include "SoraEnemy.h"
+#include "Combat/SoraDefense.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
@@ -196,64 +196,9 @@ void ASoraPlayerCharacter::NoteDojoSwing(float StartedAt,float RecoveredAt,float
         }
     }
 }
-bool ASoraPlayerCharacter::AdmitDamage(float& Damage,AActor* Causer)
+bool ASoraPlayerCharacter::AdmitDamage(float& Damage,FSoraHit& Hit,AActor* Causer)
 {
-    USoraGameEvents* Events=USoraGameEvents::Get(this);
-    const int32 WeaponInHand=WeaponId;
-    if(bDojoTraining&&Equipment->IsGuardHeld())
-    {
-        if(const auto* Pupil=Cast<ASoraEnemy>(Causer)) if(Pupil->IsDojoPupil())
-        {
-            const FVector ToAttacker=(Pupil->GetActorLocation()-GetActorLocation()).GetSafeNormal2D();
-            const bool bFacing=FVector::DotProduct(GetActorForwardVector(),ToAttacker)>=.25f;
-            if(bFacing)
-            {
-                const int32 HeldMs=FMath::RoundToInt((GetWorld()->GetTimeSeconds()-Equipment->GuardPressedAt())*1000.f);
-                if(auto* G=PlayerGameMode(this))
-                {
-                    if(G->Campaign()->DojoLessonStage()==2)
-                        G->Campaign()->RecordDojoLesson(SoraDojoRules::EAction::Parry,HeldMs,true);
-                    else if(G->Campaign()->DojoLessonStage()==1)
-                        G->Campaign()->RecordDojoLesson(SoraDojoRules::EAction::Guard,HeldMs,true);
-                }
-                if(Events)
-                {
-                    FSoraDefenseEvent Guarded;
-                    Guarded.Defender=this; Guarded.Attacker=Causer; Guarded.HeldMs=HeldMs; Guarded.bDojo=true;
-                    Events->OnGuarded.Broadcast(Guarded);
-                }
-                return false;
-            }
-        }
-    }
-    if(!bDojoTraining&&bCampaignHero&&Equipment->IsGuardHeld()&&!Equipment->IsCommittedStrike()&&
-        (WeaponInHand==0||WeaponInHand==19||WeaponInHand==20))
-    {
-        if(auto* Retainer=Cast<ASoraEnemy>(Causer); Retainer&&Retainer->IsBladeRetainer())
-        {
-            const FVector ToAttacker=(Retainer->GetActorLocation()-GetActorLocation()).GetSafeNormal2D();
-            const float Facing=FVector::DotProduct(GetActorForwardVector(),ToAttacker);
-            const int32 HeldMs=FMath::RoundToInt((GetWorld()->GetTimeSeconds()-Equipment->GuardPressedAt())*1000.f);
-            FSoraDefenseEvent Defense;
-            Defense.Defender=this; Defense.Attacker=Causer; Defense.HeldMs=HeldMs;
-            switch(SoraHistoricalArms::DefendBlade(true,Facing,HeldMs,Equipment->GuardReserve()))
-            {
-            case SoraHistoricalArms::EDefense::Parry:
-                Equipment->SpendGuard(18.f);
-                Retainer->DelayNextAttack(.65f);
-                if(Events) Events->OnParried.Broadcast(Defense);
-                return false;
-            case SoraHistoricalArms::EDefense::Guard:
-                Equipment->SpendGuard(30.f);
-                Damage*=.25f;
-                Defense.Damage=Damage;
-                if(Events) Events->OnGuarded.Broadcast(Defense);
-                break;
-            case SoraHistoricalArms::EDefense::Exposed: break;
-            }
-        }
-    }
-    return true;
+    return SoraDefense::AdmitHero(*this,Damage,Hit,Causer);
 }
 void ASoraPlayerCharacter::OnDefeated(AActor* Causer)
 {

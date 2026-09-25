@@ -327,8 +327,10 @@ struct FRun
     }
 };
 
-// The first invasion chapter: guard and parry a blade retainer, cut it down with
-// the katana, then carbine, reload, yumi, yari, sprint and jump.
+// The first invasion chapter: guard a blade retainer's cut, meet the next one
+// with a fresh guard (a parry, timed from the retainer's own windup), cut it
+// down with the katana in its stagger, then carbine, reload, yumi, yari,
+// sprint and jump.
 FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Retainer"), Log);
@@ -336,15 +338,24 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         return FString();
     if (!Test.TestTrue(TEXT("Retainer scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(160, 0, 0)))
         return FString();
-    const bool bOk = Run.Play(640, [](FRun& R, int32 F)
+    int32 ParryAt = INDEX_NONE;
+    const bool bOk = Run.Play(640, [&ParryAt](FRun& R, int32 F)
     {
+        // The guard goes up once the retainer's second cut is past half its
+        // windup, inside the parry window, and comes down after the cut.
+        const FFoe* Blade = R.Foe(0);
+        if (ParryAt == INDEX_NONE && F > 105 && F < 240 && Blade && Blade->IsWindingUp() && Blade->WindupProgress() >= .55f)
+        {
+            ParryAt = F;
+            return R.Down(EKeys::LeftControl);
+        }
+        if (ParryAt != INDEX_NONE && F == ParryAt + 14)
+            return R.Up(EKeys::LeftControl);
         switch (F)
         {
         case 5: return R.Down(EKeys::LeftControl);
         case 40: return R.Up(EKeys::LeftControl);
         case 60: case 150: case 200: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
-        case 116: return R.Down(EKeys::LeftControl);
-        case 135: return R.Up(EKeys::LeftControl);
         case 250: return R.Tap(EKeys::One);
         case 270: return R.Aim(R.Foe(1)) && R.Down(EKeys::LeftMouseButton);
         case 330: return R.Up(EKeys::LeftMouseButton);
@@ -364,6 +375,7 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         }
     });
     const FString Hash = Run.Finish();
+    Run.Expect(TEXT("the second cut is met with a fresh guard"), ParryAt != INDEX_NONE);
     Run.Expect(TEXT("the retainer and a carbine target fall and Nyaakoto stands"),
         bOk && Run.Mode()->Campaign()->Kills == 2 && Run.Hero()->IsAlive());
     // After the traced fight, two defeats open the first production site.
@@ -378,7 +390,10 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 }
 
 // The dojo: stance, guard, parry and recovery through real Block and Fire
-// presses against a sparring pupil, then scored bouts with the bokken.
+// presses against a sparring pupil, then scored bouts with the bokken. A blade's
+// contact holds the world for a moment (hit-stop), so the bout's swings come
+// every twelve frames while the pupil stands; each lands once the bokken has
+// recovered.
 FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Dojo"), Log);
@@ -394,8 +409,10 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 120: return R.Up(EKeys::LeftControl);
         case 190: return R.Down(EKeys::LeftControl);
         case 205: return R.Up(EKeys::LeftControl);
-        case 215: case 270: case 320: case 370: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
-        default: return true;
+        case 215: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
+        default:
+            return F >= 264 && F % 12 == 0 && R.Foe(0) && R.Foe(0)->IsAlive() ?
+                R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton) : true;
         }
     });
     const FString Hash = Run.Finish();
@@ -469,7 +486,9 @@ FString Training(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         {
         case 0: return R.Place(R.Foe(1), FVector(700, 0, 0));
         case 5: return R.Aim(R.Foe(1)) && R.Tap(EKeys::LeftMouseButton);
-        case 65: return R.Place(R.Foe(2), FVector(700, 250, 0));
+        // The wounded Invader1 stands 250 cm from the next shell's target,
+        // inside its 360 cm blast.
+        case 65: return R.Place(R.Foe(1), FVector(700, 0, 0)) && R.Place(R.Foe(2), FVector(700, 250, 0));
         case 70: return R.Aim(R.Foe(2)) && R.Tap(EKeys::LeftMouseButton);
         case 140: return R.Tap(EKeys::R);
         // Far enough from the wounded Invader2 that the mortar's blast reaches
@@ -582,7 +601,8 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
 
     Scenario = TEXT("Dojo");
     Expect(*this, DojoLog, Scenario, TEXT("ChapterStarted chapter=0 resumed=0 liberated=0"));
-    Expect(*this, DojoLog, Scenario, TEXT("Guarded defender=Hero attacker=Pupil0 dojo=1"), 2);
+    Expect(*this, DojoLog, Scenario, TEXT("Guarded defender=Hero attacker=Pupil0 dojo=1"));
+    Expect(*this, DojoLog, Scenario, TEXT("Parried defender=Hero attacker=Pupil0 dojo=1"));
     Expect(*this, DojoLog, Scenario, TEXT("Committed attacker=Pupil0 weapon=0 windup=0.55"), 2);
     Expect(*this, DojoLog, Scenario, TEXT("Committed attacker=Hero weapon=0 windup=0.00"), 4);
     Expect(*this, DojoLog, Scenario, TEXT("Resolved attacker=Hero target=Pupil0 weapon=0 hit=0"));
@@ -614,7 +634,7 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, TrainingLog, Scenario, TEXT("Detonated instigator=Hero"), 3);
     Expect(*this, TrainingLog, Scenario, TEXT("Damaged victim=Invader1 causer=Projectile"));
     Expect(*this, TrainingLog, Scenario, TEXT("Died victim=Invader1 killer=Projectile sparring=0"));
-    Expect(*this, TrainingLog, Scenario, TEXT("Committed attacker=Hero weapon=6 windup=0.00"));
+    Expect(*this, TrainingLog, Scenario, TEXT("Committed attacker=Hero weapon=6 windup=0.30"));
     Expect(*this, TrainingLog, Scenario, TEXT("Resolved attacker=Hero target=Retainer0 weapon=6 hit=1"));
 
     KernelEvents(*this, KernelLog);

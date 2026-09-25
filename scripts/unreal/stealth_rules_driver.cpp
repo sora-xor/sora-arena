@@ -167,4 +167,52 @@ int main()
     assert(CoverScore(300, 900) < CoverScore(300, 1800));
     assert(CoverScore(300, 300) < 0 && CoverScore(300, 2500) < 0);
     assert(RetreatScore(300, 800) < 0 && RetreatScore(300, 1500) == 300);
+
+    // Each archetype perceives with its own senses (Content/Data/enemies.json).
+    // The standard perception is exactly the constants above.
+    const FPerception Standard = SoraStealthRules::Standard();
+    assert(StandardHearingCm == NoiseRadiusCm(ENoise::Sprint));
+    assert(InView({SightRangeCm, ViewConeMilli, true, 0, false}, Standard));
+    assert(SightGainPerSecond(Front, Standard) == SightGainPerSecond(Front));
+    assert(HeardPermille(ENoise::Shot, 2000, false, Standard) == HeardPermille(ENoise::Shot, 2000, false));
+    // A dark range: a target in darkness is seen only close; light restores the range.
+    FPerception Watch = Standard;
+    Watch.DarkSightRangeCm = 800;
+    assert(SightRangeAt(Watch, 0) == 800 && SightRangeAt(Watch, 1000) == SightRangeCm);
+    assert(!InView({1500, 1000, true, 0, false}, Watch) && InView({1500, 1000, true, 1000, false}, Watch));
+    assert(InView({700, 1000, true, 0, false}, Watch));
+    // A narrow drone cone and a long marksman's eye.
+    FPerception Drone = Standard;
+    Drone.ViewConeMilli = 866;
+    Drone.FocusConeMilli = 866;
+    assert(!InView({800, 800, true, 1000, false}, Drone) && InView({800, 900, true, 1000, false}, Drone));
+    FPerception Marksman = Standard;
+    Marksman.SightRangeCm = Marksman.DarkSightRangeCm = 4000;
+    assert(InView({3500, 1000, true, 1000, false}, Marksman) && !InView({3500, 1000, true, 1000, false}));
+    // Hearing scales every noise's reach; a deaf drone hears nothing.
+    FPerception Keen = Standard;
+    Keen.HearingCm = StandardHearingCm * 2;
+    assert(HeardRadiusCm(ENoise::Footstep, Keen) == NoiseRadiusCm(ENoise::Footstep) * 2);
+    assert(HeardPermille(ENoise::Footstep, 600, false, Keen) > 0 && HeardPermille(ENoise::Footstep, 600, false) == 0);
+    FPerception Deaf = Standard;
+    Deaf.HearingCm = 0;
+    assert(HeardPermille(ENoise::Explosion, 10, false, Deaf) == 0);
+    // A reluctant conscript notices everything a fifth more slowly: even a close
+    // shot only makes it suspicious.
+    FPerception Reluctant = Standard;
+    Reluctant.SuspicionPermille = 800;
+    assert(SightGainPerSecond(Front, Reluctant) == SightGainPerSecond(Front) * 800 / 1000);
+    assert(HeardPermille(ENoise::Shot, 1500, false, Reluctant) == 800);
+    FMind Conscript = Calm();
+    FSenses Startled = Quiet();
+    Startled.NoiseImpulse = HeardPermille(ENoise::Shot, 1500, false, Reluctant);
+    Conscript = Step(Conscript, Startled, Frame);
+    assert(Conscript.State == EState::Suspicious);
+    // An alarmist auditor skips suspicion: what it half-notices, it reports.
+    FMind Auditor = Calm();
+    FSenses Noticed = Quiet();
+    Noticed.Alarmist = true;
+    Noticed.NoisePerSecond = HeardPermille(ENoise::Footstep, 150, false);
+    RunUntilChange(Auditor, Noticed, 5000);
+    assert(Auditor.State == EState::Alert && Auditor.Awareness == AwarenessMax);
 }

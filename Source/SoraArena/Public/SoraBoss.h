@@ -6,7 +6,9 @@
 
 // The final chapter's alien collector. It reuses the banker cat prototype and
 // stays entirely local; it never enters the multiplayer combat kernel. Two
-// telegraphed attacks alternate: a long debt beam and a close cleave.
+// telegraphed attacks alternate: a long debt beam, which no guard stops, and a
+// close cleave, which a guard chips and a fresh guard parries. A parried
+// cleave staggers it and holds its recovery until the stagger ends.
 UCLASS()
 class SORAARENA_API ASoraBoss : public ASoraEnemy
 {

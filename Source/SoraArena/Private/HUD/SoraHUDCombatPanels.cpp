@@ -64,10 +64,10 @@ void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
         HUD.Panel(BossX+17.f,BossY+36.f,(BossWidth-34.f)*FMath::Clamp(Boss->Health/Boss->MaxHealth,0.f,1.f),7.f,Gold);
         if(Boss->IsBossTelegraphing())
         {
-            HUD.Label(Boss->IsBossBeamWindup()?TEXT("債務光線の予兆 ― 線から離れよ"):TEXT("斬撃の予兆 ― 間合いから離れよ"),
+            HUD.Label(Boss->IsBossBeamWindup()?TEXT("債務光線の予兆 ― 線から離れよ"):TEXT("斬撃の予兆 ― 受けるか、合わせるか、間合いから離れよ"),
                 BossX+17.f,BossY+51.f,JapaneseSubtitleScale,Ivory);
             if(G->bEnglishSubtitles)
-                HUD.Label(Boss->IsBossBeamWindup()?TEXT("DEBT BEAM: evade the line"):TEXT("CLEAVE: leave the arc"),
+                HUD.Label(Boss->IsBossBeamWindup()?TEXT("DEBT BEAM: evade the line"):TEXT("CLEAVE: guard, parry, or leave the arc"),
                     BossX+17.f,BossY+78.f,EnglishSubtitleScale,Muted);
             HUD.Label(FString::Printf(TEXT("%.1f s"),Boss->BossWarningSeconds()),BossX+BossWidth-88.f,BossY+76.f,.48f,Gold);
             HUD.Panel(BossX+BossWidth-108.f,BossY+101.f,90.f,4.f,FLinearColor(.15f,.18f,.20f));

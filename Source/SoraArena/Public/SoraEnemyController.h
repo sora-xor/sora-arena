@@ -26,12 +26,17 @@ struct FSoraPatrolRoute
 // The campaign opponents' brain, run from its own tick before its pawn moves.
 // Sparring pupils and the final collector keep their fixed drills. Every other
 // opponent runs SoraStealthRules' state machine (unaware, suspicious, alert,
-// search, combat, retreat) on what it perceives: a view cone with line of
-// sight, distance and a light proxy, and the noise of footsteps, sprinting,
-// blades, shots, explosions and allies' call-outs. It walks the runtime
-// navigation mesh (USoraNavigation) around walls, patrols its route, takes
-// cover behind the arena's low boxes and peeks out to fire, or flanks by slot.
-// Every choice follows world time, slots and fixed patterns; nothing is random.
+// search, combat, retreat) on what its archetype perceives (Content/Data/
+// enemies.json): a view cone with line of sight, distance and a light proxy,
+// and the noise of footsteps, sprinting, blades, shots, explosions and allies'
+// call-outs. It walks the runtime navigation mesh (USoraNavigation) around
+// walls and patrols its route. In a fight each archetype keeps its own
+// manner: blades, shields, conscripts and automata close to their reach;
+// rifles take cover behind the arena's low boxes and peek out to fire, or
+// flank by slot; a marksman moves on after its shots; a grenadier keeps its
+// distance; a drone holds station in the air; a walker stands and turns; an
+// auditor runs and raises the alarm. A staggered opponent does nothing. Every
+// choice follows world time, slots and fixed patterns; nothing is random.
 UCLASS()
 class SORAARENA_API ASoraEnemyController : public AAIController
 {
@@ -44,8 +49,11 @@ public:
     void BeginHunt();
     // The opponent starts unaware on Route; an empty route guards where it stands.
     void BeginPatrol(const FSoraPatrolRoute& Route);
-    // An ally at Caller shouts that the hero is at Where.
-    void HearCallout(const FVector& Caller, const FVector& Where);
+    // An ally at Caller shouts that the hero is at Where. An auditor's alarm
+    // reaches everyone within its alarm radius at full urgency.
+    void HearCallout(const FVector& Caller, const FVector& Where, bool bAlarm = false);
+    // Straight to alert: a conscript whose collar drags it back up knows where the hero is.
+    void Rouse(const FVector& Where);
     // The hero is in the view cone, within sight range and unobstructed.
     bool CanSee(const ASoraCharacterBase& Target) const;
     SoraStealthRules::EState State() const { return Mind.State; }
@@ -70,6 +78,7 @@ private:
         FVector Origin;
         FVector Evidence;
         TWeakObjectPtr<const AActor> Source;
+        bool bAlarm = false;
     };
     void Prepare(bool bHunt);
     void Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
@@ -80,6 +89,8 @@ private:
     bool Occluded(const FVector& From, const FVector& To, const AActor* Source) const;
     void Enter(ASoraEnemy& Enemy, SoraStealthRules::EState Previous, int32 NowMs);
     void CallOut(const ASoraEnemy& Enemy) const;
+    void AlarmRun(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, float DeltaSeconds, int32 NowMs);
+    void AnnounceState(const ASoraEnemy& Enemy) const;
     void Act(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
     void Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
     void Patrol(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
@@ -87,6 +98,7 @@ private:
     bool ChoosePosition(const ASoraEnemy& Enemy, const FVector& Threat, bool bRetreat);
     bool Claimed(const FVector& Spot) const;
     EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
+    EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
     void ClearPath();
     void Face(ASoraEnemy& Enemy, const FVector& Direction, float DeltaSeconds, float Rate) const;
     void LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float DeltaSeconds, int32 NowMs) const;
@@ -139,6 +151,11 @@ private:
     bool bCanPeek = false;
     FVector PeekPosition = FVector::ZeroVector;
     int32 ReviewPositionAtMs = 0;
+    // A marksman that has fired enough moves on and does not take this spot again.
+    bool bAvoidSpot = false;
+    FVector AvoidSpot = FVector::ZeroVector;
+    // An auditor's alarm repeats while it runs.
+    int32 NextAlarmMs = 0;
     TWeakObjectPtr<USoraGameEvents> Events;
     FDelegateHandle FiredHandle, DetonatedHandle, MeleeHandle;
 };

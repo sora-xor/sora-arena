@@ -105,6 +105,35 @@ struct FSoraDetonatedEvent
     UPROPERTY() float Damage = 0.f;
 };
 
+// What an opponent does that presentation answers: barks, captions,
+// telegraph sounds and music. Detail is the attack's cue from
+// Content/Data/enemies.json for AttackWindup, and the new state for
+// AlertState (unaware, suspicious, alert, search, combat, retreat).
+UENUM()
+enum class ESoraEnemyCue : uint8
+{
+    AlertState,
+    AttackWindup,
+    Staggered,
+    ShieldTurned,
+    BarrierBroken,
+    Alarm,
+    // A debt-bound conscript knocked down, freed by a cut collar, or back on its feet.
+    Subdued,
+    Freed,
+    Risen,
+};
+
+USTRUCT()
+struct FSoraEnemyCueEvent
+{
+    GENERATED_BODY()
+    UPROPERTY() TObjectPtr<AActor> Enemy = nullptr;
+    UPROPERTY() FName Archetype;
+    UPROPERTY() ESoraEnemyCue Cue = ESoraEnemyCue::AlertState;
+    UPROPERTY() FName Detail;
+};
+
 USTRUCT()
 struct FSoraSiteRestoredEvent
 {
@@ -142,6 +171,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDefenseSignature, const FSoraDefenseEve
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDamagedSignature, const FSoraDamagedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDiedSignature, const FSoraDiedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDetonatedSignature, const FSoraDetonatedEvent&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSoraEnemyCueSignature, const FSoraEnemyCueEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraSiteRestoredSignature, const FSoraSiteRestoredEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraChapterSignature, const FSoraChapterEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraBossPhaseSignature, const FSoraBossPhaseEvent&);
@@ -168,6 +198,7 @@ public:
     FSoraDamagedSignature OnDamaged;
     FSoraDiedSignature OnDied;
     FSoraDetonatedSignature OnDetonated;
+    FSoraEnemyCueSignature OnEnemyCue;
     FSoraSiteRestoredSignature OnSiteRestored;
     FSoraChapterSignature OnChapterStarted;
     FSoraChapterSignature OnChapterCompleted;

@@ -22,7 +22,7 @@ public:
     ASoraPlayerCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
     virtual void SetupPlayerInputComponent(UInputComponent* Input) override;
     virtual void SetKernelDriven(bool Enabled, const FSoraPracticeMap* Map = nullptr) override;
-    virtual bool AdmitDamage(float& Damage, AActor* Causer) override;
+    virtual bool AdmitDamage(float& Damage, FSoraHit& Hit, AActor* Causer) override;
     virtual void OnDefeated(AActor* Causer) override;
     virtual bool IsSparring() const override { return bDojoTraining; }
     // Chapter one: the bokken, the four forms and nonlethal bouts.

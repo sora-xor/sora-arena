@@ -3,10 +3,17 @@
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+namespace SoraCollector
+{
+// The cleave: a guard lets a quarter through; a parry staggers the collector.
+constexpr int32 CleaveDamage = 30;
+constexpr int32 CleaveGuardChip = 8;
+constexpr int32 BeamDamage = 22;
+}
+
 void ASoraBoss::InitCollector(int32 Id)
 {
-    InitInvader(Id);
-    bBladeRetainer=false; bDuelWindup=false;
+    InitScripted(Id);
     MaxHealth=300.f; Health=MaxHealth;
     GetCharacterMovement()->MaxWalkSpeed=280.f;
     SetActorScale3D(FVector(1.25f));
@@ -47,8 +54,9 @@ bool ASoraBoss::UpdateAttack(float Dt,ASoraCharacterBase& Target)
     }
     if(bBossRecovery)
     {
+        // A parried cleave's stagger outlasts the recovery.
         BossPhaseTimer=FMath::Max(0.f,BossPhaseTimer-Dt);
-        if(BossPhaseTimer<=0.f) bBossRecovery=false;
+        if(BossPhaseTimer<=0.f&&!IsStaggered()) bBossRecovery=false;
         return true;
     }
     return false;
@@ -105,7 +113,7 @@ void ASoraBoss::Strike(ASoraCharacterBase& Target)
             Events->OnWeaponFired.Broadcast(Fired);
         }
         if(Hit.GetActor()==&Target)
-            SoraDamage::Deal(&Target,22.f,BossLockedDirection,Hit,GetController(),this);
+            SoraDamage::Strike(&Target,SoraCollector::BeamDamage,FSoraHit::Beam(From),BossLockedDirection,Hit,GetController(),this);
     }
     else
     {
@@ -119,8 +127,10 @@ void ASoraBoss::Strike(ASoraCharacterBase& Target)
         Resolved.Attacker=this;
         if(Delta.Size2D()<=330.f && FVector::DotProduct(Delta.GetSafeNormal2D(),BossLockedDirection)>=.88f && Hit.GetActor()==&Target)
         {
+            FSoraHit Cleave=FSoraHit::Melee(From,INDEX_NONE);
+            Cleave.bParryable=true; Cleave.GuardChip=SoraCollector::CleaveGuardChip;
             Resolved.Target=&Target;
-            Resolved.Damage=SoraDamage::Deal(&Target,30.f,BossLockedDirection,Hit,GetController(),this);
+            Resolved.Damage=SoraDamage::Strike(&Target,SoraCollector::CleaveDamage,Cleave,BossLockedDirection,Hit,GetController(),this);
             Resolved.bHit=Resolved.Damage>0;
         }
         if(Events) Events->OnStrikeResolved.Broadcast(Resolved);

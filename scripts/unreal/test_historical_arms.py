@@ -34,4 +34,7 @@ with tempfile.TemporaryDirectory(prefix="sora-historical-arms-") as temp:
                     str(ROOT / "scripts/unreal/historical_arms_driver.cpp"), "-o", str(binary)],
                    check=True, env=env)
     subprocess.run([str(binary)], check=True, env=env)
-print("Historical offline arm profile passes: katana, yari, naginata maai and timing; yumi cataloged separately from Arena")
+melee = [w for w in catalog["weapons"] + arms if w["kind"] == "melee"]
+assert sorted(w["id"] for w in melee) == [0, 2, 4, 6, 8, 10, 12, 19, 20]
+print("Historical offline arm profile passes: committed maai, timing and weight for all nine melee arms; "
+      "yumi cataloged separately from Arena")

@@ -62,25 +62,58 @@ struct FSight
     bool TargetMoving;
 };
 
-constexpr bool InView(FSight Sight)
+// What one kind of opponent perceives (Content/Data/enemies.json). Standard()
+// is the enforcers' reference and the values the constants above name.
+struct FPerception
 {
-    return Sight.Clear && Sight.DistanceCm >= 0 && Sight.DistanceCm <= SightRangeCm &&
-        Sight.FacingMilli >= ViewConeMilli;
+    int SightRangeCm;
+    // A target in darkness is seen only this far; light between darkness and
+    // daylight scales between the two ranges.
+    int DarkSightRangeCm;
+    int ViewConeMilli;
+    int FocusConeMilli;
+    // How far a sprint is heard; every noise's reach scales with it.
+    int HearingCm;
+    // Reluctant opponents notice everything more slowly.
+    int SuspicionPermille;
+    // An alarmist reports whatever it half-notices: it skips suspicion.
+    bool Alarmist;
+};
+
+// A sprint's reach (NoiseRadiusCm(ENoise::Sprint)) for a standard listener.
+constexpr int StandardHearingCm = 1100;
+
+constexpr FPerception Standard()
+{
+    return {SightRangeCm, SightRangeCm, ViewConeMilli, FocusConeMilli, StandardHearingCm, 1000, false};
+}
+
+constexpr int SightRangeAt(FPerception Perception, int LightPermille)
+{
+    const int Dark = Clamp(Perception.DarkSightRangeCm, 0, Perception.SightRangeCm);
+    return Dark + (Perception.SightRangeCm - Dark) * Clamp(LightPermille, 0, 1000) / 1000;
+}
+
+constexpr bool InView(FSight Sight, FPerception Perception = Standard())
+{
+    return Sight.Clear && Sight.DistanceCm >= 0 && Sight.DistanceCm <= SightRangeAt(Perception, Sight.LightPermille) &&
+        Sight.FacingMilli >= Perception.ViewConeMilli;
 }
 
 // Awareness permille per second of unbroken view: fastest close and in the
 // focus cone, slower with distance, in the dark and at the edge of view, and
 // faster when the target moves.
-constexpr int SightGainPerSecond(FSight Sight)
+constexpr int SightGainPerSecond(FSight Sight, FPerception Perception = Standard())
 {
-    if (!InView(Sight))
+    if (!InView(Sight, Perception))
         return 0;
-    const int Range = Sight.DistanceCm <= CloseSightCm ? 4000 :
-        4000 - (Sight.DistanceCm - CloseSightCm) * 3700 / (SightRangeCm - CloseSightCm);
+    const int Reach = SightRangeAt(Perception, Sight.LightPermille);
+    const int Range = Sight.DistanceCm <= CloseSightCm || Reach <= CloseSightCm ? 4000 :
+        4000 - (Sight.DistanceCm - CloseSightCm) * 3700 / (Reach - CloseSightCm);
     const int Light = DarkFloorPermille + (1000 - DarkFloorPermille) * Clamp(Sight.LightPermille, 0, 1000) / 1000;
-    const int Cone = Sight.FacingMilli >= FocusConeMilli ? 3 : 1;
+    const int Cone = Sight.FacingMilli >= Perception.FocusConeMilli ? 3 : 1;
     const int Motion = Sight.TargetMoving ? 3 : 2;
-    return Range * Light / 1000 * Cone / 3 * Motion / 2;
+    return Range * Light / 1000 * Cone / 3 * Motion / 2 * Perception.SuspicionPermille / 1000;
 }
 
 // The light proxy: the key light's share of daylight from its illuminance in
@@ -136,17 +169,25 @@ constexpr bool IsContinuous(ENoise Noise)
     return Noise == ENoise::Footstep || Noise == ENoise::Sprint;
 }
 
+// How far this listener hears a noise.
+constexpr int HeardRadiusCm(ENoise Noise, FPerception Perception = Standard())
+{
+    return NoiseRadiusCm(Noise) * Clamp(Perception.HearingCm, 0, 100000) / StandardHearingCm;
+}
+
 // Awareness permille a noise adds (per second for a continuous one): its peak
 // within half its radius, falling to two fifths of the peak at the edge. A
 // blocked path between the noise and the listener halves the radius.
-constexpr int HeardPermille(ENoise Noise, int DistanceCm, bool Occluded)
+constexpr int HeardPermille(ENoise Noise, int DistanceCm, bool Occluded, FPerception Perception = Standard())
 {
-    const int Radius = Occluded ? NoiseRadiusCm(Noise) / 2 : NoiseRadiusCm(Noise);
+    const int Full = HeardRadiusCm(Noise, Perception);
+    const int Radius = Occluded ? Full / 2 : Full;
     if (Radius <= 0 || DistanceCm < 0 || DistanceCm > Radius)
         return 0;
     const int Peak = NoisePeakPermille(Noise);
     const int Half = Radius / 2;
-    return DistanceCm <= Half ? Peak : Peak - (Peak - Peak * 2 / 5) * (DistanceCm - Half) / (Radius - Half);
+    const int Level = DistanceCm <= Half ? Peak : Peak - (Peak - Peak * 2 / 5) * (DistanceCm - Half) / (Radius - Half);
+    return Level * Perception.SuspicionPermille / 1000;
 }
 
 struct FMind
@@ -174,6 +215,8 @@ struct FSenses
     // investigated, the last known place, or the retreat cover.
     bool Reached;
     bool CanRetreat;
+    // FPerception::Alarmist.
+    bool Alarmist;
 };
 
 constexpr FMind Calm()
@@ -212,7 +255,7 @@ constexpr FMind Step(FMind Mind, FSenses Senses, int DtMs)
         if (Mind.Awareness >= AwarenessMax)
             return Enter(Mind, Sees ? EState::Combat : EState::Alert, AwarenessMax);
         if (Mind.State == EState::Unaware && Mind.Awareness >= SuspiciousAt)
-            return Enter(Mind, EState::Suspicious, Mind.Awareness);
+            return Senses.Alarmist ? Enter(Mind, EState::Alert, AwarenessMax) : Enter(Mind, EState::Suspicious, Mind.Awareness);
         if (Mind.State == EState::Suspicious && Mind.Awareness <= 0)
             return Enter(Mind, EState::Unaware, 0);
         return Mind;

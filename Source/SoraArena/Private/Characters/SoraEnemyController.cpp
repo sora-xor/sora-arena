@@ -1,4 +1,5 @@
 #include "SoraEnemyController.h"
+#include "Combat/SoraEnemyCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCatalog.h"
 #include "SoraEnemy.h"
@@ -6,6 +7,7 @@
 #include "SoraHistoricalArms.h"
 #include "SoraPlayerCharacter.h"
 #include "World/SoraNavigation.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/Light.h"
@@ -37,6 +39,30 @@ constexpr int32 SearchPauseMs = 800;
 constexpr float FootworkRangeCm = 400.f;
 // Without cover, a ranged opponent closes to this range and sidesteps there.
 constexpr float OpenFireRangeCm = 650.f;
+// A melee opponent holds its ground once the hero is this far inside its reach.
+constexpr float HoldReachShare = .8f;
+// An auditor on the run shouts again this often.
+constexpr int32 AlarmRepeatMs = 2000;
+
+const TCHAR* StateName(SoraStealthRules::EState State)
+{
+    switch (State)
+    {
+    case SoraStealthRules::EState::Unaware: return TEXT("unaware");
+    case SoraStealthRules::EState::Suspicious: return TEXT("suspicious");
+    case SoraStealthRules::EState::Alert: return TEXT("alert");
+    case SoraStealthRules::EState::Search: return TEXT("search");
+    case SoraStealthRules::EState::Combat: return TEXT("combat");
+    case SoraStealthRules::EState::Retreat: return TEXT("retreat");
+    }
+    return TEXT("unaware");
+}
+
+bool IsShooter(const FSoraEnemyArchetype* Kind)
+{
+    return Kind && (Kind->Behavior == ESoraEnemyBehavior::Rifle || Kind->Behavior == ESoraEnemyBehavior::Marksman ||
+        Kind->Behavior == ESoraEnemyBehavior::Grenadier);
+}
 }
 
 ASoraEnemyController::ASoraEnemyController()
@@ -117,9 +143,18 @@ void ASoraEnemyController::OnMeleeCommitted(const FSoraMeleeCommittedEvent& Even
     Heard.Add({Stealth::ENoise::Melee, Attacker->GetActorLocation(), Attacker->GetActorLocation(), Attacker});
 }
 
-void ASoraEnemyController::HearCallout(const FVector& Caller, const FVector& Where)
+void ASoraEnemyController::HearCallout(const FVector& Caller, const FVector& Where, bool bAlarm)
 {
-    Heard.Add({Stealth::ENoise::Callout, Caller, Where, nullptr});
+    Heard.Add({Stealth::ENoise::Callout, Caller, Where, nullptr, bAlarm});
+}
+
+void ASoraEnemyController::Rouse(const FVector& Where)
+{
+    const Stealth::EState Previous = Mind.State;
+    Mind = Stealth::Enter(Mind, Stealth::EState::Alert, Stealth::AwarenessMax);
+    LastKnown = Where;
+    if (ASoraEnemy* Enemy = GetPawn<ASoraEnemy>())
+        Enter(*Enemy, Previous, WorldMs());
 }
 
 void ASoraEnemyController::Prepare(bool bHunt)
@@ -128,7 +163,10 @@ void ASoraEnemyController::Prepare(bool bHunt)
     bHunting = bHunt;
     Mind = bHunt ? Stealth::Hunting() : Stealth::Calm();
     Slot = Enemy ? Enemy->EnemySlot() : 0;
-    Role = Stealth::Role(Slot, Enemy && Enemy->IsBladeRetainer());
+    // Rifles cover or flank by slot; the other shooters always take cover.
+    const FSoraEnemyArchetype* Kind = Enemy ? Enemy->Archetype() : nullptr;
+    Role = !Kind || Kind->IsMelee() ? Stealth::ERole::Blade :
+        Kind->Behavior == ESoraEnemyBehavior::Rifle ? Stealth::Role(Slot, false) : Stealth::ERole::CoverShooter;
     Post = Enemy ? Enemy->GetActorLocation() : FVector::ZeroVector;
     PostYaw = Enemy ? Enemy->GetActorRotation().Yaw : 0.f;
     LastKnown = Post;
@@ -141,6 +179,8 @@ void ASoraEnemyController::Prepare(bool bHunt)
     bGoalDone = false;
     bHasPosition = false;
     bCanPeek = false;
+    bAvoidSpot = false;
+    NextAlarmMs = 0;
     ClearPath();
     NextIntelMs = WorldMs() + Stealth::IntelMs;
     CombatSinceMs = WorldMs();
@@ -172,7 +212,7 @@ void ASoraEnemyController::Tick(float Dt)
     // whose pawn is held still with its tick off does nothing, and noises made
     // meanwhile are forgotten.
     auto* Target = Cast<ASoraCharacterBase>(UGameplayStatics::GetPlayerPawn(this, 0));
-    if (!Enemy->IsActorTickEnabled() || !Enemy->CanPlay() || !Target || !Target->IsAlive())
+    if (!Enemy->IsActorTickEnabled() || !Enemy->CanPlay() || Enemy->IsFreed() || !Target || !Target->IsAlive())
     {
         Heard.Reset();
         return;
@@ -187,7 +227,8 @@ void ASoraEnemyController::Tick(float Dt)
         DrivePupil(*Enemy, *Target, Dt);
         return;
     }
-    Think(*Enemy, *Target, Dt);
+    if (Enemy->Archetype())
+        Think(*Enemy, *Target, Dt);
 }
 
 void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float Dt)
@@ -198,13 +239,14 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     const int32 NowMs = WorldMs();
     const int32 DtMs = FMath::Max(1, FMath::RoundToInt32(Dt * 1000.f));
     const FVector Here = Enemy.GetActorLocation();
-    const FVector Ear = Here + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight);
+    const FVector Ear = Here + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
     const FVector There = Target.GetActorLocation();
+    const Stealth::FPerception& Perception = Enemy.Perception();
 
     Stealth::FSenses Senses{};
     const Stealth::FSight Sight = Look(Enemy, Target);
-    const bool bSees = Stealth::InView(Sight);
-    Senses.SightGain = Stealth::SightGainPerSecond(Sight);
+    const bool bSees = Stealth::InView(Sight, Perception);
+    Senses.SightGain = Stealth::SightGainPerSecond(Sight, Perception);
     bool bEvidence = bSees;
     FVector Evidence = There;
 
@@ -215,17 +257,19 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
         const auto* Hero = Cast<ASoraPlayerCharacter>(&Target);
         const Stealth::ENoise Steps = Hero && Hero->IsSprinting() ? Stealth::ENoise::Sprint : Stealth::ENoise::Footstep;
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(There, Ear));
-        if (Distance <= Stealth::NoiseRadiusCm(Steps))
-            Senses.NoisePerSecond = Stealth::HeardPermille(Steps, Distance, Occluded(There, Ear, &Target));
+        if (Distance <= Stealth::HeardRadiusCm(Steps, Perception))
+            Senses.NoisePerSecond = Stealth::HeardPermille(Steps, Distance, Occluded(There, Ear, &Target), Perception);
         bEvidence |= Senses.NoisePerSecond > 0;
     }
     // The loudest single noise since the last tick.
     for (const FNoise& Noise : Heard)
     {
+        // The alarm's sender chose who it reaches; it arrives at full urgency.
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(Noise.Origin, Ear));
-        if (Distance > Stealth::NoiseRadiusCm(Noise.Kind))
+        if (!Noise.bAlarm && Distance > Stealth::HeardRadiusCm(Noise.Kind, Perception))
             continue;
-        const int32 Level = Stealth::HeardPermille(Noise.Kind, Distance, Occluded(Noise.Origin, Ear, Noise.Source.Get()));
+        const int32 Level = Noise.bAlarm ? Stealth::NoisePeakPermille(Stealth::ENoise::Callout) :
+            Stealth::HeardPermille(Noise.Kind, Distance, Occluded(Noise.Origin, Ear, Noise.Source.Get()), Perception);
         if (Level > Senses.NoiseImpulse)
         {
             Senses.NoiseImpulse = Level;
@@ -249,11 +293,15 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
 
     Senses.HealthPermille = Enemy.MaxHealth > 0.f ? FMath::RoundToInt32(Enemy.Health * 1000.f / Enemy.MaxHealth) : 0;
     Senses.Reached = bGoalDone;
-    Senses.CanRetreat = Stealth::CanRetreat(Role);
+    Senses.CanRetreat = Stealth::CanRetreat(Role) && SoraEnemyBrain::IsShooter(Enemy.Archetype());
+    Senses.Alarmist = Perception.Alarmist;
     const Stealth::EState Previous = Mind.State;
     Mind = Stealth::Step(Mind, Senses, DtMs);
     if (Mind.State != Previous)
         Enter(Enemy, Previous, NowMs);
+    // A staggered opponent still notices, but neither moves nor strikes.
+    if (Enemy.IsStaggered())
+        return;
     Act(Enemy, Target, bSees, Dt, NowMs);
 }
 
@@ -291,6 +339,7 @@ void ASoraEnemyController::Enter(ASoraEnemy& Enemy, Stealth::EState Previous, in
     default:
         break;
     }
+    AnnounceState(Enemy);
     // An opponent that has just found the hero shouts to the allies near it.
     const bool bWasCalm = Previous == Stealth::EState::Unaware || Previous == Stealth::EState::Suspicious ||
         Previous == Stealth::EState::Search;
@@ -298,19 +347,39 @@ void ASoraEnemyController::Enter(ASoraEnemy& Enemy, Stealth::EState Previous, in
         CallOut(Enemy);
 }
 
+void ASoraEnemyController::AnnounceState(const ASoraEnemy& Enemy) const
+{
+    if (USoraGameEvents* Bus = USoraGameEvents::Get(this))
+    {
+        FSoraEnemyCueEvent Event;
+        Event.Enemy = const_cast<ASoraEnemy*>(&Enemy); Event.Archetype = Enemy.ArchetypeId();
+        Event.Cue = ESoraEnemyCue::AlertState; Event.Detail = SoraEnemyBrain::StateName(Mind.State);
+        Bus->OnEnemyCue.Broadcast(Event);
+    }
+}
+
 void ASoraEnemyController::CallOut(const ASoraEnemy& Enemy) const
 {
-    const float Radius = Stealth::NoiseRadiusCm(Stealth::ENoise::Callout);
+    // An auditor's alarm carries farther than a trooper's shout.
+    const int32 Alarm = Enemy.Archetype() ? Enemy.Archetype()->AlarmRadiusCm : 0;
+    const float Radius = Alarm > 0 ? Alarm : Stealth::NoiseRadiusCm(Stealth::ENoise::Callout);
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
     {
         const APawn* Ally = It->GetPawn();
         if (*It != this && Ally && FVector::Dist(Ally->GetActorLocation(), Enemy.GetActorLocation()) <= Radius)
-            It->HearCallout(Enemy.GetActorLocation(), LastKnown);
+            It->HearCallout(Enemy.GetActorLocation(), LastKnown, Alarm > 0);
     }
 }
 
 void ASoraEnemyController::Act(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float Dt, int32 NowMs)
 {
+    // Weak in a fight, an auditor that knows of the hero runs and raises the alarm.
+    if (Enemy.Archetype()->Behavior == ESoraEnemyBehavior::Auditor &&
+        (Mind.State == Stealth::EState::Alert || Mind.State == Stealth::EState::Combat))
+    {
+        AlarmRun(Enemy, Target, Dt, NowMs);
+        return;
+    }
     switch (Mind.State)
     {
     case Stealth::EState::Unaware:
@@ -403,32 +472,78 @@ void ASoraEnemyController::Search(ASoraEnemy& Enemy, float Dt, int32 NowMs)
 
 void ASoraEnemyController::Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float Dt, int32 NowMs)
 {
+    const FSoraEnemyArchetype& Kind = *Enemy.Archetype();
     FVector Delta = Target.GetActorLocation() - Enemy.GetActorLocation();
     Delta.Z = 0.f;
     const float Distance = Delta.Size();
-    if (Role == Stealth::ERole::Blade)
+    switch (Kind.Behavior)
     {
-        // A committed cut keeps its locked line. Otherwise the blade squares up
-        // to the hero, pathing in until footwork takes over at close range.
-        if (!Enemy.IsDuelWindup())
+    case ESoraEnemyBehavior::Walker:
+        // A walker stands where it is placed and turns its beam on the hero.
+        Face(Enemy, Delta, Dt, 4.f);
+        if (bSees)
+            Enemy.TryAttack(Target, Distance);
+        return;
+    case ESoraEnemyBehavior::Drone:
+        // A drone holds station in the air off the hero, and nets him from there.
+        if (!Enemy.IsCommitted())
         {
             Face(Enemy, Delta, Dt, 4.f);
-            if (bSees && Distance <= SoraEnemyBrain::FootworkRangeCm)
+            WalkTo(Enemy, Target.GetActorLocation() - Delta.GetSafeNormal() * Kind.KeepDistanceCm,
+                SoraEnemyBrain::CombatSpeed, 120.f, NowMs);
+        }
+        if (bSees)
+            Enemy.TryAttack(Target, Distance);
+        return;
+    case ESoraEnemyBehavior::Blade:
+    case ESoraEnemyBehavior::Shield:
+    case ESoraEnemyBehavior::Conscript:
+    case ESoraEnemyBehavior::Automaton:
+        // A committed blow keeps its locked line. Otherwise the opponent squares
+        // up to the hero and paths in until it holds him inside its reach; a
+        // blade retainer's footwork takes over at close range.
+        if (!Enemy.IsCommitted())
+        {
+            Face(Enemy, Delta, Dt, 4.f);
+            if (bSees && Kind.Behavior == ESoraEnemyBehavior::Blade && Distance <= SoraEnemyBrain::FootworkRangeCm)
                 Footwork(Enemy, Target, Delta, Distance);
+            else if (bSees && Distance <= Enemy.MeleeReachCm() * SoraEnemyBrain::HoldReachShare)
+                Enemy.AddMovementInput(Enemy.GetActorRightVector(), FMath::Sin(Enemy.GetLifeTime() + Slot) * .2f);
             else
                 WalkTo(Enemy, Target.GetActorLocation(), SoraEnemyBrain::CombatSpeed, 150.f, NowMs);
         }
-        if (bSees || Enemy.IsDuelWindup())
-            Enemy.DuelAttack(Target, Distance);
+        if (bSees)
+            Enemy.TryAttack(Target, Distance);
         return;
+    default:
+        break;
     }
+    // Shooters: rifles, marksmen and grenadiers.
     Face(Enemy, Delta, Dt, 4.f);
     if (bSees)
-        Enemy.RangedAttack(Target, Distance);
-    // On first contact a shooter holds its ground and fires.
-    if (NowMs - CombatSinceMs < Stealth::ReactionMs(Slot))
+        Enemy.TryAttack(Target, Distance);
+    // On first contact a shooter holds its ground and fires; nobody walks off
+    // in the middle of a raise or a burst.
+    if (NowMs - CombatSinceMs < Stealth::ReactionMs(Slot) || Enemy.IsCommitted())
         return;
     const FVector Threat = Target.GetActorLocation();
+    // A marksman moves on after its shots and does not take the same spot again.
+    if (Kind.RelocateAfterShots > 0 && Enemy.ShotsSinceMove() >= Kind.RelocateAfterShots)
+    {
+        bAvoidSpot = bHasPosition;
+        AvoidSpot = Position;
+        bHasPosition = false;
+        Enemy.Relocated();
+    }
+    // A grenadier keeps its distance: its shells burst around the hero.
+    if (Kind.KeepDistanceCm > 0 && Distance < Kind.KeepDistanceCm)
+    {
+        FVector Away;
+        const USoraNavigation* Nav = USoraNavigation::Get(this);
+        if (Nav && Nav->Project(Enemy.GetActorLocation() - Delta.GetSafeNormal() * 400.f, Away))
+            WalkTo(Enemy, Away, SoraEnemyBrain::CombatSpeed, 60.f, NowMs);
+        return;
+    }
     FSoraCoverSpot Held;
     Held.Location = Position;
     Held.Normal = PositionNormal;
@@ -447,10 +562,33 @@ void ASoraEnemyController::Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
         return;
     }
     // No cover within reach: close to firing range and sidestep there.
-    if (Distance > SoraEnemyBrain::OpenFireRangeCm)
-        WalkTo(Enemy, Threat, SoraEnemyBrain::CombatSpeed, SoraEnemyBrain::OpenFireRangeCm, NowMs);
+    const float Standoff = FMath::Max(SoraEnemyBrain::OpenFireRangeCm, Kind.KeepDistanceCm + 100.f);
+    if (Distance > Standoff)
+        WalkTo(Enemy, Threat, SoraEnemyBrain::CombatSpeed, Standoff, NowMs);
     else
         Enemy.AddMovementInput(Enemy.GetActorRightVector(), FMath::Sin(Enemy.GetLifeTime() + Slot) * .2f);
+}
+
+void ASoraEnemyController::AlarmRun(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, float Dt, int32 NowMs)
+{
+    if (NowMs >= NextAlarmMs)
+    {
+        NextAlarmMs = NowMs + SoraEnemyBrain::AlarmRepeatMs;
+        CallOut(Enemy);
+        if (USoraGameEvents* Bus = USoraGameEvents::Get(this))
+        {
+            FSoraEnemyCueEvent Event;
+            Event.Enemy = &Enemy; Event.Archetype = Enemy.ArchetypeId(); Event.Cue = ESoraEnemyCue::Alarm;
+            Bus->OnEnemyCue.Broadcast(Event);
+        }
+    }
+    const FVector Here = Enemy.GetActorLocation();
+    FVector Away = Here + (Here - Target.GetActorLocation()).GetSafeNormal2D() * 600.f;
+    FVector OnMesh;
+    if (const USoraNavigation* Nav = USoraNavigation::Get(this); Nav && Nav->Project(Away, OnMesh))
+        Away = OnMesh;
+    bGoalDone = WalkTo(Enemy, Away, SoraEnemyBrain::RetreatSpeed, 60.f, NowMs) != EMove::Moving;
+    Face(Enemy, Heading, Dt, 5.f);
 }
 
 void ASoraEnemyController::Footwork(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, const FVector& Delta, float Distance)
@@ -508,7 +646,8 @@ bool ASoraEnemyController::ChoosePosition(const ASoraEnemy& Enemy, const FVector
     for (int32 Index = 0; Index < Spots.Num(); ++Index)
     {
         const FSoraCoverSpot& Spot = Spots[Index];
-        if (!USoraNavigation::Shields(Spot, Threat) || Claimed(Spot.Location))
+        if (!USoraNavigation::Shields(Spot, Threat) || Claimed(Spot.Location) ||
+            (bAvoidSpot && FVector::Dist2D(Spot.Location, AvoidSpot) < 300.f))
             continue;
         const int32 Travel = FMath::RoundToInt32(FVector::Dist2D(Here, Spot.Location));
         const int32 Range = FMath::RoundToInt32(FVector::Dist2D(Spot.Location, Threat));
@@ -591,6 +730,11 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
         ClearPath();
         return EMove::Arrived;
     }
+    // A walker never leaves its place; a drone flies over the mesh.
+    if (Enemy.Archetype() && Enemy.Archetype()->bStatic)
+        return EMove::Blocked;
+    if (Enemy.IsFlying())
+        return FlyTo(Enemy, Goal, Speed, Acceptance, NowMs);
     if (!bPathValid || FVector::Dist2D(Goal, PathGoal) > 100.f || NowMs >= RepathAtMs)
     {
         const USoraNavigation* Nav = USoraNavigation::Get(this);
@@ -641,6 +785,43 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
     return EMove::Moving;
 }
 
+ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs)
+{
+    // Straight at the goal at its hover height over the ground below, stepping
+    // aside from what is ahead; no path is needed in the air.
+    const FVector Here = Enemy.GetActorLocation();
+    FVector Direction = (Goal - Here).GetSafeNormal2D();
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(BotNavigation), false, &Enemy);
+    FCollisionObjectQueryParams Solid;
+    Solid.AddObjectTypesToQuery(ECC_WorldStatic);
+    Solid.AddObjectTypesToQuery(ECC_WorldDynamic);
+    FHitResult Ahead;
+    if (GetWorld()->LineTraceSingleByObjectType(Ahead, Here, Here + Direction * 180.f, Solid, Query))
+        Direction = FVector(-Direction.Y, Direction.X, 0.f) * (Slot % 2 ? 1.f : -1.f);
+    FHitResult Ground;
+    float Climb = 0.f;
+    if (GetWorld()->LineTraceSingleByObjectType(Ground, Here, Here - FVector(0.f, 0.f, 5000.f), Solid, Query))
+    {
+        const float Height = Enemy.Archetype()->HoverCm + Enemy.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+        Climb = FMath::Clamp((Ground.ImpactPoint.Z + Height - Here.Z) / 100.f, -1.f, 1.f);
+    }
+    // No progress for two seconds of flying means the goal cannot be reached.
+    if (NowMs - LastMovingMs > 100 || FVector::Dist2D(Here, StuckFrom) > 40.f)
+    {
+        StuckFrom = Here;
+        StuckSinceMs = NowMs;
+    }
+    else if (NowMs - StuckSinceMs > SoraEnemyBrain::StuckMs)
+    {
+        LastMovingMs = MIN_int32;
+        return EMove::Blocked;
+    }
+    LastMovingMs = NowMs;
+    Heading = Direction;
+    Enemy.AddMovementInput((Direction + FVector(0.f, 0.f, Climb)).GetClampedToMaxSize(1.f), Speed);
+    return EMove::Moving;
+}
+
 void ASoraEnemyController::ClearPath()
 {
     Path.Reset();
@@ -652,7 +833,13 @@ void ASoraEnemyController::ClearPath()
 void ASoraEnemyController::Face(ASoraEnemy& Enemy, const FVector& Direction, float Dt, float Rate) const
 {
     const FVector Flat(Direction.X, Direction.Y, 0.f);
-    if (!Flat.IsNearlyZero())
+    if (Flat.IsNearlyZero())
+        return;
+    // Heavy bodies turn at their own fixed rate, so a flank can outpace them.
+    const FSoraEnemyArchetype* Kind = Enemy.Archetype();
+    if (Kind && Kind->TurnDegreesPerSecond < 360)
+        Enemy.SetActorRotation(FMath::RInterpConstantTo(Enemy.GetActorRotation(), Flat.Rotation(), Dt, Kind->TurnDegreesPerSecond));
+    else
         Enemy.SetActorRotation(FMath::RInterpTo(Enemy.GetActorRotation(), Flat.Rotation(), Dt, Rate));
 }
 
@@ -666,19 +853,20 @@ void ASoraEnemyController::LookAround(ASoraEnemy& Enemy, float BaseYaw, float Am
 bool ASoraEnemyController::CanSee(const ASoraCharacterBase& Target) const
 {
     const ASoraEnemy* Enemy = GetPawn<ASoraEnemy>();
-    return Enemy && Stealth::InView(Look(*Enemy, Target));
+    return Enemy && Stealth::InView(Look(*Enemy, Target), Enemy->Perception());
 }
 
 Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraCharacterBase& Target) const
 {
-    const FVector Eye = Enemy.GetActorLocation() + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight);
+    const FVector Eye = Enemy.GetActorLocation() + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
     const FVector There = Target.GetActorLocation();
     const FVector Flat(There.X - Eye.X, There.Y - Eye.Y, 0.f);
+    const Stealth::FPerception& Perception = Enemy.Perception();
     Stealth::FSight Sight{};
     Sight.DistanceCm = FMath::RoundToInt32(Flat.Size());
     Sight.FacingMilli = FMath::RoundToInt32(FVector::DotProduct(Enemy.GetActorForwardVector().GetSafeNormal2D(), Flat.GetSafeNormal()) * 1000.f);
     Sight.TargetMoving = Target.GetVelocity().Size2D() > 30.f;
-    if (Sight.DistanceCm > Stealth::SightRangeCm || Sight.FacingMilli < Stealth::ViewConeMilli)
+    if (Sight.DistanceCm > Perception.SightRangeCm || Sight.FacingMilli < Perception.ViewConeMilli)
         return Sight;
     FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraSight), false, &Enemy);
     for (const float Height : {SoraEnemyBrain::HeadHeight, SoraEnemyBrain::ChestHeight})
@@ -731,6 +919,9 @@ void ASoraEnemyController::DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Tar
 {
     // The chapter-one drill: face the hero, close to bokken distance around the
     // obstacle ahead, and strike on the pupil's own rhythm.
+    // A pupil staggered by a meeting cut stands where it is.
+    if (Enemy.IsStaggered())
+        return;
     FVector Delta = Target.GetActorLocation() - Enemy.GetActorLocation();
     const float Distance = Delta.Size2D();
     Delta.Z = 0.f;
@@ -755,7 +946,7 @@ void ASoraEnemyController::DriveCollector(ASoraBoss& Boss, ASoraCharacterBase& T
 {
     // Fixed attack order, locked aim, explicit warning, and recovery make the
     // offline encounter readable. No random damage or hidden hit timestamp.
-    if (Boss.UpdateAttack(Dt, Target))
+    if (Boss.UpdateAttack(Dt, Target) || Boss.IsStaggered())
         return;
     FVector Delta = Target.GetActorLocation() - Boss.GetActorLocation();
     Delta.Z = 0.f;

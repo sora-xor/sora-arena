@@ -5,10 +5,11 @@
 class ASoraPlayerCharacter;
 
 // Nyaakoto's weapons in the offline campaign and training arena: ammunition
-// per weapon, reloads, cooldowns, gunfire and shells, the yumi draw, swept and
-// committed blade strikes, and the blade guard. The held weapon's ID lives on
-// the character so its visual and the HUD can read it. Kernel practice does
-// not use this component; its counters come from kernel snapshots.
+// per weapon, reloads, cooldowns, gunfire and shells, the yumi draw, committed
+// strikes with every melee arm (the dojo bokken's swing is swept), and the
+// blade guard. The held weapon's ID lives on the character so its visual and
+// the HUD can read it. Kernel practice does not use this component; its
+// counters come from kernel snapshots.
 UCLASS(ClassGroup=(Sora))
 class SORAARENA_API USoraEquipmentComponent : public UActorComponent
 {
@@ -48,8 +49,12 @@ public:
     bool IsGuardHeld() const { return bGuardHeld; }
     float GuardPressedAt() const { return GuardPressedTime; }
     float GuardReserve() const { return GuardStamina; }
-    // Blade guard against a retainer's cut; the stamina costs of a guard or parry.
+    // The stamina a guard or parry costs (SoraCombatRules::Defend).
     void SpendGuard(float Amount) { GuardStamina = FMath::Max(0.f, GuardStamina - Amount); }
+    // A broken guard or a heavy blow: the guard, a draw and a committed strike
+    // drop, and nothing can be raised, drawn or swung for Seconds.
+    void Stagger(float Seconds);
+    bool IsStaggered() const;
     int32 Ammo = 0;
     bool bReloading = false;
     TArray<int32> AmmoByWeapon;
@@ -71,4 +76,5 @@ private:
     bool bGuardHeld = false;
     float GuardStamina = 100.f;
     float GuardPressedTime = 0.f;
+    float StaggeredUntil = -1.f;
 };
