@@ -22,6 +22,11 @@ impl Vec3 {
             + i64::from(d.y) * i64::from(d.y)
             + i64::from(d.z) * i64::from(d.z)
     }
+    /// Squared distance in the floor plane, ignoring z.
+    pub fn horizontal_distance_squared(self, other: Self) -> i64 {
+        let d = self.delta(other);
+        i64::from(d.x) * i64::from(d.x) + i64::from(d.y) * i64::from(d.y)
+    }
 }
 
 /// Fixed Bhaskara sine approximation, Q15. Defined exactly by integer division.
@@ -62,6 +67,15 @@ impl Aabb {
             min: Vec3::new(self.min.x - xy, self.min.y - xy, self.min.z - z),
             max: Vec3::new(self.max.x + xy, self.max.y + xy, self.max.z + z),
         }
+    }
+    /// Closed overlap test: boxes that only share a face or edge overlap.
+    pub fn overlaps(self, other: Self) -> bool {
+        self.min.x <= other.max.x
+            && other.min.x <= self.max.x
+            && self.min.y <= other.max.y
+            && other.min.y <= self.max.y
+            && self.min.z <= other.max.z
+            && other.min.z <= self.max.z
     }
     pub fn contains(self, p: Vec3) -> bool {
         p.x >= self.min.x
@@ -124,6 +138,27 @@ mod tests {
         assert_eq!(
             a.intersect(Vec3::new(12, 0, 0), Vec3::new(15, 0, 0)),
             Some(0)
+        );
+    }
+    #[test]
+    fn closed_overlap_includes_touching_faces() {
+        let a = Aabb {
+            min: Vec3::new(0, 0, 0),
+            max: Vec3::new(10, 10, 10),
+        };
+        let touching = Aabb {
+            min: Vec3::new(10, 5, 0),
+            max: Vec3::new(20, 20, 5),
+        };
+        let apart = Aabb {
+            min: Vec3::new(11, 0, 0),
+            max: Vec3::new(20, 10, 10),
+        };
+        assert!(a.overlaps(touching) && touching.overlaps(a));
+        assert!(!a.overlaps(apart) && !apart.overlaps(a));
+        assert_eq!(
+            Vec3::new(3, 4, 100).horizontal_distance_squared(Vec3::default()),
+            25
         );
     }
     #[test]

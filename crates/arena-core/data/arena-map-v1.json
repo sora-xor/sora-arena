@@ -1,0 +1,429 @@
+{
+  "schema": "sora-arena-arena-map-v1",
+  "rules_version": "sora-arena-first-release-7",
+  "units": "millimetres, X forward, Y right, Z up; yaw in 1/65536 turns; time in 60 Hz ticks",
+  "player": {"radius": 350, "height": 1700, "eye_height": 1400},
+  "min_wall_height": 2000,
+  "arenas": [
+    {
+      "id": 0,
+      "slug": "nyaagyu-estate",
+      "name": "Nyaagyu Estate",
+      "map_digest": "ac3853ef6876964bcc953c8137cdf9ff8cb4a740d481da8d32aed1690c0afef5",
+      "lanes_digest": "bcdd6d2ab38ed5cf99c89f95c4ad690b2457e727b51767639f5b1218cd05c563",
+      "bounds": {"min_x": -22000, "min_y": -16000, "max_x": 22000, "max_y": 16000},
+      "walls": [
+        {"index": 0, "label": "perimeter south", "min": [-23000, -17000, 0], "max": [23000, -16000, 6000]},
+        {"index": 1, "label": "perimeter north", "min": [-23000, 16000, 0], "max": [23000, 17000, 6000]},
+        {"index": 2, "label": "perimeter west", "min": [-23000, -16000, 0], "max": [-22000, 16000, 6000]},
+        {"index": 3, "label": "perimeter east", "min": [22000, -16000, 0], "max": [23000, 16000, 6000]},
+        {"index": 4, "label": "east gatehouse south wing", "min": [14500, -16000, 0], "max": [15500, -9500, 4500]},
+        {"index": 5, "label": "mirror of east gatehouse south wing", "min": [-15500, 9500, 0], "max": [-14500, 16000, 4500]},
+        {"index": 6, "label": "east gatehouse inner south", "min": [14500, -6000, 0], "max": [15500, -1800, 4500]},
+        {"index": 7, "label": "mirror of east gatehouse inner south", "min": [-15500, 1800, 0], "max": [-14500, 6000, 4500]},
+        {"index": 8, "label": "east gatehouse inner north", "min": [14500, 1800, 0], "max": [15500, 6000, 4500]},
+        {"index": 9, "label": "mirror of east gatehouse inner north", "min": [-15500, -6000, 0], "max": [-14500, -1800, 4500]},
+        {"index": 10, "label": "east gatehouse north wing", "min": [14500, 9500, 0], "max": [15500, 16000, 4500]},
+        {"index": 11, "label": "mirror of east gatehouse north wing", "min": [-15500, -16000, 0], "max": [-14500, -9500, 4500]},
+        {"index": 12, "label": "north dojo hall", "min": [-7000, 8500, 0], "max": [7000, 12500, 5500]},
+        {"index": 13, "label": "mirror of north dojo hall", "min": [-7000, -12500, 0], "max": [7000, -8500, 5500]},
+        {"index": 14, "label": "north veranda screen east", "min": [3000, 7000, 0], "max": [5000, 7600, 2000]},
+        {"index": 15, "label": "mirror of north veranda screen east", "min": [-5000, -7600, 0], "max": [-3000, -7000, 2000]},
+        {"index": 16, "label": "north veranda screen west", "min": [-5000, 7000, 0], "max": [-3000, 7600, 2000]},
+        {"index": 17, "label": "mirror of north veranda screen west", "min": [3000, -7600, 0], "max": [5000, -7000, 2000]},
+        {"index": 18, "label": "toro north-east", "min": [2600, 2200, 0], "max": [3200, 2800, 2000]},
+        {"index": 19, "label": "mirror of toro north-east", "min": [-3200, -2800, 0], "max": [-2600, -2200, 2000]},
+        {"index": 20, "label": "toro south-east", "min": [2600, -2800, 0], "max": [3200, -2200, 2000]},
+        {"index": 21, "label": "mirror of toro south-east", "min": [-3200, 2200, 0], "max": [-2600, 2800, 2000]},
+        {"index": 22, "label": "east kura north", "min": [9500, 3000, 0], "max": [12500, 6500, 5000]},
+        {"index": 23, "label": "mirror of east kura north", "min": [-12500, -6500, 0], "max": [-9500, -3000, 5000]},
+        {"index": 24, "label": "east kura south", "min": [9500, -6500, 0], "max": [12500, -3000, 5000]},
+        {"index": 25, "label": "mirror of east kura south", "min": [-12500, 3000, 0], "max": [-9500, 6500, 5000]},
+        {"index": 26, "label": "east garden rock", "min": [9000, 1000, 0], "max": [10200, 2200, 2000]},
+        {"index": 27, "label": "mirror of east garden rock", "min": [-10200, -2200, 0], "max": [-9000, -1000, 2000]},
+        {"index": 28, "label": "east hedge north", "min": [8000, 9000, 0], "max": [8600, 13500, 2000]},
+        {"index": 29, "label": "mirror of east hedge north", "min": [-8600, -13500, 0], "max": [-8000, -9000, 2000]},
+        {"index": 30, "label": "courtyard wall south-east", "min": [5000, -4500, 0], "max": [6500, -3900, 2000]},
+        {"index": 31, "label": "mirror of courtyard wall south-east", "min": [-6500, 3900, 0], "max": [-5000, 4500, 2000]},
+        {"index": 32, "label": "well house", "min": [9500, -14500, 0], "max": [11000, -13000, 2400]},
+        {"index": 33, "label": "mirror of well house", "min": [-11000, 13000, 0], "max": [-9500, 14500, 2400]},
+        {"index": 34, "label": "pine planter north", "min": [12000, 8500, 0], "max": [13200, 9700, 2000]},
+        {"index": 35, "label": "mirror of pine planter north", "min": [-13200, -9700, 0], "max": [-12000, -8500, 2000]},
+        {"index": 36, "label": "pine planter south", "min": [12000, -11500, 0], "max": [13200, -10300, 2000]},
+        {"index": 37, "label": "mirror of pine planter south", "min": [-13200, 10300, 0], "max": [-12000, 11500, 2000]}
+      ],
+      "spawns": {
+        "team0": [
+          {"x": -19500, "y": -5000, "yaw": 0},
+          {"x": -19500, "y": -3000, "yaw": 0},
+          {"x": -19500, "y": -1000, "yaw": 0},
+          {"x": -19500, "y": 1000, "yaw": 0},
+          {"x": -19500, "y": 3000, "yaw": 0},
+          {"x": -19500, "y": 5000, "yaw": 0}
+        ],
+        "team1": [
+          {"x": 19500, "y": 5000, "yaw": 32768},
+          {"x": 19500, "y": 3000, "yaw": 32768},
+          {"x": 19500, "y": 1000, "yaw": 32768},
+          {"x": 19500, "y": -1000, "yaw": 32768},
+          {"x": 19500, "y": -3000, "yaw": 32768},
+          {"x": 19500, "y": -5000, "yaw": 32768}
+        ],
+        "ffa": [
+          {"x": -18500, "y": -12500, "yaw": 8192},
+          {"x": 18500, "y": 12500, "yaw": 40960},
+          {"x": -18500, "y": 12500, "yaw": 57344},
+          {"x": 18500, "y": -12500, "yaw": 24576},
+          {"x": 0, "y": 14500, "yaw": 49152},
+          {"x": 0, "y": -14500, "yaw": 16384},
+          {"x": -10500, "y": 0, "yaw": 0},
+          {"x": 10500, "y": 0, "yaw": 32768},
+          {"x": -4000, "y": -5500, "yaw": 8192},
+          {"x": 4000, "y": 5500, "yaw": 40960},
+          {"x": -11000, "y": -13500, "yaw": 8192},
+          {"x": 11000, "y": 13500, "yaw": 40960}
+        ]
+      },
+      "control": {"x": 0, "y": 0, "radius": 4000},
+      "payload": {
+        "length": 48000,
+        "push_radius": 3000,
+        "checkpoints": [16000, 32000, 40000],
+        "route": [
+          [-18500, 0],
+          [-8000, 0],
+          [-8000, -5500],
+          [8000, -5500],
+          [8000, 0],
+          [18500, 0]
+        ]
+      },
+      "hazards": [
+        {"index": 0, "label": "burning storehouse embers", "kind": "fire", "kind_id": 1, "min": [3000, 13500, 0], "max": [5000, 15500, 600], "damage": 10, "period": 15},
+        {"index": 1, "label": "mirror of burning storehouse embers", "kind": "fire", "kind_id": 1, "min": [-5000, -15500, 0], "max": [-3000, -13500, 600], "damage": 10, "period": 15}
+      ],
+      "lanes": [
+        {"name": "north", "points": [[-18500, 3000], [-16500, 3000], [-16500, 7750], [-7500, 7750], [-7500, 13000], [7500, 13000], [7500, 7750], [16500, 7750], [16500, 3000], [18500, 3000]]},
+        {"name": "south", "points": [[-18500, -3000], [-16500, -3000], [-16500, -7750], [-7500, -7750], [-7500, -13000], [7500, -13000], [7500, -7750], [16500, -7750], [16500, -3000], [18500, -3000]]},
+        {"name": "mid", "points": [[-18500, 0], [18500, 0]]}
+      ]
+    },
+    {
+      "id": 1,
+      "slug": "lantern-ward",
+      "name": "Lantern Ward",
+      "map_digest": "30cc233a44434127db24a0c8f40760f72be334fba7588486c932b6ee147b8a85",
+      "lanes_digest": "96013a33aaccfc4bb37e5b3e780319f823089db4c55efc0b59e67e6e42bf07b2",
+      "bounds": {"min_x": -23000, "min_y": -14000, "max_x": 23000, "max_y": 14000},
+      "walls": [
+        {"index": 0, "label": "perimeter south", "min": [-24000, -15000, 0], "max": [24000, -14000, 7000]},
+        {"index": 1, "label": "perimeter north", "min": [-24000, 14000, 0], "max": [24000, 15000, 7000]},
+        {"index": 2, "label": "perimeter west", "min": [-24000, -14000, 0], "max": [-23000, 14000, 7000]},
+        {"index": 3, "label": "perimeter east", "min": [23000, -14000, 0], "max": [24000, 14000, 7000]},
+        {"index": 4, "label": "north row machiya A", "min": [2000, 2500, 0], "max": [6000, 6500, 5000]},
+        {"index": 5, "label": "mirror of north row machiya A", "min": [-6000, -6500, 0], "max": [-2000, -2500, 5000]},
+        {"index": 6, "label": "north row machiya B", "min": [8000, 2500, 0], "max": [12000, 6500, 5500]},
+        {"index": 7, "label": "mirror of north row machiya B", "min": [-12000, -6500, 0], "max": [-8000, -2500, 5500]},
+        {"index": 8, "label": "north row machiya C", "min": [14000, 2500, 0], "max": [17500, 6500, 5000]},
+        {"index": 9, "label": "mirror of north row machiya C", "min": [-17500, -6500, 0], "max": [-14000, -2500, 5000]},
+        {"index": 10, "label": "south row machiya A", "min": [1000, -6500, 0], "max": [5000, -2500, 5000]},
+        {"index": 11, "label": "mirror of south row machiya A", "min": [-5000, 2500, 0], "max": [-1000, 6500, 5000]},
+        {"index": 12, "label": "south row machiya B", "min": [7000, -6500, 0], "max": [11000, -2500, 5500]},
+        {"index": 13, "label": "mirror of south row machiya B", "min": [-11000, 2500, 0], "max": [-7000, 6500, 5500]},
+        {"index": 14, "label": "south row machiya C", "min": [13000, -6500, 0], "max": [16500, -2500, 5000]},
+        {"index": 15, "label": "mirror of south row machiya C", "min": [-16500, 2500, 0], "max": [-13000, 6500, 5000]},
+        {"index": 16, "label": "outer north teahouse", "min": [1000, 10500, 0], "max": [6500, 14000, 6000]},
+        {"index": 17, "label": "mirror of outer north teahouse", "min": [-6500, -14000, 0], "max": [-1000, -10500, 6000]},
+        {"index": 18, "label": "outer north warehouse", "min": [9500, 10500, 0], "max": [15000, 14000, 6000]},
+        {"index": 19, "label": "mirror of outer north warehouse", "min": [-15000, -14000, 0], "max": [-9500, -10500, 6000]},
+        {"index": 20, "label": "outer south bathhouse", "min": [3500, -14000, 0], "max": [8500, -10500, 6000]},
+        {"index": 21, "label": "mirror of outer south bathhouse", "min": [-8500, 10500, 0], "max": [-3500, 14000, 6000]},
+        {"index": 22, "label": "outer south merchant house", "min": [11500, -14000, 0], "max": [17000, -10500, 6000]},
+        {"index": 23, "label": "mirror of outer south merchant house", "min": [-17000, 10500, 0], "max": [-11500, 14000, 6000]},
+        {"index": 24, "label": "north street lantern tower", "min": [-400, 6600, 0], "max": [400, 7400, 2200]},
+        {"index": 25, "label": "mirror of north street lantern tower", "min": [-400, -7400, 0], "max": [400, -6600, 2200]},
+        {"index": 26, "label": "north street cart", "min": [4000, 6600, 0], "max": [5200, 7400, 2000]},
+        {"index": 27, "label": "mirror of north street cart", "min": [-5200, -7400, 0], "max": [-4000, -6600, 2000]},
+        {"index": 28, "label": "north street barrels", "min": [13000, 6600, 0], "max": [14200, 7400, 2000]},
+        {"index": 29, "label": "mirror of north street barrels", "min": [-14200, -7400, 0], "max": [-13000, -6600, 2000]},
+        {"index": 30, "label": "main street lantern post", "min": [9800, 1500, 0], "max": [10600, 2300, 2200]},
+        {"index": 31, "label": "mirror of main street lantern post", "min": [-10600, -2300, 0], "max": [-9800, -1500, 2200]},
+        {"index": 32, "label": "main street stall", "min": [2500, 800, 0], "max": [3700, 1600, 2000]},
+        {"index": 33, "label": "mirror of main street stall", "min": [-3700, -1600, 0], "max": [-2500, -800, 2000]},
+        {"index": 34, "label": "main street cart", "min": [11500, -1600, 0], "max": [12700, -800, 2000]},
+        {"index": 35, "label": "mirror of main street cart", "min": [-12700, 800, 0], "max": [-11500, 1600, 2000]},
+        {"index": 36, "label": "east yard fence north", "min": [19000, 7000, 0], "max": [20000, 11000, 3500]},
+        {"index": 37, "label": "mirror of east yard fence north", "min": [-20000, -11000, 0], "max": [-19000, -7000, 3500]},
+        {"index": 38, "label": "east yard fence south", "min": [19000, -11000, 0], "max": [20000, -7000, 3500]},
+        {"index": 39, "label": "mirror of east yard fence south", "min": [-20000, 7000, 0], "max": [-19000, 11000, 3500]}
+      ],
+      "spawns": {
+        "team0": [
+          {"x": -21000, "y": -5000, "yaw": 0},
+          {"x": -21000, "y": -3000, "yaw": 0},
+          {"x": -21000, "y": -1000, "yaw": 0},
+          {"x": -21000, "y": 1000, "yaw": 0},
+          {"x": -21000, "y": 3000, "yaw": 0},
+          {"x": -21000, "y": 5000, "yaw": 0}
+        ],
+        "team1": [
+          {"x": 21000, "y": 5000, "yaw": 32768},
+          {"x": 21000, "y": 3000, "yaw": 32768},
+          {"x": 21000, "y": 1000, "yaw": 32768},
+          {"x": 21000, "y": -1000, "yaw": 32768},
+          {"x": 21000, "y": -3000, "yaw": 32768},
+          {"x": 21000, "y": -5000, "yaw": 32768}
+        ],
+        "ffa": [
+          {"x": -21000, "y": -12000, "yaw": 8192},
+          {"x": 21000, "y": 12000, "yaw": 40960},
+          {"x": -21000, "y": 12000, "yaw": 57344},
+          {"x": 21000, "y": -12000, "yaw": 24576},
+          {"x": -9000, "y": 8500, "yaw": 0},
+          {"x": 9000, "y": -8500, "yaw": 32768},
+          {"x": -8500, "y": 0, "yaw": 0},
+          {"x": 8500, "y": 0, "yaw": 32768},
+          {"x": 1250, "y": -12500, "yaw": 16384},
+          {"x": -1250, "y": 12500, "yaw": 49152},
+          {"x": -16000, "y": -8500, "yaw": 8192},
+          {"x": 16000, "y": 8500, "yaw": 40960}
+        ]
+      },
+      "control": {"x": 0, "y": 0, "radius": 3500},
+      "payload": {
+        "length": 56000,
+        "push_radius": 3000,
+        "checkpoints": [22000, 35000, 43500],
+        "route": [
+          [-19500, 0],
+          [-6000, 0],
+          [-6000, 8500],
+          [7000, 8500],
+          [7000, 0],
+          [19500, 0]
+        ]
+      },
+      "hazards": [
+        {"index": 0, "label": "spilled lantern oil", "kind": "fire", "kind_id": 1, "min": [9500, 9000, 0], "max": [11500, 10400, 600], "damage": 10, "period": 15},
+        {"index": 1, "label": "mirror of spilled lantern oil", "kind": "fire", "kind_id": 1, "min": [-11500, -10400, 0], "max": [-9500, -9000, 600], "damage": 10, "period": 15}
+      ],
+      "lanes": [
+        {"name": "north", "points": [[-19500, 3000], [-18500, 3000], [-18500, 8000], [18500, 8000], [18500, 3000], [19500, 3000]]},
+        {"name": "south", "points": [[-19500, -3000], [-18500, -3000], [-18500, -8000], [18500, -8000], [18500, -3000], [19500, -3000]]},
+        {"name": "mid", "points": [[-19500, 0], [19500, 0]]}
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "silk-foundry",
+      "name": "Silk Foundry",
+      "map_digest": "478bd093b566f2ee08064c689493da7d5bebe5303a40af4431da885c121dcdd6",
+      "lanes_digest": "86874900e6ade213c128acc06fcc615d0643843554f6631684715eb6a89efef9",
+      "bounds": {"min_x": -20000, "min_y": -18000, "max_x": 20000, "max_y": 18000},
+      "walls": [
+        {"index": 0, "label": "perimeter south", "min": [-21000, -19000, 0], "max": [21000, -18000, 8000]},
+        {"index": 1, "label": "perimeter north", "min": [-21000, 18000, 0], "max": [21000, 19000, 8000]},
+        {"index": 2, "label": "perimeter west", "min": [-21000, -18000, 0], "max": [-20000, 18000, 8000]},
+        {"index": 3, "label": "perimeter east", "min": [20000, -18000, 0], "max": [21000, 18000, 8000]},
+        {"index": 4, "label": "north furnace", "min": [-2500, 5000, 0], "max": [2500, 8000, 6500]},
+        {"index": 5, "label": "mirror of north furnace", "min": [-2500, -8000, 0], "max": [2500, -5000, 6500]},
+        {"index": 6, "label": "casting mould north-east", "min": [3800, 1500, 0], "max": [4800, 2500, 2000]},
+        {"index": 7, "label": "mirror of casting mould north-east", "min": [-4800, -2500, 0], "max": [-3800, -1500, 2000]},
+        {"index": 8, "label": "casting mould south-east", "min": [3800, -2500, 0], "max": [4800, -1500, 2000]},
+        {"index": 9, "label": "mirror of casting mould south-east", "min": [-4800, 1500, 0], "max": [-3800, 2500, 2000]},
+        {"index": 10, "label": "loom row 1", "min": [5000, 10500, 0], "max": [5800, 15500, 2000]},
+        {"index": 11, "label": "mirror of loom row 1", "min": [-5800, -15500, 0], "max": [-5000, -10500, 2000]},
+        {"index": 12, "label": "loom row 2", "min": [8000, 10500, 0], "max": [8800, 15500, 2000]},
+        {"index": 13, "label": "mirror of loom row 2", "min": [-8800, -15500, 0], "max": [-8000, -10500, 2000]},
+        {"index": 14, "label": "loom row 3", "min": [11000, 10500, 0], "max": [11800, 15500, 2000]},
+        {"index": 15, "label": "mirror of loom row 3", "min": [-11800, -15500, 0], "max": [-11000, -10500, 2000]},
+        {"index": 16, "label": "reeling machine A", "min": [5000, -15500, 0], "max": [9000, -14000, 2200]},
+        {"index": 17, "label": "mirror of reeling machine A", "min": [-9000, 14000, 0], "max": [-5000, 15500, 2200]},
+        {"index": 18, "label": "reeling machine B", "min": [5000, -11500, 0], "max": [9000, -10000, 2200]},
+        {"index": 19, "label": "mirror of reeling machine B", "min": [-9000, 10000, 0], "max": [-5000, 11500, 2200]},
+        {"index": 20, "label": "drive shaft housing", "min": [11500, -15500, 0], "max": [12500, -10000, 2600]},
+        {"index": 21, "label": "mirror of drive shaft housing", "min": [-12500, 10000, 0], "max": [-11500, 15500, 2600]},
+        {"index": 22, "label": "hall pillar north-east", "min": [8500, 4000, 0], "max": [9500, 5000, 7000]},
+        {"index": 23, "label": "mirror of hall pillar north-east", "min": [-9500, -5000, 0], "max": [-8500, -4000, 7000]},
+        {"index": 24, "label": "hall pillar south-east", "min": [8500, -5000, 0], "max": [9500, -4000, 7000]},
+        {"index": 25, "label": "mirror of hall pillar south-east", "min": [-9500, 4000, 0], "max": [-8500, 5000, 7000]},
+        {"index": 26, "label": "east boiler room", "min": [13500, 4500, 0], "max": [16500, 8000, 5000]},
+        {"index": 27, "label": "mirror of east boiler room", "min": [-16500, -8000, 0], "max": [-13500, -4500, 5000]},
+        {"index": 28, "label": "east coal bunker", "min": [13500, -8000, 0], "max": [16500, -4500, 5000]},
+        {"index": 29, "label": "mirror of east coal bunker", "min": [-16500, 4500, 0], "max": [-13500, 8000, 5000]},
+        {"index": 30, "label": "crate stack east", "min": [7000, -2400, 0], "max": [8200, -1200, 2000]},
+        {"index": 31, "label": "mirror of crate stack east", "min": [-8200, 1200, 0], "max": [-7000, 2400, 2000]},
+        {"index": 32, "label": "crate stack north", "min": [-3500, 14200, 0], "max": [-2500, 15200, 2000]},
+        {"index": 33, "label": "mirror of crate stack north", "min": [2500, -15200, 0], "max": [3500, -14200, 2000]},
+        {"index": 34, "label": "bridge rail north", "min": [-1000, 10500, 0], "max": [1000, 11300, 2000]},
+        {"index": 35, "label": "mirror of bridge rail north", "min": [-1000, -11300, 0], "max": [1000, -10500, 2000]},
+        {"index": 36, "label": "east dye vats", "min": [16500, 9500, 0], "max": [18000, 13500, 4000]},
+        {"index": 37, "label": "mirror of east dye vats", "min": [-18000, -13500, 0], "max": [-16500, -9500, 4000]}
+      ],
+      "spawns": {
+        "team0": [
+          {"x": -18000, "y": -5000, "yaw": 0},
+          {"x": -18000, "y": -3000, "yaw": 0},
+          {"x": -18000, "y": -1000, "yaw": 0},
+          {"x": -18000, "y": 1000, "yaw": 0},
+          {"x": -18000, "y": 3000, "yaw": 0},
+          {"x": -18000, "y": 5000, "yaw": 0}
+        ],
+        "team1": [
+          {"x": 18000, "y": 5000, "yaw": 32768},
+          {"x": 18000, "y": 3000, "yaw": 32768},
+          {"x": 18000, "y": 1000, "yaw": 32768},
+          {"x": 18000, "y": -1000, "yaw": 32768},
+          {"x": 18000, "y": -3000, "yaw": 32768},
+          {"x": 18000, "y": -5000, "yaw": 32768}
+        ],
+        "ffa": [
+          {"x": -17500, "y": -15500, "yaw": 8192},
+          {"x": 17500, "y": 15500, "yaw": 40960},
+          {"x": -17500, "y": 15500, "yaw": 57344},
+          {"x": 17500, "y": -15500, "yaw": 24576},
+          {"x": -7000, "y": 13000, "yaw": 57344},
+          {"x": 7000, "y": -13000, "yaw": 24576},
+          {"x": -10000, "y": 0, "yaw": 0},
+          {"x": 10000, "y": 0, "yaw": 32768},
+          {"x": -3000, "y": -13000, "yaw": 16384},
+          {"x": 3000, "y": 13000, "yaw": 49152},
+          {"x": -11000, "y": -9000, "yaw": 8192},
+          {"x": 11000, "y": 9000, "yaw": 40960}
+        ]
+      },
+      "control": {"x": 0, "y": 0, "radius": 3500},
+      "payload": {
+        "length": 58500,
+        "push_radius": 3000,
+        "checkpoints": [18750, 32750, 51300],
+        "route": [
+          [-16500, 0],
+          [-10500, 0],
+          [-10500, 12750],
+          [3500, 12750],
+          [3500, 3200],
+          [12500, 3200],
+          [12500, 0],
+          [16500, 0]
+        ]
+      },
+      "hazards": [
+        {"index": 0, "label": "slag channel north", "kind": "slag", "kind_id": 2, "min": [-6000, 8200, 0], "max": [6000, 9400, 400], "damage": 20, "period": 15},
+        {"index": 1, "label": "mirror of slag channel north", "kind": "slag", "kind_id": 2, "min": [-6000, -9400, 0], "max": [6000, -8200, 400], "damage": 20, "period": 15}
+      ],
+      "lanes": [
+        {"name": "north", "points": [[-16500, 3000], [-10500, 3000], [-10500, 12750], [3500, 12750], [3500, 16750], [12750, 16750], [12750, 3000], [16500, 3000]]},
+        {"name": "south", "points": [[-16500, -3000], [-12750, -3000], [-12750, -16750], [-3500, -16750], [-3500, -12750], [10500, -12750], [10500, -3000], [16500, -3000]]},
+        {"name": "mid", "points": [[-16500, 0], [16500, 0]]}
+      ]
+    },
+    {
+      "id": 3,
+      "slug": "debt-citadel",
+      "name": "Debt Citadel",
+      "map_digest": "2bb83b4cf6f9ac3ffca43394231e024d0625a440d8ee4ad73070961a8a8261db",
+      "lanes_digest": "48b0807899a18c04d687f4acdae8337c84e533d41bf4dbbd08469d81e410f7c1",
+      "bounds": {"min_x": -23000, "min_y": -16000, "max_x": 23000, "max_y": 16000},
+      "walls": [
+        {"index": 0, "label": "perimeter south", "min": [-24000, -17000, 0], "max": [24000, -16000, 9000]},
+        {"index": 1, "label": "perimeter north", "min": [-24000, 16000, 0], "max": [24000, 17000, 9000]},
+        {"index": 2, "label": "perimeter west", "min": [-24000, -16000, 0], "max": [-23000, 16000, 9000]},
+        {"index": 3, "label": "perimeter east", "min": [23000, -16000, 0], "max": [24000, 16000, 9000]},
+        {"index": 4, "label": "east security wall south", "min": [16000, -16000, 0], "max": [17000, -11500, 5500]},
+        {"index": 5, "label": "mirror of east security wall south", "min": [-17000, 11500, 0], "max": [-16000, 16000, 5500]},
+        {"index": 6, "label": "east security wall inner south", "min": [16000, -8500, 0], "max": [17000, -2500, 5500]},
+        {"index": 7, "label": "mirror of east security wall inner south", "min": [-17000, 2500, 0], "max": [-16000, 8500, 5500]},
+        {"index": 8, "label": "east security wall inner north", "min": [16000, 2500, 0], "max": [17000, 8500, 5500]},
+        {"index": 9, "label": "mirror of east security wall inner north", "min": [-17000, -8500, 0], "max": [-16000, -2500, 5500]},
+        {"index": 10, "label": "east security wall north", "min": [16000, 11500, 0], "max": [17000, 16000, 5500]},
+        {"index": 11, "label": "mirror of east security wall north", "min": [-17000, -16000, 0], "max": [-16000, -11500, 5500]},
+        {"index": 12, "label": "vault column north-east", "min": [4500, 3000, 0], "max": [6500, 5000, 8000]},
+        {"index": 13, "label": "mirror of vault column north-east", "min": [-6500, -5000, 0], "max": [-4500, -3000, 8000]},
+        {"index": 14, "label": "vault column south-east", "min": [4500, -5000, 0], "max": [6500, -3000, 8000]},
+        {"index": 15, "label": "mirror of vault column south-east", "min": [-6500, 3000, 0], "max": [-4500, 5000, 8000]},
+        {"index": 16, "label": "vault column north", "min": [-1000, 5000, 0], "max": [1000, 7000, 8000]},
+        {"index": 17, "label": "mirror of vault column north", "min": [-1000, -7000, 0], "max": [1000, -5000, 8000]},
+        {"index": 18, "label": "ledger terminal north-east", "min": [2500, 1200, 0], "max": [3300, 2400, 2000]},
+        {"index": 19, "label": "mirror of ledger terminal north-east", "min": [-3300, -2400, 0], "max": [-2500, -1200, 2000]},
+        {"index": 20, "label": "vault block north-east", "min": [8000, 12000, 0], "max": [13000, 16000, 7500]},
+        {"index": 21, "label": "mirror of vault block north-east", "min": [-13000, -16000, 0], "max": [-8000, -12000, 7500]},
+        {"index": 22, "label": "vault block south-east", "min": [8000, -16000, 0], "max": [13000, -12000, 7500]},
+        {"index": 23, "label": "mirror of vault block south-east", "min": [-13000, 12000, 0], "max": [-8000, 16000, 7500]},
+        {"index": 24, "label": "archive tower north", "min": [-2000, 12500, 0], "max": [2000, 16000, 7000]},
+        {"index": 25, "label": "mirror of archive tower north", "min": [-2000, -16000, 0], "max": [2000, -12500, 7000]},
+        {"index": 26, "label": "coin counter north-east", "min": [9000, 3500, 0], "max": [11000, 5000, 2200]},
+        {"index": 27, "label": "mirror of coin counter north-east", "min": [-11000, -5000, 0], "max": [-9000, -3500, 2200]},
+        {"index": 28, "label": "coin counter south-east", "min": [9000, -5000, 0], "max": [11000, -3500, 2200]},
+        {"index": 29, "label": "mirror of coin counter south-east", "min": [-11000, 3500, 0], "max": [-9000, 5000, 2200]},
+        {"index": 30, "label": "bond press north", "min": [5000, 11200, 0], "max": [6200, 12000, 2000]},
+        {"index": 31, "label": "mirror of bond press north", "min": [-6200, -12000, 0], "max": [-5000, -11200, 2000]},
+        {"index": 32, "label": "bond press north-west", "min": [-5500, 7800, 0], "max": [-4300, 8600, 2000]},
+        {"index": 33, "label": "mirror of bond press north-west", "min": [4300, -8600, 0], "max": [5500, -7800, 2000]},
+        {"index": 34, "label": "ledger shelf north", "min": [12500, 5500, 0], "max": [14000, 7000, 2400]},
+        {"index": 35, "label": "mirror of ledger shelf north", "min": [-14000, -7000, 0], "max": [-12500, -5500, 2400]},
+        {"index": 36, "label": "ledger shelf south", "min": [12500, -7000, 0], "max": [14000, -5500, 2400]},
+        {"index": 37, "label": "mirror of ledger shelf south", "min": [-14000, 5500, 0], "max": [-12500, 7000, 2400]},
+        {"index": 38, "label": "conduit housing north", "min": [19500, 7000, 0], "max": [21000, 8500, 3000]},
+        {"index": 39, "label": "mirror of conduit housing north", "min": [-21000, -8500, 0], "max": [-19500, -7000, 3000]},
+        {"index": 40, "label": "conduit housing south", "min": [19500, -8500, 0], "max": [21000, -7000, 3000]},
+        {"index": 41, "label": "mirror of conduit housing south", "min": [-21000, 7000, 0], "max": [-19500, 8500, 3000]}
+      ],
+      "spawns": {
+        "team0": [
+          {"x": -20000, "y": -5000, "yaw": 0},
+          {"x": -20000, "y": -3000, "yaw": 0},
+          {"x": -20000, "y": -1000, "yaw": 0},
+          {"x": -20000, "y": 1000, "yaw": 0},
+          {"x": -20000, "y": 3000, "yaw": 0},
+          {"x": -20000, "y": 5000, "yaw": 0}
+        ],
+        "team1": [
+          {"x": 20000, "y": 5000, "yaw": 32768},
+          {"x": 20000, "y": 3000, "yaw": 32768},
+          {"x": 20000, "y": 1000, "yaw": 32768},
+          {"x": 20000, "y": -1000, "yaw": 32768},
+          {"x": 20000, "y": -3000, "yaw": 32768},
+          {"x": 20000, "y": -5000, "yaw": 32768}
+        ],
+        "ffa": [
+          {"x": -20000, "y": -12500, "yaw": 8192},
+          {"x": 20000, "y": 12500, "yaw": 40960},
+          {"x": -20000, "y": 12500, "yaw": 57344},
+          {"x": 20000, "y": -12500, "yaw": 24576},
+          {"x": -5500, "y": 13800, "yaw": 57344},
+          {"x": 5500, "y": -13800, "yaw": 24576},
+          {"x": -9500, "y": 0, "yaw": 0},
+          {"x": 9500, "y": 0, "yaw": 32768},
+          {"x": -14000, "y": -9000, "yaw": 8192},
+          {"x": 14000, "y": 9000, "yaw": 40960},
+          {"x": -4000, "y": -13800, "yaw": 16384},
+          {"x": 4000, "y": 13800, "yaw": 49152}
+        ]
+      },
+      "control": {"x": 0, "y": 0, "radius": 4500},
+      "payload": {
+        "length": 58000,
+        "push_radius": 3000,
+        "checkpoints": [21500, 36500, 46500],
+        "route": [
+          [-19000, 0],
+          [-7500, 0],
+          [-7500, 10000],
+          [7500, 10000],
+          [7500, 0],
+          [19000, 0]
+        ]
+      },
+      "hazards": [
+        {"index": 0, "label": "ledger shredder grate", "kind": "shredder", "kind_id": 3, "min": [-1500, 7600, 0], "max": [1500, 9000, 600], "damage": 25, "period": 12},
+        {"index": 1, "label": "mirror of ledger shredder grate", "kind": "shredder", "kind_id": 3, "min": [-1500, -9000, 0], "max": [1500, -7600, 600], "damage": 25, "period": 12}
+      ],
+      "lanes": [
+        {"name": "north", "points": [[-19000, 3000], [-18500, 3000], [-18500, 10000], [18500, 10000], [18500, 3000], [19000, 3000]]},
+        {"name": "south", "points": [[-19000, -3000], [-18500, -3000], [-18500, -10000], [18500, -10000], [18500, -3000], [19000, -3000]]},
+        {"name": "mid", "points": [[-19000, 0], [19000, 0]]}
+      ]
+    }
+  ]
+}

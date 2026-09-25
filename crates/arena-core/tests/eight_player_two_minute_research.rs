@@ -9,10 +9,14 @@ use std::time::{Duration, Instant};
 
 const PLAYERS: usize = 8;
 const TICKS: u32 = 2 * 60 * TICK_RATE;
+// Pinned under sora-arena-first-release-7 with the final v2 state layout, on
+// the authored Nyaagyu Estate with its team spawns and a script rewritten for
+// its walls. The first-release-6 script on first-release-6 map data replays
+// identically through the new kernel apart from hashes and objectives.
 const EXPECTED_FINAL_HASH: &str =
-    "ae4f7add6174106217c1ba20f1dc18da4b1c28456a7630931739f5ba78ea60be";
+    "5d000cfd7b28526bfa55fe0050c0d47872fa6c9831b189f6ea5c602d0af019ea";
 const EXPECTED_TIMELINE_HASH: &str =
-    "effafb52709a3fc946c82eeb3ad80b3b2616193c0505c22289273e16f754fe56";
+    "409dd59b3d6016dd35c026d0d6608e9f55f56512866f22d1cfae1c5d9b1b9c9e";
 
 fn participants() -> [Participant; PLAYERS] {
     std::array::from_fn(|slot| Participant {
@@ -25,22 +29,34 @@ fn participants() -> [Participant; PLAYERS] {
 }
 
 fn controls(tick: u32) -> [Input; PLAYERS] {
-    // Both teams route north of Estate walls, approach each other with held
-    // Arc-carbine fire, then repeat. This is a fixed script, not a bot policy.
+    // Each player strafes from its Nyaagyu Estate team spawn onto the mid lane
+    // (y = 0) through the gatehouse's central doorway, then both teams advance
+    // along it with held Arc-carbine fire and back off at the end of every
+    // 900-tick cycle. This is a fixed script, not a bot policy.
     let phase = tick % 900;
     std::array::from_fn(|slot| {
         let team = slot % 2;
+        // Estate team spawns by rank: team 0 at y = -5000 + 2000r facing +x,
+        // team 1 at y = 5000 - 2000r facing -x. Each player's right is +y for
+        // team 0 and -y for team 1, and strafing moves exactly 80 mm a tick.
+        let rank = (slot / 2) as i32;
+        let spawn_y = if team == 0 {
+            -5000 + 2000 * rank
+        } else {
+            5000 - 2000 * rank
+        };
+        let right = if team == 0 { 1 } else { -1 };
         Input {
             buttons: FIRE,
-            move_x: if phase < 250 {
+            move_x: if phase < 100 {
                 0
             } else if phase < 700 || (phase / 50).is_multiple_of(2) {
                 127
             } else {
                 -127
             },
-            move_y: if phase < 250 {
-                if team == 0 { 127 } else { -127 }
+            move_y: if phase < spawn_y.unsigned_abs() / 80 {
+                (-spawn_y.signum() * right * 127) as i16
             } else {
                 0
             },
@@ -57,6 +73,13 @@ struct EventCounts {
     deaths: u32,
     respawns: u32,
     terminal: u32,
+    guarded: u32,
+    healed: u32,
+    abilities: u32,
+    entities: u32,
+    environmental: u32,
+    objectives: u32,
+    winners: u32,
 }
 
 struct Run {
@@ -105,6 +128,20 @@ fn run(mut input_for_tick: impl FnMut(u32) -> [Input; PLAYERS]) -> Run {
                 Event::Death { .. } => events.deaths += 1,
                 Event::Respawn { .. } => events.respawns += 1,
                 Event::Terminal => events.terminal += 1,
+                Event::Guarded { .. } => events.guarded += 1,
+                Event::Healed { .. } => events.healed += 1,
+                Event::AbilityUsed { .. } | Event::Marked { .. } | Event::Riposte { .. } => {
+                    events.abilities += 1
+                }
+                Event::EntitySpawned { .. }
+                | Event::EntityDamaged { .. }
+                | Event::EntityRepaired { .. }
+                | Event::EntityDestroyed { .. } => events.entities += 1,
+                Event::EnvironmentalDamage { .. } => events.environmental += 1,
+                Event::ObjectiveCaptured { .. }
+                | Event::OvertimeStarted
+                | Event::CheckpointReached { .. } => events.objectives += 1,
+                Event::MatchWinner { .. } => events.winners += 1,
             }
         }
         let hash = world.state_hash();

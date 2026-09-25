@@ -5,12 +5,14 @@
 //! by the native Iroha FPS relation before value-bearing admission is enabled.
 #![forbid(unsafe_code)]
 
+pub mod arena_export;
 pub mod catalog;
 pub mod economy;
 pub mod encrypted_wire;
 mod fragmented_wire;
 pub mod handshake;
 pub mod localhost_transport;
+pub mod maps;
 pub mod math;
 pub mod protocol;
 pub mod recovery;
@@ -23,7 +25,7 @@ pub const TICK_RATE: u32 = 60;
 pub const MAX_PLAYERS: usize = 12;
 pub const MAX_TICKS: u32 = 36_000;
 pub const ASSIST_TICKS: u32 = 5 * TICK_RATE;
-pub const RULES_VERSION: &str = "sora-arena-first-release-6";
+pub const RULES_VERSION: &str = "sora-arena-first-release-7";
 
 /// Qualification is an actual release gate, never a user-configurable toggle.
 pub const fn proof_qualified() -> bool {

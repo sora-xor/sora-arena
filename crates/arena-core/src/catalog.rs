@@ -148,7 +148,7 @@ pub const WEAPONS: [Weapon; 18] = [
     ),
     w(
         15,
-        "Micro-mortar",
+        "Bō-hiya rocket",
         P,
         85,
         50000,
@@ -238,13 +238,6 @@ pub const CLASSES: [Class; 6] = [
         move_mm_tick: 80,
     },
 ];
-pub const MAP_NAMES: [&str; 4] = [
-    "Nyaagyu Estate",
-    "Lantern Ward",
-    "Silk Foundry",
-    "Debt Citadel",
-];
-
 pub fn weapon_allowed(class: u8, weapon: u8, special: bool) -> bool {
     class < 6
         && (weapon == class * 2 || weapon == class * 2 + 1 || (special && weapon == 12 + class))

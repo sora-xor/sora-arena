@@ -23,7 +23,10 @@ SOURCE_FILES=[
     'Cargo.toml','Cargo.lock','crates/arena-core/Cargo.toml',
     'crates/arena-core/src/lib.rs','crates/arena-core/src/catalog.rs',
     'crates/arena-core/src/economy.rs','crates/arena-core/src/math.rs',
-    'crates/arena-core/src/simulation.rs','crates/arena-ffi/Cargo.toml',
+    'crates/arena-core/src/maps.rs','crates/arena-core/src/simulation.rs',
+    'crates/arena-core/src/simulation/abilities.rs','crates/arena-core/src/simulation/hazards.rs',
+    'crates/arena-core/src/simulation/objectives.rs','crates/arena-core/src/simulation/respawn.rs',
+    'crates/arena-ffi/Cargo.toml',
     'crates/arena-ffi/src/lib.rs','crates/arena-ffi/include/arena.h',
 ]
 RUNNER_FILES=['scripts/unreal/kernel_abi.py','scripts/unreal/verify_parity.py']
@@ -90,18 +93,21 @@ def make_controls(lib):
             buttons=(1 if phase<260 else 0)|(8 if phase==20 else 0)|(16 if phase==170 else 0)|(4 if phase>310 else 0)
             exercise.extend(WIRE.pack(buttons,90 if phase<180 else -50,55 if phase%120<60 else -55,yaw,0))
     # Record the exact canonical aim once. Verification never recalculates aim
-    # through a host's floating-point math implementation.
-    people=roster(0,1);people[4].update(class_id=2,weapon_id=5)
+    # through a host's floating-point math implementation. On Nyaagyu Estate
+    # the slot 2 Teppo (Coil matchlock) and the slot 0 target start at FFA
+    # spawns 2 and 0, in clear sight along x = -18500.
+    people=roster(0,1)
     native_people=(abi.Participant*6)(*(abi.Participant(**p) for p in people))
     native_config=abi.Config(**config(0,900));handle=lib.arena_create(ctypes.byref(native_config),native_people,6)
     require(bool(handle),'death fixture admission failed')
     try:
         target=abi.Player();attacker=abi.Player()
         require(lib.arena_player(handle,0,ctypes.byref(target))==0,'target query failed')
-        require(lib.arena_player(handle,4,ctypes.byref(attacker))==0,'attacker query failed')
+        require(lib.arena_player(handle,2,ctypes.byref(attacker))==0,'attacker query failed')
+        require(attacker.class_id==2 and attacker.weapon_id==5,'death fixture attacker must hold the Coil matchlock')
         yaw=round(math.atan2(target.y-attacker.y,target.x-attacker.x)*65536/(2*math.pi))&65535
     finally:lib.arena_destroy(handle)
-    death=b''.join(WIRE.pack(1 if slot==4 else 0,0,0,yaw if slot==4 else 0,0) for _ in range(900) for slot in range(6))
+    death=b''.join(WIRE.pack(1 if slot==2 else 0,0,0,yaw if slot==2 else 0,0) for _ in range(900) for slot in range(6))
     return {'exercise.controls':bytes(exercise),'death-respawn.controls':death},people
 
 def decode_frame(data,tick,count):

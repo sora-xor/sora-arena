@@ -142,10 +142,13 @@ fn projectile_from_plasma_equipped_attacker_keeps_normal_parry_and_guard() {
         for _ in 0..prior_guard_ticks {
             step(&mut world, 0, BLOCK);
         }
+        // The armed grenade strikes the guard's front face at x=4649; the
+        // detonation point, not the attacker, is the guarded direction.
         world
             .projectiles
-            .push(armed_grenade(0, Vec3::new(5000, 0, 1400)));
+            .push(armed_grenade(0, Vec3::new(4400, 0, 1400)));
         step(&mut world, 0, BLOCK);
+        assert!(world.projectiles.is_empty());
         assert_eq!(world.players[1].health, expected_health);
         assert_eq!(world.players[0].ammo, 3);
     }

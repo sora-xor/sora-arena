@@ -231,3 +231,154 @@ and state streams changed with the rules identity; source identity changed
 only for `lib.rs` and `simulation.rs`. The offline reference scenarios do not
 exercise the wall-surface payout regression and cannot establish Windows parity
 or execution-proof qualification.
+
+### 2026-09-25 test-only source identity refresh, Rust 1.97.1 pin
+
+Research tests added a `#[cfg(test)]` module declaration to `economy.rs` and a
+`serde_json` dev-dependency to `arena-core`, which also changed `Cargo.lock`.
+None of these changes is compiled into the release library. Before
+re-recording, the rebuilt release library was compared against the unchanged
+reference with only the source-identity gate bypassed. All 73 cases / 44,100
+ticks matched in every initial and final state hash, state, event and
+presentation stream, event count and checkpoint. The runner identity, ABI
+layout, native map/weapon identities, both checked-in control files and
+freshly regenerated control bytes also matched. A deliberately altered
+presentation digest was reported as a mismatch.
+
+The library was then rebuilt with the Rust 1.97.1 toolchain now pinned by
+`rust-toolchain.toml`, staged, and used to re-record the fixture. A structural
+comparison with the prior manifest found identical cases and control files.
+Only these three source identities, the reference library SHA-256 and the
+recording time changed. Two clean release builds with the same pinned compiler
+produced different library SHA-256 values, so the reference library hash
+identifies only the recorded binary; parity is established by the per-case
+outputs. Verification passes 73 cases / 44,100 ticks and eleven negative guards
+on macOS arm64. Windows parity remains unverified.
+
+### 2026-09-25 guard origin and internal effect events, rules version 7
+
+Directional guard and parry now use where the damage came from: the attacker's
+eye for rays and the detonation point for blasts. Before this change a blast
+behind a guarding player was blocked when its thrower stood in front, and a
+blast in front was not blocked when its thrower stood behind. The kernel also
+records `Guarded` and `Healed` events internally. ABI 3 does not export them:
+`event_count` and `arena_event` skip them, so ABI 3 callers see exactly event
+kinds 1-5 at unchanged indices. Weapon 15 is renamed Bō-hiya rocket, with no
+change to its simulation. The rules identity advanced to
+`sora-arena-first-release-7`; `docs/combat-rules.md` specifies the full
+revision.
+
+Before re-recording, every case was run in separate processes against three
+release libraries:
+
+- the previously staged rules-6 library, which reproduced the prior manifest
+  exactly;
+- a scratch build of the pre-change sources with only `RULES_VERSION` bumped;
+- the new library.
+
+The new library matched the version-only build in every field of all 73 cases,
+including every state hash. So the guard-origin fix and the event filtering
+change no outcome in these scenarios, and the state-hash change comes from the
+rules identity alone. Against the prior manifest, the control bytes, session
+configurations, rosters, ABI layout, runner identity, native map and weapon
+identities, event streams, presentation streams, event counts and per-checkpoint
+event and presentation digests were unchanged. All 73 initial and final state
+hashes and state streams, and the 735 checkpoint state hashes, changed. Source
+identity changed only for `lib.rs`, `simulation.rs` and `catalog.rs` in
+`arena-core` and `lib.rs` in `arena-ffi`. The kernel's own regression tests,
+not this fixture, cover the guard-origin behaviour.
+
+### 2026-09-25 class abilities and entities, rules version 7
+
+The kernel now implements the six first-release-7 class abilities and the
+entities they create (`docs/combat-rules.md` §5 and §6): the Samurai counter
+stance, the Shinobi decoy, the Teppō mark, the Hanabi fire zone, the Karakuri
+barricade and the Kusushi ward. It also implements the separate ability phase,
+the mark, stance and ward modifiers, parry stagger, and ability cooldowns that
+keep counting while a player is dead. The state hash uses the interim §12.1
+layout, which adds the stance and mark timers, the entity list and
+`next_entity_id`. The fixture's exercise controls press the ability button, so
+every exercise case changes. The ABI 3 layout and exported event kinds are
+unchanged. The new internal events (`AbilityUsed`, `Marked`, `Riposte` and the
+four entity events) are skipped like `Guarded` and `Healed`. Entities are not
+exported until ABI 4.
+
+Before re-recording, every case was traced tick by tick, in separate
+processes, against the previously staged library (`a7ad4c30…`) and the new one.
+The comparison covered the per-tick digests of the exported events and of the
+snapshot, player, presentation and projectile queries:
+
+- The 72 exercise cases diverge exactly at the first tick where any slot
+  presses the ability button, and never earlier. At that tick the only
+  difference is the Teppō's new 720-tick cooldown in place of 600.
+- The death-and-respawn case never presses the ability button. Its exported
+  events and presentation are identical at every tick. Only its state hashes
+  change, because of the new hash layout.
+
+A scratch build of the new kernel with only the pre-step hash layout restored
+reproduced the pinned eight-player research hashes. Its kill-history V2
+projection differed from the previous fixture only in `kernel_revision`. So
+outside ability use, the behavioural changes do not alter these scripted
+matches.
+
+Against the prior manifest, these were unchanged: the control bytes, session
+configurations, rosters, ABI layout, native map and weapon identities, and the
+input encoding. All 73 initial and final state hashes, state streams and
+checkpoint lists changed. Event streams changed in 30 cases and presentation
+streams in 72. Source identity changed for `simulation.rs` and `math.rs` in
+`arena-core` and `lib.rs` in `arena-ffi`, and the new
+`simulation/abilities.rs` was added. That file was also added to
+`verify_parity.py`'s `SOURCE_FILES`, which changes the runner identity. The
+new library passed 73 cases / 44,100 ticks and all eleven negative guards on
+macOS arm64. Windows parity remains unverified.
+
+### 2026-09-25 authored arenas, objectives, hazards and respawn, rules version 7
+
+The kernel now implements the rest of first-release-7 (`docs/combat-rules.md`
+§7–§10 and the final §12 state hash). The four arenas are authored integer data
+with 38–42 walls each, per-arena bounds, spawns, a control point, a payload
+route and hazards, and the configured arena's map digest replaces the wall list
+in the state hash. Control and Payload objectives, the match result
+(`MatchWinner`), environmental hazards with the environmental kill credit,
+spawn selection by team rank or farthest FFA spawn, and respawn loadout
+requests are new. Projectiles expire at the arena bounds. The ABI 3 layout and
+its exported event kinds are unchanged; the new internal events are skipped,
+and `arena_step` rejects the rules-7 loadout bit (64) with status 2, as it
+rejected every bit above 32 before. `arena_map_info` and `arena_map_wall` now
+serve the authored arenas.
+
+The death-and-respawn case had to change. Its attacker, slot 4 made a Teppō,
+has no line of sight to slot 0 from the new Estate FFA spawns. The case now
+uses slot 2, which the standard roster already makes a Teppō with the Coil
+matchlock, aiming from FFA spawn 2 at slot 0 on FFA spawn 0 along
+x = -18,500. The roster no longer overrides slot 4, and the recorded aim and
+control file changed with it. Its event counts are unchanged: 12 shots,
+4 damage, 2 deaths, 1 respawn and 1 terminal.
+
+Before re-recording, the previous fixture was run in separate processes against
+the previously staged library (`51462d4b…`, which reproduced it exactly) and a
+scratch build of the new kernel with the first-release-6 map data restored: the
+old 3–4 wall boxes, ±24,000 mm bounds, the old spawn points, the old respawn at
+the slot's own spawn without resetting yaw or pitch, and no hazards. In all 73
+cases the two produced identical event streams, presentation streams and event
+counts, identical event and presentation digests at all 735 checkpoints, and
+identical native map and weapon identities. Only the state hashes differed,
+because of the v2 layout. So every behavioural change recorded here comes from
+the new arena data and spawn rules, not from the objective, hazard, loadout or
+result code, which FFA practice does not reach.
+
+Against the prior manifest, these were unchanged: the exercise control bytes,
+session configurations, every roster except the death case's, the ABI layout,
+the input encoding and the weapon-spec identity. The map geometry identity
+changed, as did the death-and-respawn control bytes and all 73 initial and final
+state hashes, state, event and presentation streams. Event counts changed in 36
+cases. Across all cases, shots went from 11,976 to 11,401, damage events from
+196 to 102, deaths from 2 to 38 and respawns from 1 to 2, because the exercise
+lanes now meet on the new maps. Source identity changed for `lib.rs`,
+`simulation.rs`, `simulation/abilities.rs` and `catalog.rs` (its duplicate
+map-name table was removed; `maps.rs` now names the arenas) in `arena-core` and
+`lib.rs` in `arena-ffi`. `maps.rs`, `simulation/hazards.rs`, `simulation/objectives.rs` and
+`simulation/respawn.rs` were added to `verify_parity.py`'s `SOURCE_FILES`,
+which, with the death-case change, changes the runner identity. The new library
+(`c9f6b781…`) passed 73 cases / 44,100 ticks and all eleven negative guards on
+macOS arm64. Windows parity remains unverified.

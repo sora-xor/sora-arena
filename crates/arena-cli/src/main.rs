@@ -1,5 +1,6 @@
 //! Headless deterministic simulation/qualification diagnostic. Never moves XOR.
 use arena_core::{
+    arena_export,
     catalog::{self, AttackKind},
     math::Vec3,
     simulation::{Config, Event, FIRE, Input, Mode, Participant, World},
@@ -77,11 +78,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 .map(|b| format!("{b:02x}"))
                 .collect::<String>();
             println!(
-                "reference_simulation ticks={} players={} elapsed_ms={} state_hash={}",
+                "reference_simulation ticks={} players={} elapsed_ms={} state_hash={} winner={:?}",
                 w.tick,
                 w.players.len(),
                 start.elapsed().as_millis(),
-                hash
+                hash,
+                w.winner
             );
             println!(
                 "deposited={} remaining={} pending_earnings={} conserved={}",
@@ -179,13 +181,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             }
             println!("scope=offline clear-lane mechanics only; proof_qualified=false");
         }
+        "arenas" => print!("{}", arena_export::json()),
         "qualification" => {
             println!(
                 "arena_profile_qualified=false\nexecution_relation=not_implemented\nmainnet_funding=disabled\nmarketplace=disabled\nreference_kernel=development"
             );
         }
         "help" | "--help" | "-h" => println!(
-            "SORA Arena headless tools\n  catalog\n  simulate [ticks<=36000] [players<=12]\n  balance\n  qualification\nSimulation is not a cryptographic proof; no wallet is accessed."
+            "SORA Arena headless tools\n  catalog\n  simulate [ticks<=36000] [players<=12]\n  balance\n  arenas (arena-map-v1 JSON: the exact kernel collision, spawns, objectives and hazards)\n  qualification\nSimulation is not a cryptographic proof; no wallet is accessed."
         ),
         _ => return Err(format!("unknown command: {command}").into()),
     }

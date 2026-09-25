@@ -1,15 +1,55 @@
 //! Independent arena-core replay for the unregistered Iroha 26-tick kill-history research scene.
 //! The JSON projection is a regression fixture, not a proof or admission authority.
 
-use arena_core::simulation::{Config, Event, FIRE, Input, Mode, Participant, World};
+use arena_core::math::Vec3;
+use arena_core::simulation::{Config, Event, FIRE, Input, Mode, Participant, Winner, World};
 use arena_core::{ABI_VERSION, RULES_VERSION};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
+use std::path::Path;
 
 const FIXTURE_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/data/arena_kill_history_v2_kernel.json"
 );
+
+macro_rules! kernel_sources {
+    ($($name:literal),+ $(,)?) => {
+        &[$(($name, include_bytes!(concat!("../src/", $name)).as_slice())),+]
+    };
+}
+
+/// Every `src/` file that can change the replayed World or its canonical
+/// batches, in `kernel_revision` hashing order.
+const KERNEL_SOURCES: &[(&str, &[u8])] = kernel_sources![
+    "lib.rs",
+    "simulation.rs",
+    "simulation/abilities.rs",
+    "simulation/hazards.rs",
+    "simulation/objectives.rs",
+    "simulation/respawn.rs",
+    "maps.rs",
+    "catalog.rs",
+    "math.rs",
+    "economy.rs",
+    "protocol.rs",
+];
+
+/// `src/` files outside the kernel's dependency closure: the arena JSON
+/// export, transport, handshake, rollback and recovery layers that consume the
+/// kernel, and a `#[cfg(test)]` economy oracle. The classification test
+/// rejects any other file.
+const NON_SIMULATION_SOURCES: &[&str] = &[
+    "arena_export.rs",
+    "economy_reference_qualification.rs",
+    "encrypted_wire.rs",
+    "fragmented_wire.rs",
+    "handshake.rs",
+    "localhost_transport.rs",
+    "recovery.rs",
+    "rollback.rs",
+    "wire.rs",
+];
 
 fn hex(bytes: &[u8]) -> String {
     const DIGITS: &[u8; 16] = b"0123456789abcdef";
@@ -23,20 +63,7 @@ fn hex(bytes: &[u8]) -> String {
 
 fn kernel_revision() -> String {
     let mut digest = Sha256::new();
-    for (name, source) in [
-        ("lib.rs", include_bytes!("../src/lib.rs").as_slice()),
-        (
-            "simulation.rs",
-            include_bytes!("../src/simulation.rs").as_slice(),
-        ),
-        ("catalog.rs", include_bytes!("../src/catalog.rs").as_slice()),
-        ("math.rs", include_bytes!("../src/math.rs").as_slice()),
-        ("economy.rs", include_bytes!("../src/economy.rs").as_slice()),
-        (
-            "protocol.rs",
-            include_bytes!("../src/protocol.rs").as_slice(),
-        ),
-    ] {
+    for (name, source) in KERNEL_SOURCES {
         digest.update((name.len() as u64).to_le_bytes());
         digest.update(name.as_bytes());
         digest.update((source.len() as u64).to_le_bytes());
@@ -45,12 +72,15 @@ fn kernel_revision() -> String {
     hex(&digest.finalize())
 }
 
+/// Scene positions on Nyaagyu Estate: slot 2 stands on the Control centre and
+/// slots 0 and 1 aim at it along clear axis-aligned lines 6000 mm long.
+const SCENE: [(i32, i32); 3] = [(0, -6000), (-6000, 0), (0, 0)];
+
 fn input(slot: usize, tick: usize) -> Input {
     Input {
         buttons: u32::from(slot < 2 && matches!(tick, 0 | 12 | 24)) * FIRE,
         yaw: match slot {
-            0 => 24_576,
-            1 => 8_192,
+            0 => 16_384,
             _ => 0,
         },
         ..Input::default()
@@ -104,6 +134,86 @@ fn projected_event(tick: usize, event: &Event) -> Value {
         }),
         Event::Respawn { slot } => json!({"tick": tick, "kind": "respawn", "slot": slot}),
         Event::Terminal => json!({"tick": tick, "kind": "terminal"}),
+        Event::Guarded {
+            attacker,
+            victim,
+            weapon,
+            parried,
+            prevented,
+        } => json!({
+            "tick": tick, "kind": "guarded", "attacker": attacker, "victim": victim,
+            "weapon": weapon, "parried": parried, "prevented": prevented,
+        }),
+        Event::Healed {
+            healer,
+            target,
+            amount,
+            weapon,
+        } => json!({
+            "tick": tick, "kind": "healed", "healer": healer, "target": target,
+            "amount": amount, "weapon": weapon,
+        }),
+        Event::AbilityUsed { slot, class } => {
+            json!({"tick": tick, "kind": "ability", "slot": slot, "class": class})
+        }
+        Event::Marked { marker, target } => {
+            json!({"tick": tick, "kind": "marked", "marker": marker, "target": target})
+        }
+        Event::Riposte { slot, target } => {
+            json!({"tick": tick, "kind": "riposte", "slot": slot, "target": target})
+        }
+        Event::EntitySpawned { id, kind, owner } => json!({
+            "tick": tick, "kind": "entity_spawned", "id": id,
+            "entity_kind": *kind as u8, "owner": owner,
+        }),
+        Event::EntityDamaged {
+            id,
+            attacker,
+            amount,
+        } => json!({
+            "tick": tick, "kind": "entity_damaged", "id": id,
+            "attacker": attacker, "amount": amount,
+        }),
+        Event::EntityRepaired {
+            id,
+            repairer,
+            amount,
+        } => json!({
+            "tick": tick, "kind": "entity_repaired", "id": id,
+            "repairer": repairer, "amount": amount,
+        }),
+        Event::EntityDestroyed {
+            id,
+            kind,
+            owner,
+            cause,
+        } => json!({
+            "tick": tick, "kind": "entity_destroyed", "id": id,
+            "entity_kind": *kind as u8, "owner": owner, "cause": format!("{cause:?}"),
+        }),
+        Event::EnvironmentalDamage {
+            victim,
+            hazard,
+            amount,
+        } => json!({
+            "tick": tick, "kind": "environmental_damage", "victim": victim,
+            "hazard": hazard, "amount": amount,
+        }),
+        Event::ObjectiveCaptured { team } => {
+            json!({"tick": tick, "kind": "objective_captured", "team": team})
+        }
+        Event::OvertimeStarted => json!({"tick": tick, "kind": "overtime_started"}),
+        Event::CheckpointReached { index } => {
+            json!({"tick": tick, "kind": "checkpoint_reached", "index": index})
+        }
+        Event::MatchWinner { winner } => json!({
+            "tick": tick, "kind": "match_winner",
+            "winner": match winner {
+                Winner::Team(team) => json!({"team": team}),
+                Winner::Slot(slot) => json!({"slot": slot}),
+                Winner::Draw => json!("draw"),
+            },
+        }),
     }
 }
 
@@ -141,6 +251,9 @@ fn replay_fixture() -> Value {
         ],
     )
     .expect("fixed V2 scene must be admitted by the current kernel");
+    for (player, (x, y)) in world.players.iter_mut().zip(SCENE) {
+        player.position = Vec3::new(x, y, 0);
+    }
 
     // A batch lists permanent slots in order; each contains its two exact wire frames.
     let batches = (0..13)
@@ -231,4 +344,103 @@ fn exact_26_tick_kernel_replay_matches_persisted_v2_projection() {
         death_events[0]["awards"],
         json!([{"slot": 0, "amount": 20}, {"slot": 1, "amount": 80}])
     );
+    let events = actual["events"].as_array().unwrap();
+    assert_eq!(
+        events[events.len() - 2..],
+        [
+            json!({"tick": 25, "kind": "match_winner", "winner": {"slot": 1}}),
+            json!({"tick": 25, "kind": "terminal"}),
+        ]
+    );
+}
+
+fn source_files(directory: &Path, root: &Path, found: &mut Vec<String>) {
+    for entry in std::fs::read_dir(directory).expect("read arena-core source directory") {
+        let path = entry.expect("arena-core source entry").path();
+        let hidden = path
+            .file_name()
+            .is_some_and(|name| name.to_string_lossy().starts_with('.'));
+        if hidden {
+            continue;
+        }
+        if path.is_dir() {
+            source_files(&path, root, found);
+        } else {
+            let relative = path.strip_prefix(root).expect("path below src");
+            found.push(relative.to_string_lossy().replace('\\', "/"));
+        }
+    }
+}
+
+/// Lexical guard: true when `source` uses `module` as a path segment.
+fn uses_module(source: &str, module: &str) -> bool {
+    let boundary = |c: Option<char>| !c.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_');
+    source.match_indices(module).any(|(start, _)| {
+        let (before, after) = (&source[..start], &source[start + module.len()..]);
+        boundary(before.chars().next_back())
+            && boundary(after.chars().next())
+            && (after.starts_with("::")
+                || before.ends_with("crate::")
+                || before.ends_with("super::"))
+    })
+}
+
+#[test]
+fn kernel_revision_classifies_every_arena_core_source() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    let mut found = Vec::new();
+    source_files(&root, &root, &mut found);
+    found.sort();
+    let kernel = KERNEL_SOURCES
+        .iter()
+        .map(|(name, _)| name.to_string())
+        .collect::<Vec<_>>();
+    let mut classified = kernel
+        .iter()
+        .cloned()
+        .chain(NON_SIMULATION_SOURCES.iter().map(|name| name.to_string()))
+        .collect::<Vec<_>>();
+    classified.sort();
+    assert_eq!(
+        found, classified,
+        "classify each arena-core src file exactly once: hash it in KERNEL_SOURCES \
+         if it can affect the replay, otherwise list it in NON_SIMULATION_SOURCES"
+    );
+
+    for (name, source) in KERNEL_SOURCES {
+        let text = std::str::from_utf8(source).expect("UTF-8 kernel source");
+        for excluded in NON_SIMULATION_SOURCES {
+            let file = Path::new(excluded);
+            let module = match file.file_stem().and_then(|stem| stem.to_str()) {
+                Some("mod") => file.parent().and_then(|parent| parent.file_name()),
+                _ => file.file_stem(),
+            }
+            .and_then(|module| module.to_str())
+            .expect("module name");
+            assert!(
+                !uses_module(text, module),
+                "{name} uses `{module}`; hash {excluded} in KERNEL_SOURCES"
+            );
+        }
+        // A `#[path]` module compiled outside tests is part of the kernel.
+        let lines = text.lines().map(str::trim).collect::<Vec<_>>();
+        for (index, line) in lines.iter().enumerate() {
+            let Some(target) = line
+                .strip_prefix("#[path = \"")
+                .and_then(|rest| rest.strip_suffix("\"]"))
+            else {
+                continue;
+            };
+            let target = Path::new(name)
+                .parent()
+                .expect("relative source path")
+                .join(target)
+                .to_string_lossy()
+                .replace('\\', "/");
+            assert!(
+                kernel.contains(&target) || (index > 0 && lines[index - 1] == "#[cfg(test)]"),
+                "{name} compiles {target} outside #[cfg(test)]; hash it in KERNEL_SOURCES"
+            );
+        }
+    }
 }

@@ -3,9 +3,21 @@ use crate::{
     ASSIST_TICKS, Error, MAX_PLAYERS, MAX_TICKS,
     catalog::{self, AttackKind},
     economy::{self, Account, Allocation},
+    maps::{ARENAS, Arena},
     math::{self, Aabb, Vec3},
 };
 use sha2::{Digest, Sha256};
+
+mod abilities;
+mod hazards;
+mod objectives;
+mod respawn;
+use abilities::EntityHit;
+pub use abilities::{ABILITY_COOLDOWNS, Entity, EntityKind, MAX_ENTITIES, RemovalCause};
+pub use objectives::{
+    CONTROL_CAPTURE, CONTROL_TARGET, OBJECTIVE_UNLOCK_TICK, PAYLOAD_PUSH_RADIUS,
+    PAYLOAD_ROLLBACK_DELAY, Winner,
+};
 
 pub const FIRE: u32 = 1;
 pub const MELEE: u32 = 2;
@@ -13,10 +25,12 @@ pub const BLOCK: u32 = 4;
 pub const JUMP: u32 = 8;
 pub const ABILITY: u32 = 16;
 pub const RELOAD: u32 = 32;
+/// §10: with this bit a dead player requests class `move_x` (0-5) and
+/// loadout index `move_y` (0-2) for the next respawn.
+pub const LOADOUT: u32 = 64;
 pub const RESPAWN_TICKS: u32 = 8 * 60;
 pub const RADIUS: i32 = 350;
 pub const HEIGHT: i32 = 1700;
-pub const BOUNDS: i32 = 24000;
 pub const EYE_HEIGHT: i32 = 1400;
 const MAX_PROJECTILES: usize = 128;
 
@@ -59,10 +73,12 @@ pub struct Input {
 }
 impl Input {
     pub fn validate(self) -> Result<(), Error> {
-        if self.buttons & !63 != 0
+        if self.buttons & !127 != 0
             || !(-127..=127).contains(&self.move_x)
             || !(-127..=127).contains(&self.move_y)
             || !(-16384..=16384).contains(&self.pitch)
+            || (self.buttons & LOADOUT != 0
+                && (!(0..=5).contains(&self.move_x) || !(0..=2).contains(&self.move_y)))
         {
             return Err(Error::InvalidInput(
                 "input outside canonical control bounds",
@@ -121,7 +137,14 @@ pub struct Player {
     pub guarding: bool,
     pub guard_ticks: u16,
     pub spawn_protection: u16,
-    pub admitted_special: bool,
+    /// The special weapon (id 12-17) frozen at admission, if any (§10).
+    pub admitted_special: Option<u8>,
+    /// A dead player's requested `(class, weapon)`, applied at respawn (§10).
+    pub pending_loadout: Option<(u8, u8)>,
+    /// Samurai counter-stance ticks remaining (§6.1).
+    pub stance_ticks: u16,
+    /// Teppō mark ticks remaining (§6.3).
+    pub marked_ticks: u16,
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DamageRecord {
@@ -130,18 +153,41 @@ pub struct DamageRecord {
     pub victim: usize,
     pub damage: u32,
 }
+/// §3.1 damage kinds. Only rays can be negated by the Samurai stance.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DamageKind {
+    Ray,
+    Blast,
+    Zone,
+    Hazard,
+    Riposte,
+}
+/// §3.1: who dealt a pending hit, a player slot or an arena hazard index.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Source {
+    Player(usize),
+    Hazard(u8),
+}
 #[derive(Debug, Clone, Copy)]
 struct PendingDamage {
-    attacker: usize,
+    source: Source,
     victim: usize,
     amount: i32,
     weapon: u8,
-    direct_hitscan: bool,
+    /// Directional-defense source: the attacker's eye for rays and ripostes,
+    /// the detonation point for blasts, none for fire zones and hazards.
+    /// Never the attacker's current position.
+    origin: Option<Vec3>,
+    kind: DamageKind,
+    /// A charged Plasma matchlock direct hit ignores directional defense.
+    penetrating: bool,
 }
-impl PendingDamage {
-    fn penetrates_directional_guard(self) -> bool {
-        self.direct_hitscan && self.weapon == 14
-    }
+/// §5.3: where a ray stops.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RayStop {
+    Wall,
+    Entity(u32),
+    Player(usize),
 }
 #[derive(Debug, Clone)]
 pub struct Projectile {
@@ -173,6 +219,85 @@ pub enum Event {
         slot: usize,
     },
     Terminal,
+    /// A frontal stance negation, parry or guard applied, emitted before any
+    /// `Damage` for the same hit. A halved one-point hit prevents nothing but
+    /// still spent guard stamina. Internal until ABI 4.
+    Guarded {
+        attacker: usize,
+        victim: usize,
+        weapon: u8,
+        parried: bool,
+        prevented: i32,
+    },
+    /// Health actually restored (`amount > 0`): Healing lance shots carry the
+    /// lance id, class abilities `None`. Internal until ABI 4.
+    Healed {
+        healer: usize,
+        target: usize,
+        amount: i32,
+        weapon: Option<u8>,
+    },
+    /// An ability activated and started its cooldown. Its own events follow.
+    /// Internal until ABI 4, like every variant below.
+    AbilityUsed {
+        slot: usize,
+        class: u8,
+    },
+    /// A Teppō mark landed (§6.3).
+    Marked {
+        marker: usize,
+        target: usize,
+    },
+    /// A Samurai stance queued its riposte (§6.1).
+    Riposte {
+        slot: usize,
+        target: usize,
+    },
+    EntitySpawned {
+        id: u32,
+        kind: EntityKind,
+        owner: usize,
+    },
+    /// A decoy or barricade lost `amount > 0` health.
+    EntityDamaged {
+        id: u32,
+        attacker: usize,
+        amount: i32,
+    },
+    /// A forge-hammer strike restored `amount > 0` barricade health.
+    EntityRepaired {
+        id: u32,
+        repairer: usize,
+        amount: i32,
+    },
+    EntityDestroyed {
+        id: u32,
+        kind: EntityKind,
+        owner: usize,
+        cause: RemovalCause,
+    },
+    /// An arena hazard (index into the arena's hazard list) damaged a player
+    /// (§9).
+    EnvironmentalDamage {
+        victim: usize,
+        hazard: u8,
+        amount: i32,
+    },
+    /// Control ownership changed (§8.1).
+    ObjectiveCaptured {
+        team: u8,
+    },
+    /// Control overtime began (§8.1). Emitted once per match.
+    OvertimeStarted,
+    /// The payload passed checkpoint `index` (0, 1 or 2) for the first time
+    /// (§8.2).
+    CheckpointReached {
+        index: u8,
+    },
+    /// The result, immediately before `Terminal` (§8.4).
+    MatchWinner {
+        winner: Winner,
+    },
 }
 #[derive(Debug, Clone)]
 pub struct World {
@@ -181,73 +306,48 @@ pub struct World {
     pub players: Vec<Player>,
     pub accounts: Vec<Account>,
     pub projectiles: Vec<Projectile>,
+    /// Live ability entities in ascending id order (§5.1).
+    pub entities: Vec<Entity>,
+    /// The next entity id. Ids start at 1 and are never reused.
+    pub next_entity_id: u32,
     pub damage_history: Vec<DamageRecord>,
     pub events: Vec<Event>,
     pub terminal: bool,
+    /// Control owned ticks per team (§8.1).
     pub score: [u32; 2],
     pub control_owner: Option<u8>,
+    /// In `[-CONTROL_CAPTURE, CONTROL_CAPTURE]`; negative favours team 0.
     pub control_progress: i32,
+    pub overtime: bool,
+    /// Distance along the arena's payload route (§8.2).
     pub payload_progress: i32,
-    pub walls: Vec<Aabb>,
+    /// Checkpoints passed; the last one is the rollback floor.
+    pub payload_checkpoints: u8,
+    /// Consecutive unlocked ticks with no attacker near the payload.
+    pub payload_idle: u16,
+    /// Fixed once, on the terminal tick (§8.4).
+    pub winner: Option<Winner>,
 }
 
-pub fn map_walls(map: u8) -> Vec<Aabb> {
-    type WallBounds = (i32, i32, i32, i32, i32);
-    let sets: [&[WallBounds]; 4] = [
-        &[
-            (-8000, -9000, -6500, 6000, 3800),
-            (6500, -6000, 8000, 9000, 3800),
-            (-4000, 7000, 3500, 8000, 2300),
-        ],
-        &[
-            (-12000, -7000, -8000, 7000, 6000),
-            (8000, -7000, 12000, 7000, 6000),
-            (-3000, -14000, 3000, -10000, 4000),
-            (-3000, 10000, 3000, 14000, 4000),
-        ],
-        &[
-            (-11000, -12000, -9000, 10000, 5000),
-            (9000, -10000, 11000, 12000, 5000),
-            (-3000, -5000, 3000, -3500, 2300),
-            (-3000, 3500, 3000, 5000, 2300),
-        ],
-        &[
-            (-10000, -10000, -7000, 5000, 7500),
-            (7000, -5000, 10000, 10000, 7500),
-            (-3000, -16000, 3000, -12000, 5500),
-            (-3000, 12000, 3000, 16000, 5500),
-        ],
-    ];
-    sets.get(map as usize)
-        .into_iter()
-        .flat_map(|s| s.iter())
-        .map(|&(x1, y1, x2, y2, h)| Aabb {
-            min: Vec3::new(x1, y1, 0),
-            max: Vec3::new(x2, y2, h),
-        })
-        .collect()
-}
-
-fn spawn(slot: usize, team: u8, team_mode: bool) -> Vec3 {
-    if team_mode {
-        Vec3::new(
-            if team == 0 { -19000 } else { 19000 },
-            (slot as i32 / 2) * 2000 - 5000,
-            0,
-        )
-    } else {
-        let angles = [
-            0u16, 32768, 16384, 49152, 8192, 40960, 24576, 57344, 4096, 36864, 20480, 53248,
-        ];
-        math::scale_q15(math::direction(angles[slot], 0), 18000)
+/// A player-sized body standing at `position`.
+fn body_at(position: Vec3) -> Aabb {
+    Aabb {
+        min: Vec3::new(position.x - RADIUS, position.y - RADIUS, position.z),
+        max: Vec3::new(
+            position.x + RADIUS,
+            position.y + RADIUS,
+            position.z + HEIGHT,
+        ),
     }
 }
 
 impl World {
     pub fn new(config: Config, participants: &[Participant]) -> Result<Self, Error> {
+        let Some(arena) = Arena::get(config.map) else {
+            return Err(Error::InvalidConfig("invalid match bounds"));
+        };
         if participants.is_empty()
             || participants.len() > MAX_PLAYERS
-            || config.map >= 4
             || config.max_ticks == 0
             || config.max_ticks > MAX_TICKS
             || (!config.mode.team() && participants.len() > 8)
@@ -283,17 +383,24 @@ impl World {
                 return Err(Error::InvalidConfig("deposit does not authorize equipment"));
             }
             total = total.checked_add(p.bond).ok_or(Error::Arithmetic)?;
+            // §10: team modes spawn by rank within the team, FFA and Melee at
+            // the slot's FFA spawn.
+            let spawn = if config.mode.team() {
+                let rank = participants[..slot]
+                    .iter()
+                    .filter(|other| other.team == p.team)
+                    .count();
+                arena.team_spawns[usize::from(p.team)][rank % 6]
+            } else {
+                arena.ffa_spawns[slot]
+            };
             players.push(Player {
                 team: p.team,
                 class: p.class,
                 weapon: p.weapon,
-                position: spawn(slot, p.team, config.mode.team()),
+                position: spawn.position(),
                 velocity_z: 0,
-                yaw: if config.mode.team() {
-                    if p.team == 0 { 0 } else { 32768 }
-                } else {
-                    0
-                },
+                yaw: spawn.yaw,
                 pitch: 0,
                 health: catalog::CLASSES[p.class as usize].health,
                 stamina: 100,
@@ -308,7 +415,10 @@ impl World {
                 guarding: false,
                 guard_ticks: 0,
                 spawn_protection: 0,
-                admitted_special: p.weapon >= 12,
+                admitted_special: (p.weapon >= 12).then_some(p.weapon),
+                pending_loadout: None,
+                stance_ticks: 0,
+                marked_ticks: 0,
             });
             accounts.push(Account::new(p.bond));
         }
@@ -318,24 +428,32 @@ impl World {
         {
             return Err(Error::InvalidConfig("team exceeds six participants"));
         }
-        let walls = map_walls(config.map);
         Ok(Self {
             config,
             tick: 0,
             players,
             accounts,
             projectiles: Vec::new(),
+            entities: Vec::new(),
+            next_entity_id: 1,
             damage_history: Vec::new(),
             events: Vec::new(),
             terminal: false,
             score: [0, 0],
             control_owner: None,
             control_progress: 0,
+            overtime: false,
             payload_progress: 0,
-            walls,
+            payload_checkpoints: 0,
+            payload_idle: 0,
+            winner: None,
         })
     }
 
+    /// The configured arena's versioned data (§7).
+    pub fn arena(&self) -> &'static Arena {
+        &ARENAS[usize::from(self.config.map)]
+    }
     pub fn exhausted(&self, slot: usize) -> bool {
         self.accounts[slot].initial > 0 && self.accounts[slot].remaining == 0
     }
@@ -343,14 +461,25 @@ impl World {
         a != b && (!self.config.mode.team() || self.players[a].team != self.players[b].team)
     }
     fn body(&self, slot: usize) -> Aabb {
-        let p = self.players[slot].position;
-        Aabb {
-            min: Vec3::new(p.x - RADIUS, p.y - RADIUS, p.z),
-            max: Vec3::new(p.x + RADIUS, p.y + RADIUS, p.z + HEIGHT),
-        }
+        body_at(self.players[slot].position)
+    }
+    /// Static walls and live barricades, optionally without one barricade:
+    /// everything that blocks movement, rays, projectiles and blasts (§5.4).
+    fn solids(&self, skip: Option<u32>) -> impl Iterator<Item = Aabb> + '_ {
+        self.arena().walls.iter().map(|w| w.aabb).chain(
+            self.entities
+                .iter()
+                .filter(move |e| e.kind == EntityKind::Barricade && Some(e.id) != skip)
+                .map(Entity::bounds),
+        )
     }
     fn blocked(&self, from: Vec3, to: Vec3) -> bool {
-        self.walls.iter().any(|w| {
+        self.blocked_except(from, to, None)
+    }
+    /// Line of sight through static walls and live barricades, ignoring the
+    /// barricade `skip` (a blast's target, or one about to be replaced).
+    fn blocked_except(&self, from: Vec3, to: Vec3, skip: Option<u32>) -> bool {
+        self.solids(skip).any(|w| {
             // A projectile can detonate exactly on a wall face. Its same-side
             // blast ray starts on the closed AABB boundary, so a t=0 hit is
             // not occlusion when the ray immediately leaves that wall.
@@ -369,16 +498,21 @@ impl World {
         })
     }
     fn safe_motion(&self, old: Vec3, desired: Vec3) -> Vec3 {
+        let bounds = self.arena().bounds;
         let mut next = old;
         for axis in 0..2 {
             let mut p = next;
             if axis == 0 {
-                p.x = desired.x.clamp(-BOUNDS + RADIUS, BOUNDS - RADIUS);
+                p.x = desired
+                    .x
+                    .clamp(bounds.min_x + RADIUS, bounds.max_x - RADIUS);
             } else {
-                p.y = desired.y.clamp(-BOUNDS + RADIUS, BOUNDS - RADIUS);
+                p.y = desired
+                    .y
+                    .clamp(bounds.min_y + RADIUS, bounds.max_y - RADIUS);
             }
             let feet = Vec3::new(p.x, p.y, p.z + HEIGHT / 2);
-            if !self.walls.iter().any(|w| {
+            if !self.solids(None).any(|w| {
                 w.expanded(RADIUS, HEIGHT / 2).contains(feet)
                     || w.expanded(RADIUS, HEIGHT / 2)
                         .intersect(Vec3::new(next.x, next.y, next.z + HEIGHT / 2), feet)
@@ -389,6 +523,68 @@ impl World {
         }
         next.z = desired.z.max(0);
         next
+    }
+    /// §5.3: the nearest stop of a ray from `shooter`. Living enemies without
+    /// spawn protection are targets, and living allies too when `allies`.
+    /// Melee reach widens player and decoy bodies by 180 mm. Walls win ties,
+    /// then lower entity ids, then lower slots.
+    fn ray_stop(
+        &self,
+        shooter: usize,
+        from: Vec3,
+        to: Vec3,
+        melee: bool,
+        allies: bool,
+    ) -> Option<RayStop> {
+        let wall = self
+            .arena()
+            .walls
+            .iter()
+            .filter_map(|w| w.aabb.intersect(from, to))
+            .min();
+        let mut nearest = wall.unwrap_or((1 << 20) + 1);
+        let mut stop = wall.map(|_| RayStop::Wall);
+        let reach = if melee { 180 } else { 0 };
+        for e in &self.entities {
+            let body = match e.kind {
+                EntityKind::Barricade => e.bounds(),
+                EntityKind::Decoy if self.entity_enemy(shooter, e) => e.bounds().expanded(reach, 0),
+                _ => continue,
+            };
+            if let Some(t) = body.intersect(from, to)
+                && t < nearest
+            {
+                nearest = t;
+                stop = Some(RayStop::Entity(e.id));
+            }
+        }
+        for other in 0..self.players.len() {
+            let enemy = self.enemy(shooter, other);
+            if other == shooter
+                || (!enemy && !allies)
+                || !self.players[other].alive
+                || (enemy && self.players[other].spawn_protection > 0)
+            {
+                continue;
+            }
+            if let Some(t) = self.body(other).expanded(reach, 0).intersect(from, to)
+                && t < nearest
+            {
+                nearest = t;
+                stop = Some(RayStop::Player(other));
+            }
+        }
+        stop
+    }
+    /// §3.2: the origin lies in front of the victim in the floor plane. The
+    /// direction comes from where the damage came from, so a blast behind a
+    /// guard is never blocked because its thrower is ahead. A zero horizontal
+    /// offset is not frontal.
+    fn frontal(&self, victim: usize, origin: Vec3) -> bool {
+        let facing = math::direction(self.players[victim].yaw, 0);
+        let incoming = origin.delta(self.players[victim].position);
+        i64::from(facing.x) * i64::from(incoming.x) + i64::from(facing.y) * i64::from(incoming.y)
+            > 0
     }
 
     /// Invalid inputs do not advance time or partially modify a match.
@@ -408,24 +604,17 @@ impl World {
                 if self.exhausted(slot) {
                     continue;
                 }
-                if self.players[slot].respawn_ticks > 0 {
-                    self.players[slot].respawn_ticks -= 1;
+                if input.buttons & LOADOUT != 0 {
+                    self.request_loadout(slot, input.move_x as u8, input.move_y as u8);
                 }
-                if self.players[slot].respawn_ticks == 0 {
-                    let p = &mut self.players[slot];
-                    p.position = spawn(slot, p.team, self.config.mode.team());
-                    p.health = catalog::CLASSES[p.class as usize].health;
-                    p.alive = true;
-                    p.stamina = 100;
-                    p.spawn_protection = 120;
-                    p.velocity_z = 0;
-                    p.charge = 0;
-                    p.charge_weapon = u8::MAX;
-                    p.ammo = catalog::WEAPONS[p.weapon as usize].magazine;
-                    p.reload_ticks = 0;
-                    p.guarding = false;
-                    p.guard_ticks = 0;
-                    p.attack_cooldown = 0;
+                // Ability cooldowns keep counting through death (§6).
+                let p = &mut self.players[slot];
+                p.ability_cooldown = p.ability_cooldown.saturating_sub(1);
+                if p.respawn_ticks > 0 {
+                    p.respawn_ticks -= 1;
+                }
+                if p.respawn_ticks == 0 {
+                    self.respawn(slot);
                     self.events.push(Event::Respawn { slot });
                 }
                 continue;
@@ -446,7 +635,17 @@ impl World {
             }
             p.ability_cooldown = p.ability_cooldown.saturating_sub(1);
             p.spawn_protection = p.spawn_protection.saturating_sub(1);
-            p.guarding = input.buttons & BLOCK != 0 && p.stamina > 0;
+            if p.stance_ticks > 0 {
+                p.stance_ticks -= 1;
+                if p.stance_ticks == 0 {
+                    // A stance that ends by expiry negated nothing: a whiff.
+                    p.attack_cooldown = p.attack_cooldown.max(30);
+                }
+            }
+            p.marked_ticks = p.marked_ticks.saturating_sub(1);
+            // A Samurai in stance cannot guard, jump or move horizontally.
+            let stance = p.stance_ticks > 0;
+            p.guarding = !stance && input.buttons & BLOCK != 0 && p.stamina > 0;
             p.guard_ticks = if p.guarding {
                 p.guard_ticks.saturating_add(1)
             } else {
@@ -457,22 +656,27 @@ impl World {
             } else {
                 p.stamina = (p.stamina + 1).min(100);
             }
-            if input.buttons & JUMP != 0 && p.position.z == 0 {
+            if !stance && input.buttons & JUMP != 0 && p.position.z == 0 {
                 p.velocity_z = 180;
             }
             p.velocity_z = (p.velocity_z - 8).max(-500);
+            let (move_x, move_y) = if stance {
+                (0, 0)
+            } else {
+                (input.move_x, input.move_y)
+            };
             let speed =
                 catalog::CLASSES[p.class as usize].move_mm_tick / (if p.guarding { 2 } else { 1 });
             let forward = math::direction(input.yaw, 0);
             let right = math::direction(input.yaw.wrapping_add(16384), 0);
             // L1 normalization prevents diagonal speed gain without square roots.
-            let norm = (i32::from(input.move_x).abs() + i32::from(input.move_y).abs()).max(127);
-            let dx = ((i64::from(forward.x) * i64::from(input.move_x)
-                + i64::from(right.x) * i64::from(input.move_y))
+            let norm = (i32::from(move_x).abs() + i32::from(move_y).abs()).max(127);
+            let dx = ((i64::from(forward.x) * i64::from(move_x)
+                + i64::from(right.x) * i64::from(move_y))
                 * i64::from(speed)
                 / (32767 * i64::from(norm))) as i32;
-            let dy = ((i64::from(forward.y) * i64::from(input.move_x)
-                + i64::from(right.y) * i64::from(input.move_y))
+            let dy = ((i64::from(forward.y) * i64::from(move_x)
+                + i64::from(right.y) * i64::from(move_y))
                 * i64::from(speed)
                 / (32767 * i64::from(norm))) as i32;
             let old = p.position;
@@ -484,15 +688,31 @@ impl World {
         }
         self.damage_history
             .retain(|h| self.tick.saturating_sub(h.tick) <= ASSIST_TICKS);
+        // Every ability resolves before any attack is gathered, so its
+        // movement, stance, mark or entity affects this tick's attacks the
+        // same way whatever the slot order.
+        for (slot, input) in inputs.iter().enumerate() {
+            if input.buttons & ABILITY != 0
+                && self.players[slot].alive
+                && self.players[slot].ability_cooldown == 0
+            {
+                self.ability(slot);
+            }
+        }
         let mut damage = Vec::<PendingDamage>::new();
-        let mut healing = Vec::<(usize, i32)>::new();
+        let mut entity_hits = Vec::<EntityHit>::new();
+        // (healer, target, amount, weapon), resolved before the damage batch.
+        let mut healing = Vec::<(usize, usize, i32, u8)>::new();
         // Gather attacks before applying damage so mutual kills are possible.
         for (slot, input) in inputs.iter().enumerate() {
             if !self.players[slot].alive {
                 continue;
             }
-            if input.buttons & ABILITY != 0 && self.players[slot].ability_cooldown == 0 {
-                self.ability(slot);
+            if self.players[slot].stance_ticks > 0 {
+                // Attack and reload requests are ignored in stance.
+                self.players[slot].charge = 0;
+                self.players[slot].charge_weapon = u8::MAX;
+                continue;
             }
             let equipped = catalog::WEAPONS[self.players[slot].weapon as usize];
             if input.buttons & RELOAD != 0
@@ -556,46 +776,27 @@ impl World {
             match spec.kind {
                 AttackKind::Melee | AttackKind::Hitscan => {
                     let heals_allies = weapon == 17 && self.config.mode.team();
-                    let mut nearest = self
-                        .walls
-                        .iter()
-                        .filter_map(|w| w.intersect(from, to))
-                        .min()
-                        .unwrap_or((1 << 20) + 1);
-                    let mut hit = None;
-                    for other in 0..self.players.len() {
-                        let enemy = self.enemy(slot, other);
-                        if other == slot
-                            || (!enemy && !heals_allies)
-                            || !self.players[other].alive
-                            || (enemy && self.players[other].spawn_protection > 0)
-                        {
-                            continue;
+                    let melee = spec.kind == AttackKind::Melee;
+                    match self.ray_stop(slot, from, to, melee, heals_allies) {
+                        Some(RayStop::Player(other)) => {
+                            if heals_allies && !self.enemy(slot, other) {
+                                healing.push((slot, other, spec.damage, weapon));
+                            } else {
+                                damage.push(PendingDamage {
+                                    source: Source::Player(slot),
+                                    victim: other,
+                                    amount: spec.damage,
+                                    weapon,
+                                    origin: Some(from),
+                                    kind: DamageKind::Ray,
+                                    penetrating: spec.kind == AttackKind::Hitscan && weapon == 14,
+                                });
+                            }
                         }
-                        let body = if spec.kind == AttackKind::Melee {
-                            self.body(other).expanded(180, 0)
-                        } else {
-                            self.body(other)
-                        };
-                        if let Some(t) = body.intersect(from, to)
-                            && t < nearest
-                        {
-                            nearest = t;
-                            hit = Some(other);
+                        Some(RayStop::Entity(id)) => {
+                            entity_hits.extend(self.ray_entity_hit(slot, id, weapon, spec.damage));
                         }
-                    }
-                    if let Some(other) = hit {
-                        if heals_allies && !self.enemy(slot, other) {
-                            healing.push((other, spec.damage));
-                        } else {
-                            damage.push(PendingDamage {
-                                attacker: slot,
-                                victim: other,
-                                amount: spec.damage,
-                                weapon,
-                                direct_hitscan: spec.kind == AttackKind::Hitscan,
-                            });
-                        }
+                        Some(RayStop::Wall) | None => {}
                     }
                 }
                 AttackKind::Projectile => {
@@ -632,11 +833,20 @@ impl World {
             let next = old.offset(displacement);
             p.traveled += step_mm;
             p.age += 1;
+            // Walls, live barricades, the owner's enemies' decoys and every
+            // other living player body stop a projectile (§5.3).
             let mut intersection = self
-                .walls
-                .iter()
+                .solids(None)
                 .filter_map(|w| w.intersect(old, next))
                 .min();
+            for e in &self.entities {
+                if e.kind == EntityKind::Decoy
+                    && self.entity_enemy(p.owner, e)
+                    && let Some(t) = e.bounds().intersect(old, next)
+                {
+                    intersection = Some(intersection.map_or(t, |v| v.min(t)));
+                }
+            }
             for slot in 0..self.players.len() {
                 if slot != p.owner
                     && self.players[slot].alive
@@ -648,8 +858,7 @@ impl World {
             let expired = p.traveled >= spec.range_mm
                 || p.age >= 300
                 || next.z <= 0
-                || next.x.abs() > BOUNDS
-                || next.y.abs() > BOUNDS;
+                || !self.arena().bounds.contains(next.x, next.y);
             if intersection.is_some() || expired {
                 let frac = intersection.unwrap_or(1 << 20);
                 let d = next.delta(old);
@@ -675,95 +884,137 @@ impl World {
                             && !self.blocked(p.position, center)
                         {
                             damage.push(PendingDamage {
-                                attacker: p.owner,
+                                source: Source::Player(p.owner),
                                 victim: slot,
                                 amount: spec.damage,
                                 weapon: p.weapon,
-                                direct_hitscan: false,
+                                origin: Some(p.position),
+                                kind: DamageKind::Blast,
+                                penetrating: false,
                             });
                         }
                     }
+                    entity_hits.extend(self.blast_entity_hits(
+                        p.owner,
+                        p.position,
+                        spec.blast_mm,
+                        spec.damage,
+                    ));
                 }
             } else {
                 p.position = next;
                 self.projectiles.push(p);
             }
         }
+        self.entity_phase(&mut damage);
+        self.hazard_phase(&mut damage);
         // Simultaneous shots are resolved from one canonical pre-damage target
         // snapshot. Healing lands first, then the ordered damage batch, so a
         // timely lance hit can prevent a lethal hit without reviving the dead.
-        for (target, amount) in healing {
+        for (healer, target, amount, weapon) in healing {
             let player = &mut self.players[target];
             if player.alive && player.health > 0 {
                 let maximum = catalog::CLASSES[player.class as usize].health;
+                let before = player.health;
                 player.health = player.health.saturating_add(amount).min(maximum);
+                let restored = player.health - before;
+                if restored > 0 {
+                    self.events.push(Event::Healed {
+                        healer,
+                        target,
+                        amount: restored,
+                        weapon: Some(weapon),
+                    });
+                }
             }
         }
         let mut killers = vec![None; self.players.len()];
-        for hit in damage {
-            let PendingDamage {
-                attacker,
-                victim,
-                mut amount,
-                ..
-            } = hit;
+        // Samurai whose stance negated a hit in this batch (§6.1).
+        let mut negated = vec![false; self.players.len()];
+        // Ripostes are appended while the batch runs, so walk it by index.
+        let mut next = 0;
+        while let Some(&hit) = damage.get(next) {
+            next += 1;
+            let victim = hit.victim;
+            let mut amount = hit.amount;
             if self.players[victim].health <= 0 {
                 continue;
             }
-            if self.players[victim].guarding
-                && attacker != victim
-                && !hit.penetrates_directional_guard()
+            let attacker = match hit.source {
+                Source::Player(slot) => Some(slot),
+                Source::Hazard(_) => None,
+            };
+            // §3.3 modifier order: mark, directional defense, ward. Hazards
+            // are never marked or defended, but wards reduce them.
+            if self.players[victim].marked_ticks > 0
+                && attacker.is_some_and(|attacker| self.enemy(attacker, victim))
             {
-                let facing = math::direction(self.players[victim].yaw, 0);
-                let incoming = self.players[attacker]
-                    .position
-                    .delta(self.players[victim].position);
-                if i64::from(facing.x) * i64::from(incoming.x)
-                    + i64::from(facing.y) * i64::from(incoming.y)
-                    > 0
-                {
-                    if self.players[victim].guard_ticks <= 8 && self.players[victim].stamina >= 20 {
-                        amount = 0;
-                        self.players[victim].stamina -= 20;
-                    } else if self.players[victim].stamina >= 10 {
-                        amount = (amount + 1) / 2;
-                        self.players[victim].stamina -= 10;
-                    }
-                }
+                amount += amount / 4;
+            }
+            if let (Some(attacker), Some(origin)) = (attacker, hit.origin)
+                && attacker != victim
+                && !hit.penetrating
+                && self.frontal(victim, origin)
+            {
+                let (remaining, riposte) = self.defend(hit, attacker, amount, &mut negated);
+                amount = remaining;
+                damage.extend(riposte);
+            }
+            if attacker != Some(victim) && self.warded(victim) {
+                amount -= amount * 35 / 100;
             }
             let dealt = amount.min(self.players[victim].health);
             self.players[victim].health -= dealt;
             if dealt > 0 {
-                self.events.push(Event::Damage {
-                    attacker,
-                    victim,
-                    amount: dealt,
-                });
-                if attacker != victim {
-                    self.damage_history.push(DamageRecord {
-                        tick: self.tick,
-                        attacker,
+                match hit.source {
+                    Source::Player(attacker) => {
+                        self.events.push(Event::Damage {
+                            attacker,
+                            victim,
+                            amount: dealt,
+                        });
+                        if attacker != victim {
+                            self.damage_history.push(DamageRecord {
+                                tick: self.tick,
+                                attacker,
+                                victim,
+                                damage: dealt as u32,
+                            });
+                        }
+                    }
+                    Source::Hazard(hazard) => self.events.push(Event::EnvironmentalDamage {
                         victim,
-                        damage: dealt as u32,
-                    });
+                        hazard,
+                        amount: dealt,
+                    }),
                 }
             }
             if self.players[victim].health <= 0 {
-                killers[victim] = if attacker == victim {
-                    // A self-inflicted blast is a suicide even when an enemy
-                    // dealt qualifying damage earlier in the assist window.
-                    None
-                } else if self.enemy(attacker, victim) {
-                    Some(attacker)
-                } else {
-                    self.damage_history
+                // §3.4 kill credit. A self-inflicted blast is a suicide even
+                // when an enemy dealt qualifying damage earlier in the assist
+                // window. A hazard death credits the most recent enemy damage
+                // still inside the window, or no one. Friendly fire never
+                // reaches the batch.
+                killers[victim] = match hit.source {
+                    Source::Player(attacker) => {
+                        (attacker != victim && self.enemy(attacker, victim)).then_some(attacker)
+                    }
+                    Source::Hazard(_) => self
+                        .damage_history
                         .iter()
                         .rev()
                         .find(|h| h.victim == victim && self.enemy(h.attacker, victim))
-                        .map(|h| h.attacker)
+                        .map(|h| h.attacker),
                 };
             }
         }
+        // A stance that negated a hit ends with the batch that negated it.
+        for (slot, negated) in negated.into_iter().enumerate() {
+            if negated {
+                self.players[slot].stance_ticks = 0;
+            }
+        }
+        self.apply_entity_hits(&entity_hits);
         // Participation is frozen for the whole simultaneous death batch. A
         // lower-slot victim exhausting now must not lose a teammate award from
         // another death in the same tick merely because we visit it first.
@@ -812,106 +1063,117 @@ impl World {
                     &teammates,
                     self.config.mode.team(),
                 )?;
-                self.players[victim].alive = false;
-                self.players[victim].respawn_ticks = RESPAWN_TICKS;
-                self.players[victim].charge = 0;
-                self.players[victim].charge_weapon = u8::MAX;
-                self.players[victim].reload_ticks = 0;
+                let p = &mut self.players[victim];
+                p.alive = false;
+                p.respawn_ticks = RESPAWN_TICKS;
+                p.charge = 0;
+                p.charge_weapon = u8::MAX;
+                p.reload_ticks = 0;
+                // Death ends a stance without a whiff and clears a mark.
+                p.stance_ticks = 0;
+                p.marked_ticks = 0;
                 self.damage_history.retain(|h| h.victim != victim);
                 self.events.push(Event::Death {
                     victim,
                     killer,
                     awards,
                 });
+                // §5.2: a death removes the victim's decoy; a death that
+                // exhausts the reserve removes every entity the victim owns.
+                if self.exhausted(victim) {
+                    self.remove_entities(victim, None, RemovalCause::OwnerExhausted);
+                } else {
+                    self.remove_entities(victim, Some(EntityKind::Decoy), RemovalCause::OwnerDied);
+                }
             }
         }
-        self.update_objectives();
+        let secured = self.update_objectives();
         self.tick += 1;
-        let active = (0..self.players.len())
-            .filter(|&s| !self.exhausted(s))
-            .count();
-        let team_eliminated = self.config.mode.team()
-            && (0..2).any(|t| {
-                !(0..self.players.len()).any(|s| self.players[s].team == t && !self.exhausted(s))
-            });
-        if self.tick >= self.config.max_ticks
-            || (!self.config.offline && (active < 2 || team_eliminated))
-            || self.score.iter().any(|&s| s >= 18000)
-            || self.payload_progress >= 36000
-        {
+        if let Some(winner) = self.result(secured) {
+            self.winner = Some(winner);
             self.terminal = true;
+            self.events.push(Event::MatchWinner { winner });
             self.events.push(Event::Terminal);
         }
         debug_assert!(economy::conserved(&self.accounts));
+        debug_assert!(self.entities.len() <= MAX_ENTITIES);
         Ok(())
     }
 
-    fn ability(&mut self, slot: usize) {
-        let class = self.players[slot].class;
-        self.players[slot].ability_cooldown = 600;
-        if class == 5 {
-            let origin = self.players[slot].position;
-            let team = self.players[slot].team;
-            for (other, p) in self.players.iter_mut().enumerate() {
-                if p.alive
-                    && (other == slot || (self.config.mode.team() && p.team == team))
-                    && p.position.distance_squared(origin) <= 6000_i64 * 6000
-                {
-                    p.health = (p.health + 35).min(catalog::CLASSES[p.class as usize].health);
-                }
-            }
-        } else if class == 1 {
-            let old = self.players[slot].position;
-            let to = old.offset(math::scale_q15(
-                math::direction(self.players[slot].yaw, 0),
-                2000,
-            ));
-            self.players[slot].position = self.safe_motion(old, to);
-        } else {
-            self.players[slot].stamina = 100;
+    /// §3.2 directional defense of a frontal hit from another player, in
+    /// order: the Samurai stance, parry, guard. Returns the remaining amount
+    /// and the riposte to append to the batch, if the stance earned one.
+    fn defend(
+        &mut self,
+        hit: PendingDamage,
+        attacker: usize,
+        amount: i32,
+        negated: &mut [bool],
+    ) -> (i32, Option<PendingDamage>) {
+        let victim = hit.victim;
+        if hit.kind == DamageKind::Ray
+            && self.players[victim].stance_ticks > 0
+            && self.enemy(attacker, victim)
+        {
+            self.events.push(Event::Guarded {
+                attacker,
+                victim,
+                weapon: hit.weapon,
+                parried: true,
+                prevented: amount,
+            });
+            // Only the first negated hit of a stance ripostes.
+            let riposte = if negated[victim] {
+                None
+            } else {
+                negated[victim] = true;
+                self.riposte(victim, attacker)
+            };
+            return (0, riposte);
         }
-    }
-
-    fn update_objectives(&mut self) {
-        if !self.config.mode.team() {
-            return;
+        let player = &mut self.players[victim];
+        if !player.guarding {
+            return (amount, None);
         }
-        let center = if self.config.mode == Mode::Payload {
-            Vec3::new(-18000 + self.payload_progress, 0, 0)
+        let parried = player.guard_ticks <= 8 && player.stamina >= 20;
+        let remaining = if parried {
+            player.stamina -= 20;
+            0
+        } else if player.stamina >= 10 {
+            player.stamina -= 10;
+            (amount + 1) / 2
         } else {
-            Vec3::default()
+            // With less than 10 stamina a guard has no effect.
+            return (amount, None);
         };
-        let mut count = [0u32; 2];
-        for p in &self.players {
-            if p.alive && p.position.distance_squared(center) <= 3500_i64 * 3500 {
-                count[p.team as usize] += 1;
-            }
+        if parried && player.class == 0 {
+            // A Samurai's parry refunds part of the stance cooldown.
+            player.ability_cooldown = player.ability_cooldown.saturating_sub(120);
         }
-        if self.config.mode == Mode::Control {
-            if count[0] > 0 && count[1] == 0 {
-                self.control_progress = (self.control_progress - 1).max(-180);
-            } else if count[1] > 0 && count[0] == 0 {
-                self.control_progress = (self.control_progress + 1).min(180);
-            }
-            if self.control_progress == -180 {
-                self.control_owner = Some(0);
-            }
-            if self.control_progress == 180 {
-                self.control_owner = Some(1);
-            }
-            if let Some(t) = self.control_owner {
-                self.score[t as usize] += 1;
-            }
-        } else if count[0] > 0 && count[1] == 0 {
-            self.payload_progress = (self.payload_progress + 5).min(36000);
+        if parried
+            && hit.kind == DamageKind::Ray
+            && catalog::WEAPONS[hit.weapon as usize].kind == AttackKind::Melee
+        {
+            // Parry stagger: a parried melee strike delays the next attack.
+            let striker = &mut self.players[attacker];
+            striker.attack_cooldown = striker.attack_cooldown.saturating_add(30);
         }
+        self.events.push(Event::Guarded {
+            attacker,
+            victim,
+            weapon: hit.weapon,
+            parried,
+            prevented: amount - remaining,
+        });
+        (remaining, None)
     }
 
     /// Frozen offline replay fingerprint. Native envelopes use canonical Norito.
     /// This digest is not an execution proof or authenticated ledger statement.
+    /// Layout: docs/combat-rules.md §12.
     pub fn state_hash(&self) -> [u8; 32] {
         let mut h = Sha256::new();
-        h.update(b"sora-arena:reference-state:v1\0");
+        h.update(b"sora-arena:reference-state:v2\0");
         h.update(crate::RULES_VERSION.as_bytes());
         h.update([
             self.config.mode as u8,
@@ -922,15 +1184,19 @@ impl World {
         h.update(self.config.base_bond.to_le_bytes());
         h.update(self.tick.to_le_bytes());
         h.update([self.terminal as u8]);
+        h.update(self.arena().map_digest());
         h.update((self.players.len() as u32).to_le_bytes());
         for (p, a) in self.players.iter().zip(&self.accounts) {
+            let (pending_class, pending_weapon) = p.pending_loadout.unwrap_or((255, 255));
             h.update([
                 p.team,
                 p.class,
                 p.weapon,
                 p.alive as u8,
                 p.guarding as u8,
-                p.admitted_special as u8,
+                p.admitted_special.unwrap_or(255),
+                pending_class,
+                pending_weapon,
             ]);
             for n in [
                 p.position.x,
@@ -954,6 +1220,8 @@ impl World {
                 p.reload_ticks,
                 p.guard_ticks,
                 p.spawn_protection,
+                p.stance_ticks,
+                p.marked_ticks,
             ] {
                 h.update(n.to_le_bytes());
             }
@@ -982,6 +1250,23 @@ impl World {
             }
             h.update(p.age.to_le_bytes());
         }
+        h.update((self.entities.len() as u32).to_le_bytes());
+        for e in &self.entities {
+            h.update(e.id.to_le_bytes());
+            h.update([e.kind as u8]);
+            h.update((e.owner as u32).to_le_bytes());
+            h.update([e.team]);
+            for n in [e.position.x, e.position.y, e.position.z] {
+                h.update(n.to_le_bytes());
+            }
+            h.update(e.yaw.to_le_bytes());
+            h.update(e.health.to_le_bytes());
+            h.update(e.age.to_le_bytes());
+            for n in [e.half_x, e.half_y] {
+                h.update(n.to_le_bytes());
+            }
+        }
+        h.update(self.next_entity_id.to_le_bytes());
         h.update((self.damage_history.len() as u32).to_le_bytes());
         for d in &self.damage_history {
             for n in [d.tick, d.attacker as u32, d.victim as u32, d.damage] {
@@ -993,13 +1278,18 @@ impl World {
         }
         h.update([self.control_owner.unwrap_or(255)]);
         h.update(self.control_progress.to_le_bytes());
+        h.update([self.overtime as u8]);
         h.update(self.payload_progress.to_le_bytes());
-        h.update((self.walls.len() as u32).to_le_bytes());
-        for w in &self.walls {
-            for n in [w.min.x, w.min.y, w.min.z, w.max.x, w.max.y, w.max.z] {
-                h.update(n.to_le_bytes());
-            }
-        }
+        h.update([self.payload_checkpoints]);
+        h.update(self.payload_idle.to_le_bytes());
+        let (tag, value) = match self.winner {
+            None => (0u8, 0u32),
+            Some(Winner::Team(team)) => (1, u32::from(team)),
+            Some(Winner::Slot(slot)) => (2, slot as u32),
+            Some(Winner::Draw) => (3, 0),
+        };
+        h.update([tag]);
+        h.update(value.to_le_bytes());
         h.finalize().into()
     }
 }
@@ -1194,14 +1484,15 @@ mod tests {
             ],
         )
         .unwrap();
-        // The grenade travels in exact 350-mm steps and meets the near wall
-        // face at x=6500. The enemy is beside it, clear of the wall itself.
-        w.players[0].position = Vec3::new(4050, 0, 0);
-        w.players[1].position = Vec3::new(6000, 1800, 0);
+        // The grenade travels in exact 350-mm steps and meets the near face
+        // of Nyaagyu Estate's east kura at x=9500. The enemy is beside it,
+        // clear of the wall itself.
+        w.players[0].position = Vec3::new(7050, 4750, 0);
+        w.players[1].position = Vec3::new(9000, 6550, 0);
         w.players[1].health = 60;
-        let impact = Vec3::new(6500, 0, EYE_HEIGHT);
-        assert!(!w.blocked(impact, Vec3::new(6000, 1800, 900)));
-        assert!(w.blocked(impact, Vec3::new(8500, 1000, 900)));
+        let impact = Vec3::new(9500, 4750, EYE_HEIGHT);
+        assert!(!w.blocked(impact, Vec3::new(9000, 6550, 900)));
+        assert!(w.blocked(impact, Vec3::new(13_000, 4750, 900)));
         w.step(&[
             Input {
                 buttons: FIRE,
@@ -1220,9 +1511,10 @@ mod tests {
     }
     #[test]
     fn walls_stop_damage() {
+        // Nyaagyu Estate's east kura (x = 9500..12500) stands between them.
         let mut w = duel();
-        w.players[0].position = Vec3::new(4000, 0, 0);
-        w.players[1].position = Vec3::new(10000, 0, 0);
+        w.players[0].position = Vec3::new(4000, 4750, 0);
+        w.players[1].position = Vec3::new(14_000, 4750, 0);
         for _ in 0..120 {
             w.step(&[
                 Input {

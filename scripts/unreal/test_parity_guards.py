@@ -2,6 +2,7 @@
 from pathlib import Path
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -92,5 +93,20 @@ class ParityRejectionTests(unittest.TestCase):
         self.assertNotEqual(result.returncode,0)
         self.assertIn('Python optimization is unsupported',result.stderr)
         self.assertEqual(before,{path:hashlib.sha256(path.read_bytes()).hexdigest() for path in outputs})
+
+class SourceIdentityCoverageTests(unittest.TestCase):
+    def test_every_hashed_simulation_source_is_in_the_practice_identity(self):
+        # arena_kill_history_v2_parity.rs classifies every arena-core source and
+        # hashes the kernel's in KERNEL_SOURCES. Each of those, except the
+        # evidence protocol that the practice ABI never calls, must also be in
+        # this fixture's source identity, so that a new simulation module cannot
+        # change practice behaviour without a reviewed re-record.
+        import verify_parity
+        rust=(DIRECTORY.parents[1]/'crates/arena-core/tests/arena_kill_history_v2_parity.rs').read_text()
+        block=rust.split('kernel_sources![',1)[1].split('];',1)[0]
+        names=re.findall(r'"([^"]+)"',block)
+        self.assertIn('simulation/respawn.rs',names)
+        hashed={f'crates/arena-core/src/{name}' for name in names if name!='protocol.rs'}
+        self.assertEqual(hashed-set(verify_parity.SOURCE_FILES),set())
 
 if __name__=='__main__':unittest.main()
