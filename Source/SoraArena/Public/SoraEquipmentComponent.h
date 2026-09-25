@@ -32,6 +32,12 @@ public:
     void Reload();
     void GuardDown(bool bDojo, bool bCampaignHero);
     void GuardUp() { bGuardHeld = false; }
+    // 納刀: a held blade goes back into its scabbard over
+    // SoraCombatRules::SheatheMs, or is drawn again. Sheathed, nothing is cut
+    // or fired, and a guard press is a mutō-dori attempt (SoraDefense).
+    void Sheathe(bool bSheathe);
+    bool IsSheathing() const { return bSheathed; }
+    bool IsSheathed() const;
     void ReleaseTrigger() { bFireHeld = false; }
     bool EquipClassSlot(int32 Slot);
     bool EquipCampaignWeapon(int32 WeaponId);
@@ -77,4 +83,6 @@ private:
     float GuardStamina = 100.f;
     float GuardPressedTime = 0.f;
     float StaggeredUntil = -1.f;
+    bool bSheathed = false;
+    float SheathedAt = 0.f;
 };

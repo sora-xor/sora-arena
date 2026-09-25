@@ -34,9 +34,15 @@ FSoraHit FSoraHit::Beam(const FVector& From)
     Hit.Kind=Rules::EHit::Beam; Hit.Origin=From; Hit.bHasOrigin=true;
     return Hit;
 }
+FSoraHit FSoraHit::Hazard(const FVector& At)
+{
+    FSoraHit Hit;
+    Hit.Kind=Rules::EHit::Hazard; Hit.Origin=At; Hit.bHasOrigin=true;
+    return Hit;
+}
 Rules::FAttack FSoraHit::Attack(int32 Damage) const
 {
-    return {Kind,Damage,bParryable,GuardChip,GuardStamina,ParryStaggerMs,bBreaksGuard};
+    return {Kind,Damage,bParryable,GuardChip,GuardStamina,ParryStaggerMs,bBreaksGuard,bUnguardable};
 }
 FSoraDamageEvent::FSoraDamageEvent(float InDamage,const FHitResult& InHitInfo,const FVector& InShotDirection,const FSoraHit& InHit)
     : FPointDamageEvent(InDamage,InHitInfo,InShotDirection,UDamageType::StaticClass()),Hit(InHit)
@@ -68,7 +74,13 @@ float SoraDamage::Resolve(ASoraCharacterBase& Victim,float Damage,const FDamageE
     if(Victim.IsKernelDriven()) return 0;
     if(!Victim.CanPlay()||Damage<=0) return 0;
     FSoraHit Hit;
-    if(Event.IsOfType(FSoraDamageEvent::ClassID)) Hit=static_cast<const FSoraDamageEvent&>(Event).Hit;
+    if(Event.IsOfType(FSoraDamageEvent::ClassID))
+    {
+        const FSoraDamageEvent& Typed=static_cast<const FSoraDamageEvent&>(Event);
+        Hit=Typed.Hit;
+        Hit.Impact=Typed.HitInfo.ImpactPoint; Hit.bHasImpact=Typed.HitInfo.bBlockingHit||!Hit.Impact.IsNearlyZero();
+        Hit.Part=Typed.HitInfo.GetComponent();
+    }
     else if(Causer) { Hit.Origin=Causer->GetActorLocation(); Hit.bHasOrigin=true; }
     // Opponents never damage one another; a shell's owner is hit by its own blast.
     const ASoraCharacterBase* Attacker=AttackerOf(Causer);

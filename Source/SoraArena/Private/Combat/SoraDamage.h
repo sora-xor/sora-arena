@@ -6,6 +6,7 @@
 class AActor;
 class AController;
 class ASoraCharacterBase;
+class UPrimitiveComponent;
 class UWorld;
 struct FHitResult;
 
@@ -28,11 +29,21 @@ struct FSoraHit
     int32 GuardStamina = -1;
     int32 ParryStaggerMs = SoraCombatRules::ParryStaggerMs;
     bool bBreaksGuard = false;
+    // A slam or final foreclosure goes through a held guard (SoraCombatRules::FAttack).
+    bool bUnguardable = false;
+    // Above zero, a committed cut a sheathed hero may take by mutō-dori
+    // within this many milliseconds of its landing.
+    int32 MutoWindowMs = 0;
     int32 KnockbackCm = 0;
     // An opponent's blow that lands staggers the hero this long.
     int32 HeroStaggerMs = 0;
     // A hero's strike weighs this much against an opponent's poise.
     int32 StaggerMs = 0;
+    // Written by Resolve from the hit's trace: where it struck and which part
+    // of the victim (a boss's weak point) it met.
+    FVector Impact = FVector::ZeroVector;
+    bool bHasImpact = false;
+    TWeakObjectPtr<const UPrimitiveComponent> Part;
     // Written by the victim: how its guard, shield or barrier met the hit.
     SoraCombatRules::EDefense Defense = SoraCombatRules::EDefense::Exposed;
 
@@ -40,6 +51,7 @@ struct FSoraHit
     static FSoraHit Ranged(const FVector& From, int32 WeaponId);
     static FSoraHit Blast(const FVector& At, int32 WeaponId);
     static FSoraHit Beam(const FVector& From);
+    static FSoraHit Hazard(const FVector& At);
     SoraCombatRules::FAttack Attack(int32 Damage) const;
 };
 

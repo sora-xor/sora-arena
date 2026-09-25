@@ -5,6 +5,7 @@
 #include "SoraStealthRules.h"
 #include "SoraEnemy.generated.h"
 enum class ESoraEnemyCue : uint8;
+class ASoraBoss;
 struct FSoraEnemyArchetype;
 struct FSoraEnemyAttack;
 struct FSoraEnemyVariant;
@@ -101,7 +102,16 @@ public:
 
     // Stagger: the windup drops and the opponent cannot act; hits deal more.
     bool IsStaggered() const;
-    void Stagger(int32 Milliseconds);
+    virtual void Stagger(int32 Milliseconds);
+    // A parry met its blow (SoraDefense): staggered for StaggerMs.
+    virtual void Parried(int32 StaggerMs) { Stagger(StaggerMs); }
+    // 無刀取り took this opponent's blade (SoraDefense). True when its fight
+    // allows it; only a boss or rival duellist with that finisher does.
+    virtual bool Disarm(AActor* By) { return false; }
+    // An add a boss called in: its defeat is the boss's business, never a
+    // beat's defeat count.
+    void SetSummoner(ASoraBoss* Boss);
+    ASoraBoss* Summoner() const;
     bool IsShieldOpen() const;
     int32 BarrierHealth() const { return BarrierMilli / 1000; }
 
@@ -165,6 +175,7 @@ private:
     const FSoraEnemyVariant* VariantData = nullptr;
     SoraStealthRules::FPerception Senses = SoraStealthRules::Standard();
     bool bInvulnerable = false;
+    TWeakObjectPtr<ASoraBoss> SummonedBy;
     // The attack under way.
     EPhase Phase = EPhase::Idle;
     int32 AttackIndex = INDEX_NONE;

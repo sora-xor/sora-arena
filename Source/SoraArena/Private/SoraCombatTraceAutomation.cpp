@@ -79,6 +79,10 @@ struct FEventLog
         case ESoraBossPhase::Strike: return TEXT("Strike");
         case ESoraBossPhase::Recovery: return TEXT("Recovery");
         case ESoraBossPhase::Defeated: return TEXT("Defeated");
+        case ESoraBossPhase::PhaseChanged: return TEXT("PhaseChanged");
+        case ESoraBossPhase::Staggered: return TEXT("Staggered");
+        case ESoraBossPhase::Countered: return TEXT("Countered");
+        case ESoraBossPhase::Event: return TEXT("Event");
         }
         return TEXT("Unknown");
     }
@@ -134,7 +138,7 @@ struct FEventLog
         }));
         Handles.Add(Bus->OnBossPhase.AddLambda([this](const FSoraBossPhaseEvent& E)
         {
-            Lines.Add(FString::Printf(TEXT("Boss phase=%s boss=%s"), Phase(E.Phase), *Who(E.Boss)));
+            Lines.Add(FString::Printf(TEXT("Boss phase=%s boss=%s detail=%s"), Phase(E.Phase), *Who(E.Boss), *E.Detail.ToString()));
         }));
         Handles.Add(Bus->OnKernelEvent.AddLambda([this](const FSoraPracticeEvent& E, uint32 Tick)
         {
@@ -421,8 +425,9 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     return bOk ? Hash : FString();
 }
 
-// The final chapter restored at seventeen defeats: the collector's beam and
-// cleave, carbine fire, its defeat, the last site and the liberating exit.
+// The final chapter restored at seventeen defeats: the collector (High
+// Collector Val Amort) with his beam and cleave, carbine fire his ledger
+// shards intercept, his capture, the last site and the liberating exit.
 FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Collector"), Log);
@@ -619,9 +624,12 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, CollectorLog, Scenario, TEXT("Fired shooter=Boss weapon=-1 kind=Beam"));
     Expect(*this, CollectorLog, Scenario, TEXT("Resolved attacker=Boss target=Hero weapon=-1 hit=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Hero causer=Boss"));
-    Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Boss causer=Hero"), 5);
+    // His ledger shards take the carbine's rounds; the last blow is the story's.
+    Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=Event boss=Boss detail=ward_blocked"));
+    Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Boss causer=Hero"));
     TestEqual(TEXT("The collector falls once"), CollectorLog.Count(TEXT("Boss phase=Defeated boss=Boss")), 1);
-    Expect(*this, CollectorLog, Scenario, TEXT("Died victim=Boss killer=Hero sparring=0"));
+    // High Collector Val Amort is taken, never killed (katsujinken).
+    Expect(*this, CollectorLog, Scenario, TEXT("Died victim=Boss killer=Hero sparring=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("SiteRestored chapter=7 site=2 campaign=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("ChapterCompleted chapter=7 liberated=1"));
 

@@ -282,7 +282,7 @@ void ASoraEnemyController::Tick(float Dt)
     }
     if (auto* Boss = Cast<ASoraBoss>(Enemy))
     {
-        DriveCollector(*Boss, *Target, Dt);
+        DriveBoss(*Boss, *Target, Dt);
         return;
     }
     if (Enemy->IsDojoPupil())
@@ -1098,21 +1098,23 @@ void ASoraEnemyController::DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Tar
     Enemy.PupilAttack(Target, Distance);
 }
 
-void ASoraEnemyController::DriveCollector(ASoraBoss& Boss, ASoraCharacterBase& Target, float Dt)
+void ASoraEnemyController::DriveBoss(ASoraBoss& Boss, ASoraCharacterBase& Target, float Dt)
 {
-    // Fixed attack order, locked aim, explicit warning, and recovery make the
-    // offline encounter readable. No random damage or hidden hit timestamp.
-    if (Boss.UpdateAttack(Dt, Target) || Boss.IsStaggered())
-        return;
-    FVector Delta = Target.GetActorLocation() - Boss.GetActorLocation();
-    Delta.Z = 0.f;
-    const float Distance = Delta.Size2D();
-    if (Distance > 740.f)
-    {
-        const FVector Move = Delta.GetSafeNormal2D();
-        Boss.SetActorRotation(FMath::RInterpTo(Boss.GetActorRotation(), Move.Rotation(), Dt, 3.f));
-        Boss.AddMovementInput(Move, .72f);
-        return;
-    }
-    Boss.BeginAttack(Distance, Delta);
+    // Every query this frame sees the same, complete navigation mesh.
+    if (USoraNavigation* Nav = USoraNavigation::Get(this))
+        Nav->Settle();
+    // A blind boss acts on what it hears; the others see their whole arena.
+    for (const FNoise& Noise : Heard)
+        Boss.Hear(Noise.Evidence);
+    Heard.Reset();
+    const FSoraBossIntent Intent = Boss.Drive(Target, Dt);
+    const int32 NowMs = WorldMs();
+    if (Intent.bMove)
+        WalkTo(Boss, Intent.Goal, 1.f, Intent.AcceptanceCm, NowMs);
+    else
+        ClearPath();
+    const FVector Flat(Intent.Facing.X, Intent.Facing.Y, 0.f);
+    // A heavy boss turns at its phase's rate, so a flank can outpace it.
+    if (Intent.bFace && !Flat.IsNearlyZero())
+        Boss.SetActorRotation(FMath::RInterpConstantTo(Boss.GetActorRotation(), Flat.Rotation(), Dt, Intent.TurnDegreesPerSecond));
 }

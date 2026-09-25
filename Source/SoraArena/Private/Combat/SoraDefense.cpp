@@ -56,9 +56,19 @@ bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit&
         Announce(Events, bParried, Hero, Causer, HeldMs, 0.f, true);
         return false;
     }
+    // 無刀取り: sheathed, a guard pressed just before a committed cut lands
+    // takes the blade, and none of the blow. A sheathed hand guards nothing else.
+    const bool bSheathed = Kit->IsSheathed();
+    if (Opponent && Rules::MutoDori(Hit.MutoWindowMs > 0, bSheathed, Kit->IsGuardHeld(), HeldMs, Hit.MutoWindowMs, Facing) &&
+        Opponent->Disarm(&Hero))
+    {
+        Hit.Defense = Rules::EDefense::MutoDori;
+        Damage = 0.f;
+        return false;
+    }
     // Nobody guards against his own blast.
     const bool bSelf = SoraDamage::AttackerOf(Causer) == &Hero;
-    const Rules::FGuard Guard{Kit->IsGuardHeld() && Rules::BlastDefensible(bSelf), HeldMs,
+    const Rules::FGuard Guard{Kit->IsGuardHeld() && !bSheathed && Rules::BlastDefensible(bSelf), HeldMs,
         FMath::FloorToInt32(Kit->GuardReserve()), Facing};
     const Rules::FOutcome Outcome = Rules::Defend(Guard, Hit.Attack(FMath::RoundToInt32(Damage)));
     Hit.Defense = Outcome.Defense;
@@ -66,7 +76,7 @@ bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit&
     {
         Kit->SpendGuard(Outcome.Stamina);
         if (Outcome.Defense == Rules::EDefense::Parry && Opponent)
-            Opponent->Stagger(Outcome.AttackerStaggerMs);
+            Opponent->Parried(Outcome.AttackerStaggerMs);
         Announce(Events, Outcome.Defense == Rules::EDefense::Parry, Hero, Causer, HeldMs, Outcome.Damage, false);
         if (Outcome.GuardBroken)
             Kit->Stagger(Rules::GuardBreakMs / 1000.f);

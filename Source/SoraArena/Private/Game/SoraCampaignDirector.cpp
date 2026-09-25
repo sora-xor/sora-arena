@@ -159,9 +159,9 @@ void USoraCampaignDirector::SpawnEnemy()
     ASoraEnemy* Enemy=nullptr;
     if(bFinalBoss)
     {
-        auto* Boss=GetWorld()->SpawnActor<ASoraBoss>(WorldBuilder->SpawnPoint(Spawned),FRotator(0,180,0),Params);
+        // The collector is High Collector Val Amort (Content/Data/bosses.json).
+        auto* Boss=ASoraBoss::SpawnBoss(*GetWorld(),TEXT("boss_val_amort"),Spawned,WorldBuilder->SpawnPoint(Spawned),FRotator(0,180,0));
         if(!Boss) return;
-        Boss->InitCollector(Spawned);
         BossActor=Boss;
         M.Notice=TEXT("徴収官『この街の息さえ、利子として差し押さえる』");
         M.NoticeEnglish=TEXT("Collector: Even this city's breath is collateral for interest.");

@@ -1,5 +1,6 @@
 #include "HUD/SoraHUDPanels.h"
 #include "ArenaKernelSubsystem.h"
+#include "Combat/SoraBossCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
@@ -52,27 +53,70 @@ void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
     const ASoraGameMode* G=&Frame.Mode;
     const float W=Frame.W,S=Frame.S,JapaneseSubtitleScale=Frame.JapaneseSubtitleScale,EnglishSubtitleScale=Frame.EnglishSubtitleScale;
     const FLinearColor Ivory=Frame.Ivory,Gold=Frame.Gold,Teal=Frame.Teal,Muted=Frame.Muted;
-    if(const ASoraBoss* Boss=G->Campaign()->CampaignBoss())
+    const ASoraBoss* Boss=G->Campaign()->CampaignBoss();
+    const FSoraBossData* Info=Boss?Boss->Data():nullptr;
+    if(!Info) return;
+    // Name, health with its phase marks, then the defenses in play and the
+    // captioned telegraph of the attack under way (bosses.json, bilingual).
+    const FLinearColor Amber(1.f,.68f,.16f),Cyan(.04f,.85f,.95f);
+    const float BossWidth=FMath::Min(W-20.f,FMath::Max(600.f*S,480.f));
+    const float BossX=(W-BossWidth)*.5f,
+        BossY=FMath::Max(G->bEnglishSubtitles?222.f*S:178.f*S,165.f);
+    const bool bEnglish=G->bEnglishSubtitles;
+    HUD.Panel(BossX,BossY,BossWidth,bEnglish?142.f:116.f,FLinearColor(.013f,.027f,.033f,.91f));
+    HUD.Label(Info->NameJapanese,BossX+17.f,BossY+7.f,JapaneseSubtitleScale,Gold);
+    if(bEnglish) HUD.Label(Info->NameEnglish,BossX+BossWidth-17.f-HUD.LabelWidth(Info->NameEnglish,EnglishSubtitleScale),BossY+9.f,EnglishSubtitleScale,Muted);
+    const float BarX=BossX+17.f,BarW=BossWidth-34.f,BarY=BossY+36.f;
+    HUD.Panel(BarX,BarY,BarW,7.f,FLinearColor(.15f,.18f,.20f));
+    HUD.Panel(BarX,BarY,BarW*FMath::Clamp(Boss->Health/Boss->MaxHealth,0.f,1.f),7.f,Boss->IsInvulnerable()?Muted:Gold);
+    for(int32 Index=1;Index<Info->Phases.Num();++Index)
+        HUD.Panel(BarX+BarW*Info->Phases[Index].FromPermille/1000.f-1.f,BarY-3.f,2.f,13.f,Ivory);
+    if(Boss->HasBarrier()&&Info->Barrier.Health>0)
     {
-        const float BossWidth=FMath::Min(W-20.f,FMath::Max(560.f*S,470.f));
-        const float BossX=(W-BossWidth)*.5f,
-            BossY=FMath::Max(G->bEnglishSubtitles?222.f*S:178.f*S,165.f);
-        HUD.Panel(BossX,BossY,BossWidth,114.f,FLinearColor(.013f,.027f,.033f,.91f));
-        HUD.Label(TEXT("異星の徴収官"),BossX+17.f,BossY+7.f,JapaneseSubtitleScale,Gold);
-        if(G->bEnglishSubtitles) HUD.Label(TEXT("ALIEN COLLECTOR"),BossX+BossWidth-185.f,BossY+9.f,EnglishSubtitleScale,Muted);
-        HUD.Panel(BossX+17.f,BossY+36.f,BossWidth-34.f,7.f,FLinearColor(.15f,.18f,.20f));
-        HUD.Panel(BossX+17.f,BossY+36.f,(BossWidth-34.f)*FMath::Clamp(Boss->Health/Boss->MaxHealth,0.f,1.f),7.f,Gold);
-        if(Boss->IsBossTelegraphing())
+        HUD.Panel(BarX,BarY+10.f,BarW,3.f,FLinearColor(.15f,.18f,.20f));
+        HUD.Panel(BarX,BarY+10.f,BarW*FMath::Clamp(Boss->BarrierPoints()/static_cast<float>(Info->Barrier.Health),0.f,1.f),3.f,
+            FLinearColor(.78f,.74f,.92f));
+    }
+    // What is open or closed right now, in both languages.
+    TArray<FString> Japanese,English;
+    if(Boss->IsInvulnerable()) { Japanese.Add(TEXT("無敵")); English.Add(TEXT("INVULNERABLE")); }
+    if(Boss->IsShieldUp()) { Japanese.Add(TEXT("大盾：正面不可")); English.Add(TEXT("SHIELD: front blocked")); }
+    if(Boss->HasBarrier()) { Japanese.Add(Boss->IsBarrierOffline()?TEXT("障壁：停止中"):TEXT("障壁")); English.Add(Boss->IsBarrierOffline()?TEXT("BARRIER: down"):TEXT("BARRIER")); }
+    if(Boss->IsMantleUp()) { Japanese.Add(TEXT("冷却外套：被害七割減")); English.Add(TEXT("MANTLE: 70% less damage")); }
+    if(Boss->IsStaggered()) { Japanese.Add(TEXT("崩れ：好機")); English.Add(TEXT("STAGGERED: strike now")); }
+    for(int32 Index=0;Index<Info->WeakPoints.Num();++Index)
+        if(Boss->IsWeakPointOpen(Index)) { Japanese.Add(Info->WeakPoints[Index].NameJapanese); English.Add(Info->WeakPoints[Index].NameEnglish); }
+    if(Boss->LiveWards()>0&&Info->Wards.IsValidIndex(Boss->CurrentPhase()->Ward))
+    {
+        const FSoraBossWard& Ward=Info->Wards[Boss->CurrentPhase()->Ward];
+        Japanese.Add(FString::Printf(TEXT("%s ×%d"),*Ward.NameJapanese,Boss->LiveWards()));
+        English.Add(FString::Printf(TEXT("%s x%d"),*Ward.NameEnglish,Boss->LiveWards()));
+    }
+    for(const FSoraBossAttack& Attack:Info->Attacks)
+        if(Attack.EventLimit>0)
         {
-            HUD.Label(Boss->IsBossBeamWindup()?TEXT("債務光線の予兆 ― 線から離れよ"):TEXT("斬撃の予兆 ― 受けるか、合わせるか、間合いから離れよ"),
-                BossX+17.f,BossY+51.f,JapaneseSubtitleScale,Ivory);
-            if(G->bEnglishSubtitles)
-                HUD.Label(Boss->IsBossBeamWindup()?TEXT("DEBT BEAM: evade the line"):TEXT("CLEAVE: guard, parry, or leave the arc"),
-                    BossX+17.f,BossY+78.f,EnglishSubtitleScale,Muted);
-            HUD.Label(FString::Printf(TEXT("%.1f s"),Boss->BossWarningSeconds()),BossX+BossWidth-88.f,BossY+76.f,.48f,Gold);
-            HUD.Panel(BossX+BossWidth-108.f,BossY+101.f,90.f,4.f,FLinearColor(.15f,.18f,.20f));
-            HUD.Panel(BossX+BossWidth-108.f,BossY+101.f,90.f*Boss->BossWarningProgress(),4.f,Teal);
+            Japanese.Add(FString::Printf(TEXT("差押え %d / %d"),Boss->Seals(),Attack.EventLimit));
+            English.Add(FString::Printf(TEXT("SEIZED %d / %d"),Boss->Seals(),Attack.EventLimit));
         }
+    if(Japanese.Num())
+        HUD.Label(FString::Join(Japanese,TEXT("　")),BarX,BarY+15.f,.34f,Teal);
+    if(bEnglish&&English.Num())
+        HUD.Label(FString::Join(English,TEXT("  ")),BarX+BarW*.5f,BarY+16.f,.3f,Muted);
+    const FSoraBossAttack* Attack=Boss->BossAttack();
+    if(Attack&&Boss->IsBossTelegraphing())
+    {
+        const FLinearColor Warning=Attack->Telegraph==ESoraBossTelegraph::Cyan?Cyan:Amber;
+        HUD.Label(Attack->TellJapanese,BossX+17.f,BossY+66.f,JapaneseSubtitleScale,Attack->Telegraph==ESoraBossTelegraph::None?Ivory:Warning);
+        if(bEnglish)
+            HUD.Label(Attack->TellEnglish,BossX+17.f,BossY+93.f,EnglishSubtitleScale,Muted);
+        HUD.Label(FString::Printf(TEXT("%.1f s"),Boss->BossWarningSeconds()),BossX+BossWidth-88.f,BossY+(bEnglish?112.f:88.f),.48f,Gold);
+        HUD.Panel(BossX+BossWidth-108.f,BossY+(bEnglish?134.f:110.f),90.f,4.f,FLinearColor(.15f,.18f,.20f));
+        HUD.Panel(BossX+BossWidth-108.f,BossY+(bEnglish?134.f:110.f),90.f*Boss->BossWarningProgress(),4.f,Warning);
+    }
+    else if(!Info->StyleJapanese.IsEmpty())
+    {
+        HUD.Label(Info->StyleJapanese,BossX+17.f,BossY+66.f,.42f,Muted);
+        if(bEnglish) HUD.Label(Info->StyleEnglish,BossX+17.f,BossY+93.f,.34f,Muted);
     }
 }
 void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharacter& Hero)

@@ -1,4 +1,5 @@
 #include "SoraEnemy.h"
+#include "SoraBoss.h"
 #include "Combat/SoraCombatEffects.h"
 #include "Combat/SoraDamage.h"
 #include "Combat/SoraEnemyCatalog.h"
@@ -178,6 +179,8 @@ void ASoraEnemy::SuspendDojoAction()
     }
 }
 FName ASoraEnemy::ArchetypeId() const { return Kind?Kind->Id:NAME_None; }
+void ASoraEnemy::SetSummoner(ASoraBoss* Boss) { SummonedBy=Boss; }
+ASoraBoss* ASoraEnemy::Summoner() const { return SummonedBy.Get(); }
 bool ASoraEnemy::IsBladeRetainer() const { return Kind&&Kind->Behavior==ESoraEnemyBehavior::Blade; }
 bool ASoraEnemy::IsFlying() const { return Kind&&Kind->Behavior==ESoraEnemyBehavior::Drone; }
 bool ASoraEnemy::IsNonlethal() const { return Kind&&!Kind->bLethal; }
@@ -588,7 +591,9 @@ void ASoraEnemy::OnDefeated(AActor* Causer)
     // Zero here means the sparring pupil has yielded, not died; the
     // actor stands for a moment and cannot be scored a second time.
     CancelAttack();
-    if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->Campaign()->OpponentDefeated(this);
+    // A boss's add answers to the boss; the beat counts only its own opponents.
+    if(ASoraBoss* Boss=SummonedBy.Get()) Boss->AddDefeated(*this);
+    else if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->Campaign()->OpponentDefeated(this);
     // A guard's body stays where it fell for the others to find; a combat
     // wave's fallen clear away.
     const auto* Brain=Cast<ASoraEnemyController>(GetController());

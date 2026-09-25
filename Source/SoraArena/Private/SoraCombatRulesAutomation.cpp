@@ -1,7 +1,9 @@
 #include "SoraGameMode.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
+#include "Combat/SoraBossCatalog.h"
 #include "Combat/SoraCombatEffects.h"
+#include "Combat/SoraDamage.h"
 #include "Combat/SoraEnemyCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
@@ -385,18 +387,19 @@ bool FSoraGuardAndParryEveryMeleeTest::RunTest(const FString& Parameters)
         }
     }
 
-    // The collector: its debt beam goes through any guard; its cleave is a
-    // blade like any other.
+    // The collector (High Collector Val Amort, bosses.json): its debt beam
+    // goes through any guard; its cleave is a blade like any other.
     Clear(Arena);
     Arena.PlaceHero(FVector::ZeroVector, 0.f);
-    FActorSpawnParameters Params;
-    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-    ASoraBoss* Boss = Arena.Get()->SpawnActor<ASoraBoss>(FVector(250.f, 0.f, 120.f), FRotator(0.f, 180.f, 0.f), Params);
+    ASoraBoss* Boss = ASoraBoss::SpawnBoss(*Arena.Get(), TEXT("boss_val_amort"), 17, FVector(250.f, 0.f, 120.f), FRotator(0.f, 180.f, 0.f));
     if (!TestNotNull(TEXT("The collector spawns"), Boss))
         return false;
-    Boss->InitCollector(17);
     ASoraPlayerCharacter* Hero = Arena.Hero();
-    const auto Telegraphing = [Boss](bool bBeam) { return Boss->IsBossTelegraphing() && Boss->IsBossBeamWindup() == bBeam; };
+    const auto Telegraphing = [Boss](bool bBeam)
+    {
+        const FSoraBossAttack* Attack = Boss->BossAttack();
+        return Boss->IsBossTelegraphing() && Attack && (Attack->Kind == ESoraBossAttackKind::Beam) == bBeam;
+    };
     if (!Until(Arena, 600, [&]() { return Telegraphing(true); }) || !TestTrue(TEXT("The collector opens with its beam"), Telegraphing(true)))
         return false;
     const int32 BeamsBefore = Log.CountIf(Log.Fired, [Boss](const FLog::FStamped<FSoraWeaponFiredEvent>& E) { return E.Event.Shooter == Boss; });
@@ -423,9 +426,11 @@ bool FSoraGuardAndParryEveryMeleeTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The parry holds the world still"), Dilation(Arena) < .5f);
     if (!Press(Arena, EKeys::LeftControl, false))
         return false;
-    // While staggered it starts no attack, and hits on it deal a quarter more.
+    // While staggered it starts no attack, and a cut on it deals a quarter more.
     const float BossHealth = Boss->Health;
-    UGameplayStatics::ApplyDamage(Boss, 40.f, Hero->GetController(), Hero, UDamageType::StaticClass());
+    FHitResult Cut;
+    Cut.ImpactPoint = Boss->GetActorLocation();
+    SoraDamage::Strike(Boss, 40.f, FSoraHit::Melee(Hero->GetActorLocation(), 0), FVector(1.f, 0.f, 0.f), Cut, Hero->GetController(), Hero);
     TestEqual(TEXT("A staggered collector takes a quarter more"), BossHealth - Boss->Health, 50.f);
     bool bAttackedInStagger = false;
     if (!Until(Arena, 240, [&]() { bAttackedInStagger |= Boss->IsBossTelegraphing() && Boss->IsStaggered(); return !Boss->IsStaggered(); }))

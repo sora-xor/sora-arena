@@ -276,7 +276,14 @@
           "guard": { "parry": true, "chip": 9, "stamina": 35, "parry_stagger_ms": 1200, "breaks": false }
         }
       ],
-      "variants": []
+      "variants": [
+        {
+          "id": "collateral_construct",
+          "name_ja": "担保傀儡",
+          "name_en": "Collateral construct",
+          "health": 260
+        }
+      ]
     },
     {
       "id": "seizure_walker",

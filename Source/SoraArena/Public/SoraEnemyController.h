@@ -24,7 +24,9 @@ struct FSoraPatrolRoute
 };
 
 // The campaign opponents' brain, run from its own tick before its pawn moves.
-// Sparring pupils and the final collector keep their fixed drills. Every other
+// Sparring pupils keep their fixed drill; a boss or rival duellist
+// (ASoraBoss) chooses its own attacks from its pattern tables and is walked
+// here, hearing through this brain when it is blind. Every other
 // opponent runs SoraStealthRules' state machine (unaware, suspicious, alert,
 // search, combat, retreat) on what its archetype perceives (Content/Data/
 // enemies.json): a view cone with line of sight to the hero's head, chest and
@@ -103,7 +105,7 @@ private:
     void Prepare(bool bHunt);
     void Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
     void DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
-    void DriveCollector(ASoraBoss& Boss, ASoraCharacterBase& Target, float DeltaSeconds);
+    void DriveBoss(ASoraBoss& Boss, ASoraCharacterBase& Target, float DeltaSeconds);
     SoraStealthRules::FSight Look(const ASoraEnemy& Enemy, const ASoraCharacterBase& Target) const;
     bool Occluded(const FVector& From, const FVector& To, const AActor* Source) const;
     void Enter(ASoraEnemy& Enemy, SoraStealthRules::EState Previous, int32 NowMs);

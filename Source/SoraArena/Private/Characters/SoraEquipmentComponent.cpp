@@ -27,6 +27,7 @@ void USoraEquipmentComponent::ResetForClass()
 }
 void USoraEquipmentComponent::Hold(int32 WeaponId)
 {
+    bSheathed=false;
     Hero()->WeaponId=WeaponId;
     Ammo=FSoraCatalog::Get().Weapon(WeaponId).Magazine;
 }
@@ -61,6 +62,17 @@ void USoraEquipmentComponent::Stagger(float Seconds)
     NextShot=FMath::Max(NextShot,StaggeredUntil);
 }
 bool USoraEquipmentComponent::IsStaggered() const { return GetWorld()&&GetWorld()->GetTimeSeconds()<StaggeredUntil; }
+void USoraEquipmentComponent::Sheathe(bool bSheathe)
+{
+    if(bSheathe==bSheathed) return;
+    if(bSheathe&&(!SoraHistoricalArms::IsMelee(Hero()->WeaponId)||bCommittedStrike||bReloading)) return;
+    bSheathed=bSheathe; SheathedAt=GetWorld()->GetTimeSeconds();
+    bGuardHeld=false; bBowDrawing=false; bFireHeld=false;
+}
+bool USoraEquipmentComponent::IsSheathed() const
+{
+    return bSheathed&&GetWorld()&&(GetWorld()->GetTimeSeconds()-SheathedAt)*1000.f>=SoraCombatRules::SheatheMs;
+}
 void USoraEquipmentComponent::TickGuard(float Dt)
 {
     GuardStamina=FMath::Clamp(GuardStamina+(bGuardHeld?-28.f:21.f)*Dt,0.f,100.f);
@@ -79,7 +91,7 @@ void USoraEquipmentComponent::TriggerDown()
     ASoraPlayerCharacter* H=Hero();
     const int32 WeaponId=H->WeaponId;
     const auto& W=FSoraCatalog::Get().Weapon(WeaponId);
-    if(IsStaggered()) return;
+    if(IsStaggered()||bSheathed) return;
     if(W.Kind==TEXT("bow"))
     {
         if(!bBowDrawing&&!bReloading&&!H->IsSprinting()&&Ammo>0&&GetWorld()->GetTimeSeconds()>=NextShot)
@@ -132,7 +144,7 @@ void USoraEquipmentComponent::Fire()
 void USoraEquipmentComponent::Melee()
 {
     ASoraPlayerCharacter* H=Hero();
-    if(!H->CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading||bCommittedStrike||bBowDrawing||IsStaggered()||
+    if(!H->CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading||bCommittedStrike||bBowDrawing||IsStaggered()||bSheathed||
         (bGuardHeld&&!H->IsDojoTraining())) return;
     const int32 MeleeId=FSoraCatalog::Get().Weapon(H->WeaponId).Kind==TEXT("melee")?H->WeaponId:FSoraCatalog::Get().Class(H->ClassId).Weapons[0];
     const auto& W=FSoraCatalog::Get().Weapon(MeleeId);
@@ -295,7 +307,7 @@ bool USoraEquipmentComponent::EquipClassSlot(int32 Slot)
     if(bReloading||bCommittedStrike||
         (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
         (H->IsDojoTraining()&&Slot!=0)) return false;
-    bBowDrawing=false; bFireHeld=false; bGuardHeld=false;
+    bBowDrawing=false; bFireHeld=false; bGuardHeld=false; bSheathed=false;
     AmmoByWeapon[H->WeaponId]=Ammo; H->WeaponId=FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot];
     Ammo=AmmoByWeapon[H->WeaponId]; NextShot=GetWorld()->GetTimeSeconds()+.25f; H->RebuildWeapon();
     return true;
@@ -305,7 +317,7 @@ bool USoraEquipmentComponent::EquipCampaignWeapon(int32 NewWeaponId)
     ASoraPlayerCharacter* H=Hero();
     if(bReloading||bCommittedStrike||
         (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)) return false;
-    bBowDrawing=false; bFireHeld=false; bGuardHeld=false;
+    bBowDrawing=false; bFireHeld=false; bGuardHeld=false; bSheathed=false;
     AmmoByWeapon[H->WeaponId]=Ammo;
     H->WeaponId=NewWeaponId; Ammo=AmmoByWeapon[H->WeaponId];
     NextShot=GetWorld()->GetTimeSeconds()+.25f; H->RebuildWeapon();

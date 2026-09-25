@@ -15,8 +15,11 @@ namespace SoraCombatRules
 // Melee: a blade, staff, baton or claw. Ranged: a bullet or an arrow. Blast:
 // a shell's detonation, from where it went off. Beam: a locked debt beam,
 // never guarded. Scripted: damage no weapon dealt (a story event or a test).
-enum class EHit { Melee, Ranged, Blast, Beam, Scripted };
-enum class EDefense { Exposed, Guard, Parry };
+// Hazard: the arena turned against the hero (a molten channel, a strike on
+// marked cover, a floor tile giving way), never guarded.
+enum class EHit { Melee, Ranged, Blast, Beam, Scripted, Hazard };
+// MutoDori: sheathed, the hero stepped inside a committed cut and took the blade.
+enum class EDefense { Exposed, Guard, Parry, MutoDori };
 
 // A guard covers the front 120 degrees.
 constexpr int FrontMilli = 500;
@@ -46,7 +49,9 @@ constexpr int Share(int Damage, int Permille)
 }
 
 // How an attack meets a raised guard. Negative GuardChip and GuardStamina use
-// the kind's shares.
+// the kind's shares. An unguardable blow (a slam, a final foreclosure) goes
+// through a held guard whole; if it is also parryable, a fresh guard still
+// meets it.
 struct FAttack
 {
     EHit Kind;
@@ -56,6 +61,7 @@ struct FAttack
     int GuardStamina;
     int ParryStaggerMs;
     bool BreaksGuard;
+    bool Unguardable = false;
 };
 
 // The defender: whether a guard is held and for how long, its stamina, and the
@@ -98,6 +104,8 @@ constexpr FOutcome Defend(FGuard Guard, FAttack Attack)
     {
         if (Attack.Parryable && Guard.HeldMs <= ParryWindowMs)
             return {EDefense::Parry, 0, ParryStamina, Attack.ParryStaggerMs, false};
+        if (Attack.Unguardable)
+            return Exposed;
         const int Chip = Attack.GuardChip >= 0 ? Clamp(Attack.GuardChip, 0, Attack.Damage)
                                                : Share(Attack.Damage, MeleeChipPermille);
         const int Cost = Attack.GuardStamina >= 0 ? Attack.GuardStamina : MeleeGuardStamina;
@@ -116,8 +124,22 @@ constexpr int HitStopMs(EHit Kind, EDefense Defense, bool Landed, int StaggerMs)
 {
     if (Kind != EHit::Melee)
         return 0;
-    return Defense == EDefense::Parry ? 120 : Defense == EDefense::Guard ? 60 :
+    return Defense == EDefense::Parry || Defense == EDefense::MutoDori ? 120 : Defense == EDefense::Guard ? 60 :
         !Landed ? 0 : StaggerMs >= HeavyStaggerMs ? 100 : 70;
+}
+
+// 無刀取り (mutō-dori). Sheathing the blade takes SheatheMs, and a sheathed
+// hand guards nothing. Sheathed and facing a committed cut that allows it,
+// the hero who presses guard no more than the window before the cut lands
+// steps inside the arc and takes the blade: none of the blow lands and the
+// attacker is disarmed. A mistimed attempt takes the whole blow. The window
+// is Normal's; bosses.json scales it with the windups on Easy and Hard.
+constexpr int SheatheMs = 700;
+constexpr int MutoWindowMs = 180;
+
+constexpr bool MutoDori(bool Eligible, bool Sheathed, bool Pressed, int PressedMs, int WindowMs, int FacingMilli)
+{
+    return Eligible && Sheathed && Pressed && PressedMs >= 0 && PressedMs <= WindowMs && FacingMilli >= FrontMilli;
 }
 
 // Stagger. A staggered opponent drops its windup and cannot act, and every

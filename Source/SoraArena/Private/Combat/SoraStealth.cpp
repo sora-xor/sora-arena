@@ -14,7 +14,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-namespace Rules = SoraStealthRules;
+namespace StealthRules = SoraStealthRules;
 
 namespace SoraStealthZone
 {
@@ -82,25 +82,25 @@ void USoraStealth::EndZone()
     bAlarm = false;
 }
 
-Rules::FVigilance USoraStealth::Vigilance() const
+StealthRules::FVigilance USoraStealth::Vigilance() const
 {
-    return bZoneActive ? Rules::OnDifficulty(ZoneRules.Vigilance, ZoneRules.Difficulty) : Rules::Watchful();
+    return bZoneActive ? StealthRules::OnDifficulty(ZoneRules.Vigilance, ZoneRules.Difficulty) : StealthRules::Watchful();
 }
 
-void USoraStealth::AddSurface(const FBox& Volume, Rules::FSurface Surface)
+void USoraStealth::AddSurface(const FBox& Volume, StealthRules::FSurface Surface)
 {
     if (bZoneActive && Volume.IsValid)
         Floors.Add({Volume, Surface});
 }
 
-Rules::FSurface USoraStealth::SurfaceAt(const FVector& Feet) const
+StealthRules::FSurface USoraStealth::SurfaceAt(const FVector& Feet) const
 {
     // The last floor added wins, so a nightingale floor's silent edge strip
     // is added after the corridor it runs along.
     for (int32 Index = Floors.Num() - 1; Index >= 0; --Index)
         if (Floors[Index].Volume.IsInsideOrOn(Feet))
             return Floors[Index].Surface;
-    return Rules::Plain();
+    return StealthRules::Plain();
 }
 
 void USoraStealth::AddAlarmPoint(const FVector& Location)
@@ -120,22 +120,22 @@ int32 USoraStealth::LightAt(const FVector& Location) const
         if (!Light || !Light->IsVisible())
             continue;
         if (const auto* Lamp = Cast<UPointLightComponent>(Light))
-            Lamps += Rules::LampPermille(FMath::RoundToInt32(FVector::Dist(Location, Lamp->GetComponentLocation())),
+            Lamps += StealthRules::LampPermille(FMath::RoundToInt32(FVector::Dist(Location, Lamp->GetComponentLocation())),
                 FMath::RoundToInt32(Lamp->AttenuationRadius));
         else if (Light->IsA<UDirectionalLightComponent>())
             KeyDeciLux = FMath::Max(KeyDeciLux, FMath::RoundToInt32(Light->Intensity * 10.f));
     }
-    return Rules::LightPermille(Rules::AmbientPermille(KeyDeciLux), Lamps);
+    return StealthRules::LightPermille(StealthRules::AmbientPermille(KeyDeciLux), Lamps);
 }
 
-void USoraStealth::NoteState(ASoraEnemy& Guard, Rules::EState Previous, Rules::EState Next)
+void USoraStealth::NoteState(ASoraEnemy& Guard, StealthRules::EState Previous, StealthRules::EState Next)
 {
-    if (!bZoneActive || bDetected || !Rules::Detects(Previous, Next))
+    if (!bZoneActive || bDetected || !StealthRules::Detects(Previous, Next))
         return;
     bDetected = true;
     FSoraStealthDetection Detection;
     Detection.By = &Guard;
-    Detection.Response = Rules::Response(ZoneRules.OnDetected, ZoneRules.Difficulty);
+    Detection.Response = StealthRules::Response(ZoneRules.OnDetected, ZoneRules.Difficulty);
     OnDetected.Broadcast(Detection);
 }
 
@@ -150,7 +150,7 @@ void USoraStealth::RaiseAlarm(ASoraEnemy& By, const FVector& Where)
         bDetected = true;
         FSoraStealthDetection Detection;
         Detection.By = &By;
-        Detection.Response = Rules::Response(ZoneRules.OnDetected, ZoneRules.Difficulty);
+        Detection.Response = StealthRules::Response(ZoneRules.OnDetected, ZoneRules.Difficulty);
         OnDetected.Broadcast(Detection);
     }
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
@@ -206,7 +206,7 @@ void USoraStealth::FindBody(ASoraEnemy& Body, ASoraEnemy& Finder)
     OnBodyFound.Broadcast(&Body, &Finder);
 }
 
-void USoraStealth::MakeNoise(Rules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source) const
+void USoraStealth::MakeNoise(StealthRules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source) const
 {
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
         if (It->GetPawn() && It->GetPawn() != Source)
@@ -216,17 +216,17 @@ void USoraStealth::MakeNoise(Rules::ENoise Kind, const FVector& Origin, const FV
 bool USoraStealth::IsWorkPaused() const
 {
     bool bSees = false;
-    Rules::EState Most = Rules::EState::Unaware;
+    StealthRules::EState Most = StealthRules::EState::Unaware;
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
     {
         const ASoraEnemy* Guard = nullptr;
         if (!SoraStealthZone::IsBrain(*It, Guard) || !Guard->IsAlive())
             continue;
         bSees |= It->SeesHero();
-        if (Rules::Severity(It->State()) > Rules::Severity(Most))
+        if (StealthRules::Severity(It->State()) > StealthRules::Severity(Most))
             Most = It->State();
     }
-    return Rules::WorkPaused(bSees, Most);
+    return StealthRules::WorkPaused(bSees, Most);
 }
 
 ASoraEnemy* USoraStealth::TakedownTarget(const ASoraPlayerCharacter& Hero) const
@@ -244,7 +244,7 @@ ASoraEnemy* USoraStealth::TakedownTarget(const ASoraPlayerCharacter& Hero) const
             FMath::Abs(Enemy->GetActorLocation().Z - There.Z) > SoraStealthZone::ReachHeightCm)
             continue;
         const int32 Distance = FMath::RoundToInt32(FVector::Dist2D(There, Enemy->GetActorLocation()));
-        if (Distance >= BestDistance || !Rules::CanTakedown(true, true, Brain->State(), Distance,
+        if (Distance >= BestDistance || !StealthRules::CanTakedown(true, true, Brain->State(), Distance,
             SoraDamage::FacingMilli(*Enemy, There), SoraDamage::FacingMilli(Hero, Enemy->GetActorLocation())))
             continue;
         Best = Enemy;
@@ -297,7 +297,7 @@ void USoraStealth::TickTakedown()
         return;
     }
     const int32 ElapsedMs = FMath::FloorToInt32((Now() - TakedownStartedAt) * 1000.0);
-    if (!bTakedownDecided && ElapsedMs >= Rules::TakedownHoldMs)
+    if (!bTakedownDecided && ElapsedMs >= StealthRules::TakedownHoldMs)
     {
         ASoraEnemy* Target = Victim.Get();
         if (!Target || !Target->IsAlive())
@@ -306,10 +306,10 @@ void USoraStealth::TickTakedown()
             return;
         }
         bTakedownDecided = true;
-        TakedownKind = Rules::Takedown(Target->IsNonlethal(), ZoneRules.bLethalDefault, bTakedownHeld);
+        TakedownKind = StealthRules::Takedown(Target->IsNonlethal(), ZoneRules.bLethalDefault, bTakedownHeld);
         FinishTakedown(*Target, *Hero);
     }
-    if (bTakedownDecided && ElapsedMs >= Rules::TakedownMs(TakedownKind))
+    if (bTakedownDecided && ElapsedMs >= StealthRules::TakedownMs(TakedownKind))
     {
         UnlockHero();
         bTakedownActive = false;
@@ -321,7 +321,7 @@ void USoraStealth::TickTakedown()
 void USoraStealth::FinishTakedown(ASoraEnemy& Target, ASoraPlayerCharacter& Hero)
 {
     Target.Seize(false);
-    if (TakedownKind == Rules::ETakedown::Knockout)
+    if (TakedownKind == StealthRules::ETakedown::Knockout)
         Target.KnockOut(&Hero);
     else
     {
@@ -335,7 +335,7 @@ void USoraStealth::FinishTakedown(ASoraEnemy& Target, ASoraPlayerCharacter& Hero
         Trace.Location = Trace.ImpactPoint;
         SoraDamage::Strike(&Target, Target.MaxHealth * 10.f + 1000.f, Hit, Target.GetActorForwardVector(), Trace, Hero.GetController(), &Hero);
     }
-    MakeNoise(Rules::ENoise::Takedown, Target.GetActorLocation(), Hero.GetActorLocation(), &Hero);
+    MakeNoise(StealthRules::ENoise::Takedown, Target.GetActorLocation(), Hero.GetActorLocation(), &Hero);
 }
 
 void USoraStealth::AbortTakedown()
@@ -371,7 +371,7 @@ ASoraEnemy* USoraStealth::DragTarget(const ASoraPlayerCharacter& Hero) const
     if (!bZoneActive || !ZoneRules.bDragBodies || bTakedownActive || IsDragging() || !Hero.CanPlay() || Hero.IsKernelDriven())
         return nullptr;
     ASoraEnemy* Best = nullptr;
-    float BestDistance = Rules::DragReachCm;
+    float BestDistance = StealthRules::DragReachCm;
     const FVector There = Hero.GetActorLocation();
     for (const FBody& Entry : Bodies)
     {
@@ -408,7 +408,7 @@ void USoraStealth::EndDrag()
 
 float USoraStealth::HeroMoveScale() const
 {
-    return IsDragging() ? Rules::DragSpeedPermille / 1000.f : 1.f;
+    return IsDragging() ? StealthRules::DragSpeedPermille / 1000.f : 1.f;
 }
 
 void USoraStealth::TickDrag()
@@ -453,15 +453,15 @@ FSoraStealthReadout USoraStealth::Readout(const ASoraPlayerCharacter& Hero) cons
         Mark.State = It->State();
         Mark.MeterPermille = It->MeterPermille();
         Mark.Head = Guard->GetActorLocation() + FVector(0.f, 0.f, Guard->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 30.f);
-        const int32 Severity = Rules::Severity(Mark.State);
-        const int32 WorstSeverity = Rules::Severity(Readout.Worst);
+        const int32 Severity = StealthRules::Severity(Mark.State);
+        const int32 WorstSeverity = StealthRules::Severity(Readout.Worst);
         if (Severity > WorstSeverity || (Severity == WorstSeverity && Mark.MeterPermille > Readout.MeterPermille))
         {
             Readout.Worst = Mark.State;
             Readout.MeterPermille = Mark.MeterPermille;
         }
         Readout.bSeen |= It->SeesHero();
-        if (Mark.State != Rules::EState::Unaware || Mark.MeterPermille > 0)
+        if (Mark.State != StealthRules::EState::Unaware || Mark.MeterPermille > 0)
             Readout.Marks.Add(Mark);
     }
     Readout.LightPermille = LightAt(Hero.GetActorLocation());

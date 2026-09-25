@@ -1,4 +1,5 @@
 #include "Combat/SoraEnemyCatalog.h"
+#include "Combat/SoraDataReader.h"
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -6,79 +7,8 @@
 
 namespace
 {
-// Reads required, typed and range-checked fields, naming the first failure.
-struct FReader
-{
-    FString& Error;
-    FString Where;
-
-    bool Fail(const FString& Field, const TCHAR* Problem) const
-    {
-        Error = FString::Printf(TEXT("enemies.json %s.%s: %s"), *Where, *Field, Problem);
-        return false;
-    }
-    bool Int(const FJsonObject& Object, const TCHAR* Field, int32& Out, int32 Minimum, int32 Maximum) const
-    {
-        double Value = 0.0;
-        if (!Object.TryGetNumberField(Field, Value))
-            return Fail(Field, TEXT("missing whole number"));
-        if (Value != FMath::FloorToDouble(Value) || Value < Minimum || Value > Maximum)
-            return Fail(Field, TEXT("out of range or not whole"));
-        Out = static_cast<int32>(Value);
-        return true;
-    }
-    bool Text(const FJsonObject& Object, const TCHAR* Field, FString& Out) const
-    {
-        if (!Object.TryGetStringField(Field, Out) || Out.TrimStartAndEnd().IsEmpty())
-            return Fail(Field, TEXT("missing text"));
-        return true;
-    }
-    bool Name(const FJsonObject& Object, const TCHAR* Field, FName& Out) const
-    {
-        FString Value;
-        if (!Text(Object, Field, Value))
-            return false;
-        for (const TCHAR Character : Value)
-            if (!FChar::IsLower(Character) && !FChar::IsDigit(Character) && Character != TEXT('_'))
-                return Fail(Field, TEXT("not a lower_snake_case id"));
-        Out = FName(*Value);
-        return true;
-    }
-    bool Flag(const FJsonObject& Object, const TCHAR* Field, bool& Out) const
-    {
-        if (!Object.TryGetBoolField(Field, Out))
-            return Fail(Field, TEXT("missing true or false"));
-        return true;
-    }
-    bool Object(const FJsonObject& Parent, const TCHAR* Field, TSharedPtr<FJsonObject>& Out) const
-    {
-        const TSharedPtr<FJsonObject>* Found = nullptr;
-        if (!Parent.TryGetObjectField(Field, Found) || !Found || !Found->IsValid())
-            return Fail(Field, TEXT("missing object"));
-        Out = *Found;
-        return true;
-    }
-    bool Array(const FJsonObject& Parent, const TCHAR* Field, const TArray<TSharedPtr<FJsonValue>>*& Out) const
-    {
-        if (!Parent.TryGetArrayField(Field, Out) || !Out)
-            return Fail(Field, TEXT("missing array"));
-        return true;
-    }
-    template <typename TEnum, int32 N>
-    bool Choice(const FJsonObject& Object, const TCHAR* Field, const TCHAR* const (&Names)[N], TEnum& Out) const
-    {
-        FString Value;
-        if (!Text(Object, Field, Value))
-            return false;
-        for (int32 Index = 0; Index < N; ++Index)
-            if (Value == Names[Index])
-            {
-                Out = static_cast<TEnum>(Index);
-                return true;
-            }
-        return Fail(Field, TEXT("unknown value"));
-    }
-};
+using FReader = FSoraDataReader;
+constexpr const TCHAR* EnemiesFile = TEXT("enemies.json");
 
 int32 HalfArcMilli(int32 Degrees)
 {
@@ -222,7 +152,7 @@ bool ReadVariant(const FReader& R, const FJsonObject& O, FSoraEnemyVariant& V)
 
 bool ReadArchetype(FString& Error, const FJsonObject& O, int32 Index, FSoraEnemyArchetype& E)
 {
-    FReader R{Error, FString::Printf(TEXT("archetypes[%d]"), Index)};
+    FReader R{Error, EnemiesFile, FString::Printf(TEXT("archetypes[%d]"), Index)};
     int32 Faction = 0;
     if (!R.Name(O, TEXT("id"), E.Id))
         return false;
@@ -276,7 +206,7 @@ bool ReadArchetype(FString& Error, const FJsonObject& O, int32 Index, FSoraEnemy
     for (int32 AttackIndex = 0; AttackIndex < Attacks->Num(); ++AttackIndex)
     {
         const TSharedPtr<FJsonObject> Row = (*Attacks)[AttackIndex]->AsObject();
-        FReader AttackReader{Error, FString::Printf(TEXT("%s.attacks[%d]"), *R.Where, AttackIndex)};
+        FReader AttackReader{Error, EnemiesFile, FString::Printf(TEXT("%s.attacks[%d]"), *R.Where, AttackIndex)};
         if (!Row.IsValid())
             return AttackReader.Fail(TEXT("row"), TEXT("not an object"));
         FSoraEnemyAttack& Attack = E.Attacks.AddDefaulted_GetRef();
@@ -291,7 +221,7 @@ bool ReadArchetype(FString& Error, const FJsonObject& O, int32 Index, FSoraEnemy
     for (int32 VariantIndex = 0; VariantIndex < Variants->Num(); ++VariantIndex)
     {
         const TSharedPtr<FJsonObject> Row = (*Variants)[VariantIndex]->AsObject();
-        FReader VariantReader{Error, FString::Printf(TEXT("%s.variants[%d]"), *R.Where, VariantIndex)};
+        FReader VariantReader{Error, EnemiesFile, FString::Printf(TEXT("%s.variants[%d]"), *R.Where, VariantIndex)};
         if (!Row.IsValid())
             return VariantReader.Fail(TEXT("row"), TEXT("not an object"));
         FSoraEnemyVariant& Variant = E.Variants.AddDefaulted_GetRef();
