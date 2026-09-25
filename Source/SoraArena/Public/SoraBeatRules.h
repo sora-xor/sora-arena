@@ -342,6 +342,10 @@ struct FTask
     int Pickups = 0;
     int Dropoffs = 0;
     bool DropOnHit = false;
+    // A carried load slows the hero to this permille of his pace and leaves
+    // only these weapons in hand (the katana in one paw, or nothing).
+    int CarrySpeedPermille = Permille;
+    unsigned CarryWeaponsMask = 0u;
     int StepCount = 0;
     FStep Steps[MaxSteps] = {};
     int TargetCount = 0;
@@ -377,6 +381,8 @@ struct FTaskState
     unsigned Released = 0u;
     int Down[MaxWaves] = {};
     int TargetHp[MaxPoints] = {};
+    // Opponent-milliseconds at each defended target not yet worn into damage.
+    int SiegeMs[MaxPoints] = {};
     int OpponentPermille = Permille;
     bool Carrying = false;
     bool LinesDone = false;
@@ -877,6 +883,24 @@ constexpr bool DamageTarget(FTaskState& State, const FTask& Task, int Index, int
     return State.TargetHp[Index] == 0;
 }
 
+// Opponents standing at a defended target wear it down: SiegeHpPerSecond
+// for each of them, carried in whole opponent-milliseconds so no frame
+// boundary loses a fraction. Returns the damage to deal now.
+constexpr int SiegeRadiusCm = 700;
+constexpr int SiegeHpPerSecond = 5;
+constexpr int SiegeMsPerHp = 1000 / SiegeHpPerSecond;
+constexpr int SiegeDamage(FTaskState& State, const FTask& Task, int Index, int Attackers, int DeltaMs)
+{
+    if (Index < 0 || Index >= Task.TargetCount || Index >= MaxPoints || Attackers <= 0 || DeltaMs <= 0 ||
+        State.TargetHp[Index] <= 0)
+        return 0;
+    const int Delta = DeltaMs > 60000 ? 60000 : DeltaMs;
+    const long long Total = State.SiegeMs[Index] + static_cast<long long>(Attackers > MaxGoalCount ? MaxGoalCount : Attackers) * Delta;
+    const long long Damage = Total / SiegeMsPerHp;
+    State.SiegeMs[Index] = static_cast<int>(Total - Damage * SiegeMsPerHp);
+    return static_cast<int>(Damage > State.TargetHp[Index] ? State.TargetHp[Index] : Damage);
+}
+
 // Repairs a damaged, standing target up to its authored health.
 constexpr bool RepairTarget(FTaskState& State, const FTask& Task, int Index, int Hp)
 {
@@ -1051,7 +1075,8 @@ constexpr bool TaskValid(const FTask& Task)
             return Task.Goal == EGoal::Turns && Task.Count > 0 && Task.MinTurnMs > 0 && Task.MinTurnMs <= Task.MaxTurnMs;
         case ETask::Escort: return Task.Goal == EGoal::Escort && Task.SpeedCmS > 0 && Task.WaitCm > 0 && Task.PathCm >= 0;
         case ETask::Carry:
-            return Task.Goal == EGoal::Deliveries && Task.Count > 0 && PointsValid(Task.Pickups) && PointsValid(Task.Dropoffs);
+            return Task.Goal == EGoal::Deliveries && Task.Count > 0 && PointsValid(Task.Pickups) && PointsValid(Task.Dropoffs) &&
+                Task.CarrySpeedPermille > 0 && Task.CarrySpeedPermille <= Permille && (Task.CarryWeaponsMask & ~1u) == 0u;
         case ETask::Manufacture: return Task.Goal == EGoal::Steps && StepsValid(Task);
         case ETask::Defend:
             return TargetsValid(Task) && (Task.Goal == EGoal::Survive ? Task.DurationMs > 0 :

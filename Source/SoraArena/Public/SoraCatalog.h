@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "SoraBeatRules.h"
+#include "SoraMountRules.h"
 
 struct FSoraWeapon
 {
@@ -90,8 +91,10 @@ struct FSoraCollectible
     // Chapter-local bit 0-5; the save keeps chapter * 6 + MaskBit.
     int32 MaskBit = 0;
     FString Place;
-    // Completing any of these beats collects it.
+    // The explore beats whose cache holds it; opening one collects it.
     TArray<int32> Beats;
+    // Otherwise it lies loose in the world: its FSoraSpace pickup.
+    int32 Pickup = INDEX_NONE;
     FString Codex;
     FString CodexEnglish;
 };
@@ -102,6 +105,182 @@ struct FSoraPrompt
     FString On;
     FString Japanese;
     FString English;
+};
+
+// A bilingual label from campaign.json: a mechanic, a manufacturing step or a
+// defended target.
+struct FSoraLabel
+{
+    FString Japanese;
+    FString English;
+};
+
+// A chapter's space (scripts/unreal/campaign_space.py), in the world frame:
+// integer centimetres about the arena centre, every floor at z 0.
+struct FSoraBox
+{
+    FVector2D Center = FVector2D::ZeroVector;
+    FVector2D Size = FVector2D::ZeroVector;
+    float Height = 0.f;
+};
+// A visual-only prop: an imported mesh, or "pine", "tree", "building" and
+// "building_hightech" for the world builder's own dressing.
+struct FSoraProp
+{
+    FName Mesh;
+    FVector2D At = FVector2D::ZeroVector;
+    float Yaw = 0.f;
+};
+// A trigger volume: the hero standing inside it raises Event.
+struct FSoraVolume
+{
+    FString Event;
+    FVector2D Center = FVector2D::ZeroVector;
+    FVector2D Size = FVector2D::ZeroVector;
+    bool Contains(const FVector& Location) const
+    {
+        return FMath::Abs(Location.X - Center.X) <= Size.X * .5f && FMath::Abs(Location.Y - Center.Y) <= Size.Y * .5f;
+    }
+};
+// A walled zone for a place, or a route corridor with its road.
+struct FSoraZone
+{
+    FString Id;
+    FString Place;
+    // estate, ward, foundry or citadel; hall, yard, field or route.
+    FName Style;
+    FName Form;
+    FBox2D Rect = FBox2D(ForceInit);
+    float WallHeight = 0.f;
+    FVector2D Entry = FVector2D::ZeroVector;
+    float EntryYaw = 0.f;
+    TArray<FSoraBox> Walls;
+    TArray<FSoraBox> Cover;
+    TArray<FSoraProp> Props;
+    TArray<FVector2D> Route;
+    float RouteLength = 0.f;
+    bool IsRoute() const { return Route.Num() >= 2; }
+    bool Contains(const FVector& Location) const { return Rect.IsInside(FVector2D(Location)); }
+    // The road's point Chainage cm from its start, and how far along the road
+    // a point stands (projected onto its nearest stretch).
+    FVector2D PointAlong(float Chainage) const;
+    float ChainageOf(const FVector2D& Point) const;
+    // The road's heading at a chainage, in degrees.
+    float HeadingAt(float Chainage) const;
+};
+struct FSoraTackStep
+{
+    FString Id;
+    FName Part;
+    // Presses refused before she accepts it, and what a refusal waits for.
+    int32 Refusals = 0;
+    FString Gift;
+};
+struct FSoraGaitCap
+{
+    int32 FromCm = 0;
+    int32 ToCm = 0;
+    SoraMountRules::EGait Gait = SoraMountRules::EGait::Walk;
+};
+struct FSoraForcedGait
+{
+    FString Volume;
+    SoraMountRules::EGait Gait = SoraMountRules::EGait::Walk;
+};
+// A pack horse beside the ride: a convoy walking the road ahead, or a laden
+// mare led on a rope behind.
+struct FSoraPackHorse
+{
+    FString Id;
+    FName Follow;
+    int32 SpeedCmS = 0;
+    int32 SpacingCm = 0;
+};
+// The horse a ride, or a mounted fight's opening phases, puts under the hero.
+struct FSoraMount
+{
+    FName Horse;
+    FName Coat;
+    // Starts in the saddle; otherwise tacked up (Tack) and mounted from the right.
+    bool bMounted = true;
+    TArray<FSoraTackStep> Tack;
+    SoraMountRules::FHorse Rules;
+    // A live opponent this close spooks her (0: nothing does); so does
+    // entering one of the Spooks volumes.
+    int32 FearRadiusCm = 0;
+    TArray<FString> Spooks;
+    TArray<FSoraGaitCap> Caps;
+    TArray<FSoraForcedGait> Forced;
+    bool bDismount = true;
+    // The horse follows the road unless the rider steers.
+    bool bAutoSteer = false;
+    // A mounted fight: the rider dismounts as this phase begins (0: never).
+    int32 UntilPhase = 0;
+    TArray<FSoraPackHorse> Pack;
+    FVector2D At = FVector2D::ZeroVector;
+};
+// Where a beat happens: its zone (INDEX_NONE for the arena hub), where a
+// travel cut places the hero, its anchor and task points, trigger volumes,
+// opponent spawns and patrols, and what the world builds for its task.
+struct FSoraBeatSpace
+{
+    int32 Zone = INDEX_NONE;
+    FVector2D Entry = FVector2D::ZeroVector;
+    float EntryYaw = 0.f;
+    FVector2D Anchor = FVector2D::ZeroVector;
+    TArray<FVector2D> Objectives;
+    TArray<FVector2D> Pickups;
+    TArray<FVector2D> Dropoffs;
+    TArray<FVector2D> Targets;
+    TArray<FVector2D> Stations;
+    TArray<int32> StepStations;
+    TArray<FVector2D> Spawns;
+    TArray<TArray<FVector2D>> Patrols;
+    TArray<FSoraVolume> Volumes;
+    FSoraVolume Exit;
+    bool bClosing = false;
+    FVector2D Closing = FVector2D::ZeroVector;
+    bool bCache = false;
+    FVector2D Cache = FVector2D::ZeroVector;
+    // A cinematic's camera: it dollies from From to To looking at Look.
+    bool bCamera = false;
+    FVector CameraFrom = FVector::ZeroVector;
+    FVector CameraTo = FVector::ZeroVector;
+    FVector CameraLook = FVector::ZeroVector;
+    // A ride or escort runs on its zone's road; an escorted party walks from
+    // RouteMarginCm to RouteMarginCm short of the end.
+    bool bRoute = false;
+    int32 RouteMarginCm = 0;
+    // The task's kit: sluice, bellows, lift, hold, stations, carry, defend or
+    // escort; the carried item; and the kind of each pickup, drop-off, target
+    // and escorted party member.
+    FName Work;
+    FName Item;
+    TArray<FName> PickupKinds;
+    TArray<FName> DropoffKinds;
+    TArray<FName> TargetKinds;
+    TArray<FName> Party;
+    bool bMount = false;
+    FSoraMount Mount;
+};
+// A collectible lying loose in a zone.
+struct FSoraPickup
+{
+    int32 Collectible = INDEX_NONE;
+    int32 Zone = INDEX_NONE;
+    FVector2D At = FVector2D::ZeroVector;
+};
+struct FSoraSpace
+{
+    // The arena built at the origin as the hub, or INDEX_NONE.
+    int32 Hub = INDEX_NONE;
+    FVector2D Start = FVector2D::ZeroVector;
+    float StartYaw = 0.f;
+    TArray<FSoraZone> Zones;
+    TArray<FVector2D> Sites;
+    TArray<FSoraPickup> Pickups;
+    // The zone a location stands in, INDEX_NONE for the hub, or -2 for neither.
+    int32 ZoneAt(const FVector& Location) const;
 };
 
 // One spawn group of a wave: its enemy type (bible §7, Content/Data/enemies.json
@@ -159,6 +338,7 @@ struct FSoraBeat
     TMap<FString, SoraBeatRules::EFail> FailEvents;
     // Collectibles in an explore beat's cache.
     TArray<int32> Rewards;
+    FSoraBeatSpace Space;
     bool Is(SoraBeatRules::EType Type) const { return Task.Type == Type; }
     bool Has(SoraBeatRules::EGoal Goal) const { return Task.Goal == Goal; }
 };
@@ -182,6 +362,7 @@ struct FSoraChapter
     TArray<FSoraDialogueTrigger> Triggers;
     TArray<FSoraCollectible> Collectibles;
     TArray<FSoraPrompt> Prompts;
+    FSoraSpace Space;
     int32 BeatIndex(const FString& BeatId) const;
     int32 LineIndex(const FString& LineId) const;
 };
@@ -203,9 +384,11 @@ struct FSoraCollectibleCategory
  * Offline authored content, loaded fail-closed: Content/Data/catalog.json
  * (schema 4) for weapons, classes, maps, the hero and the dialogue speakers;
  * Content/Data/campaign/campaign.json for the chapter index, title cards, site
- * labels, mechanic flags and story flags; and campaign/chapter_0N.json,
+ * labels, mechanic flags and story flags with the labels of mechanics,
+ * manufacturing steps and defended targets; and campaign/chapter_0N.json,
  * generated by scripts/unreal/build_campaign_data.py, for beats and their
- * tasks, lines, triggers, checkpoints, unlocks, collectibles and prompts.
+ * tasks, lines, triggers, checkpoints, unlocks, collectibles, prompts and
+ * the chapter's space (read by SoraCatalogSpace.cpp).
  * Financial rules are deliberately absent.
  */
 class SORAARENA_API FSoraCatalog
@@ -238,12 +421,18 @@ public:
     TMap<FString, FSoraDialogueSpeaker> DialogueSpeakers;
     FSoraHero HeroData;
     TArray<FSoraMap> Maps;
-    // Mechanic flags and story flags in bit order.
+    // Mechanic flags and story flags in bit order, with the mechanics' labels.
     TArray<FString> Mechanics;
+    TArray<FSoraLabel> MechanicLabels;
     TArray<FString> StoryFlags;
     TArray<FSoraCollectibleCategory> CollectibleCategories;
+    // Manufacturing steps and defended targets by id.
+    TMap<FString, FSoraLabel> StepLabels;
+    TMap<FString, FSoraLabel> TargetLabels;
 private:
     bool LoadCampaign();
+    // A chapter file's space block (SoraCatalogSpace.cpp).
+    bool LoadSpace(const class FJsonObject& Data, FSoraChapter& Chapter);
     bool Fail(const FString& Message);
     bool bReady = false;
 };

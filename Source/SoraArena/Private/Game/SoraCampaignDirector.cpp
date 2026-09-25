@@ -1,10 +1,12 @@
 #include "SoraCampaignDirector.h"
+#include "Game/SoraCampaignReach.h"
 #include "SoraBoss.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalog.h"
 #include "SoraEnemy.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
+#include "SoraHorse.h"
 #include "SoraInputStates.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraProjectile.h"
@@ -21,18 +23,7 @@
 namespace
 {
 constexpr int32 LastChapter = SoraCampaignRules::ChapterCount - 1;
-// Anchor radii (2D, cm): working an objective, arriving, holding ground, and
-// how close an opponent must stand to contest a hold.
-constexpr float InteractRadius = 260.f;
-constexpr float ReachRadius = 320.f;
-constexpr float HoldRadius = 420.f;
-constexpr float ContestRadius = 900.f;
 constexpr float PromptSeconds = 8.f;
-// The TaskAnchor points of a beat: 0 is its own anchor (a site, a hold, a
-// crank, the first objective, the first drop-off), 1 a dialogue's closing
-// anchor or the first pickup, 2 + N the volume that releases wave N.
-constexpr int32 ClosingPoint = 1;
-constexpr int32 VolumePointBase = 2;
 // The dojo form each lesson gate names, in SoraDojoRules order.
 const TCHAR* const LessonGates[] = {TEXT("stance_hold"), TEXT("front_guard_survive"), TEXT("awase"), TEXT("recovery_complete")};
 
@@ -90,6 +81,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
 {
     const ASoraGameMode& M=Mode();
     if(!ActiveBeatData()||Event.Victim!=M.Hero()||!SoraBeatRules::DropCarried(TaskState,Task)) return;
+    CarryChanged();
     Fire(TEXT("item_dropped"));
     Notify(TEXT("荷を落とした。拾いに戻ろう。"),TEXT("You dropped your load. Go back for it."),4.f);
     UpdateObjective();
@@ -145,6 +137,10 @@ void USoraCampaignDirector::ResetRound()
     // restored encounter or score a defeat against its fresh opponents.
     ClearOfflineProjectiles();
     ClearOpponents();
+    // The hero comes down from the saddle before the world he stands in is rebuilt.
+    ClearHorses();
+    EndCinematicCamera(0.f);
+    Notices.Reset();
     Kills=0; KillsNeeded=0; bLinesStarted=false; bChapterOpening=false; CinematicSeconds=0.f; DojoLessonMask=0u;
     Queue.Reset(); LineRemaining=0.f; Heard.Reset(); FiredTriggers.Reset(); TriggerTimes.Reset();
     PromptIndex=INDEX_NONE; PromptRemaining=0.f;
@@ -190,6 +186,7 @@ void USoraCampaignDirector::ResetRound()
         Started.ChapterId=ChapterId; Started.bResumed=bResumed||bLiberated; Started.bLiberated=bLiberated;
         Events->OnChapterStarted.Broadcast(Started);
     }
+    ShowPickups();
     if(M.bChapterComplete) { UpdateObjective(); return; }
     const int32 Beat=bResumed?BeatIndex:SoraBeatRules::NextBeat(BeatState,Chapter.Rules.GetData(),Chapter.Rules.Num());
     const int32 Phase=bResumed?BeatPhase:0;
@@ -236,7 +233,8 @@ void USoraCampaignDirector::ApplyLoadout()
     if(!Player||!M.Arena()) return;
     Player->GetCharacterMovement()->StopMovementImmediately();
     Player->SetActorLocation(M.Arena()->PlayerStart(),false,nullptr,ETeleportType::TeleportPhysics);
-    Player->SetActorRotation(FRotator::ZeroRotator); if(Player->GetController()) Player->GetController()->SetControlRotation(FRotator::ZeroRotator);
+    const FRotator Facing(0,M.Arena()->PlayerStartYaw(),0);
+    Player->SetActorRotation(Facing); if(Player->GetController()) Player->GetController()->SetControlRotation(Facing);
     // The campaign follows Nyaakoto. The six-class selection is for Arena
     // practice and cannot rewrite the offline protagonist's loadout.
     Player->ApplyClass(M.bCampaign?0:M.SelectedClass);
@@ -255,15 +253,11 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     if(Index!=0||bResumed) bChapterOpening=false;
     BeatIndex=Index; BeatPhase=Phase;
     Task=Beat.Task;
-    // Until authored routes are placed, an escort, a ride or a stealth zone
-    // runs from where the hero stands to the beat's anchor.
-    RouteStart=M.Hero()?M.Hero()->GetActorLocation():M.Arena()->PlayerStart();
-    if(Task.Goal==SoraBeatRules::EGoal::Escort&&Task.PathCm==0)
-        Task.PathCm=FMath::Max(100,FMath::RoundToInt32(FVector::Dist2D(RouteStart,PointLocation(0))));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; bHeroSeen=false; bDetected=false; CinematicSeconds=0.f;
+    VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset();
     if(bKeepPupil)
     {
         Enemies.RemoveAll([](const TObjectPtr<ASoraEnemy>& Enemy) { return !IsValid(Enemy)||!Enemy->IsAlive(); });
@@ -273,8 +267,11 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     // Saves at the beat's start; a restored checkpoint is already on disk.
     if(!bResumed&&Phase==0&&Chapter.Rules[Index].Checkpoint) SaveCheckpoint();
     // Until Sequencer cinematics land, the letterboxed card holds play, the
-    // round timer and dialogue while the subtitles run on its clock.
+    // round timer and dialogue while the subtitles run on its clock and a
+    // camera dollies over the place.
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed) M.TitleCardTime=Task.DurationMs/1000.f;
+    // The beat's place: a travel cut to its entry, its kit, horse and camera.
+    EnterBeatSpace(bResumed);
     if(Task.Goal==SoraBeatRules::EGoal::Lines&&Beat.LinesEvent==TEXT("beat_start")) StartLines();
     SpawnCast(bKeepPupil);
     Fire(TEXT("beat_start"));
@@ -326,6 +323,8 @@ void USoraCampaignDirector::CompleteActiveBeat()
         M.Arena()->ActivateSite(Site);
         if(ASoraPlayerCharacter* Player=M.Hero()) Player->Heal(22.f);
         Japanese=Chapter.Sites[Site].Restored; English=Chapter.Sites[Site].RestoredEnglish;
+        Tell(FSoraStoryNotice::EKind::Site,TEXT("生産を取り戻した：")+Chapter.Sites[Site].Name,
+            TEXT("Production restored: ")+Chapter.Sites[Site].NameEnglish,Japanese,English);
         if(auto* Events=USoraGameEvents::Get(this))
         {
             FSoraSiteRestoredEvent Restored;
@@ -338,13 +337,20 @@ void USoraCampaignDirector::CompleteActiveBeat()
     {
         Japanese+=(Japanese.IsEmpty()?TEXT(""):TEXT(" "))+FString::Printf(TEXT("新たな武器：%s"),*WeaponNames(NewWeapons,false));
         English+=(English.IsEmpty()?TEXT(""):TEXT(" "))+FString::Printf(TEXT("New weapon: %s."),*WeaponNames(NewWeapons,true));
+        Tell(FSoraStoryNotice::EKind::Weapon,FString::Printf(TEXT("新たな武器：%s"),*WeaponNames(NewWeapons,false)),
+            FString::Printf(TEXT("New weapon: %s"),*WeaponNames(NewWeapons,true)));
     }
+    for(int32 Bit=0;Bit<FSoraCatalog::Get().MechanicLabels.Num();++Bit)
+        if((Chapter.Rules[Index].MechanicsMask&(1u<<Bit))!=0u)
+            Tell(FSoraStoryNotice::EKind::Mechanic,TEXT("新たな技：")+FSoraCatalog::Get().MechanicLabels[Bit].Japanese,
+                TEXT("New skill: ")+FSoraCatalog::Get().MechanicLabels[Bit].English);
     if(!Japanese.IsEmpty()) Notify(Japanese,English,8.f);
     Collect(Index);
     Fire(TEXT("beat_complete"));
     BroadcastBeat(false,false);
     Telemetry(TEXT("complete"));
     const int32 NextBeat=SoraBeatRules::NextBeat(BeatState,Chapter.Rules.GetData(),Chapter.Rules.Num());
+    LeaveBeatSpace();
     if(NextBeat==INDEX_NONE) FinishChapter();
     else BeginBeat(NextBeat,0,false);
 }
@@ -354,6 +360,7 @@ void USoraCampaignDirector::FinishChapter()
     const FSoraChapter& Chapter=*ActiveChapter();
     if(!SoraBeatRules::FinishChapter(BeatState,Chapter.Rules.GetData(),Chapter.Rules.Num())) return;
     ClearOpponents();
+    ClearHorses();
     M.bChapterComplete=true;
     Save->HighestChapter=FMath::Max(Save->HighestChapter,FMath::Min(LastChapter,ChapterId+1));
     const bool bLiberated=SoraCampaignRules::CampaignLiberated(ChapterId,LastChapter,true);
@@ -384,8 +391,8 @@ void USoraCampaignDirector::CompleteOptional(int32 Index)
     Collect(Index);
     Fire(TEXT("beat_complete"),Index);
     if(NewWeapons)
-        Notify(FString::Printf(TEXT("新たな武器：%s"),*WeaponNames(NewWeapons,false)),
-            FString::Printf(TEXT("New weapon: %s."),*WeaponNames(NewWeapons,true)),8.f);
+        Tell(FSoraStoryNotice::EKind::Weapon,FString::Printf(TEXT("新たな武器：%s"),*WeaponNames(NewWeapons,false)),
+            FString::Printf(TEXT("New weapon: %s"),*WeaponNames(NewWeapons,true)));
     if(auto* Events=USoraGameEvents::Get(this))
     {
         FSoraBeatEvent Event;
@@ -399,34 +406,33 @@ void USoraCampaignDirector::CompleteOptional(int32 Index)
 void USoraCampaignDirector::Collect(int32 Beat)
 {
     const FSoraChapter& Chapter=*ActiveChapter();
-    unsigned long long Found=0ull;
-    FString Japanese,English;
-    TArray<FString> Ids;
+    // An explore beat's cache holds its collectibles; each goes to the codex.
     for(const FSoraCollectible& Item:Chapter.Collectibles)
     {
         const unsigned long long Bit=SoraCampaignRules::CollectibleBit(ChapterId,Item.MaskBit);
         if(!Item.Beats.Contains(Beat)||(static_cast<unsigned long long>(Save->Collectibles)&Bit)!=0ull) continue;
-        Found|=Bit; Ids.Add(Item.Id);
+        Save->Collectibles=static_cast<int64>(static_cast<unsigned long long>(Save->Collectibles)|Bit);
         for(const FSoraCollectibleCategory& Category:FSoraCatalog::Get().CollectibleCategories)
-            if(Category.Id==Item.Category&&!Japanese.Contains(Category.Japanese))
-            {
-                Japanese+=(Japanese.IsEmpty()?TEXT(""):TEXT("、"))+Category.Japanese;
-                English+=(English.IsEmpty()?TEXT(""):TEXT(", "))+Category.English;
-            }
+            if(Category.Id==Item.Category)
+                Tell(FSoraStoryNotice::EKind::Collectible,TEXT("見つけた：")+Category.Japanese,TEXT("Found: ")+Category.English,
+                    Item.Codex,Item.CodexEnglish);
+        Fire(TEXT("collectible:")+Item.Id,Beat); Fire(TEXT("collectible_found:")+Item.Id,Beat);
     }
-    if(!Found) return;
-    Save->Collectibles=static_cast<int64>(static_cast<unsigned long long>(Save->Collectibles)|Found);
-    for(const FString& Id:Ids) { Fire(TEXT("collectible:")+Id,Beat); Fire(TEXT("collectible_found:")+Id,Beat); }
-    if(Mode().NoticeTime<=0.f) Notify(FString::Printf(TEXT("見つけた：%s"),*Japanese),FString::Printf(TEXT("Found: %s."),*English),6.f);
 }
 void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime,TickType,ThisTickFunction);
     ASoraGameMode& M=Mode();
+    if(!M.bMenu)
+    {
+        for(FSoraStoryNotice& Notice:Notices) Notice.Remaining-=DeltaTime;
+        Notices.RemoveAll([](const FSoraStoryNotice& Notice) { return Notice.Remaining<=0.f; });
+    }
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||!Save||M.bDeterministicPractice||M.bMenu||M.bDefeated||M.bChapterComplete) return;
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed)
     {
+        UpdateCinematicCamera();
         // A cinematic runs on the card's clock; when the card closes on its own the cinematic is over.
         CinematicSeconds=M.InputState()==SoraInput::Card?FMath::Max(0.f,Task.DurationMs/1000.f-M.TitleCardTime):Task.DurationMs/1000.f;
         SoraBeatRules::FTick Step;
@@ -468,34 +474,29 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     SoraBeatRules::FTick Step;
     Step.DeltaMs=DeltaMs; Step.AtTask=HeroAtTask(); Step.Contested=Contested(); Step.Seen=bHeroSeen;
     SoraBeatRules::Tick(TaskState,Task,Step);
-    // Arrivals: a dialogue's own anchor, its closing anchor, the exit, and the volumes that release waves.
-    if(Task.Goal==SoraBeatRules::EGoal::Lines&&!bLinesStarted&&Beat.LinesEvent.StartsWith(TEXT("volume_enter:"))&&Near(PointLocation(0),ReachRadius))
-    {
-        StartLines(); Fire(Beat.LinesEvent);
-    }
+    // Trigger volumes the hero walks or rides into raise their events: a
+    // dialogue waiting on one starts, and the waves it names come.
+    TickVolumes();
+    if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     if(Task.Goal==SoraBeatRules::EGoal::Lines&&bLinesStarted&&Queue.IsEmpty()) SoraBeatRules::FinishLines(TaskState,Task);
-    if(Task.AnchorAfterLines&&TaskState.LinesDone&&!TaskState.Reached&&Near(PointLocation(ClosingPoint),ReachRadius)&&
-        SoraBeatRules::Reach(TaskState,Task))
+    // Arrivals: a dialogue's closing anchor (or its volume) after its lines, and the exit.
+    const FSoraBeatSpace& Space=Beat.Space;
+    const FVector Hero=M.Hero()?M.Hero()->GetActorLocation():FVector::ZeroVector;
+    const FSoraVolume* Closing=Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Beat.ClosingEvent; });
+    const bool bAtClosing=Near(ASoraWorldBuilder::Floor(Space.Closing),SoraCampaignReach::Arrive)||(Closing&&Closing->Contains(Hero));
+    // A closing volume raised its own event as the hero entered it; an
+    // "event:" closing is raised here.
+    if(Task.AnchorAfterLines&&TaskState.LinesDone&&!TaskState.Reached&&bAtClosing&&SoraBeatRules::Reach(TaskState,Task)&&!Closing)
         Fire(Beat.ClosingEvent);
     if(Task.Goal==SoraBeatRules::EGoal::Exit&&M.Hero())
     {
         // The way to the exit, so ambushes along a route come as the hero passes them.
-        const float Whole=FVector::Dist2D(RouteStart,PointLocation(0));
-        if(Whole>ReachRadius)
-            SoraBeatRules::Travel(TaskState,Task,FMath::FloorToInt32(1000.f*(1.f-FVector::Dist2D(M.Hero()->GetActorLocation(),PointLocation(0))/Whole)));
+        SoraBeatRules::Travel(TaskState,Task,RoadPermille());
+        if(Space.Exit.Contains(Hero)&&SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
     }
-    if(Task.Goal==SoraBeatRules::EGoal::Exit&&Near(PointLocation(0),ReachRadius)&&SoraBeatRules::Reach(TaskState,Task))
-    {
-        if(!Beat.ExitEvent.IsEmpty()) Fire(Beat.ExitEvent);
-        Fire(TEXT("exit_reached"));
-    }
-    for(int32 Wave=0;Wave<Task.WaveCount;++Wave)
-        if(Task.Waves[Wave].Trigger==SoraBeatRules::EWaveTrigger::Volume&&!SoraBeatRules::Released(TaskState,Wave)&&
-            Near(PointLocation(VolumePointBase+Wave),ReachRadius)&&SoraBeatRules::ReleaseWave(TaskState,Task,Wave))
-        {
-            Fire(Beat.Waves[Wave].Event);
-            QueueWaves(1u<<Wave);
-        }
+    // Horses, a siege on defended targets, the escorted party and the task's kit.
+    TickSpace(DeltaMs);
+    if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // A crank left alone goes slack.
     const bool bSlack=SoraBeatRules::CrankSlipping(TaskState,Task);
     if(bSlack&&!bCrankSlack) Fire(TEXT("crank_released"));
@@ -587,33 +588,35 @@ ASoraEnemy* USoraCampaignDirector::SpawnWaveOpponent(FName Type,bool bSparring,i
     // Merge: ASoraEnemy::SpawnArchetype(World, Type, Slot, ...) builds the
     // enemies.json archetype; training targets and pupils stay sparring pupils.
     (void)Type;
-    ASoraWorldBuilder* WorldBuilder=Mode().Arena();
-    return WorldBuilder&&GetWorld()?SpawnPrototype(*GetWorld(),WorldBuilder->SpawnPoint(Slot),bSparring,Slot):nullptr;
+    return GetWorld()?SpawnPrototype(*GetWorld(),SpawnLocation(Slot),bSparring,Slot):nullptr;
 }
 ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(FName Type,int32 Slot)
 {
-    // Merge: the AI lane's archetype on its patrol route, unaware until its
-    // perception raises alert_state events through RaiseBeatEvent. Until then
-    // a guard fights at once, as on_detected falls back to combat.
+    // Merge: the AI lane's archetype walking its patrol route (GuardPatrol),
+    // unaware until its perception raises alert_state events through
+    // RaiseBeatEvent. Until then a guard stands at its route's start and
+    // fights at once, as on_detected falls back to combat.
     (void)Type;
-    ASoraWorldBuilder* WorldBuilder=Mode().Arena();
-    return WorldBuilder&&GetWorld()?SpawnPrototype(*GetWorld(),WorldBuilder->SpawnPoint(Slot),false,Slot):nullptr;
+    const FSoraBeatSpace* Space=ActiveSpace();
+    if(!GetWorld()||!Space) return nullptr;
+    const FVector Post=Space->Patrols.IsEmpty()?SpawnLocation(Slot):ASoraWorldBuilder::Floor(Space->Patrols[Slot%Space->Patrols.Num()][0],120.f);
+    ASoraEnemy* Guard=SpawnPrototype(*GetWorld(),Post,false,Slot);
+    if(Guard&&!Space->Patrols.IsEmpty()) GuardPatrols.Add(Guard,Slot%Space->Patrols.Num());
+    return Guard;
 }
 ASoraEnemy* USoraCampaignDirector::SpawnDuelOpponent(FName Opponent,bool bSparring,int32 Slot)
 {
     // Merge: the named duellist (npc_toranosuke, npc_sekireisai) from the AI lane.
     (void)Opponent;
-    ASoraWorldBuilder* WorldBuilder=Mode().Arena();
-    return WorldBuilder&&GetWorld()?SpawnPrototype(*GetWorld(),WorldBuilder->SpawnPoint(Slot),bSparring,Slot):nullptr;
+    return GetWorld()?SpawnPrototype(*GetWorld(),SpawnLocation(Slot),bSparring,Slot):nullptr;
 }
 ASoraBoss* USoraCampaignDirector::SpawnBoss(FName Boss,int32 Slot)
 {
     // Merge: the bosses.json boss with its pattern tables, weak points and adds.
     (void)Boss;
-    ASoraWorldBuilder* WorldBuilder=Mode().Arena();
-    if(!WorldBuilder||!GetWorld()) return nullptr;
+    if(!GetWorld()) return nullptr;
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-    ASoraBoss* Collector=GetWorld()->SpawnActor<ASoraBoss>(WorldBuilder->SpawnPoint(Slot),FRotator(0,180,0),Params);
+    ASoraBoss* Collector=GetWorld()->SpawnActor<ASoraBoss>(SpawnLocation(Slot),FRotator(0,180,0),Params);
     if(Collector) Collector->InitCollector(Slot);
     return Collector;
 }
@@ -683,15 +686,21 @@ void USoraCampaignDirector::ClearOpponents()
 {
     // A falling opponent removes itself after its lifespan; the living leave now.
     for(const auto& Enemy:Enemies) if(IsValid(Enemy)&&Enemy->IsAlive()) Enemy->Destroy();
-    Enemies.Reset(); EnemyWaves.Reset(); Pending.Reset(); BossActor=nullptr; Spawned=0;
+    Enemies.Reset(); EnemyWaves.Reset(); GuardPatrols.Reset(); Frightening.Reset(); Pending.Reset(); BossActor=nullptr; Spawned=0;
 }
 void USoraCampaignDirector::ClearEncounter()
 {
     ClearOpponents();
     ClearOfflineProjectiles();
+    ClearHorses();
+    EndCinematicCamera(0.f);
     Kills=0;
-    Queue.Reset(); LineRemaining=0.f; PromptRemaining=0.f;
-    if(ASoraWorldBuilder* WorldBuilder=Mode().Arena()) { WorldBuilder->ShowObjective(nullptr); WorldBuilder->ShowCaches({}); }
+    Queue.Reset(); LineRemaining=0.f; PromptRemaining=0.f; Notices.Reset();
+    if(ASoraWorldBuilder* WorldBuilder=Mode().Arena())
+    {
+        WorldBuilder->ShowObjective(nullptr); WorldBuilder->ShowCaches({}); WorldBuilder->ClearKit();
+        WorldBuilder->ShowCarried(Mode().Hero(),NAME_None);
+    }
 }
 const ASoraBoss* USoraCampaignDirector::CampaignBoss() const
 {
@@ -763,10 +772,7 @@ void USoraCampaignDirector::RaiseBeatEvent(FName Event)
     Fire(Name);
     // The AI lane reports what its guards see; work under guard pauses while one does.
     if(Name.StartsWith(TEXT("alert_state:"))) bHeroSeen=Name==TEXT("alert_state:alert")||Name==TEXT("alert_state:combat");
-    unsigned Fresh=0u;
-    for(int32 Wave=0;Wave<Beat->Waves.Num();++Wave)
-        if(Beat->Waves[Wave].Event==Name&&SoraBeatRules::ReleaseWave(TaskState,Task,Wave)) Fresh|=1u<<Wave;
-    QueueWaves(Fresh);
+    ReleaseEventWaves(Name);
     SoraBeatRules::EFail Failure=SoraBeatRules::EFail::PlayerDied;
     if(FailureOf(Name,Failure)&&!(Failure==SoraBeatRules::EFail::Detected&&bDetected))
     {
@@ -779,6 +785,15 @@ void USoraCampaignDirector::RaiseBeatEvent(FName Event)
         if(Outcome!=SoraBeatRules::ERetry::None&&Outcome!=SoraBeatRules::ERetry::Continue) return;
     }
     Progressed(Before);
+}
+void USoraCampaignDirector::ReleaseEventWaves(const FString& Event)
+{
+    const FSoraBeat* Beat=ActiveBeatData();
+    if(!Beat) return;
+    unsigned Fresh=0u;
+    for(int32 Wave=0;Wave<Beat->Waves.Num();++Wave)
+        if(Beat->Waves[Wave].Event==Event&&SoraBeatRules::ReleaseWave(TaskState,Task,Wave)) Fresh|=1u<<Wave;
+    QueueWaves(Fresh);
 }
 bool USoraCampaignDirector::FailureOf(const FString& Event,SoraBeatRules::EFail& Failure) const
 {
@@ -910,102 +925,31 @@ float USoraCampaignDirector::CinematicElapsed() const
     const FSoraBeat* Beat=ActiveBeatData();
     return Beat&&Beat->Is(SoraBeatRules::EType::Cinematic)?FMath::Max(0.f,Task.DurationMs/1000.f-Mode().TitleCardTime):0.f;
 }
-int32 USoraCampaignDirector::ObjectivePoint() const
-{
-    const FSoraBeat* Beat=ActiveBeatData();
-    if(!Beat) return INDEX_NONE;
-    switch(Task.Goal)
-    {
-    case SoraBeatRules::EGoal::Lines:
-        if(!bLinesStarted&&Beat->LinesEvent!=TEXT("beat_start")) return 0;
-        return Task.AnchorAfterLines&&TaskState.LinesDone&&!TaskState.Reached?ClosingPoint:INDEX_NONE;
-    case SoraBeatRules::EGoal::WavesCleared:
-    {
-        // Once the field is clear, the volume that brings the next wave.
-        if(LiveWaveOpponents()>0||!Pending.IsEmpty()) return INDEX_NONE;
-        for(int32 Wave=0;Wave<Task.WaveCount;++Wave)
-            if(Task.Waves[Wave].Trigger==SoraBeatRules::EWaveTrigger::Volume&&!SoraBeatRules::Released(TaskState,Wave))
-                return VolumePointBase+Wave;
-        return INDEX_NONE;
-    }
-    case SoraBeatRules::EGoal::Objectives:
-        for(int32 Objective=0;Objective<Task.Count;++Objective)
-            if((TaskState.PointsMask&(1u<<Objective))==0u) return Objective;
-        return INDEX_NONE;
-    case SoraBeatRules::EGoal::Deliveries:
-        // A carry's goods wait at pickups 1..N; its first drop-off (a ride's
-        // too) stands at the beat's anchor, later ones further on.
-        if(Task.Task==SoraBeatRules::ETask::Carry&&!TaskState.Carrying)
-        {
-            for(int32 Point=0;Point<Task.Pickups;++Point)
-                if(Task.Pickups<Task.Count||(TaskState.PointsMask&(1u<<Point))==0u) return 1+Point;
-            return INDEX_NONE;
-        }
-        for(int32 Point=0;Point<Task.Dropoffs;++Point)
-            if(TaskState.DropoffUses[Point]<SoraBeatRules::DropoffShare(Task))
-                return Point==0?0:1+(Task.Task==SoraBeatRules::ETask::Carry?Task.Pickups:0)+Point;
-        return INDEX_NONE;
-    case SoraBeatRules::EGoal::Exit:
-        return TaskState.Reached?INDEX_NONE:0;
-    case SoraBeatRules::EGoal::Hold:
-    case SoraBeatRules::EGoal::Turns:
-    case SoraBeatRules::EGoal::Steps:
-        return 0;
-    case SoraBeatRules::EGoal::Survive:
-        return Task.Task==SoraBeatRules::ETask::Defend?0:INDEX_NONE;
-    default:
-        return INDEX_NONE;
-    }
-}
-FVector USoraCampaignDirector::PointLocation(int32 Point) const
-{
-    const ASoraGameMode& M=Mode();
-    return M.Arena()&&ActiveChapter()&&ActiveChapter()->Rules.IsValidIndex(BeatIndex)
-        ?M.Arena()->TaskAnchor(BeatIndex,ActiveChapter()->Rules[BeatIndex].Site,Point):FVector::ZeroVector;
-}
-FVector USoraCampaignDirector::PartyLocation() const
-{
-    // The escorted party walks from where the beat began toward its anchor.
-    const float Along=SoraBeatRules::ProgressPermille(TaskState,Task)/1000.f;
-    return FMath::Lerp(RouteStart,PointLocation(0),Along);
-}
 bool USoraCampaignDirector::ObjectiveAnchor(FVector& Location) const
 {
-    const ASoraGameMode& M=Mode();
-    if(!ActiveBeatData()||!M.Arena()||M.bChapterComplete) return false;
-    if(Task.Goal==SoraBeatRules::EGoal::Escort) { Location=PartyLocation(); return true; }
-    const int32 Point=ObjectivePoint();
-    if(Point==INDEX_NONE) return false;
-    Location=PointLocation(Point);
-    return true;
+    bool bInteract=false;
+    return ObjectivePoint(Location,bInteract);
 }
 bool USoraCampaignDirector::AnchorTakesInteract() const
 {
-    const FSoraBeat* Beat=ActiveBeatData();
-    if(!Beat) return false;
-    switch(Task.Goal)
-    {
-    case SoraBeatRules::EGoal::Lines: return !bLinesStarted&&Beat->LinesEvent.StartsWith(TEXT("interact:"));
-    case SoraBeatRules::EGoal::Objectives:
-    case SoraBeatRules::EGoal::Turns:
-    case SoraBeatRules::EGoal::Deliveries:
-    case SoraBeatRules::EGoal::Steps: return true;
-    case SoraBeatRules::EGoal::Survive: return Task.TargetCount>0;
-    default: return false;
-    }
+    FVector Location; bool bInteract=false;
+    return ObjectivePoint(Location,bInteract)&&bInteract;
 }
 bool USoraCampaignDirector::HeroAtTask() const
 {
-    if(Task.Goal==SoraBeatRules::EGoal::Hold) return Near(PointLocation(0),HoldRadius);
+    const FSoraBeatSpace* Space=ActiveSpace();
+    if(!Space) return false;
+    if(Task.Goal==SoraBeatRules::EGoal::Hold) return Near(ASoraWorldBuilder::Floor(Space->Anchor),SoraCampaignReach::Hold);
     if(Task.Goal==SoraBeatRules::EGoal::Escort) return Near(PartyLocation(),static_cast<float>(Task.WaitCm));
     return false;
 }
 bool USoraCampaignDirector::Contested() const
 {
-    if(Task.Goal!=SoraBeatRules::EGoal::Hold) return false;
-    const FVector Anchor=PointLocation(0);
+    const FSoraBeatSpace* Space=ActiveSpace();
+    if(Task.Goal!=SoraBeatRules::EGoal::Hold||!Space) return false;
+    const FVector Anchor=ASoraWorldBuilder::Floor(Space->Anchor);
     for(const auto& Enemy:Enemies)
-        if(IsValid(Enemy)&&Enemy->IsAlive()&&FVector::Dist2D(Enemy->GetActorLocation(),Anchor)<ContestRadius) return true;
+        if(IsValid(Enemy)&&Enemy->IsAlive()&&FVector::Dist2D(Enemy->GetActorLocation(),Anchor)<SoraCampaignReach::Contest) return true;
     return false;
 }
 TArray<int32> USoraCampaignDirector::AvailableCaches() const
@@ -1021,14 +965,15 @@ TArray<int32> USoraCampaignDirector::AvailableCaches() const
 }
 FVector USoraCampaignDirector::CacheLocation(int32 Beat) const
 {
-    return Mode().Arena()?Mode().Arena()->CacheAnchor(Beat):FVector::ZeroVector;
+    const FSoraChapter* Chapter=ActiveChapter();
+    return Chapter&&Chapter->Beats.IsValidIndex(Beat)?ASoraWorldBuilder::Floor(Chapter->Beats[Beat].Space.Cache):FVector::ZeroVector;
 }
 void USoraCampaignDirector::UpdateObjective()
 {
     ASoraWorldBuilder* WorldBuilder=Mode().Arena();
     if(!WorldBuilder) return;
     FVector Anchor;
-    WorldBuilder->ShowObjective(ObjectiveAnchor(Anchor)?&Anchor:nullptr);
+    WorldBuilder->ShowObjective(ObjectiveAnchor(Anchor)&&Mode().bCampaign?&Anchor:nullptr);
     TArray<FVector> Caches;
     for(const int32 Beat:AvailableCaches()) Caches.Add(CacheLocation(Beat));
     WorldBuilder->ShowCaches(Caches);
@@ -1153,24 +1098,40 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(!M.bCampaign) { ArenaInteract(Player); return; }
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||M.bChapterComplete) return;
+    const FSoraBeatSpace& Space=Beat->Space;
     IdleMs=0;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
     const int32 DoneBefore=TaskState.Done;
-    const int32 Point=ObjectivePoint();
-    const bool bAtPoint=Point!=INDEX_NONE&&Near(PointLocation(Point),InteractRadius);
-    bool bWorked=false;
-    if(Task.Goal==SoraBeatRules::EGoal::Lines&&bAtPoint&&!bLinesStarted&&Beat->LinesEvent.StartsWith(TEXT("interact:")))
+    const float Reach=IsMounted()?SoraCampaignReach::Saddle:SoraCampaignReach::Interact;
+    // The nearest of Points within reach that Usable allows, or INDEX_NONE.
+    const auto NearestOf=[&](const TArray<FVector2D>& Points,TFunctionRef<bool(int32)> Usable)
+    {
+        int32 Best=INDEX_NONE; float BestDistance=Reach;
+        for(int32 Index=0;Index<Points.Num();++Index)
+        {
+            const float Distance=FVector::Dist2D(Player.GetActorLocation(),ASoraWorldBuilder::Floor(Points[Index]));
+            if(Distance<BestDistance&&Usable(Index)) { Best=Index; BestDistance=Distance; }
+        }
+        return Best;
+    };
+    const bool bAtAnchor=Near(ASoraWorldBuilder::Floor(Space.Anchor),Reach);
+    if(Task.Goal==SoraBeatRules::EGoal::Lines&&bAtAnchor&&!bLinesStarted&&Beat->LinesEvent.StartsWith(TEXT("interact:")))
     {
         StartLines(); Fire(Beat->LinesEvent);
         return;
     }
-    if(bAtPoint) switch(Task.Goal)
+    bool bWorked=false;
+    switch(Task.Goal)
     {
     case SoraBeatRules::EGoal::Objectives:
-        if((bWorked=SoraBeatRules::WorkObjective(TaskState,Task,Point))) Fire(TEXT("interact:")+Beat->Objectives[Point]);
+    {
+        const int32 Objective=NearestOf(Space.Objectives,[&](int32 Index) { return (TaskState.PointsMask&(1u<<Index))==0u; });
+        if((bWorked=SoraBeatRules::WorkObjective(TaskState,Task,Objective))) Fire(TEXT("interact:")+Beat->Objectives[Objective]);
         break;
+    }
     case SoraBeatRules::EGoal::Turns:
     {
+        if(!bAtAnchor) break;
         // Each E is one turn; the rate band decides whether it counts.
         const ETurn Turned=SoraBeatRules::Turn(TaskState,Task);
         bWorked=Turned==ETurn::InBand||Turned==ETurn::Slow;
@@ -1183,17 +1144,35 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     case SoraBeatRules::EGoal::Deliveries:
         if(Task.Task==SoraBeatRules::ETask::Carry&&!TaskState.Carrying)
         {
-            if((bWorked=SoraBeatRules::Pickup(TaskState,Task,Point-1))) Fire(TEXT("item_picked:")+Beat->Pickups[Point-1]);
+            // A store is revisited for every load; distinct goods are taken once each.
+            const int32 Pickup=NearestOf(Space.Pickups,[&](int32 Index)
+                { return Task.Pickups<Task.Count||(TaskState.PointsMask&(1u<<Index))==0u; });
+            if((bWorked=SoraBeatRules::Pickup(TaskState,Task,Pickup)))
+            {
+                CarryChanged();
+                Fire(TEXT("item_picked:")+Beat->Pickups[Pickup]);
+            }
         }
         else
         {
-            const int32 Dropoff=Point==0?0:Point-1-(Task.Task==SoraBeatRules::ETask::Carry?Task.Pickups:0);
-            if((bWorked=SoraBeatRules::Deliver(TaskState,Task,Dropoff))) Fire(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
+            const int32 Dropoff=NearestOf(Space.Dropoffs,[&](int32 Index)
+                { return TaskState.DropoffUses[Index]<SoraBeatRules::DropoffShare(Task); });
+            if((bWorked=SoraBeatRules::Deliver(TaskState,Task,Dropoff)))
+            {
+                if(Task.Task==SoraBeatRules::ETask::Carry) CarryChanged();
+                Fire(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
+                // A delivery may call the waves that wait on it.
+                ReleaseEventWaves(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
+            }
         }
         break;
     case SoraBeatRules::EGoal::Steps:
     {
+        // Each step is worked at its own station.
         const int32 Step=TaskState.Step;
+        if(!Space.StepStations.IsValidIndex(Step)||
+            !Near(ASoraWorldBuilder::Floor(Space.Stations[Space.StepStations[Step]]),Reach))
+            break;
         const EStroke Struck=SoraBeatRules::Stroke(TaskState,Task);
         bWorked=Struck!=EStroke::Refused;
         if(Struck==EStroke::Missed)
@@ -1209,8 +1188,9 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     }
     case SoraBeatRules::EGoal::Survive:
     {
-        // A repair at the defended position: the worst-hit target standing
-        // regains a quarter of its health.
+        // A repair at the defended position or a target: the worst-hit target
+        // standing regains a quarter of its health.
+        if(!bAtAnchor&&NearestOf(Space.Targets,[](int32) { return true; })==INDEX_NONE) break;
         int32 Worst=INDEX_NONE;
         for(int32 Target=0;Target<Task.TargetCount;++Target)
             if(TaskState.TargetHp[Target]>0&&TaskState.TargetHp[Target]<Task.TargetHp[Target]&&
@@ -1229,8 +1209,11 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
         Progressed(Before);
         return;
     }
+    // A loose collectible or an explore cache within reach, else the horse
+    // (tack-up, mount, dismount).
+    if(PickUp()) return;
     for(const int32 Cache:AvailableCaches())
-        if(Near(CacheLocation(Cache),InteractRadius))
+        if(Near(CacheLocation(Cache),SoraCampaignReach::Interact))
         {
             // The cache's own task: opened, it completes its explore beat.
             SoraBeatRules::FTaskState Opened=SoraBeatRules::StartTask(ActiveChapter()->Tasks[Cache],0);
@@ -1239,6 +1222,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
                 CompleteOptional(Cache);
             return;
         }
+    InteractSpace(Player);
 }
 void USoraCampaignDirector::OpponentDefeated(ASoraEnemy* Opponent)
 {
@@ -1457,7 +1441,7 @@ FString USoraCampaignDirector::ObjectiveText() const
     case SoraBeatRules::EGoal::Survive: Progress=FString::Printf(TEXT("持ちこたえる 残り %d 秒"),FMath::DivideAndRoundUp(Task.DurationMs-S.Progress,1000)); break;
     case SoraBeatRules::EGoal::Points: Progress=FString::Printf(TEXT("一本 %d 対 %d"),S.Done,S.RivalPoints); break;
     case SoraBeatRules::EGoal::Lessons: if(Task.Count>0) Progress=FString::Printf(TEXT("立合い %d / %d"),S.Done,Task.Count); break;
-    case SoraBeatRules::EGoal::Exit: Progress=TEXT("出口へ"); break;
+    case SoraBeatRules::EGoal::Exit: Progress=Beat->Is(SoraBeatRules::EType::HorsebackRide)?TEXT("目的地へ"):TEXT("出口へ"); break;
     case SoraBeatRules::EGoal::Hold: Progress=FString::Printf(TEXT("持ちこたえる %d / %d 秒"),S.Progress/1000,FMath::DivideAndRoundUp(Task.DurationMs,1000)); break;
     case SoraBeatRules::EGoal::Turns: Progress=FString::Printf(TEXT("回す %d / %d"),S.Done,Task.Count); break;
     case SoraBeatRules::EGoal::Escort: Progress=FString::Printf(TEXT("護衛 %d%%"),Percent); break;
@@ -1489,7 +1473,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     case SoraBeatRules::EGoal::Survive: Progress=FString::Printf(TEXT("Hold out %d s"),FMath::DivideAndRoundUp(Task.DurationMs-S.Progress,1000)); break;
     case SoraBeatRules::EGoal::Points: Progress=FString::Printf(TEXT("Points %d to %d"),S.Done,S.RivalPoints); break;
     case SoraBeatRules::EGoal::Lessons: if(Task.Count>0) Progress=FString::Printf(TEXT("Bouts %d of %d"),S.Done,Task.Count); break;
-    case SoraBeatRules::EGoal::Exit: Progress=TEXT("Reach the exit"); break;
+    case SoraBeatRules::EGoal::Exit: Progress=Beat->Is(SoraBeatRules::EType::HorsebackRide)?TEXT("Ride to the destination"):TEXT("Reach the exit"); break;
     case SoraBeatRules::EGoal::Hold: Progress=FString::Printf(TEXT("Hold %d of %d s"),S.Progress/1000,FMath::DivideAndRoundUp(Task.DurationMs,1000)); break;
     case SoraBeatRules::EGoal::Turns: Progress=FString::Printf(TEXT("Turns %d of %d"),S.Done,Task.Count); break;
     case SoraBeatRules::EGoal::Escort: Progress=FString::Printf(TEXT("Escort %d%%"),Percent); break;

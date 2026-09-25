@@ -1,97 +1,10 @@
 #include "SoraCatalog.h"
 #include "SoraCampaignRules.h"
-#include "Dom/JsonObject.h"
-#include "Misc/FileHelper.h"
-#include "Misc/Paths.h"
-#include "Serialization/JsonSerializer.h"
+#include "SoraCatalogJson.h"
 
 namespace
 {
-using FJsonRows = TArray<TSharedPtr<FJsonValue>>;
-
-bool ReadJson(const FString& Relative, TSharedPtr<FJsonObject>& Root)
-{
-    FString Text;
-    return FFileHelper::LoadFileToString(Text, *(FPaths::ProjectContentDir() / TEXT("Data") / Relative)) &&
-        FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) && Root.IsValid();
-}
-bool Str(const FJsonObject& Object, const TCHAR* Key, FString& Out)
-{
-    return Object.TryGetStringField(Key, Out) && !Out.IsEmpty();
-}
-bool Whole(double Value, int32& Out)
-{
-    if (!FMath::IsFinite(Value) || Value != FMath::FloorToDouble(Value) || Value < MIN_int32 || Value > MAX_int32)
-        return false;
-    Out = static_cast<int32>(Value);
-    return true;
-}
-bool Int(const FJsonObject& Object, const TCHAR* Key, int32& Out)
-{
-    double Value = 0;
-    return Object.TryGetNumberField(Key, Value) && Whole(Value, Out);
-}
-bool Num(const FJsonObject& Object, const TCHAR* Key, double& Out)
-{
-    return Object.TryGetNumberField(Key, Out) && FMath::IsFinite(Out);
-}
-const FJsonRows* Rows(const FJsonObject& Object, const TCHAR* Key)
-{
-    const FJsonRows* Result = nullptr;
-    return Object.TryGetArrayField(Key, Result) ? Result : nullptr;
-}
-TSharedPtr<FJsonObject> Child(const FJsonObject& Object, const TCHAR* Key)
-{
-    const TSharedPtr<FJsonObject>* Result = nullptr;
-    return Object.TryGetObjectField(Key, Result) && Result ? *Result : nullptr;
-}
-bool IsNull(const FJsonObject& Object, const TCHAR* Key)
-{
-    const TSharedPtr<FJsonValue> Value = Object.TryGetField(Key);
-    return Value.IsValid() && Value->IsNull();
-}
-bool Strings(const FJsonRows* Values, TArray<FString>& Out)
-{
-    if (!Values) return false;
-    for (const auto& Value : *Values)
-    {
-        FString Text;
-        if (!Value.IsValid() || !Value->TryGetString(Text) || Text.IsEmpty()) return false;
-        Out.Add(MoveTemp(Text));
-    }
-    return true;
-}
-bool WeaponMask(const FJsonRows* Values, unsigned& Out)
-{
-    if (!Values) return false;
-    for (const auto& Value : *Values)
-    {
-        double Number = 0; int32 Id = 0;
-        if (!Value.IsValid() || !Value->TryGetNumber(Number) || !Whole(Number, Id) ||
-            Id < 0 || Id >= SoraBeatRules::WeaponCount || (Out & (1u << Id)) != 0u)
-            return false;
-        Out |= 1u << Id;
-    }
-    return true;
-}
-template <typename TEnum>
-bool Named(const FJsonObject& Object, const TCHAR* Key, const TMap<FString, TEnum>& Names, TEnum& Out)
-{
-    FString Name;
-    const TEnum* Found = Str(Object, Key, Name) ? Names.Find(Name) : nullptr;
-    if (Found) Out = *Found;
-    return Found != nullptr;
-}
-// A non-empty string, or null (left empty).
-bool Nullable(const FJsonObject& Object, const TCHAR* Key, FString& Out)
-{
-    Out.Reset();
-    return IsNull(Object, Key) || Str(Object, Key, Out);
-}
-bool Points(const FJsonObject& Object, const TCHAR* Key, TArray<FString>& Out)
-{
-    return Strings(Rows(Object, Key), Out) && Out.Num() <= SoraBeatRules::MaxPoints;
-}
+using namespace SoraCatalogJson;
 
 // A beat's task block (build_campaign_data.py normalize_task): the goal and
 // its integer parameters for SoraBeatRules, and the names the director uses.
@@ -148,7 +61,9 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Points(O, TEXT("dropoffs"), Beat.Dropoffs) || !Nullable(O, TEXT("lines_event"), Beat.LinesEvent) ||
         !Nullable(O, TEXT("closing_event"), Beat.ClosingEvent) || !Nullable(O, TEXT("exit_event"), Beat.ExitEvent) ||
         !Nullable(O, TEXT("opponent"), Opponent) || !O.TryGetBoolField(TEXT("sparring"), Beat.bSparring) ||
-        !Strings(Rows(O, TEXT("phase_events")), Beat.PhaseEvents))
+        !Strings(Rows(O, TEXT("phase_events")), Beat.PhaseEvents) ||
+        !Int(O, TEXT("carry_speed_permille"), T.CarrySpeedPermille) ||
+        !WeaponMask(Rows(O, TEXT("carry_weapons")), T.CarryWeaponsMask))
         return false;
     if (!TaskName.IsEmpty() && !Tasks.Contains(TaskName)) return false;
     T.Task = TaskName.IsEmpty() ? ETask::None : Tasks[TaskName];
@@ -266,7 +181,8 @@ bool FSoraCatalog::Load()
     if (!Int(*Root, TEXT("schema_version"), SchemaVersion) || SchemaVersion != 4 || Root->HasField(TEXT("chapters")))
         return Fail(TEXT("Unsupported offline catalog schema"));
     Weapons.Reset(); CampaignWeapons.Reset(); Classes.Reset(); Chapters.Reset(); Maps.Reset(); DialogueSpeakers.Reset();
-    Mechanics.Reset(); StoryFlags.Reset(); CollectibleCategories.Reset();
+    Mechanics.Reset(); MechanicLabels.Reset(); StoryFlags.Reset(); CollectibleCategories.Reset();
+    StepLabels.Reset(); TargetLabels.Reset();
     const FJsonRows* Rows = nullptr;
     if (!Root->TryGetArrayField(TEXT("dialogue_speakers"), Rows)) return Fail(TEXT("Catalog lacks dialogue speakers"));
     for (const auto& Row : *Rows)
@@ -375,10 +291,29 @@ bool FSoraCatalog::LoadCampaign()
     int32 SchemaVersion = 0;
     if (!ReadJson(TEXT("campaign/campaign.json"), Campaign) || !Int(*Campaign, TEXT("schema_version"), SchemaVersion) || SchemaVersion != 4)
         return Fail(TEXT("Cannot load Content/Data/campaign/campaign.json (schema 4)"));
-    if (!Strings(Rows(*Campaign, TEXT("mechanics")), Mechanics) || Mechanics.Num() != SoraBeatRules::MechanicCount)
-        return Fail(TEXT("Campaign needs its nineteen mechanic flags"));
-    for (int32 Index = 0; Index < Mechanics.Num(); ++Index)
-        if (Mechanics.Find(Mechanics[Index]) != Index) return Fail(TEXT("Duplicate campaign mechanic flag"));
+    // Bilingual labels by id: the mechanic flags in bit order, manufacturing
+    // steps and defended targets.
+    const auto Labels = [&](const TCHAR* Key, TArray<FString>* Ids, TArray<FSoraLabel>* Ordered, TMap<FString, FSoraLabel>* ById)
+    {
+        const FJsonRows* LabelRows = Rows(*Campaign, Key);
+        if (!LabelRows || LabelRows->IsEmpty()) return false;
+        for (const auto& Row : *LabelRows)
+        {
+            const auto O = Row.IsValid() ? Row->AsObject() : nullptr;
+            FString Id; FSoraLabel Label;
+            if (!O || !Str(*O, TEXT("id"), Id) || !Str(*O, TEXT("ja"), Label.Japanese) || !Str(*O, TEXT("en"), Label.English) ||
+                (Ids && Ids->Contains(Id)) || (ById && ById->Contains(Id)))
+                return false;
+            if (Ids) Ids->Add(Id);
+            if (Ordered) Ordered->Add(Label);
+            if (ById) ById->Add(Id, MoveTemp(Label));
+        }
+        return true;
+    };
+    if (!Labels(TEXT("mechanics"), &Mechanics, &MechanicLabels, nullptr) || Mechanics.Num() != SoraBeatRules::MechanicCount)
+        return Fail(TEXT("Campaign needs its nineteen labelled mechanic flags"));
+    if (!Labels(TEXT("step_kinds"), nullptr, nullptr, &StepLabels) || !Labels(TEXT("targets"), nullptr, nullptr, &TargetLabels))
+        return Fail(TEXT("Campaign needs bilingual labels for manufacturing steps and defended targets"));
     if (!Strings(Rows(*Campaign, TEXT("story_flags")), StoryFlags) || StoryFlags.Num() > SoraBeatRules::MaxStoryFlags)
         return Fail(TEXT("Campaign story flags must be a list of at most sixteen names"));
     for (int32 Index = 0; Index < StoryFlags.Num(); ++Index)
@@ -566,6 +501,10 @@ bool FSoraCatalog::LoadCampaign()
             Rule.PhaseCheckpoints = PhaseCheckpoints[BeatIndex];
             if (!ReadTask(*Task, TypeName, Beat) || !SoraBeatRules::TaskValid(Beat.Task))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid %s task"), *Beat.Id, *TypeName));
+            for (const FString& Kind : Beat.StepKinds)
+                if (!StepLabels.Contains(Kind)) return Bad(FString::Printf(TEXT("beat %s has an unlabelled step %s"), *Beat.Id, *Kind));
+            for (const FString& Target : Beat.Targets)
+                if (!TargetLabels.Contains(Target)) return Bad(FString::Printf(TEXT("beat %s has an unlabelled target %s"), *Beat.Id, *Target));
             // A dialogue beat's lines, and an explore beat's rewards, stay in its parameters.
             if (Beat.Is(SoraBeatRules::EType::Dialogue) &&
                 (!LineRefs(Rows(*Params, TEXT("lines")), Beat.Lines) || Beat.Lines.Num() != Beat.Task.Count || Beat.LinesEvent.IsEmpty()))
@@ -589,18 +528,21 @@ bool FSoraCatalog::LoadCampaign()
         // Every task valid, the chapter opens on a cinematic (its title card),
         // only explore beats are optional and only bosses and duels save per phase.
         if (!SoraBeatRules::TasksValid(C.Rules.GetData(), C.Tasks.GetData(), C.Rules.Num())) return Bad(TEXT("beat tasks violate SoraBeatRules"));
-        // A collectible without beats lies in its explore beat's cache or, when
-        // no cache holds it, along the beats played at its place.
+        // A collectible lies in an explore beat's cache or loose in the world
+        // at its pickup (read with the space); the script's beats only hint
+        // at when it is found.
         for (int32 Item = 0; Item < C.Collectibles.Num(); ++Item)
         {
             FSoraCollectible& Collectible = C.Collectibles[Item];
-            if (!Collectible.Beats.IsEmpty()) continue;
+            Collectible.Beats.Reset();
             for (int32 Beat = 0; Beat < C.Beats.Num(); ++Beat)
                 if (C.Beats[Beat].Rewards.Contains(Item)) Collectible.Beats.Add(Beat);
-            for (int32 Beat = 0; Collectible.Beats.IsEmpty() && Beat < C.Beats.Num(); ++Beat)
-                if (C.Beats[Beat].Place == Collectible.Place && !C.Rules[Beat].Optional) Collectible.Beats.Add(Beat);
-            if (Collectible.Beats.IsEmpty()) return Bad(FString::Printf(TEXT("collectible %s is never reachable"), *Collectible.Id));
         }
+        const TSharedPtr<FJsonObject> Space = Child(*Data, TEXT("space"));
+        if (!Space || !LoadSpace(*Space, C)) return false;
+        for (const FSoraCollectible& Collectible : C.Collectibles)
+            if (Collectible.Beats.IsEmpty() == (Collectible.Pickup == INDEX_NONE))
+                return Bad(FString::Printf(TEXT("collectible %s must lie in one cache or at one pickup"), *Collectible.Id));
 
         const FJsonRows* SiteRows = Rows(*Data, TEXT("sites"));
         if (!SiteRows || SiteRows->Num() != SoraBeatRules::SiteCount) return Bad(TEXT("needs three site rows"));

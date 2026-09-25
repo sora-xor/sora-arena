@@ -18,6 +18,14 @@ generated chapter files, and checks the bible's §12.3 rules:
 7. nonlethal enemies never counted toward a defeat count;
 8. at most 360 target seconds between checkpoints.
 
+Each chapter's ``space`` (campaign_space.py) must be buildable: zones and
+route corridors never overlap each other or the arena, every beat's points,
+spawns, patrols, stations, targets, caches, horses and collectible pickups
+stand on their zone's floor clear of its walls and cover, every volume a
+beat's events name exists inside its zone, rides and escorts run on routes
+at least as long as their scripts ask, and an escort walks its whole route.
+Every mechanic, manufacturing step and defended target has a bilingual label.
+
 It also checks line references both ways (every scheduled line exists, every
 line is scheduled), and that the 25 cues of catalog schema 3, frozen in
 scripts/unreal/fixtures/campaign_legacy_lines.json, survive verbatim.
@@ -29,9 +37,12 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import re
 import textwrap
 from pathlib import Path
+
+from campaign_space import arena_blockers
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "Content/Data"
@@ -58,6 +69,15 @@ ENEMIES = ("enforcer_rifle", "blade_retainer", "shield_enforcer", "grenadier", "
            "bound_conscript", "auditor", "loom_automaton", "seizure_walker")
 TRAINING_TARGETS = ("mato_kinteki", "mato_tsuri")
 MOUNTED_WEAPONS = {0, 18, 19}
+GAITS = ("walk", "trot", "canter", "gallop")
+# The arena's floor inside its perimeter walls (SoraWorldBuilder.cpp).
+ARENA_RECT = (-3150, -2550, 3150, 2550)
+# Clearance a point keeps from a zone's walls and cover, and between the
+# distinct points of one beat (cm).
+WALL_CLEAR = 150
+COVER_CLEAR = 60
+POINT_SPACING = 250
+ZONE_GAP = 2000
 SITE_KINDS = {"training", "debt_seal", "irrigation", "workshop", "foundry", "ledger", "power", "supplies"}
 MUTO_DEFEATS = ("disarm", "capture")
 EN_MAX_CPS = 17
@@ -156,13 +176,178 @@ def check_line(line, speakers, context):
     require("..." not in line["en"], f"{context}: EN ellipsis must be the single character … (§18)")
 
 
+def _inside(rect, point, margin):
+    x0, y0, x1, y1 = rect
+    return x0 + margin <= point[0] <= x1 - margin and y0 + margin <= point[1] <= y1 - margin
+
+
+def _clear_of_cover(cover, point, margin):
+    return all(abs(point[0] - cx) >= sx / 2 + margin or abs(point[1] - cy) >= sy / 2 + margin
+               for cx, cy, sx, sy, _ in cover)
+
+
+def _length(points):
+    return sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(points, points[1:]))
+
+
+def _volume_events(beat, chapter):
+    task = beat["task"]
+    events = {task[key] for key in ("lines_event", "closing_event", "exit_event")}
+    events |= {wave["event"] for wave in task["waves"]}
+    events |= {row["on"] for row in chapter["triggers"] if row["beat"] == beat["id"]}
+    return {event for event in events if event and event.startswith("volume_enter:")}
+
+
+def check_space(chapter, beats, rewards, labels, where):
+    """The chapter's space is one the world builder can build and the hero can play."""
+    space = chapter["space"]
+    zones = space["zones"]
+    rects = [tuple(zone["rect"]) for zone in zones] + ([ARENA_RECT] if space["hub"] is not None else [])
+    require(space["hub"] in (None, chapter["map"]), f"{where}: the hub is not the chapter's arena")
+    for number, a in enumerate(rects):
+        require(a[0] < a[2] and a[1] < a[3], f"{where}: zone {number} has an empty floor")
+        for b in rects[number + 1:]:
+            apart = a[2] + ZONE_GAP <= b[0] or b[2] + ZONE_GAP <= a[0] or a[3] + ZONE_GAP <= b[1] or b[3] + ZONE_GAP <= a[1]
+            require(apart, f"{where}: zones {a} and {b} overlap or touch")
+    for zone in zones:
+        rect, cover = zone["rect"], zone["cover"]
+        require(zone["style"] in ("estate", "ward", "foundry", "citadel") and
+                zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
+        require(len(zone["walls"]) == 4 and zone["wall_cm"] >= 200, f"{where}: zone {zone['id']} must be walled in")
+        for piece in cover:
+            require(_inside(rect, piece, max(piece[2], piece[3]) / 2 + WALL_CLEAR),
+                    f"{where}: cover {piece[:2]} of {zone['id']} leaves no way past the wall")
+        require(_inside(rect, zone["entry"], WALL_CLEAR) and _clear_of_cover(cover, zone["entry"], COVER_CLEAR),
+                f"{where}: zone {zone['id']} entry")
+        require((zone["form"] == "route") == bool(zone["route"]), f"{where}: zone {zone['id']} route")
+        for point in zone["route"]:
+            require(_inside(rect, point, 600), f"{where}: road {zone['id']} leaves its corridor at {point}")
+
+    # The hub's buildings, cover, lantern poles and torii posts stand in for its cover.
+    hub_blockers = [[(x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0, 0]
+                    for x0, y0, x1, y1 in arena_blockers(space["hub"])] if space["hub"] is not None else []
+
+    def zone_of(index):
+        return (tuple(zones[index]["rect"]), zones[index]["cover"]) if index >= 0 else (ARENA_RECT, hub_blockers)
+
+    def on_floor(index, point, what, cover_margin=COVER_CLEAR):
+        rect, cover = zone_of(index)
+        require(_inside(rect, point, WALL_CLEAR) and _clear_of_cover(cover, point, cover_margin),
+                f"{what} at {point[:2]} is off its floor or inside a wall or cover")
+
+    records = space["beats"]
+    require([record["beat"] for record in records] == [beat["id"] for beat in beats], f"{where}: one space per beat")
+    require(space["start"] == records[0]["entry"], f"{where}: the chapter starts at its first beat")
+    for site, point in enumerate(space["sites"]):
+        owner = next(beat for beat in beats if beat["site"] == site)
+        index = records[beats.index(owner)]["zone"]
+        # The hub's sites are the arena's own (SoraWorldBuilder.cpp); a zone's
+        # site keeps clear of the zone's cover.
+        if index < 0:
+            require(_inside(ARENA_RECT, point, WALL_CLEAR), f"{where} site {site} is off the arena floor")
+        else:
+            on_floor(index, point, f"{where} site {site}", 150)
+    for beat, record in zip(beats, records):
+        task, index, what = beat["task"], record["zone"], beat["id"]
+        routed = beat["type"] == "horseback_ride" or task["goal"] == "escort"
+        require(routed == (record["route"] is not None) and
+                (not routed or zones[index]["form"] == "route"), f"{what}: rides and escorts run on a route")
+        on_floor(index, record["entry"], f"{what} entry")
+        on_floor(index, record["anchor"], f"{what} anchor", 0)
+        for key, count in (("objectives", len(task["objectives"])), ("pickups", len(task["pickups"])),
+                           ("dropoffs", len(task["dropoffs"])), ("targets", len(task["targets"]))):
+            require(len(record[key]) == count, f"{what}: {count} {key} in the task, {len(record[key])} placed")
+        distinct = [record["anchor"]] + record["objectives"] + record["pickups"] + record["dropoffs"] + record["targets"]
+        for key in ("objectives", "pickups", "dropoffs", "targets", "stations", "spawns"):
+            for point in record[key]:
+                on_floor(index, point, f"{what} {key}")
+        if not routed:
+            for number, a in enumerate(distinct):
+                for b in distinct[number + 1:]:
+                    require(math.hypot(a[0] - b[0], a[1] - b[1]) >= POINT_SPACING, f"{what}: points {a} and {b} coincide")
+        for loop in record["patrols"]:
+            for point in loop:
+                on_floor(index, point, f"{what} patrol")
+        require(record["spawns"] or not task["waves"] and beat["type"] not in ("duel", "boss", "stealth_zone"),
+                f"{what}: opponents need spawns")
+        if task["steps"]:
+            require(record["stations"] and len(record["step_stations"]) == len(task["steps"]) and
+                    all(0 <= station < len(record["stations"]) for station in record["step_stations"]),
+                    f"{what}: every manufacturing step needs its station")
+            for step in task["steps"]:
+                require(step["kind"] in labels["step_kinds"], f"{what}: step {step['kind']} has no label")
+        for target in task["targets"]:
+            require(target["id"] in labels["targets"], f"{what}: target {target['id']} has no label")
+        rect = zone_of(index)[0]
+        placed = {volume["event"] for volume in record["volumes"]}
+        named = _volume_events(beat, chapter)
+        if record["mount"]:
+            named |= {f"volume_enter:{name}" for name in record["mount"]["spooks"]}
+            named |= {f"volume_enter:{entry['volume']}" for entry in record["mount"]["forced"]}
+        require(placed == named, f"{what}: volumes {sorted(placed)} differ from its events {sorted(named)}")
+        for volume in record["volumes"] + [record["exit"]]:
+            require(_inside(rect, volume["center"], 0) and min(volume["size"]) >= 300, f"{what}: volume {volume}")
+        if task["anchor_after_lines"]:
+            require(record["closing"] is not None, f"{what}: a dialogue that ends at an anchor needs one")
+            on_floor(index, record["closing"], f"{what} closing anchor", 0)
+        if beat["type"] == "explore_optional":
+            require(record["cache"] is not None, f"{what}: an explore beat needs its cache")
+            on_floor(index, record["cache"], f"{what} cache")
+        require((record["camera"] is not None) == (beat["type"] == "cinematic"), f"{what}: cinematic camera")
+        kit = record["kit"]
+        require(len(kit["targets"]) == len(task["targets"]) and len(kit["pickups"]) == len(task["pickups"]) and
+                (beat["type"] == "horseback_ride" or len(kit["dropoffs"]) == len(task["dropoffs"])),
+                f"{what}: kit kinds per point")
+        if task["goal"] == "deliveries" and beat["type"] == "production_task":
+            require(0 < task["carry_speed_permille"] <= 1000 and set(task["carry_weapons"]) <= {0},
+                    f"{what}: carry pace and loadout")
+        if routed:
+            route = zones[index]["route"]
+            length = _length(route)
+            wanted = beat["ext"].get("route_length_m") or (beat["params"].get("escort") or {}).get("path_length_m")
+            require(wanted is None or abs(length - wanted * 100) <= 2, f"{what}: route {length:.0f} cm, script {wanted} m")
+            if task["goal"] == "escort":
+                margin = record["route"]["margin_cm"]
+                require(task["path_cm"] == round(length) - 2 * margin and task["path_cm"] > 0,
+                        f"{what}: the escort walks {task['path_cm']} cm of a {length:.0f} cm route")
+        mount = record["mount"]
+        require((mount is not None) == (beat["type"] == "horseback_ride" or any(
+            "mount" in phase for phase in beat["params"].get("phases", []))), f"{what}: horse")
+        if mount:
+            require(set(mount["weapons"]) <= MOUNTED_WEAPONS, f"{what}: mounted weapons {mount['weapons']}")
+            require(set(mount["gaits"]) <= set(GAITS) and mount["gaits"], f"{what}: gaits {mount['gaits']}")
+            speeds = mount["speeds_cm_s"]
+            require(all(0 < a < b for a, b in zip(speeds, speeds[1:])), f"{what}: gait speeds must rise")
+            require(set(mount["arcs"]) == {str(weapon) for weapon in mount["weapons"]} and
+                    all(-180 <= arc[0] < arc[1] <= 180 for arc in mount["arcs"].values()), f"{what}: mounted arcs")
+            require(not mount["arcs"].get("18") or mount["arcs"]["18"][1] <= 15,
+                    f"{what}: the yumi shoots to the left from the saddle (bible §4.2)")
+            require(not mount["tack"] or not mount["mounted"], f"{what}: a horse to tack up starts unmounted")
+            on_floor(index, mount["at"], f"{what} horse")
+            for spook in mount["spooks"]:
+                require(f"volume_enter:{spook}" in placed, f"{what}: spook volume {spook} is not placed")
+    found = [pickup["collectible"] for pickup in space["pickups"]]
+    loose = [item["id"] for item in chapter["collectibles"] if item["id"] not in rewards]
+    require(sorted(found) == sorted(loose), f"{where}: pickups {sorted(found)} for loose collectibles {sorted(loose)}")
+    for pickup in space["pickups"]:
+        on_floor(pickup["zone"], pickup["at"], f"{where} pickup {pickup['collectible']}")
+
+
 def validate(catalog, campaign, chapters, legacy, bosses=None):
     speakers = {speaker["id"] for speaker in catalog["dialogue_speakers"]}
     require(catalog["schema_version"] == 4 and "chapters" not in catalog,
             "catalog.json must be schema 4 without the schema-3 chapter list")
     require(campaign["schema_version"] == 4, "campaign.json must be schema 4")
     require(len(campaign["chapters"]) == 8 == len(chapters), "the campaign has eight chapters")
-    require(tuple(campaign["mechanics"]) == MECHANICS, "campaign mechanics must list the §12.1 flags in order")
+    require(tuple(row["id"] for row in campaign["mechanics"]) == MECHANICS,
+            "campaign mechanics must list the §12.1 flags in order")
+    for group in ("mechanics", "step_kinds", "targets"):
+        ids = [row["id"] for row in campaign[group]]
+        require(len(ids) == len(set(ids)), f"campaign {group} repeat an id")
+        for row in campaign[group]:
+            require(JAPANESE.search(row["ja"]) and row["en"].strip() and not JAPANESE.search(row["en"]),
+                    f"campaign {group} {row['id']}: bilingual label")
+    labels = {group: {row["id"] for row in campaign[group]} for group in ("step_kinds", "targets")}
     categories = {row["id"]: row for row in campaign["collectible_categories"]}
     known_bosses = set(BOSSES) if bosses is None else set(BOSSES) & boss_ids(bosses)
     require(known_bosses == set(BOSSES), f"bosses.json lacks {sorted(set(BOSSES) - known_bosses)}")
@@ -347,6 +532,7 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
         rewards = {reward for beat in beats if beat["type"] == "explore_optional"
                    for reward in beat["params"].get("rewards", []) if re.fullmatch(r"ch\d\d\.c\d\d", str(reward))}
         require(rewards <= {item["id"] for item in collectibles}, f"{where}: explore rewards name unknown collectibles")
+        check_space(chapter, beats, rewards, labels, where)
         prompt_ids = [prompt["id"] for prompt in chapter["ui_prompts"]]
         require(len(prompt_ids) == len(set(prompt_ids)), f"{where}: HUD prompt ids repeat")
         for prompt in chapter["ui_prompts"]:
@@ -468,8 +654,41 @@ def self_test(catalog, campaign, chapters, legacy):
         row = next(row for row in data[2][1]["triggers"] if row["mode"] == "blocking")
         row["lines"] = [line["id"] for line in data[2][1]["lines"][:12]]
 
+    def space(data, number, beat_id):
+        return next(record for record in data[2][number]["space"]["beats"] if record["beat"] == beat_id)
+
+    def anchor_in_wall(data):
+        record = space(data, 3, "ch04.b06")
+        record["anchor"] = [data[2][3]["space"]["zones"][record["zone"]]["rect"][0] - 50, 0]
+
+    def short_route(data):
+        zone = next(zone for zone in data[2][7]["space"]["zones"] if zone["id"] == "route:ch08.b02")
+        zone["route"] = zone["route"][:-3]
+
+    def missing_volume(data):
+        space(data, 0, "ch01.b05")["volumes"].pop()
+
+    def zones_collide(data):
+        data[2][4]["space"]["zones"][1]["rect"] = list(data[2][4]["space"]["zones"][0]["rect"])
+
+    def lost_collectible(data):
+        data[2][0]["space"]["pickups"].pop()
+
+    def unlabelled_step(data):
+        data[1]["step_kinds"] = [row for row in data[1]["step_kinds"] if row["id"] != "quench"]
+
+    def yumi_to_the_right(data):
+        space(data, 1, "ch02.b08")["mount"]["arcs"]["18"] = [-15, 170]
+
+    def spawn_in_building(data):
+        space(data, 2, "ch03.b16")["spawns"][0] = [1850, 1100]
+
+    def short_escort(data):
+        next(beat for beat in data[2][7]["beats"] if beat["id"] == "ch08.b07")["task"]["path_cm"] -= 400
+
     validate(*copy.deepcopy((catalog, campaign, chapters, legacy)))
-    mutations = (swap_unlock, fast_line, long_gap, gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
+    mutations = (anchor_in_wall, short_route, missing_volume, zones_collide, lost_collectible, unlabelled_step,
+                 yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,
                  lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition)
     for mutate in mutations:

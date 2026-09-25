@@ -237,7 +237,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {}
   },
@@ -592,7 +594,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "route_length_m": 1750,
@@ -872,7 +876,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "volley_command": {
@@ -1145,7 +1151,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "supply_point": "sp_nokaji"
@@ -1313,7 +1321,11 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 800,
+    "carry_weapons": [
+     0
+    ]
    },
    "ext": {
     "scripted": {
@@ -1594,7 +1606,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "volley_command": {
@@ -1809,7 +1823,7 @@
     "max_turn_ms": 0,
     "speed_cm_s": 260,
     "wait_cm": 1200,
-    "path_cm": 18000,
+    "path_cm": 17000,
     "pickups": [],
     "dropoffs": [],
     "drop_on_hit": false,
@@ -1832,7 +1846,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "release": {
@@ -1933,7 +1949,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {}
   },
@@ -2027,7 +2045,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {}
   },
@@ -2256,7 +2276,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "scripted": {
@@ -2468,7 +2490,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {}
   },
@@ -2585,7 +2609,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {}
   },
@@ -2672,7 +2698,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {}
   },
@@ -2787,7 +2815,9 @@
     "guards": [],
     "opponent": "boss_val_amort",
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "lethal_finisher": false,
@@ -2893,7 +2923,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {}
   },
@@ -2999,7 +3031,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 700,
+    "carry_weapons": []
    },
    "ext": {
     "combat": false,
@@ -3105,7 +3139,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "blocking_max_s": 20
@@ -3195,7 +3231,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {}
   }
@@ -7362,6 +7400,7 @@
    "reading": "かくれだに",
    "en": "Hidden Valley",
    "arena": null,
+   "hub": false,
    "source": "New hub"
   },
   {
@@ -7371,6 +7410,7 @@
    "reading": "ねこやまのどてみち",
    "en": "Nekoyama causeway",
    "arena": null,
+   "hub": false,
    "source": "New ride space"
   },
   {
@@ -7380,6 +7420,7 @@
    "reading": "がいかく",
    "en": "Outer bailey",
    "arena": 3,
+   "hub": true,
    "source": "Arena 3"
   },
   {
@@ -7389,6 +7430,7 @@
    "reading": "おおてもん",
    "en": "Main gate",
    "arena": 3,
+   "hub": false,
    "source": "Arena 3"
   },
   {
@@ -7398,6 +7440,7 @@
    "reading": "たんぽろう",
    "en": "Collateral cells",
    "arena": null,
+   "hub": false,
    "source": "New"
   },
   {
@@ -7407,6 +7450,7 @@
    "reading": "ちょうぼとう",
    "en": "Ledger Spire",
    "arena": null,
+   "hub": false,
    "source": "New vertical"
   },
   {
@@ -7416,6 +7460,7 @@
    "reading": "ちょうぼきかん",
    "en": "Ledger Engine summit",
    "arena": null,
+   "hub": false,
    "source": "New"
   },
   {
@@ -7425,6 +7470,7 @@
    "reading": null,
    "en": "Lantern Ward, harvest festival",
    "arena": 1,
+   "hub": true,
    "source": "Arena 1 (festival variant)"
   },
   {
@@ -7434,6 +7480,7 @@
    "reading": "ひがしのとりい",
    "en": "Eastern Torii",
    "arena": 1,
+   "hub": false,
    "source": "Arena 1 edge"
   }
  ],
@@ -7444,6 +7491,5995 @@
   "splines": [],
   "patrols": [],
   "ext": {}
+ },
+ "space": {
+  "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+  "hub": 3,
+  "hub_place": "pl_outer_bailey",
+  "start": [
+   8280,
+   0,
+   0
+  ],
+  "zones": [
+   {
+    "id": "pl_kakuredani",
+    "place": "pl_kakuredani",
+    "style": "citadel",
+    "form": "field",
+    "rect": [
+     8000,
+     -2600,
+     15200,
+     2600
+    ],
+    "wall_cm": 220,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      15230,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      11600,
+      -2630,
+      7200,
+      60,
+      220
+     ],
+     [
+      11600,
+      2630,
+      7200,
+      60,
+      220
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       8288,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       8288,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       14984,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       14984,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       8825,
+       -3050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       8825,
+       3050,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       9925,
+       -3050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       9925,
+       3050,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       11025,
+       -3050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       11025,
+       3050,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       12125,
+       -3050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       12125,
+       3050,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       13225,
+       -3050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       13225,
+       3050,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       14325,
+       -3050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       14325,
+       3050,
+       180
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_otemon",
+    "place": "pl_otemon",
+    "style": "citadel",
+    "form": "yard",
+    "rect": [
+     18200,
+     -1600,
+     22600,
+     1600
+    ],
+    "wall_cm": 360,
+    "entry": [
+     18480,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      18170,
+      0,
+      60,
+      3320,
+      360
+     ],
+     [
+      22630,
+      0,
+      60,
+      3320,
+      360
+     ],
+     [
+      20400,
+      -1630,
+      4400,
+      60,
+      360
+     ],
+     [
+      20400,
+      1630,
+      4400,
+      60,
+      360
+     ]
+    ],
+    "cover": [
+     [
+      19520,
+      -960,
+      230,
+      180,
+      140
+     ],
+     [
+      19520,
+      960,
+      230,
+      180,
+      140
+     ],
+     [
+      20224,
+      -960,
+      230,
+      180,
+      140
+     ],
+     [
+      20224,
+      960,
+      230,
+      180,
+      140
+     ],
+     [
+      20928,
+      -960,
+      230,
+      180,
+      140
+     ],
+     [
+      20928,
+      960,
+      230,
+      180,
+      140
+     ],
+     [
+      21632,
+      -960,
+      230,
+      180,
+      140
+     ],
+     [
+      21632,
+      960,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       18376,
+       -1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       18376,
+       1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       22468,
+       -1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       22468,
+       1408,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       19025,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       19025,
+       2050,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       20125,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       20125,
+       2050,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       21225,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       21225,
+       2050,
+       180
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_collateral_cells",
+    "place": "pl_collateral_cells",
+    "style": "citadel",
+    "form": "hall",
+    "rect": [
+     25600,
+     -1300,
+     29200,
+     1300
+    ],
+    "wall_cm": 700,
+    "entry": [
+     25880,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      25570,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      29230,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      27400,
+      -1330,
+      3600,
+      60,
+      700
+     ],
+     [
+      27400,
+      1330,
+      3600,
+      60,
+      700
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       25744,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       25744,
+       1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       29092,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       29092,
+       1144,
+       0
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_ledger_spire",
+    "place": "pl_ledger_spire",
+    "style": "citadel",
+    "form": "hall",
+    "rect": [
+     32200,
+     -1300,
+     35800,
+     1300
+    ],
+    "wall_cm": 700,
+    "entry": [
+     32480,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      32170,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      35830,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      34000,
+      -1330,
+      3600,
+      60,
+      700
+     ],
+     [
+      34000,
+      1330,
+      3600,
+      60,
+      700
+     ]
+    ],
+    "cover": [
+     [
+      33280,
+      -780,
+      230,
+      180,
+      140
+     ],
+     [
+      33280,
+      780,
+      230,
+      180,
+      140
+     ],
+     [
+      33856,
+      -780,
+      230,
+      180,
+      140
+     ],
+     [
+      33856,
+      780,
+      230,
+      180,
+      140
+     ],
+     [
+      34432,
+      -780,
+      230,
+      180,
+      140
+     ],
+     [
+      34432,
+      780,
+      230,
+      180,
+      140
+     ],
+     [
+      35008,
+      -780,
+      230,
+      180,
+      140
+     ],
+     [
+      35008,
+      780,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       32344,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       32344,
+       1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35692,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35692,
+       1144,
+       0
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_ledger_engine",
+    "place": "pl_ledger_engine",
+    "style": "citadel",
+    "form": "hall",
+    "rect": [
+     38800,
+     -2100,
+     44400,
+     2100
+    ],
+    "wall_cm": 700,
+    "entry": [
+     39080,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      38770,
+      0,
+      60,
+      4320,
+      700
+     ],
+     [
+      44430,
+      0,
+      60,
+      4320,
+      700
+     ],
+     [
+      41600,
+      -2130,
+      5600,
+      60,
+      700
+     ],
+     [
+      41600,
+      2130,
+      5600,
+      60,
+      700
+     ]
+    ],
+    "cover": [
+     [
+      40480,
+      -1260,
+      230,
+      180,
+      140
+     ],
+     [
+      40480,
+      1260,
+      230,
+      180,
+      140
+     ],
+     [
+      41376,
+      -1260,
+      230,
+      180,
+      140
+     ],
+     [
+      41376,
+      1260,
+      230,
+      180,
+      140
+     ],
+     [
+      42272,
+      -1260,
+      230,
+      180,
+      140
+     ],
+     [
+      42272,
+      1260,
+      230,
+      180,
+      140
+     ],
+     [
+      43168,
+      -1260,
+      230,
+      180,
+      140
+     ],
+     [
+      43168,
+      1260,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       39024,
+       -1848,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       39024,
+       1848,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       44232,
+       -1848,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       44232,
+       1848,
+       0
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_lantern_ward_festival",
+    "place": "pl_lantern_ward_festival",
+    "style": "ward",
+    "form": "yard",
+    "rect": [
+     47400,
+     -1600,
+     51800,
+     1600
+    ],
+    "wall_cm": 360,
+    "entry": [
+     47680,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      47370,
+      0,
+      60,
+      3320,
+      360
+     ],
+     [
+      51830,
+      0,
+      60,
+      3320,
+      360
+     ],
+     [
+      49600,
+      -1630,
+      4400,
+      60,
+      360
+     ],
+     [
+      49600,
+      1630,
+      4400,
+      60,
+      360
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       47576,
+       -1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       47576,
+       1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       51668,
+       -1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       51668,
+       1408,
+       0
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       48225,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       48225,
+       2050,
+       180
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       49325,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       49325,
+       2050,
+       180
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       50425,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       50425,
+       2050,
+       180
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_higashi_torii",
+    "place": "pl_higashi_torii",
+    "style": "ward",
+    "form": "yard",
+    "rect": [
+     54800,
+     -1600,
+     59200,
+     1600
+    ],
+    "wall_cm": 360,
+    "entry": [
+     55080,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      54770,
+      0,
+      60,
+      3320,
+      360
+     ],
+     [
+      59230,
+      0,
+      60,
+      3320,
+      360
+     ],
+     [
+      57000,
+      -1630,
+      4400,
+      60,
+      360
+     ],
+     [
+      57000,
+      1630,
+      4400,
+      60,
+      360
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       54976,
+       -1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       54976,
+       1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       59068,
+       -1408,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       59068,
+       1408,
+       0
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       55625,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       55625,
+       2050,
+       180
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       56725,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       56725,
+       2050,
+       180
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       57825,
+       -2050,
+       0
+      ]
+     },
+     {
+      "mesh": "building",
+      "at": [
+       57825,
+       2050,
+       180
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "route:ch08.b02",
+    "place": "pl_causeway",
+    "style": "citadel",
+    "form": "route",
+    "rect": [
+     8000,
+     -13200,
+     184703,
+     -10800
+    ],
+    "wall_cm": 200,
+    "entry": [
+     8280,
+     -12000,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      -12000,
+      60,
+      2520,
+      200
+     ],
+     [
+      184733,
+      -12000,
+      60,
+      2520,
+      200
+     ],
+     [
+      96351,
+      -13230,
+      176703,
+      60,
+      200
+     ],
+     [
+      96351,
+      -10770,
+      176703,
+      60,
+      200
+     ]
+    ],
+    "cover": [
+     [
+      12587,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      16562,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      20537,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      24512,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      28487,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      32462,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      36437,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      40412,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      44387,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      48362,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      52337,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      56312,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      60287,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      64261,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      68236,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      72211,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      76186,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      80161,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      84136,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      88111,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      92086,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      96061,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      100036,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      104011,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      107986,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      111961,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      115936,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      119910,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      123885,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      127860,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      131835,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      135810,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      139785,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      143760,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      147735,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      151710,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      155685,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      159660,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      163635,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      167610,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      171584,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      175559,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      179534,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      183509,
+      -11220,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11387,
+       -11256,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       15362,
+       -12291,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       19337,
+       -11698,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       23312,
+       -12755,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       27287,
+       -11268,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       31262,
+       -12279,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35237,
+       -11687,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       39212,
+       -12766,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       43187,
+       -11279,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       47162,
+       -12268,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       51137,
+       -11675,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       55112,
+       -12777,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       59087,
+       -11290,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       63061,
+       -12257,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       67036,
+       -11664,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       71011,
+       -12789,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       74986,
+       -11302,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       78961,
+       -12246,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       82936,
+       -11653,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       86911,
+       -12800,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       90886,
+       -11313,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       94861,
+       -12234,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       98836,
+       -11642,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       102811,
+       -12811,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       106786,
+       -11324,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       110761,
+       -12223,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       114736,
+       -11630,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       118710,
+       -12823,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       122685,
+       -11335,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       126660,
+       -12212,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       130635,
+       -11619,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       134610,
+       -12834,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       138585,
+       -11347,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       142560,
+       -12200,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       146535,
+       -11608,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       150510,
+       -12845,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       154485,
+       -11358,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       158460,
+       -12189,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       162435,
+       -11596,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       166410,
+       -12856,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       170384,
+       -11369,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       174359,
+       -12178,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       178334,
+       -11585,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       182309,
+       -12868,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       8800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       9350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       11000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       11550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       13200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       13750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       15400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       15950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       17600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       18150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       19800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       20350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       22000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       22550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       24200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       24750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       26400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       26950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       28600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       29150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       30800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       31350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       33000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       33550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       35200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       35750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       37400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       37950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       39600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       40150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       41800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       42350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       44000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       44550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       46200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       46750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       48400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       48950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       50600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       51150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       52800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       53350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       55000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       55550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       57200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       57750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       59400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       59950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       61600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       62150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       63800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       64350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       66000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       66550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       68200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       68750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       70400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       70950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       72600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       73150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       74800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       75350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       77000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       77550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       79200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       79750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       81400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       81950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       83600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       84150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       85800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       86350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       88000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       88550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       90200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       90750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       92400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       92950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       94600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       95150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       96800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       97350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       99000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       99550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       101200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       101750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       103400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       103950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       105600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       106150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       107800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       108350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       110000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       110550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       112200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       112750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       114400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       114950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       116600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       117150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       118800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       119350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       121000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       121550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       123200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       123750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       125400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       125950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       127600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       128150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       129800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       130350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       132000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       132550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       134200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       134750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       136400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       136950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       138600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       139150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       140800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       141350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       143000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       143550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       145200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       145750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       147400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       147950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       149600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       150150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       151800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       152350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       154000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       154550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       156200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       156750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       158400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       158950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       160600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       161150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       162800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       163350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       165000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       165550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       167200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       167750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       169400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       169950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       171600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       172150,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       173800,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       174350,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       176000,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       176550,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       178200,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       178750,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       180400,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       180950,
+       -10350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       182600,
+       -13650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       183150,
+       -10350,
+       180
+      ]
+     }
+    ],
+    "route": [
+     [
+      9400,
+      -12000
+     ],
+     [
+      13400,
+      -11550
+     ],
+     [
+      17400,
+      -12000
+     ],
+     [
+      21400,
+      -12450
+     ],
+     [
+      25400,
+      -12000
+     ],
+     [
+      29400,
+      -11550
+     ],
+     [
+      33400,
+      -12000
+     ],
+     [
+      37400,
+      -12450
+     ],
+     [
+      41400,
+      -12000
+     ],
+     [
+      45400,
+      -11550
+     ],
+     [
+      49400,
+      -12000
+     ],
+     [
+      53400,
+      -12450
+     ],
+     [
+      57400,
+      -12000
+     ],
+     [
+      61400,
+      -11550
+     ],
+     [
+      65400,
+      -12000
+     ],
+     [
+      69400,
+      -12450
+     ],
+     [
+      73400,
+      -12000
+     ],
+     [
+      77400,
+      -11550
+     ],
+     [
+      81400,
+      -12000
+     ],
+     [
+      85400,
+      -12450
+     ],
+     [
+      89400,
+      -12000
+     ],
+     [
+      93400,
+      -11550
+     ],
+     [
+      97400,
+      -12000
+     ],
+     [
+      101400,
+      -12450
+     ],
+     [
+      105400,
+      -12000
+     ],
+     [
+      109400,
+      -11550
+     ],
+     [
+      113400,
+      -12000
+     ],
+     [
+      117400,
+      -12450
+     ],
+     [
+      121400,
+      -12000
+     ],
+     [
+      125400,
+      -11550
+     ],
+     [
+      129400,
+      -12000
+     ],
+     [
+      133400,
+      -12450
+     ],
+     [
+      137400,
+      -12000
+     ],
+     [
+      141400,
+      -11550
+     ],
+     [
+      145400,
+      -12000
+     ],
+     [
+      149400,
+      -12450
+     ],
+     [
+      153400,
+      -12000
+     ],
+     [
+      157400,
+      -11550
+     ],
+     [
+      161400,
+      -12000
+     ],
+     [
+      165400,
+      -12450
+     ],
+     [
+      169400,
+      -12000
+     ],
+     [
+      173400,
+      -11550
+     ],
+     [
+      177400,
+      -12000
+     ],
+     [
+      181400,
+      -12450
+     ],
+     [
+      183303,
+      -12236
+     ]
+    ]
+   },
+   {
+    "id": "route:ch08.b07",
+    "place": "pl_collateral_cells",
+    "style": "citadel",
+    "form": "route",
+    "rect": [
+     8000,
+     -18200,
+     28687,
+     -15800
+    ],
+    "wall_cm": 200,
+    "entry": [
+     8280,
+     -17000,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      -17000,
+      60,
+      2520,
+      200
+     ],
+     [
+      28717,
+      -17000,
+      60,
+      2520,
+      200
+     ],
+     [
+      18343,
+      -18230,
+      20687,
+      60,
+      200
+     ],
+     [
+      18343,
+      -15770,
+      20687,
+      60,
+      200
+     ]
+    ],
+    "cover": [
+     [
+      12587,
+      -17780,
+      230,
+      180,
+      140
+     ],
+     [
+      16562,
+      -16220,
+      230,
+      180,
+      140
+     ],
+     [
+      20537,
+      -17780,
+      230,
+      180,
+      140
+     ],
+     [
+      24512,
+      -16220,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11387,
+       -16256,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       15362,
+       -17291,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       19337,
+       -16698,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       23312,
+       -17755,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       8800,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       9350,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       11000,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       11550,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       13200,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       13750,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       15400,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       15950,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       17600,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       18150,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       19800,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       20350,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       22000,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       22550,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       24200,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       24750,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       26400,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       26950,
+       -15350,
+       180
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       28600,
+       -18650,
+       0
+      ]
+     },
+     {
+      "mesh": "building_hightech",
+      "at": [
+       29150,
+       -15350,
+       180
+      ]
+     }
+    ],
+    "route": [
+     [
+      9400,
+      -17000
+     ],
+     [
+      13400,
+      -16550
+     ],
+     [
+      17400,
+      -17000
+     ],
+     [
+      21400,
+      -17450
+     ],
+     [
+      25400,
+      -17000
+     ],
+     [
+      27287,
+      -16788
+     ]
+    ]
+   }
+  ],
+  "sites": [
+   [
+    26987,
+    -15988
+   ],
+   [
+    0,
+    1000
+   ],
+   [
+    51184,
+    0
+   ]
+  ],
+  "beats": [
+   {
+    "beat": "ch08.b01",
+    "zone": 0,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "anchor": [
+     9584,
+     -728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      14800,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      14768,
+      -2236
+     ],
+     [
+      14768,
+      2236
+     ],
+     [
+      13616,
+      -2236
+     ],
+     [
+      13616,
+      2236
+     ],
+     [
+      11600,
+      -2236
+     ],
+     [
+      11600,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       10160,
+       -1040
+      ],
+      [
+       13400,
+       -1040
+      ],
+      [
+       13400,
+       1040
+      ],
+      [
+       10160,
+       1040
+      ]
+     ],
+     [
+      [
+       11240,
+       -520
+      ],
+      [
+       12464,
+       -520
+      ],
+      [
+       12464,
+       520
+      ],
+      [
+       11240,
+       520
+      ]
+     ]
+    ],
+    "camera": [
+     8350,
+     -1456,
+     480,
+     8900,
+     -832,
+     420,
+     12320,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b02",
+    "zone": 7,
+    "entry": [
+     9698,
+     -11966,
+     0
+    ],
+    "anchor": [
+     183303,
+     -12236
+    ],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_outer_koguchi",
+      "center": [
+       183005,
+       -12270
+      ],
+      "size": [
+       1000,
+       2400
+      ]
+     },
+     {
+      "event": "volume_enter:vol_pylon_1",
+      "center": [
+       116640,
+       -12365
+      ],
+      "size": [
+       800,
+       2400
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      183005,
+      -12270
+     ],
+     "size": [
+      1000,
+      2400
+     ]
+    },
+    "spawns": [
+     [
+      11884,
+      -11050
+     ],
+     [
+      14369,
+      -12950
+     ],
+     [
+      16853,
+      -11050
+     ],
+     [
+      19337,
+      -12950
+     ],
+     [
+      21822,
+      -11050
+     ],
+     [
+      24306,
+      -12950
+     ],
+     [
+      26790,
+      -11050
+     ],
+     [
+      29275,
+      -12950
+     ],
+     [
+      31759,
+      -11050
+     ],
+     [
+      34243,
+      -12950
+     ],
+     [
+      36728,
+      -11050
+     ],
+     [
+      39212,
+      -12950
+     ],
+     [
+      41696,
+      -11050
+     ],
+     [
+      44181,
+      -12950
+     ],
+     [
+      46665,
+      -11050
+     ],
+     [
+      49149,
+      -12950
+     ],
+     [
+      51634,
+      -11050
+     ],
+     [
+      54118,
+      -12950
+     ],
+     [
+      56602,
+      -11050
+     ],
+     [
+      59087,
+      -12950
+     ],
+     [
+      61571,
+      -11050
+     ],
+     [
+      64055,
+      -12950
+     ],
+     [
+      66540,
+      -11050
+     ],
+     [
+      69024,
+      -12950
+     ],
+     [
+      71508,
+      -11050
+     ],
+     [
+      73993,
+      -12950
+     ],
+     [
+      76477,
+      -11050
+     ],
+     [
+      78961,
+      -12950
+     ],
+     [
+      81446,
+      -11050
+     ],
+     [
+      83930,
+      -12950
+     ],
+     [
+      86414,
+      -11050
+     ],
+     [
+      88899,
+      -12950
+     ],
+     [
+      91383,
+      -11050
+     ],
+     [
+      93867,
+      -12950
+     ],
+     [
+      96351,
+      -11050
+     ],
+     [
+      98836,
+      -12950
+     ],
+     [
+      101320,
+      -11050
+     ],
+     [
+      103804,
+      -12950
+     ],
+     [
+      106289,
+      -11050
+     ],
+     [
+      108773,
+      -12950
+     ],
+     [
+      111257,
+      -11050
+     ],
+     [
+      113742,
+      -12950
+     ],
+     [
+      116226,
+      -11050
+     ],
+     [
+      118710,
+      -12950
+     ],
+     [
+      121195,
+      -11050
+     ],
+     [
+      123679,
+      -12950
+     ],
+     [
+      126163,
+      -11050
+     ],
+     [
+      128648,
+      -12950
+     ],
+     [
+      131132,
+      -11050
+     ],
+     [
+      133616,
+      -12950
+     ],
+     [
+      136101,
+      -11050
+     ],
+     [
+      138585,
+      -12950
+     ],
+     [
+      141069,
+      -11050
+     ],
+     [
+      143554,
+      -12950
+     ],
+     [
+      146038,
+      -11050
+     ],
+     [
+      148522,
+      -12950
+     ],
+     [
+      151007,
+      -11050
+     ],
+     [
+      153491,
+      -12950
+     ],
+     [
+      155975,
+      -11050
+     ],
+     [
+      158460,
+      -12950
+     ],
+     [
+      160944,
+      -11050
+     ],
+     [
+      163428,
+      -12950
+     ],
+     [
+      165913,
+      -11050
+     ],
+     [
+      168397,
+      -12950
+     ],
+     [
+      170881,
+      -11050
+     ],
+     [
+      173366,
+      -12950
+     ],
+     [
+      175850,
+      -11050
+     ],
+     [
+      178334,
+      -12950
+     ],
+     [
+      180819,
+      -11050
+     ]
+    ],
+    "dropoffs": [],
+    "route": {
+     "zone": 7,
+     "margin_cm": 500
+    },
+    "objectives": [],
+    "pickups": [],
+    "targets": [],
+    "stations": [],
+    "step_stations": [],
+    "closing": null,
+    "patrols": [],
+    "cache": null,
+    "camera": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": {
+     "horse": "kurimaru",
+     "coat": "chestnut",
+     "mounted": true,
+     "tack": [],
+     "gaits": [
+      "walk",
+      "trot",
+      "canter",
+      "gallop"
+     ],
+     "speeds_cm_s": [
+      170,
+      350,
+      550,
+      800
+     ],
+     "stamina": {
+      "max": 100,
+      "per_s": [
+       8,
+       8,
+       3,
+       -6
+      ],
+      "lockout": 20,
+      "recover": 50
+     },
+     "fear": {
+      "radius_cm": 900,
+      "recover_ms": 2500
+     },
+     "spooks": [],
+     "gait_caps": [],
+     "forced": [],
+     "weapons": [
+      19,
+      18,
+      0
+     ],
+     "arcs": {
+      "0": [
+       20,
+       110
+      ],
+      "18": [
+       -170,
+       15
+      ],
+      "19": [
+       -10,
+       90
+      ]
+     },
+     "dismount": false,
+     "auto_steer": true,
+     "until_phase": 0,
+     "pack": [],
+     "at": [
+      9898,
+      -11966,
+      0
+     ]
+    }
+   },
+   {
+    "beat": "ch08.b03",
+    "zone": -1,
+    "entry": [
+     -2700,
+     0,
+     0
+    ],
+    "anchor": [
+     850,
+     220
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      2000,
+      0
+     ],
+     "size": [
+      500,
+      900
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      2700,
+      -1100
+     ],
+     [
+      2700,
+      1100
+     ],
+     [
+      500,
+      1800
+     ],
+     [
+      -500,
+      -1850
+     ],
+     [
+      2100,
+      450
+     ],
+     [
+      500,
+      -1400
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       -1650,
+       -330
+      ],
+      [
+       1650,
+       -330
+      ],
+      [
+       1650,
+       330
+      ],
+      [
+       -1650,
+       330
+      ]
+     ],
+     [
+      [
+       -900,
+       -330
+      ],
+      [
+       900,
+       -330
+      ],
+      [
+       900,
+       330
+      ],
+      [
+       -900,
+       330
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b04",
+    "zone": -1,
+    "entry": [
+     -2700,
+     0,
+     0
+    ],
+    "anchor": [
+     0,
+     1000
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [
+     [
+      0,
+      220
+     ],
+     [
+      -850,
+      220
+     ]
+    ],
+    "volumes": [],
+    "exit": {
+     "center": [
+      2000,
+      0
+     ],
+     "size": [
+      500,
+      900
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      2700,
+      -1100
+     ],
+     [
+      2700,
+      1100
+     ],
+     [
+      500,
+      1800
+     ],
+     [
+      -500,
+      -1850
+     ],
+     [
+      2100,
+      450
+     ],
+     [
+      500,
+      -1400
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       -1650,
+       -330
+      ],
+      [
+       1650,
+       -330
+      ],
+      [
+       1650,
+       330
+      ],
+      [
+       -1650,
+       330
+      ]
+     ],
+     [
+      [
+       -900,
+       -330
+      ],
+      [
+       900,
+       -330
+      ],
+      [
+       900,
+       330
+      ],
+      [
+       -900,
+       330
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "defend",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [
+      "furnace",
+      "tent"
+     ],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b05",
+    "zone": -1,
+    "entry": [
+     -2700,
+     0,
+     0
+    ],
+    "anchor": [
+     -850,
+     220
+    ],
+    "objectives": [],
+    "pickups": [
+     [
+      -1650,
+      220
+     ]
+    ],
+    "dropoffs": [
+     [
+      2050,
+      -220
+     ],
+     [
+      1650,
+      220
+     ],
+     [
+      1250,
+      -220
+     ]
+    ],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      2000,
+      0
+     ],
+     "size": [
+      500,
+      900
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      2700,
+      -1100
+     ],
+     [
+      2700,
+      1100
+     ],
+     [
+      500,
+      1800
+     ],
+     [
+      -500,
+      -1850
+     ],
+     [
+      2100,
+      450
+     ],
+     [
+      500,
+      -1400
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       -1650,
+       -330
+      ],
+      [
+       1650,
+       -330
+      ],
+      [
+       1650,
+       330
+      ],
+      [
+       -1650,
+       330
+      ]
+     ],
+     [
+      [
+       -900,
+       -330
+      ],
+      [
+       900,
+       -330
+      ],
+      [
+       900,
+       330
+      ],
+      [
+       -900,
+       330
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "carry",
+     "item": "bundle",
+     "pickups": [
+      "depot"
+     ],
+     "dropoffs": [
+      "depot",
+      "depot",
+      "depot"
+     ],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b06",
+    "zone": 1,
+    "entry": [
+     18480,
+     0,
+     0
+    ],
+    "anchor": [
+     19168,
+     -448
+    ],
+    "objectives": [
+     [
+      19168,
+      0
+     ],
+     [
+      19872,
+      -448
+     ],
+     [
+      19872,
+      0
+     ]
+    ],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_masugata",
+      "center": [
+       20620,
+       0
+      ],
+      "size": [
+       400,
+       2560
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      22200,
+      0
+     ],
+     "size": [
+      500,
+      2560
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      22336,
+      -1376
+     ],
+     [
+      22336,
+      1376
+     ],
+     [
+      21632,
+      -1376
+     ],
+     [
+      21632,
+      1376
+     ],
+     [
+      20400,
+      -1376
+     ],
+     [
+      20400,
+      1376
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       19520,
+       -640
+      ],
+      [
+       21500,
+       -640
+      ],
+      [
+       21500,
+       640
+      ],
+      [
+       19520,
+       640
+      ]
+     ],
+     [
+      [
+       20180,
+       -320
+      ],
+      [
+       20928,
+       -320
+      ],
+      [
+       20928,
+       320
+      ],
+      [
+       20180,
+       320
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b07",
+    "zone": 8,
+    "entry": [
+     9698,
+     -16966,
+     0
+    ],
+    "anchor": [
+     27287,
+     -16788
+    ],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_refuge",
+      "center": [
+       18343,
+       -17106
+      ],
+      "size": [
+       800,
+       2400
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      26989,
+      -16821
+     ],
+     "size": [
+      1000,
+      2400
+     ]
+    },
+    "spawns": [
+     [
+      11884,
+      -16050
+     ],
+     [
+      14369,
+      -17950
+     ],
+     [
+      16853,
+      -16050
+     ],
+     [
+      19337,
+      -17950
+     ],
+     [
+      21822,
+      -16050
+     ],
+     [
+      24306,
+      -17950
+     ]
+    ],
+    "dropoffs": [],
+    "route": {
+     "zone": 8,
+     "margin_cm": 500
+    },
+    "objectives": [],
+    "pickups": [],
+    "targets": [],
+    "stations": [],
+    "step_stations": [],
+    "closing": null,
+    "patrols": [],
+    "cache": null,
+    "camera": null,
+    "kit": {
+     "work": "escort",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": [
+      "villager",
+      "villager",
+      "villager",
+      "villager",
+      "villager",
+      "villager"
+     ]
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b08",
+    "zone": 2,
+    "entry": [
+     25880,
+     0,
+     0
+    ],
+    "anchor": [
+     26392,
+     -364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      28800,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      28984,
+      -1118
+     ],
+     [
+      28984,
+      1118
+     ],
+     [
+      28408,
+      -1118
+     ],
+     [
+      28408,
+      1118
+     ],
+     [
+      27400,
+      -1118
+     ],
+     [
+      27400,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       26680,
+       -520
+      ],
+      [
+       28300,
+       -520
+      ],
+      [
+       28300,
+       520
+      ],
+      [
+       26680,
+       520
+      ]
+     ],
+     [
+      [
+       27220,
+       -260
+      ],
+      [
+       27832,
+       -260
+      ],
+      [
+       27832,
+       260
+      ],
+      [
+       27220,
+       260
+      ]
+     ]
+    ],
+    "camera": [
+     25950,
+     -728,
+     480,
+     26500,
+     -416,
+     420,
+     27760,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b09",
+    "zone": 2,
+    "entry": [
+     25880,
+     0,
+     0
+    ],
+    "anchor": [
+     26968,
+     364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_spire_entrance",
+      "center": [
+       28800,
+       0
+      ],
+      "size": [
+       500,
+       2080
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      28800,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": [
+     28800,
+     0
+    ],
+    "spawns": [
+     [
+      28984,
+      -1118
+     ],
+     [
+      28984,
+      1118
+     ],
+     [
+      28408,
+      -1118
+     ],
+     [
+      28408,
+      1118
+     ],
+     [
+      27400,
+      -1118
+     ],
+     [
+      27400,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       26680,
+       -520
+      ],
+      [
+       28300,
+       -520
+      ],
+      [
+       28300,
+       520
+      ],
+      [
+       26680,
+       520
+      ]
+     ],
+     [
+      [
+       27220,
+       -260
+      ],
+      [
+       27832,
+       -260
+      ],
+      [
+       27832,
+       260
+      ],
+      [
+       27220,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b10",
+    "zone": 3,
+    "entry": [
+     32480,
+     0,
+     0
+    ],
+    "anchor": [
+     32992,
+     -364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_spire_L3",
+      "center": [
+       33880,
+       0
+      ],
+      "size": [
+       400,
+       2080
+      ]
+     },
+     {
+      "event": "volume_enter:vol_spire_void_edge",
+      "center": [
+       34480,
+       0
+      ],
+      "size": [
+       400,
+       2080
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      35400,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      35584,
+      -1118
+     ],
+     [
+      35584,
+      1118
+     ],
+     [
+      35008,
+      -1118
+     ],
+     [
+      35008,
+      1118
+     ],
+     [
+      34000,
+      -1118
+     ],
+     [
+      34000,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       33280,
+       -520
+      ],
+      [
+       34900,
+       -520
+      ],
+      [
+       34900,
+       520
+      ],
+      [
+       33280,
+       520
+      ]
+     ],
+     [
+      [
+       33820,
+       -260
+      ],
+      [
+       34432,
+       -260
+      ],
+      [
+       34432,
+       260
+      ],
+      [
+       33820,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b11",
+    "zone": 3,
+    "entry": [
+     32480,
+     0,
+     0
+    ],
+    "anchor": [
+     33568,
+     364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      35400,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      35584,
+      -1118
+     ],
+     [
+      35584,
+      1118
+     ],
+     [
+      35008,
+      -1118
+     ],
+     [
+      35008,
+      1118
+     ],
+     [
+      34000,
+      -1118
+     ],
+     [
+      34000,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       33280,
+       -520
+      ],
+      [
+       34900,
+       -520
+      ],
+      [
+       34900,
+       520
+      ],
+      [
+       33280,
+       520
+      ]
+     ],
+     [
+      [
+       33820,
+       -260
+      ],
+      [
+       34432,
+       -260
+      ],
+      [
+       34432,
+       260
+      ],
+      [
+       33820,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "lift",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b12",
+    "zone": 3,
+    "entry": [
+     32480,
+     0,
+     0
+    ],
+    "anchor": [
+     34720,
+     0
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_heirloom_hall",
+      "center": [
+       34180,
+       0
+      ],
+      "size": [
+       400,
+       2080
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      35400,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      35584,
+      -1118
+     ],
+     [
+      35584,
+      1118
+     ],
+     [
+      35008,
+      -1118
+     ],
+     [
+      35008,
+      1118
+     ],
+     [
+      34000,
+      -1118
+     ],
+     [
+      34000,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       33280,
+       -520
+      ],
+      [
+       34900,
+       -520
+      ],
+      [
+       34900,
+       520
+      ],
+      [
+       33280,
+       520
+      ]
+     ],
+     [
+      [
+       33820,
+       -260
+      ],
+      [
+       34432,
+       -260
+      ],
+      [
+       34432,
+       260
+      ],
+      [
+       33820,
+       260
+      ]
+     ]
+    ],
+    "cache": [
+     32560,
+     -988
+    ],
+    "stations": [],
+    "step_stations": [],
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b13",
+    "zone": 4,
+    "entry": [
+     39080,
+     0,
+     0
+    ],
+    "anchor": [
+     40032,
+     -588
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      44000,
+      0
+     ],
+     "size": [
+      500,
+      3360
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      44064,
+      -1806
+     ],
+     [
+      44064,
+      1806
+     ],
+     [
+      43168,
+      -1806
+     ],
+     [
+      43168,
+      1806
+     ],
+     [
+      41600,
+      -1806
+     ],
+     [
+      41600,
+      1806
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       40480,
+       -840
+      ],
+      [
+       43000,
+       -840
+      ],
+      [
+       43000,
+       840
+      ],
+      [
+       40480,
+       840
+      ]
+     ],
+     [
+      [
+       41320,
+       -420
+      ],
+      [
+       42272,
+       -420
+      ],
+      [
+       42272,
+       420
+      ],
+      [
+       41320,
+       420
+      ]
+     ]
+    ],
+    "camera": [
+     39150,
+     -1176,
+     480,
+     39700,
+     -672,
+     420,
+     42160,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b14",
+    "zone": 4,
+    "entry": [
+     39080,
+     0,
+     0
+    ],
+    "anchor": [
+     40928,
+     588
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      44000,
+      0
+     ],
+     "size": [
+      500,
+      3360
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      44064,
+      -1806
+     ],
+     [
+      44064,
+      1806
+     ],
+     [
+      43168,
+      -1806
+     ],
+     [
+      43168,
+      1806
+     ],
+     [
+      41600,
+      -1806
+     ],
+     [
+      41600,
+      1806
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       40480,
+       -840
+      ],
+      [
+       43000,
+       -840
+      ],
+      [
+       43000,
+       840
+      ],
+      [
+       40480,
+       840
+      ]
+     ],
+     [
+      [
+       41320,
+       -420
+      ],
+      [
+       42272,
+       -420
+      ],
+      [
+       42272,
+       420
+      ],
+      [
+       41320,
+       420
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b15",
+    "zone": 4,
+    "entry": [
+     39080,
+     0,
+     0
+    ],
+    "anchor": [
+     42720,
+     0
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      44000,
+      0
+     ],
+     "size": [
+      500,
+      3360
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      44064,
+      -1806
+     ],
+     [
+      44064,
+      1806
+     ],
+     [
+      43168,
+      -1806
+     ],
+     [
+      43168,
+      1806
+     ],
+     [
+      41600,
+      -1806
+     ],
+     [
+      41600,
+      1806
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       40480,
+       -840
+      ],
+      [
+       43000,
+       -840
+      ],
+      [
+       43000,
+       840
+      ],
+      [
+       40480,
+       840
+      ]
+     ],
+     [
+      [
+       41320,
+       -420
+      ],
+      [
+       42272,
+       -420
+      ],
+      [
+       42272,
+       420
+      ],
+      [
+       41320,
+       420
+      ]
+     ]
+    ],
+    "camera": [
+     39150,
+     -1176,
+     480,
+     39700,
+     -672,
+     420,
+     42160,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b16",
+    "zone": 5,
+    "entry": [
+     47680,
+     0,
+     0
+    ],
+    "anchor": [
+     51184,
+     0
+    ],
+    "objectives": [],
+    "pickups": [
+     [
+      48368,
+      -448
+     ]
+    ],
+    "dropoffs": [
+     [
+      50480,
+      -448
+     ]
+    ],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_fest_a",
+      "center": [
+       49087,
+       0
+      ],
+      "size": [
+       400,
+       2560
+      ]
+     },
+     {
+      "event": "volume_enter:vol_fest_b",
+      "center": [
+       49453,
+       0
+      ],
+      "size": [
+       400,
+       2560
+      ]
+     },
+     {
+      "event": "volume_enter:vol_fest_c",
+      "center": [
+       49820,
+       0
+      ],
+      "size": [
+       400,
+       2560
+      ]
+     },
+     {
+      "event": "volume_enter:vol_fest_d",
+      "center": [
+       50187,
+       0
+      ],
+      "size": [
+       400,
+       2560
+      ]
+     },
+     {
+      "event": "volume_enter:vol_assembly",
+      "center": [
+       50553,
+       0
+      ],
+      "size": [
+       400,
+       2560
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      51400,
+      0
+     ],
+     "size": [
+      500,
+      2560
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      51536,
+      -1376
+     ],
+     [
+      51536,
+      1376
+     ],
+     [
+      50832,
+      -1376
+     ],
+     [
+      50832,
+      1376
+     ],
+     [
+      49600,
+      -1376
+     ],
+     [
+      49600,
+      1376
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       48720,
+       -640
+      ],
+      [
+       50700,
+       -640
+      ],
+      [
+       50700,
+       640
+      ],
+      [
+       48720,
+       640
+      ]
+     ],
+     [
+      [
+       49380,
+       -320
+      ],
+      [
+       50128,
+       -320
+      ],
+      [
+       50128,
+       320
+      ],
+      [
+       49380,
+       320
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "carry",
+     "item": "box",
+     "pickups": [
+      "depot"
+     ],
+     "dropoffs": [
+      "depot"
+     ],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b17",
+    "zone": 6,
+    "entry": [
+     55080,
+     0,
+     0
+    ],
+    "anchor": [
+     55768,
+     -448
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_torii",
+      "center": [
+       57220,
+       0
+      ],
+      "size": [
+       400,
+       2560
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      58800,
+      0
+     ],
+     "size": [
+      500,
+      2560
+     ]
+    },
+    "closing": [
+     58800,
+     0
+    ],
+    "spawns": [
+     [
+      58936,
+      -1376
+     ],
+     [
+      58936,
+      1376
+     ],
+     [
+      58232,
+      -1376
+     ],
+     [
+      58232,
+      1376
+     ],
+     [
+      57000,
+      -1376
+     ],
+     [
+      57000,
+      1376
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       56120,
+       -640
+      ],
+      [
+       58100,
+       -640
+      ],
+      [
+       58100,
+       640
+      ],
+      [
+       56120,
+       640
+      ]
+     ],
+     [
+      [
+       56780,
+       -320
+      ],
+      [
+       57528,
+       -320
+      ],
+      [
+       57528,
+       320
+      ],
+      [
+       56780,
+       320
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch08.b18",
+    "zone": 6,
+    "entry": [
+     55080,
+     0,
+     0
+    ],
+    "anchor": [
+     56472,
+     448
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      58800,
+      0
+     ],
+     "size": [
+      500,
+      2560
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      58936,
+      -1376
+     ],
+     [
+      58936,
+      1376
+     ],
+     [
+      58232,
+      -1376
+     ],
+     [
+      58232,
+      1376
+     ],
+     [
+      57000,
+      -1376
+     ],
+     [
+      57000,
+      1376
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       56120,
+       -640
+      ],
+      [
+       58100,
+       -640
+      ],
+      [
+       58100,
+       640
+      ],
+      [
+       56120,
+       640
+      ]
+     ],
+     [
+      [
+       56780,
+       -320
+      ],
+      [
+       57528,
+       -320
+      ],
+      [
+       57528,
+       320
+      ],
+      [
+       56780,
+       320
+      ]
+     ]
+    ],
+    "camera": [
+     55150,
+     -896,
+     480,
+     55700,
+     -512,
+     420,
+     57440,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   }
+  ],
+  "pickups": [
+   {
+    "collectible": "ch08.c01",
+    "zone": 2,
+    "at": [
+     25960,
+     988
+    ]
+   },
+   {
+    "collectible": "ch08.c02",
+    "zone": 1,
+    "at": [
+     18640,
+     1216
+    ]
+   },
+   {
+    "collectible": "ch08.c06",
+    "zone": 5,
+    "at": [
+     47840,
+     1216
+    ]
+   }
+  ]
  },
  "ext": {
   "objective_ja": "債務の城塞を落とし、帳簿機関を断て",

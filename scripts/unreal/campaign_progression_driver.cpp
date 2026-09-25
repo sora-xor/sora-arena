@@ -1,6 +1,7 @@
 #include "SoraBeatRules.h"
 #include "SoraCampaignRules.h"
 #include "SoraDojoRules.h"
+#include "SoraMountRules.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -13,6 +14,28 @@ struct FChapterFixture
 {
     int Count;
     FBeat Beats[MaxBeats];
+};
+using SoraMountRules::EGait;
+using SoraMountRules::FHorse;
+// A stretch of a route ridden no faster than Gait.
+struct FGaitCap
+{
+    int FromCm;
+    int ToCm;
+    EGait Gait;
+};
+// A horse a ride or a mounted boss authors, with its route (0 for a mounted
+// fight) and target time.
+struct FRideFixture
+{
+    const char* Beat;
+    FHorse Horse;
+    int LengthCm;
+    int TargetMs;
+    int CapCount;
+    FGaitCap Caps[4];
+    bool Mounted;
+    int TackSteps;
 };
 
 #include "campaign_chapters.generated.inc"
@@ -626,6 +649,169 @@ static void TestRideExploreCollectible()
 // Every authored task, played by a hero who does everything right and then
 // through its failures.
 // ---------------------------------------------------------------------------
+// Opponents at a defended target wear it down by whole HP, carrying the
+// fraction between frames; a carried load is a pace and a loadout.
+static void TestSiegeAndCarry()
+{
+    FTask Defend = Make(EType::ProductionTask, EGoal::Survive, ETask::Defend);
+    Defend.DurationMs = 10000;
+    Defend.TargetCount = 2;
+    Defend.TargetHp[0] = 100;
+    Defend.TargetHp[1] = 50;
+    FTaskState State = Begin(Defend, "siege");
+    int Dealt = 0;
+    for (int Frame = 0; Frame < 125; ++Frame)
+        Dealt += SiegeDamage(State, Defend, 0, 3, 16);
+    Expect(Dealt == 3 * SiegeHpPerSecond * 2 && State.SiegeMs[0] == 0,
+        "siege: three opponents for two seconds of 16 ms frames wear other than 30 HP");
+    Expect(SiegeDamage(State, Defend, 0, 0, 1000) == 0 && SiegeDamage(State, Defend, 2, 3, 1000) == 0,
+        "siege: no opponents, or no such target, still wore it down");
+    Expect(SiegeDamage(State, Defend, 0, 1, SiegeMsPerHp - 1) == 0 && SiegeDamage(State, Defend, 0, 1, 1) == 1,
+        "siege: a fraction of a point was lost between frames");
+    DamageTarget(State, Defend, 1, 45);
+    Expect(SiegeDamage(State, Defend, 1, 10, 1000) == 5, "siege: wore past the target's last HP");
+    Expect(DamageTarget(State, Defend, 1, 5) && SiegeDamage(State, Defend, 1, 3, 1000) == 0,
+        "siege: a destroyed target was worn again");
+    State = StartTask(Defend, 0);
+    Expect(State.SiegeMs[0] == 0 && State.TargetHp[1] == 50, "siege: a fresh start kept the old siege");
+
+    FTask Carry = Make(EType::ProductionTask, EGoal::Deliveries, ETask::Carry);
+    Carry.Count = 2;
+    Carry.Pickups = 1;
+    Carry.Dropoffs = 1;
+    Carry.CarrySpeedPermille = 800;
+    Carry.CarryWeaponsMask = 1u;
+    Expect(TaskValid(Carry), "carry: a four-fifths pace with the katana in one paw");
+    Carry.CarrySpeedPermille = 0;
+    Expect(!TaskValid(Carry), "carry: a load that stops the hero dead");
+    Carry.CarrySpeedPermille = 1200;
+    Expect(!TaskValid(Carry), "carry: a load that speeds the hero up");
+    Carry.CarrySpeedPermille = 700;
+    Carry.CarryWeaponsMask = 1u << 18;
+    Expect(!TaskValid(Carry), "carry: a yumi drawn with a load in the arms");
+    std::cout << "siege damage, carry pace and loadout rules passed\n";
+}
+
+// Gaits, wind, spooking, the right-side mount and mounted arcs (bible §4.2-4.5).
+static void TestMountRules()
+{
+    using namespace SoraMountRules;
+    FHorse Horse;
+    Horse.MaxGait = EGait::Canter;
+    Horse.FearRecoverMs = 1500;
+    Horse.WeaponsMask = (1u << 0) | (1u << 18);
+    Horse.ArcMin[0] = 30; Horse.ArcMax[0] = 150;
+    Horse.ArcMin[1] = -170; Horse.ArcMax[1] = 15;
+    Expect(HorseValid(Horse), "mount: a katana-and-yumi ride is valid");
+    FRide Ride;
+    Step(Ride, Horse, {100, true});
+    Expect(Ride.Gait == EGait::Walk && SpeedCmS(Ride, Horse) == 170, "mount: legs on did not walk her on at 170 cm/s");
+    Step(Ride, Horse, {UrgeStepMs - 1, true, true});
+    Expect(Ride.Gait == EGait::Walk, "mount: she trotted before the urging was held long enough");
+    Step(Ride, Horse, {1, true, true});
+    Expect(Ride.Gait == EGait::Trot, "mount: held urging did not trot");
+    Step(Ride, Horse, {UrgeStepMs * 3, true, true});
+    Expect(Ride.Gait == EGait::Canter, "mount: urging passed the ride's fastest gait");
+    Step(Ride, Horse, {5000, true});
+    Expect(Ride.Gait == EGait::Canter, "mount: legs on did not hold the gait");
+    Step(Ride, Horse, {ReinStepMs, false, false, true});
+    Expect(Ride.Gait == EGait::Trot, "mount: gathered reins did not bring her down a gait");
+    Step(Ride, Horse, {EaseStepMs - 1});
+    Expect(Ride.Gait == EGait::Trot, "mount: she eased down before the reins were left long enough");
+    Step(Ride, Horse, {1});
+    Expect(Ride.Gait == EGait::Walk, "mount: left alone, she did not ease down");
+    Step(Ride, Horse, {EaseStepMs * 2});
+    Expect(Ride.Gait == EGait::Halt, "mount: left alone, she did not halt");
+
+    // Spooked, she drops to a walk and will not be urged until she settles.
+    Ride.Gait = EGait::Canter;
+    Step(Ride, Horse, {100, true, true, false, EGait::Gallop, true});
+    Expect(Ride.Gait == EGait::Walk && Spooked(Ride), "mount: a spook did not drop her to a walk");
+    Step(Ride, Horse, {1300, true, true});
+    Expect(Ride.Gait == EGait::Walk, "mount: urged out of a spook");
+    Step(Ride, Horse, {100, true});
+    Step(Ride, Horse, {UrgeStepMs, true, true});
+    Expect(!Spooked(Ride) && Ride.Gait == EGait::Trot, "mount: she never settled after her recovery time");
+    Step(Ride, Horse, {UrgeStepMs, true, true, false, EGait::Walk});
+    Expect(Ride.Gait == EGait::Walk, "mount: a forced walk did not hold her to a walk");
+
+    // Wind: the gallop drains 12 a second, locks out below 20 and returns at 50.
+    FHorse Fast = Horse;
+    Fast.MaxGait = EGait::Gallop;
+    FRide Run;
+    Run.Gait = EGait::Gallop;
+    int Ms = 0;
+    for (; Run.Gait == EGait::Gallop && Ms < 20000; Ms += 100)
+        Step(Run, Fast, {100, true, true});
+    Expect(Run.Gait == EGait::Canter && Run.GallopLocked && Ms >= 6600 && Ms <= 6800,
+        "mount: the gallop did not wind her out after 80 points at 12 a second");
+    Step(Run, Fast, {UrgeStepMs * 2, true, true});
+    Expect(Run.Gait == EGait::Canter, "mount: a winded horse galloped again");
+    Step(Run, Fast, {ReinStepMs, false, false, true});
+    for (Ms = 0; Run.GallopLocked && Ms < 20000; Ms += 100)
+        Step(Run, Fast, {100, true});
+    Expect(!Run.GallopLocked && Ms >= 3700 && Ms <= 3900, "mount: at a trot the wind did not return to 50 in 3.75 s");
+
+    // The rider mounts and dismounts on her right; the left is refused.
+    Expect(CanMount(0, 120) && CanMount(-100, 60) && !CanMount(0, -120) && AtLeftFlank(0, -120) &&
+        !CanMount(300, 120) && !CanMount(0, 20) && !CanMount(0, 400), "mount: the right flank decides who mounts");
+    // The yumi shoots to the left, the katana cuts to the right, and nothing
+    // the ride does not allow acts at all.
+    Expect(ArcAllows(Horse, 18, -90, 0) && ArcAllows(Horse, 18, 10, 0) && !ArcAllows(Horse, 18, 90, 0) &&
+        ArcAllows(Horse, 0, 90, 0) && !ArcAllows(Horse, 0, -90, 0) && ArcAllows(Horse, 0, -150, 170) &&
+        !ArcAllows(Horse, 19, 0, 0) && !ArcAllows(Horse, 5, -90, 0), "mount: mounted arcs");
+    FHorse Wrong = Horse;
+    Wrong.ArcMin[1] = -15; Wrong.ArcMax[1] = 170;
+    Expect(!HorseValid(Wrong), "mount: a yumi shooting to the right from the saddle was accepted");
+    Wrong = Horse;
+    Wrong.WeaponsMask |= 1u << 5;
+    Expect(!HorseValid(Wrong), "mount: a matchlock fired from the saddle was accepted");
+    Wrong = Horse;
+    Wrong.SpeedCmS[3] = Wrong.SpeedCmS[2];
+    Expect(!HorseValid(Wrong), "mount: a canter no faster than the trot was accepted");
+    std::cout << "gaits, wind, spooking, the right-side mount and mounted arcs passed\n";
+}
+
+// Every authored horse is valid, and every ride reaches the end of its route
+// at the best pace its gaits, caps and wind allow, within its target time or,
+// where the script's route length outruns it, half as long again (reported).
+static void TestAuthoredRides()
+{
+    using namespace SoraMountRules;
+    int Routes = 0;
+    for (const FRideFixture& Ride : Rides)
+    {
+        const std::string Where = Ride.Beat;
+        Expect(HorseValid(Ride.Horse), Where + ": the authored horse is invalid");
+        Expect(Ride.TackSteps == 0 || !Ride.Mounted, Where + ": a horse still to be tacked up is already ridden");
+        if (Ride.LengthCm == 0)
+            continue;
+        FRide State;
+        long long Travelled = 0;
+        int Ms = 0;
+        for (; Travelled < Ride.LengthCm * 1000LL && Ms < 4 * Ride.TargetMs; Ms += 100)
+        {
+            EGait Cap = EGait::Gallop;
+            for (int Index = 0; Index < Ride.CapCount; ++Index)
+                if (Travelled >= Ride.Caps[Index].FromCm * 1000LL && Travelled < Ride.Caps[Index].ToCm * 1000LL)
+                    Cap = Ride.Caps[Index].Gait;
+            Step(State, Ride.Horse, {100, true, true, false, Cap});
+            Travelled += static_cast<long long>(SpeedCmS(State, Ride.Horse)) * 100;
+        }
+        // A script's own route length can outrun its pacing estimate; half as
+        // long again is the most the chapter's ±5% budget can absorb.
+        Expect(Travelled >= Ride.LengthCm * 1000LL && Ms * 2 <= Ride.TargetMs * 3,
+            Where + ": at its best pace the ride takes " + std::to_string(Ms) + " ms of its " +
+            std::to_string(Ride.TargetMs) + " ms target");
+        if (Ms > Ride.TargetMs)
+            std::cout << "pacing overrun: " << Where << " takes " << Ms / 1000 << " s at its best pace, "
+                      << Ride.TargetMs / 1000 << " s budgeted\n";
+        ++Routes;
+    }
+    std::cout << sizeof(Rides) / sizeof(Rides[0]) << " authored horses valid; " << Routes
+              << " routes ridden to their end\n";
+}
+
 static bool DefeatOne(FTaskState& State, const FTask& Task)
 {
     for (int Wave = 0; Wave < Task.WaveCount; ++Wave)
@@ -954,6 +1140,9 @@ int main()
     TestBossAndStealth();
     TestProduction();
     TestRideExploreCollectible();
+    TestSiegeAndCarry();
+    TestMountRules();
+    TestAuthoredRides();
     unsigned RouteMinimum = 0u, AllEarlier = 0u, MechanicsEarlier = 0u, FlagsEarlier = 0u;
     FEntry Skipper{0u, 0u, 0u}, Completist{0u, 0u, 0u};
     FUnlockLog SkipperLog{}, CompletistLog{};

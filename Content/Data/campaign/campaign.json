@@ -252,25 +252,101 @@
   }
  ],
  "mechanics": [
-  "kamae",
-  "maai_ring",
-  "awase",
-  "marobashi",
-  "yumi",
-  "mount",
-  "mounted_archery",
-  "yari",
-  "carry",
-  "stealth",
-  "takedown",
-  "seal_cut",
-  "hayago_reload",
-  "crank",
-  "manufacture",
-  "tsubute",
-  "muto_dori",
-  "shield_break",
-  "volley_command"
+  {
+   "id": "kamae",
+   "ja": "構え",
+   "en": "Stance (kamae)"
+  },
+  {
+   "id": "maai_ring",
+   "ja": "間合い",
+   "en": "Distance (maai)"
+  },
+  {
+   "id": "awase",
+   "ja": "合わせ",
+   "en": "Awase: meeting the strike"
+  },
+  {
+   "id": "marobashi",
+   "ja": "転（まろばし）",
+   "en": "Marobashi footwork"
+  },
+  {
+   "id": "yumi",
+   "ja": "和弓",
+   "en": "Yumi archery"
+  },
+  {
+   "id": "mount",
+   "ja": "騎乗",
+   "en": "Riding"
+  },
+  {
+   "id": "mounted_archery",
+   "ja": "騎射",
+   "en": "Mounted archery"
+  },
+  {
+   "id": "yari",
+   "ja": "槍",
+   "en": "Yari"
+  },
+  {
+   "id": "carry",
+   "ja": "荷運び",
+   "en": "Carrying loads"
+  },
+  {
+   "id": "stealth",
+   "ja": "忍び",
+   "en": "Stealth"
+  },
+  {
+   "id": "takedown",
+   "ja": "当て落とし",
+   "en": "Silent takedown"
+  },
+  {
+   "id": "seal_cut",
+   "ja": "封印断ち",
+   "en": "Cutting debt seals"
+  },
+  {
+   "id": "hayago_reload",
+   "ja": "早合",
+   "en": "Hayagō reload"
+  },
+  {
+   "id": "crank",
+   "ja": "巻き上げ",
+   "en": "Cranking"
+  },
+  {
+   "id": "manufacture",
+   "ja": "ものづくり",
+   "en": "Making"
+  },
+  {
+   "id": "tsubute",
+   "ja": "礫",
+   "en": "Throwing stones (tsubute)"
+  },
+  {
+   "id": "muto_dori",
+   "ja": "無刀取り",
+   "en": "Mutō-dori"
+  },
+  {
+   "id": "shield_break",
+   "ja": "盾崩し",
+   "en": "Breaking shields"
+  },
+  {
+   "id": "volley_command",
+   "ja": "一斉射撃の号令",
+   "en": "Volley command"
+  }
  ],
  "story_flags": [
   "nafudakake_marked"
@@ -305,6 +381,120 @@
    "ja": "生産の記録",
    "en": "Registry page",
    "count": 8
+  }
+ ],
+ "step_kinds": [
+  {
+   "id": "heat",
+   "ja": "加熱",
+   "en": "Heat"
+  },
+  {
+   "id": "bend",
+   "ja": "矯め",
+   "en": "Bend true"
+  },
+  {
+   "id": "hammer_rhythm",
+   "ja": "鍛え打ち",
+   "en": "Hammer"
+  },
+  {
+   "id": "assemble",
+   "ja": "組み立て",
+   "en": "Assemble"
+  },
+  {
+   "id": "inspect",
+   "ja": "検め",
+   "en": "Inspect"
+  },
+  {
+   "id": "quench",
+   "ja": "焼き入れ",
+   "en": "Quench"
+  },
+  {
+   "id": "paste",
+   "ja": "糊付け",
+   "en": "Paste"
+  },
+  {
+   "id": "weave_rhythm",
+   "ja": "機織り",
+   "en": "Weave"
+  }
+ ],
+ "targets": [
+  {
+   "id": "pack_horse_a",
+   "ja": "荷駄馬（一）",
+   "en": "Pack horse A"
+  },
+  {
+   "id": "pack_horse_b",
+   "ja": "荷駄馬（二）",
+   "en": "Pack horse B"
+  },
+  {
+   "id": "planter_01",
+   "ja": "早乙女（一）",
+   "en": "Planter 1"
+  },
+  {
+   "id": "planter_02",
+   "ja": "早乙女（二）",
+   "en": "Planter 2"
+  },
+  {
+   "id": "planter_03",
+   "ja": "早乙女（三）",
+   "en": "Planter 3"
+  },
+  {
+   "id": "planter_04",
+   "ja": "早乙女（四）",
+   "en": "Planter 4"
+  },
+  {
+   "id": "planter_05",
+   "ja": "早乙女（五）",
+   "en": "Planter 5"
+  },
+  {
+   "id": "planter_06",
+   "ja": "早乙女（六）",
+   "en": "Planter 6"
+  },
+  {
+   "id": "planter_07",
+   "ja": "早乙女（七）",
+   "en": "Planter 7"
+  },
+  {
+   "id": "planter_08",
+   "ja": "早乙女（八）",
+   "en": "Planter 8"
+  },
+  {
+   "id": "tatara_furnace",
+   "ja": "たたら炉",
+   "en": "Tatara furnace"
+  },
+  {
+   "id": "npc:kozo",
+   "ja": "村下 鋼蔵",
+   "en": "Murage Kōzō"
+  },
+  {
+   "id": "nokaji_forge",
+   "ja": "野鍛冶の炉",
+   "en": "Field forge"
+  },
+  {
+   "id": "aid_station",
+   "ja": "救護所",
+   "en": "Aid station"
   }
  ]
 }

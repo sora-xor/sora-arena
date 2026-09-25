@@ -222,7 +222,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "title_card": {
@@ -326,7 +328,9 @@
     "guards": [],
     "opponent": "npc_sekireisai",
     "sparring": true,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -464,7 +468,9 @@
     "guards": [],
     "opponent": "npc_matsukichi",
     "sparring": true,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -597,7 +603,9 @@
     "guards": [],
     "opponent": "npc_matsukichi",
     "sparring": true,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -713,7 +721,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -818,7 +828,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -1034,7 +1046,9 @@
     "guards": [],
     "opponent": null,
     "sparring": true,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -1174,7 +1188,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "complete": {
@@ -1358,7 +1374,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -1462,7 +1480,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "entry": {
@@ -1559,7 +1579,9 @@
     "guards": [],
     "opponent": "npc_toranosuke",
     "sparring": true,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -1711,7 +1733,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "prompts": [
@@ -1804,7 +1828,9 @@
     "guards": [],
     "opponent": null,
     "sparring": false,
-    "phase_events": []
+    "phase_events": [],
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
    },
    "ext": {
     "next": "ch02_invasion/ch02.b01",
@@ -5316,6 +5342,7 @@
    "reading": "つまぎざかどうじょう",
    "en": "Tsumagizaka Dōjō",
    "arena": null,
+   "hub": false,
    "source": "Estate sublevel (existing NyaagyuDojo source)"
   },
   {
@@ -5325,6 +5352,7 @@
    "reading": "ニャーギュウのやしき",
    "en": "Nyaagyu Estate, day",
    "arena": 0,
+   "hub": true,
    "source": "Arena 0"
   },
   {
@@ -5334,6 +5362,7 @@
    "reading": "うまや",
    "en": "Stable",
    "arena": null,
+   "hub": false,
    "source": "Estate sublevel"
   },
   {
@@ -5343,6 +5372,7 @@
    "reading": "まとば・あづち",
    "en": "Archery range",
    "arena": null,
+   "hub": false,
    "source": "New, small"
   },
   {
@@ -5352,6 +5382,7 @@
    "reading": "いっそうせきのもり",
    "en": "One-Claw Stone Wood",
    "arena": null,
+   "hub": false,
    "source": "New, small"
   },
   {
@@ -5361,6 +5392,7 @@
    "reading": "どうじょうのかじば",
    "en": "Dojo smithy",
    "arena": null,
+   "hub": false,
    "source": "Estate sublevel"
   }
  ],
@@ -6107,6 +6139,2577 @@
   ],
   "patrols": [],
   "ext": {}
+ },
+ "space": {
+  "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+  "hub": 0,
+  "hub_place": "pl_estate_day",
+  "start": [
+   8280,
+   0,
+   0
+  ],
+  "zones": [
+   {
+    "id": "pl_tsumagizaka_dojo",
+    "place": "pl_tsumagizaka_dojo",
+    "style": "estate",
+    "form": "hall",
+    "rect": [
+     8000,
+     -1300,
+     11600,
+     1300
+    ],
+    "wall_cm": 700,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      11630,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      9800,
+      -1330,
+      3600,
+      60,
+      700
+     ],
+     [
+      9800,
+      1330,
+      3600,
+      60,
+      700
+     ]
+    ],
+    "cover": [
+     [
+      9080,
+      -780,
+      230,
+      180,
+      140
+     ],
+     [
+      9080,
+      780,
+      230,
+      180,
+      140
+     ],
+     [
+      9656,
+      -780,
+      230,
+      180,
+      140
+     ],
+     [
+      9656,
+      780,
+      230,
+      180,
+      140
+     ],
+     [
+      10232,
+      -780,
+      230,
+      180,
+      140
+     ],
+     [
+      10232,
+      780,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       8144,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       8144,
+       1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11492,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11492,
+       1144,
+       0
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_matoba",
+    "place": "pl_matoba",
+    "style": "estate",
+    "form": "field",
+    "rect": [
+     14600,
+     -2600,
+     21800,
+     2600
+    ],
+    "wall_cm": 220,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      14570,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      21830,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      18200,
+      -2630,
+      7200,
+      60,
+      220
+     ],
+     [
+      18200,
+      2630,
+      7200,
+      60,
+      220
+     ]
+    ],
+    "cover": [
+     [
+      16760,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      16760,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      17912,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      17912,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      19064,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      19064,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      20216,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      20216,
+      1560,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       14888,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       14888,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       21584,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       21584,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_ProvisionKura",
+      "at": [
+       16760,
+       -3300,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_EstateDojo",
+      "at": [
+       19496,
+       3350,
+       180
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       15200,
+       2900,
+       200
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       15900,
+       -2900,
+       160
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       17000,
+       2900,
+       200
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       17700,
+       -2900,
+       160
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       18800,
+       2900,
+       200
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       19500,
+       -2900,
+       160
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       20600,
+       2900,
+       200
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       21300,
+       -2900,
+       160
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_issoseki_wood",
+    "place": "pl_issoseki_wood",
+    "style": "estate",
+    "form": "field",
+    "rect": [
+     24800,
+     -2600,
+     32000,
+     2600
+    ],
+    "wall_cm": 220,
+    "entry": [
+     25080,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      24770,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      32030,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      28400,
+      -2630,
+      7200,
+      60,
+      220
+     ],
+     [
+      28400,
+      2630,
+      7200,
+      60,
+      220
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       25088,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       25088,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       31784,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       31784,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_ProvisionKura",
+      "at": [
+       26960,
+       -3300,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_EstateDojo",
+      "at": [
+       29696,
+       3350,
+       180
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       25400,
+       2900,
+       320
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       26100,
+       -2900,
+       40
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       27200,
+       2900,
+       320
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       27900,
+       -2900,
+       40
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       29000,
+       2900,
+       320
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       29700,
+       -2900,
+       40
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       30800,
+       2900,
+       320
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       31500,
+       -2900,
+       40
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_dojo_smithy",
+    "place": "pl_dojo_smithy",
+    "style": "estate",
+    "form": "hall",
+    "rect": [
+     35000,
+     -1300,
+     38600,
+     1300
+    ],
+    "wall_cm": 700,
+    "entry": [
+     35280,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      34970,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      38630,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      36800,
+      -1330,
+      3600,
+      60,
+      700
+     ],
+     [
+      36800,
+      1330,
+      3600,
+      60,
+      700
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35144,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35144,
+       1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       38492,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       38492,
+       1144,
+       0
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "route:ch01.b06",
+    "place": "pl_umaya",
+    "style": "estate",
+    "form": "route",
+    "rect": [
+     8000,
+     -13200,
+     40612,
+     -10800
+    ],
+    "wall_cm": 200,
+    "entry": [
+     8280,
+     -12000,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      -12000,
+      60,
+      2520,
+      200
+     ],
+     [
+      40642,
+      -12000,
+      60,
+      2520,
+      200
+     ],
+     [
+      24306,
+      -13230,
+      32612,
+      60,
+      200
+     ],
+     [
+      24306,
+      -10770,
+      32612,
+      60,
+      200
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11387,
+       -11256,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       15362,
+       -12291,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       19337,
+       -11698,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       23312,
+       -12755,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       27287,
+       -11268,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       31262,
+       -12279,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35237,
+       -11687,
+       0
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       8800,
+       -13550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       10300,
+       -10450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       11800,
+       -13550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       13300,
+       -10450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       14800,
+       -13550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       16300,
+       -10450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       17800,
+       -13550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       19300,
+       -10450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       20800,
+       -13550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       22300,
+       -10450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       23800,
+       -13550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       25300,
+       -10450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       26800,
+       -13550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       28300,
+       -10450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       29800,
+       -13550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       31300,
+       -10450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       32800,
+       -13550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       34300,
+       -10450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       35800,
+       -13550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       37300,
+       -10450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       38800,
+       -13550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       40300,
+       -10450,
+       200
+      ]
+     }
+    ],
+    "route": [
+     [
+      9400,
+      -12000
+     ],
+     [
+      13400,
+      -11550
+     ],
+     [
+      17400,
+      -12000
+     ],
+     [
+      21400,
+      -12450
+     ],
+     [
+      25400,
+      -12000
+     ],
+     [
+      29400,
+      -11550
+     ],
+     [
+      33400,
+      -12000
+     ],
+     [
+      37400,
+      -12450
+     ],
+     [
+      39212,
+      -12246
+     ]
+    ]
+   }
+  ],
+  "sites": [
+   [
+    11096,
+    -520
+   ],
+   [
+    11096,
+    520
+   ],
+   [
+    38096,
+    0
+   ]
+  ],
+  "beats": [
+   {
+    "beat": "ch01.b01",
+    "zone": 0,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "anchor": [
+     8792,
+     -364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      11200,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      11384,
+      -1118
+     ],
+     [
+      11384,
+      1118
+     ],
+     [
+      10808,
+      -1118
+     ],
+     [
+      10808,
+      1118
+     ],
+     [
+      9800,
+      -1118
+     ],
+     [
+      9800,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       9080,
+       -520
+      ],
+      [
+       10700,
+       -520
+      ],
+      [
+       10700,
+       520
+      ],
+      [
+       9080,
+       520
+      ]
+     ],
+     [
+      [
+       9620,
+       -260
+      ],
+      [
+       10232,
+       -260
+      ],
+      [
+       10232,
+       260
+      ],
+      [
+       9620,
+       260
+      ]
+     ]
+    ],
+    "camera": [
+     8350,
+     -728,
+     480,
+     8900,
+     -416,
+     420,
+     10160,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b02",
+    "zone": 0,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "anchor": [
+     11096,
+     -520
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      11200,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      11384,
+      -1118
+     ],
+     [
+      11384,
+      1118
+     ],
+     [
+      10808,
+      -1118
+     ],
+     [
+      10808,
+      1118
+     ],
+     [
+      9800,
+      -1118
+     ],
+     [
+      9800,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       9080,
+       -520
+      ],
+      [
+       10700,
+       -520
+      ],
+      [
+       10700,
+       520
+      ],
+      [
+       9080,
+       520
+      ]
+     ],
+     [
+      [
+       9620,
+       -260
+      ],
+      [
+       10232,
+       -260
+      ],
+      [
+       10232,
+       260
+      ],
+      [
+       9620,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b03",
+    "zone": 0,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "anchor": [
+     11096,
+     520
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      11200,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      11384,
+      -1118
+     ],
+     [
+      11384,
+      1118
+     ],
+     [
+      10808,
+      -1118
+     ],
+     [
+      10808,
+      1118
+     ],
+     [
+      9800,
+      -1118
+     ],
+     [
+      9800,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       9080,
+       -520
+      ],
+      [
+       10700,
+       -520
+      ],
+      [
+       10700,
+       520
+      ],
+      [
+       9080,
+       520
+      ]
+     ],
+     [
+      [
+       9620,
+       -260
+      ],
+      [
+       10232,
+       -260
+      ],
+      [
+       10232,
+       260
+      ],
+      [
+       9620,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b04",
+    "zone": 0,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "anchor": [
+     9368,
+     -364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_ch01_dojo_yard",
+      "center": [
+       9980,
+       0
+      ],
+      "size": [
+       400,
+       2080
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      11200,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      11384,
+      -1118
+     ],
+     [
+      11384,
+      1118
+     ],
+     [
+      10808,
+      -1118
+     ],
+     [
+      10808,
+      1118
+     ],
+     [
+      9800,
+      -1118
+     ],
+     [
+      9800,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       9080,
+       -520
+      ],
+      [
+       10700,
+       -520
+      ],
+      [
+       10700,
+       520
+      ],
+      [
+       9080,
+       520
+      ]
+     ],
+     [
+      [
+       9620,
+       -260
+      ],
+      [
+       10232,
+       -260
+      ],
+      [
+       10232,
+       260
+      ],
+      [
+       9620,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b05",
+    "zone": 0,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "anchor": [
+     9944,
+     364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_ch01_engawa_east",
+      "center": [
+       9680,
+       0
+      ],
+      "size": [
+       400,
+       2080
+      ]
+     },
+     {
+      "event": "volume_enter:vol_ch01_engawa_mentor",
+      "center": [
+       10280,
+       0
+      ],
+      "size": [
+       400,
+       2080
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      11200,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      11384,
+      -1118
+     ],
+     [
+      11384,
+      1118
+     ],
+     [
+      10808,
+      -1118
+     ],
+     [
+      10808,
+      1118
+     ],
+     [
+      9800,
+      -1118
+     ],
+     [
+      9800,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       9080,
+       -520
+      ],
+      [
+       10700,
+       -520
+      ],
+      [
+       10700,
+       520
+      ],
+      [
+       9080,
+       520
+      ]
+     ],
+     [
+      [
+       9620,
+       -260
+      ],
+      [
+       10232,
+       -260
+      ],
+      [
+       10232,
+       260
+      ],
+      [
+       9620,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b06",
+    "zone": 4,
+    "entry": [
+     9698,
+     -11966,
+     0
+    ],
+    "anchor": [
+     39212,
+     -12246
+    ],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_ch01_matoba_hitch",
+      "center": [
+       38914,
+       -12280
+      ],
+      "size": [
+       1000,
+       2400
+      ]
+     },
+     {
+      "event": "volume_enter:vol_ch01_lane_pheasant",
+      "center": [
+       24306,
+       -12123
+      ],
+      "size": [
+       800,
+       2400
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      38914,
+      -12280
+     ],
+     "size": [
+      1000,
+      2400
+     ]
+    },
+    "spawns": [
+     [
+      11884,
+      -11050
+     ],
+     [
+      14369,
+      -12950
+     ],
+     [
+      16853,
+      -11050
+     ],
+     [
+      19337,
+      -12950
+     ],
+     [
+      21822,
+      -11050
+     ],
+     [
+      24306,
+      -12950
+     ],
+     [
+      26790,
+      -11050
+     ],
+     [
+      29275,
+      -12950
+     ],
+     [
+      31759,
+      -11050
+     ],
+     [
+      34243,
+      -12950
+     ],
+     [
+      36728,
+      -11050
+     ]
+    ],
+    "dropoffs": [],
+    "route": {
+     "zone": 4,
+     "margin_cm": 500
+    },
+    "objectives": [],
+    "pickups": [],
+    "targets": [],
+    "stations": [],
+    "step_stations": [],
+    "closing": null,
+    "patrols": [],
+    "cache": null,
+    "camera": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": {
+     "horse": "kurimaru",
+     "coat": "chestnut",
+     "mounted": false,
+     "tack": [
+      {
+       "id": "ip_ch01_kura",
+       "part": "kura",
+       "refusals": 0,
+       "gift": null
+      },
+      {
+       "id": "ip_ch01_haruobi",
+       "part": "haruobi",
+       "refusals": 0,
+       "gift": null
+      },
+      {
+       "id": "ip_ch01_abumi",
+       "part": "abumi",
+       "refusals": 0,
+       "gift": null
+      },
+      {
+       "id": "ip_ch01_kutsuwa",
+       "part": "kutsuwa",
+       "refusals": 2,
+       "gift": "barley_ear"
+      }
+     ],
+     "gaits": [
+      "walk",
+      "trot"
+     ],
+     "speeds_cm_s": [
+      160,
+      360,
+      550,
+      800
+     ],
+     "stamina": {
+      "max": 100,
+      "per_s": [
+       8,
+       8,
+       0,
+       -12
+      ],
+      "lockout": 20,
+      "recover": 50
+     },
+     "fear": {
+      "radius_cm": 600,
+      "recover_ms": 1500
+     },
+     "spooks": [
+      "vol_ch01_lane_pheasant"
+     ],
+     "gait_caps": [
+      {
+       "from_cm": 0,
+       "to_cm": 7000,
+       "gait": "walk"
+      },
+      {
+       "from_cm": 7000,
+       "to_cm": 24000,
+       "gait": "trot"
+      },
+      {
+       "from_cm": 24000,
+       "to_cm": 30000,
+       "gait": "walk"
+      }
+     ],
+     "forced": [],
+     "weapons": [],
+     "arcs": {},
+     "dismount": true,
+     "auto_steer": true,
+     "until_phase": 0,
+     "pack": [],
+     "at": [
+      9898,
+      -11966,
+      0
+     ]
+    }
+   },
+   {
+    "beat": "ch01.b07",
+    "zone": 1,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "anchor": [
+     16184,
+     -728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      21400,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      21368,
+      -2236
+     ],
+     [
+      21368,
+      2236
+     ],
+     [
+      20216,
+      -2236
+     ],
+     [
+      20216,
+      2236
+     ],
+     [
+      18200,
+      -2236
+     ],
+     [
+      18200,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       16760,
+       -1040
+      ],
+      [
+       20000,
+       -1040
+      ],
+      [
+       20000,
+       1040
+      ],
+      [
+       16760,
+       1040
+      ]
+     ],
+     [
+      [
+       17840,
+       -520
+      ],
+      [
+       19064,
+       -520
+      ],
+      [
+       19064,
+       520
+      ],
+      [
+       17840,
+       520
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b08",
+    "zone": 2,
+    "entry": [
+     25080,
+     0,
+     0
+    ],
+    "anchor": [
+     26384,
+     -728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      31600,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      31568,
+      -2236
+     ],
+     [
+      31568,
+      2236
+     ],
+     [
+      30416,
+      -2236
+     ],
+     [
+      30416,
+      2236
+     ],
+     [
+      28400,
+      -2236
+     ],
+     [
+      28400,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       26960,
+       -1040
+      ],
+      [
+       30200,
+       -1040
+      ],
+      [
+       30200,
+       1040
+      ],
+      [
+       26960,
+       1040
+      ]
+     ],
+     [
+      [
+       28040,
+       -520
+      ],
+      [
+       29264,
+       -520
+      ],
+      [
+       29264,
+       520
+      ],
+      [
+       28040,
+       520
+      ]
+     ]
+    ],
+    "cache": [
+     25520,
+     -1976
+    ],
+    "stations": [],
+    "step_stations": [],
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b09",
+    "zone": 3,
+    "entry": [
+     35280,
+     0,
+     0
+    ],
+    "anchor": [
+     38096,
+     0
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "stations": [
+     [
+      37696,
+      -480
+     ],
+     [
+      37696,
+      -160
+     ],
+     [
+      37696,
+      160
+     ],
+     [
+      37696,
+      480
+     ]
+    ],
+    "step_stations": [
+     0,
+     1,
+     2,
+     3,
+     3,
+     3
+    ],
+    "volumes": [],
+    "exit": {
+     "center": [
+      38200,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      38384,
+      -1118
+     ],
+     [
+      38384,
+      1118
+     ],
+     [
+      37808,
+      -1118
+     ],
+     [
+      37808,
+      1118
+     ],
+     [
+      36800,
+      -1118
+     ],
+     [
+      36800,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       36080,
+       -520
+      ],
+      [
+       37700,
+       -520
+      ],
+      [
+       37700,
+       520
+      ],
+      [
+       36080,
+       520
+      ]
+     ],
+     [
+      [
+       36620,
+       -260
+      ],
+      [
+       37232,
+       -260
+      ],
+      [
+       37232,
+       260
+      ],
+      [
+       36620,
+       260
+      ]
+     ]
+    ],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "stations",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b10",
+    "zone": -1,
+    "entry": [
+     -2700,
+     0,
+     0
+    ],
+    "anchor": [
+     1250,
+     -220
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_ch01_estate_engawa",
+      "center": [
+       -600,
+       0
+      ],
+      "size": [
+       400,
+       1100
+      ]
+     },
+     {
+      "event": "volume_enter:vol_ch01_estate_north_gate",
+      "center": [
+       600,
+       0
+      ],
+      "size": [
+       400,
+       1100
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      2000,
+      0
+     ],
+     "size": [
+      500,
+      900
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      2700,
+      -1100
+     ],
+     [
+      2700,
+      1100
+     ],
+     [
+      500,
+      1800
+     ],
+     [
+      -500,
+      -1850
+     ],
+     [
+      2100,
+      450
+     ],
+     [
+      500,
+      -1400
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       -1650,
+       -330
+      ],
+      [
+       1650,
+       -330
+      ],
+      [
+       1650,
+       330
+      ],
+      [
+       -1650,
+       330
+      ]
+     ],
+     [
+      [
+       -900,
+       -330
+      ],
+      [
+       900,
+       -330
+      ],
+      [
+       900,
+       330
+      ],
+      [
+       -900,
+       330
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b11",
+    "zone": -1,
+    "entry": [
+     -2700,
+     0,
+     0
+    ],
+    "anchor": [
+     -1650,
+     220
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      2000,
+      0
+     ],
+     "size": [
+      500,
+      900
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      2700,
+      -1100
+     ],
+     [
+      2700,
+      1100
+     ],
+     [
+      500,
+      1800
+     ],
+     [
+      -500,
+      -1850
+     ],
+     [
+      2100,
+      450
+     ],
+     [
+      500,
+      -1400
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       -1650,
+       -330
+      ],
+      [
+       1650,
+       -330
+      ],
+      [
+       1650,
+       330
+      ],
+      [
+       -1650,
+       330
+      ]
+     ],
+     [
+      [
+       -900,
+       -330
+      ],
+      [
+       900,
+       -330
+      ],
+      [
+       900,
+       330
+      ],
+      [
+       -900,
+       330
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b12",
+    "zone": -1,
+    "entry": [
+     -2700,
+     0,
+     0
+    ],
+    "anchor": [
+     -400,
+     -220
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      2000,
+      0
+     ],
+     "size": [
+      500,
+      900
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      2700,
+      -1100
+     ],
+     [
+      2700,
+      1100
+     ],
+     [
+      500,
+      1800
+     ],
+     [
+      -500,
+      -1850
+     ],
+     [
+      2100,
+      450
+     ],
+     [
+      500,
+      -1400
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       -1650,
+       -330
+      ],
+      [
+       1650,
+       -330
+      ],
+      [
+       1650,
+       330
+      ],
+      [
+       -1650,
+       330
+      ]
+     ],
+     [
+      [
+       -900,
+       -330
+      ],
+      [
+       900,
+       -330
+      ],
+      [
+       900,
+       330
+      ],
+      [
+       -900,
+       330
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch01.b13",
+    "zone": -1,
+    "entry": [
+     -2700,
+     0,
+     0
+    ],
+    "anchor": [
+     850,
+     220
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      2000,
+      0
+     ],
+     "size": [
+      500,
+      900
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      2700,
+      -1100
+     ],
+     [
+      2700,
+      1100
+     ],
+     [
+      500,
+      1800
+     ],
+     [
+      -500,
+      -1850
+     ],
+     [
+      2100,
+      450
+     ],
+     [
+      500,
+      -1400
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       -1650,
+       -330
+      ],
+      [
+       1650,
+       -330
+      ],
+      [
+       1650,
+       330
+      ],
+      [
+       -1650,
+       330
+      ]
+     ],
+     [
+      [
+       -900,
+       -330
+      ],
+      [
+       900,
+       -330
+      ],
+      [
+       900,
+       330
+      ],
+      [
+       -900,
+       330
+      ]
+     ]
+    ],
+    "camera": [
+     -2950,
+     -600,
+     520,
+     -2450,
+     300,
+     470,
+     0,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   }
+  ],
+  "pickups": [
+   {
+    "collectible": "ch01.c03",
+    "zone": 0,
+    "at": [
+     8360,
+     988
+    ]
+   },
+   {
+    "collectible": "ch01.c04",
+    "zone": 3,
+    "at": [
+     35360,
+     988
+    ]
+   },
+   {
+    "collectible": "ch01.c05",
+    "zone": 3,
+    "at": [
+     36080,
+     -1118
+    ]
+   },
+   {
+    "collectible": "ch01.c06",
+    "zone": 1,
+    "at": [
+     15320,
+     1976
+    ]
+   }
+  ]
  },
  "ext": {
   "season": "Genna 9 (1623), late spring; dawn to dusk; overcast morning clearing to a golden evening",

@@ -37,7 +37,7 @@ catalog = json.loads((DATA / "catalog.json").read_text())
 campaign = json.loads((DATA / "campaign/campaign.json").read_text())
 chapters = [json.loads((DATA / entry["file"]).read_text()) for entry in campaign["chapters"]]
 speakers = {entry["id"]: entry for entry in catalog["dialogue_speakers"]}
-mechanic_bits = {name: bit for bit, name in enumerate(campaign["mechanics"])}
+mechanic_bits = {row["id"]: bit for bit, row in enumerate(campaign["mechanics"])}
 flag_bits = {name: bit for bit, name in enumerate(campaign["story_flags"])}
 assert catalog["schema_version"] == 4 and campaign["schema_version"] == 4 and len(chapters) == 8
 assert catalog["default_language"] == "ja"
@@ -71,6 +71,16 @@ for gate in ("AdvanceChapter", "CampaignLiberated", "CollectibleBit", "Collectib
 catalog_loader = (ROOT / "Source/SoraArena/Private/SoraCatalog.cpp").read_text()
 for gate in ("ChapterValid", "TasksValid"):
     assert f"SoraBeatRules::{gate}" in catalog_loader, f"The catalog loader no longer refuses chapters by {gate}"
+# The world-facing director, the horse and the space loader run the same
+# host-tested siege and horseback rules.
+world = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp").read_text()
+for gate in ("SoraBeatRules::SiegeDamage", "SoraMountRules::CanMount", "SoraMountRules::ArcAllows", "SoraMountRules::Slower"):
+    assert gate in world, f"The campaign director no longer uses tested {gate}"
+horse = (ROOT / "Source/SoraArena/Private/Characters/SoraHorse.cpp").read_text()
+for gate in ("Step(Ride,Rules", "SoraMountRules::SpeedCmS", "TurnDegS"):
+    assert gate in horse or gate.replace("SoraMountRules::", "") in horse, f"The horse no longer rides by tested {gate}"
+space_loader = (ROOT / "Source/SoraArena/Private/SoraCatalogSpace.cpp").read_text()
+assert "HorseValid(M.Rules)" in space_loader, "The space loader no longer refuses an invalid horse"
 character = (ROOT / "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp").read_text()
 for action in ("Stance", "Guard", "Parry", "Recovery"):
     assert f"SoraDojoRules::EAction::{action}" in character
@@ -117,7 +127,8 @@ def task_fields(task):
     scalars = (("Count", "count", 0), ("DurationMs", "duration_ms", 0), ("MaxAlive", "max_alive", 6),
                ("LossLimit", "loss_limit", 0), ("DecayPermille", "decay_permille", 0),
                ("MinTurnMs", "min_turn_ms", 0), ("MaxTurnMs", "max_turn_ms", 0), ("SpeedCmS", "speed_cm_s", 0),
-               ("WaitCm", "wait_cm", 0), ("PathCm", "path_cm", 0), ("ReinforceWave", "reinforce_wave", -1))
+               ("WaitCm", "wait_cm", 0), ("PathCm", "path_cm", 0), ("ReinforceWave", "reinforce_wave", -1),
+               ("CarrySpeedPermille", "carry_speed_permille", 1000))
     for name, key, default in scalars:
         if task[key] != default:
             fields.append(f"T.{name} = {task[key]};")
@@ -144,6 +155,8 @@ def task_fields(task):
     fields.append(f"T.TargetCount = {len(task['targets'])};")
     for index, target in enumerate(task["targets"]):
         fields.append(f"T.TargetHp[{index}] = {target['hp']};")
+    if task["carry_weapons"]:
+        fields.append(f"T.CarryWeaponsMask = {mask(task['carry_weapons'])}u;")
     failures = " | ".join(f"FailBit(EFail::{FAILURES[name]})" for name in task["fail_checkpoint"]) or "0u"
     fields.append(f"T.FailMask = {failures};")
     return fields
@@ -193,6 +206,41 @@ for weapon, beat_id in WEAPON_UNLOCKS:
     position = [beat["id"] for beat in chapters[chapter]["beats"]].index(beat_id)
     unlock_rows.append(f"{{{weapon}, {chapter}, {position}}}")
 lines.append(f"static constexpr int UnlockOrder[][3] = {{{', '.join(unlock_rows)}}};")
+
+# Every horse a ride or mounted boss puts under the hero (the space's mount
+# blocks, campaign_space.py), with its route length and gait caps, so the
+# driver can ride each one at its best pace.
+GAIT_NAMES = ("halt", "walk", "trot", "canter", "gallop")
+ride_rows = []
+for chapter in chapters:
+    zones = chapter["space"]["zones"]
+    for beat, record in zip(chapter["beats"], chapter["space"]["beats"]):
+        mount = record["mount"]
+        if not mount:
+            continue
+        top = max(GAIT_NAMES.index(gait) for gait in mount["gaits"])
+        per_s = mount["stamina"]["per_s"]
+        slots = {0: 0, 18: 1, 19: 2}
+        arc_min, arc_max = [0, 0, 0], [0, 0, 0]
+        for weapon, arc in mount["arcs"].items():
+            arc_min[slots[int(weapon)]], arc_max[slots[int(weapon)]] = arc
+        horse = (f"{{EGait::{GAIT_NAMES[top].capitalize()}, {{0, {', '.join(map(str, mount['speeds_cm_s']))}}}, "
+                 f"{{{per_s[0]}, {', '.join(map(str, per_s))}}}, {mount['stamina']['lockout']}, "
+                 f"{mount['stamina']['recover']}, {mount['fear']['recover_ms'] if mount['fear'] else 0}, "
+                 f"{mask(mount['weapons'])}u, {{{', '.join(map(str, arc_min))}}}, {{{', '.join(map(str, arc_max))}}}}}")
+        length = 0
+        if record["route"] is not None:
+            route = zones[record["zone"]]["route"]
+            length = round(sum(((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) ** 0.5 for a, b in zip(route, route[1:])))
+        caps = [f"{{{cap['from_cm']}, {cap['to_cm']}, EGait::{cap['gait'].capitalize()}}}" for cap in mount["gait_caps"]]
+        caps += ["{0, 0, EGait::Halt}"] * (4 - len(caps))
+        assert len(caps) == 4
+        ride_rows.append(f'    {{"{beat["id"]}", {horse}, {length}, {beat["target_s"] * 1000}, '
+                         f'{len(mount["gait_caps"])}, {{{", ".join(caps)}}}, {"true" if mount["mounted"] else "false"}, '
+                         f'{len(mount["tack"])}}},')
+lines.append("static const FRideFixture Rides[] = {")
+lines.extend(ride_rows)
+lines.append("};")
 
 build_env = os.environ.copy()
 compiler = shutil.which("clang++") or shutil.which("c++")

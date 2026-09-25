@@ -16,6 +16,9 @@ catalog schema 4:
 - ``collectibles``, ``ui_prompts``, ``checkpoints``, ``unlocks``, ``places``
   (from the bible's §14 table) and ``layout`` (volumes, points, splines and
   patrols in integer centimetres, in the frame the chapter authored).
+- ``space``: the playable layout campaign_space.py derives from the places,
+  beats and tasks (zones, route corridors, sites, and every beat's points,
+  volumes, spawns, patrols, camera and horse) in one world frame.
 
 The chapter title card and the production-site labels are not in the scripts;
 they live in the hand-authored Content/Data/campaign/campaign.json.
@@ -35,6 +38,8 @@ import sys
 from pathlib import Path
 
 import yaml
+
+from campaign_space import derive_space, ride_mount
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs/campaign"
@@ -267,6 +272,8 @@ def load_places():
             "reading": reading.group(2) if reading else None,
             "en": english,
             "arena": int(arena.group(1)) if arena else None,
+            # A bold "**Arena N**" row is the arena itself, not a space beside it.
+            "hub": source.startswith("**Arena "),
             "source": source.replace("**", "").replace("`", ""),
         }
     table = BIBLE.read_text().split("## 14. Places and levels", 1)[1].split("\n## ", 1)[0]
@@ -518,7 +525,7 @@ def normalize_task(beat):
         "drop_on_hit": False, "steps": [], "targets": [], "on_detected": "combat", "reinforce_wave": -1,
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
         "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "opponent": None,
-        "sparring": False, "phase_events": [],
+        "sparring": False, "phase_events": [], "carry_speed_permille": 1000, "carry_weapons": [],
     }
     nonlethal = params.get("nonlethal_types", DEFAULT_NONLETHAL)
     task["waves"] = [task_wave(wave, nonlethal, f"{where}.waves[{index}]")
@@ -622,6 +629,12 @@ def normalize_task(beat):
             task.update(goal="deliveries", count=block["count"], pickups=ids_of(block["pickups"], f"{where}.pickups"),
                         dropoffs=ids_of(block["dropoffs"], f"{where}.dropoffs"),
                         drop_on_hit=drop if isinstance(drop, bool) else expect(drop.get("normal"), (bool,), where))
+            # The load slows the hero and leaves at most the katana in one paw.
+            task["carry_speed_permille"] = permille(block.get("move_speed_mult", 1), f"{where}.carry.move_speed_mult")
+            loadout = expect(block.get("loadout_while_carrying", []), (list,), f"{where}.carry.loadout_while_carrying")
+            if set(loadout) - {"katana_one_hand"}:
+                fail(where, f"carry loadout {loadout} has no runtime meaning")
+            task["carry_weapons"] = [0] if loadout else []
         elif name == "manufacture":
             for index, step in enumerate(block["steps"]):
                 timing = step.get("timing") or {}
@@ -1280,6 +1293,11 @@ def build_chapter(number, places):
                              for value in (document[key] if isinstance(document[key], list) else [document[key]])})
     for key in ("maps_also", "epilogue_map"):
         ext.pop(key, None)
+    collectibles = [normalize_collectible(item, prefix, index)
+                    for index, item in enumerate(expect(document["collectibles"], (list,), prefix))]
+    layout = normalize_layout(document, prefix)
+    chapter_map = expect_int(document["map"], f"{prefix}.map", 0)
+    space = derive_space({"prefix": prefix, "map": chapter_map}, beats, places, collectibles, triggers, layout, fail)
     return {
         "schema_version": SCHEMA_VERSION,
         "id": chapter_id,
@@ -1287,7 +1305,7 @@ def build_chapter(number, places):
         "source": f"docs/campaign/chapter-{number:02d}.md",
         "title_ja": expect(document["title_ja"], (str,), f"{prefix}.title_ja"),
         "title_en": expect(document["title_en"], (str,), f"{prefix}.title_en"),
-        "map": expect_int(document["map"], f"{prefix}.map", 0),
+        "map": chapter_map,
         "secondary_maps": secondary_maps,
         "target_s": expect_int(document["target_s"], f"{prefix}.target_s", 1),
         "sites": production_sites(document, beats),
@@ -1296,12 +1314,12 @@ def build_chapter(number, places):
         "beats": beats,
         "lines": lines,
         "triggers": triggers,
-        "collectibles": [normalize_collectible(item, prefix, index)
-                         for index, item in enumerate(expect(document["collectibles"], (list,), prefix))],
+        "collectibles": collectibles,
         "ui_prompts": [normalize_prompt(item, prefix, index)
                        for index, item in enumerate(document.get("ui_prompts") or [])],
         "places": chapter_places,
-        "layout": normalize_layout(document, prefix),
+        "layout": layout,
+        "space": space,
         "ext": ext,
     }
 
@@ -1354,6 +1372,8 @@ def self_test():
             "target_s": 60, "sequence": "LS", "duration_s": 60, "skippable": True, "subtitles": []}
     line = {"id": "ch01.b01.nyaakoto.001", "speaker": "samurai", "ja": "参る。", "en": "Here I come.",
             "register": "samurai_restrained", "duration_s": 1.5}
+    ride = {"id": "ch01.b06", "type": "horseback_ride", "unlocks": {"mechanics": []}, "ext": {},
+            "params": {"horse": "kurimaru", "gaits": ["walk", "trot"], "weapons": [0, 18]}}
     cases = {
         "duplicate key": lambda: parse("a: 1\na: 2\n"),
         "bare on key": lambda: parse("dialogue:\n  - {on: beat_start}\n"),
@@ -1373,9 +1393,12 @@ def self_test():
             {**beat, "fail": {"on": "lantern_lit", "to": "checkpoint"}}, None, "ch01", 1, [], []),
         "unknown dialogue condition": lambda: trigger_row(
             "ch01.b01", "beat_start", "ambient", [line["id"]], "dialogue", "self-test", ext={"requires_flag": "moon:full"}),
+        "mounting from the left": lambda: ride_mount(
+            {**ride, "ext": {"tack_up": {"mount_side": "left", "interact_points": []}}}, fail),
+        "a matchlock in the saddle": lambda: ride_mount({**ride, "params": {**ride["params"], "weapons": [0, 5]}}, fail),
     }
     accepted = [name for name, action in cases.items() if not rejects(action)]
-    if accepted or rejects(lambda: normalize_beat(beat, None, "ch01", 1, [], [])):
+    if accepted or rejects(lambda: normalize_beat(beat, None, "ch01", 1, [], [])) or rejects(lambda: ride_mount(ride, fail)):
         raise BuildError(f"importer self-test failed: accepted {accepted} or rejected a valid beat")
     return len(cases)
 

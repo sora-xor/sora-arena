@@ -10,12 +10,17 @@
 #include "SoraEnemy.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
+#include "SoraHorse.h"
 #include "SoraInputStates.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
+#include "Camera/CameraActor.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
@@ -24,19 +29,23 @@
 
 // Plays all eight chapters' schema-4 beats in real game worlds through the
 // entry points the player's input reaches: BeginRound (Enter) opens chapters,
-// skips cinematics and continues results; Interact (E) works each beat's
-// anchor (objectives, crank turns in their rate band, pickups and deliveries,
-// manufacturing strokes on the beat) and opens explore caches; the hero walks
-// (is placed) onto anchors, into the volumes that release waves and beside an
+// skips cinematics (which play through their camera) and continues results;
+// Interact (E) works each beat's points (objectives, crank turns in their rate
+// band, pickups and deliveries, manufacturing strokes at each step's station),
+// tacks up and mounts the horse from her right (the left is refused), picks
+// up loose collectibles and opens explore caches; the hero walks (is placed,
+// or rides) onto points, into the volumes that release waves and beside an
 // escorted party; the clock runs holds and survivals; lethal damage reaches
-// OpponentDefeated; and the dojo forms are recorded. The disk save is read
-// back at every checkpoint beat. Three checkpoints (one a boss phase) are
-// restored in fresh worlds; a defeat, a lost sparring match, a lost defended
-// target and a stealth alarm take their beats' failure paths; a hurried crank
-// turn slips and an off-beat stroke restarts its rhythm; locked weapons are
-// refused; chapters one to five open every cache while six to eight skip them
-// (but for the flagship's name board, whose story flag reaches the final
-// chapter); and the campaign ends liberated with all 21 weapons.
+// OpponentDefeated; and the dojo forms are recorded. Every beat starts with
+// the hero in its place (a travel cut), and every ride in the saddle. The
+// disk save is read back at every checkpoint beat. Three checkpoints (one a
+// boss phase) are restored in fresh worlds; a defeat, a lost sparring match, a
+// lost defended target and a stealth alarm take their beats' failure paths; a
+// hurried crank turn slips and an off-beat stroke restarts its rhythm; locked
+// weapons are refused; chapters one to five open every cache and pick up every
+// loose collectible while six to eight skip them (but for the flagship's name
+// board, whose story flag reaches the final chapter); and the campaign ends
+// liberated with all 21 weapons.
 // Combat balance is not under test here (see SoraArena.Campaign.CombatTrace):
 // the hero is healed between actions so a long wave cannot end the run.
 namespace SoraCampaignPlaythrough
@@ -57,6 +66,9 @@ struct FState
     int32 ChaptersCompleted = 0;
     int32 BeatsPlayed = 0;
     int32 CachesOpened = 0;
+    int32 PickupsFound = 0;
+    int32 RidesRidden = 0;
+    int32 CinematicShots = 0;
     int32 CheckpointsRead = 0;
     int32 LinesShown = 0;
     // Beats played per task goal (SoraBeatRules::EGoal).
@@ -132,11 +144,21 @@ bool Advance(FAutomationTestBase& Test, FState& State, int32 Frames = 2, float D
     return true;
 }
 
+// Places the hero on the floor at Location; a mounted hero rides there (the
+// horse is placed and carries him).
 void MoveTo(FState& State, const FVector& Location)
 {
+    USoraCampaignDirector* Director = Campaign(State);
+    if (Director && Director->IsMounted())
+    {
+        Director->Steed()->Place(FVector(Location.X, Location.Y, 0.f), Director->Steed()->GetActorRotation().Yaw);
+        return;
+    }
     ASoraPlayerCharacter* Hero = Player(State);
     Hero->GetCharacterMovement()->StopMovementImmediately();
-    Hero->SetActorLocation(FVector(Location.X, Location.Y, Hero->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+    // Every floor of a chapter's space is at z 0.
+    const float Half = Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    Hero->SetActorLocation(FVector(Location.X, Location.Y, Half + 2.f), false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 // Every checkpoint beat writes the slot as it starts; read it back from disk.
@@ -186,10 +208,12 @@ bool DefeatOne(FAutomationTestBase& Test, FState& State)
     return Advance(Test, State);
 }
 
-// A spot on the arena floor away from every beat anchor and cache.
+// A spot on the active beat's floor away from every point it works: its
+// place's entry, or the arena's west lawn in the hub.
 FVector FarAway(const FState& State)
 {
-    return Mode(State)->Arena()->PlayerStart() + FVector(0, 1800, 0);
+    const FSoraBeatSpace* Space = Campaign(State)->ActiveSpace();
+    return Space && Space->Zone != INDEX_NONE ? ASoraWorldBuilder::Floor(Space->Entry) : FVector(-2700, 1800, 0);
 }
 
 // Every live opponent falls, one lethal blow at a time, while Beat is active.
@@ -255,6 +279,60 @@ bool OpenCaches(FAutomationTestBase& Test, FState& State, int32 Only = INDEX_NON
             return false;
     }
     return true;
+}
+
+// Walks to every loose collectible and picks it up; each goes to the save.
+bool PickUpAll(FAutomationTestBase& Test, FState& State)
+{
+    USoraCampaignDirector* Director = Campaign(State);
+    if (!Mode(State)->IsPlaying() || Director->IsMounted())
+        return true;
+    const FSoraChapter& Chapter = ChapterData(State);
+    for (const int32 Pickup : Director->LoosePickups())
+    {
+        const FSoraCollectible& Item = Chapter.Collectibles[Chapter.Space.Pickups[Pickup].Collectible];
+        MoveTo(State, Director->PickupLocation(Pickup));
+        Mode(State)->Interact(Player(State));
+        const uint64 Bit = SoraCampaignRules::CollectibleBit(Director->ChapterId, Item.MaskBit);
+        const USoraSaveGame* Saved = Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(State.Slot, 0));
+        if (!Test.TestTrue(*(Item.Id + TEXT(" is picked up and kept at once")), (Director->CollectedMask() & Bit) != 0ull &&
+            Saved && (static_cast<uint64>(Saved->Collectibles) & Bit) != 0ull && !Director->StoryNotices().IsEmpty()))
+            return Fail(Test, State, Item.Id + TEXT(" could not be picked up"));
+        ++State.PickupsFound;
+        if (!Advance(Test, State))
+            return false;
+    }
+    return true;
+}
+
+// Tacks up the ride's horse at her side (the bit refused until she has her
+// barley), is refused from her left and mounts from her right.
+bool MountUp(FAutomationTestBase& Test, FState& State, const FSoraBeat& Beat)
+{
+    USoraCampaignDirector* Director = Campaign(State);
+    ASoraHorse* Horse = Director->Steed();
+    if (!Test.TestNotNull(*(Beat.Id + TEXT(" has its horse")), Horse))
+        return Fail(Test, State, Beat.Id + TEXT(" has no horse"));
+    const FVector Right = Horse->GetActorLocation() + Horse->GetActorRightVector() * 120.f;
+    const FVector Left = Horse->GetActorLocation() - Horse->GetActorRightVector() * 120.f;
+    const TArray<FSoraTackStep>& Tack = Beat.Space.Mount.Tack;
+    int32 Presses = 0;
+    for (; Presses < 16 && Director->TackDone() < Tack.Num(); ++Presses)
+    {
+        MoveTo(State, Right);
+        Mode(State)->Interact(Player(State));
+    }
+    int32 Refusals = 0;
+    for (const FSoraTackStep& Step : Tack)
+        Refusals += Step.Refusals;
+    bool bOk = Test.TestEqual(*(Beat.Id + TEXT(": every piece of tack, the bit after its refusals")), Presses, Tack.Num() + Refusals);
+    MoveTo(State, Left);
+    Mode(State)->Interact(Player(State));
+    bOk &= Test.TestTrue(*(Beat.Id + TEXT(": mounting from her left is refused")), !Director->IsMounted() && Mode(State)->NoticeTime > 0.f);
+    MoveTo(State, Right);
+    Mode(State)->Interact(Player(State));
+    bOk &= Test.TestTrue(*(Beat.Id + TEXT(": the hero mounts from her right")), Director->IsMounted());
+    return (bOk || Fail(Test, State, Beat.Id + TEXT(" could not be mounted"))) && Advance(Test, State);
 }
 
 bool RecordLessons(FAutomationTestBase& Test, FState& State, const FSoraBeat& Beat, bool bFirst)
@@ -345,11 +423,28 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     switch (Rules.Goal)
     {
     case EGoal::Elapsed:
+    {
         bOk &= Test.TestTrue(*(Beat.Id + TEXT(" plays on the card")), GameMode->InputState() == SoraInput::Card &&
             GameMode->TitleCardChapter() == &Chapter && GameMode->TitleCardTime > 0.f && LiveEnemies(State).IsEmpty());
         bOk &= Test.TestTrue(*(Beat.Id + TEXT(" is skippable")), Rules.Skippable);
+        // The shot blends in from the hero's eye to the cinematic's camera over its place.
+        if (!Advance(Test, State, 1))
+            return false;
+        const APlayerController* Controller = Cast<APlayerController>(Player(State)->GetController());
+        const AActor* Shot = Director->CinematicCamera();
+        const auto Viewing = [&](const AActor* Target)
+        {
+            return Controller && Target && (Controller->GetViewTarget() == Target ||
+                (Controller->PlayerCameraManager && Controller->PlayerCameraManager->PendingViewTarget.Target == Target));
+        };
+        bOk &= Test.TestTrue(*(Beat.Id + TEXT(" plays through its camera")), Viewing(Shot));
         GameMode->BeginRound();
+        const FSoraBeat* After = Director->ActiveBeatData();
+        if (!GameMode->bChapterComplete && After && !After->Is(SoraBeatRules::EType::Cinematic))
+            bOk &= Test.TestTrue(*(Beat.Id + TEXT(": the view returns to the hero")), Viewing(Player(State)));
+        ++State.CinematicShots;
         break;
+    }
     case EGoal::Lines:
         if (Beat.LinesEvent != TEXT("beat_start"))
         {
@@ -413,6 +508,15 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Hold:
     case EGoal::Escort:
     {
+        // Rides are ridden: a horse to tack up is mounted from her right,
+        // the others start in the saddle.
+        if (Beat.Is(SoraBeatRules::EType::HorsebackRide))
+        {
+            if (!Director->IsMounted() && !MountUp(Test, State, Beat))
+                return false;
+            bOk &= Test.TestTrue(*(Beat.Id + TEXT(" is ridden")), Director->IsMounted());
+            ++State.RidesRidden;
+        }
         // A hold fills only with the hero in it.
         if (Rules.Goal == EGoal::Hold)
         {
@@ -435,10 +539,20 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Turns:
     case EGoal::Steps:
     {
+        // A cargo ride delivers from the saddle.
+        if (Beat.Is(SoraBeatRules::EType::HorsebackRide))
+        {
+            bOk &= Test.TestTrue(*(Beat.Id + TEXT(" is ridden")), Director->IsMounted());
+            ++State.RidesRidden;
+        }
         MoveTo(State, FarAway(State));
         GameMode->Interact(Player(State));
         bOk &= Test.TestEqual(*(Beat.Id + TEXT(" cannot be worked from afar")), Director->TaskProgress().Done, 0);
-        bool bSlipTested = false, bMissTested = false;
+        bool bSlipTested = false, bMissTested = false, bLoadTested = false;
+        ASoraWorldBuilder* WorldBuilder = GameMode->Arena();
+        const FName Kit = WorldBuilder->ActiveKit();
+        const float GaugeBefore = WorldBuilder->KitGaugeHeight();
+        bOk &= Test.TestTrue(*(Beat.Id + TEXT(" stages its task's kit")), Beat.Space.Work.IsNone() || Kit == Beat.Space.Work);
         for (int32 Action = 0; Action < MaxActionsPerBeat && Active(); ++Action)
         {
             const SoraBeatRules::FTaskState& Task = Director->TaskProgress();
@@ -447,6 +561,13 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 // A steady rhythm inside the band; one hurried turn slips first.
                 if (!Wait(Test, State, (Rules.MinTurnMs + Rules.MaxTurnMs) / 2) || !WorkAtAnchor(Test, State))
                     return false;
+                // The water rises in its channel and a lift climbs with the turns.
+                if (Action == 0 && Active() && (Kit == TEXT("sluice") || Kit == TEXT("lift")))
+                {
+                    if (!Advance(Test, State, 1))
+                        return false;
+                    bOk &= Test.TestTrue(*(Beat.Id + TEXT(": the kit's gauge rises with the turns")), WorldBuilder->KitGaugeHeight() > GaugeBefore);
+                }
                 if (!bSlipTested && Task.Done == 1 && Active())
                 {
                     bSlipTested = true;
@@ -472,6 +593,17 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             {
                 if (!WorkAtAnchor(Test, State))
                     return false;
+                // A load slows the hero, shows in his arms and leaves him at most the katana.
+                if (!bLoadTested && Active() && Director->TaskProgress().Carrying && Rules.Task == SoraBeatRules::ETask::Carry)
+                {
+                    bLoadTested = true;
+                    const float Pace = Rules.CarrySpeedPermille / 1000.f;
+                    bOk &= Test.TestTrue(*(Beat.Id + TEXT(": the load slows the hero")),
+                        FMath::IsNearlyEqual(Director->CarryPace(), Pace) && FMath::IsNearlyEqual(Player(State)->GetEquipment()->MoveScale(false), Pace) &&
+                        WorldBuilder->IsCarryingLoad());
+                    bOk &= Test.TestFalse(*(Beat.Id + TEXT(": the yumi cannot be drawn under a load")),
+                        Player(State)->IsCampaignHero() && Player(State)->GetEquipment()->EquipCampaignWeapon(18));
+                }
             }
             else if (!LiveEnemies(State).IsEmpty())
             {
@@ -492,6 +624,9 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     const SoraBeatRules::FProgress& Progress = Director->Progress();
     bOk &= Test.TestTrue(*(Beat.Id + TEXT(" completes")), (Director->ActiveBeat() != Index || GameMode->bChapterComplete) &&
         (Progress.CompletedMask & SoraBeatRules::BeatBit(Index)) != 0u);
+    if (Beat.Is(SoraBeatRules::EType::HorsebackRide))
+        bOk &= Test.TestTrue(*(Beat.Id + TEXT(": the rider is down at the destination")),
+            !Director->IsMounted() || (Director->ActiveBeatData() && Director->ActiveBeatData()->Space.bMount));
     bOk &= Test.TestTrue(*(Beat.Id + TEXT(" unlocks its weapons, mechanics and story flags")),
         (Progress.WeaponsMask & (Rule.WeaponsMask | Rule.GrantsMask)) == (Rule.WeaponsMask | Rule.GrantsMask) &&
         (Progress.MechanicsMask & Rule.MechanicsMask) == Rule.MechanicsMask && (Progress.FlagsMask & Rule.FlagsMask) == Rule.FlagsMask);
@@ -513,12 +648,16 @@ bool PlayUntil(FAutomationTestBase& Test, FState& State, int32 StopBeat = INDEX_
         const USoraCampaignDirector* Director = Campaign(State);
         if (Mode(State)->bChapterComplete || Director->ActiveBeat() == StopBeat)
             return true;
-        // A checkpoint beat saved as it started, before any cache is opened.
+        // Every beat starts with the hero in its place.
         const FSoraChapter& Chapter = ChapterData(State);
+        if (const FSoraBeatSpace* Space = Director->ActiveSpace();
+            Space && !Test.TestEqual(*(Where(State) + TEXT(": the hero stands in the beat's place")), Director->HeroZone(), Space->Zone))
+            return Fail(Test, State, Where(State) + TEXT(" did not travel to its place"));
+        // A checkpoint beat saved as it started, before any cache is opened.
         if (Chapter.Rules.IsValidIndex(Director->ActiveBeat()) && Chapter.Rules[Director->ActiveBeat()].Checkpoint &&
             Director->ActivePhase() == 0 && !ExpectCheckpoint(Test, State))
             return false;
-        if (Director->ChapterId < CompletistChapters && !OpenCaches(Test, State))
+        if (Director->ChapterId < CompletistChapters && (!OpenCaches(Test, State) || !PickUpAll(Test, State)))
             return false;
         if (!PlayBeat(Test, State))
             return false;
@@ -559,8 +698,9 @@ bool StartWorld(FAutomationTestBase& Test, FState& State)
     State.World = MakeUnique<FSoraAutomationWorld>();
     ++State.WorldsStarted;
     // BeginPlay reads the save; the next tick runs ResetRound, which rebuilds
-    // the chapter and restores the checkpoint.
-    if (!State.World->Start(State.Slot) || !State.World->Tick(1))
+    // the chapter and restores the checkpoint. A local player's controller
+    // then lets the cinematics take its view.
+    if (!State.World->Start(State.Slot) || !State.World->Tick(1) || !State.World->EnableKeyInput())
     {
         State.World->ForwardErrorMessages(&Test);
         return Fail(Test, State, FString::Printf(TEXT("Campaign world %d did not start"), State.WorldsStarted));
@@ -759,7 +899,32 @@ bool LoseDefendedTarget(FAutomationTestBase& Test, FState& State)
     if (!Test.TestTrue(TEXT("The defence has targets to keep"), Rules.TargetCount > 0 &&
         (Rules.FailMask & SoraBeatRules::FailBit(SoraBeatRules::EFail::TargetDestroyed)) != 0u))
         return Fail(Test, State, Where(State) + TEXT(" keeps no target"));
-    bool bOk = Test.TestFalse(TEXT("A wounded target is no failure"), Director->DamageDefendedTarget(0, Rules.TargetHp[0] / 2));
+    // An opponent standing at a target wears it down, a whole point at a time.
+    const TArray<ASoraEnemy*> Foes = LiveEnemies(State);
+    if (!Test.TestFalse(TEXT("The defence's first wave is on the field"), Foes.IsEmpty()))
+        return Fail(Test, State, Where(State) + TEXT(" has no opponent to besiege its targets"));
+    const FVector Target = ASoraWorldBuilder::Floor(Director->ActiveSpace()->Targets[0], 120.f);
+    Foes[0]->SetActorLocation(Target + FVector(0, 250, 0), false, nullptr, ETeleportType::TeleportPhysics);
+    Foes[0]->SetActorTickEnabled(false);
+    const int32 Whole = Director->TaskProgress().TargetHp[0];
+    if (!Advance(Test, State, 60))
+        return false;
+    bool bOk = Test.TestTrue(TEXT("An opponent at a target wears it down"), Director->TaskProgress().TargetHp[0] < Whole &&
+        Director->TaskProgress().TargetHp[0] >= Whole - 2 * SoraBeatRules::SiegeHpPerSecond);
+    Foes[0]->SetActorTickEnabled(true);
+    UGameplayStatics::ApplyDamage(Foes[0], Foes[0]->Health, Player(State)->GetController(), Player(State), UDamageType::StaticClass());
+    if (!Advance(Test, State))
+        return false;
+    // The siege is repaired back to whole at the defended position before the target is tested.
+    FVector Position;
+    if (!Director->ObjectiveAnchor(Position))
+        return Fail(Test, State, Where(State) + TEXT(" has no defended position"));
+    MoveTo(State, Position);
+    if (!Advance(Test, State))
+        return false;
+    GameMode->Interact(Player(State));
+    bOk &= Test.TestEqual(TEXT("A repair makes the besieged target whole"), Director->TaskProgress().TargetHp[0], Rules.TargetHp[0]);
+    bOk &= Test.TestFalse(TEXT("A wounded target is no failure"), Director->DamageDefendedTarget(0, Rules.TargetHp[0] / 2));
     // A repair at the defended position mends a quarter of it.
     FVector Anchor;
     if (!Director->ObjectiveAnchor(Anchor))
@@ -915,9 +1080,17 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
         bool bOk = Test.TestTrue(TEXT("The reloaded campaign is liberated"), Campaign(S)->bCampaignComplete && GameMode->bChapterComplete);
         bOk &= Test.TestEqual(TEXT("The liberated city shows every site"), GameMode->Arena()->ActivatedMask(), 7);
         bOk &= Test.TestTrue(TEXT("No opponent returns to the liberated city"), LiveEnemies(S).IsEmpty());
-        // Chapters one to five opened every cache; six to eight left theirs,
-        // but for the flagship's name board.
+        // Chapters one to five opened every cache and picked up every loose
+        // find; six to eight left theirs, but for the flagship's name board.
         const FSoraCatalog& Data = FSoraCatalog::Get();
+        for (int32 Chapter = 0; Chapter <= LastChapter; ++Chapter)
+            for (const FSoraPickup& Pickup : Data.Chapter(Chapter).Space.Pickups)
+            {
+                const FSoraCollectible& Found = Data.Chapter(Chapter).Collectibles[Pickup.Collectible];
+                bOk &= Test.TestEqual(*FString::Printf(TEXT("%s picked up on this route"), *Found.Id),
+                    (Campaign(S)->CollectedMask() & SoraCampaignRules::CollectibleBit(Chapter, Found.MaskBit)) != 0ull,
+                    Chapter < CompletistChapters);
+            }
         for (int32 Chapter = 0; Chapter <= LastChapter; ++Chapter)
             for (const FSoraBeat& Beat : Data.Chapter(Chapter).Beats)
                 for (const int32 Item : Beat.Rewards)
@@ -946,8 +1119,9 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
             Test.TestTrue(*FString::Printf(TEXT("Task goal %d was played"), Goal), !bAuthored || (Played && *Played > 0));
             Goals += FString::Printf(TEXT("%s%d"), Goals.IsEmpty() ? TEXT("") : TEXT(","), Played ? *Played : 0);
         }
-        UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_PLAYTHROUGH_OK: chapters=%d beats=%d caches=%d checkpoints=%d lines=%d worlds=%d goals=[%s]"),
-            S.ChaptersCompleted, S.BeatsPlayed, S.CachesOpened, S.CheckpointsRead, S.LinesShown, S.WorldsStarted, *Goals);
+        UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_PLAYTHROUGH_OK: chapters=%d beats=%d caches=%d pickups=%d rides=%d shots=%d checkpoints=%d lines=%d worlds=%d goals=[%s]"),
+            S.ChaptersCompleted, S.BeatsPlayed, S.CachesOpened, S.PickupsFound, S.RidesRidden, S.CinematicShots, S.CheckpointsRead,
+            S.LinesShown, S.WorldsStarted, *Goals);
         return true;
     });
     return true;

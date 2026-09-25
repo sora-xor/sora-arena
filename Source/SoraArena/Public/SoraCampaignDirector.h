@@ -4,12 +4,15 @@
 #include "SoraBeatRules.h"
 #include "SoraDojoRules.h"
 #include "SoraCampaignDirector.generated.h"
+class ACameraActor;
 class ASoraBoss;
 class ASoraEnemy;
 class ASoraGameMode;
+class ASoraHorse;
 class ASoraPlayerCharacter;
 class USoraSaveGame;
 struct FSoraBeat;
+struct FSoraBeatSpace;
 struct FSoraChapter;
 struct FSoraDamagedEvent;
 struct FSoraDialogueCue;
@@ -27,20 +30,42 @@ struct FSoraSubtitle
     float Seconds = 0.f;
 };
 
+// A story notice the HUD shows apart from system notices: a weapon or
+// mechanic unlocked, a collectible found, a production site restored.
+struct FSoraStoryNotice
+{
+    enum class EKind : uint8 { Weapon, Mechanic, Collectible, Site };
+    EKind Kind = EKind::Weapon;
+    FString Japanese;
+    FString English;
+    // A collectible's codex entry, or the site's restored line.
+    FString Detail;
+    FString DetailEnglish;
+    float Remaining = 0.f;
+};
+
 // Offline rounds on ASoraGameMode: the eight campaign chapters and the
 // training arena. A chapter plays its schema-4 beats (Content/Data/campaign)
 // in the order SoraBeatRules.h allows, and each beat's task through the same
-// rules: cinematics on the letterboxed card, dialogue lines, waves released by
-// their triggers, duels and bosses with their phases, stealth zones, the
-// production tasks (hold, crank, escort, carry, manufacture, defend), rides
-// and explore caches, at the beat's anchors (SoraWorldBuilderLayout.cpp).
+// rules, in the chapter's space (FSoraSpace, built by ASoraWorldBuilder):
+// cinematics through a camera that dollies over their place behind the
+// letterboxed card; dialogue lines; waves released by their triggers and put
+// on the field at the beat's spawns; duels and bosses with their phases;
+// stealth zones whose guards stand on patrol routes; the production tasks
+// (hold, crank, escort, carry, manufacture, defend) at their points with their
+// kits; rides on Kurimaru and the other horses (SoraMountRules.h); explore
+// caches and loose collectibles. A beat in another place than the hero cuts
+// to its entry (travel); the hero entering a trigger volume raises its event.
 // Failures follow the beat's rules: a checkpoint, a match retried in place, or
 // the story moving on. Completing a beat restores its production site and
 // unlocks its weapons, mechanics and story flags; the save (schema 6) keeps
 // the checkpoint beat and phase, the beats done, the unlock and flag masks and
 // the collectibles, and is refused unless SoraBeatRules accepts it. Lines are
 // keyed by events (FireDialogueTrigger). Chapter-one forms use SoraDojoRules.h.
-// The director ticks itself; the paused menu stops it.
+// World-facing play (travel, volumes, points, spawns, horses, carry, siege,
+// escort, pickups, the cinematic camera) lives in
+// Private/Game/SoraCampaignDirectorWorld.cpp. The director ticks itself; the
+// paused menu stops it.
 UCLASS(ClassGroup=(Sora))
 class SORAARENA_API USoraCampaignDirector : public UActorComponent
 {
@@ -56,7 +81,7 @@ public:
     bool HasSave() const { return Save != nullptr; }
     // Builds the chapter or arena, restores a valid checkpoint and starts its beat.
     void ResetRound();
-    // Destroys opponents and live shells so kernel practice can take the arena.
+    // Destroys opponents, horses and live shells so kernel practice can take the arena.
     void ClearEncounter();
     // After a completed chapter: the next chapter is saved, or the campaign is
     // liberated and the menu reopens (returns false).
@@ -75,9 +100,10 @@ public:
     // Chapter one only: pupils drop their windups; the hero drops the guard
     // and recovery lesson when the menu opens.
     void SuspendDojo(bool bIncludeHero);
-    // E: works the active beat at its anchor (an objective, a crank turn, a
+    // E: works the active beat at its point (an objective, a crank turn, a
     // pickup or delivery, a manufacturing stroke, a repair, a dialogue's
-    // interact trigger) or opens an explore cache.
+    // interact trigger); tacks up, mounts (from her right) or dismounts the
+    // horse; picks up a loose collectible; or opens an explore cache.
     void Interact(ASoraPlayerCharacter& Player);
     // Enter on a cinematic: skips it and starts the next beat now.
     void SkipCinematic();
@@ -113,32 +139,56 @@ public:
     FString ObjectiveText() const;
     FString ObjectiveTextEnglish() const;
     FString DojoLessonText(bool bEnglish) const;
+    // Unlocks, finds and restored sites for the HUD, oldest first.
+    const TArray<FSoraStoryNotice>& StoryNotices() const { return Notices; }
 
     // Beat state for the HUD and automation.
     const FSoraChapter* ActiveChapter() const;
     const FSoraBeat* ActiveBeatData() const;
+    const FSoraBeatSpace* ActiveSpace() const;
     int32 ActiveBeat() const { return BeatIndex; }
     int32 ActivePhase() const { return BeatPhase; }
     const SoraBeatRules::FProgress& Progress() const { return BeatState; }
-    // The active beat's task (an escort's route laid out by the world) and its progress.
     const SoraBeatRules::FTask& ActiveTask() const { return Task; }
     const SoraBeatRules::FTaskState& TaskProgress() const { return TaskState; }
     bool IsWeaponUnlocked(int32 WeaponId) const;
     bool IsStoryFlagSet(FName Flag) const;
     unsigned long long CollectedMask() const;
-    // Where the active beat's objective stands, when it has one in the world,
-    // and whether E works it there.
+    // Where the active beat's objective stands, and whether E works it there.
     bool ObjectiveAnchor(FVector& Location) const;
     bool AnchorTakesInteract() const;
     // Explore beats whose cache can be opened now, and where.
     TArray<int32> AvailableCaches() const;
     FVector CacheLocation(int32 Beat) const;
-    // Seconds of the running cinematic, and whether it opens a fresh chapter
-    // (the title card shows first).
+    // The chapter's collectibles still lying loose (its space's pickups), and where.
+    TArray<int32> LoosePickups() const;
+    FVector PickupLocation(int32 Pickup) const;
+    // Where the escorted party walks, and the zone the hero stands in
+    // (INDEX_NONE for the hub, -2 for none).
+    FVector PartyLocation() const;
+    int32 HeroZone() const;
+    // A guard's patrol route, for the AI lane's patrol behaviour.
+    const TArray<FVector2D>* GuardPatrol(const ASoraEnemy* Guard) const;
+    // Seconds of the running cinematic, whether it opens a fresh chapter (the
+    // title card shows first), and the camera it plays through.
     float CinematicElapsed() const;
     bool IsChapterOpening() const { return bChapterOpening; }
+    ACameraActor* CinematicCamera() const { return ShotCamera; }
     int32 LinesQueued() const { return Queue.Num(); }
     bool LinesStarted() const { return bLinesStarted; }
+    // The active beat's riding horse (ridden or waiting), its pack horses, how
+    // much of her tack is on, and whether the hero rides her.
+    ASoraHorse* Steed() const { return Horse; }
+    TArray<ASoraHorse*> PackHorses() const;
+    int32 TackDone() const { return TackSteps; }
+    bool IsMounted() const;
+    // A weapon acts from the saddle only in its mounted arc, and under a
+    // carried load only if the carry's loadout keeps it; a refusal raises a notice.
+    bool ArmsReady(int32 WeaponId, float AimYaw, bool bNotify);
+    // Whether the hero may hold a weapon at all in the saddle or under a load.
+    bool CanHold(int32 WeaponId, bool bNotify);
+    // The carried load's pace (1 when nothing is carried).
+    float CarryPace() const;
     // Automation: a valid schema-6 checkpoint at the start of Beat (or a later
     // Phase) of Chapter, reached through every earlier required beat with the
     // unlocks chapter select grants.
@@ -161,8 +211,13 @@ private:
     UPROPERTY() TObjectPtr<USoraSaveGame> Save;
     UPROPERTY() TArray<TObjectPtr<ASoraEnemy>> Enemies;
     UPROPERTY() TObjectPtr<ASoraBoss> BossActor;
+    UPROPERTY() TObjectPtr<ASoraHorse> Horse;
+    UPROPERTY() TArray<TObjectPtr<ASoraHorse>> Pack;
+    UPROPERTY() TObjectPtr<ACameraActor> ShotCamera;
     // The wave each spawned opponent belongs to; guards, duellists and bosses have none.
     TMap<const ASoraEnemy*, int32> EnemyWaves;
+    // A stealth guard's patrol route (an index into the beat's patrols).
+    TMap<const ASoraEnemy*, int32> GuardPatrols;
     TArray<FPendingSpawn> Pending;
     // Chapter progress and the unlocks and flags held when the chapter began.
     SoraBeatRules::FProgress BeatState{0u, 0u, 0u, 0u, 0u, false};
@@ -175,8 +230,6 @@ private:
     SoraBeatRules::FTaskState TaskState;
     // Sub-millisecond carry of the integer beat clock.
     float ClockCarryMs = 0.f;
-    // Where the beat's route (an escort, a ride, a stealth zone) began.
-    FVector RouteStart = FVector::ZeroVector;
     int32 Spawned = 0;
     int32 IdleMs = 0;
     bool bLinesStarted = false;
@@ -186,6 +239,14 @@ private:
     bool bDetected = false;
     float CinematicSeconds = 0.f;
     unsigned DojoLessonMask = 0u;
+    // Trigger volumes the hero has entered in the active beat; the horse's
+    // tack-up and its refusals; opponents already inside her fear radius.
+    TSet<int32> VolumesEntered;
+    int32 TackSteps = 0;
+    int32 TackRefused = 0;
+    TSet<const ASoraEnemy*> Frightening;
+    // The escorted party's progress last shown, so the kit knows they walk.
+    int32 LastEscortProgress = 0;
     // Dialogue: lines waiting, the head's remaining time, lines heard this
     // round, triggers already fired in it and when repeatable ones last played.
     TArray<int32> Queue;
@@ -195,6 +256,7 @@ private:
     TMap<int32, double> TriggerTimes;
     int32 PromptIndex = INDEX_NONE;
     float PromptRemaining = 0.f;
+    TArray<FSoraStoryNotice> Notices;
     // Training arena.
     int32 ArenaSitesMask = 0;
     bool bArenaComplete = false;
@@ -215,6 +277,8 @@ private:
     // releases and spawns due waves and completes the beat once its task is done.
     void Progressed(int32 PermilleBefore);
     void QueueWaves(unsigned Waves);
+    // Releases the volume and event waves an event names.
+    void ReleaseEventWaves(const FString& Event);
     void HandleFailure(SoraBeatRules::ERetry Outcome, const FString& Event);
     bool FailureOf(const FString& Event, SoraBeatRules::EFail& Failure) const;
     void StartLines();
@@ -225,6 +289,8 @@ private:
     void Enqueue(const TArray<int32>& Lines, bool bForce);
     void ShowPrompt(const FString& Event, int32 Beat);
     void Notify(const FString& Japanese, const FString& English, float Seconds);
+    void Tell(FSoraStoryNotice::EKind Kind, const FString& Japanese, const FString& English,
+        const FString& Detail = FString(), const FString& DetailEnglish = FString());
     // Who a beat puts on the field. The AI lane's archetypes
     // (Content/Data/enemies.json) and data-driven bosses (bosses.json) replace
     // these bodies at merge; until then every opponent is the prototype
@@ -240,10 +306,6 @@ private:
     void ClearOpponents();
     int32 LiveWaveOpponents() const;
     void CheckPhase();
-    // The point (TaskAnchor) of the active objective, or INDEX_NONE.
-    int32 ObjectivePoint() const;
-    FVector PointLocation(int32 Point) const;
-    FVector PartyLocation() const;
     bool HeroAtTask() const;
     bool Contested() const;
     bool Near(const FVector& Location, float Radius) const;
@@ -255,4 +317,33 @@ private:
     void ClearOfflineProjectiles();
     // Training arena rounds (not campaign).
     void ArenaInteract(ASoraPlayerCharacter& Player);
+
+    // World-facing play (SoraCampaignDirectorWorld.cpp).
+    // Where the active objective stands and whether E works it there.
+    bool ObjectivePoint(FVector& Location, bool& bInteract) const;
+    // Where an opponent of this slot enters the field: the beat's spawns, or
+    // on a road the next ones ahead of the hero.
+    FVector SpawnLocation(int32 Slot) const;
+    // The beat's place as it starts: a travel cut to its entry, its kit, its
+    // horse and its camera; and what it leaves behind when it ends.
+    void EnterBeatSpace(bool bResumed);
+    void LeaveBeatSpace();
+    void TickSpace(int32 DeltaMs);
+    void TickVolumes();
+    void TickHorses();
+    void TickSiege(int32 DeltaMs);
+    // E on a loose collectible within reach, or on the horse (tack-up, mount, dismount); true when used.
+    bool PickUp();
+    bool InteractSpace(ASoraPlayerCharacter& Player);
+    void Dismount();
+    void ClearHorses();
+    void ShowKit();
+    void ShowPickups();
+    // A carried load changed: the load in the hero's arms and the weapon he may hold.
+    void CarryChanged();
+    void StartCinematicCamera();
+    void UpdateCinematicCamera();
+    void EndCinematicCamera(float BlendSeconds);
+    // How far along its road the hero has come, permille of the way.
+    int32 RoadPermille() const;
 };

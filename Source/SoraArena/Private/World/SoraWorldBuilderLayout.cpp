@@ -1,37 +1,45 @@
 #include "SoraWorldBuilder.h"
+#include "SoraCatalog.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/PointLight.h"
 #include "Engine/World.h"
 
+// A chapter's space (FSoraSpace, scripts/unreal/campaign_space.py): the hub
+// arena when one of its places is the arena itself, a walled zone for every
+// other place and a corridor for every ride and escort
+// (SoraWorldBuilderLayoutZones.cpp), and the chapter's three production
+// sites where their beats restore them. Every floor is at z 0, so a point of
+// the space is a location on the ground.
 namespace
 {
-// The central road between the torii, clear of lantern posts (y 470), cover
-// (y 590 and beyond), the Lantern Ward terminal and every production site.
-const FVector RoadAnchors[] = {
-    FVector(-1650,220,0), FVector(-1250,-220,0), FVector(-850,220,0), FVector(-400,-220,0), FVector(0,220,0),
-    FVector(400,-220,0), FVector(850,220,0), FVector(1250,-220,0), FVector(1650,220,0), FVector(2050,-220,0)};
-// Gaps between the building rows of every map, away from sites and cover.
-const FVector CacheAnchors[] = {
-    FVector(-1500,1100,0), FVector(500,-1100,0), FVector(1500,1100,0), FVector(-500,-1100,0)};
+// The arena map whose dressing a zone's style borrows.
+int32 ZoneStyleMap(FName Style)
+{
+    return Style==TEXT("ward")?1:Style==TEXT("foundry")?2:Style==TEXT("citadel")?3:0;
+}
 }
 
-FVector ASoraWorldBuilder::BeatAnchor(int32 Beat,int32 Site) const
+void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
 {
-    if(NodePositions.IsValidIndex(Site)) return NodePositions[Site];
-    // Three steps per beat: consecutive objectives sit about 12 m apart.
-    return RoadAnchors[(FMath::Max(Beat,0)*3)%UE_ARRAY_COUNT(RoadAnchors)];
-}
-FVector ASoraWorldBuilder::TaskAnchor(int32 Beat,int32 Site,int32 Point) const
-{
-    if(Point<=0) return BeatAnchor(Beat,Site);
-    // Later points step two road anchors (about 8 m) at a time from the beat's own.
-    const int32 Count=UE_ARRAY_COUNT(RoadAnchors);
-    return RoadAnchors[((FMath::Max(Beat,0)*3)+Point*2+1)%Count];
-}
-FVector ASoraWorldBuilder::CacheAnchor(int32 Beat) const
-{
-    return CacheAnchors[FMath::Max(Beat,0)%UE_ARRAY_COUNT(CacheAnchors)];
+    const FSoraSpace& Space=Chapter.Space;
+    // The hub arena brings its own light; a chapter without one is lit as its map.
+    if(Space.Hub!=INDEX_NONE) BuildArena(Space.Hub,false);
+    else Lighting(Chapter.Map);
+    for(int32 Index=0;Index<Space.Zones.Num();++Index) BuildZone(Space.Zones[Index],Index);
+    NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();
+    const FLinearColor Accent=FSoraCatalog::Get().Map(Chapter.Map).Accent;
+    for(int32 Site=0;Site<Space.Sites.Num();++Site)
+    {
+        const FVector P=Floor(Space.Sites[Site]);
+        const int32 Zone=Space.ZoneAt(P);
+        NodePositions.Add(P);
+        SiteStructure(Site,P,Chapter.Sites[Site].Kind,Space.Zones.IsValidIndex(Zone)?ZoneStyleMap(Space.Zones[Zone].Style):Chapter.Map,Accent);
+    }
+    // The hero stands a capsule's height above the floor at the first beat's entry.
+    bCampaignSpace=true;
+    CampaignStart=Floor(Space.Start,120.f);
+    CampaignStartYaw=Space.StartYaw;
 }
 void ASoraWorldBuilder::ShowObjective(const FVector* Location)
 {
@@ -42,12 +50,12 @@ void ASoraWorldBuilder::ShowObjective(const FVector* Location)
     }
     if(!ObjectiveMarker)
     {
-        // A slim gold beacon: visible across the arena, never collision.
+        // A slim gold beacon: visible across the zone, never collision.
         ObjectiveMarker=Shape(this,RootComponent,TEXT("ObjectiveMarker"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
             FVector::ZeroVector,FVector(.22f,.22f,3.2f),FLinearColor(.94f,.65f,.21f));
         ObjectiveMarker->SetCastShadow(false);
     }
-    ObjectiveMarker->SetRelativeLocation(*Location+FVector(0,0,160));
+    ObjectiveMarker->SetRelativeLocation(FVector(Location->X,Location->Y,160.f));
     ObjectiveMarker->SetVisibility(true);
 }
 void ASoraWorldBuilder::ShowCaches(const TArray<FVector>& Locations)

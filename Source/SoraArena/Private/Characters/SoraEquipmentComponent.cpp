@@ -31,6 +31,23 @@ bool CampaignUnlocked(const ASoraPlayerCharacter& Hero,int32 WeaponId)
     G->NoticeTime=4.f;
     return false;
 }
+USoraCampaignDirector* HeroCampaign(const ASoraPlayerCharacter& Hero)
+{
+    auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(&Hero));
+    return G&&G->bCampaign?G->Campaign():nullptr;
+}
+// In the saddle a weapon acts only in its mounted arc, and under a carried
+// load only if the load leaves it in hand; a refusal raises a notice.
+bool ArmsReady(const ASoraPlayerCharacter& Hero,int32 WeaponId)
+{
+    USoraCampaignDirector* Campaign=HeroCampaign(Hero);
+    return !Campaign||Campaign->ArmsReady(WeaponId,Hero.GetControlRotation().Yaw,true);
+}
+bool CanHold(const ASoraPlayerCharacter& Hero,int32 WeaponId)
+{
+    USoraCampaignDirector* Campaign=HeroCampaign(Hero);
+    return !Campaign||Campaign->CanHold(WeaponId,true);
+}
 }
 
 USoraEquipmentComponent::USoraEquipmentComponent()
@@ -72,7 +89,10 @@ float USoraEquipmentComponent::StrikeWindupProgress() const
 }
 float USoraEquipmentComponent::MoveScale(bool bSprinting) const
 {
-    return bCommittedStrike?.35f:bHistoricalRecovery?.65f:bBowDrawing?.55f:bGuardHeld?.50f:bSprinting?1.35f:1.f;
+    // A carried load slows every pace and allows no sprint.
+    const USoraCampaignDirector* Campaign=HeroCampaign(*Hero());
+    const float Load=Campaign?Campaign->CarryPace():1.f;
+    return (bCommittedStrike?.35f:bHistoricalRecovery?.65f:bBowDrawing?.55f:bGuardHeld?.50f:bSprinting&&Load>=1.f?1.35f:1.f)*Load;
 }
 void USoraEquipmentComponent::TickGuard(float Dt)
 {
@@ -92,6 +112,7 @@ void USoraEquipmentComponent::TriggerDown()
     ASoraPlayerCharacter* H=Hero();
     const int32 WeaponId=H->WeaponId;
     const auto& W=FSoraCatalog::Get().Weapon(WeaponId);
+    if(!ArmsReady(*H,WeaponId)) return;
     if(W.Kind==TEXT("bow"))
     {
         if(!bBowDrawing&&!bReloading&&!H->IsSprinting()&&Ammo>0&&GetWorld()->GetTimeSeconds()>=NextShot)
@@ -146,6 +167,7 @@ void USoraEquipmentComponent::Melee()
     if(!H->CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading||bCommittedStrike||bBowDrawing||
         (bGuardHeld&&!H->IsDojoTraining())) return;
     const int32 MeleeId=FSoraCatalog::Get().Weapon(H->WeaponId).Kind==TEXT("melee")?H->WeaponId:FSoraCatalog::Get().Class(H->ClassId).Weapons[0];
+    if(!ArmsReady(*H,MeleeId)) return;
     const auto& W=FSoraCatalog::Get().Weapon(MeleeId);
     const UCameraComponent* Camera=H->GetCamera();
     USoraGameEvents* Events=USoraGameEvents::Get(this);
@@ -262,7 +284,7 @@ void USoraEquipmentComponent::ReleaseBow()
     ASoraPlayerCharacter* H=Hero();
     bBowDrawing=false;
     if(!H->CanPlay()||H->WeaponId!=18||bReloading||H->IsSprinting()||Ammo<=0||
-        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<.65f) return;
+        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<.65f||!ArmsReady(*H,18)) return;
     const auto& W=FSoraCatalog::Get().Weapon(18);
     const FVector Direction=H->GetCamera()->GetForwardVector();
     const FVector Origin=H->GetCamera()->GetComponentLocation()+Direction*65.f;
@@ -302,7 +324,8 @@ bool USoraEquipmentComponent::EquipClassSlot(int32 Slot)
     if(bReloading||bCommittedStrike||
         (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
         (H->IsDojoTraining()&&Slot!=0)||
-        !CampaignUnlocked(*H,FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot])) return false;
+        !CampaignUnlocked(*H,FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot])||
+        !CanHold(*H,FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot])) return false;
     bBowDrawing=false; bFireHeld=false; bGuardHeld=false;
     AmmoByWeapon[H->WeaponId]=Ammo; H->WeaponId=FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot];
     Ammo=AmmoByWeapon[H->WeaponId]; NextShot=GetWorld()->GetTimeSeconds()+.25f; H->RebuildWeapon();
@@ -313,7 +336,7 @@ bool USoraEquipmentComponent::EquipCampaignWeapon(int32 NewWeaponId)
     ASoraPlayerCharacter* H=Hero();
     if(bReloading||bCommittedStrike||
         (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
-        !CampaignUnlocked(*H,NewWeaponId)) return false;
+        !CampaignUnlocked(*H,NewWeaponId)||!CanHold(*H,NewWeaponId)) return false;
     bBowDrawing=false; bFireHeld=false; bGuardHeld=false;
     AmmoByWeapon[H->WeaponId]=Ammo;
     H->WeaponId=NewWeaponId; Ammo=AmmoByWeapon[H->WeaponId];

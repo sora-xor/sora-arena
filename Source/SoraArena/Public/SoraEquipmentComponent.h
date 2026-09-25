@@ -8,8 +8,10 @@ class ASoraPlayerCharacter;
 // per weapon, reloads, cooldowns, gunfire and shells, the yumi draw, swept and
 // committed blade strikes, and the blade guard. The held weapon's ID lives on
 // the character so its visual and the HUD can read it. In the campaign, a
-// weapon the save has not unlocked is refused with a notice. Kernel practice
-// does not use this component; its counters come from kernel snapshots.
+// weapon the save has not unlocked is refused with a notice; from the saddle a
+// weapon acts only in its mounted arc (SoraMountRules.h), and a carried load
+// slows the hero and leaves at most the katana in hand. Kernel practice does
+// not use this component; its counters come from kernel snapshots.
 UCLASS(ClassGroup=(Sora))
 class SORAARENA_API USoraEquipmentComponent : public UActorComponent
 {

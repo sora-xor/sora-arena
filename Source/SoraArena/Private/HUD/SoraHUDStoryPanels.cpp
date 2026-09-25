@@ -2,12 +2,208 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraGameMode.h"
+#include "SoraHorse.h"
 #include "SoraHUD.h"
 #include "SoraPlayerCharacter.h"
+#include "SoraWorldBuilder.h"
 #include "Engine/Texture2D.h"
 
 namespace
 {
+// One row of the beat tracker: a Japanese label with its English beneath,
+// and a bar when Fraction is not negative.
+struct FTrackerRow
+{
+    FString Japanese;
+    FString English;
+    float Fraction = -1.f;
+    FLinearColor Color = FLinearColor::White;
+};
+const TCHAR* const GaitJapanese[] = {TEXT("停止"), TEXT("常歩"), TEXT("速歩"), TEXT("駈歩"), TEXT("襲歩")};
+const TCHAR* const GaitEnglish[] = {TEXT("halt"), TEXT("walk"), TEXT("trot"), TEXT("canter"), TEXT("gallop")};
+FString HorseName(FName Horse, bool bEnglish)
+{
+    return Horse==TEXT("kurimaru")?(bEnglish?TEXT("Kurimaru"):TEXT("栗丸")):Horse==TEXT("arashi")?(bEnglish?TEXT("Arashi"):TEXT("嵐"))
+        :(bEnglish?TEXT("Pack horse"):TEXT("荷駄馬"));
+}
+FString TackName(FName Part, bool bEnglish)
+{
+    return Part==TEXT("kura")?(bEnglish?TEXT("saddle (kura)"):TEXT("鞍")):Part==TEXT("haruobi")?(bEnglish?TEXT("girth (haruobi)"):TEXT("腹帯"))
+        :Part==TEXT("abumi")?(bEnglish?TEXT("stirrups (abumi)"):TEXT("鐙")):(bEnglish?TEXT("bit and reins (kutsuwa, tazuna)"):TEXT("轡と手綱"));
+}
+// The active beat: where it stands in the chapter, its task's progress and
+// what that task needs now, and the horse of a ride.
+TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
+{
+    TArray<FTrackerRow> Rows;
+    const ASoraGameMode& G=Frame.Mode;
+    const USoraCampaignDirector* Campaign=G.Campaign();
+    const FSoraBeat* Beat=Campaign->ActiveBeatData();
+    const FSoraChapter* Chapter=Campaign->ActiveChapter();
+    const SoraBeatRules::FTask& Task=Campaign->ActiveTask();
+    const SoraBeatRules::FTaskState& State=Campaign->TaskProgress();
+    const float Fraction=SoraBeatRules::ProgressPermille(State,Task)/1000.f;
+    int32 Required=0,Number=0;
+    for(int32 Index=0;Index<Chapter->Rules.Num();++Index)
+        if(!Chapter->Rules[Index].Optional) { ++Required; if(Index<=Campaign->ActiveBeat()) ++Number; }
+    Rows.Add({FString::Printf(TEXT("第%d場  %s"),Number,*Beat->Title),FString::Printf(TEXT("Beat %d of %d: %s"),Number,Required,*Beat->TitleEnglish),-1.f,Frame.Ivory});
+    using SoraBeatRules::EGoal;
+    switch(Task.Goal)
+    {
+    case EGoal::WavesCleared:
+        Rows.Add({FString::Printf(TEXT("侵略者を退ける  %d / %d"),SoraBeatRules::Defeated(State,Task),SoraBeatRules::TotalLethal(Task)),
+            FString::Printf(TEXT("Drive off the invaders: %d of %d"),SoraBeatRules::Defeated(State,Task),SoraBeatRules::TotalLethal(Task)),Fraction,Frame.Gold});
+        break;
+    case EGoal::Objectives:
+        Rows.Add({FString::Printf(TEXT("目標  %d / %d"),State.Done,Task.Count),FString::Printf(TEXT("Objectives: %d of %d"),State.Done,Task.Count),Fraction,Frame.Gold});
+        break;
+    case EGoal::Survive:
+        Rows.Add({FString::Printf(TEXT("持ちこたえる  残り %d 秒"),FMath::DivideAndRoundUp(Task.DurationMs-State.Progress,1000)),
+            FString::Printf(TEXT("Hold out: %d s left"),FMath::DivideAndRoundUp(Task.DurationMs-State.Progress,1000)),Fraction,Frame.Gold});
+        break;
+    case EGoal::Points:
+        Rows.Add({FString::Printf(TEXT("一本  %d 対 %d"),State.Done,State.RivalPoints),FString::Printf(TEXT("Points: %d to %d"),State.Done,State.RivalPoints),-1.f,Frame.Gold});
+        break;
+    case EGoal::Lessons:
+        Rows.Add({TEXT("型と立合い"),TEXT("Forms and bouts"),Fraction,Frame.Gold});
+        break;
+    case EGoal::OpponentDown:
+        Rows.Add({FString::Printf(TEXT("相手を倒す  第%d段 / %d"),State.Phase+1,Task.PhaseCount),
+            FString::Printf(TEXT("Defeat your opponent: phase %d of %d"),State.Phase+1,Task.PhaseCount),1.f-Fraction,Frame.Gold});
+        break;
+    case EGoal::Exit:
+        Rows.Add({FString::Printf(TEXT("%s  %d%%"),Beat->Is(SoraBeatRules::EType::HorsebackRide)?TEXT("目的地まで"):TEXT("出口まで"),FMath::RoundToInt32(Fraction*100.f)),
+            FString::Printf(TEXT("%d%% of the way"),FMath::RoundToInt32(Fraction*100.f)),Fraction,Frame.Gold});
+        break;
+    case EGoal::Hold:
+        Rows.Add({FString::Printf(TEXT("持ちこたえる  %d / %d 秒"),State.Progress/1000,FMath::DivideAndRoundUp(Task.DurationMs,1000)),
+            FString::Printf(TEXT("Hold the ground: %d of %d s"),State.Progress/1000,FMath::DivideAndRoundUp(Task.DurationMs,1000)),Fraction,Frame.Teal});
+        break;
+    case EGoal::Turns:
+        Rows.Add({FString::Printf(TEXT("回す  %d / %d"),State.Done,Task.Count),FString::Printf(TEXT("Turn the crank: %d of %d"),State.Done,Task.Count),Fraction,Frame.Teal});
+        if(SoraBeatRules::CrankSlipping(State,Task))
+            Rows.Add({TEXT("緩んでいる。一定の調子で回し続けろ"),TEXT("Slipping back: keep a steady rhythm"),-1.f,FLinearColor(.9f,.35f,.2f)});
+        break;
+    case EGoal::Escort:
+    {
+        Rows.Add({FString::Printf(TEXT("護衛  %d%%"),FMath::RoundToInt32(Fraction*100.f)),FString::Printf(TEXT("Escort: %d%% of the way"),FMath::RoundToInt32(Fraction*100.f)),Fraction,Frame.Teal});
+        const ASoraPlayerCharacter* Hero=G.Hero();
+        if(Hero&&FVector::Dist2D(Hero->GetActorLocation(),Campaign->PartyLocation())>Task.WaitCm)
+            Rows.Add({TEXT("一行が待っている。そばへ戻れ"),TEXT("The party waits for you: stay close"),-1.f,FLinearColor(.9f,.6f,.2f)});
+        break;
+    }
+    case EGoal::Deliveries:
+        Rows.Add({FString::Printf(TEXT("運ぶ  %d / %d"),State.Done,Task.Count),FString::Printf(TEXT("Delivered: %d of %d"),State.Done,Task.Count),Fraction,Frame.Teal});
+        if(State.Carrying)
+            Rows.Add({TEXT("荷を抱えている：足が遅く、刀は片手"),TEXT("Carrying a load: slower, katana one-handed at most"),-1.f,Frame.Muted});
+        break;
+    case EGoal::Steps:
+    {
+        Rows.Add({FString::Printf(TEXT("工程  %d / %d"),FMath::Min(State.Step+1,Task.StepCount),Task.StepCount),
+            FString::Printf(TEXT("Step %d of %d"),FMath::Min(State.Step+1,Task.StepCount),Task.StepCount),Fraction,Frame.Teal});
+        for(int32 Step=0;Step<Beat->StepKinds.Num();++Step)
+            if(const FSoraLabel* Label=FSoraCatalog::Get().StepLabels.Find(Beat->StepKinds[Step]))
+                Rows.Add({FString::Printf(TEXT("%s %s ×%d"),Step<State.Step?TEXT("済"):Step==State.Step?TEXT("▶"):TEXT("・"),*Label->Japanese,Task.Steps[Step].Count),
+                    FString::Printf(TEXT("%s %s x%d"),Step<State.Step?TEXT("done"):Step==State.Step?TEXT("now"):TEXT("next"),*Label->English,Task.Steps[Step].Count),
+                    -1.f,Step<State.Step?Frame.Teal:Step==State.Step?Frame.Gold:Frame.Muted});
+        break;
+    }
+    default:
+        break;
+    }
+    // Defended targets and how much of each still stands.
+    for(int32 Target=0;Target<Task.TargetCount&&Target<Beat->Targets.Num();++Target)
+        if(const FSoraLabel* Label=FSoraCatalog::Get().TargetLabels.Find(Beat->Targets[Target]))
+        {
+            const float Health=Task.TargetHp[Target]>0?static_cast<float>(State.TargetHp[Target])/Task.TargetHp[Target]:0.f;
+            Rows.Add({Label->Japanese,Label->English,Health,FMath::Lerp(FLinearColor(.78f,.12f,.08f),Frame.Teal,Health)});
+        }
+    // A hold fills only while the hero stands on the ground he holds.
+    const ASoraPlayerCharacter* Holder=G.Hero();
+    if(Task.Goal==EGoal::Hold&&Holder&&State.Progress<Task.DurationMs&&
+        FVector::Dist2D(ASoraWorldBuilder::Floor(Beat->Space.Anchor),Holder->GetActorLocation())>420.f)
+        Rows.Add({TEXT("持ち場を離れている"),TEXT("You have left the ground you hold"),-1.f,FLinearColor(.9f,.6f,.2f)});
+    // The horse of a ride: her gait, pace and wind, and what E does with her.
+    if(const ASoraHorse* Horse=Campaign->Steed())
+    {
+        const int32 Gait=SoraMountRules::Index(Horse->Gait());
+        const FName Name=Beat->Space.bMount?Beat->Space.Mount.Horse:FName(TEXT("kurimaru"));
+        Rows.Add({FString::Printf(TEXT("%s  %s  %.1f m/s"),*HorseName(Name,false),GaitJapanese[Gait],Horse->SpeedCmS()/100.f),
+            FString::Printf(TEXT("%s: %s, %.1f m/s"),*HorseName(Name,true),GaitEnglish[Gait],Horse->SpeedCmS()/100.f),
+            Horse->StaminaPoints()/100.f,Horse->IsWinded()?FLinearColor(.85f,.3f,.15f):Frame.Gold});
+        if(Horse->IsSpooked()) Rows.Add({TEXT("驚いている。手綱を引かず落ち着かせよ"),TEXT("Spooked: ease the reins and let her settle"),-1.f,FLinearColor(.9f,.6f,.2f)});
+        if(!Campaign->IsMounted()&&Beat->Space.bMount)
+        {
+            const TArray<FSoraTackStep>& Tack=Beat->Space.Mount.Tack;
+            if(Campaign->TackDone()<Tack.Num())
+                Rows.Add({TEXT("E  馬具を付ける：")+TackName(Tack[Campaign->TackDone()].Part,false),
+                    TEXT("E  Tack up: ")+TackName(Tack[Campaign->TackDone()].Part,true),-1.f,Frame.Gold});
+            else Rows.Add({TEXT("E  右側から乗る"),TEXT("E  Mount from her right side"),-1.f,Frame.Gold});
+        }
+        else if(Campaign->IsMounted())
+        {
+            Rows.Add({TEXT("前進で歩ませ、Shift で促し、後退で手綱を引く"),TEXT("Forward to walk on, Shift to urge, back to rein in"),-1.f,Frame.Muted});
+            if(Beat->Space.bMount&&Beat->Space.Mount.bDismount) Rows.Add({TEXT("E  降りる（右側へ）"),TEXT("E  Dismount (to her right)"),-1.f,Frame.Muted});
+        }
+    }
+    return Rows;
+}
+// The beat tracker, top right under the bar.
+float DrawBeatTracker(const FSoraHUDFrame& Frame)
+{
+    ASoraHUD& HUD=Frame.HUD;
+    const ASoraGameMode& G=Frame.Mode;
+    const USoraCampaignDirector* Campaign=G.Campaign();
+    const float W=Frame.W,S=Frame.S,X=W-455*S,Width=435*S,Top=87*S;
+    if(!G.bCampaign||G.bDeterministicPractice||G.bChapterComplete||!Campaign->ActiveBeatData()||!Campaign->ActiveChapter()) return Top;
+    const TArray<FTrackerRow> Rows=TrackerRows(Frame);
+    const bool bEnglish=G.bEnglishSubtitles;
+    float Height=10*S;
+    for(const FTrackerRow& Row:Rows) Height+=24*S+(bEnglish?18*S:0.f)+(Row.Fraction>=0.f?9*S:0.f);
+    HUD.Panel(X,Top,Width,Height,FLinearColor(.013f,.027f,.033f,.8f));
+    float Y=Top+6*S;
+    for(const FTrackerRow& Row:Rows)
+    {
+        HUD.Label(Row.Japanese,X+12*S,Y,.44*S,Row.Color);
+        Y+=24*S;
+        if(bEnglish) { HUD.Label(Row.English,X+12*S,Y-2*S,.34*S,Frame.Muted); Y+=18*S; }
+        if(Row.Fraction>=0.f)
+        {
+            HUD.Panel(X+12*S,Y,Width-24*S,4*S,FLinearColor(.12f,.16f,.18f));
+            HUD.Panel(X+12*S,Y,(Width-24*S)*FMath::Clamp(Row.Fraction,0.f,1.f),4*S,Row.Color);
+            Y+=9*S;
+        }
+    }
+    return Top+Height;
+}
+// Unlocks, finds and restored sites, newest at the bottom, under the tracker.
+void DrawStoryNotices(const FSoraHUDFrame& Frame,float Top)
+{
+    ASoraHUD& HUD=Frame.HUD;
+    const ASoraGameMode& G=Frame.Mode;
+    const float W=Frame.W,S=Frame.S,X=W-455*S,Width=435*S;
+    if(!G.bCampaign||G.bDeterministicPractice) return;
+    float Y=Top+8*S;
+    for(const FSoraStoryNotice& Notice:G.Campaign()->StoryNotices())
+    {
+        const FLinearColor Accent=Notice.Kind==FSoraStoryNotice::EKind::Weapon?Frame.Gold
+            :Notice.Kind==FSoraStoryNotice::EKind::Collectible?Frame.Ivory:Frame.Teal;
+        const bool bDetail=!Notice.Detail.IsEmpty();
+        const float Height=12*S+26*S+(G.bEnglishSubtitles?20*S:0.f)+(bDetail?40*S+(G.bEnglishSubtitles?36*S:0.f):0.f);
+        const float Fade=FMath::Clamp(Notice.Remaining,0.f,1.f);
+        HUD.Panel(X,Y,Width,Height,FLinearColor(.015f,.035f,.045f,.9f*Fade));
+        HUD.Panel(X,Y,4*S,Height,Accent);
+        float Line=Y+6*S;
+        HUD.Label(Notice.Japanese,X+14*S,Line,.48*S,Accent); Line+=26*S;
+        if(G.bEnglishSubtitles) { HUD.Label(Notice.English,X+14*S,Line-2*S,.36*S,Frame.Muted); Line+=20*S; }
+        if(bDetail)
+        {
+            Line+=HUD.WrappedLabel(Notice.Detail,X+14*S,Line,.36*S,Frame.Ivory,Width-28*S,20*S,2)*20*S;
+            if(G.bEnglishSubtitles) HUD.WrappedLabel(Notice.DetailEnglish,X+14*S,Line,.32*S,Frame.Muted,Width-28*S,18*S,2);
+        }
+        Y+=Height+6*S;
+    }
+}
 // A line with its speaker: Japanese first, English beneath when enabled.
 void DrawLine(const FSoraHUDFrame& Frame,const FSoraDialogueCue& Line,float Top)
 {
@@ -96,12 +292,21 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
             if(Screen.X>0&&Screen.X<W&&Screen.Y>170*S&&Screen.Y<H-120*S)
                 HUD.Label(FString::Printf(TEXT("目標 / %dm"),FMath::RoundToInt32(Metres)),Screen.X-60*S,Screen.Y,.42*S,Gold);
         }
-        if(Campaign->AnchorTakesInteract()&&Metres<2.6f) HUD.Label(TEXT("E  作業する"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+        if(Campaign->AnchorTakesInteract()&&Metres<2.6f)
+            HUD.Label(G->bEnglishSubtitles?TEXT("E  作業する   Work"):TEXT("E  作業する"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
     }
     if(Hero&&G->bCampaign&&!G->bDeterministicPractice)
+    {
         for(const int32 Cache:Campaign->AvailableCaches())
             if(FVector::Dist2D(Campaign->CacheLocation(Cache),Hero->GetActorLocation())<260.f)
-                HUD.Label(TEXT("E  調べる"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+                HUD.Label(G->bEnglishSubtitles?TEXT("E  調べる   Search"):TEXT("E  調べる"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+        // A loose collectible within reach.
+        for(const int32 Pickup:Campaign->LoosePickups())
+            if(FVector::Dist2D(Campaign->PickupLocation(Pickup),Hero->GetActorLocation())<260.f)
+                HUD.Label(G->bEnglishSubtitles?TEXT("E  拾う   Pick up"):TEXT("E  拾う"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+    }
+    // The beat tracker, and story notices beneath it.
+    DrawStoryNotices(Frame,DrawBeatTracker(Frame));
     // Story lines and notices share the lower third; play and objective
     // timers continue beneath a line.
     const auto* Cue=Campaign->CurrentDialogueCue();
