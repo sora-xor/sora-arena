@@ -311,7 +311,8 @@ private:
     bool Near(const FVector& Location, float Radius) const;
     void ApplyLoadout();
     void BroadcastBeat(bool bStarted, bool bResumed);
-    void Telemetry(const TCHAR* Event) const;
+    // A telemetry row for the active beat, or for Beat (an optional beat completed beside it).
+    void Telemetry(const TCHAR* Event, int32 Beat = INDEX_NONE) const;
     void SaveCheckpoint();
     void ClearCheckpoint();
     void ClearOfflineProjectiles();

@@ -400,6 +400,7 @@ void USoraCampaignDirector::CompleteOptional(int32 Index)
         Events->OnBeatCompleted.Broadcast(Event);
     }
     UpdateObjective();
+    Telemetry(TEXT("complete"),Index);
     // The find is kept at once; the beat's completion reaches the next checkpoint.
     SaveProgress();
 }
@@ -1336,19 +1337,22 @@ void USoraCampaignDirector::BroadcastBeat(bool bStarted,bool bResumed)
     Event.ChapterId=ChapterId; Event.BeatIndex=BeatIndex; Event.BeatId=Beat->Id; Event.bResumed=bResumed; Event.Phase=BeatPhase;
     (bStarted?Events->OnBeatStarted:Events->OnBeatCompleted).Broadcast(Event);
 }
-void USoraCampaignDirector::Telemetry(const TCHAR* Event) const
+void USoraCampaignDirector::Telemetry(const TCHAR* Event,int32 Beat) const
 {
     // Per-beat timestamps and task progress for pacing playtests (bible §10),
-    // one JSON object per line.
+    // one JSON object per line. A cache opened beside the active beat writes
+    // its own optional beat's row, complete at once.
     const ASoraGameMode& M=Mode();
     const FSoraChapter* Chapter=ActiveChapter();
     if(!Chapter) return;
-    const FString BeatId=Chapter->Beats.IsValidIndex(BeatIndex)?Chapter->Beats[BeatIndex].Id:FString();
+    const bool bActive=Beat==INDEX_NONE||Beat==BeatIndex;
+    if(bActive) Beat=BeatIndex;
+    const FString BeatId=Chapter->Beats.IsValidIndex(Beat)?Chapter->Beats[Beat].Id:FString();
     const FString Line=FString::Printf(TEXT("{\"utc\":\"%s\",\"slot\":\"%s\",\"chapter\":\"%s\",\"beat\":\"%s\",\"event\":\"%s\",\"phase\":%d,")
         TEXT("\"beat_ms\":%d,\"progress_permille\":%d,\"done\":%d,\"losses\":%d,\"round_s\":%.2f,\"world_s\":%.2f}\n"),
-        *FDateTime::UtcNow().ToIso8601(),*M.SaveSlotName,*Chapter->Id,*BeatId,Event,BeatPhase,
-        TaskState.ElapsedMs,SoraBeatRules::ProgressPermille(TaskState,Task),TaskState.Done,TaskState.Losses,
-        M.RoundTime,GetWorld()?GetWorld()->GetTimeSeconds():0.0);
+        *FDateTime::UtcNow().ToIso8601(),*M.SaveSlotName,*Chapter->Id,*BeatId,Event,bActive?BeatPhase:0,
+        bActive?TaskState.ElapsedMs:0,bActive?SoraBeatRules::ProgressPermille(TaskState,Task):SoraBeatRules::Permille,
+        bActive?TaskState.Done:1,bActive?TaskState.Losses:0,M.RoundTime,GetWorld()?GetWorld()->GetTimeSeconds():0.0);
     FFileHelper::SaveStringToFile(Line,*(FPaths::ProjectSavedDir()/TEXT("Telemetry/campaign_beats.jsonl")),
         FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM,&IFileManager::Get(),FILEWRITE_Append);
 }
