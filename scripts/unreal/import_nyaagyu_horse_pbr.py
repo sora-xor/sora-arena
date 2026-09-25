@@ -1,6 +1,6 @@
-"""Import the separate UV/PBR horse study into the pinned UE 5.8.2 editor.
+"""Import the separate UV/PBR horse study into the pinned UE editor.
 
-Run after opening the project in UE 5.8.2:
+Run after opening the project in the pinned UE:
   UnrealEditor-Cmd SoraArena.uproject -ExecutePythonScript=scripts/unreal/import_nyaagyu_horse_pbr.py
 
 This never replaces the original horse review mesh or changes its geometry.
@@ -12,13 +12,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Nyaagyu horse PBR import requires Unreal Engine 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Nyaagyu horse PBR import")
 
 root = Path(unreal.Paths.project_dir()).resolve()
 horse = root / "Content/SourceArt/Horses/Nyaagyu"

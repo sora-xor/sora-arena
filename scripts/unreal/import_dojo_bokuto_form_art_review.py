@@ -1,4 +1,4 @@
-"""Import the source-only scanned-oak bokuto form into UE 5.8.2 ArtReview.
+"""Import the source-only scanned-oak bokuto form into pinned-UE ArtReview.
 
 Run the independent Blender source/FBX validator first. This script creates
 only /Game/Generated/ArtReview/DojoBokutoForm assets and never replaces the
@@ -11,11 +11,11 @@ from collections import Counter
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-ENGINE_VERSION = "5.8.2"
 DESTINATION = "/Game/Generated/ArtReview/DojoBokutoForm"
 MESH_NAME = "SM_Nyaagyu_BokutoForm"
 SURFACES = {
@@ -24,9 +24,10 @@ SURFACES = {
     "M_Bokuto_DarkLeatherTsuba": ("Leather", (.27, .20, .15), 1.07),
 }
 
-engine = unreal.SystemLibrary.get_engine_version()
-if not engine.startswith(ENGINE_VERSION + "-"):
-    raise RuntimeError(f"Bokuto ArtReview requires pinned UE {ENGINE_VERSION}; got {engine}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Bokuto ArtReview")
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Weapons/DojoBokutoForm"
 leather_source = root / "Content/SourceArt/Weapons/NyaagyuYumi"

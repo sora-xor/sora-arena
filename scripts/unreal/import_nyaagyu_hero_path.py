@@ -1,4 +1,4 @@
-"""Standalone UE 5.8.2 import of the six-metre Estate hero path insert.
+"""Standalone pinned-UE import of the six-metre Estate hero path insert.
 
 Run from the pinned editor:
   UnrealEditor-Cmd SoraArena.uproject \
@@ -13,13 +13,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Nyaagyu hero path requires pinned Unreal 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Nyaagyu hero path")
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/NyaagyuHeroPath"
 record = json.loads((source / "manifest.json").read_text())

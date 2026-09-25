@@ -1,4 +1,4 @@
-"""Strict UE 5.8.2, isolated Fern 02 material/mesh art review import.
+"""Strict pinned-UE, isolated Fern 02 material/mesh art review import.
 
 Assets are written exclusively under /Game/Generated/ArtReview/Fern02.
 Nothing is placed in a map or added to gameplay collision/WorldBuilder.
@@ -9,13 +9,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Fern 02 art review requires pinned Unreal 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Fern 02 art review")
 
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/PolyHaven/Fern02"

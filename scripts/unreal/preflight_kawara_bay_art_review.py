@@ -2,7 +2,7 @@
 """Verify the source-only kawara bay and optionally import it into ArtReview.
 
 The --run path is deliberately gated. It never cooks or edits a playable map.
-UE 5.8.3 is diagnostic-only and must run in a separate Git worktree.
+It runs only with the exact engine pinned in scripts/toolchain/versions.json.
 """
 
 from __future__ import annotations
@@ -15,6 +15,9 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import ENGINE_VERSION, require_engine_root  # noqa: E402
 
 
 SOURCE_REL = Path("Content/SourceArt/Environment/NyaagyuKawaraBay")
@@ -89,18 +92,14 @@ def check_optional_ibushi(project: Path) -> bool:
     return True
 
 
-def editor_binary(engine_root: Path) -> tuple[Path, str]:
-    version_file = engine_root / "Engine/Build/Build.version"
-    require(version_file.is_file(), f"Engine version file missing: {version_file}")
-    build = json.loads(version_file.read_text(encoding="utf-8"))
-    version = ".".join(str(build[field]) for field in
-                       ("MajorVersion", "MinorVersion", "PatchVersion"))
+def editor_binary(engine_root: Path) -> Path:
+    require_engine_root(engine_root)
     relative = ("Engine/Binaries/Mac/UnrealEditor-Cmd" if sys.platform == "darwin" else
                 "Engine/Binaries/Win64/UnrealEditor-Cmd.exe" if sys.platform == "win32" else
                 "Engine/Binaries/Linux/UnrealEditor-Cmd")
     editor = engine_root / relative
     require(editor.is_file(), f"Unreal Editor command binary missing: {editor}")
-    return editor, version
+    return editor
 
 
 def active_heavy_builds() -> list[str]:
@@ -121,10 +120,8 @@ def main() -> None:
     parser.add_argument("--project-root", type=Path,
                         default=Path(__file__).resolve().parents[2])
     parser.add_argument("--engine-root", type=Path)
-    parser.add_argument("--allow-diagnostic-5.8.3", dest="allow_diagnostic_5_8_3",
-                        action="store_true")
     parser.add_argument("--run", action="store_true",
-                        help="Run editor import after version/worktree/free-space gates")
+                        help="Run editor import after engine-pin/free-space/competing-build gates")
     args = parser.parse_args()
     project = args.project_root.expanduser().resolve()
     require((project / "SoraArena.uproject").is_file(), "SoraArena project is missing")
@@ -135,13 +132,7 @@ def main() -> None:
     if not args.run:
         return
     require(args.engine_root is not None, "--run requires --engine-root")
-    editor, version = editor_binary(args.engine_root.expanduser().resolve())
-    require(version == "5.8.2" or
-            (args.allow_diagnostic_5_8_3 and version == "5.8.3"),
-            f"UE {version} is not the pinned release engine; 5.8.3 is diagnostic-only")
-    if version == "5.8.3":
-        require((project / ".git").is_file(),
-                "UE 5.8.3 diagnostic import requires a separate Git worktree")
+    editor = editor_binary(args.engine_root.expanduser().resolve())
     available = shutil.disk_usage(project).free
     require(available >= MIN_FREE_BYTES,
             f"Import needs at least 30 GiB free; found {available / 1024**3:.1f} GiB")
@@ -154,7 +145,7 @@ def main() -> None:
     command = [str(editor), str(project / "SoraArena.uproject"),
                f"-ExecutePythonScript={editor_script}", "-Unattended", "-NullRHI",
                "-NoSplash", "-NoSound", "-stdout", "-FullStdOutLogOutput"]
-    environment = dict(os.environ, SORA_KAWARA_ART_REVIEW_ENGINE=version)
+    environment = dict(os.environ, SORA_KAWARA_ART_REVIEW_ENGINE=ENGINE_VERSION)
     with log.open("w", encoding="utf-8") as stream:
         result = subprocess.run(command, cwd=project, env=environment, stdout=stream,
                                 stderr=subprocess.STDOUT, timeout=1800, check=False)
@@ -163,7 +154,7 @@ def main() -> None:
             "SORA_KAWARA_ART_REVIEW_REJECTED" not in output and
             "LogPython: Error" not in output,
             f"UE art-review import failed or emitted no success marker; inspect {log}")
-    print(f"{SUCCESS}: UE {version} assets staged; inspect {log}")
+    print(f"{SUCCESS}: UE {ENGINE_VERSION} assets staged; inspect {log}")
 
 
 if __name__ == "__main__":

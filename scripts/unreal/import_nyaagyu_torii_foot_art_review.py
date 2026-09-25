@@ -1,4 +1,4 @@
-"""Import the pinned gate-foot study only into the UE 5.8.2 ArtReview area.
+"""Import the pinned gate-foot study only into the pinned UE ArtReview area.
 
 This script does not place an actor, alter the Estate map, or modify gameplay
 collision. The two local stone sockets are evaluated in an isolated package.
@@ -9,13 +9,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-engine = unreal.SystemLibrary.get_engine_version()
-if not engine.startswith("5.8.2"):
-    raise RuntimeError(f"Torii-foot ArtReview requires pinned UE 5.8.2; got {engine}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Torii-foot ArtReview")
 
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/NyaagyuToriiFootStudy"

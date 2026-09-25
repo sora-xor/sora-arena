@@ -16,11 +16,12 @@ without the previous English fallback, resolved the Japanese menu title, and
 found the separately authored English subtitle. A separately staged 5.8.3 Mac
 app contains those resources, passes a headless startup smoke, and passes the
 same Japanese automation inside the package with
-`native=ja active=ja title=猫柳生 english_subtitle=present`. The pinned 5.8.2
-and packaged Japanese UI/subtitle visual readability still require checks.
+`native=ja active=ja title=猫柳生 english_subtitle=present`. A release run on the
+pinned UE 5.8.3 build and a packaged Japanese UI/subtitle visual readability
+check are still required.
 The HUD gives Japanese and English campaign subtitles, speaker names and notices
 a minimum text size at 720p and above; content and font-width checks pass, but
-the UE 5.8.2 visual and controller readability pass is still open.
+the UE 5.8.3 visual and controller readability pass is still open.
 Local control preferences now save inverted look, stick dead zones, look
 sensitivity and whitelisted combat-action remaps separately from campaign
 checkpoints. Wallet and menu bindings remain fixed. The control UI and actual
@@ -30,7 +31,7 @@ Windows/macOS controller verification are still open.
 
 | Milestone | Current state | Completion evidence still required |
 | --- | --- | --- |
-| Foundation | Active: deterministic Rust kernel and C ABI; locked workspace tests and strict Clippy pass; native generic admission, catalog and Connect changes in isolated Iroha worktree | UE 5.8.2 build, real wallet pairing, complete two-player proof-to-settlement path |
+| Foundation | Active: deterministic Rust kernel and C ABI; locked workspace tests and strict Clippy pass; native generic admission, catalog and Connect changes in isolated Iroha worktree | Release UE 5.8.3 build, real wallet pairing, complete two-player proof-to-settlement path |
 | Research match | Pending | 4v4 two-minute match, then 6v6 ten-minute match with complete proof coverage and measured resources |
 | Vertical slice | Source and original prototype assets in progress | One finished mission/arena, representative classes and complete buy/equip/bond/play/settle flow |
 | Full production | Chapter/class/weapon/arena data and offline prototype source present | Eight authored chapters, finished art/animation/audio/cinematics, accessibility and measured balance |
@@ -48,8 +49,10 @@ has not run that fixture. A pinned Windows GNU cross-build now produces a PE
 x86-64 kernel DLL with all fifteen header exports and matching sizes/alignments
 for eleven C ABI structs; it cannot establish Windows runtime parity. The Mac
 editor target compiled in an isolated UE **5.8.3** diagnostic worktree (installed
-changelist **58210709**). This checks source/API compatibility in that hotfix;
-the pinned 5.8.2 build and actual Unreal gameplay integration remain unverified.
+changelist **58210709**). That Launcher build became the release engine pin on
+2026-09-25 after UE 5.8.2 could no longer be installed ([toolchain](toolchain.md));
+these earlier interim runs are not release qualification, and actual Unreal
+gameplay integration remains unverified.
 The same isolated 5.8.3 checkout loaded `/Engine/Maps/Entry` with
 `SoraGameMode` in a headless Mac game startup and exited cleanly. This is a
 startup smoke check, not a played campaign or rendered performance test.
@@ -58,7 +61,7 @@ cook exited successfully. The latest post-terrain run reported 671 cooked
 packages, and UAT staged and archived the updated game target. The 1.0 GiB
 Mac app contains all 32 authored estate terrain tile packages in IoStore,
 has a valid local code signature, and passed an exit-0 headless packaged
-startup. This is not a 5.8.2 release cook, distribution signature, played
+startup. This is not a release cook, distribution signature, played
 session, or frame-rate test.
 A separate headless test
 runs a twelve-player idle Control lobby for the full 36,000-tick ten-minute clock,
@@ -109,7 +112,8 @@ health after seventeen guards. The prototype save schema advances to 5 so a
 pre-boss checkpoint cannot skip the encounter; no compatibility decoder is
 included. Content validation passes 25 timed bilingual cues. The interim
 UE 5.8.3 editor compile and SaveGame automation do not verify subtitle
-readability, combat balance, played-world recovery or the pinned 5.8.2 build.
+readability, combat balance, played-world recovery or a release build on the
+pinned 5.8.3 engine.
 The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
 the six-class selector is available in offline arena practice. This source
 behavior still needs an Unreal menu and save/reload check.
@@ -123,7 +127,8 @@ six environment props, 32 modular estate terrain tiles, the SORA insignia and
 the pinned CC0 palette. Its follow-up validator loaded 92 expected packages
 with their declared Unreal types, including the high-tier Nanite-enabled and
 Mac-tier conventional terrain assets. The
-UE 5.8.2 release import, in-game visual pass, and measured frame rate remain open.
+release import on the pinned UE 5.8.3 engine, in-game visual pass, and measured
+frame rate remain open.
 An original irrigation sluice now adds a hand-cranked timber/stone gate and
 alien meter to the agricultural liberation chapter's Estate sites. Its editable
 Blender source, FBX, collision-box round trip, material provenance and hashes
@@ -465,7 +470,7 @@ captured [unedited estate, character and path views](visual-reviews/README.md)
 with no material shader-map errors in the logs. These views still show repeated
 road motifs, sparse scene dressing and visibly stylized cat anatomy. Neither
 the current asset count nor the engine feature flags constitute AAA
-photorealism. The exact 5.8.2, Windows/Nanite, Lumen coverage, 60 fps, and
+photorealism. The release UE 5.8.3 build, Windows/Nanite, Lumen coverage, 60 fps, and
 full-content release gates remain open.
 
 The next Mac diagnostic loaded 276 expected generated packages, cooked 898
@@ -482,7 +487,7 @@ view because distinct stones still repeat and detail softened. The atlas is
 source-only; the main path binding and collision remain unchanged. The horse
 anatomy and measured-tack study has editable source and texture maps but is
 also source-only and still visibly stylized. No frame in this pass qualifies
-AAA photorealism or the exact UE 5.8.2 release path.
+AAA photorealism or the UE 5.8.3 release path.
 
 The subsequent facial-anatomy V2 source study moved Nyaakoto's eyes, ear cups,
 muzzle volumes and neck transition. Its Blender/FBX validator passes, but its
@@ -501,7 +506,7 @@ It uses hash-pinned CC0 photographed bamboo and leather 2K albedo, normal and
 ARM scans. Its Blender/FBX round trip passes for 60 mesh parts and preserves
 the stave/grip UVs. The first-person runtime still uses the earlier prototype:
 the study needs period-art review, a driven draw/string/arrow rig, correct paw
-contact and a packaged UE 5.8.2 visual pass. The source renders do not yet pass
+contact and a packaged UE 5.8.3 release visual pass. The source renders do not yet pass
 the AAA photoreal gate.
 
 A full water-court and bamboo/rill subset were modeled with editable geometry,
@@ -653,7 +658,7 @@ shippable mesh, historically verified weapon reference, or Unreal screenshot.
 ## Workstreams
 
 - Deterministic Rust combat/economics, replay, P2P evidence and Unreal C ABI.
-- UE 5.8.2 offline playable game, original assets and campaign production.
+- UE 5.8.3 offline playable game, original assets and campaign production.
 - Generic native Iroha admission, proof-authenticated allocations, equipment and Connect.
 - Installed toolchains, packaged builds, measured performance and qualification.
 
@@ -662,7 +667,8 @@ Iroha changes are isolated in `../iroha-arena`, branch
 
 ## Release gates
 
-1. Reproducible UE 5.8.2 Windows and macOS builds.
+1. Reproducible Windows and macOS builds on the pinned UE 5.8.3 Launcher build
+   (changelist 58210709).
 2. Deterministic simulation parity, source-reviewed complete FPS execution AIR,
    and actual proof generation/verification for all financially relevant rules.
 3. Real four-validator test-XOR admission/dispute/settlement and NFT market runs.

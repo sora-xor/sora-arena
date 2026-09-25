@@ -1,4 +1,4 @@
-"""Import source-only integrated Estate road candidates in pinned UE 5.8.2.
+"""Import source-only integrated Estate road candidates in the pinned UE.
 
 This does not place assets in gameplay. A visual review and exact-engine cook
 must pass before any release WorldBuilder change. The eight HI central tiles
@@ -10,13 +10,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Integrated Roji import requires pinned UE 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Integrated Roji import")
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/NyaagyuIntegratedRoji"
 record = json.loads((source / "manifest.json").read_text())

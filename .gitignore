@@ -88,3 +88,7 @@ __pycache__/
 *.secret
 *.key
 .env
+
+# Unreal packages regenerated from Content/SourceArt by scripts/toolchain/import-mac.sh
+Content/Generated/
+Content/ArtReview/

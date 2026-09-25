@@ -1,17 +1,74 @@
 {
   "schema_version": 1,
   "unreal": {
-    "version": "5.8.2",
-    "interim_compile_diagnostic_version": "5.8.3",
+    "version": "5.8.3",
+    "changelist": 58210709,
+    "compatible_changelist": 55116800,
+    "branch": "++UE5+Release-5.8",
+    "is_promoted_build": 1,
+    "is_licensee_version": 0,
+    "distribution": "Epic Games Launcher binary (installed build)",
+    "macos_launcher_app_version": "5.8.3-58210709+++UE5+Release-5.8-Mac",
     "source_commit": null,
-    "source_commit_note": "Record the verified Epic source commit after repository access is available; no source revision has been downloaded or validated yet.",
+    "source_commit_note": "Launcher binary build: Epic ships no Git revision with a Launcher installation. Engine/Build/Build.version Changelist, CompatibleChangelist and BranchName plus Engine/Build/InstalledBuild.txt identify it.",
+    "pin_approved": "2026-09-25: the user approved this Launcher build as the release engine because the previous hotfix pin can no longer be installed; see docs/toolchain.md.",
     "default_macos_root": "/Users/Shared/Epic Games/UE_5.8",
-    "default_windows_root": "C:\\Program Files\\Epic Games\\UE_5.8"
+    "default_windows_root": "C:\\Program Files\\Epic Games\\UE_5.8",
+    "plugins": {
+      "PythonScriptPlugin": {
+        "descriptor": "Engine/Plugins/Experimental/PythonScriptPlugin/PythonScriptPlugin.uplugin",
+        "version": 1,
+        "version_name": "1.0",
+        "enabled_by": "SoraArena.uproject"
+      },
+      "EditorScriptingUtilities": {
+        "descriptor": "Engine/Plugins/Editor/EditorScriptingUtilities/EditorScriptingUtilities.uplugin",
+        "version": 1,
+        "version_name": "1.0",
+        "enabled_by": "SoraArena.uproject"
+      },
+      "ContentBrowserFileDataSource": {
+        "descriptor": "Engine/Plugins/Editor/ContentBrowser/ContentBrowserFileDataSource/ContentBrowserFileDataSource.uplugin",
+        "version": 1,
+        "version_name": "1.0",
+        "enabled_by": "PythonScriptPlugin"
+      }
+    },
+    "research_plugins": {
+      "MeshPartition": {
+        "descriptor": "Engine/Plugins/Experimental/MeshPartition/MeshPartition.uplugin",
+        "version": 1,
+        "version_name": "1.0",
+        "enabled_by": "Plugins/SoraMeshTerrainResearch (opt-in, isolated worktree only)"
+      },
+      "MeshPartitionWater": {
+        "descriptor": "Engine/Plugins/Experimental/MeshPartitionWater/MeshPartitionWater.uplugin",
+        "version": 1,
+        "version_name": "1.0",
+        "enabled_by": "Plugins/SoraMeshTerrainResearch (opt-in, isolated worktree only)"
+      },
+      "PCGMeshPartitionInterop": {
+        "descriptor": "Engine/Plugins/Experimental/PCGMeshPartitionInterop/PCGMeshPartitionInterop.uplugin",
+        "version": 1,
+        "version_name": "1.0",
+        "enabled_by": "Plugins/SoraMeshTerrainResearch (opt-in, isolated worktree only)"
+      },
+      "MeshTerrainMode": {
+        "descriptor": "Engine/Plugins/Experimental/MeshTerrainMode/MeshTerrainMode.uplugin",
+        "version": 1,
+        "version_name": "1.0",
+        "enabled_by": "Plugins/SoraMeshTerrainResearch (opt-in, isolated worktree only)"
+      }
+    }
   },
   "xcode": "26.1.1",
   "default_macos_xcode": "~/Applications/SORAToolchain/Xcode_26.1.1.app/Contents/Developer",
   "blender": "5.2.2",
   "git_lfs": "3.8.0",
+  "rust": {
+    "version": "1.97.1",
+    "commit_hash": "8bab26f4f68e0e26f0bb7960be334d5b520ea452"
+  },
   "linux": {
     "distribution": "Ubuntu 22.04",
     "unreal_toolchain": "v26",

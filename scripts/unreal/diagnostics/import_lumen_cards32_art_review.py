@@ -1,6 +1,6 @@
 """Rebuild paired Estate duplicates for an isolated 12-versus-32-card test.
 
-Run only in the UE 5.8.3 diagnostic worktree's editor. No runtime placement,
+Run only in an isolated diagnostic worktree's pinned-UE editor. No runtime placement,
 source mesh, material, collision, or production asset is changed here. Both
 ArtReview variants must undergo the same explicit rebuild before comparison.
 """
@@ -9,13 +9,15 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.3"):
-    raise RuntimeError(f"Lumen card ArtReview requires diagnostic UE 5.8.3; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Lumen card ArtReview")
 root = Path(unreal.Paths.project_dir()).resolve()
 if not (root / ".git").is_file():
     raise RuntimeError("Lumen card ArtReview must run in an isolated Git worktree")

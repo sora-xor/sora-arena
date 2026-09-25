@@ -1,4 +1,4 @@
-"""Build the Estate's scan-led stone-path material in pinned UE 5.8.2.
+"""Build the Estate's scan-led stone-path material in the pinned UE.
 
 The material is used only on existing stone terrain slots. It preserves the
 photographed color and matched PBR maps, source vertex tint and wetness, and
@@ -10,13 +10,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Estate road variation import requires UE 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Estate road variation import")
 root = Path(unreal.Paths.project_dir()).resolve()
 manifest_path = root / "Content/SourceArt/Environment/NyaagyuTerrain/manifest.json"
 manifest = json.loads(manifest_path.read_text())

@@ -9,7 +9,11 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from sora_engine_pin import require_engine_root  # noqa: E402
 
 
 PLUGINS = ("MeshPartition", "MeshPartitionWater", "PCGMeshPartitionInterop", "MeshTerrainMode")
@@ -32,10 +36,9 @@ def assignment(source: str, field: str, expression: str, path: Path) -> str:
 
 
 def audit(engine: Path, project: Path) -> dict:
+    version = require_engine_root(engine, ("plugins", "research_plugins"))
     build_path = engine / "Engine/Build/Build.version"
     build = json.loads(read(build_path))
-    version = ".".join(str(build[key]) for key in ("MajorVersion", "MinorVersion", "PatchVersion"))
-    require(version in {"5.8.2", "5.8.3"}, f"Unsupported UE patch for this audit: {version}")
 
     plugin_root = engine / "Engine/Plugins/Experimental"
     descriptors = {}
@@ -114,7 +117,7 @@ def audit(engine: Path, project: Path) -> dict:
             "m1_nanite_disabled": True,
         },
         "assessment": {
-            "release_engine_pin_met": version == "5.8.2",
+            "release_engine_pin_met": True,
             "mesh_terrain_rendering_qualified": False,
             "reason": "Source flags and build defaults do not prove cooked compiled sections, Lumen Surface Cache coverage, software distance-field representation, Nanite rendering, or frame rate.",
         },

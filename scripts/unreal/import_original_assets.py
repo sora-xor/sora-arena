@@ -1,4 +1,4 @@
-"""UE 5.8.2 editor script: import source art and build original surface material.
+"""Pinned-UE editor script: import source art and build original surface material.
 
 Run with the compiled project: UnrealEditor-Cmd <project> -ExecutePythonScript=<this>
 The script intentionally requires the requested engine version. It never downloads
@@ -8,11 +8,13 @@ from pathlib import Path
 import hashlib
 import json
 import runpy
+import sys
 import unreal
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"SORA Arena requires Unreal Engine 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Original asset import")
 
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt"

@@ -11,9 +11,6 @@ spec.loader.exec_module(doctor)
 report = doctor.inspect()
 if not report['cook_ready']:
     sys.exit('Selected Unreal/Xcode/Metal cook prerequisites are not ready; run scripts/toolchain/doctor.py for details.')
-if report['engine_mode'] == 'interim_compile_diagnostic':
-    print('INTERIM UE 5.8.3 COOK DIAGNOSTIC ONLY; UE 5.8.2 release prerequisites remain unmet.',
-          file=sys.stderr)
 project = next(doctor.ROOT.glob('*.uproject'))
 for name, value in [('UE_ROOT', report['engine_root']), ('DEVELOPER_DIR', report['developer_dir']),
                     ('SDKROOT', report['sdk_root']), ('PROJECT', str(project))]:

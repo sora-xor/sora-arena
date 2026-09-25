@@ -6,12 +6,15 @@ pair must never be packaged as a controlled 12-versus-32 card comparison.
 
 from pathlib import Path
 import hashlib
+import sys
 
 import unreal
 
 
-if not unreal.SystemLibrary.get_engine_version().startswith("5.8.3"):
-    raise RuntimeError("Lumen-card paired readback requires diagnostic UE 5.8.3")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Lumen-card paired readback")
 root = Path(unreal.Paths.project_dir()).resolve()
 if not (root / ".git").is_file():
     raise RuntimeError("Lumen-card paired readback requires an isolated Git worktree")

@@ -1,4 +1,4 @@
-# Read-only Windows prerequisite report for the pinned UE 5.8.2 build.
+# Read-only Windows prerequisite report for the pinned Unreal Engine build (scripts/toolchain/versions.json).
 [CmdletBinding()]
 param(
     [string]$EngineRoot,
@@ -45,22 +45,55 @@ if ([string]::IsNullOrWhiteSpace($EngineRoot)) { $EngineRoot = $env:UE_ROOT }
 if ([string]::IsNullOrWhiteSpace($EngineRoot)) { $EngineRoot = [string]$pins.unreal.default_windows_root }
 $engine = [IO.Path]::GetFullPath($EngineRoot)
 $buildVersionPath = Join-Path $engine 'Engine\Build\Build.version'
+$buildVersion = $null
 $actualEngineVersion = $null
 if (Test-Path -LiteralPath $buildVersionPath -PathType Leaf) {
     try {
         $buildVersion = Get-Content -Raw -LiteralPath $buildVersionPath | ConvertFrom-Json
         $actualEngineVersion = @($buildVersion.MajorVersion, $buildVersion.MinorVersion, $buildVersion.PatchVersion) -join '.'
-    } catch { $actualEngineVersion = "invalid Build.version: $($_.Exception.Message)" }
+    } catch {
+        $buildVersion = $null
+        $actualEngineVersion = "invalid Build.version: $($_.Exception.Message)"
+    }
 }
+# Same identity as scripts/unreal/sora_engine_pin.py: exact version, changelists,
+# branch, promoted/licensee flags, Launcher installed build and the project's
+# engine plugin descriptors.
+Add-Check 'unreal' $actualEngineVersion ([string]$pins.unreal.version) ($actualEngineVersion -eq [string]$pins.unreal.version) $engine
+foreach ($field in @(
+        @('unreal_changelist', 'Changelist', 'changelist'),
+        @('unreal_compatible_changelist', 'CompatibleChangelist', 'compatible_changelist'),
+        @('unreal_branch', 'BranchName', 'branch'),
+        @('unreal_promoted_build', 'IsPromotedBuild', 'is_promoted_build'),
+        @('unreal_licensee_version', 'IsLicenseeVersion', 'is_licensee_version'))) {
+    $actualField = $null
+    if ($null -ne $buildVersion -and @($buildVersion.PSObject.Properties.Name) -contains $field[1]) {
+        $actualField = $buildVersion.($field[1])
+    }
+    $expectedField = $pins.unreal.($field[2])
+    Add-Check $field[0] $actualField $expectedField ($null -ne $actualField -and [string]$actualField -ceq [string]$expectedField)
+}
+$installedBuild = Test-Path -LiteralPath (Join-Path $engine 'Engine\Build\InstalledBuild.txt') -PathType Leaf
+$installedLabel = 'installed build (Engine/Build/InstalledBuild.txt)'
+Add-Check 'unreal_distribution' $(if ($installedBuild) { $installedLabel } else { 'not an installed build' }) $installedLabel $installedBuild ([string]$pins.unreal.distribution)
+$pluginActual = [ordered]@{}
+$pluginExpected = [ordered]@{}
+$pluginsOk = $true
+foreach ($plugin in $pins.unreal.plugins.PSObject.Properties) {
+    $pluginExpected[$plugin.Name] = "$($plugin.Value.version_name) (version $($plugin.Value.version))"
+    $pluginActual[$plugin.Name] = $null
+    $descriptor = Join-Path $engine ([string]$plugin.Value.descriptor)
+    if (Test-Path -LiteralPath $descriptor -PathType Leaf) {
+        try {
+            $pluginData = Get-Content -Raw -LiteralPath $descriptor | ConvertFrom-Json
+            $pluginActual[$plugin.Name] = "$($pluginData.VersionName) (version $($pluginData.Version))"
+        } catch {}
+    }
+    if ($pluginActual[$plugin.Name] -cne $pluginExpected[$plugin.Name]) { $pluginsOk = $false }
+}
+Add-Check 'unreal_plugins' ([pscustomobject]$pluginActual) ([pscustomobject]$pluginExpected) $pluginsOk
 $batchFile = Join-Path $engine 'Engine\Build\BatchFiles\Build.bat'
-Add-Check 'unreal' $actualEngineVersion ([string]$pins.unreal.version) (
-    $actualEngineVersion -eq [string]$pins.unreal.version -and (Test-Path -LiteralPath $batchFile -PathType Leaf)
-) $engine
-if (-not [string]::IsNullOrWhiteSpace([string]$pins.unreal.source_commit)) {
-    $git = Get-Command git.exe -ErrorAction SilentlyContinue
-    $actualCommit = if ($null -ne $git) { (& $git.Source -C $engine rev-parse HEAD 2>$null) -join '' } else { $null }
-    Add-Check 'unreal_source_commit' $actualCommit ([string]$pins.unreal.source_commit) ($actualCommit -eq [string]$pins.unreal.source_commit)
-}
+Add-Check 'unreal_build_script' $batchFile 'Engine\Build\BatchFiles\Build.bat' (Test-Path -LiteralPath $batchFile -PathType Leaf)
 
 $vswhere = $null
 if ($isWindows -and -not [string]::IsNullOrWhiteSpace(${env:ProgramFiles(x86)})) {

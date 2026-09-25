@@ -10,6 +10,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import sys
 
 import unreal
 
@@ -20,13 +21,12 @@ def require(condition, message):
 
 
 root = Path(unreal.Paths.project_dir()).resolve()
-expected_version = os.environ.get("SORA_KAWARA_ART_REVIEW_ENGINE")
-actual_version = unreal.SystemLibrary.get_engine_version()
-require(expected_version in ("5.8.2", "5.8.3") and
-        actual_version.startswith(expected_version),
-        f"Expected gated UE 5.8.2/diagnostic 5.8.3, got {actual_version}")
-require(expected_version != "5.8.3" or (root / ".git").is_file(),
-        "UE 5.8.3 diagnostics require a separate Git worktree")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import ENGINE_VERSION, require_running_engine  # noqa: E402
+
+require(os.environ.get("SORA_KAWARA_ART_REVIEW_ENGINE") == ENGINE_VERSION,
+        "Run through preflight_kawara_bay_art_review.py --run")
+require_running_engine("Kawara bay ArtReview")
 preflight_path = root / "scripts/unreal/preflight_kawara_bay_art_review.py"
 spec = importlib.util.spec_from_file_location("sora_kawara_preflight", preflight_path)
 require(spec is not None and spec.loader is not None, "Could not load roof preflight")

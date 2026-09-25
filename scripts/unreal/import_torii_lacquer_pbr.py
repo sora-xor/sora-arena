@@ -8,12 +8,15 @@ three independently authored maps before changing the imported material slot.
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-if not unreal.SystemLibrary.get_engine_version().startswith("5.8.2"):
-    raise RuntimeError("Torii PBR import requires pinned Unreal Engine 5.8.2")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Torii PBR import")
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/ToriiLacquer"
 record = json.loads((source / "manifest.json").read_text(encoding="utf-8"))

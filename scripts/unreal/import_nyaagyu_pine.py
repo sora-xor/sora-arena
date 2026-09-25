@@ -3,13 +3,15 @@
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"SORA Arena requires Unreal Engine 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Nyaagyu pine import")
 root = Path(unreal.Paths.project_dir()).resolve()
 art = root / "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall"
 record = json.loads((art / "manifest.json").read_text())

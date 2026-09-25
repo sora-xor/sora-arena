@@ -1,0 +1,6 @@
+# Exact compiler for the kernel, the native parity reference and the cargo gates.
+# scripts/toolchain/versions.json pins the same release; doctor.py checks both.
+[toolchain]
+channel = "1.97.1"
+profile = "minimal"
+components = ["rustfmt", "clippy"]

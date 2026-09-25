@@ -7,13 +7,15 @@ Unreal does not silently generate or replace the close-range hero silhouette.
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"SORA Arena requires Unreal Engine 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Nyaakoto LOD import")
 root = Path(unreal.Paths.project_dir()).resolve()
 hero = root / "Content/SourceArt/Characters/Hero"
 lod_dir = hero / "LOD"

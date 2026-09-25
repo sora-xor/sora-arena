@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
 
 import unreal
 
@@ -28,10 +29,12 @@ def require(value, message):
 
 project = Path(unreal.Paths.project_dir()).resolve()
 phase = os.environ.get("SORA_MESH_RESEARCH_PHASE", "")
-expected_version = os.environ.get("SORA_MESH_RESEARCH_ENGINE_VERSION", "5.8.2")
-actual_version = unreal.SystemLibrary.get_engine_version()
-require(actual_version.startswith(expected_version),
-        f"Expected UE {expected_version}, found {actual_version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import ENGINE_VERSION  # noqa: E402
+
+engine_version = unreal.SystemLibrary.get_engine_version()
+require(engine_version == ENGINE_VERSION,
+        f"Expected pinned UE {ENGINE_VERSION}, found {engine_version}")
 require(phase in ("stage", "author", "verify"), "Unknown research phase")
 
 

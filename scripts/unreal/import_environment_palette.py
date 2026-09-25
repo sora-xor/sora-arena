@@ -1,4 +1,4 @@
-"""Import the pinned CC0 Nyaagyu production palette in Unreal Engine 5.8.2.
+"""Import the manifest-pinned CC0 Nyaagyu production palette in the pinned UE editor.
 
 Creates world-aligned PBR material instances with real-world texture scale, DX
 normal maps and correctly unpacked AO/Roughness/Metallic maps. No website assets
@@ -8,10 +8,13 @@ from pathlib import Path
 import hashlib
 import json
 import runpy
+import sys
 import unreal
 
-if not unreal.SystemLibrary.get_engine_version().startswith('5.8.2'):
-    raise RuntimeError('This asset authoring script requires Unreal Engine 5.8.2')
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Environment palette import")
 ROOT=Path(unreal.Paths.project_dir()).resolve()
 SOURCE=ROOT/'Content/SourceArt/Environment/PolyHaven'
 manifest=json.loads((SOURCE/'manifest.json').read_text())

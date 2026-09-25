@@ -1,8 +1,6 @@
-"""Import the source-only Kura frontage into isolated UE 5.8.2 ArtReview.
+"""Import the source-only Kura frontage into isolated pinned-UE ArtReview.
 
 No WorldBuilder placement, gameplay collision, map data, or save data changes.
-The diagnostic UE 5.8.3 worktree may copy this script with an *isolated*
-version-guard substitution for a non-release packaged visual A/B.
 """
 
 from __future__ import annotations
@@ -10,13 +8,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Kura front art review requires pinned UE 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Kura front art review")
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/NyaagyuKuraFront"
 record = json.loads((source / "manifest.json").read_text())

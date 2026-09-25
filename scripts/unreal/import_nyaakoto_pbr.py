@@ -8,10 +8,13 @@ from pathlib import Path
 import hashlib
 import json
 import struct
+import sys
 import unreal
 
-if not unreal.SystemLibrary.get_engine_version().startswith("5.8.2"):
-    raise RuntimeError("Nyaakoto PBR import requires the pinned Unreal Engine 5.8.2")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Nyaakoto PBR import")
 
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Characters/Hero/PBR"

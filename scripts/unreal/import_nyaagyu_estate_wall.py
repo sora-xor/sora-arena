@@ -1,4 +1,4 @@
-"""Standalone UE 5.8.2 import of the visual-only Estate perimeter wall.
+"""Standalone pinned-UE import of the visual-only Estate perimeter wall.
 
 Run: UnrealEditor-Cmd SoraArena.uproject \
   -ExecutePythonScript=scripts/unreal/import_nyaagyu_estate_wall.py
@@ -11,13 +11,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Estate wall import requires pinned Unreal 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Estate wall import")
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Environment/NyaagyuEstateWall"
 record = json.loads((source / "manifest.json").read_text())

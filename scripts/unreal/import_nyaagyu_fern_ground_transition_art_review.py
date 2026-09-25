@@ -1,4 +1,4 @@
-"""Strict UE 5.8.2 Fern 02 ground-transition import, isolated to ArtReview.
+"""Strict pinned-UE Fern 02 ground-transition import, isolated to ArtReview.
 
 Requires import_nyaagyu_fern_art_review.py to have run first. No level,
 WorldBuilder, gameplay collision, or player-save data is changed.
@@ -9,13 +9,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version=unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Fern ground transition requires pinned UE 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Fern ground transition")
 root=Path(unreal.Paths.project_dir()).resolve()
 source=root/"Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition"
 record_path=source/"manifest.json"

@@ -1,6 +1,6 @@
 # SORA Arena: Nyaagyu Rebellion
 
-First-release development of a Japanese samurai-cat FPS for Unreal Engine 5.8.2,
+First-release development of a Japanese samurai-cat FPS for Unreal Engine 5.8.3,
 with an offline campaign and planned P2P multiplayer settled through native Iroha
 execution proofs. Japanese is the primary language for dialogue and interfaces;
 English subtitles are enabled by default.
@@ -15,7 +15,8 @@ are a separate gameplay rule and remain disabled for real-value play.
 Rust reference kernel, payout rules, signed input evidence, bounded prediction
 and rollback, durable evidence recovery, and Unreal C ABI run locally. Unreal game code, original prototype
 models, campaign data and a native Connect subsystem are present. The Unreal
-project still requires an actual 5.8.2 build and playtest. Full FPS proofs, live
+project still requires a qualified release build and playtest on the pinned
+UE 5.8.3 engine. Full FPS proofs, live
 networking, complete campaign content and photoreal assets remain in development.
 Real-value bonding and trading are disabled.
 The [packaged Mac visual review](docs/visual-reviews/README.md) shows the current
@@ -44,8 +45,11 @@ execution proof, and the native ABI reports proof qualification as false.
 ## Unreal and native integration
 
 Use the project-specific setup and build commands in [toolchain.md](docs/toolchain.md).
-Do not substitute the existing UE 5.2 installation for the pinned 5.8.2 engine.
-The exact engine revision is recorded after the installation is verified.
+The release engine is the Epic Games Launcher build of UE 5.8.3, changelist
+58210709 (re-pinned from the no longer installable 5.8.2 on 2026-09-25).
+`scripts/toolchain/doctor.py` verifies that exact build; do not substitute any
+other installed engine. `rust-toolchain.toml` pins the Rust kernel toolchain to
+1.97.1, which the doctor also checks.
 
 - `crates/arena-core`: integer combat, bond allocation, evidence, rollback and recovery.
 - `crates/arena-ffi`: versioned native ABI for Unreal presentation.

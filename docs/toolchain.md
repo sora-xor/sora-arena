@@ -1,9 +1,61 @@
 # Unreal and art toolchain
 
-The project targets **Unreal Engine 5.8.2**. Tool versions are recorded in
+The project targets **Unreal Engine 5.8.3**, the Epic Games Launcher build with
+changelist **58210709**. Tool versions are recorded in
 [`scripts/toolchain/versions.json`](../scripts/toolchain/versions.json). These pins
 are requirements, not evidence that every tool is installed or that the game has
 been compiled. Run the doctor to inspect the actual machine.
+
+## Release engine pin (approved deviation, 2026-09-25)
+
+The approved plan specified **UE 5.8.2**. On **2026-09-25** the user approved
+re-pinning the release engine to **UE 5.8.3** because 5.8.2 can no longer be
+installed: the Launcher offers only 5.8.3, Epic's offline installer is limited
+to eligible Developer Portal organizations, and this account receives HTTP 404
+for Epic's private source repository (see the blockers below). The deviation was
+reported as the plan required. The pin is the exact installed build:
+
+| Field | Pinned value (from `Engine/Build/Build.version` and the engine's `.uplugin` files) |
+| --- | --- |
+| Version | **5.8.3** (`MajorVersion` 5, `MinorVersion` 8, `PatchVersion` 3) |
+| Changelist | **58210709** |
+| CompatibleChangelist | **55116800** |
+| BranchName | `++UE5+Release-5.8` |
+| IsPromotedBuild / IsLicenseeVersion | **1** / **0** |
+| Editor version string | `5.8.3-58210709+++UE5+Release-5.8` (`unreal.SystemLibrary.get_engine_version()`) |
+| Distribution | Epic Games Launcher binary (installed build: `Engine/Build/InstalledBuild.txt`); Launcher AppVersion `5.8.3-58210709+++UE5+Release-5.8-Mac` |
+| Install path | `/Users/Shared/Epic Games/UE_5.8` (macOS); Windows default `C:\Program Files\Epic Games\UE_5.8` |
+| Source commit | none (`source_commit: null`): a Launcher binary carries no Git revision; the changelists, branch and installed-build marker identify it |
+| Engine plugins enabled by `SoraArena.uproject` | `PythonScriptPlugin` 1.0 (Version 1, beta), `EditorScriptingUtilities` 1.0 (Version 1, beta), and PythonScriptPlugin's dependency `ContentBrowserFileDataSource` 1.0 (Version 1) |
+| Opt-in research plugins | `MeshPartition`, `MeshPartitionWater`, `PCGMeshPartitionInterop`, `MeshTerrainMode`, each 1.0 (Version 1, experimental); enabled only by `Plugins/SoraMeshTerrainResearch` in an isolated worktree |
+
+`scripts/toolchain/doctor.py` (Mac) and `doctor-windows.ps1` compare the
+version, both changelists, the branch, the promoted and licensee flags, the
+installed-build marker and the project plugin versions with the engine
+directory and fail closed on any difference; the Mesh Partition research runner and source audit also check the
+research plugins. Editor-side import, validation and diagnostic scripts call
+[`scripts/unreal/sora_engine_pin.py`](../scripts/unreal/sora_engine_pin.py),
+which reads `versions.json` and requires the exact editor version string; host
+preflights use the same module on `Build.version`, the installed-build marker
+and plugin descriptors. There is no override flag.
+
+Results recorded before the re-pin (2026-09-23 to 2026-09-24) came from this same
+installed 5.8.3 build, run as opt-in "interim diagnostics" in isolated
+worktrees. Their records keep that label: they establish what those runs did,
+not release qualification. Windows builds, release packaging/signing, played
+gameplay, rendered quality and performance still need runs under this pin.
+
+## Rust toolchain pin
+
+The Rust kernel, native parity reference and cargo gates use **Rust 1.97.1**
+(commit `8bab26f4f68e0e26f0bb7960be334d5b520ea452`), recorded under `rust` in
+`versions.json`. The repository-root `rust-toolchain.toml` selects channel
+`1.97.1` (minimal profile with `rustfmt` and `clippy`), so `cargo` in this
+checkout uses it. `doctor.py` checks that file's channel and runs `rustc -vV` in
+the repository with `RUSTUP_AUTO_INSTALL=0`, requiring the exact release and
+commit hash; a missing toolchain fails instead of downloading. Its JSON reports
+`rust_ready`. `python3 scripts/toolchain/test_doctor_rust.py` tests this check
+with a faked compiler.
 
 ## Verified on this workstation (2026-09-23)
 
@@ -14,11 +66,11 @@ been compiled. Run the doctor to inspect the actual machine.
 | Git LFS | **3.8.0**, installed; LFS filters and hooks initialized for this repository only |
 | Epic Games Launcher | **20.3.2**, installed at `~/Applications/SORAToolchain/Epic Games Launcher.app`; bundle version and arm64 executable verified |
 | Existing Epic launcher | The older `/Applications` copy self-updated to 18.1.2 during inspection; it was preserved |
-| Unreal Engine | **5.2.0** exists at `/Users/Shared/Epic Games/UE_5.2`; the Launcher installed **5.8.3** at `/Users/Shared/Epic Games/UE_5.8`; **5.8.2 is not installed** |
+| Unreal Engine | **5.2.0** existed at `/Users/Shared/Epic Games/UE_5.2`; the Launcher installed **5.8.3** at `/Users/Shared/Epic Games/UE_5.8`; **5.8.2 was not installable** (5.8.3 became the pin on 2026-09-25) |
 | Xcode | **26.1.1, build 17B100**, installed at `~/Applications/SORAToolchain/Xcode_26.1.1.app`; full Apple code-signature verification passed, SDK **26.1** found, and first-launch status reports complete. Existing **27.0** is preserved |
 | Metal Toolchain | Apple's separate **17B54** component was downloaded through the selected Xcode; `xcrun --sdk macosx metal -v` reports compiler **32023.830**. Xcode's SDK and first-launch checks alone did not install this compiler. |
-| Engine revision | The installed 5.8.3 `Build.version` reports promoted build changelist **58210709** on `++UE5+Release-5.8`; the exact 5.8.2 source commit has not been acquired, so release `source_commit` remains `null` |
-| UE 5.8 compilation / packaging / runtime | The project Mac editor and game targets compile in isolated **5.8.3**. After both original-asset and palette imports, the editor validator loads **207** expected packages, including revised terrain/foliage, the provision storehouse, separate katana/saya and PBR bindings; editor and cooked-game automation load three Nyaakoto LODs and 23 material slots. The latest Mac diagnostic cook completed with **795 packages cooked** and seven platform skips. UAT staged a signed app using pak/IoStore with bundle identifier `org.sora.soraarena`; the headless packaged LOD test exited 0. The pinned 5.8.2 release build, Windows build, visual quality and gameplay qualification remain open. |
+| Engine revision | The installed 5.8.3 `Build.version` reports promoted build changelist **58210709** (compatible changelist **55116800**) on `++UE5+Release-5.8`; as a Launcher binary it has no source commit |
+| UE 5.8 compilation / packaging / runtime | The project Mac editor and game targets compile in isolated **5.8.3**. After both original-asset and palette imports, the editor validator loads **207** expected packages, including revised terrain/foliage, the provision storehouse, separate katana/saya and PBR bindings; editor and cooked-game automation load three Nyaakoto LODs and 23 material slots. The latest Mac diagnostic cook completed with **795 packages cooked** and seven platform skips. UAT staged a signed app using pak/IoStore with bundle identifier `org.sora.soraarena`; the headless packaged LOD test exited 0. These were interim diagnostics before the re-pin; a release build under the pin, the Windows build, visual quality and gameplay qualification remain open. |
 
 The machine's global `xcode-select` remains pointed at Command Line Tools. These
 scripts select Xcode and its matching `SDKROOT` only for their own process; they
@@ -37,14 +89,14 @@ Xcode 27 is a pin mismatch, not a claim that every use with UE 5.8 is impossible
   `Build.version` reports changelist 58210709. Exact 5.8.2 needs Epic's
   private source access or an existing licensed installation; the local GitHub
   account still receives HTTP 404 for that repository. Epic released 5.8.3 on 2026-09-22, so the original
-  description of 5.8.2 as the latest hotfix is stale. The release engine pin
-  remains 5.8.2 until the requested version choice is resolved.
+  description of 5.8.2 as the latest hotfix is stale. Resolved on 2026-09-25:
+  the user approved 5.8.3 as the release pin (see above).
 - Epic's offline macOS installer is restricted to eligible Developer Portal
   organizations; it is not an account-free route to the historical hotfix.
-- The Mac editor target compiled with the exact 5.8.3 diagnostic opt-in in an
-  isolated worktree. Its source art and palette imports are also isolated there.
-  A diagnostic game target also compiled and a cooked package launched, but
-  this does not satisfy the 5.8.2 release pin or establish played gameplay,
+- Before the re-pin, the Mac editor target compiled with the exact 5.8.3
+  interim opt-in in an isolated worktree, where the source art and palette
+  imports were also isolated. A diagnostic game target also compiled and a
+  cooked package launched. Those runs did not establish played gameplay,
   rendered art quality, Windows parity, or release packaging/signing.
 - Direct command-line expansion of the Apple download was denied by OS file
   permissions. Normal Finder/Archive Utility extraction succeeded, and Apple's
@@ -73,44 +125,43 @@ silently upgrading the project's toolchain. Homebrew must already be installed.
 It does not provision Epic/Apple accounts, download Unreal, or change global
 Git/Xcode configuration.
 
-The doctor checks engine `Build.version`, Mac build scripts, selected Xcode,
-SDK, first-launch setup and executable Metal compiler, actual Blender/Git LFS command output, repository LFS setup, the root project
-file, editor executable, and disk space. Exit status **1** indicates a missing or
+The doctor checks the engine identity in the pin table (exact
+`Build.version` version, changelist, compatible changelist, branch and
+promoted/licensee flags; the installed-build marker; project plugin descriptor
+versions), the Mac `Build.sh`,
+an executable UnrealEditor binary (so a partial Launcher download cannot appear
+ready), selected Xcode, SDK, first-launch setup and executable Metal compiler,
+actual Blender/Git LFS command output, repository LFS setup, the root project
+file, disk space and the Rust pin. Exit status **1** indicates a missing or
 mismatched check; status **0** indicates these presence/version checks passed.
-Its `build_ready` JSON flag checks code-build prerequisites; `cook_ready`
-additionally requires a working Metal compiler. Neither is a build or cook result.
-The JSON also reports `release_prerequisites_ready` and
-`interim_compile_prerequisites_ready` separately. With the override unset,
-the doctor and Mac build script strictly require **5.8.2**.
+Its `build_ready` JSON flag checks code-build prerequisites (engine identity,
+Xcode/SDK and project); `cook_ready` additionally requires a working Metal
+compiler. Neither is a build or cook result. The Mac wrappers read those flags
+and the JSON's `engine_root`, `developer_dir` and `sdk_root`. The JSON also
+reports `pinned_engine_version` (the editor version string), `rust_ready` and
+`all_checks_pass`, which set the doctor's summary and exit status.
 
-### Opt-in 5.8.3 diagnostic
-
-The following checks the installed 5.8.3 for isolated Mac editor, game-target,
-cook, staging and launch diagnostics:
+### Mac build, cook, stage and editor
 
 ```sh
 export UE_ROOT='/Users/Shared/Epic Games/UE_5.8'
-SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/doctor.py --json
-SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/build-mac.sh Development
-SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/build-mac.sh Development Game
-SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/cook-mac.sh
-SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/stage-mac.sh /tmp/sora-arena-mac-diagnostic
-SORA_INTERIM_UE_VERSION=5.8.3 scripts/toolchain/run-editor.sh
+scripts/toolchain/doctor.py --json
+scripts/toolchain/build-mac.sh Development
+scripts/toolchain/build-mac.sh Development Game
+scripts/toolchain/cook-mac.sh
+scripts/toolchain/stage-mac.sh /tmp/sora-arena-mac
+scripts/toolchain/run-editor.sh
 ```
 
-The override must be exactly `5.8.3`; any other set value, including an empty
-string or `5.8.2`, fails closed. The interim check also requires an installed,
-executable UnrealEditor binary so a partial Launcher download cannot appear
-ready. The build, cook, stage and editor wrappers print interim diagnostic
-banners. This does
-not change `versions.json`'s **5.8.2 release pin**, the `.uproject` association,
-Windows build policy, or asset import scripts. Without the exact override,
-`run-editor.sh` still requires 5.8.2. Diagnostic compile, launch, cook or stage
-results do not qualify a release, prove gameplay or rendering, or supply
-an exact 5.8.2 source revision. The installed 5.8.3 build reports changelist
-58210709, not an exact 5.8.2 source commit. `python3 scripts/toolchain/test_doctor_interim.py` runs host-only
-fake-engine tests for the strict default, exact opt-in and rejected values;
-it never invokes Unreal.
+Every wrapper first requires the doctor's `build_ready` (`cook_ready` for the
+cook). There is no engine-selection override. Transitional, for the build lane
+that was already running during the re-pin only: `SORA_INTERIM_UE_VERSION` set to
+exactly `5.8.3` is ignored, and any other set value (including an empty string
+or `5.8.2`) fails closed. It will be removed after Wave A. Compile, launch, cook
+or stage results do not by themselves qualify a release or prove gameplay or
+rendering. `python3 scripts/toolchain/test_doctor_pin.py` runs host-only
+fake-engine tests for the exact version/changelist/branch/promoted and licensee
+flags/distribution/plugin pin, the transitional variable and the Rust wiring; it never invokes Unreal.
 
 On this Mac, UBT compiled and linked the game target but its nested Xcode
 post-build invocation failed at the generated `Touch UBT generated tiles`
@@ -118,28 +169,26 @@ pre-action. The game wrapper retries the exact generated scheme only for that
 specific failure, verifies the signed `.app`, then invokes Unreal's own
 `WriteMetadata` mode for the matching build products and target receipt. A
 different build failure still exits nonzero. UAT staging requires that receipt.
-The isolated 5.8.3 diagnostic then completed UAT stage/package/archive in
+Before the re-pin, the isolated 5.8.3 diagnostic completed UAT stage/package/archive in
 74 seconds; the archived app passed strict `codesign` verification and a
 `-NullRHI -unattended -ExecCmds=Quit` startup smoke. Its pak contains the
 Japanese `Game.locmeta` and `ja/Game.locres`. The packaged
 `SoraArena.Localization.NativeJapanese` automation also passed, reporting
 `native=ja active=ja title=猫柳生 english_subtitle=present`; a visual Japanese
-UI and subtitle readability check remains open. This recovery is not yet validated on
-the requested 5.8.2 build.
+UI and subtitle readability check remains open. That recovery was observed in
+the isolated interim worktree; it still has to be exercised from a release
+checkout under the pin.
 
 ## Finish Unreal and Xcode provisioning
 
-1. Resolve the release engine pin: to keep **5.8.2**, obtain that source through Epic's
-   supported GitHub access procedure (Epic/GitHub account linking and private
-   repository access), or supply an existing licensed installation. If the
-   newer **5.8.3** hotfix is chosen for release later, make that an explicit
-   pin/revision change with its own qualification. The current Launcher 5.8.3
-   download is limited to the opt-in compile diagnostic above. Keep the
-   existing 5.2 installation separate.
-2. After source access is available, resolve the official 5.8.2 release reference,
-   record its full commit SHA in `versions.json`, and use the same revision on all
-   build machines. No guessed source revision is recorded here.
-3. On another Mac, download **Xcode 26.1.1** from Apple Developer downloads.
+1. Install **UE 5.8.3** from the Epic Games Launcher into the default
+   `/Users/Shared/Epic Games/UE_5.8` (or set `UE_ROOT`). The doctor must report
+   changelist 58210709, compatible changelist 55116800, branch
+   `++UE5+Release-5.8`, an installed build and the pinned plugin versions. A
+   Launcher that serves any other build is a pin change: it needs explicit
+   approval, a `versions.json` update and requalification, never a local
+   override. Keep other engine installations separate.
+2. On another Mac, download **Xcode 26.1.1** from Apple Developer downloads.
    Install it alongside other Xcode versions. This workstation uses
    `~/Applications/SORAToolchain/Xcode_26.1.1.app`; a separate
    `/Applications/Xcode_26.1.1.app` also works. Complete any Apple sign-in and
@@ -148,7 +197,7 @@ the requested 5.8.2 build.
    Install the separate Apple Metal compiler component with
    `DEVELOPER_DIR=/path/to/Xcode_26.1.1.app/Contents/Developer xcodebuild -downloadComponent MetalToolchain`;
    verify `DEVELOPER_DIR=/path/to/Xcode_26.1.1.app/Contents/Developer xcrun --sdk macosx metal -v` succeeds.
-4. Set paths and run the doctor, then build:
+3. Set paths and run the doctor, then build:
 
 ```sh
 export UE_ROOT='/Users/Shared/Epic Games/UE_5.8'
@@ -191,7 +240,8 @@ checks; the version table alone does not establish compatibility.
 
 ### Windows project build and staging
 
-For an early, **static-only** check on this M1 Ultra, the pinned Rust 1.93.1
+For an early, **static-only** check on this M1 Ultra, Rust 1.93.1 (the toolchain
+`check_windows_kernel_crossbuild.py` still selects, not yet the 1.97.1 pin)
 Windows GNU target and free MinGW GCC 16.2.0 can cross-build `arena-ffi`:
 
 ```sh
@@ -207,7 +257,8 @@ DLL SHA-256 was
 This GNU cross-build does **not** replace the required Windows MSVC/Unreal
 build, execute the DLL, compare simulation replays, or qualify on-chain proofs.
 
-On a 64-bit Windows machine, install the licensed **UE 5.8.2** engine, Visual
+On a 64-bit Windows machine, install **UE 5.8.3** from the Epic Games Launcher
+(changelist 58210709), Visual
 Studio **2022 17.14** with MSVC **14.44.35207**, Windows SDK
 **10.0.22621.0**, native x86-64 Rust MSVC, and Python 3. The scripts never
 install or upgrade them. In PowerShell, from the repository root:
@@ -222,12 +273,13 @@ rustup target add x86_64-pc-windows-msvc
 
 `UE_ROOT` can point to another licensed installation; omit it to use the
 recorded default. The read-only doctor verifies `Engine/Build/Build.version`
-reports **exactly 5.8.2**, `Build.bat`, a complete nonpreview 17.14 Visual
+reports **exactly 5.8.3** with the pinned changelist, compatible changelist,
+branch and promoted/licensee flags, `InstalledBuild.txt`, the pinned project plugin descriptor versions,
+`Build.bat`, a complete nonpreview 17.14 Visual
 Studio instance found through `vswhere`, exact MSVC compiler/linker and SDK
 headers/libraries/tools, the Rust MSVC host and installed target, Python 3,
 project C++/Rust source, and the project-scoped UBT pins. It exits nonzero on
-any mismatch and does not claim a successful compilation. If an engine source
-revision is recorded later in `versions.json`, it also verifies that checkout.
+any mismatch and does not claim a successful compilation.
 
 The build script first requires a passing doctor. It copies the pinned
 `Config/UnrealBuildTool/BuildConfiguration.xml` into the project's ignored
@@ -251,8 +303,8 @@ nor the script has been run on Windows yet.
 
 ## Official references
 
-- [UE 5.8.2 hotfix](https://forums.unrealengine.com/t/5-8-2-hotfix-released/2746335)
-- [UE 5.8.3 hotfix](https://forums.unrealengine.com/t/5-8-3-hotfix-released/2833315)
+- [UE 5.8.2 hotfix](https://forums.unrealengine.com/t/5-8-2-hotfix-released/2746335) (original plan pin)
+- [UE 5.8.3 hotfix](https://forums.unrealengine.com/t/5-8-3-hotfix-released/2833315) (release pin since 2026-09-25)
 - [UE 5.8 release notes and platform toolchains](https://dev.epicgames.com/documentation/unreal-engine/unreal-engine-5-8-release-notes)
 - [Epic source access](https://www.unrealengine.com/en-US/ue-on-github)
 - [Epic Launcher installation steps](https://dev.epicgames.com/documentation/unreal-engine/install-unreal-engine)

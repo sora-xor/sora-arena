@@ -2,8 +2,7 @@
 
 This creates one unreferenced material under /Game/Generated/Environment/ArtReview.
 It leaves the main palette, terrain meshes, WorldBuilder, collision, and kernel
-untouched. Run only with the pinned UE 5.8.2 editor; a diagnostic copy may
-change just the version guard for UE 5.8.3 packaged comparison.
+untouched. Run only with the pinned UE editor.
 """
 
 from __future__ import annotations
@@ -11,13 +10,15 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-version = unreal.SystemLibrary.get_engine_version()
-if not version.startswith("5.8.2"):
-    raise RuntimeError(f"Estate road variation import requires UE 5.8.2; got {version}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Estate road variation ArtReview")
 root = Path(unreal.Paths.project_dir()).resolve()
 manifest_path = root / "Content/SourceArt/Environment/NyaagyuTerrain/manifest.json"
 manifest = json.loads(manifest_path.read_text())

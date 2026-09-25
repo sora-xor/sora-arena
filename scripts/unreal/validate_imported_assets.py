@@ -1,6 +1,6 @@
 """Validate the authored UE asset packages after both import scripts have run.
 
-Run in UE 5.8.2 with ``-ExecutePythonScript=<this file>``. For a host-only
+Run in the pinned UE editor with ``-ExecutePythonScript=<this file>``. For a host-only
 manifest check, run ``python3 scripts/unreal/validate_imported_assets.py
 --source-only``. The host check cannot establish that Unreal packages exist.
 """
@@ -11,8 +11,10 @@ from pathlib import Path
 import re
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
 
-RELEASE_VERSION = "5.8.2"
+
 MESHES = "/Game/Generated/Meshes"
 PROPS = "/Game/Generated/Environment/Props"
 PALETTE = "/Game/Generated/Environment"
@@ -1315,9 +1317,7 @@ def main():
 
     import unreal
 
-    version = unreal.SystemLibrary.get_engine_version()
-    require(re.match(r"^" + re.escape(RELEASE_VERSION) + r"(?:-|$)", version) is not None,
-            f"SORA asset validation requires release UE {RELEASE_VERSION}; got {version}")
+    require_running_engine("SORA asset validation")
     project_root = Path(unreal.Paths.project_dir()).resolve()
     specs = expected_assets(project_root)
     count = validate_loaded_assets(unreal, specs)

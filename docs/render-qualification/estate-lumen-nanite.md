@@ -6,18 +6,19 @@ lighting, `.ini` files, or gameplay to improve a capture. Run against the
 current Estate content at a fixed 1280×720 viewport. Save original PNG bytes,
 the unfiltered runtime log, and a literal command/readback transcript.
 
-The release pin is **UE 5.8.2**. Before opening the project, run:
+The release pin is **UE 5.8.3** (changelist 58210709; see
+[toolchain.md](../toolchain.md)). Before opening the project, run:
 
 ```sh
 python3 scripts/render/estate_render_evidence.py --platform mac preflight
 ```
 
-For the isolated UE 5.8.3 Mac diagnostic only, add `--allow-interim` before
-`preflight`. The script reads `Build.version`, `versions.json`, the project
-association, and renderer configuration. It rejects other engine patches.
-The result records the engine changelist and file hash. The release source
-commit remains unpinned in `versions.json`, so even a 5.8.2 screenshot would
-not by itself establish an exact release revision.
+The script checks the engine against the pin in `versions.json` through
+`scripts/unreal/sora_engine_pin.py` (version, changelist, branch, installed
+build and plugin versions), plus the project association and renderer
+configuration. It rejects any other engine. The result records the
+`Build.version` contents and file hash. Earlier archives in this directory were
+captured before the 2026-09-25 re-pin and are labelled as interim diagnostics.
 
 Use the runtime-built **Nyaagyu Estate**, not an empty level-editor map. Lock
 the following two camera transforms in the diagnostic package or editor PIE;
@@ -110,7 +111,7 @@ Archive without resizing, cropping, color correction, or compression:
 
 ```sh
 python3 scripts/render/estate_render_evidence.py \
-  --platform mac --allow-interim \
+  --platform mac \
   --project-root /absolute/path/to/diagnostic/sora-arena \
   archive --capture-dir /absolute/path/to/raw-pngs \
   --runtime-log /absolute/path/to/lit-runtime.log \
@@ -120,7 +121,7 @@ python3 scripts/render/estate_render_evidence.py \
   --output /absolute/path/to/docs/render-qualification/estate-2026-09-24
 ```
 
-Use `--platform windows` and a verified 5.8.2 `--engine-root` for Windows.
+Use `--platform windows` and the pinned 5.8.3 `--engine-root` for Windows.
 The tool refuses missing or incorrectly sized captures and never overwrites
 an existing archive. If a visualization fails, archive the available raw
 evidence with `--allow-incomplete`; `manifest.json` then records

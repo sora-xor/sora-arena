@@ -12,9 +12,6 @@ report = doctor.inspect()
 editor = Path(report['engine_root'])/'Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor'
 if not report['build_ready'] or not editor.is_file():
     sys.exit('Selected editor prerequisites are unavailable; run scripts/toolchain/doctor.py and build-mac.sh first.')
-if report['engine_mode'] == 'interim_compile_diagnostic':
-    print('INTERIM UE 5.8.3 EDITOR DIAGNOSTIC ONLY; UE 5.8.2 release prerequisites remain unmet.',
-          file=sys.stderr)
 for name, value in [('EDITOR', str(editor)), ('DEVELOPER_DIR', report['developer_dir']),
                     ('SDKROOT', report['sdk_root']),
                     ('PROJECT', str(next(doctor.ROOT.glob('*.uproject'))))]:

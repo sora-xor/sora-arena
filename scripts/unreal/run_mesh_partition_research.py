@@ -12,6 +12,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import ENGINE_VERSION, require_engine_root  # noqa: E402
+
 
 SOURCE_MAP = "/Game/Research/NyaagyuMeshTerrain_Source"
 WP_MAP = SOURCE_MAP + "_WP"
@@ -73,9 +76,7 @@ def enable_plugin_only_in_worktree(project):
 def run_phase(args, phase, command, marker=None):
     log = args.project_root / f"Saved/Logs/mesh_research_{phase}.log"
     log.parent.mkdir(parents=True, exist_ok=True)
-    env = dict(__import__("os").environ,
-               SORA_MESH_RESEARCH_PHASE=phase,
-               SORA_MESH_RESEARCH_ENGINE_VERSION=args.engine_version)
+    env = dict(__import__("os").environ, SORA_MESH_RESEARCH_PHASE=phase)
     with log.open("w", encoding="utf-8") as output:
         result = subprocess.run(command, cwd=args.project_root, env=env, stdout=output,
                                 stderr=subprocess.STDOUT, timeout=3600, check=False)
@@ -94,9 +95,7 @@ def main():
     parser.add_argument("--project-root", required=True, type=Path,
                         help="Separate diagnostic Git worktree containing imported UE assets")
     parser.add_argument("--engine-root", required=True, type=Path,
-                        help="Installed UE 5.8 engine root")
-    parser.add_argument("--allow-interim-5.8.3", action="store_true",
-                        help="Research diagnostic only; release remains pinned to 5.8.2")
+                        help="Installed engine root matching scripts/toolchain/versions.json")
     parser.add_argument("--dry-run", action="store_true", help="Validate inputs without editing or running UE")
     parser.add_argument("--prepare-plugin-only", action="store_true",
                         help="Enable the Editor plugin in the diagnostic worktree, then stop for its build")
@@ -108,11 +107,7 @@ def main():
             "Use a separate linked Git worktree; never run on the release checkout")
     require((args.project_root / "SoraArena.uproject").is_file(), "Project descriptor missing")
     source_check(args.project_root)
-    build = json.loads((args.engine_root / "Engine/Build/Build.version").read_text())
-    args.engine_version = f'{build["MajorVersion"]}.{build["MinorVersion"]}.{build["PatchVersion"]}'
-    require(args.engine_version == "5.8.2" or
-            (args.allow_interim_5_8_3 and args.engine_version == "5.8.3"),
-            f"UE {args.engine_version} is not the pinned 5.8.2 release engine")
+    require_engine_root(args.engine_root, ("plugins", "research_plugins"))
     system = sys.platform
     if system == "darwin":
         editor = args.engine_root / "Engine/Binaries/Mac/UnrealEditor-Cmd"
@@ -125,7 +120,7 @@ def main():
         require(not (args.project_root / "Content/Research" / name).exists(),
                 f"Research map already exists; refusing to overwrite {name}")
     if args.dry_run:
-        print(f"Source, imports, worktree, and UE {args.engine_version} preflight passed")
+        print(f"Source, imports, worktree, and UE {ENGINE_VERSION} preflight passed")
         return
 
     enable_plugin_only_in_worktree(args.project_root)

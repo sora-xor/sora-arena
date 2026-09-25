@@ -1,4 +1,4 @@
-"""Import the visual-only Nyaagyu dojo bokken PBR study into UE 5.8.2.
+"""Import the visual-only Nyaagyu dojo bokken PBR study into the pinned UE.
 
 The candidate lives solely under /Game/Generated/ArtReview/DojoBokkenPBR.
 It never replaces the playable /Game/Generated/Meshes/SM_Nyaagyu_DojoBokken.
@@ -10,11 +10,11 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import unreal
 
 
-ENGINE_VERSION = "5.8.2"
 DESTINATION = "/Game/Generated/ArtReview/DojoBokkenPBR"
 MESH_NAME = "SM_Nyaagyu_DojoBokken_PBRStudy"
 SLOTS = {
@@ -24,9 +24,10 @@ SLOTS = {
     "M_Bokken_QuietWoodGrain": (.36, .29, .23),
 }
 
-engine = unreal.SystemLibrary.get_engine_version()
-if not engine.startswith(ENGINE_VERSION + "-"):
-    raise RuntimeError(f"Dojo bokken ArtReview requires pinned UE {ENGINE_VERSION}; got {engine}")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sora_engine_pin import require_running_engine  # noqa: E402
+
+require_running_engine("Dojo bokken ArtReview")
 root = Path(unreal.Paths.project_dir()).resolve()
 source = root / "Content/SourceArt/Weapons/DojoBokkenPBR"
 original = root / "Content/SourceArt/Weapons/Original"

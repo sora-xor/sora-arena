@@ -21,6 +21,9 @@ import sys
 
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO / "scripts/unreal"))
+import sora_engine_pin  # noqa: E402
+
 PINS = json.loads((REPO / "scripts/toolchain/versions.json").read_text())
 CAMERAS = {
     "Entrance": {"location_cm": [-2696, 0, 154.15], "rotation_deg": [0, 0, 0], "horizontal_fov_deg": 94},
@@ -66,20 +69,14 @@ def png_dimensions(path: Path) -> tuple[int, int]:
     return struct.unpack(">II", header[16:24])
 
 
-def engine_info(engine_root: Path, allow_interim: bool) -> dict:
+def engine_info(engine_root: Path) -> dict:
+    try:
+        version = sora_engine_pin.require_engine_root(engine_root)
+    except RuntimeError as exc:
+        raise ValueError(str(exc)) from exc
     version_file = engine_root / "Engine/Build/Build.version"
-    data = json.loads(version_file.read_text())
-    version = ".".join(str(data[field]) for field in ("MajorVersion", "MinorVersion", "PatchVersion"))
-    release = PINS["unreal"]["version"]
-    interim = PINS["unreal"]["interim_compile_diagnostic_version"]
-    if version == release:
-        classification = "release_version_only"
-    elif allow_interim and version == interim:
-        classification = "interim_diagnostic_only"
-    else:
-        raise ValueError(f"Unreal {version} is not the pinned {release} release" +
-                         (f" or explicitly allowed {interim} interim diagnostic" if allow_interim else ""))
-    return {"version": version, "classification": classification, "build_version": data,
+    return {"version": version, "engine_version": sora_engine_pin.ENGINE_VERSION,
+            "build_version": json.loads(version_file.read_text()),
             "build_version_sha256": sha256(version_file), "root": str(engine_root.resolve()),
             "release_source_commit_pin": PINS["unreal"]["source_commit"]}
 
@@ -123,14 +120,13 @@ def expected_captures(system: str) -> tuple[str, ...]:
 
 
 def preflight(args: argparse.Namespace) -> dict:
-    engine = engine_info(args.engine_root.expanduser(), args.allow_interim)
+    engine = engine_info(args.engine_root.expanduser())
     project = project_info(args.project_root.expanduser(), args.platform)
     return {"schema": 1, "engine": engine, "project": project,
             "host": platform.platform(), "capture_platform": args.platform,
             "cameras": CAMERAS, "required_captures": expected_captures(args.platform),
             "limitations": [
-                "A 5.8.3 capture is an interim diagnostic, never UE 5.8.2 release acceptance.",
-                "The release source commit is unpinned; version alone is not an exact engine revision.",
+                "The pinned engine is a Launcher binary build; its changelist, not a source commit, identifies it.",
                 "M1 Ultra Mac fallback captures cannot qualify Windows Nanite or RTX performance.",
             ]}
 
@@ -190,8 +186,6 @@ def main() -> int:
     parser.add_argument("--engine-root", type=Path,
                         default=Path(PINS["unreal"]["default_macos_root"]))
     parser.add_argument("--platform", choices=("mac", "windows"), required=True)
-    parser.add_argument("--allow-interim", action="store_true",
-                        help="Permit pinned 5.8.3 only as an interim diagnostic")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("preflight")
     archive_parser = sub.add_parser("archive")
