@@ -1,0 +1,7 @@
+# Audio pipeline (scripts/audio). Free, open-source; install with:
+#   python3 -m pip install --user -r scripts/audio/requirements.txt
+# Verified with the macOS system Python 3.9.6 on 2026-09-25.
+numpy==1.23.5        # BSD-3-Clause
+scipy==1.13.1        # BSD-3-Clause
+soundfile==0.13.1    # BSD-3-Clause (bundles libsndfile 1.2.2, LGPL-2.1, used as a library)
+pyloudnorm==0.2.0    # MIT (ITU-R BS.1770-4 integrated loudness)

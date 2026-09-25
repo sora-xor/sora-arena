@@ -1,0 +1,93 @@
+{
+ "schema_version": 2,
+ "source": "Wikimedia Commons (per-file CC0 / public domain only)",
+ "purpose": "Japanese instrument reference tones for the music sampler",
+ "ledger_policy": "docs/art-research/free-asset-acquisition-plan.md (sections 2.1-2.5)",
+ "fetch_script": "scripts/audio/fetch_cc0_audio.py",
+ "raw_root": "Local/ThirdPartyRaw/audio",
+ "raw_committed": false,
+ "batch_log": {
+  "started_at_utc": "2026-09-25T11:27:28+00:00",
+  "finished_at_utc": "2026-09-25T11:27:29+00:00",
+  "free_gib_before": 75.2,
+  "free_gib_after": 75.15,
+  "raw_audio_tree_bytes_after": 619874946
+ },
+ "assets": [
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "api",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "wikimedia/File:Shakuhachi-flute-440Hz.ogg",
+   "name": "File:Shakuhachi-flute-440Hz.ogg",
+   "role": "music: single shakuhachi A4 tone (timbre reference and sampler seed)",
+   "origin_url": "https://freesound.org/people/--DeletedUser--/sounds/268183/",
+   "mirror_url": "https://commons.wikimedia.org/wiki/File%3AShakuhachi-flute-440Hz.ogg",
+   "authors": [
+    "--DeletedUser--"
+   ],
+   "license_evidence": {
+    "api_url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url|size|sha1|extmetadata|mime&titles=File%3AShakuhachi-flute-440Hz.ogg",
+    "LicenseShortName": "CC0",
+    "License": "cc0",
+    "UsageTerms": "Creative Commons Zero, Public Domain Dedication",
+    "Credit": "https://freesound.org/people/--DeletedUser--/sounds/268183/",
+    "ImageDescription": "440Hz sound played on a Shakuhachi (japanese bambooflute)",
+    "api_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/wikimedia-File_Shakuhachi-flute-440Hz.ogg-2026-09-25.html",
+     "sha256": "0ddee86062a8fc8ab0d6078921c49ac49e0905957e31c5e5987c491a438a5b5c",
+     "captured_at_utc": "2026-09-25T11:27:29+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:27:29+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:27:29+00:00",
+   "files": [
+    {
+     "url": "https://upload.wikimedia.org/wikipedia/commons/2/22/Shakuhachi-flute-440Hz.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+     "file": "Local/ThirdPartyRaw/audio/wikimedia/Shakuhachi-flute-440Hz.ogg",
+     "bytes": 87667,
+     "sha256": "0c98ae0126ff1405af4bff74360204aa62ce3bd5ec1532d3b542647a3e45d8dc",
+     "reused_local": true,
+     "upstream_sha1": "0f0b7446fa6b3bda269d1b216ab1158edcb6d44d",
+     "mime": "application/ogg"
+    }
+   ],
+   "use_policy": "sample",
+   "upstream": {
+    "site": "Freesound",
+    "url": "https://freesound.org/people/--DeletedUser--/sounds/268183/",
+    "authors": [
+     "--DeletedUser-- (Freesound account since deleted)"
+    ],
+    "license": "CC0-1.0",
+    "license_stated": [
+     "Creative Commons 0",
+     "publicdomain/zero/1.0"
+    ],
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/freesound-sound-268183-2026-09-25.html",
+     "sha256": "70c3beca56a5283ec43bee902fefcea8830eb1fe0d1b7ba55fe4d5868a9c67c5",
+     "captured_at_utc": "2026-09-25T20:42:53+00:00"
+    },
+    "access": "direct (public page read; nothing downloaded from it)",
+    "verified_at_utc": "2026-09-25T20:42:53+00:00"
+   }
+  }
+ ],
+ "skipped": []
+}

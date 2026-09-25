@@ -1,0 +1,126 @@
+{
+ "name": "mus_ch07_flagship_battle",
+ "title": "複利号 (The Compound-Interest Flagship)",
+ "description": "Alien flagship battle loop: cold synth stem + taiko stem (ch07 hangar / Collatera P2)",
+ "bpm": 132,
+ "beats_per_bar": 4,
+ "intro_bars": 0,
+ "loop_bars": 24,
+ "sample_rate": 48000,
+ "handoff_sample": 0,
+ "loop_length_samples": 2094545,
+ "loop_seconds": 43.6364,
+ "master_gain_db": -0.17,
+ "master_limiter_max_gr_db": 2.64,
+ "target_integrated_lufs": -16.0,
+ "stems": [
+  "synth",
+  "taiko"
+ ],
+ "loop_mix_is": "sum of all stems",
+ "score_module": "scripts/audio/music/scores/flagship_battle.py",
+ "files": [
+  {
+   "file": "Content/SourceArt/Audio/Music/mus_ch07_flagship_battle/mus_ch07_flagship_battle_loop.wav",
+   "bytes": 12567382,
+   "sha256": "cc8ac4b8b7def0fde51fb1f17ab9b2f1dfa287ea1a3286a5fe3b19fe8d75f032",
+   "piece": "mus_ch07_flagship_battle",
+   "role": "loop",
+   "loop": true,
+   "qa": {
+    "sr": 48000,
+    "channels": 2,
+    "subtype": "PCM_24",
+    "seconds": 43.636,
+    "sample_peak_dbfs": -1.26,
+    "true_peak_dbtp": -1.23,
+    "integrated_lufs": -16.0,
+    "momentary_max_lufs": -13.63,
+    "rms_dbfs": -17.56,
+    "dc_offset_dbfs": -96.2,
+    "max_fullscale_run": 0,
+    "leading_silence_ms": 0.0,
+    "trailing_silence_ms": 0.0,
+    "loop": [
+     0,
+     2094544
+    ],
+    "wrap_hf_ratio_vs_p95": 1.104,
+    "wrap_jump_vs_p999_step": 0.99,
+    "wrap_curvature_vs_p999": 1.044,
+    "wrap_level_delta_db": -3.81,
+    "loop_click": false,
+    "fail": [],
+    "warn": []
+   }
+  },
+  {
+   "file": "Content/SourceArt/Audio/Music/mus_ch07_flagship_battle/mus_ch07_flagship_battle_stem_synth.wav",
+   "bytes": 12567382,
+   "sha256": "bf0686d167093137010655b2d2ef18bcb85b3a8ee77cab467d8b5ad2be1dc39c",
+   "piece": "mus_ch07_flagship_battle",
+   "role": "stem:synth",
+   "loop": true,
+   "qa": {
+    "sr": 48000,
+    "channels": 2,
+    "subtype": "PCM_24",
+    "seconds": 43.636,
+    "sample_peak_dbfs": -2.93,
+    "true_peak_dbtp": -2.9,
+    "integrated_lufs": -18.16,
+    "momentary_max_lufs": -16.4,
+    "rms_dbfs": -19.7,
+    "dc_offset_dbfs": -99.6,
+    "max_fullscale_run": 0,
+    "leading_silence_ms": 0.0,
+    "trailing_silence_ms": 0.0,
+    "loop": [
+     0,
+     2094544
+    ],
+    "wrap_hf_ratio_vs_p95": 1.117,
+    "wrap_jump_vs_p999_step": 1.008,
+    "wrap_curvature_vs_p999": 1.055,
+    "wrap_level_delta_db": -8.08,
+    "loop_click": false,
+    "fail": [],
+    "warn": []
+   }
+  },
+  {
+   "file": "Content/SourceArt/Audio/Music/mus_ch07_flagship_battle/mus_ch07_flagship_battle_stem_taiko.wav",
+   "bytes": 12567382,
+   "sha256": "a16d5da7696827284e01a59260f61e601e80656641c3536d2c4f847442285925",
+   "piece": "mus_ch07_flagship_battle",
+   "role": "stem:taiko",
+   "loop": true,
+   "qa": {
+    "sr": 48000,
+    "channels": 2,
+    "subtype": "PCM_24",
+    "seconds": 43.636,
+    "sample_peak_dbfs": -4.76,
+    "true_peak_dbtp": -4.76,
+    "integrated_lufs": -20.05,
+    "momentary_max_lufs": -14.88,
+    "rms_dbfs": -21.63,
+    "dc_offset_dbfs": -105.0,
+    "max_fullscale_run": 0,
+    "leading_silence_ms": 0.0,
+    "trailing_silence_ms": 0.0,
+    "loop": [
+     0,
+     2094544
+    ],
+    "wrap_hf_ratio_vs_p95": 0.011,
+    "wrap_jump_vs_p999_step": 0.069,
+    "wrap_curvature_vs_p999": 0.016,
+    "wrap_level_delta_db": -2.18,
+    "loop_click": false,
+    "fail": [],
+    "warn": []
+   }
+  }
+ ]
+}

@@ -1,0 +1,2123 @@
+{
+  "format": "sora-cc0-selection/1",
+  "name": "first-slice",
+  "purpose": "CC0 core set for the Nyaagyu Estate (Arena 0) and campaign chapters 1-2: backlog items 3-7 of docs/art-research/free-asset-acquisition-plan.md, plus a small extension (priority 8) of plan-named chapter 1-2 items.",
+  "references": [
+    "docs/art-research/free-asset-acquisition-plan.md (sections 3.1-3.8, 5, 6)",
+    "docs/campaign/story-bible.md (sections 14, 15, 16, 19; setting 1623)",
+    "docs/campaign/chapter-01.md (sections 2, 7.1-7.3)",
+    "docs/campaign/chapter-02.md (section 2)"
+  ],
+  "format_policy": {
+    "polyhaven": {
+      "texture": "Diffuse as sRGB JPG; nor_dx and arm as half-float EXR (DWAA). The 16-bit PNGs are about 4x larger (plan F7 and the 2026-09-25 file listing); UE imports the EXR and must set Normalmap/Masks compression. No displacement unless Nanite displacement or Mesh Terrain adopts it.",
+      "hdri": "Radiance .hdr (4K for lighting HDRIs, 2K for look-reference only).",
+      "model": "glTF 2K bundle exactly as listed by the API (gltf + bin + its textures), plus nor_dx EXR where extra_channels asks for it.",
+      "resolution": "2K default; 4K only for hero surfaces seen from under 2 m (story bible 1024 px/m hero density: a 4K tile covers about 4 m, a 2K tile about 2 m). No 8K/16K."
+    },
+    "ambientcg": {
+      "material": "Members of the 2K-JPG archive only (plan section 4.1): Color, NormalDX, Roughness, AmbientOcclusion, Metalness, Opacity where present. NormalGL, Displacement, .blend/.usdc/.mtlx/.tres and previews are not taken. Members are extracted by HTTP Range, so the archive itself is never stored."
+    }
+  },
+  "groups": [
+    {
+      "priority": 3,
+      "backlog_item": 3,
+      "label": "Poly Haven architecture set",
+      "source": "polyhaven",
+      "kind": "texture",
+      "items": [
+        {
+          "id": "hinoki_planks",
+          "resolution": "4k",
+          "hero": true,
+          "hero_reason": "Dojo lesson floor under the first-person camera during every ch01 duel (b02-b05).",
+          "game_use": [
+            {
+              "place": "pl_tsumagizaka_dojo",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "檜の床 hinoki floor of the hero dojo interior (6 x 5 ken lesson floor)"
+            },
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01",
+                "ch02"
+              ],
+              "use": "縁側 engawa boards and veranda (b05 sunbeam spot, b10 estate veranda)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "The scan is knotty; a 1623 dojo floor would be chosen clear-grain (無節) boards polished by feet. Compare against clear-grain reference before use (plan 3.1)."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "japanese_cedar_planks",
+          "resolution": "4k",
+          "hero": true,
+          "hero_reason": "羽目板 wall panelling of the dojo interior and stable walls, seen at arm's length.",
+          "game_use": [
+            {
+              "place": "pl_tsumagizaka_dojo",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "羽目板 wainscot panelling, 舞良戸 doors, name-board backing"
+            },
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "board-walled stable (12.7 x 5.5 m), stall partitions"
+            },
+            {
+              "place": "pl_dojo_smithy",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "smithy shed walls and loft shelf"
+            },
+            {
+              "place": "pl_bugugura",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "武具蔵 armory storehouse boarding and 槍掛け spear rack"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Check for uniformly machine-planed widths or modern milled joints; period boards are hand-dressed. Colour/grain is appropriate for sugi."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "clay_plaster",
+          "resolution": "4k",
+          "hero": true,
+          "hero_reason": "Earthen walls the player brushes past in the lane, smithy and tea hut; cover in ch02 fights.",
+          "game_use": [
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01",
+                "ch02"
+              ],
+              "use": "土壁 / 土塀 earthen walls (overlay on existing NyaagyuEstateWall), 長屋門 gatehouse rooms"
+            },
+            {
+              "place": "pl_estate_night",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "茶室 tea hut walls (4.5 mats; b14 heirloom), fire-charred wall variants"
+            },
+            {
+              "place": "pl_dojo_smithy",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "smithy walls and 火床 hearth surround"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "炭焼き小屋 charcoal-burner hut walls"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "stacked_stone_wall",
+          "resolution": "4k",
+          "hero": true,
+          "hero_reason": "Dry-stone retaining walls line the ch01 lane at saddle height and form knee-high cover at the ch02 bridge.",
+          "game_use": [
+            {
+              "place": "ch01 lane kit (pl_umaya to pl_matoba)",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "dry-stone retaining walls bounding the estate lane (b06)"
+            },
+            {
+              "place": "pl_ishibashi",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "knee-high dry-stone wall along the near-bank road (b09 cover)"
+            },
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01",
+                "ch02"
+              ],
+              "use": "kura and gate stone plinths / footings"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Poly Haven describes 'deep mortar crevices'. Lane retaining walls and the bridge wall are dry-laid (no mortar). Mortar-joint check required before use (plan backlog 3 'done when')."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "fails dry-stone use as is",
+            "notes": "Rounded, flat brown slate-like stones fully bedded in tan mortar: mortared rubble, not dry-stone, and not the local granite. Build the lane and bridge dry-stone walls from rock scans (ScanRock01, rock_moss_set_01/02) or re-author the joints as voids and regrade."
+          }
+        },
+        {
+          "id": "patterned_clay_plaster",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "rough daub on charcoal huts and the lean-to workshop (masked breakup layer only)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Overlapping decorative arc trowel pattern is not a Japanese 土壁 finish. Use only as masked breakup under clay_plaster."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "roof_planks",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_matoba",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "射場 shed and the small roof over the 安土 sand mound"
+            },
+            {
+              "place": "pl_dojo_smithy",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "plank roof of the smithy shed"
+            },
+            {
+              "place": "pl_bugugura",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "下屋 lean-to eave of the armory storehouse"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "差し掛け小屋 lean-to workshop roof (b16)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Not for the stable: chapter-01 specifies a cedar-bark roof (杉皮葺) on the 厩; this is a plank texture."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "thatch_roof_angled",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "thatched charcoal-burner huts (family shelters, b11)"
+            },
+            {
+              "place": "pl_matoba",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "straw texture for 巻藁 and hanging straw targets (b07)"
+            },
+            {
+              "place": "later: pl_shimomura",
+              "chapters": [
+                "ch04"
+              ],
+              "use": "茅葺 farmhouse field surface (evaluation)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European reed thatch; Japanese kayabuki uses susuki/kaya with different ridge (棟) construction. Field surface only; author ridges."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "reed_roof_03",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "weathered, mossy thatch variant for the older huts"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European reed thatch (plan 3.1); field surface only."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "bamboo_wall_02",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "ch01 lane kit",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "竹垣 bamboo fences bounding the lane (b06)"
+            },
+            {
+              "place": "pl_estate_night",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "竹束 bamboo-bundle mantlets in the gate yard (b02)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Species unknown. Mōsō bamboo reportedly arrived in 1736 (plan F14, unverified); culms must read as madake/hachiku (node rings, wall thickness). Weave pattern must match a Japanese 竹垣 style."
+            }
+          ],
+          "period_risk": "medium",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "plausible; check ties",
+            "notes": "Herringbone split-bamboo panels (網代-like) on thin culm battens bound with thin dark ties that may be wire; 網代垣 is a period form, but ties should read as shuro rope."
+          }
+        },
+        {
+          "id": "bamboo_wall_03",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "ch01 lane kit",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "alternate 竹垣 fence panel"
+            },
+            {
+              "place": "pl_bugugura",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "竹束 rack against the storehouse"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Species unknown; mōsō risk as for bamboo_wall_02 (plan F14)."
+            }
+          ],
+          "period_risk": "medium",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "plausible",
+            "notes": "Checker-weave split-bamboo panel with culm battens; a plausible 網代 panel. Culm species not identifiable at this scale."
+          }
+        },
+        {
+          "id": "tatami_mat",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_estate_night",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "茶室 tea hut floor (four-and-a-half mats, b14)"
+            },
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "母屋 main-house rooms and the dojo kamiza dais"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Upstream mentions decorative fabric edges: heri must be plain dark hemp/cotton for a samurai house (patterned 高麗縁 only for high-status seats). Check for modern machine-woven omote."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "lacquered_cherry_wood",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "wood grain base under the lacquered 鞍 saddle on its stand (b06 tack hero set)"
+            },
+            {
+              "place": "pl_bugugura",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "鎧櫃 armor chests"
+            },
+            {
+              "place": "pl_tsumagizaka_dojo",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "刀掛け sword rack and 神棚 fittings"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Western clear-lacquered cherry. Urushi (黒/朱) is an opaque pigmented clear-coat with edge wear to 木地; use only as the grain layer under authored urushi."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "wood_inlaid_stone_wall",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "evaluation only: gate and kura footing with timber sill"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Architectural style unknown and probably not Japanese; evaluation only until reviewed."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "exclude",
+            "notes": "Ashlar blocks with a carved floral-arabesque timber band (South Asian or Middle Eastern style). Not usable for Nyaagyu."
+          }
+        },
+        {
+          "id": "mossy_stone_wall",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "切通し cutting walls (4 m, mossy) at chainage 300 m"
+            },
+            {
+              "place": "ch01 lane kit",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "shaded retaining-wall variant"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "gorge path walls at the valley mouth"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Upstream mentions rough mortar; the cutting and dry-stone walls have none. Mortar-joint check required."
+            }
+          ],
+          "period_risk": "medium",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "plausible after engine review",
+            "notes": "Small squared grey stones with wide joints filled by moss and soil; the joints read as moss-filled gaps rather than cement. Plausible for shaded low retaining walls and the cutting; not for ishigaki."
+          }
+        },
+        {
+          "id": "japanese_stone_wall",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_ishibashi",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "abutments and the three stone piers of the 石桁橋 slab-beam bridge"
+            },
+            {
+              "place": "later: pl_ishigaki",
+              "chapters": [
+                "ch06"
+              ],
+              "use": "reference for Arena 3 ramparts"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Poly Haven: 'deep mortar joints'. Ishigaki and the slab-beam bridge are laid without mortar (plan F16). Check visually; mask or re-author joints."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "usable after joint re-authoring",
+            "notes": "Grey granite polygonal blocks, tightly fitted; joints about 1 cm wide carry a pale mortar line. The polygonal fit is plausible for early-17th-century cut-fit masonry, but the pale fill must be masked to dark open joints before use on the bridge piers and abutments."
+          }
+        },
+        {
+          "id": "granite_wall",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_ishibashi",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "granite bridge piers and deck-curb stones; 6 m granite outcrop under the marksman platform"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Poly Haven: 'deep mortar joints' (plan F16). Granite colour is right; joints are not."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "not usable as a wall",
+            "notes": "Long ashlar courses separated by continuous thick raised mortar beds and pale vertical joints: modern Western coursing. Only the granite face may be sampled for slab-beam deck and curb surfaces."
+          }
+        }
+      ]
+    },
+    {
+      "priority": 4,
+      "backlog_item": 4,
+      "label": "Poly Haven ground and bark",
+      "source": "polyhaven",
+      "kind": "texture",
+      "items": [
+        {
+          "id": "forest_ground_05",
+          "resolution": "4k",
+          "hero": true,
+          "hero_reason": "Packed-earth ground is always within 2 m of the first-person camera (lane, highway, yards).",
+          "game_use": [
+            {
+              "place": "ch01 lane kit",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "packed-earth estate lane (story bible 15.1: streets are packed earth)"
+            },
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "packed-earth and gravel highway surface, 2 間 wide"
+            },
+            {
+              "place": "pl_bugugura",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "armory yard ground"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "japanese_cedar_bark",
+          "resolution": "4k",
+          "hero": true,
+          "hero_reason": "Sugi trunks are cover and landmarks at arm's length in the wood and on the highway.",
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "sugi trunks of the cedar forest (in-house tree building, plan 3.3 route 1)"
+            },
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "cedar avenue from the back gate (0-260 m)"
+            },
+            {
+              "place": "pl_ishibashi",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "cedar trunks used as near-bank cover"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "forest_ground_04",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "dry gravel-and-stone road variant on steep pitches"
+            },
+            {
+              "place": "pl_matoba",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "shooting-line ground and berms"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "forest_ground_06",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "damp forest floor between moss and ferns"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "valley floor and clearing"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Leaf flecks may be broadleaf litter; a sugi/hinoki floor is needle and bark litter. Check before large-area use."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "muddy_tracks",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "evaluation only: churned mud outside the stable and at the tie rail"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Contains deep tire tracks; wheeled-vehicle tread is anachronistic in 1623. Only hoof-churned areas may be used after masking out every tread."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "inspect normal and height first",
+            "notes": "No tread pattern is visible in the diffuse preview, but the upstream description says deep tire tracks; check the normal map and height at full resolution before any use."
+          }
+        },
+        {
+          "id": "river_small_rocks",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_ishibashi",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "rocky stream bed and the 20 m gravel bar at the ford (b09 flank route)"
+            },
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "stream bed in the wood"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "stream margins and plunge-pool path"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "pine_bark",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01",
+                "ch02"
+              ],
+              "use": "pines along both long estate edges (Y about ±22)"
+            },
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "sparse pine stand at 640-800 m"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Species unspecified; reddish flaky plates suit akamatsu upper trunks, not kuromatsu. Compare with reference."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "japanese_zelkova_bark",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_tsumagizaka_dojo",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "the old 欅 zelkova at the dojo yard's south-west corner (orientation landmark)"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "sakura_bark",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "yamazakura trunks at the wood edge (late spring)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Trees must read as yamazakura, never Somei-Yoshino (a late-Edo cultivar; plan F14, unverified). Bark alone is neutral; flowers and leaf-out timing decide."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "trident_maple_bark",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "generic maple trunk bark for momiji understorey"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Trident maple (唐楓, Acer buergerianum) is reportedly an 18th-century (Kyōhō-era) introduction to Japan (not independently verified). Use only as generic maple bark for iroha-momiji; do not model tōkaede."
+            }
+          ],
+          "period_risk": "medium"
+        }
+      ]
+    },
+    {
+      "priority": 5,
+      "backlog_item": 5,
+      "label": "Poly Haven HDRIs (lighting only)",
+      "source": "polyhaven",
+      "kind": "hdri",
+      "items": [
+        {
+          "id": "kloofendal_misty_morning_puresky",
+          "resolution": "4k",
+          "game_use": [
+            {
+              "place": "pl_tsumagizaka_dojo / pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "dawn and morning-mist image-based lighting (b01 dawn suburi, b08 wood)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "South African sky; lighting only. The visible sky comes from SkyAtmosphere and volumetric clouds (plan 3.4)."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "qwantani_dusk_2_puresky",
+          "resolution": "4k",
+          "game_use": [
+            {
+              "place": "pl_estate_day / pl_estate_night",
+              "chapters": [
+                "ch01",
+                "ch02"
+              ],
+              "use": "dusk lighting for ch01.b13 and the ch02.b01 afterglow"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "South African sky; lighting only."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "qwantani_night_puresky",
+          "resolution": "4k",
+          "game_use": [
+            {
+              "place": "pl_estate_night / pl_kaido / pl_ishibashi",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "moonlit night fill (about 4100 K) for b02-b09; the chapter 2 plan asks for a CC0 night HDRI"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Southern-hemisphere star field; never visible as the Japanese sky, lighting only."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "ninomaru_teien",
+          "resolution": "4k",
+          "game_use": [
+            {
+              "place": "look development",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "Japanese-garden sunrise reference for roji and courtyard look-dev and reflections"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Real present-day garden: modern elements may be visible. Look-development and reflection reference only, never a visible background."
+            }
+          ],
+          "period_risk": "low"
+        }
+      ]
+    },
+    {
+      "priority": 6,
+      "backlog_item": 6,
+      "label": "Poly Haven models",
+      "source": "polyhaven",
+      "kind": "model",
+      "items": [
+        {
+          "id": "rock_moss_set_01",
+          "resolution": "2k",
+          "extra_channels": [
+            [
+              "nor_dx",
+              "exr"
+            ]
+          ],
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "mossy forest rocks around the One-Claw Stone"
+            },
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "ravine and verge rocks (400-550 m bend)"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "rock_moss_set_02",
+          "resolution": "2k",
+          "extra_channels": [
+            [
+              "nor_dx",
+              "exr"
+            ]
+          ],
+          "game_use": [
+            {
+              "place": "pl_ishibashi",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "stream-bank rocks and the ford's edges"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "gorge path and waterfall pool rocks"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "boulder_01",
+          "resolution": "2k",
+          "extra_channels": [
+            [
+              "nor_dx",
+              "exr"
+            ]
+          ],
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "boulder at the valley mouth carrying the first charcoal SORA mark (collectible c05)"
+            },
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "form study for the 3 m split One-Claw Stone (needs photogrammetry-grade granite; scan is 1.3 x 1.8 x 1.0 m)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Lithology unknown (rusty mineral streaks); the One-Claw Stone is granite. Up-scaling a 1.8 m scan to 3 m halves texel density."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "root_cluster_01",
+          "resolution": "2k",
+          "extra_channels": [
+            [
+              "nor_dx",
+              "exr"
+            ]
+          ],
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "exposed roots on the cedar forest floor"
+            },
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "roadside bank roots in the cedar avenue"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "moss_01",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "moss carpet clumps (chapter-01 asset list: moss carpet)"
+            },
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "moss on the 切通し walls and roadside 石仏"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "tree_stump_01",
+          "resolution": "2k",
+          "extra_channels": [
+            [
+              "nor_dx",
+              "exr"
+            ]
+          ],
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "felled-tree stumps near the charcoal kiln"
+            },
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "forest dressing"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Decayed natural stump; check the top for chainsaw-cut faces (anachronistic) before use near the charcoal burners."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "wooden_bucket_01",
+          "resolution": "2k",
+          "extra_channels": [
+            [
+              "nor_dx",
+              "exr"
+            ]
+          ],
+          "game_use": [
+            {
+              "place": "pl_tsumagizaka_dojo yard",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "釣瓶 well bucket (yard set: well with tsurube, b04-b05)"
+            },
+            {
+              "place": "pl_bugugura",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "bucket at the well curb (cover at +4.5, +5)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Western coopered bucket with metal bands and an iron handle; Japanese 桶 use split-bamboo hoops (竹箍) and rope or wooden bails. Re-author hoops and handle; use the stave surface only."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "wooden_bucket_02",
+          "resolution": "2k",
+          "extra_channels": [
+            [
+              "nor_dx",
+              "exr"
+            ]
+          ],
+          "game_use": [
+            {
+              "place": "pl_dojo_smithy",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "quench tub"
+            },
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "water tub beside the 飼葉桶 feed trough"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Same metal-hoop problem as wooden_bucket_01."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "katana_stand_01",
+          "resolution": "2k",
+          "extra_channels": [
+            [
+              "nor_dx",
+              "exr"
+            ]
+          ],
+          "game_use": [
+            {
+              "place": "pl_tsumagizaka_dojo",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "刀掛け sword rack in the dojo (fittings list, story bible 15.2)"
+            },
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "b12 katana return scene dressing"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Painted stand with a decorative central crest: the crest must be removed or replaced by the exact SORA mon (story bible 17). Check the stand's form against an Edo 刀掛け before use (plan 3.8)."
+            }
+          ],
+          "period_risk": "medium"
+        }
+      ]
+    },
+    {
+      "priority": 7,
+      "backlog_item": 7,
+      "label": "ambientCG 2K materials",
+      "source": "ambientcg",
+      "kind": "material",
+      "download": "2K-JPG",
+      "items": [
+        {
+          "id": "Rope001",
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "注連縄 shimenawa on the split boulder (base for authored straw rope)"
+            },
+            {
+              "place": "pl_matoba",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "lashings of the hanging straw-target frames"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "pack-load lashings on the 荷鞍 pack saddles"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Twisted cordage look; a shimenawa is left-laid rice straw (稲藁). Re-author the shimenawa; use for hemp lashings only."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Rope002",
+          "game_use": [
+            {
+              "place": "evaluation",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "evaluation only"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Tagged metal/steel: wire rope is anachronistic in 1623. Evaluation only; kept because the plan names Rope001-003."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "Rope003",
+          "game_use": [
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "半鐘 alarm-bell ring rope (b13) and well rope for the 釣瓶"
+            },
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "halters and the tie-rail rope"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Check fibre look against hemp (麻) rope."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Bamboo001A",
+          "game_use": [
+            {
+              "place": "pl_dojo_smithy",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "fresh bamboo for arrow-shaft (矢) straightening props (b09)"
+            },
+            {
+              "place": "weapons",
+              "chapters": [
+                "ch01",
+                "ch02"
+              ],
+              "use": "yumi bamboo laminate and ya shafts (material reference)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Species unknown; must read as madake/hachiku, not mōsō (plan F14)."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "material reference only",
+            "notes": "Procedural culms with single-line node rings (mōsō-like; madake and hachiku show a double ring) and a flat CG surface. Period and photoreal risk."
+          }
+        },
+        {
+          "id": "Bamboo001B",
+          "game_use": [
+            {
+              "place": "ch01 lane kit",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "dry bamboo fence posts and rails"
+            },
+            {
+              "place": "weapons",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "袋竹刀 fukuro-shinai split-bamboo core (seen at the sleeve mouth)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Mōsō risk (plan F14)."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "material reference only",
+            "notes": "Same procedural family as Bamboo001A/002B (not individually viewed): single-ring nodes and flat CG shading are expected."
+          }
+        },
+        {
+          "id": "Bamboo001C",
+          "game_use": [
+            {
+              "place": "pl_estate_night",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "weathered 竹束 mantlets and old fence sections"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Mōsō risk (plan F14)."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "material reference only",
+            "notes": "Same procedural family as Bamboo001A/002B (not individually viewed): single-ring nodes and flat CG shading are expected."
+          }
+        },
+        {
+          "id": "Bamboo002A",
+          "game_use": [
+            {
+              "place": "ch01 lane kit",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "green bamboo fence infill (late spring)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Mōsō risk (plan F14)."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "material reference only",
+            "notes": "Same procedural family as Bamboo001A/002B (not individually viewed): single-ring nodes and flat CG shading are expected."
+          }
+        },
+        {
+          "id": "Bamboo002B",
+          "game_use": [
+            {
+              "place": "pl_matoba",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "弓立て / 矢立て racks in the 射場"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Mōsō risk (plan F14)."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "material reference only",
+            "notes": "Procedural culms with single-line node rings and flat CG shading, as Bamboo001A."
+          }
+        },
+        {
+          "id": "Bamboo002C",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "old bamboo on the lean-to and hut frames"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Mōsō risk (plan F14)."
+            }
+          ],
+          "period_risk": "high",
+          "visual_review": {
+            "method": "agent visual check, 2026-09-25, downscaled diffuse preview (900 px; ambientCG 700 px)",
+            "verdict": "material reference only",
+            "notes": "Same procedural family as Bamboo001A/002B (not individually viewed): single-ring nodes and flat CG shading are expected."
+          }
+        },
+        {
+          "id": "Moss001",
+          "game_use": [
+            {
+              "place": "pl_issoseki_wood",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "photogrammetry moss carpet ground layer"
+            },
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "moss on 石仏 and 石灯籠"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "Moss002",
+          "game_use": [
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "moss in granite joints and on roji stones (story bible 15.1)"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "Moss003",
+          "game_use": [
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "cutting walls and roadside banks"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "Moss004",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "hut roofs and valley boulders"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "Plaster007",
+          "game_use": [
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01",
+                "ch02"
+              ],
+              "use": "weathered 漆喰 on kura and walls (compare with existing white_plaster_02)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Tagged 'paint': a painted modern wall. 漆喰 is lime plaster; use for crack and spall breakup only."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "Plaster001",
+          "game_use": [
+            {
+              "place": "pl_estate_day",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "rough lime-plaster variant for the 長屋門 gatehouse"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Modern stucco; check the trowel texture against 漆喰."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "RoofingTiles011A",
+          "game_use": [
+            {
+              "place": "evaluation",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "compare with the existing ibushi kawara maps (plan 3.1: evaluate)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Western clay-tile profile, not 桟瓦 or 本瓦; evaluation only. The existing NyaagyuKawaraBay ibushi maps stay primary."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "RoofingTiles012A",
+          "game_use": [
+            {
+              "place": "evaluation",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "kawara comparison"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Western clay-tile profile; evaluation only."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "RoofingTiles013A",
+          "game_use": [
+            {
+              "place": "evaluation",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "kawara comparison"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Western clay-tile profile; evaluation only."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "RoofingTiles014A",
+          "game_use": [
+            {
+              "place": "evaluation",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "kawara comparison"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Western clay-tile profile; evaluation only."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "RoofingTiles015A",
+          "game_use": [
+            {
+              "place": "evaluation",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "grey clay tile compared with ibushi (silver-black, roughness 0.35-0.5)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Grey clay but Western profile; evaluation only."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "RoofingTiles015B",
+          "game_use": [
+            {
+              "place": "evaluation",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "weathered grey tile comparison"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Western profile; evaluation only."
+            }
+          ],
+          "period_risk": "high"
+        },
+        {
+          "id": "Leather014",
+          "game_use": [
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "力革 stirrup leathers, crupper and girth (tack hero set, b06)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Modern tanned leather; period tack leather was often smoked (燻革) or lacquered. Re-grade colour and sheen."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Leather006",
+          "game_use": [
+            {
+              "place": "weapons",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "弽 yugake archery glove and ebira fittings"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Modern tanned leather; re-grade (smoked deerskin)."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Leather007",
+          "game_use": [
+            {
+              "place": "pl_bugugura",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "armor-chest straps and worn leather on 鎧櫃"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Modern tanned leather; re-grade."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Leather001",
+          "game_use": [
+            {
+              "place": "weapons",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "袋竹刀 undyed, unlacquered leather sleeve (chapter-01 note)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Smooth modern leather; fukuro-shinai hide should look undyed and slightly wrinkled."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Fabric001",
+          "game_use": [
+            {
+              "place": "characters",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "襷 tasuki and plain white cotton (晒し) cloth on Nyaakoto's practice outfit"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Weave micro-structure reference; period cloth (asa hemp, momen cotton, silk) must be authored."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Fabric002",
+          "game_use": [
+            {
+              "place": "characters",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "evaluation: patterned cloth for villager kosode"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Modern printed pattern; motifs must come from katagami (plan 3.6), not this print."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "Fabric011",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "woven cloth wrapping on pack loads"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Machine weave; check scale and regularity."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Fabric012",
+          "game_use": [
+            {
+              "place": "characters",
+              "chapters": [
+                "ch01",
+                "ch02"
+              ],
+              "use": "indigo (藍) weave base for 小袖 and 袴"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Machine weave; indigo hue and hemp/cotton slub must be authored."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Fabric013",
+          "game_use": [
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "下鞍 saddle pad cloth"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Machine weave; check pattern."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Fabric019",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "evaluation: 陣幕 curtain weave under the SORA mon"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Tagged wool: wool (羅紗) was a rare import in 1623. Weave micro-structure only; 陣幕 are hemp or cotton."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "ThatchedRoof001A",
+          "game_use": [
+            {
+              "place": "pl_estate_night",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "種籾俵 seed-rice bales (b05 carry) and straw on the pack horses"
+            },
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "straw bales, 藁 bedding and 馬沓 straw hoof-boots"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European straw thatch; bale weave (俵) and umagutsu braid must be authored on top."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "ThatchedRoof002A",
+          "game_use": [
+            {
+              "place": "pl_matoba",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "straw targets (b07) and 巻藁"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "rice bales handed out in b11"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European thatch; see ThatchedRoof001A."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Wicker013",
+          "game_use": [
+            {
+              "place": "pl_dojo_smithy",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "bamboo baskets and feather boxes on the fletching bench"
+            },
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "charcoal baskets (炭俵 frames, 籠)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Photographed modern bamboo furniture weave; check the weave against period 籠 patterns."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "Wicker005",
+          "game_use": [
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "叺 straw sack weave and feed baskets"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Procedural furniture wicker; 叺 are woven straw matting (筵). Evaluation."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "Chainmail001",
+          "game_use": [
+            {
+              "place": "characters",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "kusari base for Nyaakoto's ch02 armor (plan 3.6: re-author as Japanese kusari)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European 4-in-1 weave; Japanese kusari patterns differ. Re-author before use."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "Chainmail002",
+          "game_use": [
+            {
+              "place": "characters",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "kusari evaluation"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European weave; re-author."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "Chainmail003",
+          "game_use": [
+            {
+              "place": "characters",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "kusari evaluation"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European weave; re-author."
+            }
+          ],
+          "period_risk": "medium"
+        },
+        {
+          "id": "Chainmail004",
+          "game_use": [
+            {
+              "place": "characters",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "kusari evaluation"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European weave; re-author."
+            }
+          ],
+          "period_risk": "medium"
+        }
+      ]
+    },
+    {
+      "priority": 8,
+      "backlog_item": null,
+      "label": "Extension: plan-named chapter 1-2 items outside backlog 3-7 (thatch variants, camphor bark, textile bases)",
+      "source": "polyhaven",
+      "kind": "texture",
+      "items": [
+        {
+          "id": "reed_roof_04",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "thatch variant (plan 3.1 lists reed_roof_03/04)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European reed thatch; field surface only."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "riet_01",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "grey weathered thatch variant (plan 3.1)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "European reed thatch; field surface only."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "japanese_camphor_bark",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kaido",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "楠 camphor trees at the 鎮守 shrine path (chainage 750 m)"
+            }
+          ],
+          "period_flags": [],
+          "period_risk": "none"
+        },
+        {
+          "id": "rough_linen",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "characters",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "asa (hemp) weave base for Nyaakoto's 袴 and villagers' clothing (plan 3.6 row 1)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Blue linen; re-colour and add hemp slub. Micro-structure base only."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "hessian_230",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "coarse sacking on pack loads and rice-bale wraps"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Jute hessian; period sacking is straw (叺) or hemp. Coarse asa base only."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "hessian_380",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_umaya",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "rough hemp cloth: feed sacks, horse blankets"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Jute hessian; see hessian_230."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "crepe_satin",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "pl_kakuredani",
+              "chapters": [
+                "ch02"
+              ],
+              "use": "silk sheen base for SORA-mon 陣幕 and nobori (story bible 15.1 silk: anisotropic sheen)"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Gold crepe satin; silk sheen reference only, colour and weave re-authored."
+            }
+          ],
+          "period_risk": "low"
+        }
+      ]
+    },
+    {
+      "priority": 8,
+      "backlog_item": null,
+      "label": "Extension: bamboo-grove light-quality references (plan 3.4 row 3)",
+      "source": "polyhaven",
+      "kind": "hdri",
+      "items": [
+        {
+          "id": "bamboo_tunnel",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "look development",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "dappled light-quality reference for bamboo-lined lanes"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "Location and bamboo species unstated (possibly mōsō); reference only, never visible."
+            }
+          ],
+          "period_risk": "low"
+        },
+        {
+          "id": "spooky_bamboo_morning",
+          "resolution": "2k",
+          "game_use": [
+            {
+              "place": "look development",
+              "chapters": [
+                "ch01"
+              ],
+              "use": "low-contrast sunrise-through-bamboo reference"
+            }
+          ],
+          "period_flags": [
+            {
+              "risk": "As bamboo_tunnel; reference only."
+            }
+          ],
+          "period_risk": "low"
+        }
+      ]
+    }
+  ]
+}

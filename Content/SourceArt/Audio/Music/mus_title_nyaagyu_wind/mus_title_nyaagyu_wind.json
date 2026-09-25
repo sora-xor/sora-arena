@@ -1,0 +1,81 @@
+{
+ "name": "mus_title_nyaagyu_wind",
+ "title": "猫柳生の風 (Wind over Nyaagyu)",
+ "description": "Title / main menu theme: shakuhachi theme over hirajoshi koto and taiko",
+ "bpm": 66,
+ "beats_per_bar": 4,
+ "intro_bars": 4,
+ "loop_bars": 16,
+ "sample_rate": 48000,
+ "handoff_sample": 698182,
+ "loop_length_samples": 2792727,
+ "loop_seconds": 58.1818,
+ "master_gain_db": 1.37,
+ "master_limiter_max_gr_db": 3.11,
+ "target_integrated_lufs": -16.0,
+ "stems": [],
+ "loop_mix_is": "sum of all stems",
+ "score_module": "scripts/audio/music/scores/title_nyaagyu_wind.py",
+ "files": [
+  {
+   "file": "Content/SourceArt/Audio/Music/mus_title_nyaagyu_wind/mus_title_nyaagyu_wind_intro.wav",
+   "bytes": 5917136,
+   "sha256": "0fd1343abfd849d624a87a0ec3af5b897df03002b1da185c204ae7b0ec6f8c16",
+   "piece": "mus_title_nyaagyu_wind",
+   "role": "intro",
+   "loop": false,
+   "qa": {
+    "sr": 48000,
+    "channels": 2,
+    "subtype": "PCM_24",
+    "seconds": 20.545,
+    "sample_peak_dbfs": -9.52,
+    "true_peak_dbtp": -9.52,
+    "integrated_lufs": -19.28,
+    "momentary_max_lufs": -16.02,
+    "rms_dbfs": -23.11,
+    "dc_offset_dbfs": -119.0,
+    "max_fullscale_run": 0,
+    "leading_silence_ms": 0.0,
+    "trailing_silence_ms": 3107.1,
+    "loop": null,
+    "fail": [],
+    "warn": []
+   }
+  },
+  {
+   "file": "Content/SourceArt/Audio/Music/mus_title_nyaagyu_wind/mus_title_nyaagyu_wind_loop.wav",
+   "bytes": 16756474,
+   "sha256": "e38cddb4ce3e9fa0c504629e3933ecf882d24f7088f8916d384347bac8368f2c",
+   "piece": "mus_title_nyaagyu_wind",
+   "role": "loop",
+   "loop": true,
+   "qa": {
+    "sr": 48000,
+    "channels": 2,
+    "subtype": "PCM_24",
+    "seconds": 58.182,
+    "sample_peak_dbfs": -1.26,
+    "true_peak_dbtp": -1.22,
+    "integrated_lufs": -16.0,
+    "momentary_max_lufs": -12.06,
+    "rms_dbfs": -18.77,
+    "dc_offset_dbfs": -108.4,
+    "max_fullscale_run": 0,
+    "leading_silence_ms": 0.0,
+    "trailing_silence_ms": 0.0,
+    "loop": [
+     0,
+     2792726
+    ],
+    "wrap_hf_ratio_vs_p95": 0.001,
+    "wrap_jump_vs_p999_step": 0.032,
+    "wrap_curvature_vs_p999": 0.092,
+    "wrap_level_delta_db": -20.11,
+    "loop_click": false,
+    "fail": [],
+    "warn": []
+   }
+  }
+ ]
+}

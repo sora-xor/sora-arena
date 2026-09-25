@@ -1,0 +1,3562 @@
+{
+ "schema_version": 2,
+ "source": "Kenney (kenney.nl) audio packs",
+ "purpose": "CC0 UI / foley / sci-fi placeholder layers",
+ "ledger_policy": "docs/art-research/free-asset-acquisition-plan.md (sections 2.1-2.5)",
+ "fetch_script": "scripts/audio/fetch_cc0_audio.py",
+ "raw_root": "Local/ThirdPartyRaw/audio",
+ "raw_committed": false,
+ "batch_log": {
+  "started_at_utc": "2026-09-25T11:25:23+00:00",
+  "finished_at_utc": "2026-09-25T11:26:09+00:00",
+  "free_gib_before": 75.75,
+  "free_gib_after": 75.71,
+  "raw_audio_tree_bytes_after": 199900386
+ },
+ "credit": "Kenney (www.kenney.nl) — CC0; credit appreciated, not required.",
+ "assets": [
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "direct",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "kenney/interface-sounds",
+   "name": "Interface Sounds",
+   "role": "ui: placeholder clicks and confirms",
+   "origin_url": "https://kenney.nl/assets/interface-sounds",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-interface-sounds-2026-09-25.html",
+     "sha256": "0a82a88c616f1c452e2849ac885c5142a46eda2e893a3a91cce333f303ef3f67",
+     "captured_at_utc": "2026-09-25T11:25:29+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/License.txt",
+      "sha256": "f7966c773bbed0eca6a9c75081c44a178b38eae112724dbb5fdfbd4192d118a9",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:25:29+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:25:29+00:00",
+   "archive": {
+    "url": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+    "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/kenney_interface-sounds.zip",
+    "bytes": 834536,
+    "sha256": "f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232",
+    "reused_local": false
+   },
+   "files": [
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/back_001.ogg",
+     "bytes": 6997,
+     "sha256": "07db973f79f6ae0f2edc34561e7592e24d0577455919fb602cb8ecc0da991dcf"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/back_002.ogg",
+     "bytes": 7029,
+     "sha256": "61581c58194e3f19f531072edabbc344204c7e0a2887b8ededce4357bcf09195"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/back_003.ogg",
+     "bytes": 7208,
+     "sha256": "ff5e87de1230b1a5f1fa83e5a4ba9d7eb1c07154267ac34b510a17d4caa03cef"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/back_004.ogg",
+     "bytes": 6923,
+     "sha256": "c22e3c49f42c2a5ba6748e91283efe124f32822469c1258c3e5d7b3d7ab9361c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/bong_001.ogg",
+     "bytes": 4848,
+     "sha256": "d21d0f0b782445db579d11e2506b24cd1ac9d664ee33aeaf807761aa7b6fd710"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/click_001.ogg",
+     "bytes": 4876,
+     "sha256": "ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/click_002.ogg",
+     "bytes": 4275,
+     "sha256": "adcd1f4adc35f1b41bc1b5bbefeff7aa44f2f3f0d96d3199b544140c7c1e761c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/click_003.ogg",
+     "bytes": 4371,
+     "sha256": "2fa929138bc3a0f432696588f66eac94b8f6d463905ec8808c6461ce4b054292"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/click_004.ogg",
+     "bytes": 4486,
+     "sha256": "09e2c1b643b71b9aff9932b4e02d78db116446b9a14b00a5b2a9b28d2668fd8e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/click_005.ogg",
+     "bytes": 4410,
+     "sha256": "a3ee7ebb036bc3cdc218ae52bb27548c4f49bcf07505274f8b61b1af8236acc2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/close_001.ogg",
+     "bytes": 9915,
+     "sha256": "44af8249b933e0fd35ec957a638bb1a0b01f85b53fbe9674bf77bd3ca3168ef4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/close_002.ogg",
+     "bytes": 14752,
+     "sha256": "bc4279d2bb2bf86592473eab6a8eab55e51b54a8619315000dbd780a83b102d8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/close_003.ogg",
+     "bytes": 15648,
+     "sha256": "39a1a7f3bc001766c1881841e9903c6b16f5a10b5666e0791d7f6444677d8b05"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/close_004.ogg",
+     "bytes": 16263,
+     "sha256": "41b41e01ac75f4bc5a9c8dc3b0de744fa7f877757463692783c12a8ae4bfae6b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/confirmation_001.ogg",
+     "bytes": 8968,
+     "sha256": "063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/confirmation_002.ogg",
+     "bytes": 14169,
+     "sha256": "33b17a9a9a2397c62b285c52c33a907fdffb476909c99e42dde603f6a7a8b12c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/confirmation_003.ogg",
+     "bytes": 9535,
+     "sha256": "3091bf0be0497f825769ee0733ca7bdc3bcd59bd6c6e8f2ba8f93d580ff38022"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/confirmation_004.ogg",
+     "bytes": 12391,
+     "sha256": "568967a3d9f8a8f6af54ea01729c4882284308f2a27d78c07ffd7ee0d6951661"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/drop_001.ogg",
+     "bytes": 5859,
+     "sha256": "692ee3a6f1821402ca649ff735bee9591dc4846c8098fc7d6a90fd15fa57c1af"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/drop_002.ogg",
+     "bytes": 6411,
+     "sha256": "4ac4d1cef7e936965cbf795852ca2020300b9e2ba7daa59f2bf4f1f7bf416218"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/drop_003.ogg",
+     "bytes": 6288,
+     "sha256": "43d086d50f90493a98cd2e09aa6dbf150d164f1578e1ec768d21cb185571ad87"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/drop_004.ogg",
+     "bytes": 7230,
+     "sha256": "10738707f9300f9b963ceba46d5da2ed4a221faf7d39484a643c2d3bc151c5f2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/error_001.ogg",
+     "bytes": 7373,
+     "sha256": "46e67425d16339772e8d328fb36a49426c9467418686e11beeb71ff84b0f6433"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/error_002.ogg",
+     "bytes": 7369,
+     "sha256": "76810ec365f41078fd0507101da5bb7b8730fe011dde43908329fdabd8575e79"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/error_003.ogg",
+     "bytes": 12256,
+     "sha256": "885b28175c7b511118bcffab95675b48bbac9005cf6514656ebdad979276b3ab"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/error_004.ogg",
+     "bytes": 6393,
+     "sha256": "0b574cea597d96507e782ae9764f88482ce49f46e931e57054bf7150047f2d69"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/error_005.ogg",
+     "bytes": 7266,
+     "sha256": "3f75b11df5b06d68d2c25fbf0e9c9d9e7dd9250562a4007ee34856b8a309a2ae"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/error_006.ogg",
+     "bytes": 8288,
+     "sha256": "a97513d7fd2b12b1210c423be943b4c1ab0e899b11db95855e9b74836e646ae0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/error_007.ogg",
+     "bytes": 10225,
+     "sha256": "f1ee4c1ac8bfe1a82eacb54b26f49e8974bab93bcf10c01800bc10dbf730f559"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/error_008.ogg",
+     "bytes": 9215,
+     "sha256": "eba17ecb2a426bfd4a8a6acff5f8a86202b6424a77af0fd842e37809a1ab6d81"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glass_001.ogg",
+     "bytes": 6103,
+     "sha256": "183eebee20eb0a532b0b85104d139cbf2673eb66d95c3cc733ac9ea98362e7e8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glass_002.ogg",
+     "bytes": 4917,
+     "sha256": "08e972c73e53c91d6d310e107e80db60edce78ae47225889a028e628a6f3da49"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glass_003.ogg",
+     "bytes": 5732,
+     "sha256": "9a6f16e3c2eff6fe5d017a4755a28306b14555728831cd00d70308e8f9689566"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glass_004.ogg",
+     "bytes": 8323,
+     "sha256": "2379b58f953e3d86982aa8cddcae763022c6258e9820171bf905ce58b4e97766"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glass_005.ogg",
+     "bytes": 6206,
+     "sha256": "1f6c88008d0d9fe449197512811785e1d4638daf408a96a4a02756530e019172"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glass_006.ogg",
+     "bytes": 6956,
+     "sha256": "840500be48078f1210f1fd7a9ac4e5665ed9b6f4a2b8dce91a237152a65e94cc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glitch_001.ogg",
+     "bytes": 5121,
+     "sha256": "da78c642bbd95da2c364ed0e991ebbfc5a4c0d281165d932b5819e0dd31a39d2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glitch_002.ogg",
+     "bytes": 5473,
+     "sha256": "1da06a2e63ce131f5e0316ca27c75fc0d672db7a8f9b986c70693f2bd992eabc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glitch_003.ogg",
+     "bytes": 4915,
+     "sha256": "d55e0c64aee9f1ab2ba9523d0e256ca76639c3ec2f230405e2ff25aff36020b3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/glitch_004.ogg",
+     "bytes": 5225,
+     "sha256": "d0f4db4d12f88592bc328bd621d356d099eaa2dda37bab37a6cf17891c5026d1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_001.ogg",
+     "bytes": 12111,
+     "sha256": "fd3e75e1de2f2fda90aceeacaeb0427ac8bddd3b07a6ce2a8f9ba923df3771f9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_002.ogg",
+     "bytes": 9915,
+     "sha256": "cc51162cb4506158b953b121bf479aad070056533ade5c5cd2f980183127ceb4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_003.ogg",
+     "bytes": 11748,
+     "sha256": "df16f25d45189f5d44d6a482ab20d5067350ca8525a9affa1f8ce599e31a20a5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_004.ogg",
+     "bytes": 17723,
+     "sha256": "59c7a24b204be24d2a44a86d1e4d18c2cf51fa0446967a14b2590e8fb3afaf34"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_005.ogg",
+     "bytes": 20900,
+     "sha256": "0ee06fc3ee494723fc95b2224f9dc0af857f2903e7f94d5d33d8e67f454b3cf7"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_006.ogg",
+     "bytes": 11618,
+     "sha256": "f050b3bb77cb0b901bc8df43d2cc1872c353aebae10b4030cf8ae681726ad343"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_007.ogg",
+     "bytes": 8097,
+     "sha256": "3400931f3f3a1e9cf253efef9069bcdf053edd2234e4ee9bf88977c389943484"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_008.ogg",
+     "bytes": 9085,
+     "sha256": "57c074e600e193a303ce781c04c0ccc191c6030f9f106594fd94a65e55435c17"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/maximize_009.ogg",
+     "bytes": 7650,
+     "sha256": "b4d56386258b3cc1c8f6e5a22465f8cd65de3d4309e022664050f43151e466cd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_001.ogg",
+     "bytes": 11924,
+     "sha256": "8481912bc7fa5828924a00ef15b6cd613b994956e0817bd3122065c9b2896d2d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_002.ogg",
+     "bytes": 9441,
+     "sha256": "670e47846dc003fe29d39c8dfebb8635bfcacae3c0916392c0e8bff659493ad6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_003.ogg",
+     "bytes": 11739,
+     "sha256": "400e1041499de85ec8b5529a35ff36787288175c4696cf2018ecff24a3a3fd29"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_004.ogg",
+     "bytes": 17099,
+     "sha256": "fcfe6fbb03a728e90b907f34d2ec7bf3ea1857397c3e47ee01990c1be059e4f6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_005.ogg",
+     "bytes": 19501,
+     "sha256": "4e6792a98c75d3ff187c0c55561c38c569e02c64757ebebb98831cfe84e3e172"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_006.ogg",
+     "bytes": 11292,
+     "sha256": "39d7c47855b9642f43548b7b132c20e20a1490c7eb13d10008c32fcb24da19f8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_007.ogg",
+     "bytes": 7677,
+     "sha256": "e951505044de0d5d87b72ce7f312ac3fbbdde025ec8c10db70f9d2651a2c8947"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_008.ogg",
+     "bytes": 9298,
+     "sha256": "bc14c17875436dcaaf809c25db5e61454dbc35612880f329ff37a95ef9b6a865"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/minimize_009.ogg",
+     "bytes": 7665,
+     "sha256": "885c20fc8b5b52226288794842a403821cd16e9800ec1d76be7a2f1655542eb8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/open_001.ogg",
+     "bytes": 9834,
+     "sha256": "a27c6bb0df7da1e6af5dd5937593c98bc58b6e513f42fe6a3254cd6a6949c648"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/open_002.ogg",
+     "bytes": 14975,
+     "sha256": "24ff224fe2c09c6aed1b41249825382dc74cf324b887ff279d8494912ce2beee"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/open_003.ogg",
+     "bytes": 15046,
+     "sha256": "bcdca6b5c9c33aa15ca3fb18a1fa8d98a01b528b85be08c5a610e57c75fc022d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/open_004.ogg",
+     "bytes": 15879,
+     "sha256": "4e02b8287bc4d9e7bf7a889cb9e48613c8eb22a310dfb0bf29c2bfd0a1e4bea5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/pluck_001.ogg",
+     "bytes": 6317,
+     "sha256": "be97ec4893a02d6eccfb678daa76c83e34cb2583b834ec2593d2641def739fa4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/pluck_002.ogg",
+     "bytes": 6941,
+     "sha256": "c977fe249ff42d1c93a552b33abc13a8399df3879fa510475426e5c4bbac1da9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/question_001.ogg",
+     "bytes": 11700,
+     "sha256": "abb8f9e4eb2071491b0b15f84ee302386b1847609310c1b000ae174639a6cc5a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/question_002.ogg",
+     "bytes": 9455,
+     "sha256": "46056f10c70dda860e93bd27b66f4d33c0b7154eff28def06471b50028efa5b3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/question_003.ogg",
+     "bytes": 8233,
+     "sha256": "00bafc564e29c12e99da584864a750260e7110378251d63d3aa5b3d727836efe"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/question_004.ogg",
+     "bytes": 9821,
+     "sha256": "585ecb58b529dc49b5c5ce5ba93427bf73b7052bae55e49c43ba8f169c93ac99"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scratch_001.ogg",
+     "bytes": 8989,
+     "sha256": "5c294d2e1a6b6d07ee2d75b17105a55ad3527e5482dd60652dc49c2ea4c70096"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scratch_002.ogg",
+     "bytes": 9319,
+     "sha256": "2b07edafc1f3f49c4813f2b0ae9481c566c1f9962a22d5f5b79da7111e058e56"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scratch_003.ogg",
+     "bytes": 8849,
+     "sha256": "2d80371b55ebe2e8b916b84093a8ae7717d09a80c6b617079ade5bd0dacba7b7"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scratch_004.ogg",
+     "bytes": 16478,
+     "sha256": "26009c67ef90ee7a5a2bc458ef9e7f5a9da83da9397a830cff9e4a1813914687"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scratch_005.ogg",
+     "bytes": 15824,
+     "sha256": "65742c15dca9853611e1c9e83bd04ac0d693f79896715cafa90bad39745d7a62"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scroll_001.ogg",
+     "bytes": 21633,
+     "sha256": "320c6aafb2c7a503eae508dc443b72d7f7c0a317bfd16813157ed400cd04cf16"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scroll_002.ogg",
+     "bytes": 24628,
+     "sha256": "6fbcda22bc45349c66f1ba4b56d6c211b12264e83667de4b9af1e4ffcef74be5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scroll_003.ogg",
+     "bytes": 29488,
+     "sha256": "c2fecaa6e37c73d7141d0bd303d1c2231428d97c19ce83d50236a56804818643"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scroll_004.ogg",
+     "bytes": 20348,
+     "sha256": "431398a3c12ba3aa30ead97f3e2f9b05eb00978facf04b31bda138ab77a2f54c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/scroll_005.ogg",
+     "bytes": 20448,
+     "sha256": "e39d059462225efa31f758fb2e01871cc96781972b5062873a24a55c88174e02"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/select_001.ogg",
+     "bytes": 5468,
+     "sha256": "aec0c31ea934a35936ae0d2ab8fac8123c93aa5647f935853a58dbaf90278b7a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/select_002.ogg",
+     "bytes": 5463,
+     "sha256": "4cc6ac5341b9b2c86fef80c347de028e9ab9f2e037586ac7d9fa59a403a1c012"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/select_003.ogg",
+     "bytes": 6901,
+     "sha256": "9a612fd2f513d52a296906b41071c990f75defe56be3bee60d2d4e2423b51b8b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/select_004.ogg",
+     "bytes": 6909,
+     "sha256": "eb6cb435f3f2ab14f85f46a2bdd9073ec511d0f1f8d8c890c6636045703a5fd4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/select_005.ogg",
+     "bytes": 6767,
+     "sha256": "ad09146e4ea33b931b2f5dfb4051a4f1fe4a36f1a48c42c5e9269c292ae21214"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/select_006.ogg",
+     "bytes": 8101,
+     "sha256": "b44550fa8d3276c072ce7c3c1315d949f7a28a95bc22b3618ad4eea62eac8abe"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/select_007.ogg",
+     "bytes": 6580,
+     "sha256": "cd4390dd2b24f09016a5fa1be63334fa0f1859811f4cf29c02e8e2750f6a2cd0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/select_008.ogg",
+     "bytes": 6339,
+     "sha256": "f703b6b1c62dae1c246a46d5c2442802588f68be2df4d17e0d65cf7e0dbfc826"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/switch_001.ogg",
+     "bytes": 6753,
+     "sha256": "3b74efad87f1e69dbd1d05c5ad952ab90859b5a3d11da6ec5bd79b4f03b42afa"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/switch_002.ogg",
+     "bytes": 7097,
+     "sha256": "6fc395be2ad1f99ce318a5d28f98fb76dbeb676d83a0b28239d8c1fb90736180"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/switch_003.ogg",
+     "bytes": 9653,
+     "sha256": "ca12dd32103f401481d5aff56d5e9831174e99bb577139c09b07d046eb8b837e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/switch_004.ogg",
+     "bytes": 7248,
+     "sha256": "541c19cc1ab712a9efc5765df602e7d0da09d9cafdd297ce1e19b092289fd62f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/switch_005.ogg",
+     "bytes": 7814,
+     "sha256": "e94dfab6fd6558068ab3ea97e22e4b4f16b83ee440e6abf33ec4c4e9fbe8a70e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/switch_006.ogg",
+     "bytes": 7873,
+     "sha256": "2676ddc4e341ee557b4d1dc8767ef8655540d66fb3ded6a1614080dbc4dc6f18"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/switch_007.ogg",
+     "bytes": 7921,
+     "sha256": "eeaf60c2abc7e1b715e2b032401bcbf6b3753b77f96b238f861a034a75515967"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/tick_001.ogg",
+     "bytes": 4497,
+     "sha256": "9d057b918024c787bbe6c00beed13a7ef72a3fa0c259add3cef36582792f4230"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/tick_002.ogg",
+     "bytes": 4514,
+     "sha256": "869442f54214be902ec7437f79e400dc91c1bfd90d18a6dd2d5b7e41ffbf457b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/tick_004.ogg",
+     "bytes": 5031,
+     "sha256": "0253d5f7d8d2afbbc370eac2a4539bb844239f0c98343e516d376b137c06d27c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/toggle_001.ogg",
+     "bytes": 7369,
+     "sha256": "ca1d2dde5f0b286abac4f070e23edab8f30927c8a533665cdf2ac6492a415e49"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/toggle_002.ogg",
+     "bytes": 8056,
+     "sha256": "1f564f5520cfa0764028ce245ad97599d3ece8f0ab504554c403af92ac72b900"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/toggle_003.ogg",
+     "bytes": 8654,
+     "sha256": "7e69aba356d590826cce291bbd9dc6a85d7c53858b0e3712fcad30e1ad080b23"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/Audio/toggle_004.ogg",
+     "bytes": 6695,
+     "sha256": "d7bf2236fc95a0fe1e3b278259392bcb062644e2d4ec5f9c96f7c09a9928262f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/interface-sounds/extracted/License.txt",
+     "bytes": 574,
+     "sha256": "f7966c773bbed0eca6a9c75081c44a178b38eae112724dbb5fdfbd4192d118a9"
+    }
+   ],
+   "placeholder_only": true,
+   "notes": "Kenney audio is stylised game audio: placeholder / layering only, never a hero sound."
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "direct",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "kenney/ui-audio",
+   "name": "UI Audio",
+   "role": "ui: placeholder clicks and switches",
+   "origin_url": "https://kenney.nl/assets/ui-audio",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-ui-audio-2026-09-25.html",
+     "sha256": "f0ffe60c9453653b22d2304e203299d5a3f426eccc1d470bf4b8a7f5404cb4f3",
+     "captured_at_utc": "2026-09-25T11:25:34+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/License.txt",
+      "sha256": "4f88ab3c885c87874834441a0d009cea8942f57461d7b870be65cf4e31362073",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:25:34+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:25:34+00:00",
+   "archive": {
+    "url": "https://kenney.nl/media/pages/assets/ui-audio/490d233f68-1677590494/kenney_ui-audio.zip",
+    "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/kenney_ui-audio.zip",
+    "bytes": 411949,
+    "sha256": "946fc23a63d535d693eb31b2eabb80c8c28d6351e2186b344ceb71b2cb1d5eb6",
+    "reused_local": false
+   },
+   "files": [
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/click1.ogg",
+     "bytes": 4983,
+     "sha256": "59175ac17cd49a68dd736285738441287636112a84a6f7ce0d89921bda5a5360"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/click2.ogg",
+     "bytes": 4656,
+     "sha256": "c394b46bc6737f7f7edfbfa3031ce621b7a43d498d456d6198364eee9cd3e306"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/click3.ogg",
+     "bytes": 4880,
+     "sha256": "e3e7fc7ccd9c5cfdf77bffa05aee10d4973812076c76dc889ba2b16ea434127f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/click4.ogg",
+     "bytes": 4558,
+     "sha256": "9c02bbfc872b50eb8750adf4b7c343120f19f5d2f04ab06a7a8948368a77b872"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/click5.ogg",
+     "bytes": 4532,
+     "sha256": "52d41e0bb012731bf2a391d53ffb52265ef21589c7701e66b391d5e36a65b293"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/mouseclick1.ogg",
+     "bytes": 4686,
+     "sha256": "ece1210c62ccae6c9ea4f4c59466d9d453d6b357c7d4b1a6c31196e5e6fea1bf"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/mouserelease1.ogg",
+     "bytes": 4775,
+     "sha256": "23cb78cea76d8f1bb1266af228101a09b5d62063f4ac87ead15b1d395c6181f0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/rollover1.ogg",
+     "bytes": 5932,
+     "sha256": "4eb47e2e1540c44847b47a89825e21335c820a4e54cacf8c4c1eb5100e36af42"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/rollover2.ogg",
+     "bytes": 4701,
+     "sha256": "d0bc0fcba496d73df1da8c145e5330df75f87ab5a4f33a9b71461b006b5c338e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/rollover3.ogg",
+     "bytes": 4778,
+     "sha256": "641df2c95468f1f035ff0ae964129da10543b4ea8ff6c13f66bcbd899dcfc113"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/rollover4.ogg",
+     "bytes": 5188,
+     "sha256": "8b70e47aa1d51d220a3609a02cc50ceed6e05a20f51c6f8daaf5fd83eae42cf3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/rollover5.ogg",
+     "bytes": 5258,
+     "sha256": "3e1805b914a66e63695913d19ba98c5ec584cc69d29c7167d83c460ab752a5d3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/rollover6.ogg",
+     "bytes": 5385,
+     "sha256": "18f6f69f5fdbf55c175ca4eca8447d4ad5d8a315efd985038424f922dadefad8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch1.ogg",
+     "bytes": 6104,
+     "sha256": "efdd1d1e2904fb2d81259cd96bb80101caceae94be02baa4b5310714a6708b19"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch10.ogg",
+     "bytes": 6456,
+     "sha256": "bf61b3f3af39b2c680e70ee2f791786edd2bca2016ea683947059f079849bbf3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch11.ogg",
+     "bytes": 6248,
+     "sha256": "a8d445bd96fe3842ff2dcdd42ae728330baa8928032ca5f3d5cd4b926929550a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch12.ogg",
+     "bytes": 4588,
+     "sha256": "dab0c21eacb6536724d139c27c0d60c932c87171752dc8d24d7a826694377f94"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch13.ogg",
+     "bytes": 4467,
+     "sha256": "54d1e63b907274bb415a8de7f652194756a8eeab4079a7cf769ec153b93a436a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch14.ogg",
+     "bytes": 4522,
+     "sha256": "c640b370738c816eda3d1196d8a8dda7130825b4094f3bb3cbba22a9f6f9b7c9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch15.ogg",
+     "bytes": 6325,
+     "sha256": "5a20a9d5365dec8fec1311731540f56429cab38822326133c7ce60fbcf9fd275"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch16.ogg",
+     "bytes": 6991,
+     "sha256": "d2e9dd4fd2918132f8400e270701384e93139f2207ac115705a2c183cf3d2098"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch17.ogg",
+     "bytes": 6686,
+     "sha256": "d09974d4cf5ccb2d75647e2464cd424e7e3c7a0374e73e8a22577662031a3677"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch18.ogg",
+     "bytes": 7633,
+     "sha256": "ba759707fc2e55f4e7d1edd1dd78a4110267f4dc564edfb989c00f062ef69d8c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch19.ogg",
+     "bytes": 7177,
+     "sha256": "63753f884e4e0d44b0939bee9f048b32e658d996958930363c0579ffa0f810c1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch2.ogg",
+     "bytes": 6042,
+     "sha256": "aa8ad6e4745e87c84c24a0335e0e0f8629ccbbc474ccfd544fe07d7f3a1b2280"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch20.ogg",
+     "bytes": 6965,
+     "sha256": "276b402ee4840f88a8df4eca6ece029b61c5840fa9149b0c5008fe4bda89cc21"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch21.ogg",
+     "bytes": 7453,
+     "sha256": "8a3fdc5d35c74ae4ce4ec75c1f85c7f5fac1a2a6ac838353b09c48c5d7888fc9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch22.ogg",
+     "bytes": 7116,
+     "sha256": "913261ad55fa0692902e4027a7a139844e7589d30c4286ab10e6d637f28b1d9f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch23.ogg",
+     "bytes": 7177,
+     "sha256": "148d91722dd819b450d8b50e65686d9b1d39d38ca05b361caa387bcbd2a90d81"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch24.ogg",
+     "bytes": 6340,
+     "sha256": "aec5e91eef35c4a64d3bec7a25e54a68fa0448f4cf3179455e18c72c3dda60e9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch25.ogg",
+     "bytes": 7130,
+     "sha256": "ba31fc9a780a6908809154e0108e8d2728b5b9a6e769c8f56d61d920fba100ae"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch26.ogg",
+     "bytes": 6031,
+     "sha256": "1a628e2fbede99afdb57533fa367f352fede596df18c91deb841a21f8171654a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch27.ogg",
+     "bytes": 6445,
+     "sha256": "a6a3a5fa54037e3b69c0fe7f2d9b50422cb23dd616bb7f72ac0a2a028a810028"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch28.ogg",
+     "bytes": 5916,
+     "sha256": "2f7b627d85ce1530faef5374d3826bfca1ff2823b1b41d5f908448976061e2d4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch29.ogg",
+     "bytes": 6769,
+     "sha256": "b2923ed170e963b5e211bf73e75f8eeb41f6b49a46eb52f3b3fc43234c713a16"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch3.ogg",
+     "bytes": 6270,
+     "sha256": "75d87dc60b7d29df838530af8c9e28205102234e07b5f1e849aa3d95c3922bd0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch30.ogg",
+     "bytes": 7151,
+     "sha256": "d220abb5218fccc6d37649e17e7cce2a4e253f474332d9ea2b0f0518264aff5a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch31.ogg",
+     "bytes": 8180,
+     "sha256": "bca5f3047e73d28f6619d49a45dee1984340c165da5fa49b239068c2cb9b4be1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch32.ogg",
+     "bytes": 7868,
+     "sha256": "b740f507ad386a1d09bb5ca69a75231656a71375df11348fcd2d5e323b8d6727"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch33.ogg",
+     "bytes": 8530,
+     "sha256": "977ecead4b27cf9801aed433bfa4bdfcf49444c15990d27d2e472401a1fb2742"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch34.ogg",
+     "bytes": 7910,
+     "sha256": "6e7943ed133c1b559d009da5028da0a318fee0b1bcfe6e4fa49744ba2cd3975b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch35.ogg",
+     "bytes": 6935,
+     "sha256": "1ec7f5a76318f88c499d37567167f565cb564266d52b37112aac6467fe4126cb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch36.ogg",
+     "bytes": 6616,
+     "sha256": "1dd3cf29291219ab2eed0292d5c3b06b1e102ea70821099e741fc127734ffa04"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch37.ogg",
+     "bytes": 6822,
+     "sha256": "25faa57a3e819a3e3a2191934226e540467fcd11680131a7a77b47271048327e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch38.ogg",
+     "bytes": 7303,
+     "sha256": "d5c164ba622e3c7904eb0f442a81cff9985bebbd8951202348d2a7c8a449309b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch4.ogg",
+     "bytes": 6477,
+     "sha256": "687a42c24e5d25be1a256f35a439fe858548fe76d43ccfb17db546618b0d36db"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch5.ogg",
+     "bytes": 6181,
+     "sha256": "8a5c85c0009cfd985634e8fdb4e0350690be5d85fd49f43a90b35c7de0bef7c0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch6.ogg",
+     "bytes": 6610,
+     "sha256": "34d37cbfe6785cab2f3217b613fc976ba05b869c0ce61381eafa67ee257ecc9d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch7.ogg",
+     "bytes": 5707,
+     "sha256": "7a3032d1dae63d1096cf2f1e59cb43e598d5229dcb9617e9d3fb13e96c78d5f2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch8.ogg",
+     "bytes": 6253,
+     "sha256": "c7bf07f8d58ac62faac2427868619631b1a89b0ab08e87c7c01621a086fa1873"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Audio/switch9.ogg",
+     "bytes": 6009,
+     "sha256": "069861740681c528866483e3d528d79034f24d744c4fc79f7045b7d9ed999e26"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/License.txt",
+     "bytes": 479,
+     "sha256": "4f88ab3c885c87874834441a0d009cea8942f57461d7b870be65cf4e31362073"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/ui-audio/extracted/Preview.ogg",
+     "bytes": 171143,
+     "sha256": "0430586fc3e1045c44c1f9173d288545aa87aca210d497e7626d6187bc0eefe7"
+    }
+   ],
+   "placeholder_only": true,
+   "notes": "Kenney audio is stylised game audio: placeholder / layering only, never a hero sound."
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "direct",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "kenney/impact-sounds",
+   "name": "Impact Sounds",
+   "role": "sfx: impact / footstep placeholder layers",
+   "origin_url": "https://kenney.nl/assets/impact-sounds",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-impact-sounds-2026-09-25.html",
+     "sha256": "51ee47e9b4b2a9c57ebd3ba068c6c7fb1117d499d2aded44435a456f078d3f40",
+     "captured_at_utc": "2026-09-25T11:25:39+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/License.txt",
+      "sha256": "b49aa9c56b04528b95913de13e506a0f7c5e807b9925db9bfef86af1f91120db",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:25:39+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:25:39+00:00",
+   "archive": {
+    "url": "https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip",
+    "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/kenney_impact-sounds.zip",
+    "bytes": 800850,
+    "sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+    "reused_local": false
+   },
+   "files": [
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_000.ogg",
+     "bytes": 6353,
+     "sha256": "b9524658b52a99a20590f8feefc103088637fd13ea8ec35811aee785e1f2f330"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_001.ogg",
+     "bytes": 6411,
+     "sha256": "9af3c3f76705107339e72036e4053bdca3eaa50ad31c8c929f42ce8d40e5d781"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_002.ogg",
+     "bytes": 6411,
+     "sha256": "9af3c3f76705107339e72036e4053bdca3eaa50ad31c8c929f42ce8d40e5d781"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_003.ogg",
+     "bytes": 6301,
+     "sha256": "4ae7454338d57c7d102145919ae653c7d010eb542797c4f25a1c7470be3a7e4c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_004.ogg",
+     "bytes": 6301,
+     "sha256": "4ae7454338d57c7d102145919ae653c7d010eb542797c4f25a1c7470be3a7e4c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_concrete_000.ogg",
+     "bytes": 5808,
+     "sha256": "d7267e183067757c92c169de2a379abea592cfca6b39bb2e8feea15221ad79fe"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_concrete_001.ogg",
+     "bytes": 6308,
+     "sha256": "507a75eb19b897087855a3be3cf11a12d7fa37d143ad535eeebe0b8031c7325d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_concrete_002.ogg",
+     "bytes": 6255,
+     "sha256": "b21fa546d74941196b25da8a20b7010abd8c05c4fcf93545d1f344e66a664e13"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_concrete_003.ogg",
+     "bytes": 5805,
+     "sha256": "8b513c2f0316324060b9174b8f28df6c2147418c506e6a53b77f18e149a5547b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_concrete_004.ogg",
+     "bytes": 5912,
+     "sha256": "24dd8db2413e5b81ad181e1205c12a1c7801da5f85715d471b92a4b2f632e45e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_000.ogg",
+     "bytes": 8290,
+     "sha256": "9d49497777405d78d7cf7f2888e28277f3a23192300cfd1d79d54876b20f479f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_001.ogg",
+     "bytes": 8313,
+     "sha256": "fb28781bd22b2eefdc14077f1adf5c94d7fe9c3a130194633b55f3e0d39d9f04"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_002.ogg",
+     "bytes": 8278,
+     "sha256": "73a520139f5be716a403bfe9c80e0e94d1e61d8e9de04a354b336392164b53dc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_003.ogg",
+     "bytes": 8129,
+     "sha256": "0546e1d8ab2def714425701a18bd34c5ee2794b12e858e5b595aabcf38a34137"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_004.ogg",
+     "bytes": 7800,
+     "sha256": "086fd4ab3546a507ea5f5c759a9a10e535c95ade13705c238bc0eeffd7d4e8ba"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_snow_000.ogg",
+     "bytes": 7880,
+     "sha256": "c05fa4a9dc9a7aabc04996466fb589537e49af76de9998d8f9e6270ec92dcef7"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_snow_001.ogg",
+     "bytes": 7794,
+     "sha256": "980fb9a1c9227aed7995067b0357f373053337f2416316db8ea0438418542fb4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_snow_002.ogg",
+     "bytes": 7694,
+     "sha256": "db52bafdc66304f3b999f2c29227826c65993916e630ac2ffbca17d07b263178"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_snow_003.ogg",
+     "bytes": 7860,
+     "sha256": "68272e3f1cabcabd02d328fd344454d7c04cb58b5a86972fcdd858f845e3d007"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_snow_004.ogg",
+     "bytes": 7630,
+     "sha256": "7fe9ce5f5732aaa0a50ef02bb1ac162c27f6bd85214e86aaea6e13e7a41dbc00"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_wood_000.ogg",
+     "bytes": 5949,
+     "sha256": "5f1c252942a220d658121bd9417448cd19649ded9fff2ff15f6e50899373ce8e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_wood_001.ogg",
+     "bytes": 5929,
+     "sha256": "e4f68e1c9fd55b4dc8ca89ed2bbab6f200171bc54bdc18aa96b80d8e7336f462"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_wood_002.ogg",
+     "bytes": 5895,
+     "sha256": "9ff095b05cee5eec40b081defe3f0eef7232bb16d4865ce03b9f6dbab875cfdd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_wood_003.ogg",
+     "bytes": 6207,
+     "sha256": "2a68a083daa9eda08fed0ea5da5280dfbe0de226196c576be02f95259dd139d9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_wood_004.ogg",
+     "bytes": 5799,
+     "sha256": "b33e0854e2b3f6b6492e25c25ef8f90447a332f7c6bb25dd02edced9581d3441"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactBell_heavy_000.ogg",
+     "bytes": 13915,
+     "sha256": "94b8bb5f2d43ab65e4bcc32b28562416e9bc2c51d9fd4be1e333660ee52f977f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactBell_heavy_001.ogg",
+     "bytes": 15577,
+     "sha256": "9df61e3ae9a83dc65e5a1fd3ed19d480876f3b22b963a1b9ef6fa293592dcec4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactBell_heavy_002.ogg",
+     "bytes": 9252,
+     "sha256": "a4171ed1a4a17fb858a38de1c59b5b42e50d8f046c525706c0e3ac8671f189f5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactBell_heavy_003.ogg",
+     "bytes": 9429,
+     "sha256": "5572ccdeb3b62373b86fa955355b3a222c36e815f0636ba16165189a21cf2514"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactBell_heavy_004.ogg",
+     "bytes": 6529,
+     "sha256": "49fe4fafa2001bd0d312976796824571ca8429851f285997e1327d17bb34fd00"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGeneric_light_000.ogg",
+     "bytes": 5827,
+     "sha256": "f0e982611e97512fee5f777986b67e8b435434b601f94992ec044f7e89fb5acb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGeneric_light_001.ogg",
+     "bytes": 5636,
+     "sha256": "c3cd1c073d186ae8fa35788ba94de581f1826e7427a7bb26490b2695fac18efa"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGeneric_light_002.ogg",
+     "bytes": 5795,
+     "sha256": "d0bf60905b59ff630ffe01eb0edeeacd2504eaa8fb6523aeef7d2458b78264d3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGeneric_light_003.ogg",
+     "bytes": 5792,
+     "sha256": "0e8896706130f6bc88cdf1f0157aaacdbe88dce86cf0330f9136e44eb1209e81"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGeneric_light_004.ogg",
+     "bytes": 5747,
+     "sha256": "f906fa3a37acc4372787b496efcedefa2856045d5ec9456a3bd6c303c0eabb41"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_heavy_000.ogg",
+     "bytes": 7403,
+     "sha256": "b44b39a940e8948e74b9bd3776bff980df43cf220abdaf0d467dc4c43c0244a5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_heavy_001.ogg",
+     "bytes": 8946,
+     "sha256": "58686e0e562612cc566791844a10e269f8d1921f4766c14ba43976fd0a429f4e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_heavy_002.ogg",
+     "bytes": 7661,
+     "sha256": "4978654ac840ad519692d5d5ba48a8101cabce13b9a577be73ad589185e5e9ed"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_heavy_003.ogg",
+     "bytes": 6956,
+     "sha256": "aed07b154f24410c17e5262bbef832842fb275d41fe297f721af7501d0e9c23a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_heavy_004.ogg",
+     "bytes": 8300,
+     "sha256": "c7742b0e33c1733ddaf902aa68464a4f5364e4d4cb6ff11b76a7aa4151a138dd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_light_000.ogg",
+     "bytes": 6526,
+     "sha256": "d750cf88097d0c3e69920e6e14496e1444e1a9da01aa4cca8f5ec8cb44c57b4f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_light_001.ogg",
+     "bytes": 6544,
+     "sha256": "05e513fbd42829060eb37855f8c3866722ec5c39a8937c9bfde518cc609effa2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_light_002.ogg",
+     "bytes": 6562,
+     "sha256": "710db7451bb7857b9140dfe6afe4621ea2188ad65eda3919c569d1bb285b933d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_light_003.ogg",
+     "bytes": 6618,
+     "sha256": "765290ce32fa108c939a0dbd6fbacbcd05abde622b57b708eb8a64058ef4225a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_light_004.ogg",
+     "bytes": 6641,
+     "sha256": "f535b7cb7835400d8d28bcf9e1cf047ce3c0eb7a6456bdb1a4a27acbec1ed2cb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_medium_000.ogg",
+     "bytes": 8400,
+     "sha256": "9252d50bfb85edb17d6073c4a7806e10cdb9de56d3dbfc93a4b9727146d2df6d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_medium_001.ogg",
+     "bytes": 8605,
+     "sha256": "d3d806cb3012c9ddd87010b30295ccb74d6d8b690077d19e67afd09a9d8feb03"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_medium_002.ogg",
+     "bytes": 8341,
+     "sha256": "48616f22c95589ed9fe55babf0fd012721d7b2ef1b9e85c2ad6408a2cd7c164f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_medium_003.ogg",
+     "bytes": 8596,
+     "sha256": "dccea1ecc3d942ee5fd217c684632638f6c039c97cd3ae59c75ab15d0c3f0b59"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactGlass_medium_004.ogg",
+     "bytes": 8397,
+     "sha256": "853fe77ad46bd0cf106e40e741b039e15b90f73edecd92cde524fbad9e3ebe00"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_heavy_000.ogg",
+     "bytes": 6110,
+     "sha256": "e07045693e4a2b3d165c424e3dab4c781d9ff8880a386880ac89a51315d7f831"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_heavy_001.ogg",
+     "bytes": 7279,
+     "sha256": "83554049f81f4db9209379e103c30bfa63f65c42189a03f300b045c2c82e23ae"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_heavy_002.ogg",
+     "bytes": 5634,
+     "sha256": "b914c8f1eb7c0f34bb165d7c77f4be0351f6be0660c13c53e65424e262e2c093"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_heavy_003.ogg",
+     "bytes": 6209,
+     "sha256": "b0f2ba4dabde9a87eb9c188a19d31e0c2300fd321adeba08d3b9b8aa011d7037"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_heavy_004.ogg",
+     "bytes": 5788,
+     "sha256": "6d65b463c0555dd5be16b8db6d2cbe23a94e07a4637779b8ad17d0db3e500a87"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_light_000.ogg",
+     "bytes": 7651,
+     "sha256": "33b5e6e37c6e9d54e07bf5a89b12c76e879f40c1ea83cdd82714df1d6f9fec6d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_light_001.ogg",
+     "bytes": 6967,
+     "sha256": "fba69c467ddd85da7b1d82e259f936b876d9ba6a3d6f1b24bdd10468e46bfe08"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_light_002.ogg",
+     "bytes": 6804,
+     "sha256": "25a96f90a9a1f88a531e824e126f0519504625e5635e65a72e4f31611428db29"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_light_003.ogg",
+     "bytes": 9023,
+     "sha256": "92d5db6bfc672d9dc1b4f390b2900504f013187fa36335472554fafefa9050b1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_light_004.ogg",
+     "bytes": 6675,
+     "sha256": "9b1c35820fba507081261f19ab5f461f69a5e2627a7d91acdb73ca3cfc997979"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_medium_000.ogg",
+     "bytes": 7117,
+     "sha256": "a96f879fec0864a8938e0c745b6996a6c5679c16a234ce31a01cc995e8401003"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_medium_001.ogg",
+     "bytes": 6151,
+     "sha256": "e8a9eaba7c4d27422e4eeb3e6c7100d5d7dc0f83e005efc98c960adcc5265337"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_medium_002.ogg",
+     "bytes": 5857,
+     "sha256": "7e89ce2ca0dbda95ea2b78d4b50791cab35c10d20e9f5ccd45dd0b00e99ff548"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_medium_003.ogg",
+     "bytes": 6964,
+     "sha256": "2a185e2e57211d02c1bdd33b872d6b6a2fe83e6c14f4e56f426a95e717acf08e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMetal_medium_004.ogg",
+     "bytes": 5744,
+     "sha256": "03e10f800199c7166208e41c11cf4acfac6cc265467f02357da71972bc967295"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMining_000.ogg",
+     "bytes": 12035,
+     "sha256": "36b4ea107222d073c67ca64dde26944975609202d5090b2f2021213c1a7e35cd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMining_001.ogg",
+     "bytes": 11481,
+     "sha256": "61235a18de3f3d92118235398222dbf51d448f1be70b1c8bc962b10b86f2d9c6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMining_002.ogg",
+     "bytes": 11235,
+     "sha256": "059558ec751115ca6b1441e00f0adc837c1a3eeb0a066b109e0fd879fc5d0b0c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMining_003.ogg",
+     "bytes": 12160,
+     "sha256": "4237fa2cd80364ad81cd0af44f67d7497f1c5edcc7bdb02cd22be2ba4580c83d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactMining_004.ogg",
+     "bytes": 11668,
+     "sha256": "8ca3a99d85d845751ad8ce7b40509da58263a62e48cde70e5a30b5ccef4c9a3b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlank_medium_000.ogg",
+     "bytes": 12016,
+     "sha256": "8403cd7a043f0391574c88c55dd205743725b5363d2407f6de145f201690b68f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlank_medium_001.ogg",
+     "bytes": 12082,
+     "sha256": "d7c304319f8beac616231b62041fa8da74045b62d7155965516efb9b19303df4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlank_medium_002.ogg",
+     "bytes": 12313,
+     "sha256": "f6a14da45994229676b4f29e6a35f504b5c2ec2b8166fb1a3b1aa004bc6911ef"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlank_medium_003.ogg",
+     "bytes": 12138,
+     "sha256": "0602a7b3eab5f53484f10fe775ee4204e7a2ba9703c886b302e012f7f6fab8de"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlank_medium_004.ogg",
+     "bytes": 12084,
+     "sha256": "6a51318c1c63821ea757622b57fafbf44c16c28129f6d39406a784260d87c447"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_heavy_000.ogg",
+     "bytes": 10032,
+     "sha256": "112d4f93ddcc370b410630f971c0f5d991856102da9c76bc5c5540d388e75aaa"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_heavy_001.ogg",
+     "bytes": 8713,
+     "sha256": "142fd6c77f13d25f318265901163f70f8dfe12f87829169a570025be43de7011"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_heavy_002.ogg",
+     "bytes": 10188,
+     "sha256": "b0cab75d1befa32b4cf215d8ee7e1c400a39182e8b105963b8e310f825b198a1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_heavy_003.ogg",
+     "bytes": 8490,
+     "sha256": "59775f8979a396c8a793b0a1db206d5bdc651eae808d858e9acaee8ebda5bc6d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_heavy_004.ogg",
+     "bytes": 11092,
+     "sha256": "e31bfec90630155bcc6af541d1d14ae8202c435c52b42e6b6183fdb6ffb248b0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_light_000.ogg",
+     "bytes": 10474,
+     "sha256": "6e797cf8a5bfc52d7ed5eb47c227974c1cf2a674954fec5b539cea7d62c7282c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_light_001.ogg",
+     "bytes": 11730,
+     "sha256": "947915c2eb6ac57ee08fd3a48b297fd108d69abc72076e79882c21cad0eef56e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_light_002.ogg",
+     "bytes": 9932,
+     "sha256": "8ac5869ea434cf0d364872774efe70b2d666a4f02ba35ddfc1e051d336721be8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_light_003.ogg",
+     "bytes": 10626,
+     "sha256": "dbfb7c1d002576696df3e9a43d6639ee3f342068398b5e7b55bc2389d20508a9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_light_004.ogg",
+     "bytes": 11928,
+     "sha256": "9cb33b0c0cce948313f078b60769d2f8e4075472494fc8f8129aa4a23c951897"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_medium_000.ogg",
+     "bytes": 10921,
+     "sha256": "b670d30452983369771081319c268475edaaafe782bf4e8d70bd7eef09d8823c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_medium_001.ogg",
+     "bytes": 11491,
+     "sha256": "68ba7701b71ef620f498f3038e832157d71ac8db7ad59424545890b250ceb24e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_medium_002.ogg",
+     "bytes": 10250,
+     "sha256": "68762e1ed49bb59ae6602fad6ce2ebac61958478ddb2668de9106f010cd4b6b0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_medium_003.ogg",
+     "bytes": 11616,
+     "sha256": "964c5fcfb91e7710e2af25c2243c8b7160756b223b0984bacc9eb25bfeea057b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPlate_medium_004.ogg",
+     "bytes": 10803,
+     "sha256": "f0e8164081190839caff6c2958361b22780ffba5617f77f2d4ee3a4275b318bf"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_000.ogg",
+     "bytes": 11617,
+     "sha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_001.ogg",
+     "bytes": 10861,
+     "sha256": "f92f5cb6ba4ff2766497292ffd90865654317eeca976f5652e0708dbdcdc0dd9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_002.ogg",
+     "bytes": 9025,
+     "sha256": "7993dd4c156b9979ad69f17be5ebe31850b16039a3857f8477141be54dfee1b3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_003.ogg",
+     "bytes": 10029,
+     "sha256": "4ab53b26f4ea575120dcc1348526c9e0db2afc6af7a442aa0489bdead2ca80b6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_004.ogg",
+     "bytes": 10452,
+     "sha256": "f4c0c3eb8ab6517583b8218ed03f28923d1b687379aab4c1d5a6d4c10cf8e500"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_medium_000.ogg",
+     "bytes": 8800,
+     "sha256": "486988aa2d6440ffc4c62a0e8ccf3c23673ba84424bd4723378d451b7255eb5c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_medium_001.ogg",
+     "bytes": 8701,
+     "sha256": "e71d23abcc3f10d9d6bc9615b2a431fff70b12333a5fcdd9964457564ace4349"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_medium_002.ogg",
+     "bytes": 10399,
+     "sha256": "6492f9ccbc8d24dcef607bb1b48790b7870961474561f7fe5601e1c73a3018ef"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_medium_003.ogg",
+     "bytes": 9509,
+     "sha256": "2d7c719c05999e0532f4384e1018e04cd916db715140bf16dee2dff3f820e908"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_medium_004.ogg",
+     "bytes": 10032,
+     "sha256": "4a256878a3afb994ec9a4399336687748e68c7c136872c08c9c797d8c4e2464a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_000.ogg",
+     "bytes": 6570,
+     "sha256": "49e7ca88743fca974bb8676ea138b751cfd8f9033b5e7af8736c2a215d6edbc1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_001.ogg",
+     "bytes": 6689,
+     "sha256": "4d0096364ba9e46119d2ff6df493fdc101bd2e1efae061da5e5f77a53b3fdcb6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_002.ogg",
+     "bytes": 6749,
+     "sha256": "d130ae541951243d3f6ed963d0057450a445ffe117fbf9a084d34eb1635cb563"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_003.ogg",
+     "bytes": 6665,
+     "sha256": "d00286a2dc62ee5cb4d42bf56120e7050a855f69e655fc1294410aadd337eba3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_004.ogg",
+     "bytes": 6478,
+     "sha256": "e008f0b6b14f62339c8fe9f9b45cbd6317ba4f66604c4899053b8017020a36f0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_medium_000.ogg",
+     "bytes": 5351,
+     "sha256": "7d3ba0bb5e60a11b5d3e558c141303dcf494256675fbf753c0d252d2cf0481e3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_medium_001.ogg",
+     "bytes": 5506,
+     "sha256": "7642a4fd43e547afe4f7adfadb3dabb681c0ff512f52c1674bae30a726841faf"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_medium_002.ogg",
+     "bytes": 5358,
+     "sha256": "5069e3571a77d7f7aae9ef71d0364aa245fb7d64a7c8cc9956f221d03088c089"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_medium_003.ogg",
+     "bytes": 5392,
+     "sha256": "5c4a1f35fde7e14046931da7bc3d1b23736541b7190ba107e08a379c4ca43cd6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_medium_004.ogg",
+     "bytes": 5438,
+     "sha256": "b0a4dea90eed47accf50b768beff1166f2f1486fb139e4d025b2427637624bca"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactTin_medium_000.ogg",
+     "bytes": 6509,
+     "sha256": "f4bbee66ca191ec744b84fc07ac9ed2a6fda955d51cfed8360f12b62815d3cbd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactTin_medium_001.ogg",
+     "bytes": 6603,
+     "sha256": "84253095543c094d83cd749f42ecfbc96e356b60385f18a192c18eafb25b3cc6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactTin_medium_002.ogg",
+     "bytes": 6156,
+     "sha256": "c1d2c4f9910d4529581ae56a9a9a01454c4619fbb7d6da7616221d8ec58cc0c4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactTin_medium_003.ogg",
+     "bytes": 6541,
+     "sha256": "0d18737d93ba7aa0669f751094cbc1671bbebac4fe207783922938ce75e24334"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactTin_medium_004.ogg",
+     "bytes": 6362,
+     "sha256": "fd53e24efec3d5c1cee5a46fee70f97efd4bd01e53ac5d9b5f3b6719dfe9f5aa"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_heavy_000.ogg",
+     "bytes": 6233,
+     "sha256": "15ff82332f342c30e469215539e1cc57e11b221aa2cf7e11e811d313a9927f3d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_heavy_001.ogg",
+     "bytes": 6239,
+     "sha256": "f1b07a53ac10c615fff9ba470511fdeb722b5902e1a8520759fc20ad6f546015"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_heavy_002.ogg",
+     "bytes": 6146,
+     "sha256": "ce1e06f2a05f2634c645cb72f6a1623e64bc2d92be34917430a61031fb6597d4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_heavy_003.ogg",
+     "bytes": 6181,
+     "sha256": "af07511902b309b3f6d8f0e1fafbe93869127fb88099ebdc0aa6a00a98dc3cb0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_heavy_004.ogg",
+     "bytes": 6253,
+     "sha256": "2c647ae6bd29c72ae2523f7e16e325d8d331b75cc99ab4f637c48a0e11c34677"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_light_000.ogg",
+     "bytes": 6343,
+     "sha256": "eb45e35b4bed784d3f120de4afec4b0d6ac09d9e143cce8cfcb7d739e1b1f3c3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_light_001.ogg",
+     "bytes": 6373,
+     "sha256": "4b76bf3ccc8e60d19188f3165b778a7817786faa6887c55d9049bcbeef3b425f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_light_002.ogg",
+     "bytes": 6366,
+     "sha256": "b183cf7a5bd783817e0e4b82af34ac6658fa1927049089dadc8b15c2ecc771dc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_light_003.ogg",
+     "bytes": 6381,
+     "sha256": "cdfbe8af2fe7ff9ee28f337a0a989deee0f327620da456c8413644880e9d0004"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_light_004.ogg",
+     "bytes": 6395,
+     "sha256": "e10009f67ddaeb3a59a3e1129cfc1615d84ba60ab578eae07e7092ac223f099c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_medium_000.ogg",
+     "bytes": 6575,
+     "sha256": "1723a9fd25103ed41af06054814e84e65f4a772bac86ab2dc927da93d9592ff5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_medium_001.ogg",
+     "bytes": 6555,
+     "sha256": "15271dbe8e2872dbb0ff1aeb7b12b2d2b92b7c1951c88532b9ab9158c36dfc73"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_medium_002.ogg",
+     "bytes": 6607,
+     "sha256": "3f3f1917428b828f733a963167833c707bf88296ff158e1559c57c5cb813d799"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_medium_003.ogg",
+     "bytes": 6598,
+     "sha256": "635c37cfcd854b187d643d450ff0397798dcc29ae94da32192b814fae6bd854c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactWood_medium_004.ogg",
+     "bytes": 6481,
+     "sha256": "7ba48f2f99c91c71be420841a91f1e69c0cbc4fe887fcd7213144d67bb87b13a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/License.txt",
+     "bytes": 608,
+     "sha256": "b49aa9c56b04528b95913de13e506a0f7c5e807b9925db9bfef86af1f91120db"
+    }
+   ],
+   "placeholder_only": true,
+   "notes": "Kenney audio is stylised game audio: placeholder / layering only, never a hero sound."
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "direct",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "kenney/rpg-audio",
+   "name": "RPG Audio",
+   "role": "sfx: foley placeholders (cloth, metal, footsteps, doors)",
+   "origin_url": "https://kenney.nl/assets/rpg-audio",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-rpg-audio-2026-09-25.html",
+     "sha256": "21f120da69980383562e3780017666af4355a1c31e808a81979c350256c56046",
+     "captured_at_utc": "2026-09-25T11:25:44+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/License.txt",
+      "sha256": "5735dfd72cb64cbbceda4ebc00c380c41ca680edb82ff153aa7c9ab97614c539",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:25:44+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:25:44+00:00",
+   "archive": {
+    "url": "https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip",
+    "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/kenney_rpg-audio.zip",
+    "bytes": 964837,
+    "sha256": "6dbeaf8544da958d8f2adcb4a4a4b76c1ade34a05f8ab9edccd327da7375f38b",
+    "reused_local": false
+   },
+   "files": [
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/beltHandle1.ogg",
+     "bytes": 10820,
+     "sha256": "2ef665bd8b65dbe669f4560be38a6d8f04a162e618b15a49e3e71b58e558aab0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/beltHandle2.ogg",
+     "bytes": 15410,
+     "sha256": "f3b692d5c83263c25bce779805b212dbab515d18a603c695fc6a1e8650cf5366"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/bookClose.ogg",
+     "bytes": 9292,
+     "sha256": "81e976532565f4372abd14e83d2684195fa548d0a28d345de221e56052454f32"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/bookFlip1.ogg",
+     "bytes": 18248,
+     "sha256": "fa81ac2fedc8c641661b87e349630a36c9800e795e0c800e029214efdbe26a7d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/bookFlip2.ogg",
+     "bytes": 12393,
+     "sha256": "3409042acbfaebc24c1a6327dc073e36f9250841712e96c5040da566a97df73c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/bookFlip3.ogg",
+     "bytes": 9077,
+     "sha256": "c85db5dceb3f1df073e960630277eaa88a5afda0477c1ddd68dad707621767be"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/bookOpen.ogg",
+     "bytes": 8273,
+     "sha256": "953390534377222bee89ac8cd9e60a58fdc037c71a4d7c18c43cd647c7f34ba8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/bookPlace1.ogg",
+     "bytes": 9901,
+     "sha256": "26f3ce60fbde85b678b0ad7f6624d80535fe540d88232ad1e38e47a96662d977"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/bookPlace2.ogg",
+     "bytes": 11185,
+     "sha256": "831874e8fd142d4d0a03ff009f1f83966338a7878c0f6f38c613ae5b80dd731e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/bookPlace3.ogg",
+     "bytes": 9570,
+     "sha256": "b1afa711e1cabfe5b2c56e20e20e0f9d82142d067727447fa992ddc43dbdb06e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/chop.ogg",
+     "bytes": 9370,
+     "sha256": "d00c2b3c9fff07e376145c8c8c45c90e5084ec192f6ce0387db233f7b86f1486"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/cloth1.ogg",
+     "bytes": 16508,
+     "sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/cloth2.ogg",
+     "bytes": 11787,
+     "sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/cloth3.ogg",
+     "bytes": 12432,
+     "sha256": "a48632d17a4f1416541d261a32a31612e01267144c407fa3ecab3ff410f0085b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/cloth4.ogg",
+     "bytes": 11043,
+     "sha256": "e7ab9a6c4466dea874196c61f59bf1da05cfe58748f42fadd695d441a154a99b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/clothBelt.ogg",
+     "bytes": 21491,
+     "sha256": "f29560a2aea95bbfeb643e1e8f56ec2b6f7e32f32ce4e140645a36db81de3253"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/clothBelt2.ogg",
+     "bytes": 20013,
+     "sha256": "d545b1d9f20e6188140aaf551a96f1e82fe0d15f7ca066fac8b065e1231e0038"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/creak1.ogg",
+     "bytes": 15761,
+     "sha256": "8a346186fd297254248cab8e8117060a52a5cf2a84f603153a762108550ea95e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/creak2.ogg",
+     "bytes": 19012,
+     "sha256": "8a990afdc03aebb91d528f5385e2f95582dbfa8e2c12c71098ab01be9142294a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/creak3.ogg",
+     "bytes": 10408,
+     "sha256": "f9638787f95004b9d2d06f8eff8e99d4e594c21b51947daf562856fbcec905d1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/doorClose_1.ogg",
+     "bytes": 18564,
+     "sha256": "834d29c60a8a8bfb50b158cdb6b7dfa8f02812a408a1ee9703d038dfab0b1aeb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/doorClose_2.ogg",
+     "bytes": 17598,
+     "sha256": "4aa4fe79836c53cd6d0cb0b22ddc33b9901429463ae1bb75131f072683f63f21"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/doorClose_3.ogg",
+     "bytes": 20889,
+     "sha256": "d0a2540e5e1639bc2fbeef34e76f28e9f9cb8a151736a0ac4c13859994328d0e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/doorClose_4.ogg",
+     "bytes": 16902,
+     "sha256": "fd21c0e7a9d0317375d2561590f0770dd3380ee35507d064862cb44d6f71595b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/doorOpen_1.ogg",
+     "bytes": 22848,
+     "sha256": "4ab93bab96522d8eb109ff96dc57cb6765deb02448fe14c10472084be5bb2a0b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/doorOpen_2.ogg",
+     "bytes": 30280,
+     "sha256": "68962fb0458c9bac59dec3adefa9849703c7c89d34712de03dd0075d095e79e9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/drawKnife1.ogg",
+     "bytes": 11134,
+     "sha256": "276403e72c3b71c47bc24db3083970c23f8e5551ffa78f436f83483c56f3f0bb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/drawKnife2.ogg",
+     "bytes": 12395,
+     "sha256": "d5df6a4130cbb016f97b4883769a418917b9629cb4c21717030b186e0c73281a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/drawKnife3.ogg",
+     "bytes": 12726,
+     "sha256": "a11ae62fb1a628425769d11a9de394980ad8909c31f4c9a4316f226963e21caf"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/dropLeather.ogg",
+     "bytes": 11695,
+     "sha256": "097e1d3b74949b0145fda0519d40b7e0773ab82ec4858727f95be830927e1a45"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep00.ogg",
+     "bytes": 9475,
+     "sha256": "6fe61ef1fc3bcf0e253bf2eb64759db6cb69e2fe452f4d88cc597ecf78a3d601"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep01.ogg",
+     "bytes": 9900,
+     "sha256": "313472dba31fd0c855376069fa368bb5a198c27251cc8398ef464578b7047a4c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep02.ogg",
+     "bytes": 9528,
+     "sha256": "2d9575b7dead6e1217ca113991fc5229e9b6d998ea0726ebbb277e7398ab888f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep03.ogg",
+     "bytes": 10559,
+     "sha256": "a86756b9af9f370455ab47844239bb07fd1bee7a113068c91f0fcd9b72703fae"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep04.ogg",
+     "bytes": 11303,
+     "sha256": "fd264d72a7cd622b82abde202f4ed09fa7de95d34c36473ee938ce66cdf39830"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep05.ogg",
+     "bytes": 10288,
+     "sha256": "817957e1f95d97fd36870064c41673895575cde17bccb245f50364c86ed10198"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep06.ogg",
+     "bytes": 9885,
+     "sha256": "6cabfe7ae95d227a84066c6e17014ac31cc7c89b14ef51d7877e98352d4a64fb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep07.ogg",
+     "bytes": 10264,
+     "sha256": "42924cdbf998d5b3db180a339fd74afc94c570d594a536687e337ef1bdfdb346"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep08.ogg",
+     "bytes": 9242,
+     "sha256": "668f14dc1254d0d0f33025e9c7dbcdf2c2f00462ed0e07fb8f099c1d711c1337"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/footstep09.ogg",
+     "bytes": 9356,
+     "sha256": "9324ebb9b2c5bcd078dcb523c6518d38a9f34081069d511602c2efb14ce06ce2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/handleCoins.ogg",
+     "bytes": 25394,
+     "sha256": "8a91f969e932df709df80ee124d86a51389eed9b67f22e5e716bc2bbf60d8dab"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/handleCoins2.ogg",
+     "bytes": 13094,
+     "sha256": "4b857968d64f9ac9336a10ffac6694d7547e1f01566ad6857b30bc8db3ee6c32"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/handleSmallLeather.ogg",
+     "bytes": 10492,
+     "sha256": "ae3cbf695aa0a8b98b5a80a835be5a3ccbd5446a24db2235cd4c3cd6fc92ed96"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/handleSmallLeather2.ogg",
+     "bytes": 10028,
+     "sha256": "a66f6db5918ad016c28a9f2768f127a7f39b5fa04481e5a3b4e78ebe2a1c282d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/knifeSlice.ogg",
+     "bytes": 15532,
+     "sha256": "4cd96dc630bed9840c15f1dd2306da2cc56a4da26a5d3f1a03c5a7265ac5e54f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/knifeSlice2.ogg",
+     "bytes": 15099,
+     "sha256": "6c2064d0ef988d1ec3d56868e823ea8823a5cac00f2742560052633529407def"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/metalClick.ogg",
+     "bytes": 13615,
+     "sha256": "9851a69d0c613e13bceef08060ecc4148f098ef487927cbebe270d642398a3b3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/metalLatch.ogg",
+     "bytes": 10208,
+     "sha256": "ba9ba60b172b3ebc131a940f25793cd2e207aca7af73dc80d637277f060f1708"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/metalPot1.ogg",
+     "bytes": 31619,
+     "sha256": "159def979e8e386c2c539f5e99cc30a080eb2dcb6c911fa2e4ccc0785b2522fd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/metalPot2.ogg",
+     "bytes": 22471,
+     "sha256": "8e1f820d217d380fde10e969d109db34303e3f4d11c3951926eddef813d04ae2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Audio/metalPot3.ogg",
+     "bytes": 23142,
+     "sha256": "d306e5b848f6843332d0ca19f8f7dfe5796aeb56d8273902b085df463273f1dc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/License.txt",
+     "bytes": 478,
+     "sha256": "5735dfd72cb64cbbceda4ebc00c380c41ca680edb82ff153aa7c9ab97614c539"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/rpg-audio/extracted/Preview.ogg",
+     "bytes": 321120,
+     "sha256": "631d554d100779c7896699bb4727807d4ca365ca850dc79216157cf31dae4b6a"
+    }
+   ],
+   "placeholder_only": true,
+   "notes": "Kenney audio is stylised game audio: placeholder / layering only, never a hero sound."
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "direct",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "kenney/sci-fi-sounds",
+   "name": "Sci-fi Sounds",
+   "role": "sfx: alien placeholder layers",
+   "origin_url": "https://kenney.nl/assets/sci-fi-sounds",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-sci-fi-sounds-2026-09-25.html",
+     "sha256": "53f60b5587acf1ee1a3f9533c18e79280ad3348c3ae8348b97da284ed68f90ba",
+     "captured_at_utc": "2026-09-25T11:25:53+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/License.txt",
+      "sha256": "a9767b25c3533f69d03af136480efad08efba19a9f0d89616992b34c79fd6186",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:25:53+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:25:53+00:00",
+   "archive": {
+    "url": "https://kenney.nl/media/pages/assets/sci-fi-sounds/6b296f9ecf-1677589334/kenney_sci-fi-sounds.zip",
+    "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/kenney_sci-fi-sounds.zip",
+    "bytes": 5875104,
+    "sha256": "119340f351a5098ad814f78719438c0da355a9ce8a4c8a3af6a8d48aa3d49e04",
+    "reused_local": false
+   },
+   "files": [
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/computerNoise_000.ogg",
+     "bytes": 119024,
+     "sha256": "1527944e16eb14b48ee03fe3e7ce6aae94262833a4e1f83928d451a7414fe4e1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/computerNoise_001.ogg",
+     "bytes": 120178,
+     "sha256": "29b4842f6d8c0ba2b0cb00bfaff3b852b492bb43197a82e697917aacbe106757"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/computerNoise_002.ogg",
+     "bytes": 130861,
+     "sha256": "6ae9bb261c6536d1699972da0cdbf6e0762cf7e9b925adb64a06ff375255cb71"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/computerNoise_003.ogg",
+     "bytes": 123515,
+     "sha256": "5b1b73bbe6e6ad1b1d39422f640f1bbee3376e8e18916f9305b04b9d143f5cf3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/doorClose_000.ogg",
+     "bytes": 20369,
+     "sha256": "c9134651ebbd7c016f90393aee495ff8120bd343bb7569b689a7506987ebd6c2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/doorClose_001.ogg",
+     "bytes": 21561,
+     "sha256": "2153e83ff9880c78f9539aa5dcce80fc9e3b39c6fa0f8dec9325ec6d7ea2c9d5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/doorClose_002.ogg",
+     "bytes": 20530,
+     "sha256": "01c7d15e90ae1b218812597d04c20e3df872367ebf22cd99d66dddd5fdb542a4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/doorOpen_000.ogg",
+     "bytes": 19616,
+     "sha256": "5b7e07eccd4413ad9ef3720c2d14f9cc699f4c50111e9b2f48bd60e6f1a164c3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/doorOpen_001.ogg",
+     "bytes": 21442,
+     "sha256": "8c204ca94eb722d3af95f29221f4551938ca3c217fda32c14dabe2cf6a9c782b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/doorOpen_002.ogg",
+     "bytes": 19864,
+     "sha256": "84473b70b0b2f69bd325fffee5790f030ff6597d178efddc7e4c201933a6c6c1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/engineCircular_000.ogg",
+     "bytes": 177470,
+     "sha256": "8ab85f9fa85e9e692287f98acb36b9ac3ba15313b007c039055e286b736f4e3a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/engineCircular_001.ogg",
+     "bytes": 199100,
+     "sha256": "e1df3a942842a24f7c4056db3177e8008edd73d4f3985fd95f55362bc85058bc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/engineCircular_002.ogg",
+     "bytes": 188542,
+     "sha256": "5f364bd42269e111df1d421fa2b45f0b2f0cc99a873ceae2d55b34898ad0d779"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/engineCircular_003.ogg",
+     "bytes": 184193,
+     "sha256": "f592ec53043887cf5aeec60d545372da3b4459fba3f634265ee9d5251a4edf4e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/engineCircular_004.ogg",
+     "bytes": 180870,
+     "sha256": "ce286b2d637b0d71c230f0f12bc95c1d2a8cf0419aa13e66fcdde1f9096acae7"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/explosionCrunch_000.ogg",
+     "bytes": 28274,
+     "sha256": "4b597d658d0ae101f0a030fbeea5fc3a4292ab85f017470a8254a8e7959cbd69"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/explosionCrunch_001.ogg",
+     "bytes": 47916,
+     "sha256": "fdd04d6f0032d4d57c134ad37f3587d2d00e58c9572715275bd8cf4f43593576"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/explosionCrunch_002.ogg",
+     "bytes": 47907,
+     "sha256": "be2b8ddc62e4a24c91e2e77793de98549ce216faf2f323a917e7d6f34321ff97"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/explosionCrunch_003.ogg",
+     "bytes": 54824,
+     "sha256": "8c7197bb3a1c504690319c3abe0e62a5423ee246dd70caab57963d0b7aa8144f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/explosionCrunch_004.ogg",
+     "bytes": 79250,
+     "sha256": "9c3a1c73cadf0de5d5a578b31a264f20b1ac7cb6ec9bbd34a203f58402ea5390"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/forceField_000.ogg",
+     "bytes": 25672,
+     "sha256": "c2916f2a062c8ddd1aca2826d134fe90847037db31342726ffb0f9097afe339c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/forceField_001.ogg",
+     "bytes": 28947,
+     "sha256": "5574e69dd04e5f59322c5ddffde5978f077b09170ae5e29cec0bd9901828cd90"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/forceField_002.ogg",
+     "bytes": 27647,
+     "sha256": "051b0eafc479695af4ca3607d41fd4be41bae7c21f4f9508d004722b09f1bd63"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/forceField_003.ogg",
+     "bytes": 23938,
+     "sha256": "15e3fe971ffd3415e5ab641d3a4d043fb31f6712b0956315b524ba29c3889cda"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/forceField_004.ogg",
+     "bytes": 26885,
+     "sha256": "05609bb296cbc287ae95ac8924c89809d69c89d7bb357cc6a117ec1b1ef65e09"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/impactMetal_000.ogg",
+     "bytes": 15491,
+     "sha256": "956c6612a256aa1a67a2327fffe2454f6b1d82e4c1c2be28fd66916335d5b1d6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/impactMetal_001.ogg",
+     "bytes": 15305,
+     "sha256": "4a2b76f20052819c6ace57cc5ba55ec58deffcf74e3ed30694d619c582cc8e8e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/impactMetal_002.ogg",
+     "bytes": 12708,
+     "sha256": "0c1bb4db8a4d48b2b8c2e65a175d9056b845f1063837599995d81be1c5957d2c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/impactMetal_003.ogg",
+     "bytes": 17303,
+     "sha256": "ef29c3943ee701616f65e3d596c13eb3ff6b11ca5b3ac01e7bc923366a5c6f76"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/impactMetal_004.ogg",
+     "bytes": 11290,
+     "sha256": "0032710d1fc88c217946cd54492f275eb4363bb8025a4bc1b7ce08df7b3c60de"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserLarge_000.ogg",
+     "bytes": 25566,
+     "sha256": "a56d95794cd732d6c2d66ce488c14cf557fe526c282897c9a77675c2bd9b77e6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserLarge_001.ogg",
+     "bytes": 26220,
+     "sha256": "e678aca631495b7dfef4ac625f0349875ccac81a60f538d530e072241af3e4bd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserLarge_002.ogg",
+     "bytes": 27440,
+     "sha256": "e5e0b6ccc4d5720c8174a3e5b7cc6f9be3057352a89cbb2e99a00efc6fe5cc11"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserLarge_003.ogg",
+     "bytes": 26104,
+     "sha256": "3c7b3c9d856ee31fa1b92d29322f6ee472446627381595baeaba2af35c07135f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserLarge_004.ogg",
+     "bytes": 26283,
+     "sha256": "86c749483b40e1bba9bfea6a04e884d479e5481e52efb6f113341141de516b3b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserRetro_000.ogg",
+     "bytes": 12588,
+     "sha256": "2a203a007d24cc7e607eb8bec1d86bedba7f551911217ce2c4c1f31393aed32c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserRetro_001.ogg",
+     "bytes": 12732,
+     "sha256": "a0a99efaa755594982d5dfebf3d9cecaed5249bdf1f0de29cf26ca9ea24c191a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserRetro_002.ogg",
+     "bytes": 13130,
+     "sha256": "df6112dc4eba5444bc28a1c8b80f6ce942bb2696beb466ac8e736b2ebf3e15b9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserRetro_003.ogg",
+     "bytes": 14271,
+     "sha256": "4442b847419f5f203ef8ba16f19957124884da176c843d68d48a22e9cd022796"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserRetro_004.ogg",
+     "bytes": 12701,
+     "sha256": "e42c226741e73fa6f3a501835dcca8c6d51105ee039f5d0ee29e0a3e5450a635"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserSmall_000.ogg",
+     "bytes": 7286,
+     "sha256": "72b589eadd41781257ac859e4f4d030222e623390e4a1a83f6d05329a6e026f1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserSmall_001.ogg",
+     "bytes": 7448,
+     "sha256": "ab87913aba9790a0c5fa173d086267ba521ad522fcad2252271db49988313cf5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserSmall_002.ogg",
+     "bytes": 8973,
+     "sha256": "e70139466c3e801358c9041ee17db7ff82c0e9a9cdf44647ad0ea6b9f8458f63"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserSmall_003.ogg",
+     "bytes": 8179,
+     "sha256": "cfa4391ca280933f567ce81c646b16f7cb2a090866eae674159a20f07641833c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/laserSmall_004.ogg",
+     "bytes": 8632,
+     "sha256": "a464e34436f3c2a09f0e3a03dc0658a9036148062bbf293722007df4cfd8ff08"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/lowFrequency_explosion_000.ogg",
+     "bytes": 14317,
+     "sha256": "3cb48d86dab63140cfb9aaeea4d4a6846abaca5831d157d8adbec0490da26343"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/lowFrequency_explosion_001.ogg",
+     "bytes": 9408,
+     "sha256": "cdda50600a4928f2f1b8371224d53c171ac799c1cf2c30b11999508985250b3b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/slime_000.ogg",
+     "bytes": 20870,
+     "sha256": "480ee82b690136ea9db6966a3c3033356b8274752795c4e37afd6b6defcfacff"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/slime_001.ogg",
+     "bytes": 159177,
+     "sha256": "822ca475d71e18ef6bba707dbe6bff2bd493d3457b2552f7473d23022c1257ca"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLarge_000.ogg",
+     "bytes": 189900,
+     "sha256": "885aeda16116b715be5e8fd03d0d77959761015e1ca5823fd3b53d4fd965107f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLarge_001.ogg",
+     "bytes": 212818,
+     "sha256": "fcf4aec5587aa29cdb82fd24801ebd37accd57d61eb67683de8c48cb73ba899e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLarge_002.ogg",
+     "bytes": 214424,
+     "sha256": "dc1a5c00a93d24bd5fd1d3cfca70483054e7c025b40d255980309544428084de"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLarge_003.ogg",
+     "bytes": 214580,
+     "sha256": "c1e6542f9ad0839083072d9b2d4d77208b9ceb60e5f3fd9873047de7f0c57a83"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLarge_004.ogg",
+     "bytes": 210809,
+     "sha256": "1021ea050c664d021e4e847d92148fa6781bcf1fe573d94e91b6b18aea1c16ee"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLow_000.ogg",
+     "bytes": 99760,
+     "sha256": "d7deee8d7217ce63aab802ad7365a59cacfd243392dc1bd03b0a9d454aa494df"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLow_001.ogg",
+     "bytes": 99120,
+     "sha256": "307dfd8fbfe7e6f2d59dec4de445cf02bd4fff86005803096b8c95e333836a70"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLow_002.ogg",
+     "bytes": 72688,
+     "sha256": "3b1adf8645a40c35fcad25eee224c82c9836dc443102a9af5586eb22cbedabcc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLow_003.ogg",
+     "bytes": 85760,
+     "sha256": "e8f7ce4dbc20b5aeead35b94f1c8927b0baa416edaa5b39f1699703031111488"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineLow_004.ogg",
+     "bytes": 100444,
+     "sha256": "c489079d9e8d577ceae4b1ea71fbe282ea1bce8b873dfa9166f9c962f7df81d3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineSmall_000.ogg",
+     "bytes": 116880,
+     "sha256": "2bec8ff75d81f0c37a6b78bd63beea6c70375e49ee30b0bbe7f38d654d576831"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineSmall_001.ogg",
+     "bytes": 133181,
+     "sha256": "a87d5d8b2233f7bd803df78927b52c27be251e8d1354c6cc9ea00ce26215e3da"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineSmall_002.ogg",
+     "bytes": 120467,
+     "sha256": "3d7da67ca2d24ca2abd1e257556d74ff28cf152402968c2035d6f1ea92517f25"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineSmall_003.ogg",
+     "bytes": 129935,
+     "sha256": "78f6c1f0a46e3693f56ed6922bd23e5af9a4093aac9b653c1ce9ee7b33081c29"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngineSmall_004.ogg",
+     "bytes": 130520,
+     "sha256": "009ef3beadec605ab0e60cd64c73b6ca42590058e8491e72b4bc813ba0e3ab57"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngine_000.ogg",
+     "bytes": 109059,
+     "sha256": "c06e84fb6734ddd0ce7242351e0952d560b3b3e47430172e8944f761d7bb1fc8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngine_001.ogg",
+     "bytes": 121385,
+     "sha256": "ee53af299758b664c086d9ca99efecb41168596ea9fb1c5c24ac4389f94aea6b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngine_002.ogg",
+     "bytes": 111072,
+     "sha256": "5a1b1cc6d335944dd9ef94578b6bad939195d3020f61780c19425d2f6b3583db"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/spaceEngine_003.ogg",
+     "bytes": 67503,
+     "sha256": "e100065a0c2ddc2c4aa301fe5b002e251fb31a07bad674a51183964a6b6a0e6a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/thrusterFire_000.ogg",
+     "bytes": 201216,
+     "sha256": "0fdc474d93f209debf1fc4ea77765a669dcb7676db31b4d8a0a509685bccf374"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/thrusterFire_001.ogg",
+     "bytes": 204218,
+     "sha256": "924636edc923fe4aab5829b69dc5dc1c5d659dec5739865434dabee752a3bb79"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/thrusterFire_002.ogg",
+     "bytes": 205657,
+     "sha256": "5f7731c30196d73777d62eec7cb36a28bf63852e70244057b7625b888e71a3a8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/thrusterFire_003.ogg",
+     "bytes": 196273,
+     "sha256": "04f558ca5abf30788e49ed4370289dfd7e38c7f054d2ea35c2a013210374f1e5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/Audio/thrusterFire_004.ogg",
+     "bytes": 209339,
+     "sha256": "5297afd01c3e91a13d08ec1f673d89997bd17012fa8645a20c94fba240f0f1b2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/sci-fi-sounds/extracted/License.txt",
+     "bytes": 571,
+     "sha256": "a9767b25c3533f69d03af136480efad08efba19a9f0d89616992b34c79fd6186"
+    }
+   ],
+   "placeholder_only": true,
+   "notes": "Kenney audio is stylised game audio: placeholder / layering only, never a hero sound."
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "direct",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "kenney/digital-audio",
+   "name": "Digital Audio",
+   "role": "ui/sfx: digital placeholder layers",
+   "origin_url": "https://kenney.nl/assets/digital-audio",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-digital-audio-2026-09-25.html",
+     "sha256": "3ab76c36d8d2b876599eb24933b28d74cf107db30f0d05bd9ceaa6d857ceb95b",
+     "captured_at_utc": "2026-09-25T11:25:58+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/License.txt",
+      "sha256": "654d24e000d1c3b2a1d2264151f49e273e8a26d24e26e9bffc2aeb48cea93815",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:25:58+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:25:58+00:00",
+   "archive": {
+    "url": "https://kenney.nl/media/pages/assets/digital-audio/216eac4753-1677590265/kenney_digital-audio.zip",
+    "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/kenney_digital-audio.zip",
+    "bytes": 990367,
+    "sha256": "24e6ce28b76a6d8c89cff4d331e0965ff5c3de8a73c612028e9d363cc64e4f06",
+    "reused_local": false
+   },
+   "files": [
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/highDown.ogg",
+     "bytes": 5803,
+     "sha256": "cdbea353b2e435b4f869c7b045af81079c5d5eb81cfbbc805013ccc3a7a0f36a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/highUp.ogg",
+     "bytes": 6135,
+     "sha256": "cbc1c3c7ccf5d7903818144a4c3f5b2ed2385095792f29d8d7c76360ba4fa559"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser1.ogg",
+     "bytes": 9315,
+     "sha256": "0bf468769b48a834dc1c6e38e457f2c71159b010225a9aedf84316795e8cc3e5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser2.ogg",
+     "bytes": 8524,
+     "sha256": "50470d64f9397855e5d9a334484da9c5232b3e0524c52f088b8a73822bd89f45"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser3.ogg",
+     "bytes": 8302,
+     "sha256": "caede23d2b65299acdc4e9cab16d06c247d69c7ca1c74caa5e9da21cbdbc1400"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser4.ogg",
+     "bytes": 9208,
+     "sha256": "13f34561740aadbd3438b971dfe248cf56ea09d333eb7a0278561e09e27c3557"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser5.ogg",
+     "bytes": 8484,
+     "sha256": "8d7b30b35112bedf4dd6f03796a5f33af85414b02947187e4063819fd80cf3e2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser6.ogg",
+     "bytes": 8928,
+     "sha256": "cec018b67fdd9a857e692be0596cec070617346853e5341c3e2df3aae950473d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser7.ogg",
+     "bytes": 8848,
+     "sha256": "ec67a33a99dce15b93d74ee4d32c903150dcd04b822853f417eafd526ca041fd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser8.ogg",
+     "bytes": 9383,
+     "sha256": "c87572c683af43f2c0050138a0d72ca049d7cae0ad0a6ae27ba3bd7ddf29bcd6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/laser9.ogg",
+     "bytes": 9331,
+     "sha256": "ae77fe3e3f3488e64b83f0526640af512e5ef452d88e79b4b97404803a047e9f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/lowDown.ogg",
+     "bytes": 5956,
+     "sha256": "e0215fcfd8b9d7877f74d5c46b239a13d7db0d25998da97b80404931ef9eef5d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/lowRandom.ogg",
+     "bytes": 5416,
+     "sha256": "ceefeeeb6982838d78ac9059a845ca614b3bd94580a9a9127fd5834d6206f739"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/lowThreeTone.ogg",
+     "bytes": 7035,
+     "sha256": "b4b3bc7420e71bfbec49a6ea13b8c12d76a5751cbdf063d8a8ac017c0b1e1d87"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/pepSound1.ogg",
+     "bytes": 6019,
+     "sha256": "f2f44effce087e47683f0fea05a71002bd8dca78fb10bf93d9f0b38d49f9590e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/pepSound2.ogg",
+     "bytes": 5910,
+     "sha256": "5a33494e622c15c4587e0a19447cf55c86283faac0e6c1238b550f43a30f16a3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/pepSound3.ogg",
+     "bytes": 5590,
+     "sha256": "5e9f2b4a0b14e65a157d0bbcb28cf816926583afa96e753489c722ec3d810a78"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/pepSound4.ogg",
+     "bytes": 5948,
+     "sha256": "8afd1776651eb3155e1b588f26d6c9b5cc183e9c53297685763f51ac63e63673"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/pepSound5.ogg",
+     "bytes": 6422,
+     "sha256": "4dc9824b319efd915bac82d8e2767e51d5f6503224d358fda6e2d445f2934bc8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaseJump1.ogg",
+     "bytes": 6733,
+     "sha256": "c60069ed7108678dd6a1306404d168a93cc2575cda37b06add9dd6c4d46352a3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaseJump2.ogg",
+     "bytes": 6342,
+     "sha256": "5d85717cfca231f7da7887cef5f44b2131bbe3308eb0c1fee0b4f9e61d59b571"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaseJump3.ogg",
+     "bytes": 6854,
+     "sha256": "69e25a1b7b0781f57af84eb4424973ec406d34bc48eed8b6964787b2d74093a9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaseJump4.ogg",
+     "bytes": 7117,
+     "sha256": "90e1c90b9da3d0be66b54f4daa926f0fde79eba867dec7e9d1eef10524756e19"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaseJump5.ogg",
+     "bytes": 6770,
+     "sha256": "322d62ab7da973880d86c5ad217a2da85916ed95aa6c8d29991de392fd0f7522"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserDown1.ogg",
+     "bytes": 7113,
+     "sha256": "d2d046cd0247045f8819905fc9719a7237ccbd590b3128ce58a61a81f50d208b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserDown2.ogg",
+     "bytes": 6093,
+     "sha256": "0eaadbbc5c259cc89a1dfbb0c99b61ca07e08710d035cc9bfc805b68cb0bdc9e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserDown3.ogg",
+     "bytes": 7329,
+     "sha256": "19fd2f5bb8448e022381f1a72c36117d4adcb521ebeb697e888bfaf7945cfa56"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserUp1.ogg",
+     "bytes": 7390,
+     "sha256": "4423d459fc15fdd8593a4584d71e272ec2e5f8bdc11b759db623fc613ffd957c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserUp2.ogg",
+     "bytes": 6895,
+     "sha256": "8f158744623b8d7a6d68aec5ba0716b8edd76a7461646071120c81f81dc54792"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserUp3.ogg",
+     "bytes": 7222,
+     "sha256": "d6edcbde2c7190e275ef3eba08a8886129153a361cd0e16dc0fb58206deb5e53"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserUp4.ogg",
+     "bytes": 6332,
+     "sha256": "a64a69368af9d85dfce8dd38432fd6c9935a7766621782193102c9cb276571fc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserUp5.ogg",
+     "bytes": 6289,
+     "sha256": "704433167121712c456fa7f06af96c975a28f9a022d91feb68196bb073704ea0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserUp6.ogg",
+     "bytes": 6349,
+     "sha256": "39616fbeb3cf28288873502e99acfc590705d54bf7f58ef3f1a23cec72dd22db"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/phaserUp7.ogg",
+     "bytes": 6410,
+     "sha256": "47ff0828ef14d4944689e771a50bc4e991a88067bea1ba46a06c6aeb1e03c2a3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp1.ogg",
+     "bytes": 9011,
+     "sha256": "8c361b624b560c0bc30ea3063b71212bc30caebf425c9df2481c13b25561485c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp10.ogg",
+     "bytes": 6568,
+     "sha256": "e4d2c7707655361678ccd358048b7956753e4f333e99545b4ae25e07a9b2ef9b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp11.ogg",
+     "bytes": 6495,
+     "sha256": "d673bfcd3aee32202908708fdadb3ad3033f65162c6dbae4615e181e19eee0d3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp12.ogg",
+     "bytes": 7278,
+     "sha256": "a9387a2cb0b13b8c794579e61ae1fb7e666e22d46a36aec6c77471635096f2fc"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp2.ogg",
+     "bytes": 5577,
+     "sha256": "83786b43d828a399e14ac20604b63a60ca05385977f5477d00304c2adc696204"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp3.ogg",
+     "bytes": 9043,
+     "sha256": "59e7591f7a068882767bc1fd61edabf479b78787466d3a70bc49dfa0533777d2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp4.ogg",
+     "bytes": 6288,
+     "sha256": "df6992456056af760815460b66d2ca1c3a07c200cca26325db5820b90104d177"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp5.ogg",
+     "bytes": 5652,
+     "sha256": "528e7245a1b61c6fd94bcb8df1d747e6e9b76dce58a36e44be992cf9e09884f8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp6.ogg",
+     "bytes": 5607,
+     "sha256": "d1007bc67852cc767fad077a6b7ee016c0eb3d52a2032f1496726d7ab590e22d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp7.ogg",
+     "bytes": 5868,
+     "sha256": "9048d651b51f528099c384566b0d4c6c597bee8b56c48f3adab7a901feba0fa5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp8.ogg",
+     "bytes": 6363,
+     "sha256": "2a2adebaacbf07cc89c194e5d088c8e01cad8557800559d6cb5b6106b6739508"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/powerUp9.ogg",
+     "bytes": 6101,
+     "sha256": "7dfa3198ab951f09bee096bcd08db6faafcdb57a6bf416c91e1fa9a8321076e5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/spaceTrash1.ogg",
+     "bytes": 12132,
+     "sha256": "8f702781627c95cf9f91724dab3bcdb46bb87cc0ccf2a350748798dba6bc82aa"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/spaceTrash2.ogg",
+     "bytes": 12640,
+     "sha256": "1b3a14886d25a471273eec5d55ff3a7e7c7c6df4e82f3659046dafed982a76d4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/spaceTrash3.ogg",
+     "bytes": 12413,
+     "sha256": "03fd29fd857c67b4401e7ffbc321568229844a10051ae455af497b2335f37d6c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/spaceTrash4.ogg",
+     "bytes": 12685,
+     "sha256": "d0c659b2c8108a7bccfeac94dbac6b770f89e4b71c0b4c6c3024941287094f34"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/spaceTrash5.ogg",
+     "bytes": 11729,
+     "sha256": "7b74e7c5c9df8023bd6bdc595045ef96bd3e606da5457cfbbb6ff9d4dd32a005"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/threeTone1.ogg",
+     "bytes": 7361,
+     "sha256": "bdf21eb12e65507f091d074886fdac820e1ccae51d060caa168e5567acadb84b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/threeTone2.ogg",
+     "bytes": 8082,
+     "sha256": "124198c80ff2e1826230be606aa3dcdd90262272bb545f621a9eb91dccfd5c9d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/tone1.ogg",
+     "bytes": 6634,
+     "sha256": "12c6a1955aad54cb04206b5e9985df4379ebc598a01b65070609e0b0a3b9b026"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/twoTone1.ogg",
+     "bytes": 7362,
+     "sha256": "8732f14d6398407a8f1df77b986c2099cfd88f6583e1272cb60497cb2fe8da1d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/twoTone2.ogg",
+     "bytes": 7349,
+     "sha256": "e8e4a2d9faa4344f4722de9ef81103290858bbcd80f1dc686879128cae52e9f0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/zap1.ogg",
+     "bytes": 8126,
+     "sha256": "4e4bf11c671a4be0723022a7177f8e122329fa32a0c59555581f4193ed111585"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/zap2.ogg",
+     "bytes": 9819,
+     "sha256": "169cf3876647bae0a28a7eb3fc5b5bd573ab9efae7b56b64a8700ff9bafb3494"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/zapThreeToneDown.ogg",
+     "bytes": 9936,
+     "sha256": "272e60bc62a1685f990fa50d163c3cb7f85073c1c3f89e3c3409e7ec938703c5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/zapThreeToneUp.ogg",
+     "bytes": 9590,
+     "sha256": "52da0ff5e219179df4521b38276abde0ed6ba27e0cf030b0d1209b8857406eff"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/zapTwoTone.ogg",
+     "bytes": 9847,
+     "sha256": "7d5871b7b01f631bee006772cc4fb6ab6a1eb5c78d5be42edc722b57157c00f5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Audio/zapTwoTone2.ogg",
+     "bytes": 9016,
+     "sha256": "9da93e8dade111d1913cb9dc582925712afed9f69206a80ebf89510756909a06"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/License.txt",
+     "bytes": 482,
+     "sha256": "654d24e000d1c3b2a1d2264151f49e273e8a26d24e26e9bffc2aeb48cea93815"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/digital-audio/extracted/Preview.ogg",
+     "bytes": 587635,
+     "sha256": "989a5f69887d90e0eff0dcc641a09419857d4649a219d03e7aa5ef53d7eb5d0b"
+    }
+   ],
+   "placeholder_only": true,
+   "notes": "Kenney audio is stylised game audio: placeholder / layering only, never a hero sound."
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "direct",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "kenney/casino-audio",
+   "name": "Casino Audio",
+   "role": "ui: coin/chip handling placeholders for XOR payout UI",
+   "origin_url": "https://kenney.nl/assets/casino-audio",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-casino-audio-2026-09-25.html",
+     "sha256": "870207c3707c37b11a0cf24f489ffbe52966501a204aebd5e9dad7883b68ecce",
+     "captured_at_utc": "2026-09-25T11:26:03+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/License.txt",
+      "sha256": "3d9c53acb6e236d760da14030f54bc53e1d8c2599f78470c36b96fddcde09221",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:26:03+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:26:03+00:00",
+   "archive": {
+    "url": "https://kenney.nl/media/pages/assets/casino-audio/2472606a04-1721639069/kenney_casino-audio.zip",
+    "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/kenney_casino-audio.zip",
+    "bytes": 876839,
+    "sha256": "f36250766ac5bc378c13708ddf12a23a8e54a3251f8d482c7536e51b5dbafa18",
+    "reused_local": false
+   },
+   "files": [
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-fan-1.ogg",
+     "bytes": 12489,
+     "sha256": "7a9758ccad8899baef1b9f60b4064e4baa724a548293832fdaea07e6e07e638d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-fan-2.ogg",
+     "bytes": 18363,
+     "sha256": "5743373c9dde00c6eee949a2c8e65d75946522768999167e1f5632451630e848"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-place-1.ogg",
+     "bytes": 9624,
+     "sha256": "d8f26c33a665dcbdcc6f632f6050bc9dd548feb0d4942d4547615926d3926810"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-place-2.ogg",
+     "bytes": 8046,
+     "sha256": "903d5050718595e87864dd755643b476ab1a5533080dcc2dddc72570d33ba9f8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-place-3.ogg",
+     "bytes": 11503,
+     "sha256": "1d988631a6e5201ed1bb0d728f2e43a3ec79401258426858793598044ac95841"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-place-4.ogg",
+     "bytes": 9618,
+     "sha256": "18e3ba713b7259605fd27cdc048085ed56cf86b32403f070b6cb125019f77183"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-shove-1.ogg",
+     "bytes": 10690,
+     "sha256": "1ea667aa6795d5f14239192116ebcbd8f3f47eb1c7faaf2ec56844b9067b8b06"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-shove-2.ogg",
+     "bytes": 10445,
+     "sha256": "8e95c1d3ae94b5b91bc663432ad7c3bf4e03a541c22ec10fa51c65fe0e29054b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-shove-3.ogg",
+     "bytes": 9948,
+     "sha256": "399520d483a1466fcaa850b9c407b4edbd5c7f0cbdf17e84dea12e9636326d0d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-shove-4.ogg",
+     "bytes": 10875,
+     "sha256": "0a1ad3a2f16bd2ed73349e6342426ca7a59a6e26b7e26e36d51d51c2c2349d6f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-shuffle.ogg",
+     "bytes": 30002,
+     "sha256": "96c84883a30845ede723a4cf2e8369e9837e7dd4e0d4eb0212b0a7ed21b0f544"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-slide-1.ogg",
+     "bytes": 8833,
+     "sha256": "006cf9822d15d7063f8899e56041f41646df30adb6fbd8b974ee5d5420012690"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-slide-2.ogg",
+     "bytes": 9042,
+     "sha256": "e674a1679ec87b507047fe012d068ad2c412125f56186f0e732684705c2a6888"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-slide-3.ogg",
+     "bytes": 9164,
+     "sha256": "af2ab62656cb3df73316ce5771b8ee1111a840962b21607e3202151e7413c52c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-slide-4.ogg",
+     "bytes": 7912,
+     "sha256": "b9c82bcdbe6b7d00a06e2546bd2683a9ab082ca5fd090a42882f33eddd925b7f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-slide-5.ogg",
+     "bytes": 9180,
+     "sha256": "8638ab0c17f029aded0e27a4f9b9bb9f8c621b19a6e9975e855cb40ea63e2201"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-slide-6.ogg",
+     "bytes": 8780,
+     "sha256": "be85da181ac879c20cb667d0f9f156dbdc236d3751737ad27359a15e946430a0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-slide-7.ogg",
+     "bytes": 9580,
+     "sha256": "bda2040194f43484d03ee3c65ed6fff57251882ea7227abce4214bfa30bf2705"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/card-slide-8.ogg",
+     "bytes": 9863,
+     "sha256": "95d9aa26f8c63af9934f27a8e3b7e9b583f177640f0bbd6982f12dba52b9ae6b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/cards-pack-open-1.ogg",
+     "bytes": 12715,
+     "sha256": "1214059fdfbf1c396c0702244fc833739cc346d326a71e450b731f456e54d6fb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/cards-pack-open-2.ogg",
+     "bytes": 10918,
+     "sha256": "49e02479815c69cd303e0d8f12952c0492d5b3e555838f3485cc25a09818e6fb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/cards-pack-take-out-1.ogg",
+     "bytes": 8269,
+     "sha256": "6d38b979f64d20e4153173187ed67b04c6c004767c0a43eddb65c75fa925a1c4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/cards-pack-take-out-2.ogg",
+     "bytes": 9424,
+     "sha256": "d991829eeaf7e5a6f8462594e5be0d91535309ffd6249278f34eec70470395a4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chip-lay-1.ogg",
+     "bytes": 5720,
+     "sha256": "4b2111252ccb64eed67f171e061053849cfbb29873536c03948646f244a3905c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chip-lay-2.ogg",
+     "bytes": 6123,
+     "sha256": "8ca8b2d450741c04ed7b4ba51ed3f73c2400c8b3dbe83b974be4fe4774a76712"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chip-lay-3.ogg",
+     "bytes": 6327,
+     "sha256": "bf24ebb417b6279568800dffdb0205d3ec8854c7efe179e8964755a6341727aa"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-collide-1.ogg",
+     "bytes": 6356,
+     "sha256": "f41b3d106360fc68ebc061a211d4265b4cb5fa1fbe86e4d57d3673510e2c3784"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-collide-2.ogg",
+     "bytes": 5987,
+     "sha256": "2a10c5ff4b2fbaa55a317fc258ddce3fec85bd26db2d3c2ad298b3b33ce23bc6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-collide-3.ogg",
+     "bytes": 6301,
+     "sha256": "1c5e885f72b64c38fff7ef05579e49310e7acf026cf123ffb65fffb57fb06e1c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-collide-4.ogg",
+     "bytes": 6038,
+     "sha256": "1ffa34af64adc62fce583c5aa9a3c98287b1673ef191576a5571f1ffd39529dd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-handle-1.ogg",
+     "bytes": 9374,
+     "sha256": "a2c495237fb0dc0dc96ccc2c9840572edd226e6459398ecb631c6c9f9e5408f0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-handle-2.ogg",
+     "bytes": 8639,
+     "sha256": "099b6d7d3a71e7d22171a93d124e7366e326d32eb85d718ba29abded8a49c329"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-handle-3.ogg",
+     "bytes": 6261,
+     "sha256": "7c5a86e27b2bef839ae096dd655506cf46a82494bd01cc28f51bed6ab26cc342"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-handle-4.ogg",
+     "bytes": 7347,
+     "sha256": "0d171ea00224709cbe31ef95a111eabaf1382606a4836c5717043b339cbed8e9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-handle-5.ogg",
+     "bytes": 11273,
+     "sha256": "589753ea21b1955626e82975be8979f42140f5b0645a8c33c2d1f7e33fba68cb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-handle-6.ogg",
+     "bytes": 8909,
+     "sha256": "527d4d3de55cc261dc476329b71a750c296f3ad633ac50318d913976bb89857c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-stack-1.ogg",
+     "bytes": 6469,
+     "sha256": "12bf175b9afcea112175b241ad3336c6244ac5fdcdff8b5942ecc03f2225e0c4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-stack-2.ogg",
+     "bytes": 5642,
+     "sha256": "9f985e766c3557eef1764240b48e30b2f0ffa870a99f05de85cd6bf0ea758ef5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-stack-3.ogg",
+     "bytes": 7203,
+     "sha256": "48cc0f01e2b62be7677f2e8c02177906cab80e96fa8176fa05b3ced35bc2a9c2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-stack-4.ogg",
+     "bytes": 6095,
+     "sha256": "129a3af12f096ef9d8326b32c3c674d687f1a0b447157ccd02fb431ba134b580"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-stack-5.ogg",
+     "bytes": 5749,
+     "sha256": "42dd800e3e24bbd07d3ebfc86c44b6500d376641e30270dc363d95a73e90b56e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/chips-stack-6.ogg",
+     "bytes": 5821,
+     "sha256": "5ec35171aa65bf5edd977e293523a649227accf36e682bf1ac9a84286f04c682"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/dice-grab-1.ogg",
+     "bytes": 10278,
+     "sha256": "1952cf1987b2c1ebb035b30b5f0caf23604b6ce4c88b6a226fe6e6257ce730f3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/dice-grab-2.ogg",
+     "bytes": 11437,
+     "sha256": "4eb4940d1e71aa3f6ac5f865b6b47748a492adf6a83d622c8efe6284dbebbd2c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/dice-shake-1.ogg",
+     "bytes": 19388,
+     "sha256": "ba603441c857204dbe3ff3345902c7e1c3f523bf1bd314acf088609bc6c1e4e5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/dice-shake-2.ogg",
+     "bytes": 19976,
+     "sha256": "47e8e2cb0adb95bcd7348b58db8dc2bbfe3c553e50a4e9ef007e67891ed51ca2"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/dice-shake-3.ogg",
+     "bytes": 19722,
+     "sha256": "aecd1dd0de6e42ebb510d1f9bfe91a580a8af238dd73bdfda368b90b894b5c09"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/dice-throw-1.ogg",
+     "bytes": 9523,
+     "sha256": "4e6581c73465cdd7ec32e86a709b4ea5c682e819c9bdb7989d1df1880ba67886"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/dice-throw-2.ogg",
+     "bytes": 7545,
+     "sha256": "e0b8c370503b2c5c2a72d311cccae30fe63a6afd48f2be32e771fcf1a98585d6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/dice-throw-3.ogg",
+     "bytes": 9231,
+     "sha256": "09c13d35a9a30bfce31a5e9bca94adc5be189ddecd0b4500237d54c7fd05227c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/die-throw-1.ogg",
+     "bytes": 8410,
+     "sha256": "b31d716165be60e442da3c1ca25a3968aad1e0851a7f0859f495aecc02fd9e13"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/die-throw-2.ogg",
+     "bytes": 9824,
+     "sha256": "a2702cfe14d24aab302483a1499daa88474a4af4acd794b58d97f4af16333b3d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/die-throw-3.ogg",
+     "bytes": 10018,
+     "sha256": "52fc44c7bb89328a147738574c925508c34abf4c19a014575b37ffb8c6b02437"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Audio/die-throw-4.ogg",
+     "bytes": 8159,
+     "sha256": "6253cabcb10c4152548cbc9d3ea87c1bf1bd484f0bd8d6b73c542e690509c0fd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/License.txt",
+     "bytes": 487,
+     "sha256": "3d9c53acb6e236d760da14030f54bc53e1d8c2599f78470c36b96fddcde09221"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/casino-audio/extracted/Preview.ogg",
+     "bytes": 424935,
+     "sha256": "14038ebbdfa096ce32bf6e358c00b6ae9d168d6be9cd080840ca3b896cc5f217"
+    }
+   ],
+   "placeholder_only": true,
+   "notes": "Kenney audio is stylised game audio: placeholder / layering only, never a hero sound."
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "changes": null,
+   "access": "direct",
+   "acquired_by": "agent",
+   "storage": "local-private",
+   "committed": false,
+   "used_by": [],
+   "fallback": null,
+   "asset_id": "kenney/music-jingles",
+   "name": "Music Jingles",
+   "role": "music: placeholder stingers only",
+   "origin_url": "https://kenney.nl/assets/music-jingles",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-music-jingles-2026-09-25.html",
+     "sha256": "7e3980666955cf617c266a01a92d052613e811ff4db239fd2a45ad7aee15f80d",
+     "captured_at_utc": "2026-09-25T11:26:09+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/License.txt",
+      "sha256": "373b1c880ee6c7a83c1ccf209f251cf45fc9ea9b1f0330844fa7be64a401adc4",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:26:09+00:00"
+   },
+   "acquired_at_utc": "2026-09-25T11:26:09+00:00",
+   "archive": {
+    "url": "https://kenney.nl/media/pages/assets/music-jingles/f37e530b9e-1677590399/kenney_music-jingles.zip",
+    "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/kenney_music-jingles.zip",
+    "bytes": 1239525,
+    "sha256": "b729ba57959bd58793d2c5cafa348aaf2655d354f3da35ec4729e03ec77197b8",
+    "reused_local": false
+   },
+   "files": [
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES00.ogg",
+     "bytes": 39948,
+     "sha256": "1010c9b566d6c090ff03a4aaaf7439e26eb4cc4f20373800d0b7e6a9057b795d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES01.ogg",
+     "bytes": 11758,
+     "sha256": "dac403c193e8b6277375c25182ba75bb6868e0e453f0ac2de368d079016e0476"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES02.ogg",
+     "bytes": 11743,
+     "sha256": "2c0b9dcc14bdae6d66ecb40d0351e61b4b2fc570e7b13821974e2057f07c93e7"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES03.ogg",
+     "bytes": 16573,
+     "sha256": "64b146c4b737d4a74d60316554bdb667cfbe20681a71722948c5f70f83af7d92"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES04.ogg",
+     "bytes": 16796,
+     "sha256": "f396b3bb91cf939b51b64c734db01187d70a59cf74dd83cb9d6746e00552d50e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES05.ogg",
+     "bytes": 21439,
+     "sha256": "f488e856ca7e01df286c7e3edc853bfa7bfde91e1d39754f611bda2e844ef37d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES06.ogg",
+     "bytes": 19138,
+     "sha256": "7b54cb3d789b6f8451ca1a81649ec5d43a4ef87c8be81e6811980dca3d3302d8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES07.ogg",
+     "bytes": 18971,
+     "sha256": "eac9e04c7ccdf10c9e0350e53a99f6bfb925eda725a6273b2972329170ab56a0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES08.ogg",
+     "bytes": 16534,
+     "sha256": "ed99f241626d54754c8e73af1b2e9146e04a4a4a6ba353671dd9f1501c6c8109"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES09.ogg",
+     "bytes": 11934,
+     "sha256": "4924318115351d89bb69ab719e514933cc7ecac2947570824ed97d162508819e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES10.ogg",
+     "bytes": 12001,
+     "sha256": "9fb44945db139fcb2ea16ed786d8aff1b44ca6a749828bc433ad19f383de7e1c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES11.ogg",
+     "bytes": 21177,
+     "sha256": "ee06814cd4e703bdd501b8035d143061b7fa21cf3b5ab2d0cb4e014dabf1054a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES12.ogg",
+     "bytes": 21202,
+     "sha256": "ac678f8435036f800f4b2244e6d6b929bfdd012640698ab9815b35b86bfbcd29"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES13.ogg",
+     "bytes": 25177,
+     "sha256": "da3b3d2334dcd7713f06dd3c0af28e224d1df8ee8792d9907f5a77c1630807d7"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES14.ogg",
+     "bytes": 11717,
+     "sha256": "d1ccfd0aa466abe7240e7fb011390513c244884288b98366799bc763c6cff62d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES15.ogg",
+     "bytes": 11849,
+     "sha256": "f5b12417d8f0283b15c0f481cb35569dbf3b8c5a79ad117594bcea64dd0eb8c8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/8-Bit jingles/jingles_NES16.ogg",
+     "bytes": 14057,
+     "sha256": "f39a24acc1a4be5e10628e43ca049c24a1e94c6f8d2953506cb000d5da5761cd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT00.ogg",
+     "bytes": 8650,
+     "sha256": "e23d8c9e971a4e34484bc834a3ec1d560811ec6f5edd5efa2c61e583c18c504a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT01.ogg",
+     "bytes": 11681,
+     "sha256": "ddca9df332d7cdab525bbbe62ca26e9d61aa64bfa626d9516d5c53eb91c45322"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT02.ogg",
+     "bytes": 11735,
+     "sha256": "1ebd52ba108c0e749d2814c54e44bba6c39d111fa30d025fddfac70538e0e241"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT03.ogg",
+     "bytes": 13944,
+     "sha256": "889d4c2b76c7edd63138b3a976c3f7337aaba3de90019d19bca70ec958c93014"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT04.ogg",
+     "bytes": 11424,
+     "sha256": "7c20cd8d6b98e583822e1f58abc596900a07ba75ca690ec599efe5ea58981211"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT05.ogg",
+     "bytes": 13868,
+     "sha256": "fe67e9e1d8c9da2228cc6c83fe5778c75397f87192e070ce7d956e270743cb30"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT06.ogg",
+     "bytes": 11854,
+     "sha256": "a793813952205365f72f45d96d82195b8c3a6fbcc57b338b60c6fc0fc6f7db35"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT07.ogg",
+     "bytes": 8707,
+     "sha256": "b35d7bea586f6412be312753a50b708e9505ce86c42e5549117c18f8da00a4e6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT08.ogg",
+     "bytes": 8613,
+     "sha256": "e82b1d3cf1020b99347acdcf76090150397d06ac90403a2718e7a738bf75f01d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT09.ogg",
+     "bytes": 15477,
+     "sha256": "3114537d0d82f83c98037b4867c67dae4faa09e904405e511a9336088d022554"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT10.ogg",
+     "bytes": 15019,
+     "sha256": "8e246cd4099bb170dbd53a9c4c1e2113c57f4c5469abf4fcb7953cd6ae894bff"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT11.ogg",
+     "bytes": 17932,
+     "sha256": "40d6f3fb92225d039a9196c5cda98c9366efdc837c10b9b6d01d94dfafae8ec9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT12.ogg",
+     "bytes": 8666,
+     "sha256": "4ef863027af0574b7f2e83a48d9cb67922a72f3ea1b361a0f767630e135fb3af"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT13.ogg",
+     "bytes": 8577,
+     "sha256": "6673791db0a0ba935f49381ad60008092a4662440c2a973510c440d0a98c1996"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT14.ogg",
+     "bytes": 10099,
+     "sha256": "1ae8616ed3df0c9c0f154fb65f688f8f45eea165d50f37fdc0b086955270b35f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT15.ogg",
+     "bytes": 19626,
+     "sha256": "e2929ad1acb0ff929f2367eb06d4a57d3c543be9f5a8b6a7fad7e44e440474e1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Hit jingles/jingles_HIT16.ogg",
+     "bytes": 8445,
+     "sha256": "8b17f8af468e06cc158d5afb3853fde2e4baf9dc072b7f65b9a0fe8cb083ef2c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI00.ogg",
+     "bytes": 10382,
+     "sha256": "b442ade3308a2bbda4b8c572c86f9f1071c7bdbcfb1e6f915d35c605b61bd475"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI01.ogg",
+     "bytes": 16579,
+     "sha256": "3f8f2534a297d19386c233a7ee4fa8737cc40870dd206010263760e1983dde46"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI02.ogg",
+     "bytes": 16360,
+     "sha256": "4967dc3cd31257716f455ef50f8980378726ce086954c7a5563c0c57ee129e3e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI03.ogg",
+     "bytes": 16981,
+     "sha256": "88da900ec74a79fb845f2dcf2068383998833a9ee1b87a23f074924781af5700"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI04.ogg",
+     "bytes": 11052,
+     "sha256": "f98fa4af012d443da636a2d90f2926adc2384ec833851918f88426be9a25acf9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI05.ogg",
+     "bytes": 10291,
+     "sha256": "017e600a154f504039b302b4848a5ad5870248280b4320b037f1d82324988bf5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI06.ogg",
+     "bytes": 11867,
+     "sha256": "6389d8d473c7d82375396da01584f12459039be0e709be0265ef9bda7a1ebb0c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI07.ogg",
+     "bytes": 19137,
+     "sha256": "91870588924e0e498c6eb8d4f4ccf8595c9e7dc51fb553797b551062e642ce7c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI08.ogg",
+     "bytes": 10825,
+     "sha256": "b3cb6e790980c68be38e8d5cd2e50c408a1c9d8a7aa46ca855ab9b36c6be12c4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI09.ogg",
+     "bytes": 10872,
+     "sha256": "582b561bcfc53c90ef3fef8549829d3be8e01dcd9a0312363d8ed9ca83ed2565"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI10.ogg",
+     "bytes": 14004,
+     "sha256": "baf50beffc4cc2dbb92c9d596a22732a8b5249c7648b681c0df6d0af6c561478"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI11.ogg",
+     "bytes": 13830,
+     "sha256": "072fe661c6ce8c7672afaf0af51e27533d6effe99d35584b01d864bde800ecc1"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI12.ogg",
+     "bytes": 15969,
+     "sha256": "f5fc4c01b106e6317acaee1bffb51704e41c85b0fa7529dff86b447bdabf150c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI13.ogg",
+     "bytes": 14644,
+     "sha256": "44f5b9d0d3ed9835a015e72199b4b82acc2e7f322c342c4f8f8bf1abd3537214"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI14.ogg",
+     "bytes": 15212,
+     "sha256": "b6c0e64f9e69883e411e1b7595db5b516019a6e5b720c360bec8f75977549b28"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI15.ogg",
+     "bytes": 13905,
+     "sha256": "ae6c65768979a16ec802e8fb911c362a6b1423e92302d59d35dab10407324bc3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Pizzicato jingles/jingles_PIZZI16.ogg",
+     "bytes": 10201,
+     "sha256": "1b1211b6360aae37ea685fee057bcabd034a749c1dfac6a9d643086d96e9b9aa"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX00.ogg",
+     "bytes": 10335,
+     "sha256": "f87605d2a3c717e6a26e584f57d24eac44e47f5a01470dad18809e5d6c9eb618"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX01.ogg",
+     "bytes": 17409,
+     "sha256": "272b8160616d0f924f447df3f8543ab83440c5e41168107bd5abe1140894122b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX02.ogg",
+     "bytes": 17112,
+     "sha256": "70a6c8cf7d2d391eededdb6121371e01f859130595da08413a28ea0608a82e3f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX03.ogg",
+     "bytes": 19785,
+     "sha256": "f240f7c553c9d621db62d8fb8ebbdf0c8e74ec3a1ad2dfa16c9728cec2dcff6d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX04.ogg",
+     "bytes": 9786,
+     "sha256": "94eeaa26800f6a04eb71b9d9e4f25c19d779109f6903d17811d2a881d2f5614d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX05.ogg",
+     "bytes": 10183,
+     "sha256": "de8be60bc25c74e9c7dcf10bbca8e1fed1ec90efd555bb74080c756591622817"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX06.ogg",
+     "bytes": 11167,
+     "sha256": "f2dd409878c90e435da196108658d6efda598afec0a1b8994a2ffb5dcaaa5bf6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX07.ogg",
+     "bytes": 30900,
+     "sha256": "241c8570fbded819ee0205e4be3efa80aeb834a70df89318da88f9e219798b11"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX08.ogg",
+     "bytes": 9989,
+     "sha256": "2c1fbd5088016bbf264f01daaead97a58153493891ae226611c0239830e1cf0c"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX09.ogg",
+     "bytes": 10023,
+     "sha256": "dc8022ce4257957c0e7bcbd7504a2ea49b8c05df9f61f822ce85277e87e5ba8a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX10.ogg",
+     "bytes": 13565,
+     "sha256": "ee9092e858526e3638f7a639f25c2218f14432466c3e4dd7e1e84073925390ae"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX11.ogg",
+     "bytes": 13737,
+     "sha256": "ccc09671f1cb59ba556e4041daa1f31de396ac3ba79245951876fdece78b5dcd"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX12.ogg",
+     "bytes": 16903,
+     "sha256": "be483e806ae449c37d21f192921c4bb382a19b8739b2dc2c9c4bed15b34f2dd9"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX13.ogg",
+     "bytes": 15654,
+     "sha256": "9a7d20a4e7d3196cded11bac0de584f230264a4bdb695a8b136493dff8f273d8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX14.ogg",
+     "bytes": 15119,
+     "sha256": "05bad8a2e9e557f73dcc947f7d8b525d25d0346be75965e0611bc47fcbf2aa0f"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX15.ogg",
+     "bytes": 13560,
+     "sha256": "9bf90fa491bd9aa868ba735f76f3ffb8bf15e1b9d4a0bd5236cb91cd770dd38a"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Sax jingles/jingles_SAX16.ogg",
+     "bytes": 10588,
+     "sha256": "4d18848cf2d60c39d80808efa747386e329cca246381fc2ee32d16bba915f8b0"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL00.ogg",
+     "bytes": 15691,
+     "sha256": "8799eb726d784ae0aa1a9df80648a873ac60015bc00aea12c8e2dd1431a2bd7d"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL01.ogg",
+     "bytes": 21019,
+     "sha256": "099b192f120f7eb7c24613be277428628b9ec9c81e1f8420254abce336fbe7e5"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL02.ogg",
+     "bytes": 21919,
+     "sha256": "891c2b48d3586744b38be18b8c5a35f46ac30fe06efb48f70f3f5528a0cec0c3"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL03.ogg",
+     "bytes": 19117,
+     "sha256": "21233e95b5e2c167293484c9906264c632a5f1fe45744d1d5b52ba1dfb0a18fb"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL04.ogg",
+     "bytes": 14951,
+     "sha256": "65be5fe4af66574f4725602e454b7ea8d2613ab536a4a719fcb3810a240fdecf"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL05.ogg",
+     "bytes": 15082,
+     "sha256": "7e1f170ee00a8265723342c8d30e797a64641603a2c59c2316d3357b8c5f60d6"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL06.ogg",
+     "bytes": 18893,
+     "sha256": "7a332720d8a70ac87fe1eae55e440466c2b9a3b39068a946faa30da7753b1df8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL07.ogg",
+     "bytes": 22460,
+     "sha256": "206b5cb18870c1faa393047cb857eda28441b9682380c9eb5910119ea04c2ece"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL08.ogg",
+     "bytes": 13885,
+     "sha256": "8b0df04c5e9e1adfd1d7a99c111894956e18374db03c681e14f2fd2c7d387626"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL09.ogg",
+     "bytes": 11145,
+     "sha256": "6eba3198a05a3388be4a1edc2d11135ac2b924d8418704e94636d3e0af3c2854"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL10.ogg",
+     "bytes": 16151,
+     "sha256": "88a6645658b15dc327a2377ca7354e364625f081cd6ff9fda0b46dc54f664b71"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL11.ogg",
+     "bytes": 14615,
+     "sha256": "86e97f88473e77119c24cc2fbcc711b3343a0b665d4297ea684f59ea17fc998e"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL12.ogg",
+     "bytes": 18971,
+     "sha256": "17842dd21980be3373a01cc575eec8ddb86e2a49c3afcef7365fc5d907233c0b"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL13.ogg",
+     "bytes": 17122,
+     "sha256": "1eddde22f0894c2267d558198d7fbfb289423929d0a060a3c4f5e1b6ab83be49"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL14.ogg",
+     "bytes": 20532,
+     "sha256": "a24f6f6f76063d8e0442b15e660896ec4dd11a7be45d19f71088408e002c99f8"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL15.ogg",
+     "bytes": 16113,
+     "sha256": "764db253add93d5824a9329faceeb4247e10cf49a4e4e1653a46fa366d5b2138"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Audio/Steel jingles/jingles_STEEL16.ogg",
+     "bytes": 15473,
+     "sha256": "03f2048dc74dae100bc29b8cd59b4497ac7a057dae32c207916495c5dc214083"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/License.txt",
+     "bytes": 482,
+     "sha256": "373b1c880ee6c7a83c1ccf209f251cf45fc9ea9b1f0330844fa7be64a401adc4"
+    },
+    {
+     "file": "Local/ThirdPartyRaw/audio/kenney/music-jingles/extracted/Preview.ogg",
+     "bytes": 155244,
+     "sha256": "e3cf15383007de5c5f5dd68027ea87ee4c8c0a7e382a2252ead55c1f21608c60"
+    }
+   ],
+   "placeholder_only": true,
+   "notes": "Kenney audio is stylised game audio: placeholder / layering only, never a hero sound."
+  }
+ ]
+}

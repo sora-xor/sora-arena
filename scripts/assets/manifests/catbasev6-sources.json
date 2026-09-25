@@ -1,0 +1,948 @@
+{
+  "schema_version": 2,
+  "generator": "scripts/art/fetch_cat_base_v6_sources.py",
+  "lane_draft": "Content/SourceArt/Characters/CatBaseV6/sources_manifest.json",
+  "derived_art": "Content/SourceArt/Characters/CatBaseV6",
+  "ledger_policy": "docs/art-research/free-asset-acquisition-plan.md sections 2.1-2.5",
+  "kind": "asset-ledger",
+  "ledger_id": "catbasev6-sources",
+  "source": "catbasev6",
+  "title": "CatBaseV6 anatomy inputs (Objaverse-mirrored Sketchfab scans, Wikimedia Commons photos, Poly Haven HDRIs)",
+  "purpose": "Private third-party inputs consulted for the CatBaseV6 cat head study; raw files stay in the gitignored Local/ThirdPartyRaw tree (decision D6).",
+  "credits": [
+    "Scans downloaded from the Objaverse 1.0 dataset (https://huggingface.co/datasets/allenai/objaverse), made available under the ODC Attribution License 1.0 (https://opendatacommons.org/licenses/by/1-0/); each object keeps its own Sketchfab license.",
+    "HDRIs: Powered by Poly Haven - https://polyhaven.com (CC0 1.0)."
+  ],
+  "mirror_license": {
+    "dataset": "allenai/objaverse",
+    "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+    "license": "ODC-By-1.0",
+    "license_url": "https://opendatacommons.org/licenses/by/1-0/",
+    "license_tags": [
+      "license:odc-by"
+    ],
+    "gated": false,
+    "dataset_revision": "21e4e142159e2153706c23a3a02e55cec5591cea",
+    "note": "The collection is ODC-By 1.0; each object keeps its own Sketchfab license (re-read per object).",
+    "snapshot": {
+      "url": "https://huggingface.co/api/datasets/allenai/objaverse",
+      "path": "Local/ThirdPartyRaw/_licenses/objaverse/hf-api-datasets-allenai-objaverse-2026-09-25.json",
+      "sha256": "8eae11ccc97a693c4b2d5c5138f855724e0306ec32996ba9a3e42c09ee0b641e",
+      "retrieved_at_utc": "2026-09-25T20:40:36+00:00",
+      "via": "api"
+    }
+  },
+  "records": [
+    {
+      "asset_id": "sketchfab-7c99ca836d834c39872ecf5e9b5e2087",
+      "name": "Domestic Cat (Felis catus)",
+      "kind": "scan",
+      "role": "Edinburgh R(D)SVS domestic-cat CT: primary skull proportions under the face",
+      "tier": "PUB-BY",
+      "license": "CC-BY-4.0",
+      "license_label": "CC Attribution",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "origin_url": "https://sketchfab.com/3d-models/domestic-cat-felis-catus-7c99ca836d834c39872ecf5e9b5e2087",
+      "metadata_url": "https://api.sketchfab.com/v3/models/7c99ca836d834c39872ecf5e9b5e2087",
+      "mirror_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/7c99ca836d834c39872ecf5e9b5e2087.glb",
+      "mirror_license": {
+        "dataset": "allenai/objaverse",
+        "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+        "license": "ODC-By-1.0",
+        "license_url": "https://opendatacommons.org/licenses/by/1-0/",
+        "license_tags": [
+          "license:odc-by"
+        ],
+        "gated": false,
+        "dataset_revision": "21e4e142159e2153706c23a3a02e55cec5591cea",
+        "note": "The collection is ODC-By 1.0; each object keeps its own Sketchfab license (re-read per object).",
+        "snapshot": {
+          "url": "https://huggingface.co/api/datasets/allenai/objaverse",
+          "path": "Local/ThirdPartyRaw/_licenses/objaverse/hf-api-datasets-allenai-objaverse-2026-09-25.json",
+          "sha256": "8eae11ccc97a693c4b2d5c5138f855724e0306ec32996ba9a3e42c09ee0b641e",
+          "retrieved_at_utc": "2026-09-25T20:40:36+00:00",
+          "via": "api"
+        }
+      },
+      "authors": [
+        "The University of Edinburgh Open.Ed"
+      ],
+      "author_profile": "https://sketchfab.com/openededinburgh",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Domestic Cat (Felis catus)\" by The University of Edinburgh Open.Ed (original CT information courtesy of Dr Tobias Schwarz; adapted and prepared by Brian Mather, The Royal (Dick) School of Veterinary Studies, The University of Edinburgh), https://sketchfab.com/3d-models/domestic-cat-felis-catus-7c99ca836d834c39872ecf5e9b5e2087, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "changes": "Used as the skull under the CatBaseV6 art study: aligned to the midsagittal plane, scaled 2.2x, pitched 12 deg, Laplacian-smoothed, converted to a level set and used only as the bone surface under a new procedurally sculpted soft-tissue skin; no CT triangles are stored in the .blend or shipped. The raw scan stays private (Local/ThirdPartyRaw).",
+      "derived_art": [
+        "Content/SourceArt/Characters/CatBaseV6"
+      ],
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/sketchfab-api/7c99ca836d834c39872ecf5e9b5e2087-2026-09-25.json",
+        "sha256": "9d1ee4716eac1a18308f25836cf8bd17c140400ccd7be2147836c3bb88f7bdbb",
+        "url": "https://api.sketchfab.com/v3/models/7c99ca836d834c39872ecf5e9b5e2087",
+        "retrieved_at_utc": "2026-09-25T11:14:26+00:00",
+        "via": "api"
+      },
+      "access": "direct",
+      "acquired_at_utc": "2026-09-25T11:14:26+00:00",
+      "acquisition_note": "objaverse-mirror",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/scans/objaverse/7c99ca836d834c39872ecf5e9b5e2087.glb",
+          "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/7c99ca836d834c39872ecf5e9b5e2087.glb",
+          "bytes": 30407732,
+          "sha256": "ba3b7ae1548c279b763539d5e312eef494c23d7fcc588ac89a84a3a9bfad70f3"
+        }
+      ]
+    },
+    {
+      "asset_id": "sketchfab-1254ff5a110a45299b39a9469f565ea3",
+      "name": "Domestic Cat skull",
+      "kind": "scan",
+      "role": "RISD Nature Lab domestic cat skull (437 03): cross-check",
+      "tier": "PUB-BY",
+      "license": "CC-BY-4.0",
+      "license_label": "CC Attribution",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "origin_url": "https://sketchfab.com/3d-models/domestic-cat-skull-1254ff5a110a45299b39a9469f565ea3",
+      "metadata_url": "https://api.sketchfab.com/v3/models/1254ff5a110a45299b39a9469f565ea3",
+      "mirror_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-086/1254ff5a110a45299b39a9469f565ea3.glb",
+      "mirror_license": {
+        "dataset": "allenai/objaverse",
+        "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+        "license": "ODC-By-1.0",
+        "license_url": "https://opendatacommons.org/licenses/by/1-0/",
+        "license_tags": [
+          "license:odc-by"
+        ],
+        "gated": false,
+        "dataset_revision": "21e4e142159e2153706c23a3a02e55cec5591cea",
+        "note": "The collection is ODC-By 1.0; each object keeps its own Sketchfab license (re-read per object).",
+        "snapshot": {
+          "url": "https://huggingface.co/api/datasets/allenai/objaverse",
+          "path": "Local/ThirdPartyRaw/_licenses/objaverse/hf-api-datasets-allenai-objaverse-2026-09-25.json",
+          "sha256": "8eae11ccc97a693c4b2d5c5138f855724e0306ec32996ba9a3e42c09ee0b641e",
+          "retrieved_at_utc": "2026-09-25T20:40:36+00:00",
+          "via": "api"
+        }
+      },
+      "authors": [
+        "RISD Nature Lab"
+      ],
+      "author_profile": "https://sketchfab.com/RISDNaturelab",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Domestic Cat skull\" by RISD Nature Lab, https://sketchfab.com/3d-models/domestic-cat-skull-1254ff5a110a45299b39a9469f565ea3, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "changes": "None: not incorporated into any output; kept privately as a skull-proportion cross-check.",
+      "derived_art": [],
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/sketchfab-api/1254ff5a110a45299b39a9469f565ea3-2026-09-25.json",
+        "sha256": "4b8e5e7e5b9594791e647960f6df98da5c748e12ff3d41af37ac49c7d78494f4",
+        "url": "https://api.sketchfab.com/v3/models/1254ff5a110a45299b39a9469f565ea3",
+        "retrieved_at_utc": "2026-09-25T11:14:31+00:00",
+        "via": "api"
+      },
+      "access": "direct",
+      "acquired_at_utc": "2026-09-25T11:14:31+00:00",
+      "acquisition_note": "objaverse-mirror",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/scans/objaverse/1254ff5a110a45299b39a9469f565ea3.glb",
+          "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-086/1254ff5a110a45299b39a9469f565ea3.glb",
+          "bytes": 25305868,
+          "sha256": "6a767922cc46ab8c7745a9f12b74b71db3b14850fb097155a0c62f6e91411c18"
+        }
+      ]
+    },
+    {
+      "asset_id": "sketchfab-42f9f5f91f1844688bf717a59586da40",
+      "name": "Domestic Cat Skull (full)",
+      "kind": "scan",
+      "role": "RISD Nature Lab domestic cat skull (full, 18.85): cross-check with mandible",
+      "tier": "PUB-BY",
+      "license": "CC-BY-4.0",
+      "license_label": "CC Attribution",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "origin_url": "https://sketchfab.com/3d-models/domestic-cat-skull-full-42f9f5f91f1844688bf717a59586da40",
+      "metadata_url": "https://api.sketchfab.com/v3/models/42f9f5f91f1844688bf717a59586da40",
+      "mirror_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-120/42f9f5f91f1844688bf717a59586da40.glb",
+      "mirror_license": {
+        "dataset": "allenai/objaverse",
+        "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+        "license": "ODC-By-1.0",
+        "license_url": "https://opendatacommons.org/licenses/by/1-0/",
+        "license_tags": [
+          "license:odc-by"
+        ],
+        "gated": false,
+        "dataset_revision": "21e4e142159e2153706c23a3a02e55cec5591cea",
+        "note": "The collection is ODC-By 1.0; each object keeps its own Sketchfab license (re-read per object).",
+        "snapshot": {
+          "url": "https://huggingface.co/api/datasets/allenai/objaverse",
+          "path": "Local/ThirdPartyRaw/_licenses/objaverse/hf-api-datasets-allenai-objaverse-2026-09-25.json",
+          "sha256": "8eae11ccc97a693c4b2d5c5138f855724e0306ec32996ba9a3e42c09ee0b641e",
+          "retrieved_at_utc": "2026-09-25T20:40:36+00:00",
+          "via": "api"
+        }
+      },
+      "authors": [
+        "RISD Nature Lab"
+      ],
+      "author_profile": "https://sketchfab.com/RISDNaturelab",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Domestic Cat Skull (full)\" by RISD Nature Lab, https://sketchfab.com/3d-models/domestic-cat-skull-full-42f9f5f91f1844688bf717a59586da40, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "changes": "None: not incorporated into any output; kept privately as a skull-proportion cross-check.",
+      "derived_art": [],
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/sketchfab-api/42f9f5f91f1844688bf717a59586da40-2026-09-25.json",
+        "sha256": "cf80794142ae743014a6da6075778cdf089df23e26ed8154a0e307979bd2e459",
+        "url": "https://api.sketchfab.com/v3/models/42f9f5f91f1844688bf717a59586da40",
+        "retrieved_at_utc": "2026-09-25T11:14:37+00:00",
+        "via": "api"
+      },
+      "access": "direct",
+      "acquired_at_utc": "2026-09-25T11:14:37+00:00",
+      "acquisition_note": "objaverse-mirror",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/scans/objaverse/42f9f5f91f1844688bf717a59586da40.glb",
+          "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-120/42f9f5f91f1844688bf717a59586da40.glb",
+          "bytes": 29860712,
+          "sha256": "965baca4e1c19f8a2c22bca46f683d7414dec8aac5c79bbdf78092de4dedc169"
+        }
+      ]
+    },
+    {
+      "asset_id": "sketchfab-ee8876449c5b48ecad78f89a26c2427c",
+      "name": "Felis catus (Domestic cat) (Kot domowy)",
+      "kind": "scan",
+      "role": "Mammal Research Institute PAS domestic cat skull: cross-check",
+      "tier": "PUB-BY",
+      "license": "CC-BY-4.0",
+      "license_label": "CC Attribution",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "origin_url": "https://sketchfab.com/3d-models/felis-catus-domestic-cat-kot-domowy-ee8876449c5b48ecad78f89a26c2427c",
+      "metadata_url": "https://api.sketchfab.com/v3/models/ee8876449c5b48ecad78f89a26c2427c",
+      "mirror_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-034/ee8876449c5b48ecad78f89a26c2427c.glb",
+      "mirror_license": {
+        "dataset": "allenai/objaverse",
+        "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+        "license": "ODC-By-1.0",
+        "license_url": "https://opendatacommons.org/licenses/by/1-0/",
+        "license_tags": [
+          "license:odc-by"
+        ],
+        "gated": false,
+        "dataset_revision": "21e4e142159e2153706c23a3a02e55cec5591cea",
+        "note": "The collection is ODC-By 1.0; each object keeps its own Sketchfab license (re-read per object).",
+        "snapshot": {
+          "url": "https://huggingface.co/api/datasets/allenai/objaverse",
+          "path": "Local/ThirdPartyRaw/_licenses/objaverse/hf-api-datasets-allenai-objaverse-2026-09-25.json",
+          "sha256": "8eae11ccc97a693c4b2d5c5138f855724e0306ec32996ba9a3e42c09ee0b641e",
+          "retrieved_at_utc": "2026-09-25T20:40:36+00:00",
+          "via": "api"
+        }
+      },
+      "authors": [
+        "Mammal Research Institute PAS, Poland"
+      ],
+      "author_profile": "https://sketchfab.com/MammalResearchInstitutePAS",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Felis catus (Domestic cat) (Kot domowy)\" by Mammal Research Institute PAS, Poland, https://sketchfab.com/3d-models/felis-catus-domestic-cat-kot-domowy-ee8876449c5b48ecad78f89a26c2427c, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "changes": "None: not incorporated into any output; kept privately as a skull-proportion cross-check.",
+      "derived_art": [],
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/sketchfab-api/ee8876449c5b48ecad78f89a26c2427c-2026-09-25.json",
+        "sha256": "07ff4ab4df2c8ec862a97920c4ef6199df28a6a322fb5002fd3f2aa2aa8fa2b4",
+        "url": "https://api.sketchfab.com/v3/models/ee8876449c5b48ecad78f89a26c2427c",
+        "retrieved_at_utc": "2026-09-25T11:14:42+00:00",
+        "via": "api"
+      },
+      "access": "direct",
+      "acquired_at_utc": "2026-09-25T11:14:42+00:00",
+      "acquisition_note": "objaverse-mirror",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/scans/objaverse/ee8876449c5b48ecad78f89a26c2427c.glb",
+          "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-034/ee8876449c5b48ecad78f89a26c2427c.glb",
+          "bytes": 11936032,
+          "sha256": "9d71bd2e376a10630debd82273dca154be5689f6f1e22d5b37ee6c250fa0269a"
+        }
+      ]
+    },
+    {
+      "asset_id": "sketchfab-94cc7033cd1549398ae26118d6edd086",
+      "name": "Domestic Cat Jaw",
+      "kind": "scan",
+      "role": "RISD Nature Lab domestic cat mandible (439.03): jaw depth and chin",
+      "tier": "PUB-BY",
+      "license": "CC-BY-4.0",
+      "license_label": "CC Attribution",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "origin_url": "https://sketchfab.com/3d-models/domestic-cat-jaw-94cc7033cd1549398ae26118d6edd086",
+      "metadata_url": "https://api.sketchfab.com/v3/models/94cc7033cd1549398ae26118d6edd086",
+      "mirror_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-018/94cc7033cd1549398ae26118d6edd086.glb",
+      "mirror_license": {
+        "dataset": "allenai/objaverse",
+        "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+        "license": "ODC-By-1.0",
+        "license_url": "https://opendatacommons.org/licenses/by/1-0/",
+        "license_tags": [
+          "license:odc-by"
+        ],
+        "gated": false,
+        "dataset_revision": "21e4e142159e2153706c23a3a02e55cec5591cea",
+        "note": "The collection is ODC-By 1.0; each object keeps its own Sketchfab license (re-read per object).",
+        "snapshot": {
+          "url": "https://huggingface.co/api/datasets/allenai/objaverse",
+          "path": "Local/ThirdPartyRaw/_licenses/objaverse/hf-api-datasets-allenai-objaverse-2026-09-25.json",
+          "sha256": "8eae11ccc97a693c4b2d5c5138f855724e0306ec32996ba9a3e42c09ee0b641e",
+          "retrieved_at_utc": "2026-09-25T20:40:36+00:00",
+          "via": "api"
+        }
+      },
+      "authors": [
+        "RISD Nature Lab"
+      ],
+      "author_profile": "https://sketchfab.com/RISDNaturelab",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Domestic Cat Jaw\" by RISD Nature Lab, https://sketchfab.com/3d-models/domestic-cat-jaw-94cc7033cd1549398ae26118d6edd086, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "changes": "None: not incorporated into any output; kept privately as a jaw-proportion cross-check.",
+      "derived_art": [],
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/sketchfab-api/94cc7033cd1549398ae26118d6edd086-2026-09-25.json",
+        "sha256": "f632b4f9aa26794f513ec61e1d3fbbde5edd7a6215627f0b9853e57a72939aca",
+        "url": "https://api.sketchfab.com/v3/models/94cc7033cd1549398ae26118d6edd086",
+        "retrieved_at_utc": "2026-09-25T11:14:47+00:00",
+        "via": "api"
+      },
+      "access": "direct",
+      "acquired_at_utc": "2026-09-25T11:14:47+00:00",
+      "acquisition_note": "objaverse-mirror",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/scans/objaverse/94cc7033cd1549398ae26118d6edd086.glb",
+          "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-018/94cc7033cd1549398ae26118d6edd086.glb",
+          "bytes": 20294892,
+          "sha256": "33469ed64f9ad6cefa1ce4b7f8f9a1a0f8e8d5b152724eb8702ae0b60a0cbb54"
+        }
+      ]
+    },
+    {
+      "asset_id": "sketchfab-2996f59c517245aa91cf513a5624935e",
+      "name": "Cat (Take 2)",
+      "kind": "scan",
+      "role": "Neo_minigan Cat (Take 2) photogrammetry: real head/cheek/ear/coat form",
+      "tier": "PUB-BY",
+      "license": "CC-BY-4.0",
+      "license_label": "CC Attribution",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "origin_url": "https://sketchfab.com/3d-models/cat-take-2-2996f59c517245aa91cf513a5624935e",
+      "metadata_url": "https://api.sketchfab.com/v3/models/2996f59c517245aa91cf513a5624935e",
+      "mirror_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-065/2996f59c517245aa91cf513a5624935e.glb",
+      "mirror_license": {
+        "dataset": "allenai/objaverse",
+        "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+        "license": "ODC-By-1.0",
+        "license_url": "https://opendatacommons.org/licenses/by/1-0/",
+        "license_tags": [
+          "license:odc-by"
+        ],
+        "gated": false,
+        "dataset_revision": "21e4e142159e2153706c23a3a02e55cec5591cea",
+        "note": "The collection is ODC-By 1.0; each object keeps its own Sketchfab license (re-read per object).",
+        "snapshot": {
+          "url": "https://huggingface.co/api/datasets/allenai/objaverse",
+          "path": "Local/ThirdPartyRaw/_licenses/objaverse/hf-api-datasets-allenai-objaverse-2026-09-25.json",
+          "sha256": "8eae11ccc97a693c4b2d5c5138f855724e0306ec32996ba9a3e42c09ee0b641e",
+          "retrieved_at_utc": "2026-09-25T20:40:36+00:00",
+          "via": "api"
+        }
+      },
+      "authors": [
+        "Neo_minigan"
+      ],
+      "author_profile": "https://sketchfab.com/neominigan",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Cat (Take 2)\" by Neo_minigan, https://sketchfab.com/3d-models/cat-take-2-2996f59c517245aa91cf513a5624935e, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "changes": "None: not incorporated into any output; kept privately as a head and coat form reference.",
+      "derived_art": [],
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/sketchfab-api/2996f59c517245aa91cf513a5624935e-2026-09-25.json",
+        "sha256": "fcd25b78ca632459293ffbdb8b018ed870de80552a048ac5547fc5e56a67323e",
+        "url": "https://api.sketchfab.com/v3/models/2996f59c517245aa91cf513a5624935e",
+        "retrieved_at_utc": "2026-09-25T11:14:48+00:00",
+        "via": "api"
+      },
+      "access": "direct",
+      "acquired_at_utc": "2026-09-25T11:14:48+00:00",
+      "acquisition_note": "copied from earlier evaluation file /tmp/sora-cat-scan-eval/neominigan-cat-take-2.glb (originally from the Objaverse mirror)",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/scans/objaverse/2996f59c517245aa91cf513a5624935e.glb",
+          "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-065/2996f59c517245aa91cf513a5624935e.glb",
+          "bytes": 49087696,
+          "sha256": "b2c2cad76dbad62d3eb41c99a20292de31f5b55163eb6d7ca84c11b7dccb444c"
+        }
+      ]
+    },
+    {
+      "asset_id": "sketchfab-3ffbfcabc4c34b58b03d43fd4f445b54",
+      "name": "Cat sitting upright",
+      "kind": "scan",
+      "role": "elaughli Cat sitting upright scan: awake skull-to-neck proportion",
+      "tier": "PUB-BY",
+      "license": "CC-BY-4.0",
+      "license_label": "CC Attribution",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "origin_url": "https://sketchfab.com/3d-models/cat-sitting-upright-3ffbfcabc4c34b58b03d43fd4f445b54",
+      "metadata_url": "https://api.sketchfab.com/v3/models/3ffbfcabc4c34b58b03d43fd4f445b54",
+      "mirror_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-153/3ffbfcabc4c34b58b03d43fd4f445b54.glb",
+      "mirror_license": {
+        "dataset": "allenai/objaverse",
+        "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+        "license": "ODC-By-1.0",
+        "license_url": "https://opendatacommons.org/licenses/by/1-0/",
+        "license_tags": [
+          "license:odc-by"
+        ],
+        "gated": false,
+        "dataset_revision": "21e4e142159e2153706c23a3a02e55cec5591cea",
+        "note": "The collection is ODC-By 1.0; each object keeps its own Sketchfab license (re-read per object).",
+        "snapshot": {
+          "url": "https://huggingface.co/api/datasets/allenai/objaverse",
+          "path": "Local/ThirdPartyRaw/_licenses/objaverse/hf-api-datasets-allenai-objaverse-2026-09-25.json",
+          "sha256": "8eae11ccc97a693c4b2d5c5138f855724e0306ec32996ba9a3e42c09ee0b641e",
+          "retrieved_at_utc": "2026-09-25T20:40:36+00:00",
+          "via": "api"
+        }
+      },
+      "authors": [
+        "elaughli"
+      ],
+      "author_profile": "https://sketchfab.com/elaughli",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Cat sitting upright\" by elaughli, https://sketchfab.com/3d-models/cat-sitting-upright-3ffbfcabc4c34b58b03d43fd4f445b54, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "changes": "None: not incorporated into any output; rendered privately once as a qualitative head turntable (round 3), not used geometrically.",
+      "derived_art": [],
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/sketchfab-api/3ffbfcabc4c34b58b03d43fd4f445b54-2026-09-25.json",
+        "sha256": "752c452f82773d1f173e2a18a6331b2590bd7594b696dded150760f3a111a0ea",
+        "url": "https://api.sketchfab.com/v3/models/3ffbfcabc4c34b58b03d43fd4f445b54",
+        "retrieved_at_utc": "2026-09-25T11:14:53+00:00",
+        "via": "api"
+      },
+      "access": "direct",
+      "acquired_at_utc": "2026-09-25T11:14:53+00:00",
+      "acquisition_note": "copied from earlier evaluation file /tmp/sora-cat-scan-eval/elaughli-cat-sitting-upright.glb (originally from the Objaverse mirror)",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/scans/objaverse/3ffbfcabc4c34b58b03d43fd4f445b54.glb",
+          "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-153/3ffbfcabc4c34b58b03d43fd4f445b54.glb",
+          "bytes": 35951736,
+          "sha256": "a4076770bbeef5bd649275a15a33fb4107df0aabdff0fe148e92e3443483d828"
+        }
+      ]
+    },
+    {
+      "asset_id": "commons-126894459",
+      "name": "Cat unsplash (2016 photo; cropped 2022).jpg",
+      "kind": "reference-photo",
+      "view": "front",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_label": "CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:Cat_unsplash_(2016_photo;_cropped_2022).jpg",
+      "mirror_url": null,
+      "authors": [
+        "Photo by Mikhail Vasilyev on Unsplash"
+      ],
+      "credit": "https://unsplash.com/photos/Z1YtN-kmHCI",
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "attribution_text": null,
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Cat unsplash (2016 photo; cropped 2022).jpg-2026-09-25.json",
+        "sha256": "1dd1eb5d8c3d7f641fdf1dd857a1f183fc6433740c401ee9967e7083540e7b20",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ACat+unsplash+%282016+photo%3B+cropped+2022%29.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:24+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:24+00:00",
+      "commons_sha1_original": "3a542689af731de088ef2b16a4cac055ada04266",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/front__Cat_unsplash__2016_photo__cropped_2022_.jpg",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Cat_unsplash_%282016_photo%3B_cropped_2022%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "bytes": 1716425,
+          "sha256": "9765c7c6111913b7dcd6d9908ad3ca36c207649d652c933f8a0167ca790d937e"
+        }
+      ]
+    },
+    {
+      "asset_id": "commons-155562161",
+      "name": "Nicolas im ese.jpg",
+      "kind": "reference-photo",
+      "view": "front",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "PUB-BY",
+      "license": "CC-BY-4.0",
+      "license_label": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:Nicolas_im_ese.jpg",
+      "mirror_url": null,
+      "authors": [
+        "Corsec 2020"
+      ],
+      "credit": "Own work",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Nicolas im ese.jpg\" by Corsec 2020, Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Nicolas_im_ese.jpg, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0)",
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Nicolas im ese.jpg-2026-09-25.json",
+        "sha256": "089a2e89d8c15a1833fa6bb6e7bbe7393322a3b7517dd0e13db861cf314d9de6",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ANicolas+im+ese.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:26+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:26+00:00",
+      "commons_sha1_original": "e815bb40720dc3c12fc68f2edbc5caac3146d997",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/front__Nicolas_im_ese.jpg",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/Nicolas_im_ese.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "bytes": 207634,
+          "sha256": "4a63521bdb12e56fa1ba7d7996d38d7436c102520b680bf9e24f05a3c9635b38"
+        }
+      ]
+    },
+    {
+      "asset_id": "commons-148884719",
+      "name": "Night watchman.jpg",
+      "kind": "reference-photo",
+      "view": "front",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_label": "CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:Night_watchman.jpg",
+      "mirror_url": null,
+      "authors": [
+        "Sindugab"
+      ],
+      "credit": "Own work",
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "attribution_text": null,
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Night watchman.jpg-2026-09-25.json",
+        "sha256": "185aeae41100f693364868d9ea505d7640913e905e3e708adc9daaea99875687",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ANight+watchman.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:32+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:32+00:00",
+      "commons_sha1_original": "53d950021805960672b2fd69d7b864163d2ebb63",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/front__Night_watchman.jpg",
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Night_watchman.jpg/3840px-Night_watchman.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "bytes": 3485849,
+          "sha256": "bae2602d16be74045ae6c139d66c5572dff3155d2e667ae70e5fa5d313b3ee36"
+        }
+      ]
+    },
+    {
+      "asset_id": "commons-182247760",
+      "name": "3 Chome Chiyozaki, Nishi-ku, Ōsaka-shi, Ōsaka-fu 550-0023, Japan - panoramio (4) (2011; cropped 2026).jpg",
+      "kind": "reference-photo",
+      "view": "threequarter",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "PUB-BY",
+      "license": "CC-BY-3.0",
+      "license_label": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:3_Chome_Chiyozaki,_Nishi-ku,_%C5%8Csaka-shi,_%C5%8Csaka-fu_550-0023,_Japan_-_panoramio_(4)_(2011;_cropped_2026).jpg",
+      "mirror_url": null,
+      "authors": [
+        "shikabane taro"
+      ],
+      "credit": "https://web.archive.org/web/20161024135844/http://www.panoramio.com/photo/83921934",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"3 Chome Chiyozaki, Nishi-ku, Ōsaka-shi, Ōsaka-fu 550-0023, Japan - panoramio (4) (2011; cropped 2026).jpg\" by shikabane taro, Wikimedia Commons, https://commons.wikimedia.org/wiki/File:3_Chome_Chiyozaki,_Nishi-ku,_%C5%8Csaka-shi,_%C5%8Csaka-fu_550-0023,_Japan_-_panoramio_(4)_(2011;_cropped_2026).jpg, CC BY 3.0 (https://creativecommons.org/licenses/by/3.0)",
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/3 Chome Chiyozaki, Nishi-ku, Ōsaka-shi, Ōsaka-fu 550-0023, Japan - panoramio (4) (2011; cropped 2026).jpg-2026-09-25.json",
+        "sha256": "3ed4dc869acf72a99cec0b7d2d6748616b0ebb0089cd4e337f88b066b908b2a8",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3A3+Chome+Chiyozaki%2C+Nishi-ku%2C+%C5%8Csaka-shi%2C+%C5%8Csaka-fu+550-0023%2C+Japan+-+panoramio+%284%29+%282011%3B+cropped+2026%29.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:40+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:40+00:00",
+      "commons_sha1_original": "a6608c1ac3aa82522e72995b74feedbb86c74b3a",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/threequarter__3_Chome_Chiyozaki__Nishi-ku__Ōsaka-shi__Ōsaka-fu_550-0023__Japan_-_panoramio__4_.jpg",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/9/9a/3_Chome_Chiyozaki%2C_Nishi-ku%2C_%C5%8Csaka-shi%2C_%C5%8Csaka-fu_550-0023%2C_Japan_-_panoramio_%284%29_%282011%3B_cropped_2026%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "bytes": 1171109,
+          "sha256": "7e8477556fafddb0a2307462feafc6499bfc393e94f2f80d9a8e21f9e25f767d"
+        }
+      ]
+    },
+    {
+      "asset_id": "commons-163897605",
+      "name": "Tigger the shorthair 1.jpg",
+      "kind": "reference-photo",
+      "view": "threequarter",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_label": "CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:Tigger_the_shorthair_1.jpg",
+      "mirror_url": null,
+      "authors": [
+        "MallardTV"
+      ],
+      "credit": "Own work",
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "attribution_text": null,
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Tigger the shorthair 1.jpg-2026-09-25.json",
+        "sha256": "a36ae63a6bfec5f0cf62b0c3babb2e567d608d202adedc5d377d322c5222a2b5",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ATigger+the+shorthair+1.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:42+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:42+00:00",
+      "commons_sha1_original": "00963cdd991efd89a864e10dde7287574e902f04",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/threequarter__Tigger_the_shorthair_1.jpg",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Tigger_the_shorthair_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "bytes": 1860678,
+          "sha256": "a9f0b0aff8f57020a90335bf7180d6e4b34fec12c016cb38b883c9bc6de41ed0"
+        }
+      ]
+    },
+    {
+      "asset_id": "commons-11029252",
+      "name": "Cat in Corte 1.jpg",
+      "kind": "reference-photo",
+      "view": "threequarter",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "PUB-BY",
+      "license": "CC-BY-3.0",
+      "license_label": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:Cat_in_Corte_1.jpg",
+      "mirror_url": null,
+      "authors": [
+        "User:Amada44"
+      ],
+      "credit": "Own work",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Cat in Corte 1.jpg\" by User:Amada44, Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Cat_in_Corte_1.jpg, CC BY 3.0 (https://creativecommons.org/licenses/by/3.0)",
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Cat in Corte 1.jpg-2026-09-25.json",
+        "sha256": "cd576e9a7a1a36aedcd6f927e4831fcb1984bca80cf0f9bd9469fffde401882b",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ACat+in+Corte+1.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:51+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:51+00:00",
+      "commons_sha1_original": "45121ce57de085456d11409290df1c3a8be9f13a",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/threequarter__Cat_in_Corte_1.jpg",
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Cat_in_Corte_1.jpg/3840px-Cat_in_Corte_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "bytes": 2254142,
+          "sha256": "2be498c7f684d6756ad40ed4e4d04e2100d876a8564d09d9950180df02d0264a"
+        }
+      ]
+    },
+    {
+      "asset_id": "commons-148779733",
+      "name": "قط شوارع.jpg",
+      "kind": "reference-photo",
+      "view": "threequarter",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_label": "CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:%D9%82%D8%B7_%D8%B4%D9%88%D8%A7%D8%B1%D8%B9.jpg",
+      "mirror_url": null,
+      "authors": [
+        "Noha albzour"
+      ],
+      "credit": "Own work",
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "attribution_text": null,
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/قط شوارع.jpg-2026-09-25.json",
+        "sha256": "6b651602a992f7086219d9114d877b336806cfa914c7edb4ef93984fa16ef3c9",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3A%D9%82%D8%B7+%D8%B4%D9%88%D8%A7%D8%B1%D8%B9.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:54+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:54+00:00",
+      "commons_sha1_original": "86707de18d531fdd7671dacd9c80ff1fac2abcde",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/threequarter__قط_شوارع.jpg",
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/%D9%82%D8%B7_%D8%B4%D9%88%D8%A7%D8%B1%D8%B9.jpg/3840px-%D9%82%D8%B7_%D8%B4%D9%88%D8%A7%D8%B1%D8%B9.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "bytes": 1369666,
+          "sha256": "50261bf1c73e8593bcf4d47c82b487802a105a2ce9df9700de3551ad8d2a1b17"
+        }
+      ]
+    },
+    {
+      "asset_id": "polyhaven-misty_pines",
+      "name": "Misty Pines",
+      "kind": "hdri",
+      "role": "exterior overcast review pass (pine forest, real environment background)",
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "origin_url": "https://polyhaven.com/a/misty_pines",
+      "metadata_url": "https://api.polyhaven.com/info/misty_pines",
+      "mirror_url": null,
+      "authors": [
+        "Greg Zaal"
+      ],
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven",
+      "changes": null,
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-26.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "url": "https://polyhaven.com/license",
+        "retrieved_at_utc": "2026-09-25T16:07:55+00:00",
+        "via": "direct"
+      },
+      "record_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/misty_pines-info-2026-09-26.json",
+        "sha256": "b29f223d17b4d3af764b53a77c02d8739e931332755ee11f930b9aae77480f00"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T16:07:55+00:00",
+      "resolution": "4k",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/hdri/polyhaven/misty_pines_4k.hdr",
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/misty_pines_4k.hdr",
+          "bytes": 27461567,
+          "upstream_md5": "72674148afccea37432739b194835e2a",
+          "sha256": "54b38320e9302faaa68538ef77ee3b4896bf2f3fd29ecdb3707f15c278a70bd5"
+        }
+      ]
+    },
+    {
+      "asset_id": "polyhaven-overcast_soil",
+      "name": "Overcast Soil",
+      "kind": "hdri",
+      "role": "reference-matched A/B frame: overcast light over bare ground, like profile ref Cat (4938330260)",
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "origin_url": "https://polyhaven.com/a/overcast_soil",
+      "metadata_url": "https://api.polyhaven.com/info/overcast_soil",
+      "mirror_url": null,
+      "authors": [
+        "Sergej Majboroda"
+      ],
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven",
+      "changes": null,
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-26.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "url": "https://polyhaven.com/license",
+        "retrieved_at_utc": "2026-09-25T16:08:00+00:00",
+        "via": "direct"
+      },
+      "record_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/overcast_soil-info-2026-09-26.json",
+        "sha256": "62124f4893e13928cc48e2c1bb30ba8f80203ee626f16a785b3203e55c69a6db"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T16:08:00+00:00",
+      "resolution": "4k",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/hdri/polyhaven/overcast_soil_4k.hdr",
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/overcast_soil_4k.hdr",
+          "bytes": 25480313,
+          "upstream_md5": "1fa7fd3340f64ec4c01e53e62e22fe3b",
+          "sha256": "10a0700c0f26cc7a30f7c25b75280793af8e3d5be4ce5b56405c12c6b8fa7f3b"
+        }
+      ]
+    }
+  ]
+}

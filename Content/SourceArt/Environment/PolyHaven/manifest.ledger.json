@@ -1,0 +1,1572 @@
+{
+  "schema_version": 2,
+  "kind": "asset-ledger",
+  "ledger_id": "polyhaven-sourceart-legacy",
+  "source": "polyhaven",
+  "purpose": "Schema-2 extension of the committed Poly Haven palette and scan manifests (repo LFS copies).",
+  "generator": "scripts/assets/migrate_polyhaven_ledger.py",
+  "extends": [
+    {
+      "manifest": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+      "sha256": "d21c351a0ca82165f885d9fc4cbcff652009fee0b9336ae9367b2ccd667cdd0b",
+      "schema_version": 1
+    },
+    {
+      "manifest": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/manifest.json",
+      "sha256": "81343d5cdad492e3c740daf309232c6c5f5587ea18d58d99854c7aacefed0acf",
+      "schema_version": 1
+    },
+    {
+      "manifest": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/manifest.json",
+      "sha256": "bad34b2165b2666b0fabc63260461b1de3a7bd796dc2564a08d8defed27026e6",
+      "schema_version": 1
+    },
+    {
+      "manifest": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+      "sha256": "34649551f7a25d0e769f22ab035eec72eb3eb2fc7395f1738d6ca57c347a62ca",
+      "schema_version": 1
+    },
+    {
+      "manifest": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+      "sha256": "7c120896fea5e205f4ea24a37002bc24be190a9b6157ebb485bc624b2faf4af1",
+      "schema_version": 1
+    },
+    {
+      "manifest": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+      "sha256": "7aefb46c2c3b8134ae16bf64e4443840ea8617b57acee893ca22485ab07b6239",
+      "schema_version": 1
+    },
+    {
+      "manifest": "Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition/manifest.json",
+      "sha256": "19033f5b5aec4e86531c86e2c1ae84849553abc3bdb5e9b41ace10dfef4ff5e3",
+      "schema_version": 1
+    }
+  ],
+  "policy": "The extended schema-1 manifests stay byte-identical because other manifests pin their SHA-256 and validators assert schema_version 1. Historical file hashes are copied verbatim.",
+  "credit": "Powered by Poly Haven - https://polyhaven.com",
+  "records": [
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-22T09:38:09.819466+00:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "wood_planks_dirt",
+      "name": "Wood Planks Dirt",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/wood_planks_dirt",
+      "metadata_url": "https://api.polyhaven.com/files/wood_planks_dirt",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/Textures/T_Timber_Diffuse.T_Timber_Diffuse",
+        "/Game/Generated/Environment/Textures/T_Timber_nor_dx.T_Timber_nor_dx",
+        "/Game/Generated/Environment/Textures/T_Timber_arm.T_Timber_arm",
+        "/Game/Generated/Environment/MI_Nyaagyu_Timber.MI_Nyaagyu_Timber"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+          "sha256": "556835168ffb105f31666add0237f7fb7a11a5d6d05d4cfa5979a4e957b9da63",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 43070227,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+          "upstream_md5": "d6567068f9d2fa3fea5fde1c99a5c687",
+          "upstream_md5_today": "d6567068f9d2fa3fea5fde1c99a5c687",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+          "sha256": "5c8640bbd63e56dbca947dbd2d0be380c661feb556c2949ec95d842ce7f31a59",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 14364491,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+          "upstream_md5": "f25f73cb3185e50bd4dbb556a7d22793",
+          "upstream_md5_today": "f25f73cb3185e50bd4dbb556a7d22793",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+          "sha256": "958c93dbd644dc7ea925bff951cbe6275c4066f60000417e1abef2c1b9a3e6fc",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 16555698,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+          "upstream_md5": "8f85833244650848a2280da9ec446689",
+          "upstream_md5_today": "8f85833244650848a2280da9ec446689",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-22T09:38:09.819466+00:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "stone_floor",
+      "name": "Stone Floor",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/stone_floor",
+      "metadata_url": "https://api.polyhaven.com/files/stone_floor",
+      "authors": {
+        "Dimitrios Savva": "All"
+      },
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/Textures/T_Stone_Diffuse.T_Stone_Diffuse",
+        "/Game/Generated/Environment/Textures/T_Stone_nor_dx.T_Stone_nor_dx",
+        "/Game/Generated/Environment/Textures/T_Stone_arm.T_Stone_arm",
+        "/Game/Generated/Environment/MI_Nyaagyu_Stone.MI_Nyaagyu_Stone"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/stone_floor/stone_floor_arm_2k.png",
+          "sha256": "339e2af892ff7f371346bce64f3b88f96ea5455959d3340c7d2ffe7ed91cf557",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 16322804,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_floor/stone_floor_arm_2k.png",
+          "upstream_md5": "2c898a3c9156983dc24df9a0fb5eeaea",
+          "upstream_md5_today": "2c898a3c9156983dc24df9a0fb5eeaea",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/stone_floor/stone_floor_diff_2k.jpg",
+          "sha256": "ce19d3cb1e683419b6a596e1baffbf2b429f970f8ddba81e391ad9a38f310ed8",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 3800807,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_floor/stone_floor_diff_2k.jpg",
+          "upstream_md5": "f786fb0cd3c4119fa9db9445f74cf3aa",
+          "upstream_md5_today": "f786fb0cd3c4119fa9db9445f74cf3aa",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/stone_floor/stone_floor_nor_dx_2k.png",
+          "sha256": "14981993cccbcca9a4775200dfd38f7ad381a7b494ae09b760a9ea036d74e247",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 22634443,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_floor/stone_floor_nor_dx_2k.png",
+          "upstream_md5": "0da466f3128da817a3b2d366f78e07b6",
+          "upstream_md5_today": "0da466f3128da817a3b2d366f78e07b6",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-22T09:38:09.819466+00:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "brown_mud_leaves_01",
+      "name": "Brown Mud Leaves 01",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/brown_mud_leaves_01",
+      "metadata_url": "https://api.polyhaven.com/files/brown_mud_leaves_01",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/Textures/T_Soil_Diffuse.T_Soil_Diffuse",
+        "/Game/Generated/Environment/Textures/T_Soil_nor_dx.T_Soil_nor_dx",
+        "/Game/Generated/Environment/Textures/T_Soil_arm.T_Soil_arm",
+        "/Game/Generated/Environment/MI_Nyaagyu_Soil.MI_Nyaagyu_Soil"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+          "sha256": "9056337763fa1db614b98aee969c4f07277731292b9549171e7b66c88cf6a416",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 18103277,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.png",
+          "upstream_md5": "975879d67e3b85b4fbdd8b169284b91a",
+          "upstream_md5_today": "975879d67e3b85b4fbdd8b169284b91a",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "sha256": "29c997d77f56e4ea16d3e998a306be0c17fddb28ab4822657c7cd8249040ffda",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 4539452,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg",
+          "upstream_md5": "e8b45aee8e00a253eb3a2b08cea89776",
+          "upstream_md5_today": "e8b45aee8e00a253eb3a2b08cea89776",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+          "sha256": "9bbc1abea84c6774ead2153f8444a5ac5675ac4ce19e7e02d1cb869b20b81f26",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 24178023,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/brown_mud_leaves_01/brown_mud_leaves_01_nor_dx_2k.png",
+          "upstream_md5": "d9ece11098edf7ee8c3ba6afb223a51a",
+          "upstream_md5_today": "d9ece11098edf7ee8c3ba6afb223a51a",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-22T09:38:09.819466+00:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "rusty_metal_02",
+      "name": "Rusty Metal 02",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/rusty_metal_02",
+      "metadata_url": "https://api.polyhaven.com/files/rusty_metal_02",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/Textures/T_Metal_Diffuse.T_Metal_Diffuse",
+        "/Game/Generated/Environment/Textures/T_Metal_nor_dx.T_Metal_nor_dx",
+        "/Game/Generated/Environment/Textures/T_Metal_arm.T_Metal_arm",
+        "/Game/Generated/Environment/MI_Nyaagyu_Metal.MI_Nyaagyu_Metal"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+          "sha256": "4d36db2e58b4f044f70b3547f5917ce84f783f5d5543a83ed72884f8542930a3",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 5067593,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rusty_metal_02/rusty_metal_02_arm_2k.png",
+          "upstream_md5": "b844a82aff1adb28453411dd94d40556",
+          "upstream_md5_today": "b844a82aff1adb28453411dd94d40556",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+          "sha256": "4c887dd400ed8a5964377c65e20654262307d6888443eae85feb80cc6e72287a",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 1952454,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+          "upstream_md5": "385195f8de0117418d99dc1d06b7ff38",
+          "upstream_md5_today": "385195f8de0117418d99dc1d06b7ff38",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+          "sha256": "c1d4c83f14a6ba123f017f1022fca8b92899b577da443c68b3741b6ee9b5b999",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 3897295,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+          "upstream_md5": "6a8f6cd5eafa52f14752d6e5512d7efa",
+          "upstream_md5_today": "6a8f6cd5eafa52f14752d6e5512d7efa",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-22T09:38:09.819466+00:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "kloofendal_overcast_puresky",
+      "name": "Kloofendal Overcast (Pure Sky)",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/kloofendal_overcast_puresky",
+      "metadata_url": "https://api.polyhaven.com/files/kloofendal_overcast_puresky",
+      "authors": {
+        "Greg Zaal": "All"
+      },
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/Textures/T_NyaagyuOvercast.T_NyaagyuOvercast"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+          "sha256": "77ade807bd208195073a51b970dea574fa70cd80cf666aeedf5cd416ab5c8abd",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/manifest.json",
+          "bytes": 16953534,
+          "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/kloofendal_overcast_puresky_4k.hdr",
+          "upstream_md5": "6678d8e9a87f9b8cdfc4fc4038591d59",
+          "upstream_md5_today": "6678d8e9a87f9b8cdfc4fc4038591d59",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-23T23:28:29+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "grey_roof_tiles",
+      "name": "Grey Roof Tiles",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/grey_roof_tiles",
+      "metadata_url": "https://api.polyhaven.com/files/grey_roof_tiles",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/MI_Nyaagyu_Kawara.MI_Nyaagyu_Kawara"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_arm_4k.png",
+          "sha256": "06014af2deb71778bf613bf2eccc713a956f42874e1418ba3e0c7c5750fb6d31",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/manifest.json",
+          "bytes": 20611120,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/grey_roof_tiles/grey_roof_tiles_arm_4k.png",
+          "upstream_md5": "cf42aacb88a0d9706650517a7db99a81",
+          "upstream_md5_today": "cf42aacb88a0d9706650517a7db99a81",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_diff_4k.jpg",
+          "sha256": "28b0a8716d492b6d121e62d12f0c23b061a6b41c1f441e7c9e79cc76db161e3f",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/manifest.json",
+          "bytes": 6511882,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/grey_roof_tiles/grey_roof_tiles_diff_4k.jpg",
+          "upstream_md5": "11cb0491bf0292f92f6a06782f3dc830",
+          "upstream_md5_today": "11cb0491bf0292f92f6a06782f3dc830",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/grey_roof_tiles_nor_dx_4k.png",
+          "sha256": "30720ff6ddb2d99199d6b6aedbd4741c0cee2f01e0d7bef7c5dec45b6f74b5df",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/GreyRoofTiles/manifest.json",
+          "bytes": 14713417,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/grey_roof_tiles/grey_roof_tiles_nor_dx_4k.png",
+          "upstream_md5": "0cdb306df160791defcda4149ea32cab",
+          "upstream_md5_today": "0cdb306df160791defcda4149ea32cab",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-24T00:34:42+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "white_plaster_02",
+      "name": "White Plaster 02",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/white_plaster_02",
+      "metadata_url": "https://api.polyhaven.com/files/white_plaster_02",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/MI_Nyaagyu_Plaster.MI_Nyaagyu_Plaster"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/white_plaster_02_arm_2k.jpg",
+          "sha256": "acdb65bfabb3613812bdad9156021400e518bdf4998c011921ce43695a5e24d4",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/manifest.json",
+          "bytes": 894383,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_arm_2k.jpg",
+          "upstream_md5": "8037fca09e797a6664834a00adbe05aa",
+          "upstream_md5_today": "8037fca09e797a6664834a00adbe05aa",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/white_plaster_02_diff_2k.jpg",
+          "sha256": "0ca5245ba70777d3e41ff4566c9f8d363855461891802c55cb7dc0f6f85f084e",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/manifest.json",
+          "bytes": 2568315,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_diff_2k.jpg",
+          "upstream_md5": "35f9c96c16aa0d934da7884b232f6d07",
+          "upstream_md5_today": "35f9c96c16aa0d934da7884b232f6d07",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/white_plaster_02_nor_dx_2k.png",
+          "sha256": "3c5bef5be1d0871848bb1d59aa770933cd626dc514b5f833f79fb9b1e71ead4b",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/manifest.json",
+          "bytes": 24664322,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_nor_dx_2k.png",
+          "upstream_md5": "3b0839a30985ec8ba67130ff52358283",
+          "upstream_md5_today": "3b0839a30985ec8ba67130ff52358283",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-23T22:27:49+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "tree_small_02",
+      "name": "tree_small_02",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/tree_small_02",
+      "metadata_url": "https://api.polyhaven.com/files/tree_small_02",
+      "authors": [
+        "Rico Cilliers"
+      ],
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuTree_HI.SM_NyaagyuTree_HI",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuTree_MAC.SM_NyaagyuTree_MAC"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_arm_2k.jpg",
+          "sha256": "e96b4e84e9786b982d01562e0d249f6e58db1b656dd511db7c034d6ed60b1c92",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 2586815,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_arm_2k.jpg",
+          "upstream_md5_today": "038ad0c1968be6802b20d084cdf30603",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_branch_arm_2k.jpg",
+          "sha256": "82da928cc4e8a45c559f6abe8053227c7ae6cc14eb8d026a30c203aedd087042",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 1147503,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_branch_arm_2k.jpg",
+          "upstream_md5_today": "d6a0921ec6dbeaaf22a4b91d68fe16d1",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_branch_diff_2k.jpg",
+          "sha256": "9032de9e063ee7e3763a6b10d19d89302f5776e85a966b6dd1c3a5634b2a80e1",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 1425692,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_branch_diff_2k.jpg",
+          "upstream_md5_today": "5ba327fc166360fcbb44f2eb04fbd8d8",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_branch_nor_dx_2k.jpg",
+          "sha256": "6a742bea1b5b212e06cf78f6469f28828fef0074b0fa106b7203add9d62802f8",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 1790025,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_branch_nor_dx_2k.jpg",
+          "upstream_md5_today": "4806c9f2f2eb8651ab28990f42325aa7",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_diff_2k.jpg",
+          "sha256": "4ab3210b6ec6bb1181145500bca71d1c1f81ead6baaa8600f5979c2cec50c6a4",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 3170612,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_diff_2k.jpg",
+          "upstream_md5_today": "ff4d82640b7e0daaec0b71bfc1cef76c",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_leaves_alpha_2k.png",
+          "sha256": "566484c7047ce67af5a4435c1e4da2b773578d73f83ae45dfad0fd442df7b9d5",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 636661,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/tree_small_02/tree_small_02_leaves_alpha_2k.png",
+          "upstream_md5_today": "4d94de8e4677e92ce6d812871f9cf541",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_leaves_arm_2k.jpg",
+          "sha256": "a126c0d92b60c44c0664e4d3651831970e259b0d5a1fb39ebb67081cbecaca96",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 2191542,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_leaves_arm_2k.jpg",
+          "upstream_md5_today": "4b88d67947fe214f2afc65beb83bee02",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_leaves_diff_2k.jpg",
+          "sha256": "6c984a46861562f2a20381c54106aa5e07ce0d3fce785907f8d263157e7561af",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 961870,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_leaves_diff_2k.jpg",
+          "upstream_md5_today": "021ddc0cf1d94b99716a106cede576c7",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_leaves_nor_dx_2k.jpg",
+          "sha256": "ccb19c4d201e140292b0cc9b8c5f298c8eefdb24b82ac10daf7193b4a209c487",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 2361018,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_leaves_nor_dx_2k.jpg",
+          "upstream_md5_today": "fea7ce2cdb3c6b13233dc980fdbc2af6",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Textures/tree_small_02_nor_dx_2k.jpg",
+          "sha256": "70e26cb4e5f45c5aa91c2a89af113342f536ff30a29f523a8994f1a0aef1890d",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 4550246,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/tree_small_02/tree_small_02_nor_dx_2k.jpg",
+          "upstream_md5_today": "a23cd0dd29686cb118e947ad1bc306e8",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_arm_1k.jpg",
+          "sha256": "891c5a1bb124292984b01558e9f2b0302d27d2fa3ccf9dfc6c34f9ea4ca24e6c",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 708242,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_arm_1k.jpg",
+          "upstream_md5_today": "44b6ed4bf32d7cd67cb3e9d5faeacc38",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_branch_arm_1k.jpg",
+          "sha256": "8968b46d76c67da09ebbf4eed04b8123c9e0ddf5b55d123968b35b32aa76d27a",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 375732,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_branch_arm_1k.jpg",
+          "upstream_md5_today": "9ec3d8428295d87ae363bf0d1e0a8288",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_branch_diff_1k.jpg",
+          "sha256": "a71b768e330c0c6cca097e30314f6b4e842ef724a1370f6aab14b4434eec64cb",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 449977,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_branch_diff_1k.jpg",
+          "upstream_md5_today": "88b531469f5dba2fc44ca85df3776e7c",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_branch_nor_gl_1k.jpg",
+          "sha256": "a2efae9e7fede259601188cd5cb7e561fc502bd87e04d862a9532b2d8e647a62",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 581596,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_branch_nor_gl_1k.jpg",
+          "upstream_md5_today": "00a3eed0d4d28e7e890d9ec6ac0619af",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_diff_1k.jpg",
+          "sha256": "4e0093f407b3a1120a36de49a48ebe5a465a9a9b77e361c7a3e66866e115e404",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 863246,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_diff_1k.jpg",
+          "upstream_md5_today": "a7287a3f4e7f0d4577cb949b245f5b14",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_leaves_arm_1k.jpg",
+          "sha256": "71f81374daf5a8f3e6eb2c694264a1769fdb0bea508178e4105618eecea83c3e",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 633698,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_leaves_arm_1k.jpg",
+          "upstream_md5_today": "3dad5bafc732f7692db32a262530bbab",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_leaves_diff_1k.jpg",
+          "sha256": "261e7d7a5ac7d2e16ea8823ff8510be8f3f615999724232994039ad2885e5c36",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 340003,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_leaves_diff_1k.jpg",
+          "upstream_md5_today": "315cbc2cebfb399e649ccd39112c109a",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_leaves_nor_gl_1k.jpg",
+          "sha256": "8c72e04fb23e16ae1df79c01385a638473d1dd4dede3d51e83d70153c129f09b",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 681604,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_leaves_nor_gl_1k.jpg",
+          "upstream_md5_today": "b06c87e73f54d9654f66d67e9de7aa85",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/textures/tree_small_02_nor_gl_1k.jpg",
+          "sha256": "9c83be074c950ea1b94c732c0c0291b53b9ba357f932d378bafe3ca3b4418871",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 1228646,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/tree_small_02/tree_small_02_nor_gl_1k.jpg",
+          "upstream_md5_today": "115a20da8621cd3e034e9b1bbe574746",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/tree_small_02.bin",
+          "sha256": "8da6c3c389ad8748286d1b7488cd827f75ebdad9d8f59ef7dfb0916df5edc634",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 95102324,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/tree_small_02/tree_small_02.bin",
+          "upstream_md5_today": "7a7019a87e6fe0d7475c0fa2e08d8962",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Upstream/tree_small_02_1k.gltf",
+          "sha256": "3062a709614c05b80fdc1e56583998bc3cb1027b0d52f956c8ecfb882ff8ca6d",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+          "bytes": 9075,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/tree_small_02/tree_small_02_1k.gltf",
+          "upstream_md5_today": "63f42b19687332f7b3a5c8b531734d8e",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "license_snapshot": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-09-23T22:27:49+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "generator": "scripts/art/create_nyaagyu_photoreal_tree.py",
+      "asset_id": "tree_small_02:derived",
+      "name": "Project-made derivatives of tree_small_02",
+      "kind": "derived-art",
+      "origin_url": "scripts/art/create_nyaagyu_photoreal_tree.py",
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json",
+      "generator_sha256_at_build": null,
+      "derived_from": [
+        "tree_small_02"
+      ],
+      "used_by": [
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuTree_HI.SM_NyaagyuTree_HI",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuTree_MAC.SM_NyaagyuTree_MAC"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/NyaagyuTree_Source.blend",
+          "sha256": "782079a3a061d748929b6c1b2b2d30c0e718298a4f2d0a1c6dfa9b01806b8360",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/Preview_NyaagyuTree.png",
+          "sha256": "94fd7d84c5fe2217bfdc250d94bb925b4bc1d300ce8440b6cfe5bfd02ec533e2",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/SM_NyaagyuTree_HI.fbx",
+          "sha256": "4938f7e809e631421616a7affda33f0b8ebd3158cd5617ac9a63fa52e1150e06",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/SM_NyaagyuTree_MAC.fbx",
+          "sha256": "fc3938a4947a350dd94fc5e8a7e1a8f9842cc22338bfe2d0f4dd7678e512b68d",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/TreeSmall02/manifest.json"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-24T00:58:47+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "pine_sapling_small",
+      "name": "pine_sapling_small",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/pine_sapling_small",
+      "metadata_url": "https://api.polyhaven.com/files/pine_sapling_small",
+      "authors": [
+        "Rico Cilliers",
+        "Rob Tuytel"
+      ],
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+      "used_by": [
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_A_HI.SM_NyaagyuPine_A_HI",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_A_MAC.SM_NyaagyuPine_A_MAC",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_B_HI.SM_NyaagyuPine_B_HI",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_B_MAC.SM_NyaagyuPine_B_MAC",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_C_HI.SM_NyaagyuPine_C_HI",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_C_MAC.SM_NyaagyuPine_C_MAC"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Textures/pine_sapling_small_bark_arm_2k.jpg",
+          "sha256": "7afccadf4d239dfbcb99338067bf1b4d0c3316b42021ac2d7cdf17f8dddb7346",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 2941366,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_sapling_small/pine_sapling_small_bark_arm_2k.jpg",
+          "upstream_md5_today": "218f22567f42e7918afc25c7e3450be8",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Textures/pine_sapling_small_bark_diff_2k.jpg",
+          "sha256": "359bb1be7aab30f5b79d391af9ef088503d6d135d529c9fc06bce60adf28ef60",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 2700448,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_sapling_small/pine_sapling_small_bark_diff_2k.jpg",
+          "upstream_md5_today": "f420cb9ca2e845cd988f3bcf03c41a85",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Textures/pine_sapling_small_bark_nor_dx_2k.jpg",
+          "sha256": "b228f0b7f4221c5d958a635e98609d62c904069ccb68bb2125cea199e1821bc5",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 3369455,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_sapling_small/pine_sapling_small_bark_nor_dx_2k.jpg",
+          "upstream_md5_today": "baf153fade9a5b35037af0706c27e689",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Textures/pine_sapling_small_twig_alpha_2k.png",
+          "sha256": "0d471fe538f67d85fb5d4d19b02ad88a5c31b18f83bdb5b9c40eb2f3e16e98f6",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 334535,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/pine_sapling_small/pine_sapling_small_twig_alpha_2k.png",
+          "upstream_md5_today": "90189603eb9fb879a097d726cfff43e1",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Textures/pine_sapling_small_twig_arm_2k.jpg",
+          "sha256": "f7907164f65ac089d997a6759db63c3504d25a97ad6c26c9ef5a7f58b985d11d",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 1251644,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_sapling_small/pine_sapling_small_twig_arm_2k.jpg",
+          "upstream_md5_today": "20b41bc76f1e40e11d1847b39779c015",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Textures/pine_sapling_small_twig_diff_2k.jpg",
+          "sha256": "216afcc5da6dca9e6286c516520e221cd1babf8a9cddf141cd4b98c2b10f4df0",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 1542464,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_sapling_small/pine_sapling_small_twig_diff_2k.jpg",
+          "upstream_md5_today": "acb5a3388d67a8cfcdcfcf9c66539fd0",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Textures/pine_sapling_small_twig_mask_2k.png",
+          "sha256": "b78c1d3d7d0d476fe31126a57771c542e52631e8b2c21e13cd03f82a204a5cce",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 318955,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/pine_sapling_small/pine_sapling_small_twig_mask_2k.png",
+          "upstream_md5_today": "20c45eb7b75fe1b49dc2e381d97b0b35",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Textures/pine_sapling_small_twig_nor_dx_2k.jpg",
+          "sha256": "b88ef0676c96edc5f1abd5eef21ad7bc831b934f57d1253a131e819cdf84df6e",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 2589750,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_sapling_small/pine_sapling_small_twig_nor_dx_2k.jpg",
+          "upstream_md5_today": "a69ded8b028941f01a15ed5895556778",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/pine_sapling_small.bin",
+          "sha256": "b4d2fc73d53f1d8717eb5ef9a2c66957d2a53152787e543aace88fcd6fca94ef",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 17771796,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/pine_sapling_small/pine_sapling_small.bin",
+          "upstream_md5_today": "76dd1802d8de128c812f2e124a258b35",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/pine_sapling_small_1k.gltf",
+          "sha256": "f358c01926861dd082f32dba60f7c9fba232b585a985cf38c0d2229eecf4bc48",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 11442,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/pine_sapling_small/pine_sapling_small_1k.gltf",
+          "upstream_md5_today": "237a7672645631550ae571743aa9f55b",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/textures/pine_sapling_small_bark_arm_1k.jpg",
+          "sha256": "336a4680cd571b6076b67afee2310b290b8900d9d126eb39ec1ae92e95be2ea9",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 801278,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_bark_arm_1k.jpg",
+          "upstream_md5_today": "21d1abd15e40951825a4f3da110b20ea",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/textures/pine_sapling_small_bark_diff_1k.jpg",
+          "sha256": "5c76836b01c3536fa0e24207b67bf4f3315b53ebe2b4ecc6f08dfcf3f8d74929",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 725265,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_bark_diff_1k.jpg",
+          "upstream_md5_today": "7d3a558ed614c7e75594c7be3bf80311",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/textures/pine_sapling_small_bark_nor_gl_1k.jpg",
+          "sha256": "05c46455531781b6cf18cae0648cf627f60ee942adaa8bcbfd1592fc2506a9e0",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 1016849,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_bark_nor_gl_1k.jpg",
+          "upstream_md5_today": "bb6e3a6eea777d992cef48fabfdc538c",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/textures/pine_sapling_small_twig_arm_1k.jpg",
+          "sha256": "2eb0aa44124b5a4ae9401e00b23b3c916f4c3f421616ce1bb932f248fc061288",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 394056,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_twig_arm_1k.jpg",
+          "upstream_md5_today": "b5062030fc42ec7bd12eb3f052054104",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/textures/pine_sapling_small_twig_diff_1k.jpg",
+          "sha256": "54af7d6fb664b5a38bcb118b557bc50e01e86ec54d6f1a573c3e32c649a53362",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 477942,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_twig_diff_1k.jpg",
+          "upstream_md5_today": "dacc918bb421968e9ccc1956d78a2dbe",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Upstream/textures/pine_sapling_small_twig_nor_gl_1k.jpg",
+          "sha256": "76af87821d7ff00e25768d5d97a449394fe64a21ae55d099da7f5ed46d9098c8",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+          "bytes": 692711,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_twig_nor_gl_1k.jpg",
+          "upstream_md5_today": "eebc5a81f8f6231d8e18ec4ad7292798",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "license_snapshot": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-09-24T00:58:47+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "generator": "scripts/art/create_nyaagyu_pine_saplings.py",
+      "asset_id": "pine_sapling_small:derived",
+      "name": "Project-made derivatives of pine_sapling_small",
+      "kind": "derived-art",
+      "origin_url": "scripts/art/create_nyaagyu_pine_saplings.py",
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json",
+      "generator_sha256_at_build": null,
+      "derived_from": [
+        "pine_sapling_small"
+      ],
+      "used_by": [
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_A_HI.SM_NyaagyuPine_A_HI",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_A_MAC.SM_NyaagyuPine_A_MAC",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_B_HI.SM_NyaagyuPine_B_HI",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_B_MAC.SM_NyaagyuPine_B_MAC",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_C_HI.SM_NyaagyuPine_C_HI",
+        "/Game/Generated/Environment/Foliage/SM_NyaagyuPine_C_MAC.SM_NyaagyuPine_C_MAC"
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/NyaagyuPine_Source.blend",
+          "sha256": "125f1ac81952714ee8f670bce01d2e738b493961dc304b9d9d80bc0ef06b50e9",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/Preview_NyaagyuPine.png",
+          "sha256": "387f7982a58723581119bc87b5e9a6a4579a7b411452dbf9ce0fe79d0f198f47",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/SM_NyaagyuPine_A_HI.fbx",
+          "sha256": "7d02d4762d7aabceb68ba55b11081e6778d1e29ea63fd83af9714532ba12c718",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/SM_NyaagyuPine_A_MAC.fbx",
+          "sha256": "c62eb9b92b65648ca6540c1ec8eaacae740634d8b08e5af2b56c171771b3ee5d",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/SM_NyaagyuPine_B_HI.fbx",
+          "sha256": "a1458d9855e09d98487ab6392cf9e70f4a5f4d7dd66808f8c546e82503e9db57",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/SM_NyaagyuPine_B_MAC.fbx",
+          "sha256": "d7cb4a639cc5c09a9c48df14d1e9cc00100991192a576da9fda5323871eb4a7d",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/SM_NyaagyuPine_C_HI.fbx",
+          "sha256": "9566632ebbd541ca5ffba6ef39aecd7c55f19d6291309b54b00f003491f3fc23",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/SM_NyaagyuPine_C_MAC.fbx",
+          "sha256": "bf944ed9ea518ebef8ed89a6276509a44785b800559331e9a8e9abe71d88bb2e",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/PineSaplingSmall/manifest.json"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-24T05:48:45+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "fern_02",
+      "name": "fern_02",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/fern_02",
+      "metadata_url": "https://api.polyhaven.com/files/fern_02",
+      "authors": {
+        "Rob Tuytel": "scanning",
+        "Rico Cilliers": "modeling"
+      },
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+      "used_by": [],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/fern_02.bin",
+          "sha256": "fe1abb762bcbbc7ad9e86925c8080437a62add257d9280e9142fdc85c226e64c",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 176176,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/fern_02/fern_02.bin",
+          "upstream_md5": "c061e9255f7d36ae9ce0e92ef3e100b2",
+          "upstream_md5_today": "c061e9255f7d36ae9ce0e92ef3e100b2",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/fern_02_4k.gltf",
+          "sha256": "7d5d458d4be38edceff922586234fa906377db5257e66d7cdde34b37e79788f7",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 6899,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/fern_02/fern_02_4k.gltf",
+          "upstream_md5": "10425c45145273a2899b8cc585592d2e",
+          "upstream_md5_today": "10425c45145273a2899b8cc585592d2e",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_alpha_2k.png",
+          "sha256": "f51eb9b8f9f4b25a882f8fe12d1ef53ba69448bac7e71396ec1f05b684e9ea75",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 230089,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/fern_02/fern_02_alpha_2k.png",
+          "upstream_md5": "ff18f7e8e869c58eac8f9c7d7c519f4a",
+          "upstream_md5_today": "ff18f7e8e869c58eac8f9c7d7c519f4a",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_alpha_4k.png",
+          "sha256": "50dd262282e9787ae8abf4475b5d2071df8a88f5242f480602a0672347bd7ff9",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 470827,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/4k/fern_02/fern_02_alpha_4k.png",
+          "upstream_md5": "520e194db987df18fd73b49d979ada0c",
+          "upstream_md5_today": "520e194db987df18fd73b49d979ada0c",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_arm_2k.jpg",
+          "sha256": "1eaf9bd29e2d83a77ca5d89bdddebcd9216b8b4ba244644580fe5b89bbe713f1",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 850856,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fern_02/fern_02_arm_2k.jpg",
+          "upstream_md5": "7f7b46e813a3cb4811405191de0ecdce",
+          "upstream_md5_today": "7f7b46e813a3cb4811405191de0ecdce",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_arm_4k.jpg",
+          "sha256": "0ccfb4d98966c0e69769e9ddd5be872e34bb1d2f8aece3aff6d42fd3e61f8f1c",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 2569142,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/fern_02/fern_02_arm_4k.jpg",
+          "upstream_md5": "37426a24b433a05fe3958acc34232ede",
+          "upstream_md5_today": "37426a24b433a05fe3958acc34232ede",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_diff_2k.jpg",
+          "sha256": "9ee18172170728050871772e2cd6d8d37b52f9138e61b49b04486623f9caf84b",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 993703,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fern_02/fern_02_diff_2k.jpg",
+          "upstream_md5": "ba8bbb9dc9ff55bdc081565cd926d776",
+          "upstream_md5_today": "ba8bbb9dc9ff55bdc081565cd926d776",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_diff_4k.jpg",
+          "sha256": "f924354b032fcde77830b0c33c4dff80b4b143f793e70126894788f199b61960",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 3025392,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/fern_02/fern_02_diff_4k.jpg",
+          "upstream_md5": "07642c942fe65ae5b03b212398ba7004",
+          "upstream_md5_today": "07642c942fe65ae5b03b212398ba7004",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_nor_dx_2k.jpg",
+          "sha256": "4c6531d4c3b8f7e149bcbaeb4b1ca28e8d50c6ad7bcd8eff228bcfb756aa57f3",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 1369183,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fern_02/fern_02_nor_dx_2k.jpg",
+          "upstream_md5": "b56f5a028d42bc888f624db5c7204820",
+          "upstream_md5_today": "b56f5a028d42bc888f624db5c7204820",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_nor_dx_4k.jpg",
+          "sha256": "31a427c608b2e0e52a1bd5310b21c6ad9b070a060656f8cb57876a72354b7e3b",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 5070321,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/fern_02/fern_02_nor_dx_4k.jpg",
+          "upstream_md5": "33c86f5ffe8ca857c200662912e43af5",
+          "upstream_md5_today": "33c86f5ffe8ca857c200662912e43af5",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_nor_gl_2k.jpg",
+          "sha256": "dfe1ac4a428d21f7c134411500177d66b8dd800c8fec6f0040c50f44414a777b",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 1365615,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fern_02/fern_02_nor_gl_2k.jpg",
+          "upstream_md5": "00936dff4661dc9fe1f2fbe6c000615a",
+          "upstream_md5_today": "00936dff4661dc9fe1f2fbe6c000615a",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Upstream/textures/fern_02_nor_gl_4k.jpg",
+          "sha256": "14125a030e3fab96f52343215a65167ea46bcabae4bdef3444ba8ae22cb05e41",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+          "bytes": 5058951,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/4k/fern_02/fern_02_nor_gl_4k.jpg",
+          "upstream_md5": "1a35f2135cd71a64a255406b11f988a2",
+          "upstream_md5_today": "1a35f2135cd71a64a255406b11f988a2",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "license_snapshot": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-09-24T05:48:45+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "generator": "scripts/art/create_nyaagyu_fern_shoulder.py",
+      "asset_id": "fern_02:derived",
+      "name": "Project-made derivatives of fern_02",
+      "kind": "derived-art",
+      "origin_url": "scripts/art/create_nyaagyu_fern_shoulder.py",
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json",
+      "generator_sha256_at_build": null,
+      "derived_from": [
+        "fern_02"
+      ],
+      "used_by": [],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/NyaagyuFern02_ShoulderStudy.blend",
+          "sha256": "a766674e488c22e04056dee3148d35a252302ae1b13da9999922619f84d3bbdc",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Preview_Fern02_EyeHeight_SourceOnly.png",
+          "sha256": "cf204f33d158c746f6d3f1123b301b8d53d2b08aa5fd4d28a05c62c94f123dd7",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/Preview_Fern02_MAC_Fallback_SourceOnly.png",
+          "sha256": "e0d3facdafc557837bcdf530dadd57750066e9c52b9b1c8f658bf897a05d8a7a",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/SM_NyaagyuFern02_A_HI.fbx",
+          "sha256": "2933f034582e273af3ba63865e823dacbd7fa51a7bcf93151c4b8513e7bbfe8f",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/SM_NyaagyuFern02_A_MAC_LOD1.fbx",
+          "sha256": "5578523f0e8030fc351852ae97b5fe92e6e1daf1f8c1fd224572fe1574cbafc6",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/SM_NyaagyuFern02_B_HI.fbx",
+          "sha256": "322edd81336e10e6bebbd3d0754f5a815730f3362fc46239a96be83eb725e9b3",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/SM_NyaagyuFern02_B_MAC_LOD1.fbx",
+          "sha256": "dbdf9ae817a540178ea1224229edd717cba6d1b095cc34b23bd588fbed4def94",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/SM_NyaagyuFern02_C_HI.fbx",
+          "sha256": "d17e8f0a7d6b7c15df5eafbdca8730281579271c54a1d9c85593f031806e4694",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/SM_NyaagyuFern02_C_MAC_LOD1.fbx",
+          "sha256": "a59ad0c51e9263bdc1076cfededd14f28f9ca5d1f87ad5c5101b2c6b8e5edc88",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/SM_NyaagyuFern02_D_HI.fbx",
+          "sha256": "649269bf083166563d45c5b4a4231ff187a9a7cfd01103f086a51a0f107160e0",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/SM_NyaagyuFern02_D_MAC_LOD1.fbx",
+          "sha256": "632ff2af266c126da716be7e8434bc2b3b5644599177692caf8a75af96d83cef",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/manifest.json"
+        }
+      ]
+    },
+    {
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "license_snapshot": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-09-24T06:46:20+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "generator": "scripts/art/create_nyaagyu_fern_ground_transition.py",
+      "asset_id": "SM_NyaagyuFernGroundTransition:derived",
+      "name": "Project-made derivatives of SM_NyaagyuFernGroundTransition",
+      "kind": "derived-art",
+      "origin_url": "scripts/art/create_nyaagyu_fern_ground_transition.py",
+      "base_manifest": "Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition/manifest.json",
+      "generator_sha256_at_build": "337536cb177c63171ca3c2e20d97b93f0bb20c4d45fc3e621cfd827f8128e3f0",
+      "derived_from": [
+        "fern_02"
+      ],
+      "used_by": [],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition/Nyaagyu_FernGroundTransition.blend",
+          "sha256": "360c6f8b0c2fe4e6886ca7b2e81f8c1fc51120b6b270d6588580493ba85642f5",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition/Preview_FernGroundTransition_EyeHeight.png",
+          "sha256": "3d661768ed4a3a9eaf6973078540a9c68129dbe57ee8918049bd8fc4abf4914a",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition/manifest.json"
+        },
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition/Preview_FernGroundTransition_MacFallback.png",
+          "sha256": "d9d37345b69508f5d06b13f986d1718abd93afb05d13ab50352f1e5aafcf3468",
+          "hash_source": "Content/SourceArt/Environment/PolyHaven/Fern02/GroundTransition/manifest.json"
+        }
+      ]
+    },
+    {
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "courtesy_credit": "Powered by Poly Haven - https://polyhaven.com",
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://polyhaven.com/license",
+        "path": "Local/ThirdPartyRaw/_licenses/polyhaven/polyhaven-license-2026-09-25.html",
+        "sha256": "0b7a23e05e933f7f28ffab64ac1302e215f44eeb69abbfac4f2c4fd331101be5",
+        "retrieved_at_utc": "2026-09-25T11:35:31+00:00",
+        "via": "direct",
+        "note": "Retroactive: snapshot taken during the 2026-09-25 schema-2 migration. The original acquisitions recorded the license URL and CC0 identifier but kept no terms snapshot."
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-24T01:53:47+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "asset_id": "stone_floor:displacement",
+      "name": "Stone Floor Displacement 2k",
+      "kind": "legacy-polyhaven",
+      "origin_url": "https://polyhaven.com/a/stone_floor",
+      "metadata_url": "https://api.polyhaven.com/files/stone_floor",
+      "authors": {
+        "Dimitrios Savva": "All"
+      },
+      "note": "Committed in 7ba299e (2026-09-24 terrain macro relief) without a manifest entry.",
+      "used_by": [],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/stone_floor/stone_floor_disp_2k.png",
+          "sha256": "ffcbb3ce31a7b92178f1441076b48d6b6e04c851fdd48edbef48595784717a21",
+          "bytes": 6424960,
+          "hash_source": "computed 2026-09-25 (no earlier record)",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_floor/stone_floor_disp_2k.png",
+          "upstream_md5_today": "8413a85bb5748cabf486b5593daf7c33",
+          "upstream_md5_match": true,
+          "upstream_checked_at_utc": "2026-09-25T11:41:01+00:00"
+        }
+      ]
+    },
+    {
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "license_snapshot": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-09-23T09:20:49+09:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "fallback": null,
+      "generator": "scripts/art/render_environment_palette.py",
+      "asset_id": "Nyaagyu_PBR_Palette_Preview",
+      "name": "Nyaagyu PBR palette preview render",
+      "kind": "derived-art",
+      "origin_url": "scripts/art/render_environment_palette.py",
+      "derived_from": [
+        "wood_planks_dirt",
+        "stone_floor",
+        "brown_mud_leaves_01",
+        "rusty_metal_02",
+        "kloofendal_overcast_puresky"
+      ],
+      "used_by": [],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/PolyHaven/Nyaagyu_PBR_Palette_Preview.png",
+          "sha256": "efad2501bd88b603951ac022fbd1fcd0a35a222cabf370c6f671be5738bfada8",
+          "bytes": 1682096,
+          "hash_source": "computed 2026-09-25 (no earlier record)"
+        }
+      ]
+    }
+  ]
+}

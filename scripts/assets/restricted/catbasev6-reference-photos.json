@@ -1,0 +1,272 @@
+{
+  "schema_version": 2,
+  "generator": "scripts/art/fetch_cat_base_v6_sources.py",
+  "lane_draft": "Content/SourceArt/Characters/CatBaseV6/sources_manifest.json",
+  "derived_art": "Content/SourceArt/Characters/CatBaseV6",
+  "ledger_policy": "docs/art-research/free-asset-acquisition-plan.md sections 2.1-2.5",
+  "kind": "restricted-manifest",
+  "source": "catbasev6-reference",
+  "purpose": "CatBaseV6 reference photographs whose license is outside the plan allowlist; viewed only (REF).",
+  "records": [
+    {
+      "asset_id": "commons-131932591",
+      "name": "Взгляд кота.jpg",
+      "kind": "reference-photo",
+      "view": "profile",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "REF",
+      "license": "CC-BY-2.0",
+      "license_label": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:%D0%92%D0%B7%D0%B3%D0%BB%D1%8F%D0%B4_%D0%BA%D0%BE%D1%82%D0%B0.jpg",
+      "mirror_url": null,
+      "authors": [
+        "fly_jib"
+      ],
+      "credit": "https://www.flickr.com/photos/130024626@N08/17639228864/",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Взгляд кота.jpg\" by fly_jib, Wikimedia Commons, https://commons.wikimedia.org/wiki/File:%D0%92%D0%B7%D0%B3%D0%BB%D1%8F%D0%B4_%D0%BA%D0%BE%D1%82%D0%B0.jpg, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0)",
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Взгляд кота.jpg-2026-09-25.json",
+        "sha256": "d3493a495023586f9ef23e7f43646fc5fc31c6de8e2f7bc299411ec0b255afed",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3A%D0%92%D0%B7%D0%B3%D0%BB%D1%8F%D0%B4+%D0%BA%D0%BE%D1%82%D0%B0.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:35+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:35+00:00",
+      "commons_sha1_original": "2a0b019ed914c6aa1087c0c97cbef34e048aa183",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/profile__Взгляд_кота.jpg",
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/%D0%92%D0%B7%D0%B3%D0%BB%D1%8F%D0%B4_%D0%BA%D0%BE%D1%82%D0%B0.jpg/3840px-%D0%92%D0%B7%D0%B3%D0%BB%D1%8F%D0%B4_%D0%BA%D0%BE%D1%82%D0%B0.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "bytes": 1046963,
+          "sha256": "d6da1decc4f3baa2aac022cd6102728ebd42ad22e93a8abaee218a9ba8a427d6"
+        }
+      ],
+      "listing_url": "https://commons.wikimedia.org/wiki/File:%D0%92%D0%B7%D0%B3%D0%BB%D1%8F%D0%B4_%D0%BA%D0%BE%D1%82%D0%B0.jpg",
+      "entitlement_owner": "none (public Wikimedia Commons file; no account, entitlement or terms acceptance)",
+      "user_step": null,
+      "reason": "CC BY 2.0 is outside the plan allowlist (CC BY 3.0/4.0); kept as REF: viewed only, never shipped, traced or sampled"
+    },
+    {
+      "asset_id": "commons-24280394",
+      "name": "Cat (4938330260).jpg",
+      "kind": "reference-photo",
+      "view": "profile",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "REF",
+      "license": "CC-BY-2.0",
+      "license_label": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:Cat_(4938330260).jpg",
+      "mirror_url": null,
+      "authors": [
+        "carrotmadman6 from Mauritius"
+      ],
+      "credit": "Cat",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Cat (4938330260).jpg\" by carrotmadman6 from Mauritius, Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Cat_(4938330260).jpg, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0)",
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Cat (4938330260).jpg-2026-09-25.json",
+        "sha256": "d7331f3d2e3cfee20856b6a345f4a4b511d213bb2f39a59412d9d5deba12f1d6",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ACat+%284938330260%29.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:37+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:37+00:00",
+      "commons_sha1_original": "a67f9d8b176f6f13a94693a80fb70137e1e779a6",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/profile__Cat__4938330260_.jpg",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Cat_%284938330260%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "bytes": 448202,
+          "sha256": "8e49c18f00db482dab90c1e4f9fa5a10e462b15e7815a4462bc0872d1f0f3d53"
+        }
+      ],
+      "listing_url": "https://commons.wikimedia.org/wiki/File:Cat_(4938330260).jpg",
+      "entitlement_owner": "none (public Wikimedia Commons file; no account, entitlement or terms acceptance)",
+      "user_step": null,
+      "reason": "CC BY 2.0 is outside the plan allowlist (CC BY 3.0/4.0); kept as REF: viewed only, never shipped, traced or sampled"
+    },
+    {
+      "asset_id": "commons-151056058",
+      "name": "Tabby Cat (47966581036).jpg",
+      "kind": "reference-photo",
+      "view": "threequarter",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "REF",
+      "license": "CC-BY-2.0",
+      "license_label": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:Tabby_Cat_(47966581036).jpg",
+      "mirror_url": null,
+      "authors": [
+        "Jennifer C."
+      ],
+      "credit": "Tabby Cat",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Tabby Cat (47966581036).jpg\" by Jennifer C., Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Tabby_Cat_(47966581036).jpg, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0)",
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Tabby Cat (47966581036).jpg-2026-09-25.json",
+        "sha256": "ff89303d4b78ab4d395847421e049b1e21dcae1b684a08d74c6713a897369d9b",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ATabby+Cat+%2847966581036%29.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:48+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:48+00:00",
+      "commons_sha1_original": "4ae1a3f7b298ef5d86fc91fc7a3f1a5fd56ebf7b",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/threequarter__Tabby_Cat__47966581036_.jpg",
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Tabby_Cat_%2847966581036%29.jpg/3840px-Tabby_Cat_%2847966581036%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "bytes": 1825639,
+          "sha256": "48c62d9b4adff3165b41b63f103470e41c50fc62cbf40940deee281f2f7b26c2"
+        }
+      ],
+      "listing_url": "https://commons.wikimedia.org/wiki/File:Tabby_Cat_(47966581036).jpg",
+      "entitlement_owner": "none (public Wikimedia Commons file; no account, entitlement or terms acceptance)",
+      "user_step": null,
+      "reason": "CC BY 2.0 is outside the plan allowlist (CC BY 3.0/4.0); kept as REF: viewed only, never shipped, traced or sampled"
+    },
+    {
+      "asset_id": "commons-46976721",
+      "name": "As if he's not paying attention (2353790041).jpg",
+      "kind": "reference-photo",
+      "view": "eye",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "REF",
+      "license": "CC-BY-2.0",
+      "license_label": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:As_if_he%27s_not_paying_attention_(2353790041).jpg",
+      "mirror_url": null,
+      "authors": [
+        "Kevin Dooley from Chandler, AZ, USA"
+      ],
+      "credit": "As if he's not paying attention",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"As if he's not paying attention (2353790041).jpg\" by Kevin Dooley from Chandler, AZ, USA, Wikimedia Commons, https://commons.wikimedia.org/wiki/File:As_if_he%27s_not_paying_attention_(2353790041).jpg, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0)",
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/As if he's not paying attention (2353790041).jpg-2026-09-25.json",
+        "sha256": "e1031af352517946da0d4a5903d7282a8844d0ee6112edca98172636b76f0a65",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3AAs+if+he%27s+not+paying+attention+%282353790041%29.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:56+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:56+00:00",
+      "commons_sha1_original": "68b2e2ba9cc7eacc4a0be963611ee2f6e104bc81",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/eye__As_if_he_s_not_paying_attention__2353790041_.jpg",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/c5/As_if_he%27s_not_paying_attention_%282353790041%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "bytes": 4165697,
+          "sha256": "2b94df967fdf5127206082e0865213d6afa0a35ce1a287379b1fbacff09ad61f"
+        }
+      ],
+      "listing_url": "https://commons.wikimedia.org/wiki/File:As_if_he%27s_not_paying_attention_(2353790041).jpg",
+      "entitlement_owner": "none (public Wikimedia Commons file; no account, entitlement or terms acceptance)",
+      "user_step": null,
+      "reason": "CC BY 2.0 is outside the plan allowlist (CC BY 3.0/4.0); kept as REF: viewed only, never shipped, traced or sampled"
+    },
+    {
+      "asset_id": "commons-151056085",
+      "name": "Tabby Cat (47966579821).jpg",
+      "kind": "reference-photo",
+      "view": "eye",
+      "role": "reference only (anatomy, coat pattern, eye and nose macro); no pixels are shipped or projected",
+      "tier": "REF",
+      "license": "CC-BY-2.0",
+      "license_label": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "origin_url": "https://commons.wikimedia.org/wiki/File:Tabby_Cat_(47966579821).jpg",
+      "mirror_url": null,
+      "authors": [
+        "Jennifer C."
+      ],
+      "credit": "Tabby Cat",
+      "commercial_use": true,
+      "redistribution": "attribution",
+      "derivatives": true,
+      "attribution_text": "\"Tabby Cat (47966579821).jpg\" by Jennifer C., Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Tabby_Cat_(47966579821).jpg, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0)",
+      "changes": "None: viewed on screen as anatomy, coat and eye reference only; no pixels were copied, traced, projected, sampled or shipped.",
+      "use_policy": "reference-only: viewed on screen; nothing from the photograph is shipped",
+      "license_snapshot": {
+        "path": "Local/ThirdPartyRaw/_licenses/wikimedia/Tabby Cat (47966579821).jpg-2026-09-25.json",
+        "sha256": "725b2567707c948c3a22713b08b29e27ccb480e6efca68f6855d4b42f336df04",
+        "url": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ATabby+Cat+%2847966579821%29.jpg&iiprop=url%7Csize%7Csha1%7Cextmetadata%7Cmime&iiurlwidth=2400",
+        "retrieved_at_utc": "2026-09-25T11:22:59+00:00",
+        "via": "api"
+      },
+      "access": "api",
+      "acquired_at_utc": "2026-09-25T11:22:59+00:00",
+      "commons_sha1_original": "2a68e8148dc3e7951300b1dab3fe5f8d2d148ee8",
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "acquired_by": "agent",
+      "storage": "local-private",
+      "used_by": [],
+      "fallback": null,
+      "files": [
+        {
+          "path": "Local/ThirdPartyRaw/reference/wikimedia/eye__Tabby_Cat__47966579821_.jpg",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/5/59/Tabby_Cat_%2847966579821%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "bytes": 1935228,
+          "sha256": "fcc2eb9dba2707793350891f04c5c3d80323e3119ecd3a3f2893b56044f27923"
+        }
+      ],
+      "listing_url": "https://commons.wikimedia.org/wiki/File:Tabby_Cat_(47966579821).jpg",
+      "entitlement_owner": "none (public Wikimedia Commons file; no account, entitlement or terms acceptance)",
+      "user_step": null,
+      "reason": "CC BY 2.0 is outside the plan allowlist (CC BY 3.0/4.0); kept as REF: viewed only, never shipped, traced or sampled"
+    }
+  ]
+}
