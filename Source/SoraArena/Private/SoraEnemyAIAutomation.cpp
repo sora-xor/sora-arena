@@ -1,0 +1,432 @@
+#include "SoraGameMode.h"
+
+#if WITH_DEV_AUTOMATION_TESTS
+#include "SoraAutomationWorld.h"
+#include "SoraCatalog.h"
+#include "SoraEnemy.h"
+#include "SoraEnemyController.h"
+#include "SoraEquipmentComponent.h"
+#include "SoraPlayerCharacter.h"
+#include "SoraSaveGame.h"
+#include "SoraWorldBuilder.h"
+#include "World/SoraNavigation.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/World.h"
+#include "EngineUtils.h"
+#include "GameFramework/PlayerController.h"
+#include "InputCoreTypes.h"
+#include "Kismet/GameplayStatics.h"
+#include "Misc/AutomationTest.h"
+#include "Templates/UniquePtr.h"
+
+// The offline opponents' brain in real game worlds: the runtime navigation mesh
+// takes a hunter around a wall placed during play, the view cone and line of
+// sight decide what a sentry sees, and a shot is heard where the cone cannot see.
+namespace SoraEnemyAI
+{
+using EState = SoraStealthRules::EState;
+
+// The first invasion chapter on the estate, cleared of its hunting wave so each
+// test places exactly the opponents it examines on the open central road.
+struct FArena
+{
+    FAutomationTestBase& Test;
+    FString Slot;
+    TUniquePtr<FSoraAutomationWorld> World;
+
+    FArena(FAutomationTestBase& InTest, const TCHAR* Name)
+        : Test(InTest), Slot(FSoraAutomationWorld::UniqueSaveSlot(Name))
+    {
+        FSoraAutomationWorld::IgnoreMissingGeneratedArt(Test);
+        FSoraAutomationWorld::IgnoreAbsentSaveSlot(Test, Slot);
+    }
+    ~FArena()
+    {
+        if (World)
+        {
+            World->DestroyTestWorld(true);
+            World->ForwardErrorMessages(&Test);
+            World.Reset();
+        }
+        FSoraAutomationWorld::DeleteSaveSlot(Slot);
+    }
+    UWorld* Get() const { return World ? World->GetTestWorld() : nullptr; }
+    ASoraGameMode* Mode() const { return World ? World->Mode() : nullptr; }
+    ASoraPlayerCharacter* Hero() const { return World ? World->Player() : nullptr; }
+
+    bool Start()
+    {
+        USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
+        if (!Test.TestNotNull(TEXT("Seed save is created"), Save))
+            return false;
+        Save->SaveSchema = 5;
+        Save->CurrentChapter = 1;
+        Save->HighestChapter = 1;
+        Save->CheckpointChapter = -1;
+        if (!Test.TestTrue(TEXT("Seed save is written"), UGameplayStatics::SaveGameToSlot(Save, Slot, 0)))
+            return false;
+        World = MakeUnique<FSoraAutomationWorld>();
+        // Enter twice: close the menu, then skip the chapter title card.
+        if (!World->Start(Slot) || !World->Tick(1) || !World->EnableKeyInput() ||
+            !World->PressKey(EKeys::Enter) || !World->PressKey(EKeys::Enter))
+        {
+            World->ForwardErrorMessages(&Test);
+            return Test.TestTrue(TEXT("The chapter world starts with key input"), false);
+        }
+        if (!Test.TestTrue(TEXT("The chapter is in play"), Mode() && Mode()->IsPlaying() && Hero()))
+            return false;
+        // The director never replaces an opponent that is removed rather than defeated.
+        for (TActorIterator<ASoraEnemy> It(Get()); It; ++It)
+            It->Destroy();
+        // The hero rests (no footsteps) and outlasts any strike during a test.
+        Hero()->MaxHealth = 100000.f;
+        Hero()->Health = Hero()->MaxHealth;
+        return true;
+    }
+    bool Tick(int32 Frames)
+    {
+        if (World->Tick(Frames))
+            return true;
+        World->ForwardErrorMessages(&Test);
+        return Test.TestTrue(TEXT("The world ticks"), false);
+    }
+    void PlaceHero(const FVector& At, float Yaw) const
+    {
+        ASoraPlayerCharacter* Player = Hero();
+        Player->SetActorLocation(FVector(At.X, At.Y, Player->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+        const FRotator Rotation(0.f, Yaw, 0.f);
+        if (AController* Controller = Player->GetController())
+            Controller->SetControlRotation(Rotation);
+        Player->FaceRotation(Rotation, 0.f);
+    }
+    ASoraEnemy* Spawn(int32 EnemySlot, const FVector& At, float Yaw, const FSoraPatrolRoute* Patrol = nullptr) const
+    {
+        return ASoraEnemy::SpawnInvader(*Get(), EnemySlot, FVector(At.X, At.Y, 120.f), FRotator(0.f, Yaw, 0.f), Patrol);
+    }
+    // A sentry guarding the spot it stands on.
+    ASoraEnemy* Sentry(int32 EnemySlot, const FVector& At, float Yaw) const
+    {
+        FSoraPatrolRoute Post;
+        Post.Points.Add(FVector(At.X, At.Y, 90.f));
+        return Spawn(EnemySlot, At, Yaw, &Post);
+    }
+    // A wall raised during play; it blocks bodies, sight and the navigation mesh.
+    AActor* Wall(const FVector& Center, const FVector& Size) const
+    {
+        AActor* Built = Get()->SpawnActor<AActor>();
+        UStaticMeshComponent* Mesh = ASoraWorldBuilder::Shape(Built, nullptr, TEXT("AutomationWall"),
+            TEXT("/Engine/BasicShapes/Cube.Cube"), Center, Size / 100.f, FLinearColor(.3f, .3f, .3f), true);
+        Built->SetRootComponent(Mesh);
+        return Built;
+    }
+    static ASoraEnemyController* Brain(const ASoraEnemy* Enemy)
+    {
+        return Enemy ? Cast<ASoraEnemyController>(Enemy->GetController()) : nullptr;
+    }
+};
+
+const TCHAR* Name(EState State)
+{
+    switch (State)
+    {
+    case EState::Unaware: return TEXT("Unaware");
+    case EState::Suspicious: return TEXT("Suspicious");
+    case EState::Alert: return TEXT("Alert");
+    case EState::Search: return TEXT("Search");
+    case EState::Combat: return TEXT("Combat");
+    case EState::Retreat: return TEXT("Retreat");
+    }
+    return TEXT("Unknown");
+}
+} // namespace SoraEnemyAI
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraEnemyPathAroundWallTest,
+    "SoraArena.AI.PathAroundWall",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraEnemyPathAroundWallTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraEnemyAI;
+    if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
+        return false;
+    FArena Arena(*this, TEXT("PathAroundWall"));
+    if (!Arena.Start())
+        return false;
+    // A ten-metre wall raised mid-road between a blade retainer and the hero.
+    const FVector HeroAt(1000.f, 0.f, 0.f);
+    const float WallX = 560.f, WallHalfLength = 500.f;
+    Arena.PlaceHero(HeroAt, 180.f);
+    Arena.Wall(FVector(WallX, 0.f, 200.f), FVector(60.f, WallHalfLength * 2.f, 400.f));
+    ASoraEnemy* Retainer = Arena.Spawn(0, FVector(100.f, 0.f, 0.f), 0.f);
+    ASoraEnemyController* Brain = FArena::Brain(Retainer);
+    if (!TestNotNull(TEXT("A blade retainer spawns with its brain"), Brain) || !Arena.Tick(2))
+        return false;
+    TestTrue(TEXT("A combat-wave retainer hunts"), Brain->IsHunting() && Retainer->IsBladeRetainer());
+
+    USoraNavigation* Nav = USoraNavigation::Get(Arena.Get());
+    if (!TestTrue(TEXT("The runtime navigation mesh is ready"), Nav && Nav->IsReady()))
+        return false;
+    TestTrue(TEXT("The navigation bounds cover the built arena"), Nav->CoveredBounds().IsInsideXY(HeroAt) &&
+        Nav->CoveredBounds().IsInsideXY(Retainer->GetActorLocation()));
+    FHitResult Direct;
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(AutomationWallCheck), false, Retainer);
+    Arena.Get()->LineTraceSingleByChannel(Direct, Retainer->GetActorLocation(), Arena.Hero()->GetActorLocation(), ECC_Visibility, Query);
+    TestTrue(TEXT("The wall blocks the straight line to the hero"),
+        Direct.GetActor() && Direct.GetActor() != Arena.Hero() && !Direct.GetActor()->IsA<ASoraWorldBuilder>());
+    TestFalse(TEXT("The retainer cannot see the hero through the wall"), Brain->CanSee(*Arena.Hero()));
+    TArray<FVector> Path;
+    const bool bPath = Nav->FindPath(Retainer->GetActorLocation(), Arena.Hero()->GetActorLocation(), *Retainer, Path);
+    float PathWidest = 0.f;
+    for (const FVector& Point : Path)
+        PathWidest = FMath::Max(PathWidest, FMath::Abs(Point.Y));
+    AddInfo(FString::Printf(TEXT("Mesh path from (%.0f, %.0f, %.0f): %d points, widest |y| %.0f"),
+        Retainer->GetActorLocation().X, Retainer->GetActorLocation().Y, Retainer->GetActorLocation().Z, Path.Num(), PathWidest));
+    TestTrue(TEXT("The mesh path bends around the wall's end"), bPath && Path.Num() >= 3 && PathWidest >= WallHalfLength);
+    const int32 RebuildsBefore = Nav->Rebuilds();
+
+    float Widest = 0.f;
+    int32 Frames = 0;
+    for (; Frames < 900 && FVector::Dist2D(Retainer->GetActorLocation(), Arena.Hero()->GetActorLocation()) > 260.f; ++Frames)
+    {
+        if (!Arena.Tick(1))
+            return false;
+        Widest = FMath::Max(Widest, FMath::Abs(Retainer->GetActorLocation().Y));
+    }
+    const FVector End = Retainer->GetActorLocation();
+    AddInfo(FString::Printf(TEXT("Retainer reached (%.0f, %.0f) after %d frames; widest |y| %.0f; state %s"),
+        End.X, End.Y, Frames, Widest, Name(Brain->State())));
+    TestTrue(TEXT("The retainer reaches the hero"), FVector::Dist2D(End, Arena.Hero()->GetActorLocation()) <= 260.f);
+    TestTrue(TEXT("The retainer ends on the hero's side of the wall"), End.X > WallX);
+    TestTrue(TEXT("The retainer walked around the wall's end"), Widest >= WallHalfLength - 20.f);
+    TestEqual(TEXT("A settled arena is not rebuilt while the retainer walks"), Nav->Rebuilds(), RebuildsBefore);
+    TestEqual(TEXT("The retainer fights once it sees the hero"), static_cast<int32>(Brain->State()), static_cast<int32>(EState::Combat));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraEnemySightConeTest,
+    "SoraArena.AI.SightCone",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraEnemySightConeTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraEnemyAI;
+    if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
+        return false;
+    FArena Arena(*this, TEXT("SightCone"));
+    if (!Arena.Start())
+        return false;
+    // A sentry at its post looking east along the road.
+    Arena.PlaceHero(FVector(-600.f, 0.f, 0.f), 0.f);
+    ASoraEnemy* Sentry = Arena.Sentry(2, FVector::ZeroVector, 0.f);
+    ASoraEnemyController* Brain = FArena::Brain(Sentry);
+    if (!TestNotNull(TEXT("A sentry spawns with its brain"), Brain) || !Arena.Tick(2))
+        return false;
+    ASoraPlayerCharacter* Hero = Arena.Hero();
+    TestFalse(TEXT("A sentry is not a hunter"), Brain->IsHunting());
+
+    // Behind the sentry, six metres away in daylight: outside the cone.
+    TestFalse(TEXT("The hero behind the sentry is not seen"), Brain->CanSee(*Hero));
+    if (!Arena.Tick(120))
+        return false;
+    TestEqual(TEXT("Two seconds behind the sentry leave it unaware"), static_cast<int32>(Brain->State()), static_cast<int32>(EState::Unaware));
+    TestEqual(TEXT("Nothing behind the sentry raises its awareness"), Brain->AwarenessPermille(), 0);
+
+    // Beyond sight range straight ahead.
+    Arena.PlaceHero(FVector(2950.f, 0.f, 0.f), 180.f);
+    TestFalse(TEXT("The hero beyond sight range is not seen"), Brain->CanSee(*Hero));
+
+    // In the cone but behind a wall raised between them.
+    const FVector InFront(1000.f, 300.f, 0.f);
+    AActor* Screen = Arena.Wall(FVector(500.f, 150.f, 200.f), FVector(60.f, 800.f, 400.f));
+    Arena.PlaceHero(InFront, 180.f);
+    if (!Arena.Tick(1))
+        return false;
+    TestFalse(TEXT("The hero behind a wall in the cone is not seen"), Brain->CanSee(*Hero));
+    if (!Arena.Tick(120))
+        return false;
+    TestEqual(TEXT("Two seconds behind the wall leave the sentry unaware"), static_cast<int32>(Brain->State()), static_cast<int32>(EState::Unaware));
+
+    // The wall comes down: in the cone and unobstructed.
+    Screen->Destroy();
+    if (!Arena.Tick(1))
+        return false;
+    TestTrue(TEXT("The hero in the cone with a clear line is seen"), Brain->CanSee(*Hero));
+    int32 Frames = 0;
+    while (Frames < 90 && Brain->State() != EState::Combat)
+    {
+        if (!Arena.Tick(1))
+            return false;
+        ++Frames;
+    }
+    AddInfo(FString::Printf(TEXT("The sentry reached %s after %d frames in view"), Name(Brain->State()), Frames));
+    TestEqual(TEXT("A clear view in daylight brings the sentry into combat"), static_cast<int32>(Brain->State()), static_cast<int32>(EState::Combat));
+    TestTrue(TEXT("Detection builds over several frames, not at once"), Frames > 3);
+    TestTrue(TEXT("The sentry knows where the hero stands"), FVector::Dist2D(Brain->LastKnownLocation(), Hero->GetActorLocation()) < 50.f);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraEnemyHearsShotTest,
+    "SoraArena.AI.HearsShot",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraEnemyHearsShotTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraEnemyAI;
+    if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
+        return false;
+    FArena Arena(*this, TEXT("HearsShot"));
+    if (!Arena.Start())
+        return false;
+    // Both sentries face east, away from the hero west of them: one fifteen
+    // metres off, one beyond a gunshot's forty-metre reach.
+    const FVector HeroAt(-1500.f, 0.f, 0.f);
+    Arena.PlaceHero(HeroAt, 180.f);
+    ASoraEnemy* Near = Arena.Sentry(2, FVector::ZeroVector, 0.f);
+    ASoraEnemy* Far = Arena.Sentry(3, FVector(2600.f, 300.f, 0.f), 0.f);
+    ASoraEnemyController* NearBrain = FArena::Brain(Near);
+    ASoraEnemyController* FarBrain = FArena::Brain(Far);
+    if (!TestTrue(TEXT("Both sentries spawn with brains"), NearBrain && FarBrain) || !Arena.Tick(60))
+        return false;
+    TestFalse(TEXT("The near sentry cannot see the hero behind it"), NearBrain->CanSee(*Arena.Hero()));
+    TestEqual(TEXT("A silent hero leaves the near sentry unaware"), static_cast<int32>(NearBrain->State()), static_cast<int32>(EState::Unaware));
+
+    // The carbine, readied, then one shot fired west, away from both sentries.
+    if (!Arena.World->PressKey(EKeys::One) || !Arena.Tick(30))
+        return TestTrue(TEXT("The hero draws the carbine"), false);
+    TestEqual(TEXT("The sentries ignore a hero changing weapons at rest"), static_cast<int32>(NearBrain->State()), static_cast<int32>(EState::Unaware));
+    const int32 AmmoBefore = Arena.Hero()->GetEquipment()->Ammo;
+    if (!Arena.World->InjectKey(EKeys::LeftMouseButton, IE_Pressed) || !Arena.Tick(1) ||
+        !Arena.World->InjectKey(EKeys::LeftMouseButton, IE_Released) || !Arena.Tick(1))
+        return TestTrue(TEXT("The hero fires"), false);
+    TestEqual(TEXT("The hero holds the carbine"), Arena.Hero()->WeaponId, 1);
+    TestTrue(TEXT("A round leaves the carbine"), Arena.Hero()->GetEquipment()->Ammo < AmmoBefore);
+    const EState Heard = NearBrain->State();
+    AddInfo(FString::Printf(TEXT("After the shot the near sentry is %s, the far one %s"), Name(Heard), Name(FarBrain->State())));
+    TestTrue(TEXT("The near sentry hears the shot and is alerted"), Heard == EState::Alert || Heard == EState::Combat);
+    TestTrue(TEXT("The shot tells the near sentry where the hero is"),
+        FVector::Dist2D(NearBrain->LastKnownLocation(), Arena.Hero()->GetActorLocation()) < 200.f);
+    TestEqual(TEXT("The far sentry, beyond a shot's reach, stays unaware"), static_cast<int32>(FarBrain->State()), static_cast<int32>(EState::Unaware));
+
+    // Alerted, the near sentry turns to the place it heard and finds the hero.
+    int32 Frames = 0;
+    while (Frames < 180 && NearBrain->State() != EState::Combat)
+    {
+        if (!Arena.Tick(1))
+            return false;
+        ++Frames;
+    }
+    AddInfo(FString::Printf(TEXT("The near sentry reached %s %d frames after the shot"), Name(NearBrain->State()), Frames));
+    TestEqual(TEXT("The alerted sentry turns and fights the hero"), static_cast<int32>(NearBrain->State()), static_cast<int32>(EState::Combat));
+    return true;
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraEnemyCoverAndFlankTest,
+    "SoraArena.AI.CoverAndFlank",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraEnemyCoverAndFlankTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraEnemyAI;
+    if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
+        return false;
+    FArena Arena(*this, TEXT("CoverAndFlank"));
+    if (!Arena.Start())
+        return false;
+    // Two hunters meet the hero on the open road between the estate's cover boxes.
+    const FVector HeroAt(-1000.f, 0.f, 0.f);
+    Arena.PlaceHero(HeroAt, 0.f);
+    ASoraEnemy* Shooter = Arena.Spawn(2, FVector(300.f, -250.f, 0.f), 180.f);
+    ASoraEnemy* Flanker = Arena.Spawn(1, FVector(300.f, 250.f, 0.f), 180.f);
+    ASoraEnemyController* ShooterBrain = FArena::Brain(Shooter);
+    ASoraEnemyController* FlankerBrain = FArena::Brain(Flanker);
+    if (!TestTrue(TEXT("Both hunters spawn with brains"), ShooterBrain && FlankerBrain))
+        return false;
+    TestEqual(TEXT("Slot 2 takes cover"), static_cast<int32>(ShooterBrain->CombatRole()), static_cast<int32>(SoraStealthRules::ERole::CoverShooter));
+    TestEqual(TEXT("Slot 1 flanks"), static_cast<int32>(FlankerBrain->CombatRole()), static_cast<int32>(SoraStealthRules::ERole::Flanker));
+
+    float ClosestToCover = TNumericLimits<float>::Max();
+    int32 Frames = 0;
+    for (; Frames < 420; ++Frames)
+    {
+        if (!Arena.Tick(1))
+            return false;
+        if (ShooterBrain->HoldsPosition())
+            ClosestToCover = FMath::Min(ClosestToCover, FVector::Dist2D(Shooter->GetActorLocation(), ShooterBrain->HeldPosition()));
+        if (ClosestToCover <= 60.f && FlankerBrain->HoldsPosition() && Frames >= 240)
+            break;
+    }
+    const FVector Cover = ShooterBrain->HeldPosition();
+    const FVector Flank = FlankerBrain->HeldPosition();
+    AddInfo(FString::Printf(TEXT("After %d frames the shooter holds (%.0f, %.0f), closest %.0f; the flanker holds (%.0f, %.0f)"),
+        Frames, Cover.X, Cover.Y, ClosestToCover, Flank.X, Flank.Y));
+    if (!TestTrue(TEXT("The cover shooter chooses a position"), ShooterBrain->HoldsPosition()))
+        return false;
+    TestTrue(TEXT("The cover shooter reaches its cover"), ClosestToCover <= 60.f);
+    // A box of the arena stands between the hero's chest and a body at the spot.
+    FHitResult Screen;
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(AutomationCoverCheck), false, Arena.Hero());
+    Query.AddIgnoredActor(Shooter);
+    Query.AddIgnoredActor(Flanker);
+    const FVector Chest(0.f, 0.f, 10.f);
+    Arena.Get()->LineTraceSingleByChannel(Screen, Arena.Hero()->GetActorLocation() + Chest,
+        FVector(Cover.X, Cover.Y, Shooter->GetActorLocation().Z) + Chest, ECC_Visibility, Query);
+    TestTrue(TEXT("The cover shields the shooter's body from the hero"), Screen.bBlockingHit && Screen.GetActor() && Screen.GetActor()->IsA<ASoraWorldBuilder>());
+    if (!TestTrue(TEXT("The flanker chooses a position"), FlankerBrain->HoldsPosition()))
+        return false;
+    // Seen from the hero, the flank opens a second direction of fire.
+    const FVector FromHeroToFlank = (Flank - Arena.Hero()->GetActorLocation()).GetSafeNormal2D();
+    const FVector FromHeroToShooter = (Shooter->GetActorLocation() - Arena.Hero()->GetActorLocation()).GetSafeNormal2D();
+    const float Spread = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(FromHeroToFlank, FromHeroToShooter), -1.f, 1.f)));
+    AddInfo(FString::Printf(TEXT("The flank opens %.0f degrees from the shooter around the hero"), Spread));
+    TestTrue(TEXT("The flanker circles to the hero's side"), Spread >= 45.f);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraEnemyPatrolTest,
+    "SoraArena.AI.Patrol",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraEnemyPatrolTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraEnemyAI;
+    if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
+        return false;
+    FArena Arena(*this, TEXT("Patrol"));
+    if (!Arena.Start())
+        return false;
+    // The hero rests far out of sight; the guard walks a three-point loop.
+    Arena.PlaceHero(FVector(-2900.f, 1000.f, 0.f), 0.f);
+    FSoraPatrolRoute Route;
+    Route.Points = {FVector(0.f, 0.f, 90.f), FVector(600.f, 0.f, 90.f), FVector(600.f, 300.f, 90.f)};
+    Route.PauseMs = 500;
+    ASoraEnemy* Guard = Arena.Spawn(3, FVector::ZeroVector, 0.f, &Route);
+    ASoraEnemyController* Brain = FArena::Brain(Guard);
+    if (!TestNotNull(TEXT("A patrolling guard spawns with its brain"), Brain))
+        return false;
+    TArray<int32> Visits;
+    for (int32 Frame = 0; Frame < 900 && Visits.Num() < 4; ++Frame)
+    {
+        if (!Arena.Tick(1))
+            return false;
+        for (int32 Point = 0; Point < Route.Points.Num(); ++Point)
+            if (FVector::Dist2D(Guard->GetActorLocation(), Route.Points[Point]) <= 80.f && (Visits.IsEmpty() || Visits.Last() != Point))
+                Visits.Add(Point);
+    }
+    FString Order;
+    for (const int32 Point : Visits)
+        Order += FString::Printf(TEXT("%d "), Point);
+    AddInfo(FString::Printf(TEXT("Waypoints visited: %s"), *Order));
+    TestTrue(TEXT("The guard walks its route in order and loops back"), Visits == TArray<int32>({0, 1, 2, 0}));
+    TestEqual(TEXT("A guard that never sees or hears the hero stays unaware"), static_cast<int32>(Brain->State()), static_cast<int32>(EState::Unaware));
+    return true;
+}
+#endif

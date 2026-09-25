@@ -19,13 +19,25 @@ ASoraEnemy::ASoraEnemy(const FObjectInitializer& ObjectInitializer)
     bUseControllerRotationYaw=false;
     GetCharacterMovement()->bOrientRotationToMovement=false;
 }
-void ASoraEnemy::InitInvader(int32 Id)
+void ASoraEnemy::InitInvader(int32 Id,const FSoraPatrolRoute* Patrol)
 {
     bDojoPupil=false;
     bBladeRetainer=Id%6==0; bDuelWindup=false; EnemyIndex=Id; RangedShots=0;
     ApplyClass(Id%6);
     if(bBladeRetainer) { WeaponId=0; RebuildWeapon(); }
     BuildCat();
+    if(auto* Brain=Cast<ASoraEnemyController>(GetController()))
+    {
+        if(Patrol) Brain->BeginPatrol(*Patrol);
+        else Brain->BeginHunt();
+    }
+}
+ASoraEnemy* ASoraEnemy::SpawnInvader(UWorld& World,int32 Id,const FVector& Location,const FRotator& Rotation,const FSoraPatrolRoute* Patrol)
+{
+    FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    ASoraEnemy* Enemy=World.SpawnActor<ASoraEnemy>(Location,Rotation,Params);
+    if(Enemy) Enemy->InitInvader(Id,Patrol);
+    return Enemy;
 }
 void ASoraEnemy::InitDojoPupil(int32 Id)
 {
@@ -48,9 +60,6 @@ void ASoraEnemy::TickPlay(float Dt)
 {
     const bool Moving=GetVelocity().Size2D()>5.f;
     UpdateLocomotion(Moving,Moving?FMath::Clamp(GetVelocity().Size2D()/180.f,.65f,2.5f):1.f);
-    // The controller decides; asking it here keeps its decisions ahead of the
-    // hero's tick and consumed by movement on the next frame, as before.
-    if(auto* Brain=Cast<ASoraEnemyController>(GetController())) Brain->Think(Dt);
 }
 bool ASoraEnemy::AdmitDamage(float& Damage,AActor* Causer)
 {

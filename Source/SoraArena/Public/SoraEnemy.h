@@ -2,11 +2,12 @@
 #include "CoreMinimal.h"
 #include "SoraCharacterBase.h"
 #include "SoraEnemy.generated.h"
+struct FSoraPatrolRoute;
 
 // A campaign or training-arena opponent: an alien ranged invader, a blade
 // retainer on every sixth slot, or a chapter-one sparring pupil. The pawn
 // owns its attacks (telegraph, windup, strike and damage); ASoraEnemyController
-// decides where it moves and which attack it runs each frame.
+// decides from its own tick where it moves and which attack it runs.
 UCLASS()
 class SORAARENA_API ASoraEnemy : public ASoraCharacterBase
 {
@@ -14,7 +15,12 @@ class SORAARENA_API ASoraEnemy : public ASoraCharacterBase
 public:
     ASoraEnemy(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
     // Slot is the spawn order; slots 0, 6, 12 and 18 are blade retainers.
-    void InitInvader(int32 Slot);
+    // Without a patrol the invader belongs to a combat wave and hunts the hero;
+    // with one it starts unaware on that route.
+    void InitInvader(int32 Slot, const FSoraPatrolRoute* Patrol = nullptr);
+    // Spawns and initializes an invader, or returns null when it cannot be placed.
+    static ASoraEnemy* SpawnInvader(UWorld& World, int32 Slot, const FVector& Location, const FRotator& Rotation,
+        const FSoraPatrolRoute* Patrol = nullptr);
     // Nonlethal sparring with the bokken; a defeated pupil yields.
     void InitDojoPupil(int32 Slot);
     void SuspendDojoAction();

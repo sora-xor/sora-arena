@@ -358,7 +358,9 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 570: return R.Down(EKeys::LeftShift) && R.Down(EKeys::W);
         case 595: return R.Tap(EKeys::SpaceBar);
         case 620: return R.Up(EKeys::LeftShift) && R.Up(EKeys::W);
-        default: return true;
+        // The hero tracks the carbine target through the burst; the invader
+        // walks the navigation mesh rather than straight down the aim line.
+        default: return F > 270 && F < 330 && R.Foe(1) ? R.Aim(R.Foe(1)) : true;
         }
     });
     const FString Hash = Run.Finish();
@@ -470,7 +472,9 @@ FString Training(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 65: return R.Place(R.Foe(2), FVector(700, 250, 0));
         case 70: return R.Aim(R.Foe(2)) && R.Tap(EKeys::LeftMouseButton);
         case 140: return R.Tap(EKeys::R);
-        case 290: return R.Tap(EKeys::Three) && R.Place(R.Foe(3), FVector(900, -250, 0));
+        // Far enough from the wounded Invader2 that the mortar's blast reaches
+        // only the invader it targets, on a line between the torii's pillars.
+        case 290: return R.Tap(EKeys::Three) && R.Place(R.Foe(3), FVector(1200, -400, 0));
         case 310: return R.Aim(R.Foe(3)) && R.Tap(EKeys::LeftMouseButton);
         case 360: return R.Tap(EKeys::Two);
         case 370: return R.Place(R.Foe(0), FVector(120, 0, 0)) && R.Aim(R.Foe(0));

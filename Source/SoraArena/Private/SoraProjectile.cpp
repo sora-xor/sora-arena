@@ -14,6 +14,9 @@ ASoraProjectile::ASoraProjectile()
     Collision=CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision")); RootComponent=Collision;
     Collision->InitSphereRadius(9); Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     Collision->SetCollisionResponseToAllChannels(ECR_Block); Collision->SetCollisionObjectType(ECC_WorldDynamic);
+    // A shell or arrow in flight is not terrain: it must never dirty the
+    // opponents' navigation mesh.
+    Collision->SetCanEverAffectNavigation(false);
 }
 void ASoraProjectile::BeginPlay()
 {
