@@ -86,6 +86,9 @@ TASKS = {
 HORSES = ("kurimaru", "arashi", "pack_horse")
 RIDE_MODES = ("travel", "escort_convoy", "chase", "charge", "cargo")
 DEFEATS = ("kill", "disarm", "destroy_weakpoints", "capture")
+# How each boss defeat ends in SoraBeatRules::EDefeat: the machine whose weak
+# points break falls; a disarmed boss is spared; a captured one is bound.
+BOSS_DEFEATS = {"kill": "kill", "destroy_weakpoints": "kill", "disarm": "spare", "capture": "capture"}
 SCORING = ("points", "hp", "lesson_gates")
 FINISHERS = ("none", "muto_dori")
 TRIGGER_MODES = ("ambient", "blocking", "radio", "bark", "cinematic")
@@ -194,6 +197,11 @@ FAIL_EVENTS = (
     (r"npc_died:\w+", "escort_down"), (r"convoy_member_(seized|hp0)", "convoy_lost"),
     (r"boss_event:\w+", "boss_event"),
 )
+# A boss's intro or outro cue timed inside its sequence (ch02.b15).
+BOSS_CUE = re.compile(r"(intro|outro)@(\d+(?:\.\d+)?)")
+# Proposed events (ch03's x_ names) the director raises under its own name:
+# a wave's start, the boss's fall and an objective worked.
+RAISED_PROPOSALS = {"x_wave_start": "wave_start", "x_boss_defeated": "boss_defeated", "x_objective": "interact"}
 # A dialogue trigger may wait for a collectible found or a story flag set.
 REQUIRES_FLAG = re.compile(r"(collectible:ch0[1-8]\.c0[1-6]|story:[a-z_]+)")
 
@@ -518,19 +526,23 @@ def normalize_task(beat):
     complete = params.get("complete") or {}
     task = {
         "type": kind, "task": params.get("task"), "goal": None, "count": 0, "duration_ms": 0, "skippable": False,
-        "anchor_after_lines": False, "clear_waves": False, "pause_when_seen": params.get("stealth") is True,
-        "max_alive": params.get("max_alive", 6), "waves": [], "phases": [1000], "lesson_mask": 0,
+        "anchor_after_lines": False, "pause_when_seen": params.get("stealth") is True,
+        "max_alive": params.get("max_alive", 6), "waves": [], "phases": [1000], "defeat": "kill",
+        "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
         "max_turn_ms": 0, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
         "drop_on_hit": False, "steps": [], "targets": [], "on_detected": "combat", "reinforce_wave": -1,
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
         "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "opponent": None,
-        "sparring": False, "phase_events": [], "carry_speed_permille": 1000, "carry_weapons": [],
+        "sparring": False, "phase_events": [], "carry_item": None, "carry_speed_permille": 1000, "carry_weapons": [],
     }
     nonlethal = params.get("nonlethal_types", DEFAULT_NONLETHAL)
+    # Waves are what a beat throws at the hero. Only a fight to clear them
+    # (all_waves_cleared) waits for them to fall; any other goal completes its
+    # beat with whoever still stands withdrawing (chapter-02 b06, chapter-06's
+    # "Kill requirement: None", chapter-08 b02's charge).
     task["waves"] = [task_wave(wave, nonlethal, f"{where}.waves[{index}]")
                      for index, wave in enumerate(params.get("waves") or [])]
-    task["clear_waves"] = bool(task["waves"]) and kind != "stealth_zone"
 
     def objectives(*sources):
         for source in sources:
@@ -571,19 +583,31 @@ def normalize_task(beat):
             task.update(goal="points", count=scoring["first_to"])
         elif scoring["mode"] == "lesson_gates":
             task["goal"] = "lessons"
+            flanks = 0
             for gate in expect(params.get("lesson_gates"), (list,), f"{where}.lesson_gates"):
                 name = gate["gate"]
                 if name in LESSON_FORMS:
-                    task["lesson_mask"] |= 1 << LESSON_FORMS[name]
+                    # A form learned once it has its clean repetitions (awase ×2).
+                    form = LESSON_FORMS[name]
+                    task["lesson_mask"] |= 1 << form
+                    task["form_reps"][form] = expect_int(gate.get("count", 1), f"{where}.{name}.count", 1)
                 elif name == "marobashi_flank":
-                    # Flanking is scored as bouts against the pupil.
-                    task["count"] += expect_int(gate.get("count"), f"{where}.marobashi_flank", 1)
+                    # Each of the lesson's bouts scores only straight after a 転 flank.
+                    flanks = expect_int(gate.get("count"), f"{where}.marobashi_flank", 1)
+                    task["flank_bouts"] = True
                 elif name not in UNMEASURED_GATES:
                     fail(where, f"lesson gate {name!r}")
+            # The lesson's scored bouts (x_scored_bouts); a 転 lesson scores one per flank.
+            bouts = beat["ext"].get("scored_bouts")
+            task["count"] = expect_int(bouts.get("count"), f"{where}.scored_bouts", 1) if bouts else flanks
+            if flanks and flanks != task["count"]:
+                fail(where, f"{flanks} 転 flanks for {task['count']} scored bouts")
             if not task["lesson_mask"] and not task["count"]:
                 fail(where, "a lesson duel teaches nothing the runtime measures")
         else:
             task["goal"] = "opponent_down"
+            # A duel not to the death (lethal: false, or a mutō-dori finish) spares its opponent.
+            task["defeat"] = "spare" if not params["lethal"] or params["finisher"] == "muto_dori" else "kill"
             for index, event in enumerate(params.get("events") or []):
                 task["phases"].append(permille(event["at_hp_pct"] / 100, f"{where}.events[{index}]"))
                 task["phase_events"].append(expect(event["id"], (str,), f"{where}.events[{index}].id"))
@@ -627,6 +651,7 @@ def normalize_task(beat):
             drop = block.get("drop_on_hit", False)
             # Per-difficulty drops follow Normal until difficulty settings land.
             task.update(goal="deliveries", count=block["count"], pickups=ids_of(block["pickups"], f"{where}.pickups"),
+                        carry_item=expect(block["item"], (str,), f"{where}.carry.item"),
                         dropoffs=ids_of(block["dropoffs"], f"{where}.dropoffs"),
                         drop_on_hit=drop if isinstance(drop, bool) else expect(drop.get("normal"), (bool,), where))
             # The load slows the hero and leaves at most the katana in one paw.
@@ -665,8 +690,15 @@ def normalize_task(beat):
         else:
             fail(where, f"ride completion {complete['kind']!r}")
     elif kind == "boss":
-        task.update(goal="opponent_down", opponent=params["boss"],
+        task.update(goal="opponent_down", opponent=params["boss"], defeat=BOSS_DEFEATS[params["defeat"]],
                     phases=[permille(phase["hp_pct_start"] / 100, f"{where}.phases") for phase in params["phases"]])
+        if task["defeat"] == "capture":
+            # The hand that binds a yielded boss: ch06's bulkhead lever, ch08's engine spine.
+            ext = beat["ext"]
+            binding = (ext.get("defeat_interact") or {}).get("id") or (ext.get("post_defeat") or {}).get("interact")
+            if not isinstance(binding, str) or not re.fullmatch(r"\w+", binding):
+                fail(where, "a capture names no interaction that binds the boss")
+            task["capture_event"] = f"interact:{binding}"
     elif kind == "explore_optional":
         task["goal"] = "cache"
 
@@ -787,6 +819,22 @@ def trigger_row(beat, event, mode, lines, source, context, repeatable=False, coo
     }
 
 
+def raised_event(event):
+    """A script's event as the runtime raises it, and what the rename keeps.
+
+    A boss's intro or outro cue (ch02's ``intro@6.0``) plays in order as the
+    fight opens or closes, under ``intro_cinematic`` or ``outro_cinematic``
+    like ch05's, keeping its time for Sequencer. A proposed name (ch03's
+    ``x_wave_start:1``) the director now raises is spelled as it raises it."""
+    cue = BOSS_CUE.fullmatch(event)
+    if cue:
+        return f"{cue[1]}_cinematic", {"at_s": float(cue[2])}
+    name, colon, rest = event.partition(":")
+    if name in RAISED_PROPOSALS:
+        return RAISED_PROPOSALS[name] + colon + rest, {"proposed": event}
+    return event, {}
+
+
 def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
     context = raw.get("id", f"{chapter_prefix} beat {number}")
     expect(raw, (dict,), context)
@@ -799,6 +847,12 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
         fail(beat_id, "collectibles are registered per chapter, not sequenced")
     required, optional = PARAMS[beat_type]
     ext = strip_ext(raw, beat_id)
+    # A ride's proposed waves (ch02.b08's drone groups) are the waves the
+    # runtime plays on every ride (ch08.b02 writes them unprefixed).
+    if beat_type == "horseback_ride" and "waves" in ext:
+        if "waves" in raw:
+            fail(beat_id, "waves given twice")
+        raw["waves"] = ext.pop("waves")
     # A production task's own block, nested under the task name or (ch01.b09) flat.
     task_keys = (raw.get("task"), *TASKS.get(raw.get("task"), ())) if beat_type == "production_task" else ()
     unknown = [key for key in raw if not key.startswith("x_") and key not in COMMON_KEYS
@@ -938,8 +992,10 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
         extra = {(key[2:] if key.startswith("x_") else key): value for key, value in entry.items()
                  if key not in ("on", "lines", "mode", "repeatable", "cooldown_s")}
         for event in event_list(entry.get("on"), f"{where}.on"):
+            event, cue = raised_event(event)
             triggers.append(trigger_row(beat_id, event, entry.get("mode"), entry.get("lines"), "dialogue", where,
-                                        entry.get("repeatable", False), entry.get("cooldown_s"), ext=extra))
+                                        entry.get("repeatable", False), entry.get("cooldown_s"),
+                                        ext={**extra, **cue}))
     if beat_type == "dialogue":
         ids = []
         for index, entry in enumerate(params.pop("lines")):
@@ -960,7 +1016,8 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
         expect(bark, (dict,), where)
         if set(bark) != {"on", "line"}:
             fail(where, f"barks take on and line, got {sorted(bark)}")
-        triggers.append(trigger_row(beat_id, bark["on"], "bark", [bark["line"]], "bark", where))
+        event, cue = raised_event(bark["on"])
+        triggers.append(trigger_row(beat_id, event, "bark", [bark["line"]], "bark", where, ext=cue))
     if beat_type == "cinematic":
         rows = normalize_subtitles(params.pop("subtitles"), f"{beat_id}.subtitles")
         for line, at_ms, spread in place_subtitles(rows, lines, params["duration_s"], f"{beat_id}.subtitles"):
@@ -1374,6 +1431,11 @@ def self_test():
             "register": "samurai_restrained", "duration_s": 1.5}
     ride = {"id": "ch01.b06", "type": "horseback_ride", "unlocks": {"mechanics": []}, "ext": {},
             "params": {"horse": "kurimaru", "gaits": ["walk", "trot"], "weapons": [0, 18]}}
+    capture = {"id": "ch08.b14", "type": "boss", "fail": [], "ext": {"defeat_interact": {"id": "bulkhead_lever"}},
+               "params": {"boss": "boss_val_amort", "defeat": "capture", "phases": [{"hp_pct_start": 100}]}}
+    lesson = {"id": "ch01.b04", "type": "duel", "fail": [], "ext": {"scored_bouts": {"count": 2}},
+              "params": {"opponent": "npc_matsukichi", "weapons": {"player": "bokuto"}, "loss_policy": "retry",
+                         "scoring": {"mode": "lesson_gates"}, "lesson_gates": [{"gate": "marobashi_flank", "count": 2}]}}
     cases = {
         "duplicate key": lambda: parse("a: 1\na: 2\n"),
         "bare on key": lambda: parse("dialogue:\n  - {on: beat_start}\n"),
@@ -1396,9 +1458,13 @@ def self_test():
         "mounting from the left": lambda: ride_mount(
             {**ride, "ext": {"tack_up": {"mount_side": "left", "interact_points": []}}}, fail),
         "a matchlock in the saddle": lambda: ride_mount({**ride, "params": {**ride["params"], "weapons": [0, 5]}}, fail),
+        "a capture that binds nothing": lambda: normalize_task({**capture, "ext": {}}),
+        "転 flanks that miss their bouts": lambda: normalize_task({**lesson, "ext": {"scored_bouts": {"count": 3}}}),
     }
     accepted = [name for name, action in cases.items() if not rejects(action)]
-    if accepted or rejects(lambda: normalize_beat(beat, None, "ch01", 1, [], [])) or rejects(lambda: ride_mount(ride, fail)):
+    valid = (lambda: normalize_beat(beat, None, "ch01", 1, [], []), lambda: ride_mount(ride, fail),
+             lambda: normalize_task(capture), lambda: normalize_task(lesson))
+    if accepted or any(rejects(action) for action in valid):
         raise BuildError(f"importer self-test failed: accepted {accepted} or rejected a valid beat")
     return len(cases)
 

@@ -400,9 +400,10 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     return bOk ? Hash : FString();
 }
 
-// The dojo's lesson duels (ch01.b02-b04): stance, guard, parry and recovery
-// through real Block and Fire presses against one sparring pupil, then a
-// scored bout with the bokken.
+// The dojo's lesson duels (ch01.b02-b03): stance, guard, two parries (awase
+// ×2) and recovery through real Block and Fire presses against one sparring
+// pupil, then the lesson's two scored bouts with the bokken, the second pupil
+// stepping in for the first, which opens the 転 lesson (ch01.b04).
 FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Dojo"), Log);
@@ -410,29 +411,35 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         return FString();
     if (!Test.TestTrue(TEXT("Dojo scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(150, 0, 0)))
         return FString();
-    const bool bOk = Run.Play(420, [](FRun& R, int32 F)
+    // The pupil's cut lands every two seconds (frames 76, 196, 317, ...); a
+    // pupil yields to three clean cuts, each after the bokken's recovery.
+    const bool bOk = Run.Play(700, [](FRun& R, int32 F)
     {
         switch (F)
         {
         case 0: return R.Down(EKeys::LeftControl);
         case 120: return R.Up(EKeys::LeftControl);
-        case 190: return R.Down(EKeys::LeftControl);
-        case 205: return R.Up(EKeys::LeftControl);
-        case 215: case 270: case 320: case 370: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
+        case 190: case 310: return R.Down(EKeys::LeftControl);
+        case 205: case 325: return R.Up(EKeys::LeftControl);
+        case 335: case 390: case 440: case 490: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
+        case 495: return R.Place(R.Foe(1), FVector(150, 0, 0));
+        case 540: case 590: case 640: return R.Aim(R.Foe(1)) && R.Tap(EKeys::LeftMouseButton);
         default: return true;
         }
     });
     const FString Hash = Run.Finish();
-    Run.Expect(TEXT("all four forms are learned and one pupil yields in the flanking duel"),
-        bOk && Run.Mode()->Campaign()->DojoLessonStage() == 4 && Run.Mode()->Campaign()->ActiveBeat() == 3 &&
-        Run.Mode()->Campaign()->Kills == 1);
+    const USoraCampaignDirector* Campaign = Run.Mode()->Campaign();
+    Run.Expect(TEXT("all four forms are learned, awase twice, and two pupils yield in the lesson's bouts"),
+        bOk && Campaign->DojoLessonStage() == 4 && (Campaign->Progress().CompletedMask & SoraBeatRules::BeatBit(2)) != 0u &&
+        Campaign->ActiveBeat() == 3);
     return bOk ? Hash : FString();
 }
 
 // The final chapter restored at its boss (ch08.b14): the collector's beam and
-// cleave, carbine fire and its defeat; Enter skips the aftermath cinematic
-// and the registry is carried to the last site. With a listener attached the
-// chapter then plays out to liberation.
+// cleave, carbine fire and its defeat; it yields and E binds it (captured,
+// not killed), Enter skips the aftermath cinematic and the registry is
+// carried to the last site. With a listener attached the chapter then plays
+// out to liberation.
 constexpr int32 CollectorChapter = 7, CollectorBeat = 13, BossSlot = 0;
 FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
@@ -461,9 +468,18 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
             UGameplayStatics::ApplyDamage(Boss, Boss->Health, R.Controller(), R.Hero(), UDamageType::StaticClass());
             return true;
         }
+        // The yielded collector waits where it knelt; E beside it binds it.
+        case 335:
+        {
+            FVector Captive;
+            if (!R.Mode()->Campaign()->AwaitingCapture() || !R.Mode()->Campaign()->ObjectiveAnchor(Captive))
+                return R.Fail(TEXT("The collector did not yield to be captured"));
+            R.Hero()->SetActorLocation(FVector(Captive.X, Captive.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+            return R.Tap(EKeys::E);
+        }
         // Enter skips the aftermath cinematic; the registry box is carried from
         // the canal steps to the notice board at the last site.
-        case 340: return R.Tap(EKeys::Enter);
+        case 345: return R.Tap(EKeys::Enter);
         case 360: case 370:
         {
             FVector Point;
@@ -477,7 +493,7 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     });
     const FString Hash = Run.Finish();
     const USoraCampaignDirector* Campaign = Run.Mode()->Campaign();
-    Run.Expect(TEXT("the collector falls and the registry restores the last site"),
+    Run.Expect(TEXT("the collector yields, is captured, and the registry restores the last site"),
         bOk && !Campaign->CampaignBoss() && Run.Mode()->Arena()->ActivatedMask() == 7 && Campaign->ActiveBeat() == 16);
     if (bOk && Log)
     {

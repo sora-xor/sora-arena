@@ -325,6 +325,9 @@ struct FSoraBeat
     TArray<FString> Objectives;
     TArray<FString> Pickups;
     TArray<FString> Dropoffs;
+    // What a carry moves ("barley_load"): its pickups and deliveries also
+    // raise item_picked:<item> and item_delivered:<item>.
+    FString CarryItem;
     TArray<FString> Targets;
     TArray<FString> StepKinds;
     // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.
@@ -332,8 +335,10 @@ struct FSoraBeat
     bool bSparring = false;
     // A stealth zone's guards, by enemy type.
     TArray<FName> Guards;
-    // A duel's scripted events, one per later phase.
+    // A duel's scripted events, one per later phase, and the interaction that
+    // binds a captured boss ("interact:bulkhead_lever").
     TArray<FString> PhaseEvents;
+    FString CaptureEvent;
     // The beat's `fail` rows by event.
     TMap<FString, SoraBeatRules::EFail> FailEvents;
     // Collectibles in an explore beat's cache.

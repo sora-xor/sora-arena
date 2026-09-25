@@ -7,6 +7,7 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
+#include "Algo/AllOf.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/AutomationTest.h"
@@ -114,6 +115,27 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
         for (const FSoraPickup& Pickup : Data.Space.Pickups)
             Probe.Stand(Pickup.At, Name + TEXT(" ") + Data.Collectibles[Pickup.Collectible].Id);
         bOk &= Probe.bOk;
+        // Explore caches stand still while the objective refreshes (many times
+        // a second as a hold fills): the same caches again leave the same
+        // chest and glow, and caches no longer offered leave.
+        TArray<FVector> Caches;
+        for (const FSoraBeat& Beat : Data.Beats)
+            if (Beat.Space.bCache)
+                Caches.Add(ASoraWorldBuilder::Floor(Beat.Space.Cache));
+        if (!Caches.IsEmpty())
+        {
+            ASoraWorldBuilder* Builder = World.Mode()->Arena();
+            Builder->ShowCaches(Caches);
+            const TArray<TObjectPtr<AActor>> Glows = Builder->CacheGlows();
+            for (int32 Refresh = 0; Refresh < 8; ++Refresh)
+                Builder->ShowCaches(Caches);
+            bOk &= Test.TestTrue(*(Name + TEXT(": standing caches are not rebuilt as the objective refreshes")),
+                Glows.Num() == Caches.Num() && Builder->CacheGlows() == Glows &&
+                Algo::AllOf(Glows, [](const TObjectPtr<AActor>& Glow) { return IsValid(Glow); }));
+            Builder->ShowCaches({});
+            bOk &= Test.TestTrue(*(Name + TEXT(": caches no longer offered leave")), Builder->CacheGlows().IsEmpty() &&
+                Algo::AllOf(Glows, [](const TObjectPtr<AActor>& Glow) { return !IsValid(Glow) || Glow->IsActorBeingDestroyed(); }));
+        }
         UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_SPACE: %s zones=%d points=%d"), *Name, Data.Space.Zones.Num(), Probe.Points);
     }
     World.DestroyTestWorld(true);

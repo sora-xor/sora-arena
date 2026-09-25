@@ -193,14 +193,22 @@
     "duration_ms": 120000,
     "skippable": true,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -232,6 +240,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -345,14 +354,22 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -387,6 +404,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -536,14 +554,22 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -581,6 +607,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -668,14 +695,22 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -707,6 +742,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -788,7 +824,6 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": true,
     "pause_when_seen": true,
     "max_alive": 6,
     "waves": [
@@ -816,7 +851,16 @@
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -852,6 +896,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": "tool_crate",
     "carry_speed_permille": 800,
     "carry_weapons": [
      0
@@ -929,14 +974,22 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -968,6 +1021,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -1092,7 +1146,6 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": true,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [
@@ -1155,7 +1208,16 @@
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -1189,6 +1251,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -1282,7 +1345,6 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": true,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [
@@ -1340,7 +1402,16 @@
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -1372,6 +1443,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -1481,14 +1553,22 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -1553,6 +1633,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -1763,7 +1844,6 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [
@@ -1791,7 +1871,16 @@
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -1835,6 +1924,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -1899,14 +1989,22 @@
     "duration_ms": 90000,
     "skippable": true,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -1938,6 +2036,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -1993,14 +2092,22 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -2032,6 +2139,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -2087,14 +2195,22 @@
     "duration_ms": 120000,
     "skippable": true,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -2126,6 +2242,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -2231,7 +2348,6 @@
     "duration_ms": 120000,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": true,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [
@@ -2294,7 +2410,16 @@
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "pause",
@@ -2326,6 +2451,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -2405,14 +2531,22 @@
     "duration_ms": 90000,
     "skippable": true,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -2444,6 +2578,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -2527,7 +2662,6 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": true,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [
@@ -2575,7 +2709,16 @@
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -2607,6 +2750,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -2674,7 +2818,6 @@
     "duration_ms": 0,
     "skippable": false,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
@@ -2682,7 +2825,16 @@
      1000,
      500
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -2714,6 +2866,7 @@
     "opponent": "boss_penalta",
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -2802,14 +2955,22 @@
     "duration_ms": 90000,
     "skippable": true,
     "anchor_after_lines": false,
-    "clear_waves": false,
     "pause_when_seen": false,
     "max_alive": 6,
     "waves": [],
     "phases": [
      1000
     ],
+    "defeat": "kill",
+    "capture_event": null,
     "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
     "contest": "none",
@@ -2841,6 +3002,7 @@
     "opponent": null,
     "sparring": false,
     "phase_events": [],
+    "carry_item": null,
     "carry_speed_permille": 1000,
     "carry_weapons": []
    },
@@ -6136,7 +6298,7 @@
   },
   {
    "beat": "ch03.b08",
-   "on": "x_wave_start:1",
+   "on": "wave_start:1",
    "mode": "ambient",
    "lines": [
     "ch03.b08.enforcer.004"
@@ -6146,7 +6308,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_wave_start:1"
+   }
   },
   {
    "beat": "ch03.b08",
@@ -6475,7 +6639,7 @@
   },
   {
    "beat": "ch03.b10",
-   "on": "x_objective:obj_light_fuse",
+   "on": "interact:obj_light_fuse",
    "mode": "ambient",
    "lines": [
     "ch03.b10.nyaakoto.008"
@@ -6485,7 +6649,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_objective:obj_light_fuse"
+   }
   },
   {
    "beat": "ch03.b10",
@@ -6959,7 +7125,7 @@
   },
   {
    "beat": "ch03.b14",
-   "on": "x_wave_start:1",
+   "on": "wave_start:1",
    "mode": "ambient",
    "lines": [
     "ch03.b14.enforcer.005"
@@ -6969,7 +7135,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_wave_start:1"
+   }
   },
   {
    "beat": "ch03.b14",
@@ -7287,7 +7455,7 @@
   },
   {
    "beat": "ch03.b16",
-   "on": "x_wave_start:1",
+   "on": "wave_start:1",
    "mode": "ambient",
    "lines": [
     "ch03.b16.enforcer.002"
@@ -7297,7 +7465,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_wave_start:1"
+   }
   },
   {
    "beat": "ch03.b16",
@@ -7315,7 +7485,7 @@
   },
   {
    "beat": "ch03.b16",
-   "on": "x_wave_start:2",
+   "on": "wave_start:2",
    "mode": "radio",
    "lines": [
     "ch03.b16.kohagi.004"
@@ -7325,7 +7495,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_wave_start:2"
+   }
   },
   {
    "beat": "ch03.b16",
@@ -7566,7 +7738,7 @@
   },
   {
    "beat": "ch03.b17",
-   "on": "x_boss_defeated",
+   "on": "boss_defeated",
    "mode": "ambient",
    "lines": [
     "ch03.b17.penalta.011"
@@ -7576,7 +7748,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_boss_defeated"
+   }
   },
   {
    "beat": "ch03.b17",

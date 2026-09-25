@@ -65,7 +65,9 @@ public:
     // Shows the marker over the active objective; nullptr hides it.
     void ShowObjective(const FVector* Location);
     // Explore caches: an unmarked chest with a lantern glow (bible §12.2).
+    // Caches already standing where asked are left as they are.
     void ShowCaches(const TArray<FVector>& Locations);
+    const TArray<TObjectPtr<AActor>>& CacheGlows() const { return CacheLights; }
     // A site restored by its beat, wherever the hero stands.
     void ActivateSite(int32 Index);
     FVector ExitPoint() const { return FVector(2250,0,110); }
@@ -144,6 +146,7 @@ private:
     UPROPERTY() TObjectPtr<UStaticMeshComponent> ObjectiveMarker;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> CacheMarkers;
     UPROPERTY() TArray<TObjectPtr<AActor>> CacheLights;
+    TArray<FVector> CacheLocations;
     // Shared layout (SoraWorldBuilder.cpp).
     UStaticMeshComponent* Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision = true, FRotator Rotation = FRotator::ZeroRotator, const FString& SurfaceRole = TEXT(""));
     void Building(FVector Location, FVector Size, FLinearColor Wall, bool HighTech);

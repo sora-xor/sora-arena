@@ -16,7 +16,13 @@ generated chapter files, and checks the bible's §12.3 rules:
 6. every line bilingual, spoken by a catalog speaker, at most 17 EN
    characters per second and within the §18 two-line subtitle limits;
 7. nonlethal enemies never counted toward a defeat count;
-8. at most 360 target seconds between checkpoints.
+8. at most 360 target seconds between the checkpoints the runtime writes, on
+   a route that skips the explore caches and one that opens each of them
+   (checkpoint_saves models SoraCampaignDirector).
+
+Every trigger row naming an event the director raises must name one it can
+raise in its beat (director_event_error), so no authored line waits on an
+event that never comes.
 
 Each chapter's ``space`` (campaign_space.py) must be buildable: zones and
 route corridors never overlap each other or the arena, every beat's points,
@@ -85,6 +91,19 @@ EN_LINE_CHARS, JA_LINE_CHARS, SUBTITLE_LINES = 42, 16, 2
 MIN_LINE_S = 1.0
 BLOCKING_MAX_S = 20.0
 CHECKPOINT_GAP_S = 360
+# Event families SoraCampaignDirector raises; rows naming them must name an
+# event it can raise in their beat (director_event_error).
+DIRECTOR_FAMILIES = ("rate_band", "boss_phase", "duel_phase", "duel_event", "intro_cinematic", "outro_cinematic",
+                     "boss_defeated", "duel_won", "bout_scored", "bout_start", "wave_start", "wave_spawned",
+                     "awase_success", "awase_fail", "marobashi_miss", "gate_complete", "gate_start", "step_start",
+                     "step_failed", "step_complete", "item_picked", "item_delivered", "crank_released",
+                     "output_complete", "exit_reached", "site_restored", "point", "match_lost", "loss_continue",
+                     "collectible", "collectible_found")
+# Scripted proposals in those families that nothing raises yet, each listed
+# under "What the offline runtime does not do yet" in offline-acceptance.md.
+UNRAISED_PROPOSALS = {
+    "x_item_picked:sword_bundle": "ch03.b05's sword-bundle pickup and the loadout locked until it",
+}
 JAPANESE = re.compile(r"[぀-ヿ㐀-鿿]")
 
 
@@ -149,6 +168,112 @@ def pattern_tables(beat):
         elif isinstance(value, str):
             tables.add(value)
     return tables
+
+
+def checkpoint_saves(beats, rows, explore):
+    """Target times (cs) of the checkpoints SoraCampaignDirector writes on one route.
+
+    Required beats play in order. A checkpoint beat saves as it begins, right
+    after the required beat before it, and a boss or duel again at each later
+    phase it saves at (its rows' offsets into the beat). An optional beat
+    never begins: the route that opens the caches opens each at the first
+    beat in play (not a cinematic) once the cache's requirements are met,
+    spending the cache's target time there, and opening it saves again when
+    the cache checkpoints and the active beat can be restored from its start
+    (CompleteOptional). The chapter's end closes the last gap."""
+    starts, elapsed = {}, 0
+    for beat in beats:
+        starts[beat["id"]] = elapsed * 100
+        elapsed += beat["target_s"]
+    saves, done, time = [], set(), 0
+    for beat in beats:
+        if beat["optional"]:
+            continue
+        if beat["checkpoint"]:
+            saves.append(time)
+        if explore and beat["type"] != "cinematic":
+            for cache in beats:
+                if cache["optional"] and cache["id"] not in done and set(cache["requires"]) <= done:
+                    time += cache["target_s"] * 100
+                    done.add(cache["id"])
+                    if cache["checkpoint"] and beat["checkpoint"]:
+                        saves.append(time)
+        saves += [time + row["at_cs"] - starts[beat["id"]] for row in rows
+                  if row["beat"] == beat["id"] and row["phase"] > 0]
+        time += beat["target_s"] * 100
+        done.add(beat["id"])
+    return sorted(saves + [time])
+
+
+def director_event_error(row, beat, offset, chapter):
+    """Why SoraCampaignDirector can never raise a beat row's event, or None.
+
+    Only the families the director raises are checked; events the AI lane or
+    the world raise (pattern:, ai:, alert_state:, npc_downed:, ...) and
+    free-form interact: and volume_enter: names are theirs. Any event may end
+    in ":first", which plays on its first raise in the beat."""
+    event = row["on"][:-6] if row["on"].endswith(":first") else row["on"]
+    family, _, rest = event.partition(":")
+    task, params = beat["task"], beat["params"]
+    number = int(rest) if rest.isdigit() else None
+    if event in UNRAISED_PROPOSALS:
+        return None
+    if re.fullmatch(r"(intro|outro)@[\d.]+", event) or family.startswith("x_") and family[2:] in DIRECTOR_FAMILIES:
+        return "a scripted name the director never raises"
+    if family == "rate_band":
+        return None if task["goal"] == "turns" and rest in ("in", "above", "below") else "no such crank rate band"
+    if family in ("boss_phase", "duel_phase"):
+        kind = "boss" if family == "boss_phase" else "duel"
+        ok = beat["type"] == kind and task["goal"] == "opponent_down" and number and number <= len(task["phases"])
+        return None if ok else "no such phase"
+    if family == "duel_event":
+        return None if rest in task["phase_events"] else "no such duel event"
+    if family in ("intro_cinematic", "outro_cinematic", "boss_defeated"):
+        return None if beat["type"] == "boss" and not rest else "raised only in a boss fight"
+    if family == "duel_won":
+        return None if beat["type"] == "duel" and not rest else "raised only in a duel"
+    if family in ("bout_scored", "bout_start"):
+        first = offset if task["goal"] == "lessons" else 0
+        ok = task["goal"] in ("lessons", "points") and number and first < number <= first + task["count"]
+        return None if ok else f"bouts here run {first + 1}-{first + task['count']}"
+    if family in ("wave_start", "wave_spawned") and rest:
+        ids = {wave["id"] for wave in task["waves"]}
+        return None if (number and number <= len(task["waves"])) or rest in ids else "no such wave"
+    if family in ("awase_success", "awase_fail"):
+        taught = task["goal"] == "lessons" and task["lesson_mask"] & 4
+        ok = taught and (rest in ("early", "late") if family == "awase_fail" else number and number <= task["form_reps"][2])
+        return None if ok else "no such awase"
+    if family == "marobashi_miss":
+        return None if task["flank_bouts"] else "raised only in a 転 lesson"
+    if family in ("gate_complete", "gate_start"):
+        gates = {gate["gate"] for gate in params.get("lesson_gates", [])}
+        return None if rest in gates else "no such lesson gate"
+    if family in ("step_start", "step_failed", "step_complete"):
+        kind, _, count = rest.partition(":")
+        kinds = [step["kind"] for step in task["steps"]]
+        ok = kind in kinds and (family != "step_complete" or (count.isdigit() and 1 <= int(count) <= max(
+            step["count"] for step in task["steps"] if step["kind"] == kind)))
+        return None if ok else "no such manufacturing step"
+    if family in ("item_picked", "item_delivered"):
+        points = task["pickups"] if family == "item_picked" else task["dropoffs"]
+        load = re.fullmatch(r"load_(\d\d)", rest) if family == "item_delivered" else None
+        ok = rest in points or rest == task["carry_item"] or (load and 1 <= int(load[1]) <= task["count"])
+        return None if ok else "no such pickup, drop-off, carried item or load"
+    if family in ("crank_released", "output_complete", "exit_reached"):
+        goal = {"crank_released": "turns", "output_complete": "steps", "exit_reached": "exit"}[family]
+        return None if task["goal"] == goal else f"raised only on a {goal} task"
+    if family == "site_restored":
+        return None if number is not None and number == beat["site"] else "the beat restores no such site"
+    if family == "point":
+        return None if task["goal"] == "points" and rest in ("player", "rival") else "no such point"
+    if family in ("match_lost", "loss_continue"):
+        return None if task["goal"] == "points" else "raised only in a sparring match"
+    if family in ("collectible", "collectible_found"):
+        return None if rest in {item["id"] for item in chapter["collectibles"]} else "no such collectible"
+    if event.startswith("event:crank_turn_"):
+        turn = event[len("event:crank_turn_"):]
+        return None if task["goal"] == "turns" and turn.isdigit() and 1 <= int(turn) <= task["count"] else "no such turn"
+    return None
 
 
 def allows_muto(beat):
@@ -478,12 +603,17 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
                     require(allows_muto(beat), f"{beat['id']}: table {table} has a mutō-dori attack, "
                                                "but the fight's defeat and finisher do not allow it")
 
-        # Rule 8: checkpoint spacing, including the chapter's end.
+        # Rule 8: checkpoint spacing, including the chapter's end, where the
+        # runtime writes its saves, on the route that skips the explore beats
+        # and on the one that opens every cache.
         positions = sorted(row["at_cs"] for row in chapter["checkpoints"])
         require(positions and positions[0] == 0, f"{where}: the first beat must checkpoint")
-        positions.append(beat_total * 100)
-        gap = max(b - a for a, b in zip(positions, positions[1:]))
-        require(gap <= CHECKPOINT_GAP_S * 100, f"{where}: {gap / 100:g} target seconds between checkpoints")
+        for explore in (False, True):
+            saves = checkpoint_saves(beats, chapter["checkpoints"], explore)
+            gap = max(b - a for a, b in zip(saves, saves[1:]))
+            require(gap <= CHECKPOINT_GAP_S * 100,
+                    f"{where}: {gap / 100:g} target seconds between checkpoints "
+                    f"({'opening' if explore else 'skipping'} the caches)")
 
         # Rule 6 and line references.
         lines = {}
@@ -494,9 +624,18 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
             lines[line["id"]] = line
         line_ids |= set(lines)
         scheduled = set()
+        # Lesson bouts are numbered across the chapter's lesson duels.
+        offsets, bouts = {}, 0
+        for beat in beats:
+            offsets[beat["id"]] = bouts
+            if beat["task"]["goal"] == "lessons":
+                bouts += beat["task"]["count"]
         for row in chapter["triggers"]:
             context = f"{where} trigger {row['beat']} {row['on']}"
             require(row["beat"] is None or row["beat"] in by_id, f"{context}: unknown beat")
+            if row["beat"] is not None:
+                problem = director_event_error(row, by_id[row["beat"]], offsets[row["beat"]], chapter)
+                require(problem is None, f"{context}: {problem}")
             require(row["lines"], f"{context}: no lines")
             missing = [line for line in row["lines"] if line not in lines]
             require(not missing, f"{context}: references missing lines {missing}")
@@ -594,9 +733,14 @@ def self_test(catalog, campaign, chapters, legacy):
         line(data, "ch01.b01.sekireisai.001")["en"] = "Stop. " * 5
 
     def long_gap(data):
-        for row in data[2][0]["checkpoints"]:
-            if row["beat"] in ("ch01.b12", "ch01.b13"):
-                row["at_cs"] = 0
+        beat(data, "ch01.b11")["checkpoint"] = False
+        data[2][0]["checkpoints"] = [row for row in data[2][0]["checkpoints"] if row["beat"] != "ch01.b11"]
+
+    def cache_without_save(data):
+        # Opening ch01.b08's cache no longer saves: the completist's detour
+        # through the wood runs 510 s between checkpoints.
+        beat(data, "ch01.b08")["checkpoint"] = False
+        data[2][0]["checkpoints"] = [row for row in data[2][0]["checkpoints"] if row["beat"] != "ch01.b08"]
 
     def gun_on_horse(data):
         beat(data, "ch02.b08")["params"]["weapons"].append(5)
@@ -683,12 +827,27 @@ def self_test(catalog, campaign, chapters, legacy):
     def spawn_in_building(data):
         space(data, 2, "ch03.b16")["spawns"][0] = [1850, 1100]
 
+    def trigger(data, beat_id, event):
+        chapter = data[2][int(beat_id[2:4]) - 1]
+        return next(row for row in chapter["triggers"] if row["beat"] == beat_id and row["on"] == event)
+
+    def boss_cue_time(data):
+        trigger(data, "ch02.b15", "intro_cinematic")["on"] = "intro@6.0"
+
+    def unraised_rate_band(data):
+        trigger(data, "ch05.b06", "rate_band:in:first")["on"] = "rate_band:inside:first"
+
+    def bout_numbered_per_beat(data):
+        trigger(data, "ch01.b04", "bout_scored:3")["on"] = "bout_scored:1"
+
     def short_escort(data):
         next(beat for beat in data[2][7]["beats"] if beat["id"] == "ch08.b07")["task"]["path_cm"] -= 400
 
     validate(*copy.deepcopy((catalog, campaign, chapters, legacy)))
     mutations = (anchor_in_wall, short_route, missing_volume, zones_collide, lost_collectible, unlabelled_step,
-                 yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
+                 yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, cache_without_save,
+                 boss_cue_time, unraised_rate_band, bout_numbered_per_beat,
+                 gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,
                  lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition)
     for mutate in mutations:

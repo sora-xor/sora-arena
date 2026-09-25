@@ -15,7 +15,9 @@ struct FSoraBeat;
 struct FSoraBeatSpace;
 struct FSoraChapter;
 struct FSoraDamagedEvent;
+struct FSoraDefenseEvent;
 struct FSoraDialogueCue;
+struct FSoraMarobashiEvent;
 struct FSoraPrompt;
 
 // A queued line as the HUD and voice playback need it: the speaker's names,
@@ -108,6 +110,12 @@ public:
     // Enter on a cinematic: skips it and starts the next beat now.
     void SkipCinematic();
     void OpponentDefeated(ASoraEnemy* Opponent);
+    // A boss or duellist the active fight spares (disarmed, captured, a duel
+    // not to the death) yields where it stands at zero health instead of
+    // falling; a captive stays there until the hero binds it with E.
+    bool SparesOpponent(const ASoraEnemy& Opponent) const;
+    bool IsCaptive(const ASoraEnemy& Opponent) const;
+    bool AwaitingCapture() const;
     void PlayerKilled();
     bool RecordDojoLesson(SoraDojoRules::EAction Action, int32 DurationMs,
         bool bFacingAttacker = true, int32 RecoveryMs = 0);
@@ -157,7 +165,9 @@ public:
     // Where the active beat's objective stands, and whether E works it there.
     bool ObjectiveAnchor(FVector& Location) const;
     bool AnchorTakesInteract() const;
-    // Explore beats whose cache can be opened now, and where.
+    // Explore beats whose cache can be opened now, and where. Opening one
+    // saves a checkpoint when the active beat can be restored from where play
+    // stands (its start, or a boss or duel phase it saves at).
     TArray<int32> AvailableCaches() const;
     FVector CacheLocation(int32 Beat) const;
     // The chapter's collectibles still lying loose (its space's pickups), and where.
@@ -214,10 +224,15 @@ private:
     UPROPERTY() TObjectPtr<ASoraHorse> Horse;
     UPROPERTY() TArray<TObjectPtr<ASoraHorse>> Pack;
     UPROPERTY() TObjectPtr<ACameraActor> ShotCamera;
-    // The wave each spawned opponent belongs to; guards, duellists and bosses have none.
-    TMap<const ASoraEnemy*, int32> EnemyWaves;
-    // A stealth guard's patrol route (an index into the beat's patrols).
-    TMap<const ASoraEnemy*, int32> GuardPatrols;
+    // The wave each spawned opponent belongs to (guards, duellists and bosses
+    // have none) and a stealth guard's patrol route (an index into the beat's
+    // patrols). Weak keys: a fallen opponent's entry leaves with it, and an
+    // opponent built later at a freed address never inherits it.
+    TMap<TWeakObjectPtr<const ASoraEnemy>, int32> EnemyWaves;
+    TMap<TWeakObjectPtr<const ASoraEnemy>, int32> GuardPatrols;
+    // A captured boss yielded here, waiting for the hero's hand.
+    UPROPERTY() TObjectPtr<ASoraEnemy> Captive;
+    FVector2D CaptiveAt = FVector2D::ZeroVector;
     TArray<FPendingSpawn> Pending;
     // Chapter progress and the unlocks and flags held when the chapter began.
     SoraBeatRules::FProgress BeatState{0u, 0u, 0u, 0u, 0u, false};
@@ -244,7 +259,15 @@ private:
     TSet<int32> VolumesEntered;
     int32 TackSteps = 0;
     int32 TackRefused = 0;
-    TSet<const ASoraEnemy*> Frightening;
+    TSet<TWeakObjectPtr<const ASoraEnemy>> Frightening;
+    // Events raised in the active beat, so an event's ":first" rows play once.
+    TSet<FString> BeatEvents;
+    // Chapter one: bouts the chapter's earlier lesson duels scored (bouts are
+    // numbered across the dojo), the beat clock at an awase that 転 must
+    // follow, and when a pupil's cut landed on a hero still to meet it.
+    int32 BoutOffset = 0;
+    int32 AwaseAtMs = INDEX_NONE;
+    double LateHitAt = -1.0;
     // The escorted party's progress last shown, so the kit knows they walk.
     int32 LastEscortProgress = 0;
     // Dialogue: lines waiting, the head's remaining time, lines heard this
@@ -262,8 +285,15 @@ private:
     bool bArenaComplete = false;
 
     bool LoadCheckpoint();
-    // A hit on the hero knocks a carried item loose where the carry says so.
+    // A hit on the hero knocks a carried item loose where the carry says so,
+    // and in the dojo marks an awase pressed too late.
     void HeroDamaged(const FSoraDamagedEvent& Event);
+    // A dojo awase (the chapter-one guard met within the parry window), which
+    // a 転 lesson's flank must follow; and the hero's 転 itself.
+    void HeroGuarded(const FSoraDefenseEvent& Event);
+    void HeroRolled(const FSoraMarobashiEvent& Event);
+    // The next bout of a lesson duel opens, numbered across the chapter.
+    void OpenBout();
     void BeginBeat(int32 Index, int32 Phase, bool bResumed);
     void RetryBeatInPlace();
     void CompleteActiveBeat();
@@ -306,6 +336,12 @@ private:
     void ClearOpponents();
     int32 LiveWaveOpponents() const;
     void CheckPhase();
+    // Plays every phase an opponent has passed since phase Before, in order,
+    // and saves at the last when bSave and its beat saves there.
+    void EnterPhases(int32 Before, bool bSave);
+    // Whether a checkpoint written now restores (the active beat's start, or a
+    // phase it saves at).
+    bool CanCheckpointHere() const;
     bool HeroAtTask() const;
     bool Contested() const;
     bool Near(const FVector& Location, float Radius) const;

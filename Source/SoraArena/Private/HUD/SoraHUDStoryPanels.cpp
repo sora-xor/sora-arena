@@ -290,10 +290,17 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
         {
             const FVector Screen=HUD.Project(Position);
             if(Screen.X>0&&Screen.X<W&&Screen.Y>170*S&&Screen.Y<H-120*S)
-                HUD.Label(FString::Printf(TEXT("目標 / %dm"),FMath::RoundToInt32(Metres)),Screen.X-60*S,Screen.Y,.42*S,Gold);
+            {
+                const int32 Distance=FMath::RoundToInt32(Metres);
+                HUD.Label(G->bEnglishSubtitles?FString::Printf(TEXT("目標 / %dm   Objective"),Distance):FString::Printf(TEXT("目標 / %dm"),Distance),
+                    Screen.X-60*S,Screen.Y,.42*S,Gold);
+            }
         }
+        // E binds a yielded boss; elsewhere it works the task.
+        const bool bCapture=Campaign->AwaitingCapture();
         if(Campaign->AnchorTakesInteract()&&Metres<2.6f)
-            HUD.Label(G->bEnglishSubtitles?TEXT("E  作業する   Work"):TEXT("E  作業する"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+            HUD.Label(bCapture?(G->bEnglishSubtitles?TEXT("E  捕らえる   Capture"):TEXT("E  捕らえる"))
+                :G->bEnglishSubtitles?TEXT("E  作業する   Work"):TEXT("E  作業する"),W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
     }
     if(Hero&&G->bCampaign&&!G->bDeterministicPractice)
     {

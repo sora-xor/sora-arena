@@ -83,6 +83,9 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     case SoraBeatRules::EGoal::Escort:
         Location=PartyLocation(); bInteract=false;
         return true;
+    case SoraBeatRules::EGoal::OpponentDown:
+        // A yielded boss waits where it knelt for the hero's hand.
+        return SoraBeatRules::AwaitsCapture(TaskState,Task)&&At(CaptiveAt,true);
     default:
         return false;
     }
@@ -137,7 +140,7 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
 const TArray<FVector2D>* USoraCampaignDirector::GuardPatrol(const ASoraEnemy* Guard) const
 {
     const FSoraBeatSpace* Space=ActiveSpace();
-    const int32* Route=GuardPatrols.Find(Guard);
+    const int32* Route=GuardPatrols.Find(TWeakObjectPtr<const ASoraEnemy>(Guard));
     return Space&&Route&&Space->Patrols.IsValidIndex(*Route)?&Space->Patrols[*Route]:nullptr;
 }
 void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
@@ -305,13 +308,14 @@ void USoraCampaignDirector::TickHorses()
             for(const auto& Enemy:Enemies)
             {
                 if(!IsValid(Enemy)) continue;
+                const TWeakObjectPtr<const ASoraEnemy> Key(Enemy.Get());
                 const bool bClose=Enemy->IsAlive()&&FVector::Dist2D(Enemy->GetActorLocation(),Horse->GetActorLocation())<Mount.FearRadiusCm;
-                if(bClose&&!Frightening.Contains(Enemy))
+                if(bClose&&!Frightening.Contains(Key))
                 {
-                    Frightening.Add(Enemy);
+                    Frightening.Add(Key);
                     if(IsMounted()) { Horse->Spook(); Fire(TEXT("horse_spooked")); }
                 }
-                else if(!bClose) Frightening.Remove(Enemy);
+                else if(!bClose) Frightening.Remove(Key);
             }
     }
     // A convoy waits for a rider who falls behind.

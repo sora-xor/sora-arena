@@ -1,5 +1,6 @@
 #include "SoraWorldBuilder.h"
 #include "SoraCatalog.h"
+#include "Algo/AllOf.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/PointLight.h"
@@ -60,9 +61,17 @@ void ASoraWorldBuilder::ShowObjective(const FVector* Location)
 }
 void ASoraWorldBuilder::ShowCaches(const TArray<FVector>& Locations)
 {
+    // The objective refreshes whenever a task's progress moves (many times a
+    // second while a hold fills or an escort walks); caches that already
+    // stand where they are asked for stay, so nothing is rebuilt for them.
+    const auto Standing=[](const auto& Part) { return IsValid(Part); };
+    if(Locations==CacheLocations&&CacheMarkers.Num()==Locations.Num()&&Algo::AllOf(CacheMarkers,Standing)&&
+        Algo::AllOf(CacheLights,Standing))
+        return;
     for(const auto& Marker:CacheMarkers) if(Marker) Marker->DestroyComponent();
     for(const auto& Light:CacheLights) if(Light) Light->Destroy();
     CacheMarkers.Reset(); CacheLights.Reset();
+    CacheLocations=Locations;
     for(int32 I=0;I<Locations.Num();++I)
     {
         // No map marker (bible §12.2): a small chest and a warm lantern glow.

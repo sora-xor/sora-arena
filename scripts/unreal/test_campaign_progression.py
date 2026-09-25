@@ -63,7 +63,8 @@ for gate in ("CompleteBeat", "NextBeat", "FinishChapter", "ProgressValid", "Chec
              "CanStartBeat", "StartTask", "ReleaseWaves", "ReleaseWave", "Tick", "TaskComplete", "Skip",
              "FinishLines", "Reach", "Travel", "RecordDefeat", "ScorePoint", "RecordForms", "OpponentHealth", "WorkObjective",
              "Turn", "Pickup", "Deliver", "DropCarried", "Stroke", "DamageTarget", "RepairTarget", "OpenCache",
-             "Fail", "RetryTask", "ProgressPermille", "CrankSlipping", "PhaseStartPermille"):
+             "Fail", "RetryTask", "ProgressPermille", "CrankSlipping", "PhaseStartPermille", "RepeatForm", "RecordFlank",
+             "AwaitsCapture", "Capture"):
     assert re.search(rf"SoraBeatRules::{gate}\b", director), f"The campaign director no longer uses tested beat {gate} rule"
 for gate in ("AdvanceChapter", "CampaignLiberated", "CollectibleBit", "CollectiblesValid", "RecordArenaDefeat",
              "RestoreArenaSite", "FinishArena"):
@@ -99,6 +100,7 @@ TRIGGERS = {"start": "Start", "prev_cleared": "PrevCleared", "alive_below": "Ali
 CONTESTS = {"none": "None", "pause": "Pause", "decay": "Decay"}
 LOSSES = {"checkpoint": "Checkpoint", "retry": "Retry", "continue_after": "ContinueAfter"}
 DETECTIONS = {"combat": "Combat", "restart": "Restart", "reinforce": "Reinforce"}
+DEFEATS = {"kill": "Kill", "spare": "Spare", "capture": "Capture"}
 FAILURES = {"player_died": "PlayerDied", "match_lost": "MatchLost", "target_destroyed": "TargetDestroyed",
             "escort_down": "EscortDown", "convoy_lost": "ConvoyLost", "detected": "Detected",
             "horse_down": "HorseDown", "boss_event": "BossEvent"}
@@ -133,12 +135,17 @@ def task_fields(task):
         if task[key] != default:
             fields.append(f"T.{name} = {task[key]};")
     for name, key in (("Skippable", "skippable"), ("AnchorAfterLines", "anchor_after_lines"),
-                      ("ClearWaves", "clear_waves"), ("PauseWhenSeen", "pause_when_seen"),
-                      ("DropOnHit", "drop_on_hit"), ("HorseDownRetries", "horse_down_retries")):
+                      ("PauseWhenSeen", "pause_when_seen"), ("DropOnHit", "drop_on_hit"),
+                      ("HorseDownRetries", "horse_down_retries"), ("FlankBouts", "flank_bouts")):
         if task[key]:
             fields.append(f"T.{name} = true;")
     if task["lesson_mask"]:
         fields.append(f"T.LessonMask = {task['lesson_mask']}u;")
+    for form, reps in enumerate(task["form_reps"]):
+        if reps != 1:
+            fields.append(f"T.FormReps[{form}] = {reps};")
+    assert (task["defeat"] == "capture") == (task["capture_event"] is not None)
+    fields.append(f"T.Defeat = EDefeat::{DEFEATS[task['defeat']]};")
     fields.append(f"T.Loss = ELoss::{LOSSES[task['loss']]}; T.Contest = EContest::{CONTESTS[task['contest']]};")
     fields.append(f"T.OnDetected = EDetected::{DETECTIONS[task['on_detected']]};")
     fields.append(f"T.WaveCount = {len(task['waves'])};")

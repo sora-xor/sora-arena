@@ -75,6 +75,16 @@ struct FSoraDefenseEvent
     UPROPERTY() bool bDojo = false;
 };
 
+// 転 (marobashi): the hero rolled to an opponent's flank, after an awase on
+// it or out of a boss blow's line in its last stretch.
+USTRUCT()
+struct FSoraMarobashiEvent
+{
+    GENERATED_BODY()
+    UPROPERTY() TObjectPtr<AActor> Hero = nullptr;
+    UPROPERTY() TObjectPtr<AActor> Opponent = nullptr;
+    UPROPERTY() bool bAfterAwase = false;
+};
 USTRUCT()
 struct FSoraDamagedEvent
 {
@@ -153,6 +163,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FSoraWeaponFiredSignature, const FSoraWeapon
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraMeleeCommittedSignature, const FSoraMeleeCommittedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraStrikeResolvedSignature, const FSoraStrikeResolvedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDefenseSignature, const FSoraDefenseEvent&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSoraMarobashiSignature, const FSoraMarobashiEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDamagedSignature, const FSoraDamagedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDiedSignature, const FSoraDiedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDetonatedSignature, const FSoraDetonatedEvent&);
@@ -180,6 +191,7 @@ public:
     FSoraStrikeResolvedSignature OnStrikeResolved;
     FSoraDefenseSignature OnGuarded;
     FSoraDefenseSignature OnParried;
+    FSoraMarobashiSignature OnMarobashi;
     FSoraDamagedSignature OnDamaged;
     FSoraDiedSignature OnDied;
     FSoraDetonatedSignature OnDetonated;

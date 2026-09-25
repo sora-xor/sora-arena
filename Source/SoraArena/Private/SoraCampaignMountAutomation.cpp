@@ -5,6 +5,7 @@
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
+#include "SoraEnemy.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraHorse.h"
 #include "SoraMountRules.h"
@@ -14,6 +15,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
@@ -28,7 +30,8 @@
 // her to a halt, and a pheasant on the verge spooks her. From the saddle the
 // yumi draws only to the left, the katana cuts only to the right and a
 // matchlock cannot be held; a convoy walks the road at its pace and waits
-// for a rider who rides away from it; the gallop winds her out; a mounted
+// for a rider who rides away from it; the road's drones come as the rider
+// passes their marks; the gallop winds her out; a mounted
 // fight's rider comes down when its later phase begins; a laden pack mare
 // follows on her lead rope; and a ride ends with the rider on the ground at
 // the next beat's place.
@@ -88,6 +91,19 @@ struct FRide
     {
         const FRotator Aim(0, Horse()->GetActorRotation().Yaw + Degrees, 0);
         Hero()->GetController()->SetControlRotation(Aim);
+    }
+    // The rider's arrows find every opponent standing, so no ambush comes
+    // within the horse's fear; returns how many fell.
+    int32 ShootDown()
+    {
+        int32 Fallen = 0;
+        for (TActorIterator<ASoraEnemy> It(World->GetTestWorld()); It; ++It)
+            if (It->IsAlive() && !It->IsActorBeingDestroyed())
+            {
+                UGameplayStatics::ApplyDamage(*It, It->Health, Hero()->GetController(), Hero(), UDamageType::StaticClass());
+                ++Fallen;
+            }
+        return Fallen;
     }
     // The ridden horse placed on her road Chainage cm from its start, facing along it.
     void PlaceOnRoad(float Chainage)
@@ -249,15 +265,28 @@ bool MountedArcsConvoyAndWind(FAutomationTestBase& Test)
     if (!Ride.Frames(60))
         return false;
     bOk &= Test.TestTrue(TEXT("The convoy waits for a rider far ahead"), FMath::IsNearlyEqual(Convoy[0]->RoadChainage(), Waiting, 1.f));
-    // Urged to the gallop she runs at 850 cm/s until winded below 20, then canters.
-    if (!Ride.Down(EKeys::W) || !Ride.Down(EKeys::LeftShift) || !Ride.Frames(200))
+    // Urged to the gallop she runs at 850 cm/s until winded below 20, then
+    // canters. The road's drones come as the rider passes their marks, and
+    // his arrows bring each down before it can frighten her.
+    if (!Ride.Down(EKeys::W) || !Ride.Down(EKeys::LeftShift))
         return false;
-    bOk &= Test.TestTrue(TEXT("Urged on she gallops at 850 cm/s"), Ride.Horse()->Gait() == EGait::Gallop && Ride.Horse()->SpeedCmS() == 850);
-    for (int32 Frame = 0; Frame < 900 && !Ride.Horse()->IsWinded(); ++Frame)
+    int32 Drones = 0;
+    for (int32 Frame = 0; Frame < 200; ++Frame)
+    {
         if (!Ride.Frames(1))
             return false;
+        Drones += Ride.ShootDown();
+    }
+    bOk &= Test.TestTrue(TEXT("Urged on she gallops at 850 cm/s"), Ride.Horse()->Gait() == EGait::Gallop && Ride.Horse()->SpeedCmS() == 850);
+    for (int32 Frame = 0; Frame < 900 && !Ride.Horse()->IsWinded(); ++Frame)
+    {
+        if (!Ride.Frames(1))
+            return false;
+        Drones += Ride.ShootDown();
+    }
     bOk &= Test.TestTrue(TEXT("The gallop winds her into a canter"), Ride.Horse()->IsWinded() && Ride.Horse()->Gait() == EGait::Canter &&
         Ride.Horse()->StaminaPoints() < 20);
+    bOk &= Test.TestTrue(TEXT("The convoy road's drones come as the rider passes their marks"), Drones > 0);
     return bOk && Ride.Up(EKeys::LeftShift) && Ride.Up(EKeys::W);
 }
 

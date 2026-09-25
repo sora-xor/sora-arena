@@ -284,6 +284,10 @@ struct FStep
     int ToleranceMs = 0;
 };
 enum class EContest : unsigned char { None, Pause, Decay };
+// How a boss, or a duel fought to its end, ends (bible §3.2, §8): the
+// opponent falls; or, disarmed or yielding, is spared at zero health; or
+// yields and is bound by the hero's own hand (a capture).
+enum class EDefeat : unsigned char { Kill, Spare, Capture };
 // A sparring match's loss policy (duel loss_policy).
 enum class ELoss : unsigned char { Checkpoint, Retry, ContinueAfter };
 enum class EDetected : unsigned char { Combat, Restart, Reinforce };
@@ -312,8 +316,6 @@ struct FTask
     bool Skippable = false;
     // Dialogue that ends at an anchor once its lines have played.
     bool AnchorAfterLines = false;
-    // Released lethal opponents must fall before the goal counts.
-    bool ClearWaves = false;
     // Work under guard (production stealth): progress pauses while a guard sees the hero.
     bool PauseWhenSeen = false;
     int MaxAlive = 6;
@@ -322,8 +324,14 @@ struct FTask
     // Boss or duel phases: the opponent's health (permille) as each begins.
     int PhaseCount = 1;
     int PhaseStart[MaxPhases] = {Permille, 0, 0, 0};
-    // A lesson duel's dojo forms, in SoraDojoRules order.
+    // How the fight ends at zero health.
+    EDefeat Defeat = EDefeat::Kill;
+    // A lesson duel's dojo forms, in SoraDojoRules order, the clean
+    // repetitions each wants (awase ×2), and whether a bout scores only
+    // straight after a 転 flank (ch01.b04).
     unsigned LessonMask = 0u;
+    int FormReps[4] = {1, 1, 1, 1};
+    bool FlankBouts = false;
     ELoss Loss = ELoss::Checkpoint;
     int LossLimit = 0;
     // A hold under contest pauses or decays; decay is permille of the hold per
@@ -370,6 +378,11 @@ struct FTaskState
     int RivalPoints = 0;
     int Losses = 0;
     unsigned Forms = 0u;
+    // Clean repetitions of each form still being learned.
+    int FormReps[4] = {};
+    // Decay not yet worn into progress, in millionths of the hold or of the
+    // turns required, so no frame boundary loses a fraction.
+    int DecayCarry = 0;
     int Step = 0;
     int StepDone = 0;
     // The last counted crank turn or rhythm stroke, or -1.
@@ -389,6 +402,9 @@ struct FTaskState
     bool Reached = false;
     bool Skipped = false;
     bool Conceded = false;
+    // A 転 flank waiting for its bout, and a yielded opponent bound.
+    bool Flanked = false;
+    bool Captured = false;
 };
 
 // One step of the beat clock and where the hero stands.
@@ -522,7 +538,7 @@ constexpr bool GoalMet(const FTaskState& State, const FTask& Task)
         return (State.Forms & Task.LessonMask) == Task.LessonMask && State.Done >= Task.Count;
     case EGoal::Survive:
     case EGoal::Hold: return Task.DurationMs > 0 && State.Progress >= Task.DurationMs;
-    case EGoal::OpponentDown: return State.OpponentPermille <= 0;
+    case EGoal::OpponentDown: return State.OpponentPermille <= 0 && (Task.Defeat != EDefeat::Capture || State.Captured);
     case EGoal::Turns: return Task.Count > 0 && State.Progress >= Task.Count * Permille;
     // An escort without a route (PathCm 0) cannot arrive.
     case EGoal::Escort: return Task.PathCm > 0 && State.Progress >= Task.PathCm * Permille;
@@ -534,11 +550,13 @@ constexpr bool GoalMet(const FTaskState& State, const FTask& Task)
     return false;
 }
 
-// The beat is done: its goal met (or a lost match conceded on the loss
-// branch) and, where it clears its waves, every released opponent down.
+// The beat is done: its goal met, or a lost match conceded on the loss
+// branch. Waves are what the beat throws at the hero; only a fight to clear
+// them (WavesCleared) waits for its opponents to fall, and those still
+// standing when any other goal is met withdraw (bible §12.2, chapter-02 b06).
 constexpr bool TaskComplete(const FTaskState& State, const FTask& Task)
 {
-    return (GoalMet(State, Task) || State.Conceded) && (!Task.ClearWaves || ReleasedCleared(State, Task));
+    return GoalMet(State, Task) || State.Conceded;
 }
 
 constexpr int PhaseStartPermille(const FTask& Task, int Phase)
@@ -613,15 +631,30 @@ constexpr bool ReleaseWave(FTaskState& State, const FTask& Task, int Wave)
     return true;
 }
 
+// Wears Ms of decay off a hold or a crank: DecayPermille of Whole (the
+// hold's time, or the turns required in thousandths) a second. The fraction
+// of a unit below the loss carries to the next step, so the same slack costs
+// the same progress whatever the frame rate.
+constexpr long long DecayUnit = 1000LL * Permille;
+constexpr void Decay(FTaskState& State, const FTask& Task, long long Whole, int Ms)
+{
+    const long long Total = State.DecayCarry + static_cast<long long>(Task.DecayPermille) * Whole * Ms;
+    const long long Loss = Total / DecayUnit;
+    State.DecayCarry = static_cast<int>(Total - Loss * DecayUnit);
+    State.Progress = State.Progress > Loss ? State.Progress - static_cast<int>(Loss) : 0;
+}
+
 // Advances the beat clock: holds fill while the hero stands in them, a crank
 // slips back once he stops, the escorted party walks while he keeps up, and a
-// survival counts down.
+// survival counts down. A completed task no longer moves.
 constexpr bool Tick(FTaskState& State, const FTask& Task, FTick Step)
 {
     if (Step.DeltaMs <= 0 || TaskComplete(State, Task))
         return false;
-    const int Delta = Step.DeltaMs > 60000 ? 60000 : Step.DeltaMs;
-    State.ElapsedMs = State.ElapsedMs > MaxClockMs - Delta ? MaxClockMs : State.ElapsedMs + Delta;
+    const int Before = State.ElapsedMs;
+    const int Clamped = Step.DeltaMs > 60000 ? 60000 : Step.DeltaMs;
+    State.ElapsedMs = State.ElapsedMs > MaxClockMs - Clamped ? MaxClockMs : State.ElapsedMs + Clamped;
+    const int Delta = State.ElapsedMs - Before;
     const bool Watched = Task.PauseWhenSeen && Step.Seen;
     switch (Task.Goal)
     {
@@ -630,19 +663,20 @@ constexpr bool Tick(FTaskState& State, const FTask& Task, FTick Step)
         break;
     case EGoal::Hold:
         if (Step.Contested && Task.Contest == EContest::Decay)
-        {
-            const long long Loss = static_cast<long long>(Task.DecayPermille) * Task.DurationMs * Delta / (1000LL * Permille);
-            State.Progress = State.Progress > Loss ? State.Progress - static_cast<int>(Loss) : 0;
-        }
+            Decay(State, Task, Task.DurationMs, Delta);
         else if (Step.AtTask && !Watched && !(Step.Contested && Task.Contest == EContest::Pause))
             State.Progress = State.Progress + Delta > Task.DurationMs ? Task.DurationMs : State.Progress + Delta;
         break;
     case EGoal::Turns:
-        if (State.LastActionMs >= 0 && State.ElapsedMs - State.LastActionMs > Task.MaxTurnMs)
+        // Only the time past the slowest turn slips.
+        if (State.LastActionMs >= 0)
         {
-            const long long Loss = static_cast<long long>(Task.DecayPermille) * Task.Count * Delta / 1000LL;
-            State.Progress = State.Progress > Loss ? State.Progress - static_cast<int>(Loss) : 0;
-            State.Done = State.Progress / Permille;
+            const int Slack = State.ElapsedMs - State.LastActionMs - Task.MaxTurnMs;
+            if (Slack > 0)
+            {
+                Decay(State, Task, static_cast<long long>(Task.Count) * Permille, Slack < Delta ? Slack : Delta);
+                State.Done = State.Progress / Permille;
+            }
         }
         break;
     case EGoal::Escort:
@@ -716,15 +750,17 @@ constexpr bool RecordDefeat(FTaskState& State, const FTask& Task, int Wave)
 enum class EPoint : unsigned char { Refused, Scored, Won, Lost };
 
 // A sparring point to the hero or the rival, or a scored lesson bout (only
-// once the lesson's forms are learned).
+// once the lesson's forms are learned, and where the lesson teaches 転 only
+// straight after a flank).
 constexpr EPoint ScorePoint(FTaskState& State, const FTask& Task, bool Player)
 {
     if (GoalMet(State, Task) || State.Conceded)
         return EPoint::Refused;
     if (Task.Goal == EGoal::Lessons)
     {
-        if (!Player || (State.Forms & Task.LessonMask) != Task.LessonMask)
+        if (!Player || (State.Forms & Task.LessonMask) != Task.LessonMask || (Task.FlankBouts && !State.Flanked))
             return EPoint::Refused;
+        State.Flanked = false;
         ++State.Done;
         return State.Done >= Task.Count ? EPoint::Won : EPoint::Scored;
     }
@@ -749,6 +785,29 @@ constexpr bool RecordForms(FTaskState& State, const FTask& Task, unsigned Forms)
     return true;
 }
 
+// One clean repetition of a form the lesson teaches and has yet to learn;
+// true once the form has its repetitions (awase ×2) and may be learned.
+constexpr bool RepeatForm(FTaskState& State, const FTask& Task, int Form)
+{
+    if (Task.Goal != EGoal::Lessons || Form < 0 || Form > 3 || (Task.LessonMask & (1u << Form)) == 0u ||
+        (State.Forms & (1u << Form)) != 0u)
+        return false;
+    if (State.FormReps[Form] < Task.FormReps[Form])
+        ++State.FormReps[Form];
+    return State.FormReps[Form] >= Task.FormReps[Form];
+}
+
+// A 転 step to the opponent's flank straight after an awase, which the next
+// scored bout of a lesson that teaches it spends.
+constexpr bool RecordFlank(FTaskState& State, const FTask& Task)
+{
+    if (Task.Goal != EGoal::Lessons || !Task.FlankBouts || State.Flanked || GoalMet(State, Task) ||
+        (State.Forms & Task.LessonMask) != Task.LessonMask)
+        return false;
+    State.Flanked = true;
+    return true;
+}
+
 // The opponent's health as a permille of its maximum; it only falls. True
 // when a later phase begins.
 constexpr bool OpponentHealth(FTaskState& State, const FTask& Task, int HealthPermille)
@@ -763,6 +822,22 @@ constexpr bool OpponentHealth(FTaskState& State, const FTask& Task, int HealthPe
         State.OpponentPermille <= Task.PhaseStart[State.Phase + 1])
         ++State.Phase;
     return State.Phase != Before;
+}
+
+// A capture's opponent has yielded at zero health and waits for the hero.
+constexpr bool AwaitsCapture(const FTaskState& State, const FTask& Task)
+{
+    return Task.Goal == EGoal::OpponentDown && Task.Defeat == EDefeat::Capture && State.OpponentPermille <= 0 &&
+        !State.Captured;
+}
+
+// The hero binds the yielded opponent (the vault's bulkhead, the engine's spine).
+constexpr bool Capture(FTaskState& State, const FTask& Task)
+{
+    if (!AwaitsCapture(State, Task))
+        return false;
+    State.Captured = true;
+    return true;
 }
 
 constexpr bool WorkObjective(FTaskState& State, const FTask& Task, int Index)
@@ -1050,8 +1125,14 @@ constexpr bool TaskValid(const FTask& Task)
 {
     if (!WavesValid(Task) || !PhasesValid(Task) || Task.Count < 0 || Task.Count > MaxGoalCount ||
         Task.DurationMs < 0 || Task.DurationMs > MaxClockMs || Task.DecayPermille < 0 ||
-        Task.DecayPermille > Permille || (Task.Task != ETask::None) != (Task.Type == EType::ProductionTask))
+        Task.DecayPermille > Permille || (Task.Task != ETask::None) != (Task.Type == EType::ProductionTask) ||
+        (Task.Defeat != EDefeat::Kill && Task.Goal != EGoal::OpponentDown) ||
+        (Task.FlankBouts && (Task.Goal != EGoal::Lessons || Task.Count < 1)))
         return false;
+    for (int Form = 0; Form < 4; ++Form)
+        if (Task.FormReps[Form] < 1 || Task.FormReps[Form] > MaxGoalCount ||
+            (Task.FormReps[Form] > 1 && (Task.Goal != EGoal::Lessons || (Task.LessonMask & (1u << Form)) == 0u)))
+            return false;
     const bool NoWaves = Task.WaveCount == 0;
     switch (Task.Type)
     {
@@ -1066,7 +1147,7 @@ constexpr bool TaskValid(const FTask& Task)
             Task.Goal == EGoal::Lessons ? (Task.LessonMask & ~0x0fu) == 0u && (Task.LessonMask != 0u || Task.Count > 0) :
             Task.Goal == EGoal::OpponentDown);
     case EType::StealthZone:
-        return !Task.ClearWaves && (Task.Goal == EGoal::Exit || (Task.Goal == EGoal::Objectives && PointsValid(Task.Count)));
+        return Task.Goal == EGoal::Exit || (Task.Goal == EGoal::Objectives && PointsValid(Task.Count));
     case EType::ProductionTask:
         switch (Task.Task)
         {

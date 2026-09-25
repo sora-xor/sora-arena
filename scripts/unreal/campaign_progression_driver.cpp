@@ -203,7 +203,6 @@ static void TestCinematicAndDialogue()
 static void TestWaves()
 {
     FTask Fight = Make(EType::CombatWave, EGoal::WavesCleared);
-    Fight.ClearWaves = true;
     Fight.WaveCount = 5;
     Fight.Waves[0] = {EWaveTrigger::Start, 0, 2, 0};
     Fight.Waves[1] = {EWaveTrigger::PrevCleared, 0, 1, 2};
@@ -228,7 +227,6 @@ static void TestWaves()
 
     // Progress-triggered waves never leave an empty field behind them.
     FTask Push = Make(EType::CombatWave, EGoal::WavesCleared);
-    Push.ClearWaves = true;
     Push.WaveCount = 3;
     Push.Waves[0] = {EWaveTrigger::Start, 0, 5, 0};
     Push.Waves[1] = {EWaveTrigger::ProgressAt, 330, 4, 0};
@@ -241,9 +239,10 @@ static void TestWaves()
         RecordDefeat(State, Push, 1);
     Expect(ProgressPermille(State, Push) < 660 && ReleaseWaves(State, Push) == 4u,
         "waves: a cleared field waited for progress only defeats can bring");
+    // ch02.b06's shape: the defence ends on its clock and whoever still
+    // stands withdraws; only a fight to clear the waves waits for them.
     FTask Timed = Make(EType::ProductionTask, EGoal::Survive, ETask::Defend);
     Timed.DurationMs = 150000;
-    Timed.ClearWaves = true;
     Timed.WaveCount = 2;
     Timed.Waves[0] = {EWaveTrigger::Start, 0, 1, 0};
     Timed.Waves[1] = {EWaveTrigger::AfterMs, 45000, 2, 0};
@@ -252,6 +251,10 @@ static void TestWaves()
     Expect(ReleaseWaves(State, Timed) == 0u, "waves: a timed wave came early");
     Tick(State, Timed, At(1));
     Expect(ReleaseWaves(State, Timed) == 2u, "waves: a timed wave did not come on time");
+    Tick(State, Timed, At(60000));
+    Tick(State, Timed, At(45000));
+    Expect(TaskComplete(State, Timed) && Alive(State, Timed) == 3,
+        "waves: a timed defence waited for its opponents to fall (chapter-02 b06: they withdraw)");
 
     FTask Bad = Fight;
     Bad.Waves[0] = {EWaveTrigger::PrevCleared, 0, 1, 0};
@@ -274,15 +277,13 @@ static void TestWaves()
 
     FTask Sabotage = Make(EType::CombatWave, EGoal::Objectives);
     Sabotage.Count = 2;
-    Sabotage.ClearWaves = true;
     Sabotage.WaveCount = 1;
     Sabotage.Waves[0] = {EWaveTrigger::Start, 0, 1, 0};
     State = Begin(Sabotage, "combat objectives");
     Expect(WorkObjective(State, Sabotage, 0) && !WorkObjective(State, Sabotage, 0) && !WorkObjective(State, Sabotage, 2),
         "combat objectives: one objective counted twice or out of range");
-    Expect(WorkObjective(State, Sabotage, 1) && GoalMet(State, Sabotage) && !TaskComplete(State, Sabotage),
-        "combat objectives: finished with an opponent still standing");
-    Expect(RecordDefeat(State, Sabotage, 0) && TaskComplete(State, Sabotage), "combat objectives: did not finish");
+    Expect(WorkObjective(State, Sabotage, 1) && TaskComplete(State, Sabotage) && Alive(State, Sabotage) == 1,
+        "combat objectives: the objectives did not end it while an opponent stood (chapter-08 b06)");
     FTask Stand = Make(EType::CombatWave, EGoal::Survive);
     Stand.DurationMs = 10000;
     Stand.WaveCount = 1;
@@ -378,6 +379,77 @@ static void TestDuels()
     std::cout << "beat tasks: sparring points and loss policies, lesson forms and bouts, phased duel passed\n";
 }
 
+// How a fight ends (bible §3.2, §8): a spared opponent ends it at zero
+// health; a captured one waits there for the hero's hand. And the dojo's
+// repeated forms (awase ×2) and 転 bouts (chapter-01 b03, b04).
+static void TestDefeatsAndLessons()
+{
+    FTask Capture = Make(EType::Boss, EGoal::OpponentDown);
+    Capture.Defeat = EDefeat::Capture;
+    Capture.PhaseCount = 3;
+    Capture.PhaseStart[1] = 700;
+    Capture.PhaseStart[2] = 400;
+    FTaskState State = Begin(Capture, "capture");
+    Expect(!AwaitsCapture(State, Capture) && !SoraBeatRules::Capture(State, Capture), "capture: bound before it yielded");
+    OpponentHealth(State, Capture, 0);
+    Expect(State.Phase == 2 && AwaitsCapture(State, Capture) && !TaskComplete(State, Capture) &&
+        ProgressPermille(State, Capture) == Permille, "capture: a yielded boss ended the fight before it was bound");
+    Expect(SoraBeatRules::Capture(State, Capture) && !SoraBeatRules::Capture(State, Capture) && TaskComplete(State, Capture) &&
+        !AwaitsCapture(State, Capture), "capture: binding the yielded boss did not end it, or bound it twice");
+    Expect(Fail(State, Capture, EFail::PlayerDied) == ERetry::Checkpoint, "capture: a fall must reload");
+    FTask Spare = Capture;
+    Spare.Defeat = EDefeat::Spare;
+    State = Begin(Spare, "spare");
+    OpponentHealth(State, Spare, 0);
+    Expect(TaskComplete(State, Spare) && !AwaitsCapture(State, Spare) && !SoraBeatRules::Capture(State, Spare),
+        "spare: a disarmed opponent did not end the fight at zero health");
+    FTask Bad = Make(EType::CombatWave, EGoal::WavesCleared);
+    Bad.WaveCount = 1;
+    Bad.Waves[0] = {EWaveTrigger::Start, 0, 1, 0};
+    Bad.Defeat = EDefeat::Capture;
+    Expect(!TaskValid(Bad), "capture: a wave fight that captures accepted");
+
+    // ch01.b03: awase twice before the form is learned, then two scored bouts.
+    FTask Awase = Make(EType::Duel, EGoal::Lessons);
+    Awase.LessonMask = 0xeu;
+    Awase.FormReps[2] = 2;
+    Awase.Count = 2;
+    Awase.Loss = ELoss::Retry;
+    State = Begin(Awase, "repeated form");
+    Expect(RepeatForm(State, Awase, 1) && !RepeatForm(State, Awase, 0), "lesson: a form outside the lesson repeated");
+    RecordForms(State, Awase, 0x3u);
+    Expect(!RepeatForm(State, Awase, 1), "lesson: a learned form repeated");
+    Expect(!RepeatForm(State, Awase, 2) && State.FormReps[2] == 1, "lesson: one awase learned a form that wants two");
+    Expect(RepeatForm(State, Awase, 2) && RecordForms(State, Awase, 0x7u) && RepeatForm(State, Awase, 3) &&
+        RecordForms(State, Awase, 0xfu), "lesson: the second awase did not learn the form");
+    Expect(ScorePoint(State, Awase, true) == EPoint::Scored && ScorePoint(State, Awase, true) == EPoint::Won &&
+        TaskComplete(State, Awase), "lesson: the scored bouts did not follow the forms");
+    Bad = Awase;
+    Bad.FormReps[0] = 2;
+    Expect(!TaskValid(Bad), "lesson: repetitions of a form the lesson does not teach accepted");
+    Bad = Awase;
+    Bad.FormReps[2] = 0;
+    Expect(!TaskValid(Bad), "lesson: a form wanting no repetition accepted");
+
+    // ch01.b04: each bout scores only straight after a 転 flank.
+    FTask Roll = Make(EType::Duel, EGoal::Lessons);
+    Roll.Count = 2;
+    Roll.FlankBouts = true;
+    Roll.Loss = ELoss::Retry;
+    State = Begin(Roll, "marobashi");
+    Expect(ScorePoint(State, Roll, true) == EPoint::Refused, "marobashi: a bout scored without a flank");
+    Expect(RecordFlank(State, Roll) && !RecordFlank(State, Roll) && ScorePoint(State, Roll, true) == EPoint::Scored &&
+        ScorePoint(State, Roll, true) == EPoint::Refused, "marobashi: one flank scored two bouts, or flanks stacked");
+    Expect(RecordFlank(State, Roll) && ScorePoint(State, Roll, true) == EPoint::Won && TaskComplete(State, Roll) &&
+        !RecordFlank(State, Roll), "marobashi: two flanked bouts did not complete the lesson");
+    FTaskState Taught = Begin(Awase, "flank outside its lesson");
+    Expect(!RecordFlank(Taught, Awase), "marobashi: a flank counted in a lesson that does not teach it");
+    Bad = Roll;
+    Bad.Count = 0;
+    Expect(!TaskValid(Bad), "marobashi: a flank lesson without bouts accepted");
+    std::cout << "beat tasks: spared and captured opponents, repeated forms and 転 bouts passed\n";
+}
+
 static void TestBossAndStealth()
 {
     FTask Boss = Make(EType::Boss, EGoal::OpponentDown);
@@ -426,9 +498,6 @@ static void TestBossAndStealth()
     for (int Objective = 0; Objective < 3; ++Objective)
         Expect(!TaskComplete(State, Plant) && WorkObjective(State, Plant, Objective), "stealth: an objective refused");
     Expect(TaskComplete(State, Plant), "stealth: its objectives did not end it");
-    Bad = Zone;
-    Bad.ClearWaves = true;
-    Expect(!TaskValid(Bad), "stealth: a zone that waits for its alarms accepted");
     std::cout << "beat tasks: boss phases and failures, stealth exit, objectives and detection passed\n";
 }
 
@@ -453,6 +522,9 @@ static void TestProduction()
     Tick(State, Hold, At(5000, true));
     Tick(State, Hold, At(1000, true, true));
     Expect(State.Progress == 4000, "hold: a contested decaying hold lost other than a tenth per second");
+    Tick(State, Hold, At(6000, true));
+    Expect(TaskComplete(State, Hold) && !Tick(State, Hold, At(3000, true, true)) && State.Progress == Hold.DurationMs,
+        "hold: a held ground decayed once its time was held");
 
     FTask Crank = Make(EType::ProductionTask, EGoal::Turns, ETask::Crank);
     Crank.Count = 3;
@@ -467,12 +539,29 @@ static void TestProduction()
     Expect(Turn(State, Crank) == ETurn::TooFast, "crank: hammering the crank found the rhythm");
     Tick(State, Crank, At(900));
     Expect(Turn(State, Crank) == ETurn::InBand && State.Progress == 2000 && !CrankSlipping(State, Crank), "crank: an in-band turn");
-    Tick(State, Crank, At(3000));
-    Expect(CrankSlipping(State, Crank) && State.Progress == 1100, "crank: a slack crank did not slip back");
-    Expect(Turn(State, Crank) == ETurn::Slow && State.Progress == 2100, "crank: a slow turn");
+    Tick(State, Crank, At(2500));
+    Expect(!CrankSlipping(State, Crank) && State.Progress == 2000, "crank: slipped inside its slowest turn");
+    // Only the 500 ms past the slowest turn slip: a tenth of three turns a second.
+    Tick(State, Crank, At(500));
+    Expect(CrankSlipping(State, Crank) && State.Progress == 1850, "crank: a slack crank did not slip back for its slack alone");
+    Expect(Turn(State, Crank) == ETurn::Slow && State.Progress == 2850, "crank: a slow turn");
     Tick(State, Crank, At(1000));
     Expect(Turn(State, Crank) == ETurn::InBand && TaskComplete(State, Crank) && Turn(State, Crank) == ETurn::Refused,
         "crank: three turns' worth did not finish it");
+    // ch04.b06's shape: a crank turned full while its wave stands is done;
+    // it neither waits for the fight nor slips while the hero fights.
+    Crank.WaveCount = 1;
+    Crank.Waves[0] = {EWaveTrigger::ProgressAt, 600, 2, 0};
+    State = Begin(Crank, "crank under attack");
+    for (int Turned = 0; Turned < Crank.Count; ++Turned)
+    {
+        Tick(State, Crank, At(1000));
+        Turn(State, Crank);
+        ReleaseWaves(State, Crank);
+    }
+    Expect(TaskComplete(State, Crank) && Alive(State, Crank) == 2 && !Tick(State, Crank, At(10000)) &&
+        State.Progress == Crank.Count * Permille && !CrankSlipping(State, Crank),
+        "crank: a full crank waited for its wave to fall, or slipped while it stood");
     FTask Bad = Crank;
     Bad.MinTurnMs = 3000;
     Expect(!TaskValid(Bad), "crank: an inverted rate band accepted");
@@ -575,11 +664,57 @@ static void TestProduction()
                  "manufacture rhythm, defended targets passed\n";
 }
 
+// A hold's or a crank's decay costs the same whatever the frame rate: the
+// director feeds whole milliseconds, and the fraction of a unit carries.
+static int DecayedAtFrames(const FTask& Task, int FrameMs, int SlackMs, bool Crank)
+{
+    FTaskState State = StartTask(Task, 0);
+    if (Crank)
+    {
+        for (int Turned = 0; Turned < Task.Count - 1; ++Turned)
+        {
+            Tick(State, Task, At(Task.MinTurnMs));
+            Turn(State, Task);
+        }
+    }
+    else
+        Tick(State, Task, At(Task.DurationMs - 1, true));
+    const int Before = State.Progress;
+    for (int Spent = 0; Spent < SlackMs; Spent += FrameMs)
+        Tick(State, Task, At(FrameMs < SlackMs - Spent ? FrameMs : SlackMs - Spent, true, true));
+    return Before - State.Progress;
+}
+
+static void TestDecayFrames()
+{
+    // ch04.b06 and ch08.b11: slow decays that whole-unit rounding per frame lost.
+    FTask Crank = Make(EType::ProductionTask, EGoal::Turns, ETask::Crank);
+    Crank.Count = 48;
+    Crank.MinTurnMs = 400;
+    Crank.MaxTurnMs = 1500;
+    Crank.DecayPermille = 10;
+    FTask Hold = Make(EType::ProductionTask, EGoal::Hold, ETask::Hold);
+    Hold.DurationMs = 120000;
+    Hold.Contest = EContest::Decay;
+    Hold.DecayPermille = 3;
+    const int SlackMs = 10000 + Crank.MaxTurnMs;
+    const int CrankLoss = DecayedAtFrames(Crank, 17, SlackMs, true), HoldLoss = DecayedAtFrames(Hold, 17, 10000, false);
+    // Ten seconds past the slowest turn at a hundredth of 48 turns a second; ten contested seconds at 0.3% of 120 s.
+    Expect(CrankLoss == 4800 && HoldLoss == 3600, "decay: the slack cost other than its rate at 60 fps");
+    for (int FrameMs : {1, 2, 3, 4, 7, 8, 16, 33, 50, 250, 1000})
+    {
+        Expect(DecayedAtFrames(Crank, FrameMs, SlackMs, true) == CrankLoss,
+            "decay: a crank slips differently at " + std::to_string(FrameMs) + " ms frames");
+        Expect(DecayedAtFrames(Hold, FrameMs, 10000, false) == HoldLoss,
+            "decay: a hold decays differently at " + std::to_string(FrameMs) + " ms frames");
+    }
+    std::cout << "hold and crank decay cost the same at every frame rate\n";
+}
+
 static void TestRideExploreCollectible()
 {
     FTask Ride = Make(EType::HorsebackRide, EGoal::Exit);
     Ride.HorseDownRetries = true;
-    Ride.ClearWaves = true;
     Ride.WaveCount = 2;
     Ride.Waves[0] = {EWaveTrigger::Start, 0, 1, 0};
     Ride.Waves[1] = {EWaveTrigger::ProgressAt, 400, 2, 0};
@@ -593,8 +728,9 @@ static void TestRideExploreCollectible()
     Expect(RecordDefeat(State, Ride, 1) && RecordDefeat(State, Ride, 1), "ride: the ambush could not be fought");
     Expect(Fail(State, Ride, EFail::HorseDown) == ERetry::Checkpoint && Fail(State, Ride, EFail::ConvoyLost) == ERetry::Checkpoint,
         "ride: failures");
-    Expect(Reach(State, Ride) && !TaskComplete(State, Ride), "ride: arrived with its attackers standing");
-    Expect(RecordDefeat(State, Ride, 0) && TaskComplete(State, Ride), "ride: did not end at its destination");
+    // chapter-08 b02's charge ends at the koguchi with the walkers still standing.
+    Expect(Reach(State, Ride) && TaskComplete(State, Ride) && Alive(State, Ride) == 1,
+        "ride: the destination did not end the ride while an attacker stood");
     Ride.HorseDownRetries = false;
     Expect(Fail(State, Ride, EFail::HorseDown) == ERetry::Continue, "ride: dismount_continue reloaded");
     FTask Cargo = Make(EType::HorsebackRide, EGoal::Deliveries);
@@ -848,9 +984,23 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
     case EGoal::Survive: return Tick(State, Task, At(500));
     case EGoal::Points: return ScorePoint(State, Task, true) != EPoint::Refused || Tick(State, Task, At(500));
     case EGoal::Lessons:
-        return RecordForms(State, Task, 0x0fu) || ScorePoint(State, Task, true) != EPoint::Refused || Tick(State, Task, At(500));
+        // Each form the lesson teaches, repeated as often as it asks (awase ×2).
+        for (int Form = 0; Form < 4; ++Form)
+            if ((Task.LessonMask & ~State.Forms & (1u << Form)) != 0u)
+            {
+                if (RepeatForm(State, Task, Form))
+                    Expect(RecordForms(State, Task, 1u << Form), Where + ": a repeated form was not learned");
+                return true;
+            }
+        // A 転 lesson's bout follows its flank.
+        if (Task.FlankBouts)
+            RecordFlank(State, Task);
+        return ScorePoint(State, Task, true) != EPoint::Refused || Tick(State, Task, At(500));
     case EGoal::OpponentDown:
     {
+        // A yielded boss the fight captures is bound by the hero's hand.
+        if (AwaitsCapture(State, Task))
+            return SoraBeatRules::Capture(State, Task);
         const int Before = State.Phase;
         const int Health = State.OpponentPermille - 50;
         OpponentHealth(State, Task, Health);
@@ -917,10 +1067,30 @@ static int PlayTask(const FTask& Task, int Phase, const std::string& Where)
     Expect(GoalMet(State, Task) && !State.Conceded, Where + ": completed off its goal");
     Expect(Task.Goal == EGoal::WavesCleared || ProgressPermille(State, Task) == Permille,
         Where + ": completed short of full progress");
-    Expect(!Task.ClearWaves || Alive(State, Task) == 0, Where + ": completed with released opponents standing");
-    Expect(!Tick(State, Task, At(1000)) && ScorePoint(State, Task, true) == EPoint::Refused,
-        Where + ": play went on after completion");
+    Expect(Task.Goal != EGoal::WavesCleared || Alive(State, Task) == 0, Where + ": a fight to clear ended with opponents standing");
+    const FTaskState Done = State;
+    Expect(!Tick(State, Task, At(10000)) && ScorePoint(State, Task, true) == EPoint::Refused &&
+        State.Progress == Done.Progress && State.Done == Done.Done, Where + ": play went on after completion");
     return Actions;
+}
+
+// Plays the task as a hero who fights nobody: every goal but a fight's
+// completes on its own terms, whatever the waves put on the field (the
+// bible's "Kill requirement: None" of chapter six, a timed defence, a charge).
+static void PlayWithoutFighting(const FTask& Task, const std::string& Where)
+{
+    if (Task.Goal == EGoal::WavesCleared || Task.Goal == EGoal::OpponentDown || Task.Goal == EGoal::Points ||
+        Task.Goal == EGoal::Lessons)
+        return;
+    FTaskState State = StartTask(Task, 0);
+    int Actions = 0;
+    for (; Actions < 100000 && !TaskComplete(State, Task); ++Actions)
+    {
+        ReleaseWaves(State, Task);
+        if (!TaskComplete(State, Task))
+            Expect(Act(State, Task, Where), Where + ": the hero had nothing to do but fight");
+    }
+    Expect(TaskComplete(State, Task) && Defeated(State, Task) == 0, Where + ": completes only once opponents fall");
 }
 
 static void TestAuthoredTasks(int Chapter, const FChapterFixture& Plan, const FTask* Tasks)
@@ -935,6 +1105,7 @@ static void TestAuthoredTasks(int Chapter, const FChapterFixture& Plan, const FT
         if (Task.Goal == EGoal::Escort && Task.PathCm == 0)
             Task.PathCm = 3000;
         PlayTask(Task, 0, Where);
+        PlayWithoutFighting(Task, Where);
         // Each later phase a boss or duel saves at restores and plays to the end.
         for (int Phase = 1; Phase <= Plan.Beats[Index].PhaseCheckpoints; ++Phase)
         {
@@ -980,7 +1151,6 @@ static void TestAuthoredTasks(int Chapter, const FChapterFixture& Plan, const FT
                 Where + ": detection did not follow on_detected");
             Expect(Task.OnDetected != EDetected::Reinforce || Released(State, Task.ReinforceWave),
                 Where + ": detection did not call its reinforcements");
-            Expect(!Task.ClearWaves, Where + ": a stealth zone waits for its alarms");
         }
         else if (!Task.PauseWhenSeen)
             Expect(Seen == ERetry::None, Where + ": detection outside stealth");
@@ -1137,8 +1307,10 @@ int main()
     TestCinematicAndDialogue();
     TestWaves();
     TestDuels();
+    TestDefeatsAndLessons();
     TestBossAndStealth();
     TestProduction();
+    TestDecayFrames();
     TestRideExploreCollectible();
     TestSiegeAndCarry();
     TestMountRules();
