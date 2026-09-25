@@ -7,8 +7,9 @@ class ASoraPlayerCharacter;
 // Nyaakoto's weapons in the offline campaign and training arena: ammunition
 // per weapon, reloads, cooldowns, gunfire and shells, the yumi draw, swept and
 // committed blade strikes, and the blade guard. The held weapon's ID lives on
-// the character so its visual and the HUD can read it. Kernel practice does
-// not use this component; its counters come from kernel snapshots.
+// the character so its visual and the HUD can read it. In the campaign, a
+// weapon the save has not unlocked is refused with a notice. Kernel practice
+// does not use this component; its counters come from kernel snapshots.
 UCLASS(ClassGroup=(Sora))
 class SORAARENA_API USoraEquipmentComponent : public UActorComponent
 {

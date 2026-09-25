@@ -44,10 +44,18 @@ for chapter in chapters:
 assert chapters[-1]["beats"][-1]["id"] == "ch08.b18"
 assert any(line["speaker"] == "banker" for line in chapters[-1]["lines"])
 assert any(beat["type"] == "boss" and beat["params"]["boss"] == "boss_val_amort" for beat in chapters[-1]["beats"])
-# The director still runs the chapter-one dojo lessons through the tested gates.
+# The Unreal director runs the beats, saves and chapter advance through the
+# same host-tested gates, and the chapter-one dojo lessons through SoraDojoRules.
 director = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignDirector.cpp").read_text()
 for gate in ("Record", "CheckpointValid", "CanScoreBout"):
     assert f"SoraDojoRules::{gate}" in director, f"The campaign director no longer uses tested dojo {gate} gate"
+for gate in ("CompleteBeat", "NextBeat", "FinishChapter", "ProgressValid", "CheckpointValid", "EntryValid", "CanStartBeat"):
+    assert f"SoraBeatRules::{gate}" in director, f"The campaign director no longer uses tested beat {gate} gate"
+for gate in ("AdvanceChapter", "CampaignLiberated", "CollectibleBit", "CollectiblesValid", "RecordArenaDefeat",
+             "RestoreArenaSite", "FinishArena"):
+    assert f"SoraCampaignRules::{gate}" in director, f"The campaign director no longer uses tested campaign {gate} gate"
+catalog_loader = (ROOT / "Source/SoraArena/Private/SoraCatalog.cpp").read_text()
+assert "SoraBeatRules::ChapterValid" in catalog_loader, "The catalog loader no longer refuses invalid chapters"
 character = (ROOT / "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp").read_text()
 for action in ("Stance", "Guard", "Parry", "Recovery"):
     assert f"SoraDojoRules::EAction::{action}" in character

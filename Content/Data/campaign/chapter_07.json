@@ -3735,8 +3735,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3748,8 +3750,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 8571,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3761,8 +3765,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 17143,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3774,8 +3780,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 25714,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3787,8 +3795,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 34286,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3800,8 +3810,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 42857,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3813,8 +3825,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 51429,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3826,8 +3840,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 60000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3839,8 +3855,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 68571,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3852,8 +3870,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 77143,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3865,8 +3885,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 85714,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3878,8 +3900,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 94286,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3891,8 +3915,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 102857,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b01",
@@ -3904,8 +3930,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 111429,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b02",
@@ -4077,8 +4105,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b03",
@@ -4090,8 +4120,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 12857,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b03",
@@ -4103,8 +4135,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 25714,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b03",
@@ -4116,8 +4150,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 38571,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b03",
@@ -4129,8 +4165,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 51429,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b03",
@@ -4142,8 +4180,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 64286,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b03",
@@ -4155,8 +4195,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 77143,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b04",
@@ -4807,8 +4849,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b12",
@@ -4820,8 +4864,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 18000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b12",
@@ -4833,8 +4879,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 36000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b12",
@@ -4846,8 +4894,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 54000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b12",
@@ -4859,8 +4909,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 72000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b13",
@@ -5132,8 +5184,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b15",
@@ -5145,8 +5199,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 30000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b15",
@@ -5158,8 +5214,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 60000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b15",
@@ -5171,8 +5229,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 90000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch07.b16",

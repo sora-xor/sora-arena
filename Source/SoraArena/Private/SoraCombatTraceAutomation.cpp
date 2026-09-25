@@ -140,12 +140,24 @@ struct FEventLog
         {
             Lines.Add(FString::Printf(TEXT("Kernel kind=%u tick=%u"), E.Kind, Tick));
         }));
+        Handles.Add(Bus->OnBeatStarted.AddLambda([this](const FSoraBeatEvent& E)
+        {
+            Lines.Add(FString::Printf(TEXT("BeatStarted chapter=%d beat=%s resumed=%d phase=%d"), E.ChapterId, *E.BeatId, E.bResumed, E.Phase));
+        }));
+        Handles.Add(Bus->OnBeatCompleted.AddLambda([this](const FSoraBeatEvent& E)
+        {
+            Lines.Add(FString::Printf(TEXT("BeatCompleted chapter=%d beat=%s"), E.ChapterId, *E.BeatId));
+        }));
+        Handles.Add(Bus->OnBeatFailed.AddLambda([this](const FSoraBeatEvent& E)
+        {
+            Lines.Add(FString::Printf(TEXT("BeatFailed chapter=%d beat=%s"), E.ChapterId, *E.BeatId));
+        }));
         return true;
     }
     void Detach()
     {
         USoraGameEvents* Bus = Events.Get();
-        if (Bus && Handles.Num() == 13)
+        if (Bus && Handles.Num() == 16)
         {
             Bus->OnWeaponFired.Remove(Handles[0]); Bus->OnMeleeCommitted.Remove(Handles[1]);
             Bus->OnStrikeResolved.Remove(Handles[2]); Bus->OnGuarded.Remove(Handles[3]);
@@ -153,7 +165,8 @@ struct FEventLog
             Bus->OnDied.Remove(Handles[6]); Bus->OnDetonated.Remove(Handles[7]);
             Bus->OnSiteRestored.Remove(Handles[8]); Bus->OnChapterStarted.Remove(Handles[9]);
             Bus->OnChapterCompleted.Remove(Handles[10]); Bus->OnBossPhase.Remove(Handles[11]);
-            Bus->OnKernelEvent.Remove(Handles[12]);
+            Bus->OnKernelEvent.Remove(Handles[12]); Bus->OnBeatStarted.Remove(Handles[13]);
+            Bus->OnBeatCompleted.Remove(Handles[14]); Bus->OnBeatFailed.Remove(Handles[15]);
         }
         Handles.Reset();
         Events.Reset();
@@ -205,18 +218,32 @@ struct FRun
         Test.AddError(FString::Printf(TEXT("%s frame %d: %s"), *Name, Frame, *Message));
         return false;
     }
-    bool Seed(int32 Chapter, int32 CheckpointKills = 0, int32 CheckpointMask = 0, bool bCheckpoint = false)
+    // A schema-6 checkpoint at the start of Beat, reached through every
+    // earlier required beat with the unlocks chapter select grants.
+    bool Seed(int32 Chapter, int32 Beat)
     {
         USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
         if (!Save)
             return Fail(TEXT("Save object was not created"));
-        Save->SaveSchema = 5;
-        Save->CurrentChapter = Chapter;
-        Save->HighestChapter = Chapter;
-        Save->CheckpointChapter = bCheckpoint ? Chapter : -1;
-        Save->CheckpointKills = CheckpointKills;
-        Save->CheckpointNodesMask = CheckpointMask;
+        if (!USoraCampaignDirector::SeedCheckpoint(*Save, Chapter, Beat))
+            return Fail(TEXT("Seed checkpoint is not valid"));
         return UGameplayStatics::SaveGameToSlot(Save, Slot, 0) || Fail(TEXT("Seed save was not written"));
+    }
+    // Defeats the active beat's remaining opponents, one per frame, untraced.
+    bool ClearBeat(int32 Beat)
+    {
+        for (int32 Attempt = 0; Attempt < 40 && Mode()->Campaign()->ActiveBeat() == Beat; ++Attempt)
+        {
+            for (TActorIterator<FFoe> It(Get()); It; ++It)
+                if (It->IsEnemy() && It->IsAlive() && !It->IsActorBeingDestroyed())
+                {
+                    UGameplayStatics::ApplyDamage(*It, It->Health, Controller(), Hero(), UDamageType::StaticClass());
+                    break;
+                }
+            if (!World->Tick(1))
+                return Fail(TEXT("World failed to tick"));
+        }
+        return Mode()->Campaign()->ActiveBeat() != Beat || Fail(TEXT("Beat did not complete"));
     }
     bool Start()
     {
@@ -327,12 +354,14 @@ struct FRun
     }
 };
 
-// The first invasion chapter: guard and parry a blade retainer, cut it down with
-// the katana, then carbine, reload, yumi, yari, sprint and jump.
+// The flagship's drone deck (ch07.b10), four opponents at once: guard and parry
+// a blade retainer, cut it down with the katana, then carbine, reload, yumi,
+// yari, sprint and jump, with every arm the earlier chapters unlocked.
+constexpr int32 RetainerChapter = 6, RetainerBeat = 9;
 FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Retainer"), Log);
-    if (!Run.Seed(1) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
+    if (!Run.Seed(RetainerChapter, RetainerBeat) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
         return FString();
     if (!Test.TestTrue(TEXT("Retainer scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(160, 0, 0)))
         return FString();
@@ -364,23 +393,19 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     const FString Hash = Run.Finish();
     Run.Expect(TEXT("the retainer and a carbine target fall and Nyaakoto stands"),
         bOk && Run.Mode()->Campaign()->Kills == 2 && Run.Hero()->IsAlive());
-    // After the traced fight, two defeats open the first production site.
-    if (bOk && Log)
-    {
-        const FVector Site = Run.Mode()->Arena()->NodePositions[0];
-        Run.Hero()->SetActorLocation(FVector(Site.X, Site.Y, Run.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-        if (!Run.Tap(EKeys::E) || !Run.Step())
-            return FString();
-    }
+    // After the traced fight, the rest of the deck falls and the next beat begins.
+    if (bOk && Log && !Run.ClearBeat(RetainerBeat))
+        return FString();
     return bOk ? Hash : FString();
 }
 
-// The dojo: stance, guard, parry and recovery through real Block and Fire
-// presses against a sparring pupil, then scored bouts with the bokken.
+// The dojo's lesson duels (ch01.b02-b04): stance, guard, parry and recovery
+// through real Block and Fire presses against one sparring pupil, then a
+// scored bout with the bokken.
 FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Dojo"), Log);
-    if (!Run.Seed(0) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
+    if (!Run.Seed(0, 1) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
         return FString();
     if (!Test.TestTrue(TEXT("Dojo scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(150, 0, 0)))
         return FString();
@@ -397,21 +422,25 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         }
     });
     const FString Hash = Run.Finish();
-    Run.Expect(TEXT("all four forms are learned and one pupil yields"),
-        bOk && Run.Mode()->Campaign()->DojoLessonStage() == 4 && Run.Mode()->Campaign()->Kills == 1);
+    Run.Expect(TEXT("all four forms are learned and one pupil yields in the flanking duel"),
+        bOk && Run.Mode()->Campaign()->DojoLessonStage() == 4 && Run.Mode()->Campaign()->ActiveBeat() == 3 &&
+        Run.Mode()->Campaign()->Kills == 1);
     return bOk ? Hash : FString();
 }
 
-// The final chapter restored at seventeen defeats: the collector's beam and
-// cleave, carbine fire, its defeat, the last site and the liberating exit.
+// The final chapter restored at its boss (ch08.b14): the collector's beam and
+// cleave, carbine fire and its defeat; Enter skips the aftermath cinematic
+// and the registry is carried to the last site. With a listener attached the
+// chapter then plays out to liberation.
+constexpr int32 CollectorChapter = 7, CollectorBeat = 13, BossSlot = 0;
 FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Collector"), Log);
-    if (!Run.Seed(7, 17, 3, true) || !Run.Start() || !Run.Key(EKeys::Enter))
+    if (!Run.Seed(CollectorChapter, CollectorBeat) || !Run.Start() || !Run.Key(EKeys::Enter))
         return FString();
     if (!Test.TestTrue(TEXT("Collector scenario is in play"), Run.Mode()->IsPlaying()) ||
-        !Test.TestNotNull(TEXT("The collector waits at seventeen defeats"), Run.Mode()->Campaign()->CampaignBoss()) ||
-        !Run.Place(Run.Foe(17), FVector(600, 0, 0)))
+        !Test.TestNotNull(TEXT("The collector waits at its checkpoint"), Run.Mode()->Campaign()->CampaignBoss()) ||
+        !Run.Place(Run.Foe(BossSlot), FVector(600, 0, 0)))
         return FString();
     const bool bOk = Run.Play(420, [](FRun& R, int32 F)
     {
@@ -420,35 +449,50 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 5: return R.Tap(EKeys::One);
         case 20: return R.Down(EKeys::D);
         case 60: return R.Up(EKeys::D);
-        case 150: return R.Place(R.Foe(17), FVector(250, 0, 0)) && R.Aim(R.Foe(17));
+        case 150: return R.Place(R.Foe(BossSlot), FVector(250, 0, 0)) && R.Aim(R.Foe(BossSlot));
         case 160: return R.Down(EKeys::LeftMouseButton);
         case 300: return R.Up(EKeys::LeftMouseButton);
         case 330:
         {
-            FFoe* Boss = R.Foe(17);
-            if (!Boss)
+            FFoe* Boss = R.Foe(BossSlot);
+            if (!Boss || !Boss->IsA<ASoraBoss>())
                 return R.Fail(TEXT("The collector is gone before its defeat"));
             UGameplayStatics::ApplyDamage(Boss, Boss->Health, R.Controller(), R.Hero(), UDamageType::StaticClass());
             return true;
         }
-        case 340:
+        // Enter skips the aftermath cinematic; the registry goes to the last site.
+        case 340: return R.Tap(EKeys::Enter);
+        case 360:
         {
             const FVector Site = R.Mode()->Arena()->NodePositions[2];
             R.Hero()->SetActorLocation(FVector(Site.X, Site.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-            return R.Tap(EKeys::E);
-        }
-        case 360:
-        {
-            const FVector Exit = R.Mode()->Arena()->ExitPoint();
-            R.Hero()->SetActorLocation(FVector(Exit.X, Exit.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
             return R.Tap(EKeys::E);
         }
         default: return true;
         }
     });
     const FString Hash = Run.Finish();
-    Run.Expect(TEXT("the collector falls, the last site is restored and Nyaagyu is liberated"),
-        bOk && Run.Mode()->Campaign()->Kills == 18 && Run.Mode()->bChapterComplete && Run.Mode()->Campaign()->bCampaignComplete);
+    const USoraCampaignDirector* Campaign = Run.Mode()->Campaign();
+    Run.Expect(TEXT("the collector falls and the registry restores the last site"),
+        bOk && !Campaign->CampaignBoss() && Run.Mode()->Arena()->ActivatedMask() == 7 && Campaign->ActiveBeat() == 16);
+    if (bOk && Log)
+    {
+        // The festival's closing lines play on, then Nyaakoto rehangs the plaque
+        // and Enter skips the final cinematic into liberation.
+        for (int32 Frame = 0; Frame < 400 && Campaign->ActiveBeat() == 16 && Campaign->LinesQueued() > 0; ++Frame)
+            if (!Run.World->Tick(1, .5f))
+                return FString();
+        FVector Plaque;
+        if (!Campaign->ObjectiveAnchor(Plaque))
+        {
+            Run.Fail(TEXT("The plaque has no anchor"));
+            return FString();
+        }
+        Run.Hero()->SetActorLocation(FVector(Plaque.X, Plaque.Y, Run.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+        if (!Run.World->Tick(2) || !Run.Key(EKeys::Enter))
+            return FString();
+        Run.Expect(TEXT("Nyaagyu is liberated"), Run.Mode()->bChapterComplete && Campaign->bCampaignComplete);
+    }
     return bOk ? Hash : FString();
 }
 
@@ -557,9 +601,10 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Collector fight is unchanged by listeners"), Collector(*this, &CollectorLog), Collector(*this));
     TestEqual(TEXT("Training fight is unchanged by listeners"), Training(*this, &TrainingLog), Training(*this));
 
-    const TCHAR* Scenario = TEXT("First invasion chapter");
-    TestEqual(TEXT("The chapter starts once, fresh"), RetainerLog.Count(TEXT("ChapterStarted ")), 1);
-    Expect(*this, RetainerLog, Scenario, TEXT("ChapterStarted chapter=1 resumed=0 liberated=0"));
+    const TCHAR* Scenario = TEXT("Flagship drone deck");
+    TestEqual(TEXT("The chapter starts once, at its checkpoint"), RetainerLog.Count(TEXT("ChapterStarted ")), 1);
+    Expect(*this, RetainerLog, Scenario, TEXT("ChapterStarted chapter=6 resumed=1 liberated=0"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=6 beat=ch07.b10 resumed=1 phase=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Guarded defender=Hero attacker=Retainer0 dojo=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Parried defender=Hero attacker=Retainer0 dojo=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Committed attacker=Retainer0 weapon=0 windup=0.42"));
@@ -574,10 +619,14 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, RetainerLog, Scenario, TEXT("Fired shooter=Hero weapon=18 kind=Arrow"));
     Expect(*this, RetainerLog, Scenario, TEXT("Fired shooter=Invader"));
     Expect(*this, RetainerLog, Scenario, TEXT("Damaged victim=Hero causer=Invader"));
-    Expect(*this, RetainerLog, Scenario, TEXT("SiteRestored chapter=1 site=0 campaign=1"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatCompleted chapter=6 beat=ch07.b10"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=6 beat=ch07.b11 resumed=0 phase=0"));
 
     Scenario = TEXT("Dojo");
-    Expect(*this, DojoLog, Scenario, TEXT("ChapterStarted chapter=0 resumed=0 liberated=0"));
+    Expect(*this, DojoLog, Scenario, TEXT("ChapterStarted chapter=0 resumed=1 liberated=0"));
+    Expect(*this, DojoLog, Scenario, TEXT("BeatCompleted chapter=0 beat=ch01.b02"));
+    Expect(*this, DojoLog, Scenario, TEXT("BeatCompleted chapter=0 beat=ch01.b03"));
+    Expect(*this, DojoLog, Scenario, TEXT("SiteRestored chapter=0 site=1 campaign=1"));
     Expect(*this, DojoLog, Scenario, TEXT("Guarded defender=Hero attacker=Pupil0 dojo=1"), 2);
     Expect(*this, DojoLog, Scenario, TEXT("Committed attacker=Pupil0 weapon=0 windup=0.55"), 2);
     Expect(*this, DojoLog, Scenario, TEXT("Committed attacker=Hero weapon=0 windup=0.00"), 4);
@@ -598,6 +647,8 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Boss causer=Hero"), 5);
     TestEqual(TEXT("The collector falls once"), CollectorLog.Count(TEXT("Boss phase=Defeated boss=Boss")), 1);
     Expect(*this, CollectorLog, Scenario, TEXT("Died victim=Boss killer=Hero sparring=0"));
+    Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b14"));
+    Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b15"));
     Expect(*this, CollectorLog, Scenario, TEXT("SiteRestored chapter=7 site=2 campaign=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("ChapterCompleted chapter=7 liberated=1"));
 

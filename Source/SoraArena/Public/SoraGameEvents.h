@@ -125,6 +125,20 @@ struct FSoraChapterEvent
     UPROPERTY() bool bLiberated = false;
 };
 
+// A campaign beat of catalog schema 4 (Content/Data/campaign/chapter_0N.json).
+USTRUCT()
+struct FSoraBeatEvent
+{
+    GENERATED_BODY()
+    UPROPERTY() int32 ChapterId = 0;
+    UPROPERTY() int32 BeatIndex = 0;
+    UPROPERTY() FString BeatId;
+    // Started from a saved checkpoint, and at which boss or duel phase.
+    UPROPERTY() bool bResumed = false;
+    UPROPERTY() int32 Phase = 0;
+    UPROPERTY() bool bOptional = false;
+};
+
 USTRUCT()
 struct FSoraBossPhaseEvent
 {
@@ -145,6 +159,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDetonatedSignature, const FSoraDetonate
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraSiteRestoredSignature, const FSoraSiteRestoredEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraChapterSignature, const FSoraChapterEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraBossPhaseSignature, const FSoraBossPhaseEvent&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSoraBeatSignature, const FSoraBeatEvent&);
 // One deterministic-practice event from the Rust kernel and the tick it ended.
 DECLARE_MULTICAST_DELEGATE_TwoParams(FSoraKernelEventSignature, const FSoraPracticeEvent&, uint32);
 
@@ -172,6 +187,11 @@ public:
     FSoraChapterSignature OnChapterStarted;
     FSoraChapterSignature OnChapterCompleted;
     FSoraBossPhaseSignature OnBossPhase;
+    // Beat started (fresh, resumed, or a later boss or duel phase saved),
+    // completed, or failed when the hero fell during it.
+    FSoraBeatSignature OnBeatStarted;
+    FSoraBeatSignature OnBeatCompleted;
+    FSoraBeatSignature OnBeatFailed;
     FSoraKernelEventSignature OnKernelEvent;
 
 protected:

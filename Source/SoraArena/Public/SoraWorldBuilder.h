@@ -10,9 +10,10 @@ struct FSoraChapter;
 // Builds the procedural arena at runtime. The shared layout (ground, walls,
 // building rows, cover, torii, production sites and lanterns) lives in
 // Private/World/SoraWorldBuilder.cpp; each map's dressing lives in its own
-// Private/World/SoraMap*.cpp file, lighting in SoraWorldBuilderLighting.cpp and
-// the kernel-defined practice map in SoraWorldBuilderPractice.cpp. Authored
-// props are visual only; the primitive boxes remain the gameplay collision.
+// Private/World/SoraMap*.cpp file, lighting in SoraWorldBuilderLighting.cpp,
+// campaign beat objectives in SoraWorldBuilderLayout.cpp and the
+// kernel-defined practice map in SoraWorldBuilderPractice.cpp. Authored props
+// are visual only; the primitive boxes remain the gameplay collision.
 UCLASS()
 class SORAARENA_API ASoraWorldBuilder : public AActor
 {
@@ -27,6 +28,17 @@ public:
     int32 ActivatedMask() const;
     void RestoreActivatedMask(int32 Mask);
     FVector SpawnPoint(int32 Index) const;
+    // Campaign beat layout (SoraWorldBuilderLayout.cpp). A beat that restores a
+    // production site stands at that site; every other beat's objective stands
+    // on the central road, spread so consecutive beats move the hero. Explore
+    // beats hide an unmarked cache off the road, found by its lantern glow.
+    FVector BeatAnchor(int32 Beat, int32 Site) const;
+    FVector CacheAnchor(int32 Beat) const;
+    // Shows the marker over the active objective; nullptr hides it.
+    void ShowObjective(const FVector* Location);
+    void ShowCaches(const TArray<FVector>& Locations);
+    // A site restored by its beat, wherever the hero stands.
+    void ActivateSite(int32 Index);
     FVector ExitPoint() const { return FVector(2250,0,110); }
     // Begin far enough west of the entrance torii to frame the gate and
     // estate in first person instead of spawning with the camera under a beam.
@@ -42,6 +54,9 @@ private:
     TArray<FLinearColor> SiteRestoredColors;
     UPROPERTY() TArray<TObjectPtr<AActor>> DecorActors;
     TSet<int32> Activated;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> ObjectiveMarker;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> CacheMarkers;
+    UPROPERTY() TArray<TObjectPtr<AActor>> CacheLights;
     // Shared layout (SoraWorldBuilder.cpp).
     UStaticMeshComponent* Box(const FString& Name, FVector Location, FVector Size, FLinearColor Color, bool Collision = true, FRotator Rotation = FRotator::ZeroRotator, const FString& SurfaceRole = TEXT(""));
     void Building(FVector Location, FVector Size, FLinearColor Wall, bool HighTech);

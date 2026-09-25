@@ -1,6 +1,8 @@
 #include "SoraEquipmentComponent.h"
 #include "Combat/SoraDamage.h"
+#include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
+#include "SoraGameMode.h"
 #include "SoraGameEvents.h"
 #include "SoraHistoricalArms.h"
 #include "SoraPlayerCharacter.h"
@@ -17,6 +19,18 @@ SoraHistoricalArms::EForm EquipmentForm(int32 WeaponId)
         WeaponId==20?SoraHistoricalArms::EForm::Naginata:SoraHistoricalArms::EForm::Katana;
 }
 bool IsEquipmentBlade(int32 WeaponId) { return WeaponId==0||WeaponId==19||WeaponId==20; }
+// Nyaakoto carries only the arms the campaign has unlocked (saved in schema 6);
+// a locked choice is refused with a notice. The training arena lends every arm.
+bool CampaignUnlocked(const ASoraPlayerCharacter& Hero,int32 WeaponId)
+{
+    auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(&Hero));
+    if(!G||!G->bCampaign||!Hero.IsCampaignHero()||G->Campaign()->IsWeaponUnlocked(WeaponId)) return true;
+    const FSoraWeapon& Weapon=FSoraCatalog::Get().Weapon(WeaponId);
+    G->Notice=FString::Printf(TEXT("%sはまだ手にしていない。"),*Weapon.Name);
+    G->NoticeEnglish=FString::Printf(TEXT("%s is not yet unlocked in the campaign."),*Weapon.NameEnglish);
+    G->NoticeTime=4.f;
+    return false;
+}
 }
 
 USoraEquipmentComponent::USoraEquipmentComponent()
@@ -287,7 +301,8 @@ bool USoraEquipmentComponent::EquipClassSlot(int32 Slot)
     ASoraPlayerCharacter* H=Hero();
     if(bReloading||bCommittedStrike||
         (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
-        (H->IsDojoTraining()&&Slot!=0)) return false;
+        (H->IsDojoTraining()&&Slot!=0)||
+        !CampaignUnlocked(*H,FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot])) return false;
     bBowDrawing=false; bFireHeld=false; bGuardHeld=false;
     AmmoByWeapon[H->WeaponId]=Ammo; H->WeaponId=FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot];
     Ammo=AmmoByWeapon[H->WeaponId]; NextShot=GetWorld()->GetTimeSeconds()+.25f; H->RebuildWeapon();
@@ -297,7 +312,8 @@ bool USoraEquipmentComponent::EquipCampaignWeapon(int32 NewWeaponId)
 {
     ASoraPlayerCharacter* H=Hero();
     if(bReloading||bCommittedStrike||
-        (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)) return false;
+        (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
+        !CampaignUnlocked(*H,NewWeaponId)) return false;
     bBowDrawing=false; bFireHeld=false; bGuardHeld=false;
     AmmoByWeapon[H->WeaponId]=Ammo;
     H->WeaponId=NewWeaponId; Ammo=AmmoByWeapon[H->WeaponId];

@@ -3553,8 +3553,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b01",
@@ -3566,8 +3568,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 24000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b01",
@@ -3579,8 +3583,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 48000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b01",
@@ -3592,8 +3598,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 72000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b01",
@@ -3605,8 +3613,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 96000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b02",
@@ -4195,8 +4205,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4208,8 +4220,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 10714,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4221,8 +4235,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 21429,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4234,8 +4250,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 32143,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4247,8 +4265,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 42857,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4260,8 +4280,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 53571,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4273,8 +4295,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 64286,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4286,8 +4310,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 75000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4299,8 +4325,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 85714,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4312,8 +4340,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 96429,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4325,8 +4355,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 107143,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4338,8 +4370,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 117857,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4351,8 +4385,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 128571,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b12",
@@ -4364,8 +4400,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 139286,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b13",
@@ -4416,8 +4454,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b14",
@@ -4429,8 +4469,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 18000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b14",
@@ -4442,8 +4484,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 36000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b14",
@@ -4455,8 +4499,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 54000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b14",
@@ -4468,8 +4514,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 72000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b15",
@@ -4692,8 +4740,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b18",
@@ -4705,8 +4755,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 13333,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b18",
@@ -4718,8 +4770,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 26667,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b18",
@@ -4731,8 +4785,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 40000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b18",
@@ -4744,8 +4800,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 53333,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b18",
@@ -4757,8 +4815,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 66667,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b18",
@@ -4770,8 +4830,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 80000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b18",
@@ -4783,8 +4845,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 93333,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch05.b18",
@@ -4796,8 +4860,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 106667,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": null,

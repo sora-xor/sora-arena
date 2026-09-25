@@ -1,4 +1,5 @@
 #include "SoraBeatRules.h"
+#include "SoraCampaignRules.h"
 #include "SoraDojoRules.h"
 
 #include <cstdlib>
@@ -58,6 +59,41 @@ static void TestDojoLessons()
         Expect(!CheckpointValid({Invalid}, 0, 0u), "forged lesson checkpoint accepted", 0);
     }
     std::cout << "chapter 1: stance, guard, parry, recovery and saved lesson gates passed\n";
+}
+
+// Chapter advance, liberation, the collectibles mask and the training arena.
+static void TestCampaignRules()
+{
+    using namespace SoraCampaignRules;
+    Expect(AdvanceChapter(0, 7, true) == 1 && AdvanceChapter(0, 7, false) == 0 && AdvanceChapter(7, 7, true) == 7,
+        "chapter advance ignores completion or the last chapter", 7);
+    Expect(CampaignLiberated(7, 7, true) && !CampaignLiberated(6, 7, true) && !CampaignLiberated(7, 7, false),
+        "liberation outside a completed final chapter", 7);
+    unsigned long long All = 0ull;
+    for (int Chapter = 0; Chapter < ChapterCount; ++Chapter)
+        for (int Bit = 0; Bit < CollectiblesPerChapter; ++Bit)
+        {
+            const unsigned long long Mask = CollectibleBit(Chapter, Bit);
+            Expect(Mask != 0ull && (All & Mask) == 0ull, "collectible bits overlap", Chapter);
+            Expect(CollectiblesValid(Mask, Chapter) && (Chapter == 0 || !CollectiblesValid(Mask, Chapter - 1)),
+                "collectible accepted before its chapter is reached", Chapter);
+            All |= Mask;
+        }
+    Expect(All == (1ull << 48) - 1ull && CollectiblesValid(All, 7), "the 48 collectibles are not one mask", 7);
+    Expect(CollectibleBit(8, 0) == 0ull && CollectibleBit(0, 6) == 0ull && CollectibleBit(-1, 0) == 0ull,
+        "collectible outside the campaign accepted", 7);
+    Expect(!CollectiblesValid(1ull << 48, 7) && !CollectiblesValid(0ull, 8) && !CollectiblesValid(0ull, -1),
+        "forged collectible mask accepted", 7);
+    FArena Arena{0, 0u, false};
+    Expect(!FinishArena(Arena), "arena exit opened before its work", 0);
+    for (int Site = 0; Site < 3; ++Site)
+        Expect(RestoreArenaSite(Arena, Site) && !RestoreArenaSite(Arena, Site), "arena workshop restored twice", 0);
+    Expect(!RestoreArenaSite(Arena, 3) && !FinishArena(Arena), "arena exit opened before twelve defeats", 0);
+    for (int Defeat = 0; Defeat < ArenaDefeats; ++Defeat)
+        Expect(RecordArenaDefeat(Arena), "arena defeat refused", 0);
+    Expect(!RecordArenaDefeat(Arena) && FinishArena(Arena) && !FinishArena(Arena) && !RecordArenaDefeat(Arena),
+        "arena accepted a defeat beyond twelve or a second exit", 0);
+    std::cout << "campaign advance, collectibles mask and training arena gates passed\n";
 }
 
 static bool SameProgress(const FProgress& A, const FProgress& B)
@@ -149,6 +185,7 @@ int main()
 {
     static_assert(sizeof(Chapters) / sizeof(Chapters[0]) == 8, "Eight chapters are required");
     TestDojoLessons();
+    TestCampaignRules();
     unsigned RouteMinimum = 0u, AllEarlier = 0u, MechanicsEarlier = 0u;
     unsigned SkipperWeapons = 0u, SkipperMechanics = 0u, CompletistWeapons = 0u, CompletistMechanics = 0u;
     for (int Chapter = 0; Chapter < 8; ++Chapter)

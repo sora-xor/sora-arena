@@ -447,6 +447,28 @@ def normalize_subtitles(subtitles, context):
     return rows
 
 
+def place_subtitles(rows, lines, duration_s, context):
+    """Times on a cinematic's own clock. A script that times none of its
+    subtitles (ch05-ch07) plays them in script order, spread evenly over the
+    cinematic and never overlapping; a script that times some must time all."""
+    if all(at_ms is not None for _, at_ms in rows):
+        return [(line, at_ms, False) for line, at_ms in rows]
+    if any(at_ms is not None for _, at_ms in rows):
+        fail(context, "subtitles mix timed and untimed lines")
+    durations = {line["id"]: line["duration_s"] for line in lines}
+    total = round(duration_s * 1000)
+    placed, free = [], 0
+    for index, (line, _) in enumerate(rows):
+        if line not in durations:
+            fail(context, f"subtitle {line} is not a line of this chapter")
+        at_ms = max(round(index * total / len(rows)), free)
+        free = at_ms + round(durations[line] * 1000)
+        if free > total:
+            fail(context, f"subtitle {line} runs past the end of the cinematic")
+        placed.append((line, at_ms, True))
+    return placed
+
+
 def normalize_line(raw, context, chapter_prefix):
     expect(raw, (dict,), context)
     missing = [key for key in LINE_KEYS if key not in raw]
@@ -674,8 +696,10 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
             fail(where, f"barks take on and line, got {sorted(bark)}")
         triggers.append(trigger_row(beat_id, bark["on"], "bark", [bark["line"]], "bark", where))
     if beat_type == "cinematic":
-        for line, at_ms in normalize_subtitles(params.pop("subtitles"), f"{beat_id}.subtitles"):
-            triggers.append(trigger_row(beat_id, "subtitle", "cinematic", [line], "subtitle", beat_id, at_ms=at_ms))
+        rows = normalize_subtitles(params.pop("subtitles"), f"{beat_id}.subtitles")
+        for line, at_ms, spread in place_subtitles(rows, lines, params["duration_s"], f"{beat_id}.subtitles"):
+            triggers.append(trigger_row(beat_id, "subtitle", "cinematic", [line], "subtitle", beat_id, at_ms=at_ms,
+                                        ext={"at_ms_spread": True} if spread else None))
     for key, event in (("intro_subtitles", "intro_cinematic"), ("outro_subtitles", "outro_cinematic")):
         if key in ext:
             triggers.append(trigger_row(beat_id, event, "cinematic", ext.pop(key), key, beat_id))
@@ -1086,6 +1110,10 @@ def self_test():
             {key: value for key, value in line.items() if key != "duration_s"}, "self-test", "ch01"),
         "recorded audio": lambda: normalize_line({**line, "audio": "vo.wav"}, "self-test", "ch01"),
         "sub-centimetre layout": lambda: to_cm(0.001, 100, "self-test"),
+        "mixed subtitle timing": lambda: place_subtitles(
+            [(line["id"], 0), ("ch01.b01.nyaakoto.002", None)], [line, {**line, "id": "ch01.b01.nyaakoto.002"}], 60, "self-test"),
+        "subtitle past its cinematic": lambda: place_subtitles(
+            [(line["id"], None), ("ch01.b01.nyaakoto.002", None)], [line, {**line, "id": "ch01.b01.nyaakoto.002"}], 2, "self-test"),
     }
     accepted = [name for name, action in cases.items() if not rejects(action)]
     if accepted or rejects(lambda: normalize_beat(beat, None, "ch01", 1, [], [])):

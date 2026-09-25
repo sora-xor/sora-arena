@@ -3999,8 +3999,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4012,8 +4014,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 11000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4025,8 +4029,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 22000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4038,8 +4044,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 33000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4051,8 +4059,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 44000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4064,8 +4074,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 55000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4077,8 +4089,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 66000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4090,8 +4104,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 77000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4103,8 +4119,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 88000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b01",
@@ -4116,8 +4134,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 99000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b02",
@@ -5502,8 +5522,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b12",
@@ -5515,8 +5537,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 16000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b12",
@@ -5528,8 +5552,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 32000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b12",
@@ -5541,8 +5567,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 48000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b12",
@@ -5554,8 +5582,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 64000,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b13",
@@ -5925,8 +5955,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 0,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b16",
@@ -5938,8 +5970,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 16429,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b16",
@@ -5951,8 +5985,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 32857,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b16",
@@ -5964,8 +6000,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 49286,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b16",
@@ -5977,8 +6015,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 65714,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b16",
@@ -5990,8 +6030,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 82143,
+   "ext": {
+    "at_ms_spread": true
+   }
   },
   {
    "beat": "ch06.b16",
@@ -6003,8 +6045,10 @@
    "source": "subtitle",
    "repeatable": false,
    "cooldown_s": null,
-   "at_ms": null,
-   "ext": {}
+   "at_ms": 98571,
+   "ext": {
+    "at_ms_spread": true
+   }
   }
  ],
  "collectibles": [

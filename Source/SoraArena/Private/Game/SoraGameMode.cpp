@@ -56,9 +56,9 @@ void ASoraGameMode::Tick(float Dt)
 void ASoraGameMode::BeginRound()
 {
     if(!FSoraCatalog::Get().IsReady()) return;
-    // Enter on the chapter title card skips it; the round timer and dialogue
-    // then begin from zero.
-    if(InputState()==SoraInput::Card) { TitleCardTime=0.f; return; }
+    // Enter on the chapter title card or a cinematic skips it; the campaign
+    // director starts the next beat at once.
+    if(InputState()==SoraInput::Card) { CampaignDirector->SkipCinematic(); return; }
     if(bDeterministicPractice)
     {
         auto* K=Kernel();

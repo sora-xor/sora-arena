@@ -172,6 +172,7 @@ void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 }
 void ASoraWorldBuilder::ClearArena()
 {
+    ShowObjective(nullptr); ShowCaches({});
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
     for(const auto& A:DecorActors) if(A) A->Destroy(); DecorActors.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset(); Activated.Reset(); NodePositions.Reset();
 }
