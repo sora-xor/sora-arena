@@ -140,10 +140,10 @@ void USoraCampaignDirector::StealthDetected(const FSoraStealthDetection& Detecti
 {
     if(!ActiveBeatData()) return;
     // On Easy the zone answers a detection with a fight (SoraStealthRules::
-    // Response): the hero is seen, but the beat is not failed or reinforced.
+    // Response): the beat is neither failed nor reinforced, and guarded work
+    // pauses only while a guard actually sees the hero (IsWorkPaused).
     if(Detection.Response==SoraStealthRules::EOnDetected::Combat&&Task.OnDetected!=SoraBeatRules::EDetected::Combat)
     {
-        bHeroSeen=true;
         Fire(TEXT("ai_event:detected"));
         return;
     }
