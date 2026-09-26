@@ -62,11 +62,13 @@ void FSoraPracticeArenaKit::Place(const FString& Look,TFunctionRef<void(UStaticM
     if(!Batch)
     {
         Batch=NewObject<UInstancedStaticMeshComponent>(&Builder,MakeUniqueObjectName(&Builder,UInstancedStaticMeshComponent::StaticClass(),TEXT("PracticeBatch")));
+        // Visual only: collision and navigation are off before the mesh is
+        // set, so the batch never enters the navigation octree.
+        Batch->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        Batch->SetCanEverAffectNavigation(false);
         Batch->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,SoraPracticeArt::Cube));
         Batch->SetupAttachment(Builder.GetRootComponent());
-        Batch->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Batch->SetGenerateOverlapEvents(false);
-        Batch->SetCanEverAffectNavigation(false);
         Batch->ComponentTags.Add(bWallPieces?TEXT("PracticeWallPiece"):TEXT("PracticeGroundPiece"));
         Batch->RegisterComponent(); Builder.AddInstanceComponent(Batch); Builder.Pieces.Add(Batch);
         Style(Batch);

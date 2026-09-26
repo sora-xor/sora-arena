@@ -84,6 +84,10 @@ def output(a,pin,prop):
 
 mat=create_material('M_Nyaagyu_PBR')
 mat.set_editor_property('tangent_space_normal',False)
+# Practice arenas batch their surfaces into instanced meshes. A cooked material
+# cannot gain a usage flag at runtime, so without this one every instance of the
+# palette draws with the default material in the shipped game.
+mat.set_editor_property('used_with_instanced_static_meshes',True)
 tile=node(mat,unreal.MaterialExpressionVectorParameter,-1100,-450,parameter_name='TileSize',default_value=unreal.LinearColor(200,200,200,1))
 tint=node(mat,unreal.MaterialExpressionVectorParameter,-550,-500,parameter_name='Tint',default_value=unreal.LinearColor(1,1,1,1))
 projected={}

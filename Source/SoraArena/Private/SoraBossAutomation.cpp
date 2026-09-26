@@ -36,14 +36,18 @@ struct FStamped
 {
     FSoraBossPhaseEvent Event;
     double Ms = 0.0;
+    // Where the boss and the hero stood when it was announced.
+    FVector BossAt = FVector::ZeroVector;
+    FVector HeroAt = FVector::ZeroVector;
 };
 
-// Every boss announcement and every hurt, stamped with world time.
+// Every boss announcement, every hurt and every resolved strike, stamped with world time.
 struct FLog
 {
     UWorld* World = nullptr;
     TArray<FStamped> Boss;
     TArray<TPair<FSoraDamagedEvent, double>> Damaged;
+    TArray<TPair<FSoraStrikeResolvedEvent, double>> Resolved;
     TArray<FSoraDefenseEvent> Parried;
     TArray<FSoraDefenseEvent> Guarded;
     TArray<FSoraDiedEvent> Died;
@@ -51,6 +55,11 @@ struct FLog
 
     ~FLog() { Detach(); }
     double Now() const { return World ? World->GetTimeSeconds() * 1000.0 : 0.0; }
+    FVector HeroAt() const
+    {
+        const APawn* Hero = World ? UGameplayStatics::GetPlayerPawn(World, 0) : nullptr;
+        return Hero ? Hero->GetActorLocation() : FVector::ZeroVector;
+    }
     bool Attach(UWorld* InWorld)
     {
         World = InWorld;
@@ -58,17 +67,20 @@ struct FLog
         if (!Events)
             return false;
         const TWeakObjectPtr<USoraGameEvents> Bus = Events;
-        const FDelegateHandle BossHandle = Events->OnBossPhase.AddLambda([this](const FSoraBossPhaseEvent& E) { Boss.Add({E, Now()}); });
+        const FDelegateHandle BossHandle = Events->OnBossPhase.AddLambda([this](const FSoraBossPhaseEvent& E)
+            { Boss.Add({E, Now(), E.Boss ? E.Boss->GetActorLocation() : FVector::ZeroVector, HeroAt()}); });
         const FDelegateHandle DamagedHandle = Events->OnDamaged.AddLambda([this](const FSoraDamagedEvent& E) { Damaged.Add({E, Now()}); });
+        const FDelegateHandle ResolvedHandle = Events->OnStrikeResolved.AddLambda([this](const FSoraStrikeResolvedEvent& E) { Resolved.Add({E, Now()}); });
         const FDelegateHandle ParriedHandle = Events->OnParried.AddLambda([this](const FSoraDefenseEvent& E) { Parried.Add(E); });
         const FDelegateHandle GuardedHandle = Events->OnGuarded.AddLambda([this](const FSoraDefenseEvent& E) { Guarded.Add(E); });
         const FDelegateHandle DiedHandle = Events->OnDied.AddLambda([this](const FSoraDiedEvent& E) { Died.Add(E); });
-        Removers.Add([Bus, BossHandle, DamagedHandle, ParriedHandle, GuardedHandle, DiedHandle]()
+        Removers.Add([Bus, BossHandle, DamagedHandle, ResolvedHandle, ParriedHandle, GuardedHandle, DiedHandle]()
         {
             if (!Bus.IsValid())
                 return;
             Bus->OnBossPhase.Remove(BossHandle);
             Bus->OnDamaged.Remove(DamagedHandle);
+            Bus->OnStrikeResolved.Remove(ResolvedHandle);
             Bus->OnParried.Remove(ParriedHandle);
             Bus->OnGuarded.Remove(GuardedHandle);
             Bus->OnDied.Remove(DiedHandle);
@@ -117,6 +129,21 @@ struct FLog
         return Found;
     }
 };
+
+// What a step that failed saw: every boss announcement from FromMs on, with
+// where the boss and the hero stood, and every strike resolved on the hero.
+void Explain(FAutomationTestBase& Test, const FLog& Log, double FromMs)
+{
+    for (const FStamped& Entry : Log.Boss)
+        if (Entry.Ms >= FromMs)
+            Test.AddInfo(FString::Printf(TEXT("%.1f ms: %s %s #%d, boss at (%.0f, %.0f), hero at (%.0f, %.0f), %.0f cm apart"), Entry.Ms,
+                *StaticEnum<ESoraBossPhase>()->GetNameStringByValue(static_cast<int64>(Entry.Event.Phase)), *Entry.Event.Detail.ToString(),
+                Entry.Event.Serial, Entry.BossAt.X, Entry.BossAt.Y, Entry.HeroAt.X, Entry.HeroAt.Y, FVector::Dist2D(Entry.BossAt, Entry.HeroAt)));
+    for (const TPair<FSoraStrikeResolvedEvent, double>& Entry : Log.Resolved)
+        if (Entry.Value >= FromMs)
+            Test.AddInfo(FString::Printf(TEXT("%.1f ms: a strike resolved %s for %.0f"), Entry.Value,
+                Entry.Key.Target ? TEXT("on its target") : TEXT("out of reach or line"), Entry.Key.Damage));
+}
 
 bool Until(FArena& Arena, int32 MaxFrames, TFunctionRef<bool()> Done)
 {
@@ -1172,9 +1199,16 @@ bool FSoraBossTarifaTest::RunTest(const FString& Parameters)
         if (!Rest(Arena))
             return Stopped(*this, __LINE__);
         Stand(Arena, *Boss, 700.f);
+        const double MetFrom = Log.Now();
         FBlow Lash;
-        if (!Meet(Arena, Log, *Boss, TEXT("tether_lash"), EStance::Parry, Lash) || !TestTrue(TEXT("The cable snaps"), Lash.Parried == 1))
+        if (!Meet(Arena, Log, *Boss, TEXT("tether_lash"), EStance::Parry, Lash))
             return Stopped(*this, __LINE__);
+        if (!TestTrue(*FString::Printf(TEXT("Round %d: the cable snaps (%d parried, %d guarded, %.0f hurt, health %.0f)"), Round,
+                Lash.Parried, Lash.Guarded, Lash.HeroDamage, Boss->Health), Lash.Parried == 1))
+        {
+            Explain(*this, Log, MetFrom);
+            return Stopped(*this, __LINE__);
+        }
         for (int32 Blow = 0; Blow < 3 && Boss->IsAlive(); ++Blow)
         {
             Cut(*Boss, *Hero, 100.f, 0.f);

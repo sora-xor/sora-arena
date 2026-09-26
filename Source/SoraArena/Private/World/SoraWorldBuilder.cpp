@@ -16,11 +16,17 @@ ASoraWorldBuilder::ASoraWorldBuilder()
 UStaticMeshComponent* ASoraWorldBuilder::Shape(AActor* Owner, USceneComponent* Parent, const FString& Name, const TCHAR* Asset, FVector Location, FVector Scale, FLinearColor Color, bool Collision)
 {
     UStaticMeshComponent* M = NewObject<UStaticMeshComponent>(Owner, MakeUniqueObjectName(Owner,UStaticMeshComponent::StaticClass(),FName(*Name)));
+    // Collision and navigation come before the mesh. Setting a mesh on a new
+    // component that still has the default blocking collision enters it in
+    // the navigation octree at the origin; a cooked game (whose meshes are
+    // never still compiling) keeps that entry after the collision is turned
+    // off, and the next rebuild cuts holes wherever the visual shape stands.
+    M->SetCollisionEnabled(Collision ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+    M->SetCollisionResponseToAllChannels(ECR_Block);
+    M->SetCanEverAffectNavigation(Collision);
     M->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, Asset));
     M->SetupAttachment(Parent);
     M->SetRelativeLocation(Location); M->SetRelativeScale3D(Scale);
-    M->SetCollisionEnabled(Collision ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
-    M->SetCollisionResponseToAllChannels(ECR_Block);
     M->SetGenerateOverlapEvents(false);
     M->RegisterComponent(); Owner->AddInstanceComponent(M);
     Tint(M, Color);
@@ -79,6 +85,8 @@ bool ASoraWorldBuilder::ImportedProp(const FString& Name, FVector Location, FRot
         return false;
     }
     auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
+    // Visual only, so never in the navigation octree (see Shape).
+    Mesh->SetCanEverAffectNavigation(false);
     Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
     Mesh->SetRelativeLocation(Location); Mesh->SetRelativeRotation(Rotation);
     Mesh->SetRelativeScale3D(FVector(Scale));

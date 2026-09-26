@@ -34,6 +34,8 @@ void ASoraWorldBuilder::NyaagyuTerrain()
             continue;
         }
         auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
+        // Visual only, so never in the navigation octree (see Shape).
+        Mesh->SetCanEverAffectNavigation(false);
         Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
         Mesh->SetRelativeLocation(FVector(-2400+X*1600,-1950+Y*1300,0));
         // This relief is visual only. The offline campaign retains its flat
@@ -70,6 +72,7 @@ void ASoraWorldBuilder::NyaagyuTree(FVector Location, FRotator Rotation, float S
         return;
     }
     auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
+    Mesh->SetCanEverAffectNavigation(false);
     Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
     Mesh->SetRelativeLocation(Location); Mesh->SetRelativeRotation(Rotation); Mesh->SetRelativeScale3D(FVector(Scale));
     // Tree silhouettes, leaf masks and lighting are presentation only. The
@@ -99,6 +102,7 @@ void ASoraWorldBuilder::NyaagyuPine(FVector Location, FRotator Rotation, float S
         return;
     }
     auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),FName(*Name)));
+    Mesh->SetCanEverAffectNavigation(false);
     Mesh->SetStaticMesh(Asset); Mesh->SetupAttachment(RootComponent);
     Mesh->SetRelativeLocation(Location); Mesh->SetRelativeRotation(Rotation); Mesh->SetRelativeScale3D(FVector(Scale));
     // Young pines add silhouette and dappled light only; campaign/practice

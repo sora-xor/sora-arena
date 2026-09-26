@@ -27,7 +27,9 @@ void USoraViewmodelComponent::Build(int32 WeaponId,bool bDojoBokken,bool bFirstP
     }
     if(AuthoredMesh)
     {
-        auto* Mesh=NewObject<UStaticMeshComponent>(Owner,MakeUniqueObjectName(Owner,UStaticMeshComponent::StaticClass(),TEXT("OriginalWeaponMesh"))); Mesh->SetStaticMesh(AuthoredMesh);
+        auto* Mesh=NewObject<UStaticMeshComponent>(Owner,MakeUniqueObjectName(Owner,UStaticMeshComponent::StaticClass(),TEXT("OriginalWeaponMesh")));
+        // Visual only, so never in the navigation octree (ASoraWorldBuilder::Shape).
+        Mesh->SetCanEverAffectNavigation(false); Mesh->SetStaticMesh(AuthoredMesh);
         Mesh->SetupAttachment(this); Mesh->SetRelativeScale3D(FVector(.75)); Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         if(bFirstPerson) Mesh->SetFirstPersonPrimitiveType(EFirstPersonPrimitiveType::FirstPerson);
         Mesh->SetOnlyOwnerSee(bFirstPerson); Mesh->SetVisibility(true); Mesh->RegisterComponent(); Owner->AddInstanceComponent(Mesh); Parts.Add(Mesh);

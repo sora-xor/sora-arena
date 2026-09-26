@@ -783,6 +783,7 @@ def expected_assets(project_root):
         add(specs, "/Game/Generated/UI/T_NyaagyuTitle.T_NyaagyuTitle", "Texture2D")
 
     add(specs, "/Game/Generated/Materials/M_ArenaSurface.M_ArenaSurface", "Material")
+    add(specs, "/Game/Generated/Materials/M_ArenaGlow.M_ArenaGlow", "Material")
     add(specs, f"{PALETTE}/M_Nyaagyu_PBR.M_Nyaagyu_PBR", "Material")
     add(specs, f"{PALETTE}/M_Nyaagyu_Sky.M_Nyaagyu_Sky", "Material")
     palette_root = source_root / "Environment/PolyHaven"
@@ -953,6 +954,21 @@ def validate_loaded_assets(unreal, specs):
         require(all(abs(getattr(tint, channel) - value) < 1e-5
                     for channel, value in zip("rgb", surface["tint"])),
                 f"Nyaakoto material {name} changed its tint")
+    # Practice arenas draw these as instanced meshes; a cooked material without
+    # the usage flag falls back to the default material in the shipped game.
+    for path in ("/Game/Generated/Materials/M_ArenaSurface.M_ArenaSurface",
+                 "/Game/Generated/Materials/M_ArenaGlow.M_ArenaGlow",
+                 f"{PALETTE}/M_Nyaagyu_PBR.M_Nyaagyu_PBR"):
+        require(bool(asset_library.load_asset(path).get_editor_property("used_with_instanced_static_meshes")),
+                f"{path} must compile an instanced-static-mesh shader permutation")
+    glow = asset_library.load_asset("/Game/Generated/Materials/M_ArenaGlow.M_ArenaGlow")
+    require(glow.get_editor_property("shading_model") == unreal.MaterialShadingModel.MSM_UNLIT
+            and glow.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_ADDITIVE
+            and [str(name) for name in material_lib.get_vector_parameter_names(glow)] == ["Color"],
+            "M_ArenaGlow must be unlit additive emissive coloured by its Color parameter")
+    mon_mesh = asset_library.load_asset("/Game/Generated/UI/SM_SoraKamon.SM_SoraKamon")
+    require(bool(mon_mesh.get_editor_property("allow_cpu_access")),
+            "The SORA mon must keep CPU-readable vertices in cooked builds")
     base_path = f"{PALETTE}/M_Nyaagyu_PBR.M_Nyaagyu_PBR"
     for role in ("Timber", "Stone", "Soil", "Metal", "Kawara", "Plaster"):
         path = f"{PALETTE}/MI_Nyaagyu_{role}.MI_Nyaagyu_{role}"

@@ -154,6 +154,8 @@ void ASoraPlayerCharacter::BuildHeroSaya()
     if(!Saya) return;
     auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(
         this,UStaticMeshComponent::StaticClass(),TEXT("NyaakotoHeroSaya")));
+    // Visual only, so never in the navigation octree (ASoraWorldBuilder::Shape).
+    Mesh->SetCanEverAffectNavigation(false);
     Mesh->SetStaticMesh(Saya);
     Mesh->SetupAttachment(GetMesh());
     Mesh->SetRelativeLocation(FVector(17,-25,95));

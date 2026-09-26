@@ -163,6 +163,8 @@ void ASoraCharacterBase::BuildCat()
     if(auto* AuthoredMesh=LoadObject<UStaticMesh>(nullptr,Asset))
     {
         auto* Mesh=NewObject<UStaticMeshComponent>(this,MakeUniqueObjectName(this,UStaticMeshComponent::StaticClass(),TEXT("OriginalCatMesh")));
+        // Visual only, so never in the navigation octree (ASoraWorldBuilder::Shape).
+        Mesh->SetCanEverAffectNavigation(false);
         Mesh->SetStaticMesh(AuthoredMesh); Mesh->SetupAttachment(GetCapsuleComponent());
         Mesh->SetRelativeLocation(FVector(0,0,-88)); Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Mesh->SetOwnerNoSee(bOwnerHidden); Mesh->RegisterComponent(); AddInstanceComponent(Mesh); BodyParts.Add(Mesh);

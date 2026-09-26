@@ -7,7 +7,8 @@ import_original_assets.py also runs it, after M_ArenaSurface exists.
 The FBX is scripts/art/create_sora_kamon_mon.py's exact extrusion of the
 user-supplied SVG's two paths; this import checks both hashes and never
 simplifies the mesh. Practice presentation places and colours it at runtime,
-and it never collides.
+and it never collides. It keeps its vertices CPU-readable in cooked builds, so
+the packaged practice test can check its orientation.
 """
 
 from __future__ import annotations
@@ -96,6 +97,10 @@ if abs(size.x - 1.0) > .01 or abs(size.y - 100.0) > .1 or abs(size.z - 100.0) > 
 mesh.set_material(0, instance)
 if mesh.get_material(0).get_path_name() != instance.get_path_name():
     raise RuntimeError("The SORA mon lost its lacquer red")
+# A cooked build releases vertex data from CPU memory after upload unless the
+# mesh keeps it. SoraArena.Practice.MarksTextScoreboard reads the mon's
+# positions to prove it stands upright, in the editor and in the package alike.
+mesh.set_editor_property("allow_cpu_access", True)
 assets.save_loaded_asset(mesh)
 assets.save_directory(destination, only_if_is_dirty=False, recursive=True)
 unreal.log(f"SORA_KAMON_MON_READY: {record['vertices']} vertices, {record['triangles']} triangles from the pinned SVG, visual only")

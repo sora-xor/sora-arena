@@ -555,7 +555,33 @@ metallic.set_editor_property("default_value", 0)
 lib.connect_material_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
 lib.connect_material_property(roughness, "", unreal.MaterialProperty.MP_ROUGHNESS)
 lib.connect_material_property(metallic, "", unreal.MaterialProperty.MP_METALLIC)
+# Practice arenas draw their painted blocks and the ledger sigil's tally as
+# instanced meshes. A cooked material cannot gain a usage flag at runtime, so
+# without this one the shipped game draws them with the default material.
+material.set_editor_property("used_with_instanced_static_meshes", True)
 lib.recompile_material(material)
+assets.save_asset(path)
+
+# The practice arenas' lit strips, lamp tongues and practice-pawn glow: unlit
+# additive emissive in the colour "Color", as the engine's EmissiveMeshMaterial
+# draws, but compiled for instanced meshes, which the engine's is not.
+path = "/Game/Generated/Materials/M_ArenaGlow"
+glow = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
+    "M_ArenaGlow", "/Game/Generated/Materials", unreal.Material, unreal.MaterialFactoryNew())
+for old_expression in list(lib.get_material_expressions(glow)):
+    lib.delete_material_expression(glow, old_expression)
+if lib.get_num_material_expressions(glow):
+    raise RuntimeError("Arena glow material retained expressions from its prior import")
+glow.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+glow.set_editor_property("blend_mode", unreal.BlendMode.BLEND_ADDITIVE)
+glow.set_editor_property("two_sided", True)
+glow.set_editor_property("used_with_instanced_static_meshes", True)
+glow_color = lib.create_material_expression(glow, unreal.MaterialExpressionVectorParameter, -400, 0)
+glow_color.set_editor_property("parameter_name", "Color")
+glow_color.set_editor_property("default_value", unreal.LinearColor(1, 1, 1, 1))
+if not lib.connect_material_property(glow_color, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR):
+    raise RuntimeError("Arena glow material could not bind its emissive colour")
+lib.recompile_material(glow)
 assets.save_asset(path)
 
 font = source / "Fonts/NotoSansCJKjp-Regular.otf"

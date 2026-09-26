@@ -31,19 +31,14 @@ UMaterialInterface* SurfaceMaterial()
     static TWeakObjectPtr<UMaterialInterface> Fallback;
     return CachedMaterial(Fallback,TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
 }
-// The engine's additive emissive mesh material takes its colour from "Color".
+// The imported unlit additive glow takes its colour from "Color". It is
+// compiled for instanced meshes, which the lit strips are; the engine's
+// EmissiveMeshMaterial is not, so a cooked game would draw them with the
+// default material. Without the import, glows are painted flat.
 UMaterialInterface* GlowMaterial()
 {
     static TWeakObjectPtr<UMaterialInterface> Cache;
-    static bool bChecked=false, bUsable=false;
-    UMaterialInterface* Material=CachedMaterial(Cache,TEXT("/Engine/EngineMaterials/EmissiveMeshMaterial.EmissiveMeshMaterial"));
-    if(Material&&!bChecked)
-    {
-        FLinearColor Probe;
-        bUsable=Material->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("Color")),Probe);
-        bChecked=true;
-    }
-    return bUsable?Material:nullptr;
+    return CachedMaterial(Cache,TEXT("/Game/Generated/Materials/M_ArenaGlow.M_ArenaGlow"));
 }
 // The imported SORA mon, loaded once. It is never redrawn: without the
 // import there is no mark at all, and the error names the importer.
@@ -67,12 +62,14 @@ constexpr int32 SigilNotches=30, SigilRim=40;
 UStaticMeshComponent* SoraPracticeArt::Part(AActor* Owner,USceneComponent* Parent,const FString& Name,const TCHAR* Shape,FVector Location,FVector Scale,FRotator Rotation)
 {
     auto* Mesh=NewObject<UStaticMeshComponent>(Owner,MakeUniqueObjectName(Owner,UStaticMeshComponent::StaticClass(),FName(*Name)));
+    // Visual only: collision and navigation are off before the mesh is set,
+    // so the part never enters the navigation octree (ASoraWorldBuilder::Shape).
+    Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Mesh->SetCanEverAffectNavigation(false);
     Mesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,Shape));
     if(Parent) Mesh->SetupAttachment(Parent);
     Mesh->SetRelativeLocation(Location); Mesh->SetRelativeRotation(Rotation); Mesh->SetRelativeScale3D(Scale);
-    Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Mesh->SetGenerateOverlapEvents(false);
-    Mesh->SetCanEverAffectNavigation(false);
     Mesh->RegisterComponent(); Owner->AddInstanceComponent(Mesh);
     return Mesh;
 }
@@ -154,9 +151,10 @@ USceneComponent* SoraPracticeArt::Kamon(AActor* Owner,USceneComponent* Parent,co
     // of tally notches, cold cyan on graphite. It shares nothing with the mon.
     Paint(Disc,Field,.28f,.55f);
     auto* Tally=NewObject<UInstancedStaticMeshComponent>(Owner,MakeUniqueObjectName(Owner,UInstancedStaticMeshComponent::StaticClass(),FName(*(Name+TEXT("SigilTally")))));
+    Tally->SetCollisionEnabled(ECollisionEnabled::NoCollision); Tally->SetCanEverAffectNavigation(false);
     Tally->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,Cube));
     Tally->SetupAttachment(Root);
-    Tally->SetCollisionEnabled(ECollisionEnabled::NoCollision); Tally->SetGenerateOverlapEvents(false); Tally->SetCanEverAffectNavigation(false);
+    Tally->SetGenerateOverlapEvents(false);
     Tally->RegisterComponent(); Owner->AddInstanceComponent(Tally);
     if(Out) Out->Add(Tally);
     const float Depth=Thickness*1.3f/100.f;

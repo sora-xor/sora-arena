@@ -59,11 +59,14 @@ inline constexpr FAction Actions[] = {
     {TEXT("Subtitles"), Card | Play | Result},
 };
 
-// An action without a row has no states, so it can never act.
+// An action without a row has no states, so it can never act. Names come from
+// mapping FNames, which compare without case and keep the first spelling the
+// process registered: a cooked game, which does not preserve each FName's
+// case, reads the Block action back as "bLock". Rows match the same way.
 inline uint8 StatesFor(const TCHAR* Name)
 {
     for (const FAction& Action : Actions)
-        if (FCString::Strcmp(Action.Name, Name) == 0)
+        if (FCString::Stricmp(Action.Name, Name) == 0)
             return Action.States;
     return 0;
 }
@@ -108,10 +111,11 @@ inline constexpr FRemappable Remappable[] = {
 inline constexpr int32 RemappableCount = UE_ARRAY_COUNT(Remappable);
 
 // The Remappable entry for an action or a movement half, or INDEX_NONE.
+// Matched without case, as StatesFor matches.
 inline int32 FindRemappable(const TCHAR* Name, int32 Axis)
 {
     for (int32 Index = 0; Index < RemappableCount; ++Index)
-        if (FCString::Strcmp(Remappable[Index].Name, Name) == 0 && Remappable[Index].Axis == Axis)
+        if (FCString::Stricmp(Remappable[Index].Name, Name) == 0 && Remappable[Index].Axis == Axis)
             return Index;
     return INDEX_NONE;
 }

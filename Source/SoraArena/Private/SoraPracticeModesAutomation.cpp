@@ -895,9 +895,13 @@ bool FSoraPracticeMarksTextTest::RunTest(const FString& Parameters)
         const FVector MonSize = Mon->GetBoundingBox().GetSize();
         bool bOk = Test.TestTrue(TEXT("The mon is imported at its authored size and facing"), MonSize.Equals(FVector(1, 100, 100), .05));
         // Upright: the ends of its top bar stand above the centre, as in the SVG.
+        // A cooked game releases vertex positions after upload unless the mesh
+        // allows CPU access, as the import makes the mon do; reading released
+        // positions would read freed memory.
+        bOk &= Test.TestTrue(TEXT("The mon keeps CPU-readable vertices, as imported"), Mon->bAllowCPUAccess);
         const FStaticMeshLODResources& Lod = Mon->GetRenderData()->LODResources[0];
         bool bBarEnd = false;
-        for (uint32 Index = 0; Index < Lod.VertexBuffers.PositionVertexBuffer.GetNumVertices() && !bBarEnd; ++Index)
+        for (uint32 Index = 0; Mon->bAllowCPUAccess && Index < Lod.VertexBuffers.PositionVertexBuffer.GetNumVertices() && !bBarEnd; ++Index)
         {
             const FVector3f P = Lod.VertexBuffers.PositionVertexBuffer.VertexPosition(Index);
             bBarEnd = FMath::IsNearlyEqual(FMath::Abs(P.Y), 30.56f, .1f) && FMath::IsNearlyEqual(P.Z, 24.92f, .1f);
