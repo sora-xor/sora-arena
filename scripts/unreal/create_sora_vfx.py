@@ -329,13 +329,17 @@ def build_materials(textures, samplers):
     mats["Fire"] = g.finish()
 
     # Flash shapes (2x2 sheet), additive; bright cores whiten toward the luminance of the tint.
+    # A flash is hundreds of cd/m2, so the sheet's 1-2/255 floor and the neighbouring cell that bilinear
+    # filtering pulls in at a cell's border would both draw the quad: drop the floor and fade the outer 5 %
+    # of the cell. This keeps 79-98 % of each cell's light; a radial mask kept 23 % of the ring and 55 % of the
+    # side plume, and cut the plume off at the muzzle.
     g = Graph("M_SoraVFX_Flash", blend=BM.BLEND_ADDITIVE, shading=SM.MSM_UNLIT)
     tex = cell_sample(g, "T_VFX_Flash")
     pc = g.node(unreal.MaterialExpressionParticleColor)
     fade = soft_fade(g, 12.0)
     emissive = g.custom(
-        "float2 q = frac(UV) * 2.0 - 1.0;\n"
-        "float t = Tex.r * saturate(1.0 - dot(q, q)) * saturate(1.0 - dot(q, q));\n"
+        "float2 q = abs(frac(UV) * 2.0 - 1.0);\n"
+        "float t = saturate((Tex.r - 0.008) / 0.992) * saturate((1.0 - max(q.x, q.y)) * 10.0);\n"
         "float core = pow(saturate((t - 0.55) / 0.45), 3.0);\n"
         "float lum = dot(PC.rgb, float3(0.2126, 0.7152, 0.0722));\n"
         "return (PC.rgb * t + core * lum * CoreWhite) * PC.a * Fade;",

@@ -27,7 +27,8 @@
     - a larger matchlock plume, fireball and smoke;
     - fewer, wider and slower fire-zone and forge flames;
     - denser wood and fur dust, and lower mist banks;
-    - radial masks on the Flash and WaterLit cells;
+    - a radial mask on the WaterLit cells, and an edge fade with a black
+      point on the Flash cells;
     - a per-shot warm-up in the preview script.
   - Two fixes, with their causes found in the engine source (section 6,
     items 1 and 3):
@@ -243,8 +244,16 @@ unrun" means a cause was found and the script changed, but no build has run it.
 3. **Hard sprite edges.** The explosion flash at 0.03 s and the energy muzzle's
    star and ring show their quads. Mist banks are invisible over the ground but
    show as hard-edged grey quads against an empty sky. The water crown sheets
-   read as translucent cones. Tuned: radial masks on the Flash and WaterLit
-   cells. The mist had a second cause: its banks went through `puffs()`,
+   read as translucent cones. Measured on `T_VFX_Flash.png`, the flash quads
+   have two causes. The sheet has a floor of 1–2/255 over 5–15 % of each
+   cell. The side cell's plume also reaches its bottom border (0.35–0.51 in
+   the outer 8 px), right above the ring cell, which bilinear filtering pulls
+   in at the border. At hundreds of cd/m² both draw the quad.
+   **Tuned:** the Flash material subtracts a 2/255 black point and fades the
+   outer 5 % of each cell. It keeps 79–98 % of each cell's light. The radial
+   mask it replaces kept 23 % of the ring and 55 % of the side plume, and cut
+   the plume off at the muzzle. The WaterLit cells have a radial mask (it
+   keeps 83–95 %). The mist had a second cause: its banks went through `puffs()`,
    which gave the renderer an 8×8 flipbook. Each sprite's UVs then covered a
    sixty-fourth of the mist cell, so the bank drew as a nearly flat patch cut
    off at the quad (section 1, "Flipbooks and sheet cells"). **Fixed, unrun:**
