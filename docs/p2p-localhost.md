@@ -177,7 +177,9 @@ Receivers ignore anything they already hold.
 `run_headless` carries out the local part of the
 [dropout policy](p2p-pipeline.md#peer-dropout). Progress means a change in the
 confirmed tick, the certified tick or the number of openings held for pending
-frontiers.
+frontiers. A harness watching `run_headless` sees the peer after every step.
+It may hold both limits, so that step counts as progress, or stop the peer
+like a crash.
 
 1. **Stop combat.** When live evidence makes no progress for the stall limit
    (`--stall-seconds`, default 60 s, counted from the presentation start),
@@ -222,7 +224,8 @@ clock:
 arena-cli peer --slot N --peers 127.0.0.1:P0,...,127.0.0.1:P7 --dir DIR \
   [--ticks 7200] [--rate-hz 60] [--start-unix-ms MS] [--session N] [--restore] \
   [--drop N] [--duplicate N] [--reorder N] [--corrupt N] [--impair-seed N] \
-  [--research-lan] [--progress TICKS] [--stall-seconds S] [--resolve-seconds S]
+  [--research-lan] [--progress TICKS] [--stall-seconds S] [--resolve-seconds S] \
+  [--withhold-from TICK] [--hold]
 ```
 
 It plays the eight-peer research script: 4v4 Control on the Nyaagyu Estate,
@@ -237,6 +240,14 @@ only offline zero-bond matches.
   next one to the same peer or for 8 ms; `--corrupt` flips one bit.
 - `--stall-seconds` and `--resolve-seconds` are the [dropout](#dropout)
   limits.
+- `--withhold-from TICK` never opens this peer's commitments in frontiers
+  from that tick on, like a peer that withholds its controls. It still seals,
+  endorses and certifies. A restarted peer opens everything it sealed.
+- `--hold` counts no stall or resolve time until the harness writes `release`
+  on standard input or closes it. The peer prints a `quiet` line, with its
+  confirmed and certified ticks, next commitment, checkpoint and journal
+  records, whenever every frame it sent is acknowledged and one of those
+  changed.
 
 Controls are committed when their batch is due, `INPUT_DELAY_TICKS` ahead.
 The script also commits the lead-in batches with its known controls, where a
@@ -264,15 +275,19 @@ fast as the pipeline allows, with 2% drop, duplication and reordering and 1%
 corruption on every datagram. The harness SIGKILLs slot 2 once it has
 confirmed tick 120 and restarts it 300 ms later.
 
-The dropout test also runs in the normal suite. Four processes present 360
-ticks as fast as possible with 2 s stall and resolve limits. The harness
-SIGKILLs slot 3 once it has confirmed tick 120 and never restarts it. Each
-survivor must end with `unresolved`, or with a `completed=false` result if
-nothing was pending. The harness then restores every survivor's journal. Each
-must be interrupted short of the clock, and every pending frontier must lack
-only slot 3's opening. All survivors must hold the same certified frontiers.
-Each survivor that confirmed the latest checkpoint any of them retained must
-hold it too. A survivor restarted from its journal must then exit without
+The dropout test also runs in the normal suite. Four held processes present
+360 ticks as fast as possible with 2 s stall and resolve limits, and slot 3
+withholds its openings from tick 140. The evidence then stops at a known
+frontier however fast each process runs: tick 140 confirmed, a full pipeline
+of 16 frontiers certified past it and one assembly window committed past
+that. Once every peer reported `quiet` there with its checkpoint at 120
+synced, every frame that decides the survivors' evidence has arrived. The
+harness SIGKILLs slot 3, never restarts it, and releases the survivors, so a
+loaded machine cannot stop combat before the dropout. Each survivor must end
+with `unresolved`. The harness then restores every survivor's journal. Each
+must be interrupted at tick 140 with the checkpoint at 120, all must hold the
+same 16 certified frontiers, and every pending frontier must lack only slot
+3's opening. A survivor restarted from its journal must then exit without
 journaling anything.
 
 Four two-minute tests are opt-in:

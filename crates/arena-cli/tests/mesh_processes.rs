@@ -9,15 +9,18 @@
 mod script;
 
 use arena_core::{
-    mesh_transport::ReceiptLog, protocol::Phase, recovery::DurableSession, simulation::World,
+    mesh_transport::ReceiptLog,
+    protocol::{BATCH_TICKS, MAX_ASSEMBLY_FRONTIERS, MAX_OUTSTANDING_FRONTIERS, Phase},
+    recovery::DurableSession,
+    simulation::World,
 };
 use std::{
     collections::HashMap,
     fs::{self, File},
-    io::{BufRead, BufReader},
+    io::{BufRead, BufReader, Write},
     net::UdpSocket,
     path::PathBuf,
-    process::{Child, Command, Stdio},
+    process::{Child, ChildStdin, Command, Stdio},
     sync::{
         atomic::{AtomicU64, Ordering},
         mpsc,
@@ -33,6 +36,14 @@ const PINNED_TWO_MINUTE_HASH: &str =
 
 /// The public session number every harness peer derives its keys from.
 const SESSION: u64 = 20_260_925;
+
+/// The dropped peer opens none of its commitments from this tick on, after
+/// the checkpoint at 120.
+const WITHHELD: u32 = 140;
+/// Every peer then certifies one full pipeline of frontiers past it...
+const CERTIFIED: u32 = WITHHELD + (MAX_OUTSTANDING_FRONTIERS * BATCH_TICKS) as u32;
+/// ...and commits one assembly window past that.
+const COMMITTED: u32 = CERTIFIED + (MAX_ASSEMBLY_FRONTIERS * BATCH_TICKS) as u32;
 
 static NEXT_ROOT: AtomicU64 = AtomicU64::new(0);
 
@@ -58,6 +69,10 @@ struct Scenario {
     /// `--stall-seconds` and `--resolve-seconds` of every peer.
     limits: (u64, u64),
     timeout: Duration,
+    /// This slot opens none of its commitments from this tick on.
+    withhold: Option<(usize, u32)>,
+    /// Every peer holds its limits until the harness releases it.
+    hold: bool,
 }
 
 struct Mesh {
@@ -65,6 +80,7 @@ struct Mesh {
     peers: String,
     start_unix_ms: u64,
     children: Vec<Option<Child>>,
+    stdins: Vec<Option<ChildStdin>>,
     incarnations: Vec<u32>,
     sender: mpsc::Sender<(usize, String)>,
     lines: mpsc::Receiver<(usize, String)>,
@@ -100,6 +116,7 @@ impl Mesh {
             peers,
             start_unix_ms,
             children: (0..players).map(|_| None).collect(),
+            stdins: (0..players).map(|_| None).collect(),
             incarnations: vec![0; players],
             sender,
             lines,
@@ -136,13 +153,23 @@ impl Mesh {
         if restore {
             command.arg("--restore");
         }
+        if scenario.hold {
+            command.arg("--hold");
+        }
+        if let Some((withholder, tick)) = scenario.withhold
+            && withholder == slot
+        {
+            command.args(["--withhold-from", &tick.to_string()]);
+        }
         let stderr =
             File::create(self.root.join(format!("stderr-{slot}-{incarnation}.txt"))).unwrap();
         let mut child = command
+            .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::from(stderr))
             .spawn()
             .unwrap();
+        self.stdins[slot] = child.stdin.take();
         let stdout = child.stdout.take().unwrap();
         let sender = self.sender.clone();
         thread::spawn(move || {
@@ -154,6 +181,14 @@ impl Mesh {
             }
         });
         self.children[slot] = Some(child);
+    }
+
+    /// Let a held peer's stall and resolve limits count. A peer that already
+    /// left shows up in its exit status and stderr.
+    fn release(&mut self, slot: usize) {
+        if let Some(stdin) = self.stdins[slot].as_mut() {
+            let _ = writeln!(stdin, "release");
+        }
     }
 
     /// The journal a peer process left behind, restored as the harness
@@ -432,6 +467,8 @@ fn four_processes_agree_after_a_killed_peer_restarts_under_impairment() {
         progress: 30,
         limits: (90, 60),
         timeout: Duration::from_secs(240),
+        withhold: None,
+        hold: false,
     });
     let impaired = results
         .iter()
@@ -460,6 +497,8 @@ fn eight_processes_play_a_two_minute_match_to_the_pinned_kernel_hash() {
         progress: 600,
         limits: (90, 60),
         timeout: Duration::from_secs(400),
+        withhold: None,
+        hold: false,
     });
 }
 
@@ -480,6 +519,8 @@ fn eight_processes_recover_a_peer_killed_and_restarted_mid_match() {
         progress: 300,
         limits: (90, 60),
         timeout: Duration::from_secs(400),
+        withhold: None,
+        hold: false,
     });
     assert_eq!(results[0]["state_hash"], PINNED_TWO_MINUTE_HASH);
     for (slot, result) in results.iter().enumerate() {
@@ -502,6 +543,8 @@ fn eight_processes_agree_despite_loss_reordering_duplication_and_damage() {
         progress: 600,
         limits: (90, 60),
         timeout: Duration::from_secs(400),
+        withhold: None,
+        hold: false,
     });
     assert_eq!(results[0]["state_hash"], PINNED_TWO_MINUTE_HASH);
     for result in &results {
@@ -526,6 +569,8 @@ fn twelve_processes_play_a_two_minute_six_versus_six_match() {
         progress: 600,
         limits: (90, 60),
         timeout: Duration::from_secs(400),
+        withhold: None,
+        hold: false,
     });
 }
 
@@ -541,16 +586,44 @@ fn survivors_stop_combat_and_keep_the_evidence_when_a_peer_never_returns() {
         progress: 30,
         limits: (2, 2),
         timeout: Duration::from_secs(120),
+        // Slot 3 withholds its openings, so the evidence stops at a known
+        // frontier however fast each process runs, and no peer's limits
+        // count until the harness releases it.
+        withhold: Some((3, WITHHELD)),
+        hold: true,
     };
     let mut mesh = Mesh::new(scenario.players);
     for slot in 0..scenario.players {
         mesh.spawn(&scenario, slot, false);
     }
     let deadline = Instant::now() + scenario.timeout;
-    // Slot 3 is SIGKILLed once it confirmed tick 120 and never returns.
-    // Each survivor ends with an `unresolved` or a `result` line.
+    // A peer reports `quiet` when every frame it sent is acknowledged. Once
+    // each reported it at the frontier where slot 3's openings stop, with its
+    // checkpoint at 120 synced, every frame that decides the survivors'
+    // evidence has arrived: nothing any peer sends later can change it.
+    let mut settled = [false; 4];
+    while !settled.iter().all(|settled| *settled) {
+        let (slot, line) = mesh.next_line(scenario.name, deadline);
+        if line.starts_with("quiet ") {
+            let quiet = fields(&line);
+            settled[slot] |= number(&quiet, "confirmed") == u64::from(WITHHELD)
+                && number(&quiet, "certified") == u64::from(CERTIFIED)
+                && number(&quiet, "next_commit") == u64::from(COMMITTED)
+                && quiet["checkpoint"] == "120"
+                && quiet["records"] == quiet["durable"];
+        }
+    }
+    // Slot 3 is SIGKILLed and never returns; only now do the survivors'
+    // limits count, so a loaded machine cannot stop combat before the
+    // dropout.
+    let mut child = mesh.children[3].take().unwrap();
+    child.kill().unwrap();
+    assert!(!child.wait().unwrap().success());
+    eprintln!("{}: killed slot 3 once every peer settled", scenario.name);
+    for slot in 0..3 {
+        mesh.release(slot);
+    }
     let mut ends: Vec<Option<(String, Fields)>> = vec![None; 3];
-    let mut killed = false;
     while ends.iter().any(Option::is_none) {
         let (slot, line) = mesh.next_line(scenario.name, deadline);
         let kind = line
@@ -558,92 +631,60 @@ fn survivors_stop_combat_and_keep_the_evidence_when_a_peer_never_returns() {
             .next()
             .unwrap_or_default()
             .to_string();
-        if !killed && slot == 3 && kind == "progress" && number(&fields(&line), "confirmed") >= 120
-        {
-            let mut child = mesh.children[3].take().unwrap();
-            child.kill().unwrap();
-            assert!(!child.wait().unwrap().success());
-            killed = true;
-            eprintln!("{}: killed slot 3 after {line}", scenario.name);
-        } else if slot < 3 && (kind == "unresolved" || kind == "result") {
+        if slot < 3 && (kind == "unresolved" || kind == "result") {
             ends[slot] = Some((kind, fields(&line)));
         }
     }
-    assert!(killed, "the survivors ended before the dropout");
-    let mut shared = Vec::new();
     for (slot, end) in ends.iter().enumerate() {
         let (kind, end) = end.as_ref().unwrap();
         let status = mesh.children[slot].as_mut().unwrap().wait().unwrap();
+        assert_eq!(kind, "unresolved", "slot {slot}\n{}", mesh.stderr());
+        assert!(!status.success());
         let journal = mesh.restore(&scenario, slot);
         let session = journal.session();
         let evidence = session.evidence();
-        // Combat stopped short of the clock; the journal keeps the last
-        // certified checkpoint, every pending frontier and every opening.
+        // Combat stopped where slot 3's openings end. The journal keeps the
+        // last certified checkpoint, every pending frontier and every
+        // opening, and every survivor holds the same certified frontiers.
+        assert_eq!(evidence.phase, Phase::Resolving);
         assert!(!session.confirmed().terminal);
-        assert!(session.confirmed().tick < scenario.ticks);
-        if kind == "unresolved" {
-            assert!(!status.success());
-            assert_eq!(evidence.phase, Phase::Resolving);
-            assert_eq!(
-                number(end, "confirmed"),
-                u64::from(session.confirmed().tick)
-            );
-            assert_eq!(number(end, "pending"), evidence.pending.len() as u64);
-            for frontier in &evidence.pending {
-                // Only the dropped peer's opening is missing; a consensus
-                // deadline must forfeit it.
-                let opened = frontier
-                    .openings
-                    .iter()
-                    .map(Option::is_some)
-                    .collect::<Vec<_>>();
-                assert_eq!(opened, [true, true, true, false], "slot {slot}");
-            }
-        } else {
-            assert!(status.success(), "slot {slot} exited with {status}");
-            assert_eq!(evidence.phase, Phase::Terminal);
-            assert_eq!(end["completed"], "false");
-        }
-        shared.push((
-            evidence.certified_tick,
-            session.confirmed().tick,
+        assert_eq!(session.confirmed().tick, WITHHELD);
+        assert_eq!(number(end, "confirmed"), u64::from(WITHHELD));
+        assert_eq!(
             session
                 .last_checkpoint()
-                .map(|checkpoint| checkpoint.checkpoint.clone()),
-        ));
+                .map(|checkpoint| checkpoint.checkpoint.tick),
+            Some(120)
+        );
+        assert_eq!(evidence.certified_tick, CERTIFIED);
+        assert_eq!(evidence.pending.len(), MAX_OUTSTANDING_FRONTIERS);
+        assert_eq!(number(end, "pending"), evidence.pending.len() as u64);
+        for frontier in &evidence.pending {
+            // Only the dropped peer's opening is missing; a consensus
+            // deadline must forfeit it.
+            let opened = frontier
+                .openings
+                .iter()
+                .map(Option::is_some)
+                .collect::<Vec<_>>();
+            assert_eq!(opened, [true, true, true, false], "slot {slot}");
+        }
         eprintln!(
-            "{}: slot {slot} {kind} phase={:?} confirmed={} certified={} pending={} checkpoint={:?} records={}",
+            "{}: slot {slot} {kind} phase={:?} confirmed={} certified={} pending={} records={}",
             scenario.name,
             evidence.phase,
             session.confirmed().tick,
             evidence.certified_tick,
             evidence.pending.len(),
-            session
-                .last_checkpoint()
-                .map(|checkpoint| checkpoint.checkpoint.tick),
             journal.receipt().records
         );
-    }
-    // The survivors shared their certificates and last certified checkpoint
-    // when they stopped. A survivor that never received the dropped peer's
-    // opening before that checkpoint cannot retain it.
-    let latest = shared
-        .iter()
-        .filter_map(|(_, _, checkpoint)| checkpoint.clone())
-        .max_by_key(|checkpoint| checkpoint.tick);
-    for (certified, confirmed, checkpoint) in &shared {
-        assert_eq!(*certified, shared[0].0);
-        if let Some(latest) = &latest
-            && *confirmed >= latest.tick
-        {
-            assert_eq!(checkpoint.as_ref(), Some(latest));
-        }
     }
 
     // A survivor restarted from its journal stays stopped: it journals
     // nothing new, so it neither commits nor endorses.
     let records = mesh.restore(&scenario, 0).receipt().records;
     mesh.spawn(&scenario, 0, true);
+    mesh.release(0);
     let status = mesh.children[0].as_mut().unwrap().wait().unwrap();
     assert!(!status.success());
     assert_eq!(mesh.restore(&scenario, 0).receipt().records, records);

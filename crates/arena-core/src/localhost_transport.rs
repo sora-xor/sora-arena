@@ -1140,22 +1140,41 @@ mod tests {
         let frame = certificate(&initiator, &keys, &set);
         let outgoing = initiator.prepare(&frame).unwrap();
         let exact = outgoing.fragments.clone();
-        initiator.timeout = Duration::from_millis(35);
+        assert_eq!(exact.len(), 1);
+        // The responder journals the frame and loses its ACK before the
+        // sender starts counting attempts, so no sync is raced against them.
         responder.drop_next_ack = true;
-        responder
-            .socket
-            .set_read_timeout(Some(Duration::from_millis(90)))
-            .unwrap();
+        initiator.transmit(&outgoing).unwrap();
+        assert_eq!(responder.receive().unwrap(), frame);
+        let accepted = responder.journal().receipt();
+        // The ACK of the first reliable attempt is lost as well, so only a
+        // retry after the timeout is answered. Three more timeouts leave the
+        // responder thread ample time to wake on a loaded machine.
+        responder.drop_next_ack = true;
+        initiator.timeout = Duration::from_millis(250);
         let receiving = thread::spawn(move || {
-            assert_eq!(responder.receive().unwrap(), frame);
-            let accepted = responder.journal().receipt();
-            assert!(matches!(responder.receive(), Err(TransportError::Timeout)));
-            assert_eq!(responder.journal().receipt(), accepted);
+            // Each attempt resends the exact bytes, and a duplicate is only
+            // acknowledged: the first ACK is lost, the second arrives.
+            for _ in 0..2 {
+                let datagram = read_datagram(&responder.socket, responder.remote).unwrap();
+                assert_eq!(datagram, exact[0]);
+                assert!(matches!(
+                    responder.process_datagram(&datagram),
+                    Ok(ReceivedDatagram::Incomplete)
+                ));
+            }
             responder
         });
         initiator.transmit_reliably(&outgoing).unwrap();
         responder = receiving.join().unwrap();
-        assert_eq!(outgoing.fragments, exact);
+        // Any later retry is acknowledged again, never delivered or
+        // journaled twice.
+        responder
+            .socket
+            .set_read_timeout(Some(Duration::from_millis(25)))
+            .unwrap();
+        assert!(matches!(responder.receive(), Err(TransportError::Timeout)));
+        assert_eq!(responder.journal().receipt(), accepted);
         assert_eq!(initiator.journal().receipt().records, 1);
         assert_eq!(responder.journal().receipt().records, 2);
     }
@@ -1369,17 +1388,24 @@ mod tests {
         send_datagram(&initiator.socket, initiator.remote, &outgoing.fragments[0]).unwrap();
         assert_eq!(responder.receive().unwrap(), frame);
         let accepted = responder.journal().receipt();
-        initiator.timeout = Duration::from_millis(50);
-        responder
-            .socket
-            .set_read_timeout(Some(Duration::from_millis(100)))
-            .unwrap();
+        // The retried frame's first fragment is acknowledged again, however
+        // late the responder thread wakes within the sender's attempts.
         let pumping = thread::spawn(move || {
-            assert!(matches!(responder.receive(), Err(TransportError::Timeout)));
+            let datagram = read_datagram(&responder.socket, responder.remote).unwrap();
+            assert!(matches!(
+                responder.process_datagram(&datagram),
+                Ok(ReceivedDatagram::Incomplete)
+            ));
             responder
         });
         initiator.transmit_reliably(&outgoing).unwrap();
         responder = pumping.join().unwrap();
+        // The rest of the retry is only acknowledged, never journaled again.
+        responder
+            .socket
+            .set_read_timeout(Some(Duration::from_millis(25)))
+            .unwrap();
+        assert!(matches!(responder.receive(), Err(TransportError::Timeout)));
         assert_eq!(responder.journal().receipt(), accepted);
     }
 

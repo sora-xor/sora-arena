@@ -40,7 +40,6 @@ use std::{
     fs::{File, OpenOptions},
     io::{self, Read, Seek, SeekFrom, Write},
     net::{IpAddr, SocketAddr, UdpSocket},
-    ops::ControlFlow,
     path::Path,
     sync::mpsc,
     thread::{self, JoinHandle},
@@ -754,6 +753,8 @@ pub struct MeshPeer {
     own_votes: VecDeque<(Checkpoint, SlotSignature)>,
     signed_through: u32,
     finish_records: Option<u32>,
+    /// Research only: own commitments from this tick on are never opened.
+    withhold_from: Option<u32>,
     last_write: Option<Instant>,
     last_datagram: Instant,
     stats: MeshStats,
@@ -914,6 +915,7 @@ impl MeshPeer {
             own_votes: VecDeque::new(),
             signed_through,
             finish_records: None,
+            withhold_from: None,
             last_write: None,
             last_datagram: Instant::now(),
             stats: MeshStats::default(),
@@ -1030,6 +1032,14 @@ impl MeshPeer {
                         .collect()
                 },
             )
+    }
+
+    /// Research only: never open this peer's commitment in a frontier
+    /// starting at or after `start_tick`, like a peer that withholds its
+    /// controls. It still seals, endorses, certifies and relays. Nothing is
+    /// journaled, so a restarted peer opens everything it sealed.
+    pub fn withhold_openings_from(&mut self, start_tick: u32) {
+        self.withhold_from = Some(start_tick);
     }
 
     /// Stop combat on a dropout: journal an interrupt, after which this peer
@@ -2015,6 +2025,9 @@ impl MeshPeer {
                     continue;
                 }
                 if slot == self.local {
+                    if self.withhold_from.is_some_and(|from| tick >= from) {
+                        continue;
+                    }
                     if let Some(sealed) = self
                         .journal
                         .sealed_openings()
@@ -2337,6 +2350,18 @@ pub struct Pace {
     pub linger: Duration,
 }
 
+/// What the harness watching `run_headless` asks after each step.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Watch {
+    /// Count the limits as usual.
+    Run,
+    /// Count this step as progress: neither the stall nor the resolve limit
+    /// passes while the harness holds, however slowly the evidence moves.
+    Hold,
+    /// Drop the peer like a crash.
+    Stop,
+}
+
 /// How long a complete peer waits for its last acknowledgements.
 const ACK_DRAIN_LIMIT: Duration = Duration::from_secs(10);
 
@@ -2422,8 +2447,9 @@ fn progress_mark(peer: &MeshPeer) -> (u32, u32, usize) {
 /// `control(tick)` is this slot's control for
 /// combat tick `tick`; it commits each batch when its last control is
 /// sampled, `INPUT_DELAY_TICKS` ahead, and predicts remote players with their
-/// last confirmed controls. `on_tick` sees every presented tick and may stop
-/// the peer, which drops it like a crash.
+/// last confirmed controls. `watch` sees the peer after every step, whether
+/// or not a tick was presented: it may hold the limits below, or stop the
+/// peer, which drops it like a crash.
 ///
 /// A dropout stops combat after `Pace::stall_limit` without progress. The
 /// peer keeps exchanging evidence and, after `Pace::resolve_limit` without
@@ -2433,7 +2459,7 @@ pub fn run_headless(
     mut peer: MeshPeer,
     pace: Pace,
     control: impl Fn(u32) -> Input,
-    mut on_tick: impl FnMut(&MeshPeer, u32) -> ControlFlow<()>,
+    mut watch: impl FnMut(&MeshPeer) -> Watch,
 ) -> Result<HeadlessReport> {
     let started = Instant::now();
     let max_ticks = peer.session().confirmed().config.max_ticks;
@@ -2491,17 +2517,21 @@ pub fn run_headless(
                 presentation.max_late = presentation.max_late.max(late);
             }
             presentation.presented += 1;
-            if on_tick(&peer, presented).is_break() {
-                return Err(MeshError::Stopped {
-                    confirmed: peer.session().confirmed().tick,
-                });
-            }
         }
 
         let mark = progress_mark(&peer);
         if mark != progress {
             progress = mark;
             progressed_at = now;
+        }
+        match watch(&peer) {
+            Watch::Run => {}
+            Watch::Hold => progressed_at = progressed_at.max(now),
+            Watch::Stop => {
+                return Err(MeshError::Stopped {
+                    confirmed: peer.session().confirmed().tick,
+                });
+            }
         }
         let quiet = now.duration_since(progressed_at);
         if peer.is_complete() {
@@ -2571,7 +2601,7 @@ mod tests {
         fs,
         net::Ipv4Addr,
         path::PathBuf,
-        sync::atomic::{AtomicU64, Ordering},
+        sync::atomic::{AtomicBool, AtomicU64, Ordering},
     };
 
     static NEXT_ROOT: AtomicU64 = AtomicU64::new(0);
@@ -2738,12 +2768,7 @@ mod tests {
 
     fn run_paced(peer: MeshPeer, pace: Pace) -> Result<HeadlessReport> {
         let slot = peer.local_slot();
-        run_headless(
-            peer,
-            pace,
-            move |tick| control(tick, slot),
-            |_, _| ControlFlow::Continue(()),
-        )
+        run_headless(peer, pace, move |tick| control(tick, slot), |_| Watch::Run)
     }
 
     fn assert_agree(fixture: &Fixture, reports: &[HeadlessReport]) {
@@ -2859,11 +2884,11 @@ mod tests {
                 peer,
                 shared,
                 |tick| control(tick, 2),
-                |peer, _| {
+                |peer| {
                     if peer.session().confirmed().tick >= 30 {
-                        ControlFlow::Break(())
+                        Watch::Stop
                     } else {
-                        ControlFlow::Continue(())
+                        Watch::Run
                     }
                 },
             );
@@ -3164,6 +3189,9 @@ mod tests {
         first.handle_ack(0, &ack(0, 0, 0b11));
         assert_eq!(received(&first), [false, true, true]);
         let before = first.stats.retransmitted;
+        // A fully backed-off timeout, so a thread that runs late on a loaded
+        // machine cannot turn the early resend into a timeout.
+        first.remotes[0].rto = RETRANSMIT_MAX;
         let long_ago = Instant::now() - GAP_RESEND_AFTER;
         for entry in &mut first.remotes[0].outbound {
             entry.sent_at = Some(long_ago);
@@ -3495,46 +3523,185 @@ mod tests {
         assert_eq!(journal.session().evidence().pending.len(), 1);
     }
 
-    /// Slots 0 and 1 run on `survivors`. Slot 2 runs on the same clock until
-    /// it confirmed tick 150, after the checkpoint at 120, and is then
-    /// dropped like a crash. With `returns`, it restarts from its journal
-    /// that long after the drop, on the pace given.
+    /// Slot 2 opens none of its commitments from this tick on, after the
+    /// checkpoint at 120.
+    const WITHHELD: u32 = 140;
+    /// Every peer then certifies one full pipeline of frontiers past it...
+    const CERTIFIED: u32 = WITHHELD + (MAX_OUTSTANDING_FRONTIERS * BATCH_TICKS) as u32;
+    /// ...and commits one assembly window past that, short of the clock.
+    const COMMITTED: u32 = CERTIFIED + ASSEMBLY_TICKS;
+    const _: () = assert!(COMMITTED < 240);
+
+    /// How far the peers of a dropout scenario have come, shared with the
+    /// watches of their `run_headless`.
+    #[derive(Default)]
+    struct Dropout {
+        settled: [AtomicBool; 3],
+        dropped: AtomicBool,
+        interrupted: [AtomicBool; 2],
+        /// The returned slot 2 has closed every frontier.
+        closed: AtomicBool,
+    }
+
+    /// Nothing is left for this peer to send before the dropout: it
+    /// confirmed up to the withheld openings, certified and committed as far
+    /// as the pipeline allows, synced the checkpoint at 120, and every peer
+    /// acknowledged every frame it sent. Once each slot was seen settled,
+    /// every frame that decides the survivors' evidence has arrived.
+    fn settled(peer: &MeshPeer) -> bool {
+        let session = peer.session();
+        session.confirmed().tick == WITHHELD
+            && session.evidence().certified_tick == CERTIFIED
+            && peer.next_commit_tick() == COMMITTED
+            && session
+                .last_checkpoint()
+                .is_some_and(|last| last.checkpoint.tick == 120)
+            && peer.journal().durable_receipt() == peer.journal().receipt()
+            && peer.unacknowledged() == 0
+    }
+
+    /// Every frontier the three peers endorsed before the dropout is closed
+    /// and synced, and every peer acknowledged every frame this one sent.
+    fn closed(peer: &MeshPeer) -> bool {
+        let session = peer.session();
+        session.confirmed().tick == COMMITTED
+            && session.evidence().pending.is_empty()
+            && peer.journal().durable_receipt() == peer.journal().receipt()
+            && peer.unacknowledged() == 0
+    }
+
+    /// Hold the limits, but fail rather than hold forever.
+    fn hold(peer: &MeshPeer, deadline: Instant, awaited: &str) -> Watch {
+        assert!(
+            Instant::now() < deadline,
+            "slot {} held too long for {awaited}\n{}",
+            peer.local_slot(),
+            peer.describe()
+        );
+        Watch::Hold
+    }
+
+    /// A survivor holds its limits until slot 2 is gone, so only the dropout
+    /// stops combat however slowly a loaded machine moves the live evidence,
+    /// and while its journal still has records to sync. With `returns`, once
+    /// it stopped combat it holds until it and the returned slot 2 closed
+    /// every frontier.
+    fn survivor(
+        dropout: &Dropout,
+        returns: bool,
+        deadline: Instant,
+    ) -> impl FnMut(&MeshPeer) -> Watch + '_ {
+        let mut released = !returns;
+        move |peer: &MeshPeer| {
+            let slot = peer.local_slot();
+            if settled(peer) {
+                dropout.settled[slot].store(true, Ordering::SeqCst);
+            }
+            if !dropout.dropped.load(Ordering::SeqCst) {
+                return hold(peer, deadline, "the dropout");
+            }
+            if peer.journal().durable_receipt() != peer.journal().receipt() {
+                return hold(peer, deadline, "its journal");
+            }
+            if peer.session().evidence().phase == Phase::Live {
+                return Watch::Run;
+            }
+            dropout.interrupted[slot].store(true, Ordering::SeqCst);
+            released = released || (dropout.closed.load(Ordering::SeqCst) && closed(peer));
+            if released {
+                Watch::Run
+            } else {
+                hold(peer, deadline, "the returning peer")
+            }
+        }
+    }
+
+    /// Slots 0 and 1 survive. Slot 2 runs on the same clock but withholds its
+    /// openings from `WITHHELD` on, so the evidence stops at a known
+    /// frontier however fast each peer runs. Once every peer settled there,
+    /// slot 2 is dropped like a crash and the survivors' limits start to
+    /// count. With `returns`, slot 2 restarts from its journal once both
+    /// survivors stopped combat.
     fn drop_slot_two(
         fixture: &Fixture,
-        survivors: Pace,
-        returns: Option<(Duration, Pace)>,
+        limits: Pace,
+        returns: bool,
     ) -> (Vec<Result<HeadlessReport>>, Option<Result<HeadlessReport>>) {
+        let dropout = Dropout::default();
+        // Only bounds a failing run.
+        let deadline = Instant::now() + Duration::from_secs(120);
         thread::scope(|scope| {
             let handles = (0..2)
                 .map(|slot| {
                     let peer =
                         MeshPeer::start(fixture.admission(slot, false, Impairment::default()))
                             .unwrap();
-                    scope.spawn(move || run_paced(peer, survivors))
+                    let watch = survivor(&dropout, returns, deadline);
+                    scope.spawn(move || {
+                        run_headless(peer, limits, |tick| control(tick, slot), watch)
+                    })
                 })
                 .collect::<Vec<_>>();
-            let peer = MeshPeer::start(fixture.admission(2, false, Impairment::default())).unwrap();
+            let mut peer =
+                MeshPeer::start(fixture.admission(2, false, Impairment::default())).unwrap();
+            peer.withhold_openings_from(WITHHELD);
             let stopped = run_headless(
                 peer,
-                survivors,
+                limits,
                 |tick| control(tick, 2),
-                |peer, _| {
-                    if peer.session().confirmed().tick >= 150 {
-                        ControlFlow::Break(())
+                |peer| {
+                    if settled(peer) {
+                        dropout.settled[2].store(true, Ordering::SeqCst);
+                    }
+                    if dropout
+                        .settled
+                        .iter()
+                        .all(|settled| settled.load(Ordering::SeqCst))
+                    {
+                        Watch::Stop
                     } else {
-                        ControlFlow::Continue(())
+                        hold(peer, deadline, "every peer to settle")
                     }
                 },
             );
             assert!(
-                matches!(stopped, Err(MeshError::Stopped { .. })),
+                matches!(
+                    stopped,
+                    Err(MeshError::Stopped {
+                        confirmed: WITHHELD
+                    })
+                ),
                 "{:?}",
                 stopped.map(|report| report.outcome)
             );
-            let returned = returns.map(|(after, pace)| {
-                thread::sleep(after);
-                let admission = fixture.admission(2, true, Impairment::default());
-                run_paced(MeshPeer::resume(admission).unwrap(), pace)
+            dropout.dropped.store(true, Ordering::SeqCst);
+            let returned = returns.then(|| {
+                while !dropout
+                    .interrupted
+                    .iter()
+                    .all(|interrupted| interrupted.load(Ordering::SeqCst))
+                {
+                    assert!(
+                        Instant::now() < deadline,
+                        "the survivors never stopped combat"
+                    );
+                    thread::sleep(Duration::from_millis(5));
+                }
+                let peer =
+                    MeshPeer::resume(fixture.admission(2, true, Impairment::default())).unwrap();
+                run_headless(
+                    peer,
+                    limits,
+                    |tick| control(tick, 2),
+                    |peer| {
+                        if dropout.closed.load(Ordering::SeqCst) || closed(peer) {
+                            dropout.closed.store(true, Ordering::SeqCst);
+                            Watch::Run
+                        } else {
+                            hold(peer, deadline, "every frontier to close")
+                        }
+                    },
+                )
             });
             let results = handles
                 .into_iter()
@@ -3544,102 +3711,78 @@ mod tests {
         })
     }
 
-    #[test]
-    fn a_dropout_stops_combat_and_preserves_the_evidence_for_consensus() {
-        let fixture = fixture(3, 240);
-        // The limits leave room for a loaded machine: a stall shorter than
-        // a slow sync or handshake would stop combat on a live peer.
-        let survivors = Pace {
+    fn dropout_limits() -> Pace {
+        Pace {
             stall_limit: Duration::from_millis(1_500),
             resolve_limit: Duration::from_millis(1_500),
             ..pace(Some(60), Instant::now() + Duration::from_millis(200))
-        };
-        let (results, _) = drop_slot_two(&fixture, survivors, None);
-        let mut certified = Vec::new();
+        }
+    }
+
+    #[test]
+    fn a_dropout_stops_combat_and_preserves_the_evidence_for_consensus() {
+        let fixture = fixture(3, 240);
+        let (results, _) = drop_slot_two(&fixture, dropout_limits(), false);
         for (slot, result) in results.iter().enumerate() {
+            // Combat stopped where the dropped peer's openings end. The
+            // certified checkpoint, every pending frontier and every opening
+            // received stay. Only the dropped peer's openings are missing,
+            // and only a consensus deadline can forfeit them.
+            let Err(MeshError::Unresolved {
+                confirmed, pending, ..
+            }) = result
+            else {
+                panic!(
+                    "slot {slot}: {:?}",
+                    result.as_ref().map(|report| &report.outcome)
+                );
+            };
+            assert_eq!(
+                (*confirmed, *pending),
+                (WITHHELD, MAX_OUTSTANDING_FRONTIERS)
+            );
             let journal = fixture.restore(slot);
             let session = journal.session();
             let evidence = session.evidence();
-            // Combat stopped short of the clock, possibly before the last
-            // frontiers the dropped peer closed itself: their openings never
-            // left it. The certified checkpoint, every pending frontier and
-            // every opening received stay.
+            assert_eq!(evidence.phase, Phase::Resolving);
             assert!(!session.confirmed().terminal);
-            assert!((120..240).contains(&session.confirmed().tick));
+            assert_eq!(session.confirmed().tick, WITHHELD);
             assert_eq!(session.last_checkpoint().unwrap().checkpoint.tick, 120);
-            match result {
-                Err(MeshError::Unresolved { pending, .. }) => {
-                    assert_eq!(evidence.phase, Phase::Resolving);
-                    assert_eq!(*pending, evidence.pending.len());
-                    for frontier in &evidence.pending {
-                        // Only the dropped peer's opening is missing; a
-                        // consensus deadline must forfeit it.
-                        let opened = frontier
-                            .openings
-                            .iter()
-                            .map(Option::is_some)
-                            .collect::<Vec<_>>();
-                        assert_eq!(opened, [true, true, false], "slot {slot}");
-                    }
-                }
-                Ok(report) => {
-                    assert!(!report.outcome.completed);
-                    assert_eq!(evidence.phase, Phase::Terminal);
-                }
-                Err(error) => panic!("slot {slot}: {error}"),
+            // Both survivors hold the same certified frontiers.
+            assert_eq!(evidence.certified_tick, CERTIFIED);
+            assert_eq!(evidence.pending.len(), MAX_OUTSTANDING_FRONTIERS);
+            for frontier in &evidence.pending {
+                let opened = frontier
+                    .openings
+                    .iter()
+                    .map(Option::is_some)
+                    .collect::<Vec<_>>();
+                assert_eq!(opened, [true, true, false], "slot {slot}");
             }
-            certified.push(evidence.certified_tick);
         }
-        // The survivors shared their certificates when they stopped.
-        assert_eq!(certified[0], certified[1]);
         // A restarted survivor stays stopped.
-        match MeshPeer::resume(fixture.admission(0, true, Impairment::default())) {
-            Ok(peer) => {
-                assert_eq!(peer.session().evidence().phase, Phase::Resolving);
-                assert!(!peer.can_commit() && !peer.can_predict());
-            }
-            Err(error) => assert!(
-                matches!(
-                    error,
-                    MeshError::Evidence(Error::InvalidEvidence("journal already finished"))
-                ),
-                "{error}"
-            ),
-        }
+        let peer = MeshPeer::resume(fixture.admission(0, true, Impairment::default())).unwrap();
+        assert_eq!(peer.session().evidence().phase, Phase::Resolving);
+        assert!(!peer.can_commit() && !peer.can_predict());
     }
 
     #[test]
     fn a_returning_peer_closes_the_frontiers_its_dropout_left_open() {
         let fixture = fixture(3, 240);
-        let start = Instant::now() + Duration::from_millis(200);
-        // The survivors stop combat 1.5 s after the drop and wait 5 s more
-        // for openings; the peer returns 4 s after the drop.
-        let survivors = Pace {
-            stall_limit: Duration::from_millis(1_500),
-            resolve_limit: Duration::from_secs(5),
-            ..pace(Some(60), start)
-        };
-        let returning = Pace {
-            stall_limit: Duration::from_millis(1_500),
-            resolve_limit: Duration::from_millis(1_500),
-            ..pace(Some(60), start)
-        };
-        let (results, returned) = drop_slot_two(
-            &fixture,
-            survivors,
-            Some((Duration::from_secs(4), returning)),
-        );
+        let (results, returned) = drop_slot_two(&fixture, dropout_limits(), true);
         let mut reports = results
             .into_iter()
             .map(|result| result.unwrap())
             .collect::<Vec<_>>();
         reports.push(returned.unwrap().unwrap());
-        // The survivors stopped combat before the peer returned; its openings
-        // then closed every frontier, with no consensus deadline.
+        // The survivors stopped combat before the peer returned. Its openings
+        // then closed every frontier its dropout left open, and with them
+        // every frontier all three endorsed before it left, with no
+        // consensus deadline.
         let outcome = reports[0].outcome.clone();
         assert!(!outcome.completed, "combat did not stop on the dropout");
         assert_eq!(outcome.deadline_frontiers, 0);
-        assert!((150..240).contains(&outcome.tick));
+        assert_eq!(outcome.tick, COMMITTED);
         let mut world = World::new(fixture.config.clone(), &fixture.participants).unwrap();
         while world.tick < outcome.tick {
             let tick = world.tick;

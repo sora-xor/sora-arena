@@ -4,9 +4,14 @@
 //! docs/p2p-localhost.md.
 use std::{
     fs,
+    io::{self, BufRead},
     net::{SocketAddr, UdpSocket},
-    ops::ControlFlow,
     path::PathBuf,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
+    thread,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
@@ -14,7 +19,7 @@ use arena_core::{
     MAX_PLAYERS, MAX_TICKS,
     mesh_transport::{
         HeadlessReport, Impairment, MeshAdmission, MeshError, MeshPeer, NetworkScope, Pace,
-        ReceiptLog, run_headless,
+        ReceiptLog, Watch, run_headless,
     },
     protocol::BATCH_TICKS,
     recovery::DurableSession,
@@ -22,7 +27,7 @@ use arena_core::{
 
 use crate::script;
 
-pub const USAGE: &str = "peer --slot N --peers ADDR,ADDR,... --dir PATH [--ticks 7200] [--rate-hz 60] [--start-unix-ms MS] [--session N] [--restore] [--drop N] [--duplicate N] [--reorder N] [--corrupt N] [--impair-seed N] [--research-lan] [--progress TICKS] [--stall-seconds S] [--resolve-seconds S]";
+pub const USAGE: &str = "peer --slot N --peers ADDR,ADDR,... --dir PATH [--ticks 7200] [--rate-hz 60] [--start-unix-ms MS] [--session N] [--restore] [--drop N] [--duplicate N] [--reorder N] [--corrupt N] [--impair-seed N] [--research-lan] [--progress TICKS] [--stall-seconds S] [--resolve-seconds S] [--withhold-from TICK] [--hold]";
 
 struct Options {
     slot: usize,
@@ -38,6 +43,8 @@ struct Options {
     progress: u32,
     stall_seconds: u64,
     resolve_seconds: u64,
+    withhold_from: Option<u32>,
+    hold: bool,
 }
 
 fn parse(args: impl Iterator<Item = String>) -> Result<Options, String> {
@@ -59,6 +66,8 @@ fn parse(args: impl Iterator<Item = String>) -> Result<Options, String> {
         progress: 300,
         stall_seconds: 60,
         resolve_seconds: 60,
+        withhold_from: None,
+        hold: false,
     };
     while let Some(flag) = args.next() {
         let mut value = || args.next().ok_or_else(|| format!("{flag} needs a value"));
@@ -119,6 +128,13 @@ fn parse(args: impl Iterator<Item = String>) -> Result<Options, String> {
             }
             "--stall-seconds" => options.stall_seconds = number(value()?)?.max(1),
             "--resolve-seconds" => options.resolve_seconds = number(value()?)?.max(1),
+            "--withhold-from" => {
+                options.withhold_from = Some(
+                    u32::try_from(number(value()?)?)
+                        .map_err(|_| "--withhold-from is too large".to_string())?,
+                )
+            }
+            "--hold" => options.hold = true,
             _ => return Err(format!("unknown peer option {flag}")),
         }
     }
@@ -193,7 +209,7 @@ pub fn run(args: impl Iterator<Item = String>) -> Result<(), Box<dyn std::error:
         },
         impairment: options.impairment,
     };
-    let peer = if options.restore {
+    let mut peer = if options.restore {
         let peer = MeshPeer::resume(admission)?;
         let session = peer.session();
         println!(
@@ -207,6 +223,9 @@ pub fn run(args: impl Iterator<Item = String>) -> Result<(), Box<dyn std::error:
     } else {
         MeshPeer::start(admission)?
     };
+    if let Some(tick) = options.withhold_from {
+        peer.withhold_openings_from(tick);
+    }
     println!("ready slot={slot} address={}", options.addresses[slot]);
     let pace = Pace {
         rate_hz: (options.rate_hz > 0).then_some(options.rate_hz),
@@ -215,22 +234,64 @@ pub fn run(args: impl Iterator<Item = String>) -> Result<(), Box<dyn std::error:
         resolve_limit: Duration::from_secs(options.resolve_seconds),
         linger: Duration::from_millis(2_000),
     };
+    // A held peer counts no stall or resolve time until the harness writes
+    // `release` or closes standard input.
+    let released = Arc::new(AtomicBool::new(!options.hold));
+    if options.hold {
+        let released = Arc::clone(&released);
+        thread::spawn(move || {
+            let _ = io::stdin()
+                .lock()
+                .lines()
+                .map_while(Result::ok)
+                .any(|line| line.trim() == "release");
+            released.store(true, Ordering::SeqCst);
+        });
+    }
     let every = options.progress;
+    let mut reported = peer.session().predicted().tick / every * every;
+    let mut quiet = None;
     let result = run_headless(
         peer,
         pace,
         |tick| script::control(tick, slot),
-        |peer, tick| {
-            if (tick + 1).is_multiple_of(every) {
-                let session = peer.session();
+        |peer| {
+            let session = peer.session();
+            while reported + every <= session.predicted().tick {
+                reported += every;
                 println!(
-                    "progress slot={slot} presented={} confirmed={} certified={}",
-                    tick + 1,
+                    "progress slot={slot} presented={reported} confirmed={} certified={}",
                     session.confirmed().tick,
                     session.evidence().certified_tick
                 );
             }
-            ControlFlow::Continue(())
+            if options.hold && peer.unacknowledged() == 0 {
+                // Every frame this peer sent is acknowledged: report where
+                // it stands, so the harness knows what the others hold.
+                let state = (
+                    session.confirmed().tick,
+                    session.evidence().certified_tick,
+                    peer.next_commit_tick(),
+                    session
+                        .last_checkpoint()
+                        .map(|checkpoint| checkpoint.checkpoint.tick),
+                    peer.journal().receipt().records,
+                    peer.journal().durable_receipt().records,
+                );
+                if quiet != Some(state) {
+                    quiet = Some(state);
+                    let (confirmed, certified, next_commit, checkpoint, records, durable) = state;
+                    println!(
+                        "quiet slot={slot} confirmed={confirmed} certified={certified} next_commit={next_commit} checkpoint={} records={records} durable={durable}",
+                        checkpoint.map_or_else(|| String::from("none"), |tick| tick.to_string())
+                    );
+                }
+            }
+            if released.load(Ordering::SeqCst) {
+                Watch::Run
+            } else {
+                Watch::Hold
+            }
         },
     );
     if let Err(MeshError::Unresolved {
