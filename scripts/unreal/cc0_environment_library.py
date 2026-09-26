@@ -10,7 +10,10 @@ Every CC0 input comes from the schema-2 ledgers
 files stay read-only in the clone's gitignored ``Local/`` tree, which git
 worktrees share with the main checkout. ``build_plan`` checks each ledger
 record, its file hashes and the period-accuracy policy below before anything
-is imported. The library lives under ``/Game/Generated/Environment/CC0``.
+is imported. The library lives under ``/Game/Generated/Environment/CC0``,
+which ``Config/DefaultGame.ini`` lists under ``DirectoriesToNeverCook``: the
+project always cooks ``/Game/Generated``, and the never-cook list overrides
+that, so nothing in the library reaches a package until it is admitted.
 
 Period-accuracy policy (the ledger's ``period_risk`` and ``period_flags``):
 
@@ -19,11 +22,16 @@ Period-accuracy policy (the ledger's ``period_risk`` and ``period_flags``):
   buckets, possible moso bamboo). They are imported under ``CC0/Evaluation``
   and bound only to ``MI_Eval_*`` instances, never to a place instance.
 * ``medium`` records may only fill the restricted role their flag names
-  (``MEDIUM_ROLES``); anything else is evaluation-only.
+  (``MEDIUM_ROLES``); anything else is evaluation-only. A breakup layer B
+  covers at most ``MAX_BREAKUP_COVERAGE`` of the surface.
 * ``low``/``none`` records may be used at the places their ``game_use`` names;
   the flag text travels with the instance as a caveat.
-* A place instance may only bind a record whose ``game_use`` lists that place,
-  and never a record meant only for characters or weapons.
+* A place instance may only bind a record whose ``game_use`` lists that place
+  for direct use (an entry that is only the base of an authored asset, such as
+  the shimenawa's rope, does not count), and never a record meant only for
+  characters or weapons.
+* Texture sets that hold discrete units (``MESH_UV_ONLY``: the tatami mats)
+  are never projected in world space.
 
 Nothing here is admitted as photoreal game art: each ledger record keeps its
 ``photoreal_gate`` and every instance carries it as metadata.
@@ -36,6 +44,8 @@ import hashlib
 import json
 from pathlib import Path
 import re
+
+from cc0_environment_hlsl import RANKS
 
 LIBRARY_VERSION = 1
 PACKAGE_ROOT = "/Game/Generated/Environment/CC0"
@@ -59,11 +69,78 @@ MPC_SCALARS = {"Wetness": 0.0, "PuddleAmount": 0.0, "LanternIntensity": 1.0}
 NOT_ADMITTED = ("Not admitted: needs the packaged A/B comparison, measured frame cost and "
                 "license check in docs/art-direction/photoreal-acceptance.md before any runtime use.")
 CHARACTER_ONLY = {"characters", "weapons"}
+COOK_CONFIG = "Config/DefaultGame.ini"
+# The measured ambient-occlusion distributions behind the rank-based height blend and puddles.
+AO_RANKS = "scripts/unreal/cc0_ao_ranks.json"
+AO_RANKS_GENERATOR = "scripts/unreal/measure_cc0_ao.py"
+# game_use text naming a record only as the input of an authored asset, not for direct use.
+AUTHORING_ONLY = re.compile(r"\bauthored\b|\bre-author", re.IGNORECASE)
 
 
 def require(condition, message):
     if not condition:
         raise RuntimeError(message)
+
+
+def never_cook_directories(project_root: Path) -> list[str]:
+    """The ``DirectoriesToNeverCook`` package paths of the project's packaging settings."""
+    text = (Path(project_root) / COOK_CONFIG).read_text(encoding="utf-8")
+    return re.findall(r'^\+DirectoriesToNeverCook=\(Path="([^"]+)"\)\s*$', text, re.MULTILINE)
+
+
+def can_ever_render(command_line: str) -> bool:
+    """``FApp::CanEverRender`` for an editor started with ``command_line`` (never a commandlet here).
+
+    With ``-nullrhi`` no material resource is cached or translated, so a
+    material cannot report compile errors (``UMaterial::CacheResourceShadersForRendering``).
+    """
+    return not any(token.lstrip("-/").lower() == "nullrhi" for token in command_line.split())
+
+
+def image_size(path: Path) -> tuple[int, int]:
+    """Pixel size read from a PNG, JPEG or OpenEXR header: the size Unreal imports as the texture source.
+
+    Texture settings that depend on the size (the power-of-two mode) are
+    derived from the source bytes, which the SHA-256 tags pin, rather than
+    from ``Texture2D.blueprint_get_size_x``, which reports the built platform
+    size (or its stand-in's) once an editor with a renderer has built it.
+    """
+    with Path(path).open("rb") as stream:
+        head = stream.read(8)
+        if head == b"\x89PNG\r\n\x1a\n":
+            chunk = stream.read(16)
+            require(chunk[4:8] == b"IHDR", f"{path}: PNG without IHDR")
+            return int.from_bytes(chunk[8:12], "big"), int.from_bytes(chunk[12:16], "big")
+        if head[:2] == b"\xff\xd8":
+            stream.seek(2)
+            while True:
+                marker = stream.read(2)
+                require(len(marker) == 2 and marker[0] == 0xFF, f"{path}: JPEG without a frame header")
+                while marker[1] == 0xFF:  # fill bytes
+                    marker = marker[1:] + stream.read(1)
+                code = marker[1]
+                if code in (0x01, 0xD8) or 0xD0 <= code <= 0xD7:
+                    continue
+                length = int.from_bytes(stream.read(2), "big")
+                if 0xC0 <= code <= 0xCF and code not in (0xC4, 0xC8, 0xCC):
+                    frame = stream.read(5)
+                    return int.from_bytes(frame[3:5], "big"), int.from_bytes(frame[1:3], "big")
+                stream.seek(length - 2, 1)
+        if head[:4] == b"\x76\x2f\x31\x01":
+            data = head[8:] + stream.read(1 << 16)
+            offset = 0
+            while data[offset] != 0:
+                name_end = data.index(b"\0", offset)
+                type_end = data.index(b"\0", name_end + 1)
+                size = int.from_bytes(data[type_end + 1:type_end + 5], "little")
+                value = data[type_end + 5:type_end + 5 + size]
+                if data[offset:name_end] == b"dataWindow":
+                    require(data[name_end + 1:type_end] == b"box2i" and size == 16, f"{path}: bad EXR dataWindow")
+                    x0, y0, x1, y1 = (int.from_bytes(value[i:i + 4], "little", signed=True) for i in range(0, 16, 4))
+                    return x1 - x0 + 1, y1 - y0 + 1
+                offset = type_end + 5 + size
+            raise RuntimeError(f"{path}: EXR header without dataWindow")
+    raise RuntimeError(f"{path}: not a PNG, JPEG or OpenEXR file")
 
 
 def sha256(path: Path) -> str:
@@ -100,9 +177,16 @@ def storage_root(project_root: Path) -> Path:
 
 
 def places(record) -> set[str]:
-    """Normalised place ids of a ledger record's game_use entries."""
+    """Normalised place ids of a ledger record's game_use entries for direct use.
+
+    An entry whose use names the record only as the input of an authored asset
+    (``AUTHORING_ONLY``, e.g. Rope001 as the "base for authored straw rope" of
+    the shimenawa) does not make that place a place for the record itself.
+    """
     result = set()
     for use in record.data.get("game_use") or []:
+        if AUTHORING_ONLY.search(use.get("use", "")):
+            continue
         for token in use["place"].split(" / "):
             token = token.strip().removeprefix("later: ")
             if token.startswith("ch01 lane kit"):
@@ -325,6 +409,24 @@ PALETTE_SETS = {
     "GreyStonePath": ("grey_stone_path", "T_TerrainGreyStonePath",
                       {"BaseColor": "Diffuse", "Normal": "nor_dx", "ARM": "arm"}, (180.0, 180.0)),
 }
+# Where each palette set's ARM source is recorded: (folder, manifest keys to its file list).
+PALETTE_SOURCES = {
+    "WhitePlaster02": ("Content/SourceArt/Environment/PolyHaven/WhitePlaster02", ("files",)),
+    "GreyStonePath": ("Content/SourceArt/Environment/NyaagyuTerrain", ("stone_pathway_scan", "files")),
+}
+
+
+def palette_arm_source(project_root: Path, name: str) -> tuple[str, str]:
+    """(project-relative path, SHA-256) of the ARM map import_environment_palette.py imported for a palette set."""
+    folder, keys = PALETTE_SOURCES[name]
+    node = json.loads((Path(project_root) / folder / "manifest.json").read_text(encoding="utf-8"))
+    for key in keys:
+        node = node[key]
+    entries = [entry for entry in node if entry.get("channel") == "arm"]
+    require(len(entries) == 1, f"{name}: expected one arm file in {folder}/manifest.json")
+    return f"{folder}/{entries[0]['file']}", entries[0]["sha256"]
+
+
 EXTERNAL_NOTES = {
     "palette:white_plaster_02": "Surface scan, not a historical reconstruction (its manifest).",
     "palette:grey_stone_path": "Estate roji path scan already on the playable terrain.",
@@ -340,7 +442,7 @@ EXTERNAL_NOTES = {
 @dataclass(frozen=True)
 class Master:
     name: str
-    family: str              # surface | heightblend | foliage | cloth | lantern
+    family: str              # surface | heightblend | foliage | cloth | silk | lantern
     virtual: bool = False    # layer A (or only layer) samples streaming virtual textures
 
 
@@ -351,6 +453,7 @@ MASTERS = {m.name: m for m in (
     Master("M_Env_HeightBlend2_VTBase", "heightblend", virtual=True),
     Master("M_Env_Foliage", "foliage"),
     Master("M_Env_Cloth", "cloth"),
+    Master("M_Env_Silk", "silk"),
     Master("M_Env_LanternPaper", "lantern"),
 )}
 
@@ -360,6 +463,7 @@ TEXTURE_PARAMS = {
     "heightblend": ("BaseColor", "Normal", "ARM", "LayerBBaseColor", "LayerBNormal", "LayerBARM"),
     "foliage": ("BaseColor", "Normal", "ARM"),
     "cloth": ("BaseColor", "Normal", "ARM"),
+    "silk": ("BaseColor", "Normal", "ARM"),
     "lantern": ("BaseColor", "Normal", "ARM", "Thickness"),
 }
 WORLD_ALIGNED_FAMILIES = ("surface", "heightblend")
@@ -369,13 +473,13 @@ _SURFACE = _FINISH | {"MetallicScale", "PuddleResponse", "MacroScaleACm", "Macro
                       "DetailNormalStrength"}
 # Exact parameter names of each master family (the validator compares them with the built graphs).
 FAMILY_PARAMETERS = {
-    "surface": {"scalar": _SURFACE, "vector": {"BaseColorTint", "UVScale", "TileSizeCm"},
+    "surface": {"scalar": _SURFACE, "vector": {"BaseColorTint", "UVScale", "TileSizeCm", "AOKnotsLo", "AOKnotsHi"},
                 "switch": {"WorldAlignedUV", "UseDetailNormal"},
                 "texture": {"BaseColor", "Normal", "ARM", "MacroVariation", "DetailNormal"}},
     "heightblend": {"scalar": _SURFACE | {"LayerBCoverage", "VertexColorBlend", "TopFacingBias", "HeightFromCrevices",
                                           "BlendContrast", "LayerBRoughnessMin", "LayerBRoughnessMax"},
                     "vector": {"BaseColorTint", "UVScale", "TileSizeCm", "LayerBUVScale", "LayerBTileSizeCm",
-                               "LayerBTint"},
+                               "LayerBTint", "AOKnotsLo", "AOKnotsHi"},
                     "switch": {"WorldAlignedUV", "UseDetailNormal"},
                     "texture": {"BaseColor", "Normal", "ARM", "LayerBBaseColor", "LayerBNormal", "LayerBARM",
                                 "MacroVariation", "DetailNormal"}},
@@ -385,6 +489,9 @@ FAMILY_PARAMETERS = {
     "cloth": {"scalar": _FINISH | {"MacroScaleACm", "MacroScaleBCm", "ClothAmount"},
               "vector": {"BaseColorTint", "UVScale", "FuzzColor"}, "switch": set(),
               "texture": {"BaseColor", "Normal", "ARM", "MacroVariation"}},
+    "silk": {"scalar": _FINISH | {"MacroScaleACm", "MacroScaleBCm", "Anisotropy", "ShotAmount"},
+             "vector": {"BaseColorTint", "UVScale", "ShotColor"}, "switch": set(),
+             "texture": {"BaseColor", "Normal", "ARM", "MacroVariation"}},
     "lantern": {"scalar": _FINISH | {"ColorTemperatureK", "EmissiveIntensity", "TransmissionMin", "TransmissionMax",
                                      "FlickerSpeed", "FlickerAmount"},
                 "vector": {"BaseColorTint", "UVScale"}, "switch": set(),
@@ -431,6 +538,7 @@ def _inst(name, place, master, layers, *, grade=None, wet=None, extra=None, vect
 
 
 # Medium-risk records and the only role their flag allows.
+MAX_BREAKUP_COVERAGE = 0.3  # a "masked breakup" layer B covers at most this share of a surface
 MEDIUM_ROLES = {
     "patterned_clay_plaster": "layer_b",      # "Use only as masked breakup under clay_plaster"
     "Plaster007": "layer_b",                  # "use for crack and spall breakup only"
@@ -438,6 +546,15 @@ MEDIUM_ROLES = {
     "trident_maple_bark": "maple_bark",       # "Use only as generic maple bark for iroha-momiji"
     "bamboo_wall_02": "review_pending",       # species/weave must be checked before admission
     "bamboo_wall_03": "review_pending",
+}
+
+# Sets that hold discrete units and must follow each mesh's own UV layout.
+MESH_UV_ONLY = {
+    # Two 90 x 180 cm mats per 180 cm tile, heri on the long edges only: projected in
+    # world space, every mat becomes an endless strip with no ends and one orientation.
+    # A mat mesh lays U along its 180 cm length and V across it; UVScale (1, 0.5) maps
+    # it to one mat, so each mat can be turned for the 4.5-mat layout.
+    "TatamiMat": "one mat per mesh UV square",
 }
 
 PLACE_INSTANCES = (
@@ -459,23 +576,24 @@ PLACE_INSTANCES = (
     _inst("MI_EstateDay_Tsuchikabe", "pl_estate_day", "M_Env_Surface_VT", ["ClayPlaster"],
           wet=_wet(1.0, 0.35, 0.35), world_aligned=True, detail=True,
           extra={"DetailTiling": 2.7, "DetailNormalStrength": 0.4}),
+    # LayerBCoverage is the share of the surface layer B covers (see HLSL_BLEND).
     _inst("MI_Kakuredani_CharcoalHutDaub", "pl_kakuredani", "M_Env_HeightBlend2_VTBase",
           ["ClayPlaster", "PatternedClayPlaster"], wet=_wet(1.0, 0.35, 0.35), world_aligned=True,
-          extra={"LayerBCoverage": 0.32, "HeightFromCrevices": 0.0, "BlendContrast": 3.0},
+          extra={"LayerBCoverage": 0.18, "HeightFromCrevices": 0.0, "BlendContrast": 8.0},
           vectors={"LayerBTint": (0.82, 0.74, 0.62, 1.0)}, roles={"patterned_clay_plaster": "layer_b"}),
     _inst("MI_EstateDay_Shikkui", "pl_estate_day", "M_Env_HeightBlend2", ["WhitePlaster02", "Plaster007"],
           wet=_wet(1.0, 0.22, 0.3), world_aligned=True,
-          extra={"LayerBCoverage": 0.22, "HeightFromCrevices": 1.0, "BlendContrast": 5.0},
+          extra={"LayerBCoverage": 0.1, "HeightFromCrevices": 1.0, "BlendContrast": 6.0},
           roles={"Plaster007": "layer_b"}),
     _inst("MI_EstateDay_Tatami", "pl_estate_day", "M_Env_Surface", ["TatamiMat"],
-          grade=_grade((0.97, 0.97, 0.93), (0.5, 0.8)), world_aligned=True),
+          grade=_grade((0.97, 0.97, 0.93), (0.5, 0.8)), vectors={"UVScale": (1.0, 0.5, 0.0, 0.0)}),
     # Kawara (the ledger keeps the project's ibushi maps primary over every RoofingTiles set).
     _inst("MI_EstateDay_IbushiKawara", "pl_estate_day", "M_Env_Surface", ["NyaagyuIbushi"],
           grade=_grade((1.0, 1.0, 1.0), (0.35, 0.5)), wet=_wet(1.0, 0.15, 0.12)),
     # Stone paths, stream beds and ground.
     _inst("MI_EstateDay_RojiStonePath", "pl_estate_day", "M_Env_HeightBlend2", ["GreyStonePath", "Moss002"],
           wet=_wet(1.0, 0.3, 0.2, puddles=0.6), world_aligned=True,
-          extra={"LayerBCoverage": 0.34, "HeightFromCrevices": 1.0, "BlendContrast": 6.0},
+          extra={"LayerBCoverage": 0.25, "HeightFromCrevices": 1.0, "BlendContrast": 8.0},
           vectors={"LayerBTileSizeCm": (100.0, 100.0, 0.0, 0.0)}),
     _inst("MI_Kaido_PackedEarthRoad", "pl_kaido", "M_Env_Surface_VT", ["ForestGround05"],
           wet=_wet(1.0, 0.32, 0.22, puddles=1.0), world_aligned=True, extra={"MacroStrength": 0.16}),
@@ -485,7 +603,7 @@ PLACE_INSTANCES = (
           wet=_wet(1.0, 0.3, 0.25, puddles=0.5), world_aligned=True, extra={"MacroStrength": 0.12}),
     _inst("MI_IssosekiWood_MossForestFloor", "pl_issoseki_wood", "M_Env_HeightBlend2",
           ["ForestGround06", "Moss001"], wet=_wet(1.0, 0.3, 0.25, puddles=0.2, base=0.2), world_aligned=True,
-          extra={"LayerBCoverage": 0.45, "HeightFromCrevices": 0.0, "BlendContrast": 3.0, "MacroStrength": 0.12},
+          extra={"LayerBCoverage": 0.4, "HeightFromCrevices": 0.0, "BlendContrast": 6.0, "MacroStrength": 0.12},
           vectors={"LayerBTileSizeCm": (150.0, 150.0, 0.0, 0.0)}),
     _inst("MI_Ishibashi_StreamBed", "pl_ishibashi", "M_Env_Surface", ["RiverSmallRocks"],
           wet=_wet(1.0, 0.3, 0.12, puddles=0.8, base=0.55), world_aligned=True),
@@ -496,7 +614,7 @@ PLACE_INSTANCES = (
           wet=_wet(1.0, 0.3, 0.35), world_aligned=True),
     _inst("MI_Kakuredani_MossyThatch", "pl_kakuredani", "M_Env_HeightBlend2", ["Riet01", "Moss004"],
           wet=_wet(1.0, 0.3, 0.35), world_aligned=True,
-          extra={"LayerBCoverage": 0.3, "HeightFromCrevices": 1.0, "BlendContrast": 4.0, "TopFacingBias": 0.15},
+          extra={"LayerBCoverage": 0.2, "HeightFromCrevices": 1.0, "BlendContrast": 6.0, "TopFacingBias": 0.15},
           vectors={"LayerBTileSizeCm": (150.0, 150.0, 0.0, 0.0)}),
     _inst("MI_Umaya_WaraStraw", "pl_umaya", "M_Env_Surface", ["ThatchedRoof001A"],
           grade=_grade((1.02, 0.98, 0.9)), wet=_wet(0.3, 0.3, 0.4), world_aligned=True,
@@ -536,9 +654,10 @@ PLACE_INSTANCES = (
           grade=_grade((0.96, 0.9, 0.78), (0.7, 1.0), 0.45), wet=_wet(0.4, 0.35, 0.5)),
     _inst("MI_Umaya_AsaHorseBlanket", "pl_umaya", "M_Env_Cloth", ["Hessian380"],
           grade=_grade((0.92, 0.88, 0.8), (0.7, 1.0), 0.45)),
-    _inst("MI_Kakuredani_JinmakuSilk", "pl_kakuredani", "M_Env_Cloth", ["CrepeSatin"],
+    # Silk: anisotropic sheen along the warp (mesh U) and a shot-silk shift toward the weft colour.
+    _inst("MI_Kakuredani_JinmakuSilk", "pl_kakuredani", "M_Env_Silk", ["CrepeSatin"],
           grade=_grade((1.2, 1.17, 1.07), (0.28, 0.5), 1.0), wet=_wet(0.4, 0.3, 0.3),
-          extra={"ClothAmount": 0.35}, vectors={"FuzzColor": (0.5, 0.49, 0.45, 1.0)}),
+          extra={"Anisotropy": 0.7, "ShotAmount": 0.25}, vectors={"ShotColor": (0.9, 0.86, 0.78, 1.0)}),
     _inst("MI_Kakuredani_PackWrapCloth", "pl_kakuredani", "M_Env_Cloth", ["Fabric011"],
           grade=_grade((0.96, 0.92, 0.84), (0.6, 1.0), 0.5)),
     _inst("MI_Umaya_ShitaguraPad", "pl_umaya", "M_Env_Cloth", ["Fabric013"],
@@ -571,7 +690,7 @@ EVALUATION_INSTANCES = (
     # kept for review until the joints are checked on screen.
     _inst("MI_Eval_StackedStoneWall_MossJoints", "evaluation", "M_Env_HeightBlend2_VTBase",
           ["StackedStoneWall", "Moss003"], wet=_wet(1.0, 0.3, 0.2), world_aligned=True,
-          extra={"LayerBCoverage": 0.5, "HeightFromCrevices": 1.0, "BlendContrast": 8.0},
+          extra={"LayerBCoverage": 0.3, "HeightFromCrevices": 1.0, "BlendContrast": 8.0},
           vectors={"LayerBTileSizeCm": (120.0, 120.0, 0.0, 0.0)}),
 )
 
@@ -622,6 +741,7 @@ class Plan:
     meshes: list
     hdris: list              # (record, package path)
     expected: dict           # object path -> class name
+    ao_ranks: dict = field(default_factory=dict)  # set name -> AO value at each of RANKS
 
     def source_path(self, channel: Channel) -> Path:
         if channel.root == "storage":
@@ -649,6 +769,8 @@ def check_instance(instance: Instance, sets: dict, records: dict):
         texture_set = sets[name]
         require(master.virtual == texture_set.virtual if index == 0 else not texture_set.virtual,
                 f"{instance.name}: {name} virtual-texture state does not match {master.name}")
+        require(not (instance.world_aligned and name in MESH_UV_ONLY),
+                f"{instance.name}: {name} needs mesh UVs ({MESH_UV_ONLY.get(name)}), not world projection")
         if instance.evaluation:
             continue
         require(not texture_set.evaluation, f"{instance.name}: evaluation set {name} bound at a place")
@@ -666,6 +788,10 @@ def check_instance(instance: Instance, sets: dict, records: dict):
                     f"{instance.name}: medium-risk {record.asset_id} has no allowed role here")
             if role == "layer_b":
                 require(index == 1, f"{instance.name}: {record.asset_id} may only be a breakup layer B")
+                coverage = instance.scalars.get("LayerBCoverage", 0.3) + instance.scalars.get("TopFacingBias", 0.0)
+                require(coverage <= MAX_BREAKUP_COVERAGE,
+                        f"{instance.name}: breakup layer {record.asset_id} covers {coverage:.2f} of the surface, "
+                        f"more than {MAX_BREAKUP_COVERAGE}")
             elif role == "plank_roof_regraded":
                 require(instance.place != "pl_umaya" and instance.scalars.get("RoughnessMin", 0) >= 0.5,
                         f"{instance.name}: roof_planks must not roof the stable and needs re-graded roughness")
@@ -675,12 +801,83 @@ def check_instance(instance: Instance, sets: dict, records: dict):
             require(claimed is None, f"{instance.name}: role claimed for non-medium {record.asset_id}")
 
 
+AO_BINS = 4096                  # histogram bins over [0, 1] in AO_RANKS
+RANK_TAILS = (0.001, 0.999)     # quantiles that stand for rank 0 and rank 1 (outliers ignored)
+
+
+def histogram_knots(first_bin: int, counts: list, bins: int = AO_BINS) -> list[float]:
+    """The value at each of RANKS of a histogram (``counts`` from bin ``first_bin`` of ``bins`` over [0, 1]).
+
+    Values are spread evenly inside a bin; rank 0 and 1 stand for the RANK_TAILS quantiles.
+    """
+    total = sum(counts)
+    require(total > 0, "empty histogram")
+    knots = []
+    for rank in RANKS:
+        goal = (RANK_TAILS[0] if rank == 0.0 else RANK_TAILS[1] if rank == 1.0 else rank) * total
+        cumulative = 0
+        for index, count in enumerate(counts):
+            if count and cumulative + count >= goal:
+                knots.append(round((first_bin + index + (goal - cumulative) / count) / bins, 6))
+                break
+            cumulative += count
+    return knots
+
+
+def value_rank(value: float, knots) -> float:
+    """The Custom HLSL's rank of ``value``: the piecewise-linear curve through (knot, RANKS)."""
+    rank = 0.0
+    for index in range(len(RANKS) - 1):
+        span = max(knots[index + 1] - knots[index], 1e-5)
+        rank += (RANKS[index + 1] - RANKS[index]) * min(max((value - knots[index]) / span, 0.0), 1.0)
+    return rank
+
+
+def needs_ao_ranks(instance: Instance) -> bool:
+    """Whether the instance's master reads layer A's AO rank: every height blend, and puddles."""
+    return MASTERS[instance.master].family == "heightblend" or instance.scalars.get("PuddleResponse", 0.0) > 0.0
+
+
+def ao_source(project_root: Path, texture_set: TextureSet, packs: list) -> tuple[str, str, str]:
+    """(root, relative path, SHA-256) of the file whose first channel becomes the set's ARM red (AO)."""
+    if not texture_set.imported:
+        return ("project", *palette_arm_source(project_root, texture_set.name))
+    arm = texture_set.channels["ARM"]
+    if arm.root in ("storage", "project"):
+        return arm.root, arm.file, arm.sha256
+    job = next(job for job in packs if job.output == arm.file)
+    source = job.inputs["R"]
+    require(isinstance(source, tuple), f"{texture_set.name}: its ARM map has no ambient occlusion to rank")
+    return source
+
+
+def load_ao_ranks(project_root: Path, sets: dict, packs: list, names: set) -> dict:
+    """AO knots of each named set from AO_RANKS, which must have been measured from the current sources."""
+    path = Path(project_root) / AO_RANKS
+    require(path.is_file(), f"Missing {AO_RANKS}; run {AO_RANKS_GENERATOR}")
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    require(doc.get("generator") == AO_RANKS_GENERATOR and doc.get("ranks") == list(RANKS),
+            f"{AO_RANKS} was measured at other ranks; rerun {AO_RANKS_GENERATOR}")
+    ranks = {}
+    for name in sorted(names):
+        entry = doc["sets"].get(name)
+        root, relative, digest = ao_source(project_root, sets[name], packs)
+        require(entry is not None and entry["file"] == relative and entry["sha256"] == digest,
+                f"{name}: no AO measurement of {relative} in {AO_RANKS}; rerun {AO_RANKS_GENERATOR}")
+        knots = entry["knots"]
+        require(len(knots) == len(RANKS) and all(a <= b for a, b in zip(knots, knots[1:])),
+                f"{name}: AO knots must rise with rank")
+        ranks[name] = knots
+    return ranks
+
+
 def _gltf_nodes(path: Path) -> tuple:
     gltf = json.loads(path.read_text(encoding="utf-8"))
     return tuple(node["name"] for node in gltf["nodes"] if "mesh" in node)
 
 
-def build_plan(project_root: Path, *, verify: bool = True) -> Plan:
+def build_plan(project_root: Path, *, verify: bool = True, measured: bool = True) -> Plan:
+    """The whole library. ``measured=False`` skips the AO measurements (for the tool that makes them)."""
     project_root = Path(project_root).resolve()
     storage = storage_root(project_root)
     records = load_ledgers(project_root)
@@ -755,7 +952,9 @@ def build_plan(project_root: Path, *, verify: bool = True) -> Plan:
         for _, name in mesh.assets:
             add(_package(mesh.folder, name), "StaticMesh")
 
-    plan = Plan(project_root, storage, records, sets, packs, instances, meshes, hdris, expected)
+    ranked = {instance.layers[0] for instance in instances if needs_ao_ranks(instance)}
+    ao_ranks = load_ao_ranks(project_root, sets, packs, ranked) if measured else {}
+    plan = Plan(project_root, storage, records, sets, packs, instances, meshes, hdris, expected, ao_ranks)
     if verify:
         verify_sources(plan)
     return plan
@@ -770,6 +969,9 @@ def resolved_vectors(plan: Plan, instance: Instance) -> dict:
             if key not in vectors:
                 tile = plan.sets[instance.layers[index]].tile_cm or (AMBIENTCG_TILE_CM, AMBIENTCG_TILE_CM)
                 vectors[key] = (tile[0], tile[1], 0.0, 0.0)
+    if needs_ao_ranks(instance):
+        knots = tuple(float(value) for value in plan.ao_ranks[instance.layers[0]])
+        vectors["AOKnotsLo"], vectors["AOKnotsHi"] = knots[:4], knots[4:]
     return vectors
 
 
@@ -905,6 +1107,27 @@ def verify_packed(plan: Plan) -> int:
         path = plan.project_root / PACKED_ROOT / job.output
         require(path.is_file() and sha256(path) == entry["sha256"], f"Packed map changed on disk: {path}")
     return len(plan.packs)
+
+
+def ledger_uses(plan: Plan) -> dict[str, list[str]]:
+    """Ledger key -> every /Game package built from that record or binding it (the ledger's ``used_by``).
+
+    Keys are ``<source>:<asset_id>`` for first-slice records and the set origin
+    (``palette:...``, ``project:...``) for the sets the library binds from elsewhere.
+    """
+    uses: dict[str, set] = {}
+    for texture_set in plan.sets.values():
+        packages = uses.setdefault(texture_set.origin, set())
+        if texture_set.imported:
+            packages.update(channel.package for channel in texture_set.channels.values())
+    for instance in plan.instances:
+        for texture_set in plan.layers_of(instance):
+            uses[texture_set.origin].add(instance_path(instance))
+    for mesh in plan.meshes:
+        uses[mesh.record.key].update(_package(mesh.folder, name) for _, name in mesh.assets)
+    for record, path in plan.hdris:
+        uses.setdefault(record.key, set()).add(path)
+    return {key: sorted(packages) for key, packages in sorted(uses.items())}
 
 
 def metadata(plan: Plan, instance: Instance) -> dict:

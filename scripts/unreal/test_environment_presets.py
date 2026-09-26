@@ -1,13 +1,16 @@
 """Host tests for the environment lighting presets, CC0 surface assignments and seeded scatter.
 
 Run: python3 scripts/unreal/test_environment_presets.py
-Needs only the committed ledgers, the story bible and the world-builder lighting source.
+Needs only the committed ledgers, the story bible and the world-builder lighting source; the
+moss-cushion coverage test also reads moss_01's glTF from Local/ and is skipped without it.
 """
 
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 import hashlib
+import json
 from pathlib import Path
 import re
 import sys
@@ -138,6 +141,18 @@ class SurfaceTest(unittest.TestCase):
                              self.sets, self.records)
         self.assertNotIn("wall_plaster", P.SURFACES["pl_estate_night"])
 
+    def test_the_shimenawa_is_not_hemp_lashing(self):
+        # Rope001's flag: a shimenawa is left-laid rice straw; use Rope001 for hemp lashings only.
+        flags = " ".join(self.records["Rope001"].flags)
+        self.assertIn("hemp lashings only", flags)
+        self.assertNotIn("rope", P.SURFACES["pl_issoseki_wood"])
+        self.assertIn("shimenawa", P.UNFILLED["pl_issoseki_wood"])
+        with self.assertRaisesRegex(RuntimeError, "not planned for pl_issoseki_wood"):
+            L.check_instance(replace(self.instances["MI_Matoba_HempLashing"], place="pl_issoseki_wood"),
+                             self.sets, self.records)
+        for place, roles in P.UNFILLED.items():
+            self.assertFalse(set(roles) & set(P.SURFACES.get(place, {})), place)
+
     def test_every_place_instance_is_assigned_somewhere(self):
         assigned = {name for roles in P.SURFACES.values() for names in roles.values() for name in names}
         meshes = {name for name, instance in self.instances.items()
@@ -204,6 +219,70 @@ class ScatterTest(unittest.TestCase):
         self.assertEqual(circles[0][:2], (0, 0))
         self.assertEqual(circles[-1][:2], (1000, 777))
 
+    def test_path_division_is_the_same_in_cpp(self):
+        # C++ `/` truncates toward zero; Python `//` floors. The reviewer's path runs toward -x and -y.
+        def truncating(points, half_width):
+            circles, step = [], max(1, half_width // 2)
+            for (ax, ay), (bx, by) in zip(points, points[1:]):
+                dx, dy = bx - ax, by - ay
+                count = max(1, int(Fraction(max(abs(dx), abs(dy)) + step - 1, step)))
+                circles += [(ax + int(Fraction(dx * index, count)), ay + int(Fraction(dy * index, count)), half_width)
+                            for index in range(count + 1)]
+            return circles
+
+        paths = ([(1000, 0), (-1000, -777)], [(0, 0), (-333, 1000), (500, -251), (-7, -7)], [(-1000, 0), (1000, 0)])
+        for path in paths:
+            self.assertEqual(P.path_exclusions(path, 120), truncating(path, 120), path)
+            mirrored = P.path_exclusions([(-x, -y) for x, y in path], 120)
+            self.assertEqual(mirrored, [(-x, -y, r) for x, y, r in P.path_exclusions(path, 120)], path)
+        self.assertIn((942, -22, 120), P.path_exclusions(paths[0], 120))  # floor division gave (941, -23)
+
+    def test_moss_is_scattered_as_cushions(self):
+        rule = next(item for item in P.SCATTER if item.place == "pl_issoseki_wood"
+                    and item.instance == "MI_IssosekiWood_MossClump01")
+        low, high, radius = rule.cluster
+        placed = P.scatter(rule, ("A", "B"), 11, (0, 0, 4000, 4000))
+        self.assertEqual(placed, P.scatter(rule, ("A", "B"), 11, (0, 0, 4000, 4000)))
+        # Group the sprigs by cushion: the plain scatter of the same rule gives the centres.
+        centres = P.scatter(replace(rule, cluster=()), ("A",), 11, (0, 0, 4000, 4000))
+        for _, x, y, _, _ in placed:
+            self.assertTrue(any((x - cx) ** 2 + (y - cy) ** 2 <= radius * radius for _, cx, cy, _, _ in centres))
+        per_cushion = len(placed) / len(centres)
+        self.assertTrue(low * 0.7 <= per_cushion <= high, per_cushion)  # square offsets outside the circle drop
+        self.assertTrue(all(rule.scale_milli[0] <= scale <= rule.scale_milli[1] for *_, scale in placed))
+
+    @unittest.skipUnless((L.storage_root(ROOT) / "Local/ThirdPartyRaw/cc0").is_dir(), "Local/ not fetched")
+    def test_moss_cushions_are_covered_by_sprigs(self):
+        # moss_01's sprigs are 0.9-3.7 cm: alone at 0.6 per m^2 they would be invisible specks.
+        plan = L.build_plan(ROOT, verify=False)
+        mesh = next(item for item in plan.meshes if item.record.asset_id == "moss_01")
+        gltf = json.loads((plan.storage / mesh.gltf).read_text(encoding="utf-8"))
+        footprints = []
+        for node in gltf["nodes"]:
+            if "mesh" not in node:
+                continue
+            scale = node.get("scale", [1.0, 1.0, 1.0])
+            accessors = [gltf["accessors"][primitive["attributes"]["POSITION"]]
+                         for primitive in gltf["meshes"][node["mesh"]]["primitives"]]
+            width = [100 * (max(a["max"][axis] for a in accessors) - min(a["min"][axis] for a in accessors))
+                     * scale[axis] for axis in (0, 2)]  # glTF is Y-up: X and Z lie on the ground
+            footprints.append(width[0] * width[1])
+            self.assertLess(max(width), 4.0, node["name"])
+        for rule in P.SCATTER:
+            if rule.instance != "MI_IssosekiWood_MossClump01":
+                continue
+            low, high, radius = rule.cluster
+            mean_scale = sum(rule.scale_milli) / 2000
+            covered = (low + high) / 2 * 0.785 * sum(footprints) / len(footprints) * mean_scale ** 2
+            self.assertGreater(covered / (3.14159 * radius * radius), 0.4, rule)
+
+    def test_cluster_scatter_is_pinned(self):
+        # A C++ port must reproduce this digest bit for bit, with a path running toward -x and -y.
+        rule = P.ScatterRule("pl_issoseki_wood", "MI_IssosekiWood_MossClump01", 25.0, (1100, 1800), 20, (24, 48, 9))
+        placed = P.scatter(rule, ("C", "D", "E"), 20260927, (-1000, -1000, 1000, 1000),
+                           P.path_exclusions([(1000, 0), (-1000, -777)], 120))
+        self.assertEqual(hashlib.sha256(repr(placed).encode()).hexdigest(), CLUSTER_DIGEST)
+
     def test_integer_algorithm_is_pinned(self):
         # A C++ port must reproduce this digest bit for bit.
         rule = P.ScatterRule("pl_issoseki_wood", "MI_IssosekiWood_MossClump01", 60.0, (900, 1800), 20)
@@ -215,6 +294,7 @@ class ScatterTest(unittest.TestCase):
 
 
 PINNED_DIGEST = "f76f09e69eabd0f93ea2cac9ee2593331eaf76615b862841e5bccc9662a26933"
+CLUSTER_DIGEST = "631bf3713fbebf22d04c2aa6954d2da18e610ee22b907636c2011e04088f79c5"
 
 
 if __name__ == "__main__":

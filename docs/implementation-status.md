@@ -249,6 +249,33 @@ import, cook, frame cost and the photoreal A/B gate. No gameplay code
 references the library or `scripts/unreal/environment_presets.py` (lighting
 presets, per-place surfaces, seeded scatter) yet.
 
+2026-09-27 review fixes (host-verified only; no editor run, because free disk
+stayed at 22-25 GiB against the 32 GiB floor):
+
+- **Cook.** The library is never cooked. `Config/DefaultGame.ini` always cooks
+  `/Game/Generated`, so it now also lists `/Game/Generated/Environment/CC0`
+  under `DirectoriesToNeverCook`. Without that, every package would have
+  shipped about 2.3 GB of unadmitted content, including the evaluation
+  surfaces, the look-development HDRIs and the look-development level.
+- **Height blend and puddles.** Both now threshold ranks within the AO and
+  macro distributions measured from the real maps, not raw values. On those
+  maps the old values showed no layer B on the shikkui, roji and thatch,
+  covered 99.98% of the daub, and flooded the whole road from
+  `PuddleAmount` 0.7. Each blend now covers its stated share within 0.03. The
+  road's flat share in puddles is 15% at 0.7, 21% at 0.8 and 35% at 1.0.
+- **Tatami and silk.** The tatami uses mesh UVs, one mat per UV square, so
+  mats can have ends and turn. The jinmaku silk has an eighth master,
+  `M_Env_Silk`, which is anisotropic with a shot-silk shift.
+- **Ledger.** Each ledger record's `used_by` now lists the packages built from
+  it. TextureCan Paper 0017 has a schema-2 record.
+- **Presets.** The One-Claw Stone Wood's shimenawa is no longer assigned
+  Rope001. Moss is scattered as cushions of sprigs. The scatter's integer
+  division matches C++.
+- **Importer.** It no longer presents a `-nullrhi` recompile as a compile
+  check.
+
+Details are in the [library doc](cc0-environment-library.md).
+
 ## Milestones and current evidence
 
 | Milestone | Current state | Completion evidence still required |

@@ -1,0 +1,109 @@
+{
+  "schema_version": 2,
+  "kind": "asset-ledger",
+  "ledger_id": "texturecan-shoji-paper-0017",
+  "source": "texturecan",
+  "purpose": "Schema-2 extension of the shoji paper study's schema-1 manifest: the four unaltered TextureCan Paper 0017 maps, which the CC0 environment library also imports for its lantern paper.",
+  "generator": "hand-written; used_by is written by scripts/unreal/record_cc0_ledger_uses.py",
+  "extends": [
+    {
+      "manifest": "Content/SourceArt/Environment/ShojiPaperArtReview/manifest.json",
+      "sha256": "23135138afefb563de9a4c815ff98c997a20ae4b7f7bb88e84c04b11ed6910b3",
+      "schema_version": 1
+    }
+  ],
+  "policy": "The extended schema-1 manifest stays byte-identical; its status describes the Blender study, which remains source-only. The per-map hashes are copied verbatim from it.",
+  "records": [
+    {
+      "asset_id": "texturecan_paper_0017",
+      "name": "TextureCan Paper 0017 (Japanese shoji screen paper)",
+      "kind": "texture",
+      "tier": "PUB-CC0",
+      "license": "CC0-1.0",
+      "license_url": "https://www.texturecan.com/terms/",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+      "origin_url": "https://www.texturecan.com/details/281/",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "license_snapshot": {
+        "url": "https://www.texturecan.com/terms/",
+        "path": "Local/ThirdPartyRaw/_licenses/texturecan/texturecan-terms-2026-09-27.html",
+        "sha256": "1cbec10e4cbac9c4a8c8f80abeaa88a82e0f91650ad60e615712ff9605609b8e",
+        "retrieved_at_utc": "2026-09-26T15:31:59+00:00",
+        "via": "direct",
+        "quote": "All the PBR textures, graphics and photos offered by TextureCan.com are under the Creative Commons CC0 1.0 Universe License.",
+        "note": "Retroactive: taken when the CC0 environment library began importing these maps. The 2026-09-24 acquisition recorded the terms URL and CC0 statement in the study manifest but kept no terms snapshot."
+      },
+      "license_evidence": {
+        "asset_page": {
+          "url": "https://www.texturecan.com/details/281/",
+          "path": "Local/ThirdPartyRaw/_licenses/texturecan/texturecan-paper-0017-2026-09-27.html",
+          "sha256": "26a3e0514f9d6cf97d328247640ecd0efc4ae431eabb186f7936809b6e7eb8f8",
+          "retrieved_at_utc": "2026-09-26T15:32:00+00:00"
+        }
+      },
+      "access": "direct",
+      "acquired_at_utc": "2026-09-24T01:20:24+00:00",
+      "acquired_by": "agent",
+      "acquisition": {
+        "archive_url": "https://www.texturecan.com/downloads/paper_0017/paper_0017_2k_tZ5978.zip",
+        "archive_sha256": "7e2a6fa92d0deaf187e00446108aed57af36f89535727097470d39418dc65dc9",
+        "commit": "1554621"
+      },
+      "storage": "repo-lfs",
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_EstateNight_AndonPaper.MI_EstateNight_AndonPaper",
+        "/Game/Generated/Environment/CC0/Instances/MI_LanternWardRain_ChochinPaper.MI_LanternWardRain_ChochinPaper",
+        "/Game/Generated/Environment/CC0/Textures/Paper0017/T_Paper0017_ARM.T_Paper0017_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Paper0017/T_Paper0017_BaseColor.T_Paper0017_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Paper0017/T_Paper0017_Normal.T_Paper0017_Normal",
+        "/Game/Generated/Environment/CC0/Textures/Paper0017/T_Paper0017_Thickness.T_Paper0017_Thickness"
+      ],
+      "fallback": null,
+      "source_type": "Procedural paper-only PBR; not photographed or historically certified washi",
+      "period_note": "Procedural paper, not certified washi; its fibres failed the shoji photoreal gate (README), so the lanterns need their own A/B.",
+      "not_recorded_here": "Content/SourceArt/Environment/ShojiPaperArtReview/Textures/paper_0017_translucency_ART_ESTIMATE_2k.png is a project derivative of the height map (see the study manifest); the library does not import it.",
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/ShojiPaperArtReview/Textures/paper_0017_color_2k.jpg",
+          "sha256": "3a74947a492e4dcbce807410c577ebd755ea2d9f8064edd2442f394987dd3ea5",
+          "hash_source": "Content/SourceArt/Environment/ShojiPaperArtReview/manifest.json",
+          "bytes": 67125,
+          "channel": "Color",
+          "archive_member_of": "https://www.texturecan.com/downloads/paper_0017/paper_0017_2k_tZ5978.zip"
+        },
+        {
+          "path": "Content/SourceArt/Environment/ShojiPaperArtReview/Textures/paper_0017_height_2k.png",
+          "sha256": "ddcee8e3779d271ab816c2567d673c7f0abf3bc158f68d601426282192b21035",
+          "hash_source": "Content/SourceArt/Environment/ShojiPaperArtReview/manifest.json",
+          "bytes": 5655819,
+          "channel": "Height",
+          "archive_member_of": "https://www.texturecan.com/downloads/paper_0017/paper_0017_2k_tZ5978.zip"
+        },
+        {
+          "path": "Content/SourceArt/Environment/ShojiPaperArtReview/Textures/paper_0017_normal_directx_2k.png",
+          "sha256": "403a15e4b9d13d3f19301bd8d4066fd0a6b03a24e556fcfc0f4271ef147ac625",
+          "hash_source": "Content/SourceArt/Environment/ShojiPaperArtReview/manifest.json",
+          "bytes": 23391323,
+          "channel": "NormalDX",
+          "archive_member_of": "https://www.texturecan.com/downloads/paper_0017/paper_0017_2k_tZ5978.zip"
+        },
+        {
+          "path": "Content/SourceArt/Environment/ShojiPaperArtReview/Textures/paper_0017_roughness_2k.jpg",
+          "sha256": "7fee09407fa73b6b8dd7b806ecf0505ee626fbc5c9e99279516def340a2dd33b",
+          "hash_source": "Content/SourceArt/Environment/ShojiPaperArtReview/manifest.json",
+          "bytes": 92751,
+          "channel": "Roughness",
+          "archive_member_of": "https://www.texturecan.com/downloads/paper_0017/paper_0017_2k_tZ5978.zip"
+        }
+      ]
+    }
+  ]
+}

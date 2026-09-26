@@ -18,7 +18,9 @@ by an exporter to ``Content/Data``. Nothing in the game reads it yet.
   seeded placement in integer centimetres, tenths of a degree and thousandths
   of scale. Past the grid cell size (the rounded square root of the rule's
   density, fixed per rule) it uses only 64-bit integer arithmetic (SplitMix64
-  hashes and squared distances), so a C++ port reproduces it bit for bit.
+  hashes and squared distances) whose divisions and remainders all have
+  non-negative operands, so C++ ``/`` and ``%`` (which truncate) give the same
+  results as Python's (which floor), and a C++ port reproduces it bit for bit.
 
 HDRIs are lighting-only by their ledger flags: the visible sky stays
 SkyAtmosphere and clouds. The look-development HDRIs are never game presets.
@@ -147,12 +149,20 @@ SURFACES = {
                       "roof": ("MI_Kakuredani_KayabukiThatchField", "MI_Kakuredani_MossyThatch"),
                       "cloth": ("MI_Kakuredani_AsaSacking", "MI_Kakuredani_JinmakuSilk",
                                 "MI_Kakuredani_PackWrapCloth")},
+    # The wood's rope is the split boulder's 注連縄, left-laid rice straw: the ledger names
+    # Rope001 only as the base of that authored rope ("use for hemp lashings only"), so the
+    # role stays empty until the shimenawa is authored (UNFILLED).
     "pl_issoseki_wood": {"ground": ("MI_IssosekiWood_MossForestFloor",), "stream_bed": ("MI_Ishibashi_StreamBed",),
                          "tree_bark": ("MI_IssosekiWood_SugiBark", "MI_IssosekiWood_YamazakuraBark",
-                                       "MI_IssosekiWood_MomijiBark"),
-                         "rope": ("MI_Matoba_HempLashing",)},
+                                       "MI_IssosekiWood_MomijiBark")},
     "pl_lantern_ward_rain": {"lantern_paper": ("MI_LanternWardRain_ChochinPaper",)},
     "lane_kit": {"ground": ("MI_Kaido_PackedEarthRoad",), "fence": ("MI_LaneKit_AjiroTakegaki",)},
+}
+
+# Roles a place needs that no CC0 record may fill: they need authored art.
+UNFILLED = {
+    "pl_issoseki_wood": {"shimenawa": "left-laid rice-straw 注連縄 on the split boulder (Rope001 flag: re-author; "
+                                      "Rope001 is for hemp lashings only)"},
 }
 
 
@@ -160,21 +170,26 @@ SURFACES = {
 class ScatterRule:
     place: str
     instance: str            # CC0 library mesh instance; its meshes are the variants
-    per_100_m2: float        # mean count per 100 m^2 before exclusions
+    per_100_m2: float        # mean count (of clusters, for a cluster rule) per 100 m^2 before exclusions
     scale_milli: tuple       # (min, max) uniform scale in thousandths
     clearance_cm: int        # added to every exclusion radius for this rule
+    cluster: tuple = ()      # (min count, max count, radius cm): each placement becomes that many meshes
 
 
-# Densities follow §15.2: a moss-and-fern cedar floor in the wood, a rocky stream at the
-# bridge, a cut-over valley at the charcoal burners' huts, rocks and roots along the road.
+# Densities follow §15.2: a mossy cedar floor in the wood, a rocky stream at the bridge, a
+# cut-over valley at the charcoal burners' huts, rocks and roots along the road. The moss_01
+# scans are single sprigs 0.9-3.7 cm across, so they are placed as cushions: 24-48 sprigs
+# within 9 cm in the wood, 20-36 within 7 cm by the road (about half of each cushion covered
+# at 1.1-1.8x). The moss carpet between the cushions is the wood floor's Moss001 layer. Ferns
+# are not in this library (the fern art review).
 SCATTER = (
-    ScatterRule("pl_issoseki_wood", "MI_IssosekiWood_MossClump01", 60.0, (900, 1800), 20),
+    ScatterRule("pl_issoseki_wood", "MI_IssosekiWood_MossClump01", 25.0, (1100, 1800), 20, (24, 48, 9)),
     ScatterRule("pl_issoseki_wood", "MI_IssosekiWood_MossRockSet01", 2.0, (700, 1300), 80),
     ScatterRule("pl_issoseki_wood", "MI_IssosekiWood_RootCluster01", 0.4, (800, 1200), 120),
     ScatterRule("pl_issoseki_wood", "MI_IssosekiWood_TreeStump01", 0.3, (850, 1150), 150),
     ScatterRule("pl_kaido", "MI_IssosekiWood_MossRockSet01", 1.0, (600, 1200), 100),
     ScatterRule("pl_kaido", "MI_IssosekiWood_RootCluster01", 0.2, (800, 1200), 150),
-    ScatterRule("pl_kaido", "MI_IssosekiWood_MossClump01", 25.0, (900, 1600), 40),
+    ScatterRule("pl_kaido", "MI_IssosekiWood_MossClump01", 8.0, (1100, 1600), 40, (20, 36, 7)),
     ScatterRule("pl_ishibashi", "MI_Ishibashi_MossRockSet02", 4.0, (700, 1400), 80),
     ScatterRule("pl_kakuredani", "MI_Ishibashi_MossRockSet02", 1.5, (700, 1300), 100),
     ScatterRule("pl_kakuredani", "MI_IssosekiWood_TreeStump01", 0.8, (850, 1150), 150),
@@ -205,6 +220,17 @@ def isqrt_cell_cm(per_100_m2: float) -> int:
     return max(1, int(round(side)))
 
 
+def _part(delta: int, index: int, count: int) -> int:
+    """delta * index / count rounded toward zero, dividing only non-negative values.
+
+    C++ ``/`` truncates and Python ``//`` floors, which differ for a negative
+    numerator; dividing the magnitude and restoring the sign gives both languages
+    the same answer.
+    """
+    magnitude = abs(delta) * index // count
+    return magnitude if delta >= 0 else -magnitude
+
+
 def path_exclusions(points, half_width_cm: int) -> list:
     """A path polyline (integer cm) as overlapping exclusion circles no more than half a width apart."""
     library.require(half_width_cm > 0 and len(points) >= 2, "a path needs two points and a width")
@@ -213,9 +239,9 @@ def path_exclusions(points, half_width_cm: int) -> list:
     for (ax, ay), (bx, by) in zip(points, points[1:]):
         dx, dy = bx - ax, by - ay
         length = max(abs(dx), abs(dy))
-        count = max(1, -(-length // step))
+        count = max(1, (length + step - 1) // step)
         for index in range(count + 1):
-            circles.append((ax + dx * index // count, ay + dy * index // count, half_width_cm))
+            circles.append((ax + _part(dx, index, count), ay + _part(dy, index, count), half_width_cm))
     return circles
 
 
@@ -225,6 +251,9 @@ def scatter(rule: ScatterRule, variants: tuple, seed: int, bounds_cm: tuple, exc
     ``exclusions`` are integer circles (x, y, radius_cm): spawns, objectives and path
     samples from ``path_exclusions``. Returns (variant, x_cm, y_cm, yaw_tenths_deg,
     scale_milli) tuples, sorted, identical for identical inputs on every platform.
+    A cluster rule's placements are cluster centres; each becomes ``cluster`` count
+    meshes at hashed offsets within its radius, each kept only inside the bounds and
+    clear of the exclusions.
     """
     x0, y0, x1, y1 = bounds_cm
     library.require(x0 < x1 and y0 < y1, "empty scatter bounds")
@@ -233,22 +262,38 @@ def scatter(rule: ScatterRule, variants: tuple, seed: int, bounds_cm: tuple, exc
     cell = isqrt_cell_cm(rule.per_100_m2)
     low, high = rule.scale_milli
     library.require(0 < low <= high, f"{rule.instance}: bad scale range")
+    if rule.cluster:
+        count_low, count_high, spread = rule.cluster
+        library.require(0 < count_low <= count_high and spread > 0, f"{rule.instance}: bad cluster")
+
+    def clear(x, y):
+        return x0 <= x < x1 and y0 <= y < y1 and not any(
+            (x - cx) ** 2 + (y - cy) ** 2 < (radius + rule.clearance_cm) ** 2 for cx, cy, radius in exclusions)
+
     placed = []
     for i in range((x1 - x0 + cell - 1) // cell):
         for j in range((y1 - y0 + cell - 1) // cell):
             h = hash_keys(seed, i, j)
             x = x0 + i * cell + h % cell
             y = y0 + j * cell + (h >> 20) % cell
-            if x >= x1 or y >= y1:
-                continue
-            if any((x - cx) ** 2 + (y - cy) ** 2 < (radius + rule.clearance_cm) ** 2
-                   for cx, cy, radius in exclusions):
+            if not clear(x, y):
                 continue
             g = hash_keys(seed, i, j, 1)
-            variant = variants[g % len(variants)]
-            yaw = (g >> 16) % 3600
-            scale = low + (g >> 32) % (high - low + 1)
-            placed.append((variant, x, y, yaw, scale))
+            if not rule.cluster:
+                variant = variants[g % len(variants)]
+                yaw = (g >> 16) % 3600
+                scale = low + (g >> 32) % (high - low + 1)
+                placed.append((variant, x, y, yaw, scale))
+                continue
+            for k in range(count_low + (g >> 40) % (count_high - count_low + 1)):
+                m = hash_keys(seed, i, j, 2, k)
+                dx = m % (2 * spread + 1) - spread
+                dy = (m >> 20) % (2 * spread + 1) - spread
+                if dx * dx + dy * dy > spread * spread or not clear(x + dx, y + dy):
+                    continue
+                n = hash_keys(seed, i, j, 3, k)
+                placed.append((variants[(m >> 40) % len(variants)], x + dx, y + dy, n % 3600,
+                               low + (n >> 32) % (high - low + 1)))
     return sorted(placed)
 
 

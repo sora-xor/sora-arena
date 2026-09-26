@@ -2,8 +2,8 @@
 
 In the pinned editor (``-ExecutePythonScript=<this file>``) it loads every
 package the library declares and checks what the importer promised: texture
-colour spaces, compression, DirectX normals, virtual texturing and source
-hashes; lighting-only cubemaps; the weather collection; each master's exact
+colour spaces, compression, DirectX normals, virtual texturing, the
+power-of-two mode of the source's own size and source hashes; lighting-only cubemaps; the weather collection; each master's exact
 parameters, shading setup and collection bindings; every instance's parent,
 bindings, overrides and provenance tags, with no place instance reaching an
 evaluation texture; and each scanned mesh's slot, Nanite state and measured
@@ -42,7 +42,7 @@ def validate_textures(unreal, assets, plan, packed):
             continue
         for channel in texture_set.channels.values():
             texture = assets.load_asset(channel.package)
-            size = (texture.blueprint_get_size_x(), texture.blueprint_get_size_y())
+            size = library.image_size(plan.source_path(channel))  # the source, not the built platform size
             for key, value in library.texture_expectations(channel, texture_set, size).items():
                 if key in library.ENUM_SETTINGS:
                     value = getattr(getattr(unreal, library.ENUM_SETTINGS[key]), value)
@@ -85,7 +85,7 @@ def validate_master(unreal, assets, lib, plan, defaults, master, mpc):
         "shading_model": {"foliage": unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE,
                           "cloth": unreal.MaterialShadingModel.MSM_CLOTH}.get(
                               family, unreal.MaterialShadingModel.MSM_DEFAULT_LIT),
-        "two_sided": family in ("foliage", "cloth", "lantern"),
+        "two_sided": family in ("foliage", "cloth", "silk", "lantern"),
         "tangent_space_normal": family not in library.WORLD_ALIGNED_FAMILIES,
         "used_with_nanite": True,
         "used_with_instanced_static_meshes": True,
@@ -125,9 +125,9 @@ def validate_master(unreal, assets, lib, plan, defaults, master, mpc):
     require(collections == wanted, f"{master.name}: weather collection inputs {sorted(collections)}")
     expected_customs = ["finish", "project"]
     if family in library.WORLD_ALIGNED_FAMILIES:
-        expected_customs += ["projected_normal", "detail"]
-    if family in ("heightblend", "lantern"):
-        expected_customs.append({"heightblend": "blend", "lantern": "lantern"}[family])
+        expected_customs += ["projected_normal", "detail", "rank"]
+    if family in ("heightblend", "silk", "lantern"):
+        expected_customs.append(family if family != "heightblend" else "blend")
     require(sorted(customs) == sorted(CUSTOM[key].description for key in expected_customs),
             f"{master.name}: Custom expressions {sorted(customs)}")
     require(material.get_path_name() == library.master_path(master.name), f"{master.name}: path")

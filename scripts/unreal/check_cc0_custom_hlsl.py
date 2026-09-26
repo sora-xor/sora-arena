@@ -44,7 +44,7 @@ struct FMaterialPixelParameters { float4 SvPosition; };
 struct FWSVector3 { float3 High; float3 Low; };
 FWSVector3 SoraWSVector3(float3 Value) { FWSVector3 Result; Result.High = Value; Result.Low = 0.0; return Result; }
 """
-_SWIZZLE = {"float": ".x", "float2": ".xy", "float3": ".xyz"}
+_SWIZZLE = {"float": ".x", "float2": ".xy", "float3": ".xyz", "float4": ""}
 
 
 def shader_source(customs: list[Custom]) -> str:

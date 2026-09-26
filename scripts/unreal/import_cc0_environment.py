@@ -11,10 +11,11 @@ maps first. The script then
   streaming virtual textures for the 4K hero sets;
 * imports the HDRIs as lighting-only cubemaps and each scanned glTF node as
   its own Nanite static mesh;
-* builds ``MPC_EnvironmentWeather`` and seven master materials: opaque PBR
+* builds ``MPC_EnvironmentWeather`` and eight master materials: opaque PBR
   (world-aligned or mesh UVs, detail normal, macro variation), a two-layer
-  height blend, two-sided foliage, cloth, and emissive lantern paper, all
-  sharing one wetness/puddle response driven by the collection;
+  height blend ranked on layer A's measured AO, two-sided foliage, cloth,
+  anisotropic shot silk and emissive lantern paper, all sharing one
+  wetness/puddle response driven by the collection;
 * creates the place-named and evaluation material instances, tagged with
   their sources, period risk and photoreal status, and binds each scan's
   instance to its meshes.
@@ -22,6 +23,12 @@ maps first. The script then
 A source whose recorded SHA-256 is unchanged is not imported again, and a
 master whose graph digest is unchanged is not rebuilt (a rebuild recompiles
 all of its shaders).
+
+Material compilation is checked only where it can happen: in an editor with a
+renderer, every master and instance must compile for the running shader
+platform. ``import-mac.sh`` runs this with ``-nullrhi``, where no material
+resource exists to translate or compile (``FApp::CanEverRender`` is false), so
+there the completion line says the materials were not compiled.
 """
 
 from __future__ import annotations
@@ -37,7 +44,7 @@ import unreal
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
 import cc0_environment_library as library  # noqa: E402
-from cc0_environment_hlsl import CUSTOM, Custom  # noqa: E402
+from cc0_environment_hlsl import CUSTOM, RANKS, Custom  # noqa: E402
 
 require_running_engine("CC0 environment library import")
 
@@ -48,6 +55,7 @@ MP = unreal.MaterialProperty
 SOURCE_TAG = "SoraSourceSha256"
 GRAPH_TAG = "SoraGraphSha256"
 require = library.require
+RENDERS = library.can_ever_render(unreal.SystemLibrary.get_command_line())
 
 
 # --- Textures -------------------------------------------------------------------
@@ -116,9 +124,9 @@ def import_textures(plan: library.Plan, packed: dict) -> tuple[dict, int]:
                 texture = import_file(plan.source_path(channel), channel.package)
                 require(isinstance(texture, unreal.Texture2D), f"{channel.package} did not import as Texture2D")
                 imported += 1
-            # The imported source size (the platform size ignores stretching until it is built).
-            size = (texture.blueprint_get_size_x(), texture.blueprint_get_size_y())
-            configure(texture, texture_settings(channel, texture_set, size))
+            # The source's own size: blueprint_get_size_x reports the built (stretched) size once
+            # an editor with a renderer has built the texture.
+            configure(texture, texture_settings(channel, texture_set, library.image_size(plan.source_path(channel))))
             ASSETS.set_metadata_tag(texture, SOURCE_TAG, digest)
             ASSETS.set_metadata_tag(texture, "SoraSources", texture_set.origin)
             require(ASSETS.save_loaded_asset(texture, False), f"Could not save {channel.package}")
@@ -295,9 +303,9 @@ class Graph:
         return self.node(unreal.MaterialExpressionScalarParameter, parameter_name=name,
                          default_value=float(default), group=group), ""
 
-    def vector(self, name, default, group):
+    def vector(self, name, default, group, output="RGB"):
         return self.node(unreal.MaterialExpressionVectorParameter, parameter_name=name,
-                         default_value=unreal.LinearColor(*default), group=group), "RGB"
+                         default_value=unreal.LinearColor(*default), group=group), output
 
     def mask(self, pin, channels):
         expression = self.node(unreal.MaterialExpressionComponentMask,
@@ -385,13 +393,18 @@ OUTPUT_TYPES = {"float": unreal.CustomMaterialOutputType.CMOT_FLOAT1,
                 "float3": unreal.CustomMaterialOutputType.CMOT_FLOAT3}
 
 
-def finish_inputs(g: Graph, albedo, normal, arm, macro_a, macro_b, nz, *, remap=True, puddles=True,
+def finish_inputs(g: Graph, albedo, normal, arm, ao_rank, macro_a, macro_b, nz, *, remap=True, puddles=True,
                   metal=True, wet=(0.0, 0.3, 0.25)):
-    """Wire the grading, macro and wetness parameters into the shared finish node."""
+    """Wire the grading, macro and wetness parameters into the shared finish node.
+
+    ``ao_rank`` is layer A's AO rank (puddles fill the lowest share of flat ground);
+    families without puddles pass a constant.
+    """
     grade, weather = "Surface Grade", "Weather"
     one, zero = g.node(unreal.MaterialExpressionConstant, r=1.0), g.node(unreal.MaterialExpressionConstant, r=0.0)
     inputs = {
-        "Albedo": albedo, "NormalTS": normal, "Arm": arm, "MacroA": macro_a, "MacroB": macro_b, "Nz": nz,
+        "Albedo": albedo, "NormalTS": normal, "Arm": arm, "AORank": ao_rank, "MacroA": macro_a, "MacroB": macro_b,
+        "Nz": nz,
         "Tint": g.vector("BaseColorTint", (1, 1, 1, 1), grade),
         "Desaturation": g.scalar("Desaturation", 0.0, grade),
         "RoughMin": g.scalar("RoughnessMin", 0.0, grade) if remap else (zero, ""),
@@ -447,6 +460,8 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
     elif family == "cloth":
         properties.update(two_sided=True, shading_model=unreal.MaterialShadingModel.MSM_CLOTH,
                           used_with_skeletal_mesh=True, opacity_mask_clip_value=0.4)
+    elif family == "silk":  # default-lit: the anisotropic BRDF (r.AnisotropicMaterials) is not a cloth-model feature
+        properties.update(two_sided=True, used_with_skeletal_mesh=True)
     elif family == "lantern":
         properties.update(two_sided=True)
     material.set_editor_properties(properties)
@@ -479,7 +494,7 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
         uv = uvs["LayerB" if param.startswith("LayerB") else ""]
         samples[param] = g.texture(param, defaults[param], uv, "Layer B" if param.startswith("LayerB") else "Maps")
 
-    if family in ("surface", "heightblend", "foliage", "cloth"):
+    if family != "lantern":
         macro_texture = ASSETS.load_asset(library.MACRO_VARIATION)
         require(macro_texture is not None, "Engine macro-variation texture is missing")
         macro_a = g.texture("MacroVariation", macro_texture,
@@ -495,12 +510,22 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
         half = g.node(unreal.MaterialExpressionConstant, r=0.5), ""
         macro_pins = (half, half)
 
+    if family in library.WORLD_ALIGNED_FAMILIES:
+        # Layer A's AO as a rank within its measured distribution (cc0_ao_ranks.json); the
+        # defaults are the identity curve, each instance binds its scan's knots.
+        ao_rank = g.custom(CUSTOM["rank"], {
+            "Value": (samples["ARM"], "R"),
+            "KnotsLo": g.vector("AOKnotsLo", RANKS[:4], "Height Blend", "RGBA"),
+            "KnotsHi": g.vector("AOKnotsHi", RANKS[4:], "Height Blend", "RGBA")}), ""
+    else:
+        ao_rank = g.node(unreal.MaterialExpressionConstant, r=0.5), ""
+
     if family == "heightblend":
         blend = g.custom(CUSTOM["blend"], {
             "ColorA": (samples["BaseColor"], "RGB"), "NormalA": (samples["Normal"], "RGB"),
             "ArmA": (samples["ARM"], "RGB"),
             "ColorB": (samples["LayerBBaseColor"], "RGB"), "NormalB": (samples["LayerBNormal"], "RGB"),
-            "ArmB": (samples["LayerBARM"], "RGB"),
+            "ArmB": (samples["LayerBARM"], "RGB"), "RankA": ao_rank,
             "VertexR": (g.node(unreal.MaterialExpressionVertexColor), "R"), "Nz": nz,
             "Coverage": g.scalar("LayerBCoverage", 0.3, "Height Blend"),
             "VertexColorBlend": g.scalar("VertexColorBlend", 0.0, "Height Blend"),
@@ -527,12 +552,23 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
             "Strength": g.scalar("DetailNormalStrength", 0.5, "Detail")})
         normal = g.switch("UseDetailNormal", False, (detailed, ""), normal, "Detail")
 
-    wet_defaults = {"foliage": (0.5, 0.1, 0.3), "cloth": (0.0, 0.35, 0.4), "lantern": (0.2, 0.15, 0.3)}
-    finish = finish_inputs(g, albedo, normal, arm, *macro_pins, nz,
+    wet_defaults = {"foliage": (0.5, 0.1, 0.3), "cloth": (0.0, 0.35, 0.4), "silk": (0.0, 0.3, 0.3),
+                    "lantern": (0.2, 0.15, 0.3)}
+    finish = finish_inputs(g, albedo, normal, arm, ao_rank, *macro_pins, nz,
                            remap=family != "heightblend", puddles=family in library.WORLD_ALIGNED_FAMILIES,
                            metal=family in library.WORLD_ALIGNED_FAMILIES,
                            wet=wet_defaults.get(family, (0.0, 0.3, 0.25)))
-    g.out(finish, "", MP.MP_BASE_COLOR)
+    if family == "silk":
+        # Anisotropy runs along the mesh tangent (the default Tangent output), so the warp runs along U.
+        silk = g.custom(CUSTOM["silk"], {
+            "Albedo": (finish, ""), "View": (g.node(unreal.MaterialExpressionCameraVectorWS), ""),
+            "Tangent": (g.node(unreal.MaterialExpressionVertexTangentWS), ""), "N": vertex_normal,
+            "ShotColor": g.vector("ShotColor", (1, 1, 1, 1), "Silk"),
+            "ShotAmount": g.scalar("ShotAmount", 0.0, "Silk")})
+        g.out(silk, "", MP.MP_BASE_COLOR)
+        g.out(*g.scalar("Anisotropy", 0.6, "Silk"), MP.MP_ANISOTROPY)
+    else:
+        g.out(finish, "", MP.MP_BASE_COLOR)
     g.out(finish, "RoughnessOut", MP.MP_ROUGHNESS)
     g.out(finish, "MetallicOut", MP.MP_METALLIC)
     g.out(finish, "AOOut", MP.MP_AMBIENT_OCCLUSION)
@@ -577,12 +613,24 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
         g.out(emissive, "", MP.MP_EMISSIVE_COLOR)
 
     LIB.layout_material_expressions(material)
-    errors = LIB.recompile_material(material)
-    require(not errors, f"{name} failed to compile: {errors}")
+    errors = LIB.recompile_material(material)  # always empty without a renderer: nothing is translated
+    require(not (RENDERS and errors), f"{name} failed to compile: {errors}")
     ASSETS.set_metadata_tag(material, "SoraLibrary", f"cc0-environment v{library.LIBRARY_VERSION}")
     ASSETS.set_metadata_tag(material, GRAPH_TAG, digest)
     require(ASSETS.save_loaded_asset(material, False), f"Could not save {name}")
     return material, True
+
+
+def check_compiled(materials) -> int:
+    """With a renderer, compile each material (or instance permutation) for the running shader
+    platform and fail on one without a pixel shader. Returns how many were compiled."""
+    if not RENDERS:
+        return 0
+    for material in materials:
+        statistics = LIB.get_statistics(material)  # submits and finishes the compile jobs
+        require(statistics.get_editor_property("num_pixel_shader_instructions") > 0,
+                f"{material.get_path_name()} has no compiled pixel shader for this platform")
+    return len(materials)
 
 
 def build_mpc():
@@ -689,9 +737,12 @@ def main():
     ASSETS.save_directory(library.PACKAGE_ROOT, only_if_is_dirty=True, recursive=True)
     missing = [path for path in plan.expected if not ASSETS.does_asset_exist(path.split(".")[0])]
     require(not missing, f"Expected packages missing after import: {missing[:5]}")
+    compiled = check_compiled(list(masters.values()) + list(instances.values()))
+    shaders = (f"{compiled} materials compiled for this platform" if RENDERS
+               else "materials not compiled: null RHI")
     unreal.log(f"SORA_CC0_ENVIRONMENT_READY: {len(plan.expected)} packages "
                f"({imported_textures} textures, {imported_hdris} HDRIs, {imported_meshes} meshes imported; "
-               f"{len(masters)} masters ({rebuilt} rebuilt), {len(instances)} instances)")
+               f"{len(masters)} masters ({rebuilt} rebuilt), {len(instances)} instances; {shaders})")
 
 
 main()

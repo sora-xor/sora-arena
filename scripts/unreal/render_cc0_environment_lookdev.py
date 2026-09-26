@@ -6,15 +6,18 @@ Run in the pinned editor *with* a renderer (not ``-nullrhi``), after
     scripts/toolchain/run-editor.sh -RenderOffScreen -unattended -nosplash -nosound \
         -ExecutePythonScript=$PWD/scripts/unreal/render_cc0_environment_lookdev.py
 
-It builds ``/Game/Generated/Environment/CC0/LookDev/L_CC0LookDev`` (generated,
-never shipped): one sample per material instance on engine cubes (world-aligned
+It builds ``/Game/Generated/Environment/CC0/LookDev/L_CC0LookDev`` (generated;
+never cooked, because ``Config/DefaultGame.ini`` never cooks the library's
+folder): one sample per material instance on engine cubes (world-aligned
 surfaces: top = floor projection, sides = wall projection), cylinders (bark),
-spheres (mesh-UV props, cloth, lantern paper) and the scanned meshes at their
+two 180 x 90 cm mats turned 90 degrees to each other (tatami, mesh UVs), spheres
+(mesh-UV props, cloth, silk, lantern paper) and the scanned meshes at their
 measured size, lit by the lighting-only Kloofendal misty-morning HDRI and a
 5200 K sun under fixed manual exposure. Distance views show repetition: 60 m of
 six ground instances from standing eye height and three 30 m walls at a
 grazing angle. Each view is captured dry and again with
-``MPC_EnvironmentWeather`` at Wetness 1 / PuddleAmount 0.7, into
+``MPC_EnvironmentWeather`` at Wetness 1 / PuddleAmount 0.7 (about 15% of the
+flat packed-earth road in puddles, by the measured AO and macro ranks), into
 ``Saved/CC0LookDev/``; the run fails unless every capture is written afresh.
 Taking the screenshots compiles every master and instance permutation for the
 running platform; the log must then show no material or shader errors. These
@@ -111,7 +114,14 @@ def sample(plan, instance, location):
             mesh_actor(load(f"{mesh.folder}/{asset}.{asset}"), None,
                        (x + (index - count // 2) * 25.0, y, 0.0), (scale,) * 3)
         return " (x10)" if scale != 1.0 else ""
-    if family in library.WORLD_ALIGNED_FAMILIES and instance.world_aligned:
+    if any(layer in library.MESH_UV_ONLY for layer in instance.layers):
+        # Two mats, one turned: each cube's top face is one 0-1 UV square, which UVScale (1, 0.5)
+        # maps to one mat. Which cube axis the engine cube's U follows shows in the capture.
+        cube = load("/Engine/BasicShapes/Cube.Cube")
+        mesh_actor(cube, material, (x - 20.0, y - 50.0, 3.0), (1.8, 0.9, 0.06))
+        turned = mesh_actor(cube, material, (x + 115.0, y + 40.0, 3.0), (1.8, 0.9, 0.06))
+        turned.set_actor_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=90.0), False)
+    elif family in library.WORLD_ALIGNED_FAMILIES and instance.world_aligned:
         mesh_actor(load("/Engine/BasicShapes/Cube.Cube"), material, (x, y, 45.0), (1.6, 1.6, 0.9))
     elif "Bark" in instance.name:
         mesh_actor(load("/Engine/BasicShapes/Cylinder.Cylinder"), material, (x, y, 90.0), (0.7, 0.7, 1.8))

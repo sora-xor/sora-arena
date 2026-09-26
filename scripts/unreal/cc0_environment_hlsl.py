@@ -13,6 +13,36 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# The ranks at which a measured distribution is recorded (cc0_ao_ranks.json): dense at both
+# tails, where crevice fills, peak breakups and puddles set their thresholds.
+RANKS = (0.0, 0.05, 0.15, 0.3, 0.7, 0.85, 0.95, 1.0)
+# T_Default_MacroVariation's saturate(0.5 * (R + G)) at RANKS, measured by measure_cc0_ao.py.
+MACRO_KNOTS = (0.107982, 0.233875, 0.314912, 0.392533, 0.557711, 0.639388, 0.733745, 0.919376)
+# Puddles: lowness is PUDDLE_MACRO of the macro rank (metre-scale hollows) and the rest of the
+# AO rank (crevices); PUDDLE_REACH sets how far rising water spreads, PUDDLE_SHARPNESS its edge.
+# With uniform ranks, flat ground at PuddleAmount x PuddleResponse = 1 is about 35% puddle.
+PUDDLE_MACRO = 0.7
+PUDDLE_REACH = 0.46
+PUDDLE_SHARPNESS = 8.0
+
+
+def _literal(value: float) -> str:
+    return repr(float(round(value, 6)))
+
+
+def rank_code(result: str, value: str, knots: str) -> str:
+    """HLSL setting ``result`` to the rank of ``value`` on the piecewise-linear curve through
+    (``knots``[i], RANKS[i]); ``knots`` is an HLSL initialiser of eight floats."""
+    ranks = ", ".join(_literal(rank) for rank in RANKS)
+    return (f"float {result}Knots[8] = {{ {knots} }};\n"
+            f"const float {result}Ranks[8] = {{ {ranks} }};\n"
+            f"float {result} = 0.0;\n"
+            f"[unroll] for (int {result}Index = 0; {result}Index < 7; ++{result}Index)\n"
+            f"    {result} += ({result}Ranks[{result}Index + 1] - {result}Ranks[{result}Index])"
+            f" * saturate(({value} - {result}Knots[{result}Index])"
+            f" / max({result}Knots[{result}Index + 1] - {result}Knots[{result}Index], 1e-5));\n")
+
+
 # Dominant-axis planar projection of the world position in centimetres: one
 # texture fetch per map, oriented so text/grain reads upright on walls.
 HLSL_PROJECT = """
@@ -43,12 +73,18 @@ HLSL_DETAIL = """
 return normalize(float3(Base.xy + Detail.xy * Strength, Base.z));
 """
 
-# Height blend of layer B over layer A: the ARM occlusion of A is the height
-# proxy (crevices first when HeightFromCrevices is 1), vertex red paints coverage.
+# The rank (0-1) of a sampled value within its texture's measured distribution.
+HLSL_RANK = rank_code("rank", "Value", "KnotsLo.x, KnotsLo.y, KnotsLo.z, KnotsLo.w, KnotsHi.x, KnotsHi.y, "
+                      "KnotsHi.z, KnotsHi.w") + "return rank;\n"
+
+# Height blend of layer B over layer A. Layer A's AO rank is the height proxy
+# (crevices first when HeightFromCrevices is 1, peaks first when it is 0), so
+# layer B covers the Coverage share of the surface whatever the scan's AO band;
+# vertex red scales the coverage and upward faces add TopFacingBias.
 HLSL_BLEND = """
 float coverage = saturate(Coverage * lerp(1.0, VertexR, VertexColorBlend) + TopFacingBias * saturate(Nz));
-float h = lerp(ArmA.r, 1.0 - ArmA.r, HeightFromCrevices);
-float alpha = saturate((h + 2.0 * coverage - 1.5) * Contrast + 0.5);
+float h = lerp(RankA, 1.0 - RankA, HeightFromCrevices);
+float alpha = saturate((h - (1.0 - coverage)) * Contrast + 0.5);
 float roughA = lerp(RoughMinA, RoughMaxA, ArmA.g);
 float roughB = lerp(RoughMinB, RoughMaxB, ArmB.g);
 NormalOut = normalize(lerp(NormalA, NormalB, alpha));
@@ -58,9 +94,17 @@ return lerp(ColorA, ColorB * TintB, alpha);
 
 # Grading, macro variation and the shared rain response. Wet surfaces darken by
 # WetDarkening and lose roughness toward WetRoughness (story bible 15.1: wet
-# timber 0.2-0.35, albedo -25-35%); puddles gather on flat, low, macro-dark
-# ground when PuddleAmount rises.
-HLSL_FINISH = """
+# timber 0.2-0.35, albedo -25-35%). Puddles fill the lowest share of flat
+# ground (the macro-dark hollows, then the occluded crevices) as
+# PuddleAmount x PuddleResponse rises, and none at 0.
+def _finish_code() -> str:
+    knots = ", ".join(_literal(knot) for knot in MACRO_KNOTS)
+    return HLSL_FINISH_TEMPLATE.replace("MACRO_RANK", rank_code("macroRank", "macro", knots).strip()).replace(
+        "PUDDLE_MACRO", _literal(PUDDLE_MACRO)).replace("PUDDLE_REACH", _literal(PUDDLE_REACH)).replace(
+        "PUDDLE_SHARPNESS", _literal(PUDDLE_SHARPNESS))
+
+
+HLSL_FINISH_TEMPLATE = """
 float lum = dot(Albedo, float3(0.2126, 0.7152, 0.0722));
 float3 albedo = lerp(Albedo, lum.xxx, Desaturation) * Tint;
 float macro = saturate(0.5 * (MacroA + MacroB));
@@ -72,9 +116,10 @@ float metal = saturate(Arm.b * MetallicScale);
 float3 n = float3(NormalTS.xy * NormalStrength, NormalTS.z);
 float exposure = lerp(0.65, 1.0, saturate(Nz));
 float wet = saturate(max(BaseWetness, Wetness * WetnessResponse)) * exposure;
-float lowness = 0.5 * (1.0 - Arm.r) + 0.5 * (1.0 - macro);
+MACRO_RANK
+float lowness = PUDDLE_MACRO * (1.0 - macroRank) + (1.0 - PUDDLE_MACRO) * (1.0 - AORank);
 float flatness = saturate((Nz - 0.85) * 6.67);
-float puddle = saturate((PuddleAmount * PuddleResponse * 1.2 - (1.0 - lowness)) * 8.0) * flatness;
+float puddle = saturate((lowness - 1.0 + PUDDLE_REACH * PuddleAmount * PuddleResponse) * PUDDLE_SHARPNESS) * flatness;
 wet = max(wet, puddle);
 albedo *= 1.0 - WetDarkening * wet;
 rough = lerp(rough, min(rough, WetRoughness), wet);
@@ -85,6 +130,20 @@ MetallicOut = metal;
 AOOut = ao;
 NormalOut = normalize(lerp(n, float3(0.0, 0.0, 1.0), puddle));
 return max(albedo, 0.0);
+"""
+
+# Silk (story bible 15.1: anisotropic sheen; shot-silk hue shift for the nobori).
+# The sheen is the material's Anisotropy along the mesh tangent (the warp runs
+# along U); this shifts the hue toward the weft's ShotColor, at unchanged
+# luminance, where the view runs along the warp and toward grazing angles.
+HLSL_SILK = """
+float3 v = normalize(View);
+float along = abs(dot(v, normalize(Tangent)));
+float grazing = 1.0 - abs(dot(v, normalize(N)));
+float shot = saturate(ShotAmount * (0.6 * along + 0.4 * grazing));
+float3 weights = float3(0.2126, 0.7152, 0.0722);
+float3 weft = dot(Albedo, weights) * ShotColor / max(dot(ShotColor, weights), 1e-4);
+return lerp(Albedo, weft, shot);
 """
 
 # Emissive washi: blackbody colour at unit luminance, fibre-thickness
@@ -104,7 +163,7 @@ class Custom:
     description: str
     code: str
     output: str               # float1 | float2 | float3
-    inputs: tuple             # ((name, type), ...) in pin order; type: float | float3 | lwc3
+    inputs: tuple             # ((name, type), ...) in pin order; type: float | float3 | float4 | lwc3
     outputs: tuple = ()       # additional outputs ((name, type), ...)
 
 
@@ -112,8 +171,12 @@ def _floats(*names):
     return tuple((name, "float") for name in names)
 
 
+HLSL_FINISH = _finish_code()
+
 CUSTOM = {
     "project": Custom("SORA world projection (cm)", HLSL_PROJECT, "float2", (("P", "lwc3"), ("N", "float3"))),
+    "rank": Custom("SORA measured rank", HLSL_RANK, "float",
+                   (("Value", "float"), ("KnotsLo", "float4"), ("KnotsHi", "float4"))),
     "projected_normal": Custom("SORA projected normal to world", HLSL_PROJECTED_NORMAL, "float3",
                                (("NormalTS", "float3"), ("N", "float3"))),
     "detail": Custom("SORA detail normal", HLSL_DETAIL, "float3",
@@ -121,18 +184,21 @@ CUSTOM = {
     "blend": Custom(
         "SORA height blend", HLSL_BLEND, "float3",
         (("ColorA", "float3"), ("NormalA", "float3"), ("ArmA", "float3"), ("ColorB", "float3"),
-         ("NormalB", "float3"), ("ArmB", "float3"), ("VertexR", "float"), ("Nz", "float"))
+         ("NormalB", "float3"), ("ArmB", "float3"), ("RankA", "float"), ("VertexR", "float"), ("Nz", "float"))
         + _floats("Coverage", "VertexColorBlend", "TopFacingBias", "HeightFromCrevices", "Contrast")
         + (("TintB", "float3"),) + _floats("RoughMinA", "RoughMaxA", "RoughMinB", "RoughMaxB"),
         (("NormalOut", "float3"), ("ArmOut", "float3"))),
     "finish": Custom(
         "SORA environment finish", HLSL_FINISH, "float3",
-        (("Albedo", "float3"), ("NormalTS", "float3"), ("Arm", "float3"), ("MacroA", "float"), ("MacroB", "float"),
-         ("Nz", "float"), ("Tint", "float3"))
+        (("Albedo", "float3"), ("NormalTS", "float3"), ("Arm", "float3"), ("AORank", "float"), ("MacroA", "float"),
+         ("MacroB", "float"), ("Nz", "float"), ("Tint", "float3"))
         + _floats("Desaturation", "RoughMin", "RoughMax", "AOStrength", "NormalStrength", "MetallicScale",
                   "MacroStrength", "MacroRoughness", "Wetness", "PuddleAmount", "WetnessResponse", "BaseWetness",
                   "WetDarkening", "WetRoughness", "PuddleResponse"),
         (("RoughnessOut", "float"), ("MetallicOut", "float"), ("AOOut", "float"), ("NormalOut", "float3"))),
+    "silk": Custom("SORA shot silk", HLSL_SILK, "float3",
+                   (("Albedo", "float3"), ("View", "float3"), ("Tangent", "float3"), ("N", "float3"),
+                    ("ShotColor", "float3"), ("ShotAmount", "float"))),
     "lantern": Custom(
         "SORA lantern paper emission", HLSL_LANTERN, "float3",
         (("BlackBody", "float3"),) + _floats("TemperatureK", "Thickness", "TransmissionMin", "TransmissionMax")
