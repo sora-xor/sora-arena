@@ -7,7 +7,6 @@
 #include "SoraEnemyController.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
-#include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
@@ -21,7 +20,8 @@
 // A real game world for the opponents' automation (SoraArena.AI.*, SoraArena.Combat.*).
 namespace SoraEnemyTest
 {
-// The first invasion chapter on the estate, cleared of its hunting wave so each
+// The estate's training arena (the campaign's chapters are built as their own
+// spaces) with Nyaakoto's campaign loadout, cleared of its invaders so each
 // test places exactly the opponents it examines on the open central road.
 struct FArena
 {
@@ -51,29 +51,31 @@ struct FArena
 
     bool Start()
     {
-        USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
-        if (!Test.TestNotNull(TEXT("Seed save is created"), Save))
-            return false;
-        Save->SaveSchema = 5;
-        Save->CurrentChapter = 1;
-        Save->HighestChapter = 1;
-        Save->CheckpointChapter = -1;
-        if (!Test.TestTrue(TEXT("Seed save is written"), UGameplayStatics::SaveGameToSlot(Save, Slot, 0)))
-            return false;
         World = MakeUnique<FSoraAutomationWorld>();
-        // Enter three times: the title screen opens the main menu, Continue
-        // opens the saved chapter on its title card, and the card is skipped.
-        if (!World->Start(Slot) || !World->Tick(1) || !World->EnableKeyInput() ||
-            !World->PressKey(EKeys::Enter) || !World->PressKey(EKeys::Enter) || !World->PressKey(EKeys::Enter))
+        // The title screen opens the main menu; the estate's training arena is
+        // then built behind it (it has no front-end entry) and play begins.
+        if (!World->Start(Slot) || !World->Tick(1) || !World->EnableKeyInput() || !World->PressKey(EKeys::Enter))
         {
             World->ForwardErrorMessages(&Test);
-            return Test.TestTrue(TEXT("The chapter world starts with key input"), false);
+            return Test.TestTrue(TEXT("The arena world starts with key input"), false);
         }
-        if (!Test.TestTrue(TEXT("The chapter is in play"), Mode() && Mode()->IsPlaying() && Hero()))
+        Mode()->bCampaign = false;
+        Mode()->MapId = 0;
+        Mode()->ResetRound();
+        Mode()->BeginRound();
+        if (!World->Tick(2))
+        {
+            World->ForwardErrorMessages(&Test);
+            return Test.TestTrue(TEXT("The arena world ticks"), false);
+        }
+        if (!Test.TestTrue(TEXT("The arena is in play"), Mode() && Mode()->IsPlaying() && Hero()))
             return false;
         // The director never replaces an opponent that is removed rather than defeated.
         for (TActorIterator<ASoraEnemy> It(Get()); It; ++It)
             It->Destroy();
+        // Nyaakoto's campaign loadout and guard, as in a chapter; the arena
+        // lends every arm.
+        Hero()->SetCampaignHeroLoadout(true);
         // The hero rests (no footsteps) and outlasts any strike during a test.
         Hero()->MaxHealth = 100000.f;
         Hero()->Health = Hero()->MaxHealth;

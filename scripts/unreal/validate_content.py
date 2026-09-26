@@ -2,7 +2,6 @@
 from pathlib import Path
 import json
 import hashlib
-import math
 import re
 import struct
 
@@ -19,7 +18,9 @@ assert "void ASoraWorldBuilder::BuildPractice(" in practice_builder
 world_builder = "".join(world_sources.values())
 estate_builder = world_sources["SoraMapNyaagyuEstate.cpp"]
 catalog = json.loads((content / "Data/catalog.json").read_text())
-assert catalog["schema_version"] == 3
+# Schema 4 keeps the shared core here; the offline campaign lives in
+# Content/Data/campaign (campaign.json plus eight generated chapter files).
+assert catalog["schema_version"] == 4 and "chapters" not in catalog
 assert catalog["default_language"] == "ja" and catalog["english_subtitles_default"] is True
 speakers = catalog["dialogue_speakers"]
 speaker_ids = {speaker["id"] for speaker in speakers}
@@ -51,7 +52,7 @@ assert all(arm["class"] == 0 and arm["special"] is False and arm["blast_radius"]
            for arm in catalog["campaign_weapons"])
 assert catalog["campaign_weapons"][0]["projectile_speed"] > 0
 assert all(arm["projectile_speed"] == 0 for arm in catalog["campaign_weapons"][1:])
-assert len(catalog["chapters"]) == 8 and len(catalog["maps"]) == 4
+assert len(catalog["maps"]) == 4
 assert [w["id"] for w in catalog["weapons"]] == list(range(18))
 assert [c["id"] for c in catalog["classes"]] == list(range(6))
 for c in catalog["classes"]:
@@ -68,32 +69,19 @@ for w in catalog["weapons"]:
     assert w["kind"] in ("melee","hitscan","explosive","healing")
     if w["kind"] == "explosive": assert w["blast_radius"] > 0 and w["projectile_speed"] > 0
 assert all(m["name_en"].strip() and re.search(r"[\u3040-\u9fff]", m["name"]) for m in catalog["maps"])
-site_kinds = {"training", "debt_seal", "irrigation", "workshop", "foundry", "ledger", "power", "supplies"}
-for chapter in catalog["chapters"]:
-    assert 0 <= chapter["map"] < 4 and chapter["kills"] > 0
-    assert chapter["narrative_en"] and chapter["title_en"] and chapter["objective_en"]
-    assert re.search(r"[\u3040-\u9fff]",chapter["narrative"])
-    assert len(chapter["sites"]) == 3
-    for index, site in enumerate(chapter["sites"]):
-        assert site["kind"] in site_kinds
-        assert 0 <= site["requires_kills"] <= chapter["kills"]
-        assert site["requires_sites"] == sorted(set(site["requires_sites"]))
-        assert all(isinstance(prior, int) and not isinstance(prior, bool) and 0 <= prior < index for prior in site["requires_sites"])
-        assert all(site[field].strip() for field in ("name", "name_en", "restored", "restored_en"))
-        assert all(re.search(r"[\u3040-\u9fff]",site[field]) for field in ("name", "restored"))
-    assert chapter["sites"][0]["requires_sites"] == []
-    assert chapter["sites"][-1]["requires_kills"] == chapter["kills"]
-    assert len(chapter["dialogue"]) >= 2
-    previous_end = 0.0
-    for cue in chapter["dialogue"]:
-        start, duration = cue["start_s"], cue["duration_s"]
-        assert cue["speaker"] in speaker_ids
-        assert all(isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) for value in (start, duration))
-        assert previous_end <= start and 1.5 <= duration <= 8 and start + duration <= 45
-        assert re.search(r"[\u3040-\u9fff]", cue["ja"]) and len(cue["ja"]) <= 64
-        assert cue["en"].strip() and len(cue["en"]) <= 110
-        previous_end = start + duration
-assert "猫柳生新陰流" in catalog["chapters"][0]["narrative"]
+# The chapter files are generated from the chapter scripts' YAML and must match
+# a fresh build; nothing else may sit in the campaign directory.
+from build_campaign_data import build as build_campaign_data, self_test as campaign_importer_self_test
+campaign_importer_self_test()
+campaign_files = build_campaign_data()
+for relative, data in campaign_files.items():
+    assert (ROOT / relative).read_bytes() == data, f"{relative} is stale; run scripts/unreal/build_campaign_data.py"
+assert {path.name for path in (content / "Data/campaign").iterdir()} == (
+    {"campaign.json"} | {Path(relative).name for relative in campaign_files})
+from validate_campaign import check_project as check_campaign
+campaign_summary = check_campaign()
+campaign = json.loads((content / "Data/campaign/campaign.json").read_text())
+assert "猫柳生新陰流" in campaign["chapters"][0]["narrative_ja"]
 manifest = json.loads((content / "SourceArt/manifest.json").read_text())
 assert len(manifest["characters"]) == 2 and len(manifest["weapons"]) == 18
 hero = manifest["hero_katana"]
@@ -640,10 +628,11 @@ assert "SIL OPEN FONT LICENSE" in (font.parent / "OFL.txt").read_text()
 from fontTools.ttLib import TTFont
 cmap = TTFont(font).getBestCmap()
 text = json.dumps(catalog,ensure_ascii=False)
+text += "".join(path.read_text() for path in sorted((content / "Data/campaign").glob("*.json")))
 text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"))
 absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
 assert not absent, f"Bundled font lacks glyphs: {absent}"
-cue_count = sum(len(chapter["dialogue"]) for chapter in catalog["chapters"])
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
 print(input_summary)
-print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters with 24 authored production sites and {cue_count} timed bilingual dialogue cues, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 10 original environment props, 18 hash-pinned Nyaakoto PBR maps for 23 runtime materials, licensed Japanese font, hash-verified SORA logo.")
+print(campaign_summary)
+print(f"Content validation passed: 6 classes, 18 weapons, 8 Japanese chapters in catalog schema 4 with 24 authored production sites, 4 maps, {fbx_count} FBX source assets including a dojo bokken, Arc carbine, Samurai special naginata, feline hero character, Edo horse/tack study, 32 modular terrain tiles and 10 original environment props, 18 hash-pinned Nyaakoto PBR maps for 23 runtime materials, licensed Japanese font, hash-verified SORA logo.")

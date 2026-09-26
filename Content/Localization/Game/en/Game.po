@@ -595,11 +595,35 @@ msgctxt "SoraArena.HUD,Practice.Keys"
 msgid "武芸稽古「{Mode}」{Count} 人。{Fire} 射撃、{Melee} 近接、{Reload} 装填、{Block} 防御、{Ability} 技、{Jump} 跳躍、{Scoreboard} 戦況表。倒れたら {WeaponOne}・{WeaponTwo}・{WeaponThree} で武器、{Ability}・{Interact} で流儀を選べる。資産は預けない。"
 msgstr "Offline practice, {Mode} with {Count} players: {Fire} fire, {Melee} melee, {Reload} reload, {Block} block, {Ability} ability, {Jump} jump, {Scoreboard} scoreboard. While down, {WeaponOne}/{WeaponTwo}/{WeaponThree} choose a weapon and {Ability}/{Interact} a class. No assets are bonded."
 
+#. Key:	Prompt.Capture
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Prompt.Capture"
+msgid "{Interact}  捕らえる"
+msgstr "{Interact}  Capture"
+
 #. Key:	Prompt.Examine
 #: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
 msgctxt "SoraArena.HUD,Prompt.Examine"
 msgid "{Interact}  調べる"
 msgstr "{Interact}  Examine"
+
+#. Key:	Prompt.PickUp
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Prompt.PickUp"
+msgid "{Interact}  拾う"
+msgstr "{Interact}  Pick up"
+
+#. Key:	Prompt.Search
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Prompt.Search"
+msgid "{Interact}  調べる"
+msgstr "{Interact}  Search"
+
+#. Key:	Prompt.Work
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Prompt.Work"
+msgid "{Interact}  作業する"
+msgstr "{Interact}  Work"
 
 #. Key:	Result.Next
 #: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
@@ -612,6 +636,12 @@ msgstr "{Enter}  Continue    |    {Menu}  Menu"
 msgctxt "SoraArena.HUD,TitleCard.Begin"
 msgid "{Enter}  はじめる"
 msgstr "Press {Enter} to begin"
+
+#. Key:	TitleCard.Skip
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,TitleCard.Skip"
+msgid "{Enter}  とばす"
+msgstr "{Enter}  Skip"
 
 #. Key:	TopBar.OfflineBuild
 #: Source/SoraArena/Private/HUD/SoraHUD.cpp

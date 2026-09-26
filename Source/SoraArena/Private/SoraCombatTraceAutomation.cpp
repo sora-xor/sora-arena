@@ -150,12 +150,24 @@ struct FEventLog
         {
             Lines.Add(FString::Printf(TEXT("Marobashi hero=%s opponent=%s awase=%d"), *Who(E.Hero), *Who(E.Opponent), E.bAfterAwase));
         }));
+        Handles.Add(Bus->OnBeatStarted.AddLambda([this](const FSoraBeatEvent& E)
+        {
+            Lines.Add(FString::Printf(TEXT("BeatStarted chapter=%d beat=%s resumed=%d phase=%d"), E.ChapterId, *E.BeatId, E.bResumed, E.Phase));
+        }));
+        Handles.Add(Bus->OnBeatCompleted.AddLambda([this](const FSoraBeatEvent& E)
+        {
+            Lines.Add(FString::Printf(TEXT("BeatCompleted chapter=%d beat=%s"), E.ChapterId, *E.BeatId));
+        }));
+        Handles.Add(Bus->OnBeatFailed.AddLambda([this](const FSoraBeatEvent& E)
+        {
+            Lines.Add(FString::Printf(TEXT("BeatFailed chapter=%d beat=%s"), E.ChapterId, *E.BeatId));
+        }));
         return true;
     }
     void Detach()
     {
         USoraGameEvents* Bus = Events.Get();
-        if (Bus && Handles.Num() == 14)
+        if (Bus && Handles.Num() == 17)
         {
             Bus->OnWeaponFired.Remove(Handles[0]); Bus->OnMeleeCommitted.Remove(Handles[1]);
             Bus->OnStrikeResolved.Remove(Handles[2]); Bus->OnGuarded.Remove(Handles[3]);
@@ -164,6 +176,8 @@ struct FEventLog
             Bus->OnSiteRestored.Remove(Handles[8]); Bus->OnChapterStarted.Remove(Handles[9]);
             Bus->OnChapterCompleted.Remove(Handles[10]); Bus->OnBossPhase.Remove(Handles[11]);
             Bus->OnKernelEvent.Remove(Handles[12]); Bus->OnMarobashi.Remove(Handles[13]);
+            Bus->OnBeatStarted.Remove(Handles[14]); Bus->OnBeatCompleted.Remove(Handles[15]);
+            Bus->OnBeatFailed.Remove(Handles[16]);
         }
         Handles.Reset();
         Events.Reset();
@@ -215,18 +229,32 @@ struct FRun
         Test.AddError(FString::Printf(TEXT("%s frame %d: %s"), *Name, Frame, *Message));
         return false;
     }
-    bool Seed(int32 Chapter, int32 CheckpointKills = 0, int32 CheckpointMask = 0, bool bCheckpoint = false)
+    // A schema-6 checkpoint at the start of Beat, reached through every
+    // earlier required beat with the unlocks chapter select grants.
+    bool Seed(int32 Chapter, int32 Beat)
     {
         USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
         if (!Save)
             return Fail(TEXT("Save object was not created"));
-        Save->SaveSchema = 5;
-        Save->CurrentChapter = Chapter;
-        Save->HighestChapter = Chapter;
-        Save->CheckpointChapter = bCheckpoint ? Chapter : -1;
-        Save->CheckpointKills = CheckpointKills;
-        Save->CheckpointNodesMask = CheckpointMask;
+        if (!USoraCampaignDirector::SeedCheckpoint(*Save, Chapter, Beat))
+            return Fail(TEXT("Seed checkpoint is not valid"));
         return UGameplayStatics::SaveGameToSlot(Save, Slot, 0) || Fail(TEXT("Seed save was not written"));
+    }
+    // Defeats the active beat's remaining opponents, one per frame, untraced.
+    bool ClearBeat(int32 Beat)
+    {
+        for (int32 Attempt = 0; Attempt < 40 && Mode()->Campaign()->ActiveBeat() == Beat; ++Attempt)
+        {
+            for (TActorIterator<FFoe> It(Get()); It; ++It)
+                if (It->IsEnemy() && It->IsAlive() && !It->IsActorBeingDestroyed())
+                {
+                    UGameplayStatics::ApplyDamage(*It, It->Health, Controller(), Hero(), UDamageType::StaticClass());
+                    break;
+                }
+            if (!World->Tick(1))
+                return Fail(TEXT("World failed to tick"));
+        }
+        return Mode()->Campaign()->ActiveBeat() != Beat || Fail(TEXT("Beat did not complete"));
     }
     bool Start()
     {
@@ -340,19 +368,26 @@ struct FRun
     }
 };
 
-// The first invasion chapter: guard a blade retainer's cut, meet the next one
-// with a fresh guard (a parry, timed from the retainer's own windup), cut it
-// down with the katana in its stagger, then carbine, reload, yumi, yari,
-// sprint and jump.
+// The foundry yard's first wave (ch05.b05): two blade retainers and two rifle
+// enforcers from enemies.json at once (more arrive once fewer than two
+// stand). Guard a retainer's cut, meet the next with a fresh guard (a parry,
+// timed from the retainer's own windup), cut it down with the katana, then
+// the naginata on the second retainer, the yumi, the yari, sprint and jump,
+// with every arm the earlier chapters unlocked (the carbine comes later, at
+// ch05.b09).
+constexpr int32 RetainerChapter = 4, RetainerBeat = 4;
 FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Retainer"), Log);
-    if (!Run.Seed(1) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
+    if (!Run.Seed(RetainerChapter, RetainerBeat) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
         return FString();
     if (!Test.TestTrue(TEXT("Retainer scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(160, 0, 0)))
         return FString();
-    int32 ParryAt = INDEX_NONE;
-    const bool bOk = Run.Play(640, [&ParryAt](FRun& R, int32 F)
+    // A blade's contact holds world time for a moment (hit-stop), so each arm
+    // after the katana is taken up once the last one has recovered, and the
+    // script follows the hero's own state from there rather than fixed frames.
+    int32 ParryAt = INDEX_NONE, ReadyAt = INDEX_NONE, DrawAt = INDEX_NONE, ThrustAt = INDEX_NONE, RunAt = INDEX_NONE;
+    const bool bOk = Run.Play(800, [&](FRun& R, int32 F)
     {
         // The guard goes up once the retainer's second cut is past half its
         // windup, inside the parry window, and comes down after the cut.
@@ -369,108 +404,190 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 5: return R.Down(EKeys::LeftControl);
         case 40: return R.Up(EKeys::LeftControl);
         case 60: case 150: case 200: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
-        case 250: return R.Tap(EKeys::One);
-        case 270: return R.Aim(R.Foe(1)) && R.Down(EKeys::LeftMouseButton);
-        case 330: return R.Up(EKeys::LeftMouseButton);
-        case 340: return R.Tap(EKeys::R);
-        case 440: return R.Tap(EKeys::Four);
-        case 460: return R.Aim(R.Foe(2)) && R.Down(EKeys::LeftMouseButton);
-        case 510: return R.Up(EKeys::LeftMouseButton);
-        case 530: return R.Tap(EKeys::Five);
-        case 545: return R.Place(R.Foe(4), FVector(200, 0, 0)) && R.Aim(R.Foe(4));
-        case 550: return R.Tap(EKeys::RightMouseButton);
-        case 570: return R.Down(EKeys::LeftShift) && R.Down(EKeys::W);
-        case 595: return R.Tap(EKeys::SpaceBar);
-        case 620: return R.Up(EKeys::LeftShift) && R.Up(EKeys::W);
-        // The hero tracks the carbine target through the burst; the invader
-        // walks the navigation mesh rather than straight down the aim line.
-        default: return F > 270 && F < 330 && R.Foe(1) ? R.Aim(R.Foe(1)) : true;
+        case 250: return R.Tap(EKeys::Six);
+        case 265: return R.Place(R.Foe(1), FVector(220, 0, 0)) && R.Aim(R.Foe(1));
+        case 270: case 330: case 390: return R.Aim(R.Foe(1)) && R.Tap(EKeys::LeftMouseButton);
+        default: break;
         }
+        // The hero keeps facing the second retainer through the naginata's cuts;
+        // it walks the navigation mesh rather than standing on the aim line.
+        if (F < 440)
+            return F > 265 && R.Foe(1) && R.Foe(1)->IsAlive() ? R.Aim(R.Foe(1)) : true;
+        const int32 Held = R.Hero()->WeaponId;
+        // The yumi: drawn at the first rifle enforcer, a moment after it comes
+        // to hand, and loosed.
+        if (DrawAt == INDEX_NONE)
+        {
+            if (Held != 18)
+                return F % 4 != 0 || R.Tap(EKeys::Four);
+            if (ReadyAt == INDEX_NONE)
+                ReadyAt = F;
+            if (F < ReadyAt + 20)
+                return true;
+            DrawAt = F;
+            ReadyAt = INDEX_NONE;
+            return R.Aim(R.Foe(2)) && R.Down(EKeys::LeftMouseButton);
+        }
+        if (F == DrawAt + 50)
+            return R.Up(EKeys::LeftMouseButton);
+        // The yari: a thrust at the second enforcer, set two metres off.
+        if (F > DrawAt + 60 && ThrustAt == INDEX_NONE)
+        {
+            if (Held != 19)
+                return F % 4 != 0 || R.Tap(EKeys::Five);
+            if (ReadyAt == INDEX_NONE)
+                ReadyAt = F;
+            if (F < ReadyAt + 20)
+                return true;
+            ThrustAt = F;
+            return R.Place(R.Foe(3), FVector(200, 0, 0)) && R.Aim(R.Foe(3)) && R.Tap(EKeys::RightMouseButton);
+        }
+        // Sprint, and a jump in stride.
+        if (ThrustAt != INDEX_NONE && RunAt == INDEX_NONE && F >= ThrustAt + 20)
+        {
+            RunAt = F;
+            return R.Down(EKeys::LeftShift) && R.Down(EKeys::W);
+        }
+        if (RunAt != INDEX_NONE && F == RunAt + 25)
+            return R.Tap(EKeys::SpaceBar);
+        if (RunAt != INDEX_NONE && F == RunAt + 50)
+            return R.Up(EKeys::LeftShift) && R.Up(EKeys::W);
+        return true;
     });
     const FString Hash = Run.Finish();
     Run.Expect(TEXT("the second cut is met with a fresh guard"), ParryAt != INDEX_NONE);
-    Run.Expect(TEXT("the retainer and a carbine target fall and Nyaakoto stands"),
-        bOk && Run.Mode()->Campaign()->Kills == 2 && Run.Hero()->IsAlive());
-    // After the traced fight, two defeats open the first production site.
-    if (bOk && Log)
-    {
-        const FVector Site = Run.Mode()->Arena()->NodePositions[0];
-        Run.Hero()->SetActorLocation(FVector(Site.X, Site.Y, Run.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-        if (!Run.Tap(EKeys::E) || !Run.Step())
-            return FString();
-    }
+    Run.Expect(TEXT("the yumi is drawn, the yari thrust and the hero sprints"), DrawAt != INDEX_NONE && ThrustAt != INDEX_NONE && RunAt != INDEX_NONE);
+    Run.Expect(TEXT("the first retainer falls to the katana and Nyaakoto stands"),
+        bOk && Run.Mode()->Campaign()->Kills >= 1 && Run.Foe(0) == nullptr && Run.Hero()->IsAlive());
+    // After the traced fight, the rest of the deck falls and the next beat begins.
+    if (bOk && Log && !Run.ClearBeat(RetainerBeat))
+        return FString();
     return bOk ? Hash : FString();
 }
 
-// The dojo: stance, guard, parry and recovery through real Block and Fire
-// presses against a sparring pupil, then scored bouts with the bokken. A blade's
-// contact holds the world for a moment (hit-stop), so the bout's swings come
-// every twelve frames while the pupil stands; each lands once the bokken has
-// recovered.
+// The dojo's lesson duels (ch01.b02-b03): stance, guard, two parries (awase
+// ×2) and recovery through real Block and Fire presses against one sparring
+// pupil, then the lesson's two scored bouts with the bokken, the second pupil
+// stepping in for the first, which opens the 転 lesson (ch01.b04). The pupil
+// walks its own footwork and a blade's contact holds the world for a moment
+// (hit-stop), so the script answers the pupil rather than the frame count: a
+// pupil that strays is set back in front, each awase is a fresh guard in the
+// last stretch of the pupil's windup (its cut lands 0.55 s of world time after
+// the windup begins, and a guard younger than 260 ms meets it), and the bouts'
+// swings come every twelve frames while a pupil stands.
 FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Dojo"), Log);
-    if (!Run.Seed(0) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
+    if (!Run.Seed(0, 1) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
         return FString();
     if (!Test.TestTrue(TEXT("Dojo scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(150, 0, 0)))
         return FString();
-    const bool bOk = Run.Play(420, [](FRun& R, int32 F)
+    double WindupAt = -1.0;
+    bool bGuardUp = false, bSecondStepsIn = false;
+    const bool bOk = Run.Play(900, [&](FRun& R, int32 F)
     {
-        switch (F)
+        const USoraCampaignDirector* Campaign = R.Mode()->Campaign();
+        const double Now = R.Get()->GetTimeSeconds();
+        FFoe* Pupil = R.Foe(0) && R.Foe(0)->IsAlive() ? R.Foe(0) : R.Foe(1) && R.Foe(1)->IsAlive() ? R.Foe(1) : nullptr;
+        // Stance, then the guard held through a cut.
+        if (F == 0)
+            return R.Down(EKeys::LeftControl);
+        if (F == 120)
+            return R.Up(EKeys::LeftControl);
+        if (F < 130 || !Pupil)
+            return true;
+        // The second pupil steps in once the first has yielded.
+        if (Pupil == R.Foe(1) && !bSecondStepsIn)
         {
-        case 0: return R.Down(EKeys::LeftControl);
-        case 120: return R.Up(EKeys::LeftControl);
-        case 190: return R.Down(EKeys::LeftControl);
-        case 205: return R.Up(EKeys::LeftControl);
-        case 215: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
-        default:
-            return F >= 264 && F % 12 == 0 && R.Foe(0) && R.Foe(0)->IsAlive() ?
-                R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton) : true;
+            bSecondStepsIn = true;
+            return R.Place(Pupil, FVector(150, 0, 0)) && R.Aim(Pupil);
         }
+        if (!Pupil->IsPupilWindup() && FVector::Dist2D(Pupil->GetActorLocation(), R.Hero()->GetActorLocation()) > 170.f && F % 30 == 0)
+            return R.Place(Pupil, FVector(150, 0, 0)) && R.Aim(Pupil);
+        if (Campaign->DojoLessonStage() == 2)
+        {
+            // Awase: the guard goes up 0.38 s into the windup and down after the cut.
+            if (WindupAt < 0.0 && Pupil->IsPupilWindup())
+                WindupAt = Now;
+            if (WindupAt >= 0.0 && !bGuardUp && Now >= WindupAt + .38)
+            {
+                bGuardUp = true;
+                return R.Aim(Pupil) && R.Down(EKeys::LeftControl);
+            }
+            if (bGuardUp && Now >= WindupAt + .8)
+            {
+                bGuardUp = false; WindupAt = -1.0;
+                return R.Up(EKeys::LeftControl);
+            }
+            return R.Aim(Pupil);
+        }
+        if (bGuardUp)
+        {
+            bGuardUp = false; WindupAt = -1.0;
+            return R.Up(EKeys::LeftControl);
+        }
+        // Recovery, then the bouts: a cut every twelve frames.
+        return F % 12 == 0 ? R.Aim(Pupil) && R.Tap(EKeys::LeftMouseButton) : true;
     });
     const FString Hash = Run.Finish();
-    Run.Expect(TEXT("all four forms are learned and one pupil yields"),
-        bOk && Run.Mode()->Campaign()->DojoLessonStage() == 4 && Run.Mode()->Campaign()->Kills == 1);
+    const USoraCampaignDirector* Campaign = Run.Mode()->Campaign();
+    Run.Expect(TEXT("all four forms are learned, awase twice, and two pupils yield in the lesson's bouts"),
+        bOk && Campaign->DojoLessonStage() == 4 && (Campaign->Progress().CompletedMask & SoraBeatRules::BeatBit(2)) != 0u &&
+        Campaign->ActiveBeat() == 3);
     return bOk ? Hash : FString();
 }
 
-// The final chapter restored at seventeen defeats: the collector (High
-// Collector Val Amort) with his beam and cleave, and carbine fire his ledger
-// shards intercept. The story's blow then brings him to his cane phase (the
-// phases between are SoraArena.Boss.ValAmort's), where no weapon finishes
-// him: the katana goes into its scabbard on the Sheathe key, and a guard
-// pressed just before his final foreclosure lands takes his cane
-// (mutō-dori). Then the last site and the liberating exit.
+// The final chapter restored at its boss (ch08.b14): High Collector Val Amort
+// with his beam and cleave, and carbine fire his ledger shards intercept. The
+// story's blow then brings him to his cane phase (the phases between are
+// SoraArena.Boss.ValAmort's), where no weapon finishes him: the katana goes
+// into its scabbard on the Sheathe key, and a guard pressed just before his
+// final foreclosure lands takes his cane (mutō-dori). He yields and E binds
+// him (captured, not killed), Enter skips the aftermath cinematic and the
+// registry is carried to the last site. With a listener attached the chapter
+// then plays out to liberation.
+constexpr int32 CollectorChapter = 7, CollectorBeat = 13, BossSlot = 0;
 FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Collector"), Log);
-    if (!Run.Seed(7, 17, 3, true) || !Run.Start() || !Run.Key(EKeys::Enter))
+    if (!Run.Seed(CollectorChapter, CollectorBeat) || !Run.Start() || !Run.Key(EKeys::Enter))
         return FString();
     if (!Test.TestTrue(TEXT("Collector scenario is in play"), Run.Mode()->IsPlaying()) ||
-        !Test.TestNotNull(TEXT("The collector waits at seventeen defeats"), Run.Mode()->Campaign()->CampaignBoss()) ||
-        !Run.Place(Run.Foe(17), FVector(600, 0, 0)))
+        !Test.TestNotNull(TEXT("The collector waits at its checkpoint"), Run.Mode()->Campaign()->CampaignBoss()) ||
+        !Run.Place(Run.Foe(BossSlot), FVector(600, 0, 0)))
         return FString();
     int32 TakenAt = INDEX_NONE, GuardAt = INDEX_NONE, Attempts = 0;
     const bool bOk = Run.Play(900, [&](FRun& R, int32 F)
     {
-        // Captured: the last site, then the exit.
+        const auto MoveTo = [&R](const FVector& Point)
+        {
+            R.Hero()->SetActorLocation(FVector(Point.X, Point.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+        };
         if (TakenAt != INDEX_NONE)
         {
-            if (F == TakenAt + 10)
+            FVector Point;
+            // The yielded collector waits where he knelt; E beside him binds him.
+            if (F == TakenAt + 5)
             {
-                const FVector Site = R.Mode()->Arena()->NodePositions[2];
-                R.Hero()->SetActorLocation(FVector(Site.X, Site.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+                if (!R.Mode()->Campaign()->AwaitingCapture() || !R.Mode()->Campaign()->ObjectiveAnchor(Point))
+                    return R.Fail(TEXT("The collector did not yield to be captured"));
+                MoveTo(Point);
                 return R.Tap(EKeys::E);
             }
-            if (F == TakenAt + 30)
+            // Enter skips the aftermath cinematic; the registry box is carried
+            // from the canal steps to the notice board at the last site.
+            if (F == TakenAt + 15)
+                return R.Tap(EKeys::Enter);
+            if (F == TakenAt + 30 || F == TakenAt + 40)
             {
-                const FVector Exit = R.Mode()->Arena()->ExitPoint();
-                R.Hero()->SetActorLocation(FVector(Exit.X, Exit.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+                if (!R.Mode()->Campaign()->ObjectiveAnchor(Point))
+                    return R.Fail(TEXT("The registry has no pickup or drop-off"));
+                MoveTo(Point);
                 return R.Tap(EKeys::E);
             }
             return true;
         }
-        FFoe* Foe = R.Foe(17);
+        FFoe* Foe = R.Foe(BossSlot);
         const ASoraBoss* Boss = Cast<ASoraBoss>(Foe);
         if (F > 330 && (!Boss || Boss->IsDefeated()))
         {
@@ -495,16 +612,13 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 332: return R.Tap(EKeys::Two);
         case 334:
         {
-            // The cane phase is fought inside his arena, on the open road
-            // that crosses it: he stands on it, the hero two metres off, facing him.
+            // The cane phase is fought at his arena's centre, the hero two
+            // metres off, facing him.
             if (!Boss)
                 return R.Fail(TEXT("The collector is gone before his cane phase"));
-            const FVector Stand(Boss->ArenaCenter().X, 0.f, Foe->GetActorLocation().Z);
-            const FVector Hero(Stand.X - 220.f, 0.f, R.Hero()->GetActorLocation().Z);
-            if (FVector::Dist2D(Hero, Boss->ArenaCenter()) >= Boss->ArenaRadius())
-                return R.Fail(TEXT("The road does not cross the collector's arena"));
+            const FVector Stand(Boss->ArenaCenter().X, Boss->ArenaCenter().Y, Foe->GetActorLocation().Z);
             Foe->SetActorLocation(Stand, false, nullptr, ETeleportType::TeleportPhysics);
-            R.Hero()->SetActorLocation(Hero, false, nullptr, ETeleportType::TeleportPhysics);
+            MoveTo(Stand - FVector(220.f, 0.f, 0.f));
             return R.Aim(Foe);
         }
         case 340: return R.Tap(EKeys::V);
@@ -530,9 +644,28 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         return R.Aim(Foe);
     });
     const FString Hash = Run.Finish();
+    const USoraCampaignDirector* Campaign = Run.Mode()->Campaign();
     Run.Expect(TEXT("the collector is taken by mutō-dori on the first foreclosure"), TakenAt != INDEX_NONE && Attempts == 1);
-    Run.Expect(TEXT("the collector falls, the last site is restored and Nyaagyu is liberated"),
-        bOk && Run.Mode()->Campaign()->Kills == 18 && Run.Mode()->bChapterComplete && Run.Mode()->Campaign()->bCampaignComplete);
+    Run.Expect(TEXT("the collector yields, is captured, and the registry restores the last site"),
+        bOk && !Campaign->CampaignBoss() && Run.Mode()->Arena()->ActivatedMask() == 7 && Campaign->ActiveBeat() == 16);
+    if (bOk && Log)
+    {
+        // The festival's closing lines play on, then Nyaakoto rehangs the plaque
+        // and Enter skips the final cinematic into liberation.
+        for (int32 Frame = 0; Frame < 400 && Campaign->ActiveBeat() == 16 && Campaign->LinesQueued() > 0; ++Frame)
+            if (!Run.World->Tick(1, .5f))
+                return FString();
+        FVector Plaque;
+        if (!Campaign->ObjectiveAnchor(Plaque))
+        {
+            Run.Fail(TEXT("The plaque has no anchor"));
+            return FString();
+        }
+        Run.Hero()->SetActorLocation(FVector(Plaque.X, Plaque.Y, Run.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+        if (!Run.World->Tick(2) || !Run.Key(EKeys::Enter))
+            return FString();
+        Run.Expect(TEXT("Nyaagyu is liberated"), Run.Mode()->bChapterComplete && Campaign->bCampaignComplete);
+    }
     return bOk ? Hash : FString();
 }
 
@@ -662,30 +795,40 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Dojo is unchanged by listeners"), Dojo(*this, &DojoLog), Dojo(*this));
     TestEqual(TEXT("Collector fight is unchanged by listeners"), Collector(*this, &CollectorLog), Collector(*this));
     TestEqual(TEXT("Training fight is unchanged by listeners"), Training(*this, &TrainingLog), Training(*this));
+    // Each fight's announced events, for reading a failed expectation.
+    for (const TPair<const TCHAR*, const FEventLog*>& Fight : {TPair<const TCHAR*, const FEventLog*>(TEXT("Retainer"), &RetainerLog),
+        TPair<const TCHAR*, const FEventLog*>(TEXT("Dojo"), &DojoLog), TPair<const TCHAR*, const FEventLog*>(TEXT("Collector"), &CollectorLog),
+        TPair<const TCHAR*, const FEventLog*>(TEXT("Training"), &TrainingLog)})
+        FFileHelper::SaveStringToFile(FString::Join(Fight.Value->Lines, TEXT("\n")),
+            *(FPaths::ProjectSavedDir() / TEXT("Diagnostics") / (FString(TEXT("scripted_fight_")) + Fight.Key + TEXT(".txt"))));
 
-    const TCHAR* Scenario = TEXT("First invasion chapter");
-    TestEqual(TEXT("The chapter starts once, fresh"), RetainerLog.Count(TEXT("ChapterStarted ")), 1);
-    Expect(*this, RetainerLog, Scenario, TEXT("ChapterStarted chapter=1 resumed=0 liberated=0"));
+    const TCHAR* Scenario = TEXT("Foundry yard");
+    TestEqual(TEXT("The chapter starts once, at its checkpoint"), RetainerLog.Count(TEXT("ChapterStarted ")), 1);
+    Expect(*this, RetainerLog, Scenario, TEXT("ChapterStarted chapter=4 resumed=1 liberated=0"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=4 beat=ch05.b05 resumed=1 phase=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Guarded defender=Hero attacker=Retainer0 dojo=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Parried defender=Hero attacker=Retainer0 dojo=0"));
     Expect(*this, RetainerLog, Scenario, TEXT("Committed attacker=Retainer0 weapon=0 windup=0.42"));
     Expect(*this, RetainerLog, Scenario, TEXT("Committed attacker=Hero weapon=0 windup=0.20"), 3);
+    Expect(*this, RetainerLog, Scenario, TEXT("Committed attacker=Hero weapon=20"));
     Expect(*this, RetainerLog, Scenario, TEXT("Committed attacker=Hero weapon=19 windup=0.29"));
     Expect(*this, RetainerLog, Scenario, TEXT("Resolved attacker=Hero target=Retainer0 weapon=0 hit=1"), 3);
     Expect(*this, RetainerLog, Scenario, TEXT("Resolved attacker=Retainer0 target=Hero weapon=0 hit=1"));
     Expect(*this, RetainerLog, Scenario, TEXT("Damaged victim=Retainer0 causer=Hero"), 3);
     Expect(*this, RetainerLog, Scenario, TEXT("Died victim=Retainer0 killer=Hero sparring=0"));
-    Expect(*this, RetainerLog, Scenario, TEXT("Fired shooter=Hero weapon=1 kind=Hitscan"), 4);
-    Expect(*this, RetainerLog, Scenario, TEXT("Died victim=Invader1 killer=Hero sparring=0"));
+    Expect(*this, RetainerLog, Scenario, TEXT("Resolved attacker=Hero target=Retainer1 weapon=20 hit=1"));
     Expect(*this, RetainerLog, Scenario, TEXT("Fired shooter=Hero weapon=18 kind=Arrow"));
     Expect(*this, RetainerLog, Scenario, TEXT("Fired shooter=Invader"));
-    Expect(*this, RetainerLog, Scenario, TEXT("Damaged victim=Hero causer=Invader"));
-    Expect(*this, RetainerLog, Scenario, TEXT("SiteRestored chapter=1 site=0 campaign=1"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatCompleted chapter=4 beat=ch05.b05"));
+    Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=4 beat=ch05.b06 resumed=0 phase=0"));
 
     Scenario = TEXT("Dojo");
-    Expect(*this, DojoLog, Scenario, TEXT("ChapterStarted chapter=0 resumed=0 liberated=0"));
+    Expect(*this, DojoLog, Scenario, TEXT("ChapterStarted chapter=0 resumed=1 liberated=0"));
+    Expect(*this, DojoLog, Scenario, TEXT("BeatCompleted chapter=0 beat=ch01.b02"));
+    Expect(*this, DojoLog, Scenario, TEXT("BeatCompleted chapter=0 beat=ch01.b03"));
+    Expect(*this, DojoLog, Scenario, TEXT("SiteRestored chapter=0 site=1 campaign=1"));
     Expect(*this, DojoLog, Scenario, TEXT("Guarded defender=Hero attacker=Pupil0 dojo=1"));
-    Expect(*this, DojoLog, Scenario, TEXT("Parried defender=Hero attacker=Pupil0 dojo=1"));
+    Expect(*this, DojoLog, Scenario, TEXT("Parried defender=Hero attacker=Pupil0 dojo=1"), 2);
     Expect(*this, DojoLog, Scenario, TEXT("Committed attacker=Pupil0 weapon=0 windup=0.55"), 2);
     Expect(*this, DojoLog, Scenario, TEXT("Committed attacker=Hero weapon=0 windup=0.00"), 4);
     Expect(*this, DojoLog, Scenario, TEXT("Resolved attacker=Hero target=Pupil0 weapon=0 hit=0"));
@@ -714,6 +857,8 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
         CollectorLog.Count(TEXT("Guarded defender=Hero attacker=Boss")) + CollectorLog.Count(TEXT("Parried defender=Hero attacker=Boss")), 0);
     // High Collector Val Amort is taken, never killed (katsujinken).
     Expect(*this, CollectorLog, Scenario, TEXT("Died victim=Boss killer=Hero sparring=1"));
+    Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b14"));
+    Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b15"));
     Expect(*this, CollectorLog, Scenario, TEXT("SiteRestored chapter=7 site=2 campaign=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("ChapterCompleted chapter=7 liberated=1"));
 

@@ -1,87 +1,14 @@
 #pragma once
 
-// Offline chapter gates shared by the Unreal GameMode and a host-compiled
-// acceptance driver. No wallet, network, or Unreal headers belong here.
+// Offline campaign rules above the chapter beats (SoraBeatRules.h): chapter
+// advance and liberation, the collectibles mask, and the training arena's
+// defeat and site gates. Shared by the Unreal campaign director and a
+// host-compiled acceptance driver. No wallet, network, or Unreal headers
+// belong here.
 namespace SoraCampaignRules
 {
-struct FSite
-{
-    int RequiredKills;
-    unsigned RequiredSitesMask;
-};
-
-struct FCheckpoint
-{
-    int Kills;
-    unsigned NodesMask;
-    bool Complete;
-};
-
-constexpr unsigned AllSitesMask(int SiteCount)
-{
-    return SiteCount > 0 && SiteCount <= 3 ? (1u << SiteCount) - 1u : 0u;
-}
-
-constexpr bool CanRestoreSite(int Kills, unsigned ActiveMask, FSite Site)
-{
-    return Kills >= Site.RequiredKills &&
-        (ActiveMask & Site.RequiredSitesMask) == Site.RequiredSitesMask;
-}
-
-constexpr bool CanFinishChapter(int Kills, int KillsNeeded, unsigned ActiveMask, int SiteCount)
-{
-    return AllSitesMask(SiteCount) != 0u && KillsNeeded > 0 && Kills >= KillsNeeded &&
-        ActiveMask == AllSitesMask(SiteCount);
-}
-
-constexpr bool CheckpointValid(FCheckpoint State, int KillsNeeded, const FSite* Sites, int SiteCount)
-{
-    const unsigned AllMask = AllSitesMask(SiteCount);
-    if (!Sites || !AllMask || KillsNeeded <= 0 || State.Kills < 0 ||
-        State.Kills > KillsNeeded || (State.NodesMask & ~AllMask) != 0)
-        return false;
-    for (int Index = 0; Index < SiteCount; ++Index)
-        if ((State.NodesMask & (1u << Index)) != 0 &&
-            !CanRestoreSite(State.Kills, State.NodesMask, Sites[Index]))
-            return false;
-    return !State.Complete || CanFinishChapter(State.Kills, KillsNeeded, State.NodesMask, SiteCount);
-}
-
-constexpr bool RecordDefeat(FCheckpoint& State, int KillsNeeded)
-{
-    if (State.Complete || State.Kills < 0 || State.Kills >= KillsNeeded)
-        return false;
-    ++State.Kills;
-    return true;
-}
-
-constexpr bool RestoreSite(FCheckpoint& State, int Index, FSite Site, int SiteCount)
-{
-    if (State.Complete || AllSitesMask(SiteCount) == 0u || Index < 0 || Index >= SiteCount ||
-        (State.NodesMask & (1u << Index)) != 0 ||
-        !CanRestoreSite(State.Kills, State.NodesMask, Site))
-        return false;
-    State.NodesMask |= 1u << Index;
-    return true;
-}
-
-constexpr bool CompleteChapter(FCheckpoint& State, int KillsNeeded, int SiteCount)
-{
-    if (State.Complete || !CanFinishChapter(State.Kills, KillsNeeded, State.NodesMask, SiteCount))
-        return false;
-    State.Complete = true;
-    return true;
-}
-
-constexpr bool IsFinalBossSlot(int ChapterId, int Spawned, int KillsNeeded)
-{
-    return ChapterId == 7 && KillsNeeded > 0 && Spawned == KillsNeeded - 1;
-}
-
-constexpr bool CanSpawnFinalBoss(int ChapterId, int Kills, int Spawned, int KillsNeeded)
-{
-    return IsFinalBossSlot(ChapterId, Spawned, KillsNeeded) && Kills == KillsNeeded - 1;
-}
+constexpr int ChapterCount = 8;
+constexpr int CollectiblesPerChapter = 6;
 
 constexpr int AdvanceChapter(int ChapterId, int LastChapterId, bool Complete)
 {
@@ -91,5 +18,55 @@ constexpr int AdvanceChapter(int ChapterId, int LastChapterId, bool Complete)
 constexpr bool CampaignLiberated(int ChapterId, int LastChapterId, bool Complete)
 {
     return Complete && ChapterId == LastChapterId;
+}
+
+// Collectibles are one campaign-wide mask, bit chapter * 6 + the chapter's mask_bit.
+constexpr unsigned long long CollectibleBit(int ChapterId, int MaskBit)
+{
+    return ChapterId >= 0 && ChapterId < ChapterCount && MaskBit >= 0 && MaskBit < CollectiblesPerChapter
+        ? 1ull << (ChapterId * CollectiblesPerChapter + MaskBit) : 0ull;
+}
+
+// Only chapters already reached can have been searched.
+constexpr bool CollectiblesValid(unsigned long long Mask, int HighestChapter)
+{
+    if (HighestChapter < 0 || HighestChapter >= ChapterCount)
+        return false;
+    const int Bits = (HighestChapter + 1) * CollectiblesPerChapter;
+    return (Mask & ~((1ull << Bits) - 1ull)) == 0ull;
+}
+
+// The training arena: twelve defeats and three workshops in any order, then the exit.
+struct FArena
+{
+    int Kills;
+    unsigned SitesMask;
+    bool Complete;
+};
+constexpr int ArenaDefeats = 12;
+constexpr unsigned ArenaSitesMask = 7u;
+
+constexpr bool RecordArenaDefeat(FArena& State)
+{
+    if (State.Complete || State.Kills < 0 || State.Kills >= ArenaDefeats)
+        return false;
+    ++State.Kills;
+    return true;
+}
+
+constexpr bool RestoreArenaSite(FArena& State, int Index)
+{
+    if (State.Complete || Index < 0 || Index >= 3 || (State.SitesMask & (1u << Index)) != 0u)
+        return false;
+    State.SitesMask |= 1u << Index;
+    return true;
+}
+
+constexpr bool FinishArena(FArena& State)
+{
+    if (State.Complete || State.Kills != ArenaDefeats || State.SitesMask != ArenaSitesMask)
+        return false;
+    State.Complete = true;
+    return true;
 }
 } // namespace SoraCampaignRules

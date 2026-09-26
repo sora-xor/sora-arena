@@ -595,11 +595,15 @@ bool ASoraEnemy::AdmitDamage(float& Damage,FSoraHit& Hit,AActor* Causer)
 void ASoraEnemy::OnDefeated(AActor* Causer)
 {
     // Zero here means the sparring pupil has yielded, not died; the
-    // actor stands for a moment and cannot be scored a second time.
+    // actor stands for a moment and cannot be scored a second time. So does
+    // a boss or duellist the story spares (disarmed, captured, a duel not to
+    // the death); a captive stays until the campaign takes it away.
     CancelAttack();
+    auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
+    const bool bSpared=G&&G->Campaign()->SparesOpponent(*this);
     // A boss's add answers to the boss; the beat counts only its own opponents.
     if(ASoraBoss* Boss=SummonedBy.Get()) Boss->AddDefeated(*this);
-    else if(auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this))) G->Campaign()->OpponentDefeated(this);
+    else if(G) G->Campaign()->OpponentDefeated(this);
     // A guard's body stays where it fell for the others to find; a combat
     // wave's fallen clear away.
     const auto* Brain=Cast<ASoraEnemyController>(GetController());
@@ -609,9 +613,9 @@ void ASoraEnemy::OnDefeated(AActor* Causer)
         return;
     }
     SetActorEnableCollision(false);
-    if(bDojoPupil) SetActorTickEnabled(false);
+    if(bDojoPupil||bSpared) SetActorTickEnabled(false);
     else SetActorRotation(FRotator(0,GetActorRotation().Yaw,85));
-    SetLifeSpan(2.f);
+    if(!G||!G->Campaign()->IsCaptive(*this)) SetLifeSpan(2.f);
 }
 void ASoraEnemy::Subdue(AActor* Causer)
 {

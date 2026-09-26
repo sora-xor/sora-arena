@@ -10,8 +10,11 @@ class ASoraPlayerCharacter;
 // strikes with every melee arm (the dojo bokken's swing is swept), the blade
 // guard, and the sword school's sheathed hand, 転 step, 残心 and 水月 read
 // (SoraCombatRules). The held weapon's ID lives on the character so its
-// visual and the HUD can read it. Kernel practice does not use this
-// component; its counters come from kernel snapshots.
+// visual and the HUD can read it. In the campaign, a weapon the save has not
+// unlocked is refused with a notice; from the saddle a weapon acts only in its
+// mounted arc (SoraMountRules.h), and a carried load slows the hero and leaves
+// at most the katana in hand. Kernel practice does not use this component; its
+// counters come from kernel snapshots.
 UCLASS(ClassGroup=(Sora))
 class SORAARENA_API USoraEquipmentComponent : public UActorComponent
 {

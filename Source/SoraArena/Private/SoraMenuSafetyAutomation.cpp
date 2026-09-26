@@ -79,9 +79,9 @@ struct FScope
         Test.AddError(FString::Printf(TEXT("Key %s could not be pressed"), *Key.ToString()));
         return false;
     }
-    bool Frames(int32 Count)
+    bool Frames(int32 Count, float DeltaSeconds = 1.f / FramesPerSecond)
     {
-        if (World->Tick(Count))
+        if (World->Tick(Count, DeltaSeconds))
             return true;
         Test.AddError(TEXT("Test world failed to tick"));
         return false;
@@ -111,19 +111,27 @@ struct FScope
     }
 };
 
-// Seeds the isolated slot with a campaign in progress before the world loads it.
-bool WriteSave(FAutomationTestBase& Test, const FString& Slot, int32 Chapter, int32 Highest,
-    int32 CheckpointChapter = -1, int32 CheckpointKills = 0, int32 CheckpointMask = 0)
+// Seeds the isolated slot with a campaign in progress before the world loads
+// it: a chapter entered with every earlier unlock, fresh or at the start of
+// CheckpointBeat.
+bool WriteSave(FAutomationTestBase& Test, const FString& Slot, int32 Chapter, int32 Highest, int32 CheckpointBeat = INDEX_NONE)
 {
     USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
     if (!Save)
         return false;
-    Save->SaveSchema = 5;
-    Save->CurrentChapter = Chapter;
+    if (CheckpointBeat != INDEX_NONE)
+    {
+        if (!Test.TestTrue(TEXT("Seed checkpoint is valid"), USoraCampaignDirector::SeedCheckpoint(*Save, Chapter, CheckpointBeat)))
+            return false;
+    }
+    else
+    {
+        Save->SaveSchema = USoraSaveGame::Schema;
+        Save->CurrentChapter = Chapter;
+        Save->ChapterEntryWeapons = static_cast<int32>(FSoraCatalog::Get().EarlierWeapons(Chapter));
+        Save->ChapterEntryMechanics = static_cast<int32>(FSoraCatalog::Get().EarlierMechanics(Chapter));
+    }
     Save->HighestChapter = Highest;
-    Save->CheckpointChapter = CheckpointChapter;
-    Save->CheckpointKills = CheckpointKills;
-    Save->CheckpointNodesMask = CheckpointMask;
     return Test.TestTrue(TEXT("Seed campaign saved to the isolated slot"), UGameplayStatics::SaveGameToSlot(Save, Slot, 0));
 }
 
@@ -226,21 +234,20 @@ bool FSoraNewCampaignConfirmationTest::RunTest(const FString& Parameters)
     if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
         return false;
     FScope Scope(*this, TEXT("NewCampaignConfirmation"));
-    // Chapter four with its first site restored, and chapter five unlocked.
-    constexpr int32 Chapter = 3, Highest = 4;
-    const int32 Kills = FSoraCatalog::Get().Chapter(Chapter).Sites[0].RequiredKills;
-    if (!WriteSave(*this, Scope.Slot, Chapter, Highest, Chapter, Kills, 1) || !Scope.Start())
+    // Chapter four at its first weir (ch04.b06), and chapter five reached.
+    constexpr int32 Chapter = 3, Highest = 4, Beat = 5;
+    if (!WriteSave(*this, Scope.Slot, Chapter, Highest, Beat) || !Scope.Start())
         return false;
     ASoraGameMode* Mode = Scope.Mode();
     if (!TestEqual(TEXT("The saved chapter loads"), Mode->Campaign()->ChapterId, Chapter) ||
-        !TestEqual(TEXT("The saved checkpoint loads"), Mode->Campaign()->Kills, Kills) || !TestTrue(TEXT("The game opens in the menu"), Mode->bMenu))
+        !TestEqual(TEXT("The saved checkpoint loads"), Mode->Campaign()->ActiveBeat(), Beat) || !TestTrue(TEXT("The game opens in the menu"), Mode->bMenu))
         return false;
     const auto Kept = [&](const TCHAR* What)
     {
         const USoraSaveGame* Saved = Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(Scope.Slot, 0));
         return TestTrue(What, Saved && Saved->CurrentChapter == Chapter && Saved->HighestChapter == Highest &&
-            Saved->CheckpointChapter == Chapter && Saved->CheckpointKills == Kills && Saved->CheckpointNodesMask == 1 &&
-            Mode->Campaign()->ChapterId == Chapter && Mode->Campaign()->Kills == Kills);
+            Saved->CheckpointChapter == Chapter && Saved->CheckpointBeat == Beat &&
+            Mode->Campaign()->ChapterId == Chapter && Mode->Campaign()->ActiveBeat() == Beat);
     };
     USoraFrontEnd* FrontEnd = Scope.FrontEnd();
     if (!TestTrue(TEXT("The game opens on the title screen"), Scope.On(SoraUI::EScreen::Title) && Scope.Paused()))
@@ -283,10 +290,17 @@ bool FSoraNewCampaignConfirmationTest::RunTest(const FString& Parameters)
     Scope.Key(EKeys::Gamepad_DPad_Up);
     Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
     const USoraSaveGame* Saved = Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(Scope.Slot, 0));
+    // The dojo's opening cinematic is a checkpoint beat, so the new save
+    // holds that opening and nothing else.
     TestTrue(TEXT("Confirming erases the saved campaign"), Saved && Saved->CurrentChapter == 0 &&
-        Saved->HighestChapter == 0 && Saved->CheckpointChapter == -1 && !Saved->CampaignComplete);
+        Saved->HighestChapter == 0 && Saved->CheckpointChapter == 0 && Saved->CheckpointBeat == 0 &&
+        Saved->CheckpointBeatsMask == 0 && !Saved->CampaignComplete);
+    TestFalse(TEXT("A new campaign has no progress to erase"), Mode->Campaign()->HasProgress());
+    TestTrue(TEXT("Confirming erases every unlock and find"), Saved && Saved->ChapterEntryWeapons == 0 &&
+        Saved->ChapterEntryMechanics == 0 && Saved->Collectibles == 0);
     TestTrue(TEXT("The new campaign opens on the dojo's title card"),
-        !Mode->bMenu && !Scope.Paused() && Mode->InputState() == SoraInput::Card && Mode->Campaign()->ChapterId == 0 && Mode->Campaign()->Kills == 0);
+        !Mode->bMenu && !Scope.Paused() && Mode->InputState() == SoraInput::Card && Mode->Campaign()->ChapterId == 0 &&
+        Mode->Campaign()->ActiveBeat() == 0 && Mode->Campaign()->Progress().CompletedMask == 0u);
     return true;
 }
 
@@ -513,9 +527,18 @@ bool FSoraChapterTitleCardTest::RunTest(const FString& Parameters)
     for (int32 Id = 0; Id < 21; ++Id)
         TestFalse(*FString::Printf(TEXT("Weapon %d has an English name"), Id), Catalog.Weapon(Id).NameEnglish.IsEmpty());
 
-    // The first invasion chapter, started fresh from the menu.
+    // The first invasion chapter, started fresh from the menu. Its opening
+    // cinematic plays on the card: the title card first, then the letterboxed
+    // frame with the cinematic's subtitles on their own clock.
     constexpr int32 ChapterId = 1;
     const FSoraChapter& Chapter = Catalog.Chapter(ChapterId);
+    const FSoraBeat& Opening = Chapter.Beats[0];
+    const FSoraDialogueTrigger* FirstSubtitle = Chapter.Triggers.FindByPredicate([](const FSoraDialogueTrigger& Trigger)
+    {
+        return Trigger.Beat == 0 && Trigger.On == TEXT("subtitle");
+    });
+    if (!TestTrue(TEXT("The chapter opens on a cinematic with subtitles"), Opening.Is(SoraBeatRules::EType::Cinematic) && FirstSubtitle != nullptr))
+        return false;
     FScope Scope(*this, TEXT("ChapterTitleCard"));
     if (!WriteSave(*this, Scope.Slot, ChapterId, ChapterId) || !Scope.Start())
         return false;
@@ -525,37 +548,41 @@ bool FSoraChapterTitleCardTest::RunTest(const FString& Parameters)
     Scope.Key(EKeys::Enter);
     TestTrue(TEXT("The card waits behind the main menu"), Scope.On(SoraUI::EScreen::Main) && !Mode->TitleCardChapter());
     Scope.Key(EKeys::Enter);
-    if (!TestTrue(TEXT("Continue opens the chapter on its title card"), Mode->TitleCardChapter() == &Chapter))
+    if (!TestTrue(TEXT("Continue opens the chapter on its title card"), Mode->TitleCardChapter() == &Chapter &&
+        Mode->Campaign()->ActiveBeat() == 0 && Mode->Campaign()->IsChapterOpening()))
         return false;
     TestEqual(TEXT("No notice competes with the card"), Mode->NoticeTime, 0.f);
 
-    // The card holds combat, the round timer and the dialogue.
+    // The card holds combat, the round timer and the dialogue queue.
     const float Health = Hero->Health;
-    TArray<ASoraEnemy*> Opponents;
-    for (TActorIterator<ASoraEnemy> It(Scope.Get()); It; ++It)
-        if (It->IsEnemy())
-            Opponents.Add(*It);
-    if (!TestTrue(TEXT("The chapter's opponents wait behind the card"), Opponents.Num() > 0))
-        return false;
-    UGameplayStatics::ApplyDamage(Hero, 50.f, nullptr, Opponents[0], UDamageType::StaticClass());
+    UGameplayStatics::ApplyDamage(Hero, 50.f, nullptr, nullptr, UDamageType::StaticClass());
     TestEqual(TEXT("The hero cannot be hurt under the card"), Hero->Health, Health);
-    const TArray<FVector> Before = Scope.OpponentLocations();
+    TestTrue(TEXT("No opponent takes the field during the opening cinematic"), Scope.OpponentLocations().IsEmpty());
     Scope.Frames(2 * FramesPerSecond);
-    TestTrue(TEXT("Opponents hold still under the card"), Scope.OpponentLocations() == Before);
     TestEqual(TEXT("The round timer waits for the card"), Mode->RoundTime, 0.f);
-    TestNull(TEXT("Dialogue waits for the card"), Mode->Campaign()->CurrentDialogueCue());
-    TestTrue(TEXT("The card counts down"), Mode->TitleCardTime > 0.f && Mode->TitleCardTime < ASoraGameMode::TitleCardSeconds - 1.9f);
+    TestNull(TEXT("No subtitle before its cue"), Mode->Campaign()->CurrentDialogueCue());
+    TestTrue(TEXT("The card counts down the cinematic"), Mode->TitleCardTime > 0.f && Mode->TitleCardTime < Opening.Task.DurationMs / 1000.f - 1.9f);
+    TestTrue(TEXT("The title card shows first"), Mode->Campaign()->CinematicElapsed() < ASoraGameMode::TitleCardSeconds);
+    Scope.Frames(FMath::CeilToInt32((FirstSubtitle->AtMs / 1000.f - 2.f + .1f) * FramesPerSecond));
+    TestTrue(TEXT("The first subtitle appears on its cue"),
+        Mode->Campaign()->CurrentDialogueCue() == &Chapter.Dialogue[FirstSubtitle->Lines[0]]);
 
-    // Left alone, the card closes by itself and the dialogue begins after it.
+    // Left alone, the cinematic closes by itself and the next beat's lines follow it.
     int32 Frames = 0;
-    while (Mode->TitleCardChapter() && Frames++ < static_cast<int32>(ASoraGameMode::TitleCardSeconds) * FramesPerSecond)
-        Scope.Frames(1);
+    while (Mode->TitleCardChapter() && Frames++ < FMath::CeilToInt32(Opening.Task.DurationMs / 1000.f) * 4)
+        Scope.Frames(1, .25f);
     if (!TestTrue(TEXT("The card closes on its own"), Mode->TitleCardChapter() == nullptr && Mode->IsPlaying()))
         return false;
-    TestTrue(TEXT("The round timer starts when the card closes"), Mode->RoundTime < .1f);
-    const FSoraDialogueCue& Opening = Chapter.Dialogue[0];
-    Scope.Frames(FMath::CeilToInt32((Opening.StartSeconds + .1f) * FramesPerSecond));
-    TestTrue(TEXT("The opening dialogue follows the card"), Mode->Campaign()->CurrentDialogueCue() == &Opening);
+    Scope.Frames(1);
+    TestTrue(TEXT("The round timer starts when the card closes"), Mode->RoundTime < .3f);
+    TestEqual(TEXT("The chapter's first combat beat begins"), Mode->Campaign()->ActiveBeat(), 1);
+    const FSoraDialogueTrigger* Next = Chapter.Triggers.FindByPredicate([](const FSoraDialogueTrigger& Trigger)
+    {
+        return Trigger.Beat == 1 && Trigger.On == TEXT("beat_start");
+    });
+    TestTrue(TEXT("Its opening line follows the card"),
+        Next && Mode->Campaign()->CurrentDialogueCue() == &Chapter.Dialogue[Next->Lines[0]]);
+    TestFalse(TEXT("Its opponents take the field"), Scope.OpponentLocations().IsEmpty());
     return true;
 }
 

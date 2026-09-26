@@ -1,0 +1,10915 @@
+{
+ "schema_version": 4,
+ "id": "ch04_irrigation",
+ "index": 3,
+ "source": "docs/campaign/chapter-04.md",
+ "title_ja": "田畑の解放",
+ "title_en": "Agricultural Liberation",
+ "map": 0,
+ "secondary_maps": [],
+ "target_s": 3600,
+ "sites": [
+  {
+   "index": 0,
+   "beat": "ch04.b06",
+   "requires_sites": []
+  },
+  {
+   "index": 1,
+   "beat": "ch04.b11",
+   "requires_sites": [
+    0
+   ]
+  },
+  {
+   "index": 2,
+   "beat": "ch04.b17",
+   "requires_sites": [
+    1
+   ]
+  }
+ ],
+ "checkpoints": [
+  {
+   "beat": "ch04.b01",
+   "phase": 0,
+   "at_cs": 0
+  },
+  {
+   "beat": "ch04.b02",
+   "phase": 0,
+   "at_cs": 12000
+  },
+  {
+   "beat": "ch04.b04",
+   "phase": 0,
+   "at_cs": 39000
+  },
+  {
+   "beat": "ch04.b05",
+   "phase": 0,
+   "at_cs": 69000
+  },
+  {
+   "beat": "ch04.b06",
+   "phase": 0,
+   "at_cs": 93000
+  },
+  {
+   "beat": "ch04.b07",
+   "phase": 0,
+   "at_cs": 117000
+  },
+  {
+   "beat": "ch04.b09",
+   "phase": 0,
+   "at_cs": 150000
+  },
+  {
+   "beat": "ch04.b10",
+   "phase": 0,
+   "at_cs": 174000
+  },
+  {
+   "beat": "ch04.b11",
+   "phase": 0,
+   "at_cs": 198000
+  },
+  {
+   "beat": "ch04.b12",
+   "phase": 0,
+   "at_cs": 216000
+  },
+  {
+   "beat": "ch04.b14",
+   "phase": 0,
+   "at_cs": 246000
+  },
+  {
+   "beat": "ch04.b15",
+   "phase": 0,
+   "at_cs": 276000
+  },
+  {
+   "beat": "ch04.b16",
+   "phase": 0,
+   "at_cs": 285000
+  },
+  {
+   "beat": "ch04.b16",
+   "phase": 1,
+   "at_cs": 306600
+  },
+  {
+   "beat": "ch04.b17",
+   "phase": 0,
+   "at_cs": 333000
+  }
+ ],
+ "unlocks": [
+  {
+   "beat": "ch04.b03",
+   "weapons": [
+    2,
+    5
+   ],
+   "mechanics": [
+    "hayago_reload"
+   ],
+   "grants": [],
+   "story_flags": []
+  },
+  {
+   "beat": "ch04.b06",
+   "weapons": [],
+   "mechanics": [
+    "crank"
+   ],
+   "grants": [],
+   "story_flags": []
+  }
+ ],
+ "beats": [
+  {
+   "id": "ch04.b01",
+   "type": "cinematic",
+   "place": "pl_shoya_yashiki",
+   "title_ja": "庄屋屋敷にて",
+   "title_en": "At the Headman's House",
+   "target_s": 120,
+   "checkpoint": true,
+   "requires": [],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_fields_morning",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch04/Cinematics/LS_Ch04_B01_ShoyaHouse",
+    "duration_s": 120,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_shoya_doma",
+     "equipped": [
+      0,
+      18
+     ]
+    }
+   },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 120000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b02",
+   "type": "horseback_ride",
+   "place": "pl_shimomura",
+   "title_ja": "お種と土手道を見回る",
+   "title_en": "Scout the bank roads with Otane",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b01"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_ride_scout",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "horse": "kurimaru",
+    "mode": "travel",
+    "route": "spl_dote_scout",
+    "complete": {
+     "kind": "volume_enter",
+     "volume": "vol_shoya_gate"
+    },
+    "gaits": [
+     "walk",
+     "trot",
+     "canter"
+    ],
+    "weapons": [
+     0,
+     18
+    ],
+    "fear": {
+     "spook_radius_cm": 900,
+     "recover_s": 2.5
+    },
+    "auto_steer": "setting",
+    "dismount_allowed": false,
+    "on_horse_down": "checkpoint"
+   },
+   "task": {
+    "type": "horseback_ride",
+    "task": null,
+    "goal": "exit",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": true,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": "volume_enter:vol_shoya_gate",
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {
+    "companions": [
+     {
+      "npc": "otane",
+      "horse": "pack_horse",
+      "lead_cm": 600
+     }
+    ],
+    "scout_marks": [
+     "grp_mugi_north",
+     "grp_mugi_south",
+     "grp_collect_station"
+    ]
+   }
+  },
+  {
+   "id": "ch04.b03",
+   "type": "dialogue",
+   "place": "pl_shoya_yashiki",
+   "title_ja": "鳥威しと鎖鎌",
+   "title_en": "The Crow-Scarer and the Kusarigama",
+   "target_s": 90,
+   "checkpoint": false,
+   "requires": [
+    "ch04.b02"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [
+     2,
+     5
+    ],
+    "mechanics": [
+     "hayago_reload"
+    ],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_fields_morning",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "beat_start",
+    "mode": "ambient",
+    "interrupt": "queue",
+    "camera": "soft_lookat",
+    "lines": [
+     "ch04.b03.tetsugoro.001",
+     "ch04.b03.tetsugoro.002",
+     "ch04.b03.tetsugoro.003",
+     "ch04.b03.tetsugoro.004",
+     "ch04.b03.tetsugoro.005",
+     "ch04.b03.otane.006",
+     "ch04.b03.nyaakoto.007",
+     "ch04.b03.otane.008"
+    ]
+   },
+   "task": {
+    "type": "dialogue",
+    "task": null,
+    "goal": "lines",
+    "count": 8,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": "beat_start",
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04",
+   "type": "combat_wave",
+   "place": "pl_shimomura",
+   "title_ja": "麦畑の徴収隊を退けよ",
+   "title_en": "Drive off the collection patrol",
+   "target_s": 300,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b03"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_combat_barley",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "bounds": "vol_mugibatake_b04",
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_mugi_north",
+        "patrol": "spl_mugi_sweep_a"
+       },
+       {
+        "type": "blade_retainer",
+        "count": 1,
+        "spawn": "sp_mugi_north"
+       },
+       {
+        "type": "drone",
+        "count": 1,
+        "spawn": "sp_collect_station_air"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_mugi_south",
+        "patrol": "spl_mugi_sweep_b"
+       },
+       {
+        "type": "blade_retainer",
+        "count": 1,
+        "spawn": "sp_mugi_south"
+       },
+       {
+        "type": "drone",
+        "count": 1,
+        "spawn": "sp_collect_station_air"
+       }
+      ],
+      "trigger": "alive_below:2"
+     },
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_collect_station"
+       }
+      ],
+      "trigger": "alive_below:2"
+     }
+    ],
+    "complete": {
+     "kind": "all_waves_cleared"
+    },
+    "max_alive": 6,
+    "allies": [
+     {
+      "npc": "otane",
+      "role": "kusarigama_melee",
+      "downable": true
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ],
+    "target_kind": "enemy"
+   },
+   "task": {
+    "type": "combat_wave",
+    "task": null,
+    "goal": "waves_cleared",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       },
+       {
+        "type": "blade_retainer",
+        "count": 1,
+        "lethal": true
+       },
+       {
+        "type": "drone",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "alive_below",
+      "value": 2,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       },
+       {
+        "type": "blade_retainer",
+        "count": 1,
+        "lethal": true
+       },
+       {
+        "type": "drone",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "alive_below",
+      "value": 2,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 2,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {
+    "sight_occluders": [
+     {
+      "volume": "vol_barley_tall",
+      "ai_sight_cm": 500,
+      "crouched_hidden_beyond_cm": 300,
+      "sway_tell": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch04.b05",
+   "type": "stealth_zone",
+   "place": "pl_otameike",
+   "title_ja": "堤の見張りを抜けよ",
+   "title_en": "Slip past the dam guards",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b04"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_stealth_dam",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "zone": "vol_otameike_stealth",
+    "guards": [
+     {
+      "id": "g_crest_a",
+      "type": "bound_conscript",
+      "patrol": "spl_crest_a",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 1500,
+       "dark_range_cm": 700
+      },
+      "hearing_cm": 800
+     },
+     {
+      "id": "g_crest_b_yosaku",
+      "type": "bound_conscript",
+      "patrol": "spl_crest_b",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 1500,
+       "dark_range_cm": 700
+      },
+      "hearing_cm": 800
+     },
+     {
+      "id": "g_stair_top",
+      "type": "bound_conscript",
+      "patrol": "static:pt_stair_top:scan_120deg_6s",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 1800,
+       "dark_range_cm": 700
+      },
+      "hearing_cm": 800
+     },
+     {
+      "id": "g_hut",
+      "type": "bound_conscript",
+      "patrol": "spl_hut_loop",
+      "sight": {
+       "cone_deg": 90,
+       "range_cm": 1200,
+       "dark_range_cm": 600
+      },
+      "hearing_cm": 800
+     },
+     {
+      "id": "g_drone_water",
+      "type": "drone",
+      "patrol": "spl_reservoir_loop",
+      "sight": {
+       "cone_deg": 30,
+       "range_cm": 2500,
+       "dark_range_cm": 1200
+      },
+      "hearing_cm": 0
+     }
+    ],
+    "on_detected": "combat",
+    "complete": {
+     "kind": "exit_reached",
+     "volume": "vol_winch_platform"
+    },
+    "detection": {
+     "suspicion_rate": 0.8,
+     "alert_threshold": 1.0,
+     "search_s": 20
+    },
+    "takedowns": {
+     "rear": true,
+     "lethal_default": false
+    },
+    "light_sources": [],
+    "noise_surfaces": [
+     {
+      "kind": "gravel",
+      "volume": "vol_crest_gravel"
+     },
+     {
+      "kind": "running_water",
+      "volume": "vol_spillway",
+      "mult": 0.5
+     },
+     {
+      "kind": "puddle",
+      "volume": "vol_toe_ditch"
+     }
+    ],
+    "lures": []
+   },
+   "task": {
+    "type": "stealth_zone",
+    "task": null,
+    "goal": "exit",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": "volume_enter:vol_winch_platform",
+    "guards": [
+     "bound_conscript",
+     "bound_conscript",
+     "bound_conscript",
+     "bound_conscript",
+     "drone"
+    ],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {
+    "shade_volumes": [
+     "vol_willow_shade_01",
+     "vol_willow_shade_02",
+     "vol_reed_bed_west"
+    ],
+    "approach": {
+     "mount": "kurimaru",
+     "from": "vol_mugibatake_b04",
+     "to": "vol_gorge_foot",
+     "est_s": 90
+    }
+   }
+  },
+  {
+   "id": "ch04.b06",
+   "type": "production_task",
+   "place": "pl_otameike",
+   "title_ja": "一の堰を開けよ",
+   "title_en": "Open the First Weir",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b05"
+   ],
+   "optional": false,
+   "site": 0,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [
+     "crank"
+    ],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": {
+    "item_ja": "用水",
+    "item_en": "Irrigation water",
+    "qty": 12,
+    "unit_ja": "枚",
+    "unit_en": "paddies"
+   },
+   "music": "ch04_crank",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "crank",
+    "crank": {
+     "actor": "sluice_winch_01",
+     "turns_required": 12,
+     "turn_rate_band": [
+      0.4,
+      1.2
+     ],
+     "progress_decay_per_s": 0.05,
+     "stamina_per_turn": 6,
+     "interruptible": true,
+     "coop_npc": "otane"
+    },
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_dam_north"
+       }
+      ],
+      "trigger": "progress_at:0.25"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 2,
+        "spawn": "sp_reservoir_air"
+       }
+      ],
+      "trigger": "progress_at:0.6"
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "task": {
+    "type": "production_task",
+    "task": "crank",
+    "goal": "turns",
+    "count": 12,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 250,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 600,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 2,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 50,
+    "min_turn_ms": 833,
+    "max_turn_ms": 2500,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {
+    "events": [
+     {
+      "at_progress": 0.25,
+      "id": "debt_seal_broken",
+      "effects": [
+       "collars_dark:pl_otameike"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch04.b07",
+   "type": "production_task",
+   "place": "pl_otameike",
+   "title_ja": "水が満ちるまで堰を守れ",
+   "title_en": "Hold the weir while the water rises",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b06"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_hold",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "hold",
+    "hold": {
+     "volume": "vol_weir_platform",
+     "hold_s": 90,
+     "contest": "pause"
+    },
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_dam_west"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "shield_enforcer",
+        "count": 2,
+        "spawn": "sp_dam_east"
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_dam_east"
+       }
+      ],
+      "trigger": "progress_at:0.33"
+     },
+     {
+      "enemies": [
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "spawn": "sp_dam_north"
+       },
+       {
+        "type": "drone",
+        "count": 2,
+        "spawn": "sp_reservoir_air"
+       }
+      ],
+      "trigger": "progress_at:0.66"
+     }
+    ],
+    "max_alive": 6,
+    "allies": [
+     {
+      "npc": "otane",
+      "role": "kusarigama_melee",
+      "downable": true
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "task": {
+    "type": "production_task",
+    "task": "hold",
+    "goal": "hold",
+    "count": 0,
+    "duration_ms": 90000,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 330,
+      "event": null,
+      "members": [
+       {
+        "type": "shield_enforcer",
+        "count": 2,
+        "lethal": true
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 4,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 660,
+      "event": null,
+      "members": [
+       {
+        "type": "blade_retainer",
+        "count": 2,
+        "lethal": true
+       },
+       {
+        "type": "drone",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 4,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "pause",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b08",
+   "type": "cinematic",
+   "place": "pl_shimomura",
+   "title_ja": "水が走る",
+   "title_en": "The Water Runs",
+   "target_s": 90,
+   "checkpoint": false,
+   "requires": [
+    "ch04.b07"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_water_release",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch04/Cinematics/LS_Ch04_B08_WaterRuns",
+    "duration_s": 90,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_canal_head_bank",
+     "equipped": [
+      0,
+      18
+     ]
+    }
+   },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 90000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b09",
+   "type": "explore_optional",
+   "place": "pl_tanada",
+   "title_ja": "棚田と水分社",
+   "title_en": "The Terraces and the Water Shrine",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b08"
+   ],
+   "optional": true,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_explore_terraces",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "volume": "vol_tanada",
+    "pois": [
+     {
+      "id": "poi_mikumari_sha",
+      "kind": "lore"
+     },
+     {
+      "id": "poi_tanada_vista",
+      "kind": "vista"
+     },
+     {
+      "id": "poi_minakuchi_order",
+      "kind": "challenge"
+     },
+     {
+      "id": "poi_shrine_keeper",
+      "kind": "npc"
+     },
+     {
+      "id": "poi_field_hut_cache",
+      "kind": "cache"
+     }
+    ],
+    "rewards": [
+     "ch04.c01",
+     "ch04.c02",
+     "arrows:6",
+     "hayago:10"
+    ],
+    "exit_hint_after_s": 180
+   },
+   "task": {
+    "type": "explore_optional",
+    "task": null,
+    "goal": "cache",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b10",
+   "type": "production_task",
+   "place": "pl_shimomura",
+   "title_ja": "牛車を水車小屋へ",
+   "title_en": "Escort the ox-cart to the mill",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b08"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_escort_sunshower",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "escort",
+    "escort": {
+     "npcs": [
+      "ox_cart_01",
+      "carpenter_genroku",
+      "carpenter_kichiji"
+     ],
+     "path": "spl_mill_road",
+     "speed_cm_s": 110,
+     "wait_for_player_cm": 1500,
+     "fail_on_npc_death": true,
+     "hide_on_signal": true,
+     "npc_health": 250,
+     "down_revive_s": 6
+    },
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "spawn": "sp_paddy_bank_east"
+       }
+      ],
+      "trigger": "volume_enter:vol_escort_mid"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 2,
+        "spawn": "sp_canal_air"
+       },
+       {
+        "type": "blade_retainer",
+        "count": 1,
+        "spawn": "sp_mill_road"
+       }
+      ],
+      "trigger": "progress_at:0.75"
+     }
+    ],
+    "max_alive": 6,
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "task": {
+    "type": "production_task",
+    "task": "escort",
+    "goal": "escort",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "volume",
+      "value": 0,
+      "event": "volume_enter:vol_escort_mid",
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "progress_at",
+      "value": 750,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 2,
+        "lethal": true
+       },
+       {
+        "type": "blade_retainer",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 110,
+    "wait_cm": 1500,
+    "path_cm": 14840,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "escort_down",
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {
+    "weather_events": [
+     {
+      "at_progress": 0.5,
+      "set": "sun_shower_on"
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch04.b11",
+   "type": "production_task",
+   "place": "pl_suisha_goya",
+   "title_ja": "水車を直せ",
+   "title_en": "Repair the waterwheel",
+   "target_s": 180,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b10"
+   ],
+   "optional": false,
+   "site": 1,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": {
+    "item_ja": "水車",
+    "item_en": "Waterwheel",
+    "qty": 1,
+    "unit_ja": "基",
+    "unit_en": "wheel"
+   },
+   "music": "ch04_mill_repair",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "manufacture",
+    "manufacture": {
+     "recipe": "waterwheel_repair",
+     "stations": [
+      "st_wheel_rim",
+      "st_axle_seat",
+      "st_wheel_brake"
+     ],
+     "steps": [
+      {
+       "kind": "assemble",
+       "count": 6
+      },
+      {
+       "kind": "hammer_rhythm",
+       "count": 12,
+       "timing": {
+        "beat_ms": 700,
+        "tolerance_ms": 150
+       }
+      },
+      {
+       "kind": "assemble",
+       "count": 1,
+       "timing": {
+        "beat_ms": 900,
+        "tolerance_ms": 200
+       }
+      },
+      {
+       "kind": "inspect",
+       "count": 1
+      }
+     ],
+     "output": {
+      "item": "waterwheel",
+      "qty": 1
+     }
+    },
+    "waves": [],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "task": {
+    "type": "production_task",
+    "task": "manufacture",
+    "goal": "steps",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [
+     {
+      "kind": "assemble",
+      "count": 6,
+      "beat_ms": 0,
+      "tolerance_ms": 0
+     },
+     {
+      "kind": "hammer_rhythm",
+      "count": 12,
+      "beat_ms": 700,
+      "tolerance_ms": 150
+     },
+     {
+      "kind": "assemble",
+      "count": 1,
+      "beat_ms": 900,
+      "tolerance_ms": 200
+     },
+     {
+      "kind": "inspect",
+      "count": 1,
+      "beat_ms": 0,
+      "tolerance_ms": 0
+     }
+    ],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b12",
+   "type": "production_task",
+   "place": "pl_shimomura",
+   "title_ja": "田植えの列を守れ",
+   "title_en": "Guard the planting line",
+   "target_s": 240,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b11"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_planting_defend",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "defend",
+    "defend": {
+     "targets": [
+      {
+       "actor": "planter_01",
+       "hp": 100,
+       "downable": true,
+       "haul_after_s": 12
+      },
+      {
+       "actor": "planter_02",
+       "hp": 100,
+       "downable": true,
+       "haul_after_s": 12
+      },
+      {
+       "actor": "planter_03",
+       "hp": 100,
+       "downable": true,
+       "haul_after_s": 12
+      },
+      {
+       "actor": "planter_04",
+       "hp": 100,
+       "downable": true,
+       "haul_after_s": 12
+      },
+      {
+       "actor": "planter_05",
+       "hp": 100,
+       "downable": true,
+       "haul_after_s": 12
+      },
+      {
+       "actor": "planter_06",
+       "hp": 100,
+       "downable": true,
+       "haul_after_s": 12
+      },
+      {
+       "actor": "planter_07",
+       "hp": 100,
+       "downable": true,
+       "haul_after_s": 12
+      },
+      {
+       "actor": "planter_08",
+       "hp": 100,
+       "downable": true,
+       "haul_after_s": 12
+      }
+     ],
+     "duration_s": 150,
+     "fail_on_target_destroyed": true,
+     "fail_after_targets_lost": 3,
+     "repair_interact": {
+      "kind": "net_cut",
+      "hold_s": 1.0
+     }
+    },
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_paddy_air_e"
+       }
+      ],
+      "trigger": "start"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_paddy_air_n"
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_far_dike"
+       }
+      ],
+      "trigger": "after_s:40"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_paddy_air_e"
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_far_dike"
+       }
+      ],
+      "trigger": "after_s:85"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 3,
+        "spawn": "sp_paddy_air_n"
+       }
+      ],
+      "trigger": "after_s:120"
+     }
+    ],
+    "max_alive": 6,
+    "allies": [
+     {
+      "npc": "otane",
+      "role": "kusarigama_melee",
+      "downable": true
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "task": {
+    "type": "production_task",
+    "task": "defend",
+    "goal": "survive",
+    "count": 0,
+    "duration_ms": 150000,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "start",
+      "value": 0,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "after_ms",
+      "value": 40000,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "after_ms",
+      "value": 85000,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       },
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 5,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "after_ms",
+      "value": 120000,
+      "event": null,
+      "members": [
+       {
+        "type": "drone",
+        "count": 3,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [
+     {
+      "id": "planter_01",
+      "hp": 100
+     },
+     {
+      "id": "planter_02",
+      "hp": 100
+     },
+     {
+      "id": "planter_03",
+      "hp": 100
+     },
+     {
+      "id": "planter_04",
+      "hp": 100
+     },
+     {
+      "id": "planter_05",
+      "hp": 100
+     },
+     {
+      "id": "planter_06",
+      "hp": 100
+     },
+     {
+      "id": "planter_07",
+      "hp": 100
+     },
+     {
+      "id": "planter_08",
+      "hp": 100
+     }
+    ],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "target_destroyed",
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {
+    "weather_events": [
+     {
+      "at_progress": 0.5,
+      "set": "sun_shower_off"
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch04.b13",
+   "type": "dialogue",
+   "place": "pl_shimomura",
+   "title_ja": "生産改帳を開く",
+   "title_en": "Open the Production Registry",
+   "target_s": 60,
+   "checkpoint": false,
+   "requires": [
+    "ch04.b12"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_registry",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "trigger": "beat_start",
+    "mode": "blocking",
+    "interrupt": "queue",
+    "camera": "soft_lookat",
+    "lines": [
+     "ch04.b13.oyuki.001",
+     "ch04.b13.oyuki.002",
+     "ch04.b13.oyuki.003",
+     "ch04.b13.taemon.004",
+     "ch04.b13.oyuki.005"
+    ]
+   },
+   "task": {
+    "type": "dialogue",
+    "task": null,
+    "goal": "lines",
+    "count": 5,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": "beat_start",
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b14",
+   "type": "horseback_ride",
+   "place": "pl_shimomura",
+   "title_ja": "麦を三つの集落へ",
+   "title_en": "Deliver barley to three hamlets",
+   "target_s": 300,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b13"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": {
+    "item_ja": "麦",
+    "item_en": "Barley",
+    "qty": 30,
+    "unit_ja": "束",
+    "unit_en": "sheaves"
+   },
+   "music": "ch04_harvest_ride",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "horse": "kurimaru",
+    "mode": "cargo",
+    "route": "spl_aze_loop",
+    "gaits": [
+     "walk",
+     "trot"
+    ],
+    "weapons": [
+     0,
+     18
+    ],
+    "fear": {
+     "spook_radius_cm": 900,
+     "recover_s": 2.5
+    },
+    "auto_steer": "setting",
+    "dismount_allowed": true,
+    "on_horse_down": "dismount_continue",
+    "cargo": {
+     "item": "barley_sheaf",
+     "qty": 30,
+     "dropoffs": [
+      "hamlet_kami",
+      "hamlet_naka",
+      "hamlet_shimo"
+     ],
+     "per_dropoff": 10,
+     "carrier": "pack_horse",
+     "unload_hold_s": 3.0
+    },
+    "waves": [
+     {
+      "enemies": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "spawn": "sp_toll_post"
+       },
+       {
+        "type": "drone",
+        "count": 1,
+        "spawn": "sp_toll_air"
+       }
+      ],
+      "trigger": "volume_enter:vol_toll_post"
+     },
+     {
+      "enemies": [
+       {
+        "type": "drone",
+        "count": 2,
+        "spawn": "sp_canal_air"
+       }
+      ],
+      "trigger": "item_delivered:hamlet_naka"
+     }
+    ],
+    "nonlethal_types": [
+     "bound_conscript"
+    ],
+    "complete": {
+     "kind": "cargo_delivered"
+    }
+   },
+   "task": {
+    "type": "horseback_ride",
+    "task": null,
+    "goal": "deliveries",
+    "count": 3,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [
+     {
+      "id": null,
+      "trigger": "volume",
+      "value": 0,
+      "event": "volume_enter:vol_toll_post",
+      "members": [
+       {
+        "type": "enforcer_rifle",
+        "count": 2,
+        "lethal": true
+       },
+       {
+        "type": "drone",
+        "count": 1,
+        "lethal": true
+       }
+      ],
+      "lethal": 3,
+      "nonlethal": 0
+     },
+     {
+      "id": null,
+      "trigger": "event",
+      "value": 0,
+      "event": "item_delivered:hamlet_naka",
+      "members": [
+       {
+        "type": "drone",
+        "count": 2,
+        "lethal": true
+       }
+      ],
+      "lethal": 2,
+      "nonlethal": 0
+     }
+    ],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [
+     "hamlet_kami",
+     "hamlet_naka",
+     "hamlet_shimo"
+    ],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b15",
+   "type": "cinematic",
+   "place": "pl_gogura",
+   "title_ja": "秤、現る",
+   "title_en": "The Scales Arrive",
+   "target_s": 90,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b14"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_hakari_reveal",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch04/Cinematics/LS_Ch04_B15_HakariSeizure",
+    "duration_s": 90,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_boss_ring_ne_mounted",
+     "equipped": [
+      0,
+      18
+     ]
+    }
+   },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 90000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16",
+   "type": "boss",
+   "place": "pl_shimomura",
+   "title_ja": "査定機「秤」を倒せ",
+   "title_en": "Bring down the Assessor Engine",
+   "target_s": 480,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b15"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_boss_hakari",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    },
+    {
+     "on": "boss_event:mill_seal_3",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "boss": "boss_hakari",
+    "arena": {
+     "volume": "vol_paddies_boss",
+     "lock": true
+    },
+    "phases": [
+     {
+      "hp_pct_start": 100,
+      "pattern_table": "hakari_mounted",
+      "adds": "drone_release",
+      "mount": {
+       "horse": "kurimaru",
+       "route": "spl_boss_ring",
+       "weapons": [
+        0,
+        18
+       ],
+       "gaits": [
+        "walk",
+        "trot",
+        "canter",
+        "gallop"
+       ],
+       "fear": {
+        "spook_radius_cm": 900,
+        "recover_s": 2.0
+       }
+      }
+     },
+     {
+      "hp_pct_start": 55,
+      "pattern_table": "hakari_mill",
+      "adds": "drone_pair",
+      "arena_mod": "dismount"
+     }
+    ],
+    "defeat": "destroy_weakpoints",
+    "outro_cinematic": "/Game/Campaign/Ch04/Cinematics/LS_Ch04_B16_HakariCollapse",
+    "checkpoint_per_phase": true,
+    "telegraph": {
+     "palette": "default",
+     "min_windup_ms": 800
+    },
+    "finisher": "none"
+   },
+   "task": {
+    "type": "boss",
+    "task": null,
+    "goal": "opponent_down",
+    "count": 0,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000,
+     550
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died",
+     "boss_event"
+    ],
+    "fail_events": {
+     "player_died": "player_died",
+     "boss_event:mill_seal_3": "boss_event"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": "boss_hakari",
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {
+    "weakpoints": [
+     {
+      "id": "coil_fl",
+      "phase": 1,
+      "hp": 450,
+      "exposed_when": "leg_planted"
+     },
+     {
+      "id": "coil_fr",
+      "phase": 1,
+      "hp": 450,
+      "exposed_when": "leg_planted"
+     },
+     {
+      "id": "coil_rl",
+      "phase": 1,
+      "hp": 450,
+      "exposed_when": "leg_planted"
+     },
+     {
+      "id": "coil_rr",
+      "phase": 1,
+      "hp": 450,
+      "exposed_when": "leg_planted"
+     },
+     {
+      "id": "ledger_drum",
+      "phase": 2,
+      "hp": 2200,
+      "exposed_when": "assessment_kneel"
+     }
+    ],
+    "ammo_pickups": [
+     {
+      "at": "pk_arrows_se",
+      "arrows": 6,
+      "respawn_s": 45
+     },
+     {
+      "at": "pk_arrows_nw",
+      "arrows": 6,
+      "respawn_s": 45
+     }
+    ]
+   }
+  },
+  {
+   "id": "ch04.b17",
+   "type": "production_task",
+   "place": "pl_gogura",
+   "title_ja": "麦を郷蔵へ戻せ",
+   "title_en": "Return the barley to the granary",
+   "target_s": 150,
+   "checkpoint": true,
+   "requires": [
+    "ch04.b16"
+   ],
+   "optional": false,
+   "site": 2,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": {
+    "item_ja": "麦（返還）",
+    "item_en": "Barley returned to growers",
+    "qty": 120,
+    "unit_ja": "束",
+    "unit_en": "sheaves"
+   },
+   "music": "ch04_return_harvest",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "task": "carry",
+    "carry": {
+     "item": "barley_load",
+     "count": 3,
+     "pickups": [
+      "pk_hopper_spill_01",
+      "pk_hopper_spill_02",
+      "pk_hopper_spill_03"
+     ],
+     "dropoffs": [
+      "dp_gogura_door"
+     ],
+     "loadout_while_carrying": [
+      "katana_one_hand"
+     ],
+     "move_speed_mult": 0.8,
+     "drop_on_hit": false
+    },
+    "waves": [],
+    "nonlethal_types": [
+     "bound_conscript"
+    ]
+   },
+   "task": {
+    "type": "production_task",
+    "task": "carry",
+    "goal": "deliveries",
+    "count": 3,
+    "duration_ms": 0,
+    "skippable": false,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [
+     "pk_hopper_spill_01",
+     "pk_hopper_spill_02",
+     "pk_hopper_spill_03"
+    ],
+    "dropoffs": [
+     "dp_gogura_door"
+    ],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": "barley_load",
+    "carry_speed_permille": 800,
+    "carry_weapons": [
+     0
+    ]
+   },
+   "ext": {}
+  },
+  {
+   "id": "ch04.b18",
+   "type": "cinematic",
+   "place": "pl_shimomura",
+   "title_ja": "蛍",
+   "title_en": "Fireflies",
+   "target_s": 120,
+   "checkpoint": false,
+   "requires": [
+    "ch04.b17"
+   ],
+   "optional": false,
+   "site": null,
+   "unlocks": {
+    "weapons": [],
+    "mechanics": [],
+    "grants": [],
+    "story_flags": []
+   },
+   "registry": null,
+   "music": "ch04_dusk_fireflies",
+   "fail": [
+    {
+     "on": "player_died",
+     "to": "checkpoint"
+    }
+   ],
+   "params": {
+    "sequence": "/Game/Campaign/Ch04/Cinematics/LS_Ch04_B18_Fireflies",
+    "duration_s": 120,
+    "skippable": true,
+    "fallback": "camera_blend",
+    "end_state": {
+     "player_transform": "ps_chapter_end",
+     "equipped": [
+      0,
+      18
+     ]
+    }
+   },
+   "task": {
+    "type": "cinematic",
+    "task": null,
+    "goal": "elapsed",
+    "count": 0,
+    "duration_ms": 120000,
+    "skippable": true,
+    "anchor_after_lines": false,
+    "pause_when_seen": false,
+    "max_alive": 6,
+    "waves": [],
+    "phases": [
+     1000
+    ],
+    "defeat": "kill",
+    "capture_event": null,
+    "lesson_mask": 0,
+    "form_reps": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "flank_bouts": false,
+    "loss": "checkpoint",
+    "loss_limit": 0,
+    "contest": "none",
+    "decay_permille": 0,
+    "min_turn_ms": 0,
+    "max_turn_ms": 0,
+    "speed_cm_s": 0,
+    "wait_cm": 0,
+    "path_cm": 0,
+    "pickups": [],
+    "dropoffs": [],
+    "drop_on_hit": false,
+    "steps": [],
+    "targets": [],
+    "on_detected": "combat",
+    "reinforce_wave": -1,
+    "horse_down_retries": false,
+    "fail_checkpoint": [
+     "player_died"
+    ],
+    "fail_events": {
+     "player_died": "player_died"
+    },
+    "objectives": [],
+    "lines_event": null,
+    "closing_event": null,
+    "exit_event": null,
+    "guards": [],
+    "opponent": null,
+    "sparring": false,
+    "phase_events": [],
+    "carry_item": null,
+    "carry_speed_permille": 1000,
+    "carry_weapons": []
+   },
+   "ext": {}
+  }
+ ],
+ "lines": [
+  {
+   "id": "ch04.b01.taemon.001",
+   "beat": "ch04.b01",
+   "speaker": "farmer",
+   "ja": "水車を奪われた。稲はまだ芽も出ていないのに。",
+   "en": "They took the pumps before the rice had even sprouted.",
+   "duration_s": 5.0,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b01.taemon.002",
+   "beat": "ch04.b01",
+   "speaker": "farmer",
+   "ja": "溜池には封を貼られてな。水は升で量り売りや。",
+   "en": "They sealed the reservoir. Now water is sold by the measure.",
+   "duration_s": 5.5,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b01.oyuki.003",
+   "beat": "ch04.b01",
+   "speaker": "leader",
+   "ja": "青田買い、でございます。植える前の稲を「買う」のです。",
+   "en": "It is aotagai. They 'buy' the rice before it is planted.",
+   "duration_s": 5.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b01.oyuki.004",
+   "beat": "ch04.b01",
+   "speaker": "leader",
+   "ja": "代金は「信用」、つまり借りです。利息は実りより速く増えます。",
+   "en": "Paid in 'Credit', which is to say debt. The interest outgrows any harvest.",
+   "duration_s": 5.5,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b01.otane.005",
+   "beat": "ch04.b01",
+   "speaker": "farmer_young",
+   "ja": "田植えは今しかあらへん。水が来な、苗は十日で枯れる。",
+   "en": "It's planting now or never. No water, and the seedlings die in ten days.",
+   "duration_s": 5.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b01.nyaakoto.006",
+   "beat": "ch04.b01",
+   "speaker": "samurai",
+   "ja": "堰は、どこに。",
+   "en": "Where is the weir?",
+   "duration_s": 1.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b01.taemon.007",
+   "beat": "ch04.b01",
+   "speaker": "farmer",
+   "ja": "大溜池の、一の堰や。爺さまの代から、皆で分けてきた水や。",
+   "en": "The First Weir, up at the Great Reservoir. We've shared it since Grandad's day.",
+   "duration_s": 7.0,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b01.otane.008",
+   "beat": "ch04.b01",
+   "speaker": "farmer_young",
+   "ja": "案内したる。馬で通れる土手は、限られとるで。",
+   "en": "I'll show you. Only some banks will take a horse.",
+   "duration_s": 4.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b02.otane.001",
+   "beat": "ch04.b02",
+   "speaker": "farmer_young",
+   "ja": "畦は細いで、馬は無理や。土手道だけ通ってな。",
+   "en": "The paddy ridges are too narrow for horses. Keep to the bank roads.",
+   "duration_s": 4.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b02.otane.002",
+   "beat": "ch04.b02",
+   "speaker": "farmer_young",
+   "ja": "あの杭、見える？　水を量る杭や。一升ごとに戸口の数字が増える。",
+   "en": "See that post? It meters the water. Every measure adds to the number on our doors.",
+   "duration_s": 6.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b02.otane.003",
+   "beat": "ch04.b02",
+   "speaker": "farmer_young",
+   "ja": "麦はもう刈り頃や。刈ったそばから「徴収」や。",
+   "en": "The barley's ready to cut. They 'collect' it as fast as we cut it.",
+   "duration_s": 4.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b02.nyaakoto.004",
+   "beat": "ch04.b02",
+   "speaker": "samurai",
+   "ja": "見張りは、いくつだ。",
+   "en": "How many guards?",
+   "duration_s": 2.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b02.otane.005",
+   "beat": "ch04.b02",
+   "speaker": "farmer_young",
+   "ja": "麦畑に八つか九つ。空に「目録」が二つ。",
+   "en": "Eight or nine in the barley. Two 'Inventories' in the sky.",
+   "duration_s": 4.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b02.otane.006",
+   "beat": "ch04.b02",
+   "speaker": "farmer_young",
+   "ja": "去年の今ごろは、田植え歌がここまで聞こえとった。",
+   "en": "This time last year, you could hear the planting songs from here.",
+   "duration_s": 4.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b03.tetsugoro.001",
+   "beat": "ch04.b03",
+   "speaker": "gunsmith",
+   "ja": "田右衛門の鳥威しだ。筒は生きとった。",
+   "en": "Taemon's crow-scaring gun. The barrel was still sound.",
+   "duration_s": 4.0,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b03.tetsugoro.002",
+   "beat": "ch04.b03",
+   "speaker": "gunsmith",
+   "ja": "尾栓に、奴らのコイルを噛ませた。",
+   "en": "I fitted one of their coils into the breech.",
+   "duration_s": 3.5,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b03.tetsugoro.003",
+   "beat": "ch04.b03",
+   "speaker": "gunsmith",
+   "ja": "雨で火縄が死ぬんなら、火縄をやめりゃええ。",
+   "en": "If rain kills the match, stop using a match.",
+   "duration_s": 4.0,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b03.tetsugoro.004",
+   "beat": "ch04.b03",
+   "speaker": "gunsmith",
+   "ja": "頬に付けて撃て。肩には当てるな。",
+   "en": "Stock to your cheek. Not your shoulder.",
+   "duration_s": 3.5,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b03.tetsugoro.005",
+   "beat": "ch04.b03",
+   "speaker": "gunsmith",
+   "ja": "早合を込めて、カチッと鳴ったら締めろ。",
+   "en": "Load the hayagō. When it clicks, lock it.",
+   "duration_s": 4.0,
+   "register": "blunt_artisan",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b03.otane.006",
+   "beat": "ch04.b03",
+   "speaker": "farmer_young",
+   "ja": "これ、兄やんの鎖鎌。持っとき。うちのは、こっちや。",
+   "en": "This is my brother's kusarigama. Keep it. I've got my own.",
+   "duration_s": 4.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b03.nyaakoto.007",
+   "beat": "ch04.b03",
+   "speaker": "samurai",
+   "ja": "……お借りする。",
+   "en": "…Then I will borrow it.",
+   "duration_s": 2.0,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b03.otane.008",
+   "beat": "ch04.b03",
+   "speaker": "farmer_young",
+   "ja": "借りやない。預けるんや。兄やんを取り返すまで。",
+   "en": "It's not a loan. I'm trusting it to you. Until we get my brother back.",
+   "duration_s": 5.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04.otane.001",
+   "beat": "ch04.b04",
+   "speaker": "farmer_young",
+   "ja": "来たで。麦の中や。……向こうも、こっちが見えてへん。",
+   "en": "Here they come, through the barley. …They can't see us either.",
+   "duration_s": 5.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04.otane.002",
+   "beat": "ch04.b04",
+   "speaker": "farmer_young",
+   "ja": "分銅を投げて！　刃ぁ絡めたら、こっちのもんや！",
+   "en": "Throw the weight! Snag the blade and they're ours!",
+   "duration_s": 4.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04.enforcer.003",
+   "beat": "ch04.b04",
+   "speaker": "enforcer",
+   "ja": "債務者を確認。回収を開始いたします。",
+   "en": "Debtor identified. Commencing collection.",
+   "duration_s": 4.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04.enforcer.004",
+   "beat": "ch04.b04",
+   "speaker": "enforcer",
+   "ja": "対象を見失いました。当該区画を精査いたします。",
+   "en": "Target lost. Auditing this sector.",
+   "duration_s": 5.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04.enforcer.005",
+   "beat": "ch04.b04",
+   "speaker": "enforcer",
+   "ja": "損失が許容範囲を超過。撤収いたします。",
+   "en": "Losses exceed tolerance. Withdrawing.",
+   "duration_s": 5.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04.drone.006",
+   "beat": "ch04.b04",
+   "speaker": "drone",
+   "ja": "差押え対象を記録。",
+   "en": "Seizure target logged.",
+   "duration_s": 2.5,
+   "register": "alien_device",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04.otane.007",
+   "beat": "ch04.b04",
+   "speaker": "farmer_young",
+   "ja": "足、取られた……！　起こして！",
+   "en": "They got my leg…! Get me up!",
+   "duration_s": 3.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b04.otane.008",
+   "beat": "ch04.b04",
+   "speaker": "farmer_young",
+   "ja": "……麦、踏まれてもうた。まあ、麦は起きる。",
+   "en": "…They trampled the barley. Well—barley stands back up.",
+   "duration_s": 4.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.kohagi.001",
+   "beat": "ch04.b05",
+   "speaker": "scout",
+   "ja": "堤の上に四。首輪つき。水の上に目録が一。",
+   "en": "Four on the dam. Collared. One Inventory over the water.",
+   "duration_s": 5.0,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.kohagi.002",
+   "beat": "ch04.b05",
+   "speaker": "scout",
+   "ja": "首輪の者は斬らないで。峰で。",
+   "en": "Don't cut the collared ones. Use the back of the blade.",
+   "duration_s": 4.0,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.conscript.003",
+   "beat": "ch04.b05",
+   "speaker": "conscript",
+   "ja": "……首輪が熱い。日が高うなると、焼けるようや。",
+   "en": "…The collar's hot. Once the sun's high, it burns.",
+   "duration_s": 4.5,
+   "register": "yamato_rural",
+   "delivery": "distressed",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.conscript.004",
+   "beat": "ch04.b05",
+   "speaker": "conscript",
+   "ja": "誰や……？　誰か、おるんか。",
+   "en": "Who's that…? Someone there?",
+   "duration_s": 3.0,
+   "register": "yamato_rural",
+   "delivery": "distressed",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.conscript.005",
+   "beat": "ch04.b05",
+   "speaker": "conscript",
+   "ja": "頼む、出てこんといてくれ。見つけたら、報せなあかんのや。",
+   "en": "Please, stay hidden. If I find you, I have to report it.",
+   "duration_s": 5.0,
+   "register": "yamato_rural",
+   "delivery": "distressed",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.conscript.006",
+   "beat": "ch04.b05",
+   "speaker": "conscript",
+   "ja": "すまん！　見つけてもうた！　首輪が勝手に叫ぶんや！",
+   "en": "Sorry! I found you! The collar cries out on its own!",
+   "duration_s": 4.5,
+   "register": "yamato_rural",
+   "delivery": "distressed",
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.drone.007",
+   "beat": "ch04.b05",
+   "speaker": "drone",
+   "ja": "動体を検知。照合中。",
+   "en": "Movement detected. Reconciling.",
+   "duration_s": 3.0,
+   "register": "alien_device",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.yosaku.008",
+   "beat": "ch04.b05",
+   "speaker": "yosaku",
+   "ja": "……お種の兄の、与作や。恩に着る。",
+   "en": "…I'm Yosaku, Otane's brother. I owe you.",
+   "duration_s": 4.0,
+   "register": "yamato_rural",
+   "delivery": "distressed",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b05.kohagi.009",
+   "beat": "ch04.b05",
+   "speaker": "scout",
+   "ja": "堤、抜けた。巻き上げは、そこ。",
+   "en": "Dam's clear. The winch is there.",
+   "duration_s": 3.5,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b06.otane.001",
+   "beat": "ch04.b06",
+   "speaker": "farmer_young",
+   "ja": "封されてから一度も回ってへん。重いで。速すぎたら綱が切れる。",
+   "en": "Hasn't turned since they sealed it. It's heavy. Too fast and the rope snaps.",
+   "duration_s": 5.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b06.taemon.002",
+   "beat": "ch04.b06",
+   "speaker": "farmer",
+   "ja": "ほんまに水、戻るんか。戻ったかて、また取られるんやないか。",
+   "en": "Will the water really come back? And won't they just take it again?",
+   "duration_s": 6.0,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b06.nyaakoto.003",
+   "beat": "ch04.b06",
+   "speaker": "samurai",
+   "ja": "水を戻す。収穫は育てた者に渡そう。",
+   "en": "We will restore the water. The harvest will go to those who grew it.",
+   "duration_s": 5.0,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b06.enforcer.004",
+   "beat": "ch04.b06",
+   "speaker": "enforcer",
+   "ja": "無許可の取水を確認。延滞金が加算されます。",
+   "en": "Unauthorized intake detected. Late fees will be applied.",
+   "duration_s": 5.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b06.conscript.005",
+   "beat": "ch04.b06",
+   "speaker": "conscript",
+   "ja": "首輪の光が……消えた。",
+   "en": "The collar's light… it's gone out.",
+   "duration_s": 2.5,
+   "register": "yamato_rural",
+   "delivery": "distressed",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b06.taemon.006",
+   "beat": "ch04.b06",
+   "speaker": "farmer",
+   "ja": "……水の音や。",
+   "en": "…That's the sound of water.",
+   "duration_s": 2.0,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b07.otane.001",
+   "beat": "ch04.b07",
+   "speaker": "farmer_young",
+   "ja": "堰板が上がりきるまで、ここを守るで！",
+   "en": "Hold here until the gate boards are all the way up!",
+   "duration_s": 3.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b07.enforcer.002",
+   "beat": "ch04.b07",
+   "speaker": "enforcer",
+   "ja": "盾列、前進。担保を保全いたします。",
+   "en": "Shield line, advance. Securing the collateral.",
+   "duration_s": 4.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b07.otane.003",
+   "beat": "ch04.b07",
+   "speaker": "farmer_young",
+   "ja": "盾は前だけや！　横から絡めたれ！",
+   "en": "Shields only cover the front! Snag them from the side!",
+   "duration_s": 4.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b07.taemon.004",
+   "beat": "ch04.b07",
+   "speaker": "farmer",
+   "ja": "水位、あと半分や！　踏ん張れ！",
+   "en": "Halfway there! Hold on!",
+   "duration_s": 4.0,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b07.enforcer.005",
+   "beat": "ch04.b07",
+   "speaker": "enforcer",
+   "ja": "採算が合いません。後退いたします。",
+   "en": "This is no longer profitable. Falling back.",
+   "duration_s": 4.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b07.taemon.006",
+   "beat": "ch04.b07",
+   "speaker": "farmer",
+   "ja": "溢れる……！　田に、水が入る！",
+   "en": "It's spilling over…! Water's reaching the fields!",
+   "duration_s": 3.5,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b08.taemon.001",
+   "beat": "ch04.b08",
+   "speaker": "farmer",
+   "ja": "水はな、借りるもんやない。上から下へ、皆に回るもんや。",
+   "en": "Water isn't something you borrow. It runs downhill, round to everyone.",
+   "duration_s": 6.0,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b08.villager.002",
+   "beat": "ch04.b08",
+   "speaker": "villager",
+   "ja": "水や……！　水が来たで！",
+   "en": "Water…! The water's here!",
+   "duration_s": 3.0,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b08.otane.003",
+   "beat": "ch04.b08",
+   "speaker": "farmer_young",
+   "ja": "早乙女、呼んできて！　今日のうちに植えるで！",
+   "en": "Call the planters! We plant today!",
+   "duration_s": 4.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b09.villager.001",
+   "beat": "ch04.b09",
+   "speaker": "villager",
+   "ja": "水分の神さんはな、水を分ける神さんや。独り占めはなさらん。",
+   "en": "Mikumari is the god who divides the water. Never hoards it.",
+   "duration_s": 6.0,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b09.villager.002",
+   "beat": "ch04.b09",
+   "speaker": "villager",
+   "ja": "猫柳生の先生も、昔はようお参りに来はった。",
+   "en": "Your old sensei used to come up here to pray, years ago.",
+   "duration_s": 4.5,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b09.nyaakoto.003",
+   "beat": "ch04.b09",
+   "speaker": "samurai",
+   "ja": "……屋敷が、見える。",
+   "en": "…I can see the estate from here.",
+   "duration_s": 2.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b10.genroku.001",
+   "beat": "ch04.b10",
+   "speaker": "carpenter",
+   "ja": "牛は急かしたらあかん。牛の足で行くで。",
+   "en": "Don't rush the ox. We go at the ox's pace.",
+   "duration_s": 4.0,
+   "register": "kamigata_commoner",
+   "delivery": "artisan",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b10.genroku.002",
+   "beat": "ch04.b10",
+   "speaker": "carpenter",
+   "ja": "羽根板六枚に、心棒一本。濡らしたらあかんで。",
+   "en": "Six paddles, one axle. They mustn't get wet.",
+   "duration_s": 5.0,
+   "register": "kamigata_commoner",
+   "delivery": "artisan",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b10.enforcer.003",
+   "beat": "ch04.b10",
+   "speaker": "enforcer",
+   "ja": "搬送中の資産を確認。差し押さえます。",
+   "en": "Assets in transit identified. Seizing them.",
+   "duration_s": 4.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b10.nyaakoto.004",
+   "beat": "ch04.b10",
+   "speaker": "samurai",
+   "ja": "伏せろ。",
+   "en": "Get down.",
+   "duration_s": 1.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b10.otane.005",
+   "beat": "ch04.b10",
+   "speaker": "farmer_young",
+   "ja": "……狐の嫁入りや。日ぃ照っとんのに。",
+   "en": "A fox's wedding. Rain, with the sun still out.",
+   "duration_s": 3.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b10.genroku.006",
+   "beat": "ch04.b10",
+   "speaker": "carpenter",
+   "ja": "言うたそばから！　板に蓑、掛けたって！",
+   "en": "Of course it rains now! Get the straw capes over the boards!",
+   "duration_s": 4.0,
+   "register": "kamigata_commoner",
+   "delivery": "artisan",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b11.genroku.001",
+   "beat": "ch04.b11",
+   "speaker": "carpenter",
+   "ja": "羽根板は一枚ずつ。楔は二度打ちや。",
+   "en": "One paddle at a time. Two strikes on each wedge.",
+   "duration_s": 4.0,
+   "register": "kamigata_commoner",
+   "delivery": "artisan",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b11.genroku.002",
+   "beat": "ch04.b11",
+   "speaker": "carpenter",
+   "ja": "心棒、据えるで。息、合わせてや。……せえの！",
+   "en": "Seating the axle. Breathe with me… Heave!",
+   "duration_s": 5.0,
+   "register": "kamigata_commoner",
+   "delivery": "artisan",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b11.genroku.003",
+   "beat": "ch04.b11",
+   "speaker": "carpenter",
+   "ja": "よっしゃ。歯止め、外してみい。",
+   "en": "Right. Go on—release the brake.",
+   "duration_s": 3.5,
+   "register": "kamigata_commoner",
+   "delivery": "artisan",
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b11.otane.004",
+   "beat": "ch04.b11",
+   "speaker": "farmer_young",
+   "ja": "回った……！　樋に水が上がる！",
+   "en": "It's turning…! Water's climbing into the flume!",
+   "duration_s": 3.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b11.nyaakoto.005",
+   "beat": "ch04.b11",
+   "speaker": "samurai",
+   "ja": "水車にも、紋を。",
+   "en": "Paint the mon on the wheel, too.",
+   "duration_s": 2.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b12.planter.001",
+   "beat": "ch04.b12",
+   "speaker": "planter",
+   "ja": "〽今日植える苗は　秋には黄金",
+   "en": "♪ The seedlings we plant today / turn to gold by autumn",
+   "duration_s": 5.5,
+   "register": "work_song",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b12.planter.002",
+   "beat": "ch04.b12",
+   "speaker": "planter",
+   "ja": "〽水は上から　皆の田へ",
+   "en": "♪ Water from above / to everyone's fields",
+   "duration_s": 4.0,
+   "register": "work_song",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b12.otane.003",
+   "beat": "ch04.b12",
+   "speaker": "farmer_young",
+   "ja": "網が来る！　早乙女を守って！",
+   "en": "Nets incoming! Protect the planters!",
+   "duration_s": 3.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b12.drone.004",
+   "beat": "ch04.b12",
+   "speaker": "drone",
+   "ja": "労働資産を差し押さえます。",
+   "en": "Seizing labor assets.",
+   "duration_s": 3.0,
+   "register": "alien_device",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b12.planter.005",
+   "beat": "ch04.b12",
+   "speaker": "planter",
+   "ja": "網や……！　動かれへん！",
+   "en": "A net…! I can't move!",
+   "duration_s": 4.0,
+   "register": "work_song",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b12.villager.006",
+   "beat": "ch04.b12",
+   "speaker": "villager",
+   "ja": "あかん、火縄が湿気てもうた！　お侍、その鉄砲は撃てるんか！",
+   "en": "No good, my match is soaked! Samurai—does yours still fire?",
+   "duration_s": 6.0,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b12.otane.007",
+   "beat": "ch04.b12",
+   "speaker": "farmer_young",
+   "ja": "……植わった。一列、全部。",
+   "en": "…Planted. The whole line.",
+   "duration_s": 3.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b13.oyuki.001",
+   "beat": "ch04.b13",
+   "speaker": "leader",
+   "ja": "生産改帳、本日より付けます。まずは、これまでの分から。",
+   "en": "The production registry begins today. First, what came before.",
+   "duration_s": 5.5,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b13.oyuki.002",
+   "beat": "ch04.b13",
+   "speaker": "leader",
+   "ja": "矢十二本、種籾四俵、提灯四十張。",
+   "en": "Twelve arrows. Four bales of seed rice. Forty lanterns.",
+   "duration_s": 4.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b13.oyuki.003",
+   "beat": "ch04.b13",
+   "speaker": "leader",
+   "ja": "そして本日、用水十二枚、水車一基。",
+   "en": "And today: water for twelve paddies. One waterwheel.",
+   "duration_s": 4.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "blocking",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b13.taemon.004",
+   "beat": "ch04.b13",
+   "speaker": "farmer",
+   "ja": "紙は紙や。",
+   "en": "Paper is paper.",
+   "duration_s": 1.5,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b13.oyuki.005",
+   "beat": "ch04.b13",
+   "speaker": "leader",
+   "ja": "ええ。ですから、紙には、在る物しか書きません。",
+   "en": "Indeed. That is why paper records only what exists.",
+   "duration_s": 4.5,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b14.otane.001",
+   "beat": "ch04.b14",
+   "speaker": "farmer_young",
+   "ja": "文太は臆病やで。青い光に寄せたら暴れる。",
+   "en": "Bunta scares easily. Keep her clear of the blue light.",
+   "duration_s": 4.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b14.villager.002",
+   "beat": "ch04.b14",
+   "speaker": "villager",
+   "ja": "麦や……！　上垣内に、麦が戻った！",
+   "en": "Barley…! Barley's back in the upper hamlet!",
+   "duration_s": 4.0,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b14.otane.003",
+   "beat": "ch04.b14",
+   "speaker": "farmer_young",
+   "ja": "その馬、麦で動くんか。",
+   "en": "Does that horse run on barley?",
+   "duration_s": 2.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b14.nyaakoto.004",
+   "beat": "ch04.b14",
+   "speaker": "samurai",
+   "ja": "……麦で動く。",
+   "en": "…She runs on barley.",
+   "duration_s": 2.0,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b14.villager.005",
+   "beat": "ch04.b14",
+   "speaker": "villager",
+   "ja": "これで子らに食わせられる。おおきに。",
+   "en": "Now I can feed the children. Thank you.",
+   "duration_s": 3.5,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b14.villager.006",
+   "beat": "ch04.b14",
+   "speaker": "villager",
+   "ja": "下垣内まで、来てくれはったんか。",
+   "en": "You came all the way down to the lower hamlet?",
+   "duration_s": 3.5,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b15.margina.001",
+   "beat": "ch04.b15",
+   "speaker": "boss_margina",
+   "ja": "下村の皆様。査定の結果が出ました。",
+   "en": "Residents of Shimomura. The assessment is complete.",
+   "duration_s": 4.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b15.margina.002",
+   "beat": "ch04.b15",
+   "speaker": "boss_margina",
+   "ja": "当区画の収穫は、全て担保として差し押さえます。",
+   "en": "All harvest in this sector is seized as collateral.",
+   "duration_s": 5.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b15.margina.003",
+   "beat": "ch04.b15",
+   "speaker": "boss_margina",
+   "ja": "ご異議は書面にて。受付は、秋でございます。",
+   "en": "Objections are accepted in writing. The office opens in autumn.",
+   "duration_s": 5.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b15.otane.004",
+   "beat": "ch04.b15",
+   "speaker": "farmer_young",
+   "ja": "郷蔵の麦が……！　皆の麦が！",
+   "en": "The granary barley…! Everyone's barley!",
+   "duration_s": 3.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b15.nyaakoto.005",
+   "beat": "ch04.b15",
+   "speaker": "samurai",
+   "ja": "栗丸。……行くぞ。",
+   "en": "Kurimaru. …We ride.",
+   "duration_s": 2.5,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.001",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "査定を開始いたします。動かないでください。値が狂います。",
+   "en": "Commencing assessment. Please hold still. Movement distorts the value.",
+   "duration_s": 6.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.002",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "差押え網、展開。",
+   "en": "Deploying seizure net.",
+   "duration_s": 2.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.003",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "査定中……評価額、零。",
+   "en": "Assessing… Value: zero.",
+   "duration_s": 3.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.004",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "計量。",
+   "en": "Weighing.",
+   "duration_s": 1.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.005",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "目録、放出。",
+   "en": "Releasing Inventory.",
+   "duration_s": 2.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.otane.006",
+   "beat": "ch04.b16",
+   "speaker": "farmer_young",
+   "ja": "左回りや！　相手をずっと左に置いて射るんや！",
+   "en": "Circle left! Keep it on your left and shoot!",
+   "duration_s": 4.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.kohagi.007",
+   "beat": "ch04.b16",
+   "speaker": "scout",
+   "ja": "脚の環が光った。踏んだ時だけ。",
+   "en": "Leg ring's glowing. Only when it plants.",
+   "duration_s": 3.5,
+   "register": "terse",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.008",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "秤に誤差。……許容外です。",
+   "en": "Scale error. …Outside tolerance.",
+   "duration_s": 3.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.009",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "再評価いたします。……水車小屋に、担保価値あり。",
+   "en": "Revaluing. …The mill has collateral value.",
+   "duration_s": 6.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.otane.010",
+   "beat": "ch04.b16",
+   "speaker": "farmer_young",
+   "ja": "水車の前で膝ついた！　腹の太鼓、叩き斬ったれ！",
+   "en": "It's kneeling at the mill! Cut the drum in its belly!",
+   "duration_s": 4.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.011",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "担保価値を、算定中。",
+   "en": "Calculating collateral value.",
+   "duration_s": 3.0,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.012",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "減価償却。",
+   "en": "Depreciation.",
+   "duration_s": 1.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.013",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "一件、差押え完了。",
+   "en": "One item seized.",
+   "duration_s": 2.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.otane.014",
+   "beat": "ch04.b16",
+   "speaker": "farmer_young",
+   "ja": "立って！　まだ終わってへん！",
+   "en": "Get up! It's not over!",
+   "duration_s": 2.5,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": true,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b16.margina.015",
+   "beat": "ch04.b16",
+   "speaker": "boss_margina",
+   "ja": "……損切りいたします。",
+   "en": "…I am cutting my losses.",
+   "duration_s": 2.5,
+   "register": "alien_corporate_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b17.oyuki.001",
+   "beat": "ch04.b17",
+   "speaker": "leader",
+   "ja": "郷蔵へ運びましょう。どの田の麦か、札を付けてくださいませ。",
+   "en": "Let us take it to the granary. Tag each load with its field.",
+   "duration_s": 5.5,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b17.villager.002",
+   "beat": "ch04.b17",
+   "speaker": "villager",
+   "ja": "うちの麦や。……ほんまに、うちの麦や。",
+   "en": "It's our barley. …It really is ours.",
+   "duration_s": 4.0,
+   "register": "yamato_rural",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b17.oyuki.003",
+   "beat": "ch04.b17",
+   "speaker": "leader",
+   "ja": "麦、百二十束。育てた者の名と共に、記しました。",
+   "en": "Barley, 120 sheaves. Recorded with the names of those who grew it.",
+   "duration_s": 5.0,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b17.taemon.004",
+   "beat": "ch04.b17",
+   "speaker": "farmer",
+   "ja": "ならば、皆で食べられるだけ作ろう。",
+   "en": "Then we will grow enough for everyone to eat.",
+   "duration_s": 3.5,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "ambient",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b18.otane.001",
+   "beat": "ch04.b18",
+   "speaker": "farmer_young",
+   "ja": "うちも入れて。空紋の一揆に。",
+   "en": "Count me in. The Sora League.",
+   "duration_s": 3.0,
+   "register": "kamigata_bright",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b18.oyuki.002",
+   "beat": "ch04.b18",
+   "speaker": "leader",
+   "ja": "歓迎いたします。……一名、確かに記しました。",
+   "en": "Welcome. …One member, duly recorded.",
+   "duration_s": 4.5,
+   "register": "business_keigo",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b18.taemon.003",
+   "beat": "ch04.b18",
+   "speaker": "farmer",
+   "ja": "蛍が出たら、田はもう大丈夫や。",
+   "en": "When the fireflies come out, the fields will be fine.",
+   "duration_s": 4.0,
+   "register": "yamato_elder",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b18.kohagi.004",
+   "beat": "ch04.b18",
+   "speaker": "scout",
+   "ja": "尾根に一騎。……黒鹿毛。",
+   "en": "One rider on the ridge. …A black-bay.",
+   "duration_s": 3.5,
+   "register": "terse",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  },
+  {
+   "id": "ch04.b18.nyaakoto.005",
+   "beat": "ch04.b18",
+   "speaker": "samurai",
+   "ja": "……虎之介。",
+   "en": "…Toranosuke.",
+   "duration_s": 2.0,
+   "register": "samurai_restrained",
+   "delivery": null,
+   "mode": "cinematic",
+   "repeatable": false,
+   "readings": null,
+   "voice_variant": null,
+   "ext": {}
+  }
+ ],
+ "triggers": [
+  {
+   "beat": "ch04.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b01.taemon.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 8000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b01.taemon.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 14500,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b01.oyuki.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 21000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b01.oyuki.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 27500,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b01.otane.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 36000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b01.nyaakoto.006"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 43000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b01.taemon.007"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 45500,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b01",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b01.otane.008"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 53000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b02",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b02.otane.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b02",
+   "on": "volume_enter:vol_meter_post_02",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b02.otane.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b02",
+   "on": "volume_enter:vol_mugi_overlook",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b02.otane.003",
+    "ch04.b02.nyaakoto.004",
+    "ch04.b02.otane.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b02",
+   "on": "volume_enter:vol_scout_end",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b02.otane.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b03",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b03.tetsugoro.001",
+    "ch04.b03.tetsugoro.002",
+    "ch04.b03.tetsugoro.003",
+    "ch04.b03.tetsugoro.004",
+    "ch04.b03.tetsugoro.005",
+    "ch04.b03.otane.006",
+    "ch04.b03.nyaakoto.007",
+    "ch04.b03.otane.008"
+   ],
+   "source": "dialogue_beat",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b04",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b04.otane.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b04",
+   "on": "progress_at:0.15",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b04.otane.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b04",
+   "on": "alert_state:alert",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b04.enforcer.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b04",
+   "on": "alert_state:search",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b04.enforcer.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b04",
+   "on": "alert_state:suspicious",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b04.drone.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b04",
+   "on": "progress_at:0.8",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b04.enforcer.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b04",
+   "on": "npc_downed:otane",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b04.otane.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b04",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b04.otane.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b05",
+   "on": "volume_enter:vol_gorge_foot",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b05.kohagi.001",
+    "ch04.b05.kohagi.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b05",
+   "on": "idle_s:20",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b05.conscript.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b05",
+   "on": "alert_state:suspicious",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b05.conscript.004",
+    "ch04.b05.drone.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b05",
+   "on": "alert_state:search",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b05.conscript.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b05",
+   "on": "alert_state:alert",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b05.conscript.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b05",
+   "on": "npc_freed:yosaku",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b05.yosaku.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b05",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b05.kohagi.009"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b06",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b06.otane.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b06",
+   "on": "progress_at:0.25",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b06.enforcer.004",
+    "ch04.b06.conscript.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b06",
+   "on": "progress_at:0.3",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b05.yosaku.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b06",
+   "on": "progress_at:0.5",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b06.taemon.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b06",
+   "on": "progress_at:0.75",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b06.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b06",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b06.taemon.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b07",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b07.otane.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b07",
+   "on": "progress_at:0.33",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b07.enforcer.002",
+    "ch04.b07.otane.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b07",
+   "on": "progress_at:0.5",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b07.taemon.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b07",
+   "on": "progress_at:0.9",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b07.enforcer.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b07",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b07.taemon.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b08.taemon.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 18000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b08.villager.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 40000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b08",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b08.otane.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 62000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b09",
+   "on": "volume_enter:vol_mikumari_sha",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b09.villager.001",
+    "ch04.b09.villager.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b09",
+   "on": "volume_enter:vol_tanada_vista",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b09.nyaakoto.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b10",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b10.genroku.001",
+    "ch04.b10.genroku.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b10",
+   "on": "volume_enter:vol_escort_mid",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b10.enforcer.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b10",
+   "on": "player_signal",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b10.nyaakoto.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b10",
+   "on": "progress_at:0.5",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b10.otane.005",
+    "ch04.b10.genroku.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b11",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b11.genroku.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b11",
+   "on": "progress_at:0.6",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b11.genroku.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b11",
+   "on": "progress_at:0.9",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b11.genroku.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b11",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b11.otane.004",
+    "ch04.b11.nyaakoto.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b12",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b12.planter.001",
+    "ch04.b12.planter.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b12",
+   "on": "progress_at:0.05",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b12.otane.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b12",
+   "on": "pattern:net_lock",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b12.drone.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b12",
+   "on": "npc_downed:planter_*",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b12.planter.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b12",
+   "on": "progress_at:0.5",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b12.villager.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b12",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b12.otane.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b13",
+   "on": "beat_start",
+   "mode": "blocking",
+   "lines": [
+    "ch04.b13.oyuki.001",
+    "ch04.b13.oyuki.002",
+    "ch04.b13.oyuki.003",
+    "ch04.b13.taemon.004",
+    "ch04.b13.oyuki.005"
+   ],
+   "source": "dialogue_beat",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b14",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b14.otane.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b14",
+   "on": "item_delivered:hamlet_kami",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b14.villager.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b14",
+   "on": "idle_s:4",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b14.otane.003",
+    "ch04.b14.nyaakoto.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b14",
+   "on": "item_delivered:hamlet_naka",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b14.villager.005"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b14",
+   "on": "item_delivered:hamlet_shimo",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b14.villager.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b15.margina.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 22000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b15.margina.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 27500,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b15.margina.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 34000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b15.otane.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 48000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b15",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b15.nyaakoto.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 78000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b16.margina.001",
+    "ch04.b16.otane.006"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "pattern:step_plant",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b16.kohagi.007"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "weakpoint_destroyed:coil_*",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b16.margina.008"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "boss_phase:2",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b16.margina.009",
+    "ch04.b16.otane.010"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "boss_event:mill_seal",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b16.margina.013"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "player_died",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b16.otane.014"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b16.margina.015"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "pattern:seizure_net",
+   "mode": "bark",
+   "lines": [
+    "ch04.b16.margina.002"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "pattern:sweep_beam",
+   "mode": "bark",
+   "lines": [
+    "ch04.b16.margina.003"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "pattern:plant_stomp",
+   "mode": "bark",
+   "lines": [
+    "ch04.b16.margina.004"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "pattern:drone_release",
+   "mode": "bark",
+   "lines": [
+    "ch04.b16.margina.005"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "pattern:assessment_kneel",
+   "mode": "bark",
+   "lines": [
+    "ch04.b16.margina.011"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b16",
+   "on": "pattern:claw_sweep",
+   "mode": "bark",
+   "lines": [
+    "ch04.b16.margina.012"
+   ],
+   "source": "bark",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b17",
+   "on": "beat_start",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b17.oyuki.001"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b17",
+   "on": "item_delivered:barley_load",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b17.villager.002"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b17",
+   "on": "progress_at:1.0",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b17.oyuki.003"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b17",
+   "on": "beat_complete",
+   "mode": "ambient",
+   "lines": [
+    "ch04.b17.taemon.004"
+   ],
+   "source": "dialogue",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": null,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b18",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b18.otane.001"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 20000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b18",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b18.oyuki.002"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 26000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b18",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b18.taemon.003"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 44000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b18",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b18.kohagi.004"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 78000,
+   "requires_flag": null,
+   "ext": {}
+  },
+  {
+   "beat": "ch04.b18",
+   "on": "subtitle",
+   "mode": "cinematic",
+   "lines": [
+    "ch04.b18.nyaakoto.005"
+   ],
+   "source": "subtitle",
+   "repeatable": false,
+   "cooldown_s": null,
+   "at_ms": 86000,
+   "requires_flag": null,
+   "ext": {}
+  }
+ ],
+ "collectibles": [
+  {
+   "id": "ch04.c01",
+   "category": "scroll_fragment",
+   "place": "pl_tanada",
+   "mask_bit": 0,
+   "beats": [],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "水月の巻・断簡。「水は器に随いて争わず。されど堰を切れば石をも運ぶ。剣もまた然り。」 石鈴斎の手。",
+    "en": "Moon-in-Water scroll, fragment: 'Water yields to its vessel and does not quarrel. Loose the weir, and it carries stones. So too the sword.' In Sekireisai's hand."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch04.c02",
+   "category": "league_mark",
+   "place": "pl_tanada",
+   "mask_bit": 1,
+   "beats": [],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "小萩の白墨の印。空紋の横に四本の線と矢印。「堤に見張り四。東の石段は見られている。」",
+    "en": "Kohagi's chalk mark: the Sora mon, four strokes and an arrow. 'Four guards on the dam. The east stair is watched.'"
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch04.c03",
+   "category": "seizure_notice",
+   "place": "pl_shimomura",
+   "mask_bit": 2,
+   "beats": [],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "用水従量課金のお知らせ。「用水は一升ごとに課金されます。未払い分は翌朝の利息に算入いたします。恒星信用院 下村徴収所」",
+    "en": "Notice of metered irrigation: 'Water is billed per measure. Unpaid amounts are added to the next morning's interest. Stellar Credit House, Shimomura Collection Office.'"
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch04.c04",
+   "category": "heirloom",
+   "place": "pl_otameike",
+   "mask_bit": 3,
+   "beats": [],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "番水の割符。上・中・下の垣内が水を回す順を刻んだ木札。天正の頃より三つに割り、一つずつ持ち合った。徴収所に「無効契約」として吊るされていた。",
+    "en": "The water-rotation tally: a wooden board carved with the order in which the three hamlets take the water. Split in three since the Tenshō years, one piece per hamlet. Found hung in the guard hut as a 'void contract'."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch04.c05",
+   "category": "registry_page",
+   "place": "pl_gogura",
+   "mask_bit": 4,
+   "beats": [],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "郷蔵の納め帳・一葉。去年の麦の納め。束の数の横に、庄屋と年寄の印、そして作り手の爪印。",
+    "en": "A leaf from the granary intake book: last year's barley. Beside each count, the headman's and elder's seals and the grower's claw-print."
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  },
+  {
+   "id": "ch04.c06",
+   "category": "registry_page",
+   "place": "pl_shoya_yashiki",
+   "mask_bit": 5,
+   "beats": [],
+   "title_ja": null,
+   "title_en": null,
+   "codex": {
+    "ja": "五箇条の下書き。お雪の筆。「利をもって利を生まず」の横に、消された一行。「ただし急ぎの時は」。",
+    "en": "A draft of the five articles in Oyuki's hand. Beside 'Interest begets no interest', one line struck out: 'Except in emergencies.'"
+   },
+   "volume": null,
+   "actor": null,
+   "sets_flag": null,
+   "location_en": null
+  }
+ ],
+ "ui_prompts": [
+  {
+   "id": "ui.ch04.b02.bank_roads",
+   "beats": [
+    "ch04.b02"
+   ],
+   "on": "beat_start",
+   "ja": "畦は馬で通れない。土手道を進め",
+   "en": "Horses cannot use paddy ridges. Keep to the bank roads.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b03.hayago",
+   "beats": [
+    "ch04.b03"
+   ],
+   "on": "after weapon 5 unlock",
+   "ja": "{reload}で早合を込める。カチッと鳴った瞬間にもう一度{reload}で素早く締める",
+   "en": "{reload} loads a hayagō. Press {reload} again on the click to lock it faster.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b03.cheek",
+   "beats": [
+    "ch04.b03"
+   ],
+   "on": "first aim with weapon 5",
+   "ja": "頬付けで構える。馬上では鉄砲を使えない",
+   "en": "Cheek-stocked aim. Firearms cannot be used on horseback.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b04.bind",
+   "beats": [
+    "ch04.b04"
+   ],
+   "on": "progress_at:0.15",
+   "ja": "{alt_attack}で分銅を投げ、刃・盾・目録を絡め取る",
+   "en": "{alt_attack}: throw the weight to snare a blade, shield or drone.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b04.barley",
+   "beats": [
+    "ch04.b04"
+   ],
+   "on": "beat_start",
+   "ja": "高い麦の中では互いに見えにくい。揺れる穂に注意",
+   "en": "In tall barley no one sees far. Watch for swaying heads.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b05.nonlethal",
+   "beats": [
+    "ch04.b05"
+   ],
+   "on": "beat_start",
+   "ja": "首輪の者は峰打ちで倒し、{interact}で首輪を断つ",
+   "en": "Subdue the collared with the blade's back, then {interact} to cut the collar.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b06.crank",
+   "beats": [
+    "ch04.b06"
+   ],
+   "on": "beat_start",
+   "ja": "{interact}長押しで巻き上げる。速さを帯の中に保て",
+   "en": "Hold {interact} to crank. Keep your speed inside the band.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b07.hold",
+   "beats": [
+    "ch04.b07"
+   ],
+   "on": "beat_start",
+   "ja": "堰の周りに留まれ。敵が入ると水位が止まる",
+   "en": "Stay by the weir. Enemies inside stop the water rising.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b10.signal",
+   "beats": [
+    "ch04.b10"
+   ],
+   "on": "beat_start",
+   "ja": "{signal}で同行者を伏せさせる",
+   "en": "{signal}: tell the escort to take cover.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b12.net",
+   "beats": [
+    "ch04.b12"
+   ],
+   "on": "first npc_downed",
+   "ja": "網に捕らわれた者は{interact}で解放。12秒で連れ去られる",
+   "en": "{interact} to free netted planters. They are taken after 12 s.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b13.registry",
+   "beats": [
+    "ch04.b13"
+   ],
+   "on": "beat_complete",
+   "ja": "生産改帳が開いた。{menu}からいつでも見られる",
+   "en": "The registry is open. View it any time from {menu}.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b14.pack",
+   "beats": [
+    "ch04.b14"
+   ],
+   "on": "beat_start",
+   "ja": "荷を積んだ駄馬がいる間は常歩と速歩のみ",
+   "en": "While leading a laden pack horse you can only walk or trot.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b16.ccw",
+   "beats": [
+    "ch04.b16"
+   ],
+   "on": "beat_start",
+   "ja": "左回りに走り、敵を弓手（左）に置け",
+   "en": "Circle left to keep the target on your bow side.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b16.coils",
+   "beats": [
+    "ch04.b16"
+   ],
+   "on": "first step_plant",
+   "ja": "脚の秤環は踏み込んだ時だけ光る",
+   "en": "Leg coils glow only while that leg is planted.",
+   "shown_en": null
+  },
+  {
+   "id": "ui.ch04.b16.drum",
+   "beats": [
+    "ch04.b16"
+   ],
+   "on": "boss_phase:2",
+   "ja": "膝をついた時、腹の帳簿胴を斬れ",
+   "en": "When it kneels, strike the ledger drum.",
+   "shown_en": null
+  }
+ ],
+ "places": [
+  {
+   "id": "pl_shoya_yashiki",
+   "chapter": 4,
+   "ja": "庄屋屋敷",
+   "reading": "しょうややしき",
+   "en": "Headman's house",
+   "arena": null,
+   "hub": false,
+   "source": "Sub-place of pl_shimomura"
+  },
+  {
+   "id": "pl_shimomura",
+   "chapter": 4,
+   "ja": "下村",
+   "reading": "しもむら",
+   "en": "Lower Village fields",
+   "arena": null,
+   "hub": false,
+   "source": "New open area, about 800 × 600 m (C3)"
+  },
+  {
+   "id": "pl_otameike",
+   "chapter": 4,
+   "ja": "大溜池・一の堰",
+   "reading": "おおためいけ・いちのせき",
+   "en": "Great Reservoir and First Weir",
+   "arena": null,
+   "hub": false,
+   "source": "New"
+  },
+  {
+   "id": "pl_tanada",
+   "chapter": 4,
+   "ja": "棚田・水分社",
+   "reading": "たなだ・みくまりのやしろ",
+   "en": "Terraces and water shrine",
+   "arena": null,
+   "hub": false,
+   "source": "New"
+  },
+  {
+   "id": "pl_suisha_goya",
+   "chapter": 4,
+   "ja": "水車小屋",
+   "reading": "すいしゃごや",
+   "en": "Waterwheel mill",
+   "arena": null,
+   "hub": false,
+   "source": "New"
+  },
+  {
+   "id": "pl_gogura",
+   "chapter": 4,
+   "ja": "郷蔵",
+   "reading": "ごうぐら",
+   "en": "Village granary",
+   "arena": null,
+   "hub": false,
+   "source": "New"
+  }
+ ],
+ "layout": {
+  "frames": [],
+  "volumes": [],
+  "points": [],
+  "splines": [],
+  "patrols": [],
+  "ext": {}
+ },
+ "space": {
+  "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+  "hub": null,
+  "hub_place": null,
+  "start": [
+   8280,
+   0,
+   0
+  ],
+  "zones": [
+   {
+    "id": "pl_shoya_yashiki",
+    "place": "pl_shoya_yashiki",
+    "style": "estate",
+    "form": "hall",
+    "rect": [
+     8000,
+     -1300,
+     11600,
+     1300
+    ],
+    "wall_cm": 700,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      11630,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      9800,
+      -1330,
+      3600,
+      60,
+      700
+     ],
+     [
+      9800,
+      1330,
+      3600,
+      60,
+      700
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       8144,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       8144,
+       1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11492,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11492,
+       1144,
+       0
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_shimomura",
+    "place": "pl_shimomura",
+    "style": "estate",
+    "form": "field",
+    "rect": [
+     14600,
+     -2600,
+     21800,
+     2600
+    ],
+    "wall_cm": 220,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      14570,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      21830,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      18200,
+      -2630,
+      7200,
+      60,
+      220
+     ],
+     [
+      18200,
+      2630,
+      7200,
+      60,
+      220
+     ]
+    ],
+    "cover": [
+     [
+      16760,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      16760,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      17912,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      17912,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      19064,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      19064,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      20216,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      20216,
+      1560,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       14888,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       14888,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       21584,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       21584,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_ProvisionKura",
+      "at": [
+       16760,
+       -3300,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_EstateDojo",
+      "at": [
+       19496,
+       3350,
+       180
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       15200,
+       2900,
+       200
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       15900,
+       -2900,
+       160
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       17000,
+       2900,
+       200
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       17700,
+       -2900,
+       160
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       18800,
+       2900,
+       200
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       19500,
+       -2900,
+       160
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       20600,
+       2900,
+       200
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       21300,
+       -2900,
+       160
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_otameike",
+    "place": "pl_otameike",
+    "style": "estate",
+    "form": "field",
+    "rect": [
+     24800,
+     -2600,
+     32000,
+     2600
+    ],
+    "wall_cm": 220,
+    "entry": [
+     25080,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      24770,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      32030,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      28400,
+      -2630,
+      7200,
+      60,
+      220
+     ],
+     [
+      28400,
+      2630,
+      7200,
+      60,
+      220
+     ]
+    ],
+    "cover": [
+     [
+      26960,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      26960,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      28112,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      28112,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      29264,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      29264,
+      1560,
+      230,
+      180,
+      140
+     ],
+     [
+      30416,
+      -1560,
+      230,
+      180,
+      140
+     ],
+     [
+      30416,
+      1560,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       25088,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       25088,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       31784,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       31784,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_ProvisionKura",
+      "at": [
+       26960,
+       -3300,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_EstateDojo",
+      "at": [
+       29696,
+       3350,
+       180
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       25400,
+       2900,
+       320
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       26100,
+       -2900,
+       40
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       27200,
+       2900,
+       320
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       27900,
+       -2900,
+       40
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       29000,
+       2900,
+       320
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       29700,
+       -2900,
+       40
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       30800,
+       2900,
+       320
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       31500,
+       -2900,
+       40
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_tanada",
+    "place": "pl_tanada",
+    "style": "estate",
+    "form": "field",
+    "rect": [
+     35000,
+     -2600,
+     42200,
+     2600
+    ],
+    "wall_cm": 220,
+    "entry": [
+     35280,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      34970,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      42230,
+      0,
+      60,
+      5320,
+      220
+     ],
+     [
+      38600,
+      -2630,
+      7200,
+      60,
+      220
+     ],
+     [
+      38600,
+      2630,
+      7200,
+      60,
+      220
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35288,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35288,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       41984,
+       -2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       41984,
+       2288,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_ProvisionKura",
+      "at": [
+       37160,
+       -3300,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Nyaagyu_EstateDojo",
+      "at": [
+       39896,
+       3350,
+       180
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       35600,
+       2900,
+       80
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       36300,
+       -2900,
+       280
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       37400,
+       2900,
+       80
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       38100,
+       -2900,
+       280
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       39200,
+       2900,
+       80
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       39900,
+       -2900,
+       280
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       41000,
+       2900,
+       80
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       41700,
+       -2900,
+       280
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_suisha_goya",
+    "place": "pl_suisha_goya",
+    "style": "estate",
+    "form": "hall",
+    "rect": [
+     45200,
+     -1300,
+     48800,
+     1300
+    ],
+    "wall_cm": 700,
+    "entry": [
+     45480,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      45170,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      48830,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      47000,
+      -1330,
+      3600,
+      60,
+      700
+     ],
+     [
+      47000,
+      1330,
+      3600,
+      60,
+      700
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       45344,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       45344,
+       1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       48692,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       48692,
+       1144,
+       0
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "pl_gogura",
+    "place": "pl_gogura",
+    "style": "estate",
+    "form": "hall",
+    "rect": [
+     51800,
+     -1300,
+     55400,
+     1300
+    ],
+    "wall_cm": 700,
+    "entry": [
+     52080,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      51770,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      55430,
+      0,
+      60,
+      2720,
+      700
+     ],
+     [
+      53600,
+      -1330,
+      3600,
+      60,
+      700
+     ],
+     [
+      53600,
+      1330,
+      3600,
+      60,
+      700
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       51944,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       51944,
+       1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       55292,
+       -1144,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       55292,
+       1144,
+       0
+      ]
+     }
+    ],
+    "route": []
+   },
+   {
+    "id": "route:ch04.b02",
+    "place": "pl_shimomura",
+    "style": "estate",
+    "form": "route",
+    "rect": [
+     8000,
+     -13200,
+     42103,
+     -10800
+    ],
+    "wall_cm": 200,
+    "entry": [
+     8280,
+     -12000,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      -12000,
+      60,
+      2520,
+      200
+     ],
+     [
+      42133,
+      -12000,
+      60,
+      2520,
+      200
+     ],
+     [
+      25051,
+      -13230,
+      34103,
+      60,
+      200
+     ],
+     [
+      25051,
+      -10770,
+      34103,
+      60,
+      200
+     ]
+    ],
+    "cover": [],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11387,
+       -11256,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       15362,
+       -12291,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       19337,
+       -11698,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       23312,
+       -12755,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       27287,
+       -11268,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       31262,
+       -12279,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35237,
+       -11687,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       39212,
+       -12766,
+       0
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       8800,
+       -13550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       10300,
+       -10450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       11800,
+       -13550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       13300,
+       -10450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       14800,
+       -13550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       16300,
+       -10450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       17800,
+       -13550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       19300,
+       -10450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       20800,
+       -13550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       22300,
+       -10450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       23800,
+       -13550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       25300,
+       -10450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       26800,
+       -13550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       28300,
+       -10450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       29800,
+       -13550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       31300,
+       -10450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       32800,
+       -13550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       34300,
+       -10450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       35800,
+       -13550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       37300,
+       -10450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       38800,
+       -13550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       40300,
+       -10450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       41800,
+       -13550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       43300,
+       -10450,
+       80
+      ]
+     }
+    ],
+    "route": [
+     [
+      9400,
+      -12000
+     ],
+     [
+      13400,
+      -11550
+     ],
+     [
+      17400,
+      -12000
+     ],
+     [
+      21400,
+      -12450
+     ],
+     [
+      25400,
+      -12000
+     ],
+     [
+      29400,
+      -11550
+     ],
+     [
+      33400,
+      -12000
+     ],
+     [
+      37400,
+      -12450
+     ],
+     [
+      40703,
+      -12078
+     ]
+    ]
+   },
+   {
+    "id": "route:ch04.b10",
+    "place": "pl_shimomura",
+    "style": "estate",
+    "form": "route",
+    "rect": [
+     8000,
+     -18200,
+     26541,
+     -15800
+    ],
+    "wall_cm": 200,
+    "entry": [
+     8280,
+     -17000,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      -17000,
+      60,
+      2520,
+      200
+     ],
+     [
+      26571,
+      -17000,
+      60,
+      2520,
+      200
+     ],
+     [
+      17270,
+      -18230,
+      18541,
+      60,
+      200
+     ],
+     [
+      17270,
+      -15770,
+      18541,
+      60,
+      200
+     ]
+    ],
+    "cover": [
+     [
+      12587,
+      -17780,
+      230,
+      180,
+      140
+     ],
+     [
+      16562,
+      -16220,
+      230,
+      180,
+      140
+     ],
+     [
+      20537,
+      -17780,
+      230,
+      180,
+      140
+     ],
+     [
+      24512,
+      -16220,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11387,
+       -16256,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       15362,
+       -17291,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       19337,
+       -16698,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       23312,
+       -17755,
+       0
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       8800,
+       -18550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       10300,
+       -15450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       11800,
+       -18550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       13300,
+       -15450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       14800,
+       -18550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       16300,
+       -15450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       17800,
+       -18550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       19300,
+       -15450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       20800,
+       -18550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       22300,
+       -15450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       23800,
+       -18550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       25300,
+       -15450,
+       80
+      ]
+     }
+    ],
+    "route": [
+     [
+      9400,
+      -17000
+     ],
+     [
+      13400,
+      -16550
+     ],
+     [
+      17400,
+      -17000
+     ],
+     [
+      21400,
+      -17450
+     ],
+     [
+      25141,
+      -17029
+     ]
+    ]
+   },
+   {
+    "id": "route:ch04.b14",
+    "place": "pl_shimomura",
+    "style": "estate",
+    "form": "route",
+    "rect": [
+     8000,
+     -23200,
+     62971,
+     -20800
+    ],
+    "wall_cm": 200,
+    "entry": [
+     8280,
+     -22000,
+     0
+    ],
+    "walls": [
+     [
+      7970,
+      -22000,
+      60,
+      2520,
+      200
+     ],
+     [
+      63001,
+      -22000,
+      60,
+      2520,
+      200
+     ],
+     [
+      35485,
+      -23230,
+      54971,
+      60,
+      200
+     ],
+     [
+      35485,
+      -20770,
+      54971,
+      60,
+      200
+     ]
+    ],
+    "cover": [
+     [
+      12587,
+      -22780,
+      230,
+      180,
+      140
+     ],
+     [
+      16562,
+      -21220,
+      230,
+      180,
+      140
+     ],
+     [
+      20537,
+      -22780,
+      230,
+      180,
+      140
+     ],
+     [
+      24512,
+      -21220,
+      230,
+      180,
+      140
+     ],
+     [
+      28487,
+      -22780,
+      230,
+      180,
+      140
+     ],
+     [
+      32462,
+      -21220,
+      230,
+      180,
+      140
+     ],
+     [
+      36437,
+      -22780,
+      230,
+      180,
+      140
+     ],
+     [
+      40412,
+      -21220,
+      230,
+      180,
+      140
+     ],
+     [
+      44387,
+      -22780,
+      230,
+      180,
+      140
+     ],
+     [
+      48362,
+      -21220,
+      230,
+      180,
+      140
+     ],
+     [
+      52337,
+      -22780,
+      230,
+      180,
+      140
+     ],
+     [
+      56312,
+      -21220,
+      230,
+      180,
+      140
+     ],
+     [
+      60287,
+      -22780,
+      230,
+      180,
+      140
+     ]
+    ],
+    "props": [
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       11387,
+       -21256,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       15362,
+       -22291,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       19337,
+       -21698,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       23312,
+       -22755,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       27287,
+       -21268,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       31262,
+       -22279,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       35237,
+       -21687,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       39212,
+       -22766,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       43187,
+       -21279,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       47162,
+       -22268,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       51137,
+       -21675,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       55112,
+       -22777,
+       0
+      ]
+     },
+     {
+      "mesh": "SM_Edo_LanternPost",
+      "at": [
+       59087,
+       -21290,
+       0
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       8800,
+       -23550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       10300,
+       -20450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       11800,
+       -23550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       13300,
+       -20450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       14800,
+       -23550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       16300,
+       -20450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       17800,
+       -23550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       19300,
+       -20450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       20800,
+       -23550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       22300,
+       -20450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       23800,
+       -23550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       25300,
+       -20450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       26800,
+       -23550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       28300,
+       -20450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       29800,
+       -23550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       31300,
+       -20450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       32800,
+       -23550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       34300,
+       -20450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       35800,
+       -23550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       37300,
+       -20450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       38800,
+       -23550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       40300,
+       -20450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       41800,
+       -23550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       43300,
+       -20450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       44800,
+       -23550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       46300,
+       -20450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       47800,
+       -23550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       49300,
+       -20450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       50800,
+       -23550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       52300,
+       -20450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       53800,
+       -23550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       55300,
+       -20450,
+       320
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       56800,
+       -23550,
+       160
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       58300,
+       -20450,
+       200
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       59800,
+       -23550,
+       280
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       61300,
+       -20450,
+       80
+      ]
+     },
+     {
+      "mesh": "pine",
+      "at": [
+       62800,
+       -23550,
+       40
+      ]
+     },
+     {
+      "mesh": "tree",
+      "at": [
+       64300,
+       -20450,
+       320
+      ]
+     }
+    ],
+    "route": [
+     [
+      9400,
+      -22000
+     ],
+     [
+      13400,
+      -21550
+     ],
+     [
+      17400,
+      -22000
+     ],
+     [
+      21400,
+      -22450
+     ],
+     [
+      25400,
+      -22000
+     ],
+     [
+      29400,
+      -21550
+     ],
+     [
+      33400,
+      -22000
+     ],
+     [
+      37400,
+      -22450
+     ],
+     [
+      41400,
+      -22000
+     ],
+     [
+      45400,
+      -21550
+     ],
+     [
+      49400,
+      -22000
+     ],
+     [
+      53400,
+      -22450
+     ],
+     [
+      57400,
+      -22000
+     ],
+     [
+      61400,
+      -21550
+     ],
+     [
+      61571,
+      -21569
+     ]
+    ]
+   }
+  ],
+  "sites": [
+   [
+    30992,
+    0
+   ],
+   [
+    48296,
+    0
+   ],
+   [
+    54896,
+    0
+   ]
+  ],
+  "beats": [
+   {
+    "beat": "ch04.b01",
+    "zone": 0,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "anchor": [
+     8792,
+     -364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      11200,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      11384,
+      -1118
+     ],
+     [
+      11384,
+      1118
+     ],
+     [
+      10808,
+      -1118
+     ],
+     [
+      10808,
+      1118
+     ],
+     [
+      9800,
+      -1118
+     ],
+     [
+      9800,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       9080,
+       -520
+      ],
+      [
+       10700,
+       -520
+      ],
+      [
+       10700,
+       520
+      ],
+      [
+       9080,
+       520
+      ]
+     ],
+     [
+      [
+       9620,
+       -260
+      ],
+      [
+       10232,
+       -260
+      ],
+      [
+       10232,
+       260
+      ],
+      [
+       9620,
+       260
+      ]
+     ]
+    ],
+    "camera": [
+     8350,
+     -728,
+     480,
+     8900,
+     -416,
+     420,
+     10160,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b02",
+    "zone": 6,
+    "entry": [
+     9698,
+     -11966,
+     0
+    ],
+    "anchor": [
+     40703,
+     -12078
+    ],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_shoya_gate",
+      "center": [
+       40405,
+       -12112
+      ],
+      "size": [
+       1000,
+       2400
+      ]
+     },
+     {
+      "event": "volume_enter:vol_meter_post_02",
+      "center": [
+       22860,
+       -12286
+      ],
+      "size": [
+       800,
+       2400
+      ]
+     },
+     {
+      "event": "volume_enter:vol_mugi_overlook",
+      "center": [
+       27243,
+       -11793
+      ],
+      "size": [
+       800,
+       2400
+      ]
+     },
+     {
+      "event": "volume_enter:vol_scout_end",
+      "center": [
+       31625,
+       -11800
+      ],
+      "size": [
+       800,
+       2400
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      40405,
+      -12112
+     ],
+     "size": [
+      1000,
+      2400
+     ]
+    },
+    "spawns": [
+     [
+      11884,
+      -11050
+     ],
+     [
+      14369,
+      -12950
+     ],
+     [
+      16853,
+      -11050
+     ],
+     [
+      19337,
+      -12950
+     ],
+     [
+      21822,
+      -11050
+     ],
+     [
+      24306,
+      -12950
+     ],
+     [
+      26790,
+      -11050
+     ],
+     [
+      29275,
+      -12950
+     ],
+     [
+      31759,
+      -11050
+     ],
+     [
+      34243,
+      -12950
+     ],
+     [
+      36728,
+      -11050
+     ],
+     [
+      39212,
+      -12950
+     ]
+    ],
+    "dropoffs": [],
+    "route": {
+     "zone": 6,
+     "margin_cm": 500
+    },
+    "objectives": [],
+    "pickups": [],
+    "targets": [],
+    "stations": [],
+    "step_stations": [],
+    "closing": null,
+    "patrols": [],
+    "cache": null,
+    "camera": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": {
+     "horse": "kurimaru",
+     "coat": "chestnut",
+     "mounted": true,
+     "tack": [],
+     "gaits": [
+      "walk",
+      "trot",
+      "canter"
+     ],
+     "speeds_cm_s": [
+      170,
+      350,
+      550,
+      800
+     ],
+     "stamina": {
+      "max": 100,
+      "per_s": [
+       8,
+       8,
+       0,
+       -12
+      ],
+      "lockout": 20,
+      "recover": 50
+     },
+     "fear": {
+      "radius_cm": 900,
+      "recover_ms": 2500
+     },
+     "spooks": [],
+     "gait_caps": [],
+     "forced": [],
+     "weapons": [
+      0,
+      18
+     ],
+     "arcs": {
+      "0": [
+       30,
+       150
+      ],
+      "18": [
+       -170,
+       15
+      ]
+     },
+     "dismount": false,
+     "auto_steer": true,
+     "until_phase": 0,
+     "pack": [],
+     "at": [
+      9898,
+      -11966,
+      0
+     ]
+    }
+   },
+   {
+    "beat": "ch04.b03",
+    "zone": 0,
+    "entry": [
+     8280,
+     0,
+     0
+    ],
+    "anchor": [
+     9368,
+     364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      11200,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      11384,
+      -1118
+     ],
+     [
+      11384,
+      1118
+     ],
+     [
+      10808,
+      -1118
+     ],
+     [
+      10808,
+      1118
+     ],
+     [
+      9800,
+      -1118
+     ],
+     [
+      9800,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       9080,
+       -520
+      ],
+      [
+       10700,
+       -520
+      ],
+      [
+       10700,
+       520
+      ],
+      [
+       9080,
+       520
+      ]
+     ],
+     [
+      [
+       9620,
+       -260
+      ],
+      [
+       10232,
+       -260
+      ],
+      [
+       10232,
+       260
+      ],
+      [
+       9620,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b04",
+    "zone": 1,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "anchor": [
+     16184,
+     -728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      21400,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      21368,
+      -2236
+     ],
+     [
+      21368,
+      2236
+     ],
+     [
+      20216,
+      -2236
+     ],
+     [
+      20216,
+      2236
+     ],
+     [
+      18200,
+      -2236
+     ],
+     [
+      18200,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       16760,
+       -1040
+      ],
+      [
+       20000,
+       -1040
+      ],
+      [
+       20000,
+       1040
+      ],
+      [
+       16760,
+       1040
+      ]
+     ],
+     [
+      [
+       17840,
+       -520
+      ],
+      [
+       19064,
+       -520
+      ],
+      [
+       19064,
+       520
+      ],
+      [
+       17840,
+       520
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b05",
+    "zone": 2,
+    "entry": [
+     25080,
+     0,
+     0
+    ],
+    "anchor": [
+     26384,
+     -728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_winch_platform",
+      "center": [
+       31600,
+       0
+      ],
+      "size": [
+       500,
+       4160
+      ]
+     },
+     {
+      "event": "volume_enter:vol_gorge_foot",
+      "center": [
+       29360,
+       0
+      ],
+      "size": [
+       400,
+       4160
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      31600,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      31568,
+      -2236
+     ],
+     [
+      31568,
+      2236
+     ],
+     [
+      30416,
+      -2236
+     ],
+     [
+      30416,
+      2236
+     ],
+     [
+      28400,
+      -2236
+     ],
+     [
+      28400,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       26960,
+       -1040
+      ],
+      [
+       30200,
+       -1040
+      ],
+      [
+       30200,
+       1040
+      ],
+      [
+       26960,
+       1040
+      ]
+     ],
+     [
+      [
+       28040,
+       -520
+      ],
+      [
+       29264,
+       -520
+      ],
+      [
+       29264,
+       520
+      ],
+      [
+       28040,
+       520
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b06",
+    "zone": 2,
+    "entry": [
+     25080,
+     0,
+     0
+    ],
+    "anchor": [
+     30992,
+     0
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      31600,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      31568,
+      -2236
+     ],
+     [
+      31568,
+      2236
+     ],
+     [
+      30416,
+      -2236
+     ],
+     [
+      30416,
+      2236
+     ],
+     [
+      28400,
+      -2236
+     ],
+     [
+      28400,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       26960,
+       -1040
+      ],
+      [
+       30200,
+       -1040
+      ],
+      [
+       30200,
+       1040
+      ],
+      [
+       26960,
+       1040
+      ]
+     ],
+     [
+      [
+       28040,
+       -520
+      ],
+      [
+       29264,
+       -520
+      ],
+      [
+       29264,
+       520
+      ],
+      [
+       28040,
+       520
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "sluice",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b07",
+    "zone": 2,
+    "entry": [
+     25080,
+     0,
+     0
+    ],
+    "anchor": [
+     29840,
+     0
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      31600,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      31568,
+      -2236
+     ],
+     [
+      31568,
+      2236
+     ],
+     [
+      30416,
+      -2236
+     ],
+     [
+      30416,
+      2236
+     ],
+     [
+      28400,
+      -2236
+     ],
+     [
+      28400,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       26960,
+       -1040
+      ],
+      [
+       30200,
+       -1040
+      ],
+      [
+       30200,
+       1040
+      ],
+      [
+       26960,
+       1040
+      ]
+     ],
+     [
+      [
+       28040,
+       -520
+      ],
+      [
+       29264,
+       -520
+      ],
+      [
+       29264,
+       520
+      ],
+      [
+       28040,
+       520
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "hold",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b08",
+    "zone": 1,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "anchor": [
+     17336,
+     728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      21400,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      21368,
+      -2236
+     ],
+     [
+      21368,
+      2236
+     ],
+     [
+      20216,
+      -2236
+     ],
+     [
+      20216,
+      2236
+     ],
+     [
+      18200,
+      -2236
+     ],
+     [
+      18200,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       16760,
+       -1040
+      ],
+      [
+       20000,
+       -1040
+      ],
+      [
+       20000,
+       1040
+      ],
+      [
+       16760,
+       1040
+      ]
+     ],
+     [
+      [
+       17840,
+       -520
+      ],
+      [
+       19064,
+       -520
+      ],
+      [
+       19064,
+       520
+      ],
+      [
+       17840,
+       520
+      ]
+     ]
+    ],
+    "camera": [
+     14950,
+     -1456,
+     480,
+     15500,
+     -832,
+     420,
+     18920,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b09",
+    "zone": 3,
+    "entry": [
+     35280,
+     0,
+     0
+    ],
+    "anchor": [
+     36584,
+     -728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_mikumari_sha",
+      "center": [
+       38360,
+       0
+      ],
+      "size": [
+       400,
+       4160
+      ]
+     },
+     {
+      "event": "volume_enter:vol_tanada_vista",
+      "center": [
+       39560,
+       0
+      ],
+      "size": [
+       400,
+       4160
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      41800,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      41768,
+      -2236
+     ],
+     [
+      41768,
+      2236
+     ],
+     [
+      40616,
+      -2236
+     ],
+     [
+      40616,
+      2236
+     ],
+     [
+      38600,
+      -2236
+     ],
+     [
+      38600,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       37160,
+       -1040
+      ],
+      [
+       40400,
+       -1040
+      ],
+      [
+       40400,
+       1040
+      ],
+      [
+       37160,
+       1040
+      ]
+     ],
+     [
+      [
+       38240,
+       -520
+      ],
+      [
+       39464,
+       -520
+      ],
+      [
+       39464,
+       520
+      ],
+      [
+       38240,
+       520
+      ]
+     ]
+    ],
+    "cache": [
+     35720,
+     -1976
+    ],
+    "stations": [],
+    "step_stations": [],
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b10",
+    "zone": 7,
+    "entry": [
+     9698,
+     -16966,
+     0
+    ],
+    "anchor": [
+     25141,
+     -17029
+    ],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_escort_mid",
+      "center": [
+       17271,
+       -16985
+      ],
+      "size": [
+       800,
+       2400
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      24843,
+      -17063
+     ],
+     "size": [
+      1000,
+      2400
+     ]
+    },
+    "spawns": [
+     [
+      11884,
+      -16050
+     ],
+     [
+      14369,
+      -17950
+     ],
+     [
+      16853,
+      -16050
+     ],
+     [
+      19337,
+      -17950
+     ],
+     [
+      21822,
+      -16050
+     ],
+     [
+      24306,
+      -17950
+     ]
+    ],
+    "dropoffs": [],
+    "route": {
+     "zone": 7,
+     "margin_cm": 500
+    },
+    "objectives": [],
+    "pickups": [],
+    "targets": [],
+    "stations": [],
+    "step_stations": [],
+    "closing": null,
+    "patrols": [],
+    "cache": null,
+    "camera": null,
+    "kit": {
+     "work": "escort",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": [
+      "cart",
+      "villager",
+      "villager"
+     ]
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b11",
+    "zone": 4,
+    "entry": [
+     45480,
+     0,
+     0
+    ],
+    "anchor": [
+     48296,
+     0
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "stations": [
+     [
+      47896,
+      -320
+     ],
+     [
+      47896,
+      0
+     ],
+     [
+      47896,
+      320
+     ]
+    ],
+    "step_stations": [
+     0,
+     1,
+     2,
+     2
+    ],
+    "volumes": [],
+    "exit": {
+     "center": [
+      48400,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      48584,
+      -1118
+     ],
+     [
+      48584,
+      1118
+     ],
+     [
+      48008,
+      -1118
+     ],
+     [
+      48008,
+      1118
+     ],
+     [
+      47000,
+      -1118
+     ],
+     [
+      47000,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       46280,
+       -520
+      ],
+      [
+       47900,
+       -520
+      ],
+      [
+       47900,
+       520
+      ],
+      [
+       46280,
+       520
+      ]
+     ],
+     [
+      [
+       46820,
+       -260
+      ],
+      [
+       47432,
+       -260
+      ],
+      [
+       47432,
+       260
+      ],
+      [
+       46820,
+       260
+      ]
+     ]
+    ],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "stations",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b12",
+    "zone": 1,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "anchor": [
+     19640,
+     0
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [
+     [
+      19640,
+      -728
+     ],
+     [
+      19640,
+      728
+     ],
+     [
+      18488,
+      0
+     ],
+     [
+      18488,
+      -728
+     ],
+     [
+      18488,
+      728
+     ],
+     [
+      17336,
+      0
+     ],
+     [
+      17336,
+      -728
+     ],
+     [
+      17336,
+      728
+     ]
+    ],
+    "volumes": [],
+    "exit": {
+     "center": [
+      21400,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      21368,
+      -2236
+     ],
+     [
+      21368,
+      2236
+     ],
+     [
+      20216,
+      -2236
+     ],
+     [
+      20216,
+      2236
+     ],
+     [
+      18200,
+      -2236
+     ],
+     [
+      18200,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       16760,
+       -1040
+      ],
+      [
+       20000,
+       -1040
+      ],
+      [
+       20000,
+       1040
+      ],
+      [
+       16760,
+       1040
+      ]
+     ],
+     [
+      [
+       17840,
+       -520
+      ],
+      [
+       19064,
+       -520
+      ],
+      [
+       19064,
+       520
+      ],
+      [
+       17840,
+       520
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "defend",
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [
+      "villager",
+      "villager",
+      "villager",
+      "villager",
+      "villager",
+      "villager",
+      "villager",
+      "villager"
+     ],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b13",
+    "zone": 1,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "anchor": [
+     17336,
+     -728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      21400,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      21368,
+      -2236
+     ],
+     [
+      21368,
+      2236
+     ],
+     [
+      20216,
+      -2236
+     ],
+     [
+      20216,
+      2236
+     ],
+     [
+      18200,
+      -2236
+     ],
+     [
+      18200,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       16760,
+       -1040
+      ],
+      [
+       20000,
+       -1040
+      ],
+      [
+       20000,
+       1040
+      ],
+      [
+       16760,
+       1040
+      ]
+     ],
+     [
+      [
+       17840,
+       -520
+      ],
+      [
+       19064,
+       -520
+      ],
+      [
+       19064,
+       520
+      ],
+      [
+       17840,
+       520
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b14",
+    "zone": 8,
+    "entry": [
+     9698,
+     -21966,
+     0
+    ],
+    "anchor": [
+     61571,
+     -21569
+    ],
+    "volumes": [
+     {
+      "event": "volume_enter:vol_toll_post",
+      "center": [
+       35485,
+       -22235
+      ],
+      "size": [
+       800,
+       2400
+      ]
+     }
+    ],
+    "exit": {
+     "center": [
+      61273,
+      -21564
+     ],
+     "size": [
+      1000,
+      2400
+     ]
+    },
+    "spawns": [
+     [
+      11884,
+      -21050
+     ],
+     [
+      14369,
+      -22950
+     ],
+     [
+      16853,
+      -21050
+     ],
+     [
+      19337,
+      -22950
+     ],
+     [
+      21822,
+      -21050
+     ],
+     [
+      24306,
+      -22950
+     ],
+     [
+      26790,
+      -21050
+     ],
+     [
+      29275,
+      -22950
+     ],
+     [
+      31759,
+      -21050
+     ],
+     [
+      34243,
+      -22950
+     ],
+     [
+      36728,
+      -21050
+     ],
+     [
+      39212,
+      -22950
+     ],
+     [
+      41696,
+      -21050
+     ],
+     [
+      44181,
+      -22950
+     ],
+     [
+      46665,
+      -21050
+     ],
+     [
+      49149,
+      -22950
+     ],
+     [
+      51634,
+      -21050
+     ],
+     [
+      54118,
+      -22950
+     ],
+     [
+      56602,
+      -21050
+     ],
+     [
+      59087,
+      -22950
+     ]
+    ],
+    "dropoffs": [
+     [
+      22443,
+      -22333
+     ],
+     [
+      35485,
+      -22235
+     ],
+     [
+      48528,
+      -21902
+     ]
+    ],
+    "route": {
+     "zone": 8,
+     "margin_cm": 500
+    },
+    "objectives": [],
+    "pickups": [],
+    "targets": [],
+    "stations": [],
+    "step_stations": [],
+    "closing": null,
+    "patrols": [],
+    "cache": null,
+    "camera": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": {
+     "horse": "kurimaru",
+     "coat": "chestnut",
+     "mounted": true,
+     "tack": [],
+     "gaits": [
+      "walk",
+      "trot"
+     ],
+     "speeds_cm_s": [
+      170,
+      350,
+      550,
+      800
+     ],
+     "stamina": {
+      "max": 100,
+      "per_s": [
+       8,
+       8,
+       0,
+       -12
+      ],
+      "lockout": 20,
+      "recover": 50
+     },
+     "fear": {
+      "radius_cm": 900,
+      "recover_ms": 2500
+     },
+     "spooks": [],
+     "gait_caps": [],
+     "forced": [],
+     "weapons": [
+      0,
+      18
+     ],
+     "arcs": {
+      "0": [
+       30,
+       150
+      ],
+      "18": [
+       -170,
+       15
+      ]
+     },
+     "dismount": true,
+     "auto_steer": true,
+     "until_phase": 0,
+     "pack": [
+      {
+       "id": "pack_horse_cargo",
+       "follow": "lead",
+       "speed_cm_s": 0,
+       "spacing_cm": 300,
+       "hp": 0
+      }
+     ],
+     "at": [
+      9898,
+      -21966,
+      0
+     ]
+    }
+   },
+   {
+    "beat": "ch04.b15",
+    "zone": 5,
+    "entry": [
+     52080,
+     0,
+     0
+    ],
+    "anchor": [
+     52592,
+     -364
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      55000,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      55184,
+      -1118
+     ],
+     [
+      55184,
+      1118
+     ],
+     [
+      54608,
+      -1118
+     ],
+     [
+      54608,
+      1118
+     ],
+     [
+      53600,
+      -1118
+     ],
+     [
+      53600,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       52880,
+       -520
+      ],
+      [
+       54500,
+       -520
+      ],
+      [
+       54500,
+       520
+      ],
+      [
+       52880,
+       520
+      ]
+     ],
+     [
+      [
+       53420,
+       -260
+      ],
+      [
+       54032,
+       -260
+      ],
+      [
+       54032,
+       260
+      ],
+      [
+       53420,
+       260
+      ]
+     ]
+    ],
+    "camera": [
+     52150,
+     -728,
+     480,
+     52700,
+     -416,
+     420,
+     53960,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b16",
+    "zone": 1,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "anchor": [
+     18488,
+     728
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      21400,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      21368,
+      -2236
+     ],
+     [
+      21368,
+      2236
+     ],
+     [
+      20216,
+      -2236
+     ],
+     [
+      20216,
+      2236
+     ],
+     [
+      18200,
+      -2236
+     ],
+     [
+      18200,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       16760,
+       -1040
+      ],
+      [
+       20000,
+       -1040
+      ],
+      [
+       20000,
+       1040
+      ],
+      [
+       16760,
+       1040
+      ]
+     ],
+     [
+      [
+       17840,
+       -520
+      ],
+      [
+       19064,
+       -520
+      ],
+      [
+       19064,
+       520
+      ],
+      [
+       17840,
+       520
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": {
+     "horse": "kurimaru",
+     "coat": "chestnut",
+     "mounted": true,
+     "tack": [],
+     "gaits": [
+      "walk",
+      "trot",
+      "canter",
+      "gallop"
+     ],
+     "speeds_cm_s": [
+      170,
+      350,
+      550,
+      800
+     ],
+     "stamina": {
+      "max": 100,
+      "per_s": [
+       8,
+       8,
+       0,
+       -12
+      ],
+      "lockout": 20,
+      "recover": 50
+     },
+     "fear": {
+      "radius_cm": 900,
+      "recover_ms": 2000
+     },
+     "spooks": [],
+     "gait_caps": [],
+     "forced": [],
+     "weapons": [
+      0,
+      18
+     ],
+     "arcs": {
+      "0": [
+       30,
+       150
+      ],
+      "18": [
+       -170,
+       15
+      ]
+     },
+     "dismount": true,
+     "auto_steer": false,
+     "until_phase": 1,
+     "pack": [],
+     "at": [
+      15180,
+      0,
+      0
+     ]
+    }
+   },
+   {
+    "beat": "ch04.b17",
+    "zone": 5,
+    "entry": [
+     52080,
+     0,
+     0
+    ],
+    "anchor": [
+     54896,
+     0
+    ],
+    "objectives": [],
+    "pickups": [
+     [
+      52592,
+      -364
+     ],
+     [
+      52592,
+      0
+     ],
+     [
+      52592,
+      364
+     ]
+    ],
+    "dropoffs": [
+     [
+      54320,
+      -364
+     ]
+    ],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      55000,
+      0
+     ],
+     "size": [
+      500,
+      2080
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      55184,
+      -1118
+     ],
+     [
+      55184,
+      1118
+     ],
+     [
+      54608,
+      -1118
+     ],
+     [
+      54608,
+      1118
+     ],
+     [
+      53600,
+      -1118
+     ],
+     [
+      53600,
+      1118
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       52880,
+       -520
+      ],
+      [
+       54500,
+       -520
+      ],
+      [
+       54500,
+       520
+      ],
+      [
+       52880,
+       520
+      ]
+     ],
+     [
+      [
+       53420,
+       -260
+      ],
+      [
+       54032,
+       -260
+      ],
+      [
+       54032,
+       260
+      ],
+      [
+       53420,
+       260
+      ]
+     ]
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "camera": null,
+    "route": null,
+    "kit": {
+     "work": "carry",
+     "item": "bale",
+     "pickups": [
+      "depot",
+      "depot",
+      "depot"
+     ],
+     "dropoffs": [
+      "depot"
+     ],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   },
+   {
+    "beat": "ch04.b18",
+    "zone": 1,
+    "entry": [
+     14880,
+     0,
+     0
+    ],
+    "anchor": [
+     16184,
+     0
+    ],
+    "objectives": [],
+    "pickups": [],
+    "dropoffs": [],
+    "targets": [],
+    "volumes": [],
+    "exit": {
+     "center": [
+      21400,
+      0
+     ],
+     "size": [
+      500,
+      4160
+     ]
+    },
+    "closing": null,
+    "spawns": [
+     [
+      21368,
+      -2236
+     ],
+     [
+      21368,
+      2236
+     ],
+     [
+      20216,
+      -2236
+     ],
+     [
+      20216,
+      2236
+     ],
+     [
+      18200,
+      -2236
+     ],
+     [
+      18200,
+      2236
+     ]
+    ],
+    "patrols": [
+     [
+      [
+       16760,
+       -1040
+      ],
+      [
+       20000,
+       -1040
+      ],
+      [
+       20000,
+       1040
+      ],
+      [
+       16760,
+       1040
+      ]
+     ],
+     [
+      [
+       17840,
+       -520
+      ],
+      [
+       19064,
+       -520
+      ],
+      [
+       19064,
+       520
+      ],
+      [
+       17840,
+       520
+      ]
+     ]
+    ],
+    "camera": [
+     14950,
+     -1456,
+     480,
+     15500,
+     -832,
+     420,
+     18920,
+     0,
+     180
+    ],
+    "stations": [],
+    "step_stations": [],
+    "cache": null,
+    "route": null,
+    "kit": {
+     "work": null,
+     "item": null,
+     "pickups": [],
+     "dropoffs": [],
+     "targets": [],
+     "party": []
+    },
+    "mount": null
+   }
+  ],
+  "pickups": [
+   {
+    "collectible": "ch04.c03",
+    "zone": 1,
+    "at": [
+     15320,
+     1976
+    ]
+   },
+   {
+    "collectible": "ch04.c04",
+    "zone": 2,
+    "at": [
+     25520,
+     1976
+    ]
+   },
+   {
+    "collectible": "ch04.c05",
+    "zone": 5,
+    "at": [
+     52160,
+     988
+    ]
+   },
+   {
+    "collectible": "ch04.c06",
+    "zone": 0,
+    "at": [
+     8360,
+     988
+    ]
+   }
+  ]
+ },
+ "ext": {
+  "boss_patterns": {
+   "boss_id": "boss_hakari",
+   "display": {
+    "ja": "査定機「秤」",
+    "en": "Assessor Engine Hakari",
+    "pilot": "boss_margina"
+   },
+   "hp": 4000,
+   "difficulty_scaling": {
+    "easy_windup_mult": 1.3,
+    "hard_windup_mult": 0.85
+   },
+   "hakari_mounted": [
+    {
+     "id": "step_plant",
+     "color": "none",
+     "windup_ms": 0,
+     "active_ms": 3000,
+     "recovery_ms": 0,
+     "cooldown_s": 4.0,
+     "effect": "one leg plants; its weigh-coil glows and is damageable for 3.0 s",
+     "counter": "shoot the glowing coil (left arc)"
+    },
+    {
+     "id": "seizure_net",
+     "color": "cyan",
+     "windup_ms": 800,
+     "active_ms": 400,
+     "recovery_ms": 1400,
+     "cooldown_s": 9.0,
+     "effect": "net projectile 3500 cm/s, 250 cm radius; roots Kurimaru 2.0 s (rider can still shoot)",
+     "counter": "change gait or direction during the lock tone"
+    },
+    {
+     "id": "sweep_beam",
+     "color": "cyan",
+     "windup_ms": 1100,
+     "active_ms": 900,
+     "recovery_ms": 1800,
+     "cooldown_s": 14.0,
+     "effect": "180-degree sweep at 80 cm height, reach 3000 cm, 45 damage and a spook",
+     "counter": "gallop out beyond 3000 cm (襲歩, horse stamina)"
+    },
+    {
+     "id": "plant_stomp",
+     "color": "amber",
+     "windup_ms": 1000,
+     "active_ms": 300,
+     "recovery_ms": 3500,
+     "cooldown_s": 20.0,
+     "effect": "600 cm ring, 40 damage, rider thrown if inside; then all four coils glow for the 3.5 s recovery",
+     "counter": "leave the ring, then punish the long recovery"
+    },
+    {
+     "id": "drone_release",
+     "color": "none",
+     "windup_ms": 1200,
+     "active_ms": 0,
+     "recovery_ms": 800,
+     "cooldown_s": 40.0,
+     "effect": "2 drones, max 3 alive; a marking drone makes the next seizure_net track the rider through its 800 ms windup",
+     "counter": "shoot or katana-cut the marking drone (its cyan eye) to clear the mark"
+    }
+   ],
+   "hakari_mill": [
+    {
+     "id": "assessment_kneel",
+     "color": "cyan",
+     "windup_ms": 1500,
+     "active_ms": 6000,
+     "recovery_ms": 1000,
+     "cooldown_s": 22.0,
+     "effect": "kneels at the mill, exposing the ledger drum (x2.5 melee, x1.5 ranged); an assessment ring fills over 6 s",
+     "counter": "deal 250 damage during the kneel to interrupt (2.0 s stagger); otherwise the mill takes 1 seal (3 = fail)"
+    },
+    {
+     "id": "claw_sweep",
+     "color": "amber",
+     "windup_ms": 1000,
+     "active_ms": 400,
+     "recovery_ms": 1500,
+     "cooldown_s": 7.0,
+     "effect": "240-degree front arc, 700 cm, 50 damage and knockback; cannot be parried",
+     "counter": "step out of the arc or guard (60% reduction); flank during recovery"
+    },
+    {
+     "id": "seizure_net",
+     "color": "cyan",
+     "windup_ms": 800,
+     "active_ms": 400,
+     "recovery_ms": 1400,
+     "cooldown_s": 10.0,
+     "effect": "roots the player 1.5 s",
+     "counter": "sidestep during the lock tone"
+    },
+    {
+     "id": "sweep_beam",
+     "color": "cyan",
+     "windup_ms": 1100,
+     "active_ms": 900,
+     "recovery_ms": 1800,
+     "cooldown_s": 16.0,
+     "effect": "head turret sweep at 80 cm, reach 1800 cm on foot",
+     "counter": "crouch behind the mill footing or millrace wall (stone blocks the beam) or leave range"
+    }
+   ],
+   "hakari_mill_revaluation_at_hp_pct": 25,
+   "revaluation_mods": {
+    "assessment_kneel.active_ms": 4500,
+    "sweep_beam.windup_ms": 950,
+    "claw_sweep.windup_ms": 850
+   },
+   "adds": {
+    "drone_release": "see pattern",
+    "drone_pair": {
+     "type": "drone",
+     "count": 2,
+     "respawn_after_clear_s": 30
+    }
+   },
+   "defeat": "destroy_weakpoints",
+   "fate": "collapses into the paddy; Margina ejects and flees"
+  }
+ }
+}

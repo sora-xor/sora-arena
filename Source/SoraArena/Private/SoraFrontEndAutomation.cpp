@@ -292,11 +292,14 @@ bool FSoraFrontEndChapterSelectTest::RunTest(const FString& Parameters)
     if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
         return false;
     {
-        // Chapter five with a checkpoint; replay chapter two.
+        // Chapter five at a later checkpoint beat; replay chapter two.
         FScope Scope(*this, TEXT("ChapterSelect"));
         constexpr int32 Chapter = 4, Replay = 1;
-        const int32 Kills = Catalog.Chapter(Chapter).Sites[0].RequiredKills;
-        if (!Scope.Seed(Chapter, Chapter, Chapter, Kills, 1) || !Scope.Start())
+        int32 Beat = INDEX_NONE;
+        for (int32 Index = 1; Beat == INDEX_NONE && Index < Catalog.Chapter(Chapter).Rules.Num(); ++Index)
+            if (Catalog.Chapter(Chapter).Rules[Index].Checkpoint && !Catalog.Chapter(Chapter).Rules[Index].Optional)
+                Beat = Index;
+        if (!TestTrue(TEXT("Chapter five has a later checkpoint beat"), Beat != INDEX_NONE) || !Scope.Seed(Chapter, Chapter, Beat) || !Scope.Start())
             return false;
         ASoraGameMode* Mode = Scope.Mode();
         USoraFrontEnd* FrontEnd = Scope.FrontEnd();
@@ -314,14 +317,16 @@ bool FSoraFrontEndChapterSelectTest::RunTest(const FString& Parameters)
         Scope.Key(Keyboard.Accept);
         TestTrue(TEXT("The replayed chapter opens on its title card"), !Mode->bMenu && Mode->TitleCardChapter() == &Catalog.Chapter(Replay));
         const USoraSaveGame* Saved = Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(Scope.Slot, 0));
+        // The replayed chapter's opening cinematic is its first checkpoint.
         TestTrue(TEXT("The save moves to the replayed chapter, keeps its reach and drops the old checkpoint"),
-            Saved && Saved->CurrentChapter == Replay && Saved->HighestChapter == Chapter && Saved->CheckpointChapter == -1);
+            Saved && Saved->CurrentChapter == Replay && Saved->HighestChapter == Chapter && Saved->CheckpointChapter == Replay &&
+            Saved->CheckpointBeat == 0 && Saved->CheckpointBeatsMask == 0);
     }
     {
         // A liberated campaign: no Continue, and its final chapter replays as a fight.
         FScope Scope(*this, TEXT("ChapterSelectLiberated"));
         constexpr int32 Final = 7;
-        if (!Scope.Seed(Final, Final, -1, 0, 0, true) || !Scope.Start())
+        if (!Scope.Seed(Final, Final, INDEX_NONE, true) || !Scope.Start())
             return false;
         ASoraGameMode* Mode = Scope.Mode();
         USoraFrontEnd* FrontEnd = Scope.FrontEnd();

@@ -1,0 +1,6 @@
+# Python packages the host checks import, pinned. Install with:
+#   pip3 install --user -r scripts/requirements.txt
+# build_campaign_data.py and validate_content.py parse the chapter scripts' YAML.
+PyYAML==6.0.3
+# validate_content.py checks every catalog and campaign glyph against the bundled font.
+fonttools==4.38.0

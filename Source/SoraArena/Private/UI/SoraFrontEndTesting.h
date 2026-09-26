@@ -3,6 +3,8 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "CoreMinimal.h"
 #include "SoraAutomationWorld.h"
+#include "SoraCampaignDirector.h"
+#include "SoraCatalog.h"
 #include "SoraFrontEnd.h"
 #include "SoraGameMode.h"
 #include "SoraSaveGame.h"
@@ -58,18 +60,29 @@ struct FScope
         }
         FSoraAutomationWorld::DeleteSaveSlot(Slot);
     }
-    bool Seed(int32 Chapter, int32 Highest, int32 CheckpointChapter = -1, int32 CheckpointKills = 0, int32 CheckpointMask = 0,
-        bool bComplete = false)
+    // A schema-6 save at Chapter with the reach Highest: a checkpoint at
+    // CheckpointBeat (USoraCampaignDirector::SeedCheckpoint), or none, with the
+    // entry unlocks the earlier chapters offer.
+    bool Seed(int32 Chapter, int32 Highest, int32 CheckpointBeat = INDEX_NONE, bool bComplete = false)
     {
         USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
         if (!Save)
             return false;
-        Save->SaveSchema = 5;
-        Save->CurrentChapter = Chapter;
+        if (CheckpointBeat != INDEX_NONE)
+        {
+            if (!Test.TestTrue(TEXT("Seed checkpoint is valid"), USoraCampaignDirector::SeedCheckpoint(*Save, Chapter, CheckpointBeat)))
+                return false;
+        }
+        else
+        {
+            const FSoraCatalog& Catalog = FSoraCatalog::Get();
+            Save->SaveSchema = USoraSaveGame::Schema;
+            Save->CurrentChapter = Chapter;
+            Save->ChapterEntryWeapons = static_cast<int32>(Catalog.EarlierWeapons(Chapter));
+            Save->ChapterEntryMechanics = static_cast<int32>(Catalog.EarlierMechanics(Chapter));
+            Save->ChapterEntryFlags = static_cast<int32>(Catalog.EarlierFlags(Chapter));
+        }
         Save->HighestChapter = Highest;
-        Save->CheckpointChapter = CheckpointChapter;
-        Save->CheckpointKills = CheckpointKills;
-        Save->CheckpointNodesMask = CheckpointMask;
         Save->CampaignComplete = bComplete;
         return Test.TestTrue(TEXT("Seed campaign saved to the isolated slot"), UGameplayStatics::SaveGameToSlot(Save, Slot, 0));
     }

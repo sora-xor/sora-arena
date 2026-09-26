@@ -1,8 +1,10 @@
 #include "SoraEquipmentComponent.h"
 #include "Combat/SoraDamage.h"
+#include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraCombatRules.h"
 #include "SoraEnemy.h"
+#include "SoraGameMode.h"
 #include "SoraGameEvents.h"
 #include "SoraHistoricalArms.h"
 #include "SoraPlayerCharacter.h"
@@ -13,6 +15,38 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+namespace
+{
+// Nyaakoto carries only the arms the campaign has unlocked (saved in schema 6);
+// a locked choice is refused with a notice. The training arena lends every arm.
+bool CampaignUnlocked(const ASoraPlayerCharacter& Hero,int32 WeaponId)
+{
+    auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(&Hero));
+    if(!G||!G->bCampaign||!Hero.IsCampaignHero()||G->Campaign()->IsWeaponUnlocked(WeaponId)) return true;
+    const FSoraWeapon& Weapon=FSoraCatalog::Get().Weapon(WeaponId);
+    G->Notice=FString::Printf(TEXT("%sはまだ手にしていない。"),*Weapon.Name);
+    G->NoticeEnglish=FString::Printf(TEXT("%s is not yet unlocked in the campaign."),*Weapon.NameEnglish);
+    G->NoticeTime=4.f;
+    return false;
+}
+USoraCampaignDirector* HeroCampaign(const ASoraPlayerCharacter& Hero)
+{
+    auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(&Hero));
+    return G&&G->bCampaign?G->Campaign():nullptr;
+}
+// In the saddle a weapon acts only in its mounted arc, and under a carried
+// load only if the load leaves it in hand; a refusal raises a notice.
+bool ArmsReady(const ASoraPlayerCharacter& Hero,int32 WeaponId)
+{
+    USoraCampaignDirector* Campaign=HeroCampaign(Hero);
+    return !Campaign||Campaign->ArmsReady(WeaponId,Hero.GetControlRotation().Yaw,true);
+}
+bool CanHold(const ASoraPlayerCharacter& Hero,int32 WeaponId)
+{
+    USoraCampaignDirector* Campaign=HeroCampaign(Hero);
+    return !Campaign||Campaign->CanHold(WeaponId,true);
+}
+}
 
 USoraEquipmentComponent::USoraEquipmentComponent()
 {
@@ -55,8 +89,12 @@ float USoraEquipmentComponent::StrikeWindupProgress() const
 }
 float USoraEquipmentComponent::MoveScale(bool bSprinting) const
 {
-    // The 転 step carries the hero itself; walking adds nothing to it.
-    return bStepping?0.f:bCommittedStrike?.35f:bHistoricalRecovery?.65f:bBowDrawing?.55f:bGuardHeld?.50f:bSprinting?1.35f:1.f;
+    // The 転 step carries the hero itself; walking adds nothing to it. A
+    // carried load slows every other pace and allows no sprint.
+    if(bStepping) return 0.f;
+    const USoraCampaignDirector* Campaign=HeroCampaign(*Hero());
+    const float Load=Campaign?Campaign->CarryPace():1.f;
+    return (bCommittedStrike?.35f:bHistoricalRecovery?.65f:bBowDrawing?.55f:bGuardHeld?.50f:bSprinting&&Load>=1.f?1.35f:1.f)*Load;
 }
 void USoraEquipmentComponent::Stagger(float Seconds)
 {
@@ -175,6 +213,7 @@ void USoraEquipmentComponent::TriggerDown()
     if(IsStaggered()||bStepping) return;
     // 抜刀: a sheathed hand's first press draws the blade and strikes nothing.
     if(bSheathed) { Sheathe(false); return; }
+    if(!ArmsReady(*H,WeaponId)) return;
     if(W.Kind==TEXT("bow"))
     {
         if(!bBowDrawing&&!bReloading&&!H->IsSprinting()&&Ammo>0&&GetWorld()->GetTimeSeconds()>=NextShot)
@@ -231,6 +270,7 @@ void USoraEquipmentComponent::Melee()
     if(!H->CanPlay()||GetWorld()->GetTimeSeconds()<NextShot||bReloading||bCommittedStrike||bBowDrawing||IsStaggered()||bSheathed||
         bStepping||(bGuardHeld&&!H->IsDojoTraining())) return;
     const int32 MeleeId=FSoraCatalog::Get().Weapon(H->WeaponId).Kind==TEXT("melee")?H->WeaponId:FSoraCatalog::Get().Class(H->ClassId).Weapons[0];
+    if(!ArmsReady(*H,MeleeId)) return;
     const auto& W=FSoraCatalog::Get().Weapon(MeleeId);
     const UCameraComponent* Camera=H->GetCamera();
     USoraGameEvents* Events=USoraGameEvents::Get(this);
@@ -351,7 +391,7 @@ void USoraEquipmentComponent::ReleaseBow()
     ASoraPlayerCharacter* H=Hero();
     bBowDrawing=false;
     if(!H->CanPlay()||H->WeaponId!=18||bReloading||H->IsSprinting()||Ammo<=0||
-        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<.65f) return;
+        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<.65f||!ArmsReady(*H,18)) return;
     const auto& W=FSoraCatalog::Get().Weapon(18);
     const FVector Direction=H->GetCamera()->GetForwardVector();
     const FVector Origin=H->GetCamera()->GetComponentLocation()+Direction*65.f;
@@ -390,7 +430,9 @@ bool USoraEquipmentComponent::EquipClassSlot(int32 Slot)
     ASoraPlayerCharacter* H=Hero();
     if(bReloading||bCommittedStrike||
         (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
-        (H->IsDojoTraining()&&Slot!=0)) return false;
+        (H->IsDojoTraining()&&Slot!=0)||
+        !CampaignUnlocked(*H,FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot])||
+        !CanHold(*H,FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot])) return false;
     bBowDrawing=false; bFireHeld=false; bGuardHeld=false; bSheathed=false;
     AmmoByWeapon[H->WeaponId]=Ammo; H->WeaponId=FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot];
     Ammo=AmmoByWeapon[H->WeaponId]; NextShot=GetWorld()->GetTimeSeconds()+.25f; H->RebuildWeapon();
@@ -400,7 +442,8 @@ bool USoraEquipmentComponent::EquipCampaignWeapon(int32 NewWeaponId)
 {
     ASoraPlayerCharacter* H=Hero();
     if(bReloading||bCommittedStrike||
-        (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)) return false;
+        (bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)||
+        !CampaignUnlocked(*H,NewWeaponId)||!CanHold(*H,NewWeaponId)) return false;
     bBowDrawing=false; bFireHeld=false; bGuardHeld=false; bSheathed=false;
     AmmoByWeapon[H->WeaponId]=Ammo;
     H->WeaponId=NewWeaponId; Ammo=AmmoByWeapon[H->WeaponId];
