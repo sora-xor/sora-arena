@@ -1,6 +1,8 @@
 #include "SoraEnemy.h"
+#include "SoraSettings.h"
 #include "SoraBoss.h"
 #include "Combat/SoraCombatEffects.h"
+#include "Combat/SoraBossCatalog.h"
 #include "Combat/SoraDamage.h"
 #include "Combat/SoraEnemyCatalog.h"
 #include "Combat/SoraStealth.h"
@@ -27,8 +29,6 @@ constexpr float ChestHeight = 35.f;
 constexpr float ShellGravity = 980.f;
 // A squad's bursts are offset by slot so it never fires in unison.
 constexpr float SlotRecoverySeconds = .2f;
-const FLinearColor Amber(1.f, .68f, .16f);
-const FLinearColor Cyan(.04f, .85f, .95f);
 
 // The catalog weapon each body carries until its own kit exists: a visual only.
 int32 HeldWeapon(ESoraEnemyBehavior Behavior)
@@ -274,16 +274,22 @@ void ASoraEnemy::Commit(int32 Index,ASoraCharacterBase& Target)
 {
     const FSoraEnemyAttack& Attack=Kind->Attacks[Index];
     const float Time=Now();
+    // The settings' campaign difficulty scales every windup as it scales the
+    // bosses' (bosses.json: +30% on Easy, -15% on Hard); damage never changes.
+    FSoraBossCatalog& Bosses=FSoraBossCatalog::Get();
+    const int32 WindupMs=Bosses.IsReady()||Bosses.Load()?SoraBossRules::ForDifficulty(Attack.WindupMs,
+        static_cast<SoraBossRules::EDifficulty>(static_cast<uint8>(SoraAccessibility::CampaignDifficulty(this))),
+        Bosses.EasyWindupPermille,Bosses.HardWindupPermille):Attack.WindupMs;
     AttackIndex=Index; AttackTarget=&Target; Phase=EPhase::Windup;
-    PhaseStartedAt=Time; PhaseEndsAt=Time+Attack.WindupMs/1000.f; NextLaserAt=Time;
+    PhaseStartedAt=Time; PhaseEndsAt=Time+WindupMs/1000.f; NextLaserAt=Time;
     LockedDirection=(Target.GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::ChestHeight)-Eye()).GetSafeNormal();
     LockedPoint=Feet(Target);
-    Telegraph(Attack,Attack.WindupMs/1000.f);
+    Telegraph(Attack,WindupMs/1000.f);
     if(Attack.Kind==ESoraEnemyAttackKind::Melee) if(USoraGameEvents* Events=USoraGameEvents::Get(this))
     {
         FSoraMeleeCommittedEvent Committed;
         Committed.Attacker=this; Committed.WeaponId=WeaponId; Committed.Direction=LockedDirection;
-        Committed.WindupSeconds=Attack.WindupMs/1000.f;
+        Committed.WindupSeconds=WindupMs/1000.f;
         Events->OnMeleeCommitted.Broadcast(Committed);
     }
     Announce(ESoraEnemyCue::AttackWindup,Attack.Cue);
@@ -297,25 +303,25 @@ void ASoraEnemy::Telegraph(const FSoraEnemyAttack& Attack,float Life)
     switch(Attack.Kind)
     {
     case ESoraEnemyAttackKind::Melee:
-        if(Attack.ArcMilli<=-1000) SoraDamage::Ring(World,Ground,Attack.MaxRangeCm,SoraEnemyBody::Amber,Life);
-        else SoraDamage::Beam(World,From,From+LockedDirection*Attack.MaxRangeCm,SoraEnemyBody::Amber,2.f,Life);
+        if(Attack.ArcMilli<=-1000) SoraDamage::Ring(World,Ground,Attack.MaxRangeCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),Life);
+        else SoraDamage::Beam(World,From,From+LockedDirection*Attack.MaxRangeCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),2.f,Life);
         return;
     case ESoraEnemyAttackKind::Burst:
         // The raised stock: a short line along the aim.
-        SoraDamage::Beam(World,From,From+LockedDirection*160.f,SoraEnemyBody::Amber,1.2f,Life);
+        SoraDamage::Beam(World,From,From+LockedDirection*160.f,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),1.2f,Life);
         return;
     case ESoraEnemyAttackKind::LockShot:
         // The glint's laser tracks the target (AdvanceAttack).
         return;
     case ESoraEnemyAttackKind::Lob:
         // The launcher is raised; the landing ring shows for the whole flight.
-        SoraDamage::Beam(World,From,From+FVector(0.f,0.f,120.f),SoraEnemyBody::Amber,1.5f,Life);
+        SoraDamage::Beam(World,From,From+FVector(0.f,0.f,120.f),SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),1.5f,Life);
         return;
     case ESoraEnemyAttackKind::Beam:
-        SoraDamage::Beam(World,Ground,Ground+Flat*Attack.MaxRangeCm,SoraEnemyBody::Cyan,3.f,Life);
+        SoraDamage::Beam(World,Ground,Ground+Flat*Attack.MaxRangeCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Lock),3.f,Life);
         return;
     case ESoraEnemyAttackKind::Net:
-        SoraDamage::Ring(World,LockedPoint+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraEnemyBody::Cyan,Life);
+        SoraDamage::Ring(World,LockedPoint+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Lock),Life);
         return;
     }
 }
@@ -338,7 +344,7 @@ void ASoraEnemy::AdvanceAttack()
         {
             const FVector Chest=Target->GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::ChestHeight);
             LockedDirection=(Chest-Eye()).GetSafeNormal();
-            SoraDamage::Beam(GetWorld(),Eye(),Chest,SoraEnemyBody::Cyan,.8f,.12f);
+            SoraDamage::Beam(GetWorld(),Eye(),Chest,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Lock),.8f,.12f);
             NextLaserAt=Time+.1f;
         }
         if(Time>=PhaseEndsAt) Release(Attack,*Target);
@@ -437,7 +443,7 @@ void ASoraEnemy::FireRound(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Ta
     ++RangedShots; ++ShotsSinceRelocation;
     const FVector Direction=(To-From).GetSafeNormal();
     const FVector End=To+(bMiss?FVector(0,80,60):FVector::ZeroVector);
-    SoraDamage::Beam(GetWorld(),From,End,Attack.bCyanTelegraph?SoraEnemyBody::Cyan:FLinearColor(1,.12,.3),1.7f);
+    SoraDamage::Beam(GetWorld(),From,End,Attack.bCyanTelegraph?SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Lock):FLinearColor(1,.12,.3),1.7f);
     if(USoraGameEvents* Events=USoraGameEvents::Get(this))
     {
         FSoraWeaponFiredEvent Fired;
@@ -464,7 +470,7 @@ void ASoraEnemy::Lob(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)
     Shell->Damage=Attack.Damage; Shell->Radius=Attack.RadiusCm; Shell->ArmingCm=Attack.ArmingCm;
     UGameplayStatics::FinishSpawningActor(Shell,Shell->GetActorTransform());
     ++ShotsSinceRelocation;
-    SoraDamage::Ring(GetWorld(),Landing+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraEnemyBody::Amber,Flight);
+    SoraDamage::Ring(GetWorld(),Landing+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),Flight);
     if(USoraGameEvents* Events=USoraGameEvents::Get(this))
     {
         FSoraWeaponFiredEvent Fired;

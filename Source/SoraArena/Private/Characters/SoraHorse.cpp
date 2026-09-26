@@ -1,5 +1,7 @@
 #include "SoraHorse.h"
 #include "SoraCatalog.h"
+#include "SoraGameMode.h"
+#include "SoraSettings.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
 #include "Camera/CameraComponent.h"
@@ -251,7 +253,11 @@ void ASoraHorse::TickRidden(int32 DeltaMs,float DeltaSeconds)
     Step(Ride,Rules,Control);
     float Yaw=GetActorRotation().Yaw;
     const float Turn=TurnDegS[Index(Ride.Gait)];
-    if(FMath::Abs(Steer)>.2f||!bAutoSteer||!Road) Yaw+=Steer*Turn*DeltaSeconds;
+    // A ride that allows it (every chapter ride's auto_steer: setting) steers
+    // itself while the player's auto-steer setting is on.
+    const ASoraGameMode* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    const bool bSteered=bAutoSteer&&Road&&Mode&&Mode->Settings()&&Mode->Settings()->AutoSteer();
+    if(FMath::Abs(Steer)>.2f||!bSteered) Yaw+=Steer*Turn*DeltaSeconds;
     else if(Ride.Gait!=EGait::Halt)
     {
         // Auto-steer (accessibility): she keeps to the road a little ahead of her.

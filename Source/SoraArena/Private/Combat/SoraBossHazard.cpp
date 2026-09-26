@@ -1,4 +1,5 @@
 #include "Combat/SoraBossHazard.h"
+#include "SoraSettings.h"
 #include "Combat/SoraBossCatalog.h"
 #include "Combat/SoraCombatEffects.h"
 #include "Combat/SoraDamage.h"
@@ -80,7 +81,8 @@ void ASoraBossHazard::BeginWard(ASoraBoss& From, int32 Ward, int32 Place)
 
 void ASoraBossHazard::BuildZone(bool bCyan)
 {
-    const FLinearColor Colour = bCyan ? SoraHazardLook::Cyan : SoraHazardLook::Amber;
+    // A zone is a telegraph: the settings' palette (SoraAccessibility).
+    const FLinearColor Colour = SoraAccessibility::TelegraphColor(this, bCyan ? SoraAccessibility::ETelegraph::Lock : SoraAccessibility::ETelegraph::Cleave);
     Fill = ASoraWorldBuilder::Shape(this, RootComponent, TEXT("ZoneFill"), TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
         FVector(0.f, 0.f, 1.f), FVector(RadiusCm / 50.f, RadiusCm / 50.f, .02f), Colour);
     for (int32 Segment = 0; Segment < SoraHazardLook::RimSegments; ++Segment)

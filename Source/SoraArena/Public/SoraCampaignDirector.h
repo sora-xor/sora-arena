@@ -18,6 +18,7 @@ struct FSoraDamagedEvent;
 struct FSoraDefenseEvent;
 struct FSoraDialogueCue;
 struct FSoraMarobashiEvent;
+struct FSoraStealthDetection;
 struct FSoraPrompt;
 
 // A queued line as the HUD and voice playback need it: the speaker's names,
@@ -300,6 +301,15 @@ private:
     // A dojo awase (the chapter-one guard met within the parry window), which
     // a 転 lesson's flank must follow; and the hero's 転 itself.
     void HeroGuarded(const FSoraDefenseEvent& Event);
+    // USoraStealth: a stealth beat (or guarded work) opens the zone on the
+    // settings' difficulty, and the zone's detection, alarm and found bodies
+    // reach the beat as alert_state:alert, ai_event:alarm_raised and
+    // ai_event:body_found.
+    void OpenStealthZone();
+    void CloseStealthZone();
+    void StealthDetected(const FSoraStealthDetection& Detection);
+    void StealthAlarm(ASoraEnemy* By);
+    void StealthBodyFound(ASoraEnemy* Body, ASoraEnemy* Finder);
     void HeroRolled(const FSoraMarobashiEvent& Event);
     // The next bout of a lesson duel opens, numbered across the chapter.
     void OpenBout();

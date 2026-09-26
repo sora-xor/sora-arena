@@ -10,6 +10,7 @@
 #include "SoraHorse.h"
 #include "SoraMountRules.h"
 #include "SoraPlayerCharacter.h"
+#include "SoraSettings.h"
 #include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
 #include "Camera/CameraComponent.h"
@@ -160,7 +161,9 @@ bool TackUpAndFirstRide(FAutomationTestBase& Test)
         Campaign->IsMounted() && Hero->GetAttachParentActor() == Ride.Horse() && Campaign->CurrentPrompt() != nullptr);
     bOk &= Test.TestTrue(TEXT("The rider's eye sits above her back"),
         FMath::IsNearlyEqual(Hero->GetCamera()->GetComponentLocation().Z, ASoraHorse::RiderEyeCm, 12.f));
-    // Legs on: she walks on at the lane's 160 cm/s and keeps to the road.
+    // Legs on: she walks on at the lane's 160 cm/s and keeps to the road, the
+    // player's auto-steer setting on (every ride's auto_steer is the setting).
+    Ride.Mode()->Settings()->SetAutoSteer(true);
     if (!Ride.Down(EKeys::W) || !Ride.Frames(60))
         return false;
     const FSoraZone& Road = Campaign->ActiveChapter()->Space.Zones[Beat.Space.Zone];

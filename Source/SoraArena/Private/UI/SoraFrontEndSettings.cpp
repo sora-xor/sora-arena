@@ -478,12 +478,20 @@ bool USoraFrontEnd::CaptureKey(const FKey& Key)
     FName TakenBy;
     int32 TakenAxis = 0;
     const SoraText::FLine KeyName = SoraUI::KeyLabel(Key);
+    const FKey OldKey = Hero ? Hero->ControlKey(CaptureIndex, Key.IsGamepadKey()) : EKeys::Invalid;
     switch (Hero ? Hero->RemapControl(CaptureIndex, Key, &TakenBy, &TakenAxis) : ESoraRemapResult::NoControl)
     {
     case ESoraRemapResult::Done:
         Pop();
         SetBanner(SoraText::Format(NSLOCTEXT("SoraArena.Controls", "Banner.Rebound", "「{Control}」を {Key} にした。"),
             {{TEXT("Control"), SoraUI::ControlName(Control.Name, Control.Axis)}, {TEXT("Key"), KeyName}}));
+        Changed();
+        return true;
+    case ESoraRemapResult::Swapped:
+        Pop();
+        SetBanner(SoraText::Format(NSLOCTEXT("SoraArena.Controls", "Banner.Swapped", "「{Control}」を {Key} にした。「{Other}」は {OldKey} に移った。"),
+            {{TEXT("Control"), SoraUI::ControlName(Control.Name, Control.Axis)}, {TEXT("Key"), KeyName},
+                {TEXT("Other"), SoraUI::ControlName(TakenBy, TakenAxis)}, {TEXT("OldKey"), SoraUI::KeyLabel(OldKey)}}));
         Changed();
         return true;
     case ESoraRemapResult::Taken:

@@ -54,6 +54,7 @@ public:
     void Spook() { bSpookPending = true; }
     // The fastest gait the road, a forced stretch or a laden pack mare allows.
     SoraMountRules::EGait Cap = SoraMountRules::EGait::Gallop;
+    // The ride allows auto-steer; the player's setting (USoraSettings::AutoSteer) turns it on.
     bool bAutoSteer = false;
     SoraMountRules::EGait Gait() const { return Ride.Gait; }
     int32 StaminaPoints() const { return Ride.Stamina / 1000; }

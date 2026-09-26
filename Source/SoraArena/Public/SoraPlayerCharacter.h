@@ -22,6 +22,9 @@ enum class ESoraRemapResult : uint8
     Unbindable,
     // Another control can use the key in the same game state.
     Taken,
+    // A pad button another rebindable control held: the two traded buttons
+    // (every pad button has a default job, so a pad rebind swaps).
+    Swapped,
 };
 
 // Nyaakoto, the possessed first-person hero. Owns input (gated by
@@ -64,12 +67,14 @@ public:
     // Local controls, saved to the game mode's control slot. Only the
     // SoraInput::Remappable controls can be rebound, and only while a menu is
     // open: each has one keyboard-or-mouse key and one pad button (movement
-    // halves a keyboard key only), and a key that another control can use in
-    // the same game state is refused. Wallet, menu and campaign commands are
-    // never rebindable.
+    // halves a keyboard key only). A key that another control can use in the
+    // same game state is refused, except that a pad button held by another
+    // rebindable control trades places with this control's own. Wallet, menu
+    // and campaign commands are never rebindable.
     UFUNCTION(BlueprintCallable, Category="SORA|Controls") bool RemapCombatAction(FName ActionName, FKey NewKey);
     // Rebinds Remappable[Index] in NewKey's slot. On Taken, TakenBy and
-    // TakenAxis name the control that holds the key.
+    // TakenAxis name the control that holds the key; on Swapped, the control
+    // that took this one's old pad button.
     ESoraRemapResult RemapControl(int32 Index, const FKey& NewKey, FName* TakenBy = nullptr, int32* TakenAxis = nullptr);
     // Remappable[Index]'s key in one slot, or EKeys::Invalid.
     FKey ControlKey(int32 Index, bool bPad) const;

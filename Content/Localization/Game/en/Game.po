@@ -145,6 +145,12 @@ msgctxt "SoraArena.Controls,Banner.Rebound"
 msgid "「{Control}」を {Key} にした。"
 msgstr "{Control} is now on {Key}."
 
+#. Key:	Banner.Swapped
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Banner.Swapped"
+msgid "「{Control}」を {Key} にした。「{Other}」は {OldKey} に移った。"
+msgstr "{Control} is now on {Key}; {Other} moved to {OldKey}."
+
 #. Key:	Binding.Hint
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
 msgctxt "SoraArena.Controls,Binding.Hint"

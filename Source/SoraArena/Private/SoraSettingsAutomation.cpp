@@ -300,6 +300,7 @@ bool FSoraControlsRemapTest::RunTest(const FString& Parameters)
     if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
         return false;
     const int32 Fire = Control(TEXT("Fire")), Melee = Control(TEXT("Melee")), Jump = Control(TEXT("Jump")), Reload = Control(TEXT("Reload"));
+    const int32 Crouch = Control(TEXT("Crouch"));
     const int32 Forward = Control(TEXT("MoveForward"), 1);
     FScope Scope(*this, TEXT("ControlsRemap"));
     if (!Scope.Start() || !TestTrue(TEXT("The keyboard opens Controls"), Scope.OpenSettings(Keyboard, EAction::OpenControls) && Scope.On(EScreen::Controls)))
@@ -346,21 +347,23 @@ bool FSoraControlsRemapTest::RunTest(const FString& Parameters)
     Scope.Key(Pad.Accept);
     TestTrue(TEXT("The pad cannot rebind movement"), !FrontEnd->IsCapturing() && FrontEnd->BannerEnglish.Contains(TEXT("keyboard")));
 
-    // Pad: a taken button and a stick direction are refused; a free button binds;
-    // a button shared across states that never overlap is allowed.
+    // Pad: a stick direction is refused. Every pad button has a default job,
+    // so a button another control holds trades places with this one's; a
+    // button shared across states that never overlap is allowed.
     Scope.FocusOn(Pad, EAction::Binding, Jump);
     Scope.Key(Pad.Accept);
     TestTrue(TEXT("A on Jump opens a pad rebind"), FrontEnd->IsCapturing() && FrontEnd->CaptureDevice() == SoraUI::EDevice::Gamepad);
-    Scope.Key(EKeys::Gamepad_FaceButton_Left);
-    TestTrue(TEXT("X is refused: it reloads"), FrontEnd->IsCapturing() && FrontEnd->ConfirmEnglish().Contains(TEXT("Reload")));
     Scope.Key(EKeys::Gamepad_LeftStick_Up);
     TestTrue(TEXT("A stick direction is refused"), FrontEnd->IsCapturing() && FrontEnd->ConfirmEnglish().Contains(TEXT("cannot be bound")));
     Scope.Key(EKeys::Gamepad_RightThumbstick);
-    TestEqual(TEXT("R3 binds Jump"), Hero->ControlKey(Jump, true), EKeys::Gamepad_RightThumbstick);
+    TestTrue(TEXT("R3 trades places: Jump takes it and Crouch takes A"), !FrontEnd->IsCapturing() &&
+        Hero->ControlKey(Jump, true) == EKeys::Gamepad_RightThumbstick && Hero->ControlKey(Crouch, true) == EKeys::Gamepad_FaceButton_Bottom &&
+        FrontEnd->BannerEnglish.Contains(TEXT("Crouch moved to")));
     Scope.FocusOn(Pad, EAction::Binding, Reload);
     Scope.Key(Pad.Accept);
     Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
-    TestTrue(TEXT("A binds Reload while Enter keeps it on cards and results"), Hero->ControlKey(Reload, true) == EKeys::Gamepad_FaceButton_Bottom &&
+    TestTrue(TEXT("A binds Reload while Enter keeps it on cards and results, and Crouch takes X"),
+        Hero->ControlKey(Reload, true) == EKeys::Gamepad_FaceButton_Bottom && Hero->ControlKey(Crouch, true) == EKeys::Gamepad_FaceButton_Left &&
         Hero->GetActionKeys(TEXT("Enter")).Contains(EKeys::Gamepad_FaceButton_Bottom));
     TestFalse(TEXT("Menu, Enter and Subtitles are not rebindable"), Hero->RemapCombatAction(TEXT("Menu"), EKeys::K) ||
         Hero->RemapCombatAction(TEXT("Enter"), EKeys::K) || Hero->RemapCombatAction(TEXT("Subtitles"), EKeys::K));
@@ -382,7 +385,7 @@ bool FSoraControlsRemapTest::RunTest(const FString& Parameters)
     Hero = Scope.World->Player();
     TestTrue(TEXT("Rebound keys survive the restart"), Hero->ControlKey(Fire, false) == EKeys::F && Hero->ControlKey(Melee, false) == EKeys::MiddleMouseButton &&
         Hero->ControlKey(Forward, false) == EKeys::I && Hero->ControlKey(Jump, true) == EKeys::Gamepad_RightThumbstick &&
-        Hero->ControlKey(Reload, true) == EKeys::Gamepad_FaceButton_Bottom);
+        Hero->ControlKey(Reload, true) == EKeys::Gamepad_FaceButton_Bottom && Hero->ControlKey(Crouch, true) == EKeys::Gamepad_FaceButton_Left);
     const APlayerController* Controller = Cast<APlayerController>(Hero->GetController());
     FInputAxisProperties LeftStick;
     Controller->PlayerInput->GetAxisProperties(EKeys::Gamepad_LeftX, LeftStick);
@@ -419,7 +422,8 @@ bool FSoraControlsRemapTest::RunTest(const FString& Parameters)
     const USoraControlSaveGame* Saved = Cast<USoraControlSaveGame>(UGameplayStatics::LoadGameFromSlot(FSoraAutomationWorld::ControlSlot(Scope.Slot), 0));
     TestTrue(TEXT("Reset restores DefaultInput.ini and clears the saved bindings"), Hero->ControlKey(Fire, false) == EKeys::LeftMouseButton &&
         Hero->ControlKey(Forward, false) == EKeys::W && Hero->ControlKey(Jump, true) == EKeys::Gamepad_FaceButton_Bottom &&
-        Hero->ControlKey(Reload, true) == EKeys::Gamepad_FaceButton_Left && Saved && Saved->Bindings.Num() == 0);
+        Hero->ControlKey(Reload, true) == EKeys::Gamepad_FaceButton_Left && Hero->ControlKey(Crouch, true) == EKeys::Gamepad_RightThumbstick &&
+        Saved && Saved->Bindings.Num() == 0);
     TestTrue(TEXT("Reset keeps sensitivity and the dead zones"), Hero->GetMouseSensitivity() == 1.25f && FMath::IsNearlyEqual(Hero->GetMoveDeadZone(), .16f));
 
     // A saved swap made through a free button replays as a whole. The profile

@@ -1,6 +1,7 @@
 #include "SoraCampaignDirector.h"
 #include "Game/SoraCampaignReach.h"
 #include "Combat/SoraBossCatalog.h"
+#include "Combat/SoraStealth.h"
 #include "SoraBoss.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalog.h"
@@ -94,6 +95,12 @@ void USoraCampaignDirector::BeginPlay()
         Events->OnGuarded.AddUObject(this,&USoraCampaignDirector::HeroGuarded);
         Events->OnMarobashi.AddUObject(this,&USoraCampaignDirector::HeroRolled);
     }
+    if(USoraStealth* Stealth=USoraStealth::Get(this))
+    {
+        Stealth->OnDetected.AddUObject(this,&USoraCampaignDirector::StealthDetected);
+        Stealth->OnAlarm.AddUObject(this,&USoraCampaignDirector::StealthAlarm);
+        Stealth->OnBodyFound.AddUObject(this,&USoraCampaignDirector::StealthBodyFound);
+    }
 }
 void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
 {
@@ -108,6 +115,47 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     Fire(TEXT("item_dropped"));
     Notify(TEXT("荷を落とした。拾いに戻ろう。"),TEXT("You dropped your load. Go back for it."),4.f);
     UpdateObjective();
+}
+void USoraCampaignDirector::OpenStealthZone()
+{
+    USoraStealth* Stealth=USoraStealth::Get(this);
+    if(!Stealth) return;
+    if(Stealth->IsZoneActive()) Stealth->EndZone();
+    const FSoraBeat* Beat=ActiveBeatData();
+    if(!Beat||(!Beat->Is(SoraBeatRules::EType::StealthZone)&&!Task.PauseWhenSeen)) return;
+    FSoraStealthZone Zone;
+    Zone.Difficulty=static_cast<SoraStealthRules::EDifficulty>(static_cast<uint8>(SoraAccessibility::CampaignDifficulty(this)));
+    Zone.OnDetected=Task.OnDetected==SoraBeatRules::EDetected::Restart?SoraStealthRules::EOnDetected::Restart
+        :Task.OnDetected==SoraBeatRules::EDetected::Reinforce?SoraStealthRules::EOnDetected::Reinforce:SoraStealthRules::EOnDetected::Combat;
+    // Rear takedowns once the story has taught them (bible §12.1 takedown).
+    const int32 Takedown=FSoraCatalog::Get().Mechanics.Find(TEXT("takedown"));
+    Zone.bRearTakedowns=Takedown!=INDEX_NONE&&(BeatState.MechanicsMask&(1u<<Takedown))!=0u;
+    Stealth->BeginZone(Zone);
+}
+void USoraCampaignDirector::CloseStealthZone()
+{
+    if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->IsZoneActive()) Stealth->EndZone();
+}
+void USoraCampaignDirector::StealthDetected(const FSoraStealthDetection& Detection)
+{
+    if(!ActiveBeatData()) return;
+    // On Easy the zone answers a detection with a fight (SoraStealthRules::
+    // Response): the hero is seen, but the beat is not failed or reinforced.
+    if(Detection.Response==SoraStealthRules::EOnDetected::Combat&&Task.OnDetected!=SoraBeatRules::EDetected::Combat)
+    {
+        bHeroSeen=true;
+        Fire(TEXT("ai_event:detected"));
+        return;
+    }
+    RaiseBeatEvent(TEXT("alert_state:alert"));
+}
+void USoraCampaignDirector::StealthAlarm(ASoraEnemy* By)
+{
+    if(ActiveBeatData()) RaiseBeatEvent(TEXT("ai_event:alarm_raised"));
+}
+void USoraCampaignDirector::StealthBodyFound(ASoraEnemy* Body,ASoraEnemy* Finder)
+{
+    if(ActiveBeatData()) RaiseBeatEvent(TEXT("ai_event:body_found"));
 }
 void USoraCampaignDirector::HeroGuarded(const FSoraDefenseEvent& Event)
 {
@@ -316,6 +364,9 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed) M.TitleCardTime=Task.DurationMs/1000.f;
     // The beat's place: a travel cut to its entry, its kit, horse and camera.
     EnterBeatSpace(bResumed);
+    // A stealth beat opens its zone before its guards take their posts; a
+    // restored checkpoint opens it afresh.
+    OpenStealthZone();
     if(Task.Goal==SoraBeatRules::EGoal::Lines&&Beat.LinesEvent==TEXT("beat_start")) StartLines();
     SpawnCast(bKeepPupil);
     Fire(TEXT("beat_start"));
@@ -527,7 +578,10 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     if(ActiveBeatData()!=&Beat) return;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
     SoraBeatRules::FTick Step;
-    Step.DeltaMs=DeltaMs; Step.AtTask=HeroAtTask(); Step.Contested=Contested(); Step.Seen=bHeroSeen;
+    // Work under guard pauses while any guard sees the hero or is alarmed.
+    const USoraStealth* Stealth=USoraStealth::Get(this);
+    Step.DeltaMs=DeltaMs; Step.AtTask=HeroAtTask(); Step.Contested=Contested();
+    Step.Seen=bHeroSeen||(Stealth&&Stealth->IsZoneActive()&&Stealth->IsWorkPaused());
     SoraBeatRules::Tick(TaskState,Task,Step);
     // Trigger volumes the hero walks or rides into raise their events: a
     // dialogue waiting on one starts, and the waves it names come.
@@ -807,6 +861,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 }
 void USoraCampaignDirector::ClearEncounter()
 {
+    CloseStealthZone();
     ClearOpponents();
     ClearOfflineProjectiles();
     ClearHorses();

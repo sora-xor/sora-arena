@@ -9,8 +9,10 @@ generated chapter files, and checks the bible's §12.3 rules:
 2. production sites 0-2 each restored once per chapter, in the order the
    beats' requires chain enforces;
 3. weapons 0-20 each unlocked exactly once, at the §11 beat, in §11 order;
-4. boss ids from §8 (and bosses.json when that file exists), and mutō-dori
-   attacks only in fights whose defeat or finisher allows mutō-dori;
+4. boss ids from §8, each staged by its bosses.json fight at that beat, the
+   rival duels bosses.json stages at theirs, wave and guard enemy types from
+   enemies.json (whose roster is the bible's §7), and mutō-dori attacks only
+   in fights whose defeat or finisher allows mutō-dori;
 5. mounted weapons within {0, 18, 19}, and registry entries only on production
    tasks and cargo rides;
 6. every line bilingual, spoken by a catalog speaker, at most 17 EN
@@ -121,15 +123,9 @@ def load():
     campaign = json.loads((DATA / "campaign/campaign.json").read_text())
     chapters = [json.loads((DATA / entry["file"]).read_text()) for entry in campaign["chapters"]]
     legacy = json.loads(LEGACY_LINES.read_text())["lines"]
-    bosses_path = DATA / "bosses.json"
-    bosses = json.loads(bosses_path.read_text()) if bosses_path.is_file() else None
-    return catalog, campaign, chapters, legacy, bosses
-
-
-def boss_ids(bosses):
-    """bosses.json is L3's file; accept a list of rows or an id-keyed map under `bosses`."""
-    rows = bosses.get("bosses", bosses) if isinstance(bosses, dict) else bosses
-    return set(rows) if isinstance(rows, dict) else {row["id"] for row in rows}
+    # The AI lane's fights and archetypes (validate_enemies.py checks their own rules).
+    roster = {"bosses": json.loads((DATA / "bosses.json").read_text()), "enemies": json.loads((DATA / "enemies.json").read_text())}
+    return catalog, campaign, chapters, legacy, roster
 
 
 def requires_closure(beats):
@@ -458,7 +454,7 @@ def check_space(chapter, beats, rewards, labels, where):
         on_floor(pickup["zone"], pickup["at"], f"{where} pickup {pickup['collectible']}")
 
 
-def validate(catalog, campaign, chapters, legacy, bosses=None):
+def validate(catalog, campaign, chapters, legacy, roster):
     speakers = {speaker["id"] for speaker in catalog["dialogue_speakers"]}
     require(catalog["schema_version"] == 4 and "chapters" not in catalog,
             "catalog.json must be schema 4 without the schema-3 chapter list")
@@ -474,8 +470,11 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
                     f"campaign {group} {row['id']}: bilingual label")
     labels = {group: {row["id"] for row in campaign[group]} for group in ("step_kinds", "targets")}
     categories = {row["id"]: row for row in campaign["collectible_categories"]}
-    known_bosses = set(BOSSES) if bosses is None else set(BOSSES) & boss_ids(bosses)
+    fights = {row["beat"]: row for row in roster["bosses"]["bosses"] + roster["bosses"]["duels"]}
+    known_bosses = set(BOSSES) & {row["id"] for row in roster["bosses"]["bosses"]}
     require(known_bosses == set(BOSSES), f"bosses.json lacks {sorted(set(BOSSES) - known_bosses)}")
+    archetypes = {row["id"] for row in roster["enemies"]["archetypes"]}
+    require(archetypes == set(ENEMIES), f"enemies.json's roster {sorted(archetypes)} is not the bible's §7")
 
     # Story flags: set once each by a beat, read by a later chapter's conditional lines.
     flags = campaign["story_flags"]
@@ -562,6 +561,14 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
                 require(set(params["weapons"]) <= MOUNTED_WEAPONS, f"{beat['id']}: mounted weapons {params['weapons']}")
             if beat["type"] == "boss":
                 require(params["boss"] in known_bosses, f"{beat['id']}: unknown boss {params['boss']!r}")
+                require(fights.get(beat["id"], {}).get("id") == params["boss"],
+                        f"{beat['id']}: bosses.json does not stage {params['boss']} at this beat")
+            # A rival duel bosses.json stages here is fought against its opponent.
+            if beat["id"] in fights and fights[beat["id"]]["id"].startswith("duel_"):
+                require(beat["type"] == "duel" and beat["task"]["opponent"] == fights[beat["id"]]["opponent"],
+                        f"{beat['id']}: bosses.json stages {fights[beat['id']]['id']} against another opponent")
+            for guard in beat["task"]["guards"]:
+                require(guard in archetypes, f"{beat['id']}: unknown guard type {guard!r}")
             waves = params.get("waves", [])
             lethal = 0
             for wave in waves:
@@ -570,7 +577,7 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
                     if kind in TRAINING_TARGETS:
                         require(params.get("target_kind") == "mato", f"{beat['id']}: training target outside the range")
                     else:
-                        require(kind in ENEMIES, f"{beat['id']}: unknown enemy type {kind!r}")
+                        require(kind in archetypes, f"{beat['id']}: enemies.json has no {kind!r}")
                     if kind == "bound_conscript":
                         require(kind in params["nonlethal_types"], f"{beat['id']}: conscripts must be nonlethal")
                     if kind not in params.get("nonlethal_types", []):
@@ -715,7 +722,7 @@ def validate(catalog, campaign, chapters, legacy, bosses=None):
             "checkpoints": sum(len(chapter["checkpoints"]) for chapter in chapters)}
 
 
-def self_test(catalog, campaign, chapters, legacy):
+def self_test(catalog, campaign, chapters, legacy, roster):
     """Every mutation below breaks one rule; the validator must reject each."""
     def beat(data, beat_id):
         chapter = data[2][int(beat_id[2:4]) - 1]
@@ -785,6 +792,19 @@ def self_test(catalog, campaign, chapters, legacy):
     def unknown_boss(data):
         beat(data, "ch02.b15")["params"]["boss"] = "boss_nobody"
 
+    def boss_at_the_wrong_beat(data):
+        next(row for row in data[4]["bosses"]["bosses"] if row["id"] == "boss_dunark")["beat"] = "ch02.b14"
+
+    def duel_against_another(data):
+        next(row for row in data[4]["bosses"]["duels"] if row["beat"] == "ch06.b09")["opponent"] = "npc_sekireisai"
+
+    def unknown_archetype(data):
+        wave = beat(data, "ch02.b02")["params"]["waves"][0]
+        wave["enemies"][0]["type"] = "enforcer_musket"
+
+    def guard_without_archetype(data):
+        data[4]["enemies"]["archetypes"] = [row for row in data[4]["enemies"]["archetypes"] if row["id"] != "drone"]
+
     def optional_site(data):
         beat(data, "ch01.b08")["site"], beat(data, "ch01.b09")["site"] = 2, None
 
@@ -843,15 +863,16 @@ def self_test(catalog, campaign, chapters, legacy):
     def short_escort(data):
         next(beat for beat in data[2][7]["beats"] if beat["id"] == "ch08.b07")["task"]["path_cm"] -= 400
 
-    validate(*copy.deepcopy((catalog, campaign, chapters, legacy)))
+    validate(*copy.deepcopy((catalog, campaign, chapters, legacy, roster)))
     mutations = (anchor_in_wall, short_route, missing_volume, zones_collide, lost_collectible, unlabelled_step,
                  yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, cache_without_save,
                  boss_cue_time, unraised_rate_band, bout_numbered_per_beat,
                  gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,
-                 lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition)
+                 lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition,
+                 boss_at_the_wrong_beat, duel_against_another, unknown_archetype, guard_without_archetype)
     for mutate in mutations:
-        data = copy.deepcopy((catalog, campaign, chapters, legacy))
+        data = copy.deepcopy((catalog, campaign, chapters, legacy, roster))
         mutate(data)
         try:
             validate(*data)
@@ -862,9 +883,9 @@ def self_test(catalog, campaign, chapters, legacy):
 
 
 def check_project():
-    catalog, campaign, chapters, legacy, bosses = load()
-    summary = validate(catalog, campaign, chapters, legacy, bosses)
-    rejected = self_test(catalog, campaign, chapters, legacy)
+    catalog, campaign, chapters, legacy, roster = load()
+    summary = validate(catalog, campaign, chapters, legacy, roster)
+    rejected = self_test(catalog, campaign, chapters, legacy, roster)
     return (f"Campaign schema 4 passed the bible's eight rules: {summary['beats']} beats, {summary['lines']} "
             f"bilingual lines on {summary['triggers']} triggers, {summary['checkpoints']} checkpoints, "
             f"{summary['target_s']} target seconds, 21 weapon unlocks in §11 order, 25 schema-3 cues verbatim; "

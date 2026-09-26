@@ -438,21 +438,32 @@ void BindSlot(UPlayerInput& Input,const SoraInput::FRemappable& Control,const FK
 bool ASoraPlayerCharacter::RemapCombatAction(FName ActionName,FKey NewKey)
 {
     const int32 Index=SoraInput::FindRemappable(*ActionName.ToString(),0);
-    return Index!=INDEX_NONE&&RemapControl(Index,NewKey)==ESoraRemapResult::Done;
+    if(Index==INDEX_NONE) return false;
+    const ESoraRemapResult Result=RemapControl(Index,NewKey);
+    return Result==ESoraRemapResult::Done||Result==ESoraRemapResult::Swapped;
 }
 ESoraRemapResult ASoraPlayerCharacter::RemapControl(int32 Index,const FKey& NewKey,FName* TakenBy,int32* TakenAxis)
 {
-    const ESoraRemapResult Result=ApplyControlMapping(Index,NewKey,true,TakenBy,TakenAxis);
-    if(Result!=ESoraRemapResult::Done||!ControlProfile) return Result;
-    const SoraInput::FRemappable& Control=SoraInput::Remappable[Index];
     const bool bPad=NewKey.IsGamepadKey();
-    ControlProfile->Bindings.RemoveAll([&](const FSoraControlBinding& Binding)
+    const FKey OldKey=ControlKey(Index,bPad);
+    FName Other; int32 OtherAxis=0;
+    const ESoraRemapResult Result=ApplyControlMapping(Index,NewKey,true,&Other,&OtherAxis);
+    if(TakenBy) *TakenBy=Other;
+    if(TakenAxis) *TakenAxis=OtherAxis;
+    if((Result!=ESoraRemapResult::Done&&Result!=ESoraRemapResult::Swapped)||!ControlProfile) return Result;
+    // The profile keeps each changed slot: this control's, and on a swap the other's.
+    const auto Store=[this,bPad](const SoraInput::FRemappable& Control,const FKey& Key)
     {
-        return Binding.ActionName==FName(Control.Name)&&Binding.Axis==Control.Axis&&Binding.Key.IsGamepadKey()==bPad;
-    });
-    FSoraControlBinding Binding;
-    Binding.ActionName=Control.Name; Binding.Axis=Control.Axis; Binding.Key=NewKey;
-    ControlProfile->Bindings.Add(Binding);
+        ControlProfile->Bindings.RemoveAll([&](const FSoraControlBinding& Binding)
+        {
+            return Binding.ActionName==FName(Control.Name)&&Binding.Axis==Control.Axis&&Binding.Key.IsGamepadKey()==bPad;
+        });
+        FSoraControlBinding Binding;
+        Binding.ActionName=Control.Name; Binding.Axis=Control.Axis; Binding.Key=Key;
+        ControlProfile->Bindings.Add(Binding);
+    };
+    Store(SoraInput::Remappable[Index],NewKey);
+    if(Result==ESoraRemapResult::Swapped) Store(SoraInput::Remappable[SoraInput::FindRemappable(*Other.ToString(),OtherAxis)],OldKey);
     SaveControlProfile();
     return Result;
 }
@@ -468,17 +479,35 @@ ESoraRemapResult ASoraPlayerCharacter::ApplyControlMapping(int32 Index,const FKe
     if(const ESoraRemapResult Key=CheckKey(Control,NewKey); Key!=ESoraRemapResult::Done) return Key;
     UPlayerInput& PlayerInput=*PC->PlayerInput;
     FName Other; int32 OtherAxis=0;
+    ESoraRemapResult Result=ESoraRemapResult::Done;
     if(FindConflict(PlayerInput,Control,NewKey,Other,OtherAxis))
     {
         if(TakenBy) *TakenBy=Other;
         if(TakenAxis) *TakenAxis=OtherAxis;
-        return ESoraRemapResult::Taken;
+        // Every pad button has a default job, so a pad button another
+        // rebindable control holds trades places with this control's own,
+        // provided neither then shares a button with a third action.
+        const int32 OtherIndex=NewKey.IsGamepadKey()?SoraInput::FindRemappable(*Other.ToString(),OtherAxis):INDEX_NONE;
+        const FKey OldKey=ControlKey(Index,true);
+        if(OtherIndex==INDEX_NONE||!OldKey.IsValid()) return ESoraRemapResult::Taken;
+        const SoraInput::FRemappable& Swap=SoraInput::Remappable[OtherIndex];
+        BindSlot(PlayerInput,Control,NewKey);
+        BindSlot(PlayerInput,Swap,OldKey);
+        FName Third; int32 ThirdAxis=0;
+        if(FindConflict(PlayerInput,Control,NewKey,Third,ThirdAxis)||FindConflict(PlayerInput,Swap,OldKey,Third,ThirdAxis))
+        {
+            BindSlot(PlayerInput,Swap,NewKey);
+            BindSlot(PlayerInput,Control,OldKey);
+            PlayerInput.ForceRebuildingKeyMaps(false);
+            return ESoraRemapResult::Taken;
+        }
+        Result=ESoraRemapResult::Swapped;
     }
-    BindSlot(PlayerInput,Control,NewKey);
+    else BindSlot(PlayerInput,Control,NewKey);
     PlayerInput.FlushPressedKeys();
     PlayerInput.ForceRebuildingKeyMaps(false);
     FireUp(); MeleeUp(); BlockUp(); SprintUp(); JumpUp();
-    return ESoraRemapResult::Done;
+    return Result;
 }
 FKey ASoraPlayerCharacter::ControlKey(int32 Index,bool bPad) const
 {

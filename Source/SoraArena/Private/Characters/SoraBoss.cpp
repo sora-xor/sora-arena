@@ -1,4 +1,5 @@
 #include "SoraBoss.h"
+#include "SoraSettings.h"
 #include "Combat/SoraBossCatalog.h"
 #include "Combat/SoraBossHazard.h"
 #include "Combat/SoraDamage.h"
@@ -36,16 +37,22 @@ constexpr float BlastSlackCm = 250.f;
 // The arena lock: this many wall segments, this tall.
 constexpr int32 LockSegments = 24;
 constexpr float LockHeight = 600.f;
-const FLinearColor Amber(1.f, .68f, .16f);
+// Barrier, ward and arena-lock parts; telegraphs take the player's palette.
 const FLinearColor Cyan(.04f, .85f, .95f);
-const FLinearColor AmberStrike(1.f, .80f, .24f);
-const FLinearColor CyanStrike(.12f, 1.f, 1.f);
 const FLinearColor Steel(.75f, .82f, .87f);
 const FLinearColor Dark(.10f, .11f, .12f);
 
-FLinearColor TelegraphColor(ESoraBossTelegraph Telegraph)
+// A telegraph in the settings' palette (SoraAccessibility): cyan marks a
+// locked aim or beam, amber a blow or an area. The strike itself flashes a
+// lighter shade of the same colour.
+FLinearColor TelegraphColor(const UObject* WorldContext, ESoraBossTelegraph Telegraph)
 {
-    return Telegraph == ESoraBossTelegraph::Cyan ? Cyan : Amber;
+    return SoraAccessibility::TelegraphColor(WorldContext,
+        Telegraph == ESoraBossTelegraph::Cyan ? SoraAccessibility::ETelegraph::Lock : SoraAccessibility::ETelegraph::Cleave);
+}
+FLinearColor StrikeColor(const UObject* WorldContext, ESoraBossTelegraph Telegraph)
+{
+    return FMath::Lerp(TelegraphColor(WorldContext, Telegraph), FLinearColor::White, .25f);
 }
 
 FName DefeatName(ESoraBossDefeat Defeat)
@@ -850,7 +857,7 @@ void ASoraBoss::Telegraph(const FSoraBossAttack& Attack, float Life)
     if (Attack.Telegraph == ESoraBossTelegraph::None)
         return;
     UWorld* World = GetWorld();
-    const FLinearColor Shade = SoraBossBody::TelegraphColor(Attack.Telegraph);
+    const FLinearColor Shade = SoraBossBody::TelegraphColor(this, Attack.Telegraph);
     const float Scale = GetActorScale3D().Z;
     const FVector EyePoint = GetActorLocation() + FVector(0.f, 0.f, SoraBossBody::EyeHeight * Scale);
     const FVector Feet = GetActorLocation() - FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 3.f);
@@ -1267,7 +1274,7 @@ void ASoraBoss::StrikeArea(ASoraCharacterBase& Target)
     const int32 Damage = Distance <= Attack.InnerRadiusCm + SoraBossBody::HeroRadius ? Attack.Damage : Attack.EdgeDamage;
     const FVector Feet = GetActorLocation() - FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 3.f);
     AnnounceStrike(Run.Attack, Run.Serial);
-    SoraDamage::Ring(GetWorld(), Feet, Attack.RadiusCm, SoraBossBody::AmberStrike, .2f);
+    SoraDamage::Ring(GetWorld(), Feet, Attack.RadiusCm, SoraBossBody::StrikeColor(this, ESoraBossTelegraph::Amber), .2f);
     if (bInside && Damage > 0)
     {
         FSoraHit Hit = FSoraHit::Melee(GetActorLocation(), INDEX_NONE);
@@ -1314,7 +1321,7 @@ void ASoraBoss::StrikeBeam(ASoraCharacterBase& Target, const FVector& Direction)
     const bool bHit = Along >= 0.f && Along <= Reach && Across <= Attack.WidthCm * .5f + SoraBossBody::HeroRadius && bClear;
     if (Attack.SweepDegrees == 0 || bHit)
         AnnounceStrike(Run.Attack, Run.Serial);
-    SoraDamage::Beam(GetWorld(), From, From + Flat * Reach, SoraBossBody::CyanStrike, 8.f, .1f);
+    SoraDamage::Beam(GetWorld(), From, From + Flat * Reach, SoraBossBody::StrikeColor(this, ESoraBossTelegraph::Cyan), 8.f, .1f);
     if (!bHit)
         return;
     Run.bLanded = true;
@@ -1385,7 +1392,7 @@ void ASoraBoss::Land(ASoraCharacterBase& Target)
     const int32 Distance = FMath::RoundToInt32(FVector::Dist2D(Target.GetActorLocation(), GetActorLocation()));
     const FVector Feet = GetActorLocation() - FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 3.f);
     AnnounceStrike(Run.Attack, Run.Serial);
-    SoraDamage::Ring(GetWorld(), Feet, Attack.RadiusCm, SoraBossBody::AmberStrike, .2f);
+    SoraDamage::Ring(GetWorld(), Feet, Attack.RadiusCm, SoraBossBody::StrikeColor(this, ESoraBossTelegraph::Amber), .2f);
     if (!Run.bLanded && BossRules::Lands(Distance, Attack.RadiusCm + FMath::RoundToInt32(SoraBossBody::HeroRadius)))
     {
         Run.bLanded = true;
@@ -1472,7 +1479,7 @@ void ASoraBoss::AdvanceSides()
         // The sonar ring expands; as its front passes a moving hero, he is found.
         const int32 Front = BossRules::PulseFrontCm(Now - (Side.EndsMs - Attack.ExpandMs), Attack.ExpandMs, Attack.RadiusCm);
         const FVector Feet = GetActorLocation() - FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 5.f);
-        SoraDamage::Ring(GetWorld(), Feet, FMath::Max(50, Front), SoraBossBody::Cyan, .05f);
+        SoraDamage::Ring(GetWorld(), Feet, FMath::Max(50, Front), SoraBossBody::TelegraphColor(this, ESoraBossTelegraph::Cyan), .05f);
         if (Target && !Side.bTested && Front >= FMath::RoundToInt32(FVector::Dist2D(Target->GetActorLocation(), GetActorLocation())))
         {
             Side.bTested = true;
