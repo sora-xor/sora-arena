@@ -299,6 +299,63 @@ and the new navigation test. The four editor-only tests passed in
 instanced dressing; the front-end screenshots (title and pause over the
 training arena) look the same before and after.
 
+#### Rendered captures and frame time
+
+`scripts/toolchain/capture-packaged-mac.sh ARCHIVE_DIRECTORY [output]` renders
+the staged package with Metal at 1920×1080 through `-RenderOffscreen`. It works
+while the Mac is locked, because offscreen rendering needs no window. It makes
+two launches:
+
+- `frontend` runs `SoraArena.UIRendered.FrontEndScreens`.
+- `capture` runs `SoraCapture`, the harness in
+  `Source/SoraArena/Private/SoraCaptureAutomation.cpp`:
+  - `SoraCapture.Campaign.Chapter1`–`8` seed checkpoints on a throwaway slot
+    and save two to four beats per chapter, each facing its opponent, guard,
+    boss telegraph, task, horse or road.
+  - `SoraCapture.Practice.<Arena>` plays zero-stake practice on the kernel's
+    bot policy. It measures a capped window (20 s, `t.MaxFPS=60`) and an
+    uncapped window (15 s) with stat-unit timers and `csvprofile`, then saves
+    the fight, the scoreboard, stat unit and the results.
+
+The harness sits outside the `SoraArena` test tree, so the packaged and editor
+suites never spend time on it. Each launch gets its own `-UserDir` in the
+app's sandbox container and `-LLM`, as `test-packaged-mac.sh` does. The script
+writes `shots.tsv` (every frame, with its size and SHA-256), `index.tsv` (what
+each frame shows), `frame-times.tsv` and `contention.txt`. The run fails if a
+test fails or a frame is missing or not 1920×1080.
+
+Two things decide whether the frame times mean anything:
+
+- **App Nap.** An offscreen app with `-nosound` has no visible window, so macOS
+  App Nap coalesces its timers. In the first run a requested 5 ms sleep took
+  8.6–32 ms, and the 60 fps cap, which waits by sleeping, held the game at
+  20–25 fps. The script now appends `-NSAppSleepDisabled YES`, which sets that
+  AppKit default through NSUserDefaults' argument domain for that launch
+  only; the same sleep then takes 6.0 ms. Unreal also reads the bare `YES` as
+  a startup map. It logs `Can't Find URL: YES` and loads its default URL,
+  `/Engine/Maps/Entry?Name=Player`, which is what it loads without the pair.
+- **Other GPU work.** The workstation is shared. Every 2 s the script samples
+  the GPU's busy figure (IOAccelerator "Device Utilization %"), the load, and
+  every other process that uses half a core or can load the GPU (Blender, an
+  Unreal editor or game, shader workers). `frame-times.tsv` names the other
+  GPU work seen in each measured window. `SORA_CAPTURE_IDLE_WAIT=N` waits up
+  to N seconds before the capture launch until the GPU reads at most 10% busy
+  and no such process has run for ten seconds.
+
+`frame-times.tsv` pairs each window with its CSV profile by start time and
+checks the profile's `SoraCaptureWindow` label. The first version paired them
+by file name, which put the wrong arena's CSV beside three of the four arenas.
+
+On 2026-09-26 the package `Local/Packages/mac-capture-harness` (the green
+package's cooked content with the harness compiled in) saved 61 frames
+(`Saved/PackagedCapture/full1`); 40 are curated in
+[visual-reviews/wave-c-baseline](visual-reviews/wave-c-baseline/README.md).
+That README records the art verdict, the HUD defects, three harness misses
+and the frame times. The M1 Ultra is an Apple7 GPU, and UE 5.8.3 enables SM6
+on macOS only on Apple8 (M2 or later), so the package always runs
+`METAL_SM5`, with Nanite and virtual shadow maps off. Its "please ensure you
+are running Mac OS 15" warning is misleading on macOS 27.
+
 ## Finish Unreal and Xcode provisioning
 
 1. Install **UE 5.8.3** from the Epic Games Launcher into the default

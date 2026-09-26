@@ -1,0 +1,41 @@
+file	launch	beat	subject	sha256	harness_seen
+FE_01_Title.png	frontend (SoraArena.UIRendered.FrontEndScreens)		front end	1c3bd86516db36844ac6c0c2364e5b2e7c57aa83696e65f55a4153bf7ac4fb87	
+FE_02_MainKeyboard.png	frontend (SoraArena.UIRendered.FrontEndScreens)		front end	26238fa969c1e8e0356c03a00aff3b27283abbf46e7c335bd2027e98c3de0a3e	
+FE_04_PracticeLobby.png	frontend (SoraArena.UIRendered.FrontEndScreens)		front end	bb490f4c078c3c2218ace2654c45c309cede2ff62ba1bb82a5e41d4d5e20602f	
+FE_12_Graphics.png	frontend (SoraArena.UIRendered.FrontEndScreens)		front end	fb2c27bc0873fd63ef46198127b0ac66c735bee5e3ccde647f0f9bde99d8aa4b	
+FE_16_ControlsBindings.png	frontend (SoraArena.UIRendered.FrontEndScreens)		front end	7076d5a5bbc99966f2c49f93e98f7cea7866db82c7c7ec52ad2b70dd0356348f	
+C1_02_SeiganDuel.png	capture (SoraCapture)	ch01.b02	opponent	003dc2a1828206372a0c001cadf05f4975408cfbc00b514123e74d3861df574f	SoraEnemy_2147480645 1 m away
+C1_06_KurimaruTack.png	capture (SoraCapture)	ch01.b06	horse	e5fdc9ca8f91b814d4890f0f94b76f4c31c58e35f4515580c7d86438e6a876d1	; tack 4, on foot
+C1_09_ArrowWork.png	capture (SoraCapture)	ch01.b09	task	4f060286b1de182b3c1bfa4c579cfdae5e90097f797afc37168c3439ef71e09e	
+C2_02_NagayaGate.png	capture (SoraCapture)	ch02.b02	opponent	a1df469c180029fa90837ae5e63ca65df0aef3add33d8bea756282dd88afe8e5	SoraEnemy_2147474871 7 m away
+C2_08_PackTrainRide.png	capture (SoraCapture)	ch02.b08	ride	d9b932bbd17927b4e322ef3540ac461546021b86f3f45ec5c054032518d83a73	; tack 0, mounted
+C2_15_DunarkTelegraph.png	capture (SoraCapture)	ch02.b15	boss telegraph	642a2eacf39dd44fb8369b8473d0d1e4118f2b09d8859f34370e5515b5eab581	the boss stood 247 cm off, outside its 230 cm reach, and did not close; the hero stepped in to 180 cm; SoraBoss_2147471542 telegraphs quick_cut at 42% of its warning; health 1000 permille, phase 1
+C3_02_LandingStealth.png	capture (SoraCapture)	ch03.b02	guard	83f2b7e6e012312bb83c4304f71b4adf801199bbf6c44e42ac9d6ee29e076e00	SoraEnemy_2147468338 9 m away
+C3_07_CraftspeopleEscort.png	capture (SoraCapture)	ch03.b07	task	a8d005216e9a30013813bd614c3b3e5292d80729f38a6e3706490c8de7cd07ac	
+C3_17_PenaltaTelegraph.png	capture (SoraCapture)	ch03.b17	boss telegraph	9b9f94e9513ae233c17b78d4bfd265a17fabba86d144be3ca0d49d8728ead5ca	SoraBoss_2147463422 telegraphs hammer_slam at 35% of its warning; health 1000 permille, phase 1
+C4_02_BankRoadRide.png	capture (SoraCapture)	ch04.b02	ride	dc4f5cd522c1d4048234ebc83d8ca46a7c77f6ea6c1ef3996547acef23d45a75	; tack 0, mounted
+C4_11_Waterwheel.png	capture (SoraCapture)	ch04.b11	task	569a8e7368a21e1a6d13592be4d33dd2eecdce582cbbaeb3944ec16009ffe948	
+C4_16_AssessorTelegraph.png	capture (SoraCapture)	ch04.b16	boss telegraph	2df36a540abbf7e53539d4acebf297f709899494e74e44a54afb6ee47155f127	SoraBoss_2147459691 telegraphs seizure_net at 40% of its warning; health 1000 permille, phase 1
+C5_06_Bellows.png	capture (SoraCapture)	ch05.b06	task	150cc5b438b1a9a9b2629959884077b226598a048417a613e7147c823a7374bb	
+C5_16_TarifaTelegraph.png	capture (SoraCapture)	ch05.b16	boss telegraph	7a2262b5e4281e10c36f56c017ae1e5f40d66a66f05c744a5832179360d408b1	SoraBoss_2147450308 telegraphs tether_lash at 33% of its warning; health 1000 permille, phase 1
+C6_06_LedgerAisles.png	capture (SoraCapture)	ch06.b06	guard	022ff44aa6f437ee757a3dcdaa4e819ab51cbb14f499862d52158943d9e718b6	SoraEnemy_2147448217 6 m away
+C6_09_ToranosukeDuel.png	capture (SoraCapture)	ch06.b09	opponent	8c83e454dc5feb31d5d3f7c8c1634a056fa3fe90014d3120c49319f68b5d97c6	SoraBoss_2147446768 2 m away
+C6_13_EskroTelegraph.png	capture (SoraCapture)	ch06.b13	boss telegraph	e964365e3a568c3a2b4cf0255d61342898f1a8ab43ab7fb0f93b31e76d0a5db1	the boss stood 1203 cm off, outside its 300 cm reach, and did not close; the hero stepped in to 250 cm; no telegraph within 40 s; SoraBoss_2147445608 telegraphs nothing at 0% of its warning; health 1000 permille, phase 1; distance 250 cm (engage 1500, near 250, reach 300/1500), facing 1.00, speed 0 cm/s, tick 1, controller SoraEnemyController, stunned 0, invulnerable 0, recovering 0, staggered 0, turn-locked 0, serial 0, playing 1
+C7_04_CargoHold.png	capture (SoraCapture)	ch07.b04	guard	6d382cdeedf035906cd65af8239f0c90b42ab129797973b434a529f1eba4e193	SoraEnemy_2147439887 2 m away
+C7_10_HullRidge.png	capture (SoraCapture)	ch07.b10	opponent	8172da6ecc82a7f82fdf9fa591425a68ea6b670953a415d72d6456ee96b249bd	SoraEnemy_2147437745 8 m away
+C7_13_CollateraTelegraph.png	capture (SoraCapture)	ch07.b13	boss telegraph	cc4600bd3f473c072b64f9448b79f7a7a63c5eebc6571ea6e0f9cfc7cd99d729	SoraBoss_2147435846 telegraphs twin_burst at 38% of its warning; health 1000 permille, phase 1
+C8_02_CausewayRide.png	capture (SoraCapture)	ch08.b02	ride	fcc1bf2758a41163af0080abd55fe8b74d4da8bfee8db7aa9a9e94aef7f45f91	; tack 0, mounted
+C8_04_FieldForge.png	capture (SoraCapture)	ch08.b04	task	0d154d96980ff915dc1385c985258913102b87c34231dec5ea6952bbd4e48011	
+C8_14_HighCollectorTelegraph.png	capture (SoraCapture)	ch08.b14	boss telegraph	54680c4d43151ba3512b2e01509820d78d6233a1e3891039be6396fe9f001d99	SoraBoss_2147414715 telegraphs amort_ledger_beam at 31% of its warning; health 1000 permille, phase 1
+A1_NyaagyuEstate_Combat.png	capture (SoraCapture)	NyaagyuEstate	Combat	8ffcfc290e64cad672ae9e2fc20c9fab517aac176fc4501bc15c5734a07e6a58	tick 2712; slot 7 in the hero's sights 11 m away; kill feed line 22 ticks old
+A1_NyaagyuEstate_Results.png	capture (SoraCapture)	NyaagyuEstate	Results	cd135b91f93e7c4d5175cf94f8652424ab1aa1c5d7add01e559b3d4a9d915bab	
+A1_NyaagyuEstate_Scoreboard.png	capture (SoraCapture)	NyaagyuEstate	Scoreboard	31f97f1ee0d0fedb08c4677dd85e1525cea37b87e69f8e3cce04c5c103258c7e	
+A2_LanternWard_Combat.png	capture (SoraCapture)	LanternWard	Combat	707783ede04f5117e0c0f3c5ef90eb8b10f3a561e3ed9a2d911f592f1feedead	tick 3062; slot 7 in the hero's sights 2 m away; kill feed line 106 ticks old
+A2_LanternWard_Results.png	capture (SoraCapture)	LanternWard	Results	68f6a1f414d1fc2fdd5cfc88a0ccceab09a4a7b5dc377349b832908e0c57a164	
+A2_LanternWard_Scoreboard.png	capture (SoraCapture)	LanternWard	Scoreboard	81f8abcc2b9182ac4bdaae230b61b857711db98a14680dc95aab43b743e67dc4	
+A3_SilkFoundry_Combat.png	capture (SoraCapture)	SilkFoundry	Combat	1ceddc39376b9bea0032949e31ca9f4ce21ed723df4257dab1d2469a076f9762	tick 2588; slot 3 in the hero's sights 15 m away; kill feed line 13 ticks old
+A3_SilkFoundry_Results.png	capture (SoraCapture)	SilkFoundry	Results	8849da24c13358c209bc6f89cb159362441f2c4b667089870ce9a0635dd26d96	
+A3_SilkFoundry_Scoreboard.png	capture (SoraCapture)	SilkFoundry	Scoreboard	9ba230118a3dd68f7ff48509101f7a81806f837d68c7c8b71d47a94c26f6b30e	
+A4_DebtCitadel_Combat.png	capture (SoraCapture)	DebtCitadel	Combat	e5517de020bc84018f1d233e7d328d127c51215abf93ce2e00fc8f2c789a7eb8	tick 2557; slot 1 in the hero's sights 4 m away; kill feed line 101 ticks old
+A4_DebtCitadel_Results.png	capture (SoraCapture)	DebtCitadel	Results	3dba3e33d7c88cf7fc6d36869a0259744920e4b1a6b58adeb999348b3cd611a5	
+A4_DebtCitadel_Scoreboard.png	capture (SoraCapture)	DebtCitadel	Scoreboard	9a23f387aecd0b7b3360d14c808ac13b202173fcecd2ec437d2258b8448c373f	
