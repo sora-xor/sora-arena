@@ -221,6 +221,183 @@ chapters' authored routes and detection numbers. The missing mechanics
 snare) and the arms with no key were resolved in the
 [gameplay lane](#2026-09-26-gameplay-lane-every-arm-and-the-fieldcraft-the-chapters-script).
 
+## 2026-09-26 gameplay lane, second step: the scripted sets and the guards' senses
+
+Branch `lane/gameplay`, on top of the arms-and-fieldcraft step below. This
+step builds what that step left open. As with every entry here, anything not
+listed under **Run** is unverified.
+
+**Now in the source**
+
+- **Guards' authored senses and zone rules** (`build_campaign_data.py`
+  `guard_row` and `stealth_block`, `FSoraGuard`, `FSoraStealthRulesData`).
+  Each guard a zone or guarded work posts carries the chapter's sight, dark
+  sight, view cone, hearing and suspicion multiplier. It also carries how it
+  watches: a post it keeps, the arc it sweeps there and how long a sweep
+  takes, or how often it turns about (ch03.b03's kido-ban every 12 s). Each
+  zone carries its detection rate, suspicious threshold, search time and
+  wariness; whether rear takedowns are allowed and lethal by default;
+  whether bodies are found and dragged; and the later zone a detection
+  warns (ch03.b02 to b03, whose guards then start suspicious and wary).
+  Where the script gives no number, the archetype's or `Watchful()`'s
+  default stays. `validate_campaign.py` checks all of it.
+- **Seizure nets** (`SoraFieldcraftRules` `FNet`, `SoraFieldcraftNets.cpp`).
+  A drone from a net wave flies to free quarry and locks it for 800 ms under
+  a cyan ring, then nets it. The quarry is ch02.b08's three pack horses (400
+  health each), ch04.b10's ox cart (600) or ch04.b12's eight planters. A net
+  on any pack horse halts the whole tied string, and a net on the ox halts the
+  escort. A net is cut with Interact held for 1 s beside it, or from the
+  saddle with the katana on the ride's side (ch02.b08: to the right). Bringing
+  its tether drone down lets it fall slack. A pack horse left netted 15 s is
+  hauled off (`convoy_member_seized`), and the ride fails to its checkpoint.
+  A planter left netted 12 s is taken, and the defence fails at its third
+  loss (`target_loss_limit`). Opponents standing at a pack horse or the cart
+  wear it down, and one worn to nothing is `convoy_member_hp0`. A cut buys
+  time: the load cut free is let be for 9 s while the drone whose net was cut
+  reloads (`NetRearmMs`, the seizure-net launcher's reload in ch04.b16).
+  ch02.b08's first wave only scouts off the road's left, only two of the
+  ravine wave's three drones net (the chapter's `netters: 2`; the third
+  scouts), and past 1 020 m one of G4's netting drones crosses to the
+  string's right, raising `ai:drone_crossed_right`
+  (`one_crosses_right_at_m`). A net that catches the
+  rider throws him (`horse_down`, 15 damage). The ride then goes on with him
+  on foot, where the script says so (ch02.b08), or back to its checkpoint
+  (ch08.b02). A whistle (Interact out of reach) brings the horse to his side
+  in 3 s.
+- **Searchlights** (`FSearchlightRules`, `SoraFieldcraftWatch.cpp`). ch06.b02's
+  two lights on the keep wall sweep 70° over 10 s, with an 8 m spot. A head in
+  the spot for 0.5 s sends the guards to look, and 1.5 s raises the alarm. A
+  diver is never seen, nor a head surfaced under the lotus and reeds, and
+  after a detection the lights hold on the last
+  place he was seen for 6 s. ch02.b08's ship light comes on with the third
+  wave and sweeps 640–800 m of the road; its spot makes Kurimaru shy and
+  halts the string.
+- **Other sets.** ch07.b04's temple bell: one stone rings it once, and every
+  guard within 25 m that has not placed the hero goes to it and looks it
+  over for 12 s. ch03.b14's three cook-fires gutter at 25, 55 and 80 % of the
+  hold. The hold waits, and the objective marker points at the fire, until
+  Interact held 2 s relights it. ch03.b03 and b10 have ladders onto 3.2 m
+  board roofs. Jump at the foot climbs, the roof is a floor, a drop onto the
+  ground is heard as far as the roof's `drop_noise_cm` says (9 m on all four
+  ch03 roofs), a drop onto ch03.b03's straw is not, and ch03.b10's
+  marksman keeps his post up on the roof. ch03.b05's crates are hoisted on the
+  well's 釣瓶 with Interact held 3 s, and the hoist waits while a guard
+  watches. ch03.b10's charge and fuse, ch06.b04's relay nodes and ch06.b11's
+  presses are worked with Interact held (1–4 s). ch06.b06's alarm lecterns
+  stand where its auditors run.
+- **The volley and the charge.** Each volley in ch08.b03 and b06 leaves a 4 s
+  smoke bank that blocks sight across its ring for both sides: opponents'
+  eyes and their aimed rounds. It has no collision, so the hero's rounds,
+  arrows and blades pass through it. On Easy, with the new
+  setting 斉射の自動号令 (on by default), a loaded rank fires by itself on
+  the opponent nearest the hero. ch08.b02's charge: Toranosuke on Arashi
+  keeps the hero's right, and twenty League riders run the causeway in a
+  column of twos at a canter (550 cm/s), leaving the hero's rank to him and
+  Toranosuke. The pack eases by up to 150 cm/s for
+  a hero who falls behind, but never waits. Three seal stakes bar the road.
+  A yari thrust from a canter or faster breaks a stake, and so do two arrows.
+  A stake left standing is broken by the riders 8 s after it holds them, and
+  each rider strikes opponents on the causeway. The wave's seizure walkers
+  there take no damage, as the script says.
+- **Events.** Every opponent's attack windup is raised as `pattern:<cue>` and
+  `ai:<cue>` (ch03.b10's glint prompt), and an `<event>@N` row plays on the
+  Nth raise (ch02.b08's first-net prompt). Five ch03 prompts that had no event
+  now have one. The HUD shows held work, nets and the haul timer, the
+  searchlight's exposure, guttered fires, the ladder, the auto-order and the
+  charge, all bilingual (430 localization keys).
+- **Tests.** `SoraFieldcraftSetsAutomation.cpp` adds 13 tests to
+  `SoraArena.Fieldcraft.*`: `AuthoredSenses`, `ConvoyNets`, `DroneCrossing`,
+  `HorseDown`, `PlantersNets`, `CartNet`, `Searchlights`, `Bell`,
+  `CookFires`, `Ladders`, `GuardedHoist`, `VolleySmokeAndAutoOrder` and
+  `Charge`.
+  `Campaign.Playthrough` now relights ch03.b14's fires, hoists ch03.b05's
+  crates and holds Interact on held objectives, and reports `fires_relit`,
+  `loads_hoisted` and `objectives_held`. `UI.SettingsPersist` turns the
+  auto-order off with the pad and checks that it persists.
+
+**Review fixes (2026-09-27)**
+
+- **Unity build.** The four fieldcraft sources each declared `Cube` and
+  `Cylinder` (two of them also `WaterLevel`) in their own namespace and
+  pulled it in with a file-scope `using namespace`. In one unity file, which
+  UBT makes once they are committed, the names were ambiguous; the leak also
+  broke `SoraPracticeActors.cpp` and tripped `-Wshadow` in
+  `SoraProjectile.cpp`. The 2026-09-26 run compiled each source on its own
+  and could not see this. The shared shapes, the water line and the surface
+  roles now live once in `Game/SoraFieldcraftLayout.h`. Each source names
+  them through its `Layout` alias, and none has a file-scope
+  using-directive. `SoraCampaignPlaythroughAutomation.cpp` qualifies its
+  `LastChapter`, which met `SoraCampaignDirector.cpp`'s in a one-file probe.
+- **A reset on the ladder or in a vault.** `USoraFieldcraft::Clear()` now
+  ends a ladder climb the way it ends a wall climb (`MOVE_Falling`). A round
+  reset (`ApplyClass`, then `ResetLoadout`) ends a vault in progress. A
+  retry, a checkpoint restart or Return to title no longer leaves the hero
+  flying, or pulls him back to an old landing.
+- **Nets:** the reload and the 9 s let-be, G2's two netters and G4's
+  crossing (above). The crossing drone flanks the string on the right even
+  when the other waves' drones hold every load. The data carries
+  `nets_per_wave`, `cross_wave` and `cross_at_cm`, which the loader and
+  `validate_campaign.py` check.
+- **Smoke:** now a sight volume (`SmokeBetween`) that opponents' `Look`,
+  their search for bodies and their aimed rounds consult. It no longer
+  stops the hero's hitscan, arrows or melee, and the volley ring no longer
+  lands on its side.
+- **Searchlights** hide a head surfaced under the lotus and reeds
+  (`UnderCover`, as `HeroExposure` already did).
+- **Roof drops** are heard as far as `drop_noise_cm` says:
+  `USoraStealth::MakeNoise` and the guards' hearing take a loudness. The
+  loader and validator accept any radius up to the rules' tenfold cap and
+  no longer require exactly 900 cm.
+- **Charge:** the League column leaves the hero's rank (the fourth, 13.5 m
+  behind its head) empty, so neither Kurimaru nor Arashi shares a place
+  with a League rider.
+- **Localization:** the nine notices in `SoraCampaignDirectorWorld.cpp`
+  (the whistle, dismounting, the mounting side, full arms, saddle arms and
+  arcs, and finds) are `NSLOCTEXT` in `SoraArena.Campaign`, with English in
+  `Game.po`. The file is now in the check's enforced list.
+- **Photoreal, in part.** Roofs, posts, ladders, cell doors, the climbing
+  face with its holds and ledges, rubble, alarm lecterns, searchlight posts,
+  the bell and its gantry, braziers, andon, flood poles, kamado, and the
+  board, gravel and grate floors now wear the environment palette's CC0 PBR
+  surfaces (`MI_Nyaagyu_Timber`, `Stone`, `Metal`, `Plaster`: world-aligned,
+  made by `import_environment_palette.py`) instead of flat tints. Their
+  geometry is still engine shapes. Not done: the League riders and horses,
+  since no horse or rider asset exists and that art belongs to the art
+  lanes (the Codex tack study is off-limits); and the seizure net and smoke
+  bank, since the VFX lane's Niagara systems (such as the matchlock's powder
+  cloud) are not merged and `SoraArena` does not link Niagara yet. None of
+  this has been seen rendered.
+
+**Run on 2026-09-27, after the review fixes**
+
+- Host checks, all passing: `test_fieldcraft_rules.py` (now also the
+  reload), `test_stealth_rules.py`, `test_campaign_progression.py`,
+  `test_combat_rules.py`, `test_boss_rules.py`, `test_historical_arms.py`,
+  `validate_enemies.py`, `check_catalog_kernel_parity.py`,
+  `validate_campaign.py` (55 mutations rejected), `validate_content.py`,
+  `build_campaign_data.py --check`, `check_input_conflicts.py` and
+  `native_japanese_localization.py --check` (430 keys in 12 namespaces, 24
+  enforced sources).
+- UnrealHeaderTool, run alone (`UnrealBuildTool -Mode=UnrealHeaderTool` on
+  the editor's `.uhtmanifest`), succeeded. It rewrote only
+  `SoraCampaignDirector.generated.h`.
+- All 85 of the module's sources pass clang `-fsyntax-only` with UBT's own
+  flags (`-Werror`, `-Wshadow`). So does the whole module compiled as one
+  translation unit in UBT's order, the worst case of any unity split. The
+  reviewer's two unity probes and seven blob probes pass; before the fix
+  they gave 17 and 33 errors.
+- **Not run:** the editor build (linking), every Unreal automation test
+  (the new and changed assertions included) and the playthrough. The data
+  volume held 23–25 GiB free, below the 30 GiB floor
+  `run-automation-mac.sh` enforces and the 32 GiB floor for heavy work.
+
+**Not done**
+
+- Everything above is unbuilt and unrun in Unreal until the automation runs.
+- Nothing is seen rendered. League riders and their horses, stakes, nets,
+  searchlight spots and smoke banks are engine-shape proxies in flat
+  colours. The static sets are engine shapes in CC0 PBR surfaces.
+
 ## 2026-09-26 gameplay lane: every arm, and the fieldcraft the chapters script
 
 Branch `lane/gameplay`. This step made every arm the campaign unlocks

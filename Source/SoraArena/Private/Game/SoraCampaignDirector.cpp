@@ -17,6 +17,7 @@
 #include "SoraProjectile.h"
 #include "SoraSaveGame.h"
 #include "SoraSettings.h"
+#include "SoraText.h"
 #include "SoraWorldBuilder.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -127,13 +128,22 @@ void USoraCampaignDirector::OpenStealthZone()
     if(Stealth->IsZoneActive()) Stealth->EndZone();
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||(!Beat->Is(SoraBeatRules::EType::StealthZone)&&!Task.PauseWhenSeen)) return;
+    // The zone's authored detection, takedowns and bodies (bible §12.2), on
+    // the settings' difficulty.
+    const FSoraStealthRulesData& Rules=Beat->Stealth;
     FSoraStealthZone Zone;
+    Zone.Vigilance=SoraStealthRules::Detection(Rules.RatePermille,Rules.SuspiciousAtPermille,Rules.SearchMs,Rules.WaryPermille);
     Zone.Difficulty=static_cast<SoraStealthRules::EDifficulty>(static_cast<uint8>(SoraAccessibility::CampaignDifficulty(this)));
     Zone.OnDetected=Task.OnDetected==SoraBeatRules::EDetected::Restart?SoraStealthRules::EOnDetected::Restart
         :Task.OnDetected==SoraBeatRules::EDetected::Reinforce?SoraStealthRules::EOnDetected::Reinforce:SoraStealthRules::EOnDetected::Combat;
-    // Rear takedowns once the story teaches them (bible §12.1 takedown),
-    // from the beat that teaches them on.
-    Zone.bRearTakedowns=IsMechanicInPlay(TEXT("takedown"));
+    // Rear takedowns once the story teaches them (bible §12.1 takedown), from
+    // the beat that teaches them on, where the zone allows them.
+    Zone.bRearTakedowns=Rules.bRearTakedowns&&IsMechanicInPlay(TEXT("takedown"));
+    Zone.bLethalDefault=Rules.bLethalDefault;
+    Zone.bBodiesDiscoverable=Rules.bBodies;
+    Zone.bDragBodies=Rules.bDrag;
+    // An earlier zone that saw the hero sends its word ahead (ch03.b02 to b03).
+    Zone.bCarriedOver=DetectionCarried.Contains(Beat->Id);
     Stealth->BeginZone(Zone);
 }
 void USoraCampaignDirector::CloseStealthZone()
@@ -142,7 +152,10 @@ void USoraCampaignDirector::CloseStealthZone()
 }
 void USoraCampaignDirector::FieldcraftEvent(FName Event)
 {
-    if(Mode().bCampaign&&ActiveBeatData()) RaiseBeatEvent(Event);
+    if(!Mode().bCampaign||!ActiveBeatData()) return;
+    RaiseBeatEvent(Event);
+    // A cook-fire guttering or relit moves the objective to it and back.
+    if(Event.ToString().StartsWith(TEXT("fire_"))) UpdateObjective();
 }
 void USoraCampaignDirector::EnemyCue(const FSoraEnemyCueEvent& Event)
 {
@@ -170,6 +183,13 @@ void USoraCampaignDirector::EnemyCue(const FSoraEnemyCueEvent& Event)
     case ESoraEnemyCue::Subdued: Fire(TEXT("conscript_downed")); return;
     case ESoraEnemyCue::Freed: Fire(TEXT("conscript_freed")); return;
     case ESoraEnemyCue::ShieldTurned: Fire(TEXT("ai:shield_turned")); return;
+    case ESoraEnemyCue::AttackWindup:
+        // An opponent's attack telegraph, as the scripts key it: the marksman's
+        // glint (pattern:marksman_lock), the grenadier's shell, a walker's sweep.
+        if(Event.Detail.IsNone()) return;
+        Fire(TEXT("pattern:")+Detail);
+        Fire(TEXT("ai:")+Detail);
+        return;
     case ESoraEnemyCue::BarrierBroken: Fire(TEXT("shield_broken")); return;
     default: return;
     }
@@ -179,6 +199,9 @@ void USoraCampaignDirector::StealthDetected(const FSoraStealthDetection& Detecti
     if(!ActiveBeatData()) return;
     // A patrol that finds the hero finds the party beside him: they drop.
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->PartyDetected();
+    // A later zone the script names starts suspicious and wary.
+    if(const FSoraBeat* Beat=ActiveBeatData(); Beat->bStealth&&!Beat->Stealth.CarryoverTo.IsEmpty())
+        DetectionCarried.Add(Beat->Stealth.CarryoverTo);
     // On Easy the zone answers a detection with a fight (SoraStealthRules::
     // Response): the beat is neither failed nor reinforced. Guarded work
     // pauses only while a guard sees the hero or is alarmed (IsWorkPaused).
@@ -270,6 +293,7 @@ void USoraCampaignDirector::ResetRound()
     EndCinematicCamera(0.f);
     Notices.Reset();
     Kills=0; KillsNeeded=0; bLinesStarted=false; bChapterOpening=false; CinematicSeconds=0.f; DojoLessonMask=0u;
+    DetectionCarried.Reset();
     Queue.Reset(); LineRemaining=0.f; Heard.Reset(); FiredTriggers.Reset(); TriggerTimes.Reset();
     PromptIndex=INDEX_NONE; PromptRemaining=0.f;
     BeatIndex=INDEX_NONE; BeatPhase=0; ArenaSitesMask=0; bArenaComplete=false;
@@ -385,8 +409,9 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; bDetected=false; CinematicSeconds=0.f;
-    VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset(); BeatEvents.Reset();
-    Scheduled.Reset(); bWorkWasSeen=false; GuardStates.Reset();
+    VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset(); BeatEvents.Reset(); WhistleAt=-1.0;
+    HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
+    Scheduled.Reset(); bWorkWasSeen=false; GuardStates.Reset(); EventRaises.Reset();
     AwaseAtMs=INDEX_NONE; LateHitAt=-1.0; BoutOffset=0;
     // The dojo numbers its bouts across the chapter's lesson duels.
     for(int32 Earlier=0;Earlier<Chapter.Beats.Num();++Earlier)
@@ -663,6 +688,9 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         SoraBeatRules::Travel(TaskState,Task,RoadPermille());
         if(Space.Exit.Contains(Hero)&&SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
     }
+    // Work held at a point: a load hoisted, an objective worked.
+    TickHeldWork(DeltaMs);
+    if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // Horses, a siege on defended targets, the escorted party and the task's kit.
     TickSpace(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
@@ -697,6 +725,64 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         }
     Progressed(Before);
 }
+bool USoraCampaignDirector::TakeLoad(int32 Pickup)
+{
+    const FSoraBeat* Beat=ActiveBeatData();
+    if(!Beat||!SoraBeatRules::Pickup(TaskState,Task,Pickup)) return false;
+    CarryChanged();
+    if(!BeatEvents.Contains(TEXT("event:first_pickup"))) Fire(TEXT("event:first_pickup"));
+    Fire(TEXT("item_picked:")+Beat->Pickups[Pickup]);
+    Fire(TEXT("item_picked:")+Beat->CarryItem);
+    return true;
+}
+bool USoraCampaignDirector::WorkObjectiveAt(int32 Objective)
+{
+    const FSoraBeat* Beat=ActiveBeatData();
+    if(!Beat||!SoraBeatRules::WorkObjective(TaskState,Task,Objective)) return false;
+    Fire(TEXT("interact:")+Beat->Objectives[Objective]);
+    Fire(TEXT("event:objective_done_")+Beat->Objectives[Objective]);
+    return true;
+}
+void USoraCampaignDirector::TickHeldWork(int32 DeltaMs)
+{
+    const FSoraBeat* Beat=ActiveBeatData();
+    const FSoraBeatSpace* Space=ActiveSpace();
+    ASoraPlayerCharacter* Hero=Mode().Hero();
+    if(HeldWork==EHeldWork::None||!Beat||!Space||!Hero) return;
+    const bool bHoist=HeldWork==EHeldWork::Hoist;
+    const TArray<FVector2D>& Points=bHoist?Space->Pickups:Space->Objectives;
+    const int32 Need=bHoist?Task.PickupHoldMs:Beat->ObjectiveHoldMs.IsValidIndex(HeldPoint)?Beat->ObjectiveHoldMs[HeldPoint]:0;
+    // The work holds while Interact stays down at its point. A hoist under
+    // guard waits (without letting the load fall) while a guard watches.
+    if(!Hero->IsActionHeld(TEXT("Interact"))||!Points.IsValidIndex(HeldPoint)||
+        !Near(ASoraWorldBuilder::Floor(Points[HeldPoint]),SoraCampaignReach::Interact+60.f))
+    {
+        HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
+        return;
+    }
+    const USoraStealth* Stealth=USoraStealth::Get(this);
+    const bool bWatched=bHoist&&Task.PauseWhenSeen&&Stealth&&Stealth->IsZoneActive()&&Stealth->IsWorkPaused();
+    if(bWatched&&!bHeldWatched) Fire(TEXT("ai_event:hoist_paused"));
+    bHeldWatched=bWatched;
+    if(bWatched) return;
+    HeldMs+=DeltaMs;
+    if(HeldMs<Need) return;
+    const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
+    const int32 Point=HeldPoint;
+    HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
+    if(bHoist?TakeLoad(Point):WorkObjectiveAt(Point))
+    {
+        UpdateObjective();
+        Progressed(Before);
+    }
+}
+float USoraCampaignDirector::HeldWorkProgress() const
+{
+    const FSoraBeat* Beat=ActiveBeatData();
+    const int32 Need=HeldWork==EHeldWork::Hoist?Task.PickupHoldMs
+        :Beat&&Beat->ObjectiveHoldMs.IsValidIndex(HeldPoint)?Beat->ObjectiveHoldMs[HeldPoint]:0;
+    return HeldWork!=EHeldWork::None&&Need>0?FMath::Clamp(static_cast<float>(HeldMs)/Need,0.f,1.f):-1.f;
+}
 void USoraCampaignDirector::Progressed(int32 PermilleBefore)
 {
     const FSoraBeat* Beat=ActiveBeatData();
@@ -728,7 +814,7 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
         // it: a lethal blow only knocks one down, and cutting its seal frees it.
         for(const FSoraWaveGroup& Group:Beat->Waves[Wave].Groups)
             if(Group.bLethal)
-                for(int32 Member=0;Member<Group.Count;++Member) Pending.Add({Wave,Group.Type});
+                for(int32 Member=0;Member<Group.Count;++Member) Pending.Add({Wave,Group.Type,Group.bInvulnerable});
             else if(!Beat->bSparring&&GetWorld())
                 for(int32 Member=0;Member<Group.Count;++Member)
                     if(ASoraEnemy* Conscript=ASoraEnemy::SpawnArchetype(*GetWorld(),Group.Type,Spawned,SpawnLocation(Spawned),FRotator(0,180,0)))
@@ -784,16 +870,18 @@ void USoraCampaignDirector::SkipCinematic()
     Telemetry(TEXT("skip"));
     CompleteActiveBeat();
 }
-ASoraEnemy* USoraCampaignDirector::SpawnWaveOpponent(FName Type,bool bSparring,int32 Slot)
+ASoraEnemy* USoraCampaignDirector::SpawnWaveOpponent(FName Type,bool bSparring,int32 Slot,bool bInvulnerable)
 {
     // Sparring beats (bokuto bouts, the matoba's targets) keep the chapter-one
     // pupil; every other opponent is its enemies.json archetype, hunting the hero.
     UWorld* World=GetWorld();
     if(!World) return nullptr;
     if(bSparring) return SpawnPrototype(*World,SpawnLocation(Slot),true,Slot);
-    return ASoraEnemy::SpawnArchetype(*World,Type,Slot,SpawnLocation(Slot),FRotator(0,180,0));
+    FSoraEnemyTuning Tuning;
+    Tuning.bInvulnerable=bInvulnerable;
+    return ASoraEnemy::SpawnArchetype(*World,Type,Slot,SpawnLocation(Slot),FRotator(0,180,0),nullptr,&Tuning);
 }
-ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(FName Type,int32 Slot)
+ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int32 GuardIndex,int32 Slot)
 {
     // The archetype walks its patrol route from its first point, unaware
     // until USoraStealth's perception reports it (alert_state events).
@@ -803,11 +891,28 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(FName Type,int32 Slot)
     const TArray<FVector2D>* Points=Space->Patrols.IsEmpty()?nullptr:&Space->Patrols[Slot%Space->Patrols.Num()];
     if(Points)
         for(const FVector2D& Point:*Points) Route.Points.Add(ASoraWorldBuilder::Floor(Point,90.f));
-    const FVector Post=Points&&!Points->IsEmpty()?ASoraWorldBuilder::Floor((*Points)[0],120.f):SpawnLocation(Slot);
+    FVector Post=Points&&!Points->IsEmpty()?ASoraWorldBuilder::Floor((*Points)[0],120.f):SpawnLocation(Slot);
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
-    // A route of two points is walked back and forth; a longer one loops.
+    // A route of two points is walked back and forth; a longer one loops. A
+    // guard the chapter posts keeps the first point of its round as its post.
+    if(Guard.bPost&&Route.Points.Num()>1) Route.Points.SetNum(1);
     Route.bPingPong=Route.Points.Num()==2;
-    return ASoraEnemy::SpawnArchetype(*GetWorld(),Type,Slot,Post,FRotator(0,180,0),&Route);
+    // A guard the script posts on a roof (ch03.b10's marksman) stands up there.
+    if(const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this); Fieldcraft&&Fieldcraft->Active())
+        for(const FSoraLadder& Ladder:Fieldcraft->Active()->Ladders)
+            if(Ladder.Guards.Contains(GuardIndex))
+            {
+                Post=FVector(Ladder.Roof.Center,Ladder.HeightCm+120.f);
+                Route.Points.Reset();
+                Route.Points.Add(FVector(Ladder.Roof.Center,Ladder.HeightCm+90.f));
+                Route.bPingPong=false;
+            }
+    // The senses the chapter authors for this guard.
+    FSoraEnemyTuning Senses;
+    Senses.SightCm=Guard.SightCm; Senses.DarkSightCm=Guard.DarkSightCm; Senses.ViewDegrees=Guard.ViewDegrees;
+    Senses.HearingCm=Guard.HearingCm; Senses.SuspicionPermille=Guard.SuspicionPermille;
+    Senses.ScanDegrees=Guard.ScanDegrees; Senses.ScanMs=Guard.ScanMs; Senses.TurnMs=Guard.TurnMs;
+    return ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
 }
 ASoraEnemy* USoraCampaignDirector::SpawnDuelOpponent(FName Opponent,bool bSparring,int32 Slot)
 {
@@ -859,8 +964,8 @@ void USoraCampaignDirector::SpawnCast(bool bKeepPupil)
     }
     // A stealth zone's guards, and those watching guarded work, take their posts.
     else
-        for(const FName Guard:Beat->Guards)
-            if(ASoraEnemy* Enemy=SpawnStealthGuard(Guard,Spawned)) AddOpponent(Enemy,INDEX_NONE);
+        for(int32 Index=0;Index<Beat->Guards.Num();++Index)
+            if(ASoraEnemy* Enemy=SpawnStealthGuard(Beat->Guards[Index],Index,Spawned)) AddOpponent(Enemy,INDEX_NONE);
 }
 void USoraCampaignDirector::SpawnPending()
 {
@@ -870,7 +975,7 @@ void USoraCampaignDirector::SpawnPending()
     {
         const FPendingSpawn Next=Pending[0];
         Pending.RemoveAt(0);
-        if(ASoraEnemy* Enemy=SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned)) { AddOpponent(Enemy,Next.Wave); ++Alive; }
+        if(ASoraEnemy* Enemy=SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable)) { AddOpponent(Enemy,Next.Wave); ++Alive; }
         else
         {
             // A wave never waits on an opponent the world could not build.
@@ -882,6 +987,8 @@ void USoraCampaignDirector::SpawnPending()
 void USoraCampaignDirector::AddOpponent(ASoraEnemy* Enemy,int32 Wave)
 {
     Enemies.Add(Enemy); EnemyWaves.Add(TWeakObjectPtr<const ASoraEnemy>(Enemy),Wave); ++Spawned;
+    // A wave's drones may be the beat's seizure drones or its scouts.
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this); Fieldcraft&&Enemy&&Wave!=INDEX_NONE) Fieldcraft->OpponentJoined(*Enemy,Wave);
 }
 void USoraCampaignDirector::SpawnArenaInvader()
 {
@@ -979,20 +1086,26 @@ void USoraCampaignDirector::Fire(const FString& Event,int32 Beat)
     if(Beat==BeatIndex) BeatEvents.Add(Event,&bRaised);
     const bool bFirst=Beat==BeatIndex&&!bRaised;
     const FString First=Event+TEXT(":first");
+    // The Nth time the beat raises an event, its "<event>@N" rows play too
+    // (ch02.b08's first net, ai:convoy_netted@1).
+    const int32 Raises=Beat==BeatIndex?++EventRaises.FindOrAdd(Event):0;
+    const FString Nth=Raises>0?FString::Printf(TEXT("%s@%d"),*Event,Raises):FString();
     for(int32 Index=0;Index<Chapter->Triggers.Num();++Index)
     {
         const FSoraDialogueTrigger& Trigger=Chapter->Triggers[Index];
         // The beat's own rows and the chapter's bark pools.
-        if((Trigger.Beat!=Beat&&Trigger.Beat!=INDEX_NONE)||(Trigger.On!=Event&&!(bFirst&&Trigger.On==First))||
-            !TriggerAllowed(Index))
+        if((Trigger.Beat!=Beat&&Trigger.Beat!=INDEX_NONE)||
+            (Trigger.On!=Event&&!(bFirst&&Trigger.On==First)&&!(Raises>0&&Trigger.On==Nth))||!TriggerAllowed(Index))
             continue;
         FiredTriggers.Add(Index);
         if(GetWorld()) TriggerTimes.Add(Index,GetWorld()->GetTimeSeconds());
         Enqueue(Trigger.Lines,false);
     }
     ShowPrompt(Event,Beat);
-    // A prompt keyed "<event>:first" shows on the event's first raise in the beat.
+    // A prompt keyed "<event>:first" shows on the event's first raise in the
+    // beat, one keyed "<event>@N" on its Nth.
     if(bFirst) ShowPrompt(First,Beat);
+    if(Raises>0) ShowPrompt(Nth,Beat);
     if(Beat!=BeatIndex) return;
     // A row keyed "<event>+Ns" plays N seconds after the event, once.
     if(GetWorld())
@@ -1214,8 +1327,9 @@ bool USoraCampaignDirector::HeroAtTask() const
     // standing and in the open (SoraFieldcraftRules::PartyWalks).
     if(Task.Goal==SoraBeatRules::EGoal::Escort)
     {
+        // A netted ox halts the cart until the net is cut.
         const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this);
-        return Near(PartyLocation(),static_cast<float>(Task.WaitCm))&&(!Fieldcraft||Fieldcraft->PartyReady());
+        return Near(PartyLocation(),static_cast<float>(Task.WaitCm))&&(!Fieldcraft||(Fieldcraft->PartyReady()&&!Fieldcraft->QuarryHalted()));
     }
     return false;
 }
@@ -1461,11 +1575,15 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     case SoraBeatRules::EGoal::Objectives:
     {
         const int32 Objective=NearestOf(Space.Objectives,[&](int32 Index) { return (TaskState.PointsMask&(1u<<Index))==0u; });
-        if((bWorked=SoraBeatRules::WorkObjective(TaskState,Task,Objective)))
+        // An objective with a hold (a charge planted, a relay node pulled) is
+        // worked with Interact held; the hold fills in TickHeldWork.
+        if(Beat->ObjectiveHoldMs.IsValidIndex(Objective)&&Beat->ObjectiveHoldMs[Objective]>0)
         {
-            Fire(TEXT("interact:")+Beat->Objectives[Objective]);
-            Fire(TEXT("event:objective_done_")+Beat->Objectives[Objective]);
+            HeldWork=EHeldWork::Objective; HeldPoint=Objective; HeldMs=0;
+            Fire(TEXT("interact_start:")+Beat->Objectives[Objective]);
+            return;
         }
+        bWorked=WorkObjectiveAt(Objective);
         break;
     }
     case SoraBeatRules::EGoal::Turns:
@@ -1488,13 +1606,14 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
             // A store is revisited for every load; distinct goods are taken once each.
             const int32 Pickup=NearestOf(Space.Pickups,[&](int32 Index)
                 { return Task.Pickups<Task.Count||(TaskState.PointsMask&(1u<<Index))==0u; });
-            if((bWorked=SoraBeatRules::Pickup(TaskState,Task,Pickup)))
+            // A load hoisted at its pickup (ch03.b05's 釣瓶) is held for; the hold fills in TickHeldWork.
+            if(Pickup!=INDEX_NONE&&Task.PickupHoldMs>0)
             {
-                CarryChanged();
-                if(!BeatEvents.Contains(TEXT("event:first_pickup"))) Fire(TEXT("event:first_pickup"));
-                Fire(TEXT("item_picked:")+Beat->Pickups[Pickup]);
-                Fire(TEXT("item_picked:")+Beat->CarryItem);
+                HeldWork=EHeldWork::Hoist; HeldPoint=Pickup; HeldMs=0;
+                Fire(TEXT("hoist_start"));
+                return;
             }
+            bWorked=TakeLoad(Pickup);
         }
         else
         {
@@ -1742,6 +1861,10 @@ void USoraCampaignDirector::Notify(const FString& Japanese,const FString& Englis
 {
     ASoraGameMode& M=Mode();
     M.Notice=Japanese; M.NoticeEnglish=English; M.NoticeTime=Seconds;
+}
+void USoraCampaignDirector::Notify(const SoraText::FLine& Line,float Seconds)
+{
+    Notify(Line.Japanese,Line.English,Seconds);
 }
 void USoraCampaignDirector::BroadcastBeat(bool bStarted,bool bResumed)
 {

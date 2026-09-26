@@ -372,10 +372,15 @@ struct FTask
     // only these weapons in hand (the katana in one paw, or nothing).
     int CarrySpeedPermille = Permille;
     unsigned CarryWeaponsMask = 0u;
+    // Each load is hoisted at its pickup with Interact held this long (0: taken at once).
+    int PickupHoldMs = 0;
     int StepCount = 0;
     FStep Steps[MaxSteps] = {};
     int TargetCount = 0;
     int TargetHp[MaxPoints] = {};
+    // A defence that may lose some of its targets (ch04.b12's planters) fails
+    // at its TargetLossLimit-th loss; 0 or 1: at the first.
+    int TargetLossLimit = 0;
     EDetected OnDetected = EDetected::Combat;
     int ReinforceWave = -1;
     // A ride whose horse going down returns to the checkpoint (else the rider goes on foot).
@@ -988,6 +993,15 @@ constexpr bool DamageTarget(FTaskState& State, const FTask& Task, int Index, int
     return State.TargetHp[Index] == 0;
 }
 
+// Defended targets destroyed so far.
+constexpr int TargetsLost(const FTaskState& State, const FTask& Task)
+{
+    int Lost = 0;
+    for (int Target = 0; Target < Task.TargetCount && Target < MaxPoints; ++Target)
+        Lost += State.TargetHp[Target] <= 0;
+    return Lost;
+}
+
 // Opponents standing at a defended target wear it down: SiegeHpPerSecond
 // for each of them, carried in whole opponent-milliseconds so no frame
 // boundary loses a fraction. Returns the damage to deal now.
@@ -1069,6 +1083,10 @@ constexpr ERetry Fail(FTaskState& State, const FTask& Task, EFail Event)
         if (Task.Type != EType::HorsebackRide)
             return ERetry::None;
         return Task.HorseDownRetries ? ERetry::Checkpoint : ERetry::Continue;
+    case EFail::TargetDestroyed:
+        if ((Task.FailMask & FailBit(Event)) == 0u)
+            return ERetry::None;
+        return Task.TargetLossLimit <= 1 || TargetsLost(State, Task) >= Task.TargetLossLimit ? ERetry::Checkpoint : ERetry::Continue;
     default:
         return (Task.FailMask & FailBit(Event)) != 0u ? ERetry::Checkpoint : ERetry::None;
     }
@@ -1136,7 +1154,8 @@ constexpr bool StepsValid(const FTask& Task)
 
 constexpr bool TargetsValid(const FTask& Task)
 {
-    if (Task.TargetCount < 0 || Task.TargetCount > MaxPoints)
+    if (Task.TargetCount < 0 || Task.TargetCount > MaxPoints || Task.TargetLossLimit < 0 ||
+        Task.TargetLossLimit > Task.TargetCount)
         return false;
     for (int Target = 0; Target < Task.TargetCount; ++Target)
         if (Task.TargetHp[Target] <= 0)

@@ -7,8 +7,10 @@
 // hidden on his signal and lost), work held at a point (snuffing a lamp,
 // cutting a collar, opening a cell, raising the downed), lamps that go dark
 // and relight, breath in the water, grip on a wall, thrown stones, a carried
-// candle, vaulting low cover, the kusarigama's weighted chain and the
-// rotating volley ranks the hero commands. Time is
+// candle, vaulting low cover, the kusarigama's weighted chain, the
+// rotating volley ranks the hero commands and their smoke, seizure nets on
+// what the hero guards, searchlights, a one-shot bell lure, ladders onto the
+// roofs and the League riders who charge beside him. Time is
 // integer milliseconds, distance integer centimetres and fractions permille,
 // so no rule depends on a floating-point frame boundary. No Unreal headers
 // belong here.
@@ -501,6 +503,284 @@ constexpr int VolleyShare(int Targets, int Standing, int PerRank, int Nearest)
         return 0;
     const int Total = VolleyDamage * (Standing < PerRank ? Standing : PerRank) / PerRank;
     return Total / Count + (Nearest == 0 ? Total % Count : 0);
+}
+
+// The white smoke bank a volley leaves hides its ring for this long, for both sides.
+constexpr int SmokeMs = 4000;
+
+// Easy's auto-order (ch08 easy_auto_order): with the front rank loaded and
+// the hero not marking, the ranks fire on the opponent nearest the hero
+// within reach, the ring on it.
+constexpr bool AutoOrders(bool Easy, bool Enabled, bool FrontLoaded, bool Marking, bool TargetInReach)
+{
+    return Easy && Enabled && FrontLoaded && !Marking && TargetInReach;
+}
+
+// ---------------------------------------------------------------------------
+// Seizure nets (差押え網, ch02.b08, ch04.b10, ch04.b12). A drone over a free
+// quarry (a pack horse, the ox, a planter) locks it for WindupMs under a cyan
+// ring, then drops its net. A netted quarry stands where it is, and a tied
+// string or a cart halts with it, until the hero cuts the net (Interact held
+// CutMs beside it, or a blade from the saddle) or brings its tether drone
+// down. Left netted HaulMs it is hauled away (0: never). A lock breaks when
+// its drone is downed or gone. A load freed is let be NetRearmMs (below).
+// ---------------------------------------------------------------------------
+enum class ENet : unsigned char { Free, Locking, Netted, Taken };
+enum class ENetChange : unsigned char { None, Netted, Freed, Taken };
+
+struct FNetRules
+{
+    int WindupMs;
+    int HaulMs;
+    int CutMs;
+};
+
+struct FNet
+{
+    ENet State;
+    // Ms into the lock, or netted.
+    int Ms;
+    // Unbroken ms of the hero's hand on the net.
+    int HeldMs;
+};
+
+constexpr FNet FreeNet()
+{
+    return {ENet::Free, 0, 0};
+}
+
+constexpr bool NetValid(const FNetRules& Rules)
+{
+    return Rules.WindupMs > 0 && Rules.HaulMs >= 0 && Rules.CutMs > 0;
+}
+
+// A drone over a free quarry begins its lock.
+constexpr bool BeginLock(FNet& Net)
+{
+    if (Net.State != ENet::Free)
+        return false;
+    Net = {ENet::Locking, 0, 0};
+    return true;
+}
+
+// Its drone is downed or gone: a lock breaks and a net goes slack.
+constexpr ENetChange Loosen(FNet& Net)
+{
+    const bool Netted = Net.State == ENet::Netted;
+    if (Net.State == ENet::Locking || Netted)
+        Net = FreeNet();
+    return Netted ? ENetChange::Freed : ENetChange::None;
+}
+
+// A blade from the saddle cuts a net at once.
+constexpr bool CutNet(FNet& Net)
+{
+    if (Net.State != ENet::Netted)
+        return false;
+    Net = FreeNet();
+    return true;
+}
+
+// One step: Held is the hero's hand on the net (Interact held beside it).
+constexpr ENetChange NetTick(FNet& Net, const FNetRules& Rules, int DtMs, bool Held)
+{
+    if (DtMs <= 0)
+        return ENetChange::None;
+    if (Net.State == ENet::Locking)
+    {
+        Net.Ms += DtMs;
+        if (Net.Ms < Rules.WindupMs)
+            return ENetChange::None;
+        Net = {ENet::Netted, 0, 0};
+        return ENetChange::Netted;
+    }
+    if (Net.State != ENet::Netted)
+        return ENetChange::None;
+    Net.HeldMs = Held ? Net.HeldMs + DtMs : 0;
+    if (Net.HeldMs >= Rules.CutMs)
+    {
+        Net = FreeNet();
+        return ENetChange::Freed;
+    }
+    Net.Ms += DtMs;
+    if (Rules.HaulMs <= 0 || Net.Ms < Rules.HaulMs)
+        return ENetChange::None;
+    Net.State = ENet::Taken;
+    Net.HeldMs = 0;
+    return ENetChange::Taken;
+}
+
+// A drone locks a quarry it hovers within this reach of (2D).
+constexpr int NetReachCm = 320;
+
+// A drone whose net is cut (by hand or from the saddle) reloads its launcher
+// for NetRearmMs before it can lock anything again, as the Credit House's
+// seizure-net launcher does (ch04.b16: 9 s); with its tether brought down it
+// is gone. A load freed either way is not locked again for as long, so a cut
+// buys the string, the cart or the planter that much. The ms left after a
+// step of DtMs:
+constexpr int NetRearmMs = 9000;
+constexpr int Rearm(int LeftMs, int DtMs)
+{
+    return DtMs <= 0 ? LeftMs : LeftMs > DtMs ? LeftMs - DtMs : 0;
+}
+
+// A blade from the saddle reaches a netted pack horse this far off the rider's
+// flank; the ride's own arc says which flank (ch02.b08: the katana to the right).
+constexpr int SaddleCutCm = 420;
+
+// ---------------------------------------------------------------------------
+// Searchlights (探照灯, ch06.b02). A lamp on a wall swings its beam SweepDeg
+// across its centre line and back every PeriodMs, lighting a spot SpotCm
+// across where the beam meets the water or the road. A head in the spot for
+// SuspiciousMs sends the guards to look; for AlertMs, it raises the zone's
+// alarm. Out of the spot the count runs down as fast as it built. Once the
+// hero is detected the lights lock on the last place seen for LockMs.
+// ---------------------------------------------------------------------------
+struct FSearchlightRules
+{
+    int SweepDeg;
+    int PeriodMs;
+    int SpotCm;
+    int SuspiciousMs;
+    int AlertMs;
+    int LockMs;
+};
+
+constexpr bool SearchlightValid(const FSearchlightRules& Rules)
+{
+    return Rules.SweepDeg > 0 && Rules.SweepDeg <= 180 && Rules.PeriodMs >= 2 && Rules.SpotCm > 0 &&
+        Rules.SuspiciousMs > 0 && Rules.AlertMs > Rules.SuspiciousMs && Rules.LockMs >= 0;
+}
+
+// The beam's bearing at world time NowMs, in thousandths of a degree off its
+// centre line: from -Sweep/2 to +Sweep/2 over the first half of the period
+// and back over the second, shifted by PhaseMs.
+constexpr int BeamMilliDeg(const FSearchlightRules& Rules, int NowMs, int PhaseMs)
+{
+    const int Period = Rules.PeriodMs;
+    int At = (NowMs % Period + PhaseMs % Period) % Period;
+    if (At < 0)
+        At += Period;
+    const int Half = Period / 2;
+    const long long Along = At <= Half ? At : Period - At;
+    const long long Sweep = static_cast<long long>(Rules.SweepDeg) * 1000;
+    return static_cast<int>(-Sweep / 2 + Sweep * Along / Half);
+}
+
+enum class ESpotted : unsigned char { None, Suspicious, Alert };
+
+// The hero's time in the spot: it builds while his head is in it and runs
+// down out of it; crossing SuspiciousMs, then AlertMs, reports once each.
+constexpr ESpotted Spotted(int& InSpotMs, bool InSpot, int DtMs, const FSearchlightRules& Rules)
+{
+    if (DtMs <= 0)
+        return ESpotted::None;
+    const int Before = InSpotMs;
+    InSpotMs = InSpot ? (InSpotMs + DtMs > Rules.AlertMs ? Rules.AlertMs : InSpotMs + DtMs)
+                      : (InSpotMs > DtMs ? InSpotMs - DtMs : 0);
+    if (Before < Rules.AlertMs && InSpotMs >= Rules.AlertMs)
+        return ESpotted::Alert;
+    if (Before < Rules.SuspiciousMs && InSpotMs >= Rules.SuspiciousMs)
+        return ESpotted::Suspicious;
+    return ESpotted::None;
+}
+
+// ---------------------------------------------------------------------------
+// A one-shot lure (ch07.b04's temple bell): a stone that strikes it rings it
+// once, and every guard within RadiusCm that has not placed the hero
+// (unaware or suspicious) goes to it and looks it over for HoldMs.
+// ---------------------------------------------------------------------------
+struct FBellRules
+{
+    int RadiusCm;
+    int Uses;
+    int HoldMs;
+};
+
+constexpr bool RingBell(int& UsesLeft)
+{
+    if (UsesLeft <= 0)
+        return false;
+    --UsesLeft;
+    return true;
+}
+
+// A stone within this of the bell's lip strikes it.
+constexpr int BellStrikeCm = 110;
+
+// ---------------------------------------------------------------------------
+// A cook-fire (ch03.b14 竈): at each of the hold's fire_out progress marks
+// the next fire gutters, and the hold's progress waits until the hero relights
+// it (Interact held RelightMs at it).
+// ---------------------------------------------------------------------------
+// The fire that gutters at the Mark-th mark (0 first), of Fires.
+constexpr int GutteringFire(int Mark, int Fires)
+{
+    return Fires > 0 && Mark >= 0 ? Mark % Fires : -1;
+}
+
+// Marks passed between two progress readings (permille), for OutAt ascending.
+constexpr int MarksCrossed(const int* OutAt, int Marks, int Before, int After)
+{
+    int Crossed = 0;
+    for (int Mark = 0; Mark < Marks; ++Mark)
+        Crossed += Before < OutAt[Mark] && After >= OutAt[Mark];
+    return Crossed;
+}
+
+// ---------------------------------------------------------------------------
+// Ladders onto the board roofs (ch03.b03, b10): Jump at a ladder's foot,
+// facing it, climbs it at LadderCmS and steps off onto the roof. Coming down
+// off a roof, a drop of more than DropNoiseOverCm lands with a thud heard
+// DropNoiseCm away, unless it lands on straw.
+// ---------------------------------------------------------------------------
+constexpr int LadderCmS = 150;
+constexpr int DropNoiseOverCm = 200;
+
+constexpr bool LandingHeard(int DropCm, bool OnStraw)
+{
+    return DropCm > DropNoiseOverCm && !OnStraw;
+}
+
+// ---------------------------------------------------------------------------
+// The League's charge (ch08.b02). The pack of riders runs the causeway at
+// PaceCmS in a column of twos; when the hero falls more than LagCm behind his
+// place in it the pack eases off, up to CatchUpCmS, but it never waits. A seal
+// stake bars the causeway until broken: a yari thrust from a horse at a canter
+// or faster breaks it, or two arrows; a stake the hero leaves standing is
+// broken by the riders behind StakeBreakMs after the pack reaches it. Each
+// rider strikes an opponent on the causeway within RiderReachCm once every
+// RiderStrikeMs.
+// ---------------------------------------------------------------------------
+constexpr int LagCm = 3000;
+constexpr int RiderReachCm = 350;
+constexpr int RiderStrikeMs = 1500;
+constexpr int RiderStrikeDamage = 40;
+constexpr int StakeArrows = 2;
+
+// The pack's pace with the hero Lag cm behind his place in it: full pace
+// within LagCm, easing by up to CatchUp as he falls another LagCm behind.
+constexpr int PackPaceCmS(int PaceCmS, int CatchUpCmS, int Lag)
+{
+    const int Over = Lag - LagCm;
+    if (Over <= 0)
+        return PaceCmS;
+    const int Ease = Over >= LagCm ? CatchUpCmS : CatchUpCmS * Over / LagCm;
+    return PaceCmS - Ease;
+}
+
+enum class EStakeHit : unsigned char { None, Yari, Arrow };
+
+// A hit on a standing stake: true when it breaks. Arrows counts the arrows it has taken.
+constexpr bool StakeStruck(int& Arrows, EStakeHit Hit, bool CanterOrFaster)
+{
+    if (Hit == EStakeHit::Yari)
+        return CanterOrFaster;
+    if (Hit != EStakeHit::Arrow)
+        return false;
+    ++Arrows;
+    return Arrows >= StakeArrows;
 }
 
 } // namespace SoraFieldcraftRules

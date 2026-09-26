@@ -427,6 +427,14 @@ void USoraSettings::SetAutoSteer(bool bEnabled)
     Changed();
 }
 
+bool USoraSettings::VolleyAutoOrder() const { return Read().VolleyAutoOrder; }
+
+void USoraSettings::SetVolleyAutoOrder(bool bEnabled)
+{
+    Write().VolleyAutoOrder = bEnabled;
+    Changed();
+}
+
 int32 USoraSettings::CameraShake() const { return Read().CameraShake; }
 
 void USoraSettings::SetCameraShake(int32 Percent)

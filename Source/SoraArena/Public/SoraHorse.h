@@ -46,6 +46,15 @@ public:
     FVector2D LocalOf(const FVector& Location) const;
     // A pack horse walks a road at a pace (a convoy), or trails a leader on a rope.
     void FollowRoad(const FSoraZone* InRoad, float StartChainage, int32 PaceCmS);
+    // A League horse runs its lane of the road, this far right of its middle
+    // (negative: left), at a pace its pack sets each step.
+    void SetLane(float OffsetCm) { LaneCm = OffsetCm; }
+    void SetRoadPace(int32 InPaceCmS) { PaceCmS = InPaceCmS; }
+    void SetRoadChainage(float InChainage);
+    // A League rider in the saddle, the rival (Toranosuke on Arashi) in his own colours.
+    void SeatRider(bool bRival);
+    // A convoy horse's id (FSoraPackHorse::Id).
+    FString PackId;
     void Lead(ASoraHorse* InLeader, float SpacingCm);
     void SetWaiting(bool bWait) { bWaiting = bWait; }
     // Places her, halted, on the ground at Location facing Yaw.
@@ -80,6 +89,7 @@ private:
     float Chainage = 0.f;
     int32 PaceCmS = 0;
     float LeadSpacing = 0.f;
+    float LaneCm = 0.f;
     bool bWaiting = false;
     bool bSpookPending = false;
     float ClockCarryMs = 0.f;

@@ -118,9 +118,10 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Defaults: full volume, English subtitles, standard size, speaker names, no captions"), bDefaultVolumes &&
         Settings->EnglishSubtitles() && Scope.Mode()->bEnglishSubtitles && Settings->SubtitleSize() == ESubtitleSize::Standard &&
         Settings->SpeakerNames() && !Settings->SoundCaptions());
-    TestTrue(TEXT("Defaults: standard telegraphs, held guard and sprint, normal difficulty, no auto-steer, flashes and full shake"),
+    TestTrue(TEXT("Defaults: standard telegraphs, held guard and sprint, normal difficulty, no auto-steer, the volley auto-order, flashes and full shake"),
         Settings->TelegraphPalette() == EPalette::Standard && !Settings->ToggleGuard() && !Settings->ToggleSprint() &&
-        Settings->CampaignDifficulty() == EDifficulty::Normal && !Settings->AutoSteer() && !Settings->ReduceFlashing() && Settings->CameraShake() == 100);
+        Settings->CampaignDifficulty() == EDifficulty::Normal && !Settings->AutoSteer() && Settings->VolleyAutoOrder() &&
+        !Settings->ReduceFlashing() && Settings->CameraShake() == 100);
 
     // Everything below with the pad alone.
     if (!TestTrue(TEXT("The pad opens Audio from the title"), Scope.OpenSettings(Pad, EAction::OpenAudio) && Scope.On(EScreen::Audio)))
@@ -171,14 +172,17 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
     Scope.Key(Pad.Right);
     Scope.FocusOn(Pad, EAction::AutoSteer);
     Scope.Key(Pad.Accept);
+    Scope.FocusOn(Pad, EAction::VolleyAutoOrder);
+    Scope.Key(Pad.Accept);
     Scope.FocusOn(Pad, EAction::ReduceFlashing);
     Scope.Key(Pad.Right);
     Scope.FocusOn(Pad, EAction::CameraShake);
     for (int32 Press = 0; Press < 3; ++Press)
         Scope.Key(Pad.Left);
-    TestTrue(TEXT("Accessibility: red-green telegraphs, toggled guard and sprint, easy, auto-steer, reduced flashing, 70% shake"),
+    TestTrue(TEXT("Accessibility: red-green telegraphs, toggled guard and sprint, easy, auto-steer, no volley auto-order, reduced flashing, 70% shake"),
         Settings->TelegraphPalette() == EPalette::RedGreen && Settings->ToggleGuard() && Settings->ToggleSprint() &&
-        Settings->CampaignDifficulty() == EDifficulty::Easy && Settings->AutoSteer() && Settings->ReduceFlashing() && Settings->CameraShake() == 70);
+        Settings->CampaignDifficulty() == EDifficulty::Easy && Settings->AutoSteer() && !Settings->VolleyAutoOrder() &&
+        Settings->ReduceFlashing() && Settings->CameraShake() == 70);
     Scope.Key(Pad.Back);
     Scope.Key(Pad.Back);
     Scope.Key(Pad.Back);
@@ -194,8 +198,8 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
         !Scope.Mode()->bEnglishSubtitles && Settings->SubtitleSize() == ESubtitleSize::ExtraLarge && !Settings->SpeakerNames() &&
         Settings->SoundCaptions());
     TestTrue(TEXT("Accessibility settings survive"), Settings->TelegraphPalette() == EPalette::RedGreen && Settings->ToggleGuard() &&
-        Settings->ToggleSprint() && Settings->CampaignDifficulty() == EDifficulty::Easy && Settings->AutoSteer() && Settings->ReduceFlashing() &&
-        Settings->CameraShake() == 70);
+        Settings->ToggleSprint() && Settings->CampaignDifficulty() == EDifficulty::Easy && Settings->AutoSteer() && !Settings->VolleyAutoOrder() &&
+        Settings->ReduceFlashing() && Settings->CameraShake() == 70);
     Scope.Key(EKeys::F10);
     TestTrue(TEXT("F10 toggles English subtitles and saves them"), Scope.Mode()->bEnglishSubtitles && Settings->EnglishSubtitles());
 
@@ -224,7 +228,8 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
         return false;
     Settings = Scope.Mode()->Settings();
     return TestTrue(TEXT("A save of another schema is discarded for the defaults"), !Settings->ToggleGuard() && !Settings->ReduceFlashing() &&
-        Settings->EnglishSubtitles() && Settings->CampaignDifficulty() == EDifficulty::Normal && !Settings->AutoSteer());
+        Settings->EnglishSubtitles() && Settings->CampaignDifficulty() == EDifficulty::Normal && !Settings->AutoSteer() &&
+        Settings->VolleyAutoOrder());
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(

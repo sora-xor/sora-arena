@@ -206,11 +206,12 @@ void USoraStealth::FindBody(ASoraEnemy& Body, ASoraEnemy& Finder)
     OnBodyFound.Broadcast(&Body, &Finder);
 }
 
-void USoraStealth::MakeNoise(StealthRules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source) const
+void USoraStealth::MakeNoise(StealthRules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source,
+    int32 LoudnessPermille) const
 {
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)
         if (It->GetPawn() && It->GetPawn() != Source)
-            It->HearNoise(Kind, Origin, Evidence, Source);
+            It->HearNoise(Kind, Origin, Evidence, Source, LoudnessPermille);
 }
 
 bool USoraStealth::IsWorkPaused() const

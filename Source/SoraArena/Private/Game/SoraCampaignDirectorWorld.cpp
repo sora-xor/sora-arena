@@ -1,4 +1,6 @@
 #include "SoraCampaignDirector.h"
+#include "Combat/SoraCombatEffects.h"
+#include "Combat/SoraDamage.h"
 #include "Game/SoraCampaignReach.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalog.h"
@@ -10,6 +12,7 @@
 #include "SoraMountRules.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraSaveGame.h"
+#include "SoraText.h"
 #include "SoraWorldBuilder.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
@@ -74,6 +77,10 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     case SoraBeatRules::EGoal::Exit:
         return !TaskState.Reached&&At(Space.Exit.Center,false);
     case SoraBeatRules::EGoal::Hold:
+        // A guttered cook-fire wants the hero's hand before the hold goes on.
+        if(const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this); Fieldcraft&&Fieldcraft->FiresOut()>0)
+            for(int32 Fire=0;Fire<Fieldcraft->Active()->Fires.Points.Num();++Fire)
+                if(!Fieldcraft->IsFireLit(Fire)) return At(Fieldcraft->Active()->Fires.Points[Fire],true);
         return At(Space.Anchor,false);
     case SoraBeatRules::EGoal::Turns:
         return At(Space.Anchor,true);
@@ -197,6 +204,7 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
                     ASoraHorse* Beast=GetWorld()->SpawnActor<ASoraHorse>(ASoraWorldBuilder::Floor(Mount.At),FRotator(0,Yaw,0),Params);
                     if(!Beast) continue;
                     Beast->Build(TEXT("bay"),ASoraHorse::ETack::Pack);
+                    Beast->PackId=Row.Id;
                     Beast->FollowRoad(Road,Ahead,Row.SpeedCmS);
                     Ahead+=Row.SpacingCm;
                     Pack.Add(Beast);
@@ -322,9 +330,33 @@ void USoraCampaignDirector::TickHorses()
                 else if(!bClose) Frightening.Remove(Key);
             }
     }
-    // A convoy waits for a rider who falls behind.
+    // A net's lock on the rider throws him: the horse stumbles (horse_down)
+    // and he goes on foot, or back to the checkpoint where the ride says so.
+    if(IsMounted())
+        if(const USoraCombatEffects* Effects=USoraCombatEffects::Get(this); Effects&&Effects->IsRooted(Hero))
+        {
+            ASoraPlayerCharacter* Rider=Mode().Hero();
+            Dismount();
+            FHitResult Trace; Trace.ImpactPoint=Rider->GetActorLocation(); Trace.Location=Trace.ImpactPoint;
+            SoraDamage::Strike(Rider,SoraCampaignReach::ThrownHp,FSoraHit::Hazard(Rider->GetActorLocation()),FVector::UpVector,Trace,nullptr,nullptr);
+            RaiseBeatEvent(TEXT("horse_down"));
+            if(!ActiveBeatData()||Mode().bDefeated) return;
+        }
+    // She answers his whistle.
+    if(WhistleAt>=0.0&&GetWorld()&&GetWorld()->GetTimeSeconds()>=WhistleAt&&IsValid(Horse)&&!IsMounted())
+    {
+        WhistleAt=-1.0;
+        // At his left shoulder, facing his way, so he stands at her right to mount.
+        const FRotator Facing(0.f,Hero->GetActorRotation().Yaw,0.f);
+        Horse->Place(Hero->GetActorLocation()-FRotationMatrix(Facing).GetUnitAxis(EAxis::Y)*SoraMountRules::DismountSideCm,Facing.Yaw);
+        Fire(TEXT("horse_returned"));
+    }
+    // A convoy waits for a rider who falls behind, and halts while any of its
+    // string is netted or shies from a light.
+    const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this);
+    const bool bHalted=Fieldcraft&&Fieldcraft->QuarryHalted();
     for(const auto& Beast:Pack)
-        if(IsValid(Beast)) Beast->SetWaiting(FVector::Dist2D(Beast->GetActorLocation(),Hero->GetActorLocation())>SoraCampaignReach::ConvoyWait);
+        if(IsValid(Beast)) Beast->SetWaiting(bHalted||FVector::Dist2D(Beast->GetActorLocation(),Hero->GetActorLocation())>SoraCampaignReach::ConvoyWait);
 }
 void USoraCampaignDirector::TickSiege(int32 DeltaMs)
 {
@@ -334,9 +366,13 @@ void USoraCampaignDirector::TickSiege(int32 DeltaMs)
     {
         if(TaskState.TargetHp[Target]<=0) continue;
         const FVector Where=ASoraWorldBuilder::Floor(Space->Targets[Target]);
+        // A seizure drone on its errand nets rather than wears a target down.
+        const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this);
         int32 Attackers=0;
         for(const auto& Enemy:Enemies)
-            if(IsValid(Enemy)&&Enemy->IsAlive()&&FVector::Dist2D(Enemy->GetActorLocation(),Where)<SoraBeatRules::SiegeRadiusCm) ++Attackers;
+            if(IsValid(Enemy)&&Enemy->IsAlive()&&(!Fieldcraft||!Fieldcraft->IsOnErrand(*Enemy))&&
+                FVector::Dist2D(Enemy->GetActorLocation(),Where)<SoraBeatRules::SiegeRadiusCm)
+                ++Attackers;
         const int32 Damage=SoraBeatRules::SiegeDamage(TaskState,Task,Target,Attackers,DeltaMs);
         // A target lost fails the defence to its checkpoint.
         if(Damage>0&&DamageDefendedTarget(Target,Damage)) return;
@@ -421,8 +457,11 @@ bool USoraCampaignDirector::PickUp()
             Save->Collectibles=static_cast<int64>(CollectedMask()|SoraCampaignRules::CollectibleBit(ChapterId,Item.MaskBit));
             for(const FSoraCollectibleCategory& Category:FSoraCatalog::Get().CollectibleCategories)
                 if(Category.Id==Item.Category)
-                    Tell(FSoraStoryNotice::EKind::Collectible,TEXT("見つけた：")+Category.Japanese,TEXT("Found: ")+Category.English,
-                        Item.Codex,Item.CodexEnglish);
+                {
+                    const SoraText::FLine Found=SoraText::Format(NSLOCTEXT("SoraArena.Campaign","FoundCollectible","見つけた：{Category}"),
+                        {{TEXT("Category"),SoraText::FLine{Category.Japanese,Category.English}}});
+                    Tell(FSoraStoryNotice::EKind::Collectible,Found.Japanese,Found.English,Item.Codex,Item.CodexEnglish);
+                }
             Fire(TEXT("collectible:")+Item.Id); Fire(TEXT("collectible_found:")+Item.Id);
             ShowPickups();
             SaveProgress();
@@ -438,7 +477,7 @@ bool USoraCampaignDirector::InteractSpace(ASoraPlayerCharacter& Player)
     {
         if(!Space->Mount.bDismount)
         {
-            Notify(TEXT("ここでは降りられない。"),TEXT("You cannot dismount here."),3.f);
+            Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","CannotDismount","ここでは降りられない。")),3.f);
             return true;
         }
         Dismount();
@@ -446,7 +485,15 @@ bool USoraCampaignDirector::InteractSpace(ASoraPlayerCharacter& Player)
         return true;
     }
     const FVector2D Local=Horse->LocalOf(Player.GetActorLocation());
-    if(Local.Size()>SoraCampaignReach::Saddle) return false;
+    // Out of reach on a ride that lets him down, a whistle brings her to him.
+    if(Local.Size()>SoraCampaignReach::Saddle)
+    {
+        if(!Space->Mount.bDismount||Space->Mount.Tack.Num()>TackSteps||WhistleAt>=0.0||!GetWorld()) return false;
+        WhistleAt=GetWorld()->GetTimeSeconds()+SoraCampaignReach::WhistleSeconds;
+        Fire(TEXT("whistle"));
+        Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","WhistleKurimaru","指笛で栗丸を呼んだ。")),3.f);
+        return true;
+    }
     // Tack-up, piece by piece in order at her side; the bit is refused until
     // she is given what she wants.
     const TArray<FSoraTackStep>& Tack=Space->Mount.Tack;
@@ -472,7 +519,7 @@ bool USoraCampaignDirector::InteractSpace(ASoraPlayerCharacter& Player)
         Fire(TEXT("mount"));
         return true;
     }
-    Notify(TEXT("馬には右側から乗る。右へ回り込もう。"),TEXT("Mount from her right side, as riders do. Walk around to her right."),4.f);
+    Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","MountFromRight","馬には右側から乗る。右へ回り込もう。")),4.f);
     return true;
 }
 float USoraCampaignDirector::CarryPace() const
@@ -484,13 +531,12 @@ bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
     if(!Mode().bCampaign||WeaponId<0||WeaponId>=SoraBeatRules::WeaponCount) return true;
     if(TaskState.Carrying&&Task.Task==SoraBeatRules::ETask::Carry&&(Task.CarryWeaponsMask&(1u<<WeaponId))==0u)
     {
-        if(bNotify) Notify(TEXT("荷を抱えている。手にできるのは刀を片手で、が精一杯だ。"),
-            TEXT("Your arms are full: at most the katana in one paw."),3.f);
+        if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","ArmsFull","荷を抱えている。手にできるのは刀を片手で、が精一杯だ。")),3.f);
         return false;
     }
     if(IsMounted()&&(Horse->RideRules().WeaponsMask&(1u<<WeaponId))==0u)
     {
-        if(bNotify) Notify(TEXT("馬上ではこの武器は使えない。"),TEXT("That weapon cannot be used from the saddle."),3.f);
+        if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","NotFromSaddle","馬上ではこの武器は使えない。")),3.f);
         return false;
     }
     return true;
@@ -503,9 +549,9 @@ bool USoraCampaignDirector::ArmsReady(int32 WeaponId,float AimYaw,bool bNotify)
         return true;
     // Bible §4.2-4.3: the yumi to the left (弓手), the katana and yari to the right (馬手).
     if(bNotify)
-        Notify(WeaponId==18?TEXT("馬上の弓は左手側へ射る。"):WeaponId==19?TEXT("馬上の槍は前と右へ突く。"):TEXT("馬上の刀は右手側へ斬る。"),
-            WeaponId==18?TEXT("From the saddle the yumi shoots to the left."):WeaponId==19?TEXT("From the saddle the yari thrusts forward and to the right.")
-                :TEXT("From the saddle the katana cuts to the right."),3.f);
+        Notify(SoraText::Line(WeaponId==18?NSLOCTEXT("SoraArena.Campaign","SaddleYumiArc","馬上の弓は左手側へ射る。")
+            :WeaponId==19?NSLOCTEXT("SoraArena.Campaign","SaddleYariArc","馬上の槍は前と右へ突く。")
+            :NSLOCTEXT("SoraArena.Campaign","SaddleKatanaArc","馬上の刀は右手側へ斬る。")),3.f);
     return false;
 }
 void USoraCampaignDirector::CarryChanged()

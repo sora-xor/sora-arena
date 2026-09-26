@@ -1,5 +1,6 @@
 #include "HUD/SoraHUDPanels.h"
 #include "SoraArmsRules.h"
+#include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraft.h"
@@ -14,8 +15,10 @@
 // beat's fieldcraft (USoraFieldcraft) asks of the hero: the work his hand can
 // do here and how far a held piece of it has come, his breath in the water
 // and grip on the wall, the stones he carries, the candle, the signal his
-// escorted party answers, the volley ranks' ring and loading, and where the
-// downed lie. Every line is Japanese
+// escorted party answers, the volley ranks' ring and loading (and Easy's
+// auto-order), seizure nets and the time before a netted load is hauled off,
+// a searchlight's spot on him, guttered cook-fires, a ladder in reach, the
+// League's charge, and where the downed lie. Every line is Japanese
 // with its English beside or beneath it while subtitles are on, and every
 // key is the player's own on the device in hand.
 namespace
@@ -102,8 +105,6 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
     const ASoraGameMode& G = Frame.Mode;
     const USoraFieldcraft* Fieldcraft = G.bCampaign && !G.bDeterministicPractice ? USoraFieldcraft::Get(&Hero) : nullptr;
     if (!Fieldcraft || Hero.ArmsWheel().bOpen) return;
-    const FSoraFieldcraftReadout R = Fieldcraft->Readout(Hero);
-    if (!R.bActive) return;
     const float W = Frame.W, H = Frame.H, S = Frame.S;
     const float PromptX = W * .5f - 170 * S;
     float PromptY = H * .5f + 100 * S;
@@ -112,6 +113,19 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
         Frame.LabelWithEnglish(Line, PromptX, PromptY, .5f * S, Color);
         PromptY += 30 * S;
     };
+    // Work held at a point: a load hoisted on the well's 釣瓶 (it waits while a
+    // guard watches), or an objective worked with Interact held.
+    if (const USoraCampaignDirector* Campaign = G.Campaign(); Campaign && Campaign->HeldWorkProgress() >= 0.f)
+    {
+        const FText Pattern = Campaign->IsHeldWorkWatched() ? NSLOCTEXT("SoraArena.Fieldcraft", "HoistWatched", "見られている　{Key} を押さえたまま待て")
+            : Campaign->IsHoisting() ? NSLOCTEXT("SoraArena.Fieldcraft", "Hoist", "{Key} 長押し：釣瓶で引き上げる")
+            : NSLOCTEXT("SoraArena.Fieldcraft", "HeldWork", "{Key} を押さえたまま仕事を続ける");
+        Prompt(Keyed(HUD, Pattern, TEXT("Interact")), Campaign->IsHeldWorkWatched() ? FLinearColor(.95f, .35f, .2f) : Frame.Gold);
+        Bar(HUD, PromptX, PromptY - 4 * S, 300 * S, S, Campaign->HeldWorkProgress(), Frame.Gold);
+        PromptY += 8 * S;
+    }
+    const FSoraFieldcraftReadout R = Fieldcraft->Readout(Hero);
+    if (!R.bActive) return;
     // What the hero's hand can do here, and how far a held piece of it has come.
     using EHold = FSoraFieldcraftReadout::EHold;
     const EHold Work = R.Holding != EHold::None ? R.Holding : R.HoldHere;
@@ -120,6 +134,8 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
         const FText Pattern = Work == EHold::Snuff ? NSLOCTEXT("SoraArena.Fieldcraft", "Snuff", "{Key} 長押し：灯りを消す")
             : Work == EHold::Revive ? NSLOCTEXT("SoraArena.Fieldcraft", "Revive", "{Key} 長押し：助け起こす")
             : Work == EHold::Free ? NSLOCTEXT("SoraArena.Fieldcraft", "Free", "{Key} 長押し：首輪を断つ")
+            : Work == EHold::NetCut ? NSLOCTEXT("SoraArena.Fieldcraft", "NetCut", "{Key} 長押し：網を切る")
+            : Work == EHold::Relight ? NSLOCTEXT("SoraArena.Fieldcraft", "Relight", "{Key} 長押し：竈の火を点け直す")
             : NSLOCTEXT("SoraArena.Fieldcraft", "Release", "{Key} 長押し：牢の戸を開ける");
         Prompt(Keyed(HUD, Pattern, TEXT("Interact")), Frame.Gold);
         if (R.Holding != EHold::None)
@@ -130,6 +146,7 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
     }
     if (R.bAtPile) Prompt(Keyed(HUD, NSLOCTEXT("SoraArena.Fieldcraft", "TakeStones", "{Key}：礫を拾う"), TEXT("Interact")), Frame.Gold);
     if (R.bAtFace) Prompt(Keyed(HUD, NSLOCTEXT("SoraArena.Fieldcraft", "StartClimb", "{Key}：手掛かりへ取り付く"), TEXT("Jump")), Frame.Gold);
+    if (R.bAtLadder) Prompt(Keyed(HUD, NSLOCTEXT("SoraArena.Fieldcraft", "Ladder", "{Key}：梯子を使う"), TEXT("Jump")), Frame.Gold);
     // The left column above the health panel: breath, grip, stones, the candle, the signal.
     float Y = H - 150 * S;
     const float X = 30 * S;
@@ -188,6 +205,22 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
             }
         }
     }
+    // Seizure nets: how many are netted, and the time before the first is hauled off.
+    if (R.NetsHeld > 0 || R.NetsLocking > 0)
+        Status(SoraText::Format(NSLOCTEXT("SoraArena.Fieldcraft", "Nets", "差押網 {Held}　網を切るか、吊る目録を落とせ"),
+            {{TEXT("Held"), R.NetsHeld}}), FLinearColor(.95f, .35f, .2f), R.NetsHeld > 0 ? R.HaulLeft : -1.f);
+    // A searchlight's spot on him, filling toward the alarm.
+    if (R.bInLight)
+        Status(SoraText::Line(NSLOCTEXT("SoraArena.Fieldcraft", "InLight", "探照灯に照らされている　潜れ")), FLinearColor(.95f, .35f, .2f),
+            1.f - R.LightExposure);
+    if (R.FiresOut > 0)
+        Status(Keyed(HUD, NSLOCTEXT("SoraArena.Fieldcraft", "FireOut", "竈の火が消えた　{Key} 長押しで点け直すまで炊き出しは止まる"), TEXT("Interact")),
+            Frame.Gold, -1.f);
+    if (R.bAutoOrder)
+        Status(SoraText::Line(NSLOCTEXT("SoraArena.Fieldcraft", "AutoOrder", "自動号令：込め終えた組が一番近い敵へ放つ")), Frame.Muted, -1.f);
+    if (R.Riders > 0)
+        Status(SoraText::Format(NSLOCTEXT("SoraArena.Fieldcraft", "Charge", "騎馬 {Riders}　差押え杭 残り {Stakes}"),
+            {{TEXT("Riders"), R.Riders}, {TEXT("Stakes"), R.StakesStanding}}), Frame.Ivory, -1.f);
     // Where the downed lie, so the hero can reach them in time.
     const SoraText::FLine Down = SoraText::Line(NSLOCTEXT("SoraArena.Fieldcraft", "Downed", "倒れている"));
     for (const FVector& At : R.Downed)

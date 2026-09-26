@@ -1528,11 +1528,13 @@ beats:
     - {type: drone, count: 3, spawn: sp_kaido_g2_ravine}
     trigger: progress_at:0.33
     behavior: net_convoy
+    netters: 2
   - enemies:
     - {type: drone, count: 2, spawn: sp_kaido_g3_left}
     trigger: progress_at:0.55
     behavior: net_convoy
     with: ship_searchlight_sweep
+    x_sweep_m: [640, 800]
   - enemies:
     - {type: drone, count: 3, spawn: sp_kaido_g4_left}
     trigger: progress_at:0.75

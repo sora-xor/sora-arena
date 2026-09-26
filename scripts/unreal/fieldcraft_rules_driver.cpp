@@ -273,6 +273,119 @@ void Volleys()
     assert(VolleyShare(1, 2, 4, 0) == 144 && VolleyShare(1, 0, 4, 0) == 0);
     assert(VolleyShare(0, 4, 4, 0) == 0);
 }
+
+void Nets()
+{
+    const FNetRules Convoy{800, 15000, 1000};
+    const FNetRules Cart{800, 0, 1000};
+    assert(NetValid(Convoy) && NetValid(Cart) && !NetValid({0, 15000, 1000}) && !NetValid({800, 15000, 0}));
+    // Locked for 800 ms under the ring, then netted; nothing locks twice.
+    FNet Net = FreeNet();
+    assert(BeginLock(Net) && !BeginLock(Net) && Net.State == ENet::Locking);
+    ENetChange Change = ENetChange::None;
+    int Ms = 0;
+    for (; Change == ENetChange::None; Ms += Frame)
+        Change = NetTick(Net, Convoy, Frame, false);
+    assert(Change == ENetChange::Netted && Ms >= 800 && Ms < 800 + Frame && Net.State == ENet::Netted);
+    // A hand on the net for a full second cuts it; letting go starts over.
+    assert(NetTick(Net, Convoy, 600, true) == ENetChange::None && NetTick(Net, Convoy, 17, false) == ENetChange::None);
+    assert(NetTick(Net, Convoy, 990, true) == ENetChange::None && NetTick(Net, Convoy, 10, true) == ENetChange::Freed);
+    assert(Net.State == ENet::Free);
+    // Left netted it is hauled away at 15 s, the lift's clock never paused by a broken hold.
+    assert(BeginLock(Net) && NetTick(Net, Convoy, 800, false) == ENetChange::Netted);
+    for (Ms = 0, Change = ENetChange::None; Change == ENetChange::None; Ms += 250)
+        Change = NetTick(Net, Convoy, 250, Ms % 1000 == 0);
+    assert(Change == ENetChange::Taken && Ms == 15000 && Net.State == ENet::Taken);
+    assert(NetTick(Net, Convoy, 1000, true) == ENetChange::None && !BeginLock(Net) && !CutNet(Net));
+    // The ox's net holds until it is cut: no haul.
+    FNet Ox = FreeNet();
+    assert(BeginLock(Ox) && NetTick(Ox, Cart, 800, false) == ENetChange::Netted);
+    for (Ms = 0; Ms < 120000; Ms += 1000)
+        assert(NetTick(Ox, Cart, 1000, false) == ENetChange::None);
+    // A blade from the saddle cuts at once; a tether downed loosens a net and breaks a lock.
+    assert(CutNet(Ox) && Ox.State == ENet::Free && !CutNet(Ox));
+    assert(BeginLock(Ox) && Loosen(Ox) == ENetChange::None && Ox.State == ENet::Free);
+    assert(BeginLock(Ox) && NetTick(Ox, Cart, 800, false) == ENetChange::Netted && Loosen(Ox) == ENetChange::Freed);
+    assert(Loosen(Ox) == ENetChange::None);
+    // A drone whose net was cut reloads for 9 s before it locks again, at any frame rate.
+    for (const int Step : {1, 16, 17, 33, 250})
+    {
+        int Left = NetRearmMs, Ms = 0;
+        for (; Left > 0; Ms += Step)
+            Left = Rearm(Left, Step);
+        assert(Ms >= NetRearmMs && Ms < NetRearmMs + Step);
+    }
+    assert(Rearm(0, Frame) == 0 && Rearm(500, 0) == 500 && Rearm(500, -Frame) == 500 && NetRearmMs > 2 * 800);
+}
+
+void Searchlights()
+{
+    const FSearchlightRules Moat{70, 10000, 800, 500, 1500, 6000};
+    assert(SearchlightValid(Moat) && !SearchlightValid({70, 10000, 800, 1500, 1500, 0}) && !SearchlightValid({0, 10000, 800, 500, 1500, 0}));
+    // The beam swings 35 degrees each way and back every ten seconds.
+    assert(BeamMilliDeg(Moat, 0, 0) == -35000 && BeamMilliDeg(Moat, 2500, 0) == 0 && BeamMilliDeg(Moat, 5000, 0) == 35000);
+    assert(BeamMilliDeg(Moat, 7500, 0) == 0 && BeamMilliDeg(Moat, 10000, 0) == -35000 && BeamMilliDeg(Moat, 12500, 0) == 0);
+    assert(BeamMilliDeg(Moat, 0, 5000) == 35000 && BeamMilliDeg(Moat, 99999, 5000) == BeamMilliDeg(Moat, 104999, 0));
+    for (int At = 0; At < 30000; At += 7)
+        assert(BeamMilliDeg(Moat, At, 0) >= -35000 && BeamMilliDeg(Moat, At, 0) <= 35000);
+    // Half a second in the spot: suspicion; a second and a half: the alarm. Out of it the count runs down.
+    int InSpot = 0;
+    ESpotted Seen = ESpotted::None;
+    int Ms = 0;
+    for (; Seen == ESpotted::None; Ms += Frame)
+        Seen = Spotted(InSpot, true, Frame, Moat);
+    assert(Seen == ESpotted::Suspicious && Ms >= 500 && Ms < 500 + Frame);
+    for (Seen = ESpotted::None; Seen == ESpotted::None; Ms += Frame)
+        Seen = Spotted(InSpot, true, Frame, Moat);
+    assert(Seen == ESpotted::Alert && Ms >= 1500 && Ms < 1500 + Frame && InSpot == 1500);
+    assert(Spotted(InSpot, true, 1000, Moat) == ESpotted::None && InSpot == 1500);
+    int Out = 0;
+    while (InSpot > 0)
+    {
+        assert(Spotted(InSpot, false, Frame, Moat) == ESpotted::None);
+        Out += Frame;
+    }
+    assert(Out >= 1500 && Out < 1500 + Frame);
+    // A quick pass through the spot is not enough to be noticed.
+    for (int Pass = 0; Pass < 20; ++Pass)
+    {
+        assert(Spotted(InSpot, true, 400, Moat) == ESpotted::None);
+        assert(Spotted(InSpot, false, 400, Moat) == ESpotted::None);
+    }
+}
+
+void BellFiresAndRoofs()
+{
+    int Uses = 1;
+    assert(RingBell(Uses) && Uses == 0 && !RingBell(Uses));
+    // Three fires gutter in turn at 25, 55 and 80 percent.
+    const int OutAt[] = {250, 550, 800};
+    assert(MarksCrossed(OutAt, 3, 0, 249) == 0 && MarksCrossed(OutAt, 3, 249, 250) == 1 && MarksCrossed(OutAt, 3, 250, 900) == 2);
+    assert(MarksCrossed(OutAt, 3, 0, 1000) == 3 && MarksCrossed(OutAt, 3, 800, 1000) == 0);
+    assert(GutteringFire(0, 3) == 0 && GutteringFire(2, 3) == 2 && GutteringFire(3, 3) == 0 && GutteringFire(0, 0) == -1);
+    // A drop off a roof is heard unless it lands on straw; stepping down a ladder is not.
+    assert(LandingHeard(320, false) && !LandingHeard(320, true) && !LandingHeard(DropNoiseOverCm, false));
+}
+
+void Charge()
+{
+    // Within 30 m of his place the pack keeps its pace; it eases by up to
+    // 150 cm/s as he falls another 30 m behind, and never stops.
+    assert(PackPaceCmS(600, 150, -500) == 600 && PackPaceCmS(600, 150, LagCm) == 600);
+    assert(PackPaceCmS(600, 150, LagCm + 1500) == 525 && PackPaceCmS(600, 150, 2 * LagCm) == 450);
+    assert(PackPaceCmS(600, 150, 100000) == 450);
+    // A stake breaks to a yari at a canter or faster, or to its second arrow.
+    int Arrows = 0;
+    assert(!StakeStruck(Arrows, EStakeHit::Yari, false) && StakeStruck(Arrows, EStakeHit::Yari, true));
+    assert(!StakeStruck(Arrows, EStakeHit::Arrow, false) && Arrows == 1 && StakeStruck(Arrows, EStakeHit::Arrow, false));
+    assert(!StakeStruck(Arrows = 0, EStakeHit::None, true) && Arrows == 0);
+    // Easy's auto-order fires only with the toggle on, the front loaded, no ring held and a target in reach.
+    assert(AutoOrders(true, true, true, false, true));
+    assert(!AutoOrders(false, true, true, false, true) && !AutoOrders(true, false, true, false, true));
+    assert(!AutoOrders(true, true, false, false, true) && !AutoOrders(true, true, true, true, true) &&
+        !AutoOrders(true, true, true, false, false));
+    assert(SmokeMs == 4000);
+}
 }
 
 int main()
@@ -284,5 +397,9 @@ int main()
     Climbing();
     Lures();
     Volleys();
+    Nets();
+    Searchlights();
+    BellFiresAndRoofs();
+    Charge();
     return 0;
 }

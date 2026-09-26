@@ -33,7 +33,7 @@ enum class EAction : uint8
     // Param is the ESoraAudioBus.
     Volume,
     Subtitles, SubtitleSize, SpeakerNames, SoundCaptions,
-    TelegraphPalette, ToggleGuard, ToggleSprint, CampaignDifficulty, AutoSteer, ReduceFlashing, CameraShake,
+    TelegraphPalette, ToggleGuard, ToggleSprint, CampaignDifficulty, AutoSteer, VolleyAutoOrder, ReduceFlashing, CameraShake,
     LookSensitivity, MouseSensitivity, InvertLook, MoveDeadZone, LookDeadZone,
     // Param is the SoraInput::Remappable entry.
     Binding, ResetControls, CaptureCancel,

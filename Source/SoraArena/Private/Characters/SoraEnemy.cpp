@@ -9,6 +9,7 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraEnemyController.h"
+#include "SoraFieldcraft.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraProjectile.h"
@@ -106,6 +107,8 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
         if(Tuning->DarkSightCm>=0) Senses.DarkSightRangeCm=Tuning->DarkSightCm;
         if(Tuning->ViewDegrees>0) Senses.ViewConeMilli=SoraEnemyBody::HalfArcMilli(Tuning->ViewDegrees);
         if(Tuning->HearingCm>=0) Senses.HearingCm=Tuning->HearingCm;
+        if(Tuning->SuspicionPermille>0) Senses.SuspicionPermille=Tuning->SuspicionPermille;
+        ScanDegrees=Tuning->ScanDegrees; ScanMs=Tuning->ScanMs; TurnMs=Tuning->TurnMs;
     }
     Senses.DarkSightRangeCm=FMath::Min(Senses.DarkSightRangeCm,Senses.SightRangeCm);
     Senses.FocusConeMilli=FMath::Max(Senses.ViewConeMilli,SoraStealthRules::FocusConeMilli);
@@ -465,8 +468,10 @@ void ASoraEnemy::FireRound(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Ta
     FHitResult Trace;
     FCollisionQueryParams Query(SCENE_QUERY_STAT(BotNavigation),false,this);
     GetWorld()->LineTraceSingleByChannel(Trace,From,To,ECC_Visibility,Query);
-    // Without a clear line the round is held.
-    if(Trace.GetActor()!=&Target) return;
+    // Without a clear line the round is held; a volley's smoke bank between
+    // them hides the target (it stops no round, but none is aimed into it).
+    const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this);
+    if(Trace.GetActor()!=&Target||(Fieldcraft&&Fieldcraft->SmokeBetween(From,To))) return;
     const bool bMiss=bPattern&&RangedShotMisses(EnemyIndex,RangedShots);
     ++RangedShots; ++ShotsSinceRelocation;
     const FVector Direction=(To-From).GetSafeNormal();

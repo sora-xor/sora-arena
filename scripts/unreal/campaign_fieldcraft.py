@@ -26,8 +26,24 @@ out, by rule and in the same integer centimetres as the rest of the space:
   at its target, netted as its target is worn down, freed as it is mended;
 - rotating volley ranks (``volley_command``): how many ranks of how many
   gunners answer the hero's order, how soon a rank fires, how long it takes
-  to reload and how wide and far its ring reaches. Its gunners are the
-  ``volley_rank`` allies, one row to a rank.
+  to reload and how wide and far its ring reaches, the smoke bank it leaves
+  and Easy's auto-order. Its gunners are the ``volley_rank`` allies, one row
+  to a rank;
+- the alarm lecterns an auditor runs to (``alarm_points``);
+- seizure nets (``seizure``, a defence's ``haul_after_s``): what the drones
+  of which waves net (a convoy's pack horses, an escort's ox cart, the
+  planters a defence protects), how long a lock takes, how long a net holds
+  before its quarry is hauled off, how the hero cuts it, and which waves only
+  scout;
+- searchlights (``sensors`` searchlight, a wave's ``ship_searchlight_sweep``):
+  where each stands and what it sweeps, and how long a head in its spot takes
+  to be noticed;
+- a one-shot lure object (``lure_objects``: ch07.b04's temple bell);
+- the cook-fires a hold keeps lit (``interact_points`` with ``fire_out_at``);
+- ladders onto the board roofs (``ladders``), the roofs, the straw that
+  softens a drop, and the guards posted up there;
+- the League's charge (``charge``): its riders, their pace and the rival at
+  the hero's right, and the seal stakes across the road.
 
 SoraCatalogSpace.cpp reads the block fail-closed and USoraFieldcraft plays it;
 validate_campaign.py checks every point stands on its zone's floor.
@@ -70,6 +86,8 @@ ALLY_ROLES = {
     "gate_winch": ("bystander", -1), "lookout_roof": ("bystander", -1),
     "swim_lead": ("guide", -1), "climb_guide": ("guide", -1), "follow": ("guide", -1),
 }
+# A volley's white smoke bank (ch08.b03 smoke_obscure_s; SoraFieldcraftRules::SmokeMs).
+SMOKE_S = 4.0
 ALLY_HEALTH = 120
 ALLY_REVIVE_MS = 3000
 ALLY_STEP_CM = 240
@@ -105,9 +123,31 @@ def _ms(seconds, context, fail):
     return _whole(seconds * 1000, context, fail)
 
 
+# A drone's seizure-net lock (enemies.json drone seizure_net windup_ms).
+NET_WINDUP_MS = 800
+# The moat's searchlights stand on the keep wall 17.5 m up (chapter-06 §pl_moat).
+SEARCHLIGHT_HEIGHT_CM = 1750
+SEARCHLIGHT_WALL_CM = 250
+# A ship's searchlight over a road (ch02.b08 G3) sweeps its stretch on the
+# moat lights' ten-second period, the only period the scripts give.
+ROAD_LIGHT_PERIOD_MS = 10000
+ROAD_LIGHT_SPOT_CM = 600
+# The temple bell hangs from its gantry hook over the hold's centre aisle.
+BELL_HEIGHT_CM = 300
+# Cook-fires stand along the court's lean-to within the hold's reach (SoraCampaignReach::Hold 420).
+KAMADO_OFFSETS = ((-280, -250), (-280, 0), (-280, 250), (280, -250), (280, 0), (280, 250), (0, -330), (0, 330))
+# A roof, and a straw pile beside it.
+ROOF_CM = (900, 600)
+STRAW_CM = (260, 260)
+LADDER_OUT_CM = 70
+# The charge's pack keeps a canter; riders in a column of twos this far apart.
+CHARGE_GAIT = "canter"
+
+
 def empty():
     return {"lamps": [], "surfaces": [], "water": None, "climb": None, "stones": None, "candle": None,
-            "party": [], "signal": False, "hide_spots": [], "releases": [], "allies": [], "people": [], "volley": None}
+            "party": [], "signal": False, "hide_spots": [], "releases": [], "allies": [], "people": [], "volley": None,
+            "alarms": [], "nets": None, "searchlights": [], "bell": None, "fires": None, "ladders": [], "charge": None}
 
 
 def _people(beat, record):
@@ -177,6 +217,7 @@ class _Layout:
         zones = params.get("zone")
         self.whole = set(zones if isinstance(zones, list) else [zones]) | {params.get("bounds")}
         self.scatter = 0
+        self.named = {}
 
     def patch(self, size):
         """A patch on the floor by a fixed golden-ratio scatter, clear of cover."""
@@ -192,14 +233,18 @@ class _Layout:
 
     def area(self, name, size):
         """A named area: its trigger band where one is placed, the whole
-        floor for the beat's own zone, else a patch."""
+        floor for the beat's own zone, else a patch (the same one each time
+        the name is asked for)."""
+        if name in self.named:
+            return self.named[name]
         if name in self.placed:
             volume = self.placed[name]
             return {"center": list(volume["center"]), "size": list(volume["size"])}
         x0, y0, x1, y1 = self.rect
         if name in self.whole:
             return {"center": [(x0 + x1) // 2, (y0 + y1) // 2], "size": [x1 - x0 - 300, y1 - y0 - 300]}
-        return self.patch(size)
+        self.named[name] = self.patch(size)
+        return self.named[name]
 
     def spot(self):
         """A free work spot near the guards' routes, else anywhere clear."""
@@ -214,7 +259,8 @@ class _Layout:
         return point or (self.patch((120, 120)) or {}).get("center")
 
 
-def _surfaces(beat, layout, fail):
+def _surfaces(beat, layout, roofs, fail):
+    """Floors that change footsteps; one on a roof stands at its height."""
     rows = []
     for number, entry in enumerate(beat["params"].get("noise_surfaces") or []):
         where = f"{beat['id']}.noise_surfaces[{number}]"
@@ -236,14 +282,15 @@ def _surfaces(beat, layout, fail):
             area = layout.area(name, PATCH_CM.get(kind, (420, 420)))
             if area is None:
                 fail(where, f"no room on the floor for {name}")
-            rows.append({"kind": kind, **area, "step_permille": step, "crouch_permille": crouch})
+            height = roofs.get(name, 0)
+            rows.append({"kind": kind, **area, "height_cm": height, "step_permille": step, "crouch_permille": crouch})
             # The edge strip runs along the band's far side and is added after
             # it, so it wins where they meet (USoraStealth::SurfaceAt).
             if edge is not None:
                 cx, cy = area["center"]
                 sx, sy = area["size"]
                 strip = [cx, _i(cy + sy / 2 - EDGE_STRIP_CM / 2)]
-                rows.append({"kind": "edge_strip", "center": strip, "size": [sx, EDGE_STRIP_CM],
+                rows.append({"kind": "edge_strip", "center": strip, "size": [sx, EDGE_STRIP_CM], "height_cm": height,
                              "step_permille": step, "crouch_permille": edge})
     return rows
 
@@ -483,13 +530,237 @@ def _volley(beat, allies, fail):
     volley = {"ranks": _whole(rows["ranks"], where, fail), "per_rank": _whole(rows["gunners_per_rank"], where, fail),
               "weapon": _whole(rows["weapon"], where, fail), "order_delay_ms": _whole(rows["order_delay_ms"], where, fail),
               "cycle_ms": _ms(rows["rank_cycle_s"], where, fail), "radius_cm": _whole(rows["target_radius_cm"], where, fail),
-              "range_cm": _whole(rows["max_range_cm"], where, fail)}
+              "range_cm": _whole(rows["max_range_cm"], where, fail),
+              # ch08.b06's ranks keep b03's rules ("same rules as b03"): the 4 s
+              # smoke bank and Easy's auto-order.
+              "smoke_ms": _ms(rows.get("smoke_obscure_s", SMOKE_S), where, fail),
+              "auto_order": bool(rows.get("easy_auto_order", True))}
     if ranks != list(range(volley["ranks"])) or any(
             sum(ally["rank"] == rank for ally in allies) != volley["per_rank"] for rank in ranks):
         fail(where, f"{volley['ranks']} ranks of {volley['per_rank']} gunners, not the allies' volley_rank rows")
     if any(ally["weapon"] != volley["weapon"] for ally in allies if ally["rank"] >= 0):
         fail(where, "the ranks carry the volley's arm")
     return volley
+
+
+def _alarms(beat, layout, fail):
+    """The alarm lecterns an auditor runs to (ch06.b06 alarm_points)."""
+    rows = []
+    for entry in beat["ext"].get("alarm_points") or []:
+        point = layout.spot()
+        if point is None:
+            fail(beat["id"], f"no room for the alarm {entry['id']}")
+        rows.append({"id": entry["id"], "at": list(point)})
+    return rows
+
+
+def _drones(wave):
+    return sum(enemy["count"] for enemy in wave["enemies"] if enemy["type"] == "drone")
+
+
+def _nets(beat, record, fail):
+    """Seizure nets: a convoy's pack horses (ch02.b08 x_seizure with its
+    waves' net_convoy and scout_only behaviours, how many of a wave net, and
+    the one that crosses the road), an escort's ox cart (ch04.b10 x_seizure)
+    or a defence's people (ch04.b12 targets[].haul_after_s)."""
+    params, ext = beat["params"], beat["ext"]
+    where = f"{beat['id']}.seizure"
+    seizure = ext.get("seizure")
+    waves = params.get("waves") or []
+    drones = [number for number, wave in enumerate(waves) if _drones(wave)]
+    no_cross = {"cross_wave": -1, "cross_at_cm": 0}
+    if params.get("task") == "defend":
+        targets = params["defend"]["targets"]
+        hauls = {target.get("haul_after_s") for target in targets}
+        if hauls == {None}:
+            return None
+        if len(hauls) != 1:
+            fail(where, "every defended person is hauled away after the same time")
+        repair = params["defend"].get("repair_interact") or {}
+        if repair.get("kind") != "net_cut":
+            fail(where, "netted people are freed by cutting the net (repair_interact net_cut)")
+        quarry = [{"id": target["actor"], "kind": "person", "index": index, "hp": 0}
+                  for index, target in enumerate(targets)]
+        return {"quarry": quarry, "windup_ms": NET_WINDUP_MS, "haul_ms": _ms(hauls.pop(), where, fail),
+                "cut_ms": _ms(repair["hold_s"], where, fail), "saddle_weapon": -1, "saddle_side": 0, "tether": True,
+                "halts": False, "net_waves": drones, "nets_per_wave": [_drones(waves[number]) for number in drones],
+                "scout_waves": [], **no_cross, "lost_event": None}
+    if seizure is None:
+        return None
+    cut = seizure["cut"]
+    if seizure.get("telegraph") != "cyan_lock_ring" or not seizure.get("kill_tether_drone_cancels"):
+        fail(where, "a seizure net locks under a cyan ring and its tether's fall frees it")
+    if beat["type"] == "horseback_ride":
+        convoy = params["convoy"]
+        quarry = [{"id": npc, "kind": "pack_horse", "index": index, "hp": _whole(convoy["hp"], where, fail)}
+                  for index, npc in enumerate(convoy["npcs"])]
+        behaviours = [wave.get("behavior") for wave in waves]
+        if set(behaviours) - {"net_convoy", "scout_only"}:
+            fail(where, f"wave behaviours {behaviours}")
+        side = {"right": 1, "left": -1}[cut["side"]]
+        net_waves = [number for number, kind in enumerate(behaviours) if kind == "net_convoy"]
+        # "2 of them try seizure nets": a wave's netters, the rest of it scouting.
+        nets_per_wave = [waves[number].get("netters", _drones(waves[number])) for number in net_waves]
+        if any(not 1 <= count <= _drones(waves[number]) for number, count in zip(net_waves, nets_per_wave)):
+            fail(where, "a net wave nets with one to all of its drones")
+        # "One crosses to the right at 1 020 m" (one_crosses_right_at_m).
+        crossing = [number for number, wave in enumerate(waves) if "one_crosses_right_at_m" in wave]
+        if len(crossing) > 1 or any(number not in net_waves for number in crossing):
+            fail(where, "one net wave has a drone cross the road")
+        cross = ({"cross_wave": crossing[0],
+                  "cross_at_cm": _whole(waves[crossing[0]]["one_crosses_right_at_m"] * 100, where, fail)}
+                 if crossing else no_cross)
+        return {"quarry": quarry, "windup_ms": _whole(seizure["net_windup_ms"], where, fail),
+                "haul_ms": _ms(seizure["lift_timer_s"], where, fail), "cut_ms": _ms(cut["dismounted_interact_s"], where, fail),
+                "saddle_weapon": _whole(cut["mounted_weapon"], where, fail), "saddle_side": side, "tether": True,
+                "halts": bool(convoy.get("halt_when_netted")), "net_waves": net_waves, "nets_per_wave": nets_per_wave,
+                "scout_waves": [number for number, kind in enumerate(behaviours) if kind == "scout_only"], **cross,
+                "lost_event": "convoy_member_seized"}
+    if params.get("task") != "escort":
+        fail(where, "only a convoy, an escort or a defence is netted")
+    cart = ext.get("cart") or {}
+    if seizure["targets"] != [cart.get("actor")] or cart["actor"] not in params["escort"]["npcs"]:
+        fail(where, "an escort's net falls on its cart")
+    return {"quarry": [{"id": cart["actor"], "kind": "cart", "index": 0, "hp": _whole(cart["hp"], where, fail)}],
+            "windup_ms": _whole(seizure["net_windup_ms"], where, fail), "haul_ms": _ms(seizure["lift_timer_s"], where, fail),
+            "cut_ms": _ms(cut["dismounted_interact_s"], where, fail), "saddle_weapon": -1, "saddle_side": 0, "tether": True,
+            "halts": bool(seizure.get("halts_escort")), "net_waves": drones,
+            "nets_per_wave": [_drones(waves[number]) for number in drones], "scout_waves": [], **no_cross, "lost_event": None}
+
+
+def _searchlights(beat, record, rect, water, fail):
+    """The moat's searchlights on the keep wall (ch06.b02 sensors) and a
+    ship's searchlight over a road (ch02.b08 G3's ship_searchlight_sweep)."""
+    where = f"{beat['id']}.sensors"
+    lights = []
+    rows = [sensor for sensor in beat["ext"].get("sensors") or [] if sensor["kind"] == "searchlight"]
+    x0, y0, x1, y1 = rect
+    for number, sensor in enumerate(rows):
+        # On the far wall, facing across the water to its middle line.
+        at = [_i(x0 + (x1 - x0) * (number + 1) / (len(rows) + 1)), y1 - SEARCHLIGHT_WALL_CM]
+        middle = water["center"][1] if water else (y0 + y1) // 2
+        lights.append({"id": sensor["id"], "at": at, "height_cm": SEARCHLIGHT_HEIGHT_CM, "yaw": -90,
+                       "reach_cm": at[1] - middle, "road_from_cm": 0, "road_to_cm": 0,
+                       "sweep_deg": _whole(sensor["sweep_deg"], where, fail), "period_ms": _ms(sensor["period_s"], where, fail),
+                       "spot_cm": _whole(sensor["spot_radius_cm"], where, fail) * 2,
+                       "suspicious_ms": _ms(sensor["suspicious_after_s"], where, fail),
+                       "alert_ms": _ms(sensor["alert_after_s"], where, fail), "lock_ms": 0, "active_on": None,
+                       "spooks": False})
+    # On detection the lights lock on the last place seen (the alarm wave's effect).
+    for wave in beat["params"].get("waves") or []:
+        for effect in wave.get("effects") or []:
+            match = re.fullmatch(r"searchlights_lock_last_seen_(\d+)s", effect)
+            if match:
+                for light in lights:
+                    light["lock_ms"] = int(match.group(1)) * 1000
+    for number, wave in enumerate(beat["params"].get("waves") or []):
+        if wave.get("with") != "ship_searchlight_sweep":
+            continue
+        fear = beat["params"].get("fear") or {}
+        span = wave.get("x_sweep_m")
+        if not isinstance(span, list) or len(span) != 2 or not 0 <= span[0] < span[1] or not fear:
+            fail(where, "a ship's searchlight needs its stretch of road (x_sweep_m) and the horses' fear")
+        lights.append({"id": "ship_searchlight", "at": list(record["entry"][:2]), "height_cm": 0, "yaw": 0, "reach_cm": 0,
+                       "road_from_cm": _whole(span[0] * 100, where, fail), "road_to_cm": _whole(span[1] * 100, where, fail),
+                       "sweep_deg": 0, "period_ms": ROAD_LIGHT_PERIOD_MS, "spot_cm": ROAD_LIGHT_SPOT_CM,
+                       "suspicious_ms": 0, "alert_ms": 0, "lock_ms": 0, "active_on": f"wave_start:{number + 1}",
+                       "spooks": True})
+    return lights
+
+
+def _bell(beat, layout, fail):
+    """A one-shot lure object (ch07.b04's temple bell)."""
+    rows = beat["ext"].get("lure_objects") or []
+    if not rows:
+        return None
+    if len(rows) != 1:
+        fail(beat["id"], "one lure object a beat")
+    row = rows[0]
+    where = f"{beat['id']}.lure_objects"
+    if sorted(row.get("draws") or []) != ["suspicious", "unaware"]:
+        fail(where, "a lure draws the guards that have not placed the hero")
+    area = layout.area("vol_hold_bell", (200, 200)) if "vol_hold_bell" in layout.placed else layout.patch((200, 200))
+    return {"id": row["id"], "at": list(area["center"]), "height_cm": BELL_HEIGHT_CM,
+            "radius_cm": _whole(row["radius_cm"], where, fail), "uses": _whole(row["uses"], where, fail),
+            "hold_ms": _ms(row["hold_s"], where, fail)}
+
+
+def _fires(beat, record, layout, fail):
+    """A hold's cook-fires (ch03.b14): its interact points gutter at fire_out_at."""
+    marks = beat["ext"].get("fire_out_at")
+    hold = beat["params"].get("hold") or {}
+    if marks is None:
+        return None
+    where = f"{beat['id']}.fire_out_at"
+    points = hold.get("interact_points") or []
+    if not points or len(points) > len(KAMADO_OFFSETS) or marks != sorted(marks) or not all(0 < mark < 1 for mark in marks):
+        fail(where, f"{len(points)} cook-fires guttering at {marks}")
+    anchor = record["anchor"]
+    spots = [[anchor[0] + dx, anchor[1] + dy] for dx, dy in KAMADO_OFFSETS]
+    spots = [at for at in spots if _inside(layout.rect, at, 200) and _clear(at, layout.cover, 110)]
+    if len(spots) < len(points):
+        fail(where, f"no room for {len(points)} cook-fires by the hold")
+    rows = [{"id": point, "at": at} for point, at in zip(points, spots)]
+    return {"points": rows, "out_at": [_i(mark * 1000) for mark in marks],
+            "relight_ms": _ms(hold["per_point_s"], where, fail)}
+
+
+def _ladders(beat, layout, fail):
+    """Ladders onto the board roofs (ch03 x_ladders): each roof a raised
+    floor beside the ladder's foot, a straw pile to land on, and the guards
+    posted up there (by their index in the zone's guards)."""
+    rows = []
+    guards = [guard.get("id") for guard in beat["params"].get("guards") or []]
+    for entry in beat["ext"].get("ladders") or []:
+        where = f"{beat['id']}.ladders.{entry['id']}"
+        roof = layout.area(entry["roof"], ROOF_CM)
+        if roof is None:
+            fail(where, f"no room for the roof {entry['roof']}")
+        (cx, cy), (sx, sy) = roof["center"], roof["size"]
+        foot = [_i(cx - sx / 2 - LADDER_OUT_CM), cy]
+        if not _inside(layout.rect, foot, 150) or not _clear(foot, layout.cover, 60):
+            fail(where, "no room at the ladder's foot")
+        straw = None
+        if entry.get("straw"):
+            straw = {"center": [_i(cx + sx / 2 + STRAW_CM[0] / 2 + 40), cy], "size": list(STRAW_CM)}
+            if not _inside(layout.rect, straw["center"], 200) or not _clear(straw["center"], layout.cover, 150):
+                fail(where, "no room for the straw by the roof")
+            layout.named[entry["straw"]] = straw
+        posted = []
+        for guard in entry.get("guards") or []:
+            if guard not in guards:
+                fail(where, f"no guard {guard} to post on the roof")
+            posted.append(guards.index(guard))
+        rows.append({"id": entry["id"], "foot": foot, "yaw": 0, "roof": roof,
+                     "height_cm": _whole(entry["height_cm"], where, fail),
+                     "drop_noise_cm": _whole(entry["drop_noise_cm"], where, fail), "straw": straw, "guards": posted})
+    return rows
+
+
+def _charge(beat, record, fail):
+    """The League's charge (ch08.b02 x_charge): riders, their pace and the
+    rival at the hero's right, and the seal stakes across the road."""
+    charge = beat["ext"].get("charge")
+    if beat["type"] != "horseback_ride" or not charge:
+        return None
+    where = f"{beat['id']}.charge"
+    if charge.get("formation") != "column_of_twos" or (charge.get("rival") or {}).get("slot") != "right":
+        fail(where, "the League rides in a column of twos with the rival at the hero's right")
+    mount = record["mount"]
+    pace = mount["speeds_cm_s"][mount["gaits"].index(CHARGE_GAIT)]
+    stakes = []
+    for objective in beat["params"].get("objectives") or []:
+        if objective.get("kind") != "destroy" or not objective.get("volume"):
+            fail(where, f"objective {objective.get('id')} is not a stake on the road")
+        if sorted(objective.get("breaks_on") or []) != ["arrow_x2", "yari_thrust_canter_or_faster"]:
+            fail(where, f"{objective['id']} breaks on {objective.get('breaks_on')}")
+        volume = next((row for row in record["volumes"] if row["event"] == f"volume_enter:{objective['volume']}"), None)
+        if volume is None:
+            fail(where, f"{objective['volume']} is not placed")
+        stakes.append({"id": objective["id"], "at": list(volume["center"])})
+    return {"riders": _whole(charge["riders"], where, fail), "rival": charge["rival"]["npc"], "pace_cm_s": pace,
+            "catch_up_cm_s": _whole(charge["catch_up_cm_s"], where, fail),
+            "stake_break_ms": _ms(charge["riders_break_missed_pylon_after_s"], where, fail), "stakes": stakes}
 
 
 def derive_fieldcraft(beat, record, zone, rect, cover, allocator, fail):
@@ -505,7 +776,12 @@ def derive_fieldcraft(beat, record, zone, rect, cover, allocator, fail):
         if point is None:
             fail(beat["id"], f"no room for the light {lamp['id']}")
         craft["lamps"].append({**lamp, "at": list(point)})
-    craft["surfaces"] = _surfaces(beat, layout, fail)
+    # Roofs first, so a roof's noisy boards are the roof itself.
+    craft["ladders"] = _ladders(beat, layout, fail)
+    roofs = {}
+    for entry in beat["ext"].get("ladders") or []:
+        roofs[entry["roof"]] = next(row["height_cm"] for row in craft["ladders"] if row["id"] == entry["id"])
+    craft["surfaces"] = _surfaces(beat, layout, roofs, fail)
     craft["water"] = _water(beat, layout, fail)
     craft["climb"] = _climb(beat, layout, fail)
     craft["stones"] = _stones(beat, layout, fail)
@@ -517,4 +793,10 @@ def derive_fieldcraft(beat, record, zone, rect, cover, allocator, fail):
     craft["allies"] = _allies(beat, record, layout, fail)
     craft["people"] = _people(beat, record)
     craft["volley"] = _volley(beat, craft["allies"], fail)
+    craft["alarms"] = _alarms(beat, layout, fail)
+    craft["nets"] = _nets(beat, record, fail)
+    craft["searchlights"] = _searchlights(beat, record, rect, craft["water"], fail)
+    craft["bell"] = _bell(beat, layout, fail)
+    craft["fires"] = _fires(beat, record, layout, fail)
+    craft["charge"] = _charge(beat, record, fail)
     return craft

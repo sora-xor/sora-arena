@@ -218,6 +218,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -228,12 +229,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "title_card": {
@@ -333,6 +337,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -343,12 +348,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": "npc_sekireisai",
     "sparring": true,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -482,6 +490,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -492,12 +501,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": "npc_matsukichi",
     "sparring": true,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -626,6 +638,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -636,12 +649,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": "npc_matsukichi",
     "sparring": true,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -753,6 +769,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -763,12 +780,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -869,6 +889,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": true,
@@ -879,12 +900,15 @@
     "closing_event": null,
     "exit_event": "volume_enter:vol_ch01_matoba_hitch",
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -1047,7 +1071,8 @@
        {
         "type": "mato_kinteki",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 1,
@@ -1062,7 +1087,8 @@
        {
         "type": "mato_tsuri",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1096,6 +1122,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1106,12 +1133,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": true,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -1247,6 +1277,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1257,12 +1288,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "complete": {
@@ -1442,6 +1476,7 @@
      }
     ],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1452,12 +1487,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -1557,6 +1595,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1567,12 +1606,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "entry": {
@@ -1663,6 +1705,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1675,12 +1718,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": "npc_toranosuke",
     "sparring": true,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -1828,6 +1874,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1838,12 +1885,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "prompts": [
@@ -1932,6 +1982,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1942,12 +1993,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "next": "ch02_invasion/ch02.b01",
@@ -7329,7 +7383,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -7451,7 +7512,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -7573,7 +7641,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -7707,7 +7782,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -7863,7 +7945,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -8081,7 +8170,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -8234,7 +8330,14 @@
       }
      ],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -8359,7 +8462,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -8505,7 +8615,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -8650,7 +8767,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -8772,7 +8896,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -8894,7 +9025,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -9026,7 +9164,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    }
   ],

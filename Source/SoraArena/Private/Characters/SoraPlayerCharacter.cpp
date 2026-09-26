@@ -72,6 +72,13 @@ void ASoraPlayerCharacter::ResetLoadout()
 {
     Equipment->ResetForClass();
     for(int32& Arm:GroupMemory) Arm=INDEX_NONE;
+    // A round reset (ApplyClass after the reset stands him at the start) ends
+    // a vault in progress there, not at the last attempt's landing.
+    if(bVaulting)
+    {
+        bVaulting=false;
+        GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+    }
 }
 void ASoraPlayerCharacter::OnBodyRebuilt() { QuiverParts.Reset(); }
 void ASoraPlayerCharacter::HaltActions()

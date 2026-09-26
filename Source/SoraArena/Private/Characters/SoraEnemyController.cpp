@@ -161,9 +161,10 @@ void ASoraEnemyController::Rouse(const FVector& Where)
         Enter(*Enemy, Previous, WorldMs());
 }
 
-void ASoraEnemyController::HearNoise(Stealth::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source)
+void ASoraEnemyController::HearNoise(Stealth::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source,
+    int32 LoudnessPermille)
 {
-    Heard.Add({Kind, Origin, Evidence, Source});
+    Heard.Add({Kind, Origin, Evidence, Source, false, LoudnessPermille});
 }
 
 void ASoraEnemyController::HearAlarm(const FVector& Where)
@@ -245,6 +246,7 @@ void ASoraEnemyController::Prepare(bool bHunt)
     bSeesHero = false;
     BodyEvidence = 0;
     BodyInView.Reset();
+    bErrand = false;
     ClearPath();
     NextIntelMs = WorldMs() + Stealth::IntelMs;
     CombatSinceMs = WorldMs();
@@ -342,10 +344,10 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     {
         // The alarm's sender chose who it reaches; it arrives at full urgency.
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(Noise.Origin, Ear));
-        if (!Noise.bAlarm && Distance > Stealth::HeardRadiusCm(Noise.Kind, Perception))
+        if (!Noise.bAlarm && Distance > Stealth::HeardRadiusCm(Noise.Kind, Perception, Noise.LoudnessPermille))
             continue;
         int32 Level = Noise.bAlarm ? Stealth::NoisePeakPermille(Stealth::ENoise::Callout) :
-            Stealth::HeardPermille(Noise.Kind, Distance, Occluded(Noise.Origin, Ear, Noise.Source.Get()), Perception);
+            Stealth::HeardPermille(Noise.Kind, Distance, Occluded(Noise.Origin, Ear, Noise.Source.Get()), Perception, Noise.LoudnessPermille);
         // A lure (a thrown stone, a float line) sends a calm guard to look but
         // never tells it the hero is there; one already hunting pays it no mind.
         if (Noise.Kind == Stealth::ENoise::Lure)
@@ -393,6 +395,9 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     // A staggered opponent still notices, but neither moves nor strikes.
     if (Enemy.IsStaggered())
         return;
+    // A scripted errand takes it where the beat sends it instead.
+    if (RunErrand(Enemy, Dt, NowMs))
+        return;
     // In a fight it may turn on someone beside the hero: the nearest companion
     // it can see that stands clearly nearer than he does.
     if (Mind.State == Stealth::EState::Combat)
@@ -416,6 +421,34 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
         }
     }
     Act(Enemy, Target, bSees, Dt, NowMs);
+}
+
+void ASoraEnemyController::SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm)
+{
+    bErrand = true;
+    bErrandWhileCalm = bWhileCalm;
+    bErrandReached = false;
+    ErrandGoal = Goal;
+    ErrandFacing = Facing.IsNearlyZero() ? FVector::ForwardVector : Facing.GetSafeNormal2D();
+    ErrandPace = FMath::Clamp(Pace, .1f, 1.f);
+    ErrandUntilMs = DurationMs > 0 ? WorldMs() + DurationMs : 0;
+}
+
+bool ASoraEnemyController::RunErrand(ASoraEnemy& Enemy, float Dt, int32 NowMs)
+{
+    if (!bErrand)
+        return false;
+    // A calm errand (a guard drawn to a bell) ends once it knows of the hero, or at its time.
+    if ((bErrandWhileCalm && !Stealth::IsCalm(Mind.State)) || (ErrandUntilMs > 0 && NowMs >= ErrandUntilMs))
+    {
+        bErrand = false;
+        return false;
+    }
+    bErrandReached = WalkTo(Enemy, ErrandGoal, ErrandPace, ErrandReachCm, NowMs) != EMove::Moving;
+    Face(Enemy, bErrandReached ? ErrandFacing : Heading, Dt, 5.f);
+    if (bErrandReached && bErrandWhileCalm)
+        LookAround(Enemy, ErrandFacing.Rotation().Yaw, 40.f, Dt, NowMs);
+    return true;
 }
 
 void ASoraEnemyController::Enter(ASoraEnemy& Enemy, Stealth::EState Previous, int32 NowMs)
@@ -537,9 +570,15 @@ void ASoraEnemyController::Patrol(ASoraEnemy& Enemy, float Dt, int32 NowMs)
 {
     if (Route.Points.Num() <= 1)
     {
-        // A guard post: return to it, then watch its arc.
+        // A guard post: return to it, then watch its arc: the sweep the
+        // chapter authors for it, turning about as often as it says, or the
+        // brain's own look about.
         if (WalkTo(Enemy, Post, SoraEnemyBrain::PatrolSpeed, 60.f, NowMs) == EMove::Moving)
             Face(Enemy, Heading, Dt, 5.f);
+        else if (Enemy.PostTurnMs() > 0)
+            Face(Enemy, FRotator(0.f, PostYaw + (NowMs / Enemy.PostTurnMs() % 2) * 180.f, 0.f).Vector(), Dt, 3.f);
+        else if (Enemy.PostScanMs() > 0)
+            LookAround(Enemy, PostYaw, Enemy.PostScanDegrees() * .5f, Dt, NowMs, Enemy.PostScanMs());
         else
             LookAround(Enemy, PostYaw, 25.f, Dt, NowMs);
         return;
@@ -1006,10 +1045,11 @@ void ASoraEnemyController::Face(ASoraEnemy& Enemy, const FVector& Direction, flo
         Enemy.SetActorRotation(FMath::RInterpTo(Enemy.GetActorRotation(), Flat.Rotation(), Dt, Rate));
 }
 
-void ASoraEnemyController::LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float Dt, int32 NowMs) const
+void ASoraEnemyController::LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float Dt, int32 NowMs, int32 PeriodMs) const
 {
-    // A slow sweep on a six-second cycle, offset by slot.
-    const float Phase = 2.f * PI * static_cast<float>((NowMs + Slot * 977) % 6000) / 6000.f;
+    // A slow sweep on its cycle (six seconds unless authored), offset by slot.
+    const int32 Period = FMath::Max(1000, PeriodMs);
+    const float Phase = 2.f * PI * static_cast<float>((NowMs + Slot * 977) % Period) / Period;
     Enemy.SetActorRotation(FMath::RInterpTo(Enemy.GetActorRotation(), FRotator(0.f, BaseYaw + Amplitude * FMath::Sin(Phase), 0.f), Dt, 3.f));
 }
 
@@ -1035,21 +1075,22 @@ Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraC
     if (Sight.DistanceCm > Perception.SightRangeCm || Sight.FacingMilli < Perception.ViewConeMilli)
         return Sight;
     // How much of the hero a line from the eye reaches: low cover hides a
-    // crouch but not a standing head.
+    // crouch but not a standing head, and a volley's smoke bank all of him.
     FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraSight), false, &Enemy);
     const float HalfHeight = Target.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    const USoraFieldcraft* Fieldcraft = USoraFieldcraft::Get(this);
     int32 Visible = 0;
     for (const float Share : SoraEnemyBrain::BodySamples)
     {
         FHitResult Hit;
-        GetWorld()->LineTraceSingleByChannel(Hit, Eye, There + FVector(0.f, 0.f, Share * HalfHeight), ECC_Visibility, Query);
-        Visible += Hit.GetActor() == &Target ? 1 : 0;
+        const FVector Sample = There + FVector(0.f, 0.f, Share * HalfHeight);
+        GetWorld()->LineTraceSingleByChannel(Hit, Eye, Sample, ECC_Visibility, Query);
+        Visible += Hit.GetActor() == &Target && !(Fieldcraft && Fieldcraft->SmokeBetween(Eye, Sample)) ? 1 : 0;
     }
     Sight.ExposurePermille = Stealth::ExposurePermille(Visible, static_cast<int32>(UE_ARRAY_COUNT(SoraEnemyBrain::BodySamples)));
     // Under the water nothing of the hero shows; at its surface only a head.
-    if (Cast<ASoraPlayerCharacter>(&Target))
-        if (const USoraFieldcraft* Fieldcraft = USoraFieldcraft::Get(this))
-            Sight.ExposurePermille = Fieldcraft->HeroExposure(Sight.ExposurePermille);
+    if (Fieldcraft && Cast<ASoraPlayerCharacter>(&Target))
+        Sight.ExposurePermille = Fieldcraft->HeroExposure(Sight.ExposurePermille);
     if (Sight.ExposurePermille > 0)
         Sight.LightPermille = Zone ? Zone->LightAt(There) : 1000;
     return Sight;
@@ -1080,6 +1121,8 @@ void ASoraEnemyController::LookForBodies(ASoraEnemy& Enemy, int32 DtMs)
         FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraBodySight), false, &Enemy);
         Query.AddIgnoredActor(Body);
         if (GetWorld()->LineTraceTestByChannel(Eye, At, ECC_Visibility, Query))
+            continue;
+        if (const USoraFieldcraft* Fieldcraft = USoraFieldcraft::Get(this); Fieldcraft && Fieldcraft->SmokeBetween(Eye, At))
             continue;
         Sight.ExposurePermille = 1000;
         Sight.LightPermille = Zone->LightAt(At);

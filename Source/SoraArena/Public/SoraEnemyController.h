@@ -60,8 +60,10 @@ public:
     void HearCallout(const FVector& Caller, const FVector& Where, bool bAlarm = false);
     // Straight to alert: a conscript whose collar drags it back up knows where the hero is.
     void Rouse(const FVector& Where);
-    // A noise the stealth zone makes heard everywhere at once (a takedown's scuffle).
-    void HearNoise(SoraStealthRules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source);
+    // A noise the stealth zone makes heard everywhere at once (a takedown's
+    // scuffle), at Loudness (x1000 of the kind's own).
+    void HearNoise(SoraStealthRules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source,
+        int32 LoudnessPermille = 1000);
     // The zone's alarm: to where it says the hero is, and wary from now on.
     void HearAlarm(const FVector& Where);
     // A body found in the zone: the finder searches around it, the others where they stand.
@@ -87,6 +89,19 @@ public:
     // The cover spot or flank point held in combat or retreat.
     bool HoldsPosition() const { return bHasPosition; }
     FVector HeldPosition() const { return Position; }
+    // A scripted errand the beat gives it (USoraFieldcraft): a seizure drone
+    // to its quarry, a scout pacing the road, a guard drawn to a rung bell.
+    // It goes to Goal at Pace (x its full speed) and holds there facing
+    // Facing, and neither patrols nor fights while the errand lasts. It still
+    // notices the hero; one that only runs while calm (bWhileCalm) ends the
+    // moment it is alerted. DurationMs 0 lasts until cleared.
+    void SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm);
+    // An errand's goal is reached within this (2D).
+    static constexpr float ErrandReachCm = 120.f;
+    void ClearErrand() { bErrand = false; }
+    bool HasErrand() const { return bErrand; }
+    // Within its acceptance of the errand's goal (2D).
+    bool ErrandReached() const { return bErrand && bErrandReached; }
 protected:
     virtual void OnPossess(APawn* InPawn) override;
     virtual void OnUnPossess() override;
@@ -101,6 +116,7 @@ private:
         FVector Evidence;
         TWeakObjectPtr<const AActor> Source;
         bool bAlarm = false;
+        int32 LoudnessPermille = 1000;
     };
     void Prepare(bool bHunt);
     void Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
@@ -127,7 +143,7 @@ private:
     bool Stuck(const FVector& Here, int32 NowMs);
     void ClearPath();
     void Face(ASoraEnemy& Enemy, const FVector& Direction, float DeltaSeconds, float Rate) const;
-    void LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float DeltaSeconds, int32 NowMs) const;
+    void LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float DeltaSeconds, int32 NowMs, int32 PeriodMs = 6000) const;
     void Footwork(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, const FVector& Delta, float Distance);
     void OnWeaponFired(const FSoraWeaponFiredEvent& Event);
     void OnDetonated(const FSoraDetonatedEvent& Event);
@@ -186,6 +202,15 @@ private:
     int32 Lectern = INDEX_NONE;
     bool bLecternUnreachable = false;
     bool bAlarmRaised = false;
+    // A scripted errand (SetErrand).
+    bool bErrand = false;
+    bool bErrandWhileCalm = false;
+    bool bErrandReached = false;
+    FVector ErrandGoal = FVector::ZeroVector;
+    FVector ErrandFacing = FVector::ForwardVector;
+    float ErrandPace = 1.f;
+    int32 ErrandUntilMs = 0;
+    bool RunErrand(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
     // Stealth: the hero in view at the last tick, and evidence of a body.
     bool bSeesHero = false;
     int32 BodyEvidence = 0;

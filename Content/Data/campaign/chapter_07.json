@@ -232,6 +232,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -246,12 +247,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -383,12 +387,14 @@
        {
         "type": "enforcer_rifle",
         "count": 4,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "marksman",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 5,
@@ -403,12 +409,14 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "marksman",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -423,7 +431,8 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -457,6 +466,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -471,12 +481,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "objective": {
@@ -595,6 +608,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -609,12 +623,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -824,12 +841,14 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "drone",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -863,6 +882,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "reinforce",
     "reinforce_wave": 0,
     "horse_down_retries": false,
@@ -877,21 +897,122 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [
-     "enforcer_rifle",
-     "enforcer_rifle",
-     "enforcer_rifle",
-     "drone",
-     "drone",
-     "auditor",
-     "bound_conscript",
-     "bound_conscript"
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1800,
+      "dark_sight_cm": 700,
+      "view_deg": 90,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1800,
+      "dark_sight_cm": 700,
+      "view_deg": 90,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1800,
+      "dark_sight_cm": 700,
+      "view_deg": 90,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "drone",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1400,
+      "dark_sight_cm": 900,
+      "view_deg": 60,
+      "hearing_cm": 0,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "drone",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1400,
+      "dark_sight_cm": 900,
+      "view_deg": 60,
+      "hearing_cm": 0,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "auditor",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1200,
+      "dark_sight_cm": 500,
+      "view_deg": 70,
+      "hearing_cm": 1200,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "bound_conscript",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1000,
+      "dark_sight_cm": 400,
+      "view_deg": 80,
+      "hearing_cm": 600,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "bound_conscript",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1000,
+      "dark_sight_cm": 400,
+      "view_deg": 80,
+      "hearing_cm": 600,
+      "suspicion_permille": 0
+     }
     ],
+    "stealth": {
+     "rate_permille": 1000,
+     "suspicious_at_permille": 250,
+     "search_ms": 20000,
+     "wary_permille": 1200,
+     "rear_takedowns": true,
+     "lethal_default": true,
+     "bodies": true,
+     "drag": true,
+     "carryover_to": null
+    },
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "exit": {
@@ -1021,6 +1142,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1035,12 +1157,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "entry": {
@@ -1158,7 +1283,8 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1173,12 +1299,14 @@
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "blade_retainer",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1193,12 +1321,14 @@
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1232,6 +1362,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1246,12 +1377,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "guaranteed_drop": {
@@ -1370,7 +1504,8 @@
        {
         "type": "drone",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -1385,7 +1520,8 @@
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -1400,12 +1536,14 @@
        {
         "type": "blade_retainer",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1439,6 +1577,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1453,12 +1592,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "override": {
@@ -1592,17 +1734,20 @@
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "marksman",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1617,12 +1762,14 @@
        {
         "type": "shield_enforcer",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1637,12 +1784,14 @@
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "drone",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1676,6 +1825,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1690,12 +1840,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "guaranteed_drop": {
@@ -1808,6 +1961,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1822,12 +1976,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "complete_also": "volume_enter:vol_dorsal_hatch"
@@ -1923,7 +2080,8 @@
        {
         "type": "drone",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -1938,7 +2096,8 @@
        {
         "type": "drone",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1953,7 +2112,8 @@
        {
         "type": "drone",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1987,6 +2147,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2001,12 +2162,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "environment": {
@@ -2136,12 +2300,14 @@
        {
         "type": "shield_enforcer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -2156,12 +2322,14 @@
        {
         "type": "shield_enforcer",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "blade_retainer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -2176,12 +2344,14 @@
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -2215,6 +2385,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2229,12 +2400,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "pickup": {
@@ -2325,6 +2499,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2339,12 +2514,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -2448,6 +2626,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2462,12 +2641,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": "boss_collatera",
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "fate": "knocked_down_left_on_bridge",
@@ -2726,7 +2908,8 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -2741,12 +2924,14 @@
        {
         "type": "blade_retainer",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "drone",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -2761,12 +2946,14 @@
        {
         "type": "shield_enforcer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -2800,6 +2987,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2814,12 +3002,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "allies": [
@@ -2931,6 +3122,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2945,12 +3137,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "places_spanned": [
@@ -3037,6 +3232,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -3051,12 +3247,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "on_complete": "chapter_complete -> registry_page"
@@ -8729,7 +8928,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -8961,7 +9167,14 @@
       }
      ],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -9093,7 +9306,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -9286,6 +9506,7 @@
         520,
         520
        ],
+       "height_cm": 0,
        "step_permille": 1500,
        "crouch_permille": 1500
       },
@@ -9299,6 +9520,7 @@
         520,
         520
        ],
+       "height_cm": 0,
        "step_permille": 1500,
        "crouch_permille": 1500
       },
@@ -9312,6 +9534,7 @@
         520,
         360
        ],
+       "height_cm": 0,
        "step_permille": 500,
        "crouch_permille": 500
       },
@@ -9325,6 +9548,7 @@
         420,
         420
        ],
+       "height_cm": 0,
        "step_permille": 1500,
        "crouch_permille": 1500
       }
@@ -9345,7 +9569,24 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": {
+      "id": "bell_bonsho",
+      "at": [
+       19730,
+       0
+      ],
+      "height_cm": 300,
+      "radius_cm": 2500,
+      "uses": 1,
+      "hold_ms": 12000
+     },
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -9482,7 +9723,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -9604,7 +9852,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -9726,7 +9981,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -9871,7 +10133,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -9993,7 +10262,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -10138,7 +10414,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -10272,7 +10555,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -10404,7 +10694,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -10526,7 +10823,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -10664,7 +10968,14 @@
       }
      ],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -10796,7 +11107,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -10930,7 +11248,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    }
   ],

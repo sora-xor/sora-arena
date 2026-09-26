@@ -127,8 +127,10 @@ public:
     void FindBody(ASoraEnemy& Body, ASoraEnemy& Finder);
     bool IsDetected() const { return bDetected; }
     bool IsAlarmRaised() const { return bAlarm; }
-    // A noise every brain hears at once (a takedown's scuffle).
-    void MakeNoise(SoraStealthRules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source) const;
+    // A noise every brain hears at once (a takedown's scuffle), at Loudness
+    // (x1000 of the kind's own; a roof's authored drop reaches as its script says).
+    void MakeNoise(SoraStealthRules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source,
+        int32 LoudnessPermille = 1000) const;
     // Work under guard: any guard sees the hero or is alarmed.
     bool IsWorkPaused() const;
 

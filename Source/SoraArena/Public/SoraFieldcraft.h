@@ -7,10 +7,14 @@
 #include "SoraFieldcraft.generated.h"
 class APointLight;
 class ASoraCompanion;
+class ASoraEnemy;
+class ASoraHorse;
 class ASoraPlayerCharacter;
 class UPointLightComponent;
 class USphereComponent;
+class USpotLightComponent;
 class UStaticMeshComponent;
+struct FSoraMeleeCommittedEvent;
 
 // A lamp or fire of the beat's fieldcraft: its body, and the point light
 // the guards see by (USoraStealth::LightAt counts every visible APointLight).
@@ -56,6 +60,27 @@ private:
     void Land();
 };
 
+// A seal stake (差押え杭) across the charge's road (ch08.b02): its cyan
+// barrier bars the way until a yari thrust from a horse at a canter or
+// faster, or two arrows, break it (SoraFieldcraftRules::StakeStruck).
+UCLASS()
+class SORAARENA_API ASoraSealStake : public AActor
+{
+    GENERATED_BODY()
+public:
+    ASoraSealStake();
+    void Build(int32 Index, float WidthCm);
+    virtual float TakeDamage(float Damage, const FDamageEvent& Event, AController* Instigator, AActor* Causer) override;
+    // The barrier falls and the way is open.
+    void Break();
+    bool IsStanding() const { return bStanding; }
+private:
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> Stake;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> Barrier;
+    int32 Index = INDEX_NONE;
+    bool bStanding = true;
+};
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraFieldcraftEventSignature, FName);
 
 // What the HUD shows of the beat's fieldcraft for the hero.
@@ -81,7 +106,7 @@ struct FSoraFieldcraftReadout
     bool bCandle = false;
     bool bCupped = false;
     // What Interact held would work now, how far a hold has come (0-1).
-    enum class EHold : uint8 { None, Snuff, Revive, Free, Release };
+    enum class EHold : uint8 { None, Snuff, Revive, Free, Release, NetCut, Relight };
     EHold HoldHere = EHold::None;
     EHold Holding = EHold::None;
     float HoldProgress = 0.f;
@@ -104,6 +129,24 @@ struct FSoraFieldcraftReadout
     int32 FrontRank = 0;
     float RankLoaded[SoraFieldcraftRules::MaxRanks] = {};
     int32 RankStanding[SoraFieldcraftRules::MaxRanks] = {};
+    // Easy's auto-order is giving the orders.
+    bool bAutoOrder = false;
+    // Seizure nets: quarry locked and netted, and the least time any netted
+    // one has left before it is hauled off (0-1 of its timer; 1 with no haul).
+    int32 NetsLocking = 0;
+    int32 NetsHeld = 0;
+    float HaulLeft = 1.f;
+    // A searchlight's spot on the hero, and how near it is to raising the alarm (0-1).
+    bool bInLight = false;
+    float LightExposure = 0.f;
+    // Cook-fires out (the hold waits for them).
+    int32 FiresOut = 0;
+    // At a ladder's foot or its top, where Jump climbs; on a ladder.
+    bool bAtLadder = false;
+    bool bOnLadder = false;
+    // The charge: riders with the hero, the rival, and stakes still standing.
+    int32 Riders = 0;
+    int32 StakesStanding = 0;
 };
 
 /**
@@ -146,9 +189,9 @@ public:
     bool Interact(ASoraPlayerCharacter& Hero);
     bool Jump(ASoraPlayerCharacter& Hero);
     // In the water or on the wall no arm is used and no weapon changes hands.
-    bool ArmsStowed() const { return bSwimming || bClimbing; }
+    bool ArmsStowed() const { return bSwimming || bClimbing || LadderClimb != INDEX_NONE; }
     // The hero's own movement input is ignored (the wall moves him).
-    bool HoldsHero() const { return bClimbing; }
+    bool HoldsHero() const { return bClimbing || LadderClimb != INDEX_NONE; }
     // A cap on the hero's pace in cm/s (the water), or 0.
     float HeroPace() const;
     bool IsSwimming() const { return bSwimming; }
@@ -195,10 +238,57 @@ public:
     FSoraFieldcraftReadout Readout(const ASoraPlayerCharacter& Hero) const;
     // Look targets raised this beat (automation).
     const TSet<FString>& Seen() const { return LookedAt; }
-    // Volleys: the ring held, orders given and volleys fired this beat.
+    // Volleys: the ring held, orders given and volleys fired this beat, and
+    // the smoke banks standing.
     bool IsMarking() const { return bMarking; }
     int32 VolleysOrdered() const { return VolleyState.Orders; }
     int32 VolleysFired() const { return VolleysFiredCount; }
+    int32 SmokeBanks() const { return Smoke.Num(); }
+    // A volley's smoke bank stands between From and To: it hides each from
+    // the other, for both sides (opponents' sight and aimed rounds), while
+    // arrows, rounds and blades pass through it.
+    bool SmokeBetween(const FVector& From, const FVector& To) const;
+    // Easy's auto-order is on (the difficulty is Easy and the setting allows it).
+    bool AutoOrdering() const;
+
+    // Seizure nets (FSoraNets). The director tells it who each wave puts on
+    // the field; the drones of a net wave take quarry (as many as the wave
+    // nets with; the rest scout), a scout wave's hang off the road. A drone
+    // whose net is cut reloads before it locks again. While any of a string
+    // or a cart is netted (or the string shies from a searchlight) it halts.
+    void OpponentJoined(ASoraEnemy& Enemy, int32 Wave);
+    bool IsOnErrand(const ASoraEnemy& Enemy) const;
+    bool QuarryHalted() const;
+    int32 QuarryCount() const { return QuarryStates.Num(); }
+    SoraFieldcraftRules::ENet NetOf(int32 Quarry) const;
+    int32 QuarryHealth(int32 Quarry) const;
+    FVector QuarryLocation(int32 Quarry) const;
+    ASoraEnemy* TetherOf(int32 Quarry) const;
+    // A netting drone reloading after its net was cut; the drones that net.
+    bool IsRearming(const ASoraEnemy& Drone) const;
+    int32 NettingDrones() const;
+    // Searchlights: where each one's spot falls now, and whether it shines.
+    int32 LightCount() const { return LightStates.Num(); }
+    bool IsLightOn(int32 Light) const;
+    FVector SpotOf(int32 Light) const;
+    // The one-shot bell: rung this beat.
+    bool BellRung() const { return BellUses == 0 && bBellStaged; }
+    FVector BellLocation() const;
+    // Cook-fires: lit or guttered.
+    bool IsFireLit(int32 Fire) const { return FiresLit.IsValidIndex(Fire) && FiresLit[Fire]; }
+    int32 FiresOut() const;
+    FVector FireLocation(int32 Fire) const;
+    // Ladders: on one now, and whether the hero stands on a roof.
+    bool IsOnLadder() const { return LadderClimb != INDEX_NONE; }
+    bool IsOnRoof(const FVector& Location) const;
+    // The League's charge: its riders (the rival first), the stakes, and
+    // what the riders have struck.
+    const TArray<TObjectPtr<ASoraHorse>>& ChargeRiders() const { return Riders; }
+    bool IsStakeStanding(int32 Stake) const;
+    FVector StakeLocation(int32 Stake) const;
+    void StakeHit(int32 Stake, bool bYari, bool bArrow);
+    int32 RiderStrikes() const { return RiderStrikeCount; }
+    float PackLead() const { return PackChainage; }
 
     virtual void Tick(float DeltaTime) override;
     virtual TStatId GetStatId() const override;
@@ -206,7 +296,7 @@ public:
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 private:
-    enum class EHoldKind : uint8 { None, Snuff, Companion, Release };
+    enum class EHoldKind : uint8 { None, Snuff, Companion, Release, NetCut, Relight };
     struct FHold
     {
         EHoldKind Kind = EHoldKind::None;
@@ -229,6 +319,25 @@ private:
     void TickCandle();
     void TickLooks();
     void TickVolley(int32 DtMs);
+    void TickSmoke(int32 DtMs);
+    void AutoOrder();
+    // Nets, searchlights, the bell, cook-fires, ladders and the charge
+    // (SoraFieldcraftNets.cpp, SoraFieldcraftWatch.cpp, SoraFieldcraftCharge.cpp).
+    void StageNets();
+    void TickNets(int32 DtMs);
+    void NetChanged(int32 Quarry, SoraFieldcraftRules::ENetChange Change);
+    void QuarryDamaged(int32 Quarry, int32 Hp);
+    void SaddleCut(const FSoraMeleeCommittedEvent& Event);
+    void TickScouts();
+    void StageWatch();
+    void TickSearchlights(int32 DtMs);
+    void BellStruck();
+    void TickFires();
+    void TickLadders(float DeltaTime);
+    bool LadderJump(ASoraPlayerCharacter& Hero);
+    void StageCharge();
+    void TickCharge(float DeltaTime, int32 DtMs);
+    void RiderStrikes(int32 DtMs);
     // Where the hero's eye meets the ground within the volley's reach.
     bool AimMark(const ASoraPlayerCharacter& Hero, FVector& At) const;
     void OrderVolley();
@@ -238,8 +347,14 @@ private:
     bool AtFace(const ASoraPlayerCharacter& Hero) const;
     // The nearest work within reach of Where: its kind, index or companion, and the ms it takes.
     FHold WorkAt(const FVector& Where) const;
+    // A piece of the set; with a Surface role (SoraFieldcraftLayout) it wears
+    // that CC0 PBR surface of the environment palette, tinted Color.
     UStaticMeshComponent* Piece(const FString& Name, const TCHAR* Mesh, const FVector& At, const FVector& Scale,
-        const FLinearColor& Color, bool bCollision = false);
+        const FLinearColor& Color, bool bCollision = false, const TCHAR* Surface = nullptr);
+    // At the water's surface among reeds or lotus: only a head shows, under the leaves.
+    bool UnderCover(const FVector& Location) const;
+    // The ladder whose roof Location stands on, or INDEX_NONE.
+    int32 RoofAt(const FVector& Location) const;
 
     const FSoraFieldcraft* Staged = nullptr;
     FString BeatId;
@@ -292,4 +407,81 @@ private:
     bool bVolleyTaught = false;
     TArray<FPendingVolley> PendingVolleys;
     int32 VolleysFiredCount = 0;
+    // Smoke banks: the drum of smoke each hangs in over its ring (its foot,
+    // radius and top), what shows it, and the ms it has left.
+    struct FSmoke
+    {
+        TWeakObjectPtr<UStaticMeshComponent> Bank;
+        int32 LeftMs = 0;
+        FVector Foot = FVector::ZeroVector;
+        float RadiusCm = 0.f;
+        float TopCm = 0.f;
+    };
+    TArray<FSmoke> Smoke;
+    // Seizure nets: each quarry's net, its drone, health and siege carry;
+    // the drones that net (and how many of each net wave have joined), the
+    // scouts, the reload of each drone whose net was cut, and the one drone
+    // sent across the road to the hero's right.
+    struct FQuarryState
+    {
+        SoraFieldcraftRules::FNet Net = SoraFieldcraftRules::FreeNet();
+        TWeakObjectPtr<ASoraEnemy> Drone;
+        int32 Hp = 0;
+        int32 SiegeMs = 0;
+        bool bLost = false;
+        // Freed, it is let be this long (the cut net's drone reloads).
+        int32 GraceMs = 0;
+        TWeakObjectPtr<UStaticMeshComponent> NetMesh;
+    };
+    TArray<FQuarryState> QuarryStates;
+    TArray<TWeakObjectPtr<ASoraEnemy>> Netters;
+    TArray<int32> NettersJoined;
+    TArray<TWeakObjectPtr<ASoraEnemy>> Scouts;
+    TMap<TWeakObjectPtr<ASoraEnemy>, int32> NetRearm;
+    TArray<TWeakObjectPtr<ASoraEnemy>> Crossers;
+    TWeakObjectPtr<ASoraEnemy> Crosser;
+    bool bDroneCrossed = false;
+    int32 StringShyMs = 0;
+    FDelegateHandle MeleeHandle;
+    // Searchlights: time the hero's head has spent in each spot, whether it
+    // shines, and where it is locked after a detection.
+    struct FLightState
+    {
+        int32 InSpotMs = 0;
+        bool bOn = false;
+        int32 LockedMs = 0;
+        FVector LockedAt = FVector::ZeroVector;
+        bool bSpookedHorses = false;
+        TWeakObjectPtr<USpotLightComponent> Lamp;
+        TWeakObjectPtr<UStaticMeshComponent> Spot;
+    };
+    TArray<FLightState> LightStates;
+    int32 LightClockMs = 0;
+    // The bell.
+    bool bBellStaged = false;
+    int32 BellUses = 0;
+    // Cook-fires: lit, and the marks passed.
+    TArray<bool> FiresLit;
+    UPROPERTY() TArray<TObjectPtr<ASoraLamp>> FireActors;
+    int32 FireMarks = 0;
+    int32 LastProgress = 0;
+    // Ladders: the one being climbed, up or down, and how far; the roof he
+    // last stood on, and the roof a fall started from (INDEX_NONE: none).
+    int32 LadderClimb = INDEX_NONE;
+    bool bLadderUp = true;
+    float LadderAlong = 0.f;
+    int32 RoofFall = INDEX_NONE;
+    float RoofFallZ = 0.f;
+    int32 RoofStood = INDEX_NONE;
+    float RoofStandZ = 0.f;
+    // The charge: the riders (the rival first), the pack's lead chainage, the
+    // stakes and when the pack reached each still standing.
+    UPROPERTY() TArray<TObjectPtr<ASoraHorse>> Riders;
+    UPROPERTY() TArray<TObjectPtr<ASoraSealStake>> Stakes;
+    TArray<int32> StakeArrows;
+    TArray<int32> StakeHeldMs;
+    TArray<float> StakeChainage;
+    float PackChainage = 0.f;
+    int32 RiderClockMs = 0;
+    int32 RiderStrikeCount = 0;
 };

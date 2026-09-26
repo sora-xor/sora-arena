@@ -17,10 +17,12 @@ struct FSoraChapter;
 struct FSoraDamagedEvent;
 struct FSoraDefenseEvent;
 struct FSoraDialogueCue;
+struct FSoraGuard;
 struct FSoraEnemyCueEvent;
 struct FSoraMarobashiEvent;
 struct FSoraStealthDetection;
 struct FSoraPrompt;
+namespace SoraText { struct FLine; }
 
 // A queued line as the HUD and voice playback need it: the speaker's names,
 // the Japanese line with its English subtitle, and how long it holds.
@@ -176,6 +178,12 @@ public:
     // far the cut has come (0-1).
     const ASoraEnemy* SealBeingCut() const { return SealTarget.Get(); }
     float SealCutProgress() const;
+    // Work held at a point (0-1), or -1 when none is: a load hoisted at its
+    // pickup (ch03.b05's 釣瓶, waiting while a guard watches) or an objective
+    // worked with Interact held (a charge planted, a relay node pulled).
+    float HeldWorkProgress() const;
+    bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
+    bool IsHeldWorkWatched() const { return bHeldWatched; }
     unsigned long long CollectedMask() const;
     // Where the active beat's objective stands, and whether E works it there.
     bool ObjectiveAnchor(FVector& Location) const;
@@ -229,6 +237,7 @@ private:
     {
         int32 Wave = INDEX_NONE;
         FName Type;
+        bool bInvulnerable = false;
     };
     ASoraGameMode& Mode() const;
     UPROPERTY() TObjectPtr<USoraSaveGame> Save;
@@ -274,10 +283,26 @@ private:
     int32 TackSteps = 0;
     int32 TackRefused = 0;
     TSet<TWeakObjectPtr<const ASoraEnemy>> Frightening;
-    // Events raised in the active beat, so an event's ":first" rows play once.
+    // Events raised in the active beat, so an event's ":first" rows play once,
+    // and how many times each was raised (its "@N" rows).
     TSet<FString> BeatEvents;
+    TMap<FString,int32> EventRaises;
     // "<event>+Ns" rows waiting on the beat clock (world seconds, event).
     TArray<TPair<double, FString>> Scheduled;
+    // When a whistle brings the horse back (or -1).
+    double WhistleAt=-1.0;
+    // Work held at a point: what it is, the pickup or objective, the ms held
+    // and whether a guard watches.
+    enum class EHeldWork : uint8 { None, Hoist, Objective };
+    EHeldWork HeldWork=EHeldWork::None;
+    int32 HeldPoint=INDEX_NONE;
+    int32 HeldMs=0;
+    bool bHeldWatched=false;
+    bool TakeLoad(int32 Pickup);
+    bool WorkObjectiveAt(int32 Objective);
+    void TickHeldWork(int32 DeltaMs);
+    // Later zones an earlier zone's detection has warned (x_on_detected_carryover).
+    TSet<FString> DetectionCarried;
     // Work under guard was seen last step; each guard's last reported state.
     bool bWorkWasSeen = false;
     TMap<TWeakObjectPtr<const AActor>, FName> GuardStates;
@@ -354,14 +379,16 @@ private:
     void Enqueue(const TArray<int32>& Lines, bool bForce);
     void ShowPrompt(const FString& Event, int32 Beat);
     void Notify(const FString& Japanese, const FString& English, float Seconds);
+    // A notice from an NSLOCTEXT line (SoraText::Line or Format).
+    void Notify(const SoraText::FLine& Line, float Seconds);
     void Tell(FSoraStoryNotice::EKind Kind, const FString& Japanese, const FString& English,
         const FString& Detail = FString(), const FString& DetailEnglish = FString());
     // Who a beat puts on the field. The AI lane's archetypes
     // (Content/Data/enemies.json) and data-driven bosses (bosses.json) replace
     // these bodies at merge; until then every opponent is the prototype
     // invader, a sparring pupil or the collector.
-    ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot);
-    ASoraEnemy* SpawnStealthGuard(FName Type, int32 Slot);
+    ASoraEnemy* SpawnWaveOpponent(FName Type, bool bSparring, int32 Slot, bool bInvulnerable = false);
+    ASoraEnemy* SpawnStealthGuard(const FSoraGuard& Guard, int32 GuardIndex, int32 Slot);
     ASoraEnemy* SpawnDuelOpponent(FName Opponent, bool bSparring, int32 Slot);
     ASoraBoss* SpawnBoss(FName Boss, int32 Slot);
     void SpawnCast(bool bKeepPupil);

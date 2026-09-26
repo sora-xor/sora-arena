@@ -1,12 +1,17 @@
 #include "SoraFieldcraft.h"
+#include "Game/SoraFieldcraftLayout.h"
 #include "Combat/SoraDamage.h"
 #include "Combat/SoraStealth.h"
 #include "Game/SoraCampaignReach.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCompanion.h"
 #include "SoraEnemy.h"
+#include "SoraEnemyController.h"
+#include "SoraGameEvents.h"
 #include "SoraGameMode.h"
+#include "SoraHorse.h"
 #include "SoraPlayerCharacter.h"
+#include "SoraSettings.h"
 #include "SoraText.h"
 #include "SoraWorldBuilder.h"
 #include "Camera/CameraComponent.h"
@@ -22,14 +27,10 @@
 #include "Kismet/GameplayStatics.h"
 
 namespace Craft = SoraFieldcraftRules;
+namespace Layout = SoraFieldcraftLayout;
 
 namespace SoraFieldcraftLayout
 {
-const TCHAR* const Cube = TEXT("/Engine/BasicShapes/Cube.Cube");
-const TCHAR* const Cylinder = TEXT("/Engine/BasicShapes/Cylinder.Cylinder");
-const TCHAR* const Sphere = TEXT("/Engine/BasicShapes/Sphere.Sphere");
-// The water stands at a swimmer's chest: a crouch (a dive) puts his eye under it.
-constexpr float WaterLevel = 110.f;
 // The climber hangs this far off the face, clear of its ledges.
 constexpr float ClimbOffset = 70.f;
 constexpr float ClimbSpeed = 120.f;
@@ -44,6 +45,8 @@ constexpr float StoneSpeed = 1500.f;
 constexpr float StoneLift = 380.f;
 constexpr float StoneGravity = 980.f;
 constexpr float EscortHidePace = 240.f;
+// A volley's smoke bank rises this high over its ring.
+constexpr float SmokeHeightCm = 300.f;
 
 FVector Floor(const FVector2D& Point, float Height = 0.f) { return FVector(Point.X, Point.Y, Height); }
 
@@ -66,19 +69,23 @@ FString Wildcard(const FString& Id)
     return Id.Left(Cut) + TEXT("_*");
 }
 
-FLinearColor FloorColor(FName Kind)
+// A floor patch of Kind: the palette surface it wears (nullptr: none) and its
+// colour, flat or as that surface's tint.
+const TCHAR* FloorLook(FName Kind, FLinearColor& Color)
 {
-    if (Kind == TEXT("puddle")) return FLinearColor(.035f, .05f, .06f);
-    if (Kind == TEXT("gravel")) return FLinearColor(.42f, .41f, .38f);
-    if (Kind == TEXT("running_water")) return FLinearColor(.05f, .16f, .22f);
-    if (Kind == TEXT("tatami")) return FLinearColor(.55f, .5f, .3f);
-    if (Kind == TEXT("nightingale_floor") || Kind == TEXT("dobuita") || Kind == TEXT("board_roof")) return FLinearColor(.33f, .2f, .1f);
-    if (Kind == TEXT("edge_strip")) return FLinearColor(.2f, .12f, .06f);
-    if (Kind == TEXT("metal_grate")) return FLinearColor(.12f, .13f, .14f);
-    return FLinearColor(.3f, .3f, .3f);
+    if (Kind == TEXT("gravel")) { Color = FLinearColor(.82f, .8f, .76f); return Stone; }
+    if (Kind == TEXT("nightingale_floor") || Kind == TEXT("dobuita") || Kind == TEXT("board_roof"))
+    {
+        Color = FLinearColor(.75f, .62f, .48f);
+        return Timber;
+    }
+    if (Kind == TEXT("edge_strip")) { Color = FLinearColor(.45f, .36f, .28f); return Timber; }
+    if (Kind == TEXT("metal_grate")) { Color = FLinearColor(.45f, .45f, .48f); return Metal; }
+    Color = Kind == TEXT("puddle") ? FLinearColor(.035f, .05f, .06f) : Kind == TEXT("running_water") ? FLinearColor(.05f, .16f, .22f)
+        : Kind == TEXT("tatami") ? FLinearColor(.55f, .5f, .3f) : FLinearColor(.3f, .3f, .3f);
+    return nullptr;
 }
 }
-using namespace SoraFieldcraftLayout;
 
 // ---------------------------------------------------------------------------
 // ASoraLamp
@@ -100,9 +107,10 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
     Index = InIndex;
     const bool bFlood = Data.Kind == TEXT("floodlight");
     const bool bBrazier = Data.Kind == TEXT("brazier");
+    const bool bKamado = Data.Kind == TEXT("kamado");
     const bool bStrip = Data.Kind == TEXT("strip") || Data.Kind == TEXT("arch");
-    GlowHeight = bFlood ? 520.f : bBrazier ? 95.f : bStrip ? 230.f : 160.f;
-    Intensity = bFlood ? 9000.f : bBrazier ? 5200.f : bStrip ? 1800.f : 3200.f;
+    GlowHeight = bFlood ? 520.f : bBrazier ? 95.f : bKamado ? 40.f : bStrip ? 230.f : 160.f;
+    Intensity = bFlood ? 9000.f : bBrazier || bKamado ? 5200.f : bStrip ? 1800.f : 3200.f;
     // Warm 行灯 and fires at about 1900 K; the Credit House's lamps cold.
     const FLinearColor LightColor = bFlood ? FLinearColor(.78f, .9f, 1.f) : bStrip ? FLinearColor(.2f, .9f, 1.f) : FLinearColor(1.f, .62f, .3f);
     FActorSpawnParameters Params;
@@ -119,9 +127,12 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
         Lamp->SetCastShadows(bFlood);
     }
     USceneComponent* Root = GetRootComponent();
-    const auto Add = [&](const TCHAR* Name, const TCHAR* Mesh, const FVector& At, const FVector& Scale, const FLinearColor& Color)
+    // A part in a flat colour, or dressed in a palette surface tinted by it.
+    const auto Add = [&](const TCHAR* Name, const TCHAR* Mesh, const FVector& At, const FVector& Scale, const FLinearColor& Color,
+        const TCHAR* Surface = nullptr)
     {
         UStaticMeshComponent* Part = ASoraWorldBuilder::Shape(this, Root, Name, Mesh, At, Scale, Color);
+        if (Surface) ASoraWorldBuilder::Surface(Part, Surface, Color);
         Pieces.Add(Part);
         return Part;
     };
@@ -129,29 +140,36 @@ void ASoraLamp::Build(const FSoraLamp& Data, int32 InIndex)
     const FVector Base = FVector::ZeroVector;
     if (bBrazier)
     {
-        Add(TEXT("BrazierLegs"), Cylinder, Base + FVector(0, 0, 35), FVector(.5f, .5f, .7f), FLinearColor(.08f, .07f, .06f));
-        Add(TEXT("BrazierBowl"), Cylinder, Base + FVector(0, 0, 78), FVector(.8f, .8f, .18f), FLinearColor(.1f, .09f, .08f));
-        Flame = Add(TEXT("BrazierFire"), Sphere, Base + FVector(0, 0, 95), FVector(.55f, .55f, .35f), FLinearColor(1.f, .45f, .1f));
+        Add(TEXT("BrazierLegs"), Layout::Cylinder, Base + FVector(0, 0, 35), FVector(.5f, .5f, .7f), FLinearColor(.3f, .28f, .27f), Layout::Metal);
+        Add(TEXT("BrazierBowl"), Layout::Cylinder, Base + FVector(0, 0, 78), FVector(.8f, .8f, .18f), FLinearColor(.34f, .32f, .3f), Layout::Metal);
+        Flame = Add(TEXT("BrazierFire"), Layout::Sphere, Base + FVector(0, 0, 95), FVector(.55f, .55f, .35f), FLinearColor(1.f, .45f, .1f));
     }
     else if (bFlood)
     {
-        Add(TEXT("FloodPole"), Cylinder, Base + FVector(0, 0, 260), FVector(.12f, .12f, 5.2f), FLinearColor(.1f, .11f, .13f));
-        Flame = Add(TEXT("FloodLens"), Cube, Base + FVector(0, 0, 520), FVector(.45f, .6f, .35f), FLinearColor(.8f, .92f, 1.f));
+        Add(TEXT("FloodPole"), Layout::Cylinder, Base + FVector(0, 0, 260), FVector(.12f, .12f, 5.2f), FLinearColor(.36f, .38f, .42f), Layout::Metal);
+        Flame = Add(TEXT("FloodLens"), Layout::Cube, Base + FVector(0, 0, 520), FVector(.45f, .6f, .35f), FLinearColor(.8f, .92f, 1.f));
         // The cable junction at the pole's foot takes an arrow or a round.
-        UStaticMeshComponent* Junction = Add(TEXT("FloodJunction"), Cube, Base + FVector(18, 0, 60), FVector(.3f, .3f, .4f),
+        UStaticMeshComponent* Junction = Add(TEXT("FloodJunction"), Layout::Cube, Base + FVector(18, 0, 60), FVector(.3f, .3f, .4f),
             FLinearColor(.05f, .7f, .8f));
         Junction->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         Junction->SetCollisionResponseToAllChannels(ECR_Block);
         Junction->SetCanEverAffectNavigation(false);
     }
+    else if (bKamado)
+    {
+        // A clay 竈 with its fire mouth and the rice pot on top.
+        Add(TEXT("KamadoBody"), Layout::Cube, Base + FVector(0, 0, 32), FVector(.9f, .7f, .64f), FLinearColor(.78f, .6f, .45f), Layout::Plaster);
+        Add(TEXT("KamadoPot"), Layout::Cylinder, Base + FVector(0, 0, 76), FVector(.5f, .5f, .26f), FLinearColor(.3f, .28f, .27f), Layout::Metal);
+        Flame = Add(TEXT("KamadoFire"), Layout::Cube, Base + FVector(36, 0, 24), FVector(.06f, .34f, .24f), FLinearColor(1.f, .45f, .1f));
+    }
     else if (bStrip)
-        Flame = Add(TEXT("LedgerStrip"), Cube, Base + FVector(0, 0, 230), FVector(.1f, 1.4f, .08f), FLinearColor(.15f, .85f, .95f));
+        Flame = Add(TEXT("LedgerStrip"), Layout::Cube, Base + FVector(0, 0, 230), FVector(.1f, 1.4f, .08f), FLinearColor(.15f, .85f, .95f));
     else
     {
         // A 行灯 on its post: the paper box and its frame.
-        Add(TEXT("AndonPost"), Cylinder, Base + FVector(0, 0, 60), FVector(.08f, .08f, 1.2f), FLinearColor(.22f, .13f, .07f));
-        Flame = Add(TEXT("AndonPaper"), Cube, Base + FVector(0, 0, 150), FVector(.32f, .32f, .42f), FLinearColor(.95f, .78f, .5f));
-        Add(TEXT("AndonCap"), Cube, Base + FVector(0, 0, 175), FVector(.38f, .38f, .05f), FLinearColor(.12f, .07f, .04f));
+        Add(TEXT("AndonPost"), Layout::Cylinder, Base + FVector(0, 0, 60), FVector(.08f, .08f, 1.2f), FLinearColor(.55f, .42f, .3f), Layout::Timber);
+        Flame = Add(TEXT("AndonPaper"), Layout::Cube, Base + FVector(0, 0, 150), FVector(.32f, .32f, .42f), FLinearColor(.95f, .78f, .5f));
+        Add(TEXT("AndonCap"), Layout::Cube, Base + FVector(0, 0, 175), FVector(.38f, .38f, .05f), FLinearColor(.4f, .3f, .22f), Layout::Timber);
     }
     bShootable = Data.Snuff == FSoraLamp::ESnuff::Shot;
     SetLit(true);
@@ -201,9 +219,9 @@ void ASoraThrownStone::Tick(float Dt)
 {
     Super::Tick(Dt);
     if (Age == 0.f)
-        ASoraWorldBuilder::Shape(this, RootComponent, TEXT("Tsubute"), Sphere, FVector::ZeroVector, FVector(.07f), FLinearColor(.36f, .35f, .33f));
+        ASoraWorldBuilder::Shape(this, RootComponent, TEXT("Tsubute"), Layout::Sphere, FVector::ZeroVector, FVector(.07f), FLinearColor(.36f, .35f, .33f));
     Age += Dt;
-    Velocity.Z -= StoneGravity * Dt;
+    Velocity.Z -= Layout::StoneGravity * Dt;
     FHitResult Hit;
     AddActorWorldOffset(Velocity * Dt, true, &Hit);
     if (Hit.bBlockingHit || Age > 3.f || GetActorLocation().Z < -50.f) Land();
@@ -256,9 +274,10 @@ void USoraFieldcraft::Raise(const FString& Event)
 }
 
 UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* Mesh, const FVector& At, const FVector& Scale,
-    const FLinearColor& Color, bool bCollision)
+    const FLinearColor& Color, bool bCollision, const TCHAR* Surface)
 {
     UStaticMeshComponent* Part = ASoraWorldBuilder::Shape(Props, Props->GetRootComponent(), Name, Mesh, At, Scale, Color, bCollision);
+    if (Surface) ASoraWorldBuilder::Surface(Part, Surface, Color);
     if (!bCollision) Part->SetCanEverAffectNavigation(false);
     return Part;
 }
@@ -267,10 +286,22 @@ void USoraFieldcraft::Clear()
 {
     ASoraPlayerCharacter* Player = Hero();
     if (bClimbing && Player) LetGo(*Player, false);
+    // Off a ladder he was on, as off the wall: the flying the ladder held him
+    // in ends and he drops from where he was (a reset then stands him at the
+    // checkpoint).
+    if (LadderClimb != INDEX_NONE && Player) Player->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
     for (const auto& Companion : Party) if (IsValid(Companion)) Companion->Destroy();
     for (const auto& Companion : Allies) if (IsValid(Companion)) Companion->Destroy();
     for (const auto& Companion : People) if (IsValid(Companion)) Companion->Destroy();
     for (const auto& Lamp : LampActors) if (IsValid(Lamp)) Lamp->Destroy();
+    for (const auto& Fire : FireActors) if (IsValid(Fire)) Fire->Destroy();
+    for (const auto& Rider : Riders) if (IsValid(Rider)) Rider->Destroy();
+    for (const auto& Stake : Stakes) if (IsValid(Stake)) Stake->Destroy();
+    for (const auto& Weak : Netters) if (auto* Brain = Weak.IsValid() ? Cast<ASoraEnemyController>(Weak->GetController()) : nullptr) Brain->ClearErrand();
+    for (const auto& Weak : Scouts) if (auto* Brain = Weak.IsValid() ? Cast<ASoraEnemyController>(Weak->GetController()) : nullptr) Brain->ClearErrand();
+    if (MeleeHandle.IsValid())
+        if (USoraGameEvents* Events = USoraGameEvents::Get(this)) Events->OnMeleeCommitted.Remove(MeleeHandle);
+    MeleeHandle.Reset();
     if (IsValid(Props)) Props->Destroy();
     if (IsValid(CandleLight)) CandleLight->DestroyComponent();
     if (Staged && Staged->bCandle)
@@ -283,7 +314,14 @@ void USoraFieldcraft::Clear()
     bClimbing = false; Grip = {0, 0}; ClimbHeight = 0.f; bFalling = false; LedgesReached.Reset();
     Stones = 0; bCupped = false; LookedAt.Reset(); NextLookAt = 0.f; bPartyHidden = false; bFirstSignal = true;
     VolleyState = Craft::StartVolley(); VolleyClockMs = 0; bMarking = false; bMarkValid = false; MarkAt = FVector::ZeroVector;
-    bFrontReady = false; bVolleyTaught = false; PendingVolleys.Reset(); VolleysFiredCount = 0;
+    bFrontReady = false; bVolleyTaught = false; PendingVolleys.Reset(); VolleysFiredCount = 0; Smoke.Reset();
+    QuarryStates.Reset(); Netters.Reset(); NettersJoined.Reset(); Scouts.Reset(); NetRearm.Reset(); Crossers.Reset(); Crosser.Reset();
+    bDroneCrossed = false; StringShyMs = 0;
+    LightStates.Reset(); LightClockMs = 0; bBellStaged = false; BellUses = 0;
+    FiresLit.Reset(); FireActors.Reset(); FireMarks = 0; LastProgress = 0;
+    LadderClimb = INDEX_NONE; bLadderUp = true; LadderAlong = 0.f; RoofFall = INDEX_NONE; RoofFallZ = 0.f; RoofStood = INDEX_NONE; RoofStandZ = 0.f;
+    Riders.Reset(); Stakes.Reset(); StakeArrows.Reset(); StakeHeldMs.Reset(); StakeChainage.Reset(); PackChainage = 0.f;
+    RiderClockMs = 0; RiderStrikeCount = 0;
 }
 
 void USoraFieldcraft::Stage(const FSoraBeat& Beat)
@@ -301,6 +339,9 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     Props->AddInstanceComponent(Root);
     StageWorld(Beat);
     StageCompanions(Beat);
+    StageNets();
+    StageWatch();
+    StageCharge();
 }
 
 void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
@@ -312,7 +353,7 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     for (int32 Index = 0; Index < F.Lamps.Num(); ++Index)
     {
-        ASoraLamp* Lamp = GetWorld()->SpawnActor<ASoraLamp>(Floor(F.Lamps[Index].At), FRotator::ZeroRotator, Params);
+        ASoraLamp* Lamp = GetWorld()->SpawnActor<ASoraLamp>(Layout::Floor(F.Lamps[Index].At), FRotator::ZeroRotator, Params);
         if (Lamp) Lamp->Build(F.Lamps[Index], Index);
         LampActors.Add(Lamp);
         LampStates.Add({true, 0});
@@ -324,11 +365,15 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
     {
         const FSoraFloorPatch& Patch = F.Floors[Index];
         const FVector2D Half = Patch.Area.Size * .5f;
+        // A roof's boards are its own floor, up where it stands.
+        const float Height = static_cast<float>(Patch.HeightCm);
         if (bZone)
-            Stealth->AddSurface(FBox(FVector(Patch.Area.Center - Half, -50.f), FVector(Patch.Area.Center + Half, 250.f)),
+            Stealth->AddSurface(FBox(FVector(Patch.Area.Center - Half, Height - 50.f), FVector(Patch.Area.Center + Half, Height + 250.f)),
                 {Patch.StepPermille, Patch.CrouchPermille});
-        Piece(FString::Printf(TEXT("Floor%d"), Index), Cube, Floor(Patch.Area.Center, 1.f + Index * .1f),
-            FVector(Patch.Area.Size.X / 100.f, Patch.Area.Size.Y / 100.f, .015f), FloorColor(Patch.Kind));
+        FLinearColor Color;
+        const TCHAR* Surface = Layout::FloorLook(Patch.Kind, Color);
+        Piece(FString::Printf(TEXT("Floor%d"), Index), Layout::Cube, Layout::Floor(Patch.Area.Center, Height + 1.f + Index * .1f),
+            FVector(Patch.Area.Size.X / 100.f, Patch.Area.Size.Y / 100.f, .015f), Color, false, Surface);
     }
     if (F.bWater)
     {
@@ -342,10 +387,10 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
             Stealth->AddSurface(FBox(FVector(Water.Area.Center - Half, -50.f), FVector(Water.Area.Center + Half, 250.f)),
                 {Water.SurfaceStepPermille, 0});
         }
-        Piece(TEXT("WaterSurface"), Cube, Floor(Water.Area.Center, WaterLevel),
+        Piece(TEXT("WaterSurface"), Layout::Cube, Layout::Floor(Water.Area.Center, Layout::WaterLevel),
             FVector(Water.Area.Size.X / 100.f, Water.Area.Size.Y / 100.f, .02f), FLinearColor(.02f, .09f, .12f));
         for (int32 Index = 0; Index < Water.Cover.Num(); ++Index)
-            Piece(FString::Printf(TEXT("Reeds%d"), Index), Cylinder, Floor(Water.Cover[Index].Center, WaterLevel + 3.f),
+            Piece(FString::Printf(TEXT("Reeds%d"), Index), Layout::Cylinder, Layout::Floor(Water.Cover[Index].Center, Layout::WaterLevel + 3.f),
                 FVector(Water.Cover[Index].Size.X / 100.f, Water.Cover[Index].Size.Y / 100.f, .04f), FLinearColor(.1f, .24f, .08f));
         for (int32 Line = 0; Line < Water.Lines.Num(); ++Line)
         {
@@ -354,8 +399,8 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
             const bool bAcross = Band.Size.Y >= Band.Size.X;
             const float Length = bAcross ? Band.Size.Y : Band.Size.X;
             for (float Along = -Length * .5f; Along <= Length * .5f; Along += 120.f)
-                Piece(FString::Printf(TEXT("Float%d"), Line), Sphere,
-                    Floor(Band.Center + (bAcross ? FVector2D(0.f, Along) : FVector2D(Along, 0.f)), WaterLevel + 4.f),
+                Piece(FString::Printf(TEXT("Float%d"), Line), Layout::Sphere,
+                    Layout::Floor(Band.Center + (bAcross ? FVector2D(0.f, Along) : FVector2D(Along, 0.f)), Layout::WaterLevel + 4.f),
                     FVector(.12f), FLinearColor(.85f, .25f, .08f));
         }
     }
@@ -366,30 +411,30 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
         const FSoraClimbFace& Face = F.Climb;
         const float Height = static_cast<float>(Face.Rules.HeightCm);
         const FVector2D Middle = Face.At + FVector2D(Face.DepthCm * .5f, 0.f);
-        Piece(TEXT("ClimbFace"), Cube, Floor(Middle, Height * .5f), FVector(Face.DepthCm / 100.f, Face.WidthCm / 100.f, Height / 100.f),
-            FLinearColor(.34f, .33f, .3f), true);
+        Piece(TEXT("ClimbFace"), Layout::Cube, Layout::Floor(Middle, Height * .5f), FVector(Face.DepthCm / 100.f, Face.WidthCm / 100.f, Height / 100.f),
+            FLinearColor(.78f, .76f, .72f), true, Layout::Stone);
         for (int32 Hold = 1; Hold < Face.Rules.Holds; ++Hold)
             for (float Across = -Face.WidthCm * .5f + 150.f; Across < Face.WidthCm * .5f; Across += 300.f)
-                Piece(TEXT("ClimbHold"), Cube, Floor(Face.At + FVector2D(-8.f, Across + (Hold % 2 ? 40.f : -40.f)),
-                    Craft::HoldHeightCm(Face.Rules, Hold)), FVector(.16f, .3f, .1f), FLinearColor(.4f, .38f, .34f));
+                Piece(TEXT("ClimbHold"), Layout::Cube, Layout::Floor(Face.At + FVector2D(-8.f, Across + (Hold % 2 ? 40.f : -40.f)),
+                    Craft::HoldHeightCm(Face.Rules, Hold)), FVector(.16f, .3f, .1f), FLinearColor(.86f, .84f, .8f), false, Layout::Stone);
         for (int32 Hold = 1; Hold < Face.Rules.Holds; ++Hold)
             if ((Face.Rules.LedgeMask & (1u << Hold)) != 0u)
-                Piece(TEXT("ClimbLedge"), Cube, Floor(Face.At + FVector2D(-LedgeDepth * .5f, 0.f), Craft::HoldHeightCm(Face.Rules, Hold) - 6.f),
-                    FVector(LedgeDepth / 100.f, Face.WidthCm / 100.f, .12f), FLinearColor(.3f, .29f, .26f));
+                Piece(TEXT("ClimbLedge"), Layout::Cube, Layout::Floor(Face.At + FVector2D(-Layout::LedgeDepth * .5f, 0.f), Craft::HoldHeightCm(Face.Rules, Hold) - 6.f),
+                    FVector(Layout::LedgeDepth / 100.f, Face.WidthCm / 100.f, .12f), FLinearColor(.7f, .68f, .64f), false, Layout::Stone);
     }
     if (F.bStones)
     {
         Stones = F.Stones.Carried;
         for (int32 Pile = 0; Pile < F.Stones.Piles.Num(); ++Pile)
             for (int32 Stone = 0; Stone < 6; ++Stone)
-                Piece(FString::Printf(TEXT("Rubble%d"), Pile), Sphere,
-                    Floor(F.Stones.Piles[Pile] + FVector2D(FMath::Cos(Stone * 1.1f) * 30.f, FMath::Sin(Stone * 1.1f) * 30.f), 8.f),
-                    FVector(.14f + Stone % 3 * .04f), FLinearColor(.4f, .38f, .35f));
+                Piece(FString::Printf(TEXT("Rubble%d"), Pile), Layout::Sphere,
+                    Layout::Floor(F.Stones.Piles[Pile] + FVector2D(FMath::Cos(Stone * 1.1f) * 30.f, FMath::Sin(Stone * 1.1f) * 30.f), 8.f),
+                    FVector(.14f + Stone % 3 * .04f), FLinearColor(.84f, .8f, .74f), false, Layout::Stone);
     }
     for (int32 Door = 0; Door < F.Releases.Num(); ++Door)
     {
-        Doors.Add(Piece(FString::Printf(TEXT("CellDoor%d"), Door), Cube, Floor(F.Releases[Door].At, 105.f),
-            FVector(1.8f, .12f, 2.1f), FLinearColor(.16f, .1f, .06f)));
+        Doors.Add(Piece(FString::Printf(TEXT("CellDoor%d"), Door), Layout::Cube, Layout::Floor(F.Releases[Door].At, 105.f),
+            FVector(1.8f, .12f, 2.1f), FLinearColor(.5f, .4f, .32f), false, Layout::Timber));
         DoorsOpen.Add(false);
     }
     if (F.bCandle)
@@ -411,12 +456,12 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
     const FSoraFieldcraft& F = *Staged;
     FActorSpawnParameters Params;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-    const FVector Start = Floor(Beat.Space.Entry, 90.f);
+    const FVector Start = Layout::Floor(Beat.Space.Entry, 90.f);
     for (int32 Member = 0; Member < F.Party.Num(); ++Member)
     {
         const FSoraCompanionSpec& Spec = F.Party[Member];
         // A member behind a cell door waits there; the rest start at the road's start in file.
-        const FVector At = Spec.Release != INDEX_NONE ? Floor(F.Releases[Spec.Release].At + FVector2D(-60.f + 40.f * (Member % 4), 110.f), 90.f)
+        const FVector At = Spec.Release != INDEX_NONE ? Layout::Floor(F.Releases[Spec.Release].At + FVector2D(-60.f + 40.f * (Member % 4), 110.f), 90.f)
             : Start + FVector(-SoraCampaignReach::PartySpacing * Member, 60.f, 0.f);
         ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(At, FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
         if (!Companion) continue;
@@ -432,7 +477,7 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
         Spec.Role = TEXT("bystander");
         Spec.bDetectable = false;
         Spec.Rules = {100, false, 3000, 0, 0, false, 0};
-        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Floor(F.People[Index].At, 90.f),
+        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Layout::Floor(F.People[Index].At, 90.f),
             FRotator(0.f, Index * 45.f, 0.f), Params);
         if (!Companion) continue;
         Companion->Init(Spec, Index);
@@ -441,7 +486,7 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
     for (int32 Index = 0; Index < F.Allies.Num(); ++Index)
     {
         const FSoraCompanionSpec& Spec = F.Allies[Index];
-        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Floor(Spec.At, 90.f), FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
+        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Layout::Floor(Spec.At, 90.f), FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
         if (!Companion) continue;
         Companion->Init(Spec, Index);
         Allies.Add(Companion);
@@ -462,14 +507,22 @@ void USoraFieldcraft::Tick(float DeltaTime)
     const auto* Mode = GetWorld() ? Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()) : nullptr;
     if (!Staged || !Mode || !Mode->IsPlaying() || Mode->bDeterministicPractice) return;
     const int32 DtMs = StepMs(DeltaTime);
+    // An event one step raises may end the chapter, and with it the stage,
+    // under the steps after it.
     TickHolds(DtMs);
-    TickCompanions(DtMs);
-    TickVolley(DtMs);
-    TickLamps(DtMs);
-    TickWater(DtMs);
-    TickClimb(DeltaTime, DtMs);
-    TickCandle();
-    TickLooks();
+    if (Staged) TickCompanions(DtMs);
+    if (Staged) TickNets(DtMs);
+    if (Staged) TickVolley(DtMs);
+    if (Staged) TickSmoke(DtMs);
+    if (Staged) TickLamps(DtMs);
+    if (Staged) TickFires();
+    if (Staged) TickSearchlights(DtMs);
+    if (Staged) TickWater(DtMs);
+    if (Staged) TickClimb(DeltaTime, DtMs);
+    if (Staged) TickLadders(DeltaTime);
+    if (Staged) TickCharge(DeltaTime, DtMs);
+    if (Staged) TickCandle();
+    if (Staged) TickLooks();
 }
 
 // ---------------------------------------------------------------------------
@@ -478,7 +531,7 @@ void USoraFieldcraft::Tick(float DeltaTime)
 USoraFieldcraft::FHold USoraFieldcraft::WorkAt(const FVector& Where) const
 {
     FHold Best;
-    float BestDistance = WorkReach;
+    float BestDistance = Layout::WorkReach;
     const auto Consider = [&](const FVector& At, EHoldKind Kind, int32 Index, ASoraCompanion* Companion, int32 NeedMs)
     {
         const float Distance = FVector::Dist2D(At, Where);
@@ -498,10 +551,18 @@ USoraFieldcraft::FHold USoraFieldcraft::WorkAt(const FVector& Where) const
                 Consider(Companion->GetActorLocation(), EHoldKind::Companion, INDEX_NONE, Companion, Companion->Rules().FreeMs);
         }
     for (int32 Door = 0; Door < DoorsOpen.Num(); ++Door)
-        if (!DoorsOpen[Door]) Consider(Floor(Staged->Releases[Door].At), EHoldKind::Release, Door, nullptr, Staged->Releases[Door].HoldMs);
+        if (!DoorsOpen[Door]) Consider(Layout::Floor(Staged->Releases[Door].At), EHoldKind::Release, Door, nullptr, Staged->Releases[Door].HoldMs);
     for (int32 Lamp = 0; Lamp < LampStates.Num(); ++Lamp)
         if (LampStates[Lamp].Lit && Staged->Lamps[Lamp].Snuff == FSoraLamp::ESnuff::Hold)
-            Consider(Floor(Staged->Lamps[Lamp].At), EHoldKind::Snuff, Lamp, nullptr, Staged->Lamps[Lamp].HoldMs);
+            Consider(Layout::Floor(Staged->Lamps[Lamp].At), EHoldKind::Snuff, Lamp, nullptr, Staged->Lamps[Lamp].HoldMs);
+    // A net to cut by hand (not from the saddle), and a guttered cook-fire to relight.
+    const auto* Mode = GetWorld() ? Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()) : nullptr;
+    const bool bMounted = Mode && Mode->Campaign() && Mode->Campaign()->IsMounted();
+    for (int32 Quarry = 0; Quarry < QuarryStates.Num() && !bMounted; ++Quarry)
+        if (QuarryStates[Quarry].Net.State == Craft::ENet::Netted)
+            Consider(QuarryLocation(Quarry), EHoldKind::NetCut, Quarry, nullptr, Staged->Nets.Rules.CutMs);
+    for (int32 Fire = 0; Fire < FiresLit.Num(); ++Fire)
+        if (!FiresLit[Fire]) Consider(FireLocation(Fire), EHoldKind::Relight, Fire, nullptr, Staged->Fires.RelightMs);
     return Best;
 }
 
@@ -512,7 +573,7 @@ bool USoraFieldcraft::Interact(ASoraPlayerCharacter& Player)
     // Stones are taken up at a rubble pile.
     if (Staged->bStones && Stones < Staged->Stones.Max)
         for (const FVector2D& Pile : Staged->Stones.Piles)
-            if (FVector::Dist2D(Floor(Pile), Where) < PileReach)
+            if (FVector::Dist2D(Layout::Floor(Pile), Where) < Layout::PileReach)
             {
                 Stones = Craft::Refill(Stones, Staged->Stones.Max);
                 Raise(TEXT("pickup:tsubute"));
@@ -530,18 +591,27 @@ void USoraFieldcraft::TickHolds(int32 DtMs)
     ASoraPlayerCharacter* Player = Hero();
     FVector At = FVector::ZeroVector;
     if (Holding.Kind == EHoldKind::Companion) At = Holding.Companion.IsValid() ? Holding.Companion->GetActorLocation() : FVector(MAX_flt);
-    else if (Holding.Kind == EHoldKind::Release) At = Floor(Staged->Releases[Holding.Index].At);
-    else At = Floor(Staged->Lamps[Holding.Index].At);
+    else if (Holding.Kind == EHoldKind::Release) At = Layout::Floor(Staged->Releases[Holding.Index].At);
+    else if (Holding.Kind == EHoldKind::NetCut) At = QuarryLocation(Holding.Index);
+    else if (Holding.Kind == EHoldKind::Relight) At = FireLocation(Holding.Index);
+    else At = Layout::Floor(Staged->Lamps[Holding.Index].At);
     // The work holds only while Interact stays down beside it.
     const bool bHeld = Player && Player->IsActionHeld(TEXT("Interact")) &&
-        FVector::Dist2D(At, Player->GetActorLocation()) < WorkReach + 60.f;
+        FVector::Dist2D(At, Player->GetActorLocation()) < Layout::WorkReach + 60.f;
     if (!bHeld) { Holding = FHold(); return; }
-    // A companion counts the hand on it in its own rules (TickCompanions).
-    if (Holding.Kind == EHoldKind::Companion) return;
+    // A companion counts the hand on it in its own rules (TickCompanions), a net in its own (TickNets).
+    if (Holding.Kind == EHoldKind::Companion || Holding.Kind == EHoldKind::NetCut) return;
     if (!Craft::Hold(Holding.HeldMs, true, DtMs, Holding.NeedMs)) return;
     const FHold Done = Holding;
     Holding = FHold();
     if (Done.Kind == EHoldKind::Snuff) SnuffLamp(Done.Index);
+    else if (Done.Kind == EHoldKind::Relight)
+    {
+        // The cook-fire burns again and the hold goes on.
+        FiresLit[Done.Index] = true;
+        if (IsValid(FireActors[Done.Index])) FireActors[Done.Index]->SetLit(true);
+        Raise(TEXT("fire_lit:") + Staged->Fires.Ids[Done.Index]);
+    }
     else
     {
         // A cell door opens and those behind it are free.
@@ -573,7 +643,7 @@ void USoraFieldcraft::RaiseDowned(const ASoraCompanion& Companion)
 {
     const FString& Id = Companion.CompanionId();
     Raise(TEXT("npc_downed:") + Id);
-    if (const FString Any = Wildcard(Id); !Any.IsEmpty()) Raise(TEXT("npc_downed:") + Any);
+    if (const FString Any = Layout::Wildcard(Id); !Any.IsEmpty()) Raise(TEXT("npc_downed:") + Any);
     Raise(TEXT("npc_downed:any"));
 }
 
@@ -618,8 +688,11 @@ void USoraFieldcraft::TargetChanged(int32 Target, int32 HealthPermille)
     {
         ASoraCompanion* Person = People[Index];
         if (Staged->People[Index].Target != Target || !IsValid(Person)) continue;
-        // Worn below half the target's person is netted (ch04.b12's
-        // npc_downed:planter_*); mended past it, the net is cut; lost, taken.
+        // Where drones net the people (ch04.b12's seizure nets) their nets
+        // decide it (TickNets); elsewhere (ch05.b07's Kōzō) a person worn below
+        // half its target's health is netted, mended past it freed, and lost
+        // with it taken.
+        if (Staged->bNets && Staged->Nets.Kind == FSoraNets::EKind::Person && HealthPermille > 0) return;
         const Craft::EState Wanted = HealthPermille <= 0 ? Craft::EState::Dead :
             HealthPermille < Craft::Permille / 2 ? Craft::EState::Bound : Craft::EState::Up;
         const Craft::EState Before = Person->Condition();
@@ -633,6 +706,18 @@ void USoraFieldcraft::TargetChanged(int32 Target, int32 HealthPermille)
 
 void USoraFieldcraft::NoteBeatEvent(const FString& Event)
 {
+    // A road's searchlight comes on with its wave; a detection locks the
+    // wall lights on the last place the hero was seen (ch06.b02's alarm).
+    for (int32 Light = 0; Light < LightStates.Num() && Staged; ++Light)
+    {
+        const FSoraSearchlight& Row = Staged->Searchlights[Light];
+        if (!Row.ActiveOn.IsEmpty() && Row.ActiveOn == Event) LightStates[Light].bOn = true;
+        if (Event == TEXT("alert_state:alert") && !Row.IsRoad() && Row.Rules.LockMs > 0 && Hero())
+        {
+            LightStates[Light].LockedMs = Row.Rules.LockMs;
+            LightStates[Light].LockedAt = Hero()->GetActorLocation();
+        }
+    }
     for (const auto& Ally : Allies)
         if (IsValid(Ally) && !Ally->IsJoined() && Staged)
             for (const FSoraCompanionSpec& Spec : Staged->Allies)
@@ -643,6 +728,8 @@ void USoraFieldcraft::StoneLanded(const FVector& At, int32 NoiseCm)
 {
     if (!Staged) return;
     Raise(TEXT("lure_triggered"));
+    // A stone that strikes the bell rings it (once).
+    if (Staged->bBell && BellUses > 0 && FVector::Dist(At, BellLocation()) <= Craft::BellStrikeCm) BellStruck();
     // A guard's bark when it hears one (ai_event:lure_heard).
     for (TActorIterator<ASoraEnemy> It(GetWorld()); It; ++It)
         if (It->IsAlive() && It->IsEnemy() && FVector::Dist(It->GetActorLocation(), At) <= NoiseCm)
@@ -694,9 +781,13 @@ int32 USoraFieldcraft::HeroExposure(int32 ExposurePermille) const
     if (bDiving) return 0;
     // At the surface only a head shows; among reeds and lotus barely that.
     const ASoraPlayerCharacter* Player = Hero();
-    const bool bCovered = Player && Staged->Water.Cover.ContainsByPredicate([&](const FSoraVolume& Cover)
-        { return Cover.Contains(Player->GetActorLocation()); });
-    return ExposurePermille * (bCovered ? 150 : 450) / 1000;
+    return ExposurePermille * (Player && UnderCover(Player->GetActorLocation()) ? 150 : 450) / 1000;
+}
+
+bool USoraFieldcraft::UnderCover(const FVector& Location) const
+{
+    return bSwimming && !bDiving && Staged && Staged->bWater &&
+        Staged->Water.Cover.ContainsByPredicate([&](const FSoraVolume& Cover) { return Cover.Contains(Location); });
 }
 
 void USoraFieldcraft::TickWater(int32 DtMs)
@@ -754,6 +845,8 @@ bool USoraFieldcraft::AtFace(const ASoraPlayerCharacter& Player) const
 bool USoraFieldcraft::Jump(ASoraPlayerCharacter& Player)
 {
     if (!Staged) return false;
+    // At a ladder's foot, or its top on the roof, Jump takes the ladder.
+    if (LadderJump(Player)) return true;
     if (bClimbing)
     {
         LetGo(Player, false);
@@ -782,7 +875,7 @@ void USoraFieldcraft::LetGo(ASoraPlayerCharacter& Player, bool bFell)
     Movement->StopMovementImmediately();
     Movement->SetMovementMode(MOVE_Falling);
     // Pushed off the face so he falls clear of its ledges.
-    Player.AddActorWorldOffset(FVector(-ClimbOffset * .5f, 0.f, 0.f), true);
+    Player.AddActorWorldOffset(FVector(-Layout::ClimbOffset * .5f, 0.f, 0.f), true);
     Raise(bFell ? TEXT("climb_fell") : TEXT("climb_let_go"));
 }
 
@@ -811,7 +904,7 @@ void USoraFieldcraft::TickClimb(float DeltaTime, int32 DtMs)
     // Each hold reached spends grip; resting still at a ledge gives it back.
     const float Next = static_cast<float>(Craft::HoldHeightCm(Rules, Grip.Hold + 1));
     const float Below = static_cast<float>(Craft::HoldHeightCm(Rules, Grip.Hold - 1));
-    ClimbHeight = FMath::Clamp(ClimbHeight + Up * ClimbSpeed * DeltaTime, 0.f, static_cast<float>(Rules.HeightCm));
+    ClimbHeight = FMath::Clamp(ClimbHeight + Up * Layout::ClimbSpeed * DeltaTime, 0.f, static_cast<float>(Rules.HeightCm));
     Craft::EReach Reached = Craft::EReach::Moved;
     bool bReached = false;
     if (Up > .2f && ClimbHeight >= Next && Grip.Hold < Rules.Holds) { Reached = Craft::Reach(Grip, Rules, 1); bReached = true; }
@@ -853,10 +946,10 @@ void USoraFieldcraft::TickClimb(float DeltaTime, int32 DtMs)
         Movement->SetMovementMode(MOVE_Walking);
         return;
     }
-    const float Y = FMath::Clamp(Player->GetActorLocation().Y + Side * ClimbSideSpeed * DeltaTime,
+    const float Y = FMath::Clamp(Player->GetActorLocation().Y + Side * Layout::ClimbSideSpeed * DeltaTime,
         Face.At.Y - Face.WidthCm * .5f + 60.f, Face.At.Y + Face.WidthCm * .5f - 60.f);
     Movement->Velocity = FVector::ZeroVector;
-    Player->SetActorLocation(FVector(Face.At.X - Player->GetCapsuleComponent()->GetScaledCapsuleRadius() - ClimbOffset * .5f, Y,
+    Player->SetActorLocation(FVector(Face.At.X - Player->GetCapsuleComponent()->GetScaledCapsuleRadius() - Layout::ClimbOffset * .5f, Y,
         ClimbHeight + HalfHeight), false, nullptr, ETeleportType::TeleportPhysics);
 }
 
@@ -884,15 +977,15 @@ bool USoraFieldcraft::Ability(ASoraPlayerCharacter& Player)
             float BestDistance = MAX_flt;
             for (int32 Spot = 0; Spot < Staged->HideSpots.Num(); ++Spot)
             {
-                const float Distance = FVector::Dist2D(Floor(Staged->HideSpots[Spot]), Party[Member]->GetActorLocation());
+                const float Distance = FVector::Dist2D(Layout::Floor(Staged->HideSpots[Spot]), Party[Member]->GetActorLocation());
                 if (!Taken.Contains(Spot) && Distance < BestDistance) { Best = Spot; BestDistance = Distance; }
             }
             HideSpotOf[Member] = Best;
             if (Best != INDEX_NONE)
             {
                 Taken.Add(Best);
-                Party[Member]->SetGoal(Floor(Staged->HideSpots[Best], Party[Member]->GetActorLocation().Z), Party[Member]->GetActorRotation().Yaw,
-                    EscortHidePace);
+                Party[Member]->SetGoal(Layout::Floor(Staged->HideSpots[Best], Party[Member]->GetActorLocation().Z), Party[Member]->GetActorRotation().Yaw,
+                    Layout::EscortHidePace);
             }
         }
         bPartyHidden = bHide;
@@ -934,7 +1027,7 @@ void USoraFieldcraft::ThrowStone(ASoraPlayerCharacter& Player)
     ASoraThrownStone* Stone = GetWorld()->SpawnActor<ASoraThrownStone>(Camera->GetComponentLocation() + Direction * 60.f,
         FRotator::ZeroRotator, Params);
     if (!Stone) return;
-    Stone->Velocity = Direction * StoneSpeed + FVector(0.f, 0.f, StoneLift);
+    Stone->Velocity = Direction * Layout::StoneSpeed + FVector(0.f, 0.f, Layout::StoneLift);
     Stone->NoiseCm = Staged->Stones.NoiseCm;
     Raise(TEXT("tsubute_thrown"));
 }
@@ -993,6 +1086,8 @@ void USoraFieldcraft::TickVolley(int32 DtMs)
     const bool bReady = VolleyClockMs >= VolleyState.ReadyAtMs[VolleyState.Front];
     if (bReady && !bFrontReady) Raise(TEXT("event:volley_ready"));
     bFrontReady = bReady;
+    // On Easy the ranks may order themselves (ch08 easy_auto_order).
+    if (bReady && PendingVolleys.IsEmpty() && AutoOrdering()) AutoOrder();
     // A rank ordered stays in front until it fires; then it files back to load.
     const int32 Front = PendingVolleys.IsEmpty() ? VolleyState.Front : PendingVolleys[0].Rank;
     for (const auto& Ally : Allies)
@@ -1041,6 +1136,18 @@ void USoraFieldcraft::FireVolley(int32 Rank, const FVector& At)
     Raise(TEXT("event:volley_rotate"));
     if (Standing == 0) return;
     From /= Standing;
+    // The white smoke bank it leaves hides that lane for both sides (ch08
+    // smoke_obscure_s): it blocks sight (SmokeBetween), never what is shot or
+    // swung through it, so it has no collision.
+    if (Volley.SmokeMs > 0)
+    {
+        const float Radius = static_cast<float>(Volley.Rules.RadiusCm);
+        UStaticMeshComponent* Bank = Piece(TEXT("VolleySmoke"), Layout::Cylinder, FVector(At.X, At.Y, At.Z + Layout::SmokeHeightCm * .5f),
+            FVector(Radius / 50.f, Radius / 50.f, Layout::SmokeHeightCm / 100.f), FLinearColor(.86f, .86f, .84f));
+        Bank->SetCastShadow(false);
+        Smoke.Add({Bank, Volley.SmokeMs, At, Radius, At.Z + Layout::SmokeHeightCm});
+        Raise(TEXT("event:volley_smoke"));
+    }
     // Everyone in the ring, nearest its centre first (then by spawn order):
     // shields are staggered, a walker struck in the legs, and the volley's
     // weight split across the nearest unshielded. Nothing misses.
@@ -1079,8 +1186,78 @@ void USoraFieldcraft::FireVolley(int32 Rank, const FVector& At)
             Strike(*Open[Index], static_cast<float>(Share));
 }
 
+bool USoraFieldcraft::AutoOrdering() const
+{
+    const auto* Mode = GetWorld() ? Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()) : nullptr;
+    return Staged && Staged->bVolley && Staged->Volley.bAutoOrder && Mode && Mode->Settings() &&
+        SoraAccessibility::CampaignDifficulty(this) == SoraAccessibility::EDifficulty::Easy && Mode->Settings()->VolleyAutoOrder();
+}
+
+void USoraFieldcraft::AutoOrder()
+{
+    // The ring on the opponent nearest the hero within the ranks' reach.
+    const ASoraPlayerCharacter* Player = Hero();
+    if (!Player || bMarking) return;
+    const float Range = static_cast<float>(Staged->Volley.Rules.RangeCm);
+    const ASoraEnemy* Target = nullptr;
+    float Best = Range;
+    for (TActorIterator<ASoraEnemy> It(GetWorld()); It; ++It)
+    {
+        if (!It->IsEnemy() || !It->IsAlive() || It->IsSubdued() || It->IsHidden()) continue;
+        const float Distance = FVector::Dist2D(It->GetActorLocation(), Player->GetActorLocation());
+        if (Distance < Best || (Distance == Best && Target && It->GetUniqueID() < Target->GetUniqueID())) { Best = Distance; Target = *It; }
+    }
+    if (!Craft::AutoOrders(true, true, true, bMarking, Target != nullptr)) return;
+    MarkAt = Target->GetActorLocation() - FVector(0.f, 0.f, Target->GetSimpleCollisionHalfHeight());
+    bMarkValid = true;
+    Raise(TEXT("event:volley_auto_order"));
+    OrderVolley();
+}
+
+bool USoraFieldcraft::SmokeBetween(const FVector& From, const FVector& To) const
+{
+    for (const FSmoke& Bank : Smoke)
+    {
+        // The part of the segment inside the bank's circle (seen from above),
+        // then whether it is inside the bank's height anywhere along that part.
+        const FVector2D A(From - Bank.Foot), D(To - From);
+        const float R2 = Bank.RadiusCm * Bank.RadiusCm;
+        const float DD = D.SizeSquared(), AD = FVector2D::DotProduct(A, D), AA = A.SizeSquared();
+        float Enter = 0.f, Leave = 1.f;
+        if (DD <= KINDA_SMALL_NUMBER)
+        {
+            if (AA > R2) continue;
+        }
+        else
+        {
+            const float Disc = AD * AD - DD * (AA - R2);
+            if (Disc < 0.f) continue;
+            const float Root = FMath::Sqrt(Disc);
+            Enter = FMath::Max(0.f, (-AD - Root) / DD);
+            Leave = FMath::Min(1.f, (-AD + Root) / DD);
+            if (Enter > Leave) continue;
+        }
+        const float ZEnter = FMath::Lerp(From.Z, To.Z, Enter), ZLeave = FMath::Lerp(From.Z, To.Z, Leave);
+        if (FMath::Max(ZEnter, ZLeave) >= Bank.Foot.Z && FMath::Min(ZEnter, ZLeave) <= Bank.TopCm) return true;
+    }
+    return false;
+}
+
+void USoraFieldcraft::TickSmoke(int32 DtMs)
+{
+    for (int32 Index = Smoke.Num() - 1; Index >= 0; --Index)
+    {
+        Smoke[Index].LeftMs -= DtMs;
+        if (Smoke[Index].LeftMs > 0 && Smoke[Index].Bank.IsValid()) continue;
+        if (UStaticMeshComponent* Bank = Smoke[Index].Bank.Get()) Bank->DestroyComponent();
+        Smoke.RemoveAt(Index);
+    }
+}
+
 int32 USoraFieldcraft::WorkRatePermille() const
 {
+    // A guttered cook-fire stops the kitchen until it is relit.
+    if (Staged && Staged->bFires && FiresOut() > 0) return 0;
     return Staged && Staged->bCandle ? Craft::WorkRatePermille(Staged->Candle, bCupped) : Craft::Permille;
 }
 
@@ -1133,7 +1310,7 @@ bool USoraFieldcraft::PartyWork(FVector& Location) const
 {
     if (!Staged) return false;
     for (int32 Door = 0; Door < DoorsOpen.Num(); ++Door)
-        if (!DoorsOpen[Door]) { Location = Floor(Staged->Releases[Door].At); return true; }
+        if (!DoorsOpen[Door]) { Location = Layout::Floor(Staged->Releases[Door].At); return true; }
     for (const auto& Member : Party)
         if (IsValid(Member) && (Member->IsBound() || Member->IsDown()))
         {
@@ -1148,7 +1325,7 @@ void USoraFieldcraft::TickLooks()
     ASoraPlayerCharacter* Player = Hero();
     const float Time = GetWorld()->GetTimeSeconds();
     if (!Player || Time < NextLookAt) return;
-    NextLookAt = Time + LookSeconds;
+    NextLookAt = Time + Layout::LookSeconds;
     const FVector Eye = Player->GetCamera()->GetComponentLocation();
     const FVector Forward = Player->GetCamera()->GetForwardVector();
     const auto Looks = [&](const FVector& At, const AActor* Owner, const FString& Id)
@@ -1156,7 +1333,7 @@ void USoraFieldcraft::TickLooks()
         if (LookedAt.Contains(Id)) return;
         const FVector Delta = At - Eye;
         const float Distance = Delta.Size();
-        if (Distance > LookReach || Distance < 1.f) return;
+        if (Distance > Layout::LookReach || Distance < 1.f) return;
         // Within a few degrees of the view's centre, and in plain sight.
         const float Aim = FMath::Max(FMath::Cos(FMath::DegreesToRadians(5.f)), FMath::Cos(FMath::Atan(80.f / Distance)));
         if (FVector::DotProduct(Forward, Delta / Distance) < FMath::Min(Aim, .9985f)) return;
@@ -1171,7 +1348,7 @@ void USoraFieldcraft::TickLooks()
         if (GetWorld()->LineTraceSingleByChannel(Hit, Eye, At, ECC_Visibility, Query)) return;
         LookedAt.Add(Id);
         Raise(TEXT("look_at:") + Id);
-        const FString Kin = Family(Id);
+        const FString Kin = Layout::Family(Id);
         if (Kin != Id && !LookedAt.Contains(Kin))
         {
             LookedAt.Add(Kin);
@@ -1183,7 +1360,7 @@ void USoraFieldcraft::TickLooks()
     for (const auto& Member : Party)
         if (IsValid(Member) && Member->IsBound()) Looks(Member->GetActorLocation() + FVector(0.f, 0.f, 50.f), Member, TEXT("collar_") + Member->CompanionId());
     for (int32 Door = 0; Door < DoorsOpen.Num(); ++Door)
-        if (!DoorsOpen[Door]) Looks(Floor(Staged->Releases[Door].At, 120.f), nullptr, Staged->Releases[Door].Id);
+        if (!DoorsOpen[Door]) Looks(Layout::Floor(Staged->Releases[Door].At, 120.f), nullptr, Staged->Releases[Door].Id);
 }
 
 FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Player) const
@@ -1202,7 +1379,7 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
     Out.Stones = Stones;
     Out.StonesMax = Staged->bStones ? Staged->Stones.Max : 0;
     for (const FVector2D& Pile : Staged->Stones.Piles)
-        Out.bAtPile |= Staged->bStones && Stones < Staged->Stones.Max && FVector::Dist2D(Floor(Pile), Player.GetActorLocation()) < PileReach;
+        Out.bAtPile |= Staged->bStones && Stones < Staged->Stones.Max && FVector::Dist2D(Layout::Floor(Pile), Player.GetActorLocation()) < Layout::PileReach;
     Out.bCandle = Staged->bCandle;
     Out.bCupped = bCupped;
     const auto Kind = [&](const FHold& Work)
@@ -1211,6 +1388,8 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
         {
         case EHoldKind::Snuff: return FSoraFieldcraftReadout::EHold::Snuff;
         case EHoldKind::Release: return FSoraFieldcraftReadout::EHold::Release;
+        case EHoldKind::NetCut: return FSoraFieldcraftReadout::EHold::NetCut;
+        case EHoldKind::Relight: return FSoraFieldcraftReadout::EHold::Relight;
         case EHoldKind::Companion:
             return Work.Companion.IsValid() && Work.Companion->IsBound() ? FSoraFieldcraftReadout::EHold::Free : FSoraFieldcraftReadout::EHold::Revive;
         case EHoldKind::None: break;
@@ -1221,6 +1400,8 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
     Out.Holding = Kind(Holding);
     if (Holding.Kind == EHoldKind::Companion && Holding.Companion.IsValid())
         Out.HoldProgress = static_cast<float>(Holding.Companion->State().HeldMs) / FMath::Max(1, Holding.NeedMs);
+    else if (Holding.Kind == EHoldKind::NetCut && QuarryStates.IsValidIndex(Holding.Index))
+        Out.HoldProgress = static_cast<float>(QuarryStates[Holding.Index].Net.HeldMs) / FMath::Max(1, Holding.NeedMs);
     else if (Holding.Kind != EHoldKind::None)
         Out.HoldProgress = static_cast<float>(Holding.HeldMs) / FMath::Max(1, Holding.NeedMs);
     Out.bSignal = Staged->bSignal && !Party.IsEmpty();
@@ -1244,6 +1425,31 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
             Out.RankLoaded[Rank] = FMath::Clamp(1.f - static_cast<float>(VolleyState.ReadyAtMs[Rank] - VolleyClockMs) / Rules.CycleMs, 0.f, 1.f);
         for (const auto& Ally : Allies)
             if (IsValid(Ally) && Ally->VolleyRank() != INDEX_NONE && Ally->CanVolley()) ++Out.RankStanding[Ally->VolleyRank()];
+        Out.bAutoOrder = AutoOrdering();
     }
+    for (const FQuarryState& State : QuarryStates)
+    {
+        Out.NetsLocking += State.Net.State == Craft::ENet::Locking;
+        Out.NetsHeld += State.Net.State == Craft::ENet::Netted;
+        if (State.Net.State == Craft::ENet::Netted && Staged->Nets.Rules.HaulMs > 0)
+            Out.HaulLeft = FMath::Min(Out.HaulLeft, 1.f - static_cast<float>(State.Net.Ms) / Staged->Nets.Rules.HaulMs);
+    }
+    for (int32 Light = 0; Light < LightStates.Num(); ++Light)
+        if (!Staged->Searchlights[Light].IsRoad() && LightStates[Light].InSpotMs > 0)
+        {
+            Out.bInLight = true;
+            Out.LightExposure = FMath::Max(Out.LightExposure,
+                static_cast<float>(LightStates[Light].InSpotMs) / FMath::Max(1, Staged->Searchlights[Light].Rules.AlertMs));
+        }
+    Out.FiresOut = FiresOut();
+    Out.bOnLadder = LadderClimb != INDEX_NONE;
+    for (const FSoraLadder& Ladder : Staged->Ladders)
+    {
+        const FVector Foot(Ladder.Foot, Player.GetActorLocation().Z);
+        const FVector Top = Foot + FRotator(0.f, Ladder.Yaw, 0.f).Vector() * 140.f;
+        Out.bAtLadder |= !Out.bOnLadder && (FVector::Dist2D(Player.GetActorLocation(), IsOnRoof(Player.GetActorLocation()) ? Top : Foot) < 110.f);
+    }
+    for (const auto& Rider : Riders) Out.Riders += IsValid(Rider);
+    for (int32 Stake = 0; Stake < Stakes.Num(); ++Stake) Out.StakesStanding += IsStakeStanding(Stake);
     return Out;
 }

@@ -106,6 +106,12 @@ struct FState
     // downed raised) and parties sent on after hiding.
     int32 PartyTended = 0;
     int32 PartySentOn = 0;
+    // Cook-fires relit by hand (ch03.b14), loads hoisted by a held hand
+    // (ch03.b05) and objectives worked with Interact held (ch03.b10's charge
+    // and fuse, ch06.b04's relay nodes, ch06.b11's presses).
+    int32 FiresRelit = 0;
+    int32 LoadsHoisted = 0;
+    int32 ObjectivesHeld = 0;
     // Failures sent to the checkpoint, and matches retried in place.
     int32 Failures = 0;
     int32 InPlaceRetries = 0;
@@ -411,6 +417,62 @@ bool TendParty(FAutomationTestBase& Test, FState& State)
     return true;
 }
 
+// A guttered cook-fire (ch03.b14) stops the kitchen until Interact held at
+// it relights it.
+bool TendFires(FAutomationTestBase& Test, FState& State)
+{
+    USoraFieldcraft* Fieldcraft = USoraFieldcraft::Get(Player(State));
+    if (!Fieldcraft || !Fieldcraft->IsStaged() || !Fieldcraft->Active()->bFires) return true;
+    USoraCampaignDirector* Director = Campaign(State);
+    for (int32 Fire = 0; Fire < Fieldcraft->Active()->Fires.Points.Num(); ++Fire)
+    {
+        if (Fieldcraft->IsFireLit(Fire)) continue;
+        // The hold waits while the fire is out, the hero in it or not.
+        const int32 Before = Director->TaskProgress().Progress;
+        if (!Advance(Test, State, 4, .25f))
+            return false;
+        if (!Test.TestEqual(TEXT("The kitchen waits while a cook-fire is out"), Director->TaskProgress().Progress, Before))
+            return Fail(Test, State, Where(State) + TEXT(": the hold filled with a fire out"));
+        MoveTo(State, Fieldcraft->FireLocation(Fire));
+        State.World->InjectKey(EKeys::E, IE_Pressed);
+        const bool bHeld = Advance(Test, State, 12, .25f);
+        State.World->InjectKey(EKeys::E, IE_Released);
+        if (!bHeld || !Advance(Test, State, 1))
+            return false;
+        if (!Test.TestTrue(TEXT("Interact held at a guttered cook-fire relights it"), Fieldcraft->IsFireLit(Fire)))
+            return Fail(Test, State, Where(State) + TEXT(": the cook-fire was not relit"));
+        ++State.FiresRelit;
+    }
+    return true;
+}
+
+// A load hoisted at its pickup (ch03.b05's 釣瓶): Interact held there takes it.
+bool HoistLoad(FAutomationTestBase& Test, FState& State)
+{
+    USoraCampaignDirector* Director = Campaign(State);
+    // The patrol that watches the well is dealt with first; the hoist waits while it looks.
+    for (int32 Action = 0; Action < MaxActionsPerBeat && !LiveEnemies(State).IsEmpty(); ++Action)
+        if (!DefeatOne(Test, State))
+            return false;
+    FVector Anchor;
+    if (!Director->ObjectiveAnchor(Anchor))
+        return Fail(Test, State, Where(State) + TEXT(": no pickup to hoist at"));
+    MoveTo(State, Anchor);
+    if (!Advance(Test, State, 1))
+        return false;
+    State.World->InjectKey(EKeys::E, IE_Pressed);
+    bool bHeld = Advance(Test, State, 1, FrameSeconds);
+    const bool bStarted = Director->HeldWorkProgress() >= 0.f && !Director->TaskProgress().Carrying;
+    bHeld = bHeld && Advance(Test, State, 14, .25f);
+    State.World->InjectKey(EKeys::E, IE_Released);
+    if (!bHeld || !Advance(Test, State, 1))
+        return false;
+    if (!Test.TestTrue(TEXT("A load is hoisted with Interact held, not at a press"), bStarted && Director->TaskProgress().Carrying))
+        return Fail(Test, State, Where(State) + TEXT(": the load was not hoisted"));
+    ++State.LoadsHoisted;
+    return true;
+}
+
 // A spot on the active beat's floor away from every point it works: its
 // place's entry, or the arena's west lawn in the hub.
 FVector FarAway(const FState& State)
@@ -439,16 +501,35 @@ bool Wait(FAutomationTestBase& Test, FState& State, int32 Milliseconds)
     return Advance(Test, State, Frames, Milliseconds / 1000.f / Frames);
 }
 
-// Walks (is placed) to the active objective and presses E there.
+// Walks (is placed) to the active objective and presses E there. An
+// objective worked with Interact held (a charge planted, a relay node pulled)
+// fills only while E stays down, so E is held until it is done.
 bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
 {
+    USoraCampaignDirector* Director = Campaign(State);
     FVector Anchor;
-    if (!Campaign(State)->ObjectiveAnchor(Anchor))
+    if (!Director->ObjectiveAnchor(Anchor))
         return Fail(Test, State, Where(State) + TEXT(": no objective to work"));
     MoveTo(State, Anchor);
     if (!Advance(Test, State, 1))
         return false;
     Mode(State)->Interact(Player(State));
+    if (Director->HeldWorkProgress() < 0.f)
+        return true;
+    // Worked once its point is marked done, or the beat it finished has moved on.
+    const int32 BeatBefore = Director->ActiveBeat();
+    const unsigned Before = Director->TaskProgress().PointsMask;
+    const auto Worked = [&]() { return Director->ActiveBeat() != BeatBefore || Director->TaskProgress().PointsMask != Before; };
+    State.World->InjectKey(EKeys::E, IE_Pressed);
+    bool bHeld = true;
+    for (int32 Quarter = 0; Quarter < 40 && bHeld && !Worked(); ++Quarter)
+        bHeld = Advance(Test, State, 1, .25f);
+    State.World->InjectKey(EKeys::E, IE_Released);
+    if (!bHeld || !Advance(Test, State, 1))
+        return false;
+    if (!Test.TestTrue(TEXT("An objective with a hold is worked with Interact held"), Worked()))
+        return Fail(Test, State, Where(State) + TEXT(": the held objective was not worked"));
+    ++State.ObjectivesHeld;
     return true;
 }
 
@@ -909,6 +990,8 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 return false;
             if (Rules.Goal == EGoal::Escort && !TendParty(Test, State))
                 return false;
+            if (Rules.Goal == EGoal::Hold && !TendFires(Test, State))
+                return false;
             Standing.Reset();
             for (ASoraEnemy* Enemy : LiveEnemies(State))
                 Standing.Add(Enemy);
@@ -994,7 +1077,8 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             }
             else if (Director->ObjectiveAnchor(Anchor))
             {
-                if (!WorkAtAnchor(Test, State))
+                const bool bHoist = Rules.Task == SoraBeatRules::ETask::Carry && Rules.PickupHoldMs > 0 && !Task.Carrying;
+                if (bHoist ? !HoistLoad(Test, State) : !WorkAtAnchor(Test, State))
                     return false;
                 // A load slows the hero, shows in his arms and leaves him at most the katana.
                 if (!bLoadTested && Active() && Director->TaskProgress().Carrying && Rules.Task == SoraBeatRules::ETask::Carry)
@@ -1605,6 +1689,9 @@ bool CheckTelemetry(FAutomationTestBase& Test, FState& State)
     Totals->SetNumberField(TEXT("conscripts_freed"), State.ConscriptsFreed);
     Totals->SetNumberField(TEXT("party_tended"), State.PartyTended);
     Totals->SetNumberField(TEXT("party_sent_on"), State.PartySentOn);
+    Totals->SetNumberField(TEXT("fires_relit"), State.FiresRelit);
+    Totals->SetNumberField(TEXT("loads_hoisted"), State.LoadsHoisted);
+    Totals->SetNumberField(TEXT("objectives_held"), State.ObjectivesHeld);
     Totals->SetNumberField(TEXT("worlds"), State.WorldsStarted);
     FString Json;
     const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Json);
@@ -1707,9 +1794,9 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
     using namespace SoraCampaignPlaythrough;
     const FSoraCatalog& Catalog = FSoraCatalog::Get();
     if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()) ||
-        !TestEqual(TEXT("Eight campaign chapters"), Catalog.Chapters.Num(), LastChapter + 1))
+        !TestEqual(TEXT("Eight campaign chapters"), Catalog.Chapters.Num(), SoraCampaignPlaythrough::LastChapter + 1))
         return false;
-    for (int32 Chapter = 0; Chapter <= LastChapter; ++Chapter)
+    for (int32 Chapter = 0; Chapter <= SoraCampaignPlaythrough::LastChapter; ++Chapter)
         if (!TestEqual(*FString::Printf(TEXT("Chapter %d has three production sites"), Chapter + 1), Catalog.Chapter(Chapter).Sites.Num(), 3))
             return false;
     FSoraAutomationWorld::IgnoreMissingGeneratedArt(*this);
@@ -1803,7 +1890,7 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
             static_cast<uint64>(AllCollectibles()));
         bOk &= Test.TestTrue(TEXT("No loose find is left lying"), Campaign(S)->LoosePickups().IsEmpty());
         int32 Loose = 0;
-        for (int32 Chapter = 0; Chapter <= LastChapter; ++Chapter)
+        for (int32 Chapter = 0; Chapter <= SoraCampaignPlaythrough::LastChapter; ++Chapter)
             Loose += FSoraCatalog::Get().Chapter(Chapter).Space.Pickups.Num();
         bOk &= Test.TestEqual(TEXT("Every loose find was picked up in its chapter"), S.PickupsFound, Loose);
         return bOk || Fail(Test, S, TEXT("Liberation did not survive reload"));
@@ -1823,7 +1910,7 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
         const FSoraCatalog& Data = FSoraCatalog::Get();
         TSet<int32> Authored;
         int32 Beats = 0;
-        for (int32 Chapter = 0; Chapter <= LastChapter; ++Chapter)
+        for (int32 Chapter = 0; Chapter <= SoraCampaignPlaythrough::LastChapter; ++Chapter)
             for (const SoraBeatRules::FTask& Task : Data.Chapter(Chapter).Tasks)
             {
                 Authored.Add(static_cast<int32>(Task.Goal));
@@ -1833,7 +1920,7 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
         // The two captures (ch06.b13's bulkhead, ch08.b14's engine spine), the
         // caches whose opening saved, and a fallen guard's patrol forgotten.
         int32 Captured = 0, SavingCaches = 0;
-        for (int32 Chapter = 0; Chapter <= LastChapter; ++Chapter)
+        for (int32 Chapter = 0; Chapter <= SoraCampaignPlaythrough::LastChapter; ++Chapter)
             for (int32 Index = 0; Index < Data.Chapter(Chapter).Beats.Num(); ++Index)
             {
                 Captured += Data.Chapter(Chapter).Tasks[Index].Defeat == SoraBeatRules::EDefeat::Capture;
@@ -1854,10 +1941,15 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
         bOk &= Test.TestTrue(TEXT("Debt-bound conscripts were knocked down and freed"), S.ConscriptsDown > 0 && S.ConscriptsFreed > 0);
         // ch05.b03's six collars and ch08.b07's four cells were opened by hand.
         bOk &= Test.TestTrue(TEXT("The escorted parties' collars and cells were opened by hand"), S.PartyTended >= 10);
-        UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_PLAYTHROUGH_OK: chapters=%d beats=%d caches=%d pickups=%d rides=%d shots=%d checkpoints=%d reloads=%d phase_reloads=%d arms=%d lines=%d worlds=%d conscripts_down=%d conscripts_freed=%d party_tended=%d party_sent_on=%d goals=[%s]"),
+        // ch03.b14's three cook-fires gutter and are relit; ch03.b05's three crates are hoisted by hand.
+        bOk &= Test.TestTrue(TEXT("Every guttered cook-fire was relit by hand"), S.FiresRelit >= 3);
+        bOk &= Test.TestTrue(TEXT("Every hoisted load was held for"), S.LoadsHoisted >= 3);
+        // ch03.b10's charge and fuse, ch06.b04's three relay nodes and ch06.b11's three presses.
+        bOk &= Test.TestTrue(TEXT("Every objective with a hold was worked with Interact held"), S.ObjectivesHeld >= 8);
+        UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_PLAYTHROUGH_OK: chapters=%d beats=%d caches=%d pickups=%d rides=%d shots=%d checkpoints=%d reloads=%d phase_reloads=%d arms=%d lines=%d worlds=%d conscripts_down=%d conscripts_freed=%d party_tended=%d party_sent_on=%d fires_relit=%d loads_hoisted=%d objectives_held=%d goals=[%s]"),
             S.ChaptersCompleted, S.BeatsPlayed, S.CachesOpened, S.PickupsFound, S.RidesRidden, S.CinematicShots, S.CheckpointsRead,
             S.CheckpointReloads, S.PhaseReloads, S.ArmsEquipped, S.LinesShown, S.WorldsStarted, S.ConscriptsDown, S.ConscriptsFreed,
-            S.PartyTended, S.PartySentOn, *Goals);
+            S.PartyTended, S.PartySentOn, S.FiresRelit, S.LoadsHoisted, S.ObjectivesHeld, *Goals);
         return true;
     });
     // The route that skipped the vault armory: a save entering the flagship
@@ -1909,7 +2001,7 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
     {
         if (!StopWorld(Test, S))
             return false;
-        Test.TestEqual(TEXT("All eight chapters completed"), S.ChaptersCompleted, LastChapter + 1);
+        Test.TestEqual(TEXT("All eight chapters completed"), S.ChaptersCompleted, SoraCampaignPlaythrough::LastChapter + 1);
         FSoraAutomationWorld::DeleteSaveSlot(S.Slot);
         Test.TestFalse(TEXT("The isolated save slot is removed"), UGameplayStatics::DoesSaveGameExist(S.Slot, 0));
         return true;

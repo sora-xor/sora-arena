@@ -223,6 +223,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -237,12 +238,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "loadout": {
@@ -384,6 +388,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -398,15 +403,50 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [
-     "drone",
-     "drone"
+     {
+      "type": "drone",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1800,
+      "dark_sight_cm": 700,
+      "view_deg": 50,
+      "hearing_cm": 600,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "drone",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1800,
+      "dark_sight_cm": 700,
+      "view_deg": 50,
+      "hearing_cm": 600,
+      "suspicion_permille": 0
+     }
     ],
+    "stealth": {
+     "rate_permille": 1000,
+     "suspicious_at_permille": 250,
+     "search_ms": 20000,
+     "wary_permille": 1200,
+     "rear_takedowns": false,
+     "lethal_default": false,
+     "bodies": true,
+     "drag": true,
+     "carryover_to": "ch03.b03"
+    },
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "exit": "vol_b02_exit",
@@ -584,6 +624,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -598,18 +639,86 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [
-     "bound_conscript",
-     "bound_conscript",
-     "bound_conscript",
-     "enforcer_rifle",
-     "enforcer_rifle"
+     {
+      "type": "bound_conscript",
+      "post": true,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 12000,
+      "sight_cm": 1500,
+      "dark_sight_cm": 600,
+      "view_deg": 90,
+      "hearing_cm": 700,
+      "suspicion_permille": 700
+     },
+     {
+      "type": "bound_conscript",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1500,
+      "dark_sight_cm": 600,
+      "view_deg": 90,
+      "hearing_cm": 700,
+      "suspicion_permille": 700
+     },
+     {
+      "type": "bound_conscript",
+      "post": true,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1500,
+      "dark_sight_cm": 600,
+      "view_deg": 90,
+      "hearing_cm": 700,
+      "suspicion_permille": 700
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": true,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2200,
+      "dark_sight_cm": 800,
+      "view_deg": 70,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2200,
+      "dark_sight_cm": 800,
+      "view_deg": 70,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     }
     ],
+    "stealth": {
+     "rate_permille": 1000,
+     "suspicious_at_permille": 250,
+     "search_ms": 20000,
+     "wary_permille": 1200,
+     "rear_takedowns": true,
+     "lethal_default": true,
+     "bodies": true,
+     "drag": true,
+     "carryover_to": null
+    },
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "seal_cut": {
@@ -627,7 +736,16 @@
       "on_enter": "alert"
      }
     ],
-    "exit": "vol_b03_exit"
+    "exit": "vol_b03_exit",
+    "ladders": [
+     {
+      "id": "ladder_b03_shop",
+      "roof": "vol_b03_shop_roof",
+      "height_cm": 320,
+      "drop_noise_cm": 900,
+      "straw": "vol_b03_straw"
+     }
+    ]
    }
   },
   {
@@ -725,6 +843,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -739,12 +858,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -858,6 +980,7 @@
     "drop_on_hit": true,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -872,9 +995,42 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [
-     "enforcer_rifle",
-     "bound_conscript"
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 0,
+      "dark_sight_cm": -1,
+      "view_deg": 0,
+      "hearing_cm": -1,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "bound_conscript",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 0,
+      "dark_sight_cm": -1,
+      "view_deg": 0,
+      "hearing_cm": -1,
+      "suspicion_permille": 0
+     }
     ],
+    "stealth": {
+     "rate_permille": 1000,
+     "suspicious_at_permille": 250,
+     "search_ms": 12000,
+     "wary_permille": 1200,
+     "rear_takedowns": true,
+     "lethal_default": false,
+     "bodies": true,
+     "drag": true,
+     "carryover_to": null
+    },
     "opponent": null,
     "sparring": false,
     "phase_events": [],
@@ -882,7 +1038,9 @@
     "carry_speed_permille": 800,
     "carry_weapons": [
      0
-    ]
+    ],
+    "pickup_hold_ms": 3000,
+    "objective_hold_ms": []
    },
    "ext": {
     "pre_step": {
@@ -986,6 +1144,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1000,12 +1159,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -1140,12 +1302,14 @@
        {
         "type": "bound_conscript",
         "count": 2,
-        "lethal": false
+        "lethal": false,
+        "invulnerable": false
        },
        {
         "type": "drone",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 1,
@@ -1160,7 +1324,8 @@
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -1175,12 +1340,14 @@
        {
         "type": "enforcer_rifle",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "blade_retainer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -1214,6 +1381,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1230,12 +1398,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "detection": {
@@ -1339,7 +1510,8 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1354,12 +1526,14 @@
        {
         "type": "blade_retainer",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1374,7 +1548,8 @@
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 1,
@@ -1408,6 +1583,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1422,12 +1598,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "hazards": [
@@ -1602,6 +1781,7 @@
      }
     ],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1612,12 +1792,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -1838,12 +2021,14 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1877,6 +2062,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "reinforce",
     "reinforce_wave": 0,
     "horse_down_retries": false,
@@ -1895,24 +2081,129 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [
-     "marksman",
-     "drone",
-     "enforcer_rifle",
-     "enforcer_rifle",
-     "bound_conscript",
-     "bound_conscript",
-     "blade_retainer"
+     {
+      "type": "marksman",
+      "post": true,
+      "scan_deg": 120,
+      "scan_ms": 14000,
+      "turn_ms": 0,
+      "sight_cm": 4000,
+      "dark_sight_cm": 1500,
+      "view_deg": 40,
+      "hearing_cm": 400,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "drone",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1800,
+      "dark_sight_cm": 700,
+      "view_deg": 50,
+      "hearing_cm": 600,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2200,
+      "dark_sight_cm": 800,
+      "view_deg": 70,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2200,
+      "dark_sight_cm": 800,
+      "view_deg": 70,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "bound_conscript",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1500,
+      "dark_sight_cm": 600,
+      "view_deg": 90,
+      "hearing_cm": 700,
+      "suspicion_permille": 700
+     },
+     {
+      "type": "bound_conscript",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1500,
+      "dark_sight_cm": 600,
+      "view_deg": 90,
+      "hearing_cm": 700,
+      "suspicion_permille": 700
+     },
+     {
+      "type": "blade_retainer",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1600,
+      "dark_sight_cm": 600,
+      "view_deg": 80,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     }
     ],
+    "stealth": {
+     "rate_permille": 1000,
+     "suspicious_at_permille": 250,
+     "search_ms": 20000,
+     "wary_permille": 1200,
+     "rear_takedowns": true,
+     "lethal_default": true,
+     "bodies": true,
+     "drag": true,
+     "carryover_to": null
+    },
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": [
+     4000,
+     1000,
+     0
+    ]
    },
    "ext": {
     "static_lights": [
      "terminal_glow_b10"
+    ],
+    "ladders": [
+     {
+      "id": "ladder_b10_pawnshop",
+      "roof": "vol_b10_roofs",
+      "height_cm": 320,
+      "drop_noise_cm": 900,
+      "guards": [
+       "g_b10_m1"
+      ]
+     }
     ],
     "charge": {
      "fuse_s": 20,
@@ -2001,6 +2292,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2015,12 +2307,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -2104,6 +2399,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2118,12 +2414,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -2207,6 +2506,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2221,12 +2521,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -2342,12 +2645,14 @@
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "bound_conscript",
         "count": 2,
-        "lethal": false
+        "lethal": false,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -2362,7 +2667,8 @@
        {
         "type": "drone",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -2377,12 +2683,14 @@
        {
         "type": "blade_retainer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -2416,6 +2724,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2430,12 +2739,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "fire_out_at": [
@@ -2543,6 +2855,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2557,12 +2870,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -2656,12 +2972,14 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "marksman",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -2676,12 +2994,14 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "marksman",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -2715,6 +3035,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2729,12 +3050,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -2831,6 +3155,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2845,12 +3170,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": "boss_penalta",
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "interactables": [
@@ -2967,6 +3295,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2981,12 +3310,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   }
@@ -7138,7 +7470,7 @@
   },
   {
    "beat": "ch03.b14",
-   "on": "x_fire_out",
+   "on": "fire_out",
    "mode": "ambient",
    "lines": [
     "ch03.b14.oyuki.006"
@@ -7148,7 +7480,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_fire_out"
+   }
   },
   {
    "beat": "ch03.b14",
@@ -8149,7 +8483,7 @@
    "beats": [
     "ch03.b10"
    ],
-   "on": null,
+   "on": "pattern:marksman_lock:first",
    "ja": "光が見えたら狙われている",
    "en": "A glint means you are targeted",
    "shown_en": "First marksman lock"
@@ -8159,7 +8493,7 @@
    "beats": [
     "ch03.b10"
    ],
-   "on": null,
+   "on": "volume_enter:vol_b10_dobuita",
    "ja": "溝板は端を歩けば鳴らない",
    "en": "Walk the drain boards' edges to stay silent",
    "shown_en": "On vol_b10_dobuita_*"
@@ -8169,7 +8503,7 @@
    "beats": [
     "ch03.b10"
    ],
-   "on": null,
+   "on": "interact:obj_light_fuse",
    "ja": "導火二十秒。離れよ",
    "en": "Fuse: 20 s. Get clear",
    "shown_en": "On lighting the fuse"
@@ -8179,7 +8513,7 @@
    "beats": [
     "ch03.b14"
    ],
-   "on": null,
+   "on": "fire_out:first",
    "ja": "消えた竈は{Interact}長押しで点け直す",
    "en": "Hold {Interact} to relight a cook-fire",
    "shown_en": "First guttered fire"
@@ -8189,7 +8523,7 @@
    "beats": [
     "ch03.b14"
    ],
-   "on": null,
+   "on": "volume_enter:vol_b14_supply",
    "ja": "補給所：持ち物を替えられる",
    "en": "Supply point: change your loadout",
    "shown_en": "On vol_b14_supply"
@@ -11279,7 +11613,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -11472,6 +11813,7 @@
         360,
         360
        ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       },
@@ -11485,6 +11827,7 @@
         360,
         360
        ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       },
@@ -11498,6 +11841,7 @@
         360,
         360
        ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       },
@@ -11511,6 +11855,7 @@
         360,
         360
        ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       },
@@ -11524,6 +11869,7 @@
         360,
         360
        ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       },
@@ -11537,6 +11883,7 @@
         360,
         360
        ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       }
@@ -11551,7 +11898,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -11726,32 +12080,6 @@
       {
        "kind": "puddle",
        "center": [
-        16903,
-        -453
-       ],
-       "size": [
-        360,
-        360
-       ],
-       "step_permille": 2000,
-       "crouch_permille": 2000
-      },
-      {
-       "kind": "puddle",
-       "center": [
-        18535,
-        280
-       ],
-       "size": [
-        360,
-        360
-       ],
-       "step_permille": 2000,
-       "crouch_permille": 2000
-      },
-      {
-       "kind": "puddle",
-       "center": [
         16518,
         -173
        ],
@@ -11759,6 +12087,35 @@
         360,
         360
        ],
+       "height_cm": 0,
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        18150,
+        560
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "height_cm": 0,
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        17141,
+        -626
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       },
@@ -11772,6 +12129,7 @@
         520,
         360
        ],
+       "height_cm": 0,
        "step_permille": 500,
        "crouch_permille": 500
       }
@@ -11786,7 +12144,46 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [
+      {
+       "id": "ladder_b03_shop",
+       "foot": [
+        18015,
+        280
+       ],
+       "yaw": 0,
+       "roof": {
+        "center": [
+         18535,
+         280
+        ],
+        "size": [
+         900,
+         600
+        ]
+       },
+       "height_cm": 320,
+       "drop_noise_cm": 900,
+       "straw": {
+        "center": [
+         19155,
+         280
+        ],
+        "size": [
+         260,
+         260
+        ]
+       },
+       "guards": []
+      }
+     ],
+     "charge": null
     }
    },
    {
@@ -11956,7 +12353,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -12104,7 +12508,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -12226,7 +12637,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -12502,7 +12920,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -12624,7 +13049,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -12770,7 +13202,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -12958,32 +13397,6 @@
       {
        "kind": "puddle",
        "center": [
-        38303,
-        -453
-       ],
-       "size": [
-        360,
-        360
-       ],
-       "step_permille": 2000,
-       "crouch_permille": 2000
-      },
-      {
-       "kind": "puddle",
-       "center": [
-        39935,
-        280
-       ],
-       "size": [
-        360,
-        360
-       ],
-       "step_permille": 2000,
-       "crouch_permille": 2000
-      },
-      {
-       "kind": "puddle",
-       "center": [
         37918,
         -173
        ],
@@ -12991,6 +13404,7 @@
         360,
         360
        ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       },
@@ -13004,34 +13418,37 @@
         360,
         360
        ],
+       "height_cm": 0,
        "step_permille": 2000,
        "crouch_permille": 2000
       },
       {
-       "kind": "dobuita",
+       "kind": "puddle",
+       "center": [
+        38541,
+        -626
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "height_cm": 0,
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
        "center": [
         40173,
         107
        ],
        "size": [
-        420,
-        420
+        360,
+        360
        ],
-       "step_permille": 1500,
-       "crouch_permille": 1500
-      },
-      {
-       "kind": "edge_strip",
-       "center": [
-        40173,
-        272
-       ],
-       "size": [
-        420,
-        90
-       ],
-       "step_permille": 1500,
-       "crouch_permille": 0
+       "height_cm": 0,
+       "step_permille": 2000,
+       "crouch_permille": 2000
       },
       {
        "kind": "dobuita",
@@ -13043,6 +13460,7 @@
         420,
         420
        ],
+       "height_cm": 0,
        "step_permille": 1500,
        "crouch_permille": 1500
       },
@@ -13056,11 +13474,12 @@
         420,
         90
        ],
+       "height_cm": 0,
        "step_permille": 1500,
        "crouch_permille": 0
       },
       {
-       "kind": "board_roof",
+       "kind": "dobuita",
        "center": [
         39788,
         387
@@ -13069,6 +13488,35 @@
         420,
         420
        ],
+       "height_cm": 0,
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      },
+      {
+       "kind": "edge_strip",
+       "center": [
+        39788,
+        552
+       ],
+       "size": [
+        420,
+        90
+       ],
+       "height_cm": 0,
+       "step_permille": 1500,
+       "crouch_permille": 0
+      },
+      {
+       "kind": "board_roof",
+       "center": [
+        39935,
+        280
+       ],
+       "size": [
+        900,
+        600
+       ],
+       "height_cm": 320,
        "step_permille": 1500,
        "crouch_permille": 1500
       }
@@ -13083,7 +13531,39 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [
+      {
+       "id": "ladder_b10_pawnshop",
+       "foot": [
+        39415,
+        280
+       ],
+       "yaw": 0,
+       "roof": {
+        "center": [
+         39935,
+         280
+        ],
+        "size": [
+         900,
+         600
+        ]
+       },
+       "height_cm": 320,
+       "drop_noise_cm": 900,
+       "straw": null,
+       "guards": [
+        0
+       ]
+      }
+     ],
+     "charge": null
     }
    },
    {
@@ -13215,7 +13695,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -13337,7 +13824,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -13469,7 +13963,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -13603,7 +14104,44 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": {
+      "points": [
+       {
+        "id": "kamado_b14_1",
+        "at": [
+         26304,
+         390
+        ]
+       },
+       {
+        "id": "kamado_b14_2",
+        "at": [
+         26304,
+         640
+        ]
+       },
+       {
+        "id": "kamado_b14_3",
+        "at": [
+         26864,
+         390
+        ]
+       }
+      ],
+      "out_at": [
+       250,
+       550,
+       800
+      ],
+      "relight_ms": 2000
+     },
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -13735,7 +14273,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -13869,7 +14414,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -13991,7 +14543,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    },
    {
@@ -14123,7 +14682,14 @@
      "releases": [],
      "allies": [],
      "people": [],
-     "volley": null
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
     }
    }
   ],

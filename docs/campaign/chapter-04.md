@@ -1673,6 +1673,16 @@ beats:
     hide_on_signal: true
     npc_health: 250
     down_revive_s: 6
+  x_seizure:
+    targets: [ox_cart_01]
+    net_windup_ms: 800
+    telegraph: cyan_lock_ring
+    lift_timer_s: 0
+    cut: {dismounted_interact_s: 1.0}
+    kill_tether_drone_cancels: true
+    halts_escort: true
+  x_cart: {actor: ox_cart_01, hp: 600}
+  fail: {'on': player_died|convoy_member_hp0, to: checkpoint}
   waves:
   - enemies:
     - {type: enforcer_rifle, count: 3, spawn: sp_paddy_bank_east}

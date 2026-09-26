@@ -35,4 +35,7 @@ print("Fieldcraft rules pass: the arms ring, groups, stepping and wheel sectors;
       "held hand or a healing lance, bleeding out, freed from collars and cells, hidden and sent on by signal, and "
       "the party walking only whole; held work; lamps snuffed and relit; breath and drowning at any frame rate; grip, "
       "ledges and falls; tsubute stones and their capped lure; the candle; vaulting; the kusarigama's chain; "
-      "rotating volley ranks, their reload and the volley's split")
+      "rotating volley ranks, their reload, the volley's split, its smoke and Easy's auto-order; seizure nets locked, "
+      "cut by hand or from the saddle, loosened by a downed tether and hauled off, and a cut net's reload; searchlights' sweep and the time a "
+      "head in the spot takes to be noticed; the one-shot bell; guttering cook-fires; a roof's drop; the charge's pace "
+      "and its seal stakes")

@@ -255,6 +255,10 @@ def _referenced_volumes(beat, triggers):
     add(f"volume_enter:{spook['volume']}" if spook.get("volume") else None)
     for forced in ext.get("forced_gait_volumes") or []:
         add(f"volume_enter:{forced['volume']}")
+    # A ride's objectives on the road (ch08.b02's seal stakes) stand in their volumes.
+    if beat["type"] == "horseback_ride":
+        for objective in beat["params"].get("objectives") or []:
+            add(f"volume_enter:{objective['volume']}" if objective.get("volume") else None)
     return names
 
 
@@ -783,6 +787,12 @@ def beat_index(beat):
 
 def _volume_chainage(beat, name, number, count, length):
     ext = beat["ext"]
+    # A ride's road objectives (ch08.b02's three seal stakes) stand evenly
+    # between the barricade groups: at 23%, 50% and 77% of the road.
+    stakes = [row["volume"] for row in beat["params"].get("objectives") or [] if row.get("volume")] \
+        if beat["type"] == "horseback_ride" else []
+    if name in stakes:
+        return length * (0.1 + 0.8 * (stakes.index(name) + 0.5) / len(stakes))
     spook = ext.get("scripted_spook") or {}
     if spook.get("volume") == name and spook.get("at_m") is not None:
         return min(length - 600, _i(spook["at_m"] * 100))
