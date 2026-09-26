@@ -3,9 +3,11 @@
 Pure Python, no ``unreal``, so the host check and the editor scripts read one
 definition. Its sources:
 
-* the bus tree, default levels, user sliders and ducking come from the cue
-  proposal (``Content/SourceArt/Audio/cues.proposed.json``, docs/audio.md
-  section 2);
+* the bus tree, default levels, user sliders, submix routing and ducking come
+  from the runtime audio data (``Content/Data/audio.json``, built by
+  scripts/audio/build_audio_data.py; docs/audio.md section 2). The two
+  telegraph buses keep a volume floor, so their submixes feed Master directly
+  while their sound classes stay under their parents;
 * the SoundWaves are the WAV records of the two OWN manifests
   (``Original/manifest.json`` and ``Music/manifest.json``), each checked
   against its SHA-256, its byte size and its own RIFF chunks;
@@ -14,11 +16,10 @@ definition. Its sources:
   ``storage: local-private``, ``committed: false``, and a promoted record fails
   here until its import route is defined.
 
-Every SoundWave takes the bus of the cues it plays in (section 3). A wave
-that several ready cues share keeps their common bus; one shared with a cue
-still needing its own sound (a placeholder) takes the bus of its ready cue.
-A cue has one bus, so a cue that mixes buses names its exceptions in
-BUS_OVERRIDES.
+Every SoundWave takes the bus of the cues it plays in (section 3), and every
+music piece's wave the Music bus. A wave that several ready cues share keeps
+their common bus; one shared with a cue still needing its own sound (a
+placeholder) takes the bus of its ready cue.
 """
 
 import hashlib
@@ -29,18 +30,12 @@ from pathlib import Path
 
 
 SOURCE = "Content/SourceArt/Audio"
-PROPOSAL = f"{SOURCE}/cues.proposed.json"
+DATA = "Content/Data/audio.json"
 OWN_MANIFESTS = (f"{SOURCE}/Original/manifest.json", f"{SOURCE}/Music/manifest.json")
 AUDIO_LEDGERS = "scripts/assets/manifests"
 GENERATED = "/Game/Generated/Audio"
 BUSES = f"{GENERATED}/Buses"
 SAMPLE_RATE = 48000
-
-# Files whose bus differs from their cue's. site.restored plays on UI, but its
-# note and docs/audio.md section 3.5 keep its stinger on the Music bus.
-BUS_OVERRIDES = {
-    f"{SOURCE}/Music/Stingers/mus_sting_site_restored.wav": "Music",
-}
 
 # ESoraAudioBus order (Source/SoraArena/Public/SoraSettings.h): the six user
 # sliders, each a bus of its own name.
@@ -162,23 +157,23 @@ def check_ledger_admits_no_cc0(root):
     return records
 
 
-def resolve_buses(proposal):
-    """Return {source file: bus} from the cues and music states."""
+def source_of(wave):
+    """audio.json names a wave by its path under both roots; this is its WAV."""
+    return f"{SOURCE}/{wave}.wav"
+
+
+def resolve_buses(data):
+    """Return {source file: bus} from the cues and the music pieces."""
     uses = {}
-    for cue in proposal["cues"]:
-        for file in cue["files"]:
-            uses.setdefault(file, []).append((cue["status"], cue["bus"], cue["id"]))
-    for state in proposal["music"]["states"]:
-        for file in state["files"]:
-            uses.setdefault(file, []).append(("ready-own", "Music", f"music:{state['state']}"))
+    for cue in data["cues"]:
+        for wave in cue["waves"]:
+            uses.setdefault(source_of(wave), []).append((cue["status"], cue["bus"], cue["id"]))
+    for name, piece in data["music"]["pieces"].items():
+        for wave in [piece["intro"], piece["full"], *piece["stems"].values()]:
+            if wave:
+                uses.setdefault(source_of(wave), []).append(("ready-own", "Music", f"music:{name}"))
     buses = {}
-    for file, bus in BUS_OVERRIDES.items():
-        require(file in uses and bus not in {cue_bus for _, cue_bus, _ in uses[file]},
-                f"Bus override for {file} is stale: its cues already play it on {bus}")
     for file, cues in uses.items():
-        if file in BUS_OVERRIDES:
-            buses[file] = BUS_OVERRIDES[file]
-            continue
         ready = {bus for status, bus, _ in cues if status == "ready-own"}
         candidates = ready or {bus for _, bus, _ in cues}
         require(len(candidates) == 1,
@@ -188,29 +183,38 @@ def resolve_buses(proposal):
     return buses
 
 
-def bus_tree(proposal):
-    """Validate the proposal's buses and ducking; return (buses, ducking mixes)."""
-    buses = proposal["buses"]
+def bus_tree(data):
+    """Validate the data's buses and ducking; return (buses, ducking mixes)."""
+    buses = data["buses"]
     names = [bus["id"] for bus in buses]
-    require(len(names) == len(set(names)), "Duplicate bus in the cue proposal")
+    require(len(names) == len(set(names)), "Duplicate bus in the audio data")
     by_name = {bus["id"]: bus for bus in buses}
-    roots = [bus["id"] for bus in buses if bus["parent"] is None]
+    roots = [bus["id"] for bus in buses if not bus["parent"]]
     require(roots == ["Master"], f"The bus tree needs Master as its only root: {roots}")
     for bus in buses:
-        require(bus["parent"] is None or (bus["parent"] in by_name
-                                          and names.index(bus["parent"]) < names.index(bus["id"])),
+        require(not bus["parent"] or (bus["parent"] in by_name
+                                      and names.index(bus["parent"]) < names.index(bus["id"])),
                 f"Bus {bus['id']} has no parent listed before it")
         require(bus["default_db"] <= 0.0, f"Bus {bus['id']} would boost its sounds")
-    sliders = tuple(bus["id"] for bus in buses if "user_slider" in bus)
+        # A telegraph bus keeps a floor under its parent's slider, so its
+        # submix feeds Master; every other submix follows the class tree.
+        if bus["floor_of"]:
+            require(bus["submix_parent"] == "Master" and bus["floor_db"] < 0.0
+                    and by_name.get(bus["floor_of"], {}).get("slider"),
+                    f"Floored bus {bus['id']} must feed Master with a floor below 0 dB of a slider bus")
+        else:
+            require(bus["submix_parent"] == bus["parent"],
+                    f"Bus {bus['id']} routes its submix past its parent without a floor")
+    sliders = tuple(bus["id"] for bus in buses if bus["slider"])
     require(sorted(sliders) == sorted(USER_SLIDERS)
-            and all(by_name[name].get("user_slider") == name for name in USER_SLIDERS),
+            and all(by_name[name]["slider"] == name for name in USER_SLIDERS),
             f"The user sliders must be the ESoraAudioBus buses {USER_SLIDERS}: {sliders}")
     for name in list(LOADING) + list(ALWAYS_PLAY) + list(UI_SOUND) + list(MUSIC):
         require(name in by_name, f"Audio policy names an unknown bus {name}")
 
     def ancestors(name):
         chain = []
-        while by_name[name]["parent"] is not None:
+        while by_name[name]["parent"]:
             name = by_name[name]["parent"]
             chain.append(name)
         return chain
@@ -219,7 +223,7 @@ def bus_tree(proposal):
     for name in NEVER_DUCKED:
         protected.update(ancestors(name))
     mixes = {}
-    for rule in proposal["ducking"]:
+    for rule in data["ducking"]:
         require(rule["trigger"] in by_name and rule["target"] in by_name,
                 f"Ducking names an unknown bus: {rule}")
         require(rule["target"] not in protected,
@@ -244,10 +248,10 @@ def bus_tree(proposal):
 def load(root):
     """Return the complete, verified import spec for the project at ``root``."""
     root = Path(root)
-    proposal = read_json(root / PROPOSAL)
-    require(proposal["sample_rate_hz"] == SAMPLE_RATE, "The cue proposal changed its sample rate")
-    buses, mixes = bus_tree(proposal)
-    bus_of = resolve_buses(proposal)
+    data = read_json(root / DATA)
+    require(data["sample_rate_hz"] == SAMPLE_RATE, "The audio data changed its sample rate")
+    buses, mixes = bus_tree(data)
+    bus_of = resolve_buses(data)
     unknown = sorted(set(bus_of.values()) - {bus["id"] for bus in buses})
     require(not unknown, f"Audio is routed to buses the tree lacks: {unknown}")
     cc0_records = check_ledger_admits_no_cc0(root)

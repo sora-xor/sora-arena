@@ -5,8 +5,9 @@ UnrealEditor-Cmd <project> -ExecutePythonScript=<this>
 
 It builds, under /Game/Generated/Audio (docs/audio.md section 2):
 
-* one SoundSubmix per bus, parented as the bus tree, with the -1 dB limiter
-  on SMX_Master (which feeds the engine's main submix);
+* one SoundSubmix per bus, parented as the bus tree except that the two
+  telegraph buses feed SMX_Master directly (their volume floor), with the
+  -1 dB limiter on SMX_Master (which feeds the engine's main submix);
 * one SoundClass per bus, parented alike, carrying the bus's default level,
   its loading behaviour and its submix, so every sound of the class routes
   there;
@@ -55,9 +56,9 @@ for bus in audio["buses"]:
     submixes[bus["id"]] = ensure(spec.submix_path(bus["id"]), unreal.SoundSubmix,
                                  unreal.SoundSubmixFactory())
 for bus in audio["buses"]:
-    if bus["parent"] is not None:
-        spec.require(link.set_submix_parent(submixes[bus["id"]], submixes[bus["parent"]]),
-                     f"Cannot parent SMX_{bus['id']} to SMX_{bus['parent']}")
+    if bus["submix_parent"]:
+        spec.require(link.set_submix_parent(submixes[bus["id"]], submixes[bus["submix_parent"]]),
+                     f"Cannot parent SMX_{bus['id']} to SMX_{bus['submix_parent']}")
 
 limiter_factory = unreal.SoundSubmixEffectFactory()
 limiter_factory.set_editor_property("sound_effect_submix_preset_class",
@@ -97,7 +98,7 @@ for bus in audio["buses"]:
     sound_class.set_editor_property("properties", properties)
     classes[name] = sound_class
 for bus in audio["buses"]:
-    if bus["parent"] is not None:
+    if bus["parent"]:
         spec.require(link.set_sound_class_parent(classes[bus["id"]], classes[bus["parent"]]),
                      f"Cannot parent SC_{bus['id']} to SC_{bus['parent']}")
 

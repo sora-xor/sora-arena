@@ -30,7 +30,7 @@ def wav(frames, loop=None):
 class AudioSpecTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.proposal = json.loads((ROOT / spec.PROPOSAL).read_text(encoding="utf-8"))
+        cls.data = json.loads((ROOT / spec.DATA).read_text(encoding="utf-8"))
 
     def refused(self, message, call, *args):
         with self.assertRaises(RuntimeError) as caught:
@@ -47,37 +47,44 @@ class AudioSpecTests(unittest.TestCase):
         self.assertEqual(buses["mus_sting_duel_point.wav"], "UI")
         self.assertEqual(buses["shd_barrier_regen.wav"], "SFX_Telegraph")
         self.assertEqual(buses["mel_parry_layer_body_01.wav"], "SFX_Melee")
+        routing = {bus["id"]: bus["submix_parent"] for bus in audio["buses"]}
+        self.assertEqual((routing["SFX_Telegraph"], routing["Voice_Barks"], routing["SFX_Weapons"]),
+                         ("Master", "Master", "SFX"))
         voice = next(mix for mix in audio["mixes"] if mix["trigger"] == "Voice")
         self.assertEqual(voice["sources"], ["Voice", "Voice_Barks"])
         self.assertEqual(voice["targets"], [("Music", -6.0), ("Ambience", -4.0)])
 
     def test_ducking_a_telegraph_ancestor_is_refused(self):
-        proposal = copy.deepcopy(self.proposal)
-        proposal["ducking"].append({"trigger": "Voice", "target": "SFX", "db": -3.0,
-                                    "attack_ms": 80, "release_ms": 450})
-        self.refused("would lower a telegraph bus", spec.bus_tree, proposal)
+        data = copy.deepcopy(self.data)
+        data["ducking"].append({"trigger": "Voice", "target": "SFX", "db": -3.0,
+                                "attack_ms": 80, "release_ms": 450})
+        self.refused("would lower a telegraph bus", spec.bus_tree, data)
 
     def test_one_trigger_needs_one_timing(self):
-        proposal = copy.deepcopy(self.proposal)
-        proposal["ducking"][1]["release_ms"] = 900
-        self.refused("one attack and release", spec.bus_tree, proposal)
+        data = copy.deepcopy(self.data)
+        data["ducking"][1]["release_ms"] = 900
+        self.refused("one attack and release", spec.bus_tree, data)
 
     def test_sliders_must_match_the_settings_enum(self):
-        proposal = copy.deepcopy(self.proposal)
-        next(bus for bus in proposal["buses"] if bus["id"] == "UI").pop("user_slider")
-        self.refused("user sliders", spec.bus_tree, proposal)
+        data = copy.deepcopy(self.data)
+        next(bus for bus in data["buses"] if bus["id"] == "UI")["slider"] = ""
+        self.refused("user sliders", spec.bus_tree, data)
 
     def test_a_wave_on_two_ready_buses_is_refused(self):
-        proposal = copy.deepcopy(self.proposal)
-        cue = next(cue for cue in proposal["cues"] if cue["id"] == "ui.click")
-        proposal["cues"].append(dict(cue, id="ui.click.copy", bus="SFX_Foley"))
-        self.refused("plays on several buses", spec.resolve_buses, proposal)
+        data = copy.deepcopy(self.data)
+        cue = next(cue for cue in data["cues"] if cue["id"] == "ui.click")
+        data["cues"].append(dict(cue, id="ui.click.copy", bus="SFX_Foley"))
+        self.refused("plays on several buses", spec.resolve_buses, data)
 
-    def test_a_stale_override_is_refused(self):
-        proposal = copy.deepcopy(self.proposal)
-        cue = next(cue for cue in proposal["cues"] if cue["id"] == "site.restored")
-        cue["bus"] = "Music"
-        self.refused("is stale", spec.resolve_buses, proposal)
+    def test_a_submix_may_skip_its_parent_only_for_a_floor(self):
+        data = copy.deepcopy(self.data)
+        next(bus for bus in data["buses"] if bus["id"] == "SFX_Weapons")["submix_parent"] = "Master"
+        self.refused("past its parent without a floor", spec.bus_tree, data)
+
+    def test_a_floored_bus_feeds_master(self):
+        data = copy.deepcopy(self.data)
+        next(bus for bus in data["buses"] if bus["id"] == "SFX_Telegraph")["submix_parent"] = "SFX"
+        self.refused("must feed Master", spec.bus_tree, data)
 
     def test_wav_layout_reads_the_smpl_loop(self):
         self.assertEqual(spec.wav_layout(wav(480, (0, 479)), "loop"), (48000, 2, 24, 480, [(0, 479)]))

@@ -3,6 +3,7 @@
 #include "ArenaWalletSubsystem.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
+#include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraInputStates.h"
 #include "SoraPlayerCharacter.h"
@@ -53,6 +54,26 @@ FChoice LobbyDifficulty(int32 Difficulty)
             NSLOCTEXT("SoraArena.Menu", "Lobby.Difficulty.Standard.Hint", "ボットは狙い、守り、拠点を意識する。")};
     }
 }
+// What the front end just did, for USoraAudioSubsystem.
+void Sound(const USoraFrontEnd& Front, ESoraUISound Sound)
+{
+    if (USoraGameEvents* Events = USoraGameEvents::Get(&Front.Mode()))
+        Events->OnUISound.Broadcast(Sound);
+}
+// A row whose option steps a number rather than a choice.
+bool Steps(SoraUI::EAction Action)
+{
+    using SoraUI::EAction;
+    return Action == EAction::Volume || Action == EAction::ResolutionScale || Action == EAction::CameraShake ||
+        Action == EAction::LookSensitivity || Action == EAction::MouseSensitivity || Action == EAction::MoveDeadZone ||
+        Action == EAction::LookDeadZone;
+}
+// Accepting these commits the player to something; the rest move between screens.
+bool Commits(SoraUI::EAction Action)
+{
+    using SoraUI::EAction;
+    return Action == EAction::Continue || Action == EAction::Resume || Action == EAction::LobbyStart || Action == EAction::ConfirmYes;
+}
 FText SettingsLabel() { return NSLOCTEXT("SoraArena.Menu", "Main.Settings", "設定"); }
 FText SettingsHint()
 {
@@ -83,11 +104,14 @@ void USoraFrontEnd::ShowPause()
     Stack = {{SoraUI::EScreen::Pause, 0}};
     BannerJapanese.Empty(); BannerEnglish.Empty();
     Changed();
+    Sound(*this, ESoraUISound::MenuOpen);
 }
 void USoraFrontEnd::Hide()
 {
     if (!IsOpen())
         return;
+    if (IsPauseContext())
+        Sound(*this, ESoraUISound::MenuClose);
     Stack.Reset();
     BannerJapanese.Empty(); BannerEnglish.Empty();
     Changed();
@@ -147,6 +171,7 @@ void USoraFrontEnd::MoveFocus(int32 Direction)
     if (!Stack.Num() || RowList.IsEmpty())
         return;
     int32& Focus = Stack.Last().Focus;
+    const int32 Was = Focus;
     // Wraps around the list and skips disabled rows.
     for (int32 Step = 1; Step <= RowList.Num(); ++Step)
     {
@@ -157,6 +182,8 @@ void USoraFrontEnd::MoveFocus(int32 Direction)
             break;
         }
     }
+    if (Focus != Was)
+        Sound(*this, ESoraUISound::Hover);
     Changed();
 }
 void USoraFrontEnd::NoteDevice(SoraUI::EDevice Device)
@@ -208,18 +235,30 @@ bool USoraFrontEnd::Command(SoraUI::ECommand Pressed)
     case SoraUI::ECommand::Left:
     case SoraUI::ECommand::Right:
         if (Row && Row->bOption && Row->bEnabled)
+        {
+            Sound(*this, Steps(Row->Action) ? ESoraUISound::Slider : ESoraUISound::Option);
             Adjust(*Row, Pressed == SoraUI::ECommand::Left ? -1 : 1);
+        }
         return true;
     case SoraUI::ECommand::Accept:
         if (Current == SoraUI::EScreen::Title)
         {
+            Sound(*this, ESoraUISound::Confirm);
             ShowMain();
             return true;
         }
         if (Row && Row->bEnabled)
+        {
+            Sound(*this, Row->Action == SoraUI::EAction::Back || Row->Action == SoraUI::EAction::ConfirmNo ? ESoraUISound::Back
+                : Commits(Row->Action) ? ESoraUISound::Confirm : Row->bOption ? ESoraUISound::Option : ESoraUISound::Click);
             Activate(*Row);
+        }
+        else if (Row)
+            Sound(*this, ESoraUISound::Error);
         return true;
     case SoraUI::ECommand::Back:
+        if (Current != SoraUI::EScreen::Title)
+            Sound(*this, ESoraUISound::Back);
         Back();
         return true;
     case SoraUI::ECommand::Start:
@@ -251,6 +290,7 @@ void USoraFrontEnd::Hover(int32 Index)
     if (!Stack.Num() || !RowList.IsValidIndex(Index) || !RowList[Index].bEnabled || Stack.Last().Focus == Index)
         return;
     Stack.Last().Focus = Index;
+    Sound(*this, ESoraUISound::Hover);
     Changed();
 }
 void USoraFrontEnd::Click(int32 Index, SoraUI::ECommand Pressed)
@@ -289,6 +329,7 @@ void USoraFrontEnd::ReportFailure()
     if (!IsOpen())
         return;
     const ASoraGameMode& Game = Mode();
+    Sound(*this, ESoraUISound::Error);
     const SoraText::FLine Failed = SoraText::Line(NSLOCTEXT("SoraArena.Menu", "Banner.CouldNotStart", "開始できませんでした。"));
     BannerJapanese = Game.Notice.IsEmpty() ? Failed.Japanese : Game.Notice;
     BannerEnglish = Game.NoticeEnglish.IsEmpty() ? Failed.English : Game.NoticeEnglish;

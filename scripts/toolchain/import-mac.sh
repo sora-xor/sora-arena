@@ -57,8 +57,10 @@ if [[ -z "$EXPECTED_PACKAGES" ]]; then
   echo "Source art check did not report an expected package count: $SOURCE_CHECK" >&2
   exit 1
 fi
-# The audio check verifies the OWN audio hashes, loop chunks, bus tree and cue
-# routing, and yields the audio package count its editor validator must load.
+# The audio checks verify the runtime audio data against the game, then the
+# OWN audio hashes, loop chunks, bus tree and cue routing, and yield the audio
+# package count its editor validator must load.
+PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/audio/validate_audio_data.py"
 AUDIO_CHECK="$(PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/unreal/validate_audio_import.py" --source-only)"
 EXPECTED_AUDIO_PACKAGES="$(sed -n 's/^SORA_AUDIO_SOURCE_CHECK_COMPLETE: \([0-9][0-9]*\) expected Unreal packages .*$/\1/p' <<<"$AUDIO_CHECK")"
 if [[ -z "$EXPECTED_AUDIO_PACKAGES" ]]; then

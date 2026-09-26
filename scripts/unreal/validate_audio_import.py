@@ -10,8 +10,8 @@ The editor check fails unless /Game/Generated/Audio holds exactly the expected
 packages and each has the expected class, and:
 
 * every submix and sound class sits in the bus tree of docs/audio.md section
-  2, with unity submix levels, the Master limiter and nothing else in an
-  effect chain;
+  2 (the telegraph buses' submixes feed Master for their floor), with unity
+  submix levels, the Master limiter and nothing else in an effect chain;
 * every sound class carries its bus's default level, flags, loading
   behaviour, submix and passive ducking mixes;
 * every ducking mix lowers exactly its targets over its attack and release;
@@ -39,6 +39,8 @@ def validate_buses(unreal, audio):
     buses = audio["buses"]
     children = {bus["id"]: [child["id"] for child in buses if child["parent"] == bus["id"]]
                 for bus in buses}
+    submix_children = {bus["id"]: [child["id"] for child in buses if child["submix_parent"] == bus["id"]]
+                       for bus in buses}
     limiter = load(spec.object_path(spec.LIMITER_PATH))
     settings = limiter.get_editor_property("settings")
     expected_limiter = {
@@ -69,13 +71,14 @@ def validate_buses(unreal, audio):
         name = bus["id"]
         parent = bus["parent"]
         submix = load(spec.object_path(spec.submix_path(name)))
-        expected_parent = spec.object_path(spec.submix_path(parent)) if parent else None
+        routed_parent = bus["submix_parent"]
+        expected_parent = spec.object_path(spec.submix_path(routed_parent)) if routed_parent else None
         actual_parent = submix.get_editor_property("parent_submix")
         require((actual_parent.get_path_name() if actual_parent else None) == expected_parent,
                 f"SMX_{name} parent is {actual_parent}, expected {expected_parent}")
-        require(names(submix.get_editor_property("child_submixes"))
-                == [spec.object_path(spec.submix_path(child)) for child in children[name]],
-                f"SMX_{name} children differ from the bus tree")
+        require(sorted(names(submix.get_editor_property("child_submixes")))
+                == sorted(spec.object_path(spec.submix_path(child)) for child in submix_children[name]),
+                f"SMX_{name} children differ from the submix routing")
         chain = names(submix.get_editor_property("submix_effect_chain"))
         require(chain == ([limiter.get_path_name()] if name == "Master" else []),
                 f"SMX_{name} effect chain is {chain}")
