@@ -205,52 +205,99 @@ package was restaged from the clean Config.
 tests the staged app without the editor. It checks the bundle identifier, a
 strict signature and the staged kernel, Connect bridge and data. It runs a
 `-NullRHI` startup smoke (default map with `SoraGameMode`, language `ja`, exit
-0) and then `Automation RunTests <Filter>` under `-RenderOffscreen`. It fails
-unless every test reports Success in Unreal's JSON report and no cooked
-material falls back to the default material for a missing usage flag. UE signs
-the app with the App Sandbox, so every launch gets an empty `-UserDir` inside
+0, no fatal error, assertion or ensure) and then `Automation RunTests <Filter>`
+under `-RenderOffscreen`. It fails unless every test reports Success in
+Unreal's JSON report and no cooked material falls back to the default material
+for a missing usage flag. UE signs the app with the App Sandbox, so every
+launch gets an empty `-UserDir` inside
 `~/Library/Containers/org.sora.soraarena/Data/tmp/`, copied afterwards to
 `<output>/app-data`. The player's saves are never touched. A game lists only
 `ClientContext` tests; the four editor-only tests stay with
 `run-automation-mac.sh`.
 
+Two UE 5.8.3 engine races in Development builds shape how the script launches
+the package:
+
+- **Startup crash (LLM teardown).** A Development or Test Mac build starts
+  Unreal's low-level memory tracker (LLM) and, unless `-LLM` is given, turns it
+  off and frees its trackers early in the game thread's PreInit
+  (`FLLMGlobals::ProcessCommandLineInner`). On the Mac the main thread is at
+  that moment still handling AppKit's launch Apple event, and LaunchServices
+  allocates inside an `FLLMScope` in `FMallocBinned3::PushNewPoolToFront`.
+  `FLLMScope` takes no lock against that teardown, so when the trackers go away
+  inside the scope its `PopTag` fails and the app dies with `SIGSEGV` before
+  its first log line. That happened in 4 of 26 launches on 2026-09-26 and in
+  1 of 30 in a later probe. The script launches with `-LLM`, which leaves the
+  tracker on, so nothing is torn down. With `-LLM`, 70 probe launches of the
+  staged package gave 0 crashes. Shipping builds compile LLM out
+  (`LowLevelMemTrackerDefines.h`). A Development package started without
+  `-LLM`, for example from Finder, can still crash this way.
+- **Exit ensure (I/O teardown).** During engine exit, `~FIoDispatcherImpl`
+  unbinds its file backend's wake-up delegate while a read that completes on
+  the backend thread may still be executing it. The Development build's
+  delegate race detector then reports up to three ensures under
+  `FEngineLoop::Exit`, in `FIoDispatcherImpl` and `FFileIoStore` teardown. The
+  smoke quits on its first frame with reads still in flight, and hit this in
+  2 of 109 such launches on 2026-09-26. The smoke check names only that exact
+  case, with no project frame in the stack, as a known engine race and does
+  not fail on it. Any other ensure fails the smoke.
+
 On 2026-09-26 the main checkout (source as of `d70c30b`, kernel
-`libarena_ffi.dylib` sha256 `1bd6e8fa…d494`) imported 279 packages, built the
-game (through the Xcode retry above) and cooked 918 packages with 0 errors and
-0 warnings. Staging into `Local/Packages/mac-wavec-baseline` produced a
-1.3 GiB signed app. Three full runs of the packaged test gave the same result:
-two on that package, and one after the guarded cook and the restage. The
-startup smoke passed. The package found all 79 client-context
-tests, and **76 passed**, including `UIRendered.FrontEndScreens` and its 19
-screenshots, the 8-chapter `Campaign.Playthrough`, `Practice.FullMatches`,
-`KernelDeterminism` and both localization tests. **Three fail only in the
-package**, and all three pass in the editor at the same source:
+`libarena_ffi.dylib` sha256 `1bd6e8fa…d494`) first packaged into
+`Local/Packages/mac-wavec-baseline`: 76 of 79 client-context tests passed,
+three failed only in the package, and eight cooked materials drew as the
+default material. Fixing them took four changes:
 
-- `Input.StateGatedKeys`: the cooked game's `Block` action FName reads back as
-  `bLock`, because FNames are case-insensitive and keep their first-registered
-  spelling. `SoraInput::StatesFor` compares with case-sensitive
-  `FCString::Strcmp`, so it gives `Block` no states. The rebind dialog's
-  `FindConflict` makes the same lookup, so in the package it ignores the Block
-  mappings.
-- `Practice.MarksTextScoreboard`: the test reads the mon mesh's CPU vertex
-  positions. A cooked build discards them after upload
-  (`TResourceArray::Discard`), so the check fails under Metal, and under
-  `-NullRHI` the game thread crashed in that read (`KERN_INVALID_ADDRESS`).
-- `Boss.Tarifa`: the awase on `tether_lash` is counted as parried, but Tarifa
-  is not staggered ("The cable snaps"). It fails the same way under `-NullRHI`
-  and `-RenderOffscreen`; the cause is not yet found.
+- **`Input.StateGatedKeys`.** In a cooked game the `Block` action FName reads
+  back as `bLock`: FNames compare without case, and a game build keeps only
+  the first spelling it registered. `SoraInput::StatesFor` and
+  `FindRemappable` compared names with case-sensitive `Strcmp`, which gave
+  Block no input states. The rebind dialog's conflict check therefore ignored
+  Block mappings, and a saved layout that rebinds Block would have been
+  rejected. Both functions now compare with `Stricmp`.
+- **`Practice.MarksTextScoreboard`.** The test reads the SORA mon's vertex
+  positions to prove it stands upright, but a cooked build releases vertex
+  data after upload. Under Metal the read saw stale memory; under `-NullRHI`
+  it crashed the game thread. `import_sora_kamon_mon.py` now sets
+  `allow_cpu_access` on `SM_SoraKamon`, which keeps those positions in the
+  cooked game. The validator requires the flag, and the test asserts it before
+  it reads.
+- **`Boss.Tarifa`.** The root cause is the navigation mesh, not the parry. A
+  component that got its static mesh while it still had the default blocking
+  collision entered the navigation octree at the origin. In a cooked game,
+  where meshes are never still compiling at that point, the entry stayed after
+  the builder turned collision off. The estate terrain tiles, trees, props,
+  practice parts, bodies and boss-hazard shapes did this. At the next rebuild,
+  holes appeared wherever those visual shapes stood. In the package, Tarifa
+  walked around her own painted steam zone at the wet slot; the editor sent
+  her straight at the hero. That left a loom automaton between her and the
+  hero, where it blocked the tether's line, so no strike landed to parry.
+  `ASoraWorldBuilder::Shape` now sets collision and navigation before the
+  mesh. Every other visual-only mesh sets `SetCanEverAffectNavigation(false)`
+  first. After the fix the packaged navigation octree near the wet slot holds
+  only the ground, and the path is straight, as in the editor. The new test
+  `SoraArena.AI.VisualMeshesOffNavigation` fails if any
+  non-navigation-relevant mesh is in the octree or if a painted zone cuts the
+  rebuilt mesh. The Tarifa test now prints the boss timeline, with positions,
+  whenever a lash is not met.
+- **Default materials.** `M_Nyaagyu_PBR`, the parent of every `MI_Nyaagyu_*`
+  instance, and `M_ArenaSurface` now carry
+  `used_with_instanced_static_meshes`. The practice glow uses the new unlit
+  additive `M_ArenaGlow` ("Color" parameter, instanced-mesh usage) in place of
+  the engine's `EmissiveMeshMaterial`, which lacks that usage. The validator
+  requires all three flags.
 
-The same runs show that eight cooked materials lack the `InstancedStaticMeshes`
-usage flag, so the practice arenas' instanced dressing draws with the default
-material in the package: `MI_Nyaagyu_Plaster`, `Stone`, `Timber`, `Kawara`,
-`Metal` and `TerrainStone`, `M_ArenaSurface`, and the engine's
-`EmissiveMeshMaterial`. Separately, 4 of the 26 package launches that day ended
-in a `SIGSEGV` at startup, before the first log line. In each crash the main
-thread was in AppKit's launch Apple-event handling and hit
-`FLLMTracker::PopTag` ("Called PopTag but PushTag was never called!") under
-`FMallocBinned3`. This is an intermittent engine-level startup crash of this
-Development package; the script fails such a launch and copies its `.ips`
-report.
+After `import-mac.sh` (280 packages), `build-mac.sh Development Game`,
+`cook-mac.sh` (919 cooked, 7 skipped by platform, 0 errors, 0 warnings, Config
+unchanged) and `stage-mac.sh Local/Packages/mac-capture-green`, the full
+packaged run passed (`Saved/PackagedAutomation/green-final1`). The smoke passed,
+the package found all 80 client-context tests and **80 passed**, and no
+cooked material fell back to the default material. That includes
+`Campaign.Playthrough`, `Practice.FullMatches`, `UIRendered.FrontEndScreens`
+and the new navigation test. The four editor-only tests passed in
+`run-automation-mac.sh`. The fixed materials show in the practice arenas'
+instanced dressing; the front-end screenshots (title and pause over the
+training arena) look the same before and after.
 
 ## Finish Unreal and Xcode provisioning
 

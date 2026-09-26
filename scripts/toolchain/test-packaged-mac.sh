@@ -7,7 +7,7 @@
 #    the staged kernel, Connect bridge, arena map and campaign data.
 # 2. A startup smoke with -NullRHI: the default map loads with SoraGameMode,
 #    the game culture is Japanese, the app quits with status 0 and logs no
-#    fatal error or ensure.
+#    fatal error or ensure (one engine exit race is named as known; see below).
 # 3. The project's client-context Unreal automation inside the package with
 #    -RenderOffscreen (Metal, no window), so the rendered front-end test runs
 #    too. It fails unless every test reports Success in Unreal's exported JSON
@@ -116,6 +116,16 @@ fi
 # directory and the launch's stdout log; a launch past the timeout is killed
 # by SIGALRM (status 142). The app creates the directories it writes. macOS
 # crash reports written during the launch are copied beside its log.
+#
+# -LLM keeps Unreal's low-level memory tracker on. A Development or Test Mac
+# build of UE 5.8.3 starts it at launch and, without -LLM, turns it off and
+# frees its trackers early in the game thread's PreInit. On the Mac the main
+# thread is then still handling AppKit's launch Apple event, which allocates
+# inside a tracker scope; when the teardown lands inside that scope the scope's
+# PopTag finds no tracker and the app dies with SIGSEGV before its first log
+# line (4 of 26 launches on 2026-09-26; FLLMScope in LLM.cpp takes no lock
+# against ProcessCommandLine). With the tracker left on there is no teardown.
+# Shipping builds compile the tracker out (LowLevelMemTrackerDefines.h).
 launch() {
   local name="$1" status
   shift
@@ -123,7 +133,7 @@ launch() {
   touch "$OUTPUT/$name.started"
   set +e
   /usr/bin/perl -e 'alarm shift @ARGV; exec @ARGV or die "exec failed: $!\n"' "$TIMEOUT_SECONDS" \
-    "$EXE" -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput \
+    "$EXE" -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput -LLM \
     "-UserDir=$APP_DATA/$name-userdir" "$@" >"$OUTPUT/$name.log" 2>&1
   status=$?
   set -e
@@ -165,8 +175,38 @@ languages = re.findall(r'Overriding language with [\w ]+ configuration option \(
 # Unreal logs the language and locale overrides once per initialization pass.
 if not languages or set(languages) != {'ja'}:
     problems.append(f'the game language overrides were {sorted(set(languages)) or "absent"}, not ja from DefaultGame.ini')
-fatal = [line for line in log.splitlines()
-         if re.search(r'Fatal error|=== Critical error|Assertion failed|Ensure condition failed|LogOutputDevice: Error', line)]
+lines = log.splitlines()
+# UE 5.8.3's IoDispatcher teardown races its own file backend: during engine
+# exit, ~FIoDispatcherImpl unbinds the backend's wake-up delegate while a read
+# that completes on the backend's thread may still be executing it, and the
+# Development build's delegate race detector reports that as an ensure (then
+# two more as the same delegates are destroyed). A launch that quits on its
+# first frame, as this one does, can still have reads in flight; 2 of 109
+# such launches on 2026-09-26 hit it. Only ensure blocks that are that engine race,
+# wholly inside engine exit and engine I/O teardown with no project frame, are
+# reported as known rather than failing the smoke; anything else fails it.
+known, block = set(), None
+for index, line in enumerate(lines):
+    if 'LogOutputDevice: Error: === Handled ensure: ===' in line:
+        block = [index]
+        continue
+    if block is not None and 'LogOutputDevice: Error:' in line:
+        block.append(index)
+        continue
+    if block is not None:
+        text = '\n'.join(lines[i] for i in block)
+        if ('Ensure condition failed: UE::Private::FMTAccessDetectorOptions::bSuppressCheckFailure' in text
+                and 'SoraArena!FEngineLoop::Exit()' in text
+                and ('SoraArena!FIoDispatcherImpl::~FIoDispatcherImpl()' in text
+                     or 'SoraArena!FFileIoStore::~FFileIoStore()' in text)
+                and not re.search(r'SoraArena!\S*(Sora|Arena)', text)):
+            known.update(block)
+        block = None
+known_ensures = sum(1 for i in known if 'LogOutputDevice: Error: === Handled ensure: ===' in lines[i])
+if known_ensures:
+    print(f'Known engine exit race: {known_ensures} IoDispatcher teardown ensure(s) during engine exit, no project frame')
+fatal = [line for index, line in enumerate(lines) if index not in known
+         and re.search(r'Fatal error|=== Critical error|Assertion failed|Ensure condition failed|LogOutputDevice: Error', line)]
 for line in fatal[:10]:
     print(f'  {line[:240]}', file=sys.stderr)
 if fatal:
