@@ -311,11 +311,19 @@ two launches:
   `Source/SoraArena/Private/SoraCaptureAutomation.cpp`:
   - `SoraCapture.Campaign.Chapter1`–`8` seed checkpoints on a throwaway slot
     and save two to four beats per chapter, each facing its opponent, guard,
-    boss telegraph, task, horse or road.
+    boss telegraph, task, horse or road from a spot with a clear view of it.
+    A cinematic is saved on its card through its own camera once a subtitle
+    shows. A beat that keeps no checkpoint (`ch01.b13`) is reached by playing
+    the dialogue beat before it. The hero walks to draw a boss that hunts by
+    ear. The world is paused while a frame is written, so the telegraph or
+    fight the harness saw is the one drawn. A shot that misses its subject,
+    its telegraph or its beat fails the test.
   - `SoraCapture.Practice.<Arena>` plays zero-stake practice on the kernel's
     bot policy. It measures a capped window (20 s, `t.MaxFPS=60`) and an
     uncapped window (15 s) with stat-unit timers and `csvprofile`, then saves
-    the fight, the scoreboard, stat unit and the results.
+    the fight, the scoreboard, stat unit and the results. It waits for each
+    profile to finish writing, so the engine's CSV frame counter is gone
+    before the next frame is saved.
 
 The harness sits outside the `SoraArena` test tree, so the packaged and editor
 suites never spend time on it. Each launch gets its own `-UserDir` in the
@@ -346,12 +354,15 @@ Two things decide whether the frame times mean anything:
 checks the profile's `SoraCaptureWindow` label. The first version paired them
 by file name, which put the wrong arena's CSV beside three of the four arenas.
 
-On 2026-09-26 the package `Local/Packages/mac-capture-harness` (the green
-package's cooked content with the harness compiled in) saved 61 frames
-(`Saved/PackagedCapture/full1`); 40 are curated in
+On 2026-09-27 the package `Local/Packages/mac-capture-harness5` (the green
+package's cooked content with the current harness compiled in) passed the
+front end 1 of 1 and `SoraCapture` 12 of 12, and saved 61 frames
+(`Saved/PackagedCapture/full5`). 43 are curated in
 [visual-reviews/wave-c-baseline](visual-reviews/wave-c-baseline/README.md).
-That README records the art verdict, the HUD defects, three harness misses
-and the frame times. The M1 Ultra is an Apple7 GPU, and UE 5.8.3 enables SM6
+That README records the art verdict, the HUD defects, the harness fixes and
+the frame times. No measured window has yet been free of other lanes'
+Blender jobs (the first run's were not sampled), so none is the game's own
+frame time. The M1 Ultra is an Apple7 GPU, and UE 5.8.3 enables SM6
 on macOS only on Apple8 (M2 or later), so the package always runs
 `METAL_SM5`, with Nanite and virtual shadow maps off. Its "please ensure you
 are running Mac OS 15" warning is misleading on macOS 27.

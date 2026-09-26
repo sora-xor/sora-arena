@@ -14,6 +14,7 @@
 #include "SoraPracticeDirector.h"
 #include "SoraPracticeLobby.h"
 #include "SoraSaveGame.h"
+#include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ContentStreaming.h"
@@ -55,7 +56,11 @@
 // throwaway save slot (the player's campaign is never read or written) at
 // two to four beats of the chapter, turns the hero toward what the beat is
 // about (its opponent, a guard, the boss in a telegraph, the task, the horse,
-// or the road from the saddle) and saves the frame with its HUD.
+// or the road from the saddle) from where he can see it, and saves the frame
+// with its HUD. A cinematic is caught on its letterboxed card through its own
+// camera, with a subtitle when one comes; a beat that keeps no checkpoint is
+// reached by playing the dialogue beat before it from that beat's checkpoint.
+// A shot that misses what it is for (a telegraph, an opponent, its beat) fails.
 // SoraCapture.Practice.<Arena> plays zero-stake practice with the hero on the
 // kernel's bot policy, measures frame time (capped as the preset ships, then
 // uncapped) with the engine's stat-unit timers and a CSV profile, and saves the
@@ -90,6 +95,9 @@ struct FShot
     int32 Beat;
     ESubject Subject;
     const TCHAR* Name;
+    // For a beat that keeps no checkpoint, the dialogue beat straight before
+    // it, whose checkpoint the shot starts from; INDEX_NONE for the beat's own.
+    int32 From = INDEX_NONE;
 };
 
 // Two to four beats a chapter: its places, the people in them, a fight, a
@@ -98,7 +106,7 @@ const FShot Shots[] = {
     {0, 1, ESubject::Opponent, TEXT("C1_02_SeiganDuel")},
     {0, 5, ESubject::Steed, TEXT("C1_06_KurimaruTack")},
     {0, 8, ESubject::Objective, TEXT("C1_09_ArrowWork")},
-    {0, 12, ESubject::Cinematic, TEXT("C1_13_SkySplits")},
+    {0, 12, ESubject::Cinematic, TEXT("C1_13_SkySplits"), 11},
     {1, 1, ESubject::Opponent, TEXT("C2_02_NagayaGate")},
     {1, 7, ESubject::Ride, TEXT("C2_08_PackTrainRide")},
     {1, 14, ESubject::Boss, TEXT("C2_15_DunarkTelegraph")},
@@ -190,6 +198,10 @@ struct FSession
     FString Note;
     // What the capture did to the beat beyond facing its subject.
     FString Step;
+    // A boss shot: whether the hero stepped in, and the frames he walked for
+    // a boss that hunts by ear to hear him.
+    bool bSteppedIn = false;
+    int32 WalkFrames = 0;
     FString File;
     FDateTime Previous;
     TArray<FTiming> Timings;
@@ -264,6 +276,13 @@ FVector Center(const AActor& Actor)
     return Actor.GetComponentsBoundingBox(true).GetCenter();
 }
 
+// A character's face and shoulders, most of the way up its capsule, where a
+// player looks at an opponent (the centre of its bounds is its belly).
+FVector Upper(const ACharacter& Body)
+{
+    return Body.GetActorLocation() + FVector(0.f, 0.f, Body.GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * .7f);
+}
+
 void Aim(ASoraPlayerCharacter& Hero, const FVector& Target)
 {
     APlayerController* Controller = Cast<APlayerController>(Hero.GetController());
@@ -291,36 +310,97 @@ void Place(ASoraPlayerCharacter& Hero, const FVector2D& At)
     Hero.SetActorLocation(Spot, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
-// Within Reach of Target when farther than Far, on the line from where he stands.
-void Approach(ASoraPlayerCharacter& Hero, const FVector& Target, float Far, float Reach)
+// What the shot looks at: the point, a second point low on it (a
+// character's legs, which a table or a ledge can hide) and the floor under
+// it, and the character there, if it is one.
+struct FSight
 {
-    const FVector2D From(Hero.GetActorLocation()), To(Target);
-    const float Distance = FVector2D::Distance(From, To);
-    if (Distance > Far)
-        Place(Hero, To + (From - To).GetSafeNormal() * Reach);
+    FVector Target = FVector::ZeroVector;
+    FVector Low = FVector::ZeroVector;
+    float FloorZ = 0.f;
+    const AActor* Body = nullptr;
+};
+
+// Whether the hero's eye sees the sight, high and low: nothing blocks either
+// line short of Slack before its end (an objective's kit stands at its
+// anchor). The character looked at never blocks its own view, nor does the
+// horse he rides (Ridden).
+bool Sees(const ASoraPlayerCharacter& Hero, const FSight& Sight, float Slack, const AActor* Ridden)
+{
+    const FVector Eye = Hero.GetCamera() ? Hero.GetCamera()->GetComponentLocation() : Hero.GetPawnViewLocation();
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraCaptureSees), false, &Hero);
+    if (Sight.Body)
+        Query.AddIgnoredActor(Sight.Body);
+    if (Ridden)
+        Query.AddIgnoredActor(Ridden);
+    for (const FVector& Point : {Sight.Target, Sight.Low})
+    {
+        FHitResult Hit;
+        if (Hero.GetWorld()->LineTraceSingleByChannel(Hit, Eye, Point, ECC_Visibility, Query) && FVector::Dist(Hit.ImpactPoint, Point) > Slack)
+            return false;
+    }
+    return true;
 }
 
-// The nearest living opponent (a duellist may be a boss); guards first when asked for one.
+// A working distance from the sight with a clear view of it: where the hero
+// stands when he is between Near and Far from it and sees it; else Reach from
+// it, on the floor it stands on (not on a table or a ledge beside it), on his
+// side of it or the nearest turn round it (30 degrees at a time) from which
+// he sees it. Says what it did; empty when he stayed.
+FString Frame(ASoraPlayerCharacter& Hero, const FSight& Sight, float Near, float Far, float Reach, float Slack, const AActor* Ridden)
+{
+    const FVector Start = Hero.GetActorLocation();
+    const FVector2D To(Sight.Target), From(Start);
+    const float Distance = FVector2D::Distance(From, To);
+    if (Distance >= Near && Distance <= Far && Sees(Hero, Sight, Slack, Ridden))
+        return FString();
+    const FVector2D Away = Distance > 1.f ? (From - To) / Distance : FVector2D(1.f, 0.f);
+    const float Half = Hero.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    for (int32 Turn = 0; Turn < 12; ++Turn)
+    {
+        const int32 Degrees = 30 * ((Turn + 1) / 2) * (Turn % 2 ? 1 : -1);
+        Hero.SetActorLocation(Start, false, nullptr, ETeleportType::TeleportPhysics);
+        Place(Hero, To + Away.GetRotated(static_cast<float>(Degrees)) * Reach);
+        if (FMath::Abs(Hero.GetActorLocation().Z - Half - Sight.FloorZ) <= 60.f && Sees(Hero, Sight, Slack, Ridden))
+            return FString::Printf(TEXT("the hero moved from %.0f m off to %.0f m, %d degrees round from his side, where he sees it"),
+                Distance / 100.f, Reach / 100.f, Degrees);
+    }
+    Hero.SetActorLocation(Start, false, nullptr, ETeleportType::TeleportPhysics);
+    if (Distance >= Near && Distance <= Far)
+        return FString::Printf(TEXT("no clear view from %.0f m on any side; the hero stayed %.0f m off"), Reach / 100.f, Distance / 100.f);
+    Place(Hero, To + Away * Reach);
+    return FString::Printf(TEXT("no clear view from %.0f m on any side; the hero moved from %.0f m off to %.0f m on his side"),
+        Reach / 100.f, Distance / 100.f, Reach / 100.f);
+}
+
+// Adds what the capture did to the beat.
+void Did(FSession& Session, const FString& What)
+{
+    if (!What.IsEmpty())
+        Session.Step += (Session.Step.IsEmpty() ? TEXT("") : TEXT("; ")) + What;
+}
+
+// The nearest living opponent (a duellist may be a boss), guards first when
+// asked for one, and one on the ground before a drone overhead.
 const ASoraEnemy* Nearest(const FSession& Session, bool bGuard)
 {
     const ASoraPlayerCharacter* Hero = Session.Hero();
     if (!Hero)
         return nullptr;
     const ASoraEnemy* Best = nullptr;
-    bool bBestGuard = false;
+    int32 BestRank = 0;
     float BestDistance = TNumericLimits<float>::Max();
     for (TActorIterator<ASoraEnemy> It(Hero->GetWorld()); It; ++It)
     {
         if (It->IsActorBeingDestroyed() || !It->IsAlive())
             continue;
         const ASoraEnemyController* Brain = Cast<ASoraEnemyController>(It->GetController());
-        const bool bIsGuard = Brain && Brain->IsGuard();
+        const int32 Rank = (bGuard && !(Brain && Brain->IsGuard()) ? 2 : 0) + (It->IsFlying() ? 1 : 0);
         const float Distance = FVector::Dist(It->GetActorLocation(), Hero->GetActorLocation());
-        const bool bBetter = (bGuard && bIsGuard != bBestGuard) ? bIsGuard : Distance < BestDistance;
-        if (!Best || bBetter)
+        if (!Best || Rank < BestRank || (Rank == BestRank && Distance < BestDistance))
         {
             Best = *It;
-            bBestGuard = bIsGuard;
+            BestRank = Rank;
             BestDistance = Distance;
         }
     }
@@ -328,39 +408,51 @@ const ASoraEnemy* Nearest(const FSession& Session, bool bGuard)
 }
 
 // Where the shot looks, if its subject is on the field now.
-bool Subject(const FSession& Session, ESubject Kind, FVector& Target)
+bool Subject(const FSession& Session, ESubject Kind, FSight& Sight)
 {
     USoraCampaignDirector* Campaign = Session.Campaign();
     if (!Campaign)
         return false;
+    const auto Character = [&Sight](const ACharacter& Body)
+    {
+        const float Half = Body.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+        Sight.Target = Upper(Body);
+        Sight.Low = Body.GetActorLocation() - FVector(0.f, 0.f, Half * .4f);
+        Sight.FloorZ = Body.GetActorLocation().Z - Half;
+        Sight.Body = &Body;
+        return true;
+    };
+    // The objective's anchor is a point on the floor.
+    const auto Anchor = [&Sight, Campaign](float Above)
+    {
+        if (!Campaign->ObjectiveAnchor(Sight.Target))
+            return false;
+        Sight.FloorZ = Sight.Target.Z;
+        Sight.Target.Z += Above;
+        Sight.Low = Sight.Target;
+        Sight.Body = nullptr;
+        return true;
+    };
     switch (Kind)
     {
     case ESubject::Opponent:
     case ESubject::Guard:
         if (const ASoraEnemy* Enemy = Nearest(Session, Kind == ESubject::Guard))
-        {
-            Target = Center(*Enemy);
-            return true;
-        }
-        return Campaign->ObjectiveAnchor(Target);
+            return Character(*Enemy);
+        return Anchor(0.f);
     case ESubject::Boss:
         if (const ASoraBoss* Boss = Campaign->CampaignBoss())
-        {
-            Target = Center(*Boss);
-            return true;
-        }
+            return Character(*Boss);
         return false;
     case ESubject::Objective:
-        if (Campaign->ObjectiveAnchor(Target))
-        {
-            Target.Z += 60.f;
-            return true;
-        }
-        return false;
+        return Anchor(60.f);
     case ESubject::Steed:
         if (const ASoraHorse* Horse = Campaign->Steed())
         {
-            Target = Center(*Horse);
+            Sight.Target = Center(*Horse);
+            Sight.Low = Sight.Target;
+            Sight.FloorZ = Horse->GetActorLocation().Z;
+            Sight.Body = Horse;
             return true;
         }
         return false;
@@ -391,9 +483,9 @@ void FaceSubject(const FSession& Session, ESubject Kind)
             Controller->SetControlRotation(FRotator(-6.f, Horse->GetActorRotation().Yaw, 0.f));
         return;
     }
-    FVector Target;
-    if (Subject(Session, Kind, Target))
-        Aim(*Hero, Target);
+    FSight Sight;
+    if (Subject(Session, Kind, Sight))
+        Aim(*Hero, Sight.Target);
 }
 
 // E at the horse's right side until her tack is on (the bit is refused until
@@ -443,6 +535,18 @@ void AppendIndex(const FSession& Session, const FString& Row)
 void StreamIn()
 {
     Queue([]() { IStreamingManager::Get().StreamAllResources(4.f); });
+}
+
+// Stops the world from the frame a shot has what it is for until its frame is
+// written, so the telegraph or the fight the harness saw is the one drawn
+// however long a frame takes; the HUD and the renderer go on.
+void Freeze(FSessionRef Session, bool bFrozen)
+{
+    Queue([Session, bFrozen]()
+    {
+        if (ASoraGameMode* M = Session->M())
+            UGameplayStatics::SetGamePaused(M, bFrozen);
+    });
 }
 
 // Requests the viewport with its HUD and Slate, then waits for the file to
@@ -513,28 +617,108 @@ void StepIn(FSession& Session, const ASoraBoss& Boss)
     const float Bodies = Boss.GetCapsuleComponent()->GetScaledCapsuleRadius() + Hero->GetCapsuleComponent()->GetScaledCapsuleRadius() + 15.f;
     const float Stand = FMath::Max(Bodies, Reach - 50.f);
     Place(*Hero, FVector2D(Boss.GetActorLocation() + Boss.GetActorForwardVector().GetSafeNormal2D() * Stand));
-    Session.Step = FString::Printf(TEXT("the boss stood %.0f cm off, outside its %d cm reach, and did not close; the hero stepped in to %.0f cm"),
+    const FString What = FString::Printf(TEXT("the boss stood %.0f cm off, outside its %d cm reach, and did not close; the hero stepped in to %.0f cm"),
         Distance, Reach, Stand);
-    UE_LOG(LogTemp, Display, TEXT("SORA_CAPTURE_BOSS %s: %s"), *Boss.GetName(), *Session.Step);
+    Did(Session, What);
+    UE_LOG(LogTemp, Display, TEXT("SORA_CAPTURE_BOSS %s: %s"), *Boss.GetName(), *What);
+}
+
+// A boss that hunts by ear never finds a hero who stands still; a player
+// would move, and so does the hero, sideways round it, while it has not
+// heard him.
+void Walk(FSession& Session, const ASoraBoss& Boss)
+{
+    ASoraPlayerCharacter* Hero = Session.Hero();
+    const FSoraBossData* Data = Boss.Data();
+    if (!Hero || !Data || !Data->bBlind || Boss.KnowsHero())
+        return;
+    Hero->AddMovementInput(Hero->GetActorRightVector(), 1.f);
+    ++Session.WalkFrames;
+}
+
+// Whether the chapter's beat is in play as it should be, a cinematic on its
+// letterboxed card and any other beat live; if not, the error says what is.
+bool InBeat(FAutomationTestBase* Test, const FSession& Session, int32 Chapter, int32 Beat, const FString& Where)
+{
+    const ASoraGameMode* M = Session.M();
+    const USoraCampaignDirector* Campaign = Session.Campaign();
+    const bool bCinematic = FSoraCatalog::Get().Chapter(Chapter).Beats[Beat].Is(SoraBeatRules::EType::Cinematic);
+    const SoraInput::EState Expected = bCinematic ? SoraInput::Card : SoraInput::Play;
+    if (M && Campaign && Session.Hero() && Campaign->ChapterId == Chapter && Campaign->ActiveBeat() == Beat && M->InputState() == Expected)
+        return true;
+    Test->AddError(FString::Printf(TEXT("%s: beat %d is not in play %s (chapter %d, beat %d, input state %d, hero %s)"), *Where,
+        Beat + 1, bCinematic ? TEXT("on its card") : TEXT("live"), Campaign ? Campaign->ChapterId + 1 : 0,
+        Campaign ? Campaign->ActiveBeat() + 1 : 0, M ? static_cast<int32>(M->InputState()) : -1,
+        Session.Hero() ? TEXT("present") : TEXT("missing")));
+    return false;
+}
+
+// A beat that keeps no checkpoint is reached from the dialogue beat straight
+// before it: the hero goes to its trigger and presses E, as a player does,
+// and when its lines have run the shot's beat begins.
+void LeadIn(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot, const FString& Where)
+{
+    Queue([Test, Session, Shot, Where]()
+    {
+        USoraCampaignDirector* Campaign = Session->Campaign();
+        ASoraPlayerCharacter* Hero = Session->Hero();
+        if (!Session->bShotLive || !Campaign || !Hero)
+            return;
+        if (Shot.From + 1 != Shot.Beat || Campaign->ActiveTask().Goal != SoraBeatRules::EGoal::Lines)
+        {
+            Test->AddError(Where + TEXT(": a shot starts only from the dialogue beat straight before it"));
+            Session->bShotLive = false;
+            return;
+        }
+        FVector Anchor;
+        if (!Campaign->LinesStarted() && Campaign->ObjectiveAnchor(Anchor))
+        {
+            const FVector2D To(Anchor), From(Hero->GetActorLocation());
+            Place(*Hero, To + (From - To).GetSafeNormal() * 150.f);
+            Aim(*Hero, Anchor);
+            Session->M()->Interact(Hero);
+        }
+        Session->bShotLive = Test->TestTrue(*(Where + TEXT(": the dialogue before the beat begins")), Campaign->LinesStarted());
+    });
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(90.0, [Session, Shot](double)
+    {
+        const USoraCampaignDirector* Campaign = Session->Campaign();
+        return !Session->bShotLive || !Campaign || Campaign->ActiveBeat() != Shot.From;
+    }, [Test, Session, Where]()
+    {
+        Test->AddError(Where + TEXT(": the dialogue before the beat did not end within 90 s"));
+        Session->bShotLive = false;
+    }));
+    Queue([Test, Session, Shot, Where]()
+    {
+        if (!Session->bShotLive)
+            return;
+        Session->bShotLive = InBeat(Test, *Session, Shot.Chapter, Shot.Beat, Where);
+        if (Session->bShotLive)
+            Did(*Session, FString::Printf(TEXT("played on from the checkpoint at beat %d through its dialogue"), Shot.From + 1));
+    });
 }
 
 void QueueShot(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot)
 {
     const FString Where = FString::Printf(TEXT("%s (chapter %d beat %d)"), Shot.Name, Shot.Chapter + 1, Shot.Beat + 1);
-    // The beat's checkpoint on the throwaway slot, continued as Continue
-    // would: the round rebuilt from the save, then play.
-    Queue([Test, Session, Shot, Where]()
+    const int32 Start = Shot.From == INDEX_NONE ? Shot.Beat : Shot.From;
+    // The checkpoint on the throwaway slot, continued as Continue would: the
+    // round rebuilt from the save, then play (a cinematic's on its card).
+    Queue([Test, Session, Shot, Where, Start]()
     {
         Session->bShotLive = false;
         Session->Note.Reset();
         Session->Step.Reset();
+        Session->bSteppedIn = false;
+        Session->WalkFrames = 0;
         ASoraGameMode* M = Session->M();
         USaveGame* Created = UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass());
         USoraSaveGame* Save = Cast<USoraSaveGame>(Created);
-        if (!M || !Save || !USoraCampaignDirector::SeedCheckpoint(*Save, Shot.Chapter, Shot.Beat) ||
+        if (!M || !Save || !USoraCampaignDirector::SeedCheckpoint(*Save, Shot.Chapter, Start) ||
             !UGameplayStatics::SaveGameToSlot(Save, Session->Slot, 0))
         {
-            Test->AddError(Where + TEXT(": the checkpoint could not be seeded"));
+            Test->AddError(FString::Printf(TEXT("%s: the checkpoint at beat %d could not be seeded"), *Where, Start + 1));
             return;
         }
         if (!M->bMenu)
@@ -549,30 +733,41 @@ void QueueShot(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot
         }
         M->ResetRound();
         M->BeginRound();
-        if (M->InputState() == SoraInput::Card)
-            M->BeginRound();
-        USoraCampaignDirector* Campaign = M->Campaign();
-        ASoraPlayerCharacter* Hero = M->Hero();
-        if (!Test->TestTrue(*(Where + TEXT(": the beat is in play")), Hero && M->IsPlaying() &&
-                Campaign->ChapterId == Shot.Chapter && Campaign->ActiveBeat() == Shot.Beat))
+        if (!InBeat(Test, *Session, Shot.Chapter, Start, Where))
             return;
         // The restore notice is the seeding's, not the beat's.
         M->Notice.Reset();
         M->NoticeEnglish.Reset();
         M->NoticeTime = 0.f;
         Session->bShotLive = true;
-        // Face the subject from a working distance: close enough to read,
-        // never into a stealth guard's arms.
-        FVector Target;
-        if (Subject(*Session, Shot.Subject, Target))
+    });
+    if (Shot.From != INDEX_NONE)
+        LeadIn(Test, Session, Shot, Where);
+    // Face the subject from a working distance where nothing blocks the view:
+    // close enough to read, a stealth guard neither in the hero's face nor
+    // lost in the distance, and crouched in a stealth zone, as a player
+    // sneaks there.
+    Queue([Session, Shot]()
+    {
+        ASoraPlayerCharacter* Hero = Session->Hero();
+        USoraCampaignDirector* Campaign = Session->Campaign();
+        if (!Session->bShotLive || !Hero || !Campaign)
+            return;
+        if (Hero->IsCrouched())
+            Hero->UnCrouch();
+        const AActor* Ridden = Campaign->IsMounted() ? Campaign->Steed() : nullptr;
+        FSight Sight;
+        if (Subject(*Session, Shot.Subject, Sight))
             switch (Shot.Subject)
             {
-            case ESubject::Objective: Approach(*Hero, Target, 700.f, 380.f); break;
-            case ESubject::Opponent: Approach(*Hero, Target, 2500.f, 800.f); break;
-            case ESubject::Guard: Approach(*Hero, Target, 4500.f, 2000.f); break;
-            case ESubject::Boss: Approach(*Hero, Target, 3000.f, 1200.f); break;
+            case ESubject::Objective: Did(*Session, Frame(*Hero, Sight, 0.f, 700.f, 380.f, 150.f, Ridden)); break;
+            case ESubject::Opponent: Did(*Session, Frame(*Hero, Sight, 0.f, 2500.f, 800.f, 50.f, Ridden)); break;
+            case ESubject::Guard: Did(*Session, Frame(*Hero, Sight, 1000.f, 4500.f, 1500.f, 50.f, Ridden)); break;
+            case ESubject::Boss: Did(*Session, Frame(*Hero, Sight, 0.f, 3000.f, 1200.f, 50.f, Ridden)); break;
             default: break;
             }
+        if (Shot.Subject == ESubject::Guard)
+            Hero->Crouch();
     });
     if (Shot.Subject == ESubject::Steed || Shot.Subject == ESubject::Ride)
         TackUp(Session);
@@ -591,8 +786,8 @@ void QueueShot(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot
     Wait(2.5, [Session, Kind]() { FaceSubject(*Session, Kind); });
     StreamIn();
     // Lumen and TSR settle after the stream-in hitch; a boss is caught in a
-    // telegraph, a fight once an opponent stands.
-    const double Timeout = Kind == ESubject::Boss ? 40.0 : Kind == ESubject::Opponent ? 15.0 : 1.5;
+    // telegraph, a fight once an opponent stands, a cinematic with a line.
+    const double Timeout = Kind == ESubject::Boss ? 40.0 : Kind == ESubject::Cinematic ? 45.0 : Kind == ESubject::Opponent ? 15.0 : 1.5;
     const TSharedRef<int32> Reported = MakeShared<int32>(0);
     ADD_LATENT_AUTOMATION_COMMAND(FUntil(Timeout, [Session, Kind, Reported](double Elapsed)
     {
@@ -612,20 +807,40 @@ void QueueShot(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot
                 ++*Reported;
                 UE_LOG(LogTemp, Display, TEXT("SORA_CAPTURE_BOSS %.0f s: %s; %s"), Elapsed, *BossSeen(*Boss), *BossState(*Session, *Boss));
             }
-            if (Boss && Session->Step.IsEmpty() && Elapsed >= 7.0 && !Boss->IsBossTelegraphing())
-                StepIn(*Session, *Boss);
+            if (Boss && Elapsed >= 7.0 && !Boss->IsBossTelegraphing())
+            {
+                if (!Session->bSteppedIn)
+                {
+                    Session->bSteppedIn = true;
+                    StepIn(*Session, *Boss);
+                }
+                Walk(*Session, *Boss);
+            }
             if (!Boss || !Boss->IsBossTelegraphing() || Boss->BossWarningProgress() < .3f)
                 return false;
+            if (Session->WalkFrames > 0)
+                Did(*Session, FString::Printf(TEXT("the boss hunts by ear and had not heard the hero standing still; he walked round it for %d frames until it did"),
+                    Session->WalkFrames));
             Session->Note = BossSeen(*Boss);
             return true;
         }
         case ESubject::Opponent:
         {
-            const ASoraEnemy* Enemy = Nearest(*Session, false);
-            if (!Enemy)
+            // Opponents walk up as the shot waits; it is taken once the
+            // nearest stands in clear view, not behind a table or a ledge.
+            FSight Sight;
+            if (!Session->Hero() || !Subject(*Session, Kind, Sight) || !Sight.Body || !Sees(*Session->Hero(), Sight, 50.f, nullptr))
                 return false;
-            Session->Note = FString::Printf(TEXT("%s %.0f m away"), *Enemy->GetName(),
-                FVector::Dist(Enemy->GetActorLocation(), Session->Hero()->GetActorLocation()) / 100.f);
+            Session->Note = FString::Printf(TEXT("%s %.0f m away in clear view"), *Sight.Body->GetName(),
+                FVector::Dist(Sight.Body->GetActorLocation(), Session->Hero()->GetActorLocation()) / 100.f);
+            return true;
+        }
+        case ESubject::Cinematic:
+        {
+            const FSoraDialogueCue* Line = Campaign->CurrentDialogueCue();
+            if (!Line)
+                return false;
+            Session->Note = FString::Printf(TEXT("%.0f s into the cinematic, with the line %s"), Campaign->CinematicElapsed(), *Line->Id);
             return true;
         }
         default:
@@ -633,43 +848,73 @@ void QueueShot(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot
         }
     }, [Test, Session, Kind, Where]()
     {
-        const ASoraBoss* Boss = Session->Campaign() ? Session->Campaign()->CampaignBoss() : nullptr;
-        Session->Note = Kind == ESubject::Boss
-            ? (Boss ? TEXT("no telegraph within 40 s; ") + BossSeen(*Boss) + TEXT("; ") + BossState(*Session, *Boss)
-                    : FString(TEXT("no boss on the field")))
-            : FString(TEXT("no opponent on the field within 15 s"));
-        Test->AddWarning(Where + TEXT(": ") + Session->Note);
+        const USoraCampaignDirector* Campaign = Session->Campaign();
+        const ASoraBoss* Boss = Campaign ? Campaign->CampaignBoss() : nullptr;
+        switch (Kind)
+        {
+        case ESubject::Boss:
+            Session->Note = Boss ? TEXT("no telegraph within 40 s; ") + BossSeen(*Boss) + TEXT("; ") + BossState(*Session, *Boss)
+                                 : FString(TEXT("no boss on the field"));
+            Test->AddError(Where + TEXT(": ") + Session->Note);
+            break;
+        case ESubject::Opponent:
+            Session->Note = TEXT("no opponent in clear view within 15 s");
+            Test->AddError(Where + TEXT(": ") + Session->Note);
+            break;
+        case ESubject::Cinematic:
+            // Not every stretch of a cinematic carries a line; the frame is still its card.
+            Session->Note = FString::Printf(TEXT("%.0f s into the cinematic, with no line on its card"), Campaign ? Campaign->CinematicElapsed() : 0.f);
+            break;
+        default:
+            break;
+        }
     }));
+    if (Kind == ESubject::Cinematic)
+        Queue([Test, Session, Where]()
+        {
+            const USoraCampaignDirector* Campaign = Session->Campaign();
+            const ASoraPlayerCharacter* Hero = Session->Hero();
+            const APlayerController* Controller = Hero ? Cast<APlayerController>(Hero->GetController()) : nullptr;
+            if (Session->bShotLive)
+                Test->TestTrue(*(Where + TEXT(": the cinematic plays through its camera")), Campaign && Controller &&
+                    Campaign->CinematicCamera() && Controller->GetViewTarget() == Campaign->CinematicCamera());
+        });
+    Freeze(Session, true);
     SaveFrame(Test, Session, Shot.Name);
     Queue([Test, Session, Shot, Where]()
     {
         USoraCampaignDirector* Campaign = Session->Campaign();
         const FSoraChapter& Chapter = FSoraCatalog::Get().Chapter(Shot.Chapter);
         const FSoraBeat& Beat = Chapter.Beats[Shot.Beat];
-        FString Seen = Session->Step.IsEmpty() ? Session->Note : Session->Step + TEXT("; ") + Session->Note;
+        TArray<FString> Seen;
+        if (!Session->Step.IsEmpty())
+            Seen.Add(Session->Step);
+        if (!Session->Note.IsEmpty())
+            Seen.Add(Session->Note);
         if (Session->bShotLive && Campaign)
         {
-            if (Seen.IsEmpty() && Shot.Subject == ESubject::Guard)
+            if (Session->Note.IsEmpty() && Shot.Subject == ESubject::Guard)
                 if (const ASoraEnemy* Guard = Nearest(*Session, true))
-                    Seen = FString::Printf(TEXT("%s %.0f m away"), *Guard->GetName(),
-                        FVector::Dist(Guard->GetActorLocation(), Session->Hero()->GetActorLocation()) / 100.f);
+                    Seen.Add(FString::Printf(TEXT("%s %.0f m away, the hero crouched"), *Guard->GetName(),
+                        FVector::Dist(Guard->GetActorLocation(), Session->Hero()->GetActorLocation()) / 100.f));
             if (Shot.Subject == ESubject::Steed || Shot.Subject == ESubject::Ride)
-                Seen = FString::Printf(TEXT("%s; tack %d, %s"), *Seen, Campaign->TackDone(),
-                    Campaign->IsMounted() ? TEXT("mounted") : TEXT("on foot"));
+                Seen.Add(FString::Printf(TEXT("tack %d, %s"), Campaign->TackDone(), Campaign->IsMounted() ? TEXT("mounted") : TEXT("on foot")));
             if (Campaign->ActiveBeat() != Shot.Beat)
             {
                 const FString Moved = FString::Printf(TEXT("the frame shows beat %d, not %d"), Campaign->ActiveBeat() + 1, Shot.Beat + 1);
-                Test->AddWarning(Where + TEXT(": ") + Moved);
-                Seen = Moved + TEXT("; ") + Seen;
+                Test->AddError(Where + TEXT(": ") + Moved);
+                Seen.Insert(Moved, 0);
             }
         }
         if (Shot.Subject == ESubject::Ride)
             Test->TestTrue(*(Where + TEXT(": the hero rides")), Campaign && Campaign->IsMounted());
+        const FString Line = FString::Join(Seen, TEXT("; "));
         UE_LOG(LogTemp, Display, TEXT("SORA_CAPTURE %s chapter %d %s (%s): %s"), Shot.Name, Shot.Chapter + 1, *Beat.Id,
-            SubjectName(Shot.Subject), *Seen);
+            SubjectName(Shot.Subject), *Line);
         AppendIndex(*Session, FString::Printf(TEXT("%s.png\t%d\t%s\t%s\t%s\t%s\t%s"), Shot.Name, Shot.Chapter + 1, *Beat.Id,
-            *Beat.Title, *Beat.TitleEnglish, SubjectName(Shot.Subject), *Seen.Replace(TEXT("\t"), TEXT(" "))));
+            *Beat.Title, *Beat.TitleEnglish, SubjectName(Shot.Subject), *Line.Replace(TEXT("\t"), TEXT(" "))));
     });
+    Freeze(Session, false);
 }
 
 // ---- Practice ----
@@ -803,7 +1048,7 @@ FString RenderSettings()
 }
 
 // Frame time over Seconds of live practice, with a CSV profile of the same window.
-void Measure(FSessionRef Session, const FString& Label, double Seconds, bool bUncapped)
+void Measure(FAutomationTestBase* Test, FSessionRef Session, const FString& Label, double Seconds, bool bUncapped)
 {
     TSharedRef<float> Cap = MakeShared<float>(0.f);
     Queue([Session, Label, Cap, bUncapped]()
@@ -839,6 +1084,18 @@ void Measure(FSessionRef Session, const FString& Label, double Seconds, bool bUn
         if (bUncapped && MaxFps)
             MaxFps->Set(*Cap, ECVF_SetByConsole);
     });
+#if CSV_PROFILER
+    // The profile stops at the next frame and is written after it; until
+    // then the engine draws its frame counter over the view, and no frame is
+    // saved or window begun.
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(30.0, [](double)
+    {
+        return !FCsvProfiler::Get()->IsCapturing() && !FCsvProfiler::Get()->IsWritingFile();
+    }, [Test, Label]()
+    {
+        Test->AddError(FString::Printf(TEXT("The %s window's CSV profile was still being captured or written 30 s after it stopped"), *Label));
+    }));
+#endif
 }
 
 void HoldKey(const FKey& Key, bool bDown)
@@ -880,8 +1137,8 @@ void QueueArena(FAutomationTestBase* Test, FSessionRef Session, const FArena& Ar
     Wait(4.0, [Session]() { FollowAutopilot(*Session); });
     StreamIn();
     Wait(3.0, [Session]() { FollowAutopilot(*Session); });
-    Measure(Session, TEXT("capped"), 20.0, false);
-    Measure(Session, TEXT("uncapped"), 15.0, true);
+    Measure(Test, Session, TEXT("capped"), 20.0, false);
+    Measure(Test, Session, TEXT("uncapped"), 15.0, true);
     // A fight with a fresh line in the kill feed, seen by the living hero.
     ADD_LATENT_AUTOMATION_COMMAND(FUntil(45.0, [Session](double)
     {
@@ -902,8 +1159,14 @@ void QueueArena(FAutomationTestBase* Test, FSessionRef Session, const FArena& Ar
         Session->Note = FString::Printf(TEXT("tick %u; slot %d in the hero's sights %.0f m away; kill feed line %d ticks old"), K->PracticeTick,
             Seen, FVector::Dist(K->PracticePlayers[Seen].Feet, K->PracticePlayers[0].Feet) / 100.f, Age);
         return true;
-    }, [Session]() { Session->Note = TEXT("no opponent in the hero's sights with a fresh kill line within 45 s"); }));
+    }, [Test, Session, Arena]()
+    {
+        Session->Note = TEXT("no opponent in the hero's sights with a fresh kill line within 45 s");
+        Test->AddError(FString::Printf(TEXT("%s combat frame: %s"), Arena.Name, *Session->Note));
+    }));
+    Freeze(Session, true);
     SaveFrame(Test, Session, Prefix + TEXT("_Combat"));
+    Freeze(Session, false);
     Queue([Session]() { UE_LOG(LogTemp, Display, TEXT("SORA_CAPTURE practice combat: %s"), *Session->Note); });
     Queue([]() { HoldKey(EKeys::Tab, true); });
     Wait(.6, [Session]() { FollowAutopilot(*Session); });
