@@ -238,9 +238,10 @@ evaluation-only, and medium-risk surfaces only fill the role their flag allows.
 `import-mac.sh` packs, checks, imports and validates it (wired in, but not yet run end to end; each step ran separately). Run: the 15 host tests,
 the pack and source check (344 packages), and the headless 5.8.3 import and
 validator (`SORA_CC0_ENVIRONMENT_VALIDATED: 344 packages`). Not yet run:
-shader compilation and rendered dry/wet look-development (the render script was
-held when free disk fell below the 30 GiB floor), cook, frame cost and the
-photoreal A/B gate; no gameplay code references the library yet.
+shader compilation and rendered dry/wet look-development (the render script
+was held below the 30 GiB disk floor, and its one attempt was terminated
+externally before any capture), cook, frame cost and the photoreal A/B gate;
+no gameplay code references the library yet.
 
 ## Milestones and current evidence
 

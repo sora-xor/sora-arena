@@ -375,5 +375,8 @@ The following remain unverified:
 
 `scripts/unreal/render_cc0_environment_lookdev.py` renders fixed-camera dry
 and wet captures of every instance, and in doing so compiles the shaders. It
-was held and has not run: free disk fell below the 30 GiB floor while other
-lanes were writing.
+has not produced a capture. It was first held while free disk was below the
+30 GiB floor. One attempt at 32.4 GiB free built the look-development level;
+the editor then received an external termination (`Mac
+GracefulTerminationHandler`, then exit 137) while it was building the
+imported textures' platform data, before any shader or screenshot.
