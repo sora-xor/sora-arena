@@ -348,11 +348,16 @@ unverified.
   `Fieldcraft`, `Integration` and `Input` with `Campaign.CombatTrace`,
   `DeterministicEnemyFire` and `Mount` passed all 47. The other 33 of the 80
   passed before these last fixes and were not rerun after them.
-- **Not run:** `SoraArena.Campaign.Playthrough` (which now also takes every
-  arm up on its keys and tends the escorted parties by hand) and
-  `Practice.FullMatches`. The data volume had 30.4–31.3 GiB free while this
-  lane ran, below the 32 GiB floor set for heavy work, so neither long run
-  was started. No cook, package, Windows build or rendered capture was made.
+- After the commit, with 32.6 GiB free, `SoraArena.Campaign.Playthrough`
+  ran and passed (27.7 s). It now also takes every arm up in its beat and
+  checks the group key and wheel reach it, and it tends the escorted parties
+  by hand. It reported chapters=8, beats=125, caches=8, pickups=28, rides=7,
+  checkpoints=120, reloads=61, phase_reloads=13, arms=19, worlds=76,
+  conscripts_down=7 and freed=7, party_tended=10 (ch05.b03's six collars
+  and ch08.b07's four cells) and party_sent_on=0.
+- **Not run:** `Practice.FullMatches`. The data volume fell to 30.2 GiB
+  during the playthrough, below the 32 GiB floor for heavy work. No cook,
+  package, Windows build or rendered capture was made.
 
 **Not done**
 
