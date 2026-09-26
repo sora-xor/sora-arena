@@ -19,18 +19,25 @@
   a real Metal RHI in a throwaway editor world. They are not packaged-game
   screenshots and have no Lumen scene, bloom, motion blur or eye adaptation.
 - **Verified up to a tuning pass, not after it.** The build passed (27
-  systems, no compile errors) and was rendered at 21:20–21:31 JST. A later
-  tuning pass is in the script but has **not been run**, because free disk was
-  26–27 GiB, below the lane's 32 GiB floor for editor work. The pass covers:
-  - flashes, sparks, fire and motes about 3–5 times dimmer;
-  - a larger matchlock plume, fireball and smoke;
-  - fewer, wider and slower fire-zone and forge flames;
-  - denser wood and fur dust, and lower mist banks;
-  - radial masks on the Flash and WaterLit cells;
-  - a per-shot warm-up in the preview script.
+  systems, no compile errors) and was rendered at 21:20–21:31 JST. Two later
+  changes are in the scripts but have **not been run**. Free disk was
+  25.9–27.0 GiB all evening, below the lane's 32 GiB floor for editor work.
+  - The tuning pass:
+    - flashes, sparks, fire and motes about 3–5 times dimmer;
+    - a larger matchlock plume, fireball and smoke;
+    - fewer, wider and slower fire-zone and forge flames;
+    - denser wood and fur dust, and lower mist banks;
+    - radial masks on the Flash and WaterLit cells;
+    - a per-shot warm-up in the preview script.
+  - Two fixes, with their causes found in the engine source (section 6,
+    items 1 and 3):
+    - the particle lights now write the attributes the light renderer reads;
+    - the water mist is drawn without the 8×8 flipbook that showed it a
+      sixty-fourth of its texture cell.
+  - The preview script now ends with a pass/fail light check (section 7).
 
-  An import must pass, and its stills must be looked at, before this is
-  integrated (section 7).
+  An import must pass, the light check must log `PASS`, and the stills must
+  be looked at before this is integrated (section 7).
 - **Not photoreal yet.** The stills show systems that work and read, but
   several fall short of the AAA target. The worst: Niagara lights that light
   nothing, spark halos, hard sprite edges, flames that look like sticks, and
@@ -46,7 +53,9 @@ Epic). The editor-only project plugin
 [`Plugins/SoraVfxAuthoring`](../Plugins/SoraVfxAuthoring) exposes those calls to
 Python as `unreal.SoraNiagaraAuthoring`, one Blueprint-callable function per
 operation that returns the engine's errors (empty on success). It is an
-`Editor` module, so game targets never build or load it.
+`Editor` module, so game targets never build or load it. UnrealBuildTool's
+target export confirms this: the `SoraArena` game target has 460 modules
+without it, and `SoraArenaEditor` lists it among 968 (section 7).
 
 `create_sora_vfx.py` then:
 
@@ -95,14 +104,24 @@ Engine behaviour this relies on or works around, each found while building:
   particle-colour output is RGB, so Custom nodes take its `RGBA` output.
 - A fresh `ScaleColor` module has an integer scale mode; the templates' older
   copy has an enum.
-- `Light_Attributes` can apply its values to the light renderer's attributes
-  or write them to attributes of its own. The engine module's description:
-  "In the case of writing to a unique attribute, you will have to bind that
-  new attribute to your Light Renderer". The script sets its Color and Radius
-  modes to 1, and the built systems carry `Particles.Light_Attributes.Color`
-  and `Particles.Light_Attributes.LightRadius`. The renderer still reads
-  `Particles.Color` and `Particles.LightRadius`, so the lumen-scaled colour
-  never reaches it (section 6, first item).
+- **Lights.** The light renderer reads `Particles.Color` and
+  `Particles.LightRadius` through its default bindings
+  (`NiagaraLightRendererProperties.cpp`). When they are not written, the light
+  takes the particle's plain white colour and the 100 cm default radius
+  (`NiagaraRendererLights.cpp`, `NiagaraConstants.cpp`). White is 1 in
+  inverse-square units, about a thousandth of a lumen, so the light is
+  invisible. The first build used `Light_Attributes`, whose Color and Radius
+  inputs set to 1 wrote `Particles.Light_Attributes.Color` and `.LightRadius`
+  instead. The engine module says: "In the case of writing to a unique
+  attribute, you will have to bind that new attribute to your Light Renderer".
+  Each light emitter now writes the two default attributes itself with a Set
+  Parameters module at the end of its update stack (`light()` in the script).
+  It carries no sprite, so `Particles.Color` has no other use.
+- **Flipbooks and sheet cells.** A sprite renderer with a `SubImageSize`
+  maps each particle's UVs onto one sub-image (`NiagaraSpriteVertexFactory.ush`).
+  Materials that pick one cell of a 2×2 sheet themselves (`M_SoraVFX_Flash`,
+  `M_SoraVFX_WaterLit`) must therefore be drawn by a 1×1 renderer.
+  `puffs(..., frames=None)` does that for the water mist.
 - `WindForce` requires the drag module after it in the stack.
 
 ## 2. Conventions the game code must follow
@@ -201,7 +220,8 @@ schema-2 OWN manifest `Content/SourceArt/VFX/manifest.json` that
 ## 6. Limitations and known gaps (step 1)
 
 These defects show in the 21:31 stills of the verified build, most severe
-first. "Tuned" means the unrun pass of the status section aims at it.
+first. "Tuned" means the unrun pass of the status section aims at it; "Fixed,
+unrun" means a cause was found and the script changed, but no build has run it.
 
 1. **Niagara lights light nothing.** A lantern test in the same stage
    compared the lantern with an ordinary 150 lm point light at the same spot,
@@ -209,15 +229,14 @@ first. "Tuned" means the unrun pass of the status section aims at it.
    (the same as without it) and rose to 0.1542 with the point light. In the
    stills, the wall and floor next to the explosion (30 000 lm), the matchlock
    (5000 lm), the parry (1500 lm) and the metal impact (600 lm) are identical,
-   to four decimals, at the flash frame and at a late frame. The likely cause
-   is the per-module attributes described in section 1. The fix is either to
-   bind the light renderer's colour and radius to
-   `Particles.Light_Attributes.Color` and `.LightRadius`, or to use the
-   module's modes that write the renderer's own attributes. The test then
-   passes when the floor brightens as it does under the point light. Scene
-   captures might also leave particle lights out, so check once in a game
-   viewport too. Until this is fixed, every flash, fire, forge, lantern and
-   ward light in the table above is absent.
+   to four decimals, at the flash frame and at a late frame. Cause: the
+   emitters wrote per-module attributes that the renderer does not read, so
+   each light kept the particle's white (section 1, "Lights"). **Fixed,
+   unrun:** `light()` now writes `Particles.Color` and `Particles.LightRadius`,
+   and the preview script's light check repeats this test with a pass
+   criterion (section 7). Scene captures might also leave particle lights out,
+   so check once in a game viewport too. Until the check passes, treat every
+   flash, fire, forge, lantern and ward light in the table above as absent.
 2. **Spark halos.** Parry, metal-impact and explosion sparks at 1000–1600
    cd/m² render as round halos about 10 cm across around their streaks: the
    tail of the glow falloff stays visible over the whole sprite. Tuned: 90–350.
@@ -225,7 +244,12 @@ first. "Tuned" means the unrun pass of the status section aims at it.
    star and ring show their quads. Mist banks are invisible over the ground but
    show as hard-edged grey quads against an empty sky. The water crown sheets
    read as translucent cones. Tuned: radial masks on the Flash and WaterLit
-   cells. The mist still needs a test against a real sky.
+   cells. The mist had a second cause: its banks went through `puffs()`,
+   which gave the renderer an 8×8 flipbook. Each sprite's UVs then covered a
+   sixty-fourth of the mist cell, so the bank drew as a nearly flat patch cut
+   off at the quad (section 1, "Flipbooks and sheet cells"). **Fixed, unrun:**
+   the sluice, splash and mist banks draw the whole cell. The mist still needs
+   a test against a real sky.
 4. **Flames.** By day the fire-zone flames read as bright vertical sticks, and
    the forge as one yellow column. Tuned: wider, slower and fewer flames. The
    photoreal route is a simulated flipbook (a Blender Mantaflow bake).
@@ -269,6 +293,15 @@ What was run on 2026-09-26 (JST, pinned UE 5.8.3):
 - **21:29–21:31:** `render_vfx_previews.py` with the same editor command line
   logged `SORA_VFX_PREVIEW_DONE: 59`. The stills were tiled and looked at.
 - **21:36:** the lantern light test of section 6.
+- **23:36–23:37, UnrealBuildTool only (no compile, no editor):** the target
+  export, from the worktree root with the pinned engine and Xcode:
+  `"$UE_ROOT/Engine/Build/BatchFiles/Mac/Build.sh" SoraArena Mac Development
+  -Project=$PWD/SoraArena.uproject -Mode=JsonExport -OutputFile=<file>
+  -WaitMutex -architecture=arm64`. Both exports exited 0.
+  - The game target `SoraArena` lists 460 modules, and none of them is
+    `SoraVfxAuthoring`, `NiagaraEditor` or `UnrealEd`.
+  - The same export of `SoraArenaEditor` lists 968 modules, including
+    `SoraVfxAuthoring` from `Plugins/SoraVfxAuthoring`.
 - **Later, host only (no editor):**
   - The textures, regenerated into a scratch folder, match the manifest's
     SHA-256 and the files byte for byte.
@@ -278,9 +311,20 @@ What was run on 2026-09-26 (JST, pinned UE 5.8.3):
     into 26 sheets.
   - All four Python scripts parse, and `bash -n` passes for `import-mac.sh`.
 
+The light check. `render_vfx_previews.py` ends by building the dusk stage.
+It measures the median luminance of the floor below one spot three times:
+bare, under `NS_SoraVFX_Lantern` at 150 lm hanging 150 cm above it, and under
+an ordinary 150 lm point light in the same place. It logs
+`SORA_VFX_LIGHT_CHECK: PASS` when the lantern adds 0.5 to 2 times what the
+point light adds, and the point light adds at least half the bare value.
+Otherwise it logs `FAIL` as an error. The captures are saved as
+`LightCheck_none/lantern/point.exr`.
+
 Not run yet:
 
 - `import-mac.sh` end to end with the new step.
-- The tuned script, and the tuned preview script.
-- A Game-target build and cook with the editor-only plugin present. Its only
-  module is of type `Editor`, which game targets do not build.
+- The tuned script with the light and mist fixes, and the preview script with
+  its light check.
+- A Game-target build and cook with the editor-only plugin present. The UBT
+  export above shows the game target leaves the plugin's module out, but
+  nothing was compiled or cooked.

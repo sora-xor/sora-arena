@@ -984,11 +984,13 @@ def light(e, lumens, radius, color_rgb, flash=True, flicker=None, fade_expr=None
     """Give an emitter a light renderer; lumens is converted to the engine's inverse-square units.
 
     lumens and radius may be HLSL (reading User.*); color_rgb is an (r, g, b) tuple or an HLSL float3.
+
+    The renderer keeps its default bindings, Particles.Color and Particles.LightRadius, and the emitter
+    writes both every frame with Set Parameters at the end of its update stack. Light_Attributes is not
+    used: its output modes write Particles.Light_Attributes.Color and .LightRadius, which an unbound
+    renderer never reads; the light then keeps the particle's white (about a thousandth of a lumen).
     """
     index = e.add_renderer("NiagaraLightRendererProperties")
-    e.force("Light/Light_Attributes")
-    e.set("Light_Attributes", "Radius", 1)
-    e.set("Light_Attributes", "Light Radius", Expr(radius) if isinstance(radius, str) else float(radius))
     terms = [f"({lumens}) * {LUMEN_TO_LIGHT:.3f}" if isinstance(lumens, str) else f"{lumens * LUMEN_TO_LIGHT:.1f}"]
     if flash:
         terms.append("User.FlashScale")
@@ -997,10 +999,9 @@ def light(e, lumens, radius, color_rgb, flash=True, flicker=None, fade_expr=None
                      f" + 0.3 * sin(Engine.Time * 23.9) + 0.15 * sin(Engine.Time * 41.7)))")
     if fade_expr:
         terms.append(f"({fade_expr})")
-    e.set("Light_Attributes", "Color", 1)
     tint = color_rgb if isinstance(color_rgb, str) else "float3({:.4f}, {:.4f}, {:.4f})".format(*color_rgb)
-    # Colour mode 1 scales a colour by (1, 1, 1, 1): feed it the finished light colour.
-    e.set("Light_Attributes", "Color Value To Scale", Expr(f"float4(({tint}) * ({' * '.join(terms)}), 1.0)"))
+    e.write(PU, "Particles.LightRadius", "float", radius if isinstance(radius, str) else f"{float(radius):.1f}")
+    e.write(PU, "Particles.Color", "color", f"float4(({tint}) * ({' * '.join(terms)}), 1.0)")
     check(AUTHOR.set_renderer_properties(e.asset, e.name, index, json.dumps({
         "bUseInverseSquaredFalloff": True, "bAffectsTranslucency": True, "bAllowMegaLights": megalights,
         "RadiusScale": 1.0, "bAlphaScalesBrightness": False})), e.where("light renderer"))
@@ -1240,8 +1241,13 @@ def upright(e):
 def puffs(s, name, material, *, life, color_value, size_range, count=None, rate=None, duration=None, delay=0.0,
           sphere=4.0, box=None, disc=None, offset=None, speed=(0.0, 0.0), axis=(1, 0, 0), angle=30.0, inner=None,
           drag_amount=2.0, rise=0.0, curl_amount=None, grow_to=3.0, alpha=None, heat=None, erode=.3, spin_rate=20.0,
-          local=False, gravity_z=0.0):
-    """Billowing flipbook sprites: smoke, dust, steam, vapour, fireballs."""
+          local=False, gravity_z=0.0, frames=8):
+    """Billowing sprites: smoke, dust, steam, vapour and fireballs play an 8x8 flipbook.
+
+    frames=None draws the whole quad instead, for materials that pick one cell of a 2x2 sheet themselves
+    (the water cells): the sprite renderer maps a particle's UVs onto one sub-image of the flipbook, so an
+    8x8 renderer would show such a material only a sixty-fourth of its cell.
+    """
     burst_mode = count is not None
     e = s.emitter(name, "OmnidirectionalBurst" if burst_mode else "Fountain")
     if burst_mode:
@@ -1265,7 +1271,10 @@ def puffs(s, name, material, *, life, color_value, size_range, count=None, rate=
     grow(e, f"lerp(1.0, {grow_to:.3f}, 1.0 - pow(1.0 - {AGE}, 2.2))")
     fade(e, alpha or fade_in_out(.05, 1.2))
     dynamic_params(e, [heat if heat is not None else 0.0, f"{AGE} * {erode:.3f}", None, None])
-    flipbook(e, material)
+    if frames:
+        flipbook(e, material, frames)
+    else:
+        e.renderer(Material=material, SubImageSize={"x": 1, "y": 1}, bSubImageBlend=False, SortMode="ViewDepth")
     if local:
         e.props(bLocalSpace=True)
     return e
@@ -1796,7 +1805,7 @@ def water_sluice_rise(mi):
     puffs(s, "Mist", mi["Mist"], rate=Expr("4.0 * User.Flow * User.Width / 400.0"), life=(3.0, 5.0),
           color_value=rgb(.8, .85, .88, .2), size_range=(150, 280), box=Expr("float3(120.0, User.Width, 10.0)"),
           offset=(60, 0, 40), speed=(20, 60), axis=(1, 0, .3), angle=30, drag_amount=.6, rise=8.0, grow_to=2.0,
-          alpha=fade_in_out(.25, 1.0), spin_rate=8.0)
+          alpha=fade_in_out(.25, 1.0), spin_rate=8.0, frames=None)
     s.compile()
     return s
 
@@ -1820,7 +1829,7 @@ def water_splash(mi):
     fade(e, f"pow(saturate(1.0 - {AGE}), 0.7)")
     e.renderer(Material=mi["Spray"])
     puffs(s, "Mist", mi["Mist"], count=3, life=(1.0, 1.8), color_value=rgb(.82, .86, .9, .25), size_range=(50, 90),
-          speed=(40, 120), angle=30, drag_amount=2.0, grow_to=2.2, alpha=fade_in_out(.1, 1.0))
+          speed=(40, 120), angle=30, drag_amount=2.0, grow_to=2.2, alpha=fade_in_out(.1, 1.0), frames=None)
     e = s.emitter("FoamRing", "SimpleSpriteBurst")
     once(e, 2.2); burst(e, 1); lifetime(e, 2.0)
     color(e, rgb(.88, .92, .94, .8))
@@ -1937,7 +1946,7 @@ def mist(mi):
     s.user("Density", .16, "Opacity of each bank.")
     puffs(s, "Banks", mi["Mist"], rate=3.0, life=(12.0, 20.0), color_value=Expr("float4(0.78, 0.82, 0.86, User.Density)"),
           size_range=(300, 600), box=Link("User.Extent"), offset=(0, 0, 90), speed=(0, 1), axis=(0, 0, 1), angle=1, drag_amount=.2,
-          rise=0.0, grow_to=1.5, alpha=fade_in_out(.2, 1.0), spin_rate=4.0)
+          rise=0.0, grow_to=1.5, alpha=fade_in_out(.2, 1.0), spin_rate=4.0, frames=None)
     e = s.emitters[-1]
     e.ensure("Update/Forces/WindForce", PU, before="Drag")     # wind must precede the drag it relies on
     e.set("WindForce", "Wind Speed", Link("User.Wind"))

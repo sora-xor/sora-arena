@@ -21,6 +21,13 @@ real level, no bloom, motion blur or eye adaptation (the sheet script applies a
 fixed exposure and a filmic curve). A capture made before the editor world has
 ticked comes back empty, hence the warm-up. GPU emitters (rain) do not
 advance through advance_simulation and are captured after real ticks instead.
+
+After the stills it checks that Niagara lights light the scene: on the dusk
+stage it measures the floor under NS_SoraVFX_Lantern (150 lm by default)
+against the bare stage and against an ordinary 150 lm point light in the same
+place, and logs SORA_VFX_LIGHT_CHECK: PASS when the lantern brightens the floor
+by 0.5 to 2 times what the point light adds (FAIL, as an error, otherwise). The
+three captures are saved as LightCheck_<case>.exr beside the stills.
 """
 from __future__ import annotations
 
@@ -159,6 +166,55 @@ def aim(camera, location, look_at):
     camera.set_actor_rotation(unreal.MathLibrary.make_rot_from_x(direction), False)
 
 
+def floor_median():
+    """Median luminance of the floor below the light-check spot (the lantern hangs 150 cm above it)."""
+    x0, y0, x1, y1 = int(WIDTH * .44), int(HEIGHT * .70), int(WIDTH * .56), int(HEIGHT * .80)
+    pixels = unreal.RenderingLibrary.read_render_target_raw_pixel_area(world, target, x0, y0, x1, y1, False)
+    values = sorted(.2126 * p.r + .7152 * p.g + .0722 * p.b for p in pixels)
+    if not values:
+        raise RuntimeError("the light check read no pixels from the render target")
+    return values[len(values) // 2]
+
+
+def light_check(camera):
+    """Yields editor ticks to wait; logs SORA_VFX_LIGHT_CHECK with the three floor medians."""
+    set_lighting("dusk")
+    aim(camera, V(-300, 0, 170), V(0, 0, 60))
+    floor = {}
+    for case in ("none", "lantern", "point"):
+        actor = None
+        if case == "lantern":
+            actor = actors.spawn_actor_from_object(unreal.load_asset("/Game/Generated/VFX/NS_SoraVFX_Lantern"), V(0, 0, 150), R())
+            actor.niagara_component.activate(True)
+            actor.niagara_component.advance_simulation(60, 1 / 60)
+        elif case == "point":
+            actor = actors.spawn_actor_from_class(unreal.PointLight, V(0, 0, 150), R())
+            point = actor.light_component
+            point.set_mobility(unreal.ComponentMobility.MOVABLE)
+            point.set_editor_property("intensity_units", unreal.LightUnits.LUMENS)
+            point.set_editor_property("intensity", 150.0)
+            point.set_editor_property("attenuation_radius", 420.0)
+        yield 30
+        capture.capture_scene()
+        yield 2
+        unreal.RenderingLibrary.export_render_target(world, target, str(OUT), f"LightCheck_{case}.exr")
+        floor[case] = floor_median()
+        if actor is not None:
+            actor.destroy_actor()
+        yield 2
+    gain_point = floor["point"] - floor["none"]
+    gain_lantern = floor["lantern"] - floor["none"]
+    ratio = gain_lantern / gain_point if gain_point > 0.0 else 0.0
+    passed = gain_point > .5 * floor["none"] and .5 <= ratio <= 2.0
+    report = (f"SORA_VFX_LIGHT_CHECK: {'PASS' if passed else 'FAIL'} floor median: bare {floor['none']:.4f}, "
+              f"lantern {floor['lantern']:.4f}, 150 lm point light {floor['point']:.4f}; "
+              f"lantern gain / point gain {ratio:.2f} (passes at 0.5-2.0)")
+    if passed:
+        unreal.log(report)
+    else:
+        unreal.log_error(report)
+
+
 def apply_user(component, values):
     for key, value in values.items():
         name = "User." + key if not key.startswith("User.") else key
@@ -185,6 +241,7 @@ class Runner:
         self.started = time.time()
         self.warm_actors = []
         self.written = []
+        self.light = None
         self.handle = unreal.register_slate_post_tick_callback(self.tick)
 
     def finish(self):
@@ -231,7 +288,8 @@ class Runner:
                 self.actor = None
             self.index += 1
             if self.index >= len(self.queue):
-                self.finish()
+                self.light = light_check(self.camera)
+                self.phase = "light"
                 return
             self.shot = self.queue[self.index]
             name, (location, rotation), (camera, look_at), mode, user, ages, sweep = self.shot
@@ -292,6 +350,12 @@ class Runner:
             log(f"captured {self.pending}")
             self.phase = "age" if self.ages else "next"
             self.wait = 1
+            return
+        if self.phase == "light":
+            try:
+                self.wait = next(self.light)
+            except StopIteration:
+                self.finish()
             return
 
 
