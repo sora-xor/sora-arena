@@ -133,6 +133,8 @@ void USoraAudioSubsystem::Deinitialize()
     }
     Handles.Reset();
     bSubscribed = false;
+    if (bDriveSubmixesForTesting)
+        DriveSubmixesForTesting(false);
     if (USoraSettings* Settings = BoundSettings.Get())
         Settings->OnChanged.Remove(SettingsHandle);
     BoundSettings.Reset();
@@ -213,6 +215,15 @@ float USoraAudioSubsystem::SubmixGain(FName Bus) const
     return Gain ? *Gain : 1.f;
 }
 
+TArray<FName> USoraAudioSubsystem::MissingSubmixes() const
+{
+    TArray<FName> Out;
+    for (const auto& Pair : SubmixGains)
+        if (!SubmixObjects.Contains(Pair.Key))
+            Out.Add(Pair.Key);
+    return Out;
+}
+
 TArray<FName> USoraAudioSubsystem::LiveLoops() const
 {
     TArray<FName> Out;
@@ -245,8 +256,9 @@ void USoraAudioSubsystem::ApplyBusGains()
         return;
     const auto Slider = [Settings](int32 Index) { return Settings ? Settings->BusGain(static_cast<ESoraAudioBus>(Index)) : 1.f; };
     // Settings attached to the engine drive the device; automation's detached
-    // settings only compute, so no test changes the editor's mix.
-    const bool bDevice = Settings && Settings->IsAttached() && HasDevice();
+    // settings only compute, so no test changes the editor's mix unless it
+    // drives the submixes itself and puts them back.
+    const bool bDevice = ((Settings && Settings->IsAttached()) || bDriveSubmixesForTesting) && HasDevice();
     for (const FBus& Bus : D->Buses)
     {
         float Gain = 1.f;
@@ -257,10 +269,36 @@ void USoraAudioSubsystem::ApplyBusGains()
         else
             continue;
         SubmixGains.Add(Bus.Id, Gain);
-        if (bDevice)
-            if (USoundSubmix* Submix = LoadObject<USoundSubmix>(nullptr, *SubmixObjectPath(Bus.Id), nullptr, LOAD_NoWarn | LOAD_Quiet))
-                Submix->SetSubmixOutputVolume(GetWorld(), Gain);
+        USoundSubmix* Submix = SubmixFor(Bus.Id);
+        if (bDevice && Submix)
+        {
+            Submix->SetSubmixOutputVolume(GetWorld(), Gain);
+            DeviceGains.Add(Bus.Id, Gain);
+        }
     }
+}
+
+USoundSubmix* USoraAudioSubsystem::SubmixFor(FName Bus)
+{
+    if (const TObjectPtr<USoundSubmix>* Found = SubmixObjects.Find(Bus))
+        return *Found;
+    USoundSubmix* Submix = LoadObject<USoundSubmix>(nullptr, *SubmixObjectPath(Bus), nullptr, LOAD_NoWarn | LOAD_Quiet);
+    if (Submix)
+        SubmixObjects.Add(Bus, Submix);
+    return Submix;
+}
+
+void USoraAudioSubsystem::DriveSubmixesForTesting(bool bDrive)
+{
+    bDriveSubmixesForTesting = bDrive;
+    if (!bDrive)
+    {
+        for (const auto& Pair : DeviceGains)
+            if (USoundSubmix* Submix = HasDevice() ? SubmixFor(Pair.Key) : nullptr)
+                Submix->SetSubmixOutputVolume(GetWorld(), 1.f);
+        DeviceGains.Reset();
+    }
+    ApplyBusGains();
 }
 
 // Rules and playback --------------------------------------------------------
@@ -271,12 +309,18 @@ void USoraAudioSubsystem::Dispatch(FName Family, const FFacts& Facts, const FReq
     const TArray<FRule>* Rules = D ? D->Bindings.Find(Family) : nullptr;
     if (!Rules)
         return;
-    for (const FRule& Rule : *Rules)
+    for (int32 Index = 0; Index < Rules->Num(); ++Index)
     {
+        const FRule& Rule = (*Rules)[Index];
         if (!Rule.Matches(Facts))
             continue;
         if (!Rule.Cue.IsNone())
-            Play(Rule.Cue, Request, Rule.DelaySeconds);
+        {
+            FRequest Chosen = Request;
+            Chosen.RuleFamily = Family;
+            Chosen.Rule = Index;
+            Play(Rule.Cue, Chosen, Rule.DelaySeconds);
+        }
         if (!Rule.bContinue)
             return;
     }
@@ -351,6 +395,15 @@ int32 USoraAudioSubsystem::Play(FName CueId, const FRequest& Request, float Rule
             }
             return INDEX_NONE;
         }
+        // A shot after the gap starts a new burst. Shooters tick before this
+        // subsystem, so the last burst may not have been let go yet: let go
+        // of it first, or its loop would run on with nothing to stop it.
+        if (State)
+        {
+            const FSustainState Ended = *State;
+            Sustains.Remove(Key);
+            EndSustain(Key, Ended);
+        }
         FSustainState& Fresh = Sustains.Add(Key);
         Fresh.Cue = CueId;
         Fresh.Source = Request.Source;
@@ -368,6 +421,10 @@ int32 USoraAudioSubsystem::Play(FName CueId, const FRequest& Request, float Rule
     Record.bStinger = Cue->bStinger;
     Record.Location = Request.Location;
     Record.Source = Request.Source;
+    Record.FadeInSeconds = Request.FadeInSeconds;
+    Record.RuleFamily = Request.RuleFamily;
+    Record.Rule = Request.Rule;
+    Record.ForwardedBy = Request.ForwardedBy;
     Record.Time = Now;
     if (Cue->IsVoiced())
         Record.Wave = Cue->Waves[PickWave(*Cue)];
@@ -455,14 +512,19 @@ UAudioComponent* USoraAudioSubsystem::Spawn(const FSoraAudioPlay& Record, bool b
     // Menus pause the world; the interface and the music play on, the rest
     // pauses with it.
     Component->bIsUISound = !Record.bSpatial && (Cue->Bus == TEXT("UI") || Cue->Bus == TEXT("Music") || Cue->bStinger);
-    Component->bAutoDestroy = !Record.bLoop;
+    // Every component goes when its sound ends, a loop once StopLoop's fade
+    // is done, so none lingers on the world settings or its carrier.
+    Component->bAutoDestroy = true;
     Component->bStopWhenOwnerDestroyed = Carrier != nullptr;
     // A wave imported for another bus's cue (the parry body layers under the
     // hero's hurt) still sounds on this cue's bus.
     USoundClass* Class = ClassFor(Cue->Bus);
     if (Class && Wave->SoundClassObject != Class)
         Component->SoundClassOverride = Class;
-    Component->Play(Record.StartSeconds);
+    if (Record.FadeInSeconds > 0.f)
+        Component->FadeIn(Record.FadeInSeconds, 1.f, Record.StartSeconds);
+    else
+        Component->Play(Record.StartSeconds);
     if (Record.bLoop)
         Held.Add(Component);
     return Component;
@@ -510,27 +572,35 @@ void USoraAudioSubsystem::StopLoop(const FString& Key, float FadeSeconds)
         Component->FadeOut(FMath::Max(FadeSeconds, .02f), 0.f);
 }
 
+void USoraAudioSubsystem::EndSustain(const FString& Key, const FSustainState& State)
+{
+    const FData* D = FData::Get();
+    const FCue* Cue = D ? D->Cue(State.Cue) : nullptr;
+    if (!Cue || !State.bLooping)
+        return;
+    StopLoop(TEXT("sustain:") + Key, .08f);
+    FRequest Release;
+    Release.Family = TEXT("Sustain");
+    Release.Source = State.Source;
+    Release.Location = State.Source.IsValid() ? State.Source->GetActorLocation() : State.Location;
+    Release.bHero = IsHero(State.Source.Get());
+    Play(Cue->Sustain.Release, Release);
+}
+
 void USoraAudioSubsystem::TickSustains(double Now)
 {
     const FData* D = FData::Get();
+    TArray<TPair<FString, FSustainState>> Ended;
     for (auto It = Sustains.CreateIterator(); It; ++It)
     {
-        const FSustainState& State = It.Value();
-        const FCue* Cue = D->Cue(State.Cue);
-        if (!Cue || Now - State.LastShot <= Cue->Sustain.GapSeconds)
+        const FCue* Cue = D->Cue(It.Value().Cue);
+        if (Cue && Now - It.Value().LastShot <= Cue->Sustain.GapSeconds)
             continue;
-        if (State.bLooping)
-        {
-            StopLoop(TEXT("sustain:") + It.Key(), .08f);
-            FRequest Release;
-            Release.Family = TEXT("Sustain");
-            Release.Source = State.Source;
-            Release.Location = State.Source.IsValid() ? State.Source->GetActorLocation() : State.Location;
-            Release.bHero = IsHero(State.Source.Get());
-            Play(Cue->Sustain.Release, Release);
-        }
+        Ended.Emplace(It.Key(), It.Value());
         It.RemoveCurrent();
     }
+    for (const TPair<FString, FSustainState>& Burst : Ended)
+        EndSustain(Burst.Key, Burst.Value);
 }
 
 USoundWave* USoraAudioSubsystem::LoadWave(const FString& Wave)
@@ -862,13 +932,19 @@ void USoraAudioSubsystem::KernelEvent(const FSoraPracticeEvent& Event, uint32 Ti
     Request.Source = Pawn;
     Request.Location = !Event.From.IsNearlyZero() && !bAtTarget ? Event.From : Pawn ? Pawn->GetActorLocation() : Event.To;
     Request.bHero = (bAtTarget ? Event.Target : Event.Actor) == 0;
-    const TArray<FRule>* Rules = D->Bindings.Find(TEXT("Kernel"));
-    for (const FRule& Rule : Rules ? *Rules : TArray<FRule>())
+    const TArray<FRule>* Rules = D->Bindings.Find(Request.Family);
+    for (int32 Index = 0; Rules && Index < Rules->Num(); ++Index)
     {
+        const FRule& Rule = (*Rules)[Index];
         if (!Rule.Matches(Facts))
             continue;
         if (!Rule.Cue.IsNone())
-            Play(Rule.Cue, Request, Rule.DelaySeconds);
+        {
+            FRequest Chosen = Request;
+            Chosen.RuleFamily = Request.Family;
+            Chosen.Rule = Index;
+            Play(Rule.Cue, Chosen, Rule.DelaySeconds);
+        }
         else if (!Rule.As.IsNone())
         {
             // The event as the family it forwards to would carry it.
@@ -889,7 +965,9 @@ void USoraAudioSubsystem::KernelEvent(const FSoraPracticeEvent& Event, uint32 Ti
             else
                 As.Flag(TEXT("bDojo"), false).Int(TEXT("HeldMs"), 0).Number(TEXT("Damage"), 0.0)
                     .Flag(TEXT("DefenderIsHero"), Event.Target == 0).Flag(TEXT("AttackerIsHero"), Event.Actor == 0);
-            Dispatch(Rule.As, As, Request);
+            FRequest Forwarded = Request;
+            Forwarded.ForwardedBy = Index;
+            Dispatch(Rule.As, As, Forwarded);
         }
         if (!Rule.bContinue)
             return;

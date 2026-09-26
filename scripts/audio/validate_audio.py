@@ -2,10 +2,14 @@
 """Validate the audio ledger and source audio (the audio half of plan §2.5 validator rules).
 
 Fails when:
-  1. a file under Content/SourceArt/Audio (wav / mid / flac / ogg) has no OWN manifest record, or its SHA-256
-     differs from the record;
+  1. a file under Content/SourceArt/Audio (wav / mid / flac / ogg) has neither an OWN manifest record nor a
+     record in the CC0 derivatives' ledger (Content/SourceArt/Audio/CC0/manifest.json), or its SHA-256 differs;
+  1b. a CC0 derivative is not PUB-CC0 / CC0-1.0 stored in repo LFS, names a raw file or span that the raw
+     ledger does not record with the same SHA-256 and asset, or the derivatives exceed the free-asset plan's
+     0.5 GB for audio sources in the repository (section 5);
   2. an audio ledger record (scripts/assets/manifests/audio_*.json) has a license outside the allowlist, a tier
-     other than PUB-CC0 / PUB-PD, a file without SHA-256, or a raw file whose SHA-256 no longer matches;
+     other than PUB-CC0 / PUB-PD, a file without SHA-256, or a raw file whose SHA-256 no longer matches (raw
+     files stay in Local/; only their derivatives are committed);
   3. a raw third-party audio path is not gitignored, or any path under Local/ is tracked by git;
   3b. a reference-only record (scripts/assets/restricted/audio_*.json) is not tier REF/RST, lists a file outside
      Local/ or with a changed SHA-256, or is used as a cue layer or music sample source;
@@ -15,6 +19,7 @@ Fails when:
 
   python3 scripts/audio/validate_audio.py            # full (hashes every raw file: ~3 GB, ~1 min)
   python3 scripts/audio/validate_audio.py --quick    # skip re-hashing raw third-party files
+  python3 scripts/audio/validate_audio.py --local-root <tree>   # a worktree reads Local/ from the main tree
 """
 from __future__ import annotations
 
@@ -31,6 +36,8 @@ from qa_audio import analyze  # noqa: E402
 
 AUDIO = ROOT / 'Content/SourceArt/Audio'
 OWN_MANIFESTS = [AUDIO / 'Original/manifest.json', AUDIO / 'Music/manifest.json']
+CC0_MANIFEST = AUDIO / 'CC0/manifest.json'
+CC0_BUDGET_BYTES = 500_000_000  # free-asset plan section 5: audio sources used in the repository
 LICENSES = {'CC0-1.0', 'PDM-1.0', 'US-PD'}
 TIERS = {'PUB-CC0', 'PUB-PD'}
 REFERENCE_TIERS = {'REF', 'RST'}
@@ -44,10 +51,49 @@ def sha(path: Path) -> str:
     return h.hexdigest()
 
 
+def cc0_derivatives(errors: list[str]) -> dict[str, dict]:
+    """The CC0 derivatives' rows by file, after checking their records against the raw ledger."""
+    if not CC0_MANIFEST.exists():
+        errors.append(f'missing {CC0_MANIFEST.relative_to(ROOT)} (run scripts/audio/build_cc0_audio.py)')
+        return {}
+    raw: dict[str, tuple[str, str]] = {}
+    for m in sorted((ROOT / 'scripts/assets/manifests').glob('audio_*.json')):
+        for a in json.loads(m.read_text())['assets']:
+            for row in list(a.get('files', [])) + list(a.get('downloads', [])):
+                raw[row['file']] = (a['asset_id'], row['sha256'])
+    doc = json.loads(CC0_MANIFEST.read_text())
+    rows: dict[str, dict] = {}
+    total = 0
+    for record in doc.get('records', []):
+        label = f'{CC0_MANIFEST.relative_to(ROOT)}:{record.get("asset_id")}'
+        if record.get('tier') != 'PUB-CC0' or record.get('license') != 'CC0-1.0':
+            errors.append(f'{label}: a derivative must be PUB-CC0 under CC0-1.0')
+        if record.get('storage') != 'repo-lfs' or record.get('committed') is not True:
+            errors.append(f'{label}: derivatives are committed through LFS (storage repo-lfs)')
+        for row in record.get('files', []):
+            total += int(row.get('bytes') or 0)
+            if not row['file'].startswith(str(AUDIO.relative_to(ROOT)) + '/CC0/'):
+                errors.append(f'{label}: {row["file"]} lies outside Content/SourceArt/Audio/CC0')
+            rows[row['file']] = row
+            if not row.get('derived_from') or row['derived_from'][0].get('asset_id') != record.get('asset_id'):
+                errors.append(f'{label}: {row["file"]} does not start from this asset')
+            for span in row.get('derived_from', []):
+                known = raw.get(span.get('file'))
+                if known is None or known != (span.get('asset_id'), span.get('sha256')):
+                    errors.append(f'{label}: {row["file"]} names {span.get("file")} unlike the raw ledger')
+                if not 0 <= span.get('start_s', -1) < span.get('end_s', -1):
+                    errors.append(f'{label}: {row["file"]} has an empty span of {span.get("file")}')
+    if total > CC0_BUDGET_BYTES:
+        errors.append(f'CC0 derivatives take {total} bytes, over the {CC0_BUDGET_BYTES} byte budget')
+    return rows
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--quick', action='store_true')
+    ap.add_argument('--local-root', type=Path, default=ROOT, help='the tree whose Local/ holds the raw files')
     args = ap.parse_args()
+    local = args.local_root.resolve()
     errors: list[str] = []
 
     # 1. OWN files
@@ -61,13 +107,16 @@ def main() -> int:
             errors.append(f'{m.relative_to(ROOT)} tier is not OWN')
         for row in data.get('files', []):
             records[row['file']] = row
+    own_count = len(records)
+    derivatives = cc0_derivatives(errors)
+    records.update(derivatives)
     for p in sorted(AUDIO.rglob('*')):
         if p.suffix.lower() not in {'.wav', '.mid', '.flac', '.ogg'}:
             continue
         rel = str(p.relative_to(ROOT))
         row = records.get(rel)
         if row is None:
-            errors.append(f'no OWN record for {rel}')
+            errors.append(f'no OWN or CC0 derivative record for {rel}')
         elif row.get('sha256') != sha(p):
             errors.append(f'SHA-256 mismatch for {rel}')
     for rel in records:
@@ -90,7 +139,7 @@ def main() -> int:
                     errors.append(f'{f}: no SHA-256')
                 if not f.startswith('Local/'):
                     errors.append(f'{f}: third-party raw file outside Local/')
-                path = ROOT / f
+                path = local / f
                 if not path.exists():
                     errors.append(f'{f}: missing on disk')
                 elif not args.quick:
@@ -109,12 +158,12 @@ def main() -> int:
                 reference_files[f] = a['asset_id']
                 if not f.startswith('Local/'):
                     errors.append(f'{f}: reference-only file outside Local/')
-                path = ROOT / f
+                path = local / f
                 if not path.exists():
                     errors.append(f'{f}: missing on disk')
                 elif not args.quick and sha(path) != row.get('sha256'):
                     errors.append(f'{f}: SHA-256 changed since fetch')
-    for m in OWN_MANIFESTS:
+    for m in OWN_MANIFESTS + [CC0_MANIFEST]:
         if m.exists():
             text = m.read_text()
             for f, asset_id in reference_files.items():
@@ -141,7 +190,7 @@ def main() -> int:
                 for f in layer['files']:
                     if f['file'] in reference_files:
                         errors.append(f'cue {c["id"]}: {f["file"]} is reference-only')
-                    if not (ROOT / f['file']).exists():
+                    if not (local / f['file']).exists():
                         errors.append(f'cue {c["id"]}: missing CC0 layer {f["file"]} (run fetch_cc0_audio.py)')
     else:
         errors.append('cues.proposed.json missing (run scripts/audio/build_cue_proposal.py)')
@@ -155,8 +204,8 @@ def main() -> int:
 
     for e in errors:
         print('ERROR', e)
-    print(f'{len(records)} OWN records, {len(wavs)} WAVs QA-checked, {raw_count} raw files re-hashed, '
-          f'{len(errors)} errors')
+    print(f'{own_count} OWN records, {len(derivatives)} CC0 derivatives, {len(wavs)} WAVs QA-checked, '
+          f'{raw_count} raw files re-hashed, {len(errors)} errors')
     return 1 if errors else 0
 
 

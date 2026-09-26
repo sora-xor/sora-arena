@@ -39,14 +39,20 @@ class AudioSpecTests(unittest.TestCase):
 
     def test_project_sources_pass(self):
         audio = spec.load(ROOT)
-        self.assertEqual(len(audio["waves"]), 149)
-        self.assertEqual(sum(wave["loop"] for wave in audio["waves"]), 19)
-        self.assertEqual(len(audio["expected"]), 149 + 14 + 14 + 3 + 1)
+        self.assertEqual(audio["cc0_waves"], 86)
+        self.assertEqual(len(audio["waves"]), 149 + 86)
+        self.assertEqual(sum(wave["loop"] for wave in audio["waves"]), 19 + 6)
+        self.assertEqual(len(audio["expected"]), 149 + 86 + 14 + 14 + 3 + 1)
         buses = {wave["source"].rsplit("/", 1)[1]: wave["bus"] for wave in audio["waves"]}
         self.assertEqual(buses["mus_sting_site_restored.wav"], "Music")
         self.assertEqual(buses["mus_sting_duel_point.wav"], "UI")
         self.assertEqual(buses["shd_barrier_regen.wav"], "SFX_Telegraph")
         self.assertEqual(buses["mel_parry_layer_body_01.wav"], "SFX_Melee")
+        self.assertEqual(buses["cc0_wpn_repeater_fire_01.wav"], "SFX_Weapons")
+        self.assertEqual(buses["cc0_fol_step_earth_01.wav"], "SFX_Foley")
+        self.assertEqual(buses["cc0_amb_estate_day_loop.wav"], "Ambience")
+        estate = next(wave for wave in audio["waves"] if wave["source"].endswith("cc0_amb_estate_day_loop.wav"))
+        self.assertEqual((estate["package"], estate["loop"]), ("/Game/Generated/Audio/CC0/Ambience/cc0_amb_estate_day_loop", True))
         routing = {bus["id"]: bus["submix_parent"] for bus in audio["buses"]}
         self.assertEqual((routing["SFX_Telegraph"], routing["Voice_Barks"], routing["SFX_Weapons"]),
                          ("Master", "Master", "SFX"))
@@ -91,13 +97,31 @@ class AudioSpecTests(unittest.TestCase):
         self.assertEqual(spec.wav_layout(wav(480), "one-shot")[4], [])
         self.refused("Not a RIFF WAVE", spec.wav_layout, b"RIFX" + wav(4)[4:], "bad")
 
-    def test_cc0_admitted_to_the_repository_is_refused(self):
+    def test_raw_cc0_committed_to_the_repository_is_refused(self):
         with tempfile.TemporaryDirectory(prefix="sora-audio-spec-") as temp:
             ledgers = Path(temp) / spec.AUDIO_LEDGERS
             ledgers.mkdir(parents=True)
             record = {"asset_id": "kenney/test", "committed": True, "storage": "repo-lfs"}
             (ledgers / "audio_test.json").write_text(json.dumps({"raw_committed": False, "assets": [record]}))
-            self.refused("admitted to the repository", spec.check_ledger_admits_no_cc0, Path(temp))
+            self.refused("takes only its derivatives", spec.check_raw_cc0_stays_local, Path(temp))
+
+    def test_a_cc0_derivative_outside_repo_lfs_is_refused(self):
+        with tempfile.TemporaryDirectory(prefix="sora-audio-spec-") as temp:
+            for manifest in spec.OWN_MANIFESTS:
+                (Path(temp) / manifest).parent.mkdir(parents=True, exist_ok=True)
+                (Path(temp) / manifest).write_text(json.dumps({"schema_version": 2, "tier": "OWN", "files": []}))
+            ledger = Path(temp) / spec.CC0_MANIFEST
+            ledger.parent.mkdir(parents=True, exist_ok=True)
+            record = {"asset_id": "opengameart/test", "tier": "PUB-CC0", "storage": "local-private", "files": []}
+            ledger.write_text(json.dumps({"schema_version": 2, "tier": "PUB-CC0", "records": [record]}))
+            self.refused("not a PUB-CC0 derivative in repo LFS", spec.wave_records, Path(temp))
+
+    def test_a_ready_cc0_cue_sets_the_bus_of_a_shared_wave(self):
+        data = copy.deepcopy(self.data)
+        cue = next(cue for cue in data["cues"] if cue["id"] == "foot.earth")
+        self.assertEqual(cue["status"], "ready-cc0")
+        data["cues"].append(dict(cue, id="foot.earth.placeholder", bus="SFX_Impacts", status="needed"))
+        self.assertEqual(spec.resolve_buses(data)[spec.source_of(cue["waves"][0])], "SFX_Foley")
 
 
 if __name__ == "__main__":

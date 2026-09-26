@@ -10,8 +10,11 @@ that what it loads is complete and means what it says. It fails when:
    parent is neither Master nor the bus's own parent, or a floored (telegraph)
    bus does not route straight to Master with a floor below 0 dB;
 3. a cue names an unknown bus or attenuation preset, is spatial without a
-   preset, plays a wave no OWN manifest records (or a one-shot as a loop),
-   says nothing about the sound it still needs, carries a caption that has no
+   preset, plays a wave neither an OWN manifest nor the CC0 derivatives'
+   ledger records (or a one-shot as a loop), is ready or a placeholder without
+   waves, is ready-cc0 or placeholder-cc0 with other than CC0 derivatives (or
+   plays a derivative under any other status), says nothing
+   about the sound it still needs (a placeholder included), carries a caption that has no
    ``NSLOCTEXT("SoraArena.SoundCaptions", ...)`` with an English subtitle in
    Game.po, marks a looping or 3D stinger, a strike mark off the telegraph
    bus or past its wave, or a broken sustain;
@@ -53,6 +56,8 @@ ARENA_HEADER = ROOT / 'crates/arena-ffi/include/arena.h'
 CAPTION_SOURCES = ROOT / 'Source/SoraArena/Private/Audio'
 GAME_PO = ROOT / 'Content/Localization/Game/en/Game.po'
 OWN_MANIFESTS = (ROOT / SOURCE / 'Original/manifest.json', ROOT / SOURCE / 'Music/manifest.json')
+CC0_MANIFEST = ROOT / SOURCE / 'CC0/manifest.json'
+READY = ('ready-own', 'ready-cc0')
 TOP = {'schema_version', 'source', 'sample_rate_hz', 'buses', 'ducking', 'attenuation', 'cues', 'bindings',
        'unbound_events', 'music', 'beats', 'maps', 'weather', 'footsteps', 'horses', 'attached', 'telegraphs'}
 STATES = {'menu', 'exploration', 'stealth', 'combat', 'boss'}
@@ -112,13 +117,11 @@ def translated(key):
     return bool(match and match.group(1))
 
 
-def own_waves():
-    waves = {}
-    for manifest in OWN_MANIFESTS:
-        for record in read(manifest)['files']:
-            if record['file'].endswith('.wav'):
-                waves[record['file'][len(SOURCE) + 1:-4]] = record
-    return waves
+def project_waves():
+    """Every wave the import makes: the OWN renders and the CC0 derivatives, by audio.json path."""
+    records = [record for manifest in OWN_MANIFESTS for record in read(manifest)['files']]
+    records += [row for record in read(CC0_MANIFEST)['records'] for row in record['files']]
+    return {record['file'][len(SOURCE) + 1:-4]: record for record in records if record['file'].endswith('.wav')}
 
 
 def check_buses(data, sliders):
@@ -165,13 +168,15 @@ def check_cues(data, buses, waves, captions):
         for wave in cue['waves']:
             record = waves.get(wave)
             if record is None:
-                error(f'{name}: no OWN manifest records {wave}')
+                error(f'{name}: no OWN manifest or CC0 ledger records {wave}')
             elif record['loop'] != cue['loop']:
                 error(f'{name}: {wave} loop flag {record["loop"]} differs from the cue {cue["loop"]}')
-        if (not cue['waves'] or cue['status'] != 'ready-own') and not cue['needs']:
+            if (cue['status'] in ('ready-cc0', 'placeholder-cc0')) != wave.startswith('CC0/'):
+                error(f'{name}: status {cue["status"]} does not match its wave {wave}')
+        if (not cue['waves'] or cue['status'] not in READY) and not cue['needs']:
             error(f'{name}: says nothing about the sound it still needs')
-        if cue['status'] == 'ready-own' and not cue['waves']:
-            error(f'{name}: is ready-own without waves')
+        if (cue['status'] in READY or cue['status'] == 'placeholder-cc0') and not cue['waves']:
+            error(f'{name}: is {cue["status"]} without waves')
         if cue['caption']:
             if cue['caption'] not in captions:
                 error(f'{name}: caption {cue["caption"]} has no NSLOCTEXT("SoraArena.SoundCaptions", ...)')
@@ -351,9 +356,9 @@ def check_coverage(data, cues):
     for piece in data['music']['pieces'].values():
         music |= set(piece['stems'].values()) | {piece['intro'], piece['full']}
     referenced = {wave for cue in cues.values() for wave in cue['waves']} | (music - {''})
-    missing = sorted(set(own_waves()) - referenced)
+    missing = sorted(set(project_waves()) - referenced)
     if missing:
-        error(f'OWN waves no cue or piece plays (the import needs each): {missing[:5]}')
+        error(f'waves no cue or piece plays (the import needs each): {missing[:5]}')
 
 
 def check_music(data, waves):
@@ -487,7 +492,7 @@ def main():
     enums['Kernel'] = kernel_kinds(ARENA_HEADER.read_text(encoding='utf-8'))
     enums['delegates'] = delegates(events)
     sliders = enum_values(SETTINGS_HEADER.read_text(encoding='utf-8'), 'ESoraAudioBus')[:-1]
-    waves = own_waves()
+    waves = project_waves()
     buses = check_buses(data, sliders)
     captions = caption_keys()
     cues = check_cues(data, buses, waves, captions)

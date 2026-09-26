@@ -1,0 +1,4102 @@
+{
+ "schema_version": 2,
+ "kind": "asset-ledger",
+ "ledger_id": "audio-cc0-derivatives",
+ "source": "SORA Arena CC0 audio derivatives (Content/SourceArt/Audio/CC0)",
+ "tier": "PUB-CC0",
+ "purpose": "The CC0 recordings the runtime cues play, cut and levelled from the raw ledger (scripts/assets/manifests/audio_*.json); docs/audio.md sections 1 and 2.1.",
+ "generator": "scripts/audio/build_cc0_audio.py",
+ "regenerate": "python3 scripts/audio/build_cc0_audio.py --local-root <tree holding Local/ThirdPartyRaw/audio>",
+ "format": "48 kHz / 24-bit PCM WAV, mono or stereo as recorded; beds carry a RIFF smpl loop over the whole file",
+ "loudness_policy": "docs/audio.md section 4: transients peak-referenced (\"P\" after \"limit\" dB of soft-clip density), sustained one-shots by maximum momentary loudness (\"M\"), beds by integrated loudness (\"I\", gain only, <= -3 dBTP)",
+ "budget_bytes": 500000000,
+ "total_bytes": 101101024,
+ "records": [
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:25:39+00:00",
+   "acquired_by": "agent",
+   "asset_id": "kenney/impact-sounds",
+   "name": "Impact Sounds",
+   "origin_url": "https://kenney.nl/assets/impact-sounds",
+   "mirror_url": null,
+   "authors": [
+    "Kenney (kenney.nl)"
+   ],
+   "license_evidence": {
+    "page_license_field": "Creative Commons CC0",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/kenney-impact-sounds-2026-09-25.html",
+     "sha256": "51ee47e9b4b2a9c57ebd3ba068c6c7fb1117d499d2aded44435a456f078d3f40",
+     "captured_at_utc": "2026-09-25T11:25:39+00:00"
+    },
+    "bundled_license_files": [
+     {
+      "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/License.txt",
+      "sha256": "b49aa9c56b04528b95913de13e506a0f7c5e807b9925db9bfef86af1f91120db",
+      "states_cc0": true
+     }
+    ],
+    "verified_at_utc": "2026-09-25T11:25:39+00:00"
+   },
+   "placeholder_only": true,
+   "role": "sfx: impact / footstep placeholder layers",
+   "raw_ledger": "scripts/assets/manifests/audio_kenney.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_body_hit_01.cc0_mel_body_hit_01",
+    "/Game/Generated/Audio/CC0/Impacts/cc0_imp_body_fall_01.cc0_imp_body_fall_01",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_body_hit_02.cc0_mel_body_hit_02",
+    "/Game/Generated/Audio/CC0/Impacts/cc0_imp_body_fall_02.cc0_imp_body_fall_02",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_body_hit_03.cc0_mel_body_hit_03",
+    "/Game/Generated/Audio/CC0/Impacts/cc0_imp_body_fall_03.cc0_imp_body_fall_03",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_body_hit_04.cc0_mel_body_hit_04",
+    "/Game/Generated/Audio/CC0/Impacts/cc0_imp_body_fall_04.cc0_imp_body_fall_04",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_body_hit_05.cc0_mel_body_hit_05",
+    "/Game/Generated/Audio/CC0/Impacts/cc0_imp_body_fall_05.cc0_imp_body_fall_05",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_grass_01.cc0_fol_step_grass_01",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_grass_02.cc0_fol_step_grass_02",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_grass_03.cc0_fol_step_grass_03",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_grass_04.cc0_fol_step_grass_04",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_grass_05.cc0_fol_step_grass_05",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_tatami_01.cc0_fol_step_tatami_01",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_tatami_02.cc0_fol_step_tatami_02",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_tatami_03.cc0_fol_step_tatami_03",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_tatami_04.cc0_fol_step_tatami_04",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_tatami_05.cc0_fol_step_tatami_05"
+   ],
+   "layered_into": [],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_body_hit_01.wav",
+     "bytes": 181862,
+     "sha256": "d3c6b1a3be3f3031cb5545084371d35857aa3b478957535d180d2c7aad9f81ad",
+     "cue": "melee.strike.hit_body",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 4.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_000.ogg",
+       "sha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8",
+       "start_s": 0.0,
+       "end_s": 0.649
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.631,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -14.85,
+      "momentary_max_lufs": -12.47,
+      "rms_dbfs": -15.03,
+      "dc_offset_dbfs": -83.6,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 65.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Impacts/cc0_imp_body_fall_01.wav",
+     "bytes": 145514,
+     "sha256": "7838b5e990b82cb682bfa90101cf6c2ff44a6488bc2df0baa8021d08afef7b23",
+     "cue": "enemy.died",
+     "loop": false,
+     "target": {
+      "P": -2.0,
+      "limit": 3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_000.ogg",
+       "sha256": "49e7ca88743fca974bb8676ea138b751cfd8f9033b5e7af8736c2a215d6edbc1",
+       "start_s": 0.0,
+       "end_s": 0.5051
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.505,
+      "sample_peak_dbfs": -2.01,
+      "true_peak_dbtp": -2.0,
+      "integrated_lufs": -16.5,
+      "momentary_max_lufs": -13.71,
+      "rms_dbfs": -15.44,
+      "dc_offset_dbfs": -80.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 57.0,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_body_hit_02.wav",
+     "bytes": 153140,
+     "sha256": "5af492db13bd725e2278cf53b780e64581431c4c0703bf4f0958df293df82ca1",
+     "cue": "melee.strike.hit_body",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 4.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_001.ogg",
+       "sha256": "f92f5cb6ba4ff2766497292ffd90865654317eeca976f5652e0708dbdcdc0dd9",
+       "start_s": 0.0,
+       "end_s": 0.5359
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.532,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -14.98,
+      "momentary_max_lufs": -12.37,
+      "rms_dbfs": -14.54,
+      "dc_offset_dbfs": -100.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 63.9,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Impacts/cc0_imp_body_fall_02.wav",
+     "bytes": 164792,
+     "sha256": "c8c36b0949e4afb067b116fdc28b2f16caea4597241229dab71f11853fd121d4",
+     "cue": "enemy.died",
+     "loop": false,
+     "target": {
+      "P": -2.0,
+      "limit": 3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_001.ogg",
+       "sha256": "4d0096364ba9e46119d2ff6df493fdc101bd2e1efae061da5e5f77a53b3fdcb6",
+       "start_s": 0.0,
+       "end_s": 0.572
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.572,
+      "sample_peak_dbfs": -2.01,
+      "true_peak_dbtp": -2.0,
+      "integrated_lufs": -16.17,
+      "momentary_max_lufs": -13.51,
+      "rms_dbfs": -15.61,
+      "dc_offset_dbfs": -95.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 56.1,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_body_hit_03.wav",
+     "bytes": 131804,
+     "sha256": "43363e0183aba11f2c792d7def9882b1fca108aad0f037ceb0284a9a7e27f018",
+     "cue": "melee.strike.hit_body",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 4.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_002.ogg",
+       "sha256": "7993dd4c156b9979ad69f17be5ebe31850b16039a3857f8477141be54dfee1b3",
+       "start_s": 0.0,
+       "end_s": 0.4575
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.458,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -15.1,
+      "momentary_max_lufs": -12.41,
+      "rms_dbfs": -13.99,
+      "dc_offset_dbfs": -82.9,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 57.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Impacts/cc0_imp_body_fall_03.wav",
+     "bytes": 164876,
+     "sha256": "726239d1a598436bdf844ad749fd400b847f2825db72ef5238accd970f7fc1c5",
+     "cue": "enemy.died",
+     "loop": false,
+     "target": {
+      "P": -2.0,
+      "limit": 3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_002.ogg",
+       "sha256": "d130ae541951243d3f6ed963d0057450a445ffe117fbf9a084d34eb1635cb563",
+       "start_s": 0.0,
+       "end_s": 0.5723
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.572,
+      "sample_peak_dbfs": -2.01,
+      "true_peak_dbtp": -2.0,
+      "integrated_lufs": -15.99,
+      "momentary_max_lufs": -13.33,
+      "rms_dbfs": -15.38,
+      "dc_offset_dbfs": -76.2,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 39.3,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_body_hit_04.wav",
+     "bytes": 136502,
+     "sha256": "04bab564647132450a69407fd4d6eba182ad8c6d204d8ad17ff306dd34b9b64c",
+     "cue": "melee.strike.hit_body",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 4.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_003.ogg",
+       "sha256": "4ab53b26f4ea575120dcc1348526c9e0db2afc6af7a442aa0489bdead2ca80b6",
+       "start_s": 0.0,
+       "end_s": 0.4738
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.474,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -15.4,
+      "momentary_max_lufs": -12.68,
+      "rms_dbfs": -14.5,
+      "dc_offset_dbfs": -83.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 60.1,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Impacts/cc0_imp_body_fall_04.wav",
+     "bytes": 156770,
+     "sha256": "f710132511f3ae0661278f6b7b19127a22cc97b69d874d0c84913e4e08c18cb9",
+     "cue": "enemy.died",
+     "loop": false,
+     "target": {
+      "P": -2.0,
+      "limit": 3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_003.ogg",
+       "sha256": "d00286a2dc62ee5cb4d42bf56120e7050a855f69e655fc1294410aadd337eba3",
+       "start_s": 0.0,
+       "end_s": 0.5442
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.544,
+      "sample_peak_dbfs": -2.01,
+      "true_peak_dbtp": -2.0,
+      "integrated_lufs": -16.59,
+      "momentary_max_lufs": -13.95,
+      "rms_dbfs": -14.95,
+      "dc_offset_dbfs": -74.3,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 39.8,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_body_hit_05.wav",
+     "bytes": 153350,
+     "sha256": "2a915f3dde060744ce366a17d1e6680ebcfc8406ef04b812459daa78be9ba419",
+     "cue": "melee.strike.hit_body",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 4.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactPunch_heavy_004.ogg",
+       "sha256": "f4c0c3eb8ab6517583b8218ed03f28923d1b687379aab4c1d5a6d4c10cf8e500",
+       "start_s": 0.0,
+       "end_s": 0.5363
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.532,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -15.06,
+      "momentary_max_lufs": -12.46,
+      "rms_dbfs": -14.58,
+      "dc_offset_dbfs": -101.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 63.9,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Impacts/cc0_imp_body_fall_05.wav",
+     "bytes": 144320,
+     "sha256": "7af01dc456117083cb26a818d9e1878be81b2badba39c9335848a1037e47b724",
+     "cue": "enemy.died",
+     "loop": false,
+     "target": {
+      "P": -2.0,
+      "limit": 3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/impactSoft_heavy_004.ogg",
+       "sha256": "e008f0b6b14f62339c8fe9f9b45cbd6317ba4f66604c4899053b8017020a36f0",
+       "start_s": 0.0,
+       "end_s": 0.501
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.501,
+      "sample_peak_dbfs": -2.01,
+      "true_peak_dbtp": -2.0,
+      "integrated_lufs": -16.45,
+      "momentary_max_lufs": -13.67,
+      "rms_dbfs": -15.02,
+      "dc_offset_dbfs": -79.9,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 63.9,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_grass_01.wav",
+     "bytes": 223988,
+     "sha256": "31e648d8b2f8eaeae4680b07df83ca81122fb4f58ab6ac73c5d8b5825f1071b4",
+     "cue": "foot.grass",
+     "loop": false,
+     "target": {
+      "M": -24.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_000.ogg",
+       "sha256": "9d49497777405d78d7cf7f2888e28277f3a23192300cfd1d79d54876b20f479f",
+       "start_s": 0.0,
+       "end_s": 0.7776
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.778,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -25.69,
+      "momentary_max_lufs": -25.65,
+      "rms_dbfs": -29.68,
+      "dc_offset_dbfs": -89.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 616.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_grass_02.wav",
+     "bytes": 194048,
+     "sha256": "cde108b638d588bb0d707afcb4cec841e011f1a94971e73de14fc7a85ec25cc8",
+     "cue": "foot.grass",
+     "loop": false,
+     "target": {
+      "M": -24.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_001.ogg",
+       "sha256": "fb28781bd22b2eefdc14077f1adf5c94d7fe9c3a130194633b55f3e0d39d9f04",
+       "start_s": 0.0,
+       "end_s": 0.6736
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.674,
+      "sample_peak_dbfs": -1.16,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -24.22,
+      "momentary_max_lufs": -24.18,
+      "rms_dbfs": -28.21,
+      "dc_offset_dbfs": -81.2,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 526.8,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_grass_03.wav",
+     "bytes": 199472,
+     "sha256": "69cf0161520b5ad26606d72d672a5d386cce6c2438a397e4aa5fc9fc583e2040",
+     "cue": "foot.grass",
+     "loop": false,
+     "target": {
+      "M": -24.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_002.ogg",
+       "sha256": "73a520139f5be716a403bfe9c80e0e94d1e61d8e9de04a354b336392164b53dc",
+       "start_s": 0.0,
+       "end_s": 0.6924
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.692,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -24.86,
+      "momentary_max_lufs": -24.82,
+      "rms_dbfs": -29.03,
+      "dc_offset_dbfs": -89.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 531.9,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_grass_04.wav",
+     "bytes": 192812,
+     "sha256": "7b2f83b036b811dedd46e974c827f2d164ad56d630aeffc16e7c421693422c11",
+     "cue": "foot.grass",
+     "loop": false,
+     "target": {
+      "M": -24.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_003.ogg",
+       "sha256": "0546e1d8ab2def714425701a18bd34c5ee2794b12e858e5b595aabcf38a34137",
+       "start_s": 0.0,
+       "end_s": 0.6693
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.669,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -26.12,
+      "momentary_max_lufs": -26.08,
+      "rms_dbfs": -29.46,
+      "dc_offset_dbfs": -84.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 527.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_grass_05.wav",
+     "bytes": 45086,
+     "sha256": "8e4a642151c4c94937d24026515a21a1d90c934b049acb64fff5ccde0c030b3e",
+     "cue": "foot.grass",
+     "loop": false,
+     "target": {
+      "M": -24.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_grass_004.ogg",
+       "sha256": "086fd4ab3546a507ea5f5c759a9a10e535c95ade13705c238bc0eeffd7d4e8ba",
+       "start_s": 0.0,
+       "end_s": 0.5902
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.156,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -25.47,
+      "momentary_max_lufs": -25.43,
+      "rms_dbfs": -22.57,
+      "dc_offset_dbfs": null,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 31.0,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_tatami_01.wav",
+     "bytes": 41744,
+     "sha256": "0068f1c5526043ff2dcd556c4ecb413a84a4bc0b6916c1d83ec5477e3f790416",
+     "cue": "foot.tatami",
+     "loop": false,
+     "target": {
+      "M": -26.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_000.ogg",
+       "sha256": "b9524658b52a99a20590f8feefc103088637fd13ea8ec35811aee785e1f2f330",
+       "start_s": 0.0,
+       "end_s": 0.1448
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.145,
+      "sample_peak_dbfs": -1.45,
+      "true_peak_dbtp": -1.45,
+      "integrated_lufs": -26.04,
+      "momentary_max_lufs": -26.0,
+      "rms_dbfs": -23.36,
+      "dc_offset_dbfs": null,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 71.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_tatami_02.wav",
+     "bytes": 41744,
+     "sha256": "93ec27d9543347eb84aa8de767bd6f9101ddebf16275ddeb9bdfd55c7a17a3ef",
+     "cue": "foot.tatami",
+     "loop": false,
+     "target": {
+      "M": -26.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_001.ogg",
+       "sha256": "9af3c3f76705107339e72036e4053bdca3eaa50ad31c8c929f42ce8d40e5d781",
+       "start_s": 0.0,
+       "end_s": 0.1448
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.145,
+      "sample_peak_dbfs": -4.95,
+      "true_peak_dbtp": -4.9,
+      "integrated_lufs": -26.04,
+      "momentary_max_lufs": -26.0,
+      "rms_dbfs": -23.51,
+      "dc_offset_dbfs": null,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 58.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_tatami_03.wav",
+     "bytes": 41744,
+     "sha256": "93ec27d9543347eb84aa8de767bd6f9101ddebf16275ddeb9bdfd55c7a17a3ef",
+     "cue": "foot.tatami",
+     "loop": false,
+     "target": {
+      "M": -26.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_002.ogg",
+       "sha256": "9af3c3f76705107339e72036e4053bdca3eaa50ad31c8c929f42ce8d40e5d781",
+       "start_s": 0.0,
+       "end_s": 0.1448
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.145,
+      "sample_peak_dbfs": -4.95,
+      "true_peak_dbtp": -4.9,
+      "integrated_lufs": -26.04,
+      "momentary_max_lufs": -26.0,
+      "rms_dbfs": -23.51,
+      "dc_offset_dbfs": null,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 58.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_tatami_04.wav",
+     "bytes": 41744,
+     "sha256": "52c1625a6b127de369970593320e26a59f1a0992b1796048ff4b85d4d3fb48d4",
+     "cue": "foot.tatami",
+     "loop": false,
+     "target": {
+      "M": -26.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_003.ogg",
+       "sha256": "4ae7454338d57c7d102145919ae653c7d010eb542797c4f25a1c7470be3a7e4c",
+       "start_s": 0.0,
+       "end_s": 0.1448
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.145,
+      "sample_peak_dbfs": -1.57,
+      "true_peak_dbtp": -1.56,
+      "integrated_lufs": -26.04,
+      "momentary_max_lufs": -26.0,
+      "rms_dbfs": -23.32,
+      "dc_offset_dbfs": null,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 69.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_tatami_05.wav",
+     "bytes": 41744,
+     "sha256": "52c1625a6b127de369970593320e26a59f1a0992b1796048ff4b85d4d3fb48d4",
+     "cue": "foot.tatami",
+     "loop": false,
+     "target": {
+      "M": -26.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "kenney/impact-sounds",
+       "file": "Local/ThirdPartyRaw/audio/kenney/impact-sounds/extracted/Audio/footstep_carpet_004.ogg",
+       "sha256": "4ae7454338d57c7d102145919ae653c7d010eb542797c4f25a1c7470be3a7e4c",
+       "start_s": 0.0,
+       "end_s": 0.1448
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.145,
+      "sample_peak_dbfs": -1.57,
+      "true_peak_dbtp": -1.56,
+      "integrated_lufs": -26.04,
+      "momentary_max_lufs": -26.0,
+      "rms_dbfs": -23.32,
+      "dc_offset_dbfs": null,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 69.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:33:22+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+   "name": "25 CC0 bang / firework SFX",
+   "origin_url": "https://opengameart.org/content/25-cc0-bang-firework-sfx",
+   "mirror_url": null,
+   "authors": [
+    "rubberduck"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "I recorded 25 bang / firework / cannon / explosions from fireworks. One sfx is loopable and a few are using some effects to sound a bit sci-fi like. Also included are a few short bangs usable for gun shots",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-25-cc0-bang-firework-sfx-2026-09-25.html",
+     "sha256": "24a834bbbe344cdaea7ce17d42014c5bb04e99b927fe7467057af3aad88ca76e",
+     "captured_at_utc": "2026-09-25T11:33:22+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:33:22+00:00"
+   },
+   "role": "weapons / festival: firework bangs (hanabi, grenades)",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_01.cc0_wpn_grenade_launcher_fire_01",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_02.cc0_wpn_grenade_launcher_fire_02",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_03.cc0_wpn_grenade_launcher_fire_03",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_01.cc0_wpn_micro_mortar_fire_01",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_02.cc0_wpn_micro_mortar_fire_02",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_03.cc0_wpn_micro_mortar_fire_03",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_04.cc0_wpn_micro_mortar_fire_04",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_05.cc0_wpn_micro_mortar_fire_05",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_01.cc0_exp_detonation_01",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_02.cc0_exp_detonation_02",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_03.cc0_exp_detonation_03",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_04.cc0_exp_detonation_04",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_05.cc0_exp_detonation_05",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_06.cc0_exp_detonation_06",
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_festival_loop.cc0_amb_festival_loop"
+   ],
+   "layered_into": [
+    "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_festival_loop.wav",
+    "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_festival_loop.wav",
+    "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_festival_loop.wav",
+    "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_festival_loop.wav",
+    "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_festival_loop.wav",
+    "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_festival_loop.wav"
+   ],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_01.wav",
+     "bytes": 379556,
+     "sha256": "23728873d55cf676e769ada881f985bde9729f627b91ab731f350c892bb03f79",
+     "cue": "weapon.fired.grenade_launcher",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/shot_01.ogg",
+       "sha256": "a846eefebbb08b6f6d31a7728318b8de349ea2971cea148d7afdb41d797fdcfc",
+       "start_s": 0.0,
+       "end_s": 0.4586
+      },
+      {
+       "asset_id": "opengameart/cannon-fire",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/cannon-fire/download/cannon_fire_0.ogg",
+       "sha256": "2b21ffa41e5c3be4eecdfbd3490544f5aa8b6d1581787265863e13de1a8e599d",
+       "start_s": 0.0,
+       "end_s": 3.5759
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.318,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -20.08,
+      "momentary_max_lufs": -14.27,
+      "rms_dbfs": -19.49,
+      "dc_offset_dbfs": -57.3,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 125.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_02.wav",
+     "bytes": 364376,
+     "sha256": "220e9c06e010313374bc598fee4be45881ba7aa6e2e630ac2d28b44cac1b799b",
+     "cue": "weapon.fired.grenade_launcher",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/shot_02.ogg",
+       "sha256": "4b9b62ff7f430d9d257a07efc54be8192c2e01668fe5e2461f217b2f8fe33a77",
+       "start_s": 0.0,
+       "end_s": 0.3744
+      },
+      {
+       "asset_id": "opengameart/cannon-fire",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/cannon-fire/download/cannon_fire_0.ogg",
+       "sha256": "2b21ffa41e5c3be4eecdfbd3490544f5aa8b6d1581787265863e13de1a8e599d",
+       "start_s": 0.0,
+       "end_s": 3.5759
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.265,
+      "sample_peak_dbfs": -1.2,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -22.99,
+      "momentary_max_lufs": -17.2,
+      "rms_dbfs": -22.13,
+      "dc_offset_dbfs": -76.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 110.7,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_03.wav",
+     "bytes": 379556,
+     "sha256": "e5edd8d92ea9db9adf02956779f7d42a9005975a88be95902b07713f3480e9af",
+     "cue": "weapon.fired.grenade_launcher",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/shot_03.ogg",
+       "sha256": "f3cfbf0af36a717ff9c8f58640f181db7b73266e8263591014d453c4e77c6418",
+       "start_s": 0.0,
+       "end_s": 0.2642
+      },
+      {
+       "asset_id": "opengameart/cannon-fire",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/cannon-fire/download/cannon_fire_0.ogg",
+       "sha256": "2b21ffa41e5c3be4eecdfbd3490544f5aa8b6d1581787265863e13de1a8e599d",
+       "start_s": 0.0,
+       "end_s": 3.5759
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.318,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -21.3,
+      "momentary_max_lufs": -15.32,
+      "rms_dbfs": -19.78,
+      "dc_offset_dbfs": -73.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 125.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_01.wav",
+     "bytes": 335114,
+     "sha256": "0275e3561fa5bff233aeec7ad8ceecacb09702fa9a0b1ebf4e36b9347f154903",
+     "cue": "weapon.fired.micro_mortar",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/cannon_01.ogg",
+       "sha256": "e87ca0ee6b53da1f21cd9086cb75f456495871618fdfed63388bd2208a872596",
+       "start_s": 0.0,
+       "end_s": 1.2383
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.163,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -13.47,
+      "momentary_max_lufs": -10.9,
+      "rms_dbfs": -18.51,
+      "dc_offset_dbfs": -71.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 154.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_02.wav",
+     "bytes": 453668,
+     "sha256": "1f8013ee9601ae22ab54191e819f5b484210d00ba81c07aa75cf7c354ef8bda9",
+     "cue": "weapon.fired.micro_mortar",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/cannon_02.ogg",
+       "sha256": "716392af61b29dabe637c2616091207f390d25357aae3d4c625df5dfea7e961d",
+       "start_s": 0.0,
+       "end_s": 1.7951
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.575,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -15.72,
+      "momentary_max_lufs": -10.19,
+      "rms_dbfs": -18.66,
+      "dc_offset_dbfs": -76.7,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 205.1,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_03.wav",
+     "bytes": 238376,
+     "sha256": "d1d44a5cea0ea1c333fb5cfd3309c4d8361ac427328474c54bdb0180861181b0",
+     "cue": "weapon.fired.micro_mortar",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/cannon_03.ogg",
+       "sha256": "c3690a013befc16be1432e6fe62422db71c7b606980ddfe62429e864c5caf1d2",
+       "start_s": 0.0,
+       "end_s": 0.8643
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.828,
+      "sample_peak_dbfs": -1.02,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -19.28,
+      "momentary_max_lufs": -15.9,
+      "rms_dbfs": -23.08,
+      "dc_offset_dbfs": -104.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 85.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_04.wav",
+     "bytes": 260894,
+     "sha256": "adf9e7870875c38b1ca00e40d2ea7313fff137f609b02f1b5e44514ba53a63f6",
+     "cue": "weapon.fired.micro_mortar",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/cannon_04.ogg",
+       "sha256": "58714ef1d8c73a52cd9358c783de4b961ee96259de112c6493a1028bc60410e8",
+       "start_s": 0.0,
+       "end_s": 0.918
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.906,
+      "sample_peak_dbfs": -1.09,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -16.0,
+      "momentary_max_lufs": -12.45,
+      "rms_dbfs": -19.58,
+      "dc_offset_dbfs": -101.4,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 92.8,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_micro_mortar_fire_05.wav",
+     "bytes": 244760,
+     "sha256": "4ce0393cf90fb5d30d684005f9cec179fa68c65922d3feed446d53c0aa2d2d0c",
+     "cue": "weapon.fired.micro_mortar",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/cannon_05.ogg",
+       "sha256": "d0ab7de664533fa115a65dcc877c443fe02e8e6cc96e8051c34fe9ec66474c7b",
+       "start_s": 0.0,
+       "end_s": 0.9171
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.85,
+      "sample_peak_dbfs": -1.03,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -20.18,
+      "momentary_max_lufs": -16.69,
+      "rms_dbfs": -24.0,
+      "dc_offset_dbfs": -131.6,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.9,
+      "trailing_silence_ms": 120.9,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_01.wav",
+     "bytes": 726368,
+     "sha256": "24deba250ac86dee7ac2cd6c9a11b27ce37571d542657cadd6935d9d27232a14",
+     "cue": "explosion.detonated",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 8.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/bang_01.ogg",
+       "sha256": "5f4c32527a74b73c1ba9f5914bb7881f96068f29435be241c4de7c9020e3e638",
+       "start_s": 0.0,
+       "end_s": 1.0343
+      },
+      {
+       "asset_id": "opengameart/muffled-distant-explosion",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/muffled-distant-explosion/download/NenadSimic - Muffled Distant Explosion.wav",
+       "sha256": "13a0bf75af94ec6d332bc71cba489b573466e05c4b17288158b3d683b41de39f",
+       "start_s": 0.0,
+       "end_s": 5.1429
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 2.522,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -14.8,
+      "momentary_max_lufs": -8.86,
+      "rms_dbfs": -17.38,
+      "dc_offset_dbfs": -73.7,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.3,
+      "trailing_silence_ms": 302.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_02.wav",
+     "bytes": 726368,
+     "sha256": "e1ae2ece19cdba3e23f9da6f4b498f005c6a3269c9260cf03fad94d8b6e260a9",
+     "cue": "explosion.detonated",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 8.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/bang_02.ogg",
+       "sha256": "0f0c960888e6ebcb1bc68fa77fa0e52a26b8693b7a420a95ed0d669c486bc4f5",
+       "start_s": 0.0,
+       "end_s": 0.8947
+      },
+      {
+       "asset_id": "opengameart/muffled-distant-explosion",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/muffled-distant-explosion/download/NenadSimic - Muffled Distant Explosion.wav",
+       "sha256": "13a0bf75af94ec6d332bc71cba489b573466e05c4b17288158b3d683b41de39f",
+       "start_s": 0.0,
+       "end_s": 5.1429
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 2.522,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -19.77,
+      "momentary_max_lufs": -13.57,
+      "rms_dbfs": -19.52,
+      "dc_offset_dbfs": -72.3,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 302.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_03.wav",
+     "bytes": 726398,
+     "sha256": "b3baa5c8b93a9f210846bf78613e43fafd1af5344744114244bfa08e554be2a3",
+     "cue": "explosion.detonated",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 8.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/bang_03.ogg",
+       "sha256": "b823f53557ca9702f57b3f9e997fc92d5b87da99d464309d14199aabf2d620c4",
+       "start_s": 0.0,
+       "end_s": 1.0901
+      },
+      {
+       "asset_id": "opengameart/muffled-distant-explosion",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/muffled-distant-explosion/download/NenadSimic - Muffled Distant Explosion.wav",
+       "sha256": "13a0bf75af94ec6d332bc71cba489b573466e05c4b17288158b3d683b41de39f",
+       "start_s": 0.0,
+       "end_s": 5.1429
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 2.522,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -13.03,
+      "momentary_max_lufs": -8.69,
+      "rms_dbfs": -16.7,
+      "dc_offset_dbfs": -77.7,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 302.1,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_04.wav",
+     "bytes": 731126,
+     "sha256": "10eabb8bc7bb232e175b8f7807227a3a818b51d9d11c1fedcf860fb9c761ce7d",
+     "cue": "explosion.detonated",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 8.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/bang_04.ogg",
+       "sha256": "fb3b76187c36e185a331d2250268132dbf2eb490a6c0414d69e3570c72b4f2e6",
+       "start_s": 0.0,
+       "end_s": 1.0855
+      },
+      {
+       "asset_id": "opengameart/muffled-distant-explosion",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/muffled-distant-explosion/download/NenadSimic - Muffled Distant Explosion.wav",
+       "sha256": "13a0bf75af94ec6d332bc71cba489b573466e05c4b17288158b3d683b41de39f",
+       "start_s": 0.0,
+       "end_s": 5.1429
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 2.538,
+      "sample_peak_dbfs": -1.02,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -17.58,
+      "momentary_max_lufs": -11.81,
+      "rms_dbfs": -17.99,
+      "dc_offset_dbfs": -63.4,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 312.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_05.wav",
+     "bytes": 726392,
+     "sha256": "50cb02f67468695aff31f8b5766fc2280a5d8780f34c3ef708d9e5e66a6e8595",
+     "cue": "explosion.detonated",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 8.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/bang_05.ogg",
+       "sha256": "6881ae4a9ca936916322162cbc13dfcf180a35b99e9b84048988161234bfa83c",
+       "start_s": 0.0,
+       "end_s": 1.1089
+      },
+      {
+       "asset_id": "opengameart/muffled-distant-explosion",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/muffled-distant-explosion/download/NenadSimic - Muffled Distant Explosion.wav",
+       "sha256": "13a0bf75af94ec6d332bc71cba489b573466e05c4b17288158b3d683b41de39f",
+       "start_s": 0.0,
+       "end_s": 5.1429
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 2.522,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -20.21,
+      "momentary_max_lufs": -13.87,
+      "rms_dbfs": -19.3,
+      "dc_offset_dbfs": -71.4,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 302.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_06.wav",
+     "bytes": 668450,
+     "sha256": "c777e410f5fd75d737e4b24a7b5a0ac0f2638e3c7cc45ffa527fd5afbb5e5eb4",
+     "cue": "explosion.detonated",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 8.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/bang_06.ogg",
+       "sha256": "1209d7d44cd333abe089bb0ed8ac684381abfde8e4baad20bd5a0005168fd9ea",
+       "start_s": 0.0,
+       "end_s": 1.3638
+      },
+      {
+       "asset_id": "opengameart/muffled-distant-explosion",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/muffled-distant-explosion/download/NenadSimic - Muffled Distant Explosion.wav",
+       "sha256": "13a0bf75af94ec6d332bc71cba489b573466e05c4b17288158b3d683b41de39f",
+       "start_s": 0.0,
+       "end_s": 5.1429
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 2.321,
+      "sample_peak_dbfs": -1.01,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -14.83,
+      "momentary_max_lufs": -9.46,
+      "rms_dbfs": -18.79,
+      "dc_offset_dbfs": -87.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 274.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_festival_loop.wav",
+     "bytes": 16128112,
+     "sha256": "75b0887cef35e3d7494b1cd7355926ec293cb4f101f0083bd2ad4d68ed39d560",
+     "cue": "amb.festival",
+     "loop": true,
+     "target": {
+      "I": -26.0,
+      "tp": -3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/fw_loop.ogg",
+       "sha256": "f584e533bbbf236efe49506ab1caaad9269375ce260ee773bbd8f1448c05ea34",
+       "start_s": 0.0,
+       "end_s": 14.8932
+      },
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/fw_01.ogg",
+       "sha256": "1c8a6053433cd682a65665780ead9dfadc14c9442337e6d54469100bcb743694",
+       "start_s": 0.0,
+       "end_s": 1.2032
+      },
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/fw_02.ogg",
+       "sha256": "3f0e772c7608937de3e0d39167e1c7037c047f1891bbcf7f7ab6af21fe87177c",
+       "start_s": 0.0,
+       "end_s": 1.1107
+      },
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/fw_03.ogg",
+       "sha256": "2f2c7e9d44d61a5ddcdf7982383229e9b3fa6e0d37651c07030ab7d21baca49c",
+       "start_s": 0.0,
+       "end_s": 1.3215
+      },
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/fw_04.ogg",
+       "sha256": "48c5f564ebba962c3f54cd6bc6d4d958c47e9a795aabe8a91643afaa9fdf4c11",
+       "start_s": 0.0,
+       "end_s": 2.3841
+      },
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/fw_05.ogg",
+       "sha256": "d513015c404049f5332ea4c3b0d19a764e7c26639949c7d18894635b691f4787",
+       "start_s": 0.0,
+       "end_s": 1.1359
+      },
+      {
+       "asset_id": "opengameart/25-cc0-bang-firework-sfx",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/25-cc0-bang-firework-sfx/extracted/25-CC0-bang-sfx/fw_06.ogg",
+       "sha256": "3957eaa6bb83b63ee73de9a5d3a17df201dfddedf705eb29cd25a9548a8f02c2",
+       "start_s": 0.0,
+       "end_s": 1.3735
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 56.0,
+      "sample_peak_dbfs": -3.03,
+      "true_peak_dbtp": -3.0,
+      "integrated_lufs": -28.32,
+      "momentary_max_lufs": -22.24,
+      "rms_dbfs": -33.03,
+      "dc_offset_dbfs": -144.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 0.0,
+      "loop": [
+       0,
+       2687999
+      ],
+      "wrap_hf_ratio_vs_p95": 0.002,
+      "wrap_jump_vs_p999_step": 0.011,
+      "wrap_curvature_vs_p999": 0.006,
+      "wrap_level_delta_db": -6.99,
+      "loop_click": false,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:32:46+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/6-short-water-splashes",
+   "name": "6 Short water splashes",
+   "origin_url": "https://opengameart.org/content/6-short-water-splashes",
+   "mirror_url": null,
+   "authors": [
+    "ezwa"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "Water Splashes",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-6-short-water-splashes-2026-09-25.html",
+     "sha256": "daa5d0eba8daa63017c083ccffcdbdf3ebd3a24270f69b1149a1b17daec0b881",
+     "captured_at_utc": "2026-09-25T11:32:46+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:32:46+00:00"
+   },
+   "role": "foley: water splashes (moat swim, paddies)",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_water_01.cc0_fol_step_water_01",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_water_02.cc0_fol_step_water_02",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_water_03.cc0_fol_step_water_03",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_water_04.cc0_fol_step_water_04",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_water_05.cc0_fol_step_water_05",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_water_06.cc0_fol_step_water_06"
+   ],
+   "layered_into": [],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_water_01.wav",
+     "bytes": 158688,
+     "sha256": "72cd0c3897061dab204346c597f99dd590ab6b7c593a7e58f8e3e32f05f4abac",
+     "cue": "foot.water",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/6-short-water-splashes",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/6-short-water-splashes/extracted/ezwa-water_splash/ezwa-water_splash/water_splash-01.flac",
+       "sha256": "9bdc7921e76e22753368a5d239bd3f5e6a204ef8eae33d469c8c8bac426d9fd8",
+       "start_s": 0.0,
+       "end_s": 1.1196
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 1.102,
+      "sample_peak_dbfs": -2.43,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -22.44,
+      "momentary_max_lufs": -20.26,
+      "rms_dbfs": -27.71,
+      "dc_offset_dbfs": -95.2,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 36.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_water_02.wav",
+     "bytes": 57744,
+     "sha256": "5fdf8ca7f0f13fdbc120d75ab0783e8bd1b34cd8389cdf45587b5269b1f36a3e",
+     "cue": "foot.water",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/6-short-water-splashes",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/6-short-water-splashes/extracted/ezwa-water_splash/ezwa-water_splash/water_splash-02.flac",
+       "sha256": "c0c2c6e6fa113138a71b9966a456bea844dbb955f0ed7b95a01777cb62fd7461",
+       "start_s": 0.0,
+       "end_s": 0.4186
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.401,
+      "sample_peak_dbfs": -2.43,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -20.35,
+      "momentary_max_lufs": -20.31,
+      "rms_dbfs": -23.5,
+      "dc_offset_dbfs": -58.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 18.8,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_water_03.wav",
+     "bytes": 102870,
+     "sha256": "a512ab360d806481eb89b0c316b1e3a7c8a7b3ebcc516fe39bc97d29ec75f871",
+     "cue": "foot.water",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/6-short-water-splashes",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/6-short-water-splashes/extracted/ezwa-water_splash/ezwa-water_splash/water_splash-03.flac",
+       "sha256": "a22c5cac675fa60aaff8d907acf7627f1e9dcc337798ff4eb34f2f8e7a4c9e2e",
+       "start_s": 0.0,
+       "end_s": 0.7151
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.714,
+      "sample_peak_dbfs": -1.17,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -22.28,
+      "momentary_max_lufs": -20.06,
+      "rms_dbfs": -24.38,
+      "dc_offset_dbfs": -77.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 19.3,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_water_04.wav",
+     "bytes": 189362,
+     "sha256": "a1139421116d5364329d11efcede6d3de7b8b585fdb17eb79a4136920926edf3",
+     "cue": "foot.water",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/6-short-water-splashes",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/6-short-water-splashes/extracted/ezwa-water_splash/ezwa-water_splash/water_splash-04.flac",
+       "sha256": "73c04d73e3068b1ee9369941bad69370d0713df75725e0f6ab23334c4f319f95",
+       "start_s": 0.0,
+       "end_s": 1.3154
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 1.315,
+      "sample_peak_dbfs": -1.96,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -24.02,
+      "momentary_max_lufs": -21.52,
+      "rms_dbfs": -29.22,
+      "dc_offset_dbfs": -85.4,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 45.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_water_05.wav",
+     "bytes": 25458,
+     "sha256": "eafbd477a3b4ce9569c3a04df316bed90cb0e18e9a007bab5421ac73c158d60e",
+     "cue": "foot.water",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/6-short-water-splashes",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/6-short-water-splashes/extracted/ezwa-water_splash/ezwa-water_splash/water_splash-05.flac",
+       "sha256": "03047bdb77a52874687beb538548f0dda5797a5a7bbce6d69fcc60cf8851cc7c",
+       "start_s": 0.0,
+       "end_s": 0.1765
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.176,
+      "sample_peak_dbfs": -1.96,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -21.79,
+      "momentary_max_lufs": -21.74,
+      "rms_dbfs": -20.72,
+      "dc_offset_dbfs": null,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 13.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_water_06.wav",
+     "bytes": 167462,
+     "sha256": "bf93973a14aae104ba52422be6eab4fa55b0762f13845b695f2654dcb48d6e5b",
+     "cue": "foot.water",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/6-short-water-splashes",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/6-short-water-splashes/extracted/ezwa-water_splash/ezwa-water_splash/water_splash-06.flac",
+       "sha256": "c6a464efeb0e1df6405165939f020c5031825e376a1e09045c130ad157bbd62e",
+       "start_s": 0.0,
+       "end_s": 1.1626
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 1.163,
+      "sample_peak_dbfs": -3.44,
+      "true_peak_dbtp": -2.39,
+      "integrated_lufs": -22.81,
+      "momentary_max_lufs": -20.0,
+      "rms_dbfs": -25.1,
+      "dc_offset_dbfs": -86.6,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 21.9,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:33:18+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/cannon-fire",
+   "name": "Cannon fire",
+   "origin_url": "https://opengameart.org/content/cannon-fire",
+   "mirror_url": null,
+   "authors": [
+    "Thimras"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "A cannon (ship or otherwise) firing.",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-cannon-fire-2026-09-25.html",
+     "sha256": "e5a9df95f8e806ef5b2c70be882dd41800f4de1b094f1f72ada28028f428b1fe",
+     "captured_at_utc": "2026-09-25T11:33:18+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:33:18+00:00"
+   },
+   "role": "weapons: cannon report layer",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_01.cc0_wpn_grenade_launcher_fire_01",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_02.cc0_wpn_grenade_launcher_fire_02",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_03.cc0_wpn_grenade_launcher_fire_03"
+   ],
+   "layered_into": [
+    "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_01.wav",
+    "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_02.wav",
+    "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_grenade_launcher_fire_03.wav"
+   ],
+   "files": []
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:30:46+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+   "name": "Fantozzi's Footsteps (Grass/Sand & Stone)",
+   "origin_url": "https://freesound.org/people/Fantozzi/packs/10338/",
+   "mirror_url": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+   "authors": [
+    "Fantozzi"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "These are 12 single steps for use in games. They were taken from http://www.freesound.org/people/Fantozzi/packs/10338/ under CC0, where you can get even more steps (but will have to slice them up - please upload them here too!) 16bit 44100Hz Flac and OGG Vorbis file versions available in the 7z archive. \"Sand\" sounds like grass too. \"Stone\" could be most hard surfaces",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-fantozzis-footsteps-grasssand-stone-2026-09-25.html",
+     "sha256": "9377c5cc88805c6373c53794de3e32109ada58788fcb3528c1db60d94a2b6d68",
+     "captured_at_utc": "2026-09-25T11:30:46+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:30:46+00:00"
+   },
+   "upstream": {
+    "site": "Freesound",
+    "url": "https://freesound.org/people/Fantozzi/packs/10338/",
+    "authors": [
+     "Fantozzi"
+    ],
+    "license": "CC0-1.0",
+    "license_stated": [
+     "Creative Commons 0"
+    ],
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/freesound-pack-10338-2026-09-25.html",
+     "sha256": "f4d20597de2d91621c2bcd8873a218a647d4deb8af663962fe6e784ff545d0ee",
+     "captured_at_utc": "2026-09-25T20:42:50+00:00"
+    },
+    "access": "direct (public page read; nothing downloaded from it)",
+    "verified_at_utc": "2026-09-25T20:42:50+00:00"
+   },
+   "role": "footsteps: grass/sand and stone single steps",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_earth_01.cc0_fol_step_earth_01",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_earth_02.cc0_fol_step_earth_02",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_earth_03.cc0_fol_step_earth_03",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_earth_04.cc0_fol_step_earth_04",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_earth_05.cc0_fol_step_earth_05",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_earth_06.cc0_fol_step_earth_06",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_stone_01.cc0_fol_step_stone_01",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_stone_02.cc0_fol_step_stone_02",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_stone_03.cc0_fol_step_stone_03",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_stone_04.cc0_fol_step_stone_04",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_stone_05.cc0_fol_step_stone_05",
+    "/Game/Generated/Audio/CC0/Foley/cc0_fol_step_stone_06.cc0_fol_step_stone_06"
+   ],
+   "layered_into": [],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_earth_01.wav",
+     "bytes": 127484,
+     "sha256": "957701ef30d7bc4e60d5d4d880f0719ebc083c9691d60e00f82d02d0335214a2",
+     "cue": "foot.earth",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-SandL1.flac",
+       "sha256": "93a2630579a82507e3c6ceab9b012f71a50cf8922f4beadb14057dcc0636b099",
+       "start_s": 0.0,
+       "end_s": 0.4425
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.443,
+      "sample_peak_dbfs": -3.28,
+      "true_peak_dbtp": -3.07,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -28.17,
+      "dc_offset_dbfs": -97.3,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.6,
+      "trailing_silence_ms": 22.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_earth_02.wav",
+     "bytes": 91898,
+     "sha256": "4f64676740615eeeb4d7fb8828b3e2dd21cb25f47e71d0f886e2e4fbf5cb4b5b",
+     "cue": "foot.earth",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-SandL2.flac",
+       "sha256": "9bb57478cc96e1410cae27d926aa8d77d5f2d368d9776822f63cf0b37c6d2faf",
+       "start_s": 0.0,
+       "end_s": 0.3196
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.319,
+      "sample_peak_dbfs": -2.96,
+      "true_peak_dbtp": -2.95,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.58,
+      "dc_offset_dbfs": -98.3,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.3,
+      "trailing_silence_ms": 12.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_earth_03.wav",
+     "bytes": 86288,
+     "sha256": "19eab7188b30073863b4622ba97eb6e839964284c7851e00dc9e4ffa99ea8fd9",
+     "cue": "foot.earth",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-SandL3.flac",
+       "sha256": "042820e65cc947d8bb8adf18524ffff7cdf5fc310f9412cbf8bdf7a139984c21",
+       "start_s": 0.0,
+       "end_s": 0.2995
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.299,
+      "sample_peak_dbfs": -1.21,
+      "true_peak_dbtp": -1.13,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.58,
+      "dc_offset_dbfs": -68.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.4,
+      "trailing_silence_ms": 7.3,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_earth_04.wav",
+     "bytes": 115904,
+     "sha256": "aca3397cf25bba22b43c2095a3ca97d8aa1ff272bd89d5e4ca8a2d399a5cbb1d",
+     "cue": "foot.earth",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-SandR1.flac",
+       "sha256": "3514d12f3369297233e915814364ed02902003d4103b010371c2ac15c2aa48fe",
+       "start_s": 0.0,
+       "end_s": 0.4058
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.402,
+      "sample_peak_dbfs": -2.21,
+      "true_peak_dbtp": -2.2,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -27.64,
+      "dc_offset_dbfs": -117.1,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 11.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_earth_05.wav",
+     "bytes": 97796,
+     "sha256": "eddebb8d7a1209737bb49463467285887726d21f79f78f184978ef895c3f029a",
+     "cue": "foot.earth",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-SandR2.flac",
+       "sha256": "0356f659313887f01a9f21fd5bedf57a77073d0d74d57b5621279ee453a80f3c",
+       "start_s": 0.0,
+       "end_s": 0.3402
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.339,
+      "sample_peak_dbfs": -1.13,
+      "true_peak_dbtp": -1.12,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.77,
+      "dc_offset_dbfs": -109.6,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.3,
+      "trailing_silence_ms": 20.1,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_earth_06.wav",
+     "bytes": 94610,
+     "sha256": "e0477ce3c3b6234ef6597cda5a6e3b8cafbee0a3c69884990f01e1ac03b473cf",
+     "cue": "foot.earth",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-SandR3.flac",
+       "sha256": "7535306b6ff3b9e071256f12789eb53fb90769a913ff7e00b271298727e0f521",
+       "start_s": 0.0,
+       "end_s": 0.3295
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.328,
+      "sample_peak_dbfs": -4.35,
+      "true_peak_dbtp": -4.21,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.79,
+      "dc_offset_dbfs": -76.7,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.3,
+      "trailing_silence_ms": 9.8,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_stone_01.wav",
+     "bytes": 107444,
+     "sha256": "da3592bfff0fd1e15c3ea0a322b5fc47fa99bb1e10eef74ef966d73ef85dd651",
+     "cue": "foot.stone",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-StoneL1.flac",
+       "sha256": "7cfa4a2f500ae2bd19a961022296611d837c34ca2e556fe68deb692388f49971",
+       "start_s": 0.0,
+       "end_s": 0.3729
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.373,
+      "sample_peak_dbfs": -5.97,
+      "true_peak_dbtp": -5.96,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.11,
+      "dc_offset_dbfs": -91.1,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.5,
+      "trailing_silence_ms": 29.0,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_stone_02.wav",
+     "bytes": 95144,
+     "sha256": "fbc1d208ea4b5691f800c5f343f4d8ca394482a977cd3910748be7103f22e5e8",
+     "cue": "foot.stone",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-StoneL2.flac",
+       "sha256": "dcbd6be44af4b3206daa36c5398035ca527bb057c51ce00482b9ca6356be2468",
+       "start_s": 0.0,
+       "end_s": 0.3316
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.33,
+      "sample_peak_dbfs": -6.79,
+      "true_peak_dbtp": -6.65,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.18,
+      "dc_offset_dbfs": -92.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.5,
+      "trailing_silence_ms": 23.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_stone_03.wav",
+     "bytes": 95354,
+     "sha256": "3b2e2ac5270daf1d71ced8fd8249ac218616a89655fdfa0c4f95fbfb1e981514",
+     "cue": "foot.stone",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-StoneL3.flac",
+       "sha256": "37a25f4254cf8f2e56d271912b0569f3bb15c57bf3fde9de492466eb23853b0d",
+       "start_s": 0.0,
+       "end_s": 0.3309
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.331,
+      "sample_peak_dbfs": -7.57,
+      "true_peak_dbtp": -7.57,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.47,
+      "dc_offset_dbfs": -90.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.8,
+      "trailing_silence_ms": 18.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_stone_04.wav",
+     "bytes": 102764,
+     "sha256": "d1efd325a49ff6c52b7447e31f189a4f5258147919db6e9bf4db3a34052701d4",
+     "cue": "foot.stone",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-StoneR1.flac",
+       "sha256": "7073bddd2e3ba432e15a83844180c0ebc52835c2c6bab0fa902ee5952499c729",
+       "start_s": 0.0,
+       "end_s": 0.3567
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.357,
+      "sample_peak_dbfs": -5.12,
+      "true_peak_dbtp": -5.05,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.4,
+      "dc_offset_dbfs": -97.9,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.4,
+      "trailing_silence_ms": 21.7,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_stone_05.wav",
+     "bytes": 92180,
+     "sha256": "3b9e3f37d98943e965af95260af8236973b61e1badb4660013aa1b6ea84045a1",
+     "cue": "foot.stone",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-StoneR2.flac",
+       "sha256": "d66330b4a32e93b0dfdcb8c53667654de8702a0fa48b2d06c48d94dc66b3e1cc",
+       "start_s": 0.0,
+       "end_s": 0.3226
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.32,
+      "sample_peak_dbfs": -6.73,
+      "true_peak_dbtp": -6.72,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -25.98,
+      "dc_offset_dbfs": -85.3,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.4,
+      "trailing_silence_ms": 19.9,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Foley/cc0_fol_step_stone_06.wav",
+     "bytes": 98354,
+     "sha256": "8864c94ae45c271d6101360084c0400d0fe769b4a60dbb5992dc595ffab6932e",
+     "cue": "foot.stone",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fantozzis-footsteps-grasssand-stone",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fantozzis-footsteps-grasssand-stone/extracted/Fantozzi-footsteps/Fantozzi-footsteps/flac/Fantozzi-StoneR3.flac",
+       "sha256": "b98f2c4b932242739ce8687206f7eb3313ce30afd4af7b7e148507c5cbd26787",
+       "start_s": 0.0,
+       "end_s": 0.3421
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.341,
+      "sample_peak_dbfs": -6.63,
+      "true_peak_dbtp": -6.63,
+      "integrated_lufs": -22.04,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -26.39,
+      "dc_offset_dbfs": -81.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 15.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:33:08+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/fireplace-sound-loop",
+   "name": "Fireplace Sound loop",
+   "origin_url": "https://opengameart.org/content/fireplace-sound-loop",
+   "mirror_url": null,
+   "authors": [
+    "PagDev"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "Wood-Burning on Fireplace Sound Effect loop",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-fireplace-sound-loop-2026-09-25.html",
+     "sha256": "eccd7fe14ad44d3fbf99b0308e3f1a09e3d98ad258917d1fff934b92bfacaec5",
+     "captured_at_utc": "2026-09-25T11:33:08+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:33:08+00:00"
+   },
+   "role": "ambience: wood fire loop (burning estate, forge)",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_fire_loop.cc0_amb_fire_loop"
+   ],
+   "layered_into": [],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_fire_loop.wav",
+     "bytes": 7776112,
+     "sha256": "cc381b63353d8664f01444a142d32a889e692a14124c95699af4dfbc55759447",
+     "cue": "amb.fire",
+     "loop": true,
+     "target": {
+      "I": -26.0,
+      "tp": -3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/fireplace-sound-loop",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/fireplace-sound-loop/download/fire.wav",
+       "sha256": "85ca0cc60d0c037fff8b185e31ad1fcdbda6ce45eee17c3ee1318d1b8f59e330",
+       "start_s": 0.0,
+       "end_s": 29.2635
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 27.0,
+      "sample_peak_dbfs": -3.41,
+      "true_peak_dbtp": -3.11,
+      "integrated_lufs": -28.76,
+      "momentary_max_lufs": -25.67,
+      "rms_dbfs": -30.14,
+      "dc_offset_dbfs": -142.6,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 0.0,
+      "loop": [
+       0,
+       1295999
+      ],
+      "wrap_hf_ratio_vs_p95": 0.029,
+      "wrap_jump_vs_p999_step": 0.029,
+      "wrap_curvature_vs_p999": 0.074,
+      "wrap_level_delta_db": 0.7,
+      "loop_click": false,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:29:31+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+   "name": "Medieval sound effects - Weapon Textures",
+   "origin_url": "https://opengameart.org/content/medieval-sound-effects-weapon-textures",
+   "mirror_url": null,
+   "authors": [
+    "Ben Jaszczak & Brian Nelson"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "From StillNorthMedia site: \"You may use any of our sounds freely, with no royalties, and no credit needs to be given (although it is always appreciated).\" And from FreeFirearmsSFX , the project that prompted Still North Media's inception: \"Our team holds CC0 NO RIGHTS RESERVED for this library. It may be used without royalty or credit (though we would love to hear how you've used our sounds) for any application, personal or professional. Have at it!\" See also these related submissions by the same team: https://opengameart.org/content/the-free-firearm-sound-library https://opengameart.org/content/medieval-sound-effects-weapon-impacts Please note that OGA is not affiliated with this project. We would encourage you to visit their site, but it is no longer available except via Archive.org (Thanks, Internet Archive !) Big thanks to their team and all of their Kickstarter supporters for kicking off all that lead to this amazing content! Sound effects in this package include: Arrow Fletching Axe Swing Crossbow Bolt Approach Crossbow Bolt Pass Crossbow Bolt Passby Crossbow Lever Trigger Crossbow Place Bolt Crossbow Set Nut Against Sear Crossbow Shoot Dagger Draw Fast Dagger Draw Slow Dagge",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-medieval-sound-effects-weapon-textures-2026-09-25.html",
+     "sha256": "bfa016eede134fa7164607ef727624ff55ddd64c90d5b4a9fd623a5d0edb8583",
+     "captured_at_utc": "2026-09-25T11:29:31+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:29:31+00:00"
+   },
+   "role": "melee: draws, sheathing, handling, armour textures",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_yumi_draw_01.cc0_wpn_yumi_draw_01",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_yumi_draw_02.cc0_wpn_yumi_draw_02",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_yumi_draw_03.cc0_wpn_yumi_draw_03",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_yumi_draw_04.cc0_wpn_yumi_draw_04",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_yumi_release_01.cc0_wpn_yumi_release_01",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_yumi_release_02.cc0_wpn_yumi_release_02",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_yumi_release_03.cc0_wpn_yumi_release_03",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_yumi_release_04.cc0_wpn_yumi_release_04",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_draw_01.cc0_mel_katana_draw_01",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_draw_02.cc0_mel_katana_draw_02",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_draw_03.cc0_mel_katana_draw_03",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_draw_04.cc0_mel_katana_draw_04",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_draw_05.cc0_mel_katana_draw_05",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_draw_06.cc0_mel_katana_draw_06",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_sheathe_01.cc0_mel_katana_sheathe_01",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_sheathe_02.cc0_mel_katana_sheathe_02",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_sheathe_03.cc0_mel_katana_sheathe_03",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_sheathe_04.cc0_mel_katana_sheathe_04",
+    "/Game/Generated/Audio/CC0/Melee/cc0_mel_katana_sheathe_05.cc0_mel_katana_sheathe_05"
+   ],
+   "layered_into": [],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_yumi_draw_01.wav",
+     "bytes": 216044,
+     "sha256": "6895a386c78d45c761426a968f6d00cd180c4dcf7a02aeb21740e7cf29f4f2bb",
+     "cue": "weapon.yumi.draw",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/English Longbow Draw.wav",
+       "sha256": "bba988c01dfe839aff995b6b05d8d432eeb339bd9761cf92be7321bc733f3bee",
+       "start_s": 2.7,
+       "end_s": 4.2
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 1.5,
+      "sample_peak_dbfs": -6.26,
+      "true_peak_dbtp": -5.79,
+      "integrated_lufs": -25.95,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -22.15,
+      "dc_offset_dbfs": -72.2,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 4.3,
+      "trailing_silence_ms": 31.3,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_yumi_draw_02.wav",
+     "bytes": 216044,
+     "sha256": "fe04a0c269790a394e7d6d1eb7ae43ae6331d51f61e4872c7e7ee8b0e858457a",
+     "cue": "weapon.yumi.draw",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/English Longbow Draw.wav",
+       "sha256": "bba988c01dfe839aff995b6b05d8d432eeb339bd9761cf92be7321bc733f3bee",
+       "start_s": 13.3,
+       "end_s": 14.8
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 1.5,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -23.99,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -25.39,
+      "dc_offset_dbfs": -93.7,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 5.2,
+      "trailing_silence_ms": 24.3,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_yumi_draw_03.wav",
+     "bytes": 216044,
+     "sha256": "4eb09c9acbf0eb3e2d9383381ac1e144636904cd957019dfe812eda6417bef4c",
+     "cue": "weapon.yumi.draw",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Scythian Recurve Draw.wav",
+       "sha256": "b41781c926d358e6a259ea5e522b9730f857c8a0e65e28ff9ed632fdf598ce08",
+       "start_s": 1.9,
+       "end_s": 3.4
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 1.5,
+      "sample_peak_dbfs": -2.01,
+      "true_peak_dbtp": -1.64,
+      "integrated_lufs": -28.75,
+      "momentary_max_lufs": -24.33,
+      "rms_dbfs": -21.02,
+      "dc_offset_dbfs": -83.1,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 4.1,
+      "trailing_silence_ms": 19.3,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_yumi_draw_04.wav",
+     "bytes": 216044,
+     "sha256": "142672f2b40e22076245747f67b21726c47695c4a618bb6079c81ecce9f0a842",
+     "cue": "weapon.yumi.draw",
+     "loop": false,
+     "target": {
+      "M": -22.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Scythian Recurve Draw.wav",
+       "sha256": "b41781c926d358e6a259ea5e522b9730f857c8a0e65e28ff9ed632fdf598ce08",
+       "start_s": 9.3,
+       "end_s": 10.8
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 1.5,
+      "sample_peak_dbfs": -1.43,
+      "true_peak_dbtp": -1.12,
+      "integrated_lufs": -26.49,
+      "momentary_max_lufs": -22.0,
+      "rms_dbfs": -21.97,
+      "dc_offset_dbfs": -74.2,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 2.6,
+      "trailing_silence_ms": 18.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_yumi_release_01.wav",
+     "bytes": 157926,
+     "sha256": "785ece94b5723861a7b87a4df8c490254f1504857171e479a5ab0d04348be7a0",
+     "cue": "weapon.fired.yumi",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 5.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/English Longbow Shoot.wav",
+       "sha256": "c25684ccdab3eb13f17a0ffa637fbd175659d092665f16c0bce8510d46c4fbee",
+       "start_s": 0.0067,
+       "end_s": 1.2067
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 1.096,
+      "sample_peak_dbfs": -1.13,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -22.87,
+      "momentary_max_lufs": -19.77,
+      "rms_dbfs": -24.59,
+      "dc_offset_dbfs": -101.4,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 62.0,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_yumi_release_02.wav",
+     "bytes": 90632,
+     "sha256": "9303672aff22043bc4cdb4f445c59da46261620118c2ef3cf83eedcbd36dee49",
+     "cue": "weapon.fired.yumi",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 5.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/English Longbow Shoot.wav",
+       "sha256": "c25684ccdab3eb13f17a0ffa637fbd175659d092665f16c0bce8510d46c4fbee",
+       "start_s": 2.6277,
+       "end_s": 3.8277
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.629,
+      "sample_peak_dbfs": -1.03,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -24.24,
+      "momentary_max_lufs": -24.19,
+      "rms_dbfs": -28.23,
+      "dc_offset_dbfs": -73.9,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.3,
+      "trailing_silence_ms": 67.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_yumi_release_03.wav",
+     "bytes": 59826,
+     "sha256": "dd4d32367fe34b67653f0b91a59688dea8c8e1f078ce29e72bdca86d8dcfef08",
+     "cue": "weapon.fired.yumi",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 5.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Scythian Recurve Shoot.wav",
+       "sha256": "8d95d06f0c7539f14b5a69fb2818ab42dc985b6966db9856a30a7767f11c259b",
+       "start_s": 0.2102,
+       "end_s": 0.9026
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.415,
+      "sample_peak_dbfs": -1.2,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -24.03,
+      "momentary_max_lufs": -23.99,
+      "rms_dbfs": -26.51,
+      "dc_offset_dbfs": -83.9,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 52.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_yumi_release_04.wav",
+     "bytes": 101544,
+     "sha256": "d43f40a41a9b64d11c601ca12712730bb7a8112d92970e7f7719dedd916b66c2",
+     "cue": "weapon.fired.yumi",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 5.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Scythian Recurve Shoot.wav",
+       "sha256": "8d95d06f0c7539f14b5a69fb2818ab42dc985b6966db9856a30a7767f11c259b",
+       "start_s": 3.3993,
+       "end_s": 4.112
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.705,
+      "sample_peak_dbfs": -1.04,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -26.12,
+      "momentary_max_lufs": -23.33,
+      "rms_dbfs": -25.94,
+      "dc_offset_dbfs": -85.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.3,
+      "trailing_silence_ms": 62.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_draw_01.wav",
+     "bytes": 90426,
+     "sha256": "c34c963d4115223e37fb61ac5371b6dff8a86624df9e3e1dce3832345a99c4be",
+     "cue": "melee.katana.draw",
+     "loop": false,
+     "target": {
+      "M": -18.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_2_of_2/Katana Draw Fast.wav",
+       "sha256": "cd1785c90dc4cbce6a7a3bcfec1f58cd7850dae1c14b49b290b4a08cf7d28c82",
+       "start_s": 0.166,
+       "end_s": 0.8419
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.628,
+      "sample_peak_dbfs": -1.16,
+      "true_peak_dbtp": -1.11,
+      "integrated_lufs": -25.83,
+      "momentary_max_lufs": -24.22,
+      "rms_dbfs": -28.64,
+      "dc_offset_dbfs": -85.9,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 69.3,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_draw_02.wav",
+     "bytes": 71492,
+     "sha256": "64c8f0615c4b13c24adf7a96c4374a67d63b73c411560b8f71aeed967921c708",
+     "cue": "melee.katana.draw",
+     "loop": false,
+     "target": {
+      "M": -18.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_2_of_2/Katana Draw Fast.wav",
+       "sha256": "cd1785c90dc4cbce6a7a3bcfec1f58cd7850dae1c14b49b290b4a08cf7d28c82",
+       "start_s": 1.2281,
+       "end_s": 1.7242
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.496,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -22.55,
+      "momentary_max_lufs": -22.45,
+      "rms_dbfs": -25.65,
+      "dc_offset_dbfs": -72.9,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 36.1,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_draw_03.wav",
+     "bytes": 77268,
+     "sha256": "476be4a034c704a6230b264f42bea5cda094d741c2ccbd5b61549bd4f257db86",
+     "cue": "melee.katana.draw",
+     "loop": false,
+     "target": {
+      "M": -18.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_2_of_2/Katana Draw Fast.wav",
+       "sha256": "cd1785c90dc4cbce6a7a3bcfec1f58cd7850dae1c14b49b290b4a08cf7d28c82",
+       "start_s": 2.2478,
+       "end_s": 2.7841
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.536,
+      "sample_peak_dbfs": -2.31,
+      "true_peak_dbtp": -2.31,
+      "integrated_lufs": -18.05,
+      "momentary_max_lufs": -18.0,
+      "rms_dbfs": -21.66,
+      "dc_offset_dbfs": -75.7,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 28.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_draw_04.wav",
+     "bytes": 74064,
+     "sha256": "c5f764b89add5fbc4fb8a0a080d8be3abfd9a464456793884c95e7273ac493e9",
+     "cue": "melee.katana.draw",
+     "loop": false,
+     "target": {
+      "M": -18.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_2_of_2/Katana Draw Fast.wav",
+       "sha256": "cd1785c90dc4cbce6a7a3bcfec1f58cd7850dae1c14b49b290b4a08cf7d28c82",
+       "start_s": 3.1634,
+       "end_s": 3.6774
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.514,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.02,
+      "integrated_lufs": -20.17,
+      "momentary_max_lufs": -20.05,
+      "rms_dbfs": -23.38,
+      "dc_offset_dbfs": -78.4,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 36.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_draw_05.wav",
+     "bytes": 103584,
+     "sha256": "76f268caf520beea1432e3d4eec69e5c20c3952167bd18343d274a7e4e814fad",
+     "cue": "melee.katana.draw",
+     "loop": false,
+     "target": {
+      "M": -18.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_2_of_2/Katana Draw Fast.wav",
+       "sha256": "cd1785c90dc4cbce6a7a3bcfec1f58cd7850dae1c14b49b290b4a08cf7d28c82",
+       "start_s": 4.0796,
+       "end_s": 4.8041
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.719,
+      "sample_peak_dbfs": -1.6,
+      "true_peak_dbtp": -1.18,
+      "integrated_lufs": -21.15,
+      "momentary_max_lufs": -19.96,
+      "rms_dbfs": -24.33,
+      "dc_offset_dbfs": -75.7,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.3,
+      "trailing_silence_ms": 39.7,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_draw_06.wav",
+     "bytes": 68006,
+     "sha256": "9f95cfa05bb8f5644aa28c352d7583d13f42dc9f0953af40fd5320301e9a7c08",
+     "cue": "melee.katana.draw",
+     "loop": false,
+     "target": {
+      "M": -18.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_2_of_2/Katana Draw Fast.wav",
+       "sha256": "cd1785c90dc4cbce6a7a3bcfec1f58cd7850dae1c14b49b290b4a08cf7d28c82",
+       "start_s": 5.1277,
+       "end_s": 5.5996
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.472,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.05,
+      "integrated_lufs": -19.51,
+      "momentary_max_lufs": -19.25,
+      "rms_dbfs": -22.04,
+      "dc_offset_dbfs": -87.2,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 23.5,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_sheathe_01.wav",
+     "bytes": 97332,
+     "sha256": "d8f7e3471211efcbcae174414f93acd5538d48b6ec3ac92ee44750523a9dc0d1",
+     "cue": "melee.katana.sheathe",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Katana Sheath Fast.wav",
+       "sha256": "ddf325589f6eb58a86f7e9ae2f5da651648ab5fa1bec11a5809d9196f6fc96b3",
+       "start_s": 0.1982,
+       "end_s": 0.8738
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.676,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -22.56,
+      "momentary_max_lufs": -21.08,
+      "rms_dbfs": -24.38,
+      "dc_offset_dbfs": -70.2,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 36.9,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_sheathe_02.wav",
+     "bytes": 85620,
+     "sha256": "b6342941cb4c11a37fd3935d0e5ce514e49a408adb80f36d2dc4019eb1c60d09",
+     "cue": "melee.katana.sheathe",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Katana Sheath Fast.wav",
+       "sha256": "ddf325589f6eb58a86f7e9ae2f5da651648ab5fa1bec11a5809d9196f6fc96b3",
+       "start_s": 2.2647,
+       "end_s": 2.8715
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.594,
+      "sample_peak_dbfs": -1.45,
+      "true_peak_dbtp": -1.29,
+      "integrated_lufs": -23.53,
+      "momentary_max_lufs": -23.47,
+      "rms_dbfs": -27.83,
+      "dc_offset_dbfs": -95.7,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.2,
+      "trailing_silence_ms": 64.0,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_sheathe_03.wav",
+     "bytes": 73646,
+     "sha256": "e1b0a09cdcd64114db19889f2ec23836da7dd670cd1f3229dbd3fadba890e3e3",
+     "cue": "melee.katana.sheathe",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Katana Sheath Fast.wav",
+       "sha256": "ddf325589f6eb58a86f7e9ae2f5da651648ab5fa1bec11a5809d9196f6fc96b3",
+       "start_s": 4.4668,
+       "end_s": 4.9779
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.511,
+      "sample_peak_dbfs": -1.14,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -20.54,
+      "momentary_max_lufs": -20.0,
+      "rms_dbfs": -22.87,
+      "dc_offset_dbfs": -68.2,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 35.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_sheathe_04.wav",
+     "bytes": 77034,
+     "sha256": "9554ccc2329209cf2a76ed5b537557e1d5c069d08258c24e827abd3c19d81c46",
+     "cue": "melee.katana.sheathe",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Katana Sheath Fast.wav",
+       "sha256": "ddf325589f6eb58a86f7e9ae2f5da651648ab5fa1bec11a5809d9196f6fc96b3",
+       "start_s": 5.4668,
+       "end_s": 6.0015
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.535,
+      "sample_peak_dbfs": -1.14,
+      "true_peak_dbtp": -1.11,
+      "integrated_lufs": -23.93,
+      "momentary_max_lufs": -23.83,
+      "rms_dbfs": -27.4,
+      "dc_offset_dbfs": -82.4,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.3,
+      "trailing_silence_ms": 65.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Melee/cc0_mel_katana_sheathe_05.wav",
+     "bytes": 69888,
+     "sha256": "36d5866c3e6eb11e0eb2b92e361cfdd818853d5e86bb9ec52050ff056c3c7732",
+     "cue": "melee.katana.sheathe",
+     "loop": false,
+     "target": {
+      "M": -20.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/medieval-sound-effects-weapon-textures",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/medieval-sound-effects-weapon-textures/extracted/medieval_sfx_textures_1_of_2/Katana Sheath Fast.wav",
+       "sha256": "ddf325589f6eb58a86f7e9ae2f5da651648ab5fa1bec11a5809d9196f6fc96b3",
+       "start_s": 6.4413,
+       "end_s": 6.9374
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 1,
+      "subtype": "PCM_24",
+      "seconds": 0.485,
+      "sample_peak_dbfs": -1.11,
+      "true_peak_dbtp": -1.1,
+      "integrated_lufs": -24.74,
+      "momentary_max_lufs": -24.58,
+      "rms_dbfs": -28.11,
+      "dc_offset_dbfs": -85.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 66.4,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:33:25+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/muffled-distant-explosion",
+   "name": "Muffled Distant Explosion",
+   "origin_url": "https://opengameart.org/content/muffled-distant-explosion",
+   "mirror_url": null,
+   "authors": [
+    "NenadSimic"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "A low pitched log drum hit with delayed reverberation, for that natural reflection of sound heard after a loud bang in the distance.",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-muffled-distant-explosion-2026-09-25.html",
+     "sha256": "686cbb52786b997c1ac9ebbc12dfecc721778d8e81c4439ce914d82ae3af7868",
+     "captured_at_utc": "2026-09-25T11:33:25+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:33:25+00:00"
+   },
+   "role": "weapons: distant explosion tail",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_01.cc0_exp_detonation_01",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_02.cc0_exp_detonation_02",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_03.cc0_exp_detonation_03",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_04.cc0_exp_detonation_04",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_05.cc0_exp_detonation_05",
+    "/Game/Generated/Audio/CC0/Explosions/cc0_exp_detonation_06.cc0_exp_detonation_06"
+   ],
+   "layered_into": [
+    "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_01.wav",
+    "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_02.wav",
+    "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_03.wav",
+    "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_04.wav",
+    "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_05.wav",
+    "Content/SourceArt/Audio/CC0/Explosions/cc0_exp_detonation_06.wav"
+   ],
+   "files": []
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:32:07+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/park-ambiences",
+   "name": "Park ambiences",
+   "origin_url": "https://opengameart.org/content/park-ambiences",
+   "mirror_url": null,
+   "authors": [
+    "Thimras"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "3 recordings of ambience in different parts of a public park. One is close to a copse of trees, featuring birds chattering before the rain. The second is a recording of a small river with water falling over a low step, with some bird calls and frogs and other wildlife. The third is recorded in an open field with more intense wind. All recordings were made in a public park in Adelaide, South Australia, in winter. All files are recorded at 48kHz. To keep the filesize under 100mb, the two largest recordings have a bit depth of 16 bit. The park_ambience_wind file has a bit depth of 24 bit.",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-park-ambiences-2026-09-25.html",
+     "sha256": "4e777aadc0d6183c1fa63ebc0101baa2a99b8b6b20212fcc14f30a929492d6a1",
+     "captured_at_utc": "2026-09-25T11:32:07+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:32:07+00:00"
+   },
+   "role": "ambience: birds before rain, small river, wind (long field recordings)",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_estate_day_loop.cc0_amb_estate_day_loop",
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_typhoon_loop.cc0_amb_typhoon_loop"
+   ],
+   "layered_into": [],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_estate_day_loop.wav",
+     "bytes": 21600112,
+     "sha256": "878cb18fdf02fab44989b6100783eae0ca53eb9215fc451e947190ec117f8775",
+     "cue": "amb.estate.day",
+     "loop": true,
+     "target": {
+      "I": -26.0,
+      "tp": -3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/park-ambiences",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/park-ambiences/download/park_ambience_birds.wav",
+       "sha256": "dc1a5ac34b89cab7f8f261b53a23da7c1c5e3cc895aae4cb6fb4a1a04001b2af",
+       "start_s": 124.8,
+       "end_s": 203.8
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 75.0,
+      "sample_peak_dbfs": -9.39,
+      "true_peak_dbtp": -9.39,
+      "integrated_lufs": -26.0,
+      "momentary_max_lufs": -20.03,
+      "rms_dbfs": -30.47,
+      "dc_offset_dbfs": -144.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 0.0,
+      "loop": [
+       0,
+       3599999
+      ],
+      "wrap_hf_ratio_vs_p95": 0.036,
+      "wrap_jump_vs_p999_step": 0.043,
+      "wrap_curvature_vs_p999": 0.067,
+      "wrap_level_delta_db": 0.77,
+      "loop_click": false,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_typhoon_loop.wav",
+     "bytes": 12384112,
+     "sha256": "988209f95b23c03869232458fa5ea3c5bc8bfce702d3bcdddcb287768812099d",
+     "cue": "amb.typhoon",
+     "loop": true,
+     "target": {
+      "I": -23.0,
+      "tp": -3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/park-ambiences",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/park-ambiences/download/park_ambience_wind.wav",
+       "sha256": "5c381856745b4706e7eba55eb9271a61a530e90c05df8126adb2db89ecfa6c5a",
+       "start_s": 112.0,
+       "end_s": 158.0
+      },
+      {
+       "asset_id": "opengameart/rain-loopable",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/rain-loopable/extracted/Rain OGG/3.ogg",
+       "sha256": "73a0f5ef19ed9f64599c0425b1fb52d857acfc42c0fd5eab85c4577ace18f0ed",
+       "start_s": 0.0,
+       "end_s": 45.0
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 43.0,
+      "sample_peak_dbfs": -7.76,
+      "true_peak_dbtp": -7.58,
+      "integrated_lufs": -23.0,
+      "momentary_max_lufs": -20.95,
+      "rms_dbfs": -26.69,
+      "dc_offset_dbfs": -144.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 0.0,
+      "loop": [
+       0,
+       2063999
+      ],
+      "wrap_hf_ratio_vs_p95": 0.497,
+      "wrap_jump_vs_p999_step": 0.191,
+      "wrap_curvature_vs_p999": 0.386,
+      "wrap_level_delta_db": -0.82,
+      "loop_click": false,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:32:19+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/rain-long-thunder",
+   "name": "Rain + Long Thunder",
+   "origin_url": "https://opengameart.org/content/rain-long-thunder",
+   "mirror_url": null,
+   "authors": [
+    "WuxiaScrub"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "Natural rain sound with loud/long thunder at 20 second mark",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-rain-long-thunder-2026-09-25.html",
+     "sha256": "85a664c57bed50c778e7256ff4c1af7e9d904b3b5df324da7de55d541dbb9a30",
+     "captured_at_utc": "2026-09-25T11:32:19+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:32:19+00:00"
+   },
+   "role": "weather: rain with long thunder",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_thunder_01.cc0_amb_thunder_01"
+   ],
+   "layered_into": [],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_thunder_01.wav",
+     "bytes": 4608044,
+     "sha256": "1fb091c099a94720fc545b92e86992d2a01706f428bee9cb9ab407d7c7060703",
+     "cue": "amb.thunder",
+     "loop": false,
+     "target": {
+      "M": -14.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/rain-long-thunder",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/rain-long-thunder/download/rain-thunder.ogg",
+       "sha256": "9499fd1aefa3b5d8ba3764ea46d15c00ab449be7e19c029290a1f52228f1434c",
+       "start_s": 20.5,
+       "end_s": 36.5
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 16.0,
+      "sample_peak_dbfs": -4.87,
+      "true_peak_dbtp": -4.87,
+      "integrated_lufs": -19.84,
+      "momentary_max_lufs": -14.0,
+      "rms_dbfs": -20.85,
+      "dc_offset_dbfs": -145.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 32.5,
+      "trailing_silence_ms": 167.8,
+      "loop": null,
+      "fail": [],
+      "warn": [
+       "leading_silence>20ms"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:32:16+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/rain-loopable",
+   "name": "Rain (loopable)",
+   "origin_url": "https://opengameart.org/content/rain-loopable",
+   "mirror_url": null,
+   "authors": [
+    "Ylmir"
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "Four loopable rain SFX, with a length varying between 25 and 45 seconds. Recorded about two hours ago with a single mono mic at my window, then I processed it a bit, trying to make it sound stereo. It was more an experiment, but it can probably be useful anyway ;) Available in two formats, the samples are the same : - MP3, 192 kbps, constant bitrate - OGG, 160 kbps",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-rain-loopable-2026-09-25.html",
+     "sha256": "8fd526a334fb6d611cfe15b62827e14d6726422f2c3939d4dcb3c0c9e62798cb",
+     "captured_at_utc": "2026-09-25T11:32:16+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:32:16+00:00"
+   },
+   "role": "ambience: rain loops (window, mono)",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_rain_loop_01.cc0_amb_rain_loop_01",
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_rain_loop_02.cc0_amb_rain_loop_02",
+    "/Game/Generated/Audio/CC0/Ambience/cc0_amb_typhoon_loop.cc0_amb_typhoon_loop"
+   ],
+   "layered_into": [
+    "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_typhoon_loop.wav"
+   ],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_rain_loop_01.wav",
+     "bytes": 12384112,
+     "sha256": "c808646e7ebb4f8f869143785cf8de6d92c44f3c917e07ccc724368c96add238",
+     "cue": "amb.rain",
+     "loop": true,
+     "target": {
+      "I": -26.0,
+      "tp": -3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/rain-loopable",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/rain-loopable/extracted/Rain OGG/3.ogg",
+       "sha256": "73a0f5ef19ed9f64599c0425b1fb52d857acfc42c0fd5eab85c4577ace18f0ed",
+       "start_s": 0.0,
+       "end_s": 45.0
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 43.0,
+      "sample_peak_dbfs": -11.39,
+      "true_peak_dbtp": -11.04,
+      "integrated_lufs": -26.0,
+      "momentary_max_lufs": -24.17,
+      "rms_dbfs": -30.88,
+      "dc_offset_dbfs": -144.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 0.0,
+      "loop": [
+       0,
+       2063999
+      ],
+      "wrap_hf_ratio_vs_p95": 0.494,
+      "wrap_jump_vs_p999_step": 0.195,
+      "wrap_curvature_vs_p999": 0.389,
+      "wrap_level_delta_db": -0.51,
+      "loop_click": false,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Ambience/cc0_amb_rain_loop_02.wav",
+     "bytes": 10224112,
+     "sha256": "190f6a248b7c8cec076985e6740838f988b7350d64e277e21432ebf95ce6ddaa",
+     "cue": "amb.rain",
+     "loop": true,
+     "target": {
+      "I": -26.0,
+      "tp": -3.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/rain-loopable",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/rain-loopable/extracted/Rain OGG/4.ogg",
+       "sha256": "de24aeefd113daf0d12769c61adb1a262606e7df683e3bb52a27c4d0ff356549",
+       "start_s": 0.0,
+       "end_s": 37.5
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 35.5,
+      "sample_peak_dbfs": -5.06,
+      "true_peak_dbtp": -5.06,
+      "integrated_lufs": -26.0,
+      "momentary_max_lufs": -21.03,
+      "rms_dbfs": -30.43,
+      "dc_offset_dbfs": -144.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.0,
+      "trailing_silence_ms": 0.0,
+      "loop": [
+       0,
+       1703999
+      ],
+      "wrap_hf_ratio_vs_p95": 0.863,
+      "wrap_jump_vs_p999_step": 0.638,
+      "wrap_curvature_vs_p999": 0.389,
+      "wrap_level_delta_db": -0.78,
+      "loop_click": false,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  },
+  {
+   "tier": "PUB-CC0",
+   "license": "CC0-1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "commercial_use": true,
+   "redistribution": "unrestricted",
+   "derivatives": true,
+   "platform_restriction": null,
+   "ai_terms": "none",
+   "agent_handling": "allowed",
+   "attribution_text": null,
+   "access": "direct",
+   "acquired_at_utc": "2026-09-25T11:27:32+00:00",
+   "acquired_by": "agent",
+   "asset_id": "opengameart/the-free-firearm-sound-library",
+   "name": "The Free Firearm Sound Library",
+   "origin_url": "https://opengameart.org/content/the-free-firearm-sound-library",
+   "mirror_url": null,
+   "authors": [
+    "Ben Jaszczak, et al."
+   ],
+   "license_evidence": {
+    "page_licenses": [
+     "CC0"
+    ],
+    "license_selected": "CC0",
+    "page_statement": "From The Free Firearm Sound Library homepage : The firearm sound library was the brainchild of a team of college students with a mutual passion for the audio and visual arts. In November, 2013 we launched a Kickstarter campaign to develop an extensive open source firearm sound effects library, and on December 7, 2013 our project was funded by an incredible group of backers and we went into full tilt production. This website serves to connect our backers with our two libraries, as well as to give credit to the backers who made it all possible. Along with the availability of these sounds comes the need to understand their proper application. The metadata included in the sound files along with some instructional videos will help make these sounds serve you to their full potential. Our team holds CC0 NO RIGHTS RESERVED for this library. It may be used without royalty or credit (though we would love to hear how you've used our sounds) for any application, personal or professional. Have at it! Please note that OGA is not affiliated with this project, and as such, we encourage you to visit their site so as to make sure you're getting the latest version of the files: http://freefirearmsfx.",
+    "page_snapshot": {
+     "path": "Local/ThirdPartyRaw/_licenses/audio/oga-the-free-firearm-sound-library-2026-09-25.html",
+     "sha256": "b378c770ba167b7bb49aa535c132e39ae50d9289195edb5c6ce9aeb2a6f1dc53",
+     "captured_at_utc": "2026-09-25T11:27:32+00:00"
+    },
+    "verified_at_utc": "2026-09-25T11:27:32+00:00"
+   },
+   "role": "weapons: matchlock report low layers, mechanisms (Free Firearm Sound Library, CC0)",
+   "raw_ledger": "scripts/assets/manifests/audio_opengameart.json",
+   "changes": "Cut into single takes or loop windows, resampled to 48 kHz / 24-bit, DC removed, trimmed and faded, levelled to the docs/audio.md section 4 targets; beds looped by an equal-power crossfade; explosions and the grenade launcher layered over a distant body (scripts/audio/build_cc0_audio.py).",
+   "storage": "repo-lfs",
+   "committed": true,
+   "fallback": null,
+   "used_by": [
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_repeater_fire_01.cc0_wpn_repeater_fire_01",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_repeater_fire_02.cc0_wpn_repeater_fire_02",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_repeater_fire_03.cc0_wpn_repeater_fire_03",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_repeater_fire_04.cc0_wpn_repeater_fire_04",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_repeater_fire_05.cc0_wpn_repeater_fire_05",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_repeater_fire_06.cc0_wpn_repeater_fire_06",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_repeater_fire_07.cc0_wpn_repeater_fire_07",
+    "/Game/Generated/Audio/CC0/Weapons/cc0_wpn_repeater_fire_08.cc0_wpn_repeater_fire_08"
+   ],
+   "layered_into": [],
+   "files": [
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_repeater_fire_01.wav",
+     "bytes": 307388,
+     "sha256": "d6316ce334e82e7f2737a37203d5edf670451cc830643841dd1a5e02e0a14976",
+     "cue": "weapon.fired.repeater",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/the-free-firearm-sound-library",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/the-free-firearm-sound-library/extracted/Prepared SFX Library/Prepared SFX Library/Model 1894/L_17P.wav",
+       "sha256": "f2d381043f74967786367d2b23f68a6d5a3fe74c26ff4d3a00002ab05e913117",
+       "start_s": 0.5856,
+       "end_s": 1.6564
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.067,
+      "sample_peak_dbfs": -1.46,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -20.99,
+      "momentary_max_lufs": -16.33,
+      "rms_dbfs": -23.03,
+      "dc_offset_dbfs": -68.6,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 54.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_repeater_fire_02.wav",
+     "bytes": 307106,
+     "sha256": "d66fb970a599bb3b3b64172ed521eea5916fec27b68a08d152149974e3a7ef42",
+     "cue": "weapon.fired.repeater",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/the-free-firearm-sound-library",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/the-free-firearm-sound-library/extracted/Prepared SFX Library/Prepared SFX Library/Model 1894/L_17P.wav",
+       "sha256": "f2d381043f74967786367d2b23f68a6d5a3fe74c26ff4d3a00002ab05e913117",
+       "start_s": 4.351,
+       "end_s": 5.4215
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.066,
+      "sample_peak_dbfs": -1.47,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -21.66,
+      "momentary_max_lufs": -16.94,
+      "rms_dbfs": -23.79,
+      "dc_offset_dbfs": -69.3,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 53.1,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_repeater_fire_03.wav",
+     "bytes": 274292,
+     "sha256": "c570ce798bed34205d0bd2b87cf630c1491e5ce11b6d1bb809823967c7bd460d",
+     "cue": "weapon.fired.repeater",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/the-free-firearm-sound-library",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/the-free-firearm-sound-library/extracted/Prepared SFX Library/Prepared SFX Library/Model 1894/L_23P.wav",
+       "sha256": "e2309b40f71f419e49566d0048001d3907de509accd5b6722eb5d11fa648ef3c",
+       "start_s": 0.5627,
+       "end_s": 1.5149
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.952,
+      "sample_peak_dbfs": -1.04,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -20.95,
+      "momentary_max_lufs": -16.38,
+      "rms_dbfs": -23.32,
+      "dc_offset_dbfs": -97.5,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 127.6,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_repeater_fire_04.wav",
+     "bytes": 274922,
+     "sha256": "6b969a8197b782675f1d8ef43a97c597825d46e5c1ba9c3324c004b6c10a36d8",
+     "cue": "weapon.fired.repeater",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/the-free-firearm-sound-library",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/the-free-firearm-sound-library/extracted/Prepared SFX Library/Prepared SFX Library/Model 1894/L_23P.wav",
+       "sha256": "e2309b40f71f419e49566d0048001d3907de509accd5b6722eb5d11fa648ef3c",
+       "start_s": 4.1131,
+       "end_s": 5.0675
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.954,
+      "sample_peak_dbfs": -1.33,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -19.33,
+      "momentary_max_lufs": -16.4,
+      "rms_dbfs": -23.13,
+      "dc_offset_dbfs": -116.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 128.8,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_repeater_fire_05.wav",
+     "bytes": 321170,
+     "sha256": "42adf5dea654ca20fe6d865f89c173ae69468163f9efe7bccf969b59e74d23a7",
+     "cue": "weapon.fired.repeater",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/the-free-firearm-sound-library",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/the-free-firearm-sound-library/extracted/Prepared SFX Library/Prepared SFX Library/Marlin 336/I_17P.wav",
+       "sha256": "335d11d62004f66de48f87fa6b98b986dd33ac03c7f8a2340b2432a714ff186e",
+       "start_s": 0.0537,
+       "end_s": 1.4537
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.115,
+      "sample_peak_dbfs": -1.48,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -17.57,
+      "momentary_max_lufs": -15.45,
+      "rms_dbfs": -22.99,
+      "dc_offset_dbfs": -91.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 29.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_repeater_fire_06.wav",
+     "bytes": 400964,
+     "sha256": "9b02b949a11031626d37f57d151a037134e0b045067cb86a43a6929f9e6a9a37",
+     "cue": "weapon.fired.repeater",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/the-free-firearm-sound-library",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/the-free-firearm-sound-library/extracted/Prepared SFX Library/Prepared SFX Library/Marlin 336/I_17P.wav",
+       "sha256": "335d11d62004f66de48f87fa6b98b986dd33ac03c7f8a2340b2432a714ff186e",
+       "start_s": 6.8341,
+       "end_s": 8.2341
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 1.392,
+      "sample_peak_dbfs": -1.61,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -18.5,
+      "momentary_max_lufs": -15.04,
+      "rms_dbfs": -23.69,
+      "dc_offset_dbfs": -81.1,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 52.7,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_repeater_fire_07.wav",
+     "bytes": 241412,
+     "sha256": "f2813fd9d14ac68e1d3939cef38285715f76ae7187a2bbea0d03beaaa74e5885",
+     "cue": "weapon.fired.repeater",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/the-free-firearm-sound-library",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/the-free-firearm-sound-library/extracted/Prepared SFX Library/Prepared SFX Library/Marlin 336/I_22P.wav",
+       "sha256": "88c2a543ae4df36975557d0715e46b33e3667853ae6bb6633016f5fb79ff17f1",
+       "start_s": 0.73,
+       "end_s": 1.5786
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.838,
+      "sample_peak_dbfs": -1.47,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -19.5,
+      "momentary_max_lufs": -19.46,
+      "rms_dbfs": -25.65,
+      "dc_offset_dbfs": -121.8,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 174.2,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    },
+    {
+     "file": "Content/SourceArt/Audio/CC0/Weapons/cc0_wpn_repeater_fire_08.wav",
+     "bytes": 241328,
+     "sha256": "d1a0c0a7ade38205b7e82a72f8ac9bee1f572a9a5b4dbc856c2980d6aaefef2d",
+     "cue": "weapon.fired.repeater",
+     "loop": false,
+     "target": {
+      "P": -1.0,
+      "limit": 6.0
+     },
+     "derived_from": [
+      {
+       "asset_id": "opengameart/the-free-firearm-sound-library",
+       "file": "Local/ThirdPartyRaw/audio/opengameart/the-free-firearm-sound-library/extracted/Prepared SFX Library/Prepared SFX Library/Marlin 336/I_22P.wav",
+       "sha256": "88c2a543ae4df36975557d0715e46b33e3667853ae6bb6633016f5fb79ff17f1",
+       "start_s": 6.9937,
+       "end_s": 7.8771
+      }
+     ],
+     "qa": {
+      "sr": 48000,
+      "channels": 2,
+      "subtype": "PCM_24",
+      "seconds": 0.838,
+      "sample_peak_dbfs": -1.43,
+      "true_peak_dbtp": -1.0,
+      "integrated_lufs": -20.01,
+      "momentary_max_lufs": -19.97,
+      "rms_dbfs": -26.06,
+      "dc_offset_dbfs": -127.0,
+      "max_fullscale_run": 0,
+      "leading_silence_ms": 0.1,
+      "trailing_silence_ms": 174.1,
+      "loop": null,
+      "fail": [],
+      "warn": []
+     }
+    }
+   ]
+  }
+ ]
+}

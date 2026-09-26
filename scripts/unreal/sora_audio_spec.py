@@ -9,12 +9,12 @@ definition. Its sources:
   telegraph buses keep a volume floor, so their submixes feed Master directly
   while their sound classes stay under their parents;
 * the SoundWaves are the WAV records of the two OWN manifests
-  (``Original/manifest.json`` and ``Music/manifest.json``), each checked
-  against its SHA-256, its byte size and its own RIFF chunks;
-* a CC0 audio record would be imported only once the ledger admits it to the
-  repository. Today every ``scripts/assets/manifests/audio_*.json`` record is
-  ``storage: local-private``, ``committed: false``, and a promoted record fails
-  here until its import route is defined.
+  (``Original/manifest.json`` and ``Music/manifest.json``) and of the CC0
+  derivatives' ledger (``CC0/manifest.json``, built by
+  scripts/audio/build_cc0_audio.py), each checked against its SHA-256, its
+  byte size and its own RIFF chunks. CC0 audio enters the repository only as
+  those derivatives: every raw ``scripts/assets/manifests/audio_*.json``
+  record stays ``storage: local-private``, ``committed: false``.
 
 Every SoundWave takes the bus of the cues it plays in (section 3), and every
 music piece's wave the Music bus. A wave that several ready cues share keeps
@@ -32,6 +32,8 @@ from pathlib import Path
 SOURCE = "Content/SourceArt/Audio"
 DATA = "Content/Data/audio.json"
 OWN_MANIFESTS = (f"{SOURCE}/Original/manifest.json", f"{SOURCE}/Music/manifest.json")
+CC0_MANIFEST = f"{SOURCE}/CC0/manifest.json"
+READY = ("ready-own", "ready-cc0")
 AUDIO_LEDGERS = "scripts/assets/manifests"
 GENERATED = "/Game/Generated/Audio"
 BUSES = f"{GENERATED}/Buses"
@@ -142,8 +144,9 @@ def wav_layout(data, name):
     return rate, channels, bits, frames, loops
 
 
-def check_ledger_admits_no_cc0(root):
-    """Count the CC0 audio records and refuse any admitted to the repository."""
+def check_raw_cc0_stays_local(root):
+    """Count the raw CC0 audio records and refuse any committed: the repository
+    takes only their derivatives (CC0_MANIFEST)."""
     records = 0
     for path in sorted((root / AUDIO_LEDGERS).glob("audio_*.json")):
         ledger = read_json(path)
@@ -152,9 +155,27 @@ def check_ledger_admits_no_cc0(root):
         for record in ledger["assets"]:
             records += 1
             require(record.get("committed") is False and record.get("storage") == "local-private",
-                    f"{path.name}: {record.get('asset_id')} is admitted to the repository; "
-                    "define its import route (bus, asset path) in sora_audio_spec.py first")
+                    f"{path.name}: raw {record.get('asset_id')} is committed; the repository takes only "
+                    f"its derivatives ({CC0_MANIFEST}, scripts/audio/build_cc0_audio.py)")
     return records
+
+
+def wave_records(root):
+    """(manifest, record) of every WAV the OWN manifests and the CC0 derivatives' ledger list."""
+    rows = []
+    for manifest_path in OWN_MANIFESTS:
+        manifest = read_json(root / manifest_path)
+        require(manifest.get("schema_version") == 2 and manifest.get("tier") == "OWN",
+                f"{manifest_path} is not a schema-2 OWN manifest")
+        rows += [(manifest_path, record) for record in manifest["files"]]
+    derivatives = read_json(root / CC0_MANIFEST)
+    require(derivatives.get("schema_version") == 2 and derivatives.get("tier") == "PUB-CC0",
+            f"{CC0_MANIFEST} is not a schema-2 PUB-CC0 ledger")
+    for record in derivatives["records"]:
+        require(record.get("tier") == "PUB-CC0" and record.get("storage") == "repo-lfs",
+                f"{CC0_MANIFEST}: {record.get('asset_id')} is not a PUB-CC0 derivative in repo LFS")
+        rows += [(CC0_MANIFEST, row) for row in record["files"]]
+    return [(path, row) for path, row in rows if row["file"].endswith(".wav")]
 
 
 def source_of(wave):
@@ -174,7 +195,7 @@ def resolve_buses(data):
                 uses.setdefault(source_of(wave), []).append(("ready-own", "Music", f"music:{name}"))
     buses = {}
     for file, cues in uses.items():
-        ready = {bus for status, bus, _ in cues if status == "ready-own"}
+        ready = {bus for status, bus, _ in cues if status in READY}
         candidates = ready or {bus for _, bus, _ in cues}
         require(len(candidates) == 1,
                 f"{file} plays on several buses {sorted(candidates)} in "
@@ -254,57 +275,51 @@ def load(root):
     bus_of = resolve_buses(data)
     unknown = sorted(set(bus_of.values()) - {bus["id"] for bus in buses})
     require(not unknown, f"Audio is routed to buses the tree lacks: {unknown}")
-    cc0_records = check_ledger_admits_no_cc0(root)
+    raw_cc0_records = check_raw_cc0_stays_local(root)
 
     waves = []
-    for manifest_path in OWN_MANIFESTS:
-        manifest = read_json(root / manifest_path)
-        require(manifest.get("schema_version") == 2 and manifest.get("tier") == "OWN",
-                f"{manifest_path} is not a schema-2 OWN manifest")
-        for record in manifest["files"]:
-            relative = record["file"]
-            if not relative.endswith(".wav"):
-                continue
-            require(relative.startswith(SOURCE + "/"), f"Audio outside {SOURCE}: {relative}")
-            path = root / relative
-            require(path.is_file(), f"Missing OWN audio: {relative}")
-            data = path.read_bytes()
-            require(len(data) == record["bytes"]
-                    and hashlib.sha256(data).hexdigest() == record["sha256"],
-                    f"OWN audio does not match its manifest: {relative}")
-            rate, channels, bits, frames, loops = wav_layout(data, relative)
-            qa = record["qa"]
-            require(rate == SAMPLE_RATE == qa["sr"] and channels == qa["channels"] and bits == 24,
-                    f"Unexpected WAV format for {relative}: {rate} Hz, {channels} ch, {bits} bit")
-            require(abs(frames / rate - qa["seconds"]) < 0.002,
-                    f"{relative} length differs from its QA record")
-            looping = record["loop"]
-            require(isinstance(looping, bool), f"{relative} has no loop flag")
-            if looping:
-                # One smpl loop over the whole file; the RIFF end is inclusive.
-                require(loops == [(0, frames - 1)] and qa["loop"] == [0, frames - 1],
-                        f"{relative} must loop its whole file: smpl {loops}, {frames} frames")
-            else:
-                require(not loops and qa["loop"] is None, f"One-shot {relative} carries a loop")
-            require(relative in bus_of, f"No cue or music state plays {relative}")
-            bus = bus_of[relative]
-            stem = Path(relative).stem
-            folder = str(Path(relative).parent.relative_to(SOURCE)).replace("\\", "/")
-            package = f"{GENERATED}/{folder}/{stem}"
-            waves.append({
-                "source": relative,
-                "package": package,
-                "object_path": object_path(package),
-                "bus": bus,
-                "loop": looping,
-                "frames": frames,
-                "channels": channels,
-                "smpl_loop": loops[0] if loops else None,
-                "virtualization": PLAY_WHEN_SILENT
-                if bus == "SFX_Telegraph" or (bus == "Music" and looping) else RESTART,
-            })
+    for manifest_path, record in wave_records(root):
+        relative = record["file"]
+        require(relative.startswith(SOURCE + "/"), f"Audio outside {SOURCE}: {relative}")
+        path = root / relative
+        require(path.is_file(), f"Missing audio: {relative}")
+        data = path.read_bytes()
+        require(len(data) == record["bytes"]
+                and hashlib.sha256(data).hexdigest() == record["sha256"],
+                f"Audio does not match {manifest_path}: {relative}")
+        rate, channels, bits, frames, loops = wav_layout(data, relative)
+        qa = record["qa"]
+        require(rate == SAMPLE_RATE == qa["sr"] and channels == qa["channels"] and bits == 24,
+                f"Unexpected WAV format for {relative}: {rate} Hz, {channels} ch, {bits} bit")
+        require(abs(frames / rate - qa["seconds"]) < 0.002,
+                f"{relative} length differs from its QA record")
+        looping = record["loop"]
+        require(isinstance(looping, bool), f"{relative} has no loop flag")
+        if looping:
+            # One smpl loop over the whole file; the RIFF end is inclusive.
+            require(loops == [(0, frames - 1)] and qa["loop"] == [0, frames - 1],
+                    f"{relative} must loop its whole file: smpl {loops}, {frames} frames")
+        else:
+            require(not loops and qa["loop"] is None, f"One-shot {relative} carries a loop")
+        require(relative in bus_of, f"No cue or music state plays {relative}")
+        bus = bus_of[relative]
+        stem = Path(relative).stem
+        folder = str(Path(relative).parent.relative_to(SOURCE)).replace("\\", "/")
+        package = f"{GENERATED}/{folder}/{stem}"
+        waves.append({
+            "source": relative,
+            "package": package,
+            "object_path": object_path(package),
+            "bus": bus,
+            "loop": looping,
+            "frames": frames,
+            "channels": channels,
+            "smpl_loop": loops[0] if loops else None,
+            "virtualization": PLAY_WHEN_SILENT
+            if bus == "SFX_Telegraph" or (bus == "Music" and looping) else RESTART,
+        })
     unused = sorted(set(bus_of) - {wave["source"] for wave in waves})
-    require(not unused, f"Cues play audio no OWN manifest records: {unused[:5]}")
+    require(not unused, f"Cues play audio no OWN manifest or CC0 ledger records: {unused[:5]}")
     packages = [wave["package"] for wave in waves]
     require(len(packages) == len(set(packages)), "Two source WAVs map to one Unreal package")
 
@@ -320,7 +335,8 @@ def load(root):
         "mixes": mixes,
         "waves": waves,
         "expected": expected,
-        "cc0_records": cc0_records,
+        "raw_cc0_records": raw_cc0_records,
+        "cc0_waves": sum(1 for wave in waves if wave["source"].startswith(f"{SOURCE}/CC0/")),
     }
 
 

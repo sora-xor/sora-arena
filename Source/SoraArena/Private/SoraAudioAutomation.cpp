@@ -4,7 +4,9 @@
 #include "ArenaKernelSubsystem.h"
 #include "Audio/SoraAudioData.h"
 #include "AudioDevice.h"
+#include "AudioMixerDevice.h"
 #include "Components/AudioComponent.h"
+#include "GameFramework/WorldSettings.h"
 #include "HUD/SoraHUDPanels.h"
 #include "SoraCaptions.h"
 #include "SoraEnemy.h"
@@ -15,6 +17,7 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraSettings.h"
 #include "Sound/SoundClass.h"
+#include "Sound/SoundSubmix.h"
 #include "Sound/SoundWave.h"
 #include "UI/SoraFrontEndTesting.h"
 
@@ -61,9 +64,17 @@ FString BeatIn(const TCHAR* State)
     return Ids.IsEmpty() ? FString() : Ids[0];
 }
 
+// A rule of audio.json's bindings, as the coverage check counts it: a rule
+// that plays its cue ("Family#3"), or a Kernel rule that forwards ("Kernel>4").
+FString RuleKey(FName Family, int32 Rule, bool bForward)
+{
+    return FString::Printf(TEXT("%s%s%d"), *Family.ToString(), bForward ? TEXT(">") : TEXT("#"), Rule);
+}
+
 // Raises an event and checks exactly which cues it played; every voiced
 // cue's wave must be imported in its bus's class, and playing where there is
-// a device. Remembers each family's cues for the coverage check.
+// a device. Remembers each rule that chose a cue, and each Kernel rule that
+// forwarded one, for the coverage check.
 struct FProbe
 {
     FAutomationTestBase& Test;
@@ -80,7 +91,10 @@ struct FProbe
         for (const FSoraAudioPlay& Play : Audio.Plays())
         {
             Got.Add(Play.Cue);
-            Covered.Add(Play.Family.ToString() + TEXT("|") + Play.Cue.ToString());
+            if (Play.Rule != INDEX_NONE)
+                Covered.Add(RuleKey(Play.RuleFamily, Play.Rule, false));
+            if (Play.ForwardedBy != INDEX_NONE)
+                Covered.Add(RuleKey(Play.Family, Play.ForwardedBy, true));
             const SoraAudioData::FCue* Cue = FData::Get()->Cue(Play.Cue);
             if (!Play.IsVoiced())
             {
@@ -154,9 +168,14 @@ bool FSoraAudioDataTest::RunTest(const FString& Parameters)
             TestTrue(*FString::Printf(TEXT("%s: %s has a bus class and loops only as its cue does"), *Pair.Key.ToString(), *Path),
                 Wave->SoundClassObject && Wave->SoundClassObject->GetName().StartsWith(TEXT("SC_")) && Wave->bLooping == Cue.bLoop);
             Overridden += Wave->SoundClassObject && Wave->SoundClassObject->GetName() != TEXT("SC_") + Cue.Bus.ToString();
+            // The runtime seeks into or holds back the wave by its strike
+            // mark; a strike past the end would never sound with the blow.
+            if (Cue.StrikeMs > 0)
+                TestTrue(*FString::Printf(TEXT("%s: the %d ms strike mark falls inside %s (%.0f ms)"), *Pair.Key.ToString(), Cue.StrikeMs, *Path,
+                    Wave->Duration * 1000.f), Wave->Duration * 1000.f > Cue.StrikeMs);
         }
-        TestTrue(*FString::Printf(TEXT("%s: a telegraph's strike mark falls inside its waves"), *Pair.Key.ToString()), Cue.StrikeMs == 0 ||
-            Cue.Bus == TEXT("SFX_Telegraph"));
+        TestTrue(*FString::Printf(TEXT("%s: only a voiced telegraph carries a strike mark"), *Pair.Key.ToString()), Cue.StrikeMs == 0 ||
+            (Cue.Bus == TEXT("SFX_Telegraph") && Cue.IsVoiced()));
     }
     for (const auto& Pair : D->Pieces)
         for (const TPair<FName, FString>& Stem : Pair.Value.Stems)
@@ -237,6 +256,14 @@ bool FSoraAudioEventsTest::RunTest(const FString& Parameters)
     Probe.Expect(TEXT("The Shock Emitter's first shot"), Shot(16, ESoraShotKind::Hitscan, Other), {TEXT("weapon.fired.shock_emitter")});
     Probe.Expect(TEXT("The Shock Emitter held"), Shot(16, ESoraShotKind::Hitscan, Other), {TEXT("weapon.loop.shock_emitter")});
     TestTrue(TEXT("The Shock Emitter's loop runs"), Audio->LiveLoops().Contains(TEXT("weapon.loop.shock_emitter")));
+    // One tap after the gap, raised before the subsystem's own tick has seen
+    // the burst end (shooters tick first): the burst lets go, then the tap
+    // sounds, and no loop is left running.
+    World->TimeSeconds += 1.0;
+    Probe.Expect(TEXT("A Shock Emitter tap after a burst"), Shot(16, ESoraShotKind::Hitscan, Other),
+        {TEXT("weapon.release.shock_emitter"), TEXT("weapon.fired.shock_emitter")});
+    TestFalse(TEXT("The tap after a burst leaves no loop running"), Audio->LiveLoops().Contains(TEXT("weapon.loop.shock_emitter")));
+    Probe.Expect(TEXT("The Shock Emitter held again"), Shot(16, ESoraShotKind::Hitscan, Other), {TEXT("weapon.loop.shock_emitter")});
     // Letting go takes play time, in which the dojo may make its own sounds.
     Audio->ForgetPlays();
     Scope.World->Tick(FramesPerSecond);
@@ -488,22 +515,18 @@ bool FSoraAudioEventsTest::RunTest(const FString& Parameters)
     Probe.Expect(TEXT("Mounting"), Hear(TEXT("Horse"), FFacts().Text(TEXT("Action"), TEXT("Mounted")).Text(TEXT("Gait"), TEXT("Halt")), Other),
         {TEXT("horse.tack")});
 
-    // Every rule of every family was heard; a kernel forward counts through
-    // the cue it played for that family.
+    // Every rule of every family chose its cue at least once, each by its own
+    // index (two rules playing one cue count apart), and every Kernel forward
+    // carried a practice event to the family it sounds as.
     const FData* D = FData::Get();
     for (const auto& Pair : D->Bindings)
-        for (const SoraAudioData::FRule& Rule : Pair.Value)
+        for (int32 Index = 0; Index < Pair.Value.Num(); ++Index)
         {
-            if (!Rule.Cue.IsNone())
-                TestTrue(*FString::Printf(TEXT("%s's rule for %s was exercised"), *Pair.Key.ToString(), *Rule.Cue.ToString()),
-                    Probe.Covered.Contains(Pair.Key.ToString() + TEXT("|") + Rule.Cue.ToString()));
-            else
-            {
-                bool bForwarded = false;
-                for (const SoraAudioData::FRule& Target : D->Bindings.FindRef(Rule.As))
-                    bForwarded |= !Target.Cue.IsNone() && Probe.Covered.Contains(TEXT("Kernel|") + Target.Cue.ToString());
-                TestTrue(*FString::Printf(TEXT("Kernel events forwarded to %s were exercised"), *Rule.As.ToString()), bForwarded);
-            }
+            const SoraAudioData::FRule& Rule = Pair.Value[Index];
+            const bool bForward = Rule.Cue.IsNone();
+            TestTrue(*FString::Printf(TEXT("%s rule %d (%s %s) was exercised"), *Pair.Key.ToString(), Index, bForward ? TEXT("as") : TEXT("plays"),
+                         bForward ? *Rule.As.ToString() : *Rule.Cue.ToString()),
+                Probe.Covered.Contains(RuleKey(Pair.Key, Index, bForward)));
         }
     return true;
 }
@@ -638,7 +661,36 @@ bool FSoraAudioVolumesTest::RunTest(const FString& Parameters)
         Near(Audio->SubmixGain(TEXT("Voice")), 0.f) && Near(Audio->SubmixGain(TEXT("Voice_Barks")), Floor));
     TestTrue(TEXT("Master stays the device volume, never a submix gain"), Near(Audio->SubmixGain(TEXT("Master")), 1.f) &&
         Near(Audio->SubmixGain(TEXT("SFX_Weapons")), 1.f));
-    return TestFalse(TEXT("Automation's settings stay detached, so the editor's mix is untouched"), Settings->IsAttached());
+    // The gains reach real submixes: every slider and floored bus's SMX_
+    // asset loads from the path the runtime drives.
+    TestTrue(*FString::Printf(TEXT("Every driven bus's submix loads (missing: %s)"), *Join(Audio->MissingSubmixes())),
+        Audio->MissingSubmixes().IsEmpty());
+    TestTrue(TEXT("Detached settings leave the device's submixes alone"), Audio->DeviceSubmixGains().IsEmpty());
+    if (!TestFalse(TEXT("Automation's settings stay detached, so the editor's mix is untouched"), Settings->IsAttached()))
+        return false;
+
+    // With a device, the in-game path: the same gains go to each submix the
+    // world's mixer has registered, then back to unity.
+    UWorld* World = Scope.World->GetTestWorld();
+    if (!Audio->HasDevice())
+        return true;
+    // UE 5.8's only audio device is the audio mixer.
+    const Audio::FMixerDevice* Mixer = static_cast<const Audio::FMixerDevice*>(World->GetAudioDeviceRaw());
+    Audio->DriveSubmixesForTesting(true);
+    Settings->SetBusVolume(ESoraAudioBus::SFX, 60);
+    TArray<FString> Undriven;
+    for (const FName Bus : {FName(TEXT("Music")), FName(TEXT("SFX")), FName(TEXT("Voice")), FName(TEXT("UI")), FName(TEXT("Ambience")),
+             FName(TEXT("SFX_Telegraph")), FName(TEXT("Voice_Barks"))})
+    {
+        const float* Sent = Audio->DeviceSubmixGains().Find(Bus);
+        const USoundSubmix* Submix = LoadObject<USoundSubmix>(nullptr, *SoraAudioData::SubmixObjectPath(Bus), nullptr, LOAD_NoWarn | LOAD_Quiet);
+        if (!Sent || !Near(*Sent, Audio->SubmixGain(Bus)) || !Submix || !Mixer->GetSubmixInstance(Submix).IsValid())
+            Undriven.Add(Bus.ToString());
+    }
+    TestTrue(*FString::Printf(TEXT("On a device each slider and floored bus drives its registered submix (not: %s)"), *FString::Join(Undriven, TEXT(", "))),
+        Undriven.IsEmpty() && Near(Audio->DeviceSubmixGains().FindRef(TEXT("SFX")), .36f));
+    Audio->DriveSubmixesForTesting(false);
+    return TestTrue(TEXT("Automation hands the device's submixes back"), Audio->DeviceSubmixGains().IsEmpty());
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -701,11 +753,29 @@ bool FSoraAudioMusicTest::RunTest(const FString& Parameters)
         Scope.World->Tick(1);
     };
     const FData* D = FData::Get();
+    // Every stem of the piece keeps its voice whatever the mix, so a stem that
+    // returns is still on the bar: the muted ones are held just above the
+    // level the engine treats as a stop, and on a device each is playing,
+    // neither fading out nor virtualised.
+    const float Inaudible = FMath::Pow(10.f, -60.f / 20.f);
+    const auto Locked = [&](const TCHAR* When)
+    {
+        TArray<FString> Wrong;
+        for (const auto& Pair : Music.StemGains)
+            if (Music.Stems.Contains(Pair.Key) ? !FMath::IsNearlyEqual(Pair.Value, Music.BedGain) : FMath::IsNearlyZero(Pair.Value) || Pair.Value > Inaudible)
+                Wrong.Add(FString::Printf(TEXT("%s %.5f"), *Pair.Key.ToString(), Pair.Value));
+        const SoraAudioData::FPiece* Piece = D->Pieces.Find(Music.Piece);
+        TestTrue(*FString::Printf(TEXT("%s: every stem of %s is held, the muted ones just above silence (wrong: %s)"), When, *Music.Piece.ToString(),
+                     *FString::Join(Wrong, TEXT(", "))),
+            Piece && Music.StemGains.Num() == Piece->Stems.Num() && Wrong.IsEmpty());
+        if (Audio->HasDevice() && Piece)
+            TestEqual(*FString::Printf(TEXT("%s: on a device every stem of %s has its voice (%s)"), When, *Music.Piece.ToString(), *Join(Audio->StemVoices())),
+                Audio->StemVoices().Num(), Piece->Stems.Num());
+    };
     Start(Stealth);
     TestTrue(*FString::Printf(TEXT("%s plays Occupied Streets' base stem (%s)"), *Stealth, *Status()),
         Is(ESoraMusicState::Stealth, TEXT("occupation"), {TEXT("base")}) && FMath::IsNearlyEqual(Music.FadeSeconds, D->PieceSeconds));
-    if (Audio->HasDevice())
-        TestEqual(TEXT("On a device every stem of the piece has its voice, the silent ones too"), Audio->StemVoices().Num(), 4);
+    Locked(TEXT("A stealth zone"));
     Alert(TEXT("suspicious"));
     TestTrue(*FString::Printf(TEXT("A suspicious guard adds the pulse (%s)"), *Status()),
         Is(ESoraMusicState::Stealth, TEXT("occupation"), {TEXT("base"), TEXT("pulse")}) && FMath::IsNearlyEqual(Music.FadeSeconds, D->StemSeconds));
@@ -715,13 +785,16 @@ bool FSoraAudioMusicTest::RunTest(const FString& Parameters)
     Alert(TEXT("search"));
     TestTrue(*FString::Printf(TEXT("A search eases back over 2.5 s (%s)"), *Status()),
         Is(ESoraMusicState::Stealth, TEXT("occupation"), {TEXT("base"), TEXT("pulse"), TEXT("search")}) && FMath::IsNearlyEqual(Music.FadeSeconds, 2.5f));
+    Locked(TEXT("A search after a fight, the percussion muted"));
     Alert(TEXT("unaware"));
     TestTrue(*FString::Printf(TEXT("An unaware guard leaves the base alone (%s)"), *Status()), Is(ESoraMusicState::Stealth, TEXT("occupation"), {TEXT("base")}));
+    Locked(TEXT("Unaware again"));
 
     // A combat beat, then a boss by his phases, then his defeat.
     Start(Combat);
     TestTrue(*FString::Printf(TEXT("%s plays the alert stems (%s)"), *Combat, *Status()),
         Is(ESoraMusicState::Combat, TEXT("occupation"), {TEXT("base"), TEXT("pulse"), TEXT("perc")}));
+    Locked(TEXT("Back in a fight"));
     Start(Boss);
     TestTrue(*FString::Printf(TEXT("%s plays the Compound-Interest Flagship's synth (%s)"), *Boss, *Status()),
         Is(ESoraMusicState::Boss, TEXT("flagship"), {TEXT("synth")}));
@@ -737,6 +810,7 @@ bool FSoraAudioMusicTest::RunTest(const FString& Parameters)
     TestTrue(*FString::Printf(TEXT("His second phase brings in the taiko (%s)"), *Status()), Is(ESoraMusicState::Boss, TEXT("flagship"), {TEXT("synth"), TEXT("taiko")}));
     Phase(ESoraBossPhase::PhaseChanged, 2);
     TestTrue(*FString::Printf(TEXT("His last phase is the taiko alone (%s)"), *Status()), Is(ESoraMusicState::Boss, TEXT("flagship"), {TEXT("taiko")}));
+    Locked(TEXT("The boss's last phase, the synth muted"));
     Phase(ESoraBossPhase::Defeated, 2);
     TestTrue(*FString::Printf(TEXT("His defeat returns to exploration (%s)"), *Status()), Is(ESoraMusicState::Exploration, TEXT("title"), {TEXT("main")}));
 
@@ -764,9 +838,21 @@ bool FSoraAudioMusicTest::RunTest(const FString& Parameters)
         Music.Stinger == TEXT("chapter.completed") && FMath::IsNearlyEqual(Music.BedGain, FMath::Pow(10.f, -6.f / 20.f), .001f));
     TestTrue(TEXT("A second stinger while the first sounds is dropped, never stacked"), Plays.Num() >= 2 && !Plays[0].bDropped &&
         Plays[1].Cue == TEXT("site.restored") && Plays[1].bDropped);
+    Locked(TEXT("Under a stinger"));
     Scope.World->Tick(8 * FramesPerSecond);
-    return TestTrue(*FString::Printf(TEXT("After the stinger the bed comes back (%s, %.3f)"), *Music.Stinger.ToString(), Music.BedGain),
+    TestTrue(*FString::Printf(TEXT("After the stinger the bed comes back (%s, %.3f)"), *Music.Stinger.ToString(), Music.BedGain),
         Music.Stinger != TEXT("chapter.completed") && (!Music.Stinger.IsNone() || FMath::IsNearlyEqual(Music.BedGain, 1.f)));
+    if (!Audio->HasDevice())
+        return true;
+    // Every piece, intro and bed this world started goes when its sound
+    // ends; none waits on the world settings for the world to end.
+    TArray<FString> Kept;
+    for (UActorComponent* Component : World->GetWorldSettings()->GetComponents())
+        if (const UAudioComponent* Sound = Cast<UAudioComponent>(Component))
+            if (!Sound->bAutoDestroy)
+                Kept.Add(Sound->Sound ? Sound->Sound->GetName() : Sound->GetName());
+    return TestTrue(*FString::Printf(TEXT("On a device every audio component on the world settings is destroyed when it stops (kept: %s)"),
+                        *FString::Join(Kept, TEXT(", "))), Kept.IsEmpty());
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -800,8 +886,16 @@ bool FSoraAudioAmbienceTest::RunTest(const FString& Parameters)
     };
     FString Seen = Start(TEXT("ch01.b10"));
     TestTrue(*(TEXT("The estate by day: ") + Seen), Audio->Bed() == TEXT("amb.estate.day") && Audio->Weather() == TEXT("clear") && Audio->WeatherBed().IsNone());
+    Audio->ForgetPlays();
     Seen = Start(TEXT("ch03.b02"));
     TestTrue(*(TEXT("The canal approach in the rain: ") + Seen), Audio->Weather() == TEXT("rain") && Audio->WeatherBed() == TEXT("amb.rain"));
+    // The rain comes in over the 2 s the estate's bed takes to go.
+    const FSoraAudioPlay* Rain = nullptr;
+    for (const FSoraAudioPlay& Play : Audio->Plays())
+        if (Play.Cue == TEXT("amb.rain"))
+            Rain = &Play;
+    TestTrue(TEXT("A new bed fades in over 2 s, a cross-fade with the one going"), Rain && FMath::IsNearlyEqual(Rain->FadeInSeconds, 2.f) &&
+        !Audio->LiveLoops().Contains(TEXT("amb.estate.day")));
     Seen = Start(TEXT("ch07.b02"));
     TestTrue(*(TEXT("The anchor bastion in the typhoon: ") + Seen), Audio->Weather() == TEXT("typhoon") && Audio->WeatherBed() == TEXT("amb.typhoon"));
     Seen = Start(TEXT("ch07.b05"));

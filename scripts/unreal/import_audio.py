@@ -14,8 +14,9 @@ It builds, under /Game/Generated/Audio (docs/audio.md section 2):
 * one ducking SoundMix per trigger bus (SMIX_Duck_<trigger>), attached as a
   passive modifier to the trigger bus and its sub-buses, so a playing voice,
   telegraph or explosion ducks its targets for as long as it sounds;
-* a SoundWave for every OWN WAV (sora_audio_spec.py), in its bus's class,
-  looping over the whole file when its manifest marks it a loop.
+* a SoundWave for every OWN WAV and every CC0 derivative
+  (sora_audio_spec.py), in its bus's class, looping over the whole file when
+  its manifest marks it a loop.
 
 Re-running replaces the waves from source and re-applies every setting. It
 never deletes assets; validate_audio_import.py fails on any it did not make.
@@ -165,4 +166,5 @@ assets.save_directory(spec.GENERATED, only_if_is_dirty=False, recursive=True)
 loops = sum(1 for wave in audio["waves"] if wave["loop"])
 unreal.log(f"SORA_AUDIO_IMPORT_COMPLETE: {len(audio['waves'])} sound waves ({loops} loops), "
            f"{len(classes)} sound classes, {len(submixes)} submixes, {len(audio['mixes'])} ducking mixes; "
-           f"{audio['cc0_records']} CC0 audio records stay local-private")
+           f"{audio['cc0_waves']} of the waves CC0 derivatives; {audio['raw_cc0_records']} raw CC0 records stay "
+           f"local-private")

@@ -10,6 +10,7 @@ class USoraSettings;
 class USoundAttenuation;
 class USoundClass;
 class USoundConcurrency;
+class USoundSubmix;
 class USoundWave;
 enum class ESoraUISound : uint8;
 struct FSoraBeatEvent;
@@ -59,6 +60,13 @@ struct FSoraAudioPlay
     float DelaySeconds = 0.f;
     // Into the wave: a telegraph cut short for a quicker windup.
     float StartSeconds = 0.f;
+    // A bed coming in under the one fading out.
+    float FadeInSeconds = 0.f;
+    // The rule that chose the cue: its family and index in audio.json's
+    // bindings, and the Kernel rule that forwarded the event to that family.
+    FName RuleFamily;
+    int32 Rule = INDEX_NONE;
+    int32 ForwardedBy = INDEX_NONE;
     double Time = 0.0;
     TWeakObjectPtr<AActor> Source;
     TWeakObjectPtr<UAudioComponent> Component;
@@ -87,6 +95,9 @@ struct FSoraMusicStatus
     FName Stinger;
     double StingerEnds = 0.0;
     float BedGain = 1.f;
+    // The gain every stem of the piece is held at: the bed's for the mix,
+    // MutedStemGain for the rest, recorded with or without a device.
+    TMap<FName, float> StemGains;
 };
 
 /**
@@ -129,11 +140,27 @@ public:
     FName Bed() const { return BedCue; }
     FName WeatherBed() const { return WeatherCue; }
     FName Weather() const { return WeatherName; }
-    // The stems of the piece now sounding that have a voice on the device
-    // (none without one); muted stems keep theirs, sample-locked.
+    // The stems of the piece now sounding whose voice is playing on the
+    // device, neither fading out nor virtualised (none without a device);
+    // muted stems keep theirs, sample-locked.
     TArray<FName> StemVoices() const;
+    // A muted stem's gain (-80 dB). UAudioComponent::AdjustVolume to a level
+    // within UE_SMALL_NUMBER of zero is a fade-out that stops the sound when
+    // it ends, so a stem that left the mix would never come back; this stays
+    // clear of that and far below hearing under the mix.
+    static constexpr float MutedStemGain = .0001f;
     // The output gain the settings gave a bus's submix (1 before any).
     float SubmixGain(FName Bus) const;
+    // The gain last sent to each bus's submix on the device: empty unless
+    // settings attached to the engine (or DriveSubmixesForTesting) drive it.
+    const TMap<FName, float>& DeviceSubmixGains() const { return DeviceGains; }
+    // Slider and floored buses whose SMX_ submix did not load from the path
+    // the runtime uses (an import missing or renamed).
+    TArray<FName> MissingSubmixes() const;
+    // Automation only: drive this world's submixes from detached settings as
+    // attached ones would, so a device run checks the real path; false puts
+    // every driven submix back to unity.
+    void DriveSubmixesForTesting(bool bDrive);
     // Loops running now, by cue: beds, sustains, holds and loops on
     // opponents (a cue still without its sound runs silent).
     TArray<FName> LiveLoops() const;
@@ -162,8 +189,14 @@ private:
         int32 WindupMs = 0;
         // An ambience bed: heard everywhere, whatever the cue's 3D preset.
         bool bBed = false;
+        // Comes in over this long instead of starting at full level.
+        float FadeInSeconds = 0.f;
         // Loops are kept under this key until stopped.
         FString LoopKey;
+        // The rule that chose the cue (FSoraAudioPlay).
+        FName RuleFamily;
+        int32 Rule = INDEX_NONE;
+        int32 ForwardedBy = INDEX_NONE;
     };
     struct FLoop
     {
@@ -248,6 +281,9 @@ private:
     UAudioComponent* Spawn(const FSoraAudioPlay& Play, bool bAttach);
     void StopLoop(const FString& Key, float FadeSeconds);
     bool IsLooping(const FString& Key) const;
+    // A burst of sustained shots ended: its loop stops and its release plays.
+    void EndSustain(const FString& Key, const FSustainState& State);
+    USoundSubmix* SubmixFor(FName Bus);
     USoundWave* LoadWave(const FString& Wave);
     USoundAttenuation* AttenuationFor(FName Preset);
     USoundConcurrency* ConcurrencyFor(const SoraAudioData::FCue& Cue);
@@ -283,6 +319,8 @@ private:
     void ChangeMusic(ESoraMusicState State, FName Mix, const TArray<FName>& Stems);
     void StartPiece(FName Piece, const TArray<FName>& Stems, bool bIntro, float FadeSeconds);
     void SetStemGains(float FadeSeconds);
+    // MusicNow.StemGains for the piece, mix and bed gain now.
+    void HoldStemGains();
     void FadeOutPiece(FPieceVoice& Voice, float FadeSeconds);
     bool StartStinger(FSoraAudioPlay& Record, const SoraAudioData::FCue& Cue);
     double MusicClock() const;
@@ -314,6 +352,9 @@ private:
     TWeakObjectPtr<USoraSettings> BoundSettings;
     FDelegateHandle SettingsHandle;
     TMap<FName, float> SubmixGains;
+    TMap<FName, float> DeviceGains;
+    UPROPERTY() TMap<FName, TObjectPtr<USoundSubmix>> SubmixObjects;
+    bool bDriveSubmixesForTesting = false;
 
     // Campaign context.
     FString BeatId;

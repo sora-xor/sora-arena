@@ -11,11 +11,14 @@ Content/Data and adds what the game needs to play it:
   keeps them audible at low SFX and Voice settings (so their submixes feed
   Master directly);
 * ``attenuation``: the proposal's 3D presets;
-* ``cues``: every cue with the OWN waves it plays (paths relative to both
-  Content/SourceArt/Audio and /Game/Generated/Audio), its bus, attenuation,
-  concurrency, randomisation, caption key and, for telegraphs, the strike mark
-  the difficulty-scaled windup is aligned to. A cue whose sound does not exist
-  yet keeps its place with no waves and says what it still needs;
+* ``cues``: every cue with the waves it plays (paths relative to both
+  Content/SourceArt/Audio and /Game/Generated/Audio): the OWN renders, or the
+  CC0 recordings build_cc0_audio.py admitted (Content/SourceArt/Audio/CC0,
+  status ready-cc0, or placeholder-cc0 for Kenney stand-ins); its bus,
+  attenuation, concurrency, randomisation, caption key and, for telegraphs,
+  the strike mark the difficulty-scaled windup is aligned to. A cue whose
+  sound does not exist yet keeps its place with no waves and says what it
+  still needs, as does a placeholder;
 * ``bindings``: for every event family (the USoraGameEvents delegates, the
   practice kernel's events, the front end's sounds, and what the subsystem
   polls: the hero's weapon actions, footsteps and horses) the ordered rules
@@ -43,6 +46,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PROPOSAL = ROOT / 'Content/SourceArt/Audio/cues.proposed.json'
+CC0_MANIFEST = ROOT / 'Content/SourceArt/Audio/CC0/manifest.json'
 OUT = ROOT / 'Content/Data/audio.json'
 DATA = ROOT / 'Content/Data'
 SOURCE_PREFIX = 'Content/SourceArt/Audio/'
@@ -150,26 +154,11 @@ SUSTAIN = {
     'projectile.beam': {'loop': 'weapon.loop.beam', 'release': 'weapon.release.beam', 'gap_ms': 450},
 }
 NEEDS = {
-    'weapon.fired.repeater': 'CC0 Model 1894 / Marlin 336 lever-action reports (local-private)',
-    'weapon.fired.grenade_launcher': 'CC0 cannon and firework layers plus a tube layer',
-    'weapon.fired.micro_mortar': 'CC0 firework cannon layers',
     'weapon.fired.healing_lance': 'a warm heal voice of our own',
-    'weapon.yumi.draw': 'CC0 longbow draw layers; tsurune needs our own recording',
     'weapon.yumi.nock': 'CC0 nock layers',
-    'weapon.fired.yumi': 'CC0 bow shots; tsurune and yugaeri need our own recording',
     'projectile.arrow.flyby': 'CC0 arrow pass-by layers',
-    'melee.strike.hit_body': 'own cloth, armour and cut foley',
-    'melee.katana.draw': 'CC0 katana draw layers; the nōtō click needs close foley',
-    'melee.katana.sheathe': 'CC0 sheathe layers; the nōtō click needs close foley',
-    'enemy.died': 'body fall and armour rattle',
-    'explosion.detonated': 'CC0 bangs, muffled tail and cannon layers plus a debris layer',
     'boss.defeated': 'a release sting per boss (placeholder: the boss phase sting)',
     'foot.wood': 'suri-ashi on hinoki (the board creak is only its quiet stealth layer)',
-    'foot.tatami': 'tatami steps',
-    'foot.earth': 'CC0 sand steps (local-private)',
-    'foot.stone': 'CC0 stone steps (local-private)',
-    'foot.grass': 'grass steps',
-    'foot.water': 'CC0 splashes (local-private)',
     'foot.gravel': 'gravel steps',
     'foot.metal_grating': 'gantry grating steps',
     'horse.walk': 'unshod hooves (Freesound U2 or own recording)',
@@ -178,16 +167,29 @@ NEEDS = {
     'horse.snort': 'snorts (Freesound U2)',
     'horse.whinny': 'whinnies (Freesound U2)',
     'horse.tack': 'bit, abumi and saddle creak',
-    'amb.estate.day': 'CC0 park field recording layers plus uguisu and pheasant',
     'amb.stream': 'CC0 small-river recording',
-    'amb.rain': 'CC0 rain loops and eave drips',
-    'amb.thunder': 'CC0 long thunder',
-    'amb.fire': 'CC0 fireplace loop and crackle',
     'amb.smithy': 'CC0 workshop hammering and anvils',
     'amb.vault': 'CC0 drips over the low-passed Ledger Engine (plays the engine alone for now)',
     'amb.night_insects': 'night insects and frogs',
-    'amb.typhoon': 'typhoon wind beds in three intensities and a gust riser',
-    'amb.festival': 'crowd and 祭囃子',
+}
+# Cues the admitted CC0 recordings voice (Content/SourceArt/Audio/CC0), and
+# what would still make them right. Kenney files are placeholders by their
+# ledger ("never a hero sound"): their cues are placeholder-cc0.
+CC0_PLACEHOLDERS = {'melee.strike.hit_body', 'enemy.died', 'foot.grass', 'foot.tatami'}
+STILL_WANTED = {
+    'weapon.fired.yumi': 'the tsurune and yugaeri of a real yumi (own recording); CC0 longbow and recurve releases stand in',
+    'weapon.yumi.draw': "a yumi's own draw (own recording); CC0 longbow and recurve creaks stand in",
+    'weapon.fired.grenade_launcher': 'a launcher tube layer over the CC0 shot and cannon body',
+    'explosion.detonated': 'a debris layer over the CC0 bang and muffled body',
+    'melee.katana.draw': 'the nōtō click needs close foley',
+    'melee.katana.sheathe': 'the nōtō click needs close foley',
+    'melee.strike.hit_body': "own cloth, armour and cut foley; Kenney's heavy punch stands in",
+    'enemy.died': "a body fall and armour rattle of our own; Kenney's heavy soft impact stands in",
+    'foot.grass': "grass steps of our own; Kenney's grass steps stand in",
+    'foot.tatami': "tatami (igusa) steps of our own; Kenney's carpet steps stand in",
+    'amb.estate.day': 'uguisu and pheasant calls over the CC0 park birds',
+    'amb.typhoon': 'wind beds in three intensities and a gust riser; CC0 park wind and rain stand in',
+    'amb.festival': 'crowd and 祭囃子 under the CC0 fireworks',
 }
 
 # ---------------------------------------------------------------------------
@@ -506,7 +508,7 @@ def read(path):
 
 def wave_of(source):
     if not source.startswith(SOURCE_PREFIX) or not source.endswith('.wav'):
-        fail(f'not an OWN wave: {source}')
+        fail(f'not a project wave: {source}')
     return source[len(SOURCE_PREFIX):-4]
 
 
@@ -534,8 +536,10 @@ def build_attenuation(proposal):
     return presets
 
 
-def needs(cue, waves):
-    if waves and cue['status'] == 'ready-own':
+def needs(cue, status, waves):
+    if status in ('ready-cc0', 'placeholder-cc0'):
+        return STILL_WANTED.get(cue['id'], '')
+    if waves and status == 'ready-own':
         return ''
     if cue['id'] in NEEDS:
         return NEEDS[cue['id']]
@@ -543,25 +547,43 @@ def needs(cue, waves):
     return f"its CC0 layers ({', '.join(layers)}) are local-private" if layers else ''
 
 
+def cc0_waves():
+    """Cue id -> the CC0 derivatives build_cc0_audio.py made for it, in name order."""
+    waves = {}
+    for record in read(CC0_MANIFEST)['records']:
+        for row in record['files']:
+            waves.setdefault(row['cue'], []).append(wave_of(row['file']))
+    return {cue: sorted(names) for cue, names in waves.items()}
+
+
 def build_cues(proposal):
     cues = []
+    cc0 = cc0_waves()
     for cue in proposal['cues']:
         cue_id = cue['id']
         if cue_id in DROPPED:
             continue
         waves = WAVE_EDITS.get(cue_id, [wave_of(file) for file in cue['files']])
+        status = cue['status']
+        if cue_id in cc0:
+            if waves:
+                fail(f'{cue_id} would mix OWN and CC0 waves')
+            waves = cc0[cue_id]
+            status = 'placeholder-cc0' if cue_id in CC0_PLACEHOLDERS else 'ready-cc0'
+            if status == 'placeholder-cc0' and cue_id not in STILL_WANTED:
+                fail(f'placeholder {cue_id} must say what replaces it')
         # 'none' and 'default' are 2D: beds, stingers, interface and telegraphs.
         attenuation = cue['attenuation'] if cue['attenuation'] not in ('none', 'default') else ''
         bus = SITE_RESTORED_BUS if cue_id == 'site.restored' else cue['bus']
         entry = {
-            'id': cue_id, 'bus': bus, 'status': cue['status'], 'waves': waves,
+            'id': cue_id, 'bus': bus, 'status': status, 'waves': waves,
             'spatial': bool(cue['spatial']) and attenuation != '', 'attenuation': attenuation,
             'loop': bool(cue['loop']) or cue_id in LOOP_EDITS, 'max_instances': cue['max_instances'],
             'shuffle': cue['random'] != 'sequential', 'pitch_cents': cue['pitch_cents'],
             'volume_db': cue['volume_db'], 'caption': CAPTIONS.get(cue_id, ''),
             'caption_hero': cue_id in CAPTION_HERO, 'stinger': cue_id in STINGERS,
             'strike_ms': STRIKE_MS.get(cue_id, 0), 'sustain': SUSTAIN.get(cue_id),
-            'needs': needs(cue, waves),
+            'needs': needs(cue, status, waves),
             'unbound': UNBOUND_CUES.get(cue_id, ''),
             'notes': cue['notes'],
         }
@@ -580,7 +602,10 @@ def build_cues(proposal):
             'unbound': '', 'notes': added['notes'],
         })
     known = {cue['id'] for cue in cues}
-    for table in (CAPTIONS, STRIKE_MS, SUSTAIN, UNBOUND_CUES, NEEDS, WAVE_EDITS):
+    unused = sorted(set(cc0) - known)
+    if unused:
+        fail(f'CC0 audio is made for unknown cues: {unused}')
+    for table in (CAPTIONS, STRIKE_MS, SUSTAIN, UNBOUND_CUES, NEEDS, WAVE_EDITS, CC0_PLACEHOLDERS, STILL_WANTED):
         stale = sorted(set(table) - known)
         if stale:
             fail(f'edits name unknown cues: {stale}')

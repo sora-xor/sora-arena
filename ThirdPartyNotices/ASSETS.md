@@ -8,7 +8,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 
 | Tier | Records | Files | Bytes recorded |
 |---|---:|---:|---:|
-| PUB-CC0 | 178 | 2479 | 4,454,056,199 |
+| PUB-CC0 | 190 | 2565 | 4,555,157,223 |
 | PUB-BY | 10 | 10 | 206,477,553 |
 | OWN | 7 | 179 | 191,378,780 |
 | REF | 6 | 6 | 9,778,972 |
@@ -76,6 +76,23 @@ These assets are dedicated to the public domain under CC0 1.0 (<https://creative
 | opengameart/ui-sound-effects-button-clicks-user-feedback-notifications | UI Sound Effects (Button Clicks, User Feedback, Notifications) | Robin Lamb | CC0-1.0 | local private | 24 | <https://opengameart.org/content/ui-sound-effects-button-clicks-user-feedback-notifications> |
 | opengameart/water-waves | Water Waves | transitking | CC0-1.0 | local private | 4 | <https://freesound.org/people/transitking/sounds/11505/> via <https://opengameart.org/content/water-waves> |
 | opengameart/wood-and-metal-sound-effects-volume-2 | Wood and Metal Sound Effects: Volume 2 | Ogrebane | CC0-1.0 | local private | 26 | <https://opengameart.org/content/wood-and-metal-sound-effects-volume-2> |
+
+### SORA Arena CC0 audio derivatives (Content/SourceArt/Audio/CC0)
+
+| Asset | Name | Authors | License | Stored | Files | Source |
+|---|---|---|---|---|---:|---|
+| kenney/impact-sounds | Impact Sounds | Kenney (kenney.nl) | CC0-1.0 | repository (LFS) | 20 | <https://kenney.nl/assets/impact-sounds> |
+| opengameart/25-cc0-bang-firework-sfx | 25 CC0 bang / firework SFX | rubberduck | CC0-1.0 | repository (LFS) | 15 | <https://opengameart.org/content/25-cc0-bang-firework-sfx> |
+| opengameart/6-short-water-splashes | 6 Short water splashes | ezwa | CC0-1.0 | repository (LFS) | 6 | <https://opengameart.org/content/6-short-water-splashes> |
+| opengameart/cannon-fire | Cannon fire | Thimras | CC0-1.0 | repository (LFS) | 0 | <https://opengameart.org/content/cannon-fire> |
+| opengameart/fantozzis-footsteps-grasssand-stone | Fantozzi's Footsteps (Grass/Sand & Stone) | Fantozzi | CC0-1.0 | repository (LFS) | 12 | <https://freesound.org/people/Fantozzi/packs/10338/> via <https://opengameart.org/content/fantozzis-footsteps-grasssand-stone> |
+| opengameart/fireplace-sound-loop | Fireplace Sound loop | PagDev | CC0-1.0 | repository (LFS) | 1 | <https://opengameart.org/content/fireplace-sound-loop> |
+| opengameart/medieval-sound-effects-weapon-textures | Medieval sound effects - Weapon Textures | Ben Jaszczak & Brian Nelson | CC0-1.0 | repository (LFS) | 19 | <https://opengameart.org/content/medieval-sound-effects-weapon-textures> |
+| opengameart/muffled-distant-explosion | Muffled Distant Explosion | NenadSimic | CC0-1.0 | repository (LFS) | 0 | <https://opengameart.org/content/muffled-distant-explosion> |
+| opengameart/park-ambiences | Park ambiences | Thimras | CC0-1.0 | repository (LFS) | 2 | <https://opengameart.org/content/park-ambiences> |
+| opengameart/rain-long-thunder | Rain + Long Thunder | WuxiaScrub | CC0-1.0 | repository (LFS) | 1 | <https://opengameart.org/content/rain-long-thunder> |
+| opengameart/rain-loopable | Rain (loopable) | Ylmir | CC0-1.0 | repository (LFS) | 2 | <https://opengameart.org/content/rain-loopable> |
+| opengameart/the-free-firearm-sound-library | The Free Firearm Sound Library | Ben Jaszczak, et al. | CC0-1.0 | repository (LFS) | 8 | <https://opengameart.org/content/the-free-firearm-sound-library> |
 
 ### VCSL — Versilian Community Sample Library
 

@@ -112,9 +112,24 @@ TArray<FName> USoraAudioSubsystem::StemVoices() const
     for (const FPieceVoice& Voice : Voices)
         if (Voice.StopAt <= 0.0 && Voice.Piece == MusicNow.Piece)
             for (const auto& Stem : Voice.Stems)
-                if (Stem.Value.IsValid())
+            {
+                // A stem fading out is on its way to stopping; a virtualised
+                // one would restart out of step with the others.
+                const UAudioComponent* Component = Stem.Value.Get();
+                if (Component && Component->IsPlaying() && Component->GetPlayState() != EAudioComponentPlayState::FadingOut &&
+                    !Component->IsVirtualized())
                     Out.Add(Stem.Key);
+            }
     return Out;
+}
+
+void USoraAudioSubsystem::HoldStemGains()
+{
+    MusicNow.StemGains.Reset();
+    const FData* D = FData::Get();
+    if (const FPiece* Piece = D ? D->Pieces.Find(MusicNow.Piece) : nullptr)
+        for (const TPair<FName, FString>& Stem : Piece->Stems)
+            MusicNow.StemGains.Add(Stem.Key, MusicNow.Stems.Contains(Stem.Key) ? MusicNow.BedGain : MutedStemGain);
 }
 
 void USoraAudioSubsystem::TickMusic()
@@ -176,6 +191,7 @@ void USoraAudioSubsystem::ChangeMusic(ESoraMusicState State, FName Mix, const TA
             FadeOutPiece(Voice, Fade);
     const FPiece* PieceData = D->Pieces.Find(Piece);
     MusicNow.bIntro = Data && Data->bIntro && PieceData && !PieceData->Intro.IsEmpty();
+    HoldStemGains();
     if (PieceData)
         StartPiece(Piece, Stems, MusicNow.bIntro, Fade);
 }
@@ -218,18 +234,21 @@ void USoraAudioSubsystem::StartPiece(FName PieceId, const TArray<FName>& Stems, 
             Component->FadeIn(Fade, Gain);
         Held.Add(Component);
     };
+    // Each component goes when its voice stops (after FadeOutPiece), rather
+    // than staying on the world settings for the rest of the world.
+    const bool bAutoDestroy = true;
     if (bIntro)
         if (USoundWave* Intro = LoadWave(Piece.Intro))
-            if (UAudioComponent* Component = UGameplayStatics::CreateSound2D(World, Intro, 1.f, 1.f, 0.f, nullptr, false, false))
+            if (UAudioComponent* Component = UGameplayStatics::CreateSound2D(World, Intro, 1.f, 1.f, 0.f, nullptr, false, bAutoDestroy))
             {
                 Start(Component, OnStart, 0.f, MusicNow.BedGain);
                 Voice.Intro = Component;
             }
     for (const TPair<FName, FString>& Stem : Piece.Stems)
         if (USoundWave* Wave = LoadWave(Stem.Value))
-            if (UAudioComponent* Component = UGameplayStatics::CreateSound2D(World, Wave, 1.f, 1.f, 0.f, nullptr, false, false))
+            if (UAudioComponent* Component = UGameplayStatics::CreateSound2D(World, Wave, 1.f, 1.f, 0.f, nullptr, false, bAutoDestroy))
             {
-                Start(Component, bIntro ? Handoff : OnStart, bIntro ? 0.f : FadeSeconds, Stems.Contains(Stem.Key) ? MusicNow.BedGain : 0.f);
+                Start(Component, bIntro ? Handoff : OnStart, bIntro ? 0.f : FadeSeconds, MusicNow.StemGains.FindRef(Stem.Key));
                 Voice.Stems.Add(Stem.Key, Component);
             }
     if (Clock)
@@ -248,13 +267,15 @@ void USoraAudioSubsystem::FadeOutPiece(FPieceVoice& Voice, float FadeSeconds)
 
 void USoraAudioSubsystem::SetStemGains(float FadeSeconds)
 {
+    // Never to zero: the engine would stop the stem at the end of the fade.
+    HoldStemGains();
     for (FPieceVoice& Voice : Voices)
     {
         if (Voice.StopAt > 0.0 || Voice.Piece != MusicNow.Piece)
             continue;
         for (const auto& Stem : Voice.Stems)
             if (UAudioComponent* Component = Stem.Value.Get())
-                Component->AdjustVolume(FMath::Max(FadeSeconds, .02f), MusicNow.Stems.Contains(Stem.Key) ? MusicNow.BedGain : 0.f);
+                Component->AdjustVolume(FMath::Max(FadeSeconds, .02f), MusicNow.StemGains.FindRef(Stem.Key));
         if (UAudioComponent* Intro = Voice.Intro.Get())
             Intro->AdjustVolume(FMath::Max(FadeSeconds, .02f), MusicNow.BedGain);
     }
@@ -302,11 +323,13 @@ void USoraAudioSubsystem::SetBed(const FString& Key, FName Cue, FName& Current)
     Current = Cue;
     if (Cue.IsNone())
         return;
+    // The new bed comes in over the same 2 s the old one takes to go.
     FRequest Request;
     Request.Family = TEXT("Ambience");
     Request.Location = Listener();
     Request.LoopKey = Key;
     Request.bBed = true;
+    Request.FadeInSeconds = BedFadeSeconds;
     Play(Cue, Request);
 }
 
