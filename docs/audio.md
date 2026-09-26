@@ -1,16 +1,19 @@
 # Audio: cue list, buses, loudness and sources
 
-**Status (2026-09-25):**
+**Status (2026-09-26):**
 
 - **Built:**
   - a reproducible audio pipeline;
   - 133 original SFX, 3 music loops (8 WAV renders, including stems), 6 stingers and 3 MIDI scores;
   - a CC0 source library of about 3 GB, with a SHA-256 ledger;
-  - a 104-cue proposal in [`Content/SourceArt/Audio/cues.proposed.json`](../Content/SourceArt/Audio/cues.proposed.json).
-- **Not done:** nothing is imported into Unreal yet. No MetaSound, SoundClass or Submix assets exist.
+  - a 104-cue proposal in [`Content/SourceArt/Audio/cues.proposed.json`](../Content/SourceArt/Audio/cues.proposed.json);
+  - the Unreal import (section 2.1): `scripts/toolchain/import-mac.sh` imports the 149 OWN WAVs as SoundWaves,
+    builds the bus tree below as SoundClasses and SoundSubmixes with the Master limiter and three passive
+    ducking SoundMixes, and loads all 181 packages back with their expected types and routing.
+- **Not done:** nothing in the game plays these sounds yet. There is no MetaSound, attenuation or concurrency
+  asset, Quartz transition or cue data in `Content/Data`, and the five non-Master volume sliders do not reach
+  their buses. No CC0 layer is imported, because the ledger keeps every CC0 audio file in `Local/`.
 - **Not heard:** no one has listened to any file. All QA is numerical (section 4.3).
-
-The engineering lane owns the import and moves the approved cue data into `Content/Data`.
 
 Related: [free-asset plan §3.11–3.12 and §4](art-research/free-asset-acquisition-plan.md), the
 [story bible](campaign/story-bible.md) (L5 music states and captioned barks), and the chapter scripts
@@ -106,6 +109,57 @@ Buses map to UE SoundClasses and Submixes. The user sliders are **Master, Music,
 **Attenuation presets:** `weapon_long` (80 m), `weapon_mid`, `melee_close` (25 m), `foley_short`, `foley_mid`,
 `stealth_noise` (radius equals the AI hearing radius), `explosion` (150 m), `flyby` (Doppler), `drone`,
 `ambient_emitter` and `far` (thunder, with distance delay). The full values are in the JSON.
+
+### 2.1 In Unreal
+
+`scripts/unreal/import_audio.py` builds everything under `/Game/Generated/Audio` from `cues.proposed.json` and
+the two OWN manifests. `scripts/toolchain/import-mac.sh` runs it after the art import, then
+`scripts/unreal/validate_audio_import.py`. Both read their rules from `scripts/unreal/sora_audio_spec.py`.
+
+| Assets | Path | What they do |
+|---|---|---|
+| 149 SoundWaves | `Original/<category>/<file>`, `Music/<piece>/<file>` | One per OWN WAV, each hash-checked. Each is in the class of the bus its cues play it on and has no submix of its own |
+| 14 SoundClasses | `Buses/SC_<bus>` | The bus tree above. Each carries its bus's default level (Music 0.398 = -8 dB), its loading behaviour and its submix |
+| 14 SoundSubmixes | `Buses/SMX_<bus>` | The same tree at unity gain. `SMX_Master` feeds the engine's main submix |
+| 1 limiter | `Buses/SFXP_MasterLimiter` | On `SMX_Master`: a peak limiter at -1 dBFS, 5 ms look-ahead, 1 ms attack, 100 ms release |
+| 3 SoundMixes | `Buses/SMIX_Duck_<trigger>` | The ducking table, as passive modifiers of each trigger bus and its sub-buses |
+
+- **Levels.** The default levels are SoundClass volumes, which multiply down the tree; submix outputs stay at
+  0 dB. Master's slider is the audio device volume (`USoraSettings::ApplyAudio`); the other five sliders are
+  still to be applied to their classes.
+- **Limiter.** Unreal's limiter reads sample peaks, not true peaks. The -1 dBTP target of section 2 is still to
+  be measured on a packaged mix (section 4.1).
+- **Routing.** A class's Default Submix routes its sounds. Waves set no submix, so a MetaSound or cue in the
+  same class routes the same way.
+- **Ducking.** Unreal pushes a class's passive SoundMix while a sound of that class plays and pops it when the
+  last one stops; the attack and release are the mix's fade-in and fade-out. Passive modifiers key on a
+  sound's own class, so `Voice_Barks` carries the Voice duck too. The spec refuses any duck of Telegraph,
+  Voice_Barks or their ancestors.
+- **Telegraphs.** `SC_SFX_Telegraph` and `SC_Voice_Barks` are Always Play. Telegraph waves play when silent
+  instead of virtualising, and keep their first chunk resident (Retain On Load). Their level still follows
+  SFX; the separate Telegraph floor (above) is still to build.
+- **Loops.** The 19 loops loop the whole file. Unreal also reads each `smpl` loop as a loop region, but it
+  treats the RIFF end as exclusive, so that region is one frame shorter than the file. Nothing loops by it: a
+  looping SoundWave repeats the whole file, and a MetaSound Wave Player loops by its own Loop Start and Loop
+  Duration inputs (the whole wave by default). Music loops and stems play when silent, so a muted stem stays
+  sample-locked with the others.
+- **Loading.** Music and Voice load on demand, SFX and Ambience prime on load, and UI and Telegraph retain
+  their first chunk. Compression is the project default, which the import logs as Bink Audio at quality 80.
+- **One bus per wave.** A wave shared by several cues takes the bus of its ready cues:
+  - `shd_barrier_regen` is on Telegraph, for `boss.shield.regen`, not the placeholder healing lance;
+  - the parry body layers are on Melee.
+
+  `mus_sting_site_restored` is the one explicit exception (`BUS_OVERRIDES`): its cue `site.restored` is on UI,
+  but the cue's note and section 3.5 put the stinger on Music.
+- **CC0 layers.** Every `scripts/assets/manifests/audio_*.json` record is `storage: local-private`, so none is
+  imported, and the spec fails if one is admitted to the repository before its import route exists. The cue
+  proposal names 195 CC0 files (531 MB), above the 0.5 GB that the free-asset plan (section 5) allows for audio
+  sources in the repository.
+- **Validation.** `validate_audio_import.py --source-only` checks the hashes, the WAV loop chunks, the bus tree,
+  the ducking and the cue routing on the host, and reports the expected package count. In the editor it
+  fails unless `/Game/Generated/Audio` holds exactly those packages and every tree link, level, flag, loading
+  behaviour, submix, ducking mix, loop flag and loop region matches the spec. `scripts/unreal/test_audio_spec.py`
+  checks that the spec's refusals fire (8 host tests).
 
 ## 3. Cue list (gameplay event → files)
 
@@ -385,12 +439,19 @@ and untracked, and that every path in the cue proposal exists.
 | `scripts/audio/qa_audio.py`, `validate_audio.py`, `build_cue_proposal.py` | QA, ledger validation, cue proposal |
 | `scripts/assets/manifests/audio_{vcsl,kenney,opengameart,wikimedia}.json` | Schema-2 ledger records for the raw CC0 sources |
 | `Content/SourceArt/Audio/` | The OWN renders, their manifests and [README](../Content/SourceArt/Audio/README.md) |
+| `scripts/unreal/import_audio.py`, `validate_audio_import.py`, `sora_audio_spec.py`, `test_audio_spec.py` | Unreal import of the SoundWaves, bus tree and ducking, and its validator (section 2.1) |
+| `Source/SoraArena/Private/Audio/SoraAudioImportLibrary.*` | Editor-only links the importer uses to parent submixes and sound classes (Python cannot set a submix's parent) |
 
 ## 7. Gaps, in priority order
 
-1. **Import into UE 5.8.** This belongs to the engineering lane. Import the 149 WAVs as SoundWaves, build
-   SoundClasses and Submixes from §2, build MetaSounds for the multi-layer cues (`needs-assembly`), and set up
-   Quartz music transitions. It also means moving the approved `cues.proposed.json` into `Content/Data`.
+1. **Finish the UE 5.8 integration.** Done: the SoundWaves, the bus tree, the limiter and the ducking (section
+   2.1). Still to do:
+   - MetaSounds for the multi-layer cues (`needs-assembly`);
+   - attenuation and concurrency assets;
+   - Quartz music transitions;
+   - the approved cue data moved from `cues.proposed.json` into `Content/Data`;
+   - playback on the `USoraGameEvents` delegates;
+   - the five non-Master slider gains and the Telegraph floor.
 2. **Human listening and mix review** of everything here (plan §4.3). No file has been auditioned.
 3. **User steps:**
    - Freesound OAuth (U2) unblocks horse, gravel, insects, tatami, crowd and tsurune.

@@ -57,6 +57,14 @@ if [[ -z "$EXPECTED_PACKAGES" ]]; then
   echo "Source art check did not report an expected package count: $SOURCE_CHECK" >&2
   exit 1
 fi
+# The audio check verifies the OWN audio hashes, loop chunks, bus tree and cue
+# routing, and yields the audio package count its editor validator must load.
+AUDIO_CHECK="$(PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/unreal/validate_audio_import.py" --source-only)"
+EXPECTED_AUDIO_PACKAGES="$(sed -n 's/^SORA_AUDIO_SOURCE_CHECK_COMPLETE: \([0-9][0-9]*\) expected Unreal packages .*$/\1/p' <<<"$AUDIO_CHECK")"
+if [[ -z "$EXPECTED_AUDIO_PACKAGES" ]]; then
+  echo "Source audio check did not report an expected package count: $AUDIO_CHECK" >&2
+  exit 1
+fi
 
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config
@@ -102,4 +110,8 @@ run_step import-original import_original_assets.py 'SORA_ASSET_IMPORT_COMPLETE: 
 run_step import-palette import_environment_palette.py 'NYAAGYU_PBR_READY: '
 run_step validate validate_imported_assets.py \
   "SORA_ASSET_VALIDATION_COMPLETE: $EXPECTED_PACKAGES packages loaded with expected types"
-echo "PASS: imported and loaded $EXPECTED_PACKAGES expected packages; logs: $OUTPUT"
+# Audio is independent of the art: sound waves, then the bus tree and ducking.
+run_step import-audio import_audio.py 'SORA_AUDIO_IMPORT_COMPLETE: '
+run_step validate-audio validate_audio_import.py \
+  "SORA_AUDIO_VALIDATION_COMPLETE: $EXPECTED_AUDIO_PACKAGES packages loaded with expected types and routing"
+echo "PASS: imported and loaded $EXPECTED_PACKAGES expected art packages and $EXPECTED_AUDIO_PACKAGES audio packages; logs: $OUTPUT"
