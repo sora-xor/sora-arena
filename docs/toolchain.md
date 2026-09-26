@@ -186,7 +186,20 @@ checkout under the pin.
 UAT archives the app into `ARCHIVE_DIRECTORY/Mac/` unless a component of that
 path already starts with `Mac` (case-insensitive, `DeploymentContext.cs`), in
 which case the app lands directly in `ARCHIVE_DIRECTORY`; `stage-mac.sh` and
-`test-packaged-mac.sh` both follow that rule.
+`test-packaged-mac.sh` both follow that rule. On a restage, Xcode's incremental
+package build syncs the newly staged data into the app but skips its CodeSign
+step when the executable is unchanged, which left a changed pak outside the
+seal. `stage-mac.sh` now verifies the archived app strictly. Only when every
+complaint is a staged file under `Contents/UE`, it signs the app again as Xcode
+does (ad hoc, with the app's own entitlements). Any other signature failure
+stops the script.
+
+The cook commandlet starts the editor, which wrote an AndroidFileServer
+`SecurityToken` into `Config/DefaultEngine.ini` during the first cook. That
+cook's package was staged with the token in its config. `cook-mac.sh` now uses
+the editor runners' Config guard and keeps its log under `Saved/Cook/`. The
+token block was removed from the working tree and never committed, and the
+package was restaged from the clean Config.
 
 `scripts/toolchain/test-packaged-mac.sh ARCHIVE_DIRECTORY [Filter] [output]`
 tests the staged app without the editor. It checks the bundle identifier, a
@@ -205,8 +218,9 @@ On 2026-09-26 the main checkout (source as of `d70c30b`, kernel
 `libarena_ffi.dylib` sha256 `1bd6e8fa…d494`) imported 279 packages, built the
 game (through the Xcode retry above) and cooked 918 packages with 0 errors and
 0 warnings. Staging into `Local/Packages/mac-wavec-baseline` produced a
-1.3 GiB signed app. Two consecutive full runs of the packaged test gave the same
-result. The startup smoke passed. The package found all 79 client-context
+1.3 GiB signed app. Three full runs of the packaged test gave the same result:
+two on that package, and one after the guarded cook and the restage. The
+startup smoke passed. The package found all 79 client-context
 tests, and **76 passed**, including `UIRendered.FrontEndScreens` and its 19
 screenshots, the 8-chapter `Campaign.Playthrough`, `Practice.FullMatches`,
 `KernelDeterminism` and both localization tests. **Three fail only in the
@@ -230,7 +244,7 @@ The same runs show that eight cooked materials lack the `InstancedStaticMeshes`
 usage flag, so the practice arenas' instanced dressing draws with the default
 material in the package: `MI_Nyaagyu_Plaster`, `Stone`, `Timber`, `Kawara`,
 `Metal` and `TerrainStone`, `M_ArenaSurface`, and the engine's
-`EmissiveMeshMaterial`. Separately, 4 of the 24 package launches that day ended
+`EmissiveMeshMaterial`. Separately, 4 of the 26 package launches that day ended
 in a `SIGSEGV` at startup, before the first log line. In each crash the main
 thread was in AppKit's launch Apple-event handling and hit
 `FLLMTracker::PopTag` ("Called PopTag but PushTag was never called!") under

@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Cook Mac content with the same project-scoped Unreal/Xcode selection as builds.
+# The cook commandlet starts the editor, so it gets the editor runners' Config
+# guard: without it AndroidFileServer writes a SecurityToken into
+# Config/DefaultEngine.ini. The log is kept under Saved/Cook/.
 set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
 TOOLCHAIN_EXPORTS="$(PYTHONDONTWRITEBYTECODE=1 python3 - "$SCRIPT_DIR" <<'PY'
 import importlib.util, shlex, sys
 from pathlib import Path
@@ -23,10 +27,14 @@ if [[ ! -x "$EDITOR_CMD" ]]; then
   echo "UnrealEditor-Cmd is missing: $EDITOR_CMD" >&2
   exit 1
 fi
-COOK_LOG="$(mktemp -t sora-arena-cook.XXXXXX)"
-trap 'rm -f "$COOK_LOG"' EXIT
+COOK_LOG="$PROJECT_ROOT/Saved/Cook/$(date -u +%Y%m%dT%H%M%SZ).log"
+mkdir -p "$(dirname -- "$COOK_LOG")"
+echo "Cook log: $COOK_LOG" >&2
+source "$SCRIPT_DIR/editor-config-guard.sh"
+guard_config
 "$EDITOR_CMD" "$PROJECT" -run=Cook -TargetPlatform=Mac \
-  -Unattended -NullRHI -NoSplash -NoSound -stdout -FullStdOutLogOutput "$@" 2>&1 | tee "$COOK_LOG"
+  -Unattended -NullRHI -NoSplash -NoSound -stdout -FullStdOutLogOutput \
+  "${EDITOR_CONFIG_ARGS[@]}" "$@" 2>&1 | tee "$COOK_LOG"
 python3 - "$COOK_LOG" <<'PY'
 from pathlib import Path
 import sys

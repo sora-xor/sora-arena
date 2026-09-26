@@ -1,4 +1,5 @@
-# Sourced by the headless editor runners (run-automation-mac.sh, import-mac.sh).
+# Sourced by the headless editor runners (run-automation-mac.sh, import-mac.sh,
+# cook-mac.sh).
 #
 # Two engine features rewrite project Config on every editor start: the
 # Enhanced Input editor module upgrades the default input classes in
