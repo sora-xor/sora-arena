@@ -222,6 +222,26 @@ kusarigama and coil matchlock have no key; a guarded carry answers a
 detection with a fight rather than pausing; guards walk the space's derived
 patrol loops, not the chapters' authored routes and detection numbers.
 
+## 2026-09-26 environment lane: CC0 material library
+
+The first-slice CC0 ledgers now feed a [material library](cc0-environment-library.md)
+under `/Game/Generated/Environment/CC0`: 220 hash-verified textures (DirectX
+normals, packed ARM, streaming virtual textures for the six 4K hero sets), six
+lighting-only HDRI cubemaps, 34 Nanite scan meshes, `MPC_EnvironmentWeather`
+(wetness, puddles, lantern intensity), seven masters (opaque PBR with
+world-aligned/mesh UVs, detail normal and macro variation; a two-layer height
+blend; two-sided foliage; cloth; emissive lantern paper) and 47 instances named
+for story-bible places plus 29 evaluation instances. The ledgers' period flags
+are enforced in code: flagged-inaccurate surfaces (mortared walls, tyre tracks,
+Western roof tiles, wire rope, possible moso bamboo, metal-hooped buckets) are
+evaluation-only, and medium-risk surfaces only fill the role their flag allows.
+`import-mac.sh` packs, checks, imports and validates it. Run: the 15 host tests,
+the pack and source check (344 packages), and the headless 5.8.3 import and
+validator (`SORA_CC0_ENVIRONMENT_VALIDATED: 344 packages`). Not yet run:
+shader compilation and rendered dry/wet look-development (the render script was
+held when free disk fell below the 30 GiB floor), cook, frame cost and the
+photoreal A/B gate; no gameplay code references the library yet.
+
 ## Milestones and current evidence
 
 | Milestone | Current state | Completion evidence still required |
