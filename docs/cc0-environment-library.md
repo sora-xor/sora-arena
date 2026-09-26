@@ -47,6 +47,15 @@ copy. If a file is missing, the import stops and names
 Every imported texture, cubemap and mesh records its source SHA-256 as package
 metadata. A source whose hash is unchanged is not imported again.
 
+Each master records `SoraGraphSha256`, the digest
+`cc0_environment_library.master_graph_digest` takes of everything its graph is
+built from: the importer and library source, the master's name and the
+default maps it binds. The importer rebuilds a master only when that digest
+changes, and leaves `MPC_EnvironmentWeather` alone when its parameters already
+match. Rebuilding a master gives it a new state id, which recompiles every
+shader of it and of its instances, and every rebuild adds to the shader cache
+on disk. The validator fails a master whose recorded digest is stale.
+
 The first run on 2026-09-26 imported the following. It used about 2.3 GB under
 `Content/Generated/Environment/CC0`.
 
@@ -59,7 +68,7 @@ The first run on 2026-09-26 imported the following. It used about 2.3 GB under
 | Material instances | 76 |
 
 `scripts/unreal/test_cc0_environment_library.py` runs host-only tests of the
-period policy and naming rules.
+period policy, naming rules and master digest.
 
 ## Texture import rules
 
@@ -347,24 +356,62 @@ Every slot binds the instance built from that scan's own maps. The Mac preset
 turns Nanite off (`Config/Mac/MacEngine.ini`), so the Mac renders Nanite's
 fallback mesh. No conventional LOD chain has been authored.
 
+## Presets for applying the library
+
+`scripts/unreal/environment_presets.py` holds the data the next step needs to
+apply the library. The game does not read it yet.
+
+- `LIGHTING` has one preset per lighting state in the story bible's §16 table
+  (overcast estate day, misty wood dawn, golden dusks, the fire-lit ch02 night,
+  Lantern Ward dusk rain, the hazy village day, the furnace night, the new-moon
+  citadel, the typhoon, the clear ch08 dawn and the festival night), and
+  `ARENAS` maps each arena to one of them. Each preset gives the key light
+  (kind, colour temperature, angle, intensity), a lighting-only HDRI where the
+  ledger plans one for that chapter, exposure bias, fog, the
+  `MPC_EnvironmentWeather` values, the lantern colour and the bible's Mac
+  fallback. Only `estate_day` is `shipped`: it repeats the values
+  `SoraWorldBuilderLighting.cpp` uses today, and a test holds the two
+  together. Every other intensity is an unverified starting value to tune
+  against captures.
+- `SURFACES` names, for each story-bible place, the place instance for each
+  surface role (floor, board wall, earthen wall, plaster, roof, ground, path,
+  bark, straw, rope, leather, cloth, fence, lantern paper). The test runs the
+  library's own `check_instance` with the instance moved to that place, so an
+  instance is only reused where every ledger record it binds is planned. For
+  example, `MI_EstateDay_Shikkui` cannot be used at the night estate until the
+  ledger lists `Plaster007` there.
+- `SCATTER` gives per-place densities, scale ranges and clearances for the
+  scanned rocks, roots, stumps and moss. `scatter()` places them on a jittered
+  grid seeded by SplitMix64 hashes. It returns integer centimetres, tenths of
+  a degree and thousandths of scale, and it keeps clear of exclusion circles
+  (spawns, objectives, and paths sampled by `path_exclusions`). Apart from
+  each rule's grid cell size (a rounded square root of its density), its
+  arithmetic is 64-bit integer, so a C++ port can reproduce it. The test pins
+  an output digest.
+
+`scripts/unreal/test_environment_presets.py` checks all of this with host-only
+tests.
+
 ## Verification status
 
 The following were run on 2026-09-26:
 
-- the host tests: 15 tests;
+- the host tests: 16 library tests (including the master digest) and 15
+  preset tests;
 - the pack step and the host source check: 344 packages;
 - the editor import: `SORA_CC0_ENVIRONMENT_READY: 344 packages`;
 - the editor validator: `SORA_CC0_ENVIRONMENT_VALIDATED: 344 packages`, with
   220 textures, 7 masters, 47 place and 29 evaluation instances, and 34 meshes.
 
-Each step ran on its own with the same editor flags that `import-mac.sh`
-uses. The full `import-mac.sh`, including its build and original-asset steps,
-has not yet run end to end with the new steps. These checks ran in a
-`-nullrhi` editor. In that editor the material translation reported no errors,
-but no shaders were compiled.
+Each editor step ran on its own with the same flags that `import-mac.sh` uses,
+in a `-nullrhi` editor. That editor translated the materials without errors
+but compiled no shaders. The editor runs predate the master graph digest, so
+the digest path (`SoraGraphSha256`, skipping unchanged masters) has run only
+in the host test, not yet in the editor.
 
 The following remain unverified:
 
+- the full `import-mac.sh` run end to end with the new steps;
 - actual Metal and D3D shader compilation of the Custom HLSL nodes;
 - the rendered appearance of the dry and wet states and of the world-aligned
   normal frame;
@@ -374,9 +421,28 @@ The following remain unverified:
 - frame cost.
 
 `scripts/unreal/render_cc0_environment_lookdev.py` renders fixed-camera dry
-and wet captures of every instance, and in doing so compiles the shaders. It
-has not produced a capture. It was first held while free disk was below the
-30 GiB floor. One attempt at 32.4 GiB free built the look-development level;
-the editor then received an external termination (`Mac
-GracefulTerminationHandler`, then exit 137) while it was building the
-imported textures' platform data, before any shader or screenshot.
+and wet captures of every instance and the distance views, and in doing so
+compiles the shaders. It has not produced a capture, for lack of disk:
+
+- The first attempt, at 32.4 GiB free, built the look-development level. The
+  lane's own disk watchdog then stopped it when free space fell to 31.9 GiB:
+  SIGTERM (logged as `Mac GracefulTerminationHandler`), then `kill -9` (exit
+  137) because the busy editor kept running. That was while it built the
+  imported textures' platform data, before any shader or screenshot.
+- Before the second attempt, a review of the script found that it passed
+  rotations to `unreal.Rotator` positionally, and the order is (roll, pitch,
+  yaw). The cameras would have been rolled, not pitched down, so they would
+  have missed the samples. The labels would have been upside down, and the
+  sun would have pointed up. The script now names pitch and yaw. It also waits
+  for each PNG from the image write queue and fails unless every capture is
+  written afresh.
+- The second attempt ran from 20:05 to 20:51 JST under a guard that suspends
+  the editor (SIGSTOP) below 32 GiB free and resumes it at 32.5 GiB. Other
+  jobs held free space at 29.0-33.2 GiB. The editor was suspended for 1,717
+  of 2,723 seconds, loaded the level and began building textures. It was
+  stopped after 15 minutes suspended in a row, before any shader compilation
+  or screenshot.
+
+The lane's disk watchdog also stopped an end-to-end `import-mac.sh` run at
+31.9 GiB free, during its original-asset step. The next `import-mac.sh` run
+imports that step's packages again.

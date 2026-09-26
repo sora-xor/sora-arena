@@ -235,13 +235,15 @@ for story-bible places plus 29 evaluation instances. The ledgers' period flags
 are enforced in code: flagged-inaccurate surfaces (mortared walls, tyre tracks,
 Western roof tiles, wire rope, possible moso bamboo, metal-hooped buckets) are
 evaluation-only, and medium-risk surfaces only fill the role their flag allows.
-`import-mac.sh` packs, checks, imports and validates it (wired in, but not yet run end to end; each step ran separately). Run: the 15 host tests,
-the pack and source check (344 packages), and the headless 5.8.3 import and
-validator (`SORA_CC0_ENVIRONMENT_VALIDATED: 344 packages`). Not yet run:
-shader compilation and rendered dry/wet look-development (the render script
-was held below the 30 GiB disk floor, and its one attempt was terminated
-externally before any capture), cook, frame cost and the photoreal A/B gate;
-no gameplay code references the library yet.
+`import-mac.sh` packs, checks, imports and validates it (wired in, but not yet run end to end; each step ran separately). Run: the host tests
+(16 library, 15 preset), the pack and source check (344 packages), and the
+headless 5.8.3 import and validator (`SORA_CC0_ENVIRONMENT_VALIDATED: 344
+packages`). Not yet run: shader compilation and the rendered dry/wet and
+distance look-development, because both render attempts ran out of disk before
+any capture (free space held at 28-33 GiB against the 32 GiB floor). Also not
+yet run: the end-to-end import, cook, frame cost and the photoreal A/B gate. No
+gameplay code references the library or `scripts/unreal/environment_presets.py`
+(lighting presets, per-place surfaces, seeded scatter) yet.
 
 ## Milestones and current evidence
 

@@ -11,18 +11,22 @@ never shipped): one sample per material instance on engine cubes (world-aligned
 surfaces: top = floor projection, sides = wall projection), cylinders (bark),
 spheres (mesh-UV props, cloth, lantern paper) and the scanned meshes at their
 measured size, lit by the lighting-only Kloofendal misty-morning HDRI and a
-5200 K sun under fixed manual exposure. Each group is captured dry and again
-with ``MPC_EnvironmentWeather`` at Wetness 1 / PuddleAmount 0.7, into
-``Saved/CC0LookDev/``. Taking the screenshots compiles every master and
-instance permutation for the running platform; the log must then show no
-material or shader errors. These are look-development captures on engine
-primitives, not in-game photoreal approvals.
+5200 K sun under fixed manual exposure. Distance views show repetition: 60 m of
+six ground instances from standing eye height and three 30 m walls at a
+grazing angle. Each view is captured dry and again with
+``MPC_EnvironmentWeather`` at Wetness 1 / PuddleAmount 0.7, into
+``Saved/CC0LookDev/``; the run fails unless every capture is written afresh.
+Taking the screenshots compiles every master and instance permutation for the
+running platform; the log must then show no material or shader errors. These
+are look-development captures on engine primitives, not in-game photoreal
+approvals.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 import sys
+import time
 
 import unreal
 
@@ -50,6 +54,12 @@ GROUPS = (
                        "AsaHorseBlanket", "JinmakuSilk", "PackWrapCloth", "ShitaguraPad", "ChochinPaper",
                        "AndonPaper")),
 )
+# Repetition at distance: 60 m of ground from standing eye height (165 cm), and
+# 30 m walls seen at a grazing angle from 4 m away.
+DISTANCE = (("PackedEarthRoad", "ground"), ("MossForestFloor", "ground"), ("RojiStonePath", "ground"),
+            ("ValleyFloor", "ground"), ("GravelPitch", "ground"), ("HinokiFloor", "ground"),
+            ("Tsuchikabe", "wall"), ("Shikkui", "wall"), ("SugiBoardWall", "wall"))
+DISTANCE_ORIGIN_Y = 14000.0
 
 
 def load(path):
@@ -58,12 +68,14 @@ def load(path):
     return asset
 
 
-def spawn(cls, location, rotation=(0.0, 0.0, 0.0)):
-    return ACTORS.spawn_actor_from_class(cls, unreal.Vector(*location), unreal.Rotator(*rotation))
+def spawn(cls, location, pitch=0.0, yaw=0.0):
+    # unreal.Rotator's positional order is (roll, pitch, yaw), so name them.
+    rotation = unreal.Rotator(roll=0.0, pitch=pitch, yaw=yaw)
+    return ACTORS.spawn_actor_from_class(cls, unreal.Vector(*location), rotation)
 
 
-def mesh_actor(mesh, material, location, scale, rotation=(0.0, 0.0, 0.0)):
-    actor = spawn(unreal.StaticMeshActor, location, rotation)
+def mesh_actor(mesh, material, location, scale):
+    actor = spawn(unreal.StaticMeshActor, location)
     component = actor.static_mesh_component
     component.set_static_mesh(mesh)
     if material is not None:
@@ -74,7 +86,7 @@ def mesh_actor(mesh, material, location, scale, rotation=(0.0, 0.0, 0.0)):
 
 
 def label(text, location):
-    actor = spawn(unreal.TextRenderActor, location, (0.0, 180.0, 0.0))
+    actor = spawn(unreal.TextRenderActor, location, yaw=180.0)  # face the cameras on -X
     component = actor.text_render
     component.set_text(text)
     component.set_world_size(13.0)
@@ -132,12 +144,27 @@ def build_scene(plan):
             suffix = sample(plan, instance, (x, y, 0.0))
             label(instance.name.removeprefix("MI_") + suffix, (x - 115.0, y, 4.0))
         rows = (len(names) + columns - 1) // columns
-        camera = spawn(unreal.CameraActor, (-560.0, origin_y, 430.0 + rows * 40.0), (-26.0, 0.0, 0.0))
+        camera = spawn(unreal.CameraActor, (-560.0, origin_y, 430.0 + rows * 40.0), pitch=-26.0)
         camera.camera_component.set_editor_property("field_of_view", 62.0)
         shots.append((group, camera))
-    ground = mesh_actor(load("/Engine/BasicShapes/Plane.Plane"), None, (1200.0, 4000.0, 0.0), (80.0, 120.0, 1.0))
-    ground.static_mesh_component.set_material(0, load("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"))
-    sun = spawn(unreal.DirectionalLight, (0.0, 0.0, 800.0), (-38.0, 35.0, 0.0))
+    plane, cube = load("/Engine/BasicShapes/Plane.Plane"), load("/Engine/BasicShapes/Cube.Cube")
+    neutral = load("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")
+    mesh_actor(plane, neutral, (1200.0, 4000.0, 0.0), (80.0, 120.0, 1.0))
+    for index, (name, kind) in enumerate(DISTANCE):
+        instance = by_suffix[name]
+        require(instance.world_aligned, f"{instance.name}: the distance view needs a world-aligned instance")
+        material = load(library.instance_path(instance))
+        y = DISTANCE_ORIGIN_Y + index * 6000.0
+        if kind == "ground":
+            mesh_actor(plane, material, (2600.0, y, 0.0), (60.0, 40.0, 1.0))
+            camera = spawn(unreal.CameraActor, (-400.0, y, 165.0), pitch=-10.0)
+        else:
+            mesh_actor(plane, neutral, (1550.0, y, 0.0), (40.0, 40.0, 1.0))
+            mesh_actor(cube, material, (1500.0, y, 150.0), (30.0, 0.3, 3.0))
+            camera = spawn(unreal.CameraActor, (-400.0, y - 400.0, 165.0), pitch=-2.0, yaw=8.0)
+        camera.camera_component.set_editor_property("field_of_view", 62.0)
+        shots.append((f"distance_{name}", camera))
+    sun = spawn(unreal.DirectionalLight, (0.0, 0.0, 800.0), pitch=-38.0, yaw=35.0)
     light = sun.light_component
     light.set_intensity(3.0)
     light.set_use_temperature(True)
@@ -168,11 +195,17 @@ def main():
     world = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).get_editor_world()
     queue = [(f"{group}_{state}", camera, state) for state in ("dry", "wet") for group, camera in shots]
     status = {"task": None, "frames": 0, "written": []}
+    LEVELS.editor_set_viewport_realtime(True)  # Lumen and TSR accumulate during the capture delay
 
     def weather(state):
         wet = state == "wet"
         unreal.KismetMaterialLibrary.set_scalar_parameter_value(world, mpc, "Wetness", 1.0 if wet else 0.0)
         unreal.KismetMaterialLibrary.set_scalar_parameter_value(world, mpc, "PuddleAmount", 0.7 if wet else 0.0)
+
+    def finish(message, error=False):
+        unreal.unregister_slate_post_tick_callback(handle)
+        (unreal.log_error if error else unreal.log)(message)
+        unreal.SystemLibrary.quit_editor()
 
     def tick(_delta):
         status["frames"] += 1
@@ -182,15 +215,26 @@ def main():
         if task is not None and not task.is_task_done():
             return
         if task is not None:
-            status["written"].append(status["current"])
+            # The editor hands the PNG to the image write queue, which saves it
+            # after the task reports done; wait for this capture's own file.
+            # Count editor ticks, not seconds: the first request also compiles every
+            # shader, and a disk guard may suspend the process mid-wait.
+            path = status["current"]
+            if not path.is_file() or path.stat().st_mtime < status["started"]:
+                status["wait_ticks"] += 1
+                if status["wait_ticks"] > 3000:
+                    finish(f"SORA_CC0_LOOKDEV_FAILED: {path} was not written", error=True)
+                return
+            status["written"].append(path.name)
+            status["task"] = None
         if not queue:
-            unreal.unregister_slate_post_tick_callback(handle)
-            unreal.log("SORA_CC0_LOOKDEV_COMPLETE: " + ", ".join(str(path) for path in status["written"]))
-            unreal.SystemLibrary.quit_editor()
+            finish(f"SORA_CC0_LOOKDEV_COMPLETE: {len(status['written'])} captures in {OUT}: "
+                   + ", ".join(status["written"]))
             return
         name, camera, state = queue.pop(0)
         weather(state)
         status["current"] = OUT / f"{name}.png"
+        status["started"], status["wait_ticks"] = time.time(), 0
         status["task"] = unreal.AutomationLibrary.take_high_res_screenshot(
             1920, 1080, str(status["current"]), camera, False, False,
             unreal.ComparisonTolerance.LOW, "", 4.0, True)

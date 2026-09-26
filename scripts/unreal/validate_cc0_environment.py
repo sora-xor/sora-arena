@@ -72,9 +72,12 @@ def validate_mpc(unreal, assets):
     return mpc
 
 
-def validate_master(unreal, assets, lib, master, mpc):
+def validate_master(unreal, assets, lib, plan, defaults, master, mpc):
     material = assets.load_asset(library.master_path(master.name))
     family = master.family
+    require(assets.get_metadata_tag(material, "SoraGraphSha256")
+            == library.master_graph_digest(plan, master.name, defaults[master.name]),
+            f"{master.name}: built from other graph code or default maps; rerun import_cc0_environment.py")
     expected = {
         "blend_mode": unreal.BlendMode.BLEND_MASKED if family == "foliage" else unreal.BlendMode.BLEND_OPAQUE,
         "shading_model": {"foliage": unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE,
@@ -211,7 +214,8 @@ def main():
                 f"{path}: expected {class_name}, found {asset and asset.get_class().get_name()}")
     textures = validate_textures(unreal, assets, plan, packed)
     mpc = validate_mpc(unreal, assets)
-    masters = {name: validate_master(unreal, assets, lib, master, mpc)
+    defaults = library.master_defaults(plan)
+    masters = {name: validate_master(unreal, assets, lib, plan, defaults, master, mpc)
                for name, master in library.MASTERS.items()}
     instances = {instance.name: validate_instance(unreal, assets, lib, plan, instance)
                  for instance in plan.instances}

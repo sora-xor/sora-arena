@@ -817,6 +817,40 @@ def mpc_path() -> str:
     return _package(MATERIALS, MPC_NAME)
 
 
+def bound_packages(plan: Plan, instance: Instance) -> dict[str, str]:
+    """Texture package bound to each of the instance's master texture parameters."""
+    layers = plan.layers_of(instance)
+    return {param: (layers[1] if param.startswith("LayerB") else layers[0]).channels[param.removeprefix("LayerB")].package
+            for param in TEXTURE_PARAMS[MASTERS[instance.master].family]}
+
+
+def master_defaults(plan: Plan) -> dict[str, dict[str, str]]:
+    """Default texture package per master parameter: what the master's first instance binds."""
+    defaults = {}
+    for instance in plan.instances:
+        defaults.setdefault(instance.master, bound_packages(plan, instance))
+    require(set(defaults) == set(MASTERS), f"Masters without an instance: {set(MASTERS) - set(defaults)}")
+    return defaults
+
+
+GRAPH_SOURCES = ("scripts/unreal/import_cc0_environment.py", "scripts/unreal/cc0_environment_library.py")
+
+
+def master_graph_digest(plan: Plan, master_name: str, defaults: dict[str, str]) -> str:
+    """SHA-256 of everything a master's graph is built from: the graph code, its name and default maps.
+
+    The importer rebuilds a master only when this changes. Rebuilding gives the
+    material a new state id, which recompiles every shader of it and its instances.
+    """
+    digest = hashlib.sha256()
+    for relative in GRAPH_SOURCES:
+        digest.update((plan.project_root / relative).read_bytes())
+    digest.update(master_name.encode())
+    for param, package in sorted(defaults.items()):
+        digest.update(f"\n{param}={package}".encode())
+    return digest.hexdigest()
+
+
 def verify_sources(plan: Plan):
     """Hash every raw and project file the plan imports or packs."""
     checked = {}

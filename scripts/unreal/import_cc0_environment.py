@@ -19,7 +19,9 @@ maps first. The script then
   their sources, period risk and photoreal status, and binds each scan's
   instance to its meshes.
 
-A source whose recorded SHA-256 is unchanged is not imported again.
+A source whose recorded SHA-256 is unchanged is not imported again, and a
+master whose graph digest is unchanged is not rebuilt (a rebuild recompiles
+all of its shaders).
 """
 
 from __future__ import annotations
@@ -43,6 +45,7 @@ TOOLS = unreal.AssetToolsHelpers.get_asset_tools()
 LIB = unreal.MaterialEditingLibrary
 MP = unreal.MaterialProperty
 SOURCE_TAG = "SoraSourceSha256"
+GRAPH_TAG = "SoraGraphSha256"
 require = library.require
 
 
@@ -491,11 +494,20 @@ def finish_inputs(g: Graph, albedo, normal, arm, macro_a, macro_b, nz, *, remap=
                     {"RoughnessOut": F1, "MetallicOut": F1, "AOOut": F1, "NormalOut": F3})
 
 
-def build_master(master: library.Master, mpc, textures: dict):
+def build_master(master: library.Master, mpc, defaults: dict, digest: str):
+    """The master's graph, rebuilt only when ``digest`` (library.master_graph_digest) changed.
+
+    ``defaults`` maps each texture parameter to the placeholder texture its first
+    instance binds, so the sampler types match what the instances bind.
+    """
     path = library.master_path(master.name)
     folder, name = split(path)
-    material = (ASSETS.load_asset(path) if ASSETS.does_asset_exist(path.split(".")[0])
-                else TOOLS.create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew()))
+    if ASSETS.does_asset_exist(path.split(".")[0]):
+        material = ASSETS.load_asset(path)
+        if ASSETS.get_metadata_tag(material, GRAPH_TAG) == digest:
+            return material, False
+    else:
+        material = TOOLS.create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew())
     for expression in list(LIB.get_material_expressions(material)):
         LIB.delete_material_expression(material, expression)
     require(LIB.get_num_material_expressions(material) == 0, f"{name} kept stale expressions")
@@ -523,9 +535,7 @@ def build_master(master: library.Master, mpc, textures: dict):
     if family == "cloth":
         g.use_attributes()
 
-    # Placeholder textures: the instance binds the real maps. The first instance
-    # of each master supplies defaults whose sampler types match what it binds.
-    defaults = textures[master.name]
+    # Placeholder textures (``defaults``): the instance binds the real maps.
     position = g.node(unreal.MaterialExpressionWorldPosition), ""
     vertex_normal = g.node(unreal.MaterialExpressionVertexNormalWS), ""
     nz = g.mask(vertex_normal, "b")
@@ -653,8 +663,9 @@ def build_master(master: library.Master, mpc, textures: dict):
     errors = LIB.recompile_material(material)
     require(not errors, f"{name} failed to compile: {errors}")
     ASSETS.set_metadata_tag(material, "SoraLibrary", f"cc0-environment v{library.LIBRARY_VERSION}")
+    ASSETS.set_metadata_tag(material, GRAPH_TAG, digest)
     require(ASSETS.save_loaded_asset(material, False), f"Could not save {name}")
-    return material
+    return material, True
 
 
 def build_mpc():
@@ -665,6 +676,10 @@ def build_mpc():
                                    unreal.MaterialParameterCollectionFactoryNew()))
     existing = {str(item.get_editor_property("parameter_name")): item
                 for item in mpc.get_editor_property("scalar_parameters")}
+    if (list(existing) == list(library.MPC_SCALARS) and not mpc.get_editor_property("vector_parameters")
+            and all(existing[key].get_editor_property("default_value") == value
+                    for key, value in library.MPC_SCALARS.items())):
+        return mpc  # unchanged: editing it would recompile every material that reads it
     parameters = []
     for parameter_name, default in library.MPC_SCALARS.items():
         item = existing.get(parameter_name) or unreal.CollectionScalarParameter()
@@ -679,14 +694,7 @@ def build_mpc():
 # --- Instances ------------------------------------------------------------------
 
 def bound_textures(plan: library.Plan, instance: library.Instance, textures: dict) -> dict:
-    family = library.MASTERS[instance.master].family
-    layers = plan.layers_of(instance)
-    result = {}
-    for param in library.TEXTURE_PARAMS[family]:
-        layer = layers[1] if param.startswith("LayerB") else layers[0]
-        role = param.removeprefix("LayerB")
-        result[param] = textures[layer.channels[role].package]
-    return result
+    return {param: textures[package] for param, package in library.bound_packages(plan, instance).items()}
 
 
 def build_instance(plan: library.Plan, instance: library.Instance, parent, textures: dict):
@@ -744,16 +752,6 @@ def build_instance(plan: library.Plan, instance: library.Instance, parent, textu
     return mi
 
 
-def master_defaults(plan: library.Plan, textures: dict) -> dict:
-    """Default texture per master parameter, taken from the first instance of that master."""
-    defaults = {}
-    for instance in plan.instances:
-        if instance.master not in defaults:
-            defaults[instance.master] = bound_textures(plan, instance, textures)
-    require(set(defaults) == set(library.MASTERS), f"Masters without an instance: {set(library.MASTERS) - set(defaults)}")
-    return defaults
-
-
 def main():
     project_root = Path(unreal.Paths.project_dir()).resolve()
     plan = library.build_plan(project_root)
@@ -762,8 +760,12 @@ def main():
     textures, imported_textures = import_textures(plan, packed)
     imported_hdris = import_hdris(plan)
     mpc = build_mpc()
-    defaults = master_defaults(plan, textures)
-    masters = {name: build_master(master, mpc, defaults) for name, master in library.MASTERS.items()}
+    defaults = library.master_defaults(plan)
+    built = {name: build_master(master, mpc, {param: textures[package] for param, package in defaults[name].items()},
+                                library.master_graph_digest(plan, name, defaults[name]))
+             for name, master in library.MASTERS.items()}
+    masters = {name: material for name, (material, _) in built.items()}
+    rebuilt = sum(changed for _, changed in built.values())
     instances = {instance.name: build_instance(plan, instance, masters[instance.master], textures)
                  for instance in plan.instances}
     imported_meshes = import_meshes(plan, instances)
@@ -772,7 +774,7 @@ def main():
     require(not missing, f"Expected packages missing after import: {missing[:5]}")
     unreal.log(f"SORA_CC0_ENVIRONMENT_READY: {len(plan.expected)} packages "
                f"({imported_textures} textures, {imported_hdris} HDRIs, {imported_meshes} meshes imported; "
-               f"{len(masters)} masters, {len(instances)} instances)")
+               f"{len(masters)} masters ({rebuilt} rebuilt), {len(instances)} instances)")
 
 
 main()

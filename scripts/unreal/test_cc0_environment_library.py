@@ -162,6 +162,21 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(sum(cls == "StaticMesh" for cls in plan.expected.values()),
                          sum(len(mesh.nodes) for mesh in plan.meshes))
 
+    @unittest.skipUnless((L.storage_root(ROOT) / "Local/ThirdPartyRaw/cc0").is_dir(),
+                         "Local/ThirdPartyRaw/cc0 not fetched (scripts/assets/fetch_cc0.py)")
+    def test_master_graph_digest_tracks_graph_inputs(self):
+        plan = L.build_plan(ROOT, verify=False)
+        defaults = L.master_defaults(plan)
+        self.assertEqual(set(defaults), set(L.MASTERS))
+        for name, master in L.MASTERS.items():
+            self.assertEqual(set(defaults[name]), set(L.TEXTURE_PARAMS[master.family]), name)
+        digests = {name: L.master_graph_digest(plan, name, defaults[name]) for name in L.MASTERS}
+        self.assertEqual(len(set(digests.values())), len(L.MASTERS))
+        name = "M_Env_Surface"
+        self.assertEqual(L.master_graph_digest(plan, name, dict(defaults[name])), digests[name])
+        moved = dict(defaults[name], Normal="/Game/Elsewhere/T_Other.T_Other")
+        self.assertNotEqual(L.master_graph_digest(plan, name, moved), digests[name])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
