@@ -125,6 +125,12 @@ silently upgrading the project's toolchain. Homebrew must already be installed.
 It does not provision Epic/Apple accounts, download Unreal, or change global
 Git/Xcode configuration.
 
+The host checks under `scripts/unreal` also import two pinned Python packages,
+PyYAML 6.0.3 (the chapter scripts' YAML, for `build_campaign_data.py` and
+`validate_content.py`) and fontTools 4.38.0 (the glyph check). Install them with
+`pip3 install --user -r scripts/requirements.txt`; the doctor does not check
+them yet.
+
 The doctor checks the engine identity in the pin table (exact
 `Build.version` version, changelist, compatible changelist, branch and
 promoted/licensee flags; the installed-build marker; project plugin descriptor

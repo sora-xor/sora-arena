@@ -7,9 +7,11 @@ legacy formats, aliases, and fallback decoders are prohibited.
 Japanese is the primary language for all dialogue and player-facing interfaces.
 English subtitles are on by default. Localization is part of campaign production,
 including subtitle timing, speaker identification, readable Japanese fonts and
-controller-readable menus. The offline catalog now contains 25 timed bilingual
-dialogue cues across eight chapters, shown during active gameplay; no voice acting
-is recorded, and timing/readability still need Unreal play verification. A native
+controller-readable menus. The campaign's generated chapter files now carry
+1,032 bilingual lines with speakers across 133 beats, and the interface's
+strings are `NSLOCTEXT` compiled into Japanese and English `Game.locres`
+([2026-09-26 integration](#2026-09-26-lane-integration)); no voice acting is
+recorded, and timing/readability still need rendered play verification. A native
 Japanese Game localization resource passed `SoraArena.Localization.NativeJapanese`
 in a UE 5.8.3 `-game` run: Unreal loaded its metadata/resource, selected `ja`
 without the previous English fallback, resolved the Japanese menu title, and
@@ -22,19 +24,142 @@ check are still required.
 The HUD gives Japanese and English campaign subtitles, speaker names and notices
 a minimum text size at 720p and above; content and font-width checks pass, but
 the UE 5.8.3 visual and controller readability pass is still open.
-Local control preferences now save inverted look, stick dead zones, look
-sensitivity and whitelisted combat-action remaps separately from campaign
-checkpoints. Wallet and menu bindings remain fixed. The control UI and actual
-Windows/macOS controller verification are still open.
+Local control preferences save inverted look, stick dead zones, look
+sensitivity and the rebound keys separately from campaign checkpoints. The
+Slate front end's Controls screen rebinds every play-only action and the
+movement keys per device ([input](input.md)); menu, Enter and subtitle keys
+stay fixed. Actual Windows/macOS controller verification is still open.
+
+## 2026-09-26 lane integration
+
+Five lanes were merged on `codex/nyaagyu-rebellion` (UI and P2P committed from
+the main tree, then `lane/practice`, `lane/ai` and `lane/campaign`), wired
+together and verified on this Mac (M1 Ultra, macOS 27.0, UE 5.8.3
+changelist 58210709, Rust 1.97.1). This section records what now exists and
+what was actually run; everything not listed as run is unverified.
+
+**Now in the source**
+
+- **Front end and settings (UI lane).** Every menu is C++ Slate (`USoraFrontEnd`,
+  `SSoraFrontEnd`): title, main, pause, chapter select, practice lobby, wallet,
+  settings (graphics presets, audio buses, subtitles, accessibility, controls),
+  credits and confirmations, by keyboard, mouse or pad. Controls rebind per
+  device; a pad rebind onto another control's button swaps the two because
+  every pad button now has a default job. The telegraph palette colours every
+  boss, enemy and boss-hazard telegraph; the campaign difficulty scales boss
+  health and timing, archetype windups (+30% Easy, -15% Hard) and a stealth
+  zone's vigilance and answer to detection (a fight on Easy); the auto-steer
+  setting turns on a ride's auto-steer; subtitle size and speaker names shape
+  the dialogue panel. 369 interface strings are `NSLOCTEXT` compiled into
+  Japanese and English `Game.locres`.
+- **Deterministic practice (practice lane).** ABI 4 exports every kernel event
+  and 21 functions, including `arena_bot_input`: deterministic Rust bots
+  (`crates/arena-bots`) in four tiers. The practice lobby's six choices (mode,
+  seats, arena, class, special, tier) reach `USoraPracticeDirector::StartPractice`
+  as one `FSoraPracticeConfig`: free-for-all, Control, Payload and Melee only
+  on the four kernel-exact arenas, with entity and objective actors, a
+  scoreboard, kill feed, results, spectator camera and respawn loadout choice.
+- **Opponents (AI lane).** An AI controller with runtime navmesh and
+  perception; ten `enemies.json` archetypes with guard, parry, stagger,
+  hit-stop, shells, subdue and seal-cut; `USoraStealth` zones with crouch,
+  rear takedowns, bodies and alarms; the seven `bosses.json` bosses and
+  Toranosuke's two duels from their pattern tables; 転, 残心, 水月, mutō-dori
+  and the Sheathe key.
+- **Campaign (campaign lane).** Catalog schema 4: 133 beats in eight chapter
+  files generated from `docs/campaign/chapter-0N.md`, 1,032 bilingual lines,
+  host-tested beat rules, save schema 6 (schema 5 refused, no decoder),
+  derived chapter spaces, production kits, horses and the story HUD.
+- **Wiring done at the merge.** Wave members, stealth guards (on their patrol
+  routes), rival duels and bosses are the AI lane's opponents; debt-bound
+  conscripts fight beside their wave without counting toward it, and with
+  `seal_cut` learned Interact held beside a knocked-down one cuts its seal; a
+  stealth beat opens the stealth zone and its detection, alarm and found
+  bodies reach the beat; `validate_campaign.py` requires every wave and guard
+  type to be an `enemies.json` archetype and every boss and rival duel to be
+  staged by `bosses.json` at its beat.
+- **P2P (P2P lane).** Pipelined p2p-evidence v2 (up to 16 certified frontiers
+  in flight), protocol-level peer dropout, and an N-peer loopback research
+  mesh (`mesh_transport`, `arena peer`); zero-bond research only, with no
+  NAT/relay transport, consensus deadline or settlement.
+
+**Run on 2026-09-26, after the merges**
+
+- `cargo fmt --all --check` and `cargo clippy --workspace --all-targets
+  --locked -- -D warnings`: pass.
+- `cargo test --workspace --locked`, three full runs while other work held the
+  load average near 20: the last (`--no-fail-fast`) passed 254 tests with 5
+  ignored and failed 1, `mesh_transport::tests::a_dropout_stops_combat_and_preserves_the_evidence_for_consensus`.
+  The earlier two stopped at `localhost_transport::tests::lost_ack_retries_exact_bytes_and_duplicate_is_only_acknowledged`
+  and at `survivors_stop_combat_and_keep_the_evidence_when_a_peer_never_returns`
+  (`crates/arena-cli/tests/mesh_processes.rs`). Rerun alone, the first passed
+  3 of 3 times and the mesh process tests 3 of 3; the `mesh_transport` unit
+  tests passed 4 of 7 times, `a_returning_peer_closes_the_frontiers_its_dropout_left_open`
+  also failing once. Every other test passed in every run. These P2P timing
+  tests are not a green gate on a loaded machine (below).
+- `cargo build --release -p arena-ffi` and `scripts/unreal/stage_kernel.py
+  --platform Mac` (ABI 4, library SHA-256 `1bd6e8fa…`, six bots in four tiers
+  verified). `verify_parity.py` passes all 94 cases / 99,043 ticks on
+  Darwin/arm64 after an identity-only re-record (the P2P lane's `Cargo.lock`
+  and `arena-core` `lib.rs`; every expected value unchanged, see the fixture
+  README), and `test_parity_guards.py` passes its 17 tests. The kill-history V2
+  fixture was regenerated (`kernel_revision` only).
+- Host checks, all passing: `validate_content.py`, `validate_campaign.py` (37
+  mutations rejected), `test_campaign_progression.py` (133 beat tasks),
+  `build_campaign_data.py --check`, `check_input_conflicts.py` (27 actions and
+  axes, 22 rebindable controls), `validate_enemies.py`, `test_stealth_rules.py`,
+  `test_combat_rules.py`, `test_boss_rules.py`, `test_historical_arms.py`,
+  `check_catalog_kernel_parity.py` and `native_japanese_localization.py --check`
+  (369 keys).
+- `scripts/toolchain/run-automation-mac.sh SoraArena` in the headless
+  (`-nullrhi`) editor: all 77 tests passed, `Practice.FullMatches` in 251 s.
+  The playthrough reported 8 chapters, 125 beats, 8 caches, 28 pickups, 7
+  rides, 120 checkpoints read, 61 checkpoint and 13 phase reloads in 76
+  worlds, and 7 conscripts knocked down and freed. After the last fix (an
+  Easy detection no longer leaves guarded work paused), `Integration.*`,
+  `Stealth.*` and `Campaign.Playthrough` passed again (9 tests).
+- Merge-specific test changes, all passing above: the lobby test checks every
+  config field and the seat count; the AI lane's tests run in the estate's
+  training arena with Nyaakoto's loadout; the combat trace plays ch05.b05's
+  retainers, the dojo lessons answered from the pupil's windup and Val Amort
+  taken by mutō-dori before his capture; the UI tests seed schema-6 saves;
+  `ControlsRemap` checks the pad swap; two new `Integration` tests.
+
+**Not done or not verified**
+
+- Nothing has been seen rendered: every Unreal test runs `-nullrhi`, so the
+  front end, HUD panels (practice, stealth, boss, story tracker), telegraph
+  colours and layouts have no screenshot review. Visual quality is far from
+  the photoreal bar: practice props, horses, bodies and many opponents are
+  engine primitives or prototype meshes, and there are no Sequencer
+  cinematics, Niagara effects or recorded voice.
+- No Windows build, cook or run, and no packaged Mac build of the merged tree.
+- The 6–8 hour campaign pacing, balance and combat readability are not
+  measured; the playthrough automation proves the beats can be completed, not
+  how long they take. Stealth beats use default vigilance and archetype
+  senses, not each chapter's authored detection numbers, lights and noise
+  surfaces. Horse mesh/animation, allies, convoy losses and escorts as
+  characters are missing (see [offline acceptance](campaign/offline-acceptance.md)).
+- Practice HUD lines, campaign notices and the stealth and boss panels are
+  paired `TEXT()` literals with English, not yet in `Game.locres`.
+- The P2P mesh's dropout tests are timing-sensitive: under a load average near
+  20 from other work, `a_dropout_stops_combat_and_preserves_the_evidence_for_consensus`,
+  `a_returning_peer_closes_the_frontiers_its_dropout_left_open`,
+  `survivors_stop_combat_and_keep_the_evidence_when_a_peer_never_returns` and
+  once `lost_ack_retries_exact_bytes_and_duplicate_is_only_acknowledged`
+  failed in some full-suite or repeated runs and passed in others (details
+  above). They need to tolerate a loaded machine before they can gate a merge.
+- Real wallet pairing, the Iroha `ArenaV1` relation, proofs, settlement,
+  marketplace and any staked play remain unimplemented or unqualified;
+  funding and trading stay disabled.
 
 ## Milestones and current evidence
 
 | Milestone | Current state | Completion evidence still required |
 | --- | --- | --- |
 | Foundation | Active: deterministic Rust kernel and C ABI; locked workspace tests and strict Clippy pass; native generic admission, catalog and Connect changes in isolated Iroha worktree | Release UE 5.8.3 build, real wallet pairing, complete two-player proof-to-settlement path |
-| Research match | Pending | 4v4 two-minute match, then 6v6 ten-minute match with complete proof coverage and measured resources |
+| Research match | Zero-bond research only: an eight-process 4v4 two-minute loopback mesh reaches the pinned final state (P2P lane measurements); a twelve-process 6v6 agrees on the final state but misses 60 Hz on one machine; no proof | 4v4 two-minute match, then 6v6 ten-minute match with complete proof coverage and measured resources |
 | Vertical slice | Source and original prototype assets in progress | One finished mission/arena, representative classes and complete buy/equip/bond/play/settle flow |
-| Full production | Chapter/class/weapon/arena data and offline prototype source present | Eight authored chapters, finished art/animation/audio/cinematics, accessibility and measured balance |
+| Full production | Eight chapters of 133 beats play end to end in automation against enemies.json archetypes and bosses.json fights; practice in four modes with Rust bots; Slate front end, settings, accessibility and remapping; art, horses, cinematics, effects and voice mostly primitive or missing | Finished art/animation/audio/cinematics, rendered and controller verification, measured pacing and balance |
 | Qualification | Unqualified; funding/trading disabled | Independent review, four validators, Windows/macOS parity, adversarial integration and performance tests |
 | Release | Pending | Packaged Windows/macOS builds, recovery tools, release manifest and operational documentation |
 
@@ -44,10 +169,12 @@ losses and conservation. [Weapon handling](combat-rules.md) records exact timing
 geometry and class abilities are a foundation implementation. The Unreal campaign
 prototype currently has its own gameplay implementation. Kernel-driven offline
 practice source and its native presentation queries are implemented. A real
-macOS library passes 73 checked-in replay cases / 44,100 canonical ticks; Windows
-has not run that fixture. A pinned Windows GNU cross-build now produces a PE
-x86-64 kernel DLL with all fifteen header exports and matching sizes/alignments
-for eleven C ABI structs; it cannot establish Windows runtime parity. The Mac
+macOS library passes the ABI 4 fixture's 94 checked-in cases / 99,043 canonical
+ticks (re-run after the lane merge); Windows has not run that fixture. A pinned
+Windows GNU cross-build earlier produced a PE x86-64 ABI 3 kernel DLL with all
+fifteen header exports and matching sizes/alignments for eleven C ABI structs;
+the practice lane reports its ABI 4 cross-build exporting all 21 names. Neither
+establishes Windows runtime parity. The Mac
 editor target compiled in an isolated UE **5.8.3** diagnostic worktree (installed
 changelist **58210709**). That Launcher build became the release engine pin on
 2026-09-25 after UE 5.8.2 could no longer be installed ([toolchain](toolchain.md));
@@ -81,42 +208,15 @@ deliveries in 90.92 seconds on the M1 Ultra; all eight peers matched the
 pinned kernel hashes. This is zero-bond research with fixture-held keys and
 lossless local transport, not a production 4v4 P2P match, execution proof or
 settlement. See [the loopback research note](proof/eight-peer-loopback-research.md).
-The offline campaign now has 24 authored Japanese production-site tasks with
-English subtitle text. Each task has a combat threshold and earlier-site
-requirements; prototype props vary by task type and change appearance on
-activation. The first dojo encounter uses nonlethal wooden-sword sparring
-rather than pre-invasion alien enemies. Nyaagyushinkageryuu apprenticeship
-now requires a held stance, front-facing guard, fresh timed parry against a
-telegraphed pupil swing, and full wooden-sword recovery before sparring damage
-can score. Its prefix-complete lesson mask is validated on reload. The campaign
-also persists defeated opponents,
-restored sites, and exit completion to a local SaveGame checkpoint, rejecting
-inconsistent site progress on load. Round resets now destroy live explosive
-shells before restoring an encounter, so a previous attempt cannot damage new
-opponents or advance their saved kill count. The `SoraArena.Campaign.SaveRoundTrip`
-automation passed inside UE 5.8.3, covering `USoraSaveGame` memory serialization
-and restoration of all checkpoint fields. `SoraArena.Campaign.DiskSaveRecovery`
-also passed four on-disk save/load cases and removed its temporary slot. World
-teardown and an in-game checkpoint recovery test remain open; the shared
-encounter layouts do not meet the
-six-to-eight-hour campaign target.
-The [host campaign acceptance driver](campaign/offline-acceptance.md) exercises
-the same extracted GameMode progression rules across all eight catalog
-chapters, checkpoint values, the final boss gate and final liberation. It
-checks all 25 Japanese dialogue cues have English counterparts. It does not
-test Unreal save slots, played combat, subtitle rendering or campaign length.
-The final chapter now reserves its eighteenth opponent for a distinct alien
-collector boss with locked-aim cyan beam and amber cleave warnings, recovery,
-bilingual HUD/dialogue and a local checkpoint that respawns the boss at full
-health after seventeen guards. The prototype save schema advances to 5 so a
-pre-boss checkpoint cannot skip the encounter; no compatibility decoder is
-included. Content validation passes 25 timed bilingual cues. The interim
-UE 5.8.3 editor compile and SaveGame automation do not verify subtitle
-readability, combat balance, played-world recovery or a release build on the
-pinned 5.8.3 engine.
-The campaign presentation and playable protagonist remain the Nyaagyu Samurai;
-the six-class selector is available in offline arena practice. This source
-behavior still needs an Unreal menu and save/reload check.
+The offline campaign now runs on catalog schema 4: 133 beats in eight
+generated chapter files with host-tested task rules (`SoraBeatRules.h`), save
+schema 6 (schema 5 is refused, with no decoder), campaign spaces, production
+kits, horses and a story HUD, and its opponents are the AI lane's enemies.json
+archetypes and bosses.json fights. What is played and verified, and what is
+not, is in [the 2026-09-26 integration record](#2026-09-26-lane-integration)
+and [the offline acceptance record](campaign/offline-acceptance.md). The
+campaign's protagonist is Nyaakoto; the six classes are offered in
+deterministic practice and the training arena.
 Six original Edo/alien environment props now have editable Blender source,
 FBX exports, metric collision/bounds checks, and campaign placement source.
 The Lantern Ward debt terminal has a retained flat blockout and a licensed CC0
@@ -235,7 +335,9 @@ geometry and input encoding. Its state/presentation expectations change in all
 73 cases, while event streams change only for four Kanabo loadout cases. The
 rebuilt library passes 73 cases / 44,100 ticks, eleven negative guards, and
 72 native practice scenarios / 86,400 replayed ticks. The full locked offline
-Rust suite, format checking, and strict all-targets Clippy pass.
+Rust suite, format checking, and strict all-targets Clippy pass. That ABI 3
+fixture has since been removed; ABI 4 and its `practice-abi4` fixture replace
+it ([2026-09-26 integration](#2026-09-26-lane-integration)).
 The version-6 fixture refresh changes state hashes and streams for the rules
 identity; its event and presentation streams are unchanged from version 5.
 These deterministic checks are not a human balance playtest. The separate
