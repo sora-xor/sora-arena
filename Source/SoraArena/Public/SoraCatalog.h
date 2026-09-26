@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "SoraBeatRules.h"
+#include "SoraFieldcraftRules.h"
 #include "SoraMountRules.h"
 
 struct FSoraWeapon
@@ -221,6 +222,126 @@ struct FSoraMount
     TArray<FSoraPackHorse> Pack;
     FVector2D At = FVector2D::ZeroVector;
 };
+// A beat's fieldcraft (scripts/unreal/campaign_fieldcraft.py), played by
+// USoraFieldcraft with SoraFieldcraftRules.h.
+// A lamp or fire the guards see by: how far it lights and how it goes dark
+// (Interact held HoldMs beside it, an arrow or round on its cable junction,
+// or never), and after how long it comes back (0: it stays dark).
+struct FSoraLamp
+{
+    enum class ESnuff : uint8 { Hold, Shot, None };
+    FString Id;
+    FName Kind;
+    FVector2D At = FVector2D::ZeroVector;
+    float RadiusCm = 0.f;
+    ESnuff Snuff = ESnuff::None;
+    int32 HoldMs = 0;
+    int32 RelightMs = 0;
+};
+// A floor that changes footsteps (SoraStealthRules::FSurface).
+struct FSoraFloorPatch
+{
+    FName Kind;
+    FSoraVolume Area;
+    int32 StepPermille = 1000;
+    int32 CrouchPermille = 1000;
+};
+// Water to swim and dive in, the reeds and lotus that hide a swimmer's head,
+// and the float lines that ring when touched at the surface.
+struct FSoraWater
+{
+    FSoraVolume Area;
+    SoraFieldcraftRules::FWaterRules Rules{};
+    int32 SurfaceStepPermille = 1000;
+    TArray<FSoraVolume> Cover;
+    TArray<FSoraVolume> Lines;
+    TArray<int32> LineNoiseCm;
+};
+// A face to climb: its foot's centre, the way it faces, its width, depth and
+// height, its holds' rules, and the events its ledges and top raise.
+struct FSoraClimbFace
+{
+    FVector2D At = FVector2D::ZeroVector;
+    float Yaw = 0.f;
+    float WidthCm = 0.f;
+    float DepthCm = 0.f;
+    SoraFieldcraftRules::FClimbRules Rules{};
+    TArray<FString> LedgeEvents;
+    FString TopEvent;
+};
+struct FSoraStones
+{
+    int32 Carried = 0;
+    int32 Max = 0;
+    int32 NoiseCm = 0;
+    int32 InvestigateMs = 0;
+    TArray<FVector2D> Piles;
+};
+// Someone who walks or fights beside the hero. An escorted party member
+// (Role escort) walks the road; Release is the cell door that holds it.
+struct FSoraCompanionSpec
+{
+    FString Id;
+    FName Role;
+    int32 WeaponId = INDEX_NONE;
+    SoraFieldcraftRules::FCompanionRules Rules{};
+    FVector2D At = FVector2D::ZeroVector;
+    bool bDetectable = true;
+    int32 Release = INDEX_NONE;
+    // The event it joins the fight on ("wave_start:3"), or empty: from the start.
+    FString Joins;
+    // A volley rank's gunner: its rank (0 is the first), or INDEX_NONE.
+    int32 Rank = INDEX_NONE;
+};
+// A person a defence protects, standing at its defended target.
+struct FSoraDefendedPerson
+{
+    FString Id;
+    int32 Target = INDEX_NONE;
+    FVector2D At = FVector2D::ZeroVector;
+};
+// Rotating volley ranks the hero commands (ch08 volley_command): the ranks
+// are the beat's allies with a Rank, PerRank to a rank, all with WeaponId.
+struct FSoraVolley
+{
+    SoraFieldcraftRules::FVolleyRules Rules{};
+    int32 PerRank = 0;
+    int32 WeaponId = INDEX_NONE;
+};
+struct FSoraRelease
+{
+    FString Id;
+    FVector2D At = FVector2D::ZeroVector;
+    int32 HoldMs = 0;
+};
+struct FSoraFieldcraft
+{
+    TArray<FSoraLamp> Lamps;
+    TArray<FSoraFloorPatch> Floors;
+    bool bWater = false;
+    FSoraWater Water;
+    bool bClimb = false;
+    FSoraClimbFace Climb;
+    bool bStones = false;
+    FSoraStones Stones;
+    bool bCandle = false;
+    SoraFieldcraftRules::FCandle Candle{};
+    float CandleRadiusCm = 0.f;
+    TArray<FSoraCompanionSpec> Party;
+    bool bSignal = false;
+    TArray<FVector2D> HideSpots;
+    TArray<FSoraRelease> Releases;
+    TArray<FSoraCompanionSpec> Allies;
+    TArray<FSoraDefendedPerson> People;
+    bool bVolley = false;
+    FSoraVolley Volley;
+    bool IsEmpty() const
+    {
+        return Lamps.IsEmpty() && Floors.IsEmpty() && !bWater && !bClimb && !bStones && !bCandle && Party.IsEmpty() &&
+            Allies.IsEmpty() && People.IsEmpty();
+    }
+};
+
 // Where a beat happens: its zone (INDEX_NONE for the arena hub), where a
 // travel cut places the hero, its anchor and task points, trigger volumes,
 // opponent spawns and patrols, and what the world builds for its task.
@@ -264,6 +385,7 @@ struct FSoraBeatSpace
     TArray<FName> Party;
     bool bMount = false;
     FSoraMount Mount;
+    FSoraFieldcraft Fieldcraft;
 };
 // A collectible lying loose in a zone.
 struct FSoraPickup
@@ -318,6 +440,9 @@ struct FSoraBeat
     // "volume_enter:<id>", "interact:<id>") and, for one that ends at an
     // anchor, the event that ends it.
     TArray<int32> Lines;
+    // A dialogue's blocking lines (ext blocking_lines): when the last of them
+    // ends the beat raises blocking_end and play is the player's again.
+    TArray<int32> BlockingLines;
     FString LinesEvent;
     FString ClosingEvent;
     // A stealth zone's exit or a ride's destination ("volume_enter:<id>"), if named.

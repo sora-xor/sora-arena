@@ -67,7 +67,8 @@ struct FSoraDamageEvent : public FPointDamageEvent
 
 // The single damage path for campaign and training combat. Attackers call
 // Strike or Blast; every character's TakeDamage calls Resolve, which applies
-// the shared rules (no damage between opponents, SoraCombatRules), asks the
+// the shared rules (no damage between opponents, nor between the hero and
+// his companions; SoraCombatRules), asks the
 // victim for its own defenses and defeat handling, holds the world still on a
 // blade's contact, and announces Damaged, Died or a conscript's knockdown
 // through USoraGameEvents. Kernel practice never reaches it: kernel-driven

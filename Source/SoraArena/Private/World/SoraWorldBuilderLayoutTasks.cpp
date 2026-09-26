@@ -217,7 +217,8 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
                 for(int32 Corner=0;Corner<4;++Corner)
                     KitShape(TEXT("AidPole"),KitCylinder,P+FVector(Corner%2?120:-120,Corner/2?100:-100,55),FVector(.06f,.06f,1.1f),KitTimber);
             }
-            else KitMember(TEXT("villager"),P,Target*45.f);
+            // A defended person is the beat's fieldcraft's own character (USoraFieldcraft).
+            else if(Kind!=TEXT("person")) KitMember(TEXT("villager"),P,Target*45.f);
             // A banner beside each target pales to red as it is worn down.
             KitShape(TEXT("TargetPole"),KitCylinder,P+FVector(0,140,110),FVector(.05f,.05f,2.2f),KitTimber);
             KitTargets.Add(KitShape(TEXT("TargetBanner"),KitCube,P+FVector(0,165,190),FVector(.02f,.45f,.7f),KitTeal));

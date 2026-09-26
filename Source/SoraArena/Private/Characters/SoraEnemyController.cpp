@@ -3,7 +3,10 @@
 #include "Combat/SoraStealth.h"
 #include "SoraBoss.h"
 #include "SoraCatalog.h"
+#include "SoraCompanion.h"
 #include "SoraEnemy.h"
+#include "SoraFieldcraft.h"
+#include "SoraFieldcraftRules.h"
 #include "SoraGameEvents.h"
 #include "SoraHistoricalArms.h"
 #include "SoraPlayerCharacter.h"
@@ -41,6 +44,9 @@ constexpr float HoldReachShare = .8f;
 constexpr int32 AlarmRepeatMs = 2000;
 // A body is looked at a little above the floor it lies on.
 constexpr float BodySightHeight = 20.f;
+// In a fight an opponent turns on a companion this near, and clearly nearer than the hero.
+constexpr float QuarryCm = 1500.f;
+constexpr float QuarryShare = .7f;
 
 const TCHAR* StateName(SoraStealthRules::EState State)
 {
@@ -331,17 +337,27 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
         bEvidence |= Senses.NoisePerSecond > 0;
     }
     // The loudest single noise since the last tick.
+    bool bLure = false;
     for (const FNoise& Noise : Heard)
     {
         // The alarm's sender chose who it reaches; it arrives at full urgency.
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(Noise.Origin, Ear));
         if (!Noise.bAlarm && Distance > Stealth::HeardRadiusCm(Noise.Kind, Perception))
             continue;
-        const int32 Level = Noise.bAlarm ? Stealth::NoisePeakPermille(Stealth::ENoise::Callout) :
+        int32 Level = Noise.bAlarm ? Stealth::NoisePeakPermille(Stealth::ENoise::Callout) :
             Stealth::HeardPermille(Noise.Kind, Distance, Occluded(Noise.Origin, Ear, Noise.Source.Get()), Perception);
+        // A lure (a thrown stone, a float line) sends a calm guard to look but
+        // never tells it the hero is there; one already hunting pays it no mind.
+        if (Noise.Kind == Stealth::ENoise::Lure)
+            Level = Mind.State == Stealth::EState::Unaware || Mind.State == Stealth::EState::Suspicious
+                ? SoraFieldcraftRules::LureImpulsePermille(Level, Mind.Awareness / Stealth::AwarenessScale)
+                : Mind.State == Stealth::EState::Search
+                ? FMath::Clamp(Level, 0, FMath::Max(0, (Vigil.SuspicionThreshold - Mind.Awareness) / Stealth::AwarenessScale - 1))
+                : 0;
         if (Level > Senses.NoiseImpulse)
         {
             Senses.NoiseImpulse = Level;
+            bLure = Noise.Kind == Stealth::ENoise::Lure;
             if (!bSees)
                 Evidence = Noise.Evidence;
         }
@@ -363,7 +379,8 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     Senses.HealthPermille = Enemy.MaxHealth > 0.f ? FMath::RoundToInt32(Enemy.Health * 1000.f / Enemy.MaxHealth) : 0;
     Senses.Reached = bGoalDone;
     Senses.CanRetreat = Stealth::CanRetreat(Role) && SoraEnemyBrain::IsShooter(Enemy.Archetype());
-    Senses.Alarmist = Perception.Alarmist;
+    // Even an alarmist only goes to look at where a stone fell.
+    Senses.Alarmist = Perception.Alarmist && !(bLure && !bSees);
     const Stealth::EState Previous = Mind.State;
     Mind = Stealth::Step(Mind, Senses, DtMs, Vigil);
     if (Mind.State != Previous)
@@ -376,6 +393,28 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     // A staggered opponent still notices, but neither moves nor strikes.
     if (Enemy.IsStaggered())
         return;
+    // In a fight it may turn on someone beside the hero: the nearest companion
+    // it can see that stands clearly nearer than he does.
+    if (Mind.State == Stealth::EState::Combat)
+    {
+        const float HeroDistance = FVector::Dist2D(Here, There);
+        ASoraCompanion* Quarry = nullptr;
+        float Best = FMath::Min(SoraEnemyBrain::QuarryCm, HeroDistance * SoraEnemyBrain::QuarryShare);
+        for (TActorIterator<ASoraCompanion> It(GetWorld()); It; ++It)
+        {
+            const float Distance = FVector::Dist2D(Here, It->GetActorLocation());
+            if (Distance < Best && It->IsAlive() && It->IsExposed(FMath::RoundToInt32(Distance)) && CanSee(**It))
+            {
+                Best = Distance;
+                Quarry = *It;
+            }
+        }
+        if (Quarry)
+        {
+            Act(Enemy, *Quarry, true, Dt, NowMs);
+            return;
+        }
+    }
     Act(Enemy, Target, bSees, Dt, NowMs);
 }
 
@@ -1007,6 +1046,10 @@ Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraC
         Visible += Hit.GetActor() == &Target ? 1 : 0;
     }
     Sight.ExposurePermille = Stealth::ExposurePermille(Visible, static_cast<int32>(UE_ARRAY_COUNT(SoraEnemyBrain::BodySamples)));
+    // Under the water nothing of the hero shows; at its surface only a head.
+    if (Cast<ASoraPlayerCharacter>(&Target))
+        if (const USoraFieldcraft* Fieldcraft = USoraFieldcraft::Get(this))
+            Sight.ExposurePermille = Fieldcraft->HeroExposure(Sight.ExposurePermille);
     if (Sight.ExposurePermille > 0)
         Sight.LightPermille = Zone ? Zone->LightAt(There) : 1000;
     return Sight;

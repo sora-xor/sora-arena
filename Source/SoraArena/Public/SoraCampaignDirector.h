@@ -17,6 +17,7 @@ struct FSoraChapter;
 struct FSoraDamagedEvent;
 struct FSoraDefenseEvent;
 struct FSoraDialogueCue;
+struct FSoraEnemyCueEvent;
 struct FSoraMarobashiEvent;
 struct FSoraStealthDetection;
 struct FSoraPrompt;
@@ -68,8 +69,12 @@ struct FSoraStoryNotice
 // SoraBeatRules accepts it. Lines are keyed by events (FireDialogueTrigger).
 // Chapter-one forms use SoraDojoRules.h. World-facing play (travel, volumes,
 // points, spawns, horses, carry, siege, escort, pickups, the cinematic camera)
-// lives in Private/Game/SoraCampaignDirectorWorld.cpp. The director ticks
-// itself; the paused menu stops it.
+// lives in Private/Game/SoraCampaignDirectorWorld.cpp. Each beat's fieldcraft
+// (lamps, noisy floors, water, a climbing face, stones, the candle, the
+// escorted party and allies) is staged in USoraFieldcraft as the beat starts,
+// and what happens there reaches the beat as events. An event a script keys
+// "<event>+Ns" plays N seconds after <event>. The director ticks itself; the
+// paused menu stops it.
 UCLASS(ClassGroup=(Sora))
 class SORAARENA_API USoraCampaignDirector : public UActorComponent
 {
@@ -271,6 +276,11 @@ private:
     TSet<TWeakObjectPtr<const ASoraEnemy>> Frightening;
     // Events raised in the active beat, so an event's ":first" rows play once.
     TSet<FString> BeatEvents;
+    // "<event>+Ns" rows waiting on the beat clock (world seconds, event).
+    TArray<TPair<double, FString>> Scheduled;
+    // Work under guard was seen last step; each guard's last reported state.
+    bool bWorkWasSeen = false;
+    TMap<TWeakObjectPtr<const AActor>, FName> GuardStates;
     // Chapter one: bouts the chapter's earlier lesson duels scored (bouts are
     // numbered across the dojo), the beat clock at an awase that 転 must
     // follow, and when a pupil's cut landed on a hero still to meet it.
@@ -309,6 +319,13 @@ private:
     void StealthDetected(const FSoraStealthDetection& Detection);
     void StealthAlarm(ASoraEnemy* By);
     void StealthBodyFound(ASoraEnemy* Body, ASoraEnemy* Finder);
+    // The fieldcraft's events (npc_downed:<id>, signal:hide, look_at:<id> ...)
+    // reach the beat as the world's do.
+    void FieldcraftEvent(FName Event);
+    // Opponents' cues the scripts key: alert_state:<state> barks, a retreat,
+    // an alarm run, a takedown, a conscript knocked down or freed.
+    void EnemyCue(const FSoraEnemyCueEvent& Event);
+    void TickScheduled();
     void HeroRolled(const FSoraMarobashiEvent& Event);
     // The next bout of a lesson duel opens, numbered across the chapter.
     void OpenBout();

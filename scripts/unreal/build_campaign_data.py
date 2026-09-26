@@ -199,9 +199,13 @@ FAIL_EVENTS = (
 )
 # A boss's intro or outro cue timed inside its sequence (ch02.b15).
 BOSS_CUE = re.compile(r"(intro|outro)@(\d+(?:\.\d+)?)")
-# Proposed events (ch03's x_ names) the director raises under its own name:
-# a wave's start, the boss's fall and an objective worked.
-RAISED_PROPOSALS = {"x_wave_start": "wave_start", "x_boss_defeated": "boss_defeated", "x_objective": "interact"}
+# Proposed events (ch03's x_ names) the runtime raises under its own name:
+# a wave's start, the boss's fall and an objective worked (the director); the
+# hero's signal to an escorted party, a downed member raised, one freed, and a
+# searching guard giving up (USoraFieldcraft and the guards' cues).
+RAISED_PROPOSALS = {"x_wave_start": "wave_start", "x_boss_defeated": "boss_defeated", "x_objective": "interact",
+                    "x_signal": "signal", "x_npc_revived": "npc_revived", "x_npc_freed": "npc_freed",
+                    "x_alert_state": "alert_state"}
 # A dialogue trigger may wait for a collectible found or a story flag set.
 REQUIRES_FLAG = re.compile(r"(collectible:ch0[1-8]\.c0[1-6]|story:[a-z_]+)")
 
@@ -1370,7 +1374,11 @@ def build_chapter(number, places):
                     for index, item in enumerate(expect(document["collectibles"], (list,), prefix))]
     layout = normalize_layout(document, prefix)
     chapter_map = expect_int(document["map"], f"{prefix}.map", 0)
-    space = derive_space({"prefix": prefix, "map": chapter_map}, beats, places, collectibles, triggers, layout, fail)
+    # A HUD prompt keyed by a volume needs that volume placed, as a line does.
+    prompted = [{"beat": beat_id, "on": row.get("on")} for row in document.get("ui_prompts") or []
+                for beat_id in [row.get("beat")] + list(row.get("x_also_beats") or [])]
+    space = derive_space({"prefix": prefix, "map": chapter_map}, beats, places, collectibles, triggers + prompted,
+                         layout, fail)
     return {
         "schema_version": SCHEMA_VERSION,
         "id": chapter_id,

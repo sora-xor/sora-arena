@@ -143,13 +143,15 @@ SoraText::FLine SoraUI::ControlName(FName Name, int32 Axis)
         {TEXT("Crouch"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Crouch", "しゃがむ")},
         {TEXT("Sheathe"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Sheathe", "納刀・抜刀")},
         {TEXT("Ability"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Ability", "技")},
-        {TEXT("WeaponOne"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponOne", "主武器")},
-        {TEXT("WeaponTwo"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponTwo", "近接武器")},
-        {TEXT("WeaponThree"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponThree", "特殊武器")},
-        {TEXT("WeaponFour"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponFour", "弓（物語）")},
-        {TEXT("WeaponFive"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponFive", "槍（物語）")},
-        {TEXT("WeaponSix"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponSix", "薙刀（物語）")},
-        {TEXT("CampaignWeaponNext"), 0, NSLOCTEXT("SoraArena.Controls", "Control.CampaignWeaponNext", "次の武器（物語）")},
+        {TEXT("WeaponOne"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponOne", "主武器・物語は刀剣")},
+        {TEXT("WeaponTwo"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponTwo", "近接武器・物語は長柄")},
+        {TEXT("WeaponThree"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponThree", "特殊武器・物語は弓")},
+        {TEXT("WeaponFour"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponFour", "鉄砲（物語）")},
+        {TEXT("WeaponFive"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponFive", "鎖・打物（物語）")},
+        {TEXT("WeaponSix"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponSix", "火具・支援（物語）")},
+        {TEXT("ArmsWheel"), 0, NSLOCTEXT("SoraArena.Controls", "Control.ArmsWheel", "武器の輪（押す：次、長押し：選ぶ）")},
+        {TEXT("ArmsNext"), 0, NSLOCTEXT("SoraArena.Controls", "Control.ArmsNext", "次の武器（物語）")},
+        {TEXT("ArmsPrevious"), 0, NSLOCTEXT("SoraArena.Controls", "Control.ArmsPrevious", "前の武器（物語）")},
         {TEXT("Scoreboard"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Scoreboard", "戦況表（稽古）")},
         {TEXT("Menu"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Menu", "一時停止メニュー")},
         {TEXT("Enter"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Enter", "決定・続ける")},
@@ -185,6 +187,20 @@ SoraText::FLine SoraUI::ActionKey(const UObject* WorldContext, FName Action)
             if (Key.IsGamepadKey() == bWanted)
                 return KeyLabel(Key);
     return KeyLabel(EKeys::Invalid);
+}
+
+FText SoraUI::ArmsGroupName(int32 Group)
+{
+    switch (Group)
+    {
+    case 0: return NSLOCTEXT("SoraArena.Arms", "Group.Swords", "刀剣");
+    case 1: return NSLOCTEXT("SoraArena.Arms", "Group.Polearms", "長柄");
+    case 2: return NSLOCTEXT("SoraArena.Arms", "Group.Bow", "弓");
+    case 3: return NSLOCTEXT("SoraArena.Arms", "Group.Firearms", "鉄砲");
+    case 4: return NSLOCTEXT("SoraArena.Arms", "Group.ChainAndImpact", "鎖・打物");
+    case 5: return NSLOCTEXT("SoraArena.Arms", "Group.FireAndSupport", "火具・支援");
+    default: return FText::GetEmpty();
+    }
 }
 
 FText SoraUI::SpecialTradeoff(int32 WeaponId)

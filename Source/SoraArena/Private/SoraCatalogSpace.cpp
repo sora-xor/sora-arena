@@ -191,6 +191,239 @@ bool SpaceReadMount(const FJsonObject& O, const SoraBeatRules::FTask& Task, FSor
     }
     return true;
 }
+// An area on the floor: {center, size}.
+bool SpaceArea(const FJsonObject& O, FSoraVolume& Out)
+{
+    return SpaceVolume(O, Out, false);
+}
+bool SpaceAreas(const FJsonRows* Values, TArray<FSoraVolume>& Out)
+{
+    if (!Values) return false;
+    for (const auto& Value : *Values)
+    {
+        const auto A = Value.IsValid() ? Value->AsObject() : nullptr;
+        FSoraVolume Area;
+        if (!A || !SpaceArea(*A, Area)) return false;
+        Out.Add(MoveTemp(Area));
+    }
+    return true;
+}
+bool SpaceBool(const FJsonObject& O, const TCHAR* Key, bool& Out)
+{
+    return O.TryGetBoolField(Key, Out);
+}
+// One companion: an escorted party member or an ally.
+bool SpaceCompanion(const FJsonObject& O, bool bParty, FSoraCompanionSpec& C)
+{
+    using namespace SoraFieldcraftRules;
+    FCompanionRules& R = C.Rules;
+    int32 Health = 0, Revive = 0;
+    if (!Str(O, TEXT("id"), C.Id) || !Int(O, TEXT("health"), Health) || !Int(O, TEXT("revive_ms"), Revive)) return false;
+    R.Health = Health; R.ReviveMs = Revive;
+    if (bParty)
+    {
+        int32 Bleedout = 0, Lance = 0, Free = 0;
+        if (!Int(O, TEXT("bleedout_ms"), Bleedout) || !Int(O, TEXT("lance_ms"), Lance) || !Int(O, TEXT("free_ms"), Free) ||
+            !Int(O, TEXT("release"), C.Release) || C.Release < INDEX_NONE)
+            return false;
+        C.Role = TEXT("escort");
+        R.Downable = true; R.BleedoutMs = Bleedout; R.LanceReviveMs = Lance; R.Bound = Free > 0; R.FreeMs = Free;
+        return RulesValid(R) && (C.Release == INDEX_NONE || R.Bound);
+    }
+    static const TSet<FName> Roles = {TEXT("fighter"), TEXT("shooter"), TEXT("rank"), TEXT("guide"), TEXT("bystander")};
+    FString Role;
+    bool bDownable = false;
+    if (!Str(O, TEXT("role"), Role) || !Roles.Contains(FName(*Role)) || !Int(O, TEXT("weapon"), C.WeaponId) ||
+        !Int(O, TEXT("rank"), C.Rank) || C.Rank < INDEX_NONE || C.Rank >= MaxRanks || (Role == TEXT("rank")) != (C.Rank >= 0) ||
+        C.WeaponId < INDEX_NONE || C.WeaponId >= SoraBeatRules::WeaponCount || !SpaceBool(O, TEXT("downable"), bDownable) ||
+        !SpaceBool(O, TEXT("detectable"), C.bDetectable) || !SpacePoint(O.TryGetField(TEXT("at")), C.At) ||
+        !Nullable(O, TEXT("joins"), C.Joins) || (!C.Joins.IsEmpty() && !C.Joins.StartsWith(TEXT("wave_start:"))))
+        return false;
+    C.Role = FName(*Role);
+    R.Downable = bDownable; R.BleedoutMs = 0; R.LanceReviveMs = 0; R.Bound = false; R.FreeMs = 0;
+    const bool bArmed = C.Role == TEXT("fighter") || C.Role == TEXT("shooter") || C.Role == TEXT("rank");
+    return RulesValid(R) && bArmed == (C.WeaponId != INDEX_NONE);
+}
+// The beat's fieldcraft block (campaign_fieldcraft.py): every key present,
+// with the types and ranges SoraFieldcraftRules accepts.
+bool SpaceReadFieldcraft(const FJsonObject& O, const FSoraBeat& Beat, FSoraFieldcraft& F)
+{
+    using namespace SoraFieldcraftRules;
+    const FJsonRows* LampRows = Rows(O, TEXT("lamps"));
+    const FJsonRows* FloorRows = Rows(O, TEXT("surfaces"));
+    const FJsonRows* PartyRows = Rows(O, TEXT("party"));
+    const FJsonRows* ReleaseRows = Rows(O, TEXT("releases"));
+    const FJsonRows* AllyRows = Rows(O, TEXT("allies"));
+    const FJsonRows* PeopleRows = Rows(O, TEXT("people"));
+    if (!LampRows || !FloorRows || !PartyRows || !ReleaseRows || !AllyRows || !PeopleRows || !SpaceBool(O, TEXT("signal"), F.bSignal) ||
+        !SpacePoints(Rows(O, TEXT("hide_spots")), F.HideSpots) || F.bSignal == F.HideSpots.IsEmpty() ||
+        !O.HasField(TEXT("water")) || !O.HasField(TEXT("climb")) || !O.HasField(TEXT("stones")) || !O.HasField(TEXT("candle")) ||
+        !O.HasField(TEXT("volley")))
+        return false;
+    static const TMap<FString, FSoraLamp::ESnuff> Snuffs = {
+        {TEXT("hold"), FSoraLamp::ESnuff::Hold}, {TEXT("shot"), FSoraLamp::ESnuff::Shot}, {TEXT("none"), FSoraLamp::ESnuff::None}};
+    for (const auto& Row : *LampRows)
+    {
+        const auto L = Row.IsValid() ? Row->AsObject() : nullptr;
+        FSoraLamp Lamp; FString Kind; int32 Radius = 0;
+        if (!L || !Str(*L, TEXT("id"), Lamp.Id) || !Str(*L, TEXT("kind"), Kind) || !SpacePoint(L->TryGetField(TEXT("at")), Lamp.At) ||
+            !Int(*L, TEXT("radius_cm"), Radius) || Radius <= 0 || !Named(*L, TEXT("snuff"), Snuffs, Lamp.Snuff) ||
+            !Int(*L, TEXT("hold_ms"), Lamp.HoldMs) || !Int(*L, TEXT("relight_ms"), Lamp.RelightMs) || Lamp.RelightMs < 0 ||
+            (Lamp.Snuff == FSoraLamp::ESnuff::Hold) != (Lamp.HoldMs > 0))
+            return false;
+        Lamp.Kind = FName(*Kind); Lamp.RadiusCm = static_cast<float>(Radius);
+        F.Lamps.Add(MoveTemp(Lamp));
+    }
+    for (const auto& Row : *FloorRows)
+    {
+        const auto S = Row.IsValid() ? Row->AsObject() : nullptr;
+        FSoraFloorPatch Floor; FString Kind;
+        if (!S || !Str(*S, TEXT("kind"), Kind) || !SpaceArea(*S, Floor.Area) || !Int(*S, TEXT("step_permille"), Floor.StepPermille) ||
+            !Int(*S, TEXT("crouch_permille"), Floor.CrouchPermille) || Floor.StepPermille <= 0 || Floor.StepPermille > 10000 ||
+            Floor.CrouchPermille < 0 || Floor.CrouchPermille > 10000)
+            return false;
+        Floor.Kind = FName(*Kind);
+        F.Floors.Add(MoveTemp(Floor));
+    }
+    F.bWater = !IsNull(O, TEXT("water"));
+    if (F.bWater)
+    {
+        const TSharedPtr<FJsonObject> W = Child(O, TEXT("water"));
+        FWaterRules& R = F.Water.Rules;
+        const FJsonRows* LineRows = W ? Rows(*W, TEXT("lines")) : nullptr;
+        if (!W || !SpaceArea(*W, F.Water.Area) || !Int(*W, TEXT("surface_cm_s"), R.SurfaceCmS) || !Int(*W, TEXT("dive_cm_s"), R.DiveCmS) ||
+            !Int(*W, TEXT("breath_ms"), R.BreathMs) || !Int(*W, TEXT("recover_ms"), R.RecoverMs) ||
+            !Int(*W, TEXT("drown_hp_s"), R.DrownHpPerSecond) || !Int(*W, TEXT("surface_step_permille"), F.Water.SurfaceStepPermille) ||
+            F.Water.SurfaceStepPermille <= 0 || !WaterValid(R) || !SpaceAreas(Rows(*W, TEXT("cover")), F.Water.Cover) || !LineRows)
+            return false;
+        for (const auto& Row : *LineRows)
+        {
+            const auto A = Row.IsValid() ? Row->AsObject() : nullptr;
+            FSoraVolume Line; int32 Noise = 0;
+            if (!A || !SpaceArea(*A, Line) || !Int(*A, TEXT("noise_cm"), Noise) || Noise <= 0) return false;
+            F.Water.Lines.Add(Line); F.Water.LineNoiseCm.Add(Noise);
+        }
+    }
+    F.bClimb = !IsNull(O, TEXT("climb"));
+    if (F.bClimb)
+    {
+        const TSharedPtr<FJsonObject> C = Child(O, TEXT("climb"));
+        FClimbRules& R = F.Climb.Rules;
+        const FJsonRows* LedgeRows = C ? Rows(*C, TEXT("ledges")) : nullptr;
+        int32 Yaw = 0, Width = 0, Depth = 0;
+        if (!C || !SpacePoint(C->TryGetField(TEXT("at")), F.Climb.At) || !Int(*C, TEXT("yaw"), Yaw) || !Int(*C, TEXT("width_cm"), Width) ||
+            !Int(*C, TEXT("depth_cm"), Depth) || Width <= 0 || Depth <= 0 || !Int(*C, TEXT("height_cm"), R.HeightCm) ||
+            !Int(*C, TEXT("holds"), R.Holds) || !Int(*C, TEXT("grip_per_hold"), R.GripPerHold) ||
+            !Int(*C, TEXT("regen_per_s"), R.RegenPerSecond) || !Int(*C, TEXT("hurt_cm"), R.HurtCm) || !Int(*C, TEXT("hurt_hp"), R.HurtHp) ||
+            !Int(*C, TEXT("lethal_cm"), R.LethalCm) || !LedgeRows || !Strings(Rows(*C, TEXT("ledge_events")), F.Climb.LedgeEvents) ||
+            F.Climb.LedgeEvents.Num() != LedgeRows->Num() || !Nullable(*C, TEXT("top_event"), F.Climb.TopEvent))
+            return false;
+        R.LedgeMask = 0u;
+        for (const auto& Value : *LedgeRows)
+        {
+            double Number = 0; int32 Hold = 0;
+            if (!Value.IsValid() || !Value->TryGetNumber(Number) || !Whole(Number, Hold) || Hold <= 0 || Hold >= 32) return false;
+            R.LedgeMask |= 1u << Hold;
+        }
+        F.Climb.Yaw = static_cast<float>(Yaw); F.Climb.WidthCm = static_cast<float>(Width); F.Climb.DepthCm = static_cast<float>(Depth);
+        if (!ClimbValid(R)) return false;
+    }
+    F.bStones = !IsNull(O, TEXT("stones"));
+    if (F.bStones)
+    {
+        const TSharedPtr<FJsonObject> S = Child(O, TEXT("stones"));
+        if (!S || !Int(*S, TEXT("carried"), F.Stones.Carried) || !Int(*S, TEXT("max"), F.Stones.Max) || F.Stones.Max <= 0 ||
+            F.Stones.Carried < 0 || F.Stones.Carried > F.Stones.Max || !Int(*S, TEXT("noise_cm"), F.Stones.NoiseCm) ||
+            F.Stones.NoiseCm <= 0 || !Int(*S, TEXT("investigate_ms"), F.Stones.InvestigateMs) || F.Stones.InvestigateMs <= 0 ||
+            !SpacePoints(Rows(*S, TEXT("piles")), F.Stones.Piles))
+            return false;
+    }
+    F.bCandle = !IsNull(O, TEXT("candle"));
+    if (F.bCandle)
+    {
+        const TSharedPtr<FJsonObject> L = Child(O, TEXT("candle"));
+        FCandle& R = F.Candle;
+        int32 Radius = 0;
+        if (!L || !Int(*L, TEXT("visibility_permille"), R.VisibilityPermille) || !Int(*L, TEXT("cupped_permille"), R.CuppedVisibilityPermille) ||
+            !Int(*L, TEXT("cupped_rate_permille"), R.CuppedRatePermille) || !Int(*L, TEXT("radius_cm"), Radius) || Radius <= 0 ||
+            R.CuppedVisibilityPermille < 1000 || R.VisibilityPermille <= R.CuppedVisibilityPermille ||
+            R.CuppedRatePermille <= 0 || R.CuppedRatePermille >= 1000)
+            return false;
+        F.CandleRadiusCm = static_cast<float>(Radius);
+    }
+    for (const auto& Row : *ReleaseRows)
+    {
+        const auto R = Row.IsValid() ? Row->AsObject() : nullptr;
+        FSoraRelease Release;
+        if (!R || !Str(*R, TEXT("id"), Release.Id) || !SpacePoint(R->TryGetField(TEXT("at")), Release.At) ||
+            !Int(*R, TEXT("hold_ms"), Release.HoldMs) || Release.HoldMs <= 0)
+            return false;
+        F.Releases.Add(MoveTemp(Release));
+    }
+    TSet<FString> Ids;
+    for (const auto& Row : *PartyRows)
+    {
+        const auto M = Row.IsValid() ? Row->AsObject() : nullptr;
+        FSoraCompanionSpec Member;
+        bool bSeen = false;
+        if (!M || !SpaceCompanion(*M, true, Member) || Member.Release >= F.Releases.Num() ||
+            (Member.Release >= 0 && Member.Rules.FreeMs != F.Releases[Member.Release].HoldMs))
+            return false;
+        Ids.Add(Member.Id, &bSeen);
+        if (bSeen) return false;
+        F.Party.Add(MoveTemp(Member));
+    }
+    for (const auto& Row : *AllyRows)
+    {
+        const auto A = Row.IsValid() ? Row->AsObject() : nullptr;
+        FSoraCompanionSpec Ally;
+        bool bSeen = false;
+        if (!A || !SpaceCompanion(*A, false, Ally)) return false;
+        Ids.Add(Ally.Id, &bSeen);
+        if (bSeen) return false;
+        F.Allies.Add(MoveTemp(Ally));
+    }
+    for (const auto& Row : *PeopleRows)
+    {
+        const auto P = Row.IsValid() ? Row->AsObject() : nullptr;
+        FSoraDefendedPerson Person;
+        bool bSeen = false;
+        if (!P || !Str(*P, TEXT("id"), Person.Id) || !Int(*P, TEXT("target"), Person.Target) || Person.Target < 0 ||
+            Person.Target >= Beat.Task.TargetCount || !SpacePoint(P->TryGetField(TEXT("at")), Person.At) ||
+            Person.At != Beat.Space.Targets[Person.Target])
+            return false;
+        Ids.Add(Person.Id, &bSeen);
+        if (bSeen) return false;
+        F.People.Add(MoveTemp(Person));
+    }
+    // Volley ranks: each a full row of gunners with the volley's arm, from the start.
+    F.bVolley = !IsNull(O, TEXT("volley"));
+    TArray<int32> Gunners;
+    Gunners.Init(0, MaxRanks);
+    for (const FSoraCompanionSpec& Ally : F.Allies)
+        if (Ally.Rank >= 0)
+        {
+            if (!F.bVolley || !Ally.Joins.IsEmpty()) return false;
+            ++Gunners[Ally.Rank];
+        }
+    if (F.bVolley)
+    {
+        const TSharedPtr<FJsonObject> V = Child(O, TEXT("volley"));
+        FVolleyRules& R = F.Volley.Rules;
+        if (!V || !Int(*V, TEXT("ranks"), R.Ranks) || !Int(*V, TEXT("per_rank"), F.Volley.PerRank) || F.Volley.PerRank <= 0 ||
+            !Int(*V, TEXT("weapon"), F.Volley.WeaponId) || F.Volley.WeaponId < 0 || F.Volley.WeaponId >= SoraBeatRules::WeaponCount ||
+            !Int(*V, TEXT("order_delay_ms"), R.OrderDelayMs) || !Int(*V, TEXT("cycle_ms"), R.CycleMs) ||
+            !Int(*V, TEXT("radius_cm"), R.RadiusCm) || !Int(*V, TEXT("range_cm"), R.RangeCm) || !VolleyValid(R))
+            return false;
+        for (int32 Rank = 0; Rank < MaxRanks; ++Rank)
+            if (Gunners[Rank] != (Rank < R.Ranks ? F.Volley.PerRank : 0)) return false;
+        for (const FSoraCompanionSpec& Ally : F.Allies)
+            if (Ally.Rank >= 0 && Ally.WeaponId != F.Volley.WeaponId) return false;
+    }
+    // Only an escort walks a party, and only its road holds hide spots and cell doors.
+    const bool bEscort = Beat.Task.Goal == SoraBeatRules::EGoal::Escort;
+    return F.Party.IsEmpty() != bEscort && (bEscort || (!F.bSignal && F.Releases.IsEmpty()));
+}
 }
 
 FVector2D FSoraZone::PointAlong(float Chainage) const
@@ -366,6 +599,9 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if (B.bMount != (Beat.Is(SoraBeatRules::EType::HorsebackRide) || (Mount.IsValid() && Beat.Is(SoraBeatRules::EType::Boss))) ||
             (B.bMount && (!Mount || !SpaceReadMount(*Mount, Task, B.Mount))))
             return Bad(Beat.Id + TEXT(" horse"));
+        const TSharedPtr<FJsonObject> Fieldcraft = Child(*O, TEXT("fieldcraft"));
+        if (!Fieldcraft || !SpaceReadFieldcraft(*Fieldcraft, Beat, B.Fieldcraft))
+            return Bad(Beat.Id + TEXT(" fieldcraft"));
     }
     const FJsonRows* PickupRows = Rows(Data, TEXT("pickups"));
     if (!PickupRows) return Bad(TEXT("no pickups"));

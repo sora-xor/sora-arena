@@ -8,6 +8,7 @@
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
+#include "SoraFieldcraft.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
@@ -94,7 +95,10 @@ void USoraCampaignDirector::BeginPlay()
         Events->OnDamaged.AddUObject(this,&USoraCampaignDirector::HeroDamaged);
         Events->OnGuarded.AddUObject(this,&USoraCampaignDirector::HeroGuarded);
         Events->OnMarobashi.AddUObject(this,&USoraCampaignDirector::HeroRolled);
+        Events->OnEnemyCue.AddUObject(this,&USoraCampaignDirector::EnemyCue);
     }
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this))
+        Fieldcraft->OnEvent.AddUObject(this,&USoraCampaignDirector::FieldcraftEvent);
     if(USoraStealth* Stealth=USoraStealth::Get(this))
     {
         Stealth->OnDetected.AddUObject(this,&USoraCampaignDirector::StealthDetected);
@@ -136,9 +140,45 @@ void USoraCampaignDirector::CloseStealthZone()
 {
     if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->IsZoneActive()) Stealth->EndZone();
 }
+void USoraCampaignDirector::FieldcraftEvent(FName Event)
+{
+    if(Mode().bCampaign&&ActiveBeatData()) RaiseBeatEvent(Event);
+}
+void USoraCampaignDirector::EnemyCue(const FSoraEnemyCueEvent& Event)
+{
+    if(!Mode().bCampaign||!ActiveBeatData()||Mode().bDeterministicPractice) return;
+    const FString Detail=Event.Detail.ToString();
+    switch(Event.Cue)
+    {
+    case ESoraEnemyCue::AlertState:
+    {
+        // The guards' barks for their state; detection itself (and what it
+        // fails) comes from the stealth zone, never from a bark.
+        const TWeakObjectPtr<const AActor> Key(Event.Enemy.Get());
+        const FName* Before=GuardStates.Find(Key);
+        if(Before&&*Before==TEXT("search")&&Event.Detail==TEXT("unaware")) Fire(TEXT("alert_state:search_to_unaware"));
+        GuardStates.Add(Key,Event.Detail);
+        if(Event.Detail==TEXT("retreat")) { Fire(TEXT("ai_event:retreat")); Fire(TEXT("enemy_retreat")); Fire(TEXT("event:enemy_retreat")); }
+        else Fire(TEXT("alert_state:")+Detail);
+        return;
+    }
+    case ESoraEnemyCue::Alarm: Fire(TEXT("ai_event:alarm_run")); return;
+    case ESoraEnemyCue::KnockedOut:
+        Fire(TEXT("ai_event:takedown"));
+        if(!BeatEvents.Contains(TEXT("ai_event:first_takedown"))) Fire(TEXT("ai_event:first_takedown"));
+        return;
+    case ESoraEnemyCue::Subdued: Fire(TEXT("conscript_downed")); return;
+    case ESoraEnemyCue::Freed: Fire(TEXT("conscript_freed")); return;
+    case ESoraEnemyCue::ShieldTurned: Fire(TEXT("ai:shield_turned")); return;
+    case ESoraEnemyCue::BarrierBroken: Fire(TEXT("shield_broken")); return;
+    default: return;
+    }
+}
 void USoraCampaignDirector::StealthDetected(const FSoraStealthDetection& Detection)
 {
     if(!ActiveBeatData()) return;
+    // A patrol that finds the hero finds the party beside him: they drop.
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->PartyDetected();
     // On Easy the zone answers a detection with a fight (SoraStealthRules::
     // Response): the beat is neither failed nor reinforced. Guarded work
     // pauses only while a guard sees the hero or is alarmed (IsWorkPaused).
@@ -224,6 +264,7 @@ void USoraCampaignDirector::ResetRound()
     // restored encounter or score a defeat against its fresh opponents.
     ClearOfflineProjectiles();
     ClearOpponents();
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
     // The hero comes down from the saddle before the world he stands in is rebuilt.
     ClearHorses();
     EndCinematicCamera(0.f);
@@ -345,6 +386,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; bDetected=false; CinematicSeconds=0.f;
     VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset(); BeatEvents.Reset();
+    Scheduled.Reset(); bWorkWasSeen=false; GuardStates.Reset();
     AwaseAtMs=INDEX_NONE; LateHitAt=-1.0; BoutOffset=0;
     // The dojo numbers its bouts across the chapter's lesson duels.
     for(int32 Earlier=0;Earlier<Chapter.Beats.Num();++Earlier)
@@ -365,8 +407,10 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     // The beat's place: a travel cut to its entry, its kit, horse and camera.
     EnterBeatSpace(bResumed);
     // A stealth beat opens its zone before its guards take their posts; a
-    // restored checkpoint opens it afresh.
+    // restored checkpoint opens it afresh. Its fieldcraft follows, so its
+    // floors and the candle join the zone.
     OpenStealthZone();
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Stage(Beat);
     if(Task.Goal==SoraBeatRules::EGoal::Lines&&Beat.LinesEvent==TEXT("beat_start")) StartLines();
     SpawnCast(bKeepPupil);
     Fire(TEXT("beat_start"));
@@ -460,6 +504,7 @@ void USoraCampaignDirector::FinishChapter()
     if(!SoraBeatRules::FinishChapter(BeatState,Chapter.Rules.GetData(),Chapter.Rules.Num())) return;
     ClearOpponents();
     ClearHorses();
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
     M.bChapterComplete=true;
     Save->HighestChapter=FMath::Max(Save->HighestChapter,FMath::Min(LastChapter,ChapterId+1));
     const bool bLiberated=SoraCampaignRules::CampaignLiberated(ChapterId,LastChapter,true);
@@ -548,6 +593,8 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     }
     if(M.InputState()==SoraInput::Card) return;
     PromptRemaining=FMath::Max(0.f,PromptRemaining-DeltaTime);
+    TickScheduled();
+    if(ActiveBeatData()!=Beat) return;
     TickSealCut();
     TickDialogue(DeltaTime);
     TickBeat(DeltaTime);
@@ -563,6 +610,9 @@ void USoraCampaignDirector::TickDialogue(float DeltaSeconds)
         Queue.RemoveAt(0);
         if(!Queue.IsEmpty()) LineRemaining+=Chapter.Dialogue[Queue[0]].DurationSeconds;
         Fire(TEXT("lines_done:")+Chapter.Dialogue[Finished].Id);
+        // The last blocking line ends the scene's hold (ch01.b12's blocking_end).
+        if(const FSoraBeat* Beat=ActiveBeatData(); Beat&&!Beat->BlockingLines.IsEmpty()&&Finished==Beat->BlockingLines.Last())
+            Fire(TEXT("blocking_end"));
     }
     if(Queue.IsEmpty()) LineRemaining=0.f;
 }
@@ -583,6 +633,15 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     const USoraStealth* Stealth=USoraStealth::Get(this);
     Step.DeltaMs=DeltaMs; Step.AtTask=HeroAtTask(); Step.Contested=Contested();
     Step.Seen=Stealth&&Stealth->IsZoneActive()&&Stealth->IsWorkPaused();
+    // A cupped candle copies at its reduced pace.
+    if(const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Step.RatePermille=Fieldcraft->WorkRatePermille();
+    // Work under guard stops the moment a guard sees the hero (ch06.b08's copy_paused).
+    if(Task.PauseWhenSeen&&Step.Seen&&!bWorkWasSeen) Fire(TEXT("ai_event:copy_paused"));
+    bWorkWasSeen=Task.PauseWhenSeen&&Step.Seen;
+    // A guard the hero could take from behind, the first time (ch06.b04's first_rear_reach).
+    if(Stealth&&Stealth->IsZoneActive()&&M.Hero()&&!BeatEvents.Contains(TEXT("ai_event:first_rear_reach"))&&
+        Stealth->TakedownTarget(*M.Hero()))
+        Fire(TEXT("ai_event:first_rear_reach"));
     SoraBeatRules::Tick(TaskState,Task,Step);
     // Trigger volumes the hero walks or rides into raise their events: a
     // dialogue waiting on one starts, and the waves it names come.
@@ -609,7 +668,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // A crank left alone goes slack.
     const bool bSlack=SoraBeatRules::CrankSlipping(TaskState,Task);
-    if(bSlack&&!bCrankSlack) Fire(TEXT("crank_released"));
+    if(bSlack&&!bCrankSlack) { Fire(TEXT("crank_released")); Fire(TEXT("event:player_left_capstan")); }
     bCrankSlack=bSlack;
     // The dojo: an awase that 転 did not follow, and one met too late.
     if(AwaseAtMs!=INDEX_NONE&&TaskState.ElapsedMs-AwaseAtMs>MarobashiWindowMs)
@@ -675,6 +734,7 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
                     if(ASoraEnemy* Conscript=ASoraEnemy::SpawnArchetype(*GetWorld(),Group.Type,Spawned,SpawnLocation(Spawned),FRotator(0,180,0)))
                         AddOpponent(Conscript,INDEX_NONE);
         Fire(FString::Printf(TEXT("wave_start:%d"),Wave+1));
+        Fire(FString::Printf(TEXT("event:wave_start_%d"),Wave+1));
         Fire(TEXT("wave_spawned"));
         Fire(FString::Printf(TEXT("wave_spawned:%d"),Wave+1));
         if(!Beat->Waves[Wave].Id.IsEmpty()) Fire(TEXT("wave_spawned:")+Beat->Waves[Wave].Id);
@@ -865,6 +925,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 void USoraCampaignDirector::ClearEncounter()
 {
     CloseStealthZone();
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
     ClearOpponents();
     ClearOfflineProjectiles();
     ClearHorses();
@@ -930,6 +991,33 @@ void USoraCampaignDirector::Fire(const FString& Event,int32 Beat)
         Enqueue(Trigger.Lines,false);
     }
     ShowPrompt(Event,Beat);
+    // A prompt keyed "<event>:first" shows on the event's first raise in the beat.
+    if(bFirst) ShowPrompt(First,Beat);
+    if(Beat!=BeatIndex) return;
+    // A row keyed "<event>+Ns" plays N seconds after the event, once.
+    if(GetWorld())
+    {
+        const FString Delayed=Event+TEXT("+");
+        TSet<FString> Due;
+        for(const FSoraDialogueTrigger& Trigger:Chapter->Triggers)
+            if(Trigger.Beat==Beat&&Trigger.On.StartsWith(Delayed)&&Trigger.On.EndsWith(TEXT("s"))) Due.Add(Trigger.On);
+        for(const FSoraPrompt& Prompt:Chapter->Prompts)
+            if(Prompt.Beats.Contains(Beat)&&Prompt.On.StartsWith(Delayed)&&Prompt.On.EndsWith(TEXT("s"))) Due.Add(Prompt.On);
+        for(const FString& Row:Due)
+            if(!BeatEvents.Contains(Row)&&!Scheduled.ContainsByPredicate([&](const TPair<double,FString>& Entry) { return Entry.Value==Row; }))
+                Scheduled.Emplace(GetWorld()->GetTimeSeconds()+FCString::Atod(*Row.Mid(Delayed.Len(),Row.Len()-Delayed.Len()-1)),Row);
+    }
+    // Allies that join with a wave step in as it comes.
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->NoteBeatEvent(Event);
+}
+void USoraCampaignDirector::TickScheduled()
+{
+    if(Scheduled.IsEmpty()||!GetWorld()) return;
+    const double Now=GetWorld()->GetTimeSeconds();
+    TArray<FString> Due;
+    for(int32 Index=Scheduled.Num()-1;Index>=0;--Index)
+        if(Now>=Scheduled[Index].Key) { Due.Insert(Scheduled[Index].Value,0); Scheduled.RemoveAt(Index); }
+    for(const FString& Event:Due) Fire(Event);
 }
 void USoraCampaignDirector::ShowPrompt(const FString& Event,int32 Beat)
 {
@@ -1046,6 +1134,8 @@ bool USoraCampaignDirector::DamageDefendedTarget(int32 Target,int32 Hp)
     const int32 Full=Task.TargetHp[Target],Before=TaskState.TargetHp[Target];
     const bool bDestroyed=SoraBeatRules::DamageTarget(TaskState,Task,Target,Hp);
     const int32 After=TaskState.TargetHp[Target];
+    // The person standing at a worn target is netted, and taken when it is lost.
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->TargetChanged(Target,Full>0?After*1000/Full:0);
     // "target_hp_below:<actor or any>:<fraction>" lines as a target weakens.
     for(const FSoraDialogueTrigger& Trigger:ActiveChapter()->Triggers)
     {
@@ -1120,7 +1210,13 @@ bool USoraCampaignDirector::HeroAtTask() const
     const FSoraBeatSpace* Space=ActiveSpace();
     if(!Space) return false;
     if(Task.Goal==SoraBeatRules::EGoal::Hold) return Near(ASoraWorldBuilder::Floor(Space->Anchor),SoraCampaignReach::Hold);
-    if(Task.Goal==SoraBeatRules::EGoal::Escort) return Near(PartyLocation(),static_cast<float>(Task.WaitCm));
+    // The escorted party walks while the hero keeps up and all of it is free,
+    // standing and in the open (SoraFieldcraftRules::PartyWalks).
+    if(Task.Goal==SoraBeatRules::EGoal::Escort)
+    {
+        const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this);
+        return Near(PartyLocation(),static_cast<float>(Task.WaitCm))&&(!Fieldcraft||Fieldcraft->PartyReady());
+    }
     return false;
 }
 bool USoraCampaignDirector::Contested() const
@@ -1365,7 +1461,11 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     case SoraBeatRules::EGoal::Objectives:
     {
         const int32 Objective=NearestOf(Space.Objectives,[&](int32 Index) { return (TaskState.PointsMask&(1u<<Index))==0u; });
-        if((bWorked=SoraBeatRules::WorkObjective(TaskState,Task,Objective))) Fire(TEXT("interact:")+Beat->Objectives[Objective]);
+        if((bWorked=SoraBeatRules::WorkObjective(TaskState,Task,Objective)))
+        {
+            Fire(TEXT("interact:")+Beat->Objectives[Objective]);
+            Fire(TEXT("event:objective_done_")+Beat->Objectives[Objective]);
+        }
         break;
     }
     case SoraBeatRules::EGoal::Turns:
@@ -1391,6 +1491,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
             if((bWorked=SoraBeatRules::Pickup(TaskState,Task,Pickup)))
             {
                 CarryChanged();
+                if(!BeatEvents.Contains(TEXT("event:first_pickup"))) Fire(TEXT("event:first_pickup"));
                 Fire(TEXT("item_picked:")+Beat->Pickups[Pickup]);
                 Fire(TEXT("item_picked:")+Beat->CarryItem);
             }
@@ -1442,6 +1543,10 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
                 (Worst==INDEX_NONE||TaskState.TargetHp[Target]*Task.TargetHp[Worst]<TaskState.TargetHp[Worst]*Task.TargetHp[Target]))
                 Worst=Target;
         bWorked=Worst!=INDEX_NONE&&SoraBeatRules::RepairTarget(TaskState,Task,Worst,FMath::Max(1,Task.TargetHp[Worst]/4));
+        // Mended past half, a netted person's net is cut.
+        if(bWorked)
+            if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this))
+                Fieldcraft->TargetChanged(Worst,TaskState.TargetHp[Worst]*1000/FMath::Max(1,Task.TargetHp[Worst]));
         break;
     }
     case SoraBeatRules::EGoal::OpponentDown:

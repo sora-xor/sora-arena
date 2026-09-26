@@ -58,6 +58,11 @@ void DrawDojoLesson(const FSoraHUDFrame& Frame);
 void DrawBoss(const FSoraHUDFrame& Frame);
 void DrawStealth(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// The campaign's arms wheel and the arm a key took up; the beat's fieldcraft:
+// the hand's work, breath, grip, stones, the candle, the signal and the
+// downed (SoraHUDFieldcraftPanel.cpp).
+void DrawArmsWheel(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+void DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawDialogue(const FSoraHUDFrame& Frame);
 void DrawResult(const FSoraHUDFrame& Frame);
 void DrawCaptions(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter* Hero);

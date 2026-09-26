@@ -212,10 +212,13 @@ void ASoraHUD::DrawHUD()
     SoraHUDPanels::DrawBoss(Frame);
     if(P) SoraHUDPanels::DrawStealth(Frame,*P);
     if(P) SoraHUDPanels::DrawHero(Frame,*P);
+    if(P) SoraHUDPanels::DrawFieldcraft(Frame,*P);
     SoraHUDPanels::DrawDialogue(Frame);
     SoraHUDPanels::DrawCaptions(Frame,P);
     SoraHUDPanels::DrawResult(Frame);
     SoraHUDPanels::DrawPractice(Frame);
+    // The arms wheel sits over everything else while it is open.
+    if(P) SoraHUDPanels::DrawArmsWheel(Frame,*P);
 }
 void SoraHUDPanels::DrawTopBar(const FSoraHUDFrame& Frame)
 {

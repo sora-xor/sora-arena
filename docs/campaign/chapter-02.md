@@ -806,7 +806,7 @@ ch02 is the first chapter in which every one of these types appears (bible §7),
 | Trigger | Prompt id | 日本語 (UI) | English (UI) |
 |---|---|---|---|
 | `npc_downed:any` | `ch02.b02.tut.001` | 倒れた門弟のそばで{Interact}長押し：助け起こす。 | Hold {Interact} beside a downed pupil to help them up. |
-| `beat_start` | `ch02.b03.tut.002` | 槍を得た。{WeaponFive}／{CampaignWeaponNext}で持ち替え。 | Yari acquired. Press {WeaponFive} or {CampaignWeaponNext} to switch. |
+| `beat_start` | `ch02.b03.tut.002` | 槍を得た。{WeaponTwo}（長柄）／{ArmsWheel}で持ち替え。 | Yari acquired. Press {WeaponTwo} (polearms) or {ArmsWheel} to switch. |
 | `volume_enter:vol_bugugura_yard` | `ch02.b03.tut.003` | 盾の縁を槍で突けば、構えが崩れる。 | Thrust at a shield's edge to break its guard. |
 | `ai:player_inside_polearm_min` | `ch02.b03.tut.004` | 懐では槍は弱い。退いて間合いを取れ。 | The yari is weak up close. Step back to regain distance. |
 | `volume_enter:vol_kura_sw_door` | `ch02.b05.tut.005` | {Interact}長押し：石突で封印をこじ開ける。 | Hold {Interact}: pry the seal off with the spear butt. |
@@ -2286,7 +2286,7 @@ lines:
 - {id: ch02.b16.nyaakoto.015, beat: ch02.b16, speaker: samurai, register: samurai_restrained, ja: 取り返す。先生も、蔵も、田も。, en: 'I will take it all back. Sensei, the granaries, the fields.', duration_s: 4.0, kind: story, 'on': cine@128.0, mode: cinematic, audio: null}
 ui_prompts:
 - {id: ch02.b02.tut.001, beat: ch02.b02, 'on': 'npc_downed:any', ja: '倒れた門弟のそばで{Interact}長押し：助け起こす。', en: 'Hold {Interact} beside a downed pupil to help them up.'}
-- {id: ch02.b03.tut.002, beat: ch02.b03, 'on': beat_start, ja: '槍を得た。{WeaponFive}／{CampaignWeaponNext}で持ち替え。', en: 'Yari acquired. Press {WeaponFive} or {CampaignWeaponNext} to switch.'}
+- {id: ch02.b03.tut.002, beat: ch02.b03, 'on': beat_start, ja: '槍を得た。{WeaponTwo}（長柄）／{ArmsWheel}で持ち替え。', en: 'Yari acquired. Press {WeaponTwo} (polearms) or {ArmsWheel} to switch.'}
 - {id: ch02.b03.tut.003, beat: ch02.b03, 'on': 'volume_enter:vol_bugugura_yard', ja: 盾の縁を槍で突けば、構えが崩れる。, en: Thrust at a shield's edge to break its guard.}
 - {id: ch02.b03.tut.004, beat: ch02.b03, 'on': 'ai:player_inside_polearm_min', ja: 懐では槍は弱い。退いて間合いを取れ。, en: The yari is weak up close. Step back to regain distance.}
 - {id: ch02.b05.tut.005, beat: ch02.b05, 'on': 'volume_enter:vol_kura_sw_door', ja: '{Interact}長押し：石突で封印をこじ開ける。', en: 'Hold {Interact}: pry the seal off with the spear butt.'}

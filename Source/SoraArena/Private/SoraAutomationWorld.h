@@ -46,6 +46,12 @@ struct FSoraAutomationWorld : FTestWorldWrapper
     // Menu-safety tests use it to show that play input alone, through the
     // input states and the paused world, acts on nothing in a menu.
     bool InjectKeyPastFrontEnd(const FKey& Key, EInputEvent Event) const;
+    // One analog sample for an axis key (a stick or the mouse), as a device
+    // reports it each frame; the value holds until the next sample.
+    bool InjectAxis(const FKey& Key, float Value) const;
+    // Nyaakoto takes up WeaponId as a player does: its group's key (1-6,
+    // SoraArmsRules.h) pressed, a third of a second apart, until it is in hand.
+    bool TakeUpArm(int32 WeaponId);
 
     // A checkout that has not run scripts/toolchain/import-mac.sh has no
     // /Game/Generated art; the world builder then logs its documented

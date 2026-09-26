@@ -516,6 +516,19 @@ static void TestProduction()
     Expect(State.Progress == 4000, "hold: filled while contested or seen");
     Tick(State, Hold, At(6000, true));
     Expect(TaskComplete(State, Hold) && ProgressPermille(State, Hold) == Permille, "hold: did not fill");
+    // A cupped candle (ch06.b08) works the hold at half pace, the same at any frame rate.
+    for (const int FrameMs : {1, 3, 7, 17, 33, 250})
+    {
+        State = Begin(Hold, "cupped hold");
+        for (int Ms = 0; Ms < 6000; Ms += FrameMs)
+        {
+            FTick Step = At(FrameMs, true);
+            Step.RatePermille = 500;
+            Tick(State, Hold, Step);
+        }
+        const int Walked = (6000 + FrameMs - 1) / FrameMs * FrameMs;
+        Expect(State.Progress == Walked / 2, "cupped hold: half pace must not depend on the frame");
+    }
     Hold.Contest = EContest::Decay;
     Hold.DecayPermille = 100;
     State = Begin(Hold, "decaying hold");

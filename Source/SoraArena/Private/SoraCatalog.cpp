@@ -526,6 +526,11 @@ bool FSoraCatalog::LoadCampaign()
             if (Beat.Is(SoraBeatRules::EType::Dialogue) &&
                 (!LineRefs(Rows(*Params, TEXT("lines")), Beat.Lines) || Beat.Lines.Num() != Beat.Task.Count || Beat.LinesEvent.IsEmpty()))
                 return Bad(FString::Printf(TEXT("beat %s has invalid dialogue lines"), *Beat.Id));
+            // Blocking lines are some of the dialogue's own lines.
+            if (const TSharedPtr<FJsonObject> Ext = Child(*O, TEXT("ext")); Ext && Ext->HasField(TEXT("blocking_lines")) &&
+                (!LineRefs(Rows(*Ext, TEXT("blocking_lines")), Beat.BlockingLines) ||
+                 Beat.BlockingLines.ContainsByPredicate([&](int32 Line) { return !Beat.Lines.Contains(Line); })))
+                return Bad(FString::Printf(TEXT("beat %s has invalid blocking lines"), *Beat.Id));
             if (Beat.Is(SoraBeatRules::EType::ExploreOptional))
             {
                 TArray<FString> Rewards;

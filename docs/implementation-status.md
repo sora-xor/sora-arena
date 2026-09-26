@@ -137,9 +137,10 @@ what was actually run; everything not listed as run is unverified.
 - The 6–8 hour campaign pacing, balance and combat readability are not
   measured; the playthrough automation proves the beats can be completed, not
   how long they take. Stealth beats use default vigilance and archetype
-  senses, not each chapter's authored detection numbers, lights and noise
-  surfaces. Horse mesh/animation, allies, convoy losses and escorts as
-  characters are missing (see [offline acceptance](campaign/offline-acceptance.md)).
+  senses, not each chapter's authored detection numbers (its lights and
+  noise surfaces are staged since the gameplay lane). Horse mesh/animation and convoy losses are missing (see
+  [offline acceptance](campaign/offline-acceptance.md)); allies and escorts
+  became characters in the gameplay lane (below).
 - Practice HUD lines, campaign notices and the stealth and boss panels are
   paired `TEXT()` literals with English, not yet in `Game.locres`.
 - The P2P mesh's dropout tests are timing-sensitive: under a load average near
@@ -213,14 +214,160 @@ timing tests included, on this run); `stage_kernel.py --platform Mac` staged
 the unchanged library (SHA-256 `1bd6e8fa…`), `verify_parity.py` passed its 94
 cases / 99,043 ticks and `test_parity_guards.py` its 17 tests.
 
-Still open from the review: prompts for mechanics the runtime lacks (the
-escort signal, tsubute throws, swimming, climbing, lamp snuffing, the
-kusarigama snare) no longer name a key but still describe them; the campaign
-hero reaches only his class slots (katana, arc carbine, monofilament
-naginata) and the yumi, yari and naginata, so later unlocks such as the
-kusarigama and coil matchlock have no key; a guarded carry answers a
-detection with a fight rather than pausing; guards walk the space's derived
-patrol loops, not the chapters' authored routes and detection numbers.
+Still open from the review: a guarded carry answers a detection with a fight
+rather than pausing; guards walk the space's derived patrol loops, not the
+chapters' authored routes and detection numbers. The missing mechanics
+(escort signal, tsubute, swimming, climbing, lamp snuffing, the kusarigama
+snare) and the arms with no key were resolved in the
+[gameplay lane](#2026-09-26-gameplay-lane-every-arm-and-the-fieldcraft-the-chapters-script).
+
+## 2026-09-26 gameplay lane: every arm, and the fieldcraft the chapters script
+
+Branch `lane/gameplay`. This step made every arm the campaign unlocks
+reachable and gave the chapter scripts the mechanics their prompts and beats
+name. It records what exists and what was run; anything not listed as run is
+unverified.
+
+**Now in the source**
+
+- **Arms (`SoraArmsRules.h`).** All 21 campaign arms sit on one ring in six
+  groups: swords, polearms, the bow, firearms, chain and striking arms,
+  explosives and support. Keys 1–6 take up a group's first held arm, a second
+  press steps within it, and a group remembers the arm last taken from it.
+  On the pad the d-pad reaches the first three groups. The mouse wheel steps
+  the whole ring. The arms wheel (X / RB) steps on a tap; held, it opens a
+  radial wheel of every arm he holds, chosen by mouse or right stick while the
+  world runs at a quarter pace (`CinematicTimeDilation`), and taken up on
+  release. Pause and halted actions close it. The training arena lends
+  Nyaakoto every arm on the same keys. A group whose arms the saddle or a load
+  refuses gives the campaign's reason. Every label is bilingual
+  (`SoraUI::ArmsGroupName`, `SoraArena.Arms.*`). `CampaignWeaponNext` is
+  gone, so saved control profiles that rebound it fall back to the defaults.
+  The weapon panel shows the arm's English name beside the Japanese. The
+  guard bar shows for every melee arm, and the dojo bokken label is now
+  `NSLOCTEXT`.
+- **Fieldcraft (`SoraFieldcraftRules.h`, `USoraFieldcraft`,
+  `campaign_fieldcraft.py`).** Each beat's space now carries a `fieldcraft`
+  block, derived from the chapter script's `params` and `ext`, that the loader
+  reads fail-closed and `validate_campaign.py` checks (46 mutations rejected).
+  From it the runtime plays:
+  - lamps and fires the guards see by. A held Interact snuffs a 行灯 (1 s) or
+    a brazier (1.5 s). A round or arrow on a floodlight's cable junction cuts
+    it for 10 s. `lamp_out:<id>` and `lamp_lit:<id>` are raised.
+  - floors that change footsteps: puddles, gravel, running water, tatami,
+    boards, and the nightingale floor with its silent edge strip.
+  - water. He swims and dives (Crouch) at the script's paces. Only his head
+    shows at the surface, and less of it in the reeds. Breath runs out and he
+    drowns past it, arms are stowed in the water, and float lines ring.
+  - a climbing face. It has holds, grip spent per hold, ledges that give grip
+    back and raise their volume events, falls that hurt or kill, and its top
+    as the zone's exit.
+  - tsubute stones (Ability), taken up at rubble. Where a stone lands the
+    guards hear it and go to look; a stone never gives the hero away.
+  - the cupped candle. Guard cups it, and the copying runs at half pace.
+  - vaulting low cover with Jump.
+  - the kusarigama's weighted chain (Melee at 3.3–6.2 m). It binds a blade,
+    pulls a shield aside, or drags a drone down.
+  - rotating volley ranks for ch08.b03 and b06. Held Ability marks a 4 m ring
+    up to 60 m (b06: 40 m) away, and release gives the order. The front rank
+    fires 800 ms later and goes back to reload for 9 s, and a rank still
+    loading refuses an order. The volley splits 288 damage across up to four
+    unshielded opponents in the ring, nearest first; it staggers shields for
+    2 s and a walker's legs for 1 s, and nothing misses. The volley's damage
+    is credited to the hero. `event:volley_tutorial`, `_ready`, `_ordered`,
+    `_ordered_N` and `_rotate` are raised, and the HUD shows the ring and each
+    rank's loading.
+- **Companions (`ASoraCompanion`).** Escorted parties, allies, the ranks
+  and the people a defence protects are now characters rather than props.
+  Escorts walk the road and hide or go on at the Ability signal. They go
+  down, a 2–3 s held Interact or the healing lance's round raises them, and
+  left down past their window they die, which fails the escort. Collars are
+  cut and cell doors opened by a held hand. Fighters close on opponents near
+  their post with a committed windup. Shooters hold their post and miss on a
+  fixed pattern. Guides keep near the hero. Allies that wait for a wave join
+  with it. Opponents may take an exposed companion as their quarry, and the
+  hero's blows never hurt one (no friendly fire). ch04.b12's planters and
+  ch05.b07's Kōzō are netted as their target is worn below half and freed as
+  it is mended.
+- **Events that were never raised.** `look_at:<id>` and `look_at:<family>`
+  (lamps, collars, cell doors, once per beat), `npc_downed:<id>`,
+  `:<prefix>_*` and `:any`, `npc_revived:*`, `npc_freed:*`,
+  `interact_done:collar_*`, `npc_died:*` and `npc_died:any_escort`,
+  `blocking_end` after a beat's last blocking line, `alert_state:<state>` and
+  `:search_to_unaware`, `ai_event:*` (retreat, alarm run, takedown, lure
+  heard, float line), `lure_triggered`, `signal:*`, `equip:N`, `fired:N`,
+  `snare:*`, the climb's ledge and top volumes, and `<event>+Ns` scheduled
+  rows. Prompts keyed on these now show. The prompt events feed volume
+  placement too, which fixes four prompts whose volumes were never placed
+  (ch01.b05, ch02.b03, ch02.b05, ch06.b02). The chapter scripts' prompts for
+  these mechanics now name their keys (`{Ability}`, `{Interact}`, `{Jump}`,
+  `{ArmsWheel}`).
+
+**Run on 2026-09-26 in `lane/gameplay`**
+
+- Host checks, all passing: `test_fieldcraft_rules.py` (new),
+  `test_stealth_rules.py`, `test_campaign_progression.py`,
+  `test_combat_rules.py`, `test_boss_rules.py`, `test_historical_arms.py`,
+  `validate_enemies.py`, `validate_campaign.py` (46 mutations rejected),
+  `validate_content.py`, `build_campaign_data.py --check`,
+  `check_input_conflicts.py` (29 actions and axes on 49 keys, 24 rebindable
+  controls), `check_catalog_kernel_parity.py` and
+  `native_japanese_localization.py --check` (408 keys).
+- `run-automation-mac.sh SoraArena.Fieldcraft` (headless `-nullrhi` editor)
+  passed all 14 tests. The first runs failed seven, and each failure was
+  fixed:
+  - Long waits ticked in 1 s frames, which the engine caps at 0.4 s. They
+    now tick in quarter seconds.
+  - The eye stayed level because the headless world has no local player, so
+    `APlayerCameraManager::UpdateCamera` never turns it. The tests now set
+    the eye as that update does.
+  - A look or a shot had other captives in its line. The tests now find a
+    clear side, and look-at traces now ignore the hero's companions.
+  - The climb test let go at the 3.2 m ledge, a fall too short to hurt. It
+    now lets go at the 5.8 m ledge.
+  - The vault test started out of reach of the cover.
+  - The swim test stood in the reeds.
+  - A diver under the hub's overhead geometry could not stand up, so he
+    could not surface and drowned. A dive now follows the crouch wish, not
+    the stance.
+- Every other Unreal test except `Campaign.Playthrough` and
+  `Practice.FullMatches` ran next (80 tests), and six failed:
+  - `AI.HearsShot`, `Combat.SheatheKey`, `Campaign.Mount`,
+    `Campaign.CombatTrace` and `Events.ScriptedFight` still pressed the old
+    class-slot keys.
+  - The ch05.b05 and ch05.b10 traces and `DeterministicEnemyFire` now had the
+    beat's allies fighting, or standing in the line of sight.
+  - The training arena, which lends Nyaakoto every arm, gave the new group
+    keys nothing to take up.
+
+  Fixed: the arena lends every arm to the group keys and the wheel, and a
+  group whose arms the saddle or a load refuses now gives the campaign's
+  reason. The tests take arms up on their group keys
+  (`FSoraAutomationWorld::TakeUpArm`), and the hero-only traces stand the
+  allies aside. The rerun of `SoraArena.AI`, `Combat`, `Events`,
+  `Fieldcraft`, `Integration` and `Input` with `Campaign.CombatTrace`,
+  `DeterministicEnemyFire` and `Mount` passed all 47. The other 33 of the 80
+  passed before these last fixes and were not rerun after them.
+- **Not run:** `SoraArena.Campaign.Playthrough` (which now also takes every
+  arm up on its keys and tends the escorted parties by hand) and
+  `Practice.FullMatches`. The data volume had 30.4–31.3 GiB free while this
+  lane ran, below the 32 GiB floor set for heavy work, so neither long run
+  was started. No cook, package, Windows build or rendered capture was made.
+
+**Not done**
+
+- Convoy losses: drones do not net ch02.b08's convoy, and nothing raises
+  `horse_down` or `convoy_member_*`. ch04.b10's ox-cart nets, the planters'
+  12 s haul timer and their fail-after-three are modelled only through the
+  targets' health.
+- Searchlights (ch06.b02's sensors), ch07.b04's bell lure, ch03.b14's
+  cook-fire relighting, ch03's roof ladders, the volley's smoke bank and the
+  Easy auto-order, and ch08's League riders on the charge.
+- Guards' authored sight, hearing and detection numbers. Zones still use the
+  rules' defaults.
+- Nothing here has been seen rendered: companions use the hero's rig and
+  proxy props, lamps are engine shapes with point lights, and the wheel, ring
+  and prompts have no screenshot review.
 
 ## Milestones and current evidence
 

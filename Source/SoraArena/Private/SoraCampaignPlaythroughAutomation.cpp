@@ -2,6 +2,7 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
+#include "SoraArmsRules.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCampaignRules.h"
@@ -10,6 +11,7 @@
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
+#include "SoraFieldcraft.h"
 #include "SoraGameEvents.h"
 #include "SoraHorse.h"
 #include "SoraInputStates.h"
@@ -100,6 +102,10 @@ struct FState
     // Debt-bound conscripts knocked down, and those whose seal was cut.
     int32 ConscriptsDown = 0;
     int32 ConscriptsFreed = 0;
+    // The escorted party's needs met by hand (cells opened, collars cut, the
+    // downed raised) and parties sent on after hiding.
+    int32 PartyTended = 0;
+    int32 PartySentOn = 0;
     // Failures sent to the checkpoint, and matches retried in place.
     int32 Failures = 0;
     int32 InPlaceRetries = 0;
@@ -181,12 +187,12 @@ unsigned long long AllCollectibles()
     return Mask;
 }
 
-// A campaign arm Nyaakoto takes up in play: his class slots (katana, arc
-// carbine, monofilament naginata) and the yumi, yari and naginata. In chapter
-// one he trains with the bokken, so arms are gated from chapter two.
+// A campaign arm Nyaakoto takes up in play: every one of the 21, each on its
+// group key and the arms wheel (SoraArmsRules.h). In chapter one he trains
+// with the bokken, so arms are gated from chapter two.
 bool Holdable(int32 WeaponId)
 {
-    return WeaponId >= 18 || FSoraCatalog::Get().Class(0).Weapons.Contains(WeaponId);
+    return WeaponId >= 0 && WeaponId < SoraArmsRules::ArmsCount;
 }
 
 // The unlocks as the chapters author them, in beat order (bible §11): each
@@ -371,6 +377,36 @@ bool FreeConscripts(FAutomationTestBase& Test, FState& State)
         if (!Test.TestTrue(TEXT("Interact held beside a knocked-down conscript cuts its seal"), Conscript->IsFreed()))
             return Fail(Test, State, Where(State) + TEXT(": a conscript's seal was not cut"));
         ++State.ConscriptsFreed;
+    }
+    return true;
+}
+
+// The escorted party (USoraFieldcraft) walks only whole: a cell door opened,
+// a collar cut or a downed member raised, each with Interact held beside it,
+// and a party that dropped at a patrol's alarm sent on with the signal.
+bool TendParty(FAutomationTestBase& Test, FState& State)
+{
+    USoraFieldcraft* Fieldcraft = USoraFieldcraft::Get(Player(State));
+    if (!Fieldcraft || !Fieldcraft->IsStaged()) return true;
+    FVector Work;
+    for (int32 Round = 0; Round < 32 && Fieldcraft->PartyWork(Work); ++Round)
+    {
+        MoveTo(State, Work);
+        State.World->InjectKey(EKeys::E, IE_Pressed);
+        const bool bHeld = Advance(Test, State, 16, .25f);
+        State.World->InjectKey(EKeys::E, IE_Released);
+        if (!bHeld || !Advance(Test, State, 1))
+            return false;
+        FVector After;
+        if (!Test.TestTrue(TEXT("Interact held at the escorted party's need meets it"), !Fieldcraft->PartyWork(After) || After != Work))
+            return Fail(Test, State, Where(State) + TEXT(": the party's need was not met by hand"));
+        ++State.PartyTended;
+    }
+    if (Fieldcraft->Readout(*Player(State)).bPartyHidden)
+    {
+        if (!State.World->PressKey(EKeys::Q) || Fieldcraft->Readout(*Player(State)).bPartyHidden)
+            return Fail(Test, State, Where(State) + TEXT(": the hidden party did not answer the signal"));
+        ++State.PartySentOn;
     }
     return true;
 }
@@ -871,6 +907,8 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             if (Rules.Goal != EGoal::Exit && !LiveEnemies(State).IsEmpty()) { if (!DefeatOne(Test, State)) return false; continue; }
             if (Rules.Goal != EGoal::Exit && !FreeConscripts(Test, State))
                 return false;
+            if (Rules.Goal == EGoal::Escort && !TendParty(Test, State))
+                return false;
             Standing.Reset();
             for (ASoraEnemy* Enemy : LiveEnemies(State))
                 Standing.Add(Enemy);
@@ -1014,8 +1052,8 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     return NoteUnlocks(Test, State, Beat.Id, Rule) && Advance(Test, State, 1);
 }
 
-// Nyaakoto holds only what the campaign has unlocked: his class slots
-// (katana, arc carbine, monofilament naginata) and the yumi, yari and naginata.
+// Nyaakoto holds only what the campaign has unlocked, and every arm it has
+// unlocked he can take up with his own keys.
 bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool bUnlocked)
 {
     ASoraPlayerCharacter* Hero = Player(State);
@@ -1023,7 +1061,7 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
     const int32 Held = Hero->WeaponId;
     if (!Holdable(WeaponId))
         return Fail(Test, State, FString::Printf(TEXT("Weapon %d has no campaign slot"), WeaponId));
-    const bool bEquipped = WeaponId >= 18 ? Kit->EquipCampaignWeapon(WeaponId) : Kit->EquipClassSlot(FSoraCatalog::Get().Class(0).Weapons.Find(WeaponId));
+    const bool bEquipped = Kit->EquipCampaignWeapon(WeaponId);
     const FString What = FString::Printf(TEXT("%s: weapon %d %s"), *Where(State), WeaponId, bUnlocked ? TEXT("equips") : TEXT("stays locked"));
     bool bOk = Test.TestEqual(*What, bEquipped, bUnlocked) && Test.TestEqual(*(What + TEXT(" (held)")), Hero->WeaponId, bUnlocked ? WeaponId : Held);
     if (!bUnlocked)
@@ -1031,6 +1069,21 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
     // Back to the katana, after the equip delay.
     if (!Advance(Test, State, 20) || (bEquipped && !Kit->EquipClassSlot(0)))
         return Fail(Test, State, What + TEXT(": could not return to the katana"));
+    // Every unlocked arm is in reach of the player's own keys: its group key,
+    // pressed until it comes up, and a place on the arms wheel's ring.
+    const int32 Group = SoraArmsRules::GroupOf(WeaponId);
+    if (bUnlocked)
+    {
+        int32 Presses = 0;
+        for (; Presses < SoraArmsRules::GroupStart[Group + 1] - SoraArmsRules::GroupStart[Group] && Hero->WeaponId != WeaponId; ++Presses)
+            Hero->SelectArmsGroup(Group);
+        bOk &= Test.TestEqual(*(What + TEXT(" on its group key")), Hero->WeaponId, WeaponId);
+        bOk &= Test.TestTrue(*(What + TEXT(" on the arms wheel")), SoraArmsRules::Holds(Hero->HoldableArms(), WeaponId));
+        if (!Advance(Test, State, 20) || !Kit->EquipClassSlot(0))
+            return Fail(Test, State, What + TEXT(": could not return to the katana"));
+    }
+    else
+        bOk &= Test.TestFalse(*(What + TEXT(" is not on the arms wheel")), SoraArmsRules::Holds(Hero->HoldableArms(), WeaponId));
     return (bOk || Fail(Test, State, What)) && Advance(Test, State, 20);
 }
 
@@ -1550,6 +1603,8 @@ bool CheckTelemetry(FAutomationTestBase& Test, FState& State)
     Totals->SetNumberField(TEXT("phase_reloads"), State.PhaseReloads);
     Totals->SetNumberField(TEXT("conscripts_down"), State.ConscriptsDown);
     Totals->SetNumberField(TEXT("conscripts_freed"), State.ConscriptsFreed);
+    Totals->SetNumberField(TEXT("party_tended"), State.PartyTended);
+    Totals->SetNumberField(TEXT("party_sent_on"), State.PartySentOn);
     Totals->SetNumberField(TEXT("worlds"), State.WorldsStarted);
     FString Json;
     const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Json);
@@ -1797,9 +1852,12 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
         if (!bOk || !CheckTelemetry(Test, S))
             return Fail(Test, S, TEXT("The playthrough's unlocks, beats or telemetry are wrong"));
         bOk &= Test.TestTrue(TEXT("Debt-bound conscripts were knocked down and freed"), S.ConscriptsDown > 0 && S.ConscriptsFreed > 0);
-        UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_PLAYTHROUGH_OK: chapters=%d beats=%d caches=%d pickups=%d rides=%d shots=%d checkpoints=%d reloads=%d phase_reloads=%d arms=%d lines=%d worlds=%d conscripts_down=%d conscripts_freed=%d goals=[%s]"),
+        // ch05.b03's six collars and ch08.b07's four cells were opened by hand.
+        bOk &= Test.TestTrue(TEXT("The escorted parties' collars and cells were opened by hand"), S.PartyTended >= 10);
+        UE_LOG(LogTemp, Display, TEXT("SORA_CAMPAIGN_PLAYTHROUGH_OK: chapters=%d beats=%d caches=%d pickups=%d rides=%d shots=%d checkpoints=%d reloads=%d phase_reloads=%d arms=%d lines=%d worlds=%d conscripts_down=%d conscripts_freed=%d party_tended=%d party_sent_on=%d goals=[%s]"),
             S.ChaptersCompleted, S.BeatsPlayed, S.CachesOpened, S.PickupsFound, S.RidesRidden, S.CinematicShots, S.CheckpointsRead,
-            S.CheckpointReloads, S.PhaseReloads, S.ArmsEquipped, S.LinesShown, S.WorldsStarted, S.ConscriptsDown, S.ConscriptsFreed, *Goals);
+            S.CheckpointReloads, S.PhaseReloads, S.ArmsEquipped, S.LinesShown, S.WorldsStarted, S.ConscriptsDown, S.ConscriptsFreed,
+            S.PartyTended, S.PartySentOn, *Goals);
         return true;
     });
     // The route that skipped the vault armory: a save entering the flagship

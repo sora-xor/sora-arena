@@ -1,6 +1,11 @@
 #include "SoraPlayerCharacter.h"
 #include "ArenaKernelSubsystem.h"
+#include "SoraArmsRules.h"
 #include "SoraCampaignDirector.h"
+#include "SoraFieldcraft.h"
+#include "SoraFieldcraftRules.h"
+#include "SoraFrontEnd.h"
+#include "SoraText.h"
 #include "SoraCatalog.h"
 #include "SoraControlSaveGame.h"
 #include "Combat/SoraDefense.h"
@@ -23,11 +28,25 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerInput.h"
+#include "GameFramework/WorldSettings.h"
 #include "Kismet/GameplayStatics.h"
 
 namespace
 {
 ASoraGameMode* PlayerGameMode(const UObject* Context) { return Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(Context)); }
+// The beat's fieldcraft when the hero plays the campaign.
+USoraFieldcraft* HeroFieldcraft(const ASoraPlayerCharacter& Hero)
+{
+    const auto* G=PlayerGameMode(&Hero);
+    return G&&G->bCampaign&&!Hero.IsKernelDriven()?USoraFieldcraft::Get(&Hero):nullptr;
+}
+// The arms wheel slows the world while it is open. It uses the cinematic
+// dilation, which the hit-stop's global dilation never touches.
+void SlowForWheel(const UObject* Context,bool bSlow)
+{
+    if(AWorldSettings* Settings=Context&&Context->GetWorld()?Context->GetWorld()->GetWorldSettings():nullptr)
+        Settings->CinematicTimeDilation=bSlow?SoraArmsRules::WheelTimePermille/1000.f:1.f;
+}
 // The eye above the capsule's centre standing and crouched; a crouched
 // capsule of 88 cm passes the ch03 culvert.
 constexpr float StandingEyeZ=64.f, CrouchedEyeZ=40.f, CrouchedHalfHeight=44.f;
@@ -49,9 +68,19 @@ ASoraPlayerCharacter::ASoraPlayerCharacter(const FObjectInitializer& ObjectIniti
     GetCharacterMovement()->SetCrouchedHalfHeight(CrouchedHalfHeight);
     GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching=true;
 }
-void ASoraPlayerCharacter::ResetLoadout() { Equipment->ResetForClass(); }
+void ASoraPlayerCharacter::ResetLoadout()
+{
+    Equipment->ResetForClass();
+    for(int32& Arm:GroupMemory) Arm=INDEX_NONE;
+}
 void ASoraPlayerCharacter::OnBodyRebuilt() { QuiverParts.Reset(); }
-void ASoraPlayerCharacter::HaltActions() { Equipment->Halt(); }
+void ASoraPlayerCharacter::HaltActions()
+{
+    Equipment->Halt();
+    // A held round (menu, card, result or a fall) closes the wheel untaken.
+    if(Wheel.bOpen) CloseArmsWheel(false);
+    bArmsKeyHeld=false;
+}
 void ASoraPlayerCharacter::SetDojoTraining(bool Enabled)
 {
     const bool bChanged=bDojoTraining!=Enabled;
@@ -169,8 +198,16 @@ void ASoraPlayerCharacter::TickPlay(float Dt)
     if(!bDojoTraining) Equipment->TickGuard(Dt);
     if(bDojoTraining) TickDojoLessons();
     Equipment->TickWeapon();
+    TickArmsWheel();
+    TickVault();
     const USoraStealth* Stealth=USoraStealth::Get(this);
     GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*Equipment->MoveScale(bSprint)*(Stealth?Stealth->HeroMoveScale():1.f);
+    // The water caps his pace: a swimmer's stroke, slower still in a dive.
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HeroPace()>0.f)
+    {
+        GetCharacterMovement()->MaxWalkSpeed=FMath::Min(GetCharacterMovement()->MaxWalkSpeed,Craft->HeroPace());
+        bSprint=false;
+    }
     GetCharacterMovement()->MaxWalkSpeedCrouched=GetCharacterMovement()->MaxWalkSpeed*SoraStealthRules::CrouchSpeedPermille/1000.f;
     // A sprint stands the hero up; the eye settles to his stance.
     if(bSprint&&GetCharacterMovement()->bWantsToCrouch) UnCrouch();
@@ -233,16 +270,40 @@ void ASoraPlayerCharacter::OnDefeated(AActor* Causer)
     Equipment->ReleaseTrigger();
     if(auto* G=PlayerGameMode(this)) G->Campaign()->PlayerKilled();
 }
-void ASoraPlayerCharacter::Forward(float V) { if(bKernelDriven) { InputForward=V; return; } if(CanPlay()) AddMovementInput(GetActorForwardVector(),V); }
-void ASoraPlayerCharacter::Strafe(float V) { if(bKernelDriven) { InputRight=V; return; } if(CanPlay()) AddMovementInput(GetActorRightVector(),V); }
-void ASoraPlayerCharacter::Yaw(float V) { if(CanPlay()) AddControllerYawInput(V*MouseSensitivity); }
-void ASoraPlayerCharacter::Pitch(float V) { if(CanPlay()) AddControllerPitchInput((bInvertedLook?-V:V)*MouseSensitivity); }
+void ASoraPlayerCharacter::Forward(float V)
+{
+    if(bKernelDriven) { InputForward=V; return; }
+    // On the wall the fieldcraft reads the axis to climb; a vault carries him.
+    if(bVaulting) return;
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HoldsHero()) return;
+    if(CanPlay()) AddMovementInput(GetActorForwardVector(),V);
+}
+void ASoraPlayerCharacter::Strafe(float V)
+{
+    if(bKernelDriven) { InputRight=V; return; }
+    if(bVaulting) return;
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HoldsHero()) return;
+    if(CanPlay()) AddMovementInput(GetActorRightVector(),V);
+}
+// While the arms wheel is open, look input moves its cursor instead of the view.
+void ASoraPlayerCharacter::Yaw(float V)
+{
+    if(Wheel.bOpen) { Wheel.Cursor.X=FMath::Clamp(Wheel.Cursor.X+V*.04f,-1.f,1.f); return; }
+    if(CanPlay()) AddControllerYawInput(V*MouseSensitivity);
+}
+void ASoraPlayerCharacter::Pitch(float V)
+{
+    if(Wheel.bOpen) { Wheel.Cursor.Y=FMath::Clamp(Wheel.Cursor.Y-V*.04f,-1.f,1.f); return; }
+    if(CanPlay()) AddControllerPitchInput((bInvertedLook?-V:V)*MouseSensitivity);
+}
 void ASoraPlayerCharacter::GamepadYaw(float V)
 {
+    if(Wheel.bOpen) { WheelPad.X=FMath::Clamp(V,-1.f,1.f); return; }
     if(CanPlay()) AddControllerYawInput(FMath::Clamp(V,-1.f,1.f)*90.f*GamepadLookSensitivity*GetWorld()->GetDeltaSeconds());
 }
 void ASoraPlayerCharacter::GamepadPitch(float V)
 {
+    if(Wheel.bOpen) { WheelPad.Y=-FMath::Clamp(V,-1.f,1.f); return; }
     if(CanPlay()) AddControllerPitchInput(FMath::Clamp(V,-1.f,1.f)*70.f*GamepadLookSensitivity*GetWorld()->GetDeltaSeconds()*(bInvertedLook?-1.f:1.f));
 }
 void ASoraPlayerCharacter::FireDown()
@@ -252,6 +313,9 @@ void ASoraPlayerCharacter::FireDown()
     if(!CanPlay()) return;
     if(bKernelDriven) { KernelHeldButtons|=1; return; }
     if(const USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->IsHeroBusy()) return;
+    // No arm is used in the water, on the wall, in a vault or with the wheel open.
+    if(Wheel.bOpen||bVaulting) return;
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
     // A held sprint blocks the trigger until released; a toggled one ends here.
     if(TogglesSprint()) bSprint=false;
     Equipment->TriggerDown();
@@ -268,14 +332,22 @@ void ASoraPlayerCharacter::SprintReleased() { if(!TogglesSprint()) SprintUp(); }
 void ASoraPlayerCharacter::JumpDown()
 {
     if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; }
+    if(!CanPlay()||bVaulting) return;
     // Left or Right with Jump inside a 転 window rolls to the opponent's flank instead.
-    if(CanPlay()&&SoraDefense::Marobashi(*this,GetInputAxisValue(TEXT("MoveRight")))) return;
-    if(CanPlay()&&!Equipment->IsCommittedStrike()&&!Equipment->IsBowDrawing()&&!Equipment->IsStepping()) Jump();
+    if(SoraDefense::Marobashi(*this,GetInputAxisValue(TEXT("MoveRight")))) return;
+    // At the climbing face's foot Jump reaches for the holds; on the wall it lets go.
+    if(USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->Jump(*this)) return;
+    if(Equipment->IsCommittedStrike()||Equipment->IsBowDrawing()||Equipment->IsStepping()) return;
+    // Facing low cover, a vault carries him over it.
+    if(TryVault()) return;
+    Jump();
 }
 void ASoraPlayerCharacter::JumpUp() { StopJumping(); }
 void ASoraPlayerCharacter::Melee()
 {
     if(bKernelDriven) { if(CanPlay()) KernelHeldButtons|=2; return; }
+    if(Wheel.bOpen||bVaulting) return;
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
     // Behind an unsuspecting guard the press is a rear takedown instead of a strike.
     if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->BeginTakedown(*this)) return;
     Equipment->Melee();
@@ -290,6 +362,9 @@ void ASoraPlayerCharacter::Interact()
     if(!CanPlay()) return;
     // Held at a body in a stealth zone, Interact drags it.
     if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->BeginDrag(*this)) return;
+    // Held at the beat's fieldcraft: a lamp snuffed, the downed raised, a
+    // collar cut, a cell opened; or stones taken up at a rubble pile.
+    if(USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->Interact(*this)) return;
     if(auto* G=PlayerGameMode(this)) G->Interact(this);
 }
 void ASoraPlayerCharacter::InteractUp() { if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->EndDrag(); }
@@ -308,6 +383,8 @@ void ASoraPlayerCharacter::SheathePressed()
 }
 void ASoraPlayerCharacter::Menu()
 {
+    if(Wheel.bOpen) CloseArmsWheel(false);
+    bArmsKeyHeld=false;
     if(auto* G=PlayerGameMode(this))
     {
         G->OpenPauseMenu();
@@ -337,7 +414,13 @@ bool ASoraPlayerCharacter::TogglesSprint() const
     const auto* G=PlayerGameMode(this);
     return G&&G->Settings()&&G->Settings()->ToggleSprint();
 }
-void ASoraPlayerCharacter::Ability() { if(bKernelDriven&&CanPlay()) KernelQueuedButtons|=16; }
+void ASoraPlayerCharacter::Ability()
+{
+    if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=16; return; }
+    // In the campaign: the signal to an escorted party, or a tsubute thrown.
+    if(!CanPlay()||Wheel.bOpen) return;
+    if(USoraFieldcraft* Craft=HeroFieldcraft(*this)) Craft->Ability(*this);
+}
 void ASoraPlayerCharacter::MeleeUp()
 {
     KernelHeldButtons&=~2u;
@@ -347,26 +430,180 @@ void ASoraPlayerCharacter::MeleeUp()
 void ASoraPlayerCharacter::Subtitles() { if(auto* G=PlayerGameMode(this)) G->ToggleSubtitles(); }
 void ASoraPlayerCharacter::ScoreboardDown() { bScoreboardHeld=true; }
 void ASoraPlayerCharacter::ScoreboardUp() { bScoreboardHeld=false; }
-void ASoraPlayerCharacter::Equip(int32 Slot)
+// Weapon keys: the six groups of Nyaakoto's arms (SoraArmsRules.h), in the
+// campaign and in the training arena with his loadout; another class's three arms.
+// Practice enters with the loadout chosen in the lobby; the kernel holds it.
+void ASoraPlayerCharacter::WeaponKey(int32 Group,int32 Slot)
 {
-    // Practice enters with the loadout chosen in the lobby; the kernel holds it.
-    if(bKernelDriven||!CanPlay()) return;
-    Equipment->EquipClassSlot(Slot);
+    if(bKernelDriven||!CanPlay()||Wheel.bOpen) return;
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
+    if(bCampaignHero&&!bDojoTraining) { SelectArmsGroup(Group); return; }
+    if(Slot!=INDEX_NONE) Equipment->EquipClassSlot(Slot);
 }
-void ASoraPlayerCharacter::WeaponOne(){Equip(1);} void ASoraPlayerCharacter::WeaponTwo(){Equip(0);} void ASoraPlayerCharacter::WeaponThree(){Equip(2);}
-void ASoraPlayerCharacter::EquipCampaignWeapon(int32 NewWeaponId)
+void ASoraPlayerCharacter::WeaponOne(){WeaponKey(0,1);} void ASoraPlayerCharacter::WeaponTwo(){WeaponKey(1,0);}
+void ASoraPlayerCharacter::WeaponThree(){WeaponKey(2,2);} void ASoraPlayerCharacter::WeaponFour(){WeaponKey(3,INDEX_NONE);}
+void ASoraPlayerCharacter::WeaponFive(){WeaponKey(4,INDEX_NONE);} void ASoraPlayerCharacter::WeaponSix(){WeaponKey(5,INDEX_NONE);}
+unsigned ASoraPlayerCharacter::ArmsMask(bool bNow) const
 {
     const auto* G=PlayerGameMode(this);
-    if(!G||!G->bCampaign||G->Campaign()->ChapterId==0||bKernelDriven||bDojoTraining||
-        !CanPlay()||NewWeaponId<18||NewWeaponId>20||ClassId!=0) return;
-    Equipment->EquipCampaignWeapon(NewWeaponId);
+    if(!G||!bCampaignHero||bDojoTraining||bKernelDriven||!FSoraCatalog::Get().IsReady()) return 0u;
+    // The estate's training arena lends every arm.
+    if(!G->bCampaign) return (1u<<SoraArmsRules::ArmsCount)-1u;
+    USoraCampaignDirector* Campaign=G->Campaign();
+    unsigned Mask=0u;
+    for(int32 Id=0;Id<SoraArmsRules::ArmsCount;++Id)
+        if(Campaign->IsWeaponUnlocked(Id)&&(!bNow||Campaign->CanHold(Id,false))) Mask|=1u<<Id;
+    return Mask;
 }
-void ASoraPlayerCharacter::WeaponFour(){EquipCampaignWeapon(18);}
-void ASoraPlayerCharacter::WeaponFive(){EquipCampaignWeapon(19);}
-void ASoraPlayerCharacter::WeaponSix(){EquipCampaignWeapon(20);}
-void ASoraPlayerCharacter::CampaignWeaponNext()
+unsigned ASoraPlayerCharacter::HoldableArms() const { return ArmsMask(true); }
+bool ASoraPlayerCharacter::TakeUpArm(int32 NewWeaponId)
 {
-    EquipCampaignWeapon(WeaponId>=18&&WeaponId<20?WeaponId+1:18);
+    if(NewWeaponId==INDEX_NONE) return false;
+    if(NewWeaponId==WeaponId) { ArmsTakenTime=GetWorld()->GetTimeSeconds(); return true; }
+    if(!Equipment->EquipCampaignWeapon(NewWeaponId)) return false;
+    GroupMemory[SoraArmsRules::GroupOf(NewWeaponId)]=NewWeaponId;
+    ArmsTakenTime=GetWorld()->GetTimeSeconds();
+    return true;
+}
+bool ASoraPlayerCharacter::SelectArmsGroup(int32 Group)
+{
+    if(Group<0||Group>=SoraArmsRules::GroupCount) return false;
+    const int32 Pick=SoraArmsRules::Pick(HoldableArms(),Group,WeaponId,GroupMemory[Group]);
+    if(Pick!=INDEX_NONE) return TakeUpArm(Pick);
+    // Handed over but out of reach now (in the saddle, under a load): the
+    // campaign's refusal says why.
+    if(const int32 Kept=SoraArmsRules::Pick(ArmsMask(false),Group,WeaponId,GroupMemory[Group]); Kept!=INDEX_NONE)
+        return Equipment->EquipCampaignWeapon(Kept);
+    // Nothing of that kind handed over yet.
+    if(auto* G=PlayerGameMode(this))
+    {
+        const FText Name=SoraUI::ArmsGroupName(Group);
+        const SoraText::FLine Line=SoraText::Format(NSLOCTEXT("SoraArena.Arms","GroupEmpty","いま手にできる{Group}はない。"),
+            {{TEXT("Group"),SoraText::Line(Name)}});
+        G->Notice=Line.Japanese; G->NoticeEnglish=Line.English; G->NoticeTime=3.f;
+    }
+    return false;
+}
+bool ASoraPlayerCharacter::StepArms(int32 Step)
+{
+    return TakeUpArm(SoraArmsRules::Next(HoldableArms(),WeaponId,Step));
+}
+void ASoraPlayerCharacter::ArmsNext()
+{
+    if(!bKernelDriven&&CanPlay()&&!Wheel.bOpen&&bCampaignHero&&!bDojoTraining) StepArms(1);
+}
+void ASoraPlayerCharacter::ArmsPrevious()
+{
+    if(!bKernelDriven&&CanPlay()&&!Wheel.bOpen&&bCampaignHero&&!bDojoTraining) StepArms(-1);
+}
+void ASoraPlayerCharacter::ArmsWheelDown()
+{
+    if(bKernelDriven||!CanPlay()||!bCampaignHero||bDojoTraining) return;
+    if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
+    bArmsKeyHeld=true;
+    ArmsKeyDownAt=GetWorld()->GetRealTimeSeconds();
+}
+void ASoraPlayerCharacter::ArmsWheelUp()
+{
+    if(!bArmsKeyHeld) return;
+    bArmsKeyHeld=false;
+    // A tap steps to the next arm; a hold's release takes the one under the cursor.
+    if(Wheel.bOpen) CloseArmsWheel(true);
+    else if(CanPlay()) StepArms(1);
+}
+void ASoraPlayerCharacter::OpenArmsWheel()
+{
+    int32 Ring[SoraArmsRules::ArmsCount]={};
+    const int32 Count=SoraArmsRules::HeldRing(HoldableArms(),Ring);
+    if(Count<=1) return;
+    Wheel.bOpen=true;
+    Wheel.Arms.Reset();
+    for(int32 Index=0;Index<Count;++Index) Wheel.Arms.Add(Ring[Index]);
+    Wheel.Choice=Wheel.Arms.Find(WeaponId);
+    Wheel.Cursor=FVector2D::ZeroVector; WheelPad=FVector2D::ZeroVector;
+    Equipment->ReleaseTrigger(); bSprint=false;
+    SlowForWheel(this,true);
+}
+void ASoraPlayerCharacter::CloseArmsWheel(bool bTake)
+{
+    const int32 Choice=Wheel.Choice;
+    const bool bChosen=Wheel.Cursor.Size()*1000.f>=SoraArmsRules::WheelDeadPermille;
+    const TArray<int32> Arms=Wheel.Arms;
+    Wheel=FArmsWheel();
+    SlowForWheel(this,false);
+    if(bTake&&bChosen&&Arms.IsValidIndex(Choice)) TakeUpArm(Arms[Choice]);
+}
+void ASoraPlayerCharacter::TickArmsWheel()
+{
+    if(bArmsKeyHeld&&!Wheel.bOpen&&(GetWorld()->GetRealTimeSeconds()-ArmsKeyDownAt)*1000.f>=SoraArmsRules::WheelHoldMs) OpenArmsWheel();
+    if(!Wheel.bOpen) return;
+    // The right stick points at a sector outright; the mouse drags the cursor there.
+    if(WheelPad.Size()>.5f) Wheel.Cursor=WheelPad.GetClampedToMaxSize(1.f);
+    Wheel.Cursor=Wheel.Cursor.GetClampedToMaxSize(1.f);
+    if(Wheel.Cursor.Size()*1000.f<SoraArmsRules::WheelDeadPermille) return;
+    const float Degrees=FMath::RadiansToDegrees(FMath::Atan2(Wheel.Cursor.X,Wheel.Cursor.Y));
+    Wheel.Choice=SoraArmsRules::Sector(FMath::RoundToInt32(Degrees*1000.f),Wheel.Arms.Num());
+}
+// Vaulting (SoraFieldcraftRules): Jump facing low cover carries him over it.
+bool ASoraPlayerCharacter::TryVault()
+{
+    UCharacterMovementComponent* Movement=GetCharacterMovement();
+    if(!Movement->IsMovingOnGround()||IsCrouched()) return false;
+    const float HalfHeight=GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    const float Radius=GetCapsuleComponent()->GetScaledCapsuleRadius();
+    const FVector Feet=GetActorLocation()-FVector(0.f,0.f,HalfHeight);
+    const FVector Forward=GetActorForwardVector().GetSafeNormal2D();
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraVault),false,this);
+    FHitResult Front;
+    if(!GetWorld()->LineTraceSingleByChannel(Front,Feet+FVector(0.f,0.f,SoraFieldcraftRules::VaultLowCm+5.f),
+        Feet+FVector(0.f,0.f,SoraFieldcraftRules::VaultLowCm+5.f)+Forward*(Radius+70.f),ECC_Visibility,Query)||
+        Cast<ASoraCharacterBase>(Front.GetActor()))
+        return false;
+    // Its top, found from above just past its near face.
+    const FVector Probe=Front.ImpactPoint+Forward*12.f;
+    FHitResult Top;
+    if(!GetWorld()->LineTraceSingleByChannel(Top,FVector(Probe.X,Probe.Y,Feet.Z+SoraFieldcraftRules::VaultHighCm+40.f),
+        FVector(Probe.X,Probe.Y,Feet.Z),ECC_Visibility,Query)||Top.bStartPenetrating)
+        return false;
+    const int32 TopCm=FMath::RoundToInt32(Top.ImpactPoint.Z-Feet.Z);
+    // Its far face, found from beyond it looking back.
+    const FVector Beyond=Front.ImpactPoint+Forward*(SoraFieldcraftRules::VaultDepthCm+40.f);
+    FHitResult Far;
+    const bool bFar=GetWorld()->LineTraceSingleByChannel(Far,FVector(Beyond.X,Beyond.Y,Feet.Z+SoraFieldcraftRules::VaultLowCm+5.f),
+        FVector(Front.ImpactPoint.X,Front.ImpactPoint.Y,Feet.Z+SoraFieldcraftRules::VaultLowCm+5.f),ECC_Visibility,Query);
+    const int32 DepthCm=bFar?FMath::RoundToInt32(FVector::Dist2D(Far.ImpactPoint,Front.ImpactPoint)):SoraFieldcraftRules::VaultDepthCm+1;
+    const FVector Landing=FVector(Far.ImpactPoint.X,Far.ImpactPoint.Y,GetActorLocation().Z)+Forward*(Radius+25.f);
+    const bool bClear=bFar&&!GetWorld()->SweepTestByChannel(Landing,Landing,FQuat::Identity,ECC_Pawn,
+        FCollisionShape::MakeCapsule(Radius,HalfHeight),Query);
+    if(!SoraFieldcraftRules::CanVault(TopCm,DepthCm,bClear)) return false;
+    bVaulting=true; VaultStartedAt=GetWorld()->GetTimeSeconds();
+    VaultFrom=GetActorLocation();
+    VaultOver=FVector((Front.ImpactPoint.X+Far.ImpactPoint.X)*.5f,(Front.ImpactPoint.Y+Far.ImpactPoint.Y)*.5f,Top.ImpactPoint.Z+HalfHeight+8.f);
+    VaultTo=Landing;
+    bSprint=false; Equipment->Halt();
+    Movement->StopMovementImmediately();
+    Movement->SetMovementMode(MOVE_Flying);
+    return true;
+}
+void ASoraPlayerCharacter::TickVault()
+{
+    if(!bVaulting) return;
+    const float Alpha=FMath::Clamp((GetWorld()->GetTimeSeconds()-VaultStartedAt)*1000.f/SoraFieldcraftRules::VaultMs,0.f,1.f);
+    // Up onto the top, then over and down: two straight legs, eased.
+    const FVector At=Alpha<.5f?FMath::Lerp(VaultFrom,VaultOver,FMath::SmoothStep(0.f,1.f,Alpha*2.f))
+        :FMath::Lerp(VaultOver,VaultTo,FMath::SmoothStep(0.f,1.f,(Alpha-.5f)*2.f));
+    SetActorLocation(At,false,nullptr,ETeleportType::TeleportPhysics);
+    if(Alpha<1.f) return;
+    bVaulting=false;
+    GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+}
+bool ASoraPlayerCharacter::IsActionHeld(FName ActionName) const
+{
+    const auto* PC=Cast<APlayerController>(GetController());
+    if(!PC||!PC->PlayerInput) return false;
+    for(const FInputActionKeyMapping& Mapping:PC->PlayerInput->GetKeysForAction(ActionName))
+        if(PC->IsInputKeyDown(Mapping.Key)) return true;
+    return false;
 }
 TArray<FKey> ASoraPlayerCharacter::GetActionKeys(FName ActionName) const
 {
@@ -702,5 +939,6 @@ void ASoraPlayerCharacter::SetupPlayerInputComponent(UInputComponent* I)
     BindPress(I,TEXT("Scoreboard"),&ASoraPlayerCharacter::ScoreboardDown); BindRelease(I,TEXT("Scoreboard"),&ASoraPlayerCharacter::ScoreboardUp);
     BindPress(I,TEXT("WeaponOne"),&ASoraPlayerCharacter::WeaponOne); BindPress(I,TEXT("WeaponTwo"),&ASoraPlayerCharacter::WeaponTwo); BindPress(I,TEXT("WeaponThree"),&ASoraPlayerCharacter::WeaponThree);
     BindPress(I,TEXT("WeaponFour"),&ASoraPlayerCharacter::WeaponFour); BindPress(I,TEXT("WeaponFive"),&ASoraPlayerCharacter::WeaponFive); BindPress(I,TEXT("WeaponSix"),&ASoraPlayerCharacter::WeaponSix);
-    BindPress(I,TEXT("CampaignWeaponNext"),&ASoraPlayerCharacter::CampaignWeaponNext);
+    BindPress(I,TEXT("ArmsWheel"),&ASoraPlayerCharacter::ArmsWheelDown); BindRelease(I,TEXT("ArmsWheel"),&ASoraPlayerCharacter::ArmsWheelUp);
+    BindPress(I,TEXT("ArmsNext"),&ASoraPlayerCharacter::ArmsNext); BindPress(I,TEXT("ArmsPrevious"),&ASoraPlayerCharacter::ArmsPrevious);
 }

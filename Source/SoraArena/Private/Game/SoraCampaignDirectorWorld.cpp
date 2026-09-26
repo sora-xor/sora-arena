@@ -4,6 +4,7 @@
 #include "SoraCatalog.h"
 #include "SoraEnemy.h"
 #include "SoraEquipmentComponent.h"
+#include "SoraFieldcraft.h"
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
 #include "SoraMountRules.h"
@@ -81,6 +82,13 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     case SoraBeatRules::EGoal::Survive:
         return Task.Task==SoraBeatRules::ETask::Defend&&At(Space.Anchor,true);
     case SoraBeatRules::EGoal::Escort:
+        // Before the party can go on the hero's hand is wanted: a cell to
+        // open, a collar to cut, one of them to raise.
+        if(const USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this); Fieldcraft&&Fieldcraft->PartyWork(Location))
+        {
+            bInteract=true;
+            return true;
+        }
         Location=PartyLocation(); bInteract=false;
         return true;
     case SoraBeatRules::EGoal::OpponentDown:
@@ -215,6 +223,8 @@ void USoraCampaignDirector::LeaveBeatSpace()
 {
     const FSoraBeat* Beat=ActiveBeatData();
     if(Beat&&Beat->Is(SoraBeatRules::EType::Cinematic)) EndCinematicCamera(.6f);
+    // The beat's lamps, water, face and company leave with it.
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
     // A ride ends at its destination with the rider down on the ground.
     ClearHorses();
     if(ASoraWorldBuilder* World=Mode().Arena())
@@ -358,14 +368,22 @@ void USoraCampaignDirector::ShowKit()
     View.bSlack=bCrankSlack;
     if(Task.Goal==SoraBeatRules::EGoal::Escort&&Space->bRoute)
     {
-        // The party walks in file along the road, the leader where PartyLocation is.
+        // The party walks in file along the road, the leader where
+        // PartyLocation is: its carts and horses first, then its people.
         const FSoraZone& Road=Chapter->Space.Zones[Space->Zone];
         const float Lead=Space->RouteMarginCm+TaskState.Progress/1000.f;
-        for(int32 Member=0;Member<Space->Party.Num();++Member)
-            View.Party.Add(ASoraWorldBuilder::Floor(Road.PointAlong(FMath::Max<float>(Space->RouteMarginCm*.5f,Lead-Member*SoraCampaignReach::PartySpacing))));
+        const auto Slot=[&](int32 Member)
+            { return ASoraWorldBuilder::Floor(Road.PointAlong(FMath::Max<float>(Space->RouteMarginCm*.5f,Lead-Member*SoraCampaignReach::PartySpacing))); };
+        for(int32 Member=0;Member<Space->Party.Num();++Member) View.Party.Add(Slot(Member));
         View.PartyYaw=Road.HeadingAt(Lead);
         View.bPartyWalking=TaskState.Progress>LastEscortProgress;
         LastEscortProgress=TaskState.Progress;
+        if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this))
+        {
+            TArray<FVector> People;
+            for(int32 Member=0;Member<Fieldcraft->PartyMembers().Num();++Member) People.Add(Slot(Space->Party.Num()+Member));
+            Fieldcraft->PlaceParty(People,View.PartyYaw,static_cast<float>(Task.SpeedCmS));
+        }
     }
     World->ShowKit(View);
 }

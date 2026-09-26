@@ -201,6 +201,33 @@ void ASoraEnemy::Outflanked(int32 Ms)
 }
 bool ASoraEnemy::IsTurnLocked() const { return GetWorld()&&Now()<TurnLockedUntil; }
 bool ASoraEnemy::IsShieldOpen() const { return Kind&&Kind->bShield&&(Now()<ShieldOpenUntil||IsStaggered()); }
+bool ASoraEnemy::HasShield() const { return Kind&&Kind->bShield; }
+void ASoraEnemy::Snared(SoraFieldcraftRules::ESnare Snare,AActor* By)
+{
+    if(!IsAlive()||Snare==SoraFieldcraftRules::ESnare::None) return;
+    switch(Snare)
+    {
+    case SoraFieldcraftRules::ESnare::Blade:
+        Stagger(SoraFieldcraftRules::SnareMs);
+        break;
+    case SoraFieldcraftRules::ESnare::Shield:
+        ShieldOpenUntil=FMath::Max(ShieldOpenUntil,Now()+SoraFieldcraftRules::ShieldOpenMs/1000.f);
+        Stagger(SoraFieldcraftRules::SnareMs/3);
+        Announce(ESoraEnemyCue::ShieldTurned,NAME_None);
+        break;
+    case SoraFieldcraftRules::ESnare::Drone:
+    {
+        Stagger(SoraFieldcraftRules::SnareMs);
+        FHitResult Trace; Trace.ImpactPoint=GetActorLocation(); Trace.Location=Trace.ImpactPoint;
+        const FVector From=By?By->GetActorLocation():GetActorLocation();
+        SoraDamage::Strike(this,MaxHealth*SoraFieldcraftRules::DroneDamagePermille/1000.f,FSoraHit::Melee(From,2),
+            (GetActorLocation()-From).GetSafeNormal(),Trace,By?By->GetInstigatorController():nullptr,By);
+        break;
+    }
+    case SoraFieldcraftRules::ESnare::None:
+        break;
+    }
+}
 const FSoraEnemyAttack* ASoraEnemy::CurrentAttack() const
 {
     return Kind&&Phase!=EPhase::Idle&&Kind->Attacks.IsValidIndex(AttackIndex)?&Kind->Attacks[AttackIndex]:nullptr;

@@ -146,7 +146,7 @@ bool FSoraSheatheKeyTest::RunTest(const FString& Parameters)
     if (!Tap(Arena, EKeys::V) || !Tap(Arena, EKeys::V))
         return false;
     TestFalse(TEXT("V draws a sheathed blade"), Kit->IsSheathing());
-    if (!Tap(Arena, EKeys::V) || !Tick(Arena, 20, {}) || !Tap(Arena, EKeys::One) || !Tick(Arena, 20, {}))
+    if (!Tap(Arena, EKeys::V) || !Tick(Arena, 20, {}) || !Arena.World->TakeUpArm(1) || !Tick(Arena, 20, {}))
         return false;
     TestTrue(TEXT("The carbine comes out drawn"), Hero->WeaponId == 1 && !Kit->IsSheathing());
     if (!Tap(Arena, EKeys::V))

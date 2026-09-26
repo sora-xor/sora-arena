@@ -224,8 +224,8 @@ bool MountedArcsConvoyAndWind(FAutomationTestBase& Test)
     USoraEquipmentComponent* Kit = Ride.Hero()->GetEquipment();
     bool bOk = Test.TestTrue(TEXT("The escort ride starts in the saddle with three pack horses"),
         Campaign->IsMounted() && Campaign->PackHorses().Num() == 3);
-    // The yumi draws to the left (弓手) and is refused to the right.
-    if (!Ride.Key(EKeys::Four) || !Ride.Frames(20))
+    // The yumi (the bow key, 3) draws to the left (弓手) and is refused to the right.
+    if (!Ride.Key(EKeys::Three) || !Ride.Frames(20))
         return false;
     bOk &= Test.TestEqual(TEXT("The yumi is taken up in the saddle"), Ride.Hero()->WeaponId, 18);
     Ride.Aim(90.f);
@@ -240,8 +240,8 @@ bool MountedArcsConvoyAndWind(FAutomationTestBase& Test)
     bOk &= Test.TestTrue(TEXT("The yumi draws to the left"), Kit->IsBowDrawing());
     if (!Ride.Up(EKeys::LeftMouseButton) || !Ride.Frames(30))
         return false;
-    // The katana cuts to the right (馬手) and is refused to the left.
-    if (!Ride.Key(EKeys::Two) || !Ride.Frames(20))
+    // The katana (the swords key, 1) cuts to the right (馬手) and is refused to the left.
+    if (!Ride.Key(EKeys::One) || !Ride.Frames(20))
         return false;
     Ride.Aim(-90.f);
     if (!Ride.Key(EKeys::RightMouseButton))
@@ -303,11 +303,13 @@ bool NoFirearmsInTheSaddle(FAutomationTestBase& Test)
     USoraCampaignDirector* Campaign = Ride.Campaign();
     bool bOk = Test.TestTrue(TEXT("The charge starts in the saddle"), Campaign->IsMounted() && Campaign->IsWeaponUnlocked(1));
     const int32 Held = Ride.Hero()->WeaponId;
-    if (!Ride.Key(EKeys::One) || !Ride.Frames(20))
+    // The firearms key (4) finds only arms the saddle refuses.
+    if (!Ride.Key(EKeys::Four) || !Ride.Frames(20))
         return false;
-    bOk &= Test.TestTrue(TEXT("The arc carbine cannot be held in the saddle"),
+    bOk &= Test.TestTrue(TEXT("No firearm, the arc carbine among them, can be held in the saddle"),
         Ride.Hero()->WeaponId == Held && Ride.Mode()->NoticeEnglish.Contains(TEXT("saddle")));
-    if (!Ride.Key(EKeys::Five) || !Ride.Frames(20))
+    // The polearms key (2) takes up the yari.
+    if (!Ride.Key(EKeys::Two) || !Ride.Frames(20))
         return false;
     Ride.Aim(0.f);
     if (!Ride.Down(EKeys::RightMouseButton) || !Ride.Frames(1))

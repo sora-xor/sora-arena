@@ -6131,7 +6131,7 @@
    "beats": [
     "ch04.b03"
    ],
-   "on": "after weapon 5 unlock",
+   "on": "equip:5",
    "ja": "{Reload}で早合を込める。カチッと鳴った瞬間にもう一度{Reload}で素早く締める",
    "en": "{Reload} loads a hayagō. Press {Reload} again on the click to lock it faster.",
    "shown_en": null
@@ -6141,7 +6141,7 @@
    "beats": [
     "ch04.b03"
    ],
-   "on": "first aim with weapon 5",
+   "on": "fired:5",
    "ja": "頬付けで構える。馬上では鉄砲を使えない",
    "en": "Cheek-stocked aim. Firearms cannot be used on horseback.",
    "shown_en": null
@@ -6211,9 +6211,9 @@
    "beats": [
     "ch04.b12"
    ],
-   "on": "first npc_downed",
-   "ja": "網に捕らわれた者は{Interact}で解放。12秒で連れ去られる",
-   "en": "{Interact} to free netted planters. They are taken after 12 s.",
+   "on": "npc_downed:any:first",
+   "ja": "網に捕らわれた早乙女のそばで{Interact}：網を切る。網のまま削られると連れ去られる",
+   "en": "Press {Interact} beside a netted planter to cut the net. Worn down in it, they are taken.",
    "shown_en": null
   },
   {
@@ -8524,7 +8524,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b02",
@@ -8723,6 +8738,21 @@
       -11966,
       0
      ]
+    },
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
     }
    },
    {
@@ -8830,7 +8860,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b04",
@@ -8937,7 +8982,38 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "otane",
+       "role": "fighter",
+       "weapon": 2,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        15210,
+        0
+       ]
+      }
+     ],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b05",
@@ -9067,7 +9143,62 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [
+      {
+       "kind": "gravel",
+       "center": [
+        27260,
+        -737
+       ],
+       "size": [
+        520,
+        520
+       ],
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      },
+      {
+       "kind": "running_water",
+       "center": [
+        29930,
+        455
+       ],
+       "size": [
+        520,
+        360
+       ],
+       "step_permille": 500,
+       "crouch_permille": 500
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        26630,
+        -281
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      }
+     ],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b06",
@@ -9174,7 +9305,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b07",
@@ -9281,7 +9427,38 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "otane",
+       "role": "fighter",
+       "weapon": 2,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        25410,
+        0
+       ]
+      }
+     ],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b08",
@@ -9398,7 +9575,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b09",
@@ -9531,7 +9723,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b10",
@@ -9615,12 +9822,97 @@
      "dropoffs": [],
      "targets": [],
      "party": [
-      "cart",
-      "villager",
-      "villager"
+      "cart"
      ]
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [
+      {
+       "id": "carpenter_genroku",
+       "health": 250,
+       "revive_ms": 2000,
+       "bleedout_ms": 6000,
+       "lance_ms": 0,
+       "free_ms": 0,
+       "release": -1
+      },
+      {
+       "id": "carpenter_kichiji",
+       "health": 250,
+       "revive_ms": 2000,
+       "bleedout_ms": 6000,
+       "lance_ms": 0,
+       "free_ms": 0,
+       "release": -1
+      }
+     ],
+     "signal": true,
+     "hide_spots": [
+      [
+       10195,
+       -16261
+      ],
+      [
+       11189,
+       -17449
+      ],
+      [
+       12182,
+       -16037
+      ],
+      [
+       13176,
+       -17225
+      ],
+      [
+       15164,
+       -17398
+      ],
+      [
+       16157,
+       -16210
+      ],
+      [
+       17151,
+       -17622
+      ],
+      [
+       18145,
+       -16434
+      ],
+      [
+       19139,
+       -17846
+      ],
+      [
+       20132,
+       -16657
+      ],
+      [
+       22120,
+       -16719
+      ],
+      [
+       23113,
+       -17907
+      ],
+      [
+       24107,
+       -16495
+      ]
+     ],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b11",
@@ -9745,7 +10037,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b12",
@@ -9883,18 +10190,114 @@
      "pickups": [],
      "dropoffs": [],
      "targets": [
-      "villager",
-      "villager",
-      "villager",
-      "villager",
-      "villager",
-      "villager",
-      "villager",
-      "villager"
+      "person",
+      "person",
+      "person",
+      "person",
+      "person",
+      "person",
+      "person",
+      "person"
      ],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "otane",
+       "role": "fighter",
+       "weapon": 2,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        15210,
+        0
+       ]
+      }
+     ],
+     "people": [
+      {
+       "id": "planter_01",
+       "target": 0,
+       "at": [
+        19640,
+        -728
+       ]
+      },
+      {
+       "id": "planter_02",
+       "target": 1,
+       "at": [
+        19640,
+        728
+       ]
+      },
+      {
+       "id": "planter_03",
+       "target": 2,
+       "at": [
+        18488,
+        0
+       ]
+      },
+      {
+       "id": "planter_04",
+       "target": 3,
+       "at": [
+        18488,
+        -728
+       ]
+      },
+      {
+       "id": "planter_05",
+       "target": 4,
+       "at": [
+        18488,
+        728
+       ]
+      },
+      {
+       "id": "planter_06",
+       "target": 5,
+       "at": [
+        17336,
+        0
+       ]
+      },
+      {
+       "id": "planter_07",
+       "target": 6,
+       "at": [
+        17336,
+        -728
+       ]
+      },
+      {
+       "id": "planter_08",
+       "target": 7,
+       "at": [
+        17336,
+        728
+       ]
+      }
+     ],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b13",
@@ -10001,7 +10404,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b14",
@@ -10219,6 +10637,21 @@
       -21966,
       0
      ]
+    },
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
     }
    },
    {
@@ -10336,7 +10769,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b16",
@@ -10501,6 +10949,21 @@
       0,
       0
      ]
+    },
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
     }
    },
    {
@@ -10632,7 +11095,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch04.b18",
@@ -10749,7 +11227,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    }
   ],
   "pickups": [

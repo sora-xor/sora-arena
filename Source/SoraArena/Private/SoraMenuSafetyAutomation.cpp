@@ -4,6 +4,7 @@
 #include "SoraAutomationWorld.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
+#include "SoraCompanion.h"
 #include "SoraControlSaveGame.h"
 #include "SoraEnemy.h"
 #include "SoraEquipmentComponent.h"
@@ -185,6 +186,9 @@ bool RunFire(FAutomationTestBase& Test, FFireRun& Run)
         else
             It->SetActorTickEnabled(false);
     }
+    // The dojo's pupils who stand with the hero here leave the road clear.
+    for (TActorIterator<ASoraCompanion> It(World); It; ++It)
+        It->Destroy();
     if (!Test.TestNotNull(TEXT("The ranged invader spawned"), Shooter) ||
         !Test.TestFalse(TEXT("It fires rather than duels"), Shooter->IsBladeRetainer()))
         return false;

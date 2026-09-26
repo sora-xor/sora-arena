@@ -7,9 +7,11 @@ class ASoraPlayerCharacter;
 
 // Nyaakoto's weapons in the offline campaign and training arena: ammunition
 // per weapon, reloads, cooldowns, gunfire and shells, the yumi draw, committed
-// strikes with every melee arm (the dojo bokken's swing is swept), the blade
-// guard, and the sword school's sheathed hand, 転 step, 残心 and 水月 read
-// (SoraCombatRules). The held weapon's ID lives on the character so its
+// strikes with every melee arm (the dojo bokken's swing is swept), the
+// kusarigama's weighted chain cast at an opponent beyond the sickle's reach
+// (SoraFieldcraftRules::Snare), the healing lance raising a downed companion,
+// the blade guard, and the sword school's sheathed hand, 転 step, 残心 and
+// 水月 read (SoraCombatRules). The held weapon's ID lives on the character so its
 // visual and the HUD can read it. In the campaign, a weapon the save has not
 // unlocked is refused with a notice; from the saddle a weapon acts only in its
 // mounted arc (SoraMountRules.h), and a carried load slows the hero and leaves
@@ -71,6 +73,11 @@ public:
     bool IsBowDrawing() const { return bBowDrawing; }
     float BowDrawProgress() const;
     bool IsCommittedStrike() const { return bCommittedStrike; }
+    // The committed action is the kusarigama's chain, not a cut.
+    bool IsChainCast() const { return bCommittedStrike && bChainCast; }
+    // Weights cast and opponents the chain caught (automation reads them).
+    int32 ChainsCast() const { return ChainCasts; }
+    int32 ChainsLanded() const { return ChainHits; }
     float StrikeWindupProgress() const;
     bool IsTriggerHeld() const { return bFireHeld; }
     bool IsGuardHeld() const { return bGuardHeld; }
@@ -91,10 +98,20 @@ private:
     void ReleaseBow();
     void TickStep();
     void ResolveCommittedStrike();
+    void ResolveChain();
+    // The opponent the kusarigama's weight would fly at now, or null.
+    ASoraEnemy* ChainQuarry() const;
+    // An event for the campaign's active beat (equip:N, fired:N, draw_complete ...).
+    void RaiseBeatEvent(const FString& Event) const;
     bool bFireHeld = false;
     bool bBowDrawing = false;
     float BowDrawStartedAt = 0.f;
     bool bCommittedStrike = false;
+    bool bChainCast = false;
+    TWeakObjectPtr<ASoraEnemy> ChainTarget;
+    int32 ChainCasts = 0;
+    int32 ChainHits = 0;
+    bool bDrawCompleteRaised = false;
     bool bHistoricalRecovery = false;
     int32 CommittedWeaponId = INDEX_NONE;
     float CommittedStrikeAt = 0.f;

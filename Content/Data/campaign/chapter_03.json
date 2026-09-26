@@ -5377,7 +5377,7 @@
   },
   {
    "beat": "ch03.b02",
-   "on": "x_alert_state:search_to_unaware",
+   "on": "alert_state:search_to_unaware",
    "mode": "ambient",
    "lines": [
     "ch03.b02.drone.008"
@@ -5390,7 +5390,8 @@
    "ext": {
     "source": [
      "drone"
-    ]
+    ],
+    "proposed": "x_alert_state:search_to_unaware"
    }
   },
   {
@@ -5501,7 +5502,7 @@
   },
   {
    "beat": "ch03.b03",
-   "on": "x_alert_state:search_to_unaware",
+   "on": "alert_state:search_to_unaware",
    "mode": "ambient",
    "lines": [
     "ch03.b03.conscript.006"
@@ -5514,7 +5515,8 @@
    "ext": {
     "source": [
      "bound_conscript"
-    ]
+    ],
+    "proposed": "x_alert_state:search_to_unaware"
    }
   },
   {
@@ -5579,7 +5581,7 @@
   },
   {
    "beat": "ch03.b03",
-   "on": "x_npc_freed:kidoban",
+   "on": "npc_freed:kidoban",
    "mode": "ambient",
    "lines": [
     "ch03.b03.kidoban.010",
@@ -5590,7 +5592,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_npc_freed:kidoban"
+   }
   },
   {
    "beat": "ch03.b03",
@@ -5789,7 +5793,7 @@
   },
   {
    "beat": "ch03.b05",
-   "on": "x_alert_state:search_to_unaware",
+   "on": "alert_state:search_to_unaware",
    "mode": "ambient",
    "lines": [
     "ch03.b03.conscript.006"
@@ -5802,7 +5806,8 @@
    "ext": {
     "source": [
      "bound_conscript"
-    ]
+    ],
+    "proposed": "x_alert_state:search_to_unaware"
    }
   },
   {
@@ -5932,7 +5937,7 @@
   },
   {
    "beat": "ch03.b07",
-   "on": "x_signal:hide",
+   "on": "signal:hide",
    "mode": "ambient",
    "lines": [
     "ch03.b07.nyaakoto.003"
@@ -5942,11 +5947,13 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_signal:hide"
+   }
   },
   {
    "beat": "ch03.b07",
-   "on": "x_signal:go",
+   "on": "signal:go",
    "mode": "ambient",
    "lines": [
     "ch03.b07.nyaakoto.004"
@@ -5956,7 +5963,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_signal:go"
+   }
   },
   {
    "beat": "ch03.b07",
@@ -6002,7 +6011,7 @@
   },
   {
    "beat": "ch03.b07",
-   "on": "x_npc_revived:any",
+   "on": "npc_revived:any",
    "mode": "ambient",
    "lines": [
     "ch03.b07.nyaakoto.008"
@@ -6012,7 +6021,9 @@
    "cooldown_s": null,
    "at_ms": null,
    "requires_flag": null,
-   "ext": {}
+   "ext": {
+    "proposed": "x_npc_revived:any"
+   }
   },
   {
    "beat": "ch03.b07",
@@ -6080,7 +6091,7 @@
   },
   {
    "beat": "ch03.b07",
-   "on": "x_alert_state:search_to_unaware",
+   "on": "alert_state:search_to_unaware",
    "mode": "ambient",
    "lines": [
     "ch03.b03.conscript.006"
@@ -6093,7 +6104,8 @@
    "ext": {
     "source": [
      "bound_conscript"
-    ]
+    ],
+    "proposed": "x_alert_state:search_to_unaware"
    }
   },
   {
@@ -6212,7 +6224,7 @@
   },
   {
    "beat": "ch03.b07",
-   "on": "x_alert_state:search_to_unaware",
+   "on": "alert_state:search_to_unaware",
    "mode": "ambient",
    "lines": [
     "ch03.b02.drone.008"
@@ -6225,7 +6237,8 @@
    "ext": {
     "source": [
      "drone"
-    ]
+    ],
+    "proposed": "x_alert_state:search_to_unaware"
    }
   },
   {
@@ -6673,7 +6686,7 @@
   },
   {
    "beat": "ch03.b10",
-   "on": "x_alert_state:search_to_unaware",
+   "on": "alert_state:search_to_unaware",
    "mode": "ambient",
    "lines": [
     "ch03.b03.conscript.006"
@@ -6686,7 +6699,8 @@
    "ext": {
     "source": [
      "bound_conscript"
-    ]
+    ],
+    "proposed": "x_alert_state:search_to_unaware"
    }
   },
   {
@@ -6805,7 +6819,7 @@
   },
   {
    "beat": "ch03.b10",
-   "on": "x_alert_state:search_to_unaware",
+   "on": "alert_state:search_to_unaware",
    "mode": "ambient",
    "lines": [
     "ch03.b02.drone.008"
@@ -6818,7 +6832,8 @@
    "ext": {
     "source": [
      "drone"
-    ]
+    ],
+    "proposed": "x_alert_state:search_to_unaware"
    }
   },
   {
@@ -7201,7 +7216,7 @@
   },
   {
    "beat": "ch03.b14",
-   "on": "x_alert_state:search_to_unaware",
+   "on": "alert_state:search_to_unaware",
    "mode": "ambient",
    "lines": [
     "ch03.b03.conscript.006"
@@ -7214,7 +7229,8 @@
    "ext": {
     "source": [
      "bound_conscript"
-    ]
+    ],
+    "proposed": "x_alert_state:search_to_unaware"
    }
   },
   {
@@ -8023,7 +8039,7 @@
    "beats": [
     "ch03.b02"
    ],
-   "on": null,
+   "on": "volume_enter:vol_b02_puddles",
    "ja": "水たまりは大きな音を立てる",
    "en": "Puddles make noise",
    "shown_en": "On vol_b02_puddles"
@@ -8033,7 +8049,7 @@
    "beats": [
     "ch03.b02"
    ],
-   "on": null,
+   "on": "look_at:andon",
    "ja": "{Interact}長押し：灯りを消す",
    "en": "Hold {Interact}: snuff the lamp",
    "shown_en": "Near a snuffable lamp"
@@ -8043,7 +8059,7 @@
    "beats": [
     "ch03.b02"
    ],
-   "on": null,
+   "on": "alert_state:suspicious:first",
    "ja": "気配：不審 → 警戒 → 捜索",
    "en": "Awareness: Suspicious → Alert → Searching",
    "shown_en": "First suspicion"
@@ -8053,7 +8069,7 @@
    "beats": [
     "ch03.b03"
    ],
-   "on": null,
+   "on": "ai_event:first_rear_reach",
    "ja": "背後から{Melee}：不意討ち",
    "en": "From behind, {Melee}: takedown",
    "shown_en": "Behind an unaware guard"
@@ -8073,7 +8089,7 @@
    "beats": [
     "ch03.b03"
    ],
-   "on": null,
+   "on": "conscript_downed",
    "ja": "倒れた者のそばで{Interact}長押し：首輪を切る",
    "en": "Hold {Interact} beside the downed: cut the collar",
    "shown_en": "Downed conscript, 8 s window"
@@ -8083,7 +8099,7 @@
    "beats": [
     "ch03.b05"
    ],
-   "on": null,
+   "on": "event:first_pickup",
    "ja": "運搬中：刀は片手、弓は使えない",
    "en": "Carrying: katana one-handed, no bow",
    "shown_en": "First pickup"
@@ -8103,7 +8119,7 @@
    "beats": [
     "ch03.b07"
    ],
-   "on": null,
+   "on": "npc_downed:any",
    "ja": "{Interact}長押し：助け起こす",
    "en": "Hold {Interact}: help them up",
    "shown_en": "Escort downed"
@@ -8123,7 +8139,7 @@
    "beats": [
     "ch03.b09"
    ],
-   "on": null,
+   "on": "equip:7",
    "ja": "擲弾筒：弧を描いて飛ぶ。近いと自分も巻き込む",
    "en": "Grenade Launcher: arcing shells. Close blasts hurt you too",
    "shown_en": "Unlock"
@@ -11249,7 +11265,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b02",
@@ -11390,7 +11421,138 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [
+      {
+       "id": "andon_b02_w1",
+       "kind": "andon",
+       "radius_cm": 650,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        11080,
+        -448
+       ]
+      },
+      {
+       "id": "andon_b02_w3",
+       "kind": "andon",
+       "radius_cm": 650,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        11080,
+        448
+       ]
+      },
+      {
+       "id": "andon_b02_shed",
+       "kind": "andon",
+       "radius_cm": 650,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        9672,
+        -448
+       ]
+      }
+     ],
+     "surfaces": [
+      {
+       "kind": "puddle",
+       "center": [
+        9503,
+        -453
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        11135,
+        280
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        9118,
+        -173
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        10750,
+        560
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        9741,
+        -626
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        11373,
+        107
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      }
+     ],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b03",
@@ -11520,7 +11682,112 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [
+      {
+       "id": "andon_b03_bansho",
+       "kind": "andon",
+       "radius_cm": 650,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        18480,
+        -448
+       ]
+      },
+      {
+       "id": "brazier_b03",
+       "kind": "brazier",
+       "radius_cm": 600,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        18480,
+        448
+       ]
+      },
+      {
+       "id": "scan_arch_b03",
+       "kind": "arch",
+       "radius_cm": 450,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        17072,
+        -448
+       ]
+      }
+     ],
+     "surfaces": [
+      {
+       "kind": "puddle",
+       "center": [
+        16903,
+        -453
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        18535,
+        280
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        16518,
+        -173
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "running_water",
+       "center": [
+        18773,
+        107
+       ],
+       "size": [
+        520,
+        360
+       ],
+       "step_permille": 500,
+       "crouch_permille": 500
+      }
+     ],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b04",
@@ -11675,7 +11942,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b05",
@@ -11808,7 +12090,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b06",
@@ -11915,7 +12212,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b07",
@@ -12040,14 +12352,158 @@
      "pickups": [],
      "dropoffs": [],
      "targets": [],
-     "party": [
-      "villager",
-      "villager",
-      "villager",
-      "villager"
-     ]
+     "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [
+      {
+       "id": "tokichi",
+       "health": 100,
+       "revive_ms": 2000,
+       "bleedout_ms": 8000,
+       "lance_ms": 0,
+       "free_ms": 0,
+       "release": -1
+      },
+      {
+       "id": "tamakichi",
+       "health": 100,
+       "revive_ms": 2000,
+       "bleedout_ms": 8000,
+       "lance_ms": 0,
+       "free_ms": 0,
+       "release": -1
+      },
+      {
+       "id": "isa",
+       "health": 100,
+       "revive_ms": 2000,
+       "bleedout_ms": 8000,
+       "lance_ms": 0,
+       "free_ms": 0,
+       "release": -1
+      },
+      {
+       "id": "oren",
+       "health": 100,
+       "revive_ms": 2000,
+       "bleedout_ms": 8000,
+       "lance_ms": 0,
+       "free_ms": 0,
+       "release": -1
+      }
+     ],
+     "signal": true,
+     "hide_spots": [
+      [
+       10195,
+       -11261
+      ],
+      [
+       11189,
+       -12449
+      ],
+      [
+       12182,
+       -11037
+      ],
+      [
+       13176,
+       -12225
+      ],
+      [
+       15164,
+       -12398
+      ],
+      [
+       16157,
+       -11210
+      ],
+      [
+       17151,
+       -12622
+      ],
+      [
+       18145,
+       -11434
+      ],
+      [
+       19139,
+       -12846
+      ],
+      [
+       20132,
+       -11657
+      ],
+      [
+       22120,
+       -11719
+      ],
+      [
+       23113,
+       -12907
+      ],
+      [
+       24107,
+       -11495
+      ],
+      [
+       25101,
+       -12684
+      ],
+      [
+       26095,
+       -11272
+      ],
+      [
+       27088,
+       -12460
+      ],
+      [
+       28082,
+       -11048
+      ],
+      [
+       29076,
+       -12236
+      ],
+      [
+       31063,
+       -12387
+      ],
+      [
+       32057,
+       -11199
+      ],
+      [
+       33051,
+       -12611
+      ],
+      [
+       34045,
+       -11423
+      ],
+      [
+       35038,
+       -12834
+      ],
+      [
+       36032,
+       -11646
+      ]
+     ],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b08",
@@ -12154,7 +12610,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b09",
@@ -12285,7 +12756,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b10",
@@ -12428,7 +12914,177 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [
+      {
+       "id": "tsuji_andon_sw",
+       "kind": "andon",
+       "radius_cm": 650,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        39880,
+        -448
+       ]
+      },
+      {
+       "id": "tsuji_andon_se",
+       "kind": "andon",
+       "radius_cm": 650,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        39880,
+        448
+       ]
+      },
+      {
+       "id": "terminal_glow_b10",
+       "kind": "strip",
+       "radius_cm": 450,
+       "snuff": "hold",
+       "hold_ms": 1000,
+       "relight_ms": 0,
+       "at": [
+        38472,
+        448
+       ]
+      }
+     ],
+     "surfaces": [
+      {
+       "kind": "puddle",
+       "center": [
+        38303,
+        -453
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        39935,
+        280
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        37918,
+        -173
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        39550,
+        560
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "step_permille": 2000,
+       "crouch_permille": 2000
+      },
+      {
+       "kind": "dobuita",
+       "center": [
+        40173,
+        107
+       ],
+       "size": [
+        420,
+        420
+       ],
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      },
+      {
+       "kind": "edge_strip",
+       "center": [
+        40173,
+        272
+       ],
+       "size": [
+        420,
+        90
+       ],
+       "step_permille": 1500,
+       "crouch_permille": 0
+      },
+      {
+       "kind": "dobuita",
+       "center": [
+        38156,
+        -346
+       ],
+       "size": [
+        420,
+        420
+       ],
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      },
+      {
+       "kind": "edge_strip",
+       "center": [
+        38156,
+        -181
+       ],
+       "size": [
+        420,
+        90
+       ],
+       "step_permille": 1500,
+       "crouch_permille": 0
+      },
+      {
+       "kind": "board_roof",
+       "center": [
+        39788,
+        387
+       ],
+       "size": [
+        420,
+        420
+       ],
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      }
+     ],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b11",
@@ -12545,7 +13201,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b12",
@@ -12652,7 +13323,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b13",
@@ -12769,7 +13455,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b14",
@@ -12888,7 +13589,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b15",
@@ -13005,7 +13721,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b16",
@@ -13124,7 +13855,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b17",
@@ -13231,7 +13977,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch03.b18",
@@ -13348,7 +14109,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    }
   ],
   "pickups": [

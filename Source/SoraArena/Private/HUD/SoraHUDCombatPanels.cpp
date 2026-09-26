@@ -9,6 +9,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraFrontEnd.h"
 #include "SoraGameMode.h"
+#include "SoraHistoricalArms.h"
 #include "SoraHUD.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraPracticeDirector.h"
@@ -194,7 +195,12 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
     HUD.Panel(45*S,H-45*S,290*S,4*S,FLinearColor(.12,.19,.21)); HUD.Panel(45*S,H-45*S,290*S*FMath::Clamp(P->Health/P->MaxHealth,0.f,1.f),4*S,Teal);
     const auto& Weapon=FSoraCatalog::Get().Weapon(P->WeaponId);
     HUD.Panel(W-390*S,H-110*S,365*S,80*S,FLinearColor(.015,.035,.05,.9));
-    HUD.Label(G->bCampaign&&G->Campaign()->ChapterId==0?TEXT("木刀 / 非致死の立合い"):Weapon.Name,W-365*S,H-96*S,.72*S,Ivory);
+    const bool bBokken=G->bCampaign&&G->Campaign()->ChapterId==0;
+    const SoraText::FLine Arm=bBokken?SoraText::Line(NSLOCTEXT("SoraArena.Arms","Bokken","木刀 / 非致死の立合い"))
+        :SoraText::FLine{Weapon.Name,Weapon.NameEnglish};
+    HUD.Label(Arm.Japanese,W-365*S,H-96*S,.72*S,Ivory);
+    // The arm's English name beside it while subtitles are on.
+    if(G->bEnglishSubtitles) HUD.Label(Arm.English,W-365*S+HUD.LabelWidth(Arm.Japanese,.72*S)+12*S,H-86*S,.36*S,Muted);
     if(G->bDeterministicPractice)
     {
         if(auto* K=G->Kernel()) if(K->PracticePlayers.Num()>0)
@@ -253,8 +259,7 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
             HUD.Panel(W-365*S,H-122*S,320*S,4*S,FLinearColor(.12,.19,.21));
             HUD.Panel(W-365*S,H-122*S,320*S*Progress,4*S,Gold);
         }
-        if(G->bCampaign&&G->Campaign()->ChapterId>0&&
-            (P->WeaponId==0||P->WeaponId==19||P->WeaponId==20))
+        if(G->bCampaign&&G->Campaign()->ChapterId>0&&SoraHistoricalArms::IsMelee(P->WeaponId))
         {
             HUD.Panel(W-365*S,H-35*S,320*S,3*S,FLinearColor(.12,.19,.21));
             HUD.Panel(W-365*S,H-35*S,320*S*FMath::Clamp(Kit->GuardReserve()/100.f,0.f,1.f),3*S,Teal);

@@ -7459,8 +7459,8 @@
     "ch08.b03"
    ],
    "on": "event:volley_tutorial",
-   "ja": "長押しで的を示し、離すと斉射",
-   "en": "Hold to mark a target, release to fire a volley",
+   "ja": "{Ability}長押しで的を示し、離すと斉射",
+   "en": "Hold {Ability} to mark a target, release to fire a volley",
    "shown_en": null
   },
   {
@@ -7488,9 +7488,9 @@
    "beats": [
     "ch08.b07"
    ],
-   "on": "event:first_hide_signal",
-   "ja": "合図で民を隠す／進ませる",
-   "en": "Signal the people to hide or to move",
+   "on": "beat_start",
+   "ja": "{Ability}で合図：民を伏せさせる／進ませる",
+   "en": "{Ability}: signal the people to hide or to move",
    "shown_en": null
   },
   {
@@ -11266,7 +11266,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b02",
@@ -11677,6 +11692,21 @@
       -11966,
       0
      ]
+    },
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
     }
    },
    {
@@ -11784,7 +11814,346 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "league_teppo_rank_a_1",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 0,
+       "joins": null,
+       "at": [
+        -1890,
+        0
+       ]
+      },
+      {
+       "id": "league_teppo_rank_a_2",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 0,
+       "joins": null,
+       "at": [
+        -1890,
+        240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_a_3",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 0,
+       "joins": null,
+       "at": [
+        -1890,
+        -240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_a_4",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 0,
+       "joins": null,
+       "at": [
+        -1890,
+        480
+       ]
+      },
+      {
+       "id": "league_teppo_rank_b_1",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 1,
+       "joins": null,
+       "at": [
+        -1650,
+        0
+       ]
+      },
+      {
+       "id": "league_teppo_rank_b_2",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 1,
+       "joins": null,
+       "at": [
+        -1650,
+        240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_b_3",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 1,
+       "joins": null,
+       "at": [
+        -1650,
+        -240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_b_4",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 1,
+       "joins": null,
+       "at": [
+        -1650,
+        480
+       ]
+      },
+      {
+       "id": "league_teppo_rank_c_1",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 2,
+       "joins": null,
+       "at": [
+        -1410,
+        0
+       ]
+      },
+      {
+       "id": "league_teppo_rank_c_2",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 2,
+       "joins": null,
+       "at": [
+        -1410,
+        240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_c_3",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 2,
+       "joins": null,
+       "at": [
+        -1410,
+        -240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_c_4",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 2,
+       "joins": null,
+       "at": [
+        -1410,
+        480
+       ]
+      },
+      {
+       "id": "toranosuke",
+       "role": "fighter",
+       "weapon": 0,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -1170,
+        0
+       ]
+      },
+      {
+       "id": "league_yari_1",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -1170,
+        240
+       ]
+      },
+      {
+       "id": "league_yari_2",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -1170,
+        -240
+       ]
+      },
+      {
+       "id": "league_yari_3",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -1170,
+        720
+       ]
+      },
+      {
+       "id": "league_yari_4",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -1170,
+        -720
+       ]
+      },
+      {
+       "id": "league_yari_5",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -930,
+        0
+       ]
+      },
+      {
+       "id": "league_yari_6",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -930,
+        240
+       ]
+      },
+      {
+       "id": "tamakichi",
+       "role": "shooter",
+       "weapon": 15,
+       "health": 120,
+       "downable": false,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -930,
+        -240
+       ]
+      },
+      {
+       "id": "oyuki",
+       "role": "bystander",
+       "weapon": -1,
+       "health": 120,
+       "downable": false,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -930,
+        480
+       ]
+      }
+     ],
+     "people": [],
+     "volley": {
+      "ranks": 3,
+      "per_rank": 4,
+      "weapon": 5,
+      "order_delay_ms": 800,
+      "cycle_ms": 9000,
+      "radius_cm": 400,
+      "range_cm": 6000
+     }
+    }
    },
    {
     "beat": "ch08.b04",
@@ -11903,7 +12272,128 @@
      ],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "kozo",
+       "role": "bystander",
+       "weapon": -1,
+       "health": 120,
+       "downable": false,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -2370,
+        0
+       ]
+      },
+      {
+       "id": "tetsugoro",
+       "role": "bystander",
+       "weapon": -1,
+       "health": 120,
+       "downable": false,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -2370,
+        480
+       ]
+      },
+      {
+       "id": "okuzu",
+       "role": "bystander",
+       "weapon": -1,
+       "health": 120,
+       "downable": false,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -2370,
+        -480
+       ]
+      },
+      {
+       "id": "league_yari_1",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -2130,
+        0
+       ]
+      },
+      {
+       "id": "league_yari_2",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -2130,
+        480
+       ]
+      },
+      {
+       "id": "league_yari_3",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -2130,
+        -480
+       ]
+      },
+      {
+       "id": "league_yari_4",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -1890,
+        0
+       ]
+      }
+     ],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b05",
@@ -12034,7 +12524,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b06",
@@ -12166,7 +12671,226 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "toranosuke",
+       "role": "fighter",
+       "weapon": 0,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        19290,
+        0
+       ]
+      },
+      {
+       "id": "league_teppo_rank_a_1",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 0,
+       "joins": null,
+       "at": [
+        18810,
+        0
+       ]
+      },
+      {
+       "id": "league_teppo_rank_a_2",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 0,
+       "joins": null,
+       "at": [
+        18810,
+        240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_a_3",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 0,
+       "joins": null,
+       "at": [
+        18810,
+        -240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_a_4",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 0,
+       "joins": null,
+       "at": [
+        18810,
+        480
+       ]
+      },
+      {
+       "id": "league_teppo_rank_b_1",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 1,
+       "joins": null,
+       "at": [
+        19050,
+        0
+       ]
+      },
+      {
+       "id": "league_teppo_rank_b_2",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 1,
+       "joins": null,
+       "at": [
+        19050,
+        240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_b_3",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 1,
+       "joins": null,
+       "at": [
+        19050,
+        -240
+       ]
+      },
+      {
+       "id": "league_teppo_rank_b_4",
+       "role": "rank",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": 1,
+       "joins": null,
+       "at": [
+        19050,
+        480
+       ]
+      },
+      {
+       "id": "league_yari_1",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        19290,
+        240
+       ]
+      },
+      {
+       "id": "league_yari_2",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        19290,
+        -240
+       ]
+      },
+      {
+       "id": "league_yari_3",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        19290,
+        480
+       ]
+      },
+      {
+       "id": "league_yari_4",
+       "role": "fighter",
+       "weapon": 19,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        19290,
+        -480
+       ]
+      }
+     ],
+     "people": [],
+     "volley": {
+      "ranks": 2,
+      "per_rank": 4,
+      "weapon": 5,
+      "order_delay_ms": 800,
+      "cycle_ms": 9000,
+      "radius_cm": 400,
+      "range_cm": 4000
+     }
+    }
    },
    {
     "beat": "ch08.b07",
@@ -12249,16 +12973,227 @@
      "pickups": [],
      "dropoffs": [],
      "targets": [],
-     "party": [
-      "villager",
-      "villager",
-      "villager",
-      "villager",
-      "villager",
-      "villager"
-     ]
+     "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [
+      {
+       "id": "prisoners_a_1",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 0
+      },
+      {
+       "id": "prisoners_a_2",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 0
+      },
+      {
+       "id": "prisoners_a_3",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 0
+      },
+      {
+       "id": "prisoners_a_4",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 0
+      },
+      {
+       "id": "prisoners_b_1",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 1
+      },
+      {
+       "id": "prisoners_b_2",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 1
+      },
+      {
+       "id": "prisoners_b_3",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 1
+      },
+      {
+       "id": "prisoners_b_4",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 1
+      },
+      {
+       "id": "takemaru",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 2
+      },
+      {
+       "id": "prisoners_c_2",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 2
+      },
+      {
+       "id": "prisoners_c_3",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 2
+      },
+      {
+       "id": "child_1_1",
+       "health": 150,
+       "revive_ms": 3000,
+       "bleedout_ms": 30000,
+       "lance_ms": 1000,
+       "free_ms": 2000,
+       "release": 3
+      }
+     ],
+     "signal": true,
+     "hide_spots": [
+      [
+       10195,
+       -16261
+      ],
+      [
+       11189,
+       -17449
+      ],
+      [
+       12182,
+       -16037
+      ],
+      [
+       13176,
+       -17225
+      ],
+      [
+       15164,
+       -17398
+      ],
+      [
+       16157,
+       -16210
+      ],
+      [
+       17151,
+       -17622
+      ],
+      [
+       18145,
+       -16434
+      ],
+      [
+       19139,
+       -17846
+      ],
+      [
+       20132,
+       -16657
+      ],
+      [
+       22120,
+       -16719
+      ],
+      [
+       23113,
+       -17907
+      ],
+      [
+       24107,
+       -16495
+      ],
+      [
+       25101,
+       -17684
+      ],
+      [
+       26095,
+       -16272
+      ]
+     ],
+     "releases": [
+      {
+       "id": "cell_door_1",
+       "at": [
+        9698,
+        -16240
+       ],
+       "hold_ms": 2000
+      },
+      {
+       "id": "cell_door_2",
+       "at": [
+        10016,
+        -16240
+       ],
+       "hold_ms": 2000
+      },
+      {
+       "id": "cell_door_3",
+       "at": [
+        10334,
+        -16240
+       ],
+       "hold_ms": 2000
+      },
+      {
+       "id": "cell_door_4",
+       "at": [
+        10652,
+        -16240
+       ],
+       "hold_ms": 2000
+      }
+     ],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b08",
@@ -12375,7 +13310,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b09",
@@ -12497,7 +13447,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b10",
@@ -12627,7 +13592,98 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "kohagi",
+       "role": "fighter",
+       "weapon": 4,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32810,
+        0
+       ]
+      },
+      {
+       "id": "toranosuke",
+       "role": "fighter",
+       "weapon": 0,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32810,
+        240
+       ]
+      },
+      {
+       "id": "tetsugoro",
+       "role": "guide",
+       "weapon": -1,
+       "health": 120,
+       "downable": false,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32810,
+        -240
+       ]
+      },
+      {
+       "id": "league_engineer_1",
+       "role": "guide",
+       "weapon": -1,
+       "health": 120,
+       "downable": false,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32810,
+        480
+       ]
+      },
+      {
+       "id": "league_engineer_2",
+       "role": "guide",
+       "weapon": -1,
+       "health": 120,
+       "downable": false,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32810,
+        -480
+       ]
+      }
+     ],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b11",
@@ -12734,7 +13790,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b12",
@@ -12856,7 +13927,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b13",
@@ -12973,7 +14059,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b14",
@@ -13080,7 +14181,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b15",
@@ -13197,7 +14313,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b16",
@@ -13374,7 +14505,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b17",
@@ -13496,7 +14642,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    },
    {
     "beat": "ch08.b18",
@@ -13613,7 +14774,22 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null
+    }
    }
   ],
   "pickups": [

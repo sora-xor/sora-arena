@@ -323,11 +323,17 @@ def _length(points):
 
 
 def _volume_events(beat, chapter):
+    """The volumes a beat's events name: its task's, its lines' and its HUD
+    prompts', but those on a climbing face, which its fieldcraft raises."""
     task = beat["task"]
     events = {task[key] for key in ("lines_event", "closing_event", "exit_event")}
     events |= {wave["event"] for wave in task["waves"]}
     events |= {row["on"] for row in chapter["triggers"] if row["beat"] == beat["id"]}
-    return {event for event in events if event and event.startswith("volume_enter:")}
+    events |= {row["on"] for row in chapter["ui_prompts"] if beat["id"] in row["beats"]}
+    record = next(row for row in chapter["space"]["beats"] if row["beat"] == beat["id"])
+    climb = record["fieldcraft"]["climb"]
+    owned = set(climb["ledge_events"]) | {climb["top_event"]} if climb else set()
+    return {event for event in events if event and event.startswith("volume_enter:") and event not in owned}
 
 
 def check_space(chapter, beats, rewards, labels, where):
@@ -442,6 +448,7 @@ def check_space(chapter, beats, rewards, labels, where):
                 margin = record["route"]["margin_cm"]
                 require(task["path_cm"] == round(length) - 2 * margin and task["path_cm"] > 0,
                         f"{what}: the escort walks {task['path_cm']} cm of a {length:.0f} cm route")
+        check_fieldcraft(beat, record, index, zones, zone_of, on_floor)
         mount = record["mount"]
         require((mount is not None) == (beat["type"] == "horseback_ride" or any(
             "mount" in phase for phase in beat["params"].get("phases", []))), f"{what}: horse")
@@ -463,6 +470,99 @@ def check_space(chapter, beats, rewards, labels, where):
     require(sorted(found) == sorted(loose), f"{where}: pickups {sorted(found)} for loose collectibles {sorted(loose)}")
     for pickup in space["pickups"]:
         on_floor(pickup["zone"], pickup["at"], f"{where} pickup {pickup['collectible']}")
+
+
+FIELDCRAFT_KEYS = {"lamps", "surfaces", "water", "climb", "stones", "candle", "party", "signal", "hide_spots",
+                   "releases", "allies", "people", "volley"}
+ALLY_KINDS = {"fighter", "shooter", "rank", "guide", "bystander"}
+VOLLEY_KEYS = {"ranks", "per_rank", "weapon", "order_delay_ms", "cycle_ms", "radius_cm", "range_cm"}
+
+
+def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
+    """The beat's fieldcraft (campaign_fieldcraft.py) is one USoraFieldcraft can play."""
+    craft, what = record["fieldcraft"], beat["id"]
+    rect, _ = zone_of(index)
+    require(set(craft) == FIELDCRAFT_KEYS, f"{what}: fieldcraft keys {sorted(craft)}")
+
+    def area(row, label):
+        require(_inside(rect, row["center"], 0) and min(row["size"]) > 0, f"{what}: {label} {row} is off its floor")
+
+    for lamp in craft["lamps"]:
+        require(lamp["snuff"] in ("hold", "shot", "none") and lamp["radius_cm"] > 0 and lamp["relight_ms"] >= 0 and
+                (lamp["snuff"] == "hold") == (lamp["hold_ms"] > 0), f"{what}: lamp {lamp['id']} rules")
+        on_floor(index, lamp["at"], f"{what} lamp {lamp['id']}")
+    for surface in craft["surfaces"]:
+        area(surface, f"{surface['kind']} floor")
+        require(0 <= surface["crouch_permille"] <= 10000 and 0 < surface["step_permille"] <= 10000,
+                f"{what}: {surface['kind']} floor loudness")
+    water = craft["water"]
+    if water:
+        area(water, "water")
+        require(min(water[key] for key in ("surface_cm_s", "dive_cm_s", "breath_ms", "recover_ms")) > 0 and
+                water["drown_hp_s"] >= 0 and water["surface_step_permille"] > 0, f"{what}: swimming rules")
+        for row in water["cover"] + water["lines"]:
+            area(row, "water cover or float line")
+    climb = craft["climb"]
+    if climb:
+        require(zones[index]["form"] != "route" and climb["holds"] > 0 and climb["holds"] < 32 and
+                0 < climb["grip_per_hold"] * climb["holds"] <= 100 and climb["regen_per_s"] >= 0 and
+                all(0 < hold < climb["holds"] for hold in climb["ledges"]) and
+                len(climb["ledges"]) == len(climb["ledge_events"]) and 0 < climb["hurt_cm"] < climb["lethal_cm"],
+                f"{what}: climbing rules")
+        x0, y0, x1, y1 = rect
+        require(climb["width_cm"] == y1 - y0 and climb["at"][0] + climb["depth_cm"] < x1 and
+                record["entry"][0] < climb["at"][0] and climb["at"][0] < record["exit"]["center"][0],
+                f"{what}: the climbing face must bar the way to the exit wall to wall, with the entry before it")
+    stones = craft["stones"]
+    if stones:
+        require(stones["max"] > 0 and 0 <= stones["carried"] <= stones["max"] and stones["noise_cm"] > 0 and
+                stones["investigate_ms"] > 0 and (stones["carried"] > 0 or stones["piles"]), f"{what}: tsubute")
+        for pile in stones["piles"]:
+            on_floor(index, pile, f"{what} rubble", 0)
+    candle = craft["candle"]
+    if candle:
+        require(candle["visibility_permille"] > candle["cupped_permille"] >= 1000 and
+                0 < candle["cupped_rate_permille"] < 1000 and candle["radius_cm"] > 0, f"{what}: candle")
+    escort = beat["task"]["goal"] == "escort"
+    ids = [member["id"] for member in craft["party"]]
+    require(len(ids) == len(set(ids)) and (not escort or ids), f"{what}: the escorted party")
+    require(not craft["party"] or escort, f"{what}: only an escort has a party")
+    for member in craft["party"]:
+        require(member["health"] > 0 and member["revive_ms"] > 0 and member["bleedout_ms"] >= 0 and
+                member["lance_ms"] >= 0 and -1 <= member["release"] < len(craft["releases"]) and
+                (member["release"] < 0 or member["free_ms"] == craft["releases"][member["release"]]["hold_ms"]),
+                f"{what}: party member {member['id']}")
+    require(craft["signal"] == bool(craft["hide_spots"]) and (not craft["signal"] or escort), f"{what}: hide on signal")
+    for spot in craft["hide_spots"]:
+        on_floor(index, spot, f"{what} hide spot")
+    for release in craft["releases"]:
+        require(release["hold_ms"] > 0, f"{what}: cell door {release['id']}")
+        on_floor(index, release["at"], f"{what} cell door {release['id']}")
+    ally_ids = [ally["id"] for ally in craft["allies"]]
+    require(len(ally_ids) == len(set(ally_ids)) and not set(ally_ids) & set(ids), f"{what}: allies repeat an id")
+    for ally in craft["allies"]:
+        require(ally["role"] in ALLY_KINDS and ally["health"] > 0 and ally["revive_ms"] > 0 and
+                (ally["weapon"] == -1) == (ally["role"] in ("guide", "bystander")) and -1 <= ally["weapon"] <= 20 and
+                (ally["rank"] >= 0) == (ally["role"] == "rank") and ally["rank"] < 4 and
+                (ally["joins"] is None or re.fullmatch(r"wave_start:\d+", ally["joins"]) and
+                 int(ally["joins"].split(":")[1]) <= len(beat["task"]["waves"])), f"{what}: ally {ally['id']}")
+        on_floor(index, ally["at"], f"{what} ally {ally['id']}")
+    # SoraFieldcraftRules::FVolleyRules: up to four ranks, each a full row of gunners with the volley's arm.
+    volley = craft["volley"]
+    gunners = [ally for ally in craft["allies"] if ally["role"] == "rank"]
+    require(bool(volley) == bool(gunners), f"{what}: volley ranks without a volley, or a volley without ranks")
+    if volley:
+        require(set(volley) == VOLLEY_KEYS and 0 < volley["ranks"] <= 4 and volley["per_rank"] > 0 and
+                volley["order_delay_ms"] >= 0 and min(volley["cycle_ms"], volley["radius_cm"], volley["range_cm"]) > 0 and
+                sorted({ally["rank"] for ally in gunners}) == list(range(volley["ranks"])) and
+                all(sum(ally["rank"] == rank for ally in gunners) == volley["per_rank"] for rank in range(volley["ranks"])) and
+                all(ally["weapon"] == volley["weapon"] and ally["joins"] is None for ally in gunners),
+                f"{what}: volley ranks")
+    people = [person["target"] for person in craft["people"]]
+    kinds = record["kit"]["targets"]
+    require(len(people) == len(set(people)) and people == [index for index, kind in enumerate(kinds) if kind == "person"] and
+            all(person["at"] == record["targets"][person["target"]] for person in craft["people"]),
+            f"{what}: every defended person stands at its target")
 
 
 def validate(catalog, campaign, chapters, legacy, roster):
@@ -917,6 +1017,23 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def short_escort(data):
         next(beat for beat in data[2][7]["beats"] if beat["id"] == "ch08.b07")["task"]["path_cm"] -= 400
 
+    def lamp_in_wall(data):
+        record = space(data, 2, "ch03.b02")
+        record["fieldcraft"]["lamps"][0]["at"] = [data[2][2]["space"]["zones"][record["zone"]]["rect"][0] - 50, 0]
+
+    def climb_around_the_face(data):
+        space(data, 5, "ch06.b03")["fieldcraft"]["climb"]["width_cm"] -= 400
+
+    def ally_joins_no_wave(data):
+        space(data, 4, "ch05.b10")["fieldcraft"]["allies"][2]["joins"] = "wave_start:9"
+
+    def volley_rank_short(data):
+        allies = space(data, 7, "ch08.b03")["fieldcraft"]["allies"]
+        allies.remove(next(ally for ally in allies if ally["rank"] == 1))
+
+    def party_without_escort(data):
+        space(data, 1, "ch02.b02")["fieldcraft"]["party"] = [dict(space(data, 2, "ch03.b07")["fieldcraft"]["party"][0])]
+
     validate(*copy.deepcopy((catalog, campaign, chapters, legacy, roster)))
     mutations = (anchor_in_wall, short_route, missing_volume, zones_collide, lost_collectible, unlabelled_step,
                  yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, cache_without_save,
@@ -925,7 +1042,8 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,
                  lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition,
                  boss_at_the_wrong_beat, duel_against_another, unknown_archetype, guard_without_archetype,
-                 unguarded_work, guard_outside_stealth, unbound_key_token, bracketed_control)
+                 unguarded_work, guard_outside_stealth, unbound_key_token, bracketed_control,
+                 lamp_in_wall, climb_around_the_face, ally_joins_no_wave, party_without_escort, volley_rank_short)
     for mutate in mutations:
         data = copy.deepcopy((catalog, campaign, chapters, legacy, roster))
         mutate(data)

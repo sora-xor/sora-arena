@@ -31,9 +31,16 @@ enum class ESoraRemapResult : uint8
 // SoraInputStates.h), movement (standing or crouch-walking), dojo training,
 // the campaign loadout and local control preferences. In a stealth zone
 // (USoraStealth) Melee behind an unsuspecting guard is a rear takedown and
-// Interact held at a body drags it. Weapons live in USoraEquipmentComponent and the held
-// weapon's model in USoraViewmodelComponent. In deterministic practice the
-// same pawn packs its input for the Rust kernel instead of acting locally.
+// Interact held at a body drags it. The beat's fieldcraft (USoraFieldcraft)
+// takes Ability (a signal to the escorted, a thrown stone), Interact held at
+// its points (a lamp, the downed, a collar, a cell door), Crouch in the water
+// (a dive), Jump at a wall or low cover (a climb or a vault) and Guard with
+// the candle lit (cupping it). In the campaign the six weapon keys take up a
+// group of arms, and the arms wheel (SoraArmsRules.h) steps through, or shows
+// in a ring, every arm he can hold. Weapons live in USoraEquipmentComponent
+// and the held weapon's model in USoraViewmodelComponent. In deterministic
+// practice the same pawn packs its input for the Rust kernel instead of
+// acting locally.
 UCLASS()
 class SORAARENA_API ASoraPlayerCharacter : public ASoraCharacterBase
 {
@@ -93,6 +100,33 @@ public:
     UFUNCTION(BlueprintPure, Category="SORA|Controls") bool GetInvertedLook() const { return bInvertedLook; }
     // Held guard for the dojo and campaign blades, or the kernel's block bit.
     bool IsGuarding() const;
+    // Whether one of Action's keys is held down now (a hold the fieldcraft counts).
+    bool IsActionHeld(FName ActionName) const;
+    // The campaign hero's arms (SoraArmsRules.h). The arms he can take up
+    // now, as a mask of catalog IDs: unlocked, or handed over by the beat in
+    // play, and allowed in the saddle or under a load; every arm in the
+    // training arena. Empty for another class, in the dojo and in practice.
+    unsigned HoldableArms() const;
+    // A group key: the group's arm last held, or its next; false (with a
+    // notice when the group has none) when nothing changed hands.
+    bool SelectArmsGroup(int32 Group);
+    // The next (Step +1) or previous (-1) arm he can hold, in ring order.
+    bool StepArms(int32 Step);
+    // The arms wheel, open while its key is held past a tap: the ring of arms
+    // he can hold, the one under the cursor (an index into Arms), and the
+    // cursor, a unit-radius offset from the wheel's centre.
+    struct FArmsWheel
+    {
+        bool bOpen = false;
+        TArray<int32> Arms;
+        int32 Choice = INDEX_NONE;
+        FVector2D Cursor = FVector2D::ZeroVector;
+    };
+    const FArmsWheel& ArmsWheel() const { return Wheel; }
+    // World time an arm was last taken up by a key, the wheel or a step.
+    float ArmsTakenAt() const { return ArmsTakenTime; }
+    // A vault over low cover is carrying the hero (SoraFieldcraftRules).
+    bool IsVaulting() const { return bVaulting; }
 protected:
     virtual void TickPlay(float DeltaSeconds) override;
     virtual void HaltActions() override;
@@ -122,6 +156,18 @@ private:
     uint32 KernelHeldButtons = 0, KernelQueuedButtons = 0;
     bool bSprint = false;
     bool bScoreboardHeld = false;
+    // The arms wheel's key: when it went down, and the wheel it opened.
+    bool bArmsKeyHeld = false;
+    float ArmsKeyDownAt = 0.f;
+    FArmsWheel Wheel;
+    FVector2D WheelPad = FVector2D::ZeroVector;
+    float ArmsTakenTime = -1000.f;
+    // Each group's arm last taken up, or INDEX_NONE.
+    int32 GroupMemory[6] = {INDEX_NONE, INDEX_NONE, INDEX_NONE, INDEX_NONE, INDEX_NONE, INDEX_NONE};
+    // A vault in progress: from, over and to, and when it began.
+    bool bVaulting = false;
+    float VaultStartedAt = 0.f;
+    FVector VaultFrom = FVector::ZeroVector, VaultOver = FVector::ZeroVector, VaultTo = FVector::ZeroVector;
     uint64 InputFrame = MAX_uint64;
     uint8 InputFrameState = 0;
     bool AcceptsInput(uint8 States);
@@ -145,9 +191,21 @@ private:
     void SprintReleased(); void BlockReleased();
     bool TogglesGuard() const; bool TogglesSprint() const;
     void Subtitles(); void ScoreboardDown(); void ScoreboardUp();
-    void WeaponOne(); void WeaponTwo(); void WeaponThree(); void Equip(int32 Slot);
-    void WeaponFour(); void WeaponFive(); void WeaponSix(); void CampaignWeaponNext();
-    void EquipCampaignWeapon(int32 WeaponId);
+    void WeaponOne(); void WeaponTwo(); void WeaponThree(); void WeaponFour(); void WeaponFive(); void WeaponSix();
+    // A weapon key: its group of Nyaakoto's arms (in the campaign and in the
+    // training arena with his loadout), else its class slot (INDEX_NONE: none).
+    void WeaponKey(int32 Group, int32 Slot);
+    bool TakeUpArm(int32 WeaponId);
+    // Unlocked (or handed over) arms; bNow keeps only those he can hold now.
+    unsigned ArmsMask(bool bNow) const;
+    void ArmsWheelDown(); void ArmsWheelUp(); void ArmsNext(); void ArmsPrevious();
+    void OpenArmsWheel();
+    // Closes the wheel, taking up the arm under its cursor when bTake.
+    void CloseArmsWheel(bool bTake);
+    void TickArmsWheel();
+    // Jump at low cover: a vault over it (true: the press is spent).
+    bool TryVault();
+    void TickVault();
     ESoraRemapResult ApplyControlMapping(int32 Index, const FKey& NewKey, bool bRequireMenu, FName* TakenBy, int32* TakenAxis);
     void LoadControlProfile();
     void RestoreBindings();

@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "SoraCharacterBase.h"
 #include "SoraCombatRules.h"
+#include "SoraFieldcraftRules.h"
 #include "SoraStealthRules.h"
 #include "SoraEnemy.generated.h"
 enum class ESoraEnemyCue : uint8;
@@ -117,7 +118,12 @@ public:
     void SetSummoner(ASoraBoss* Boss);
     ASoraBoss* Summoner() const;
     bool IsShieldOpen() const;
+    // A tower shield on its arm (enemies.json shield).
+    bool HasShield() const;
     int32 BarrierHealth() const { return BarrierMilli / 1000; }
+    // The kusarigama's weighted chain caught it (SoraFieldcraftRules::Snare):
+    // a blade bound, a shield's rim pulled aside, a drone dragged down.
+    void Snared(SoraFieldcraftRules::ESnare Kind, AActor* By);
 
     // 活人剣. A knocked-down conscript's collar can be cut within its window;
     // SoraDamage::Resolve calls Subdue for a blow that would kill it.

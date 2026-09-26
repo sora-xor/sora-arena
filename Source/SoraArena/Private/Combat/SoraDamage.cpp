@@ -84,9 +84,10 @@ float SoraDamage::Resolve(ASoraCharacterBase& Victim,float Damage,const FDamageE
         Hit.Part=Typed.HitInfo.GetComponent();
     }
     else if(Causer) { Hit.Origin=Causer->GetActorLocation(); Hit.bHasOrigin=true; }
-    // Opponents never damage one another; a shell's owner is hit by its own blast.
+    // Opponents never damage one another, nor the hero and his companions one
+    // another (no friendly fire); a shell's owner is hit by its own blast.
     const ASoraCharacterBase* Attacker=AttackerOf(Causer);
-    if(Attacker&&Attacker!=&Victim&&Attacker->IsEnemy()&&Victim.IsEnemy()) return 0;
+    if(Attacker&&Attacker!=&Victim&&Attacker->IsEnemy()==Victim.IsEnemy()) return 0;
     USoraCombatEffects* Effects=USoraCombatEffects::Get(&Victim);
     // Guards, shields, barriers and sparring gates may absorb or reduce the blow.
     const bool bAdmitted=Victim.AdmitDamage(Damage,Hit,Causer);
