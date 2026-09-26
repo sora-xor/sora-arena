@@ -93,6 +93,7 @@ void ASoraHUD::DrawHUD()
     if(P) SoraHUDPanels::DrawHero(Frame,*P);
     SoraHUDPanels::DrawDialogue(Frame);
     SoraHUDPanels::DrawResult(Frame);
+    SoraHUDPanels::DrawPractice(Frame);
 }
 void SoraHUDPanels::DrawTopBar(const FSoraHUDFrame& Frame)
 {

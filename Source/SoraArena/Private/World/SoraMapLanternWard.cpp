@@ -1,4 +1,6 @@
 #include "SoraWorldBuilder.h"
+#include "ArenaKernelSubsystem.h"
+#include "World/SoraPracticeArena.h"
 #include "Components/StaticMeshComponent.h"
 
 // Lantern Ward, map 1: the occupied street's alien debt terminal.
@@ -11,4 +13,43 @@ void ASoraWorldBuilder::LanternWardTerminal()
     auto* Proxy=Box(TEXT("StreetDebtTerminalCollision"),StreetTerminal+FVector(0,0,121),
         FVector(140,74,242),FLinearColor(.10f,.15f,.20f),true);
     if(HasStreetTerminal) Proxy->SetVisibility(false);
+}
+
+// Practice: the occupied merchant street. Machiya with koshi lattices and lit
+// shoji line the street, the perimeter takes the authored estate wall where
+// it fits, lantern towers light the corners and an invader debt terminal
+// stands where the kernel keeps a street stall.
+void SoraPracticeDressing::LanternWardWall(FSoraPracticeArenaKit& Kit,const FSoraPracticeWall& Wall,int32 Index)
+{
+    using K=FSoraPracticeArenaKit;
+    const FLinearColor Ochre(.86f,.74f,.55f);
+    if(K::Labelled(Wall,TEXT("perimeter")))
+    {
+        if(!Kit.FittedRun(TEXT("SM_Nyaagyu_EstateWall_4m"),Wall,400.f,1.4f)) PlasterWall(Kit,Wall,Ochre);
+    }
+    else if(K::Labelled(Wall,TEXT("machiya"))) Townhouse(Kit,Wall,Ochre,true,true);
+    else if(K::Labelled(Wall,TEXT("teahouse"))) Townhouse(Kit,Wall,FLinearColor(.92f,.86f,.72f),false,true);
+    else if(K::Labelled(Wall,TEXT("warehouse"))) Storehouse(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("bathhouse"))) Townhouse(Kit,Wall,FLinearColor(.84f,.8f,.74f),false,true);
+    else if(K::Labelled(Wall,TEXT("merchant house"))) Townhouse(Kit,Wall,FLinearColor(.8f,.66f,.48f),true,true);
+    else if(K::Labelled(Wall,TEXT("lantern"))) LanternPost(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("stall")))
+    {
+        if(!Kit.FittedProp(TEXT("SM_Alien_StreetDebtTerminal"),Wall.Minimum,Wall.Maximum,1.35f)) Goods(Kit,Wall);
+    }
+    else if(K::Labelled(Wall,TEXT("cart"))||K::Labelled(Wall,TEXT("barrels"))) Goods(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("fence"))) Fence(Kit,Wall);
+    else PlasterWall(Kit,Wall,Ochre);
+}
+void SoraPracticeDressing::LanternWardGrounds(FSoraPracticeArenaKit& Kit)
+{
+    // Worn paving along the lanes; the main street is the widest.
+    Lanes(Kit,TEXT("Stone"),FLinearColor(.9f,.86f,.8f),170.f,1.5f,true);
+    for(const FSoraPracticeLane& Lane:Kit.Map.Lanes)
+        if(Lane.Name==TEXT("mid"))
+            for(int32 Index=1;Index<Lane.Points.Num();++Index)
+                Kit.Strip(Lane.Points[Index-1],Lane.Points[Index],420.f,1.2f,TEXT("Stone"),FLinearColor(.95f,.92f,.86f));
+    // Evening light hangs over the street from the eaves.
+    for(float X=Kit.Map.Minimum.X+600.f;X<Kit.Map.Maximum.X-500.f;X+=1100.f)
+        Kit.Lamp(FVector(X,0,420.f),FLinearColor(1.f,.6f,.32f),1800.f,1300.f);
 }

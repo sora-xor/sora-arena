@@ -33,4 +33,6 @@ void DrawBoss(const FSoraHUDFrame& Frame);
 void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawDialogue(const FSoraHUDFrame& Frame);
 void DrawResult(const FSoraHUDFrame& Frame);
+// Deterministic practice, drawn last (SoraHUDPracticePanels.cpp).
+void DrawPractice(const FSoraHUDFrame& Frame);
 }

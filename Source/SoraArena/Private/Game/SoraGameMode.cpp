@@ -154,7 +154,8 @@ void ASoraGameMode::DeterministicPractice()
 void ASoraGameMode::SelectPracticeWeapon(int32 Slot)
 {
     if(!bMenu||!bDeterministicPractice||Slot<0||Slot>2) return;
-    PracticeDirector->WeaponSlot=Slot; PracticeDirector->Reset();
+    // 3 admits the class special; 1 and 2 enter with the standard loadout.
+    PracticeDirector->Config.SpecialWeaponId=Slot==2?SoraPractice::SpecialOf(SelectedClass):INDEX_NONE; PracticeDirector->Reset();
 }
 FString ASoraGameMode::ObjectiveText() const
 {

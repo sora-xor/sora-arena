@@ -174,8 +174,11 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         }
     }
 
-    // Reuse the actor so ClearArena is covered too: no visual campaign tile
-    // may remain in a deterministic practice map, even as collisionless art.
+    // Reuse the actor so ClearArena is covered too. The estate's practice map
+    // lays the same scanned tiles (they rise 1-4 cm) and roadside silt as
+    // flat, collisionless art; the kernel's ground and walls are the only
+    // collision, and campaign cover, cargo and perimeter art stay out.
+    // SoraArena.Practice.ArenaDressing checks the full rules on real arenas.
     FSoraPracticeMap PracticeMap;
     PracticeMap.Minimum = FVector(-3200, -2600, 0);
     PracticeMap.Maximum = FVector(3200, 2600, 500);
@@ -187,11 +190,14 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     int32 PracticeCargoCount = 0;
     int32 PracticeWallVisualCount = 0;
     int32 PracticeRoadsideVisualCount = 0;
+    int32 PracticeCollidingArt = 0;
     bool bKernelGroundPresent = false;
     bool bKernelWallPresent = false;
     for (UStaticMeshComponent* Component : PracticeMeshes)
     {
         if (!Component) continue;
+        const bool bKernelBox = Component->GetName().StartsWith(TEXT("KernelGround")) || Component->GetName().StartsWith(TEXT("KernelWall"));
+        PracticeCollidingArt += !bKernelBox && Component->GetCollisionEnabled() != ECollisionEnabled::NoCollision ? 1 : 0;
         PracticeTerrainCount += Component->GetName().StartsWith(TEXT("SM_NyaagyuTerrain_")) ? 1 : 0;
         PracticeCargoCount += Component->GetName().StartsWith(TEXT("SM_Nyaagyu_CargoStack")) ? 1 : 0;
         PracticeWallVisualCount += Component->GetName().StartsWith(TEXT("SM_Nyaagyu_EstateWall_4m")) ? 1 : 0;
@@ -201,10 +207,11 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         bKernelWallPresent |= Component->GetName().StartsWith(TEXT("KernelWall0")) &&
             Component->GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics;
     }
-    TestEqual(TEXT("Practice mode has no authored terrain components"), PracticeTerrainCount, 0);
+    TestEqual(TEXT("Practice estate lays the sixteen scanned terrain tiles"), PracticeTerrainCount, 16);
     TestEqual(TEXT("Practice mode has no authored cargo components"), PracticeCargoCount, 0);
-    TestEqual(TEXT("Practice mode has no authored perimeter components"), PracticeWallVisualCount, 0);
-    TestEqual(TEXT("Practice mode has no ground-dressing components"), PracticeRoadsideVisualCount, 0);
+    TestEqual(TEXT("Practice mode has no perimeter modules without a kernel perimeter wall"), PracticeWallVisualCount, 0);
+    TestEqual(TEXT("Practice estate lays eight flat roadside silt patches"), PracticeRoadsideVisualCount, 8);
+    TestEqual(TEXT("Practice art never collides"), PracticeCollidingArt, 0);
     TestTrue(TEXT("Practice mode has kernel-defined colliding ground"), bKernelGroundPresent);
     TestTrue(TEXT("Practice mode has kernel-defined colliding wall"), bKernelWallPresent);
 

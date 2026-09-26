@@ -21,6 +21,9 @@ public class SoraArena : ModuleRules
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/OFL.txt", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/ThirdPartyNotices/QRCodeGen.txt", StagedFileType.NonUFS);
+        // Practice reads the kernel's arena data (wall labels, spawns, lanes)
+        // after matching every shared value against the kernel's own queries.
+        RuntimeDependencies.Add("$(ProjectDir)/crates/arena-core/data/arena-map-v1.json", StagedFileType.NonUFS);
         // A packaged game without the IrohaConnect bridge or the Rust combat
         // kernel cannot sign or run deterministic practice, so the build fails.
         // The editor may still build without them and says so.

@@ -76,8 +76,9 @@ void SoraHUDPanels::DrawMenu(const FSoraHUDFrame& Frame)
     }
     if(G->bDeterministicPractice)
     {
-        const int32 Weapon=FSoraCatalog::Get().Class(G->SelectedClass).Weapons[G->Practice()->WeaponSlot];
-        HUD.Label(TEXT("入場時の武器： ")+FSoraCatalog::Get().Weapon(Weapon).Name+TEXT("  /  メニューで 1 主武器・2 近接・3 特殊を選択"),L,680*S,.46*S,Gold);
+        const int32 Special=G->Practice()->Config.SpecialWeaponId;
+        const int32 Weapon=Special!=INDEX_NONE?Special:FSoraCatalog::Get().Class(G->SelectedClass).Weapons[1];
+        HUD.Label(TEXT("入場時の武器： ")+FSoraCatalog::Get().Weapon(Weapon).Name+TEXT("  /  メニューで 1・2 標準装備、3 特殊武器"),L,680*S,.46*S,Gold);
         HUD.Label(TEXT("WASD 移動   マウス 照準   左クリック 射撃   右クリック 近接   R 装填   Ctrl 防御   Q 技   Space 跳躍"),L,725*S,.50*S,Ivory);
         HUD.Label(TEXT("武器は稽古中に変更できません。Esc メニュー / F10 英語字幕。XOR 入金・オンライン対戦はありません。"),L,763*S,.45*S,Ivory);
         if(auto* K=G->Kernel()) if(!K->PracticeError.IsEmpty()) HUD.WrappedLabel(K->PracticeError,L,447*S,.4*S,Gold,W-L*2,20*S,1);
