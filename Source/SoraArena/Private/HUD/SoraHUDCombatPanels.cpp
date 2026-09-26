@@ -123,12 +123,7 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
                 HUD.Panel(W-365*S,H-122*S,320*S,4*S,FLinearColor(.12,.19,.21));
                 HUD.Panel(W-365*S,H-122*S,320*S*Progress,4*S,Gold);
             }
-            if(!State.Alive)
-            {
-                HUD.Panel(W*.25,H*.35,W*.5,120*S,FLinearColor(.013,.027,.033,.88f));
-                HUD.Label(FString::Printf(TEXT("%.1f 秒後に復帰します"),State.RespawnTicks/60.f),W*.3,H*.38,.9*S,Gold);
-                if(G->bEnglishSubtitles) HUD.Label(TEXT("Respawning — no stake is at risk."),W*.3,H*.38+48*S,.45*S,Ivory);
-            }
+            // The respawn countdown and loadout choice: SoraHUDPracticePanels.cpp.
             if(G->Practice()->bSlowed) HUD.Label(TEXT("処理負荷により、稽古時間を減速しています"),30*S,200*S,.4*S,Gold);
         }
     }

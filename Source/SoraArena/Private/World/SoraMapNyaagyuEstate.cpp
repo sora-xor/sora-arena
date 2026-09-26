@@ -1,4 +1,6 @@
 #include "SoraWorldBuilder.h"
+#include "ArenaKernelSubsystem.h"
+#include "World/SoraPracticeArena.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
@@ -6,8 +8,8 @@
 // Nyaagyu Estate, map 0: scanned mesh terrain, authored perimeter wall modules,
 // dojo halls and provision storehouses, CC0 trees and pines, roadside
 // dressing, cargo stacks and the irrigation sluice. All of it is visual; the
-// shared layout's primitive boxes stay the collision, and practice maps never
-// load any of it.
+// shared layout's primitive boxes stay the collision. Practice (at the end of
+// this file) loads none of this campaign art.
 void ASoraWorldBuilder::NyaagyuTerrain()
 {
 #if PLATFORM_MAC
@@ -179,4 +181,30 @@ void ASoraWorldBuilder::EstateSluice(FVector P)
     // in the Nyaagyu Estate campaign. It is decorative; multiplayer
     // practice continues to use only deterministic kernel collision.
     ImportedProp(TEXT("SM_Nyaagyu_IrrigationSluice"),P+FVector(0,-295,0),FRotator::ZeroRotator);
+}
+
+// Practice: the estate as the kernel draws it. The perimeter and the east
+// gatehouse are tsuiji plaster walls, and the halls, storehouses, screens,
+// lanterns, rocks and hedges are dressed in courses that fill each box
+// exactly. The stone paths lie flat.
+void SoraPracticeDressing::EstateWall(FSoraPracticeArenaKit& Kit,const FSoraPracticeWall& Wall,int32 Index)
+{
+    using K=FSoraPracticeArenaKit;
+    if(K::Labelled(Wall,TEXT("perimeter"))||K::Labelled(Wall,TEXT("gatehouse"))) PlasterWall(Kit,Wall,FLinearColor(.95f,.93f,.88f));
+    else if(K::Labelled(Wall,TEXT("dojo hall"))) Townhouse(Kit,Wall,FLinearColor(.95f,.93f,.88f),false,true);
+    else if(K::Labelled(Wall,TEXT("screen"))) Screen(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("toro"))) StoneLantern(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("kura"))) Storehouse(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("rock"))) Rock(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("hedge"))||K::Labelled(Wall,TEXT("planter"))) Hedge(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("well house"))) Townhouse(Kit,Wall,FLinearColor(.9f,.86f,.78f),false,false);
+    else PlasterWall(Kit,Wall,FLinearColor(.93f,.9f,.84f));
+}
+void SoraPracticeDressing::EstateGrounds(FSoraPracticeArenaKit& Kit)
+{
+    // Stone paths along every lane on the kernel's flat floor. The arena
+    // loads no campaign art: the scanned terrain would lift feet 1-4 cm off the
+    // kernel floor, and the campaign's trees and silt are placed for its own
+    // collision.
+    Lanes(Kit,TEXT("TerrainStone"),FLinearColor(.95f,.93f,.9f),170.f,1.5f,false);
 }

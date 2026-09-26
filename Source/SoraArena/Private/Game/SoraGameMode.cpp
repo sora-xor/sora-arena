@@ -193,10 +193,9 @@ bool ASoraGameMode::StartChapter(int32 Chapter)
 }
 FText ASoraGameMode::PracticeLimits() const
 {
-    // StartPracticeFromLobby hands the kernel the class, the arena and the
-    // special weapon; the kernel practice seats six in a free-for-all with
-    // one kind of bot. Empty this once USoraPracticeDirector takes the lot.
-    return NSLOCTEXT("SoraArena.Menu","Lobby.Limits","いまの稽古は六匹の乱戦と一種類のボットだけで行う。形式・人数・難易度の選択はまだ反映されない。");
+    // Every lobby choice reaches the kernel through FSoraPracticeConfig, so
+    // the lobby has nothing to warn about.
+    return FText::GetEmpty();
 }
 bool ASoraGameMode::StartPracticeFromLobby(const FSoraPracticeLobbySelection& Selection)
 {
@@ -209,22 +208,23 @@ bool ASoraGameMode::StartPracticeFromLobby(const FSoraPracticeLobbySelection& Se
         Notice=Refused.Japanese; NoticeEnglish=Refused.English;
         return false;
     }
-    // Until USoraPracticeDirector::StartPractice(FSoraPracticeConfig) lands,
-    // the kernel practice takes the class, the map and whether the special
-    // weapon is admitted (entering with it drawn), and runs its six-player
-    // free-for-all; Mode, PlayerCount and Difficulty reach the kernel then.
-    SelectedClass=Selection.ClassId; MapId=Selection.MapId;
-    PracticeDirector->WeaponSlot=Selection.SpecialWeaponId==INDEX_NONE?1:2;
-    bDeterministicPractice=true; bCampaign=false;
-    if(!PracticeDirector->Reset())
+    // The lobby's six fields are the practice config's, one for one.
+    FSoraPracticeConfig Config;
+    Config.Mode=Selection.Mode; Config.PlayerCount=Selection.PlayerCount; Config.MapId=Selection.MapId;
+    Config.ClassId=Selection.ClassId; Config.SpecialWeaponId=Selection.SpecialWeaponId; Config.Difficulty=Selection.Difficulty;
+    if(!PracticeDirector->StartPractice(Config))
     {
-        // The kernel refused. The saved chapter returns behind the lobby,
-        // which shows the reason.
-        const FString Reason=Notice,ReasonEnglish=NoticeEnglish;
-        bDeterministicPractice=false; bCampaign=true;
-        CampaignDirector->ResumeSavedChapter();
-        ResetRound();
-        Notice=Reason; NoticeEnglish=ReasonEnglish;
+        // A choice the kernel refuses changes nothing. A match that failed
+        // to build has already switched to practice: the saved chapter
+        // returns behind the lobby. Either way the lobby shows the reason.
+        if(bDeterministicPractice&&!(Kernel()&&Kernel()->PracticeActive()))
+        {
+            const FString Reason=Notice,ReasonEnglish=NoticeEnglish;
+            bDeterministicPractice=false; bCampaign=true;
+            CampaignDirector->ResumeSavedChapter();
+            ResetRound();
+            Notice=Reason; NoticeEnglish=ReasonEnglish;
+        }
         return false;
     }
     CampaignDirector->SaveProgress();

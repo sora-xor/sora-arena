@@ -65,13 +65,16 @@ def main():
 
     sys.path.insert(0, str(ROOT / "scripts/unreal"))
     from kernel_abi import (Config, Participant, Input, Snapshot, Player, MapInfo,
-                            MapWall, Presentation, Weapon, Event, Projectile)
+                            MapWall, MapPoint, MapHazard, Presentation, Weapon, Event,
+                            Projectile, Entity, Objective)
     layouts = {
         "ArenaConfig": Config, "ArenaParticipant": Participant, "ArenaInput": Input,
         "ArenaSnapshot": Snapshot, "ArenaPlayerSnapshot": Player,
-        "ArenaMapInfo": MapInfo, "ArenaMapWall": MapWall,
-        "ArenaPlayerPresentation": Presentation, "ArenaWeaponSpec": Weapon,
-        "ArenaEvent": Event, "ArenaProjectileSnapshot": Projectile,
+        "ArenaMapInfo": MapInfo, "ArenaMapWall": MapWall, "ArenaMapPoint": MapPoint,
+        "ArenaMapHazard": MapHazard, "ArenaPlayerPresentation": Presentation,
+        "ArenaWeaponSpec": Weapon, "ArenaEvent": Event,
+        "ArenaProjectileSnapshot": Projectile, "ArenaEntitySnapshot": Entity,
+        "ArenaObjectiveSnapshot": Objective,
     }
     assertions = ["#include \"arena.h\""]
     for name, host_type in layouts.items():

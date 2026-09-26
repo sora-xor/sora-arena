@@ -214,6 +214,7 @@ void ASoraHUD::DrawHUD()
     SoraHUDPanels::DrawDialogue(Frame);
     SoraHUDPanels::DrawCaptions(Frame,P);
     SoraHUDPanels::DrawResult(Frame);
+    SoraHUDPanels::DrawPractice(Frame);
 }
 void SoraHUDPanels::DrawTopBar(const FSoraHUDFrame& Frame)
 {

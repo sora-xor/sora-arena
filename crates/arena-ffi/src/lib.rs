@@ -1,23 +1,51 @@
-//! Native C ABI for Unreal. Foreign callers own pointer validity and serialize
+//! Native C ABI 4 for Unreal. Foreign callers own pointer validity and serialize
 //! per-handle access. No function signs a wallet transaction or qualifies proofs.
+use arena_bots::{Bots, Difficulty};
 use arena_core::{
     ABI_VERSION, catalog,
     maps::Arena,
     math::Vec3,
-    simulation::{self, Config, Event, Input, Mode, Participant, World},
+    simulation::{
+        self, ABILITY_COOLDOWNS, CONTROL_CAPTURE, CONTROL_TARGET, Config, Entity, Event, Input,
+        Mode, OBJECTIVE_UNLOCK_TICK, PAYLOAD_PUSH_RADIUS, PAYLOAD_ROLLBACK_DELAY, Participant,
+        RemovalCause, Winner, World,
+    },
 };
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
 pub struct ArenaHandle {
     world: World,
+    /// Practice bot memories (crates/arena-bots): not kernel state and never
+    /// part of the state hash.
+    bots: Bots,
 }
-/// FIRE, MELEE, BLOCK, JUMP, ABILITY and RELOAD: the ABI 3 button domain.
-const ABI3_BUTTONS: u32 = simulation::FIRE
-    | simulation::MELEE
-    | simulation::BLOCK
-    | simulation::JUMP
-    | simulation::ABILITY
-    | simulation::RELOAD;
+/// `ARENA_NONE`: an absent slot, weapon, class or team.
+pub const NONE: u32 = u32::MAX;
+/// `ARENA_EVENT_*` kinds. 1-5 keep their ABI 3 meaning.
+pub const EVENT_SHOT: u32 = 1;
+pub const EVENT_DAMAGE: u32 = 2;
+pub const EVENT_DEATH: u32 = 3;
+pub const EVENT_RESPAWN: u32 = 4;
+pub const EVENT_TERMINAL: u32 = 5;
+pub const EVENT_GUARDED: u32 = 6;
+pub const EVENT_HEALED: u32 = 7;
+pub const EVENT_ABILITY: u32 = 8;
+pub const EVENT_MARKED: u32 = 9;
+pub const EVENT_RIPOSTE: u32 = 10;
+pub const EVENT_ENTITY_SPAWNED: u32 = 11;
+pub const EVENT_ENTITY_DAMAGED: u32 = 12;
+pub const EVENT_ENTITY_REPAIRED: u32 = 13;
+pub const EVENT_ENTITY_DESTROYED: u32 = 14;
+pub const EVENT_HAZARD_DAMAGE: u32 = 15;
+pub const EVENT_OBJECTIVE_CAPTURED: u32 = 16;
+pub const EVENT_OVERTIME: u32 = 17;
+pub const EVENT_CHECKPOINT: u32 = 18;
+pub const EVENT_MATCH_WINNER: u32 = 19;
+/// `ARENA_BOT_*` practice difficulties.
+pub const BOT_NOVICE: u32 = Difficulty::Novice as u32;
+pub const BOT_STANDARD: u32 = Difficulty::Standard as u32;
+pub const BOT_VETERAN: u32 = Difficulty::Veteran as u32;
+pub const BOT_MASTER: u32 = Difficulty::Master as u32;
 #[repr(C)]
 pub struct ArenaConfig {
     pub abi_version: u32,
@@ -94,10 +122,39 @@ pub struct ArenaMapInfo {
     pub player_radius: i32,
     pub player_height: i32,
     pub eye_height: i32,
+    pub control_x: i32,
+    pub control_y: i32,
+    pub control_radius: i32,
+    pub route_point_count: u32,
+    pub route_length: i32,
+    pub checkpoint_0: i32,
+    pub checkpoint_1: i32,
+    pub checkpoint_2: i32,
+    pub push_radius: i32,
+    pub hazard_count: u32,
 }
 #[repr(C)]
 #[derive(Default)]
 pub struct ArenaMapWall {
+    pub min_x: i32,
+    pub min_y: i32,
+    pub min_z: i32,
+    pub max_x: i32,
+    pub max_y: i32,
+    pub max_z: i32,
+}
+#[repr(C)]
+#[derive(Default)]
+pub struct ArenaMapPoint {
+    pub x: i32,
+    pub y: i32,
+}
+#[repr(C)]
+#[derive(Default)]
+pub struct ArenaMapHazard {
+    pub kind: u32,
+    pub damage: i32,
+    pub period: u32,
     pub min_x: i32,
     pub min_y: i32,
     pub min_z: i32,
@@ -120,6 +177,13 @@ pub struct ArenaPlayerPresentation {
     pub reload_ticks: u32,
     pub charge_ticks_current: u32,
     pub charge_ticks_required: u32,
+    pub guard_ticks: u32,
+    pub ability_cooldown_total: u32,
+    pub stance_ticks: u32,
+    pub marked_ticks: u32,
+    pub pending_class: u32,
+    pub pending_weapon: u32,
+    pub admitted_special: u32,
 }
 #[repr(C)]
 #[derive(Default)]
@@ -138,7 +202,7 @@ pub struct ArenaWeaponSpec {
     pub reload_ticks: u32,
 }
 #[repr(C)]
-#[derive(Default)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct ArenaEvent {
     pub tick: u32,
     pub kind: u32,
@@ -149,6 +213,9 @@ pub struct ArenaEvent {
     pub y: i32,
     pub z: i32,
     pub value: i32,
+    pub entity_id: u32,
+    pub entity_kind: u32,
+    pub detail: u32,
 }
 #[repr(C)]
 #[derive(Default)]
@@ -160,12 +227,102 @@ pub struct ArenaProjectileSnapshot {
     pub y: i32,
     pub z: i32,
 }
+#[repr(C)]
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct ArenaEntitySnapshot {
+    pub id: u32,
+    pub kind: u32,
+    pub owner_slot: u32,
+    pub team: u32,
+    pub x: i32,
+    pub y: i32,
+    pub z: i32,
+    pub yaw: u32,
+    pub health: i32,
+    pub max_health: i32,
+    pub age: u32,
+    pub lifetime: u32,
+    pub half_x: i32,
+    pub half_y: i32,
+    pub height: i32,
+}
+#[repr(C)]
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct ArenaObjectiveSnapshot {
+    pub mode: u32,
+    pub unlock_tick: u32,
+    pub score_0: u32,
+    pub score_1: u32,
+    pub score_target: u32,
+    pub control_owner: u32,
+    pub control_progress: i32,
+    pub control_capture: i32,
+    pub control_team_0: u32,
+    pub control_team_1: u32,
+    pub contested: u32,
+    pub overtime: u32,
+    pub payload_progress: i32,
+    pub payload_length: i32,
+    pub payload_checkpoints: u32,
+    pub payload_idle: u32,
+    pub payload_rollback_delay: u32,
+    pub payload_x: i32,
+    pub payload_y: i32,
+    pub payload_z: i32,
+    pub payload_attackers: u32,
+    pub payload_defenders: u32,
+    pub winner_kind: u32,
+    pub winner_value: u32,
+}
+
+fn arena(map_id: u32) -> Option<&'static Arena> {
+    u8::try_from(map_id).ok().and_then(Arena::get)
+}
+/// `ARENA_WINNER_*` kind and value, the §12 state-hash encoding.
+fn winner_code(winner: Option<Winner>) -> (u32, u32) {
+    match winner {
+        None => (0, 0),
+        Some(Winner::Team(team)) => (1, u32::from(team)),
+        Some(Winner::Slot(slot)) => (2, slot as u32),
+        Some(Winner::Draw) => (3, 0),
+    }
+}
+/// `ARENA_REMOVAL_*` cause and the slot that caused it, if any.
+fn removal_code(cause: RemovalCause) -> (u32, u32) {
+    match cause {
+        RemovalCause::Expired => (0, NONE),
+        RemovalCause::Destroyed { by } => (1, by as u32),
+        RemovalCause::Replaced => (2, NONE),
+        RemovalCause::OwnerDied => (3, NONE),
+        RemovalCause::OwnerExhausted => (4, NONE),
+    }
+}
+fn entity_snapshot(e: &Entity) -> ArenaEntitySnapshot {
+    let bounds = e.bounds();
+    ArenaEntitySnapshot {
+        id: e.id,
+        kind: e.kind as u32,
+        owner_slot: e.owner as u32,
+        team: u32::from(e.team),
+        x: e.position.x,
+        y: e.position.y,
+        z: e.position.z,
+        yaw: u32::from(e.yaw),
+        health: e.health,
+        max_health: e.kind.max_health(),
+        age: u32::from(e.age),
+        lifetime: u32::from(e.kind.lifetime()),
+        half_x: e.half_x,
+        half_y: e.half_y,
+        height: bounds.max.z - bounds.min.z,
+    }
+}
 
 /// # Safety
 /// Output must be aligned, writable storage for one ArenaMapInfo.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn arena_map_info(map_id: u32, out: *mut ArenaMapInfo) -> i32 {
-    let Some(arena) = u8::try_from(map_id).ok().and_then(Arena::get) else {
+    let Some(arena) = arena(map_id) else {
         return 1;
     };
     if out.is_null() {
@@ -182,6 +339,16 @@ pub unsafe extern "C" fn arena_map_info(map_id: u32, out: *mut ArenaMapInfo) -> 
             player_radius: simulation::RADIUS,
             player_height: simulation::HEIGHT,
             eye_height: simulation::EYE_HEIGHT,
+            control_x: arena.control.x,
+            control_y: arena.control.y,
+            control_radius: arena.control.radius,
+            route_point_count: arena.route.len() as u32,
+            route_length: arena.route_length(),
+            checkpoint_0: arena.checkpoints[0],
+            checkpoint_1: arena.checkpoints[1],
+            checkpoint_2: arena.checkpoints[2],
+            push_radius: PAYLOAD_PUSH_RADIUS,
+            hazard_count: arena.hazards.len() as u32,
         })
     };
     0
@@ -190,10 +357,9 @@ pub unsafe extern "C" fn arena_map_info(map_id: u32, out: *mut ArenaMapInfo) -> 
 /// Output must be aligned, writable storage for one ArenaMapWall.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn arena_map_wall(map_id: u32, index: u32, out: *mut ArenaMapWall) -> i32 {
-    let Some(arena) = u8::try_from(map_id).ok().and_then(Arena::get) else {
-        return 1;
-    };
-    let Some(w) = arena.walls.get(index as usize).map(|wall| wall.aabb) else {
+    let Some(w) =
+        arena(map_id).and_then(|arena| arena.walls.get(index as usize).map(|wall| wall.aabb))
+    else {
         return 1;
     };
     if out.is_null() {
@@ -207,6 +373,53 @@ pub unsafe extern "C" fn arena_map_wall(map_id: u32, index: u32, out: *mut Arena
             max_x: w.max.x,
             max_y: w.max.y,
             max_z: w.max.z,
+        })
+    };
+    0
+}
+/// # Safety
+/// Output must be aligned, writable storage for one ArenaMapPoint.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn arena_map_route_point(
+    map_id: u32,
+    index: u32,
+    out: *mut ArenaMapPoint,
+) -> i32 {
+    let Some(&(x, y)) = arena(map_id).and_then(|arena| arena.route.get(index as usize)) else {
+        return 1;
+    };
+    if out.is_null() {
+        return 1;
+    }
+    unsafe { out.write(ArenaMapPoint { x, y }) };
+    0
+}
+/// # Safety
+/// Output must be aligned, writable storage for one ArenaMapHazard.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn arena_map_hazard(
+    map_id: u32,
+    index: u32,
+    out: *mut ArenaMapHazard,
+) -> i32 {
+    let Some(h) = arena(map_id).and_then(|arena| arena.hazards.get(index as usize)) else {
+        return 1;
+    };
+    if out.is_null() {
+        return 1;
+    }
+    let v = h.volume;
+    unsafe {
+        out.write(ArenaMapHazard {
+            kind: h.kind as u32,
+            damage: h.damage,
+            period: u32::from(h.period),
+            min_x: v.min.x,
+            min_y: v.min.y,
+            min_z: v.min.z,
+            max_x: v.max.x,
+            max_y: v.max.y,
+            max_z: v.max.z,
         })
     };
     0
@@ -280,82 +493,194 @@ pub unsafe extern "C" fn arena_player_presentation(
             reload_ticks: p.reload_ticks as u32,
             charge_ticks_current,
             charge_ticks_required: charge_spec.charge_ticks as u32,
+            guard_ticks: u32::from(p.guard_ticks),
+            ability_cooldown_total: u32::from(ABILITY_COOLDOWNS[p.class as usize]),
+            stance_ticks: u32::from(p.stance_ticks),
+            marked_ticks: u32::from(p.marked_ticks),
+            pending_class: p
+                .pending_loadout
+                .map_or(NONE, |(class, _)| u32::from(class)),
+            pending_weapon: p
+                .pending_loadout
+                .map_or(NONE, |(_, weapon)| u32::from(weapon)),
+            admitted_special: p.admitted_special.map_or(NONE, u32::from),
         })
     };
     0
 }
-/// ABI 3 projection of one kernel event. ABI 3 exports exactly the
-/// first-release-6 presentation kinds 1-5; events added by first-release-7
-/// (guard/parry, heal, abilities, entities, hazards, objectives and the
-/// match winner) return `None` and stay internal
-/// until ABI 4 assigns them kinds, so the ABI 3 stream and its indices are
-/// unchanged. Deliberately exhaustive: a new kernel event must choose an
-/// export here.
-fn abi3_event(w: &World, event: &Event) -> Option<ArenaEvent> {
+/// ABI 4 projection of one kernel event, read after the step (docs/combat-rules.md
+/// §4.3). Every kernel event has an exported kind. Deliberately exhaustive: a
+/// new kernel event must choose an export here. `None` means the world lost an
+/// entity an event names, which the kernel never does.
+fn export_event(w: &World, event: &Event) -> Option<ArenaEvent> {
     let mut result = ArenaEvent {
         tick: w.tick.saturating_sub(1),
-        actor_slot: u32::MAX,
-        target_slot: u32::MAX,
-        weapon_id: u32::MAX,
+        actor_slot: NONE,
+        target_slot: NONE,
+        weapon_id: NONE,
         ..ArenaEvent::default()
     };
+    let feet = |slot: usize| w.players[slot].position;
+    let arena = w.arena();
+    let control = Vec3::new(arena.control.x, arena.control.y, 0);
+    // An entity event reads the entity's live record, or the record of this
+    // step's removal: an entity can spawn and leave within one step.
+    let entity = |result: &mut ArenaEvent, kind: u32, id: u32, actor: u32| {
+        let e = w
+            .entity(id)
+            .or_else(|| w.removed_entities.iter().find(|e| e.id == id))?;
+        result.kind = kind;
+        result.actor_slot = actor;
+        result.target_slot = e.owner as u32;
+        result.entity_id = id;
+        result.entity_kind = e.kind as u32;
+        Some(e.position)
+    };
     let position = match event {
-        Event::Shot { slot, weapon } => {
-            result.kind = 1;
-            result.actor_slot = *slot as u32;
-            result.weapon_id = *weapon as u32;
-            w.players[*slot]
-                .position
-                .offset(Vec3::new(0, 0, simulation::EYE_HEIGHT))
+        &Event::Shot { slot, weapon } => {
+            result.kind = EVENT_SHOT;
+            result.actor_slot = slot as u32;
+            result.weapon_id = u32::from(weapon);
+            feet(slot).offset(Vec3::new(0, 0, simulation::EYE_HEIGHT))
         }
-        Event::Damage {
+        &Event::Damage {
             attacker,
             victim,
             amount,
         } => {
-            result.kind = 2;
-            result.actor_slot = *attacker as u32;
-            result.target_slot = *victim as u32;
-            result.value = *amount;
-            w.players[*victim].position
+            result.kind = EVENT_DAMAGE;
+            result.actor_slot = attacker as u32;
+            result.target_slot = victim as u32;
+            result.value = amount;
+            feet(victim)
         }
-        Event::Death { victim, killer, .. } => {
-            result.kind = 3;
-            result.target_slot = *victim as u32;
-            result.actor_slot = killer.map_or(u32::MAX, |slot| slot as u32);
-            w.players[*victim].position
+        &Event::Death { victim, killer, .. } => {
+            result.kind = EVENT_DEATH;
+            result.target_slot = victim as u32;
+            result.actor_slot = killer.map_or(NONE, |slot| slot as u32);
+            result.detail = u32::from(w.exhausted(victim));
+            feet(victim)
         }
-        Event::Respawn { slot } => {
-            result.kind = 4;
-            result.target_slot = *slot as u32;
-            w.players[*slot].position
+        &Event::Respawn { slot } => {
+            result.kind = EVENT_RESPAWN;
+            result.target_slot = slot as u32;
+            result.weapon_id = u32::from(w.players[slot].weapon);
+            result.detail = u32::from(w.players[slot].class);
+            feet(slot)
         }
         Event::Terminal => {
-            result.kind = 5;
+            result.kind = EVENT_TERMINAL;
             Vec3::default()
         }
-        Event::Guarded { .. }
-        | Event::Healed { .. }
-        | Event::AbilityUsed { .. }
-        | Event::Marked { .. }
-        | Event::Riposte { .. }
-        | Event::EntitySpawned { .. }
-        | Event::EntityDamaged { .. }
-        | Event::EntityRepaired { .. }
-        | Event::EntityDestroyed { .. }
-        | Event::EnvironmentalDamage { .. }
-        | Event::ObjectiveCaptured { .. }
-        | Event::OvertimeStarted
-        | Event::CheckpointReached { .. }
-        | Event::MatchWinner { .. } => return None,
+        &Event::Guarded {
+            attacker,
+            victim,
+            weapon,
+            parried,
+            prevented,
+        } => {
+            result.kind = EVENT_GUARDED;
+            result.actor_slot = attacker as u32;
+            result.target_slot = victim as u32;
+            result.weapon_id = u32::from(weapon);
+            result.value = prevented;
+            result.detail = u32::from(parried);
+            feet(victim)
+        }
+        &Event::Healed {
+            healer,
+            target,
+            amount,
+            weapon,
+        } => {
+            result.kind = EVENT_HEALED;
+            result.actor_slot = healer as u32;
+            result.target_slot = target as u32;
+            result.weapon_id = weapon.map_or(NONE, u32::from);
+            result.value = amount;
+            feet(target)
+        }
+        &Event::AbilityUsed { slot, class } => {
+            result.kind = EVENT_ABILITY;
+            result.actor_slot = slot as u32;
+            result.detail = u32::from(class);
+            feet(slot)
+        }
+        &Event::Marked { marker, target } => {
+            result.kind = EVENT_MARKED;
+            result.actor_slot = marker as u32;
+            result.target_slot = target as u32;
+            feet(target)
+        }
+        &Event::Riposte { slot, target } => {
+            result.kind = EVENT_RIPOSTE;
+            result.actor_slot = slot as u32;
+            result.target_slot = target as u32;
+            feet(target)
+        }
+        &Event::EntitySpawned { id, owner, .. } => {
+            entity(&mut result, EVENT_ENTITY_SPAWNED, id, owner as u32)?
+        }
+        &Event::EntityDamaged {
+            id,
+            attacker,
+            amount,
+        } => {
+            result.value = amount;
+            entity(&mut result, EVENT_ENTITY_DAMAGED, id, attacker as u32)?
+        }
+        &Event::EntityRepaired {
+            id,
+            repairer,
+            amount,
+        } => {
+            result.value = amount;
+            entity(&mut result, EVENT_ENTITY_REPAIRED, id, repairer as u32)?
+        }
+        &Event::EntityDestroyed { id, cause, .. } => {
+            let (detail, actor) = removal_code(cause);
+            result.detail = detail;
+            entity(&mut result, EVENT_ENTITY_DESTROYED, id, actor)?
+        }
+        &Event::EnvironmentalDamage {
+            victim,
+            hazard,
+            amount,
+        } => {
+            result.kind = EVENT_HAZARD_DAMAGE;
+            result.target_slot = victim as u32;
+            result.value = amount;
+            result.detail = u32::from(hazard);
+            feet(victim)
+        }
+        &Event::ObjectiveCaptured { team } => {
+            result.kind = EVENT_OBJECTIVE_CAPTURED;
+            result.detail = u32::from(team);
+            control
+        }
+        Event::OvertimeStarted => {
+            result.kind = EVENT_OVERTIME;
+            control
+        }
+        &Event::CheckpointReached { index } => {
+            let distance = *arena.checkpoints.get(usize::from(index))?;
+            result.kind = EVENT_CHECKPOINT;
+            result.value = distance;
+            result.detail = u32::from(index);
+            arena.route_point(distance)
+        }
+        &Event::MatchWinner { winner } => {
+            let (kind, value) = winner_code(Some(winner));
+            result.kind = EVENT_MATCH_WINNER;
+            result.detail = kind;
+            result.value = value as i32;
+            Vec3::default()
+        }
     };
     result.x = position.x;
     result.y = position.y;
     result.z = position.z;
     Some(result)
-}
-fn abi3_events(w: &World) -> impl Iterator<Item = ArenaEvent> + '_ {
-    w.events.iter().filter_map(|event| abi3_event(w, event))
 }
 /// # Safety
 /// Live handle and aligned writable output; no concurrent handle mutation.
@@ -369,8 +694,11 @@ pub unsafe extern "C" fn arena_event(
         return 1;
     }
     let w = &(unsafe { &*handle }).world;
-    let Some(result) = abi3_events(w).nth(index as usize) else {
+    let Some(event) = w.events.get(index as usize) else {
         return 1;
+    };
+    let Some(result) = export_event(w, event) else {
+        return 2;
     };
     unsafe { out.write(result) };
     0
@@ -409,6 +737,91 @@ pub unsafe extern "C" fn arena_projectile(
             z: p.position.z,
         })
     };
+    0
+}
+/// # Safety
+/// Live handle and aligned writable count storage; no concurrent mutation.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn arena_entity_count(handle: *const ArenaHandle, out: *mut u32) -> i32 {
+    if handle.is_null() || out.is_null() {
+        return 1;
+    }
+    unsafe { out.write((&*handle).world.entities.len() as u32) };
+    0
+}
+/// # Safety
+/// Live handle and aligned writable output; no concurrent mutation.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn arena_entity(
+    handle: *const ArenaHandle,
+    index: u32,
+    out: *mut ArenaEntitySnapshot,
+) -> i32 {
+    if handle.is_null() || out.is_null() {
+        return 1;
+    }
+    let Some(e) = (unsafe { &*handle }).world.entities.get(index as usize) else {
+        return 1;
+    };
+    unsafe { out.write(entity_snapshot(e)) };
+    0
+}
+/// # Safety
+/// Live handle and aligned writable output; no concurrent mutation.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn arena_objective(
+    handle: *const ArenaHandle,
+    out: *mut ArenaObjectiveSnapshot,
+) -> i32 {
+    if handle.is_null() || out.is_null() {
+        return 1;
+    }
+    let w = &unsafe { &*handle }.world;
+    let arena = w.arena();
+    let (winner_kind, winner_value) = winner_code(w.winner);
+    let mut o = ArenaObjectiveSnapshot {
+        mode: w.config.mode as u32,
+        unlock_tick: OBJECTIVE_UNLOCK_TICK,
+        control_owner: NONE,
+        winner_kind,
+        winner_value,
+        ..ArenaObjectiveSnapshot::default()
+    };
+    // Head counts use the kernel's own objective rule (§8): living players
+    // within the horizontal radius, by team.
+    match w.config.mode {
+        Mode::Control => {
+            let c = arena.control;
+            let [team_0, team_1] = w.count_near(Vec3::new(c.x, c.y, 0), c.radius);
+            o.score_0 = w.score[0];
+            o.score_1 = w.score[1];
+            o.score_target = CONTROL_TARGET;
+            o.control_owner = w.control_owner.map_or(NONE, u32::from);
+            o.control_progress = w.control_progress;
+            o.control_capture = CONTROL_CAPTURE;
+            o.control_team_0 = team_0 as u32;
+            o.control_team_1 = team_1 as u32;
+            o.contested = u32::from(team_0 > 0 && team_1 > 0);
+            o.overtime = u32::from(w.overtime);
+        }
+        Mode::Payload => {
+            let at = arena.route_point(w.payload_progress);
+            let [attackers, defenders] = w.count_near(at, PAYLOAD_PUSH_RADIUS);
+            o.payload_progress = w.payload_progress;
+            o.payload_length = arena.route_length();
+            o.payload_checkpoints = u32::from(w.payload_checkpoints);
+            o.payload_idle = u32::from(w.payload_idle);
+            o.payload_rollback_delay = u32::from(PAYLOAD_ROLLBACK_DELAY);
+            o.payload_x = at.x;
+            o.payload_y = at.y;
+            o.payload_z = at.z;
+            o.payload_attackers = attackers as u32;
+            o.payload_defenders = defenders as u32;
+            o.contested = u32::from(attackers > 0 && defenders > 0);
+        }
+        Mode::FreeForAll | Mode::Melee => {}
+    }
+    unsafe { out.write(o) };
     0
 }
 
@@ -469,6 +882,8 @@ pub unsafe extern "C" fn arena_create(
                 special_entitled: p.special_entitled == 1,
             });
         }
+        // The kernel enforces the remaining admission rules (§2.1): player
+        // limits per mode and team, class weapons, Melee weapons and bonds.
         match World::new(
             Config {
                 mode,
@@ -479,7 +894,10 @@ pub unsafe extern "C" fn arena_create(
             },
             &roster,
         ) {
-            Ok(world) => Box::into_raw(Box::new(ArenaHandle { world })),
+            Ok(world) => {
+                let bots = Bots::new(&world);
+                Box::into_raw(Box::new(ArenaHandle { world, bots }))
+            }
             Err(_) => std::ptr::null_mut(),
         }
     }))
@@ -523,16 +941,55 @@ pub unsafe extern "C" fn arena_step(
                 pitch: i.pitch,
             });
         }
-        // ABI 3 keeps the first-release-6 input domain: bits above RELOAD,
-        // including the rules-7 LOADOUT request, are invalid input (status 2)
-        // and change nothing, exactly as before. ABI 4 will admit LOADOUT.
-        if controls.iter().any(|c| c.buttons & !ABI3_BUTTONS != 0) {
-            return 2;
-        }
+        // The kernel validates the canonical input domain (§2.2), including
+        // the LOADOUT request's class and index, before changing anything.
         match h.world.step(&controls) {
             Ok(()) => 0,
             Err(_) => 2,
         }
+    }))
+    .unwrap_or(3)
+}
+/// A practice bot's input for `slot` on the next step (crates/arena-bots). The
+/// bot plans from the current state once per tick; repeated calls before the
+/// next step return the same input. Zero-stake handles only: bots never play
+/// for bonded value.
+///
+/// # Safety
+/// Valid exclusively-owned handle and aligned writable output storage.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn arena_bot_input(
+    handle: *mut ArenaHandle,
+    slot: u32,
+    difficulty: u32,
+    out: *mut ArenaInput,
+) -> i32 {
+    if handle.is_null() || out.is_null() {
+        return 1;
+    }
+    catch_unwind(AssertUnwindSafe(|| {
+        let h = unsafe { &mut *handle };
+        let Some(difficulty) = Difficulty::from_code(difficulty) else {
+            return 1;
+        };
+        if slot as usize >= h.world.players.len() || !h.world.config.offline {
+            return 1;
+        }
+        if h.world.terminal {
+            return 2;
+        }
+        let input = h.bots.input(&h.world, slot as usize, difficulty);
+        unsafe {
+            out.write(ArenaInput {
+                slot,
+                buttons: input.buttons,
+                move_x: input.move_x,
+                move_y: input.move_y,
+                yaw: input.yaw,
+                pitch: input.pitch,
+            })
+        };
+        0
     }))
     .unwrap_or(3)
 }
@@ -553,7 +1010,7 @@ pub unsafe extern "C" fn arena_snapshot(
         player_count: w.players.len() as u32,
         terminal: w.terminal as u32,
         proof_qualified: arena_proof_qualified(),
-        event_count: abi3_events(w).count() as u32,
+        event_count: w.events.len() as u32,
         deposited: w.accounts.iter().map(|a| a.initial).sum(),
         remaining: w.accounts.iter().map(|a| a.remaining).sum(),
         earnings: w.accounts.iter().map(|a| a.earnings).sum(),
@@ -616,662 +1073,4 @@ pub unsafe extern "C" fn arena_state_hash(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn abi_layout_matches_header() {
-        assert_eq!(std::mem::size_of::<ArenaConfig>(), 32);
-        assert_eq!(std::mem::size_of::<ArenaParticipant>(), 32);
-        assert_eq!(std::mem::size_of::<ArenaInput>(), 16);
-        assert_eq!(std::mem::size_of::<ArenaPlayerSnapshot>(), 80);
-        assert_eq!(std::mem::size_of::<ArenaSnapshot>(), 48);
-        assert_eq!(std::mem::size_of::<ArenaMapInfo>(), 36);
-        assert_eq!(std::mem::size_of::<ArenaMapWall>(), 24);
-        assert_eq!(std::mem::size_of::<ArenaPlayerPresentation>(), 44);
-        assert_eq!(
-            std::mem::offset_of!(ArenaPlayerPresentation, charge_ticks_current),
-            36
-        );
-        assert_eq!(
-            std::mem::offset_of!(ArenaPlayerPresentation, charge_ticks_required),
-            40
-        );
-        assert_eq!(std::mem::size_of::<ArenaWeaponSpec>(), 48);
-        assert_eq!(std::mem::size_of::<ArenaEvent>(), 36);
-        assert_eq!(std::mem::size_of::<ArenaProjectileSnapshot>(), 24);
-    }
-    #[test]
-    fn presentation_queries_use_reference_geometry_and_tick_events() {
-        unsafe {
-            let mut map = ArenaMapInfo::default();
-            assert_eq!(arena_map_info(0, &mut map), 0);
-            assert_eq!(
-                (map.player_radius, map.player_height, map.eye_height),
-                (350, 1700, 1400)
-            );
-            assert_eq!(
-                (map.min_x, map.min_y, map.max_x, map.max_y),
-                (-22_000, -16_000, 22_000, 16_000)
-            );
-            let mut wall = ArenaMapWall::default();
-            assert_eq!(arena_map_wall(0, 0, &mut wall), 0);
-            assert_eq!(
-                (wall.min_x, wall.min_y, wall.max_x, wall.max_y),
-                (-23_000, -17_000, 23_000, -16_000)
-            );
-            assert_eq!(arena_map_wall(0, map.wall_count, &mut wall), 1);
-            assert_eq!(arena_map_info(4, &mut map), 1);
-            let mut weapon = ArenaWeaponSpec::default();
-            assert_eq!(arena_weapon_spec(7, &mut weapon), 0);
-            assert_eq!(
-                (weapon.kind, weapon.damage, weapon.projectile_mm_tick),
-                (2, 65, 350)
-            );
-            assert_eq!(arena_weapon_spec(18, &mut weapon), 1);
-            let config = ArenaConfig {
-                abi_version: ABI_VERSION,
-                mode: 0,
-                map_id: 0,
-                max_ticks: 600,
-                base_bond: 0,
-                player_count: 1,
-                offline: 1,
-            };
-            let participant = ArenaParticipant {
-                slot: 0,
-                team: 0,
-                class_id: 3,
-                weapon_id: 7,
-                bond: 0,
-                special_entitled: 0,
-                reserved: 0,
-            };
-            let handle = arena_create(&config, &participant, 1);
-            assert!(!handle.is_null());
-            let mut input = ArenaInput {
-                slot: 0,
-                buttons: simulation::FIRE,
-                move_x: 0,
-                move_y: 0,
-                yaw: 0,
-                pitch: 0,
-            };
-            assert_eq!(arena_step(handle, &input, 1), 0);
-            let mut event = ArenaEvent::default();
-            assert_eq!(arena_event(handle, 0, &mut event), 0);
-            assert_eq!((event.kind, event.tick, event.weapon_id), (1, 0, 7));
-            assert_eq!(event.z, 1400);
-            let mut count = 0;
-            assert_eq!(arena_projectile_count(handle, &mut count), 0);
-            assert_eq!(count, 1);
-            let mut projectile = ArenaProjectileSnapshot::default();
-            assert_eq!(arena_projectile(handle, 0, &mut projectile), 0);
-            let id = projectile.id;
-            let x = projectile.x;
-            input.buttons = 0;
-            assert_eq!(arena_step(handle, &input, 1), 0);
-            assert_eq!(arena_event(handle, 0, &mut event), 1);
-            assert_eq!(arena_projectile(handle, 0, &mut projectile), 0);
-            assert_eq!(projectile.id, id);
-            assert_eq!(projectile.x, x + 350);
-            let mut presentation = ArenaPlayerPresentation::default();
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(presentation.cooldown_ticks, 47);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (0, 0)
-            );
-            assert_eq!(
-                (
-                    presentation.ammo,
-                    presentation.magazine,
-                    presentation.reload_ticks
-                ),
-                (4, 5, 0)
-            );
-            input.buttons = simulation::RELOAD;
-            assert_eq!(arena_step(handle, &input, 1), 0);
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!((presentation.ammo, presentation.reload_ticks), (4, 144));
-            assert_eq!(arena_player_presentation(handle, 1, &mut presentation), 1);
-            arena_destroy(handle);
-        }
-    }
-    #[test]
-    fn presentation_exposes_only_weapon_bound_windup_progress() {
-        unsafe {
-            let config = ArenaConfig {
-                abi_version: ABI_VERSION,
-                mode: 0,
-                map_id: 0,
-                max_ticks: 120,
-                base_bond: 0,
-                player_count: 1,
-                offline: 1,
-            };
-            let mut participant = ArenaParticipant {
-                slot: 0,
-                team: 0,
-                class_id: 3,
-                weapon_id: 6,
-                bond: 0,
-                special_entitled: 0,
-                reserved: 0,
-            };
-            let handle = arena_create(&config, &participant, 1);
-            assert!(!handle.is_null());
-            let mut input = ArenaInput {
-                slot: 0,
-                buttons: simulation::FIRE,
-                move_x: 0,
-                move_y: 0,
-                yaw: 0,
-                pitch: 0,
-            };
-            let mut presentation = ArenaPlayerPresentation::default();
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (0, 18)
-            );
-            for _ in 0..9 {
-                assert_eq!(arena_step(handle, &input, 1), 0);
-            }
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (9, 18)
-            );
-            input.buttons = 0;
-            assert_eq!(arena_step(handle, &input, 1), 0);
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (0, 18)
-            );
-            arena_destroy(handle);
-
-            participant.weapon_id = 7;
-            let handle = arena_create(&config, &participant, 1);
-            assert!(!handle.is_null());
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (0, 0)
-            );
-            input.buttons = simulation::MELEE;
-            assert_eq!(arena_step(handle, &input, 1), 0);
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (1, 18)
-            );
-            input.buttons = 0;
-            assert_eq!(arena_step(handle, &input, 1), 0);
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (0, 0)
-            );
-            arena_destroy(handle);
-
-            participant.weapon_id = 15;
-            participant.special_entitled = 1;
-            let handle = arena_create(&config, &participant, 1);
-            assert!(!handle.is_null());
-            input.buttons = simulation::MELEE;
-            for _ in 0..18 {
-                assert_eq!(arena_step(handle, &input, 1), 0);
-            }
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (18, 18)
-            );
-            input.buttons = simulation::FIRE;
-            assert_eq!(arena_step(handle, &input, 1), 0);
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(
-                (
-                    presentation.charge_ticks_current,
-                    presentation.charge_ticks_required
-                ),
-                (1, 15)
-            );
-            let mut snapshot = ArenaSnapshot::default();
-            assert_eq!(arena_snapshot(handle, &mut snapshot), 0);
-            assert_eq!(snapshot.event_count, 0);
-            arena_destroy(handle);
-        }
-    }
-    #[test]
-    fn abi3_skips_internal_guard_and_heal_events_without_shifting_indices() {
-        fn inputs(buttons: [u32; 2]) -> [ArenaInput; 2] {
-            std::array::from_fn(|slot| ArenaInput {
-                slot: slot as u32,
-                buttons: buttons[slot],
-                move_x: 0,
-                move_y: 0,
-                yaw: 0,
-                pitch: 0,
-            })
-        }
-        unsafe {
-            let config = ArenaConfig {
-                abi_version: ABI_VERSION,
-                mode: 0,
-                map_id: 0,
-                max_ticks: 600,
-                base_bond: 0,
-                player_count: 2,
-                offline: 1,
-            };
-            let people = [0, 1].map(|slot| ArenaParticipant {
-                slot,
-                team: slot,
-                class_id: 0,
-                weapon_id: 1,
-                bond: 0,
-                special_entitled: 0,
-                reserved: 0,
-            });
-            let handle = arena_create(&config, people.as_ptr(), 2);
-            assert!(!handle.is_null());
-            let world = &mut (*handle).world;
-            world.players[0].position = Vec3::new(0, 0, 0);
-            world.players[1].position = Vec3::new(5000, 0, 0);
-            let mut frame = inputs([0, simulation::BLOCK]);
-            frame[1].yaw = 32768;
-            // Nine held guard ticks close the parry window; the tenth halves.
-            for _ in 0..9 {
-                assert_eq!(arena_step(handle, frame.as_ptr(), 2), 0);
-            }
-            frame[0].buttons = simulation::FIRE;
-            assert_eq!(arena_step(handle, frame.as_ptr(), 2), 0);
-            let world = &(*handle).world;
-            assert!(matches!(
-                world.events.as_slice(),
-                [
-                    Event::Shot { slot: 0, .. },
-                    Event::Guarded {
-                        parried: false,
-                        prevented: 11,
-                        ..
-                    },
-                    Event::Damage { amount: 11, .. }
-                ]
-            ));
-            let mut snapshot = ArenaSnapshot::default();
-            assert_eq!(arena_snapshot(handle, &mut snapshot), 0);
-            assert_eq!(snapshot.event_count, 2);
-            let mut event = ArenaEvent::default();
-            assert_eq!(arena_event(handle, 0, &mut event), 0);
-            assert_eq!((event.kind, event.actor_slot, event.weapon_id), (1, 0, 1));
-            assert_eq!(arena_event(handle, 1, &mut event), 0);
-            assert_eq!(
-                (event.kind, event.actor_slot, event.target_slot, event.value),
-                (2, 0, 1, 11)
-            );
-            assert_eq!(arena_event(handle, 2, &mut event), 1);
-            arena_destroy(handle);
-
-            let config = ArenaConfig { mode: 1, ..config };
-            let mut people = people;
-            people[0].class_id = 5;
-            people[0].weapon_id = 17;
-            people[1].team = 0;
-            let handle = arena_create(&config, people.as_ptr(), 2);
-            assert!(!handle.is_null());
-            let world = &mut (*handle).world;
-            world.players[0].position = Vec3::new(0, 0, 0);
-            world.players[1].position = Vec3::new(3000, 0, 0);
-            world.players[1].health = 80;
-            let frame = inputs([simulation::FIRE, 0]);
-            assert_eq!(arena_step(handle, frame.as_ptr(), 2), 0);
-            let world = &(*handle).world;
-            assert!(matches!(
-                world.events.as_slice(),
-                [
-                    Event::Shot {
-                        slot: 0,
-                        weapon: 17
-                    },
-                    Event::Healed {
-                        healer: 0,
-                        target: 1,
-                        amount: 15,
-                        weapon: Some(17)
-                    }
-                ]
-            ));
-            assert_eq!(arena_snapshot(handle, &mut snapshot), 0);
-            assert_eq!(snapshot.event_count, 1);
-            assert_eq!(arena_event(handle, 0, &mut event), 0);
-            assert_eq!((event.kind, event.weapon_id), (1, 17));
-            assert_eq!(arena_event(handle, 1, &mut event), 1);
-            arena_destroy(handle);
-        }
-    }
-    #[test]
-    fn abi3_skips_ability_and_entity_events_without_shifting_indices() {
-        unsafe {
-            let config = ArenaConfig {
-                abi_version: ABI_VERSION,
-                mode: 0,
-                map_id: 0,
-                max_ticks: 600,
-                base_bond: 0,
-                player_count: 2,
-                offline: 1,
-            };
-            let people =
-                [(0, 4, 9), (1, 0, 1)].map(|(slot, class_id, weapon_id)| ArenaParticipant {
-                    slot,
-                    team: 0,
-                    class_id,
-                    weapon_id,
-                    bond: 0,
-                    special_entitled: 0,
-                    reserved: 0,
-                });
-            let handle = arena_create(&config, people.as_ptr(), 2);
-            assert!(!handle.is_null());
-            let world = &mut (*handle).world;
-            world.players[0].position = Vec3::new(0, 0, 0);
-            world.players[1].position = Vec3::new(4000, 0, 0);
-            let frame = [
-                ArenaInput {
-                    slot: 0,
-                    buttons: simulation::ABILITY,
-                    move_x: 0,
-                    move_y: 0,
-                    yaw: 0,
-                    pitch: 0,
-                },
-                ArenaInput {
-                    slot: 1,
-                    buttons: simulation::FIRE,
-                    move_x: 0,
-                    move_y: 0,
-                    yaw: 32768,
-                    pitch: 0,
-                },
-            ];
-            assert_eq!(arena_step(handle, frame.as_ptr(), 2), 0);
-            // The barricade goes up in the ability phase and absorbs the shot.
-            let world = &(*handle).world;
-            assert!(matches!(
-                world.events.as_slice(),
-                [
-                    Event::AbilityUsed { slot: 0, class: 4 },
-                    Event::EntitySpawned { id: 1, .. },
-                    Event::Shot { slot: 1, weapon: 1 },
-                    Event::EntityDamaged {
-                        id: 1,
-                        attacker: 1,
-                        amount: 22
-                    },
-                ]
-            ));
-            let mut snapshot = ArenaSnapshot::default();
-            assert_eq!(arena_snapshot(handle, &mut snapshot), 0);
-            assert_eq!(snapshot.event_count, 1);
-            let mut event = ArenaEvent::default();
-            assert_eq!(arena_event(handle, 0, &mut event), 0);
-            assert_eq!((event.kind, event.actor_slot, event.weapon_id), (1, 1, 1));
-            assert_eq!(arena_event(handle, 1, &mut event), 1);
-            let mut presentation = ArenaPlayerPresentation::default();
-            assert_eq!(arena_player_presentation(handle, 0, &mut presentation), 0);
-            assert_eq!(presentation.ability_cooldown_ticks, 720);
-            arena_destroy(handle);
-        }
-    }
-    #[test]
-    fn abi3_map_queries_serve_every_arena_table_exactly() {
-        unsafe {
-            for (map_id, arena) in arena_core::maps::ARENAS.iter().enumerate() {
-                let map_id = map_id as u32;
-                let mut info = ArenaMapInfo::default();
-                assert_eq!(arena_map_info(map_id, &mut info), 0);
-                let b = arena.bounds;
-                assert_eq!(
-                    (info.min_x, info.min_y, info.max_x, info.max_y, info.floor_z),
-                    (b.min_x, b.min_y, b.max_x, b.max_y, 0)
-                );
-                assert_eq!(info.wall_count as usize, arena.walls.len());
-                assert!(info.wall_count <= 64);
-                for (index, expected) in arena.walls.iter().enumerate() {
-                    let mut wall = ArenaMapWall::default();
-                    assert_eq!(arena_map_wall(map_id, index as u32, &mut wall), 0);
-                    let a = expected.aabb;
-                    assert_eq!(
-                        [
-                            wall.min_x, wall.min_y, wall.min_z, wall.max_x, wall.max_y, wall.max_z
-                        ],
-                        [a.min.x, a.min.y, a.min.z, a.max.x, a.max.y, a.max.z]
-                    );
-                }
-                let mut wall = ArenaMapWall::default();
-                assert_eq!(arena_map_wall(map_id, info.wall_count, &mut wall), 1);
-                assert_eq!(arena_map_wall(map_id, 0, std::ptr::null_mut()), 1);
-                assert_eq!(arena_map_info(map_id, std::ptr::null_mut()), 1);
-            }
-            let mut info = ArenaMapInfo::default();
-            for map_id in [4, 256, u32::MAX] {
-                assert_eq!(arena_map_info(map_id, &mut info), 1);
-                assert_eq!(arena_map_wall(map_id, 0, &mut ArenaMapWall::default()), 1);
-            }
-        }
-    }
-    #[test]
-    fn abi3_rejects_the_rules_7_loadout_bit_like_any_unknown_button() {
-        unsafe {
-            let config = ArenaConfig {
-                abi_version: ABI_VERSION,
-                mode: 0,
-                map_id: 1,
-                max_ticks: 600,
-                base_bond: 0,
-                player_count: 1,
-                offline: 1,
-            };
-            let participant = ArenaParticipant {
-                slot: 0,
-                team: 0,
-                class_id: 0,
-                weapon_id: 1,
-                bond: 0,
-                special_entitled: 0,
-                reserved: 0,
-            };
-            let handle = arena_create(&config, &participant, 1);
-            assert!(!handle.is_null());
-            let world = &mut (*handle).world;
-            world.players[0].alive = false;
-            world.players[0].respawn_ticks = 5;
-            let mut before = [0u8; 32];
-            assert_eq!(arena_state_hash(handle, before.as_mut_ptr(), 32), 0);
-            for buttons in [
-                simulation::LOADOUT,
-                simulation::LOADOUT | simulation::FIRE,
-                128,
-            ] {
-                let input = ArenaInput {
-                    slot: 0,
-                    buttons,
-                    move_x: 1,
-                    move_y: 0,
-                    yaw: 0,
-                    pitch: 0,
-                };
-                assert_eq!(arena_step(handle, &input, 1), 2);
-                let mut after = [0u8; 32];
-                assert_eq!(arena_state_hash(handle, after.as_mut_ptr(), 32), 0);
-                assert_eq!(before, after);
-            }
-            let world = &(*handle).world;
-            assert_eq!((world.tick, world.players[0].pending_loadout), (0, None));
-            // The kernel itself accepts the request (ABI 4 will expose it).
-            let mut kernel = world.clone();
-            kernel
-                .step(&[Input {
-                    buttons: simulation::LOADOUT,
-                    move_x: 1,
-                    ..Input::default()
-                }])
-                .unwrap();
-            assert_eq!(kernel.players[0].pending_loadout, Some((1, 3)));
-            arena_destroy(handle);
-        }
-    }
-    #[test]
-    fn abi3_skips_hazard_objective_and_winner_events() {
-        let idle = |count: usize| {
-            (0..count)
-                .map(|slot| ArenaInput {
-                    slot: slot as u32,
-                    buttons: 0,
-                    move_x: 0,
-                    move_y: 0,
-                    yaw: 0,
-                    pitch: 0,
-                })
-                .collect::<Vec<_>>()
-        };
-        unsafe {
-            let config = ArenaConfig {
-                abi_version: ABI_VERSION,
-                mode: 1,
-                map_id: 0,
-                max_ticks: 602,
-                base_bond: 0,
-                player_count: 2,
-                offline: 1,
-            };
-            let people = [0, 1].map(|slot| ArenaParticipant {
-                slot,
-                team: slot,
-                class_id: 0,
-                weapon_id: 1,
-                bond: 0,
-                special_entitled: 0,
-                reserved: 0,
-            });
-            let handle = arena_create(&config, people.as_ptr(), 2);
-            assert!(!handle.is_null());
-            let world = &mut (*handle).world;
-            // Tick 600 unlocks the point and is a multiple of every fire
-            // hazard period: slot 0 captures, slot 1 burns in the embers.
-            world.tick = 600;
-            world.control_progress = -479;
-            world.players[0].position = Vec3::new(0, 0, 0);
-            world.players[1].position = Vec3::new(4000, 14_500, 0);
-            let frame = idle(2);
-            assert_eq!(arena_step(handle, frame.as_ptr(), 2), 0);
-            let world = &(*handle).world;
-            assert_eq!(
-                world.events,
-                vec![
-                    Event::EnvironmentalDamage {
-                        victim: 1,
-                        hazard: 0,
-                        amount: 10
-                    },
-                    Event::ObjectiveCaptured { team: 0 },
-                ]
-            );
-            let mut snapshot = ArenaSnapshot::default();
-            assert_eq!(arena_snapshot(handle, &mut snapshot), 0);
-            assert_eq!(snapshot.event_count, 0);
-            let mut event = ArenaEvent::default();
-            assert_eq!(arena_event(handle, 0, &mut event), 1);
-            // The last tick fixes the winner; ABI 3 still sees only Terminal.
-            assert_eq!(arena_step(handle, frame.as_ptr(), 2), 0);
-            let world = &(*handle).world;
-            assert_eq!(
-                world.events,
-                vec![
-                    Event::MatchWinner {
-                        winner: simulation::Winner::Team(0)
-                    },
-                    Event::Terminal
-                ]
-            );
-            assert_eq!(arena_snapshot(handle, &mut snapshot), 0);
-            assert_eq!((snapshot.event_count, snapshot.terminal), (1, 1));
-            assert_eq!(arena_event(handle, 0, &mut event), 0);
-            assert_eq!((event.kind, event.tick), (5, 601));
-            arena_destroy(handle);
-        }
-    }
-    #[test]
-    fn handle_lifecycle_and_null_rejection() {
-        unsafe {
-            assert_eq!(arena_step(std::ptr::null_mut(), std::ptr::null(), 0), 1);
-            let c = ArenaConfig {
-                abi_version: ABI_VERSION,
-                mode: 0,
-                map_id: 0,
-                max_ticks: 60,
-                base_bond: 0,
-                player_count: 1,
-                offline: 1,
-            };
-            let p = ArenaParticipant {
-                slot: 0,
-                team: 0,
-                class_id: 0,
-                weapon_id: 1,
-                bond: 0,
-                special_entitled: 0,
-                reserved: 0,
-            };
-            let h = arena_create(&c, &p, 1);
-            assert!(!h.is_null());
-            let old_layout = ArenaConfig {
-                abi_version: 2,
-                ..c
-            };
-            assert!(arena_create(&old_layout, &p, 1).is_null());
-            let i = ArenaInput {
-                slot: 0,
-                buttons: 0,
-                move_x: 127,
-                move_y: 0,
-                yaw: 0,
-                pitch: 0,
-            };
-            assert_eq!(arena_step(h, &i, 1), 0);
-            let mut s = ArenaSnapshot::default();
-            assert_eq!(arena_snapshot(h, &mut s), 0);
-            assert_eq!(s.tick, 1);
-            assert_eq!(s.proof_qualified, 0);
-            assert_eq!(s.deposited, 0);
-            arena_destroy(h);
-        }
-    }
-}
+mod tests;

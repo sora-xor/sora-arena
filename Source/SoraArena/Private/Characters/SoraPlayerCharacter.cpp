@@ -342,6 +342,8 @@ bool ASoraPlayerCharacter::TogglesSprint() const
 void ASoraPlayerCharacter::Ability() { if(bKernelDriven&&CanPlay()) KernelQueuedButtons|=16; }
 void ASoraPlayerCharacter::MeleeUp() { KernelHeldButtons&=~2u; }
 void ASoraPlayerCharacter::Subtitles() { if(auto* G=PlayerGameMode(this)) G->ToggleSubtitles(); }
+void ASoraPlayerCharacter::ScoreboardDown() { bScoreboardHeld=true; }
+void ASoraPlayerCharacter::ScoreboardUp() { bScoreboardHeld=false; }
 void ASoraPlayerCharacter::Equip(int32 Slot)
 {
     // Practice enters with the loadout chosen in the lobby; the kernel holds it.
@@ -663,6 +665,7 @@ void ASoraPlayerCharacter::SetupPlayerInputComponent(UInputComponent* I)
     BindPress(I,TEXT("Reload"),&ASoraPlayerCharacter::Reload); BindPress(I,TEXT("Interact"),&ASoraPlayerCharacter::Interact);
     BindPress(I,TEXT("Menu"),&ASoraPlayerCharacter::Menu); BindPress(I,TEXT("Enter"),&ASoraPlayerCharacter::Enter);
     BindPress(I,TEXT("Subtitles"),&ASoraPlayerCharacter::Subtitles);
+    BindPress(I,TEXT("Scoreboard"),&ASoraPlayerCharacter::ScoreboardDown); BindRelease(I,TEXT("Scoreboard"),&ASoraPlayerCharacter::ScoreboardUp);
     BindPress(I,TEXT("WeaponOne"),&ASoraPlayerCharacter::WeaponOne); BindPress(I,TEXT("WeaponTwo"),&ASoraPlayerCharacter::WeaponTwo); BindPress(I,TEXT("WeaponThree"),&ASoraPlayerCharacter::WeaponThree);
     BindPress(I,TEXT("WeaponFour"),&ASoraPlayerCharacter::WeaponFour); BindPress(I,TEXT("WeaponFive"),&ASoraPlayerCharacter::WeaponFive); BindPress(I,TEXT("WeaponSix"),&ASoraPlayerCharacter::WeaponSix);
     BindPress(I,TEXT("CampaignWeaponNext"),&ASoraPlayerCharacter::CampaignWeaponNext);

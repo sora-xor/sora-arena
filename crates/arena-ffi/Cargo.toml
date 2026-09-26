@@ -8,6 +8,7 @@ license.workspace = true
 crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
+arena-bots = { path = "../arena-bots" }
 arena-core = { path = "../arena-core" }
 
 [lints]

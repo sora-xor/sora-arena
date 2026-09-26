@@ -21,6 +21,8 @@ public:
     ASoraWorldBuilder();
     void Build(int32 MapId, const FSoraChapter* Chapter = nullptr);
     void BuildPractice(int32 MapId, const FSoraPracticeMap& Map);
+    // The practice arena's dressing kit (Private/World/SoraPracticeArena.h).
+    friend struct FSoraPracticeArenaKit;
     bool ActivateNearest(const FVector& Location);
     int32 NearestInactiveNode(const FVector& Location) const;
     int32 ActiveNodes() const { return Activated.Num(); }

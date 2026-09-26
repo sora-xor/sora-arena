@@ -446,8 +446,11 @@ bool FSoraFrontEndPracticeLobbyTest::RunTest(const FString& Parameters)
     if (!TestTrue(TEXT("Staged Rust kernel is available"), Kernel && Kernel->Available))
         return false;
     Scope.Choose(Keyboard, EAction::LobbyStart);
-    if (!TestTrue(TEXT("Start begins kernel practice with the lobby's class, map and special"), !Mode->bMenu && Mode->bDeterministicPractice &&
-        Kernel->PracticeActive() && Mode->SelectedClass == 4 && Mode->MapId == Map && Mode->Practice()->WeaponSlot == 2))
+    const FSoraPracticeConfig& Config = Mode->Practice()->Config;
+    if (!TestTrue(TEXT("Start begins kernel practice with every lobby choice"), !Mode->bMenu && Mode->bDeterministicPractice &&
+        Kernel->PracticeActive() && Mode->SelectedClass == 4 && Mode->MapId == Map && Config.Mode == L.Mode &&
+        Config.PlayerCount == L.PlayerCount && Config.MapId == L.MapId && Config.ClassId == L.ClassId &&
+        Config.SpecialWeaponId == 16 && Config.Difficulty == L.Difficulty && Kernel->PracticePlayers.Num() == L.PlayerCount))
         return false;
     const SoraText::FLine Reload = SoraUI::ActionKey(Mode, TEXT("Reload"));
     TestTrue(TEXT("The practice notice names the player's own keys in both languages"), !Reload.Japanese.IsEmpty() &&

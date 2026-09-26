@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "SM_SoraKamon",
+  "generator": "scripts/art/create_sora_kamon_mon.py",
+  "validator": "scripts/art/validate_sora_kamon_mon.py",
+  "source_svg": "../sora_logo_NOtext2.svg",
+  "source_svg_sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910",
+  "fbx": "SM_SoraKamon.fbx",
+  "fbx_sha256": "9d51357d02516b5e9ed65459fae7e32fcc72bb6a14c1d8612ba4b356a78779e2",
+  "unreal_asset": "/Game/Generated/UI/SM_SoraKamon.SM_SoraKamon",
+  "diameter_m": 1.0,
+  "thickness_m": 0.01,
+  "orientation": "mark in the Y-Z plane facing +X, legs toward -Z, centred on the origin",
+  "vertices": 200,
+  "triangles": 392,
+  "material_slots": [
+    "M_SoraKamon"
+  ],
+  "collision": "Visual only; practice presentation never collides",
+  "license": "User-supplied SORA mark for SORA Arena, geometry taken unchanged from the pinned SVG's two paths; no third-party license is asserted"
+}

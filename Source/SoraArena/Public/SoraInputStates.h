@@ -48,6 +48,8 @@ inline constexpr FAction Actions[] = {
     {TEXT("WeaponFive"), Play},
     {TEXT("WeaponSix"), Play},
     {TEXT("CampaignWeaponNext"), Play},
+    // Held in play: the practice scoreboard of every seat.
+    {TEXT("Scoreboard"), Play},
     // Esc/Start opens the pause menu; the front end closes it.
     {TEXT("Menu"), Card | Play | Result},
     // Enter skips the chapter card and continues a result.
@@ -97,6 +99,7 @@ inline constexpr FRemappable Remappable[] = {
     {TEXT("WeaponFive"), 0},
     {TEXT("WeaponSix"), 0},
     {TEXT("CampaignWeaponNext"), 0},
+    {TEXT("Scoreboard"), 0},
 };
 inline constexpr int32 RemappableCount = UE_ARRAY_COUNT(Remappable);
 

@@ -148,6 +148,7 @@ SoraText::FLine SoraUI::ControlName(FName Name, int32 Axis)
         {TEXT("WeaponFive"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponFive", "槍（物語）")},
         {TEXT("WeaponSix"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponSix", "薙刀（物語）")},
         {TEXT("CampaignWeaponNext"), 0, NSLOCTEXT("SoraArena.Controls", "Control.CampaignWeaponNext", "次の武器（物語）")},
+        {TEXT("Scoreboard"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Scoreboard", "戦況表（稽古）")},
         {TEXT("Menu"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Menu", "一時停止メニュー")},
         {TEXT("Enter"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Enter", "決定・続ける")},
         {TEXT("Subtitles"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Subtitles", "英語字幕の切り替え")},

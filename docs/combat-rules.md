@@ -20,10 +20,14 @@ hash.
 - Rules identity: `sora-arena-first-release-7`. It replaces
   `sora-arena-first-release-6` without a compatibility mode. Replays, fixtures
   and journals recorded under an earlier identity are rejected, not converted.
-- Native presentation ABI: exactly 3 in this revision. ABI 3's layout, its
-  input domain and its exported event kinds 1–5 do not change (see §4.3 and
-  §10). ABI 4 will expose the new events, entities, objective state and the
-  loadout request.
+- Native presentation ABI: exactly 4 (`crates/arena-ffi/include/arena.h`).
+  ABI 4 exports every event (§4.3), the entity list (§5.1), the objective
+  state (§8), the arena objective and hazard data (§7.1) and the loadout
+  request (§10). It has no ABI 3 compatibility mode. The ABI number is not part
+  of the rules identity or the state hash. ABI 4 also serves zero-stake
+  practice bots (`arena_bot_input`, `crates/arena-bots`). Bots only choose
+  inputs and are not rules: neither the state hash nor any fixture's pinned
+  sources include the bot crate.
 - Match limits: at most 12 permanent slots, at most 8 in free-for-all and Melee,
   at most 6 per team in Control and Payload, and at most 36,000 ticks (ten
   minutes). Nothing, including overtime, extends a match past its configured
@@ -37,12 +41,12 @@ identity are regression baselines, not balance evidence.
 | --- | --- |
 | §2 phase order; §2.1–§2.7 admission, inputs and their commitment, integer geometry, movement, attacks, projectiles and deaths | Implemented |
 | §3 damage: origin, guard-origin fix, parry stagger, modifier order, kill and environmental credit | Implemented |
-| §4 events; ABI 3 filtering | Implemented |
+| §4 events; ABI 4 export | Implemented |
 | §5 entities, §6 class abilities, §6.7 rocket designation | Implemented |
 | §7 arena data, map digest, lane digest and export | Implemented |
 | §8 Control, Payload, FFA and Melee results | Implemented |
 | §9 environmental hazards | Implemented |
-| §10 respawn and loadout selection, including its input encoding and commitment | Implemented in the kernel and the evidence protocol; ABI 3 rejects the loadout bit until ABI 4 |
+| §10 respawn and loadout selection, including its input encoding and commitment | Implemented in the kernel, the evidence protocol and ABI 4 |
 | §12 state hash | Implemented (`reference-state:v2`) |
 | §13 classes, weapon catalog, weapon handling and balance baseline | Implemented; catalog unchanged from first-release-6 except the rocket's name |
 
@@ -402,31 +406,34 @@ Integer division truncates toward zero; every amount here is nonnegative.
 
 Events are replaced on every step and describe only the tick just executed.
 They are presentation data, not proofs. The kernel records all kinds below;
-`world.events` keeps them in emission order.
+`world.events` keeps them in emission order. `world.removed_entities` keeps the
+full record of each entity removed in the step, in `EntityDestroyed` order, so
+presentation can place an entity that spawned and left within one step. It is
+replaced every step, and like the events it is not part of the state hash.
 
 ### 4.1 Event kinds
 
-| Event | Fields | Emitted when | ABI 3 kind |
+| Event | Fields | Emitted when | ABI 4 kind |
 | --- | --- | --- | --- |
 | `Shot` | slot, weapon | An attack is released | 1 |
 | `Damage` | attacker, victim, amount | A player loses health to a player source | 2 |
 | `Death` | victim, killer, awards | A player dies (§3.4, §11) | 3 |
 | `Respawn` | slot | A dead player respawns | 4 |
 | `Terminal` | — | The match ends; always the last event | 5 |
-| `Guarded` | attacker, victim, weapon, parried, prevented | Stance, parry or guard applies (§3.2) | internal |
-| `Healed` | healer, target, amount, weapon | Health is restored; `amount > 0`; weapon 17 for the lance, none for an ability | internal |
-| `AbilityUsed` | slot, class | An ability activates and its cooldown starts (§6) | internal |
-| `Marked` | marker, target | A Teppō mark lands (§6.3) | internal |
-| `Riposte` | slot, target | A Samurai riposte is queued (§6.1) | internal |
-| `EntitySpawned` | id, kind, owner | An entity is created (§5) | internal |
-| `EntityDamaged` | id, attacker, amount | A decoy or barricade loses health | internal |
-| `EntityRepaired` | id, repairer, amount | A barricade is repaired; `amount > 0` | internal |
-| `EntityDestroyed` | id, kind, owner, cause | An entity is removed; cause from §5.2 | internal |
-| `EnvironmentalDamage` | victim, hazard, amount | A hazard deals damage (§9) | internal |
-| `ObjectiveCaptured` | team | Control ownership changes (§8.1) | internal |
-| `OvertimeStarted` | — | Control overtime begins (§8.1) | internal |
-| `CheckpointReached` | index | The payload passes a checkpoint (§8.2) | internal |
-| `MatchWinner` | winner | Immediately before `Terminal` (§8.4) | internal |
+| `Guarded` | attacker, victim, weapon, parried, prevented | Stance, parry or guard applies (§3.2) | 6 |
+| `Healed` | healer, target, amount, weapon | Health is restored; `amount > 0`; weapon 17 for the lance, none for an ability | 7 |
+| `AbilityUsed` | slot, class | An ability activates and its cooldown starts (§6) | 8 |
+| `Marked` | marker, target | A Teppō mark lands (§6.3) | 9 |
+| `Riposte` | slot, target | A Samurai riposte is queued (§6.1) | 10 |
+| `EntitySpawned` | id, kind, owner | An entity is created (§5) | 11 |
+| `EntityDamaged` | id, attacker, amount | A decoy or barricade loses health | 12 |
+| `EntityRepaired` | id, repairer, amount | A barricade is repaired; `amount > 0` | 13 |
+| `EntityDestroyed` | id, kind, owner, cause | An entity is removed; cause from §5.2 | 14 |
+| `EnvironmentalDamage` | victim, hazard, amount | A hazard deals damage (§9) | 15 |
+| `ObjectiveCaptured` | team | Control ownership changes (§8.1) | 16 |
+| `OvertimeStarted` | — | Control overtime begins (§8.1) | 17 |
+| `CheckpointReached` | index | The payload passes a checkpoint (§8.2) | 18 |
+| `MatchWinner` | winner | Immediately before `Terminal` (§8.4) | 19 |
 
 Objective progress is continuous state, not an event: it is read from the
 snapshot every tick. `EnvironmentalDamage.hazard` indexes the arena's hazard
@@ -444,15 +451,21 @@ guard stamina was spent.
 full-health ally, or a Kusushi pulse on a full-health player, emits no `Healed`.
 Healing never revives the dead.
 
-### 4.3 ABI 3 export
+### 4.3 ABI 4 export
 
-ABI 3 exports exactly event kinds 1–5 with their first-release-6 meaning.
-`arena_snapshot.event_count` counts only exported events, and `arena_event`
-indexes only exported events, in their original relative order. Internal events
-are skipped: they do not appear, do not shift the index of exported events, and
-do not change the event stream an ABI 3 caller observes. ABI 4 will add new kind
-numbers for the internal events and expose them. It will be a new layout that
-callers must require exactly, with no ABI 3 compatibility mode.
+ABI 4 exports every event, one for one and in emission order:
+`arena_snapshot.event_count` is the length of `world.events`, and
+`arena_event(i)` projects its `i`-th entry. Kinds 1–5 keep their ABI 3 meaning,
+and the table above numbers the rest (`ARENA_EVENT_*` in `arena.h`). An
+exported event carries the tick, the kind, actor and target slots, a weapon, a
+position, a value, an entity id and kind, and a kind-specific detail such as the
+parry flag, the removal cause, the hazard index, the team, the checkpoint index
+or the winner kind. `arena.h` documents every field of every kind. Positions
+are read after the step: a player's feet (a shot's eye), an entity's floor
+centre (from `removed_entities` once it is gone), the Control centre for a
+capture or overtime, and the route point of a checkpoint. The projection is
+exhaustive, so a new kernel event must be given a kind. ABI 4 is a new layout
+that callers must require exactly; there is no ABI 3 compatibility mode.
 
 ## 5. Entities
 
@@ -742,7 +755,7 @@ Each of the four arenas is versioned integer data (`arena-map-v1`):
 - **Walls:** static AABBs, each at least 2000 mm high (§7.2). The first four
   are the perimeter, each 1000 mm thick outside the bounds. They are followed by
   interior pieces in point-mirror pairs. This order is canonical: it is the
-  ABI 3 `arena_map_wall` index order and part of the map digest.
+  native `arena_map_wall` index order and part of the map digest.
 - **Spawns:** six per team and twelve FFA, each `(x, y, yaw)`.
 - **Control point:** centre and radius.
 - **Payload route:** axis-aligned waypoints and three checkpoint distances.
@@ -769,10 +782,11 @@ state hash. Lanes have a separate digest that is not part of the state hash, so
 editing bot guidance cannot change a match outcome: SHA-256 over
 `"sora-arena:arena-lanes:v1\0"`, u8 arena id, u32 lane count, then each lane in
 `north`, `south`, `mid` order as u32 name length, the name bytes, u32 point
-count and each point as i32 x, y. ABI 3 serves the new bounds and
-walls through the existing `arena_map_info` and `arena_map_wall` without a
-layout change. Its consumers accept at most 64 walls, and every arena here has
-at most 42.
+count and each point as i32 x, y. ABI 4 serves the bounds, walls, Control
+circle, payload route, checkpoint distances, push radius and hazards through
+`arena_map_info`, `arena_map_wall`, `arena_map_route_point` and
+`arena_map_hazard`. Its consumers accept at most 64 walls, and every arena here
+has at most 42.
 
 Each `arena-data` block below has one record per line, and `#` starts a
 comment. The records are:
@@ -1379,9 +1393,11 @@ rays, projectiles or line of sight.
     `ffa[slot mod 12]`.
   - Spawn yaw comes from the arena data, at the first spawn and at every
     respawn; a respawn also resets pitch to 0.
-- **ABI 3 inputs.** Until ABI 4, `arena_step` keeps its first-release-6 input
-  domain: any button bit above `RELOAD` (32) is rejected with status 2,
-  exactly as before, so ABI 3 callers cannot submit a loadout request.
+- **ABI 4 inputs.** `arena_step` accepts the whole §2.2 domain, including
+  `LOADOUT`. An input outside it, such as button bit 128 or a loadout class of
+  6, rejects the whole step with status 2 and changes nothing.
+  `arena_player_presentation` reports the pending class and weapon
+  (`ARENA_NONE` for none) and the admitted special.
 
 ## 11. Bonds and death transfers (unchanged)
 
@@ -1548,9 +1564,8 @@ restores the magazine and clears melee defense and attack recovery.
 - All shots gather targets from the same pre-damage state. Queued healing
   resolves before ordered damage, which allows a same-tick rescue but no
   resurrection.
-- Each non-zero heal emits the internal `Healed` event (weapon 17). ABI 3 does
-  not export it, so ABI 3 callers still see only the shot and the next health
-  snapshot.
+- Each non-zero heal emits the `Healed` event (weapon 17), which ABI 4 exports
+  as kind 7.
 
 ### 13.4 Balance baseline
 
@@ -1601,7 +1616,7 @@ same.
 ## 14. Verification status
 
 - Behavioural tests cover the guard-origin fix, `Guarded` and `Healed`
-  emission, ABI 3 event filtering, and every first-release-6 rule that is
+  emission, ABI 4 event export, and every first-release-6 rule that is
   unchanged. See the test files under `crates/arena-core/tests` and the
   `arena-ffi` unit tests.
 - `class_abilities.rs` drives every class ability through real inputs: the
@@ -1653,10 +1668,16 @@ same.
   the last valid selection exactly as a direct replay does; a durable journal
   restores the pending selection bit for bit. `full_match_clock.rs` runs a
   staked ten-minute match in every mode to its clock result. The `arena-ffi`
-  tests check that ABI 3 serves every arena table exactly, rejects the loadout
-  bit, and filters the new events.
-- The practice ABI 3 parity fixture and the kill-history V2 projection are
-  re-pinned whenever the rules identity changes. Their READMEs and change logs
+  tests check the ABI 4 layouts and `arena.h` constants; that it serves every
+  arena table (walls, route points and hazards) exactly; every exported event
+  kind with its fields and position, including an entity that spawns and is
+  destroyed in one step; the entity and objective queries in every mode;
+  loadout requests and their rejection; and staked conservation and
+  exhaustion.
+- The practice ABI 4 parity fixture (`scripts/unreal/fixtures/practice-abi4`)
+  and the kill-history V2 projection are re-pinned whenever the rules identity
+  changes. The fixture replays every exported event kind, all four modes, 8-
+  and 12-player matches and staked matches. Their READMEs and change logs
   record why.
 - Every rule in this document enlarges the future `ArenaV1` execution relation.
   No rule here is proof-qualified, and `proof_qualified()` stays false. The

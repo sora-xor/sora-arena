@@ -10,7 +10,7 @@ pub const GLOBAL_BOUNDS: i32 = 24_000;
 /// Every wall is at least this high: above the 1936 mm apex of a jump, so no
 /// player can jump over a wall or land inside one (§7.2).
 pub const MIN_WALL_HEIGHT: i32 = 2000;
-/// ABI 3 consumers accept at most 64 walls per arena.
+/// Native ABI consumers accept at most 64 walls per arena.
 pub const MAX_WALLS: usize = 64;
 const MAP_DOMAIN: &[u8] = b"sora-arena:arena-map:v1\0";
 const LANES_DOMAIN: &[u8] = b"sora-arena:arena-lanes:v1\0";
@@ -100,7 +100,7 @@ pub struct Arena {
     pub name: &'static str,
     pub bounds: Bounds,
     /// Canonical order: the four perimeter walls, then interior pieces in
-    /// point-mirror pairs. It is the ABI 3 `arena_map_wall` index order.
+    /// point-mirror pairs. It is the native `arena_map_wall` index order.
     pub walls: &'static [Wall],
     /// Six spawns per team, used by team rank (§10).
     pub team_spawns: [[Spawn; 6]; 2],

@@ -43,7 +43,7 @@ impl World {
     }
 
     /// Living players of each team within `radius` of `centre`, horizontally.
-    fn count_near(&self, centre: Vec3, radius: i32) -> [i32; 2] {
+    pub fn count_near(&self, centre: Vec3, radius: i32) -> [i32; 2] {
         let mut count = [0; 2];
         for p in &self.players {
             if p.alive

@@ -290,7 +290,7 @@ compiler selection explicitly.
 
 It then builds the real Rust FFI DLL with `cargo --locked`, stages it through
 `stage_kernel.py --platform Win64` after ABI/execution checks, runs the pinned
-73-case native parity fixture and negative guard tests, and invokes the UE
+94-case native parity fixture and negative guard tests, and invokes the UE
 `SoraArenaEditor Win64` target. Each failure stops the sequence. The Windows
 parity fixture must pass unchanged against the macOS reference before any
 cross-platform parity claim. The script builds an editor diagnostic; it does

@@ -21,7 +21,7 @@ pub mod rollback;
 pub mod simulation;
 pub mod wire;
 
-pub const ABI_VERSION: u32 = 3;
+pub const ABI_VERSION: u32 = 4;
 pub const TICK_RATE: u32 = 60;
 pub const MAX_PLAYERS: usize = 12;
 pub const MAX_TICKS: u32 = 36_000;
