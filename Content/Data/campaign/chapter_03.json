@@ -826,28 +826,7 @@
     "anchor_after_lines": false,
     "pause_when_seen": true,
     "max_alive": 6,
-    "waves": [
-     {
-      "id": null,
-      "trigger": "start",
-      "value": 0,
-      "event": null,
-      "members": [
-       {
-        "type": "enforcer_rifle",
-        "count": 1,
-        "lethal": true
-       },
-       {
-        "type": "bound_conscript",
-        "count": 1,
-        "lethal": false
-       }
-      ],
-      "lethal": 1,
-      "nonlethal": 1
-     }
-    ],
+    "waves": [],
     "phases": [
      1000
     ],
@@ -892,7 +871,10 @@
     "lines_event": null,
     "closing_event": null,
     "exit_event": null,
-    "guards": [],
+    "guards": [
+     "enforcer_rifle",
+     "bound_conscript"
+    ],
     "opponent": null,
     "sparring": false,
     "phase_events": [],
@@ -8052,8 +8034,8 @@
     "ch03.b02"
    ],
    "on": null,
-   "ja": "［調べる］長押し：灯りを消す",
-   "en": "Hold [Interact]: snuff the lamp",
+   "ja": "{Interact}長押し：灯りを消す",
+   "en": "Hold {Interact}: snuff the lamp",
    "shown_en": "Near a snuffable lamp"
   },
   {
@@ -8072,8 +8054,8 @@
     "ch03.b03"
    ],
    "on": null,
-   "ja": "背後から［近接］：不意討ち",
-   "en": "From behind, [Melee]: takedown",
+   "ja": "背後から{Melee}：不意討ち",
+   "en": "From behind, {Melee}: takedown",
    "shown_en": "Behind an unaware guard"
   },
   {
@@ -8092,8 +8074,8 @@
     "ch03.b03"
    ],
    "on": null,
-   "ja": "倒れた者に［調べる］長押し：首輪を切る",
-   "en": "Hold [Interact] on the downed: cut the collar",
+   "ja": "倒れた者のそばで{Interact}長押し：首輪を切る",
+   "en": "Hold {Interact} beside the downed: cut the collar",
    "shown_en": "Downed conscript, 8 s window"
   },
   {
@@ -8112,8 +8094,8 @@
     "ch03.b07"
    ],
    "on": null,
-   "ja": "［合図］：伏せさせる／進ませる",
-   "en": "[Signal]: hide / move on",
+   "ja": "同行者はあなたがそばにいる間だけ進む",
+   "en": "The escort moves on only while you stay close",
    "shown_en": "b07 start"
   },
   {
@@ -8122,8 +8104,8 @@
     "ch03.b07"
    ],
    "on": null,
-   "ja": "［調べる］長押し：助け起こす",
-   "en": "Hold [Interact]: help them up",
+   "ja": "{Interact}長押し：助け起こす",
+   "en": "Hold {Interact}: help them up",
    "shown_en": "Escort downed"
   },
   {
@@ -8182,8 +8164,8 @@
     "ch03.b14"
    ],
    "on": null,
-   "ja": "消えた竈は［調べる］長押しで点け直す",
-   "en": "Hold [Interact] to relight a cook-fire",
+   "ja": "消えた竈は{Interact}長押しで点け直す",
+   "en": "Hold {Interact} to relight a cook-fire",
    "shown_en": "First guttered fire"
   },
   {

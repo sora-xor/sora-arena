@@ -1157,20 +1157,20 @@ HP on Normal is 2000 (Easy 1600, Hard 2400). Windups scale by +30% on Easy and �
 |---|---|---|---|---|
 | `ui.ch03.crouch` | b02 | しゃがむと足音が小さくなる | Crouch to move quietly | First 10 s of b02 |
 | `ui.ch03.puddle` | b02 | 水たまりは大きな音を立てる | Puddles make noise | On `vol_b02_puddles` |
-| `ui.ch03.snuff` | b02 | ［調べる］長押し：灯りを消す | Hold [Interact]: snuff the lamp | Near a snuffable lamp |
+| `ui.ch03.snuff` | b02 | {Interact}長押し：灯りを消す | Hold {Interact}: snuff the lamp | Near a snuffable lamp |
 | `ui.ch03.states` | b02 | 気配：不審 → 警戒 → 捜索 | Awareness: Suspicious → Alert → Searching | First suspicion |
-| `ui.ch03.takedown` | b03 | 背後から［近接］：不意討ち | From behind, [Melee]: takedown | Behind an unaware guard |
+| `ui.ch03.takedown` | b03 | 背後から{Melee}：不意討ち | From behind, {Melee}: takedown | Behind an unaware guard |
 | `ui.ch03.mineuchi` | b03 | 首輪の者には峰打ちになる | Strikes on the collared use the blade's back | Aiming at a conscript |
-| `ui.ch03.sealcut` | b03 | 倒れた者に［調べる］長押し：首輪を切る | Hold [Interact] on the downed: cut the collar | Downed conscript, 8 s window |
+| `ui.ch03.sealcut` | b03 | 倒れた者のそばで{Interact}長押し：首輪を切る | Hold {Interact} beside the downed: cut the collar | Downed conscript, 8 s window |
 | `ui.ch03.carry` | b05 | 運搬中：刀は片手、弓は使えない | Carrying: katana one-handed, no bow | First pickup |
-| `ui.ch03.signal` | b07 | ［合図］：伏せさせる／進ませる | [Signal]: hide / move on | b07 start |
-| `ui.ch03.revive` | b07 | ［調べる］長押し：助け起こす | Hold [Interact]: help them up | Escort downed |
+| `ui.ch03.signal` | b07 | 同行者はあなたがそばにいる間だけ進む | The escort moves on only while you stay close | b07 start |
+| `ui.ch03.revive` | b07 | {Interact}長押し：助け起こす | Hold {Interact}: help them up | Escort downed |
 | `ui.ch03.bend` | b09 | 緑の間で離す | Release in the green | First bend |
 | `ui.ch03.grenade` | b09 | 擲弾筒：弧を描いて飛ぶ。近いと自分も巻き込む | Grenade Launcher: arcing shells. Close blasts hurt you too | Unlock |
 | `ui.ch03.glint` | b10 | 光が見えたら狙われている | A glint means you are targeted | First marksman lock |
 | `ui.ch03.dobuita` | b10 | 溝板は端を歩けば鳴らない | Walk the drain boards' edges to stay silent | On `vol_b10_dobuita_*` |
 | `ui.ch03.fuse` | b10 | 導火二十秒。離れよ | Fuse: 20 s. Get clear | On lighting the fuse |
-| `ui.ch03.fire` | b14 | 消えた竈は［調べる］長押しで点け直す | Hold [Interact] to relight a cook-fire | First guttered fire |
+| `ui.ch03.fire` | b14 | 消えた竈は{Interact}長押しで点け直す | Hold {Interact} to relight a cook-fire | First guttered fire |
 | `ui.ch03.supply` | b14 | 補給所：持ち物を替えられる | Supply point: change your loadout | On `vol_b14_supply` |
 | `ui.ch03.rope` | b17 | 綱を斬る：網を落とす | Cut the rope: drop the net | 稽古 (Easy) only, first time in the drop zone |
 | `ui.ch03.vents` | b17 | 背の排気口が弱点 | The rear vents are the weak point | 稽古 (Easy) only, after 4 blocked hits |
@@ -2607,20 +2607,20 @@ lines:
 ui_prompts:
   - {id: ui.ch03.crouch, beat: ch03.b02, ja: "しゃがむと足音が小さくなる", en: "Crouch to move quietly", x_shown: "First 10 s of b02"}
   - {id: ui.ch03.puddle, beat: ch03.b02, ja: "水たまりは大きな音を立てる", en: "Puddles make noise", x_shown: "On vol_b02_puddles"}
-  - {id: ui.ch03.snuff, beat: ch03.b02, ja: "［調べる］長押し：灯りを消す", en: "Hold [Interact]: snuff the lamp", x_shown: "Near a snuffable lamp"}
+  - {id: ui.ch03.snuff, beat: ch03.b02, ja: "{Interact}長押し：灯りを消す", en: "Hold {Interact}: snuff the lamp", x_shown: "Near a snuffable lamp"}
   - {id: ui.ch03.states, beat: ch03.b02, ja: "気配：不審 → 警戒 → 捜索", en: "Awareness: Suspicious → Alert → Searching", x_shown: "First suspicion"}
-  - {id: ui.ch03.takedown, beat: ch03.b03, ja: "背後から［近接］：不意討ち", en: "From behind, [Melee]: takedown", x_shown: "Behind an unaware guard"}
+  - {id: ui.ch03.takedown, beat: ch03.b03, ja: "背後から{Melee}：不意討ち", en: "From behind, {Melee}: takedown", x_shown: "Behind an unaware guard"}
   - {id: ui.ch03.mineuchi, beat: ch03.b03, ja: "首輪の者には峰打ちになる", en: "Strikes on the collared use the blade's back", x_shown: "Aiming at a conscript"}
-  - {id: ui.ch03.sealcut, beat: ch03.b03, ja: "倒れた者に［調べる］長押し：首輪を切る", en: "Hold [Interact] on the downed: cut the collar", x_shown: "Downed conscript, 8 s window"}
+  - {id: ui.ch03.sealcut, beat: ch03.b03, ja: "倒れた者のそばで{Interact}長押し：首輪を切る", en: "Hold {Interact} beside the downed: cut the collar", x_shown: "Downed conscript, 8 s window"}
   - {id: ui.ch03.carry, beat: ch03.b05, ja: "運搬中：刀は片手、弓は使えない", en: "Carrying: katana one-handed, no bow", x_shown: "First pickup"}
-  - {id: ui.ch03.signal, beat: ch03.b07, ja: "［合図］：伏せさせる／進ませる", en: "[Signal]: hide / move on", x_shown: "b07 start"}
-  - {id: ui.ch03.revive, beat: ch03.b07, ja: "［調べる］長押し：助け起こす", en: "Hold [Interact]: help them up", x_shown: "Escort downed"}
+  - {id: ui.ch03.signal, beat: ch03.b07, ja: "同行者はあなたがそばにいる間だけ進む", en: "The escort moves on only while you stay close", x_shown: "b07 start"}
+  - {id: ui.ch03.revive, beat: ch03.b07, ja: "{Interact}長押し：助け起こす", en: "Hold {Interact}: help them up", x_shown: "Escort downed"}
   - {id: ui.ch03.bend, beat: ch03.b09, ja: "緑の間で離す", en: "Release in the green", x_shown: "First bend"}
   - {id: ui.ch03.grenade, beat: ch03.b09, ja: "擲弾筒：弧を描いて飛ぶ。近いと自分も巻き込む", en: "Grenade Launcher: arcing shells. Close blasts hurt you too", x_shown: "Unlock"}
   - {id: ui.ch03.glint, beat: ch03.b10, ja: "光が見えたら狙われている", en: "A glint means you are targeted", x_shown: "First marksman lock"}
   - {id: ui.ch03.dobuita, beat: ch03.b10, ja: "溝板は端を歩けば鳴らない", en: "Walk the drain boards' edges to stay silent", x_shown: "On vol_b10_dobuita_*"}
   - {id: ui.ch03.fuse, beat: ch03.b10, ja: "導火二十秒。離れよ", en: "Fuse: 20 s. Get clear", x_shown: "On lighting the fuse"}
-  - {id: ui.ch03.fire, beat: ch03.b14, ja: "消えた竈は［調べる］長押しで点け直す", en: "Hold [Interact] to relight a cook-fire", x_shown: "First guttered fire"}
+  - {id: ui.ch03.fire, beat: ch03.b14, ja: "消えた竈は{Interact}長押しで点け直す", en: "Hold {Interact} to relight a cook-fire", x_shown: "First guttered fire"}
   - {id: ui.ch03.supply, beat: ch03.b14, ja: "補給所：持ち物を替えられる", en: "Supply point: change your loadout", x_shown: "On vol_b14_supply"}
   - {id: ui.ch03.rope, beat: ch03.b17, ja: "綱を斬る：網を落とす", en: "Cut the rope: drop the net", x_shown: "稽古 (Easy) only, first time in the drop zone"}
   - {id: ui.ch03.vents, beat: ch03.b17, ja: "背の排気口が弱点", en: "The rear vents are the weak point", x_shown: "稽古 (Easy) only, after 4 blocked hits"}

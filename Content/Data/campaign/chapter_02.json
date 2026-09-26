@@ -6079,8 +6079,8 @@
     "ch02.b03"
    ],
    "on": "beat_start",
-   "ja": "槍を得た。{Polearm}で持ち替え。",
-   "en": "Yari acquired. Press {Polearm} to switch.",
+   "ja": "槍を得た。{WeaponFive}／{CampaignWeaponNext}で持ち替え。",
+   "en": "Yari acquired. Press {WeaponFive} or {CampaignWeaponNext} to switch.",
    "shown_en": null
   },
   {
@@ -6139,8 +6139,8 @@
     "ch02.b06"
    ],
    "on": "beat_start",
-   "ja": "荷馬を守れ。そばで{Interact}長押し：傷の手当て。",
-   "en": "Protect the pack horses. Hold {Interact} beside one to treat it.",
+   "ja": "荷馬を守れ。そばで{Interact}：傷の手当て。",
+   "en": "Protect the pack horses. Press {Interact} beside one to treat it.",
    "shown_en": null
   },
   {
@@ -6159,8 +6159,8 @@
     "ch02.b08"
    ],
    "on": "beat_start",
-   "ja": "手綱を結び{Aim}で引き分け。馬上の弓は左（弓手）のみ。",
-   "en": "Reins knotted. Hold {Aim} to draw. In the saddle, the bow shoots left only.",
+   "ja": "手綱を結び{Fire}長押しで引き分け。馬上の弓は左（弓手）のみ。",
+   "en": "Reins knotted. Hold {Fire} to draw. In the saddle, the bow shoots left only.",
    "shown_en": null
   },
   {
@@ -6169,8 +6169,8 @@
     "ch02.b08"
    ],
    "on": "beat_start+6s",
-   "ja": "{GaitUp}／{GaitDown}で歩度を変え、荷馬の速さに合わせよ。",
-   "en": "Use {GaitUp} and {GaitDown} to change gait. Keep pace with the pack train.",
+   "ja": "前進しながら{Sprint}で歩度を上げ、後ろへ引いて緩める。荷馬の速さに合わせよ。",
+   "en": "Hold {Sprint} while moving forward to quicken the gait; pull back to slow. Keep pace with the pack train.",
    "shown_en": null
   },
   {

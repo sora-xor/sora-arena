@@ -806,16 +806,16 @@ ch02 is the first chapter in which every one of these types appears (bible §7),
 | Trigger | Prompt id | 日本語 (UI) | English (UI) |
 |---|---|---|---|
 | `npc_downed:any` | `ch02.b02.tut.001` | 倒れた門弟のそばで{Interact}長押し：助け起こす。 | Hold {Interact} beside a downed pupil to help them up. |
-| `beat_start` | `ch02.b03.tut.002` | 槍を得た。{Polearm}で持ち替え。 | Yari acquired. Press {Polearm} to switch. |
+| `beat_start` | `ch02.b03.tut.002` | 槍を得た。{WeaponFive}／{CampaignWeaponNext}で持ち替え。 | Yari acquired. Press {WeaponFive} or {CampaignWeaponNext} to switch. |
 | `volume_enter:vol_bugugura_yard` | `ch02.b03.tut.003` | 盾の縁を槍で突けば、構えが崩れる。 | Thrust at a shield's edge to break its guard. |
 | `ai:player_inside_polearm_min` | `ch02.b03.tut.004` | 懐では槍は弱い。退いて間合いを取れ。 | The yari is weak up close. Step back to regain distance. |
 | `volume_enter:vol_kura_sw_door` | `ch02.b05.tut.005` | {Interact}長押し：石突で封印をこじ開ける。 | Hold {Interact}: pry the seal off with the spear butt. |
 | `event:first_pickup` | `ch02.b05.tut.006` | 俵を担ぐ間は片手の刀のみ。弓は使えず、走れない。 | Carrying a bale: one-handed katana only. No bow, no sprint. |
 | `event:first_pickup+4s` | `ch02.b05.tut.007` | {Interact}で俵を下ろせる。後で拾い直せる。 | Press {Interact} to set a bale down. Pick it up again later. |
-| `beat_start` | `ch02.b06.tut.008` | 荷馬を守れ。そばで{Interact}長押し：傷の手当て。 | Protect the pack horses. Hold {Interact} beside one to treat it. |
+| `beat_start` | `ch02.b06.tut.008` | 荷馬を守れ。そばで{Interact}：傷の手当て。 | Protect the pack horses. Press {Interact} beside one to treat it. |
 | `ai:drop_pod_launch@1` | `ch02.b06.tut.009` | 橙の輪は降下ポッドの着弾点。輪から離れよ。 | Amber rings mark where pods will land. Get clear. |
-| `beat_start` | `ch02.b08.tut.010` | 手綱を結び{Aim}で引き分け。馬上の弓は左（弓手）のみ。 | Reins knotted. Hold {Aim} to draw. In the saddle, the bow shoots left only. |
-| `beat_start+6s` | `ch02.b08.tut.011` | {GaitUp}／{GaitDown}で歩度を変え、荷馬の速さに合わせよ。 | Use {GaitUp} and {GaitDown} to change gait. Keep pace with the pack train. |
+| `beat_start` | `ch02.b08.tut.010` | 手綱を結び{Fire}長押しで引き分け。馬上の弓は左（弓手）のみ。 | Reins knotted. Hold {Fire} to draw. In the saddle, the bow shoots left only. |
+| `beat_start+6s` | `ch02.b08.tut.011` | 前進しながら{Sprint}で歩度を上げ、後ろへ引いて緩める。荷馬の速さに合わせよ。 | Hold {Sprint} while moving forward to quicken the gait; pull back to slow. Keep pace with the pack train. |
 | `ai:convoy_netted@1` | `ch02.b08.tut.012` | 網の掛かった荷馬の左に並び、右へ斬って網を切れ。 | Ride on a netted horse's left and cut to your right to free it. |
 | `event:arrows_below:4` | `ch02.b08.tut.013` | 先頭の荷馬に並ぶと、予備の箙から矢を補える。 | Ride beside the lead pack horse to refill arrows from its spare quiver. |
 | `beat_start` | `ch02.b13.tut.014` | 襲歩は馬の息を使う。尽きる前に駈歩へ落とせ。 | The gallop spends the horse's wind. Ease to a canter before it runs out. |
@@ -2286,16 +2286,16 @@ lines:
 - {id: ch02.b16.nyaakoto.015, beat: ch02.b16, speaker: samurai, register: samurai_restrained, ja: 取り返す。先生も、蔵も、田も。, en: 'I will take it all back. Sensei, the granaries, the fields.', duration_s: 4.0, kind: story, 'on': cine@128.0, mode: cinematic, audio: null}
 ui_prompts:
 - {id: ch02.b02.tut.001, beat: ch02.b02, 'on': 'npc_downed:any', ja: '倒れた門弟のそばで{Interact}長押し：助け起こす。', en: 'Hold {Interact} beside a downed pupil to help them up.'}
-- {id: ch02.b03.tut.002, beat: ch02.b03, 'on': beat_start, ja: '槍を得た。{Polearm}で持ち替え。', en: 'Yari acquired. Press {Polearm} to switch.'}
+- {id: ch02.b03.tut.002, beat: ch02.b03, 'on': beat_start, ja: '槍を得た。{WeaponFive}／{CampaignWeaponNext}で持ち替え。', en: 'Yari acquired. Press {WeaponFive} or {CampaignWeaponNext} to switch.'}
 - {id: ch02.b03.tut.003, beat: ch02.b03, 'on': 'volume_enter:vol_bugugura_yard', ja: 盾の縁を槍で突けば、構えが崩れる。, en: Thrust at a shield's edge to break its guard.}
 - {id: ch02.b03.tut.004, beat: ch02.b03, 'on': 'ai:player_inside_polearm_min', ja: 懐では槍は弱い。退いて間合いを取れ。, en: The yari is weak up close. Step back to regain distance.}
 - {id: ch02.b05.tut.005, beat: ch02.b05, 'on': 'volume_enter:vol_kura_sw_door', ja: '{Interact}長押し：石突で封印をこじ開ける。', en: 'Hold {Interact}: pry the seal off with the spear butt.'}
 - {id: ch02.b05.tut.006, beat: ch02.b05, 'on': 'event:first_pickup', ja: 俵を担ぐ間は片手の刀のみ。弓は使えず、走れない。, en: 'Carrying a bale: one-handed katana only. No bow, no sprint.'}
 - {id: ch02.b05.tut.007, beat: ch02.b05, 'on': 'event:first_pickup+4s', ja: '{Interact}で俵を下ろせる。後で拾い直せる。', en: 'Press {Interact} to set a bale down. Pick it up again later.'}
-- {id: ch02.b06.tut.008, beat: ch02.b06, 'on': beat_start, ja: '荷馬を守れ。そばで{Interact}長押し：傷の手当て。', en: 'Protect the pack horses. Hold {Interact} beside one to treat it.'}
+- {id: ch02.b06.tut.008, beat: ch02.b06, 'on': beat_start, ja: '荷馬を守れ。そばで{Interact}：傷の手当て。', en: 'Protect the pack horses. Press {Interact} beside one to treat it.'}
 - {id: ch02.b06.tut.009, beat: ch02.b06, 'on': 'ai:drop_pod_launch@1', ja: 橙の輪は降下ポッドの着弾点。輪から離れよ。, en: Amber rings mark where pods will land. Get clear.}
-- {id: ch02.b08.tut.010, beat: ch02.b08, 'on': beat_start, ja: '手綱を結び{Aim}で引き分け。馬上の弓は左（弓手）のみ。', en: 'Reins knotted. Hold {Aim} to draw. In the saddle, the bow shoots left only.'}
-- {id: ch02.b08.tut.011, beat: ch02.b08, 'on': beat_start+6s, ja: '{GaitUp}／{GaitDown}で歩度を変え、荷馬の速さに合わせよ。', en: 'Use {GaitUp} and {GaitDown} to change gait. Keep pace with the pack train.'}
+- {id: ch02.b08.tut.010, beat: ch02.b08, 'on': beat_start, ja: '手綱を結び{Fire}長押しで引き分け。馬上の弓は左（弓手）のみ。', en: 'Reins knotted. Hold {Fire} to draw. In the saddle, the bow shoots left only.'}
+- {id: ch02.b08.tut.011, beat: ch02.b08, 'on': beat_start+6s, ja: '前進しながら{Sprint}で歩度を上げ、後ろへ引いて緩める。荷馬の速さに合わせよ。', en: 'Hold {Sprint} while moving forward to quicken the gait; pull back to slow. Keep pace with the pack train.'}
 - {id: ch02.b08.tut.012, beat: ch02.b08, 'on': 'ai:convoy_netted@1', ja: 網の掛かった荷馬の左に並び、右へ斬って網を切れ。, en: Ride on a netted horse's left and cut to your right to free it.}
 - {id: ch02.b08.tut.013, beat: ch02.b08, 'on': 'event:arrows_below:4', ja: 先頭の荷馬に並ぶと、予備の箙から矢を補える。, en: Ride beside the lead pack horse to refill arrows from its spare quiver.}
 - {id: ch02.b13.tut.014, beat: ch02.b13, 'on': beat_start, ja: 襲歩は馬の息を使う。尽きる前に駈歩へ落とせ。, en: The gallop spends the horse's wind. Ease to a canter before it runs out.}

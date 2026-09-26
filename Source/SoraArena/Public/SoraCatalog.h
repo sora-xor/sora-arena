@@ -98,7 +98,9 @@ struct FSoraCollectible
     FString Codex;
     FString CodexEnglish;
 };
-// A HUD prompt: a UI string, never a voiced line.
+// A HUD prompt: a UI string, never a voiced line. It names keys only as
+// {Action} tokens for input actions, which the HUD replaces with the player's
+// own keys (SoraHUDPanels::KeyPrompt).
 struct FSoraPrompt
 {
     TArray<int32> Beats;
@@ -333,7 +335,8 @@ struct FSoraBeat
     // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.
     FName Opponent;
     bool bSparring = false;
-    // A stealth zone's guards, by enemy type.
+    // The guards a stealth zone, or a production task under guard, posts on
+    // its patrols, by enemy type.
     TArray<FName> Guards;
     // A duel's scripted events, one per later phase, and the interaction that
     // binds a captured boss ("interact:bulkhead_lever").

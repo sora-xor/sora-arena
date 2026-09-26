@@ -52,7 +52,8 @@ FLinearColor TelegraphColor(const UObject* WorldContext, ESoraBossTelegraph Tele
 }
 FLinearColor StrikeColor(const UObject* WorldContext, ESoraBossTelegraph Telegraph)
 {
-    return FMath::Lerp(TelegraphColor(WorldContext, Telegraph), FLinearColor::White, .25f);
+    return SoraAccessibility::StrikeColor(WorldContext,
+        Telegraph == ESoraBossTelegraph::Cyan ? SoraAccessibility::ETelegraph::Lock : SoraAccessibility::ETelegraph::Cleave);
 }
 
 FName DefeatName(ESoraBossDefeat Defeat)

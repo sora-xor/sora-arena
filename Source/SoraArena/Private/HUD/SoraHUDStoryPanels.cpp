@@ -354,10 +354,40 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
         const float StripH=10*S+JapaneseSubtitleLineHeight+(G->bEnglishSubtitles?EnglishSubtitleLineHeight:0.f);
         const float StripY=StripBottom-StripH;
         HUD.Panel(20*S,StripY,W-40*S,StripH,FLinearColor(.015,.035,.045,.90));
-        HUD.WrappedLabel(Prompt->Japanese,35*S,StripY+5*S,JapaneseSubtitleScale,Teal,W-70*S,JapaneseSubtitleLineHeight,1);
+        // Its keys are the player's own, following the device and rebinding.
+        const SoraText::FLine Line=KeyPrompt(&HUD,Prompt->Japanese,Prompt->English);
+        HUD.WrappedLabel(Line.Japanese,35*S,StripY+5*S,JapaneseSubtitleScale,Teal,W-70*S,JapaneseSubtitleLineHeight,1);
         if(G->bEnglishSubtitles)
-            HUD.WrappedLabel(Prompt->English,35*S,StripY+5*S+JapaneseSubtitleLineHeight,EnglishSubtitleScale,Muted,W-70*S,EnglishSubtitleLineHeight,1);
+            HUD.WrappedLabel(Line.English,35*S,StripY+5*S+JapaneseSubtitleLineHeight,EnglishSubtitleScale,Muted,W-70*S,EnglishSubtitleLineHeight,1);
     }
+}
+SoraText::FLine SoraHUDPanels::KeyPrompt(const UObject* WorldContext,const FString& Japanese,const FString& English)
+{
+    const auto Resolve=[WorldContext](const FString& Text,bool bEnglish)
+    {
+        FString Out;
+        for(int32 At=0;At<Text.Len();)
+        {
+            int32 Close=INDEX_NONE;
+            if(Text[At]==TEXT('{')) Close=Text.Find(TEXT("}"),ESearchCase::CaseSensitive,ESearchDir::FromStart,At);
+            if(Close==INDEX_NONE) { Out.AppendChar(Text[At++]); continue; }
+            const SoraText::FLine Key=SoraUI::ActionKey(WorldContext,FName(*Text.Mid(At+1,Close-At-1)));
+            Out+=bEnglish?TEXT("[")+Key.English+TEXT("]"):TEXT("［")+Key.Japanese+TEXT("］");
+            At=Close+1;
+        }
+        return Out;
+    };
+    return {Resolve(Japanese,false),Resolve(English,true)};
+}
+SoraText::FLine SoraHUDPanels::ResultHeadline(const ASoraGameMode& G)
+{
+    if(G.bDeterministicPractice) return SoraText::Line(NSLOCTEXT("SoraArena.HUD","Result.PracticeOver","稽古終了"));
+    if(G.bDefeated) return SoraText::Line(NSLOCTEXT("SoraArena.HUD","Result.RiseAgain","ふたたび立ち上がれ"));
+    if(!G.bCampaign) return SoraText::Line(NSLOCTEXT("SoraArena.HUD","Result.ArenaCleared","稽古場を制した"));
+    if(G.Campaign()->bCampaignComplete) return SoraText::Line(NSLOCTEXT("SoraArena.HUD","Result.Liberated","猫柳生、解放"));
+    // Chapter one ends the dojo's training; every later chapter frees a district.
+    if(G.Campaign()->ChapterId==0) return SoraText::Line(NSLOCTEXT("SoraArena.HUD","Result.DojoComplete","道場の修行を終えた"));
+    return SoraText::Line(NSLOCTEXT("SoraArena.HUD","Result.DistrictLiberated","街区を解放した"));
 }
 void SoraHUDPanels::DrawResult(const FSoraHUDFrame& Frame)
 {
@@ -368,7 +398,9 @@ void SoraHUDPanels::DrawResult(const FSoraHUDFrame& Frame)
     if(G->bDefeated||G->bChapterComplete)
     {
         HUD.Panel(0,H*.3,W,H*.35,FLinearColor(.012,.026,.034,.94));
-        HUD.Label(G->bDeterministicPractice?TEXT("稽古終了"):G->bDefeated?TEXT("ふたたび立ち上がれ"):G->Campaign()->bCampaignComplete?TEXT("猫柳生、解放"):TEXT("街区を解放した"),W*.2,H*.36,1.8*S,G->bDefeated?Gold:Teal);
+        const SoraText::FLine Headline=ResultHeadline(*G);
+        HUD.Label(Headline.Japanese,W*.2,H*.36,1.8*S,G->bDefeated?Gold:Teal);
+        if(G->bEnglishSubtitles) HUD.Label(Headline.English,W*.2,H*.418,.8*S,Muted);
         HUD.WrappedLabel(G->Notice,W*.2,H*.48,.65*S,Ivory,W*.65,29*S,2);
         if(G->bEnglishSubtitles) HUD.WrappedLabel(G->NoticeEnglish,W*.2,H*.535,EnglishSubtitleScale,Muted,W*.65,EnglishSubtitleLineHeight,2);
         const SoraText::FLine Next=SoraText::Format(NSLOCTEXT("SoraArena.HUD","Result.Next","{Enter}  続ける    |    {Menu}  メニュー"),

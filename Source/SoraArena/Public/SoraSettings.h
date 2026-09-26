@@ -62,6 +62,8 @@ enum class EPalette : uint8 { Standard, RedGreen, BlueYellow, HighContrast, Coun
 SORAARENA_API FLinearColor TelegraphColor(EPalette Palette, ETelegraph Kind);
 // The colour for the world's chosen palette; Standard without a game mode.
 SORAARENA_API FLinearColor TelegraphColor(const UObject* WorldContext, ETelegraph Kind);
+// The strike that follows a telegraph flashes a lighter shade of its colour.
+SORAARENA_API FLinearColor StrikeColor(const UObject* WorldContext, ETelegraph Kind);
 enum class ESubtitleSize : uint8 { Standard, Large, ExtraLarge, Count };
 SORAARENA_API float SubtitleScale(ESubtitleSize Size);
 // Campaign difficulty, the story bible's three tiers: 稽古 (Easy), 真剣

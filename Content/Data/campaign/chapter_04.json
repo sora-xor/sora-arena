@@ -6132,8 +6132,8 @@
     "ch04.b03"
    ],
    "on": "after weapon 5 unlock",
-   "ja": "{reload}で早合を込める。カチッと鳴った瞬間にもう一度{reload}で素早く締める",
-   "en": "{reload} loads a hayagō. Press {reload} again on the click to lock it faster.",
+   "ja": "{Reload}で早合を込める。カチッと鳴った瞬間にもう一度{Reload}で素早く締める",
+   "en": "{Reload} loads a hayagō. Press {Reload} again on the click to lock it faster.",
    "shown_en": null
   },
   {
@@ -6152,8 +6152,8 @@
     "ch04.b04"
    ],
    "on": "progress_at:0.15",
-   "ja": "{alt_attack}で分銅を投げ、刃・盾・目録を絡め取る",
-   "en": "{alt_attack}: throw the weight to snare a blade, shield or drone.",
+   "ja": "鎖鎌の分銅は刃・盾・目録を絡め取る",
+   "en": "The kusarigama weight snares a blade, shield or drone.",
    "shown_en": null
   },
   {
@@ -6172,8 +6172,8 @@
     "ch04.b05"
    ],
    "on": "beat_start",
-   "ja": "首輪の者は峰打ちで倒し、{interact}で首輪を断つ",
-   "en": "Subdue the collared with the blade's back, then {interact} to cut the collar.",
+   "ja": "首輪の者は峰打ちで倒し、{Interact}長押しで首輪を断つ",
+   "en": "Subdue the collared with the back of the blade, then hold {Interact} to cut the collar.",
    "shown_en": null
   },
   {
@@ -6182,8 +6182,8 @@
     "ch04.b06"
    ],
    "on": "beat_start",
-   "ja": "{interact}長押しで巻き上げる。速さを帯の中に保て",
-   "en": "Hold {interact} to crank. Keep your speed inside the band.",
+   "ja": "{Interact}を一定の調子で押して巻き上げる。速さを帯の中に保て",
+   "en": "Press {Interact} at a steady pace to crank. Keep your speed inside the band.",
    "shown_en": null
   },
   {
@@ -6202,8 +6202,8 @@
     "ch04.b10"
    ],
    "on": "beat_start",
-   "ja": "{signal}で同行者を伏せさせる",
-   "en": "{signal}: tell the escort to take cover.",
+   "ja": "同行者はあなたがそばにいる間だけ進む",
+   "en": "The escort moves on only while you stay close.",
    "shown_en": null
   },
   {
@@ -6212,8 +6212,8 @@
     "ch04.b12"
    ],
    "on": "first npc_downed",
-   "ja": "網に捕らわれた者は{interact}で解放。12秒で連れ去られる",
-   "en": "{interact} to free netted planters. They are taken after 12 s.",
+   "ja": "網に捕らわれた者は{Interact}で解放。12秒で連れ去られる",
+   "en": "{Interact} to free netted planters. They are taken after 12 s.",
    "shown_en": null
   },
   {
@@ -6222,8 +6222,8 @@
     "ch04.b13"
    ],
    "on": "beat_complete",
-   "ja": "生産改帳が開いた。{menu}からいつでも見られる",
-   "en": "The registry is open. View it any time from {menu}.",
+   "ja": "生産改帳が開いた。{Menu}からいつでも見られる",
+   "en": "The registry is open. View it any time from {Menu}.",
    "shown_en": null
   },
   {

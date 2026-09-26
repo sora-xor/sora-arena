@@ -1245,8 +1245,19 @@ static FProgress PlayChapter(int Chapter, const FChapterFixture& Plan, FEntry En
         Forged({State.CompletedMask, State.SitesMask, State.WeaponsMask, State.MechanicsMask, State.FlagsMask, true},
             "forged chapter completion accepted");
 
+        // A required beat teaches its own unlocks while it is in play; an
+        // optional cache gives nothing before it is opened, and a grant
+        // arrives only as its beat completes.
+        const unsigned TaughtWeapons = Beat.Optional ? 0u : Beat.WeaponsMask;
+        const unsigned TaughtMechanics = Beat.Optional ? 0u : Beat.MechanicsMask;
+        Expect(InPlayWeapons(State, Beats, Count, Index) == (State.WeaponsMask | TaughtWeapons) &&
+            InPlayMechanics(State, Beats, Count, Index) == (State.MechanicsMask | TaughtMechanics),
+            "a beat in play does not hold exactly what it teaches", Chapter);
         const unsigned Before = State.WeaponsMask;
         Expect(CompleteBeat(State, Beats, Count, Index), "beat completion rejected", Chapter);
+        Expect(InPlayWeapons(State, Beats, Count, Index) == State.WeaponsMask &&
+            InPlayMechanics(State, Beats, Count, Index) == State.MechanicsMask,
+            "a completed beat still teaches beyond what it unlocked", Chapter);
         Expect(!CompleteBeat(State, Beats, Count, Index), "beat completed twice", Chapter);
         Expect(ProgressValid(State, Beats, Count, Entry.Weapons, Entry.Mechanics, Entry.Flags), "state invalid after a beat", Chapter);
         for (int Weapon = 0; Weapon < WeaponCount; ++Weapon)

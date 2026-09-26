@@ -414,7 +414,8 @@ void ASoraEnemy::StrikeMelee(const FSoraEnemyAttack& Attack,ASoraCharacterBase& 
     // The committed line (or ring) must still hold the target, in reach and in the open.
     const bool bReach=Distance>=Attack.MinRangeCm&&Distance<=Attack.MaxRangeCm&&(bAround||Facing>=Attack.ArcMilli)&&
         Trace.GetActor()==&Target;
-    if(bAround) SoraDamage::Ring(GetWorld(),Feet(*this)+FVector(0.f,0.f,3.f),Attack.MaxRangeCm,FLinearColor(1.f,.80f,.24f),.13f);
+    // The strike flashes a lighter shade of its telegraph (the settings' palette).
+    if(bAround) SoraDamage::Ring(GetWorld(),Feet(*this)+FVector(0.f,0.f,3.f),Attack.MaxRangeCm,SoraAccessibility::StrikeColor(this,SoraAccessibility::ETelegraph::Cleave),.13f);
     else SoraDamage::Beam(GetWorld(),From,From+LockedDirection*Attack.MaxRangeCm,FLinearColor(.75f,.82f,.87f),2.f,.13f);
     FSoraStrikeResolvedEvent Resolved;
     Resolved.Attacker=this; Resolved.WeaponId=WeaponId;
@@ -495,7 +496,7 @@ void ASoraEnemy::FireBeam(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Tar
     const bool bClear=!GetWorld()->LineTraceTestByObjectType(From,There,Solid,Query);
     const bool bHit=Along>=0.f&&Along<=Attack.MaxRangeCm&&Across<=Attack.WidthCm*.5f&&bClear;
     const FVector End=From+Flat*Attack.MaxRangeCm;
-    SoraDamage::Beam(GetWorld(),From,End,FLinearColor(.12f,1.f,1.f),8.f,.22f);
+    SoraDamage::Beam(GetWorld(),From,End,SoraAccessibility::StrikeColor(this,SoraAccessibility::ETelegraph::Lock),8.f,.22f);
     if(USoraGameEvents* Events=USoraGameEvents::Get(this))
     {
         FSoraWeaponFiredEvent Fired;
@@ -510,7 +511,7 @@ void ASoraEnemy::FireBeam(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Tar
 }
 void ASoraEnemy::CastNet(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)
 {
-    SoraDamage::Ring(GetWorld(),LockedPoint+FVector(0.f,0.f,3.f),Attack.RadiusCm,FLinearColor(.12f,1.f,1.f),.25f);
+    SoraDamage::Ring(GetWorld(),LockedPoint+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::StrikeColor(this,SoraAccessibility::ETelegraph::Lock),.25f);
     // Only a target still inside the lock ring is caught.
     if(FVector::Dist2D(Feet(Target),LockedPoint)>Attack.RadiusCm) return;
     if(USoraCombatEffects* Effects=USoraCombatEffects::Get(this)) Effects->Root(Target,Attack.RootMs);
@@ -607,21 +608,25 @@ void ASoraEnemy::OnDefeated(AActor* Causer)
     CancelAttack();
     auto* G=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
     const bool bSpared=G&&G->Campaign()->SparesOpponent(*this);
+    // It settles before anyone hears of the defeat, so a beat that ends on it
+    // clears a field whose fallen are already down or already leaving: a
+    // guard's body stays where it fell for the others to find (until the
+    // encounter ends), and a combat wave's fallen clear away.
+    const auto* Brain=Cast<ASoraEnemyController>(GetController());
+    const bool bBody=Kind&&Brain&&Brain->IsGuard();
+    if(bBody) LieDown(true);
+    else
+    {
+        SetActorEnableCollision(false);
+        if(bDojoPupil||bSpared) SetActorTickEnabled(false);
+        else SetActorRotation(FRotator(0,GetActorRotation().Yaw,85));
+        SetLifeSpan(2.f);
+    }
     // A boss's add answers to the boss; the beat counts only its own opponents.
     if(ASoraBoss* Boss=SummonedBy.Get()) Boss->AddDefeated(*this);
     else if(G) G->Campaign()->OpponentDefeated(this);
-    // A guard's body stays where it fell for the others to find; a combat
-    // wave's fallen clear away.
-    const auto* Brain=Cast<ASoraEnemyController>(GetController());
-    if(Kind&&Brain&&Brain->IsGuard())
-    {
-        LieDown(true);
-        return;
-    }
-    SetActorEnableCollision(false);
-    if(bDojoPupil||bSpared) SetActorTickEnabled(false);
-    else SetActorRotation(FRotator(0,GetActorRotation().Yaw,85));
-    if(!G||!G->Campaign()->IsCaptive(*this)) SetLifeSpan(2.f);
+    // A captive stays until the campaign takes it away.
+    if(!bBody&&G&&G->Campaign()->IsCaptive(*this)) SetLifeSpan(0.f);
 }
 void ASoraEnemy::Subdue(AActor* Causer)
 {
@@ -719,7 +724,8 @@ void ASoraEnemy::PupilAttack(ASoraCharacterBase& Target,float Dist)
     if(Time<NextPupilStrike||Dist>190.f) return;
     bPupilWindup=true; PupilWindupEndsAt=Time+.55f; NextPupilStrike=PupilWindupEndsAt+1.45f;
     PupilLockedDirection=(Target.GetActorLocation()+FVector(0,0,50)-From).GetSafeNormal();
-    SoraDamage::Beam(GetWorld(),From,From+PupilLockedDirection*200.f,FLinearColor(1.f,.68f,.16f),2.f,.55f);
+    // The dojo teaches reading this windup: it takes the settings' palette like every telegraph.
+    SoraDamage::Beam(GetWorld(),From,From+PupilLockedDirection*200.f,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),2.f,.55f);
     if(Events)
     {
         FSoraMeleeCommittedEvent Committed;

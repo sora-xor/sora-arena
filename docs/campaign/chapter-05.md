@@ -1019,13 +1019,13 @@ This is played straight, per the tone rules. Nyaakoto's reach is katsujinken, ev
 |---|---|---|---|---|
 | `ui.ch05.tut.01` | ch05.b02 | `beat_start` | 水の中を歩くと、足音が小さくなる | Walking in water makes your steps quieter |
 | `ui.ch05.tut.02` | ch05.b02 | `volume_enter:vol_kanna_tailings` | 砂利の上は足音が大きい | Gravel is loud underfoot |
-| `ui.ch05.tut.03` | ch05.b02 | `look_at:kagaribi` | [長押し] 篝火に砂をかけて消す | [Hold] Smother the brazier with sand |
+| `ui.ch05.tut.03` | ch05.b02 | `look_at:kagaribi` | {Interact}長押し：篝火に砂をかけて消す | Hold {Interact}: smother the brazier with sand |
 | `ui.ch05.tut.04` | ch05.b02 | `look_at:flood_upper` | 照明の根元の線を射ると、しばらく消える | Shoot the floodlight's base cable to cut it briefly |
-| `ui.ch05.tut.05` | ch05.b03 | `look_at:collar` | [長押し] 首輪を断つ | [Hold] Cut the collar |
-| `ui.ch05.tut.06` | ch05.b03 | `progress_at:0.05` | [合図] 同行者を伏せさせる | [Signal] Your companions take cover |
+| `ui.ch05.tut.05` | ch05.b03 | `look_at:collar` | {Interact}長押し：首輪を断つ | Hold {Interact}: cut the collar |
+| `ui.ch05.tut.06` | ch05.b03 | `progress_at:0.05` | 見張りに見られている間、同行者は足を止める | While a guard sees you, your companions stop and wait |
 | `ui.ch05.tut.07` | ch05.b05 | `polearm_obstructed:first` | 薙刀の払いは機に当たる。狭い所では突け | Naginata sweeps catch on looms. Thrust in narrow aisles |
 | `ui.ch05.tut.08` | ch05.b06 | `beat_start` | 左右交互に一定の間で踏む。炎の色と印が目安 | Tread left-right at a steady pace. Watch the flame and gauge |
-| `ui.ch05.tut.09` | ch05.b07 | `target_hp_below:tatara_furnace:0.7` | [長押し] 粘土で釜を補修 | [Hold] Patch the furnace with clay |
+| `ui.ch05.tut.09` | ch05.b07 | `target_hp_below:tatara_furnace:0.7` | {Interact}：粘土で釜を補修 | Press {Interact}: patch the furnace with clay |
 | `ui.ch05.tut.10` | ch05.b08 | `beat_start` | 小鎚の合図の一拍後に打つ | Strike one beat after the small hammer's cue |
 | `ui.ch05.tut.11` | ch05.b10 | `beat_start` | アーク・カービン: 構えて撃つ/弾を込め直す | Arc Carbine: aim, fire, reload |
 | `ui.ch05.tut.12` | ch05.b11 | `beat_start` | お絹の呼び声に合わせて紋糸を引く | Pull the figure cords on Okinu's call |
@@ -2393,8 +2393,8 @@ ui_prompts:
   - id: "ui.ch05.tut.03"
     beat: "ch05.b02"
     "on": "look_at:kagaribi"
-    ja: "[長押し] 篝火に砂をかけて消す"
-    en: "[Hold] Smother the brazier with sand"
+    ja: "{Interact}長押し：篝火に砂をかけて消す"
+    en: "Hold {Interact}: smother the brazier with sand"
   - id: "ui.ch05.tut.04"
     beat: "ch05.b02"
     "on": "look_at:flood_upper"
@@ -2403,13 +2403,13 @@ ui_prompts:
   - id: "ui.ch05.tut.05"
     beat: "ch05.b03"
     "on": "look_at:collar"
-    ja: "[長押し] 首輪を断つ"
-    en: "[Hold] Cut the collar"
+    ja: "{Interact}長押し：首輪を断つ"
+    en: "Hold {Interact}: cut the collar"
   - id: "ui.ch05.tut.06"
     beat: "ch05.b03"
     "on": "progress_at:0.05"
-    ja: "[合図] 同行者を伏せさせる"
-    en: "[Signal] Your companions take cover"
+    ja: "見張りに見られている間、同行者は足を止める"
+    en: "While a guard sees you, your companions stop and wait"
   - id: "ui.ch05.tut.07"
     beat: "ch05.b05"
     "on": "polearm_obstructed:first"
@@ -2423,8 +2423,8 @@ ui_prompts:
   - id: "ui.ch05.tut.09"
     beat: "ch05.b07"
     "on": "target_hp_below:tatara_furnace:0.7"
-    ja: "[長押し] 粘土で釜を補修"
-    en: "[Hold] Patch the furnace with clay"
+    ja: "{Interact}：粘土で釜を補修"
+    en: "Press {Interact}: patch the furnace with clay"
   - id: "ui.ch05.tut.10"
     beat: "ch05.b08"
     "on": "beat_start"

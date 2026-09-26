@@ -494,7 +494,7 @@ Tutorial prompts (L4 `ui_strings`, not voiced):
 
 | Prompt id | Trigger | Japanese | English |
 |---|---|---|---|
-| `ch01.b02.prompt.01` | `beat_start` | ［防御］長押しで正眼に構える（0.6秒） | Hold [Guard] to take seigan (0.6 s). |
+| `ch01.b02.prompt.01` | `beat_start` | {Block}長押しで正眼に構える（0.6秒） | Hold {Block} to take seigan (0.6 s). |
 | `ch01.b02.prompt.02` | `gate_start:maai_step` | 水月の輪が浮かぶ間合いで止まり、師に向く | Stop where the moon ring appears, facing Sensei. |
 
 #### ch01.b03 · Receive the cut, then meet it (受けて、合わせよ)
@@ -517,9 +517,9 @@ Tutorial prompts (L4 `ui_strings`, not voiced):
 
 | Prompt id | Trigger | Japanese | English |
 |---|---|---|---|
-| `ch01.b03.prompt.01` | `beat_start` | 相手に向き、［防御］を保って一撃を受ける | Face him and hold [Guard] through the strike. |
-| `ch01.b03.prompt.02` | `gate_start:awase` | 金色の予兆に合わせて［防御］を押す | Press [Guard] as the gold warning flashes. |
-| `ch01.b03.prompt.03` | `gate_start:recovery_complete` | 一度振り、［攻撃］を離して刃の戻りを待つ | Swing once, release [Attack], and wait for the blade to return. |
+| `ch01.b03.prompt.01` | `beat_start` | 相手に向き、{Block}を保って一撃を受ける | Face him and hold {Block} through the strike. |
+| `ch01.b03.prompt.02` | `gate_start:awase` | 金色の予兆に合わせて{Block}を押す | Press {Block} as the gold warning flashes. |
+| `ch01.b03.prompt.03` | `gate_start:recovery_complete` | 一度振り、{Fire}を離して刃の戻りを待つ | Swing once, release {Fire}, and wait for the blade to return. |
 | `ch01.b03.prompt.04` | `bout_start:1` | 合わせて崩し、その隙に打って一本を取る | Meet his cut, then strike the opening to score. |
 
 #### ch01.b04 · Marobashi: roll with the flood (転（まろばし）)
@@ -537,7 +537,7 @@ Tutorial prompts (L4 `ui_strings`, not voiced):
 
 | Prompt id | Trigger | Japanese | English |
 |---|---|---|---|
-| `ch01.b04.prompt.01` | `volume_enter:vol_ch01_dojo_yard` | 合わせた直後（0.4秒以内）に 左右＋［踏み込み］ | Within 0.4 s of an awase: Left/Right + [Step]. |
+| `ch01.b04.prompt.01` | `volume_enter:vol_ch01_dojo_yard` | 合わせた直後（0.4秒以内）に 左右＋{Jump} | Within 0.4 s of an awase: Left/Right + {Jump}. |
 
 #### ch01.b05 · The sunbeam on the veranda (縁側の陽だまり)
 
@@ -555,7 +555,7 @@ Tutorial prompts (L4 `ui_strings`, not voiced):
 
 | Prompt id | Trigger | Japanese | English |
 |---|---|---|---|
-| `ch01.b05.prompt.01` | `volume_enter:vol_ch01_engawa_sunbeam` | ［調べる］で一礼（任意） | [Interact] to bow (optional). |
+| `ch01.b05.prompt.01` | `volume_enter:vol_ch01_engawa_sunbeam` | {Interact}で一礼（任意） | {Interact} to bow (optional). |
 
 #### ch01.b06 · Tack up Kurimaru and ride to the range (栗丸に鞍を置き、的場へ)
 
@@ -576,10 +576,10 @@ Tutorial prompts (L4 `ui_strings`, not voiced):
 
 | Prompt id | Trigger | Japanese | English |
 |---|---|---|---|
-| `ch01.b06.prompt.01` | `beat_start` | 光る馬具で［調べる］：鞍・腹帯・鐙・轡の順 | [Interact] at each tack piece: saddle, girth, stirrups, bit. |
-| `ch01.b06.prompt.02` | `interact_refused:ip_ch01_kutsuwa:2` | ［調べる］長押しで大麦の穂を与える | Hold [Interact] to offer the ear of barley. |
-| `ch01.b06.prompt.03` | `interact:ip_ch01_kutsuwa` | ［調べる］で栗丸に乗る（右から） | [Interact] to mount Kurimaru (from the right). |
-| `ch01.b06.prompt.04` | `mount` | 前進で常歩、［速歩］で速歩 | Move forward to walk. Press [Trot] to trot. |
+| `ch01.b06.prompt.01` | `beat_start` | 光る馬具で{Interact}：鞍・腹帯・鐙・轡の順 | {Interact} at each tack piece: saddle, girth, stirrups, bit. |
+| `ch01.b06.prompt.02` | `interact_refused:ip_ch01_kutsuwa:2` | もう一度{Interact}で大麦の穂を与える | Press {Interact} again to offer the ear of barley. |
+| `ch01.b06.prompt.03` | `interact:ip_ch01_kutsuwa` | {Interact}で栗丸に乗る（右から） | {Interact} to mount Kurimaru (from the right). |
+| `ch01.b06.prompt.04` | `mount` | 前進で常歩。前進しながら{Sprint}長押しで歩度を上げる | Move forward to walk. Hold {Sprint} while moving forward to quicken her gait. |
 | `ch01.b06.prompt.05` | `horse_spooked` | 馬が驚いた。手綱を引かず、落ち着くのを待つ | She is spooked. Ease the reins and let her settle. |
 
 #### ch01.b07 · Draw the bow at the range (的場で弓を引け)
@@ -601,7 +601,7 @@ Tutorial prompts (L4 `ui_strings`, not voiced):
 
 | Prompt id | Trigger | Japanese | English |
 |---|---|---|---|
-| `ch01.b07.prompt.01` | `equip:18` | ［攻撃］長押しで引分け（0.65秒）。会で狙い、離して放つ | Hold [Attack] to draw (0.65 s). Aim at full draw; release to loose. |
+| `ch01.b07.prompt.01` | `equip:18` | {Fire}長押しで引分け（0.65秒）。会で狙い、離して放つ | Hold {Fire} to draw (0.65 s). Aim at full draw; release to loose. |
 | `ch01.b07.prompt.02` | `wave_start:2` | 遠い的ほど矢は落ちる。揺れの先を狙う | Arrows drop over distance. Lead the swing. |
 
 #### ch01.b08 · The One-Claw Stone Wood (一爪石の森)
@@ -634,10 +634,10 @@ Tutorial prompts (L4 `ui_strings`, not voiced):
 
 | Prompt id | Trigger | Japanese | English |
 |---|---|---|---|
-| `ch01.b09.prompt.01` | `beat_start` | ［調べる］長押しで鞴を押し、火床を起こす | Hold [Interact] to work the bellows and wake the hearth. |
+| `ch01.b09.prompt.01` | `beat_start` | {Interact}で鞴を押し、火床を起こす | Press {Interact} to work the bellows and wake the hearth. |
 | `ch01.b09.prompt.02` | `step_start:heat` | 矢を炭にかざし、艶が出たら離す | Warm the shaft over the coals; lift it when it gleams. |
 | `ch01.b09.prompt.03` | `step_start:bend` | 矯め木で押し、筋がまっすぐになったら離す | Press it in the tamegi; release when the line runs true. |
-| `ch01.b09.prompt.04` | `step_start:paste` | ［調べる］で膠を引き、羽を付ける | [Interact] to spread glue and set the feathers. |
+| `ch01.b09.prompt.04` | `step_start:paste` | {Interact}で膠を引き、羽を付ける | {Interact} to spread glue and set the feathers. |
 
 #### ch01.b10 · The sword that kills, the sword that gives life (殺人刀と活人剣)
 
@@ -701,7 +701,7 @@ Tutorial prompts (L4 `ui_strings`, not voiced):
 
 | Prompt id | Trigger | Japanese | English |
 |---|---|---|---|
-| `ch01.b12.prompt.01` | `blocking_end` | ［抜刀］で抜き、［納刀］で納める | [Draw] to unsheathe. [Sheathe] to put it away. |
+| `ch01.b12.prompt.01` | `blocking_end` | {Sheathe}で抜刀・納刀 | Press {Sheathe} to draw or sheathe the blade. |
 
 #### ch01.b13 · The sky splits (空が裂ける)
 
@@ -1826,26 +1826,26 @@ lines:
   - {id: ch01.b13.sekireisai.006, beat: ch01.b13, "on": seq, speaker: mentor, ja: "ニャーコト。預けたものを、忘れるな。", en: "Nyaakoto. Do not forget what you hold in trust.", register: archaic_samurai, duration_s: 3.5, mode: cinematic, kind: cinematic, t_s: 88.0, audio: null}
   - {id: ch01.b13.nyaakoto.007, beat: ch01.b13, "on": seq, speaker: samurai, ja: "……はい、先生。", en: "…Yes, Sensei.", register: jidaigeki_restrained, duration_s: 1.6, mode: cinematic, kind: cinematic, t_s: 92.1, audio: null}
 ui_prompts:
-  - {id: ch01.b02.prompt.01, beat: ch01.b02, "on": beat_start, ja: "［防御］長押しで正眼に構える（0.6秒）", en: "Hold [Guard] to take seigan (0.6 s)."}
+  - {id: ch01.b02.prompt.01, beat: ch01.b02, "on": beat_start, ja: "{Block}長押しで正眼に構える（0.6秒）", en: "Hold {Block} to take seigan (0.6 s)."}
   - {id: ch01.b02.prompt.02, beat: ch01.b02, "on": "gate_start:maai_step", ja: "水月の輪が浮かぶ間合いで止まり、師に向く", en: "Stop where the moon ring appears, facing Sensei."}
-  - {id: ch01.b03.prompt.01, beat: ch01.b03, "on": beat_start, ja: "相手に向き、［防御］を保って一撃を受ける", en: "Face him and hold [Guard] through the strike."}
-  - {id: ch01.b03.prompt.02, beat: ch01.b03, "on": "gate_start:awase", ja: "金色の予兆に合わせて［防御］を押す", en: "Press [Guard] as the gold warning flashes."}
-  - {id: ch01.b03.prompt.03, beat: ch01.b03, "on": "gate_start:recovery_complete", ja: "一度振り、［攻撃］を離して刃の戻りを待つ", en: "Swing once, release [Attack], and wait for the blade to return."}
+  - {id: ch01.b03.prompt.01, beat: ch01.b03, "on": beat_start, ja: "相手に向き、{Block}を保って一撃を受ける", en: "Face him and hold {Block} through the strike."}
+  - {id: ch01.b03.prompt.02, beat: ch01.b03, "on": "gate_start:awase", ja: "金色の予兆に合わせて{Block}を押す", en: "Press {Block} as the gold warning flashes."}
+  - {id: ch01.b03.prompt.03, beat: ch01.b03, "on": "gate_start:recovery_complete", ja: "一度振り、{Fire}を離して刃の戻りを待つ", en: "Swing once, release {Fire}, and wait for the blade to return."}
   - {id: ch01.b03.prompt.04, beat: ch01.b03, "on": "bout_start:1", ja: "合わせて崩し、その隙に打って一本を取る", en: "Meet his cut, then strike the opening to score."}
-  - {id: ch01.b04.prompt.01, beat: ch01.b04, "on": "volume_enter:vol_ch01_dojo_yard", ja: "合わせた直後（0.4秒以内）に 左右＋［踏み込み］", en: "Within 0.4 s of an awase: Left/Right + [Step]."}
-  - {id: ch01.b05.prompt.01, beat: ch01.b05, "on": "volume_enter:vol_ch01_engawa_sunbeam", ja: "［調べる］で一礼（任意）", en: "[Interact] to bow (optional)."}
-  - {id: ch01.b06.prompt.01, beat: ch01.b06, "on": beat_start, ja: "光る馬具で［調べる］：鞍・腹帯・鐙・轡の順", en: "[Interact] at each tack piece: saddle, girth, stirrups, bit."}
-  - {id: ch01.b06.prompt.02, beat: ch01.b06, "on": "interact_refused:ip_ch01_kutsuwa:2", ja: "［調べる］長押しで大麦の穂を与える", en: "Hold [Interact] to offer the ear of barley."}
-  - {id: ch01.b06.prompt.03, beat: ch01.b06, "on": "interact:ip_ch01_kutsuwa", ja: "［調べる］で栗丸に乗る（右から）", en: "[Interact] to mount Kurimaru (from the right)."}
-  - {id: ch01.b06.prompt.04, beat: ch01.b06, "on": mount, ja: "前進で常歩、［速歩］で速歩", en: "Move forward to walk. Press [Trot] to trot."}
+  - {id: ch01.b04.prompt.01, beat: ch01.b04, "on": "volume_enter:vol_ch01_dojo_yard", ja: "合わせた直後（0.4秒以内）に 左右＋{Jump}", en: "Within 0.4 s of an awase: Left/Right + {Jump}."}
+  - {id: ch01.b05.prompt.01, beat: ch01.b05, "on": "volume_enter:vol_ch01_engawa_sunbeam", ja: "{Interact}で一礼（任意）", en: "{Interact} to bow (optional)."}
+  - {id: ch01.b06.prompt.01, beat: ch01.b06, "on": beat_start, ja: "光る馬具で{Interact}：鞍・腹帯・鐙・轡の順", en: "{Interact} at each tack piece: saddle, girth, stirrups, bit."}
+  - {id: ch01.b06.prompt.02, beat: ch01.b06, "on": "interact_refused:ip_ch01_kutsuwa:2", ja: "もう一度{Interact}で大麦の穂を与える", en: "Press {Interact} again to offer the ear of barley."}
+  - {id: ch01.b06.prompt.03, beat: ch01.b06, "on": "interact:ip_ch01_kutsuwa", ja: "{Interact}で栗丸に乗る（右から）", en: "{Interact} to mount Kurimaru (from the right)."}
+  - {id: ch01.b06.prompt.04, beat: ch01.b06, "on": mount, ja: "前進で常歩。前進しながら{Sprint}長押しで歩度を上げる", en: "Move forward to walk. Hold {Sprint} while moving forward to quicken her gait."}
   - {id: ch01.b06.prompt.05, beat: ch01.b06, "on": horse_spooked, ja: "馬が驚いた。手綱を引かず、落ち着くのを待つ", en: "She is spooked. Ease the reins and let her settle."}
-  - {id: ch01.b07.prompt.01, beat: ch01.b07, "on": "equip:18", ja: "［攻撃］長押しで引分け（0.65秒）。会で狙い、離して放つ", en: "Hold [Attack] to draw (0.65 s). Aim at full draw; release to loose."}
+  - {id: ch01.b07.prompt.01, beat: ch01.b07, "on": "equip:18", ja: "{Fire}長押しで引分け（0.65秒）。会で狙い、離して放つ", en: "Hold {Fire} to draw (0.65 s). Aim at full draw; release to loose."}
   - {id: ch01.b07.prompt.02, beat: ch01.b07, "on": "wave_start:2", ja: "遠い的ほど矢は落ちる。揺れの先を狙う", en: "Arrows drop over distance. Lead the swing."}
-  - {id: ch01.b09.prompt.01, beat: ch01.b09, "on": beat_start, ja: "［調べる］長押しで鞴を押し、火床を起こす", en: "Hold [Interact] to work the bellows and wake the hearth."}
+  - {id: ch01.b09.prompt.01, beat: ch01.b09, "on": beat_start, ja: "{Interact}で鞴を押し、火床を起こす", en: "Press {Interact} to work the bellows and wake the hearth."}
   - {id: ch01.b09.prompt.02, beat: ch01.b09, "on": "step_start:heat", ja: "矢を炭にかざし、艶が出たら離す", en: "Warm the shaft over the coals; lift it when it gleams."}
   - {id: ch01.b09.prompt.03, beat: ch01.b09, "on": "step_start:bend", ja: "矯め木で押し、筋がまっすぐになったら離す", en: "Press it in the tamegi; release when the line runs true."}
-  - {id: ch01.b09.prompt.04, beat: ch01.b09, "on": "step_start:paste", ja: "［調べる］で膠を引き、羽を付ける", en: "[Interact] to spread glue and set the feathers."}
+  - {id: ch01.b09.prompt.04, beat: ch01.b09, "on": "step_start:paste", ja: "{Interact}で膠を引き、羽を付ける", en: "{Interact} to spread glue and set the feathers."}
   - {id: ch01.b11.prompt.01, beat: ch01.b11, "on": beat_start, ja: "三本先取。面・小手・胴への一撃で一本", en: "First to three. A clean hit to head, wrist or body scores."}
   - {id: ch01.b11.prompt.02, beat: ch01.b11, "on": beat_start, ja: "輪の外へ出ると仕切り直し", en: "Step out of the ring and the exchange resets."}
-  - {id: ch01.b12.prompt.01, beat: ch01.b12, "on": blocking_end, ja: "［抜刀］で抜き、［納刀］で納める", en: "[Draw] to unsheathe. [Sheathe] to put it away."}
+  - {id: ch01.b12.prompt.01, beat: ch01.b12, "on": blocking_end, ja: "{Sheathe}で抜刀・納刀", en: "Press {Sheathe} to draw or sheathe the blade."}
 ```

@@ -516,11 +516,11 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         fail(prefix, f"production sites without a place: {sites}")
 
     # Cover and props: every zone gets its style's dressing; zones and routes
-    # where a fight happens get cover by the walls.
+    # where a fight happens (or guards stand watch) get cover by the walls.
     fights = {"combat_wave", "boss", "duel", "stealth_zone"}
     for index, zone in enumerate(zones):
         hosted = [beat for beat in beats if route_of.get(beat["id"], zone_of.get(beat["place"])) == index]
-        combat = any(beat["type"] in fights or beat["task"]["waves"] for beat in hosted)
+        combat = any(beat["type"] in fights or beat["task"]["waves"] or beat["task"]["guards"] for beat in hosted)
         if zone.form == "route":
             _dress_route(zone, combat)
         else:

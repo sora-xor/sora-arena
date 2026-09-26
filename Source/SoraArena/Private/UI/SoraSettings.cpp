@@ -132,6 +132,11 @@ FLinearColor SoraAccessibility::TelegraphColor(const UObject* WorldContext, ETel
     return TelegraphColor(Mode && Mode->Settings() ? Mode->Settings()->TelegraphPalette() : EPalette::Standard, Kind);
 }
 
+FLinearColor SoraAccessibility::StrikeColor(const UObject* WorldContext, ETelegraph Kind)
+{
+    return FMath::Lerp(TelegraphColor(WorldContext, Kind), FLinearColor::White, .25f);
+}
+
 SoraAccessibility::EDifficulty SoraAccessibility::CampaignDifficulty(const UObject* WorldContext)
 {
     const ASoraGameMode* Mode = WorldContext ? Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(WorldContext)) : nullptr;

@@ -1655,33 +1655,7 @@
     "anchor_after_lines": false,
     "pause_when_seen": true,
     "max_alive": 6,
-    "waves": [
-     {
-      "id": "w_kicho_patrol",
-      "trigger": "start",
-      "value": 0,
-      "event": null,
-      "members": [
-       {
-        "type": "auditor",
-        "count": 3,
-        "lethal": true
-       },
-       {
-        "type": "enforcer_rifle",
-        "count": 1,
-        "lethal": true
-       },
-       {
-        "type": "drone",
-        "count": 1,
-        "lethal": true
-       }
-      ],
-      "lethal": 5,
-      "nonlethal": 0
-     }
-    ],
+    "waves": [],
     "phases": [
      1000
     ],
@@ -1722,7 +1696,13 @@
     "lines_event": null,
     "closing_event": null,
     "exit_event": null,
-    "guards": [],
+    "guards": [
+     "auditor",
+     "auditor",
+     "auditor",
+     "enforcer_rifle",
+     "drone"
+    ],
     "opponent": null,
     "sparring": false,
     "phase_events": [],
@@ -7431,8 +7411,8 @@
     "ch06.b02"
    ],
    "on": "beat_start",
-   "ja": "潜る：［しゃがみ］　息は8秒まで",
-   "en": "Dive: [Crouch]. Breath lasts 8 s.",
+   "ja": "潜る：{Crouch}　息は8秒まで",
+   "en": "Dive: {Crouch}. Breath lasts 8 s.",
    "shown_en": null
   },
   {
@@ -7461,8 +7441,8 @@
     "ch06.b03"
    ],
    "on": "volume_enter:vol_climb_start",
-   "ja": "手掛かりへ：［移動］　握力に注意",
-   "en": "Reach for holds: [Move]. Watch your grip.",
+   "ja": "手掛かりへ進む。握力に注意",
+   "en": "Reach for the holds. Watch your grip.",
    "shown_en": null
   },
   {
@@ -7491,8 +7471,8 @@
     "ch06.b04"
    ],
    "on": "volume_enter:vol_relay_entry",
-   "ja": "柱の目が背を向けた隙に、節を抜く［長押し］",
-   "en": "Pull a node while the eye faces away [Hold].",
+   "ja": "柱の目が背を向けた隙に、{Interact}で節を抜く",
+   "en": "Pull a node with {Interact} while the eye faces away.",
    "shown_en": null
   },
   {
@@ -7501,8 +7481,8 @@
     "ch06.b04"
    ],
    "on": "ai_event:first_rear_reach",
-   "ja": "背後から当て身：［近接］（殺さない）",
-   "en": "Rear takedown: [Melee]. Non-lethal.",
+   "ja": "背後から当て身：{Melee}（殺さない）",
+   "en": "Rear takedown: {Melee}. Non-lethal.",
    "shown_en": null
   },
   {
@@ -7511,8 +7491,8 @@
     "ch06.b04"
    ],
    "on": "ai_event:first_takedown",
-   "ja": "倒れた者を引きずる：［調べる］長押し",
-   "en": "Drag a body: hold [Interact].",
+   "ja": "倒れた者を引きずる：{Interact}長押し",
+   "en": "Drag a body: hold {Interact}.",
    "shown_en": null
   },
   {
@@ -7521,8 +7501,8 @@
     "ch06.b06"
    ],
    "on": "volume_enter:vol_rubble_c1",
-   "ja": "礫：拾って［投擲］。音で誘う",
-   "en": "Tsubute: pick up, then [Throw] to lure.",
+   "ja": "礫（つぶて）：音で見張りを誘う",
+   "en": "Tsubute: lure a guard with noise.",
    "shown_en": null
   },
   {
@@ -7541,8 +7521,8 @@
     "ch06.b08"
    ],
    "on": "beat_start",
-   "ja": "蝋燭を覆う：［ガード］長押し　写しは半速",
-   "en": "Cup the candle: hold [Guard]. Copying slows.",
+   "ja": "蝋燭を覆う：{Block}長押し　写しは半速",
+   "en": "Cup the candle: hold {Block}. Copying slows.",
    "shown_en": null
   },
   {
@@ -7561,8 +7541,8 @@
     "ch06.b09"
    ],
    "on": "duel_phase:2",
-   "ja": "納刀：［武器切替］長押し",
-   "en": "Sheathe: hold [Weapon Switch].",
+   "ja": "納刀：{Sheathe}",
+   "en": "Sheathe: press {Sheathe}.",
    "shown_en": null
   },
   {
@@ -7571,8 +7551,8 @@
     "ch06.b09"
    ],
    "on": "ai_event:player_sheathed",
-   "ja": "無刀取り：納刀中、真っ向斬りに踏み込み［受け］",
-   "en": "Mutō-dori: while sheathed, step into a vertical cut with [Guard].",
+   "ja": "無刀取り：納刀中、真っ向斬りに踏み込み{Block}",
+   "en": "Mutō-dori: while sheathed, step into a vertical cut with {Block}.",
    "shown_en": null
   },
   {
@@ -7611,8 +7591,8 @@
     "ch06.b13"
    ],
    "on": "ai_event:boss_hp_zero",
-   "ja": "隔壁を落とす：［調べる］長押し",
-   "en": "Drop the bulkhead: hold [Interact].",
+   "ja": "隔壁を落とす：{Interact}",
+   "en": "Drop the bulkhead: {Interact}.",
    "shown_en": null
   }
  ],

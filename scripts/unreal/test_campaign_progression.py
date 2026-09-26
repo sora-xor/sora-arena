@@ -64,7 +64,7 @@ for gate in ("CompleteBeat", "NextBeat", "FinishChapter", "ProgressValid", "Chec
              "FinishLines", "Reach", "Travel", "RecordDefeat", "ScorePoint", "RecordForms", "OpponentHealth", "WorkObjective",
              "Turn", "Pickup", "Deliver", "DropCarried", "Stroke", "DamageTarget", "RepairTarget", "OpenCache",
              "Fail", "RetryTask", "ProgressPermille", "CrankSlipping", "PhaseStartPermille", "RepeatForm", "RecordFlank",
-             "AwaitsCapture", "Capture"):
+             "AwaitsCapture", "Capture", "InPlayWeapons", "InPlayMechanics"):
     assert re.search(rf"SoraBeatRules::{gate}\b", director), f"The campaign director no longer uses tested beat {gate} rule"
 for gate in ("AdvanceChapter", "CampaignLiberated", "CollectibleBit", "CollectiblesValid", "RecordArenaDefeat",
              "RestoreArenaSite", "FinishArena"):

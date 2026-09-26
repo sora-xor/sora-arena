@@ -151,6 +151,24 @@ constexpr bool CompleteBeat(FProgress& State, const FBeat* Beats, int Count, int
     return true;
 }
 
+// What the hero may use while beat Active is in play: what the route has
+// earned, and what a required beat teaches. A beat's unlocks are learned in
+// it (ch02.b03 hands over the yari, ch03.b03 teaches the takedown and the seal
+// cut), and completing it keeps them. An optional cache gives its weapons
+// only once opened, and a grant that makes up for a skipped cache arrives as
+// its beat completes.
+constexpr unsigned InPlayWeapons(FProgress State, const FBeat* Beats, int Count, int Active)
+{
+    return State.WeaponsMask | (CanStartBeat(State, Beats, Count, Active) && !Beats[Active].Optional
+        ? Beats[Active].WeaponsMask : 0u);
+}
+
+constexpr unsigned InPlayMechanics(FProgress State, const FBeat* Beats, int Count, int Active)
+{
+    return State.MechanicsMask | (CanStartBeat(State, Beats, Count, Active) && !Beats[Active].Optional
+        ? Beats[Active].MechanicsMask : 0u);
+}
+
 constexpr bool CanFinishChapter(FProgress State, const FBeat* Beats, int Count)
 {
     const unsigned Required = RequiredBeatsMask(Beats, Count);

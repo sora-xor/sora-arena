@@ -11,8 +11,10 @@ generated chapter files, and checks the bible's §12.3 rules:
 3. weapons 0-20 each unlocked exactly once, at the §11 beat, in §11 order;
 4. boss ids from §8, each staged by its bosses.json fight at that beat, the
    rival duels bosses.json stages at theirs, wave and guard enemy types from
-   enemies.json (whose roster is the bible's §7), and mutō-dori attacks only
-   in fights whose defeat or finisher allows mutō-dori;
+   enemies.json (whose roster is the bible's §7), guards posted in every
+   stealth zone and every production task under guard (its patrolling wave
+   members and x_guards) and nowhere else, and mutō-dori attacks only in
+   fights whose defeat or finisher allows mutō-dori;
 5. mounted weapons within {0, 18, 19}, and registry entries only on production
    tasks and cargo rides;
 6. every line bilingual, spoken by a catalog speaker, at most 17 EN
@@ -24,7 +26,10 @@ generated chapter files, and checks the bible's §12.3 rules:
 
 Every trigger row naming an event the director raises must name one it can
 raise in its beat (director_event_error), so no authored line waits on an
-event that never comes.
+event that never comes. Every HUD prompt names its keys only as {Action}
+tokens for input actions in Config/DefaultInput.ini, the same in both
+languages, which the HUD replaces with the player's own keys; a bracketed
+control name ([Guard], ［調べる］) is refused.
 
 Each chapter's ``space`` (campaign_space.py) must be buildable: zones and
 route corridors never overlap each other or the arena, every beat's points,
@@ -55,6 +60,7 @@ from campaign_space import arena_blockers
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "Content/Data"
 LEGACY_LINES = ROOT / "scripts/unreal/fixtures/campaign_legacy_lines.json"
+INPUT = ROOT / "Config/DefaultInput.ini"
 
 # Story bible §10: target minutes per chapter.
 CHAPTER_TARGET_S = (2400, 2700, 3300, 3600, 3600, 3300, 3000, 3300)
@@ -107,6 +113,9 @@ UNRAISED_PROPOSALS = {
     "x_item_picked:sword_bundle": "ch03.b05's sword-bundle pickup and the loadout locked until it",
 }
 JAPANESE = re.compile(r"[぀-ヿ㐀-鿿]")
+# A HUD prompt's key token, and a control named in brackets instead.
+KEY_TOKEN = re.compile(r"\{([^{}]*)\}")
+BRACKETED_CONTROL = re.compile(r"[\[［【][^\]］】]*[\]］】]")
 
 
 class CampaignError(AssertionError):
@@ -123,8 +132,10 @@ def load():
     campaign = json.loads((DATA / "campaign/campaign.json").read_text())
     chapters = [json.loads((DATA / entry["file"]).read_text()) for entry in campaign["chapters"]]
     legacy = json.loads(LEGACY_LINES.read_text())["lines"]
-    # The AI lane's fights and archetypes (validate_enemies.py checks their own rules).
-    roster = {"bosses": json.loads((DATA / "bosses.json").read_text()), "enemies": json.loads((DATA / "enemies.json").read_text())}
+    # The AI lane's fights and archetypes (validate_enemies.py checks their own
+    # rules), and the input actions a HUD prompt may name.
+    roster = {"bosses": json.loads((DATA / "bosses.json").read_text()), "enemies": json.loads((DATA / "enemies.json").read_text()),
+              "actions": sorted(set(re.findall(r'^\+ActionMappings=\(ActionName="(\w+)"', INPUT.read_text(), re.MULTILINE)))}
     return catalog, campaign, chapters, legacy, roster
 
 
@@ -569,10 +580,26 @@ def validate(catalog, campaign, chapters, legacy, roster):
                         f"{beat['id']}: bosses.json stages {fights[beat['id']]['id']} against another opponent")
             for guard in beat["task"]["guards"]:
                 require(guard in archetypes, f"{beat['id']}: unknown guard type {guard!r}")
+            # Somebody watches every stealth zone and all work under guard: the
+            # zone's guards, or the task's patrolling wave members and x_guards.
+            guarded = beat["type"] == "production_task" and beat["task"]["pause_when_seen"]
+            if beat["type"] == "stealth_zone":
+                posted = [guard["type"] for guard in params["guards"]]
+            elif guarded:
+                posted = [enemy["type"] for wave in params.get("waves", []) for enemy in wave["enemies"]
+                          if "patrol" in enemy for _ in range(enemy["count"])]
+                posted += [guard["type"] for guard in beat["ext"].get("guards") or [] for _ in range(guard.get("count", 1))]
+            else:
+                posted = []
+            require(sorted(beat["task"]["guards"]) == sorted(posted) and (posted or beat["type"] != "stealth_zone" and not guarded),
+                    f"{beat['id']}: guards {beat['task']['guards']} are not the {sorted(posted)} it posts")
             waves = params.get("waves", [])
             lethal = 0
             for wave in waves:
                 for enemy in wave["enemies"]:
+                    # Work under guard posts its patrolling members instead of sending them.
+                    if guarded and "patrol" in enemy:
+                        continue
                     kind = enemy["type"]
                     if kind in TRAINING_TARGETS:
                         require(params.get("target_kind") == "mato", f"{beat['id']}: training target outside the range")
@@ -684,6 +711,13 @@ def validate(catalog, campaign, chapters, legacy, roster):
         for prompt in chapter["ui_prompts"]:
             require(all(beat in by_id for beat in prompt["beats"]), f"{prompt['id']}: unknown beat")
             require(JAPANESE.search(prompt["ja"]) and prompt["en"].strip(), f"{prompt['id']}: bilingual prompt")
+            # Keys only as {Action} tokens the HUD resolves to the player's own keys.
+            tokens = [sorted(KEY_TOKEN.findall(prompt[language])) for language in ("ja", "en")]
+            require(tokens[0] == tokens[1] and set(tokens[0]) <= set(roster["actions"]),
+                    f"{prompt['id']}: key tokens {tokens} must be input actions, the same in both languages")
+            require(not any(BRACKETED_CONTROL.search(prompt[language]) or "{" in KEY_TOKEN.sub("", prompt[language]) or
+                            "}" in KEY_TOKEN.sub("", prompt[language]) for language in ("ja", "en")),
+                    f"{prompt['id']}: names a control outside an {{Action}} token")
 
     require(CAMPAIGN_TARGET_RANGE_S[0] <= campaign_total <= CAMPAIGN_TARGET_RANGE_S[1],
             f"campaign total {campaign_total} s is outside {CAMPAIGN_TARGET_RANGE_S}")
@@ -803,7 +837,27 @@ def self_test(catalog, campaign, chapters, legacy, roster):
         wave["enemies"][0]["type"] = "enforcer_musket"
 
     def guard_without_archetype(data):
-        data[4]["enemies"]["archetypes"] = [row for row in data[4]["enemies"]["archetypes"] if row["id"] != "drone"]
+        # Posted as authored, so only the archetype check can refuse it.
+        target = beat(data, "ch03.b02")
+        target["params"]["guards"][0]["type"] = target["task"]["guards"][0] = "drone_sentinel"
+
+    def unguarded_work(data):
+        beat(data, "ch06.b08")["task"]["guards"] = []
+
+    def guard_outside_stealth(data):
+        beat(data, "ch02.b02")["task"]["guards"] = ["enforcer_rifle"]
+
+    def prompt(data, prompt_id):
+        chapter = data[2][int(prompt_id[2:4]) - 1]
+        return next(row for row in chapter["ui_prompts"] if row["id"] == prompt_id)
+
+    def unbound_key_token(data):
+        row = prompt(data, "ch02.b03.tut.002")
+        row["ja"], row["en"] = "槍を得た。{Polearm}で持ち替え。", "Yari acquired. Press {Polearm} to switch."
+
+    def bracketed_control(data):
+        row = prompt(data, "ch01.b06.prompt.04")
+        row["ja"], row["en"] = "前進で常歩、［速歩］で速歩", "Move forward to walk. Press [Trot] to trot."
 
     def optional_site(data):
         beat(data, "ch01.b08")["site"], beat(data, "ch01.b09")["site"] = 2, None
@@ -870,7 +924,8 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,
                  lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition,
-                 boss_at_the_wrong_beat, duel_against_another, unknown_archetype, guard_without_archetype)
+                 boss_at_the_wrong_beat, duel_against_another, unknown_archetype, guard_without_archetype,
+                 unguarded_work, guard_outside_stealth, unbound_key_token, bracketed_control)
     for mutate in mutations:
         data = copy.deepcopy((catalog, campaign, chapters, legacy, roster))
         mutate(data)

@@ -505,25 +505,25 @@ Bracketed tokens are input actions that L4 resolves per device. Prompts never sh
 
 | Prompt id | Beat | Shown on | Japanese (UI) | English |
 |---|---|---|---|---|
-| `hud.ch06.swim_dive` | b02 | `beat_start` | 潜る：［しゃがみ］　息は8秒まで | Dive: [Crouch]. Breath lasts 8 s. |
+| `hud.ch06.swim_dive` | b02 | `beat_start` | 潜る：{Crouch}　息は8秒まで | Dive: {Crouch}. Breath lasts 8 s. |
 | `hud.ch06.surface_cover` | b02 | `volume_enter:vol_moat_lotus_1` | 蓮と葦の陰なら、浮いても見つかりにくい | Lotus and reeds hide you at the surface. |
 | `hud.ch06.float_line` | b02 | `volume_enter:vol_moat_boom` | 浮き綱に触れると鳴る。下を潜る | The float line rings if touched. Dive under it. |
-| `hud.ch06.climb` | b03 | `volume_enter:vol_climb_start` | 手掛かりへ：［移動］　握力に注意 | Reach for holds: [Move]. Watch your grip. |
+| `hud.ch06.climb` | b03 | `volume_enter:vol_climb_start` | 手掛かりへ進む。握力に注意 | Reach for the holds. Watch your grip. |
 | `hud.ch06.climb_rest` | b03 | `volume_enter:vol_rest_ledge_1` | 足場で握力が戻る | Ledges restore grip. |
 | `hud.ch06.ai_states` | b04 | `alert_state:suspicious` | 頭上の印：不審・警戒・捜索 | Marks above heads: Suspicious, Alert, Search. |
-| `hud.ch06.sweep_gap` | b04 | `volume_enter:vol_relay_entry` | 柱の目が背を向けた隙に、節を抜く［長押し］ | Pull a node while the eye faces away [Hold]. |
-| `hud.ch06.takedown` | b04 | `ai_event:first_rear_reach` | 背後から当て身：［近接］（殺さない） | Rear takedown: [Melee]. Non-lethal. |
-| `hud.ch06.drag` | b04 | `ai_event:first_takedown` | 倒れた者を引きずる：［調べる］長押し | Drag a body: hold [Interact]. |
-| `hud.ch06.tsubute` | b06 | `volume_enter:vol_rubble_c1` | 礫：拾って［投擲］。音で誘う | Tsubute: pick up, then [Throw] to lure. |
+| `hud.ch06.sweep_gap` | b04 | `volume_enter:vol_relay_entry` | 柱の目が背を向けた隙に、{Interact}で節を抜く | Pull a node with {Interact} while the eye faces away. |
+| `hud.ch06.takedown` | b04 | `ai_event:first_rear_reach` | 背後から当て身：{Melee}（殺さない） | Rear takedown: {Melee}. Non-lethal. |
+| `hud.ch06.drag` | b04 | `ai_event:first_takedown` | 倒れた者を引きずる：{Interact}長押し | Drag a body: hold {Interact}. |
+| `hud.ch06.tsubute` | b06 | `volume_enter:vol_rubble_c1` | 礫（つぶて）：音で見張りを誘う | Tsubute: lure a guard with noise. |
 | `hud.ch06.nightingale` | b06 | `volume_enter:vol_uguisu_entry` | 鶯張り：しゃがんで壁際の端を歩く | Nightingale floor: crouch along the wall edge. |
-| `hud.ch06.candle` | b08 | `beat_start` | 蝋燭を覆う：［ガード］長押し　写しは半速 | Cup the candle: hold [Guard]. Copying slows. |
+| `hud.ch06.candle` | b08 | `beat_start` | 蝋燭を覆う：{Block}長押し　写しは半速 | Cup the candle: hold {Block}. Copying slows. |
 | `hud.ch06.copy_pause` | b08 | `ai_event:copy_paused` | 見られている間は、写しが止まる | Copying pauses while you are seen. |
-| `hud.ch06.sheathe` | b09 | `duel_phase:2` | 納刀：［武器切替］長押し | Sheathe: hold [Weapon Switch]. |
-| `hud.ch06.muto` | b09 | `ai_event:player_sheathed` | 無刀取り：納刀中、真っ向斬りに踏み込み［受け］ | Mutō-dori: while sheathed, step into a vertical cut with [Guard]. |
+| `hud.ch06.sheathe` | b09 | `duel_phase:2` | 納刀：{Sheathe} | Sheathe: press {Sheathe}. |
+| `hud.ch06.muto` | b09 | `ai_event:player_sheathed` | 無刀取り：納刀中、真っ向斬りに踏み込み{Block} | Mutō-dori: while sheathed, step into a vertical cut with {Block}. |
 | `hud.ch06.press_mask` | b11 | `volume_enter:vol_press_floor` | 印刷機の打音が足音を隠す | Press slams mask your footsteps. |
 | `hud.ch06.pulse` | b13 | `beat_start` | 脈動の間は動かない | Stay still while the pulse passes. |
 | `hud.ch06.flood` | b13 | `boss_phase:2` | 水の中は音が大きい。棚の上は静か | Water is loud. Shelf tops are silent. |
-| `hud.ch06.bulkhead` | b13 | `ai_event:boss_hp_zero` | 隔壁を落とす：［調べる］長押し | Drop the bulkhead: hold [Interact]. |
+| `hud.ch06.bulkhead` | b13 | `ai_event:boss_hp_zero` | 隔壁を落とす：{Interact} | Drop the bulkhead: {Interact}. |
 
 ### 2.6 In-fiction numbers (keep consistent in later chapters)
 
@@ -1830,25 +1830,25 @@ collectibles:
       ja: "担保受領書 第一号：猫柳生石鈴斎（隠居）一名。保管先、担保牢。状態、良好。"
       en: "Collateral Receipt No. 1: Nyaagyu Sekireisai (retired), one. Held in the collateral cells. Condition: good."
 ui_prompts:
-  - {id: "hud.ch06.swim_dive", beat: "ch06.b02", "on": "beat_start", ja: "潜る：［しゃがみ］　息は8秒まで", en: "Dive: [Crouch]. Breath lasts 8 s."}
+  - {id: "hud.ch06.swim_dive", beat: "ch06.b02", "on": "beat_start", ja: "潜る：{Crouch}　息は8秒まで", en: "Dive: {Crouch}. Breath lasts 8 s."}
   - {id: "hud.ch06.surface_cover", beat: "ch06.b02", "on": "volume_enter:vol_moat_lotus_1", ja: "蓮と葦の陰なら、浮いても見つかりにくい", en: "Lotus and reeds hide you at the surface."}
   - {id: "hud.ch06.float_line", beat: "ch06.b02", "on": "volume_enter:vol_moat_boom", ja: "浮き綱に触れると鳴る。下を潜る", en: "The float line rings if touched. Dive under it."}
-  - {id: "hud.ch06.climb", beat: "ch06.b03", "on": "volume_enter:vol_climb_start", ja: "手掛かりへ：［移動］　握力に注意", en: "Reach for holds: [Move]. Watch your grip."}
+  - {id: "hud.ch06.climb", beat: "ch06.b03", "on": "volume_enter:vol_climb_start", ja: "手掛かりへ進む。握力に注意", en: "Reach for the holds. Watch your grip."}
   - {id: "hud.ch06.climb_rest", beat: "ch06.b03", "on": "volume_enter:vol_rest_ledge_1", ja: "足場で握力が戻る", en: "Ledges restore grip."}
   - {id: "hud.ch06.ai_states", beat: "ch06.b04", "on": "alert_state:suspicious", ja: "頭上の印：不審・警戒・捜索", en: "Marks above heads: Suspicious, Alert, Search."}
-  - {id: "hud.ch06.sweep_gap", beat: "ch06.b04", "on": "volume_enter:vol_relay_entry", ja: "柱の目が背を向けた隙に、節を抜く［長押し］", en: "Pull a node while the eye faces away [Hold]."}
-  - {id: "hud.ch06.takedown", beat: "ch06.b04", "on": "ai_event:first_rear_reach", ja: "背後から当て身：［近接］（殺さない）", en: "Rear takedown: [Melee]. Non-lethal."}
-  - {id: "hud.ch06.drag", beat: "ch06.b04", "on": "ai_event:first_takedown", ja: "倒れた者を引きずる：［調べる］長押し", en: "Drag a body: hold [Interact]."}
-  - {id: "hud.ch06.tsubute", beat: "ch06.b06", "on": "volume_enter:vol_rubble_c1", ja: "礫：拾って［投擲］。音で誘う", en: "Tsubute: pick up, then [Throw] to lure."}
+  - {id: "hud.ch06.sweep_gap", beat: "ch06.b04", "on": "volume_enter:vol_relay_entry", ja: "柱の目が背を向けた隙に、{Interact}で節を抜く", en: "Pull a node with {Interact} while the eye faces away."}
+  - {id: "hud.ch06.takedown", beat: "ch06.b04", "on": "ai_event:first_rear_reach", ja: "背後から当て身：{Melee}（殺さない）", en: "Rear takedown: {Melee}. Non-lethal."}
+  - {id: "hud.ch06.drag", beat: "ch06.b04", "on": "ai_event:first_takedown", ja: "倒れた者を引きずる：{Interact}長押し", en: "Drag a body: hold {Interact}."}
+  - {id: "hud.ch06.tsubute", beat: "ch06.b06", "on": "volume_enter:vol_rubble_c1", ja: "礫（つぶて）：音で見張りを誘う", en: "Tsubute: lure a guard with noise."}
   - {id: "hud.ch06.nightingale", beat: "ch06.b06", "on": "volume_enter:vol_uguisu_entry", ja: "鶯張り：しゃがんで壁際の端を歩く", en: "Nightingale floor: crouch along the wall edge."}
-  - {id: "hud.ch06.candle", beat: "ch06.b08", "on": "beat_start", ja: "蝋燭を覆う：［ガード］長押し　写しは半速", en: "Cup the candle: hold [Guard]. Copying slows."}
+  - {id: "hud.ch06.candle", beat: "ch06.b08", "on": "beat_start", ja: "蝋燭を覆う：{Block}長押し　写しは半速", en: "Cup the candle: hold {Block}. Copying slows."}
   - {id: "hud.ch06.copy_pause", beat: "ch06.b08", "on": "ai_event:copy_paused", ja: "見られている間は、写しが止まる", en: "Copying pauses while you are seen."}
-  - {id: "hud.ch06.sheathe", beat: "ch06.b09", "on": "duel_phase:2", ja: "納刀：［武器切替］長押し", en: "Sheathe: hold [Weapon Switch]."}
-  - {id: "hud.ch06.muto", beat: "ch06.b09", "on": "ai_event:player_sheathed", ja: "無刀取り：納刀中、真っ向斬りに踏み込み［受け］", en: "Mutō-dori: while sheathed, step into a vertical cut with [Guard]."}
+  - {id: "hud.ch06.sheathe", beat: "ch06.b09", "on": "duel_phase:2", ja: "納刀：{Sheathe}", en: "Sheathe: press {Sheathe}."}
+  - {id: "hud.ch06.muto", beat: "ch06.b09", "on": "ai_event:player_sheathed", ja: "無刀取り：納刀中、真っ向斬りに踏み込み{Block}", en: "Mutō-dori: while sheathed, step into a vertical cut with {Block}."}
   - {id: "hud.ch06.press_mask", beat: "ch06.b11", "on": "volume_enter:vol_press_floor", ja: "印刷機の打音が足音を隠す", en: "Press slams mask your footsteps."}
   - {id: "hud.ch06.pulse", beat: "ch06.b13", "on": "beat_start", ja: "脈動の間は動かない", en: "Stay still while the pulse passes."}
   - {id: "hud.ch06.flood", beat: "ch06.b13", "on": "boss_phase:2", ja: "水の中は音が大きい。棚の上は静か", en: "Water is loud. Shelf tops are silent."}
-  - {id: "hud.ch06.bulkhead", beat: "ch06.b13", "on": "ai_event:boss_hp_zero", ja: "隔壁を落とす：［調べる］長押し", en: "Drop the bulkhead: hold [Interact]."}
+  - {id: "hud.ch06.bulkhead", beat: "ch06.b13", "on": "ai_event:boss_hp_zero", ja: "隔壁を落とす：{Interact}", en: "Drop the bulkhead: {Interact}."}
 lines:
   - {id: "ch06.b01.iota.001", speaker: "clerk", register: "manual_keigo", ja: "水門の格子は、水の下で外してございます。", en: "The water-gate grille is unfastened below the waterline.", duration_s: 3.8}
   - {id: "ch06.b01.kohagi.001", speaker: "scout", register: "scout_terse", ja: "金庫の奥に、街を縛る装置がある。", en: "The machine binding the city lies deep inside the vault.", duration_s: 4.8, catalog_anchor: 1}

@@ -137,12 +137,6 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
     }
     return ASoraWorldBuilder::Floor(Space->Spawns[FMath::Abs(Slot)%Space->Spawns.Num()],120.f);
 }
-const TArray<FVector2D>* USoraCampaignDirector::GuardPatrol(const ASoraEnemy* Guard) const
-{
-    const FSoraBeatSpace* Space=ActiveSpace();
-    const int32* Route=GuardPatrols.Find(TWeakObjectPtr<const ASoraEnemy>(Guard));
-    return Space&&Route&&Space->Patrols.IsValidIndex(*Route)?&Space->Patrols[*Route]:nullptr;
-}
 void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
 {
     ASoraGameMode& M=Mode();

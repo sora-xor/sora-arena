@@ -631,11 +631,47 @@ msgctxt "SoraArena.HUD,Prompt.Work"
 msgid "{Interact}  作業する"
 msgstr "{Interact}  Work"
 
+#. Key:	Result.ArenaCleared
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Result.ArenaCleared"
+msgid "稽古場を制した"
+msgstr "Training arena cleared"
+
+#. Key:	Result.DistrictLiberated
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Result.DistrictLiberated"
+msgid "街区を解放した"
+msgstr "District liberated"
+
+#. Key:	Result.DojoComplete
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Result.DojoComplete"
+msgid "道場の修行を終えた"
+msgstr "Dojo training complete"
+
+#. Key:	Result.Liberated
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Result.Liberated"
+msgid "猫柳生、解放"
+msgstr "Nyaagyu liberated"
+
 #. Key:	Result.Next
 #: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
 msgctxt "SoraArena.HUD,Result.Next"
 msgid "{Enter}  続ける    |    {Menu}  メニュー"
 msgstr "{Enter}  Continue    |    {Menu}  Menu"
+
+#. Key:	Result.PracticeOver
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Result.PracticeOver"
+msgid "稽古終了"
+msgstr "Practice over"
+
+#. Key:	Result.RiseAgain
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Result.RiseAgain"
+msgid "ふたたび立ち上がれ"
+msgstr "Rise again"
 
 #. Key:	TitleCard.Begin
 #: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp

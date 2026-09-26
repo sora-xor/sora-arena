@@ -127,9 +127,9 @@ void USoraCampaignDirector::OpenStealthZone()
     Zone.Difficulty=static_cast<SoraStealthRules::EDifficulty>(static_cast<uint8>(SoraAccessibility::CampaignDifficulty(this)));
     Zone.OnDetected=Task.OnDetected==SoraBeatRules::EDetected::Restart?SoraStealthRules::EOnDetected::Restart
         :Task.OnDetected==SoraBeatRules::EDetected::Reinforce?SoraStealthRules::EOnDetected::Reinforce:SoraStealthRules::EOnDetected::Combat;
-    // Rear takedowns once the story has taught them (bible §12.1 takedown).
-    const int32 Takedown=FSoraCatalog::Get().Mechanics.Find(TEXT("takedown"));
-    Zone.bRearTakedowns=Takedown!=INDEX_NONE&&(BeatState.MechanicsMask&(1u<<Takedown))!=0u;
+    // Rear takedowns once the story teaches them (bible §12.1 takedown),
+    // from the beat that teaches them on.
+    Zone.bRearTakedowns=IsMechanicInPlay(TEXT("takedown"));
     Stealth->BeginZone(Zone);
 }
 void USoraCampaignDirector::CloseStealthZone()
@@ -140,8 +140,8 @@ void USoraCampaignDirector::StealthDetected(const FSoraStealthDetection& Detecti
 {
     if(!ActiveBeatData()) return;
     // On Easy the zone answers a detection with a fight (SoraStealthRules::
-    // Response): the beat is neither failed nor reinforced, and guarded work
-    // pauses only while a guard actually sees the hero (IsWorkPaused).
+    // Response): the beat is neither failed nor reinforced. Guarded work
+    // pauses only while a guard sees the hero or is alarmed (IsWorkPaused).
     if(Detection.Response==SoraStealthRules::EOnDetected::Combat&&Task.OnDetected!=SoraBeatRules::EDetected::Combat)
     {
         Fire(TEXT("ai_event:detected"));
@@ -343,7 +343,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
-    ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; bHeroSeen=false; bDetected=false; CinematicSeconds=0.f;
+    ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; bDetected=false; CinematicSeconds=0.f;
     VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset(); BeatEvents.Reset();
     AwaseAtMs=INDEX_NONE; LateHitAt=-1.0; BoutOffset=0;
     // The dojo numbers its bouts across the chapter's lesson duels.
@@ -578,10 +578,11 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     if(ActiveBeatData()!=&Beat) return;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
     SoraBeatRules::FTick Step;
-    // Work under guard pauses while any guard sees the hero or is alarmed.
+    // Work under guard pauses while any guard sees the hero or is alarmed,
+    // and goes on once none does.
     const USoraStealth* Stealth=USoraStealth::Get(this);
     Step.DeltaMs=DeltaMs; Step.AtTask=HeroAtTask(); Step.Contested=Contested();
-    Step.Seen=bHeroSeen||(Stealth&&Stealth->IsZoneActive()&&Stealth->IsWorkPaused());
+    Step.Seen=Stealth&&Stealth->IsZoneActive()&&Stealth->IsWorkPaused();
     SoraBeatRules::Tick(TaskState,Task,Step);
     // Trigger volumes the hero walks or rides into raise their events: a
     // dialogue waiting on one starts, and the waves it names come.
@@ -746,9 +747,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(FName Type,int32 Slot)
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
     // A route of two points is walked back and forth; a longer one loops.
     Route.bPingPong=Route.Points.Num()==2;
-    ASoraEnemy* Guard=ASoraEnemy::SpawnArchetype(*GetWorld(),Type,Slot,Post,FRotator(0,180,0),&Route);
-    if(Guard&&Points) GuardPatrols.Add(TWeakObjectPtr<const ASoraEnemy>(Guard),Slot%Space->Patrols.Num());
-    return Guard;
+    return ASoraEnemy::SpawnArchetype(*GetWorld(),Type,Slot,Post,FRotator(0,180,0),&Route);
 }
 ASoraEnemy* USoraCampaignDirector::SpawnDuelOpponent(FName Opponent,bool bSparring,int32 Slot)
 {
@@ -798,7 +797,8 @@ void USoraCampaignDirector::SpawnCast(bool bKeepPupil)
             AddOpponent(Duellist,INDEX_NONE);
         }
     }
-    else if(Beat->Is(SoraBeatRules::EType::StealthZone))
+    // A stealth zone's guards, and those watching guarded work, take their posts.
+    else
         for(const FName Guard:Beat->Guards)
             if(ASoraEnemy* Enemy=SpawnStealthGuard(Guard,Spawned)) AddOpponent(Enemy,INDEX_NONE);
 }
@@ -839,11 +839,14 @@ int32 USoraCampaignDirector::LiveWaveOpponents() const
 }
 void USoraCampaignDirector::ClearOpponents()
 {
-    // A falling opponent removes itself after its lifespan; the living, and a
-    // captive the hero has bound, leave now.
-    for(const auto& Enemy:Enemies) if(IsValid(Enemy)&&Enemy->IsAlive()) Enemy->Destroy();
+    // A falling opponent removes itself after its lifespan. Everyone else
+    // leaves now: the living, a captive the hero has bound, a knocked-down
+    // conscript (whose collar would drag it up with nobody tracking it) and a
+    // guard's body, knocked out or killed.
+    for(const auto& Enemy:Enemies)
+        if(IsValid(Enemy)&&!Enemy->IsActorBeingDestroyed()&&(Enemy->IsAlive()||Enemy->GetLifeSpan()<=0.f)) Enemy->Destroy();
     if(IsValid(Captive)) Captive->Destroy();
-    Enemies.Reset(); EnemyWaves.Reset(); GuardPatrols.Reset(); Frightening.Reset(); Pending.Reset(); BossActor=nullptr; Spawned=0;
+    Enemies.Reset(); EnemyWaves.Reset(); Frightening.Reset(); Pending.Reset(); BossActor=nullptr; Spawned=0;
     Captive=nullptr;
 }
 bool USoraCampaignDirector::SparesOpponent(const ASoraEnemy& Opponent) const
@@ -949,8 +952,6 @@ void USoraCampaignDirector::RaiseBeatEvent(FName Event)
     if(!Beat||Mode().bChapterComplete||Mode().bDefeated||Name.IsEmpty()) return;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
     Fire(Name);
-    // The AI lane reports what its guards see; work under guard pauses while one does.
-    if(Name.StartsWith(TEXT("alert_state:"))) bHeroSeen=Name==TEXT("alert_state:alert")||Name==TEXT("alert_state:combat");
     ReleaseEventWaves(Name);
     SoraBeatRules::EFail Failure=SoraBeatRules::EFail::PlayerDied;
     if(FailureOf(Name,Failure)&&!(Failure==SoraBeatRules::EFail::Detected&&bDetected))
@@ -1247,15 +1248,27 @@ bool USoraCampaignDirector::SeedCheckpoint(USoraSaveGame& Target,int32 Chapter,i
 }
 bool USoraCampaignDirector::IsWeaponUnlocked(int32 WeaponId) const
 {
-    // The training arena lends every arm; the campaign holds what it has earned.
-    return WeaponId>=0&&WeaponId<SoraBeatRules::WeaponCount&&
-        (!Mode().bCampaign||(BeatState.WeaponsMask&(1u<<WeaponId))!=0u);
+    // The training arena lends every arm; the campaign holds what it has
+    // earned and what the beat in play hands over.
+    const FSoraChapter* Chapter=ActiveChapter();
+    const unsigned Held=Chapter&&ActiveBeatData()
+        ?SoraBeatRules::InPlayWeapons(BeatState,Chapter->Rules.GetData(),Chapter->Rules.Num(),BeatIndex):BeatState.WeaponsMask;
+    return WeaponId>=0&&WeaponId<SoraBeatRules::WeaponCount&&(!Mode().bCampaign||(Held&(1u<<WeaponId))!=0u);
+}
+bool USoraCampaignDirector::IsMechanicInPlay(FName Mechanic) const
+{
+    const FSoraChapter* Chapter=ActiveChapter();
+    const int32 Bit=Chapter?FSoraCatalog::Get().Mechanics.Find(Mechanic.ToString()):INDEX_NONE;
+    if(Bit==INDEX_NONE) return false;
+    const unsigned Learned=ActiveBeatData()
+        ?SoraBeatRules::InPlayMechanics(BeatState,Chapter->Rules.GetData(),Chapter->Rules.Num(),BeatIndex):BeatState.MechanicsMask;
+    return (Learned&(1u<<Bit))!=0u;
 }
 bool USoraCampaignDirector::BeginSealCut(ASoraPlayerCharacter& Player)
 {
-    // The seal can be cut once the story has taught it (bible §12.1 seal_cut).
-    const int32 Bit=FSoraCatalog::Get().Mechanics.Find(TEXT("seal_cut"));
-    if(Bit==INDEX_NONE||(BeatState.MechanicsMask&(1u<<Bit))==0u||!GetWorld()) return false;
+    // The seal can be cut once the story teaches it (bible §12.1 seal_cut),
+    // from the beat that teaches it on.
+    if(!IsMechanicInPlay(TEXT("seal_cut"))||!GetWorld()) return false;
     ASoraEnemy* Nearest=nullptr;
     float Best=SoraCampaignReach::Interact;
     for(const auto& Enemy:Enemies)
@@ -1530,9 +1543,8 @@ void USoraCampaignDirector::OpponentDefeated(ASoraEnemy* Opponent)
         }
         else if(bBoss) Fire(TEXT("outro_cinematic"));
     }
-    // A fallen opponent's wave, patrol and fear entries leave with it.
+    // A fallen opponent's wave and fear entries leave with it.
     EnemyWaves.Remove(TWeakObjectPtr<const ASoraEnemy>(Opponent));
-    GuardPatrols.Remove(TWeakObjectPtr<const ASoraEnemy>(Opponent));
     Frightening.Remove(TWeakObjectPtr<const ASoraEnemy>(Opponent));
     Progressed(Before);
 }

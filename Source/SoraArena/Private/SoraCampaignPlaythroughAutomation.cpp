@@ -8,6 +8,7 @@
 #include "SoraCatalog.h"
 #include "SoraDojoRules.h"
 #include "SoraEnemy.h"
+#include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraHorse.h"
@@ -53,7 +54,7 @@
 // stealth alarm take their beats' failure paths; a hurried crank turn slips and
 // an off-beat stroke restarts its rhythm. The 21 weapons and 19 mechanics must
 // arrive in the order the chapters author them (bible §11); every arm Nyaakoto
-// can hold is refused before its beat and equips after it; every collectible
+// can hold is refused before its beat and equips in it; every collectible
 // is kept through each reload and chapter advance; and the campaign ends
 // liberated with everything. A second route enters the flagship without the
 // skipped armory's phantom SMG, which the war council must grant. The
@@ -102,10 +103,13 @@ struct FState
     // Failures sent to the checkpoint, and matches retried in place.
     int32 Failures = 0;
     int32 InPlaceRetries = 0;
-    // Holdable arms refused before their beat and equipped after it.
+    // Holdable arms refused before their beat and equipped from it on; those
+    // equipped in the very beat that hands them over, before it completes.
     int32 ArmsRefused = 0;
     int32 ArmsEquipped = 0;
-    TArray<int32> PendingArms;
+    int32 ArmsInTheirBeat = 0;
+    TSet<int32> ArmsLocked;
+    TSet<int32> ArmsHeld;
     // Beats played per task goal (SoraBeatRules::EGoal).
     TMap<int32, int32> GoalsPlayed;
     // Chapter * 32 + goal of every checkpoint restored at a beat's start.
@@ -334,12 +338,11 @@ bool DefeatOne(FAutomationTestBase& Test, FState& State)
 }
 
 // 活人剣: every debt-bound conscript on the field is knocked down, and once
-// seal_cut is learned its seal is cut with Interact held beside it, so none
-// contests a hold or rises to fight again.
+// seal_cut is in play (from the beat that teaches it) its seal is cut with
+// Interact held beside it, so none contests a hold or rises to fight again.
 bool FreeConscripts(FAutomationTestBase& Test, FState& State)
 {
-    const int32 Bit = FSoraCatalog::Get().Mechanics.Find(TEXT("seal_cut"));
-    const bool bLearned = Bit != INDEX_NONE && (Campaign(State)->Progress().MechanicsMask & (1u << Bit)) != 0u;
+    const bool bLearned = Campaign(State)->IsMechanicInPlay(TEXT("seal_cut"));
     UWorld* World = State.World ? State.World->GetTestWorld() : nullptr;
     for (int32 Round = 0; World && Round < 16; ++Round)
     {
@@ -1031,30 +1034,42 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
     return (bOk || Fail(Test, State, What)) && Advance(Test, State, 20);
 }
 
-// Each holdable arm the active beat unlocks is refused while the beat is
-// ahead, and equips at the first later beat that leaves the hero's paws free
-// (out of the saddle, with no load).
+// Each holdable arm after the dojo is refused while the beat that hands it
+// over is still ahead, and equips from that beat on (at the first moment the
+// hero's paws are free: out of the saddle, with no load): the yari in
+// ch02.b03 itself, before the beat completes and keeps it.
 bool CheckArms(FAutomationTestBase& Test, FState& State)
 {
     const USoraCampaignDirector* Director = Campaign(State);
     if (Director->ChapterId == 0 || Director->IsMounted() || Director->TaskProgress().Carrying)
         return true;
-    for (const int32 WeaponId : State.PendingArms)
-    {
-        if (!ExpectWeapon(Test, State, WeaponId, true))
-            return false;
-        ++State.ArmsEquipped;
-    }
-    State.PendingArms.Reset();
-    const SoraBeatRules::FBeat& Rule = ChapterData(State).Rules[Director->ActiveBeat()];
-    const unsigned Ahead = (Rule.WeaponsMask | Rule.GrantsMask) & ~Director->Progress().WeaponsMask;
-    for (int32 WeaponId = 0; WeaponId < SoraBeatRules::WeaponCount; ++WeaponId)
-        if ((Ahead & (1u << WeaponId)) != 0u && Holdable(WeaponId))
+    unsigned Seen = FSoraCatalog::Get().EarlierWeapons(1);
+    for (int32 Chapter = 1; Chapter <= LastChapter; ++Chapter)
+        for (const SoraBeatRules::FBeat& Rule : FSoraCatalog::Get().Chapter(Chapter).Rules)
         {
-            if (!ExpectWeapon(Test, State, WeaponId, false))
-                return false;
-            ++State.ArmsRefused;
-            State.PendingArms.Add(WeaponId);
+            const unsigned Mask = (Rule.WeaponsMask | Rule.GrantsMask) & ~Seen;
+            Seen |= Mask;
+            for (int32 WeaponId = 0; WeaponId < SoraBeatRules::WeaponCount; ++WeaponId)
+            {
+                if ((Mask & (1u << WeaponId)) == 0u || !Holdable(WeaponId) || State.ArmsHeld.Contains(WeaponId))
+                    continue;
+                const bool bInPlay = Director->IsWeaponUnlocked(WeaponId);
+                if (!bInPlay && !State.ArmsLocked.Contains(WeaponId))
+                {
+                    if (!ExpectWeapon(Test, State, WeaponId, false))
+                        return false;
+                    ++State.ArmsRefused;
+                    State.ArmsLocked.Add(WeaponId);
+                }
+                else if (bInPlay && State.ArmsLocked.Contains(WeaponId))
+                {
+                    if (!ExpectWeapon(Test, State, WeaponId, true))
+                        return false;
+                    ++State.ArmsEquipped;
+                    State.ArmsInTheirBeat += (Director->Progress().WeaponsMask & (1u << WeaponId)) == 0u;
+                    State.ArmsHeld.Add(WeaponId);
+                }
+            }
         }
     return true;
 }
@@ -1192,19 +1207,22 @@ bool PlayPhases(FAutomationTestBase& Test, FState& State)
     return true;
 }
 
-// A fallen guard's patrol leaves with it: the director keys its opponents
-// weakly, so an opponent built later at a freed address never inherits a
-// dead guard's route (or its place in the horse's fear).
+// A fallen guard walks its patrol no more: its brain stops with it, and its
+// body stays where it fell for the others to find.
 bool ForgetFallenGuard(FAutomationTestBase& Test, FState& State)
 {
-    const USoraCampaignDirector* Director = Campaign(State);
     for (ASoraEnemy* Guard : LiveEnemies(State))
-        if (Director->GuardPatrol(Guard))
+        if (const ASoraEnemyController* Brain = Cast<ASoraEnemyController>(Guard->GetController()); Brain && Brain->IsGuard())
         {
             UGameplayStatics::ApplyDamage(Guard, Guard->Health, Player(State)->GetController(), Player(State), UDamageType::StaticClass());
             State.bGuardForgotten = true;
-            return (Test.TestTrue(TEXT("A fallen guard's patrol route leaves with it"), !Guard->IsAlive() && !Director->GuardPatrol(Guard)) ||
-                Fail(Test, State, Where(State) + TEXT(": a fallen guard kept its patrol"))) && Advance(Test, State);
+            const TWeakObjectPtr<ASoraEnemy> Fallen = Guard;
+            const FVector Fell = Guard->GetActorLocation();
+            if (!Advance(Test, State, 30))
+                return false;
+            return Test.TestTrue(TEXT("A fallen guard stays down where it fell, off its patrol"), Fallen.IsValid() && Fallen->IsBody() &&
+                FVector::Dist2D(Fallen->GetActorLocation(), Fell) < 1.f && Fallen->GetVelocity().IsNearlyZero()) ||
+                Fail(Test, State, Where(State) + TEXT(": a fallen guard kept walking its patrol"));
         }
     return true;
 }
@@ -1744,7 +1762,8 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
         bOk &= Test.TestEqual(TEXT("The weapons unlock in the authored order"), FString::Join(S.WeaponOrder, TEXT(" ")), FString::Join(Weapons, TEXT(" ")));
         bOk &= Test.TestEqual(TEXT("The mechanics unlock in the authored order"), FString::Join(S.MechanicOrder, TEXT(" ")), FString::Join(Mechanics, TEXT(" ")));
         bOk &= Test.TestEqual(TEXT("Each holdable arm after the dojo is refused before its beat"), S.ArmsRefused, GatedArms());
-        bOk &= Test.TestEqual(TEXT("Each holdable arm after the dojo equips after its beat"), S.ArmsEquipped, GatedArms());
+        bOk &= Test.TestEqual(TEXT("Each holdable arm after the dojo equips from its beat on"), S.ArmsEquipped, GatedArms());
+        bOk &= Test.TestTrue(TEXT("An arm is taken up in the beat that hands it over, before the beat completes"), S.ArmsInTheirBeat > 0);
         // Every beat was played, and every task goal the chapters author.
         const FSoraCatalog& Data = FSoraCatalog::Get();
         TSet<int32> Authored;
@@ -1767,7 +1786,7 @@ bool FSoraCampaignPlaythroughTest::RunTest(const FString& Parameters)
             }
         bOk &= Test.TestEqual(TEXT("Every captured boss was bound by hand"), S.Captures, Captured);
         bOk &= Test.TestEqual(TEXT("Every cache that saves wrote its checkpoint"), S.CacheCheckpoints, SavingCaches);
-        bOk &= Test.TestTrue(TEXT("A fallen guard's patrol was seen to leave with it"), S.bGuardForgotten);
+        bOk &= Test.TestTrue(TEXT("A fallen guard was seen to leave its patrol"), S.bGuardForgotten);
         FString Goals;
         for (int32 Goal = 0; Goal <= static_cast<int32>(SoraBeatRules::EGoal::Found); ++Goal)
         {

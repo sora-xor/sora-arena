@@ -63,4 +63,13 @@ void DrawResult(const FSoraHUDFrame& Frame);
 void DrawCaptions(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter* Hero);
 // Deterministic practice, drawn last (SoraHUDPracticePanels.cpp).
 void DrawPractice(const FSoraHUDFrame& Frame);
+// A campaign HUD prompt (Content/Data/campaign ui_prompts) with each {Action}
+// token replaced by the player's key for that input action (SoraUI::ActionKey),
+// bracketed in both languages. validate_campaign.py admits only tokens that
+// name an action in Config/DefaultInput.ini.
+SoraText::FLine KeyPrompt(const UObject* WorldContext, const FString& Japanese, const FString& English);
+// The result screen's headline for the round that ended: a fall, a chapter
+// (the dojo's training, a district, the liberation), the training arena or
+// deterministic practice.
+SoraText::FLine ResultHeadline(const ASoraGameMode& Mode);
 }

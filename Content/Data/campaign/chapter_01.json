@@ -5236,8 +5236,8 @@
     "ch01.b02"
    ],
    "on": "beat_start",
-   "ja": "［防御］長押しで正眼に構える（0.6秒）",
-   "en": "Hold [Guard] to take seigan (0.6 s).",
+   "ja": "{Block}長押しで正眼に構える（0.6秒）",
+   "en": "Hold {Block} to take seigan (0.6 s).",
    "shown_en": null
   },
   {
@@ -5256,8 +5256,8 @@
     "ch01.b03"
    ],
    "on": "beat_start",
-   "ja": "相手に向き、［防御］を保って一撃を受ける",
-   "en": "Face him and hold [Guard] through the strike.",
+   "ja": "相手に向き、{Block}を保って一撃を受ける",
+   "en": "Face him and hold {Block} through the strike.",
    "shown_en": null
   },
   {
@@ -5266,8 +5266,8 @@
     "ch01.b03"
    ],
    "on": "gate_start:awase",
-   "ja": "金色の予兆に合わせて［防御］を押す",
-   "en": "Press [Guard] as the gold warning flashes.",
+   "ja": "金色の予兆に合わせて{Block}を押す",
+   "en": "Press {Block} as the gold warning flashes.",
    "shown_en": null
   },
   {
@@ -5276,8 +5276,8 @@
     "ch01.b03"
    ],
    "on": "gate_start:recovery_complete",
-   "ja": "一度振り、［攻撃］を離して刃の戻りを待つ",
-   "en": "Swing once, release [Attack], and wait for the blade to return.",
+   "ja": "一度振り、{Fire}を離して刃の戻りを待つ",
+   "en": "Swing once, release {Fire}, and wait for the blade to return.",
    "shown_en": null
   },
   {
@@ -5296,8 +5296,8 @@
     "ch01.b04"
    ],
    "on": "volume_enter:vol_ch01_dojo_yard",
-   "ja": "合わせた直後（0.4秒以内）に 左右＋［踏み込み］",
-   "en": "Within 0.4 s of an awase: Left/Right + [Step].",
+   "ja": "合わせた直後（0.4秒以内）に 左右＋{Jump}",
+   "en": "Within 0.4 s of an awase: Left/Right + {Jump}.",
    "shown_en": null
   },
   {
@@ -5306,8 +5306,8 @@
     "ch01.b05"
    ],
    "on": "volume_enter:vol_ch01_engawa_sunbeam",
-   "ja": "［調べる］で一礼（任意）",
-   "en": "[Interact] to bow (optional).",
+   "ja": "{Interact}で一礼（任意）",
+   "en": "{Interact} to bow (optional).",
    "shown_en": null
   },
   {
@@ -5316,8 +5316,8 @@
     "ch01.b06"
    ],
    "on": "beat_start",
-   "ja": "光る馬具で［調べる］：鞍・腹帯・鐙・轡の順",
-   "en": "[Interact] at each tack piece: saddle, girth, stirrups, bit.",
+   "ja": "光る馬具で{Interact}：鞍・腹帯・鐙・轡の順",
+   "en": "{Interact} at each tack piece: saddle, girth, stirrups, bit.",
    "shown_en": null
   },
   {
@@ -5326,8 +5326,8 @@
     "ch01.b06"
    ],
    "on": "interact_refused:ip_ch01_kutsuwa:2",
-   "ja": "［調べる］長押しで大麦の穂を与える",
-   "en": "Hold [Interact] to offer the ear of barley.",
+   "ja": "もう一度{Interact}で大麦の穂を与える",
+   "en": "Press {Interact} again to offer the ear of barley.",
    "shown_en": null
   },
   {
@@ -5336,8 +5336,8 @@
     "ch01.b06"
    ],
    "on": "interact:ip_ch01_kutsuwa",
-   "ja": "［調べる］で栗丸に乗る（右から）",
-   "en": "[Interact] to mount Kurimaru (from the right).",
+   "ja": "{Interact}で栗丸に乗る（右から）",
+   "en": "{Interact} to mount Kurimaru (from the right).",
    "shown_en": null
   },
   {
@@ -5346,8 +5346,8 @@
     "ch01.b06"
    ],
    "on": "mount",
-   "ja": "前進で常歩、［速歩］で速歩",
-   "en": "Move forward to walk. Press [Trot] to trot.",
+   "ja": "前進で常歩。前進しながら{Sprint}長押しで歩度を上げる",
+   "en": "Move forward to walk. Hold {Sprint} while moving forward to quicken her gait.",
    "shown_en": null
   },
   {
@@ -5366,8 +5366,8 @@
     "ch01.b07"
    ],
    "on": "equip:18",
-   "ja": "［攻撃］長押しで引分け（0.65秒）。会で狙い、離して放つ",
-   "en": "Hold [Attack] to draw (0.65 s). Aim at full draw; release to loose.",
+   "ja": "{Fire}長押しで引分け（0.65秒）。会で狙い、離して放つ",
+   "en": "Hold {Fire} to draw (0.65 s). Aim at full draw; release to loose.",
    "shown_en": null
   },
   {
@@ -5386,8 +5386,8 @@
     "ch01.b09"
    ],
    "on": "beat_start",
-   "ja": "［調べる］長押しで鞴を押し、火床を起こす",
-   "en": "Hold [Interact] to work the bellows and wake the hearth.",
+   "ja": "{Interact}で鞴を押し、火床を起こす",
+   "en": "Press {Interact} to work the bellows and wake the hearth.",
    "shown_en": null
   },
   {
@@ -5416,8 +5416,8 @@
     "ch01.b09"
    ],
    "on": "step_start:paste",
-   "ja": "［調べる］で膠を引き、羽を付ける",
-   "en": "[Interact] to spread glue and set the feathers.",
+   "ja": "{Interact}で膠を引き、羽を付ける",
+   "en": "{Interact} to spread glue and set the feathers.",
    "shown_en": null
   },
   {
@@ -5446,8 +5446,8 @@
     "ch01.b12"
    ],
    "on": "blocking_end",
-   "ja": "［抜刀］で抜き、［納刀］で納める",
-   "en": "[Draw] to unsheathe. [Sheathe] to put it away.",
+   "ja": "{Sheathe}で抜刀・納刀",
+   "en": "Press {Sheathe} to draw or sheathe the blade.",
    "shown_en": null
   }
  ],

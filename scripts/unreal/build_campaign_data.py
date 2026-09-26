@@ -540,9 +540,25 @@ def normalize_task(beat):
     # Waves are what a beat throws at the hero. Only a fight to clear them
     # (all_waves_cleared) waits for them to fall; any other goal completes its
     # beat with whoever still stands withdrawing (chapter-02 b06, chapter-06's
-    # "Kill requirement: None", chapter-08 b02's charge).
-    task["waves"] = [task_wave(wave, nonlethal, f"{where}.waves[{index}]")
-                     for index, wave in enumerate(params.get("waves") or [])]
+    # "Kill requirement: None", chapter-08 b02's charge). Work under guard
+    # (a production task with stealth: true) is watched rather than attacked:
+    # the wave members authored on a patrol, and its x_guards, are posted as
+    # the zone's guards (one per head), and a wave left empty is dropped.
+    guarded = kind == "production_task" and task["pause_when_seen"]
+    for index, wave in enumerate(params.get("waves") or []):
+        if guarded:
+            for enemy in wave["enemies"]:
+                if "patrol" in enemy:
+                    task["guards"] += [expect(enemy["type"], (str,), f"{where}.waves[{index}]")] * \
+                        expect_int(enemy["count"], f"{where}.waves[{index}].count", 1)
+            wave = {**wave, "enemies": [enemy for enemy in wave["enemies"] if "patrol" not in enemy]}
+            if not wave["enemies"]:
+                continue
+        task["waves"].append(task_wave(wave, nonlethal, f"{where}.waves[{index}]"))
+    if guarded:
+        for index, guard in enumerate(beat["ext"].get("guards") or []):
+            task["guards"] += [expect(guard["type"], (str,), f"{where}.x_guards[{index}]")] * \
+                expect_int(guard.get("count", 1), f"{where}.x_guards[{index}].count", 1)
 
     def objectives(*sources):
         for source in sources:

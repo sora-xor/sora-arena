@@ -617,7 +617,12 @@
     "lines_event": null,
     "closing_event": null,
     "exit_event": null,
-    "guards": [],
+    "guards": [
+     "enforcer_rifle",
+     "enforcer_rifle",
+     "drone",
+     "blade_retainer"
+    ],
     "opponent": null,
     "sparring": false,
     "phase_events": [],
@@ -6720,8 +6725,8 @@
     "ch05.b02"
    ],
    "on": "look_at:kagaribi",
-   "ja": "[長押し] 篝火に砂をかけて消す",
-   "en": "[Hold] Smother the brazier with sand",
+   "ja": "{Interact}長押し：篝火に砂をかけて消す",
+   "en": "Hold {Interact}: smother the brazier with sand",
    "shown_en": null
   },
   {
@@ -6740,8 +6745,8 @@
     "ch05.b03"
    ],
    "on": "look_at:collar",
-   "ja": "[長押し] 首輪を断つ",
-   "en": "[Hold] Cut the collar",
+   "ja": "{Interact}長押し：首輪を断つ",
+   "en": "Hold {Interact}: cut the collar",
    "shown_en": null
   },
   {
@@ -6750,8 +6755,8 @@
     "ch05.b03"
    ],
    "on": "progress_at:0.05",
-   "ja": "[合図] 同行者を伏せさせる",
-   "en": "[Signal] Your companions take cover",
+   "ja": "見張りに見られている間、同行者は足を止める",
+   "en": "While a guard sees you, your companions stop and wait",
    "shown_en": null
   },
   {
@@ -6780,8 +6785,8 @@
     "ch05.b07"
    ],
    "on": "target_hp_below:tatara_furnace:0.7",
-   "ja": "[長押し] 粘土で釜を補修",
-   "en": "[Hold] Patch the furnace with clay",
+   "ja": "{Interact}：粘土で釜を補修",
+   "en": "Press {Interact}: patch the furnace with clay",
    "shown_en": null
   },
   {
@@ -8102,7 +8107,64 @@
       200
      ]
     ],
-    "cover": [],
+    "cover": [
+     [
+      12587,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      16562,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      20537,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      24512,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      28487,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      32462,
+      -11220,
+      230,
+      180,
+      140
+     ],
+     [
+      36437,
+      -12780,
+      230,
+      180,
+      140
+     ],
+     [
+      40412,
+      -11220,
+      230,
+      180,
+      140
+     ]
+    ],
     "props": [
      {
       "mesh": "SM_Edo_LanternPost",

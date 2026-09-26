@@ -457,11 +457,68 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     const FString Hash = Run.Finish();
     Run.Expect(TEXT("the second cut is met with a fresh guard"), ParryAt != INDEX_NONE);
     Run.Expect(TEXT("the yumi is drawn, the yari thrust and the hero sprints"), DrawAt != INDEX_NONE && ThrustAt != INDEX_NONE && RunAt != INDEX_NONE);
-    Run.Expect(TEXT("the first retainer falls to the katana and Nyaakoto stands"),
-        bOk && Run.Mode()->Campaign()->Kills >= 1 && Run.Foe(0) == nullptr && Run.Hero()->IsAlive());
+    Run.Expect(TEXT("the first retainer falls to the katana, both retainers fall and Nyaakoto stands"),
+        bOk && Run.Mode()->Campaign()->Kills == 2 && Run.Foe(0) == nullptr && Run.Hero()->IsAlive());
     // After the traced fight, the rest of the deck falls and the next beat begins.
     if (bOk && Log && !Run.ClearBeat(RetainerBeat))
         return FString();
+    return bOk ? Hash : FString();
+}
+
+// The first fight after the arc carbine is assembled (ch05.b10): four rifle
+// enforcers from enemies.json at once. The carbine comes to hand on its key,
+// held fire cuts down the first enforcer (kept six metres off, in front of
+// the muzzle), a reload refills the magazine, and a second enforcer, kept in
+// the open seven metres off, finds Nyaakoto with its bursts.
+constexpr int32 CarbineChapter = 4, CarbineBeat = 9, CarbineMagazine = 24;
+FString Carbine(FAutomationTestBase& Test, FEventLog* Log = nullptr)
+{
+    FRun Run(Test, TEXT("Carbine"), Log);
+    if (!Run.Seed(CarbineChapter, CarbineBeat) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
+        return FString();
+    if (!Test.TestTrue(TEXT("Carbine scenario is in play"), Run.Mode()->IsPlaying()) ||
+        !Test.TestNotNull(TEXT("The first enforcer stands"), Run.Foe(0)))
+        return FString();
+    int32 FellAt = INDEX_NONE, ReloadAt = INDEX_NONE, HitAt = INDEX_NONE;
+    const bool bOk = Run.Play(480, [&](FRun& R, int32 F)
+    {
+        if (F == 5)
+            return R.Tap(EKeys::One);
+        if (F < 20)
+            return true;
+        FFoe* Target = R.Foe(0);
+        if (FellAt == INDEX_NONE)
+        {
+            if (!Target || !Target->IsAlive())
+            {
+                FellAt = F;
+                return R.Up(EKeys::LeftMouseButton);
+            }
+            // The enforcer is kept in front of the muzzle while the trigger is held.
+            if (F == 20)
+                return R.Place(Target, FVector(600, 0, 0)) && R.Aim(Target) && R.Down(EKeys::LeftMouseButton);
+            if (F % 10 == 0 && !R.Place(Target, FVector(600, 0, 0)))
+                return false;
+            return R.Aim(Target);
+        }
+        if (ReloadAt == INDEX_NONE && F >= FellAt + 5)
+        {
+            ReloadAt = F;
+            return R.Tap(EKeys::R);
+        }
+        // The next enforcer stands in the open until its rounds land.
+        if (HitAt == INDEX_NONE && ReloadAt != INDEX_NONE && R.Hero()->Health < R.Hero()->MaxHealth)
+            HitAt = F;
+        if (HitAt == INDEX_NONE && ReloadAt != INDEX_NONE && (F - ReloadAt) % 20 == 10)
+            return R.Place(R.Foe(1), FVector(700, 150, 0));
+        return true;
+    });
+    const FString Hash = Run.Finish();
+    const USoraEquipmentComponent* Kit = Run.Hero()->GetEquipment();
+    Run.Expect(TEXT("the first enforcer falls to the carbine"), bOk && FellAt != INDEX_NONE && Run.Mode()->Campaign()->Kills == 1);
+    Run.Expect(TEXT("the reload refills the carbine's magazine"), ReloadAt != INDEX_NONE && Run.Hero()->WeaponId == 1 &&
+        !Kit->bReloading && Kit->Ammo == CarbineMagazine);
+    Run.Expect(TEXT("an enforcer's rounds find Nyaakoto, who stands"), HitAt != INDEX_NONE && Run.Hero()->IsAlive());
     return bOk ? Hash : FString();
 }
 
@@ -772,6 +829,7 @@ bool FSoraCombatTraceTest::RunTest(const FString& Parameters)
     if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
         return false;
     TestFalse(TEXT("Retainer fight completes"), Retainer(*this).IsEmpty());
+    TestFalse(TEXT("Carbine fight completes"), Carbine(*this).IsEmpty());
     TestFalse(TEXT("Dojo lessons and bouts complete"), Dojo(*this).IsEmpty());
     TestFalse(TEXT("Collector fight completes"), Collector(*this).IsEmpty());
     TestFalse(TEXT("Training arena fight completes"), Training(*this).IsEmpty());
@@ -790,14 +848,15 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
         return false;
     // Listeners observe only: each fight must trace identically with and without them.
-    FEventLog RetainerLog, DojoLog, CollectorLog, TrainingLog, KernelLog;
+    FEventLog RetainerLog, CarbineLog, DojoLog, CollectorLog, TrainingLog, KernelLog;
     TestEqual(TEXT("Retainer fight is unchanged by listeners"), Retainer(*this, &RetainerLog), Retainer(*this));
+    TestEqual(TEXT("Carbine fight is unchanged by listeners"), Carbine(*this, &CarbineLog), Carbine(*this));
     TestEqual(TEXT("Dojo is unchanged by listeners"), Dojo(*this, &DojoLog), Dojo(*this));
     TestEqual(TEXT("Collector fight is unchanged by listeners"), Collector(*this, &CollectorLog), Collector(*this));
     TestEqual(TEXT("Training fight is unchanged by listeners"), Training(*this, &TrainingLog), Training(*this));
     // Each fight's announced events, for reading a failed expectation.
     for (const TPair<const TCHAR*, const FEventLog*>& Fight : {TPair<const TCHAR*, const FEventLog*>(TEXT("Retainer"), &RetainerLog),
-        TPair<const TCHAR*, const FEventLog*>(TEXT("Dojo"), &DojoLog), TPair<const TCHAR*, const FEventLog*>(TEXT("Collector"), &CollectorLog),
+        TPair<const TCHAR*, const FEventLog*>(TEXT("Carbine"), &CarbineLog), TPair<const TCHAR*, const FEventLog*>(TEXT("Dojo"), &DojoLog), TPair<const TCHAR*, const FEventLog*>(TEXT("Collector"), &CollectorLog),
         TPair<const TCHAR*, const FEventLog*>(TEXT("Training"), &TrainingLog)})
         FFileHelper::SaveStringToFile(FString::Join(Fight.Value->Lines, TEXT("\n")),
             *(FPaths::ProjectSavedDir() / TEXT("Diagnostics") / (FString(TEXT("scripted_fight_")) + Fight.Key + TEXT(".txt"))));
@@ -821,6 +880,16 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, RetainerLog, Scenario, TEXT("Fired shooter=Invader"));
     Expect(*this, RetainerLog, Scenario, TEXT("BeatCompleted chapter=4 beat=ch05.b05"));
     Expect(*this, RetainerLog, Scenario, TEXT("BeatStarted chapter=4 beat=ch05.b06 resumed=0 phase=0"));
+
+    // The hero's carbine: hitscan rounds that land and kill, and the
+    // enforcers' fire that lands on him.
+    Scenario = TEXT("Carbine");
+    Expect(*this, CarbineLog, Scenario, TEXT("BeatStarted chapter=4 beat=ch05.b10 resumed=1 phase=0"));
+    Expect(*this, CarbineLog, Scenario, TEXT("Fired shooter=Hero weapon=1 kind=Hitscan"), 4);
+    Expect(*this, CarbineLog, Scenario, TEXT("Damaged victim=Invader0 causer=Hero"), 4);
+    Expect(*this, CarbineLog, Scenario, TEXT("Died victim=Invader0 killer=Hero sparring=0"));
+    Expect(*this, CarbineLog, Scenario, TEXT("Fired shooter=Invader"));
+    Expect(*this, CarbineLog, Scenario, TEXT("Damaged victim=Hero causer=Invader"));
 
     Scenario = TEXT("Dojo");
     Expect(*this, DojoLog, Scenario, TEXT("ChapterStarted chapter=0 resumed=1 liberated=0"));
@@ -875,8 +944,8 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, TrainingLog, Scenario, TEXT("Resolved attacker=Hero target=Retainer0 weapon=6 hit=1"));
 
     KernelEvents(*this, KernelLog);
-    UE_LOG(LogTemp, Display, TEXT("SORA_SCRIPTED_FIGHT_EVENTS_OK: invasion=%d dojo=%d collector=%d training=%d kernel=%d"),
-        RetainerLog.Lines.Num(), DojoLog.Lines.Num(), CollectorLog.Lines.Num(), TrainingLog.Lines.Num(), KernelLog.Lines.Num());
+    UE_LOG(LogTemp, Display, TEXT("SORA_SCRIPTED_FIGHT_EVENTS_OK: invasion=%d carbine=%d dojo=%d collector=%d training=%d kernel=%d"),
+        RetainerLog.Lines.Num(), CarbineLog.Lines.Num(), DojoLog.Lines.Num(), CollectorLog.Lines.Num(), TrainingLog.Lines.Num(), KernelLog.Lines.Num());
     return true;
 }
 #endif

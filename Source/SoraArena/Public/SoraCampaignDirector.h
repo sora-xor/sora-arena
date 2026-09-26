@@ -54,21 +54,22 @@ struct FSoraStoryNotice
 // cinematics through a camera that dollies over their place behind the
 // letterboxed card; dialogue lines; waves released by their triggers and put
 // on the field at the beat's spawns; duels and bosses with their phases;
-// stealth zones whose guards stand on patrol routes; the production tasks
-// (hold, crank, escort, carry, manufacture, defend) at their points with their
-// kits; rides on Kurimaru and the other horses (SoraMountRules.h); explore
-// caches and loose collectibles. A beat in another place than the hero cuts
-// to its entry (travel); the hero entering a trigger volume raises its event.
-// Failures follow the beat's rules: a checkpoint, a match retried in place, or
-// the story moving on. Completing a beat restores its production site and
-// unlocks its weapons, mechanics and story flags; the save (schema 6) keeps
-// the checkpoint beat and phase, the beats done, the unlock and flag masks and
-// the collectibles, and is refused unless SoraBeatRules accepts it. Lines are
-// keyed by events (FireDialogueTrigger). Chapter-one forms use SoraDojoRules.h.
-// World-facing play (travel, volumes, points, spawns, horses, carry, siege,
-// escort, pickups, the cinematic camera) lives in
-// Private/Game/SoraCampaignDirectorWorld.cpp. The director ticks itself; the
-// paused menu stops it.
+// stealth zones, and production tasks under guard, whose guards stand on
+// patrol routes; the production tasks (hold, crank, escort, carry,
+// manufacture, defend) at their points with their kits; rides on Kurimaru and
+// the other horses (SoraMountRules.h); explore caches and loose collectibles.
+// A beat in another place than the hero cuts to its entry (travel); the hero
+// entering a trigger volume raises its event. Failures follow the beat's
+// rules: a checkpoint, a match retried in place, or the story moving on. A
+// beat teaches its weapons and mechanics while it is in play; completing it
+// restores its production site and keeps its weapons, mechanics and story
+// flags; the save (schema 6) keeps the checkpoint beat and phase, the beats
+// done, the unlock and flag masks and the collectibles, and is refused unless
+// SoraBeatRules accepts it. Lines are keyed by events (FireDialogueTrigger).
+// Chapter-one forms use SoraDojoRules.h. World-facing play (travel, volumes,
+// points, spawns, horses, carry, siege, escort, pickups, the cinematic camera)
+// lives in Private/Game/SoraCampaignDirectorWorld.cpp. The director ticks
+// itself; the paused menu stops it.
 UCLASS(ClassGroup=(Sora))
 class SORAARENA_API USoraCampaignDirector : public UActorComponent
 {
@@ -160,10 +161,13 @@ public:
     const SoraBeatRules::FProgress& Progress() const { return BeatState; }
     const SoraBeatRules::FTask& ActiveTask() const { return Task; }
     const SoraBeatRules::FTaskState& TaskProgress() const { return TaskState; }
+    // What the hero may use now: what the campaign has unlocked and what the
+    // beat in play teaches (SoraBeatRules::InPlayWeapons, InPlayMechanics).
     bool IsWeaponUnlocked(int32 WeaponId) const;
+    bool IsMechanicInPlay(FName Mechanic) const;
     bool IsStoryFlagSet(FName Flag) const;
     // 活人剣: the debt-bound conscript whose seal the hero is cutting (Interact
-    // held beside a knocked-down conscript once seal_cut is learned), and how
+    // held beside a knocked-down conscript once seal_cut is in play), and how
     // far the cut has come (0-1).
     const ASoraEnemy* SealBeingCut() const { return SealTarget.Get(); }
     float SealCutProgress() const;
@@ -183,8 +187,6 @@ public:
     // (INDEX_NONE for the hub, -2 for none).
     FVector PartyLocation() const;
     int32 HeroZone() const;
-    // A guard's patrol route, for the AI lane's patrol behaviour.
-    const TArray<FVector2D>* GuardPatrol(const ASoraEnemy* Guard) const;
     // Seconds of the running cinematic, whether it opens a fresh chapter (the
     // title card shows first), and the camera it plays through.
     float CinematicElapsed() const;
@@ -231,11 +233,9 @@ private:
     UPROPERTY() TArray<TObjectPtr<ASoraHorse>> Pack;
     UPROPERTY() TObjectPtr<ACameraActor> ShotCamera;
     // The wave each spawned opponent belongs to (guards, duellists and bosses
-    // have none) and a stealth guard's patrol route (an index into the beat's
-    // patrols). Weak keys: a fallen opponent's entry leaves with it, and an
+    // have none). Weak keys: a fallen opponent's entry leaves with it, and an
     // opponent built later at a freed address never inherits it.
     TMap<TWeakObjectPtr<const ASoraEnemy>, int32> EnemyWaves;
-    TMap<TWeakObjectPtr<const ASoraEnemy>, int32> GuardPatrols;
     // A captured boss yielded here, waiting for the hero's hand.
     UPROPERTY() TObjectPtr<ASoraEnemy> Captive;
     TWeakObjectPtr<ASoraEnemy> SealTarget;
@@ -260,7 +260,6 @@ private:
     bool bLinesStarted = false;
     bool bChapterOpening = false;
     bool bCrankSlack = false;
-    bool bHeroSeen = false;
     bool bDetected = false;
     float CinematicSeconds = 0.f;
     unsigned DojoLessonMask = 0u;
