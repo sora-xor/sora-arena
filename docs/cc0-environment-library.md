@@ -357,8 +357,11 @@ The following were run on 2026-09-26:
 - the editor validator: `SORA_CC0_ENVIRONMENT_VALIDATED: 344 packages`, with
   220 textures, 7 masters, 47 place and 29 evaluation instances, and 34 meshes.
 
-These checks ran in a `-nullrhi` editor. In that editor the material
-translation reported no errors, but no shaders were compiled.
+Each step ran on its own with the same editor flags that `import-mac.sh`
+uses. The full `import-mac.sh`, including its build and original-asset steps,
+has not yet run end to end with the new steps. These checks ran in a
+`-nullrhi` editor. In that editor the material translation reported no errors,
+but no shaders were compiled.
 
 The following remain unverified:
 

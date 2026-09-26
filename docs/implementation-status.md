@@ -235,7 +235,7 @@ for story-bible places plus 29 evaluation instances. The ledgers' period flags
 are enforced in code: flagged-inaccurate surfaces (mortared walls, tyre tracks,
 Western roof tiles, wire rope, possible moso bamboo, metal-hooped buckets) are
 evaluation-only, and medium-risk surfaces only fill the role their flag allows.
-`import-mac.sh` packs, checks, imports and validates it. Run: the 15 host tests,
+`import-mac.sh` packs, checks, imports and validates it (wired in, but not yet run end to end; each step ran separately). Run: the 15 host tests,
 the pack and source check (344 packages), and the headless 5.8.3 import and
 validator (`SORA_CC0_ENVIRONMENT_VALIDATED: 344 packages`). Not yet run:
 shader compilation and rendered dry/wet look-development (the render script was

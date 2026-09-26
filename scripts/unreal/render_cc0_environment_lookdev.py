@@ -165,7 +165,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     shots = build_scene(plan)
     mpc = load(library.mpc_path())
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).get_editor_world()
     queue = [(f"{group}_{state}", camera, state) for state in ("dry", "wet") for group, camera in shots]
     status = {"task": None, "frames": 0, "written": []}
 
