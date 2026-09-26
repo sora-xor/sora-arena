@@ -105,7 +105,8 @@ fn salt(slot: usize, tick: u32) -> Hash {
     salt
 }
 
-/// Commit, sign and open one batch of the script at `start`.
+/// Commit, sign and open one batch of the script at `start`, chained to the
+/// previous certified set `parent`.
 fn batch(
     context: &Context,
     keys: &[SigningKey],
@@ -115,6 +116,7 @@ fn batch(
 ) -> (CommitmentSet, Vec<SlotSignature>, Vec<Reveal>) {
     let reveals = (0..keys.len())
         .map(|slot| Reveal {
+            start_tick: start,
             slot,
             inputs: (start..start + BATCH_TICKS as u32)
                 .map(|tick| controls(tick)[slot])
@@ -128,7 +130,7 @@ fn batch(
         parent,
         commitments: reveals
             .iter()
-            .map(|r| input_commitment(context, epoch, start, parent, r.slot, &r.inputs, r.salt))
+            .map(|r| input_commitment(context, epoch, start, r.slot, &r.inputs, r.salt))
             .collect::<Result<_, _>>()
             .unwrap(),
     };
@@ -176,8 +178,7 @@ fn a_loadout_request_has_one_canonical_eight_byte_encoding() {
 fn input_commitments_bind_the_requested_class_and_loadout() {
     let keys = keys();
     let context = context(&keys);
-    let commit =
-        |inputs: [Input; 2]| input_commitment(&context, 0, 0, [9; 32], 1, &inputs, [4; 32]);
+    let commit = |inputs: [Input; 2]| input_commitment(&context, 0, 0, 1, &inputs, [4; 32]);
     let idle = Input::default();
     let base = commit([request(3, 0), idle]).unwrap();
     // Class, index, the bit itself and the tick it is sent on all bind.
@@ -219,7 +220,8 @@ fn a_certified_request_respawns_the_dead_player_with_its_selection() {
             session.predict(controls(tick).to_vec()).unwrap();
         }
         let log = session.evidence();
-        let (set, signatures, reveals) = batch(&context, &keys, log.epoch, start, log.root);
+        let (set, signatures, reveals) =
+            batch(&context, &keys, log.epoch, start, log.commitment_head);
         session.certify(set.clone(), signatures).unwrap();
         // The requester's opening crosses the wire as a signed frame.
         let frame = WireFrame {
@@ -231,7 +233,12 @@ fn a_certified_request_respawns_the_dead_player_with_its_selection() {
             },
         };
         let packet = frame.encode(&context, &keys[1]).unwrap();
-        assert_eq!(receiver.decode(&packet, Some(&set)).unwrap(), frame);
+        assert_eq!(
+            receiver
+                .decode(&packet, std::slice::from_ref(&set))
+                .unwrap(),
+            frame
+        );
         if start == HANABI {
             // After the commitment no peer can swap its selection, and a
             // rejected opening changes neither the transcript nor the match.
@@ -298,7 +305,8 @@ fn the_durable_journal_replays_a_pending_selection_exactly() {
     let mut journal = DurableSession::create(&path, context.clone(), config(), &roster()).unwrap();
     for start in (0..HANABI + BATCH_TICKS as u32).step_by(BATCH_TICKS) {
         let log = journal.session().evidence();
-        let (set, signatures, reveals) = batch(&context, &keys, log.epoch, start, log.root);
+        let (set, signatures, reveals) =
+            batch(&context, &keys, log.epoch, start, log.commitment_head);
         journal.certify(set, signatures).unwrap();
         journal.reveal_many(reveals).unwrap();
     }

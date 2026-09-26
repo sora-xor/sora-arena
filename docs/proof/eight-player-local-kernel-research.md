@@ -12,24 +12,25 @@ The first pass records every eight-byte input and every tick's state hash. A
 second pass regenerates controls, and a third decodes the recorded input bytes.
 The test compares all 7,200 per-tick hashes, the final state hash, the complete
 input-plus-state timeline digest, and event counts across all three passes. The
-two digests are pinned as regression vectors:
+two digests are pinned as regression vectors under `sora-arena-first-release-7`:
 
 | Digest | SHA-256 hex |
 | --- | --- |
-| Final kernel state | `ae4f7add6174106217c1ba20f1dc18da4b1c28456a7630931739f5ba78ea60be` |
-| Input-plus-state timeline | `effafb52709a3fc946c82eeb3ad80b3b2616193c0505c22289273e16f754fe56` |
+| Final kernel state | `5d000cfd7b28526bfa55fe0050c0d47872fa6c9831b189f6ea5c602d0af019ea` |
+| Input-plus-state timeline | `409dd59b3d6016dd35c026d0d6608e9f55f56512866f22d1cfae1c5d9b1b9c9e` |
 
 Run with `cargo test --locked -p arena-core --test eight_player_two_minute_research -- --nocapture`.
-On 2026-09-23, the focused test passed on Apple M1 Ultra (128 GB), macOS 27.0,
-arm64, Rust 1.97.1, in an unoptimized debug build. The first run took 549 ms,
-the regenerated repeat 546 ms, and encoded-input replay 550 ms. The direct
-test process took 1.65 s wall time for all three runs. `/usr/bin/time -l` on
-that process reported a maximum resident set size of 5,193,728 bytes (about
-4.95 MiB), including the test harness and recorded inputs/hashes. The fixture
-timings include input generation or decoding, state hashing, and test checks;
-they do not isolate combat-step cost. The fixture
-recorded 1,856 shot events, 384 damage events, 64 deaths, and 64 respawns. The
-recorded input tape is 460,800 bytes. These numbers are local observations,
+On 2026-09-26, the focused test passed on Apple M1 Ultra (128 GB), macOS 27.0,
+arm64, Rust 1.97.1, in an unoptimized debug build, with a load average of about
+18 from other work. The first run took 1,353 ms, the regenerated repeat
+1,369 ms, and encoded-input replay 1,363 ms. The direct test process took
+4.69 s wall time for all three runs. `/usr/bin/time -l` on that process
+reported a maximum resident set size of 5,390,336 bytes (about 5.14 MiB),
+including the test harness and recorded inputs/hashes. The fixture timings
+include input generation or decoding, state hashing, and test checks; they do
+not isolate combat-step cost. The fixture recorded 1,838 shot events, 384
+damage events, 64 deaths, and 64 respawns. The recorded input tape is 460,800
+bytes. These numbers are local observations,
 not performance guarantees for other machines or builds.
 
 This is **not** the planned 4v4 two-minute networked research match. There are

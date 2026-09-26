@@ -253,7 +253,10 @@ individual valid reveals and signed checkpoints across restart, then replays the
 kernel against the caller's exact admission. Recovery rejects damaged records,
 forged signatures and rollback behind a caller-supplied trusted receipt. Native
 consensus deadlines and forced resolution, production transport and complete FPS AIR
-integration are still required; no peer timeout can settle funds. See
+integration are still required; no peer timeout can settle funds. Up to 16
+certified frontiers can now await openings at once, and the protocol-level
+dropout policy forfeits a withheld opening only through a consensus deadline
+resolution ([pipelined evidence](p2p-pipeline.md)). See
 [P2P recovery](p2p-recovery.md) for the remaining durability and integration gates.
 The bounded P2P wire codec signs complete commitment certificates, reveal
 openings and checkpoints with version, context and sequence binding. It rejects
@@ -264,7 +267,7 @@ Authenticated 1,200-byte fragmentation now carries the largest 12-player
 certificate in two datagrams, with bounded out-of-order reassembly. A signed
 ephemeral X25519/HKDF handshake derives pairwise directional keys and an
 admission-bound channel binding; six focused tests and the full workspace suite
-pass. The version-2 evidence journal now syncs each verified signed handshake
+pass. The version-3 evidence journal now syncs each verified signed handshake
 offer before returning its channel response, restores bounded replay protection,
 and rejects a rolled-back file when given an externally retained receipt. An
 [offline loopback UDP research transport](p2p-localhost.md) now exchanges real
@@ -284,6 +287,18 @@ accepted combat hashes/history roots against independent `World` replay and
 rejects a tampered or duplicate reveal. Focused regressions and the arena-core
 suite pass. It remains a zero-bond localhost
 research path without production NAT/relay transport or settlement authority.
+An N-peer research mesh (`mesh_transport`, `arena peer`) now runs a
+two-minute 4v4 match as eight OS processes on loopback. It passes cleanly,
+with one peer killed and restarted from its journal, and under injected
+datagram damage; every process reaches the pinned final state
+([measurements](p2p-localhost.md#n-peer-mesh-transport)). A two-minute 6v6
+match as twelve processes also agrees on the final state, but on one machine
+it does not hold 60 Hz presentation: 1.9–5.3% of ticks were late in two runs.
+When a peer drops out, the survivors stop combat with a journaled interrupt,
+share their certificates and last checkpoint, and finish once the openings
+are available. A frontier only the dropped peer can open stays pending for a
+consensus deadline, which is not implemented. The mesh has the same
+zero-bond, no-NAT, no-settlement limits.
 
 The Unreal wallet source can prepare allowlisted native transactions, verify a
 wallet signature through the native Connect bridge, submit a signed Norito

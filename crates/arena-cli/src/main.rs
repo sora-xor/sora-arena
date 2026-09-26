@@ -1,4 +1,7 @@
 //! Headless deterministic simulation/qualification diagnostic. Never moves XOR.
+mod peer;
+mod script;
+
 use arena_core::{
     arena_export,
     catalog::{self, AttackKind},
@@ -182,13 +185,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             println!("scope=offline clear-lane mechanics only; proof_qualified=false");
         }
         "arenas" => print!("{}", arena_export::json()),
+        "peer" => peer::run(args)?,
         "qualification" => {
             println!(
                 "arena_profile_qualified=false\nexecution_relation=not_implemented\nmainnet_funding=disabled\nmarketplace=disabled\nreference_kernel=development"
             );
         }
         "help" | "--help" | "-h" => println!(
-            "SORA Arena headless tools\n  catalog\n  simulate [ticks<=36000] [players<=12]\n  balance\n  arenas (arena-map-v1 JSON: the exact kernel collision, spawns, objectives and hazards)\n  qualification\nSimulation is not a cryptographic proof; no wallet is accessed."
+            "SORA Arena headless tools\n  catalog\n  simulate [ticks<=36000] [players<=12]\n  balance\n  arenas (arena-map-v1 JSON: the exact kernel collision, spawns, objectives and hazards)\n  qualification\n  {} (one scripted, offline, zero-bond research mesh peer)\nSimulation is not a cryptographic proof; no wallet is accessed.",
+            peer::USAGE
         ),
         _ => return Err(format!("unknown command: {command}").into()),
     }

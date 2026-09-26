@@ -9,8 +9,11 @@ prototype has separate gameplay code and is not proof-qualified.
 Every outcome-affecting value below is an exact integer. Distances are
 millimetres (X forward, Y right, Z up), angles are 16-bit turns (65536 per full
 turn), and times are 60 Hz simulation ticks. There is no randomness and no
-platform floating point. A change to any rule or number in this document
-changes the rules identity (`RULES_VERSION`) and the canonical state hash.
+platform floating point. A change to any combat rule or number in this
+document changes the rules identity (`RULES_VERSION`) and the canonical state
+hash. The P2P commitment format in §2.2 is versioned separately, by its
+evidence domain tag, because it changes neither the kernel nor its state
+hash.
 
 ## 1. Identity and implementation status
 
@@ -133,23 +136,30 @@ or 256 or a loadout class byte of 6, is rejected, never clamped. A bare
 encodes as the hex bytes `40 00 c k y_lo y_hi p_lo p_hi`.
 
 **Commitment.** Peers commit their inputs before revealing them, in fixed
-batches of `BATCH_TICKS = 2` inputs per slot (docs/p2p-recovery.md). A slot's
+batches of `BATCH_TICKS = 2` inputs per slot (docs/p2p-pipeline.md). A slot's
 commitment is SHA-256 over:
 
-1. the evidence context: `"sora-arena:p2p-evidence:v1\0"`, u32 tag length and
+1. the evidence context: `"sora-arena:p2p-evidence:v2\0"`, u32 tag length and
    the tag `inputs`, the 32-byte network, session and manifest hashes, u32
    roster count and each 32-byte roster key;
-2. epoch u64, the batch's first tick u32, the parent history root, slot u32,
-   u32 input count 2, and the two encoded inputs;
+2. epoch u64, the batch's first tick u32 (a multiple of 2 below 36,000), slot
+   u32, u32 input count 2, and the two encoded inputs;
 3. the 32-byte salt.
 
 Each input is validated before it is committed. A reveal must open its
-certified commitment exactly, and the transcript root then chains every
-certified commitment set and every revealed input. A loadout request (§10) is
-therefore fixed at commitment time exactly like movement and triggers: no peer
-can change its selection after seeing the others' commitments, and an
-out-of-range request can be neither committed nor decoded from a wire packet
-or a durable journal.
+certified commitment exactly. Each certified commitment set chains to the
+digest of the set before it, so up to 16 may await their openings. The reveal
+transcript root then closes them in tick order over every executed input. A
+loadout request (§10) is therefore fixed at commitment time exactly like
+movement and triggers: no peer can change its selection after seeing the
+others' commitments, and an out-of-range request can be neither committed nor
+decoded from a wire packet or a durable journal.
+
+The evidence domain tag names this format. Every commitment, set signature,
+checkpoint signature and transcript root is bound to it, so a change to the
+format changes the tag, not `RULES_VERSION`. Version 2 replaced version 1,
+which bound each commitment to its parent history root, without a
+compatibility mode: evidence under v1 is rejected, not converted.
 
 ### 2.3 Integer geometry
 

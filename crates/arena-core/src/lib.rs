@@ -14,6 +14,7 @@ pub mod handshake;
 pub mod localhost_transport;
 pub mod maps;
 pub mod math;
+pub mod mesh_transport;
 pub mod protocol;
 pub mod recovery;
 pub mod rollback;

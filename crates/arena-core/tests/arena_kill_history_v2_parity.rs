@@ -46,6 +46,7 @@ const NON_SIMULATION_SOURCES: &[&str] = &[
     "fragmented_wire.rs",
     "handshake.rs",
     "localhost_transport.rs",
+    "mesh_transport.rs",
     "recovery.rs",
     "rollback.rs",
     "wire.rs",

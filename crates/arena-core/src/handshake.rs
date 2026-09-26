@@ -110,6 +110,20 @@ impl Initiator {
         Ok((local, offer))
     }
 
+    /// Check that `response` is the responder's signed answer to this exact
+    /// offer without consuming the secret, so a forged or stale datagram
+    /// cannot end the exchange.
+    pub fn check(&self, response: &[u8]) -> Result<(), Error> {
+        decode_response(
+            &self.context,
+            self.initiator_slot,
+            self.responder_slot,
+            offer_digest(&self.context, &self.offer),
+            response,
+        )
+        .map(|_| ())
+    }
+
     /// Verify the signed answer and consume this offer's secret exactly once.
     pub fn finish(self, response: &[u8]) -> Result<PairwiseKeys, Error> {
         let responder_public = decode_response(
@@ -124,6 +138,35 @@ impl Initiator {
             .diffie_hellman(&PublicKey::from(responder_public));
         derive_keys(&self.context, &self.offer, response, &shared, true)
     }
+}
+
+/// Which handshake message a datagram claims to be.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HandshakeKind {
+    Offer,
+    Response,
+}
+
+/// The kind and claimed initiator and responder slots of a datagram that has
+/// the handshake magic and version, for routing only. Nothing is
+/// authenticated here; `accept_offer` and `Initiator::check` verify the rest.
+pub fn packet_header(packet: &[u8]) -> Option<(HandshakeKind, usize, usize)> {
+    if packet.len() < HEADER_BYTES
+        || &packet[..MAGIC.len()] != MAGIC
+        || packet[MAGIC.len()..MAGIC.len() + 2] != VERSION.to_le_bytes()
+    {
+        return None;
+    }
+    let kind = match packet[MAGIC.len() + 2] {
+        OFFER_KIND => HandshakeKind::Offer,
+        RESPONSE_KIND => HandshakeKind::Response,
+        _ => return None,
+    };
+    Some((
+        kind,
+        packet[MAGIC.len() + 3] as usize,
+        packet[MAGIC.len() + 4] as usize,
+    ))
 }
 
 /// Verify one fresh signed offer, sign a response, and derive the responder's
@@ -376,6 +419,7 @@ mod tests {
     use super::*;
     use crate::{
         encrypted_wire::{EncryptedReceiver, EncryptedSender},
+        protocol::NO_FRONTIERS,
         rollback::Checkpoint,
         wire::{WireFrame, WireMessage},
     };
@@ -460,7 +504,7 @@ mod tests {
         )
         .unwrap();
         let sealed = sender.seal(&forward, &identities[0]).unwrap();
-        assert_eq!(receiver.open(&sealed, None).unwrap(), forward);
+        assert_eq!(receiver.open(&sealed, NO_FRONTIERS).unwrap(), forward);
 
         let reverse = WireFrame {
             sender: 1,
@@ -484,7 +528,7 @@ mod tests {
         )
         .unwrap();
         let sealed = sender.seal(&reverse, &identities[1]).unwrap();
-        assert_eq!(receiver.open(&sealed, None).unwrap(), reverse);
+        assert_eq!(receiver.open(&sealed, NO_FRONTIERS).unwrap(), reverse);
     }
 
     #[test]
@@ -549,6 +593,34 @@ mod tests {
         let mut forged = response;
         forged[RESPONSE_PACKET_BYTES - 1] ^= 1;
         assert!(old_local.finish(&forged).is_err());
+    }
+
+    #[test]
+    fn a_checked_response_leaves_the_offer_open_until_the_genuine_answer() {
+        let (context, identities) = fixture();
+        let (local, offer) = Initiator::start(context.clone(), 0, 1, &identities[0]).unwrap();
+        assert_eq!(packet_header(&offer), Some((HandshakeKind::Offer, 0, 1)));
+        let mut replay = OfferReplayGuard::default();
+        let (responder_keys, response) =
+            accept_offer(&context, 0, 1, &identities[1], &offer, &mut replay).unwrap();
+        assert_eq!(
+            packet_header(&response),
+            Some((HandshakeKind::Response, 0, 1))
+        );
+        let mut forged = response;
+        forged[HEADER_BYTES + 40] ^= 1;
+        assert!(local.check(&forged).is_err());
+        let (_, other_offer) = Initiator::start(context.clone(), 0, 1, &identities[0]).unwrap();
+        let (_, stale) =
+            accept_offer(&context, 0, 1, &identities[1], &other_offer, &mut replay).unwrap();
+        assert!(local.check(&stale).is_err());
+        local.check(&response).unwrap();
+        let keys = local.finish(&response).unwrap();
+        assert_eq!(keys.channel_binding, responder_keys.channel_binding);
+        assert_eq!(packet_header(&offer[..HEADER_BYTES - 1]), None);
+        let mut unknown = offer;
+        unknown[MAGIC.len() + 2] = 7;
+        assert_eq!(packet_header(&unknown), None);
     }
 
     #[test]

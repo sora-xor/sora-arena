@@ -1,7 +1,7 @@
 //! Local durability/load diagnostic with public fixture keys and no networking.
 //! No proof is generated, no wallet is accessed, and no XOR can move.
 use arena_core::{
-    protocol::{CommitmentSet, Context, Reveal, input_commitment, sign_commitment_set},
+    protocol::{CommitmentSet, Context, Reveal, sign_commitment_set},
     recovery::DurableSession,
     simulation::{Config, Input, Mode, Participant},
 };
@@ -57,6 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let log = journal.session().evidence();
         let reveals = (0..players)
             .map(|slot| Reveal {
+                start_tick: log.certified_tick,
                 slot,
                 inputs: vec![Input::default(); 2],
                 salt: [slot as u8 + 42; 32],
@@ -64,21 +65,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .collect::<Vec<_>>();
         let set = CommitmentSet {
             epoch: log.epoch,
-            start_tick: log.next_tick,
-            parent: log.root,
+            start_tick: log.certified_tick,
+            parent: log.commitment_head,
             commitments: reveals
                 .iter()
-                .map(|r| {
-                    input_commitment(
-                        &context,
-                        log.epoch,
-                        log.next_tick,
-                        log.root,
-                        r.slot,
-                        &r.inputs,
-                        r.salt,
-                    )
-                })
+                .map(|r| r.commitment(&context, log.epoch))
                 .collect::<Result<_, _>>()?,
         };
         let signatures = keys

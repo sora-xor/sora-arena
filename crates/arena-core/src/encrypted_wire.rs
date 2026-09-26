@@ -18,8 +18,8 @@ use std::collections::VecDeque;
 
 use crate::{
     Error,
-    fragmented_wire::{FragmentAssembler, FragmentResult, fragment_packet},
-    protocol::{CommitmentSet, Context},
+    fragmented_wire::{FragmentAssembler, FragmentResult, authenticated_sequence, fragment_packet},
+    protocol::{CertifiedFrontiers, Context},
     wire::{MAX_WIRE_PACKET_BYTES, WireFrame, WireReceiver},
 };
 
@@ -260,10 +260,17 @@ impl EncryptedReceiver {
         self.expected_sender
     }
 
-    pub fn open(
+    /// The sequence of one authenticated fragment from the expected sender,
+    /// without reassembling or opening it.
+    pub(crate) fn fragment_sequence(&self, fragment: &[u8]) -> Result<u64, Error> {
+        authenticated_sequence(fragment, self.expected_sender, &self.key)
+    }
+
+    /// `frontiers` must be the receiver's own certified evidence.
+    pub fn open<F: CertifiedFrontiers + ?Sized>(
         &mut self,
         packet: &[u8],
-        pending: Option<&CommitmentSet>,
+        frontiers: &F,
     ) -> Result<WireFrame, Error> {
         if !(MIN_ENCRYPTED_PACKET_BYTES..=MAX_ENCRYPTED_PACKET_BYTES).contains(&packet.len()) {
             return Err(Error::InvalidEvidence(
@@ -316,7 +323,7 @@ impl EncryptedReceiver {
         // The signed inner sequence must match the AEAD-authenticated outer
         // sequence. Decode on a clone so a mismatch cannot advance the floor.
         let mut candidate = self.wire.clone();
-        let frame = candidate.decode(&plaintext, pending)?;
+        let frame = candidate.decode(&plaintext, frontiers)?;
         if frame.sender != sender || frame.sequence != sequence {
             return Err(Error::InvalidEvidence(
                 "encrypted packet inner header differs",
@@ -334,12 +341,12 @@ impl EncryptedReceiver {
 
     /// Accept one authenticated datagram. A complete reassembled packet still
     /// goes through AEAD and the original signed-frame verification.
-    pub fn open_fragment(
+    pub fn open_fragment<F: CertifiedFrontiers + ?Sized>(
         &mut self,
         fragment: &[u8],
-        pending: Option<&CommitmentSet>,
+        frontiers: &F,
     ) -> Result<Option<WireFrame>, Error> {
-        match self.open_fragment_or_replay(fragment, pending)? {
+        match self.open_fragment_or_replay(fragment, frontiers)? {
             FragmentDelivery::Pending => Ok(None),
             FragmentDelivery::Frame(frame) => Ok(Some(frame)),
             FragmentDelivery::AcceptedReplay(_) => {
@@ -349,18 +356,18 @@ impl EncryptedReceiver {
         }
     }
 
-    pub(crate) fn open_fragment_or_replay(
+    pub(crate) fn open_fragment_or_replay<F: CertifiedFrontiers + ?Sized>(
         &mut self,
         fragment: &[u8],
-        pending: Option<&CommitmentSet>,
+        frontiers: &F,
     ) -> Result<FragmentDelivery, Error> {
-        self.open_fragment_or_replay_with_capacity(fragment, pending, true)
+        self.open_fragment_or_replay_with_capacity(fragment, frontiers, true)
     }
 
-    pub(crate) fn open_fragment_or_replay_with_capacity(
+    pub(crate) fn open_fragment_or_replay_with_capacity<F: CertifiedFrontiers + ?Sized>(
         &mut self,
         fragment: &[u8],
-        pending: Option<&CommitmentSet>,
+        frontiers: &F,
         accept_new: bool,
     ) -> Result<FragmentDelivery, Error> {
         match self.fragments.push(
@@ -377,7 +384,7 @@ impl EncryptedReceiver {
             }
             FragmentResult::AtCapacity => Ok(FragmentDelivery::AtCapacity),
             FragmentResult::Complete(packet) => {
-                self.open(&packet, pending).map(FragmentDelivery::Frame)
+                self.open(&packet, frontiers).map(FragmentDelivery::Frame)
             }
         }
     }
@@ -411,7 +418,7 @@ mod tests {
     use super::*;
     use crate::{
         MAX_PLAYERS,
-        protocol::{CommitmentSet, sign_commitment_set},
+        protocol::{CommitmentSet, NO_FRONTIERS, sign_commitment_set},
         rollback::Checkpoint,
         wire::{MAX_WIRE_PACKET_BYTES, WireMessage},
     };
@@ -481,19 +488,19 @@ mod tests {
         assert_eq!(tx.sequence_floor(), Some(9));
         assert!(tx.seal(&frame, &keys[0]).is_err());
         let mut rx = receiver(&context, None);
-        assert_eq!(rx.open(&packet, None).unwrap(), frame);
+        assert_eq!(rx.open(&packet, NO_FRONTIERS).unwrap(), frame);
         assert_eq!(rx.sequence_floor(), Some(9));
-        assert!(rx.open(&packet, None).is_err());
+        assert!(rx.open(&packet, NO_FRONTIERS).is_err());
         assert_eq!(rx.sequence_floor(), Some(9));
 
         let mut next = frame.clone();
         next.sequence = 10;
         let next_packet = tx.seal(&next, &keys[0]).unwrap();
-        assert_eq!(rx.open(&next_packet, None).unwrap(), next);
-        assert!(rx.open(&packet, None).is_err());
+        assert_eq!(rx.open(&next_packet, NO_FRONTIERS).unwrap(), next);
+        assert!(rx.open(&packet, NO_FRONTIERS).is_err());
         assert!(
             receiver(&context, Some(10))
-                .open(&next_packet, None)
+                .open(&next_packet, NO_FRONTIERS)
                 .is_err()
         );
         assert!(sender(&context, Some(10)).seal(&frame, &keys[0]).is_err());
@@ -536,7 +543,7 @@ mod tests {
         variants.push(vec![0; MIN_ENCRYPTED_PACKET_BYTES - 1]);
         let mut rx = receiver(&context, None);
         for variant in variants {
-            assert!(rx.open(&variant, None).is_err());
+            assert!(rx.open(&variant, NO_FRONTIERS).is_err());
             assert_eq!(rx.sequence_floor(), None);
         }
         let mut wrong_channel = EncryptedReceiver::new(
@@ -547,7 +554,7 @@ mod tests {
             None,
         )
         .unwrap();
-        assert!(wrong_channel.open(&packet, None).is_err());
+        assert!(wrong_channel.open(&packet, NO_FRONTIERS).is_err());
         let mut wrong_key = EncryptedReceiver::new(
             context.clone(),
             0,
@@ -556,11 +563,15 @@ mod tests {
             None,
         )
         .unwrap();
-        assert!(wrong_key.open(&packet, None).is_err());
+        assert!(wrong_key.open(&packet, NO_FRONTIERS).is_err());
         let mut wrong_network = context.clone();
         wrong_network.network[0] ^= 1;
-        assert!(receiver(&wrong_network, None).open(&packet, None).is_err());
-        assert_eq!(rx.open(&packet, None).unwrap(), frame);
+        assert!(
+            receiver(&wrong_network, None)
+                .open(&packet, NO_FRONTIERS)
+                .is_err()
+        );
+        assert_eq!(rx.open(&packet, NO_FRONTIERS).unwrap(), frame);
     }
 
     #[test]
@@ -596,7 +607,7 @@ mod tests {
             .unwrap();
         forged[HEADER_BYTES..].copy_from_slice(&resealed);
         let mut rx = receiver(&context, None);
-        assert!(rx.open(&forged, None).is_err());
+        assert!(rx.open(&forged, NO_FRONTIERS).is_err());
         assert_eq!(rx.sequence_floor(), None);
 
         let mut forged_inner = packet.clone();
@@ -613,9 +624,9 @@ mod tests {
             )
             .unwrap();
         forged_inner[HEADER_BYTES..].copy_from_slice(&resealed);
-        assert!(rx.open(&forged_inner, None).is_err());
+        assert!(rx.open(&forged_inner, NO_FRONTIERS).is_err());
         assert_eq!(rx.sequence_floor(), None);
-        assert_eq!(rx.open(&packet, None).unwrap(), frame);
+        assert_eq!(rx.open(&packet, NO_FRONTIERS).unwrap(), frame);
     }
 
     #[test]
@@ -625,7 +636,12 @@ mod tests {
         let packet = tx.seal(&frame, &keys[0]).unwrap();
         assert!(frame.encode(&context, &keys[0]).unwrap().len() <= MAX_WIRE_PACKET_BYTES);
         assert!(packet.len() <= MAX_ENCRYPTED_PACKET_BYTES);
-        assert_eq!(receiver(&context, None).open(&packet, None).unwrap(), frame);
+        assert_eq!(
+            receiver(&context, None)
+                .open(&packet, NO_FRONTIERS)
+                .unwrap(),
+            frame
+        );
         assert!(ChannelKey::new([0; 32]).is_err());
         assert!(
             EncryptedSender::new(
@@ -674,15 +690,21 @@ mod tests {
         assert_eq!(fragments.len(), 2);
         assert!(fragments.iter().all(|f| f.len() <= 1_200));
         let mut receiver = receiver(&context, None);
-        assert_eq!(receiver.open_fragment(&fragments[1], None).unwrap(), None);
-        assert_eq!(receiver.sequence_floor(), None);
-        assert_eq!(receiver.open_fragment(&fragments[1], None).unwrap(), None);
         assert_eq!(
-            receiver.open_fragment(&fragments[0], None).unwrap(),
+            receiver.open_fragment(&fragments[1], NO_FRONTIERS).unwrap(),
+            None
+        );
+        assert_eq!(receiver.sequence_floor(), None);
+        assert_eq!(
+            receiver.open_fragment(&fragments[1], NO_FRONTIERS).unwrap(),
+            None
+        );
+        assert_eq!(
+            receiver.open_fragment(&fragments[0], NO_FRONTIERS).unwrap(),
             Some(frame)
         );
         assert_eq!(receiver.sequence_floor(), Some(1));
-        assert!(receiver.open_fragment(&fragments[0], None).is_err());
+        assert!(receiver.open_fragment(&fragments[0], NO_FRONTIERS).is_err());
     }
 
     #[test]
@@ -694,11 +716,15 @@ mod tests {
         let mut receiver = receiver(&context, None);
         let mut bad = fragments[0].clone();
         bad[3] ^= 1;
-        assert!(receiver.open_fragment(&bad, None).is_err());
+        assert!(receiver.open_fragment(&bad, NO_FRONTIERS).is_err());
         let mut bad_tag = fragments[0].clone();
         *bad_tag.last_mut().unwrap() ^= 1;
-        assert!(receiver.open_fragment(&bad_tag, None).is_err());
-        assert!(receiver.open_fragment(&vec![0; 1_201], None).is_err());
+        assert!(receiver.open_fragment(&bad_tag, NO_FRONTIERS).is_err());
+        assert!(
+            receiver
+                .open_fragment(&vec![0; 1_201], NO_FRONTIERS)
+                .is_err()
+        );
         assert_eq!(receiver.sequence_floor(), None);
         let mut wrong_key = EncryptedReceiver::new(
             context.clone(),
@@ -708,10 +734,14 @@ mod tests {
             None,
         )
         .unwrap();
-        assert!(wrong_key.open_fragment(&fragments[0], None).is_err());
+        assert!(
+            wrong_key
+                .open_fragment(&fragments[0], NO_FRONTIERS)
+                .is_err()
+        );
         let mut complete = None;
         for fragment in &fragments {
-            if let Some(decoded) = receiver.open_fragment(fragment, None).unwrap() {
+            if let Some(decoded) = receiver.open_fragment(fragment, NO_FRONTIERS).unwrap() {
                 complete = Some(decoded);
             }
         }

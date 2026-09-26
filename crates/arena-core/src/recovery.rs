@@ -2,11 +2,13 @@
 //!
 //! This first-release file format is not a native ledger codec or an execution
 //! proof. A single process owns an advisory lock; each accepted operation is
-//! flushed before returning. Torn records fail closed without changing the file.
-//! A trusted receipt from a peer/ledger is needed to detect deletion of complete
-//! suffix records. Local bytes alone cannot establish the latest agreed frontier.
+//! flushed before returning, unless the owner switched to group commit, where
+//! one write and one sync cover every record accepted since the last one.
+//! Torn records fail closed without changing the file. A trusted receipt from a
+//! peer/ledger is needed to detect deletion of complete suffix records. Local
+//! bytes alone cannot establish the latest agreed frontier.
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeMap, BTreeSet},
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
     path::Path,
@@ -22,14 +24,21 @@ use crate::{
         self, MAX_ACCEPTED_OFFERS_PER_MATCH, OFFER_PACKET_BYTES, PairwiseKeys,
         RESPONSE_PACKET_BYTES,
     },
-    protocol::{CommitmentSet, Context, Hash, Phase, Reveal, SlotSignature, input_commitment},
+    protocol::{
+        BATCH_TICKS, CommitmentSet, Context, DeadlineResolution, Hash, MAX_ASSEMBLY_FRONTIERS,
+        Phase, Reveal, SlotSignature, sign_commitment_set, validate_start,
+    },
     rollback::{Checkpoint, RollbackSession},
     simulation::{Config, Input, Mode, Participant, World},
 };
 
-const MAGIC: &[u8] = b"SORA-ARENA-EVIDENCE\x02";
+const MAGIC: &[u8] = b"SORA-ARENA-EVIDENCE\x03";
 const MAX_RECORD: usize = 4096;
 const MAX_FILE: u64 = 64 * 1024 * 1024;
+/// Openings one grouped record may carry, across any pending frontiers.
+pub const MAX_REVEAL_GROUP: usize = 64;
+/// Ticks ahead of the certified frontier a peer may seal or endorse.
+const ASSEMBLY_TICKS: u32 = (MAX_ASSEMBLY_FRONTIERS * BATCH_TICKS) as u32;
 
 #[derive(Debug)]
 pub enum RecoveryError {
@@ -64,16 +73,150 @@ impl From<Error> for RecoveryError {
 type Result<T> = std::result::Result<T, RecoveryError>;
 type AcceptedOffers = Vec<Arc<BTreeSet<Hash>>>;
 
-fn empty_accepted_offers(count: usize) -> AcceptedOffers {
-    (0..count).map(|_| Arc::new(BTreeSet::new())).collect()
-}
-
 /// Keep this receipt outside the journal before relying on its latest frontier.
 /// It authenticates byte retention, not a monetary outcome or chain finality.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Receipt {
     pub records: u32,
     pub digest: Hash,
+}
+
+/// Everything replay derives from the admission header and the records.
+#[derive(Clone)]
+struct JournalState {
+    session: RollbackSession,
+    accepted_offers: AcceptedOffers,
+    resolution_fault: Option<Error>,
+    /// This peer's own openings, journaled before their commitments left.
+    sealed: BTreeMap<(u32, usize), Reveal>,
+    /// The set digest this peer signed for each tick not yet certified.
+    endorsed: BTreeMap<u32, Hash>,
+}
+
+impl JournalState {
+    fn new(context: Context, config: Config, participants: &[Participant]) -> Result<Self> {
+        Ok(Self {
+            session: RollbackSession::new(context, config, participants)?,
+            accepted_offers: (0..participants.len())
+                .map(|_| Arc::new(BTreeSet::new()))
+                .collect(),
+            resolution_fault: None,
+            sealed: BTreeMap::new(),
+            endorsed: BTreeMap::new(),
+        })
+    }
+
+    fn apply(&mut self, record: &Record) -> Result<()> {
+        match record {
+            Record::Certify(set, signatures) => {
+                self.session.certify(set.clone(), signatures.clone())?
+            }
+            Record::Reveals(reveals) => {
+                self.session.open(reveals.clone())?;
+                self.advance();
+            }
+            Record::Deadline(resolution) => {
+                self.session.attach_deadline(resolution)?;
+                self.advance();
+            }
+            Record::Checkpoint(checkpoint, signatures) => self
+                .session
+                .retain_checkpoint(checkpoint.clone(), signatures.clone())?,
+            Record::Interrupt => self.session.interrupt(),
+            Record::Finish => self.session.finish_local()?,
+            Record::HandshakeOffer {
+                initiator,
+                responder,
+                offer,
+            } => {
+                // Accepted in every phase: a peer that restarts after this
+                // one finished may still need its final checkpoint signature.
+                let accepted = self
+                    .accepted_offers
+                    .get_mut(*responder)
+                    .ok_or(Error::InvalidEvidence("handshake responder outside roster"))?;
+                let digest = handshake::verified_offer_digest(
+                    &self.session.evidence().context,
+                    *initiator,
+                    *responder,
+                    offer,
+                )?;
+                if accepted.contains(&digest) {
+                    return Err(Error::InvalidEvidence("handshake offer replay").into());
+                }
+                if accepted.len() == MAX_ACCEPTED_OFFERS_PER_MATCH {
+                    return Err(Error::InvalidEvidence("handshake replay guard is full").into());
+                }
+                Arc::make_mut(accepted).insert(digest);
+            }
+            Record::Seal(opening) => self.seal(opening)?,
+            Record::Endorse { start_tick, digest } => self.endorse(*start_tick, *digest)?,
+        }
+        let evidence = self.session.evidence();
+        let (closed, certified) = (evidence.next_tick, evidence.certified_tick);
+        self.sealed.retain(|(start, _), _| *start >= closed);
+        self.endorsed.retain(|start, _| *start >= certified);
+        Ok(())
+    }
+
+    fn advance(&mut self) {
+        match self.session.advance() {
+            Ok(()) => self.resolution_fault = None,
+            Err(error) => {
+                // Valid openings remain useful evidence even if the reference
+                // cannot execute them. Native dispute resolution must decide
+                // this; no local timeout may.
+                self.session.interrupt();
+                self.resolution_fault = Some(error);
+            }
+        }
+    }
+
+    fn seal(&mut self, opening: &Reveal) -> Result<()> {
+        let evidence = self.session.evidence();
+        if evidence.phase != Phase::Live {
+            return Err(Error::InvalidEvidence("combat stopped; nothing new is committed").into());
+        }
+        let commitment = opening.commitment(&evidence.context, evidence.epoch)?;
+        if opening.start_tick < evidence.next_tick
+            || opening.start_tick >= evidence.certified_tick + ASSEMBLY_TICKS
+        {
+            return Err(Error::InvalidEvidence("sealed opening outside the pipeline").into());
+        }
+        if evidence
+            .frontier(opening.start_tick)
+            .is_some_and(|frontier| frontier.set.commitments[opening.slot] != commitment)
+        {
+            return Err(
+                Error::InvalidEvidence("sealed opening differs from certified commitment").into(),
+            );
+        }
+        if self
+            .sealed
+            .insert((opening.start_tick, opening.slot), opening.clone())
+            .is_some()
+        {
+            return Err(Error::InvalidEvidence("slot already sealed for this tick").into());
+        }
+        Ok(())
+    }
+
+    fn endorse(&mut self, start_tick: u32, digest: Hash) -> Result<()> {
+        let evidence = self.session.evidence();
+        if evidence.phase != Phase::Live {
+            return Err(Error::InvalidEvidence("combat stopped; nothing new is endorsed").into());
+        }
+        validate_start(start_tick)?;
+        if start_tick < evidence.certified_tick
+            || start_tick >= evidence.certified_tick + ASSEMBLY_TICKS
+        {
+            return Err(Error::InvalidEvidence("endorsement outside the assembly window").into());
+        }
+        if self.endorsed.insert(start_tick, digest).is_some() {
+            return Err(Error::InvalidEvidence("tick already endorsed").into());
+        }
+        Ok(())
+    }
 }
 
 /// Why inspection stopped after the last fully authenticated record.
@@ -103,10 +246,7 @@ pub struct PrefixFailure {
 /// Read-only dispute material. This object owns no file or writer capability.
 /// A complete prefix is still local evidence, not a settlement or finality proof.
 pub struct AuthenticatedPrefix {
-    session: RollbackSession,
-    partial: Vec<Option<Reveal>>,
-    accepted_offers: AcceptedOffers,
-    resolution_fault: Option<Error>,
+    state: JournalState,
     receipt: Receipt,
     prefix_bytes: u64,
     file_bytes: u64,
@@ -114,20 +254,26 @@ pub struct AuthenticatedPrefix {
 }
 
 impl AuthenticatedPrefix {
+    /// Pending frontiers and their retained openings are in the session's
+    /// evidence log.
     pub fn session(&self) -> &RollbackSession {
-        &self.session
+        &self.state.session
     }
-    pub fn partial_reveals(&self) -> &[Option<Reveal>] {
-        &self.partial
+    pub fn sealed_openings(&self) -> impl Iterator<Item = &Reveal> {
+        self.state.sealed.values()
+    }
+    pub fn endorsed_digest(&self, start_tick: u32) -> Option<Hash> {
+        self.state.endorsed.get(&start_tick).copied()
     }
     /// Signed handshake offers durably accepted by one original responder slot.
     pub fn accepted_offer_digests(&self, responder: usize) -> Option<Vec<Hash>> {
-        self.accepted_offers
+        self.state
+            .accepted_offers
             .get(responder)
             .map(|offers| offers.iter().copied().collect())
     }
     pub fn resolution_fault(&self) -> Option<&Error> {
-        self.resolution_fault.as_ref()
+        self.state.resolution_fault.as_ref()
     }
     pub fn receipt(&self) -> Receipt {
         self.receipt
@@ -176,10 +322,7 @@ pub fn inspect_prefix(
         ));
     }
     let mut result = AuthenticatedPrefix {
-        session: RollbackSession::new(context, config, participants)?,
-        partial: vec![None; participants.len()],
-        accepted_offers: empty_accepted_offers(participants.len()),
-        resolution_fault: None,
+        state: JournalState::new(context, config, participants)?,
         receipt: Receipt {
             records: 0,
             digest: Sha256::digest(&header).into(),
@@ -199,17 +342,8 @@ pub fn inspect_prefix(
                     break;
                 }
             };
-        let mut session = result.session.clone();
-        let mut partial = result.partial.clone();
-        let mut accepted_offers = result.accepted_offers.clone();
-        let mut resolution_fault = result.resolution_fault.clone();
-        if let Err(error) = apply(
-            &mut session,
-            &mut partial,
-            &mut accepted_offers,
-            &mut resolution_fault,
-            &record,
-        ) {
+        let mut state = result.state.clone();
+        if let Err(error) = state.apply(&record) {
             result.failure = Some(PrefixFailure {
                 record_offset: start as u64,
                 offset: (start + 8) as u64,
@@ -217,10 +351,7 @@ pub fn inspect_prefix(
             });
             break;
         }
-        result.session = session;
-        result.partial = partial;
-        result.accepted_offers = accepted_offers;
-        result.resolution_fault = resolution_fault;
+        result.state = state;
         result.receipt = receipt;
         result.prefix_bytes = end as u64;
         anchor_seen |= result.receipt == minimum;
@@ -315,17 +446,60 @@ enum Record {
         responder: usize,
         offer: [u8; OFFER_PACKET_BYTES],
     },
+    Deadline(DeadlineResolution),
+    Seal(Reveal),
+    Endorse {
+        start_tick: u32,
+        digest: Hash,
+    },
 }
 
 pub struct DurableSession {
     file: File,
-    session: RollbackSession,
-    partial: Vec<Option<Reveal>>,
-    accepted_offers: AcceptedOffers,
-    resolution_fault: Option<Error>,
+    state: JournalState,
     receipt: Receipt,
     bytes: u64,
     poisoned: bool,
+    /// Under group commit, the complete framed records accepted since the
+    /// last hand-off to the writer.
+    staged: Option<Vec<u8>>,
+    /// The newest receipt whose record is written and synced.
+    durable: Receipt,
+}
+
+/// Framed records accepted under group commit, oldest first, and the receipt
+/// of the newest one. Write them in hand-off order.
+#[derive(Debug)]
+pub struct StagedRecords {
+    bytes: Vec<u8>,
+    receipt: Receipt,
+}
+impl StagedRecords {
+    pub fn receipt(&self) -> Receipt {
+        self.receipt
+    }
+    pub fn len(&self) -> usize {
+        self.bytes.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.bytes.is_empty()
+    }
+}
+
+/// The single writer of a journal under group commit. It may run on another
+/// thread; it appends each hand-off with one write and one sync.
+#[derive(Debug)]
+pub struct GroupWriter {
+    file: File,
+}
+impl GroupWriter {
+    /// A failure may leave some of the bytes behind: the journal handle must
+    /// be poisoned and the process restored from the file before continuing.
+    pub fn write(&mut self, staged: &StagedRecords) -> Result<Receipt> {
+        self.file.write_all(&staged.bytes)?;
+        self.file.sync_all()?;
+        Ok(staged.receipt)
+    }
 }
 
 impl DurableSession {
@@ -338,7 +512,7 @@ impl DurableSession {
         participants: &[Participant],
     ) -> Result<Self> {
         let header = admission(&context, &config, participants)?;
-        let session = RollbackSession::new(context, config, participants)?;
+        let state = JournalState::new(context, config, participants)?;
         let mut file = OpenOptions::new()
             .read(true)
             .write(true)
@@ -357,18 +531,18 @@ impl DurableSession {
                 .unwrap_or(Path::new(".")),
         )?
         .sync_all()?;
+        let receipt = Receipt {
+            records: 0,
+            digest: Sha256::digest(&header).into(),
+        };
         Ok(Self {
             file,
-            session,
-            partial: vec![None; participants.len()],
-            accepted_offers: empty_accepted_offers(participants.len()),
-            resolution_fault: None,
-            receipt: Receipt {
-                records: 0,
-                digest: Sha256::digest(&header).into(),
-            },
+            state,
+            receipt,
             bytes: header.len() as u64,
             poisoned: false,
+            staged: None,
+            durable: receipt,
         })
     }
 
@@ -397,18 +571,18 @@ impl DurableSession {
                 "journal admission or format differs",
             ));
         }
+        let genesis = Receipt {
+            records: 0,
+            digest: Sha256::digest(&header).into(),
+        };
         let mut result = Self {
             file,
-            session: RollbackSession::new(context, config, participants)?,
-            partial: vec![None; participants.len()],
-            accepted_offers: empty_accepted_offers(participants.len()),
-            resolution_fault: None,
-            receipt: Receipt {
-                records: 0,
-                digest: Sha256::digest(&header).into(),
-            },
+            state: JournalState::new(context, config, participants)?,
+            receipt: genesis,
             bytes: bytes.len() as u64,
             poisoned: false,
+            staged: None,
+            durable: genesis,
         };
         let mut anchor_seen = result.receipt == minimum;
         let mut r = Reader {
@@ -426,13 +600,7 @@ impl DurableSession {
                 return Err(RecoveryError::Corrupt("journal record digest mismatch"));
             }
             let record = Record::decode(payload, participants.len())?;
-            apply(
-                &mut result.session,
-                &mut result.partial,
-                &mut result.accepted_offers,
-                &mut result.resolution_fault,
-                &record,
-            )?;
+            result.state.apply(&record)?;
             result.receipt = Receipt {
                 records: sequence,
                 digest,
@@ -445,27 +613,84 @@ impl DurableSession {
             ));
         }
         result.file.seek(SeekFrom::End(0))?;
+        result.durable = result.receipt;
         Ok(result)
     }
 
+    /// The newest accepted record. Under group commit it may not be durable
+    /// yet; see [`Self::durable_receipt`].
     pub fn receipt(&self) -> Receipt {
         self.receipt
     }
-    pub fn session(&self) -> &RollbackSession {
-        &self.session
+    /// The newest record that is written and synced.
+    pub fn durable_receipt(&self) -> Receipt {
+        self.durable
     }
-    pub fn partial_reveals(&self) -> &[Option<Reveal>] {
-        &self.partial
+
+    /// Switch to group commit. Every later record is validated and applied at
+    /// once but only buffered: [`Self::take_staged`] hands all buffered
+    /// records to the returned writer, which writes and syncs them together,
+    /// and [`Self::mark_durable`] then advances the durable receipt. Nothing
+    /// that depends on a record may leave the process before it is durable.
+    /// There is exactly one writer: a second call is refused.
+    pub fn group_commit(&mut self) -> Result<GroupWriter> {
+        if self.poisoned {
+            return Err(RecoveryError::Poisoned);
+        }
+        if self.staged.is_some() {
+            return Err(Error::InvalidConfig("journal already has a group writer").into());
+        }
+        let file = self.file.try_clone()?;
+        self.staged = Some(Vec::new());
+        Ok(GroupWriter { file })
+    }
+    /// Every record accepted since the last hand-off, or `None`. Hand off
+    /// again only after the writer finished the previous one.
+    pub fn take_staged(&mut self) -> Option<StagedRecords> {
+        let staged = self.staged.as_mut().filter(|bytes| !bytes.is_empty())?;
+        Some(StagedRecords {
+            bytes: std::mem::take(staged),
+            receipt: self.receipt,
+        })
+    }
+    /// The writer synced every record through `receipt`.
+    pub fn mark_durable(&mut self, receipt: Receipt) -> Result<()> {
+        if self.poisoned {
+            return Err(RecoveryError::Poisoned);
+        }
+        if receipt.records <= self.durable.records || receipt.records > self.receipt.records {
+            return Err(RecoveryError::Corrupt("durable receipt out of order"));
+        }
+        self.durable = receipt;
+        Ok(())
+    }
+    /// A group write failed: stop this handle. Restore from the file.
+    pub fn poison(&mut self) {
+        self.poisoned = true;
+    }
+    /// Pending frontiers and their retained openings are in the session's
+    /// evidence log.
+    pub fn session(&self) -> &RollbackSession {
+        &self.state.session
+    }
+    /// This peer's own openings not yet closed into the transcript. After a
+    /// restart, resend their commitments and open the certified ones.
+    pub fn sealed_openings(&self) -> impl Iterator<Item = &Reveal> {
+        self.state.sealed.values()
+    }
+    pub fn endorsed_digest(&self, start_tick: u32) -> Option<Hash> {
+        self.state.endorsed.get(&start_tick).copied()
     }
     pub fn accepted_offer_digests(&self, responder: usize) -> Option<Vec<Hash>> {
-        self.accepted_offers
+        self.state
+            .accepted_offers
             .get(responder)
             .map(|offers| offers.iter().copied().collect())
     }
     /// Complete openings stay available for dispute if reference execution fails.
     /// A recorded fault freezes gameplay and cannot release escrow or NFTs.
     pub fn resolution_fault(&self) -> Option<&Error> {
-        self.resolution_fault.as_ref()
+        self.state.resolution_fault.as_ref()
     }
 
     pub fn certify(
@@ -476,32 +701,95 @@ impl DurableSession {
         self.append(Record::Certify(set, signatures))
     }
     /// Each valid reveal is durable even if another player withholds theirs.
-    /// Retrying the exact same pending reveal is idempotent.
+    /// Retrying an opening the evidence already retains is idempotent.
     pub fn reveal(&mut self, reveal: Reveal) -> Result<Receipt> {
         self.reveal_many(vec![reveal])
     }
-    /// Persist reveals already received together with one sync. Never wait for
-    /// a withholding peer to fill a group; a singleton follows the same path.
+    /// Persist openings already received, for any pending frontiers, with one
+    /// sync. Never wait for a withholding peer to fill a group; a singleton
+    /// follows the same path.
     pub fn reveal_many(&mut self, reveals: Vec<Reveal>) -> Result<Receipt> {
         if self.poisoned {
             return Err(RecoveryError::Poisoned);
         }
-        if reveals.is_empty() || reveals.len() > self.partial.len() {
+        if reveals.is_empty() || reveals.len() > MAX_REVEAL_GROUP {
             return Err(Error::InvalidEvidence("invalid reveal group size").into());
         }
         for (i, reveal) in reveals.iter().enumerate() {
-            if reveals[..i].iter().any(|r| r.slot == reveal.slot) {
+            if reveals[..i]
+                .iter()
+                .any(|r| (r.start_tick, r.slot) == (reveal.start_tick, reveal.slot))
+            {
                 return Err(Error::InvalidEvidence("duplicate grouped reveal").into());
             }
         }
+        let evidence = self.state.session.evidence();
         let new = reveals
             .into_iter()
-            .filter(|r| self.partial.get(r.slot).and_then(Option::as_ref) != Some(r))
+            .filter(|r| !evidence.retains(r))
             .collect::<Vec<_>>();
         if new.is_empty() {
             return Ok(self.receipt);
         }
         self.append(Record::Reveals(new))
+    }
+    /// Journal native consensus's deadline decision for one certified
+    /// frontier. The caller's chain adapter must already have authenticated
+    /// it; a local timeout can only `interrupt`.
+    pub fn resolve_deadline(&mut self, resolution: DeadlineResolution) -> Result<Receipt> {
+        self.append(Record::Deadline(resolution))
+    }
+    /// Journal this peer's own opening before its commitment leaves the
+    /// process, so a restart can still open it, and return that commitment.
+    /// Resealing the identical opening is idempotent; any other opening of
+    /// the same slot and tick is refused, so a restart never equivocates.
+    pub fn seal(&mut self, opening: Reveal) -> Result<(Hash, Receipt)> {
+        if self.poisoned {
+            return Err(RecoveryError::Poisoned);
+        }
+        let evidence = self.state.session.evidence();
+        let commitment = opening.commitment(&evidence.context, evidence.epoch)?;
+        if self.state.sealed.get(&(opening.start_tick, opening.slot)) == Some(&opening) {
+            return Ok((commitment, self.receipt));
+        }
+        Ok((commitment, self.append(Record::Seal(opening))?))
+    }
+    /// Journal this peer's endorsement of `set` before returning its
+    /// signature, so a restarted peer never signs a second set for one tick.
+    /// Refused once combat has stopped, and for a set whose commitment for
+    /// this slot differs from the sealed one.
+    pub fn endorse(
+        &mut self,
+        set: &CommitmentSet,
+        slot: usize,
+        key: &SigningKey,
+    ) -> Result<(SlotSignature, Receipt)> {
+        if self.poisoned {
+            return Err(RecoveryError::Poisoned);
+        }
+        let evidence = self.state.session.evidence();
+        let signature = sign_commitment_set(&evidence.context, set, slot, key)?;
+        let digest = set.digest(&evidence.context)?;
+        if set.epoch != evidence.epoch
+            || (set.start_tick == evidence.certified_tick && set.parent != evidence.commitment_head)
+        {
+            return Err(Error::InvalidEvidence("endorsed set leaves the commitment chain").into());
+        }
+        if let Some(sealed) = self.state.sealed.get(&(set.start_tick, slot))
+            && sealed.commitment(&evidence.context, evidence.epoch)? != set.commitments[slot]
+        {
+            return Err(
+                Error::InvalidEvidence("endorsed set differs from sealed commitment").into(),
+            );
+        }
+        if self.state.endorsed.get(&set.start_tick) == Some(&digest) {
+            return Ok((signature, self.receipt));
+        }
+        let receipt = self.append(Record::Endorse {
+            start_tick: set.start_tick,
+            digest,
+        })?;
+        Ok((signature, receipt))
     }
     pub fn checkpoint(
         &mut self,
@@ -520,6 +808,9 @@ impl DurableSession {
     /// signed public bytes into this journal before returning keys or a
     /// response. Retain the returned receipt independently before transmitting
     /// that response so whole-suffix deletion is detectable on restart.
+    /// A finished journal still accepts fresh offers, under the same replay
+    /// guard and bound: a peer that restarted near the end of the match may
+    /// still need this peer's final checkpoint signature.
     pub fn accept_handshake_offer(
         &mut self,
         initiator: usize,
@@ -530,16 +821,14 @@ impl DurableSession {
         if self.poisoned {
             return Err(RecoveryError::Poisoned);
         }
-        if self.session.evidence().phase == Phase::Terminal {
-            return Err(Error::InvalidEvidence("terminal handshake offer").into());
-        }
         let accepted = self
+            .state
             .accepted_offers
             .get(responder)
             .ok_or(Error::InvalidEvidence("handshake responder outside roster"))?;
         let mut replay = handshake::OfferReplayGuard::restore(accepted.iter().copied())?;
         let (keys, response) = handshake::accept_offer(
-            &self.session.evidence().context,
+            &self.state.session.evidence().context,
             initiator,
             responder,
             identity,
@@ -560,7 +849,7 @@ impl DurableSession {
         if self.poisoned {
             return Err(RecoveryError::Poisoned);
         }
-        self.session.predict(controls)?;
+        self.state.session.predict(controls)?;
         Ok(())
     }
 
@@ -568,17 +857,8 @@ impl DurableSession {
         if self.poisoned {
             return Err(RecoveryError::Poisoned);
         }
-        let mut session = self.session.clone();
-        let mut partial = self.partial.clone();
-        let mut accepted_offers = self.accepted_offers.clone();
-        let mut resolution_fault = self.resolution_fault.clone();
-        apply(
-            &mut session,
-            &mut partial,
-            &mut accepted_offers,
-            &mut resolution_fault,
-            &record,
-        )?;
+        let mut state = self.state.clone();
+        state.apply(&record)?;
         let payload = record.encode();
         let sequence = self
             .receipt
@@ -593,110 +873,27 @@ impl DurableSession {
         if self.bytes + frame.len() as u64 > MAX_FILE {
             return Err(RecoveryError::Corrupt("journal exceeds bound"));
         }
-        // A failed write/sync can have retained some or all of the new bytes.
-        // Stop this handle; do not retry a financial/evidence operation blindly.
-        self.poisoned = true;
-        self.file.write_all(&frame)?;
-        self.file.sync_all()?;
-        self.session = session;
-        self.partial = partial;
-        self.accepted_offers = accepted_offers;
-        self.resolution_fault = resolution_fault;
-        self.bytes += frame.len() as u64;
-        self.receipt = Receipt {
+        let receipt = Receipt {
             records: sequence,
             digest,
         };
-        self.poisoned = false;
+        if let Some(staged) = &mut self.staged {
+            staged.extend(&frame);
+        } else {
+            // A failed write/sync can have retained some or all of the new
+            // bytes. Stop this handle; do not retry an evidence operation
+            // blindly.
+            self.poisoned = true;
+            self.file.write_all(&frame)?;
+            self.file.sync_all()?;
+            self.poisoned = false;
+            self.durable = receipt;
+        }
+        self.state = state;
+        self.bytes += frame.len() as u64;
+        self.receipt = receipt;
         Ok(self.receipt)
     }
-}
-
-fn apply(
-    session: &mut RollbackSession,
-    partial: &mut [Option<Reveal>],
-    accepted_offers: &mut AcceptedOffers,
-    resolution_fault: &mut Option<Error>,
-    record: &Record,
-) -> Result<()> {
-    match record {
-        Record::Certify(set, signatures) => {
-            session.certify(set.clone(), signatures.clone())?;
-            partial.fill(None);
-            *resolution_fault = None;
-        }
-        Record::Reveals(reveals) => {
-            let evidence = session.evidence();
-            let (set, _) = evidence
-                .pending
-                .as_ref()
-                .ok_or(Error::InvalidEvidence("reveal without pending frontier"))?;
-            for reveal in reveals {
-                if reveal.slot >= partial.len() || partial[reveal.slot].is_some() {
-                    return Err(Error::InvalidEvidence("invalid or duplicate reveal slot").into());
-                }
-                let digest = input_commitment(
-                    &evidence.context,
-                    set.epoch,
-                    set.start_tick,
-                    set.parent,
-                    reveal.slot,
-                    &reveal.inputs,
-                    reveal.salt,
-                )?;
-                if digest != set.commitments[reveal.slot] {
-                    return Err(Error::InvalidEvidence("reveal differs from commitment").into());
-                }
-                partial[reveal.slot] = Some(reveal.clone());
-            }
-            if partial.iter().all(Option::is_some) {
-                match session.reveal(partial.iter().flatten().cloned().collect()) {
-                    Ok(()) => {
-                        partial.fill(None);
-                        *resolution_fault = None;
-                    }
-                    Err(error) => {
-                        // Valid commitment openings remain useful evidence even
-                        // if the reference cannot execute them. Native dispute
-                        // resolution must decide this; no local timeout may.
-                        session.interrupt();
-                        *resolution_fault = Some(error);
-                    }
-                }
-            }
-        }
-        Record::Checkpoint(checkpoint, signatures) => {
-            session.retain_checkpoint(checkpoint.clone(), signatures.clone())?
-        }
-        Record::Interrupt => session.interrupt(),
-        Record::Finish => session.finish_local()?,
-        Record::HandshakeOffer {
-            initiator,
-            responder,
-            offer,
-        } => {
-            if session.evidence().phase == Phase::Terminal {
-                return Err(Error::InvalidEvidence("terminal handshake offer").into());
-            }
-            let accepted = accepted_offers
-                .get_mut(*responder)
-                .ok_or(Error::InvalidEvidence("handshake responder outside roster"))?;
-            let digest = handshake::verified_offer_digest(
-                &session.evidence().context,
-                *initiator,
-                *responder,
-                offer,
-            )?;
-            if accepted.contains(&digest) {
-                return Err(Error::InvalidEvidence("handshake offer replay").into());
-            }
-            if accepted.len() == MAX_ACCEPTED_OFFERS_PER_MATCH {
-                return Err(Error::InvalidEvidence("handshake replay guard is full").into());
-            }
-            Arc::make_mut(accepted).insert(digest);
-        }
-    }
-    Ok(())
 }
 
 fn admission(context: &Context, config: &Config, participants: &[Participant]) -> Result<Vec<u8>> {
@@ -760,11 +957,7 @@ impl Record {
             Self::Reveals(reveals) => {
                 out.extend([1, reveals.len() as u8]);
                 for reveal in reveals {
-                    out.extend([reveal.slot as u8, reveal.inputs.len() as u8]);
-                    out.extend(reveal.salt);
-                    for input in &reveal.inputs {
-                        out.extend(input.encode());
-                    }
+                    encode_opening(&mut out, reveal);
                 }
             }
             Self::Checkpoint(checkpoint, signatures) => {
@@ -784,6 +977,34 @@ impl Record {
             } => {
                 out.extend([5, *initiator as u8, *responder as u8]);
                 out.extend(offer);
+            }
+            Self::Deadline(resolution) => {
+                out.push(6);
+                out.extend(resolution.start_tick.to_le_bytes());
+                out.extend(resolution.frontier);
+                out.extend(resolution.attestation);
+                let opened = resolution
+                    .openings
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, opening)| opening.is_some())
+                    .fold(0u16, |mask, (slot, _)| mask | 1 << slot);
+                out.extend(opened.to_le_bytes());
+                for opening in resolution.openings.iter().flatten() {
+                    out.extend(opening.salt);
+                    for input in &opening.inputs {
+                        out.extend(input.encode());
+                    }
+                }
+            }
+            Self::Seal(opening) => {
+                out.push(7);
+                encode_opening(&mut out, opening);
+            }
+            Self::Endorse { start_tick, digest } => {
+                out.push(8);
+                out.extend(start_tick.to_le_bytes());
+                out.extend(digest);
             }
         }
         out
@@ -805,25 +1026,14 @@ impl Record {
             ),
             1 => {
                 let group = r.byte()? as usize;
-                if !(1..=count).contains(&group) {
+                if !(1..=MAX_REVEAL_GROUP).contains(&group) {
                     return Err(RecoveryError::Corrupt("invalid reveal group size"));
                 }
-                let mut reveals = Vec::with_capacity(group);
-                for _ in 0..group {
-                    let slot = r.byte()? as usize;
-                    let ticks = r.byte()? as usize;
-                    if slot >= count || ticks != crate::protocol::BATCH_TICKS {
-                        return Err(RecoveryError::Corrupt("invalid reveal bounds"));
-                    }
-                    reveals.push(Reveal {
-                        slot,
-                        salt: r.array()?,
-                        inputs: (0..ticks)
-                            .map(|_| Ok(Input::decode(r.array()?)?))
-                            .collect::<Result<_>>()?,
-                    });
-                }
-                Self::Reveals(reveals)
+                Self::Reveals(
+                    (0..group)
+                        .map(|_| r.opening(count))
+                        .collect::<Result<_>>()?,
+                )
             }
             2 => Self::Checkpoint(
                 Checkpoint {
@@ -841,6 +1051,39 @@ impl Record {
                 responder: r.byte()? as usize,
                 offer: r.array()?,
             },
+            6 => {
+                let start_tick = r.u32()?;
+                let frontier = r.array()?;
+                let attestation = r.array()?;
+                let opened = r.u16()?;
+                if u32::from(opened) >> count != 0 {
+                    return Err(RecoveryError::Corrupt("deadline slot outside roster"));
+                }
+                let openings = (0..count)
+                    .map(|slot| {
+                        if opened & 1 << slot == 0 {
+                            return Ok(None);
+                        }
+                        Ok(Some(Reveal {
+                            start_tick,
+                            slot,
+                            salt: r.array()?,
+                            inputs: r.inputs()?,
+                        }))
+                    })
+                    .collect::<Result<_>>()?;
+                Self::Deadline(DeadlineResolution {
+                    start_tick,
+                    frontier,
+                    attestation,
+                    openings,
+                })
+            }
+            7 => Self::Seal(r.opening(count)?),
+            8 => Self::Endorse {
+                start_tick: r.u32()?,
+                digest: r.array()?,
+            },
             _ => return Err(RecoveryError::Corrupt("unknown record type")),
         };
         if !r.bytes.is_empty() {
@@ -853,6 +1096,14 @@ fn encode_signatures(out: &mut Vec<u8>, signatures: &[SlotSignature]) {
     for signature in signatures {
         out.push(signature.slot as u8);
         out.extend(signature.signature);
+    }
+}
+fn encode_opening(out: &mut Vec<u8>, opening: &Reveal) {
+    out.extend(opening.start_tick.to_le_bytes());
+    out.extend([opening.slot as u8, opening.inputs.len() as u8]);
+    out.extend(opening.salt);
+    for input in &opening.inputs {
+        out.extend(input.encode());
     }
 }
 struct Reader<'a> {
@@ -873,6 +1124,9 @@ impl<'a> Reader<'a> {
     fn byte(&mut self) -> Result<u8> {
         Ok(self.array::<1>()?[0])
     }
+    fn u16(&mut self) -> Result<u16> {
+        Ok(u16::from_le_bytes(self.array()?))
+    }
     fn u32(&mut self) -> Result<u32> {
         Ok(u32::from_le_bytes(self.array()?))
     }
@@ -888,6 +1142,24 @@ impl<'a> Reader<'a> {
                 })
             })
             .collect()
+    }
+    fn inputs(&mut self) -> Result<Vec<Input>> {
+        (0..BATCH_TICKS)
+            .map(|_| Ok(Input::decode(self.array()?)?))
+            .collect()
+    }
+    fn opening(&mut self, count: usize) -> Result<Reveal> {
+        let start_tick = self.u32()?;
+        let slot = self.byte()? as usize;
+        if slot >= count || self.byte()? as usize != BATCH_TICKS {
+            return Err(RecoveryError::Corrupt("invalid reveal bounds"));
+        }
+        Ok(Reveal {
+            start_tick,
+            slot,
+            salt: self.array()?,
+            inputs: self.inputs()?,
+        })
     }
 }
 
@@ -970,6 +1242,7 @@ mod tests {
             let log = journal.session().evidence();
             let reveals = (0..2)
                 .map(|slot| Reveal {
+                    start_tick: log.certified_tick,
                     slot,
                     inputs: vec![
                         Input {
@@ -983,22 +1256,11 @@ mod tests {
                 .collect::<Vec<_>>();
             let set = CommitmentSet {
                 epoch: log.epoch,
-                start_tick: log.next_tick,
-                parent: log.root,
+                start_tick: log.certified_tick,
+                parent: log.commitment_head,
                 commitments: reveals
                     .iter()
-                    .map(|r| {
-                        input_commitment(
-                            &self.context,
-                            log.epoch,
-                            log.next_tick,
-                            log.root,
-                            r.slot,
-                            &r.inputs,
-                            r.salt,
-                        )
-                        .unwrap()
-                    })
+                    .map(|r| r.commitment(&self.context, log.epoch).unwrap())
                     .collect(),
             };
             let signatures = self
@@ -1010,11 +1272,323 @@ mod tests {
             journal.certify(set, signatures).unwrap();
             reveals
         }
+        fn openings(&self, start_tick: u32) -> Vec<Reveal> {
+            (0..2)
+                .map(|slot| Reveal {
+                    start_tick,
+                    slot,
+                    inputs: vec![
+                        Input {
+                            move_x: 127 - 254 * slot as i16,
+                            ..Input::default()
+                        };
+                        BATCH_TICKS
+                    ],
+                    salt: [slot as u8 + start_tick as u8 + 50; 32],
+                })
+                .collect()
+        }
+        fn set(&self, openings: &[Reveal], parent: Hash) -> CommitmentSet {
+            CommitmentSet {
+                epoch: 0,
+                start_tick: openings[0].start_tick,
+                parent,
+                commitments: openings
+                    .iter()
+                    .map(|r| r.commitment(&self.context, 0).unwrap())
+                    .collect(),
+            }
+        }
+        fn signatures(&self, set: &CommitmentSet) -> Vec<SlotSignature> {
+            self.keys
+                .iter()
+                .enumerate()
+                .map(|(slot, key)| sign_commitment_set(&self.context, set, slot, key).unwrap())
+                .collect()
+        }
     }
     impl Drop for Fixture {
         fn drop(&mut self) {
             let _ = fs::remove_file(&self.path);
         }
+    }
+
+    #[test]
+    fn pipelined_frontiers_seals_and_endorsements_survive_restart() {
+        let fixture = Fixture::new();
+        let mut journal = fixture.create();
+        let mut parent = journal.session().evidence().commitment_head;
+        let mut batches = Vec::new();
+        for start in [0, 2, 4] {
+            let openings = fixture.openings(start);
+            let (commitment, _) = journal.seal(openings[0].clone()).unwrap();
+            let set = fixture.set(&openings, parent);
+            assert_eq!(commitment, set.commitments[0]);
+            let (signature, _) = journal.endorse(&set, 0, &fixture.keys[0]).unwrap();
+            assert_eq!(signature, fixture.signatures(&set)[0]);
+            parent = set.digest(&fixture.context).unwrap();
+            batches.push((set, openings));
+        }
+        for (set, _) in &batches[..2] {
+            journal
+                .certify(set.clone(), fixture.signatures(set))
+                .unwrap();
+        }
+        // Openings arrive out of order across both pending frontiers.
+        journal
+            .reveal_many(vec![batches[1].1[1].clone(), batches[0].1[1].clone()])
+            .unwrap();
+        assert_eq!(journal.session().confirmed().tick, 0);
+        let receipt = journal.receipt();
+        drop(journal);
+
+        let mut journal = fixture.restore(receipt).unwrap();
+        let evidence = journal.session().evidence();
+        assert_eq!(evidence.pending.len(), 2);
+        assert_eq!(evidence.certified_tick, 4);
+        assert_eq!(
+            evidence.pending[1].openings[1],
+            Some(batches[1].1[1].clone())
+        );
+        assert_eq!(
+            journal.sealed_openings().cloned().collect::<Vec<_>>(),
+            batches
+                .iter()
+                .map(|(_, o)| o[0].clone())
+                .collect::<Vec<_>>()
+        );
+        // Certification retired the endorsements of ticks 0 and 2.
+        assert_eq!(journal.endorsed_digest(0), None);
+        let pending_digest = batches[2].0.digest(&fixture.context).unwrap();
+        assert_eq!(journal.endorsed_digest(4), Some(pending_digest));
+        // A restarted peer never signs or seals a second version of a tick.
+        let mut other = batches[2].0.clone();
+        other.commitments[1] = [7; 32];
+        assert!(journal.endorse(&other, 0, &fixture.keys[0]).is_err());
+        let mut resealed = batches[2].1[0].clone();
+        resealed.salt[0] ^= 1;
+        assert!(journal.seal(resealed).is_err());
+        let before = journal.receipt();
+        journal.endorse(&batches[2].0, 0, &fixture.keys[0]).unwrap();
+        journal.seal(batches[2].1[0].clone()).unwrap();
+        assert_eq!(journal.receipt(), before);
+        // Its own sealed openings still open the certified frontiers.
+        let own = journal
+            .sealed_openings()
+            .filter(|opening| opening.start_tick < 4)
+            .cloned()
+            .collect::<Vec<_>>();
+        journal.reveal_many(own).unwrap();
+        assert_eq!(journal.session().confirmed().tick, 4);
+        assert_eq!(journal.sealed_openings().count(), 1);
+        let mut reference = World::new(fixture.config.clone(), &fixture.participants).unwrap();
+        for (_, openings) in &batches[..2] {
+            for tick in 0..BATCH_TICKS {
+                reference
+                    .step(&[openings[0].inputs[tick], openings[1].inputs[tick]])
+                    .unwrap();
+            }
+        }
+        assert_eq!(
+            journal.session().confirmed().state_hash(),
+            reference.state_hash()
+        );
+    }
+
+    #[test]
+    fn group_commit_applies_at_once_and_syncs_every_staged_record_together() {
+        let fixture = Fixture::new();
+        let mut journal = fixture.create();
+        let genesis = journal.receipt();
+        let mut writer = journal.group_commit().unwrap();
+        assert!(journal.group_commit().is_err());
+        let admitted_bytes = fs::metadata(&fixture.path).unwrap().len();
+        let openings = fixture.openings(0);
+        journal.seal(openings[0].clone()).unwrap();
+        let set = fixture.set(&openings, journal.session().evidence().commitment_head);
+        journal.endorse(&set, 0, &fixture.keys[0]).unwrap();
+        journal
+            .certify(set.clone(), fixture.signatures(&set))
+            .unwrap();
+        journal.reveal_many(openings.clone()).unwrap();
+        // Applied and replay-checked at once, but nothing is written yet.
+        assert_eq!(journal.receipt().records, 4);
+        assert_eq!(journal.durable_receipt(), genesis);
+        assert_eq!(journal.session().confirmed().tick, 2);
+        assert_eq!(fs::metadata(&fixture.path).unwrap().len(), admitted_bytes);
+        let staged = journal.take_staged().unwrap();
+        assert!(journal.take_staged().is_none());
+        assert_eq!(staged.receipt(), journal.receipt());
+        assert!(journal.mark_durable(genesis).is_err());
+        let durable = writer.write(&staged).unwrap();
+        journal.mark_durable(durable).unwrap();
+        assert_eq!(journal.durable_receipt(), journal.receipt());
+        assert!(journal.mark_durable(durable).is_err());
+        // A record accepted after the last hand-off is lost with the process,
+        // like any unsynced write; nothing may have depended on it.
+        let lost = journal.interrupt().unwrap();
+        assert_eq!(journal.durable_receipt(), durable);
+        let state = journal.session().confirmed().state_hash();
+        drop(journal);
+        drop(writer);
+        assert!(fixture.restore(lost).is_err());
+        let restored = fixture.restore(durable).unwrap();
+        assert_eq!(restored.receipt(), durable);
+        assert_eq!(restored.durable_receipt(), durable);
+        assert_eq!(restored.session().confirmed().state_hash(), state);
+        assert_eq!(restored.session().evidence().phase, Phase::Live);
+    }
+
+    #[test]
+    fn consensus_deadline_is_journaled_and_replayed_exactly() {
+        let fixture = Fixture::new();
+        let mut journal = fixture.create();
+        let first = fixture.commit(&mut journal);
+        let second = fixture.commit(&mut journal);
+        journal.reveal(first[0].clone()).unwrap();
+        // The later frontier is complete but waits for the withheld one.
+        journal.reveal_many(second).unwrap();
+        assert_eq!(journal.session().confirmed().tick, 0);
+        // A local timeout only interrupts; it cannot close the frontier.
+        journal.interrupt().unwrap();
+        assert!(journal.finish().is_err());
+        let resolution = DeadlineResolution {
+            start_tick: 0,
+            frontier: journal.session().evidence().pending[0].digest,
+            attestation: [5; 32],
+            openings: vec![Some(first[0].clone()), None],
+        };
+        let before = journal.receipt();
+        let mut unattested = resolution.clone();
+        unattested.attestation = [0; 32];
+        assert!(journal.resolve_deadline(unattested).is_err());
+        assert_eq!(journal.receipt(), before);
+        journal.resolve_deadline(resolution).unwrap();
+        assert_eq!(journal.session().confirmed().tick, 4);
+        assert!(journal.reveal(first[1].clone()).is_err());
+        let receipt = journal.finish().unwrap();
+        let outcome = journal.session().terminal_outcome().unwrap();
+        assert_eq!(outcome.deadline_frontiers, 1);
+        assert!(!outcome.completed);
+        drop(journal);
+        let restored = fixture.restore(receipt).unwrap();
+        assert_eq!(restored.session().terminal_outcome(), Some(outcome));
+        let batch = restored.session().evidence().batches.get(0).unwrap();
+        assert_eq!(batch.deadline, Some([5; 32]));
+        assert!(batch.openings[1].is_none());
+    }
+
+    #[test]
+    fn a_stopped_match_seals_and_endorses_nothing_new() {
+        let fixture = Fixture::new();
+        let mut journal = fixture.create();
+        let openings = fixture.openings(0);
+        let set = fixture.set(&openings, journal.session().evidence().commitment_head);
+        journal.interrupt().unwrap();
+        let before = journal.receipt();
+        assert!(journal.seal(openings[0].clone()).is_err());
+        assert!(journal.endorse(&set, 0, &fixture.keys[0]).is_err());
+        assert_eq!(journal.receipt(), before);
+        // A certificate completed before the dropout is still evidence.
+        journal
+            .certify(set.clone(), fixture.signatures(&set))
+            .unwrap();
+        journal.reveal_many(openings).unwrap();
+        assert_eq!(journal.session().confirmed().tick, 2);
+        journal.finish().unwrap();
+    }
+
+    #[test]
+    fn worst_case_full_match_journal_fits_the_file_bound() {
+        let keys = (0..MAX_PLAYERS)
+            .map(|slot| SigningKey::from_bytes(&[slot as u8 + 1; 32]))
+            .collect::<Vec<_>>();
+        let context = Context {
+            network: [1; 32],
+            session: [2; 32],
+            manifest: [3; 32],
+            roster: keys.iter().map(|k| k.verifying_key().to_bytes()).collect(),
+        };
+        let config = Config {
+            mode: Mode::Control,
+            map: 0,
+            max_ticks: crate::MAX_TICKS,
+            base_bond: 1000,
+            offline: false,
+        };
+        let participants = (0..MAX_PLAYERS)
+            .map(|slot| Participant {
+                team: (slot % 2) as u8,
+                class: 0,
+                weapon: 1,
+                bond: 1000,
+                special_entitled: false,
+            })
+            .collect::<Vec<_>>();
+        let header = admission(&context, &config, &participants).unwrap().len();
+        let framed = |record: Record| 8 + record.encode().len() + 32;
+        let opening = Reveal {
+            start_tick: 0,
+            slot: 0,
+            inputs: vec![Input::default(); BATCH_TICKS],
+            salt: [0; 32],
+        };
+        let signatures = (0..MAX_PLAYERS)
+            .map(|slot| SlotSignature {
+                slot,
+                signature: [0; 64],
+            })
+            .collect::<Vec<_>>();
+        let set = CommitmentSet {
+            epoch: 0,
+            start_tick: 0,
+            parent: [0; 32],
+            commitments: vec![[0; 32]; MAX_PLAYERS],
+        };
+        let checkpoint = Checkpoint {
+            epoch: 0,
+            tick: 0,
+            history_root: [0; 32],
+            state_hash: [0; 32],
+        };
+        // One certificate, twelve separate openings, a full checkpoint, and
+        // this peer's seal and endorsement, for every batch of the match.
+        let batch = framed(Record::Certify(set, signatures.clone()))
+            + MAX_PLAYERS * framed(Record::Reveals(vec![opening.clone()]))
+            + framed(Record::Checkpoint(checkpoint, signatures))
+            + framed(Record::Seal(opening.clone()))
+            + framed(Record::Endorse {
+                start_tick: 0,
+                digest: [0; 32],
+            });
+        assert_eq!(batch, 3_470);
+        assert_eq!(
+            framed(Record::Reveals(vec![opening.clone(); MAX_PLAYERS])),
+            690
+        );
+        let mut forfeiting = vec![Some(opening); MAX_PLAYERS];
+        forfeiting[0] = None;
+        let deadlines = crate::protocol::MAX_OUTSTANDING_FRONTIERS
+            * framed(Record::Deadline(DeadlineResolution {
+                start_tick: 0,
+                frontier: [0; 32],
+                attestation: [1; 32],
+                openings: forfeiting,
+            }));
+        let offers = MAX_ACCEPTED_OFFERS_PER_MATCH
+            * MAX_PLAYERS
+            * framed(Record::HandshakeOffer {
+                initiator: 0,
+                responder: 1,
+                offer: [0; OFFER_PACKET_BYTES],
+            });
+        let total = header
+            + crate::protocol::MAX_BATCHES * batch
+            + deadlines
+            + offers
+            + framed(Record::Interrupt)
+            + framed(Record::Finish);
+        assert!(total as u64 <= MAX_FILE, "{total} bytes");
     }
 
     #[test]
@@ -1043,12 +1617,13 @@ mod tests {
         assert_eq!(journal.session().predicted().tick, 0);
         drop(journal);
         let mut recovered = fixture.restore(minimum).unwrap();
-        assert_eq!(recovered.partial_reveals()[1], Some(reveals[1].clone()));
+        let pending = &recovered.session().evidence().pending;
+        assert_eq!(pending[0].openings[1], Some(reveals[1].clone()));
         assert_eq!(recovered.session().evidence().phase, Phase::Resolving);
-        assert!(recovered.session().evidence().pending.is_some());
+        assert_eq!(pending.len(), 1);
         recovered.reveal(reveals[0].clone()).unwrap();
         assert_eq!(recovered.session().confirmed().tick, 2);
-        assert!(recovered.partial_reveals().iter().all(Option::is_none));
+        assert!(recovered.session().evidence().pending.is_empty());
         let checkpoint = recovered.session().checkpoint();
         let signatures = fixture
             .keys
@@ -1186,7 +1761,12 @@ mod tests {
         assert!(journal.reveal_many(forged).is_err());
         assert_eq!(journal.receipt(), before);
         assert_eq!(fs::metadata(&fixture.path).unwrap().len(), size);
-        assert!(journal.partial_reveals().iter().all(Option::is_none));
+        assert!(
+            journal.session().evidence().pending[0]
+                .openings
+                .iter()
+                .all(Option::is_none)
+        );
         assert!(
             journal
                 .reveal_many(vec![reveals[0].clone(), reveals[0].clone()])
@@ -1278,12 +1858,28 @@ mod tests {
         recovered.interrupt().unwrap();
         recovered.finish().unwrap();
         let terminal = recovered.receipt();
+        // A finished journal still refuses a replay, but answers a fresh
+        // offer from a peer that restarted after it finished.
         assert!(
             recovered
-                .accept_handshake_offer(0, 1, &fixture.keys[1], &new_offer)
+                .accept_handshake_offer(0, 1, &fixture.keys[1], &offer)
                 .is_err()
         );
         assert_eq!(recovered.receipt(), terminal);
+        let (late, late_offer) =
+            Initiator::start(fixture.context.clone(), 0, 1, &fixture.keys[0]).unwrap();
+        let (responder_keys, answer, after_finish) = recovered
+            .accept_handshake_offer(0, 1, &fixture.keys[1], &late_offer)
+            .unwrap();
+        assert_eq!(
+            late.finish(&answer).unwrap().channel_binding,
+            responder_keys.channel_binding
+        );
+        assert_eq!(after_finish.records, terminal.records + 1);
+        drop(recovered);
+        let restored = fixture.restore(after_finish).unwrap();
+        assert_eq!(restored.session().evidence().phase, Phase::Terminal);
+        assert_eq!(restored.accepted_offer_digests(1).unwrap().len(), 2);
     }
 
     #[test]
@@ -1405,6 +2001,7 @@ mod prefix_inspection_tests {
             let evidence = receipt.session().evidence();
             let reveals = (0..2)
                 .map(|slot| Reveal {
+                    start_tick: evidence.certified_tick,
                     slot,
                     inputs: vec![Input::default(); crate::protocol::BATCH_TICKS],
                     salt: [slot as u8 + 70; 32],
@@ -1412,22 +2009,11 @@ mod prefix_inspection_tests {
                 .collect::<Vec<_>>();
             let set = CommitmentSet {
                 epoch: evidence.epoch,
-                start_tick: evidence.next_tick,
-                parent: evidence.root,
+                start_tick: evidence.certified_tick,
+                parent: evidence.commitment_head,
                 commitments: reveals
                     .iter()
-                    .map(|r| {
-                        input_commitment(
-                            &self.context,
-                            evidence.epoch,
-                            evidence.next_tick,
-                            evidence.root,
-                            r.slot,
-                            &r.inputs,
-                            r.salt,
-                        )
-                        .unwrap()
-                    })
+                    .map(|r| r.commitment(&self.context, evidence.epoch).unwrap())
                     .collect(),
             };
             let signatures = self
@@ -1478,9 +2064,9 @@ mod prefix_inspection_tests {
         assert_eq!(prefix.receipt(), latest);
         assert_eq!(prefix.prefix_bytes(), bytes.len() as u64);
         assert_eq!(prefix.file_bytes(), bytes.len() as u64);
-        assert_eq!(prefix.partial_reveals()[1], Some(reveals[1].clone()));
-        assert!(prefix.partial_reveals()[0].is_none());
-        assert!(prefix.session().evidence().pending.is_some());
+        let pending = &prefix.session().evidence().pending;
+        assert_eq!(pending[0].openings[1], Some(reveals[1].clone()));
+        assert!(pending[0].openings[0].is_none());
         assert_eq!(prefix.session().confirmed().tick, 0);
         assert!(prefix.resolution_fault().is_none());
         assert_eq!(fs::read(&fixture.path).unwrap(), bytes);
@@ -1515,8 +2101,9 @@ mod prefix_inspection_tests {
             assert_eq!(prefix.receipt(), minimum);
             assert_eq!(prefix.prefix_bytes(), start as u64);
             assert_eq!(prefix.file_bytes(), end as u64);
-            assert_eq!(prefix.partial_reveals()[0], Some(reveals[0].clone()));
-            assert!(prefix.partial_reveals()[1].is_none());
+            let openings = &prefix.session().evidence().pending[0].openings;
+            assert_eq!(openings[0], Some(reveals[0].clone()));
+            assert!(openings[1].is_none());
             assert_eq!(prefix.session().confirmed().tick, 0);
             if end == start {
                 assert!(prefix.failure().is_none());
@@ -1535,7 +2122,7 @@ mod prefix_inspection_tests {
         let complete = fixture.inspect(latest).unwrap();
         assert!(complete.failure().is_none());
         assert_eq!(complete.session().confirmed().state_hash(), expected);
-        assert!(complete.partial_reveals().iter().all(Option::is_none));
+        assert!(complete.session().evidence().pending.is_empty());
     }
 
     #[test]
@@ -1553,8 +2140,8 @@ mod prefix_inspection_tests {
         let forged = fs::read(&fixture.path).unwrap();
         let inspected = fixture.inspect(minimum).unwrap();
         assert_eq!(inspected.prefix_bytes(), start as u64);
-        assert!(inspected.partial_reveals().iter().all(Option::is_none));
-        assert!(inspected.session().evidence().pending.is_some());
+        let pending = &inspected.session().evidence().pending;
+        assert!(pending[0].openings.iter().all(Option::is_none));
         let failure = inspected.failure().unwrap();
         assert_eq!(failure.record_offset, start as u64);
         assert_eq!(failure.offset, (start + 8) as u64);
@@ -1589,7 +2176,7 @@ mod prefix_inspection_tests {
         let prefix = fixture.inspect(minimum).unwrap();
         assert_eq!(prefix.receipt(), minimum);
         assert_eq!(prefix.prefix_bytes(), header_end);
-        assert!(prefix.session().evidence().pending.is_none());
+        assert!(prefix.session().evidence().pending.is_empty());
         let failure = prefix.failure().unwrap();
         assert_eq!(failure.record_offset, header_end);
         assert_eq!(failure.offset, header_end + 8);

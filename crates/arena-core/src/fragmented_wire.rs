@@ -53,6 +53,34 @@ pub(crate) fn fragment_packet(
     Ok(out)
 }
 
+/// The packet sequence of one fragment from `expected_sender`, after its
+/// channel authentication tag is verified. Lets an in-order receiver drop a
+/// future fragment or re-acknowledge an old one before reassembly.
+pub(crate) fn authenticated_sequence(
+    fragment: &[u8],
+    expected_sender: usize,
+    key: &ChannelKey,
+) -> Result<u64, Error> {
+    if !(HEADER_BYTES + TAG_BYTES..=MAX_DATAGRAM_BYTES).contains(&fragment.len()) {
+        return Err(Error::InvalidEvidence("fragment length outside bound"));
+    }
+    let authenticated_len = fragment.len() - TAG_BYTES;
+    key.verify_fragment_tag(
+        &fragment[..authenticated_len],
+        &fragment[authenticated_len..],
+    )?;
+    let mut at = 0;
+    if take(fragment, &mut at, MAGIC.len())? != MAGIC
+        || u16::from_le_bytes(take_array(fragment, &mut at)?) != VERSION
+    {
+        return Err(Error::InvalidEvidence("fragment magic or version differs"));
+    }
+    if take(fragment, &mut at, 1)?[0] as usize != expected_sender {
+        return Err(Error::InvalidEvidence("fragment sender differs"));
+    }
+    Ok(u64::from_le_bytes(take_array(fragment, &mut at)?))
+}
+
 struct PendingPacket {
     sequence: u64,
     total: usize,
@@ -213,6 +241,19 @@ fn take_array<const N: usize>(bytes: &[u8], at: &mut usize) -> Result<[u8; N], E
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sequence_is_read_only_from_an_authenticated_fragment() {
+        let key = ChannelKey::new([92; 32]).unwrap();
+        let fragments = fragment_packet(&[7; 40], 3, 41, &key).unwrap();
+        assert_eq!(authenticated_sequence(&fragments[0], 3, &key).unwrap(), 41);
+        assert!(authenticated_sequence(&fragments[0], 2, &key).is_err());
+        let other = ChannelKey::new([93; 32]).unwrap();
+        assert!(authenticated_sequence(&fragments[0], 3, &other).is_err());
+        let mut altered = fragments[0].clone();
+        altered[MAGIC.len() + 3] ^= 1;
+        assert!(authenticated_sequence(&altered, 3, &key).is_err());
+    }
 
     #[test]
     fn missing_tails_cannot_permanently_fill_receive_window() {

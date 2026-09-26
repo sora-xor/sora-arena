@@ -2,8 +2,13 @@
 //!
 //! The sender signs the packet header, sequence, and body. This authenticates
 //! packet order but does not encrypt traffic, make input human, or prove combat
-//! execution. Callers must supply the already certified pending frontier when
-//! decoding a reveal, and must retain sequence floors across reconnects.
+//! execution. Callers must supply their own certified frontiers when decoding a
+//! reveal, and must retain sequence floors across reconnects.
+//!
+//! Commitments and set signatures are the pre-certification traffic that lets
+//! every peer assemble the same pipelined certificates itself; see
+//! `protocol::FrontierAssembler`. Checkpoint signatures likewise let peers
+//! gather a complete checkpoint certificate without a coordinator.
 
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use sha2::{Digest, Sha256};
@@ -11,15 +16,15 @@ use sha2::{Digest, Sha256};
 use crate::{
     Error, MAX_TICKS,
     protocol::{
-        BATCH_TICKS, CommitmentSet, Context, Hash, Reveal, SlotSignature, input_commitment,
-        verify_certificate,
+        BATCH_TICKS, CertifiedFrontiers, CommitmentSet, Context, Hash, Reveal, SlotSignature,
+        validate_start, verify_certificate, verify_set_signature,
     },
     rollback::Checkpoint,
     simulation::Input,
 };
 
 const MAGIC: &[u8] = b"SORA-ARENA-P2P";
-pub const WIRE_VERSION: u16 = 1;
+pub const WIRE_VERSION: u16 = 2;
 /// This comfortably contains the largest twelve-player certificate. No
 /// allocation or cryptographic work is attempted on an oversized packet.
 pub const MAX_WIRE_PACKET_BYTES: usize = 1536;
@@ -33,12 +38,32 @@ pub enum WireMessage {
         set: CommitmentSet,
         signatures: Vec<SlotSignature>,
     },
-    /// The set is never copied onto the wire. The receiver reconstructs it
-    /// from its locally certified pending frontier and checks the opening.
+    /// The set is never copied onto the wire. The receiver looks it up among
+    /// its own certified frontiers by start tick and checks the opening.
     Reveal { set: CommitmentSet, reveal: Reveal },
     Checkpoint {
         checkpoint: Checkpoint,
         signatures: Vec<SlotSignature>,
+    },
+    /// The sender's own input commitment for one batch, sent before any set
+    /// containing it exists. The signed envelope authenticates it.
+    Commitment {
+        epoch: u64,
+        start_tick: u32,
+        commitment: Hash,
+    },
+    /// The sender's signature over one complete set. The set travels with it
+    /// so the receiver can check the signature before it assembles the set.
+    SetSignature {
+        set: CommitmentSet,
+        signature: SlotSignature,
+    },
+    /// The sender's own signature over the checkpoint of a boundary it
+    /// confirmed. A receiver retains the checkpoint only once every roster
+    /// key signed exactly the boundary it confirmed itself.
+    CheckpointSignature {
+        checkpoint: Checkpoint,
+        signature: SlotSignature,
     },
 }
 
@@ -116,13 +141,13 @@ impl WireReceiver {
         &self.sequence_floor
     }
 
-    /// `pending` must be the caller's certified frontier, never an untrusted
-    /// set received alongside this reveal. Failed decoding never advances a
+    /// `frontiers` must be the caller's own certified evidence, never sets
+    /// received alongside this reveal. Failed decoding never advances a
     /// sequence floor. This check does not apply the result to `EvidenceLog`.
-    pub fn decode(
+    pub fn decode<F: CertifiedFrontiers + ?Sized>(
         &mut self,
         packet: &[u8],
-        pending: Option<&CommitmentSet>,
+        frontiers: &F,
     ) -> Result<WireFrame, Error> {
         if !(MIN_PACKET_BYTES..=MAX_WIRE_PACKET_BYTES).contains(&packet.len()) {
             return Err(Error::InvalidEvidence("wire packet length outside bound"));
@@ -162,7 +187,7 @@ impl WireReceiver {
                 &Signature::from_bytes(&signature),
             )
             .map_err(|_| Error::InvalidEvidence("invalid wire envelope signature"))?;
-        let message = decode_message(&self.context, kind, sender, body, pending)?;
+        let message = decode_message(&self.context, kind, sender, body, frontiers)?;
         self.sequence_floor[sender] = Some(sequence);
         Ok(WireFrame {
             sender,
@@ -178,16 +203,18 @@ fn context_hash(context: &Context) -> Hash {
 
 fn envelope_digest(bytes: &[u8]) -> Hash {
     let mut hash = Sha256::new();
-    hash.update(b"sora-arena:wire-envelope:v1\0");
+    hash.update(b"sora-arena:wire-envelope:v2\0");
     hash.update(bytes);
     hash.finalize().into()
 }
 
-fn validate_frontier(set: &CommitmentSet) -> Result<(), Error> {
-    if set.start_tick > MAX_TICKS - BATCH_TICKS as u32 {
-        return Err(Error::InvalidEvidence("wire frontier tick outside match"));
+fn encode_set(out: &mut Vec<u8>, set: &CommitmentSet) {
+    out.extend(set.epoch.to_le_bytes());
+    out.extend(set.start_tick.to_le_bytes());
+    out.extend(set.parent);
+    for commitment in &set.commitments {
+        out.extend(commitment);
     }
-    Ok(())
 }
 
 fn encode_message(
@@ -198,19 +225,15 @@ fn encode_message(
     let mut out = Vec::new();
     let kind = match message {
         WireMessage::CommitmentCertificate { set, signatures } => {
-            validate_frontier(set)?;
+            validate_start(set.start_tick)?;
             verify_certificate(context, set, signatures)?;
-            out.extend(set.epoch.to_le_bytes());
-            out.extend(set.start_tick.to_le_bytes());
-            out.extend(set.parent);
-            for commitment in &set.commitments {
-                out.extend(commitment);
-            }
+            encode_set(&mut out, set);
             encode_signatures(&mut out, signatures);
             0
         }
         WireMessage::Reveal { set, reveal } => {
             validate_opening(context, sender, set, reveal)?;
+            out.extend(set.start_tick.to_le_bytes());
             out.extend(set.digest(context)?);
             out.extend(reveal.salt);
             for &input in &reveal.inputs {
@@ -223,44 +246,63 @@ fn encode_message(
             signatures,
         } => {
             validate_checkpoint(context, checkpoint, signatures)?;
-            out.extend(checkpoint.epoch.to_le_bytes());
-            out.extend(checkpoint.tick.to_le_bytes());
-            out.extend(checkpoint.history_root);
-            out.extend(checkpoint.state_hash);
+            encode_checkpoint(&mut out, checkpoint);
             encode_signatures(&mut out, signatures);
             2
+        }
+        WireMessage::Commitment {
+            epoch,
+            start_tick,
+            commitment,
+        } => {
+            validate_start(*start_tick)?;
+            out.extend(epoch.to_le_bytes());
+            out.extend(start_tick.to_le_bytes());
+            out.extend(commitment);
+            3
+        }
+        WireMessage::SetSignature { set, signature } => {
+            validate_set_signature(context, sender, set, signature)?;
+            encode_set(&mut out, set);
+            out.extend(signature.signature);
+            4
+        }
+        WireMessage::CheckpointSignature {
+            checkpoint,
+            signature,
+        } => {
+            validate_checkpoint_signature(context, sender, checkpoint, signature)?;
+            encode_checkpoint(&mut out, checkpoint);
+            out.extend(signature.signature);
+            5
         }
     };
     Ok((kind, out))
 }
 
-fn decode_message(
+fn decode_message<F: CertifiedFrontiers + ?Sized>(
     context: &Context,
     kind: u8,
     sender: usize,
     body: &[u8],
-    pending: Option<&CommitmentSet>,
+    frontiers: &F,
 ) -> Result<WireMessage, Error> {
     let mut reader = Reader::new(body);
     let message = match kind {
         0 => {
-            let set = CommitmentSet {
-                epoch: reader.u64()?,
-                start_tick: reader.u32()?,
-                parent: reader.array()?,
-                commitments: (0..context.roster.len())
-                    .map(|_| reader.array())
-                    .collect::<Result<_, _>>()?,
-            };
-            validate_frontier(&set)?;
+            let set = reader.set(context.roster.len())?;
+            validate_start(set.start_tick)?;
             let signatures = reader.signatures(context.roster.len())?;
             verify_certificate(context, &set, &signatures)?;
             WireMessage::CommitmentCertificate { set, signatures }
         }
         1 => {
-            let set = pending.ok_or(Error::InvalidEvidence(
-                "wire reveal without certified pending frontier",
-            ))?;
+            let start_tick = reader.u32()?;
+            let set = frontiers
+                .certified_frontier(start_tick)
+                .ok_or(Error::InvalidEvidence(
+                    "wire reveal without certified frontier",
+                ))?;
             if reader.array::<32>()? != set.digest(context)? {
                 return Err(Error::InvalidEvidence("wire reveal frontier differs"));
             }
@@ -269,6 +311,7 @@ fn decode_message(
                 .map(|_| Input::decode(reader.array()?))
                 .collect::<Result<Vec<_>, _>>()?;
             let reveal = Reveal {
+                start_tick,
                 slot: sender,
                 inputs,
                 salt,
@@ -280,17 +323,43 @@ fn decode_message(
             }
         }
         2 => {
-            let checkpoint = Checkpoint {
-                epoch: reader.u64()?,
-                tick: reader.u32()?,
-                history_root: reader.array()?,
-                state_hash: reader.array()?,
-            };
+            let checkpoint = reader.checkpoint()?;
             let signatures = reader.signatures(context.roster.len())?;
             validate_checkpoint(context, &checkpoint, &signatures)?;
             WireMessage::Checkpoint {
                 checkpoint,
                 signatures,
+            }
+        }
+        3 => {
+            let epoch = reader.u64()?;
+            let start_tick = reader.u32()?;
+            validate_start(start_tick)?;
+            WireMessage::Commitment {
+                epoch,
+                start_tick,
+                commitment: reader.array()?,
+            }
+        }
+        4 => {
+            let set = reader.set(context.roster.len())?;
+            let signature = SlotSignature {
+                slot: sender,
+                signature: reader.array()?,
+            };
+            validate_set_signature(context, sender, &set, &signature)?;
+            WireMessage::SetSignature { set, signature }
+        }
+        5 => {
+            let checkpoint = reader.checkpoint()?;
+            let signature = SlotSignature {
+                slot: sender,
+                signature: reader.array()?,
+            };
+            validate_checkpoint_signature(context, sender, &checkpoint, &signature)?;
+            WireMessage::CheckpointSignature {
+                checkpoint,
+                signature,
             }
         }
         _ => return Err(Error::InvalidEvidence("unknown wire message type")),
@@ -307,26 +376,26 @@ fn validate_opening(
     set: &CommitmentSet,
     reveal: &Reveal,
 ) -> Result<(), Error> {
-    validate_frontier(set)?;
-    if reveal.slot != sender
-        || set.commitments.len() != context.roster.len()
-        || reveal.inputs.len() != BATCH_TICKS
-    {
+    validate_start(set.start_tick)?;
+    if reveal.slot != sender {
         return Err(Error::InvalidEvidence("wire reveal bounds differ"));
     }
-    if input_commitment(
-        context,
-        set.epoch,
-        set.start_tick,
-        set.parent,
-        sender,
-        &reveal.inputs,
-        reveal.salt,
-    )? != set.commitments[sender]
-    {
-        return Err(Error::InvalidEvidence("wire reveal opening differs"));
+    reveal
+        .verify(context, set)
+        .map_err(|_| Error::InvalidEvidence("wire reveal opening differs"))
+}
+
+fn validate_set_signature(
+    context: &Context,
+    sender: usize,
+    set: &CommitmentSet,
+    signature: &SlotSignature,
+) -> Result<(), Error> {
+    validate_start(set.start_tick)?;
+    if signature.slot != sender {
+        return Err(Error::InvalidEvidence("set signature from another slot"));
     }
-    Ok(())
+    verify_set_signature(context, set, signature)
 }
 
 fn validate_checkpoint(
@@ -338,6 +407,30 @@ fn validate_checkpoint(
         return Err(Error::InvalidEvidence("wire checkpoint tick outside match"));
     }
     checkpoint.verify(context, signatures)
+}
+
+fn validate_checkpoint_signature(
+    context: &Context,
+    sender: usize,
+    checkpoint: &Checkpoint,
+    signature: &SlotSignature,
+) -> Result<(), Error> {
+    if checkpoint.tick > MAX_TICKS {
+        return Err(Error::InvalidEvidence("wire checkpoint tick outside match"));
+    }
+    if signature.slot != sender {
+        return Err(Error::InvalidEvidence(
+            "checkpoint signature from another slot",
+        ));
+    }
+    checkpoint.verify_signature(context, signature)
+}
+
+fn encode_checkpoint(out: &mut Vec<u8>, checkpoint: &Checkpoint) {
+    out.extend(checkpoint.epoch.to_le_bytes());
+    out.extend(checkpoint.tick.to_le_bytes());
+    out.extend(checkpoint.history_root);
+    out.extend(checkpoint.state_hash);
 }
 
 fn encode_signatures(out: &mut Vec<u8>, signatures: &[SlotSignature]) {
@@ -377,6 +470,22 @@ impl<'a> Reader<'a> {
     fn u64(&mut self) -> Result<u64, Error> {
         Ok(u64::from_le_bytes(self.array()?))
     }
+    fn set(&mut self, count: usize) -> Result<CommitmentSet, Error> {
+        Ok(CommitmentSet {
+            epoch: self.u64()?,
+            start_tick: self.u32()?,
+            parent: self.array()?,
+            commitments: (0..count).map(|_| self.array()).collect::<Result<_, _>>()?,
+        })
+    }
+    fn checkpoint(&mut self) -> Result<Checkpoint, Error> {
+        Ok(Checkpoint {
+            epoch: self.u64()?,
+            tick: self.u32()?,
+            history_root: self.array()?,
+            state_hash: self.array()?,
+        })
+    }
     fn signatures(&mut self, count: usize) -> Result<Vec<SlotSignature>, Error> {
         (0..count)
             .map(|_| {
@@ -396,7 +505,7 @@ impl<'a> Reader<'a> {
 mod tests {
     use super::*;
     use crate::MAX_PLAYERS;
-    use crate::protocol::sign_commitment_set;
+    use crate::protocol::{NO_FRONTIERS, sign_commitment_set};
 
     fn fixture() -> (
         Context,
@@ -419,6 +528,7 @@ mod tests {
         };
         let reveals = (0..keys.len())
             .map(|slot| Reveal {
+                start_tick: 14,
                 slot,
                 inputs: vec![Input::default(); BATCH_TICKS],
                 salt: [slot as u8; 32],
@@ -430,18 +540,7 @@ mod tests {
             parent: [24; 32],
             commitments: reveals
                 .iter()
-                .map(|reveal| {
-                    input_commitment(
-                        &context,
-                        7,
-                        14,
-                        [24; 32],
-                        reveal.slot,
-                        &reveal.inputs,
-                        reveal.salt,
-                    )
-                    .unwrap()
-                })
+                .map(|reveal| reveal.commitment(&context, 7).unwrap())
                 .collect(),
         };
         let checkpoint = Checkpoint {
@@ -465,7 +564,7 @@ mod tests {
     }
 
     #[test]
-    fn three_packet_types_roundtrip_and_sequence_floors_restore() {
+    fn six_packet_types_roundtrip_and_sequence_floors_restore() {
         let (context, keys, set, reveals, checkpoint) = fixture();
         let messages = [
             certificate(&context, &keys, &set),
@@ -481,20 +580,35 @@ mod tests {
                     .map(|(slot, key)| checkpoint.sign(&context, slot, key).unwrap())
                     .collect(),
             },
+            WireMessage::Commitment {
+                epoch: 7,
+                start_tick: 16,
+                commitment: [27; 32],
+            },
+            WireMessage::SetSignature {
+                set: set.clone(),
+                signature: sign_commitment_set(&context, &set, 2, &keys[2]).unwrap(),
+            },
+            WireMessage::CheckpointSignature {
+                checkpoint: checkpoint.clone(),
+                signature: checkpoint.sign(&context, 2, &keys[2]).unwrap(),
+            },
         ];
         let mut receiver = WireReceiver::new(context.clone()).unwrap();
         for (index, message) in messages.into_iter().enumerate() {
-            let sender = if index == 1 { 1 } else { 0 };
+            let sender = [0, 1, 0, 1, 2, 2][index];
             let frame = WireFrame {
                 sender,
                 sequence: index as u64,
                 message,
             };
             let bytes = frame.encode(&context, &keys[sender]).unwrap();
-            let pending = (index == 1).then_some(&set);
-            assert_eq!(receiver.decode(&bytes, pending).unwrap(), frame);
+            assert_eq!(
+                receiver.decode(&bytes, std::slice::from_ref(&set)).unwrap(),
+                frame
+            );
         }
-        assert_eq!(receiver.sequence_floor(), &[Some(2), Some(1), None]);
+        assert_eq!(receiver.sequence_floor(), &[Some(2), Some(3), Some(5)]);
         let mut restored =
             WireReceiver::with_sequence_floor(context, receiver.sequence_floor().to_vec()).unwrap();
         let old = WireFrame {
@@ -507,7 +621,7 @@ mod tests {
         }
         .encode(&restored.context, &keys[1])
         .unwrap();
-        assert!(restored.decode(&old, Some(&set)).is_err());
+        assert!(restored.decode(&old, std::slice::from_ref(&set)).is_err());
     }
 
     #[test]
@@ -541,7 +655,7 @@ mod tests {
         bad_sequence[MAGIC.len() + 2 + 1 + 1] ^= 1;
         variants.push(bad_sequence);
         for variant in variants {
-            assert!(receiver.decode(&variant, None).is_err());
+            assert!(receiver.decode(&variant, NO_FRONTIERS).is_err());
             assert_eq!(receiver.sequence_floor(), &[None, None, None]);
         }
         let mut wrong_network = context.clone();
@@ -549,11 +663,11 @@ mod tests {
         assert!(
             WireReceiver::new(wrong_network)
                 .unwrap()
-                .decode(&bytes, None)
+                .decode(&bytes, NO_FRONTIERS)
                 .is_err()
         );
-        assert_eq!(receiver.decode(&bytes, None).unwrap(), frame);
-        assert!(receiver.decode(&bytes, None).is_err());
+        assert_eq!(receiver.decode(&bytes, NO_FRONTIERS).unwrap(), frame);
+        assert!(receiver.decode(&bytes, NO_FRONTIERS).is_err());
     }
 
     #[test]
@@ -569,19 +683,32 @@ mod tests {
         };
         let bytes = frame.encode(&context, &keys[1]).unwrap();
         let mut receiver = WireReceiver::new(context.clone()).unwrap();
-        assert!(receiver.decode(&bytes, None).is_err());
+        assert!(receiver.decode(&bytes, NO_FRONTIERS).is_err());
         let mut wrong_set = set.clone();
         wrong_set.parent[0] ^= 1;
-        assert!(receiver.decode(&bytes, Some(&wrong_set)).is_err());
+        assert!(receiver.decode(&bytes, &[wrong_set][..]).is_err());
+        let mut other_tick = set.clone();
+        other_tick.start_tick += BATCH_TICKS as u32;
+        assert!(receiver.decode(&bytes, &[other_tick.clone()][..]).is_err());
         assert_eq!(receiver.sequence_floor(), &[None, None, None]);
-        assert_eq!(receiver.decode(&bytes, Some(&set)).unwrap(), frame);
+        // Several pipelined frontiers: the reveal names its own.
+        assert_eq!(
+            receiver
+                .decode(&bytes, &[other_tick, set.clone()][..])
+                .unwrap(),
+            frame
+        );
         let mut forged_opening = bytes.clone();
         // Keep the sender envelope authentic while changing a canonical input.
-        let first_input = HEADER_BYTES + 32 + 32;
+        let first_input = HEADER_BYTES + 4 + 32 + 32;
         forged_opening[first_input] = 1;
         resign(&mut forged_opening, &keys[1]);
         let mut fresh = WireReceiver::new(context.clone()).unwrap();
-        assert!(fresh.decode(&forged_opening, Some(&set)).is_err());
+        assert!(
+            fresh
+                .decode(&forged_opening, std::slice::from_ref(&set))
+                .is_err()
+        );
         assert_eq!(fresh.sequence_floor(), &[None, None, None]);
         reveals[1].inputs[0].buttons = 1;
         assert!(
@@ -604,10 +731,14 @@ mod tests {
         let mut receiver = WireReceiver::new(context.clone()).unwrap();
         assert!(
             receiver
-                .decode(&vec![0; MAX_WIRE_PACKET_BYTES + 1], None)
+                .decode(&vec![0; MAX_WIRE_PACKET_BYTES + 1], NO_FRONTIERS)
                 .is_err()
         );
-        assert!(receiver.decode(&[0; MIN_PACKET_BYTES - 1], None).is_err());
+        assert!(
+            receiver
+                .decode(&[0; MIN_PACKET_BYTES - 1], NO_FRONTIERS)
+                .is_err()
+        );
         let frame = WireFrame {
             sender: 0,
             sequence: 0,
@@ -616,7 +747,7 @@ mod tests {
         assert!(frame.encode(&context, &keys[1]).is_err());
         let mut bytes = frame.encode(&context, &keys[0]).unwrap();
         bytes[MAGIC.len() + 2 + 1] = MAX_PLAYERS as u8;
-        assert!(receiver.decode(&bytes, None).is_err());
+        assert!(receiver.decode(&bytes, NO_FRONTIERS).is_err());
         assert_eq!(receiver.sequence_floor(), &[None, None, None]);
         assert!(WireReceiver::with_sequence_floor(context, vec![None; 2]).is_err());
     }
@@ -637,11 +768,11 @@ mod tests {
         let sig_offset = HEADER_BYTES + 8 + 4 + 32 + context.roster.len() * 32 + 1;
         altered[sig_offset] ^= 1;
         resign(&mut altered, &keys[0]);
-        assert!(receiver.decode(&altered, None).is_err());
+        assert!(receiver.decode(&altered, NO_FRONTIERS).is_err());
         let mut unknown = bytes.clone();
         unknown[MAGIC.len() + 2] = 99;
         resign(&mut unknown, &keys[0]);
-        assert!(receiver.decode(&unknown, None).is_err());
+        assert!(receiver.decode(&unknown, NO_FRONTIERS).is_err());
         assert_eq!(receiver.sequence_floor(), &[None, None, None]);
 
         let mut checkpoint_signatures = keys
@@ -660,6 +791,109 @@ mod tests {
                 },
             }
             .encode(&context, &keys[0])
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn pre_certification_messages_bind_their_sender_and_batch_boundary() {
+        let (context, keys, set, _, _) = fixture();
+        let mut receiver = WireReceiver::new(context.clone()).unwrap();
+        // Another slot's signature cannot be relayed as the sender's own.
+        let relayed = WireFrame {
+            sender: 0,
+            sequence: 0,
+            message: WireMessage::SetSignature {
+                set: set.clone(),
+                signature: sign_commitment_set(&context, &set, 1, &keys[1]).unwrap(),
+            },
+        };
+        assert!(relayed.encode(&context, &keys[0]).is_err());
+        let own = WireFrame {
+            sender: 1,
+            sequence: 0,
+            message: WireMessage::SetSignature {
+                set: set.clone(),
+                signature: sign_commitment_set(&context, &set, 1, &keys[1]).unwrap(),
+            },
+        };
+        let bytes = own.encode(&context, &keys[1]).unwrap();
+        // A signature over a different set, re-enveloped by its sender.
+        let mut altered = bytes.clone();
+        let first_commitment = HEADER_BYTES + 8 + 4 + 32;
+        altered[first_commitment] ^= 1;
+        resign(&mut altered, &keys[1]);
+        assert!(receiver.decode(&altered, NO_FRONTIERS).is_err());
+        assert_eq!(receiver.decode(&bytes, NO_FRONTIERS).unwrap(), own);
+        for start_tick in [15, MAX_TICKS] {
+            let unaligned = WireFrame {
+                sender: 2,
+                sequence: 0,
+                message: WireMessage::Commitment {
+                    epoch: 0,
+                    start_tick,
+                    commitment: [1; 32],
+                },
+            };
+            assert!(unaligned.encode(&context, &keys[2]).is_err());
+        }
+        let commitment = WireFrame {
+            sender: 2,
+            sequence: 0,
+            message: WireMessage::Commitment {
+                epoch: 0,
+                start_tick: 16,
+                commitment: [1; 32],
+            },
+        };
+        let mut bytes = commitment.encode(&context, &keys[2]).unwrap();
+        bytes[HEADER_BYTES + 8] = 17;
+        resign(&mut bytes, &keys[2]);
+        assert!(receiver.decode(&bytes, NO_FRONTIERS).is_err());
+        assert_eq!(receiver.sequence_floor(), &[None, Some(0), None]);
+    }
+
+    #[test]
+    fn checkpoint_signatures_bind_their_signer_and_the_exact_checkpoint() {
+        let (context, keys, _, _, checkpoint) = fixture();
+        let relayed = WireFrame {
+            sender: 0,
+            sequence: 0,
+            message: WireMessage::CheckpointSignature {
+                checkpoint: checkpoint.clone(),
+                signature: checkpoint.sign(&context, 1, &keys[1]).unwrap(),
+            },
+        };
+        assert!(relayed.encode(&context, &keys[0]).is_err());
+        let own = WireFrame {
+            sender: 1,
+            sequence: 0,
+            message: WireMessage::CheckpointSignature {
+                checkpoint: checkpoint.clone(),
+                signature: checkpoint.sign(&context, 1, &keys[1]).unwrap(),
+            },
+        };
+        let bytes = own.encode(&context, &keys[1]).unwrap();
+        let mut receiver = WireReceiver::new(context.clone()).unwrap();
+        // The same signature re-enveloped over another state hash.
+        let mut altered = bytes.clone();
+        altered[HEADER_BYTES + 8 + 4 + 32] ^= 1;
+        resign(&mut altered, &keys[1]);
+        assert!(receiver.decode(&altered, NO_FRONTIERS).is_err());
+        assert_eq!(receiver.sequence_floor(), &[None, None, None]);
+        assert_eq!(receiver.decode(&bytes, NO_FRONTIERS).unwrap(), own);
+        let mut late = checkpoint;
+        late.tick = MAX_TICKS + 1;
+        assert!(
+            WireFrame {
+                sender: 2,
+                sequence: 0,
+                message: WireMessage::CheckpointSignature {
+                    signature: late.sign(&context, 2, &keys[2]).unwrap(),
+                    checkpoint: late,
+                },
+            }
+            .encode(&context, &keys[2])
             .is_err()
         );
     }
@@ -692,7 +926,7 @@ mod tests {
         let first = frame.encode(&context, &keys[0]).unwrap();
         assert!(first.len() <= MAX_WIRE_PACKET_BYTES);
         let mut receiver = WireReceiver::new(context.clone()).unwrap();
-        assert_eq!(receiver.decode(&first, None).unwrap(), frame);
+        assert_eq!(receiver.decode(&first, NO_FRONTIERS).unwrap(), frame);
         let old = WireFrame {
             sender: 0,
             sequence: 4,
@@ -700,7 +934,7 @@ mod tests {
         }
         .encode(&context, &keys[0])
         .unwrap();
-        assert!(receiver.decode(&old, None).is_err());
+        assert!(receiver.decode(&old, NO_FRONTIERS).is_err());
         // Other participants' sequence spaces are independent.
         let other = WireFrame {
             sender: 1,
@@ -709,7 +943,7 @@ mod tests {
         };
         assert_eq!(
             receiver
-                .decode(&other.encode(&context, &keys[1]).unwrap(), None)
+                .decode(&other.encode(&context, &keys[1]).unwrap(), NO_FRONTIERS)
                 .unwrap(),
             other
         );

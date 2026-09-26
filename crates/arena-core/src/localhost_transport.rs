@@ -24,7 +24,7 @@ use crate::{
     encrypted_wire::{EncryptedReceiver, EncryptedSender, FragmentDelivery},
     fragmented_wire::MAX_DATAGRAM_BYTES,
     handshake::{Initiator, PairwiseKeys},
-    protocol::{Context, Reveal},
+    protocol::{CommitmentSet, Context, Hash, Reveal, SlotSignature},
     recovery::{DurableSession, Receipt, RecoveryError},
     wire::{WireFrame, WireMessage},
 };
@@ -277,8 +277,53 @@ impl LocalhostPeer {
         Ok(self.socket.local_addr()?)
     }
 
+    /// Journal this peer's own opening and record the receipt before its
+    /// commitment may be prepared for the wire.
+    pub fn seal(&mut self, opening: Reveal) -> Result<Hash> {
+        if self.closed {
+            return Err(TransportError::Closed);
+        }
+        if opening.slot != self.local_slot {
+            return Err(Error::InvalidEvidence("sealed opening for another slot").into());
+        }
+        let outcome = self.journal.seal(opening);
+        let (commitment, receipt) = self.durable(outcome)?;
+        self.persist(receipt)?;
+        Ok(commitment)
+    }
+
+    /// Journal this peer's endorsement of `set` and record the receipt before
+    /// returning the signature to send.
+    pub fn endorse(&mut self, set: &CommitmentSet) -> Result<SlotSignature> {
+        if self.closed {
+            return Err(TransportError::Closed);
+        }
+        let outcome = self.journal.endorse(set, self.local_slot, &self.identity);
+        let (signature, receipt) = self.durable(outcome)?;
+        self.persist(receipt)?;
+        Ok(signature)
+    }
+
+    /// A journal refusal leaves the handle open; a failed write closes it.
+    fn durable<T>(&mut self, outcome: std::result::Result<T, RecoveryError>) -> Result<T> {
+        outcome.map_err(|error| {
+            if !matches!(error, RecoveryError::Evidence(_)) {
+                self.closed = true;
+            }
+            error.into()
+        })
+    }
+
+    fn persist(&mut self, receipt: Receipt) -> Result<()> {
+        self.receipts.persist(receipt).inspect_err(|_| {
+            self.closed = true;
+        })
+    }
+
     /// Journal and externally record local evidence before constructing bytes
     /// that may leave this machine. Keep this returned object for retries.
+    /// Commitments and set signatures carry nothing new for the journal, but
+    /// only a sealed commitment or an endorsed set may be prepared.
     pub fn prepare(&mut self, frame: &WireFrame) -> Result<PreparedEvidence> {
         if self.closed {
             return Err(TransportError::Closed);
@@ -286,16 +331,41 @@ impl LocalhostPeer {
         if frame.sender != self.local_slot {
             return Err(Error::InvalidEvidence("outbound sender differs from local slot").into());
         }
-        let receipt = match append_message(&mut self.journal, &frame.message) {
-            Ok(receipt) => receipt,
-            Err(error) => {
-                self.closed = true;
-                return Err(error.into());
+        match &frame.message {
+            WireMessage::Commitment {
+                start_tick,
+                commitment,
+                ..
+            } => {
+                let evidence = self.journal.session().evidence();
+                if !self.journal.sealed_openings().any(|opening| {
+                    opening.start_tick == *start_tick
+                        && opening.slot == self.local_slot
+                        && opening.commitment(&evidence.context, evidence.epoch).ok()
+                            == Some(*commitment)
+                }) {
+                    return Err(Error::InvalidEvidence("commitment was not sealed").into());
+                }
             }
-        };
-        if let Err(error) = self.receipts.persist(receipt) {
-            self.closed = true;
-            return Err(error);
+            WireMessage::SetSignature { set, .. } => {
+                let digest = set.digest(&self.journal.session().evidence().context)?;
+                if self.journal.endorsed_digest(set.start_tick) != Some(digest) {
+                    return Err(Error::InvalidEvidence("set was not endorsed").into());
+                }
+            }
+            // Signing a checkpoint is deterministic and commits to nothing a
+            // restarted peer could contradict, so nothing is journaled.
+            WireMessage::CheckpointSignature { .. } => {}
+            message => {
+                let receipt = match append_message(&mut self.journal, message) {
+                    Ok(receipt) => receipt.expect("evidence messages are journaled"),
+                    Err(error) => {
+                        self.closed = true;
+                        return Err(error.into());
+                    }
+                };
+                self.persist(receipt)?;
+            }
         }
         let fragments = match self.sender.seal_fragments(frame, &self.identity) {
             Ok(fragments) => fragments,
@@ -392,21 +462,15 @@ impl LocalhostPeer {
         if datagram.starts_with(ACK_MAGIC) {
             return decode_ack(datagram, self.local_slot, &self.sender).map(ReceivedDatagram::Ack);
         }
-        let pending = self
-            .journal
-            .session()
-            .evidence()
-            .pending
-            .as_ref()
-            .map(|(set, _)| set);
         // At capacity, authenticate enough of the fragment to distinguish a
         // previously persisted replay from new evidence. The latter must not
         // advance the receiver floor or receive a durable-delivery ACK.
         let accept_new = self.queued.len() < MAX_QUEUED_FRAMES;
-        match self
-            .receiver
-            .open_fragment_or_replay_with_capacity(datagram, pending, accept_new)?
-        {
+        match self.receiver.open_fragment_or_replay_with_capacity(
+            datagram,
+            self.journal.session().evidence(),
+            accept_new,
+        )? {
             FragmentDelivery::Pending => Ok(ReceivedDatagram::Incomplete),
             FragmentDelivery::AcceptedReplay(sequence) => {
                 // The evidence was already persisted. An ACK write failure
@@ -416,16 +480,15 @@ impl LocalhostPeer {
             }
             FragmentDelivery::AtCapacity => Err(TransportError::InboxFull),
             FragmentDelivery::Frame(frame) => {
-                let receipt = match append_message(&mut self.journal, &frame.message) {
-                    Ok(receipt) => receipt,
+                match append_message(&mut self.journal, &frame.message) {
+                    Ok(Some(receipt)) => self.persist(receipt)?,
+                    // Pre-certification traffic is authenticated but not
+                    // evidence; a restarted peer collects it again.
+                    Ok(None) => {}
                     Err(error) => {
                         self.closed = true;
                         return Err(error.into());
                     }
-                };
-                if let Err(error) = self.receipts.persist(receipt) {
-                    self.closed = true;
-                    return Err(error);
                 }
                 // The frame is now durable and must be delivered to game code
                 // even if this non-authorizing UDP control packet cannot leave.
@@ -483,20 +546,21 @@ fn decode_ack(packet: &[u8], local_slot: usize, sender: &EncryptedSender) -> Res
 fn append_message(
     journal: &mut DurableSession,
     message: &WireMessage,
-) -> std::result::Result<Receipt, RecoveryError> {
+) -> std::result::Result<Option<Receipt>, RecoveryError> {
     match message {
         WireMessage::CommitmentCertificate { set, signatures } => {
-            journal.certify(set.clone(), signatures.clone())
+            journal.certify(set.clone(), signatures.clone()).map(Some)
         }
-        WireMessage::Reveal { reveal, .. } => journal.reveal(Reveal {
-            slot: reveal.slot,
-            inputs: reveal.inputs.clone(),
-            salt: reveal.salt,
-        }),
+        WireMessage::Reveal { reveal, .. } => journal.reveal(reveal.clone()).map(Some),
         WireMessage::Checkpoint {
             checkpoint,
             signatures,
-        } => journal.checkpoint(checkpoint.clone(), signatures.clone()),
+        } => journal
+            .checkpoint(checkpoint.clone(), signatures.clone())
+            .map(Some),
+        WireMessage::Commitment { .. }
+        | WireMessage::SetSignature { .. }
+        | WireMessage::CheckpointSignature { .. } => Ok(None),
     }
 }
 
@@ -560,7 +624,7 @@ mod tests {
     };
 
     use crate::{
-        protocol::{CommitmentSet, input_commitment, sign_commitment_set},
+        protocol::{CommitmentSet, NO_FRONTIERS, sign_commitment_set},
         simulation::{Config, FIRE, Input, Mode, Participant, World},
     };
 
@@ -679,6 +743,7 @@ mod tests {
             .iter()
             .enumerate()
             .map(|(slot, _)| Reveal {
+                start_tick: 0,
                 slot,
                 inputs: vec![Input::default(); 2],
                 salt: [slot as u8; 32],
@@ -687,21 +752,10 @@ mod tests {
         let set = CommitmentSet {
             epoch: 0,
             start_tick: 0,
-            parent: evidence.root,
+            parent: evidence.commitment_head,
             commitments: reveals
                 .iter()
-                .map(|reveal| {
-                    input_commitment(
-                        &evidence.context,
-                        0,
-                        0,
-                        evidence.root,
-                        reveal.slot,
-                        &reveal.inputs,
-                        reveal.salt,
-                    )
-                    .unwrap()
-                })
+                .map(|reveal| reveal.commitment(&evidence.context, 0).unwrap())
                 .collect(),
         };
         (set, reveals)
@@ -814,6 +868,7 @@ mod tests {
             assert_eq!(evidence.next_tick, batch * 2);
             let reveals = (0..2)
                 .map(|slot| Reveal {
+                    start_tick: evidence.certified_tick,
                     slot,
                     inputs: (0..2)
                         .map(|offset| {
@@ -831,21 +886,14 @@ mod tests {
                 .collect::<Vec<_>>();
             let set = CommitmentSet {
                 epoch: evidence.epoch,
-                start_tick: evidence.next_tick,
-                parent: evidence.root,
+                start_tick: evidence.certified_tick,
+                parent: evidence.commitment_head,
                 commitments: reveals
                     .iter()
                     .map(|reveal| {
-                        input_commitment(
-                            &evidence.context,
-                            evidence.epoch,
-                            evidence.next_tick,
-                            evidence.root,
-                            reveal.slot,
-                            &reveal.inputs,
-                            reveal.salt,
-                        )
-                        .unwrap()
+                        reveal
+                            .commitment(&evidence.context, evidence.epoch)
+                            .unwrap()
                     })
                     .collect(),
             };
@@ -944,6 +992,65 @@ mod tests {
             "accepted controls must fire the actual gun kernel"
         );
         assert!(reference.players.iter().all(|player| player.ammo < 24));
+    }
+
+    #[test]
+    fn commitments_and_set_signatures_leave_only_after_they_are_journaled() {
+        let (_root, mut initiator, mut responder, keys) = setup(2);
+        let (set, reveals) = frontier(&initiator, &keys);
+        let commitment = WireFrame {
+            sender: 0,
+            sequence: 0,
+            message: WireMessage::Commitment {
+                epoch: 0,
+                start_tick: 0,
+                commitment: set.commitments[0],
+            },
+        };
+        assert!(initiator.prepare(&commitment).is_err());
+        // Only this peer's own slot can be sealed through its transport.
+        assert!(initiator.seal(reveals[1].clone()).is_err());
+        assert!(initiator.prepare(&commitment).is_err());
+        assert_eq!(
+            initiator.seal(reveals[0].clone()).unwrap(),
+            set.commitments[0]
+        );
+        let sealed = initiator.journal().receipt();
+        let packet = initiator.prepare(&commitment).unwrap();
+        assert_eq!(initiator.journal().receipt(), sealed);
+        let before = responder.journal().receipt();
+        initiator.transmit(&packet).unwrap();
+        // Pre-certification traffic is authenticated but is not evidence.
+        assert_eq!(responder.receive().unwrap(), commitment);
+        assert_eq!(responder.journal().receipt(), before);
+
+        let context = initiator.journal().session().evidence().context.clone();
+        let unendorsed = WireFrame {
+            sender: 0,
+            sequence: 1,
+            message: WireMessage::SetSignature {
+                set: set.clone(),
+                signature: sign_commitment_set(&context, &set, 0, &keys[0]).unwrap(),
+            },
+        };
+        assert!(initiator.prepare(&unendorsed).is_err());
+        let signature = initiator.endorse(&set).unwrap();
+        assert_eq!(
+            initiator.journal().endorsed_digest(0),
+            Some(set.digest(&context).unwrap())
+        );
+        let endorsed = WireFrame {
+            sender: 0,
+            sequence: 1,
+            message: WireMessage::SetSignature {
+                set: set.clone(),
+                signature,
+            },
+        };
+        let packet = initiator.prepare(&endorsed).unwrap();
+        initiator.transmit(&packet).unwrap();
+        assert_eq!(responder.receive().unwrap(), endorsed);
+        assert_eq!(responder.journal().receipt(), before);
     }
 
     #[test]
@@ -1351,7 +1458,7 @@ mod tests {
         assert!(
             responder
                 .receiver
-                .open_fragment(&old_packet.fragments[0], None)
+                .open_fragment(&old_packet.fragments[0], NO_FRONTIERS)
                 .is_err()
         );
         let reveal = WireFrame {
