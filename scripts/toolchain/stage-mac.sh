@@ -49,10 +49,21 @@ fi
 "$UAT" BuildCookRun -project="$PROJECT" -platform=Mac \
   -clientconfig=Development -skipbuild -skipcook -stage -pak -package -archive \
   -archivedirectory="$ARCHIVE_DIRECTORY" -unattended -noP4
-APP_PLIST="$ARCHIVE_DIRECTORY/Mac/$(basename "$PROJECT" .uproject).app/Contents/Info.plist"
+# UAT archives into ARCHIVE_DIRECTORY/Mac unless a component of that path
+# already starts with the platform name (DeploymentContext.cs), as
+# Local/Packages/mac-wavec-baseline does; test-packaged-mac.sh applies the same rule.
+APP="$(python3 - "$ARCHIVE_DIRECTORY" "$(basename "$PROJECT" .uproject)" <<'PY'
+from pathlib import Path
+import sys
+archive, name = Path(sys.argv[1]), sys.argv[2]
+named = any(part.lower().startswith('mac') for part in archive.parts[1:])
+print((archive if named else archive / 'Mac') / f'{name}.app')
+PY
+)"
+APP_PLIST="$APP/Contents/Info.plist"
 ACTUAL_BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PLIST")"
 if [[ "$ACTUAL_BUNDLE_ID" != 'org.sora.soraarena' ]]; then
   echo "Packaged Mac bundle identifier mismatch: expected org.sora.soraarena, got $ACTUAL_BUNDLE_ID" >&2
   exit 1
 fi
-echo "Verified Mac bundle identifier: $ACTUAL_BUNDLE_ID"
+echo "Verified Mac bundle identifier: $ACTUAL_BUNDLE_ID; app: $APP"

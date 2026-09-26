@@ -156,6 +156,7 @@ scripts/toolchain/build-mac.sh Development
 scripts/toolchain/build-mac.sh Development Game
 scripts/toolchain/cook-mac.sh
 scripts/toolchain/stage-mac.sh /tmp/sora-arena-mac
+scripts/toolchain/test-packaged-mac.sh /tmp/sora-arena-mac
 scripts/toolchain/run-editor.sh
 ```
 
@@ -181,6 +182,61 @@ Japanese `Game.locmeta` and `ja/Game.locres`. The packaged
 UI and subtitle readability check remains open. That recovery was observed in
 the isolated interim worktree; it still has to be exercised from a release
 checkout under the pin.
+
+UAT archives the app into `ARCHIVE_DIRECTORY/Mac/` unless a component of that
+path already starts with `Mac` (case-insensitive, `DeploymentContext.cs`), in
+which case the app lands directly in `ARCHIVE_DIRECTORY`; `stage-mac.sh` and
+`test-packaged-mac.sh` both follow that rule.
+
+`scripts/toolchain/test-packaged-mac.sh ARCHIVE_DIRECTORY [Filter] [output]`
+tests the staged app without the editor. It checks the bundle identifier, a
+strict signature and the staged kernel, Connect bridge and data. It runs a
+`-NullRHI` startup smoke (default map with `SoraGameMode`, language `ja`, exit
+0) and then `Automation RunTests <Filter>` under `-RenderOffscreen`. It fails
+unless every test reports Success in Unreal's JSON report and no cooked
+material falls back to the default material for a missing usage flag. UE signs
+the app with the App Sandbox, so every launch gets an empty `-UserDir` inside
+`~/Library/Containers/org.sora.soraarena/Data/tmp/`, copied afterwards to
+`<output>/app-data`. The player's saves are never touched. A game lists only
+`ClientContext` tests; the four editor-only tests stay with
+`run-automation-mac.sh`.
+
+On 2026-09-26 the main checkout (source as of `d70c30b`, kernel
+`libarena_ffi.dylib` sha256 `1bd6e8fa…d494`) imported 279 packages, built the
+game (through the Xcode retry above) and cooked 918 packages with 0 errors and
+0 warnings. Staging into `Local/Packages/mac-wavec-baseline` produced a
+1.3 GiB signed app. Two consecutive full runs of the packaged test gave the same
+result. The startup smoke passed. The package found all 79 client-context
+tests, and **76 passed**, including `UIRendered.FrontEndScreens` and its 19
+screenshots, the 8-chapter `Campaign.Playthrough`, `Practice.FullMatches`,
+`KernelDeterminism` and both localization tests. **Three fail only in the
+package**, and all three pass in the editor at the same source:
+
+- `Input.StateGatedKeys`: the cooked game's `Block` action FName reads back as
+  `bLock`, because FNames are case-insensitive and keep their first-registered
+  spelling. `SoraInput::StatesFor` compares with case-sensitive
+  `FCString::Strcmp`, so it gives `Block` no states. The rebind dialog's
+  `FindConflict` makes the same lookup, so in the package it ignores the Block
+  mappings.
+- `Practice.MarksTextScoreboard`: the test reads the mon mesh's CPU vertex
+  positions. A cooked build discards them after upload
+  (`TResourceArray::Discard`), so the check fails under Metal, and under
+  `-NullRHI` the game thread crashed in that read (`KERN_INVALID_ADDRESS`).
+- `Boss.Tarifa`: the awase on `tether_lash` is counted as parried, but Tarifa
+  is not staggered ("The cable snaps"). It fails the same way under `-NullRHI`
+  and `-RenderOffscreen`; the cause is not yet found.
+
+The same runs show that eight cooked materials lack the `InstancedStaticMeshes`
+usage flag, so the practice arenas' instanced dressing draws with the default
+material in the package: `MI_Nyaagyu_Plaster`, `Stone`, `Timber`, `Kawara`,
+`Metal` and `TerrainStone`, `M_ArenaSurface`, and the engine's
+`EmissiveMeshMaterial`. Separately, 4 of the 24 package launches that day ended
+in a `SIGSEGV` at startup, before the first log line. In each crash the main
+thread was in AppKit's launch Apple-event handling and hit
+`FLLMTracker::PopTag` ("Called PopTag but PushTag was never called!") under
+`FMallocBinned3`. This is an intermittent engine-level startup crash of this
+Development package; the script fails such a launch and copies its `.ips`
+report.
 
 ## Finish Unreal and Xcode provisioning
 
