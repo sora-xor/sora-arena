@@ -15,7 +15,7 @@ import shutil
 import subprocess
 import tempfile
 
-from kernel_abi import Config, Participant, Input, Snapshot, Player, Presentation, Event, load_kernel
+from kernel_abi import ABI_VERSION, Config, Participant, Input, Snapshot, Player, Presentation, Event, load_kernel
 
 ROOT=Path(__file__).resolve().parents[2]
 system=platform.system()
@@ -53,7 +53,7 @@ shots=damage_events=respawns=0
 for map_id in range(4):
     for class_id in range(6):
         for weapon_slot in range(3):
-            config=Config(3,0,map_id,600,0,6,1)
+            config=Config(ABI_VERSION,0,map_id,600,0,6,1)
             people=roster(class_id,weapon_slot)
             a=lib.arena_create(ctypes.byref(config),people,6)
             b=lib.arena_create(ctypes.byref(config),people,6)
@@ -65,7 +65,7 @@ for map_id in range(4):
                     frame=controls(tick)
                     assert lib.arena_step(a,frame,6)==0 and lib.arena_step(b,frame,6)==0
                     state=Snapshot();assert lib.arena_snapshot(a,ctypes.byref(state))==0
-                    assert state.abi_version==3 and state.tick==tick+1 and state.deposited==state.remaining==state.earnings==0
+                    assert state.abi_version==ABI_VERSION and state.tick==tick+1 and state.deposited==state.remaining==state.earnings==0
                     for index in range(state.event_count):
                         event=Event();assert lib.arena_event(a,index,ctypes.byref(event))==0
                         assert event.tick==tick
@@ -86,18 +86,20 @@ for map_id in range(4):
             finally:
                 lib.arena_destroy(a);lib.arena_destroy(b)
 
-# Clear sightline on the east side of the estate: a stationary matchlock bot
-# eliminates slot zero, which must respawn without creating any economic value.
-death_config=Config(3,0,0,900,0,6,1);people=roster(0,1)
-people[4]=Participant(4,0,2,5,0,0,0)
+# Clear sightline along x = -18500 on the estate: the stationary slot 2 Teppo
+# (Coil matchlock) at FFA spawn 2 eliminates slot zero at FFA spawn 0, which
+# must respawn without creating any economic value. The parity fixture's
+# death case uses the same pair.
+death_config=Config(ABI_VERSION,0,0,900,0,6,1);people=roster(0,1)
 handle=lib.arena_create(ctypes.byref(death_config),people,6);assert handle
 death_count=respawn_count=0
 try:
     victim=Player();attacker=Player()
     assert lib.arena_player(handle,0,ctypes.byref(victim))==0
-    assert lib.arena_player(handle,4,ctypes.byref(attacker))==0
+    assert lib.arena_player(handle,2,ctypes.byref(attacker))==0
+    assert (attacker.class_id,attacker.weapon_id)==(2,5)
     yaw=round(math.atan2(victim.y-attacker.y,victim.x-attacker.x)*65536/(2*math.pi))&65535
-    frame=(Input*6)(*(Input(slot,1 if slot==4 else 0,0,0,yaw if slot==4 else 0,0) for slot in range(6)))
+    frame=(Input*6)(*(Input(slot,1 if slot==2 else 0,0,0,yaw if slot==2 else 0,0) for slot in range(6)))
     for tick in range(900):
         assert lib.arena_step(handle,frame,6)==0
         state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0
@@ -105,7 +107,7 @@ try:
         for index in range(state.event_count):
             event=Event();assert lib.arena_event(handle,index,ctypes.byref(event))==0
             if event.kind==3 and event.target_slot==0:
-                death_count+=1;assert event.actor_slot==4
+                death_count+=1;assert event.actor_slot==2
             if event.kind==4 and event.target_slot==0:respawn_count+=1
     assert death_count>0 and respawn_count>0,'Death/respawn event presentation path was not exercised'
 finally:lib.arena_destroy(handle)

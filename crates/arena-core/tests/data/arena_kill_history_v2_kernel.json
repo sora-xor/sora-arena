@@ -1,5 +1,5 @@
 {
-  "abi_version": 3,
+  "abi_version": 4,
   "batches": [
     {
       "controls_hex": [
@@ -335,7 +335,7 @@
     1080,
     900
   ],
-  "kernel_revision": "d0fdd86bbb9d1d90603a2a1673f43f1e43394c43ab7fbc29452111dbd57d8821",
+  "kernel_revision": "2ff15e2915a7e4f19dc8efad157afb99fcf4953373cb66a0f3e28e3da57ace44",
   "rules_version": "sora-arena-first-release-7",
   "schema": "sora-arena-kill-history-v2-kernel-parity-v1",
   "scope": "unregistered-unfunded-fixed-research-scene",

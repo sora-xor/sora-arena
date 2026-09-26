@@ -13,6 +13,7 @@ pub const MAX_ENTITIES: usize = 4 * MAX_PLAYERS;
 /// Ability cooldown ticks by class id (§6).
 pub const ABILITY_COOLDOWNS: [u16; 6] = [480, 600, 720, 720, 720, 900];
 const FORGE_HAMMER: u8 = 8;
+const DECOY_HEALTH: i32 = 60;
 const BARRICADE_HEALTH: i32 = 250;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,6 +29,15 @@ impl EntityKind {
         match self {
             Self::Barricade => 1800,
             Self::Decoy | Self::FireZone | Self::Ward => 300,
+        }
+    }
+    /// Spawn health, which repair never exceeds; 0 for kinds that cannot be
+    /// damaged.
+    pub const fn max_health(self) -> i32 {
+        match self {
+            Self::Decoy => DECOY_HEALTH,
+            Self::Barricade => BARRICADE_HEALTH,
+            Self::FireZone | Self::Ward => 0,
         }
     }
     /// Barricades stand 2000 mm, above the 1936 mm apex of a jump, so no
@@ -216,7 +226,14 @@ impl World {
             }
             1 => {
                 // Utsusemi: the decoy stays where the dash starts.
-                self.spawn_entity(slot, EntityKind::Decoy, position, 60, RADIUS, RADIUS);
+                self.spawn_entity(
+                    slot,
+                    EntityKind::Decoy,
+                    position,
+                    DECOY_HEALTH,
+                    RADIUS,
+                    RADIUS,
+                );
                 let to = position.offset(math::scale_q15(math::direction(yaw, 0), 2000));
                 self.players[slot].position = self.safe_motion(position, to);
             }
@@ -385,6 +402,7 @@ impl World {
         let entities = std::mem::take(&mut self.entities);
         for e in entities {
             if e.owner == owner && kind.is_none_or(|kind| kind == e.kind) {
+                self.removed_entities.push(e);
                 self.events.push(Event::EntityDestroyed {
                     id: e.id,
                     kind: e.kind,
@@ -413,6 +431,7 @@ impl World {
             }
             if e.age >= e.kind.lifetime() {
                 self.entities.remove(index);
+                self.removed_entities.push(e);
                 self.events.push(Event::EntityDestroyed {
                     id: e.id,
                     kind: e.kind,
@@ -531,6 +550,7 @@ impl World {
         for (id, by) in emptied {
             if let Ok(index) = self.entities.binary_search_by_key(&id, |e| e.id) {
                 let e = self.entities.remove(index);
+                self.removed_entities.push(e);
                 self.events.push(Event::EntityDestroyed {
                     id,
                     kind: e.kind,

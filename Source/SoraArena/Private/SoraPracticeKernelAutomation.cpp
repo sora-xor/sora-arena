@@ -1,6 +1,7 @@
 #include "ArenaKernelSubsystem.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
+#include "arena.h"
 #include "SoraAutomationWorld.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
@@ -17,8 +18,9 @@
 // Runs deterministic practice in two independent game worlds, each with its own
 // game instance and kernel handle. The same scripted player input goes through
 // the pawn's real input bindings and the GameMode's 60 Hz practice clock. Both
-// runs must produce identical kernel state hashes and presentation, and every
-// kill, death and respawn reported by events must match the kernel counters.
+// runs must produce identical kernel state hashes, presentation and ABI 4
+// event streams, and every kill, death and respawn reported by events must
+// match the kernel counters.
 namespace SoraPracticeKernel
 {
 constexpr int32 Ticks = 3600;
@@ -38,6 +40,7 @@ struct FRun
     int32 Respawns[Slots] = {};
     int32 UnattributedDeaths = 0;
     int32 PeakProjectiles = 0;
+    int32 Kinds[ARENA_EVENT_MATCH_WINNER + 1] = {};
 };
 
 struct FState
@@ -178,14 +181,30 @@ bool Record(FAutomationTestBase& Test, FState& State, FRun& Run)
     {
         const bool bActor = Event.Actor >= 0 && Event.Actor < Slots;
         const bool bTarget = Event.Target >= 0 && Event.Target < Slots;
-        const bool bKnown = (Event.Kind == 1 && bActor) || (Event.Kind == 2 && bTarget) ||
-            ((Event.Kind == 3 || Event.Kind == 4) && bTarget && (bActor || Event.Actor == INDEX_NONE));
+        const bool bNoActor = Event.Actor == INDEX_NONE;
+        const bool bEntity = Event.EntityId > 0 && Event.EntityKind >= ARENA_ENTITY_DECOY && Event.EntityKind <= ARENA_ENTITY_WARD;
+        bool bKnown = false;
+        switch (Event.Kind)
+        {
+        case ARENA_EVENT_SHOT: case ARENA_EVENT_ABILITY: bKnown = bActor; break;
+        case ARENA_EVENT_DAMAGE: case ARENA_EVENT_GUARDED: case ARENA_EVENT_HEALED:
+        case ARENA_EVENT_MARKED: case ARENA_EVENT_RIPOSTE: bKnown = bActor && bTarget; break;
+        case ARENA_EVENT_DEATH: case ARENA_EVENT_RESPAWN: bKnown = bTarget && (bActor || bNoActor); break;
+        case ARENA_EVENT_HAZARD_DAMAGE: bKnown = bTarget && bNoActor; break;
+        // Entity events name the owner as target and the causing player, if any, as actor.
+        case ARENA_EVENT_ENTITY_SPAWNED: case ARENA_EVENT_ENTITY_DAMAGED:
+        case ARENA_EVENT_ENTITY_REPAIRED: bKnown = bEntity && bTarget && bActor; break;
+        case ARENA_EVENT_ENTITY_DESTROYED: bKnown = bEntity && bTarget && (bActor || bNoActor); break;
+        // Free-for-all practice has no objective, and 3600 ticks never reach its clock limit.
+        default: break;
+        }
         if (!bKnown)
             return Fail(Test, State, FString::Printf(TEXT("Unexpected practice event kind %u actor %d target %d at tick %d"),
                 Event.Kind, Event.Actor, Event.Target, State.Tick));
-        if (Event.Kind == 1) ++Run.Shots[Event.Actor];
-        else if (Event.Kind == 2 && bActor) ++Run.Damage[Event.Actor];
-        else if (Event.Kind == 3)
+        ++Run.Kinds[Event.Kind];
+        if (Event.Kind == ARENA_EVENT_SHOT) ++Run.Shots[Event.Actor];
+        else if (Event.Kind == ARENA_EVENT_DAMAGE) ++Run.Damage[Event.Actor];
+        else if (Event.Kind == ARENA_EVENT_DEATH)
         {
             ++Run.Deaths[Event.Target];
             if (bActor)
@@ -196,7 +215,7 @@ bool Record(FAutomationTestBase& Test, FState& State, FRun& Run)
             }
             else ++Run.UnattributedDeaths;
         }
-        else if (Event.Kind == 4) ++Run.Respawns[Event.Target];
+        else if (Event.Kind == ARENA_EVENT_RESPAWN) ++Run.Respawns[Event.Target];
     }
     for (const FSoraPracticePlayer& Player : K->PracticePlayers)
         if (Player.Health < 0 || Player.Health > Player.MaxHealth || Player.Alive != (Player.Health > 0))
@@ -286,8 +305,16 @@ bool Compare(FAutomationTestBase& Test, FState& State)
             A.Shots[Slot] == B.Shots[Slot] && A.Damage[Slot] == B.Damage[Slot] && A.Deaths[Slot] == B.Deaths[Slot] &&
             A.Kills[Slot] == B.Kills[Slot] && A.Respawns[Slot] == B.Respawns[Slot]);
     }
+    FString Kinds;
+    for (int32 Kind = ARENA_EVENT_SHOT; Kind <= ARENA_EVENT_MATCH_WINNER; ++Kind)
+    {
+        bOk &= Test.TestEqual(*FString::Printf(TEXT("Both runs export the same number of kind %d events"), Kind), A.Kinds[Kind], B.Kinds[Kind]);
+        Kinds += FString::Printf(TEXT("%s%d:%d"), Kind == ARENA_EVENT_SHOT ? TEXT("") : TEXT(","), Kind, A.Kinds[Kind]);
+    }
+    // The scripted ability presses must surface as ABI 4 ability events.
+    bOk &= Test.TestTrue(TEXT("Practice exports ability events"), A.Kinds[ARENA_EVENT_ABILITY] > 0);
     if (bOk)
-        UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_KERNEL_OK: ticks=%d hashes=%d final_hash=%s"), Ticks, A.Hashes.Num(), *A.Hashes.Last());
+        UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_KERNEL_OK: ticks=%d hashes=%d final_hash=%s kinds=%s"), Ticks, A.Hashes.Num(), *A.Hashes.Last(), *Kinds);
     return bOk || Fail(Test, State, TEXT("Independent practice runs diverged"));
 }
 

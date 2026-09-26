@@ -13,7 +13,7 @@ from unittest.mock import Mock, patch
 import kernel_abi
 
 DIRECTORY=Path(__file__).resolve().parent
-FIXTURE=DIRECTORY/'fixtures/practice-abi3'
+FIXTURE=DIRECTORY/'fixtures/practice-abi4'
 
 class ParityRejectionTests(unittest.TestCase):
     def setUp(self):
@@ -62,6 +62,27 @@ class ParityRejectionTests(unittest.TestCase):
         self.manifest['cases'][0]['expected']['checkpoints'][0]['event_stream_sha256']='0'*64
         self.rejected('checkpoint mismatch at tick 60')
 
+    def test_expected_objective_and_economy_summary(self):
+        self.manifest['cases'][0]['expected']['economy']['earnings']=1
+        self.rejected('final digest mismatch')
+
+    def test_declared_ticks_must_match_the_controls(self):
+        self.manifest['cases'][0]['ticks']=599
+        self.rejected('control length does not match declared ticks/slots')
+
+    def test_practice_case_cannot_carry_funds(self):
+        self.manifest['cases'][0]['participants'][0]['bond']=1000
+        self.rejected('offline case must be zero-stake practice')
+
+    def test_staked_case_needs_exact_bonds(self):
+        case=next(case for case in self.manifest['cases'] if case['config']['offline']==0)
+        case['participants'][0]['bond']+=10
+        self.rejected('staked case must carry exact admission bonds')
+
+    def test_every_case_is_required(self):
+        del self.manifest['cases'][-1]
+        self.rejected('fixture must cover')
+
     def test_old_success_report_is_invalidated(self):
         self.report.write_text(json.dumps({'status':'pass','scope':'obsolete result'}))
         self.manifest['cases'][0]['expected']['checkpoints'][0]['state_hash']='0'*64
@@ -69,9 +90,9 @@ class ParityRejectionTests(unittest.TestCase):
 
     def test_stale_library_is_rejected_before_layout_queries(self):
         old_library=Mock()
-        old_library.arena_abi_version.return_value=2
+        old_library.arena_abi_version.return_value=3
         with patch.object(kernel_abi.ctypes,'CDLL',return_value=old_library):
-            with self.assertRaisesRegex(RuntimeError,'exactly ABI 3'):
+            with self.assertRaisesRegex(RuntimeError,'exactly ABI 4'):
                 kernel_abi.load_kernel('unused-fake-library')
         old_library.arena_create.assert_not_called()
         old_library.arena_player_presentation.assert_not_called()

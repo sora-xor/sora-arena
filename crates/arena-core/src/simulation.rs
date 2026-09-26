@@ -221,7 +221,7 @@ pub enum Event {
     Terminal,
     /// A frontal stance negation, parry or guard applied, emitted before any
     /// `Damage` for the same hit. A halved one-point hit prevents nothing but
-    /// still spent guard stamina. Internal until ABI 4.
+    /// still spent guard stamina.
     Guarded {
         attacker: usize,
         victim: usize,
@@ -230,7 +230,7 @@ pub enum Event {
         prevented: i32,
     },
     /// Health actually restored (`amount > 0`): Healing lance shots carry the
-    /// lance id, class abilities `None`. Internal until ABI 4.
+    /// lance id, class abilities `None`.
     Healed {
         healer: usize,
         target: usize,
@@ -238,7 +238,6 @@ pub enum Event {
         weapon: Option<u8>,
     },
     /// An ability activated and started its cooldown. Its own events follow.
-    /// Internal until ABI 4, like every variant below.
     AbilityUsed {
         slot: usize,
         class: u8,
@@ -308,6 +307,10 @@ pub struct World {
     pub projectiles: Vec<Projectile>,
     /// Live ability entities in ascending id order (§5.1).
     pub entities: Vec<Entity>,
+    /// Entities removed during the last step, in `EntityDestroyed` order.
+    /// Presentation only, like `events`: replaced every step and not part of
+    /// the state hash.
+    pub removed_entities: Vec<Entity>,
     /// The next entity id. Ids start at 1 and are never reused.
     pub next_entity_id: u32,
     pub damage_history: Vec<DamageRecord>,
@@ -435,6 +438,7 @@ impl World {
             accounts,
             projectiles: Vec::new(),
             entities: Vec::new(),
+            removed_entities: Vec::new(),
             next_entity_id: 1,
             damage_history: Vec::new(),
             events: Vec::new(),
@@ -599,6 +603,7 @@ impl World {
             i.validate()?;
         }
         self.events.clear();
+        self.removed_entities.clear();
         for (slot, &input) in inputs.iter().enumerate() {
             if !self.players[slot].alive {
                 if self.exhausted(slot) {

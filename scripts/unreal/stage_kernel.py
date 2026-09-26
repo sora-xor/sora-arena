@@ -17,7 +17,7 @@ host='Mac' if platform.system()=='Darwin' else 'Win64' if platform.system()=='Wi
 if args.platform!=host: raise SystemExit('Stage on the target platform so ABI and execution can be verified before copying.')
 source_bytes=source.read_bytes()
 source_hash=hashlib.sha256(source_bytes).digest()
-from kernel_abi import Config, Participant, Input, Snapshot, Player, MapInfo, MapWall, Presentation, Weapon, Event, Projectile, load_kernel
+from kernel_abi import ABI_VERSION, NONE, LOADOUT, Config, Participant, Input, Snapshot, Player, MapInfo, MapWall, MapPoint, MapHazard, Presentation, Weapon, Event, Projectile, Entity, Objective, load_kernel
 lib=load_kernel(source)
 for map_id in range(4):
     info=MapInfo();assert lib.arena_map_info(map_id,ctypes.byref(info))==0
@@ -26,24 +26,39 @@ for map_id in range(4):
     for index in range(info.wall_count):
         wall=MapWall();assert lib.arena_map_wall(map_id,index,ctypes.byref(wall))==0
         assert wall.min_x<wall.max_x and wall.min_y<wall.max_y and wall.min_z<wall.max_z
+    assert info.min_x<info.control_x<info.max_x and info.min_y<info.control_y<info.max_y and info.control_radius>0
+    assert 0<info.checkpoint_0<info.checkpoint_1<info.checkpoint_2<info.route_length and info.push_radius>0
+    route=[]
+    for index in range(info.route_point_count):
+        point=MapPoint();assert lib.arena_map_route_point(map_id,index,ctypes.byref(point))==0
+        assert info.min_x<point.x<info.max_x and info.min_y<point.y<info.max_y;route.append((point.x,point.y))
+    assert len(route)>=2 and sum(abs(b[0]-a[0])+abs(b[1]-a[1]) for a,b in zip(route,route[1:]))==info.route_length
+    assert lib.arena_map_route_point(map_id,info.route_point_count,ctypes.byref(MapPoint()))!=0
+    for index in range(info.hazard_count):
+        hazard=MapHazard();assert lib.arena_map_hazard(map_id,index,ctypes.byref(hazard))==0
+        assert 1<=hazard.kind<=3 and hazard.damage>0 and hazard.period>0 and hazard.min_z==0<hazard.max_z
+    assert lib.arena_map_hazard(map_id,info.hazard_count,ctypes.byref(MapHazard()))!=0
 assert lib.arena_map_info(4,ctypes.byref(MapInfo()))!=0
 for weapon_id in range(18):
     spec=Weapon();assert lib.arena_weapon_spec(weapon_id,ctypes.byref(spec))==0
     assert spec.id==weapon_id and spec.kind<=2 and spec.range_mm>0 and spec.cooldown_ticks>0
     assert (spec.magazine==0)==(spec.kind==0) and (spec.reload_ticks==0)==(spec.kind==0)
-config=Config(3,0,0,60,0,1,1);participant=Participant(0,0,0,1,0,0,0)
+config=Config(ABI_VERSION,0,0,60,0,1,1);participant=Participant(0,0,0,1,0,0,0)
 handle=lib.arena_create(ctypes.byref(config),ctypes.byref(participant),1)
 assert handle,'The actual kernel rejected the offline diagnostic session'
 try:
     controls=Input(0,0,32,0,0,0)
     for tick in range(60): assert lib.arena_step(handle,ctypes.byref(controls),1)==0,f'Kernel failed at tick {tick}'
     state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0
-    assert state.abi_version==3 and state.tick==60 and state.player_count==1
+    assert state.abi_version==ABI_VERSION and state.tick==60 and state.player_count==1
     assert state.deposited==state.remaining==state.earnings==0,'Offline diagnostic moved simulated stake'
     digest=(ctypes.c_uint8*32)();assert lib.arena_state_hash(handle,digest,32)==0
-    print(f'Actual kernel: ABI 3, {state.tick} offline ticks, proof_qualified={bool(lib.arena_proof_qualified())}, state_hash={bytes(digest).hex()}')
+    # An out-of-domain loadout request rejects the whole step atomically.
+    before=bytes(digest);assert lib.arena_step(handle,ctypes.byref(Input(0,LOADOUT,6,0,0,0)),1)==2
+    assert lib.arena_state_hash(handle,digest,32)==0 and bytes(digest)==before
+    print(f'Actual kernel: ABI {ABI_VERSION}, {state.tick} offline ticks, proof_qualified={bool(lib.arena_proof_qualified())}, state_hash={bytes(digest).hex()}')
 finally: lib.arena_destroy(handle)
-projectile_config=Config(3,0,0,60,0,1,1)
+projectile_config=Config(ABI_VERSION,0,0,60,0,1,1)
 grenadier=Participant(0,0,3,7,0,0,0)
 handle=lib.arena_create(ctypes.byref(projectile_config),ctypes.byref(grenadier),1)
 assert handle,'Reference projectile practice admission failed'
@@ -59,7 +74,7 @@ try:
     assert (visual.ammo,visual.magazine,visual.reload_ticks)==(4,5,0)
     assert (visual.charge_ticks_current,visual.charge_ticks_required)==(0,0)
     event=Event();assert lib.arena_event(handle,0,ctypes.byref(event))==0
-    assert (event.tick,event.kind,event.actor_slot,event.weapon_id)==(0,1,0,7)
+    assert (event.tick,event.kind,event.actor_slot,event.target_slot,event.weapon_id,event.entity_id)==(0,1,0,NONE,7,0)
     count=ctypes.c_uint32();assert lib.arena_projectile_count(handle,ctypes.byref(count))==0 and count.value==1
     projectile=Projectile();assert lib.arena_projectile(handle,0,ctypes.byref(projectile))==0
     assert (projectile.id,projectile.owner_slot,projectile.weapon_id)==(0,0,7)
@@ -69,7 +84,29 @@ try:
     shot.buttons=32;assert lib.arena_step(handle,ctypes.byref(shot),1)==0
     assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
     assert (visual.ammo,visual.magazine,visual.reload_ticks)==(4,5,144)
-    print('Practice ABI verified: 4 reference maps, 18 weapons, player presentation, current-tick events and stable projectile IDs.')
+    print('Practice ABI verified: 4 reference maps with objectives and hazards, 18 weapons, player presentation, current-tick events and stable projectile IDs.')
+finally: lib.arena_destroy(handle)
+# A Karakuri barricade in a two-player Control match: the ability and entity
+# events, the entity query and the locked objective snapshot.
+control=Config(ABI_VERSION,1,0,60,0,2,1)
+pair=(Participant*2)(Participant(0,0,4,9,0,0,0),Participant(1,1,0,1,0,0,0))
+handle=lib.arena_create(ctypes.byref(control),pair,2)
+assert handle,'Control practice admission failed'
+try:
+    frame=(Input*2)(Input(0,16,0,0,0,0),Input(1,0,0,0,32768,0))
+    assert lib.arena_step(handle,frame,2)==0
+    state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0
+    kinds=[]
+    for index in range(state.event_count):
+        event=Event();assert lib.arena_event(handle,index,ctypes.byref(event))==0;kinds.append(event.kind)
+    assert kinds==[8,11],kinds
+    count=ctypes.c_uint32();assert lib.arena_entity_count(handle,ctypes.byref(count))==0 and count.value==1
+    entity=Entity();assert lib.arena_entity(handle,0,ctypes.byref(entity))==0
+    assert (entity.id,entity.kind,entity.owner_slot,entity.health,entity.max_health,entity.age,entity.lifetime)==(1,2,0,250,250,1,1800)
+    visual=Presentation();assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
+    assert (visual.ability_cooldown_ticks,visual.ability_cooldown_total,visual.pending_class,visual.admitted_special)==(720,720,NONE,NONE)
+    objective=Objective();assert lib.arena_objective(handle,ctypes.byref(objective))==0
+    assert (objective.mode,objective.unlock_tick,objective.control_owner,objective.control_capture,objective.score_target,objective.winner_kind)==(1,600,NONE,480,10800,0)
 finally: lib.arena_destroy(handle)
 kanabo=Participant(0,0,3,6,0,0,0)
 handle=lib.arena_create(ctypes.byref(projectile_config),ctypes.byref(kanabo),1)

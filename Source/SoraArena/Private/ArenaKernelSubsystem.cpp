@@ -3,9 +3,12 @@
 #include "Misc/Paths.h"
 #include "arena.h"
 
-static_assert(sizeof(ArenaPlayerPresentation)==44,"Unexpected ABI 3 player presentation layout");
-static_assert(offsetof(ArenaPlayerPresentation,charge_ticks_current)==36,"Unexpected ABI 3 charge offset");
-static_assert(sizeof(ArenaWeaponSpec)==48,"Unexpected ABI 3 weapon layout");
+static_assert(ARENA_ABI_VERSION==4,"This loader is written against kernel ABI 4");
+static_assert(sizeof(ArenaPlayerPresentation)==72,"Unexpected ABI 4 player presentation layout");
+static_assert(offsetof(ArenaPlayerPresentation,charge_ticks_current)==36,"Unexpected ABI 4 charge offset");
+static_assert(sizeof(ArenaWeaponSpec)==48,"Unexpected ABI 4 weapon layout");
+static_assert(sizeof(ArenaEvent)==48&&offsetof(ArenaEvent,detail)==44,"Unexpected ABI 4 event layout");
+static_assert(sizeof(ArenaMapInfo)==76&&sizeof(ArenaEntitySnapshot)==60&&sizeof(ArenaObjectiveSnapshot)==96,"Unexpected ABI 4 query layout");
 
 struct FKernelRuntime
 {
@@ -24,12 +27,17 @@ struct FKernelRuntime
     decltype(&arena_event) Event = nullptr;
     decltype(&arena_projectile_count) ProjectileCount = nullptr;
     decltype(&arena_projectile) Projectile = nullptr;
+    decltype(&arena_map_route_point) MapRoutePoint = nullptr;
+    decltype(&arena_map_hazard) MapHazard = nullptr;
+    decltype(&arena_entity_count) EntityCount = nullptr;
+    decltype(&arena_entity) Entity = nullptr;
+    decltype(&arena_objective) Objective = nullptr;
     ArenaHandle* Practice = nullptr;
     TArray<TArray<FVector>> Routes;
 };
 namespace
 {
-constexpr uint32 ExpectedKernelAbi = 3;
+constexpr uint32 ExpectedKernelAbi = ARENA_ABI_VERSION;
 FVector Millimeters(int32 X,int32 Y,int32 Z) { return FVector(X/10.0,Y/10.0,Z/10.0); }
 uint16 CanonicalYaw(float Yaw) { return static_cast<uint16>(FMath::RoundToInt(FRotator::ClampAxis(Yaw)*65536.f/360.f)&65535); }
 int16 CanonicalPitch(float Pitch) { return static_cast<int16>(FMath::Clamp(FMath::RoundToInt(Pitch*16384.f/90.f),-16384,16384)); }
@@ -100,9 +108,13 @@ void UArenaKernelSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     LOAD_KERNEL(MapInfo,arena_map_info); LOAD_KERNEL(MapWall,arena_map_wall); LOAD_KERNEL(Presentation,arena_player_presentation);
     LOAD_KERNEL(WeaponSpec,arena_weapon_spec); LOAD_KERNEL(Event,arena_event);
     LOAD_KERNEL(ProjectileCount,arena_projectile_count); LOAD_KERNEL(Projectile,arena_projectile);
+    LOAD_KERNEL(MapRoutePoint,arena_map_route_point); LOAD_KERNEL(MapHazard,arena_map_hazard);
+    LOAD_KERNEL(EntityCount,arena_entity_count); LOAD_KERNEL(Entity,arena_entity); LOAD_KERNEL(Objective,arena_objective);
 #undef LOAD_KERNEL
     const auto& R=*Runtime;
-    if(!R.Abi||!R.Qualified||!R.Create||!R.Destroy||!R.Step||!R.Snapshot||!R.Player||!R.Hash||!R.MapInfo||!R.MapWall||!R.Presentation||!R.WeaponSpec||!R.Event||!R.ProjectileCount||!R.Projectile||R.Abi()!=ExpectedKernelAbi)
+    // Every ABI 4 export must resolve before the version call; a stale library fails here.
+    if(!R.Abi||!R.Qualified||!R.Create||!R.Destroy||!R.Step||!R.Snapshot||!R.Player||!R.Hash||!R.MapInfo||!R.MapWall||!R.Presentation||!R.WeaponSpec||!R.Event||!R.ProjectileCount||!R.Projectile
+        ||!R.MapRoutePoint||!R.MapHazard||!R.EntityCount||!R.Entity||!R.Objective||R.Abi()!=ExpectedKernelAbi)
     { StatusText=TEXT("戦闘カーネルの ABI 検証に失敗しました。現在のソースから再ビルドしてください。"); return; }
     AbiVersion=R.Abi(); ProofQualified=R.Qualified()!=0;
     ArenaConfig Config{}; Config.abi_version=AbiVersion; Config.mode=0; Config.map_id=0; Config.max_ticks=60; Config.player_count=1; Config.offline=1;
@@ -229,8 +241,9 @@ bool UArenaKernelSubsystem::RefreshPractice()
         if(Runtime->Event(Runtime->Practice,I,&E)!=0) { PracticeError=TEXT("稽古の出来事を読み込めません。"); return false; }
         FSoraPracticeEvent Event; Event.Kind=E.kind; Event.Actor=E.actor_slot==UINT32_MAX?INDEX_NONE:static_cast<int32>(E.actor_slot);
         Event.Target=E.target_slot==UINT32_MAX?INDEX_NONE:static_cast<int32>(E.target_slot); Event.WeaponId=E.weapon_id==UINT32_MAX?INDEX_NONE:static_cast<int32>(E.weapon_id);
-        Event.Value=E.value; Event.From=Millimeters(E.x,E.y,E.z); Event.To=Event.From;
-        if(E.kind==1&&PracticePlayers.IsValidIndex(Event.Actor))
+        Event.Value=E.value; Event.EntityId=E.entity_id; Event.EntityKind=E.entity_kind; Event.Detail=E.detail;
+        Event.From=Millimeters(E.x,E.y,E.z); Event.To=Event.From;
+        if(E.kind==ARENA_EVENT_SHOT&&PracticePlayers.IsValidIndex(Event.Actor))
         {
             ArenaWeaponSpec Spec{};
             if(Runtime->WeaponSpec(E.weapon_id,&Spec)!=0) { PracticeError=TEXT("射撃の参照データを読み込めません。"); return false; }

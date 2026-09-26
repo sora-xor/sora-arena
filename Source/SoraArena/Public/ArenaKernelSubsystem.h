@@ -30,11 +30,14 @@ struct FSoraPracticeMap
     float PlayerRadius = 34.f, PlayerHalfHeight = 88.f, EyeHeight = 140.f;
     TArray<FSoraPracticeWall> Walls;
 };
+/** One kernel ABI 4 event (arena.h ARENA_EVENT_*). Entity events carry the
+ *  entity id and kind; Detail is the kind-specific code documented there. */
 struct FSoraPracticeEvent
 {
     uint32 Kind = 0;
     int32 Actor = INDEX_NONE, Target = INDEX_NONE, WeaponId = 0, Value = 0;
     uint32 WeaponKind = 0;
+    uint32 EntityId = 0, EntityKind = 0, Detail = 0;
     FVector From = FVector::ZeroVector, To = FVector::ZeroVector;
 };
 struct FSoraPracticeProjectile
