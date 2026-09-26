@@ -50,8 +50,9 @@ what was actually run; everything not listed as run is unverified.
   health and timing, archetype windups (+30% Easy, -15% Hard) and a stealth
   zone's vigilance and answer to detection (a fight on Easy); the auto-steer
   setting turns on a ride's auto-steer; subtitle size and speaker names shape
-  the dialogue panel. 369 interface strings are `NSLOCTEXT` compiled into
-  Japanese and English `Game.locres`.
+  the dialogue panel. 375 interface strings (369 at the merge, six result
+  headlines since) are `NSLOCTEXT` compiled into Japanese and English
+  `Game.locres`.
 - **Deterministic practice (practice lane).** ABI 4 exports every kernel event
   and 21 functions, including `arena_bot_input`: deterministic Rust bots
   (`crates/arena-bots`) in four tiers. The practice lobby's six choices (mode,
@@ -72,7 +73,7 @@ what was actually run; everything not listed as run is unverified.
 - **Wiring done at the merge.** Wave members, stealth guards (on their patrol
   routes), rival duels and bosses are the AI lane's opponents; debt-bound
   conscripts fight beside their wave without counting toward it, and with
-  `seal_cut` learned Interact held beside a knocked-down one cuts its seal; a
+  `seal_cut` in play Interact held beside a knocked-down one cuts its seal; a
   stealth beat opens the stealth zone and its detection, alarm and found
   bodies reach the beat; `validate_campaign.py` requires every wave and guard
   type to be an `enemies.json` archetype and every boss and rival duel to be
@@ -151,6 +152,75 @@ what was actually run; everything not listed as run is unverified.
 - Real wallet pairing, the Iroha `ArenaV1` relation, proofs, settlement,
   marketplace and any staked play remain unimplemented or unqualified;
   funding and trading stay disabled.
+
+**Post-merge review fixes (2026-09-26)**
+
+A review of the merged tree found these faults in the wiring; each is fixed
+with a regression test:
+
+- Opponents left behind: `ClearOpponents` destroyed only living opponents, so
+  a knocked-down conscript outlived its beat, checkpoint reload, chapter
+  change or practice start and rose untracked 8 s later, and guards' bodies
+  piled up on every reload. Every opponent an encounter put on the field now
+  leaves with it (a falling wave opponent after its 2 s lifespan, which
+  `OnDefeated` now sets before telling the campaign).
+  `Integration.OpponentsLeave`.
+- A beat refused what it teaches: mechanics and weapons were usable only
+  after the beat that unlocks them completed, so ch03.b03 had no rear
+  takedowns or seal cut and ch02.b03 refused the yari its prompt hands over.
+  `SoraBeatRules::InPlayWeapons` and `InPlayMechanics` put a required beat's
+  own unlocks in play while it runs (a grant for a skipped cache still
+  arrives at completion); the save and checkpoints are unchanged. Host-tested
+  in `test_campaign_progression.py`; `Integration.TaughtInBeat` and
+  `CampaignPrompts`; the playthrough now takes each arm up in the beat that
+  hands it over.
+- Guarded work had no guards: ch03.b05, ch05.b03 and ch06.b08 opened a
+  stealth zone but their authored patrols were dropped and their waves
+  hunted the hero. `build_campaign_data.py` now posts the patrolling wave
+  members and `x_guards` of a production task under guard as its guards;
+  `validate_campaign.py` requires every stealth zone and guarded task to post
+  exactly those and no other beat to post any. The sticky "hero seen" flag is
+  gone: a hold or escort pauses only while `USoraStealth::IsWorkPaused`.
+  `Integration.GuardedWork`.
+- HUD prompts printed raw tokens and named controls with no binding. Every
+  prompt now names keys only as `{Action}` tokens for `DefaultInput.ini`
+  actions (45 prompts rewritten in the chapter scripts, with press or hold as
+  the runtime counts it), `SoraHUDPanels::KeyPrompt` shows the player's own
+  keys, and `validate_campaign.py` refuses any other token or bracketed
+  control. `Integration.CampaignPrompts`.
+- The result headline was Japanese only and called the dojo a liberated
+  district; it is now bilingual `NSLOCTEXT` with its own dojo, arena and
+  practice headlines. `Integration.CampaignPrompts`.
+- The pupil's windup and the enemies' ring, beam and net strike flashes kept
+  fixed colours; they now follow the telegraph palette
+  (`SoraAccessibility::StrikeColor`). `Integration.TelegraphDraws`.
+- The combat trace had lost the hero's carbine: a fifth fight (ch05.b10)
+  checks hitscan rounds that land and kill, a reload and invader fire landing
+  on the hero, and the retainer fight again requires exactly two kills.
+- `validate_campaign.py`'s guard-type mutation now reaches the guard check
+  (each new rule was confirmed to fail its own mutation when removed), and
+  the dead `GuardPatrol` map is gone; the playthrough checks a fallen guard
+  against its own brain.
+
+Run after the fixes: all twelve host checks above pass (`validate_campaign.py`
+now rejects 41 mutations, localization 375 keys); `run-automation-mac.sh
+SoraArena` passed all 82 tests (`Practice.FullMatches` in 163 s; the
+playthrough again 125 beats, 120 checkpoints read, 61 and 13 reloads in 76
+worlds); `cargo fmt --all --check` and `cargo clippy --workspace --all-targets
+--locked -- -D warnings` pass, and `cargo test --workspace --locked
+--no-fail-fast` passed 255 tests with 5 ignored and none failed (the P2P
+timing tests included, on this run); `stage_kernel.py --platform Mac` staged
+the unchanged library (SHA-256 `1bd6e8fa…`), `verify_parity.py` passed its 94
+cases / 99,043 ticks and `test_parity_guards.py` its 17 tests.
+
+Still open from the review: prompts for mechanics the runtime lacks (the
+escort signal, tsubute throws, swimming, climbing, lamp snuffing, the
+kusarigama snare) no longer name a key but still describe them; the campaign
+hero reaches only his class slots (katana, arc carbine, monofilament
+naginata) and the yumi, yari and naginata, so later unlocks such as the
+kusarigama and coil matchlock have no key; a guarded carry answers a
+detection with a fight rather than pausing; guards walk the space's derived
+patrol loops, not the chapters' authored routes and detection numbers.
 
 ## Milestones and current evidence
 
