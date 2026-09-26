@@ -17,7 +17,7 @@ host='Mac' if platform.system()=='Darwin' else 'Win64' if platform.system()=='Wi
 if args.platform!=host: raise SystemExit('Stage on the target platform so ABI and execution can be verified before copying.')
 source_bytes=source.read_bytes()
 source_hash=hashlib.sha256(source_bytes).digest()
-from kernel_abi import ABI_VERSION, NONE, LOADOUT, Config, Participant, Input, Snapshot, Player, MapInfo, MapWall, MapPoint, MapHazard, Presentation, Weapon, Event, Projectile, Entity, Objective, load_kernel
+from kernel_abi import ABI_VERSION, NONE, LOADOUT, BOT_EASY, BOT_NORMAL, BOT_HARD, Config, Participant, Input, Snapshot, Player, MapInfo, MapWall, MapPoint, MapHazard, Presentation, Weapon, Event, Projectile, Entity, Objective, load_kernel
 lib=load_kernel(source)
 for map_id in range(4):
     info=MapInfo();assert lib.arena_map_info(map_id,ctypes.byref(info))==0
@@ -137,6 +137,38 @@ try:
     assert lib.arena_player_presentation(handle,0,ctypes.byref(visual))==0
     assert (visual.charge_ticks_current,visual.charge_ticks_required)==(1,15)
     state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0 and state.event_count==0
+finally: lib.arena_destroy(handle)
+# Practice bots drive every slot of a six-player minute: each plans once per
+# tick, the kernel accepts every input, nothing is ever bonded, and bots refuse
+# staked matches and finished ones.
+practice=Config(ABI_VERSION,0,2,3600,0,6,1)
+six=(Participant*6)(*(Participant(slot,slot%2,slot,2*slot+1,0,0,0) for slot in range(6)))
+handle=lib.arena_create(ctypes.byref(practice),six,6)
+assert handle,'Bot practice admission failed'
+try:
+    tiers=(BOT_HARD,BOT_NORMAL,BOT_EASY,BOT_NORMAL,BOT_HARD,BOT_EASY)
+    shots=0
+    for tick in range(3600):
+        frame=(Input*6)()
+        for slot,tier in enumerate(tiers):
+            assert lib.arena_bot_input(handle,slot,tier,ctypes.byref(frame[slot]))==0,f'bot {slot} tick {tick}'
+            again=Input();assert lib.arena_bot_input(handle,slot,tier,ctypes.byref(again))==0
+            assert bytes(again)==bytes(frame[slot]),'A bot must plan once per tick'
+        assert lib.arena_step(handle,frame,6)==0,f'Kernel rejected bot inputs at tick {tick}'
+        state=Snapshot();assert lib.arena_snapshot(handle,ctypes.byref(state))==0
+        assert (state.deposited,state.remaining,state.earnings)==(0,0,0)
+        for index in range(state.event_count):
+            event=Event();assert lib.arena_event(handle,index,ctypes.byref(event))==0;shots+=event.kind==1
+    assert state.terminal==1 and shots>100,(state.terminal,shots)
+    assert lib.arena_bot_input(handle,0,BOT_NORMAL,ctypes.byref(Input()))==2,'Bots must stop at the terminal tick'
+    assert lib.arena_bot_input(handle,0,3,ctypes.byref(Input()))==1
+    print(f'Practice bots verified: six bots, three tiers, {state.tick} ticks, {shots} shots, zero stake.')
+finally: lib.arena_destroy(handle)
+staked=Config(ABI_VERSION,0,0,60,1000,2,0)
+bonded=(Participant*2)(Participant(0,0,0,1,1000,0,0),Participant(1,1,1,3,1000,0,0))
+handle=lib.arena_create(ctypes.byref(staked),bonded,2)
+assert handle,'Staked diagnostic admission failed'
+try: assert lib.arena_bot_input(handle,0,BOT_NORMAL,ctypes.byref(Input()))==1,'Bots must refuse a staked match'
 finally: lib.arena_destroy(handle)
 if hashlib.sha256(source.read_bytes()).digest()!=source_hash:
     raise SystemExit('The kernel changed while it was being validated. Finish the build, then stage it again.')

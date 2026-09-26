@@ -32,59 +32,13 @@ struct FKernelRuntime
     decltype(&arena_entity_count) EntityCount = nullptr;
     decltype(&arena_entity) Entity = nullptr;
     decltype(&arena_objective) Objective = nullptr;
+    decltype(&arena_bot_input) BotInput = nullptr;
     ArenaHandle* Practice = nullptr;
-    TArray<TArray<FVector>> Routes;
 };
 namespace
 {
 constexpr uint32 ExpectedKernelAbi = ARENA_ABI_VERSION;
 FVector Millimeters(int32 X,int32 Y,int32 Z) { return FVector(X/10.0,Y/10.0,Z/10.0); }
-uint16 CanonicalYaw(float Yaw) { return static_cast<uint16>(FMath::RoundToInt(FRotator::ClampAxis(Yaw)*65536.f/360.f)&65535); }
-int16 CanonicalPitch(float Pitch) { return static_cast<int16>(FMath::Clamp(FMath::RoundToInt(Pitch*16384.f/90.f),-16384,16384)); }
-bool ClearRoute(const FSoraPracticeMap& Map,FVector A,FVector B,float Margin)
-{
-    A.Z=B.Z=Map.EyeHeight;
-    for(const auto& Wall:Map.Walls)
-    {
-        const FBox Bounds(Wall.Minimum-FVector(Margin,Margin,0),Wall.Maximum+FVector(Margin,Margin,0));
-        if(FMath::LineBoxIntersection(Bounds,A,B,B-A)) return false;
-    }
-    return true;
-}
-// Small visibility graph around the reference obstacles. It proposes inputs only;
-// the Rust collision solver remains the sole authority over actual movement.
-TArray<FVector> Route(const FSoraPracticeMap& Map,FVector Start,FVector End)
-{
-    const float Margin=Map.PlayerRadius+12.f;
-    TArray<FVector> Points{Start,End};
-    for(const auto& Wall:Map.Walls)
-        for(int32 X:{-1,1}) for(int32 Y:{-1,1})
-        {
-            FVector P(X<0?Wall.Minimum.X-Margin:Wall.Maximum.X+Margin,Y<0?Wall.Minimum.Y-Margin:Wall.Maximum.Y+Margin,0);
-            if(P.X>Map.Minimum.X+Margin&&P.X<Map.Maximum.X-Margin&&P.Y>Map.Minimum.Y+Margin&&P.Y<Map.Maximum.Y-Margin) Points.Add(P);
-        }
-    TArray<float> Dist; Dist.Init(TNumericLimits<float>::Max(),Points.Num()); Dist[0]=0;
-    TArray<int32> Previous; Previous.Init(INDEX_NONE,Points.Num()); TSet<int32> Visited;
-    for(int32 Count=0;Count<Points.Num();++Count)
-    {
-        int32 Best=INDEX_NONE;
-        for(int32 I=0;I<Points.Num();++I) if(!Visited.Contains(I)&&(Best==INDEX_NONE||Dist[I]<Dist[Best])) Best=I;
-        if(Best==INDEX_NONE||Dist[Best]==TNumericLimits<float>::Max()||Best==1) break;
-        Visited.Add(Best);
-        for(int32 I=0;I<Points.Num();++I)
-        {
-            if(I==Best||Visited.Contains(I)||!ClearRoute(Map,Points[Best],Points[I],Map.PlayerRadius+2.f)) continue;
-            const float Cost=Dist[Best]+FVector::Dist2D(Points[Best],Points[I]);
-            if(Cost<Dist[I]) { Dist[I]=Cost; Previous[I]=Best; }
-        }
-    }
-    TArray<FVector> Result;
-    if(Previous[1]!=INDEX_NONE)
-    {
-        for(int32 I=1;I!=0&&I!=INDEX_NONE;I=Previous[I]) Result.Insert(Points[I],0);
-    }
-    return Result;
-}
 }
 void UArenaKernelSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -110,11 +64,12 @@ void UArenaKernelSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     LOAD_KERNEL(ProjectileCount,arena_projectile_count); LOAD_KERNEL(Projectile,arena_projectile);
     LOAD_KERNEL(MapRoutePoint,arena_map_route_point); LOAD_KERNEL(MapHazard,arena_map_hazard);
     LOAD_KERNEL(EntityCount,arena_entity_count); LOAD_KERNEL(Entity,arena_entity); LOAD_KERNEL(Objective,arena_objective);
+    LOAD_KERNEL(BotInput,arena_bot_input);
 #undef LOAD_KERNEL
     const auto& R=*Runtime;
     // Every ABI 4 export must resolve before the version call; a stale library fails here.
     if(!R.Abi||!R.Qualified||!R.Create||!R.Destroy||!R.Step||!R.Snapshot||!R.Player||!R.Hash||!R.MapInfo||!R.MapWall||!R.Presentation||!R.WeaponSpec||!R.Event||!R.ProjectileCount||!R.Projectile
-        ||!R.MapRoutePoint||!R.MapHazard||!R.EntityCount||!R.Entity||!R.Objective||R.Abi()!=ExpectedKernelAbi)
+        ||!R.MapRoutePoint||!R.MapHazard||!R.EntityCount||!R.Entity||!R.Objective||!R.BotInput||R.Abi()!=ExpectedKernelAbi)
     { StatusText=TEXT("戦闘カーネルの ABI 検証に失敗しました。現在のソースから再ビルドしてください。"); return; }
     AbiVersion=R.Abi(); ProofQualified=R.Qualified()!=0;
     ArenaConfig Config{}; Config.abi_version=AbiVersion; Config.mode=0; Config.map_id=0; Config.max_ticks=60; Config.player_count=1; Config.offline=1;
@@ -140,11 +95,13 @@ void UArenaKernelSubsystem::StopPractice()
     PracticePlayers.Reset(); PracticeEvents.Reset(); PracticeProjectiles.Reset();
     PracticeTick=0; PracticeTerminal=false; PracticeHash.Empty();
 }
-bool UArenaKernelSubsystem::StartPractice(int32 ClassId,int32 WeaponSlot,int32 MapId)
+bool UArenaKernelSubsystem::StartPractice(int32 ClassId,int32 WeaponSlot,int32 MapId,int32 BotDifficulty)
 {
     StopPractice(); PracticeError.Empty();
     if(!Available||!Runtime) { PracticeError=TEXT("稽古には、検証済みの実物 Rust ライブラリが必要です。"); return false; }
-    if(ClassId<0||ClassId>5||WeaponSlot<0||WeaponSlot>2||MapId<0||MapId>3) { PracticeError=TEXT("稽古の設定が範囲外です。"); return false; }
+    if(ClassId<0||ClassId>5||WeaponSlot<0||WeaponSlot>2||MapId<0||MapId>3||BotDifficulty<ARENA_BOT_EASY||BotDifficulty>ARENA_BOT_HARD)
+    { PracticeError=TEXT("稽古の設定が範囲外です。"); return false; }
+    PracticeBotDifficulty=BotDifficulty;
     ArenaMapInfo Info{};
     if(Runtime->MapInfo(MapId,&Info)!=0||Info.wall_count>64||Info.player_height<=0||Info.player_radius<=0) { PracticeError=TEXT("参照マップを読み込めません。"); return false; }
     PracticeMap.Minimum=Millimeters(Info.min_x,Info.min_y,Info.floor_z);
@@ -165,7 +122,6 @@ bool UArenaKernelSubsystem::StartPractice(int32 ClassId,int32 WeaponSlot,int32 M
         P.weapon_id=I==0?(WeaponSlot==2?12+ClassId:2*ClassId+WeaponSlot):2*P.class_id+1;
     }
     Runtime->Practice=Runtime->Create(&Config,Roster,6);
-    Runtime->Routes.SetNum(6); for(auto& Waypoints:Runtime->Routes) Waypoints.Reset();
     if(!Runtime->Practice) { PracticeError=TEXT("Rust カーネルが稽古の作成を拒否しました。"); return false; }
     if(!RefreshPractice()) { StopPractice(); return false; }
     return true;
@@ -175,44 +131,11 @@ bool UArenaKernelSubsystem::StepPractice(const FSoraPracticeInput& Local)
     if(!PracticeActive()||PracticeTerminal) return false;
     ArenaInput Inputs[6]{};
     Inputs[0].slot=0; Inputs[0].buttons=Local.Buttons; Inputs[0].move_x=Local.Forward; Inputs[0].move_y=Local.Right; Inputs[0].yaw=Local.Yaw; Inputs[0].pitch=Local.Pitch;
+    // Every other slot is a Rust practice bot (crates/arena-bots): integer,
+    // deterministic, planned from the same kernel state on every platform.
     for(int32 Slot=1;Slot<PracticePlayers.Num();++Slot)
-    {
-        auto& Input=Inputs[Slot]; Input.slot=Slot;
-        const auto& Bot=PracticePlayers[Slot]; if(!Bot.Alive) continue;
-        int32 Target=INDEX_NONE; float Best=TNumericLimits<float>::Max();
-        for(int32 I=0;I<PracticePlayers.Num();++I) if(I!=Slot&&PracticePlayers[I].Alive)
-        {
-            const float D=FVector::DistSquared2D(Bot.Feet,PracticePlayers[I].Feet);
-            if(D<Best) { Best=D; Target=I; }
-        }
-        if(Target==INDEX_NONE) continue;
-        const auto& Other=PracticePlayers[Target];
-        const FVector Eye=Bot.Feet+FVector(0,0,PracticeMap.EyeHeight);
-        const FVector AimAt=Other.Feet+FVector(0,0,PracticeMap.PlayerHalfHeight);
-        FRotator Aim=(AimAt-Eye).Rotation();
-        // Deterministic cadence and bounded aim error make these practice opponents beatable.
-        Aim.Yaw+=static_cast<int32>((PracticeTick/45+Slot)%5)-2;
-        Input.yaw=CanonicalYaw(Aim.Yaw); Input.pitch=CanonicalPitch(Aim.Pitch);
-        const bool Visible=ClearRoute(PracticeMap,Bot.Feet,Other.Feet,0);
-        ArenaWeaponSpec Weapon{};
-        if(Runtime->WeaponSpec(Bot.WeaponId,&Weapon)!=0) { PracticeError=TEXT("武器の参照データを読み込めません。"); return false; }
-        if(Visible&&Best<FMath::Square(Weapon.range_mm/10.f)&&(PracticeTick+Slot*13)%180<115) Input.buttons|=1;
-        if(Bot.Magazine>0&&Bot.Ammo==0&&Bot.ReloadTicks==0) Input.buttons|=32;
-        if(Best<FMath::Square(165.f)) Input.buttons|=2;
-        if((PracticeTick+Slot*47)%360==0) Input.buttons|=16;
-        auto& Waypoints=Runtime->Routes[Slot];
-        if((PracticeTick+Slot*5)%30==0||Waypoints.IsEmpty()) Waypoints=Route(PracticeMap,Bot.Feet,Other.Feet);
-        while(!Waypoints.IsEmpty()&&FVector::Dist2D(Bot.Feet,Waypoints[0])<65) Waypoints.RemoveAt(0);
-        const bool Approach=!Visible||Best>FMath::Square(600.f);
-        if(Approach&&!Waypoints.IsEmpty())
-        {
-            const FVector Direction=(Waypoints[0]-Bot.Feet).GetSafeNormal2D();
-            const FVector Forward=FRotator(0,Aim.Yaw,0).Vector(),Right=FRotator(0,Aim.Yaw+90,0).Vector();
-            Input.move_x=static_cast<int16>(FMath::Clamp(FMath::RoundToInt(FVector::DotProduct(Direction,Forward)*92),-127,127));
-            Input.move_y=static_cast<int16>(FMath::Clamp(FMath::RoundToInt(FVector::DotProduct(Direction,Right)*92),-127,127));
-        }
-        else if(Visible) Input.move_y=((PracticeTick/120+Slot)%2?36:-36);
-    }
+        if(Runtime->BotInput(Runtime->Practice,Slot,PracticeBotDifficulty,&Inputs[Slot])!=0)
+        { PracticeError=TEXT("稽古の相手の入力を作成できません。処理を停止しました。"); return false; }
     if(Runtime->Step(Runtime->Practice,Inputs,6)!=0) { PracticeError=TEXT("稽古の入力が拒否されました。処理を停止しました。"); return false; }
     return RefreshPractice();
 }

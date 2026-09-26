@@ -61,11 +61,14 @@ public:
     UPROPERTY(BlueprintReadOnly) int32 VerifiedOfflineTicks = 0;
     UPROPERTY(BlueprintReadOnly) FString OfflineStateHash;
     UPROPERTY(BlueprintReadOnly) FString StatusText;
-    bool StartPractice(int32 ClassId, int32 WeaponSlot, int32 MapId);
+    // Slot 0 is the player; every other slot is a Rust practice bot of the
+    // given tier (ARENA_BOT_EASY, _NORMAL or _HARD).
+    bool StartPractice(int32 ClassId, int32 WeaponSlot, int32 MapId, int32 BotDifficulty = 1);
     void StopPractice();
     bool StepPractice(const FSoraPracticeInput& Input);
     bool PracticeActive() const;
     bool PracticeTerminal = false;
+    int32 PracticeBotDifficulty = 1;
     uint32 PracticeTick = 0;
     FString PracticeError;
     FString PracticeHash;

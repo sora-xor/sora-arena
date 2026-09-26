@@ -226,6 +226,19 @@ int32_t arena_projectile(const ArenaHandle*, uint32_t index, ArenaProjectileSnap
 int32_t arena_entity_count(const ArenaHandle*, uint32_t*);
 int32_t arena_entity(const ArenaHandle*, uint32_t index, ArenaEntitySnapshot*);
 int32_t arena_objective(const ArenaHandle*, ArenaObjectiveSnapshot*);
+#define ARENA_BOT_EASY 0u
+#define ARENA_BOT_NORMAL 1u
+#define ARENA_BOT_HARD 2u
+/* Practice bots (crates/arena-bots): not rules and outside the state hash. A bot
+ * plans the input for slot on the next arena_step from the current state, as a
+ * player at a controller would; pass it to arena_step or replace it. It plans
+ * once per tick: repeated calls before the next step return the same input.
+ * Its memory lives in the handle. Difficulty tiers differ only by fixed
+ * reaction delays, aim-error patterns and answer cadences; every choice is
+ * integer and deterministic, never random. Zero-stake handles only (offline 1):
+ * a staked handle, a slot out of range or an unknown difficulty returns 1, and
+ * a terminal match returns 2. */
+int32_t arena_bot_input(ArenaHandle*, uint32_t slot, uint32_t difficulty, ArenaInput* out);
 /* Always zero until a reviewed compiled FPS relation is actually qualified. */
 uint32_t arena_proof_qualified(void);
 #ifdef __cplusplus

@@ -2,12 +2,12 @@
   "schema_version": 2,
   "fixture_id": "sora-arena-practice-abi4",
   "scope": "offline and staked C ABI 4 simulation, event, objective and presentation parity; not network, renderer or execution-proof qualification",
-  "recorded_utc": "2026-09-26T04:21:38.685807+00:00",
+  "recorded_utc": "2026-09-26T05:12:30.395017+00:00",
   "reference_host": {
     "system": "Darwin",
     "machine": "arm64",
     "python": "3.9.6",
-    "library_sha256": "87f5a5fbb5529069c588e1d1faf4fd337507a06d7559f3734010d1e208957e3f"
+    "library_sha256": "993d0ba6d2a1ca195e4ccc497656d373635bc8fd710dada51f270ee60065c095"
   },
   "input_encoding": {
     "bytes_per_slot": 8,
@@ -27,8 +27,8 @@
     "normalization": "replace CRLF with LF in UTF-8 source bytes",
     "scope": "exact files owning the exercised World/geometry/combat/economy/C ABI plus dependency manifests; unrelated transport/proof implementation is excluded",
     "files_sha256": {
-      "Cargo.toml": "06b5cdcf5cddc6e57c56e6384af4a30a3cf8ee12eb24250cd44ab5fdd506ab46",
-      "Cargo.lock": "3d7e5d303834ead7343a55da3ed7f9f4910b24e4dc7aab516531696c05fd0ed0",
+      "Cargo.toml": "49587ab0c500b4537be32eaf700494adbe6f690d9362675c545c3d86eb21cd5c",
+      "Cargo.lock": "7f9dc716f5f03e3710888d5d4a8267f68a8baea9794661f1f1d86515794aacaf",
       "crates/arena-core/Cargo.toml": "a0dabe69655f5200e619f4fca9b4f8ab570e2045f50f82fc201a287c93f0ccfc",
       "crates/arena-core/src/lib.rs": "196cf8383aed1abfb1c53a093c735785dce88fe3d60a683bd393a014681c1a63",
       "crates/arena-core/src/catalog.rs": "1aededa25e88c3870920ddbcd8ec6a5309fcfaf6fed3b7b52d1bfe24d94f2bc2",
@@ -40,13 +40,13 @@
       "crates/arena-core/src/simulation/hazards.rs": "999d294965b67029f5ddeafe8b42b0f07b172737630831ede73319732b4789bd",
       "crates/arena-core/src/simulation/objectives.rs": "8a50c20b01d92c115bee40a03b711b6f03159c8d53eec23439c6b644e1acaa14",
       "crates/arena-core/src/simulation/respawn.rs": "2456988d8b376e2bead5f598980632bdc249a9fdc7a9f599da1cc228944885bd",
-      "crates/arena-ffi/Cargo.toml": "dd3ffa40abdeb3b9cc0e86af17bc4a165359c910d58458a492741bd388b1af31",
-      "crates/arena-ffi/src/lib.rs": "3b2c453c2117bad3369621537b19d11f98250a8e82734658c87cd651c73d2d8c",
-      "crates/arena-ffi/include/arena.h": "0f4807c8d6245971e240f40c380e92e2c0588222775ff9be2542b8119c21f46d"
+      "crates/arena-ffi/Cargo.toml": "027a2751c2c13423a70330a341a6e4a8499e0ebf078ea789415a66fc376f129b",
+      "crates/arena-ffi/src/lib.rs": "79dc08bed7c27f74a7c62c8e665fe236b4172791bf308ed6b42d723ceeb2a8af",
+      "crates/arena-ffi/include/arena.h": "83d86067d3ceb846e0239f718131e8e9bdd21f03a069c3863b665e3b30455d8b"
     }
   },
   "runner_files_sha256": {
-    "scripts/unreal/kernel_abi.py": "9003dd59cd0f95ebaf1be725b14b3617c562e262b110529e27c73a8645d6a0a3",
+    "scripts/unreal/kernel_abi.py": "d4a6f28e26e1e6cc66a95c1dcf2ea53eef8cf112f026c1a71e5fbb25835b5cb5",
     "scripts/unreal/verify_parity.py": "09cdd1365746a6c8122af343ae5cf47073ade8cdf7e55822cb5289aec929a028",
     "scripts/unreal/practice_fixture_bots.py": "f7b7e22c446a0aafbf0cd139bc7861ccfce855094e05094aafd40ef4ab829402"
   },

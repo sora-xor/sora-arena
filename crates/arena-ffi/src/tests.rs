@@ -207,6 +207,9 @@ fn header_constants_match_the_kernel() {
             "ARENA_HAZARD_SHREDDER",
             arena_core::maps::HazardKind::Shredder as u32,
         ),
+        ("ARENA_BOT_EASY", BOT_EASY),
+        ("ARENA_BOT_NORMAL", BOT_NORMAL),
+        ("ARENA_BOT_HARD", BOT_HARD),
     ] {
         assert_eq!(define(name), value, "{name}");
     }
@@ -218,7 +221,7 @@ fn header_constants_match_the_kernel() {
         .filter_map(|head| head.split_whitespace().last())
         .filter(|name| name.starts_with("arena_"))
         .collect::<Vec<_>>();
-    let exported: [(&str, *const ()); 20] = [
+    let exported: [(&str, *const ()); 21] = [
         ("arena_abi_version", arena_abi_version as *const ()),
         ("arena_create", arena_create as *const ()),
         ("arena_destroy", arena_destroy as *const ()),
@@ -244,6 +247,7 @@ fn header_constants_match_the_kernel() {
         ("arena_entity_count", arena_entity_count as *const ()),
         ("arena_entity", arena_entity as *const ()),
         ("arena_objective", arena_objective as *const ()),
+        ("arena_bot_input", arena_bot_input as *const ()),
         ("arena_proof_qualified", arena_proof_qualified as *const ()),
     ];
     assert_eq!(declared, exported.map(|(name, _)| name));
@@ -1160,5 +1164,148 @@ fn handle_lifecycle_and_null_rejection() {
         assert_eq!(arena_event(null, 0, &mut ArenaEvent::default()), 1);
         assert_eq!(arena_event(h, 0, std::ptr::null_mut()), 1);
         arena_destroy(h);
+    }
+}
+
+/// Every slot's bot input for the next step, read twice to show a bot plans
+/// once per tick.
+unsafe fn bot_inputs(handle: *mut ArenaHandle, difficulties: &[u32]) -> Vec<ArenaInput> {
+    difficulties
+        .iter()
+        .enumerate()
+        .map(|(slot, &difficulty)| {
+            let mut first = idle(1).remove(0);
+            let mut again = idle(1).remove(0);
+            assert_eq!(
+                unsafe { arena_bot_input(handle, slot as u32, difficulty, &mut first) },
+                0
+            );
+            assert_eq!(
+                unsafe { arena_bot_input(handle, slot as u32, difficulty, &mut again) },
+                0
+            );
+            assert_eq!(
+                (first.slot, first.buttons, first.move_x, first.move_y),
+                (again.slot, again.buttons, again.move_x, again.move_y)
+            );
+            assert_eq!((first.yaw, first.pitch), (again.yaw, again.pitch));
+            first
+        })
+        .collect()
+}
+
+#[test]
+fn practice_bots_play_a_whole_match_through_the_abi() {
+    // Eight bots of every class and tier on Lantern Ward, in two handles
+    // stepped in lockstep: identical inputs and state hashes every tick.
+    let roster = [
+        (0, 1),
+        (1, 3),
+        (2, 5),
+        (3, 7),
+        (4, 9),
+        (5, 11),
+        (0, 0),
+        (3, 6),
+    ];
+    let difficulties = [
+        BOT_HARD, BOT_NORMAL, BOT_EASY, BOT_HARD, BOT_NORMAL, BOT_EASY, BOT_NORMAL, BOT_HARD,
+    ];
+    let people = roster
+        .iter()
+        .enumerate()
+        .map(|(slot, &(class, weapon))| person(slot as u32, 0, class, weapon))
+        .collect::<Vec<_>>();
+    unsafe {
+        let a = arena_create(&config(0, 1, 3600, 8), people.as_ptr(), 8);
+        let b = arena_create(&config(0, 1, 3600, 8), people.as_ptr(), 8);
+        assert!(!a.is_null() && !b.is_null());
+        let (mut shots, mut deaths) = (0, 0);
+        let mut winner = None;
+        for tick in 0..3600 {
+            let inputs = bot_inputs(a, &difficulties);
+            let twins = bot_inputs(b, &difficulties);
+            for (x, y) in inputs.iter().zip(&twins) {
+                assert_eq!(
+                    (x.buttons, x.move_x, x.move_y, x.yaw, x.pitch),
+                    (y.buttons, y.move_x, y.move_y, y.yaw, y.pitch),
+                    "tick {tick}"
+                );
+            }
+            assert_eq!(arena_step(a, inputs.as_ptr(), 8), 0, "tick {tick}");
+            assert_eq!(arena_step(b, twins.as_ptr(), 8), 0, "tick {tick}");
+            let (mut ha, mut hb) = ([0u8; 32], [0u8; 32]);
+            assert_eq!(arena_state_hash(a, ha.as_mut_ptr(), 32), 0);
+            assert_eq!(arena_state_hash(b, hb.as_mut_ptr(), 32), 0);
+            assert_eq!(ha, hb, "tick {tick}");
+            for e in events(a) {
+                match e.kind {
+                    EVENT_SHOT => shots += 1,
+                    EVENT_DEATH => deaths += 1,
+                    EVENT_MATCH_WINNER => winner = Some((e.detail, e.value)),
+                    _ => {}
+                }
+            }
+        }
+        let mut state = ArenaSnapshot::default();
+        assert_eq!(arena_snapshot(a, &mut state), 0);
+        assert_eq!(
+            (
+                state.tick,
+                state.terminal,
+                state.deposited,
+                state.remaining,
+                state.earnings
+            ),
+            (3600, 1, 0, 0, 0)
+        );
+        assert!(shots > 100 && deaths > 0, "{shots} shots, {deaths} deaths");
+        assert!(winner.is_some());
+        // The match is over: bots have nothing left to plan.
+        let mut input = idle(1).remove(0);
+        assert_eq!(arena_bot_input(a, 0, BOT_NORMAL, &mut input), 2);
+        arena_destroy(a);
+        arena_destroy(b);
+    }
+}
+
+#[test]
+fn bot_input_rejects_bad_arguments_and_staked_matches() {
+    let people = [person(0, 0, 0, 1), person(1, 1, 1, 3)];
+    unsafe {
+        let handle = arena_create(&config(0, 0, 600, 2), people.as_ptr(), 2);
+        assert!(!handle.is_null());
+        let mut input = idle(1).remove(0);
+        assert_eq!(
+            arena_bot_input(std::ptr::null_mut(), 0, BOT_EASY, &mut input),
+            1
+        );
+        assert_eq!(
+            arena_bot_input(handle, 0, BOT_EASY, std::ptr::null_mut()),
+            1
+        );
+        assert_eq!(arena_bot_input(handle, 2, BOT_EASY, &mut input), 1);
+        assert_eq!(arena_bot_input(handle, 0, 3, &mut input), 1);
+        assert_eq!(arena_bot_input(handle, 1, BOT_HARD, &mut input), 0);
+        assert_eq!(input.slot, 1);
+        arena_destroy(handle);
+        // Bots never play for bonded value.
+        let mut staked = config(0, 0, 600, 2);
+        staked.offline = 0;
+        staked.base_bond = 1000;
+        let bonded = [
+            ArenaParticipant {
+                bond: 1000,
+                ..person(0, 0, 0, 1)
+            },
+            ArenaParticipant {
+                bond: 1000,
+                ..person(1, 1, 1, 3)
+            },
+        ];
+        let handle = arena_create(&staked, bonded.as_ptr(), 2);
+        assert!(!handle.is_null());
+        assert_eq!(arena_bot_input(handle, 0, BOT_NORMAL, &mut input), 1);
+        arena_destroy(handle);
     }
 }

@@ -21,7 +21,10 @@ changes the rules identity (`RULES_VERSION`) and the canonical state hash.
   ABI 4 exports every event (§4.3), the entity list (§5.1), the objective
   state (§8), the arena objective and hazard data (§7.1) and the loadout
   request (§10). It has no ABI 3 compatibility mode. The ABI number is not part
-  of the rules identity or the state hash.
+  of the rules identity or the state hash. ABI 4 also serves zero-stake
+  practice bots (`arena_bot_input`, `crates/arena-bots`). Bots only choose
+  inputs and are not rules: neither the state hash nor any fixture's pinned
+  sources include the bot crate.
 - Match limits: at most 12 permanent slots, at most 8 in free-for-all and Melee,
   at most 6 per team in Control and Payload, and at most 36,000 ticks (ten
   minutes). Nothing, including overtime, extends a match past its configured

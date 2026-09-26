@@ -13,6 +13,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "arena-bots"
+version = "0.1.0"
+dependencies = [
+ "arena-core",
+ "sha2",
+]
+
+[[package]]
 name = "arena-cli"
 version = "0.1.0"
 dependencies = [
@@ -38,6 +46,7 @@ dependencies = [
 name = "arena-ffi"
 version = "0.1.0"
 dependencies = [
+ "arena-bots",
  "arena-core",
 ]
 

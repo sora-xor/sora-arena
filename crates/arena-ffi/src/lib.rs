@@ -1,5 +1,6 @@
 //! Native C ABI 4 for Unreal. Foreign callers own pointer validity and serialize
 //! per-handle access. No function signs a wallet transaction or qualifies proofs.
+use arena_bots::{Bots, Difficulty};
 use arena_core::{
     ABI_VERSION, catalog,
     maps::Arena,
@@ -14,6 +15,9 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 
 pub struct ArenaHandle {
     world: World,
+    /// Practice bot memories (crates/arena-bots): not kernel state and never
+    /// part of the state hash.
+    bots: Bots,
 }
 /// `ARENA_NONE`: an absent slot, weapon, class or team.
 pub const NONE: u32 = u32::MAX;
@@ -37,6 +41,10 @@ pub const EVENT_OBJECTIVE_CAPTURED: u32 = 16;
 pub const EVENT_OVERTIME: u32 = 17;
 pub const EVENT_CHECKPOINT: u32 = 18;
 pub const EVENT_MATCH_WINNER: u32 = 19;
+/// `ARENA_BOT_*` practice difficulties.
+pub const BOT_EASY: u32 = Difficulty::Easy as u32;
+pub const BOT_NORMAL: u32 = Difficulty::Normal as u32;
+pub const BOT_HARD: u32 = Difficulty::Hard as u32;
 #[repr(C)]
 pub struct ArenaConfig {
     pub abi_version: u32,
@@ -885,7 +893,10 @@ pub unsafe extern "C" fn arena_create(
             },
             &roster,
         ) {
-            Ok(world) => Box::into_raw(Box::new(ArenaHandle { world })),
+            Ok(world) => {
+                let bots = Bots::new(&world);
+                Box::into_raw(Box::new(ArenaHandle { world, bots }))
+            }
             Err(_) => std::ptr::null_mut(),
         }
     }))
@@ -935,6 +946,49 @@ pub unsafe extern "C" fn arena_step(
             Ok(()) => 0,
             Err(_) => 2,
         }
+    }))
+    .unwrap_or(3)
+}
+/// A practice bot's input for `slot` on the next step (crates/arena-bots). The
+/// bot plans from the current state once per tick; repeated calls before the
+/// next step return the same input. Zero-stake handles only: bots never play
+/// for bonded value.
+///
+/// # Safety
+/// Valid exclusively-owned handle and aligned writable output storage.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn arena_bot_input(
+    handle: *mut ArenaHandle,
+    slot: u32,
+    difficulty: u32,
+    out: *mut ArenaInput,
+) -> i32 {
+    if handle.is_null() || out.is_null() {
+        return 1;
+    }
+    catch_unwind(AssertUnwindSafe(|| {
+        let h = unsafe { &mut *handle };
+        let Some(difficulty) = Difficulty::from_code(difficulty) else {
+            return 1;
+        };
+        if slot as usize >= h.world.players.len() || !h.world.config.offline {
+            return 1;
+        }
+        if h.world.terminal {
+            return 2;
+        }
+        let input = h.bots.input(&h.world, slot as usize, difficulty);
+        unsafe {
+            out.write(ArenaInput {
+                slot,
+                buttons: input.buttons,
+                move_x: input.move_x,
+                move_y: input.move_y,
+                yaw: input.yaw,
+                pitch: input.pitch,
+            })
+        };
+        0
     }))
     .unwrap_or(3)
 }
