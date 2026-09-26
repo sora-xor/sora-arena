@@ -195,7 +195,6 @@ def main():
     world = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).get_editor_world()
     queue = [(f"{group}_{state}", camera, state) for state in ("dry", "wet") for group, camera in shots]
     status = {"task": None, "frames": 0, "written": []}
-    LEVELS.editor_set_viewport_realtime(True)  # Lumen and TSR accumulate during the capture delay
 
     def weather(state):
         wet = state == "wet"
@@ -209,6 +208,10 @@ def main():
 
     def tick(_delta):
         status["frames"] += 1
+        # Draw the viewport every tick so Lumen and TSR accumulate during the
+        # capture delay. (editor_set_viewport_realtime(True) only removes an
+        # override that a False call added, and trips an editor ensure otherwise.)
+        LEVELS.editor_invalidate_viewports()
         if status["frames"] < 30:  # let the editor viewport settle after level creation
             return
         task = status["task"]

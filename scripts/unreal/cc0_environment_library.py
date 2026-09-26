@@ -833,7 +833,8 @@ def master_defaults(plan: Plan) -> dict[str, dict[str, str]]:
     return defaults
 
 
-GRAPH_SOURCES = ("scripts/unreal/import_cc0_environment.py", "scripts/unreal/cc0_environment_library.py")
+GRAPH_SOURCES = ("scripts/unreal/import_cc0_environment.py", "scripts/unreal/cc0_environment_library.py",
+                 "scripts/unreal/cc0_environment_hlsl.py")
 
 
 def master_graph_digest(plan: Plan, master_name: str, defaults: dict[str, str]) -> str:

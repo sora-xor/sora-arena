@@ -294,6 +294,7 @@ Its built-in self-test must reject known-bad layouts before it checks the projec
 - `build-mac.sh Development` fails. The script runs it first, because the importers load the project module and Unreal does not rebuild it with `-unattended`. UBT rebuilds only what a source, header or build rule change requires; its log is `build.log` in the log directory;
 - the host check `validate_imported_assets.py --source-only` fails a source hash or manifest identity;
 - `pack_cc0_environment.py` or `validate_cc0_environment.py --source-only` fails: a first-slice ledger identity, a raw file's SHA-256 in the clone's `Local/ThirdPartyRaw/cc0` (shared by git worktrees), the period-accuracy policy or a packed ARM map.
+- `check_cc0_custom_hlsl.py` fails: a CC0 master's Custom HLSL, wrapped as the 5.8 material translator wraps it, does not compile with the pinned engine's DXC for SPIR-V or DXIL.
 
 `UnrealEditor-Cmd` can exit 0 after a Python exception, so the exit code alone proves nothing. Each step must exit 0, log no `LogPython: Error` or Python traceback, and log its completion marker: `SORA_ASSET_IMPORT_COMPLETE`, then `NYAAGYU_PBR_READY`, then `SORA_CC0_ENVIRONMENT_READY`, then `SORA_ASSET_VALIDATION_COMPLETE` and `SORA_CC0_ENVIRONMENT_VALIDATED`, each validator with exactly the package count that its host check reported. It guards `Config/` as the automation runner below does. The importers replace existing packages, so the script can be run again after the source art changes.
 

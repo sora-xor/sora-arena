@@ -15,6 +15,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cc0_environment_library as L  # noqa: E402
+import cc0_environment_hlsl as H  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -176,6 +177,29 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(L.master_graph_digest(plan, name, dict(defaults[name])), digests[name])
         moved = dict(defaults[name], Normal="/Game/Elsewhere/T_Other.T_Other")
         self.assertNotEqual(L.master_graph_digest(plan, name, moved), digests[name])
+
+
+
+class CustomHlslTest(unittest.TestCase):
+    def test_translator_wrapper(self):
+        # FHLSLMaterialTranslator::CustomExpression: LWC inputs arrive demoted plus raw,
+        # extra outputs are inout, and the node code is the body.
+        self.assertEqual(
+            H.translator_function(H.CUSTOM["project"], 0).splitlines()[0],
+            "MaterialFloat2 CustomExpression0(FMaterialPixelParameters Parameters,float3 P, FWSVector3 LWCP,"
+            "MaterialFloat3 N)")
+        header = H.translator_function(H.CUSTOM["blend"], 3).splitlines()[0]
+        self.assertTrue(header.endswith(", inout MaterialFloat3 NormalOut, inout MaterialFloat3 ArmOut)"), header)
+        self.assertIn("return", H.translator_function(H.Custom("x", "A * 2.0", "float", (("A", "float"),)), 1))
+
+    def test_every_node_names_its_pins_once(self):
+        for key, custom in H.CUSTOM.items():
+            names = [name for name, _ in custom.inputs + custom.outputs]
+            self.assertEqual(len(names), len(set(names)), key)
+            self.assertTrue(all(kind in ("float", "float3", "lwc3") for _, kind in custom.inputs), key)
+
+    def test_graph_digest_covers_the_hlsl(self):
+        self.assertIn("scripts/unreal/cc0_environment_hlsl.py", L.GRAPH_SOURCES)
 
 
 if __name__ == "__main__":

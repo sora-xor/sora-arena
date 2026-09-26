@@ -19,8 +19,10 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cc0_environment_library as library  # noqa: E402
+from cc0_environment_hlsl import CUSTOM  # noqa: E402
 
 require = library.require
+SPECS = {custom.description: custom for custom in CUSTOM.values()}
 
 
 def source_check(root: Path) -> library.Plan:
@@ -107,13 +109,27 @@ def validate_master(unreal, assets, lib, plan, defaults, master, mpc):
                     f"{master.name}: collection parameter {name} is not bound to {library.MPC_NAME}")
             collections.add(name)
         elif isinstance(expression, unreal.MaterialExpressionCustom):
-            customs.append(str(expression.get_editor_property("description")))
+            description = str(expression.get_editor_property("description"))
+            spec = SPECS.get(description)
+            require(spec is not None, f"{master.name}: unknown Custom expression {description!r}")
+            # The code and pins check_cc0_custom_hlsl.py compiles on the host.
+            require(expression.get_editor_property("code") == spec.code.strip(),
+                    f"{master.name}: {description} code differs from cc0_environment_hlsl")
+            pins = [str(item.get_editor_property("input_name")) for item in expression.get_editor_property("inputs")]
+            outputs = [str(item.get_editor_property("output_name"))
+                       for item in expression.get_editor_property("additional_outputs")]
+            require(pins == [name for name, _ in spec.inputs] and outputs == [name for name, _ in spec.outputs],
+                    f"{master.name}: {description} pins {pins} {outputs} differ from cc0_environment_hlsl")
+            customs.append(description)
     wanted = {"Wetness", "PuddleAmount"} | ({"LanternIntensity"} if family == "lantern" else set())
     require(collections == wanted, f"{master.name}: weather collection inputs {sorted(collections)}")
-    require("SORA environment finish" in customs and "SORA world projection (cm)" in customs,
-            f"{master.name}: shared finish/projection nodes missing: {customs}")
+    expected_customs = ["finish", "project"]
     if family in library.WORLD_ALIGNED_FAMILIES:
-        require("SORA projected normal to world" in customs, f"{master.name}: projected normal missing")
+        expected_customs += ["projected_normal", "detail"]
+    if family in ("heightblend", "lantern"):
+        expected_customs.append({"heightblend": "blend", "lantern": "lantern"}[family])
+    require(sorted(customs) == sorted(CUSTOM[key].description for key in expected_customs),
+            f"{master.name}: Custom expressions {sorted(customs)}")
     require(material.get_path_name() == library.master_path(master.name), f"{master.name}: path")
     return material
 

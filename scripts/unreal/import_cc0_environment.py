@@ -37,6 +37,7 @@ import unreal
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
 import cc0_environment_library as library  # noqa: E402
+from cc0_environment_hlsl import CUSTOM, Custom  # noqa: E402
 
 require_running_engine("CC0 environment library import")
 
@@ -254,92 +255,6 @@ def import_meshes(plan: library.Plan, instances: dict) -> int:
 
 # --- Material graphs ------------------------------------------------------------
 
-# Dominant-axis planar projection of the world position in centimetres: one
-# texture fetch per map, oriented so text/grain reads upright on walls.
-HLSL_PROJECT = """
-float3 a = abs(N);
-if (a.z >= a.x && a.z >= a.y) return float2(P.x, -P.y);
-if (a.x >= a.y) return float2((N.x >= 0.0 ? -1.0 : 1.0) * P.y, -P.z);
-return float2((N.y >= 0.0 ? 1.0 : -1.0) * P.x, -P.z);
-"""
-
-# The DirectX tangent-space normal in the same projection frame, re-orthogonalised
-# against the geometric normal so slopes keep their shading. +R is +U, +G is +V.
-HLSL_PROJECTED_NORMAL = """
-float3 g = normalize(N);
-float3 a = abs(g);
-float3 tu = float3(1.0, 0.0, 0.0);
-float3 tv = float3(0.0, -1.0, 0.0);
-if (!(a.z >= a.x && a.z >= a.y)) {
-    tv = float3(0.0, 0.0, -1.0);
-    if (a.x >= a.y) tu = float3(0.0, g.x >= 0.0 ? -1.0 : 1.0, 0.0);
-    else tu = float3(g.y >= 0.0 ? 1.0 : -1.0, 0.0, 0.0);
-}
-tu = normalize(tu - g * dot(g, tu));
-tv = normalize(tv - g * dot(g, tv));
-return normalize(NormalTS.x * tu + NormalTS.y * tv + NormalTS.z * g);
-"""
-
-HLSL_DETAIL = """
-return normalize(float3(Base.xy + Detail.xy * Strength, Base.z));
-"""
-
-# Height blend of layer B over layer A: the ARM occlusion of A is the height
-# proxy (crevices first when HeightFromCrevices is 1), vertex red paints coverage.
-HLSL_BLEND = """
-float coverage = saturate(Coverage * lerp(1.0, VertexR, VertexColorBlend) + TopFacingBias * saturate(Nz));
-float h = lerp(ArmA.r, 1.0 - ArmA.r, HeightFromCrevices);
-float alpha = saturate((h + 2.0 * coverage - 1.5) * Contrast + 0.5);
-float roughA = lerp(RoughMinA, RoughMaxA, ArmA.g);
-float roughB = lerp(RoughMinB, RoughMaxB, ArmB.g);
-NormalOut = normalize(lerp(NormalA, NormalB, alpha));
-ArmOut = float3(lerp(ArmA.r, ArmB.r, alpha), lerp(roughA, roughB, alpha), lerp(ArmA.b, ArmB.b, alpha));
-return lerp(ColorA, ColorB * TintB, alpha);
-"""
-
-# Grading, macro variation and the shared rain response. Wet surfaces darken by
-# WetDarkening and lose roughness toward WetRoughness (story bible 15.1: wet
-# timber 0.2-0.35, albedo -25-35%); puddles gather on flat, low, macro-dark
-# ground when PuddleAmount rises.
-HLSL_FINISH = """
-float lum = dot(Albedo, float3(0.2126, 0.7152, 0.0722));
-float3 albedo = lerp(Albedo, lum.xxx, Desaturation) * Tint;
-float macro = saturate(0.5 * (MacroA + MacroB));
-float signedMacro = macro * 2.0 - 1.0;
-albedo *= 1.0 + MacroStrength * signedMacro;
-float rough = saturate(lerp(RoughMin, RoughMax, Arm.g) * (1.0 + MacroRoughness * signedMacro));
-float ao = lerp(1.0, Arm.r, AOStrength);
-float metal = saturate(Arm.b * MetallicScale);
-float3 n = float3(NormalTS.xy * NormalStrength, NormalTS.z);
-float exposure = lerp(0.65, 1.0, saturate(Nz));
-float wet = saturate(max(BaseWetness, Wetness * WetnessResponse)) * exposure;
-float lowness = 0.5 * (1.0 - Arm.r) + 0.5 * (1.0 - macro);
-float flatness = saturate((Nz - 0.85) * 6.67);
-float puddle = saturate((PuddleAmount * PuddleResponse * 1.2 - (1.0 - lowness)) * 8.0) * flatness;
-wet = max(wet, puddle);
-albedo *= 1.0 - WetDarkening * wet;
-rough = lerp(rough, min(rough, WetRoughness), wet);
-rough = lerp(rough, 0.04, puddle);
-metal *= 1.0 - puddle;
-RoughnessOut = rough;
-MetallicOut = metal;
-AOOut = ao;
-NormalOut = normalize(lerp(n, float3(0.0, 0.0, 1.0), puddle));
-return max(albedo, 0.0);
-"""
-
-# Emissive washi: blackbody colour at unit luminance, fibre-thickness
-# transmission and a per-object flicker phase.
-HLSL_LANTERN = """
-float3 colour = BlackBody / pow(0.0004 * TemperatureK, 4.0);
-float transmission = lerp(TransmissionMax, TransmissionMin, saturate(Thickness));
-float phase = dot(ObjectPosition, float3(0.0131, 0.0173, 0.0113));
-float t = Time * FlickerSpeed;
-float flicker = 1.0 + FlickerAmount * (0.6 * sin(t * 7.3 + phase) + 0.4 * sin(t * 13.1 + phase * 1.9));
-return colour * Intensity * GlobalIntensity * transmission * flicker;
-"""
-
-
 class Graph:
     """Small helper around MaterialEditingLibrary for one master material."""
 
@@ -409,9 +324,12 @@ class Graph:
         expression.set_editor_property("parameter_name", name)
         return expression, ""
 
-    def custom(self, description, code, output_type, inputs: dict, outputs: dict | None = None):
-        expression = self.node(unreal.MaterialExpressionCustom, code=code.strip(), description=description,
-                               output_type=output_type)
+    def custom(self, custom: Custom, inputs: dict):
+        """A Custom expression from its cc0_environment_hlsl entry, wired with exactly its declared inputs."""
+        declared = [name for name, _ in custom.inputs]
+        require(list(inputs) == declared, f"{custom.description}: wired {list(inputs)}, declared {declared}")
+        expression = self.node(unreal.MaterialExpressionCustom, code=custom.code.strip(),
+                               description=custom.description, output_type=OUTPUT_TYPES[custom.output])
         pins = []
         for name in inputs:
             item = unreal.CustomInput()
@@ -419,10 +337,10 @@ class Graph:
             pins.append(item)
         expression.set_editor_property("inputs", pins)
         extra = []
-        for name, kind in (outputs or {}).items():
+        for name, kind in custom.outputs:
             item = unreal.CustomOutput()
             item.set_editor_property("output_name", name)
-            item.set_editor_property("output_type", kind)
+            item.set_editor_property("output_type", OUTPUT_TYPES[kind])
             extra.append(item)
         expression.set_editor_property("additional_outputs", extra)
         for name, pin in inputs.items():
@@ -462,13 +380,14 @@ def sampler_type(texture):
     return getattr(kind, f"SAMPLERTYPE_{'VIRTUAL_' if virtual else ''}{name}")
 
 
-F1, F2, F3 = (unreal.CustomMaterialOutputType.CMOT_FLOAT1, unreal.CustomMaterialOutputType.CMOT_FLOAT2,
-              unreal.CustomMaterialOutputType.CMOT_FLOAT3)
+OUTPUT_TYPES = {"float": unreal.CustomMaterialOutputType.CMOT_FLOAT1,
+                "float2": unreal.CustomMaterialOutputType.CMOT_FLOAT2,
+                "float3": unreal.CustomMaterialOutputType.CMOT_FLOAT3}
 
 
 def finish_inputs(g: Graph, albedo, normal, arm, macro_a, macro_b, nz, *, remap=True, puddles=True,
                   metal=True, wet=(0.0, 0.3, 0.25)):
-    """Wire the grading, macro and wetness parameters into HLSL_FINISH."""
+    """Wire the grading, macro and wetness parameters into the shared finish node."""
     grade, weather = "Surface Grade", "Weather"
     one, zero = g.node(unreal.MaterialExpressionConstant, r=1.0), g.node(unreal.MaterialExpressionConstant, r=0.0)
     inputs = {
@@ -490,8 +409,7 @@ def finish_inputs(g: Graph, albedo, normal, arm, macro_a, macro_b, nz, *, remap=
         "WetRoughness": g.scalar("WetRoughness", wet[2], weather),
         "PuddleResponse": g.scalar("PuddleResponse", 0.0, weather) if puddles else (zero, ""),
     }
-    return g.custom("SORA environment finish", HLSL_FINISH, F3, inputs,
-                    {"RoughnessOut": F1, "MetallicOut": F1, "AOOut": F1, "NormalOut": F3})
+    return g.custom(CUSTOM["finish"], inputs)
 
 
 def build_master(master: library.Master, mpc, defaults: dict, digest: str):
@@ -539,7 +457,7 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
     position = g.node(unreal.MaterialExpressionWorldPosition), ""
     vertex_normal = g.node(unreal.MaterialExpressionVertexNormalWS), ""
     nz = g.mask(vertex_normal, "b")
-    coords = g.custom("SORA world projection (cm)", HLSL_PROJECT, F2, {"P": position, "N": vertex_normal}), ""
+    coords = g.custom(CUSTOM["project"], {"P": position, "N": vertex_normal}), ""
     texcoord = g.node(unreal.MaterialExpressionTextureCoordinate, coordinate_index=0), ""
 
     def uv_for(prefix, tile_default):
@@ -578,7 +496,7 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
         macro_pins = (half, half)
 
     if family == "heightblend":
-        blend = g.custom("SORA height blend", HLSL_BLEND, F3, {
+        blend = g.custom(CUSTOM["blend"], {
             "ColorA": (samples["BaseColor"], "RGB"), "NormalA": (samples["Normal"], "RGB"),
             "ArmA": (samples["ARM"], "RGB"),
             "ColorB": (samples["LayerBBaseColor"], "RGB"), "NormalB": (samples["LayerBNormal"], "RGB"),
@@ -594,7 +512,7 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
             "RoughMaxA": g.scalar("RoughnessMax", 1.0, "Surface Grade"),
             "RoughMinB": g.scalar("LayerBRoughnessMin", 0.0, "Layer B"),
             "RoughMaxB": g.scalar("LayerBRoughnessMax", 1.0, "Layer B"),
-        }, {"NormalOut": F3, "ArmOut": F3})
+        })
         albedo, normal, arm = (blend, ""), (blend, "NormalOut"), (blend, "ArmOut")
     else:
         albedo, normal, arm = (samples["BaseColor"], "RGB"), (samples["Normal"], "RGB"), (samples["ARM"], "RGB")
@@ -604,7 +522,7 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
         detail_sample = g.texture("DetailNormal", defaults["Normal"],
                                   g.binary(unreal.MaterialExpressionMultiply, uvs[""],
                                            g.scalar("DetailTiling", 4.0, "Detail")), "Detail")
-        detailed = g.custom("SORA detail normal", HLSL_DETAIL, F3, {
+        detailed = g.custom(CUSTOM["detail"], {
             "Base": normal, "Detail": (detail_sample, "RGB"),
             "Strength": g.scalar("DetailNormalStrength", 0.5, "Detail")})
         normal = g.switch("UseDetailNormal", False, (detailed, ""), normal, "Detail")
@@ -619,8 +537,7 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
     g.out(finish, "MetallicOut", MP.MP_METALLIC)
     g.out(finish, "AOOut", MP.MP_AMBIENT_OCCLUSION)
     if family in library.WORLD_ALIGNED_FAMILIES:
-        projected = g.custom("SORA projected normal to world", HLSL_PROJECTED_NORMAL, F3,
-                             {"NormalTS": (finish, "NormalOut"), "N": vertex_normal})
+        projected = g.custom(CUSTOM["projected_normal"], {"NormalTS": (finish, "NormalOut"), "N": vertex_normal})
         tangent = g.node(unreal.MaterialExpressionTransform,
                          transform_source_type=unreal.MaterialVectorCoordTransformSource.TRANSFORMSOURCE_TANGENT,
                          transform_type=unreal.MaterialVectorCoordTransform.TRANSFORM_WORLD)
@@ -645,7 +562,7 @@ def build_master(master: library.Master, mpc, defaults: dict, digest: str):
         blackbody = g.node(unreal.MaterialExpressionBlackBody)
         temperature = g.scalar("ColorTemperatureK", 2000.0, "Lantern")
         g.link(*temperature, blackbody, "Temp")
-        emissive = g.custom("SORA lantern paper emission", HLSL_LANTERN, F3, {
+        emissive = g.custom(CUSTOM["lantern"], {
             "BlackBody": (blackbody, ""), "TemperatureK": temperature,
             "Thickness": (samples["Thickness"], "R"),
             "TransmissionMin": g.scalar("TransmissionMin", 0.25, "Lantern"),

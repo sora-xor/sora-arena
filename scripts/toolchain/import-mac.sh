@@ -68,6 +68,9 @@ if [[ -z "$EXPECTED_CC0" ]]; then
   echo "CC0 environment check did not report an expected package count: $CC0_CHECK" >&2
   exit 1
 fi
+# The masters' Custom HLSL, wrapped as the 5.8 material translator wraps it,
+# must compile with the engine's own DXC before an editor builds the graphs.
+PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/unreal/check_cc0_custom_hlsl.py" >&2
 
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config

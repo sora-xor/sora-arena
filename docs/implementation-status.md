@@ -236,14 +236,18 @@ are enforced in code: flagged-inaccurate surfaces (mortared walls, tyre tracks,
 Western roof tiles, wire rope, possible moso bamboo, metal-hooped buckets) are
 evaluation-only, and medium-risk surfaces only fill the role their flag allows.
 `import-mac.sh` packs, checks, imports and validates it (wired in, but not yet run end to end; each step ran separately). Run: the host tests
-(16 library, 15 preset), the pack and source check (344 packages), and the
-headless 5.8.3 import and validator (`SORA_CC0_ENVIRONMENT_VALIDATED: 344
-packages`). Not yet run: shader compilation and the rendered dry/wet and
-distance look-development, because both render attempts ran out of disk before
-any capture (free space held at 28-33 GiB against the 32 GiB floor). Also not
-yet run: the end-to-end import, cook, frame cost and the photoreal A/B gate. No
-gameplay code references the library or `scripts/unreal/environment_presets.py`
-(lighting presets, per-place surfaces, seeded scatter) yet.
+(19 library, 15 preset), the pack and source check (344 packages), the host
+compile of the masters' six Custom HLSL nodes with the engine's DXC (SPIR-V
+and DXIL, HLSL 2018 and 2021), and the headless 5.8.3 import and validator
+(`SORA_CC0_ENVIRONMENT_VALIDATED: 344 packages`). Those editor runs were
+`-nullrhi`, which neither translates nor compiles materials. Not yet run:
+compilation of the whole materials and the rendered dry/wet and distance
+look-development, because both render attempts ran out of disk before any
+capture (free space held at 28-33 GiB against the 32 GiB floor) and free space
+has since stayed below the 30 GiB floor. Also not yet run: the end-to-end
+import, cook, frame cost and the photoreal A/B gate. No gameplay code
+references the library or `scripts/unreal/environment_presets.py` (lighting
+presets, per-place surfaces, seeded scatter) yet.
 
 ## Milestones and current evidence
 
