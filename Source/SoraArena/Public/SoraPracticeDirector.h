@@ -10,7 +10,7 @@ class ASoraGameMode;
 class ASoraPracticeControlPoint;
 class ASoraPracticeEntityActor;
 class ASoraPracticePayload;
-class UStaticMeshComponent;
+class USceneComponent;
 
 // One line of the practice feed: a death, or an objective moment.
 struct FSoraPracticeFeedEntry
@@ -18,9 +18,10 @@ struct FSoraPracticeFeedEntry
     enum EKind : uint8 { Kill, Hazard, Fall, Captured, Overtime, Checkpoint, Winner };
     EKind Kind = Kill;
     uint32 Tick = 0;
-    // Killer and victim slots (INDEX_NONE when absent); Detail is the team
-    // for Captured, the checkpoint index for Checkpoint and the winner kind
-    // for Winner (with its team or slot in Actor).
+    // Killer and victim slots (INDEX_NONE when absent); for a kill, the
+    // weapon the killer held on that tick. Detail is the team for Captured,
+    // the checkpoint index for Checkpoint and the winner kind for Winner
+    // (with its team or slot in Actor).
     int32 Actor = INDEX_NONE, Target = INDEX_NONE, WeaponId = INDEX_NONE, Detail = 0;
 };
 
@@ -106,8 +107,12 @@ public:
     FVector PresentedFeet(int32 Slot) const;
     float InterpolationAlpha() const;
     // Team colour in Control and Payload; each slot's own in free-for-all
-    // and Melee. The player's side carries the SORA kamon.
+    // and Melee. The player's side carries the SORA mon.
     FLinearColor ParticipantColor(int32 Slot) const;
+    // A shot's tracer: its shooter's colour.
+    FLinearColor TracerColor(int32 Slot) const;
+    // The player holds Scoreboard during a live match.
+    bool ShowsScoreboard() const;
     bool IsSoraSide(int32 Slot) const;
     bool UsesAlienBody(int32 Slot) const;
     // The practice actors, for the HUD and automation.
@@ -138,8 +143,8 @@ private:
     UPROPERTY() TObjectPtr<ASoraPracticePayload> PayloadActor;
     UPROPERTY() TObjectPtr<AActor> Dressing;
     UPROPERTY() TObjectPtr<ACameraActor> Spectator;
-    // The hero's own sashimono, which only others would see.
-    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> HeroBanner;
+    // Every component of the hero's own sashimono, which only others see.
+    UPROPERTY() TArray<TObjectPtr<USceneComponent>> HeroBanner;
     // The last two kernel states of every participant, projectile and payload.
     TArray<FSoraPracticePlayer> Previous, Current;
     TMap<uint32, FVector> ProjectilePrevious, ProjectileCurrent;

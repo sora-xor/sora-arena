@@ -76,11 +76,16 @@ void SoraHUDPanels::DrawMenu(const FSoraHUDFrame& Frame)
     }
     if(G->bDeterministicPractice)
     {
-        const int32 Special=G->Practice()->Config.SpecialWeaponId;
-        const int32 Weapon=Special!=INDEX_NONE?Special:FSoraCatalog::Get().Class(G->SelectedClass).Weapons[1];
-        HUD.Label(TEXT("入場時の武器： ")+FSoraCatalog::Get().Weapon(Weapon).Name+TEXT("  /  メニューで 1・2 標準装備、3 特殊武器"),L,680*S,.46*S,Gold);
-        HUD.Label(TEXT("WASD 移動   マウス 照準   左クリック 射撃   右クリック 近接   R 装填   Ctrl 防御   Q 技   Space 跳躍"),L,725*S,.50*S,Ivory);
-        HUD.Label(TEXT("武器は稽古中に変更できません。Esc メニュー / F10 英語字幕。XOR 入金・オンライン対戦はありません。"),L,763*S,.45*S,Ivory);
+        // The weapon the kernel seats the player with: the admitted special,
+        // else the class's ranged weapon, or its blade in Melee only.
+        const FSoraPracticeConfig& Config=G->Practice()->Config;
+        const FSoraWeapon& Weapon=FSoraCatalog::Get().Weapon(SoraPractice::EntryWeapon(Config.Mode,G->SelectedClass,Config.SpecialWeaponId));
+        HUD.Label(TEXT("入場時の武器： ")+Weapon.Name+TEXT("  /  メニューで 1 標準装備、3 特殊武器"),L,680*S,.46*S,Gold);
+        HUD.Label(TEXT("WASD 移動   マウス 照準   左クリック 射撃   右クリック 近接   R 装填   Ctrl 防御   Q 技   Space 跳躍   Tab 戦況表"),L,725*S,.50*S,Ivory);
+        HUD.Label(TEXT("倒れている間に 1・2・3 で次の武器、Q・E で流儀を選べます。Esc メニュー / F10 英語字幕。XOR は預けません。"),L,763*S,.45*S,Ivory);
+        if(G->bEnglishSubtitles)
+            HUD.Label(FString::Printf(TEXT("Enters with %s (1 standard, 3 special). While down, 1/2/3 pick the next weapon and Q/E the class. Tab: scoreboard. No XOR is bonded."),*Weapon.NameEnglish),
+                L,787*S,.43*S,Muted);
         if(auto* K=G->Kernel()) if(!K->PracticeError.IsEmpty()) HUD.WrappedLabel(K->PracticeError,L,447*S,.4*S,Gold,W-L*2,20*S,1);
     }
     else

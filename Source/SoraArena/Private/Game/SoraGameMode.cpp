@@ -153,8 +153,9 @@ void ASoraGameMode::DeterministicPractice()
 }
 void ASoraGameMode::SelectPracticeWeapon(int32 Slot)
 {
-    if(!bMenu||!bDeterministicPractice||Slot<0||Slot>2) return;
-    // 3 admits the class special; 1 and 2 enter with the standard loadout.
+    // 1 enters with the standard loadout and 3 admits the class special; the
+    // blade is chosen at respawn, as the kernel allows.
+    if(!bMenu||!bDeterministicPractice||(Slot!=0&&Slot!=2)) return;
     PracticeDirector->Config.SpecialWeaponId=Slot==2?SoraPractice::SpecialOf(SelectedClass):INDEX_NONE; PracticeDirector->Reset();
 }
 FString ASoraGameMode::ObjectiveText() const

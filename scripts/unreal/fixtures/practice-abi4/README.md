@@ -82,6 +82,12 @@ This replaces the reference controls/expectations by executing the loaded native
 
 ## Change log
 
+### 2026-09-26 four practice bot tiers (re-recorded identities only)
+
+The practice bots gained a fourth, strongest tier so that each of the practice lobby's four choices maps to a real tier. The ABI constants were renamed to the lobby's names, with no aliases: `ARENA_BOT_NOVICE` (0), `ARENA_BOT_STANDARD` (1), `ARENA_BOT_VETERAN` (2) and the new `ARENA_BOT_MASTER` (3). Codes 0-2 keep the parameters of the former Easy, Normal and Hard tiers, so every existing bot match replays unchanged; `arena_bot_input` now refuses code 4 and above. The re-record was required because three pinned files changed: `crates/arena-ffi/include/arena.h`, `crates/arena-ffi/src/lib.rs` and the runner binding `scripts/unreal/kernel_abi.py`.
+
+The new manifest was compared field by field with the previous one. Only `recorded_utc`, the reference library hash (`993d0ba6…` to `8f44cde8…`) and those three source and runner identities changed. The ABI layout, the map and weapon data identities, all 22 control files and every expected value of all 94 cases are identical. The library passed all 94 cases / 99,043 ticks and the seventeen negative guards on macOS arm64. Windows parity remains unverified.
+
 ### 2026-09-26 practice bots export (re-recorded identities only)
 
 ABI 4 gained one export, `arena_bot_input`, with the `ARENA_BOT_EASY`, `ARENA_BOT_NORMAL` and `ARENA_BOT_HARD` constants. It serves the zero-stake practice bots of the new `crates/arena-bots` crate, which `arena-ffi` now depends on; each handle keeps the bots' memories outside the state hash. No structure layout, kernel source or simulation outcome changed. The re-record was required because pinned files changed: `Cargo.toml` and `Cargo.lock` (the new workspace member and its dependency edges), `crates/arena-ffi/Cargo.toml`, `crates/arena-ffi/src/lib.rs`, `crates/arena-ffi/include/arena.h`, and the runner file `scripts/unreal/kernel_abi.py` (the new binding). The bot crate is deliberately not pinned: the fixture replays stored control bytes, and bots never author them.

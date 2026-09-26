@@ -5,11 +5,12 @@
 struct FKernelRuntime;
 
 // Practice numbering from arena.h, for code that does not include the kernel
-// header. Modes are ArenaConfig.mode; tiers are ARENA_BOT_*.
+// header. Modes are ArenaConfig.mode; tiers are ARENA_BOT_*, weakest first,
+// the practice lobby's Novice, Standard, Veteran and Master.
 namespace SoraPractice
 {
 enum EMode : int32 { FreeForAll = 0, Control = 1, Payload = 2, Melee = 3, ModeCount = 4 };
-enum EBot : int32 { BotEasy = 0, BotNormal = 1, BotHard = 2, BotCount = 3 };
+enum EBot : int32 { BotNovice = 0, BotStandard = 1, BotVeteran = 2, BotMaster = 3, BotCount = 4 };
 enum EEntity : int32 { Decoy = 1, Barricade = 2, FireZone = 3, Ward = 4 };
 enum EWinner : int32 { WinnerNone = 0, WinnerTeam = 1, WinnerSlot = 2, WinnerDraw = 3 };
 enum EHazard : int32 { HazardFire = 1, HazardSlag = 2, HazardShredder = 3 };
@@ -30,6 +31,12 @@ inline int32 MaxPlayers(int32 Mode) { return IsTeamMode(Mode) ? 12 : 8; }
 inline int32 PlayerStep(int32 Mode) { return IsTeamMode(Mode) ? 2 : 1; }
 // The class's special sidegrade (catalog weapons 12-17).
 inline int32 SpecialOf(int32 ClassId) { return 12 + ClassId; }
+// The weapon the player enters a match with: the admitted special, else the
+// class's ranged weapon, or its blade in Melee.
+inline int32 EntryWeapon(int32 Mode, int32 ClassId, int32 SpecialWeaponId)
+{
+    return SpecialWeaponId != INDEX_NONE ? SpecialWeaponId : Mode == Melee ? 2 * ClassId : 2 * ClassId + 1;
+}
 }
 
 /** One offline practice match: mode, seats, arena, the player's class and
@@ -46,8 +53,9 @@ struct FSoraPracticeConfig
     // SoraPractice::SpecialOf(ClassId) to enter with the class special, or
     // INDEX_NONE for the standard loadout. Melee admits only a melee special.
     int32 SpecialWeaponId = INDEX_NONE;
-    // SoraPractice::BotEasy, BotNormal or BotHard, for every bot.
-    int32 Difficulty = SoraPractice::BotNormal;
+    // SoraPractice::BotNovice, BotStandard, BotVeteran or BotMaster, for
+    // every bot.
+    int32 Difficulty = SoraPractice::BotStandard;
     bool operator==(const FSoraPracticeConfig& Other) const
     {
         return Mode == Other.Mode && PlayerCount == Other.PlayerCount && MapId == Other.MapId && ClassId == Other.ClassId &&
@@ -191,7 +199,9 @@ public:
     // Rust practice bot (crates/arena-bots) of Config.Difficulty.
     bool StartPractice(const FSoraPracticeConfig& Config);
     void StopPractice();
-    // One 60 Hz kernel tick with the player's input.
+    // One 60 Hz kernel tick with the player's input. A refused tick stops the
+    // session: nothing steps again until a new StartPractice, and the reason
+    // stays in PracticeError and PracticeErrorEnglish.
     bool StepPractice(const FSoraPracticeInput& Input);
     bool PracticeActive() const;
     // The bot policy's input for Slot on the next step, at the match's tier.
@@ -215,6 +225,7 @@ public:
     // three are zero in practice.
     uint64 PracticeDeposited = 0, PracticeRemaining = 0, PracticeEarnings = 0;
 private:
+    bool StepOnce(const FSoraPracticeInput& Input);
     bool RefreshPractice();
     bool LoadPracticeMap(int32 MapId, FSoraPracticeMap& Map, FString& Why, FString& WhyEnglish) const;
     bool Refuse(const TCHAR* Japanese, const TCHAR* English);

@@ -38,10 +38,7 @@ void SoraPracticeDressing::SilkFoundryWall(FSoraPracticeArenaKit& Kit,const FSor
         Kit.Bays(Wall,20,H-18,100.f,12.f,TEXT("Timber"),FLinearColor(.42f,.3f,.2f),nullptr,FLinearColor(.07f,.1f,.32f));
         Kit.Course(Wall,H-18,H,TEXT("Timber"),FLinearColor(.3f,.21f,.16f));
     }
-    else if(K::Labelled(Wall,TEXT("dye vats")))
-    {
-        if(!Kit.FittedProp(TEXT("SM_Nyaagyu_IrrigationSluice"),Wall.Minimum,Wall.Maximum,1.45f)) Machine(Kit,Wall,FLinearColor(.1f,.14f,.42f));
-    }
+    else if(K::Labelled(Wall,TEXT("dye vats"))) Machine(Kit,Wall,FLinearColor(.1f,.14f,.42f));
     else if(K::Labelled(Wall,TEXT("pillar"))) Column(Kit,Wall,FLinearColor(1.f,.55f,.2f),.8f);
     else if(K::Labelled(Wall,TEXT("boiler"))) Industrial(Kit,Wall,Brick,FLinearColor(1.f,.5f,.16f),true);
     else if(K::Labelled(Wall,TEXT("coal"))) Industrial(Kit,Wall,FLinearColor(.4f,.26f,.2f),FLinearColor::Black,false);

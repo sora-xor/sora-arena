@@ -40,9 +40,9 @@ void ASoraPracticePawn::BuildBanner(FLinearColor Color,bool bSora)
     for(const auto& Part:MarkParts) if(Part) Part->DestroyComponent();
     BannerParts.Reset(); MarkParts.Reset();
     const float HalfHeight=GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-    TArray<UStaticMeshComponent*> Parts;
+    TArray<USceneComponent*> Parts;
     SoraPracticeArt::Sashimono(this,GetCapsuleComponent(),HalfHeight,Color,bSora,false,&Parts);
-    for(UStaticMeshComponent* Part:Parts) BannerParts.Add(Part);
+    for(USceneComponent* Part:Parts) BannerParts.Add(Part);
     // The Teppo mark: a red ring with a pointer over the head, hidden unless marked.
     const float Over=HalfHeight+62.f;
     auto* Ring=SoraPracticeArt::Part(this,GetCapsuleComponent(),TEXT("MarkRing"),SoraPracticeArt::Cylinder,FVector(0,0,Over+22.f),FVector(.34f,.34f,.02f));

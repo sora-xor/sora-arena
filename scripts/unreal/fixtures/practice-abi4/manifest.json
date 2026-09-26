@@ -2,12 +2,12 @@
   "schema_version": 2,
   "fixture_id": "sora-arena-practice-abi4",
   "scope": "offline and staked C ABI 4 simulation, event, objective and presentation parity; not network, renderer or execution-proof qualification",
-  "recorded_utc": "2026-09-26T05:12:30.395017+00:00",
+  "recorded_utc": "2026-09-26T06:41:25.605586+00:00",
   "reference_host": {
     "system": "Darwin",
     "machine": "arm64",
     "python": "3.9.6",
-    "library_sha256": "993d0ba6d2a1ca195e4ccc497656d373635bc8fd710dada51f270ee60065c095"
+    "library_sha256": "8f44cde8109652f3c069f5a3d1351de9d6ed5497ff29acc6a6cafee3eda71834"
   },
   "input_encoding": {
     "bytes_per_slot": 8,
@@ -41,12 +41,12 @@
       "crates/arena-core/src/simulation/objectives.rs": "8a50c20b01d92c115bee40a03b711b6f03159c8d53eec23439c6b644e1acaa14",
       "crates/arena-core/src/simulation/respawn.rs": "2456988d8b376e2bead5f598980632bdc249a9fdc7a9f599da1cc228944885bd",
       "crates/arena-ffi/Cargo.toml": "027a2751c2c13423a70330a341a6e4a8499e0ebf078ea789415a66fc376f129b",
-      "crates/arena-ffi/src/lib.rs": "79dc08bed7c27f74a7c62c8e665fe236b4172791bf308ed6b42d723ceeb2a8af",
-      "crates/arena-ffi/include/arena.h": "83d86067d3ceb846e0239f718131e8e9bdd21f03a069c3863b665e3b30455d8b"
+      "crates/arena-ffi/src/lib.rs": "b81f091a219656230ba7373eeeab8b9b2cf89d7194b8619f8a2a8ad7fad9624d",
+      "crates/arena-ffi/include/arena.h": "0d963bb74bd1b9d985ba4c9f27be08fef80e1f0593cca51768f971fc7588fc72"
     }
   },
   "runner_files_sha256": {
-    "scripts/unreal/kernel_abi.py": "d4a6f28e26e1e6cc66a95c1dcf2ea53eef8cf112f026c1a71e5fbb25835b5cb5",
+    "scripts/unreal/kernel_abi.py": "0d676dd3fbdf1e7a5c6ed5fc0e923e1b54ef1a4891e4f9f6b6183ece04a00d7b",
     "scripts/unreal/verify_parity.py": "09cdd1365746a6c8122af343ae5cf47073ade8cdf7e55822cb5289aec929a028",
     "scripts/unreal/practice_fixture_bots.py": "f7b7e22c446a0aafbf0cd139bc7861ccfce855094e05094aafd40ef4ab829402"
   },

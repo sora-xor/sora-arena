@@ -19,16 +19,18 @@ mod plan;
 
 use arena_core::simulation::{Input, World};
 
-/// Practice difficulty, `ARENA_BOT_EASY`, `ARENA_BOT_NORMAL` and
-/// `ARENA_BOT_HARD` in the C ABI.
+/// Practice difficulty, weakest first: `ARENA_BOT_NOVICE`,
+/// `ARENA_BOT_STANDARD`, `ARENA_BOT_VETERAN` and `ARENA_BOT_MASTER` in the C
+/// ABI, the four tiers the practice lobby offers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Difficulty {
-    Easy = 0,
-    Normal = 1,
-    Hard = 2,
+    Novice = 0,
+    Standard = 1,
+    Veteran = 2,
+    Master = 3,
 }
 impl Difficulty {
-    pub const ALL: [Self; 3] = [Self::Easy, Self::Normal, Self::Hard];
+    pub const ALL: [Self; 4] = [Self::Novice, Self::Standard, Self::Veteran, Self::Master];
     /// The tier for a C ABI code, if it is one.
     pub fn from_code(code: u32) -> Option<Self> {
         Self::ALL.get(code as usize).copied()
@@ -67,7 +69,7 @@ pub(crate) struct Tier {
     adapts: bool,
 }
 
-const TIERS: [Tier; 3] = [
+const TIERS: [Tier; 4] = [
     Tier {
         reaction: 30,
         aim_error: 1500,
@@ -109,6 +111,23 @@ const TIERS: [Tier; 3] = [
         burst: 1,
         pause: 0,
         strafe: 48,
+        lead: true,
+        fooled: false,
+        adapts: true,
+    },
+    // Master punishes every opening: half the Veteran's reaction, a tighter
+    // aim that settles sooner, a faster turn and a quicker strafe.
+    Tier {
+        reaction: 4,
+        aim_error: 260,
+        aim_floor: 30,
+        settle: 24,
+        turn: 6400,
+        answer: 1,
+        reads_charge: true,
+        burst: 1,
+        pause: 0,
+        strafe: 36,
         lead: true,
         fooled: false,
         adapts: true,

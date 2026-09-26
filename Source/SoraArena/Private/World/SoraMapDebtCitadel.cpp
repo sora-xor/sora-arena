@@ -8,10 +8,10 @@ void ASoraWorldBuilder::DebtCitadelKiosk()
     ImportedProp(TEXT("SM_Alien_DebtKiosk"),NodePositions[1]+FVector(315,0,0),FRotator(0,90,0));
 }
 
-// Practice: the invaders' debt citadel. Vault masonry with cold lit seams,
-// columns ringed with light, ledger shelves and coin counters, and the
-// authored debt kiosk and street terminal where the kernel keeps a ledger
-// terminal or a bond press.
+// Practice: the Credit House's debt citadel. Vault masonry with cold lit
+// seams, columns ringed with light, ledger shelves, coin counters and
+// machines where the kernel keeps a ledger terminal or a bond press, each
+// filling its kernel box exactly.
 void SoraPracticeDressing::DebtCitadelWall(FSoraPracticeArenaKit& Kit,const FSoraPracticeWall& Wall,int32 Index)
 {
     using K=FSoraPracticeArenaKit;
@@ -20,16 +20,8 @@ void SoraPracticeDressing::DebtCitadelWall(FSoraPracticeArenaKit& Kit,const FSor
     else if(K::Labelled(Wall,TEXT("security"))) Vault(Kit,Wall,DebtRed,false);
     else if(K::Labelled(Wall,TEXT("vault column"))) Column(Kit,Wall,Cyan,1.3f);
     else if(K::Labelled(Wall,TEXT("vault block"))||K::Labelled(Wall,TEXT("archive"))) Vault(Kit,Wall,DebtRed,true);
-    else if(K::Labelled(Wall,TEXT("ledger terminal")))
-    {
-        if(!Kit.FittedProp(TEXT("SM_Alien_DebtKiosk"),Wall.Minimum,Wall.Maximum,1.35f)&&!Kit.FittedProp(TEXT("SM_Alien_StreetDebtTerminal"),Wall.Minimum,Wall.Maximum,1.35f))
-            Machine(Kit,Wall,Cyan);
-    }
-    else if(K::Labelled(Wall,TEXT("bond press")))
-    {
-        if(!Kit.FittedProp(TEXT("SM_Alien_StreetDebtTerminal"),Wall.Minimum,Wall.Maximum,1.35f)&&!Kit.FittedProp(TEXT("SM_Alien_DebtKiosk"),Wall.Minimum,Wall.Maximum,1.35f))
-            Machine(Kit,Wall,DebtRed);
-    }
+    else if(K::Labelled(Wall,TEXT("ledger terminal"))) Machine(Kit,Wall,Cyan);
+    else if(K::Labelled(Wall,TEXT("bond press"))) Machine(Kit,Wall,DebtRed);
     else if(K::Labelled(Wall,TEXT("coin counter"))) Machine(Kit,Wall,FLinearColor(.78f,.58f,.14f));
     else if(K::Labelled(Wall,TEXT("ledger shelf"))) Shelves(Kit,Wall);
     else if(K::Labelled(Wall,TEXT("conduit"))) Column(Kit,Wall,Cyan,1.5f);

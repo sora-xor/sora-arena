@@ -9,8 +9,7 @@
 // dojo halls and provision storehouses, CC0 trees and pines, roadside
 // dressing, cargo stacks and the irrigation sluice. All of it is visual; the
 // shared layout's primitive boxes stay the collision. Practice (at the end of
-// this file) reuses the terrain, wall module, leaf silt and trees only as
-// World/SoraPracticeArena.h allows.
+// this file) loads none of this campaign art.
 void ASoraWorldBuilder::NyaagyuTerrain()
 {
 #if PLATFORM_MAC
@@ -185,17 +184,13 @@ void ASoraWorldBuilder::EstateSluice(FVector P)
 }
 
 // Practice: the estate as the kernel draws it. The perimeter and the east
-// gatehouse take the authored wall module where it fits the kernel's box;
-// the halls, storehouses, screens, lanterns, rocks and hedges are dressed in
-// courses that fill each box exactly. The scanned terrain and stone paths lie
-// flat, and the trees stand outside the walls.
+// gatehouse are tsuiji plaster walls, and the halls, storehouses, screens,
+// lanterns, rocks and hedges are dressed in courses that fill each box
+// exactly. The stone paths lie flat.
 void SoraPracticeDressing::EstateWall(FSoraPracticeArenaKit& Kit,const FSoraPracticeWall& Wall,int32 Index)
 {
     using K=FSoraPracticeArenaKit;
-    if(K::Labelled(Wall,TEXT("perimeter"))||K::Labelled(Wall,TEXT("gatehouse")))
-    {
-        if(!Kit.FittedRun(TEXT("SM_Nyaagyu_EstateWall_4m"),Wall,400.f,1.35f)) PlasterWall(Kit,Wall,FLinearColor(.95f,.93f,.88f));
-    }
+    if(K::Labelled(Wall,TEXT("perimeter"))||K::Labelled(Wall,TEXT("gatehouse"))) PlasterWall(Kit,Wall,FLinearColor(.95f,.93f,.88f));
     else if(K::Labelled(Wall,TEXT("dojo hall"))) Townhouse(Kit,Wall,FLinearColor(.95f,.93f,.88f),false,true);
     else if(K::Labelled(Wall,TEXT("screen"))) Screen(Kit,Wall);
     else if(K::Labelled(Wall,TEXT("toro"))) StoneLantern(Kit,Wall);
@@ -207,30 +202,9 @@ void SoraPracticeDressing::EstateWall(FSoraPracticeArenaKit& Kit,const FSoraPrac
 }
 void SoraPracticeDressing::EstateGrounds(FSoraPracticeArenaKit& Kit)
 {
-    // The scanned mesh terrain rises 1-4 cm; its photographed stone route
-    // already runs along the mid lane, so only the flanking lanes are laid.
-    Kit.EstateTerrain();
-    Lanes(Kit,TEXT("TerrainStone"),FLinearColor(.95f,.93f,.9f),170.f,5.f,true);
-    // Leaf silt along the inner edges of the long walls, flat on the ground.
-    const float Edge=Kit.Map.Maximum.Y-110.f;
-    const float Along[]={-1500.f,-450.f,650.f,1650.f};
-    for(int32 Index=0;Index<UE_ARRAY_COUNT(Along);++Index)
-        for(int32 Side:{-1,1})
-            Kit.Prop(TEXT("SM_Nyaagyu_RoadsideLeafSilt_4m"),FVector(Along[Index]*Side,Side*Edge,1.f),FRotator(0,Side>0?180.f:0.f,0),.8f);
-    // Broadleaf trees behind the perimeter, far enough out that no branch
-    // reaches over the arena.
-    const FVector Min=Kit.Map.Minimum, Max=Kit.Map.Maximum;
-    int32 Tree=0;
-    for(float X=Min.X+200.f;X<=Max.X-200.f;X+=750.f)
-        for(int32 Side:{-1,1})
-        {
-            ++Tree;
-            Kit.Tree(FVector(X,Side>0?Max.Y+780.f:Min.Y-780.f,0),FRotator(0,37.f*Tree,0),1.9f+.1f*(Tree%3));
-        }
-    for(float Y=Min.Y+400.f;Y<=Max.Y-400.f;Y+=800.f)
-        for(int32 Side:{-1,1})
-        {
-            ++Tree;
-            Kit.Tree(FVector(Side>0?Max.X+780.f:Min.X-780.f,Y,0),FRotator(0,53.f*Tree,0),1.9f+.1f*(Tree%3));
-        }
+    // Stone paths along every lane on the kernel's flat floor. The arena
+    // loads no campaign art: the scanned terrain would lift feet 1-4 cm off the
+    // kernel floor, and the campaign's trees and silt are placed for its own
+    // collision.
+    Lanes(Kit,TEXT("TerrainStone"),FLinearColor(.95f,.93f,.9f),170.f,1.5f,false);
 }

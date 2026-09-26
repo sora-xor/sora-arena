@@ -6,7 +6,7 @@
 //! defense and the once-per-tick plan.
 use arena_bots::{
     Bots,
-    Difficulty::{self, Easy, Hard, Normal},
+    Difficulty::{self, Master, Novice, Standard, Veteran},
 };
 use arena_core::{
     catalog, economy, math,
@@ -254,41 +254,41 @@ fn winner_text(winner: Option<Winner>) -> String {
 /// Eight players of every class, with an NFT-entitled naginata and an
 /// unentitled rocket (2B when bonded).
 const FFA8: [Seat; 8] = [
-    seat(0, 0, 1, false, Hard),
-    seat(1, 1, 3, false, Normal),
-    seat(0, 2, 5, false, Easy),
-    seat(1, 3, 7, false, Normal),
-    seat(0, 4, 9, false, Hard),
-    seat(1, 5, 11, false, Easy),
-    seat(0, 0, 12, true, Normal),
-    seat(1, 3, 15, false, Easy),
+    seat(0, 0, 1, false, Veteran),
+    seat(1, 1, 3, false, Standard),
+    seat(0, 2, 5, false, Novice),
+    seat(1, 3, 7, false, Standard),
+    seat(0, 4, 9, false, Veteran),
+    seat(1, 5, 11, false, Novice),
+    seat(0, 0, 12, true, Standard),
+    seat(1, 3, 15, false, Novice),
 ];
 /// Eight blades: every class's melee weapon and the naginata.
 const MELEE8: [Seat; 8] = [
-    seat(0, 0, 0, false, Hard),
-    seat(1, 1, 2, false, Normal),
-    seat(0, 2, 4, false, Easy),
-    seat(1, 3, 6, false, Normal),
-    seat(0, 4, 8, false, Hard),
-    seat(1, 5, 10, false, Easy),
-    seat(0, 0, 12, true, Normal),
-    seat(1, 1, 2, false, Easy),
+    seat(0, 0, 0, false, Veteran),
+    seat(1, 1, 2, false, Standard),
+    seat(0, 2, 4, false, Novice),
+    seat(1, 3, 6, false, Standard),
+    seat(0, 4, 8, false, Veteran),
+    seat(1, 5, 10, false, Novice),
+    seat(0, 0, 12, true, Standard),
+    seat(1, 1, 2, false, Novice),
 ];
 /// 6v6 with mirrored classes and tiers; the specials are spread over both
 /// teams, entitled and unentitled.
 const TEAM12: [Seat; 12] = [
-    seat(0, 0, 0, false, Hard),
-    seat(1, 0, 1, false, Hard),
-    seat(0, 1, 3, false, Normal),
-    seat(1, 1, 13, false, Normal),
-    seat(0, 2, 5, false, Easy),
-    seat(1, 2, 14, true, Easy),
-    seat(0, 3, 15, false, Normal),
-    seat(1, 3, 7, false, Normal),
-    seat(0, 4, 9, false, Hard),
-    seat(1, 4, 16, true, Hard),
-    seat(0, 5, 17, true, Normal),
-    seat(1, 5, 11, false, Normal),
+    seat(0, 0, 0, false, Veteran),
+    seat(1, 0, 1, false, Veteran),
+    seat(0, 1, 3, false, Standard),
+    seat(1, 1, 13, false, Standard),
+    seat(0, 2, 5, false, Novice),
+    seat(1, 2, 14, true, Novice),
+    seat(0, 3, 15, false, Standard),
+    seat(1, 3, 7, false, Standard),
+    seat(0, 4, 9, false, Veteran),
+    seat(1, 4, 16, true, Veteran),
+    seat(0, 5, 17, true, Standard),
+    seat(1, 5, 11, false, Standard),
 ];
 
 /// Every mode on every map at the full ten-minute clock. Half of the matches
@@ -445,12 +445,18 @@ fn a_bot_plans_once_per_tick_whatever_the_calling_order() {
 fn a_team_fills_its_missing_roles_at_respawn() {
     // Three Samurai against three stronger Teppō in Control. As they die, the
     // highest-slot duplicate of each team takes the first missing role
-    // (Kusushi, then Karakuri, then Samurai, then Hanabi), and Easy bots never
+    // (Kusushi, then Karakuri, then Samurai, then Hanabi), and Novice bots never
     // change at all.
     let mut seats = vec![];
     for rank in 0..3 {
-        seats.push(seat(0, 0, 1, false, Normal));
-        seats.push(seat(1, 2, 5, false, if rank == 0 { Hard } else { Normal }));
+        seats.push(seat(0, 0, 1, false, Standard));
+        seats.push(seat(
+            1,
+            2,
+            5,
+            false,
+            if rank == 0 { Veteran } else { Standard },
+        ));
     }
     let case = Case {
         name: "control6-roles".into(),
@@ -481,7 +487,7 @@ fn a_team_fills_its_missing_roles_at_respawn() {
     assert!(out.loadout_requests > 0);
     let mut easy = case.clone();
     for s in &mut easy.seats {
-        s.difficulty = Easy;
+        s.difficulty = Novice;
     }
     let out = play(&easy);
     assert!(out.class_changes.is_empty() && out.loadout_requests == 0);
@@ -500,18 +506,22 @@ fn harder_tiers_win_mirror_matches() {
             max_ticks: 10_800,
         })
     };
-    let out = duel(Hard, Easy);
+    let out = duel(Veteran, Novice);
     assert!(out.kills[0] > 2 * out.kills[1], "{:?}", out.kills);
     assert_eq!(out.winner, Some(Winner::Slot(0)));
-    let out = duel(Normal, Easy);
+    let out = duel(Standard, Novice);
     assert!(out.kills[0] > out.kills[1], "{:?}", out.kills);
-    let out = duel(Easy, Hard);
+    let out = duel(Novice, Veteran);
     assert_eq!(out.winner, Some(Winner::Slot(1)));
-    // A Hard team beats the same team played Easy.
+    // Master, the top tier, beats the Veteran in the same mirror.
+    let out = duel(Master, Veteran);
+    assert!(out.kills[0] > out.kills[1], "{:?}", out.kills);
+    assert_eq!(out.winner, Some(Winner::Slot(0)));
+    // A Veteran team beats the same team played Novice.
     let seats = TEAM12
         .iter()
         .map(|s| Seat {
-            difficulty: if s.team == 0 { Hard } else { Easy },
+            difficulty: if s.team == 0 { Veteran } else { Novice },
             ..*s
         })
         .collect();
@@ -528,13 +538,13 @@ fn harder_tiers_win_mirror_matches() {
 
 #[test]
 fn blades_keep_maai_parry_and_riposte() {
-    // A Hard Samurai with a katana against a Hard Hanabi with the charged
+    // A Veteran Samurai with a katana against a Veteran Hanabi with the charged
     // Kanabo: parries of the heavy blow and counter-stance ripostes both land.
     let out = play(&Case {
         name: "melee2-duel".into(),
         mode: Mode::Melee,
         map: 2,
-        seats: vec![seat(0, 0, 0, false, Hard), seat(1, 3, 6, false, Hard)],
+        seats: vec![seat(0, 0, 0, false, Veteran), seat(1, 3, 6, false, Veteran)],
         base_bond: 0,
         max_ticks: 7200,
     });
@@ -546,13 +556,13 @@ fn blades_keep_maai_parry_and_riposte() {
 
 #[test]
 fn stronger_escorts_push_the_payload_home() {
-    // Hard attackers against Easy defenders on Debt Citadel, zero stake: the
+    // Veteran attackers against Novice defenders on Debt Citadel, zero stake: the
     // attackers win by reaching the end of the route, passing every
     // checkpoint, well inside the clock.
     let seats = TEAM12
         .iter()
         .map(|s| Seat {
-            difficulty: if s.team == 0 { Hard } else { Easy },
+            difficulty: if s.team == 0 { Veteran } else { Novice },
             ..*s
         })
         .collect();

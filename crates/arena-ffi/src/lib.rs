@@ -42,9 +42,10 @@ pub const EVENT_OVERTIME: u32 = 17;
 pub const EVENT_CHECKPOINT: u32 = 18;
 pub const EVENT_MATCH_WINNER: u32 = 19;
 /// `ARENA_BOT_*` practice difficulties.
-pub const BOT_EASY: u32 = Difficulty::Easy as u32;
-pub const BOT_NORMAL: u32 = Difficulty::Normal as u32;
-pub const BOT_HARD: u32 = Difficulty::Hard as u32;
+pub const BOT_NOVICE: u32 = Difficulty::Novice as u32;
+pub const BOT_STANDARD: u32 = Difficulty::Standard as u32;
+pub const BOT_VETERAN: u32 = Difficulty::Veteran as u32;
+pub const BOT_MASTER: u32 = Difficulty::Master as u32;
 #[repr(C)]
 pub struct ArenaConfig {
     pub abi_version: u32,

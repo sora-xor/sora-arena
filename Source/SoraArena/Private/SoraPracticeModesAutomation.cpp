@@ -4,20 +4,24 @@
 #include "arena.h"
 #include "EngineUtils.h"
 #include "SoraAutomationWorld.h"
+#include "SoraCatalog.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraPracticeActors.h"
 #include "SoraPracticeDirector.h"
 #include "SoraPracticePawn.h"
 #include "SoraWorldBuilder.h"
+#include "HUD/SoraPracticeText.h"
 #include "Camera/CameraActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "InputCoreTypes.h"
 #include "Misc/AutomationTest.h"
+#include "StaticMeshResources.h"
 #include "Templates/UniquePtr.h"
 
 // Offline practice in every mode on every arena, through the real game mode,
@@ -37,6 +41,19 @@ struct FState
     int32 Marks = 0;
     // Per match: shots, credited kills and unattributed deaths by events.
     int32 Shots = 0, Kills = 0, Deaths = 0, Unattributed = 0;
+    // The hero's component count per class after its first start: a restart
+    // must leave it as it was.
+    TMap<int32, int32> HeroComponents;
+    // The kernel's players before the frame being checked, kept by the test
+    // itself so bodies are checked against the kernel, not the director.
+    TArray<FSoraPracticePlayer> Before;
+    // The one who struck the player down on the last frame, for the
+    // spectator check on the next; how often the camera followed that
+    // killer, and how often that was a choice (another living seat came first).
+    int32 PendingKiller = INDEX_NONE, PlayerKiller = INDEX_NONE;
+    int32 KillerFollows = 0, KillerChoices = 0;
+    // Kill lines checked for the killer's weapon in both languages.
+    int32 FeedWeapons = 0;
     ~FState()
     {
         World.Reset();
@@ -131,7 +148,19 @@ bool Begin(FAutomationTestBase& Test, FState& State, const FSoraPracticeConfig& 
     const int32 Entry = Config.SpecialWeaponId != INDEX_NONE ? Config.SpecialWeaponId
         : Config.Mode == SoraPractice::Melee ? 2 * Config.ClassId : 2 * Config.ClassId + 1;
     bOk &= Test.TestEqual(*(Context + TEXT(": player enters with the chosen loadout")), K->PracticePlayers[0].WeaponId, Entry);
+    bOk &= Test.TestEqual(*(Context + TEXT(": the menu names the kernel's entry weapon")), SoraPractice::EntryWeapon(Config.Mode, Config.ClassId, Config.SpecialWeaponId), Entry);
     bOk &= Test.TestEqual(*(Context + TEXT(": admitted special")), K->PracticePlayers[0].AdmittedSpecial, Config.SpecialWeaponId);
+    // The hero outlives every match: a restart leaves exactly one banner on it
+    // and no component behind.
+    TInlineComponentArray<UActorComponent*> HeroParts(M->Hero());
+    int32 KamonRoots = 0;
+    for (const UActorComponent* Part : HeroParts)
+        KamonRoots += Part->GetName().StartsWith(TEXT("SashimonoKamonRoot")) ? 1 : 0;
+    bOk &= Test.TestEqual(*(Context + TEXT(": one sashimono mark on the hero")), KamonRoots, 1);
+    const int32 Known = State.HeroComponents.FindOrAdd(Config.ClassId, HeroParts.Num());
+    bOk &= Test.TestEqual(*(Context + TEXT(": a restart leaves the hero's components as they were")), HeroParts.Num(), Known);
+    State.Before = K->PracticePlayers;
+    State.PendingKiller = INDEX_NONE;
     if (Config.Mode == SoraPractice::Melee)
         for (const FSoraPracticePlayer& P : K->PracticePlayers)
             bOk &= Test.TestTrue(*(Context + TEXT(": Melee seats only blades")), (P.WeaponId % 2 == 0 && P.WeaponId < 12) || P.WeaponId == 12);
@@ -144,13 +173,25 @@ bool CheckPresentation(FAutomationTestBase& Test, FState& State, const FString& 
     const UArenaKernelSubsystem* K = Kernel(State);
     const USoraPracticeDirector* D = Director(State);
     const FSoraPracticeMap& Map = K->PracticeMap;
+    const float Alpha = D->InterpolationAlpha();
+    if (Alpha < 0.f || Alpha > 1.f)
+        return Fail(Test, State, FString::Printf(TEXT("%s: interpolation fraction %f outside a tick"), *Context, Alpha));
     for (int32 Slot = 0; Slot < K->PracticePlayers.Num(); ++Slot)
     {
         const FSoraPracticePlayer& P = K->PracticePlayers[Slot];
         const ASoraCharacterBase* Pawn = D->Participant(Slot);
         if (!Pawn)
             return Fail(Test, State, FString::Printf(TEXT("%s: slot %d has no body at tick %u"), *Context, Slot, K->PracticeTick));
-        const FVector Expected = D->PresentedFeet(Slot) + FVector(0, 0, Pawn->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight());
+        // The body carries this tick's kernel state...
+        if (FMath::RoundToInt(Pawn->Health) != P.Health || Pawn->ClassId != P.ClassId || Pawn->WeaponId != P.WeaponId)
+            return Fail(Test, State, FString::Printf(TEXT("%s: slot %d holds health %.0f, class %d, weapon %d; the kernel has %d, %d, %d at tick %u"), *Context, Slot,
+                Pawn->Health, Pawn->ClassId, Pawn->WeaponId, P.Health, P.ClassId, P.WeaponId, K->PracticeTick));
+        // ...and stands between the kernel's last two states, as this test
+        // recorded them; a respawn or a jump of more than 260 cm shows at once.
+        const FSoraPracticePlayer* Prior = State.Before.IsValidIndex(Slot) ? &State.Before[Slot] : nullptr;
+        const bool bJump = !Prior || Prior->Alive != P.Alive || FVector::Dist(Prior->Feet, P.Feet) > 260.0;
+        const FVector Expected = (bJump ? P.Feet : FMath::Lerp(Prior->Feet, P.Feet, static_cast<double>(Alpha))) +
+            FVector(0, 0, Pawn->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight());
         if (!Pawn->GetActorLocation().Equals(Expected, .5))
             return Fail(Test, State, FString::Printf(TEXT("%s: slot %d drawn at %s, expected %s at tick %u"), *Context, Slot,
                 *Pawn->GetActorLocation().ToString(), *Expected.ToString(), K->PracticeTick));
@@ -208,7 +249,12 @@ bool CheckPresentation(FAutomationTestBase& Test, FState& State, const FString& 
 bool Advance(FAutomationTestBase& Test, FState& State, const FString& Context)
 {
     const UArenaKernelSubsystem* K = Kernel(State);
+    const USoraPracticeDirector* D = Director(State);
     const uint32 Before = K->PracticeTick;
+    // The player went down on the last frame: now the spectator camera
+    // follows the killer while that killer stands.
+    const int32 Killer = State.PendingKiller;
+    State.PendingKiller = INDEX_NONE;
     if (!State.World->Tick(1))
     {
         State.World->ForwardErrorMessages(&Test);
@@ -233,10 +279,36 @@ bool Advance(FAutomationTestBase& Test, FState& State, const FString& Context)
             ++State.Deaths;
             if (Event.Actor == INDEX_NONE) ++State.Unattributed;
             else if (Event.Actor == Event.Target) return Fail(Test, State, Context + TEXT(": the kernel credited a player for its own death"));
-            else ++State.Kills;
+            else
+            {
+                ++State.Kills;
+                // The feed names the weapon the killer held, in both languages.
+                const FSoraPracticeFeedEntry* Line = D->Feed().FindByPredicate([&](const FSoraPracticeFeedEntry& Entry)
+                    { return Entry.Kind == FSoraPracticeFeedEntry::Kill && Entry.Tick == K->PracticeTick && Entry.Actor == Event.Actor && Entry.Target == Event.Target; });
+                const int32 Held = K->PracticePlayers[Event.Actor].WeaponId;
+                const FSoraWeapon& Weapon = FSoraCatalog::Get().Weapon(Held);
+                const SoraPracticeText::FLine Text = Line ? SoraPracticeText::FeedLine(*K, *Line) : SoraPracticeText::FLine();
+                if (!Line || Line->WeaponId != Held || !Text.Japanese.Contains(Weapon.Name) || !Text.English.Contains(Weapon.NameEnglish))
+                    return Fail(Test, State, FString::Printf(TEXT("%s: the kill of slot %d by slot %d at tick %u does not name weapon %d: \"%s\" / \"%s\""), *Context,
+                        Event.Target, Event.Actor, K->PracticeTick, Held, *Text.Japanese, *Text.English));
+                ++State.FeedWeapons;
+            }
+            if (Event.Target == 0) State.PendingKiller = State.PlayerKiller = Event.Actor;
         }
     }
-    return CheckPresentation(Test, State, Context);
+    if (Killer != INDEX_NONE && K->PracticePlayers.IsValidIndex(Killer) && K->PracticePlayers[Killer].Alive && !K->PracticeTerminal)
+    {
+        if (!D->IsSpectating() || D->SpectatedSlot() != Killer)
+            return Fail(Test, State, FString::Printf(TEXT("%s: down at tick %u, the camera shows slot %d, not the killer %d"), *Context, K->PracticeTick, D->SpectatedSlot(), Killer));
+        ++State.KillerFollows;
+        // Following the killer was a choice when another living seat comes
+        // first in the cycling order.
+        for (int32 Slot = 1; Slot < Killer; ++Slot)
+            if (K->PracticePlayers[Slot].Alive) { ++State.KillerChoices; break; }
+    }
+    const bool bOk = CheckPresentation(Test, State, Context);
+    State.Before = K->PracticePlayers;
+    return bOk;
 }
 
 // Every rule of World/SoraPracticeArena.h, for the arena just built.
@@ -247,32 +319,36 @@ bool CheckArena(FAutomationTestBase& Test, FState& State)
     const FSoraPracticeMap& Map = K->PracticeMap;
     const FString Context = FString::Printf(TEXT("Arena %d (%s)"), Map.MapId, *Map.Slug);
     constexpr double Tolerance = .6, FlatHeight = 8.01;
+    const UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, SoraPracticeArt::Cube);
     TArray<UStaticMeshComponent*> Components;
     Builder->GetComponents(Components);
-    TArray<double> Filled; Filled.SetNumZeroed(Map.Walls.Num());
-    TArray<bool> Propped, Matched; Propped.SetNumZeroed(Map.Walls.Num()); Matched.SetNumZeroed(Map.Walls.Num());
-    int32 Grounds = 0, Pieces = 0, Props = 0, Flat = 0, Hazard = 0, Outside = 0;
+    // The boxes that dress each kernel wall.
+    TArray<TArray<FBox>> Fill;
+    Fill.SetNum(Map.Walls.Num());
+    TArray<bool> Matched;
+    Matched.SetNumZeroed(Map.Walls.Num());
+    int32 Grounds = 0, Pieces = 0, Flat = 0, Hazard = 0, Outside = 0;
     const auto Inside = [](const FBox& Box, const FVector& Min, const FVector& Max)
     {
         return Box.Min.X >= Min.X - Tolerance && Box.Min.Y >= Min.Y - Tolerance && Box.Min.Z >= Min.Z - Tolerance &&
             Box.Max.X <= Max.X + Tolerance && Box.Max.Y <= Max.Y + Tolerance && Box.Max.Z <= Max.Z + Tolerance;
     };
-    // Places one visible piece: inside a wall (counting towards its volume
-    // when it is that wall's dressing), flat, inside a hazard or outside.
-    const auto Classify = [&](const FBox& Box, bool bWallPiece, bool bProp, const FString& Name)
+    // Places one visible piece: a box of a wall's dressing inside that wall,
+    // or anything flat, inside a hazard or outside the bounds.
+    const auto Classify = [&](const FBox& Box, bool bWallBox, const FString& Name)
     {
         ++Pieces;
-        int32 Wall = INDEX_NONE;
-        for (int32 Index = 0; Index < Map.Walls.Num() && Wall == INDEX_NONE; ++Index)
-            if (Inside(Box, Map.Walls[Index].Minimum, Map.Walls[Index].Maximum)) Wall = Index;
-        if (Wall != INDEX_NONE)
-        {
-            Props += bProp ? 1 : 0;
-            Propped[Wall] |= bProp;
-            if (bWallPiece || bProp) Filled[Wall] += Box.GetVolume();
-            return true;
-        }
-        if (bWallPiece || bProp)
+        for (int32 Index = 0; Index < Map.Walls.Num(); ++Index)
+            if (Inside(Box, Map.Walls[Index].Minimum, Map.Walls[Index].Maximum))
+            {
+                // Only an axis-aligned box can be checked against the kernel's
+                // box; any other mesh there could hide invisible collision.
+                if (!bWallBox)
+                    return Fail(Test, State, FString::Printf(TEXT("%s: %s inside wall %d (%s) is not a box piece of its dressing"), *Context, *Name, Index, *Map.Walls[Index].Label));
+                Fill[Index].Add(Box);
+                return true;
+            }
+        if (bWallBox)
             return Fail(Test, State, FString::Printf(TEXT("%s: wall dressing %s leaves every kernel wall at %s"), *Context, *Name, *Box.ToString()));
         if (Box.Max.Z <= Map.Minimum.Z + FlatHeight) { ++Flat; return true; }
         for (const FSoraPracticeHazard& H : Map.Hazards)
@@ -312,31 +388,79 @@ bool CheckArena(FAutomationTestBase& Test, FState& State)
         {
             ++Batches;
             const FBox Local = Batch->GetStaticMesh()->GetBoundingBox();
-            const bool bWallPiece = Batch->ComponentHasTag(TEXT("PracticeWallPiece"));
+            const bool bWallBox = Batch->ComponentHasTag(TEXT("PracticeWallPiece")) && Batch->GetStaticMesh() == Cube;
             for (int32 Instance = 0; Instance < Batch->GetInstanceCount(); ++Instance)
             {
                 FTransform Transform;
                 Batch->GetInstanceTransform(Instance, Transform, true);
-                if (!Classify(Local.TransformBy(Transform), bWallPiece, false, FString::Printf(TEXT("%s[%d]"), *Batch->GetName(), Instance)))
+                // A box stays a box only when it is turned by whole quarter turns.
+                const FRotator Turn = Transform.Rotator();
+                const double Quarter = FMath::Fmod(FMath::Abs(Turn.Yaw), 90.0);
+                const bool bAligned = (Quarter < .01 || Quarter > 89.99) && FMath::IsNearlyZero(Turn.Pitch, .01) && FMath::IsNearlyZero(Turn.Roll, .01);
+                if (!Classify(Local.TransformBy(Transform), bWallBox && bAligned, FString::Printf(TEXT("%s[%d]"), *Batch->GetName(), Instance)))
                     return false;
             }
             continue;
         }
-        if (!Classify(Box, false, Component->ComponentHasTag(TEXT("FittedProp")), Component->GetName()))
+        if (!Classify(Box, false, Component->GetName()))
             return false;
     }
     bool bOk = Test.TestEqual(*(Context + TEXT(": one ground slab")), Grounds, 1);
+    int64 Samples = 0;
     for (int32 Wall = 0; Wall < Map.Walls.Num(); ++Wall)
     {
         const FSoraPracticeWall& W = Map.Walls[Wall];
-        const double Volume = FBox(W.Minimum, W.Maximum).GetVolume();
-        bOk &= Test.TestTrue(*FString::Printf(TEXT("%s: wall %d (%s) has its hidden kernel box"), *Context, Wall, *W.Label), Matched[Wall]);
-        // Dressing fills each wall exactly: courses tile it, fitted props cover it.
-        bOk &= Test.TestTrue(*FString::Printf(TEXT("%s: wall %d (%s) is dressed to its exact volume (%.0f of %.0f cm3)"), *Context, Wall, *W.Label, Filled[Wall], Volume),
-            FMath::Abs(Filled[Wall] - Volume) <= Volume * .003);
+        const FBox Kernel(W.Minimum, W.Maximum);
+        const FString Name = FString::Printf(TEXT("%s: wall %d (%s)"), *Context, Wall, *W.Label);
+        bOk &= Test.TestTrue(*(Name + TEXT(" has its hidden kernel box")), Matched[Wall]);
+        // The boxes tile the wall: they do not overlap, and together they
+        // have its volume...
+        double Filled = 0, Overlap = 0;
+        const TArray<FBox>& Boxes = Fill[Wall];
+        for (int32 A = 0; A < Boxes.Num(); ++A)
+        {
+            Filled += Boxes[A].GetVolume();
+            for (int32 B = A + 1; B < Boxes.Num(); ++B)
+                if (Boxes[A].Intersect(Boxes[B])) Overlap += Boxes[A].Overlap(Boxes[B]).GetVolume();
+        }
+        bOk &= Test.TestTrue(*FString::Printf(TEXT("%s's dressing does not overlap (%.1f cm3)"), *Name, Overlap), Overlap <= Kernel.GetVolume() * 1e-5);
+        bOk &= Test.TestTrue(*FString::Printf(TEXT("%s is dressed to its exact volume (%.0f of %.0f cm3)"), *Name, Filled, Kernel.GetVolume()),
+            FMath::Abs(Filled - Kernel.GetVolume()) <= Kernel.GetVolume() * .003);
+        // ...and every face a player or a shot can meet is visible exactly on
+        // the kernel's face: points 5 mm inside each side and the top, every
+        // 10 cm, all lie in a dressing box.
+        int32 Holes = 0;
+        FVector FirstHole = FVector::ZeroVector;
+        const auto Covered = [&Boxes](const FVector& Point)
+        {
+            for (const FBox& Box : Boxes)
+                if (Box.IsInsideOrOn(Point)) return true;
+            return false;
+        };
+        const FVector Min = Kernel.Min, Max = Kernel.Max;
+        for (int32 Face = 0; Face < 5; ++Face)
+        {
+            // Faces: -X, +X, -Y, +Y, top. U and V run across the face.
+            const int32 Axis = Face < 2 ? 0 : Face < 4 ? 1 : 2;
+            const double Depth = Face == 0 || Face == 2 ? Min[Axis] + .5 : Max[Axis] - .5;
+            const int32 UAxis = Axis == 0 ? 1 : 0, VAxis = Axis == 2 ? 1 : 2;
+            const int32 USteps = FMath::Max(1, FMath::CeilToInt((Max[UAxis] - Min[UAxis]) / 10.0));
+            const int32 VSteps = FMath::Max(1, FMath::CeilToInt((Max[VAxis] - Min[VAxis]) / 10.0));
+            for (int32 U = 0; U <= USteps; ++U)
+                for (int32 V = 0; V <= VSteps; ++V)
+                {
+                    FVector Point;
+                    Point[Axis] = Depth;
+                    Point[UAxis] = FMath::Lerp(Min[UAxis] + .5, Max[UAxis] - .5, static_cast<double>(U) / USteps);
+                    Point[VAxis] = FMath::Lerp(Min[VAxis] + .5, Max[VAxis] - .5, static_cast<double>(V) / VSteps);
+                    ++Samples;
+                    if (!Covered(Point)) { if (Holes++ == 0) FirstHole = Point; }
+                }
+        }
+        bOk &= Test.TestEqual(*FString::Printf(TEXT("%s shows every face of its kernel box (first gap at %s)"), *Name, *FirstHole.ToString()), Holes, 0);
     }
-    UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_ARENA_OK: map=%d slug=%s walls=%d pieces=%d batches=%d components=%d fitted_props=%d flat=%d hazard=%d backdrop=%d"),
-        Map.MapId, *Map.Slug, Map.Walls.Num(), Pieces, Batches, Components.Num(), Props, Flat, Hazard, Outside);
+    UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_ARENA_OK: map=%d slug=%s walls=%d pieces=%d batches=%d components=%d face_samples=%lld flat=%d hazard=%d backdrop=%d"),
+        Map.MapId, *Map.Slug, Map.Walls.Num(), Pieces, Batches, Components.Num(), Samples, Flat, Hazard, Outside);
     // Spawn pads, the Control plaza and the payload track lie flat too.
     TArray<const AActor*> ModeActors = {Director(State)->ModeDressing(), Director(State)->ControlPoint()};
     for (const AActor* Actor : ModeActors)
@@ -396,7 +520,7 @@ bool FSoraPracticeArenaDressingTest::RunTest(const FString& Parameters)
         Step(this, State, [Map](FAutomationTestBase& Test, FState& S)
         {
             FSoraPracticeConfig Config;
-            Config.MapId = Map; Config.PlayerCount = 2; Config.Difficulty = SoraPractice::BotEasy;
+            Config.MapId = Map; Config.PlayerCount = 2; Config.Difficulty = SoraPractice::BotNovice;
             return Begin(Test, S, Config, false) && CheckArena(Test, S);
         });
     Step(this, State, [](FAutomationTestBase& Test, FState& S) { return Close(Test, S); });
@@ -496,10 +620,10 @@ bool FSoraPracticeFullMatchTest::RunTest(const FString& Parameters)
     // One whole match per mode, the player seat also on the Rust bot policy,
     // played to the kernel's terminal tick through the game mode's clock.
     FSoraPracticeConfig Configs[SoraPractice::ModeCount];
-    Configs[0].Mode = SoraPractice::FreeForAll; Configs[0].PlayerCount = 8; Configs[0].MapId = 0; Configs[0].ClassId = 2; Configs[0].Difficulty = SoraPractice::BotNormal;
-    Configs[1].Mode = SoraPractice::Control; Configs[1].PlayerCount = 12; Configs[1].MapId = 1; Configs[1].ClassId = 0; Configs[1].SpecialWeaponId = 12; Configs[1].Difficulty = SoraPractice::BotHard;
-    Configs[2].Mode = SoraPractice::Payload; Configs[2].PlayerCount = 12; Configs[2].MapId = 2; Configs[2].ClassId = 5; Configs[2].SpecialWeaponId = 17; Configs[2].Difficulty = SoraPractice::BotHard;
-    Configs[3].Mode = SoraPractice::Melee; Configs[3].PlayerCount = 6; Configs[3].MapId = 3; Configs[3].ClassId = 1; Configs[3].Difficulty = SoraPractice::BotNormal;
+    Configs[0].Mode = SoraPractice::FreeForAll; Configs[0].PlayerCount = 8; Configs[0].MapId = 0; Configs[0].ClassId = 2; Configs[0].Difficulty = SoraPractice::BotStandard;
+    Configs[1].Mode = SoraPractice::Control; Configs[1].PlayerCount = 12; Configs[1].MapId = 1; Configs[1].ClassId = 0; Configs[1].SpecialWeaponId = 12; Configs[1].Difficulty = SoraPractice::BotVeteran;
+    Configs[2].Mode = SoraPractice::Payload; Configs[2].PlayerCount = 12; Configs[2].MapId = 2; Configs[2].ClassId = 5; Configs[2].SpecialWeaponId = 17; Configs[2].Difficulty = SoraPractice::BotVeteran;
+    Configs[3].Mode = SoraPractice::Melee; Configs[3].PlayerCount = 6; Configs[3].MapId = 3; Configs[3].ClassId = 1; Configs[3].Difficulty = SoraPractice::BotMaster;
     const FStateRef State = MakeShared<FState>();
     Prepare(*this, State);
     Step(this, State, [](FAutomationTestBase& Test, FState& S) { return Open(Test, S); });
@@ -575,11 +699,16 @@ bool FSoraPracticeFullMatchTest::RunTest(const FString& Parameters)
         for (int32 Kind = SoraPractice::Decoy; Kind <= SoraPractice::Ward; ++Kind)
             bOk &= Test.TestTrue(*FString::Printf(TEXT("Entity kind %d was presented and checked"), Kind), S.EntityKinds[Kind] > 0);
         bOk &= Test.TestTrue(TEXT("A Teppo mark was shown over a marked player"), S.Marks > 0);
+        // Every death of the player moved the camera to a standing killer, and
+        // at least once another living seat came first in the cycling order.
+        bOk &= Test.TestTrue(TEXT("The spectator camera followed the player's killers"), S.KillerFollows > 0);
+        bOk &= Test.TestTrue(TEXT("Following the killer was a choice at least once"), S.KillerChoices > 0);
+        bOk &= Test.TestTrue(TEXT("Kill lines named the killers' weapons"), S.FeedWeapons > 0);
         FString Kinds;
         for (int32 Kind = ARENA_EVENT_SHOT; Kind <= ARENA_EVENT_MATCH_WINNER; ++Kind)
             Kinds += FString::Printf(TEXT("%s%d:%d"), Kind == ARENA_EVENT_SHOT ? TEXT("") : TEXT(","), Kind, S.Kinds[Kind]);
-        UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_MATCHES_OK: kinds=%s entities=decoy:%d,barricade:%d,fire:%d,ward:%d marks=%d"), *Kinds,
-            S.EntityKinds[1], S.EntityKinds[2], S.EntityKinds[3], S.EntityKinds[4], S.Marks);
+        UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_MATCHES_OK: kinds=%s entities=decoy:%d,barricade:%d,fire:%d,ward:%d marks=%d killer_follows=%d killer_choices=%d feed_weapons=%d"), *Kinds,
+            S.EntityKinds[1], S.EntityKinds[2], S.EntityKinds[3], S.EntityKinds[4], S.Marks, S.KillerFollows, S.KillerChoices, S.FeedWeapons);
         return Close(Test, S) && bOk;
     });
     return true;
@@ -594,11 +723,12 @@ bool FSoraPracticeRespawnLoadoutTest::RunTest(const FString& Parameters)
 {
     (void)Parameters;
     using namespace SoraPracticeModes;
-    // A Samurai admitted with the naginata stands still against one Hard bot
-    // until struck down, then chooses a new class and weapon while the
-    // spectator camera follows the bot, and returns with that loadout.
+    // A Samurai admitted with the naginata stands still among three Veteran
+    // bots until struck down, then chooses a new class and weapon while the
+    // spectator camera follows the one who struck, and returns with that
+    // loadout.
     FSoraPracticeConfig Config;
-    Config.PlayerCount = 2; Config.MapId = 0; Config.ClassId = 0; Config.SpecialWeaponId = 12; Config.Difficulty = SoraPractice::BotHard;
+    Config.PlayerCount = 4; Config.MapId = 0; Config.ClassId = 0; Config.SpecialWeaponId = 12; Config.Difficulty = SoraPractice::BotVeteran;
     const FStateRef State = MakeShared<FState>();
     Prepare(*this, State);
     Step(this, State, [](FAutomationTestBase& Test, FState& S) { return Open(Test, S) && S.World->EnableKeyInput(); });
@@ -609,7 +739,7 @@ bool FSoraPracticeRespawnLoadoutTest::RunTest(const FString& Parameters)
         for (int32 Frame = 0; Frame < 600 && K->PracticePlayers[0].Alive; ++Frame)
             if (!Advance(Test, S, Describe(Config))) return false;
         if (!K->PracticePlayers[0].Alive) { bDone = true; return true; }
-        if (K->PracticeTick >= 7200) return Fail(Test, S, TEXT("The Hard bot never struck down the still player in two minutes"));
+        if (K->PracticeTick >= 7200) return Fail(Test, S, TEXT("No Veteran bot struck down the still player in two minutes"));
         return true;
     });
     Step(this, State, [Config](FAutomationTestBase& Test, FState& S)
@@ -620,7 +750,11 @@ bool FSoraPracticeRespawnLoadoutTest::RunTest(const FString& Parameters)
         if (!Advance(Test, S, Context)) return false;
         const APlayerController* Controller = Cast<APlayerController>(S.World->Player()->GetController());
         bool bOk = Test.TestTrue(TEXT("Down: the spectator camera takes the view"), D->IsSpectating() && Controller->GetViewTarget() == D->SpectatorCamera());
-        bOk &= Test.TestEqual(TEXT("Down: the camera follows the one who struck"), D->SpectatedSlot(), 1);
+        // Advance checks on every frame that the camera follows the kernel's
+        // recorded killer while that killer stands.
+        bOk &= Test.TestTrue(TEXT("Down: a bot struck the player"), S.PlayerKiller > 0);
+        if (K->PracticePlayers.IsValidIndex(S.PlayerKiller) && K->PracticePlayers[S.PlayerKiller].Alive)
+            bOk &= Test.TestEqual(TEXT("Down: the camera follows the one who struck"), D->SpectatedSlot(), S.PlayerKiller);
         bOk &= Test.TestEqual(TEXT("Down: the choice starts at the current class"), D->DesiredClass(), 0);
         // The kernel's rules for the choice (combat-rules §10).
         bOk &= Test.TestTrue(TEXT("The admitted naginata is selectable for the Samurai"), D->CanSelectLoadout(0, 2));
@@ -642,8 +776,16 @@ bool FSoraPracticeRespawnLoadoutTest::RunTest(const FString& Parameters)
         for (int32 Frame = 0; Frame < 3; ++Frame)
             if (!Advance(Test, S, Context)) return false;
         bOk &= Test.TestTrue(TEXT("The kernel holds the new choice"), K->PracticePlayers[0].PendingClass == 2 && K->PracticePlayers[0].PendingWeapon == 4);
+        // Cycling moves to another standing bot whenever there is one.
+        int32 Standing = 0;
+        for (int32 Slot = 1; Slot < K->PracticePlayers.Num(); ++Slot) Standing += K->PracticePlayers[Slot].Alive ? 1 : 0;
+        const int32 Watched = D->SpectatedSlot();
         D->CycleSpectator(1);
-        bOk &= Test.TestEqual(TEXT("Cycling the camera stays among the living"), D->SpectatedSlot(), 1);
+        const int32 Next = D->SpectatedSlot();
+        bOk &= Test.TestTrue(TEXT("Cycling the camera stays among the living bots"), Next > 0 && K->PracticePlayers[Next].Alive);
+        bOk &= Test.TestTrue(TEXT("Cycling the camera moves when another bot stands"), Standing < 2 || Next != Watched);
+        D->CycleSpectator(-1);
+        bOk &= Test.TestTrue(TEXT("Cycling back returns to the same bot"), Standing < 2 || D->SpectatedSlot() == Watched);
         return bOk || Fail(Test, S, Context + TEXT(": the respawn choice failed"));
     });
     Repeat(this, State, [Config](FAutomationTestBase& Test, FState& S, bool& bDone)
@@ -667,6 +809,217 @@ bool FSoraPracticeRespawnLoadoutTest::RunTest(const FString& Parameters)
         bOk &= Test.TestTrue(TEXT("The player's own view returns"), !D->IsSpectating() && Controller->GetViewTarget() == Player);
         UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_RESPAWN_OK: tick=%u class=%d weapon=%d"), K->PracticeTick, K->PracticePlayers[0].ClassId, K->PracticePlayers[0].WeaponId);
         return (Close(Test, S) && bOk) || Fail(Test, S, TEXT("The respawn loadout did not apply"));
+    });
+    return true;
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraPracticeRefusedStepTest,
+    "SoraArena.Practice.RefusedStepStops",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraPracticeRefusedStepTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPracticeModes;
+    // A tick the kernel refuses ends the session: closing the menu cannot
+    // step on from an unverified state, and only Enter starts again.
+    FSoraPracticeConfig Config;
+    Config.PlayerCount = 4; Config.Difficulty = SoraPractice::BotStandard;
+    const FStateRef State = MakeShared<FState>();
+    Prepare(*this, State);
+    Step(this, State, [](FAutomationTestBase& Test, FState& S) { return Open(Test, S); });
+    Step(this, State, [Config](FAutomationTestBase& Test, FState& S)
+    {
+        if (!Begin(Test, S, Config, false)) return false;
+        for (int32 Frame = 0; Frame < 30; ++Frame)
+            if (!Advance(Test, S, Describe(Config))) return false;
+        return true;
+    });
+    Step(this, State, [Config](FAutomationTestBase& Test, FState& S)
+    {
+        ASoraGameMode* M = Mode(S);
+        UArenaKernelSubsystem* K = Kernel(S);
+        // Button bit 10 is outside the canonical input (combat-rules §2.2).
+        FSoraPracticeInput Bad;
+        Bad.Buttons = 1u << 10;
+        bool bOk = Test.TestFalse(TEXT("The kernel refuses a non-canonical input"), K->StepPractice(Bad));
+        bOk &= Test.TestFalse(TEXT("A refused tick ends the session"), K->PracticeActive());
+        bOk &= Test.TestTrue(TEXT("The refusal keeps its reason in both languages"), !K->PracticeError.IsEmpty() && !K->PracticeErrorEnglish.IsEmpty());
+        bOk &= Test.TestTrue(TEXT("No state survives the refusal"), K->PracticeTick == 0 && K->PracticePlayers.IsEmpty());
+        bOk &= Test.TestFalse(TEXT("The next step is refused too"), K->StepPractice(FSoraPracticeInput()));
+        // As the director leaves it: the menu open with the reason. Esc then
+        // closes the menu, and the frames after it must reopen it untouched.
+        M->SetMenuOpen(true);
+        M->ToggleMenu();
+        bOk &= Test.TestFalse(TEXT("Esc closes the menu"), M->bMenu);
+        if (!S.World->Tick(3)) return Fail(Test, S, TEXT("The world failed to tick after the refusal"));
+        bOk &= Test.TestTrue(TEXT("Closing the menu cannot resume a refused session"), M->bMenu && !K->PracticeActive() && K->PracticeTick == 0 && !K->PracticeError.IsEmpty());
+        // Enter starts a fresh match, which plays on.
+        M->BeginRound();
+        bOk &= Test.TestTrue(TEXT("Enter starts a fresh match after a refusal"), K->PracticeActive() && K->PracticeTick == 0 && K->PracticeError.IsEmpty() && !M->bMenu);
+        S.Before = K->PracticePlayers;
+        for (int32 Frame = 0; Frame < 10; ++Frame)
+            if (!Advance(Test, S, Describe(Config))) return false;
+        UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_REFUSAL_OK: tick=%u"), K->PracticeTick);
+        return (Close(Test, S) && bOk) || Fail(Test, S, TEXT("A refused tick did not stop practice"));
+    });
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSoraPracticeMarksTextTest,
+    "SoraArena.Practice.MarksTextScoreboard",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+bool FSoraPracticeMarksTextTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraPracticeModes;
+    // A 6-against-6 Control match at the Master tier: each side's marks, the
+    // League's colours, every practice line in both languages, and the held
+    // scoreboard.
+    FSoraPracticeConfig Config;
+    Config.Mode = SoraPractice::Control; Config.PlayerCount = 12; Config.MapId = 2; Config.ClassId = 4; Config.Difficulty = SoraPractice::BotMaster;
+    const FStateRef State = MakeShared<FState>();
+    Prepare(*this, State);
+    Step(this, State, [](FAutomationTestBase& Test, FState& S) { return Open(Test, S) && S.World->EnableKeyInput(); });
+    Step(this, State, [Config](FAutomationTestBase& Test, FState& S) { return Begin(Test, S, Config, false); });
+    Step(this, State, [Config](FAutomationTestBase& Test, FState& S)
+    {
+        ASoraGameMode* M = Mode(S);
+        const UArenaKernelSubsystem* K = Kernel(S);
+        const USoraPracticeDirector* D = Director(S);
+        // The imported SORA mon: one metre across, 1 cm thick, facing +X.
+        const UStaticMesh* Mon = LoadObject<UStaticMesh>(nullptr, SoraPracticeArt::SoraMon);
+        if (!Mon) return Fail(Test, S, TEXT("The SORA mon mesh is not imported; run scripts/unreal/import_sora_kamon_mon.py"));
+        const FVector MonSize = Mon->GetBoundingBox().GetSize();
+        bool bOk = Test.TestTrue(TEXT("The mon is imported at its authored size and facing"), MonSize.Equals(FVector(1, 100, 100), .05));
+        // Upright: the ends of its top bar stand above the centre, as in the SVG.
+        const FStaticMeshLODResources& Lod = Mon->GetRenderData()->LODResources[0];
+        bool bBarEnd = false;
+        for (uint32 Index = 0; Index < Lod.VertexBuffers.PositionVertexBuffer.GetNumVertices() && !bBarEnd; ++Index)
+        {
+            const FVector3f P = Lod.VertexBuffers.PositionVertexBuffer.VertexPosition(Index);
+            bBarEnd = FMath::IsNearlyEqual(FMath::Abs(P.Y), 30.56f, .1f) && FMath::IsNearlyEqual(P.Z, 24.92f, .1f);
+        }
+        bOk &= Test.TestTrue(TEXT("The mon stands upright with its bars above the centre"), bBarEnd);
+        // Counts one actor's marks: SORA mons and ledger sigils.
+        const auto Marks = [Mon](const AActor* Actor, int32& Mons, int32& Sigils, int32& Strokes)
+        {
+            Mons = Sigils = Strokes = 0;
+            TInlineComponentArray<UActorComponent*> Parts(Actor);
+            for (const UActorComponent* Part : Parts)
+            {
+                const auto* Mesh = Cast<UStaticMeshComponent>(Part);
+                if (const auto* Tally = Cast<UInstancedStaticMeshComponent>(Part))
+                    Sigils += Tally->GetName().Contains(TEXT("SigilTally")) && Tally->GetInstanceCount() == 70 ? 1 : 0;
+                else if (Mesh && Mesh->GetStaticMesh() == Mon)
+                    ++Mons;
+                Strokes += Part->GetName().Contains(TEXT("Stroke")) ? 1 : 0;
+            }
+        };
+        int32 Mons = 0, Sigils = 0, Strokes = 0;
+        for (int32 Slot = 1; Slot < K->PracticePlayers.Num(); ++Slot)
+        {
+            const bool bLeague = D->IsSoraSide(Slot);
+            Marks(D->Participant(Slot), Mons, Sigils, Strokes);
+            bOk &= Test.TestTrue(*FString::Printf(TEXT("Slot %d (team %d) carries its side's mark and no redrawn strokes"), Slot, K->PracticePlayers[Slot].Team),
+                Mons == (bLeague ? 1 : 0) && Sigils == (bLeague ? 0 : 1) && Strokes == 0 && bLeague == (K->PracticePlayers[Slot].Team == 0));
+        }
+        Marks(M->Hero(), Mons, Sigils, Strokes);
+        bOk &= Test.TestTrue(TEXT("The hero's own banner carries one SORA mon"), Mons == 1 && Sigils == 0 && Strokes == 0);
+        Marks(D->ControlPoint(), Mons, Sigils, Strokes);
+        bOk &= Test.TestTrue(TEXT("The Control point holds one mon and one sigil for its owner"), Mons == 1 && Sigils == 1 && Strokes == 0);
+        Marks(D->ModeDressing(), Mons, Sigils, Strokes);
+        bOk &= Test.TestTrue(TEXT("Each League spawn pad carries the mon, each Credit House pad the sigil"),
+            Mons == K->PracticeMap.TeamSpawns[0].Num() && Sigils == K->PracticeMap.TeamSpawns[1].Num() && Strokes == 0);
+        // Cyan never marks the League: its colour and its tracers are vermillion.
+        for (int32 Slot = 0; Slot < K->PracticePlayers.Num(); ++Slot)
+            if (D->IsSoraSide(Slot))
+            {
+                const FLinearColor Tracer = D->TracerColor(Slot);
+                bOk &= Test.TestTrue(*FString::Printf(TEXT("League slot %d fires vermillion, not cyan"), Slot), Tracer.R > 2.f * Tracer.B && Tracer.R > 2.f * Tracer.G);
+            }
+        bOk &= Test.TestTrue(TEXT("The ledger sigil is the Credit House's cyan"), SoraPracticeArt::LedgerCyan.B > 2.f * SoraPracticeArt::LedgerCyan.R);
+
+        // Names: the lobby's modes and the story bible's sides.
+        const auto Same = [&Test](const SoraPracticeText::FLine& Line, const TCHAR* Japanese, const TCHAR* English)
+        {
+            return Test.TestTrue(*FString::Printf(TEXT("%s is %s / %s"), *Line.Japanese, Japanese, English), Line.Japanese == Japanese && Line.English == English);
+        };
+        bOk &= Same(SoraPracticeText::ModeName(SoraPractice::FreeForAll), TEXT("乱戦"), TEXT("Free-for-all"));
+        bOk &= Same(SoraPracticeText::ModeName(SoraPractice::Control), TEXT("拠点制圧"), TEXT("Control"));
+        bOk &= Same(SoraPracticeText::ModeName(SoraPractice::Payload), TEXT("護送"), TEXT("Payload"));
+        bOk &= Same(SoraPracticeText::ModeName(SoraPractice::Melee), TEXT("近接のみ"), TEXT("Melee only"));
+        bOk &= Same(SoraPracticeText::SideName(0), TEXT("空紋一揆"), TEXT("The Sora League"));
+        bOk &= Same(SoraPracticeText::SideName(1), TEXT("恒星信用院"), TEXT("The Stellar Credit House"));
+        bOk &= Test.TestTrue(TEXT("The start notice names the mode in both languages"), M->Notice.Contains(TEXT("拠点制圧")) && M->NoticeEnglish.Contains(TEXT("Control")));
+        // Every line has both languages, and the English carries no Japanese.
+        int32 Lines = 0;
+        const auto Bilingual = [&Test, &Lines](const SoraPracticeText::FLine& Line, const FString& What)
+        {
+            ++Lines;
+            bool bJapaneseInEnglish = false;
+            for (const TCHAR Char : Line.English) bJapaneseInEnglish |= (Char >= 0x3000 && Char < 0xA000) || (Char >= 0xFF00 && Char <= 0xFFEF);
+            return Test.TestTrue(*FString::Printf(TEXT("%s: \"%s\" / \"%s\" is bilingual"), *What, *Line.Japanese, *Line.English),
+                !Line.Japanese.IsEmpty() && !Line.English.IsEmpty() && !bJapaneseInEnglish);
+        };
+        for (int32 Slot = 0; Slot < K->PracticePlayers.Num(); ++Slot)
+        {
+            const FSoraPracticePlayer& P = K->PracticePlayers[Slot];
+            bOk &= Bilingual(SoraPracticeText::Participant(*K, Slot), TEXT("Participant"));
+            for (const bool bTeams : {true, false}) bOk &= Bilingual(SoraPracticeText::SeatSide(P, Slot, bTeams), TEXT("Side"));
+            FSoraPracticePlayer Down = P;
+            Down.Alive = false; Down.RespawnTicks = 300;
+            bOk &= Bilingual(SoraPracticeText::SeatStatus(P), TEXT("Standing")) & Bilingual(SoraPracticeText::SeatStatus(Down), TEXT("Down"));
+        }
+        for (int32 Kind = FSoraPracticeFeedEntry::Kill; Kind <= FSoraPracticeFeedEntry::Winner; ++Kind)
+            for (const int32 Weapon : {static_cast<int32>(INDEX_NONE), 5})
+            {
+                FSoraPracticeFeedEntry Entry;
+                Entry.Kind = static_cast<FSoraPracticeFeedEntry::EKind>(Kind); Entry.Actor = 3; Entry.Target = 0; Entry.WeaponId = Weapon; Entry.Detail = 1;
+                bOk &= Bilingual(SoraPracticeText::FeedLine(*K, Entry), FString::Printf(TEXT("Feed kind %d"), Kind));
+            }
+        for (int32 Class = 0; Class < SoraPractice::ClassCount; ++Class)
+            for (int32 Index = 0; Index < 3; ++Index)
+            {
+                const SoraPracticeText::FLine Cell = SoraPracticeText::LoadoutCell(*D, Class, Index);
+                bOk &= Bilingual(Cell, FString::Printf(TEXT("Loadout %d/%d"), Class, Index));
+                // A refused choice says why in both languages.
+                if (!D->CanSelectLoadout(Class, Index))
+                    bOk &= Test.TestTrue(*FString::Printf(TEXT("Loadout %d/%d gives its reason"), Class, Index), Cell.Japanese.Contains(TEXT("（")) && Cell.English.Contains(TEXT("(")));
+            }
+        // The lobby's four tiers are the kernel's four; a fifth is refused.
+        FSoraPracticeConfig Beyond = Config;
+        Beyond.Difficulty = SoraPractice::BotCount;
+        FString Why, WhyEnglish;
+        bOk &= Test.TestEqual(TEXT("Four bot tiers"), static_cast<int32>(SoraPractice::BotCount), 4);
+        bOk &= Test.TestTrue(TEXT("The Master tier is admitted"), K->ValidatePractice(Config));
+        bOk &= Test.TestTrue(TEXT("A fifth tier is refused with its reason"), !K->ValidatePractice(Beyond, &Why, &WhyEnglish) && !Why.IsEmpty() && !WhyEnglish.IsEmpty());
+
+        // The scoreboard shows while Tab (or the pad's View) is held.
+        ASoraPlayerCharacter* Hero = S.World->Player();
+        bOk &= Test.TestFalse(TEXT("No scoreboard until it is held"), D->ShowsScoreboard());
+        for (const FKey& Key : {EKeys::Tab, EKeys::Gamepad_Special_Left})
+        {
+            S.World->InjectKey(Key, IE_Pressed);
+            bOk &= Test.TestTrue(*(Key.ToString() + TEXT(" held shows the scoreboard")), Hero->IsScoreboardHeld() && D->ShowsScoreboard());
+            S.World->InjectKey(Key, IE_Released);
+            bOk &= Test.TestFalse(*(Key.ToString() + TEXT(" released hides it")), Hero->IsScoreboardHeld() || D->ShowsScoreboard());
+        }
+        // Its rows: every seat once, the League first, each team by kills then deaths.
+        const TArray<int32> Order = SoraPracticeText::TableOrder(K->PracticePlayers, true);
+        TSet<int32> Seen(Order);
+        bOk &= Test.TestTrue(TEXT("The scoreboard lists every seat once"), Order.Num() == K->PracticePlayers.Num() && Seen.Num() == Order.Num());
+        for (int32 Row = 1; Row < Order.Num(); ++Row)
+        {
+            const FSoraPracticePlayer& A = K->PracticePlayers[Order[Row - 1]];
+            const FSoraPracticePlayer& B = K->PracticePlayers[Order[Row]];
+            bOk &= Test.TestTrue(TEXT("Scoreboard rows run by team, kills, deaths"),
+                A.Team < B.Team || (A.Team == B.Team && (A.Kills > B.Kills || (A.Kills == B.Kills && A.Deaths <= B.Deaths))));
+        }
+        UE_LOG(LogTemp, Display, TEXT("SORA_PRACTICE_MARKS_TEXT_OK: mon_vertices=%u lines=%d seats=%d"), Lod.GetNumVertices(), Lines, Order.Num());
+        return (Close(Test, S) && bOk) || Fail(Test, S, TEXT("Marks, text or scoreboard failed"));
     });
     return true;
 }

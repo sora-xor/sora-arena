@@ -9,6 +9,7 @@
 #include "SoraPracticeActors.h"
 #include "SoraPracticePawn.h"
 #include "SoraWorldBuilder.h"
+#include "HUD/SoraPracticeText.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -64,14 +65,26 @@ bool USoraPracticeDirector::IsSoraSide(int32 Slot) const
 }
 bool USoraPracticeDirector::UsesAlienBody(int32 Slot) const
 {
-    // Team modes pit the resistance against the banker invaders; in a
-    // free-for-all every other cat is an invader.
+    // Team modes pit the Sora League against the Stellar Credit House; in a
+    // free-for-all every other seat is an invader.
     return SoraPractice::IsTeamMode(Config.Mode)?!IsSoraSide(Slot):Slot%2==1;
 }
 FLinearColor USoraPracticeDirector::ParticipantColor(int32 Slot) const
 {
     if(SoraPractice::IsTeamMode(Config.Mode)) return SoraPracticeArt::TeamColor(IsSoraSide(Slot)?0:1);
     return SoraPracticeArt::SlotColor(Slot);
+}
+FLinearColor USoraPracticeDirector::TracerColor(int32 Slot) const
+{
+    // Every shot in its shooter's colour: the League's vermillion for the
+    // player's side, never the Credit House's cyan.
+    return ParticipantColor(Slot);
+}
+bool USoraPracticeDirector::ShowsScoreboard() const
+{
+    const auto* K=Mode().Kernel();
+    const ASoraPlayerCharacter* Player=Mode().Hero();
+    return K&&K->PracticeActive()&&!K->PracticeTerminal&&Player&&Player->IsScoreboardHeld();
 }
 void USoraPracticeDirector::Clear()
 {
@@ -84,6 +97,7 @@ void USoraPracticeDirector::Clear()
     ProjectileActors.Reset(); Entities.Reset(); ProjectilePrevious.Reset(); ProjectileCurrent.Reset();
     for(AActor* Actor:{static_cast<AActor*>(ControlActor.Get()),static_cast<AActor*>(PayloadActor.Get()),Dressing.Get()}) if(IsValid(Actor)) Actor->Destroy();
     ControlActor=nullptr; PayloadActor=nullptr; Dressing=nullptr;
+    // The hero outlives the match: every banner component goes, scene roots too.
     for(const auto& Part:HeroBanner) if(IsValid(Part)) Part->DestroyComponent();
     HeroBanner.Reset(); Previous.Reset(); Current.Reset(); FeedEntries.Reset(); FinalResults=FSoraPracticeResults();
     Clock.Reset();
@@ -149,9 +163,9 @@ bool USoraPracticeDirector::Reset()
     Player->SetDojoTraining(false); Player->SetCampaignHeroLoadout(false);
     Player->ApplyClass(Config.ClassId); Player->SetKernelDriven(true,&K->PracticeMap); Pawns.Add(Player);
     // Others see the hero's banner; the hero never does.
-    TArray<UStaticMeshComponent*> Banner;
+    TArray<USceneComponent*> Banner;
     SoraPracticeArt::Sashimono(Player,Player->GetCapsuleComponent(),K->PracticeMap.PlayerHalfHeight,ParticipantColor(0),true,true,&Banner);
-    for(UStaticMeshComponent* Part:Banner) HeroBanner.Add(Part);
+    for(USceneComponent* Part:Banner) HeroBanner.Add(Part);
     for(int32 Slot=1;Slot<K->PracticePlayers.Num();++Slot)
     {
         FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -177,12 +191,11 @@ bool USoraPracticeDirector::Reset()
     bRespawnChoiceMade=false;
     UpdatePresentation(); UpdateEntities(); UpdateObjective(); PresentFrame();
     if(Player->GetController()) Player->GetController()->SetControlRotation(K->PracticePlayers[0].Aim);
-    static const TCHAR* ModeNames[]={TEXT("乱戦"),TEXT("陣取り"),TEXT("荷駄護送"),TEXT("剣戟")};
-    static const TCHAR* ModeNamesEnglish[]={TEXT("Free-for-all"),TEXT("Control"),TEXT("Payload"),TEXT("Melee")};
-    M.Notice=FString::Printf(TEXT("武芸稽古「%s」%d 人。左クリック射撃、右クリック近接、R 装填、Ctrl 防御、Q 技、Space 跳躍。倒れたら 1・2・3 で武器、Q・E で流儀を選べます。XOR は預けません。"),
-        ModeNames[Config.Mode],Config.PlayerCount);
-    M.NoticeEnglish=FString::Printf(TEXT("Offline practice, %s with %d players: fire, melee, R reload, Ctrl block, Q ability, Space jump. While down, 1/2/3 choose a weapon and Q/E a class. No XOR is bonded."),
-        ModeNamesEnglish[Config.Mode],Config.PlayerCount);
+    const SoraPracticeText::FLine Name=SoraPracticeText::ModeName(Config.Mode);
+    M.Notice=FString::Printf(TEXT("武芸稽古「%s」%d 人。左クリック射撃、右クリック近接、R 装填、Ctrl 防御、Q 技、Space 跳躍、Tab 戦況表。倒れたら 1・2・3 で武器、Q・E で流儀を選べます。XOR は預けません。"),
+        *Name.Japanese,Config.PlayerCount);
+    M.NoticeEnglish=FString::Printf(TEXT("Offline practice, %s with %d players: fire, melee, R reload, Ctrl block, Q ability, Space jump, Tab scoreboard. While down, 1/2/3 choose a weapon and Q/E a class. No XOR is bonded."),
+        *Name.English,Config.PlayerCount);
     M.NoticeTime=12.f;
     return true;
 }
@@ -204,7 +217,7 @@ void USoraPracticeDirector::BuildModeDressing()
                 SoraPracticeArt::Surface(SoraPracticeArt::Part(Dressing,Root,Name,SoraPracticeArt::Cube,Spawn.Feet+FVector(0,0,.8f),FVector(1.5f,1.5f,.016f),FRotator(0,Spawn.Yaw,0)),
                     TEXT("Stone"),SoraPracticeArt::TeamColor(Team)*.9f+FLinearColor(.25f,.25f,.25f));
                 SoraPracticeArt::Kamon(Dressing,Root,Name+TEXT("Kamon"),Spawn.Feet+FVector(0,0,1.7f),FRotator(90,Spawn.Yaw,0),70.f,1.2f,Team==0,
-                    SoraPracticeArt::TeamColor(Team),Team==0?FLinearColor(.93f,.9f,.84f):FLinearColor(.04f,.05f,.06f));
+                    Team==0?FLinearColor(.93f,.9f,.84f):FLinearColor(.035f,.038f,.045f));
             }
     else
         for(int32 Index=0;Index<Map.FreeForAllSpawns.Num();++Index)
@@ -229,9 +242,12 @@ void USoraPracticeDirector::Step(float Dt)
     const int32 Steps=Clock.Advance(Dt); bSlowed=Clock.Slowed;
     for(int32 Count=0;Count<Steps;++Count)
     {
+        // A refused tick has already ended the kernel session, so closing the
+        // menu cannot resume it; Enter starts a fresh match.
         if(!K->StepPractice(PlayerInput()))
         {
-            M.Notice=K->PracticeError; M.NoticeEnglish=K->PracticeErrorEnglish.IsEmpty()?TEXT("The reference kernel rejected the practice update. Simulation stopped."):K->PracticeErrorEnglish;
+            M.Notice=K->PracticeError.IsEmpty()?TEXT("戦闘カーネルが稽古の更新を拒否しました。処理を停止しました。"):K->PracticeError;
+            M.NoticeEnglish=K->PracticeErrorEnglish.IsEmpty()?TEXT("The reference kernel rejected the practice update. Simulation stopped."):K->PracticeErrorEnglish;
             M.SetMenuOpen(true); return;
         }
         UpdatePresentation(); UpdateEntities(); UpdateObjective(); PresentEvents();
@@ -249,6 +265,7 @@ FSoraPracticeInput USoraPracticeDirector::PlayerInput()
 {
     auto* K=Mode().Kernel();
     FSoraPracticeInput Input=Mode().Hero()->ConsumeKernelInput();
+    if(!K->PracticePlayers.IsValidIndex(0)) return Input;
     const FSoraPracticePlayer& Me=K->PracticePlayers[0];
     if(Me.Alive||Me.Exhausted||!bRespawnChoiceMade) return Input;
     // Down: the chosen loadout rides on the LOADOUT bit until the kernel holds it.
@@ -419,7 +436,7 @@ void USoraPracticeDirector::PresentEvents()
                 if(Pawns.IsValidIndex(Event.Actor)) Query.AddIgnoredActor(Pawns[Event.Actor]);
                 FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit,Event.From,Event.To,ECC_Visibility,Query);
                 // Cosmetic clipping only. Damage/hit markers are driven by kernel damage events.
-                SoraDamage::Beam(GetWorld(),Event.From,Hit.bBlockingHit?Hit.ImpactPoint:Event.To,Event.Actor==0?FLinearColor(.15,.8,1):ParticipantColor(Event.Actor),1.3f,.065f);
+                SoraDamage::Beam(GetWorld(),Event.From,Hit.bBlockingHit?Hit.ImpactPoint:Event.To,TracerColor(Event.Actor),1.3f,.065f);
             }
             break;
         case ARENA_EVENT_DAMAGE:
@@ -435,6 +452,9 @@ void USoraPracticeDirector::PresentEvents()
             break;
         case ARENA_EVENT_DEATH:
             Feed.Kind=Event.Actor!=INDEX_NONE?FSoraPracticeFeedEntry::Kill:Scorched.Contains(Event.Target)?FSoraPracticeFeedEntry::Hazard:FSoraPracticeFeedEntry::Fall;
+            // The kernel's death event names no weapon; a kill shows the one
+            // the killer held on this tick, which changes only at respawn.
+            Feed.WeaponId=Event.Actor!=INDEX_NONE&&K->PracticePlayers.IsValidIndex(Event.Actor)?K->PracticePlayers[Event.Actor].WeaponId:INDEX_NONE;
             AddFeed(Feed);
             if(Event.Target==0)
             {
@@ -562,11 +582,11 @@ FString USoraPracticeDirector::ObjectiveText() const
     switch(Config.Mode)
     {
     case SoraPractice::Control:
-        return FString::Printf(TEXT("陣取り / 味方 %s  敵 %s（目標 %s）%s/ 残り %s"),*MatchClock(O.Score[0]),*MatchClock(O.Score[1]),*MatchClock(O.ScoreTarget),O.Overtime?TEXT(" 延長戦 "):TEXT(" "),*Left);
+        return FString::Printf(TEXT("拠点制圧 / 味方 %s  敵 %s（目標 %s）%s/ 残り %s"),*MatchClock(O.Score[0]),*MatchClock(O.Score[1]),*MatchClock(O.ScoreTarget),O.Overtime?TEXT(" 延長戦 "):TEXT(" "),*Left);
     case SoraPractice::Payload:
-        return FString::Printf(TEXT("荷駄護送 / 進み %d%%  関所 %d / 3 / 残り %s"),FMath::RoundToInt(100.f*O.PayloadProgress/FMath::Max(1.f,O.PayloadLength)),O.PayloadCheckpoints,*Left);
+        return FString::Printf(TEXT("護送 / 進み %d%%  関所 %d / 3 / 残り %s"),FMath::RoundToInt(100.f*O.PayloadProgress/FMath::Max(1.f,O.PayloadLength)),O.PayloadCheckpoints,*Left);
     default:
-        return FString::Printf(TEXT("%s / 撃破 %d  戦死 %d / 残り %s"),Config.Mode==SoraPractice::Melee?TEXT("剣戟"):TEXT("乱戦"),P.Kills,P.Deaths,*Left);
+        return FString::Printf(TEXT("%s / 撃破 %d  戦死 %d / 残り %s"),*SoraPracticeText::ModeName(Config.Mode).Japanese,P.Kills,P.Deaths,*Left);
     }
 }
 FString USoraPracticeDirector::ObjectiveTextEnglish() const
@@ -583,6 +603,6 @@ FString USoraPracticeDirector::ObjectiveTextEnglish() const
     case SoraPractice::Payload:
         return FString::Printf(TEXT("Payload / %d%% pushed  Checkpoints %d / 3 / %s left"),FMath::RoundToInt(100.f*O.PayloadProgress/FMath::Max(1.f,O.PayloadLength)),O.PayloadCheckpoints,*Left);
     default:
-        return FString::Printf(TEXT("%s / Kills %d  Deaths %d / %s left"),Config.Mode==SoraPractice::Melee?TEXT("Melee"):TEXT("Free-for-all"),P.Kills,P.Deaths,*Left);
+        return FString::Printf(TEXT("%s / Kills %d  Deaths %d / %s left"),*SoraPracticeText::ModeName(Config.Mode).English,P.Kills,P.Deaths,*Left);
     }
 }

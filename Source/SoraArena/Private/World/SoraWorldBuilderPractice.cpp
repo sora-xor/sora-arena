@@ -104,14 +104,6 @@ void FSoraPracticeArenaKit::Lamp(FVector Location,FLinearColor Color,float Lumen
 #endif
     Builder.DecorActors.Add(Light);
 }
-void FSoraPracticeArenaKit::EstateTerrain() { Builder.NyaagyuTerrain(); }
-void FSoraPracticeArenaKit::Tree(FVector Location,FRotator Rotation,float Scale) { Builder.NyaagyuTree(Location,Rotation,Scale); ++Pieces; }
-bool FSoraPracticeArenaKit::Prop(const TCHAR* Asset,FVector Location,FRotator Rotation,float Scale)
-{
-    const bool bPlaced=Builder.ImportedProp(Asset,Location,Rotation,Scale);
-    Pieces+=bPlaced?1:0;
-    return bPlaced;
-}
 void FSoraPracticeArenaKit::Adopt(UStaticMeshComponent* Mesh) { Builder.Pieces.Add(Mesh); ++Pieces; }
 float FSoraPracticeArenaKit::Height(const FSoraPracticeWall& Wall) { return Wall.Maximum.Z-Wall.Minimum.Z; }
 bool FSoraPracticeArenaKit::Labelled(const FSoraPracticeWall& Wall,const TCHAR* Word) { return Wall.Label.Contains(Word); }
@@ -193,49 +185,6 @@ void FSoraPracticeArenaKit::LitCourse(const FSoraPracticeWall& Wall,float Bottom
             }
         }
     }
-}
-bool FSoraPracticeArenaKit::FittedProp(const TCHAR* Asset,const FVector& Minimum,const FVector& Maximum,float MaxStretch)
-{
-    const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Props/%s.%s"),Asset,Asset);
-    UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
-    if(!Mesh) return false;
-    const FBox Local=Mesh->GetBoundingBox();
-    const FVector LocalSize=Local.GetSize(), Size=Maximum-Minimum;
-    float BestStretch=MAX_flt; int32 BestYaw=0; FVector BestScale=FVector::OneVector;
-    for(const int32 Yaw:{0,90})
-    {
-        const FVector Turned=Yaw==0?LocalSize:FVector(LocalSize.Y,LocalSize.X,LocalSize.Z);
-        if(Turned.GetMin()<=1.f) continue;
-        const FVector Scale=Size/Turned;
-        const float Stretch=Scale.GetMax()/Scale.GetMin();
-        if(Stretch<BestStretch) { BestStretch=Stretch; BestYaw=Yaw; BestScale=Scale; }
-    }
-    if(BestStretch>MaxStretch) return false;
-    // Scale applies in the prop's own axes, before its turn.
-    const FVector LocalScale=BestYaw==0?BestScale:FVector(BestScale.Y,BestScale.X,BestScale.Z);
-    const FRotator Rotation(0,BestYaw,0);
-    const FVector Location=(Minimum+Maximum)*.5-Rotation.RotateVector(Local.GetCenter()*LocalScale);
-    if(!Builder.ImportedProp(Asset,Location,Rotation,1.f)) return false;
-    Builder.Pieces.Last()->SetRelativeScale3D(LocalScale);
-    Builder.Pieces.Last()->ComponentTags.Add(TEXT("FittedProp"));
-    ++Pieces;
-    return true;
-}
-bool FSoraPracticeArenaKit::FittedRun(const TCHAR* Asset,const FSoraPracticeWall& Wall,float ModuleLength,float MaxStretch)
-{
-    const FVector Size=Wall.Maximum-Wall.Minimum;
-    const bool bAlongX=Size.X>=Size.Y;
-    const float Length=bAlongX?Size.X:Size.Y;
-    const int32 Count=FMath::Max(1,FMath::RoundToInt(Length/ModuleLength));
-    const float Step=Length/Count;
-    for(int32 Index=0;Index<Count;++Index)
-    {
-        FVector A=Wall.Minimum, B=Wall.Maximum;
-        if(bAlongX) { A.X+=Index*Step; B.X=A.X+Step; } else { A.Y+=Index*Step; B.Y=A.Y+Step; }
-        // Every segment is the same size, so the first decides for all.
-        if(!FittedProp(Asset,A,B,MaxStretch)) { check(Index==0); return false; }
-    }
-    return true;
 }
 void FSoraPracticeArenaKit::Strip(FVector A,FVector B,float Width,float StripHeight,const TCHAR* Role,FLinearColor Tint)
 {

@@ -207,9 +207,10 @@ fn header_constants_match_the_kernel() {
             "ARENA_HAZARD_SHREDDER",
             arena_core::maps::HazardKind::Shredder as u32,
         ),
-        ("ARENA_BOT_EASY", BOT_EASY),
-        ("ARENA_BOT_NORMAL", BOT_NORMAL),
-        ("ARENA_BOT_HARD", BOT_HARD),
+        ("ARENA_BOT_NOVICE", BOT_NOVICE),
+        ("ARENA_BOT_STANDARD", BOT_STANDARD),
+        ("ARENA_BOT_VETERAN", BOT_VETERAN),
+        ("ARENA_BOT_MASTER", BOT_MASTER),
     ] {
         assert_eq!(define(name), value, "{name}");
     }
@@ -1209,7 +1210,14 @@ fn practice_bots_play_a_whole_match_through_the_abi() {
         (3, 6),
     ];
     let difficulties = [
-        BOT_HARD, BOT_NORMAL, BOT_EASY, BOT_HARD, BOT_NORMAL, BOT_EASY, BOT_NORMAL, BOT_HARD,
+        BOT_VETERAN,
+        BOT_STANDARD,
+        BOT_NOVICE,
+        BOT_MASTER,
+        BOT_STANDARD,
+        BOT_NOVICE,
+        BOT_MASTER,
+        BOT_VETERAN,
     ];
     let people = roster
         .iter()
@@ -1263,7 +1271,7 @@ fn practice_bots_play_a_whole_match_through_the_abi() {
         assert!(winner.is_some());
         // The match is over: bots have nothing left to plan.
         let mut input = idle(1).remove(0);
-        assert_eq!(arena_bot_input(a, 0, BOT_NORMAL, &mut input), 2);
+        assert_eq!(arena_bot_input(a, 0, BOT_STANDARD, &mut input), 2);
         arena_destroy(a);
         arena_destroy(b);
     }
@@ -1277,16 +1285,16 @@ fn bot_input_rejects_bad_arguments_and_staked_matches() {
         assert!(!handle.is_null());
         let mut input = idle(1).remove(0);
         assert_eq!(
-            arena_bot_input(std::ptr::null_mut(), 0, BOT_EASY, &mut input),
+            arena_bot_input(std::ptr::null_mut(), 0, BOT_NOVICE, &mut input),
             1
         );
         assert_eq!(
-            arena_bot_input(handle, 0, BOT_EASY, std::ptr::null_mut()),
+            arena_bot_input(handle, 0, BOT_NOVICE, std::ptr::null_mut()),
             1
         );
-        assert_eq!(arena_bot_input(handle, 2, BOT_EASY, &mut input), 1);
-        assert_eq!(arena_bot_input(handle, 0, 3, &mut input), 1);
-        assert_eq!(arena_bot_input(handle, 1, BOT_HARD, &mut input), 0);
+        assert_eq!(arena_bot_input(handle, 2, BOT_NOVICE, &mut input), 1);
+        assert_eq!(arena_bot_input(handle, 0, BOT_MASTER + 1, &mut input), 1);
+        assert_eq!(arena_bot_input(handle, 1, BOT_MASTER, &mut input), 0);
         assert_eq!(input.slot, 1);
         arena_destroy(handle);
         // Bots never play for bonded value.
@@ -1305,7 +1313,7 @@ fn bot_input_rejects_bad_arguments_and_staked_matches() {
         ];
         let handle = arena_create(&staked, bonded.as_ptr(), 2);
         assert!(!handle.is_null());
-        assert_eq!(arena_bot_input(handle, 0, BOT_NORMAL, &mut input), 1);
+        assert_eq!(arena_bot_input(handle, 0, BOT_STANDARD, &mut input), 1);
         arena_destroy(handle);
     }
 }

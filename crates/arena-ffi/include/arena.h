@@ -226,9 +226,10 @@ int32_t arena_projectile(const ArenaHandle*, uint32_t index, ArenaProjectileSnap
 int32_t arena_entity_count(const ArenaHandle*, uint32_t*);
 int32_t arena_entity(const ArenaHandle*, uint32_t index, ArenaEntitySnapshot*);
 int32_t arena_objective(const ArenaHandle*, ArenaObjectiveSnapshot*);
-#define ARENA_BOT_EASY 0u
-#define ARENA_BOT_NORMAL 1u
-#define ARENA_BOT_HARD 2u
+#define ARENA_BOT_NOVICE 0u
+#define ARENA_BOT_STANDARD 1u
+#define ARENA_BOT_VETERAN 2u
+#define ARENA_BOT_MASTER 3u
 /* Practice bots (crates/arena-bots): not rules and outside the state hash. A bot
  * plans the input for slot on the next arena_step from the current state, as a
  * player at a controller would; pass it to arena_step or replace it. It plans

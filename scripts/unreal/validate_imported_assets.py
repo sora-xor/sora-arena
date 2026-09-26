@@ -771,6 +771,14 @@ def expected_assets(project_root):
         require(hashlib.sha256(logo_file.read_bytes()).hexdigest() == logo[hash_key],
                 f"SORA logo source hash changed: {logo_file}")
     add(specs, logo["unreal_asset"], "Texture2D")
+    # The runtime SORA mon: the pinned SVG's two paths, extruded in Blender.
+    mon = read_manifest(logo_root / "SoraKamonMon/manifest.json")
+    require(mon.get("unreal_asset") == "/Game/Generated/UI/SM_SoraKamon.SM_SoraKamon"
+            and mon.get("source_svg_sha256") == logo["source_sha256"]
+            and hashlib.sha256(source_file(logo_root / "SoraKamonMon", mon["fbx"]).read_bytes()).hexdigest() == mon["fbx_sha256"],
+            "The SORA mon mesh identity changed")
+    add(specs, mon["unreal_asset"], "StaticMesh")
+    add(specs, "/Game/Generated/UI/MI_SoraKamon_Red.MI_SoraKamon_Red", "MaterialInstanceConstant")
     if (logo_root / "Nyaagyu_Title_KeyArt.png").is_file():
         add(specs, "/Game/Generated/UI/T_NyaagyuTitle.T_NyaagyuTitle", "Texture2D")
 

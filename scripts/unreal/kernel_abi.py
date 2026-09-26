@@ -9,7 +9,7 @@ ABI_VERSION=4
 NONE=0xFFFFFFFF
 LOADOUT=64
 EVENT_KINDS=range(1,20)  # ARENA_EVENT_SHOT (1) .. ARENA_EVENT_MATCH_WINNER (19)
-BOT_EASY,BOT_NORMAL,BOT_HARD=0,1,2  # ARENA_BOT_* practice difficulties
+BOT_NOVICE,BOT_STANDARD,BOT_VETERAN,BOT_MASTER=0,1,2,3  # ARENA_BOT_* practice difficulties
 
 class Config(ctypes.Structure):
     _fields_=[('abi_version',ctypes.c_uint32),('mode',ctypes.c_uint32),('map_id',ctypes.c_uint32),('max_ticks',ctypes.c_uint32),('base_bond',ctypes.c_uint64),('player_count',ctypes.c_uint32),('offline',ctypes.c_uint32)]

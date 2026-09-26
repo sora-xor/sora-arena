@@ -10,13 +10,14 @@ struct FSoraPracticeWall;
 // ASoraWorldBuilder::BuildPractice gives each kernel wall one hidden box of
 // exactly its size and the floor one ground slab, and nothing else collides.
 // Every visible piece is one of:
-//   - inside a kernel wall's box: courses, bays and lit bands that together
-//     fill the box exactly, or an imported prop stretched so its bounds are
-//     the box (only when its axes stretch within a stated ratio of each other);
-//   - flat on the floor, no higher than FlatHeight (terrain, paths, pads);
+//   - inside a kernel wall's box: boxes (courses, bays, lit bands) that tile
+//     the box exactly, so every face a player can touch or a shot can strike
+//     is a face of the kernel's box. An imported mesh never fills a wall: its
+//     bounds would hide a narrower body behind invisible collision;
+//   - flat on the floor, no higher than FlatHeight (paths, pads);
 //   - inside a hazard volume (embers, slag, grates), which never blocks;
 //   - outside the arena bounds, as backdrop.
-// SoraPracticeArenaAutomation checks this for all four arenas.
+// The SoraArena.Practice.ArenaDressing automation checks this on all four arenas.
 struct FSoraPracticeArenaKit
 {
     static constexpr float FlatHeight = 8.f;
@@ -47,20 +48,10 @@ struct FSoraPracticeArenaKit
     // on each face, a 2 cm skin of frame and glowing panes.
     void LitCourse(const FSoraPracticeWall& Wall, float Bottom, float Top, const TCHAR* FrameRole, FLinearColor FrameTint, FLinearColor Core,
         FLinearColor Glow, float Strength, float Spacing, float Pane);
-    // Fits an imported prop's bounds exactly to Minimum..Maximum, turned by
-    // 0 or 90 degrees, when its three axis scales stay within MaxStretch of
-    // each other. False (and nothing placed) when it would distort more.
-    bool FittedProp(const TCHAR* Asset, const FVector& Minimum, const FVector& Maximum, float MaxStretch);
-    // Tiles a long wall with a module prop fitted segment by segment.
-    bool FittedRun(const TCHAR* Asset, const FSoraPracticeWall& Wall, float ModuleLength, float MaxStretch);
     // A flat strip from A to B on the floor.
     void Strip(FVector A, FVector B, float Width, float StripHeight, const TCHAR* Role, FLinearColor Tint);
-    // The builder's own imported pieces: the estate's scanned terrain, a
-    // tree, a prop at its authored scale, and a part made elsewhere adopted
-    // so that ClearArena removes it with the rest.
-    void EstateTerrain();
-    void Tree(FVector Location, FRotator Rotation, float Scale);
-    bool Prop(const TCHAR* Asset, FVector Location, FRotator Rotation, float Scale);
+    // A part made elsewhere, adopted so that ClearArena removes it with the
+    // rest. The arena loads no campaign art (scripts/unreal/validate_content.py).
     void Adopt(UStaticMeshComponent* Mesh);
     // Bounds, length and name helpers.
     static float Height(const FSoraPracticeWall& Wall);

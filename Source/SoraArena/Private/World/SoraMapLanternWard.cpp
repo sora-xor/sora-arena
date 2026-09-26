@@ -16,28 +16,21 @@ void ASoraWorldBuilder::LanternWardTerminal()
 }
 
 // Practice: the occupied merchant street. Machiya with koshi lattices and lit
-// shoji line the street, the perimeter takes the authored estate wall where
-// it fits, lantern towers light the corners and an invader debt terminal
-// stands where the kernel keeps a street stall.
+// shoji line the street inside ochre plaster walls, lantern towers light the
+// corners and goods are stacked where the kernel keeps a stall, cart or
+// barrels, each filling its kernel box exactly.
 void SoraPracticeDressing::LanternWardWall(FSoraPracticeArenaKit& Kit,const FSoraPracticeWall& Wall,int32 Index)
 {
     using K=FSoraPracticeArenaKit;
     const FLinearColor Ochre(.86f,.74f,.55f);
-    if(K::Labelled(Wall,TEXT("perimeter")))
-    {
-        if(!Kit.FittedRun(TEXT("SM_Nyaagyu_EstateWall_4m"),Wall,400.f,1.4f)) PlasterWall(Kit,Wall,Ochre);
-    }
+    if(K::Labelled(Wall,TEXT("perimeter"))) PlasterWall(Kit,Wall,Ochre);
     else if(K::Labelled(Wall,TEXT("machiya"))) Townhouse(Kit,Wall,Ochre,true,true);
     else if(K::Labelled(Wall,TEXT("teahouse"))) Townhouse(Kit,Wall,FLinearColor(.92f,.86f,.72f),false,true);
     else if(K::Labelled(Wall,TEXT("warehouse"))) Storehouse(Kit,Wall);
     else if(K::Labelled(Wall,TEXT("bathhouse"))) Townhouse(Kit,Wall,FLinearColor(.84f,.8f,.74f),false,true);
     else if(K::Labelled(Wall,TEXT("merchant house"))) Townhouse(Kit,Wall,FLinearColor(.8f,.66f,.48f),true,true);
     else if(K::Labelled(Wall,TEXT("lantern"))) LanternPost(Kit,Wall);
-    else if(K::Labelled(Wall,TEXT("stall")))
-    {
-        if(!Kit.FittedProp(TEXT("SM_Alien_StreetDebtTerminal"),Wall.Minimum,Wall.Maximum,1.35f)) Goods(Kit,Wall);
-    }
-    else if(K::Labelled(Wall,TEXT("cart"))||K::Labelled(Wall,TEXT("barrels"))) Goods(Kit,Wall);
+    else if(K::Labelled(Wall,TEXT("stall"))||K::Labelled(Wall,TEXT("cart"))||K::Labelled(Wall,TEXT("barrels"))) Goods(Kit,Wall);
     else if(K::Labelled(Wall,TEXT("fence"))) Fence(Kit,Wall);
     else PlasterWall(Kit,Wall,Ochre);
 }

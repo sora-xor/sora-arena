@@ -1,5 +1,6 @@
 #include "SoraPracticeActors.h"
 #include "SoraPracticePawn.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -12,6 +13,8 @@ const TCHAR* const SoraPracticeArt::Cube=TEXT("/Engine/BasicShapes/Cube.Cube");
 const TCHAR* const SoraPracticeArt::Cylinder=TEXT("/Engine/BasicShapes/Cylinder.Cylinder");
 const TCHAR* const SoraPracticeArt::Cone=TEXT("/Engine/BasicShapes/Cone.Cone");
 const TCHAR* const SoraPracticeArt::Sphere=TEXT("/Engine/BasicShapes/Sphere.Sphere");
+const TCHAR* const SoraPracticeArt::SoraMon=TEXT("/Game/Generated/UI/SM_SoraKamon.SM_SoraKamon");
+const FLinearColor SoraPracticeArt::LedgerCyan(.1f,.75f,1.f);
 
 namespace
 {
@@ -42,16 +45,23 @@ UMaterialInterface* GlowMaterial()
     }
     return bUsable?Material:nullptr;
 }
-// The SORA mark in the 1024-pixel logo's coordinates: two bars, the stem
-// between them and the two legs that run to the rim.
-struct FMarkStroke { float X, Y, Width, Height, DirX, DirY; };
-constexpr FMarkStroke SoraStrokes[]={
-    {512.f,299.f,626.f,84.f,0.f,1.f},
-    {512.f,384.f,84.f,86.f,0.f,1.f},
-    {512.f,469.f,626.f,84.f,0.f,1.f},
-    {368.2f,737.4f,84.f,489.f,-.5585f,.8296f},
-    {655.8f,737.4f,84.f,489.f,.5585f,.8296f},
-};
+// The imported SORA mon, loaded once. It is never redrawn: without the
+// import there is no mark at all, and the error names the importer.
+UStaticMesh* SoraMonMesh()
+{
+    static TWeakObjectPtr<UStaticMesh> Cache;
+    static bool bReported=false;
+    if(!Cache.IsValid()) Cache=LoadObject<UStaticMesh>(nullptr,SoraPracticeArt::SoraMon,nullptr,LOAD_NoWarn);
+    if(!Cache.IsValid()&&!bReported)
+    {
+        bReported=true;
+        UE_LOG(LogTemp,Error,TEXT("SORA mon mesh is missing: %s; run scripts/unreal/import_sora_kamon_mon.py"),SoraPracticeArt::SoraMon);
+    }
+    return Cache.Get();
+}
+// The ledger sigil's tally ring: notches in groups of five, the fifth
+// longer, inside a closed rim.
+constexpr int32 SigilNotches=30, SigilRim=40;
 }
 
 UStaticMeshComponent* SoraPracticeArt::Part(AActor* Owner,USceneComponent* Parent,const FString& Name,const TCHAR* Shape,FVector Location,FVector Scale,FRotator Rotation)
@@ -114,55 +124,78 @@ UPointLightComponent* SoraPracticeArt::Light(AActor* Owner,USceneComponent* Pare
     Lamp->RegisterComponent(); Owner->AddInstanceComponent(Lamp);
     return Lamp;
 }
-void SoraPracticeArt::Kamon(AActor* Owner,USceneComponent* Parent,const FString& Name,FVector Location,FRotator Rotation,float Diameter,float Thickness,bool bSora,FLinearColor Field,FLinearColor Mark,TArray<UStaticMeshComponent*>* Out)
+USceneComponent* SoraPracticeArt::Kamon(AActor* Owner,USceneComponent* Parent,const FString& Name,FVector Location,FRotator Rotation,float Diameter,float Thickness,bool bSora,FLinearColor Field,TArray<USceneComponent*>* Out)
 {
     // A scene root turns the whole mark; parts are laid out facing +X.
     auto* Root=NewObject<USceneComponent>(Owner,MakeUniqueObjectName(Owner,USceneComponent::StaticClass(),FName(*(Name+TEXT("Root")))));
     Root->SetupAttachment(Parent); Root->SetRelativeLocation(Location); Root->SetRelativeRotation(Rotation);
     Root->RegisterComponent(); Owner->AddInstanceComponent(Root);
-    const auto Add=[&](UStaticMeshComponent* Mesh) { if(Out) Out->Add(Mesh); return Mesh; };
-    Paint(Add(Part(Owner,Root,Name+TEXT("Field"),Cylinder,FVector::ZeroVector,FVector(Diameter/100.f,Diameter/100.f,Thickness/100.f),FRotator(90,0,0))),Field,.55f);
-    // Mark strokes pass through the disc so both faces carry them, as on cloth.
-    const float MarkDepth=Thickness*1.3f/100.f;
-    const float Unit=Diameter/1024.f;
+    if(Out) Out->Add(Root);
+    // Discs lie in the mark's plane: the engine cylinder's axis turned to +X.
+    // The mon's field sits just inside its rim and within its thickness.
+    const float Across=bSora?Diameter*.996f:Diameter;
+    UStaticMeshComponent* Disc=Part(Owner,Root,Name+(bSora?TEXT("Field"):TEXT("SigilDisc")),Cylinder,FVector::ZeroVector,
+        FVector(Across,Across,bSora?Thickness*.6f:Thickness)/100.f,FRotator(90,0,0));
+    if(Out) Out->Add(Disc);
     if(bSora)
     {
-        for(int32 Index=0;Index<UE_ARRAY_COUNT(SoraStrokes);++Index)
+        // The field shows through the mon's open strokes; the mon, one metre
+        // across and 1 cm thick as imported, stands proud of it on both faces
+        // in the SVG's own red.
+        Paint(Disc,Field,.8f);
+        if(SoraMonMesh())
         {
-            const FMarkStroke& S=SoraStrokes[Index];
-            const FVector Center(0,(S.X-512.f)*Unit,-(S.Y-512.f)*Unit);
-            // Image Y runs down; the stroke's long axis follows its direction.
-            const FRotator Along=FRotationMatrix::MakeFromXZ(FVector::ForwardVector,FVector(0,S.DirX,-S.DirY)).Rotator();
-            Paint(Add(Part(Owner,Root,FString::Printf(TEXT("%sStroke%d"),*Name,Index),Cube,Center,FVector(MarkDepth,S.Width*Unit/100.f,S.Height*Unit/100.f),Along)),Mark,.5f);
+            UStaticMeshComponent* Mon=Part(Owner,Root,Name+TEXT("SoraMon"),SoraMon,FVector::ZeroVector,FVector(Thickness,Diameter/100.f,Diameter/100.f));
+            if(Out) Out->Add(Mon);
         }
-        return;
+        return Root;
     }
-    // The invaders' mark: a debt coin with its square hole and four seals.
-    Paint(Add(Part(Owner,Root,Name+TEXT("Hole"),Cube,FVector::ZeroVector,FVector(MarkDepth,Diameter*.28f/100.f,Diameter*.28f/100.f))),Mark,.4f,.3f);
-    for(int32 Seal=0;Seal<4;++Seal)
+    // The Stellar Credit House's ledger sigil (story bible §17): a closed ring
+    // of tally notches, cold cyan on graphite. It shares nothing with the mon.
+    Paint(Disc,Field,.28f,.55f);
+    auto* Tally=NewObject<UInstancedStaticMeshComponent>(Owner,MakeUniqueObjectName(Owner,UInstancedStaticMeshComponent::StaticClass(),FName(*(Name+TEXT("SigilTally")))));
+    Tally->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,Cube));
+    Tally->SetupAttachment(Root);
+    Tally->SetCollisionEnabled(ECollisionEnabled::NoCollision); Tally->SetGenerateOverlapEvents(false); Tally->SetCanEverAffectNavigation(false);
+    Tally->RegisterComponent(); Owner->AddInstanceComponent(Tally);
+    if(Out) Out->Add(Tally);
+    const float Depth=Thickness*1.3f/100.f;
+    for(int32 Index=0;Index<SigilNotches;++Index)
     {
-        const float Angle=Seal*PI*.5f;
-        const FVector Center(0,FMath::Sin(Angle)*Diameter*.33f,FMath::Cos(Angle)*Diameter*.33f);
-        const bool bVertical=Seal%2==0;
-        Paint(Add(Part(Owner,Root,FString::Printf(TEXT("%sSeal%d"),*Name,Seal),Cube,Center,
-            FVector(MarkDepth,(bVertical?.07f:.13f)*Diameter/100.f,(bVertical?.13f:.07f)*Diameter/100.f))),Mark,.4f,.3f);
+        const float Angle=Index*2*PI/SigilNotches;
+        const bool bFifth=Index%5==4;
+        const float Inner=Diameter*(bFifth?.22f:.29f), Outer=Diameter*.39f, Mid=(Inner+Outer)*.5f;
+        Tally->AddInstance(FTransform(FRotator(0,0,-FMath::RadiansToDegrees(Angle)),FVector(0,FMath::Sin(Angle)*Mid,FMath::Cos(Angle)*Mid),
+            FVector(Depth,Diameter*.022f/100.f,(Outer-Inner)/100.f)));
     }
+    for(int32 Index=0;Index<SigilRim;++Index)
+    {
+        const float Angle=Index*2*PI/SigilRim, Reach=Diameter*.44f;
+        Tally->AddInstance(FTransform(FRotator(0,0,-FMath::RadiansToDegrees(Angle)),FVector(0,FMath::Sin(Angle)*Reach,FMath::Cos(Angle)*Reach),
+            FVector(Depth,2*PI*Reach/SigilRim*1.02f/100.f,Diameter*.028f/100.f)));
+    }
+    Glow(Tally,LedgerCyan,1.4f);
+    return Root;
 }
-void SoraPracticeArt::Sashimono(AActor* Owner,USceneComponent* Parent,float HalfHeight,FLinearColor Color,bool bSora,bool bOwnerNoSee,TArray<UStaticMeshComponent*>* Out)
+void SoraPracticeArt::Sashimono(AActor* Owner,USceneComponent* Parent,float HalfHeight,FLinearColor Color,bool bSora,bool bOwnerNoSee,TArray<USceneComponent*>* Out)
 {
-    TArray<UStaticMeshComponent*> Parts;
+    TArray<USceneComponent*> Parts;
     const float Back=-24.f, Bottom=HalfHeight*.3f, Top=HalfHeight+48.f;
-    const FLinearColor Lacquer(.05f,.035f,.03f), Cloth=Color*.85f;
-    Paint(Parts.Add_GetRef(Part(Owner,Parent,TEXT("SashimonoPole"),Cylinder,FVector(Back,0,(Bottom+Top)*.5f),FVector(.028f,.028f,(Top-Bottom)/100.f))),Lacquer,.35f);
-    Paint(Parts.Add_GetRef(Part(Owner,Parent,TEXT("SashimonoYard"),Cylinder,FVector(Back,0,Top-2.f),FVector(.022f,.022f,.36f),FRotator(0,0,90))),Lacquer,.35f);
+    // League flags are undyed silk carrying the red mon; the Credit House
+    // and free-for-all rivals fly their own colour with the ledger sigil.
+    const FLinearColor Lacquer(.05f,.035f,.03f), Cloth=bSora?FLinearColor(.80f,.76f,.66f):Color*.85f;
+    UStaticMeshComponent* Pole=Part(Owner,Parent,TEXT("SashimonoPole"),Cylinder,FVector(Back,0,(Bottom+Top)*.5f),FVector(.028f,.028f,(Top-Bottom)/100.f));
+    UStaticMeshComponent* Yard=Part(Owner,Parent,TEXT("SashimonoYard"),Cylinder,FVector(Back,0,Top-2.f),FVector(.022f,.022f,.36f),FRotator(0,0,90));
     // The flag hangs below the yard, flat across the wearer's back.
-    Paint(Parts.Add_GetRef(Part(Owner,Parent,TEXT("SashimonoFlag"),Cube,FVector(Back-2.f,0,Top-40.f),FVector(.012f,.32f,.72f))),Cloth,.88f);
+    UStaticMeshComponent* Flag=Part(Owner,Parent,TEXT("SashimonoFlag"),Cube,FVector(Back-2.f,0,Top-40.f),FVector(.012f,.32f,.72f));
+    Paint(Pole,Lacquer,.35f); Paint(Yard,Lacquer,.35f); Paint(Flag,Cloth,.88f);
+    Parts.Append({Pole,Yard,Flag});
     Kamon(Owner,Parent,TEXT("SashimonoKamon"),FVector(Back-2.f,0,Top-38.f),FRotator::ZeroRotator,23.f,1.6f,bSora,
-        bSora?FLinearColor(.72f,.05f,.06f):FLinearColor(.72f,.74f,.70f),bSora?FLinearColor(.92f,.90f,.84f):FLinearColor(.05f,.06f,.07f),&Parts);
-    for(UStaticMeshComponent* Mesh:Parts)
+        bSora?Cloth:FLinearColor(.035f,.038f,.045f),&Parts);
+    for(USceneComponent* Component:Parts)
     {
-        Mesh->SetOwnerNoSee(bOwnerNoSee);
-        if(Out) Out->Add(Mesh);
+        if(auto* Primitive=Cast<UPrimitiveComponent>(Component)) Primitive->SetOwnerNoSee(bOwnerNoSee);
+        if(Out) Out->Add(Component);
     }
 }
 FLinearColor SoraPracticeArt::TeamColor(int32 Team)
@@ -231,7 +264,8 @@ void ASoraPracticeEntityActor::Build(const FSoraPracticeEntity& Entity,FLinearCo
         for(int32 Side:{-1,1})
         {
             const FVector Face=bAlongX?FVector(0,Side*Half.Y,BaseH+BodyH*.55f):FVector(Side*Half.X,0,BaseH+BodyH*.55f);
-            Kamon(this,RootComponent,FString::Printf(TEXT("BarricadeKamon%d"),Side),Face,FRotator(0,bAlongX?90.f:0.f,0),Diameter,.4f,bSora,Color,FLinearColor(.93f,.90f,.84f));
+            Kamon(this,RootComponent,FString::Printf(TEXT("BarricadeKamon%d"),Side),Face,FRotator(0,bAlongX?90.f:0.f,0),Diameter,.4f,bSora,
+                bSora?FLinearColor(.93f,.90f,.84f):FLinearColor(.035f,.038f,.045f));
         }
         break;
     }
@@ -265,7 +299,7 @@ void ASoraPracticeEntityActor::Build(const FSoraPracticeEntity& Entity,FLinearCo
         Talisman=NewObject<USceneComponent>(this,TEXT("WardTalisman"));
         Talisman->SetupAttachment(RootComponent); Talisman->SetRelativeLocation(FVector(0,0,245)); Talisman->RegisterComponent(); AddInstanceComponent(Talisman);
         Paint(Part(this,Talisman,TEXT("WardOfuda"),Cube,FVector::ZeroVector,FVector(.03f,.14f,.34f)),FLinearColor(.92f,.88f,.76f),.9f);
-        Kamon(this,Talisman,TEXT("WardSeal"),FVector(0,0,8.f),FRotator::ZeroRotator,10.f,4.f,bSora,Color,FLinearColor(.95f,.93f,.86f));
+        Kamon(this,Talisman,TEXT("WardSeal"),FVector(0,0,8.f),FRotator::ZeroRotator,10.f,4.f,bSora,bSora?FLinearColor(.92f,.88f,.76f):FLinearColor(.035f,.038f,.045f));
         Lamp=Light(this,RootComponent,TEXT("WardLight"),FVector(0,0,210),Color,1400.f,R*1.4f);
         break;
     }
@@ -325,14 +359,10 @@ void ASoraPracticeControlPoint::Build(const FSoraPracticeMap& Map)
         const FVector At(FMath::Cos(Angle)*(Radius-10.f),FMath::Sin(Angle)*(Radius-10.f),1.6f);
         Ring.Add(Part(this,RootComponent,FString::Printf(TEXT("ControlLamp%d"),Index),Cube,At,FVector(2*PI*Radius/Segments*.78f/100.f,.12f,.028f),FRotator(0,FMath::RadiansToDegrees(Angle)+90.f,0)));
     }
-    // The owner's kamon lies at the centre: SORA, the debt coin or plain stone.
-    for(int32 Team=0;Team<2;++Team)
-    {
-        TArray<UStaticMeshComponent*> Pieces;
-        Kamon(this,RootComponent,Team==0?TEXT("ControlSora"):TEXT("ControlCoin"),FVector(0,0,1.2f),FRotator(90,0,0),170.f,2.f,Team==0,TeamColor(Team),
-            Team==0?FLinearColor(.93f,.9f,.84f):FLinearColor(.04f,.05f,.06f),&Pieces);
-        for(UStaticMeshComponent* Piece:Pieces) (Team==0?SoraEmblem:CoinEmblem).Add(Piece);
-    }
+    // The owner's mark lies at the centre, face up: the SORA mon, the ledger
+    // sigil, or plain stone while nobody holds the point.
+    SoraEmblem=Kamon(this,RootComponent,TEXT("ControlSora"),FVector(0,0,1.2f),FRotator(90,0,0),170.f,2.f,true,FLinearColor(.93f,.9f,.84f));
+    SigilEmblem=Kamon(this,RootComponent,TEXT("ControlSigil"),FVector(0,0,1.2f),FRotator(90,0,0),170.f,2.f,false,FLinearColor(.035f,.038f,.045f));
     Unclaimed=Part(this,RootComponent,TEXT("ControlUnclaimed"),Cylinder,FVector(0,0,1.2f),FVector(1.7f,1.7f,.02f));
     Surface(Unclaimed,TEXT("Stone"),FLinearColor(.55f,.53f,.5f));
     Beacon=Light(this,RootComponent,TEXT("ControlBeacon"),FVector(0,0,420),FLinearColor(1.f,.85f,.62f),5200.f,Radius*2.2f,true);
@@ -354,8 +384,8 @@ void ASoraPracticeControlPoint::Present(const FSoraPracticeObjective& Objective,
         else if(Index<Lit&&Leading!=INDEX_NONE) Glow(Ring[Index],TeamColor(Leading),1.4f);
         else Glow(Ring[Index],Idle,Owner==INDEX_NONE?.22f:.35f);
     }
-    for(UStaticMeshComponent* Piece:SoraEmblem) Piece->SetVisibility(Owner==0);
-    for(UStaticMeshComponent* Piece:CoinEmblem) Piece->SetVisibility(Owner==1);
+    if(SoraEmblem) SoraEmblem->SetVisibility(Owner==0,true);
+    if(SigilEmblem) SigilEmblem->SetVisibility(Owner==1,true);
     if(Unclaimed) Unclaimed->SetVisibility(Owner==INDEX_NONE);
     if(Beacon) Beacon->SetLightColor(Owner==INDEX_NONE?FLinearColor(1.f,.85f,.62f):TeamColor(Owner));
 }
@@ -396,7 +426,7 @@ void ASoraPracticePayload::Build(const FSoraPracticeMap& Map)
         const FVector At=Map.RoutePoint(Distance), Ahead=Map.RoutePoint(Distance+10.f);
         const FRotator Yaw=(Ahead-At).GetSafeNormal2D().Rotation();
         Gates.Add(Part(this,RootComponent,FString::Printf(TEXT("PayloadGate%d"),Index),Cube,At+FVector(0,0,2.1f),FVector(.45f,2.6f,.018f),Yaw));
-        Kamon(this,RootComponent,FString::Printf(TEXT("PayloadGateKamon%d"),Index),At+Yaw.RotateVector(FVector(0,165.f,2.2f)),FRotator(90,Yaw.Yaw,0),60.f,1.6f,true,TeamColor(0),FLinearColor(.93f,.9f,.84f));
+        Kamon(this,RootComponent,FString::Printf(TEXT("PayloadGateKamon%d"),Index),At+Yaw.RotateVector(FVector(0,165.f,2.2f)),FRotator(90,Yaw.Yaw,0),60.f,1.6f,true,FLinearColor(.93f,.9f,.84f));
     }
     // The cart: a timber daisha with four spoked wheels carrying Nyaagyu goods.
     CartRoot=NewObject<USceneComponent>(this,TEXT("PayloadCart"));
@@ -421,7 +451,7 @@ void ASoraPracticePayload::Build(const FSoraPracticeMap& Map)
     else
         for(int32 Crate=0;Crate<3;++Crate)
             Surface(Part(this,CartRoot,FString::Printf(TEXT("CartCrate%d"),Crate),Cube,FVector(-45+Crate*45,0,85+Crate%2*10),FVector(.4f,.8f,.5f+Crate%2*.2f)),TEXT("Timber"),FLinearColor(.7f,.5f,.3f));
-    Kamon(this,CartRoot,TEXT("CartKamon"),FVector(86,0,56),FRotator::ZeroRotator,30.f,1.2f,true,TeamColor(0),FLinearColor(.93f,.9f,.84f));
+    Kamon(this,CartRoot,TEXT("CartKamon"),FVector(86,0,56),FRotator::ZeroRotator,30.f,1.2f,true,FLinearColor(.93f,.9f,.84f));
     CartLamp=Light(this,CartRoot,TEXT("CartLamp"),FVector(0,0,190),FLinearColor(1.f,.72f,.42f),1500.f,700.f);
     const int32 Count=36;
     for(int32 Index=0;Index<Count;++Index)

@@ -324,6 +324,8 @@ void ASoraPlayerCharacter::BlockUp() { KernelHeldButtons&=~4u; Equipment->GuardU
 void ASoraPlayerCharacter::Ability() { if(bKernelDriven&&CanPlay()) KernelQueuedButtons|=16; }
 void ASoraPlayerCharacter::MeleeUp() { KernelHeldButtons&=~2u; }
 void ASoraPlayerCharacter::Subtitles() { if(auto* G=PlayerGameMode(this)) G->ToggleSubtitles(); }
+void ASoraPlayerCharacter::ScoreboardDown() { bScoreboardHeld=true; }
+void ASoraPlayerCharacter::ScoreboardUp() { bScoreboardHeld=false; }
 void ASoraPlayerCharacter::PairWallet()
 {
     const auto* G=PlayerGameMode(this); if(!G||!G->bMenu) return;
@@ -551,6 +553,7 @@ void ASoraPlayerCharacter::SetupPlayerInputComponent(UInputComponent* I)
     BindPress(I,TEXT("ReturnCampaign"),&ASoraPlayerCharacter::ReturnCampaign);
     BindPress(I,TEXT("DeterministicPractice"),&ASoraPlayerCharacter::Practice);
     BindPress(I,TEXT("Subtitles"),&ASoraPlayerCharacter::Subtitles);
+    BindPress(I,TEXT("Scoreboard"),&ASoraPlayerCharacter::ScoreboardDown); BindRelease(I,TEXT("Scoreboard"),&ASoraPlayerCharacter::ScoreboardUp);
     BindPress(I,TEXT("PairWallet"),&ASoraPlayerCharacter::PairWallet); BindPress(I,TEXT("OpenWallet"),&ASoraPlayerCharacter::OpenWallet); BindPress(I,TEXT("DisconnectWallet"),&ASoraPlayerCharacter::DisconnectWallet);
     BindPress(I,TEXT("WeaponOne"),&ASoraPlayerCharacter::WeaponOne); BindPress(I,TEXT("WeaponTwo"),&ASoraPlayerCharacter::WeaponTwo); BindPress(I,TEXT("WeaponThree"),&ASoraPlayerCharacter::WeaponThree);
     BindPress(I,TEXT("WeaponFour"),&ASoraPlayerCharacter::WeaponFour); BindPress(I,TEXT("WeaponFive"),&ASoraPlayerCharacter::WeaponFive); BindPress(I,TEXT("WeaponSix"),&ASoraPlayerCharacter::WeaponSix);

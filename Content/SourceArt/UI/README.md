@@ -22,6 +22,18 @@ generated key art or the CC0 environment palette; no independent permission to
 reuse the mark outside this game is asserted. Any public distribution of source
 assets should be checked with the mark owner.
 
+## Runtime SORA mon mesh
+
+`SoraKamonMon/SM_SoraKamon.fbx` is the same mark as geometry for practice
+presentation (sashimono, spawn pads, the Control point, the payload and
+barricades). `scripts/art/create_sora_kamon_mon.py` imports the SVG's two
+filled paths through Blender's SVG importer, scales them uniformly to a 1 m
+disc and extrudes them 1 cm; no vertex is redrawn or simplified.
+`scripts/art/validate_sora_kamon_mon.py` checks every tessellated SVG vertex
+on both faces of the exported FBX, and `scripts/unreal/import_sora_kamon_mon.py`
+imports it to `/Game/Generated/UI/SM_SoraKamon` after checking both hashes.
+The same reuse limits as the SVG apply.
+
 ## Title key art generation prompt
 
 > Use case: historical-scene. Asset type: original photoreal cinematic title-screen background for SORA Arena: Nyaagyu Rebellion, a Japanese-language serious samurai-cat first-person action game. Landscape 16:9, ideally 3840x2160. Create extraordinarily realistic live-action-film-quality anthropomorphic feline samurai in an Edo-period Japanese estate at blue hour after rain, subtly invaded by cold alien technology. Main subject to the right of center: a lean adult silver-gray tabby cat with anatomically convincing small feline eyes, natural wet individual fur and whiskers, alert dignified expression, proportionate head (not chibi), articulated feline paws gripping the properly wrapped tsuka of a sheathed Japanese katana at the hip. Weathered indigo haori and silk hakama, restrained dark lacquered samurai armor with fine lacing, worn cloth fibers. Three-quarter mid-thigh portrait, poised but not attacking. A compact original sci-fi matchlock rifle slung across back, subtle ceramic/metal cooling details. Behind: authentic weathered timber dojo, rain-soaked stone courtyard, warm paper lanterns, misty mountains and small hints of distant cold cyan alien machinery. Serious samurai drama, physically plausible materials, subtle lens and atmospheric depth, soft key light on detailed cat face and armor, cinematic muted palette of indigo, warm amber, weathered wood and cool mist. Preserve ample calm dark negative space in the left third for later Japanese menu text; compose image itself with no text, letters, numbers, logos, watermarks or interface. No human face, no toy proportions, no plastic fur, no cartoon, no glossy fantasy armor, no gore. This is generated key art, not a screenshot of an existing game.

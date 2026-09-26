@@ -18,6 +18,12 @@ extern const TCHAR* const Cube;
 extern const TCHAR* const Cylinder;
 extern const TCHAR* const Cone;
 extern const TCHAR* const Sphere;
+// The runtime SORA mon (scripts/art/create_sora_kamon_mon.py): the pinned
+// SVG's two paths, never redrawn, extruded 1 cm, one metre across, facing +X
+// with its legs down.
+extern const TCHAR* const SoraMon;
+// The Credit House's ledger cyan, the colour of its sigil.
+extern const FLinearColor LedgerCyan;
 // A registered static mesh part with no collision.
 SORAARENA_API UStaticMeshComponent* Part(AActor* Owner, USceneComponent* Parent, const FString& Name, const TCHAR* Shape,
     FVector Location, FVector Scale, FRotator Rotation = FRotator::ZeroRotator);
@@ -32,18 +38,23 @@ SORAARENA_API void Glow(UStaticMeshComponent* Mesh, FLinearColor Color, float St
 // practice lights go without.
 SORAARENA_API UPointLightComponent* Light(AActor* Owner, USceneComponent* Parent, const FString& Name, FVector Location,
     FLinearColor Color, float Lumens, float Radius, bool bShadows = false);
-// A kamon disc facing local +X. bSora draws the SORA mark (the resistance,
-// Content/SourceArt/UI/SORA_Resistance_Logo.png); otherwise the invaders'
-// square-holed debt coin. Parts go into Out when given.
-SORAARENA_API void Kamon(AActor* Owner, USceneComponent* Parent, const FString& Name, FVector Location, FRotator Rotation,
-    float Diameter, float Thickness, bool bSora, FLinearColor Field, FLinearColor Mark, TArray<UStaticMeshComponent*>* Out = nullptr);
-// A sashimono, the back banner Edo retainers wore to show their side: a
-// pole and a flag in the team colour carrying the kamon, fixed behind the
-// shoulders of a body whose capsule is Parent.
+// A mark facing local +X on its own scene root, which it returns. bSora
+// places the imported SORA mon in its own red over a disc of Field that
+// shows through its open strokes (story bible §17: the mon is never
+// redrawn); otherwise the Stellar Credit House's ledger sigil, a closed ring
+// of tally notches in cold cyan on a Field disc. The root and every part go
+// into Out, so an owner that outlives the mark can destroy all of it.
+SORAARENA_API USceneComponent* Kamon(AActor* Owner, USceneComponent* Parent, const FString& Name, FVector Location, FRotator Rotation,
+    float Diameter, float Thickness, bool bSora, FLinearColor Field, TArray<USceneComponent*>* Out = nullptr);
+// A sashimono, the back banner Edo retainers wore to show their side, fixed
+// behind the shoulders of a body whose capsule is Parent: a Sora League flag
+// of undyed silk with the red mon, or a flag in Color with the ledger sigil.
+// Every component it makes goes into Out.
 SORAARENA_API void Sashimono(AActor* Owner, USceneComponent* Parent, float HalfHeight, FLinearColor Color, bool bSora, bool bOwnerNoSee,
-    TArray<UStaticMeshComponent*>* Out = nullptr);
-// Team 0 (the SORA resistance) is lacquer red, team 1 (the invaders) cold
-// cyan; free-for-all gives every slot its own colour.
+    TArray<USceneComponent*>* Out = nullptr);
+// Team 0 (the Sora League) is vermillion, team 1 (the Stellar Credit House)
+// cold cyan; free-for-all gives every slot its own colour. Cyan never marks
+// the League (story bible §15.1).
 SORAARENA_API FLinearColor TeamColor(int32 Team);
 SORAARENA_API FLinearColor SlotColor(int32 Slot);
 }
@@ -98,9 +109,9 @@ public:
     int32 OwnerTeam() const { return Owner; }
 private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Ring;
-    // The owner's kamon for team 0 (SORA) and team 1 (the debt coin).
-    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> SoraEmblem;
-    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> CoinEmblem;
+    // The owner's mark: the SORA mon for team 0, the ledger sigil for team 1.
+    UPROPERTY() TObjectPtr<USceneComponent> SoraEmblem;
+    UPROPERTY() TObjectPtr<USceneComponent> SigilEmblem;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> Unclaimed;
     UPROPERTY() TObjectPtr<UPointLightComponent> Beacon;
     float Radius = 0.f, Time = 0.f;

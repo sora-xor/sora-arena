@@ -34,6 +34,8 @@ public:
     bool IsDojoTraining() const { return bDojoTraining; }
     bool IsCampaignHero() const { return bCampaignHero; }
     bool IsSprinting() const { return bSprint; }
+    // Scoreboard is held: practice shows every seat's kills and deaths.
+    bool IsScoreboardHeld() const { return bScoreboardHeld; }
     void StopSprint() { bSprint = false; }
     // A bokken swing; during the recovery lesson it starts the recovery timer.
     void NoteDojoSwing(float StartedAt, float RecoveredAt, float CooldownSeconds);
@@ -75,6 +77,7 @@ private:
     bool bRestoringControlProfile = false;
     uint32 KernelHeldButtons = 0, KernelQueuedButtons = 0;
     bool bSprint = false;
+    bool bScoreboardHeld = false;
     uint64 InputFrame = MAX_uint64;
     uint8 InputFrameState = 0;
     bool AcceptsInput(uint8 States);
@@ -89,7 +92,7 @@ private:
     void SprintDown(); void SprintUp(); void JumpDown(); void JumpUp();
     void Menu(); void Enter(); void NextMap(); void NewCampaign(); void ReturnCampaign();
     void Practice(); void BlockDown(); void BlockUp(); void Ability(); void MeleeUp();
-    void Subtitles();
+    void Subtitles(); void ScoreboardDown(); void ScoreboardUp();
     void PairWallet(); void OpenWallet(); void DisconnectWallet();
     void WeaponOne(); void WeaponTwo(); void WeaponThree(); void Equip(int32 Slot);
     void WeaponFour(); void WeaponFive(); void WeaponSix(); void CampaignWeaponNext();

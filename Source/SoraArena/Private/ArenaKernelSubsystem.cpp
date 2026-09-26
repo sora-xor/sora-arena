@@ -14,7 +14,8 @@ static_assert(sizeof(ArenaWeaponSpec)==48,"Unexpected ABI 4 weapon layout");
 static_assert(sizeof(ArenaEvent)==48&&offsetof(ArenaEvent,detail)==44,"Unexpected ABI 4 event layout");
 static_assert(sizeof(ArenaMapInfo)==76&&sizeof(ArenaEntitySnapshot)==60&&sizeof(ArenaObjectiveSnapshot)==96,"Unexpected ABI 4 query layout");
 static_assert(SoraPractice::FreeForAll==0&&SoraPractice::Control==1&&SoraPractice::Payload==2&&SoraPractice::Melee==3,"Practice modes are ArenaConfig.mode");
-static_assert(SoraPractice::BotEasy==ARENA_BOT_EASY&&SoraPractice::BotNormal==ARENA_BOT_NORMAL&&SoraPractice::BotHard==ARENA_BOT_HARD,"Practice tiers are ARENA_BOT_*");
+static_assert(SoraPractice::BotNovice==ARENA_BOT_NOVICE&&SoraPractice::BotStandard==ARENA_BOT_STANDARD&&SoraPractice::BotVeteran==ARENA_BOT_VETERAN
+    &&SoraPractice::BotMaster==ARENA_BOT_MASTER&&SoraPractice::BotCount==ARENA_BOT_MASTER+1,"Practice tiers are ARENA_BOT_*");
 static_assert(SoraPractice::Decoy==ARENA_ENTITY_DECOY&&SoraPractice::Barricade==ARENA_ENTITY_BARRICADE&&SoraPractice::FireZone==ARENA_ENTITY_FIRE_ZONE&&SoraPractice::Ward==ARENA_ENTITY_WARD,"Practice entity kinds are ARENA_ENTITY_*");
 static_assert(SoraPractice::WinnerNone==ARENA_WINNER_NONE&&SoraPractice::WinnerTeam==ARENA_WINNER_TEAM&&SoraPractice::WinnerSlot==ARENA_WINNER_SLOT&&SoraPractice::WinnerDraw==ARENA_WINNER_DRAW,"Practice winners are ARENA_WINNER_*");
 static_assert(SoraPractice::HazardFire==ARENA_HAZARD_FIRE&&SoraPractice::HazardSlag==ARENA_HAZARD_SLAG&&SoraPractice::HazardShredder==ARENA_HAZARD_SHREDDER,"Practice hazards are ARENA_HAZARD_*");
@@ -86,7 +87,7 @@ void BuildRoster(const FSoraPracticeConfig& Config,TArray<ArenaParticipant>& Ros
         }
         Taken[P.team].Add(Class);
         P.class_id=Class;
-        if(Slot==0) P.weapon_id=Config.SpecialWeaponId!=INDEX_NONE?Config.SpecialWeaponId:bMelee?2*Class:2*Class+1;
+        if(Slot==0) P.weapon_id=SoraPractice::EntryWeapon(Config.Mode,Class,Config.SpecialWeaponId);
         else P.weapon_id=bMelee||Class==0?2*Class:2*Class+1;
     }
 }
@@ -202,16 +203,16 @@ bool UArenaKernelSubsystem::ValidatePractice(const FSoraPracticeConfig& Config,F
     if(Config.Mode<0||Config.Mode>=ModeCount) return Reject(TEXT("稽古の形式が範囲外です。"),TEXT("The practice mode is out of range."));
     if(Config.MapId<0||Config.MapId>=MapCount) return Reject(TEXT("稽古の舞台が範囲外です。"),TEXT("The practice arena is out of range."));
     if(Config.ClassId<0||Config.ClassId>=ClassCount) return Reject(TEXT("稽古の流儀が範囲外です。"),TEXT("The practice class is out of range."));
-    if(Config.Difficulty<BotEasy||Config.Difficulty>=BotCount) return Reject(TEXT("ボットの難易度が範囲外です。"),TEXT("The bot difficulty is out of range."));
+    if(Config.Difficulty<BotNovice||Config.Difficulty>=BotCount) return Reject(TEXT("ボットの難易度が範囲外です。"),TEXT("The bot difficulty is out of range."));
     if(Config.PlayerCount<MinPlayers(Config.Mode)||Config.PlayerCount>MaxPlayers(Config.Mode)||Config.PlayerCount%PlayerStep(Config.Mode)!=0)
-        return Reject(TEXT("この形式に合わない人数です（乱戦・剣戟は 2〜8 人、団体戦は 2〜12 人の偶数）。"),
-            TEXT("That many players does not fit the mode (2-8 in free-for-all and Melee, an even 2-12 in team modes)."));
+        return Reject(TEXT("この形式に合わない人数です（乱戦・近接のみは 2〜8 人、団体戦は 2〜12 人の偶数）。"),
+            TEXT("That many players does not fit the mode (2-8 in free-for-all and Melee only, an even 2-12 in team modes)."));
     if(Config.SpecialWeaponId!=INDEX_NONE)
     {
         ArenaWeaponSpec Spec{};
         if(Config.SpecialWeaponId!=SpecialOf(Config.ClassId)) return Reject(TEXT("特殊武器はその流儀のものに限られます。"),TEXT("The special weapon must be the class's own."));
         if(Runtime->WeaponSpec(Config.SpecialWeaponId,&Spec)!=0) return Reject(TEXT("特殊武器の参照データを読み込めません。"),TEXT("The kernel has no data for that special weapon."));
-        if(Config.Mode==Melee&&Spec.kind!=0) return Reject(TEXT("剣戟では近接の特殊武器しか持ち込めません。"),TEXT("Melee admits only a melee special weapon."));
+        if(Config.Mode==Melee&&Spec.kind!=0) return Reject(TEXT("近接のみでは近接の特殊武器しか持ち込めません。"),TEXT("In Melee only, the special weapon must be a melee weapon."));
     }
     return true;
 }
@@ -378,6 +379,15 @@ bool UArenaKernelSubsystem::PracticeBotInput(int32 Slot,FSoraPracticeInput& Out)
 bool UArenaKernelSubsystem::StepPractice(const FSoraPracticeInput& Local)
 {
     if(!PracticeActive()||PracticeTerminal) return false;
+    if(StepOnce(Local)) return true;
+    // Fail closed: a refused tick ends the session, so nothing can step on
+    // from a state that was not verified; the reason outlives the handle.
+    const FString Japanese=PracticeError,English=PracticeErrorEnglish;
+    StopPractice(); PracticeError=Japanese; PracticeErrorEnglish=English;
+    return false;
+}
+bool UArenaKernelSubsystem::StepOnce(const FSoraPracticeInput& Local)
+{
     const int32 Count=PracticePlayers.Num();
     TArray<ArenaInput,TInlineAllocator<12>> Inputs; Inputs.SetNumZeroed(Count);
     for(int32 Slot=0;Slot<Count;++Slot) Inputs[Slot].slot=Slot;

@@ -1,4 +1,5 @@
 #include "HUD/SoraHUDPanels.h"
+#include "HUD/SoraPracticeText.h"
 #include "ArenaKernelSubsystem.h"
 #include "SoraCatalog.h"
 #include "SoraCharacterBase.h"
@@ -12,10 +13,12 @@
 
 // Deterministic practice: scores, the objective, the kill feed, markers over
 // allies and seen enemies, the respawn and loadout choice while down, the
-// spectator line, and the results with the match's zero-stake XOR ledger.
-// Japanese leads every line; English follows while subtitles are on.
+// spectator line, the held scoreboard, and the results with the match's
+// zero-stake XOR ledger. Every line comes from SoraPracticeText: Japanese
+// leads, and English follows while subtitles are on.
 namespace
 {
+using SoraPracticeText::FLine;
 struct FPracticeView
 {
     const FSoraHUDFrame& Frame;
@@ -27,20 +30,6 @@ struct FPracticeView
     bool bEnglish;
     bool bTeams;
 };
-const TCHAR* ModeName(int32 Mode,bool bEnglish)
-{
-    static const TCHAR* Japanese[]={TEXT("乱戦"),TEXT("陣取り"),TEXT("荷駄護送"),TEXT("剣戟")};
-    static const TCHAR* English[]={TEXT("Free-for-all"),TEXT("Control"),TEXT("Payload"),TEXT("Melee")};
-    const int32 Index=FMath::Clamp(Mode,0,3);
-    return bEnglish?English[Index]:Japanese[Index];
-}
-FString Name(const FPracticeView& V,int32 Slot,bool bEnglish)
-{
-    if(Slot==0) return bEnglish?TEXT("You"):TEXT("あなた");
-    if(!V.Kernel.PracticePlayers.IsValidIndex(Slot)) return TEXT("—");
-    const FSoraClass& Class=FSoraCatalog::Get().Class(V.Kernel.PracticePlayers[Slot].ClassId);
-    return FString::Printf(TEXT("%s %d"),bEnglish?*Class.NameEnglish:*Class.Name,Slot);
-}
 FString Clock(int32 Ticks)
 {
     const int32 Seconds=FMath::Max(0,Ticks+59)/60;
@@ -59,6 +48,16 @@ float Pair(const FPracticeView& V,const FString& Japanese,const FString& English
         Width+=12*V.S+V.HUD.LabelWidth(English,Small);
     }
     return Width;
+}
+float Pair(const FPracticeView& V,const FLine& Line,float X,float Y,float Scale,FLinearColor Color)
+{
+    return Pair(V,Line.Japanese,Line.English,X,Y,Scale,Color);
+}
+// Japanese, with its English under it while subtitles are on: table cells.
+void Stacked(const FPracticeView& V,const FLine& Line,float X,float Y,float Scale,FLinearColor Color)
+{
+    V.HUD.Label(Line.Japanese,X,Y,Scale,Color);
+    if(V.bEnglish) V.HUD.Label(Line.English,X,Y+56*Scale,Scale*.72f,Faded(V.Frame.Muted,Color.A));
 }
 void Bar(const FPracticeView& V,float X,float Y,float Width,float Height,float Fraction,FLinearColor Color)
 {
@@ -89,8 +88,9 @@ void DrawScores(const FPracticeView& V)
     const auto& O=V.Kernel.PracticeObjective;
     const float S=V.S, X=V.W-470*S, Y=87*S, Width=450*S;
     V.HUD.Panel(X,Y,Width,V.bTeams?78*S:120*S,FLinearColor(.013f,.027f,.033f,.82f));
-    Pair(V,FString::Printf(TEXT("%s / %d 人"),ModeName(V.Director.Config.Mode,false),V.Director.Config.PlayerCount),
-        FString::Printf(TEXT("%s, %d players"),ModeName(V.Director.Config.Mode,true),V.Director.Config.PlayerCount),X+14*S,Y+6*S,.44f*S,V.Frame.Gold);
+    const FLine Mode=SoraPracticeText::ModeName(V.Director.Config.Mode);
+    Pair(V,FString::Printf(TEXT("%s / %d 人  Tab 戦況表"),*Mode.Japanese,V.Director.Config.PlayerCount),
+        FString::Printf(TEXT("%s, %d players; Tab scoreboard"),*Mode.English,V.Director.Config.PlayerCount),X+14*S,Y+6*S,.44f*S,V.Frame.Gold);
     if(V.bTeams)
     {
         int32 Kills[2]={0,0};
@@ -102,22 +102,23 @@ void DrawScores(const FPracticeView& V)
             const FString Score=V.Director.Config.Mode==SoraPractice::Control
                 ?FString::Printf(TEXT("%s / %s"),*Clock(O.Score[Team]),*Clock(O.ScoreTarget))
                 :Team==0?FString::Printf(TEXT("%d%%"),FMath::RoundToInt(100.f*O.PayloadProgress/FMath::Max(1.f,O.PayloadLength))):FString(TEXT("—"));
-            Pair(V,FString::Printf(TEXT("%s  %s  撃破 %d"),Team==0?TEXT("味方 SORA"):TEXT("敵 債権団"),*Score,Kills[Team]),
-                Team==0?TEXT("Allies"):TEXT("Invaders"),X+32*S,RowY,.42f*S,Team==0?V.Frame.Ivory:V.Frame.Muted);
+            const FLine Side=SoraPracticeText::Relative(Team);
+            Pair(V,FString::Printf(TEXT("%s %s  %s  撃破 %d"),*Side.Japanese,*SoraPracticeText::SideName(Team).Japanese,*Score,Kills[Team]),
+                FString::Printf(TEXT("%s  %s  %d kills"),*Side.English,*Score,Kills[Team]),X+32*S,RowY,.42f*S,Team==0?V.Frame.Ivory:V.Frame.Muted);
         }
         return;
     }
-    // Free-for-all and Melee: the four leaders by kills, then fewest deaths.
-    TArray<int32> Order;
-    for(int32 Slot=0;Slot<V.Kernel.PracticePlayers.Num();++Slot) Order.Add(Slot);
+    // Free-for-all and Melee only: the four leaders by kills, then fewest deaths.
     const auto& Players=V.Kernel.PracticePlayers;
-    Order.Sort([&Players](int32 A,int32 B){ return Players[A].Kills!=Players[B].Kills?Players[A].Kills>Players[B].Kills:Players[A].Deaths!=Players[B].Deaths?Players[A].Deaths<Players[B].Deaths:A<B; });
+    const TArray<int32> Order=SoraPracticeText::TableOrder(Players,false);
     for(int32 Rank=0;Rank<FMath::Min(4,Order.Num());++Rank)
     {
         const int32 Slot=Order[Rank];
         const float RowY=Y+(30+Rank*21)*S;
+        const FLine Name=SoraPracticeText::Participant(V.Kernel,Slot);
         V.HUD.Panel(X+14*S,RowY+4*S,10*S,14*S,V.Director.ParticipantColor(Slot));
-        V.HUD.Label(FString::Printf(TEXT("%d. %s   %d / %d"),Rank+1,*Name(V,Slot,false),Players[Slot].Kills,Players[Slot].Deaths),X+32*S,RowY,.4f*S,Slot==0?V.Frame.Gold:V.Frame.Ivory);
+        Pair(V,FString::Printf(TEXT("%d. %s   %d / %d"),Rank+1,*Name.Japanese,Players[Slot].Kills,Players[Slot].Deaths),
+            FString::Printf(TEXT("%s, %d kills %d deaths"),*Name.English,Players[Slot].Kills,Players[Slot].Deaths),X+32*S,RowY,.4f*S,Slot==0?V.Frame.Gold:V.Frame.Ivory);
     }
 }
 void DrawObjectiveStatus(const FPracticeView& V)
@@ -129,15 +130,19 @@ void DrawObjectiveStatus(const FPracticeView& V)
         V.HUD.Panel(X,Y,Width,62*S,FLinearColor(.013f,.027f,.033f,.82f));
         const bool bLocked=V.Kernel.PracticeTick<O.UnlockTick;
         if(bLocked)
-            Pair(V,FString::Printf(TEXT("陣は %s 後に開く"),*Clock(O.UnlockTick-V.Kernel.PracticeTick)),TEXT("The point opens soon"),X+14*S,Y+6*S,.46f*S,V.Frame.Ivory);
+        {
+            const FString Left=Clock(O.UnlockTick-V.Kernel.PracticeTick);
+            Pair(V,FString::Printf(TEXT("拠点は %s 後に開く"),*Left),FString::Printf(TEXT("The point opens in %s"),*Left),X+14*S,Y+6*S,.46f*S,V.Frame.Ivory);
+        }
         else
         {
             const TCHAR* Owner=O.ControlOwner==0?TEXT("味方が保持"):O.ControlOwner==1?TEXT("敵が保持"):TEXT("無主");
-            const TCHAR* OwnerEnglish=O.ControlOwner==0?TEXT("Allies hold"):O.ControlOwner==1?TEXT("Invaders hold"):TEXT("Unclaimed");
-            Pair(V,FString::Printf(TEXT("陣：%s  味方 %d  敵 %d%s%s"),Owner,O.ControlCount[0],O.ControlCount[1],O.Contested?TEXT("  争奪中"):TEXT(""),O.Overtime?TEXT("  延長戦"):TEXT("")),
-                FString::Printf(TEXT("%s%s%s"),OwnerEnglish,O.Contested?TEXT(", contested"):TEXT(""),O.Overtime?TEXT(", overtime"):TEXT("")),X+14*S,Y+6*S,.46f*S,O.Contested?V.Frame.Gold:V.Frame.Ivory);
+            const TCHAR* OwnerEnglish=O.ControlOwner==0?TEXT("Allies hold"):O.ControlOwner==1?TEXT("Enemies hold"):TEXT("Unclaimed");
+            Pair(V,FString::Printf(TEXT("拠点：%s  味方 %d  敵 %d%s%s"),Owner,O.ControlCount[0],O.ControlCount[1],O.Contested?TEXT("  争奪中"):TEXT(""),O.Overtime?TEXT("  延長戦"):TEXT("")),
+                FString::Printf(TEXT("%s; allies %d, enemies %d%s%s"),OwnerEnglish,O.ControlCount[0],O.ControlCount[1],O.Contested?TEXT(", contested"):TEXT(""),O.Overtime?TEXT(", overtime"):TEXT("")),
+                X+14*S,Y+6*S,.46f*S,O.Contested?V.Frame.Gold:V.Frame.Ivory);
         }
-        // Capture progress from the centre: left for the allies, right for the invaders.
+        // Capture progress from the centre: left for the allies, right for the enemies.
         const float Mid=X+Width*.5f, Half=(Width-28*S)*.5f, BarY=Y+40*S;
         V.HUD.Panel(X+14*S,BarY,Width-28*S,10*S,FLinearColor(.12f,.16f,.18f,.9f));
         const float Fraction=FMath::Clamp(static_cast<float>(O.ControlProgress)/O.ControlCapture,-1.f,1.f);
@@ -150,8 +155,9 @@ void DrawObjectiveStatus(const FPracticeView& V)
         V.HUD.Panel(X,Y,Width,62*S,FLinearColor(.013f,.027f,.033f,.82f));
         const bool bRolling=O.PayloadRollbackDelay>0&&O.PayloadIdle>=O.PayloadRollbackDelay;
         const FString State=O.PayloadAttackers>0&&O.PayloadDefenders>0?TEXT("押し合い"):O.PayloadAttackers>0?FString::Printf(TEXT("前進中 %d 人"),O.PayloadAttackers):bRolling?TEXT("後退中"):TEXT("停止");
-        const FString StateEnglish=O.PayloadAttackers>0&&O.PayloadDefenders>0?TEXT("contested"):O.PayloadAttackers>0?TEXT("advancing"):bRolling?TEXT("rolling back"):TEXT("halted");
-        Pair(V,FString::Printf(TEXT("荷駄：%s  関所 %d / 3（あなたの隊が押す）"),*State,O.PayloadCheckpoints),FString::Printf(TEXT("Payload %s; your team escorts"),*StateEnglish),X+14*S,Y+6*S,.46f*S,bRolling?V.Frame.Gold:V.Frame.Ivory);
+        const FString StateEnglish=O.PayloadAttackers>0&&O.PayloadDefenders>0?TEXT("contested"):O.PayloadAttackers>0?FString::Printf(TEXT("advancing with %d"),O.PayloadAttackers):bRolling?TEXT("rolling back"):TEXT("halted");
+        Pair(V,FString::Printf(TEXT("荷車：%s  関所 %d / 3（あなたの隊が押す）"),*State,O.PayloadCheckpoints),
+            FString::Printf(TEXT("Cart %s, checkpoint %d of 3; your team escorts"),*StateEnglish,O.PayloadCheckpoints),X+14*S,Y+6*S,.46f*S,bRolling?V.Frame.Gold:V.Frame.Ivory);
         const float BarX=X+14*S, BarW=Width-28*S, BarY=Y+40*S;
         Bar(V,BarX,BarY,BarW,10*S,O.PayloadProgress/FMath::Max(1.f,O.PayloadLength),SoraPracticeArt::TeamColor(0));
         for(int32 Index=0;Index<3;++Index)
@@ -172,36 +178,14 @@ void DrawFeed(const FPracticeView& V)
         const int32 Age=static_cast<int32>(Now-Entry.Tick);
         if(Age>8*60) continue;
         const float Alpha=FMath::Clamp(1.f-(Age-6*60)/120.f,0.f,1.f);
-        FString Japanese,English; FLinearColor Color=Faded(V.Frame.Ivory,Alpha);
-        const auto Side=[](int32 Team,bool bEnglish){ return Team==0?(bEnglish?TEXT("Allies"):TEXT("味方")):(bEnglish?TEXT("Invaders"):TEXT("敵")); };
-        switch(Entry.Kind)
-        {
-        case FSoraPracticeFeedEntry::Kill:
-        {
-            const FSoraWeapon& Weapon=FSoraCatalog::Get().Weapon(FMath::Max(0,Entry.WeaponId));
-            Japanese=FString::Printf(TEXT("%s ─%s→ %s"),*Name(V,Entry.Actor,false),Entry.WeaponId>=0?*Weapon.Name:TEXT(""),*Name(V,Entry.Target,false));
-            English=FString::Printf(TEXT("%s > %s"),*Name(V,Entry.Actor,true),*Name(V,Entry.Target,true));
-            if(Entry.Actor==0||Entry.Target==0) Color=Faded(V.Frame.Gold,Alpha);
-            break;
-        }
-        case FSoraPracticeFeedEntry::Hazard:
-            Japanese=FString::Printf(TEXT("%s は火と罠に倒れた"),*Name(V,Entry.Target,false)); English=FString::Printf(TEXT("%s fell to a hazard"),*Name(V,Entry.Target,true)); break;
-        case FSoraPracticeFeedEntry::Fall:
-            Japanese=FString::Printf(TEXT("%s 自滅"),*Name(V,Entry.Target,false)); English=FString::Printf(TEXT("%s fell"),*Name(V,Entry.Target,true)); break;
-        case FSoraPracticeFeedEntry::Captured:
-            Japanese=FString::Printf(TEXT("%sが陣を奪った"),Side(Entry.Detail,false)); English=FString::Printf(TEXT("%s took the point"),Side(Entry.Detail,true));
-            Color=Faded(SoraPracticeArt::TeamColor(Entry.Detail),Alpha); break;
-        case FSoraPracticeFeedEntry::Overtime:
-            Japanese=TEXT("延長戦"); English=TEXT("Overtime"); Color=Faded(V.Frame.Gold,Alpha); break;
-        case FSoraPracticeFeedEntry::Checkpoint:
-            Japanese=FString::Printf(TEXT("荷駄が関所 %d を越えた"),Entry.Detail+1); English=FString::Printf(TEXT("Checkpoint %d reached"),Entry.Detail+1);
-            Color=Faded(V.Frame.Gold,Alpha); break;
-        case FSoraPracticeFeedEntry::Winner:
-            Japanese=TEXT("決着"); English=TEXT("Decided"); Color=Faded(V.Frame.Gold,Alpha); break;
-        }
-        const float Width=V.HUD.LabelWidth(Japanese,.4f*S)+(V.bEnglish?V.HUD.LabelWidth(English,.31f*S)+12*S:0.f);
+        const FLine Line=SoraPracticeText::FeedLine(V.Kernel,Entry);
+        FLinearColor Color=Faded(V.Frame.Ivory,Alpha);
+        if(Entry.Kind==FSoraPracticeFeedEntry::Kill&&(Entry.Actor==0||Entry.Target==0)) Color=Faded(V.Frame.Gold,Alpha);
+        else if(Entry.Kind==FSoraPracticeFeedEntry::Captured) Color=Faded(SoraPracticeArt::TeamColor(Entry.Detail),Alpha);
+        else if(Entry.Kind>=FSoraPracticeFeedEntry::Overtime) Color=Faded(V.Frame.Gold,Alpha);
+        const float Width=V.HUD.LabelWidth(Line.Japanese,.4f*S)+(V.bEnglish?V.HUD.LabelWidth(Line.English,.31f*S)+12*S:0.f);
         V.HUD.Panel(X,Y,FMath::Min(450*S,Width+20*S),24*S,FLinearColor(.013f,.027f,.033f,.7f*Alpha));
-        Pair(V,Japanese,English,X+10*S,Y+2*S,.4f*S,Color);
+        Pair(V,Line,X+10*S,Y+2*S,.4f*S,Color);
         Y+=26*S;
     }
 }
@@ -227,7 +211,9 @@ void DrawMarkers(const FPracticeView& V)
         {
             V.HUD.DrawLine(Screen.X-7*S,Screen.Y-8*S,Screen.X,Screen.Y,Color,2.f);
             V.HUD.DrawLine(Screen.X,Screen.Y,Screen.X+7*S,Screen.Y-8*S,Color,2.f);
-            V.HUD.Label(Name(V,Slot,false),Screen.X-30*S,Screen.Y-30*S,.32f*S,V.Frame.Ivory);
+            const FLine Name=SoraPracticeText::Participant(V.Kernel,Slot);
+            V.HUD.Label(Name.Japanese,Screen.X-30*S,Screen.Y-(V.bEnglish?44:30)*S,.32f*S,V.Frame.Ivory);
+            if(V.bEnglish) V.HUD.Label(Name.English,Screen.X-30*S,Screen.Y-26*S,.25f*S,V.Frame.Muted);
         }
         Bar(V,Screen.X-30*S,Screen.Y+4*S,60*S,5*S,static_cast<float>(P.Health)/FMath::Max(1,P.MaxHealth),Color);
         if(P.MarkedTicks>0) V.HUD.Label(TEXT("標"),Screen.X+34*S,Screen.Y-8*S,.5f*S,FLinearColor(1.f,.15f,.1f));
@@ -260,8 +246,8 @@ void DrawRespawn(const FPracticeView& V,const FSoraPracticePlayer& Me)
         const bool bChosen=Class==V.Director.DesiredClass();
         const float CellX=X+24*S+Class*Cell;
         V.HUD.Panel(CellX,RowY,Cell-6*S,(V.bEnglish?50:34)*S,bChosen?FLinearColor(.08f,.25f,.26f,.95f):FLinearColor(.07f,.095f,.11f,.9f));
-        V.HUD.Label(FSoraCatalog::Get().Class(Class).Name,CellX+8*S,RowY+4*S,.46f*S,bChosen?V.Frame.Teal:V.Frame.Ivory);
-        if(V.bEnglish) V.HUD.Label(FSoraCatalog::Get().Class(Class).NameEnglish,CellX+8*S,RowY+28*S,.3f*S,V.Frame.Muted);
+        const FSoraClass& Info=FSoraCatalog::Get().Class(Class);
+        Stacked(V,{Info.Name,Info.NameEnglish},CellX+8*S,RowY+4*S,.46f*S,bChosen?V.Frame.Teal:V.Frame.Ivory);
     }
     RowY+=(V.bEnglish?62:46)*S;
     Pair(V,TEXT("武器  1・2・3"),TEXT("Weapon: 1 / 2 / 3"),X+24*S,RowY,.42f*S,V.Frame.Muted);
@@ -269,27 +255,78 @@ void DrawRespawn(const FPracticeView& V,const FSoraPracticePlayer& Me)
     const float Slot=(Width-48*S)/3;
     for(int32 Index=0;Index<3;++Index)
     {
-        const int32 Weapon=USoraPracticeDirector::LoadoutWeapon(V.Director.DesiredClass(),Index);
         const bool bAllowed=V.Director.CanSelectLoadout(V.Director.DesiredClass(),Index);
         const bool bChosen=Index==V.Director.DesiredLoadout();
         const float CellX=X+24*S+Index*Slot;
         V.HUD.Panel(CellX,RowY,Slot-6*S,(V.bEnglish?50:34)*S,bChosen&&bAllowed?FLinearColor(.08f,.25f,.26f,.95f):FLinearColor(.07f,.095f,.11f,bAllowed?.9f:.5f));
-        const FSoraWeapon& Info=FSoraCatalog::Get().Weapon(Weapon);
-        const FLinearColor Color=!bAllowed?Faded(V.Frame.Muted,.55f):bChosen?V.Frame.Teal:V.Frame.Ivory;
-        V.HUD.Label(FString::Printf(TEXT("%d  %s"),Index+1,*Info.Name),CellX+8*S,RowY+4*S,.44f*S,Color);
-        if(V.bEnglish) V.HUD.Label(bAllowed?Info.NameEnglish:(Index==2?TEXT("special not admitted"):TEXT("blades only")),CellX+8*S,RowY+28*S,.3f*S,Faded(V.Frame.Muted,bAllowed?1.f:.6f));
+        const FLine Choice=SoraPracticeText::LoadoutCell(V.Director,V.Director.DesiredClass(),Index);
+        const FLinearColor Color=!bAllowed?Faded(V.Frame.Muted,.7f):bChosen?V.Frame.Teal:V.Frame.Ivory;
+        Stacked(V,{FString::Printf(TEXT("%d  %s"),Index+1,*Choice.Japanese),Choice.English},CellX+8*S,RowY+4*S,.44f*S,Color);
     }
     RowY+=(V.bEnglish?62:46)*S;
     const bool bPending=Me.PendingClass!=INDEX_NONE;
     const int32 NextClass=bPending?Me.PendingClass:Me.ClassId, NextWeapon=bPending?Me.PendingWeapon:Me.WeaponId;
     Pair(V,FString::Printf(TEXT("次の復帰：%s / %s%s"),*FSoraCatalog::Get().Class(NextClass).Name,*FSoraCatalog::Get().Weapon(NextWeapon).Name,bPending?TEXT("（カーネルが受理）"):TEXT("")),
-        FString::Printf(TEXT("Next life: %s, %s"),*FSoraCatalog::Get().Class(NextClass).NameEnglish,*FSoraCatalog::Get().Weapon(NextWeapon).NameEnglish),X+24*S,RowY,.44f*S,V.Frame.Ivory);
+        FString::Printf(TEXT("Next life: %s, %s%s"),*FSoraCatalog::Get().Class(NextClass).NameEnglish,*FSoraCatalog::Get().Weapon(NextWeapon).NameEnglish,bPending?TEXT(" (held by the kernel)"):TEXT("")),
+        X+24*S,RowY,.44f*S,V.Frame.Ivory);
     RowY+=30*S;
     if(V.Director.IsSpectating()&&V.Director.SpectatedSlot()!=INDEX_NONE)
-        Pair(V,FString::Printf(TEXT("観戦中：%s   左クリック・Ctrl で切替"),*Name(V,V.Director.SpectatedSlot(),false)),
-            FString::Printf(TEXT("Watching %s; Fire / Block to switch"),*Name(V,V.Director.SpectatedSlot(),true)),X+24*S,RowY,.4f*S,V.Frame.Muted);
+    {
+        const FLine Name=SoraPracticeText::Participant(V.Kernel,V.Director.SpectatedSlot());
+        Pair(V,FString::Printf(TEXT("観戦中：%s   左クリック・Ctrl で切替"),*Name.Japanese),
+            FString::Printf(TEXT("Watching %s; Fire / Block to switch"),*Name.English),X+24*S,RowY,.4f*S,V.Frame.Muted);
+    }
     RowY+=28*S;
     Pair(V,TEXT("無入金の稽古：倒れても XOR は動きません。"),TEXT("Zero-stake practice: no XOR moves when you fall."),X+24*S,RowY,.38f*S,V.Frame.Teal);
+}
+// The per-seat table, while the player holds Scoreboard: every seat's side,
+// class, weapon, kills, deaths and state, grouped by team in the team modes.
+void DrawScoreboard(const FPracticeView& V)
+{
+    const float S=V.S, Width=FMath::Min(V.W-80*S,1180*S), X=(V.W-Width)*.5f;
+    const TArray<FSoraPracticePlayer>& Players=V.Kernel.PracticePlayers;
+    const TArray<int32> Order=SoraPracticeText::TableOrder(Players,V.bTeams);
+    const float Row=(V.bEnglish?44:32)*S;
+    const float Height=(V.bEnglish?150:120)*S+Row*Order.Num()+(V.bTeams?Row:0.f);
+    float Y=FMath::Max(80*S,(V.H-Height)*.5f);
+    V.HUD.Panel(X,Y,Width,Height,FLinearColor(.01f,.02f,.026f,.94f));
+    const FLine Mode=SoraPracticeText::ModeName(V.Director.Config.Mode);
+    const FString Left=Clock(static_cast<int32>(SoraPractice::MatchTicks-FMath::Min(V.Kernel.PracticeTick,SoraPractice::MatchTicks)));
+    Pair(V,FString::Printf(TEXT("戦況表 ― %s / 残り %s"),*Mode.Japanese,*Left),FString::Printf(TEXT("Scoreboard: %s, %s left"),*Mode.English,*Left),X+24*S,Y+14*S,.6f*S,V.Frame.Gold);
+    Y+=(V.bEnglish?64:56)*S;
+    static const FLine Headers[]={{TEXT("参加者"),TEXT("Participant")},{TEXT("陣営"),TEXT("Side")},{TEXT("流儀"),TEXT("Class")},{TEXT("武器"),TEXT("Weapon")},
+        {TEXT("撃破"),TEXT("Kills")},{TEXT("戦死"),TEXT("Deaths")},{TEXT("状態"),TEXT("State")}};
+    static const float Columns[]={0.f,.2f,.39f,.53f,.72f,.79f,.86f};
+    const float Inner=Width-48*S, Left0=X+24*S;
+    for(int32 Column=0;Column<UE_ARRAY_COUNT(Headers);++Column) Stacked(V,Headers[Column],Left0+Inner*Columns[Column],Y,.38f*S,V.Frame.Gold);
+    Y+=(V.bEnglish?40:28)*S;
+    int32 Team=INDEX_NONE;
+    for(const int32 Slot:Order)
+    {
+        const FSoraPracticePlayer& P=Players[Slot];
+        if(V.bTeams&&P.Team!=Team)
+        {
+            // A team heading with its standing on the objective.
+            Team=P.Team;
+            const FLine Side=SoraPracticeText::SideName(Team), Relative=SoraPracticeText::Relative(Team);
+            Pair(V,FString::Printf(TEXT("%s ― %s"),*Relative.Japanese,*Side.Japanese),FString::Printf(TEXT("%s: %s"),*Relative.English,*Side.English),Left0,Y+2*S,.4f*S,SoraPracticeArt::TeamColor(Team));
+            Y+=Row;
+        }
+        if(Slot==0) V.HUD.Panel(X+8*S,Y-2*S,Width-16*S,Row-2*S,FLinearColor(.08f,.25f,.26f,.5f));
+        V.HUD.Panel(Left0-10*S,Y+4*S,6*S,Row-12*S,V.Director.ParticipantColor(Slot));
+        const FLinearColor Color=!P.Alive?V.Frame.Muted:Slot==0?V.Frame.Gold:V.Frame.Ivory;
+        const FSoraClass& Class=FSoraCatalog::Get().Class(P.ClassId);
+        const FSoraWeapon& Weapon=FSoraCatalog::Get().Weapon(P.WeaponId);
+        const float Scale=.36f*S;
+        Stacked(V,SoraPracticeText::Participant(V.Kernel,Slot),Left0+Inner*Columns[0],Y,Scale,Color);
+        Stacked(V,SoraPracticeText::SeatSide(P,Slot,V.bTeams),Left0+Inner*Columns[1],Y,Scale,Color);
+        Stacked(V,{Class.Name,Class.NameEnglish},Left0+Inner*Columns[2],Y,Scale,Color);
+        Stacked(V,{Weapon.Name,Weapon.NameEnglish},Left0+Inner*Columns[3],Y,Scale,Color);
+        V.HUD.Label(FString::FromInt(P.Kills),Left0+Inner*Columns[4],Y,Scale,Color);
+        V.HUD.Label(FString::FromInt(P.Deaths),Left0+Inner*Columns[5],Y,Scale,Color);
+        Stacked(V,SoraPracticeText::SeatStatus(P),Left0+Inner*Columns[6],Y,Scale,Color);
+        Y+=Row;
+    }
 }
 void DrawResults(const FPracticeView& V,const FSoraPracticeResults& R)
 {
@@ -299,14 +336,16 @@ void DrawResults(const FPracticeView& V,const FSoraPracticeResults& R)
     FString Title,TitleEnglish; FLinearColor TitleColor=V.Frame.Teal;
     if(R.WinnerKind==SoraPractice::WinnerTeam)
     {
-        Title=R.WinnerValue==0?TEXT("勝利 ― SORA 抵抗軍"):TEXT("敗北 ― 異星の債権団の勝ち");
-        TitleEnglish=R.WinnerValue==0?TEXT("Victory for the SORA resistance"):TEXT("Defeat: the banker invaders win");
+        const FLine Winner=SoraPracticeText::SideName(R.WinnerValue);
+        Title=FString::Printf(TEXT("%s ― %sの勝ち"),R.WinnerValue==0?TEXT("勝利"):TEXT("敗北"),*Winner.Japanese);
+        TitleEnglish=FString::Printf(TEXT("%s: %s wins"),R.WinnerValue==0?TEXT("Victory"):TEXT("Defeat"),*Winner.English);
         TitleColor=SoraPracticeArt::TeamColor(R.WinnerValue);
     }
     else if(R.WinnerKind==SoraPractice::WinnerSlot)
     {
-        Title=R.WinnerValue==0?TEXT("勝利 ― 最多撃破"):FString::Printf(TEXT("%s の勝ち"),*Name(V,R.WinnerValue,false));
-        TitleEnglish=R.WinnerValue==0?TEXT("Victory: most kills"):FString::Printf(TEXT("%s wins"),*Name(V,R.WinnerValue,true));
+        const FLine Winner=SoraPracticeText::Participant(V.Kernel,R.WinnerValue);
+        Title=R.WinnerValue==0?TEXT("勝利 ― 最多撃破"):FString::Printf(TEXT("%s の勝ち"),*Winner.Japanese);
+        TitleEnglish=R.WinnerValue==0?TEXT("Victory: most kills"):FString::Printf(TEXT("%s wins"),*Winner.English);
         TitleColor=R.WinnerValue==0?V.Frame.Gold:V.Director.ParticipantColor(R.WinnerValue);
     }
     else { Title=TEXT("引き分け"); TitleEnglish=TEXT("Draw"); TitleColor=V.Frame.Ivory; }
@@ -317,49 +356,39 @@ void DrawResults(const FPracticeView& V,const FSoraPracticeResults& R)
     switch(R.Mode)
     {
     case SoraPractice::Control:
-        Summary=FString::Printf(TEXT("陣の保持：味方 %s ／ 敵 %s（目標 %s）"),*Clock(R.Score[0]),*Clock(R.Score[1]),*Clock(R.ScoreTarget));
-        SummaryEnglish=FString::Printf(TEXT("Point held: allies %s, invaders %s (target %s)"),*Clock(R.Score[0]),*Clock(R.Score[1]),*Clock(R.ScoreTarget));
+        Summary=FString::Printf(TEXT("拠点の保持：味方 %s ／ 敵 %s（目標 %s）"),*Clock(R.Score[0]),*Clock(R.Score[1]),*Clock(R.ScoreTarget));
+        SummaryEnglish=FString::Printf(TEXT("Point held: allies %s, enemies %s (target %s)"),*Clock(R.Score[0]),*Clock(R.Score[1]),*Clock(R.ScoreTarget));
         break;
     case SoraPractice::Payload:
-        Summary=FString::Printf(TEXT("荷駄 %d%%・関所 %d / 3"),FMath::RoundToInt(100.f*R.PayloadProgress/FMath::Max(1.f,R.PayloadLength)),R.Checkpoints);
-        SummaryEnglish=FString::Printf(TEXT("Payload %d%% of the route, %d of 3 checkpoints"),FMath::RoundToInt(100.f*R.PayloadProgress/FMath::Max(1.f,R.PayloadLength)),R.Checkpoints);
+        Summary=FString::Printf(TEXT("荷車 %d%%・関所 %d / 3"),FMath::RoundToInt(100.f*R.PayloadProgress/FMath::Max(1.f,R.PayloadLength)),R.Checkpoints);
+        SummaryEnglish=FString::Printf(TEXT("Cart %d%% of the route, %d of 3 checkpoints"),FMath::RoundToInt(100.f*R.PayloadProgress/FMath::Max(1.f,R.PayloadLength)),R.Checkpoints);
         break;
     default:
         Summary=TEXT("最多撃破が勝ち、同数なら戦死の少ない方"); SummaryEnglish=TEXT("Most kills wins; fewest deaths breaks a tie");
         break;
     }
-    Pair(V,FString::Printf(TEXT("%s ／ %s ／ %s"),ModeName(R.Mode,false),*Clock(static_cast<int32>(R.Tick)),*Summary),FString::Printf(TEXT("%s, %s. %s"),ModeName(R.Mode,true),*Clock(static_cast<int32>(R.Tick)),*SummaryEnglish),X,Y,.5f*S,V.Frame.Ivory);
+    const FLine Mode=SoraPracticeText::ModeName(R.Mode);
+    Pair(V,FString::Printf(TEXT("%s ／ %s ／ %s"),*Mode.Japanese,*Clock(static_cast<int32>(R.Tick)),*Summary),FString::Printf(TEXT("%s, %s. %s"),*Mode.English,*Clock(static_cast<int32>(R.Tick)),*SummaryEnglish),X,Y,.5f*S,V.Frame.Ivory);
     Y+=46*S;
     // The table: every participant with the kernel's own bond figures.
-    static const TCHAR* Headers[]={TEXT("参加者"),TEXT("陣営"),TEXT("流儀"),TEXT("撃破"),TEXT("戦死"),TEXT("入金"),TEXT("残高"),TEXT("獲得")};
-    static const TCHAR* HeadersEnglish[]={TEXT("Participant"),TEXT("Side"),TEXT("Class"),TEXT("Kills"),TEXT("Deaths"),TEXT("Bond"),TEXT("Reserve"),TEXT("Earned")};
-    static const float Columns[]={0.f,.2f,.34f,.5f,.58f,.66f,.78f,.9f};
-    for(int32 Column=0;Column<8;++Column)
-    {
-        V.HUD.Label(Headers[Column],X+Width*Columns[Column],Y,.4f*S,V.Frame.Gold);
-        if(V.bEnglish) V.HUD.Label(HeadersEnglish[Column],X+Width*Columns[Column],Y+22*S,.28f*S,V.Frame.Muted);
-    }
+    static const FLine Headers[]={{TEXT("参加者"),TEXT("Participant")},{TEXT("陣営"),TEXT("Side")},{TEXT("流儀"),TEXT("Class")},{TEXT("撃破"),TEXT("Kills")},
+        {TEXT("戦死"),TEXT("Deaths")},{TEXT("入金"),TEXT("Bond")},{TEXT("残高"),TEXT("Reserve")},{TEXT("獲得"),TEXT("Earned")}};
+    static const float Columns[]={0.f,.2f,.36f,.5f,.58f,.66f,.78f,.9f};
+    for(int32 Column=0;Column<8;++Column) Stacked(V,Headers[Column],X+Width*Columns[Column],Y,.4f*S,V.Frame.Gold);
     Y+=(V.bEnglish?44:28)*S;
-    TArray<int32> Order;
-    for(int32 Slot=0;Slot<R.Players.Num();++Slot) Order.Add(Slot);
-    const bool bTeams=V.bTeams;
-    Order.Sort([&R,bTeams](int32 A,int32 B)
-    {
-        const FSoraPracticePlayer& P=R.Players[A]; const FSoraPracticePlayer& Q=R.Players[B];
-        if(bTeams&&P.Team!=Q.Team) return P.Team<Q.Team;
-        return P.Kills!=Q.Kills?P.Kills>Q.Kills:P.Deaths!=Q.Deaths?P.Deaths<Q.Deaths:A<B;
-    });
-    const float Row=FMath::Min(30.f,(V.H-Y-230*S)/FMath::Max(1,Order.Num())/S)*S;
+    const TArray<int32> Order=SoraPracticeText::TableOrder(R.Players,V.bTeams);
+    const float Row=FMath::Min(V.bEnglish?40.f:30.f,(V.H-Y-230*S)/FMath::Max(1,Order.Num())/S)*S;
     for(const int32 Slot:Order)
     {
         const FSoraPracticePlayer& P=R.Players[Slot];
         if(Slot==0) V.HUD.Panel(X-8*S,Y-2*S,Width+16*S,Row,FLinearColor(.08f,.25f,.26f,.5f));
         V.HUD.Panel(X,Y+5*S,8*S,Row-12*S,V.Director.ParticipantColor(Slot));
         const FLinearColor Color=Slot==0?V.Frame.Gold:V.Frame.Ivory;
-        const float Scale=FMath::Min(.42f,Row/S/60.f)*S;
-        V.HUD.Label(Name(V,Slot,false),X+Width*Columns[0]+16*S,Y,Scale,Color);
-        V.HUD.Label(bTeams?(P.Team==0?TEXT("SORA 抵抗軍"):TEXT("債権団")):(Slot==0?TEXT("SORA"):TEXT("単騎")),X+Width*Columns[1],Y,Scale,Color);
-        V.HUD.Label(FSoraCatalog::Get().Class(P.ClassId).Name,X+Width*Columns[2],Y,Scale,Color);
+        const float Scale=FMath::Min(.42f,Row/S/(V.bEnglish?90.f:60.f))*S;
+        const FSoraClass& Class=FSoraCatalog::Get().Class(P.ClassId);
+        Stacked(V,SoraPracticeText::Participant(V.Kernel,Slot),X+Width*Columns[0]+16*S,Y,Scale,Color);
+        Stacked(V,SoraPracticeText::SeatSide(P,Slot,V.bTeams),X+Width*Columns[1],Y,Scale,Color);
+        Stacked(V,{Class.Name,Class.NameEnglish},X+Width*Columns[2],Y,Scale,Color);
         V.HUD.Label(FString::FromInt(P.Kills),X+Width*Columns[3],Y,Scale,Color);
         V.HUD.Label(FString::FromInt(P.Deaths),X+Width*Columns[4],Y,Scale,Color);
         V.HUD.Label(FString::Printf(TEXT("%llu XOR"),P.InitialBond),X+Width*Columns[5],Y,Scale,Color);
@@ -392,6 +421,8 @@ void SoraHUDPanels::DrawPractice(const FSoraHUDFrame& Frame)
     DrawScores(V);
     DrawObjectiveStatus(V);
     DrawFeed(V);
+    // The held scoreboard covers the respawn panel; releasing it shows the choice again.
+    if(Director->ShowsScoreboard()) { DrawScoreboard(V); return; }
     const FSoraPracticePlayer& Me=Kernel->PracticePlayers[0];
     if(!Me.Alive) DrawRespawn(V,Me);
 }

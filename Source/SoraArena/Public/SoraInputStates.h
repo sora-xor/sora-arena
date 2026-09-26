@@ -47,6 +47,8 @@ inline constexpr FAction Actions[] = {
     {TEXT("WeaponFive"), Play},
     {TEXT("WeaponSix"), Play},
     {TEXT("CampaignWeaponNext"), Play},
+    // Held in play: the practice scoreboard of every seat.
+    {TEXT("Scoreboard"), Play},
     // Esc/Start opens and closes the menu and withdraws a pending confirmation.
     {TEXT("Menu"), Always},
     // Enter starts from the menu, skips the chapter card and continues a result.
