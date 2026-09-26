@@ -1,0 +1,33 @@
+run	time_jst	app_nap	arena	window	frames	seconds	fps	frame_mean_ms	frame_p95_ms	frame_p99_ms	game_ms	render_ms	rhi_ms	gpu_mean_ms	gpu_p95_ms	over_16_7ms	csv_frames	csv_frame_ms	csv_gpu_ms	other_gpu_work	load1
+full1	2026-09-26 21:32-21:39	on	DebtCitadel	capped	407	20.12	20.2	49.43	107.71	174.59	6.53	8.87	5.28	17.57	25.48	326	422	48.9	17.44	not sampled	not sampled
+full1	2026-09-26 21:32-21:39	on	DebtCitadel	uncapped	1128	15.01	75.2	13.35	19.1	36.46	3.3	13.34	5.37	11.92	15.08	67	1142	13.32	11.86	not sampled	not sampled
+full1	2026-09-26 21:32-21:39	on	LanternWard	capped	494	20.04	24.7	40.58	101.53	105.3	5.77	9.77	6.02	19.92	30.53	400	509	40.39	19.78	not sampled	not sampled
+full1	2026-09-26 21:32-21:39	on	LanternWard	uncapped	1052	15.02	70.1	14.27	16.21	17.68	3.13	14.26	4.71	13.31	15.14	18	1071	14.32	13.38	not sampled	not sampled
+full1	2026-09-26 21:32-21:39	on	NyaagyuEstate	capped	433	20.0	21.6	46.21	108.36	110.94	5.82	6.77	5.06	15.25	19.23	367	455	45.09	15.2	not sampled	not sampled
+full1	2026-09-26 21:32-21:39	on	NyaagyuEstate	uncapped	1262	15.01	84.1	11.89	13.84	18.06	2.92	11.88	4.83	10.93	12.47	16	1296	11.86	10.92	not sampled	not sampled
+full1	2026-09-26 21:32-21:39	on	SilkFoundry	capped	408	20.1	20.3	49.28	103.57	106.46	5.0	7.0	5.34	16.19	20.46	333	426	48.41	16.2	not sampled	not sampled
+full1	2026-09-26 21:32-21:39	on	SilkFoundry	uncapped	1178	15.0	78.5	12.74	14.97	18.61	3.23	12.73	5.0	11.74	13.25	14	1198	12.77	11.8	not sampled	not sampled
+practice-nap1	2026-09-26 23:21-23:25	off	DebtCitadel	capped	900	20.01	45.0	22.24	48.65	96.78	4.43	20.08	4.63	16.05	24.84	394	920	22.31	15.91	not sampled	not sampled
+practice-nap1	2026-09-26 23:21-23:25	off	DebtCitadel	uncapped	978	15.01	65.1	15.35	23.69	55.59	2.89	15.32	5.15	12.93	17.2	93	994	15.47	13.0	not sampled	not sampled
+practice-nap1	2026-09-26 23:21-23:25	off	LanternWard	capped	106	20.0	5.3	188.73	671.54	978.77	7.26	188.43	6.16	186.37	679.73	94	111	185.34	183.04	not sampled	not sampled
+practice-nap1	2026-09-26 23:21-23:25	off	LanternWard	uncapped	56	16.12	3.5	287.79	1154.16	1356.49	5.26	287.77	6.55	285.03	946.49	56	59	284.83	293.97	not sampled	not sampled
+practice-nap1	2026-09-26 23:21-23:25	off	NyaagyuEstate	capped	973	20.01	48.6	20.57	37.28	89.83	4.94	16.35	4.76	13.87	22.12	326	997	20.59	14.17	not sampled	not sampled
+practice-nap1	2026-09-26 23:21-23:25	off	NyaagyuEstate	uncapped	656	15.0	43.7	22.87	55.19	104.89	3.26	22.84	5.01	17.15	38.49	311	670	23.0	17.41	not sampled	not sampled
+practice-nap1	2026-09-26 23:21-23:25	off	SilkFoundry	capped	184	20.14	9.1	109.51	342.58	409.27	4.87	109.31	5.78	106.24	326.66	148	187	110.46	108.31	not sampled	not sampled
+practice-nap1	2026-09-26 23:21-23:25	off	SilkFoundry	uncapped	204	15.17	13.4	74.38	257.01	334.9	4.05	74.59	5.35	73.05	246.29	125	204	74.38	72.22	not sampled	not sampled
+practice-idle1	2026-09-26 23:35-23:39	off	DebtCitadel	capped	766	20.01	38.3	26.13	62.14	123.54	5.1	22.69	4.83	19.39	48.64	340	796	25.77	19.1	Blender	17.82
+practice-idle1	2026-09-26 23:35-23:39	off	DebtCitadel	uncapped	665	15.01	44.3	22.57	68.6	134.48	3.09	22.47	4.53	15.17	25.58	220	693	22.28	14.95	Blender	23.0
+practice-idle1	2026-09-26 23:35-23:39	off	LanternWard	capped	621	20.08	30.9	32.34	105.48	204.52	6.13	30.84	5.79	24.36	75.33	367	641	32.11	24.21	Blender	29.48
+practice-idle1	2026-09-26 23:35-23:39	off	LanternWard	uncapped	724	15.39	47.0	21.26	47.43	135.76	3.62	21.22	5.4	17.05	24.13	169	728	21.44	17.13	Blender	29.48
+practice-idle1	2026-09-26 23:35-23:39	off	NyaagyuEstate	capped	790	20.01	39.5	25.33	71.2	128.88	6.51	21.25	4.73	16.34	31.0	342	820	25.02	16.64	Blender	25.95
+practice-idle1	2026-09-26 23:35-23:39	off	NyaagyuEstate	uncapped	597	15.08	39.6	25.25	68.55	109.5	3.76	25.08	4.87	17.4	40.57	304	597	25.25	17.36	Blender	28.37
+practice-idle1	2026-09-26 23:35-23:39	off	SilkFoundry	capped	924	20.07	46.0	21.73	47.01	106.7	4.33	16.36	5.26	16.26	27.68	272	940	21.9	16.59	Blender	31.8
+practice-idle1	2026-09-26 23:35-23:39	off	SilkFoundry	uncapped	288	15.0	19.2	52.1	271.56	470.19	3.98	52.08	5.67	50.59	254.36	101	293	52.27	50.61	Blender	27.19
+practice-idle3	2026-09-26 23:53-23:58	off	DebtCitadel	capped	1200	20.01	60.0	16.68	16.7	16.71	3.98	6.91	4.64	13.4	15.29	2	1231	16.68	13.36	Blender	16.82
+practice-idle3	2026-09-26 23:53-23:58	off	DebtCitadel	uncapped	1128	15.01	75.1	13.31	14.65	27.82	2.86	13.3	4.74	12.18	13.21	25	1164	13.27	12.16	Blender	16.25
+practice-idle3	2026-09-26 23:53-23:58	off	LanternWard	capped	985	20.01	49.2	20.32	31.88	102.12	5.52	16.81	6.08	18.55	31.33	232	1015	20.21	18.45	Blender	16.45
+practice-idle3	2026-09-26 23:53-23:58	off	LanternWard	uncapped	1018	15.02	67.8	14.75	16.97	23.25	3.55	14.74	5.6	13.63	15.59	43	1035	14.84	13.73	Blender	16.48
+practice-idle3	2026-09-26 23:53-23:58	off	NyaagyuEstate	capped	676	20.04	33.7	29.65	70.28	456.36	4.97	22.76	5.05	25.85	59.95	161	685	30.04	27.04	Blender	18.04
+practice-idle3	2026-09-26 23:53-23:58	off	NyaagyuEstate	uncapped	410	15.01	27.3	36.61	236.74	382.87	3.05	36.6	5.05	34.83	237.04	55	409	36.56	34.34	Blender	17.77
+practice-idle3	2026-09-26 23:53-23:58	off	SilkFoundry	capped	1043	20.01	52.1	19.19	43.44	54.97	4.6	12.28	5.45	16.59	38.05	145	1070	19.18	16.53	Blender	16.56
+practice-idle3	2026-09-26 23:53-23:58	off	SilkFoundry	uncapped	1087	15.0	72.5	13.8	17.81	31.96	3.54	13.79	5.76	12.67	16.25	65	1115	13.83	12.72	Blender	17.36

@@ -68,12 +68,12 @@ Recurring art problems:
 - **The horse.** Kurimaru is built from cylinders, spheres and boxes with a
   box saddle (C1_06). From the saddle the rider sees a box head with two cone
   ears (C2_08, C4_02, C8_02).
-- **Spaces.** Most interiors are boxes. One rust texture covers floors and
-  walls throughout chapters 5–8 and in Silk Foundry and Debt Citadel (C5_06,
-  C5_16, C6_09, C6_13, C7_13, C8_04, C8_14). Both production tasks shown
+- **Spaces.** Most interiors are boxes. One rust texture covers most floors,
+  walls and boxes in the chapter 5–8 frames and in the Silk Foundry and Debt
+  Citadel arenas (C5_06, C5_16, C6_09, C6_13, C7_13, C8_04, C8_14, A3, A4). Both production tasks shown
   (arrow work, C1_09, and the waterwheel, C4_11) take place in the same
-  plank-walled room with box stations; no waterwheel is visible. C6_06 and
-  C7_10 show guards floating against a flat white or grey void.
+  plank-walled room with box stations; no waterwheel is visible. In C6_06
+  and C7_10 the guards appear to float against a flat white or grey void.
 - **Light.** The occupied streets (C3_02, C3_07, C3_17) are underexposed to
   near-silhouette. C6_06 is overexposed. The best-developed space is the
   Nyaagyu Estate gate (C2_02): torii, capped walls, a shōji building and
@@ -97,9 +97,9 @@ HUD defects for the UI lane:
 
 Capture artifacts (the harness's fault, not the game's):
 
-- The CSV profiler's on-screen counter, "CsvProfiler フレーム:1,198", appears
-  in A3 and A4 Combat because the frame is saved soon after the profile
-  stops.
+- The CSV profiler's on-screen counter ("CsvProfiler フレーム:1,198") shows
+  in A3 and A4 Combat. The fight frame is saved soon after the profile stops,
+  and the counter can still be on screen.
 - The hero stands very close to Dunark in C2_15, so the boss's head is behind
   the HUD.
 - C7_04 puts the hero face to face with a guard, with the bow limb across
@@ -171,45 +171,71 @@ frames is in the set above.
 
 ## Frame time at 1080p (M1 Ultra, Mac preset)
 
-**No clean 60 fps figure exists yet.** The best available data suggests the
-Mac preset needs 11.9–14.3 ms a frame on average in practice combat on the
-four arenas, with spikes in Debt Citadel. That result comes from a run whose
-contention was not recorded.
+**Only one window is close to uncontended.** Other lanes' Blender jobs ran
+on this shared GPU during almost every window measured with App Nap off.
+What the runs do show:
+
+- **Render cost.** Two runs have usable uncapped windows. In the first run
+  (`full1`) nobody recorded what else was running. In the last run
+  (`practice-idle3`) Blender was running beside the game. In both runs Debt
+  Citadel, Lantern Ward and Silk Foundry took 12.7–14.8 ms per frame (GPU
+  11.7–13.6 ms), about 68–79 fps. Nyaagyu Estate took 11.9 ms in the first
+  run and 36.6 ms in the last.
+- **As shipped (60 fps cap).** In `practice-idle3`, Debt Citadel held the
+  cap: 1200 frames in 20 s, mean 16.68 ms, p99 16.71 ms, only 2 frames over
+  16.7 ms. That is the one window with almost no other GPU work; a Blender
+  job appears only in its last sample. Every later window ran beside
+  Blender. The other three arenas reached 33.7–52.1 fps in those windows,
+  with p95 spikes of 32–70 ms. On this shared machine those spikes cannot be
+  told apart from the Blender jobs.
 
 Each arena measures a **capped** window (20 s, `t.MaxFPS=60` as the preset
 ships) and then an **uncapped** window (15 s, `t.MaxFPS=0`) in live 8- or
-12-cat practice. The figures are the engine's stat-unit timers and a
-`csvprofile` of the same window. The CSV columns agree with stat unit within
-a few percent.
+12-cat practice. The figures come from the engine's stat-unit timers and a
+`csvprofile` of the same window, and the CSV columns agree with stat unit to
+within a few percent. [frame-times.tsv](frame-times.tsv) has every window of
+all four runs.
 
-| Run (JST) | Arena | Window | fps | Frame mean / p95 / p99 ms | GPU mean ms | Other GPU work |
-|---|---|---|---|---|---|---|
-| full1 21:32–21:39 | Nyaagyu Estate | uncapped | 84.1 | 11.89 / 13.84 / 18.06 | 10.93 | not sampled |
-| full1 | Lantern Ward | uncapped | 70.1 | 14.27 / 16.21 / 17.68 | 13.31 | not sampled |
-| full1 | Silk Foundry | uncapped | 78.5 | 12.74 / 14.97 / 18.61 | 11.74 | not sampled |
-| full1 | Debt Citadel | uncapped | 75.2 | 13.35 / 19.10 / 36.46 | 11.92 | not sampled |
-| full1 | all four | capped | 20.2–24.7 | 40.6–49.4 mean | 15.3–19.9 | App Nap (below) |
-| practice-idle1 23:35–23:39 | all four | both | 19.2–47.0 | 21.3–52.1 mean | 15.2–50.6 | Blender in every window |
+| Run (JST) | App Nap | Arena | Window | fps | Frame mean / p95 / p99 ms | GPU mean ms | Other GPU work |
+|---|---|---|---|---|---|---|---|
+| full1 21:32 | on | Nyaagyu Estate | uncapped | 84.1 | 11.89 / 13.84 / 18.06 | 10.93 | not sampled |
+| full1 | on | Lantern Ward | uncapped | 70.1 | 14.27 / 16.21 / 17.68 | 13.31 | not sampled |
+| full1 | on | Silk Foundry | uncapped | 78.5 | 12.74 / 14.97 / 18.61 | 11.74 | not sampled |
+| full1 | on | Debt Citadel | uncapped | 75.2 | 13.35 / 19.10 / 36.46 | 11.92 | not sampled |
+| full1 | on | all four | capped | 20.2–24.7 | 40.6–49.4 mean | 15.3–19.9 | not sampled; App Nap |
+| practice-idle3 23:53 | off | Debt Citadel | capped | 60.0 | 16.68 / 16.70 / 16.71 | 13.40 | Blender in the last sample only |
+| practice-idle3 | off | Debt Citadel | uncapped | 75.1 | 13.31 / 14.65 / 27.82 | 12.18 | Blender |
+| practice-idle3 | off | Lantern Ward | capped | 49.2 | 20.32 / 31.88 / 102.12 | 18.55 | Blender |
+| practice-idle3 | off | Lantern Ward | uncapped | 67.8 | 14.75 / 16.97 / 23.25 | 13.63 | Blender |
+| practice-idle3 | off | Silk Foundry | capped | 52.1 | 19.19 / 43.44 / 54.97 | 16.59 | Blender |
+| practice-idle3 | off | Silk Foundry | uncapped | 72.5 | 13.80 / 17.81 / 31.96 | 12.67 | Blender |
+| practice-idle3 | off | Nyaagyu Estate | capped | 33.7 | 29.65 / 70.28 / 456.36 | 25.85 | Blender |
+| practice-idle3 | off | Nyaagyu Estate | uncapped | 27.3 | 36.61 / 236.74 / 382.87 | 34.83 | Blender |
 
-- **App Nap.** The full1 capped windows measured macOS App Nap, not the
-  game. An offscreen, silent app has no visible window, so macOS coalesces
-  its timers. The harness's probe found a requested 5 ms sleep taking
-  8.6–32 ms (mean), and the frame cap waits by sleeping. The capture script
-  now passes `-NSAppSleepDisabled YES`, after which the same probe measures
-  6.0 ms. The uncapped windows never sleep, so App Nap did not affect them.
-- **Contention.** With App Nap off, two later practice-only runs could not
-  measure the game alone. Other lanes' Blender jobs (the runtime-weapon and
-  cat-head builds in this checkout) ran on the GPU throughout, as the capture
-  script's new process sampler recorded in `practice-idle1` (Blender in 114
-  of 118 samples, 1-minute load 18–32). In `practice-nap1` (23:21–23:25,
-  before the sampler existed) the GPU time rose to 186 ms in Lantern Ward;
-  what caused it is not recorded. Nine orphaned `CrashReportClient` processes
-  from earlier crashes each spin one core at about 100%, and so does Activity
-  Monitor, in every sample. Those runs' numbers are in `Saved/PackagedCapture`
-  and are not the game's frame time.
+- **App Nap.** The full1 capped windows measured App Nap, not the game. An
+  offscreen app launched with `-nosound` has no visible window, so macOS
+  coalesces its timers. The harness's probe found that a requested 5 ms sleep
+  took 8.6–32 ms on average, and the frame cap waits by sleeping. The capture
+  script now passes `-NSAppSleepDisabled YES`. With it, the same probe
+  measures 5.9–6.1 ms in every later arena. The uncapped windows never sleep, so
+  App Nap did not affect them.
+- **Contention.** After the capture script gained its process sampler, it
+  saw Blender in every measured window of `practice-idle1` and in all but
+  the first window of `practice-idle3`. These were the runtime-weapon and cat-head builds running
+  in this checkout. For `practice-idle3` the script waited 289 s until the GPU
+  was idle and no Blender, Unreal or shader-worker process was running. The
+  next Blender job started 37 s after the launch, at the end of the first
+  measured window (Debt Citadel, capped). `practice-nap1` ran
+  before the sampler existed. Its Lantern Ward GPU time reached 186 ms, and
+  what else ran then was not recorded. Nine orphaned `CrashReportClient`
+  processes from earlier crashes, and Activity Monitor, each kept one core at
+  about 100% in every sample. The 1-minute load stayed at 16–32. The
+  contended runs' numbers are in `frame-times.tsv` for reference and are not
+  the game's own frame time.
 
-To measure cleanly, run
+To measure cleanly, stop the stray `CrashReportClient` processes and run the
+following while no other lane is rendering:
 `SORA_CAPTURE_FRONTEND=0 SORA_CAPTURE_FILTER=SoraCapture.Practice SORA_CAPTURE_IDLE_WAIT=3600 scripts/toolchain/capture-packaged-mac.sh Local/Packages/mac-capture-harness`
-when no other lane is rendering. The script waits until the GPU is idle and
-no Blender, Unreal or shader-worker process runs. It writes `frame-times.tsv`
-with the other GPU work and load seen in each window, and `contention.txt`.
+The script waits for an idle GPU. Its `frame-times.tsv` names the other GPU
+work and the load seen in each window, and its `contention.txt` summarises
+the whole launch.
