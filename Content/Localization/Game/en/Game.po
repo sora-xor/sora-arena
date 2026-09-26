@@ -1099,6 +1099,7 @@ msgid "稽古をはじめる"
 msgstr "Start practice"
 
 #. Key:	Lobby.Start.Hint
+#: Source/SoraArena/Private/SoraFrontEndAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
 msgctxt "SoraArena.Menu,Lobby.Start.Hint"
 msgid "資産は預けず、報酬も発生しない。"

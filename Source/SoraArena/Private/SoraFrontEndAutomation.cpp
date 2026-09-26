@@ -421,10 +421,12 @@ bool FSoraFrontEndPracticeLobbyTest::RunTest(const FString& Parameters)
     const SoraUI::FRow* Mortar = RowFor(EAction::LobbySpecial);
     TestTrue(TEXT("The special's hint opens with its tradeoff in both languages"), Mortar &&
         Mortar->HintJapanese.StartsWith(SoraUI::SpecialTradeoff(15).ToString()) && Mortar->HintEnglish.StartsWith(FSoraCatalog::Get().Weapon(15).Tradeoff));
-    const SoraText::FLine Limits = SoraText::Line(Mode->PracticeLimits());
+    // Every lobby choice reaches the practice director, so the Start row
+    // carries only its zero-stake line.
     const SoraUI::FRow* StartRow = RowFor(EAction::LobbyStart);
-    TestTrue(TEXT("The Start row states what practice cannot apply yet"), StartRow && (Limits.IsEmpty() ||
-        (StartRow->HintJapanese.EndsWith(Limits.Japanese) && StartRow->HintEnglish.EndsWith(Limits.English))));
+    const SoraText::FLine StartHint = SoraText::Line(NSLOCTEXT("SoraArena.Menu", "Lobby.Start.Hint", "資産は預けず、報酬も発生しない。"));
+    TestTrue(TEXT("The Start row states only that nothing is bonded"), StartRow &&
+        StartRow->HintJapanese == StartHint.Japanese && StartRow->HintEnglish == StartHint.English);
     Scope.Key(Keyboard.Up);
     Scope.Key(Keyboard.Right);
     TestTrue(TEXT("The special follows the class to Karakuri's shock emitter"), L.ClassId == 4 && L.SpecialWeaponId == 16);

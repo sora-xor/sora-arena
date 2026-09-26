@@ -191,12 +191,6 @@ bool ASoraGameMode::StartChapter(int32 Chapter)
     BeginRound();
     return !bMenu;
 }
-FText ASoraGameMode::PracticeLimits() const
-{
-    // Every lobby choice reaches the kernel through FSoraPracticeConfig, so
-    // the lobby has nothing to warn about.
-    return FText::GetEmpty();
-}
 bool ASoraGameMode::StartPracticeFromLobby(const FSoraPracticeLobbySelection& Selection)
 {
     if(!bMenu) return false;

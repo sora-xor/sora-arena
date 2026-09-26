@@ -51,10 +51,6 @@ public:
     // Zero-stake practice with the lobby's choice; false leaves the menu open
     // with the reason in Notice.
     bool StartPracticeFromLobby(const FSoraPracticeLobbySelection& Selection);
-    // The lobby choices StartPracticeFromLobby cannot apply yet, which the
-    // lobby states before the player starts; empty once every choice reaches
-    // the practice director.
-    FText PracticeLimits() const;
     void ResumePlay();
     // The campaign round from its last checkpoint, or practice from its start.
     bool RestartRound();

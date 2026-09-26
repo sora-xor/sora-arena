@@ -3,6 +3,7 @@
 #include "ArenaKernelSubsystem.h"
 #include "SoraCatalog.h"
 #include "SoraCharacterBase.h"
+#include "SoraFrontEnd.h"
 #include "SoraGameMode.h"
 #include "SoraHUD.h"
 #include "SoraPracticeActors.h"
@@ -64,6 +65,12 @@ void Bar(const FPracticeView& V,float X,float Y,float Width,float Height,float F
     V.HUD.Panel(X,Y,Width,Height,FLinearColor(.12f,.16f,.18f,.9f));
     V.HUD.Panel(X,Y,Width*FMath::Clamp(Fraction,0.f,1.f),Height,Color);
 }
+// The player's own binding for Action, on the device in hand.
+FLine Key(const FPracticeView& V,const TCHAR* Action)
+{
+    const SoraText::FLine Cap=SoraUI::ActionKey(&V.HUD,Action);
+    return {Cap.Japanese,Cap.English};
+}
 bool Ahead(const FPracticeView& V,const FVector& Location,FVector& Screen)
 {
     const APlayerController* Controller=V.HUD.PlayerOwner;
@@ -89,8 +96,9 @@ void DrawScores(const FPracticeView& V)
     const float S=V.S, X=V.W-470*S, Y=87*S, Width=450*S;
     V.HUD.Panel(X,Y,Width,V.bTeams?78*S:120*S,FLinearColor(.013f,.027f,.033f,.82f));
     const FLine Mode=SoraPracticeText::ModeName(V.Director.Config.Mode);
-    Pair(V,FString::Printf(TEXT("%s / %d 人  Tab 戦況表"),*Mode.Japanese,V.Director.Config.PlayerCount),
-        FString::Printf(TEXT("%s, %d players; Tab scoreboard"),*Mode.English,V.Director.Config.PlayerCount),X+14*S,Y+6*S,.44f*S,V.Frame.Gold);
+    const FLine Board=Key(V,TEXT("Scoreboard"));
+    Pair(V,FString::Printf(TEXT("%s / %d 人  %s 戦況表"),*Mode.Japanese,V.Director.Config.PlayerCount,*Board.Japanese),
+        FString::Printf(TEXT("%s, %d players; %s scoreboard"),*Mode.English,V.Director.Config.PlayerCount,*Board.English),X+14*S,Y+6*S,.44f*S,V.Frame.Gold);
     if(V.bTeams)
     {
         int32 Kills[2]={0,0};
@@ -237,8 +245,11 @@ void DrawRespawn(const FPracticeView& V,const FSoraPracticePlayer& Me)
     V.HUD.Panel(X,Y,Width,(V.bEnglish?360:330)*S,FLinearColor(.013f,.027f,.033f,.9f));
     Pair(V,FString::Printf(TEXT("倒れた ― 復帰まで %.1f 秒"),Me.RespawnTicks/60.f),FString::Printf(TEXT("Down: back in %.1f s"),Me.RespawnTicks/60.f),X+24*S,Y+14*S,.72f*S,V.Frame.Gold);
     float RowY=Y+62*S;
-    // The class to return as: Q and E (pad LB and Y) turn through them.
-    Pair(V,TEXT("流儀  Q ◀ ▶ E"),TEXT("Class: Q / E"),X+24*S,RowY,.42f*S,V.Frame.Muted);
+    // The class to return as: Ability and Interact (Q and E, pad LB and Y by
+    // default) turn through them; the prompts name the player's own keys.
+    const FLine Back=Key(V,TEXT("Ability")),Next=Key(V,TEXT("Interact"));
+    Pair(V,FString::Printf(TEXT("流儀  %s ◀ ▶ %s"),*Back.Japanese,*Next.Japanese),FString::Printf(TEXT("Class: %s / %s"),*Back.English,*Next.English),
+        X+24*S,RowY,.42f*S,V.Frame.Muted);
     RowY+=28*S;
     const float Cell=(Width-48*S)/SoraPractice::ClassCount;
     for(int32 Class=0;Class<SoraPractice::ClassCount;++Class)
@@ -250,7 +261,9 @@ void DrawRespawn(const FPracticeView& V,const FSoraPracticePlayer& Me)
         Stacked(V,{Info.Name,Info.NameEnglish},CellX+8*S,RowY+4*S,.46f*S,bChosen?V.Frame.Teal:V.Frame.Ivory);
     }
     RowY+=(V.bEnglish?62:46)*S;
-    Pair(V,TEXT("武器  1・2・3"),TEXT("Weapon: 1 / 2 / 3"),X+24*S,RowY,.42f*S,V.Frame.Muted);
+    const FLine Slots[3]={Key(V,TEXT("WeaponOne")),Key(V,TEXT("WeaponTwo")),Key(V,TEXT("WeaponThree"))};
+    Pair(V,FString::Printf(TEXT("武器  %s・%s・%s"),*Slots[0].Japanese,*Slots[1].Japanese,*Slots[2].Japanese),
+        FString::Printf(TEXT("Weapon: %s / %s / %s"),*Slots[0].English,*Slots[1].English,*Slots[2].English),X+24*S,RowY,.42f*S,V.Frame.Muted);
     RowY+=28*S;
     const float Slot=(Width-48*S)/3;
     for(int32 Index=0;Index<3;++Index)
@@ -261,7 +274,7 @@ void DrawRespawn(const FPracticeView& V,const FSoraPracticePlayer& Me)
         V.HUD.Panel(CellX,RowY,Slot-6*S,(V.bEnglish?50:34)*S,bChosen&&bAllowed?FLinearColor(.08f,.25f,.26f,.95f):FLinearColor(.07f,.095f,.11f,bAllowed?.9f:.5f));
         const FLine Choice=SoraPracticeText::LoadoutCell(V.Director,V.Director.DesiredClass(),Index);
         const FLinearColor Color=!bAllowed?Faded(V.Frame.Muted,.7f):bChosen?V.Frame.Teal:V.Frame.Ivory;
-        Stacked(V,{FString::Printf(TEXT("%d  %s"),Index+1,*Choice.Japanese),Choice.English},CellX+8*S,RowY+4*S,.44f*S,Color);
+        Stacked(V,{FString::Printf(TEXT("%s  %s"),*Slots[Index].Japanese,*Choice.Japanese),Choice.English},CellX+8*S,RowY+4*S,.44f*S,Color);
     }
     RowY+=(V.bEnglish?62:46)*S;
     const bool bPending=Me.PendingClass!=INDEX_NONE;
@@ -273,8 +286,9 @@ void DrawRespawn(const FPracticeView& V,const FSoraPracticePlayer& Me)
     if(V.Director.IsSpectating()&&V.Director.SpectatedSlot()!=INDEX_NONE)
     {
         const FLine Name=SoraPracticeText::Participant(V.Kernel,V.Director.SpectatedSlot());
-        Pair(V,FString::Printf(TEXT("観戦中：%s   左クリック・Ctrl で切替"),*Name.Japanese),
-            FString::Printf(TEXT("Watching %s; Fire / Block to switch"),*Name.English),X+24*S,RowY,.4f*S,V.Frame.Muted);
+        const FLine Fire=Key(V,TEXT("Fire")),Block=Key(V,TEXT("Block"));
+        Pair(V,FString::Printf(TEXT("観戦中：%s   %s・%s で切替"),*Name.Japanese,*Fire.Japanese,*Block.Japanese),
+            FString::Printf(TEXT("Watching %s; %s / %s to switch"),*Name.English,*Fire.English,*Block.English),X+24*S,RowY,.4f*S,V.Frame.Muted);
     }
     RowY+=28*S;
     Pair(V,TEXT("無入金の稽古：倒れても XOR は動きません。"),TEXT("Zero-stake practice: no XOR moves when you fall."),X+24*S,RowY,.38f*S,V.Frame.Teal);
@@ -405,7 +419,9 @@ void DrawResults(const FPracticeView& V,const FSoraPracticeResults& R)
         X,Y+42*S,.42f*S,R.bConserved?V.Frame.Teal:FLinearColor(1.f,.2f,.15f));
     V.HUD.Label(TEXT("死亡ごとに倒れた者の初期入金の 10% が移る決まりだが、入金 0 のため何も移っていない。台帳には何も書き込まない。"),X,Y+72*S,.36f*S,V.Frame.Ivory);
     if(V.bEnglish) V.HUD.Label(TEXT("Each death moves 10% of the victim's initial bond; with zero bonds nothing moved, and nothing is written to any ledger."),X,Y+100*S,.32f*S,V.Frame.Muted);
-    Pair(V,TEXT("ENTER もう一度   ESC メニュー"),TEXT("Enter: play again   Esc: menu"),X,V.H-50*S,.5f*S,V.Frame.Ivory);
+    const FLine Again=Key(V,TEXT("Enter")),Menu=Key(V,TEXT("Menu"));
+    Pair(V,FString::Printf(TEXT("%s もう一度   %s メニュー"),*Again.Japanese,*Menu.Japanese),
+        FString::Printf(TEXT("%s: play again   %s: menu"),*Again.English,*Menu.English),X,V.H-50*S,.5f*S,V.Frame.Ivory);
 }
 }
 

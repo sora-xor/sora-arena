@@ -693,12 +693,6 @@ void USoraFrontEnd::BuildRows()
         RowList.Add(PlayersRow);
         SoraUI::FRow Start = NewMenuRow(SoraUI::EAction::LobbyStart, NSLOCTEXT("SoraArena.Menu", "Lobby.Start", "稽古をはじめる"),
             NSLOCTEXT("SoraArena.Menu", "Lobby.Start.Hint", "資産は預けず、報酬も発生しない。"));
-        // Choices practice cannot apply yet are said here, before the player starts.
-        if (const FText Limits = Game.PracticeLimits(); !Limits.IsEmpty())
-        {
-            const SoraText::FLine Note = SoraText::Line(Limits);
-            Start.SetHint({Start.HintJapanese + Note.Japanese, Start.HintEnglish + TEXT(" ") + Note.English});
-        }
         Start.bEnabled = bReady && SoraPracticeLobby::IsValid(L);
         RowList.Add(Start);
         RowList.Add(NewBackRow());
