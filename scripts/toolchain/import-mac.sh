@@ -57,6 +57,11 @@ if [[ -z "$EXPECTED_PACKAGES" ]]; then
   echo "Source art check did not report an expected package count: $SOURCE_CHECK" >&2
   exit 1
 fi
+# The import builds every effect. The builder's iteration switches would narrow
+# it (and skip the texture hashes and the shader check), so they never reach it,
+# and the step must report as many systems as the builder's SYSTEMS list holds.
+unset SORA_VFX_ONLY SORA_VFX_REUSE_MATERIALS
+EXPECTED_VFX_SYSTEMS="$(PYTHONDONTWRITEBYTECODE=1 python3 "$SCRIPT_DIR/vfx_system_count.py")" || exit 1
 
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config
@@ -104,7 +109,7 @@ PY
 # the first two; the order is fixed.
 run_step import-original import_original_assets.py 'SORA_ASSET_IMPORT_COMPLETE: '
 run_step import-palette import_environment_palette.py 'NYAAGYU_PBR_READY: '
-run_step import-vfx create_sora_vfx.py 'SORA_VFX_READY: ' rhi
+run_step import-vfx create_sora_vfx.py "SORA_VFX_READY: $EXPECTED_VFX_SYSTEMS systems" rhi
 run_step validate validate_imported_assets.py \
   "SORA_ASSET_VALIDATION_COMPLETE: $EXPECTED_PACKAGES packages loaded with expected types"
 echo "PASS: imported and loaded $EXPECTED_PACKAGES expected packages; logs: $OUTPUT"

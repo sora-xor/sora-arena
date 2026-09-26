@@ -1,7 +1,15 @@
 # VFX: Niagara systems, materials and particle textures
 
-**Status (2026-09-26), step 1 of the VFX lane (C8):**
+**Status (2026-09-27), step 1 of the VFX lane (C8):**
 
+- **Step 1 does not meet the binding photoreal AAA directive.** The stills of
+  the only verified build show the matchlock's powder cloud as round
+  cotton-ball puffs, sparks as frame-filling round blobs, the explosion flash
+  and the energy muzzle's star and ring as visible square quads, fire-zone
+  flames as vertical sticks and the forge as one solid column, water crowns as
+  translucent cones, mist as grey polygons against the sky, and debris as
+  scaled basic shapes (section 6). Nothing may be wired into gameplay, or
+  called done, on the strength of these stills.
 - **Built by `scripts/toolchain/import-mac.sh`** (step `import-vfx`, script
   [`scripts/unreal/create_sora_vfx.py`](../scripts/unreal/create_sora_vfx.py)):
   27 Niagara systems and 3 effect types in `/Game/Generated/VFX`, 12 master
@@ -19,9 +27,11 @@
   a real Metal RHI in a throwaway editor world. They are not packaged-game
   screenshots and have no Lumen scene, bloom, motion blur or eye adaptation.
 - **Verified up to a tuning pass, not after it.** The build passed (27
-  systems, no compile errors) and was rendered at 21:20–21:31 JST. Two later
-  changes are in the scripts but have **not been run**. Free disk was
-  25.9–27.0 GiB all evening, below the lane's 32 GiB floor for editor work.
+  systems, no compile errors) and was rendered at 21:20–21:31 JST on
+  2026-09-26. Three later change sets are in the scripts but have **not been
+  run**. Free disk was 25.9–27.0 GiB that evening and 24–26 GiB during the
+  review fixes of 2026-09-27, below the lane's 32 GiB floor for editor work
+  (and below `import-mac.sh`'s own 30 GiB check).
   - The tuning pass:
     - flashes, sparks, fire and motes about 3–5 times dimmer;
     - a larger matchlock plume, fireball and smoke;
@@ -31,18 +41,32 @@
       point on the Flash cells;
     - a per-shot warm-up in the preview script.
   - Two fixes, with their causes found in the engine source (section 6,
-    items 1 and 3):
+    items 1 and 4):
     - the particle lights now write the attributes the light renderer reads;
     - the water mist is drawn without the 8×8 flipbook that showed it a
       sixty-fourth of its texture cell.
   - The preview script now ends with a pass/fail light check (section 7).
+  - The review fixes of 2026-09-27:
+    - per-particle random values drawn once at spawn, instead of `rand()` in
+      update inputs that re-rolled every tick (spin, drag, flame
+      temperature; section 1);
+    - no template gravity on the pan smoke and the energy vapour;
+    - the lantern's halo flickers every frame instead of once per spawn;
+    - a 360° cleave telegraph without a seam along its back;
+    - `import-mac.sh` builds every system and requires the exact count;
+    - the preview script sweeps the blade trail across its path in view,
+      renders the forge's three gauge states, the projectile trail, a 360°
+      cleave and rain, and refuses two stills with one file name.
 
   An import must pass, the light check must log `PASS`, and the stills must
   be looked at before this is integrated (section 7).
-- **Not photoreal yet.** The stills show systems that work and read, but
-  several fall short of the AAA target. The worst: Niagara lights that light
-  nothing, spark halos, hard sprite edges, flames that look like sticks, and
-  mist. See section 6.
+- **What the verified stills show.** Most show their system working, but
+  none reads as photoreal (first bullet), and several show a defect that
+  section 6 lists. Some effects are missing from their stills altogether: the
+  fire zone at dusk, the energy beam at 0.03 s, the fur impact after 0.1 s and
+  the matchlock's smoke after 0.6 s. The Niagara lights light nothing.
+  Two systems have never been rendered, rain and the projectile trail, nor
+  have a full-circle cleave and the forge's red and yamabuki states.
 
 ## 1. How the systems are authored
 
@@ -73,11 +97,11 @@ without it, and `SoraArenaEditor` lists it among 968 (section 7).
    SingleLoopingParticle, DynamicBeam, LocationBasedRibbon, UpwardMeshBurst),
    re-parameterised, with engine modules from `/Niagara/Modules` added where
    the template lacks them (curl noise, acceleration, drag, collision, vortex,
-   wind, SubUV animation, dynamic material parameters, light attributes,
-   sprite facing, Set Parameters);
+   wind, SubUV animation, dynamic material parameters, sprite facing, Set
+   Parameters);
 4. assigns each system an effect type (below), force-compiles it and fails
-   on any compile error or error-level stack issue; warnings are logged. It
-   prints `SORA_VFX_READY: 27 systems`.
+   on any compile error or error-level stack issue; warnings are logged. A
+   complete build prints `SORA_VFX_READY: 27 systems`.
 
 Effect types (scalability): `ET_SoraVFX_Burst` for one-shot weapon, impact and
 ability effects (checked at spawn, not spawned beyond 120 m, at most 64 alive),
@@ -88,9 +112,15 @@ never culled).
 
 An existing asset is reset in place (emitters and user parameters removed)
 rather than deleted. `SORA_VFX_ONLY=<builder>,<builder>` rebuilds some systems
-and `SORA_VFX_REUSE_MATERIALS=1` skips textures and materials while iterating.
+and `SORA_VFX_REUSE_MATERIALS=1` skips textures and materials while iterating;
+an unknown builder name is an error. Such a run ends with `SORA_VFX_PARTIAL`
+instead of `SORA_VFX_READY`. `import-mac.sh` unsets both variables and passes
+the step only on `SORA_VFX_READY: <n> systems`, with n the length of the
+builder's `SYSTEMS` list (27), which
+[`scripts/toolchain/vfx_system_count.py`](../scripts/toolchain/vfx_system_count.py)
+reads from the source.
 
-Engine behaviour this relies on or works around, each found while building:
+Engine behaviour this relies on or works around, found while building or in review:
 
 - The CPU vector VM has no `smoothstep`; expressions use the polynomial
   (`ss()` in the script). `min`, `max`, `pow`, `sin`, `saturate`, `lerp`,
@@ -124,6 +154,25 @@ Engine behaviour this relies on or works around, each found while building:
   `M_SoraVFX_WaterLit`) must therefore be drawn by a 1×1 renderer.
   `puffs(..., frames=None)` does that for the water mist.
 - `WindForce` requires the drag module after it in the stack.
+- **Random values.** Particle Update runs every tick, and `rand()` there is
+  drawn again on each evaluation: the CPU vector VM's `rand` is unseeded, and
+  the GPU's is seeded by the emitter's tick counter
+  (`NiagaraEmitterInstanceShader.usf`). A random spin rate in the update
+  stack made sprites jitter instead of turning, a random drag averaged out,
+  and a random flame temperature became per-frame noise (the black-body
+  output grows as T⁴). Each emitter that needs per-particle randomness now
+  writes `Particles.SoraRandom`, four uniform values, once in its spawn stack
+  (`Emitter.random()`), and update inputs read a channel of it
+  (`particle_random()`: x spin, y drag, z heat). The builder refuses an
+  update input whose expression calls `rand()`.
+- **Template forces.** The OmnidirectionalBurst, DirectionalBurst, Fountain
+  and UpwardMeshBurst templates contain a `GravityForce` module. Smoke, vapour
+  and steam must set it to zero (`gravity()`). The matchlock's cloud had no
+  override in the verified build: at 0.6 s it hung low over the floor, and by
+  2 s it was gone, which fits a fall.
+- **Spawn-time inputs.** InitializeParticle's inputs are evaluated once, at
+  spawn, so anything that must animate (the lantern halo's flicker) goes in
+  the update stack.
 
 ## 2. Conventions the game code must follow
 
@@ -139,10 +188,16 @@ Engine behaviour this relies on or works around, each found while building:
   (lm × 10⁴ / 4π); the project's lanterns are 140–260 lm and its fire zone
   2600 lm, so these effects sit on the same scale.
 - **Flash reduction.** Every system has `User.FlashScale` (default 1). It
-  multiplies the brightness of flashes, sparks and grains, the spark counts,
-  every light, and the amplitude of lantern and fire flicker and telegraph
-  pulses. When the player turns on 点滅を抑える (reduce flashing), step 2 should
-  pass about 0.3. Systems without a flash ignore it.
+  scales what flashes: the brightness of flashes, sparks and burning grains,
+  the spark counts, the lights of flashes (muzzle, impact, parry, explosion,
+  heal), and the amplitude of the flicker of steady lights (lantern, fire
+  zone, forge, ward), of the lantern halo and of telegraph pulses. It leaves
+  the brightness of steady lights and glows alone: the fire zone's 2600 lm,
+  the forge's 2400–4000 lm, the ward's and the lanterns' lights, flames,
+  embers and motes. They do not flash, and dimming them would change the
+  scene's lighting rather than reduce flashing. When the player turns on
+  点滅を抑える (reduce flashing), step 2 should pass about 0.3. Systems without
+  a flash ignore it.
 - **Telegraph colours** come from the settings palette through
   `User.TelegraphColor` (defaults: cyan for a locked aim or beam, amber for a
   blow or an area, as in `SoraBoss.cpp`).
@@ -172,7 +227,7 @@ All live in `/Game/Generated/VFX`. "Burst" systems finish by themselves;
 | `NS_SoraVFX_Shinobi_Decoy` | burst | — | A smoke-ball burst, washi talisman scraps and leaves fluttering down with curl noise |
 | `NS_SoraVFX_Karakuri_BuildDust` | loop | `Width` | Dust and wood shavings along the barricade footprint, occasional hammer sparks |
 | `NS_SoraVFX_Telegraph_Beam` | burst | `TelegraphColor`, `Length`, `Width`, `Duration` | A ground lane along +X that fills over the windup, pulsing edges, a charge glow |
-| `NS_SoraVFX_Telegraph_Cleave` | burst | `TelegraphColor`, `Radius`, `ArcDegrees`, `Duration` | A wedge (360° = an area) that fills over the windup |
+| `NS_SoraVFX_Telegraph_Cleave` | burst | `TelegraphColor`, `Radius`, `ArcDegrees`, `Duration` | A wedge that fills over the windup; at 360° a full disc with no side edges (an area) |
 | `NS_SoraVFX_Water_SluiceRise` | loop | `Width`, `Flow` | Foam, spray, crown splashes and mist through an opened sluice (+X downstream) |
 | `NS_SoraVFX_Water_Splash` | burst | — | Crown sheets, droplets, mist, a spreading foam ring |
 | `NS_SoraVFX_Forge_Fire` | loop | `Temperature`, `Bellows`, `Radius` | Flames whose black-body temperature follows the three gauge states (red, yamabuki, white), sparks with the bellows, soot, a 2400–4000 lm light |
@@ -180,7 +235,7 @@ All live in `/Game/Generated/VFX`. "Burst" systems finish by themselves;
 | `NS_SoraVFX_Steam_Burst` | burst | — | A quench burst of steam |
 | `NS_SoraVFX_Rain` | loop | `Intensity`, `Wind` | GPU streaks in a 30 m box killed on the depth buffer, and splash flecks at the component's height |
 | `NS_SoraVFX_Mist` | loop | `Extent`, `Wind`, `Density` | Large lit mist banks drifting through a box |
-| `NS_SoraVFX_Lantern` | loop | `Lumens`, `Radius`, `LightColor` | A flickering candle light (MegaLights allowed) and a soft halo |
+| `NS_SoraVFX_Lantern` | loop | `Lumens`, `Radius`, `LightColor` | A flickering candle light (MegaLights allowed) and a soft halo that flickers too |
 
 ## 4. Materials
 
@@ -220,9 +275,12 @@ schema-2 OWN manifest `Content/SourceArt/VFX/manifest.json` that
 
 ## 6. Limitations and known gaps (step 1)
 
-These defects show in the 21:31 stills of the verified build, most severe
-first. "Tuned" means the unrun pass of the status section aims at it; "Fixed,
-unrun" means a cause was found and the script changed, but no build has run it.
+Items 1–7, 9 and 11 show in the 21:31 stills of the verified build, item 12
+is what those stills leave out, and the rest were found in the scripts; the
+visible ones come first, most severe first. "Tuned" means the unrun pass of
+the status section aims at it; "Fixed, unrun" means a cause was found and the
+script changed, but no build has run it. Luminance figures are measured on the
+EXRs with `vfx_preview_sheet.read_exr` (0.2126 R + 0.7152 G + 0.0722 B).
 
 1. **Niagara lights light nothing.** A lantern test in the same stage
    compared the lantern with an ordinary 150 lm point light at the same spot,
@@ -238,10 +296,35 @@ unrun" means a cause was found and the script changed, but no build has run it.
    criterion (section 7). Scene captures might also leave particle lights out,
    so check once in a game viewport too. Until the check passes, treat every
    flash, fire, forge, lantern and ward light in the table above as absent.
-2. **Spark halos.** Parry, metal-impact and explosion sparks at 1000–1600
+2. **Effects missing from their stills.**
+   - `Hanabi_FireZone` at dusk has almost no flames: a few specks, peak
+     luminance 10.2, 29 pixels above 1. By day the same system at the same
+     age (2.5 s, Radius 300) draws a full ring of flames (peak 89, 28 990
+     pixels above 10). The flames are unlit, so the light setting cannot
+     explain it. The dusk shot was the system's first capture.
+   - `Beam_Energy` at 0.03 s renders nothing: peak luminance 0.113, the bare
+     stage. At 0.40 s the beam is there (peak 194). With the default
+     tracer `Duration` of 0.09 s, a blank first 0.03 s would be a third of a
+     tracer's life. This was also the system's first capture.
+   - `Impact_Fur` at 0.6 s shows a few grey specks near the floor and at
+     1.4 s nothing that reads (peak 1.6 against a 1.06 median): no locks of
+     fur fluttering down. The tufts are tinted close to the plaster and
+     stone, and they may also be too small or thin at 170 cm.
+   - `Muzzle_Matchlock` has no smoke at 2.0 s or 4.5 s (the two stills are
+     identical pixel for pixel), although the cloud should last 6 s: template
+     gravity, section 1. **Fixed, unrun** for the cloud (tuning pass), the
+     pan smoke and the energy vapour.
+
+   Other systems' first captures do show (the energy muzzle at 0.02 s peaks at
+   336), so a first-activation dropout is a guess, not a finding. The preview
+   script's per-shot throwaway activation (tuning pass, unrun) guards against
+   it in the stills. A first spawn waiting on pipeline-state precaching could
+   also hide an effect in the game, so step 2 must check the first shot, beam
+   and fire zone of a session in a packaged build.
+3. **Spark halos.** Parry, metal-impact and explosion sparks at 1000–1600
    cd/m² render as round halos about 10 cm across around their streaks: the
    tail of the glow falloff stays visible over the whole sprite. Tuned: 90–350.
-3. **Hard sprite edges.** The explosion flash at 0.03 s and the energy muzzle's
+4. **Hard sprite edges.** The explosion flash at 0.03 s and the energy muzzle's
    star and ring show their quads. Mist banks are invisible over the ground but
    show as hard-edged grey quads against an empty sky. The water crown sheets
    read as translucent cones. Measured on `T_VFX_Flash.png`, the flash quads
@@ -259,30 +342,65 @@ unrun" means a cause was found and the script changed, but no build has run it.
    off at the quad (section 1, "Flipbooks and sheet cells"). **Fixed, unrun:**
    the sluice, splash and mist banks draw the whole cell. The mist still needs
    a test against a real sky.
-4. **Flames.** By day the fire-zone flames read as bright vertical sticks, and
+5. **Flames.** By day the fire-zone flames read as bright vertical sticks, and
    the forge as one yellow column. Tuned: wider, slower and fewer flames. The
    photoreal route is a simulated flipbook (a Blender Mantaflow bake).
-5. **Explosion scale.** The fireball is about 1 m across and the smoke has
-   thinned away by 5 s, which is small for a grenade or rocket. Tuned: larger
-   fireball and smoke.
-6. The Kusushi ward's talismans barely read by day, and the blade trail is not
-   visible in its 0.12 s still (it is meant to be faint; judge it in motion).
-7. Smoke and fire flipbooks are 2D procedural approximations of volumes, not
+6. **Smoke shape and scale.** At 0.6 s the matchlock's powder cloud is a
+   cluster of round cotton-ball puffs, not a rolling plume. The explosion's
+   fireball is about 1 m across and its smoke has thinned away by 5 s, which is
+   small for a grenade or rocket. Tuned: a larger matchlock plume, fireball
+   and smoke; the shape needs simulated flipbooks (item 9).
+7. **Unreadable or unseen.** The Kusushi ward's talismans barely read by day.
+   The blade trail's 0.12 s still shows nothing, and the harness explains
+   it: it turned the component's +X along the direction of travel, so the
+   ribbon, whose side vector is +X, laid its width along its own path, and the
+   sweep lay in a plane the camera saw edge-on. It was not "meant to be faint"
+   as this document said. **Fixed, unrun:** the harness keeps +X along the
+   blade and cuts in the plane facing the camera, by day and at dusk (section
+   7). Whether the sheen reads once it is swept properly is still to be seen.
+8. **Per-tick random values** (not visible in any still, which are single
+   frames). Sprite spin was a zero-mean jitter of up to ±3.7° per frame at
+   60 fps (talismans and leaves at 220°/s) instead of a tumble. The fire zone
+   and forge re-rolled each flame's black-body temperature every frame, so a
+   fire-zone flame's brightness jumped by up to about 1.6–1.8 times between
+   frames (less at the forge), unscaled by `FlashScale`. Per-particle drag
+   spreads collapsed to their mean. **Fixed, unrun** (section 1, "Random
+   values").
+9. Smoke and fire flipbooks are 2D procedural approximations of volumes, not
    simulated renders. A Blender Mantaflow bake would be more convincing up
    close.
-8. Telegraphs are sprites laid 3 cm above the ground, so they do not conform
-   to uneven terrain. Niagara's decal renderer would, and is the next step
-   there.
-9. Debris meshes are engine basic shapes (cube, sphere) scaled into chips and
-   splinters, with the real PBR surfaces. Bespoke chip meshes would read
-   better at close range.
-10. Rain splash flecks assume flat ground at the component's height; the
+10. Telegraphs are sprites laid 3 cm above the ground, so they do not conform
+    to uneven terrain. Niagara's decal renderer would, and is the next step
+    there. At `ArcDegrees` 360 the cleave telegraph drew a bright double seam
+    from the centre to the back rim: the wedge's side outline stayed on at a
+    half-arc of π. **Fixed, unrun:** a half-arc above 3.13 draws a full disc
+    without sides. Evaluated in numpy, the seam's outline went from up to 1.0
+    to 0 along the back axis, and the 120° wedge is unchanged. Only 120° has
+    been rendered.
+11. Debris meshes are engine basic shapes (cube, sphere) scaled into chips and
+    splinters, with the real PBR surfaces. Bespoke chip meshes would read
+    better at close range.
+12. **Never rendered.** `NS_SoraVFX_Rain` (a GPU simulation, which
+    `NiagaraComponent.advance_simulation` does not step) and
+    `NS_SoraVFX_Trail_Projectile` had no shot, so their table rows describe
+    what the builder makes, not what anyone has seen. The forge's red-heat
+    and yamabuki states were never seen either: both forge shots were written
+    to `Forge_Fire_dusk_2.00s.exr`, so only the white-heat, full-bellows still
+    survived. **Fixed, unrun:** the preview script flies the projectile
+    trail, runs rain on real ticks, renders all three forge states and a
+    360° cleave, and refuses to start when two stills would share a file
+    name.
+13. Rain splash flecks assume flat ground at the component's height; the
     streaks themselves stop on the depth buffer.
-11. There is no heat-haze distortion and no sound. The three effect types of
+14. The lanterns flicker in unison. Each steady light's flicker is a function
+    of `Engine.Time` and the light particle's `UniqueID`, which counts from 0
+    in every lantern, so lanterns started together flicker together. The
+    particle is renewed every second, so the phase also jumps once a second.
+    A per-lantern phase (for example from the owner's position) is still to
+    do.
+15. There is no heat-haze distortion and no sound. The three effect types of
     section 1 exist, but there are no per-platform scalability overrides yet
     (the chapter asks for Mac spark caps).
-12. `NiagaraComponent.advance_simulation` does not step GPU emitters, so rain
-    is absent from the review stills.
 
 ## 7. Verification
 
@@ -300,7 +418,9 @@ What was run on 2026-09-26 (JST, pinned UE 5.8.3):
   `SORA_VFX_READY: 27 systems`, with every system `status UpToDate, 0
   warnings`. This was the script as it stood before the tuning pass.
 - **21:29–21:31:** `render_vfx_previews.py` with the same editor command line
-  logged `SORA_VFX_PREVIEW_DONE: 59`. The stills were tiled and looked at.
+  logged `SORA_VFX_PREVIEW_DONE: 59`, but only 58 EXRs exist: both forge
+  shots were written to one file (section 6, item 12). The stills were tiled
+  and looked at.
 - **21:36:** the lantern light test of section 6.
 - **23:36–23:37, UnrealBuildTool only (no compile, no editor):** the target
   export, from the worktree root with the pinned engine and Xcode:
@@ -320,6 +440,28 @@ What was run on 2026-09-26 (JST, pinned UE 5.8.3):
     into 26 sheets.
   - All four Python scripts parse, and `bash -n` passes for `import-mac.sh`.
 
+What was run on 2026-09-27 (JST) for the review fixes, host only. Free disk was
+24–26 GiB, so no editor, import or render ran:
+
+- `python3 -m unittest scripts/toolchain/test_import_vfx_gate.py
+  scripts/unreal/test_vfx_preview_shots.py`: 13 tests, all pass.
+  - The gate tests run `import-mac.sh` in a scratch project with a fake
+    editor, doctor and build. With `SORA_VFX_ONLY` and
+    `SORA_VFX_REUSE_MATERIALS` exported, the step passes and the fake editor
+    sees neither. It fails on `SORA_VFX_READY: 0`, `1` or `2 systems` and on
+    `SORA_VFX_PARTIAL`. Against the previous `import-mac.sh` the variable and
+    count tests fail.
+  - The preview tests load the preview script with a stand-in `unreal`
+    module. They check that every system of the builder has a shot, that no
+    two stills share a name, the three forge states, the 360° cleave, rain
+    and the projectile flight. They also check the blade sweep's geometry: +X
+    radial, the edge across each step of the path, a 100° arc, and a plane
+    within 10° of facing the camera. Swapped into the new script, the
+    previous harness's geometry fails that test, and so do a tangent +X alone
+    and a horizontal sweep alone.
+- The numpy check of the telegraph wedge in section 6, item 10.
+- The luminance figures of section 6, item 2, from the 21:31 EXRs.
+
 The light check. `render_vfx_previews.py` ends by building the dusk stage.
 It measures the median luminance of the floor below one spot three times:
 bare, under `NS_SoraVFX_Lantern` at 150 lm hanging 150 cm above it, and under
@@ -332,8 +474,8 @@ Otherwise it logs `FAIL` as an error. The captures are saved as
 Not run yet:
 
 - `import-mac.sh` end to end with the new step.
-- The tuned script with the light and mist fixes, and the preview script with
-  its light check.
+- The tuned script with the light, mist and review fixes, and the preview
+  script with its light check, blade sweep, projectile flight and rain.
 - A Game-target build and cook with the editor-only plugin present. The UBT
   export above shows the game target leaves the plugin's module out, but
   nothing was compiled or cooked.

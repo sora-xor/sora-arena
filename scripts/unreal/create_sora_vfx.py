@@ -10,17 +10,22 @@ hand-edited: rerunning the script rebuilds every asset in place.
 Conventions the game code relies on (docs/vfx.md):
   * local +X is the muzzle direction, the hit surface normal, the beam/trail
     axis or a telegraph's forward; +Z is up;
-  * User.FlashScale (1 by default) scales every flash, spark, light and
-    flicker; the game passes a lower value when the player turns on
-    "reduce flashing";
+  * User.FlashScale (1 by default) scales what flashes: flashes, sparks
+    and their counts, the lights of flashes, and the flicker or pulse
+    amplitude of steady lights and telegraphs. Steady lights and glows
+    (fires, forge, ward, lanterns, embers, motes) keep their brightness. The
+    game passes a lower value when the player turns on "reduce flashing";
   * brightness is scene-referred: emissive in cd/m2 against a lit white
     surface of about 8 cd/m2 in the Estate's daylight, lights in lumens
     (converted to the engine's inverse-square units).
 
-While iterating, SORA_VFX_ONLY=muzzle_matchlock,rain (builder names) rebuilds only
-some systems and SORA_VFX_REUSE_MATERIALS=1 keeps the textures and materials of
-the last full run. Prints SORA_VFX_READY: <n> systems when every material's
-shaders and every system compiled without errors.
+While iterating, SORA_VFX_ONLY=muzzle_matchlock,rain (builder names; an unknown
+name is an error) rebuilds only some systems and SORA_VFX_REUSE_MATERIALS=1 keeps
+the textures and materials of the last full run. Such a run ends with
+SORA_VFX_PARTIAL. Only a complete build (every texture checked, every
+material's shaders and every system compiled without errors) prints
+SORA_VFX_READY: <n> systems, n being len(SYSTEMS); import-mac.sh clears both
+variables and requires that exact count.
 """
 from __future__ import annotations
 
@@ -49,6 +54,7 @@ TEMPLATE = "/Niagara/DefaultAssets/Templates/Emitters/"
 MODULE = "/Niagara/Modules/"
 PS, PU, EU = "ParticleSpawnScript", "ParticleUpdateScript", "EmitterUpdateScript"
 ONLY = {name for name in os.environ.get("SORA_VFX_ONLY", "").split(",") if name}
+REUSE_MATERIALS = os.environ.get("SORA_VFX_REUSE_MATERIALS", "") == "1"
 LUMEN_TO_LIGHT = 100.0 * 100.0 / (4.0 * math.pi)   # lumens -> inverse-square light units (cm)
 
 
@@ -483,6 +489,8 @@ def build_materials(textures, samplers):
     mats["FurLit"] = g.finish()
 
     # Ground telegraphs: disc/ring (Shape 0), wedge (1) or lane (2), with a fill that tracks the windup.
+    # A wedge of 360 degrees (HalfArc pi; above 3.13 even through the half-precision dynamic parameter) is an
+    # area: it has no sides, so neither the angular cut nor the side outline may draw a seam along its back.
     g = Graph("M_SoraVFX_Telegraph", blend=BM.BLEND_TRANSLUCENT, shading=SM.MSM_UNLIT)
     uv = g.node(unreal.MaterialExpressionTextureCoordinate)
     pc = g.node(unreal.MaterialExpressionParticleColor)
@@ -499,9 +507,10 @@ def build_materials(textures, samplers):
         "  filled = inside * (1.0 - smoothstep(Fill - w, Fill, r));\n"
         "} else if (Shape < 1.5) {\n"
         "  float a = abs(atan2(p.x, p.y));\n"
-        "  float angular = 1.0 - smoothstep(HalfArc - 0.02, HalfArc, a);\n"
+        "  float full = step(3.13, HalfArc);\n"
+        "  float angular = max(full, 1.0 - smoothstep(HalfArc - 0.02, HalfArc, a));\n"
         "  inside = angular * (1.0 - smoothstep(1.0 - w * 0.5, 1.0, r));\n"
-        "  float side = smoothstep(HalfArc - 0.02 - w / max(r, 0.05), HalfArc - 0.02, a);\n"
+        "  float side = (1.0 - full) * smoothstep(HalfArc - 0.02 - w / max(r, 0.05), HalfArc - 0.02, a);\n"
         "  outline = inside * max(smoothstep(1.0 - w * 2.0, 1.0 - w, r), side);\n"
         "  filled = inside * (1.0 - smoothstep(Fill - w, Fill, r));\n"
         "} else {\n"
@@ -628,7 +637,8 @@ class System:
         assets.set_metadata_tag(self.asset, "SoraVFX.Description", description)
         # Every system takes User.FlashScale, so the game can pass the setting to any effect it spawns.
         self.user("FlashScale", 1.0, "1 = full brightness. The game lowers it (about 0.3) when the player reduces flashing; "
-                  "it scales flashes, sparks, lights and flicker amplitude.")
+                  "it scales flashes, sparks and their counts, the lights of flashes, and the flicker or pulse amplitude "
+                  "of steady lights and telegraphs. Steady lights and glows keep their brightness.")
 
     def user(self, name, value, description):
         what = f"{self.name}: User.{name}"
@@ -671,6 +681,7 @@ class Emitter:
     def __init__(self, system, name):
         self.system, self.name, self.asset = system, name, system.asset
         self._stacks = None
+        self._random = None
 
     # stack discovery
     def stacks(self):
@@ -711,6 +722,11 @@ class Emitter:
         path = [inputs] if isinstance(inputs, str) else list(inputs)
         args = (self.asset, self.name, script, module, path)
         what = self.where(f"{module}.{'/'.join(path)} = {value!r}"[:200])
+        if script == PU and isinstance(value, Expr) and "rand(" in value:
+            # Particle Update runs every tick, and rand() there is re-rolled on each evaluation (the CPU VM's
+            # is unseeded, the GPU's is seeded by the tick counter): a spin rate becomes a jitter and a
+            # temperature becomes per-frame noise. Draw per-particle values once, at spawn (particle_random).
+            raise RuntimeError(f"{what}: rand() in a Particle Update input changes every tick; use particle_random()")
         known = self.inputs(module)
         if len(path) == 1 and path[0] not in known:
             visible = sorted(name for name, info in known.items() if info["visible"])
@@ -781,6 +797,12 @@ class Emitter:
         self.set(name, target, Expr(expression), script)
         return name
 
+    def random(self):
+        """Particles.SoraRandom: four uniform [0, 1) values drawn once per particle at spawn."""
+        if self._random is None:
+            self._random = self.write(PS, RANDOM, "vec4", "float4(rand(1.0), rand(1.0), rand(1.0), rand(1.0))")
+        return RANDOM
+
     def force(self, module_path):
         """Forces, drag, collision and per-frame attribute writers run before the solver."""
         return self.ensure(module_path, PU, before="SolveForcesAndVelocity")
@@ -850,7 +872,18 @@ def fade_in_out(rise, power=1.0):
 
 
 def rand_range(lo, hi):
+    """lo..hi drawn at each evaluation: for spawn inputs only (the builder refuses rand() in Particle Update)."""
     return Expr(f"{lo:.4f} + rand({hi - lo:.4f})")
+
+
+# Channels of Particles.SoraRandom, so that one particle's spin, drag and heat do not share a value.
+RANDOM = "Particles.SoraRandom"
+SPIN, DRAG, HEAT = "x", "y", "z"
+
+
+def particle_random(e, channel, lo, hi):
+    """lo..hi fixed per particle (drawn at spawn), for inputs of the Particle Update stack."""
+    return Expr(f"({lo:.4f} + {hi - lo:.4f} * {e.random()}.{channel})")
 
 
 def burst(e, count, time=0.0):
@@ -916,7 +949,7 @@ def spin(e, rate_deg=None):
                                   "Sprite Rotation Angle Max": 360.0})
     if rate_deg:
         e.force("Update/Orientation/SpriteRotationRate")
-        e.set("SpriteRotationRate", "Rotation Rate", Expr(f"({rate_deg:.2f}) * (rand(2.0) - 1.0)"))
+        e.set("SpriteRotationRate", "Rotation Rate", particle_random(e, SPIN, -rate_deg, rate_deg))
     return e
 
 
@@ -1041,7 +1074,7 @@ def muzzle_matchlock(mi):
     color(e, hlsl_color(120.0, 50.0, 10.0, flash=True))
     size2(e, (.7, 1.5), (1.2, 3.0))
     e.many("AddVelocity", {"Velocity Speed": rand_range(1200, 3600), "Cone Axis": vec(1, 0, 0), "Cone Angle": 11.0})
-    e.set("Drag", "Drag", rand_range(1.5, 4.0))
+    drag(e, (1.5, 4.0))
     fade(e, "saturate(1.0 - Particles.NormalizedAge)", "lerp(float3(1,1,1), float3(0.55,0.25,0.08), Particles.NormalizedAge)")
     e.many("ScaleSpriteSizeBySpeed", {"Min Scale Factor": unreal.Vector2D(1, 1), "Max Scale Factor": unreal.Vector2D(1, 9),
                                       "Velocity Threshold": 2500.0})
@@ -1058,8 +1091,7 @@ def muzzle_matchlock(mi):
     gravity(e, 0.0)
     e.many("ShapeLocation", {"Sphere Radius": 6.0})
     e.many("AddVelocity", {"Velocity Mode": "In Cone", "Velocity Speed": rand_range(250, 1100), "Cone Axis": vec(1, 0, 0), "Cone Angle": 22.0})
-    e.force("Update/Forces/Drag")
-    e.set("Drag", "Drag", rand_range(3.0, 5.5))
+    drag(e, (3.0, 5.5))
     e.force("Update/Forces/V2/CurlNoiseForce")
     e.many("CurlNoiseForce", {"Noise Strength": 60.0, "Noise Frequency": 180.0})
     e.force("Update/Forces/AccelerationForce")
@@ -1082,6 +1114,7 @@ def muzzle_matchlock(mi):
     once(e, 3.0); burst(e, 5); lifetime(e, 1.5, 2.8)
     color(e, rgb(.78, .77, .74, .75))
     size(e, 6, 12); spin(e, 30)
+    gravity(e, 0.0)     # the OmnidirectionalBurst template falls under its own gravity; hot smoke rises
     e.set("InitializeParticle", "UsePositionOffset", True).set("InitializeParticle", "Position Offset", Link("User.PanOffset"))
     e.many("ShapeLocation", {"Sphere Radius": 2.0})
     e.many("AddVelocity", {"Velocity Mode": "In Cone", "Velocity Speed": rand_range(40, 120), "Cone Axis": vec(0, 0, 1), "Cone Angle": 35.0})
@@ -1138,6 +1171,7 @@ def muzzle_energy(mi):
     once(e, 1.5); burst(e, 5); lifetime(e, .5, 1.1)
     color(e, rgb(.72, .82, .9, .35))
     size(e, 6, 12); spin(e, 40)
+    gravity(e, 0.0)     # as the pan smoke: not the template's falling puffs
     e.many("ShapeLocation", {"Sphere Radius": 3.0})
     e.many("AddVelocity", {"Velocity Mode": "In Cone", "Velocity Speed": rand_range(150, 500), "Cone Axis": vec(1, 0, 0), "Cone Angle": 30.0})
     e.force("Update/Forces/Drag"); e.set("Drag", "Drag", 4.0)
@@ -1196,8 +1230,9 @@ def gravity(e, z):
 
 
 def drag(e, amount):
+    """Drag, fixed per particle within a (lo, hi) range or one value for all."""
     e.force("Update/Forces/Drag")
-    e.set("Drag", "Drag", rand_range(*amount) if isinstance(amount, tuple) else float(amount))
+    e.set("Drag", "Drag", particle_random(e, DRAG, *amount) if isinstance(amount, tuple) else float(amount))
     return e
 
 
@@ -1307,7 +1342,7 @@ def sparks(s, name, *, count=None, rate=None, life, color_value, speed, axis=(1,
         shape(e, offset=offset)
     cone(e, speed, axis, angle)
     e.set("GravityForce", "Gravity", vec(0, 0, gravity_z))
-    e.set("Drag", "Drag", rand_range(*drag_amount))
+    drag(e, drag_amount)
     if curl_amount:
         curl(e, *curl_amount)
     if bounce is not None:
@@ -1372,7 +1407,10 @@ def light_burst(s, name, *, lumens, radius, color_rgb, life, offset=None, power=
 
 
 def steady_light(s, name, *, lumens, radius, color_rgb, flicker, offset=None, megalights=True):
-    """An always-on light from one particle renewed every second; flicker amplitude follows User.FlashScale."""
+    """An always-on light from one particle renewed every second.
+
+    It does not flash, so User.FlashScale leaves its brightness alone and scales only the flicker amplitude.
+    """
     e = s.emitter(name, "SingleLoopingParticle")
     forever(e, 1.0)
     if offset is not None:
@@ -1511,7 +1549,7 @@ def impact_fur(mi):
     size(e, 6.0, 11.0); spin(e, 140)
     cone(e, (90, 260), (1, 0, 0), 60)
     e.set("GravityForce", "Gravity", vec(0, 0, -160))
-    e.set("Drag", "Drag", rand_range(3.0, 5.0))
+    drag(e, (3.0, 5.0))
     curl(e, 45.0, 90.0)
     fade(e, fade_in_out(.02, .8))
     e.many("ScaleSpriteSizeBySpeed", {"Min Scale Factor": unreal.Vector2D(1, 1), "Max Scale Factor": unreal.Vector2D(1, 1)})
@@ -1577,7 +1615,7 @@ def hanabi_fire_zone(mi):
     e.set("Drag", "Drag", 1.0)
     lift(e, 60.0)
     fade(e, fade_in_out(.12, 1.2))
-    dynamic_params(e, ["0.85 + rand(0.3)", None, None, None])
+    dynamic_params(e, [particle_random(e, HEAT, .85, 1.15), None, None, None])
     flipbook(e, mi["Fire"], loop_seconds=1.0, sort="ViewDepth")
     upright(e)
     sparks(s, "Embers", rate=Expr("min(max(User.Radius * 0.12, 8.0), 60.0)"), life=(1.0, 2.4), color_value=rgb(60.0, 18.0, 3.0),
@@ -1674,7 +1712,7 @@ def shinobi_decoy(mi):
         shape(e, sphere=35.0, offset=(0, 0, 100))
         cone(e, (250, 600), (0, 0, 1), 80)
         e.set("GravityForce", "Gravity", vec(0, 0, -260))
-        e.set("Drag", "Drag", rand_range(2.5, 4.0))
+        drag(e, (2.5, 4.0))
         curl(e, 110.0, 150.0)
         fade(e, fade_in_out(.01, .4))
         e.many("ScaleSpriteSizeBySpeed", {"Min Scale Factor": unreal.Vector2D(1, 1), "Max Scale Factor": unreal.Vector2D(1, 1)})
@@ -1866,7 +1904,7 @@ def forge_fire(mi):
     e.set("Drag", "Drag", 1.2)
     lift(e, 50.0)
     fade(e, fade_in_out(.12, 1.2))
-    dynamic_params(e, ["lerp(0.8, 1.45, User.Temperature) * (0.9 + rand(0.2))", None, None, None])
+    dynamic_params(e, [f"lerp(0.8, 1.45, User.Temperature) * {particle_random(e, HEAT, .9, 1.1)}", None, None, None])
     flipbook(e, mi["Fire"], loop_seconds=1.0)
     upright(e)
     sparks(s, "Sparks", rate=Expr("(6.0 + 45.0 * User.Bellows) * User.FlashScale"), life=(.6, 1.8),
@@ -1967,7 +2005,9 @@ def lantern(mi):
     e = s.emitter("Halo", "SingleLoopingParticle")
     forever(e, 1.0)
     e.set("InitializeParticle", "Uniform Sprite Size", 24.0)
-    color(e, Expr("float4(User.LightColor.rgb * 2.5 * (1.0 + 0.12 * User.FlashScale * sin(Engine.Time * 11.3)), 0.35)"))
+    color(e, Expr("float4(User.LightColor.rgb * 2.5, 0.35)"))
+    # The flicker goes in the update stack: InitializeParticle's colour is evaluated once, at spawn.
+    fade(e, "1.0", "(1.0 + 0.12 * User.FlashScale * sin(Engine.Time * 11.3)) * float3(1.0, 1.0, 1.0)")
     e.renderer(Material=mi["Glow"])
     e.props(bLocalSpace=True)
     s.compile()
@@ -2003,7 +2043,10 @@ MATERIAL_INSTANCES = {
 
 
 def main():
-    if os.environ.get("SORA_VFX_REUSE_MATERIALS") == "1":
+    unknown = sorted(ONLY - {builder.__name__ for builder in SYSTEMS})
+    if unknown:
+        raise RuntimeError(f"SORA_VFX_ONLY names no builder: {unknown}; the builders are {[b.__name__ for b in SYSTEMS]}")
+    if REUSE_MATERIALS:
         mi = {role: assets.load_asset(f"{DEST}/Materials/{name}") for role, name in MATERIAL_INSTANCES.items()}
         missing = [name for role, name in MATERIAL_INSTANCES.items() if mi[role] is None]
         if missing:
@@ -2015,6 +2058,13 @@ def main():
             raise RuntimeError("MATERIAL_INSTANCES is out of step with build_materials")
     built = build_systems(mi)
     log(f"built {', '.join(built)}")
+    if ONLY or REUSE_MATERIALS:
+        # An iteration run: import-mac.sh accepts only the complete build's marker.
+        unreal.log(f"SORA_VFX_PARTIAL: {len(built)} of {len(SYSTEMS)} systems rebuilt"
+                   f"{', textures and materials reused' if REUSE_MATERIALS else ''}; not a complete build")
+        return
+    if len(built) != len(SYSTEMS):
+        raise RuntimeError(f"built {len(built)} of {len(SYSTEMS)} systems")
     unreal.log(f"SORA_VFX_READY: {len(built)} systems")
 
 

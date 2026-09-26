@@ -6,9 +6,11 @@ Run with a real RHI (no -nullrhi) after scripts/unreal/create_sora_vfx.py:
         -unattended -nosplash -stdout
 
 Output EXRs (linear scene colour, before post-processing) go to
-Saved/VFXPreview/<system>_<light>_<age>.exr (override with the
+Saved/VFXPreview/<system>[_<tag>]_<light>_<age>.exr (override with the
 SORA_VFX_PREVIEW_DIR environment variable; SORA_VFX_PREVIEW_ONLY=Name,Name
-limits the systems). Each effect is placed on a stone floor in front of a
+limits the systems). A shot that repeats a system and light with other user
+parameters carries a tag, and the script refuses to start when two stills
+would share a file name. Each effect is placed on a stone floor in front of a
 plaster wall under the Estate's overcast daylight (a 25 lux sun, the overcast
 HDRI sky light) or a dusk key (1.8 lux), advanced to fixed ages with
 NiagaraComponent.advance_simulation and captured by a SceneCapture2D with
@@ -19,8 +21,16 @@ EXRs with scripts/unreal/diagnostics/vfx_preview_sheet.py (host Python).
 These are art-review stills, not packaged-game evidence: no Lumen scene of a
 real level, no bloom, motion blur or eye adaptation (the sheet script applies a
 fixed exposure and a filmic curve). A capture made before the editor world has
-ticked comes back empty, hence the warm-up. GPU emitters (rain) do not
-advance through advance_simulation and are captured after real ticks instead.
+ticked comes back empty, hence the warm-up.
+
+Some shots move instead of stepping in place. The blade trail ("sweep")
+swings the component through a 100-degree cut in the plane that faces the
+camera, with +X along the blade as a sword socket would hold it. The
+projectile trail ("flight") flies the component along its +X at 45 m/s.
+advance_simulation does not step GPU emitters, so rain ("realtime") runs on
+real editor ticks for about its age, with a scene capture on every tick to
+dispatch the GPU simulation; its age is approximate. None of the three has
+been run yet.
 
 After the stills it checks that Niagara lights light the scene: on the dusk
 stage it measures the floor under NS_SoraVFX_Lantern (150 lm by default)
@@ -35,6 +45,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import NamedTuple
 
 import unreal
 
@@ -60,38 +71,80 @@ def log(message):
     unreal.log(f"SORA_VFX_PREVIEW: {message}")
 
 
-# effect name, placement (location, rotation), camera (location, look-at), lighting, user parameters, ages, sweep
+class Shot(NamedTuple):
+    name: str
+    placement: tuple          # (location, rotation); for a sweep, the location is the cut's pivot
+    camera: tuple             # (location, look-at)
+    mode: str                 # "day" or "dusk"
+    user: dict
+    ages: list
+    motion: str | None = None  # None (stepped in place), "sweep", "flight" or "realtime"
+    tag: str = ""             # tells apart stills of one system and light with other user parameters
+
+
+def still_name(shot, age):
+    return f"{shot.name[len('NS_SoraVFX_'):]}{'_' + shot.tag if shot.tag else ''}_{shot.mode}_{age:.2f}s"
+
+
 UP = R(pitch=90.0)          # local +X up out of the floor
+CUT_PIVOT = V(0, -60, 130)  # the blade trail's cut turns about the wielder's hands, 90 cm behind the blade's middle
 SHOTS = [
-    ("NS_SoraVFX_Muzzle_Matchlock", (V(0, -160, 150), R(0, 90, 0)), (V(-560, 60, 170), V(0, 60, 150)), "day", {}, [.02, .05, .12, .6, 2.0, 4.5], None),
-    ("NS_SoraVFX_Muzzle_Energy", (V(0, -60, 150), R(0, 90, 0)), (V(-260, 0, 160), V(0, 0, 150)), "dusk", {}, [.02, .05, .3], None),
-    ("NS_SoraVFX_Beam_Energy", (V(0, -500, 140), R(0, 90, 0)), (V(-700, 0, 180), V(0, 0, 140)), "dusk",
-     {"BeamEnd": V(0, 500, 140), "Duration": 1.0}, [.03, .4], None),
-    ("NS_SoraVFX_BladeTrail", (V(0, 0, 140), R(0, 0, 0)), (V(-260, 0, 150), V(0, 0, 130)), "day", {}, [.12], "sweep"),
-    ("NS_SoraVFX_Impact_Wood", (V(0, 0, 1), UP), (V(-160, 0, 70), V(0, 0, 25)), "day", {}, [.04, .25, 1.0], None),
-    ("NS_SoraVFX_Impact_Stone", (V(0, 0, 1), UP), (V(-160, 0, 70), V(0, 0, 25)), "day", {"SparkAmount": 1.0}, [.04, .25, 1.0], None),
-    ("NS_SoraVFX_Impact_Dirt", (V(0, 0, 1), UP), (V(-220, 0, 80), V(0, 0, 30)), "day", {}, [.05, .3, 1.2], None),
-    ("NS_SoraVFX_Impact_Metal", (V(0, 0, 1), UP), (V(-160, 0, 70), V(0, 0, 25)), "dusk", {}, [.02, .12, .5], None),
-    ("NS_SoraVFX_Impact_Fur", (V(0, 0, 110), R(0, 180, 0)), (V(-170, 0, 115), V(0, 0, 100)), "day", {}, [.1, .6, 1.4], None),
-    ("NS_SoraVFX_ParrySparks", (V(0, 0, 130), R(0, 180, 0)), (V(-200, 0, 135), V(0, 0, 125)), "dusk", {}, [.02, .08, .3], None),
-    ("NS_SoraVFX_Explosion", (V(0, 0, 1), UP), (V(-1500, 0, 320), V(0, 0, 220)), "day", {}, [.03, .2, .7, 2.5, 5.0], None),
-    ("NS_SoraVFX_Hanabi_FireZone", (V(0, 0, 1), R(0, 0, 0)), (V(-1100, 0, 320), V(0, 0, 60)), "dusk", {"Radius": 300.0}, [2.5], None),
-    ("NS_SoraVFX_Hanabi_FireZone", (V(0, 0, 1), R(0, 0, 0)), (V(-1100, 0, 320), V(0, 0, 60)), "day", {"Radius": 300.0}, [2.5], None),
-    ("NS_SoraVFX_Kusushi_Heal", (V(0, 0, 1), R(0, 0, 0)), (V(-600, 0, 260), V(0, 0, 60)), "dusk", {}, [.3, .8], None),
-    ("NS_SoraVFX_Kusushi_Ward", (V(0, 0, 1), R(0, 0, 0)), (V(-650, 0, 280), V(0, 0, 90)), "day", {}, [3.0], None),
-    ("NS_SoraVFX_Shinobi_Decoy", (V(0, 0, 1), R(0, 0, 0)), (V(-700, 0, 200), V(0, 0, 110)), "day", {}, [.15, .8, 2.5], None),
-    ("NS_SoraVFX_Karakuri_BuildDust", (V(0, 0, 1), R(0, 0, 0)), (V(-500, 0, 180), V(0, 0, 40)), "day", {}, [2.5], None),
-    ("NS_SoraVFX_Telegraph_Beam", (V(-300, 0, 1), R(0, 0, 0)), (V(-900, 300, 700), V(400, 0, 0)), "day", {"Length": 1500.0}, [.3, 1.0], None),
-    ("NS_SoraVFX_Telegraph_Cleave", (V(0, 0, 1), R(0, 0, 0)), (V(-800, 250, 650), V(150, 0, 0)), "day", {}, [.3, .85], None),
-    ("NS_SoraVFX_Water_SluiceRise", (V(0, 0, 1), R(0, 0, 0)), (V(-500, -500, 260), V(100, 0, 20)), "day", {}, [4.0], None),
-    ("NS_SoraVFX_Water_Splash", (V(0, 0, 1), UP), (V(-300, 0, 90), V(0, 0, 40)), "day", {}, [.08, .35, 1.0], None),
-    ("NS_SoraVFX_Forge_Fire", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 60)), "dusk", {"Temperature": .5, "Bellows": .6}, [2.0], None),
-    ("NS_SoraVFX_Forge_Fire", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 60)), "dusk", {"Temperature": 1.0, "Bellows": 1.0}, [2.0], None),
-    ("NS_SoraVFX_Steam", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 90)), "day", {}, [3.0], None),
-    ("NS_SoraVFX_Steam_Burst", (V(0, 0, 1), R(0, 0, 0)), (V(-350, 0, 130), V(0, 0, 100)), "day", {}, [.25, 1.0], None),
-    ("NS_SoraVFX_Mist", (V(0, 0, 1), R(0, 0, 0)), (V(-1400, 0, 200), V(0, 0, 100)), "day", {}, [16.0], None),
-    ("NS_SoraVFX_Lantern", (V(0, 0, 150), R(0, 0, 0)), (V(-300, 0, 150), V(0, 0, 120)), "dusk", {}, [1.3], None),
+    Shot("NS_SoraVFX_Muzzle_Matchlock", (V(0, -160, 150), R(0, 90, 0)), (V(-560, 60, 170), V(0, 60, 150)), "day", {}, [.02, .05, .12, .6, 2.0, 4.5]),
+    Shot("NS_SoraVFX_Muzzle_Energy", (V(0, -60, 150), R(0, 90, 0)), (V(-260, 0, 160), V(0, 0, 150)), "dusk", {}, [.02, .05, .3]),
+    Shot("NS_SoraVFX_Beam_Energy", (V(0, -500, 140), R(0, 90, 0)), (V(-700, 0, 180), V(0, 0, 140)), "dusk",
+         {"BeamEnd": V(0, 500, 140), "Duration": 1.0}, [.03, .4]),
+    Shot("NS_SoraVFX_Trail_Projectile", (V(0, -380, 150), R(0, 90, 0)), (V(-700, 0, 170), V(0, 0, 150)), "dusk",
+         {}, [.15], "flight", tag="Bolt"),
+    Shot("NS_SoraVFX_Trail_Projectile", (V(0, -380, 150), R(0, 90, 0)), (V(-700, 0, 170), V(0, 0, 150)), "day",
+         {"Tint": C(.8, .8, .78), "Intensity": 1.5, "Width": 1.0}, [.15], "flight", tag="Arrow"),
+    Shot("NS_SoraVFX_BladeTrail", (CUT_PIVOT, R(0, 0, 0)), (V(-380, 0, 150), V(0, 0, 140)), "day", {}, [.12], "sweep"),
+    Shot("NS_SoraVFX_BladeTrail", (CUT_PIVOT, R(0, 0, 0)), (V(-380, 0, 150), V(0, 0, 140)), "dusk", {}, [.12], "sweep"),
+    Shot("NS_SoraVFX_Impact_Wood", (V(0, 0, 1), UP), (V(-160, 0, 70), V(0, 0, 25)), "day", {}, [.04, .25, 1.0]),
+    Shot("NS_SoraVFX_Impact_Stone", (V(0, 0, 1), UP), (V(-160, 0, 70), V(0, 0, 25)), "day", {"SparkAmount": 1.0}, [.04, .25, 1.0]),
+    Shot("NS_SoraVFX_Impact_Dirt", (V(0, 0, 1), UP), (V(-220, 0, 80), V(0, 0, 30)), "day", {}, [.05, .3, 1.2]),
+    Shot("NS_SoraVFX_Impact_Metal", (V(0, 0, 1), UP), (V(-160, 0, 70), V(0, 0, 25)), "dusk", {}, [.02, .12, .5]),
+    Shot("NS_SoraVFX_Impact_Fur", (V(0, 0, 110), R(0, 180, 0)), (V(-170, 0, 115), V(0, 0, 100)), "day", {}, [.1, .6, 1.4]),
+    Shot("NS_SoraVFX_ParrySparks", (V(0, 0, 130), R(0, 180, 0)), (V(-200, 0, 135), V(0, 0, 125)), "dusk", {}, [.02, .08, .3]),
+    Shot("NS_SoraVFX_Explosion", (V(0, 0, 1), UP), (V(-1500, 0, 320), V(0, 0, 220)), "day", {}, [.03, .2, .7, 2.5, 5.0]),
+    Shot("NS_SoraVFX_Hanabi_FireZone", (V(0, 0, 1), R(0, 0, 0)), (V(-1100, 0, 320), V(0, 0, 60)), "dusk", {"Radius": 300.0}, [2.5]),
+    Shot("NS_SoraVFX_Hanabi_FireZone", (V(0, 0, 1), R(0, 0, 0)), (V(-1100, 0, 320), V(0, 0, 60)), "day", {"Radius": 300.0}, [2.5]),
+    Shot("NS_SoraVFX_Kusushi_Heal", (V(0, 0, 1), R(0, 0, 0)), (V(-600, 0, 260), V(0, 0, 60)), "dusk", {}, [.3, .8]),
+    Shot("NS_SoraVFX_Kusushi_Ward", (V(0, 0, 1), R(0, 0, 0)), (V(-650, 0, 280), V(0, 0, 90)), "day", {}, [3.0]),
+    Shot("NS_SoraVFX_Shinobi_Decoy", (V(0, 0, 1), R(0, 0, 0)), (V(-700, 0, 200), V(0, 0, 110)), "day", {}, [.15, .8, 2.5]),
+    Shot("NS_SoraVFX_Karakuri_BuildDust", (V(0, 0, 1), R(0, 0, 0)), (V(-500, 0, 180), V(0, 0, 40)), "day", {}, [2.5]),
+    Shot("NS_SoraVFX_Telegraph_Beam", (V(-300, 0, 1), R(0, 0, 0)), (V(-900, 300, 700), V(400, 0, 0)), "day", {"Length": 1500.0}, [.3, 1.0]),
+    Shot("NS_SoraVFX_Telegraph_Cleave", (V(0, 0, 1), R(0, 0, 0)), (V(-800, 250, 650), V(150, 0, 0)), "day", {}, [.3, .85]),
+    Shot("NS_SoraVFX_Telegraph_Cleave", (V(0, 0, 1), R(0, 0, 0)), (V(-800, 250, 650), V(0, 0, 0)), "day",
+         {"ArcDegrees": 360.0}, [.3, .85], tag="Area"),
+    Shot("NS_SoraVFX_Water_SluiceRise", (V(0, 0, 1), R(0, 0, 0)), (V(-500, -500, 260), V(100, 0, 20)), "day", {}, [4.0]),
+    Shot("NS_SoraVFX_Water_Splash", (V(0, 0, 1), UP), (V(-300, 0, 90), V(0, 0, 40)), "day", {}, [.08, .35, 1.0]),
+    # The forge's three gauge states: red heat, yamabuki, white heat.
+    Shot("NS_SoraVFX_Forge_Fire", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 60)), "dusk",
+         {"Temperature": 0.0, "Bellows": .3}, [2.0], tag="Red"),
+    Shot("NS_SoraVFX_Forge_Fire", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 60)), "dusk",
+         {"Temperature": .5, "Bellows": .6}, [2.0], tag="Yamabuki"),
+    Shot("NS_SoraVFX_Forge_Fire", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 60)), "dusk",
+         {"Temperature": 1.0, "Bellows": 1.0}, [2.0], tag="White"),
+    Shot("NS_SoraVFX_Steam", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 120), V(0, 0, 90)), "day", {}, [3.0]),
+    Shot("NS_SoraVFX_Steam_Burst", (V(0, 0, 1), R(0, 0, 0)), (V(-350, 0, 130), V(0, 0, 100)), "day", {}, [.25, 1.0]),
+    Shot("NS_SoraVFX_Rain", (V(0, 0, 1), R(0, 0, 0)), (V(-300, 0, 160), V(300, 0, 120)), "day", {}, [2.5], "realtime"),
+    Shot("NS_SoraVFX_Mist", (V(0, 0, 1), R(0, 0, 0)), (V(-1400, 0, 200), V(0, 0, 100)), "day", {}, [16.0]),
+    Shot("NS_SoraVFX_Lantern", (V(0, 0, 150), R(0, 0, 0)), (V(-300, 0, 150), V(0, 0, 120)), "dusk", {}, [1.3]),
 ]
+SWEEP_FRAMES = 8            # the cut takes the last 8 frames (0.13 s) before the capture
+FLIGHT_SPEED = 4500.0       # cm/s: a yumi arrow leaves the bow at 45-60 m/s
+
+
+def place_blade(actor, pivot, t):
+    """The blade trail at fraction t of a 100-degree cut about pivot, in the plane facing the camera (world YZ).
+
+    +X is radial, along the blade, as NS_SoraVFX_BladeTrail expects (its ribbon's side vector is the
+    component's +X), so the 72 cm sheet spans the edge and is swept across the arc.
+    """
+    rotation = R(pitch=80.0 - 100.0 * t, yaw=90.0)      # from overhead to just below level, a shomen cut seen side-on
+    actor.set_actor_location(pivot + unreal.MathLibrary.get_forward_vector(rotation) * 90.0, False, False)
+    actor.set_actor_rotation(rotation, False)
+
 
 world = None
 capture = None
@@ -229,9 +282,9 @@ def apply_user(component, values):
 class Runner:
     """Advances through the shots one editor tick at a time (captures need ticks for shaders and readback)."""
 
-    def __init__(self, camera):
+    def __init__(self, camera, queue):
         self.camera = camera
-        self.queue = [shot for shot in SHOTS if not ONLY or shot[0] in ONLY]
+        self.queue = queue
         self.index = -1
         self.wait = 0
         self.actor = None
@@ -242,6 +295,8 @@ class Runner:
         self.warm_actors = []
         self.written = []
         self.light = None
+        self.delta = 0.0
+        self.realtime_left = 0.0
         self.handle = unreal.register_slate_post_tick_callback(self.tick)
 
     def finish(self):
@@ -251,6 +306,7 @@ class Runner:
         unreal.EditorPythonScripting.set_keep_python_script_alive(False)
 
     def tick(self, delta):
+        self.delta = delta
         try:
             self._tick()
         except Exception as error:          # noqa: BLE001 - report and stop instead of hanging the editor
@@ -263,7 +319,7 @@ class Runner:
             return
         if self.phase == "warmup":
             # Spawn every system once and render it so its shaders compile, then let the compile queue drain.
-            for name in sorted({shot[0] for shot in self.queue}):
+            for name in sorted({shot.name for shot in self.queue}):
                 system = unreal.load_asset(f"/Game/Generated/VFX/{name}")
                 actor = actors.spawn_actor_from_object(system, V(0, 0, 100), R(0, 0, 0))
                 actor.niagara_component.advance_simulation(20, 1 / 60)
@@ -291,16 +347,15 @@ class Runner:
                 self.light = light_check(self.camera)
                 self.phase = "light"
                 return
-            self.shot = self.queue[self.index]
-            name, (location, rotation), (camera, look_at), mode, user, ages, sweep = self.shot
-            set_lighting(mode)
-            aim(self.camera, camera, look_at)
-            system = unreal.load_asset(f"/Game/Generated/VFX/{name}")
-            self.actor = actors.spawn_actor_from_object(system, location, rotation)
+            self.shot = shot = self.queue[self.index]
+            set_lighting(shot.mode)
+            aim(self.camera, *shot.camera)
+            system = unreal.load_asset(f"/Game/Generated/VFX/{shot.name}")
+            self.actor = actors.spawn_actor_from_object(system, *shot.placement)
             component = self.actor.niagara_component
             component.set_auto_activate(False)
-            apply_user(component, user)
-            self.ages = list(ages)
+            apply_user(component, shot.user)
+            self.ages = list(shot.ages)
             # A system's first activation can wait on pipeline precaching; run it once and throw that away.
             component.activate(True)
             component.advance_simulation(30, 1 / 60)
@@ -311,33 +366,54 @@ class Runner:
             # Reset and let the component register a fresh instance before stepping it.
             component = self.actor.niagara_component
             component.set_paused(False)
-            apply_user(component, self.shot[4])
+            apply_user(component, self.shot.user)
+            if self.shot.motion == "sweep":
+                place_blade(self.actor, self.shot.placement[0], 0.0)    # start the trail at the top of the cut
+            elif self.shot.motion == "flight":
+                self.actor.set_actor_location(self.shot.placement[0], False, False)
             component.activate(True)
             component.set_paused(True)
             self.phase = "advance"
             self.wait = 3
             return
         if self.phase == "advance":
-            name, (location, rotation), _, mode, user, ages, sweep = self.shot
+            shot = self.shot
             component = self.actor.niagara_component
             age = self.ages.pop(0)
+            self.pending = still_name(shot, age)
             component.set_paused(False)
+            if shot.motion == "realtime":
+                self.realtime_left = age
+                self.phase = "realtime"
+                return
             steps = max(1, int(round(age * 60)))
-            if sweep:
-                # swing the blade through 100 degrees round a wielder 90 cm behind it over the last 8 frames
+            if shot.motion == "flight":
+                start, rotation = shot.placement
+                heading = unreal.MathLibrary.get_forward_vector(rotation)
                 for step in range(steps):
-                    if step >= steps - 8:
-                        yaw = -50.0 + 12.5 * (step - steps + 8)
-                        heading = unreal.MathLibrary.get_forward_vector(R(0, yaw, 0))
-                        self.actor.set_actor_location(location + heading * 90.0 - V(90, 0, 0), False, False)
-                        self.actor.set_actor_rotation(R(0, yaw + 90.0, 0), False)
+                    self.actor.set_actor_location(start + heading * (FLIGHT_SPEED * (step + 1) / 60.0), False, False)
+                    component.advance_simulation(1, 1 / 60)
+            elif shot.motion == "sweep":
+                # the whole cut in the last frames before the capture (all of them when the age is shorter)
+                frames = min(SWEEP_FRAMES, steps)
+                for step in range(steps):
+                    if step >= steps - frames:
+                        place_blade(self.actor, shot.placement[0], (step - (steps - frames) + 1) / frames)
                     component.advance_simulation(1, 1 / 60)
             else:
                 component.advance_simulation(steps, 1 / 60)
             component.set_paused(True)
-            self.pending = f"{name[len('NS_SoraVFX_'):]}_{mode}_{age:.2f}s"
             self.phase = "capture"
             self.wait = 2
+            return
+        if self.phase == "realtime":
+            # GPU emitters run on the world's own ticks; each scene render dispatches their queued simulation.
+            capture.capture_scene()
+            self.realtime_left -= self.delta
+            if self.realtime_left <= 0.0:
+                self.actor.niagara_component.set_paused(True)
+                self.phase = "capture"
+                self.wait = 2
             return
         if self.phase == "capture":
             capture.capture_scene()
@@ -359,5 +435,16 @@ class Runner:
             return
 
 
+def shot_queue():
+    """The shots to render; two stills that would share a file name are an error."""
+    queue = [shot for shot in SHOTS if not ONLY or shot.name in ONLY]
+    names = [still_name(shot, age) for shot in queue for age in shot.ages]
+    repeated = sorted({name for name in names if names.count(name) > 1})
+    if repeated:
+        raise RuntimeError(f"stills would overwrite each other (give the shots a tag): {repeated}")
+    return queue
+
+
+QUEUE = shot_queue()        # before the script is kept alive, so a bad table stops it at once
 unreal.EditorPythonScripting.set_keep_python_script_alive(True)
-runner = Runner(build_stage())
+runner = Runner(build_stage(), QUEUE)
