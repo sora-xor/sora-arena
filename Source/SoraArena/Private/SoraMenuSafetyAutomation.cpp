@@ -6,6 +6,8 @@
 #include "SoraCatalog.h"
 #include "SoraControlSaveGame.h"
 #include "SoraEnemy.h"
+#include "SoraEquipmentComponent.h"
+#include "SoraFrontEnd.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraInputStates.h"
 #include "SoraSaveGame.h"
@@ -21,9 +23,10 @@
 #include "Templates/UniquePtr.h"
 
 // Menu safety, input-state gating, the chapter title card and enemy fire, each
-// in a real standalone game world. Keys go through UPlayerInput and the
-// project's DefaultInput.ini, so these tests cover the key-to-action layer that
-// direct handler calls skip.
+// in a real standalone game world. In play, keys go through UPlayerInput and
+// the project's DefaultInput.ini, so these tests cover the key-to-action layer
+// that direct handler calls skip. While a front-end screen is open, presses go
+// to USoraFrontEnd::HandleKey, the path SSoraFrontEnd forwards them on.
 namespace SoraMenuSafety
 {
 constexpr int32 FramesPerSecond = 60;
@@ -64,6 +67,8 @@ struct FScope
             Test.TestNotNull(TEXT("World has its arena"), Mode()->Arena());
     }
     ASoraGameMode* Mode() const { return World ? World->Mode() : nullptr; }
+    USoraFrontEnd* FrontEnd() const { return Mode() ? Mode()->FrontEnd() : nullptr; }
+    bool On(SoraUI::EScreen Screen) const { return FrontEnd() && FrontEnd()->IsOpen() && FrontEnd()->Screen() == Screen; }
     ASoraPlayerCharacter* Player() const { return World ? World->Player() : nullptr; }
     UWorld* Get() const { return World ? World->GetTestWorld() : nullptr; }
     bool Paused() const { return Get() && Get()->IsPaused(); }
@@ -80,6 +85,21 @@ struct FScope
             return true;
         Test.AddError(TEXT("Test world failed to tick"));
         return false;
+    }
+    // Holds keys straight into play input past an open front end, as if focus
+    // had fallen back to the game viewport, checks what they did while still
+    // held, then releases them.
+    bool HeldPastFrontEnd(std::initializer_list<FKey> Keys, TFunctionRef<bool()> ActedOnNothing)
+    {
+        for (const FKey& Key : Keys)
+            if (!World->InjectKeyPastFrontEnd(Key, IE_Pressed))
+                Test.AddError(FString::Printf(TEXT("Key %s could not reach play input"), *Key.ToString()));
+        Frames(1);
+        const bool bNothing = ActedOnNothing();
+        for (const FKey& Key : Keys)
+            World->InjectKeyPastFrontEnd(Key, IE_Released);
+        Frames(1);
+        return bNothing;
     }
     TArray<FVector> OpponentLocations() const
     {
@@ -115,10 +135,10 @@ bool HasJapanese(const FString& Text)
     return false;
 }
 
-// Bit order of SoraInput::EState.
+// Bit order of SoraInput::EState; bit 1 is unused.
 FString StateNames(uint8 States)
 {
-    static const TCHAR* Names[] = {TEXT("Menu"), TEXT("Confirm"), TEXT("Card"), TEXT("Play"), TEXT("Result")};
+    static const TCHAR* Names[] = {TEXT("Menu"), TEXT("Unused"), TEXT("Card"), TEXT("Play"), TEXT("Result")};
     TArray<FString> Live;
     for (int32 Bit = 0; Bit < UE_ARRAY_COUNT(Names); ++Bit)
         if (States & (1 << Bit))
@@ -222,36 +242,51 @@ bool FSoraNewCampaignConfirmationTest::RunTest(const FString& Parameters)
             Saved->CheckpointChapter == Chapter && Saved->CheckpointKills == Kills && Saved->CheckpointNodesMask == 1 &&
             Mode->Campaign()->ChapterId == Chapter && Mode->Campaign()->Kills == Kills);
     };
-
-    // The old pad binding: a left stick click no longer starts over.
-    Scope.Key(EKeys::Gamepad_LeftThumbstick);
-    TestFalse(TEXT("Left stick click raises no prompt"), Mode->bConfirmNewCampaign);
-    Kept(TEXT("Left stick click keeps the saved campaign"));
-
-    Scope.Key(EKeys::N);
-    TestTrue(TEXT("N only asks for confirmation"), Mode->bConfirmNewCampaign && Mode->InputState() == SoraInput::Confirm);
-    Kept(TEXT("The first press erases nothing"));
+    USoraFrontEnd* FrontEnd = Scope.FrontEnd();
+    if (!TestTrue(TEXT("The game opens on the title screen"), Scope.On(SoraUI::EScreen::Title) && Scope.Paused()))
+        return false;
     Scope.Key(EKeys::Enter);
-    TestTrue(TEXT("Enter cannot start play under the prompt"), Mode->bMenu && Mode->bConfirmNewCampaign);
-    Scope.Key(EKeys::P);
-    TestFalse(TEXT("Practice cannot be chosen under the prompt"), Mode->bDeterministicPractice);
+    if (!TestTrue(TEXT("Any key leaves the title for the main menu"), Scope.On(SoraUI::EScreen::Main)) ||
+        !TestTrue(TEXT("A saved campaign offers Continue first, then New campaign"), FrontEnd->Rows().Num() > 1 &&
+            FrontEnd->Rows()[0].Action == SoraUI::EAction::Continue && FrontEnd->Rows()[1].Action == SoraUI::EAction::NewCampaign))
+        return false;
+
+    // Retired hotkeys: the left stick click, N and P mean nothing to the menu.
+    for (const FKey& Retired : {EKeys::Gamepad_LeftThumbstick, EKeys::N, EKeys::P})
+        Scope.Key(Retired);
+    TestTrue(TEXT("Retired menu hotkeys neither prompt nor start practice"), Scope.On(SoraUI::EScreen::Main) && !Mode->bDeterministicPractice);
+    // Nor do they reach anything through play input, should focus fall back
+    // to the game viewport with the menu open.
+    TestTrue(TEXT("Retired hotkeys that reach play input in the menu do nothing either"), Scope.HeldPastFrontEnd(
+        {EKeys::Gamepad_LeftThumbstick, EKeys::N, EKeys::P},
+        [&]() { return Scope.On(SoraUI::EScreen::Main) && Mode->bMenu && !Mode->bDeterministicPractice; }));
+    Kept(TEXT("Retired hotkeys keep the saved campaign"));
+
+    Scope.Key(EKeys::Down);
+    Scope.Key(EKeys::Enter);
+    TestTrue(TEXT("New campaign only asks for confirmation, starting on Cancel"),
+        Scope.On(SoraUI::EScreen::Confirm) && FrontEnd->Rows()[FrontEnd->Focus()].Action == SoraUI::EAction::ConfirmNo);
+    Kept(TEXT("Asking erases nothing"));
+    Scope.Key(EKeys::Enter);
+    TestTrue(TEXT("Enter on Cancel withdraws the prompt"), Scope.On(SoraUI::EScreen::Main) && Mode->bMenu && Scope.Paused());
+    Kept(TEXT("Cancel erases nothing"));
+
+    Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
     Scope.Key(EKeys::Escape);
-    TestTrue(TEXT("Esc withdraws the prompt and keeps the menu open"), Mode->bMenu && !Mode->bConfirmNewCampaign && Scope.Paused());
+    TestTrue(TEXT("Esc withdraws the prompt and keeps the menu open"), Scope.On(SoraUI::EScreen::Main) && Scope.Paused());
+    Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
+    Scope.Key(EKeys::Gamepad_FaceButton_Right);
+    TestTrue(TEXT("Pad B withdraws the prompt"), Scope.On(SoraUI::EScreen::Main));
     Kept(TEXT("Withdrawing erases nothing"));
 
-    Scope.Key(EKeys::Gamepad_FaceButton_Top);
-    TestTrue(TEXT("Pad Y only asks for confirmation"), Mode->bConfirmNewCampaign);
-    Scope.Key(EKeys::Gamepad_Special_Right);
-    TestTrue(TEXT("Start withdraws the prompt and keeps the menu open"), Mode->bMenu && !Mode->bConfirmNewCampaign);
-    Kept(TEXT("Withdrawing with the pad erases nothing"));
-
-    Scope.Key(EKeys::Gamepad_FaceButton_Top);
-    Scope.Key(EKeys::N);
+    Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
+    Scope.Key(EKeys::Gamepad_DPad_Up);
+    Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
     const USoraSaveGame* Saved = Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(Scope.Slot, 0));
-    TestTrue(TEXT("The confirming press erases the saved campaign"), Saved && Saved->CurrentChapter == 0 &&
+    TestTrue(TEXT("Confirming erases the saved campaign"), Saved && Saved->CurrentChapter == 0 &&
         Saved->HighestChapter == 0 && Saved->CheckpointChapter == -1 && !Saved->CampaignComplete);
-    TestTrue(TEXT("The new campaign waits in the paused menu at the dojo"),
-        Mode->bMenu && Scope.Paused() && !Mode->bConfirmNewCampaign && Mode->Campaign()->ChapterId == 0 && Mode->Campaign()->Kills == 0);
+    TestTrue(TEXT("The new campaign opens on the dojo's title card"),
+        !Mode->bMenu && !Scope.Paused() && Mode->InputState() == SoraInput::Card && Mode->Campaign()->ChapterId == 0 && Mode->Campaign()->Kills == 0);
     return true;
 }
 
@@ -269,16 +304,19 @@ bool FSoraMenuPausesWorldTest::RunTest(const FString& Parameters)
         return false;
     ASoraGameMode* Mode = Scope.Mode();
     UWorld* World = Scope.Get();
-    if (!TestTrue(TEXT("The title menu pauses the world"), Mode->bMenu && Scope.Paused()))
+    if (!TestTrue(TEXT("The title screen pauses the world"), Scope.On(SoraUI::EScreen::Title) && Mode->bMenu && Scope.Paused()))
         return false;
     double Time = World->GetTimeSeconds();
     TArray<FVector> Opponents = Scope.OpponentLocations();
     Scope.Frames(FramesPerSecond);
-    TestEqual(TEXT("World time holds under the title menu"), World->GetTimeSeconds(), Time);
-    TestTrue(TEXT("Opponents hold still under the title menu"), Scope.OpponentLocations() == Opponents);
+    TestEqual(TEXT("World time holds under the title screen"), World->GetTimeSeconds(), Time);
+    TestTrue(TEXT("Opponents hold still under the title screen"), Scope.OpponentLocations() == Opponents);
 
     Scope.Key(EKeys::Enter);
-    TestTrue(TEXT("Enter closes the menu and unpauses the world"), !Mode->bMenu && !Scope.Paused());
+    TestTrue(TEXT("The main menu keeps the world paused"), Scope.On(SoraUI::EScreen::Main) && Scope.Paused());
+    // A fresh save begins the prepared dojo round from the first row.
+    Scope.Key(EKeys::Enter);
+    TestTrue(TEXT("Enter closes the menu and unpauses the world"), !Mode->bMenu && !Scope.Paused() && !Scope.FrontEnd()->IsOpen());
     Scope.Key(EKeys::Enter);
     TestTrue(TEXT("Enter skips the chapter card into play"), Mode->IsPlaying());
     Time = World->GetTimeSeconds();
@@ -287,22 +325,37 @@ bool FSoraMenuPausesWorldTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The round timer runs in play"), Mode->RoundTime > .9f);
 
     Scope.Key(EKeys::Escape);
-    if (!TestTrue(TEXT("Esc opens the menu and pauses the world mid-round"), Mode->bMenu && Scope.Paused()))
+    if (!TestTrue(TEXT("Esc opens the pause menu and pauses the world mid-round"),
+        Scope.On(SoraUI::EScreen::Pause) && Mode->bMenu && Scope.Paused()))
         return false;
     Time = World->GetTimeSeconds();
-    const float Round = Mode->RoundTime;
+    float Round = Mode->RoundTime;
     Opponents = Scope.OpponentLocations();
     Scope.Frames(2 * FramesPerSecond);
     TestEqual(TEXT("World time holds under the pause menu"), World->GetTimeSeconds(), Time);
     TestEqual(TEXT("The round timer holds under the pause menu"), Mode->RoundTime, Round);
     TestTrue(TEXT("Opponents hold still under the pause menu"), Scope.OpponentLocations() == Opponents);
 
-    // Menu bindings run while the world is paused: the pad's Start closes it.
+    // Settings opened from the pause menu keep the world paused and return to it.
+    Scope.Key(EKeys::Gamepad_DPad_Down);
+    Scope.Key(EKeys::Gamepad_DPad_Down);
+    Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
+    TestTrue(TEXT("Settings open over the paused round"), Scope.On(SoraUI::EScreen::Settings) && Scope.Paused());
+    Scope.Key(EKeys::Gamepad_FaceButton_Right);
+    TestTrue(TEXT("B returns from settings to the pause menu"), Scope.On(SoraUI::EScreen::Pause) && Scope.Paused());
+
+    // The pad's Start resumes, as does B on the pause menu.
     Scope.Key(EKeys::Gamepad_Special_Right);
-    TestTrue(TEXT("Start closes the paused menu and unpauses the world"), !Mode->bMenu && !Scope.Paused());
+    TestTrue(TEXT("Start closes the pause menu and unpauses the world"), !Mode->bMenu && !Scope.Paused());
     Scope.Frames(FramesPerSecond / 2);
     TestTrue(TEXT("The round resumes after the menu closes"), Mode->RoundTime > Round);
-    return true;
+    Scope.Key(EKeys::Gamepad_Special_Right);
+    TestTrue(TEXT("Start in play opens the pause menu"), Scope.On(SoraUI::EScreen::Pause) && Scope.Paused());
+    Round = Mode->RoundTime;
+    Scope.Key(EKeys::Gamepad_FaceButton_Right);
+    TestTrue(TEXT("B on the pause menu resumes"), !Mode->bMenu && !Scope.Paused());
+    Scope.Frames(FramesPerSecond / 2);
+    return TestTrue(TEXT("The round runs again"), Mode->RoundTime > Round);
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -314,14 +367,17 @@ bool FSoraStateGatedKeysTest::RunTest(const FString& Parameters)
 {
     (void)Parameters;
     using namespace SoraMenuSafety;
-    // The mappings the engine actually loaded: every action has states, and no
-    // key triggers two actions that can act in one state.
+    // The mappings the engine actually loaded: every action has states, none
+    // acts under the front end, and no key triggers two actions that can act
+    // in one state.
     const UInputSettings* Settings = GetDefault<UInputSettings>();
     TMap<FKey, TArray<FString>> ActionsByKey;
     for (const FInputActionKeyMapping& Mapping : Settings->GetActionMappings())
     {
         const FString Action = Mapping.ActionName.ToString();
         TestTrue(*FString::Printf(TEXT("%s has input states"), *Action), SoraInput::StatesFor(*Action) != 0);
+        TestEqual(*FString::Printf(TEXT("%s does not act in menus, where the front end holds input"), *Action),
+            SoraInput::StatesFor(*Action) & SoraInput::Menu, 0);
         ActionsByKey.FindOrAdd(Mapping.Key).AddUnique(Action);
     }
     for (const FInputAxisKeyMapping& Mapping : Settings->GetAxisMappings())
@@ -342,8 +398,8 @@ bool FSoraStateGatedKeysTest::RunTest(const FString& Parameters)
                     *Entry.Value[A], *Entry.Value[B], *StateNames(Both)), static_cast<int32>(Both), 0);
             }
     }
-    // Pad A, Y, X, LB and RB each carry one menu action and one play action.
-    TestTrue(TEXT("The overlap check covers the shared pad buttons"), SharedKeys >= 5);
+    // Pad A is Enter on the card and results and Jump in play.
+    TestTrue(TEXT("The overlap check covers the shared pad button"), SharedKeys >= 1);
 
     FScope Scope(*this, TEXT("StateGatedKeys"));
     if (!Scope.Start())
@@ -351,9 +407,17 @@ bool FSoraStateGatedKeysTest::RunTest(const FString& Parameters)
     ASoraGameMode* Mode = Scope.Mode();
     ASoraPlayerCharacter* Hero = Scope.Player();
     Scope.Key(EKeys::Gamepad_RightThumbstick);
-    TestTrue(TEXT("Right stick click no longer selects practice"), Mode->bMenu && Mode->bCampaign && !Mode->bDeterministicPractice);
+    TestTrue(TEXT("Any button, even a stick click, only leaves the title"), Scope.On(SoraUI::EScreen::Main) && !Mode->bDeterministicPractice);
 
-    // Pad A is Enter in the menu and on the card, and Jump only in play.
+    // Should focus fall back to the game viewport with the menu open, keys
+    // reach play input; the input states and the paused world keep every
+    // play action, Enter's skip included, from acting on them.
+    TestTrue(TEXT("A, Space, the mouse, X, E and Enter that reach play input in the menu act on nothing"), Scope.HeldPastFrontEnd(
+        {EKeys::Gamepad_FaceButton_Bottom, EKeys::SpaceBar, EKeys::LeftMouseButton, EKeys::Gamepad_FaceButton_Left, EKeys::E, EKeys::Enter},
+        [&]() { return Scope.On(SoraUI::EScreen::Main) && Mode->bMenu && !Hero->bPressedJump && Hero->JumpCurrentCount == 0 &&
+            !Hero->GetEquipment()->IsTriggerHeld() && !Mode->bDeterministicPractice; }));
+
+    // Pad A accepts in the menu, skips the card, and jumps only in play.
     Scope.Key(EKeys::Gamepad_FaceButton_Bottom);
     TestTrue(TEXT("A in the menu starts the chapter on its title card"), !Mode->bMenu && Mode->InputState() == SoraInput::Card);
     TestEqual(TEXT("A in the menu does not also jump"), Hero->JumpCurrentCount, 0);
@@ -367,16 +431,22 @@ bool FSoraStateGatedKeysTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("A in play jumps"), Hero->JumpCurrentCount > 0 || Hero->GetCharacterMovement()->IsFalling());
     TestTrue(TEXT("A in play leaves the round running"), Mode->IsPlaying());
 
-    // Y, X and LB carry menu actions only while the menu is open.
+    // The old menu buttons act only in play now: Y, X, LB and the d-pad's up.
     const int32 Class = Mode->SelectedClass;
-    Scope.Key(EKeys::Gamepad_FaceButton_Top);
-    TestTrue(TEXT("Y in play does not ask to start over"), !Mode->bConfirmNewCampaign && !Mode->bMenu);
-    Scope.Key(EKeys::Gamepad_FaceButton_Left);
-    TestTrue(TEXT("X in play does not switch to practice"), !Mode->bDeterministicPractice && Mode->bCampaign);
-    Scope.Key(EKeys::Gamepad_LeftShoulder);
-    TestEqual(TEXT("LB in play does not change the practice class"), Mode->SelectedClass, Class);
+    for (const FKey& Button : {EKeys::Gamepad_FaceButton_Top, EKeys::Gamepad_FaceButton_Left, EKeys::Gamepad_LeftShoulder, EKeys::Gamepad_DPad_Up})
+        Scope.Key(Button);
+    TestTrue(TEXT("Y, X, LB and d-pad up open no menu and start no practice"),
+        !Mode->bMenu && !Mode->bDeterministicPractice && Mode->bCampaign && Mode->SelectedClass == Class);
     TestTrue(TEXT("The round is still in play"), Mode->IsPlaying());
-    return true;
+
+    // The pause menu holds the same line.
+    Scope.Frames(FramesPerSecond);
+    Scope.Key(EKeys::Escape);
+    if (!TestTrue(TEXT("Esc in play opens the pause menu"), Scope.On(SoraUI::EScreen::Pause) && Scope.Paused()))
+        return false;
+    return TestTrue(TEXT("A, Space, the mouse and Enter that reach play input under the pause menu act on nothing"), Scope.HeldPastFrontEnd(
+        {EKeys::Gamepad_FaceButton_Bottom, EKeys::SpaceBar, EKeys::LeftMouseButton, EKeys::Enter},
+        [&]() { return Scope.On(SoraUI::EScreen::Pause) && Mode->bMenu && !Hero->bPressedJump && !Hero->GetEquipment()->IsTriggerHeld(); }));
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -393,7 +463,7 @@ bool FSoraIsolatedControlProfileTest::RunTest(const FString& Parameters)
     // to J and inverts look; binding input must apply exactly that.
     FScope Scope(*this, TEXT("ControlProfile"));
     const FString ControlSlot = FSoraAutomationWorld::ControlSlot(Scope.Slot);
-    USoraControlSaveGame* Profile = Cast<USoraControlSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraControlSaveGame::StaticClass()));
+    USoraControlSaveGame* Profile = USoraControlSaveGame::New();
     if (!TestNotNull(TEXT("Control profile object"), Profile))
         return false;
     FSoraControlBinding Binding;
@@ -451,9 +521,11 @@ bool FSoraChapterTitleCardTest::RunTest(const FString& Parameters)
         return false;
     ASoraGameMode* Mode = Scope.Mode();
     ASoraPlayerCharacter* Hero = Scope.Player();
-    TestNull(TEXT("The card waits behind the menu"), Mode->TitleCardChapter());
+    TestNull(TEXT("The card waits behind the title screen"), Mode->TitleCardChapter());
     Scope.Key(EKeys::Enter);
-    if (!TestTrue(TEXT("Enter opens the chapter on its title card"), Mode->TitleCardChapter() == &Chapter))
+    TestTrue(TEXT("The card waits behind the main menu"), Scope.On(SoraUI::EScreen::Main) && !Mode->TitleCardChapter());
+    Scope.Key(EKeys::Enter);
+    if (!TestTrue(TEXT("Continue opens the chapter on its title card"), Mode->TitleCardChapter() == &Chapter))
         return false;
     TestEqual(TEXT("No notice competes with the card"), Mode->NoticeTime, 0.f);
 

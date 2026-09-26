@@ -36,6 +36,13 @@ public:
     void StartOver();
     // Return to the saved chapter from practice or the arena.
     void ResumeSavedChapter();
+    // The front end's chapter select and New Campaign confirmation: the
+    // highest chapter reached, a fresh start of any chapter up to it (the
+    // saved chapter moves there, its checkpoint is cleared, the reach is
+    // kept), and whether the save holds anything New Campaign would erase.
+    int32 HighestChapter() const;
+    bool SelectChapter(int32 Chapter);
+    bool HasProgress() const;
     // Chapter one only: pupils drop their windups; the hero drops the guard
     // and recovery lesson when the menu opens.
     void SuspendDojo(bool bIncludeHero);

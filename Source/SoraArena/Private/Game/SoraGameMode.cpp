@@ -2,15 +2,25 @@
 #include "ArenaKernelSubsystem.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
+#include "SoraFrontEnd.h"
 #include "SoraHUD.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraPracticeDirector.h"
+#include "SoraPracticeLobby.h"
+#include "SoraSettings.h"
+#include "SoraText.h"
 #include "SoraWorldBuilder.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "TimerManager.h"
+
+namespace
+{
+FText PreparingText() { return NSLOCTEXT("SoraArena.HUD", "Objective.Preparing", "舞台を準備しています……"); }
+}
 
 ASoraGameMode::ASoraGameMode()
 {
@@ -18,15 +28,31 @@ ASoraGameMode::ASoraGameMode()
     DefaultPawnClass=ASoraPlayerCharacter::StaticClass(); HUDClass=ASoraHUD::StaticClass();
     CampaignDirector=CreateDefaultSubobject<USoraCampaignDirector>(TEXT("CampaignDirector"));
     PracticeDirector=CreateDefaultSubobject<USoraPracticeDirector>(TEXT("PracticeDirector"));
+    FrontEndState=CreateDefaultSubobject<USoraFrontEnd>(TEXT("FrontEnd"));
+    SettingsState=CreateDefaultSubobject<USoraSettings>(TEXT("Settings"));
 }
 void ASoraGameMode::BeginPlay()
 {
     Super::BeginPlay();
-    if(!FSoraCatalog::Get().Load()) { Notice=FSoraCatalog::Get().Error; return; }
-    if(!CampaignDirector->LoadSave()) return;
+    // The game opens on the title screen. ASoraHUD's Slate front end takes
+    // keyboard and pad focus while any screen is open and returns it to play.
+    FrontEndState->ShowTitle();
+    const bool bCatalog=FSoraCatalog::Get().Load();
+    const bool bCampaignSave=bCatalog&&CampaignDirector->LoadSave();
+    // The settings load after the campaign save, which still carries an old
+    // copy of the subtitle switch; the settings own it.
+    SettingsState->Load(SettingsSlotName,bAttachSettingsToEngine);
+    if(!bCatalog)
+    {
+        Notice=FSoraCatalog::Get().Error;
+        // The loader's reason is developer English, so it follows the English line.
+        const SoraText::FLine Missing=SoraText::Line(NSLOCTEXT("SoraArena.Menu","Banner.ContentMissing","ゲームの内容を読み込めない。インストールを確かめてほしい。"));
+        FrontEndState->ShowMain(Missing.Japanese,Missing.English+TEXT(" ")+Notice);
+        return;
+    }
+    if(!bCampaignSave) return;
     WorldBuilder=GetWorld()->SpawnActor<ASoraWorldBuilder>();
     GetWorldTimerManager().SetTimerForNextTick(this,&ASoraGameMode::ResetRound);
-    if(auto* PC=UGameplayStatics::GetPlayerController(this,0)) { PC->SetInputMode(FInputModeGameOnly()); PC->bShowMouseCursor=false; }
 }
 UArenaKernelSubsystem* ASoraGameMode::Kernel() const
 {
@@ -38,7 +64,6 @@ ASoraPlayerCharacter* ASoraGameMode::Hero() const
 }
 void ASoraGameMode::ResetRound()
 {
-    bConfirmNewCampaign=false;
     if(bDeterministicPractice) { PracticeDirector->Reset(); return; }
     PracticeDirector->Clear();
     if(!WorldBuilder||!FSoraCatalog::Get().IsReady()) return;
@@ -75,29 +100,38 @@ void ASoraGameMode::BeginRound()
     if(bMenu&&bCampaign) CampaignDirector->SuspendDojo(false);
     SetMenuOpen(false);
 }
-void ASoraGameMode::ToggleMenu()
+void ASoraGameMode::OpenPauseMenu()
 {
-    // Esc/Start withdraws a pending New Campaign prompt; the menu stays open.
-    if(bMenu&&bConfirmNewCampaign) { bConfirmNewCampaign=false; return; }
-    SetMenuOpen(!bMenu);
-    if(bCampaign) CampaignDirector->SuspendDojo(bMenu);
+    if(bMenu) return;
+    FrontEndState->ShowPause();
+    SetMenuOpen(true);
+    if(bCampaign) CampaignDirector->SuspendDojo(true);
 }
-void ASoraGameMode::NextMap()
+void ASoraGameMode::ResumePlay()
 {
-    if(!bMenu) return; bCampaign=false; MapId=(MapId+1)%4; ResetRound();
+    if(!bMenu) return;
+    SetMenuOpen(false);
+    if(bCampaign) CampaignDirector->SuspendDojo(false);
 }
 void ASoraGameMode::SetMenuOpen(bool bOpen)
 {
-    bMenu=bOpen; bConfirmNewCampaign=false;
-    // Menu time is discarded; practice resumes on a fresh 60 Hz step.
-    if(bOpen) PracticeDirector->ResetClock();
+    bMenu=bOpen;
+    if(bOpen)
+    {
+        // Menu time is discarded; practice resumes on a fresh 60 Hz step.
+        PracticeDirector->ResetClock();
+        // A director that stops play (liberation, a refused practice step)
+        // lands on the main menu with its notice.
+        if(!FrontEndState->IsOpen()) FrontEndState->ShowMain(Notice,NoticeEnglish);
+    }
+    else FrontEndState->Hide();
     SyncMenuPause();
 }
 void ASoraGameMode::SyncMenuPause()
 {
     // The open menu pauses the world: actors, timers and the practice clock
-    // stop, while the HUD still draws and menu bindings run when paused. The
-    // first round is built by a next-tick timer, so pausing waits for it.
+    // stop, while the HUD and the Slate front end still draw and take input.
+    // The first round is built by a next-tick timer, so pausing waits for it.
     APlayerController* Controller=UGameplayStatics::GetPlayerController(this,0);
     if(!bRoundPrepared||!Controller) return;
     if(bMenu&&!IsPaused()) SetPause(Controller);
@@ -105,7 +139,7 @@ void ASoraGameMode::SyncMenuPause()
 }
 SoraInput::EState ASoraGameMode::InputState() const
 {
-    if(bMenu) return bConfirmNewCampaign?SoraInput::Confirm:SoraInput::Menu;
+    if(bMenu) return SoraInput::Menu;
     if(bDefeated||bChapterComplete) return SoraInput::Result;
     return TitleCardTime>0.f?SoraInput::Card:SoraInput::Play;
 }
@@ -114,30 +148,114 @@ const FSoraChapter* ASoraGameMode::TitleCardChapter() const
     return bCampaign&&InputState()==SoraInput::Card&&FSoraCatalog::Get().IsReady()
         ?&FSoraCatalog::Get().Chapter(CampaignDirector->ChapterId):nullptr;
 }
-void ASoraGameMode::NewCampaign()
+bool ASoraGameMode::CampaignHasProgress() const { return CampaignDirector->HasProgress(); }
+bool ASoraGameMode::CanContinueCampaign() const
+{
+    // A liberated campaign has no chapter left to continue; chapter select
+    // replays it.
+    return FSoraCatalog::Get().IsReady()&&CampaignDirector->HasSave()&&!CampaignDirector->bCampaignComplete&&CampaignHasProgress();
+}
+bool ASoraGameMode::ContinueCampaign()
+{
+    if(!bMenu||!WorldBuilder||!CanContinueCampaign()) return false;
+    if(bDeterministicPractice||!bCampaign)
+    {
+        bDeterministicPractice=false; bCampaign=true;
+        CampaignDirector->ResumeSavedChapter();
+        ResetRound();
+    }
+    BeginRound();
+    return !bMenu;
+}
+void ASoraGameMode::StartNewCampaign()
+{
+    if(!bMenu||!WorldBuilder||!FSoraCatalog::Get().IsReady()) return;
+    // A fresh save already has the dojo prepared behind the title. Anything
+    // else is erased (the front end confirmed it) and the dojo rebuilt.
+    if(CampaignHasProgress()||bDeterministicPractice||!bCampaign||CampaignDirector->ChapterId!=0)
+    {
+        bDeterministicPractice=false; bCampaign=true;
+        CampaignDirector->StartOver();
+        MapId=FSoraCatalog::Get().Chapter(0).Map;
+        ResetRound();
+    }
+    BeginRound();
+}
+int32 ASoraGameMode::HighestChapterReached() const { return CampaignDirector->HighestChapter(); }
+bool ASoraGameMode::StartChapter(int32 Chapter)
+{
+    if(!bMenu||!WorldBuilder||!FSoraCatalog::Get().IsReady()) return false;
+    bDeterministicPractice=false; bCampaign=true;
+    if(!CampaignDirector->SelectChapter(Chapter)) return false;
+    ResetRound();
+    BeginRound();
+    return !bMenu;
+}
+FText ASoraGameMode::PracticeLimits() const
+{
+    // StartPracticeFromLobby hands the kernel the class, the arena and the
+    // special weapon; the kernel practice seats six in a free-for-all with
+    // one kind of bot. Empty this once USoraPracticeDirector takes the lot.
+    return NSLOCTEXT("SoraArena.Menu","Lobby.Limits","いまの稽古は六匹の乱戦と一種類のボットだけで行う。形式・人数・難易度の選択はまだ反映されない。");
+}
+bool ASoraGameMode::StartPracticeFromLobby(const FSoraPracticeLobbySelection& Selection)
+{
+    if(!bMenu) return false;
+    FText Why;
+    if(!WorldBuilder||!SoraPracticeLobby::IsValid(Selection,&Why))
+    {
+        const SoraText::FLine Refused=SoraText::Format(NSLOCTEXT("SoraArena.Menu","Notice.PracticeRefused","この設定では稽古を始められません（{Reason}）。"),
+            {{TEXT("Reason"),SoraText::Line(WorldBuilder?Why:NSLOCTEXT("SoraArena.Menu","Notice.ArenaNotBuilt","舞台がまだ組まれていない"))}});
+        Notice=Refused.Japanese; NoticeEnglish=Refused.English;
+        return false;
+    }
+    // Until USoraPracticeDirector::StartPractice(FSoraPracticeConfig) lands,
+    // the kernel practice takes the class, the map and whether the special
+    // weapon is admitted (entering with it drawn), and runs its six-player
+    // free-for-all; Mode, PlayerCount and Difficulty reach the kernel then.
+    SelectedClass=Selection.ClassId; MapId=Selection.MapId;
+    PracticeDirector->WeaponSlot=Selection.SpecialWeaponId==INDEX_NONE?1:2;
+    bDeterministicPractice=true; bCampaign=false;
+    if(!PracticeDirector->Reset())
+    {
+        // The kernel refused. The saved chapter returns behind the lobby,
+        // which shows the reason.
+        const FString Reason=Notice,ReasonEnglish=NoticeEnglish;
+        bDeterministicPractice=false; bCampaign=true;
+        CampaignDirector->ResumeSavedChapter();
+        ResetRound();
+        Notice=Reason; NoticeEnglish=ReasonEnglish;
+        return false;
+    }
+    CampaignDirector->SaveProgress();
+    SetMenuOpen(false);
+    return true;
+}
+bool ASoraGameMode::RestartRound()
+{
+    if(!bMenu||!WorldBuilder) return false;
+    if(bDeterministicPractice) { if(!PracticeDirector->Reset()) return false; }
+    else ResetRound();
+    SetMenuOpen(false);
+    return true;
+}
+void ASoraGameMode::ReturnToTitle()
 {
     if(!bMenu) return;
-    // Starting over erases the saved chapter, checkpoint and highest chapter.
-    // The first press only asks; a second press confirms, Esc/Start withdraws.
-    if(!bConfirmNewCampaign) { bConfirmNewCampaign=true; return; }
-    bConfirmNewCampaign=false; bDeterministicPractice=false; bCampaign=true; MapId=0;
-    CampaignDirector->StartOver();
+    if(bDeterministicPractice||!bCampaign)
+    {
+        bDeterministicPractice=false; bCampaign=true;
+        CampaignDirector->ResumeSavedChapter();
+    }
+    // Continue resumes from the last checkpoint, as after a restart.
     ResetRound();
+    FrontEndState->ShowMain();
 }
-void ASoraGameMode::ReturnCampaign()
+void ASoraGameMode::QuitGame()
 {
-    if(!bMenu||!CampaignDirector->HasSave()||!FSoraCatalog::Get().IsReady()) return;
-    bDeterministicPractice=false; bCampaign=true;
-    CampaignDirector->ResumeSavedChapter();
-    ResetRound();
+    UKismetSystemLibrary::QuitGame(this,UGameplayStatics::GetPlayerController(this,0),EQuitPreference::Quit,false);
 }
-void ASoraGameMode::SelectClass(int32 Id)
-{
-    if(!bMenu||!FSoraCatalog::Get().IsReady()) return;
-    if(bCampaign) return;
-    SelectedClass=FMath::Clamp(Id,0,5); CampaignDirector->SaveProgress(); ResetRound();
-}
-void ASoraGameMode::ToggleSubtitles() { bEnglishSubtitles=!bEnglishSubtitles; CampaignDirector->SaveProgress(); }
+void ASoraGameMode::ToggleSubtitles() { SettingsState->SetEnglishSubtitles(!bEnglishSubtitles); }
 void ASoraGameMode::Interact(ASoraPlayerCharacter* Player)
 {
     if(bDeterministicPractice) return;
@@ -148,23 +266,21 @@ void ASoraGameMode::DeterministicPractice()
 {
     if(!bMenu) return;
     if(!WorldBuilder||!FSoraCatalog::Get().IsReady())
-    { Notice=TEXT("稽古の舞台またはコンテンツを準備できません。"); NoticeEnglish=TEXT("Practice requires the staged content catalog and an initialized arena."); return; }
+    {
+        const SoraText::FLine Unready=SoraText::Line(NSLOCTEXT("SoraArena.Menu","Notice.PracticeUnready","稽古の舞台またはコンテンツを準備できません。"));
+        Notice=Unready.Japanese; NoticeEnglish=Unready.English; return;
+    }
     bDeterministicPractice=true; bCampaign=false; PracticeDirector->Reset();
-}
-void ASoraGameMode::SelectPracticeWeapon(int32 Slot)
-{
-    if(!bMenu||!bDeterministicPractice||Slot<0||Slot>2) return;
-    PracticeDirector->WeaponSlot=Slot; PracticeDirector->Reset();
 }
 FString ASoraGameMode::ObjectiveText() const
 {
     if(bDeterministicPractice) return PracticeDirector->ObjectiveText();
-    if(!WorldBuilder) return TEXT("舞台を準備しています…");
+    if(!WorldBuilder) return SoraText::Line(PreparingText()).Japanese;
     return CampaignDirector->ObjectiveText();
 }
 FString ASoraGameMode::ObjectiveTextEnglish() const
 {
     if(bDeterministicPractice) return PracticeDirector->ObjectiveTextEnglish();
-    if(!WorldBuilder) return TEXT("Preparing the stage...");
+    if(!WorldBuilder) return SoraText::Line(PreparingText()).English;
     return CampaignDirector->ObjectiveTextEnglish();
 }

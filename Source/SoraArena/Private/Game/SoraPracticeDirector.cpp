@@ -3,6 +3,7 @@
 #include "Combat/SoraDamage.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
+#include "SoraFrontEnd.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
@@ -34,7 +35,7 @@ bool USoraPracticeDirector::Reset()
     ASoraWorldBuilder* WorldBuilder=M.Arena();
     if(!WorldBuilder||!FSoraCatalog::Get().IsReady())
     { M.Notice=TEXT("稽古の舞台またはコンテンツを準備できません。"); M.SetMenuOpen(true); return false; }
-    M.bConfirmNewCampaign=false; M.TitleCardTime=0.f;
+    M.TitleCardTime=0.f;
     Clear();
     auto* K=M.Kernel();
     if(!K||!K->StartPractice(M.SelectedClass,WeaponSlot,M.MapId))
@@ -59,8 +60,13 @@ bool USoraPracticeDirector::Reset()
     }
     UpdatePresentation();
     if(Player->GetController()) Player->GetController()->SetControlRotation(K->PracticePlayers[0].Aim);
-    M.Notice=TEXT("武芸稽古。左クリック射撃、右クリック近接、R 装填、Ctrl 防御、Q 技、Space 跳躍。死亡後は自動で復帰します。");
-    M.NoticeEnglish=TEXT("Offline practice: fire, melee, R reload, Ctrl block, Q ability, Space jump. Defeated players respawn automatically. No assets are bonded."); M.NoticeTime=12.f;
+    // The player's own keys, on the device in hand as practice starts.
+    const auto Key=[this](const TCHAR* Action) { return SoraUI::ActionKey(this,Action); };
+    const SoraText::FLine Keys=SoraText::Format(NSLOCTEXT("SoraArena.HUD","Practice.Keys",
+        "武芸稽古。{Fire} 射撃、{Melee} 近接、{Reload} 装填、{Block} 防御、{Ability} 技、{Jump} 跳躍。倒れても自動で復帰する。資産は預けない。"),
+        {{TEXT("Fire"),Key(TEXT("Fire"))},{TEXT("Melee"),Key(TEXT("Melee"))},{TEXT("Reload"),Key(TEXT("Reload"))},
+        {TEXT("Block"),Key(TEXT("Block"))},{TEXT("Ability"),Key(TEXT("Ability"))},{TEXT("Jump"),Key(TEXT("Jump"))}});
+    M.Notice=Keys.Japanese; M.NoticeEnglish=Keys.English; M.NoticeTime=12.f;
     return true;
 }
 void USoraPracticeDirector::Step(float Dt)
@@ -144,7 +150,7 @@ FString USoraPracticeDirector::ObjectiveText() const
         const int32 Seconds=FMath::Max(0,36000-static_cast<int32>(K->PracticeTick)+59)/60;
         return FString::Printf(TEXT("武芸稽古 / 撃破 %d  戦死 %d / 残り %02d:%02d"),P.Kills,P.Deaths,Seconds/60,Seconds%60);
     }
-    return TEXT("武芸稽古を準備しています…");
+    return TEXT("武芸稽古を準備しています……");
 }
 FString USoraPracticeDirector::ObjectiveTextEnglish() const
 {
@@ -156,5 +162,5 @@ FString USoraPracticeDirector::ObjectiveTextEnglish() const
         return FString::Printf(TEXT("Practice / Kills %d  Deaths %d / %02d:%02d left"),
             P.Kills,P.Deaths,Seconds/60,Seconds%60);
     }
-    return TEXT("Preparing practice...");
+    return TEXT("Preparing practice…");
 }

@@ -10,6 +10,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraPlayerCharacter.h"
+#include "SoraPracticeLobby.h"
 #include "SoraProjectile.h"
 #include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
@@ -222,7 +223,10 @@ struct FRun
     {
         World = MakeUnique<FSoraAutomationWorld>();
         // A listener attaches before the first frame, which builds the round.
-        if (!World->Start(Slot) || (Log && !Log->Attach(World->GetTestWorld())) || !World->Tick(1) || !World->EnableKeyInput())
+        // Any key leaves the title screen for the main menu, whose first row
+        // continues a saved campaign or begins a fresh one.
+        if (!World->Start(Slot) || (Log && !Log->Attach(World->GetTestWorld())) || !World->Tick(1) || !World->EnableKeyInput() ||
+            !World->PressKey(EKeys::Enter))
         {
             World->ForwardErrorMessages(&Test);
             return Fail(TEXT("World did not start with key input"));
@@ -457,7 +461,18 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 FString Training(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Training"), Log);
-    if (!Run.Start() || !Run.Key(EKeys::M) || !Run.Key(EKeys::F4) || !Run.Key(EKeys::Enter))
+    if (!Run.Start())
+        return FString();
+    // The training arena has no front-end entry. Enter it as the retired M and
+    // F4 menu keys did: Lantern Ward, then the Hanabi class, then play.
+    ASoraGameMode* Mode = Run.Mode();
+    Mode->bCampaign = false;
+    Mode->MapId = 1;
+    Mode->ResetRound();
+    Mode->SelectedClass = 3;
+    Mode->ResetRound();
+    Mode->BeginRound();
+    if (!Run.World->Tick(2))
         return FString();
     if (!Test.TestTrue(TEXT("Training arena is in play"), Run.Mode()->IsPlaying() && !Run.Mode()->bCampaign))
         return FString();
@@ -487,7 +502,14 @@ FString Training(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 bool KernelEvents(FAutomationTestBase& Test, FEventLog& Log)
 {
     FRun Run(Test, TEXT("KernelEvents"), &Log);
-    if (!Run.Start() || !Run.Key(EKeys::P) || !Run.Key(EKeys::Enter))
+    if (!Run.Start())
+        return false;
+    // The practice lobby's start with the saved class and map, six players.
+    FSoraPracticeLobbySelection Selection;
+    Selection.ClassId = Run.Mode()->SelectedClass;
+    Selection.MapId = Run.Mode()->MapId;
+    Selection.PlayerCount = 6;
+    if (!Run.Mode()->StartPracticeFromLobby(Selection) || !Run.World->Tick(2))
         return false;
     const UArenaKernelSubsystem* Kernel = Run.Mode()->Kernel();
     if (!Test.TestTrue(TEXT("Practice runs on the staged kernel"), Kernel && Kernel->PracticeActive() && Run.Mode()->IsPlaying()))

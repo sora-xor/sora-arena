@@ -1,6 +1,5 @@
 #include "SoraPlayerCharacter.h"
 #include "ArenaKernelSubsystem.h"
-#include "ArenaWalletSubsystem.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraControlSaveGame.h"
@@ -10,6 +9,7 @@
 #include "SoraGameMode.h"
 #include "SoraHistoricalArms.h"
 #include "SoraInputStates.h"
+#include "SoraSettings.h"
 #include "SoraViewmodelComponent.h"
 #include "SoraWorldBuilder.h"
 #include "Camera/CameraComponent.h"
@@ -17,7 +17,6 @@
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Engine/GameInstance.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -263,8 +262,8 @@ void ASoraPlayerCharacter::OnDefeated(AActor* Causer)
 }
 void ASoraPlayerCharacter::Forward(float V) { if(bKernelDriven) { InputForward=V; return; } if(CanPlay()) AddMovementInput(GetActorForwardVector(),V); }
 void ASoraPlayerCharacter::Strafe(float V) { if(bKernelDriven) { InputRight=V; return; } if(CanPlay()) AddMovementInput(GetActorRightVector(),V); }
-void ASoraPlayerCharacter::Yaw(float V) { if(CanPlay()) AddControllerYawInput(V); }
-void ASoraPlayerCharacter::Pitch(float V) { if(CanPlay()) AddControllerPitchInput(bInvertedLook?-V:V); }
+void ASoraPlayerCharacter::Yaw(float V) { if(CanPlay()) AddControllerYawInput(V*MouseSensitivity); }
+void ASoraPlayerCharacter::Pitch(float V) { if(CanPlay()) AddControllerPitchInput((bInvertedLook?-V:V)*MouseSensitivity); }
 void ASoraPlayerCharacter::GamepadYaw(float V)
 {
     if(CanPlay()) AddControllerYawInput(FMath::Clamp(V,-1.f,1.f)*90.f*GamepadLookSensitivity*GetWorld()->GetDeltaSeconds());
@@ -279,11 +278,19 @@ void ASoraPlayerCharacter::FireDown()
     // into resumed combat if it was first pressed outside gameplay.
     if(!CanPlay()) return;
     if(bKernelDriven) { KernelHeldButtons|=1; return; }
+    // A held sprint blocks the trigger until released; a toggled one ends here.
+    if(TogglesSprint()) bSprint=false;
     Equipment->TriggerDown();
 }
 void ASoraPlayerCharacter::FireUp() { KernelHeldButtons&=~1u; Equipment->TriggerUp(); }
-void ASoraPlayerCharacter::SprintDown() { if(CanPlay()&&!Equipment->IsCommittedStrike()&&!Equipment->IsBowDrawing()) bSprint=true; }
+void ASoraPlayerCharacter::SprintDown()
+{
+    // With the toggle setting, a second press ends the sprint.
+    if(TogglesSprint()&&bSprint) { bSprint=false; return; }
+    if(CanPlay()&&!Equipment->IsCommittedStrike()&&!Equipment->IsBowDrawing()) bSprint=true;
+}
 void ASoraPlayerCharacter::SprintUp() { bSprint=false; }
+void ASoraPlayerCharacter::SprintReleased() { if(!TogglesSprint()) SprintUp(); }
 void ASoraPlayerCharacter::JumpDown()
 {
     if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; }
@@ -305,47 +312,40 @@ void ASoraPlayerCharacter::Menu()
 {
     if(auto* G=PlayerGameMode(this))
     {
-        G->ToggleMenu();
+        G->OpenPauseMenu();
+        // The front end now holds input, so no held action outlives the pause.
         if(G->bMenu) { FireUp(); MeleeUp(); BlockUp(); SprintUp(); JumpUp(); }
     }
 }
 void ASoraPlayerCharacter::Enter() { if(auto* G=PlayerGameMode(this)) G->BeginRound(); }
-void ASoraPlayerCharacter::NextMap() { if(auto* G=PlayerGameMode(this)) G->NextMap(); }
-void ASoraPlayerCharacter::NewCampaign() { if(auto* G=PlayerGameMode(this)) G->NewCampaign(); }
-void ASoraPlayerCharacter::ReturnCampaign() { if(auto* G=PlayerGameMode(this)) G->ReturnCampaign(); }
-void ASoraPlayerCharacter::Practice() { if(auto* G=PlayerGameMode(this)) G->DeterministicPractice(); }
 void ASoraPlayerCharacter::BlockDown()
 {
     if(!CanPlay()) return;
+    // With the toggle setting, a second press lowers the guard.
+    if(TogglesGuard()&&IsGuarding()) { BlockUp(); return; }
     if(bKernelDriven) { KernelHeldButtons|=4; return; }
     Equipment->GuardDown(bDojoTraining,bCampaignHero);
 }
 void ASoraPlayerCharacter::BlockUp() { KernelHeldButtons&=~4u; Equipment->GuardUp(); }
+void ASoraPlayerCharacter::BlockReleased() { if(!TogglesGuard()) BlockUp(); }
+bool ASoraPlayerCharacter::IsGuarding() const { return bKernelDriven?(KernelHeldButtons&4u)!=0:Equipment->IsGuardHeld(); }
+bool ASoraPlayerCharacter::TogglesGuard() const
+{
+    const auto* G=PlayerGameMode(this);
+    return G&&G->Settings()&&G->Settings()->ToggleGuard();
+}
+bool ASoraPlayerCharacter::TogglesSprint() const
+{
+    const auto* G=PlayerGameMode(this);
+    return G&&G->Settings()&&G->Settings()->ToggleSprint();
+}
 void ASoraPlayerCharacter::Ability() { if(bKernelDriven&&CanPlay()) KernelQueuedButtons|=16; }
 void ASoraPlayerCharacter::MeleeUp() { KernelHeldButtons&=~2u; }
 void ASoraPlayerCharacter::Subtitles() { if(auto* G=PlayerGameMode(this)) G->ToggleSubtitles(); }
-void ASoraPlayerCharacter::PairWallet()
-{
-    const auto* G=PlayerGameMode(this); if(!G||!G->bMenu) return;
-    if(auto* Wallet=GetGameInstance()->GetSubsystem<UArenaWalletSubsystem>())
-        if(Wallet->State==EArenaWalletState::Idle||Wallet->State==EArenaWalletState::Disconnected||Wallet->State==EArenaWalletState::Unavailable||Wallet->State==EArenaWalletState::Error)
-            Wallet->BeginPairingFromConfig();
-}
-void ASoraPlayerCharacter::OpenWallet()
-{
-    const auto* G=PlayerGameMode(this); if(!G||!G->bMenu) return;
-    if(auto* Wallet=GetGameInstance()->GetSubsystem<UArenaWalletSubsystem>()) if(Wallet->State==EArenaWalletState::AwaitingApproval) Wallet->LaunchWallet();
-}
-void ASoraPlayerCharacter::DisconnectWallet()
-{
-    const auto* G=PlayerGameMode(this); if(!G||!G->bMenu) return;
-    if(auto* Wallet=GetGameInstance()->GetSubsystem<UArenaWalletSubsystem>()) Wallet->DisconnectWallet();
-}
-void ASoraPlayerCharacter::ChooseClass(int32 Id) { if(auto* G=PlayerGameMode(this)) G->SelectClass(Id); }
 void ASoraPlayerCharacter::Equip(int32 Slot)
 {
-    if(bKernelDriven) { if(auto* G=PlayerGameMode(this)) G->SelectPracticeWeapon(Slot); return; }
-    if(!CanPlay()) return;
+    // Practice enters with the loadout chosen in the lobby; the kernel holds it.
+    if(bKernelDriven||!CanPlay()) return;
     Equipment->EquipClassSlot(Slot);
 }
 void ASoraPlayerCharacter::WeaponOne(){Equip(1);} void ASoraPlayerCharacter::WeaponTwo(){Equip(0);} void ASoraPlayerCharacter::WeaponThree(){Equip(2);}
@@ -363,16 +363,6 @@ void ASoraPlayerCharacter::CampaignWeaponNext()
 {
     EquipCampaignWeapon(WeaponId>=18&&WeaponId<20?WeaponId+1:18);
 }
-void ASoraPlayerCharacter::ClassOne(){ChooseClass(0);} void ASoraPlayerCharacter::ClassTwo(){ChooseClass(1);} void ASoraPlayerCharacter::ClassThree(){ChooseClass(2);}
-void ASoraPlayerCharacter::ClassFour(){ChooseClass(3);} void ASoraPlayerCharacter::ClassFive(){ChooseClass(4);} void ASoraPlayerCharacter::ClassSix(){ChooseClass(5);}
-void ASoraPlayerCharacter::ClassPrevious()
-{
-    if(auto* G=PlayerGameMode(this)) if(G->bMenu) ChooseClass((G->SelectedClass+5)%6);
-}
-void ASoraPlayerCharacter::ClassNext()
-{
-    if(auto* G=PlayerGameMode(this)) if(G->bMenu) ChooseClass((G->SelectedClass+1)%6);
-}
 TArray<FKey> ASoraPlayerCharacter::GetActionKeys(FName ActionName) const
 {
     TArray<FKey> Keys;
@@ -381,52 +371,139 @@ TArray<FKey> ASoraPlayerCharacter::GetActionKeys(FName ActionName) const
     for(const FInputActionKeyMapping& Mapping:PC->PlayerInput->GetKeysForAction(ActionName)) Keys.AddUnique(Mapping.Key);
     return Keys;
 }
+namespace
+{
+// A stick pushed in a direction also reports as a button, but its axes
+// already move and aim.
+bool IsStickDirection(const FKey& Key)
+{
+    return Key==EKeys::Gamepad_LeftStick_Up||Key==EKeys::Gamepad_LeftStick_Down||Key==EKeys::Gamepad_LeftStick_Left||
+        Key==EKeys::Gamepad_LeftStick_Right||Key==EKeys::Gamepad_RightStick_Up||Key==EKeys::Gamepad_RightStick_Down||
+        Key==EKeys::Gamepad_RightStick_Left||Key==EKeys::Gamepad_RightStick_Right;
+}
+int32 AxisDirection(const FInputAxisKeyMapping& Mapping) { return Mapping.Scale>0.f?1:Mapping.Scale<0.f?-1:0; }
+bool IsControlMapping(const SoraInput::FRemappable& Control,const FInputAxisKeyMapping& Mapping)
+{
+    return Control.Axis!=0&&Mapping.AxisName==FName(Control.Name)&&AxisDirection(Mapping)==Control.Axis;
+}
+// The remap's own checks, before any other control is consulted: a button
+// or key in the control's slot. Movement halves take keyboard keys only.
+ESoraRemapResult CheckKey(const SoraInput::FRemappable& Control,const FKey& Key)
+{
+    if(!Key.IsValid()||!Key.IsBindableToActions()||Key==EKeys::AnyKey||Key.IsAxis1D()||Key.IsAxis2D()||Key.IsAxis3D()||
+        Key.IsTouch()||Key.IsGesture()||IsStickDirection(Key))
+        return ESoraRemapResult::Unbindable;
+    if(Control.Axis!=0&&(Key.IsGamepadKey()||Key.IsMouseButton())) return ESoraRemapResult::WrongDevice;
+    return ESoraRemapResult::Done;
+}
+// Another mapping on Key that can act in one of the control's states. Keys
+// shared only across disjoint states (pad A: Enter on cards and results,
+// Jump in play) are allowed, as check_input_conflicts.py allows them.
+bool FindConflict(const UPlayerInput& Input,const SoraInput::FRemappable& Control,const FKey& Key,FName& Other,int32& OtherAxis)
+{
+    const FName Name(Control.Name);
+    const uint8 States=SoraInput::StatesFor(Control.Name);
+    for(const FInputActionKeyMapping& Mapping:Input.ActionMappings)
+        if(Mapping.Key==Key&&!(Control.Axis==0&&Mapping.ActionName==Name)&&(SoraInput::StatesFor(*Mapping.ActionName.ToString())&States)!=0)
+        { Other=Mapping.ActionName; OtherAxis=0; return true; }
+    for(const FInputAxisKeyMapping& Mapping:Input.AxisMappings)
+        if(Mapping.Key==Key&&!IsControlMapping(Control,Mapping)&&(SoraInput::StatesFor(*Mapping.AxisName.ToString())&States)!=0)
+        { Other=Mapping.AxisName; OtherAxis=AxisDirection(Mapping); return true; }
+    return false;
+}
+// Replaces the control's key in NewKey's slot, without any check.
+void BindSlot(UPlayerInput& Input,const SoraInput::FRemappable& Control,const FKey& NewKey)
+{
+    const FName Name(Control.Name);
+    const bool bPad=NewKey.IsGamepadKey();
+    if(Control.Axis==0)
+    {
+        const TArray<FInputActionKeyMapping> Existing=Input.GetKeysForAction(Name);
+        for(const FInputActionKeyMapping& Mapping:Existing)
+            if(Mapping.Key.IsGamepadKey()==bPad) Input.RemoveActionMapping(Mapping);
+        Input.AddActionMapping(FInputActionKeyMapping(Name,NewKey));
+        return;
+    }
+    const TArray<FInputAxisKeyMapping> Existing=Input.AxisMappings;
+    for(const FInputAxisKeyMapping& Mapping:Existing)
+        if(IsControlMapping(Control,Mapping)&&!Mapping.Key.IsGamepadKey()) Input.RemoveAxisMapping(Mapping);
+    Input.AddAxisMapping(FInputAxisKeyMapping(Name,NewKey,static_cast<float>(Control.Axis)));
+}
+}
 bool ASoraPlayerCharacter::RemapCombatAction(FName ActionName,FKey NewKey)
 {
-    if(!ApplyCombatActionMapping(ActionName,NewKey,true)) return false;
-    if(ControlProfile)
-    {
-        const bool bGamepad=NewKey.IsGamepadKey(),bMouse=NewKey.IsMouseButton();
-        ControlProfile->Bindings.RemoveAll([&](const FSoraControlBinding& Binding)
-        {
-            return Binding.ActionName==ActionName&&Binding.Key.IsGamepadKey()==bGamepad&&Binding.Key.IsMouseButton()==bMouse;
-        });
-        FSoraControlBinding Binding;
-        Binding.ActionName=ActionName; Binding.Key=NewKey;
-        ControlProfile->Bindings.Add(Binding);
-        SaveControlProfile();
-    }
-    return true;
+    const int32 Index=SoraInput::FindRemappable(*ActionName.ToString(),0);
+    return Index!=INDEX_NONE&&RemapControl(Index,NewKey)==ESoraRemapResult::Done;
 }
-bool ASoraPlayerCharacter::ApplyCombatActionMapping(FName ActionName,FKey NewKey,bool bRequireMenu)
+ESoraRemapResult ASoraPlayerCharacter::RemapControl(int32 Index,const FKey& NewKey,FName* TakenBy,int32* TakenAxis)
 {
-    // Never permit wallet, menu, or campaign commands to be rebound by combat UI.
-    static const TSet<FName> Allowed={
-        TEXT("Fire"),TEXT("Melee"),TEXT("Jump"),TEXT("Sprint"),TEXT("Reload"),TEXT("Interact"),
-        TEXT("Block"),TEXT("Ability"),TEXT("WeaponOne"),TEXT("WeaponTwo"),TEXT("WeaponThree"),
-        TEXT("WeaponFour"),TEXT("WeaponFive"),TEXT("WeaponSix"),TEXT("CampaignWeaponNext")};
+    const ESoraRemapResult Result=ApplyControlMapping(Index,NewKey,true,TakenBy,TakenAxis);
+    if(Result!=ESoraRemapResult::Done||!ControlProfile) return Result;
+    const SoraInput::FRemappable& Control=SoraInput::Remappable[Index];
+    const bool bPad=NewKey.IsGamepadKey();
+    ControlProfile->Bindings.RemoveAll([&](const FSoraControlBinding& Binding)
+    {
+        return Binding.ActionName==FName(Control.Name)&&Binding.Axis==Control.Axis&&Binding.Key.IsGamepadKey()==bPad;
+    });
+    FSoraControlBinding Binding;
+    Binding.ActionName=Control.Name; Binding.Axis=Control.Axis; Binding.Key=NewKey;
+    ControlProfile->Bindings.Add(Binding);
+    SaveControlProfile();
+    return Result;
+}
+ESoraRemapResult ASoraPlayerCharacter::ApplyControlMapping(int32 Index,const FKey& NewKey,bool bRequireMenu,FName* TakenBy,int32* TakenAxis)
+{
+    // Only the Remappable table's controls: never wallet, menu or campaign commands.
+    if(Index<0||Index>=SoraInput::RemappableCount) return ESoraRemapResult::NoControl;
+    const SoraInput::FRemappable& Control=SoraInput::Remappable[Index];
     const auto* G=PlayerGameMode(this);
     auto* PC=Cast<APlayerController>(GetController());
-    if((bRequireMenu&&(!G||!G->bMenu))||!Allowed.Contains(ActionName)||!NewKey.IsValid()||!NewKey.IsBindableToActions()||!PC||!PC->PlayerInput) return false;
-    UPlayerInput* PlayerInput=PC->PlayerInput;
-    for(const FInputActionKeyMapping& Mapping:PlayerInput->ActionMappings)
+    if(bRequireMenu&&(!G||!G->bMenu)) return ESoraRemapResult::NotInMenu;
+    if(!PC||!PC->PlayerInput) return ESoraRemapResult::NoControl;
+    if(const ESoraRemapResult Key=CheckKey(Control,NewKey); Key!=ESoraRemapResult::Done) return Key;
+    UPlayerInput& PlayerInput=*PC->PlayerInput;
+    FName Other; int32 OtherAxis=0;
+    if(FindConflict(PlayerInput,Control,NewKey,Other,OtherAxis))
     {
-        if(Mapping.ActionName==ActionName&&Mapping.Key==NewKey) return true;
-        if(Mapping.ActionName!=ActionName&&Mapping.Key==NewKey) return false;
+        if(TakenBy) *TakenBy=Other;
+        if(TakenAxis) *TakenAxis=OtherAxis;
+        return ESoraRemapResult::Taken;
     }
-    const bool bGamepad=NewKey.IsGamepadKey(),bMouse=NewKey.IsMouseButton();
-    const TArray<FInputActionKeyMapping> Existing=PlayerInput->GetKeysForAction(ActionName);
-    for(const FInputActionKeyMapping& Mapping:Existing)
-        if(Mapping.Key.IsGamepadKey()==bGamepad&&Mapping.Key.IsMouseButton()==bMouse)
-            PlayerInput->RemoveActionMapping(Mapping);
-    FInputActionKeyMapping Replacement;
-    Replacement.ActionName=ActionName;
-    Replacement.Key=NewKey;
-    PlayerInput->AddActionMapping(Replacement);
-    PlayerInput->FlushPressedKeys();
-    PlayerInput->ForceRebuildingKeyMaps(false);
+    BindSlot(PlayerInput,Control,NewKey);
+    PlayerInput.FlushPressedKeys();
+    PlayerInput.ForceRebuildingKeyMaps(false);
     FireUp(); MeleeUp(); BlockUp(); SprintUp(); JumpUp();
-    return true;
+    return ESoraRemapResult::Done;
+}
+FKey ASoraPlayerCharacter::ControlKey(int32 Index,bool bPad) const
+{
+    const auto* PC=Cast<APlayerController>(GetController());
+    if(Index<0||Index>=SoraInput::RemappableCount||!PC||!PC->PlayerInput) return EKeys::Invalid;
+    const SoraInput::FRemappable& Control=SoraInput::Remappable[Index];
+    if(Control.Axis==0)
+    {
+        for(const FInputActionKeyMapping& Mapping:PC->PlayerInput->ActionMappings)
+            if(Mapping.ActionName==FName(Control.Name)&&Mapping.Key.IsGamepadKey()==bPad) return Mapping.Key;
+    }
+    else if(!bPad)
+    {
+        for(const FInputAxisKeyMapping& Mapping:PC->PlayerInput->AxisMappings)
+            if(IsControlMapping(Control,Mapping)&&!Mapping.Key.IsGamepadKey()) return Mapping.Key;
+    }
+    return EKeys::Invalid;
+}
+void ASoraPlayerCharacter::ResetControls()
+{
+    const auto* G=PlayerGameMode(this);
+    auto* PC=Cast<APlayerController>(GetController());
+    if(!G||!G->bMenu||!PC||!PC->PlayerInput) return;
+    // Restores DefaultInput.ini's mappings and axis properties; the player's
+    // dead zones then go back on.
+    PC->PlayerInput->ForceRebuildingKeyMaps(true);
+    SetGamepadDeadZones(GamepadMoveDeadZone,GamepadLookDeadZone);
+    PC->PlayerInput->FlushPressedKeys();
+    FireUp(); MeleeUp(); BlockUp(); SprintUp(); JumpUp();
+    if(ControlProfile) { ControlProfile->Bindings.Reset(); SaveControlProfile(); }
 }
 void ASoraPlayerCharacter::SetGamepadDeadZones(float MoveDeadZone,float LookDeadZone)
 {
@@ -462,6 +539,16 @@ void ASoraPlayerCharacter::SetGamepadLookSensitivity(float Sensitivity)
         SaveControlProfile();
     }
 }
+void ASoraPlayerCharacter::SetMouseSensitivity(float Sensitivity)
+{
+    if(!FMath::IsFinite(Sensitivity)) return;
+    MouseSensitivity=FMath::Clamp(Sensitivity,.25f,3.f);
+    if(ControlProfile&&!bRestoringControlProfile)
+    {
+        ControlProfile->MouseSensitivity=MouseSensitivity;
+        SaveControlProfile();
+    }
+}
 void ASoraPlayerCharacter::SetInvertedLook(bool Enabled)
 {
     bInvertedLook=Enabled;
@@ -477,24 +564,52 @@ void ASoraPlayerCharacter::LoadControlProfile()
     const auto* G=PlayerGameMode(this);
     ControlSlot=G?G->ControlSlotName:FString();
     ControlProfile=ControlSlot.IsEmpty()?nullptr:Cast<USoraControlSaveGame>(UGameplayStatics::LoadGameFromSlot(ControlSlot,0));
-    if(!ControlProfile||ControlProfile->SaveSchema!=1)
-        ControlProfile=Cast<USoraControlSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraControlSaveGame::StaticClass()));
+    if(!ControlProfile||ControlProfile->SaveSchema!=USoraControlSaveGame::Schema)
+        ControlProfile=USoraControlSaveGame::New();
     if(!ControlProfile) return;
     bRestoringControlProfile=true;
     SetGamepadDeadZones(FMath::IsFinite(ControlProfile->MoveDeadZone)?ControlProfile->MoveDeadZone:.18f,
         FMath::IsFinite(ControlProfile->LookDeadZone)?ControlProfile->LookDeadZone:.12f);
     SetGamepadLookSensitivity(FMath::IsFinite(ControlProfile->LookSensitivity)?ControlProfile->LookSensitivity:1.f);
+    SetMouseSensitivity(FMath::IsFinite(ControlProfile->MouseSensitivity)?ControlProfile->MouseSensitivity:1.f);
     SetInvertedLook(ControlProfile->InvertedLook);
-    const TArray<FSoraControlBinding> StoredBindings=ControlProfile->Bindings;
-    ControlProfile->Bindings.Reset();
-    // Fifteen approved combat actions can each have one keyboard, mouse, and pad key.
-    // A malformed local save cannot replay an unbounded series of key-map edits.
-    if(StoredBindings.Num()<=45) for(const FSoraControlBinding& Binding:StoredBindings)
-    {
-        if(ApplyCombatActionMapping(Binding.ActionName,Binding.Key,false))
-            ControlProfile->Bindings.Add(Binding);
-    }
+    RestoreBindings();
     bRestoringControlProfile=false;
+}
+void ASoraPlayerCharacter::RestoreBindings()
+{
+    auto* PC=Cast<APlayerController>(GetController());
+    if(!PC||!PC->PlayerInput) return;
+    UPlayerInput& PlayerInput=*PC->PlayerInput;
+    const TArray<FSoraControlBinding> Stored=ControlProfile->Bindings;
+    // The saved layout is replayed as a whole, because a swap made through a
+    // free key only fits once every binding is in place. Each control has at
+    // most one key per slot; anything malformed, or a layout with a conflict,
+    // restores DefaultInput.ini instead.
+    bool bValid=Stored.Num()<=2*SoraInput::RemappableCount;
+    TSet<TPair<int32,bool>> Slots;
+    TArray<int32> Indices;
+    for(const FSoraControlBinding& Binding:Stored)
+    {
+        const int32 Index=SoraInput::FindRemappable(*Binding.ActionName.ToString(),Binding.Axis);
+        bool bSeen=false;
+        if(Index!=INDEX_NONE) Slots.Add(TPair<int32,bool>(Index,Binding.Key.IsGamepadKey()),&bSeen);
+        bValid&=Index!=INDEX_NONE&&!bSeen&&CheckKey(SoraInput::Remappable[Index],Binding.Key)==ESoraRemapResult::Done;
+        Indices.Add(Index);
+    }
+    if(bValid)
+        for(int32 Entry=0;Entry<Stored.Num();++Entry) BindSlot(PlayerInput,SoraInput::Remappable[Indices[Entry]],Stored[Entry].Key);
+    FName Other; int32 OtherAxis=0;
+    for(int32 Entry=0;bValid&&Entry<Stored.Num();++Entry)
+        bValid&=!FindConflict(PlayerInput,SoraInput::Remappable[Indices[Entry]],Stored[Entry].Key,Other,OtherAxis);
+    if(!bValid&&Stored.Num()>0)
+    {
+        UE_LOG(LogTemp,Warning,TEXT("SORA control profile %s has an unusable key layout; the default keys apply"),*ControlSlot);
+        PlayerInput.ForceRebuildingKeyMaps(true);
+        SetGamepadDeadZones(GamepadMoveDeadZone,GamepadLookDeadZone);
+        ControlProfile->Bindings.Reset();
+    }
+    PlayerInput.ForceRebuildingKeyMaps(false);
 }
 void ASoraPlayerCharacter::SaveControlProfile()
 {
@@ -514,8 +629,8 @@ void ASoraPlayerCharacter::BindPress(UInputComponent* Input,const TCHAR* Action,
 {
     const uint8 States=SoraInput::StatesFor(Action);
     FInputActionBinding Binding(Action,IE_Pressed);
-    // Menu actions must keep working while the open menu pauses the world.
-    Binding.bExecuteWhenPaused=(States&(SoraInput::Menu|SoraInput::Confirm))!=0;
+    // An action that acts in Menu must keep working while the menu pauses the world.
+    Binding.bExecuteWhenPaused=(States&SoraInput::Menu)!=0;
     Binding.ActionDelegate.GetDelegateForManualSet().BindWeakLambda(this,[this,States,Handler]()
     {
         if(AcceptsInput(States)) (this->*Handler)();
@@ -542,20 +657,13 @@ void ASoraPlayerCharacter::SetupPlayerInputComponent(UInputComponent* I)
     BindPress(I,TEXT("Fire"),&ASoraPlayerCharacter::FireDown); BindRelease(I,TEXT("Fire"),&ASoraPlayerCharacter::FireUp);
     BindPress(I,TEXT("Melee"),&ASoraPlayerCharacter::Melee); BindRelease(I,TEXT("Melee"),&ASoraPlayerCharacter::MeleeUp);
     BindPress(I,TEXT("Jump"),&ASoraPlayerCharacter::JumpDown); BindRelease(I,TEXT("Jump"),&ASoraPlayerCharacter::JumpUp);
-    BindPress(I,TEXT("Block"),&ASoraPlayerCharacter::BlockDown); BindRelease(I,TEXT("Block"),&ASoraPlayerCharacter::BlockUp);
+    BindPress(I,TEXT("Block"),&ASoraPlayerCharacter::BlockDown); BindRelease(I,TEXT("Block"),&ASoraPlayerCharacter::BlockReleased);
     BindPress(I,TEXT("Ability"),&ASoraPlayerCharacter::Ability);
-    BindPress(I,TEXT("Sprint"),&ASoraPlayerCharacter::SprintDown); BindRelease(I,TEXT("Sprint"),&ASoraPlayerCharacter::SprintUp);
+    BindPress(I,TEXT("Sprint"),&ASoraPlayerCharacter::SprintDown); BindRelease(I,TEXT("Sprint"),&ASoraPlayerCharacter::SprintReleased);
     BindPress(I,TEXT("Reload"),&ASoraPlayerCharacter::Reload); BindPress(I,TEXT("Interact"),&ASoraPlayerCharacter::Interact);
     BindPress(I,TEXT("Menu"),&ASoraPlayerCharacter::Menu); BindPress(I,TEXT("Enter"),&ASoraPlayerCharacter::Enter);
-    BindPress(I,TEXT("Map"),&ASoraPlayerCharacter::NextMap); BindPress(I,TEXT("NewCampaign"),&ASoraPlayerCharacter::NewCampaign);
-    BindPress(I,TEXT("ReturnCampaign"),&ASoraPlayerCharacter::ReturnCampaign);
-    BindPress(I,TEXT("DeterministicPractice"),&ASoraPlayerCharacter::Practice);
     BindPress(I,TEXT("Subtitles"),&ASoraPlayerCharacter::Subtitles);
-    BindPress(I,TEXT("PairWallet"),&ASoraPlayerCharacter::PairWallet); BindPress(I,TEXT("OpenWallet"),&ASoraPlayerCharacter::OpenWallet); BindPress(I,TEXT("DisconnectWallet"),&ASoraPlayerCharacter::DisconnectWallet);
     BindPress(I,TEXT("WeaponOne"),&ASoraPlayerCharacter::WeaponOne); BindPress(I,TEXT("WeaponTwo"),&ASoraPlayerCharacter::WeaponTwo); BindPress(I,TEXT("WeaponThree"),&ASoraPlayerCharacter::WeaponThree);
     BindPress(I,TEXT("WeaponFour"),&ASoraPlayerCharacter::WeaponFour); BindPress(I,TEXT("WeaponFive"),&ASoraPlayerCharacter::WeaponFive); BindPress(I,TEXT("WeaponSix"),&ASoraPlayerCharacter::WeaponSix);
     BindPress(I,TEXT("CampaignWeaponNext"),&ASoraPlayerCharacter::CampaignWeaponNext);
-    BindPress(I,TEXT("ClassOne"),&ASoraPlayerCharacter::ClassOne); BindPress(I,TEXT("ClassTwo"),&ASoraPlayerCharacter::ClassTwo); BindPress(I,TEXT("ClassThree"),&ASoraPlayerCharacter::ClassThree);
-    BindPress(I,TEXT("ClassFour"),&ASoraPlayerCharacter::ClassFour); BindPress(I,TEXT("ClassFive"),&ASoraPlayerCharacter::ClassFive); BindPress(I,TEXT("ClassSix"),&ASoraPlayerCharacter::ClassSix);
-    BindPress(I,TEXT("ClassPrevious"),&ASoraPlayerCharacter::ClassPrevious); BindPress(I,TEXT("ClassNext"),&ASoraPlayerCharacter::ClassNext);
 }

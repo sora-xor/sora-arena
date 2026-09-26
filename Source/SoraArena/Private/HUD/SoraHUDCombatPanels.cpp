@@ -4,6 +4,7 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraEquipmentComponent.h"
+#include "SoraFrontEnd.h"
 #include "SoraGameMode.h"
 #include "SoraHUD.h"
 #include "SoraPlayerCharacter.h"
@@ -82,7 +83,12 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
     const float W=Frame.W,H=Frame.H,S=Frame.S;
     const FLinearColor Ivory=Frame.Ivory,Gold=Frame.Gold,Teal=Frame.Teal,Muted=Frame.Muted;
     const ASoraPlayerCharacter* P=&Hero; const USoraEquipmentComponent* Kit=Hero.GetEquipment();
-    if(P->DamageFlash>0) { HUD.Panel(0,0,12*S,H,FLinearColor(.8,0,0,.65)); HUD.Panel(W-12*S,0,12*S,H,FLinearColor(.8,0,0,.65)); }
+    if(P->DamageFlash>0)
+    {
+        // Reduce flashing: a faint edge that fades out instead of a bright blink.
+        const float Edge=Frame.bReduceFlashing?.25f*FMath::Clamp(P->DamageFlash/.3f,0.f,1.f):.65f;
+        HUD.Panel(0,0,12*S,H,FLinearColor(.8,0,0,Edge)); HUD.Panel(W-12*S,0,12*S,H,FLinearColor(.8,0,0,Edge));
+    }
     const float CX=W*.5f,CY=H*.5f; const FLinearColor Cross=P->HitMarkerTime>0?Gold:Ivory;
     HUD.DrawLine(CX-10,CY,CX-4,CY,Cross,1.5); HUD.DrawLine(CX+4,CY,CX+10,CY,Cross,1.5); HUD.DrawLine(CX,CY-10,CX,CY-4,Cross,1.5); HUD.DrawLine(CX,CY+4,CX,CY+10,Cross,1.5);
     HUD.Panel(25*S,H-110*S,340*S,80*S,FLinearColor(.015,.035,.05,.9));
@@ -97,10 +103,16 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
         if(auto* K=G->Kernel()) if(K->PracticePlayers.Num()>0)
         {
             const auto& State=K->PracticePlayers[0];
-            const FString Ammunition=State.Magazine==0?TEXT("剣術 / 右クリック"):
-                State.ReloadTicks>0?FString::Printf(TEXT("装填中 %.1f 秒   %d / %d"),State.ReloadTicks/60.f,State.Ammo,State.Magazine):
-                FString::Printf(TEXT("弾数 %02d / %02d   R 装填"),State.Ammo,State.Magazine);
-            HUD.Label(Ammunition,W-365*S,H-71*S,.46*S,Gold);
+            // Keys in prompts are the player's own, on the device in hand.
+            const SoraText::FLine Ammunition=State.Magazine==0
+                ?SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.Swordplay","剣術　{Melee}"),{{TEXT("Melee"),SoraUI::ActionKey(&HUD,TEXT("Melee"))}})
+                :State.ReloadTicks>0
+                ?SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.ReloadingFor","装填中 {Seconds} 秒   {Ammo} / {Magazine}"),
+                    {{TEXT("Seconds"),FString::Printf(TEXT("%.1f"),State.ReloadTicks/60.f)},{TEXT("Ammo"),State.Ammo},{TEXT("Magazine"),State.Magazine}})
+                :SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.Rounds","弾数 {Ammo} / {Magazine}   {Reload} 装填"),
+                    {{TEXT("Ammo"),FString::Printf(TEXT("%02d"),State.Ammo)},{TEXT("Magazine"),FString::Printf(TEXT("%02d"),State.Magazine)},
+                    {TEXT("Reload"),SoraUI::ActionKey(&HUD,TEXT("Reload"))}});
+            Frame.LabelWithEnglish(Ammunition,W-365*S,H-71*S,.46*S,Gold);
             HUD.Label(FString::Printf(TEXT("気力 %d / 100    待機 %.2f 秒"),State.Stamina,State.Cooldown/60.f),W-365*S,H-48*S,.33*S,Muted);
             if(State.Alive&&State.ChargeRequired>0&&State.ChargeTicks>0)
             {
@@ -122,9 +134,14 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
     }
     else
     {
-        HUD.Label(Kit->bReloading?TEXT("装填中"):Weapon.Kind==TEXT("melee")?TEXT("間合い / 斬突と残心"):
-            Weapon.Kind==TEXT("bow")?FString::Printf(TEXT("矢 %02d / %02d   長押し→離して射る"),Kit->Ammo,Weapon.Magazine):
-            FString::Printf(TEXT("%02d / %02d   R 装填"),Kit->Ammo,Weapon.Magazine),W-365*S,H-59*S,.54*S,Gold);
+        const FString Ammo=FString::Printf(TEXT("%02d"),Kit->Ammo),Magazine=FString::Printf(TEXT("%02d"),Weapon.Magazine);
+        Frame.LabelWithEnglish(Kit->bReloading?SoraText::Line(NSLOCTEXT("SoraArena.HUD","Ammo.Reloading","装填中"))
+            :Weapon.Kind==TEXT("melee")?SoraText::Line(NSLOCTEXT("SoraArena.HUD","Ammo.Melee","間合い / 斬突と残心"))
+            :Weapon.Kind==TEXT("bow")?SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.Arrows","矢 {Ammo} / {Magazine}   {Fire} 長押し→離して射る"),
+                {{TEXT("Ammo"),Ammo},{TEXT("Magazine"),Magazine},{TEXT("Fire"),SoraUI::ActionKey(&HUD,TEXT("Fire"))}})
+            :SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.Magazine","{Ammo} / {Magazine}   {Reload} 装填"),
+                {{TEXT("Ammo"),Ammo},{TEXT("Magazine"),Magazine},{TEXT("Reload"),SoraUI::ActionKey(&HUD,TEXT("Reload"))}}),
+            W-365*S,H-59*S,.54*S,Gold);
         if(Kit->IsBowDrawing()||Kit->IsCommittedStrike())
         {
             const bool bDraw=Kit->IsBowDrawing();
@@ -161,6 +178,8 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
         const bool NearSite=G->Arena()->NearestInactiveNode(P->GetActorLocation())!=INDEX_NONE;
         bool Near=NearSite;
         Near|=FVector::Dist2D(G->Arena()->ExitPoint(),P->GetActorLocation())<270;
-        if(Near) HUD.Label(TEXT("E  調べる"),CX-75*S,CY+60*S,.65*S,Gold);
+        if(Near)
+            Frame.LabelWithEnglish(SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.Examine","{Interact}  調べる"),
+                {{TEXT("Interact"),SoraUI::ActionKey(&HUD,TEXT("Interact"))}}),CX-75*S,CY+60*S,.65*S,Gold);
     }
 }

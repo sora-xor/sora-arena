@@ -9,6 +9,21 @@ class USoraControlSaveGame;
 class USoraEquipmentComponent;
 struct FSoraPracticeInput;
 
+// Why RemapControl did or did not rebind a key.
+enum class ESoraRemapResult : uint8
+{
+    Done,
+    // Remaps happen only while a menu holds the game.
+    NotInMenu,
+    NoControl,
+    // A pad button for a keyboard slot, or the reverse; movement takes keys only.
+    WrongDevice,
+    // Not a button: a stick direction, an analog axis, or a key Unreal cannot bind.
+    Unbindable,
+    // Another control can use the key in the same game state.
+    Taken,
+};
+
 // Nyaakoto, the possessed first-person hero. Owns input (gated by
 // SoraInputStates.h), movement, dojo training, the campaign loadout and local
 // control preferences. Weapons live in USoraEquipmentComponent and the held
@@ -39,14 +54,33 @@ public:
     void NoteDojoSwing(float StartedAt, float RecoveredAt, float CooldownSeconds);
     UCameraComponent* GetCamera() const { return Camera; }
     USoraEquipmentComponent* GetEquipment() const { return Equipment; }
-    // Local controls. Combat action remaps cannot target wallet or menu commands.
+    // Local controls, saved to the game mode's control slot. Only the
+    // SoraInput::Remappable controls can be rebound, and only while a menu is
+    // open: each has one keyboard-or-mouse key and one pad button (movement
+    // halves a keyboard key only), and a key that another control can use in
+    // the same game state is refused. Wallet, menu and campaign commands are
+    // never rebindable.
     UFUNCTION(BlueprintCallable, Category="SORA|Controls") bool RemapCombatAction(FName ActionName, FKey NewKey);
+    // Rebinds Remappable[Index] in NewKey's slot. On Taken, TakenBy and
+    // TakenAxis name the control that holds the key.
+    ESoraRemapResult RemapControl(int32 Index, const FKey& NewKey, FName* TakenBy = nullptr, int32* TakenAxis = nullptr);
+    // Remappable[Index]'s key in one slot, or EKeys::Invalid.
+    FKey ControlKey(int32 Index, bool bPad) const;
+    // Every rebound key returns to Config/DefaultInput.ini; sensitivity,
+    // dead zones and inversion stay.
+    void ResetControls();
     UFUNCTION(BlueprintPure, Category="SORA|Controls") TArray<FKey> GetActionKeys(FName ActionName) const;
     UFUNCTION(BlueprintCallable, Category="SORA|Controls") void SetGamepadDeadZones(float MoveDeadZone, float LookDeadZone);
+    float GetMoveDeadZone() const { return GamepadMoveDeadZone; }
+    float GetLookDeadZone() const { return GamepadLookDeadZone; }
     UFUNCTION(BlueprintCallable, Category="SORA|Controls") void SetGamepadLookSensitivity(float Sensitivity);
     UFUNCTION(BlueprintPure, Category="SORA|Controls") float GetGamepadLookSensitivity() const { return GamepadLookSensitivity; }
+    void SetMouseSensitivity(float Sensitivity);
+    float GetMouseSensitivity() const { return MouseSensitivity; }
     UFUNCTION(BlueprintCallable, Category="SORA|Controls") void SetInvertedLook(bool Enabled);
     UFUNCTION(BlueprintPure, Category="SORA|Controls") bool GetInvertedLook() const { return bInvertedLook; }
+    // Held guard for the dojo and campaign blades, or the kernel's block bit.
+    bool IsGuarding() const;
 protected:
     virtual void TickPlay(float DeltaSeconds) override;
     virtual void HaltActions() override;
@@ -70,7 +104,7 @@ private:
     int32 DojoRecoveryRequiredMs = 0;
     float InputForward = 0.f, InputRight = 0.f;
     float GamepadMoveDeadZone = .18f, GamepadLookDeadZone = .12f;
-    float GamepadLookSensitivity = 1.f;
+    float GamepadLookSensitivity = 1.f, MouseSensitivity = 1.f;
     bool bInvertedLook = false;
     bool bRestoringControlProfile = false;
     uint32 KernelHeldButtons = 0, KernelQueuedButtons = 0;
@@ -87,17 +121,18 @@ private:
     void GamepadYaw(float Value); void GamepadPitch(float Value);
     void FireDown(); void FireUp(); void Melee(); void Reload(); void Interact();
     void SprintDown(); void SprintUp(); void JumpDown(); void JumpUp();
-    void Menu(); void Enter(); void NextMap(); void NewCampaign(); void ReturnCampaign();
-    void Practice(); void BlockDown(); void BlockUp(); void Ability(); void MeleeUp();
+    void Menu(); void Enter();
+    void BlockDown(); void BlockUp(); void Ability(); void MeleeUp();
+    // Released keys; with the toggle settings on, the next press ends guard
+    // or sprint instead. SprintUp and BlockUp always end them.
+    void SprintReleased(); void BlockReleased();
+    bool TogglesGuard() const; bool TogglesSprint() const;
     void Subtitles();
-    void PairWallet(); void OpenWallet(); void DisconnectWallet();
     void WeaponOne(); void WeaponTwo(); void WeaponThree(); void Equip(int32 Slot);
     void WeaponFour(); void WeaponFive(); void WeaponSix(); void CampaignWeaponNext();
     void EquipCampaignWeapon(int32 WeaponId);
-    void ClassOne(); void ClassTwo(); void ClassThree(); void ClassFour(); void ClassFive(); void ClassSix();
-    void ClassPrevious(); void ClassNext();
-    void ChooseClass(int32 Id);
-    bool ApplyCombatActionMapping(FName ActionName, FKey NewKey, bool bRequireMenu);
+    ESoraRemapResult ApplyControlMapping(int32 Index, const FKey& NewKey, bool bRequireMenu, FName* TakenBy, int32* TakenAxis);
     void LoadControlProfile();
+    void RestoreBindings();
     void SaveControlProfile();
 };

@@ -39,10 +39,10 @@ assert set(re.findall(r"^\+CulturesToStage=(\S+)$", game_config, re.MULTILINE)) 
 # No key may trigger a menu action and a combat action in the same game state.
 from check_input_conflicts import check_project as check_input_conflicts
 input_summary = check_input_conflicts()
-from native_japanese_localization import validate_source, expected_meta, expected_resource, META, RESOURCE
+from native_japanese_localization import validate_source, expected_resources
 validate_source()
-assert META.read_bytes() == expected_meta()
-assert RESOURCE.read_bytes() == expected_resource()
+for path, data in expected_resources().items():
+    assert path.read_bytes() == data, f"{path} is stale; run scripts/unreal/native_japanese_localization.py"
 assert len(catalog["classes"]) == 6 and len(catalog["weapons"]) == 18
 assert [arm["id"] for arm in catalog["campaign_weapons"]] == [18, 19, 20]
 assert [(arm["name_en"], arm["kind"]) for arm in catalog["campaign_weapons"]] == [

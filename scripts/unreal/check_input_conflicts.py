@@ -4,10 +4,19 @@ Reads Config/DefaultInput.ini and the action-state table in
 Source/SoraArena/Public/SoraInputStates.h, which ASoraPlayerCharacter uses to ignore
 presses outside their states. Two actions may share a physical key only when no
 state lets both act. Unreal compares key names without regard to case, so this
-check does too. Menu actions may not sit on a thumbstick click, which players
-press by accident while moving or aiming. Every mapped action must be bound
-through the state gate in SoraPlayerCharacter.cpp, and no source in
-Source/SoraArena other than the automation tests may bind input any other way.
+check does too. No action may act in Menu: menus are the Slate front end, which
+holds keyboard and pad focus while open, so such a binding could never fire in
+the game. An action that acts outside play (the pause menu, the title card and
+results) may not sit on a thumbstick click, which players press by accident
+while moving or aiming. Every mapped action must be bound through the state
+gate in SoraPlayerCharacter.cpp, and no source in Source/SoraArena other than
+the automation tests may bind input any other way.
+
+The Controls screen rebinds only the SoraInput::Remappable table in the same
+header: it must list every action that acts only in play, nothing that acts
+outside play, and each movement half against a keyboard key of that axis and
+direction. The rebind dialog cancels with Esc and Start, so Menu must keep
+both, and the character must check remaps against the table.
 
 The built-in self-test runs first and must reject known-bad layouts, including
 the pre-fix pad layout, so a broken checker cannot pass silently.
@@ -24,9 +33,9 @@ SOURCE = ROOT / "Source/SoraArena"
 CHARACTER = SOURCE / "Private/Characters/SoraPlayerCharacter.cpp"
 CLASS = "ASoraPlayerCharacter"
 
-STATES = {"Menu": 1, "Confirm": 2, "Card": 4, "Play": 8, "Result": 16}
-STATES["Always"] = sum(STATES.values())
-MENU_STATES = STATES["Menu"] | STATES["Confirm"]
+# Bit 1 is unused; the values match SoraInput::EState.
+STATES = {"Menu": 1, "Card": 4, "Play": 8, "Result": 16}
+OUTSIDE_PLAY = STATES["Menu"] | STATES["Card"] | STATES["Result"]
 STICK_CLICKS = {"gamepad_leftthumbstick", "gamepad_rightthumbstick"}
 MODIFIERS = ("bShift", "bCtrl", "bAlt", "bCmd")
 # FBoolProperty's import compares without case against these (and localized True/Yes).
@@ -39,6 +48,9 @@ RAW_BINDING = re.compile(
     r"|(?:Action|Axis|Key|Touch|Gesture|AxisKey|VectorAxis)Bindings)\b")
 AXIS_BINDING = re.compile(r"\bBindAxis\b")
 PRESS = re.compile(r'\bBindPress\s*\(\s*\w+\s*,\s*TEXT\s*\(\s*"(\w+)"\s*\)')
+REMAP_GATE = re.compile(r"\bSoraInput::(?:Remappable|FindRemappable)\b")
+# The keys USoraFrontEnd::CaptureKey reads as Cancel.
+CANCEL_KEYS = {"escape", "gamepad_special_right"}
 AXIS = re.compile(r'\bBindAxis\s*\(\s*TEXT\s*\(\s*"(\w+)"\s*\)')
 
 
@@ -95,6 +107,63 @@ def parse_states(text):
     if not table:
         raise ValueError("SoraInputStates.h Actions[] table has no rows")
     return table
+
+
+def parse_remappable(text):
+    """Return [(name, axis)] from the SoraInput::Remappable table, in order."""
+    try:
+        body = text.split("Remappable[] = {", 1)[1].split("};", 1)[0]
+    except IndexError:
+        raise ValueError("SoraInputStates.h has no Remappable[] table") from None
+    rows = [(name, int(axis)) for name, axis in re.findall(r'\{TEXT\("(\w+)"\),\s*(-?\d+)\}', body)]
+    if not rows:
+        raise ValueError("SoraInputStates.h Remappable[] table has no rows")
+    return rows
+
+
+def keyboard_axis_halves(text):
+    """Return {(axis, direction)} for every axis mapping on a keyboard key."""
+    halves = set()
+    for line in text.splitlines():
+        match = re.fullmatch(r"\+AxisMappings=\((.*)\)", line.strip())
+        if not match:
+            continue
+        fields = {name: ini_value(value) for name, value in re.findall(r'(\w+)=("[^"]*"|[^,]+)', match.group(1))}
+        key = fields.get("Key", "").casefold()
+        if key.startswith(("gamepad_", "mouse")):
+            continue
+        scale = float(fields.get("Scale", "1"))
+        if scale:
+            halves.add((fields.get("AxisName", ""), 1 if scale > 0 else -1))
+    return halves
+
+
+def remap_errors(ini_text, table_text, mappings, table):
+    """Problems with the Controls screen's rebind table."""
+    errors = []
+    rows = parse_remappable(table_text)
+    actions = {name for kind, name, *_ in mappings if kind == "action"}
+    halves = keyboard_axis_halves(ini_text)
+    seen = set()
+    for name, axis in rows:
+        if (name, axis) in seen:
+            errors.append(f"Remappable lists {name} {axis:+d} twice")
+        seen.add((name, axis))
+        if table.get(name, 0) != STATES["Play"]:
+            errors.append(f"Remappable lists {name}, which acts outside play; only play-only controls may be rebound")
+        if axis == 0 and name not in actions:
+            errors.append(f"Remappable lists action {name}, which DefaultInput.ini does not map")
+        if axis not in (-1, 0, 1):
+            errors.append(f"Remappable gives {name} axis {axis}; use +1, -1 or 0")
+        elif axis and (name, axis) not in halves:
+            errors.append(f"Remappable lists {name} {axis:+d}, but no keyboard key drives that half of the axis")
+    for name in sorted(actions):
+        if table.get(name, 0) == STATES["Play"] and (name, 0) not in seen:
+            errors.append(f"{name} acts only in play, but the Controls screen cannot rebind it; add it to Remappable")
+    menu_keys = {key.split("+")[-1] for kind, name, key, _ in mappings if kind == "action" and name == "Menu"}
+    for key in sorted(CANCEL_KEYS - menu_keys):
+        errors.append(f"Menu must keep {key}: the rebind dialog cancels with it, so no control may take it")
+    return errors
 
 
 def blank_source(text):
@@ -208,6 +277,8 @@ def check(ini_text, table_text, character_text=None, sources=()):
     for name, mask in sorted(table.items()):
         if mask == 0:
             errors.append(f"{name} has no states and could never act")
+        if mask & STATES["Menu"]:
+            errors.append(f"{name} acts in Menu, where the Slate front end holds input, so it could never fire")
     by_key, labels = {}, {}
     for _, name, key, label in mappings:
         by_key.setdefault(key, [])
@@ -222,11 +293,14 @@ def check(ini_text, table_text, character_text=None, sources=()):
                     errors.append(f"{labels[key]} triggers {first} and {second} together in {state_names(both)}")
         if key.split("+")[-1] in STICK_CLICKS:
             for name in names:
-                if table.get(name, 0) & MENU_STATES:
-                    errors.append(f"{labels[key]} carries menu action {name}; stick clicks are pressed by accident")
+                if table.get(name, 0) & OUTSIDE_PLAY:
+                    errors.append(f"{labels[key]} carries {name}, which acts outside play; stick clicks are pressed by accident")
+    errors += remap_errors(ini_text, table_text, mappings, table)
     if character_text is not None:
         presses, bound_axes, binding_errors = parse_bindings(character_text)
         errors += binding_errors
+        if not REMAP_GATE.search(blank_source(character_text)[0]):
+            errors.append("SoraPlayerCharacter.cpp no longer checks remaps against SoraInput::Remappable")
         for name in sorted(actions - presses):
             errors.append(f"{name} is mapped but not bound through BindPress in SoraPlayerCharacter.cpp")
         for name in sorted(presses - actions):
@@ -258,11 +332,16 @@ def module_sources(root, character):
 
 
 SELF_TEST_TABLE = """inline constexpr FAction Actions[] = {
+    {TEXT("MoveForward"), Play},
     {TEXT("Jump"), Play},
     {TEXT("Sprint"), Play},
-    {TEXT("Enter"), Menu | Card | Result},
-    {TEXT("NewCampaign"), Menu | Confirm},
-    {TEXT("Menu"), Always},
+    {TEXT("Enter"), Card | Result},
+    {TEXT("Menu"), Card | Play | Result},
+};
+inline constexpr FRemappable Remappable[] = {
+    {TEXT("MoveForward"), 1},
+    {TEXT("Jump"), 0},
+    {TEXT("Sprint"), 0},
 };"""
 
 SELF_TEST_CHARACTER = """void ASoraPlayerCharacter::BindPress(UInputComponent* Input,const TCHAR* Action,void (ASoraPlayerCharacter::*Handler)())
@@ -280,11 +359,13 @@ void ASoraPlayerCharacter::BindRelease(UInputComponent* Input,const TCHAR* Actio
 void ASoraPlayerCharacter::SetupPlayerInputComponent(UInputComponent* I)
 {
     // I->BindAction(TEXT("Menu"),IE_Pressed,this,&A::B) stays a comment.
+    I->BindAxis(TEXT("MoveForward"),this,&A::B);
     BindPress(I,TEXT("Jump"),&A::B); BindPress(I, TEXT("Sprint"), &A::B);
-    BindPress(I,TEXT("Enter"),&A::B); BindPress(I,TEXT("NewCampaign"),&A::B);
+    BindPress(I,TEXT("Enter"),&A::B);
     BindPress(I,TEXT("Menu"),&A::B);
     UE_LOG(LogTemp,Display,TEXT("BindKey( in a string is not a call"));
 }
+bool ASoraPlayerCharacter::RemapCombatAction(FName A,FKey K) { return SoraInput::FindRemappable(*A.ToString(),0)!=INDEX_NONE; }
 """
 
 
@@ -294,25 +375,29 @@ def expect_error(errors, fragment):
 
 def self_test():
     """Known-bad layouts must fail and a disjoint shared key must pass."""
-    good = ('+ActionMappings=(ActionName="Jump",Key=Gamepad_FaceButton_Bottom)\n'
+    good = ('+AxisMappings=(AxisName="MoveForward",Scale=1.000000,Key=W)\n'
+            '+AxisMappings=(AxisName="MoveForward",Scale=1.000000,Key=Gamepad_LeftY)\n'
+            '+ActionMappings=(ActionName="Jump",Key=Gamepad_FaceButton_Bottom)\n'
             '+ActionMappings=(ActionName="Enter",Key=Gamepad_FaceButton_Bottom)\n'
             '+ActionMappings=(ActionName="Sprint",Key=Gamepad_LeftThumbstick)\n'
-            '+ActionMappings=(ActionName="NewCampaign",Key=Gamepad_FaceButton_Top)\n'
-            '+ActionMappings=(ActionName="Menu",Key=Gamepad_Special_Right)\n')
+            '+ActionMappings=(ActionName="Menu",Key=Gamepad_Special_Right)\n'
+            '+ActionMappings=(ActionName="Menu",Key=Escape)\n')
     assert check(good, SELF_TEST_TABLE) == [], check(good, SELF_TEST_TABLE)
-    # The pre-fix pad layout put New Campaign on the sprint stick click.
-    stick = good.replace("NewCampaign\",Key=Gamepad_FaceButton_Top", "NewCampaign\",Key=Gamepad_LeftThumbstick")
+    # The pre-fix pad layout put a menu command on the sprint stick click.
+    stick = good.replace("Menu\",Key=Gamepad_Special_Right", "Menu\",Key=Gamepad_LeftThumbstick")
     expect_error(check(stick, SELF_TEST_TABLE), "stick clicks")
     # Unreal matches key names without case, so a respelled key is the same key.
     expect_error(check(stick.replace("Key=Gamepad_LeftThumbstick", "Key=gamepad_leftthumbstick"), SELF_TEST_TABLE),
                  "stick clicks")
     expect_error(check(good.replace("Enter\",Key=Gamepad_FaceButton_Bottom", "Enter\",Key=\"GAMEPAD_FACEBUTTON_BOTTOM\""),
-                       SELF_TEST_TABLE.replace("Menu | Card | Result", "Menu | Card | Play | Result")),
+                       SELF_TEST_TABLE.replace("Card | Result}", "Card | Play | Result}")),
                  "triggers Jump and Enter together in Play")
-    # Enter live in play would make pad A jump and confirm in one press.
-    overlap = SELF_TEST_TABLE.replace("Menu | Card | Result", "Menu | Card | Play | Result")
+    # Enter live in play would make pad A jump and skip the card in one press.
+    overlap = SELF_TEST_TABLE.replace("Card | Result}", "Card | Play | Result}")
     expect_error(check(good, overlap), "triggers Jump and Enter together in Play")
-    # Menu toggles in every state, so it can never share a key.
+    # The front end holds input in menus, so an action there could never fire.
+    expect_error(check(good, SELF_TEST_TABLE.replace("Card | Result}", "Menu | Card | Result}")), "acts in Menu")
+    # The pause key acts in play, so it can never share a key with a play action.
     menu_share = good + '+ActionMappings=(ActionName="Jump",Key=Gamepad_Special_Right)\n'
     expect_error(check(menu_share, SELF_TEST_TABLE), "triggers Menu and Jump together in Play")
     # Unlisted actions and stale rows fail closed.
@@ -322,9 +407,27 @@ def self_test():
     # Chords are distinct keys, whatever the case of the modifier value.
     chord = good + '+ActionMappings=(ActionName="Sprint",Key=Enter,bShift=true)\n'
     assert check(chord, SELF_TEST_TABLE) == [], check(chord, SELF_TEST_TABLE)
-    unheld = good + ('+ActionMappings=(ActionName="Sprint",Key=Escape,bShift=False)\n'
-                     '+ActionMappings=(ActionName="Menu",Key=escape)\n')
-    expect_error(check(unheld, SELF_TEST_TABLE), "triggers Sprint and Menu together in Play")
+    unheld = good + '+ActionMappings=(ActionName="Sprint",Key=escape,bShift=False)\n'
+    expect_error(check(unheld, SELF_TEST_TABLE), "triggers Menu and Sprint together in Play")
+    # The rebind table: play-only controls, all of them, each movement half on a key.
+    remap = SELF_TEST_TABLE.split("inline constexpr FRemappable")[0]
+    rows = 'inline constexpr FRemappable Remappable[] = {\n%s};'
+    expect_error(check(good, remap + rows % '    {TEXT("Jump"), 0},\n    {TEXT("Sprint"), 0},\n    {TEXT("Enter"), 0},\n'),
+                 "Enter, which acts outside play")
+    expect_error(check(good, remap + rows % '    {TEXT("MoveForward"), 1},\n    {TEXT("Jump"), 0},\n'),
+                 "Sprint acts only in play, but the Controls screen cannot rebind it")
+    expect_error(check(good, remap + rows % '    {TEXT("MoveForward"), -1},\n    {TEXT("Jump"), 0},\n    {TEXT("Sprint"), 0},\n'),
+                 "no keyboard key drives that half")
+    expect_error(check(good, remap + rows % '    {TEXT("Jump"), 0},\n    {TEXT("Jump"), 0},\n    {TEXT("Sprint"), 0},\n'),
+                 "lists Jump +0 twice")
+    try:
+        check(good, remap)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a header without the Remappable table was accepted")
+    # The rebind dialog cancels with Esc and Start, which Menu must keep.
+    expect_error(check(good.replace('+ActionMappings=(ActionName="Menu",Key=Escape)\n', ''), SELF_TEST_TABLE), "Menu must keep escape")
     try:
         check(good + '-ActionMappings=(ActionName="Jump",Key=SpaceBar)\n', SELF_TEST_TABLE)
     except ValueError:
@@ -358,6 +461,9 @@ def self_test():
     expect_error(check(good, SELF_TEST_TABLE, helper), "outside BindPress/BindRelease")
     # A press helper that no longer asks the gate fails.
     expect_error(check(good, SELF_TEST_TABLE, SELF_TEST_CHARACTER.replace("if(AcceptsInput(1)) ", "")), "no press is gated")
+    # A character that no longer checks remaps against the table fails.
+    ungated = SELF_TEST_CHARACTER.replace("SoraInput::FindRemappable", "FindAnything")
+    expect_error(check(good, SELF_TEST_TABLE, ungated), "no longer checks remaps")
     # A mapped action left unbound fails.
     unbound = SELF_TEST_CHARACTER.replace("BindPress(I,TEXT(\"Menu\"),&A::B);", "")
     expect_error(check(good, SELF_TEST_TABLE, unbound), "Menu is mapped but not bound")
@@ -384,7 +490,8 @@ def check_project(ini=INPUT_INI, table=STATE_TABLE, character=CHARACTER, source=
                        for key, names in sorted(shared.items()))
     mappings = parse_mappings(ini_text)
     return (f"Input conflict check passed: {len({name for _, name, *_ in mappings})} actions and axes on "
-            f"{len({key for _, _, key, _ in mappings})} keys; no other input binding in {len(sources)} module sources; "
+            f"{len({key for _, _, key, _ in mappings})} keys; {len(parse_remappable(table_text))} rebindable controls; "
+            f"no other input binding in {len(sources)} module sources; "
             f"shared keys act in disjoint states: {detail}")
 
 

@@ -3,21 +3,22 @@
 
 // The game states in which each input action may act. ASoraPlayerCharacter binds
 // every action press through this table and ignores a press outside its states.
+// Menus are the Slate front end (USoraFrontEnd), which takes keyboard and pad
+// focus while open, so no action here acts in Menu.
 // scripts/unreal/check_input_conflicts.py reads the same rows together with
 // Config/DefaultInput.ini and fails when two actions that share a key can act
 // in one state. Keep one {TEXT("Action"), States} row per line.
 namespace SoraInput
 {
+// Bit 1 is unused: confirmations are front-end dialogs now. The values stay
+// as they were so recorded combat traces, which log the state, still match.
 enum EState : uint8
 {
-    Menu = 1 << 0,     // title or pause menu; the world is paused
-    Confirm = 1 << 1,  // menu showing the New Campaign confirmation
+    Menu = 1 << 0,     // a front-end screen; it holds input and the world is paused
     Card = 1 << 2,     // chapter title card, before dialogue and the round timer
     Play = 1 << 3,     // live combat
     Result = 1 << 4,   // defeat, chapter-complete or practice-complete screen
 };
-constexpr uint8 Always = Menu | Confirm | Card | Play | Result;
-
 struct FAction
 {
     const TCHAR* Name;
@@ -39,35 +40,19 @@ inline constexpr FAction Actions[] = {
     {TEXT("Interact"), Play},
     {TEXT("Block"), Play},
     {TEXT("Ability"), Play},
-    // Practice picks its loadout with 1/2/3 in the menu; campaign play equips.
-    {TEXT("WeaponOne"), Menu | Play},
-    {TEXT("WeaponTwo"), Menu | Play},
-    {TEXT("WeaponThree"), Menu | Play},
+    // Practice takes its loadout from the lobby; campaign play equips.
+    {TEXT("WeaponOne"), Play},
+    {TEXT("WeaponTwo"), Play},
+    {TEXT("WeaponThree"), Play},
     {TEXT("WeaponFour"), Play},
     {TEXT("WeaponFive"), Play},
     {TEXT("WeaponSix"), Play},
     {TEXT("CampaignWeaponNext"), Play},
-    // Esc/Start opens and closes the menu and withdraws a pending confirmation.
-    {TEXT("Menu"), Always},
-    // Enter starts from the menu, skips the chapter card and continues a result.
-    {TEXT("Enter"), Menu | Card | Result},
-    {TEXT("Map"), Menu},
-    // The first press only asks; a second press erases the saved campaign.
-    {TEXT("NewCampaign"), Menu | Confirm},
-    {TEXT("ReturnCampaign"), Menu},
-    {TEXT("DeterministicPractice"), Menu},
-    {TEXT("ClassOne"), Menu},
-    {TEXT("ClassTwo"), Menu},
-    {TEXT("ClassThree"), Menu},
-    {TEXT("ClassFour"), Menu},
-    {TEXT("ClassFive"), Menu},
-    {TEXT("ClassSix"), Menu},
-    {TEXT("ClassPrevious"), Menu},
-    {TEXT("ClassNext"), Menu},
-    {TEXT("Subtitles"), Always},
-    {TEXT("PairWallet"), Menu},
-    {TEXT("OpenWallet"), Menu},
-    {TEXT("DisconnectWallet"), Menu},
+    // Esc/Start opens the pause menu; the front end closes it.
+    {TEXT("Menu"), Card | Play | Result},
+    // Enter skips the chapter card and continues a result.
+    {TEXT("Enter"), Card | Result},
+    {TEXT("Subtitles"), Card | Play | Result},
 };
 
 // An action without a row has no states, so it can never act.
@@ -77,5 +62,50 @@ inline uint8 StatesFor(const TCHAR* Name)
         if (FCString::Strcmp(Action.Name, Name) == 0)
             return Action.States;
     return 0;
+}
+
+// The controls a player may rebind on the Controls screen, in its order. An
+// entry with an Axis direction is one half of a movement axis and takes one
+// keyboard key; every other entry is an action with one keyboard-or-mouse key
+// and one pad button. Menu, Enter and Subtitles stay fixed, as do the axes
+// the sticks and the mouse drive. check_input_conflicts.py requires every
+// play-only action to be listed here and nothing that acts outside play.
+struct FRemappable
+{
+    const TCHAR* Name;
+    // +1 or -1 for a movement axis half, the mapping's Scale; 0 for an action.
+    int32 Axis;
+};
+
+inline constexpr FRemappable Remappable[] = {
+    {TEXT("MoveForward"), 1},
+    {TEXT("MoveForward"), -1},
+    {TEXT("MoveRight"), -1},
+    {TEXT("MoveRight"), 1},
+    {TEXT("Fire"), 0},
+    {TEXT("Melee"), 0},
+    {TEXT("Block"), 0},
+    {TEXT("Jump"), 0},
+    {TEXT("Sprint"), 0},
+    {TEXT("Reload"), 0},
+    {TEXT("Interact"), 0},
+    {TEXT("Ability"), 0},
+    {TEXT("WeaponOne"), 0},
+    {TEXT("WeaponTwo"), 0},
+    {TEXT("WeaponThree"), 0},
+    {TEXT("WeaponFour"), 0},
+    {TEXT("WeaponFive"), 0},
+    {TEXT("WeaponSix"), 0},
+    {TEXT("CampaignWeaponNext"), 0},
+};
+inline constexpr int32 RemappableCount = UE_ARRAY_COUNT(Remappable);
+
+// The Remappable entry for an action or a movement half, or INDEX_NONE.
+inline int32 FindRemappable(const TCHAR* Name, int32 Axis)
+{
+    for (int32 Index = 0; Index < RemappableCount; ++Index)
+        if (FCString::Strcmp(Remappable[Index].Name, Name) == 0 && Remappable[Index].Axis == Axis)
+            return Index;
+    return INDEX_NONE;
 }
 }

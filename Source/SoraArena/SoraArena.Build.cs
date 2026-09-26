@@ -20,7 +20,8 @@ public class SoraArena : ModuleRules
         RuntimeDependencies.Add("$(ProjectDir)/Content/Data/...", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/OFL.txt", StagedFileType.NonUFS);
-        RuntimeDependencies.Add("$(ProjectDir)/ThirdPartyNotices/QRCodeGen.txt", StagedFileType.NonUFS);
+        // The credits screen reads every third-party notice at runtime.
+        RuntimeDependencies.Add("$(ProjectDir)/ThirdPartyNotices/...", StagedFileType.NonUFS);
         // A packaged game without the IrohaConnect bridge or the Rust combat
         // kernel cannot sign or run deterministic practice, so the build fails.
         // The editor may still build without them and says so.

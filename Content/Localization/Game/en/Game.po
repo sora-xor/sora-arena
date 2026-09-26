@@ -1,0 +1,2179 @@
+# English subtitles for SORA Arena: Nyaagyu Rebellion. The native text is Japanese.
+# scripts/unreal/native_japanese_localization.py keeps this file; translate msgstr only.
+msgid ""
+msgstr ""
+"Project-Id-Version: Game\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Key:	MenuTitle
+#: Source/SoraArena/Private/SoraLocalizationAutomation.cpp
+#: Source/SoraArena/Private/SoraNativeJapaneseLocalizationAutomation.cpp
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena,MenuTitle"
+msgid "猫柳生"
+msgstr "Nyaagyu Rebellion"
+
+#. Key:	Ahead
+#: Source/SoraArena/Private/HUD/SoraHUDCaptions.cpp
+msgctxt "SoraArena.Captions,Ahead"
+msgid "前"
+msgstr "ahead"
+
+#. Key:	ArrowLoosed
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,ArrowLoosed"
+msgid "矢を放つ音"
+msgstr "Arrow loosed"
+
+#. Key:	BeamHum
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,BeamHum"
+msgid "光線の唸り"
+msgstr "Beam hum"
+
+#. Key:	Behind
+#: Source/SoraArena/Private/HUD/SoraHUDCaptions.cpp
+msgctxt "SoraArena.Captions,Behind"
+msgid "後ろ"
+msgstr "behind"
+
+#. Key:	BladeBlocked
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,BladeBlocked"
+msgid "刃を受け止める音"
+msgstr "Blade blocked"
+
+#. Key:	BladeDrawnBack
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,BladeDrawnBack"
+msgid "刃を振りかぶる音"
+msgstr "Blade drawn back"
+
+#. Key:	BladesClash
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,BladesClash"
+msgid "刃の打ち合う音"
+msgstr "Blades clash"
+
+#. Key:	Caption
+#: Source/SoraArena/Private/HUD/SoraHUDCaptions.cpp
+msgctxt "SoraArena.Captions,Caption"
+msgid "［{Caption}］"
+msgstr "[{Caption}]"
+
+#. Key:	CaptionFrom
+#: Source/SoraArena/Private/HUD/SoraHUDCaptions.cpp
+msgctxt "SoraArena.Captions,CaptionFrom"
+msgid "［{Caption}］ {Direction}"
+msgstr "[{Caption}] {Direction}"
+
+#. Key:	CollectorArrives
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,CollectorArrives"
+msgid "徴収官の重い足音"
+msgstr "A collector's heavy steps"
+
+#. Key:	CollectorBeamWindup
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,CollectorBeamWindup"
+msgid "徴収官が光線を溜める唸り"
+msgstr "Collector charging its beam"
+
+#. Key:	CollectorCleaveWindup
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,CollectorCleaveWindup"
+msgid "徴収官が振りかぶる音"
+msgstr "Collector winding up a cleave"
+
+#. Key:	CollectorCollapses
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,CollectorCollapses"
+msgid "徴収官が崩れ落ちる音"
+msgstr "The collector collapses"
+
+#. Key:	Explosion
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,Explosion"
+msgid "爆発"
+msgstr "Explosion"
+
+#. Key:	Gunfire
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,Gunfire"
+msgid "銃声"
+msgstr "Gunfire"
+
+#. Key:	Left
+#: Source/SoraArena/Private/HUD/SoraHUDCaptions.cpp
+msgctxt "SoraArena.Captions,Left"
+msgid "左"
+msgstr "left"
+
+#. Key:	Right
+#: Source/SoraArena/Private/HUD/SoraHUDCaptions.cpp
+msgctxt "SoraArena.Captions,Right"
+msgid "右"
+msgstr "right"
+
+#. Key:	ShellLaunched
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,ShellLaunched"
+msgid "砲弾の発射音"
+msgstr "Shell launched"
+
+#. Key:	WoodenSwordsKnock
+#: Source/SoraArena/Private/UI/SoraCaptions.cpp
+msgctxt "SoraArena.Captions,WoodenSwordsKnock"
+msgid "木刀の打ち合う音"
+msgstr "Wooden swords knock"
+
+#. Key:	Banner.MovementByKeyboard
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Banner.MovementByKeyboard"
+msgid "移動はキーボードで割り当てる。パッドでは左スティックで動く。"
+msgstr "Rebind movement with the keyboard; on a pad the left stick moves."
+
+#. Key:	Banner.Rebound
+#: Source/SoraArena/Private/SoraLocalizationAutomation.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Banner.Rebound"
+msgid "「{Control}」を {Key} にした。"
+msgstr "{Control} is now on {Key}."
+
+#. Key:	Binding.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Binding.Hint"
+msgid "現在は {Keyboard}、パッドは {Pad}。決定を押した機器（キーボード・マウスかパッド）で、次に押したキーやボタンを割り当てる。"
+msgstr "Now: {Keyboard}, pad {Pad}. Press Select with the keyboard, mouse or pad, then the new key or button."
+
+#. Key:	Binding.Movement.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Binding.Movement.Hint"
+msgid "現在は {Keyboard}、パッドは {Pad}。キーボードのキーを割り当てる。パッドでは左スティックで動く。"
+msgstr "Now: {Keyboard}, pad {Pad}. Takes a keyboard key; on a pad the left stick moves."
+
+#. Key:	Bindings
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Bindings"
+msgid "キー割り当て"
+msgstr "Key bindings"
+
+#. Key:	Bindings.Keyboard
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Bindings.Keyboard"
+msgid "キー・マウス"
+msgstr "Keys and mouse"
+
+#. Key:	Bindings.Pad
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Bindings.Pad"
+msgid "パッド"
+msgstr "Pad"
+
+#. Key:	Capture.CancelKeyboard
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Controls,Capture.CancelKeyboard"
+msgid "Esc でやめる。"
+msgstr "Esc cancels."
+
+#. Key:	Capture.CancelPad
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Controls,Capture.CancelPad"
+msgid "Start でやめる。"
+msgstr "Start cancels."
+
+#. Key:	Capture.MovementKeyboardOnly
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Capture.MovementKeyboardOnly"
+msgid "移動にはキーボードのキーだけを割り当てられる。"
+msgstr "Movement takes keyboard keys only."
+
+#. Key:	Capture.NotNow
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Capture.NotNow"
+msgid "今は割り当てられない。"
+msgstr "Keys cannot be rebound right now."
+
+#. Key:	Capture.PromptKeyboard
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Controls,Capture.PromptKeyboard"
+msgid "「{Control}」の新しいキーかマウスボタンを押す。\n{Cancel}"
+msgstr "Press the new key or mouse button for {Control}.\n{Cancel}"
+
+#. Key:	Capture.PromptPad
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Controls,Capture.PromptPad"
+msgid "「{Control}」の新しいボタンを押す。\n{Cancel}"
+msgstr "Press the new pad button for {Control}.\n{Cancel}"
+
+#. Key:	Capture.Taken
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Capture.Taken"
+msgid "{Key} は「{Control}」に使われている。先にそちらを変えるか、別のキーを押してほしい。"
+msgstr "{Key} already does {Control}. Rebind that first, or press another key."
+
+#. Key:	Capture.Unbindable
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Capture.Unbindable"
+msgid "{Key} は割り当てられない。別のキーを押してほしい。"
+msgstr "{Key} cannot be bound. Press another key."
+
+#. Key:	Capture.WantKeyboard
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Capture.WantKeyboard"
+msgid "キーボードのキーかマウスのボタンを押してほしい。Esc でやめる。"
+msgstr "Press a keyboard key or mouse button. Esc cancels."
+
+#. Key:	Capture.WantPad
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,Capture.WantPad"
+msgid "パッドのボタンを押してほしい。Start でやめる。"
+msgstr "Press a pad button. Start cancels."
+
+#. Key:	Confirm.ResetControls
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Controls,Confirm.ResetControls"
+msgid "キー割り当てを既定に戻しますか？\n変えたキーとボタンはすべて元に戻ります。感度・遊び・上下反転はそのまま。"
+msgstr "Reset the key bindings?\nEvery rebound key and button returns to the default. Sensitivity, dead zones and inverted look stay."
+
+#. Key:	Confirm.ResetControls.Yes
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Controls,Confirm.ResetControls.Yes"
+msgid "既定に戻す"
+msgstr "Reset"
+
+#. Key:	Control.Ability
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Ability"
+msgid "技"
+msgstr "Ability"
+
+#. Key:	Control.Block
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Block"
+msgid "構え・受け"
+msgstr "Guard"
+
+#. Key:	Control.CampaignWeaponNext
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.CampaignWeaponNext"
+msgid "次の武器（物語）"
+msgstr "Next weapon (campaign)"
+
+#. Key:	Control.Enter
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Enter"
+msgid "決定・続ける"
+msgstr "Continue"
+
+#. Key:	Control.Fire
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Fire"
+msgid "射撃・弓を引く"
+msgstr "Fire or draw"
+
+#. Key:	Control.Interact
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Interact"
+msgid "調べる"
+msgstr "Interact"
+
+#. Key:	Control.Jump
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Jump"
+msgid "跳ぶ"
+msgstr "Jump"
+
+#. Key:	Control.Look
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Look"
+msgid "視点"
+msgstr "Look"
+
+#. Key:	Control.Melee
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Melee"
+msgid "斬撃"
+msgstr "Melee strike"
+
+#. Key:	Control.Menu
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Menu"
+msgid "一時停止メニュー"
+msgstr "the pause menu"
+
+#. Key:	Control.MoveBack
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.MoveBack"
+msgid "後ろへ下がる"
+msgstr "Move back"
+
+#. Key:	Control.MoveForward
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.MoveForward"
+msgid "前へ進む"
+msgstr "Move forward"
+
+#. Key:	Control.MoveLeft
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.MoveLeft"
+msgid "左へ動く"
+msgstr "Move left"
+
+#. Key:	Control.MoveRight
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.MoveRight"
+msgid "右へ動く"
+msgstr "Move right"
+
+#. Key:	Control.Reload
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Reload"
+msgid "装填"
+msgstr "Reload"
+
+#. Key:	Control.Sprint
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Sprint"
+msgid "走る"
+msgstr "Sprint"
+
+#. Key:	Control.Subtitles
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Subtitles"
+msgid "英語字幕の切り替え"
+msgstr "the subtitle switch"
+
+#. Key:	Control.WeaponFive
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.WeaponFive"
+msgid "槍（物語）"
+msgstr "Yari (campaign)"
+
+#. Key:	Control.WeaponFour
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.WeaponFour"
+msgid "弓（物語）"
+msgstr "Yumi (campaign)"
+
+#. Key:	Control.WeaponOne
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.WeaponOne"
+msgid "主武器"
+msgstr "Main weapon"
+
+#. Key:	Control.WeaponSix
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.WeaponSix"
+msgid "薙刀（物語）"
+msgstr "Naginata (campaign)"
+
+#. Key:	Control.WeaponThree
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.WeaponThree"
+msgid "特殊武器"
+msgstr "Special weapon"
+
+#. Key:	Control.WeaponTwo
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.WeaponTwo"
+msgid "近接武器"
+msgstr "Melee weapon"
+
+#. Key:	InvertLook
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,InvertLook"
+msgid "視点の上下反転"
+msgstr "Invert look"
+
+#. Key:	InvertLook.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,InvertLook.Hint"
+msgid "マウスと右スティックの上下を入れ替える。"
+msgstr "Swaps up and down for the mouse and the right stick."
+
+#. Key:	InvertLook.Inverted
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,InvertLook.Inverted"
+msgid "反転"
+msgstr "Inverted"
+
+#. Key:	InvertLook.Standard
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,InvertLook.Standard"
+msgid "標準"
+msgstr "Standard"
+
+#. Key:	LeftStick
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,LeftStick"
+msgid "Lスティック"
+msgstr "left stick"
+
+#. Key:	LookDeadZone
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,LookDeadZone"
+msgid "視点スティックの遊び"
+msgstr "Look stick dead zone"
+
+#. Key:	LookDeadZone.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,LookDeadZone.Hint"
+msgid "右スティックが反応し始めるまでの遊び。"
+msgstr "How far the right stick moves before it counts."
+
+#. Key:	LookSensitivity
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,LookSensitivity"
+msgid "パッドの視点感度"
+msgstr "Pad look sensitivity"
+
+#. Key:	LookSensitivity.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,LookSensitivity.Hint"
+msgid "右スティックで視点を回す速さ。"
+msgstr "How fast the right stick turns the view."
+
+#. Key:	MouseSensitivity
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,MouseSensitivity"
+msgid "マウス感度"
+msgstr "Mouse sensitivity"
+
+#. Key:	MouseSensitivity.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,MouseSensitivity.Hint"
+msgid "マウスで視点を回す速さ。"
+msgstr "How far the mouse turns the view."
+
+#. Key:	MoveDeadZone
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,MoveDeadZone"
+msgid "移動スティックの遊び"
+msgstr "Move stick dead zone"
+
+#. Key:	MoveDeadZone.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,MoveDeadZone.Hint"
+msgid "左スティックが反応し始めるまでの遊び。スティックが勝手に動くなら大きくする。"
+msgstr "How far the left stick moves before it counts. Raise it if the stick drifts."
+
+#. Key:	ResetControls
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,ResetControls"
+msgid "既定のキーに戻す"
+msgstr "Reset key bindings"
+
+#. Key:	ResetControls.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Controls,ResetControls.Hint"
+msgid "変えたキーとボタンをすべて元に戻す。"
+msgstr "Every rebound key and button returns to the default."
+
+#. Key:	Game
+#: Source/SoraArena/Private/UI/SoraCredits.cpp
+msgctxt "SoraArena.Credits,Game"
+msgid "SORA Arena: 猫柳生"
+msgstr "SORA Arena: Nyaagyu Rebellion"
+
+#. Key:	Insignia
+#: Source/SoraArena/Private/UI/SoraCredits.cpp
+msgctxt "SoraArena.Credits,Insignia"
+msgid "紋章：SORA ロゴ"
+msgstr "Insignia: the SORA logo"
+
+#. Key:	MadeBy
+#: Source/SoraArena/Private/UI/SoraCredits.cpp
+msgctxt "SoraArena.Credits,MadeBy"
+msgid "制作 SORA"
+msgstr "Made by SORA"
+
+#. Key:	Missing
+#: Source/SoraArena/Private/UI/SoraCredits.cpp
+msgctxt "SoraArena.Credits,Missing"
+msgid "権利表記を読み込めません：{Directory}"
+msgstr "Third-party notices are missing: {Directory}"
+
+#. Key:	Typeface
+#: Source/SoraArena/Private/UI/SoraCredits.cpp
+msgctxt "SoraArena.Credits,Typeface"
+msgid "書体"
+msgstr "Typeface"
+
+#. Key:	Ammo.Arrows
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.Arrows"
+msgid "矢 {Ammo} / {Magazine}   {Fire} 長押し→離して射る"
+msgstr "Arrows {Ammo} / {Magazine}   hold {Fire}, release to loose"
+
+#. Key:	Ammo.Magazine
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.Magazine"
+msgid "{Ammo} / {Magazine}   {Reload} 装填"
+msgstr "{Ammo} / {Magazine}   {Reload} reload"
+
+#. Key:	Ammo.Melee
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.Melee"
+msgid "間合い / 斬突と残心"
+msgstr "Distance: cut, thrust, zanshin"
+
+#. Key:	Ammo.Reloading
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.Reloading"
+msgid "装填中"
+msgstr "Reloading"
+
+#. Key:	Ammo.ReloadingFor
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.ReloadingFor"
+msgid "装填中 {Seconds} 秒   {Ammo} / {Magazine}"
+msgstr "Reloading {Seconds} s   {Ammo} / {Magazine}"
+
+#. Key:	Ammo.Rounds
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.Rounds"
+msgid "弾数 {Ammo} / {Magazine}   {Reload} 装填"
+msgstr "Rounds {Ammo} / {Magazine}   {Reload} reload"
+
+#. Key:	Ammo.Swordplay
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.Swordplay"
+msgid "剣術　{Melee}"
+msgstr "Swordplay: {Melee}"
+
+#. Key:	ContentError
+#: Source/SoraArena/Private/HUD/SoraHUD.cpp
+msgctxt "SoraArena.HUD,ContentError"
+msgid "SORA ARENA / コンテンツの読み込みエラー"
+msgstr "SORA ARENA / Content failed to load"
+
+#. Key:	Objective.Preparing
+#: Source/SoraArena/Private/Game/SoraGameMode.cpp
+msgctxt "SoraArena.HUD,Objective.Preparing"
+msgid "舞台を準備しています……"
+msgstr "Preparing the stage…"
+
+#. Key:	Practice.Keys
+#: Source/SoraArena/Private/Game/SoraPracticeDirector.cpp
+msgctxt "SoraArena.HUD,Practice.Keys"
+msgid "武芸稽古。{Fire} 射撃、{Melee} 近接、{Reload} 装填、{Block} 防御、{Ability} 技、{Jump} 跳躍。倒れても自動で復帰する。資産は預けない。"
+msgstr "Offline practice: {Fire} fire, {Melee} melee, {Reload} reload, {Block} block, {Ability} ability, {Jump} jump. Defeated players respawn automatically. No assets are bonded."
+
+#. Key:	Prompt.Examine
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Prompt.Examine"
+msgid "{Interact}  調べる"
+msgstr "{Interact}  Examine"
+
+#. Key:	Result.Next
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,Result.Next"
+msgid "{Enter}  続ける    |    {Menu}  メニュー"
+msgstr "{Enter}  Continue    |    {Menu}  Menu"
+
+#. Key:	TitleCard.Begin
+#: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
+msgctxt "SoraArena.HUD,TitleCard.Begin"
+msgid "{Enter}  はじめる"
+msgstr "Press {Enter} to begin"
+
+#. Key:	TopBar.OfflineBuild
+#: Source/SoraArena/Private/HUD/SoraHUD.cpp
+msgctxt "SoraArena.HUD,TopBar.OfflineBuild"
+msgid "オフライン開発版  |  XOR・NFT の送金は行いません"
+msgstr "Offline development build  |  No XOR or NFT transfers"
+
+#. Key:	TopBar.Title
+#: Source/SoraArena/Private/HUD/SoraHUD.cpp
+msgctxt "SoraArena.HUD,TopBar.Title"
+msgid "SORA 抵抗軍  /  猫柳生"
+msgstr "SORA Resistance  /  Nyaagyu Rebellion"
+
+#. Key:	DPadDown
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,DPadDown"
+msgid "十字↓"
+msgstr "D-pad down"
+
+#. Key:	DPadLeft
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,DPadLeft"
+msgid "十字←"
+msgstr "D-pad left"
+
+#. Key:	DPadRight
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,DPadRight"
+msgid "十字→"
+msgstr "D-pad right"
+
+#. Key:	DPadUp
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,DPadUp"
+msgid "十字↑"
+msgstr "D-pad up"
+
+#. Key:	Down
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,Down"
+msgid "↓"
+msgstr "Down"
+
+#. Key:	Left
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,Left"
+msgid "←"
+msgstr "Left"
+
+#. Key:	LeftAlt
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,LeftAlt"
+msgid "左 Alt"
+msgstr "Left Alt"
+
+#. Key:	LeftCommand
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,LeftCommand"
+msgid "左 Cmd"
+msgstr "Left Cmd"
+
+#. Key:	LeftControl
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,LeftControl"
+msgid "左 Ctrl"
+msgstr "Left Ctrl"
+
+#. Key:	LeftMouseButton
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,LeftMouseButton"
+msgid "左クリック"
+msgstr "Left click"
+
+#. Key:	LeftShift
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,LeftShift"
+msgid "左 Shift"
+msgstr "Left Shift"
+
+#. Key:	MiddleMouseButton
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,MiddleMouseButton"
+msgid "ホイール押し"
+msgstr "Wheel click"
+
+#. Key:	MouseScrollDown
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,MouseScrollDown"
+msgid "ホイール下"
+msgstr "Wheel down"
+
+#. Key:	MouseScrollUp
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,MouseScrollUp"
+msgid "ホイール上"
+msgstr "Wheel up"
+
+#. Key:	Right
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,Right"
+msgid "→"
+msgstr "Right"
+
+#. Key:	RightAlt
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,RightAlt"
+msgid "右 Alt"
+msgstr "Right Alt"
+
+#. Key:	RightCommand
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,RightCommand"
+msgid "右 Cmd"
+msgstr "Right Cmd"
+
+#. Key:	RightControl
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,RightControl"
+msgid "右 Ctrl"
+msgstr "Right Ctrl"
+
+#. Key:	RightMouseButton
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,RightMouseButton"
+msgid "右クリック"
+msgstr "Right click"
+
+#. Key:	RightShift
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,RightShift"
+msgid "右 Shift"
+msgstr "Right Shift"
+
+#. Key:	ThumbMouseButton
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,ThumbMouseButton"
+msgid "サイドボタン1"
+msgstr "Mouse 4"
+
+#. Key:	ThumbMouseButton2
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,ThumbMouseButton2"
+msgid "サイドボタン2"
+msgstr "Mouse 5"
+
+#. Key:	Up
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,Up"
+msgid "↑"
+msgstr "Up"
+
+#. Key:	ViewButton
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Keys,ViewButton"
+msgid "ビュー"
+msgstr "View"
+
+#. Key:	Back
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndRows.h
+msgctxt "SoraArena.Menu,Back"
+msgid "戻る"
+msgstr "Back"
+
+#. Key:	Banner.ContentMissing
+#: Source/SoraArena/Private/Game/SoraGameMode.cpp
+msgctxt "SoraArena.Menu,Banner.ContentMissing"
+msgid "ゲームの内容を読み込めない。インストールを確かめてほしい。"
+msgstr "The game content could not be loaded. Check the installation."
+
+#. Key:	Banner.ControlsReset
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Banner.ControlsReset"
+msgid "キー割り当てを既定に戻した。"
+msgstr "Key bindings are back to the defaults."
+
+#. Key:	Banner.CouldNotStart
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Banner.CouldNotStart"
+msgid "開始できませんでした。"
+msgstr "That could not start."
+
+#. Key:	Cancel
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Menu,Cancel"
+msgid "やめる"
+msgstr "Cancel"
+
+#. Key:	Chapters.Locked
+#: Source/SoraArena/Private/SoraLocalizationAutomation.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Chapters.Locked"
+msgid "第{Chapter}章　まだ到達していない"
+msgstr "Chapter {Chapter}: not reached yet"
+
+#. Key:	Chapters.Reached
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Chapters.Reached"
+msgid "第{Chapter}章　{Title}"
+msgstr "Chapter {Chapter}: {Title}"
+
+#. Key:	Confirm.Chapter
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.Chapter"
+msgid "第{Chapter}章から始めますか？\n保存中の章と途中記録は、この章の始まりに置き換わります。到達した章はそのまま選べます。"
+msgstr "Start Chapter {Chapter}?\nYour saved chapter and checkpoint move to the start of this chapter. Chapters you have reached stay available."
+
+#. Key:	Confirm.Chapter.Yes
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.Chapter.Yes"
+msgid "この章から始める"
+msgstr "Start this chapter"
+
+#. Key:	Confirm.NewCampaign
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.NewCampaign"
+msgid "はじめからやり直しますか？\n保存した章・途中記録・到達した章をすべて消去します。"
+msgstr "Start a new campaign?\nThe saved chapter, checkpoint and chapter progress will be erased."
+
+#. Key:	Confirm.NewCampaign.Yes
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.NewCampaign.Yes"
+msgid "消去してはじめる"
+msgstr "Erase and start"
+
+#. Key:	Confirm.Quit
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.Quit"
+msgid "ゲームを終了しますか？\n物語は最後のチェックポイントまで保存されています。"
+msgstr "Quit the game?\nThe story is saved up to its last checkpoint."
+
+#. Key:	Confirm.Quit.Yes
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.Quit.Yes"
+msgid "終了する"
+msgstr "Quit"
+
+#. Key:	Confirm.QuitInPlay
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.QuitInPlay"
+msgid "ゲームを終了しますか？\n最後のチェックポイント以降の進行は失われます。"
+msgstr "Quit the game?\nProgress since the last checkpoint will be lost."
+
+#. Key:	Confirm.Restart.Yes
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.Restart.Yes"
+msgid "やり直す"
+msgstr "Restart"
+
+#. Key:	Confirm.RestartCheckpoint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.RestartCheckpoint"
+msgid "チェックポイントからやり直しますか？\n最後のチェックポイント以降の進行は失われます。"
+msgstr "Restart from the checkpoint?\nProgress since the last checkpoint will be lost."
+
+#. Key:	Confirm.RestartPractice
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.RestartPractice"
+msgid "稽古をはじめからやり直しますか？\nこの稽古の記録は失われます。"
+msgstr "Restart practice?\nThis session's score will be lost."
+
+#. Key:	Confirm.ReturnToTitle
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.ReturnToTitle"
+msgid "タイトルへ戻りますか？\n最後のチェックポイント以降の進行は失われます。"
+msgstr "Return to the title screen?\nProgress since the last checkpoint will be lost."
+
+#. Key:	Confirm.ReturnToTitlePractice
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Confirm.ReturnToTitlePractice"
+msgid "タイトルへ戻りますか？\n稽古は終了します。"
+msgstr "Return to the title screen?\nThe practice session ends."
+
+#. Key:	Heading.Game
+#: Source/SoraArena/Private/SoraFrontEndAutomation.cpp
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Heading.Game"
+msgid "SORA 抵抗軍　猫柳生"
+msgstr "SORA Resistance: Nyaagyu Rebellion"
+
+#. Key:	Lobby.Arena
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Arena"
+msgid "舞台"
+msgstr "Arena"
+
+#. Key:	Lobby.Arena.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Arena.Hint"
+msgid "四つの闘技場から選ぶ。"
+msgstr "One of the four arenas."
+
+#. Key:	Lobby.Class
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Class"
+msgid "流儀"
+msgstr "Class"
+
+#. Key:	Lobby.Difficulty
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty"
+msgid "難易度"
+msgstr "Difficulty"
+
+#. Key:	Lobby.Difficulty.Master
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty.Master"
+msgid "達人"
+msgstr "Master"
+
+#. Key:	Lobby.Difficulty.Master.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty.Master.Hint"
+msgid "ボットは隙を逃さない。"
+msgstr "Bots punish every opening."
+
+#. Key:	Lobby.Difficulty.Novice
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty.Novice"
+msgid "入門"
+msgstr "Novice"
+
+#. Key:	Lobby.Difficulty.Novice.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty.Novice.Hint"
+msgid "ボットは狙いが甘く、防御も少ない。"
+msgstr "Bots aim loosely and rarely guard."
+
+#. Key:	Lobby.Difficulty.Standard
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty.Standard"
+msgid "標準"
+msgstr "Standard"
+
+#. Key:	Lobby.Difficulty.Standard.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty.Standard.Hint"
+msgid "ボットは狙い、守り、拠点を意識する。"
+msgstr "Bots aim, guard and play the objective."
+
+#. Key:	Lobby.Difficulty.Veteran
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty.Veteran"
+msgid "手練れ"
+msgstr "Veteran"
+
+#. Key:	Lobby.Difficulty.Veteran.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Difficulty.Veteran.Hint"
+msgid "ボットは受け流しと連携を使う。"
+msgstr "Bots parry and work together."
+
+#. Key:	Lobby.Invalid.Catalog
+#: Source/SoraArena/Private/UI/SoraPracticeLobby.cpp
+msgctxt "SoraArena.Menu,Lobby.Invalid.Catalog"
+msgid "内容の一覧を読み込めていない"
+msgstr "content catalog is not loaded"
+
+#. Key:	Lobby.Invalid.Class
+#: Source/SoraArena/Private/UI/SoraPracticeLobby.cpp
+msgctxt "SoraArena.Menu,Lobby.Invalid.Class"
+msgid "流儀が範囲外"
+msgstr "class out of range"
+
+#. Key:	Lobby.Invalid.Difficulty
+#: Source/SoraArena/Private/UI/SoraPracticeLobby.cpp
+msgctxt "SoraArena.Menu,Lobby.Invalid.Difficulty"
+msgid "難易度が範囲外"
+msgstr "difficulty out of range"
+
+#. Key:	Lobby.Invalid.Map
+#: Source/SoraArena/Private/UI/SoraPracticeLobby.cpp
+msgctxt "SoraArena.Menu,Lobby.Invalid.Map"
+msgid "舞台が範囲外"
+msgstr "map out of range"
+
+#. Key:	Lobby.Invalid.Mode
+#: Source/SoraArena/Private/UI/SoraPracticeLobby.cpp
+msgctxt "SoraArena.Menu,Lobby.Invalid.Mode"
+msgid "形式が範囲外"
+msgstr "mode out of range"
+
+#. Key:	Lobby.Invalid.Players
+#: Source/SoraArena/Private/UI/SoraPracticeLobby.cpp
+msgctxt "SoraArena.Menu,Lobby.Invalid.Players"
+msgid "人数が形式に合わない"
+msgstr "player count does not fit the mode"
+
+#. Key:	Lobby.Invalid.Special
+#: Source/SoraArena/Private/UI/SoraPracticeLobby.cpp
+msgctxt "SoraArena.Menu,Lobby.Invalid.Special"
+msgid "特殊武器がこの流儀とこの形式のものではない"
+msgstr "special weapon is not this class's sidegrade for this mode"
+
+#. Key:	Lobby.Limits
+#: Source/SoraArena/Private/Game/SoraGameMode.cpp
+msgctxt "SoraArena.Menu,Lobby.Limits"
+msgid "いまの稽古は六匹の乱戦と一種類のボットだけで行う。形式・人数・難易度の選択はまだ反映されない。"
+msgstr "Practice currently runs only as a six-cat free-for-all with one kind of bot; the mode, player count and difficulty chosen here are not applied yet."
+
+#. Key:	Lobby.Mode
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode"
+msgid "形式"
+msgstr "Mode"
+
+#. Key:	Lobby.Mode.Control
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode.Control"
+msgid "拠点制圧"
+msgstr "Control"
+
+#. Key:	Lobby.Mode.Control.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode.Control.Hint"
+msgid "二組に分かれて拠点を奪い合う団体戦。"
+msgstr "Two teams fight over the control points."
+
+#. Key:	Lobby.Mode.FreeForAll
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode.FreeForAll"
+msgid "乱戦"
+msgstr "Free-for-all"
+
+#. Key:	Lobby.Mode.FreeForAll.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode.FreeForAll.Hint"
+msgid "全員が敵の個人戦。最大八匹。"
+msgstr "Every cat for themselves, up to eight."
+
+#. Key:	Lobby.Mode.Melee
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode.Melee"
+msgid "近接のみ"
+msgstr "Melee only"
+
+#. Key:	Lobby.Mode.Melee.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode.Melee.Hint"
+msgid "刀・鎖鎌・金棒など、近接武器だけで戦う個人戦。"
+msgstr "Free-for-all with melee weapons only: katana, kusarigama, kanabō and the rest."
+
+#. Key:	Lobby.Mode.Payload
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode.Payload"
+msgid "護送"
+msgstr "Payload"
+
+#. Key:	Lobby.Mode.Payload.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Mode.Payload.Hint"
+msgid "二組に分かれ、荷車を押し進める側と食い止める側で戦う団体戦。"
+msgstr "Two teams: one pushes the payload, the other stops it."
+
+#. Key:	Lobby.Offline
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Offline"
+msgid "オフラインの稽古。XOR・NFT の預け入れも報酬もない。"
+msgstr "Offline practice. No XOR or NFT is bonded, and nothing is paid out."
+
+#. Key:	Lobby.Players
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Players"
+msgid "人数"
+msgstr "Players"
+
+#. Key:	Lobby.Players.Count
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Players.Count"
+msgid "{Count}匹"
+msgstr "{Count} players"
+
+#. Key:	Lobby.Players.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Players.Hint"
+msgid "あなたと {Bots} 匹のボット。"
+msgstr "You and {Bots} bots."
+
+#. Key:	Lobby.Players.Teams
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Players.Teams"
+msgid "{Side}対{Side}"
+msgstr "{Side} vs {Side}"
+
+#. Key:	Lobby.Special
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Special"
+msgid "特殊武器"
+msgstr "Special weapon"
+
+#. Key:	Lobby.Special.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Special.Hint"
+msgid "流儀の特殊武器を手に入場する。稽古では NFT も追加の預け入れもいらない。"
+msgstr "Enter with the class's special weapon. Practice needs no NFT and no extra bond."
+
+#. Key:	Lobby.Special.None
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Special.None"
+msgid "なし（標準装備）"
+msgstr "None (standard loadout)"
+
+#. Key:	Lobby.Special.None.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Special.None.Hint"
+msgid "標準の武器だけで入場する。"
+msgstr "Enter with the standard loadout."
+
+#. Key:	Lobby.Start
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Start"
+msgid "稽古をはじめる"
+msgstr "Start practice"
+
+#. Key:	Lobby.Start.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Lobby.Start.Hint"
+msgid "資産は預けず、報酬も発生しない。"
+msgstr "Nothing is bonded and nothing is paid out."
+
+#. Key:	Main.ChapterSelect
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.ChapterSelect"
+msgid "章を選ぶ"
+msgstr "Chapter select"
+
+#. Key:	Main.ChapterSelect.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.ChapterSelect.Hint"
+msgid "到達した章から、はじめ直す。"
+msgstr "Start again from any chapter you have reached."
+
+#. Key:	Main.Continue
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Continue"
+msgid "続きから"
+msgstr "Continue"
+
+#. Key:	Main.Continue.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Continue.Hint"
+msgid "第{Chapter}章「{Title}」の続きから。"
+msgstr "Resume Chapter {Chapter}: {Title}."
+
+#. Key:	Main.Continue.Value
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Continue.Value"
+msgid "第{Chapter}章"
+msgstr "Chapter {Chapter}"
+
+#. Key:	Main.Credits
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Credits"
+msgid "制作・権利表記"
+msgstr "Credits"
+
+#. Key:	Main.Credits.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Credits.Hint"
+msgid "制作と、使用している素材の権利表記。"
+msgstr "Credits and third-party notices."
+
+#. Key:	Main.NewCampaign
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.NewCampaign"
+msgid "新しい物語"
+msgstr "New campaign"
+
+#. Key:	Main.NewCampaign.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.NewCampaign.Hint"
+msgid "道場の稽古から、ニャーコトの物語をはじめる。"
+msgstr "Begin Nyaakoto's story with his training at the dojo."
+
+#. Key:	Main.Practice
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Practice"
+msgid "武芸稽古"
+msgstr "Practice"
+
+#. Key:	Main.Practice.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Practice.Hint"
+msgid "形式・舞台・流儀を選び、ボットと稽古する。XOR は使わない。"
+msgstr "Choose a mode, arena and class, and train against bots. No XOR is bonded."
+
+#. Key:	Main.Quit
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Quit"
+msgid "ゲームを終了"
+msgstr "Quit game"
+
+#. Key:	Main.Quit.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Quit.Hint"
+msgid "物語は最後のチェックポイントまで保存されている。"
+msgstr "The story is saved up to its last checkpoint."
+
+#. Key:	Main.Settings
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Settings"
+msgid "設定"
+msgstr "Settings"
+
+#. Key:	Main.Settings.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Settings.Hint"
+msgid "画質・音量・字幕・操作・アクセシビリティ。"
+msgstr "Graphics, audio, subtitles, controls and accessibility."
+
+#. Key:	Main.Wallet.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Main.Wallet.Hint"
+msgid "ウォレットとの接続は、資産の預け入れではない。"
+msgstr "Pairing a wallet deposits nothing."
+
+#. Key:	Note.KeyVisual
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Note.KeyVisual"
+msgid "背景は生成キービジュアル（ゲーム画面ではない）"
+msgstr "Background: a generated key visual, not gameplay."
+
+#. Key:	Note.OfflineBuild
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Note.OfflineBuild"
+msgid "オフライン開発版・XOR と NFT の送金なし"
+msgstr "Offline development build: no XOR or NFT transfers."
+
+#. Key:	Notice.ArenaNotBuilt
+#: Source/SoraArena/Private/Game/SoraGameMode.cpp
+msgctxt "SoraArena.Menu,Notice.ArenaNotBuilt"
+msgid "舞台がまだ組まれていない"
+msgstr "the arena is not built"
+
+#. Key:	Notice.PracticeRefused
+#: Source/SoraArena/Private/Game/SoraGameMode.cpp
+msgctxt "SoraArena.Menu,Notice.PracticeRefused"
+msgid "この設定では稽古を始められません（{Reason}）。"
+msgstr "Practice cannot start: {Reason}."
+
+#. Key:	Notice.PracticeUnready
+#: Source/SoraArena/Private/Game/SoraGameMode.cpp
+msgctxt "SoraArena.Menu,Notice.PracticeUnready"
+msgid "稽古の舞台またはコンテンツを準備できません。"
+msgstr "Practice requires the staged content catalog and an initialized arena."
+
+#. Key:	Pause.RestartCheckpoint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Pause.RestartCheckpoint"
+msgid "チェックポイントからやり直す"
+msgstr "Restart from checkpoint"
+
+#. Key:	Pause.RestartPractice
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Pause.RestartPractice"
+msgid "稽古をやり直す"
+msgstr "Restart practice"
+
+#. Key:	Pause.Resume
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Pause.Resume"
+msgid "再開"
+msgstr "Resume"
+
+#. Key:	Pause.ReturnToTitle
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Pause.ReturnToTitle"
+msgid "タイトルへ戻る"
+msgstr "Return to title"
+
+#. Key:	Prompt.Begin
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Prompt.Begin"
+msgid "はじめる"
+msgstr "Begin"
+
+#. Key:	Prompt.Change
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Prompt.Change"
+msgid "変更"
+msgstr "Change"
+
+#. Key:	Prompt.Rebind
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Prompt.Rebind"
+msgid "割り当て"
+msgstr "Rebind"
+
+#. Key:	Prompt.Scroll
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Prompt.Scroll"
+msgid "送る"
+msgstr "Scroll"
+
+#. Key:	Prompt.Select
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Prompt.Select"
+msgid "決定"
+msgstr "Select"
+
+#. Key:	Prompt.Title
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Prompt.Title"
+msgid "タイトルへ"
+msgstr "Title"
+
+#. Key:	Screen.ChapterSelect
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Screen.ChapterSelect"
+msgid "章を選ぶ"
+msgstr "Chapter select"
+
+#. Key:	Screen.Credits
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Screen.Credits"
+msgid "制作・権利表記"
+msgstr "Credits and third-party notices"
+
+#. Key:	Screen.Main
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Screen.Main"
+msgid "メインメニュー"
+msgstr "Main menu"
+
+#. Key:	Screen.Pause
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Screen.Pause"
+msgid "一時停止"
+msgstr "Paused"
+
+#. Key:	Screen.Practice
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Screen.Practice"
+msgid "武芸稽古"
+msgstr "Practice lobby"
+
+#. Key:	Screen.Wallet
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Screen.Wallet"
+msgid "IrohaConnect ウォレット"
+msgstr "IrohaConnect wallet"
+
+#. Key:	Title.Motto
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Title.Motto"
+msgid "剣を、工房を、民の手に。"
+msgstr "Swords and workshops, back in the people's hands."
+
+#. Key:	Title.Resistance
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Menu,Title.Resistance"
+msgid "SORA 抵抗軍"
+msgstr "SORA Resistance"
+
+#. Key:	Tradeoff.HealingLance
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Menu,Tradeoff.HealingLance"
+msgid "オフラインの稽古では使い手の体力を少し戻すが、威力は低い。"
+msgstr "Restores a small amount of user health in offline practice; reduced damage."
+
+#. Key:	Tradeoff.MicroMortar
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Menu,Tradeoff.MicroMortar"
+msgid "爆風は広いが、弾道は遅く予兆が見え、自分も巻き込む。"
+msgstr "Wide blast; slow telegraphed arc and self-damage."
+
+#. Key:	Tradeoff.MonofilamentNaginata
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Menu,Tradeoff.MonofilamentNaginata"
+msgid "間合いは長いが、刀より振りが遅い。"
+msgstr "Extended reach; slower attacks than katana."
+
+#. Key:	Tradeoff.PhantomSMG
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Menu,Tradeoff.PhantomSMG"
+msgid "一発ごとの当たりは重いが、弾倉は小さい。"
+msgstr "Harder individual hits; smaller magazine."
+
+#. Key:	Tradeoff.PlasmaMatchlock
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Menu,Tradeoff.PlasmaMatchlock"
+msgid "重く正確な一撃。装弾数は少なく、立て直しに時間がかかる。"
+msgstr "Heavy precision shot; low capacity and long recovery."
+
+#. Key:	Tradeoff.ShockEmitter
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Menu,Tradeoff.ShockEmitter"
+msgid "間近の敵を強く抑えるが、射程は短い。"
+msgstr "Strong close control; short range."
+
+#. Key:	AutoSteer
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,AutoSteer"
+msgid "騎乗の自動誘導"
+msgstr "Auto-steer on horseback"
+
+#. Key:	AutoSteer.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,AutoSteer.Hint"
+msgid "騎乗の場面で、馬が道筋をたどる。歩様と狙いは自分で操る。"
+msgstr "On horseback rides, the horse follows the route; you keep control of gait and aim."
+
+#. Key:	Bus.Ambience
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.Ambience"
+msgid "環境音"
+msgstr "Ambience"
+
+#. Key:	Bus.Ambience.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.Ambience.Hint"
+msgid "雨・風・街のざわめき。"
+msgstr "Rain, wind and the town."
+
+#. Key:	Bus.Master
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.Master"
+msgid "全体の音量"
+msgstr "Master volume"
+
+#. Key:	Bus.Master.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.Master.Hint"
+msgid "すべての音の大きさ。"
+msgstr "Every sound in the game."
+
+#. Key:	Bus.Music
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.Music"
+msgid "音楽"
+msgstr "Music"
+
+#. Key:	Bus.Music.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.Music.Hint"
+msgid "楽曲と戦いの音楽。"
+msgstr "Score and combat music."
+
+#. Key:	Bus.SFX
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.SFX"
+msgid "効果音"
+msgstr "Sound effects"
+
+#. Key:	Bus.SFX.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.SFX.Hint"
+msgid "武器・足音・爆発など。徴収官の予兆音は最小でも聞こえる。"
+msgstr "Weapons, footsteps, explosions. A collector's warning sounds stay audible even at the lowest setting."
+
+#. Key:	Bus.UI
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.UI"
+msgid "メニューの音"
+msgstr "Interface"
+
+#. Key:	Bus.UI.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.UI.Hint"
+msgid "メニューとウォレットの音。"
+msgstr "Menu and wallet sounds."
+
+#. Key:	Bus.Voice
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.Voice"
+msgid "声"
+msgstr "Voice"
+
+#. Key:	Bus.Voice.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Bus.Voice.Hint"
+msgid "会話と掛け声。"
+msgstr "Dialogue and barks."
+
+#. Key:	CameraShake
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,CameraShake"
+msgid "画面の揺れ"
+msgstr "Camera shake"
+
+#. Key:	CameraShake.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,CameraShake.Hint"
+msgid "爆発や衝撃によるカメラの揺れの強さ。0% で揺れない。"
+msgstr "How strongly explosions and impacts shake the camera. 0% turns it off."
+
+#. Key:	CampaignDifficulty
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,CampaignDifficulty"
+msgid "物語の難易度"
+msgstr "Campaign difficulty"
+
+#. Key:	Difficulty.Easy
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Difficulty.Easy"
+msgid "稽古"
+msgstr "Easy"
+
+#. Key:	Difficulty.Easy.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Difficulty.Easy.Hint"
+msgid "予兆が三割長く、首領は打たれ弱い。潜入で見つかっても、やり直しではなく戦いになる。"
+msgstr "Telegraphs last 30% longer and bosses have less health. Being spotted while sneaking starts a fight instead of a restart."
+
+#. Key:	Difficulty.Hard
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Difficulty.Hard"
+msgid "免許皆伝"
+msgstr "Hard"
+
+#. Key:	Difficulty.Hard.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Difficulty.Hard.Hint"
+msgid "予兆が一割五分短く、首領は打たれ強く、合わせの間も狭い。"
+msgstr "Telegraphs are 15% shorter, bosses have more health, and timing windows are tighter."
+
+#. Key:	Difficulty.Normal
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Difficulty.Normal"
+msgid "真剣"
+msgstr "Normal"
+
+#. Key:	Difficulty.Normal.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Difficulty.Normal.Hint"
+msgid "本来の予兆と手応え。"
+msgstr "The intended telegraphs and challenge."
+
+#. Key:	Difficulty.Scope
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Difficulty.Scope"
+msgid "武芸稽古と対戦には影響しない。"
+msgstr "Practice and matches are unaffected."
+
+#. Key:	EnglishSubtitles
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,EnglishSubtitles"
+msgid "英語字幕"
+msgstr "English subtitles"
+
+#. Key:	EnglishSubtitles.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,EnglishSubtitles.Hint"
+msgid "会話・物語・メニューの英語字幕。日本語は常に表示。F10 でも切り替え。"
+msgstr "English subtitles for dialogue, story and menus. Japanese always shows. F10 also toggles them."
+
+#. Key:	FrameRateLimit
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,FrameRateLimit"
+msgid "フレームレート上限"
+msgstr "Frame rate cap"
+
+#. Key:	FrameRateLimit.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,FrameRateLimit.Hint"
+msgid "描く枚数の上限。"
+msgstr "The most frames drawn each second."
+
+#. Key:	FrameRateLimit.Uncapped
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,FrameRateLimit.Uncapped"
+msgid "無制限"
+msgstr "Uncapped"
+
+#. Key:	Graphics.Unmeasured
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Settings,Graphics.Unmeasured"
+msgid "プリセットは目標値。この機体での性能はまだ計測していない。"
+msgstr "Presets are targets; performance on this machine has not been measured."
+
+#. Key:	Hidden
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Hidden"
+msgid "非表示"
+msgstr "Off"
+
+#. Key:	Hold
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Hold"
+msgid "長押し"
+msgstr "Hold"
+
+#. Key:	Off
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Off"
+msgid "オフ"
+msgstr "Off"
+
+#. Key:	On
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,On"
+msgid "オン"
+msgstr "On"
+
+#. Key:	Palette.BlueYellow
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Palette.BlueYellow"
+msgid "青黄の色覚に配慮"
+msgstr "Blue-yellow safe"
+
+#. Key:	Palette.BlueYellow.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Palette.BlueYellow.Hint"
+msgid "3型色覚向け。斬撃と範囲は赤、照準と光線は青緑。"
+msgstr "For tritanopia: cleaves and areas red, locked aims and beams teal."
+
+#. Key:	Palette.HighContrast
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Palette.HighContrast"
+msgid "高コントラスト"
+msgstr "High contrast"
+
+#. Key:	Palette.HighContrast.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Palette.HighContrast.Hint"
+msgid "どの色覚でも見分けやすい。斬撃と範囲は赤、照準と光線は淡い水色。"
+msgstr "Apart for every kind of colour vision: cleaves and areas red, locked aims and beams pale cyan."
+
+#. Key:	Palette.RedGreen
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Palette.RedGreen"
+msgid "赤緑の色覚に配慮"
+msgstr "Red-green safe"
+
+#. Key:	Palette.RedGreen.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Palette.RedGreen.Hint"
+msgid "1型・2型色覚向け。斬撃と範囲は金、照準と光線は青。"
+msgstr "For protanopia and deuteranopia: cleaves and areas gold, locked aims and beams blue."
+
+#. Key:	Palette.Standard
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Palette.Standard"
+msgid "標準"
+msgstr "Standard"
+
+#. Key:	Palette.Standard.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Palette.Standard.Hint"
+msgid "斬撃と範囲は琥珀、照準と光線は水色。"
+msgstr "Cleaves and areas amber, locked aims and beams cyan."
+
+#. Key:	Preset
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset"
+msgid "プリセット"
+msgstr "Preset"
+
+#. Key:	Preset.Custom
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset.Custom"
+msgid "カスタム"
+msgstr "Custom"
+
+#. Key:	Preset.Custom.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset.Custom.Hint"
+msgid "項目を個別に変えている。左右でプリセットに戻る。"
+msgstr "Settings changed one by one. Left or right picks a preset again."
+
+#. Key:	Preset.Mac
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset.Mac"
+msgid "Mac"
+msgstr "Mac"
+
+#. Key:	Preset.Mac.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset.Mac.Hint"
+msgid "ソフトウェア Lumen と通常の影。TSR が 75% から描き、60 fps を目指す。"
+msgstr "Software Lumen and conventional shadows; TSR renders from 75% and aims for 60 fps."
+
+#. Key:	Preset.WindowsCompetitive
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset.WindowsCompetitive"
+msgid "Windows 競技"
+msgstr "Windows Competitive"
+
+#. Key:	Preset.WindowsCompetitive.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset.WindowsCompetitive.Hint"
+msgid "Lumen と視界は保ち、影・効果・後処理を抑える。上限なし、垂直同期なし。"
+msgstr "Keeps Lumen and view distance; trims shadows, effects and post processing. Uncapped, no vsync."
+
+#. Key:	Preset.WindowsQuality
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset.WindowsQuality"
+msgid "Windows 高画質"
+msgstr "Windows Quality"
+
+#. Key:	Preset.WindowsQuality.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Preset.WindowsQuality.Hint"
+msgid "すべて最高で MegaLights を使う。TSR が 67% から描き、60 fps を目指す。"
+msgstr "Everything at Epic with MegaLights; TSR renders from 67% and aims for 60 fps."
+
+#. Key:	ReduceFlashing
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,ReduceFlashing"
+msgid "点滅を抑える"
+msgstr "Reduce flashing"
+
+#. Key:	ReduceFlashing.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,ReduceFlashing.Hint"
+msgid "被弾したときの赤い縁取りなど、画面の点滅を弱く穏やかにする。"
+msgstr "Softens screen flashes, such as the red edge when the hero is hit."
+
+#. Key:	ResolutionScale
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,ResolutionScale"
+msgid "解像度スケール（TSR）"
+msgstr "Resolution scale (TSR)"
+
+#. Key:	ResolutionScale.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,ResolutionScale.Hint"
+msgid "TSR がこの割合で描き、画面の解像度へ高精細に戻す。"
+msgstr "TSR renders at this share of the display resolution and upscales to it."
+
+#. Key:	Screen.Accessibility
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Accessibility"
+msgid "アクセシビリティ"
+msgstr "Accessibility"
+
+#. Key:	Screen.Accessibility.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Accessibility.Hint"
+msgid "予兆の色・長押しと切り替え・難易度・点滅・画面の揺れ。"
+msgstr "Telegraph colours, hold or toggle, difficulty, flashing and camera shake."
+
+#. Key:	Screen.Audio
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Audio"
+msgid "音量"
+msgstr "Audio"
+
+#. Key:	Screen.Audio.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Audio.Hint"
+msgid "全体・音楽・効果音・声・メニュー・環境音の音量。"
+msgstr "Master, music, effects, voice, interface and ambience volume."
+
+#. Key:	Screen.Controls
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Controls"
+msgid "操作"
+msgstr "Controls"
+
+#. Key:	Screen.Controls.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Controls.Hint"
+msgid "キー割り当て・感度・スティックの遊び・上下反転。"
+msgstr "Key bindings, sensitivity, stick dead zones and inverted look."
+
+#. Key:	Screen.Graphics
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Graphics"
+msgid "画質"
+msgstr "Graphics"
+
+#. Key:	Screen.Graphics.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Graphics.Hint"
+msgid "プリセット・解像度スケール・フレームレート・表示モード。"
+msgstr "Presets, resolution scale, frame rate and window mode."
+
+#. Key:	Screen.Subtitles
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Subtitles"
+msgid "字幕と表示"
+msgstr "Subtitles and display"
+
+#. Key:	Screen.Subtitles.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Screen.Subtitles.Hint"
+msgid "英語字幕・字幕の大きさ・話者名・効果音の字幕。"
+msgstr "English subtitles, subtitle size, speaker names and sound captions."
+
+#. Key:	Shown
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Shown"
+msgid "表示"
+msgstr "On"
+
+#. Key:	SoundCaptions
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SoundCaptions"
+msgid "効果音の字幕"
+msgstr "Sound captions"
+
+#. Key:	SoundCaptions.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SoundCaptions.Hint"
+msgid "銃声・刃の打ち合い・爆発・徴収官の予兆を、聞こえた方向とともに字幕で知らせる。"
+msgstr "Captions gunfire, clashing blades, explosions and a collector's windup, with the direction they came from."
+
+#. Key:	SpeakerNames
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SpeakerNames"
+msgid "話者名"
+msgstr "Speaker names"
+
+#. Key:	SpeakerNames.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SpeakerNames.Hint"
+msgid "会話の上に、話している者の名を出す。"
+msgstr "Shows who is speaking above each line."
+
+#. Key:	SubtitleSize
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SubtitleSize"
+msgid "字幕の大きさ"
+msgstr "Subtitle size"
+
+#. Key:	SubtitleSize.ExtraLarge
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SubtitleSize.ExtraLarge"
+msgid "特大"
+msgstr "Extra large"
+
+#. Key:	SubtitleSize.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SubtitleSize.Hint"
+msgid "会話・物語・効果音の字幕の文字の大きさ。"
+msgstr "Text size for dialogue, story and sound captions."
+
+#. Key:	SubtitleSize.Large
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SubtitleSize.Large"
+msgid "大"
+msgstr "Large"
+
+#. Key:	SubtitleSize.Standard
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,SubtitleSize.Standard"
+msgid "標準"
+msgstr "Standard"
+
+#. Key:	Telegraph.Cleave
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Settings,Telegraph.Cleave"
+msgid "斬撃・範囲の予兆"
+msgstr "Cleave or area telegraph"
+
+#. Key:	Telegraph.Lock
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Settings,Telegraph.Lock"
+msgid "照準・光線の予兆"
+msgstr "Locked aim or beam telegraph"
+
+#. Key:	TelegraphPalette
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,TelegraphPalette"
+msgid "予兆の色"
+msgstr "Telegraph colours"
+
+#. Key:	Toggle
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Toggle"
+msgid "切り替え"
+msgstr "Toggle"
+
+#. Key:	ToggleGuard
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,ToggleGuard"
+msgid "構え"
+msgstr "Guard"
+
+#. Key:	ToggleGuard.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,ToggleGuard.Hint"
+msgid "切り替えでは、一度押すと構え、もう一度押すと解く。"
+msgstr "Toggle: press once to raise the guard and again to lower it."
+
+#. Key:	ToggleSprint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,ToggleSprint"
+msgid "走る"
+msgstr "Sprint"
+
+#. Key:	ToggleSprint.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,ToggleSprint.Hint"
+msgid "切り替えでは、もう一度押すか撃つと止まる。"
+msgstr "Toggle: press again, or fire, to stop."
+
+#. Key:	VSync
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,VSync"
+msgid "垂直同期"
+msgstr "VSync"
+
+#. Key:	VSync.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,VSync.Hint"
+msgid "画面の書き換えに合わせ、画面の裂けを防ぐ。遅延が少し増える。"
+msgstr "Waits for the display to prevent tearing, at a little extra latency."
+
+#. Key:	Window.Borderless
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Window.Borderless"
+msgid "ボーダーレス"
+msgstr "Borderless"
+
+#. Key:	Window.Borderless.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Window.Borderless.Hint"
+msgid "画面いっぱいの枠なしウィンドウ。変更はすぐに反映される。"
+msgstr "A borderless window filling the display. Changes apply at once."
+
+#. Key:	Window.Fullscreen
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Window.Fullscreen"
+msgid "フルスクリーン"
+msgstr "Fullscreen"
+
+#. Key:	Window.Fullscreen.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Window.Fullscreen.Hint"
+msgid "画面を占有する。変更はすぐに反映される。"
+msgstr "Exclusive fullscreen. Changes apply at once."
+
+#. Key:	Window.Windowed
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Window.Windowed"
+msgid "ウィンドウ"
+msgstr "Windowed"
+
+#. Key:	Window.Windowed.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,Window.Windowed.Hint"
+msgid "枠つきのウィンドウ。変更はすぐに反映される。"
+msgstr "A framed window. Changes apply at once."
+
+#. Key:	WindowMode
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,WindowMode"
+msgid "表示モード"
+msgstr "Window mode"
+
+#. Key:	ApprovedAccount
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,ApprovedAccount"
+msgid "承認済みの口座"
+msgstr "Approved account"
+
+#. Key:	Disconnect
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,Disconnect"
+msgid "接続を解除"
+msgstr "Disconnect"
+
+#. Key:	Disconnect.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,Disconnect.Hint"
+msgid "ウォレットとの接続を終える。"
+msgstr "End the wallet session."
+
+#. Key:	JoinPreview
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview"
+msgid "参加条件の下書き（未検証）"
+msgstr "Unverified Join scaffold; no wallet approval."
+
+#. Key:	JoinPreview.Asset
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.Asset"
+msgid "資産 ID（申請）"
+msgstr "Requested asset"
+
+#. Key:	JoinPreview.FeeCaps
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.FeeCaps"
+msgid "手数料上限明細（申請）"
+msgstr "Requested fee caps"
+
+#. Key:	JoinPreview.FeePayer
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.FeePayer"
+msgid "手数料負担の申請"
+msgstr "Requested fee payer"
+
+#. Key:	JoinPreview.NftMetadata
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.NftMetadata"
+msgid "NFT 情報ハッシュ（申請）"
+msgstr "Requested NFT metadata hash"
+
+#. Key:	JoinPreview.NftPolicy
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.NftPolicy"
+msgid "返還規則（申請）"
+msgstr "Requested return policy"
+
+#. Key:	JoinPreview.NftReservations
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.NftReservations"
+msgid "NFT 装備予約（申請）"
+msgstr "Requested NFT reservations"
+
+#. Key:	JoinPreview.NftRole
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.NftRole"
+msgid "装備ロール ID（申請）"
+msgstr "Requested equipment role"
+
+#. Key:	JoinPreview.NoSigning
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.NoSigning"
+msgid "この画面から署名・入金はできない。"
+msgstr "Nothing can be signed or deposited from this screen."
+
+#. Key:	JoinPreview.Stake
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.Stake"
+msgid "申請入金額"
+msgstr "Requested stake"
+
+#. Key:	JoinPreview.Unchecked
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,JoinPreview.Unchecked"
+msgid "死亡時の損失・最大損失：未確認。台帳の試合規則・残高・所有権は未照合。"
+msgstr "Death loss and maximum loss unavailable; ledger rules, balances and ownership are unchecked."
+
+#. Key:	NotADeposit
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,NotADeposit"
+msgid "ウォレットとの接続は資産の預け入れではない。対戦の決済と NFT の売買はまだ公開していない。"
+msgstr "Pairing is not a deposit. Match settlement and NFT trading are not live yet."
+
+#. Key:	Open
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,Open"
+msgid "ウォレットを開く"
+msgstr "Open wallet app"
+
+#. Key:	Open.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,Open.Hint"
+msgid "この端末のウォレットで接続を承認する。"
+msgstr "Approve the pairing in this device's wallet app."
+
+#. Key:	Pair
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,Pair"
+msgid "接続を開始"
+msgstr "Pair wallet"
+
+#. Key:	Pair.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,Pair.Hint"
+msgid "QR コードかリンクで IrohaConnect ウォレットとつなぐ。"
+msgstr "Pair an IrohaConnect wallet by QR code or link."
+
+#. Key:	Qr
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,Qr"
+msgid "接続用 QR コード（この画面のみ）"
+msgstr "Pairing QR code, shown only here."
+
+#. Key:	State.Approved
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.Approved"
+msgid "接続済み。署名の依頼はすべて、先に正確な条件を示す。"
+msgstr "Paired. Every signing request shows its exact terms first."
+
+#. Key:	State.AwaitingApproval
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.AwaitingApproval"
+msgid "QR コードを読み取るかウォレットを開き、承認してほしい。"
+msgstr "Scan the QR code or open the wallet app, then approve."
+
+#. Key:	State.AwaitingSignature
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.AwaitingSignature"
+msgid "ウォレットでの署名を待っている。"
+msgstr "Waiting for your signature in the wallet."
+
+#. Key:	State.Connecting
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.Connecting"
+msgid "中継に接続中……"
+msgstr "Connecting to the relay…"
+
+#. Key:	State.CreatingSession
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.CreatingSession"
+msgid "接続用のセッションを作成中……"
+msgstr "Creating a pairing session…"
+
+#. Key:	State.Disconnected
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.Disconnected"
+msgid "接続を解除した。"
+msgstr "Disconnected."
+
+#. Key:	State.Error
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.Error"
+msgid "ウォレットのエラー。理由は日本語の行にある。"
+msgstr "Wallet error; the Japanese line gives the reason."
+
+#. Key:	State.Idle
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.Idle"
+msgid "未接続。"
+msgstr "Not paired."
+
+#. Key:	State.Signed
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.Signed"
+msgid "ウォレットで署名済み。まだ送信していない。"
+msgstr "Signed in the wallet; not yet submitted."
+
+#. Key:	State.Unavailable
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,State.Unavailable"
+msgid "この版では IrohaConnect を使えない。"
+msgstr "IrohaConnect is unavailable in this build."
+
+#. Key:	Status
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,Status"
+msgid "接続の状態"
+msgstr "Wallet status"
+
+#. Key:	Transaction.AwaitingSignature
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.AwaitingSignature"
+msgid "署名待ち。条件と手数料を確かめてほしい。"
+msgstr "Awaiting signature; check terms and fees."
+
+#. Key:	Transaction.Cancelled
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.Cancelled"
+msgid "送信前に取り消した。"
+msgstr "Cancelled before submission."
+
+#. Key:	Transaction.Finalized
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.Finalized"
+msgid "Torii は適用済みと報告した。試合への参加は別。"
+msgstr "Torii reports applied; match entry is separate."
+
+#. Key:	Transaction.None
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.None"
+msgid "取引の状態は分からない。"
+msgstr "Transaction status unavailable."
+
+#. Key:	Transaction.Pending
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.Pending"
+msgid "台帳での確定を待っている。"
+msgstr "Waiting for on-chain finality."
+
+#. Key:	Transaction.Rejected
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.Rejected"
+msgid "台帳で拒否されたか、期限が切れた。"
+msgstr "Rejected or expired on-chain."
+
+#. Key:	Transaction.Signed
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.Signed"
+msgid "この端末で署名済み。未送信。"
+msgstr "Signed locally; not submitted."
+
+#. Key:	Transaction.Submitting
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.Submitting"
+msgid "隔離された試験ネットワークへ送信中。"
+msgstr "Submitting to the isolated test network."
+
+#. Key:	Transaction.Uncertain
+#: Source/SoraArena/Private/UI/SoraWalletText.h
+msgctxt "SoraArena.Wallet,Transaction.Uncertain"
+msgid "状態が分からない。再送しないでほしい。"
+msgstr "Status unknown; do not resend."
+
+#. Key:	TransactionStatus
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Wallet,TransactionStatus"
+msgid "署名・台帳の状態"
+msgstr "Signing and ledger status"

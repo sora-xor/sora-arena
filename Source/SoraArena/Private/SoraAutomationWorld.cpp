@@ -1,6 +1,7 @@
 #include "SoraAutomationWorld.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
+#include "SoraFrontEnd.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
@@ -48,6 +49,8 @@ bool FSoraAutomationWorld::Start(const FString& SaveSlot)
     }
     GameMode->SaveSlotName = SaveSlot;
     GameMode->ControlSlotName = ControlSlot(SaveSlot);
+    GameMode->SettingsSlotName = SettingsSlot(SaveSlot);
+    GameMode->bAttachSettingsToEngine = false;
     World->InitializeActorsForPlay(URL);
     World->BeginPlay();
     if (!World->GetGameState())
@@ -127,11 +130,34 @@ bool FSoraAutomationWorld::PressKey(const FKey& Key)
 
 bool FSoraAutomationWorld::InjectKey(const FKey& Key, EInputEvent Event) const
 {
+    return SendKey(Key, Event, true);
+}
+
+bool FSoraAutomationWorld::InjectKeyPastFrontEnd(const FKey& Key, EInputEvent Event) const
+{
+    return SendKey(Key, Event, false);
+}
+
+bool FSoraAutomationWorld::SendKey(const FKey& Key, EInputEvent Event, bool bThroughFrontEnd) const
+{
     ASoraPlayerCharacter* Pawn = Player();
     APlayerController* Controller = Pawn ? Cast<APlayerController>(Pawn->GetController()) : nullptr;
     UWorld* World = GetTestWorld();
     if (!Controller || !Controller->PlayerInput || !World || !Pawn->InputComponent)
         return false;
+    ASoraGameMode* GameMode = Mode();
+    USoraFrontEnd* FrontEnd = GameMode ? GameMode->FrontEnd() : nullptr;
+    if (FrontEnd && Event == IE_Pressed)
+        FrontEnd->NoteDevice(SoraUI::DeviceForKey(Key));
+    // In the game an open front end screen holds keyboard and pad focus, so
+    // its presses never reach UPlayerInput; SSoraFrontEnd forwards them to
+    // USoraFrontEnd, as here. Releases still reach UPlayerInput: they only
+    // clear held state, as the HUD's flush does when a menu opens.
+    if (bThroughFrontEnd && FrontEnd && FrontEnd->IsOpen() && Event == IE_Pressed)
+    {
+        FrontEnd->HandleKey(Key);
+        return true;
+    }
     constexpr float FrameSeconds = 1.f / 60.f;
     // The stack APlayerController::BuildInputStack gives a possessed pawn: its
     // own input component, evaluated with the world's pause state.
@@ -159,7 +185,7 @@ void FSoraAutomationWorld::IgnoreMissingGeneratedArt(FAutomationTestBase& Test)
 
 void FSoraAutomationWorld::IgnoreAbsentSaveSlot(FAutomationTestBase& Test, const FString& SaveSlot)
 {
-    for (const FString& Slot : {SaveSlot, ControlSlot(SaveSlot)})
+    for (const FString& Slot : {SaveSlot, ControlSlot(SaveSlot), SettingsSlot(SaveSlot)})
         Test.AddExpectedMessagePlain(Slot + TEXT(".sav"), ELogVerbosity::Warning,
             EAutomationExpectedMessageFlags::Contains, -1);
 }
@@ -174,11 +200,16 @@ FString FSoraAutomationWorld::ControlSlot(const FString& SaveSlot)
     return SaveSlot + TEXT("_Controls");
 }
 
+FString FSoraAutomationWorld::SettingsSlot(const FString& SaveSlot)
+{
+    return SaveSlot + TEXT("_Settings");
+}
+
 void FSoraAutomationWorld::DeleteSaveSlot(const FString& SaveSlot)
 {
     if (SaveSlot.IsEmpty())
         return;
-    for (const FString& Slot : {SaveSlot, ControlSlot(SaveSlot)})
+    for (const FString& Slot : {SaveSlot, ControlSlot(SaveSlot), SettingsSlot(SaveSlot)})
         if (UGameplayStatics::DoesSaveGameExist(Slot, 0))
             UGameplayStatics::DeleteGameInSlot(Slot, 0);
 }

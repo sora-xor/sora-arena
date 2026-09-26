@@ -2,28 +2,37 @@
 
 The current project keeps Unreal's legacy Action/Axis mappings so the existing keyboard and mouse controls continue to work. The defaults in `Config/DefaultInput.ini` add common gamepad keys supported by Unreal 5.8. They do not alter the Rust combat packet: the character still quantizes the final movement axes, aim angles, and action bits in `ConsumeKernelInput()` at the fixed simulation tick.
 
-| Control | In combat | In the menu |
+| Control | In combat | In menus (the Slate front end) |
 | --- | --- | --- |
-| Left stick | Move | — |
+| Left stick | Move | Move between rows; left and right change an option |
 | Right stick | Aim | — |
 | Right trigger | Fire | — |
 | Left trigger | Block (practice) | — |
-| Bottom / right / left / top face buttons | Jump / melee / reload / interact | Continue / — / — / — |
-| Left stick click | Sprint | Start a new campaign |
-| Right stick click | — | Start offline practice |
-| Left / right shoulder | Ability / — | Previous / next class |
-| D-pad left / down / right | Main / melee / special weapon | Practice loadout slot 1 / 2 / 3 |
-| D-pad up | — | Next map |
-| Menu / View buttons | Open menu / — | Close menu / return to saved campaign |
+| Bottom / right / left / top face buttons | Jump / melee / reload / interact | Choose / back / — / — |
+| Left stick click | Sprint | — |
+| Right stick click | — | — |
+| Left / right shoulder | Ability / next campaign weapon | Change an option |
+| D-pad | Main / melee / special weapon (left / down / right) | Move between rows; left and right change an option |
+| Menu button | Open the pause menu | Resume from the pause menu |
 
-The left stick uses an 0.18 per-axis dead zone. The right stick uses an 0.12 per-axis dead zone and a 1.4 exponent to allow finer small movements. These are applied to each local `UPlayerInput` in `SetupPlayerInputComponent`, as well as declared in the project input config. The right stick is on separate axes so its turn rates can be multiplied by frame delta; the mouse continues to use raw mouse delta. `SetGamepadDeadZones()` clamps both values to 0–0.5, and `SetGamepadLookSensitivity()` clamps its multiplier to 0.25–3.0. `SetInvertedLook()` flips mouse and gamepad vertical look. These Blueprint-callable settings now save to a separate local `SoraControlsV1` slot, so they do not alter campaign checkpoints or wallet state. The Unreal editor and controller behavior remain unverified until UE 5.8.2 is installed.
+The left stick uses an 0.18 per-axis dead zone. The right stick uses an 0.12 per-axis dead zone and a 1.4 exponent to allow finer small movements. These are applied to each local `UPlayerInput` in `SetupPlayerInputComponent`, as well as declared in the project input config. The right stick is on separate axes so its turn rates can be multiplied by frame delta; the mouse uses raw mouse delta times the mouse sensitivity. The Controls screen (**設定 → 操作**) sets both dead zones (0–0.5, in steps of 0.02), pad look sensitivity and mouse sensitivity (0.25–3.0, in steps of 0.25) and inverted look, which flips mouse and pad vertical look. They save with the rebound keys to the local `SoraControlsV1` slot (`USoraControlSaveGame`, schema 2; the class default is 0, so the schema is always written, and a save without it or of another schema is discarded for the defaults), so they never touch campaign checkpoints or wallet state.
 
-`ASoraCharacter::GetActionKeys()` exposes current bindings for a future controls screen. `RemapCombatAction()` changes a named combat action on the local `UPlayerInput` while the game menu is open. It replaces that action's binding for the same device category (gamepad, mouse, or keyboard), rejects collisions and invalid/non-action keys, and leaves wallet/menu/campaign commands untouched. Successful remaps are saved in input order and replayed after launch under the same whitelist and conflict checks. There is no in-game capture UI yet. The menu's printed keyboard instructions have not been replaced with device-aware prompts.
+**Rebinding.** The Controls screen lists every control in `SoraInput::Remappable` (`Source/SoraArena/Public/SoraInputStates.h`): the four movement halves, which take one keyboard key each, and every play-only action (fire, melee, guard, jump, sprint, reload, interact, ability, the three class weapons, the three campaign weapons and next campaign weapon), which take one keyboard-or-mouse key and one pad button. Each row shows both keys. Choose a row with the device to rebind, then press the new key or button; a mouse click on the row rebinds the keyboard-and-mouse slot. Esc or Start cancels, since they stay the pause keys. `ASoraPlayerCharacter::RemapControl` (and `RemapCombatAction` for one action by name) refuses, with the reason shown in the dialog:
 
-The deliberate shared buttons are context-gated: the bottom face button is Jump in play and Continue in the menu; left stick click is Sprint in play and New Campaign in the menu; left shoulder is Ability in play and Previous Class in the menu. The wallet's pairing/open/disconnect actions retain their keyboard-only mappings. No wallet transaction can be triggered by these controller bindings.
+- a key that another action or axis can use in the same game state. A key shared only across states that never overlap is allowed, as `check_input_conflicts.py` allows it: pad A can be Reload in play while it stays Enter on title cards and results. Esc, Start and F10 are always refused, because the pause menu and the subtitle switch act in play;
+- a button of the other device, and a pad button or mouse button for a movement half;
+- a stick direction, an analog axis, Any Key, touch or gestures.
+
+Menu, Enter and Subtitles cannot be rebound, and nothing can be rebound outside a menu. **既定のキーに戻す** (Reset key bindings) asks first, then restores `Config/DefaultInput.ini` and keeps sensitivity, dead zones and inversion. At load the saved layout is replayed as a whole, so a swap made through a free button (X to R3, Y to X, then R3's action to Y) survives a restart. A saved layout that is malformed or that has a conflict is refused whole: the default keys apply and a warning is logged.
+
+**Hold or toggle.** The Accessibility screen switches guard and sprint between hold and toggle (`USoraSettings`, the `SoraSettings` slot). With toggle, a press raises the guard or starts the sprint and the next press ends it; firing also ends a toggled sprint, which a held sprint blocks. Opening the pause menu or rebinding a key ends both, as releasing the key would.
+
+`GetActionKeys()` and `ControlKey()` report current bindings. The front end's prompts are device-aware: they show pad or keyboard labels for the device the player last used, and the mouse cursor shows only while the mouse or keyboard is in use. In-game key prompts (the chapter title card, the result screen, the ammunition readouts, the examine prompt and the practice notice) name their keys through `SoraUI::ActionKey`, which reads the hero's live mappings on the device last used, so they follow the pad and every rebind, with the English beside the Japanese while subtitles are on.
+
+Menus take no action mappings at all: while a screen is open, the Slate front end holds keyboard and pad focus, so its keys never reach `UPlayerInput`, and held keys are flushed when it opens and closes. The one shared play button is the bottom face button: Jump in play, and Enter on the chapter title card and result screens. Wallet pairing, opening and disconnecting are rows on the front end's wallet screen. No wallet transaction can be triggered by these controller bindings.
 
 The fire trigger is accepted only during active gameplay. Pressing it while the title menu or a defeat screen is open cannot leave a held-fire state that shoots as soon as the player resumes.
 
-Before calling this controller feature complete, test on Windows and macOS packaged builds with at least one Xbox-layout controller and one PlayStation-layout controller. Check dead-zone drift, horizontal/vertical aim direction and turn rate at 30/60/120 rendered fps, simultaneous mouse/controller input, menu and practice context changes, remapping conflict rejection, held-button release, Japanese menu readability, and identical canonical replay inputs from equivalent final controls. This check cannot be performed until the pinned UE 5.8 engine is available.
+Rebinding, conflict refusal, the restart replay, reset, hold and toggle, and the new keys acting in play are covered by `SoraArena.UI.ControlsRemap` and `SoraArena.Input.HoldOrToggle` (see `docs/unreal.md`), with simulated keys only. Before calling this controller feature complete, test on Windows and macOS packaged builds with at least one Xbox-layout controller and one PlayStation-layout controller. Check dead-zone drift, horizontal/vertical aim direction and turn rate at 30/60/120 rendered fps, simultaneous mouse/controller input, menu and practice context changes, rebinding on the real devices, held-button release, Japanese menu readability, and identical canonical replay inputs from equivalent final controls. No real controller has been tested.
 
 The implementation uses [Epic's UE 5.8 input mapping overview](https://dev.epicgames.com/documentation/unreal-engine/input-overview-in-unreal-engine), [the `UPlayerInput` API](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/UPlayerInput), [axis properties](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/FInputAxisProperties), and [the gamepad key list](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/InputCore/EKeys).

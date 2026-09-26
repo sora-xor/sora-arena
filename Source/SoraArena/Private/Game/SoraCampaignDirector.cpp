@@ -210,6 +210,22 @@ void USoraCampaignDirector::ResumeSavedChapter()
     ChapterId=FMath::Clamp(Save->CurrentChapter,0,7);
     bCampaignComplete=Save->CampaignComplete; Mode().MapId=FSoraCatalog::Get().Chapter(ChapterId).Map;
 }
+int32 USoraCampaignDirector::HighestChapter() const { return Save?FMath::Clamp(Save->HighestChapter,0,7):0; }
+bool USoraCampaignDirector::SelectChapter(int32 Chapter)
+{
+    if(!Save||!FSoraCatalog::Get().IsReady()||Chapter<0||Chapter>HighestChapter()) return false;
+    // Replaying reopens the story from that chapter, so a liberated campaign
+    // fights its final chapter again rather than restoring the liberated city.
+    ChapterId=Chapter; bCampaignComplete=false; DojoLessonMask=0u;
+    Mode().MapId=FSoraCatalog::Get().Chapter(ChapterId).Map;
+    ClearCheckpoint();
+    SaveProgress();
+    return true;
+}
+bool USoraCampaignDirector::HasProgress() const
+{
+    return Save&&(Save->CurrentChapter>0||Save->HighestChapter>0||Save->CheckpointChapter>=0||Save->CampaignComplete);
+}
 void USoraCampaignDirector::SuspendDojo(bool bIncludeHero)
 {
     if(ChapterId!=0) return;

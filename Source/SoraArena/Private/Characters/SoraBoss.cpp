@@ -1,4 +1,5 @@
 #include "SoraBoss.h"
+#include "SoraSettings.h"
 #include "Combat/SoraDamage.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -76,13 +77,14 @@ void ASoraBoss::Telegraph()
         const FVector End=From+BossLockedDirection*1500.f;
         FHitResult Hit;
         GetWorld()->LineTraceSingleByChannel(Hit,From,End,ECC_Visibility,Query);
-        SoraDamage::Beam(GetWorld(),From,Hit.bBlockingHit?Hit.ImpactPoint:End,FLinearColor(.04f,.85f,.95f),3.f,.18f);
+        SoraDamage::Beam(GetWorld(),From,Hit.bBlockingHit?Hit.ImpactPoint:End,
+            SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Lock),3.f,.18f);
     }
     else
     {
         for(int32 Side:{-1,1})
             SoraDamage::Beam(GetWorld(),From,From+BossLockedDirection.RotateAngleAxis(Side*28.f,FVector::UpVector)*330.f,
-                FLinearColor(1.f,.52f,.08f),3.5f,.18f);
+                SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),3.5f,.18f);
     }
 }
 void ASoraBoss::Strike(ASoraCharacterBase& Target)
