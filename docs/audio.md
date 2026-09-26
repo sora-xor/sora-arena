@@ -276,7 +276,8 @@ add what it does not hear:
 - **FrontEndSounds:** menu keys and the pause menu through the real front end.
 
 The runner uses `-nosound`, so its tests check the subsystem's record of what played. With an audio device,
-each voiced cue must also be playing, in its bus's class.
+each voiced cue must also be playing in its bus's class, unless it is a short 3D one-shot out of earshot of the
+device's listener, which Unreal culls at creation; and every stem of the piece must have its voice.
 
 ## 3. Cue list (gameplay event → files)
 
