@@ -61,15 +61,18 @@ fi
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config
 
-# run_step NAME SCRIPT MARKER: a LogPython message must begin with MARKER.
+# run_step NAME SCRIPT MARKER [rhi]: a LogPython message must begin with MARKER.
+# Steps run with -nullrhi unless the fourth argument is "rhi": the VFX step must
+# compile its materials' shaders for the real Metal platform to check them.
 run_step() {
-  local name="$1" script="$PROJECT_ROOT/scripts/unreal/$2" marker="$3"
+  local name="$1" script="$PROJECT_ROOT/scripts/unreal/$2" marker="$3" rhi="-nullrhi"
   local log="$OUTPUT/$name.log" status
+  [[ "${4:-}" == rhi ]] && rhi="-RenderOffscreen"
   require_free_disk
   echo "Running $2; log: $log" >&2
   set +e
   "$EDITOR_CMD" "$PROJECT" "-ExecutePythonScript=$script" \
-    -unattended -nopause -nullrhi -nosplash -nosound -stdout -FullStdOutLogOutput \
+    -unattended -nopause "$rhi" -nosplash -nosound -stdout -FullStdOutLogOutput \
     "${EDITOR_CONFIG_ARGS[@]}" >"$log" 2>&1
   status=$?
   set -e
@@ -96,10 +99,12 @@ print(next(line.split('LogPython: ', 1)[1] for line in lines
 PY
 }
 
-# The palette step binds materials to meshes from the first step, and the
-# validator reads both; the order is fixed.
+# The palette step binds materials to meshes from the first step, the VFX
+# step reuses the palette's PBR textures for debris, and the validator reads
+# the first two; the order is fixed.
 run_step import-original import_original_assets.py 'SORA_ASSET_IMPORT_COMPLETE: '
 run_step import-palette import_environment_palette.py 'NYAAGYU_PBR_READY: '
+run_step import-vfx create_sora_vfx.py 'SORA_VFX_READY: ' rhi
 run_step validate validate_imported_assets.py \
   "SORA_ASSET_VALIDATION_COMPLETE: $EXPECTED_PACKAGES packages loaded with expected types"
 echo "PASS: imported and loaded $EXPECTED_PACKAGES expected packages; logs: $OUTPUT"

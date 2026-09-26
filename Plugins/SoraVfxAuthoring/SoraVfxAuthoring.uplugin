@@ -1,0 +1,16 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "SORA VFX Authoring",
+  "Description": "Editor-only bridge that lets scripts/unreal/create_sora_vfx.py author Niagara emitter stacks through the engine's external-edit utilities. Never loaded by the game.",
+  "Category": "SORA",
+  "EnabledByDefault": true,
+  "CanContainContent": false,
+  "Modules": [
+    {"Name": "SoraVfxAuthoring", "Type": "Editor", "LoadingPhase": "Default"}
+  ],
+  "Plugins": [
+    {"Name": "Niagara", "Enabled": true}
+  ]
+}
