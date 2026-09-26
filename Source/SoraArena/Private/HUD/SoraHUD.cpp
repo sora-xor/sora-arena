@@ -210,6 +210,7 @@ void ASoraHUD::DrawHUD()
     SoraHUDPanels::DrawObjective(Frame);
     SoraHUDPanels::DrawDojoLesson(Frame);
     SoraHUDPanels::DrawBoss(Frame);
+    if(P) SoraHUDPanels::DrawStealth(Frame,*P);
     if(P) SoraHUDPanels::DrawHero(Frame,*P);
     SoraHUDPanels::DrawDialogue(Frame);
     SoraHUDPanels::DrawCaptions(Frame,P);

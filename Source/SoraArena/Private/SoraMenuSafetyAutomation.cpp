@@ -200,7 +200,7 @@ bool RunFire(FAutomationTestBase& Test, FFireRun& Run)
             return false;
         if (Hero->Health < Health)
         {
-            Test.TestEqual(TEXT("Each hit deals the invader's fixed damage"), Health - Hero->Health, 7.f);
+            Test.TestEqual(TEXT("Each hit deals the invader's fixed damage"), Health - Hero->Health, static_cast<float>(Shooter->AttackDamage(0)));
             Run.HitFrames.Add(Frame);
             Health = Hero->Health;
         }

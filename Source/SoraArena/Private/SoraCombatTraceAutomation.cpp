@@ -2,6 +2,7 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
+#include "Combat/SoraBossCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
@@ -80,6 +81,10 @@ struct FEventLog
         case ESoraBossPhase::Strike: return TEXT("Strike");
         case ESoraBossPhase::Recovery: return TEXT("Recovery");
         case ESoraBossPhase::Defeated: return TEXT("Defeated");
+        case ESoraBossPhase::PhaseChanged: return TEXT("PhaseChanged");
+        case ESoraBossPhase::Staggered: return TEXT("Staggered");
+        case ESoraBossPhase::Countered: return TEXT("Countered");
+        case ESoraBossPhase::Event: return TEXT("Event");
         }
         return TEXT("Unknown");
     }
@@ -135,18 +140,22 @@ struct FEventLog
         }));
         Handles.Add(Bus->OnBossPhase.AddLambda([this](const FSoraBossPhaseEvent& E)
         {
-            Lines.Add(FString::Printf(TEXT("Boss phase=%s boss=%s"), Phase(E.Phase), *Who(E.Boss)));
+            Lines.Add(FString::Printf(TEXT("Boss phase=%s boss=%s detail=%s"), Phase(E.Phase), *Who(E.Boss), *E.Detail.ToString()));
         }));
         Handles.Add(Bus->OnKernelEvent.AddLambda([this](const FSoraPracticeEvent& E, uint32 Tick)
         {
             Lines.Add(FString::Printf(TEXT("Kernel kind=%u tick=%u"), E.Kind, Tick));
+        }));
+        Handles.Add(Bus->OnMarobashi.AddLambda([this](const FSoraMarobashiEvent& E)
+        {
+            Lines.Add(FString::Printf(TEXT("Marobashi hero=%s opponent=%s awase=%d"), *Who(E.Hero), *Who(E.Opponent), E.bAfterAwase));
         }));
         return true;
     }
     void Detach()
     {
         USoraGameEvents* Bus = Events.Get();
-        if (Bus && Handles.Num() == 13)
+        if (Bus && Handles.Num() == 14)
         {
             Bus->OnWeaponFired.Remove(Handles[0]); Bus->OnMeleeCommitted.Remove(Handles[1]);
             Bus->OnStrikeResolved.Remove(Handles[2]); Bus->OnGuarded.Remove(Handles[3]);
@@ -154,7 +163,7 @@ struct FEventLog
             Bus->OnDied.Remove(Handles[6]); Bus->OnDetonated.Remove(Handles[7]);
             Bus->OnSiteRestored.Remove(Handles[8]); Bus->OnChapterStarted.Remove(Handles[9]);
             Bus->OnChapterCompleted.Remove(Handles[10]); Bus->OnBossPhase.Remove(Handles[11]);
-            Bus->OnKernelEvent.Remove(Handles[12]);
+            Bus->OnKernelEvent.Remove(Handles[12]); Bus->OnMarobashi.Remove(Handles[13]);
         }
         Handles.Reset();
         Events.Reset();
@@ -331,8 +340,10 @@ struct FRun
     }
 };
 
-// The first invasion chapter: guard and parry a blade retainer, cut it down with
-// the katana, then carbine, reload, yumi, yari, sprint and jump.
+// The first invasion chapter: guard a blade retainer's cut, meet the next one
+// with a fresh guard (a parry, timed from the retainer's own windup), cut it
+// down with the katana in its stagger, then carbine, reload, yumi, yari,
+// sprint and jump.
 FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Retainer"), Log);
@@ -340,15 +351,24 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         return FString();
     if (!Test.TestTrue(TEXT("Retainer scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(160, 0, 0)))
         return FString();
-    const bool bOk = Run.Play(640, [](FRun& R, int32 F)
+    int32 ParryAt = INDEX_NONE;
+    const bool bOk = Run.Play(640, [&ParryAt](FRun& R, int32 F)
     {
+        // The guard goes up once the retainer's second cut is past half its
+        // windup, inside the parry window, and comes down after the cut.
+        const FFoe* Blade = R.Foe(0);
+        if (ParryAt == INDEX_NONE && F > 105 && F < 240 && Blade && Blade->IsWindingUp() && Blade->WindupProgress() >= .55f)
+        {
+            ParryAt = F;
+            return R.Down(EKeys::LeftControl);
+        }
+        if (ParryAt != INDEX_NONE && F == ParryAt + 14)
+            return R.Up(EKeys::LeftControl);
         switch (F)
         {
         case 5: return R.Down(EKeys::LeftControl);
         case 40: return R.Up(EKeys::LeftControl);
         case 60: case 150: case 200: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
-        case 116: return R.Down(EKeys::LeftControl);
-        case 135: return R.Up(EKeys::LeftControl);
         case 250: return R.Tap(EKeys::One);
         case 270: return R.Aim(R.Foe(1)) && R.Down(EKeys::LeftMouseButton);
         case 330: return R.Up(EKeys::LeftMouseButton);
@@ -362,10 +382,13 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 570: return R.Down(EKeys::LeftShift) && R.Down(EKeys::W);
         case 595: return R.Tap(EKeys::SpaceBar);
         case 620: return R.Up(EKeys::LeftShift) && R.Up(EKeys::W);
-        default: return true;
+        // The hero tracks the carbine target through the burst; the invader
+        // walks the navigation mesh rather than straight down the aim line.
+        default: return F > 270 && F < 330 && R.Foe(1) ? R.Aim(R.Foe(1)) : true;
         }
     });
     const FString Hash = Run.Finish();
+    Run.Expect(TEXT("the second cut is met with a fresh guard"), ParryAt != INDEX_NONE);
     Run.Expect(TEXT("the retainer and a carbine target fall and Nyaakoto stands"),
         bOk && Run.Mode()->Campaign()->Kills == 2 && Run.Hero()->IsAlive());
     // After the traced fight, two defeats open the first production site.
@@ -380,7 +403,10 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 }
 
 // The dojo: stance, guard, parry and recovery through real Block and Fire
-// presses against a sparring pupil, then scored bouts with the bokken.
+// presses against a sparring pupil, then scored bouts with the bokken. A blade's
+// contact holds the world for a moment (hit-stop), so the bout's swings come
+// every twelve frames while the pupil stands; each lands once the bokken has
+// recovered.
 FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Dojo"), Log);
@@ -396,8 +422,10 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 120: return R.Up(EKeys::LeftControl);
         case 190: return R.Down(EKeys::LeftControl);
         case 205: return R.Up(EKeys::LeftControl);
-        case 215: case 270: case 320: case 370: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
-        default: return true;
+        case 215: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
+        default:
+            return F >= 264 && F % 12 == 0 && R.Foe(0) && R.Foe(0)->IsAlive() ?
+                R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton) : true;
         }
     });
     const FString Hash = Run.Finish();
@@ -406,8 +434,13 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     return bOk ? Hash : FString();
 }
 
-// The final chapter restored at seventeen defeats: the collector's beam and
-// cleave, carbine fire, its defeat, the last site and the liberating exit.
+// The final chapter restored at seventeen defeats: the collector (High
+// Collector Val Amort) with his beam and cleave, and carbine fire his ledger
+// shards intercept. The story's blow then brings him to his cane phase (the
+// phases between are SoraArena.Boss.ValAmort's), where no weapon finishes
+// him: the katana goes into its scabbard on the Sheathe key, and a guard
+// pressed just before his final foreclosure lands takes his cane
+// (mutō-dori). Then the last site and the liberating exit.
 FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Collector"), Log);
@@ -417,40 +450,87 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         !Test.TestNotNull(TEXT("The collector waits at seventeen defeats"), Run.Mode()->Campaign()->CampaignBoss()) ||
         !Run.Place(Run.Foe(17), FVector(600, 0, 0)))
         return FString();
-    const bool bOk = Run.Play(420, [](FRun& R, int32 F)
+    int32 TakenAt = INDEX_NONE, GuardAt = INDEX_NONE, Attempts = 0;
+    const bool bOk = Run.Play(900, [&](FRun& R, int32 F)
     {
+        // Captured: the last site, then the exit.
+        if (TakenAt != INDEX_NONE)
+        {
+            if (F == TakenAt + 10)
+            {
+                const FVector Site = R.Mode()->Arena()->NodePositions[2];
+                R.Hero()->SetActorLocation(FVector(Site.X, Site.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+                return R.Tap(EKeys::E);
+            }
+            if (F == TakenAt + 30)
+            {
+                const FVector Exit = R.Mode()->Arena()->ExitPoint();
+                R.Hero()->SetActorLocation(FVector(Exit.X, Exit.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+                return R.Tap(EKeys::E);
+            }
+            return true;
+        }
+        FFoe* Foe = R.Foe(17);
+        const ASoraBoss* Boss = Cast<ASoraBoss>(Foe);
+        if (F > 330 && (!Boss || Boss->IsDefeated()))
+        {
+            if (!Boss)
+                return R.Fail(TEXT("The collector is gone before his capture"));
+            TakenAt = F;
+            return R.Up(EKeys::LeftControl);
+        }
         switch (F)
         {
         case 5: return R.Tap(EKeys::One);
         case 20: return R.Down(EKeys::D);
         case 60: return R.Up(EKeys::D);
-        case 150: return R.Place(R.Foe(17), FVector(250, 0, 0)) && R.Aim(R.Foe(17));
+        case 150: return R.Place(Foe, FVector(250, 0, 0)) && R.Aim(Foe);
         case 160: return R.Down(EKeys::LeftMouseButton);
         case 300: return R.Up(EKeys::LeftMouseButton);
         case 330:
-        {
-            FFoe* Boss = R.Foe(17);
-            if (!Boss)
-                return R.Fail(TEXT("The collector is gone before its defeat"));
-            UGameplayStatics::ApplyDamage(Boss, Boss->Health, R.Controller(), R.Hero(), UDamageType::StaticClass());
+            if (!Foe)
+                return R.Fail(TEXT("The collector is gone before his cane phase"));
+            UGameplayStatics::ApplyDamage(Foe, Foe->Health - Foe->MaxHealth * .4f, R.Controller(), R.Hero(), UDamageType::StaticClass());
             return true;
-        }
-        case 340:
+        case 332: return R.Tap(EKeys::Two);
+        case 334:
         {
-            const FVector Site = R.Mode()->Arena()->NodePositions[2];
-            R.Hero()->SetActorLocation(FVector(Site.X, Site.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-            return R.Tap(EKeys::E);
+            // The cane phase is fought inside his arena, on the open road
+            // that crosses it: he stands on it, the hero two metres off, facing him.
+            if (!Boss)
+                return R.Fail(TEXT("The collector is gone before his cane phase"));
+            const FVector Stand(Boss->ArenaCenter().X, 0.f, Foe->GetActorLocation().Z);
+            const FVector Hero(Stand.X - 220.f, 0.f, R.Hero()->GetActorLocation().Z);
+            if (FVector::Dist2D(Hero, Boss->ArenaCenter()) >= Boss->ArenaRadius())
+                return R.Fail(TEXT("The road does not cross the collector's arena"));
+            Foe->SetActorLocation(Stand, false, nullptr, ETeleportType::TeleportPhysics);
+            R.Hero()->SetActorLocation(Hero, false, nullptr, ETeleportType::TeleportPhysics);
+            return R.Aim(Foe);
         }
-        case 360:
+        case 340: return R.Tap(EKeys::V);
+        default: break;
+        }
+        if (F <= 340 || !Boss)
+            return true;
+        // Sheathed and facing him, a guard pressed in the foreclosure's last
+        // 100 ms; released after it, ready for the next if one is needed.
+        const FSoraBossAttack* Attack = Boss->BossAttack();
+        if (GuardAt == INDEX_NONE && Attack && Attack->bMuto && Boss->IsBossTelegraphing() && Boss->BossWarningSeconds() <= .1f &&
+            R.Hero()->GetEquipment()->IsSheathed())
         {
-            const FVector Exit = R.Mode()->Arena()->ExitPoint();
-            R.Hero()->SetActorLocation(FVector(Exit.X, Exit.Y, R.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-            return R.Tap(EKeys::E);
+            GuardAt = F;
+            ++Attempts;
+            return R.Aim(Foe) && R.Down(EKeys::LeftControl);
         }
-        default: return true;
+        if (GuardAt != INDEX_NONE && F >= GuardAt + 20)
+        {
+            GuardAt = INDEX_NONE;
+            return R.Up(EKeys::LeftControl);
         }
+        return R.Aim(Foe);
     });
     const FString Hash = Run.Finish();
+    Run.Expect(TEXT("the collector is taken by mutō-dori on the first foreclosure"), TakenAt != INDEX_NONE && Attempts == 1);
     Run.Expect(TEXT("the collector falls, the last site is restored and Nyaagyu is liberated"),
         bOk && Run.Mode()->Campaign()->Kills == 18 && Run.Mode()->bChapterComplete && Run.Mode()->Campaign()->bCampaignComplete);
     return bOk ? Hash : FString();
@@ -482,10 +562,14 @@ FString Training(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         {
         case 0: return R.Place(R.Foe(1), FVector(700, 0, 0));
         case 5: return R.Aim(R.Foe(1)) && R.Tap(EKeys::LeftMouseButton);
-        case 65: return R.Place(R.Foe(2), FVector(700, 250, 0));
+        // The wounded Invader1 stands 250 cm from the next shell's target,
+        // inside its 360 cm blast.
+        case 65: return R.Place(R.Foe(1), FVector(700, 0, 0)) && R.Place(R.Foe(2), FVector(700, 250, 0));
         case 70: return R.Aim(R.Foe(2)) && R.Tap(EKeys::LeftMouseButton);
         case 140: return R.Tap(EKeys::R);
-        case 290: return R.Tap(EKeys::Three) && R.Place(R.Foe(3), FVector(900, -250, 0));
+        // Far enough from the wounded Invader2 that the mortar's blast reaches
+        // only the invader it targets, on a line between the torii's pillars.
+        case 290: return R.Tap(EKeys::Three) && R.Place(R.Foe(3), FVector(1200, -400, 0));
         case 310: return R.Aim(R.Foe(3)) && R.Tap(EKeys::LeftMouseButton);
         case 360: return R.Tap(EKeys::Two);
         case 370: return R.Place(R.Foe(0), FVector(120, 0, 0)) && R.Aim(R.Foe(0));
@@ -600,7 +684,8 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
 
     Scenario = TEXT("Dojo");
     Expect(*this, DojoLog, Scenario, TEXT("ChapterStarted chapter=0 resumed=0 liberated=0"));
-    Expect(*this, DojoLog, Scenario, TEXT("Guarded defender=Hero attacker=Pupil0 dojo=1"), 2);
+    Expect(*this, DojoLog, Scenario, TEXT("Guarded defender=Hero attacker=Pupil0 dojo=1"));
+    Expect(*this, DojoLog, Scenario, TEXT("Parried defender=Hero attacker=Pupil0 dojo=1"));
     Expect(*this, DojoLog, Scenario, TEXT("Committed attacker=Pupil0 weapon=0 windup=0.55"), 2);
     Expect(*this, DojoLog, Scenario, TEXT("Committed attacker=Hero weapon=0 windup=0.00"), 4);
     Expect(*this, DojoLog, Scenario, TEXT("Resolved attacker=Hero target=Pupil0 weapon=0 hit=0"));
@@ -617,9 +702,18 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, CollectorLog, Scenario, TEXT("Fired shooter=Boss weapon=-1 kind=Beam"));
     Expect(*this, CollectorLog, Scenario, TEXT("Resolved attacker=Boss target=Hero weapon=-1 hit=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Hero causer=Boss"));
-    Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Boss causer=Hero"), 5);
+    // His ledger shards take the carbine's rounds; the story's blow takes him
+    // to his cane phase, and mutō-dori, not a blow, takes him.
+    Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=Event boss=Boss detail=ward_blocked"));
+    Expect(*this, CollectorLog, Scenario, TEXT("Damaged victim=Boss causer=Hero"));
+    Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=PhaseChanged boss=Boss detail=amort_p3_cane"));
+    Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=Windup boss=Boss detail=amort_final_foreclosure"));
     TestEqual(TEXT("The collector falls once"), CollectorLog.Count(TEXT("Boss phase=Defeated boss=Boss")), 1);
-    Expect(*this, CollectorLog, Scenario, TEXT("Died victim=Boss killer=Hero sparring=0"));
+    Expect(*this, CollectorLog, Scenario, TEXT("Boss phase=Defeated boss=Boss detail=muto_dori"));
+    TestEqual(TEXT("The foreclosure is taken, not guarded or parried"),
+        CollectorLog.Count(TEXT("Guarded defender=Hero attacker=Boss")) + CollectorLog.Count(TEXT("Parried defender=Hero attacker=Boss")), 0);
+    // High Collector Val Amort is taken, never killed (katsujinken).
+    Expect(*this, CollectorLog, Scenario, TEXT("Died victim=Boss killer=Hero sparring=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("SiteRestored chapter=7 site=2 campaign=1"));
     Expect(*this, CollectorLog, Scenario, TEXT("ChapterCompleted chapter=7 liberated=1"));
 
@@ -632,7 +726,7 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, TrainingLog, Scenario, TEXT("Detonated instigator=Hero"), 3);
     Expect(*this, TrainingLog, Scenario, TEXT("Damaged victim=Invader1 causer=Projectile"));
     Expect(*this, TrainingLog, Scenario, TEXT("Died victim=Invader1 killer=Projectile sparring=0"));
-    Expect(*this, TrainingLog, Scenario, TEXT("Committed attacker=Hero weapon=6 windup=0.00"));
+    Expect(*this, TrainingLog, Scenario, TEXT("Committed attacker=Hero weapon=6 windup=0.30"));
     Expect(*this, TrainingLog, Scenario, TEXT("Resolved attacker=Hero target=Retainer0 weapon=6 hit=1"));
 
     KernelEvents(*this, KernelLog);

@@ -140,6 +140,8 @@ SoraText::FLine SoraUI::ControlName(FName Name, int32 Axis)
         {TEXT("Sprint"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Sprint", "走る")},
         {TEXT("Reload"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Reload", "装填")},
         {TEXT("Interact"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Interact", "調べる")},
+        {TEXT("Crouch"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Crouch", "しゃがむ")},
+        {TEXT("Sheathe"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Sheathe", "納刀・抜刀")},
         {TEXT("Ability"), 0, NSLOCTEXT("SoraArena.Controls", "Control.Ability", "技")},
         {TEXT("WeaponOne"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponOne", "主武器")},
         {TEXT("WeaponTwo"), 0, NSLOCTEXT("SoraArena.Controls", "Control.WeaponTwo", "近接武器")},

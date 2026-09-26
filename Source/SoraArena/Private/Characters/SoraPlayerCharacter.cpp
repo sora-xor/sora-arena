@@ -3,7 +3,8 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraControlSaveGame.h"
-#include "SoraEnemy.h"
+#include "Combat/SoraDefense.h"
+#include "Combat/SoraStealth.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
@@ -27,6 +28,9 @@
 namespace
 {
 ASoraGameMode* PlayerGameMode(const UObject* Context) { return Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(Context)); }
+// The eye above the capsule's centre standing and crouched; a crouched
+// capsule of 88 cm passes the ch03 culvert.
+constexpr float StandingEyeZ=64.f, CrouchedEyeZ=40.f, CrouchedHalfHeight=44.f;
 }
 
 ASoraPlayerCharacter::ASoraPlayerCharacter(const FObjectInitializer& ObjectInitializer)
@@ -41,6 +45,9 @@ ASoraPlayerCharacter::ASoraPlayerCharacter(const FObjectInitializer& ObjectIniti
     Camera->FirstPersonFieldOfView=70.f;
     Camera->FirstPersonScale=.6f;
     Equipment=CreateDefaultSubobject<USoraEquipmentComponent>(TEXT("Equipment"));
+    GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch=true;
+    GetCharacterMovement()->SetCrouchedHalfHeight(CrouchedHalfHeight);
+    GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching=true;
 }
 void ASoraPlayerCharacter::ResetLoadout() { Equipment->ResetForClass(); }
 void ASoraPlayerCharacter::OnBodyRebuilt() { QuiverParts.Reset(); }
@@ -85,6 +92,8 @@ void ASoraPlayerCharacter::SuspendDojoAction()
 }
 void ASoraPlayerCharacter::SetKernelDriven(bool Enabled,const FSoraPracticeMap* Map)
 {
+    // Kernel practice has no crouch.
+    if(IsCrouched()) UnCrouch();
     KernelHeldButtons=0; KernelQueuedButtons=0; InputForward=0; InputRight=0;
     Equipment->ReleaseTrigger(); Equipment->bReloading=false; bSprint=false;
     Super::SetKernelDriven(Enabled,Map);
@@ -160,7 +169,12 @@ void ASoraPlayerCharacter::TickPlay(float Dt)
     if(!bDojoTraining) Equipment->TickGuard(Dt);
     if(bDojoTraining) TickDojoLessons();
     Equipment->TickWeapon();
-    GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*Equipment->MoveScale(bSprint);
+    const USoraStealth* Stealth=USoraStealth::Get(this);
+    GetCharacterMovement()->MaxWalkSpeed=FSoraCatalog::Get().Class(ClassId).Speed*Equipment->MoveScale(bSprint)*(Stealth?Stealth->HeroMoveScale():1.f);
+    GetCharacterMovement()->MaxWalkSpeedCrouched=GetCharacterMovement()->MaxWalkSpeed*SoraStealthRules::CrouchSpeedPermille/1000.f;
+    // A sprint stands the hero up; the eye settles to his stance.
+    if(bSprint&&GetCharacterMovement()->bWantsToCrouch) UnCrouch();
+    Eye->SetRelativeLocation(FVector(4.f,0.f,FMath::FInterpTo(Eye->GetRelativeLocation().Z,IsCrouched()?CrouchedEyeZ:StandingEyeZ,Dt,12.f)));
     const float Moving=FMath::Clamp(GetVelocity().Size2D()/500.f,0.f,1.f);
     Viewmodel->Sway(LifeTime,Moving,
         Equipment->bReloading?-30.f:Equipment->IsCommittedStrike()?25.f:Equipment->IsBowDrawing()?-15.f:0.f,
@@ -195,64 +209,23 @@ void ASoraPlayerCharacter::NoteDojoSwing(float StartedAt,float RecoveredAt,float
         }
     }
 }
-bool ASoraPlayerCharacter::AdmitDamage(float& Damage,AActor* Causer)
+bool ASoraPlayerCharacter::AdmitDamage(float& Damage,FSoraHit& Hit,AActor* Causer)
 {
-    USoraGameEvents* Events=USoraGameEvents::Get(this);
-    const int32 WeaponInHand=WeaponId;
-    if(bDojoTraining&&Equipment->IsGuardHeld())
-    {
-        if(const auto* Pupil=Cast<ASoraEnemy>(Causer)) if(Pupil->IsDojoPupil())
-        {
-            const FVector ToAttacker=(Pupil->GetActorLocation()-GetActorLocation()).GetSafeNormal2D();
-            const bool bFacing=FVector::DotProduct(GetActorForwardVector(),ToAttacker)>=.25f;
-            if(bFacing)
-            {
-                const int32 HeldMs=FMath::RoundToInt((GetWorld()->GetTimeSeconds()-Equipment->GuardPressedAt())*1000.f);
-                if(auto* G=PlayerGameMode(this))
-                {
-                    if(G->Campaign()->DojoLessonStage()==2)
-                        G->Campaign()->RecordDojoLesson(SoraDojoRules::EAction::Parry,HeldMs,true);
-                    else if(G->Campaign()->DojoLessonStage()==1)
-                        G->Campaign()->RecordDojoLesson(SoraDojoRules::EAction::Guard,HeldMs,true);
-                }
-                if(Events)
-                {
-                    FSoraDefenseEvent Guarded;
-                    Guarded.Defender=this; Guarded.Attacker=Causer; Guarded.HeldMs=HeldMs; Guarded.bDojo=true;
-                    Events->OnGuarded.Broadcast(Guarded);
-                }
-                return false;
-            }
-        }
-    }
-    if(!bDojoTraining&&bCampaignHero&&Equipment->IsGuardHeld()&&!Equipment->IsCommittedStrike()&&
-        (WeaponInHand==0||WeaponInHand==19||WeaponInHand==20))
-    {
-        if(auto* Retainer=Cast<ASoraEnemy>(Causer); Retainer&&Retainer->IsBladeRetainer())
-        {
-            const FVector ToAttacker=(Retainer->GetActorLocation()-GetActorLocation()).GetSafeNormal2D();
-            const float Facing=FVector::DotProduct(GetActorForwardVector(),ToAttacker);
-            const int32 HeldMs=FMath::RoundToInt((GetWorld()->GetTimeSeconds()-Equipment->GuardPressedAt())*1000.f);
-            FSoraDefenseEvent Defense;
-            Defense.Defender=this; Defense.Attacker=Causer; Defense.HeldMs=HeldMs;
-            switch(SoraHistoricalArms::DefendBlade(true,Facing,HeldMs,Equipment->GuardReserve()))
-            {
-            case SoraHistoricalArms::EDefense::Parry:
-                Equipment->SpendGuard(18.f);
-                Retainer->DelayNextAttack(.65f);
-                if(Events) Events->OnParried.Broadcast(Defense);
-                return false;
-            case SoraHistoricalArms::EDefense::Guard:
-                Equipment->SpendGuard(30.f);
-                Damage*=.25f;
-                Defense.Damage=Damage;
-                if(Events) Events->OnGuarded.Broadcast(Defense);
-                break;
-            case SoraHistoricalArms::EDefense::Exposed: break;
-            }
-        }
-    }
-    return true;
+    return SoraDefense::AdmitHero(*this,Damage,Hit,Causer);
+}
+void ASoraPlayerCharacter::OnStartCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust)
+{
+    Super::OnStartCrouch(HalfHeightAdjust,ScaledHalfHeightAdjust);
+    // The capsule's centre drops: the body keeps its feet on the floor and the
+    // eye starts where it was before TickPlay settles it lower.
+    GetMesh()->SetRelativeLocation(FVector(0.f,0.f,-88.f+HalfHeightAdjust));
+    Eye->AddRelativeLocation(FVector(0.f,0.f,HalfHeightAdjust));
+}
+void ASoraPlayerCharacter::OnEndCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust)
+{
+    Super::OnEndCrouch(HalfHeightAdjust,ScaledHalfHeightAdjust);
+    GetMesh()->SetRelativeLocation(FVector(0.f,0.f,-88.f));
+    Eye->AddRelativeLocation(FVector(0.f,0.f,-HalfHeightAdjust));
 }
 void ASoraPlayerCharacter::OnDefeated(AActor* Causer)
 {
@@ -278,6 +251,7 @@ void ASoraPlayerCharacter::FireDown()
     // into resumed combat if it was first pressed outside gameplay.
     if(!CanPlay()) return;
     if(bKernelDriven) { KernelHeldButtons|=1; return; }
+    if(const USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->IsHeroBusy()) return;
     // A held sprint blocks the trigger until released; a toggled one ends here.
     if(TogglesSprint()) bSprint=false;
     Equipment->TriggerDown();
@@ -294,12 +268,16 @@ void ASoraPlayerCharacter::SprintReleased() { if(!TogglesSprint()) SprintUp(); }
 void ASoraPlayerCharacter::JumpDown()
 {
     if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; }
-    if(CanPlay()&&!Equipment->IsCommittedStrike()&&!Equipment->IsBowDrawing()) Jump();
+    // Left or Right with Jump inside a 転 window rolls to the opponent's flank instead.
+    if(CanPlay()&&SoraDefense::Marobashi(*this,GetInputAxisValue(TEXT("MoveRight")))) return;
+    if(CanPlay()&&!Equipment->IsCommittedStrike()&&!Equipment->IsBowDrawing()&&!Equipment->IsStepping()) Jump();
 }
 void ASoraPlayerCharacter::JumpUp() { StopJumping(); }
 void ASoraPlayerCharacter::Melee()
 {
     if(bKernelDriven) { if(CanPlay()) KernelHeldButtons|=2; return; }
+    // Behind an unsuspecting guard the press is a rear takedown instead of a strike.
+    if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->BeginTakedown(*this)) return;
     Equipment->Melee();
 }
 void ASoraPlayerCharacter::Reload()
@@ -307,7 +285,27 @@ void ASoraPlayerCharacter::Reload()
     if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=32; return; }
     Equipment->Reload();
 }
-void ASoraPlayerCharacter::Interact() { if(CanPlay()) if(auto* G=PlayerGameMode(this)) G->Interact(this); }
+void ASoraPlayerCharacter::Interact()
+{
+    if(!CanPlay()) return;
+    // Held at a body in a stealth zone, Interact drags it.
+    if(USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->BeginDrag(*this)) return;
+    if(auto* G=PlayerGameMode(this)) G->Interact(this);
+}
+void ASoraPlayerCharacter::InteractUp() { if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->EndDrag(); }
+void ASoraPlayerCharacter::CrouchPressed()
+{
+    if(bKernelDriven||!CanPlay()) return;
+    // The wish, not the stance: under a low ceiling the stand waits for headroom.
+    if(GetCharacterMovement()->bWantsToCrouch) { UnCrouch(); return; }
+    bSprint=false; Crouch();
+}
+void ASoraPlayerCharacter::SheathePressed()
+{
+    if(bKernelDriven||!CanPlay()) return;
+    if(const USoraStealth* Stealth=USoraStealth::Get(this); Stealth&&Stealth->IsHeroBusy()) return;
+    Equipment->Sheathe(!Equipment->IsSheathing());
+}
 void ASoraPlayerCharacter::Menu()
 {
     if(auto* G=PlayerGameMode(this))
@@ -340,7 +338,12 @@ bool ASoraPlayerCharacter::TogglesSprint() const
     return G&&G->Settings()&&G->Settings()->ToggleSprint();
 }
 void ASoraPlayerCharacter::Ability() { if(bKernelDriven&&CanPlay()) KernelQueuedButtons|=16; }
-void ASoraPlayerCharacter::MeleeUp() { KernelHeldButtons&=~2u; }
+void ASoraPlayerCharacter::MeleeUp()
+{
+    KernelHeldButtons&=~2u;
+    // A takedown decided by a tap rather than a hold.
+    if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->ReleaseTakedown();
+}
 void ASoraPlayerCharacter::Subtitles() { if(auto* G=PlayerGameMode(this)) G->ToggleSubtitles(); }
 void ASoraPlayerCharacter::ScoreboardDown() { bScoreboardHeld=true; }
 void ASoraPlayerCharacter::ScoreboardUp() { bScoreboardHeld=false; }
@@ -663,6 +666,8 @@ void ASoraPlayerCharacter::SetupPlayerInputComponent(UInputComponent* I)
     BindPress(I,TEXT("Ability"),&ASoraPlayerCharacter::Ability);
     BindPress(I,TEXT("Sprint"),&ASoraPlayerCharacter::SprintDown); BindRelease(I,TEXT("Sprint"),&ASoraPlayerCharacter::SprintReleased);
     BindPress(I,TEXT("Reload"),&ASoraPlayerCharacter::Reload); BindPress(I,TEXT("Interact"),&ASoraPlayerCharacter::Interact);
+    BindRelease(I,TEXT("Interact"),&ASoraPlayerCharacter::InteractUp); BindPress(I,TEXT("Crouch"),&ASoraPlayerCharacter::CrouchPressed);
+    BindPress(I,TEXT("Sheathe"),&ASoraPlayerCharacter::SheathePressed);
     BindPress(I,TEXT("Menu"),&ASoraPlayerCharacter::Menu); BindPress(I,TEXT("Enter"),&ASoraPlayerCharacter::Enter);
     BindPress(I,TEXT("Subtitles"),&ASoraPlayerCharacter::Subtitles);
     BindPress(I,TEXT("Scoreboard"),&ASoraPlayerCharacter::ScoreboardDown); BindRelease(I,TEXT("Scoreboard"),&ASoraPlayerCharacter::ScoreboardUp);

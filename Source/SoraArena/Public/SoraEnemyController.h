@@ -1,24 +1,195 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "SoraStealthRules.h"
 #include "SoraEnemyController.generated.h"
 class ASoraBoss;
 class ASoraCharacterBase;
 class ASoraEnemy;
+class USoraGameEvents;
+struct FSoraDetonatedEvent;
+struct FSoraMeleeCommittedEvent;
+struct FSoraWeaponFiredEvent;
 
-// The campaign opponents' brain. Each frame it faces its pawn toward Nyaakoto,
-// steers around the obstacle ahead, keeps its kind's distance and runs the
-// pawn's attack. The pawn's tick calls Think at the point in the frame where
-// the first prototype ran this logic, before the hero's tick, so frame order
-// and behaviour are unchanged. Navigation-mesh pathing is not used yet.
+// A route for an opponent that starts unaware: points walked in order with a
+// look-around pause at each, looping or walking back the way it came. A single
+// point is a guard post.
+USTRUCT()
+struct FSoraPatrolRoute
+{
+    GENERATED_BODY()
+    UPROPERTY() TArray<FVector> Points;
+    UPROPERTY() bool bPingPong = false;
+    UPROPERTY() int32 PauseMs = 1500;
+};
+
+// The campaign opponents' brain, run from its own tick before its pawn moves.
+// Sparring pupils keep their fixed drill; a boss or rival duellist
+// (ASoraBoss) chooses its own attacks from its pattern tables and is walked
+// here, hearing through this brain when it is blind. Every other
+// opponent runs SoraStealthRules' state machine (unaware, suspicious, alert,
+// search, combat, retreat) on what its archetype perceives (Content/Data/
+// enemies.json): a view cone with line of sight to the hero's head, chest and
+// hips, distance, his stance and a light proxy, and the noise of footsteps
+// (walking, sprinting or crouch-walking, on the zone's floors), blades, shots,
+// explosions, takedowns and allies' call-outs. A guard (an opponent on a
+// patrol or post) obeys the stealth zone (USoraStealth): its vigilance, the
+// bodies it may find, the alarm lecterns an auditor runs to and the alarm
+// that reaches every guard. It walks the runtime navigation mesh (USoraNavigation) around
+// walls and patrols its route. In a fight each archetype keeps its own
+// manner: blades, shields, conscripts and automata close to their reach;
+// rifles take cover behind the arena's low boxes and peek out to fire, or
+// flank by slot; a marksman moves on after its shots; a grenadier keeps its
+// distance; a drone holds station in the air; a walker stands and turns; an
+// auditor runs and raises the alarm. A staggered opponent does nothing. Every
+// choice follows world time, slots and fixed patterns; nothing is random.
 UCLASS()
 class SORAARENA_API ASoraEnemyController : public AAIController
 {
     GENERATED_BODY()
 public:
-    // One frame of decisions for a pawn that is alive in live play.
-    void Think(float DeltaSeconds);
+    ASoraEnemyController();
+    virtual void Tick(float DeltaSeconds) override;
+    // A combat wave: the opponent starts alert, and the invaders' relay keeps
+    // telling it where the hero is whenever it cannot see him.
+    void BeginHunt();
+    // The opponent starts unaware on Route; an empty route guards where it stands.
+    void BeginPatrol(const FSoraPatrolRoute& Route);
+    // An ally at Caller shouts that the hero is at Where. An auditor's alarm
+    // reaches everyone within its alarm radius at full urgency.
+    void HearCallout(const FVector& Caller, const FVector& Where, bool bAlarm = false);
+    // Straight to alert: a conscript whose collar drags it back up knows where the hero is.
+    void Rouse(const FVector& Where);
+    // A noise the stealth zone makes heard everywhere at once (a takedown's scuffle).
+    void HearNoise(SoraStealthRules::ENoise Kind, const FVector& Origin, const FVector& Evidence, const AActor* Source);
+    // The zone's alarm: to where it says the hero is, and wary from now on.
+    void HearAlarm(const FVector& Where);
+    // A body found in the zone: the finder searches around it, the others where they stand.
+    void LearnOfBody(const FVector& Where, bool bFinder);
+    // A guard's start in a zone that has just opened (SoraStealthRules::Posted).
+    void EnterZone(bool bCarriedOver);
+    // On a patrol or post rather than in a hunting wave: the stealth zone's guard.
+    bool IsGuard() const { return !bHunting; }
+    // The hero was in view at the last tick.
+    bool SeesHero() const { return bSeesHero; }
+    // Wary for the rest of the beat (SoraStealthRules::WaryPermille).
+    bool IsWary() const { return Mind.Wary; }
+    // The detection meter the HUD shows over it (SoraStealthRules::Meter).
+    int32 MeterPermille() const;
+    // The hero is in the view cone, within sight range and unobstructed.
+    bool CanSee(const ASoraCharacterBase& Target) const;
+    SoraStealthRules::EState State() const { return Mind.State; }
+    int32 AwarenessPermille() const { return Mind.Awareness / SoraStealthRules::AwarenessScale; }
+    bool IsHunting() const { return bHunting; }
+    SoraStealthRules::ERole CombatRole() const { return Role; }
+    // Where the hero was last seen or heard.
+    FVector LastKnownLocation() const { return LastKnown; }
+    // The cover spot or flank point held in combat or retreat.
+    bool HoldsPosition() const { return bHasPosition; }
+    FVector HeldPosition() const { return Position; }
+protected:
+    virtual void OnPossess(APawn* InPawn) override;
+    virtual void OnUnPossess() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 private:
-    void DriveOpponent(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
-    void DriveCollector(ASoraBoss& Boss, ASoraCharacterBase& Target, float DeltaSeconds);
+    enum class EMove : uint8 { Moving, Arrived, Blocked };
+    // A noise heard since the last tick. Evidence is where it says the hero is.
+    struct FNoise
+    {
+        SoraStealthRules::ENoise Kind;
+        FVector Origin;
+        FVector Evidence;
+        TWeakObjectPtr<const AActor> Source;
+        bool bAlarm = false;
+    };
+    void Prepare(bool bHunt);
+    void Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
+    void DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
+    void DriveBoss(ASoraBoss& Boss, ASoraCharacterBase& Target, float DeltaSeconds);
+    SoraStealthRules::FSight Look(const ASoraEnemy& Enemy, const ASoraCharacterBase& Target) const;
+    bool Occluded(const FVector& From, const FVector& To, const AActor* Source) const;
+    void Enter(ASoraEnemy& Enemy, SoraStealthRules::EState Previous, int32 NowMs);
+    SoraStealthRules::FVigilance Vigilance() const;
+    void LookForBodies(ASoraEnemy& Enemy, int32 DtMs);
+    void CallOut(const ASoraEnemy& Enemy) const;
+    void AlarmRun(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, float DeltaSeconds, int32 NowMs);
+    void AnnounceState(const ASoraEnemy& Enemy) const;
+    void Act(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
+    void Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
+    void Patrol(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
+    void Search(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
+    bool ChoosePosition(const ASoraEnemy& Enemy, const FVector& Threat, bool bRetreat);
+    bool Claimed(const FVector& Spot) const;
+    EMove WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
+    EMove FlyTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs);
+    // One move request at Here: true once the walk has made no progress for
+    // SoraStealthRules::StuckMs; the next request starts a fresh clock.
+    bool Stuck(const FVector& Here, int32 NowMs);
+    void ClearPath();
+    void Face(ASoraEnemy& Enemy, const FVector& Direction, float DeltaSeconds, float Rate) const;
+    void LookAround(ASoraEnemy& Enemy, float BaseYaw, float Amplitude, float DeltaSeconds, int32 NowMs) const;
+    void Footwork(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, const FVector& Delta, float Distance);
+    void OnWeaponFired(const FSoraWeaponFiredEvent& Event);
+    void OnDetonated(const FSoraDetonatedEvent& Event);
+    void OnMeleeCommitted(const FSoraMeleeCommittedEvent& Event);
+    void Listen(bool bEnable);
+    int32 WorldMs() const;
+
+    SoraStealthRules::FMind Mind = SoraStealthRules::Calm();
+    SoraStealthRules::ERole Role = SoraStealthRules::ERole::CoverShooter;
+    bool bHunting = false;
+    int32 Slot = 0;
+    int32 NextIntelMs = 0;
+    int32 CombatSinceMs = 0;
+    FVector LastKnown = FVector::ZeroVector;
+    TArray<FNoise> Heard;
+    // Patrol and post.
+    UPROPERTY() FSoraPatrolRoute Route;
+    FVector Post = FVector::ZeroVector;
+    float PostYaw = 0.f;
+    int32 RouteIndex = 0;
+    int32 RouteStep = 1;
+    int32 PauseUntilMs = 0;
+    float PauseYaw = 0.f;
+    bool bPaused = false;
+    // Search around the last known place.
+    TArray<FVector> SearchPoints;
+    int32 SearchIndex = 0;
+    // The state's move goal is reached or unreachable (SoraStealthRules::FSenses::Reached).
+    bool bGoalDone = false;
+    // Movement along the navigation mesh.
+    TArray<FVector> Path;
+    int32 PathIndex = 0;
+    FVector PathGoal = FVector::ZeroVector;
+    bool bPathValid = false;
+    int32 RepathAtMs = 0;
+    FVector Heading = FVector::ForwardVector;
+    // The stuck clock (SoraStealthRules::Progress) and where it last started.
+    SoraStealthRules::FProgress Walked;
+    FVector StuckFrom = FVector::ZeroVector;
+    // Combat and retreat positions: a cover spot (its box and the face's
+    // outward normal) or an open flank or fallback point.
+    bool bHasPosition = false;
+    FVector Position = FVector::ZeroVector;
+    bool bPositionIsCover = false;
+    FVector PositionNormal = FVector::ForwardVector;
+    FBox2D PositionBox = FBox2D(ForceInit);
+    bool bCanPeek = false;
+    FVector PeekPosition = FVector::ZeroVector;
+    int32 ReviewPositionAtMs = 0;
+    // A marksman that has fired enough moves on and does not take this spot again.
+    bool bAvoidSpot = false;
+    FVector AvoidSpot = FVector::ZeroVector;
+    // An auditor's alarm repeats while it runs; in a zone with lecterns it
+    // runs to one instead and raises the zone's alarm there.
+    int32 NextAlarmMs = 0;
+    int32 Lectern = INDEX_NONE;
+    bool bLecternUnreachable = false;
+    bool bAlarmRaised = false;
+    // Stealth: the hero in view at the last tick, and evidence of a body.
+    bool bSeesHero = false;
+    int32 BodyEvidence = 0;
+    TWeakObjectPtr<ASoraEnemy> BodyInView;
+    TWeakObjectPtr<USoraGameEvents> Events;
+    FDelegateHandle FiredHandle, DetonatedHandle, MeleeHandle;
 };

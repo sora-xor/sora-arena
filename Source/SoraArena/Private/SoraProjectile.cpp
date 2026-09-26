@@ -1,10 +1,10 @@
 #include "SoraProjectile.h"
+#include "Combat/SoraDamage.h"
+#include "SoraCombatRules.h"
 #include "SoraGameEvents.h"
 #include "SoraWorldBuilder.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "GameFramework/DamageType.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
 
@@ -14,6 +14,9 @@ ASoraProjectile::ASoraProjectile()
     Collision=CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision")); RootComponent=Collision;
     Collision->InitSphereRadius(9); Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     Collision->SetCollisionResponseToAllChannels(ECR_Block); Collision->SetCollisionObjectType(ECC_WorldDynamic);
+    // A shell or arrow in flight is not terrain: it must never dirty the
+    // opponents' navigation mesh.
+    Collision->SetCanEverAffectNavigation(false);
 }
 void ASoraProjectile::BeginPlay()
 {
@@ -31,16 +34,18 @@ void ASoraProjectile::BeginPlay()
 }
 void ASoraProjectile::Tick(float Dt)
 {
-    Super::Tick(Dt); Age+=Dt; Velocity.Z-=(bArrow?980.f:420.f)*Dt;
+    Super::Tick(Dt); Age+=Dt; Velocity.Z-=(bArrow?980.f:Gravity)*Dt;
     if(bArrow) SetActorRotation(Velocity.Rotation());
+    const FVector Before=GetActorLocation();
     FHitResult Hit; AddActorWorldOffset(Velocity*Dt,true,&Hit);
+    Traveled+=FVector::Dist(Before,GetActorLocation());
     if(bArrow)
     {
         if(Hit.bBlockingHit)
         {
             if(Hit.GetActor()&&Hit.GetActor()!=GetOwner())
-                UGameplayStatics::ApplyPointDamage(Hit.GetActor(),Damage,Velocity.GetSafeNormal(),Hit,
-                    GetInstigatorController(),this,UDamageType::StaticClass());
+                SoraDamage::Strike(Hit.GetActor(),Damage,FSoraHit::Ranged(Before,WeaponId),Velocity.GetSafeNormal(),Hit,
+                    GetInstigatorController(),this);
             Destroy();
         }
         else if(Age>2.f) Destroy();
@@ -49,16 +54,25 @@ void ASoraProjectile::Tick(float Dt)
 }
 void ASoraProjectile::Detonate()
 {
-    TArray<AActor*> Ignore;
+    const FVector At=GetActorLocation();
+    // Stopped short of its arming distance: a dud. It neither bursts nor hurts.
+    if(!SoraCombatRules::Armed(FMath::FloorToInt32(Traveled),ArmingCm))
+    {
+        auto* Puff=GetWorld()->SpawnActor<AActor>(At,FRotator::ZeroRotator);
+        auto* Sphere=ASoraWorldBuilder::Shape(Puff,nullptr,TEXT("Dud"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector::ZeroVector,FVector(.3f),FLinearColor(.18f,.17f,.16f));
+        Puff->SetRootComponent(Sphere); Puff->SetActorLocation(At); Puff->SetLifeSpan(.2f);
+        Destroy();
+        return;
+    }
     if(auto* Events=USoraGameEvents::Get(this))
     {
         FSoraDetonatedEvent Detonated;
-        Detonated.Instigator=GetInstigator(); Detonated.Location=GetActorLocation(); Detonated.Radius=Radius; Detonated.Damage=Damage;
+        Detonated.Instigator=GetInstigator(); Detonated.Location=At; Detonated.Radius=Radius; Detonated.Damage=Damage;
         Events->OnDetonated.Broadcast(Detonated);
     }
-    UGameplayStatics::ApplyRadialDamage(this,Damage,GetActorLocation(),Radius,UDamageType::StaticClass(),Ignore,this,GetInstigatorController(),false,ECC_Visibility);
-    auto* Effect=GetWorld()->SpawnActor<AActor>(GetActorLocation(),FRotator::ZeroRotator);
+    SoraDamage::Blast(*GetWorld(),Damage,Radius,FSoraHit::Blast(At,WeaponId),GetInstigatorController(),this);
+    auto* Effect=GetWorld()->SpawnActor<AActor>(At,FRotator::ZeroRotator);
     auto* Sphere=ASoraWorldBuilder::Shape(Effect,nullptr,TEXT("Blast"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector::ZeroVector,FVector(Radius/110.f),FLinearColor(1,.22,.025));
-    Effect->SetRootComponent(Sphere); Effect->SetActorLocation(GetActorLocation()); Effect->SetLifeSpan(.12f);
+    Effect->SetRootComponent(Sphere); Effect->SetActorLocation(At); Effect->SetLifeSpan(.12f);
     Destroy();
 }

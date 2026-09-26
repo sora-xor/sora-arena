@@ -46,7 +46,9 @@ struct FSoraHUDFrame
 // Panels in draw order during play; menus are the Slate front end in
 // Private/UI. Title card, dialogue, notices and results:
 // SoraHUDStoryPanels.cpp. Objective, dojo, boss and the hero's combat
-// readouts: SoraHUDCombatPanels.cpp. Sound captions: SoraHUDCaptions.cpp.
+// readouts: SoraHUDCombatPanels.cpp. The stealth zone's detection meter,
+// guard marks and prompts: SoraHUDStealthPanel.cpp. Sound captions:
+// SoraHUDCaptions.cpp. Deterministic practice: SoraHUDPracticePanels.cpp.
 namespace SoraHUDPanels
 {
 void DrawTopBar(const FSoraHUDFrame& Frame);
@@ -54,6 +56,7 @@ void DrawTitleCard(const FSoraHUDFrame& Frame, const FSoraChapter& Card);
 void DrawObjective(const FSoraHUDFrame& Frame);
 void DrawDojoLesson(const FSoraHUDFrame& Frame);
 void DrawBoss(const FSoraHUDFrame& Frame);
+void DrawStealth(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawDialogue(const FSoraHUDFrame& Frame);
 void DrawResult(const FSoraHUDFrame& Frame);

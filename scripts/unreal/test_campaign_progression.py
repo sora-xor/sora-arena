@@ -38,7 +38,9 @@ for gate in ("CheckpointValid", "RecordDefeat", "RestoreSite", "CompleteChapter"
     assert f"SoraCampaignRules::{gate}" in campaign, f"The campaign director no longer uses tested {gate} gate"
 for gate in ("Record", "CheckpointValid", "CanScoreBout"):
     assert f"SoraDojoRules::{gate}" in campaign, f"The campaign director no longer uses tested dojo {gate} gate"
-character = (ROOT / "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp").read_text()
+# The hero records the stance and recovery lessons; his defense, the guard and parry lessons.
+character = ((ROOT / "Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp").read_text() +
+             (ROOT / "Source/SoraArena/Private/Combat/SoraDefense.cpp").read_text())
 assert "SoraDojoRules::EAction::Stance" in character
 assert "SoraDojoRules::EAction::Guard" in character
 assert "SoraDojoRules::EAction::Parry" in character

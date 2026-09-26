@@ -1,0 +1,4360 @@
+{
+  "schema_version": 1,
+  "difficulty": {
+    "easy_windup_permille": 1300,
+    "hard_windup_permille": 850
+  },
+  "bosses": [
+    {
+      "id": "boss_dunark",
+      "chapter": 2,
+      "beat": "ch02.b15",
+      "opponent": "boss_dunark",
+      "name_ja": "上陸指揮官 ドゥナーク",
+      "reading": "じょうりくしきかん ドゥナーク",
+      "name_en": "Landing Commander Dunark",
+      "style_ja": "拍子を刻む剣士 ― 三拍の督促",
+      "style_en": "A metronomic fencer: notices in three beats",
+      "body": "alien",
+      "held_weapon": 0,
+      "sparring_weapon": false,
+      "scale_permille": 1150,
+      "health": {
+        "easy": 1400,
+        "normal": 1400,
+        "hard": 1400
+      },
+      "lethal": true,
+      "defeat": "kill",
+      "finisher": "none",
+      "floor_permille": 0,
+      "poise_ms": 900,
+      "rear_permille": 1000,
+      "flank_permille": 1500,
+      "body_permille": 1000,
+      "arena_radius_cm": 1300,
+      "transition_ms": 1000,
+      "telegraph_min_ms": 500,
+      "deflect_idle_front_deg": 90,
+      "front_blocked_hint": 0,
+      "senses": "sight",
+      "hearing": null,
+      "shield": null,
+      "barrier": null,
+      "mantle": null,
+      "weak_points": [],
+      "wards": [
+        {
+          "id": "shield_drone",
+          "name_ja": "保全目録",
+          "name_en": "Custody drone",
+          "count": 1,
+          "health": 40,
+          "orbit_cm": 300,
+          "period_ms": 4000,
+          "closed_invulnerable": true,
+          "open_every_ms": 8000,
+          "open_ms": 1200,
+          "open_after_block": true,
+          "respawn_ms": 0,
+          "broken_stun_ms": 0,
+          "broken_taken_permille": 1000,
+          "bark": "ch02.b15.dunark.011"
+        }
+      ],
+      "adds": [],
+      "barks": [
+        {
+          "on": "stagger",
+          "line": "ch02.b15.dunark.013",
+          "cooldown_ms": 20000
+        }
+      ],
+      "phases": [
+        {
+          "table": "dunark_p1_notice",
+          "from_permille": 1000,
+          "bark": "ch02.b15.dunark.005",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 220,
+            "turn_deg_s": 180,
+            "near_cm": 180,
+            "far_cm": 0,
+            "engage_cm": 450
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "quick_cut",
+              "quick_cut",
+              "heavy_overhead"
+            ],
+            "beat_ms": 1300,
+            "measure": 3,
+            "pause_ms": 1500,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "dunark_p2_notice",
+          "from_permille": 600,
+          "bark": "ch02.b15.dunark.007",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 240,
+            "turn_deg_s": 180,
+            "near_cm": 180,
+            "far_cm": 0,
+            "engage_cm": 700
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "quick_cut",
+              "thrust",
+              "heavy_overhead",
+              "quick_cut",
+              "quick_cut",
+              "heavy_overhead",
+              "quick_cut",
+              "thrust",
+              "heavy_overhead",
+              "quick_cut",
+              "thrust",
+              "heavy_overhead"
+            ],
+            "beat_ms": 1100,
+            "measure": 3,
+            "pause_ms": 1200,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [
+            "burning_beam"
+          ],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "dunark_p3_final",
+          "from_permille": 250,
+          "bark": "ch02.b15.dunark.010",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 260,
+            "turn_deg_s": 180,
+            "near_cm": 180,
+            "far_cm": 0,
+            "engage_cm": 700
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "quick_cut",
+              "heavy_overhead",
+              "quick_cut",
+              "quick_cut",
+              "feint_overhead",
+              "quick_cut",
+              "quick_cut",
+              "thrust",
+              "heavy_overhead",
+              "quick_cut",
+              "feint_overhead",
+              "quick_cut",
+              "quick_cut",
+              "heavy_overhead",
+              "quick_cut",
+              "quick_cut",
+              "thrust",
+              "feint_overhead"
+            ],
+            "beat_ms": 1000,
+            "measure": 3,
+            "pause_ms": 1000,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "shield_drone",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        }
+      ],
+      "attacks": [
+        {
+          "id": "quick_cut",
+          "kind": "cut",
+          "name_ja": "早斬り",
+          "name_en": "Quick cut",
+          "tell_ja": "早斬り ― 合わせれば拍子が崩れる",
+          "tell_en": "QUICK CUT: awase breaks his measure",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 500,
+          "active_ms": 120,
+          "recovery_ms": 350,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            230
+          ],
+          "damage": 18,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 90,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 5,
+              "stamina": 12,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "measure_reset",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "heavy_overhead",
+          "kind": "cut",
+          "name_ja": "上段の重撃",
+          "name_en": "Heavy overhead",
+          "tell_ja": "上段の重撃 ― 合わせで崩せ",
+          "tell_en": "HEAVY OVERHEAD: meet it with awase",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 900,
+          "active_ms": 150,
+          "recovery_ms": 1100,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            230
+          ],
+          "damage": 45,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 60,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 12,
+              "stamina": 40,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "thrust",
+          "kind": "thrust",
+          "name_ja": "一括の突き",
+          "name_en": "All-in thrust",
+          "tell_ja": "突き ― 合わせられぬ。転じて脇を取れ",
+          "tell_en": "THRUST: cannot be parried; roll to his flank",
+          "telegraph": "amber",
+          "bark": "ch02.b15.dunark.008",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 700,
+          "active_ms": 150,
+          "recovery_ms": 900,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            630
+          ],
+          "damage": 40,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "thrust": {
+            "width_cm": 80,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 400,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 20,
+              "stamina": 40,
+              "breaks": true,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "marobashi_ms": 400,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "feint_overhead",
+          "kind": "feint",
+          "name_ja": "偽りの上段",
+          "name_en": "Feinted overhead",
+          "tell_ja": "偽りの上段 ― 肩が落ちぬ。合わせず受けよ",
+          "tell_en": "FEINT: his shoulder stays up; guard, do not awase",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 900,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            260
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "feint": {
+            "hold_ms": 400,
+            "then": "quick_cut"
+          }
+        },
+        {
+          "id": "burning_beam",
+          "kind": "zone",
+          "name_ja": "燃え落ちる梁",
+          "name_en": "Falling beam",
+          "tell_ja": "梁が落ちる ― 北西から離れよ",
+          "tell_en": "FALLING BEAM: clear the northwest",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1500,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 8,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "anchor",
+            "anchor": "beam_fall",
+            "count": 1,
+            "spread_cm": 0,
+            "radius_cm": 300,
+            "arm_ms": 0,
+            "life_ms": 600000,
+            "tick_ms": 1000,
+            "root_ms": 0,
+            "stagger_ms": 0,
+            "fragile": false,
+            "max_active": 0,
+            "void": false,
+            "breaks_mantle": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "boss_penalta",
+      "chapter": 3,
+      "beat": "ch03.b17",
+      "opponent": "boss_penalta",
+      "name_ja": "取立頭 ペナルタ",
+      "reading": "とりたてがしら ペナルタ",
+      "name_en": "Enforcer-Chief Penalta",
+      "style_ja": "大盾の重戦士 ― 正面は通らぬ",
+      "style_en": "A shield bruiser: the front will not yield",
+      "body": "alien",
+      "held_weapon": 8,
+      "sparring_weapon": false,
+      "scale_permille": 1400,
+      "health": {
+        "easy": 1600,
+        "normal": 2000,
+        "hard": 2400
+      },
+      "lethal": true,
+      "defeat": "kill",
+      "finisher": "none",
+      "floor_permille": 0,
+      "poise_ms": 1500,
+      "rear_permille": 1000,
+      "flank_permille": 1000,
+      "body_permille": 1000,
+      "arena_radius_cm": 1500,
+      "transition_ms": 1500,
+      "telegraph_min_ms": 600,
+      "deflect_idle_front_deg": 0,
+      "front_blocked_hint": 4,
+      "senses": "sight",
+      "hearing": null,
+      "shield": {
+        "arc_deg": 120,
+        "break_weapon": 7,
+        "break_hits": 3
+      },
+      "barrier": null,
+      "mantle": null,
+      "weak_points": [
+        {
+          "id": "vent_l",
+          "name_ja": "左の排気口",
+          "name_en": "Left vent",
+          "health": 0,
+          "offset_cm": [
+            -45,
+            -18,
+            40
+          ],
+          "radius_cm": 28,
+          "melee_permille": 2500,
+          "ranged_permille": 2500,
+          "closed_permille": 1250,
+          "open": "exposed"
+        },
+        {
+          "id": "vent_r",
+          "name_ja": "右の排気口",
+          "name_en": "Right vent",
+          "health": 0,
+          "offset_cm": [
+            -45,
+            18,
+            40
+          ],
+          "radius_cm": 28,
+          "melee_permille": 2500,
+          "ranged_permille": 2500,
+          "closed_permille": 1250,
+          "open": "exposed"
+        }
+      ],
+      "wards": [],
+      "adds": [],
+      "barks": [
+        {
+          "on": "defeated",
+          "line": "ch03.b17.penalta.011",
+          "cooldown_ms": 0
+        }
+      ],
+      "phases": [
+        {
+          "table": "penalta_p1",
+          "from_permille": 1000,
+          "bark": "",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 180,
+            "turn_deg_s": 90,
+            "near_cm": 200,
+            "far_cm": 0,
+            "engage_cm": 450
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "shield_bash",
+              "hammer_slam"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": true,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "penalta_p2",
+          "from_permille": 500,
+          "bark": "ch03.b17.penalta.006",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 250,
+            "turn_deg_s": 140,
+            "near_cm": 250,
+            "far_cm": 0,
+            "engage_cm": 3000
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "hammer_spin",
+              "seal_trap",
+              "hammer_slam"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {
+            "hammer_slam": {
+              "cooldown_ms": 6000
+            }
+          },
+          "late": null
+        }
+      ],
+      "attacks": [
+        {
+          "id": "shield_bash",
+          "kind": "cut",
+          "name_ja": "盾打ち",
+          "name_en": "Shield bash",
+          "tell_ja": "盾打ち ― 受けるか合わせ、転じて背へ",
+          "tell_en": "SHIELD BASH: guard or awase, then roll behind him",
+          "telegraph": "amber",
+          "bark": "ch03.b17.penalta.003",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 600,
+          "active_ms": 120,
+          "recovery_ms": 700,
+          "cooldown_ms": 3000,
+          "range_cm": [
+            0,
+            250
+          ],
+          "damage": 25,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 120,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 600,
+            "guard": {
+              "guardable": true,
+              "chip": 6,
+              "stamina": 30,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "marobashi_ms": 400,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "hammer_slam",
+          "kind": "area",
+          "name_ja": "槌落とし",
+          "name_en": "Hammer slam",
+          "tell_ja": "槌落とし ― 輪から出て、背の排気口を打て",
+          "tell_en": "HAMMER SLAM: leave the ring, then strike his rear vents",
+          "telegraph": "amber",
+          "bark": "ch03.b17.penalta.002",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1000,
+          "active_ms": 150,
+          "recovery_ms": 1800,
+          "cooldown_ms": 7000,
+          "range_cm": [
+            0,
+            350
+          ],
+          "damage": 45,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "area": {
+            "radius_cm": 350,
+            "inner_radius_cm": 150,
+            "edge_damage": 20,
+            "arc_deg": 360,
+            "hits": 1,
+            "gap_ms": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 800,
+            "guard": {
+              "guardable": false,
+              "chip": 45,
+              "stamina": 0,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "opens": [
+              "vent_l",
+              "vent_r"
+            ],
+            "opens_ms": 2000
+          }
+        },
+        {
+          "id": "hammer_spin",
+          "kind": "area",
+          "name_ja": "大回し",
+          "name_en": "Hammer spin",
+          "tell_ja": "大回し ― 輪の外へ。目の回る隙に背を打て",
+          "tell_en": "HAMMER SPIN: get out of the ring, punish his dizzy recovery",
+          "telegraph": "amber",
+          "bark": "ch03.b17.penalta.008",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1200,
+          "active_ms": 1800,
+          "recovery_ms": 2200,
+          "cooldown_ms": 10000,
+          "range_cm": [
+            0,
+            400
+          ],
+          "damage": 30,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "area": {
+            "radius_cm": 400,
+            "inner_radius_cm": 400,
+            "edge_damage": 30,
+            "arc_deg": 360,
+            "hits": 2,
+            "gap_ms": 900,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": false,
+              "chip": 30,
+              "stamina": 0,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "opens": [
+              "vent_l",
+              "vent_r"
+            ],
+            "opens_ms": 2200
+          }
+        },
+        {
+          "id": "seal_trap",
+          "kind": "zone",
+          "name_ja": "延滞の印",
+          "name_en": "Late-fee seals",
+          "tell_ja": "延滞の印 ― 円盤を射るか斬れ。踏めば足を取られる",
+          "tell_en": "LATE-FEE SEALS: shoot or cut the discs; stepping in roots you",
+          "telegraph": "amber",
+          "bark": "ch03.b17.penalta.009",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 700,
+          "active_ms": 0,
+          "recovery_ms": 400,
+          "cooldown_ms": 9000,
+          "range_cm": [
+            600,
+            3000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "around_target",
+            "anchor": "",
+            "count": 2,
+            "spread_cm": 250,
+            "radius_cm": 150,
+            "arm_ms": 800,
+            "life_ms": 12000,
+            "tick_ms": 0,
+            "root_ms": 1500,
+            "stagger_ms": 0,
+            "fragile": true,
+            "max_active": 4,
+            "void": false,
+            "breaks_mantle": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "boss_hakari",
+      "chapter": 4,
+      "beat": "ch04.b16",
+      "opponent": "boss_hakari",
+      "name_ja": "査定機「秤」",
+      "reading": "さていき はかり",
+      "name_en": "Assessor Engine Hakari",
+      "style_ja": "八メートルの査定機 ― 脚の環と帳簿胴を狙え",
+      "style_en": "An 8 m assessor engine: aim for its coils and ledger drum",
+      "body": "machine",
+      "held_weapon": 16,
+      "sparring_weapon": false,
+      "scale_permille": 4500,
+      "health": {
+        "easy": 4000,
+        "normal": 4000,
+        "hard": 4000
+      },
+      "lethal": false,
+      "defeat": "destroy_weakpoints",
+      "finisher": "none",
+      "floor_permille": 0,
+      "poise_ms": 10000,
+      "rear_permille": 1000,
+      "flank_permille": 1000,
+      "body_permille": 0,
+      "arena_radius_cm": 9000,
+      "transition_ms": 1500,
+      "telegraph_min_ms": 800,
+      "deflect_idle_front_deg": 0,
+      "front_blocked_hint": 0,
+      "senses": "sight",
+      "hearing": null,
+      "shield": null,
+      "barrier": null,
+      "mantle": null,
+      "weak_points": [
+        {
+          "id": "coil_fl",
+          "name_ja": "左前の秤環",
+          "name_en": "Front-left weigh-coil",
+          "health": 450,
+          "offset_cm": [
+            300,
+            -220,
+            -46
+          ],
+          "radius_cm": 70,
+          "melee_permille": 2000,
+          "ranged_permille": 2000,
+          "closed_permille": 0,
+          "open": "exposed"
+        },
+        {
+          "id": "coil_fr",
+          "name_ja": "右前の秤環",
+          "name_en": "Front-right weigh-coil",
+          "health": 450,
+          "offset_cm": [
+            300,
+            220,
+            -46
+          ],
+          "radius_cm": 70,
+          "melee_permille": 2000,
+          "ranged_permille": 2000,
+          "closed_permille": 0,
+          "open": "exposed"
+        },
+        {
+          "id": "coil_rr",
+          "name_ja": "右後の秤環",
+          "name_en": "Rear-right weigh-coil",
+          "health": 450,
+          "offset_cm": [
+            -300,
+            220,
+            -46
+          ],
+          "radius_cm": 70,
+          "melee_permille": 2000,
+          "ranged_permille": 2000,
+          "closed_permille": 0,
+          "open": "exposed"
+        },
+        {
+          "id": "coil_rl",
+          "name_ja": "左後の秤環",
+          "name_en": "Rear-left weigh-coil",
+          "health": 450,
+          "offset_cm": [
+            -300,
+            -220,
+            -46
+          ],
+          "radius_cm": 70,
+          "melee_permille": 2000,
+          "ranged_permille": 2000,
+          "closed_permille": 0,
+          "open": "exposed"
+        },
+        {
+          "id": "ledger_drum",
+          "name_ja": "帳簿胴",
+          "name_en": "Ledger drum",
+          "health": 2200,
+          "offset_cm": [
+            0,
+            0,
+            -246
+          ],
+          "radius_cm": 140,
+          "melee_permille": 2500,
+          "ranged_permille": 1500,
+          "closed_permille": 0,
+          "open": "exposed"
+        }
+      ],
+      "wards": [],
+      "adds": [
+        {
+          "id": "drone_release",
+          "archetype": "drone",
+          "variant": "",
+          "count": 2,
+          "max_alive": 3,
+          "respawn_ms": 0
+        },
+        {
+          "id": "drone_pair",
+          "archetype": "drone",
+          "variant": "",
+          "count": 2,
+          "max_alive": 2,
+          "respawn_ms": 30000
+        }
+      ],
+      "barks": [
+        {
+          "on": "weakpoint_destroyed",
+          "line": "ch04.b16.margina.008",
+          "cooldown_ms": 0
+        },
+        {
+          "on": "seal",
+          "line": "ch04.b16.margina.013",
+          "cooldown_ms": 0
+        },
+        {
+          "on": "defeated",
+          "line": "ch04.b16.margina.015",
+          "cooldown_ms": 0
+        }
+      ],
+      "phases": [
+        {
+          "table": "hakari_mounted",
+          "from_permille": 1000,
+          "bark": "",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 120,
+            "turn_deg_s": 45,
+            "near_cm": 900,
+            "far_cm": 0,
+            "engage_cm": 3500
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "plant_stomp",
+              "sweep_beam",
+              "seizure_net",
+              "drone_release"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              400
+            ],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "step_plant",
+              "every_ms": 4000,
+              "first_ms": 2000
+            }
+          ],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "hakari_mill",
+          "from_permille": 550,
+          "bark": "ch04.b16.margina.009",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 120,
+            "turn_deg_s": 60,
+            "near_cm": 500,
+            "far_cm": 0,
+            "engage_cm": 1800
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "assessment_kneel",
+              "claw_sweep",
+              "seizure_net",
+              "sweep_beam"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              400
+            ],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [
+            {
+              "attack": "drone_pair",
+              "at_permille": 550
+            }
+          ],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {
+            "seizure_net": {
+              "cooldown_ms": 10000,
+              "root_ms": 1500
+            },
+            "sweep_beam": {
+              "cooldown_ms": 16000,
+              "reach_cm": 1800
+            }
+          },
+          "late": {
+            "below_permille": 250,
+            "overrides": {
+              "assessment_kneel": {
+                "active_ms": 4500
+              },
+              "sweep_beam": {
+                "windup_ms": 950
+              },
+              "claw_sweep": {
+                "windup_ms": 850
+              }
+            }
+          }
+        }
+      ],
+      "attacks": [
+        {
+          "id": "step_plant",
+          "kind": "expose",
+          "name_ja": "脚の着地",
+          "name_en": "Leg plant",
+          "tell_ja": "脚の環が光った ― 踏んだ時だけ射よ",
+          "tell_en": "A LEG PLANTS: shoot its glowing coil",
+          "telegraph": "none",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 0,
+          "active_ms": 3000,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "expose": {
+            "opens": [
+              "coil_fl",
+              "coil_fr",
+              "coil_rr",
+              "coil_rl"
+            ],
+            "rotate": true,
+            "barrier_offline": false,
+            "interrupt_damage": 0,
+            "interrupt_stagger_ms": 0,
+            "event": "",
+            "event_limit": 0
+          }
+        },
+        {
+          "id": "seizure_net",
+          "kind": "zone",
+          "name_ja": "差押え網",
+          "name_en": "Seizure net",
+          "tell_ja": "差押え網 ― 錠の音の間に足並みを変えよ",
+          "tell_en": "SEIZURE NET: change pace or direction during the lock tone",
+          "telegraph": "cyan",
+          "bark": "ch04.b16.margina.002",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 800,
+          "active_ms": 0,
+          "recovery_ms": 1400,
+          "cooldown_ms": 9000,
+          "range_cm": [
+            0,
+            3500
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "target",
+            "anchor": "",
+            "count": 1,
+            "spread_cm": 0,
+            "radius_cm": 250,
+            "arm_ms": 0,
+            "life_ms": 0,
+            "tick_ms": 0,
+            "root_ms": 2000,
+            "stagger_ms": 0,
+            "fragile": false,
+            "max_active": 0,
+            "void": false,
+            "breaks_mantle": false
+          }
+        },
+        {
+          "id": "sweep_beam",
+          "kind": "beam",
+          "name_ja": "査定光",
+          "name_en": "Assessment sweep",
+          "tell_ja": "査定光 ― 石の陰に伏せるか、射程の外へ",
+          "tell_en": "ASSESSMENT SWEEP: drop behind stone or leave its reach",
+          "telegraph": "cyan",
+          "bark": "ch04.b16.margina.003",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1100,
+          "active_ms": 900,
+          "recovery_ms": 1800,
+          "cooldown_ms": 14000,
+          "range_cm": [
+            0,
+            3000
+          ],
+          "damage": 45,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "beam": {
+            "width_cm": 120,
+            "track_ms": 0,
+            "sweep_deg": 180,
+            "height_cm": 80
+          }
+        },
+        {
+          "id": "plant_stomp",
+          "kind": "area",
+          "name_ja": "計量の踏み",
+          "name_en": "Weighing stomp",
+          "tell_ja": "計量の踏み ― 輪を出て、光る四つの環を射よ",
+          "tell_en": "WEIGHING STOMP: leave the ring, then shoot all four coils",
+          "telegraph": "amber",
+          "bark": "ch04.b16.margina.004",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1000,
+          "active_ms": 300,
+          "recovery_ms": 3500,
+          "cooldown_ms": 20000,
+          "range_cm": [
+            0,
+            600
+          ],
+          "damage": 40,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "area": {
+            "radius_cm": 600,
+            "inner_radius_cm": 600,
+            "edge_damage": 40,
+            "arc_deg": 360,
+            "hits": 1,
+            "gap_ms": 0,
+            "knockback_cm": 300,
+            "hero_stagger_ms": 600,
+            "guard": {
+              "guardable": false,
+              "chip": 40,
+              "stamina": 0,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "opens": [
+              "coil_fl",
+              "coil_fr",
+              "coil_rr",
+              "coil_rl"
+            ],
+            "opens_ms": 3500
+          }
+        },
+        {
+          "id": "drone_release",
+          "kind": "summon",
+          "name_ja": "目録放出",
+          "name_en": "Inventory release",
+          "tell_ja": "目録放出 ― 印をつける目録を先に落とせ",
+          "tell_en": "INVENTORY RELEASE: down the marking drone first",
+          "telegraph": "none",
+          "bark": "ch04.b16.margina.005",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1200,
+          "active_ms": 0,
+          "recovery_ms": 800,
+          "cooldown_ms": 40000,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "summon": {
+            "group": "drone_release"
+          }
+        },
+        {
+          "id": "drone_pair",
+          "kind": "summon",
+          "name_ja": "目録二機",
+          "name_en": "Inventory pair",
+          "tell_ja": "目録二機 ― 空の目を先に落とせ",
+          "tell_en": "INVENTORY PAIR: down the eyes in the sky first",
+          "telegraph": "none",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 800,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "summon": {
+            "group": "drone_pair"
+          }
+        },
+        {
+          "id": "assessment_kneel",
+          "kind": "expose",
+          "name_ja": "査定の膝つき",
+          "name_en": "Assessment kneel",
+          "tell_ja": "査定 ― 膝をついた今、腹の帳簿胴を斬れ",
+          "tell_en": "ASSESSMENT: it kneels; strike the ledger drum",
+          "telegraph": "cyan",
+          "bark": "ch04.b16.margina.011",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1500,
+          "active_ms": 6000,
+          "recovery_ms": 1000,
+          "cooldown_ms": 22000,
+          "range_cm": [
+            0,
+            1800
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "expose": {
+            "opens": [
+              "ledger_drum"
+            ],
+            "rotate": false,
+            "barrier_offline": false,
+            "interrupt_damage": 250,
+            "interrupt_stagger_ms": 2000,
+            "event": "mill_seal",
+            "event_limit": 3
+          }
+        },
+        {
+          "id": "claw_sweep",
+          "kind": "area",
+          "name_ja": "減価の薙ぎ払い",
+          "name_en": "Depreciation sweep",
+          "tell_ja": "減価の薙ぎ払い ― 弧の外へ出るか受けよ。合わせられぬ",
+          "tell_en": "DEPRECIATION SWEEP: step out of the arc or guard; it cannot be parried",
+          "telegraph": "amber",
+          "bark": "ch04.b16.margina.012",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1000,
+          "active_ms": 400,
+          "recovery_ms": 1500,
+          "cooldown_ms": 7000,
+          "range_cm": [
+            0,
+            700
+          ],
+          "damage": 50,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "area": {
+            "radius_cm": 700,
+            "inner_radius_cm": 700,
+            "edge_damage": 50,
+            "arc_deg": 240,
+            "hits": 1,
+            "gap_ms": 0,
+            "knockback_cm": 300,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 20,
+              "stamina": 30,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "opens": [],
+            "opens_ms": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "boss_tarifa",
+      "chapter": 5,
+      "beat": "ch05.b16",
+      "opponent": "boss_tarifa",
+      "name_ja": "工房監督官 タリファ",
+      "reading": "こうぼうかんとくかん タリファ",
+      "name_en": "Foundry Overseer Tarifa",
+      "style_ja": "鉤縄と湯路を操る監督官 ― 外套は湯気に弱い",
+      "style_en": "A hazard controller with a tether: steam breaks her mantle",
+      "body": "alien",
+      "held_weapon": 19,
+      "sparring_weapon": false,
+      "scale_permille": 1100,
+      "health": {
+        "easy": 3000,
+        "normal": 3000,
+        "hard": 3000
+      },
+      "lethal": true,
+      "defeat": "kill",
+      "finisher": "none",
+      "floor_permille": 0,
+      "poise_ms": 900,
+      "rear_permille": 1000,
+      "flank_permille": 1000,
+      "body_permille": 1000,
+      "arena_radius_cm": 1600,
+      "transition_ms": 1500,
+      "telegraph_min_ms": 500,
+      "deflect_idle_front_deg": 0,
+      "front_blocked_hint": 0,
+      "senses": "sight",
+      "hearing": null,
+      "shield": null,
+      "barrier": null,
+      "mantle": {
+        "taken_permille": 300,
+        "down_ms": 4000
+      },
+      "weak_points": [],
+      "wards": [],
+      "adds": [
+        {
+          "id": "loom_pair",
+          "archetype": "loom_automaton",
+          "variant": "",
+          "count": 2,
+          "max_alive": 2,
+          "respawn_ms": 0
+        }
+      ],
+      "barks": [
+        {
+          "on": "countered",
+          "line": "ch05.b16.tarifa.007",
+          "cooldown_ms": 0
+        },
+        {
+          "on": "mantle_down",
+          "line": "ch05.b16.tarifa.009",
+          "cooldown_ms": 0
+        }
+      ],
+      "phases": [
+        {
+          "table": "tarifa_p1",
+          "from_permille": 1000,
+          "bark": "",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 220,
+            "turn_deg_s": 180,
+            "near_cm": 400,
+            "far_cm": 0,
+            "engage_cm": 1200
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "rod_sweep",
+              "quota_slam",
+              "tether_lash"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              500
+            ],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "channel_cycle",
+              "every_ms": 12000,
+              "first_ms": 6000
+            }
+          ],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": true,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "tarifa_p2",
+          "from_permille": 650,
+          "bark": "ch05.b16.tarifa.006",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 220,
+            "turn_deg_s": 180,
+            "near_cm": 400,
+            "far_cm": 0,
+            "engage_cm": 1200
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "rod_sweep",
+              "quota_slam",
+              "double_lash"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              500
+            ],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "channel_cycle",
+              "every_ms": 10000,
+              "first_ms": 4000
+            }
+          ],
+          "on_enter": [],
+          "summons": [
+            {
+              "attack": "loom_call",
+              "at_permille": 650
+            },
+            {
+              "attack": "loom_call",
+              "at_permille": 450
+            }
+          ],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": true,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "tarifa_p3",
+          "from_permille": 300,
+          "bark": "",
+          "move": {
+            "mode": "keep",
+            "speed_cm_s": 220,
+            "turn_deg_s": 180,
+            "near_cm": 600,
+            "far_cm": 900,
+            "engage_cm": 1200
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "tether_lash",
+              "rod_sweep"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              500
+            ],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "steam_burst",
+              "every_ms": 5000,
+              "first_ms": 3000
+            }
+          ],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [
+            {
+              "attack": "full_open",
+              "at_permille": 100
+            }
+          ],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": true,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        }
+      ],
+      "attacks": [
+        {
+          "id": "tether_lash",
+          "kind": "thrust",
+          "name_ja": "鉤縄",
+          "name_en": "Tether lash",
+          "tell_ja": "鉤縄 ― 合わせで断て。受ければ引きは半分",
+          "tell_en": "TETHER LASH: awase snaps the cable; a guard halves the pull",
+          "telegraph": "cyan",
+          "bark": "ch05.b16.tarifa.004",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 700,
+          "active_ms": 250,
+          "recovery_ms": 900,
+          "cooldown_ms": 6000,
+          "range_cm": [
+            300,
+            1200
+          ],
+          "damage": 12,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "thrust": {
+            "width_cm": 90,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 400,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 6,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 2000
+            },
+            "marobashi_ms": 400,
+            "muto": false,
+            "on_parry": "mantle_down",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "double_lash",
+          "kind": "thrust",
+          "name_ja": "二連鉤縄",
+          "name_en": "Double lash",
+          "tell_ja": "二連鉤縄 ― どちらかに合わせて断て",
+          "tell_en": "DOUBLE LASH: awase either lash to snap the cable",
+          "telegraph": "cyan",
+          "bark": "ch05.b16.tarifa.004",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 700,
+          "active_ms": 250,
+          "recovery_ms": 900,
+          "cooldown_ms": 8000,
+          "range_cm": [
+            300,
+            1200
+          ],
+          "damage": 12,
+          "repeat": 2,
+          "repeat_gap_ms": 500,
+          "thrust": {
+            "width_cm": 90,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 400,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 6,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 2000
+            },
+            "marobashi_ms": 400,
+            "muto": false,
+            "on_parry": "mantle_down",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "rod_sweep",
+          "kind": "cut",
+          "name_ja": "工程棒払い",
+          "name_en": "Process-rod sweep",
+          "tell_ja": "工程棒払い ― 二打とも受け、二打目に合わせよ",
+          "tell_en": "ROD SWEEP: guard both hits; awase the second",
+          "telegraph": "amber",
+          "bark": "ch05.b16.tarifa.005",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 500,
+          "active_ms": 450,
+          "recovery_ms": 800,
+          "cooldown_ms": 4000,
+          "range_cm": [
+            0,
+            260
+          ],
+          "damage": 28,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 150,
+            "hits": 2,
+            "gap_ms": 450,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 7,
+              "stamina": 30,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 2,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "quota_slam",
+          "kind": "area",
+          "name_ja": "割当打ち",
+          "name_en": "Quota slam",
+          "tell_ja": "割当打ち ― 輪から出て、隙を打て",
+          "tell_en": "QUOTA SLAM: step out of the ring and punish",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 900,
+          "active_ms": 200,
+          "recovery_ms": 1100,
+          "cooldown_ms": 10000,
+          "range_cm": [
+            0,
+            300
+          ],
+          "damage": 40,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "area": {
+            "radius_cm": 300,
+            "inner_radius_cm": 300,
+            "edge_damage": 40,
+            "arc_deg": 360,
+            "hits": 1,
+            "gap_ms": 0,
+            "knockback_cm": 250,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": false,
+              "chip": 40,
+              "stamina": 0,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "opens": [],
+            "opens_ms": 0
+          }
+        },
+        {
+          "id": "channel_cycle",
+          "kind": "zone",
+          "name_ja": "湯路の開門",
+          "name_en": "Channel gate",
+          "tell_ja": "湯路が開く ― 光を読み、橋の上へ",
+          "tell_en": "CHANNEL OPENS: read the glow; stand on the bridges",
+          "telegraph": "amber",
+          "bark": "ch05.b16.tarifa.003",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 2000,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 35,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "anchor",
+            "anchor": "channel",
+            "count": 1,
+            "spread_cm": 0,
+            "radius_cm": 250,
+            "arm_ms": 0,
+            "life_ms": 5000,
+            "tick_ms": 1000,
+            "root_ms": 0,
+            "stagger_ms": 0,
+            "fragile": false,
+            "max_active": 0,
+            "void": false,
+            "breaks_mantle": false
+          }
+        },
+        {
+          "id": "loom_call",
+          "kind": "summon",
+          "name_ja": "織機傀儡の呼び出し",
+          "name_en": "Loom automata called",
+          "tell_ja": "織機傀儡 ― 薙刀の間合いで崩せ",
+          "tell_en": "LOOM AUTOMATA: break them at naginata reach",
+          "telegraph": "none",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 800,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "summon": {
+            "group": "loom_pair"
+          }
+        },
+        {
+          "id": "steam_burst",
+          "kind": "zone",
+          "name_ja": "湯気の噴出",
+          "name_en": "Steam burst",
+          "tell_ja": "湯気が噴く ― 離れよ。監督官を誘い込め",
+          "tell_en": "STEAM BURST: stand clear, and lure her in",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 900,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 25,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "anchor",
+            "anchor": "wet_slot",
+            "count": 1,
+            "spread_cm": 0,
+            "radius_cm": 250,
+            "arm_ms": 0,
+            "life_ms": 600,
+            "tick_ms": 0,
+            "root_ms": 0,
+            "stagger_ms": 0,
+            "fragile": false,
+            "max_active": 0,
+            "void": false,
+            "breaks_mantle": true
+          }
+        },
+        {
+          "id": "full_open",
+          "kind": "zone",
+          "name_ja": "全開門",
+          "name_en": "Full open",
+          "tell_ja": "全ての湯路が開く ― 渡り橋へ",
+          "tell_en": "ALL CHANNELS OPEN: get onto a cross-bridge",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1500,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 35,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "anchor",
+            "anchor": "channel",
+            "count": 0,
+            "spread_cm": 0,
+            "radius_cm": 250,
+            "arm_ms": 0,
+            "life_ms": 4000,
+            "tick_ms": 1000,
+            "root_ms": 0,
+            "stagger_ms": 0,
+            "fragile": false,
+            "max_active": 0,
+            "void": false,
+            "breaks_mantle": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "boss_eskro",
+      "chapter": 6,
+      "beat": "ch06.b13",
+      "opponent": "boss_eskro",
+      "name_ja": "金庫番 エスクロ",
+      "reading": "きんこばん エスクロ",
+      "name_en": "Vault Warden Eskro",
+      "style_ja": "盲目の音の狩人 ― 脈動の間は動くな",
+      "style_en": "A blind sound-hunter: stay still while it pulses",
+      "body": "alien",
+      "held_weapon": 10,
+      "sparring_weapon": false,
+      "scale_permille": 1250,
+      "health": {
+        "easy": 1800,
+        "normal": 1800,
+        "hard": 1800
+      },
+      "lethal": false,
+      "defeat": "capture",
+      "finisher": "none",
+      "floor_permille": 0,
+      "poise_ms": 900,
+      "rear_permille": 1500,
+      "flank_permille": 1000,
+      "body_permille": 1000,
+      "arena_radius_cm": 1500,
+      "transition_ms": 1000,
+      "telegraph_min_ms": 500,
+      "deflect_idle_front_deg": 0,
+      "front_blocked_hint": 0,
+      "senses": "hearing",
+      "hearing": {
+        "walk_cm": 1200,
+        "crouch_cm": 600,
+        "sprint_cm": 2400,
+        "still_cm_s": 40,
+        "noise_cm": 3000,
+        "fresh_ms": 1500
+      },
+      "shield": null,
+      "barrier": null,
+      "mantle": null,
+      "weak_points": [],
+      "wards": [],
+      "adds": [
+        {
+          "id": "audit_hounds",
+          "archetype": "drone",
+          "variant": "audit_hound",
+          "count": 2,
+          "max_alive": 2,
+          "respawn_ms": 0
+        }
+      ],
+      "barks": [
+        {
+          "on": "missed",
+          "line": "ch06.b13.eskro.004",
+          "cooldown_ms": 0
+        },
+        {
+          "on": "defeated",
+          "line": "ch06.b13.eskro.010",
+          "cooldown_ms": 0
+        }
+      ],
+      "phases": [
+        {
+          "table": "eskro_hunt",
+          "from_permille": 1000,
+          "bark": "",
+          "move": {
+            "mode": "hunt",
+            "speed_cm_s": 320,
+            "turn_deg_s": 240,
+            "near_cm": 250,
+            "far_cm": 0,
+            "engage_cm": 1500
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "claw_flurry",
+              "pounce"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "reconcile_pulse",
+              "every_ms": 8000,
+              "first_ms": 3000
+            }
+          ],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "eskro_flood",
+          "from_permille": 600,
+          "bark": "ch06.b13.eskro.006",
+          "move": {
+            "mode": "hunt",
+            "speed_cm_s": 320,
+            "turn_deg_s": 240,
+            "near_cm": 250,
+            "far_cm": 0,
+            "engage_cm": 1500
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "claw_flurry",
+              "shelf_rake",
+              "wade_charge",
+              "pounce"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "reconcile_pulse",
+              "every_ms": 8000,
+              "first_ms": 3000
+            }
+          ],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 2000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "eskro_frenzy",
+          "from_permille": 250,
+          "bark": "ch06.b13.eskro.009",
+          "move": {
+            "mode": "hunt",
+            "speed_cm_s": 340,
+            "turn_deg_s": 260,
+            "near_cm": 250,
+            "far_cm": 0,
+            "engage_cm": 1500
+          },
+          "pattern": {
+            "mode": "priority",
+            "attacks": [
+              "claw_flurry",
+              "shelf_rake",
+              "double_pounce",
+              "wade_charge"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "reconcile_pulse",
+              "every_ms": 4000,
+              "first_ms": 2000
+            }
+          ],
+          "on_enter": [],
+          "summons": [
+            {
+              "attack": "hound_release",
+              "at_permille": 250
+            }
+          ],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 2000,
+          "overrides": {},
+          "late": null
+        }
+      ],
+      "attacks": [
+        {
+          "id": "reconcile_pulse",
+          "kind": "pulse",
+          "name_ja": "照合の脈動",
+          "name_en": "Reconciliation pulse",
+          "tell_ja": "照合 ― 輪が過ぎるまで動くな",
+          "tell_en": "RECONCILIATION PULSE: stay still until the ring passes",
+          "telegraph": "cyan",
+          "bark": "ch06.b13.eskro.002",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 700,
+          "active_ms": 720,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "pulse": {
+            "radius_cm": 1800,
+            "expand_ms": 720,
+            "reveal_cm_s": 120
+          }
+        },
+        {
+          "id": "pounce",
+          "kind": "charge",
+          "name_ja": "飛掛り",
+          "name_en": "Pounce",
+          "tell_ja": "飛掛り ― 最後の音へ跳ぶ。外させて背を斬れ",
+          "tell_en": "POUNCE: he leaps at the last sound; make him miss, then strike his back",
+          "telegraph": "amber",
+          "bark": "ch06.b13.eskro.003",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 600,
+          "active_ms": 300,
+          "recovery_ms": 800,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            1500
+          ],
+          "damage": 45,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "charge": {
+            "radius_cm": 250,
+            "width_cm": 0,
+            "target": "noise",
+            "miss_recovery_ms": 1500,
+            "knockback_cm": 0,
+            "guard": {
+              "guardable": false,
+              "chip": 45,
+              "stamina": 0,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            }
+          }
+        },
+        {
+          "id": "double_pounce",
+          "kind": "charge",
+          "name_ja": "二段飛掛り",
+          "name_en": "Double pounce",
+          "tell_ja": "二段飛掛り ― 囮を二つ、あるいは囮の後に動け",
+          "tell_en": "DOUBLE POUNCE: two lures, or lure then move",
+          "telegraph": "amber",
+          "bark": "ch06.b13.eskro.003",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 600,
+          "active_ms": 300,
+          "recovery_ms": 800,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            1500
+          ],
+          "damage": 45,
+          "repeat": 2,
+          "repeat_gap_ms": 0,
+          "charge": {
+            "radius_cm": 250,
+            "width_cm": 0,
+            "target": "noise",
+            "miss_recovery_ms": 1500,
+            "knockback_cm": 0,
+            "guard": {
+              "guardable": false,
+              "chip": 45,
+              "stamina": 0,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            }
+          }
+        },
+        {
+          "id": "claw_flurry",
+          "kind": "cut",
+          "name_ja": "連爪",
+          "name_en": "Claw flurry",
+          "tell_ja": "連爪 ― 前で受け、三打目に合わせよ",
+          "tell_en": "CLAW FLURRY: guard in front; awase the third swipe",
+          "telegraph": "amber",
+          "bark": "ch06.b13.eskro.005",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 500,
+          "active_ms": 900,
+          "recovery_ms": 900,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            300
+          ],
+          "damage": 18,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 120,
+            "hits": 3,
+            "gap_ms": 450,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 5,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 3,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "shelf_rake",
+          "kind": "area",
+          "name_ja": "棚払い",
+          "name_en": "Shelf rake",
+          "tell_ja": "棚払い ― 棚の向こうへ降りるか、下がれ",
+          "tell_en": "SHELF RAKE: drop to the far side of the shelf, or back off",
+          "telegraph": "amber",
+          "bark": "ch06.b13.eskro.007",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 900,
+          "active_ms": 200,
+          "recovery_ms": 1200,
+          "cooldown_ms": 5000,
+          "range_cm": [
+            0,
+            450
+          ],
+          "damage": 35,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "area": {
+            "radius_cm": 450,
+            "inner_radius_cm": 450,
+            "edge_damage": 35,
+            "arc_deg": 120,
+            "hits": 1,
+            "gap_ms": 0,
+            "knockback_cm": 200,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": false,
+              "chip": 35,
+              "stamina": 0,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "opens": [],
+            "opens_ms": 0
+          }
+        },
+        {
+          "id": "wade_charge",
+          "kind": "charge",
+          "name_ja": "水走り",
+          "name_en": "Wade charge",
+          "tell_ja": "水走り ― 横へ避けよ。水音で居場所が知れる",
+          "tell_en": "WADE CHARGE: sidestep; his splash gives him away",
+          "telegraph": "amber",
+          "bark": "ch06.b13.eskro.008",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 700,
+          "active_ms": 500,
+          "recovery_ms": 1000,
+          "cooldown_ms": 6000,
+          "range_cm": [
+            300,
+            1200
+          ],
+          "damage": 40,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "charge": {
+            "radius_cm": 120,
+            "width_cm": 150,
+            "target": "noise",
+            "miss_recovery_ms": 1000,
+            "knockback_cm": 0,
+            "guard": {
+              "guardable": false,
+              "chip": 40,
+              "stamina": 0,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            }
+          }
+        },
+        {
+          "id": "hound_release",
+          "kind": "summon",
+          "name_ja": "猟犬の放出",
+          "name_en": "Hounds released",
+          "tell_ja": "監査猟犬 ― 灯りを見る。先に落とせ",
+          "tell_en": "AUDIT HOUNDS: they see your flame; down them first",
+          "telegraph": "cyan",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 600,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "summon": {
+            "group": "audit_hounds"
+          }
+        }
+      ]
+    },
+    {
+      "id": "boss_collatera",
+      "chapter": 7,
+      "beat": "ch07.b13",
+      "opponent": "boss_collatera",
+      "name_ja": "旗艦提督 コラテラ",
+      "reading": "きかんていとく コラテラ",
+      "name_en": "Admiral Collatera",
+      "style_ja": "障壁の双銃使い ― 装填の間が隙",
+      "style_en": "A gunslinger behind a barrier: her reload is the opening",
+      "body": "alien",
+      "held_weapon": 3,
+      "sparring_weapon": false,
+      "scale_permille": 1050,
+      "health": {
+        "easy": 2000,
+        "normal": 2000,
+        "hard": 2000
+      },
+      "lethal": false,
+      "defeat": "disarm",
+      "finisher": "none",
+      "floor_permille": 0,
+      "poise_ms": 900,
+      "rear_permille": 1000,
+      "flank_permille": 1000,
+      "body_permille": 1000,
+      "arena_radius_cm": 1500,
+      "transition_ms": 1000,
+      "telegraph_min_ms": 400,
+      "deflect_idle_front_deg": 0,
+      "front_blocked_hint": 0,
+      "senses": "sight",
+      "hearing": null,
+      "shield": null,
+      "barrier": {
+        "health": 240,
+        "regen_delay_ms": 4000,
+        "regen_per_s": 80,
+        "melee_permille": 1250,
+        "weapon_permille": {
+          "11": 1500,
+          "16": 2500
+        },
+        "strip_permille": {
+          "14": 500
+        }
+      },
+      "mantle": null,
+      "weak_points": [],
+      "wards": [],
+      "adds": [
+        {
+          "id": "drone_pair",
+          "archetype": "drone",
+          "variant": "",
+          "count": 2,
+          "max_alive": 2,
+          "respawn_ms": 0
+        }
+      ],
+      "barks": [
+        {
+          "on": "barrier_broken",
+          "line": "ch07.b13.collatera.005",
+          "cooldown_ms": 20000
+        },
+        {
+          "on": "defeated",
+          "line": "ch07.b13.collatera.013",
+          "cooldown_ms": 0
+        }
+      ],
+      "phases": [
+        {
+          "table": "collatera_p1_pistols",
+          "from_permille": 1000,
+          "bark": "ch07.b13.collatera.001",
+          "move": {
+            "mode": "keep",
+            "speed_cm_s": 320,
+            "turn_deg_s": 360,
+            "near_cm": 700,
+            "far_cm": 1400,
+            "engage_cm": 3000
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "twin_burst",
+              "sidestep_burst",
+              "twin_burst",
+              "reload"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [
+              2400,
+              2600,
+              2200,
+              1600
+            ],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": true,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "collatera_p2_margin_call",
+          "from_permille": 600,
+          "bark": "ch07.b13.collatera.006",
+          "move": {
+            "mode": "keep",
+            "speed_cm_s": 320,
+            "turn_deg_s": 360,
+            "near_cm": 800,
+            "far_cm": 1500,
+            "engage_cm": 3000
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "twin_burst",
+              "twin_burst",
+              "twin_burst",
+              "reload"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [
+              3000,
+              3000,
+              3000,
+              1600
+            ],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "margin_call",
+              "every_ms": 7000,
+              "first_ms": 2000
+            },
+            {
+              "attack": "slide_props",
+              "every_ms": 6000,
+              "first_ms": 3000
+            }
+          ],
+          "on_enter": [],
+          "summons": [
+            {
+              "attack": "drone_call",
+              "at_permille": 600
+            }
+          ],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": true,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "collatera_p3_sabre",
+          "from_permille": 300,
+          "bark": "ch07.b13.collatera.010",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 340,
+            "turn_deg_s": 360,
+            "near_cm": 170,
+            "far_cm": 0,
+            "engage_cm": 800
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "cut_pair",
+              "offhand_shot",
+              "fleche_lunge"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              1000,
+              1200,
+              1500
+            ],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        }
+      ],
+      "attacks": [
+        {
+          "id": "twin_burst",
+          "kind": "volley",
+          "name_ja": "双銃三連",
+          "name_en": "Twin burst",
+          "tell_ja": "利払いの双銃 ― 照準の間に一メートル半動け",
+          "tell_en": "TWIN BURST: move 1.5 m during the laser lock",
+          "telegraph": "cyan",
+          "bark": "ch07.b13.collatera.002",
+          "bark_once": false,
+          "bark_cooldown_ms": 8000,
+          "windup_ms": 400,
+          "active_ms": 450,
+          "recovery_ms": 500,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            3000
+          ],
+          "damage": 9,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "volley": {
+            "rounds": 6,
+            "interval_ms": 90,
+            "lock_cm": 150,
+            "dash_cm": 0
+          }
+        },
+        {
+          "id": "sidestep_burst",
+          "kind": "volley",
+          "name_ja": "横跳び射撃",
+          "name_en": "Sidestep burst",
+          "tell_ja": "横跳び射撃 ― 照準の間に動け",
+          "tell_en": "SIDESTEP BURST: move during the laser lock",
+          "telegraph": "cyan",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 400,
+          "active_ms": 450,
+          "recovery_ms": 500,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            3000
+          ],
+          "damage": 9,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "volley": {
+            "rounds": 6,
+            "interval_ms": 90,
+            "lock_cm": 150,
+            "dash_cm": 400
+          }
+        },
+        {
+          "id": "reload",
+          "kind": "expose",
+          "name_ja": "残高補充",
+          "name_en": "Cell reload",
+          "tell_ja": "残高補充 ― 障壁が消える。今撃て",
+          "tell_en": "RELOAD: her barrier is down; strike now",
+          "telegraph": "none",
+          "bark": "ch07.b13.collatera.003",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 0,
+          "active_ms": 1600,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "expose": {
+            "opens": [],
+            "rotate": false,
+            "barrier_offline": true,
+            "interrupt_damage": 0,
+            "interrupt_stagger_ms": 0,
+            "event": "",
+            "event_limit": 0
+          }
+        },
+        {
+          "id": "margin_call",
+          "kind": "zone",
+          "name_ja": "追証",
+          "name_en": "Margin call",
+          "tell_ja": "追証 ― 狙われた遮蔽を捨てて動け",
+          "tell_en": "MARGIN CALL: abandon the marked cover and keep moving",
+          "telegraph": "amber",
+          "bark": "ch07.b13.collatera.007",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1500,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 60,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "anchor_or_target",
+            "anchor": "cover",
+            "count": 3,
+            "spread_cm": 0,
+            "radius_cm": 250,
+            "arm_ms": 0,
+            "life_ms": 0,
+            "tick_ms": 0,
+            "root_ms": 0,
+            "stagger_ms": 0,
+            "fragile": false,
+            "max_active": 0,
+            "void": false,
+            "breaks_mantle": false
+          }
+        },
+        {
+          "id": "slide_props",
+          "kind": "zone",
+          "name_ja": "滑る積荷",
+          "name_en": "Sliding cargo",
+          "tell_ja": "積荷が滑る ― 低い側から離れよ",
+          "tell_en": "SLIDING CARGO: get off the low side",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 700,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 30,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "anchor",
+            "anchor": "slide",
+            "count": 1,
+            "spread_cm": 0,
+            "radius_cm": 200,
+            "arm_ms": 0,
+            "life_ms": 0,
+            "tick_ms": 0,
+            "root_ms": 0,
+            "stagger_ms": 600,
+            "fragile": false,
+            "max_active": 0,
+            "void": false,
+            "breaks_mantle": false
+          }
+        },
+        {
+          "id": "drone_call",
+          "kind": "summon",
+          "name_ja": "目録二機",
+          "name_en": "Inventory pair",
+          "tell_ja": "目録二機 ― 印をつける目録を落とせ",
+          "tell_en": "INVENTORY PAIR: down the marking drones",
+          "telegraph": "none",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 800,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "summon": {
+            "group": "drone_pair"
+          }
+        },
+        {
+          "id": "cut_pair",
+          "kind": "cut",
+          "name_ja": "清算刀・二連",
+          "name_en": "Liquidation pair",
+          "tell_ja": "清算刀の二連 ― 二太刀目に合わせよ",
+          "tell_en": "LIQUIDATION PAIR: awase the second cut",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 450,
+          "active_ms": 300,
+          "recovery_ms": 600,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            220
+          ],
+          "damage": 22,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 90,
+            "hits": 2,
+            "gap_ms": 300,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 6,
+              "stamina": 20,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 2,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "fleche_lunge",
+          "kind": "thrust",
+          "name_ja": "清算の突進",
+          "name_en": "Liquidation lunge",
+          "tell_ja": "清算の突進 ― 合わせるか、転じて脇を取れ",
+          "tell_en": "LIQUIDATION LUNGE: awase, or roll aside to her flank",
+          "telegraph": "amber",
+          "bark": "ch07.b13.collatera.011",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 800,
+          "active_ms": 150,
+          "recovery_ms": 1100,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            720
+          ],
+          "damage": 35,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "thrust": {
+            "width_cm": 80,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 500,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 9,
+              "stamina": 30,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 400,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "offhand_shot",
+          "kind": "volley",
+          "name_ja": "片手撃ち",
+          "name_en": "Off-hand shot",
+          "tell_ja": "片手撃ち ― 合わせられぬ。横へ避けよ",
+          "tell_en": "OFF-HAND SHOT: cannot be parried; sidestep",
+          "telegraph": "cyan",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 400,
+          "active_ms": 0,
+          "recovery_ms": 400,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            1500
+          ],
+          "damage": 14,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "volley": {
+            "rounds": 1,
+            "interval_ms": 0,
+            "lock_cm": 100,
+            "dash_cm": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "boss_val_amort",
+      "chapter": 8,
+      "beat": "ch08.b14",
+      "opponent": "boss_val_amort",
+      "name_ja": "大徴収官 ヴァル・アモルト",
+      "reading": "だいちょうしゅうかん ヴァル・アモルト",
+      "name_en": "High Collector Val Amort",
+      "style_ja": "光線、差押え、そして仕込み杖 ― 最後は無刀取り",
+      "style_en": "Beam, seizure, then the sword-cane: end it with mutō-dori",
+      "body": "alien",
+      "held_weapon": 0,
+      "sparring_weapon": false,
+      "scale_permille": 1250,
+      "health": {
+        "easy": 1900,
+        "normal": 2400,
+        "hard": 2800
+      },
+      "lethal": false,
+      "defeat": "capture",
+      "finisher": "muto_dori",
+      "floor_permille": 0,
+      "poise_ms": 1000,
+      "rear_permille": 1000,
+      "flank_permille": 1000,
+      "body_permille": 1000,
+      "arena_radius_cm": 1500,
+      "transition_ms": 1500,
+      "telegraph_min_ms": 500,
+      "deflect_idle_front_deg": 0,
+      "front_blocked_hint": 0,
+      "senses": "sight",
+      "hearing": null,
+      "shield": null,
+      "barrier": null,
+      "mantle": null,
+      "weak_points": [],
+      "wards": [
+        {
+          "id": "amort_shards",
+          "name_ja": "帳簿片",
+          "name_en": "Ledger shards",
+          "count": 3,
+          "health": 104,
+          "orbit_cm": 250,
+          "period_ms": 4000,
+          "closed_invulnerable": false,
+          "open_every_ms": 0,
+          "open_ms": 0,
+          "open_after_block": false,
+          "respawn_ms": 20000,
+          "broken_stun_ms": 3000,
+          "broken_taken_permille": 1500,
+          "bark": "ch08.b14.valamort.003"
+        }
+      ],
+      "adds": [
+        {
+          "id": "constructs",
+          "archetype": "loom_automaton",
+          "variant": "collateral_construct",
+          "count": 2,
+          "max_alive": 3,
+          "respawn_ms": 10000
+        }
+      ],
+      "barks": [
+        {
+          "on": "muto_dori",
+          "line": "ch08.b14.valamort.009",
+          "cooldown_ms": 0
+        }
+      ],
+      "phases": [
+        {
+          "table": "amort_p1_collector",
+          "from_permille": 1000,
+          "bark": "",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 200,
+            "turn_deg_s": 180,
+            "near_cm": 740,
+            "far_cm": 0,
+            "engage_cm": 740
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "amort_ledger_beam",
+              "amort_cleave"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "amort_ledger_beam",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "amort_shards",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "amort_p2_seizure",
+          "from_permille": 700,
+          "bark": "",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 200,
+            "turn_deg_s": 180,
+            "near_cm": 740,
+            "far_cm": 0,
+            "engage_cm": 740
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "amort_ledger_beam",
+              "amort_cleave"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "amort_ledger_beam",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [
+            {
+              "attack": "amort_seizure_field",
+              "every_ms": 9000,
+              "first_ms": 2000
+            }
+          ],
+          "on_enter": [],
+          "summons": [
+            {
+              "attack": "construct_spawn",
+              "at_permille": 700
+            },
+            {
+              "attack": "construct_spawn",
+              "at_permille": 550
+            }
+          ],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "constructs",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {
+            "amort_ledger_beam": {
+              "recovery_ms": 900
+            },
+            "amort_cleave": {
+              "recovery_ms": 900
+            }
+          },
+          "late": null
+        },
+        {
+          "table": "amort_p3_cane",
+          "from_permille": 400,
+          "bark": "ch08.b14.valamort.006",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 260,
+            "turn_deg_s": 240,
+            "near_cm": 180,
+            "far_cm": 0,
+            "engage_cm": 800
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "amort_final_foreclosure",
+              "amort_cane_pair",
+              "amort_cane_thrust",
+              "amort_cane_pair",
+              "amort_final_foreclosure"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              1000
+            ],
+            "fallback": "",
+            "loop_from": 1,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": {
+            "attack": "amort_final_foreclosure",
+            "every_ms": 4000
+          },
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 10,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        }
+      ],
+      "attacks": [
+        {
+          "id": "amort_ledger_beam",
+          "kind": "beam",
+          "name_ja": "帳簿光線",
+          "name_en": "Ledger beam",
+          "tell_ja": "帳簿光線 ― 固定された線から横へ出よ",
+          "tell_en": "LEDGER BEAM: step out of the locked line",
+          "telegraph": "cyan",
+          "bark": "ch08.b14.valamort.001",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1450,
+          "active_ms": 150,
+          "recovery_ms": 1150,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            1500
+          ],
+          "damage": 22,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "beam": {
+            "width_cm": 90,
+            "track_ms": 550,
+            "sweep_deg": 0,
+            "height_cm": 0
+          }
+        },
+        {
+          "id": "amort_cleave",
+          "kind": "cut",
+          "name_ja": "取立ての薙ぎ",
+          "name_en": "Collection cleave",
+          "tell_ja": "取立ての薙ぎ ― 受けるか、合わせるか、間合いから離れよ",
+          "tell_en": "COLLECTION CLEAVE: guard, parry, or leave the arc",
+          "telegraph": "amber",
+          "bark": "ch08.b14.valamort.002",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1200,
+          "active_ms": 150,
+          "recovery_ms": 1150,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            330
+          ],
+          "damage": 30,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 56,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 8,
+              "stamina": 30,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "amort_seizure_field",
+          "kind": "zone",
+          "name_ja": "差押え領域",
+          "name_en": "Seizure field",
+          "tell_ja": "差押え領域 ― 印の床は抜ける。読んで渡れ",
+          "tell_en": "SEIZURE FIELD: marked tiles give way; read them",
+          "telegraph": "amber",
+          "bark": "ch08.b14.valamort.004",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1500,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 25,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "zone": {
+            "at": "around_target",
+            "anchor": "",
+            "count": 5,
+            "spread_cm": 450,
+            "radius_cm": 150,
+            "arm_ms": 0,
+            "life_ms": 5000,
+            "tick_ms": 1000,
+            "root_ms": 0,
+            "stagger_ms": 0,
+            "fragile": false,
+            "max_active": 0,
+            "void": true,
+            "breaks_mantle": false
+          }
+        },
+        {
+          "id": "construct_spawn",
+          "kind": "summon",
+          "name_ja": "担保傀儡",
+          "name_en": "Collateral constructs",
+          "tell_ja": "担保傀儡 ― 傀儡が立つ限り障壁は落ちぬ",
+          "tell_en": "COLLATERAL CONSTRUCTS: his shield holds while they stand",
+          "telegraph": "cyan",
+          "bark": "ch08.b14.valamort.005",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 800,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            100000
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "summon": {
+            "group": "constructs"
+          }
+        },
+        {
+          "id": "amort_cane_pair",
+          "kind": "cut",
+          "name_ja": "仕込み杖・二連",
+          "name_en": "Cane pair",
+          "tell_ja": "仕込み杖の二連 ― 受けるか合わせよ",
+          "tell_en": "CANE PAIR: guard or awase",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 500,
+          "active_ms": 350,
+          "recovery_ms": 700,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            220
+          ],
+          "damage": 18,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 90,
+            "hits": 2,
+            "gap_ms": 350,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 5,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "amort_cane_thrust",
+          "kind": "thrust",
+          "name_ja": "仕込み杖の突き",
+          "name_en": "Cane thrust",
+          "tell_ja": "仕込み杖の突き ― 合わせられぬ。転じて横から",
+          "tell_en": "CANE THRUST: cannot be parried; roll around the line",
+          "telegraph": "cyan",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 600,
+          "active_ms": 150,
+          "recovery_ms": 900,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            300
+          ],
+          "damage": 28,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "thrust": {
+            "width_cm": 70,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 60,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 14,
+              "stamina": 30,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "marobashi_ms": 400,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "amort_final_foreclosure",
+          "kind": "cut",
+          "name_ja": "最終差押え",
+          "name_en": "Final foreclosure",
+          "tell_ja": "最終差押え ― 納刀して無刀取り。抜刀なら合わせ",
+          "tell_en": "FINAL FORECLOSURE: sheathe for mutō-dori; blade drawn, awase",
+          "telegraph": "amber",
+          "bark": "ch08.b14.valamort.007",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 1000,
+          "active_ms": 150,
+          "recovery_ms": 1300,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            240
+          ],
+          "damage": 45,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 60,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": false,
+              "chip": 45,
+              "stamina": 0,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": true,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        }
+      ]
+    }
+  ],
+  "duels": [
+    {
+      "id": "duel_toranosuke_fukuro",
+      "chapter": 1,
+      "beat": "ch01.b11",
+      "opponent": "npc_toranosuke",
+      "name_ja": "鷲尾 虎之介",
+      "reading": "わしお とらのすけ",
+      "name_en": "Washio Toranosuke",
+      "style_ja": "袋竹刀の三本勝負 ― 急ぐほど隙が出る",
+      "style_en": "A fukuro-shinai bout to three: the more he hurries, the more he opens",
+      "body": "local",
+      "held_weapon": 0,
+      "sparring_weapon": true,
+      "scale_permille": 1080,
+      "health": {
+        "easy": 600,
+        "normal": 600,
+        "hard": 600
+      },
+      "lethal": false,
+      "defeat": "points",
+      "finisher": "none",
+      "floor_permille": 100,
+      "poise_ms": 600,
+      "rear_permille": 1000,
+      "flank_permille": 1000,
+      "body_permille": 1000,
+      "arena_radius_cm": 700,
+      "transition_ms": 0,
+      "telegraph_min_ms": 380,
+      "deflect_idle_front_deg": 0,
+      "front_blocked_hint": 0,
+      "senses": "sight",
+      "hearing": null,
+      "shield": null,
+      "barrier": null,
+      "mantle": null,
+      "weak_points": [],
+      "wards": [],
+      "adds": [],
+      "barks": [],
+      "phases": [
+        {
+          "table": "tora_fukuro",
+          "from_permille": 1000,
+          "bark": "",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 300,
+            "turn_deg_s": 360,
+            "near_cm": 200,
+            "far_cm": 0,
+            "engage_cm": 350
+          },
+          "pattern": {
+            "mode": "weighted",
+            "attacks": [],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [
+              {
+                "lead": 0,
+                "interval_ms": [
+                  1600,
+                  2400
+                ],
+                "recovery_bonus_ms": 0,
+                "weights": {
+                  "tora_men": 35,
+                  "tora_kote": 25,
+                  "tora_kesa": 25,
+                  "tora_feint": 15
+                }
+              },
+              {
+                "lead": 1,
+                "interval_ms": [
+                  1300,
+                  2000
+                ],
+                "recovery_bonus_ms": 0,
+                "weights": {
+                  "tora_men": 25,
+                  "tora_kote": 20,
+                  "tora_kesa": 10,
+                  "tora_feint": 25,
+                  "tora_nidan": 20
+                }
+              },
+              {
+                "lead": 2,
+                "interval_ms": [
+                  1000,
+                  1600
+                ],
+                "recovery_bonus_ms": 150,
+                "weights": {
+                  "tora_men": 20,
+                  "tora_feint": 30,
+                  "tora_nidan": 35,
+                  "tora_seme": 15
+                }
+              }
+            ],
+            "easy_halved": [
+              "tora_feint"
+            ]
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        }
+      ],
+      "attacks": [
+        {
+          "id": "tora_men",
+          "kind": "cut",
+          "name_ja": "面打ち",
+          "name_en": "Men strike",
+          "tell_ja": "面打ち ― 受けるか合わせよ",
+          "tell_en": "MEN STRIKE: guard or awase",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 500,
+          "active_ms": 100,
+          "recovery_ms": 900,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            230
+          ],
+          "damage": 8,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 60,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 2,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "tora_kote",
+          "kind": "cut",
+          "name_ja": "小手打ち",
+          "name_en": "Kote strike",
+          "tell_ja": "小手打ち ― 受けるか合わせよ",
+          "tell_en": "KOTE STRIKE: guard or awase",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 380,
+          "active_ms": 100,
+          "recovery_ms": 700,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            220
+          ],
+          "damage": 6,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 60,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 2,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "tora_kesa",
+          "kind": "cut",
+          "name_ja": "袈裟",
+          "name_en": "Kesa cut",
+          "tell_ja": "袈裟 ― 合わせて、転じよ",
+          "tell_en": "KESA CUT: awase, then roll aside",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 600,
+          "active_ms": 120,
+          "recovery_ms": 1000,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            230
+          ],
+          "damage": 10,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 90,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 3,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "tora_feint",
+          "kind": "feint",
+          "name_ja": "誘い（面から小手）",
+          "name_en": "Lure (men to kote)",
+          "tell_ja": "誘い ― 後ろ足が踏まぬ。本物の小手だけに合わせよ",
+          "tell_en": "LURE: the rear foot does not drive; awase only the real kote",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 250,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            260
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "feint": {
+            "hold_ms": 0,
+            "then": "tora_kote"
+          }
+        },
+        {
+          "id": "tora_nidan",
+          "kind": "cut",
+          "name_ja": "二段（小手から面）",
+          "name_en": "Two-step (kote to men)",
+          "tell_ja": "二段 ― どちらの太刀にも合わせられる",
+          "tell_en": "TWO-STEP: either cut can be met with awase",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 380,
+          "active_ms": 450,
+          "recovery_ms": 1100,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            230
+          ],
+          "damage": 6,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 60,
+            "hits": 2,
+            "gap_ms": 450,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 2,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "tora_seme",
+          "kind": "step",
+          "name_ja": "攻め",
+          "name_en": "Pressure",
+          "tell_ja": "攻め ― 押し込まれるな。場外は仕切り直し",
+          "tell_en": "PRESSURE: he crowds you toward the edge",
+          "telegraph": "none",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 0,
+          "active_ms": 1200,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            400
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "step": {
+            "lunge_cm": 120
+          }
+        }
+      ]
+    },
+    {
+      "id": "duel_toranosuke_steel",
+      "chapter": 6,
+      "beat": "ch06.b09",
+      "opponent": "npc_toranosuke",
+      "name_ja": "鷲尾 虎之介",
+      "reading": "わしお とらのすけ",
+      "name_en": "Washio Toranosuke",
+      "style_ja": "真剣の立合い ― 最後は無刀取り",
+      "style_en": "Real steel: the end is mutō-dori",
+      "body": "local",
+      "held_weapon": 0,
+      "sparring_weapon": false,
+      "scale_permille": 1080,
+      "health": {
+        "easy": 600,
+        "normal": 600,
+        "hard": 600
+      },
+      "lethal": false,
+      "defeat": "disarm",
+      "finisher": "muto_dori",
+      "floor_permille": 100,
+      "poise_ms": 800,
+      "rear_permille": 1000,
+      "flank_permille": 1000,
+      "body_permille": 1000,
+      "arena_radius_cm": 900,
+      "transition_ms": 1000,
+      "telegraph_min_ms": 400,
+      "deflect_idle_front_deg": 0,
+      "front_blocked_hint": 0,
+      "senses": "sight",
+      "hearing": null,
+      "shield": null,
+      "barrier": null,
+      "mantle": null,
+      "weak_points": [],
+      "wards": [],
+      "adds": [],
+      "barks": [],
+      "phases": [
+        {
+          "table": "toranosuke_steel_p1",
+          "from_permille": 1000,
+          "bark": "",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 300,
+            "turn_deg_s": 360,
+            "near_cm": 170,
+            "far_cm": 0,
+            "engage_cm": 450
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "kesa_combo",
+              "morote_tsuki",
+              "kesa_combo",
+              "feint_jodan"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              700,
+              900,
+              700,
+              900
+            ],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [
+            "taiatari"
+          ],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        },
+        {
+          "table": "toranosuke_steel_p2",
+          "from_permille": 500,
+          "bark": "",
+          "move": {
+            "mode": "close",
+            "speed_cm_s": 320,
+            "turn_deg_s": 360,
+            "near_cm": 170,
+            "far_cm": 0,
+            "engage_cm": 700
+          },
+          "pattern": {
+            "mode": "sequence",
+            "attacks": [
+              "makko_giri",
+              "kiriotoshi_rush",
+              "nidan_makko"
+            ],
+            "beat_ms": 0,
+            "measure": 0,
+            "pause_ms": 0,
+            "cadence_ms": [],
+            "gap_ms": [
+              1200,
+              1200,
+              1400
+            ],
+            "fallback": "",
+            "loop_from": 0,
+            "habits": [],
+            "easy_halved": []
+          },
+          "reactions": [],
+          "concurrent": [],
+          "on_enter": [],
+          "summons": [],
+          "once_below": [],
+          "at_floor": null,
+          "ward": "",
+          "shield": false,
+          "barrier": false,
+          "mantle": false,
+          "shield_while_adds": "",
+          "floor_permille": 0,
+          "hearing_permille": 1000,
+          "overrides": {},
+          "late": null
+        }
+      ],
+      "attacks": [
+        {
+          "id": "kesa_combo",
+          "kind": "cut",
+          "name_ja": "袈裟連撃",
+          "name_en": "Kesa combination",
+          "tell_ja": "袈裟連撃 ― どの太刀にも合わせよ",
+          "tell_en": "KESA COMBINATION: awase any of the three cuts",
+          "telegraph": "amber",
+          "bark": "ch06.b09.toranosuke.004",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 450,
+          "active_ms": 600,
+          "recovery_ms": 700,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            220
+          ],
+          "damage": 22,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 90,
+            "hits": 3,
+            "gap_ms": 300,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 6,
+              "stamina": 18,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "morote_tsuki",
+          "kind": "thrust",
+          "name_ja": "諸手突き",
+          "name_en": "Two-handed thrust",
+          "tell_ja": "諸手突き ― 合わせられぬ。転じて脇へ",
+          "tell_en": "TWO-HANDED THRUST: cannot be parried; roll to his flank",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 600,
+          "active_ms": 150,
+          "recovery_ms": 900,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            300
+          ],
+          "damage": 30,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "thrust": {
+            "width_cm": 70,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 80,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 15,
+              "stamina": 40,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "marobashi_ms": 400,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "feint_jodan",
+          "kind": "feint",
+          "name_ja": "見せ上段",
+          "name_en": "Feinted jōdan",
+          "tell_ja": "見せ上段 ― 下の胴が来る。低く受けよ",
+          "tell_en": "FEINTED JŌDAN: the real cut comes low; guard low",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 300,
+          "active_ms": 0,
+          "recovery_ms": 0,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            260
+          ],
+          "damage": 0,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "feint": {
+            "hold_ms": 0,
+            "then": "do_cut"
+          }
+        },
+        {
+          "id": "do_cut",
+          "kind": "cut",
+          "name_ja": "胴斬り",
+          "name_en": "Body cut",
+          "tell_ja": "胴斬り ― 受けよ",
+          "tell_en": "BODY CUT: guard it",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 500,
+          "active_ms": 120,
+          "recovery_ms": 700,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            220
+          ],
+          "damage": 26,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 90,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 7,
+              "stamina": 20,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "taiatari",
+          "kind": "cut",
+          "name_ja": "体当たり",
+          "name_en": "Shoulder check",
+          "tell_ja": "体当たり ― 受けを固めすぎるな",
+          "tell_en": "SHOULDER CHECK: do not turtle behind your guard",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 400,
+          "active_ms": 100,
+          "recovery_ms": 600,
+          "cooldown_ms": 3000,
+          "range_cm": [
+            0,
+            180
+          ],
+          "damage": 10,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 90,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 150,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 10,
+              "stamina": 25,
+              "breaks": false,
+              "parry": false,
+              "parry_hit": 0,
+              "parry_stagger_ms": 0
+            },
+            "marobashi_ms": 0,
+            "muto": false,
+            "on_parry": "none",
+            "if_guard_held_ms": 1500
+          }
+        },
+        {
+          "id": "makko_giri",
+          "kind": "cut",
+          "name_ja": "真っ向斬り",
+          "name_en": "Vertical cut",
+          "tell_ja": "真っ向斬り ― 納刀して無刀取り、または合わせ",
+          "tell_en": "VERTICAL CUT: sheathe for mutō-dori, or awase",
+          "telegraph": "amber",
+          "bark": "ch06.b09.toranosuke.008",
+          "bark_once": true,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 800,
+          "active_ms": 150,
+          "recovery_ms": 1100,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            230
+          ],
+          "damage": 40,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 60,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 10,
+              "stamina": 30,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": true,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "kiriotoshi_rush",
+          "kind": "cut",
+          "name_ja": "踏込み斬り落とし",
+          "name_en": "Stepping drop cut",
+          "tell_ja": "踏込み斬り落とし ― 無刀取り、または柱で線を断て",
+          "tell_en": "STEPPING DROP CUT: mutō-dori, or break his line at a post",
+          "telegraph": "amber",
+          "bark": "ch06.b09.toranosuke.009",
+          "bark_once": true,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 700,
+          "active_ms": 150,
+          "recovery_ms": 1200,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            530
+          ],
+          "damage": 38,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 60,
+            "hits": 1,
+            "gap_ms": 0,
+            "lunge_cm": 300,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 10,
+              "stamina": 30,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": true,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        },
+        {
+          "id": "nidan_makko",
+          "kind": "cut",
+          "name_ja": "二段真っ向",
+          "name_en": "Double vertical cut",
+          "tell_ja": "二段真っ向 ― どちらの太刀にも無刀取り",
+          "tell_en": "DOUBLE VERTICAL: mutō-dori on either cut",
+          "telegraph": "amber",
+          "bark": "",
+          "bark_once": false,
+          "bark_cooldown_ms": 0,
+          "windup_ms": 800,
+          "active_ms": 650,
+          "recovery_ms": 1300,
+          "cooldown_ms": 0,
+          "range_cm": [
+            0,
+            230
+          ],
+          "damage": 34,
+          "repeat": 1,
+          "repeat_gap_ms": 0,
+          "cut": {
+            "arc_deg": 60,
+            "hits": 2,
+            "gap_ms": 500,
+            "lunge_cm": 0,
+            "pull_cm": 0,
+            "knockback_cm": 0,
+            "hero_stagger_ms": 0,
+            "guard": {
+              "guardable": true,
+              "chip": 9,
+              "stamina": 30,
+              "breaks": false,
+              "parry": true,
+              "parry_hit": 0,
+              "parry_stagger_ms": 1200
+            },
+            "marobashi_ms": 0,
+            "muto": true,
+            "on_parry": "none",
+            "if_guard_held_ms": 0
+          }
+        }
+      ]
+    }
+  ]
+}

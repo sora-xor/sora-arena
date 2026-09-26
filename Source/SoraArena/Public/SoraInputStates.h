@@ -38,6 +38,8 @@ inline constexpr FAction Actions[] = {
     {TEXT("Sprint"), Play},
     {TEXT("Reload"), Play},
     {TEXT("Interact"), Play},
+    {TEXT("Crouch"), Play},
+    {TEXT("Sheathe"), Play},
     {TEXT("Block"), Play},
     {TEXT("Ability"), Play},
     // Practice takes its loadout from the lobby; campaign play equips.
@@ -91,6 +93,8 @@ inline constexpr FRemappable Remappable[] = {
     {TEXT("Sprint"), 0},
     {TEXT("Reload"), 0},
     {TEXT("Interact"), 0},
+    {TEXT("Crouch"), 0},
+    {TEXT("Sheathe"), 0},
     {TEXT("Ability"), 0},
     {TEXT("WeaponOne"), 0},
     {TEXT("WeaponTwo"), 0},

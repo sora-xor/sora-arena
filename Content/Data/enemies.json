@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "source": "docs/campaign/story-bible.md §7 roster; baselines from chapter-02.md §3.2, chapter-05.md §2.4 and chapter-07.md shield profiles. Normal difficulty. The shield enforcer's rim opening is 1200 ms, not ch02's 1000, so a second yari thrust after the first one's recovery lands inside it.",
+  "archetypes": [
+    {
+      "id": "enforcer_rifle",
+      "name_ja": "執行兵",
+      "reading": "しっこうへい",
+      "name_en": "Enforcer",
+      "weapon_ja": "徴収カービン",
+      "weapon_en": "Levy carbine",
+      "faction": "credit_house",
+      "body": "alien",
+      "behavior": "rifle",
+      "first_chapter": 2,
+      "health": 100,
+      "speed_cm_s": 480,
+      "turn_deg_s": 360,
+      "scale_permille": 1000,
+      "lethal": true,
+      "perception": { "sight_cm": 2800, "dark_sight_cm": 2800, "view_deg": 140, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
+      "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
+      "attacks": [
+        {
+          "id": "levy_burst", "cue": "rifle_burst", "name_ja": "徴収カービン三点射", "name_en": "Levy carbine burst",
+          "kind": "burst", "telegraph": "amber", "damage": 9, "windup_ms": 600, "recovery_ms": 1600, "cooldown_ms": 0,
+          "range_cm": [0, 2100], "rounds": 3, "interval_ms": 350
+        }
+      ],
+      "variants": [
+        {
+          "id": "shielded", "name_ja": "障壁執行兵", "name_en": "Shielded Enforcer", "health": 0,
+          "barrier": {
+            "health": 60, "regen_delay_ms": 4000, "regen_per_s": 30, "break_stagger_ms": 800,
+            "melee_permille": 1250, "weapon_permille": { "11": 1500, "16": 2500 }, "bypass_weapons": [14]
+          }
+        }
+      ]
+    },
+    {
+      "id": "blade_retainer",
+      "name_ja": "取立刃兵",
+      "reading": "とりたてじんぺい",
+      "name_en": "Collection Blade",
+      "weapon_ja": "帳刃",
+      "weapon_en": "Tally blade",
+      "faction": "credit_house",
+      "body": "alien",
+      "behavior": "blade",
+      "first_chapter": 2,
+      "health": 120,
+      "speed_cm_s": 520,
+      "turn_deg_s": 360,
+      "scale_permille": 1000,
+      "lethal": true,
+      "perception": { "sight_cm": 2800, "dark_sight_cm": 2800, "view_deg": 140, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
+      "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
+      "attacks": [
+        {
+          "id": "tally_cut", "cue": "retainer_warning", "name_ja": "帳刃の斬撃", "name_en": "Tally-blade cut",
+          "kind": "melee", "telegraph": "amber", "damage": 22, "windup_ms": 420, "recovery_ms": 1250, "cooldown_ms": 0,
+          "range_cm": [55, 195], "arc_deg": 90, "knockback_cm": 0, "hero_stagger_ms": 0,
+          "guard": { "parry": true, "chip": 6, "stamina": 30, "parry_stagger_ms": 1200, "breaks": false }
+        }
+      ],
+      "variants": []
+    },
+    {
+      "id": "shield_enforcer",
+      "name_ja": "盾執行兵",
+      "reading": "たてしっこうへい",
+      "name_en": "Shield Enforcer",
+      "weapon_ja": "大盾と警棒",
+      "weapon_en": "Tower shield and baton",
+      "faction": "credit_house",
+      "body": "alien",
+      "behavior": "shield",
+      "first_chapter": 2,
+      "health": 160,
+      "speed_cm_s": 380,
+      "turn_deg_s": 240,
+      "scale_permille": 1000,
+      "lethal": true,
+      "perception": { "sight_cm": 2800, "dark_sight_cm": 2800, "view_deg": 140, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
+      "defense": { "front_block_deg": 120, "rim_opening_ms": 1200, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
+      "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
+      "attacks": [
+        {
+          "id": "shield_bash", "cue": "shield_bash", "name_ja": "盾打ち", "name_en": "Shield bash",
+          "kind": "melee", "telegraph": "amber", "damage": 10, "windup_ms": 450, "recovery_ms": 700, "cooldown_ms": 2500,
+          "range_cm": [0, 150], "arc_deg": 90, "knockback_cm": 150, "hero_stagger_ms": 0,
+          "guard": { "parry": true, "chip": 3, "stamina": 30, "parry_stagger_ms": 1200, "breaks": false }
+        },
+        {
+          "id": "baton_strike", "cue": "shield_baton", "name_ja": "警棒打ち", "name_en": "Baton strike",
+          "kind": "melee", "telegraph": "amber", "damage": 16, "windup_ms": 600, "recovery_ms": 900, "cooldown_ms": 0,
+          "range_cm": [60, 210], "arc_deg": 90, "knockback_cm": 0, "hero_stagger_ms": 0,
+          "guard": { "parry": true, "chip": 4, "stamina": 30, "parry_stagger_ms": 1200, "breaks": false }
+        }
+      ],
+      "variants": []
+    },
+    {
+      "id": "grenadier",
+      "name_ja": "擲弾兵",
+      "reading": "てきだんへい",
+      "name_en": "Grenadier",
+      "weapon_ja": "ドラム弾倉の擲弾筒",
+      "weapon_en": "Drum-fed shell launcher",
+      "faction": "credit_house",
+      "body": "alien",
+      "behavior": "grenadier",
+      "first_chapter": 2,
+      "health": 110,
+      "speed_cm_s": 420,
+      "turn_deg_s": 360,
+      "scale_permille": 1000,
+      "lethal": true,
+      "perception": { "sight_cm": 2800, "dark_sight_cm": 2800, "view_deg": 140, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
+      "tactics": { "keep_distance_cm": 700, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
+      "attacks": [
+        {
+          "id": "arcing_shell", "cue": "grenadier_fire", "name_ja": "曲射弾", "name_en": "Arcing shell",
+          "kind": "lob", "telegraph": "amber", "damage": 35, "windup_ms": 500, "recovery_ms": 5500, "cooldown_ms": 0,
+          "range_cm": [600, 2500], "radius_cm": 300, "flight_ms": 1400, "arming_cm": 200
+        }
+      ],
+      "variants": []
+    },
+    {
+      "id": "marksman",
+      "name_ja": "照準査定兵",
+      "reading": "しょうじゅんさていへい",
+      "name_en": "Assessor-Marksman",
+      "weapon_ja": "長銃身の照準銃",
+      "weapon_en": "Long-barrel assessor rifle",
+      "faction": "credit_house",
+      "body": "alien",
+      "behavior": "marksman",
+      "first_chapter": 2,
+      "health": 80,
+      "speed_cm_s": 440,
+      "turn_deg_s": 360,
+      "scale_permille": 1000,
+      "lethal": true,
+      "perception": { "sight_cm": 4000, "dark_sight_cm": 4000, "view_deg": 120, "hearing_cm": 1100, "suspicion_permille": 1000, "alarmist": false },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 300, "rear_takedown": true },
+      "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 2, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
+      "attacks": [
+        {
+          "id": "assessed_shot", "cue": "marksman_lock", "name_ja": "査定狙撃", "name_en": "Assessed shot",
+          "kind": "lock_shot", "telegraph": "cyan", "damage": 40, "windup_ms": 900, "recovery_ms": 2400, "cooldown_ms": 0,
+          "range_cm": [0, 4000]
+        }
+      ],
+      "variants": []
+    },
+    {
+      "id": "drone",
+      "name_ja": "目録",
+      "reading": "もくろく",
+      "name_en": "Inventory drone",
+      "weapon_ja": "差押網の射出器",
+      "weapon_en": "Seizure-net launcher",
+      "faction": "credit_house",
+      "body": "drone",
+      "behavior": "drone",
+      "first_chapter": 2,
+      "health": 40,
+      "speed_cm_s": 500,
+      "turn_deg_s": 360,
+      "scale_permille": 600,
+      "lethal": true,
+      "perception": { "sight_cm": 2200, "dark_sight_cm": 2200, "view_deg": 60, "hearing_cm": 500, "suspicion_permille": 1000, "alarmist": false },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0, "rear_takedown": false },
+      "tactics": { "keep_distance_cm": 600, "relocate_after_shots": 0, "hover_cm": 450, "alarm_radius_cm": 0, "static": false },
+      "attacks": [
+        {
+          "id": "seizure_net", "cue": "net_windup", "name_ja": "差押網", "name_en": "Seizure net",
+          "kind": "net", "telegraph": "cyan", "damage": 0, "windup_ms": 800, "recovery_ms": 5000, "cooldown_ms": 0,
+          "range_cm": [0, 1500], "radius_cm": 150, "root_ms": 1500
+        }
+      ],
+      "variants": [
+        {
+          "id": "audit_hound", "name_ja": "監査猟犬", "name_en": "Audit hound", "health": 60,
+          "perception": { "sight_cm": 900, "dark_sight_cm": 900, "view_deg": 70 }
+        }
+      ]
+    },
+    {
+      "id": "bound_conscript",
+      "name_ja": "債縛衆",
+      "reading": "さいばくしゅう",
+      "name_en": "Debt-Bound conscript",
+      "weapon_ja": "六尺棒",
+      "weapon_en": "Six-foot staff",
+      "faction": "debt_bound",
+      "body": "local",
+      "behavior": "conscript",
+      "first_chapter": 3,
+      "health": 60,
+      "speed_cm_s": 420,
+      "turn_deg_s": 360,
+      "scale_permille": 1000,
+      "lethal": false,
+      "subdue": { "window_ms": 8000, "seal_cut_hold_ms": 1500, "rise_health_permille": 500 },
+      "perception": { "sight_cm": 2000, "dark_sight_cm": 900, "view_deg": 120, "hearing_cm": 900, "suspicion_permille": 800, "alarmist": false },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0, "rear_takedown": true },
+      "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
+      "attacks": [
+        {
+          "id": "staff_strike", "cue": "conscript_attack", "name_ja": "六尺棒の打ち込み", "name_en": "Staff strike",
+          "kind": "melee", "telegraph": "amber", "damage": 8, "windup_ms": 700, "recovery_ms": 1400, "cooldown_ms": 0,
+          "range_cm": [60, 220], "arc_deg": 90, "knockback_cm": 0, "hero_stagger_ms": 0,
+          "guard": { "parry": true, "chip": 2, "stamina": 20, "parry_stagger_ms": 1200, "breaks": false }
+        }
+      ],
+      "variants": []
+    },
+    {
+      "id": "auditor",
+      "name_ja": "監査官",
+      "reading": "かんさかん",
+      "name_en": "Auditor",
+      "weapon_ja": "監査板と灯",
+      "weapon_en": "Slate and lamp",
+      "faction": "credit_house",
+      "body": "alien",
+      "behavior": "auditor",
+      "first_chapter": 6,
+      "health": 50,
+      "speed_cm_s": 400,
+      "turn_deg_s": 360,
+      "scale_permille": 1000,
+      "lethal": true,
+      "perception": { "sight_cm": 1200, "dark_sight_cm": 500, "view_deg": 70, "hearing_cm": 1300, "suspicion_permille": 1000, "alarmist": true },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 0, "rear_takedown": true },
+      "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 3000, "static": false },
+      "attacks": [],
+      "variants": []
+    },
+    {
+      "id": "loom_automaton",
+      "name_ja": "織機傀儡",
+      "reading": "しょっきくぐつ",
+      "name_en": "Loom Automaton",
+      "weapon_ja": "杼腕と筬",
+      "weapon_en": "Shuttle arms and beater",
+      "faction": "credit_house",
+      "body": "machine",
+      "behavior": "automaton",
+      "first_chapter": 5,
+      "health": 420,
+      "speed_cm_s": 150,
+      "turn_deg_s": 90,
+      "scale_permille": 1300,
+      "lethal": true,
+      "perception": { "sight_cm": 2000, "dark_sight_cm": 2000, "view_deg": 120, "hearing_cm": 800, "suspicion_permille": 1000, "alarmist": false },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 2000, "poise_ms": 450, "rear_takedown": false },
+      "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": false },
+      "attacks": [
+        {
+          "id": "beater_slam", "cue": "automaton_slam", "name_ja": "筬打ち", "name_en": "Beater slam",
+          "kind": "melee", "telegraph": "amber", "damage": 45, "windup_ms": 1100, "recovery_ms": 1400, "cooldown_ms": 4000,
+          "range_cm": [0, 200], "arc_deg": 360, "knockback_cm": 0, "hero_stagger_ms": 0,
+          "guard": { "parry": false, "chip": 11, "stamina": 40, "parry_stagger_ms": 0, "breaks": false }
+        },
+        {
+          "id": "shuttle_thrust", "cue": "automaton_thrust", "name_ja": "杼突き", "name_en": "Shuttle thrust",
+          "kind": "melee", "telegraph": "amber", "damage": 35, "windup_ms": 800, "recovery_ms": 1000, "cooldown_ms": 0,
+          "range_cm": [60, 250], "arc_deg": 40, "knockback_cm": 0, "hero_stagger_ms": 0,
+          "guard": { "parry": true, "chip": 9, "stamina": 35, "parry_stagger_ms": 1200, "breaks": false }
+        }
+      ],
+      "variants": [
+        {
+          "id": "collateral_construct",
+          "name_ja": "担保傀儡",
+          "name_en": "Collateral construct",
+          "health": 260
+        }
+      ]
+    },
+    {
+      "id": "seizure_walker",
+      "name_ja": "差押機",
+      "reading": "さしおさえき",
+      "name_en": "Seizure Walker",
+      "weapon_ja": "掃射光線と差押網",
+      "weapon_en": "Sweep beam and seizure nets",
+      "faction": "credit_house",
+      "body": "walker",
+      "behavior": "walker",
+      "first_chapter": 8,
+      "health": 1200,
+      "speed_cm_s": 0,
+      "turn_deg_s": 45,
+      "scale_permille": 2200,
+      "lethal": true,
+      "perception": { "sight_cm": 4000, "dark_sight_cm": 4000, "view_deg": 120, "hearing_cm": 1500, "suspicion_permille": 1000, "alarmist": false },
+      "defense": { "front_block_deg": 0, "rim_opening_ms": 0, "rear_weak_permille": 1000, "poise_ms": 10000, "rear_takedown": false },
+      "tactics": { "keep_distance_cm": 0, "relocate_after_shots": 0, "hover_cm": 0, "alarm_radius_cm": 0, "static": true },
+      "attacks": [
+        {
+          "id": "sweep_beam", "cue": "walker_sweep_beam", "name_ja": "掃射光線", "name_en": "Sweep beam",
+          "kind": "beam", "telegraph": "cyan", "damage": 30, "windup_ms": 1100, "recovery_ms": 2500, "cooldown_ms": 0,
+          "range_cm": [0, 4000], "width_cm": 300
+        }
+      ],
+      "variants": []
+    }
+  ]
+}

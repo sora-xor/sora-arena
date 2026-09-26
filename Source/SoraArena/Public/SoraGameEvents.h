@@ -16,6 +16,13 @@ enum class ESoraShotKind : uint8
     Beam,
 };
 
+// A boss's or rival duellist's moments (ASoraBoss, Content/Data/bosses.json).
+// Windup, Strike and Recovery name the attack in Detail and share its Serial;
+// a Windup carries the attack's voice telegraph in Line. PhaseChanged names
+// the new pattern table, Staggered, Countered (a parry's special answer) and
+// Event name what happened (shield_broken, barrier_broken, mantle_down,
+// weakpoint_destroyed, mill_seal, deflected, missed, reload, marobashi, ...), and
+// Defeated names the defeat (kill, disarm, capture, destroy_weakpoints, muto_dori).
 UENUM()
 enum class ESoraBossPhase : uint8
 {
@@ -24,6 +31,10 @@ enum class ESoraBossPhase : uint8
     Strike,
     Recovery,
     Defeated,
+    PhaseChanged,
+    Staggered,
+    Countered,
+    Event,
 };
 
 // WeaponId is a catalog weapon, or INDEX_NONE for an opponent's fixed attack.
@@ -75,6 +86,16 @@ struct FSoraDefenseEvent
     UPROPERTY() bool bDojo = false;
 };
 
+// 転 (marobashi): the hero rolled to an opponent's flank, after an awase on
+// it or out of a boss blow's line in its last stretch.
+USTRUCT()
+struct FSoraMarobashiEvent
+{
+    GENERATED_BODY()
+    UPROPERTY() TObjectPtr<AActor> Hero = nullptr;
+    UPROPERTY() TObjectPtr<AActor> Opponent = nullptr;
+    UPROPERTY() bool bAfterAwase = false;
+};
 USTRUCT()
 struct FSoraDamagedEvent
 {
@@ -105,6 +126,39 @@ struct FSoraDetonatedEvent
     UPROPERTY() float Damage = 0.f;
 };
 
+// What an opponent does that presentation answers: barks, captions,
+// telegraph sounds and music. Detail is the attack's cue from
+// Content/Data/enemies.json for AttackWindup, and the new state for
+// AlertState (unaware, suspicious, alert, search, combat, retreat).
+UENUM()
+enum class ESoraEnemyCue : uint8
+{
+    AlertState,
+    AttackWindup,
+    Staggered,
+    ShieldTurned,
+    BarrierBroken,
+    Alarm,
+    // A debt-bound conscript knocked down, freed by a cut collar, or back on its feet.
+    Subdued,
+    Freed,
+    Risen,
+    // A rear takedown's hilt strike (当て身) put the opponent out.
+    KnockedOut,
+    // A guard found a body; Detail is unconscious, subdued or dead.
+    BodyFound,
+};
+
+USTRUCT()
+struct FSoraEnemyCueEvent
+{
+    GENERATED_BODY()
+    UPROPERTY() TObjectPtr<AActor> Enemy = nullptr;
+    UPROPERTY() FName Archetype;
+    UPROPERTY() ESoraEnemyCue Cue = ESoraEnemyCue::AlertState;
+    UPROPERTY() FName Detail;
+};
+
 USTRUCT()
 struct FSoraSiteRestoredEvent
 {
@@ -133,15 +187,28 @@ struct FSoraBossPhaseEvent
     UPROPERTY() ESoraBossPhase Phase = ESoraBossPhase::Arrived;
     UPROPERTY() bool bBeam = false;
     UPROPERTY() float HealthFraction = 1.f;
+    // The boss's id in bosses.json, and its pattern phase (0-based).
+    UPROPERTY() FName BossId;
+    UPROPERTY() int32 PhaseIndex = 0;
+    // The attack, pattern table, event or defeat (see ESoraBossPhase).
+    UPROPERTY() FName Detail;
+    // A chapter script's line id: the captioned voice telegraph or bark.
+    UPROPERTY() FName Line;
+    // One attack's windup, strikes and recovery share a serial.
+    UPROPERTY() int32 Serial = 0;
+    // The windup this attack was given, after difficulty.
+    UPROPERTY() int32 WindupMs = 0;
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraWeaponFiredSignature, const FSoraWeaponFiredEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraMeleeCommittedSignature, const FSoraMeleeCommittedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraStrikeResolvedSignature, const FSoraStrikeResolvedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDefenseSignature, const FSoraDefenseEvent&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSoraMarobashiSignature, const FSoraMarobashiEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDamagedSignature, const FSoraDamagedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDiedSignature, const FSoraDiedEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraDetonatedSignature, const FSoraDetonatedEvent&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSoraEnemyCueSignature, const FSoraEnemyCueEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraSiteRestoredSignature, const FSoraSiteRestoredEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraChapterSignature, const FSoraChapterEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraBossPhaseSignature, const FSoraBossPhaseEvent&);
@@ -165,9 +232,11 @@ public:
     FSoraStrikeResolvedSignature OnStrikeResolved;
     FSoraDefenseSignature OnGuarded;
     FSoraDefenseSignature OnParried;
+    FSoraMarobashiSignature OnMarobashi;
     FSoraDamagedSignature OnDamaged;
     FSoraDiedSignature OnDied;
     FSoraDetonatedSignature OnDetonated;
+    FSoraEnemyCueSignature OnEnemyCue;
     FSoraSiteRestoredSignature OnSiteRestored;
     FSoraChapterSignature OnChapterStarted;
     FSoraChapterSignature OnChapterCompleted;

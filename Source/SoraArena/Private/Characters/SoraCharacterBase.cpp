@@ -67,7 +67,7 @@ void ASoraCharacterBase::Tick(float Dt)
 void ASoraCharacterBase::Heal(float Amount) { if(!bKernelDriven) Health=FMath::Min(MaxHealth,Health+FMath::Max(0.f,Amount)); }
 float ASoraCharacterBase::TakeDamage(float Damage,const FDamageEvent& Event,AController* InstigatorController,AActor* Causer)
 {
-    return SoraDamage::Resolve(*this,Damage,Causer);
+    return SoraDamage::Resolve(*this,Damage,Event,Causer);
 }
 void ASoraCharacterBase::SetKernelDriven(bool Enabled,const FSoraPracticeMap* Map)
 {

@@ -265,6 +265,12 @@ msgctxt "SoraArena.Controls,Control.CampaignWeaponNext"
 msgid "次の武器（物語）"
 msgstr "Next weapon (campaign)"
 
+#. Key:	Control.Crouch
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Crouch"
+msgid "しゃがむ"
+msgstr "Crouch"
+
 #. Key:	Control.Enter
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
 msgctxt "SoraArena.Controls,Control.Enter"
@@ -342,6 +348,12 @@ msgstr "Reload"
 msgctxt "SoraArena.Controls,Control.Scoreboard"
 msgid "戦況表（稽古）"
 msgstr "Scoreboard (practice)"
+
+#. Key:	Control.Sheathe
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.Sheathe"
+msgid "納刀・抜刀"
+msgstr "Sheathe / draw"
 
 #. Key:	Control.Sprint
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
@@ -546,6 +558,18 @@ msgstr "Reloading {Seconds} s   {Ammo} / {Magazine}"
 msgctxt "SoraArena.HUD,Ammo.Rounds"
 msgid "弾数 {Ammo} / {Magazine}   {Reload} 装填"
 msgstr "Rounds {Ammo} / {Magazine}   {Reload} reload"
+
+#. Key:	Ammo.Sheathed
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.Sheathed"
+msgid "納刀 ― 無刀の構え"
+msgstr "Sheathed: mutō-dori stance"
+
+#. Key:	Ammo.Sheathing
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.HUD,Ammo.Sheathing"
+msgid "納刀中……"
+msgstr "Sheathing…"
 
 #. Key:	Ammo.Swordplay
 #: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
