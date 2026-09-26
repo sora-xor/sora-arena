@@ -106,7 +106,7 @@ PRIOR_SCANS = {
     ),
     "3ffbfcabc4c34b58b03d43fd4f445b54": (
         "glbs/000-153/3ffbfcabc4c34b58b03d43fd4f445b54.glb",
-        "elaughli Cat sitting upright scan: awake skull-to-neck proportion",
+        "elaughli Cat sitting upright scan: geometric ground truth of the round-5 head and neck",
         "/tmp/sora-cat-scan-eval/elaughli-cat-sitting-upright.glb",
     ),
 }
@@ -140,10 +140,16 @@ SCAN_USE = {
     CT_UID: {
         "credit_detail": "original CT information courtesy of Dr Tobias Schwarz; adapted and prepared by "
                          "Brian Mather, The Royal (Dick) School of Veterinary Studies, The University of Edinburgh",
-        "changes": "Used as the skull under the CatBaseV6 art study: aligned to the midsagittal plane, scaled 2.2x, "
-                   "pitched 12 deg, Laplacian-smoothed, converted to a level set and used only as the bone surface "
-                   "under a new procedurally sculpted soft-tissue skin; no CT triangles are stored in the .blend "
-                   "or shipped. The raw scan stays private (Local/ThirdPartyRaw).",
+        "changes": "Rounds 1-4 used it as the skull under the CatBaseV6 art study: aligned to the midsagittal plane, "
+                   "scaled 2.2x, pitched 12 deg, Laplacian-smoothed, converted to a level set and used only as the bone "
+                   "surface under a procedurally sculpted soft-tissue skin. Round 5 (2026-09-26) keeps it for landmarks "
+                   "only: its orbits place the eye globes, and a tissue-depth fit checks the scan-derived head against "
+                   "it; no CT surface is part of the round-5 skin. Round 6 (2026-09-26) keeps the same role; the globes "
+                   "sit 2 mm further forward along the gaze than the orbit placement. Round 7 (2026-09-26) keeps the same "
+                   "landmark-only role and eye placement. Round 8 (2026-09-26) keeps the landmark-only role; the globes "
+                   "sit a further 2.5 mm forward, and the round-5 finding that the CT vertex stands ~14 mm above the "
+                   "scanned crown sets the round-8 crown lift. No CT triangles are stored in the "
+                   ".blend or shipped. The raw scan stays private (Local/ThirdPartyRaw).",
         "derived_art": [CAT_BASE_V6],
     },
     "1254ff5a110a45299b39a9469f565ea3": {"changes": "None: not incorporated into any output; kept privately as a "
@@ -155,9 +161,46 @@ SCAN_USE = {
     "94cc7033cd1549398ae26118d6edd086": {"changes": "None: not incorporated into any output; kept privately as a "
                                                     "jaw-proportion cross-check."},
     "2996f59c517245aa91cf513a5624935e": {"changes": "None: not incorporated into any output; kept privately as a "
-                                                    "head and coat form reference."},
-    "3ffbfcabc4c34b58b03d43fd4f445b54": {"changes": "None: not incorporated into any output; rendered privately once "
-                                                    "as a qualitative head turntable (round 3), not used geometrically."},
+                                                    "head and coat form reference. Inspected in round 5 as a head source "
+                                                    "and rejected (sleeping, curled pose; head fused to the cushion; "
+                                                    "coarse surface noise)."},
+    "3ffbfcabc4c34b58b03d43fd4f445b54": {
+        "changes": "Adapted in round 5 (2026-09-26) as the geometric ground truth of the CatBaseV6 head and neck "
+                   "(scripts/art/create_cat_base_v7.py). Taken: the shape of the scanned surface of the head, face, "
+                   "cheeks, throat, nape and upper neck, from the clean left half only; nothing else (no vertex "
+                   "colour, texture, topology or ears). Changed: expressed in a head frame found by mirror-ICP (the "
+                   "head was turned about 85 deg on the body); the noisy right half discarded and replaced by the "
+                   "mirror image of the left; converted to a 0.5 mm signed distance field with tunnels under 8 mm "
+                   "(the open ear canals) sealed and smoothed 0.7-2.2 mm to remove fur-clump noise; the laid-back "
+                   "noisy pinnae removed by a morphological opening and replaced by new modelled pinnae; inset 1-15 mm "
+                   "by region (the thickness of the new groom) to turn the fur surface into a skin; scaled 1.874x and "
+                   "pitched 5 deg onto the round-4 face profile (the scan is not metric); faded out below the neck into "
+                   "an original biped bust; new eyes, lids, nose leather, lip and whisker-pad details, markings and "
+                   "groom. Round 6 (2026-09-26, scripts/art/create_cat_base_v8.py) keeps the same scan field and "
+                   "changes only what is layered on it: throat and neck insets reduced to 4.5 and 11 mm, a smooth "
+                   "conchal bowl and funnel carved under each new pinna instead of the round-5 cup, and a narrower, "
+                   "higher original bust. Round 7 (2026-09-26, scripts/art/create_cat_base_v9.py) samples the same "
+                   "scan field through a smooth warp in front of the eyes (the muzzle and nose 11 mm forward, the lower "
+                   "muzzle, lips and chin 8 mm up, so the upper lip is shorter), fills the hollows left round the removed "
+                   "scan ears with a morphological closing (r 6 scan units) and two capsule plugs in the open canal pits, "
+                   "insets the neck sides up to 15 mm more and the nape 15 mm, replaces the round-6 bowl carve by a "
+                   "concha voxelised from each new pinna, and adds new surface details (a domed nose pad, a nasal "
+                   "bridge and stop, a chin, puffier whisker pads, a lid fill band round each eye) and a new original "
+                   "bust with scapulae and forelimbs. Round 8 (2026-09-26, scripts/art/create_cat_base_v10.py) keeps the "
+                   "same scan field and changes how it is sampled and what is layered on it: floating remnants of the "
+                   "scanned pinnae dropped, then a morphological opening (r 7 scan units), a wider closing (r 14) and a "
+                   "heavy blur round the former ears and the scanned canals, so the scan's old ear canals, sockets and "
+                   "ear ledge are gone (the round-7 canal plugs removed); "
+                   "the cranium behind the ears 18 % shorter and the occiput 10 % flatter (a smooth warp), the crown "
+                   "lifted up to 13 mm, the temples pared up to 3 mm, the muzzle warp cut from 11 to 9 mm and the chin raised "
+                   "10 mm and tucked 4 mm back; neck side and nape insets cut to 2 and 9 mm; new modelled pinnae whose "
+                   "back and margins flare into the head skin, a concha carved only in front of each inner face with "
+                   "a canal tube, and new surface details (a flat nose planum, a deeper stop, a mentum crease) and a "
+                   "new original bust. The committed .blend stores a new QuadriFlow quad cage and the decimated "
+                   "derived level set it is shrink-wrapped onto (the sculpt target); no scan triangle, vertex colour or "
+                   "texture is stored or shipped. The raw scan stays private (Local/ThirdPartyRaw).",
+        "derived_art": [CAT_BASE_V6],
+    },
 }
 
 

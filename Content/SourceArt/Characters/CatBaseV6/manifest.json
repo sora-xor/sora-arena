@@ -1,0 +1,1335 @@
+{
+  "schema": "sora-arena-source-ledger/2-draft",
+  "asset_id": "CatBaseV6",
+  "tier": "PUB-BY (derived original)",
+  "status": "source-only art study; not runtime-approved",
+  "photoreal_gate": {
+    "passed": false,
+    "judged_scores_out_of_10": {
+      "1": 3.5,
+      "2": 3.5,
+      "3": 3,
+      "4": 3.5,
+      "5": 5,
+      "6": 4.5,
+      "7": 4.5,
+      "8": 5
+    },
+    "note": "No round has passed docs/art-direction/photoreal-acceptance.md; round 8 (this build) is judged 5/10."
+  },
+  "runtime": "not wired in: not imported into Unreal and not referenced by Source/, Config/ or game content",
+  "round": 8,
+  "generator": "scripts/art/create_cat_base_v10.py (round 8; imports create_cat_base_v9.py, which imports create_cat_base_v8.py, create_cat_base_v7.py and create_cat_base_v6.py)",
+  "source_fetcher": "scripts/art/fetch_cat_base_v6_sources.py",
+  "blender": "5.2.2 LTS",
+  "units": "meters; +X face forward; +Z up; character scale 2.2x adult domestic cat",
+  "derived_from": {
+    "skull": {
+      "name": "Domestic Cat (Felis catus)",
+      "origin_url": "https://sketchfab.com/3d-models/domestic-cat-felis-catus-7c99ca836d834c39872ecf5e9b5e2087",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "sha256": "ba3b7ae1548c279b763539d5e312eef494c23d7fcc588ac89a84a3a9bfad70f3",
+      "storage": "Local/ThirdPartyRaw (private, decision D6)",
+      "attribution_text": "Domestic Cat (Felis catus) CT - original CT information courtesy of Dr Tobias Schwarz; adapted and prepared by Brian Mather, The Royal (Dick) School of Veterinary Studies, The University of Edinburgh (The University of Edinburgh Open.Ed, Sketchfab), CC BY 4.0",
+      "changes": "Rounds 1-4 used it as the skull under the CatBaseV6 art study: aligned to the midsagittal plane, scaled 2.2x, pitched 12 deg, Laplacian-smoothed, converted to a level set and used only as the bone surface under a procedurally sculpted soft-tissue skin. Round 5 (2026-09-26) keeps it for landmarks only: its orbits place the eye globes, and a tissue-depth fit checks the scan-derived head against it; no CT surface is part of the round-5 skin. Round 6 (2026-09-26) keeps the same role; the globes sit 2 mm further forward along the gaze than the orbit placement. Round 7 (2026-09-26) keeps the same landmark-only role and eye placement. Round 8 (2026-09-26) keeps the landmark-only role; the globes sit a further 2.5 mm forward, and the round-5 finding that the CT vertex stands ~14 mm above the scanned crown sets the round-8 crown lift. No CT triangles are stored in the .blend or shipped. The raw scan stays private (Local/ThirdPartyRaw)."
+    },
+    "hdri": {
+      "path": "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+      "license": "CC0-1.0",
+      "author": "Greg Zaal (Poly Haven)"
+    },
+    "hdri_round3": [
+      {
+        "asset_id": "polyhaven-misty_pines",
+        "file": "Local/ThirdPartyRaw/hdri/polyhaven/misty_pines_4k.hdr",
+        "sha256": "54b38320e9302faaa68538ef77ee3b4896bf2f3fd29ecdb3707f15c278a70bd5",
+        "license": "CC0-1.0",
+        "authors": [
+          "Greg Zaal"
+        ],
+        "role": "exterior overcast review pass (pine forest, real environment background)",
+        "storage": "local-private"
+      },
+      {
+        "asset_id": "polyhaven-overcast_soil",
+        "file": "Local/ThirdPartyRaw/hdri/polyhaven/overcast_soil_4k.hdr",
+        "sha256": "10a0700c0f26cc7a30f7c25b75280793af8e3d5be4ce5b56405c12c6b8fa7f3b",
+        "license": "CC0-1.0",
+        "authors": [
+          "Sergej Majboroda"
+        ],
+        "role": "reference-matched A/B frame: overcast light over bare ground, like profile ref Cat (4938330260)",
+        "storage": "local-private"
+      }
+    ],
+    "reference_photos": "sources_manifest.json (viewed only; no pixels used)",
+    "scan_head": {
+      "name": "Cat sitting upright",
+      "origin_url": "https://sketchfab.com/3d-models/cat-sitting-upright-3ffbfcabc4c34b58b03d43fd4f445b54",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "sha256": "a4076770bbeef5bd649275a15a33fb4107df0aabdff0fe148e92e3443483d828",
+      "storage": "Local/ThirdPartyRaw (private, decision D6)",
+      "attribution_text": "\"Cat sitting upright\" by elaughli, https://sketchfab.com/3d-models/cat-sitting-upright-3ffbfcabc4c34b58b03d43fd4f445b54, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "changes": "Adapted in round 5 (2026-09-26) as the geometric ground truth of the CatBaseV6 head and neck (scripts/art/create_cat_base_v7.py). Taken: the shape of the scanned surface of the head, face, cheeks, throat, nape and upper neck, from the clean left half only; nothing else (no vertex colour, texture, topology or ears). Changed: expressed in a head frame found by mirror-ICP (the head was turned about 85 deg on the body); the noisy right half discarded and replaced by the mirror image of the left; converted to a 0.5 mm signed distance field with tunnels under 8 mm (the open ear canals) sealed and smoothed 0.7-2.2 mm to remove fur-clump noise; the laid-back noisy pinnae removed by a morphological opening and replaced by new modelled pinnae; inset 1-15 mm by region (the thickness of the new groom) to turn the fur surface into a skin; scaled 1.874x and pitched 5 deg onto the round-4 face profile (the scan is not metric); faded out below the neck into an original biped bust; new eyes, lids, nose leather, lip and whisker-pad details, markings and groom. Round 6 (2026-09-26, scripts/art/create_cat_base_v8.py) keeps the same scan field and changes only what is layered on it: throat and neck insets reduced to 4.5 and 11 mm, a smooth conchal bowl and funnel carved under each new pinna instead of the round-5 cup, and a narrower, higher original bust. Round 7 (2026-09-26, scripts/art/create_cat_base_v9.py) samples the same scan field through a smooth warp in front of the eyes (the muzzle and nose 11 mm forward, the lower muzzle, lips and chin 8 mm up, so the upper lip is shorter), fills the hollows left round the removed scan ears with a morphological closing (r 6 scan units) and two capsule plugs in the open canal pits, insets the neck sides up to 15 mm more and the nape 15 mm, replaces the round-6 bowl carve by a concha voxelised from each new pinna, and adds new surface details (a domed nose pad, a nasal bridge and stop, a chin, puffier whisker pads, a lid fill band round each eye) and a new original bust with scapulae and forelimbs. Round 8 (2026-09-26, scripts/art/create_cat_base_v10.py) keeps the same scan field and changes how it is sampled and what is layered on it: floating remnants of the scanned pinnae dropped, then a morphological opening (r 7 scan units), a wider closing (r 14) and a heavy blur round the former ears and the scanned canals, so the scan's old ear canals, sockets and ear ledge are gone (the round-7 canal plugs removed); the cranium behind the ears 18 % shorter and the occiput 10 % flatter (a smooth warp), the crown lifted up to 13 mm, the temples pared up to 3 mm, the muzzle warp cut from 11 to 9 mm and the chin raised 10 mm and tucked 4 mm back; neck side and nape insets cut to 2 and 9 mm; new modelled pinnae whose back and margins flare into the head skin, a concha carved only in front of each inner face with a canal tube, and new surface details (a flat nose planum, a deeper stop, a mentum crease) and a new original bust. The committed .blend stores a new QuadriFlow quad cage and the decimated derived level set it is shrink-wrapped onto (the sculpt target); no scan triangle, vertex colour or texture is stored or shipped. The raw scan stays private (Local/ThirdPartyRaw).",
+      "scan_to_world": {
+        "k": 1.87386,
+        "phi": 5.0795,
+        "tx": 95.2167,
+        "tz": 11.5345
+      },
+      "scan_picks_scan_metres": {
+        "nose": [
+          -0.06018,
+          -0.0324,
+          0.07617
+        ],
+        "eye_r": [
+          -0.08185,
+          -0.00731,
+          0.09544
+        ],
+        "eye_l": [
+          -0.04217,
+          -0.00249,
+          0.09358
+        ]
+      }
+    }
+  },
+  "build": {
+    "cage_quads": 95842,
+    "sculpt_target_faces": 284684,
+    "guides": 70000,
+    "strands_viewport_preview_10pct": {
+      "CatBaseV6_Fur_Head": 19775,
+      "CatBaseV6_Fur_Body": 23767,
+      "CatBaseV6_Fur_Chest": 7006,
+      "CatBaseV6_Fur_EarBack": 4829,
+      "CatBaseV6_Fur_Under": 63774,
+      "CatBaseV6_Fur_Stray": 5736
+    },
+    "build_seconds": 136
+  },
+  "strand_counts_100pct": {
+    "CatBaseV6_Fur_Body": {
+      "curves": 473407,
+      "points": 3787256,
+      "render": true
+    },
+    "CatBaseV6_Fur_Chest": {
+      "curves": 138496,
+      "points": 1107968,
+      "render": true
+    },
+    "CatBaseV6_Fur_EarBack": {
+      "curves": 108776,
+      "points": 870208,
+      "render": true
+    },
+    "CatBaseV6_Fur_EarFurnishings": {
+      "curves": 8057,
+      "points": 96684,
+      "render": true
+    },
+    "CatBaseV6_Fur_Guides": {
+      "curves": 70000,
+      "points": 560000,
+      "render": false
+    },
+    "CatBaseV6_Fur_Head": {
+      "curves": 403044,
+      "points": 3224352,
+      "render": true
+    },
+    "CatBaseV6_Fur_Stray": {
+      "curves": 5736,
+      "points": 57360,
+      "render": true
+    },
+    "CatBaseV6_Fur_Under": {
+      "curves": 1272279,
+      "points": 10178232,
+      "render": true
+    },
+    "CatBaseV6_Vibrissae": {
+      "curves": 38,
+      "points": 1064,
+      "render": true
+    }
+  },
+  "files": [
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/CatBaseV6.blend",
+      "bytes": 45087715,
+      "sha256": "b54b8497f29578dc907b5ff43c7e4b2dcba1879a273e00eacc8687937ec54e3e"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/README.md",
+      "bytes": 203360,
+      "sha256": "ba47002d957168969d9221e3242c93b3a3b9380565c855ac5392af4a77091361"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Overcast_CloseFront.png",
+      "bytes": 2856615,
+      "sha256": "01f37b85c2daecdbe75afd5a3926fd9f8e1045e83d9259524e6cae22c06f8e2d"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Overcast_CloseThreeQuarter.png",
+      "bytes": 2888292,
+      "sha256": "8bef3dbbca0f5d83357d53cb894490cc73e32f01d722e285e4767e6bc559607a"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Overcast_Front.png",
+      "bytes": 2555540,
+      "sha256": "d542ae750bff7e8121afcde58659463bfc26eb92bef27a5c8bc3448d985ae895"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Overcast_Profile.png",
+      "bytes": 2432891,
+      "sha256": "6cbb3c74cf26bc1b51d8587c61f66878d48fde5d519b29dab68f8338f55d112a"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Overcast_ThreeQuarter.png",
+      "bytes": 2541423,
+      "sha256": "d72c26e7b502ac1ccad795ca682588bfd4ca7d3a37a73e30e41fb028e2b2cbdc"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Studio_CloseFront.png",
+      "bytes": 2695096,
+      "sha256": "fa78c8beb0694bd378be95fb808a745764427caecd733100ea8cf531cc390745"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Studio_CloseThreeQuarter.png",
+      "bytes": 2868153,
+      "sha256": "3b4cd1f043077fe4697153d13bb4d13e7ee85b520b3265a9f4dcb6d7a3b14bc8"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Studio_Front.png",
+      "bytes": 2362155,
+      "sha256": "909425f55c6120647f80690525a26369bfcb016d33419fd955097078dd04a18b"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Studio_Profile.png",
+      "bytes": 2516331,
+      "sha256": "d7aa294f94a25bad24bfae48a5176d06f6148eddfb894f7375506b85ad9ae78e"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_1/CatBaseV6_R1_Studio_ThreeQuarter.png",
+      "bytes": 2530599,
+      "sha256": "5cb90b5e0ede29ab0b1193036c58925f02798b949d28478fb27c9de4cd195676"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Overcast_CloseFront.png",
+      "bytes": 2695153,
+      "sha256": "3ac92c54f2c37ec659fad825d029b6a89a534b80de23e6a39fd65f41ed03dbf5"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Overcast_CloseThreeQuarter.png",
+      "bytes": 2776804,
+      "sha256": "1a376d30d60b9f5b5e9232d43065d47dd81f852ea9749eae5dc86f3156796ad4"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Overcast_Front.png",
+      "bytes": 2405621,
+      "sha256": "410994a67bf9b84013098b9ef0f4e9e89e5ca0482e93755df7b83b71c6b2a9f7"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Overcast_Profile.png",
+      "bytes": 2406062,
+      "sha256": "f57f09e72a667b7571e328d678b4d5e552fc0d9a839ef546e304575044323df8"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Overcast_ThreeQuarter.png",
+      "bytes": 2418856,
+      "sha256": "a257ff1104f671a062fec8d0c5e8e0dabf4f8fbe0332add3005217c426230801"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Studio_CloseFront.png",
+      "bytes": 2743993,
+      "sha256": "b74309a0e60719133cd33cc5a307ba75f21dc1a9f29c72923bdc52f7c494fece"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Studio_CloseThreeQuarter.png",
+      "bytes": 2850541,
+      "sha256": "1775c694148113e8342ca713f425340114672966d123a7cc1474ecd9e42e5bd6"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Studio_Front.png",
+      "bytes": 2461196,
+      "sha256": "af17796c36e6da20f9b37834f029ea15d3e4b255d363bf608eae068c4ae5448d"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Studio_Profile.png",
+      "bytes": 2156496,
+      "sha256": "24db9fcf76637777090a00cd1d1fd8f21b5b1f674dd38e774a246deeb384a424"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_2/CatBaseV6_R2_Studio_ThreeQuarter.png",
+      "bytes": 2485780,
+      "sha256": "3f557433f5d70ab4664ece3f9eb0a79d1893444809477df71f1c682598f48891"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Exterior_CloseFront.png",
+      "bytes": 2788116,
+      "sha256": "66fffeb32ec543cd375a1d556d3f28affdc9fd98e64a906fdca7d5d5a0cb3366"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Exterior_CloseThreeQuarter.png",
+      "bytes": 2919953,
+      "sha256": "0c06b9a488cf24a57ceeb8ccf5231110b6fb9fe8d15e0e11c6dcd6903e1e533a"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Exterior_Front.png",
+      "bytes": 2592014,
+      "sha256": "fd04b92092d6e103a8c63f909bf7e79fa68d029717717d6a9f61a02a2d5dee23"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Exterior_Profile.png",
+      "bytes": 2593701,
+      "sha256": "2c8dfc70db0b9ea09edb1e68103f92d187cfb04af94b18d7d82afb7c85030e2c"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Exterior_ThreeQuarter.png",
+      "bytes": 2701746,
+      "sha256": "f92224f4f2fe8c348a0aee9a9091106b740c47197b00414e0ac551ef161d034c"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Overcast_CloseFront.png",
+      "bytes": 2656258,
+      "sha256": "c1fc6803a5df4c30695576e2b6ce08ae2f129ed212177a58680a21d62a0daee0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Overcast_CloseThreeQuarter.png",
+      "bytes": 2740079,
+      "sha256": "42be11130fbd76db91aed7788d5d2c4bdd7a40f5c5372814fdf84d66fd4dbd89"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Overcast_Front.png",
+      "bytes": 2441158,
+      "sha256": "38ac71539622415b710872edae173fe286dad69b0683bf8243fd84c6a397f6a6"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Overcast_Profile.png",
+      "bytes": 2427262,
+      "sha256": "7702de0022aa169a234df86a15bc186f61916ced05a84ce9b3cbd8b0fc2d3b95"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Overcast_ThreeQuarter.png",
+      "bytes": 2431391,
+      "sha256": "e0a06cf4b641ec588e153258078832c7bebafea7a366e48d2775a20478fe3c9b"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_RefMatch_RefMatch_Profile.png",
+      "bytes": 2093582,
+      "sha256": "4c43393586563956649654956a15a322024f07a1c3fe87b50c3cc01e0f269854"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Studio_CloseFront.png",
+      "bytes": 2771974,
+      "sha256": "68545c0799d16a5d7f23c31209bf04b7e00933d5a5bb70b65c273692974f5b68"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Studio_CloseThreeQuarter.png",
+      "bytes": 2870462,
+      "sha256": "041ca7c0f1daf1c308960b26b27b7a80d234a5545029f9fa96e590dc1e2982a1"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Studio_Front.png",
+      "bytes": 2555846,
+      "sha256": "0d4a26b14f5bd49e2aa981adf0324f5f225e142a1bcd9be25c6f49842ac3b423"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Studio_Profile.png",
+      "bytes": 2196767,
+      "sha256": "5a8eaf37c6b8d1ccb5168eb6fe7b8080ec5e90400f55a9723c44e8cb3ca2896c"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_Studio_ThreeQuarter.png",
+      "bytes": 2524906,
+      "sha256": "6f6aa7dcba25ec462309c34d482986f7ab695825991cf4a809c8d91d81ac2e48"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_ThreePoint_CloseFront.png",
+      "bytes": 2940456,
+      "sha256": "2316e80c1129ec9cf533e6cf56506e5c6473fc295e3a17e7710ec2237378456f"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_ThreePoint_CloseThreeQuarter.png",
+      "bytes": 2895147,
+      "sha256": "dc1b34ba7ab58c7f86f6c98d70ceb4edcc44e0e17c062d4056bbe6c5be5714c7"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_ThreePoint_Front.png",
+      "bytes": 2725156,
+      "sha256": "84764887cf86ec9b90849922dcc333b1092c725b20403c0c48195834bd8261b3"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_ThreePoint_Profile.png",
+      "bytes": 2385221,
+      "sha256": "cb3c89240f245b61d1d3e0ca880dc19496f40c0e015fe3f3bd05d296a373b543"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_3/CatBaseV6_R3_ThreePoint_ThreeQuarter.png",
+      "bytes": 2542092,
+      "sha256": "fbbf11525dafbff469db9162de8906f9d4a6afd8e4a7361bb8646215b58d6bac"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Exterior_CloseFront.png",
+      "bytes": 2827160,
+      "sha256": "2f894d966fc11e8e3aa914e5d47e785a7dc2c9162c458cfbab982b77ae7a0e10"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Exterior_CloseThreeQuarter.png",
+      "bytes": 2943499,
+      "sha256": "886062cf8d247fb91991b5e941faabc3d887a348f5a22ca5a8723303dd817a7c"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Exterior_Front.png",
+      "bytes": 2623721,
+      "sha256": "e3fe00b87cea942c23a57eaeff2c8b6d429a0e9f2fb2f9b47b5b954983beeb06"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Exterior_Profile.png",
+      "bytes": 2572954,
+      "sha256": "2845d16c5833e40aaf197b9c2fe9f84bab414725f86ce2810934c90be8c9e0bf"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Exterior_ThreeQuarter.png",
+      "bytes": 2696335,
+      "sha256": "cdb8126869383d9c6a35f095a913c17293be4262ac21ecc26c8d4dda725b5a13"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Overcast_CloseFront.png",
+      "bytes": 2708163,
+      "sha256": "7486133620ddd6b5a5e3e3ba58a2da3cbc6620cd9942a3e0612b39da72cde3e0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Overcast_CloseThreeQuarter.png",
+      "bytes": 2748692,
+      "sha256": "be72bfaa85dc816dcb3da5c903c8c1f4f3079a6b2ee827ddc08ff5a3234dbf6f"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Overcast_Front.png",
+      "bytes": 2449360,
+      "sha256": "7c011495eb73b6bc9d2c97aa0c35aa4265a34b8d4d68d2dbda4fc216a6d01926"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Overcast_Profile.png",
+      "bytes": 2427608,
+      "sha256": "01d313c08520f6d6f7f97160dbcfd436f4aa7c05da735e2e58d772ae3f8b7c01"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Overcast_ThreeQuarter.png",
+      "bytes": 2444155,
+      "sha256": "d1c0cac5b9c2d2f094c881c7342c57d2ea72ac18c1a0302b02d3ba5bd09d1dd3"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_RefMatch_RefMatch_Profile.png",
+      "bytes": 2014431,
+      "sha256": "7d98bb6419d5667be7ce27e8a3531e4c93fff416116e3218f178a3c6324017fe"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Studio_CloseFront.png",
+      "bytes": 2764205,
+      "sha256": "dc094b66c99058c1af9cd67445cb929037037be1fefd2bf0edaf3c3e76bc88e7"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Studio_CloseThreeQuarter.png",
+      "bytes": 2863454,
+      "sha256": "9b17e1bdb46cce7ff80835cf0674020d7c2e4cccf3015631a0fcab906d2b2e7f"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Studio_Front.png",
+      "bytes": 2513147,
+      "sha256": "08ee35173beb32186402de4647687cdbeed141d8051c8eedef66e6289896fd2b"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Studio_Profile.png",
+      "bytes": 2206918,
+      "sha256": "d7a11b85adcbd4209ba215003af65cfe78ed70c034bf72cfabc967b38be98b8c"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_Studio_ThreeQuarter.png",
+      "bytes": 2513154,
+      "sha256": "c47a8b8032c799f77035bbff10b38aa1127c6e9c6810d725cade21d6ca592e87"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_ThreePoint_CloseFront.png",
+      "bytes": 2946032,
+      "sha256": "96976bdc02f2cfe0f224de09773c885c5d8a64e68142bafdcded6b55430a30e2"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_ThreePoint_CloseThreeQuarter.png",
+      "bytes": 2933149,
+      "sha256": "59e6780a7e302255f9857b0569d7bd40b797b734456521984bc622588b42128a"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_ThreePoint_Front.png",
+      "bytes": 2652280,
+      "sha256": "6f35e0b5856ca887bb447d8f3b02880281cb02fbdb2c5d10593878459b8d0ae0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_ThreePoint_Profile.png",
+      "bytes": 2354004,
+      "sha256": "42638a876855cfe9031fc7ef4c818bf33cee845e130fa164f0f7b3bef2da415e"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_4/CatBaseV6_R4_ThreePoint_ThreeQuarter.png",
+      "bytes": 2589073,
+      "sha256": "fa0b26669c7b3164c03b0b59835084307629d1a07a8b15b91a3e96a80bbf3bea"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_AB_NyaakotoReference_CloseFront.png",
+      "bytes": 3107048,
+      "sha256": "f3da56a4fd4823521e2e5765b2d7bac5c48045fe8d77ae399685b3a0487d6b32"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_AB_R4_Overcast.png",
+      "bytes": 5267725,
+      "sha256": "73e1fdbb50882b8439f8d03bfc3b366faa0307ea04b00095d358d3041210281b"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_AB_R4_RefMatch_Profile.png",
+      "bytes": 1748208,
+      "sha256": "da721acb1465de33dadd867832a5454023dc4b72f0136e6cde7715f771bfa030"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Exterior_CloseFront.png",
+      "bytes": 2827958,
+      "sha256": "57880744a55a44608c468916fb9df0718f16f0b23fc175d70b69350676f9db2f"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Exterior_CloseThreeQuarter.png",
+      "bytes": 2945315,
+      "sha256": "9085a20e01349e0201399e472959be32796df8f507bcbf4e8aaf104ad9f4e4e0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Exterior_Front.png",
+      "bytes": 2611760,
+      "sha256": "db1ebb012402b217b171af0eb346ece6fe4be13ff523c9a56c57533ddedfdf55"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Exterior_Profile.png",
+      "bytes": 2537859,
+      "sha256": "2ec24f8f02bf03b773afc146d12c7e4870387fb31958e1e0bb003bb284b20acf"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Exterior_ThreeQuarter.png",
+      "bytes": 2676116,
+      "sha256": "5bc9c42d0f90658eb0a57256517d717af0e5f69e772e44becdc3e7f9067b3ebf"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Overcast_CloseFront.png",
+      "bytes": 2725130,
+      "sha256": "91756e45eedf2db841da7339b17d77ef412fc3e0aa7f1d0a3391c9a052e0db0d"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Overcast_CloseThreeQuarter.png",
+      "bytes": 2766978,
+      "sha256": "49d8b2b576c3ed7bf73bb0974f3cc7a4c97a1dacededa5bf2abc2e2571c28a29"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Overcast_Front.png",
+      "bytes": 2451052,
+      "sha256": "4241a0a4d6d130a327dabd4f0441de1885dde32582df9490995abdedca21ae5c"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Overcast_Profile.png",
+      "bytes": 2415850,
+      "sha256": "e3ff61737e2c1f4a8638285046ff562d8619f653fb6bb7af6a952d9cd74dc572"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Overcast_ThreeQuarter.png",
+      "bytes": 2429551,
+      "sha256": "64228f227b211145177b8154e06f2b315b30420ab70adc669c71a2e6d288caac"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_RefMatch_RefMatch_Profile.png",
+      "bytes": 2018718,
+      "sha256": "4cb12350000e50e8e7c76ac9d998487c46efe2f00b2ab40b5ee2fac37fc37e99"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Studio_CloseFront.png",
+      "bytes": 2778890,
+      "sha256": "8f82623e5f5754b21248adbe2eba924704aca26f4687a47ecebce833a5510a69"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Studio_CloseThreeQuarter.png",
+      "bytes": 2856852,
+      "sha256": "0d1e310c718841f4f78bef04ad27a96180ec789c7ed2aef1f3501406cf1c4332"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Studio_Front.png",
+      "bytes": 2510333,
+      "sha256": "f98008632d53e283bfe8f05a087162dbefb60f90db5aba819f3b31a58b0b4672"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Studio_Profile.png",
+      "bytes": 2191240,
+      "sha256": "5fb471329077998fbbd13b359ed1fc2513d95c9a5b6a3dcda1c5db44e7e763d0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_Studio_ThreeQuarter.png",
+      "bytes": 2497039,
+      "sha256": "19a3e7322dbeea1553bea3b6d53b5c7b4f14f8a9570ee6771b661166a944622f"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_ThreePoint_CloseFront.png",
+      "bytes": 2932772,
+      "sha256": "c644ef3ed703541bc0c69fd89e8a3c12d264ef2102fef4b79f5195466884c46a"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_ThreePoint_CloseThreeQuarter.png",
+      "bytes": 2944180,
+      "sha256": "b5e3586337a09581bf26860a2a2479c7056c76ae30a3deae8e336cdf0c2c0e64"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_ThreePoint_Front.png",
+      "bytes": 2637521,
+      "sha256": "2c2d775b73bfed9c3e39a82248a284cf28e3223b15e33ac81cee1aee2b0ddbab"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_ThreePoint_Profile.png",
+      "bytes": 2350553,
+      "sha256": "e7f4a63d5fa0a0779dadab272f47e6bbbe045cfb4d0d2195285c981b004e1f0f"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_5/CatBaseV6_R5_ThreePoint_ThreeQuarter.png",
+      "bytes": 2579733,
+      "sha256": "98b5a7e518ed6a012813cee7260c8b5058dcff9232eef75fedb30d8bcc6e1962"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_AB_NyaakotoReference_CloseFront.png",
+      "bytes": 3079242,
+      "sha256": "0b8edca129fd5d504d2e8ff164f4c289f1ebd812b480fa7236a24fffa30136c0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_AB_NyaakotoReference_Profile.png",
+      "bytes": 2262340,
+      "sha256": "1a580a99e9fe4d29695cefc6d804385ae56379aa3d370486d93d49631ccc0dcc"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_AB_R5_Overcast.png",
+      "bytes": 5257777,
+      "sha256": "1dae4a6d32f223db0cb3a2632b52cdebea713d168792498478a7ff2ad8ca2ee7"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_AB_R5_RefMatch_Profile.png",
+      "bytes": 1812906,
+      "sha256": "10033eb83863e1af045f1c0086d213394561f7743139ae25d3d894dbbac87dbc"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Exterior_CloseFront.png",
+      "bytes": 2832490,
+      "sha256": "b7052f45473e97679919f7fda555a47db173b196e5da419c8fa90df298182786"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Exterior_CloseThreeQuarter.png",
+      "bytes": 2948931,
+      "sha256": "1d26c3217027f1135f9e0f1a8c646867f1d8fa2d2f0781364bcc3b1920622429"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Exterior_Front.png",
+      "bytes": 2563699,
+      "sha256": "40a643047aa93a4aa098343b7b8877adf62afbd69c6624aae0c7ad09e5a2145e"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Exterior_Profile.png",
+      "bytes": 2543140,
+      "sha256": "d85cc6e8ebdc871b626037bcf502711374510d69d59600e188fab2315de39215"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Exterior_ThreeQuarter.png",
+      "bytes": 2633401,
+      "sha256": "1d99371eb4e9ae5f64e4ee5f4162308fe3548c688c25cc673110b9b6c91c1390"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Overcast_CloseFront.png",
+      "bytes": 2689168,
+      "sha256": "9d51601b7d421aa0c7dbc6de450a91e3a69543404450d61ff9758dc8767cbe20"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Overcast_CloseThreeQuarter.png",
+      "bytes": 2723867,
+      "sha256": "2c758e69b233141fb27791a843dadc22de859be801779ee21ab030cccc0e6ae0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Overcast_Front.png",
+      "bytes": 2385964,
+      "sha256": "c89c2d1e056aa4da8b51eb85e0b55d788738af879cd245a09dac4a504ec7c140"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Overcast_Profile.png",
+      "bytes": 2418497,
+      "sha256": "e871b2dbc33cb9d4edcf355111064e227e83f291c880ee3505304a7efe23eb0f"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Overcast_ThreeQuarter.png",
+      "bytes": 2375443,
+      "sha256": "4f4dd9626a7693f100bf1d9df156f1b61e9f5fcba56d823b45a8e337174b6cb2"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_RefMatch_RefMatch_Profile.png",
+      "bytes": 2029788,
+      "sha256": "2e5624e8b2ffffb70f8e78efbfe54c93717b31bee27b2507642594ff2c9bb3b5"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Studio_CloseFront.png",
+      "bytes": 2763047,
+      "sha256": "4da9a84c82b91149e83643af5afa900029292ea458bf7789f86822364e60b8a1"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Studio_CloseThreeQuarter.png",
+      "bytes": 2839843,
+      "sha256": "63ca53da89393229071f9072ed2e52f07db70cb24258732a561271feeb8e7f10"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Studio_Front.png",
+      "bytes": 2441955,
+      "sha256": "8fa2b988bed90e06ba7445c88e9d7a222e0d40ba4c9b37ce3b6f63411e496e2b"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Studio_Profile.png",
+      "bytes": 2195713,
+      "sha256": "f121e28b4b64170ca08b8c2ebee9a584c05401bc74c4e74d14f636ccd2a20ae4"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_Studio_ThreeQuarter.png",
+      "bytes": 2448476,
+      "sha256": "de57137ed1ff4da43859d44de702a38f8fb5e695e2d0f2e7b736f0c61873404b"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_ThreePoint_CloseFront.png",
+      "bytes": 2895133,
+      "sha256": "4a3fd426be6b80a61b005ae2921a4ca298346ad130c276f8da0193fef121dca2"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_ThreePoint_CloseThreeQuarter.png",
+      "bytes": 2937587,
+      "sha256": "79493b4c5c281c57f80282eca4be254034e9b97eb8152b5d8c2023768583ed97"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_ThreePoint_Front.png",
+      "bytes": 2555239,
+      "sha256": "654dfc56662a7e61be1a1afbce89850755bdf1cc012773063931e3ca6e007438"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_ThreePoint_Profile.png",
+      "bytes": 2363565,
+      "sha256": "b5d8ce9fd6add35a50091a2fcb8ad5496f1576c321fc41c07508cc5870509440"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_6/CatBaseV6_R6_ThreePoint_ThreeQuarter.png",
+      "bytes": 2524534,
+      "sha256": "bc2e038e0d6f143f8ae7b4db931f920da8f890ec2effe83b0524c5b67041fdac"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_AB_NyaakotoReference_CloseFront.png",
+      "bytes": 3073815,
+      "sha256": "231b26d54ea069d3f3b6a104f728fed343c6c8d66b99cd8e7d2e702c915b86cb"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_AB_NyaakotoReference_Profile.png",
+      "bytes": 2277576,
+      "sha256": "ae6e0951f97ac087a1e000d4bb8e9cab3769c848fa18b2baa5d171e535c7a80e"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_AB_R6_Close.png",
+      "bytes": 4168283,
+      "sha256": "d18769de02e1322b36c63cdd9d955a5b4e99bc93f607c85b93ba1eb169ee61d5"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_AB_R6_Overcast.png",
+      "bytes": 5180056,
+      "sha256": "be2b89cf430cb73c1418ed09d05e036fc02f989df539e6ea366fd9852a5eab86"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_AB_R6_RefMatch_Profile.png",
+      "bytes": 1761839,
+      "sha256": "38587a814cfa57d82de8c71156a5f6546c0b209b230af0e1662723ec57e8519b"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_AB_R6_ThreePoint_Front.png",
+      "bytes": 2030004,
+      "sha256": "31dbf3996f7b72f9b98a29ff8e7460e865fb47e93695bcf78eed025db6f5c421"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Exterior_CloseFront.png",
+      "bytes": 2827479,
+      "sha256": "df2b882e48ac364a61ea7ce0b46b12242fb2bc605458298989abcaa7c134b7ae"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Exterior_CloseThreeQuarter.png",
+      "bytes": 2954606,
+      "sha256": "9394b6872c0519dd681e74ff126f1d67e2495dda9aba9b3ec48d033264661720"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Exterior_Front.png",
+      "bytes": 2590692,
+      "sha256": "ae0a4649c3c594541e080df3aeeea8dc6f0f35be35db517c44ee6970f0245e54"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Exterior_Profile.png",
+      "bytes": 2570340,
+      "sha256": "36666e239b4d7e6bf1d9ca8b0419639e48c87a97598934bc5d810da653669975"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Exterior_ThreeQuarter.png",
+      "bytes": 2655553,
+      "sha256": "f78d428b73555be3cd2a14e28059bbb50f759937c47179d54e930d2b63aea2aa"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Overcast_CloseFront.png",
+      "bytes": 2687960,
+      "sha256": "64d341d6b23b07c4a1278efdf7a2b79be9eadb41a2bbdc87ac45a5303ef394df"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Overcast_CloseThreeQuarter.png",
+      "bytes": 2733542,
+      "sha256": "3243885263fafcc330823b0e9aa8a0698857c0f21d5d6bdf7c86446acffa97cf"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Overcast_Front.png",
+      "bytes": 2394560,
+      "sha256": "40b3e961b6c194cd8aaf4c525f570a6ef90e16780248e9d838039127b4d6186a"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Overcast_Profile.png",
+      "bytes": 2423166,
+      "sha256": "ce1ed8ea0b38bae399ee36fc0256ca905054ed3a8a22d02a26fec385a7a445d9"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Overcast_ThreeQuarter.png",
+      "bytes": 2383041,
+      "sha256": "465e51f7741b1f69df524a2ead3656fa96176ca23e91263b16a0648ffe172259"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_RefMatch_RefMatch_Profile.png",
+      "bytes": 2026657,
+      "sha256": "e40cbe154addad44c24d6e447ec024fc53159b962a790ca1f0ff6bb5639087f5"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Studio_CloseFront.png",
+      "bytes": 2785304,
+      "sha256": "8ebaef3225106ab3a83bd3639b9c4b55cf4385dec5a66809b8a12fa3bcbb2631"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Studio_CloseThreeQuarter.png",
+      "bytes": 2849688,
+      "sha256": "09d3b2fb862738d8aabea5c115ad689b5cd65b035296f7301b087ee399258201"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Studio_Front.png",
+      "bytes": 2475774,
+      "sha256": "bea31f1d494ffd29c86a2fad6574296b1401d8f2b05d3d8214fe6c900ca8fb33"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Studio_Profile.png",
+      "bytes": 2213851,
+      "sha256": "0f68e37758d0aa8c913e57b9aede36335758a82e26d213179068dfb337c6e648"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_Studio_ThreeQuarter.png",
+      "bytes": 2467014,
+      "sha256": "1f6e9dbbff4dd9e9f09b38832f1c531b0676ad20a6dad81be59dbdaad904708f"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_ThreePoint_CloseFront.png",
+      "bytes": 2942393,
+      "sha256": "ba28ac056e5dfb6faf80ea8372af80cd3e11c984d6859424130c055685b65874"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_ThreePoint_CloseThreeQuarter.png",
+      "bytes": 2970386,
+      "sha256": "66d24825376db1e544a2ea7f03f371d92c0f55de7a57a3a17c780e9c8814f2d0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_ThreePoint_Front.png",
+      "bytes": 2629426,
+      "sha256": "4515c9d41551e99fa38852be6ba99bacc56eaf3f1179f5e733c3538e40dfba97"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_ThreePoint_Profile.png",
+      "bytes": 2397690,
+      "sha256": "8a780590f8f6f7c5baf94a8a21446ef6e6a4ddcbc227622d5f92ef61641c6a21"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_7/CatBaseV6_R7_ThreePoint_ThreeQuarter.png",
+      "bytes": 2560578,
+      "sha256": "9bc5642358a3ed4a502b26f9471574cfdb3e3a889026c64a0e35fd0cea1f5d16"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_AB_NyaakotoReference_CloseFront.png",
+      "bytes": 3097761,
+      "sha256": "3655bf8bcd616bea783f27c28392c8a54a2ebf98700424b8a14c73575fe25dcc"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_AB_NyaakotoReference_Profile.png",
+      "bytes": 2264381,
+      "sha256": "83c077801b53fe4ba42077790869d4d79d2e7f73b8f2ee1ac68eb28a1d26f3f7"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_AB_R7_Close.png",
+      "bytes": 4159002,
+      "sha256": "d38b7b90b2101298562368095efa3871a3fb14454280ed7f2c314579156ef240"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_AB_R7_Overcast.png",
+      "bytes": 5152865,
+      "sha256": "ba8002528e9e154eae303b27592904357572b06ae9e014cd39b990418407509a"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_AB_R7_RefMatch_Profile.png",
+      "bytes": 1785525,
+      "sha256": "2db1d5f1a81c3ad1adfb5898908a7362e179ae54f16d52df40c0c319584c2e69"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_AB_R7_ThreePoint_Front.png",
+      "bytes": 2023249,
+      "sha256": "2c9dd85d9806e3c618f8fc03281c521bfd52d18e636b62fcffa2ed6e13664425"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_CloseThreeQuarter_AllLights.png",
+      "bytes": 2733335,
+      "sha256": "81285d22c553ee5de99692ebacef7327d2b35e284d398c6080691898d92b9830"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Exterior_CloseFront.png",
+      "bytes": 2775009,
+      "sha256": "7708bb7539a562f616d8158622c637bd080fd6e6bcf96fa65ef5fdeed77f07c0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Exterior_CloseThreeQuarter.png",
+      "bytes": 2910301,
+      "sha256": "4f039e8f6a41f44a8746a6f31d9613022cde382af5af7c790be62669fbd22c0a"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Exterior_Front.png",
+      "bytes": 2539947,
+      "sha256": "1fc0c4e33326a14dbd887c5c22d13aaf16003ffbf33bf0ea9713ee328af65441"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Exterior_Profile.png",
+      "bytes": 2528918,
+      "sha256": "928ae5514ff958a2534ac0d0a36bb1de0502fefd7dafe568d93f277cdb7d95d3"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Exterior_ThreeQuarter.png",
+      "bytes": 2619310,
+      "sha256": "f446eea4017c3d0fed3284b8b0ac8908ed87139bdcfa530385d80f37c0eec0f3"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Overcast_CloseFront.png",
+      "bytes": 2661141,
+      "sha256": "02653faf7367e1dc36582084aa0b75b2511827504710df656387a6c550c1bbe5"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Overcast_CloseThreeQuarter.png",
+      "bytes": 2710448,
+      "sha256": "9fe378b48d367fa8d86cd1dc23509706a7f294349917f943dccd2674c15987cc"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Overcast_Front.png",
+      "bytes": 2369114,
+      "sha256": "068b71de9da834c86248e0283b7afca5393756a289afc66b647bcb5a50c4a517"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Overcast_Profile.png",
+      "bytes": 2383633,
+      "sha256": "f10ea06bacd2f43f1bc49c28e0a469414d6da00f3b6c808f647ac18839890fed"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Overcast_ThreeQuarter.png",
+      "bytes": 2361525,
+      "sha256": "8e6fb10dd00bcb48d0a471d8d5e26ccd82ed6ea1d9a9839bcc29f3fc7a011cf3"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_RefMatch_RefMatch_Profile.png",
+      "bytes": 2007025,
+      "sha256": "894603b0f7cc12b5410a5e563dd1eb7f77db2261e7d2f11302f2877ac6ecea36"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Studio_CloseFront.png",
+      "bytes": 2703061,
+      "sha256": "142273c56c105b19bbea809ae6efdf5fc6041651029313b15e7a30e845519084"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Studio_CloseThreeQuarter.png",
+      "bytes": 2810714,
+      "sha256": "1621569587cfd3f76875f9f944cd9c1a90592c87e87e1b7fc2d21681a6839906"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Studio_Front.png",
+      "bytes": 2420801,
+      "sha256": "09df70f294312d075f83aec94d24c7228b5cd768981f4eb79a07e11255fd3c04"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Studio_Profile.png",
+      "bytes": 2153481,
+      "sha256": "394c117b6c3823daec58d0207935e30e8fde4ad6556392fa75f49d5be4e4330d"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_Studio_ThreeQuarter.png",
+      "bytes": 2437851,
+      "sha256": "d4c86e865b105bff3be448db0f50b5e1588ded3657016d5c833f830f92be2a22"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_ThreePoint_CloseFront.png",
+      "bytes": 2836948,
+      "sha256": "5499a0aba855c4ccb9274c67a79c00bb914709cc8108595bb6065dcd97fcd2c0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_ThreePoint_CloseThreeQuarter.png",
+      "bytes": 2893202,
+      "sha256": "062761ff17b52cca6322860b93ec82bce454c1fd1d340a082e391d0b824f85b6"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_ThreePoint_Front.png",
+      "bytes": 2540741,
+      "sha256": "9849ef6b924e39a9d137dc61c57a428d289b7846fe4d82f6f39dca5cc6207bc8"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_ThreePoint_Profile.png",
+      "bytes": 2316662,
+      "sha256": "a2fd7b2f05dbc905524ac0ce4a199498010e88def87b139a1f6ac264fc032a4c"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_8/CatBaseV6_R8_ThreePoint_ThreeQuarter.png",
+      "bytes": 2504285,
+      "sha256": "e2db8359395ba1d1b732ddf44d2bb809796ac7e659ff1d301b5175b8f5452738"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Coat.png",
+      "bytes": 2024749,
+      "sha256": "cada890333885477bc3eef27dd57eab3a0bec394551a7ae82cb08dd2460a26a1"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Detail.png",
+      "bytes": 516493,
+      "sha256": "5780dc79f2b06a54cb00e3357322571fd846dec6b8065da200a97bdb24ff416e"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_FurMask.png",
+      "bytes": 436899,
+      "sha256": "6695788c9a8487a9d91a49fc2fff1181a8f2ab765ce9286ebc1a7b66fc4eb98b"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Iris.png",
+      "bytes": 2115242,
+      "sha256": "6771ed3fb3bab54123d9dbbe83b7010dfbd955f4a89ec511633a13c415ee4ad1"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Regions.png",
+      "bytes": 818386,
+      "sha256": "651fbebd2e8e212934bc4625f8dfe5824b2186c1f8f3b44a602d14a21955f7b8"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/sources_manifest.json",
+      "bytes": 71334,
+      "sha256": "1f146725850709f8c16364d69d1dce09813aee8711124867147179ac38db1e24"
+    }
+  ],
+  "measure": {
+    "ct_landmark_fit": {
+      "pose": {
+        "pitch_deg": -14.38,
+        "scale": 0.931,
+        "dx_mm": 1.8,
+        "dz_mm": 14.6
+      },
+      "cost_round4_pose": 13461.8,
+      "cost_fitted": 740.5,
+      "depth_mm": {
+        "frontal": {
+          "mean": 10.8,
+          "p10": 5.7,
+          "min": 3.5
+        },
+        "nasal": {
+          "mean": 0.8,
+          "p10": -0.4,
+          "min": -0.9
+        },
+        "premaxilla": {
+          "mean": 12.0,
+          "p10": 2.4,
+          "min": 0.2
+        },
+        "symphysis": {
+          "mean": 8.2,
+          "p10": 1.1,
+          "min": -3.3
+        },
+        "mandible_ventral": {
+          "mean": 17.2,
+          "p10": 1.9,
+          "min": -4.7
+        },
+        "zygomatic_arch": {
+          "mean": 12.4,
+          "p10": 5.0,
+          "min": 1.5
+        },
+        "postorbital": {
+          "mean": 9.7,
+          "p10": 6.3,
+          "min": 2.0
+        },
+        "vertex": {
+          "mean": 5.7,
+          "p10": 2.6,
+          "min": 1.4
+        },
+        "cranium_side": {
+          "mean": 16.1,
+          "p10": 0.7,
+          "min": -1.3
+        },
+        "occiput": {
+          "mean": 16.0,
+          "p10": 3.9,
+          "min": -4.6
+        }
+      }
+    },
+    "scan_midsagittal_residual_mm": 0.85
+  },
+  "round6": {
+    "cornea": {
+      "radius_over_limbus": 1.045,
+      "ior": 1.376,
+      "reflect_boost_x_fresnel": 0.8,
+      "globe_forward_mm": 2.0,
+      "apex_from_globe_centre_mm": 28.26
+    },
+    "pupil": {
+      "half_width_iris_radii": 0.105,
+      "half_height_iris_radii": 0.56,
+      "feather": 0.018
+    },
+    "ear": {
+      "height_mm": 58.0,
+      "base_mm": 72.0,
+      "lean_out_deg": 20.0,
+      "thickness_mm": [
+        3.2,
+        0.9
+      ],
+      "margin_thickness_factor": 0.45
+    },
+    "nose_leather_scale": 0.8,
+    "bust_shift_mm": {
+      "x": -12.0,
+      "z": 18.0
+    },
+    "iris_texture": "Textures/T_CatBaseV6_Iris.png (procedural, painted from fields; no photograph pixels)",
+    "detail_texture": "Textures/T_CatBaseV6_Detail.png (R inner-ear vessels, G leather margin, B whisker follicles)"
+  },
+  "round7": {
+    "muzzle_warp_mm": {
+      "forward": 9.0,
+      "forward_ramp_head_x": [
+        96.0,
+        130.0
+      ],
+      "lower_muzzle_lift": 8.0,
+      "lift_ramp_head_z": [
+        -9.0,
+        -28.0
+      ]
+    },
+    "neck": {
+      "side_inset_mm": 15.0,
+      "nape_dip_mm": 15.0
+    },
+    "canal_plugs": [
+      {
+        "pit_head_mm": [
+          -32.0,
+          64.0,
+          21.0
+        ],
+        "radius_mm": 10.0
+      },
+      {
+        "pit_head_mm": [
+          -35.5,
+          76.0,
+          16.5
+        ],
+        "radius_mm": 8.5
+      }
+    ],
+    "ear_mask_closing_scan_units": {
+      "radius": 6.0,
+      "smooth_box_width_voxels": 9,
+      "cache": "Local/CatBaseV6Cache/scan_field_closed_v2.npz"
+    },
+    "ear_cavity_t_range": [
+      -0.12,
+      0.62
+    ],
+    "ear": {
+      "open_out_deg": -6.0,
+      "lean_out_deg": 32.0,
+      "cavity": "voxelised from the seated pinna (Local/CatBaseV6Cache/ear_cavity.npz)",
+      "sss_radius_mm": [
+        0.62,
+        0.16,
+        0.21
+      ],
+      "translucent_inner": 0.1,
+      "vein_reflected": 0.1
+    },
+    "fissure_mm": {
+      "upper": 9.4,
+      "lower": 10.9
+    },
+    "cornea_reflection": {
+      "floor": 0.045,
+      "fresnel_scale": 0.85
+    },
+    "nose": {
+      "edge_mm": 2.0,
+      "dome_mm": 3.2,
+      "bevel_mm": 1.6,
+      "alar_mm": 1.2,
+      "roughness": 0.45
+    },
+    "mouth": {
+      "inverted_y_z_head_mm": -20.0,
+      "pads_mm": 2.6,
+      "chin_mm": 3.0
+    },
+    "guard_layers": [
+      "CatBaseV6_Fur_Face",
+      "CatBaseV6_Fur_Ruff",
+      "CatBaseV6_Fur_Body",
+      "CatBaseV6_Fur_Chest",
+      "CatBaseV6_Fur_EarBack"
+    ]
+  },
+  "round8": {
+    "cranium": {
+      "shorten_behind_head_x_mm": -20.0,
+      "scale": 0.82,
+      "occiput_z0_mm": 10.0,
+      "occiput_scale": 0.9
+    },
+    "crown_lift_mm": 13.0,
+    "crown_lift_head_z_ramp_mm": [
+      30.0,
+      70.0
+    ],
+    "temple_inset_mm": 3.0,
+    "scan_cleanup_scan_units": {
+      "order": "relevel (largest shell), opening, closing, blur (inside the masks)",
+      "opening_radius": 7.0,
+      "closing_radius": 14.0,
+      "ear_mask_scale": 1.45,
+      "canal_mask": {
+        "c": [
+          -64.0,
+          36.0,
+          10.0
+        ],
+        "r": 18.0
+      },
+      "smooth_box_width_voxels": 15,
+      "cache": "Local/CatBaseV6Cache/scan_field_closed_v3f.npz"
+    },
+    "muzzle_forward_mm": 9.0,
+    "chin": {
+      "lift_mm": 10.0,
+      "tuck_mm": 4.0,
+      "bump_mm": 1.2,
+      "mentum_z_head_mm": -33.5
+    },
+    "neck": {
+      "side_inset_mm": 2.0,
+      "nape_dip_mm": 9.0
+    },
+    "stop": {
+      "centre_head_xz_mm": [
+        136.0,
+        26.0
+      ],
+      "depth_mm": 3.0,
+      "brow_mm": 2.2
+    },
+    "nose_planum_mm": {
+      "edge": 0.55,
+      "centre": 0.7,
+      "bevel": 0.9,
+      "alar": 1.5
+    },
+    "eyes": {
+      "globe_forward_mm": 2.5,
+      "fissure_up_mm": 9.8,
+      "fissure_lo_mm": 10.9,
+      "cornea": "Fresnel only, IOR 1.376 (no reflection floor)",
+      "lid_margin_samples": 720
+    },
+    "ear": {
+      "base_head_mm": [
+        -15.0,
+        45.0,
+        60.0
+      ],
+      "height_mm": 58.0,
+      "base_chord_mm": 72.0,
+      "tip_radius_mm": 7.0,
+      "thickness_mm": [
+        3.2,
+        0.9
+      ],
+      "lean_out_deg": 20.0,
+      "lean_back_deg": 11.0,
+      "open_out_deg": 4.0,
+      "henry_pocket_t": [
+        0.14,
+        0.27
+      ],
+      "henry_curl_deg": 140.0,
+      "flare_radius_mm_lateral_medial": [
+        5.5,
+        18.0
+      ],
+      "flare_tuck_mm": 0.5,
+      "cavity_t": [
+        -0.2,
+        0.6
+      ],
+      "canal": {
+        "len": 11.0,
+        "tilt": 45.0,
+        "r": [
+          3.0,
+          2.0
+        ]
+      },
+      "cavity_cache": "Local/CatBaseV6Cache/ear_cavity_v10.npz"
+    },
+    "guard_layers": [
+      "CatBaseV6_Fur_Head",
+      "CatBaseV6_Fur_Body",
+      "CatBaseV6_Fur_Chest",
+      "CatBaseV6_Fur_EarBack"
+    ],
+    "markings": [
+      "m_outer",
+      "m_inner",
+      "m_center",
+      "fore_a",
+      "fore_b",
+      "fore_c",
+      "mascara",
+      "cheek2",
+      "cheek3",
+      "lacrimal"
+    ],
+    "marking_edge_mm": 0.45
+  }
+}
