@@ -117,6 +117,7 @@ void DrawInspection(const FSoraHUDFrame& F,const FInspectionLayout& Mark,float X
 struct FRegistryRowLayout
 {
     TArray<FTextBlock> Text;
+    TArray<FVector2D> TextOffsets;
     float Height=0;
     bool bTally=false;
 };
@@ -150,15 +151,31 @@ FRegistryLayout BuildRegistryLayout(const FSoraHUDFrame& F)
     {
         FRegistryRowLayout Item;
         const float Width=Page.Width-72*S-(Row.HasSplitTally()?Page.Inspection.Width+18*S:0);
-        Item.Text.Add(Wrap(HUD,Row.Entry.Japanese(),FMath::Max(.62f*S,.6f),32*S,Width,F.Ivory));
-        if(English) Item.Text.Add(Wrap(HUD,Row.Entry.English(),FMath::Max(.42f*S,.5f),28*S,Width,F.Muted));
+        const float JapaneseScale=FMath::Max(.62f*S,.6f),EnglishScale=FMath::Max(.42f*S,.5f);
+        Item.Text.Add(Wrap(HUD,Row.Entry.Japanese(),JapaneseScale,32*S,Width,F.Ivory));
+        Item.TextOffsets.Add(FVector2D::ZeroVector);
+        Item.Height=Item.Text.Last().Height();
+        if(English)
+        {
+            // Goods and their translation share a baseline when both fit.
+            // Narrower columns still stack complete wrapped lines. Keep the
+            // readable sizes; reclaim vertical space through row composition.
+            const float EnglishX=RegistryTextSize(HUD,Row.Entry.Japanese(),JapaneseScale).X+16*S;
+            const float BaselineOffset=30*(JapaneseScale-EnglishScale);
+            const bool Beside=Item.Text[0].Lines.Num()==1&&
+                EnglishX+RegistryTextSize(HUD,Row.Entry.English(),EnglishScale).X<=Width;
+            Item.Text.Add(Wrap(HUD,Row.Entry.English(),EnglishScale,28*S,Beside?Width-EnglishX:Width,F.Muted));
+            Item.TextOffsets.Add(Beside?FVector2D(EnglishX,BaselineOffset):FVector2D(0,Item.Height));
+            Item.Height=FMath::Max(Item.Height,static_cast<float>(Item.TextOffsets.Last().Y)+Item.Text.Last().Height());
+        }
         const SoraText::FLine Status=SoraRegistry::Status(Row.State);
         // Keep the complete bilingual status on one wrapped line at a readable
         // floor, leaving room for all four entries at the smaller viewport.
+        Item.TextOffsets.Add(FVector2D(0,Item.Height));
         Item.Text.Add(Wrap(HUD,English?Status.Japanese+TEXT(" / ")+Status.English:Status.Japanese,
             FMath::Max(.36f*S,.55f),24*S,Width,F.Gold));
-        for(const FTextBlock& Block:Item.Text) Item.Height+=Block.Height();
-        Item.Height=FMath::Max((English?110.f:84.f)*S,Item.Height+14*S);
+        Item.Height+=Item.Text.Last().Height()+14*S;
+        Item.Height=FMath::Max(84*S,Item.Height);
         Item.bTally=Row.HasSplitTally();
         if(Item.bTally) Item.Height=FMath::Max(Item.Height,Page.Inspection.Height+8*S);
         Page.Height+=Item.Height;
@@ -170,7 +187,11 @@ FRegistryLayout BuildRegistryLayout(const FSoraHUDFrame& F)
     if(English) Page.Footer.Add(Wrap(HUD,Next.English,FMath::Max(.36f*S,.5f),24*S,Page.Width-72*S,F.Muted));
     for(const FTextBlock& Block:Page.Footer) Page.Height+=Block.Height();
     Page.Height+=24*S;
-    Page.Left=(F.W-Page.Width)*.5f; Page.Top=(F.H-Page.Height)*.5f;
+    Page.Left=(F.W-Page.Width)*.5f;
+    // Center within the space below the persistent top bar, not the whole
+    // screen. The same top/bottom bounds are enforced by capture validation.
+    const float UsableTop=87*S,UsableBottom=F.H-24*S;
+    Page.Top=UsableTop+(UsableBottom-UsableTop-Page.Height)*.5f;
     return Page;
 }
 }
@@ -182,7 +203,8 @@ bool SoraHUDPanels::RegistryLayoutFits(const FSoraHUDFrame& F,FString& Why)
     if(Page.Rows.IsEmpty()||RegistryTextSize(F.HUD,TEXT("米"),F.S).X<=0)
         Why=TEXT("Registry rows or font measurements are missing");
     else if(Page.Left<0||Page.Top<87*F.S||Page.Left+Page.Width>F.W||Page.Top+Page.Height>F.H-24*F.S)
-        Why=TEXT("Registry page exceeds its viewport margins");
+        Why=FString::Printf(TEXT("Registry page exceeds its viewport margins: top %.1f, height %.1f, available %.1f..%.1f"),
+            Page.Top,Page.Height,87*F.S,F.H-24*F.S);
     const auto Check=[&](const FTextBlock& Block)
     {
         FString Joined;
@@ -197,7 +219,18 @@ bool SoraHUDPanels::RegistryLayoutFits(const FSoraHUDFrame& F,FString& Why)
         if(Block.Scale<.5f) Why=TEXT("Registry text is below its readable scale floor");
     };
     for(const FTextBlock& Block:Page.Chapter) Check(Block);
-    for(const FRegistryRowLayout& Row:Page.Rows) for(const FTextBlock& Block:Row.Text) Check(Block);
+    for(const FRegistryRowLayout& Row:Page.Rows)
+    {
+        const float Width=Page.Width-72*F.S-(Row.bTally?Page.Inspection.Width+18*F.S:0);
+        for(int32 Index=0;Index<Row.Text.Num();++Index)
+        {
+            const FTextBlock& Block=Row.Text[Index];
+            Check(Block);
+            const FVector2D At=Row.TextOffsets[Index];
+            if(At.X<0||At.Y<0||At.X+Block.Width>Width+1.f||At.Y+Block.Height()>Row.Height)
+                Why=TEXT("Registry translated goods exceed their row");
+        }
+    }
     for(const FTextBlock& Block:Page.Footer) Check(Block);
     for(const FTextBlock& Block:Page.Inspection.Japanese) Check(Block);
     for(const FTextBlock& Block:Page.Inspection.English) Check(Block);
@@ -223,8 +256,12 @@ void SoraHUDPanels::DrawRegistry(const FSoraHUDFrame& F)
     for(const FRegistryRowLayout& Row:Page.Rows)
     {
         HUD.Panel(X,Y-8*S,Page.Width-72*S,1*S,FLinearColor(.2f,.27f,.28f));
-        float TextY=Y;
-        for(const FTextBlock& Block:Row.Text) Block.Draw(HUD,X,TextY);
+        for(int32 Index=0;Index<Row.Text.Num();++Index)
+        {
+            const FVector2D At=Row.TextOffsets[Index];
+            float TextY=Y+At.Y;
+            Row.Text[Index].Draw(HUD,X+At.X,TextY);
+        }
         if(Row.bTally) DrawInspection(F,Page.Inspection,Page.Left+Page.Width-36*S-Page.Inspection.Width,Y);
         Y+=Row.Height;
     }
