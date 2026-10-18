@@ -93,7 +93,9 @@ bool FSoraDialogueModesTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("The authored scene releases within twenty seconds"),HeldFrames<=201&&!W.Campaign()->IsDialogueBlocking());
     }
     FBeatWorld W(*this,TEXT("DialogueLineOverrides"),3,12);
-    if(!SoraDialogueAutomation::StartAuthored(W)) return false;
+    // The real defense prelude can leave an ambient completion cue ahead of
+    // the appeal. Qualify its first actual line, not the beat-index change.
+    if(!SoraDialogueAutomation::StartAuthored(W)||!Until(W,[&] { return LineId(W)==TEXT("ch04.b13.oyuki.001"); })) return false;
     TestTrue(TEXT("The blockade appeal starts with a blocking line"),W.Campaign()->IsDialogueBlocking());
     if(!Until(W,[&] { return LineId(W)==TEXT("ch04.b13.taemon.004"); })) return false;
     TestTrue(TEXT("Explicit ambient line overrides the event's blocking mode"),W.Mode()->IsPlaying());
@@ -152,7 +154,9 @@ bool FSoraDialogueCombatAndPlaqueTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("Defeat has the recorded Result state"),W.Mode()->InputState(),SoraInput::Result);
     }
     FBeatWorld W(*this,TEXT("DialoguePlaque"),7,16);
-    if(!SoraDialogueAutomation::StartAuthored(W)||!W.Tick(80,.1f)) return false;
+    // Let the real delivery's completion dialogue and Kohagi's opening line
+    // finish. Waiting does not enter the torii's later arrival volume.
+    if(!SoraDialogueAutomation::StartAuthored(W)||!Until(W,[&] { return W.Campaign()->LinesQueued()==0; })) return false;
     TestTrue(TEXT("The final scene waits for its later authored events"),W.Campaign()->ActiveBeat()==16&&!W.Campaign()->TaskProgress().LinesDone);
     // This is a directed event test. Normal world interactions that produce
     // these events are qualified separately by the complete campaign route.
