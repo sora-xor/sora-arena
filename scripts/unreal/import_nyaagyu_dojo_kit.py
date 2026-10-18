@@ -144,6 +144,7 @@ def arch_master(name, defaults, two_sided):
     path = f"{DEST}/{name}"
     m = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
         name, DEST, unreal.Material, unreal.MaterialFactoryNew())
+    m.set_editor_property("used_with_instanced_static_meshes", True)
     for old in list(lib.get_material_expressions(m)):
         lib.delete_material_expression(m, old)
     if two_sided:
@@ -255,6 +256,7 @@ def flat_master():
     path = f"{DEST}/M_SoraArchFlat"
     m = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
         "M_SoraArchFlat", DEST, unreal.Material, unreal.MaterialFactoryNew())
+    m.set_editor_property("used_with_instanced_static_meshes", True)
     for old in list(lib.get_material_expressions(m)):
         lib.delete_material_expression(m, old)
     col = node(m, unreal.MaterialExpressionVectorParameter, -500, -100, parameter_name="BaseColor",
@@ -370,6 +372,9 @@ def import_module(module, instances):
     for i, slot in enumerate(slots):
         require(slot in instances, f"{name}: unknown slot {slot}")
         mesh.set_material(i, instances[slot])
+        parent = mesh.get_material(i).get_base_material()
+        require(parent is not None and bool(parent.get_editor_property("used_with_instanced_static_meshes")),
+                f"{name}: {slot} lacks the instanced-static-mesh material permutation")
     # Distance fields stand in for this geometry in software Lumen: thin
     # members need a finer field than the default.
     mesh.set_editor_property("distance_field_self_shadow_bias", 0.5)

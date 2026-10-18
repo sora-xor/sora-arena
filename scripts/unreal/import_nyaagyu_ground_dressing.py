@@ -129,6 +129,7 @@ def make_master(name, feathered):
     path = dest + "/" + name
     master = assets.load_asset(path) if assets.does_asset_exist(path) else asset_tools.create_asset(
         name, dest, unreal.Material, unreal.MaterialFactoryNew())
+    master.set_editor_property("used_with_nanite", True)
     for old_expression in list(lib.get_material_expressions(master)):
         lib.delete_material_expression(master, old_expression)
     if lib.get_num_material_expressions(master):

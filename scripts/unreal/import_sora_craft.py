@@ -86,6 +86,7 @@ def build_master(defaults):
     fails the material on every platform)."""
     master = assets.load_asset(MASTER) if assets.does_asset_exist(MASTER) else tools.create_asset(
         "M_SoraCraft", DEST, unreal.Material, unreal.MaterialFactoryNew())
+    master.set_editor_property("used_with_instanced_static_meshes", True)
     for old in list(lib.get_material_expressions(master)):
         lib.delete_material_expression(master, old)
     require(lib.get_num_material_expressions(master) == 0, "master kept old expressions")

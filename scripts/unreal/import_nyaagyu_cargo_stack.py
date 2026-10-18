@@ -124,6 +124,7 @@ master_name="M_NyaagyuCargo_PBR"
 master_path=destination+"/"+master_name
 master=assets.load_asset(master_path) if assets.does_asset_exist(master_path) else tools.create_asset(
     master_name,destination,unreal.Material,unreal.MaterialFactoryNew())
+master.set_editor_property("used_with_nanite", True)
 for old_expression in list(lib.get_material_expressions(master)):
     lib.delete_material_expression(master, old_expression)
 if lib.get_num_material_expressions(master):
@@ -181,6 +182,7 @@ flat_name="M_NyaagyuCargo_FlatPBR"
 flat_path=destination+"/"+flat_name
 flat=assets.load_asset(flat_path) if assets.does_asset_exist(flat_path) else tools.create_asset(
     flat_name,destination,unreal.Material,unreal.MaterialFactoryNew())
+flat.set_editor_property("used_with_nanite", True)
 for old_expression in list(lib.get_material_expressions(flat)):
     lib.delete_material_expression(flat, old_expression)
 if lib.get_num_material_expressions(flat):
