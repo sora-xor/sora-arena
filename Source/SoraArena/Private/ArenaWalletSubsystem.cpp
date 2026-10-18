@@ -1573,7 +1573,7 @@ bool FArenaConnectNativeLoaderTest::RunTest(const FString& Parameters)
     for (const TCHAR* Allowed : {TEXT("OpenGameSessionV1"), TEXT("JoinGameSessionV1"), TEXT("ClaimGamePayoutV1"),
         TEXT("OfferNftV1"), TEXT("BuyNftV1"), TEXT("CancelNftOfferV1")})
         TestTrue(TEXT("An existing Arena instruction remains allowlisted"), ArenaConnect::IsAllowedInstruction(Allowed));
-    for (const TCHAR* Rejected : {TEXT("StakeGameNftV1"), TEXT("Transfer"), TEXT("instructions"), TEXT("joinGameSessionV1")})
+    for (const TCHAR* Rejected : {TEXT("StakeGameItemV1"), TEXT("Transfer"), TEXT("instructions"), TEXT("joinGameSessionV1")})
         TestFalse(TEXT("Loading the research bridge does not broaden the Arena allowlist"), ArenaConnect::IsAllowedInstruction(Rejected));
 
     const auto Input = ArenaConnect::Utf8(TEXT("{ \"z\": [3,2,1], \"a\": {\"y\":true,\"x\":null} }"));
