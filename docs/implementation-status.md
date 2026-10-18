@@ -10,62 +10,91 @@ legacy formats, aliases, and fallback decoders are prohibited.
 
 ## 2026-10-18 M2 Ultra development resumed
 
-The integration worktree now builds the editor with the pinned UE 5.8.3 /
-CL 58210709, Xcode 26.1.1 / 17B100 and SDK 26.1. Xcode's full Apple signature
-check and first-launch check pass; Metal component 17B54 provides compiler
-32023.830, and every toolchain doctor check passes. The existing Xcode 27 and
-global developer-directory selection are unchanged. Engine metadata and build
-success do not establish rendered or packaged qualification.
+The isolated integration worktree builds the editor with UE 5.8.3 /
+CL 58210709, Xcode 26.1.1 / 17B100 and SDK 26.1. Apple's signature and
+first-launch checks pass; Metal component 17B54 supplies compiler 32023.830.
+Xcode 27 remains the global developer selection. The installed engine accepts
+Xcode versions through 27.9.0, but the project selects 26.1.1 for reproducible
+builds; no project qualification with Xcode 27 is claimed.
 
-The current Rust kernel built with the exact 1.97.1 pin, passed its ABI 4 staging
-checks, and matched all 94 recorded parity cases / 99,043 canonical ticks on
-Darwin arm64. Its qualification flag remains false. Local logs and reports are
-under `Saved/Qualification/2026-10-18-m2-resume` in the integration worktree.
-This is fresh Mac kernel evidence; Windows and native execution proofs remain
-open. The matching Connect bridge is not yet staged.
+Full imports and validators pass for 280 original-art, 345 CC0 and 267 audio
+packages and 27 Niagara systems. The craft prop and 12 dojo modules import too;
+they are now included in the regular import pipeline. All 324 raw CC0 files
+were SHA-1 checked in the isolated cache. The `SORA_CC0_STORAGE_ROOT` override
+keeps builds independent of the shared checkout.
 
-Claude's Mac Nanite policy commit `cfcea32` is integrated in the working release
-branch. Runtime environment-tier selection is compiled, and the Mac shader cook
-now explicitly includes both SM5 and SM6. Both rendering-capability automation
-tests pass under NullRHI with zero errors or warnings. This verifies fallback
-selection and the resolved cook configuration, not rendered Metal output; no
-new Nanite or photoreal result is claimed here.
-Claude continues unique timber geometry, fallbacks and visual review in the art
-worktree. Campaign maai and repeatable source-validation slices are undergoing
-integration. The [release plan](complete-release-plan.md) lists the remaining work.
+Paired rendered runs on clean `640529d` each pass three tests and preserve six
+original 1920×1080 PNGs, with source/device metadata and frame hashes:
 
-The maai slice and source-validation runner are now integrated, and the updated
-editor compiles. A delayed durable handshake answer can legitimately cause an
-offer retry and channel replacement. A deterministic regression verifies that
-the response waits for durability, stale offers/responses are rejected and both
-peers reach the reference state. The clean source-validation lane passes all
-four Rust gates: 279 tests pass, five long research tests stay explicitly ignored.
-This changes test assumptions and counter documentation, not the network protocol.
-The rebuilt integration kernel again passes all 94 parity cases / 99,043 ticks.
+- `Saved/Capture/20261018T094629Z-sm5-43550`: actual Metal SM5, conventional MAC
+  asset tier, Nanite ineligible.
+- `Saved/Capture/20261018T094953Z-sm6-50039`: actual Metal SM6, HI asset tier,
+  Nanite eligible. Eligibility does not prove Nanite draws.
 
-Claude's raden-bunko and dojo-kit OWN ledgers are integrated. The remaining 228
-ledger errors concern recovered runtime weapons. A fresh Blender 5.2.2 metric
-audit passes 10 of the 17 non-blockout weapons; IDs 1, 2, 5, 9, 14, 15 and 17 fail
-normal-relief, chain-length, UV or recorded-file checks. IDs 3, 11, 13 and 16
-remain held-back blockouts. The interrupted W14 review image remains invalid.
-The fresh report is `Saved/Qualification/2026-10-18-m2-resume/weapon-metrics.json`;
-the old committed metric report has not been overwritten or presented as current.
-No weapon's provenance hash has been refreshed to conceal these defects.
+All twelve frames were inspected. Both paths retain conspicuous checker/blocky
+materials on the floor, walls and ceiling, clipped openings/lamp hotspots,
+and placeholder restoration props. This is the old imported DojoKit, before
+Claude's current timber/material work. Neither path passes photoreal acceptance.
+Forced SM5 on M2 does not qualify M1 hardware; these are uncooked editor-game
+captures, not release packages. The capture launcher archives acknowledged
+PNGs byte-for-byte and rejects stale, duplicate, corrupt or wrong-size images;
+its fifteen regression tests pass, including separate registry UI fixture scope.
 
-Chapter-three dry-well recovery and authored blocking-dialogue control are now
-integrated. The latter preserves event order and per-line modes, clears held
-inputs at transitions, and holds characters/projectiles while dialogue remains
-visible. Their directed UE tests are written but have not yet run. All 26
-selected gameplay/tooling source checks pass on clean integration commit
-`666c23d`, with unchanged source identity; the report is
-`Saved/SourceChecks/integrated-dialogue-recovery/report.json`.
+Directed UE tests now pass maai's real movement/mentor steps, equipment recovery,
+guarded hoist, all five dialogue tests and both saved ending routes. The full
+campaign suite on `44a03ce` passes 21/22, including CombatTrace; its playthrough
+stopped because the completist driver attempted maai from another zone after
+collectible detours. Correcting that fixture and its assumed katana return
+exposed a real recovery-handler bug that consumed unrelated cache interaction.
+The narrowed handler and dedicated cache/mandatory-recovery regression pass at
+`e22203b`. The full playthrough also passes: 8 chapters, 133 beats, 125 required
+beats, 8 caches, 28 pickups, 120 checkpoint reads, 61 checkpoint reloads and
+13 phase reloads. Its original telemetry is archived beside the report at
+`Saved/Qualification/2026-10-18-m2-resume/campaign-recovery-cache/`. That run
+retains 187 world teardown warnings; a lifecycle fix is integrated and awaits
+engine verification. These headless checks do not establish ordinary-input pacing.
 
-The original and CC0 asset imports have completed. VFX compilation is running
-on actual `METAL_SM6` / feature level SM6 with the pinned Xcode toolchain. This
-establishes renderer startup, not Nanite drawing, acceptable imagery or a
-completed import pipeline. Art-review capture tooling now archives original
-PNG bytes per run with source/device metadata and SHA-256 hashes; all twelve
-report/archive regression tests pass. Actual SM5/SM6 captures remain pending.
+The offline registry now preserves all 16 authored goods/count entries and
+builds its current chapter page from existing completed-beat save bits, with
+no extra ledger or wallet state. Data validation, production/retry and saved
+result recovery tests pass. Both elapsed and skipped ceremonies now complete;
+the reload fixture is being corrected to respect the authored checkpoint:
+reloading before b15 replays the b12 ceremony and restores unsealed goods.
+Actual registry page captures remain in validation. Difficulty-specific carry behavior and
+co-operative crank rules still need implementation and engine verification.
+
+All 28 gameplay/tooling source checks pass on clean `44a03ce`, with unchanged
+source identity (`Saved/SourceChecks/integrated-registry-44a03ce/report.json`).
+The clean Rust lane passes 279 tests; five long research tests remain ignored.
+The delayed durable handshake regression changes counter expectations, not the
+network protocol. The rebuilt kernel passes all 94 parity cases / 99,043 ticks
+and ABI 4 staging; its qualification flag remains false.
+
+The signed clean native source `75e4ca15` builds a 59,933,872-byte ABI 30 bridge.
+Its frozen-library consumer smoke passes 26 declarations, seven builders/eight
+canonical cases and 282 malformed requests, exact payload/fee bindings and a
+non-authorizing Join inspector. The sealed library and original build sidecar
+are now staged in the integration worktree after all four consumer file hashes,
+native source input hashes and both artifact hashes matched. A fresh runtime
+smoke on that copy passes all eight cases and 282 malformed-request rejections
+(`Saved/Qualification/2026-10-18-m2-resume/connect-abi30-integration/`). The UE
+consumer now requires ABI 30; its actual engine/package loading still needs
+verification. Native Rust unit tests need the separately reviewed P2P compile fix;
+Windows is blocked by the native non-Unix custody guard. This does not establish
+live signing, financial authorization, settlement or full execution proofs.
+
+Claude's Nanite policy and OWN ledgers are integrated. The ledger retains 228
+errors on recovered runtime weapons. Fresh Blender CPU metrics pass 10/17
+non-blockout weapons; IDs 1, 2, 5, 9, 14, 15 and 17 fail relief, chain length,
+UV or file checks, and IDs 3, 11, 13 and 16 remain blockouts. W14's truncated
+review image and mismatched hashes remain explicit; no manifest refresh hides
+them. Report: `Saved/Qualification/2026-10-18-m2-resume/weapon-metrics.json`.
+Claude's art session currently awaits its usage-limit reset; its approved CPU
+work, unique-timber requirements and paired-render baseline are in the shared
+coordination mailbox. Root continues independent implementation and validation.
+
+All paths above are relative to the isolated integration worktree. Historical
+records below keep their original source, hardware and scope.
 
 ## 2026-10-18 generic staged hit proof and Claude coordination
 
