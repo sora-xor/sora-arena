@@ -111,7 +111,7 @@ class CaptureArchiveTests(unittest.TestCase):
         outside = self.root / "private.png"
         outside.write_bytes(self.png)
         with self.assertRaises(ValueError):
-            self.archive(log="SORA_ART_REVIEW_FRAME " + str(outside))
+            self.archive(log="LogTemp: Display: SORA_ART_REVIEW_FRAME " + str(outside))
 
     def test_truncated_corrupt_or_wrong_size_png_is_rejected(self):
         missing_pixels = self.png[:33] + self.chunk(b"IDAT", zlib.compress(b"")) + self.chunk(b"IEND", b"")
@@ -138,7 +138,7 @@ class CaptureArchiveTests(unittest.TestCase):
 
     def test_registry_fixture_keeps_original_bytes_and_labels_its_scope(self):
         self.report = {"tests": [{"fullTestPath": "SoraCapture.RegistryFixture.Chapter5"}]}
-        frames = self.archive(log="SORA_REGISTRY_FIXTURE_FRAME " + str(self.source))
+        frames = self.archive(log="LogTemp: Display: SORA_REGISTRY_FIXTURE_FRAME " + str(self.source))
         self.assertEqual((self.root / "run-sm6" / frames[0]["path"]).read_bytes(), self.png)
         self.assertEqual(frames[0]["sha256"], hashlib.sha256(self.png).hexdigest())
         self.assertEqual(frames[0]["capture_kind"], "completed-save registry UI fixture; not playthrough evidence")
@@ -150,11 +150,11 @@ class CaptureArchiveTests(unittest.TestCase):
 
     def test_different_capture_markers_cannot_hide_a_reused_path(self):
         with self.assertRaisesRegex(ValueError, "duplicate"):
-            self.archive(log=self.log + "\nSORA_REGISTRY_FIXTURE_FRAME " + str(self.source))
+            self.archive(log=self.log + "\nLogTemp: Display: SORA_REGISTRY_FIXTURE_FRAME " + str(self.source))
 
     def test_weapon_fixture_keeps_original_bytes_and_labels_its_scope(self):
         self.report = {"tests": [{"fullTestPath": "SoraCapture.WeaponHUDFixture.BowDraw"}]}
-        frames = self.archive(log="SORA_WEAPON_HUD_FIXTURE_FRAME " + str(self.source))
+        frames = self.archive(log="LogTemp: Display: SORA_WEAPON_HUD_FIXTURE_FRAME " + str(self.source))
         self.assertEqual((self.root / "run-sm6" / frames[0]["path"]).read_bytes(), self.png)
         self.assertEqual(frames[0]["sha256"], hashlib.sha256(self.png).hexdigest())
         self.assertEqual(frames[0]["capture_kind"], "prepared gameplay UI fixture; not playthrough evidence")
@@ -170,16 +170,40 @@ class CaptureArchiveTests(unittest.TestCase):
                 with self.subTest(required=required, wrong_marker=wrong_marker):
                     self.report = {"tests": [{"fullTestPath": "SoraCapture." + required}]}
                     with self.assertRaisesRegex(ValueError, "no screenshot"):
-                        self.archive(log=wrong_marker + " " + str(self.source))
+                        self.archive(log="LogTemp: Display: " + wrong_marker + " " + str(self.source))
 
     def test_weapon_fixture_retains_png_and_duplicate_validation(self):
         self.report = {"tests": [{"fullTestPath": "SoraCapture.WeaponHUDFixture.Katana"}]}
-        marker = "SORA_WEAPON_HUD_FIXTURE_FRAME " + str(self.source)
+        marker = "LogTemp: Display: SORA_WEAPON_HUD_FIXTURE_FRAME " + str(self.source)
         with self.assertRaisesRegex(ValueError, "duplicate"):
             self.archive(output="duplicate", log=marker + "\n" + marker)
         self.source.write_bytes(self.png[:-12])
         with self.assertRaisesRegex(ValueError, "PNG"):
             self.archive(output="incomplete", log=marker)
+
+    def test_failed_automation_replay_is_not_a_second_frame(self):
+        timestamp = "[2026.10.18-10.33.12:978][704]"
+        original = timestamp + self.log
+        replay = ("[2026.10.18-10.33.15:062][816]LogAutomationController: LogTemp: "
+                  "SORA_ART_REVIEW_FRAME " + str(self.source) + " [log] ")
+        log = original + "\n" + replay
+        frames = self.archive(log=log)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(frames[0]["sha256"], hashlib.sha256(self.png).hexdigest())
+        report = {"devices": [{"rHI": "Metal", "renderMode": "SM6"}],
+                  "tests": [{"fullTestPath": "SoraCapture.ArtReview.Dojo", "state": "Fail", "errors": 1}],
+                  "failed": 1, "notRun": 0, "inProcess": 0}
+        self.assertTrue(VERIFY.problems(report, "Found 1 automation tests based on 'SoraCapture.ArtReview.Dojo'\n" + log, 0, "sm6"))
+        with self.assertRaisesRegex(ValueError, "no screenshot"):
+            self.archive(output="replay-only", log=replay)
+
+    def test_only_exact_original_log_records_acknowledge_frames(self):
+        for malformed in (self.log.replace("LogTemp: Display:", "LogAutomationController: LogTemp:"),
+                          self.log + " [log]", self.log.replace("LogTemp: Display: ", ""),
+                          self.log.replace("LogTemp: Display:", "LogTemp: Warning:")):
+            with self.subTest(log=malformed):
+                with self.assertRaisesRegex(ValueError, "no screenshot"):
+                    self.archive(log=malformed)
 
 
 if __name__ == "__main__":
