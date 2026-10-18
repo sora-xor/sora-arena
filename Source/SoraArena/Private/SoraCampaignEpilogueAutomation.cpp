@@ -1,5 +1,5 @@
 #if WITH_DEV_AUTOMATION_TESTS
-#include "SoraFieldcraftTestWorld.h"
+#include "SoraDialogueTestWorld.h"
 #include "SoraCampaignRules.h"
 #include "SoraWorldBuilder.h"
 
@@ -23,7 +23,7 @@ bool PlayEpilogue(FAutomationTestBase& Test,bool bSword)
 {
     FBeatWorld W(Test,bSword?TEXT("EpilogueWithSword"):TEXT("EpilogueWithoutSword"),7,16);
     const int64 Found=bSword?SwordMask():0;
-    if(!W.Start(Found)||!WaitForLines(W)) return false;
+    if(!SoraDialogueAutomation::StartAuthored(W,Found)||!WaitForLines(W)) return false;
     ASoraWorldBuilder* Builder=W.Mode()->Arena();
     if(!Test.TestNotNull(TEXT("The epilogue world is staged"),Builder)) return false;
     const unsigned Weapons=W.Campaign()->Progress().WeaponsMask;

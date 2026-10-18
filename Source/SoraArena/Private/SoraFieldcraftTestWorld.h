@@ -58,10 +58,11 @@ struct FBeatWorld
     ASoraPlayerCharacter* Hero() const { return World->Player(); }
     const FSoraBeat& BeatData() const { return Campaign()->ActiveChapter()->Beats[Beat]; }
     const FSoraFieldcraft& Craft() const { return BeatData().Space.Fieldcraft; }
-    bool Start(int64 InitialCollectibles=0)
+    bool Start(int64 InitialCollectibles=0,int32 CheckpointBeat=INDEX_NONE)
     {
+        const int32 StartBeat=CheckpointBeat==INDEX_NONE?Beat:CheckpointBeat;
         USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
-        if (!Save || !USoraCampaignDirector::SeedCheckpoint(*Save, Chapter, Beat))
+        if (!Save || !USoraCampaignDirector::SeedCheckpoint(*Save, Chapter, StartBeat))
             return Test.TestTrue(TEXT("The beat's checkpoint is seeded"), false);
         Save->Collectibles=InitialCollectibles;
         if(!UGameplayStatics::SaveGameToSlot(Save, Slot, 0))
@@ -76,7 +77,7 @@ struct FBeatWorld
         if (USoraFieldcraft* Craft = Fieldcraft())
             EventsHandle = Craft->OnEvent.AddLambda([this](FName Event) { Events.Add(Event.ToString()); });
         return Test.TestTrue(TEXT("The beat is active, including authored dialogue holds"),
-            (Mode()->IsPlaying() || Mode()->InputState() == SoraInput::Dialogue) && Campaign()->ActiveBeat() == Beat);
+            (Mode()->IsPlaying() || Mode()->InputState() == SoraInput::Dialogue) && Campaign()->ActiveBeat() == StartBeat);
     }
     bool Tick(int32 Frames, float DeltaSeconds = 1.f / 60.f)
     {
