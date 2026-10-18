@@ -3,6 +3,7 @@
 #include "Components/ActorComponent.h"
 #include "SoraBeatRules.h"
 #include "SoraDojoRules.h"
+#include "SoraRegistry.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
 class ASoraBoss;
@@ -169,6 +170,8 @@ public:
     ASoraEnemy* MaaiMentor() const;
     // Unlocks, finds and restored sites for the HUD, oldest first.
     const TArray<FSoraStoryNotice>& StoryNotices() const { return Notices; }
+    // Goods completed in this chapter, reconstructed from checkpoint progress.
+    TArray<FSoraRegistryRow> RegistryRows() const;
 
     // Beat state for the HUD and automation.
     const FSoraChapter* ActiveChapter() const;

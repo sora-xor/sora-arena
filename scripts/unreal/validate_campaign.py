@@ -56,6 +56,7 @@ import textwrap
 from pathlib import Path
 
 from campaign_space import arena_blockers
+from campaign_registry import validate_registry
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "Content/Data"
@@ -784,10 +785,10 @@ def validate(catalog, campaign, chapters, legacy, roster):
                 require(flag in flags and flag not in flags_set, f"{beat['id']}: story flag {flag!r} unknown or set twice")
                 flags_set[flag] = beat["id"]
             params = beat["params"]
-            if beat["registry"] is not None:
-                require(beat["type"] == "production_task" or
-                        (beat["type"] == "horseback_ride" and params["mode"] == "cargo"),
-                        f"{beat['id']}: only production tasks and cargo rides write the registry")
+            try:
+                validate_registry(beat["registry"], beat["type"], params, beat["ext"])
+            except ValueError as error:
+                raise CampaignError(f"{beat['id']}: {error}") from error
             if beat["type"] == "horseback_ride":
                 require(set(params["weapons"]) <= MOUNTED_WEAPONS, f"{beat['id']}: mounted weapons {params['weapons']}")
             if beat["type"] == "boss":
