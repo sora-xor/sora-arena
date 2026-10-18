@@ -1531,7 +1531,9 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
             Test->TestTrue(TEXT("Weapon, windup, arm notice, vitals and actual narrative strips do not overlap"),
                 SoraHUDPanels::BottomHUDLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why))&&
             Test->TestTrue(TEXT("Readable tracker and newest notices fit above the lower stack, retaining every target"),
-                SoraHUDPanels::StoryTrackerLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why));
+                SoraHUDPanels::StoryTrackerLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
+            Test->TestTrue(TEXT("The entire rhythm ring clears the measured Interact prompt and lower story panels"),
+                SoraHUDPanels::RhythmCueLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why));
         if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("Bow draw survives capture preparation"),Session->Hero()->GetEquipment()->IsBowDrawing());
         if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("The actual arm-change notice remains active"),
             M->GetWorld()->GetTimeSeconds()-Session->Hero()->ArmsTakenAt()<1.6f);
