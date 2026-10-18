@@ -39,7 +39,7 @@ bool Turns(FBeatWorld& W,int32 Count,bool bFreeze=false)
     for(int32 Turn=0;Turn<Count;++Turn)
     {
         if(!W.Tick(Frames)||!W.Press(EKeys::E)) return false;
-        if(bFreeze) for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) Freeze(**It);
+        if(bFreeze) for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) SoraCrankAutomation::Freeze(**It);
     }
     return true;
 }
@@ -78,7 +78,7 @@ bool FSoraCrankCooperationTest::RunTest(const FString& Parameters)
     for(int32 Frame=0;Frame<900&&!SoraBeatRules::Released(W.Campaign()->TaskProgress(),0);++Frame)
         if(!W.Tick(1)) return false;
     TestTrue(TEXT("Helper progress releases the authored quarter wave"),SoraBeatRules::Released(W.Campaign()->TaskProgress(),0));
-    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) Freeze(**It);
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) SoraCrankAutomation::Freeze(**It);
     if(!Walk(W,Anchor(W)+FVector(-180,0,0))) return false;
     TestEqual(TEXT("Returning to the wheel stops simultaneous helper credit"),W.Campaign()->WorkingCrankHelpers(),0);
     const int32 Idle=W.Campaign()->TaskProgress().Progress;
@@ -104,7 +104,7 @@ bool FSoraCrankRatchetTest::RunTest(const FString& Parameters)
     ASoraEnemy* Threat=nullptr;
     for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
     {
-        Freeze(**It); It->SetActorLocation(Anchor(W)+FVector(-2000,0,300));
+        SoraCrankAutomation::Freeze(**It); It->SetActorLocation(Anchor(W)+FVector(-2000,0,300));
         if(!Threat) Threat=*It;
     }
     if(!TestNotNull(TEXT("The quarter wave supplies a real opponent"),Threat)||!Walk(W,Anchor(W)+FVector(-650,0,0))) return false;
