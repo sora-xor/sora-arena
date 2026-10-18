@@ -452,7 +452,10 @@ bool ASoraEnemyController::RunErrand(ASoraEnemy& Enemy, float Dt, int32 NowMs)
     }
     const EMove Move=WalkTo(Enemy,ErrandGoal,ErrandPace,ErrandAcceptanceCm,NowMs);
     bErrandReached=bErrand3D?Move==EMove::Arrived:Move!=EMove::Moving;
-    Face(Enemy, bErrandReached ? ErrandFacing : Heading, Dt, 5.f);
+    // Once a flying worker is over its station, keep its tool aimed there
+    // while following the station's changing Z. Vertical travel has no yaw.
+    const bool bAtStation=bErrand3D&&FVector::Dist2D(Enemy.GetActorLocation(),ErrandGoal)<=ErrandAcceptanceCm;
+    Face(Enemy, bErrandReached||bAtStation ? ErrandFacing : Heading, Dt, 5.f);
     if (bErrandReached && bErrandWhileCalm)
         LookAround(Enemy, ErrandFacing.Rotation().Yaw, 40.f, Dt, NowMs);
     return true;
