@@ -67,7 +67,7 @@ msgid "いま手にできる{Group}はない。"
 msgstr "No {Group} to hand right now."
 
 #. Key:	TakenUp
-#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.Arms,TakenUp"
 msgid "{Group}　{Arm}"
 msgstr "{Group}: {Arm}"

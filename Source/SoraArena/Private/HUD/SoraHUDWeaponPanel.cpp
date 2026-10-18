@@ -1,5 +1,6 @@
 #include "HUD/SoraHUDPanels.h"
 #include "ArenaKernelSubsystem.h"
+#include "SoraArmsRules.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraEquipmentComponent.h"
@@ -10,6 +11,7 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraPracticeDirector.h"
 #include "Engine/Canvas.h"
+#include "Engine/World.h"
 
 namespace SoraWeaponHUD
 {
@@ -32,12 +34,13 @@ struct FPanel
     TArray<FBlock> Blocks;
     float X=0,Y=0,Width=0,Height=0,Padding=0;
     float Bar=-1,BarHeight=0;
+    float Opacity=.9f;
     FLinearColor BarColor;
     float TextWidth() const { return Width-2*Padding; }
 };
 struct FLayout
 {
-    FPanel Weapon,Windup;
+    FPanel Weapon,Windup,TakenUp;
 };
 // Keep every character. Prefer a word boundary in English; Japanese and
 // individual oversized words still wrap at measured glyph boundaries.
@@ -148,12 +151,25 @@ FLayout Build(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero)
         Windup.Height+=8*F.S+Windup.BarHeight;
         Windup.Y=Main.Y-6*F.S-Windup.Height;
     }
+    const float Since=Hero.GetWorld()->GetTimeSeconds()-Hero.ArmsTakenAt();
+    const int32 Group=SoraArmsRules::GroupOf(Hero.WeaponId);
+    if(!Hero.ArmsWheel().bOpen&&Since<1.6f&&Group>=0&&Hero.IsCampaignHero())
+    {
+        FPanel& Notice=L.TakenUp;
+        Notice.Width=Main.Width; Notice.Padding=Main.Padding; Notice.X=Main.X; Notice.Height=6*F.S;
+        const SoraText::FLine Text=SoraText::Format(NSLOCTEXT("SoraArena.Arms","TakenUp","{Group}　{Arm}"),
+            {{TEXT("Group"),SoraText::Line(SoraUI::ArmsGroupName(Group))},{TEXT("Arm"),SoraText::FLine{Weapon.Name,Weapon.NameEnglish}}});
+        AddBilingual(F,Notice,Text,.5f,F.Gold);
+        Notice.Height+=6*F.S;
+        Notice.Opacity=.9f*FMath::Clamp(1.6f-Since,0.f,1.f);
+        Notice.Y=(L.Windup.Height>0?L.Windup.Y:Main.Y)-6*F.S-Notice.Height;
+    }
     return L;
 }
 void DrawPanel(const FSoraHUDFrame& F,const FPanel& Panel)
 {
     if(Panel.Height<=0) return;
-    F.HUD.Panel(Panel.X,Panel.Y,Panel.Width,Panel.Height,FLinearColor(.015,.035,.05,.9));
+    F.HUD.Panel(Panel.X,Panel.Y,Panel.Width,Panel.Height,FLinearColor(.015,.035,.05,Panel.Opacity));
     for(const FBlock& Block:Panel.Blocks)
     {
         float Y=Panel.Y+Block.Y;
@@ -174,10 +190,22 @@ void SoraHUDPanels::DrawWeapon(const FSoraHUDFrame& F,const ASoraPlayerCharacter
     if(F.Mode.bDeterministicPractice&&F.Mode.Practice()->bSlowed)
         F.HUD.Label(TEXT("処理負荷により、稽古時間を減速しています"),30*F.S,200*F.S,.4*F.S,F.Gold);
 }
+void SoraHUDPanels::DrawArmsNotice(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero)
+{
+    SoraWeaponHUD::DrawPanel(F,SoraWeaponHUD::Build(F,Hero).TakenUp);
+}
+TArray<FBox2D> SoraHUDPanels::WeaponPanelBounds(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero)
+{
+    const SoraWeaponHUD::FLayout L=SoraWeaponHUD::Build(F,Hero);
+    TArray<FBox2D> Bounds;
+    for(const SoraWeaponHUD::FPanel* Panel:{&L.Weapon,&L.Windup,&L.TakenUp})
+        if(Panel->Height>0) Bounds.Add(FBox2D(FVector2D(Panel->X,Panel->Y),FVector2D(Panel->X+Panel->Width,Panel->Y+Panel->Height)));
+    return Bounds;
+}
 bool SoraHUDPanels::WeaponLayoutFits(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero,FString& Why)
 {
     const SoraWeaponHUD::FLayout L=SoraWeaponHUD::Build(F,Hero);
-    for(const SoraWeaponHUD::FPanel* Panel:{&L.Weapon,&L.Windup})
+    for(const SoraWeaponHUD::FPanel* Panel:{&L.Weapon,&L.Windup,&L.TakenUp})
     {
         if(Panel->Height<=0) continue;
         if(Panel->X<0||Panel->Y<0||Panel->X+Panel->Width>F.W||Panel->Y+Panel->Height>F.H)
