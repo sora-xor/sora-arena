@@ -391,6 +391,7 @@ SoraText::FLine SoraHUDPanels::ResultHeadline(const ASoraGameMode& G)
 }
 void SoraHUDPanels::DrawResult(const FSoraHUDFrame& Frame)
 {
+    if(ShowsRegistry(Frame.Mode)) { DrawRegistry(Frame); return; }
     ASoraHUD& HUD=Frame.HUD;
     const ASoraGameMode* G=&Frame.Mode;
     const float W=Frame.W,H=Frame.H,S=Frame.S,EnglishSubtitleScale=Frame.EnglishSubtitleScale,EnglishSubtitleLineHeight=Frame.EnglishSubtitleLineHeight;

@@ -41,7 +41,7 @@ struct FSoraSubtitle
 // mechanic unlocked, a collectible found, a production site restored.
 struct FSoraStoryNotice
 {
-    enum class EKind : uint8 { Weapon, Mechanic, Collectible, Site };
+    enum class EKind : uint8 { Weapon, Mechanic, Collectible, Site, Registry };
     EKind Kind = EKind::Weapon;
     FString Japanese;
     FString English;
@@ -389,6 +389,7 @@ private:
     void BeginBeat(int32 Index, int32 Phase, bool bResumed);
     void RetryBeatInPlace();
     void CompleteActiveBeat();
+    void TellRegistry(int32 CompletedBeat);
     void FinishChapter();
     void CompleteOptional(int32 Index);
     void Collect(int32 Beat);

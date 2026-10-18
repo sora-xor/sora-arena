@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "SoraText.h"
 struct FSoraChapter;
 
 // Offline narrative goods and counters, never currency or wallet state.
@@ -26,4 +27,5 @@ namespace SoraRegistry
 // One row per completed authored production, in chapter order. Existing
 // checkpoint progress is the only state: retries cannot accumulate quantities.
 TArray<FSoraRegistryRow> Completed(const FSoraChapter& Chapter, int32 ChapterIndex, unsigned CompletedMask);
+SoraText::FLine Status(ESoraRegistryState State);
 }

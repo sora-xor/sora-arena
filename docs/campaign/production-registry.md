@@ -22,10 +22,29 @@ entries; later ordinary entries are inspected. Ch07.b07's 430 horse-loads are
 returned goods: they never gain a split tally. Ch05.b17's delivery and ch08.b16's
 posting do not add entries, because their goods were already recorded.
 
+Completing a goods task emits a bilingual registry notice. The three first-tally
+entries report their inspection when ch05.b12 ends. Registry notices wait through
+the following cinematic so the title-card renderer cannot consume them unseen.
+The successful campaign result shows the current chapter's ordered registry
+page using the existing HUD typography, palette and logo. Inspected entries
+show three labelled seal marks and a split tally with the crest across its
+halves. Returned goods show the authored note 「返還のみ記帳・札は切らず」 /
+“Recorded as returned. No tally cut.” with no split tally.
+
+Continuing a saved chapter completion reopens that page; Enter on the page
+advances normally. Incomplete saves resume their checkpoint, and defeat and
+practice retain their existing result presentations. The English subtitle
+toggle and remapped Continue/Menu prompts remain available.
+
 Host checks: `python3 scripts/unreal/test_registry_data.py`, the campaign data
 generator's `--check`, and `validate_campaign.py`. Directed engine checks are
-`SoraArena.Campaign.Registry.Data` and `InvalidData`; adding them is not evidence
-that Unreal has run them.
+`SoraArena.Campaign.Registry.Data`, `InvalidData`, `ProductionAndRetry`,
+`FirstInspection` and `ResultRecovery`. They cover real carry interactions,
+completion notices, checkpoint rollback/reload, both authored ways to finish the
+inspection cinematic, saved completion pages, subtitle toggling, progression,
+chapter replay and New Campaign. The result-recovery fixture constructs a valid
+completed checkpoint through the pure progression rules; it is not a substitute
+for the full campaign playthrough. Adding tests is not execution evidence.
 
-This data/readout slice does not complete the display, bespoke brush/tally art,
-the diegetic ch05 branding press or ch06/ch08 posted-page world interactions.
+The functional seal and tally marks are not bespoke final art. The diegetic ch05
+branding press and ch06/ch08 posted-page world interactions remain separate work.
