@@ -1421,6 +1421,32 @@ static void ExpectUnlockOrder(const FUnlockLog& Log, bool Completist)
     Expect(Completist ? Moved == 0 : Moved == 1, "the skipper's route moves other than the one optional pickup");
 }
 
+static void TestAuthoredCarryDifficulty()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[1](Tasks);
+    FTask Rice = Tasks[4];
+    Expect(!Rice.DropOnHitByDifficulty[0] && !Rice.DropOnHitByDifficulty[1] && Rice.DropOnHitByDifficulty[2],
+        "seed rice: authored Easy/Normal/Hard drop policy was discarded");
+    for (int Difficulty = 0; Difficulty < 3; ++Difficulty)
+    {
+        ApplyCarryDifficulty(Rice, Difficulty);
+        FTaskState State = Begin(Rice, "seed rice difficulty");
+        Expect(Pickup(State, Rice, 0), "seed rice: pickup failed");
+        const bool Drops = Difficulty == 2;
+        Expect(DropCarried(State, Rice) == Drops && State.Carrying != Drops && State.Done == 0,
+            "seed rice: hit used the wrong difficulty or delivered the load");
+        if (Drops) Expect(Pickup(State, Rice, 0), "seed rice: dropped load could not be recovered");
+        State = RetryTask(State, Rice);
+        Expect(!State.Carrying && State.Done == 0 && Pickup(State, Rice, 0), "seed rice: retry retained partial carry state");
+        Expect(DropCarried(State, Rice) == Drops, "seed rice: retry lost its difficulty policy");
+    }
+    ApplyCarryDifficulty(Rice, -1);
+    Expect(!Rice.DropOnHit, "seed rice: invalid difficulty did not use Normal");
+    ApplyCarryDifficulty(Rice, 3);
+    Expect(!Rice.DropOnHit, "seed rice: difficulty sentinel read beyond the policy");
+}
+
 int main()
 {
     static_assert(sizeof(Chapters) / sizeof(Chapters[0]) == 8, "Eight chapters are required");
@@ -1439,6 +1465,7 @@ int main()
     TestSiegeAndCarry();
     TestMountRules();
     TestAuthoredRides();
+    TestAuthoredCarryDifficulty();
     unsigned RouteMinimum = 0u, AllEarlier = 0u, MechanicsEarlier = 0u, FlagsEarlier = 0u;
     FEntry Skipper{0u, 0u, 0u}, Completist{0u, 0u, 0u};
     FUnlockLog SkipperLog{}, CompletistLog{};

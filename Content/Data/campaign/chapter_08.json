@@ -227,7 +227,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -608,7 +612,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -912,7 +920,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1198,7 +1210,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [
      {
@@ -1396,7 +1412,11 @@
      "do_squad_mid",
      "do_squad_east"
     ],
-    "drop_on_hit": true,
+    "drop_on_hit": {
+     "easy": true,
+     "normal": true,
+     "hard": true
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1700,7 +1720,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1969,7 +1993,11 @@
     "path_cm": 17000,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2089,7 +2117,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2201,7 +2233,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2455,7 +2491,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2689,7 +2729,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2824,7 +2868,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2929,7 +2977,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3062,7 +3114,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3186,7 +3242,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3310,7 +3370,11 @@
     "dropoffs": [
      "do_kosatsu_board"
     ],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3434,7 +3498,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3542,7 +3610,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,

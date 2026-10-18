@@ -622,6 +622,17 @@ def maai_lesson(raw, count, where):
     return {"inner_cm": inner, "outer_cm": outer, "hold_ms": hold, "facing_permille": facing, "hint_ms": hint, "moves": result}
 
 
+def carry_drop_policy(value, where):
+    """Preserve all authored difficulty values, including uniform booleans."""
+    names = ("easy", "normal", "hard")
+    if isinstance(value, bool):
+        return dict.fromkeys(names, value)
+    expect(value, (dict,), where)
+    if set(value) != set(names):
+        fail(where, "drop_on_hit requires exactly easy, normal and hard")
+    return {name: expect(value[name], (bool,), f"{where}.{name}") for name in names}
+
+
 def normalize_task(beat):
     """The beat's task in the integer units SoraBeatRules.h runs (§12.2).
 
@@ -637,7 +648,7 @@ def normalize_task(beat):
         "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "maai": None, "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
         "max_turn_ms": 0, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
-        "drop_on_hit": False, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
+        "drop_on_hit": carry_drop_policy(False, where), "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
         "reinforce_wave": -1,
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
         "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "stealth": None, "opponent": None,
@@ -784,12 +795,10 @@ def normalize_task(beat):
             if expect(block["fail_on_npc_death"], (bool,), f"{where}.escort.fail_on_npc_death"):
                 task["fail_checkpoint"].append("escort_down")
         elif name == "carry":
-            drop = block.get("drop_on_hit", False)
-            # Per-difficulty drops follow Normal until difficulty settings land.
             task.update(goal="deliveries", count=block["count"], pickups=ids_of(block["pickups"], f"{where}.pickups"),
                         carry_item=expect(block["item"], (str,), f"{where}.carry.item"),
                         dropoffs=ids_of(block["dropoffs"], f"{where}.dropoffs"),
-                        drop_on_hit=drop if isinstance(drop, bool) else expect(drop.get("normal"), (bool,), where))
+                        drop_on_hit=carry_drop_policy(block.get("drop_on_hit", False), f"{where}.carry.drop_on_hit"))
             # The load slows the hero and leaves at most the katana in one paw.
             task["carry_speed_permille"] = permille(block.get("move_speed_mult", 1), f"{where}.carry.move_speed_mult")
             loadout = expect(block.get("loadout_while_carrying", []), (list,), f"{where}.carry.loadout_while_carrying")

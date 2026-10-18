@@ -137,10 +137,14 @@ def task_fields(task):
         if task[key] != default:
             fields.append(f"T.{name} = {task[key]};")
     for name, key in (("Skippable", "skippable"), ("AnchorAfterLines", "anchor_after_lines"),
-                      ("PauseWhenSeen", "pause_when_seen"), ("DropOnHit", "drop_on_hit"),
+                      ("PauseWhenSeen", "pause_when_seen"),
                       ("HorseDownRetries", "horse_down_retries"), ("FlankBouts", "flank_bouts")):
         if task[key]:
             fields.append(f"T.{name} = true;")
+    for index, name in enumerate(("easy", "normal", "hard")):
+        if task["drop_on_hit"][name]:
+            fields.append(f"T.DropOnHitByDifficulty[{index}] = true;")
+    fields.append("ApplyCarryDifficulty(T, 1);")
     if task["lesson_mask"]:
         fields.append(f"T.LessonMask = {task['lesson_mask']}u;")
     if task["equipment_weapons"] is not None:

@@ -60,7 +60,7 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Named(O, TEXT("contest"), Contests, T.Contest) || !Int(O, TEXT("decay_permille"), T.DecayPermille) ||
         !Int(O, TEXT("min_turn_ms"), T.MinTurnMs) || !Int(O, TEXT("max_turn_ms"), T.MaxTurnMs) ||
         !Int(O, TEXT("speed_cm_s"), T.SpeedCmS) || !Int(O, TEXT("wait_cm"), T.WaitCm) || !Int(O, TEXT("path_cm"), T.PathCm) ||
-        !O.TryGetBoolField(TEXT("drop_on_hit"), T.DropOnHit) || !Named(O, TEXT("on_detected"), Detections, T.OnDetected) ||
+        !Named(O, TEXT("on_detected"), Detections, T.OnDetected) ||
         !Int(O, TEXT("reinforce_wave"), T.ReinforceWave) || !O.TryGetBoolField(TEXT("horse_down_retries"), T.HorseDownRetries) ||
         !Points(O, TEXT("objectives"), Beat.Objectives) || !Points(O, TEXT("pickups"), Beat.Pickups) ||
         !Points(O, TEXT("dropoffs"), Beat.Dropoffs) || !Nullable(O, TEXT("lines_event"), Beat.LinesEvent) ||
@@ -71,6 +71,15 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Int(O, TEXT("pickup_hold_ms"), T.PickupHoldMs) || T.PickupHoldMs < 0 ||
         !WeaponMask(Rows(O, TEXT("carry_weapons")), T.CarryWeaponsMask))
         return false;
+    const auto DropPolicy = Child(O, TEXT("drop_on_hit"));
+    const TCHAR* DifficultyNames[] = {TEXT("easy"), TEXT("normal"), TEXT("hard")};
+    if (!DropPolicy || DropPolicy->Values.Num() != 3) return false;
+    for (int32 Difficulty = 0; Difficulty < 3; ++Difficulty)
+    {
+        const auto Value = DropPolicy->TryGetField(DifficultyNames[Difficulty]);
+        if (!Value.IsValid() || Value->Type != EJson::Boolean || !Value->TryGetBool(T.DropOnHitByDifficulty[Difficulty])) return false;
+    }
+    ApplyCarryDifficulty(T, 1);
     if (!TaskName.IsEmpty() && !Tasks.Contains(TaskName)) return false;
     T.Task = TaskName.IsEmpty() ? ETask::None : Tasks[TaskName];
     // A capture names the interaction that binds its boss, and a carry what

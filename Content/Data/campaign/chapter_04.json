@@ -204,7 +204,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -324,7 +328,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -453,7 +461,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -693,7 +705,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -888,7 +904,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1147,7 +1167,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1374,7 +1398,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1482,7 +1510,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1609,7 +1641,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1795,7 +1831,11 @@
     "path_cm": 14840,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1968,7 +2008,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [
      {
       "kind": "assemble",
@@ -2290,7 +2334,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [
      {
@@ -2439,7 +2487,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2648,7 +2700,11 @@
      "hamlet_naka",
      "hamlet_shimo"
     ],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2756,7 +2812,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2902,7 +2962,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3080,7 +3144,11 @@
     "dropoffs": [
      "dp_gogura_door"
     ],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3190,7 +3258,11 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
-    "drop_on_hit": false,
+    "drop_on_hit": {
+     "easy": false,
+     "normal": false,
+     "hard": false
+    },
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,

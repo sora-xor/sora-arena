@@ -369,6 +369,9 @@ struct FTask
     // Carry or cargo points; every drop-off takes an equal share of the goods.
     int Pickups = 0;
     int Dropoffs = 0;
+    // Easy, Normal, Hard. The effective policy is chosen when a beat starts,
+    // including checkpoint retry/reload, like boss and stealth difficulty.
+    bool DropOnHitByDifficulty[3] = {};
     bool DropOnHit = false;
     // A carried load slows the hero to this permille of his pace and leaves
     // only these weapons in hand (the katana in one paw, or nothing).
@@ -397,6 +400,11 @@ struct FTask
     // Failures the beat's `fail` rows return to the checkpoint.
     unsigned FailMask = 0u;
 };
+
+constexpr void ApplyCarryDifficulty(FTask& Task, int Difficulty)
+{
+    Task.DropOnHit = Task.DropOnHitByDifficulty[Difficulty >= 0 && Difficulty < 3 ? Difficulty : 1];
+}
 
 struct FTaskState
 {
