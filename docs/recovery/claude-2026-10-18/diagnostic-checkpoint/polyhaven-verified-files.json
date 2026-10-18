@@ -1,0 +1,37 @@
+{
+  "checked": "2026-10-18",
+  "source": "https://polyhaven.com/a/stone_pathway_02",
+  "author": "Amal Kumar",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "files": [
+    {
+      "file": "stone_pathway_02_disp_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_pathway_02/stone_pathway_02_disp_2k.png",
+      "md5": "17c7b16d4ade2265a1cc76f109bfd20a",
+      "size": 6218977,
+      "local_md5_verified": true
+    },
+    {
+      "file": "stone_pathway_02_diff_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_pathway_02/stone_pathway_02_diff_2k.jpg",
+      "md5": "4a1eaa4f3aa788677762712b71049e8d",
+      "size": 2870571,
+      "local_md5_verified": true
+    },
+    {
+      "file": "stone_pathway_02_nor_dx_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_pathway_02/stone_pathway_02_nor_dx_2k.png",
+      "md5": "7ad94ce51ba58bc13ee891792126b5af",
+      "size": 22842306,
+      "local_md5_verified": true
+    },
+    {
+      "file": "stone_pathway_02_arm_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/stone_pathway_02/stone_pathway_02_arm_2k.png",
+      "md5": "52a964ce621ec8d7379c36a6c5447f58",
+      "size": 14116918,
+      "local_md5_verified": true
+    }
+  ]
+}

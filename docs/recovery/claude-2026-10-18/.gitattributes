@@ -1,0 +1,6 @@
+# Unified patch context blank lines contain a required single space.
+# Preserve recovery bytes; ordinary source whitespace checks are unchanged.
+*.patch whitespace=-blank-at-eol
+# These archived editor configs preserve their original final blank lines.
+diagnostic-checkpoint/snapshot/Config/DefaultEngine.ini whitespace=-blank-at-eof
+diagnostic-checkpoint/snapshot/Config/DefaultInput.ini whitespace=-blank-at-eof
