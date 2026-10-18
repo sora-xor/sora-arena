@@ -201,7 +201,7 @@ the gallery; the north exit volume starts ch08.b13. Searching remains
 optional. The saved checkpoint stays at b11 until the exit, while found
 collectibles save immediately. A fresh-world reload repeats the lift and
 keeps those finds. No mid-lift save representation was added. The b10
-spiral and b13 summit remain separate layout work.
+spiral now has a separate source implementation, described below; b13 summit remains separate layout work.
 
 Four host `test_lift_data.py` checks pass: exact generated heights, landing
 and crew clearances, rejection of changed wave/platform contracts, and a
@@ -263,3 +263,19 @@ cooperation, ratchet, bellows-net, lift and full campaign suites should accompan
 them. No UE build, render, packaged or performance result is claimed. The
 bellows' distinct alternating left/right tread controls and flame-gauge
 presentation are outside this stamina/input slice.
+
+### Chapter eight: spiral traversal (runtime qualification pending)
+
+Chapter 08 spiral source slice: the b10 collision proxy is a four-turn,
+400 cm wide hexagonal ramp through 0/900/1800/2700 cm landings. L2 has a
+200 cm gantry and a reachable far marksman post; L4 connects to the parked
+lift. Spawn posts use real floor heights, and the L3 wave volume checks Z.
+All sixteen authored enemies must still be cleared, then the player must
+walk to L4 before b11 begins; the checkpoint stays at b10 until that boundary.
+`SoraArena.Campaign.SpireTraversal` covers ordinary key-input climbing,
+wrong-floor trigger rejection, the L2 bridge, navigation reachability and
+the lower-floor combat-clear gate. It is authored but has not been run in
+Unreal by this source lane. The same route is used by the full playthrough
+fixture. These are functional collision proxies awaiting Claude's art;
+the auditor's L3 shortcut shutter and authored supply cache behavior are
+still open, as are visual windows, lighting and spire dressing.

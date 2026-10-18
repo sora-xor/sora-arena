@@ -93,3 +93,9 @@ bool USoraCampaignDirector::TickLiftGallery(float DeltaSeconds)
     if(Next==INDEX_NONE) FinishChapter(); else BeginBeat(Next,0,false);
     return true;
 }
+
+bool USoraCampaignDirector::SpireReadyToComplete() const
+{
+    const auto* S=ActiveSpace();
+    return !S||!S->Spire.Enabled()||(Mode().Hero()&&S->Exit.Contains(Mode().Hero()->GetActorLocation()));
+}

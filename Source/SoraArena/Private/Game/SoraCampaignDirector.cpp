@@ -815,7 +815,7 @@ void USoraCampaignDirector::Progressed(int32 PermilleBefore)
     }
     QueueWaves(SoraBeatRules::ReleaseWaves(TaskState,Task));
     SpawnPending();
-    if(SoraBeatRules::TaskComplete(TaskState,Task)&&LiftReadyToComplete()) CompleteActiveBeat();
+    if(SoraBeatRules::TaskComplete(TaskState,Task)&&LiftReadyToComplete()&&SpireReadyToComplete()) CompleteActiveBeat();
 }
 void USoraCampaignDirector::QueueWaves(unsigned Waves)
 {
@@ -1002,6 +1002,8 @@ void USoraCampaignDirector::SpawnPending()
 }
 void USoraCampaignDirector::AddOpponent(ASoraEnemy* Enemy,int32 Wave)
 {
+    if(ActiveSpace()&&ActiveSpace()->Spire.Enabled()&&Enemy&&Enemy->IsFlying())
+        if(auto* Brain=Cast<ASoraEnemyController>(Enemy->GetController())) Brain->AssignSpireFlight();
     Enemies.Add(Enemy); EnemyWaves.Add(TWeakObjectPtr<const ASoraEnemy>(Enemy),Wave); ++Spawned;
     // A wave's drones may be the beat's seizure drones or its scouts.
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this); Fieldcraft&&Enemy&&Wave!=INDEX_NONE) Fieldcraft->OpponentJoined(*Enemy,Wave);

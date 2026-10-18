@@ -43,5 +43,5 @@ private:
     double TargetCm=2700.0,SpeedCmS=0.0;
     void Gates();
     UStaticMeshComponent* Box(const TCHAR* Name,USceneComponent* Parent,FVector At,FVector Size,bool Collision);
-    void Landing(const TCHAR* Name,FVector Center,FVector2D Size,bool WestOpening);
+    void Landing(const TCHAR* Name,FVector Center,FVector2D Size,bool WestOpening,bool Through=false);
 };

@@ -29,6 +29,7 @@ frames stay in the chapter file's ``layout`` block for the level artists.
 """
 from __future__ import annotations
 from campaign_lift import place_lift
+from campaign_spire import place_spire
 
 import math
 import re
@@ -576,6 +577,7 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
             at = _frac(zones[index].rect, *NOOK_AT[taken])
         pickups.append({"collectible": item["id"], "zone": index, "at": list(at)})
     place_lift(beats, records, fail)
+    place_spire(beats, records, zones, fail)
     return {
         "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
         "hub": chapter_map if hub else None,

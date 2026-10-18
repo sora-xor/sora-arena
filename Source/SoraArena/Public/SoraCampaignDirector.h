@@ -313,6 +313,7 @@ private:
     void TickPlayerCrank(int32 DeltaMs);
     bool bLiftGallery=false;
     bool LiftReadyToComplete() const;
+    bool SpireReadyToComplete() const;
     bool BeginLiftGallery();
     bool TickLiftGallery(float DeltaSeconds);
     FVector WorkAnchor() const;

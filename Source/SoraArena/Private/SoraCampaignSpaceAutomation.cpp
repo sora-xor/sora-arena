@@ -94,6 +94,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
         {
             const FSoraBeatSpace& Space = Beat.Space;
             const FString What = Beat.Id;
+            if(Space.Spire.Enabled()) World.Mode()->Arena()->StageKit(Data,9);
             if(Space.HeightCm>0&&!World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->StageKit(Data,10);
             if(Space.HeightCm==0&&World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->ClearKit();
             Probe.HeightCm=Space.HeightCm;
@@ -109,14 +110,26 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             for(int32 Landing=0;Landing<(Space.Lift.bEnabled?3:1);++Landing)
             {
                 Probe.HeightCm=Space.Lift.bEnabled?SoraLiftRules::Gantry(Landing+1):Space.HeightCm;
-                for(const FVector2D& Point:Space.Spawns) Probe.Stand(Point,What+TEXT(" spawn"));
+                for(int32 Spawn=0;Spawn<Space.Spawns.Num();++Spawn)
+                {
+                    if(Space.Spire.Enabled())
+                    {
+                        if(Spawn>=9&&Spawn<=12) continue; // Drones occupy real air, checked in SpireTraversal.
+                        Probe.HeightCm=Space.Spire.Spawns[Spawn].Z;
+                    }
+                    Probe.Stand(Space.Spawns[Spawn],What+TEXT(" spawn"));
+                }
             }
             Probe.HeightCm=Space.HeightCm;
             for (const TArray<FVector2D>& Loop : Space.Patrols)
                 for (const FVector2D& Post : Loop)
                     Probe.Stand(Post, What + TEXT(" patrol post"));
             for (const FSoraVolume& Volume : Space.Volumes)
+            {
+                Probe.HeightCm=Volume.bHeight?Volume.FloorCm:Space.HeightCm;
                 Probe.Floor(Volume.Center, What + TEXT(" ") + Volume.Event);
+            }
+            Probe.HeightCm=Space.Exit.bHeight?Space.Exit.FloorCm:Space.HeightCm;
             Probe.Floor(Space.Exit.Center, What + TEXT(" exit"));
             if (Space.bClosing)
                 Probe.Floor(Space.Closing, What + TEXT(" closing anchor"));

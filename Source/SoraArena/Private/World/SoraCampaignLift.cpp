@@ -33,13 +33,16 @@ UStaticMeshComponent* ASoraCampaignLift::Box(const TCHAR* Name,USceneComponent* 
     Shape->SetMobility(EComponentMobility::Movable); Shape->SetCanEverAffectNavigation(false);
     return Shape;
 }
-void ASoraCampaignLift::Landing(const TCHAR* Name,FVector Center,FVector2D Size,bool WestOpening)
+void ASoraCampaignLift::Landing(const TCHAR* Name,FVector Center,FVector2D Size,bool WestOpening,bool Through)
 {
     Box(Name,Scene,Center-FVector(0,0,20),FVector(Size,40),true);
     for(int32 Side:{-1,1})
         Box(TEXT("LandingSideRail"),Scene,Center+FVector(0,Side*(Size.Y*.5f-8),65),FVector(Size.X,16,130),true);
     const float WallX=(WestOpening?1.f:-1.f)*(Size.X*.5f-8);
-    Box(TEXT("LandingEndRail"),Scene,Center+FVector(WallX,0,65),FVector(16,Size.Y,130),true);
+    if(!Through) Box(TEXT("LandingEndRail"),Scene,Center+FVector(WallX,0,65),FVector(16,Size.Y,130),true);
+    else for(int32 Side:{-1,1})
+        Box(TEXT("LandingApproachPost"),Scene,Center+FVector(WallX,Side*(Size.Y*.25f+50),65),
+            FVector(16,Size.Y*.5f-100,130),true);
     // The near edge has a 200 cm opening, flush with the deck's gate.
     for(int32 Side:{-1,1})
         Box(TEXT("LandingGatePost"),Scene,Center+FVector(-WallX,Side*(Size.Y*.25f+50),65),
@@ -64,7 +67,7 @@ void ASoraCampaignLift::Build(FVector2D Center,int32 Turns,int32 MinTurnMs)
     Box(TEXT("CapstanBar"),Deck,FVector(0,0,140),FVector(180,12,12),false);
     Hawser=ASoraWorldBuilder::Shape(this,Scene,TEXT("LiftHawser"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
         FVector(-220,220,0),FVector(.12,.12,1),FLinearColor(.3,.22,.12),false);
-    Landing(TEXT("L4Landing"),FVector(-600,0,SoraLiftRules::BottomCm),FVector2D(600,600),false);
+    Landing(TEXT("L4Landing"),FVector(-600,0,SoraLiftRules::BottomCm),FVector2D(600,600),false,true);
     Landing(TEXT("HeirloomGallery"),FVector(800,0,SoraLiftRules::TopCm),FVector2D(1000,4000),true);
     // Gantry thresholds are .25/.5/.75 of the exact 115 m travel.
     for(int32 Quarter=1;Quarter<=3;++Quarter)

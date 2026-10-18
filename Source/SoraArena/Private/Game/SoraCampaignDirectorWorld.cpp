@@ -82,7 +82,9 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
         if(LiveWaveOpponents()>0||!Pending.IsEmpty()) return false;
         for(int32 Wave=0;Wave<Task.WaveCount;++Wave)
             if(Task.Waves[Wave].Trigger==SoraBeatRules::EWaveTrigger::Volume&&!SoraBeatRules::Released(TaskState,Wave))
-                if(const FSoraVolume* Volume=VolumeOf(Beat->Waves[Wave].Event)) return At(Volume->Center,false);
+                if(const FSoraVolume* Volume=VolumeOf(Beat->Waves[Wave].Event)) { Location=ASoraWorldBuilder::Floor(Volume->Center,Volume->bHeight?Volume->FloorCm:Space.HeightCm); bInteract=false; return true; }
+        if(Space.Spire.Enabled()&&SoraBeatRules::TaskComplete(TaskState,Task))
+            { Location=ASoraWorldBuilder::Floor(Space.Exit.Center,Space.Exit.FloorCm); bInteract=false; return true; }
         return false;
     case SoraBeatRules::EGoal::Objectives:
         for(int32 Objective=0;Objective<Space.Objectives.Num();++Objective)
@@ -162,6 +164,7 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
     const FSoraBeatSpace* Space=ActiveSpace();
     const ASoraPlayerCharacter* Hero=Mode().Hero();
     if(!Space||Space->Spawns.IsEmpty()) return Mode().Arena()?Mode().Arena()->SpawnPoint(Slot):FVector::ZeroVector;
+    if(Space->Spire.Enabled()) return Space->Spire.Spawns[FMath::Abs(Slot)%Space->Spire.Spawns.Num()]+FVector(0,0,120);
     if(Space->bRoute&&Chapter&&Hero)
     {
         // On a road, opponents come from the stretch just ahead of the hero.
@@ -188,10 +191,10 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
     if(!World||!Chapter||!Beat||!GetWorld()) return;
     const FSoraBeatSpace& Space=Beat->Space;
     World->StageKit(*Chapter,BeatIndex);
-    // Travel: a new place, or the authored L4 landing on lift entry.
-    // The b10 spiral is still a separate traversal slice. Only this entry
-    // cut stages the landing; the whole 115 m lift ride is physical.
-    if(Hero&&(Space.Lift.bEnabled||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
+    // Fresh checkpoint entry may need a cut to L4. Normal spiral traversal
+    // reaches the same landing on foot and continues onto the lift.
+    const bool NeedsLiftEntry=Space.Lift.bEnabled&&Hero&&FMath::Abs(Hero->GetActorLocation().Z-Space.HeightCm)>180.f;
+    if(Hero&&(NeedsLiftEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
     {
         ClearHorses();
         Hero->SetBase(nullptr);

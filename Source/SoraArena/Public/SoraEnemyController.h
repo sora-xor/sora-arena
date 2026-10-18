@@ -99,6 +99,7 @@ public:
     void SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm,
         bool bThreeDimensional = false, float AcceptanceCm = ErrandReachCm);
     void AssignLift(ASoraCampaignLift& Lift,int32 Wave);
+    void AssignSpireFlight() { bSpireFlight=true; }
     // An errand's goal is reached within this (2D).
     static constexpr float ErrandReachCm = 120.f;
     void ClearErrand() { bErrand = false; }
@@ -219,6 +220,8 @@ private:
     TWeakObjectPtr<ASoraCampaignLift> AssignedLift;
     int32 LiftWave = INDEX_NONE;
     bool bLiftJumped = false;
+    bool bSpireFlight=false;
+    bool DriveSpireFlight(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     bool DriveLift(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     // Stealth: the hero in view at the last tick, and evidence of a body.
     bool bSeesHero = false;
