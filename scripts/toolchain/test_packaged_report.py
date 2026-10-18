@@ -2,7 +2,7 @@
 from copy import deepcopy
 from pathlib import Path
 import unittest
-from verify_packaged_report import NATIVE, problems
+from verify_automation_report import NATIVE, problems
 
 BRIDGE = Path('/fixture/SoraArena.app/Contents/UE/SoraArena/Binaries/Mac/libconnect_norito_bridge.dylib')
 
@@ -67,6 +67,27 @@ class PackagedReportTests(unittest.TestCase):
         for failure in ('LogMaterial: Warning: Material /Game/Test missing usage flag bUsedWithNanite! Default Material will be used in game',
                         'LogOutputDevice: Error: Ensure condition failed: broken'):
             self.assertTrue(self.check(log="Found 1 automation tests based on 'SoraArena'\n" + failure))
+
+
+class EditorReportTests(unittest.TestCase):
+    def test_editor_context_uses_its_actual_bridge(self):
+        value = report()
+        value['tests'][0]['entries'][0]['event']['message'] = f'NativeLoader context=editor staged_library={BRIDGE}'
+        self.assertEqual([], problems(value, "Found 1 automation tests based on 'SoraArena.Connect'",
+                                      'SoraArena.Connect', 0, BRIDGE, 'editor'))
+        self.assertTrue(problems(value, "Found 1 automation tests based on 'SoraArena.Connect'",
+                                 'SoraArena.Connect', 0, BRIDGE, 'client'))
+
+    def test_editor_rejects_missing_discovery_and_success_with_errors(self):
+        value = {'tests': [{'fullTestPath': 'SoraArena.Campaign.Example', 'state': 'Success', 'errors': 0}]}
+        self.assertTrue(problems(value, '', 'SoraArena.Campaign', 0, BRIDGE, 'editor'))
+        log = "Found 1 automation tests based on 'SoraArena.Campaign'"
+        self.assertEqual([], problems(value, log, 'SoraArena.Campaign', 0, BRIDGE, 'editor'))
+        value['tests'][0]['errors'] = 1
+        self.assertTrue(problems(value, log, 'SoraArena.Campaign', 0, BRIDGE, 'editor'))
+        value['tests'][0]['errors'] = 0
+        value['tests'][0]['entries'] = [{'event': {'type': 'Error', 'message': 'reported failure'}}]
+        self.assertTrue(problems(value, log, 'SoraArena.Campaign', 0, BRIDGE, 'editor'))
 
 
 if __name__ == '__main__': unittest.main()

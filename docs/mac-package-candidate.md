@@ -66,6 +66,8 @@ Host regression checks (no Unreal or Cargo process):
 ```sh
 python3 -m unittest discover -s scripts/toolchain -p test_mac_candidate.py
 python3 -m unittest discover -s scripts/toolchain -p test_packaged_report.py
+# On macOS only (separate from portable source CI):
+python3 -m unittest discover -s scripts/toolchain -p test_mac_codesign.py
 bash -n scripts/toolchain/{build,cook,stage,test-packaged}-mac.sh
 ```
 
@@ -73,3 +75,8 @@ The macOS host test compares differently signed copies of `/usr/bin/true`
 without executing them. The remaining tests use temporary fake artifact bytes
 to exercise stale source, changed output, substituted bridge evidence and
 failed-report rejection; they are not native or packaged runtime evidence.
+
+The editor runner uses the same discovery/error checks with explicit editor
+context and its project bridge path. It writes `results.tsv` beside its report
+and retains its Config mutation guard. Passing editor automation remains
+separate from the source-bound packaged candidate qualification above.
