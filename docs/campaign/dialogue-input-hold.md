@@ -37,7 +37,8 @@ The directed Unreal suite is `SoraArena.Campaign.Dialogue`:
   final-plaque event. An injected plaque event cannot replace the arrival line.
 
 These are authored tests, not execution evidence until Unreal runs them. The
-full campaign route now drives later dialogue volumes and fails explicitly if
+full campaign route follows the public objective through later dialogue volumes
+in authored line order and fails explicitly if
 required dialogue lacks a tested world interaction. The normal ch08.b17 interactions are covered separately by
 `SoraArena.Campaign.Epilogue.WithSword` and `WithoutSword`. These walk to the
 arrival volume and use Interact at Toranosuke and Sekireisai’s freestanding board.

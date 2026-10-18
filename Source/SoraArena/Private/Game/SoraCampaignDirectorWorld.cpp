@@ -55,6 +55,21 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     switch(Task.Goal)
     {
     case SoraBeatRules::EGoal::Lines:
+        // Walk-and-talk may have several required stops. Guide them in the
+        // script's line order, including a stop before LinesEvent itself
+        // (ch01.b10's north gate precedes the engawa conversation).
+        for(const int32 Line:Beat->Lines)
+        {
+            if(FinishedLines.Contains(Line)) continue;
+            for(int32 Index=0;Index<ActiveChapter()->Triggers.Num();++Index)
+            {
+                const FSoraDialogueTrigger& Trigger=ActiveChapter()->Triggers[Index];
+                if(Trigger.Beat!=BeatIndex||!Trigger.Lines.Contains(Line)||!TriggerAllowed(Index)) continue;
+                for(int32 Volume=0;Volume<Space.Volumes.Num();++Volume)
+                    if(!VolumesEntered.Contains(Volume)&&Space.Volumes[Volume].Event==Trigger.On)
+                        return At(Space.Volumes[Volume].Center,false);
+            }
+        }
         if(!bLinesStarted&&Beat->LinesEvent.StartsWith(TEXT("interact:"))) return At(Space.Anchor,true);
         if(!bLinesStarted&&Beat->LinesEvent.StartsWith(TEXT("volume_enter:")))
             if(const FSoraVolume* Volume=VolumeOf(Beat->LinesEvent)) return At(Volume->Center,false);
