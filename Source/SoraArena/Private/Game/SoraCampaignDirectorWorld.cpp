@@ -428,7 +428,7 @@ void USoraCampaignDirector::ShowKit()
     }
     for(int32 Point=0;Point<Task.Dropoffs;++Point) View.Delivered.Add(TaskState.DropoffUses[Point]);
     View.bContested=Contested();
-    View.bSlack=bCrankSlack;
+    View.bSlack=bCrankSlack&&!(ActiveCrankHelpers>0&&Task.CoopSuspendsDecay)&&TaskState.Progress>TaskState.CrankFloor;
     if(Task.Goal==SoraBeatRules::EGoal::Escort&&Space->bRoute)
     {
         // The party walks in file along the road, the leader where

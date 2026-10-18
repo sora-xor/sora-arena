@@ -166,6 +166,31 @@ def _people(beat, record):
     return people
 
 
+
+def _crank_people(beat, record, rect, cover, fail):
+    coop = beat["task"]["crank_coop"]
+    if not coop:
+        return []
+    anchor = record["anchor"]
+    at = [anchor[0], anchor[1] + 220]
+    if not _inside(rect, at, 100) or not _clear(at, cover, 100):
+        fail(beat["id"], "crank helper has no clear work position")
+    refuge = at
+    if coop["retreat_cm"]:
+        # An existing cover's clear side reached by a swept straight walk.
+        # Reserve no new collision and never place the helper inside cover.
+        candidates = []
+        for cx, cy, sx, sy, _ in cover:
+            for point in ((cx-sx/2-100, cy), (cx+sx/2+100, cy), (cx, cy-sy/2-100), (cx, cy+sy/2+100)):
+                if not _inside(rect, point, 100):
+                    continue
+                if all(_clear((at[0]+(point[0]-at[0])*i/40, at[1]+(point[1]-at[1])*i/40), cover, 80) for i in range(41)):
+                    candidates.append(point)
+        if not candidates:
+            fail(beat["id"], "crank helper has no reachable existing cover")
+        refuge = min(candidates, key=lambda p: (p[0]-at[0])**2+(p[1]-at[1])**2)
+    return [{"id": coop["npc"], "target": -1, "at": at, "cover": [_i(v) for v in refuge]}]
+
 def owned_volumes(beat):
     """Volumes on a climbing face the fieldcraft raises itself as the climber
     reaches them (its ledges and its top): no floor band stands for them."""
@@ -569,6 +594,14 @@ def _nets(beat, record, fail):
     waves = params.get("waves") or []
     drones = [number for number, wave in enumerate(waves) if _drones(wave)]
     no_cross = {"cross_wave": -1, "cross_at_cm": 0}
+    if beat["id"] == "ch05.b06":
+        # The vent drone nets the boy until freed. No haul/death timer is
+        # authored; use the existing one-second net-cut interaction.
+        return {"quarry": [{"id": "bellows_boy", "kind": "person", "index": 0, "hp": 0}],
+                "windup_ms": NET_WINDUP_MS, "haul_ms": 0, "cut_ms": 1000,
+                "saddle_weapon": -1, "saddle_side": 0, "tether": True, "halts": False,
+                "net_waves": drones, "nets_per_wave": [_drones(waves[number]) for number in drones],
+                "scout_waves": [], **no_cross, "lost_event": None}
     if params.get("task") == "defend":
         targets = params["defend"]["targets"]
         hauls = {target.get("haul_after_s") for target in targets}
@@ -791,7 +824,7 @@ def derive_fieldcraft(beat, record, zone, rect, cover, allocator, fail):
     elif params.get("task") == "escort":
         fail(beat["id"], "an escort walks a road")
     craft["allies"] = _allies(beat, record, layout, fail)
-    craft["people"] = _people(beat, record)
+    craft["people"] = _people(beat, record) + _crank_people(beat, record, rect, cover, fail)
     craft["volley"] = _volley(beat, craft["allies"], fail)
     craft["alarms"] = _alarms(beat, layout, fail)
     craft["nets"] = _nets(beat, record, fail)

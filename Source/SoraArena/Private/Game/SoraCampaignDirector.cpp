@@ -420,7 +420,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     ResetCarryWork();
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
-    ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; bDetected=false; CinematicSeconds=0.f;
+    ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; ActiveCrankHelpers=0; bCrankHelperRetreating=false; bDetected=false; CinematicSeconds=0.f;
     VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset(); BeatEvents.Reset(); WhistleAt=-1.0;
     HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
     Scheduled.Reset(); bWorkWasSeen=false; GuardStates.Reset(); EventRaises.Reset();
@@ -664,6 +664,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     if(Stealth&&Stealth->IsZoneActive()&&M.Hero()&&!BeatEvents.Contains(TEXT("ai_event:first_rear_reach"))&&
         Stealth->TakedownTarget(*M.Hero()))
         Fire(TEXT("ai_event:first_rear_reach"));
+    Step.CrankHelpers=CrankHelpers();
     SoraBeatRules::Tick(TaskState,Task,Step);
     TickMaai(DeltaMs);
     if(ActiveBeatData()!=&Beat) return;

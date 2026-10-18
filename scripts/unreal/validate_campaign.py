@@ -585,11 +585,19 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
                 all(ally["weapon"] == volley["weapon"] and ally["joins"] is None for ally in gunners),
                 f"{what}: volley ranks")
     check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor)
-    people = [person["target"] for person in craft["people"]]
+    defended = [person for person in craft["people"] if person["target"] != -1]
+    people = [person["target"] for person in defended]
     kinds = record["kit"]["targets"]
     require(len(people) == len(set(people)) and people == [index for index, kind in enumerate(kinds) if kind == "person"] and
-            all(person["at"] == record["targets"][person["target"]] for person in craft["people"]),
+            all(person["at"] == record["targets"][person["target"]] for person in defended),
             f"{what}: every defended person stands at its target")
+    helpers = [person for person in craft["people"] if person["target"] == -1]
+    coop = beat["task"]["crank_coop"]
+    require(len(helpers) == (1 if coop else 0), f"{what}: exactly the authored crank helper is staged")
+    for helper in helpers:
+        require(set(helper) == {"id", "target", "at", "cover"} and helper["id"] == coop["npc"], f"{what}: crank helper identity")
+        on_floor(index, helper["at"], f"{what}: crank helper work")
+        on_floor(index, helper["cover"], f"{what}: crank helper cover")
 
 
 def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
@@ -614,6 +622,10 @@ def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
         elif kind == "cart":
             require(task["goal"] == "escort" and nets["halts"] and ids[0] in params["escort"]["npcs"] and
                     nets["quarry"][0]["hp"] > 0, f"{what}: an escort's nets fall on its cart")
+        elif task["goal"] == "turns":
+            require(what == "ch05.b06" and kind == "person" and ids == [task["crank_coop"]["npc"]] == [person["id"] for person in craft["people"]] and
+                    nets["haul_ms"] == 0 and nets["cut_ms"] == 1000 and nets["windup_ms"] == 800 and
+                    [row["index"] for row in nets["quarry"]] == [0], f"{what}: bellows boy's net/free contract")
         else:
             require(kind == "person" and ids == [target["id"] for target in task["targets"]] and nets["haul_ms"] > 0 and
                     [row["index"] for row in nets["quarry"]] == list(range(len(ids))), f"{what}: a defence's nets")

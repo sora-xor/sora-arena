@@ -810,6 +810,69 @@ static void TestDecayFrames()
     std::cout << "hold and crank decay cost the same at every frame rate\n";
 }
 
+static void TestCooperativeCranks()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[3](Tasks); const FTask Weir = Tasks[5];
+    ChapterTasks[4](Tasks); const FTask Bellows = Tasks[5];
+    ChapterTasks[6](Tasks); const FTask Override = Tasks[6];
+    Expect(Weir.CoopMilliTurnsS == 200 && Weir.CoopSuspendsDecay && Weir.CoopRetreatCm == 0, "Otane's authored rules");
+    Expect(Bellows.CoopMilliTurnsS == 500 && Bellows.CoopProgressPermille == 400 && !Bellows.CoopSuspendsDecay, "bellows boy's authored credited contribution");
+    Expect(Override.CoopMilliTurnsS == 150 && Override.CoopSuspendsDecay && Override.CoopRetreatCm == 500 && Override.RatchetCount == 3, "Kohagi's authored rules");
+    for (const FTask* Task : {&Weir, &Bellows, &Override})
+    {
+        int Expected = -1;
+        for (int Frame : {1, 7, 17, 33, 250, 1000, 60000})
+        {
+            FTaskState S = StartTask(*Task, 0);
+            FTick Step; Step.CrankHelpers = 1; Step.DeltaMs = 1000;
+            Tick(S, *Task, Step);
+            Expect(S.Progress == 0, "helper started an untouched task");
+            S.Progress = Task == &Bellows ? 20000 : 2000;
+            S.LastActionMs = 0; S.ElapsedMs = Task->MaxTurnMs;
+            for (int Ms = 0; Ms < 10000; Ms += Frame)
+            {
+                Step.DeltaMs = Frame < 10000-Ms ? Frame : 10000-Ms;
+                Tick(S, *Task, Step);
+            }
+            const int Authored = Task == &Weir ? 4000 : Task == &Bellows ? 13000 : 3500;
+            Expect(S.Progress == Authored, "cooperation changed the authored net rate or its units");
+            if (Expected >= 0) Expect(S.Progress == Expected, "cooperation depends on frame size");
+            Expected = S.Progress;
+        }
+    }
+    FTaskState S = StartTask(Override, 0);
+    for (int Lock : {4000, 8000, 12000})
+    {
+        while (S.Progress < Lock)
+        {
+            Tick(S, Override, At(Override.MinTurnMs));
+            Expect(Turn(S, Override) == ETurn::InBand, "ratchet turn rejected");
+        }
+        Expect(S.CrankFloor == Lock, "quarter threshold failed to latch");
+        Tick(S, Override, At(Override.MinTurnMs)); Turn(S, Override);
+        Tick(S, Override, At(60000));
+        Expect(S.Progress == Lock && S.CrankFloor == Lock, "abandoned wheel slipped below its pawl");
+        // Re-enter its rhythm after the long retreat.
+        S.LastActionMs = S.ElapsedMs-Override.MinTurnMs;
+    }
+    const int Floor = S.CrankFloor;
+    Expect(Turn(S, Override) == ETurn::InBand, "return from retreat failed");
+    Expect(Turn(S, Override) == ETurn::TooFast && S.CrankFloor == Floor, "overspeed bypassed or released a ratchet");
+    S = RetryTask(S, Override);
+    Expect(S.Progress == 0 && S.CrankFloor == 0 && S.CrankCarry == 0 && S.LastActionMs < 0, "checkpoint retained crank work");
+    FTask Bad = Override; Bad.Ratchets[1] = Bad.Ratchets[0]; Expect(!TaskValid(Bad), "duplicate ratchet accepted");
+    Bad = Override; Bad.CoopProgressPermille = 0; Expect(!TaskValid(Bad), "zero helper credit accepted");
+    // Helper work crosses ordinary progress triggers and finishes normally.
+    S = StartTask(Weir, 0); Turn(S, Weir);
+    FTick Help; Help.DeltaMs=10000; Help.CrankHelpers=1;
+    Tick(S, Weir, Help); ReleaseWaves(S, Weir);
+    Expect(Released(S, 0), "cooperative quarter progress did not release its wave");
+    for (int I=0; I<6; ++I) { Tick(S, Weir, Help); ReleaseWaves(S, Weir); }
+    Expect(TaskComplete(S, Weir), "cooperation cannot complete the crank");
+    std::cout << "cooperative cranks: exact frame-independent rates, idle loss, ratchets, waves and checkpoint reset passed\n";
+}
+
 static void TestRideExploreCollectible()
 {
     FTask Ride = Make(EType::HorsebackRide, EGoal::Exit);
@@ -1500,6 +1563,7 @@ int main()
     TestEquipmentRecovery();
     TestProduction();
     TestDecayFrames();
+    TestCooperativeCranks();
     TestRideExploreCollectible();
     TestSiegeAndCarry();
     TestMountRules();

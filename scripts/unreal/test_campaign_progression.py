@@ -147,6 +147,14 @@ def task_fields(task):
     fields.append("ApplyCarryDifficulty(T, 1);")
     if task["carry_gate"]:
         fields.append(f"T.CarryGateMs = {task['carry_gate']['hold_ms']};")
+    if task["crank_coop"]:
+        coop = task["crank_coop"]
+        for name, key in (("CoopMilliTurnsS", "rate_milliturns_s"), ("CoopProgressPermille", "progress_permille"), ("CoopRetreatCm", "retreat_cm")):
+            fields.append(f"T.{name} = {coop[key]};")
+        fields.append(f"T.CoopSuspendsDecay = {flag(coop['suspends_decay'])};")
+        fields.append(f"T.RatchetCount = {len(coop['ratchets_permille'])};")
+        for index, lock in enumerate(coop['ratchets_permille']):
+            fields.append(f"T.Ratchets[{index}] = {lock};")
     if task["lesson_mask"]:
         fields.append(f"T.LessonMask = {task['lesson_mask']}u;")
     if task["equipment_weapons"] is not None:

@@ -404,6 +404,10 @@ void ASoraCompanion::TickPlay(float Dt)
     case ERole::Shooter: Shoot(Dt); return;
     case ERole::Rank: HoldRank(Dt); return;
     case ERole::Guide: Guide(Dt); return;
-    case ERole::Bystander: UpdateLocomotion(false, 1.f); return;
+    case ERole::Bystander:
+        // A crank helper walks to its wheel or cover using character sweeps.
+        if (bHasGoal) MoveToward(GoalAt, GoalPace, 8.f);
+        else UpdateLocomotion(false, 1.f);
+        return;
     }
 }

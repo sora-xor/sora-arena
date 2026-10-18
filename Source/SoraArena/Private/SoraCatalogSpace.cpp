@@ -304,7 +304,8 @@ bool SpaceReadFieldcraftSets(const FJsonObject& O, const FSoraBeat& Beat, FSoraF
             if (!Q || !Str(*Q, TEXT("id"), Quarry.Id) || !Named(*Q, TEXT("kind"), Kinds, Kind) || (Index > 0 && Kind != Nets.Kind) ||
                 !Int(*Q, TEXT("index"), Quarry.Index) || Quarry.Index != Index || !Int(*Q, TEXT("hp"), Quarry.Hp) || Quarry.Hp < 0 ||
                 (Kind == FSoraNets::EKind::Person) != (Quarry.Hp == 0) ||
-                (Kind == FSoraNets::EKind::Person && (Quarry.Index >= Beat.Task.TargetCount || Beat.Targets[Quarry.Index] != Quarry.Id)))
+                (Kind == FSoraNets::EKind::Person && (Quarry.Index >= F.People.Num() || F.People[Quarry.Index].Id != Quarry.Id ||
+                 (Beat.Task.Task == SoraBeatRules::ETask::Defend && F.People[Quarry.Index].Target != Quarry.Index))))
                 return false;
             Nets.Kind = Kind;
             Nets.Quarry.Add(MoveTemp(Quarry));
@@ -321,7 +322,8 @@ bool SpaceReadFieldcraftSets(const FJsonObject& O, const FSoraBeat& Beat, FSoraF
             return false;
         // An escort's net falls on its one cart; a defence's on its people.
         if ((Nets.Kind == FSoraNets::EKind::Cart && (Beat.Task.Goal != SoraBeatRules::EGoal::Escort || Nets.Quarry.Num() != 1)) ||
-            (Nets.Kind == FSoraNets::EKind::Person && Beat.Task.Task != SoraBeatRules::ETask::Defend))
+            (Nets.Kind == FSoraNets::EKind::Person && Beat.Task.Task != SoraBeatRules::ETask::Defend &&
+             !(Beat.Task.Task == SoraBeatRules::ETask::Crank && Nets.Quarry.Num() == 1 && Nets.Quarry[0].Id == Beat.CrankNpc && Nets.Rules.HaulMs == 0)))
             return false;
     }
     for (const auto& Row : *LightRows)
@@ -564,14 +566,20 @@ bool SpaceReadFieldcraft(const FJsonObject& O, const FSoraBeat& Beat, FSoraField
         const auto P = Row.IsValid() ? Row->AsObject() : nullptr;
         FSoraDefendedPerson Person;
         bool bSeen = false;
-        if (!P || !Str(*P, TEXT("id"), Person.Id) || !Int(*P, TEXT("target"), Person.Target) || Person.Target < 0 ||
-            Person.Target >= Beat.Task.TargetCount || !SpacePoint(P->TryGetField(TEXT("at")), Person.At) ||
-            Person.At != Beat.Space.Targets[Person.Target])
-            return false;
+        if (!P || !Str(*P, TEXT("id"), Person.Id) || !Int(*P, TEXT("target"), Person.Target) ||
+            !SpacePoint(P->TryGetField(TEXT("at")), Person.At)) return false;
+        if (Person.Target == INDEX_NONE)
+        {
+            if (Beat.CrankNpc.IsEmpty() || Person.Id != Beat.CrankNpc ||
+                !SpacePoint(P->TryGetField(TEXT("cover")), Person.Cover)) return false;
+        }
+        else if (Person.Target < 0 || Person.Target >= Beat.Task.TargetCount || Person.At != Beat.Space.Targets[Person.Target]) return false;
         Ids.Add(Person.Id, &bSeen);
         if (bSeen) return false;
         F.People.Add(MoveTemp(Person));
     }
+    if (!Beat.CrankNpc.IsEmpty() && !F.People.ContainsByPredicate([&](const FSoraDefendedPerson& Person)
+        { return Person.Target == INDEX_NONE && Person.Id == Beat.CrankNpc; })) return false;
     // Volley ranks: each a full row of gunners with the volley's arm, from the start.
     F.bVolley = !IsNull(O, TEXT("volley"));
     TArray<int32> Gunners;
@@ -789,6 +797,11 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         const TSharedPtr<FJsonObject> Fieldcraft = Child(*O, TEXT("fieldcraft"));
         if (!Fieldcraft || !SpaceReadFieldcraft(*Fieldcraft, Beat, B.Fieldcraft))
             return Bad(Beat.Id + TEXT(" fieldcraft"));
+        for (const FSoraDefendedPerson& Person : B.Fieldcraft.People)
+            if (Person.Target == INDEX_NONE && (!S.Zones.IsValidIndex(B.Zone) ||
+                !S.Zones[B.Zone].Rect.IsInside(Person.At + FVector2D(80,80)) || !S.Zones[B.Zone].Rect.IsInside(Person.At - FVector2D(80,80)) ||
+                !S.Zones[B.Zone].Rect.IsInside(Person.Cover + FVector2D(80,80)) || !S.Zones[B.Zone].Rect.IsInside(Person.Cover - FVector2D(80,80))))
+                return Bad(Beat.Id + TEXT(" crank helper outside its floor"));
     }
     const FJsonRows* PickupRows = Rows(Data, TEXT("pickups"));
     if (!PickupRows) return Bad(TEXT("no pickups"));

@@ -38,6 +38,7 @@ import sys
 from pathlib import Path
 
 import yaml
+from campaign_crank import cooperation
 
 from campaign_space import derive_space, ride_mount
 from campaign_registry import validate_registry
@@ -660,7 +661,7 @@ def normalize_task(beat):
         "max_alive": params.get("max_alive", 6), "waves": [], "phases": [1000], "defeat": "kill",
         "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "maai": None, "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
-        "max_turn_ms": 0, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
+        "max_turn_ms": 0, "crank_coop": None, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
         "drop_on_hit": carry_drop_policy(False, where), "carry_gate": None, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
         "reinforce_wave": -1,
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
@@ -797,6 +798,7 @@ def normalize_task(beat):
             task.update(goal="hold", duration_ms=whole_ms(seconds, f"{where}.hold"), contest=block["contest"],
                         decay_permille=permille(block.get("decay_per_s", 0), f"{where}.hold.decay_per_s"))
         elif name == "crank":
+            task["crank_coop"] = cooperation(beat, fail)
             slowest, fastest = block["turn_rate_band"]
             task.update(goal="turns", count=block["turns_required"], min_turn_ms=round(1000 / fastest),
                         max_turn_ms=round(1000 / slowest),

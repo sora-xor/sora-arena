@@ -300,12 +300,14 @@ struct FSoraCompanionSpec
     // A volley rank's gunner: its rank (0 is the first), or INDEX_NONE.
     int32 Rank = INDEX_NONE;
 };
-// A person a defence protects, standing at its defended target.
+// A defended person at a target, or a crank helper (Target INDEX_NONE)
+// at its work and an existing cover slot.
 struct FSoraDefendedPerson
 {
     FString Id;
     int32 Target = INDEX_NONE;
     FVector2D At = FVector2D::ZeroVector;
+    FVector2D Cover = FVector2D::ZeroVector;
 };
 // Rotating volley ranks the hero commands (ch08 volley_command): the ranks
 // are the beat's allies with a Rank, PerRank to a rank, all with WeaponId.
@@ -592,6 +594,7 @@ struct FSoraWave
 struct FSoraBeat
 {
     FString Id;
+    FString CrankNpc;
     FString Place;
     FString Title;
     FString TitleEnglish;

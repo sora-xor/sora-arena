@@ -198,6 +198,8 @@ public:
     float HeldWorkProgress() const;
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
+    int32 WorkingCrankHelpers() const { return ActiveCrankHelpers; }
+    bool CrankHelperRetreating() const { return bCrankHelperRetreating; }
     bool NeedsCarryGate() const { return !SoraBeatRules::CarryGateReady(TaskState,Task); }
     FVector LooseLoadLocation(int32 Slot) const;
     bool IsRecoveringEquipment() const { return bStringingBow; }
@@ -296,6 +298,9 @@ private:
     bool bLinesStarted = false;
     bool bChapterOpening = false;
     bool bCrankSlack = false;
+    int32 ActiveCrankHelpers = 0;
+    bool bCrankHelperRetreating = false;
+    int32 CrankHelpers();
     bool bDetected = false;
     float CinematicSeconds = 0.f;
     unsigned DojoLessonMask = 0u;

@@ -71,6 +71,26 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Int(O, TEXT("pickup_hold_ms"), T.PickupHoldMs) || T.PickupHoldMs < 0 ||
         !WeaponMask(Rows(O, TEXT("carry_weapons")), T.CarryWeaponsMask))
         return false;
+    const auto CoopValue = O.TryGetField(TEXT("crank_coop"));
+    if (!CoopValue.IsValid()) return false;
+    if (CoopValue->Type != EJson::Null)
+    {
+        const auto Coop = CoopValue->Type == EJson::Object ? CoopValue->AsObject() : nullptr;
+        const FJsonRows* Locks = Coop ? Rows(*Coop, TEXT("ratchets_permille")) : nullptr;
+        if (!Coop || Coop->Values.Num() != 6 || !Locks || Locks->Num() > 3 ||
+            !Str(*Coop, TEXT("npc"), Beat.CrankNpc) || Beat.CrankNpc.IsEmpty() ||
+            !Int(*Coop, TEXT("rate_milliturns_s"), T.CoopMilliTurnsS) || T.CoopMilliTurnsS <= 0 ||
+            !Int(*Coop, TEXT("progress_permille"), T.CoopProgressPermille) ||
+            !Coop->TryGetBoolField(TEXT("suspends_decay"), T.CoopSuspendsDecay) ||
+            !Int(*Coop, TEXT("retreat_cm"), T.CoopRetreatCm)) return false;
+        T.RatchetCount = Locks->Num();
+        for (int32 Index = 0; Index < Locks->Num(); ++Index)
+        {
+            double Number = 0;
+            if (!(*Locks)[Index].IsValid() || !(*Locks)[Index]->TryGetNumber(Number) || Number != FMath::FloorToDouble(Number) || Number <= 0 || Number >= 1000) return false;
+            T.Ratchets[Index] = static_cast<int>(Number);
+        }
+    }
     const auto DropPolicy = Child(O, TEXT("drop_on_hit"));
     const TCHAR* DifficultyNames[] = {TEXT("easy"), TEXT("normal"), TEXT("hard")};
     if (!DropPolicy || DropPolicy->Values.Num() != 3) return false;

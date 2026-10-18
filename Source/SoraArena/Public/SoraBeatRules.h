@@ -361,6 +361,12 @@ struct FTask
     // A crank's rate band as turn intervals: faster slips, slower lets it decay.
     int MinTurnMs = 0;
     int MaxTurnMs = 0;
+    int CoopMilliTurnsS = 0;
+    int CoopProgressPermille = Permille;
+    bool CoopSuspendsDecay = false;
+    int CoopRetreatCm = 0;
+    int RatchetCount = 0;
+    int Ratchets[3] = {};
     // Escort: the party's pace, how far the hero may range from it, and its
     // route (0 until the world lays the route out).
     int SpeedCmS = 0;
@@ -428,6 +434,9 @@ struct FTaskState
     // Decay not yet worn into progress, in millionths of the hold or of the
     // turns required, so no frame boundary loses a fraction.
     int DecayCarry = 0;
+    // Signed fractional crank progress, shared by cooperation and decay.
+    int CrankCarry = 0;
+    int CrankFloor = 0;
     // A hold worked at a reduced rate (a cupped candle): thousandths of a
     // millisecond not yet counted.
     int RateCarry = 0;
@@ -471,6 +480,7 @@ struct FTick
     bool Seen = false;
     // The pace a hold fills at, x1000 (a cupped candle copies at half speed).
     int RatePermille = Permille;
+    int CrankHelpers = 0;
 };
 
 constexpr int Bits(unsigned Mask)
@@ -699,6 +709,16 @@ constexpr void Decay(FTaskState& State, const FTask& Task, long long Whole, int 
     State.Progress = State.Progress > Loss ? State.Progress - static_cast<int>(Loss) : 0;
 }
 
+// A reached pawl never releases until the whole task retries.
+constexpr void LatchCrank(FTaskState& State, const FTask& Task)
+{
+    for (int Index = 0; Index < Task.RatchetCount && Index < 3; ++Index)
+    {
+        const int Floor = Task.Count * Task.Ratchets[Index];
+        if (State.Progress >= Floor && Floor > State.CrankFloor) State.CrankFloor = Floor;
+    }
+}
+
 // Advances the beat clock: holds fill while the hero stands in them, a crank
 // slips back once he stops, the escorted party walks while he keeps up, and a
 // survival counts down. A completed task no longer moves.
@@ -730,15 +750,20 @@ constexpr bool Tick(FTaskState& State, const FTask& Task, FTick Step)
         }
         break;
     case EGoal::Turns:
-        // Only the time past the slowest turn slips.
         if (State.LastActionMs >= 0)
         {
             const int Slack = State.ElapsedMs - State.LastActionMs - Task.MaxTurnMs;
-            if (Slack > 0)
-            {
-                Decay(State, Task, static_cast<long long>(Task.Count) * Permille, Slack < Delta ? Slack : Delta);
-                State.Done = State.Progress / Permille;
-            }
+            const int DecayMs = Slack <= 0 || (Step.CrankHelpers > 0 && Task.CoopSuspendsDecay) ? 0 : Slack < Delta ? Slack : Delta;
+            const int Helpers = Step.CrankHelpers < 0 ? 0 : Step.CrankHelpers > 3 ? 3 : Step.CrankHelpers;
+            const long long Total = State.CrankCarry + static_cast<long long>(Delta) * Helpers * Task.CoopMilliTurnsS * Task.CoopProgressPermille -
+                static_cast<long long>(Task.DecayPermille) * Task.Count * Permille * DecayMs;
+            const int Change = static_cast<int>(Total / DecayUnit);
+            State.CrankCarry = static_cast<int>(Total - static_cast<long long>(Change) * DecayUnit);
+            State.Progress += Change;
+            if (State.Progress <= State.CrankFloor && Total < 0) { State.Progress = State.CrankFloor; State.CrankCarry = 0; }
+            if (State.Progress >= Task.Count * Permille) { State.Progress = Task.Count * Permille; State.CrankCarry = 0; }
+            LatchCrank(State, Task);
+            State.Done = State.Progress / Permille;
         }
         break;
     case EGoal::Escort:
@@ -926,6 +951,7 @@ constexpr ETurn Turn(FTaskState& State, const FTask& Task)
         return ETurn::TooFast;
     const int Full = Task.Count * Permille;
     State.Progress = State.Progress + Permille > Full ? Full : State.Progress + Permille;
+    LatchCrank(State, Task);
     State.Done = State.Progress / Permille;
     return Since > Task.MaxTurnMs ? ETurn::Slow : ETurn::InBand;
 }
@@ -1263,6 +1289,11 @@ constexpr bool PointsValid(int Count)
 constexpr bool TaskValid(const FTask& Task)
 {
     if (Task.CarryGateMs < 0 || Task.CarryGateMs > MaxClockMs || (Task.CarryGateMs > 0 && Task.Task != ETask::Carry)) return false;
+    if (Task.CoopMilliTurnsS < 0 || Task.CoopMilliTurnsS > 10000 || Task.CoopProgressPermille <= 0 || Task.CoopProgressPermille > Permille ||
+        Task.CoopRetreatCm < 0 || Task.CoopRetreatCm > 10000 || Task.RatchetCount < 0 || Task.RatchetCount > 3 ||
+        ((Task.CoopMilliTurnsS > 0 || Task.RatchetCount > 0) && Task.Task != ETask::Crank)) return false;
+    for (int Index = 0; Index < Task.RatchetCount; ++Index)
+        if (Task.Ratchets[Index] <= 0 || Task.Ratchets[Index] >= Permille || (Index > 0 && Task.Ratchets[Index] <= Task.Ratchets[Index-1])) return false;
     const unsigned AllWeapons = (1u << WeaponCount) - 1u;
     if (Task.EquipmentMask == 0u || (Task.EquipmentMask & ~AllWeapons) != 0u) return false;
     if (Task.RecoveryWeapons != 0u)
