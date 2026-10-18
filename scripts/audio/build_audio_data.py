@@ -80,6 +80,18 @@ SITE_RESTORED_BUS = 'Music'
 # Beds the proposal left as one-shots because nothing plays them yet.
 LOOP_EDITS = {'amb.night_insects', 'amb.typhoon', 'amb.festival'}
 ADDED_CUES = [
+    {'id': 'workshop.hammer.cue', 'bus': 'SFX_Telegraph', 'status': 'ready-cc0',
+     'waves': ['CC0/Workshop/cc0_workshop_small_hammer'], 'attenuation': 'foley_short', 'loop': False,
+     'max_instances': 2, 'pitch_cents': [0, 0],
+     'notes': 'Ch05 §2.5: small-hammer cue at the anvil; first cue is a count-in, response due 600 ms later. SFX remains audible with Music at 0.'},
+    {'id': 'workshop.hammer.hit', 'bus': 'SFX_Foley', 'status': 'ready-cc0',
+     'waves': ['CC0/Workshop/cc0_workshop_sledge'], 'attenuation': 'foley_short', 'loop': False,
+     'max_instances': 2, 'pitch_cents': [0, 0],
+     'notes': 'Ch05 §5.6: stronger recorded anvil response on an accepted player/assisted strike, independent of whole-phrase completion.'},
+    {'id': 'workshop.loom.call', 'bus': 'Voice_Barks', 'status': 'needed',
+     'waves': [], 'attenuation': 'foley_short', 'loop': False, 'max_instances': 2, 'pitch_cents': [0, 0],
+     'needs': "A cleared recording of Okinu's rhythmic call; no source voice exists in this repository.",
+     'notes': 'Ch05 §2.5: a voice call every 750 ms. The shuttle/cord visual cue works; no unrelated sound or synthesized impersonation stands in for the missing voice.'},
     {'id': 'weapon.loop.shock_emitter', 'bus': 'SFX_Weapons', 'status': 'ready-own',
      'waves': ['Original/Weapons/wpn_shock_emitter_loop'], 'attenuation': 'weapon_mid', 'loop': True,
      'max_instances': 3, 'notes': 'Sustain loop while the Shock Emitter keeps firing (weapon.fired.shock_emitter).'},
@@ -304,6 +316,11 @@ BINDINGS = {
         rule('ui.slider', {'Sound': 'Slider'}),
         rule('ui.menu.open', {'Sound': 'MenuOpen'}),
         rule('ui.menu.close', {'Sound': 'MenuClose'}),
+    ],
+    'Workshop': [
+        rule('workshop.hammer.cue', {'Action': 'HammerCue'}),
+        rule('workshop.hammer.hit', {'Action': 'HammerHit'}),
+        rule('workshop.loom.call', {'Action': 'LoomCall'}),
     ],
     'Hero': [
         rule('weapon.reload.cell_eject', {'Action': 'ReloadStarted', 'WeaponId': [1, 3, 11, 13, 14, 16, 17]}),

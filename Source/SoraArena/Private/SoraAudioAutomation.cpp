@@ -187,7 +187,7 @@ bool FSoraAudioDataTest::RunTest(const FString& Parameters)
     for (const TCHAR* Family : {TEXT("WeaponFired"), TEXT("MeleeCommitted"), TEXT("StrikeResolved"), TEXT("Guarded"), TEXT("Parried"),
              TEXT("Marobashi"), TEXT("Damaged"), TEXT("Died"), TEXT("Detonated"), TEXT("EnemyCue"), TEXT("SiteRestored"),
              TEXT("ChapterStarted"), TEXT("ChapterCompleted"), TEXT("BossPhase"), TEXT("BeatStarted"), TEXT("BeatCompleted"),
-             TEXT("BeatFailed"), TEXT("Kernel"), TEXT("UI"), TEXT("Hero"), TEXT("Footstep"), TEXT("Horse")})
+             TEXT("BeatFailed"), TEXT("Kernel"), TEXT("UI"), TEXT("Hero"), TEXT("Footstep"), TEXT("Horse"), TEXT("Workshop")})
         TestTrue(*FString::Printf(TEXT("The %s family has its rules"), Family), D->Bindings.Contains(Family));
     UE_LOG(LogTemp, Display, TEXT("SORA_AUDIO_DATA_OK: cues=%d voiced=%d waves=%d class_overrides=%d beats=%d"), D->Cues.Num(), Voiced, Waves,
         Overridden, D->Beats.Num());

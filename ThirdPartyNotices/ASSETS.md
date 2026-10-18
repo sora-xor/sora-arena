@@ -8,7 +8,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 
 | Tier | Records | Files | Bytes recorded |
 |---|---:|---:|---:|
-| PUB-CC0 | 191 | 2569 | 4,584,364,241 |
+| PUB-CC0 | 192 | 2571 | 4,584,606,249 |
 | PUB-BY | 10 | 10 | 206,477,553 |
 | OWN | 11 | 438 | 633,426,930 |
 | REF | 6 | 6 | 9,778,972 |
@@ -93,6 +93,7 @@ These assets are dedicated to the public domain under CC0 1.0 (<https://creative
 | opengameart/rain-long-thunder | Rain + Long Thunder | WuxiaScrub | CC0-1.0 | repository (LFS) | 1 | <https://opengameart.org/content/rain-long-thunder> |
 | opengameart/rain-loopable | Rain (loopable) | Ylmir | CC0-1.0 | repository (LFS) | 2 | <https://opengameart.org/content/rain-loopable> |
 | opengameart/the-free-firearm-sound-library | The Free Firearm Sound Library | Ben Jaszczak, et al. | CC0-1.0 | repository (LFS) | 8 | <https://opengameart.org/content/the-free-firearm-sound-library> |
+| vcsl/Idiophones/Struck Idiophones/Anvil | Anvil | Versilian Studios LLC and VCSL contributors | CC0-1.0 | repository (LFS) | 2 | <https://github.com/sgossner/VCSL/tree/c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e/Idiophones/Struck%20Idiophones/Anvil> |
 
 ### VCSL — Versilian Community Sample Library
 

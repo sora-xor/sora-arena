@@ -1903,8 +1903,8 @@ msgstr "[Small-hammer cue]"
 #. Key:	LoomCue
 #: Source/SoraArena/Private/Game/SoraCampaignRhythm.cpp
 msgctxt "SoraArena.Rhythm,LoomCue"
-msgid "〔お絹の掛け声〕"
-msgstr "[Okinu's call]"
+msgid "〔杼の合図〕"
+msgstr "[Shuttle cue]"
 
 #. Key:	AutoSteer
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp

@@ -292,7 +292,7 @@ void USoraCampaignDirector::ResetRound()
     EndRecoveryClimb();
     ResetCarryWork();
     StopPlayerCrank(false);
-    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1;
+    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1; RhythmStrikeMs=-1;
     // A shell fired before death or chapter advance must never damage the
     // restored encounter or score a defeat against its fresh opponents.
     ClearOfflineProjectiles();
@@ -424,7 +424,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     ResetCarryWork();
     StopPlayerCrank(false);
-    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1;
+    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1; RhythmStrikeMs=-1;
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; ActiveCrankHelpers=0; bCrankHelperRetreating=false; bLiftGallery=false; bDetected=false; CinematicSeconds=0.f;
@@ -479,7 +479,7 @@ void USoraCampaignDirector::RetryBeatInPlace()
     // A lost sparring match starts over where it stands: fresh points, the
     // losses and the forms learned kept, the rival back on the floor.
     StopPlayerCrank(false);
-    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1;
+    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1; RhythmStrikeMs=-1;
     TaskState=SoraBeatRules::RetryTask(TaskState,Task);
     Kills=0; ClearOpponents();
     if(ASoraPlayerCharacter* Player=M.Hero()) Player->Heal(Player->MaxHealth);
