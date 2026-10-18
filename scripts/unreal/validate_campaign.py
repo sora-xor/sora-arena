@@ -57,6 +57,7 @@ from pathlib import Path
 
 from campaign_space import arena_blockers
 from campaign_registry import validate_registry
+from campaign_crank import player_work
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "Content/Data"
@@ -698,6 +699,13 @@ def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
         require(chainages == sorted(chainages), f"{what}: the stakes stand along the road in order")
 
 
+def check_crank_player(beat):
+    def crank_fail(where, message):
+        require(False, f"{where}: {message}")
+    require("crank_player" in beat["task"] and beat["task"]["crank_player"] == player_work(beat, crank_fail),
+            f"{beat['id']}: exact authored player crank contract")
+
+
 def check_dropoff_capacity(beat):
     task, where = beat["task"], beat["id"]
     require("dropoff_capacity" in task, f"{where}: missing drop-off capacity field")
@@ -815,6 +823,7 @@ def validate(catalog, campaign, chapters, legacy, roster):
         # Rules 3 and 5, mechanics, bosses, enemies and rule 7.
         for beat in beats:
             check_dropoff_capacity(beat)
+            check_crank_player(beat)
             unlocks += [(weapon, beat["id"]) for weapon in beat["unlocks"]["weapons"]]
             mechanics += beat["unlocks"]["mechanics"]
             if beat["optional"] and (beat["unlocks"]["weapons"] or beat["unlocks"]["mechanics"]):

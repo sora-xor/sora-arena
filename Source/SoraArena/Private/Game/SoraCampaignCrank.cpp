@@ -7,6 +7,10 @@
 #include "SoraCampaignLift.h"
 #include "SoraGameMode.h"
 #include "EngineUtils.h"
+#include "SoraPlayerCharacter.h"
+#include "SoraEquipmentComponent.h"
+#include "SoraSettings.h"
+#include "SoraViewmodelComponent.h"
 
 int32 USoraCampaignDirector::CrankHelpers()
 {
@@ -44,4 +48,65 @@ int32 USoraCampaignDirector::CrankHelpers()
             ++ActiveCrankHelpers;
     }
     return ActiveCrankHelpers;
+}
+
+bool USoraCampaignDirector::PlayerCrankEligible() const
+{
+    const auto& M=Mode();
+    const auto* Hero=M.Hero();
+    return ActiveBeatData()&&M.bCampaign&&M.IsPlaying()&&!bDialogueHeld&&Hero&&
+        Task.Goal==SoraBeatRules::EGoal::Turns&&!SoraBeatRules::GoalMet(TaskState,Task)&&
+        !Hero->GetEquipment()->IsStaggered()&&!Hero->GetEquipment()->bReloading&&AtWorkAnchor(SoraCampaignReach::Interact);
+}
+bool USoraCampaignDirector::IsWorkingCrank() const
+{
+    return CrankInput.Active&&PlayerCrankEligible()&&Mode().Hero()->IsActionHeld(TEXT("Interact"));
+}
+void USoraCampaignDirector::StopPlayerCrank(bool bWaitForRelease)
+{
+    CrankInput={};
+    if(bWaitForRelease) SoraCrankInputRules::Stop(CrankInput);
+    if(auto* Hero=Mode().Hero()) Hero->GetViewmodel()->SetHiddenInGame(false,true);
+}
+bool USoraCampaignDirector::TurnPlayerCrank(bool bBegin)
+{
+    using SoraBeatRules::ETurn;
+    if(!PlayerCrankEligible()) { StopPlayerCrank(); return false; }
+    if(bBegin&&!SoraCrankInputRules::Begin(CrankInput,true)) return false;
+    auto* Kit=Mode().Hero()->GetEquipment();
+    const auto Turned=SoraBeatRules::PlayerTurn(TaskState,Task,FMath::FloorToInt32(Kit->GuardReserve()));
+    if(Turned.Result==ETurn::Exhausted)
+    {
+        StopPlayerCrank();
+        Notify(TEXT("体力が足りない。手を離して息を整えよう。"),TEXT("Not enough stamina. Release the crank and recover."),3.f);
+        return false;
+    }
+    if(Turned.Result==ETurn::Refused) { StopPlayerCrank(); return false; }
+    Kit->SpendGuard(Turned.Cost);
+    if(Task.CrankTwoHanded)
+    {
+        Kit->Halt(); Kit->DropStance();
+        Mode().Hero()->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands(),true);
+    }
+    const bool bWorked=Turned.Result==ETurn::InBand||Turned.Result==ETurn::Slow;
+    Fire(Turned.Result==ETurn::TooFast?TEXT("rate_band:above"):Turned.Result==ETurn::Slow?TEXT("rate_band:below"):TEXT("rate_band:in"));
+    if(Turned.Result==ETurn::TooFast)
+        Notify(TEXT("急ぎすぎだ。一定の調子で回せ。"),TEXT("Too fast: the crank slips. Keep a steady rhythm."),3.f);
+    if(bWorked) Fire(FString::Printf(TEXT("event:crank_turn_%d"),TaskState.Done));
+    if(SoraBeatRules::GoalMet(TaskState,Task)) StopPlayerCrank();
+    return bWorked;
+}
+void USoraCampaignDirector::TickPlayerCrank(int32 DeltaMs)
+{
+    const auto& M=Mode();
+    const auto* Hero=M.Hero();
+    const int32 Rate=M.Settings()&&M.Settings()->HoldToCrank()?Task.HoldMilliTurnsS:0;
+    if(SoraCrankInputRules::Tick(CrankInput,DeltaMs,Hero&&Hero->IsActionHeld(TEXT("Interact")),PlayerCrankEligible(),Rate))
+    {
+        const int32 DoneBefore=TaskState.Done;
+        if(TurnPlayerCrank(false)&&DoneBefore==0&&TaskState.Done>0)
+            Fire(TEXT("interact_start"));
+        // TickBeat owns UpdateObjective/Progressed and the completion/wave edge.
+    }
+    if(Hero) Hero->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands(),true);
 }

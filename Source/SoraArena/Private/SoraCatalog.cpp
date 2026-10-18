@@ -71,6 +71,17 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Int(O, TEXT("pickup_hold_ms"), T.PickupHoldMs) || T.PickupHoldMs < 0 ||
         !WeaponMask(Rows(O, TEXT("carry_weapons")), T.CarryWeaponsMask))
         return false;
+    const auto PlayerValue = O.TryGetField(TEXT("crank_player"));
+    if (!PlayerValue.IsValid()) return false;
+    if (PlayerValue->Type != EJson::Null)
+    {
+        const auto Player = PlayerValue->Type == EJson::Object ? PlayerValue->AsObject() : nullptr;
+        if (!Player || Player->Values.Num() != 4 ||
+            !Int(*Player, TEXT("stamina_per_turn"), T.StaminaPerTurn) ||
+            !Int(*Player, TEXT("overspeed_cost_multiplier"), T.OverspeedCostMultiplier) ||
+            !Player->TryGetBoolField(TEXT("two_handed"), T.CrankTwoHanded) ||
+            !Int(*Player, TEXT("hold_milliturns_s"), T.HoldMilliTurnsS)) return false;
+    }
     const auto CoopValue = O.TryGetField(TEXT("crank_coop"));
     if (!CoopValue.IsValid()) return false;
     if (CoopValue->Type != EJson::Null)

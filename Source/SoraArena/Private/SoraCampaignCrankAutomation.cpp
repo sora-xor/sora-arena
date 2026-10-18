@@ -5,6 +5,9 @@
 #include "SoraLiftAutomation.h"
 #include "SoraCompanion.h"
 #include "SoraEnemy.h"
+#include "SoraEquipmentComponent.h"
+#include "SoraSettings.h"
+#include "SoraViewmodelComponent.h"
 #include "EngineUtils.h"
 #include "GameFramework/DamageType.h"
 #include "Misc/AutomationTest.h"
@@ -229,6 +232,112 @@ bool FSoraCrankLiftCrewTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Reload stages all three crew members"),W.Fieldcraft()->PeopleInPlay().Num(),3);
     for(const auto& Person:W.Fieldcraft()->PeopleInPlay())
         TestTrue(TEXT("Reload restores the crew's initial availability"),Person->Condition()==SoraFieldcraftRules::EState::Up);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraCrankPlayerCostTest,"SoraArena.Campaign.CrankPlayerCosts",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraCrankPlayerCostTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraCrankAutomation;
+    for(const int32 Chapter:{3,4,6,7})
+    {
+        FBeatWorld W(*this,*FString::Printf(TEXT("CrankEffort%d"),Chapter),Chapter,Chapter==6?6:Chapter==7?10:5);
+        if(!Ready(W)) return false;
+        auto* C=W.Campaign(); auto* Kit=W.Hero()->GetEquipment();
+        const int32 Cost=C->ActiveTask().StaminaPerTurn;
+        Kit->SpendGuard(100.f);
+        C->Interact(*W.Hero());
+        TestEqual(TEXT("Exhausted input makes no progress"),C->TaskProgress().Progress,0);
+        TestEqual(TEXT("Exhausted input does not start the rhythm"),C->TaskProgress().LastActionMs,-1);
+        TestFalse(TEXT("Exhaustion leaves the hands free"),C->IsWorkingCrank());
+        if(!W.Tick(60)) return false;
+        Kit->SpendGuard(Kit->GuardReserve()-Cost);
+        C->Interact(*W.Hero());
+        TestEqual(TEXT("One accepted turn advances one physical turn"),C->TaskProgress().Progress,1000);
+        TestTrue(TEXT("The exact authored cost spends the existing resource"),FMath::IsNearlyZero(Kit->GuardReserve()));
+        const int32 Last=C->TaskProgress().LastActionMs;
+        C->Interact(*W.Hero());
+        TestEqual(TEXT("Overspeed never gains progress"),C->TaskProgress().Progress,1000);
+        TestEqual(TEXT("An immediate overspeed does not move the clock"),C->TaskProgress().LastActionMs,Last);
+        if(!W.Tick(15)) return false;
+        const float Reserve=Kit->GuardReserve();
+        C->Interact(*W.Hero());
+        TestTrue(TEXT("Only bellows overspeed has the authored double charge"),
+            FMath::IsNearlyEqual(Reserve-Kit->GuardReserve(),Cost*C->ActiveTask().OverspeedCostMultiplier));
+        TestEqual(TEXT("Paid or free overspeed still adds no work"),C->TaskProgress().Progress,1000);
+        // The option cannot invent a held cadence on another authored crank.
+        if(Chapter!=6)
+        {
+            W.Mode()->Settings()->SetHoldToCrank(true);
+            if(!W.Tick(180)||!W.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+            const int32 AfterPress=C->TaskProgress().Done;
+            if(!W.Tick(90)||!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1)) return false;
+            TestTrue(TEXT("Un-authored assist adds no repeated turns"),C->TaskProgress().Done<=AfterPress);
+        }
+    }
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraCrankHeldInputTest,"SoraArena.Campaign.CrankHeldInput",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraCrankHeldInputTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraCrankAutomation;
+    FBeatWorld W(*this,TEXT("CrankHeldInput"),6,6);
+    if(!Ready(W)) return false;
+    auto* C=W.Campaign(); auto* Kit=W.Hero()->GetEquipment();
+    const int32 Weapon=W.Hero()->WeaponId;
+    TestFalse(TEXT("Held assist defaults off"),W.Mode()->Settings()->HoldToCrank());
+    if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(120)) return false;
+    TestEqual(TEXT("Ordinary held input makes only its initial turn"),C->TaskProgress().Progress,1000);
+    TestTrue(TEXT("Two hands work only while Interact is held"),C->IsWorkingCrank()&&C->CrankOccupiesHands());
+    TestFalse(TEXT("The working wheel denies weapon actions"),C->ArmsReady(Weapon,0,false));
+    TestTrue(TEXT("The held weapon is hidden without changing its identity"),W.Hero()->GetViewmodel()->bHiddenInGame);
+    TestEqual(TEXT("Working never mutates the selected inventory weapon"),W.Hero()->WeaponId,Weapon);
+    Kit->GuardDown(false,true);
+    TestFalse(TEXT("Two hands cannot simultaneously guard"),Kit->IsGuardHeld());
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1)) return false;
+    TestTrue(TEXT("Release restores weapon permission"),C->ArmsReady(Weapon,0,false));
+    TestFalse(TEXT("Release restores the viewmodel"),W.Hero()->GetViewmodel()->bHiddenInGame);
+    if(!W.Tick(60)) return false;
+    W.Mode()->Settings()->SetHoldToCrank(true);
+    if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(120)) return false;
+    TestEqual(TEXT("Two seconds of assist add the initial turn and one timed turn"),C->TaskProgress().Progress,3000);
+    UGameplayStatics::ApplyDamage(W.Hero(),1.f,nullptr,nullptr,UDamageType::StaticClass());
+    TestTrue(TEXT("A real hit immediately restores weapon permission"),C->ArmsReady(Weapon,0,false));
+    const int32 AfterHit=C->TaskProgress().Progress;
+    if(!W.Tick(120)) return false;
+    TestTrue(TEXT("Keeping the key down after a hit cannot resume work"),C->TaskProgress().Progress<=AfterHit);
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1)||!W.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+    TestTrue(TEXT("A fresh press resumes work"),C->IsWorkingCrank());
+    for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) SoraCrankAutomation::Freeze(**It);
+    Kit->Stagger(.5f);
+    TestFalse(TEXT("Stagger immediately releases two-handed permission"),C->CrankOccupiesHands());
+    if(!W.Tick(60)) return false;
+    TestFalse(TEXT("Recovering from stagger while held cannot resume work"),C->IsWorkingCrank());
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1)||!W.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+    Kit->Reload();
+    TestFalse(TEXT("Reload input cancels active wheel work"),C->IsWorkingCrank());
+    TestTrue(TEXT("Reload input restores weapon permission"),C->ArmsReady(Weapon,0,false));
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(90)||!W.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+    if(!Walk(W,Anchor(W)+FVector(-650,0,0))) return false;
+    TestFalse(TEXT("Walking away frees both hands"),C->CrankOccupiesHands());
+    if(!Walk(W,Anchor(W)+FVector(-180,0,0))) return false;
+    TestFalse(TEXT("Returning with the key held does not restart the wheel"),C->IsWorkingCrank());
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1)||!W.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+    W.Mode()->OpenPauseMenu();
+    TestFalse(TEXT("Menu cancels work"),C->CrankOccupiesHands());
+    W.Mode()->ResumePlay();
+    if(!W.Tick(1)) return false;
+    TestFalse(TEXT("Closing the menu cannot resume a held key"),C->IsWorkingCrank());
+    if(!Reload(W)) return false;
+    TestFalse(TEXT("A fresh-world reload discards held work"),W.Campaign()->IsWorkingCrank());
+    TestEqual(TEXT("Reload retains inventory availability"),W.Hero()->WeaponId,Weapon);
+    TestTrue(TEXT("Reload retains the opted-in accessibility setting"),W.Mode()->Settings()->HoldToCrank());
+    TestEqual(TEXT("Reload resets unfinished crank work"),W.Campaign()->TaskProgress().Progress,0);
     return !HasAnyErrors();
 }
 #endif

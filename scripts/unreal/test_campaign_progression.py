@@ -62,13 +62,16 @@ for gate in ("Record", "CheckpointValid", "CanScoreBout"):
 for gate in ("CompleteBeat", "NextBeat", "FinishChapter", "ProgressValid", "CheckpointValid", "EntryValid",
              "CanStartBeat", "StartTask", "ReleaseWaves", "ReleaseWave", "Tick", "TaskComplete", "Skip",
              "FinishLines", "Reach", "Travel", "RecordDefeat", "ScorePoint", "RecordForms", "OpponentHealth", "WorkObjective",
-             "Turn", "Pickup", "Deliver", "DropCarried", "Stroke", "DamageTarget", "RepairTarget", "OpenCache",
+             "Pickup", "Deliver", "DropCarried", "Stroke", "DamageTarget", "RepairTarget", "OpenCache",
              "Fail", "RetryTask", "ProgressPermille", "CrankSlipping", "PhaseStartPermille", "RepeatForm", "RecordFlank",
              "AwaitsCapture", "Capture", "InPlayWeapons", "InPlayMechanics"):
     assert re.search(rf"SoraBeatRules::{gate}\b", director), f"The campaign director no longer uses tested beat {gate} rule"
 for gate in ("AdvanceChapter", "CampaignLiberated", "CollectibleBit", "CollectiblesValid", "RecordArenaDefeat",
              "RestoreArenaSite", "FinishArena"):
     assert f"SoraCampaignRules::{gate}" in director, f"The campaign director no longer uses tested campaign {gate} gate"
+crank_source = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignCrank.cpp").read_text()
+for gate in ("SoraBeatRules::PlayerTurn", "SoraCrankInputRules::Tick", "Kit->GuardReserve()", "Kit->SpendGuard(Turned.Cost)"):
+    assert gate in crank_source, f"The player crank no longer uses {gate}"
 catalog_loader = (ROOT / "Source/SoraArena/Private/SoraCatalog.cpp").read_text()
 for gate in ("ChapterValid", "TasksValid"):
     assert f"SoraBeatRules::{gate}" in catalog_loader, f"The catalog loader no longer refuses chapters by {gate}"
@@ -147,6 +150,11 @@ def task_fields(task):
     fields.append("ApplyCarryDifficulty(T, 1);")
     if task["carry_gate"]:
         fields.append(f"T.CarryGateMs = {task['carry_gate']['hold_ms']};")
+    if task["crank_player"]:
+        player = task["crank_player"]
+        for member, key in (("StaminaPerTurn", "stamina_per_turn"), ("OverspeedCostMultiplier", "overspeed_cost_multiplier"), ("HoldMilliTurnsS", "hold_milliturns_s")):
+            fields.append(f"T.{member} = {player[key]};")
+        fields.append(f"T.CrankTwoHanded = {flag(player['two_handed'])};")
     if task["crank_coop"]:
         coop = task["crank_coop"]
         fields.append(f"T.CoopCount = {len(coop['npcs'])};")

@@ -49,3 +49,40 @@ def cooperation(beat, fail):
         fail(where, "ratchets must be unique and increasing")
     return {"npcs": npcs, "per_npc_milliturns_s": rate, "progress_permille": mult,
             "suspends_decay": suspend, "retreat_cm": retreat, "ratchets_permille": locks}
+
+
+def player_work(beat, fail):
+    """Player effort and opt-in input; helper rates never spend this resource."""
+    if beat["params"].get("task") != "crank":
+        return None
+    where = beat["id"] + ".crank.player"
+    crank, ext = beat["params"]["crank"], beat["ext"]
+    cost = crank.get("stamina_per_turn")
+    if type(cost) is not int or not 1 <= cost <= 100:
+        fail(where, "stamina_per_turn must be a whole amount from 1 to 100")
+    overspeed, two_handed, hold_rate = 0, False, 0
+    if beat["id"] == "ch05.b06":
+        # Chapter 05 b06 prose and x_flame_gauge.above explicitly charge
+        # double for overspeed, despite the gear making no progress.
+        gauge = ext.get("flame_gauge")
+        if not isinstance(gauge, dict) or gauge.get("above") != "white with sparks + 3 notches; stamina cost x2":
+            fail(where, "bellows overspeed stamina exception must remain explicit")
+        overspeed = 2
+    if cost * overspeed > 100:
+        fail(where, "overspeed cost cannot exceed the stamina reserve")
+    override = ext.get("override")
+    if beat["id"] == "ch07.b07" and override is None:
+        fail(where, "override player contract is required")
+    if override is not None:
+        if not isinstance(override, dict) or beat["id"] != "ch07.b07":
+            fail(where, "unknown player crank override")
+        two_handed = override.get("two_handed")
+        rate = override.get("accessibility_hold_to_crank_turns_s")
+        band = crank["turn_rate_band"]
+        if (two_handed is not True or override.get("loadout_while_cranking") != "none" or
+                override.get("overspeed") != "gear_slip_no_progress" or type(rate) not in (int, float) or
+                not band[0] <= rate <= band[1] or rate != .6):
+            fail(where, "override requires two hands, no loadout, free overspeed and authored 0.6 turns/s assist")
+        hold_rate = round(rate * 1000)
+    return {"stamina_per_turn": cost, "overspeed_cost_multiplier": overspeed,
+            "two_handed": two_handed, "hold_milliturns_s": hold_rate}

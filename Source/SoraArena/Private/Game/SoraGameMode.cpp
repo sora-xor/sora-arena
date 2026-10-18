@@ -118,6 +118,7 @@ void ASoraGameMode::SetMenuOpen(bool bOpen)
     bMenu=bOpen;
     if(bOpen)
     {
+        if(CampaignDirector) CampaignDirector->StopPlayerCrank();
         // Menu time is discarded; practice resumes on a fresh 60 Hz step.
         PracticeDirector->ResetClock();
         // A director that stops play (liberation, a refused practice step)

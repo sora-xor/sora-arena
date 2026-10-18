@@ -166,7 +166,7 @@ These wait for other lanes or later steps and are not claimed:
 - The playthrough strikes bosses and duellists to their phase thresholds with lethal damage and binds captives with E; it does not fight their counterplay (shields, weak points, floors, mutō-dori), which `SoraArena.Boss.*` and the combat trace's Val Amort check. A siege needs no targeting AI (opponents who come within 7 m of a target wear it down). A capture's interaction is worked at the yielded boss, not at a bulkhead lever or the engine's spine, until the level art places them.
 - A horse mesh and animation: no horse is imported into `Content/Generated`, so every horse is the primitive proxy with period tack described above; the lateral amble and every gait cycle need an equine animator. The ch08 charge's League riders and Toranosuke are the same proxies, each with a rider built from primitives. A ride steers itself only while the player's auto-steer setting is on.
 - ch04's ox cart is still a prop at the head of the party (its net and health are the fieldcraft's), and defended pack horses, furnaces and aid tents stay targets rather than characters; repairs mend a quarter of the worst-hit target. Nets, searchlights, the bell, cook-fires, ladders, roofs, stakes and smoke banks are engine shapes; the static ones wear the environment palette's CC0 PBR surfaces (timber, stone, metal, plaster), the net and the smoke bank a flat colour until the VFX lane's systems are wired in.
-- Cooperative cranks in ch04.b06, ch05.b06 and ch07.b07 are implemented with visible helpers, authored contribution rates, the bellows boy's net/free interaction, Kohagi's five-metre retreat to existing cover, and 25/50/75% ratchets. The host tests cover exact rates at multiple frame sizes, decay, waves and reset. `SoraArena.Campaign.CrankCooperation`, `CrankRatchets` and `CrankNets` pass in Unreal at `56b95f3`, with zero errors/warnings. The boy contributes 0.5 × 0.4 = 0.2 turns/s without a decay waiver: the 1% loss of 90 turns is 0.9 turns/s, so idle progress still loses 0.7 turns/s while he helps. ch08.b11 now explicitly gives each named crew member 0.15 turns/s: three available helpers contribute 0.45 against 0.48 turns/s idle loss, for a net slip of 0.03 turns/s. The 0–3 helper rates and checkpoint reset also pass `CrankLiftCrew` in that Unreal run. The physical lift, gallery and cutter contact implementation is described below; its new Unreal fixtures have not run yet. Crank stamina costs, ch07's two-handed loadout/hold-to-crank accessibility input and final helper work animations remain outstanding.
+- Cooperative cranks in ch04.b06, ch05.b06 and ch07.b07 are implemented with visible helpers, authored contribution rates, the bellows boy's net/free interaction, Kohagi's five-metre retreat to existing cover, and 25/50/75% ratchets. The host tests cover exact rates at multiple frame sizes, decay, waves and reset. `SoraArena.Campaign.CrankCooperation`, `CrankRatchets` and `CrankNets` pass in Unreal at `56b95f3`, with zero errors/warnings. The boy contributes 0.5 × 0.4 = 0.2 turns/s without a decay waiver: the 1% loss of 90 turns is 0.9 turns/s, so idle progress still loses 0.7 turns/s while he helps. ch08.b11 now explicitly gives each named crew member 0.15 turns/s: three available helpers contribute 0.45 against 0.48 turns/s idle loss, for a net slip of 0.03 turns/s. The 0–3 helper rates and checkpoint reset also pass `CrankLiftCrew` in that Unreal run. The physical lift, gallery and cutter contact implementation is described below; its new Unreal fixtures have not run yet. Player effort and ch07's input/temporary hand occupation are implemented as described below; their Unreal qualification and final helper work animations remain outstanding.
 - Blocking dialogue input holds and the production registry are implemented; their focused qualification is recorded separately. Diegetic registry presentation and final art, rendered and packaged acceptance remain outstanding.
 - Sequencer cinematics (C9): cinematics are a dollying camera over the place behind the letterboxed card with subtitles.
 - Authored layouts: the spaces are derived by rule. ch01–ch03's authored layout frames are not placed, so ch01's dojo, stable and range stand in separate zones rather than where the script's metres put them, and places are joined by travel cuts rather than walked between; the zones are blockout floors, walls and cover dressed with the imported props (C3 kits and C4 layouts replace them).
@@ -214,3 +214,52 @@ await the integration engine run. Motion/gallery fixtures hold threats
 still to isolate traversal; `LiftEncounters` leaves their AI live. These
 source checks do not establish movement-base, jump, rendered, packaged or
 platform acceptance.
+
+
+### Player crank effort and held input (runtime qualification pending)
+
+`task.crank_player` preserves the exact authored player contract, independently
+of helper rates. The four costs are 6 (ch04.b06), 2 (ch05.b06), 8 (ch07.b07)
+and 5 (ch08.b11); chapter two authors no crank. Sources are the
+`stamina_per_turn` entries in [chapter 04](chapter-04.md),
+[chapter 05](chapter-05.md), [chapter 07](chapter-07.md) and
+[chapter 08](chapter-08.md). Chapter 05 §2.2's b06 bellows flame-gauge table and
+b06 `x_flame_gauge.above` explicitly charge ×2 for overspeed without progress:
+that attempt costs 4. Other slips, completed goals and rejected turns cost
+nothing. Insufficient reserve changes neither progress nor the rhythm's
+last-action time, and never spends a partial cost. All player costs use the
+existing equipment guard-stamina owner; its existing regeneration is unchanged.
+Helper contributions never consume or depend on the player's reserve.
+
+Chapter 07 §2.3's “Override wheel” and b07 `x_override` specify two hands,
+`loadout_while_cranking: none`, and the optional 0.6 turns/s cadence. The saved
+**Hold to crank** accessibility setting defaults off and applies only to this
+authored wheel. An initial Interact press still attempts one ordinary turn;
+while held, integer phase schedules 0.6 additional attempts/s through the same
+rate-band and stamina admission. Ordinary held input does not repeat. A long
+frame issues at most one attempt and discards extra backlog, so it cannot
+burst through the rate band. Real Interact mappings cover keyboard and pad.
+
+Active two-handed work temporarily denies weapon use/equipping/guard and
+hides the viewmodel, without changing the inventory or selected weapon.
+Release, leaving the work anchor, a hit, stagger, reload input, menu/dialogue,
+goal completion, beat transition, retry and fresh-world load end that
+permission restriction. Hits, leaving, stagger, reload and menus require a
+release and fresh press before work can resume; standing near the wheel with
+Interact already held never starts it. The lift uses its actual deck/base
+eligibility. No hand animation or new stamina regeneration rule is claimed.
+
+Host data and compiled rules tests cover all four exact costs, affordable and
+unaffordable bellows overspeed, completed/refused/slow turns, exhausted
+resource, 0.6/s at 1–500 ms frame sizes, release/interruption/reset, no implicit
+assist on other cranks, and independent helper work. Gameplay/tooling source
+checks passed 32/32; all 23 gameplay gates passed again after the final narrow
+interruption/validation review (seven crank data tests and all 133 authored
+tasks). Reports are under `Saved/SourceChecks/crank-player-work` and
+`Saved/SourceChecks/crank-player-work-final` in the producing worktree. `SoraArena.Campaign.CrankPlayerCosts`,
+`CrankHeldInput`, and the expanded `SoraArena.UI.SettingsPersist` fixture are
+prepared for the root Unreal lane and have not been run here. The existing
+cooperation, ratchet, bellows-net, lift and full campaign suites should accompany
+them. No UE build, render, packaged or performance result is claimed. The
+bellows' distinct alternating left/right tread controls and flame-gauge
+presentation are outside this stamina/input slice.

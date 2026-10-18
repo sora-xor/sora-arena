@@ -106,6 +106,7 @@ float USoraEquipmentComponent::MoveScale(bool bSprinting) const
 }
 void USoraEquipmentComponent::Stagger(float Seconds)
 {
+    if(auto* Campaign=HeroCampaign(*Hero())) Campaign->StopPlayerCrank();
     const float Until=GetWorld()->GetTimeSeconds()+Seconds;
     StaggeredUntil=FMath::Max(StaggeredUntil,Until);
     bGuardHeld=false; bBowDrawing=false; bFireHeld=false;
@@ -491,11 +492,13 @@ void USoraEquipmentComponent::ReleaseBow()
 void USoraEquipmentComponent::Reload()
 {
     ASoraPlayerCharacter* H=Hero();
+    if(auto* Campaign=HeroCampaign(*H)) Campaign->StopPlayerCrank();
     if(!H->CanPlay()||bReloading) return; const auto& W=FSoraCatalog::Get().Weapon(H->WeaponId);
     if(W.Kind==TEXT("melee")||Ammo>=W.Magazine) return; bReloading=true; ReloadEnd=GetWorld()->GetTimeSeconds()+W.Reload;
 }
 void USoraEquipmentComponent::GuardDown(bool bDojo,bool bCampaignHero)
 {
+    if(auto* Campaign=HeroCampaign(*Hero()); Campaign&&Campaign->CrankOccupiesHands()) return;
     const bool bCampaignBlade=bCampaignHero&&SoraHistoricalArms::IsMelee(Hero()->WeaponId)&&
         !bCommittedStrike&&!(bHistoricalRecovery&&GetWorld()->GetTimeSeconds()<NextShot)&&!IsStaggered()&&
         GuardStamina>=SoraCombatRules::MinimumGuardStamina;
