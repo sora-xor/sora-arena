@@ -516,6 +516,7 @@ void USoraCampaignDirector::CompleteActiveBeat()
             Tell(FSoraStoryNotice::EKind::Mechanic,TEXT("新たな技：")+FSoraCatalog::Get().MechanicLabels[Bit].Japanese,
                 TEXT("New skill: ")+FSoraCatalog::Get().MechanicLabels[Bit].English);
     if(!Japanese.IsEmpty()) Notify(Japanese,English,8.f);
+    TellRegistry(Index);
     Collect(Index);
     Fire(TEXT("beat_complete"));
     BroadcastBeat(false,false);
@@ -603,7 +604,10 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     ASoraGameMode& M=Mode();
     if(!M.bMenu)
     {
-        for(FSoraStoryNotice& Notice:Notices) Notice.Remaining-=DeltaTime;
+        for(FSoraStoryNotice& Notice:Notices)
+            // A newly recorded entry waits through the following cinematic,
+            // when the title-card path does not draw story notices.
+            if(Notice.Kind!=FSoraStoryNotice::EKind::Registry||M.InputState()!=SoraInput::Card) Notice.Remaining-=DeltaTime;
         Notices.RemoveAll([](const FSoraStoryNotice& Notice) { return Notice.Remaining<=0.f; });
     }
     const FSoraBeat* Beat=ActiveBeatData();

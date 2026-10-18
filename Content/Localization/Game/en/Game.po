@@ -1022,6 +1022,7 @@ msgid "猫柳生、解放"
 msgstr "Nyaagyu liberated"
 
 #. Key:	Result.Next
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
 #: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
 msgctxt "SoraArena.HUD,Result.Next"
 msgid "{Enter}  続ける    |    {Menu}  メニュー"
@@ -1838,6 +1839,54 @@ msgstr "Heavy precision shot; low capacity and long recovery."
 msgctxt "SoraArena.Menu,Tradeoff.ShockEmitter"
 msgid "間近の敵を強く抑えるが、射程は短い。"
 msgstr "Strong close control; short range."
+
+#. Key:	Inspected
+#: Source/SoraArena/Private/Game/SoraCampaignRegistry.cpp
+msgctxt "SoraArena.Registry,Inspected"
+msgid "三者改め・割符"
+msgstr "Three-party inspection · Split tally"
+
+#. Key:	Inspector
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
+msgctxt "SoraArena.Registry,Inspector"
+msgid "改め役"
+msgstr "Inspector"
+
+#. Key:	Maker
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
+msgctxt "SoraArena.Registry,Maker"
+msgid "作り手"
+msgstr "Maker"
+
+#. Key:	Notice
+#: Source/SoraArena/Private/Game/SoraCampaignRegistry.cpp
+msgctxt "SoraArena.Registry,Notice"
+msgid "生産改帳：{Goods}"
+msgstr "Production registry: {Goods}"
+
+#. Key:	Receiver
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
+msgctxt "SoraArena.Registry,Receiver"
+msgid "受け手"
+msgstr "Receiver"
+
+#. Key:	Recorded
+#: Source/SoraArena/Private/Game/SoraCampaignRegistry.cpp
+msgctxt "SoraArena.Registry,Recorded"
+msgid "記帳済み"
+msgstr "Recorded"
+
+#. Key:	Returned
+#: Source/SoraArena/Private/Game/SoraCampaignRegistry.cpp
+msgctxt "SoraArena.Registry,Returned"
+msgid "返還のみ記帳・札は切らず"
+msgstr "Recorded as returned. No tally cut."
+
+#. Key:	Title
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
+msgctxt "SoraArena.Registry,Title"
+msgid "生産改帳"
+msgstr "Production registry"
 
 #. Key:	AutoSteer
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp

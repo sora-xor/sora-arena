@@ -35,3 +35,27 @@ TArray<FSoraRegistryRow> USoraCampaignDirector::RegistryRows() const
     return Chapter && Mode().bCampaign && !Mode().bDeterministicPractice ?
         SoraRegistry::Completed(*Chapter, ChapterId, BeatState.CompletedMask) : TArray<FSoraRegistryRow>();
 }
+SoraText::FLine SoraRegistry::Status(ESoraRegistryState State)
+{
+    if(State==ESoraRegistryState::Returned)
+        return SoraText::Line(NSLOCTEXT("SoraArena.Registry","Returned","返還のみ記帳・札は切らず"));
+    if(State==ESoraRegistryState::Inspected)
+        return SoraText::Line(NSLOCTEXT("SoraArena.Registry","Inspected","三者改め・割符"));
+    return SoraText::Line(NSLOCTEXT("SoraArena.Registry","Recorded","記帳済み"));
+}
+void USoraCampaignDirector::TellRegistry(int32 CompletedBeat)
+{
+    const FSoraChapter* Chapter=ActiveChapter();
+    if(!Chapter||!Chapter->Beats.IsValidIndex(CompletedBeat)) return;
+    const FString& Id=Chapter->Beats[CompletedBeat].Id;
+    for(const FSoraRegistryRow& Row:RegistryRows())
+    {
+        // The first inspection changes three existing entries; it creates no
+        // goods. A later delivery or posting with no registry writes nothing.
+        if(Row.BeatId!=Id&&Id!=TEXT("ch05.b12")) continue;
+        const SoraText::FLine Heading=SoraText::Format(NSLOCTEXT("SoraArena.Registry","Notice","生産改帳：{Goods}"),
+            {{TEXT("Goods"),{Row.Entry.Japanese(),Row.Entry.English()}}});
+        const SoraText::FLine Detail=SoraRegistry::Status(Row.State);
+        Tell(FSoraStoryNotice::EKind::Registry,Heading.Japanese,Heading.English,Detail.Japanese,Detail.English);
+    }
+}

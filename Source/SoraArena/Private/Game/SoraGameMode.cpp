@@ -165,6 +165,9 @@ bool ASoraGameMode::ContinueCampaign()
         CampaignDirector->ResumeSavedChapter();
         ResetRound();
     }
+    // Continuing a saved completion reopens its chapter registry. The next
+    // Enter on that result advances; resuming from the menu must not skip it.
+    if(bChapterComplete) { SetMenuOpen(false); return true; }
     BeginRound();
     return !bMenu;
 }
