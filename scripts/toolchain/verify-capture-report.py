@@ -100,7 +100,12 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         "SORA_REGISTRY_FIXTURE_FRAME": ("SoraCapture.RegistryFixture.", "completed-save registry UI fixture; not playthrough evidence"),
         "SORA_WEAPON_HUD_FIXTURE_FRAME": ("SoraCapture.WeaponHUDFixture.", "prepared gameplay UI fixture; not playthrough evidence"),
     }
-    names = re.findall(r"(" + "|".join(kinds) + r") ([^\r\n]+)", log)
+    # Failed automation replays captured log events through
+    # LogAutomationController, appending " [log]". Those are not new frame
+    # acknowledgements. Accept only the original UE_LOG(LogTemp, Display)
+    # records, with the optional engine timestamp/frame-number prefix.
+    names = re.findall(r"^(?:\[[^\]\r\n]*\])*[ \t]*LogTemp: Display: ("
+                       + "|".join(kinds) + r") ([^\r\n]+\.png)[ \t]*$", log, re.MULTILINE)
     for marker, (prefix, _) in kinds.items():
         if not any(kind == marker for kind, _ in names) and any(
                 test.get("fullTestPath", "").startswith(prefix) for test in report.get("tests", [])):
