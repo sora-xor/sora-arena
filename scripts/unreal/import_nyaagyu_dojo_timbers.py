@@ -1,20 +1,24 @@
-"""Import the Tsumagizaka dojo hall's unique timbers: Nanite with an SM5 fallback.
+"""Import the dojo halls' timber columns: one Nanite log per placement, a baked SM5 pool.
 
 Run: scripts/toolchain/run-editor-script.sh scripts/unreal/import_nyaagyu_dojo_timbers.py NYAAGYU_DOJO_TIMBERS_READY
 
-Reads the kit manifest written by scripts/art/create_nyaagyu_dojo_timbers.py
-(SORA_TIMBERS_DIR, default Saved/DojoTimbers/manifest.json) and, per member:
+Reads Content/SourceArt/Environment/NyaagyuDojoTimbers/manifest.json (written by
+scripts/art/create_nyaagyu_dojo_timbers.py) and the local evidence that the
+dense meshes in Local/ArtCache/NyaagyuDojoTimbers were rebuilt to the
+manifest's canonical geometry digests (the generator's build or --verify run).
+Without matching evidence nothing is imported.
 
-* imports the fallback FBX as the static mesh. Its LOD0 is what METAL_SM5
-  (M1) and every non-Nanite path draws. Nanite is enabled; UVs are full
-  precision, because the log frame in UV2 needs sub-millimetre steps; vertex
-  colours replace; degenerate removal is off so check walls survive;
-* attaches the dense FBX as the Nanite hi-res source
-  (StaticMeshEditorSubsystem.import_nanite_hi_res_mesh), so SM6 draws the real
-  timber while the fallback stays exactly the mesh its maps were baked for;
-* imports the baked maps T_<member>_NormalDX and T_<member>_Masks (UV1);
-* creates MI_<member> of M_SoraTimber (baked maps) whose Nanite override is
-  MI_<member>_Nanite of M_SoraTimberNanite (vertex masks, no bake).
+* Placements (SM6): each dense FBX becomes SM_DojoTimberColumn_<rect>_S<side>_B<bay>
+  with Nanite on and Unreal's generated fallback, bound to an instance of
+  M_SoraTimberNanite (ring field, vertex masks). HallInterior draws them where
+  Nanite runs.
+* Pool (SM5, MAC tier): each committed fallback FBX becomes
+  SM_DojoTimberColumn_MAC_<Wall|Open>_NN, a conventional mesh (Nanite off), with
+  its baked T_*_NormalDX and T_*_Masks on UV1 through an instance of
+  M_SoraTimber.
+
+Both import with full-precision UVs (the log frame in UV2 needs sub-millimetre
+steps), vertex colours replaced and degenerate removal off (check walls).
 
 Both masters compute growth rings from the log frame (UV2: offset from the pith
 in metres; UV3: height along the pith and a per-log seed), the same model as
@@ -42,7 +46,8 @@ from sora_engine_pin import require_running_engine  # noqa: E402
 
 require_running_engine("Nyaagyu dojo timbers import")
 ROOT = Path(unreal.Paths.project_dir()).resolve()
-KIT = Path(os.environ.get("SORA_TIMBERS_DIR", str(ROOT / "Saved/DojoTimbers")))
+KIT = ROOT / "Content/SourceArt/Environment/NyaagyuDojoTimbers"
+CACHE = Path(os.environ.get("SORA_ART_CACHE", str(ROOT / "Local/ArtCache"))) / "NyaagyuDojoTimbers"
 DEST = "/Game/Generated/Environment/DojoTimbers"
 TEX = f"{DEST}/Textures"
 
@@ -192,6 +197,7 @@ def timber_master(name, shared, fallback: bool):
     m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_CLEAR_COAT)
     m.set_editor_property("tangent_space_normal", False)
     m.set_editor_property("used_with_nanite", True)
+    m.set_editor_property("used_with_instanced_static_meshes", True)
     g = Graph(m)
     uvq = g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=2)
     uvz = g.n(unreal.MaterialExpressionTextureCoordinate, coordinate_index=3)
@@ -241,12 +247,12 @@ def timber_master(name, shared, fallback: bool):
     late_c = g.color("LateColor", (0.040, 0.020, 0.012))
     early = g.lerp(early_c, g.op(unreal.MaterialExpressionMultiply, early_c, 0.88), g.op(unreal.MaterialExpressionMultiply, f, 0.5))
     base = g.lerp(early, late_c, lw)
-    tone = g.op(unreal.MaterialExpressionAdd, g.const(0.74),
+    tone = g.op(unreal.MaterialExpressionAdd, g.const(0.68),
                 g.op(unreal.MaterialExpressionAdd,
                      g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, year, 0.12),
                           g.op(unreal.MaterialExpressionMultiply, fib, 0.12)),
                      g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, streak, 0.12),
-                          g.op(unreal.MaterialExpressionMultiply, drift, 0.22))))
+                          g.op(unreal.MaterialExpressionMultiply, drift, 0.34))))
     base = g.op(unreal.MaterialExpressionMultiply, base, tone)
     # Masks: baked (fallback, UV1) or vertex colours (Nanite).
     if fallback:
@@ -256,25 +262,32 @@ def timber_master(name, shared, fallback: bool):
     else:
         vc = g.n(unreal.MaterialExpressionVertexColor)
         cav, wear, soot, knot = (g.mask(vc, c) for c in ("r", "g", "b", "a"))
+    # Wear: below 0.5 the hand's grime and polish (darker, glossier), above
+    # 0.5 the lacquer rubbed through on the arris (lighter, bare wood).
+    grime = g.one(unreal.MaterialExpressionSaturate, g.op(unreal.MaterialExpressionMultiply, wear, 2.0))
+    edge = g.one(unreal.MaterialExpressionSaturate,
+                 g.op(unreal.MaterialExpressionSubtract, g.op(unreal.MaterialExpressionMultiply, wear, 2.0), 1.0))
     base = g.lerp(base, g.color("KnotColor", (0.016, 0.008, 0.005)), g.op(unreal.MaterialExpressionMultiply, knot, 0.92))
     base = g.lerp(base, g.color("SootColor", (0.012, 0.010, 0.009)),
                   g.op(unreal.MaterialExpressionMultiply, soot, g.scalar("SootAmount", 0.55)))
+    base = g.lerp(base, g.op(unreal.MaterialExpressionMultiply, early_c, 0.62),
+                  g.op(unreal.MaterialExpressionMultiply, grime, 0.55))
     base = g.lerp(base, g.color("WornColor", (0.15, 0.09, 0.05)),
-                  g.op(unreal.MaterialExpressionMultiply, wear, g.scalar("WearColorAmount", 0.45)))
+                  g.op(unreal.MaterialExpressionMultiply, edge, g.scalar("WearColorAmount", 0.45)))
     base = g.lerp(base, g.const(0.0), g.op(unreal.MaterialExpressionMultiply, cav, 0.65))
     lib.connect_material_property(base, "", unreal.MaterialProperty.MP_BASE_COLOR)
     rough = g.op(unreal.MaterialExpressionAdd, g.scalar("Roughness", 0.55),
                  g.op(unreal.MaterialExpressionAdd,
                       g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, lw, 0.06),
                            g.op(unreal.MaterialExpressionMultiply, soot, 0.15)),
-                      g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, wear, -0.12),
+                      g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, edge, -0.12),
                            g.op(unreal.MaterialExpressionMultiply, g.op(unreal.MaterialExpressionSubtract, fib, 0.5), 0.12))))
     lib.connect_material_property(g.one(unreal.MaterialExpressionSaturate, rough), "", unreal.MaterialProperty.MP_ROUGHNESS)
     lib.connect_material_property(g.scalar("ClearCoat", 1.0), "", unreal.MaterialProperty.MP_CUSTOM_DATA0)
     ccr = g.op(unreal.MaterialExpressionAdd, g.scalar("ClearCoatRoughness", 0.17),
                g.op(unreal.MaterialExpressionAdd,
                     g.op(unreal.MaterialExpressionAdd, g.op(unreal.MaterialExpressionMultiply, soot, 0.16),
-                         g.op(unreal.MaterialExpressionMultiply, wear, -0.08)),
+                         g.op(unreal.MaterialExpressionMultiply, grime, -0.08)),
                     g.op(unreal.MaterialExpressionMultiply, g.op(unreal.MaterialExpressionSubtract, streak, 0.5), 0.10)))
     lib.connect_material_property(g.one(unreal.MaterialExpressionSaturate, ccr), "", unreal.MaterialProperty.MP_CUSTOM_DATA1)
     # Normal: ridge + fibre height (metres -> cm) as a surface-gradient bump.
@@ -314,7 +327,7 @@ def instance(name, parent):
     return mi
 
 
-def fbx_options():
+def fbx_options(nanite: bool):
     options = unreal.FbxImportUI()
     options.import_mesh = True
     options.import_materials = False
@@ -328,24 +341,28 @@ def fbx_options():
     data.remove_degenerates = False
     data.vertex_color_import_option = unreal.VertexColorImportOption.REPLACE
     data.normal_import_method = unreal.FBXNormalImportMethod.FBXNIM_IMPORT_NORMALS
-    data.set_editor_property("build_nanite", True)
+    data.set_editor_property("build_nanite", nanite)
     return options
 
 
-def import_member(rec, parents, shared):
-    name = rec["asset"]
-    fallback = ROOT / rec["fallback_fbx"]
-    dense = ROOT / rec["fbx"]
-    require(fallback.is_file() and sha(fallback) == rec["fallback_fbx_sha256"], f"{name}: fallback FBX changed")
-    require(dense.is_file() and sha(dense) == rec["fbx_sha256"], f"{name}: dense FBX missing or changed (rebuild with the generator)")
+def verified(path: Path, digest: str, evidence: dict, label: str):
+    """The file is the one the generator's build/--verify run wrote for ``digest``."""
+    rel = path.relative_to(ROOT).as_posix()
+    entry = evidence["fbx"].get(rel)
+    require(entry is not None, f"{label}: no rebuild evidence for {rel} (run the generator, or its --verify)")
+    require(entry["digest"] == digest, f"{label}: rebuilt geometry digest differs from the manifest")
+    require(path.is_file() and sha(path) == entry["sha256"], f"{label}: {rel} is not the file that run wrote")
+
+
+def import_mesh(fbx: Path, name: str, nanite: bool):
     task = unreal.AssetImportTask()
-    task.filename = str(fallback)
+    task.filename = str(fbx)
     task.destination_path = DEST
     task.destination_name = name
     task.automated = True
     task.replace_existing = True
     task.save = True
-    task.options = fbx_options()
+    task.options = fbx_options(nanite)
     tools.import_asset_tasks([task])
     mesh = assets.load_asset(f"{DEST}/{name}")
     require(isinstance(mesh, unreal.StaticMesh), f"{name}: import failed")
@@ -357,34 +374,63 @@ def import_member(rec, parents, shared):
     build.set_editor_property("recompute_tangents", True)
     build.set_editor_property("use_mikk_t_space", True)
     meshes.set_lod_build_settings(mesh, 0, build)
-    nanite = mesh.get_editor_property("nanite_settings")
-    nanite.set_editor_property("enabled", True)
-    mesh.set_editor_property("nanite_settings", nanite)
-    require(meshes.import_nanite_hi_res_mesh(mesh, str(dense), False), f"{name}: Nanite hi-res import failed")
-    maps = {}
-    for kind in ("NormalDX", "Masks"):
-        path = ROOT / rec["fallback_maps"][kind]["file"]
-        require(path.is_file() and sha(path) == rec["fallback_maps"][kind]["sha256"], f"{name}: {kind} changed")
-        maps[kind] = import_texture(path, path.stem, "Normal" if kind == "NormalDX" else "Masks")
-    mi = instance(f"MI_{name}", parents["base"])
-    mi_n = instance(f"MI_{name}_Nanite", parents["nanite"])
-    for target in (mi, mi_n):
-        lib.set_material_instance_scalar_parameter_value(target, "RingWidth", rec["ring_width_m"])
-    lib.set_material_instance_texture_parameter_value(mi, "NormalMap", maps["NormalDX"])
-    lib.set_material_instance_texture_parameter_value(mi, "MasksMap", maps["Masks"])
-    override = mi.get_editor_property("nanite_override_material")
-    override.set_editor_property("override_material_editor", mi_n)
-    mi.set_editor_property("nanite_override_material", override)
-    assets.save_loaded_asset(mi_n)
+    settings = mesh.get_editor_property("nanite_settings")
+    settings.set_editor_property("enabled", nanite)
+    if nanite:
+        # Unreal's fallback for the rare non-Nanite pass; SM5 draws the pool.
+        settings.set_editor_property("fallback_target", unreal.NaniteFallbackTarget.RELATIVE_ERROR)
+        settings.set_editor_property("fallback_relative_error", 1.0)
+    mesh.set_editor_property("nanite_settings", settings)
+    return mesh
+
+
+def import_placement(rec, parent, evidence):
+    name = rec["asset"]
+    fbx = ROOT / rec["cache_fbx"]
+    verified(fbx, rec["digest"], evidence, name)
+    mesh = import_mesh(fbx, name, True)
+    mi = instance(f"MI_{name}", parent)
+    lib.set_material_instance_scalar_parameter_value(mi, "RingWidth", rec["ring_width_m"])
     assets.save_loaded_asset(mi)
     mesh.set_material(0, mi)
     assets.save_loaded_asset(mesh)
     return name, rec["triangles"]
 
 
+def import_pool(rec, parent, evidence):
+    name = rec["asset"]
+    fbx = ROOT / rec["fallback_fbx"]
+    require(fbx.is_file() and sha(fbx) == rec["fallback_fbx_sha256"], f"{name}: committed fallback FBX changed")
+    verified(fbx, rec["digest"], evidence, name)
+    mesh = import_mesh(fbx, name, False)
+    maps = {}
+    for kind in ("NormalDX", "Masks"):
+        path = ROOT / rec["fallback_maps"][kind]["file"]
+        require(path.is_file() and sha(path) == rec["fallback_maps"][kind]["sha256"], f"{name}: {kind} changed")
+        maps[kind] = import_texture(path, path.stem, "Normal" if kind == "NormalDX" else "Masks")
+    mi = instance(f"MI_{name}", parent)
+    lib.set_material_instance_scalar_parameter_value(mi, "RingWidth", rec["ring_width_m"])
+    lib.set_material_instance_texture_parameter_value(mi, "NormalMap", maps["NormalDX"])
+    lib.set_material_instance_texture_parameter_value(mi, "MasksMap", maps["Masks"])
+    assets.save_loaded_asset(mi)
+    mesh.set_material(0, mi)
+    assets.save_loaded_asset(mesh)
+    return name, rec["fallback_triangles"]
+
+
+def load_kit(folder: Path, cache: Path):
+    """A kit manifest whose generator and inputs are unchanged, with clean rebuild evidence."""
+    manifest = json.loads((folder / "manifest.json").read_text())
+    require(manifest["generator_sha256"] == sha(ROOT / manifest["generator"]), f"{folder.name}: generator changed")
+    for rel, digest in manifest["inputs"].items():
+        require(sha(ROOT / rel) == digest, f"{folder.name}: generator input {rel} changed since the build")
+    evidence = json.loads((cache / "evidence.json").read_text())
+    require(not evidence.get("digest_mismatches"), f"{folder.name}: rebuild evidence reports mismatches")
+    return manifest, evidence
+
+
 def main():
-    manifest = json.loads((KIT / "manifest.json").read_text())
-    require(manifest["generator_sha256"] == sha(ROOT / manifest["generator"]), "generator changed since the build")
+    manifest, evidence = load_kit(KIT, CACHE)
     assets.make_directory(TEX)
     shared = {}
     for kind, entry in manifest["shared_textures"].items():
@@ -393,12 +439,23 @@ def main():
         shared[kind] = import_texture(path, path.stem, entry["kind"])
     shared["DefaultNormal"] = assets.load_asset("/Engine/EngineMaterials/DefaultNormal")
     shared["DefaultMasks"] = assets.load_asset("/Engine/EngineResources/Black")
-    parents = {"base": timber_master("M_SoraTimber", shared, True),
-               "nanite": timber_master("M_SoraTimberNanite", shared, False)}
-    done = [import_member(rec, parents, shared) for rec in manifest["members"]]
+    base = timber_master("M_SoraTimber", shared, True)
+    nanite = timber_master("M_SoraTimberNanite", shared, False)
+    pool = [import_pool(rec, base, evidence) for rec in manifest["pool"]]
+    placed = [import_placement(rec, nanite, evidence) for rec in manifest["placements"]]
+    report = [f"columns: {len(placed)} placement logs ({manifest['coverage']['with_own_log']} of "
+              f"{manifest['coverage']['estate_placements']} estate placements), {len(pool)} pool"]
+    triangles = sum(t for _, t in placed)
+    # The bay rails (create_nyaagyu_dojo_rails.py), when built: same two sets.
+    if (KIT / "Rails/manifest.json").is_file():
+        rails, rail_evidence = load_kit(KIT / "Rails", CACHE / "Rails")
+        rail_pool = [import_pool(rec, base, rail_evidence) for rec in rails["pool"]]
+        rail_placed = [import_placement(rec, nanite, rail_evidence) for rec in rails["placements"]]
+        triangles += sum(t for _, t in rail_placed)
+        report.append(f"rails: {len(rail_placed)} placement logs ({rails['coverage']['with_own_log']} of "
+                      f"{rails['coverage']['estate_rail_placements']}), {len(rail_pool)} pool")
     assets.save_directory(DEST, only_if_is_dirty=False, recursive=True)
-    unreal.log(f"NYAAGYU_DOJO_TIMBERS_READY: {len(done)} members: "
-               + ", ".join(f"{n}[{t} tris]" for n, t in done))
+    unreal.log(f"NYAAGYU_DOJO_TIMBERS_READY: {'; '.join(report)}; {triangles} Nanite source triangles")
 
 
 main()

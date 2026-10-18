@@ -3,7 +3,7 @@
 The fallback (``sora_timber_lib.fallback_of``) carries the macro shape; this
 bakes what only the dense mesh has into the fallback's UV1 atlas:
 
-* ``NormalDX``: tangent-space normals (DirectX green, 16-bit), the checks,
+* ``NormalDX``: tangent-space normals (DirectX green, 8-bit), the checks,
   dents, plane strokes, adze scoops, knot swell and arris detail. Tangents come
   from UV1, whose islands keep UV0's orientation (U along the perimeter, V
   along the member), so Unreal's UV0 MikkTSpace frame agrees.
@@ -115,17 +115,6 @@ def bake_fallback(dense, coarse, out_dir: Path, name: str, res=2048, extrusion=0
     keep_dense = list(dense.data.materials)
     keep_coarse = list(coarse.data.materials)
     out = {}
-    # Normals.
-    nimg = _image(f"{name}_Normal", res, True, "Non-Color")
-    _bake_target_material(coarse, nimg)
-    _select(dense, coarse)
-    bake.normal_space = "TANGENT"
-    bpy.ops.object.bake(type="NORMAL", normal_space="TANGENT", use_selected_to_active=True,
-                        cage_extrusion=extrusion, max_ray_distance=ray, margin=16)
-    n = _pixels(nimg)
-    n[..., 1] = 1.0 - n[..., 1]          # OpenGL (Blender) -> DirectX (Unreal) green
-    n[..., 3] = 1.0
-    out["NormalDX"] = _save(n, out_dir / f"T_{name}_NormalDX.png", 16)
     # Masks: RGB then alpha, each as emission from the dense mesh's colours.
     masks = np.zeros((res, res, 4), np.float32)
     for source in ("rgb", "alpha"):
@@ -137,14 +126,42 @@ def bake_fallback(dense, coarse, out_dir: Path, name: str, res=2048, extrusion=0
         bpy.ops.object.bake(type="EMIT", use_selected_to_active=True, cage_extrusion=extrusion,
                             max_ray_distance=ray, margin=16)
         p = _pixels(img)
+        bpy.data.images.remove(img)
         if source == "rgb":
             masks[..., :3] = p[..., :3]
         else:
             masks[..., 3] = p[..., 0]
-    out["Masks"] = _save(np.clip(masks, 0, 1), out_dir / f"T_{name}_Masks.png", 8)
+    masks = np.clip(masks, 0, 1)
+    out["Masks"] = _save(masks, out_dir / f"T_{name}_Masks.png", 8)
     dense.data.materials.clear()
     for m in keep_dense:
         dense.data.materials.append(m)
+    # Normals.
+    nimg = _image(f"{name}_Normal", res, True, "Non-Color")
+    _bake_target_material(coarse, nimg)
+    _select(dense, coarse)
+    bake.normal_space = "TANGENT"
+    bpy.ops.object.bake(type="NORMAL", normal_space="TANGENT", use_selected_to_active=True,
+                        cage_extrusion=extrusion, max_ray_distance=ray, margin=16)
+    n = _pixels(nimg)
+    bpy.data.images.remove(nimg)
+    # Both meshes carry the checks as geometry, at different resolutions; what
+    # the bake records inside a crack is the coarse groove's facets, not detail.
+    # Flatten it there (the fallback's own groove shades the crack, the baked
+    # cavity darkens it), feathered over the band the groove's samples cover.
+    crack = (masks[..., 0] > 0.25).astype(np.float32)
+    for _ in range(3):
+        crack = np.maximum.reduce([crack, np.roll(crack, 1, 0), np.roll(crack, -1, 0),
+                                   np.roll(crack, 1, 1), np.roll(crack, -1, 1)])
+    feather = crack.copy()
+    for _ in range(2):
+        feather = (feather + np.roll(feather, 1, 0) + np.roll(feather, -1, 0) + np.roll(feather, 1, 1)
+                   + np.roll(feather, -1, 1)) / 5.0
+    flat = np.array([0.5, 0.5, 1.0], np.float32)
+    n[..., :3] = n[..., :3] * (1.0 - feather[..., None]) + flat * feather[..., None]
+    n[..., 1] = 1.0 - n[..., 1]          # OpenGL (Blender) -> DirectX (Unreal) green
+    n[..., 3] = 1.0
+    out["NormalDX"] = _save(n, out_dir / f"T_{name}_NormalDX.png", 8)   # BC5 keeps 8 bits per channel
     coarse.data.materials.clear()
     for m in keep_coarse:
         coarse.data.materials.append(m)

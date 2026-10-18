@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "HAL/IConsoleManager.h"
+#include "World/SoraPresentationCapabilities.h"
 
 // The estate hall interior: the Tsumagizaka dojo kit
 // (Content/SourceArt/Environment/NyaagyuDojoKit, imported by
@@ -38,23 +39,65 @@ UStaticMesh* KitMesh(const TCHAR* Name)
     return LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
 }
 
-// Unique timber columns (scripts/art/create_nyaagyu_dojo_timbers.py, imported by
-// scripts/unreal/import_nyaagyu_dojo_timbers.py): each is cut from its own seeded
-// log, drawn by Nanite on SM6 and by its baked conventional fallback on SM5, with
-// the box column's section, height and pivot. "Wall" variants detail the room
-// face and the strip of each side in front of the infill; "Open" variants, beside
-// door and engawa bays, detail every face. Variants load by index until one is
-// missing; with none, the hall keeps the box column.
+// Timber columns (scripts/art/create_nyaagyu_dojo_timbers.py, imported by
+// scripts/unreal/import_nyaagyu_dojo_timbers.py), with the box column's section,
+// height and pivot. With Nanite every placement draws its own log, named by the
+// hall's rect, wall and bay exactly as scripts/art/dojo_hall_placements.py names
+// it; the same building keeps the same logs in every chapter. A placement without
+// its own log, and every placement without Nanite, draws the baked conventional
+// pool (SM_DojoTimberColumn_MAC_{Wall,Open}_NN), picked per bay and mirrored;
+// with neither, the box column. "Wall" columns detail the room face and the strip
+// of each side in front of the infill; "Open" ones, beside door and engawa bays,
+// every face.
 const TCHAR* DojoTimbers=TEXT("/Game/Generated/Environment/DojoTimbers/");
 
-TArray<UStaticMesh*> TimberColumns(const TCHAR* Kind)
+UStaticMesh* TimberMesh(const FString& Name)
+{
+    return LoadObject<UStaticMesh>(nullptr,*FString::Printf(TEXT("%s%s.%s"),DojoTimbers,*Name,*Name),nullptr,LOAD_NoWarn|LOAD_Quiet);
+}
+
+TArray<UStaticMesh*> TimberPool(const TCHAR* Kind)
 {
     TArray<UStaticMesh*> Out;
-    for(int32 I=0;I<64;++I)
+    for(int32 I=0;I<100;++I)
     {
-        const FString Name=FString::Printf(TEXT("SM_DojoTimberColumn_%s_%02d"),Kind,I);
-        UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*FString::Printf(TEXT("%s%s.%s"),DojoTimbers,*Name,*Name),
-            nullptr,LOAD_NoWarn|LOAD_Quiet);
+        UStaticMesh* Mesh=TimberMesh(FString::Printf(TEXT("SM_DojoTimberColumn_MAC_%s_%02d"),Kind,I));
+        if(!Mesh) break;
+        Out.Add(Mesh);
+    }
+    return Out;
+}
+
+FString RectTag(const FVector2D& Min,const FVector2D& Max)
+{
+    auto Tag=[](double V){ const int32 I=FMath::RoundToInt32(V); return I<0?FString::Printf(TEXT("m%d"),-I):FString::FromInt(I); };
+    return FString::Printf(TEXT("%s_%s_%s_%s"),*Tag(Min.X),*Tag(Min.Y),*Tag(Max.X),*Tag(Max.Y));
+}
+
+FString PlacementColumn(const FVector2D& Min,const FVector2D& Max,int32 Side,int32 Bay)
+{
+    return FString::Printf(TEXT("SM_DojoTimberColumn_%s_S%d_B%02d"),*RectTag(Min,Max),Side,Bay);
+}
+
+// The bay rails (scripts/art/create_nyaagyu_dojo_rails.py): nageshi and cornice
+// over every bay, nuki between the columns, koshi in boarded bays. With Nanite
+// each bay draws its own logs, cut to its exact length; otherwise the baked
+// pool (SM_DojoTimberRail_MAC_<Kind>_NN) or the kit's box rail, stretched with
+// the bay.
+enum class ERail : uint8 { Nageshi, Cornice, Koshi, Nuki, Count };
+const TCHAR* RailKind[]={TEXT("Nageshi"),TEXT("Cornice"),TEXT("Koshi"),TEXT("Nuki")};
+
+bool BayHasRail(EBay Bay,ERail Rail)
+{
+    return Bay!=EBay::Kamiza&&(Rail!=ERail::Koshi||Bay==EBay::Panel||Bay==EBay::Renji||Bay==EBay::RenjiHigh);
+}
+
+TArray<UStaticMesh*> RailPool(const TCHAR* Kind)
+{
+    TArray<UStaticMesh*> Out;
+    for(int32 I=0;I<100;++I)
+    {
+        UStaticMesh* Mesh=TimberMesh(FString::Printf(TEXT("SM_DojoTimberRail_MAC_%s_%02d"),Kind,I));
         if(!Mesh) break;
         Out.Add(Mesh);
     }
@@ -129,9 +172,17 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
     };
     const FVector2D Min=Zone.Rect.Min,Max=Zone.Rect.Max;
     const float Height=Zone.WallHeight>0.f?Zone.WallHeight:KitWallCm,ZScale=Height/KitWallCm;
-    const TArray<UStaticMesh*> WallTimbers=TimberColumns(TEXT("Wall")),OpenTimbers=TimberColumns(TEXT("Open"));
-    if(WallTimbers.Num()==0)
-        UE_LOG(LogTemp,Warning,TEXT("SORA dojo timber columns are missing; run scripts/unreal/import_nyaagyu_dojo_timbers.py. The hall uses the box column."));
+    const bool bNanite=SoraPresentation::UsesNaniteEnvironment(GetWorld());
+    const TArray<UStaticMesh*> WallPool=TimberPool(TEXT("Wall")),OpenPool=TimberPool(TEXT("Open"));
+    int32 Columns=0,OwnLogs=0,PoolColumns=0;
+    UStaticMesh* BoxRails[(int32)ERail::Count];
+    TArray<UStaticMesh*> RailPools[(int32)ERail::Count];
+    for(int32 R=0;R<(int32)ERail::Count;++R)
+    {
+        BoxRails[R]=KitMesh(*FString::Printf(TEXT("SM_DojoRail_%s"),RailKind[R]));
+        RailPools[R]=RailPool(RailKind[R]);
+    }
+    int32 Rails=0,OwnRails=0,PoolRails=0,BoxRailCount=0;
     int32 Counts[4];
     for(int32 Side=0;Side<4;++Side)
         Counts[Side]=FMath::Max(1,FMath::RoundToInt32(((Side%2==0)?Max.X-Min.X:Max.Y-Min.Y)/BayCm));
@@ -155,6 +206,34 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
             const FTransform Bay(FRotator(0,Yaw[Side],0),FVector(Centre,0.f),
                 FVector(Width/BayCm,1.f,Kind==EBay::Kamiza?1.f:ZScale));
             if(bInstanced) Instances(Bays[(int32)Kind])->AddInstance(Bay,true); else Singles(Bays[(int32)Kind])->AddInstance(Bay,true);
+            for(int32 R=0;R<(int32)ERail::Count;++R)
+            {
+                if(!BayHasRail(Kind,(ERail)R)) continue;
+                ++Rails;
+                FTransform RailAt=Bay;
+                UStaticMesh* Mesh=bNanite?TimberMesh(FString::Printf(TEXT("SM_DojoTimberRail_%s_%s_S%d_B%02d"),
+                    RailKind[R],*RectTag(Min,Max),Side,Index)):nullptr;
+                if(Mesh)
+                {
+                    ++OwnRails;
+                    RailAt.SetScale3D(FVector(1.f,1.f,ZScale));   // cut to this bay's length
+                }
+                else if(RailPools[R].Num())
+                {
+                    const uint32 H=HashCombine(HashCombine(GetTypeHash(ZoneIndex*4+R),GetTypeHash(Side)),GetTypeHash(Index));
+                    Mesh=RailPools[R][(int32)(H%(uint32)RailPools[R].Num())];
+                    ++PoolRails;
+                }
+                else if(BoxRails[R])
+                {
+                    Mesh=BoxRails[R];
+                    ++BoxRailCount;
+                }
+                if(Mesh)
+                {
+                    if(bInstanced) Instances(Mesh)->AddInstance(RailAt,true); else Singles(Mesh)->AddInstance(RailAt,true);
+                }
+            }
             // A column at each bay's start; none inside the kamiza opening.
             for(int32 Inner=0;Inner<Span;++Inner)
                 if(Inner==0)
@@ -163,10 +242,12 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
                     const int32 Prev=(Side+3)%4;
                     const EBay Before=Index>0?BayFor(Side,Index-1,Count):BayFor(Prev,Counts[Prev]-1,Counts[Prev]);
                     const bool bOpen=Kind==EBay::DoorOpen||Before==EBay::DoorOpen;
-                    const TArray<UStaticMesh*>& Pool=(bOpen&&OpenTimbers.Num())?OpenTimbers:WallTimbers;
-                    UStaticMesh* Mesh=Column;
+                    const TArray<UStaticMesh*>& Pool=(bOpen&&OpenPool.Num())?OpenPool:WallPool;
+                    UStaticMesh* Mesh=bNanite?TimberMesh(PlacementColumn(Min,Max,Side,Index)):nullptr;
                     bool bMirror=false;
-                    if(Pool.Num())
+                    ++Columns;
+                    if(Mesh) ++OwnLogs;
+                    else if(Pool.Num())
                     {
                         // A stable pick per bay; no two neighbours alike, and a
                         // mirrored copy (room face still -Y) reads as another column.
@@ -176,7 +257,9 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
                         if(Mesh==LastTimber&&N>1) Mesh=Pool[(int32)((H+1)%N)];
                         bMirror=((H>>8)&1u)!=0;
                         LastTimber=Mesh;
+                        ++PoolColumns;
                     }
+                    else Mesh=Column;
                     const FTransform Post(FRotator(0,Yaw[Side],0),FVector(Start[Side]+Along[Side]*(Index+Inner)*Width,0.f),
                         FVector(bMirror?-1.f:1.f,1.f,ZScale));
                     if(bInstanced) Instances(Mesh)->AddInstance(Post,true); else Singles(Mesh)->AddInstance(Post,true);
@@ -184,6 +267,12 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
             Index+=Span;
         }
     }
+    // Capture evidence: how many columns drew their own log, the baked pool or
+    // the box (scripts/art/dojo_hall_placements.py lists the expected names).
+    UE_LOG(LogTemp,Log,TEXT("SORA_DOJO_TIMBERS zone %d %s nanite=%d: %d columns, %d own log, %d conventional pool (%d+%d), %d box; ")
+        TEXT("%d rails, %d own log, %d pool, %d box, %d missing"),
+        ZoneIndex,*Zone.Id,bNanite?1:0,Columns,OwnLogs,PoolColumns,WallPool.Num(),OpenPool.Num(),Columns-OwnLogs-PoolColumns,
+        Rails,OwnRails,PoolRails,BoxRailCount,Rails-OwnRails-PoolRails-BoxRailCount);
     // Floor tiles cover the hall exactly (each stretched by a few percent),
     // in four board layouts so no two neighbours repeat.
     const int32 NX=FMath::Max(1,FMath::RoundToInt32((Max.X-Min.X)/FloorTileX)),NY=FMath::Max(1,FMath::RoundToInt32((Max.Y-Min.Y)/FloorTileY));
