@@ -605,6 +605,8 @@ def _dress_zone(zone, combat, site_points):
     if zone.form == "hall":
         return
     x0, y0, x1, y1 = rect
+    if zone.place == "pl_higashi_torii":
+        zone.props.append({"mesh": "torii", "at": [x1 - 900, 0, 0]})
     if zone.style == "estate":
         zone.props.append({"mesh": "SM_Nyaagyu_ProvisionKura", "at": [_i(x0 + (x1 - x0) * 0.3), y0 - 700, 0]})
         zone.props.append({"mesh": "SM_Nyaagyu_EstateDojo", "at": [_i(x0 + (x1 - x0) * 0.68), y1 + 750, 180]})
@@ -759,6 +761,15 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
                 focus = tuple(site) if site else _frac(rect, 0.6, 0.5)
                 record["camera"] = [x0 + 350, _i(y0 + (y1 - y0) * 0.22), 480, x0 + 900, _i(y0 + (y1 - y0) * 0.34),
                                     420, focus[0], focus[1], 180]
+    if beat["id"] in ("ch08.b17", "ch08.b18"):
+        # +X follows the approach north, +Y is east. The board is 3 m
+        # south of the west pillar (235 cm off the shrine axis).
+        gate_x = rect[2] - 900
+        record["anchor"] = [gate_x - 100, 500]  # Toranosuke and the sword
+        record["closing"] = [gate_x - 300, -235]  # freestanding name board
+        if beat["id"] == "ch08.b17":
+            record["volumes"] = [{"event": "volume_enter:vol_torii",
+                                  "center": [gate_x - 500, 0], "size": [1000, 2000]}]
     record.setdefault("objectives", [])
     record.setdefault("pickups", [])
     record.setdefault("targets", [])

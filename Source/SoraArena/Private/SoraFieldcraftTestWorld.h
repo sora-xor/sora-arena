@@ -58,10 +58,13 @@ struct FBeatWorld
     ASoraPlayerCharacter* Hero() const { return World->Player(); }
     const FSoraBeat& BeatData() const { return Campaign()->ActiveChapter()->Beats[Beat]; }
     const FSoraFieldcraft& Craft() const { return BeatData().Space.Fieldcraft; }
-    bool Start()
+    bool Start(int64 InitialCollectibles=0)
     {
         USoraSaveGame* Save = Cast<USoraSaveGame>(UGameplayStatics::CreateSaveGameObject(USoraSaveGame::StaticClass()));
-        if (!Save || !USoraCampaignDirector::SeedCheckpoint(*Save, Chapter, Beat) || !UGameplayStatics::SaveGameToSlot(Save, Slot, 0))
+        if (!Save || !USoraCampaignDirector::SeedCheckpoint(*Save, Chapter, Beat))
+            return Test.TestTrue(TEXT("The beat's checkpoint is seeded"), false);
+        Save->Collectibles=InitialCollectibles;
+        if(!UGameplayStatics::SaveGameToSlot(Save, Slot, 0))
             return Test.TestTrue(TEXT("The beat's checkpoint is seeded"), false);
         World = MakeUnique<FSoraAutomationWorld>();
         if (!World->Start(Slot) || !World->Tick(1) || !World->EnableKeyInput() || !World->PressKey(EKeys::Enter) ||

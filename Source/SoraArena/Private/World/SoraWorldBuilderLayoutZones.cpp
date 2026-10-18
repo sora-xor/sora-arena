@@ -133,6 +133,7 @@ void ASoraWorldBuilder::ZoneProp(const FSoraZone& Zone,const FSoraProp& Prop,int
         ZoneLantern(At,!Zone.IsRoute()||Index%3==0);
         return;
     }
+    if(Prop.Mesh==TEXT("torii")) { Torii(At,Prop.Yaw); return; }
     if(Prop.Mesh==TEXT("pine")) { NyaagyuPine(At,Facing,1.5f+.1f*(Index%4),Index%3); return; }
     if(Prop.Mesh==TEXT("tree")) { NyaagyuTree(At,Facing,.9f+.05f*(Index%5)); return; }
     if(Prop.Mesh==TEXT("building")||Prop.Mesh==TEXT("building_hightech"))
