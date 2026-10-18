@@ -41,6 +41,9 @@ python3 scripts/unreal/stage_kernel.py
 The simulation command uses synthetic controls. Its timing is not a rendering or
 cryptographic proving benchmark. A state hash or gameplay-key signature is not an
 execution proof, and the native ABI reports proof qualification as false.
+The [full-state witness command](docs/proof/full-state-witness.md) exports or
+checks every executed boundary from a signed research journal for future proof
+stages; it does not authorize settlement.
 
 ## Unreal and native integration
 

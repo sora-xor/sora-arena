@@ -315,7 +315,16 @@ the single submission attempt and never automatically resent.
 transaction has not yet been observed, not that a new submission is safe.
 Polling is bounded to 90 attempts at two-second intervals, and can be
 resumed by identity. Cancelling before signature discards any late wallet
-signature. Cancelling after submission stops local monitoring but retains the
+signature. Since results carry no request ID, new signing is blocked until
+that cancelled result is consumed. If it remains unanswered at the original
+signing deadline, the subsystem retires its transport, erases keys and advances
+the callback generation; explicit new pairing is required. Time alone never
+makes the old session reusable, including for an identical transaction payload.
+An expired result received before the ticker runs also retires the session.
+The transaction remains cancelled, with no automatic pairing or signing retry.
+`scripts/connect/verify-cancellation.py` exercises the production guard, and
+`SoraArena.Connect.CancelledSignatureLatch` checks subsystem retirement in Unreal.
+Cancelling after submission stops local monitoring but retains the
 hash, since cancelling HTTP cannot reverse a chain transaction.
 
 Before the first POST, the subsystem flushes and moves a versioned, bounded

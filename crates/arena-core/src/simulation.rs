@@ -12,6 +12,7 @@ mod abilities;
 mod hazards;
 mod objectives;
 mod respawn;
+mod state;
 use abilities::EntityHit;
 pub use abilities::{ABILITY_COOLDOWNS, Entity, EntityKind, MAX_ENTITIES, RemovalCause};
 pub use objectives::{
@@ -1173,128 +1174,29 @@ impl World {
         (remaining, None)
     }
 
+    /// Complete canonical outcome-state bytes, exactly the preimage of
+    /// `state_hash`. Presentation events and removed entities are excluded.
+    /// This reference encoding is neither a native ledger codec nor authority
+    /// to restore a checkpoint or settle an outcome. Layout: docs/combat-rules.md §12.
+    ///
+    /// # Panics
+    /// Panics if a caller has mutated the public player and account lists to
+    /// different lengths; no participant may be silently omitted.
+    pub fn state_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        state::encode(self, |part| bytes.extend_from_slice(part));
+        bytes
+    }
+
     /// Frozen offline replay fingerprint. Native envelopes use canonical Norito.
     /// This digest is not an execution proof or authenticated ledger statement.
     /// Layout: docs/combat-rules.md §12.
+    ///
+    /// # Panics
+    /// Panics when player and account list lengths differ, as `state_bytes` does.
     pub fn state_hash(&self) -> [u8; 32] {
         let mut h = Sha256::new();
-        h.update(b"sora-arena:reference-state:v2\0");
-        h.update(crate::RULES_VERSION.as_bytes());
-        h.update([
-            self.config.mode as u8,
-            self.config.map,
-            self.config.offline as u8,
-        ]);
-        h.update(self.config.max_ticks.to_le_bytes());
-        h.update(self.config.base_bond.to_le_bytes());
-        h.update(self.tick.to_le_bytes());
-        h.update([self.terminal as u8]);
-        h.update(self.arena().map_digest());
-        h.update((self.players.len() as u32).to_le_bytes());
-        for (p, a) in self.players.iter().zip(&self.accounts) {
-            let (pending_class, pending_weapon) = p.pending_loadout.unwrap_or((255, 255));
-            h.update([
-                p.team,
-                p.class,
-                p.weapon,
-                p.alive as u8,
-                p.guarding as u8,
-                p.admitted_special.unwrap_or(255),
-                pending_class,
-                pending_weapon,
-            ]);
-            for n in [
-                p.position.x,
-                p.position.y,
-                p.position.z,
-                p.velocity_z,
-                p.health,
-                p.stamina,
-            ] {
-                h.update(n.to_le_bytes());
-            }
-            h.update(p.yaw.to_le_bytes());
-            h.update(p.pitch.to_le_bytes());
-            h.update(p.respawn_ticks.to_le_bytes());
-            h.update([p.charge_weapon]);
-            for n in [
-                p.attack_cooldown,
-                p.ability_cooldown,
-                p.charge,
-                p.ammo,
-                p.reload_ticks,
-                p.guard_ticks,
-                p.spawn_protection,
-                p.stance_ticks,
-                p.marked_ticks,
-            ] {
-                h.update(n.to_le_bytes());
-            }
-            for n in [a.initial, a.remaining, a.earnings] {
-                h.update(n.to_le_bytes());
-            }
-            for n in [a.kills, a.deaths, a.paid_deaths] {
-                h.update(n.to_le_bytes());
-            }
-        }
-        h.update((self.projectiles.len() as u32).to_le_bytes());
-        for p in &self.projectiles {
-            h.update(p.id.to_le_bytes());
-            h.update((p.owner as u32).to_le_bytes());
-            h.update([p.weapon]);
-            for n in [
-                p.position.x,
-                p.position.y,
-                p.position.z,
-                p.velocity.x,
-                p.velocity.y,
-                p.velocity.z,
-                p.traveled,
-            ] {
-                h.update(n.to_le_bytes());
-            }
-            h.update(p.age.to_le_bytes());
-        }
-        h.update((self.entities.len() as u32).to_le_bytes());
-        for e in &self.entities {
-            h.update(e.id.to_le_bytes());
-            h.update([e.kind as u8]);
-            h.update((e.owner as u32).to_le_bytes());
-            h.update([e.team]);
-            for n in [e.position.x, e.position.y, e.position.z] {
-                h.update(n.to_le_bytes());
-            }
-            h.update(e.yaw.to_le_bytes());
-            h.update(e.health.to_le_bytes());
-            h.update(e.age.to_le_bytes());
-            for n in [e.half_x, e.half_y] {
-                h.update(n.to_le_bytes());
-            }
-        }
-        h.update(self.next_entity_id.to_le_bytes());
-        h.update((self.damage_history.len() as u32).to_le_bytes());
-        for d in &self.damage_history {
-            for n in [d.tick, d.attacker as u32, d.victim as u32, d.damage] {
-                h.update(n.to_le_bytes());
-            }
-        }
-        for n in self.score {
-            h.update(n.to_le_bytes());
-        }
-        h.update([self.control_owner.unwrap_or(255)]);
-        h.update(self.control_progress.to_le_bytes());
-        h.update([self.overtime as u8]);
-        h.update(self.payload_progress.to_le_bytes());
-        h.update([self.payload_checkpoints]);
-        h.update(self.payload_idle.to_le_bytes());
-        let (tag, value) = match self.winner {
-            None => (0u8, 0u32),
-            Some(Winner::Team(team)) => (1, u32::from(team)),
-            Some(Winner::Slot(slot)) => (2, slot as u32),
-            Some(Winner::Draw) => (3, 0),
-        };
-        h.update([tag]);
-        h.update(value.to_le_bytes());
+        state::encode(self, |part| h.update(part));
         h.finalize().into()
     }
 }

@@ -28,6 +28,7 @@ SOURCE_FILES=[
     'crates/arena-core/src/maps.rs','crates/arena-core/src/simulation.rs',
     'crates/arena-core/src/simulation/abilities.rs','crates/arena-core/src/simulation/hazards.rs',
     'crates/arena-core/src/simulation/objectives.rs','crates/arena-core/src/simulation/respawn.rs',
+    'crates/arena-core/src/simulation/state.rs',
     'crates/arena-ffi/Cargo.toml',
     'crates/arena-ffi/src/lib.rs','crates/arena-ffi/include/arena.h',
 ]

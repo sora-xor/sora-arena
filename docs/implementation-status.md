@@ -4,6 +4,44 @@ The active goal is the complete approved SORA Arena release. This is a progress
 record, not a claim that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-18 full-state proof handoff and signing cancellation
+
+The kernel exposes complete canonical state bytes through the same streaming
+encoder as its replay hash. An execution-witness exporter reconstructs closed
+signed batches from genesis and emits every executed boundary, retaining pending
+commitments and the signed tail of an odd terminal batch. It rejects unchecked
+deadline attestations. The CLI exports or compares an explicitly bound research
+journal without restoring claimed state or submitting transactions. See
+[full-state witness](proof/full-state-witness.md) for format and authority limits.
+This removes projected-state restrictions from reference witness preparation,
+not from native AIR. Full proofs, consensus selection and settlement remain open.
+
+Connect no longer unlocks signing when a cancelled request merely times out.
+Because result frames have no request ID, an unresolved cancellation retires
+the session and callback generation, erases transport keys and requires explicit
+pairing. A late result consumed before expiry is discarded. A result arriving
+at expiry also retires the session before it can affect another request,
+including an identical payload. The transaction stays cancelled with no retry.
+
+Validated on this Mac: workspace Rust suite 270 passed, 5 default-ignored
+research runs, zero failures; the six subsequently added CLI integration tests
+also pass. Final focused replay/encoder/CLI tests pass 23/23. Strict workspace
+Clippy, cancellation/recovery/quote host checks and C ABI checks pass. UE 5.8.3
+editor builds; `Connect.CancelledSignatureLatch` and `Connect.LaunchBindings`
+both pass with zero errors/warnings. The rebuilt/staged Rust C ABI passes all
+94 parity cases / 99,043 ticks on Darwin arm64. Re-recording changed only source,
+runner, library and timestamp identities: every case expectation and input byte
+is unchanged. The 17 parity-guard tests pass. Local logs are under
+`Saved/Qualification/2026-10-18`. Windows, live wallet pairing and real chain
+settlement were not exercised by these checks.
+
+The full-size local capacity probe also completed: 12 players, 36,000 ticks,
+18,000 signed batches, a 93,337,494-byte witness, and exact replay comparison.
+Program runtime was 174.010 seconds. This zero-bond scene fires outward from
+spawns and records no deaths; it establishes stream capacity, not representative
+combat throughput or cryptographic proving. Measurements and scope are recorded
+in the [full-state witness report](proof/full-state-witness.md#full-size-local-capacity-measurement-2026-10-18).
+
 Japanese is the primary language for all dialogue and player-facing interfaces.
 English subtitles are on by default. Localization is part of campaign production,
 including subtitle timing, speaker identification, readable Japanese fonts and

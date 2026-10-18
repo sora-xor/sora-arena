@@ -9,6 +9,7 @@ class IHttpRequest;
 class IWebSocket;
 class UTexture2D;
 struct FArenaConnectNative;
+struct FArenaCancelledSignatureGuard;
 
 UENUM(BlueprintType)
 enum class EArenaWalletState : uint8
@@ -102,10 +103,9 @@ private:
     double Deadline = 0;
     double NextStatusPollAt = 0;
     int32 StatusPollCount = 0;
-    bool bIgnoreCancelledSignatureResult = false;
-    // A cancelled request keeps its own signing deadline; a late wallet reply is
-    // absorbed until then, after which new requests may be signed again.
-    double CancelledSignatureDeadline = 0;
+    // Reusing a session is safe only after its cancelled result was consumed.
+    // An unresolved cancellation expires by retiring the transport.
+    TUniquePtr<FArenaCancelledSignatureGuard> CancelledSignature;
     bool bRecoveryBlocked = false;
     FString Origin, NetworkLiteral, ExpectedAccountLiteral, RelayToken;
     FString SubmissionOrigin, SubmissionNetworkLiteral, LastEntrypointHash;

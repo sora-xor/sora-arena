@@ -1,4 +1,5 @@
 #include "ArenaWalletSubsystem.h"
+#include "ArenaCancelledSignatureGuard.h"
 #include "ArenaTransactionRecoveryRecord.h"
 
 #include "Async/Async.h"
@@ -499,8 +500,9 @@ struct FNativeBytes
 };
 }
 
-UArenaWalletSubsystem::UArenaWalletSubsystem() = default;
-UArenaWalletSubsystem::UArenaWalletSubsystem(FVTableHelper& Helper) : Super(Helper) {}
+UArenaWalletSubsystem::UArenaWalletSubsystem() : CancelledSignature(MakeUnique<FArenaCancelledSignatureGuard>()) {}
+UArenaWalletSubsystem::UArenaWalletSubsystem(FVTableHelper& Helper)
+    : Super(Helper), CancelledSignature(MakeUnique<FArenaCancelledSignatureGuard>()) {}
 UArenaWalletSubsystem::~UArenaWalletSubsystem() = default;
 
 void UArenaWalletSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -631,8 +633,7 @@ void UArenaWalletSubsystem::ClearTransport()
     ClearWalletQr();
     ArenaConnect::Erase(PendingScaffold);
     ArenaConnect::Erase(PendingSignatory);
-    bIgnoreCancelledSignatureResult = false;
-    CancelledSignatureDeadline = 0;
+    CancelledSignature->Reset();
     IncomingFrame.Empty();
     SessionId.Empty();
     AppPublicKey.Empty();
@@ -661,14 +662,12 @@ bool UArenaWalletSubsystem::TickSession(float DeltaTime)
 {
     if (Deadline > 0 && FPlatformTime::Seconds() > Deadline)
         Fail(TEXT("接続または署名の待ち時間を超えました。再接続してください。"));
-    // Once the cancelled request's window has passed, stop waiting for its reply
-    // so the approved session can sign again. A reply that still arrives fails
-    // closed: with no request pending it is unsolicited, and during a new request
-    // its signature cannot finalize the different payload.
-    if (bIgnoreCancelledSignatureResult && FPlatformTime::Seconds() > CancelledSignatureDeadline)
+    // A result has no request ID. A late error could cancel the next request,
+    // and a late signature could sign it when its scaffold is identical. Never
+    // unblock this session on time alone: retire its keys and callback generation.
+    if (CancelledSignature->MustRetire(FPlatformTime::Seconds()))
     {
-        bIgnoreCancelledSignatureResult = false;
-        CancelledSignatureDeadline = 0;
+        Fail(TEXT("取り消した署名依頼の応答を確認できません。ウォレットを再接続してください。"), EArenaWalletState::Disconnected);
     }
     if (NextStatusPollAt > 0 && FPlatformTime::Seconds() >= NextStatusPollAt)
     {
@@ -1134,7 +1133,7 @@ bool UArenaWalletSubsystem::InspectJoinScaffold(const FString& ScaffoldBase64, F
 
 bool UArenaWalletSubsystem::RequestSignTransaction(const FString& ScaffoldBase64, const FString& Ed25519PublicKeyHex)
 {
-    if (!Native || !Socket.IsValid() || !Socket->IsConnected() || bIgnoreCancelledSignatureResult || bRecoveryBlocked
+    if (!Native || !Socket.IsValid() || !Socket->IsConnected() || CancelledSignature->BlocksSigning() || bRecoveryBlocked
         || TransactionState == EArenaTransactionState::Submitting || TransactionState == EArenaTransactionState::Pending
         || TransactionState == EArenaTransactionState::Uncertain
         || (State != EArenaWalletState::Approved && State != EArenaWalletState::Signed)) return false;
@@ -1225,12 +1224,16 @@ void UArenaWalletSubsystem::ReceiveEncrypted(const TArray<uint8>& Frame, uint64 
     const TSharedPtr<FJsonObject>* Payload = nullptr;
     if (!Json->TryGetObjectField(TEXT("payload"), Payload)) { Fail(TEXT("署名応答が不正です。")); return; }
     if ((*Payload)->HasField(TEXT("Control"))) { Fail(TEXT("ウォレットが接続または取引を終了しました。"), EArenaWalletState::Disconnected); return; }
-    if (bIgnoreCancelledSignatureResult && State == EArenaWalletState::Approved
+    if (CancelledSignature->BlocksSigning() && State == EArenaWalletState::Approved
         && ((*Payload)->HasField(TEXT("SignResultOk")) || (*Payload)->HasField(TEXT("SignResultErr"))))
     {
+        // The socket callback can run before the ticker notices expiry.
+        if (CancelledSignature->ConsumeResult(FPlatformTime::Seconds()) == FArenaCancelledSignatureGuard::EResult::RetireSession)
+        {
+            Fail(TEXT("取り消した署名依頼の応答を確認できません。ウォレットを再接続してください。"), EArenaWalletState::Disconnected);
+            return;
+        }
         ++WalletSequence;
-        bIgnoreCancelledSignatureResult = false;
-        CancelledSignatureDeadline = 0;
         return;
     }
     if (State != EArenaWalletState::AwaitingSignature || PendingScaffold.IsEmpty()) { Fail(TEXT("要求していない署名応答を拒否しました。")); return; }
@@ -1498,8 +1501,7 @@ void UArenaWalletSubsystem::CancelTransactionRequest()
         ArenaConnect::Erase(PendingScaffold);
         ArenaConnect::Erase(PendingSignatory);
         PendingTransactionSummary.Empty();
-        bIgnoreCancelledSignatureResult = true;
-        CancelledSignatureDeadline = Deadline;
+        CancelledSignature->Cancel(Deadline);
         Deadline = 0;
         SetTransactionState(EArenaTransactionState::Cancelled, TEXT("署名依頼を取り消しました。遅れて届く署名は使用しません。"));
         if (Generation == Attempt) SetState(EArenaWalletState::Approved, TEXT("署名依頼を取り消しました。取引は送信していません。"));
@@ -1624,34 +1626,41 @@ bool FArenaConnectBindingTest::RunTest(const FString& Parameters)
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FArenaCancelledSignatureLatchTest, "SoraArena.Connect.CancelledSignatureLatch", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FArenaCancelledSignatureLatchTest::RunTest(const FString& Parameters)
 {
-    // Cancelling while the wallet holds a signing request must not block every
-    // later request when the wallet never answers the cancelled one.
+    // An unanswered cancellation must retire the session before a new signing
+    // request can be admitted, even if it would use the exact same scaffold.
     UArenaWalletSubsystem* Wallet = NewObject<UArenaWalletSubsystem>(NewObject<UGameInstance>());
     Wallet->State = EArenaWalletState::AwaitingSignature;
     Wallet->TransactionState = EArenaTransactionState::AwaitingSignature;
     const double SigningDeadline = FPlatformTime::Seconds() + 90.0;
+    const uint64 OldGeneration = Wallet->Generation;
     Wallet->Deadline = SigningDeadline;
     Wallet->PendingScaffold = {1, 2, 3};
     Wallet->PendingSignatory = {4, 5, 6};
+    Wallet->AppDirectionKey = {7, 8, 9};
+    Wallet->WalletDirectionKey = {10, 11, 12};
+    Wallet->SessionId = {13, 14, 15};
+    Wallet->ApprovedAccount = TEXT("approved-test-account");
     Wallet->CancelTransactionRequest();
-    TestTrue(TEXT("Cancelling latches the cancelled request's late reply"), Wallet->bIgnoreCancelledSignatureResult);
-    TestEqual(TEXT("The latch keeps the cancelled request's signing deadline"), Wallet->CancelledSignatureDeadline, SigningDeadline);
+    TestTrue(TEXT("Cancelling blocks another request on the same session"), Wallet->CancelledSignature->BlocksSigning());
+    TestFalse(TEXT("The cancelled request remains within its original deadline"), Wallet->CancelledSignature->MustRetire(SigningDeadline - 1.0));
+    TestTrue(TEXT("The cancelled request expires at its original deadline"), Wallet->CancelledSignature->MustRetire(SigningDeadline));
     TestEqual(TEXT("Cancelling stops the session deadline"), Wallet->Deadline, 0.0);
     TestTrue(TEXT("Cancelling erases the pending scaffold and signatory"), Wallet->PendingScaffold.IsEmpty() && Wallet->PendingSignatory.IsEmpty());
     TestEqual(TEXT("The transaction is cancelled"), static_cast<int32>(Wallet->TransactionState), static_cast<int32>(EArenaTransactionState::Cancelled));
     TestEqual(TEXT("The wallet returns to the approved session"), static_cast<int32>(Wallet->State), static_cast<int32>(EArenaWalletState::Approved));
 
     Wallet->TickSession(0.f);
-    TestTrue(TEXT("Within the window a late reply is still absorbed"), Wallet->bIgnoreCancelledSignatureResult);
+    TestTrue(TEXT("Within the window a late reply is still quarantined"), Wallet->CancelledSignature->BlocksSigning());
 
-    Wallet->CancelledSignatureDeadline = FPlatformTime::Seconds() - 1.0;
-    const FString Status = Wallet->StatusText;
+    Wallet->CancelledSignature->Cancel(FPlatformTime::Seconds() - 1.0);
     Wallet->TickSession(0.f);
-    TestFalse(TEXT("After the window the latch clears, so the session can sign again"), Wallet->bIgnoreCancelledSignatureResult);
-    TestEqual(TEXT("The cleared latch keeps no deadline"), Wallet->CancelledSignatureDeadline, 0.0);
-    TestEqual(TEXT("Clearing the latch keeps the approved session"), static_cast<int32>(Wallet->State), static_cast<int32>(EArenaWalletState::Approved));
-    TestEqual(TEXT("Clearing the latch does not report a failure"), Wallet->StatusText, Status);
+    TestEqual(TEXT("An unresolved cancellation expires by disconnecting"), static_cast<int32>(Wallet->State), static_cast<int32>(EArenaWalletState::Disconnected));
+    TestEqual(TEXT("Retirement invalidates every queued old-session callback"), Wallet->Generation, OldGeneration + 1);
+    TestTrue(TEXT("Retirement erases session authentication material"), Wallet->AppDirectionKey.IsEmpty() && Wallet->WalletDirectionKey.IsEmpty() && Wallet->SessionId.IsEmpty() && Wallet->ApprovedAccount.IsEmpty());
+    TestTrue(TEXT("Retirement neither reconnects nor retries the transaction"), !Wallet->Socket.IsValid() && !Wallet->SessionRequest.IsValid() && Wallet->PendingScaffold.IsEmpty() && Wallet->LastSignedTransactionBase64.IsEmpty());
     TestEqual(TEXT("The cancelled transaction stays cancelled"), static_cast<int32>(Wallet->TransactionState), static_cast<int32>(EArenaTransactionState::Cancelled));
+    Wallet->TickSession(0.f);
+    TestEqual(TEXT("Later ticks do not retry pairing or signing"), Wallet->Generation, OldGeneration + 1);
     return true;
 }
 #endif

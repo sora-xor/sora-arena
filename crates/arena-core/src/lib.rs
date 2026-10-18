@@ -9,6 +9,7 @@ pub mod arena_export;
 pub mod catalog;
 pub mod economy;
 pub mod encrypted_wire;
+pub mod execution_trace;
 mod fragmented_wire;
 pub mod handshake;
 pub mod localhost_transport;

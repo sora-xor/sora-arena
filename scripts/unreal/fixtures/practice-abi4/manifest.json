@@ -2,12 +2,12 @@
   "schema_version": 2,
   "fixture_id": "sora-arena-practice-abi4",
   "scope": "offline and staked C ABI 4 simulation, event, objective and presentation parity; not network, renderer or execution-proof qualification",
-  "recorded_utc": "2026-09-26T07:24:41.971864+00:00",
+  "recorded_utc": "2026-10-18T04:04:34.299870+00:00",
   "reference_host": {
     "system": "Darwin",
     "machine": "arm64",
     "python": "3.9.6",
-    "library_sha256": "1bd6e8fa04d7e48abf3e654f6d7c019f3808ff18dc4b4f62d2d9c8b24dc8d494"
+    "library_sha256": "7ca3dad3be9e564c8e0aa51ecd7f5e6a4efd397523ccc926e45e745623c24b51"
   },
   "input_encoding": {
     "bytes_per_slot": 8,
@@ -30,16 +30,17 @@
       "Cargo.toml": "49587ab0c500b4537be32eaf700494adbe6f690d9362675c545c3d86eb21cd5c",
       "Cargo.lock": "027ee7519380de95934d782dbe9eb806dd53e9b82f9b62e4b303c34948c20631",
       "crates/arena-core/Cargo.toml": "a0dabe69655f5200e619f4fca9b4f8ab570e2045f50f82fc201a287c93f0ccfc",
-      "crates/arena-core/src/lib.rs": "7e692997c5958545e7fc5ba7d2692d19ef5dde0afa07b995f890a70d10a29012",
+      "crates/arena-core/src/lib.rs": "e36a7469219171469ca542dd603a4496cd4bdf5e08f5fe75fe61c01ce8c5b1f1",
       "crates/arena-core/src/catalog.rs": "1aededa25e88c3870920ddbcd8ec6a5309fcfaf6fed3b7b52d1bfe24d94f2bc2",
       "crates/arena-core/src/economy.rs": "c954a6ed4764a8c4e04cac45dc1d44db00f91917a5d12b70f095152cae4f5b11",
       "crates/arena-core/src/math.rs": "da705bbd0dd73162027e127bb1503c9425e611bb68af6424d6d27325a562a21a",
       "crates/arena-core/src/maps.rs": "d236c3e381f07ee2f19f82d5b70977fee0cf3d680a412e819a2cb5b5a3566566",
-      "crates/arena-core/src/simulation.rs": "494d989c194762d0f072f6d9b4ce8dd5d45bbdf2e289892680f978df8b661af4",
+      "crates/arena-core/src/simulation.rs": "e46e6282a76a52956feb6d005f90762cd7d7f7f98bb4f4fb145d8ae629d2009d",
       "crates/arena-core/src/simulation/abilities.rs": "cc8fa50d2e453c5c43e41bcf071de1a32f2a4942636f05adcf33b16c2d9fdadc",
       "crates/arena-core/src/simulation/hazards.rs": "999d294965b67029f5ddeafe8b42b0f07b172737630831ede73319732b4789bd",
       "crates/arena-core/src/simulation/objectives.rs": "8a50c20b01d92c115bee40a03b711b6f03159c8d53eec23439c6b644e1acaa14",
       "crates/arena-core/src/simulation/respawn.rs": "2456988d8b376e2bead5f598980632bdc249a9fdc7a9f599da1cc228944885bd",
+      "crates/arena-core/src/simulation/state.rs": "fc349075d58b4359eeb04d0e5056f17311cde1dbccc6e81867ce6ad7f95f2315",
       "crates/arena-ffi/Cargo.toml": "027a2751c2c13423a70330a341a6e4a8499e0ebf078ea789415a66fc376f129b",
       "crates/arena-ffi/src/lib.rs": "b81f091a219656230ba7373eeeab8b9b2cf89d7194b8619f8a2a8ad7fad9624d",
       "crates/arena-ffi/include/arena.h": "0d963bb74bd1b9d985ba4c9f27be08fef80e1f0593cca51768f971fc7588fc72"
@@ -47,7 +48,7 @@
   },
   "runner_files_sha256": {
     "scripts/unreal/kernel_abi.py": "0d676dd3fbdf1e7a5c6ed5fc0e923e1b54ef1a4891e4f9f6b6183ece04a00d7b",
-    "scripts/unreal/verify_parity.py": "09cdd1365746a6c8122af343ae5cf47073ade8cdf7e55822cb5289aec929a028",
+    "scripts/unreal/verify_parity.py": "9b2bfc01cda261d8dbf384b34c116d9b09d9f9c4f843072a9f7b6a0e33f9a970",
     "scripts/unreal/practice_fixture_bots.py": "f7b7e22c446a0aafbf0cd139bc7861ccfce855094e05094aafd40ef4ab829402"
   },
   "abi_layout": {

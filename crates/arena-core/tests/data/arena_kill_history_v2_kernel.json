@@ -335,7 +335,7 @@
     1080,
     900
   ],
-  "kernel_revision": "508d3fdc5789dae7317b8b26681c6109e81a9d534f3f6faf8abdc611390143c6",
+  "kernel_revision": "94010565c10d7d0bb7e229d2046f2699b131752157b4afe503a5abd3e9544eeb",
   "rules_version": "sora-arena-first-release-7",
   "schema": "sora-arena-kill-history-v2-kernel-parity-v1",
   "scope": "unregistered-unfunded-fixed-research-scene",
