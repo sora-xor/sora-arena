@@ -103,6 +103,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("rust-pin-guards", "scripts/toolchain/test_doctor_rust.py"),
         ("import-vfx-guards", "scripts/toolchain/test_import_vfx_gate.py"),
         ("capture-report-guards", "scripts/toolchain/test_capture_report.py"),
+        ("fresh-startup", "scripts/toolchain/test_fresh_startup.py"),
         ("parity-source-identity", "scripts/unreal/test_parity_guards.py"),
         ("vfx-preview-guards", "scripts/unreal/test_vfx_preview_shots.py"),
         ("environment-library-source", "scripts/unreal/test_cc0_environment_library.py"),
