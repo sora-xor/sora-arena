@@ -98,6 +98,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
     kinds = {
         "SORA_ART_REVIEW_FRAME": ("SoraCapture.ArtReview.", "art-review"),
         "SORA_REGISTRY_FIXTURE_FRAME": ("SoraCapture.RegistryFixture.", "completed-save registry UI fixture; not playthrough evidence"),
+        "SORA_WEAPON_HUD_FIXTURE_FRAME": ("SoraCapture.WeaponHUDFixture.", "prepared gameplay UI fixture; not playthrough evidence"),
     }
     names = re.findall(r"(" + "|".join(kinds) + r") ([^\r\n]+)", log)
     for marker, (prefix, _) in kinds.items():

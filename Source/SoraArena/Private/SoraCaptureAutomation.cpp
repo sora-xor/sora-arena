@@ -8,6 +8,7 @@
 #include "SoraCatalog.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
+#include "SoraEquipmentComponent.h"
 #include "SoraFrontEnd.h"
 #include "SoraHorse.h"
 #include "SoraPlayerCharacter.h"
@@ -1346,6 +1347,105 @@ void QueueRegistryFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Ch
     });
 }
 
+// Prepared gameplay UI fixtures use ordinary checkpoint load and equipment
+// actions. They leave objectives, vitals, fieldcraft and action prompts on.
+void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Case,bool English)
+{
+    const int32 Chapter=Case==0?0:3,Beat=Case==0?8:10;
+    const FString Kind=Case==0?TEXT("Bokken"):Case==1?TEXT("Katana"):TEXT("BowDraw");
+    const FString Name=FString::Printf(TEXT("WeaponHUDFixture_%s_%s"),*Kind,English?TEXT("JA_EN"):TEXT("JA"));
+    Queue([Test,Session,Chapter,Beat,Case,English]()
+    {
+        Session->bShotLive=false;
+        ASoraGameMode* M=Session->M();
+        auto* Save=NewObject<USoraSaveGame>();
+        if(!M||!USoraCampaignDirector::SeedCheckpoint(*Save,Chapter,Beat))
+        { Test->AddError(TEXT("Weapon HUD fixture checkpoint is invalid")); return; }
+        Save->EnglishSubtitles=English;
+        if(!UGameplayStatics::SaveGameToSlot(Save,Session->Slot,0))
+        { Test->AddError(TEXT("Weapon HUD fixture checkpoint was not saved")); return; }
+        if(!M->bMenu) M->SetMenuOpen(true);
+        M->SaveSlotName=Session->Slot; M->bDeterministicPractice=false; M->bCampaign=true;
+        if(!M->Campaign()->LoadSave()) { Test->AddError(TEXT("Weapon HUD fixture checkpoint did not load")); return; }
+        M->ResetRound(); M->BeginRound();
+        ASoraPlayerCharacter* Hero=Session->Hero();
+        if(!InBeat(Test,*Session,Chapter,Beat,TEXT("Weapon HUD fixture"))||!Hero) return;
+        const int32 WeaponId=Case==2?FSoraCatalog::Get().Hero().YumiId:FSoraCatalog::Get().Hero().KatanaId;
+        if(!Test->TestTrue(TEXT("The fixture equips an actually unlocked arm"),Hero->GetEquipment()->EquipCampaignWeapon(WeaponId))) return;
+        M->Notice.Reset(); M->NoticeEnglish.Reset(); M->NoticeTime=0.f;
+        Session->bShotLive=true;
+    });
+    // These manufacture checkpoints have ambient arrivals, no timed success
+    // or initial enemy wave. Let the actual lines finish; never skip dialogue.
+    Wait(.4);
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(40.0,[Session](double)
+    {
+        return !Session->bShotLive||!Session->Campaign()->CurrentDialogueCue();
+    },[Test,Session]() { Test->AddError(TEXT("Weapon HUD fixture arrival dialogue did not finish")); Session->bShotLive=false; }));
+    Queue([Test,Session,Case]()
+    {
+        if(!Session->bShotLive) return;
+        if(!Test->TestTrue(TEXT("Weapon HUD remains in actual gameplay"),Session->M()->IsPlaying()))
+        { Session->bShotLive=false; return; }
+        if(Case==2)
+        {
+            Session->Hero()->GetEquipment()->TriggerDown();
+            Session->bShotLive=Test->TestTrue(TEXT("The bow draw indicator is active"),Session->Hero()->GetEquipment()->IsBowDrawing());
+        }
+    });
+    Freeze(Session,true);
+    StreamIn();
+    const TSharedRef<double> QuietSince=MakeShared<double>(-1.0);
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(120.0,[Session,QuietSince](double Elapsed)
+    {
+        if(!Session->bShotLive) return true;
+        FAssetCompilingManager& Assets=FAssetCompilingManager::Get();
+        Assets.ProcessAsyncTasks(true);
+        if(Assets.GetNumRemainingAssets()!=0) { *QuietSince=-1.0; return false; }
+        if(*QuietSince<0.0) *QuietSince=Elapsed;
+        return Elapsed-*QuietSince>=2.0;
+    },[Test,Session]()
+    {
+        Test->AddError(FString::Printf(TEXT("Weapon HUD capture asset compilation did not settle; %d assets remain"),
+            FAssetCompilingManager::Get().GetNumRemainingAssets()));
+        Session->bShotLive=false;
+    }));
+    Queue([Test,Session,Chapter,Beat,Case,English]()
+    {
+        if(!Session->bShotLive) return;
+        ASoraGameMode* M=Session->M();
+        APlayerController* PC=M->GetWorld()->GetFirstPlayerController();
+        ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+        UGameViewportClient* Viewport=M->GetWorld()->GetGameViewport();
+        if(!Test->TestNotNull(TEXT("The gameplay fixture uses the actual HUD"),HUD)||!Viewport)
+        { Session->bShotLive=false; return; }
+        FVector2D Size; Viewport->GetViewportSize(Size);
+        FString Why;
+        Session->bShotLive=InBeat(Test,*Session,Chapter,Beat,TEXT("Weapon HUD capture"))&&
+            Test->TestEqual(TEXT("The requested language remains active"),M->bEnglishSubtitles,English)&&
+            Test->TestEqual(TEXT("The fixture retains its weapon identity"),Session->Hero()->WeaponId,
+                Case==2?FSoraCatalog::Get().Hero().YumiId:FSoraCatalog::Get().Hero().KatanaId)&&
+            Test->TestTrue(TEXT("Complete weapon text and windup fit their measured panel bounds"),
+                SoraHUDPanels::WeaponLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why));
+        if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("Bow draw survives capture preparation"),Session->Hero()->GetEquipment()->IsBowDrawing());
+        if(!Why.IsEmpty()) Test->AddError(Why);
+    });
+    SaveFrame(Test,Session,Name,true);
+    Queue([Session,Chapter,Beat,English,Name]()
+    {
+        if(!Session->bShotLive||!Session->bFrameWritten) return;
+        const FSoraBeat& Data=FSoraCatalog::Get().Chapter(Chapter).Beats[Beat];
+        const FString Note=FString::Printf(TEXT("prepared gameplay UI fixture; not playthrough evidence; language=%s; normal checkpoint and equipment actions; complete measured weapon text; asset compilation idle; gameplay overlays retained"),
+            English?TEXT("JA+EN"):TEXT("JA"));
+        AppendIndex(*Session,FString::Printf(TEXT("%s.png\t%d\t%s\t%s\t%s\tweapon HUD fixture\t%s"),
+            *Name,Chapter+1,*Data.Id,*Data.Title,*Data.TitleEnglish,*Note));
+        UE_LOG(LogTemp,Display,TEXT("SORA_WEAPON_HUD_FIXTURE %s"),*Note);
+        UE_LOG(LogTemp,Display,TEXT("SORA_WEAPON_HUD_FIXTURE_FRAME %s"),*FPaths::ConvertRelativePathToFull(Session->File));
+    });
+    Queue([Session]() { if(Session->Hero()) Session->Hero()->GetEquipment()->Halt(); });
+    Freeze(Session,false);
+}
+
 } // namespace SoraCapture
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
@@ -1434,6 +1534,36 @@ bool FSoraCaptureRegistryFixtureTest::RunTest(const FString& Parameters)
     HUD->bShowHUD=true;
     QueueRegistryFixture(this,Session,Chapter,false);
     QueueRegistryFixture(this,Session,Chapter,true);
+    Queue([WeakHUD,PreviousVisibility]() { if(ASoraHUD* Live=WeakHUD.Get()) Live->bShowHUD=PreviousVisibility; });
+    CloseSession(Session);
+    return true;
+}
+
+IMPLEMENT_COMPLEX_AUTOMATION_TEST(
+    FSoraCaptureWeaponHUDFixtureTest,
+    "SoraCapture.WeaponHUDFixture",
+    EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+void FSoraCaptureWeaponHUDFixtureTest::GetTests(TArray<FString>& OutBeautifiedNames,TArray<FString>& OutTestCommands) const
+{
+    OutBeautifiedNames={TEXT("Bokken"),TEXT("Katana"),TEXT("BowDraw")};
+    OutTestCommands={TEXT("0"),TEXT("1"),TEXT("2")};
+}
+bool FSoraCaptureWeaponHUDFixtureTest::RunTest(const FString& Parameters)
+{
+    using namespace SoraCapture;
+    const int32 Case=FCString::Atoi(*Parameters);
+    const FSessionRef Session=MakeShared<FSession>();
+    if(!TestTrue(TEXT("A supported weapon HUD fixture"),Case>=0&&Case<3)||
+        !OpenSession(*this,*Session,TEXT("WeaponHUDFixture"))) return false;
+    APlayerController* PC=Session->M()->GetWorld()->GetFirstPlayerController();
+    ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+    if(!TestNotNull(TEXT("The fixture has the game HUD"),HUD)) return false;
+    const TWeakObjectPtr<ASoraHUD> WeakHUD=HUD;
+    const bool PreviousVisibility=HUD->bShowHUD;
+    HUD->bShowHUD=true;
+    QueueWeaponHUDFixture(this,Session,Case,false);
+    QueueWeaponHUDFixture(this,Session,Case,true);
     Queue([WeakHUD,PreviousVisibility]() { if(ASoraHUD* Live=WeakHUD.Get()) Live->bShowHUD=PreviousVisibility; });
     CloseSession(Session);
     return true;
