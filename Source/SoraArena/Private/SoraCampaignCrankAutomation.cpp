@@ -330,6 +330,8 @@ bool FSoraBellowsTreadTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Pad stick uses the same neutral-separated pair"),C->TaskProgress().Progress,PadBefore+1000);
     W.World->InjectKey(EKeys::Gamepad_FaceButton_Top,IE_Released);
     if(!Reload(W)) return false;
+    // Reload replaces the entire world, including its campaign director.
+    C=W.Campaign();
     TestEqual(TEXT("Reload resets production and tread engagement"),C->TaskProgress().Progress,0);
     TestFalse(TEXT("Checkpoint never restores an active tread"),C->IsWorkingCrank());
     return !HasAnyErrors();

@@ -635,6 +635,10 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     Run.Hero()->SetActorLocation(FVector(ArenaCenter.X-800,ArenaCenter.Y-900,Run.Hero()->GetActorLocation().Z),
         false,nullptr,ETeleportType::TeleportPhysics);
     if(!Run.Place(Run.Foe(BossSlot),FVector(600,0,0))) return FString();
+    // Let the collector finish his 1.2-second cleave before the injected
+    // phase change. Cancelling its windup would leave no resolved melee hit
+    // for the listener contract to observe.
+    constexpr int32 CaneAt = 450;
     int32 TakenAt = INDEX_NONE, GuardAt = INDEX_NONE, Attempts = 0;
     const bool bOk = Run.Play(900, [&](FRun& R, int32 F)
     {
@@ -668,7 +672,7 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         }
         FFoe* Foe = R.Foe(BossSlot);
         const ASoraBoss* Boss = Cast<ASoraBoss>(Foe);
-        if (F > 330 && (!Boss || Boss->IsDefeated()))
+        if (F > CaneAt && (!Boss || Boss->IsDefeated()))
         {
             if (!Boss)
                 return R.Fail(TEXT("The collector is gone before his capture"));
@@ -685,13 +689,13 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 150: return R.Place(Foe, FVector(250, 0, 0)) && R.Aim(Foe);
         case 160: return R.Down(EKeys::LeftMouseButton);
         case 300: return R.Up(EKeys::LeftMouseButton);
-        case 330:
+        case CaneAt:
             if (!Foe)
                 return R.Fail(TEXT("The collector is gone before his cane phase"));
             UGameplayStatics::ApplyDamage(Foe, Foe->Health - Foe->MaxHealth * .4f, R.Controller(), R.Hero(), UDamageType::StaticClass());
             return true;
-        case 332: return R.Tap(EKeys::One);
-        case 334:
+        case CaneAt + 2: return R.Tap(EKeys::One);
+        case CaneAt + 4:
         {
             // The cane phase stays clear of the physical spine and dais;
             // the hero stands two metres off, facing him.
@@ -702,10 +706,10 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
             MoveTo(Stand - FVector(220.f, 0.f, 0.f));
             return R.Aim(Foe);
         }
-        case 340: return R.Tap(EKeys::V);
+        case CaneAt + 10: return R.Tap(EKeys::V);
         default: break;
         }
-        if (F <= 340 || !Boss)
+        if (F <= CaneAt + 10 || !Boss)
             return true;
         // Sheathed and facing him, a guard pressed in the foreclosure's last
         // 100 ms; released after it, ready for the next if one is needed.
