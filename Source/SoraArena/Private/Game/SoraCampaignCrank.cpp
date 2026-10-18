@@ -107,11 +107,12 @@ bool USoraCampaignDirector::PlayerBellowsAxis(float Axis)
     if(!Task.AlternateTreads||!IsWorkingCrank()) return false;
     if(SoraCrankInputRules::Tread(BellowsTreads,FMath::RoundToInt(Axis*1000.f)))
     {
+        const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
         const int32 DoneBefore=TaskState.Done;
         if(TurnPlayerCrank(false))
         {
             if(DoneBefore==0&&TaskState.Done>0) Fire(TEXT("interact_start"));
-            UpdateObjective(); Progressed();
+            UpdateObjective(); Progressed(Before);
         }
     }
     return true;
