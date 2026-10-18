@@ -117,7 +117,17 @@ bool FSoraRegistryInspectionTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("Three goods precede inspection"),W.Campaign()->RegistryRows().Num(),3);
         for(const FSoraRegistryRow& Row:W.Campaign()->RegistryRows()) TestFalse(TEXT("No tally before the ceremony ends"),Row.HasSplitTally());
         if(Skip) { if(!W.Press(EKeys::Enter)) return false; }
-        else for(int32 Frame=0;W.Campaign()->ActiveBeat()==11&&Frame<302;++Frame) if(!W.Tick(1,.5f)) return false;
+        else
+        {
+            // UWorld clamps a requested .5 s tick to the engine's .4 s maximum.
+            // Advance below that clamp and budget from the authored time left.
+            constexpr float StepSeconds=.1f;
+            const float Remaining=W.Mode()->TitleCardTime;
+            const int32 Frames=FMath::CeilToInt(Remaining/StepSeconds)+2;
+            if(!TestTrue(TEXT("The inspection retains its authored duration"),Remaining>0.f)) return false;
+            for(int32 Frame=0;W.Campaign()->ActiveBeat()==11&&Frame<Frames;++Frame)
+                if(!W.Tick(1,StepSeconds)) return false;
+        }
         if(!TestTrue(TEXT("The ceremony finishes through its authored path"),W.Campaign()->ActiveBeat()>11)) return false;
         const auto Rows=W.Campaign()->RegistryRows();
         TestEqual(TEXT("The ceremony adds no fourth goods entry"),Rows.Num(),3);
