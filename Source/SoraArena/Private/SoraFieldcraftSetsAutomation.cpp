@@ -606,10 +606,19 @@ bool FSoraFieldcraftSearchlightTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("A second and a half raises the alarm"), W.Raised(TEXT("ai_event:searchlight_alert")) && W.Stealth()->IsDetected());
         if (!W.Tick(2))
             return false;
+        // The alarm releases fresh riflemen. Keep their eyes shut too so
+        // this assertion measures the light's lock rather than a later
+        // detection by the reinforcements.
+        for (ASoraEnemy* Guard : Guards(W)) HoldStill(Guard);
         const FVector Seen = W.Hero()->GetActorLocation();
         W.Stand(Seen + FVector(0.f, -1500.f, 0.f));
+        // A later guard's alarm bark has no new visual evidence. It must not
+        // redirect either beam to the unseen hero's current position.
+        Fieldcraft->NoteBeatEvent(TEXT("alert_state:alert"));
         if (!W.Tick(8, .25f))
             return false;
+        AddInfo(FString::Printf(TEXT("Searchlight lock: seen=%s hero=%s light0=%s light1=%s"),
+            *Seen.ToString(), *W.Hero()->GetActorLocation().ToString(), *Fieldcraft->SpotOf(0).ToString(), *Fieldcraft->SpotOf(1).ToString()));
         TestTrue(TEXT("The lights lock on the last place he was seen"), FVector::Dist2D(Fieldcraft->SpotOf(0), Seen) < 250.f &&
             FVector::Dist2D(Fieldcraft->SpotOf(1), Seen) < 250.f);
         // Surfaced under the lotus leaves, a head shows to no light: locked on
@@ -623,11 +632,14 @@ bool FSoraFieldcraftSearchlightTest::RunTest(const FString& Parameters)
         {
             W.Stand(Where);
             if (!W.Tick(2)) return false;
-            Fieldcraft->NoteBeatEvent(TEXT("alert_state:alert"));
+            Fieldcraft->LockSearchlights(Where);
             return W.Tick(20);
         };
         if (!Lit(Floor(Lotus.Center)))
             return false;
+        AddInfo(FString::Printf(TEXT("Lotus visibility: hero=%s lotus=%s swimming=%d diving=%d light=%d exposure=%.3f"),
+            *W.Hero()->GetActorLocation().ToString(), *Lotus.Center.ToString(), Fieldcraft->IsSwimming(), Fieldcraft->IsDiving(),
+            Fieldcraft->Readout(*W.Hero()).bInLight, Fieldcraft->Readout(*W.Hero()).LightExposure));
         TestTrue(TEXT("Under the lotus the searchlight finds no head"), Fieldcraft->IsSwimming() && !Fieldcraft->IsDiving() &&
             !Fieldcraft->Readout(*W.Hero()).bInLight);
         FVector Open = FVector::ZeroVector;
@@ -874,6 +886,9 @@ bool FSoraFieldcraftLaddersTest::RunTest(const FString& Parameters)
         if (!Drop())
             return false;
         TestTrue(TEXT("The straw takes a drop quietly"), W.Raised(TEXT("roof_drop:straw")));
+        AddInfo(FString::Printf(TEXT("Roof landing: drops=%d hero=%s guard=%s awareness=%d calm=%d state=%d"),
+            W.Count(TEXT("roof_drop")), *W.Hero()->GetActorLocation().ToString(), *Guard->GetActorLocation().ToString(),
+            Brain ? Brain->AwarenessPermille() : -1, Calm, Brain ? static_cast<int32>(Brain->State()) : -1));
         TestTrue(TEXT("A drop off the roof onto the ground, as far as its script says (9 m), is heard"), W.Count(TEXT("roof_drop")) == 2 && Brain &&
             (Brain->AwarenessPermille() > Calm || Brain->State() != SoraStealthRules::EState::Unaware));
         // Struck down half way up the ladder and retried: he comes back

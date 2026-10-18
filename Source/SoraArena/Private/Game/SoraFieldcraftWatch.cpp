@@ -164,6 +164,18 @@ FVector USoraFieldcraft::SpotOf(int32 Light) const
     return Lamp && Spot ? Spot->GetComponentLocation() : FVector::ZeroVector;
 }
 
+void USoraFieldcraft::LockSearchlights(const FVector& KnownLocation)
+{
+    if (!Staged) return;
+    for (int32 Index = 0; Index < LightStates.Num(); ++Index)
+    {
+        const FSoraSearchlight& Row = Staged->Searchlights[Index];
+        if (Row.IsRoad() || Row.Rules.LockMs <= 0) continue;
+        LightStates[Index].LockedMs = Row.Rules.LockMs;
+        LightStates[Index].LockedAt = KnownLocation;
+    }
+}
+
 void USoraFieldcraft::TickSearchlights(int32 DtMs)
 {
     if (LightStates.IsEmpty()) return;
@@ -180,6 +192,7 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
         const FSoraSearchlight& Row = Staged->Searchlights[Index];
         USpotLightComponent* Lamp = State.Lamp.Get();
         UStaticMeshComponent* Spot = State.Spot.Get();
+        State.bSeesHero = false;
         if (!Lamp || !Spot) continue;
         Lamp->SetVisibility(State.bOn);
         Spot->SetVisibility(State.bOn);
@@ -253,6 +266,7 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
             FHitResult Hit;
             bInSpot = !GetWorld()->LineTraceSingleByChannel(Hit, From + (Head - From).GetSafeNormal() * 100.f, Head, ECC_Visibility, Query);
         }
+        State.bSeesHero = bInSpot;
         const Craft::ESpotted Seen = Craft::Spotted(State.InSpotMs, bInSpot, DtMs, Row.Rules);
         if (Seen == Craft::ESpotted::None || !Stealth || !Stealth->IsZoneActive()) continue;
         // The guards on the wall see what the light shows them.
@@ -395,6 +409,12 @@ void USoraFieldcraft::TickLadders(float DeltaTime)
                                       : FVector(Ladder.Foot, HalfHeight + 4.f);
         Player->SetActorLocation(Off, false, nullptr, ETeleportType::TeleportPhysics);
         Movement->SetMovementMode(MOVE_Walking);
+        // Remember the completed step onto the roof now. The character can
+        // leave its edge before the next subsystem tick; waiting to sample a
+        // later grounded frame would lose that fall's source and its noise.
+        RoofStood = bLadderUp ? LadderClimb : INDEX_NONE;
+        RoofStandZ = Off.Z;
+        RoofFall = INDEX_NONE;
         Raise(bLadderUp ? TEXT("roof_reached:") + Ladder.Id : TEXT("ladder_foot:") + Ladder.Id);
         LadderClimb = INDEX_NONE;
         return;

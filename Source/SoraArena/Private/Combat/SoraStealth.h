@@ -68,6 +68,9 @@ struct FSoraStealthDetection
 {
     TWeakObjectPtr<ASoraEnemy> By;
     SoraStealthRules::EOnDetected Response = SoraStealthRules::EOnDetected::Combat;
+    // Evidence held by the detector/alarm sender, never sampled later from
+    // the hero's current position. Synthetic detections may have no point.
+    TOptional<FVector> KnownLocation;
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraStealthDetectedSignature, const FSoraStealthDetection&);

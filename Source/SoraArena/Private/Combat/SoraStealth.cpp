@@ -136,6 +136,8 @@ void USoraStealth::NoteState(ASoraEnemy& Guard, StealthRules::EState Previous, S
     FSoraStealthDetection Detection;
     Detection.By = &Guard;
     Detection.Response = StealthRules::Response(ZoneRules.OnDetected, ZoneRules.Difficulty);
+    if (const auto* Brain = Cast<ASoraEnemyController>(Guard.GetController()))
+        Detection.KnownLocation = Brain->LastKnownLocation();
     OnDetected.Broadcast(Detection);
 }
 
@@ -151,6 +153,7 @@ void USoraStealth::RaiseAlarm(ASoraEnemy& By, const FVector& Where)
         FSoraStealthDetection Detection;
         Detection.By = &By;
         Detection.Response = StealthRules::Response(ZoneRules.OnDetected, ZoneRules.Difficulty);
+        Detection.KnownLocation = Where;
         OnDetected.Broadcast(Detection);
     }
     for (TActorIterator<ASoraEnemyController> It(GetWorld()); It; ++It)

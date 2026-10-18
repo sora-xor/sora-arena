@@ -706,17 +706,12 @@ void USoraFieldcraft::TargetChanged(int32 Target, int32 HealthPermille)
 
 void USoraFieldcraft::NoteBeatEvent(const FString& Event)
 {
-    // A road's searchlight comes on with its wave; a detection locks the
-    // wall lights on the last place the hero was seen (ch06.b02's alarm).
+    // A road's searchlight comes on with its wave. Wall lights receive the
+    // known detection point separately; generic alarm barks carry no position.
     for (int32 Light = 0; Light < LightStates.Num() && Staged; ++Light)
     {
         const FSoraSearchlight& Row = Staged->Searchlights[Light];
         if (!Row.ActiveOn.IsEmpty() && Row.ActiveOn == Event) LightStates[Light].bOn = true;
-        if (Event == TEXT("alert_state:alert") && !Row.IsRoad() && Row.Rules.LockMs > 0 && Hero())
-        {
-            LightStates[Light].LockedMs = Row.Rules.LockMs;
-            LightStates[Light].LockedAt = Hero()->GetActorLocation();
-        }
     }
     for (const auto& Ally : Allies)
         if (IsValid(Ally) && !Ally->IsJoined() && Staged)
@@ -1435,7 +1430,7 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
             Out.HaulLeft = FMath::Min(Out.HaulLeft, 1.f - static_cast<float>(State.Net.Ms) / Staged->Nets.Rules.HaulMs);
     }
     for (int32 Light = 0; Light < LightStates.Num(); ++Light)
-        if (!Staged->Searchlights[Light].IsRoad() && LightStates[Light].InSpotMs > 0)
+        if (!Staged->Searchlights[Light].IsRoad() && LightStates[Light].bSeesHero)
         {
             Out.bInLight = true;
             Out.LightExposure = FMath::Max(Out.LightExposure,

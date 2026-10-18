@@ -198,7 +198,11 @@ void USoraCampaignDirector::StealthDetected(const FSoraStealthDetection& Detecti
 {
     if(!ActiveBeatData()) return;
     // A patrol that finds the hero finds the party beside him: they drop.
-    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->PartyDetected();
+    if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this))
+    {
+        Fieldcraft->PartyDetected();
+        if(Detection.KnownLocation.IsSet()) Fieldcraft->LockSearchlights(Detection.KnownLocation.GetValue());
+    }
     // A later zone the script names starts suspicious and wary.
     if(const FSoraBeat* Beat=ActiveBeatData(); Beat->bStealth&&!Beat->Stealth.CarryoverTo.IsEmpty())
         DetectionCarried.Add(Beat->Stealth.CarryoverTo);

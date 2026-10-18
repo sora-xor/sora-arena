@@ -271,6 +271,9 @@ public:
     int32 LightCount() const { return LightStates.Num(); }
     bool IsLightOn(int32 Light) const;
     FVector SpotOf(int32 Light) const;
+    // A real detection supplies its evidence. A generic alert bark cannot
+    // reveal where an unseen hero has moved since then.
+    void LockSearchlights(const FVector& KnownLocation);
     // The one-shot bell: rung this beat.
     bool BellRung() const { return BellUses == 0 && bBellStaged; }
     FVector BellLocation() const;
@@ -449,6 +452,9 @@ private:
     {
         int32 InSpotMs = 0;
         bool bOn = false;
+        // Current visibility is separate from exposure, which decays after
+        // the hero leaves the beam or takes cover.
+        bool bSeesHero = false;
         int32 LockedMs = 0;
         FVector LockedAt = FVector::ZeroVector;
         bool bSpookedHorses = false;
