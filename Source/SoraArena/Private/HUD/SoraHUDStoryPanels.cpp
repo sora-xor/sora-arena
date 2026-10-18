@@ -3,6 +3,7 @@
 #include "SoraCatalog.h"
 #include "SoraFrontEnd.h"
 #include "SoraInputStates.h"
+#include "SoraRhythmHUDLayout.h"
 #include "SoraSettings.h"
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
@@ -515,7 +516,55 @@ void DrawStoryStrip(const FSoraHUDFrame& F,const FStoryStrip& Strip,FLinearColor
 }
 }
 
+namespace
+{
+struct FInteractionLayout
+{
+    SoraRhythmHUDLayout::FLayout At;
+    float Width=0.f, Height=0.f, Scale=0.f, StoryTop=0.f;
+};
+FInteractionLayout BuildInteractionLayout(const FSoraHUDFrame& F)
+{
+    FInteractionLayout L;
+    if(F.Mode.Campaign()->RhythmCuePeriodMs()<=0)
+    {
+        L.Scale=.65f*F.S;
+        L.At.PromptX=F.W*.5f-75.f*F.S; L.At.PromptY=F.H*.5f+60.f*F.S;
+        return L;
+    }
+    L.Scale=FMath::Max(.65f*F.S,.65f);
+    // Reserve whichever real localized action label is widest/tallest,
+    // including rebound keyboard and current gamepad names.
+    const auto Key=SoraUI::ActionKey(&F.HUD,TEXT("Interact"));
+    const FText Prompts[]={NSLOCTEXT("SoraArena.HUD","Prompt.Capture","{Interact}  捕らえる"),
+        NSLOCTEXT("SoraArena.HUD","Prompt.Work","{Interact}  作業する"),
+        NSLOCTEXT("SoraArena.HUD","Prompt.Search","{Interact}  調べる"),
+        NSLOCTEXT("SoraArena.HUD","Prompt.PickUp","{Interact}  拾う")};
+    for(const FText& Prompt:Prompts)
+    {
+        const auto Line=SoraText::Format(Prompt,{{TEXT("Interact"),Key}});
+        int32 JW=0,JH=0,EW=0,EH=0;
+        UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),L.Scale,L.Scale,JW,JH,Line.Japanese);
+        if(F.Mode.bEnglishSubtitles)
+            UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),L.Scale*.8f,L.Scale*.8f,EW,EH,Line.English);
+        L.Width=FMath::Max(L.Width,F.HUD.LabelWidth(Line.Japanese,L.Scale)+(F.Mode.bEnglishSubtitles?
+            14.f*F.S+F.HUD.LabelWidth(Line.English,L.Scale*.8f):0.f));
+        L.Height=FMath::Max(L.Height,FMath::Max(static_cast<float>(JH),F.Mode.bEnglishSubtitles?EH+6.f*L.Scale:0.f));
+    }
+    L.StoryTop=BuildLowerStoryLayout(F).Top;
+    L.At=SoraRhythmHUDLayout::Place(F.W,F.H,F.S,L.Width,L.Height,L.StoryTop);
+    return L;
+}
+}
 float SoraHUDPanels::GameplayStoryTop(const FSoraHUDFrame& F) { return BuildLowerStoryLayout(F).Top; }
+bool SoraHUDPanels::RhythmCueLayoutFits(const FSoraHUDFrame& F,FString& Why)
+{
+    if(F.Mode.Campaign()->RhythmCuePeriodMs()<=0) return true;
+    const auto L=BuildInteractionLayout(F);
+    if(!SoraRhythmHUDLayout::Fits(L.At,F.W,F.H,L.Width,L.Height,L.StoryTop))
+    { Why=TEXT("Rhythm ring or measured Interact text exceeds the viewport or lower story boundary"); return false; }
+    return true;
+}
 bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
 {
     const FUpperStoryLayout L=BuildUpperStoryLayout(F);
@@ -656,6 +705,7 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
     const USoraCampaignDirector* Campaign=G->Campaign();
     const float W=Frame.W,H=Frame.H,S=Frame.S;
     const FLinearColor Ivory=Frame.Ivory,Gold=Frame.Gold,Teal=Frame.Teal;
+    const auto Interaction=BuildInteractionLayout(Frame);
     // The active beat's objective marker, and E when the hero can work it or
     // stands at an explore cache. Caches carry no marker (bible §12.2).
     const ASoraPlayerCharacter* Hero=G->Hero();
@@ -679,7 +729,7 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
         if(Campaign->AnchorTakesInteract()&&Metres<2.6f)
             Frame.LabelWithEnglish(SoraText::Format(bCapture?NSLOCTEXT("SoraArena.HUD","Prompt.Capture","{Interact}  捕らえる")
                 :NSLOCTEXT("SoraArena.HUD","Prompt.Work","{Interact}  作業する"),{{TEXT("Interact"),SoraUI::ActionKey(&HUD,TEXT("Interact"))}}),
-                W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+                Interaction.At.PromptX,Interaction.At.PromptY,Interaction.Scale,Gold);
     }
     if(Hero&&G->bCampaign&&!G->bDeterministicPractice)
     {
@@ -687,20 +737,20 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
         for(const int32 Cache:Campaign->AvailableCaches())
             if(FVector::Dist2D(Campaign->CacheLocation(Cache),Hero->GetActorLocation())<260.f)
                 Frame.LabelWithEnglish(SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.Search","{Interact}  調べる"),{{TEXT("Interact"),Interact}}),
-                    W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+                    Interaction.At.PromptX,Interaction.At.PromptY,Interaction.Scale,Gold);
         // A loose collectible within reach.
         for(const int32 Pickup:Campaign->LoosePickups())
             if(FVector::Dist2D(Campaign->PickupLocation(Pickup),Hero->GetActorLocation())<260.f)
                 Frame.LabelWithEnglish(SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.PickUp","{Interact}  拾う"),{{TEXT("Interact"),Interact}}),
-                    W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+                    Interaction.At.PromptX,Interaction.At.PromptY,Interaction.Scale,Gold);
     }
     // A continuously closing, shape-based metronome; no flashing or color-only
-    // signal. At the work station it surrounds the action cue below the reticle.
+    // signal. Its entire sweep stays beside the measured action cue.
     const int32 CuePeriod=Campaign->RhythmCuePeriodMs();
     if(CuePeriod>0)
     {
         const float Radius=22.f+30.f*Campaign->RhythmCueRemainingMs()/CuePeriod;
-        const FVector2D Center(W*.5f,H*.5f+105*S);
+        const FVector2D Center(Interaction.At.CenterX,Interaction.At.CenterY);
         for(int32 Segment=0;Segment<48;++Segment)
         {
             const float A=Segment*2.f*PI/48.f,B=(Segment+1)*2.f*PI/48.f;
