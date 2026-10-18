@@ -676,6 +676,7 @@ struct FSoraBeat
     // binds a captured boss ("interact:bulkhead_lever").
     TArray<FString> PhaseEvents;
     FString CaptureEvent;
+    int32 CaptureHoldMs=0;
     // The beat's `fail` rows by event.
     TMap<FString, SoraBeatRules::EFail> FailEvents;
     // Collectibles in an explore beat's cache.

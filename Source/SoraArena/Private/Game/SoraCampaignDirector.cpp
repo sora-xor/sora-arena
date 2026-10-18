@@ -113,6 +113,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
     if(bPryingCarryGate) bCarryGateHit=true;
     StopPlayerCrank();
+    if(SpineCut.Active) SoraSummitRules::Interrupt(SpineCut);
     // A pupil's cut landed while the awase was still to be met: a guard
     // raised just after it is late.
     const ASoraEnemy* Pupil=Cast<ASoraEnemy>(Event.Causer);
@@ -422,6 +423,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyCarryDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
+    SpineCut={}; SpineReadyMs=0; bSpinePromptShown=false; bSpineMutoRaised=false;
     ResetCarryWork();
     StopPlayerCrank(false);
     RhythmClock={}; RhythmInput={}; RhythmCueShown=-1; RhythmStrikeMs=-1;
@@ -708,6 +710,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     TickHeldWork(DeltaMs);
     TickPlayerCrank(DeltaMs);
     TickPlayerRhythm();
+    if(ActiveBeatData()!=&Beat) return;
+    TickSpineCut(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // Horses, a siege on defended targets, the escorted party and the task's kit.
     TickSpace(DeltaMs);
@@ -796,6 +800,8 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(SpineCut.Active&&ActiveBeatData()&&ActiveBeatData()->CaptureHoldMs>0)
+        return static_cast<float>(SpineCut.HeldMs)/ActiveBeatData()->CaptureHoldMs;
     if(bPryingCarryGate&&Task.CarryGateMs>0) return static_cast<float>(TaskState.CarryGateHeldMs)/Task.CarryGateMs;
     if(bStringingBow&&Task.RecoveryStringMs>0) return static_cast<float>(TaskState.RecoveryHeldMs)/Task.RecoveryStringMs;
     const FSoraBeat* Beat=ActiveBeatData();
@@ -1567,6 +1573,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(InteractEpilogue(Player)) return;
     if(InteractRecovery(Player)) return;
     if(InteractCarryGate(Player)) return;
+    if(InteractSpine()) return;
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
     const FSoraBeatSpace& Space=Beat->Space;
@@ -1689,7 +1696,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     case SoraBeatRules::EGoal::OpponentDown:
         // E at a yielded boss binds it: the capture's own interaction (the
         // vault's bulkhead, the engine's spine) ends the fight.
-        if(SoraBeatRules::AwaitsCapture(TaskState,Task)&&Near(ASoraWorldBuilder::Floor(CaptiveAt),Reach)&&
+        if(!IsSpineCapture()&&SoraBeatRules::AwaitsCapture(TaskState,Task)&&Near(ASoraWorldBuilder::Floor(CaptiveAt),Reach)&&
             (bWorked=SoraBeatRules::Capture(TaskState,Task)))
         {
             Fire(Beat->CaptureEvent);
@@ -1781,7 +1788,8 @@ void USoraCampaignDirector::OpponentDefeated(ASoraEnemy* Opponent)
         {
             // A captured boss yields where it stands and waits for the hero's hand.
             Captive=Opponent; CaptiveAt=FVector2D(Opponent->GetActorLocation());
-            Notify(TEXT("相手は膝をついた。近づいて E で捕らえよ。"),TEXT("Your opponent yields. Go to them and press E to capture."),6.f);
+            if(IsSpineCapture()) BeginSpineCapture();
+            else Notify(TEXT("相手は膝をついた。近づいて E で捕らえよ。"),TEXT("Your opponent yields. Go to them and press E to capture."),6.f);
             UpdateObjective();
         }
         else if(bBoss) Fire(TEXT("outro_cinematic"));

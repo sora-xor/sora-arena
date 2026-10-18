@@ -1,4 +1,7 @@
 #include "SoraWorldBuilder.h"
+#include "SoraSettings.h"
+#include "Camera/CameraComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "SoraCatalog.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
@@ -24,10 +27,10 @@ void ASoraWorldBuilder::BuildSummit(const FSoraBeat& Beat)
     Cylinder(TEXT("SummitDais"),SummitCenter+FVector(0,0,60),400,120,true);
     for(int32 Step=0;Step<3;++Step)
         Cylinder(TEXT("SummitDaisStep"),SummitCenter+FVector(0,0,(Step+1)*15),640-Step*80,(Step+1)*30,true);
-    Cylinder(TEXT("SummitSpine"),SummitCenter+FVector(0,0,1220),200,2200,true);
+    SummitSpine=Cylinder(TEXT("SummitSpine"),SummitCenter+FVector(0,0,1220),200,2200,true);
     for(int32 Drum=0;Drum<11;++Drum)
         Cylinder(TEXT("SummitLedgerDrum"),SummitCenter+FVector(0,0,220+200*Drum),220,14,false);
-    Box(TEXT("SummitSpineSeam"),SummitCenter+FVector(0,-201,220),FVector(10,3,180),Gold,false);
+    SummitSeam=Box(TEXT("SummitSpineSeam"),SummitCenter+FVector(0,-201,220),FVector(10,3,180),Gold,false);
     Box(TEXT("SummitDeskPlinth"),SummitCenter+FVector(0,1200,50),FVector(260,140,100),Metal,true);
     Box(TEXT("SummitWritingDesk"),SummitCenter+FVector(0,1200,118),FVector(240,100,36),FLinearColor(.2f,.05f,.03f),true);
     for(int32 N=0;N<48;++N)
@@ -72,4 +75,33 @@ void ASoraWorldBuilder::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
     TickSeizure();
+}
+
+bool ASoraWorldBuilder::CanReachSummitSpine(const ASoraPlayerCharacter& Hero) const
+{
+    if(!bSummitActive||!SummitSpine||!Hero.GetCharacterMovement()->IsMovingOnGround()) return false;
+    const float Feet=Hero.GetActorLocation().Z-Hero.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    if(FMath::Abs(Feet-(SummitCenter.Z+120))>15) return false;
+    const FVector Eye=Hero.GetCamera()->GetComponentLocation(),Target=SummitSpinePoint(),Delta=Target-Eye;
+    if(Delta.Size()>260||FVector::DotProduct(Hero.GetCamera()->GetForwardVector(),Delta.GetSafeNormal())<.866f) return false;
+    FHitResult Hit; FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraSpineReach),false,&Hero);
+    // Trace just into the spine: the far side, a wall or a body cannot satisfy
+    // a clear view of the actual seam on its south face.
+    return GetWorld()->LineTraceSingleByChannel(Hit,Eye,Target+Delta.GetSafeNormal()*8,ECC_Visibility,Query)&&
+        Hit.GetComponent()==SummitSpine&&FVector::Dist(Hit.ImpactPoint,Target)<12;
+}
+void ASoraWorldBuilder::ShowSummitSpine(bool Ready,float CutProgress)
+{
+    if(!SummitSeam) return;
+    const float Progress=FMath::Clamp(CutProgress,0.f,1.f);
+    const FLinearColor Color=Progress>=1?FLinearColor(.01f,.01f,.015f):Ready
+        ?SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave):FLinearColor(.15f,.2f,.22f);
+    if(auto* Material=Cast<UMaterialInstanceDynamic>(SummitSeam->GetMaterial(0)))
+    {
+        Material->SetVectorParameterValue(TEXT("BaseColor"),Color);
+        Material->SetVectorParameterValue(TEXT("Color"),Color);
+    }
+    // A widening fracture is a functional seam proxy. The 22 m spine's
+    // authored split and the hero's nukitsuke clip remain art work.
+    SummitSeam->SetRelativeScale3D(FVector(.1f+.7f*Progress,.03f,1.8f));
 }

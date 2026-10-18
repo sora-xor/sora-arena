@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "SoraSummitRules.h"
 #include "Components/ActorComponent.h"
 #include "SoraBeatRules.h"
 #include "SoraCrankInputRules.h"
@@ -294,6 +295,14 @@ private:
     bool BeginSealCut(ASoraPlayerCharacter& Player);
     void TickSealCut();
     FVector2D CaptiveAt = FVector2D::ZeroVector;
+    SoraSummitRules::FCut SpineCut;
+    int32 SpineReadyMs=0;
+    bool bSpinePromptShown=false,bSpineMutoRaised=false;
+    bool IsSpineCapture() const;
+    bool SpineCutEligible() const;
+    void BeginSpineCapture();
+    bool InteractSpine();
+    void TickSpineCut(int32 DeltaMs);
     TArray<FPendingSpawn> Pending;
     // Chapter progress and the unlocks and flags held when the chapter began.
     SoraBeatRules::FProgress BeatState{0u, 0u, 0u, 0u, 0u, false};

@@ -673,7 +673,7 @@ def normalize_task(beat):
         "type": kind, "task": params.get("task"), "goal": None, "count": 0, "duration_ms": 0, "skippable": False,
         "anchor_after_lines": False, "pause_when_seen": params.get("stealth") is True,
         "max_alive": params.get("max_alive", 6), "waves": [], "phases": [1000], "defeat": "kill",
-        "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "maai": None, "flank_bouts": False,
+        "capture_event": None, "capture_hold_ms": 0, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "maai": None, "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
         "max_turn_ms": 0, "crank_coop": None, "crank_player": None, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
         "dropoff_capacity": None, "drop_on_hit": carry_drop_policy(False, where), "carry_gate": None, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
@@ -906,6 +906,10 @@ def normalize_task(beat):
             if not isinstance(binding, str) or not re.fullmatch(r"\w+", binding):
                 fail(where, "a capture names no interaction that binds the boss")
             task["capture_event"] = f"interact:{binding}"
+            if binding == "engine_spine":
+                task["capture_hold_ms"] = whole_ms((ext.get("post_defeat") or {}).get("hold_s"), f"{where}.post_defeat.hold_s")
+                if task["capture_hold_ms"] <= 0:
+                    fail(where, "the engine spine needs a positive held draw-cut")
     elif kind == "explore_optional":
         task["goal"] = "cache"
 

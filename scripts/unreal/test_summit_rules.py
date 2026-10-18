@@ -67,6 +67,21 @@ int main() {
     }
     assert(Selected(2,2,-3,2,-3)); // Tally locks all three lines through the marked hero cell.
     assert(Selected(2,2,1,2,-3)&&Selected(2,-2,-3,2,-3)&&Selected(2,3,-2,2,-3));
+    for(int frame:{1,7,16,33,100,500}) {
+        FCut cut; assert(Begin(cut,true,true));
+        int elapsed=0; bool done=false;
+        while(!done) { done=TickCut(cut,frame,true,true,1500); elapsed+=frame; assert(elapsed<=1500+frame); }
+        assert(elapsed>=1500&&cut.NeedsRelease&&!cut.Active);
+        assert(!Begin(cut,true,true));
+        TickCut(cut,1,true,false,1500); assert(Begin(cut,true,true));
+        assert(!TickCut(cut,700,true,true,1500));
+        TickCut(cut,1,true,false,1500); assert(cut.HeldMs==0&&!cut.Active);
+        assert(Begin(cut,true,true)); assert(!TickCut(cut,900,true,true,1500));
+        TickCut(cut,1,false,true,1500); assert(cut.HeldMs==0&&cut.NeedsRelease);
+        assert(!Begin(cut,true,true));
+        TickCut(cut,1,true,false,1500); assert(Begin(cut,true,true));
+        Interrupt(cut); assert(!TickCut(cut,1500,true,true,1500));
+    }
     std::cout<<count<<" clipped tiles, "<<full<<" full squares, "<<area<<" cm2\n";
 }
 '''

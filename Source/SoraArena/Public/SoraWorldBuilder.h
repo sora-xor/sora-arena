@@ -121,6 +121,10 @@ public:
     bool BeginSeizure(ASoraBoss& Boss,int32 Attack,int32 Serial,int32 WarningMs);
     int32 SeizurePattern() const { return SummitPattern; }
     bool SummitSafePoint(const FVector& From,const ACharacter& Body,FVector& Out) const;
+    FVector SummitSpineApproach() const { return SummitCenter+FVector(0,-320,120); }
+    FVector SummitSpinePoint() const { return SummitCenter+FVector(0,-201,220); }
+    bool CanReachSummitSpine(const ASoraPlayerCharacter& Hero) const;
+    void ShowSummitSpine(bool Ready,float CutProgress=0.f);
     void ShowRecoveryBundle(bool Visible);
     void ShowEpilogue(bool SwordFound, bool SwordReturned, int32 Plaques);
     int32 RehungPlaques() const { return EpiloguePlaques; }
@@ -147,6 +151,8 @@ private:
     void BuildSpire(const FSoraBeat& Beat);
     void BuildSummit(const FSoraBeat& Beat);
     FVector SummitCenter=FVector::ZeroVector;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> SummitSpine;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> SummitSeam;
     void BuildSummitTiles();
     void ClearSummitTiles();
     void ResetSeizure();

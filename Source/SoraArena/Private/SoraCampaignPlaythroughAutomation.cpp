@@ -12,6 +12,7 @@
 #include "SoraRecoveryAutomation.h"
 #include "SoraLiftAutomation.h"
 #include "SoraSpireAutomation.h"
+#include "SoraSummitAutomation.h"
 #include "SoraCarryAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
@@ -677,12 +678,14 @@ bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& B
         for (TActorIterator<ASoraEnemy> It(World); It; ++It)
             if (!It->IsAlive() && !It->IsActorBeingDestroyed() && Director->IsCaptive(**It))
                 Captive = *It;
+    const bool Spine=Beat.CaptureEvent==TEXT("interact:engine_spine");
     FVector At;
     bool bOk = Test.TestNotNull(*(Beat.Id + TEXT(": the yielded boss stays where it fell")), Captive) &&
         Test.TestTrue(*(Beat.Id + TEXT(": the yielded boss kneels upright and does not leave")),
             FMath::Abs(Captive->GetActorRotation().Roll) < 1.f && Captive->GetLifeSpan() == 0.f) &&
         Test.TestTrue(*(Beat.Id + TEXT(": the captive is the objective, bound with E")),
-            Director->ObjectiveAnchor(At) && Director->AnchorTakesInteract() && FVector::Dist2D(At, Captive->GetActorLocation()) < 1.f);
+            Director->ObjectiveAnchor(At) && Director->AnchorTakesInteract() && (Spine
+                ?At.Equals(Mode(State)->Arena()->SummitSpinePoint(),1.f):FVector::Dist2D(At,Captive->GetActorLocation())<1.f));
     if (!bOk)
         return Fail(Test, State, Beat.Id + TEXT(": the captured boss did not yield"));
     MoveTo(State, FarAway(State));
@@ -691,12 +694,18 @@ bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& B
     Mode(State)->Interact(Player(State));
     bOk &= Test.TestTrue(*(Beat.Id + TEXT(": E from afar binds nothing, and the captive waits")),
         Director->AwaitingCapture() && IsValid(Captive) && !Captive->IsActorBeingDestroyed());
-    MoveTo(State, At);
-    if (!Advance(Test, State, 1))
-        return false;
     const int32 Index = Director->ActiveBeat();
-    Mode(State)->Interact(Player(State));
-    bOk &= Test.TestTrue(*(Beat.Id + TEXT(": E at the captive binds it and ends the fight")),
+    if(Spine)
+    {
+        if(!SoraSummitAutomation::CutSpine(*State.World)) return Fail(Test,State,TEXT("The held spine cut is unreachable or incomplete"));
+    }
+    else
+    {
+        MoveTo(State,At);
+        if(!Advance(Test,State,1)) return false;
+        Mode(State)->Interact(Player(State));
+    }
+    bOk &= Test.TestTrue(*(Beat.Id + TEXT(": the capture interaction ends the fight")),
         !Director->AwaitingCapture() && (Director->ActiveBeat() != Index || Mode(State)->bChapterComplete));
     bOk &= ExpectLinesQueued(Test, State, ChapterData(State), Index, *Beat.CaptureEvent);
     ++State.Captures;

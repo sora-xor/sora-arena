@@ -1,5 +1,7 @@
 """An elevated disc, a walkable 18 m stair, and unchanged cinematic/boss rules."""
 import json
+import copy
+from build_campaign_data import normalize_task, BuildError
 import math
 from pathlib import Path
 import unittest
@@ -27,6 +29,18 @@ class SummitDataTests(unittest.TestCase):
             run=math.dist(a[:2],b[:2])-(200 if index>1 else 0)-(200 if index<len(stairs)-1 else 0)
             self.assertGreaterEqual(run/n,45)
         self.assertEqual(spec['center'],self.rows[10]['anchor'])
+
+    def test_capture_keeps_outcome_but_requires_the_authored_hold(self):
+        beat=self.c['beats'][13]
+        self.assertEqual(beat['task']['capture_event'],'interact:engine_spine')
+        self.assertEqual(beat['task']['capture_hold_ms'],1500)
+        self.assertEqual(beat['task']['defeat'],'capture')
+        for value in (0,-1,None):
+            bad=copy.deepcopy(beat); bad['ext']['post_defeat']['hold_s']=value
+            with self.assertRaises((BuildError,ValueError,TypeError)):
+                normalize_task(bad)
+        for row in self.c['beats']:
+            if row['id']!='ch08.b14': self.assertEqual(row['task']['capture_hold_ms'],0)
 
     def test_overlapping_places_are_separated_by_height(self):
         a=self.c['space']['zones'][self.rows[9]['zone']]
