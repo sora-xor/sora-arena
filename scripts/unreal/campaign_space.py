@@ -766,8 +766,8 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
         # south of the west pillar (235 cm off the shrine axis).
         gate_x = rect[2] - 900
         record["anchor"] = [gate_x - 100, 500]  # Toranosuke and the sword
-        record["closing"] = [gate_x - 300, -235]  # freestanding name board
         if beat["id"] == "ch08.b17":
+            record["closing"] = [gate_x - 300, -235]  # freestanding name board
             record["volumes"] = [{"event": "volume_enter:vol_torii",
                                   "center": [gate_x - 500, 0], "size": [1000, 2000]}]
     record.setdefault("objectives", [])

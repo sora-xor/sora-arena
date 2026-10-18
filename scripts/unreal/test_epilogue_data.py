@@ -42,7 +42,9 @@ class EpilogueTests(unittest.TestCase):
             self.assertTrue(zone['rect'][1] + 100 < point[1] < zone['rect'][3] - 100)
         ending = next(s for s in self.chapter['space']['beats'] if s['beat'] == 'ch08.b18')
         self.assertEqual(ending['anchor'], self.space['anchor'])
-        self.assertEqual(ending['closing'], self.space['closing'])
+        # The cinematic reuses the board's staging, not the interaction task.
+        self.assertIsNone(ending['closing'])
+        self.assertFalse(next(b for b in self.chapter['beats'] if b['id'] == 'ch08.b18')['task']['anchor_after_lines'])
         # This scene keeps its authored checkpoint policy; final completion
         # is persisted by the existing campaign-complete checkpoint.
         self.assertFalse(self.beat['checkpoint'])

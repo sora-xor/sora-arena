@@ -11,7 +11,12 @@ void ASoraWorldBuilder::StageEpilogue(const FSoraBeat& Beat)
     if(Beat.Id!=TEXT("ch08.b17")&&Beat.Id!=TEXT("ch08.b18")) return;
     const TCHAR* Cube=TEXT("/Engine/BasicShapes/Cube.Cube");
     const FLinearColor Wood(.30f,.18f,.08f),Plaque(.65f,.47f,.23f),Lacquer(.08f,.025f,.02f);
-    EpilogueBoard=Floor(Beat.Space.Closing);
+    // The final cinematic has no closing interaction. Reuse the exchange's
+    // validated staging point without adding a false task anchor to b18.
+    const FSoraChapter& Chapter=FSoraCatalog::Get().Chapter(7);
+    const int32 ExchangeIndex=Chapter.BeatIndex(TEXT("ch08.b17"));
+    if(!Chapter.Beats.IsValidIndex(ExchangeIndex)) return;
+    EpilogueBoard=Floor(Chapter.Beats[ExchangeIndex].Space.Closing);
     EpilogueSwordStand=Floor(Beat.Space.Anchor);
     const FVector B=EpilogueBoard,S=EpilogueSwordStand;
     for(int32 Side:{-1,1})
