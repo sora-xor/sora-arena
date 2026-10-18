@@ -198,7 +198,7 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
     if(Hero&&(NeedsLiftEntry||NeedsSummitEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
     {
         ClearHorses();
-        Hero->SetBase(nullptr);
+        Hero->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
         Hero->GetCharacterMovement()->StopMovementImmediately();
         const FRotator Facing(0,Space.EntryYaw,0);
         Hero->SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Space.Entry,Space.HeightCm+120.f),Facing,false,nullptr,ETeleportType::TeleportPhysics);
