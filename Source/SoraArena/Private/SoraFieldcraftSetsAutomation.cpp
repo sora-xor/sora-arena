@@ -240,13 +240,16 @@ bool FSoraFieldcraftConvoyNetsTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The drone whose net was cut reloads"), NetDrone && Fieldcraft->IsRearming(*NetDrone));
     const int32 Freed = Netted;
     bool bLeftBe = true;
+    bool bRiderLeftBe = true;
     for (int32 Frame = 0; Frame < 32; ++Frame)
     {
         if (!W.Tick(1, .25f)) return false;
         bLeftBe &= Fieldcraft->NetOf(Freed) == SoraFieldcraftRules::ENet::Free;
+        bRiderLeftBe &= Campaign->IsMounted();
         for (int32 Quarry = 0; Quarry < Fieldcraft->QuarryCount(); ++Quarry) bLeftBe &= Fieldcraft->TetherOf(Quarry) != NetDrone;
     }
     TestTrue(TEXT("While it reloads it takes nothing, and the horse cut free is let be"), bLeftBe);
+    TestTrue(TEXT("A reloading netter does not fire another net at the rider"), bRiderLeftBe);
     // A drone brought down lets its net fall slack.
     Netted = WaitForNet(160);
     if (!TestTrue(TEXT("The drones net again"), Netted != INDEX_NONE))
@@ -262,6 +265,9 @@ bool FSoraFieldcraftConvoyNetsTest::RunTest(const FString& Parameters)
     // On foot: Interact held beside the net for a second cuts it.
     Netted = WaitForNet(200);
     if (!TestTrue(TEXT("A third net falls"), Netted != INDEX_NONE))
+        return false;
+    if (!TestTrue(TEXT("The convoy remains in live play before the on-foot cut"), W.Mode()->IsPlaying()) ||
+        !TestTrue(TEXT("The rider is still in the saddle before pressing dismount"), Campaign->IsMounted()))
         return false;
     if (!W.Press(EKeys::E) || !W.Tick(2) || !TestFalse(TEXT("E in the saddle dismounts him"), Campaign->IsMounted()))
         return false;
@@ -302,6 +308,25 @@ bool FSoraFieldcraftDroneCrossingTest::RunTest(const FString& Parameters)
     const FSoraNets& Nets = Fieldcraft->Active()->Nets;
     if (!TestTrue(TEXT("G4 is the crossing wave, its mark at 1 020 m"), Nets.CrossWave == 3 && Nets.CrossAtCm == 102000 &&
         Nets.NetsPerWave == TArray<int32>({2, 2, 3})))
+        return false;
+    // Clear G1-G3 through normal damage before reaching G4. Jumping straight
+    // past all four triggers leaves seven earlier drones queued against the
+    // six-opponent cap, so the crossing wave cannot enter the world.
+    const float BeforeG4 = Kaido.RouteLength * .70f;
+    Campaign->Steed()->Place(Floor(Kaido.PointAlong(BeforeG4)), Kaido.HeadingAt(BeforeG4));
+    for (int32 Frame = 0; Frame < 120; ++Frame)
+    {
+        if (!W.Tick(1)) return false;
+        for (TActorIterator<ASoraEnemy> It(W.World->GetTestWorld()); It; ++It)
+            if (It->IsAlive())
+                UGameplayStatics::ApplyDamage(*It, It->Health + 10.f, W.Hero()->GetController(), W.Hero(), UDamageType::StaticClass());
+        const auto& State = Campaign->TaskProgress();
+        if (State.Down[0] == 2 && State.Down[1] == 3 && State.Down[2] == 2) break;
+    }
+    const auto& Cleared = Campaign->TaskProgress();
+    if (!TestTrue(TEXT("The seven earlier drones are defeated before G4 is released"),
+        Cleared.Down[0] == 2 && Cleared.Down[1] == 3 && Cleared.Down[2] == 2) ||
+        !TestFalse(TEXT("No crossing is reported before its mark"), W.Raised(TEXT("ai:drone_crossed_right"))))
         return false;
     // Just past the mark, the string walking slowly ahead of the hero.
     const float At = Nets.CrossAtCm + 300.f;
@@ -504,6 +529,14 @@ bool FSoraFieldcraftCartTest::RunTest(const FString& Parameters)
     UGameplayStatics::ApplyDamage(Drone, Drone->Health + 10.f, W.Hero()->GetController(), W.Hero(), UDamageType::StaticClass());
     TestTrue(TEXT("Shot down, its net falls slack and the cart walks on"), Walk(8) > 0);
     // Opponents standing at the cart wear it down; at nothing it is lost.
+    // Step beyond the escort's wait range so the cart stays with these
+    // stationary attackers instead of walking out of their siege radius.
+    const FSoraZone& EscortRoad = Road(W);
+    const float CartChainage = EscortRoad.ChainageOf(FVector2D(Campaign->PartyLocation()));
+    W.Stand(Floor(EscortRoad.PointAlong(CartChainage + Campaign->ActiveTask().WaitCm + 500.f)));
+    if (!W.Tick(1))
+        return false;
+    const int32 SiegeProgress = Campaign->TaskProgress().Progress;
     for (int32 Index = 0; Index < 6; ++Index)
         HoldStill(ASoraEnemy::SpawnArchetype(*W.World->GetTestWorld(), TEXT("enforcer_rifle"), Index + 1,
             Campaign->PartyLocation() + FVector(-150.f + Index * 60.f, -250.f, 120.f), FRotator::ZeroRotator));
@@ -512,6 +545,7 @@ bool FSoraFieldcraftCartTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Opponents at the cart wear it down"), Fieldcraft->QuarryHealth(0) < 600);
     for (int32 Frame = 0; Frame < 100 && !W.Mode()->bDefeated; ++Frame)
         if (!W.Tick(1, .25f)) return false;
+    TestEqual(TEXT("With the hero beyond its wait range, the besieged cart stays put"), Campaign->TaskProgress().Progress, SiegeProgress);
     TestTrue(TEXT("The cart worn to nothing fails the escort"), W.Raised(TEXT("convoy_member_hp0")) && W.Mode()->bDefeated);
     return true;
 }
@@ -555,14 +589,20 @@ bool FSoraFieldcraftSearchlightTest::RunTest(const FString& Parameters)
         if (!W.Tick(2) || !W.Press(EKeys::C) || !Follow(90))
             return false;
         TestTrue(TEXT("A diver in the spot is not seen"), Fieldcraft->IsDiving() && !W.Raised(TEXT("ai_event:searchlight_suspicious")));
-        if (!W.Press(EKeys::C) || !W.Tick(20, .25f))
+        // Surface, then start observing the detection immediately. Waiting
+        // five seconds here can trigger the alarm at the sweep's turnaround
+        // before Follow starts, and exhaust its six-second lock before the
+        // later assertion.
+        if (!W.Press(EKeys::C) || !W.Tick(2))
             return false;
+        TestFalse(TEXT("The hero has surfaced before measuring light exposure"), Fieldcraft->IsDiving());
         // A head in the spot: half a second makes the guards look, a second and a half raises the alarm.
         if (!Follow(40))
             return false;
         TestTrue(TEXT("Half a second in the light makes the guards look"), W.Raised(TEXT("ai_event:searchlight_suspicious")));
-        if (!Follow(70))
-            return false;
+        TestFalse(TEXT("Half a second has not yet raised the searchlight alarm"), W.Raised(TEXT("ai_event:searchlight_alert")));
+        for (int32 Frame = 0; Frame < 70 && !W.Stealth()->IsDetected(); ++Frame)
+            if (!Follow(1)) return false;
         TestTrue(TEXT("A second and a half raises the alarm"), W.Raised(TEXT("ai_event:searchlight_alert")) && W.Stealth()->IsDetected());
         if (!W.Tick(2))
             return false;
@@ -768,7 +808,15 @@ bool FSoraFieldcraftLaddersTest::RunTest(const FString& Parameters)
         const float Half = W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
         if (!TestTrue(TEXT("The shop has its straw"), Ladder.bStraw))
             return false;
-        W.Hero()->SetActorLocation(FVector(Ladder.Straw.Center, Ladder.HeightCm + Half + 20.f), false, nullptr, ETeleportType::TeleportPhysics);
+        // The straw's far half crosses this beat's exit (its centre is only
+        // 5 cm inside it). Land on the near half so the real exit transition
+        // does not remove this ladder before its landing checks run.
+        const FVector2D StrawLanding = Ladder.Straw.Center + (Ladder.Roof.Center - Ladder.Straw.Center).GetSafeNormal() *
+            (Ladder.Straw.Size.GetMin() * .25f);
+        if (!TestTrue(TEXT("The landing remains on straw"), Ladder.Straw.Contains(Floor(StrawLanding))) ||
+            !TestFalse(TEXT("The straw landing stays outside the beat exit"), W.BeatData().Space.Exit.Contains(Floor(StrawLanding))))
+            return false;
+        W.Hero()->SetActorLocation(FVector(StrawLanding, Ladder.HeightCm + Half + 20.f), false, nullptr, ETeleportType::TeleportPhysics);
         W.Hero()->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
         // A fall starts from the roof: he was up there.
         if (!W.Tick(1))
@@ -778,6 +826,8 @@ bool FSoraFieldcraftLaddersTest::RunTest(const FString& Parameters)
         if (!W.Tick(2))
             return false;
         AddInfo(FString::Printf(TEXT("Landed at %s"), *W.Hero()->GetActorLocation().ToString()));
+        if (!TestEqual(TEXT("Landing on the near straw keeps the ladder's beat active"), W.Campaign()->ActiveBeat(), W.Beat))
+            return false;
         // Back up, and off where there is no straw, with a guard close by: he hears it.
         W.Stand(Floor(Ladder.Foot), Ladder.Yaw);
         if (!W.Tick(2) || !W.Press(EKeys::SpaceBar))

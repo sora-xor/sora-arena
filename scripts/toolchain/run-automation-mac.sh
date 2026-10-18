@@ -37,6 +37,9 @@ if (( FREE_GIB < MIN_FREE_GIB )); then
 fi
 
 mkdir -p "$OUTPUT"
+# The editor resolves relative report paths from Engine/Binaries/Mac, whereas
+# the shell reads them from its own working directory. Give both the same path.
+OUTPUT="$(cd -- "$OUTPUT" && pwd)"
 LOG="$OUTPUT/editor.log"
 REPORT="$OUTPUT/report"
 rm -rf "$REPORT"

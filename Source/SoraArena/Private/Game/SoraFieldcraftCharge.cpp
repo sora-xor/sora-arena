@@ -207,13 +207,21 @@ void USoraFieldcraft::TickCharge(float DeltaTime, int32 DtMs)
         Rival->SetRoadPace(FMath::Max(1, HeroPace));
         Rival->SetRoadChainage(Here);
     }
+    // Reserve the gap around the hero's actual place, not only nominal rank
+    // three: he accelerates and reins independently of the pack. Keep every
+    // rank behind that gap spaced from the one before it, so a rider cannot
+    // pass through Toranosuke while the hero catches up or falls behind.
+    const int32 AheadRanks = FMath::Max(0, FMath::FloorToInt32((PackChainage - Here - Layout::RankCm) / Layout::RankCm) + 1);
     for (int32 Index = 1; Index < Riders.Num(); ++Index)
         if (ASoraHorse* Rider = Riders[Index])
         {
-            const int32 Rank = (Index - 1) / 2 + ((Index - 1) / 2 >= Layout::HeroRank ? 1 : 0);
+            const int32 Rank = (Index - 1) / 2;
+            float At = PackChainage - Rank * Layout::RankCm;
+            if (Rank >= AheadRanks)
+                At = FMath::Min(At, Here - (Rank - AheadRanks + 1) * Layout::RankCm);
             Rider->SetLane((Index % 2 ? -1.f : 1.f) * Layout::LaneCm);
             Rider->SetRoadPace(FMath::Max(1, Pace));
-            Rider->SetRoadChainage(PackChainage - Rank * Layout::RankCm);
+            Rider->SetRoadChainage(At);
         }
     RiderStrikes(DtMs);
 }

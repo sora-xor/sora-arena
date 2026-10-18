@@ -454,6 +454,11 @@ bool HoistLoad(FAutomationTestBase& Test, FState& State)
     for (int32 Action = 0; Action < MaxActionsPerBeat && !LiveEnemies(State).IsEmpty(); ++Action)
         if (!DefeatOne(Test, State))
             return false;
+    // The well's debt-bound conscript is also a guard, but is deliberately
+    // absent from LiveEnemies' lethal kill count. Subdue and, when taught,
+    // free it through the same play path as the other guarded work.
+    if (!FreeConscripts(Test, State))
+        return false;
     FVector Anchor;
     if (!Director->ObjectiveAnchor(Anchor))
         return Fail(Test, State, Where(State) + TEXT(": no pickup to hoist at"));
@@ -468,7 +473,8 @@ bool HoistLoad(FAutomationTestBase& Test, FState& State)
     if (!bHeld || !Advance(Test, State, 1))
         return false;
     if (!Test.TestTrue(TEXT("A load is hoisted with Interact held, not at a press"), bStarted && Director->TaskProgress().Carrying))
-        return Fail(Test, State, Where(State) + TEXT(": the load was not hoisted"));
+        return Fail(Test, State, Where(State) + FString::Printf(TEXT(": the load was not hoisted (started=%d, carrying=%d, watched=%d, held=%.3f)"),
+            bStarted, Director->TaskProgress().Carrying, Director->IsHeldWorkWatched(), Director->HeldWorkProgress()));
     ++State.LoadsHoisted;
     return true;
 }

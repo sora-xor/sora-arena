@@ -215,7 +215,12 @@ void USoraFieldcraft::TickNets(int32 DtMs)
         const int32 Over = Held != INDEX_NONE ? Held : bCrossing ? Nearest(*Drone, false) : INDEX_NONE;
         if (Over == INDEX_NONE)
         {
-            Brain->ClearErrand();
+            // A netter waiting for quarry or reloading still belongs to this
+            // convoy assignment. Clearing its errand resumes ordinary combat
+            // AI, which fires another seizure net at the rider during reload
+            // and throws him from the saddle. Hold station until it can take
+            // quarry again instead of starting an unrelated attack.
+            Brain->SetErrand(Drone->GetActorLocation(), Drone->GetActorForwardVector(), 1.f, 0, false);
             continue;
         }
         const FVector At = QuarryLocation(Over);
