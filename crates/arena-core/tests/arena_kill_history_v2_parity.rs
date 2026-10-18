@@ -24,6 +24,7 @@ macro_rules! kernel_sources {
 const KERNEL_SOURCES: &[(&str, &[u8])] = kernel_sources![
     "lib.rs",
     "simulation.rs",
+    "simulation/tick.rs",
     "simulation/abilities.rs",
     "simulation/hazards.rs",
     "simulation/objectives.rs",

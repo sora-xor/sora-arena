@@ -1,16 +1,24 @@
 # ArenaV1 staged execution proof: design gate
 
 This is an implementation design for the requested 12-player, 36,000-tick
-match. It is **not** a generated hit proof or a qualified settlement path.
+match. It is **not** a complete execution proof or a qualified settlement path.
 Real-value bonding remains disabled. The [feasibility record](arena-feasibility.md)
 contains the native source-sealed measurements.
 
-## Limits established by current source
+The [generic staged hit component](staged-hit-selection.md) now replaces the
+wide experimental ray-selection layout for new component research. It supports
+12 players, 64 walls and 48 entities with 674 AIR columns and a 2,643,392-byte
+conservative native wire bound. It proves a decision conditional on a public
+snapshot; authenticated World execution and settlement composition remain open.
+The wide-layout measurements below explain the earlier failed approach rather
+than impose a four-wall limit on the new component.
 
-| Current native fact | Consequence for ArenaV1 |
+## Native limits and earlier wide-layout measurements
+
+| Native fact or measured research result | Consequence for ArenaV1 |
 | --- | --- |
 | The execution envelope is capped at 4,194,304 bytes (`iroha_data_model/src/execution_proofs.rs`). | The compiled 12-player/four-wall hit layout's mandatory openings alone are 126,125,312 bytes. A larger transaction limit alone cannot repair the relation. |
-| The existing segment/box graph has 3,703 AIR columns; the composed hit graph has 57,836 (`arena_geometry_air.rs`, `arena_hit_air.rs`, source-sealed layout run). | Even a standalone current geometry intersection exceeds the envelope's opening budget. It must be expressed as a narrower staged circuit with the same integer semantics. |
+| The earlier segment/box graph has 3,703 AIR columns; the composed hit graph has 57,836 (`arena_geometry_air.rs`, `arena_hit_air.rs`, source-sealed layout run). | These wide graphs exceed the envelope's opening budget. The new staged component retains their integer semantics in a narrower microcycle schedule; full execution composition is still required. |
 | The native proof driver fixes 136 queries, eightfold extension, eight copy columns, 118 auxiliary columns, one trace group/instance, and at most `2^19` native rows (`proof_managed_note_stark.rs`). | For AIR width `w`, mandatory current/next trace openings alone require `2 × 136 × 8 × (w + 8 + 118) = 2,176(w + 126)` bytes. Thus `w <= 1,801` is merely a *necessary* condition under the 4 MiB cap; Merkle, FRI, DEEP, envelope and public data need more room. A practical target such as 400–512 columns is a hypothesis to measure, not an approved profile. |
 | Native `OpenGameSessionV1` rejects `max_ticks / batch_ticks > 4096` (`smartcontracts/isi/game.rs`). | The current Arena protocol's 2-tick batches over 36,000 ticks require 18,000 batches, so session opening fails before proof work. The raw 12-player input bytes alone are `36,000 × 12 × 8 = 3,456,000`, within the separate 4,194,304-byte declared-input bound; the batch-count gate still needs a qualified extension. |
 | Native `SettleGameSessionV1` accepts one inline `ExecutionProofEnvelopeV1` and verifies it before payouts (`smartcontracts/isi/game.rs`). | It cannot consume a portfolio of stage proofs, even if every stage fits individually. New retained verified-prefix state and terminal composition rules are required. |
@@ -29,8 +37,9 @@ An attack-cooldown-only upper bound is `ceil(36,000 / 5) × 12 = 86,400`
 initiated attacks: the Phantom SMG has the lowest catalog cooldown of five
 ticks. Ammunition/reload, stamina, death and mode rules reduce realizable
 activity, so this is **not** a measured or proven attainable workload. A
-wall-then-roster scan at four walls plus 12 original slots would require up to
-1,382,400 intersection visits at that loose bound, before movement,
+wall/entity/roster scan at the new component's bounds of 64 walls, 48 entities
+and 12 original slots would require up to 10,713,600 intersection visits at
+that loose bound, before movement,
 projectiles, blast damage, assists, objectives or economy. In particular,
 simply moving the existing wide hit graph to one row per box does not establish
 the `2^19`-row, 30-minute or 96-GiB gates.
@@ -61,7 +70,7 @@ admission authority, not a witness-selectable weapon-stat table.
    peer log or signature without consensus selection cannot authorize a slash.
 2. **Narrow microcycles.** A verifier-fixed schedule executes tick prelude;
    all original-slot movement/collision; abilities and attack initiation in
-   slot order; wall-then-original-roster hit selection for each legal melee or
+   slot order; wall-then-entity-then-original-roster hit selection for each legal melee or
    hitscan; projectile motion, ordered collision and blast effects; gathered
    damage, guarding/parry, death and assist attribution; payouts; objectives;
    and terminal conditions. Inactive branches, vector lengths, sparse event

@@ -2,12 +2,12 @@
   "schema_version": 2,
   "fixture_id": "sora-arena-practice-abi4",
   "scope": "offline and staked C ABI 4 simulation, event, objective and presentation parity; not network, renderer or execution-proof qualification",
-  "recorded_utc": "2026-10-18T04:04:34.299870+00:00",
+  "recorded_utc": "2026-10-18T05:34:47.331911+00:00",
   "reference_host": {
     "system": "Darwin",
     "machine": "arm64",
     "python": "3.9.6",
-    "library_sha256": "7ca3dad3be9e564c8e0aa51ecd7f5e6a4efd397523ccc926e45e745623c24b51"
+    "library_sha256": "078f8de06c1fc3b9ac7ef1a7059807126784d30e4171ea4ff9ebbabf3cf69538"
   },
   "input_encoding": {
     "bytes_per_slot": 8,
@@ -35,7 +35,8 @@
       "crates/arena-core/src/economy.rs": "c954a6ed4764a8c4e04cac45dc1d44db00f91917a5d12b70f095152cae4f5b11",
       "crates/arena-core/src/math.rs": "da705bbd0dd73162027e127bb1503c9425e611bb68af6424d6d27325a562a21a",
       "crates/arena-core/src/maps.rs": "d236c3e381f07ee2f19f82d5b70977fee0cf3d680a412e819a2cb5b5a3566566",
-      "crates/arena-core/src/simulation.rs": "e46e6282a76a52956feb6d005f90762cd7d7f7f98bb4f4fb145d8ae629d2009d",
+      "crates/arena-core/src/simulation.rs": "e426966bd49dbaa6910139125b2bff3fa50b57f02b5734c04cbb3bb7edf4f098",
+      "crates/arena-core/src/simulation/tick.rs": "12e4980b965af5baca494fe79e49e9cfbbb52b6d2a7baa3ab1e667bf178c0602",
       "crates/arena-core/src/simulation/abilities.rs": "cc8fa50d2e453c5c43e41bcf071de1a32f2a4942636f05adcf33b16c2d9fdadc",
       "crates/arena-core/src/simulation/hazards.rs": "999d294965b67029f5ddeafe8b42b0f07b172737630831ede73319732b4789bd",
       "crates/arena-core/src/simulation/objectives.rs": "8a50c20b01d92c115bee40a03b711b6f03159c8d53eec23439c6b644e1acaa14",
@@ -48,7 +49,7 @@
   },
   "runner_files_sha256": {
     "scripts/unreal/kernel_abi.py": "0d676dd3fbdf1e7a5c6ed5fc0e923e1b54ef1a4891e4f9f6b6183ece04a00d7b",
-    "scripts/unreal/verify_parity.py": "9b2bfc01cda261d8dbf384b34c116d9b09d9f9c4f843072a9f7b6a0e33f9a970",
+    "scripts/unreal/verify_parity.py": "65f131dbc388decb51a375bbb51d557e1529b966b97de24d276939344a5665c0",
     "scripts/unreal/practice_fixture_bots.py": "f7b7e22c446a0aafbf0cd139bc7861ccfce855094e05094aafd40ef4ab829402"
   },
   "abi_layout": {

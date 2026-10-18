@@ -1,0 +1,156 @@
+{
+  "artifacts_sha256": {
+    "binary-after.json": "7e5271a5a863a141dcceef96653288c226fc5eb74a515ac6e1e601300211e89f",
+    "binary-before.json": "7e5271a5a863a141dcceef96653288c226fc5eb74a515ac6e1e601300211e89f",
+    "build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dependencies.json": "a4f8ba0f9f76ca162a4fee3bc1afaa18410ae1de90724767b35e1766b5d5001b",
+    "generated-after.json": "620b609af7be8e80ac7304750deb613472a336e8b0df86228fcfbd4514190e0c",
+    "generated-before.json": "620b609af7be8e80ac7304750deb613472a336e8b0df86228fcfbd4514190e0c",
+    "harness.rs": "ee9b2fdb050c3342fc77dc974862f57fe709aa907577dcc9204f7cf78151b619",
+    "inputs-after.json": "67dee778fc7ee38b1bc2ab5b18152752c1727c3b05ba52e9f3c74cbe51d79ff0",
+    "inputs-before.json": "67dee778fc7ee38b1bc2ab5b18152752c1727c3b05ba52e9f3c74cbe51d79ff0",
+    "native-staged-hit": "a4c1bdcdbab3565b7f644b9b73b9b5b52ee1acc98c9304524bd2ba562bdbbafc",
+    "native_field.rs": "3a8ba5e2e8a1c9208cfa8d40d29c69394bd76620cf35989404862e3a0a0145c5",
+    "reference-case.json": "4642894af3f64683b843f0cd1e5ac141c2cfbddb60a22c949d1d042723439421",
+    "reference-fixture.json": "eb76f44972c628d1f6de7512070e46a9ce3526d995155ea978420e7e8c639f88",
+    "result/layout.txt": "5b35ca6b5b3635a27f48af4e3b4ab71a318828cfaa5d7ca02a5ed73639830e5b",
+    "result/measurements.txt": "54ec8cc1d0c1c69d2321e11e0681386f9052779ae2f84405526dc1703967f9e1",
+    "result/public-statement.txt": "bac9430384b066f15b3c2532fcab852e071fb2eca04cdcba6c0ef12d6e17e98a",
+    "result/staged-hit.stark": "22c0daae0817b50a4917fdef86f922ec1da4d7b191be71a90a5a8b66f2e3da18",
+    "run.log": "428a6bd157cef2f12831d3a9f302053cf004f5037db3d419340ee09894939871",
+    "seal-after-compile.json": "475e592dc42f297ec47aee019a08d1d778a1c5a6ee71c5b41264da1c68fe2d48",
+    "seal-after.json": "475e592dc42f297ec47aee019a08d1d778a1c5a6ee71c5b41264da1c68fe2d48",
+    "seal-before.json": "475e592dc42f297ec47aee019a08d1d778a1c5a6ee71c5b41264da1c68fe2d48",
+    "source-provenance.json": "e526549aef60891eef565925f12177c02f47b4b55fa413e751ec17c9e93a9bbe"
+  },
+  "attacker": 9,
+  "case": "bounded_random_9",
+  "checkpoint_status": {
+    "final_adapter_sha256": "05c4e15af2d7b9d0f5674413e46190c58b3e7ab4a0c4d85c88d9b6c8b2e9f846",
+    "final_air_sha256": "e2d6d84c1a5e511c46552a036bb2044c1d121a32fb91ff2a1fb9a3da289a4a8f",
+    "final_checkpoint_proof_verified": false,
+    "final_fixture_sha256": "d0a3443232c3b9440f5cb607861e8459285da7b1184303bbb81c01b61e08d3bf",
+    "historical_evidence": true,
+    "reason": "User requested commit and stop before rerun after three Copy derives and game tick-source/fixture identity update. All original recorded evidence identities below are retained unchanged."
+  },
+  "compiler_files_sha256": {
+    "bin/rustc": "34a8f7034eeb844189a3c36ebb3fe36c2193fdb47b60028eb7f9392cb1f62484",
+    "lib/librustc_driver-c6732562af0a3f04.dylib": "69b298d4d17f4c1dcb2d1543461d93841011053b41cebf65506f98669e81b4ea",
+    "lib/rustlib/aarch64-apple-darwin/lib/libaddr2line-94500ed888343737.rlib": "944a87e97faeac8e1748f851bc73a5322b7e200a4055e72a684b59ae73da28d1",
+    "lib/rustlib/aarch64-apple-darwin/lib/libadler2-4a950a0ee1ccc18a.rlib": "6673f3906cca8f8e7bba6b0f9973c2d62f8c305de22af85346590906e432a75f",
+    "lib/rustlib/aarch64-apple-darwin/lib/liballoc-b8bb800f82590d96.rlib": "371549e32e7d6ee7a1408d81c98e39a3e041361b222381d79fae828b4af72eba",
+    "lib/rustlib/aarch64-apple-darwin/lib/libcfg_if-f642a88580f31bc5.rlib": "6369ed55e4aa4ad48ee6fb033797903f9b82b212e0cefb17dda2dba94ffaab6e",
+    "lib/rustlib/aarch64-apple-darwin/lib/libcompiler_builtins-f85711a2c445f483.rlib": "c5f93bb39643266356958552b8e032a139eca3737b498c2c1ec7ecde78f7c0c2",
+    "lib/rustlib/aarch64-apple-darwin/lib/libcore-f175c277c6f09c76.rlib": "47849af27978a02f99ec55e046252d2d5408e2dbe0833b66f09fce5a74bc5387",
+    "lib/rustlib/aarch64-apple-darwin/lib/libgetopts-31e53aa04645af32.rlib": "ecc2e59a5dea9fb7f7e2ef54fc1bb02a9adb2013114c87ca31f6f99a5297206b",
+    "lib/rustlib/aarch64-apple-darwin/lib/libgimli-7bbebef24573b082.rlib": "3087dc41bf94f543bbc5429f7d047ddaa258dc5291ed5afd565ed442e15d766c",
+    "lib/rustlib/aarch64-apple-darwin/lib/libhashbrown-e89bba462a177e8a.rlib": "c8d8cd24feee1612321eb555f10c8b6a536e53addb9edaf9bc6d49f1fff0509f",
+    "lib/rustlib/aarch64-apple-darwin/lib/liblibc-6ba29fbfb854116a.rlib": "aeeaa0ef2e88af053d31632394769fcc0ff155ebc4df2dd8d0707c43491eec59",
+    "lib/rustlib/aarch64-apple-darwin/lib/libmemchr-61e921359e05dbb3.rlib": "61c421a9b2c34bc71ab5992dc322dd45ceaa73f773a298374df10bfd523497c9",
+    "lib/rustlib/aarch64-apple-darwin/lib/libminiz_oxide-385f10002f6e01a7.rlib": "74d07d712facd69d19b85fe3dde9c22abde93df0feb26a0c755fcac39f844727",
+    "lib/rustlib/aarch64-apple-darwin/lib/libobject-8294e68090e3a4d4.rlib": "a670e3da2968836a6a943a928cffe5b67db76aadc77caaf57f72c1860bec93c6",
+    "lib/rustlib/aarch64-apple-darwin/lib/libpanic_abort-807d907e2d31413c.rlib": "3ecc2699de00e528d785d685ab26365911c62e1c48684e96196d582f9760e05e",
+    "lib/rustlib/aarch64-apple-darwin/lib/libpanic_unwind-03ae39e24604c430.rlib": "19c5dddac3c9d2ceb5d7f21a97a7166a3acc0c1e31f06002112bd02c20d88329",
+    "lib/rustlib/aarch64-apple-darwin/lib/libproc_macro-9a3d5b3ae1c68bd9.rlib": "8999aeb580d4f157cba5b5aeced37b558d9022110c97e850320e60582947b377",
+    "lib/rustlib/aarch64-apple-darwin/lib/libprofiler_builtins-e5d1a52811e770f2.rlib": "0fd48215fc0369393e740c0f14c5733f9c0e3b42f521bef2ba1e7271960eb6f3",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc-stable_rt.asan.dylib": "56a26d5b955751fe5f051070a63c0caee89ea35445bb868ea4ec654e8aca1d7f",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc-stable_rt.lsan.dylib": "d1819a1cfd7de4fc9ec6d8cbf4d3d3a555b58a48168a1c5b04d7d2974d3ccdad",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc-stable_rt.rtsan.dylib": "90c2fef6d1493948407c21ccd32d29149172bc82ef237ed0b71f62da14d22e4a",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc-stable_rt.tsan.dylib": "e12918685e95625fe9f2c37e0abafdf57e328cdab21bfa4eaf13fe69e409d7ee",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc_demangle-a6818b65a9a7b7b1.rlib": "c320a6dedc41d8ad01a2de572f46db9c3e88a4752bf0a5e7593d13f8a7d5bb73",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc_literal_escaper-3b3769c33c637509.rlib": "a37293ae61cf5b06e93b40cf2615c6ab23d4f9f9d6e37074af8a18362532c031",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc_std_workspace_alloc-2d0c9888e9b8c668.rlib": "5b75d7f9fc4e08c4e951abdaa190846233202d8d315ffa70b9f23b19e2bb525f",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc_std_workspace_core-e7cb98edd98f5f11.rlib": "4aab35cdfa699c0e84213fc8826ae09dd3df6a031fca0c72532328b9f86cabdb",
+    "lib/rustlib/aarch64-apple-darwin/lib/librustc_std_workspace_std-83688fe89d16ae79.rlib": "b26cd457bd479c1ef44934312a520f0baff6f106f5eb9875d9d3c35496d646d8",
+    "lib/rustlib/aarch64-apple-darwin/lib/libstd-0678d935a1510470.dylib": "057d34017ce8cafa8bc5bec13af04f36ef72f9774ba637a59c4602d1ebf89a87",
+    "lib/rustlib/aarch64-apple-darwin/lib/libstd-0678d935a1510470.rlib": "f5ed07a1359d41728bece8b3308048b9285abeddab1f565d8a0860d8672f9fe7",
+    "lib/rustlib/aarch64-apple-darwin/lib/libstd_detect-1f9dc77801183404.rlib": "e352b0770b0366a48a19afd008a66d6f3f3f025d05d0b840bbd51fa132be54c2",
+    "lib/rustlib/aarch64-apple-darwin/lib/libsysroot-37dfe3b69ec66287.rlib": "a50b6f12a5bb252c96339ecf7e15ba128862dba0b0075b534cd2db87734a14cb",
+    "lib/rustlib/aarch64-apple-darwin/lib/libtest-cb97e081cf1ce070.rlib": "3f29de6201297fcb7008e74f3b6036a44ab2bf96dedf9d686a5700949d682b23",
+    "lib/rustlib/aarch64-apple-darwin/lib/libunwind-bff32d2c2a4e1a36.rlib": "8db6ddaa59408fc354ea478e206b46e8b523e318f06ad9d77c95747a8d2a820e"
+  },
+  "compiler_version_verbose": "rustc 1.93.1 (01f6ddf75 2026-02-11)\nbinary: rustc\ncommit-hash: 01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf\ncommit-date: 2026-02-11\nhost: aarch64-apple-darwin\nrelease: 1.93.1\nLLVM version: 21.1.8\n",
+  "computational_sources_sha256": {
+    "crates/iroha_core/src/execution_proofs/arena_aim_air.rs": "5238f640c5203abc027868a22c6e4c46e9ecbe92ef239e206abc8c16ca7f0f28",
+    "crates/iroha_core/src/execution_proofs/arena_geometry_air.rs": "74b8073807fccbb1aa2e07104311f3b933e69eb0ba054e312611eab8c18ecc40",
+    "crates/iroha_core/src/execution_proofs/arena_staged_hit_air.rs": "fd00c11015cb03b5ec49b799a5e21fac1d2ca67abce7cb936090d52120471ec1",
+    "crates/iroha_core/src/execution_proofs/arena_staged_hit_stark_research.rs": "c74797afd2a28c2c0451e827b413b14a886c2decc461bc06eb243452f34d3b96",
+    "crates/iroha_core/src/execution_proofs/checked_integer_air.rs": "d362db7c8b537b550f960536f0750ae18b456fa0c41e5be06a3ffa543293c25c",
+    "crates/iroha_core/src/execution_proofs/integer_air.rs": "106b5589b91be64881a3b8dd522c01bf72d4f04c7dbf6f0cc887d450c0b65446",
+    "crates/iroha_core/src/execution_proofs/stark/aggregate_stark.rs": "40d95e3dfdcd1c3d9734f827ff2d7e4971fc557f4338069efe0880d2864de018",
+    "crates/iroha_core/src/execution_proofs/stark/mod.rs": "6acd3b828419442f87d8bc15d525d39b31c32ea6d6aab67c63ea69a363a40a87",
+    "crates/iroha_core/src/execution_proofs/stark/proof_managed_note_stark.rs": "8219e01c886487f45a7647e0d00c34ef40d25d14a12e741399331d737afc207d",
+    "crates/iroha_core/src/execution_proofs/stark/proof_managed_note_stark_execution_fixed.rs": "5184e5737c60be7e88b3741ca0e435e0e1f13aa5328da131c05e4f0bbb09c135",
+    "crates/iroha_core/src/execution_proofs/stark/transparent_stark.rs": "aa22872f6e1d9ba8e6671bb27785c64abe0339230ee5daebbc5b4d153211a3a2",
+    "crates/iroha_core/src/execution_proofs/stark/transparent_stark_digest_tests.rs": "2d1791f8ae5d5ab4b056e31f40758c9041b7d496e86d3a132dd06a1cc9c18d8c",
+    "crates/iroha_core/src/privacy_engines/transparent_stark.rs": "6cb295a60d9afd7adb35527c86e5d481f64e569955a94c14da14bc1e73a76350"
+  },
+  "counts": {
+    "entities": 48,
+    "players": 12,
+    "walls": 64
+  },
+  "dependencies": {
+    "fastpq_isi": {
+      "file": "libfastpq_isi-54e539e6a90c596a.rlib",
+      "sha256": "6f4f288b3d0093597096638fc553fdd06c15b7d9a54905e45617828164d19ac1"
+    },
+    "iroha_data_model": {
+      "file": "libiroha_data_model-fc851a20e0c7f7db.rlib",
+      "sha256": "831537fb3517cd44835d7b470e551845c1a810f20d36bfe9737ad3b81939f30c"
+    },
+    "rand": {
+      "file": "librand-23e416dda7ecac96.rlib",
+      "sha256": "7f89e5669f7db02c16f3372c88aae53c4d09db1bcf665a0bae694af73927babd"
+    },
+    "rayon": {
+      "file": "librayon-373ce2405cd5f5c4.rlib",
+      "sha256": "40b1b9a20588d4bab79d1ffd6a0324d3bc4666a10408e5121e8dff80d4b3fcc2"
+    },
+    "sha2": {
+      "file": "libsha2-42d11312298d5bbd.rlib",
+      "sha256": "4b148be3ab00c1b770d3d0a154f2e639035b9912c5c7b466b743b974966e402f"
+    },
+    "thiserror": {
+      "file": "libthiserror-1fcf67ac1fcd6fd5.rlib",
+      "sha256": "8f13ec2014c74643305574b498fc70350ee8d1897ce62589be9b9852c8d509e0"
+    },
+    "zeroize": {
+      "file": "libzeroize-4d699feeabda947e.rlib",
+      "sha256": "c033288d2abb355b25c0d1d9e1e573e52c082460b67d27473661dc586b23c54a"
+    }
+  },
+  "expected": {
+    "fraction_q20": 10263,
+    "identity": 6,
+    "kind": 2
+  },
+  "fixture_sha256": "eb76f44972c628d1f6de7512070e46a9ce3526d995155ea978420e7e8c639f88",
+  "local_evidence_directory": "Saved/Qualification/2026-10-18/staged-hit-stark-qualified-harness",
+  "native_source": {
+    "sourceGitRevision": "8209033deae7409d800fcc576a63609a0c2c5f9d",
+    "sourceTreeClean": false,
+    "sourceTreeSha256": "4f1385385d1d13622b3005b9e0a7d217c69dbf8d6b15bac0cc82d73c0cefee3d"
+  },
+  "proof": {
+    "bytes": 2514656,
+    "positive_verify_ms": 22003,
+    "prove_ms": 409071,
+    "rejected_negative_checks": 10,
+    "sha256": "22c0daae0817b50a4917fdef86f922ec1da4d7b191be71a90a5a8b66f2e3da18"
+  },
+  "provenance_note": "All native/toolchain/dependency/input/generated-source/binary seals matched. This corrected run supersedes the initial compiler-provenance-invalid run; no independent review or deployment qualification is implied.",
+  "qualified": false,
+  "registered": false,
+  "research_only": true,
+  "resources": {
+    "binary_maximum_rss_bytes": 735494144,
+    "binary_real_seconds": 504.81,
+    "platform": "Darwin arm64 M1 Ultra",
+    "rayon_threads": 4,
+    "scope": "Entire executable including negative checks, excluding compiler; concurrent art workload."
+  },
+  "runner_sha256": "5acf014b956a0adbf4f9c1fc7ac0fe82d41054ed709801e7ee8d3fbc7e389c06",
+  "schema": "sora-arena.staged-hit-observation.v1",
+  "scope": "Generic ordered ray selection conditional on a public snapshot; no World execution, kill or settlement authority."
+}

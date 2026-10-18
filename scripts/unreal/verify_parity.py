@@ -26,6 +26,7 @@ SOURCE_FILES=[
     'crates/arena-core/src/lib.rs','crates/arena-core/src/catalog.rs',
     'crates/arena-core/src/economy.rs','crates/arena-core/src/math.rs',
     'crates/arena-core/src/maps.rs','crates/arena-core/src/simulation.rs',
+    'crates/arena-core/src/simulation/tick.rs',
     'crates/arena-core/src/simulation/abilities.rs','crates/arena-core/src/simulation/hazards.rs',
     'crates/arena-core/src/simulation/objectives.rs','crates/arena-core/src/simulation/respawn.rs',
     'crates/arena-core/src/simulation/state.rs',

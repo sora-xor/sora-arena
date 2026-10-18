@@ -37,6 +37,7 @@ pub fn source_digest() -> Hash {
         "../Cargo.toml",
         "lib.rs",
         "simulation.rs",
+        "simulation/tick.rs",
         "simulation/abilities.rs",
         "simulation/hazards.rs",
         "simulation/objectives.rs",

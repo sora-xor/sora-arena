@@ -1,8 +1,55 @@
 # First-release implementation record
 
-The active goal is the complete approved SORA Arena release. This is a progress
+The release goal remains incomplete. Development is paused at the user's
+2026-10-18 request to commit current work to master and stop. This is a progress
 record, not a claim that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
+
+## 2026-10-18 generic staged hit proof and Claude coordination
+
+The native Iroha research relation now selects the exact nearest eligible hit
+from up to 12 players, 64 walls and 48 entities in a fixed microcycle schedule.
+It computes aim and intersections in AIR, with complete scratch-state carries;
+it does not accept a host-selected hit as execution proof. The game reference
+fixture covers 92 scenes and compares actual World shots in 23 directed cases.
+Both game tests and focused strict Clippy pass; six native AIR tests pass.
+
+An earlier-source maximum-size snapshot proof generated in 409.071 seconds and verified
+in 22.003 seconds: 2,514,656 bytes, with all ten altered-statement/malformed-proof
+checks rejected. Source/dependency/compiler seals stayed equal in this corrected
+run, which repeated proving after an initial runner recorded the wrong compiler
+version. All 22 artifact hashes match. The corrected binary's peak RSS, including
+negative checks, was 701.42 MiB. These are shared-machine
+component measurements, not full-match qualification. See the
+[staged hit report](proof/staged-hit-selection.md) for exact scope and evidence.
+After that measured run, the final full-Core build passed with three missing
+`Copy` derives fixed (2 passed, 1 ignored, 25 unsuppressed warnings). The user
+stopped work before a final-source proof rerun. The observation manifest retains
+the earlier identities and explicitly does not qualify this final checkpoint.
+
+The kernel now exposes its existing tick ordering through a private phased
+orchestrator. All recorded hit vectors and kill-history values are unchanged;
+source identities were deliberately refreshed. The workspace has 278 passing
+tests, 5 ignored research tests, zero failures; strict Clippy and the release
+build pass. The staged native library passes 94 parity cases / 99,043 ticks,
+with identical input bytes and all case expectations. Fourteen proof-runner
+guards and seventeen parity guards pass. The initial parity-guard run used the
+stale source manifest and failed closed; it passed after the reviewed manifest
+refresh. No Windows qualification is implied.
+
+The native implementation remains in the separate `iroha-arena` working tree;
+it is not a registered funded profile or a claimed upstream release. Full-state
+authentication, legal attacks, damage, death, conserved awards, disconnect
+resolution, proof composition and actual validator settlement remain open.
+
+Claude owns the golden-hour Estate/dojo, SORA craft props and first-person hero
+kit in `sora-arena-wt/art`. Codex reviewed the first chest render, flagged its
+distorted front medallion, and inspected the corrected source render. Unretouched in-engine dojo captures now exist; the current materials,
+lighting, scale and density still need visual refinement. No photoreal acceptance
+is claimed. The stop checkpoint preserves work in progress. File ownership and the Unreal/GPU slot are coordinated through
+the local mailboxes. The dojo/lighting review identified repeated-rig cleanup,
+zone scoping, collision/visibility preservation and the coupling between sun
+intensity and stealth detection; those checks have been sent to Claude.
 
 ## 2026-10-18 full-state proof handoff and signing cancellation
 
