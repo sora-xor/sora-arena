@@ -43,8 +43,15 @@ distance-field settings;
 [Lumen's software tracing path](https://dev.epicgames.com/documentation/unreal-engine/lumen-technical-details-in-unreal-engine)
 uses mesh distance fields. `r.Nanite.ProxyRenderMode=0` selects the ordinary
 fallback where Nanite is unsupported, as described in Epic's [Nanite technical details](https://dev.epicgames.com/documentation/unreal-engine/nanite-technical-details).
-Mac C++ still selects the conventional `MAC` asset tier at compile time, so
-only Nanite meshes placed on every platform draw as Nanite on an M2.
+Estate terrain and foliage select `HI` at world construction only when the
+world's actual shader platform and UE's `UseNanite` runtime checks permit it.
+Otherwise they select the conventional `MAC` assets, including SM5, disabled
+Nanite and NullRHI runs. The suffix names existing asset tiers, not a hardware
+model. `SORA_ENVIRONMENT_TIER` logs the shader platform and selection; eligibility
+alone is not evidence that Nanite drew visible geometry. Changing rendering
+settings requires rebuilding the world to reselect these assets.
+The Mac cook explicitly targets both `SF_METAL_SM5` and `SF_METAL_SM6`;
+`SoraArena.Rendering.MacShaderTargets` checks the resolved configuration.
 Every production asset must still provide a usable conventional LOD or fallback
 mesh and card-fur route. These files cannot create missing geometry or prove
 that the current prototype assets are visually acceptable.

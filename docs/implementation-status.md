@@ -8,6 +8,32 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-18 M2 Ultra development resumed
+
+The integration worktree now builds the editor with the pinned UE 5.8.3 /
+CL 58210709, Xcode 26.1.1 / 17B100 and SDK 26.1. Xcode's full Apple signature
+check and first-launch check pass; Metal component 17B54 provides compiler
+32023.830, and every toolchain doctor check passes. The existing Xcode 27 and
+global developer-directory selection are unchanged. Engine metadata and build
+success do not establish rendered or packaged qualification.
+
+The current Rust kernel built with the exact 1.97.1 pin, passed its ABI 4 staging
+checks, and matched all 94 recorded parity cases / 99,043 canonical ticks on
+Darwin arm64. Its qualification flag remains false. Local logs and reports are
+under `Saved/Qualification/2026-10-18-m2-resume` in the integration worktree.
+This is fresh Mac kernel evidence; Windows and native execution proofs remain
+open. The matching Connect bridge is not yet staged.
+
+Claude's Mac Nanite policy commit `cfcea32` is integrated in the working release
+branch. Runtime environment-tier selection is compiled, and the Mac shader cook
+now explicitly includes both SM5 and SM6. Both rendering-capability automation
+tests pass under NullRHI with zero errors or warnings. This verifies fallback
+selection and the resolved cook configuration, not rendered Metal output; no
+new Nanite or photoreal result is claimed here.
+Claude continues unique timber geometry, fallbacks and visual review in the art
+worktree. Campaign maai and repeatable source-validation slices are undergoing
+integration. The [release plan](complete-release-plan.md) lists the remaining work.
+
 ## 2026-10-18 generic staged hit proof and Claude coordination
 
 The native Iroha research relation now selects the exact nearest eligible hit
