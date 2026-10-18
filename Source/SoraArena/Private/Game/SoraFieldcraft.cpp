@@ -258,6 +258,14 @@ TStatId USoraFieldcraft::GetStatId() const
     RETURN_QUICK_DECLARE_CYCLE_STAT(USoraFieldcraft, STATGROUP_Tickables);
 }
 
+void USoraFieldcraft::OnWorldEndPlay(UWorld& InWorld)
+{
+    // Release the beat's owned actors while the world still has its context.
+    // Subsystem deinitialization can run after that context is removed.
+    Clear();
+    Super::OnWorldEndPlay(InWorld);
+}
+
 void USoraFieldcraft::Deinitialize()
 {
     Clear();

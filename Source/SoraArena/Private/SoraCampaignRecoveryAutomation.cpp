@@ -4,6 +4,7 @@
 #include "SoraCatalog.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraEnemy.h"
+#include "SoraFieldcraft.h"
 #include "EngineUtils.h"
 #include "SoraSaveGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -113,6 +114,12 @@ bool FSoraCampaignRecoveryTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("Later checkpoint does not replay retrieval"),Campaign->NeedsEquipmentRecovery());
     TestTrue(TEXT("Later checkpoint restores katana and bow availability"),Campaign->CanHold(0,false)&&Campaign->CanHold(18,false));
     TestEqual(TEXT("Later checkpoint restores twelve-arrow quiver"),Hero->GetEquipment()->AmmoByWeapon[18],12);
+    auto* Fieldcraft=USoraFieldcraft::Get(Hero);
+    if(!TestNotNull(TEXT("Escort checkpoint stages fieldcraft"),Fieldcraft)) return false;
+    TestFalse(TEXT("Teardown fixture has live escorted companions"),Fieldcraft->PartyMembers().IsEmpty());
+    if(!TestTrue(TEXT("World ends gameplay before its context is removed"),World->EndPlayInTestWorld())) return false;
+    TestFalse(TEXT("End-play releases staged fieldcraft before subsystem deinitialization"),Fieldcraft->IsStaged());
+    TestTrue(TEXT("End-play releases owned companions before context removal"),Fieldcraft->PartyMembers().IsEmpty());
     return !HasAnyErrors();
 }
 #endif

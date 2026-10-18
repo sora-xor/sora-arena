@@ -296,6 +296,7 @@ public:
 
     virtual void Tick(float DeltaTime) override;
     virtual TStatId GetStatId() const override;
+    virtual void OnWorldEndPlay(UWorld& InWorld) override;
     virtual void Deinitialize() override;
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
