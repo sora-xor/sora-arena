@@ -51,9 +51,20 @@ bool FSoraCampaignSeizureTest::RunTest(const FString& Parameters)
     const auto FloorAt=[&](int32 X,int32 Y)
     {
         const FVector At=Center+FVector((X+.5f)*300,(Y+.5f)*300,0);
-        FHitResult Hit; FCollisionObjectQueryParams Solid; Solid.AddObjectTypesToQuery(ECC_WorldStatic);
-        return W.World->GetTestWorld()->LineTraceSingleByObjectType(Hit,At+FVector(0,0,20),At-FVector(0,0,60),Solid)&&
+        FHitResult Hit,SimpleHit; FCollisionObjectQueryParams Solid; Solid.AddObjectTypesToQuery(ECC_WorldStatic);
+        const FVector Start=At+FVector(0,0,20),End=At-FVector(0,0,60);
+        // Keep the original default (complex) trace assertion. Capsule
+        // movement uses simple collision; both must see the exact same floor.
+        const bool Complex=W.World->GetTestWorld()->LineTraceSingleByObjectType(Hit,Start,End,Solid)&&
             FMath::Abs(Hit.ImpactPoint.Z-Center.Z)<2;
+        const FCollisionQueryParams SimpleQuery(SCENE_QUERY_STAT(SeizureSimpleFloor),false);
+        const bool Simple=W.World->GetTestWorld()->LineTraceSingleByObjectType(SimpleHit,Start,End,Solid,SimpleQuery)&&
+            FMath::Abs(SimpleHit.ImpactPoint.Z-Center.Z)<2;
+        TestEqual(*FString::Printf(TEXT("Simple and complex floor agree at tile (%d,%d)"),X,Y),Simple,Complex);
+        AddInfo(FString::Printf(TEXT("Tile (%d,%d) pattern=%d complex=%d simple=%d component=%s impact=%s simple_component=%s simple_impact=%s"),
+            X,Y,Arena->SeizurePattern(),Complex,Simple,*GetNameSafe(Hit.GetComponent()),*Hit.ImpactPoint.ToString(),
+            *GetNameSafe(SimpleHit.GetComponent()),*SimpleHit.ImpactPoint.ToString()));
+        return Complex;
     };
     const auto Until=[&](double Time)
     {

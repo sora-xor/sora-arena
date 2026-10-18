@@ -12,6 +12,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "ProceduralMeshComponent.h"
 
 namespace Summit=SoraSummitRules;
@@ -66,6 +67,12 @@ void ASoraWorldBuilder::BuildSummitTiles()
             const TArray<FLinearColor> Colors; const TArray<FProcMeshTangent> Tangents;
             Mesh->CreateMeshSection_LinearColor(0,Vertices,Indices,Normals,UV,Colors,Tangents,false);
             Mesh->AddCollisionConvexMesh(Convex);
+            // This convex prism exactly matches the rendered tile. Use it
+            // for both movement and complex traces: UWorld's default trace
+            // params request complex collision, but this mesh has no cooked
+            // triangle section. Set the flag after AddCollisionConvexMesh
+            // (which resets it) and before registration creates its shapes.
+            Mesh->GetBodySetup()->CollisionTraceFlag=CTF_UseSimpleAsComplex;
             if(Base)
             {
                 auto* Material=UMaterialInstanceDynamic::Create(Base,Mesh);
