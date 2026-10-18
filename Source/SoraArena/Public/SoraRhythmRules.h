@@ -43,12 +43,13 @@ constexpr bool Strike(FState& State,const FTaskState& TaskState,const FTask& Tas
 // Resolves only a full phrase, after all eight windows (including misses).
 // A failed phrase/pick leaves earlier completed units intact. At most one
 // assisted response per Tick: a long stall cannot synthesize a backlog.
-constexpr EStroke Tick(FState& State,FTaskState& TaskState,const FTask& Task,bool Assist)
+constexpr EStroke Tick(FState& State,FTaskState& TaskState,const FTask& Task,bool Assist,bool* AutoStruck=nullptr)
 {
+    if(AutoStruck) *AutoStruck=false;
     if(!Active(State,TaskState,Task)) return EStroke::Refused;
     const FStep& Step=Task.Steps[State.Step];
     if(Assist&&!State.Answered&&State.LastTickMs<State.DueMs&&TaskState.ElapsedMs>=State.DueMs&&TaskState.ElapsedMs-State.LastTickMs<=Step.BeatMs)
-    { State.Answered=true; State.Hit=true; State.Assisted=true; }
+    { State.Answered=true; State.Hit=true; State.Assisted=true; if(AutoStruck) *AutoStruck=true; }
     State.LastTickMs=TaskState.ElapsedMs;
     EStroke Result=EStroke::Refused;
     while(TaskState.ElapsedMs>State.DueMs+Step.ToleranceMs)

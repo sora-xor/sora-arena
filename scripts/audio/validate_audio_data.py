@@ -19,7 +19,7 @@ that what it loads is complete and means what it says. It fails when:
    Game.po, marks a looping or 3D stinger, a strike mark off the telegraph
    bus or past its wave, or a broken sustain;
 4. an event family is not the USoraGameEvents delegates plus Kernel, UI,
-   Hero, Footstep and Horse, a family has no rule and no reason, a rule tests
+   Hero, Footstep, Horse and Workshop, a family has no rule and no reason, a rule tests
    a field its family does not carry or a value its enum lacks, or forwards to
    an unknown family; a practice kernel event kind is neither bound nor
    explained; a catalog weapon has no firing or swing rule;
@@ -65,7 +65,7 @@ SPARRING = {'', 'bokuto', 'fukuro_shinai'}
 TELEGRAPH_CLASSES = {'none', 'lock', 'cleave', 'area', 'margin_call', 'reload'}
 # What the subsystem polls rather than hears; OnKernelEvent and OnUISound are
 # the Kernel and UI families.
-POLLED = {'Hero', 'Footstep', 'Horse'}
+POLLED = {'Hero', 'Footstep', 'Horse', 'Workshop'}
 RENAMED = {'KernelEvent': 'Kernel', 'UISound': 'UI'}
 HERO_ACTIONS = {'ReloadStarted', 'ChargeStarted', 'ChargeHeld', 'BowDrawn', 'Sheathed', 'Drawn'}
 HORSE_ACTIONS = {'Hoof', 'Spooked', 'Mounted', 'Dismounted'}
@@ -240,6 +240,7 @@ def family_fields(enums):
         'Hero': {'Action': HERO_ACTIONS, 'WeaponId': int, 'IsHero': boolean},
         'Footstep': {'Surface': set(), 'Pace': PACES, 'IsHero': boolean},
         'Horse': {'Action': HORSE_ACTIONS, 'Gait': enums['EGait']},
+        'Workshop': {'Action': {'HammerCue', 'HammerHit', 'LoomCall'}},
     }
 
 

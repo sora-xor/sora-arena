@@ -5,6 +5,9 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraSettings.h"
 #include "SoraCaptions.h"
+#include "SoraAudio.h"
+#include "SoraWorldBuilder.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/DamageType.h"
 namespace SoraRhythmAutomation
 {
@@ -36,6 +39,58 @@ bool Phrase(FBeatWorld& W,int32 Hits)
     }
     return true;
 }
+int32 Heard(const USoraAudioSubsystem& Audio,FName Cue)
+{
+    int32 Count=0;
+    for(const auto& Play:Audio.Plays()) if(Play.Cue==Cue) ++Count;
+    return Count;
+}
+UStaticMeshComponent* Tool(FBeatWorld& W,const TCHAR* Name)
+{
+    TArray<UStaticMeshComponent*> Parts; W.Mode()->Arena()->GetComponents(Parts);
+    for(auto* Part:Parts) if(Part->GetName().Contains(Name)) return Part;
+    return nullptr;
+}
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRhythmWorkshopTest,"SoraArena.Campaign.RhythmWorkshop",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraRhythmWorkshopTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters; using namespace SoraRhythmAutomation;
+    FBeatWorld W(*this,TEXT("RhythmWorkshop"),4,7);
+    if(!Ready(W)) return false;
+    auto* Audio=USoraAudioSubsystem::Get(W.Mode());
+    if(!TestNotNull(TEXT("Workshop uses the real audio owner"),Audio)) return false;
+    const int32 Music=W.Mode()->Settings()->BusVolume(ESoraAudioBus::Music);
+    W.Mode()->Settings()->SetBusVolume(ESoraAudioBus::Music,0);
+    Audio->ForgetPlays();
+    if(!W.Press(EKeys::E)) return false;
+    TestEqual(TEXT("The count-in produces one small hammer cue"),Heard(*Audio,TEXT("workshop.hammer.cue")),1);
+    TestEqual(TEXT("The count-in is not a player strike"),Heard(*Audio,TEXT("workshop.hammer.hit")),0);
+    auto* Hammer=Tool(W,TEXT("CueHammerHead"));
+    if(!TestNotNull(TEXT("The station has its moving cue hammer"),Hammer)) return false;
+    const float ContactZ=Hammer->GetRelativeLocation().Z;
+    if(!W.Tick(12)) return false;
+    TestTrue(TEXT("Cue hammer returns from the contact"),Hammer->GetRelativeLocation().Z>ContactZ+10.f);
+    TestEqual(TEXT("Frames do not replay the same cue"),Heard(*Audio,TEXT("workshop.hammer.cue")),1);
+    auto* C=W.Campaign(); const int32 Until=C->RhythmState().DueMs-C->TaskProgress().ElapsedMs;
+    if(!W.Tick(FMath::CeilToInt(Until*60.f/1000.f))||!W.Press(EKeys::E)||!W.Press(EKeys::E)) return false;
+    TestEqual(TEXT("An accepted strike sounds once despite a repeated press"),Heard(*Audio,TEXT("workshop.hammer.hit")),1);
+    TestEqual(TEXT("Strike audio does not award an incomplete phrase"),C->TaskProgress().StepDone,0);
+    for(const auto& Play:Audio->Plays())
+        if(Play.Cue==TEXT("workshop.hammer.cue"))
+        {
+            TestEqual(TEXT("Music 0 leaves timing on the SFX telegraph bus"),Play.Bus,FName(TEXT("SFX_Telegraph")));
+            TestTrue(TEXT("The cue resolves its cleared waveform"),Play.IsVoiced());
+            TestTrue(TEXT("The cue is positioned at the station"),Play.bSpatial);
+        }
+    UGameplayStatics::ApplyDamage(W.Hero(),1.f,nullptr,nullptr,UDamageType::StaticClass());
+    if(!W.Tick(2)) return false;
+    const int32 AfterInterrupt=Heard(*Audio,TEXT("workshop.hammer.cue"));
+    if(!W.Tick(60)) return false;
+    TestEqual(TEXT("Combat interruption stops rhythm audio"),Heard(*Audio,TEXT("workshop.hammer.cue")),AfterInterrupt);
+    W.Mode()->Settings()->SetBusVolume(ESoraAudioBus::Music,Music);
+    return !HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRhythmPhraseTest,"SoraArena.Campaign.RhythmPhrases",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
@@ -75,6 +130,14 @@ bool FSoraRhythmAssistTest::RunTest(const FString& Parameters)
     W.Mode()->Settings()->SetRhythmAssist(true);
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(458)) return false; // 7.633 s, ten complete 750 ms windows
     TestEqual(TEXT("Ten on-beat assisted picks earn seven units"),C->TaskProgress().StepDone,7);
+    if(auto* Audio=USoraAudioSubsystem::Get(W.Mode()))
+    {
+        TestTrue(TEXT("The authored loom voice has an explicit cue contract"),Heard(*Audio,TEXT("workshop.loom.call"))>0);
+        for(const auto& Play:Audio->Plays()) if(Play.Cue==TEXT("workshop.loom.call"))
+            TestFalse(TEXT("No unrelated wave pretends to be Okinu's missing voice"),Play.IsVoiced());
+    }
+    TestNotNull(TEXT("The drawloom has a moving shuttle"),Tool(W,TEXT("Shuttle")));
+    TestNotNull(TEXT("The drawloom has a figure cord marker"),Tool(W,TEXT("CordMarker")));
     if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(120)) return false;
     TestEqual(TEXT("Release stops assisted work"),C->TaskProgress().StepDone,7);
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(20)) return false;

@@ -322,6 +322,7 @@ private:
     SoraRhythmRules::FState RhythmClock;
     SoraCrankInputRules::FState RhythmInput;
     int32 RhythmCueShown = -1;
+    int32 RhythmStrikeMs = -1;
     int32 BellowsCueStarted = 0;
     bool PlayerRhythmEligible() const;
     void StopPlayerRhythm(bool bWaitForRelease);
@@ -329,6 +330,8 @@ private:
     void TickPlayerRhythm();
     void RhythmResult(SoraBeatRules::EStroke Result,int32 Step);
     void PresentRhythmCue();
+    void PresentRhythmResponse(int32 Step);
+    void WorkshopSound(FName Action,int32 Step);
     bool bLiftGallery=false;
     int32 GalleryStairNode=0;
     bool LiftReadyToComplete() const;

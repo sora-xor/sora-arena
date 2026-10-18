@@ -121,6 +121,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     script("audio", "audio-data", "scripts/audio/validate_audio_data.py")
     unit("audio", "audio-import-spec", "scripts/unreal/test_audio_spec.py")
     unit("audio", "audio-dsp", "scripts/audio/test_build_cc0_audio.py")
+    unit("audio", "workshop-audio", "scripts/audio/test_workshop_audio.py")
     script("audio", "audio-waveforms", "scripts/audio/qa_audio.py", "Content/SourceArt/Audio")
     return result
 

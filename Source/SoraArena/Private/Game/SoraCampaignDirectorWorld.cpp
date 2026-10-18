@@ -423,6 +423,13 @@ void USoraCampaignDirector::ShowKit()
     View.BellowsNotches=SoraBeatRules::CrankFlameNotches(TaskState,Task);
     View.BellowsFoot=IsWorkingCrank()?BellowsTreads.LatchedSide:0;
     View.Strokes=Task.Goal==SoraBeatRules::EGoal::Steps?TaskState.Done:0;
+    if(SoraRhythmRules::Active(RhythmClock,TaskState,Task))
+    {
+        View.RhythmStep=TaskState.Step;
+        View.RhythmElapsedMs=TaskState.ElapsedMs-RhythmClock.StartedMs;
+        View.RhythmPeriodMs=Task.Steps[TaskState.Step].BeatMs;
+        View.RhythmHitAgeMs=RhythmStrikeMs>=0?TaskState.ElapsedMs-RhythmStrikeMs:-1;
+    }
     for(int32 Target=0;Target<Task.TargetCount;++Target)
         View.TargetHealth.Add(Task.TargetHp[Target]>0?static_cast<float>(TaskState.TargetHp[Target])/Task.TargetHp[Target]:0.f);
     View.bCarrying=TaskState.Carrying;

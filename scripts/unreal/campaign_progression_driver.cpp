@@ -4,6 +4,7 @@
 #include "SoraMountRules.h"
 #include "SoraCrankInputRules.h"
 #include "SoraRhythmRules.h"
+#include "SoraWorkshopRules.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -859,17 +860,22 @@ static void TestRhythmManufacture()
             FTask Long=Task; Long.Steps[1].Count=99;
             State=Begin(Long,"rhythm assist");State.Step=1;SoraRhythmRules::Begin(Cue,State,Long);
             const int StopAt=10*Step.PhraseStrikes*Step.BeatMs+Step.ToleranceMs+1;
-            int Units=0,Fractions=0;
+            int Units=0,Fractions=0,Responses=0;
             while(State.ElapsedMs<StopAt)
             {
                 Tick(State,Long,At((FrameMs<StopAt-State.ElapsedMs?FrameMs:StopAt-State.ElapsedMs)));
-                const auto Result=SoraRhythmRules::Tick(Cue,State,Long,true);
+                bool AutoStruck=false;
+                const auto Result=SoraRhythmRules::Tick(Cue,State,Long,true,&AutoStruck);
+                if(AutoStruck) ++Responses;
                 if(Result==EStroke::Counted) ++Units;
                 if(Result==EStroke::Credited) ++Fractions;
             }
             Expect(State.StepDone==7&&State.RhythmCarry==0&&Units==7&&Fractions==3,"ten assisted phrases/picks must earn exactly seven units, with no false completion events for fractional credit");
+            Expect(Responses==10*Step.PhraseStrikes,"workshop response must sound once per actual strike, not per completed phrase");
             const int Before=State.StepDone; Cue={};
-            Tick(State,Long,At(5000)); SoraRhythmRules::Tick(Cue,State,Long,true);
+            bool AutoStruck=true;
+            Tick(State,Long,At(5000)); SoraRhythmRules::Tick(Cue,State,Long,true,&AutoStruck);
+            Expect(!AutoStruck,"an interrupted clock must not emit workshop impacts");
             Expect(State.StepDone==Before,"released/interrupted assist must not run in the background");
             State=Begin(Long,"rhythm checkpoint");
             Expect(State.RhythmCarry==0&&State.StepDone==0,"checkpoint reset must discard partial assisted credit");
@@ -886,6 +892,22 @@ static void TestRhythmManufacture()
     Expect(State.Progress==7000,"ten assisted bellows cycles must earn seven turns");
     const auto Before=State; Tick(State,Bellows,At(1000));
     Expect(PlayerTurn(State,Bellows,1,700).Result==ETurn::Exhausted&&State.Progress==Before.Progress,"assist must not bypass stamina");
+    for(int Period:{600,750})
+    {
+        for(int Ms=0;Ms<Period*10;++Ms)
+        {
+            const auto Pose=SoraWorkshopRules::Pose(true,Ms,Period,Ms-Period);
+            Expect(Pose.CueTap>=0&&Pose.CueTap<=1&&Pose.Response>=0&&Pose.Response<=1&&Pose.Shuttle>=-1&&Pose.Shuttle<=1&&Pose.Ring>=0&&Pose.Ring<=1,"workshop pose must remain bounded");
+        }
+        const auto CuePose=SoraWorkshopRules::Pose(true,0,Period,-1);
+        Expect(CuePose.CueTap==1&&CuePose.Response==0&&CuePose.Glint,"count-in taps without inventing a player response");
+        const auto HitPose=SoraWorkshopRules::Pose(true,Period,Period,0);
+        Expect(HitPose.Response==1,"actual accepted hit must drive the response prop immediately");
+        const auto Reset=SoraWorkshopRules::Pose(false,Period,Period,0);
+        Expect(Reset.CueTap==0&&Reset.Response==0&&!Reset.Glint,"release, interruption and checkpoint must restore idle props");
+        Expect(SoraWorkshopRules::Pose(true,Period-1,Period,-1).Ring<.002f,"anvil ring must close at response time");
+        Expect(SoraWorkshopRules::Pose(true,0,0,0).Response==0,"invalid cue period must be idle");
+    }
 }
 
 static void TestBellowsTreads()

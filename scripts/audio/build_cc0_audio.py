@@ -408,9 +408,24 @@ def beds(b: Build) -> None:
     b.add('cc0_amb_festival_loop', 'Ambience', 'amb.festival', bed(loop, BED), spans, BED, loop=True)
 
 
-def render(raw: Raw) -> Build:
+def workshop(b: Build) -> None:
+    """Ch05 aizuchi's distinct cue and response; never a substitute for Okinu's voice."""
+    prefix = RAW + 'vcsl-c1ea7bc/Idiophones/Struck Idiophones/Anvil/'
+    for name, source, cue, peak in (
+        ('cc0_workshop_small_hammer', 'Anvil_Hit1_v1_rr1_Mid.wav', 'workshop.hammer.cue', -9.0),
+        ('cc0_workshop_sledge', 'Anvil_Hit2_v3_rr1_Mid.wav', 'workshop.hammer.hit', -5.0),
+    ):
+        y, span = b.whole(prefix + source)
+        # Keep the recorded attack, with a bounded tail inside the 600 ms
+        # cadence; no pitch randomisation that could move the attack.
+        y = trim(dsp.remove_dc(y))[:, :dsp.n_of(.42)]
+        target = {'P': peak, 'limit': 0.0}
+        b.add(name, 'Workshop', cue, one_shot(y, target, fade_out=.06), [span], target)
+
+
+def render(raw: Raw, workshop_only: bool = False) -> Build:
     b = Build(raw)
-    for part in (weapons, blades, explosions, footsteps, beds):
+    for part in ((workshop,) if workshop_only else (weapons, blades, explosions, footsteps, beds, workshop)):
         part(b)
     names = [item['name'] for item in b.items]
     if len(names) != len(set(names)):
@@ -494,12 +509,14 @@ def main() -> int:
     parser.add_argument('--local-root', type=Path, default=ROOT,
                         help='the tree whose Local/ThirdPartyRaw/audio holds the raw CC0 files (default: this tree)')
     parser.add_argument('--check', action='store_true', help='rebuild in a temporary folder and compare with the manifest')
+    parser.add_argument('--workshop-only', action='store_true',
+                        help='build/check only the two pinned workshop takes; preserve all other ledger rows')
     args = parser.parse_args()
     raw = Raw(args.local_root.resolve())
-    built = render(raw)
+    built = render(raw, args.workshop_only)
     if args.check:
         recorded = {row['file']: row['sha256'] for record in json.loads(MANIFEST.read_text(encoding='utf-8'))['records']
-                    for row in record['files']}
+                    for row in record['files'] if not args.workshop_only or '/Workshop/' in row['file']}
         with tempfile.TemporaryDirectory(prefix='sora-cc0-audio-') as temp:
             rows = write(built, Path(temp))
             fresh = {f"{OUT.relative_to(ROOT)}/{row['item']['category']}/{row['item']['name']}.wav": row['sha256']
@@ -510,7 +527,21 @@ def main() -> int:
         print(f'CC0_AUDIO_CURRENT: {len(fresh)} files')
         return 0
     rows = write(built, OUT)
-    dsp.save_json(MANIFEST, manifest(raw, rows))
+    fresh = manifest(raw, rows)
+    if args.workshop_only:
+        existing = json.loads(MANIFEST.read_text(encoding='utf-8'))
+        # Replacing this bounded record never refreshes unrelated hashes.
+        replaced = {record['asset_id'] for record in fresh['records']}
+        for record in existing['records']:
+            if record['asset_id'] in replaced and any('/Workshop/' not in row['file'] for row in record['files']):
+                fail('workshop-only refuses to replace an anvil record with non-workshop derivatives')
+        existing['records'] = sorted([record for record in existing['records'] if record['asset_id'] not in replaced]
+                                     + fresh['records'], key=lambda record: record['asset_id'])
+        existing['total_bytes'] = sum(row['bytes'] for record in existing['records'] for row in record['files'])
+        if existing['total_bytes'] > BUDGET_BYTES:
+            fail('workshop derivatives would exceed the audio budget')
+        fresh = existing
+    dsp.save_json(MANIFEST, fresh)
     loops = sum(1 for row in rows if row['item']['loop'])
     total = sum(row['bytes'] for row in rows)
     for row in rows:

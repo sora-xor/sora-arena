@@ -227,6 +227,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
             KitShape(TEXT("Bench"),KitCube,P+FVector(0,0,40),FVector(1.2f,.8f,.8f),KitTimber,TEXT("Timber"),true);
             KitStations.Add(KitShape(TEXT("StationMark"),KitCube,P+FVector(0,0,84),FVector(.9f,.5f,.06f),KitDim));
         }
+        StageWorkshop(Beat);
     }
     else if(KitWork==TEXT("carry"))
     {
@@ -326,6 +327,7 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     }
     else if(KitWork==TEXT("stations"))
     {
+        ShowWorkshop(View);
         for(int32 Station=0;Station<KitStations.Num();++Station)
             if(KitStations[Station]) Tint(KitStations[Station],Station<View.Step?KitTeal:Station==View.Step?KitGold:KitDim);
         // The output stacks beside the anchor, a piece for every stroke.
@@ -410,6 +412,7 @@ void ASoraWorldBuilder::ClearKit()
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
     KitLooseLoads.Reset(); CarrySeal=nullptr;
     BellowsNotches.Reset(); BellowsSparks.Reset(); BellowsFeet.Reset(); BellowsShownBand=0;
+    WorkshopParts.Reset(); WorkshopRing.Reset(); WorkshopStep=-1; bWorkshopHammer=false;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr; Lift=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
 }

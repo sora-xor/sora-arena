@@ -25,6 +25,10 @@ struct FSoraKitView
     int32 Strokes = 0;
     int32 BellowsNotches = 1;
     int32 BellowsFoot = 0;
+    int32 RhythmStep = -1;
+    int32 RhythmElapsedMs = 0;
+    int32 RhythmPeriodMs = 0;
+    int32 RhythmHitAgeMs = -1;
     // Each defended target's health, 0-1.
     TArray<float> TargetHealth;
     // Carry: the load in hand, loads taken from each pickup, delivered to each drop-off.
@@ -155,6 +159,14 @@ private:
     UPROPERTY() TObjectPtr<UStaticMeshComponent> KitWheel;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> KitFill;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitStations;
+    // Functional workshop motions; authored character clips remain separate.
+    void StageWorkshop(const FSoraBeat& Beat);
+    void ShowWorkshop(const FSoraKitView& View);
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WorkshopParts;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WorkshopRing;
+    FVector WorkshopAnchor = FVector::ZeroVector;
+    int32 WorkshopStep = -1;
+    bool bWorkshopHammer = false;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitTargets;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitStacks;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitLoads;

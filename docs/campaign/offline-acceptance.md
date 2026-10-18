@@ -359,9 +359,9 @@ fresh task copy at beat entry; it cannot compound across retries.
 
 A continuously closing HUD ring supplies a shape cue. Hammer/loom cue
 captions use localized text; native force-feedback requests are emitted once
-per cue. The checked-in audio catalog does not yet connect Kōzō's small-hammer
-tap or Okinu's call to these events, so actual cue recordings and workshop
-animation remain outstanding. Hardware vibration, final ring placement,
+per cue. The subsequent workshop slice below connects the cleared anvil audio
+and station motions; Okinu's voice and character clips remain outstanding.
+Hardware vibration, final ring placement,
 small-screen legibility and audio timing require Unreal review; no rendered
 or controller-device result is claimed here.
 
@@ -382,3 +382,55 @@ frames retain the actual tracker, notices and bottom HUD; the pad case checks
 its displayed left-stick directions against the live axis binding. Root owns
 720p/1080p captures and all UE builds/execution. Source checks are recorded at
 `Saved/SourceChecks/rhythm-assist` in the producing worktree.
+
+### Workshop cue audio and functional station motions
+
+Chapter 05 §2.5 (`chapter-05.md:694–706`) names a small-hammer tap and glint,
+an anvil ring, and Okinu's call with a shuttle flick and cord marker. The new
+`Workshop` audio family connects forge cues and accepted response strikes to
+two existing CC0 VCSL anvil recordings, pinned at
+`c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e` in `audio_vcsl.json`.
+The selected Hit1/v1 and Hit2/v3 raw files were recovered byte-for-byte and
+checked against both recorded SHA-256 and Git blob hashes. Two 48 kHz/24-bit,
+420 ms derivatives total 242,008 bytes. Their new ledger record preserves
+raw identity, spans, credit, upstream link and QA; unrelated ledger records
+and their hashes are unchanged. `build_cc0_audio.py --workshop-only --check`
+reproduces only these takes without requiring the unrelated raw library.
+
+The small-hammer cue uses retained `SFX_Telegraph` loading, fixed pitch and
+the actual station location; it does not depend on Music volume. The
+stronger `SFX_Foley` response sounds only once per admitted manual/assisted
+strike, including strikes that do not yet finish a phrase. Misses, duplicate
+presses, interrupted input and fractional production credit cannot invent
+extra impacts. The first cue is explicitly a count-in; response is due one
+600/750 ms interval later. This game-thread presentation has not been proved
+sample-accurate or reviewed for latency in Unreal.
+
+The forge now has separate cue hammer and sledge motions, a small glint,
+and a 32-segment ring closing on the anvil. The drawloom has a shuttle flick,
+an anchored figure cord/marker and a beater response. These fixed component
+pools move from the same task clock and accepted-response timestamps used by
+scoring, without adding collision, changing controls or granting progress.
+Interruptions restore idle poses. They are functional primitive station
+props, not completed first-person paws or named NPC animation clips.
+
+**Still missing:** no cleared Okinu voice recording exists in the repository.
+`workshop.loom.call` is explicitly `needed`, with no waveform or voice caption;
+the caption truthfully describes the visible shuttle cue. It is not silently
+replaced with an anvil, UI beep or imitation voice. The first-person grips,
+bellows/sledge/cord character clips, Kōzō's yokoza and Okinu's full weave cycle
+remain the §5.4 deliverables. Bellows creak/furnace breathing, loom/cord foley
+and the authored tempo-locked music stems (§5.6–5.7) remain open too.
+
+CPU coverage checks both new waveform hashes/PCM layouts/raw provenance,
+audio routing and the missing-voice contract; 1–500 ms rhythm frame sizes
+emit exactly one response per admitted strike; station poses stay bounded,
+close at their authored periods and reset on inactive clocks. The prepared
+`SoraArena.Campaign.RhythmWorkshop` fixture checks the real cue family with
+Music at 0, count-in versus hit, repeated-press refusal, moving tool and combat
+interruption. `RhythmAssist` additionally asserts the explicit unvoiced loom
+contract and separate shuttle/cord pieces. Root must run the existing audio
+importer for the two new SoundWaves, then compile/run these fixtures and
+inspect/listen to the station in-game; no UE, listening, render or controller
+verification is claimed by this source slice. Reports live under
+`Saved/SourceChecks/workshop-cues` in the producing worktree.

@@ -2,6 +2,8 @@
 #include "Game/SoraCampaignReach.h"
 #include "SoraCatalog.h"
 #include "SoraCaptions.h"
+#include "SoraAudio.h"
+#include "Audio/SoraAudioData.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
@@ -25,7 +27,7 @@ void USoraCampaignDirector::StopPlayerRhythm(bool bWaitForRelease)
 {
     // Ordinary strikes release between every press; release only ends a cue
     // when that press was performing assisted work. A hit/leave ends either.
-    if(bWaitForRelease||RhythmInput.Active) { RhythmClock={}; RhythmCueShown=-1; }
+    if(bWaitForRelease||RhythmInput.Active) { RhythmClock={}; RhythmCueShown=-1; RhythmStrikeMs=-1; }
     RhythmInput={};
     if(bWaitForRelease) SoraCrankInputRules::Stop(RhythmInput);
 }
@@ -36,11 +38,29 @@ void USoraCampaignDirector::PresentRhythmCue()
     if(Cue<0||Cue==RhythmCueShown) return;
     RhythmCueShown=Cue;
     const bool Hammer=!Bellows&&Task.Steps[TaskState.Step].PhraseStrikes==8;
+    if(!Bellows) WorkshopSound(Hammer?TEXT("HammerCue"):TEXT("LoomCall"),TaskState.Step);
     if(auto* Captions=USoraCaptions::Get(this); Captions&&!Bellows)
         Captions->Show(Hammer?NSLOCTEXT("SoraArena.Rhythm","HammerCue","〔小鎚の合図〕"):
-            NSLOCTEXT("SoraArena.Rhythm","LoomCue","〔お絹の掛け声〕"),nullptr,.6f);
+            NSLOCTEXT("SoraArena.Rhythm","LoomCue","〔杼の合図〕"),nullptr,.6f);
     if(auto* Controller=Cast<APlayerController>(Mode().Hero()->GetController()))
         Controller->PlayDynamicForceFeedback(.22f,.035f,true,true,true,true,EDynamicForceFeedbackAction::Start);
+}
+void USoraCampaignDirector::WorkshopSound(FName Action,int32 Step)
+{
+    const auto* Space=ActiveSpace();
+    if(!Space||!Space->StepStations.IsValidIndex(Step)) return;
+    const int32 Station=Space->StepStations[Step];
+    if(!Space->Stations.IsValidIndex(Station)) return;
+    // The cue originates at the work, not at the hero's eye. Missing Okinu
+    // VO remains a needed, unvoiced cue in audio.json; never play a stand-in.
+    if(auto* Audio=USoraAudioSubsystem::Get(this))
+        Audio->Hear(TEXT("Workshop"),SoraAudioData::FFacts().Text(TEXT("Action"),Action.ToString()),nullptr,
+            ASoraWorldBuilder::Floor(Space->Stations[Station],Space->HeightCm+100.f));
+}
+void USoraCampaignDirector::PresentRhythmResponse(int32 Step)
+{
+    RhythmStrikeMs=TaskState.ElapsedMs;
+    if(Task.Steps[Step].PhraseStrikes==8) WorkshopSound(TEXT("HammerHit"),Step);
 }
 int32 USoraCampaignDirector::RhythmCuePeriodMs() const
 {
@@ -76,11 +96,12 @@ void USoraCampaignDirector::WorkPlayerRhythm()
     if(Assist) SoraCrankInputRules::Begin(RhythmInput,true);
     if(!SoraRhythmRules::Active(RhythmClock,TaskState,Task))
     {
-        SoraRhythmRules::Begin(RhythmClock,TaskState,Task); RhythmCueShown=-1;
+        SoraRhythmRules::Begin(RhythmClock,TaskState,Task); RhythmCueShown=-1; RhythmStrikeMs=-1;
         PresentRhythmCue();
         return; // The first press asks for a cue; no free first hit.
     }
-    if(!Assist) SoraRhythmRules::Strike(RhythmClock,TaskState,Task);
+    if(!Assist&&SoraRhythmRules::Strike(RhythmClock,TaskState,Task))
+        PresentRhythmResponse(TaskState.Step);
 }
 void USoraCampaignDirector::TickPlayerRhythm()
 {
@@ -93,5 +114,10 @@ void USoraCampaignDirector::TickPlayerRhythm()
     if(!SoraRhythmRules::Active(RhythmClock,TaskState,Task)) return;
     PresentRhythmCue();
     const int32 Step=TaskState.Step;
-    RhythmResult(SoraRhythmRules::Tick(RhythmClock,TaskState,Task,RhythmAssistActive()),Step);
+    bool AutoStruck=false;
+    const auto Result=SoraRhythmRules::Tick(RhythmClock,TaskState,Task,RhythmAssistActive(),&AutoStruck);
+    // Sound the admitted due crossing even if this coarse frame also resolves
+    // the window. Full phrase credit (including 700-permille) is separate.
+    if(AutoStruck) PresentRhythmResponse(Step);
+    RhythmResult(Result,Step);
 }
