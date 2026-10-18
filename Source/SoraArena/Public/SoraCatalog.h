@@ -143,9 +143,12 @@ struct FSoraVolume
     FString Event;
     FVector2D Center = FVector2D::ZeroVector;
     FVector2D Size = FVector2D::ZeroVector;
+    bool bHeight = false;
+    int32 FloorCm = 0;
     bool Contains(const FVector& Location) const
     {
-        return FMath::Abs(Location.X - Center.X) <= Size.X * .5f && FMath::Abs(Location.Y - Center.Y) <= Size.Y * .5f;
+        return (!bHeight || (Location.Z >= FloorCm - 20 && Location.Z <= FloorCm + 200)) &&
+            FMath::Abs(Location.X - Center.X) <= Size.X * .5f && FMath::Abs(Location.Y - Center.Y) <= Size.Y * .5f;
     }
 };
 // A walled zone for a place, or a route corridor with its road.
@@ -514,8 +517,16 @@ struct FSoraLiftSpace
     FBox2D Gallery;
     FVector2D GalleryExit=FVector2D::ZeroVector;
 };
+struct FSoraSpireSpace
+{
+    FVector2D Center = FVector2D::ZeroVector;
+    TArray<FVector> Ramp;
+    TArray<FVector> Spawns;
+    bool Enabled() const { return Ramp.Num()==25; }
+};
 struct FSoraBeatSpace
 {
+    FSoraSpireSpace Spire;
     int32 HeightCm=0;
     FSoraLiftSpace Lift;
     int32 Zone = INDEX_NONE;

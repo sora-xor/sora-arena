@@ -120,6 +120,13 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
     const FSoraBeatSpace& Space=Beat.Space;
     StageEpilogue(Beat);
+    if(Space.Spire.Enabled())
+    {
+        const FVector C(Space.Spire.Center,2700);
+        KitShape(TEXT("ParkedSpireBridge"),KitCube,C-FVector(0,0,15),FVector(6,2,.3),KitIron,TEXT("Metal"),true);
+        for(int32 Sign:{-1,1})
+            KitShape(TEXT("ParkedSpireRail"),KitCube,C+FVector(0,Sign*90,75),FVector(6,.2,1.5),KitIron,TEXT("Metal"),true);
+    }
     if(Beat.Task.CarryGateMs>0)
         CarrySeal=KitShape(TEXT("GranarySeal"),KitCube,Floor(Space.CarryGate)+FVector(0,70,75),
             FVector(.18f,.55f,.9f),KitTeal);

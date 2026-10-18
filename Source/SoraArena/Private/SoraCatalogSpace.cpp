@@ -63,6 +63,8 @@ bool SpaceBoxes(const FJsonRows* Values, TArray<FSoraBox>& Out)
 }
 bool SpaceVolume(const FJsonObject& Object, FSoraVolume& Out, bool bNamed)
 {
+    Out.bHeight = Object.HasField(TEXT("floor_cm"));
+    if(Out.bHeight && !Int(Object,TEXT("floor_cm"),Out.FloorCm)) return false;
     return (!bNamed || (Str(Object, TEXT("event"), Out.Event) && Out.Event.StartsWith(TEXT("volume_enter:")))) &&
         SpacePoint(Object.TryGetField(TEXT("center")), Out.Center) && SpacePoint(Object.TryGetField(TEXT("size")), Out.Size) &&
         Out.Size.X > 0 && Out.Size.Y > 0;
@@ -722,6 +724,30 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpacePoints(Rows(*O, TEXT("stations")), B.Stations) || !SpacePoints(Rows(*O, TEXT("spawns")), B.Spawns) ||
             !Exit || !SpaceVolume(*Exit, B.Exit, false) || !Kit || !PatrolRows || !VolumeRows || !StationRows)
             return Bad(FString::Printf(TEXT("beat %s lacks a required field"), *Beat.Id));
+        const auto Spire=Child(*O,TEXT("spire"));
+        if(Spire.IsValid()!=(Beat.Id==TEXT("ch08.b10"))) return Bad(Beat.Id+TEXT(" physical spiral"));
+        if(Spire)
+        {
+            int32 Width=0,Void=0;
+            if(!SpacePoint(Spire->TryGetField(TEXT("center")),B.Spire.Center)||
+                !Int(*Spire,TEXT("width_cm"),Width)||Width!=400||
+                !Int(*Spire,TEXT("void_diameter_cm"),Void)||Void!=1400) return Bad(Beat.Id+TEXT(" spiral dimensions"));
+            const auto Read3=[&](const TCHAR* Key,TArray<FVector>& Points,int32 Count)
+            {
+                const auto* List=Rows(*Spire,Key); if(!List||List->Num()!=Count) return false;
+                for(const auto& V:*List) { double P[3]={}; if(!SpaceVector(V,3,P)) return false; Points.Add(FVector(P[0],P[1],P[2])); }
+                return true;
+            };
+            if(!Read3(TEXT("ramp"),B.Spire.Ramp,25)||!Read3(TEXT("spawns"),B.Spire.Spawns,16)||B.Spawns.Num()!=16)
+                return Bad(Beat.Id+TEXT(" spiral route or posts"));
+            const FVector2D Vertices[]={{-1386,0},{-693,-1200},{693,-1200},{1386,0},{693,1200},{-693,1200}};
+            for(int32 N=0;N<25;++N)
+                if(B.Spire.Ramp[N]!=FVector(B.Spire.Center+Vertices[N%6],(N*2700+12)/24)) return Bad(Beat.Id+TEXT(" spiral landing"));
+            for(int32 N=0;N<16;++N)
+                if(FVector2D(B.Spire.Spawns[N])!=B.Spawns[N]||B.Spire.Spawns[N].Z!=(N<5?900:N<9?1800:N<13?2100:2700))
+                    return Bad(Beat.Id+TEXT(" spiral spawn floor"));
+            if(!B.Exit.bHeight||B.Exit.FloorCm!=2700) return Bad(Beat.Id+TEXT(" L4 arrival floor"));
+        }
         const auto Lift=O->TryGetField(TEXT("lift"));
         if(!Int(*O,TEXT("height_cm"),B.HeightCm)||!Lift.IsValid()||
             B.HeightCm!=(Beat.Id==TEXT("ch08.b11")?2700:Beat.Id==TEXT("ch08.b12")?14200:0))
@@ -777,6 +803,13 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             const auto V = Value.IsValid() ? Value->AsObject() : nullptr;
             FSoraVolume Volume;
             if (!V || !SpaceVolume(*V, Volume, true)) return Bad(Beat.Id + TEXT(" volume"));
+            if(B.Spire.Enabled())
+            {
+                const int32 Node=Volume.Event==TEXT("volume_enter:vol_spire_L3")?16:
+                    Volume.Event==TEXT("volume_enter:vol_spire_void_edge")?8:INDEX_NONE;
+                if(Node==INDEX_NONE||!Volume.bHeight||Volume.FloorCm!=B.Spire.Ramp[Node].Z||
+                    Volume.Center!=FVector2D(B.Spire.Ramp[Node])) return Bad(Beat.Id+TEXT(" spiral trigger floor"));
+            }
             B.Volumes.Add(MoveTemp(Volume));
         }
         if (!(Beat.Waves.Num() == 0 && !Beat.Is(SoraBeatRules::EType::Duel) && !Beat.Is(SoraBeatRules::EType::Boss) &&

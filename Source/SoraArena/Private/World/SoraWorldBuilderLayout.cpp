@@ -32,7 +32,9 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
     {
         const FSoraBeat* Recovery=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Task.RecoveryWeapons!=0u; });
-        BuildZone(Space.Zones[Index],Index,Recovery);
+        const FSoraBeat* Spire=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Spire.Enabled(); });
+        if(Spire) BuildSpire(*Spire); else BuildZone(Space.Zones[Index],Index,Recovery);
     }
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();
     const FLinearColor Accent=FSoraCatalog::Get().Map(Chapter.Map).Accent;

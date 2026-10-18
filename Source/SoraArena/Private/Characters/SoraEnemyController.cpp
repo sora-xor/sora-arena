@@ -299,7 +299,7 @@ void ASoraEnemyController::Tick(float Dt)
         DrivePupil(*Enemy, *Target, Dt);
         return;
     }
-    if (DriveLift(*Enemy,*Target,Dt)) return;
+    if (DriveLift(*Enemy,*Target,Dt)||DriveSpireFlight(*Enemy,*Target,Dt)) return;
     if (Enemy->Archetype())
         Think(*Enemy, *Target, Dt);
 }
@@ -936,7 +936,8 @@ bool ASoraEnemyController::Claimed(const FVector& Spot) const
 ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs)
 {
     const FVector Here = Enemy.GetActorLocation();
-    if ((bErrand&&bErrand3D?FVector::Dist(Here,Goal):FVector::Dist2D(Here,Goal)) <= Acceptance)
+    if ((bErrand&&bErrand3D?FVector::Dist(Here,Goal):FVector::Dist2D(Here,Goal)) <= Acceptance &&
+        (Enemy.IsFlying()||FMath::Abs(Here.Z-Goal.Z)<180.f))
     {
         ClearPath();
         return EMove::Arrived;
@@ -946,7 +947,7 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
         return EMove::Blocked;
     if (Enemy.IsFlying())
         return FlyTo(Enemy, Goal, Speed, Acceptance, NowMs);
-    if (!bPathValid || FVector::Dist2D(Goal, PathGoal) > 100.f || NowMs >= RepathAtMs)
+    if (!bPathValid || FVector::Dist2D(Goal, PathGoal) > 100.f || FMath::Abs(Goal.Z-PathGoal.Z)>100.f || NowMs >= RepathAtMs)
     {
         const USoraNavigation* Nav = USoraNavigation::Get(this);
         PathGoal = Goal;
@@ -957,7 +958,7 @@ ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, cons
     FVector Next = Goal;
     if (bPathValid)
     {
-        while (PathIndex < Path.Num() - 1 && FVector::Dist2D(Here, Path[PathIndex]) <= 40.f)
+        while (PathIndex < Path.Num() - 1 && FVector::Dist2D(Here, Path[PathIndex]) <= 40.f && FMath::Abs(Here.Z-Path[PathIndex].Z)<180.f)
             ++PathIndex;
         Next = Path[PathIndex];
         // A partial path stops short of the goal: it cannot be reached from here.

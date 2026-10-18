@@ -11,6 +11,7 @@
 #include "SoraMaaiAutomation.h"
 #include "SoraRecoveryAutomation.h"
 #include "SoraLiftAutomation.h"
+#include "SoraSpireAutomation.h"
 #include "SoraCarryAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
@@ -992,7 +993,17 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
         for (int32 Action = 0; Action < MaxActionsPerBeat * 4 && Active(); ++Action)
         {
             if (!LiveEnemies(State).IsEmpty()) { if (!DefeatOne(Test, State)) return false; continue; }
-            if (Director->ObjectiveAnchor(Anchor) && Rules.Goal == EGoal::WavesCleared) MoveTo(State, Anchor);
+            if (Director->ObjectiveAnchor(Anchor) && Rules.Goal == EGoal::WavesCleared)
+            {
+                if(Beat.Space.Spire.Enabled())
+                {
+                    const bool AtL3=Player(State)->GetActorLocation().Z>1700.f;
+                    if(!SoraSpireAutomation::Climb(*State.World,Beat.Space,AtL3?17:0,AtL3?24:16))
+                        return Fail(Test,State,TEXT("The spiral must be climbed through its physical route"));
+                    if(AtL3&&!SoraLiftAutomation::Walk(*State.World,FVector(Beat.Space.Exit.Center,2700))) return false;
+                }
+                else MoveTo(State, Anchor);
+            }
             if (!Advance(Test, State, 1, FastSeconds))
                 return false;
         }

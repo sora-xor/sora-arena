@@ -47,3 +47,17 @@ bool ASoraEnemyController::DriveLift(ASoraEnemy& Enemy,ASoraCharacterBase& Targe
     }
     return false;
 }
+
+bool ASoraEnemyController::DriveSpireFlight(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt)
+{
+    if(!bSpireFlight||!Enemy.IsFlying()) return false;
+    if(Enemy.IsStaggered()) return true;
+    const FVector Offset=FRotator(0,Enemy.EnemySlot()*90,0).Vector()*450.f+FVector(0,0,220);
+    const FVector Goal=Target.GetActorLocation()+Offset;
+    SetErrand(Goal,-Offset,1.f,0,false,true,60.f);
+    RunErrand(Enemy,Dt,WorldMs());
+    const FVector Delta=Target.GetActorLocation()-Enemy.GetActorLocation();
+    Face(Enemy,Delta,Dt,5.f);
+    if(CanSee(Target)) Enemy.TryAttack(Target,Delta.Size());
+    return true;
+}

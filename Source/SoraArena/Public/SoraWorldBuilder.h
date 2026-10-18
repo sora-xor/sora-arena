@@ -113,6 +113,7 @@ private:
     // Campaign spaces (SoraWorldBuilderLayout.cpp, SoraWorldBuilderLayoutZones.cpp).
     void BuildArena(int32 MapId, bool bSites);
     void BuildCampaign(const FSoraChapter& Chapter);
+    void BuildSpire(const FSoraBeat& Beat);
     void BuildZone(const FSoraZone& Zone, int32 Index, const FSoraBeat* Recovery = nullptr);
     void ZoneProp(const FSoraZone& Zone, const FSoraProp& Prop, int32 Index);
     void ZoneLantern(FVector Location, bool bLit);
