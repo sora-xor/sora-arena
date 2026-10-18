@@ -1200,7 +1200,7 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
     const int32 Held = Hero->WeaponId;
     // Chapter three begins with only the wakizashi. Its unlock is still
     // checked here, but returning from that check cannot equip the lost kit.
-    const int32 ReturnWeapon = Director->CanHold(0,false) ? 0 : Held;
+    const int32 ReturnWeapon = Campaign(State)->CanHold(0,false) ? 0 : Held;
     if (!Holdable(WeaponId))
         return Fail(Test, State, FString::Printf(TEXT("Weapon %d has no campaign slot"), WeaponId));
     const bool bEquipped = Kit->EquipCampaignWeapon(WeaponId);
