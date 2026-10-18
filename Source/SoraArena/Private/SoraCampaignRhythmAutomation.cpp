@@ -12,16 +12,16 @@ using SoraFieldcraftAutomation::FBeatWorld;
 bool Station(FBeatWorld& W)
 {
     FVector Anchor;
-    return W.Campaign()->ObjectiveAnchor(Anchor)&&SoraRecoveryAutomation::WalkTo(*W.World,Anchor);
+    return W.Campaign()->ObjectiveAnchor(Anchor)&&SoraRecoveryAutomation::WalkTo(*W.World,Anchor+FVector(-180,0,0));
 }
 bool Ready(FBeatWorld& W)
 {
     if(!W.Start()) return false;
     W.Harden();
     for(int32 F=0;F<1800&&!W.Mode()->IsPlaying();++F) if(!W.Tick(1)) return false;
-    while(W.Campaign()->TaskProgress().Step==0)
+    for(int32 Attempt=0;Attempt<8&&W.Campaign()->TaskProgress().Step==0;++Attempt)
         if(!Station(W)||!W.Press(EKeys::E)) return false;
-    return Station(W);
+    return W.Test.TestEqual(TEXT("The ordinary preparation reaches the rhythm step"),W.Campaign()->TaskProgress().Step,1)&&Station(W);
 }
 bool Phrase(FBeatWorld& W,int32 Hits)
 {
