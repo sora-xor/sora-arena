@@ -41,8 +41,8 @@ Local/source-checks-venv/bin/python scripts/qualification/source_checks.py --gro
 | Group | Checked source behavior |
 | --- | --- |
 | `rust` | Exact compiler pin, workspace formatting, strict Clippy, locked workspace tests |
-| `gameplay` | Campaign generation and mutation checks, enemies, localization, input, catalog parity, host C++ campaign/combat/boss/stealth/fieldcraft/arms rules, cancellation/recovery and quote comparison |
-| `tooling` | Runner failure handling, engine/Rust pin guards, VFX import/preview guards, parity source-identity inventory, environment policy/preset source tests |
+| `gameplay` | Campaign generation, mutation and maai-contract checks, enemies, localization, input, catalog parity, host C++ campaign/combat/boss/stealth/fieldcraft/arms rules, cancellation/recovery and quote comparison |
+| `tooling` | Runner failure handling, engine/Rust pin guards, VFX import/preview and rendered-capture report guards, parity source-identity inventory, environment policy/preset source tests |
 | `assets` | Current LFS materialization, authored content and asset hashes, full existing ledger validator, notices freshness and ledger/acquisition regression tests |
 | `audio` | Audio data freshness/routing/localization, import specifications, DSP regressions and measured source WAV quality |
 

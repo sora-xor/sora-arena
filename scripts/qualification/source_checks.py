@@ -81,6 +81,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     script("gameplay", "catalog-kernel-parity", "scripts/unreal/check_catalog_kernel_parity.py")
     for name in ("campaign_progression", "combat_rules", "boss_rules", "stealth_rules", "fieldcraft_rules", "historical_arms"):
         script("gameplay", name.replace("_", "-"), f"scripts/unreal/test_{name}.py")
+    unit("gameplay", "maai-data", "scripts/unreal/test_maai_data.py")
     for name, path in (
         ("connect-cancellation", "scripts/connect/verify-cancellation.py"),
         ("connect-recovery", "scripts/connect/verify-recovery.py"),
