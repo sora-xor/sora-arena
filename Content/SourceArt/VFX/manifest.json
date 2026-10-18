@@ -1,0 +1,120 @@
+{
+  "schema_version": 2,
+  "tier": "OWN",
+  "name": "SORA Arena particle textures",
+  "license": "Project-owned original work (SORA Arena); procedural, no third-party imagery inside",
+  "generator": "scripts/art/create_vfx_textures.py",
+  "regenerate": "python3 scripts/art/create_vfx_textures.py",
+  "seed": 20260926,
+  "numpy": "1.23.5",
+  "generated_at_utc": "2026-09-26T12:19:55+00:00",
+  "used_by": [
+    "scripts/unreal/create_sora_vfx.py"
+  ],
+  "files": [
+    {
+      "file": "Content/SourceArt/VFX/Textures/T_VFX_SmokePuff.png",
+      "bytes": 1430611,
+      "sha256": "d13ec0164f64dda107db01ad6b8883ac5161d8d493c446f9d65a83a12b2c3aef",
+      "channels": "RGB",
+      "srgb": false,
+      "size": [
+        2048,
+        2048
+      ],
+      "role": "8x8 flipbook: R density, G heat, B thickness; a soft puff that swells and thins",
+      "unreal_asset": "/Game/Generated/VFX/Textures/T_VFX_SmokePuff.T_VFX_SmokePuff"
+    },
+    {
+      "file": "Content/SourceArt/VFX/Textures/T_VFX_Fireball.png",
+      "bytes": 1367991,
+      "sha256": "1bc8d1ead429d5e0aa8d708339e74e3437f9e0db56e3326f098665b6d61959b8",
+      "channels": "RGB",
+      "srgb": false,
+      "size": [
+        2048,
+        2048
+      ],
+      "role": "8x8 flipbook: R density, G heat, B thickness; a violent fireball rolling into smoke",
+      "unreal_asset": "/Game/Generated/VFX/Textures/T_VFX_Fireball.T_VFX_Fireball"
+    },
+    {
+      "file": "Content/SourceArt/VFX/Textures/T_VFX_Fire.png",
+      "bytes": 1234897,
+      "sha256": "60ce94d10961aa225f0fc537c4fcb995b236cae5862c6b44477ebc8b72f933fc",
+      "channels": "RGB",
+      "srgb": false,
+      "size": [
+        2048,
+        2048
+      ],
+      "role": "8x8 looping flipbook: R temperature, G opacity, B tongue mask; flames rise along -V",
+      "unreal_asset": "/Game/Generated/VFX/Textures/T_VFX_Fire.T_VFX_Fire"
+    },
+    {
+      "file": "Content/SourceArt/VFX/Textures/T_VFX_Flash.png",
+      "bytes": 101149,
+      "sha256": "1529e483ececc6de221b4702c2b2745751603819a08b558c30f2f5e4e3981d45",
+      "channels": "L",
+      "srgb": false,
+      "size": [
+        1024,
+        1024
+      ],
+      "role": "2x2 luminance: powder flash face-on, powder plume side-on (muzzle at the bottom edge, plume toward the top), energy star, shock ring",
+      "unreal_asset": "/Game/Generated/VFX/Textures/T_VFX_Flash.T_VFX_Flash"
+    },
+    {
+      "file": "Content/SourceArt/VFX/Textures/T_VFX_Noise.png",
+      "bytes": 471666,
+      "sha256": "a8a5bff10995a2a56fa9b316c0dd57dad8a3226c4841b0f65d7c0f56834eeac4",
+      "channels": "RGBA",
+      "srgb": false,
+      "size": [
+        512,
+        512
+      ],
+      "role": "tileable: R broad fbm, G fine fbm, B cellular distance, A billow",
+      "unreal_asset": "/Game/Generated/VFX/Textures/T_VFX_Noise.T_VFX_Noise"
+    },
+    {
+      "file": "Content/SourceArt/VFX/Textures/T_VFX_Water.png",
+      "bytes": 545186,
+      "sha256": "9e7ce71cd8e10648d0dffe6ff8122af3026cb1a6c003c50de5401f73970cd40d",
+      "channels": "RGB",
+      "srgb": false,
+      "size": [
+        1024,
+        1024
+      ],
+      "role": "2x2: spray droplets, splash sheet, foam, mist; R opacity, G highlight, B thickness",
+      "unreal_asset": "/Game/Generated/VFX/Textures/T_VFX_Water.T_VFX_Water"
+    },
+    {
+      "file": "Content/SourceArt/VFX/Textures/T_VFX_Scraps.png",
+      "bytes": 223286,
+      "sha256": "7a4bc637ae5957b6900c3e962ce5f41019bcf4df5f02617dd022e15887d33775",
+      "channels": "RGBA",
+      "srgb": true,
+      "size": [
+        512,
+        512
+      ],
+      "role": "2x2 colour sprites: torn washi talisman scraps (one with seal ink), dry leaf, charred flake",
+      "unreal_asset": "/Game/Generated/VFX/Textures/T_VFX_Scraps.T_VFX_Scraps"
+    },
+    {
+      "file": "Content/SourceArt/VFX/Textures/T_VFX_Fur.png",
+      "bytes": 146512,
+      "sha256": "5f62bd7065597d29434836e035403a344a1ebf6898e44a73d2cdb817c2cb5aa3",
+      "channels": "RGBA",
+      "srgb": false,
+      "size": [
+        512,
+        512
+      ],
+      "role": "2x2 locks of shed hair, agouti-banded: RGB luminance, A coverage; tinted by the particle colour",
+      "unreal_asset": "/Game/Generated/VFX/Textures/T_VFX_Fur.T_VFX_Fur"
+    }
+  ]
+}

@@ -82,19 +82,28 @@ if [[ -z "$EXPECTED_AUDIO_PACKAGES" ]]; then
   exit 1
 fi
 
+# The import builds every effect. The builder's iteration switches would narrow
+# it (and skip the texture hashes and the shader check), so they never reach it,
+# and the step must report as many systems as the builder's SYSTEMS list holds.
+unset SORA_VFX_ONLY SORA_VFX_REUSE_MATERIALS
+EXPECTED_VFX_SYSTEMS="$(PYTHONDONTWRITEBYTECODE=1 python3 "$SCRIPT_DIR/vfx_system_count.py")" || exit 1
+
 
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config
 
-# run_step NAME SCRIPT MARKER: a LogPython message must begin with MARKER.
+# run_step NAME SCRIPT MARKER [rhi]: a LogPython message must begin with MARKER.
+# Steps run with -nullrhi unless the fourth argument is "rhi": the VFX step must
+# compile its materials' shaders for the real Metal platform to check them.
 run_step() {
-  local name="$1" script="$PROJECT_ROOT/scripts/unreal/$2" marker="$3"
+  local name="$1" script="$PROJECT_ROOT/scripts/unreal/$2" marker="$3" rhi="-nullrhi"
   local log="$OUTPUT/$name.log" status
+  [[ "${4:-}" == rhi ]] && rhi="-RenderOffscreen"
   require_free_disk
   echo "Running $2; log: $log" >&2
   set +e
   "$EDITOR_CMD" "$PROJECT" "-ExecutePythonScript=$script" \
-    -unattended -nopause -nullrhi -nosplash -nosound -stdout -FullStdOutLogOutput \
+    -unattended -nopause "$rhi" -nosplash -nosound -stdout -FullStdOutLogOutput \
     "${EDITOR_CONFIG_ARGS[@]}" >"$log" 2>&1
   status=$?
   set -e
@@ -127,6 +136,8 @@ PY
 run_step import-original import_original_assets.py 'SORA_ASSET_IMPORT_COMPLETE: '
 run_step import-palette import_environment_palette.py 'NYAAGYU_PBR_READY: '
 run_step import-cc0 import_cc0_environment.py 'SORA_CC0_ENVIRONMENT_READY: '
+run_step import-vfx create_sora_vfx.py "SORA_VFX_READY: $EXPECTED_VFX_SYSTEMS systems" rhi
+
 run_step validate validate_imported_assets.py \
   "SORA_ASSET_VALIDATION_COMPLETE: $EXPECTED_PACKAGES packages loaded with expected types"
 run_step validate-cc0 validate_cc0_environment.py \
@@ -136,4 +147,4 @@ run_step import-audio import_audio.py 'SORA_AUDIO_IMPORT_COMPLETE: '
 run_step validate-audio validate_audio_import.py \
   "SORA_AUDIO_VALIDATION_COMPLETE: $EXPECTED_AUDIO_PACKAGES packages loaded with expected types and routing"
 
-echo "PASS: imported and loaded $EXPECTED_PACKAGES art, $EXPECTED_CC0 CC0 environment and $EXPECTED_AUDIO_PACKAGES audio packages; logs: $OUTPUT"
+echo "PASS: imported and loaded $EXPECTED_PACKAGES art, $EXPECTED_CC0 CC0 environment and $EXPECTED_AUDIO_PACKAGES audio packages plus $EXPECTED_VFX_SYSTEMS VFX systems; logs: $OUTPUT"
