@@ -1,5 +1,5 @@
 #if WITH_DEV_AUTOMATION_TESTS
-#include "SoraFieldcraftTestWorld.h"
+#include "SoraDialogueTestWorld.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraProjectile.h"
 
@@ -34,7 +34,7 @@ bool FSoraDialogueGiftHoldTest::RunTest(const FString& Parameters)
     (void)Parameters;
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
     FBeatWorld W(*this,TEXT("DialogueGiftHold"),0,11);
-    if(!W.Start()||!W.Tick(60,.5f)) return false;
+    if(!SoraDialogueAutomation::StartAuthored(W)||!W.Tick(60,.5f)) return false;
     TestTrue(TEXT("Waiting never completes the gift before Interact"),W.Campaign()->ActiveBeat()==11&&
         !W.Campaign()->LinesStarted()&&W.Mode()->IsPlaying());
     FVector Anchor;
@@ -83,7 +83,7 @@ bool FSoraDialogueModesTest::RunTest(const FString& Parameters)
     for(const int32 Beat:{3,11})
     {
         FBeatWorld W(*this,TEXT("DialogueVolume"),1,Beat);
-        if(!W.Start()||!W.Tick(100,.1f)) return false;
+        if(!SoraDialogueAutomation::StartAuthored(W)||!W.Tick(100,.1f)) return false;
         TestTrue(TEXT("Volume dialogue keeps control until its trigger"),W.Mode()->IsPlaying()&&!W.Campaign()->LinesStarted());
         if(!StartAtAnchor(W)||!Until(W,[&] { return W.Campaign()->IsDialogueBlocking(); },150)) return false;
         TestNotNull(TEXT("The blocking line still supplies its cue"),W.Campaign()->CurrentDialogueCue());
@@ -93,7 +93,7 @@ bool FSoraDialogueModesTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("The authored scene releases within twenty seconds"),HeldFrames<=201&&!W.Campaign()->IsDialogueBlocking());
     }
     FBeatWorld W(*this,TEXT("DialogueLineOverrides"),3,12);
-    if(!W.Start()) return false;
+    if(!SoraDialogueAutomation::StartAuthored(W)) return false;
     TestTrue(TEXT("The blockade appeal starts with a blocking line"),W.Campaign()->IsDialogueBlocking());
     if(!Until(W,[&] { return LineId(W)==TEXT("ch04.b13.taemon.004"); })) return false;
     TestTrue(TEXT("Explicit ambient line overrides the event's blocking mode"),W.Mode()->IsPlaying());
@@ -108,7 +108,7 @@ bool FSoraDialogueReentrantTest::RunTest(const FString& Parameters)
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
     {
         FBeatWorld W(*this,TEXT("DialogueCrate"),5,4);
-        if(!W.Start()||!StartAtAnchor(W)) return false;
+        if(!SoraDialogueAutomation::StartAuthored(W)||!StartAtAnchor(W)) return false;
         TestTrue(TEXT("Opening Iota's crate starts its blocking segment"),W.Campaign()->IsDialogueBlocking());
         TestEqual(TEXT("The later conversation is not prequeued"),W.Campaign()->LinesQueued(),4);
         if(!Until(W,[&] { return LineId(W)==TEXT("ch06.b05.nyaakoto.003"); })) return false;
@@ -118,7 +118,7 @@ bool FSoraDialogueReentrantTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("A reentrant head receives its full authored duration"),LineId(W),FString(TEXT("ch06.b05.nyaakoto.003")));
     }
     FBeatWorld W(*this,TEXT("DialogueToranosuke"),5,9);
-    if(!W.Start()) return false;
+    if(!SoraDialogueAutomation::StartAuthored(W)) return false;
     TestTrue(TEXT("The reconciliation begins ambient"),W.Mode()->IsPlaying());
     if(!Until(W,[&] { return LineId(W)==TEXT("ch06.b10.toranosuke.004"); })) return false;
     TestTrue(TEXT("Its middle lines_done segment holds control"),W.Campaign()->IsDialogueBlocking());
@@ -135,7 +135,7 @@ bool FSoraDialogueCombatAndPlaqueTest::RunTest(const FString& Parameters)
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
     {
         FBeatWorld W(*this,TEXT("DialogueDuel"),5,8);
-        if(!W.Start()) return false;
+        if(!SoraDialogueAutomation::StartAuthored(W)) return false;
         W.Harden();
         if(!Until(W,[&] { return W.Campaign()->LinesQueued()==0; })) return false;
         W.Campaign()->RaiseBeatEvent(TEXT("duel_event:family_page"));
@@ -152,7 +152,7 @@ bool FSoraDialogueCombatAndPlaqueTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("Defeat has the recorded Result state"),W.Mode()->InputState(),SoraInput::Result);
     }
     FBeatWorld W(*this,TEXT("DialoguePlaque"),7,16);
-    if(!W.Start()||!W.Tick(80,.1f)) return false;
+    if(!SoraDialogueAutomation::StartAuthored(W)||!W.Tick(80,.1f)) return false;
     TestTrue(TEXT("The final scene waits for its later authored events"),W.Campaign()->ActiveBeat()==16&&!W.Campaign()->TaskProgress().LinesDone);
     // This is a directed event test. Normal world interactions that produce
     // these events are qualified separately by the complete campaign route.
@@ -183,7 +183,7 @@ bool FSoraDialogueCapTest::RunTest(const FString& Parameters)
     } Restore{*Cue,Cue->DurationSeconds};
     Cue->DurationSeconds=25.f;
     FBeatWorld W(*this,TEXT("DialogueCap"),0,11);
-    if(!W.Start()||!StartAtAnchor(W)) return false;
+    if(!SoraDialogueAutomation::StartAuthored(W)||!StartAtAnchor(W)) return false;
     TestTrue(TEXT("The scene holds before a checkpoint reset"),W.Campaign()->IsDialogueBlocking());
     W.Mode()->ResetRound();
     TestTrue(TEXT("Reset cancels the active scene and waits for its interaction again"),
