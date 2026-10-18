@@ -602,6 +602,15 @@ bool FSoraFrontEndRenderedTest::RunTest(const FString& Parameters)
     const FString Folder = FPaths::ProjectSavedDir() / TEXT("Screenshots/SoraFrontEnd") /
         FString::Printf(TEXT("%dx%d"), FMath::RoundToInt(Size.X), FMath::RoundToInt(Size.Y));
     TWeakObjectPtr<USoraFrontEnd> FrontEnd = Mode->FrontEnd();
+    if(!TestNotNull(TEXT("The rendered game has its front end"),FrontEnd.Get())) return false;
+    // This navigation tour may run after the entire client suite, with the
+    // live viewport receiving input for many minutes. Establish its title
+    // precondition explicitly; an untouched launch is checked separately.
+    AddInfo(FString::Printf(TEXT("Front-end tour initial screen=%d; returning to title for navigation"),
+        static_cast<int32>(FrontEnd->Screen())));
+    Mode->SetMenuOpen(true);
+    FrontEnd->ShowTitle();
+    FrontEnd->NoteDevice(SoraUI::EDevice::KeyboardMouse);
     const auto Press = [](const FKey& Key)
     {
         const FKeyEvent Event(Key, FSlateApplication::Get().GetModifierKeys(), 0, false, 0, 0);
