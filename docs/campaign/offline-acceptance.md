@@ -281,9 +281,15 @@ the lower-floor combat-clear gate. It is authored but has not been run in
 Unreal by this source lane. The same route is used by the full playthrough
 fixture. These are functional collision proxies awaiting Claude's art;
 the auditor's L3 shortcut shutter and authored supply cache behavior are
-still open, as are visual windows, lighting and spire dressing. Companion
-fighters/guides still use direct 2D steering and melee reach; their vertical
-follow/combat behavior needs a separate implementation and runtime check.
+still open, as are visual windows, lighting and spire dressing. The spire's two fighters and three guides now follow navigation paths
+with height-aware arrival; the fighters keep their combat leash around the
+climbing hero. Failed paths stop them instead of steering across the void.
+Their committed melee hits require 3D reach, same-floor height and an actual
+clear trace to the target. Other chapters retain their existing companion
+posts, movement and escort behavior. `SoraArena.Fieldcraft.SpireCompanions`
+walks the hero and all five allies to L2/L3/L4, then verifies cross-floor and
+wall-blocked attacks fail while clear same-floor contact still damages. This
+fixture is authored but unrun by this source lane.
 
 
 Chapter 08 summit traversal source slice: the gallery north opening feeds a
