@@ -1442,6 +1442,14 @@ bool PlayPhases(FAutomationTestBase& Test, FState& State)
         UGameplayStatics::ApplyDamage(Opponent, Opponent->Health - Left, Player(State)->GetController(), Player(State), UDamageType::StaticClass());
         if (!Advance(Test, State))
             return false;
+        if(Beat.Space.Summit.Enabled())
+        {
+            const auto* Boss=Cast<ASoraBoss>(Opponent);
+            for(int32 Frame=0;Boss&&Frame<1800&&(Boss->PhaseIndex()!=Phase||Boss->IsPhaseTransitioning()||
+                (Phase==1&&!Boss->IsOnSummitDais()));++Frame)
+                if(!Advance(Test,State,1,FrameSeconds)) return false;
+            if(!Advance(Test,State,2,FrameSeconds)) return false;
+        }
         if (!Test.TestEqual(*(Context + TEXT(" begins")), Campaign(State)->ActivePhase(), Phase) || !ExpectCheckpoint(Test, State))
             return Fail(Test, State, Context + TEXT(" was not saved"));
         ++State.PhaseReloads;

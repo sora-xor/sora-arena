@@ -424,6 +424,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     SpineCut={}; SpineReadyMs=0; bSpinePromptShown=false; bSpineMutoRaised=false;
+    PendingSummitPhaseSave=INDEX_NONE;
     ResetCarryWork();
     StopPlayerCrank(false);
     RhythmClock={}; RhythmInput={}; RhythmCueShown=-1; RhythmStrikeMs=-1;
@@ -663,6 +664,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     ClockCarryMs-=DeltaMs;
     CheckPhase();
     if(ActiveBeatData()!=&Beat) return;
+    SaveArrivedSummitPhase();
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
     SoraBeatRules::FTick Step;
     // Work under guard pauses while any guard sees the hero or is alarmed,
@@ -884,7 +886,11 @@ void USoraCampaignDirector::EnterPhases(int32 Before,bool bSave)
     }
     // A long boss or duel also saves at each later phase; the opponent then
     // returns at that phase's health.
-    if(bSave&&BeatPhase<=ActiveChapter()->Rules[BeatIndex].PhaseCheckpoints) SaveCheckpoint();
+    if(bSave&&BeatPhase<=ActiveChapter()->Rules[BeatIndex].PhaseCheckpoints)
+    {
+        if(Beat.Space.Summit.Enabled()) PendingSummitPhaseSave=BeatPhase;
+        else SaveCheckpoint();
+    }
     BroadcastBeat(true,false);
 }
 void USoraCampaignDirector::SkipCinematic()
@@ -968,6 +974,7 @@ ASoraBoss* USoraCampaignDirector::SpawnBoss(FName Boss,int32 Slot)
     {
         Setup.bHasArenaCenter=true; Setup.ArenaCenter=FVector(Space->Summit.Center,Space->HeightCm+90);
         Setup.ArenaRadiusCm=1800;
+        Setup.bSummit=true; Setup.SummitDaisFloor=FVector(Space->Summit.Center,Space->HeightCm)+FVector(0,320,120);
     }
     return ASoraBoss::SpawnBoss(*GetWorld(),Boss,Slot,SpawnLocation(Slot),FRotator(0,180,0),Setup);
 }

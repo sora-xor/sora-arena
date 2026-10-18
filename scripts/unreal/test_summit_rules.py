@@ -17,6 +17,11 @@ class SummitRulesTests(unittest.TestCase):
 #include <map>
 using namespace SoraSummitRules;
 int main() {
+    assert(PhaseTransitionMs(1)==2000&&PhaseTransitionMs(2)==2500);
+    assert(!PhaseTransitionReady(1,1999,true));
+    assert(!PhaseTransitionReady(1,60000,false)); // Time alone never teleports/saves an arrival.
+    assert(PhaseTransitionReady(1,2000,true));
+    assert(!PhaseTransitionReady(2,2499,false)&&PhaseTransitionReady(2,2500,false));
     double area=0; int count=0,full=0;
     std::map<std::pair<int,int>,FPolygon> tiles;
     for(int x=-GridRadius;x<GridRadius;++x) for(int y=-GridRadius;y<GridRadius;++y) {

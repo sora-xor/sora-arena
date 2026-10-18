@@ -7,6 +7,9 @@ namespace SoraSummitRules
 {
 constexpr int RadiusCm=1800,TileCm=300,GridRadius=RadiusCm/TileCm;
 constexpr int MarkMs=1500,VoidMs=5000,RestoreMs=1000,CadenceMs=9000;
+constexpr int PhaseTransitionMs(int Phase) { return Phase==1?2000:Phase==2?2500:0; }
+constexpr bool PhaseTransitionReady(int Phase,int ElapsedMs,bool OnDais)
+{ return ElapsedMs>=PhaseTransitionMs(Phase)&&(Phase!=1||OnDais); }
 constexpr double Pi=3.14159265358979323846;
 struct FPoint { double X=0,Y=0; };
 using FPolygon=std::vector<FPoint>;

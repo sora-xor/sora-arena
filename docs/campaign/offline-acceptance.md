@@ -340,9 +340,20 @@ dais traversal, wrong-height/occlusion rejection, interruptions, and the
 capture checkpoint. Its Unreal execution remains pending root qualification.
 Host checks cover the authored duration and transient hold at 1–500 ms steps.
 
-The P2 retreat onto the dais, moving engine ring, phase-transition choreography
-and cinematic cast animation remain open. Functional tile meshes and edge
-bars are proxies for the art lane.
+The P2 retreat source candidate uses the normal enemy navigation/controller
+and swept character movement to reach the north dais stand, clear of the
+solid spine. While protected it cannot attack or summon, and its phase save
+waits for both the two-second minimum transition and actual grounded arrival.
+A blocked route keeps the previous save; no timeout teleports the boss. Once
+there, P2 holds its stand even while exposed. The P3 draw interval lasts at
+least 2.5 seconds and saves when complete. A resumed P2 checkpoint spawns on
+the completed dais stand. The existing phase health gates, take-alive outcome
+and generic boss arenas retain their contracts. `SummitPhases` exercises a
+real blocking wall, continuous retreat, phase saves and holding the dais;
+`SummitPhaseReload` covers its resumed position. These new Unreal fixtures
+remain unrun by the source lane. The camera blends, moving engine ring,
+coat/cane choreography and cinematic cast animation remain open. Functional
+tile meshes and edge bars remain proxies for the art lane.
 
 ### Alternating bellows treads and live flame gauge
 

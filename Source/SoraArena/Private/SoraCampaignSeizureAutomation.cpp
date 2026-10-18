@@ -151,6 +151,8 @@ bool FSoraCampaignSeizureTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Damage enters the real cane phase"),Boss->PhaseIndex(),2);
     TestEqual(TEXT("P3 immediately shuts off the physical field"),Arena->SeizurePattern(),-1);
     TestTrue(TEXT("Phase change restores missing collision immediately"),FloorAt(3,1)&&FloorAt(3,0));
+    TestTrue(TEXT("The P3 draw interval is still in progress"),Boss->IsPhaseTransitioning());
+    if(!Tick(155)) return false;
     auto* Save=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
     TestTrue(TEXT("Tile state never replaces the boss phase checkpoint"),Save&&Save->CheckpointBeat==13&&Save->CheckpointPhase==2);
     return !HasAnyErrors();

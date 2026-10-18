@@ -297,6 +297,8 @@ private:
     FVector2D CaptiveAt = FVector2D::ZeroVector;
     SoraSummitRules::FCut SpineCut;
     int32 SpineReadyMs=0;
+    int32 PendingSummitPhaseSave=INDEX_NONE;
+    void SaveArrivedSummitPhase();
     bool bSpinePromptShown=false,bSpineMutoRaised=false;
     bool IsSpineCapture() const;
     bool SpineCutEligible() const;
