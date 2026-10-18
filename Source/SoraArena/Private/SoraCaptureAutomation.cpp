@@ -1365,12 +1365,12 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
     Queue([Test,Session,Chapter,Beat,Case,English,PreviousRhythmAssist]()
     {
         Session->bShotLive=false;
-        *PreviousRhythmAssist=Session->M()->Settings()->RhythmAssist();
-        if(Case>=6) Session->M()->Settings()->SetRhythmAssist(false);
         ASoraGameMode* M=Session->M();
         auto* Save=NewObject<USoraSaveGame>();
         if(!M||!USoraCampaignDirector::SeedCheckpoint(*Save,Chapter,Beat))
         { Test->AddError(TEXT("Weapon HUD fixture checkpoint is invalid")); return; }
+        *PreviousRhythmAssist=M->Settings()->RhythmAssist();
+        if(Case>=6) M->Settings()->SetRhythmAssist(false);
         Save->EnglishSubtitles=English;
         if(!UGameplayStatics::SaveGameToSlot(Save,Session->Slot,0))
         { Test->AddError(TEXT("Weapon HUD fixture checkpoint was not saved")); return; }
