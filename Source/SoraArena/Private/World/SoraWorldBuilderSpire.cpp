@@ -2,7 +2,7 @@
 #include "SoraCatalog.h"
 #include "Components/StaticMeshComponent.h"
 
-// Functional collision proxies. The four-turn hex spiral is visible to the
+// Functional collision proxies. The dimension-derived spiral is visible to the
 // same navigation scan as every other arena piece; no pawn is lifted by code.
 void ASoraWorldBuilder::BuildSpire(const FSoraBeat& Beat)
 {
@@ -23,9 +23,9 @@ void ASoraWorldBuilder::BuildSpire(const FSoraBeat& Beat)
     for(int32 N=1;N<S.Ramp.Num();++N)
     {
         const FVector A=S.Ramp[N-1],B=S.Ramp[N],D=(B-A).GetSafeNormal();
-        Segment(FString::Printf(TEXT("SpireRamp%d"),N),A,B,400,false);
+        Segment(FString::Printf(TEXT("SpireRamp%d"),N),A,B,SoraSpireRules::WidthCm,false);
         // Leave the inside of the named landings open to their gantries.
-        const FVector RailA=A+D*((N-1)%8==0?230:0),RailB=B-D*(N%8==0?230:0);
+        const FVector RailA=A+D*(SoraSpireRules::IsLanding(N-1)?230:0),RailB=B-D*(SoraSpireRules::IsLanding(N)?230:0);
         const FVector Side=FVector::CrossProduct(FVector::UpVector,D).GetSafeNormal();
         for(int32 Sign:{-1,1})
         {
@@ -34,22 +34,26 @@ void ASoraWorldBuilder::BuildSpire(const FSoraBeat& Beat)
                 FVector((End-Start).Size()+35,20,150),Rail,true,D.Rotation());
         }
     }
-    for(int32 N:{0,8,16,24})
+    for(int32 L=0;L<4;++L)
+    {
+        const int32 N=SoraSpireRules::Landing(L);
         Box(FString::Printf(TEXT("SpireLanding%d"),N),S.Ramp[N]-FVector(0,0,20),FVector(600,600,40),Metal,true);
+    }
     // L2 crosses the 14 m void. Its far marksman platform is an intentional
     // dead end reached along the bridge, never a spawn floating over ground.
-    const FVector Far=C+FVector(-693,1200,900);
-    Segment(TEXT("SpireL2Gantry"),S.Ramp[8],Far,200,true);
+    const FVector L2=S.Ramp[SoraSpireRules::Landing(1)];
+    const FVector Far(2*C.X-L2.X,2*C.Y-L2.Y,L2.Z);
+    Segment(TEXT("SpireL2Gantry"),L2,Far,200,true);
     Box(TEXT("SpireMarksmanPost"),Far-FVector(0,0,20),FVector(400,400,40),Glass,true);
     // L4's middle is the parked lift. The short crossing is staged only for
     // b10 and removed before the moving deck takes its place in b11.
-    Segment(TEXT("SpireL4West"),C+FVector(-1386,0,2700),C+FVector(-300,0,2700),200,true);
-    Segment(TEXT("SpireL4East"),C+FVector(300,0,2700),C+FVector(1386,0,2700),200,true);
+    Segment(TEXT("SpireL4West"),S.Ramp.Last(),C+FVector(-300,0,2700),200,true);
+    Segment(TEXT("SpireL4East"),C+FVector(300,0,2700),C+FVector(-SoraSpireRules::Point(SoraSpireRules::NodeCount-1).X,0,2700),200,true);
     for(int32 N=0;N<6;++N)
     {
-        const FVector A=C+(S.Ramp[N]-C)*1.25f,B=C+(S.Ramp[N+1]-C)*1.25f;
-        const FVector FlatA(A.X,A.Y,0),FlatB(B.X,B.Y,0);
+        const auto A=SoraSpireRules::Vertex(N,1500),B=SoraSpireRules::Vertex(N+1,1500);
+        const FVector FlatA=C+FVector(A.X,A.Y,0),FlatB=C+FVector(B.X,B.Y,0);
         Box(FString::Printf(TEXT("SpireOuterWall%d"),N),(FlatA+FlatB)*.5f+FVector(0,0,1600),
-            FVector(FVector::Dist2D(A,B)+40,30,3200),Metal,true,(FlatB-FlatA).Rotation());
+            FVector(FVector::Dist2D(FlatA,FlatB)+40,30,3200),Metal,true,(FlatB-FlatA).Rotation());
     }
 }

@@ -6,6 +6,8 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
 #include "Game/SoraCampaignReach.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ASoraEnemy* USoraCampaignDirector::SpawnLiftOpponent(FName Type,int32 Wave,int32 Slot)
 {
@@ -104,5 +106,8 @@ bool USoraCampaignDirector::TickLiftGallery(float DeltaSeconds)
 bool USoraCampaignDirector::SpireReadyToComplete() const
 {
     const auto* S=ActiveSpace();
-    return !S||!S->Spire.Enabled()||(Mode().Hero()&&S->Exit.Contains(Mode().Hero()->GetActorLocation()));
+    if(!S||!S->Spire.Enabled()) return true;
+    const auto* Hero=Mode().Hero();
+    return Hero&&S->Exit.Contains(Hero->GetActorLocation())&&Hero->GetCharacterMovement()->IsMovingOnGround()&&
+        FMath::Abs(Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()-S->Exit.FloorCm)<10.f;
 }

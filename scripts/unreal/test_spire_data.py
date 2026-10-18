@@ -2,10 +2,14 @@
 from copy import deepcopy
 import json
 import math
+import os
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 import unittest
 from build_campaign_data import BuildError, fail
-from campaign_spire import place_spire
+from campaign_spire import place_spire, route, LANDINGS, SIDES, SUBDIVISIONS
 from campaign_space import Zone
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,29 +24,57 @@ class SpireDataTests(unittest.TestCase):
         s = self.record['spire']
         self.assertEqual((s['width_cm'],s['void_diameter_cm']),(400,1400))
         ramp = s['ramp']
-        self.assertEqual(len(ramp),25)
-        self.assertEqual([ramp[n][2] for n in (0,8,16,24)],[0,900,1800,2700])
+        self.assertEqual(len(ramp),SIDES*SUBDIVISIONS+1)
+        self.assertEqual(s['landing_nodes'],LANDINGS)
+        self.assertEqual([ramp[n][2] for n in LANDINGS],[0,900,1800,2700])
         total = 0
         for a,b in zip(ramp,ramp[1:]):
             run=math.dist(a[:2],b[:2]); total+=run
             self.assertGreater(b[2],a[2])
-            self.assertLess((b[2]-a[2])/run,1/11.9)
+            self.assertLess((b[2]-a[2])/run,1/11.5)
             self.assertGreater((b[2]-a[2])/run,1/12.5)
-        self.assertAlmostEqual(total/2700,12.32,delta=.02)
-        # Four turns have 6.75 m vertical clearance: no upper winding
-        # intersects a standing character on the lower ramp.
-        for n in range(19):
-            self.assertEqual(ramp[n+6][:2],ramp[n][:2])
-            self.assertEqual(ramp[n+6][2]-ramp[n][2],675)
+            # Measure the actual polygon's inner edge; a metadata-only
+            # diameter check missed the original 20 m aperture regression.
+            ax,ay=a[0]-s['center'][0],a[1]-s['center'][1]
+            dx,dy=b[0]-a[0],b[1]-a[1]
+            apothem=abs(ax*dy-ay*dx)/run
+            self.assertAlmostEqual(2*apothem-s['width_cm'],s['void_diameter_cm'],delta=2)
+        self.assertAlmostEqual(total/2700,12,delta=.1)
+        # A full winding leaves over 5 m between its floor surfaces.
+        loop=6*SUBDIVISIONS
+        for n in range(len(ramp)-loop):
+            self.assertEqual(ramp[n+loop][:2],ramp[n][:2])
+            self.assertGreaterEqual(ramp[n+loop][2]-ramp[n][2],522)
         self.assertEqual([p[2] for p in s['spawns']],[900]*5+[1800]*4+[2100]*4+[2700]*3)
         self.assertEqual([p[:2] for p in s['spawns']],self.record['spawns'])
         v = {v['event']:v for v in self.record['volumes']}
         self.assertEqual(v['volume_enter:vol_spire_L3']['floor_cm'],1800)
-        self.assertEqual(v['volume_enter:vol_spire_L3']['center'],ramp[16][:2])
+        self.assertEqual(v['volume_enter:vol_spire_L3']['center'],ramp[LANDINGS[2]][:2])
         self.assertEqual(self.record['exit']['floor_cm'],2700)
         lift=self.chapter['space']['beats'][10]
         self.assertEqual(s['center'],lift['anchor'])
         self.assertEqual(ramp[-1][2],lift['height_cm'])
+
+    def test_native_geometry_matches_generated_route(self):
+        compiler=os.environ.get('CXX') or shutil.which('clang++') or shutil.which('c++')
+        self.assertIsNotNone(compiler, 'Host C++ compiler is required for geometry parity')
+        source = r'''#include "SoraSpireRules.h"
+#include <iostream>
+int main() {
+    for(int l=0;l<4;++l) std::cout<<SoraSpireRules::Landing(l)<<" ";
+    std::cout<<"\n";
+    for(int n=0;n<SoraSpireRules::NodeCount;++n) {
+        const auto p=SoraSpireRules::Point(n);
+        std::cout<<p.X<<" "<<p.Y<<" "<<p.Z<<"\n";
+    }
+}'''
+        with tempfile.TemporaryDirectory() as tmp:
+            cpp=Path(tmp)/'spire.cpp'; binary=Path(tmp)/'spire'
+            cpp.write_text(source)
+            subprocess.run([compiler,'-std=c++17','-I',str(ROOT/'Source/SoraArena/Public'),str(cpp),'-o',str(binary)],check=True,capture_output=True,text=True)
+            rows=subprocess.check_output([str(binary)],text=True).splitlines()
+        self.assertEqual([int(n) for n in rows[0].split()],LANDINGS)
+        self.assertEqual([[int(n) for n in row.split()] for row in rows[1:]],route())
 
     def zones(self):
         return [Zone(z['id'],z['place'],z['style'],z['form'],z['rect'],z['wall_cm']) for z in self.chapter['space']['zones']]

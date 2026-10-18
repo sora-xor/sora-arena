@@ -760,23 +760,41 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         {
             int32 Width=0,Void=0;
             if(!SpacePoint(Spire->TryGetField(TEXT("center")),B.Spire.Center)||
-                !Int(*Spire,TEXT("width_cm"),Width)||Width!=400||
-                !Int(*Spire,TEXT("void_diameter_cm"),Void)||Void!=1400) return Bad(Beat.Id+TEXT(" spiral dimensions"));
+                !Int(*Spire,TEXT("width_cm"),Width)||Width!=SoraSpireRules::WidthCm||
+                !Int(*Spire,TEXT("void_diameter_cm"),Void)||Void!=SoraSpireRules::VoidDiameterCm) return Bad(Beat.Id+TEXT(" spiral dimensions"));
             const auto Read3=[&](const TCHAR* Key,TArray<FVector>& Points,int32 Count)
             {
                 const auto* List=Rows(*Spire,Key); if(!List||List->Num()!=Count) return false;
                 for(const auto& V:*List) { double P[3]={}; if(!SpaceVector(V,3,P)) return false; Points.Add(FVector(P[0],P[1],P[2])); }
                 return true;
             };
-            if(!Read3(TEXT("ramp"),B.Spire.Ramp,25)||!Read3(TEXT("spawns"),B.Spire.Spawns,16)||B.Spawns.Num()!=16)
+            if(!Read3(TEXT("ramp"),B.Spire.Ramp,SoraSpireRules::NodeCount)||!Read3(TEXT("spawns"),B.Spire.Spawns,16)||B.Spawns.Num()!=16)
                 return Bad(Beat.Id+TEXT(" spiral route or posts"));
-            const FVector2D Vertices[]={{-1386,0},{-693,-1200},{693,-1200},{1386,0},{693,1200},{-693,1200}};
-            for(int32 N=0;N<25;++N)
-                if(B.Spire.Ramp[N]!=FVector(B.Spire.Center+Vertices[N%6],(N*2700+12)/24)) return Bad(Beat.Id+TEXT(" spiral landing"));
+            const auto* Landings=Rows(*Spire,TEXT("landing_nodes"));
+            if(!Landings||Landings->Num()!=4) return Bad(Beat.Id+TEXT(" spiral landings"));
+            for(int32 L=0;L<4;++L)
+            {
+                double Node=0;
+                if(!SpaceNumber((*Landings)[L],Node)||Node!=SoraSpireRules::Landing(L)) return Bad(Beat.Id+TEXT(" spiral landing index"));
+            }
+            double Run=0;
+            for(int32 N=0;N<SoraSpireRules::NodeCount;++N)
+            {
+                const auto P=SoraSpireRules::Point(N);
+                if(B.Spire.Ramp[N]!=FVector(B.Spire.Center+FVector2D(P.X,P.Y),P.Z)) return Bad(Beat.Id+TEXT(" spiral route geometry"));
+                if(N==0) continue;
+                const FVector2D A(B.Spire.Ramp[N-1]-FVector(B.Spire.Center,0)),D(B.Spire.Ramp[N]-B.Spire.Ramp[N-1]);
+                const double Length=D.Size(),Apothem=FMath::Abs(A.X*D.Y-A.Y*D.X)/Length;
+                if(FMath::Abs(2*Apothem-Width-Void)>2) return Bad(Beat.Id+TEXT(" spiral clear aperture"));
+                const double Grade=(B.Spire.Ramp[N].Z-B.Spire.Ramp[N-1].Z)/Length;
+                if(Grade<1.0/12.5||Grade>1.0/11.5) return Bad(Beat.Id+TEXT(" spiral grade"));
+                Run+=Length;
+            }
+            if(FMath::Abs(Run/SoraSpireRules::HeightCm-12)>0.1) return Bad(Beat.Id+TEXT(" spiral overall grade"));
             for(int32 N=0;N<16;++N)
                 if(FVector2D(B.Spire.Spawns[N])!=B.Spawns[N]||B.Spire.Spawns[N].Z!=(N<5?900:N<9?1800:N<13?2100:2700))
                     return Bad(Beat.Id+TEXT(" spiral spawn floor"));
-            if(!B.Exit.bHeight||B.Exit.FloorCm!=2700) return Bad(Beat.Id+TEXT(" L4 arrival floor"));
+            if(!B.Exit.bHeight||B.Exit.FloorCm!=2700||B.Exit.Center!=B.Spire.Center+FVector2D(-800,0)) return Bad(Beat.Id+TEXT(" L4 arrival floor"));
         }
         const auto Lift=O->TryGetField(TEXT("lift"));
         if(!Int(*O,TEXT("height_cm"),B.HeightCm)||!Lift.IsValid()||
@@ -835,8 +853,8 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             if (!V || !SpaceVolume(*V, Volume, true)) return Bad(Beat.Id + TEXT(" volume"));
             if(B.Spire.Enabled())
             {
-                const int32 Node=Volume.Event==TEXT("volume_enter:vol_spire_L3")?16:
-                    Volume.Event==TEXT("volume_enter:vol_spire_void_edge")?8:INDEX_NONE;
+                const int32 Node=Volume.Event==TEXT("volume_enter:vol_spire_L3")?SoraSpireRules::Landing(2):
+                    Volume.Event==TEXT("volume_enter:vol_spire_void_edge")?SoraSpireRules::Landing(1):INDEX_NONE;
                 if(Node==INDEX_NONE||!Volume.bHeight||Volume.FloorCm!=B.Spire.Ramp[Node].Z||
                     Volume.Center!=FVector2D(B.Spire.Ramp[Node])) return Bad(Beat.Id+TEXT(" spiral trigger floor"));
             }
