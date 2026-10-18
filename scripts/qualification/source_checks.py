@@ -83,6 +83,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         script("gameplay", name.replace("_", "-"), f"scripts/unreal/test_{name}.py")
     unit("gameplay", "maai-data", "scripts/unreal/test_maai_data.py")
     unit("gameplay", "equipment-recovery-data", "scripts/unreal/test_recovery_data.py")
+    unit("gameplay", "carry-difficulty-data", "scripts/unreal/test_carry_difficulty_data.py")
     unit("gameplay", "epilogue-data", "scripts/unreal/test_epilogue_data.py")
     unit("gameplay", "registry-data", "scripts/unreal/test_registry_data.py")
     for name, path in (
