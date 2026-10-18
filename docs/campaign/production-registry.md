@@ -79,10 +79,22 @@ write succeeds; the qualification wrapper archives those acknowledged frames.
 A failed save/load, wrong entry state, text overflow or missing fresh PNG fails
 the fixture. Existing player save slots and HUD visibility are restored.
 
-The row names, quantities, status notes and footer prompts use measured wrapping
-with no line-count truncation. Chapter and row heights grow to retain every
-character. English footer prompts occupy their own wrapped lines. Captures check
-the same measured layout used to draw, including viewport margins and retained
-text; the resulting images still need visual inspection for readable typography,
-seal placement and overall composition at both sizes. SM5, SM6, packaged output
-and full campaign completion remain distinct evidence gates.
+The completed campaign result renders its top bar and registry page without
+objective, vitals, weapon or arms-wheel overlays. The chapter title and existing
+completion headline remain inside the page. Row names, quantities, status notes
+and footer prompts use measured wrapping with no line-count truncation. Chapter
+and row heights grow to retain every character. Small text has a minimum scale
+independent of viewport scaling; seal cells size from the actual Japanese and
+English role labels. Bilingual status shares one wrapped line, while English
+footer prompts occupy their own wrapped lines. Captures check the same measured
+layout used to draw, including viewport margins, line height, role-label bounds,
+minimum text scale and retained text. The resulting images still need visual
+inspection for readable typography, seal placement and overall composition at
+both sizes.
+
+Before each registry screenshot the fixture waits for asynchronous asset
+compilation to remain idle for two seconds, allowing engine preparation
+messages to disappear naturally. A 120-second timeout fails the fixture instead
+of capturing a partially prepared frame. Diagnostic messages remain enabled.
+SM5, SM6, packaged output and full campaign completion remain distinct evidence
+gates.
