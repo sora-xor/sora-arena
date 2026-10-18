@@ -15,7 +15,10 @@ CL 58210709, Xcode 26.1.1 / 17B100 and SDK 26.1. Apple's signature and
 first-launch checks pass; Metal component 17B54 supplies compiler 32023.830.
 Xcode 27 remains the global developer selection. The installed engine accepts
 Xcode versions through 27.9.0, but the project selects 26.1.1 for reproducible
-builds; no project qualification with Xcode 27 is claimed.
+builds; no project qualification with Xcode 27 is claimed. Epic's current
+[Mac requirements](https://dev.epicgames.com/documentation/unreal-engine/macos-development-requirements-for-unreal-engine)
+recommend 26.1.1 and explicitly exclude 26.4. Passing the installed engine's
+version range is not equivalent to a tested compiler/SDK combination.
 
 Full imports and validators pass for 280 original-art, 345 CC0 and 267 audio
 packages and 27 Niagara systems. The craft prop and 12 dojo modules import too;
@@ -39,7 +42,7 @@ change or prove visible Nanite geometry. Earlier capability tests confirm SM6
 eligibility/HI selection and SM5 conventional MAC selection on this M2 Ultra.
 Forced SM5 on M2 does not qualify M1; editor-game frames are not packages.
 
-All 57 campaign, fieldcraft and Connect editor tests pass at clean `13ec0cd`,
+All 62 campaign, fieldcraft and Connect editor tests pass at clean `56b95f3`,
 with zero test errors or warnings. This includes the complete 8-chapter,
 133-beat scripted traversal, maai movement, equipment recovery and optional
 caches, guarded hoist, both saved endings, all dialogue checks, the three carry
@@ -47,7 +50,11 @@ difficulty settings, and actual ABI 30 loading inside Unreal. Clearing
 fieldcraft during world EndPlay resolves the earlier 187 teardown warnings.
 The first-inspection fixture now verifies the authored checkpoint boundary:
 a reload before b15 replays the b12 ceremony; the later checkpoint retains it.
-Evidence: `Saved/Qualification/2026-10-18-m2-resume/campaign-fieldcraft-native/`.
+The four new crank fixtures verify cooperative contribution, the bellows-boy
+net/rescue, Kohagi's retreat and ratchets, and all zero-to-three lift-crew rates.
+Evidence: `Saved/Qualification/2026-10-18-m2-resume/candidate-campaign-fieldcraft-native/`,
+including the original report, exact editor receipt, native identity and
+133-beat telemetry. This remains editor evidence.
 
 The authored three-second granary seal pry and manual cargo set-down are now
 implemented. Damage pauses the pry without erasing partial work; release and
@@ -58,25 +65,28 @@ all pass at clean `16b7762`, with zero errors or warnings. The archived traversa
 records 133 beats, 8 caches, 28 pickups, 120 checkpoint reads, 61 checkpoint
 reloads and 13 phase reloads. Evidence is under `carry-seal/` beside the earlier
 suite. These tests exercise real inputs where stated, but the accelerated full
-traversal does not establish normal pacing or difficulty. Named carry capacities
-and co-operative crank/ratchet rules remain in development.
+traversal does not establish normal pacing or difficulty. Named carry capacities,
+crank stamina/accessibility input and the physical chapter-eight lift remain
+in development; the cooperative contribution and ratchet rules now pass Unreal.
 
 The offline registry preserves all 16 authored goods/count entries and derives
 its chapter page from existing completion bits, without wallet or extra ledger
 state. Six actual Japanese/bilingual registry fixtures pass at 1080p; after
-measured row composition, all six pass at 720p too. Visual review confirms
-readable counts/status/inspection roles, with English word-boundary polish still
-pending. The weapon panel now wraps complete text within measured bounds;
-three weapon fixtures pass at both sizes. Visual review found an instruction
-strip overlapping the taller bilingual bokken panel, so overall HUD acceptance
-remains open. Top-right task rows are also too small at 720p. Captures and
-`visual-review.json` retain these defects at `20261018T103738Z-sm6-1041` and
-`20261018T104126Z-sm6-7980`. These are prepared UI fixtures, not playthrough
+measured row composition, all six pass at 720p too. English word-boundary
+wrapping and the shared lower instruction/dialogue/weapon stack are fixed.
+At clean `0a7743b`, seven tests produce fourteen original frames at each size;
+all 28 were inspected and pass their registry/weapon/speaker scope. Reviews
+are saved in `20261018T110323Z-sm6-47738` (720p) and
+`20261018T110822Z-sm6-60150` (1080p). Earlier failed frames remain preserved.
+Top-right tracker rows are still too small at 720p; the separate HUD slice
+`e462b55` awaits integration, compilation and visual review. Overall HUD
+acceptance remains open. These are prepared UI fixtures, not playthrough
 proof. The archive verifier's 20 host regressions pass, including original
 frame acknowledgements distinguished from failed-test log replays.
 
-All 30 gameplay/tooling source checks pass on clean `16b7762`, with unchanged
-source (`Saved/SourceChecks/integrated-carry-seal-16b7762/report.json`).
+All 33 gameplay/tooling source checks pass on clean `56b95f3`, with unchanged
+source (`Saved/SourceChecks/candidate-56b95f3/report.json`). This includes the
+portable package provenance and strict automation-report guards.
 The clean Rust lane passes 279 tests; five long research tests remain ignored.
 The rebuilt kernel passes all 94 parity cases / 99,043 ticks and ABI 4 staging;
 its release qualification flag remains false.
@@ -92,15 +102,29 @@ separate record, not a relabeled original manifest, under
 `Saved/Qualification/2026-10-18-m2-resume/connect-abi30-integration/`.
 Native test closure now passes all 29 directed checks on signed clean
 `10ad7daddf`: seven P2P identity/mapping/backpressure regressions, 19 detached
-scaffold tests and three Join inspection tests. That later source's fresh
-release artifact is building separately. Package loading, Windows custody,
+scaffold tests and three Join inspection tests. Its fresh release build is now
+frozen and staged with the original sidecar, SHA-256
+`349d4d2265331b5929c205173632c76018d8b3cec9cea279c45c3e71aa3ba9cb`.
+The binary is byte-identical to the earlier library, but its provenance comes
+from this new build, not a rewritten earlier manifest. All 29 frozen files
+and six consumer hashes were verified before staging. Unreal's NativeLoader
+passes with it at `56b95f3`; evidence is under `connect-native-10ad7d/` and the
+62-test report above. Package loading, Windows custody,
 live signing, authorization and settlement remain unqualified.
 
 The first fresh Mac cook at clean `16b7762` succeeds with 1,314 packages cooked,
 seven skipped by platform, 385 materials, zero errors and zero warnings. Its
 log/source hashes are recorded under `Saved/Qualification/2026-10-18-m2-resume/`
-as `cook-16b7762.log` and `cook-16b7762-source.json`. Game build, staging and
-actual packaged tests remain pending; a successful cook is not a release.
+as `cook-16b7762.log` and `cook-16b7762-source.json`. Declared Game build and
+full cook also pass at `56b95f3` with native `10ad7dad`; the cook again reports
+1,314 cooked packages and seven platform skips, zero UE errors/warnings.
+UAT produces a strictly signed local app, but candidate verification rejects
+this first archive because UAT adds `Metadata/Crypto.json` after cooking.
+The delta records that all 43 original cook files are unchanged. The verifier
+now records that exact staging addition separately while preserving the cook
+receipt and rejecting other changes. A fresh candidate is required after this
+fix. The rejected archive and original receipts are preserved under
+`rejected-candidate-56b95f3/`; packaged execution remains unqualified.
 
 Claude's Nanite policy and OWN ledgers are integrated. The ledger retains 228
 errors on recovered runtime weapons. Fresh Blender CPU metrics pass 10/17
@@ -108,9 +132,11 @@ non-blockout weapons; IDs 1, 2, 5, 9, 14, 15 and 17 fail relief, chain length,
 UV or file checks, and IDs 3, 11, 13 and 16 remain blockouts. W14's truncated
 review image and mismatched hashes remain explicit; no manifest refresh hides
 them. Report: `Saved/Qualification/2026-10-18-m2-resume/weapon-metrics.json`.
-Claude's art session currently awaits its usage-limit reset; its approved CPU
-work, unique-timber requirements and paired-render baseline are in the shared
-coordination mailbox. Root continues independent implementation and validation.
+Claude's art session has resumed CPU timber generation and fallback work.
+Placement-to-seed/digest coverage across the estate, horizontal beams, final
+dressing and actual Unreal/Nanite evidence remain open. Ownership and the
+single Unreal lane are coordinated through the shared mailbox and the
+authorized Claude chat. Root continues independent implementation and validation.
 
 All paths above are relative to the isolated integration worktree. Historical
 records below keep their original source, hardware and scope.
