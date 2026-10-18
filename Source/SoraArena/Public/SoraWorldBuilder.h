@@ -104,6 +104,9 @@ private:
     void BuildZone(const FSoraZone& Zone, int32 Index);
     void ZoneProp(const FSoraZone& Zone, const FSoraProp& Prop, int32 Index);
     void ZoneLantern(FVector Location, bool bLit);
+    // An estate hall's authored interior (SoraWorldBuilderDojoHall.cpp): false
+    // when any kit module is missing, so the primitive visuals stay.
+    bool HallInterior(const FSoraZone& Zone, int32 Index);
     bool bCampaignSpace = false;
     FVector CampaignStart = FVector::ZeroVector;
     float CampaignStartYaw = 0.f;
