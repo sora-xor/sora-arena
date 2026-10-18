@@ -6,6 +6,7 @@
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraFieldcraftTestWorld.h"
+#include "SoraRecoveryAutomation.h"
 #include "SoraGameEvents.h"
 #include "SoraHorse.h"
 #include "SoraMountRules.h"
@@ -945,6 +946,8 @@ bool FSoraFieldcraftHoistTest::RunTest(const FString& Parameters)
     W.Harden();
     USoraCampaignDirector* Campaign = W.Campaign();
     for (TActorIterator<ASoraEnemy> It(W.World->GetTestWorld()); It; ++It) It->Destroy();
+    if(!TestTrue(TEXT("The well's equipment pre-step must precede hoisting"),Campaign->NeedsEquipmentRecovery())||
+        !TestTrue(TEXT("Recover equipment through the rope and held input"),SoraRecoveryAutomation::Recover(*W.World))) return false;
     const FVector Well = Floor(W.BeatData().Space.Pickups[0]);
     W.Stand(Well);
     if (!W.Tick(2) || !W.Press(EKeys::E))

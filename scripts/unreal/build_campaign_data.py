@@ -203,7 +203,7 @@ BOSS_CUE = re.compile(r"(intro|outro)@(\d+(?:\.\d+)?)")
 # searching guard giving up (USoraFieldcraft and the guards' cues).
 RAISED_PROPOSALS = {"x_wave_start": "wave_start", "x_boss_defeated": "boss_defeated", "x_objective": "interact",
                     "x_signal": "signal", "x_npc_revived": "npc_revived", "x_npc_freed": "npc_freed",
-                    "x_alert_state": "alert_state", "x_fire_out": "fire_out"}
+                    "x_alert_state": "alert_state", "x_fire_out": "fire_out", "x_item_picked": "item_picked"}
 # A dialogue trigger may wait for a collectible found or a story flag set.
 REQUIRES_FLAG = re.compile(r"(collectible:ch0[1-8]\.c0[1-6]|story:[a-z_]+)")
 
@@ -641,7 +641,7 @@ def normalize_task(beat):
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
         "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "stealth": None, "opponent": None,
         "sparring": False, "phase_events": [], "carry_item": None, "carry_speed_permille": 1000, "carry_weapons": [],
-        "pickup_hold_ms": 0, "objective_hold_ms": [],
+        "pickup_hold_ms": 0, "objective_hold_ms": [], "equipment_weapons": None, "recovery": None,
     }
     nonlethal = params.get("nonlethal_types", DEFAULT_NONLETHAL)
     # Waves are what a beat throws at the hero. Only a fight to clear them
@@ -950,6 +950,11 @@ def normalize_line(raw, context, chapter_prefix):
 
 def trigger_row(beat, event, mode, lines, source, context, repeatable=False, cooldown_s=None, at_ms=None, ext=None):
     ext = dict(ext or {})
+    if "delay_s" in ext:
+        delay = whole_ms(ext["delay_s"], context + ".delay_s")
+        if delay <= 0 or delay > 120000 or "+" in event:
+            fail(context, "a delayed trigger needs one positive delay of at most 120 seconds")
+        event = f"{event}+{delay / 1000:g}s"
     # A conditional line (ch08.b17's returned sword) names what must be found or set first.
     requires = ext.pop("requires_flag", None)
     if requires is not None and not REQUIRES_FLAG.fullmatch(expect(requires, (str,), f"{context}.requires_flag")):
@@ -1419,6 +1424,51 @@ def bark_pool_triggers(document, chapter_prefix, beats, triggers):
         fail(chapter_prefix, f"bark sets no beat uses: {sorted(set(sets) - used)}")
 
 
+def equipment_recovery(beats):
+    """Carry the chapter's explicit temporary loadout to its authored recovery beat.
+
+    Checkpoints restart a beat: earlier beats stay restricted, a restarted
+    recovery repeats the retrieval, and later beats have the recovered gear.
+    """
+    pending = None
+    for beat in beats:
+        ext, where = beat["ext"], beat["id"]
+        if "loadout" in ext:
+            raw = expect(ext["loadout"], (dict,), where + ".x_loadout")
+            if pending or set(raw) != {"equipped", "locked_slots", "until"}:
+                fail(where, "loadout needs equipped, locked_slots and one recovery event")
+            if raw["locked_slots"] != ["hip", "back", "polearm", "firearm"]:
+                fail(where, "unrecognized temporary equipment slots")
+            weapons = [expect_int(w, where + ".equipped", 0) for w in expect(raw["equipped"], (list,), where + ".equipped")]
+            if weapons != [4] or raw["until"] != "x_item_picked:sword_bundle":
+                fail(where, "dry-well restriction must leave only the wakizashi")
+            pending = raw
+        if pending:
+            beat["task"]["equipment_weapons"] = pending["equipped"][:]
+        if "pre_step" not in ext:
+            continue
+        raw = expect(ext["pre_step"], (dict,), where + ".x_pre_step")
+        if not pending or set(raw) != {"interact", "descend_cm", "pickup", "restores", "string_bow_s"}:
+            fail(where, "equipment pre-step needs a matching temporary loadout and complete recovery")
+        restored = expect(raw["restores"], (dict,), where + ".restores")
+        if (beat["task"]["task"] != "carry" or raw["pickup"] != "sword_bundle" or
+                raw["interact"] != "act_b05_dry_well_rope" or
+                set(restored) != {"equipped", "quiver"} or restored["equipped"] != [0, 4, 18]):
+            fail(where, "unsupported equipment recovery contract")
+        for weapon in restored["equipped"]:
+            expect_int(weapon, where + ".restores.equipped", 0)
+        depth = expect_int(raw["descend_cm"], where + ".descend_cm", 1)
+        arrows = expect_int(restored["quiver"], where + ".quiver", 1)
+        duration = whole_ms(raw["string_bow_s"], where + ".string_bow_s")
+        if depth != 700 or arrows != 12 or duration != 3000:
+            fail(where, "the dry well requires 700 cm, twelve arrows and three seconds to string the bow")
+        beat["task"]["recovery"] = {"interact": raw["interact"], "item": raw["pickup"],
+            "depth_cm": depth, "string_ms": duration, "weapons": restored["equipped"], "quiver": arrows}
+        pending = None
+    if pending:
+        fail("equipment", "temporary loadout has no recovery pickup")
+
+
 def checkpoints(beats):
     """Checkpoint positions in target time (centiseconds from chapter start).
 
@@ -1470,6 +1520,7 @@ def build_chapter(number, places):
         beat = normalize_beat(raw, previous, prefix, number_in_chapter, lines, triggers)
         beats.append(beat)
         previous = beat["id"]
+    equipment_recovery(beats)
     bark_pool_triggers(document, prefix, beats, triggers)
     order = {beat["id"]: index for index, beat in enumerate(beats)}
     # Authored order within a beat; the chapter-wide b00 pool last.

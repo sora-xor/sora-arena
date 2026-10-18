@@ -189,6 +189,11 @@ public:
     // worked with Interact held (a charge planted, a relay node pulled).
     float HeldWorkProgress() const;
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
+    bool IsRecoveringEquipment() const { return bStringingBow; }
+    bool IsClimbingRecoveryWell() const { return RecoveryClimb != ERecoveryClimb::None; }
+    bool NeedsEquipmentRecovery() const { return !SoraBeatRules::EquipmentReady(TaskState,Task); }
+    FVector RecoveryApproach() const;
+    FVector RecoveryBottom() const;
     bool IsHeldWorkWatched() const { return bHeldWatched; }
     unsigned long long CollectedMask() const;
     // Where the active beat's objective stands, and whether E works it there.
@@ -307,6 +312,14 @@ private:
     bool TakeLoad(int32 Pickup);
     bool WorkObjectiveAt(int32 Objective);
     void TickHeldWork(int32 DeltaMs);
+    enum class ERecoveryClimb : uint8 { None, Enter, Down, Up, Exit };
+    ERecoveryClimb RecoveryClimb=ERecoveryClimb::None;
+    bool bStringingBow=false;
+    void ResetEquipmentRecovery();
+    bool InteractRecovery(ASoraPlayerCharacter& Player);
+    void TickEquipmentRecovery(int32 DeltaMs);
+    void EndRecoveryClimb();
+    bool AtRecoveryBottom() const;
     // Later zones an earlier zone's detection has warned (x_on_detected_carryover).
     TSet<FString> DetectionCarried;
     // Work under guard was seen last step; each guard's last reported state.

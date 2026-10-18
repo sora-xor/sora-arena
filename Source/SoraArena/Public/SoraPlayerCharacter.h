@@ -59,6 +59,7 @@ public:
     void SetDojoTraining(bool Enabled);
     // Later chapters: Nyaakoto's katana, yumi, quiver and saya.
     void SetCampaignHeroLoadout(bool Enabled);
+    void SetCampaignGearVisible(bool Visible);
     void SuspendDojoAction();
     FSoraPracticeInput ConsumeKernelInput();
     bool IsDojoTraining() const { return bDojoTraining; }

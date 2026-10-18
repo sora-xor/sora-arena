@@ -9,6 +9,7 @@ class UStaticMeshComponent;
 class UMaterialInterface;
 struct FSoraPracticeMap;
 struct FSoraChapter;
+struct FSoraBeat;
 struct FSoraZone;
 struct FSoraProp;
 
@@ -83,6 +84,7 @@ public:
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
+    void ShowRecoveryBundle(bool Visible);
     // The chapter's collectibles still lying loose (indices into its pickups).
     void ShowPickups(const FSoraChapter& Chapter, const TArray<int32>& Loose);
     // A carried load in the hero's arms (NAME_None: nothing).
@@ -101,7 +103,7 @@ private:
     // Campaign spaces (SoraWorldBuilderLayout.cpp, SoraWorldBuilderLayoutZones.cpp).
     void BuildArena(int32 MapId, bool bSites);
     void BuildCampaign(const FSoraChapter& Chapter);
-    void BuildZone(const FSoraZone& Zone, int32 Index);
+    void BuildZone(const FSoraZone& Zone, int32 Index, const FSoraBeat* Recovery = nullptr);
     void ZoneProp(const FSoraZone& Zone, const FSoraProp& Prop, int32 Index);
     void ZoneLantern(FVector Location, bool bLit);
     // An estate hall's authored interior (SoraWorldBuilderDojoHall.cpp): false
@@ -112,6 +114,8 @@ private:
     float CampaignStartYaw = 0.f;
     // Task kit, pickups and the carried load (SoraWorldBuilderLayoutTasks.cpp).
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitPieces;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> RecoveryBundle;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> RecoveryHatch;
     UPROPERTY() TArray<TObjectPtr<AActor>> KitActors;
     // The escorted party: one root per member, a villager or a cart under it.
     UPROPERTY() TArray<TObjectPtr<USceneComponent>> KitParty;

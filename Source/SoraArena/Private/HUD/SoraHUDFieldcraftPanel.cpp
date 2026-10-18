@@ -118,6 +118,7 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
     if (const USoraCampaignDirector* Campaign = G.Campaign(); Campaign && Campaign->HeldWorkProgress() >= 0.f)
     {
         const FText Pattern = Campaign->IsHeldWorkWatched() ? NSLOCTEXT("SoraArena.Fieldcraft", "HoistWatched", "見られている　{Key} を押さえたまま待て")
+            : Campaign->IsRecoveringEquipment() ? NSLOCTEXT("SoraArena.Fieldcraft", "StringBow", "{Key} 長押し：弓に弦を張る")
             : Campaign->IsHoisting() ? NSLOCTEXT("SoraArena.Fieldcraft", "Hoist", "{Key} 長押し：釣瓶で引き上げる")
             : NSLOCTEXT("SoraArena.Fieldcraft", "HeldWork", "{Key} を押さえたまま仕事を続ける");
         Prompt(Keyed(HUD, Pattern, TEXT("Interact")), Campaign->IsHeldWorkWatched() ? FLinearColor(.95f, .35f, .2f) : Frame.Gold);

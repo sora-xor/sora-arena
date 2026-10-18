@@ -712,6 +712,11 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpacePoints(Rows(*O, TEXT("stations")), B.Stations) || !SpacePoints(Rows(*O, TEXT("spawns")), B.Spawns) ||
             !Exit || !SpaceVolume(*Exit, B.Exit, false) || !Kit || !PatrolRows || !VolumeRows || !StationRows)
             return Bad(FString::Printf(TEXT("beat %s lacks a required field"), *Beat.Id));
+        const auto Recovery = O->TryGetField(TEXT("recovery"));
+        if (!Recovery.IsValid() || (Task.RecoveryWeapons != 0u) != (Recovery->Type != EJson::Null) ||
+            (Task.RecoveryWeapons != 0u && (!SpacePoint(Recovery,B.Recovery) || B.Zone < 0 ||
+                !S.Zones[B.Zone].Rect.IsInside(B.Recovery + FVector2D(350,350)) ||
+                !S.Zones[B.Zone].Rect.IsInside(B.Recovery - FVector2D(350,350))))) return Bad(Beat.Id + TEXT(" recovery well"));
         if (B.Objectives.Num() != Beat.Objectives.Num() || B.Pickups.Num() != Task.Pickups || B.Dropoffs.Num() != Task.Dropoffs ||
             B.Targets.Num() != Task.TargetCount || StationRows->Num() != Task.StepCount || (Task.StepCount > 0) == B.Stations.IsEmpty())
             return Bad(FString::Printf(TEXT("beat %s places other points than its task has"), *Beat.Id));

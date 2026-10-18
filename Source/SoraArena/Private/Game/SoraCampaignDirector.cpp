@@ -287,6 +287,7 @@ void USoraCampaignDirector::ResetRound()
     ASoraGameMode& M=Mode();
     ASoraWorldBuilder* WorldBuilder=M.Arena();
     const bool bCampaign=M.bCampaign;
+    EndRecoveryClimb();
     // A shell fired before death or chapter advance must never damage the
     // restored encounter or score a defeat against its fresh opponents.
     ClearOfflineProjectiles();
@@ -408,6 +409,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     const bool bKeepPupil=Chapter.Beats.IsValidIndex(BeatIndex)&&Lesson(Chapter.Beats[BeatIndex])&&Lesson(Beat)&&
         Chapter.Beats[BeatIndex].Task.Maai.Count==0&&Beat.Task.Maai.Count==0;
     if(Index!=0||bResumed) bChapterOpening=false;
+    EndRecoveryClimb();
     BeatIndex=Index; BeatPhase=Phase;
     Task=Beat.Task;
     TaskState=SoraBeatRules::StartTask(Task,Phase);
@@ -444,6 +446,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     if(Task.Goal==SoraBeatRules::EGoal::Lines&&Beat.LinesEvent==TEXT("beat_start")) StartLines();
     SpawnCast(bKeepPupil);
     ResetMaai();
+    ResetEquipmentRecovery();
     Fire(TEXT("beat_start"));
     // Until Sequencer lands, a boss's intro plays its lines as the fight opens.
     if(Beat.Is(SoraBeatRules::EType::Boss)&&Phase==0) Fire(TEXT("intro_cinematic"));
@@ -697,6 +700,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         if(Space.Exit.Contains(Hero)&&SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
     }
     // Work held at a point: a load hoisted, an objective worked.
+    TickEquipmentRecovery(DeltaMs);
     TickHeldWork(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // Horses, a siege on defended targets, the escorted party and the task's kit.
@@ -786,6 +790,7 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(bStringingBow&&Task.RecoveryStringMs>0) return static_cast<float>(TaskState.RecoveryHeldMs)/Task.RecoveryStringMs;
     const FSoraBeat* Beat=ActiveBeatData();
     const int32 Need=HeldWork==EHeldWork::Hoist?Task.PickupHoldMs
         :Beat&&Beat->ObjectiveHoldMs.IsValidIndex(HeldPoint)?Beat->ObjectiveHoldMs[HeldPoint]:0;
@@ -1553,6 +1558,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(!M.bCampaign) { ArenaInteract(Player); return; }
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||M.bChapterComplete) return;
+    if(InteractRecovery(Player)) return;
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
     const FSoraBeatSpace& Space=Beat->Space;
@@ -1994,6 +2000,9 @@ FString USoraCampaignDirector::ObjectiveText() const
             M.Arena()?M.Arena()->ActiveNodes():0,Kills,KillsNeeded);
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("章を終えた");
+    if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("包みの前で操作を 3 秒長押しし、弓に弦を張る"):
+        TEXT("空井戸の縄で操作を長押しし、底の刀の包みを取り戻す");
+    if(IsClimbingRecoveryWell()||(Task.RecoveryWeapons!=0u&&AtRecoveryBottom())) return TEXT("縄で操作を長押しし、井戸から上がる");
     if(ChapterId==0&&Task.Goal==SoraBeatRules::EGoal::Lessons&&(DojoLessonMask&Task.LessonMask)!=Task.LessonMask)
         return FString::Printf(TEXT("%s  |  猫柳生新陰流  型 %d / 4"),*Beat->Title,DojoLessonStage()+1);
     const SoraBeatRules::FTaskState& S=TaskState;
@@ -2025,6 +2034,9 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
             M.Arena()?M.Arena()->ActiveNodes():0,Kills,KillsNeeded);
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("Chapter complete");
+    if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("Hold Interact at the bundle for 3 seconds to string the bow"):
+        TEXT("Hold Interact at the dry-well rope to recover the sword bundle below");
+    if(IsClimbingRecoveryWell()||(Task.RecoveryWeapons!=0u&&AtRecoveryBottom())) return TEXT("Hold Interact on the rope to climb out");
     if(ChapterId==0&&Task.Goal==SoraBeatRules::EGoal::Lessons&&(DojoLessonMask&Task.LessonMask)!=Task.LessonMask)
         return FString::Printf(TEXT("%s / Nyaagyushinkageryuu form %d of 4"),*Beat->TitleEnglish,DojoLessonStage()+1);
     const SoraBeatRules::FTaskState& S=TaskState;

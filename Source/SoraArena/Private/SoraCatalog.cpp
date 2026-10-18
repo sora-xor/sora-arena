@@ -99,10 +99,26 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         T.Maai.Count = Moves->Num();
         for (int32 Index=0;Index<Moves->Num();++Index)
         {
-            const auto Move = (*Moves)[Index].IsValid() ? (*Moves)[Index]->AsObject() : nullptr;
+            const auto Move = (*Moves)[Index].IsValid() && (*Moves)[Index]->Type == EJson::Object ? (*Moves)[Index]->AsObject() : nullptr;
             if (!Move || !Int(*Move,TEXT("forward_cm"),T.Maai.Moves[Index].ForwardCm) ||
                 !Int(*Move,TEXT("right_cm"),T.Maai.Moves[Index].RightCm)) return false;
         }
+    }
+    const auto Equipment = O.TryGetField(TEXT("equipment_weapons"));
+    const auto Recovery = O.TryGetField(TEXT("recovery"));
+    if (!Equipment.IsValid() || !Recovery.IsValid()) return false;
+    if (Equipment->Type != EJson::Null)
+    {
+        T.EquipmentMask=0u;
+        if (!WeaponMask(Rows(O,TEXT("equipment_weapons")),T.EquipmentMask)) return false;
+    }
+    if (Recovery->Type != EJson::Null)
+    {
+        const auto R = Recovery->Type == EJson::Object ? Recovery->AsObject() : nullptr;
+        if (!R || !Str(*R,TEXT("item"),Beat.RecoveryItem) || Beat.RecoveryItem != TEXT("sword_bundle") ||
+            !Str(*R,TEXT("interact"),Beat.RecoveryInteract) || Beat.RecoveryInteract != TEXT("act_b05_dry_well_rope") ||
+            !Int(*R,TEXT("depth_cm"),T.RecoveryDepthCm) || !Int(*R,TEXT("string_ms"),T.RecoveryStringMs) ||
+            !Int(*R,TEXT("quiver"),T.RecoveryQuiver) || !WeaponMask(Rows(*R,TEXT("weapons")),T.RecoveryWeapons)) return false;
     }
     T.Pickups = Beat.Pickups.Num(); T.Dropoffs = Beat.Dropoffs.Num();
     Beat.Opponent = Opponent.IsEmpty() ? NAME_None : FName(*Opponent);

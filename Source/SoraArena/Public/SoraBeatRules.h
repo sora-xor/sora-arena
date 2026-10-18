@@ -376,6 +376,13 @@ struct FTask
     unsigned CarryWeaponsMask = 0u;
     // Each load is hoisted at its pickup with Interact held this long (0: taken at once).
     int PickupHoldMs = 0;
+    // Temporary chapter equipment restriction; recovery is earned at the
+    // bottom of a real shaft before any goods can be hoisted.
+    unsigned EquipmentMask = (1u << WeaponCount) - 1u;
+    unsigned RecoveryWeapons = 0u;
+    int RecoveryDepthCm = 0;
+    int RecoveryStringMs = 0;
+    int RecoveryQuiver = 0;
     int StepCount = 0;
     FStep Steps[MaxSteps] = {};
     int TargetCount = 0;
@@ -404,6 +411,8 @@ struct FTaskState
     int Losses = 0;
     unsigned Forms = 0u;
     SoraMaaiRules::FState Maai;
+    int RecoveryHeldMs = 0;
+    bool EquipmentRecovered = false;
     // Clean repetitions of each form still being learned.
     int FormReps[4] = {};
     // Decay not yet worn into progress, in millionths of the hold or of the
@@ -587,7 +596,7 @@ constexpr bool GoalMet(const FTaskState& State, const FTask& Task)
 // standing when any other goal is met withdraw (bible §12.2, chapter-02 b06).
 constexpr bool TaskComplete(const FTaskState& State, const FTask& Task)
 {
-    return GoalMet(State, Task) || State.Conceded;
+    return (Task.RecoveryWeapons == 0u || State.EquipmentRecovered) && (GoalMet(State, Task) || State.Conceded);
 }
 
 constexpr int PhaseStartPermille(const FTask& Task, int Phase)
@@ -906,11 +915,33 @@ constexpr ETurn Turn(FTaskState& State, const FTask& Task)
     return Since > Task.MaxTurnMs ? ETurn::Slow : ETurn::InBand;
 }
 
+constexpr bool EquipmentReady(const FTaskState& State, const FTask& Task)
+{
+    return Task.RecoveryWeapons == 0u || State.EquipmentRecovered;
+}
+constexpr bool EquipmentAllows(const FTaskState& State, const FTask& Task, int Weapon)
+{
+    return Weapon >= 0 && Weapon < WeaponCount &&
+        (State.EquipmentRecovered || (Task.EquipmentMask & (1u << Weapon)) != 0u);
+}
+// Stringing must be continuous, at the bundle. Leaving it or releasing
+// Interact loses partial work; the completed pickup is raised exactly once.
+constexpr bool RecoverEquipment(FTaskState& State, const FTask& Task, int DeltaMs, bool AtBundle, bool Held)
+{
+    if (EquipmentReady(State, Task)) return false;
+    if (!AtBundle || !Held) { State.RecoveryHeldMs = 0; return false; }
+    if (DeltaMs <= 0) return false;
+    State.RecoveryHeldMs = DeltaMs >= Task.RecoveryStringMs - State.RecoveryHeldMs ? Task.RecoveryStringMs : State.RecoveryHeldMs + DeltaMs;
+    if (State.RecoveryHeldMs < Task.RecoveryStringMs) return false;
+    State.EquipmentRecovered = true;
+    return true;
+}
+
 // Takes an item at a pickup. Distinct goods (a pickup per item) are each
 // taken once; a single store is revisited.
 constexpr bool Pickup(FTaskState& State, const FTask& Task, int Index)
 {
-    if (Task.Task != ETask::Carry || State.Carrying || State.Done >= Task.Count || Index < 0 ||
+    if (!EquipmentReady(State, Task) || Task.Task != ETask::Carry || State.Carrying || State.Done >= Task.Count || Index < 0 ||
         Index >= Task.Pickups || Index >= MaxPoints)
         return false;
     if (Task.Pickups >= Task.Count)
@@ -1175,6 +1206,14 @@ constexpr bool PointsValid(int Count)
 // wave, phase and step can be met.
 constexpr bool TaskValid(const FTask& Task)
 {
+    const unsigned AllWeapons = (1u << WeaponCount) - 1u;
+    if (Task.EquipmentMask == 0u || (Task.EquipmentMask & ~AllWeapons) != 0u) return false;
+    if (Task.RecoveryWeapons != 0u)
+    {
+        if (Task.Task != ETask::Carry || Task.RecoveryWeapons != ((1u << 0) | (1u << 4) | (1u << 18)) ||
+            Task.EquipmentMask != (1u << 4) || Task.RecoveryDepthCm != 700 || Task.RecoveryStringMs != 3000 || Task.RecoveryQuiver != 12) return false;
+    }
+    else if (Task.RecoveryDepthCm != 0 || Task.RecoveryStringMs != 0 || Task.RecoveryQuiver != 0) return false;
     if (!SoraMaaiRules::Valid(Task.Maai) || (Task.Maai.Count > 0 &&
         (Task.Type != EType::Duel || Task.Goal != EGoal::Lessons || Task.LessonMask != 1u || Task.Count != 0))) return false;
     if (!WavesValid(Task) || !PhasesValid(Task) || Task.Count < 0 || Task.Count > MaxGoalCount ||

@@ -539,6 +539,40 @@ static void TestBossAndStealth()
     std::cout << "beat tasks: boss phases and failures, stealth exit, objectives and detection passed\n";
 }
 
+static void TestEquipmentRecovery()
+{
+    FTask T = Make(EType::ProductionTask,EGoal::Deliveries,ETask::Carry);
+    T.Count=3; T.Pickups=1; T.Dropoffs=1;
+    T.EquipmentMask=1u<<4; T.RecoveryWeapons=(1u<<0)|(1u<<4)|(1u<<18);
+    T.RecoveryDepthCm=700; T.RecoveryStringMs=3000; T.RecoveryQuiver=12;
+    FTaskState S=Begin(T,"dry-well recovery");
+    for(int W=0;W<WeaponCount;++W)
+        Expect(EquipmentAllows(S,T,W)==(W==4),"only the wakizashi before pickup");
+    Expect(!Pickup(S,T,0),"cannot hoist before recovering equipment");
+    Expect(!RecoverEquipment(S,T,3000,false,true)&&S.RecoveryHeldMs==0,"surface interaction cannot recover gear");
+    Expect(!RecoverEquipment(S,T,2999,true,true),"bow cannot be strung early");
+    Expect(!EquipmentAllows(S,T,18),"bow cannot fire during stringing");
+    Expect(!RecoverEquipment(S,T,1,true,false)&&S.RecoveryHeldMs==0,"releasing interrupts stringing");
+    Expect(!RecoverEquipment(S,T,2000,true,true),"partial stringing remains partial");
+    Expect(!RecoverEquipment(S,T,1000,false,true)&&S.RecoveryHeldMs==0,"leaving the bundle interrupts stringing");
+    Expect(RecoverEquipment(S,T,3000,true,true),"three continuous seconds recovers equipment");
+    Expect(!RecoverEquipment(S,T,3000,true,true),"pickup cannot repeat its event");
+    Expect(EquipmentAllows(S,T,0)&&EquipmentAllows(S,T,4)&&EquipmentAllows(S,T,18)&&Pickup(S,T,0),"restored gear permits carrying");
+    S=StartTask(T,0);
+    Expect(!S.EquipmentRecovered&&S.RecoveryHeldMs==0&&!Pickup(S,T,0),"beat checkpoint replays retrieval");
+    S.Done=T.Count;
+    Expect(!TaskComplete(S,T),"forged delivery progress cannot bypass recovery");
+    for(int Invalid=0;Invalid<4;++Invalid)
+    {
+        FTask Bad=T;
+        if(Invalid==0) Bad.RecoveryDepthCm=0;
+        if(Invalid==1) Bad.RecoveryStringMs=2999;
+        if(Invalid==2) Bad.RecoveryQuiver=0;
+        if(Invalid==3) Bad.EquipmentMask|=1u<<18;
+        Expect(!TaskValid(Bad),"malformed recovery config refused");
+    }
+}
+
 static void TestProduction()
 {
     FTask Hold = Make(EType::ProductionTask, EGoal::Hold, ETask::Hold);
@@ -1091,6 +1125,7 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
     }
     case EGoal::Escort: return Tick(State, Task, At(500, true));
     case EGoal::Deliveries:
+        if (!EquipmentReady(State, Task)) return RecoverEquipment(State, Task, Task.RecoveryStringMs, true, true);
         if (Task.Task == ETask::Carry && !State.Carrying)
         {
             for (int Point = 0; Point < Task.Pickups; ++Point)
@@ -1397,6 +1432,7 @@ int main()
     TestDuels();
     TestDefeatsAndLessons();
     TestBossAndStealth();
+    TestEquipmentRecovery();
     TestProduction();
     TestDecayFrames();
     TestRideExploreCollectible();

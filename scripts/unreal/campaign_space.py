@@ -770,6 +770,16 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
     record.setdefault("camera", None)
     record.setdefault("route", None)
     record.setdefault("dropoffs", [])
+    record["recovery"] = None
+    if task["recovery"]:
+        if zone is None or zone.form == "route":
+            fail(beat["id"], "a dry well needs its own clear courtyard")
+        # Reserve an unused clear work spot: the 340 cm opening and its
+        # east-side rope approach fit within the same allocator clearance.
+        point = allocator.take(start)
+        if point is None:
+            fail(beat["id"], "no clear spot for the recovery well")
+        record["recovery"] = list(point)
     record["kit"] = _kit(beat)
     ride = beat["type"] == "horseback_ride"
     record["mount"] = _mount(beat, ride, fail) if ride or beat["type"] == "boss" else None

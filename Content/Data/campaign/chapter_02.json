@@ -238,7 +238,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -442,7 +444,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -616,7 +620,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "unlock_at": "beat_start",
@@ -731,7 +737,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -935,7 +943,9 @@
      0
     ],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "gate_interact": {
@@ -1183,7 +1193,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "hazards": [
@@ -1300,7 +1312,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -1586,7 +1600,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "route_length_m": 1200,
@@ -1807,7 +1823,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "wave2_fallback_trigger": "after_s:120",
@@ -1935,7 +1953,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "route_length_m": 465,
@@ -2071,7 +2091,9 @@
      0
     ],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2178,7 +2200,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2295,7 +2319,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "route_length_m": 750,
@@ -2435,7 +2461,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "hazards": [
@@ -2573,7 +2601,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {}
   },
@@ -2681,7 +2711,9 @@
     "carry_speed_permille": 1000,
     "carry_weapons": [],
     "pickup_hold_ms": 0,
-    "objective_hold_ms": []
+    "objective_hold_ms": [],
+    "equipment_weapons": null,
+    "recovery": null
    },
    "ext": {
     "site_note": "site 2 (屋敷の工房) is restored at the dawn cut, relocated to pl_kakuredani in fiction"
@@ -10685,6 +10717,7 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10814,6 +10847,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11001,6 +11035,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11142,6 +11177,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11297,6 +11333,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": "carry",
      "item": "bale",
@@ -11440,6 +11477,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": "defend",
      "item": null,
@@ -11582,6 +11620,7 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11853,6 +11892,7 @@
     "patrols": [],
     "cache": null,
     "camera": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12132,6 +12172,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12287,6 +12328,7 @@
     "patrols": [],
     "cache": null,
     "camera": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12497,6 +12539,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": "carry",
      "item": "bale",
@@ -12644,6 +12687,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12854,6 +12898,7 @@
     "patrols": [],
     "cache": null,
     "camera": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13045,6 +13090,7 @@
     "step_stations": [],
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13174,6 +13220,7 @@
     "cache": null,
     "camera": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13313,6 +13360,7 @@
     "step_stations": [],
     "cache": null,
     "route": null,
+    "recovery": null,
     "kit": {
      "work": null,
      "item": null,

@@ -116,6 +116,18 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     if(!Chapter.Beats.IsValidIndex(BeatIndex)) return;
     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
     const FSoraBeatSpace& Space=Beat.Space;
+    if(RecoveryHatch)
+    {
+        const bool Open=Beat.Task.RecoveryWeapons!=0u;
+        RecoveryHatch->SetVisibility(!Open);
+        RecoveryHatch->SetCollisionEnabled(Open?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryAndPhysics);
+    }
+    if(Beat.Task.RecoveryWeapons!=0u)
+    {
+        const FVector P=Floor(Space.Recovery,-Beat.Task.RecoveryDepthCm+12.f);
+        RecoveryBundle.Add(KitShape(TEXT("SwordBundle"),KitCube,P+FVector(-65,65,5),FVector(1.1f,.35f,.2f),FLinearColor(.38f,.3f,.16f),TEXT("Timber")));
+        RecoveryBundle.Add(KitShape(TEXT("BowBag"),KitCube,P+FVector(-65,95,4),FVector(2.2f,.16f,.12f),FLinearColor(.24f,.27f,.2f)));
+    }
     KitWork=Space.Work;
     KitAnchor=Floor(Space.Anchor);
     const FVector A=KitAnchor;
@@ -307,6 +319,10 @@ float ASoraWorldBuilder::KitGaugeHeight() const
 {
     return KitGauge?KitGauge->GetRelativeLocation().Z:0.f;
 }
+void ASoraWorldBuilder::ShowRecoveryBundle(bool Visible)
+{
+    for(const auto& Piece:RecoveryBundle) if(Piece) Piece->SetVisibility(Visible);
+}
 void ASoraWorldBuilder::ClearKit()
 {
     for(const auto& Mesh:KitPieces) if(Mesh) Mesh->DestroyComponent();
@@ -314,7 +330,7 @@ void ASoraWorldBuilder::ClearKit()
     for(const auto& Member:KitParty) if(Member) Member->DestroyComponent();
     for(const auto& Actor:KitActors) if(Actor) Actor->Destroy();
     if(KitLight) KitLight->Destroy();
-    KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
+    RecoveryBundle.Reset(); KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;

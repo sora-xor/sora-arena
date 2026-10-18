@@ -109,9 +109,7 @@ DIRECTOR_FAMILIES = ("rate_band", "boss_phase", "duel_phase", "duel_event", "int
                      "collectible", "collectible_found", "maai_step_ok", "gate_retry")
 # Scripted proposals in those families that nothing raises yet, each listed
 # under "What the offline runtime does not do yet" in offline-acceptance.md.
-UNRAISED_PROPOSALS = {
-    "x_item_picked:sword_bundle": "ch03.b05's sword-bundle pickup and the loadout locked until it",
-}
+UNRAISED_PROPOSALS = {}
 JAPANESE = re.compile(r"[぀-ヿ㐀-鿿]")
 # A HUD prompt's key token, and a control named in brackets instead.
 KEY_TOKEN = re.compile(r"\{([^{}]*)\}")
@@ -220,6 +218,7 @@ def director_event_error(row, beat, offset, chapter):
     free-form interact: and volume_enter: names are theirs. Any event may end
     in ":first", which plays on its first raise in the beat."""
     event = row["on"][:-6] if row["on"].endswith(":first") else row["on"]
+    event = re.sub(r"\+[0-9]+(?:\.[0-9]+)?s$", "", event)
     family, _, rest = event.partition(":")
     task, params = beat["task"], beat["params"]
     number = int(rest) if rest.isdigit() else None
@@ -266,7 +265,8 @@ def director_event_error(row, beat, offset, chapter):
     if family in ("item_picked", "item_delivered"):
         points = task["pickups"] if family == "item_picked" else task["dropoffs"]
         load = re.fullmatch(r"load_(\d\d)", rest) if family == "item_delivered" else None
-        ok = rest in points or rest == task["carry_item"] or (load and 1 <= int(load[1]) <= task["count"])
+        recovery = task.get("recovery")
+        ok = rest in points or rest == task["carry_item"] or (family == "item_picked" and recovery and rest == recovery["item"]) or (load and 1 <= int(load[1]) <= task["count"])
         return None if ok else "no such pickup, drop-off, carried item or load"
     if family in ("crank_released", "output_complete", "exit_reached"):
         goal = {"crank_released": "turns", "output_complete": "steps", "exit_reached": "exit"}[family]
@@ -401,6 +401,10 @@ def check_space(chapter, beats, rewards, labels, where):
                            ("dropoffs", len(task["dropoffs"])), ("targets", len(task["targets"]))):
             require(len(record[key]) == count, f"{what}: {count} {key} in the task, {len(record[key])} placed")
         distinct = [record["anchor"]] + record["objectives"] + record["pickups"] + record["dropoffs"] + record["targets"]
+        require((record.get("recovery") is not None) == (task.get("recovery") is not None), f"{what}: recovery requires a well")
+        if task.get("recovery"):
+            on_floor(index, record["recovery"], f"{what} recovery well", 350)
+            distinct.append(record["recovery"])
         for key in ("objectives", "pickups", "dropoffs", "targets", "stations", "spawns"):
             for point in record[key]:
                 on_floor(index, point, f"{what} {key}")

@@ -84,17 +84,41 @@ msgctxt "SoraArena.Campaign,ArmsFull"
 msgid "荷を抱えている。手にできるのは刀を片手で、が精一杯だ。"
 msgstr "Your arms are full: at most the katana in one paw."
 
+#. Key:	ArmsRecovered
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,ArmsRecovered"
+msgid "刀と脇差、弓、矢十二本を取り戻した。縄で操作を長押しして上がる。"
+msgstr "Katana, wakizashi, bow and twelve arrows recovered. Hold Interact on the rope to climb out."
+
+#. Key:	BundleAtBottom
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,BundleAtBottom"
+msgid "井戸の底だ。操作を離し、包みの前でもう一度長押しして弓に弦を張る。"
+msgstr "At the bottom. Release Interact, then hold it again at the bundle to string the bow."
+
 #. Key:	CannotDismount
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
 msgctxt "SoraArena.Campaign,CannotDismount"
 msgid "ここでは降りられない。"
 msgstr "You cannot dismount here."
 
+#. Key:	FindBundleFirst
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,FindBundleFirst"
+msgid "先に空井戸の底から刀と弓を取り戻そう。"
+msgstr "Recover the katana and bow from the dry well first."
+
 #. Key:	FoundCollectible
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
 msgctxt "SoraArena.Campaign,FoundCollectible"
 msgid "見つけた：{Category}"
 msgstr "Found: {Category}"
+
+#. Key:	HiddenArms
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,HiddenArms"
+msgid "刀と弓は空井戸の底に隠してある。今は脇差だけだ。"
+msgstr "The katana and bow are hidden in the dry well. Only the wakizashi is available."
 
 #. Key:	MaaiLesson
 #: Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
@@ -113,6 +137,18 @@ msgstr "Mount from her right side, as riders do. Walk around to her right."
 msgctxt "SoraArena.Campaign,NotFromSaddle"
 msgid "馬上ではこの武器は使えない。"
 msgstr "That weapon cannot be used from the saddle."
+
+#. Key:	RopeDown
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,RopeDown"
+msgid "縄をつかんだ。操作を長押しして下りる。離せばその場で止まる。"
+msgstr "Hold Interact to descend the rope; release to stop."
+
+#. Key:	RopeOut
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,RopeOut"
+msgid "井戸から上がった。釣瓶で道具の箱を引き上げよう。"
+msgstr "Out of the well. Hoist the tool crates at the working well."
 
 #. Key:	SaddleKatanaArc
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
@@ -816,6 +852,12 @@ msgstr "{Key}: reach for the holds"
 msgctxt "SoraArena.Fieldcraft,Stones"
 msgid "礫 {Count} / {Max}　{Key} で投げる"
 msgstr "Stones {Count} / {Max}. {Key} to throw"
+
+#. Key:	StringBow
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,StringBow"
+msgid "{Key} 長押し：弓に弦を張る"
+msgstr "Hold {Key}: string the bow"
 
 #. Key:	Swimming
 #: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp

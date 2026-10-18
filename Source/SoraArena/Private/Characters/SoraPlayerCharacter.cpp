@@ -153,6 +153,10 @@ FSoraPracticeInput ASoraPlayerCharacter::ConsumeKernelInput()
     KernelQueuedButtons=0;
     return Input;
 }
+void ASoraPlayerCharacter::SetCampaignGearVisible(bool Visible)
+{
+    for(const auto& Piece:QuiverParts) if(Piece) Piece->SetVisibility(Visible);
+}
 void ASoraPlayerCharacter::BuildHeroQuiver()
 {
     // Nyaakoto's red-fletched quiver is visible on the world model, while

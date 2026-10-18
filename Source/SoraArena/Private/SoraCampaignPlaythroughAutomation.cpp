@@ -9,6 +9,7 @@
 #include "SoraCatalog.h"
 #include "SoraDojoRules.h"
 #include "SoraMaaiAutomation.h"
+#include "SoraRecoveryAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -1028,6 +1029,15 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
         MoveTo(State, FarAway(State));
         GameMode->Interact(Player(State));
         bOk &= Test.TestEqual(*(Beat.Id + TEXT(" cannot be worked from afar")), Director->TaskProgress().Done, 0);
+        if(Rules.RecoveryWeapons!=0u)
+        {
+            // Deal with the patrol using the currently available wakizashi
+            // before entering the rope. Recovery itself uses no state edits.
+            for(int32 Action=0;Action<MaxActionsPerBeat&&!LiveEnemies(State).IsEmpty();++Action)
+                if(!DefeatOne(Test,State)) return false;
+            if(!FreeConscripts(Test,State)||!Test.TestTrue(TEXT("Dry-well equipment is recovered by real movement and held input"),
+                SoraRecoveryAutomation::Recover(*State.World))) return false;
+        }
         bool bSlipTested = false, bMissTested = false, bLoadTested = false;
         // A crank is turned, not fought over: it is done once full, whoever stands.
         TArray<TWeakObjectPtr<ASoraEnemy>> Standing;

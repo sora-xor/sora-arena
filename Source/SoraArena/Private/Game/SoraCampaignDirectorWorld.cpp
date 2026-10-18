@@ -46,6 +46,11 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     const FSoraBeatSpace& Space=Beat->Space;
     const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point); bInteract=bWorks; return true; };
     const auto VolumeOf=[&](const FString& Event) { return Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Event; }); };
+    if(Task.RecoveryWeapons!=0u&&(NeedsEquipmentRecovery()||AtRecoveryBottom()||IsClimbingRecoveryWell()))
+    {
+        Location=AtRecoveryBottom()?RecoveryBottom()-FVector(0,0,100):RecoveryApproach()-FVector(0,0,100);
+        bInteract=true; return true;
+    }
     switch(Task.Goal)
     {
     case SoraBeatRules::EGoal::Lines:
@@ -529,6 +534,11 @@ float USoraCampaignDirector::CarryPace() const
 bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 {
     if(!Mode().bCampaign||WeaponId<0||WeaponId>=SoraBeatRules::WeaponCount) return true;
+    if(!SoraBeatRules::EquipmentAllows(TaskState,Task,WeaponId))
+    {
+        if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","HiddenArms","刀と弓は空井戸の底に隠してある。今は脇差だけだ。")),3.f);
+        return false;
+    }
     if(TaskState.Carrying&&Task.Task==SoraBeatRules::ETask::Carry&&(Task.CarryWeaponsMask&(1u<<WeaponId))==0u)
     {
         if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","ArmsFull","荷を抱えている。手にできるのは刀を片手で、が精一杯だ。")),3.f);
@@ -543,7 +553,7 @@ bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 }
 bool USoraCampaignDirector::ArmsReady(int32 WeaponId,float AimYaw,bool bNotify)
 {
-    if(!CanHold(WeaponId,bNotify)) return false;
+    if(!CanHold(WeaponId,bNotify)||IsClimbingRecoveryWell()||bStringingBow) return false;
     if(!IsMounted()||SoraMountRules::ArcAllows(Horse->RideRules(),WeaponId,FMath::RoundToInt32(AimYaw),
         FMath::RoundToInt32(Horse->GetActorRotation().Yaw)))
         return true;

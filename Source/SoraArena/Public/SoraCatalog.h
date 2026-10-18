@@ -506,6 +506,7 @@ struct FSoraBeatSpace
     FVector2D Entry = FVector2D::ZeroVector;
     float EntryYaw = 0.f;
     FVector2D Anchor = FVector2D::ZeroVector;
+    FVector2D Recovery = FVector2D::ZeroVector;
     TArray<FVector2D> Objectives;
     TArray<FVector2D> Pickups;
     TArray<FVector2D> Dropoffs;
@@ -612,6 +613,8 @@ struct FSoraBeat
     // What a carry moves ("barley_load"): its pickups and deliveries also
     // raise item_picked:<item> and item_delivered:<item>.
     FString CarryItem;
+    FString RecoveryItem;
+    FString RecoveryInteract;
     TArray<FString> Targets;
     TArray<FString> StepKinds;
     // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.

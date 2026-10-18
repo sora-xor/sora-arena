@@ -143,6 +143,12 @@ def task_fields(task):
             fields.append(f"T.{name} = true;")
     if task["lesson_mask"]:
         fields.append(f"T.LessonMask = {task['lesson_mask']}u;")
+    if task["equipment_weapons"] is not None:
+        fields.append(f"T.EquipmentMask = {mask(task['equipment_weapons'])}u;")
+    if recovery := task["recovery"]:
+        fields.append(f"T.RecoveryWeapons = {mask(recovery['weapons'])}u;")
+        for member, key in (("RecoveryDepthCm", "depth_cm"), ("RecoveryStringMs", "string_ms"), ("RecoveryQuiver", "quiver")):
+            fields.append(f"T.{member} = {recovery[key]};")
     if maai := task["maai"]:
         for member, key in (("InnerCm", "inner_cm"), ("OuterCm", "outer_cm"), ("HoldMs", "hold_ms"),
                             ("FacingPermille", "facing_permille"), ("HintMs", "hint_ms")):
