@@ -2,11 +2,13 @@
 #include "Combat/SoraDamage.h"
 #include "SoraCombatRules.h"
 #include "SoraGameEvents.h"
+#include "SoraGameMode.h"
 #include "SoraWorldBuilder.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 
 ASoraProjectile::ASoraProjectile()
 {
@@ -34,7 +36,10 @@ void ASoraProjectile::BeginPlay()
 }
 void ASoraProjectile::Tick(float Dt)
 {
-    Super::Tick(Dt); Age+=Dt; Velocity.Z-=(bArrow?980.f:Gravity)*Dt;
+    Super::Tick(Dt);
+    const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
+    if(Mode&&Mode->InputState()==SoraInput::Dialogue) return;
+    Age+=Dt; Velocity.Z-=(bArrow?980.f:Gravity)*Dt;
     if(bArrow) SetActorRotation(Velocity.Rotation());
     const FVector Before=GetActorLocation();
     FHitResult Hit; AddActorWorldOffset(Velocity*Dt,true,&Hit);

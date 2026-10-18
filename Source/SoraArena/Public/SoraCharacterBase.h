@@ -77,6 +77,8 @@ protected:
     bool bSkeletalVisual = false;
     bool bWalkingVisual = false;
     bool bKernelDriven = false;
+    bool bDialogueMovementHeld = false;
+    bool bMovementTickBeforeDialogue = true;
     FVector KernelPreviousFeet = FVector::ZeroVector;
     float LifeTime = 0.f;
 };

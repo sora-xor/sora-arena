@@ -218,6 +218,8 @@ ASoraThrownStone::ASoraThrownStone()
 void ASoraThrownStone::Tick(float Dt)
 {
     Super::Tick(Dt);
+    const auto* Mode=GetWorld()?Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()):nullptr;
+    if(Mode&&Mode->InputState()==SoraInput::Dialogue) return;
     if (Age == 0.f)
         ASoraWorldBuilder::Shape(this, RootComponent, TEXT("Tsubute"), Layout::Sphere, FVector::ZeroVector, FVector(.07f), FLinearColor(.36f, .35f, .33f));
     Age += Dt;
@@ -583,6 +585,11 @@ bool USoraFieldcraft::Interact(ASoraPlayerCharacter& Player)
     if (Work.Kind == EHoldKind::None) return false;
     Holding = Work;
     return true;
+}
+
+void USoraFieldcraft::CancelHeldInteraction()
+{
+    Holding=FHold();
 }
 
 void USoraFieldcraft::TickHolds(int32 DtMs)

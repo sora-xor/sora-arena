@@ -60,6 +60,8 @@ public:
     // Later chapters: Nyaakoto's katana, yumi, quiver and saya.
     void SetCampaignHeroLoadout(bool Enabled);
     void SetCampaignGearVisible(bool Visible);
+    // Drop held controls and motion at either edge of a dialogue hold.
+    void ResetDialogueInput();
     void SuspendDojoAction();
     FSoraPracticeInput ConsumeKernelInput();
     bool IsDojoTraining() const { return bDojoTraining; }

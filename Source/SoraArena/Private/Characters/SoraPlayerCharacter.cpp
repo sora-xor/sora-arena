@@ -88,6 +88,26 @@ void ASoraPlayerCharacter::HaltActions()
     if(Wheel.bOpen) CloseArmsWheel(false);
     bArmsKeyHeld=false;
 }
+void ASoraPlayerCharacter::ResetDialogueInput()
+{
+    HaltActions();
+    FireUp(); MeleeUp(); BlockUp(); SprintUp(); JumpUp(); InteractUp();
+    if(USoraFieldcraft* Craft=HeroFieldcraft(*this)) Craft->CancelHeldInteraction();
+    KernelHeldButtons=0; KernelQueuedButtons=0; InputForward=0.f; InputRight=0.f;
+    bScoreboardHeld=false;
+    bDojoRecoveryPending=false;
+    if(bVaulting)
+    {
+        bVaulting=false;
+        GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+    }
+    ConsumeMovementInputVector();
+    GetCharacterMovement()->StopMovementImmediately();
+    if(APlayerController* Player=Cast<APlayerController>(GetController())) Player->FlushPressedKeys();
+    // A transition cannot reuse an earlier Play snapshot in this input frame.
+    InputFrame=GFrameCounter;
+    InputFrameState=SoraInput::Dialogue;
+}
 void ASoraPlayerCharacter::SetDojoTraining(bool Enabled)
 {
     const bool bChanged=bDojoTraining!=Enabled;
@@ -907,7 +927,7 @@ bool ASoraPlayerCharacter::AcceptsInput(uint8 States)
     // Every press in one input frame is judged by the state that frame began
     // in, so the key that closes the menu or title card never also acts in play.
     if(InputFrame!=GFrameCounter) { InputFrame=GFrameCounter; InputFrameState=G->InputState(); }
-    return (States&InputFrameState)!=0;
+    return (States&InputFrameState&G->InputState())!=0;
 }
 void ASoraPlayerCharacter::BindPress(UInputComponent* Input,const TCHAR* Action,void (ASoraPlayerCharacter::*Handler)())
 {

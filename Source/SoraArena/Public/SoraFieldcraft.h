@@ -187,6 +187,7 @@ public:
     // foot, or lets go of the wall. Each returns whether it took the press.
     bool Ability(ASoraPlayerCharacter& Hero);
     bool Interact(ASoraPlayerCharacter& Hero);
+    void CancelHeldInteraction();
     bool Jump(ASoraPlayerCharacter& Hero);
     // In the water or on the wall no arm is used and no weapon changes hands.
     bool ArmsStowed() const { return bSwimming || bClimbing || LadderClimb != INDEX_NONE; }

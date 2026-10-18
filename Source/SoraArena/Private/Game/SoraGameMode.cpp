@@ -141,7 +141,8 @@ SoraInput::EState ASoraGameMode::InputState() const
 {
     if(bMenu) return SoraInput::Menu;
     if(bDefeated||bChapterComplete) return SoraInput::Result;
-    return TitleCardTime>0.f?SoraInput::Card:SoraInput::Play;
+    if(TitleCardTime>0.f) return SoraInput::Card;
+    return bCampaign&&CampaignDirector->IsDialogueBlocking()?SoraInput::Dialogue:SoraInput::Play;
 }
 const FSoraChapter* ASoraGameMode::TitleCardChapter() const
 {
@@ -252,7 +253,7 @@ void ASoraGameMode::QuitGame()
 void ASoraGameMode::ToggleSubtitles() { SettingsState->SetEnglishSubtitles(!bEnglishSubtitles); }
 void ASoraGameMode::Interact(ASoraPlayerCharacter* Player)
 {
-    if(bDeterministicPractice) return;
+    if(bDeterministicPractice||!IsPlaying()) return;
     if(!WorldBuilder||!Player) return;
     CampaignDirector->Interact(*Player);
 }

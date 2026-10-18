@@ -56,6 +56,8 @@ struct FSoraDialogueCue
     FString Japanese;
     FString English;
     float DurationSeconds = 0.f;
+    // Empty inherits the event's mode; an explicit ambient/radio line keeps control.
+    FString Mode;
     bool bRepeatable = false;
 };
 // A row of the chapter's event-keyed trigger table: "beat_start",

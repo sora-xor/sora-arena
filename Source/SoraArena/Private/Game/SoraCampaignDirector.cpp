@@ -299,7 +299,7 @@ void USoraCampaignDirector::ResetRound()
     Notices.Reset();
     Kills=0; KillsNeeded=0; bLinesStarted=false; bChapterOpening=false; CinematicSeconds=0.f; DojoLessonMask=0u;
     DetectionCarried.Reset();
-    Queue.Reset(); LineRemaining=0.f; Heard.Reset(); FiredTriggers.Reset(); TriggerTimes.Reset();
+    ClearDialogue(); Heard.Reset(); FinishedLines.Reset(); FiredTriggers.Reset(); TriggerTimes.Reset();
     PromptIndex=INDEX_NONE; PromptRemaining=0.f;
     BeatIndex=INDEX_NONE; BeatPhase=0; ArenaSitesMask=0; bArenaComplete=false;
     Task=SoraBeatRules::FTask(); TaskState=SoraBeatRules::FTaskState();
@@ -459,13 +459,6 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     UpdateObjective();
     BroadcastBeat(true,bResumed);
     Telemetry(bResumed?TEXT("resume"):TEXT("start"));
-}
-void USoraCampaignDirector::StartLines()
-{
-    const FSoraBeat* Beat=ActiveBeatData();
-    if(!Beat||bLinesStarted) return;
-    Enqueue(Beat->Lines,true); bLinesStarted=true;
-    UpdateObjective();
 }
 void USoraCampaignDirector::RetryBeatInPlace()
 {
@@ -629,26 +622,11 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     PromptRemaining=FMath::Max(0.f,PromptRemaining-DeltaTime);
     TickScheduled();
     if(ActiveBeatData()!=Beat) return;
-    TickSealCut();
+    const bool bWasBlocking=bDialogueHeld;
     TickDialogue(DeltaTime);
+    if(ActiveBeatData()!=Beat||bWasBlocking||bDialogueHeld) return;
+    TickSealCut();
     TickBeat(DeltaTime);
-}
-void USoraCampaignDirector::TickDialogue(float DeltaSeconds)
-{
-    if(Queue.IsEmpty()) return;
-    const FSoraChapter& Chapter=*ActiveChapter();
-    LineRemaining-=DeltaSeconds;
-    while(!Queue.IsEmpty()&&LineRemaining<=0.f)
-    {
-        const int32 Finished=Queue[0];
-        Queue.RemoveAt(0);
-        if(!Queue.IsEmpty()) LineRemaining+=Chapter.Dialogue[Queue[0]].DurationSeconds;
-        Fire(TEXT("lines_done:")+Chapter.Dialogue[Finished].Id);
-        // The last blocking line ends the scene's hold (ch01.b12's blocking_end).
-        if(const FSoraBeat* Beat=ActiveBeatData(); Beat&&!Beat->BlockingLines.IsEmpty()&&Finished==Beat->BlockingLines.Last())
-            Fire(TEXT("blocking_end"));
-    }
-    if(Queue.IsEmpty()) LineRemaining=0.f;
 }
 void USoraCampaignDirector::TickBeat(float DeltaSeconds)
 {
@@ -683,7 +661,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     // dialogue waiting on one starts, and the waves it names come.
     TickVolumes();
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
-    if(Task.Goal==SoraBeatRules::EGoal::Lines&&bLinesStarted&&Queue.IsEmpty()) SoraBeatRules::FinishLines(TaskState,Task);
+    if(Task.Goal==SoraBeatRules::EGoal::Lines&&bLinesStarted&&Queue.IsEmpty()&&DialogueLinesDone()) SoraBeatRules::FinishLines(TaskState,Task);
     // Arrivals: a dialogue's closing anchor (or its volume) after its lines, and the exit.
     const FSoraBeatSpace& Space=Beat.Space;
     const FVector Hero=M.Hero()?M.Hero()->GetActorLocation():FVector::ZeroVector;
@@ -1051,7 +1029,7 @@ void USoraCampaignDirector::ClearEncounter()
     ClearHorses();
     EndCinematicCamera(0.f);
     Kills=0;
-    Queue.Reset(); LineRemaining=0.f; PromptRemaining=0.f; Notices.Reset();
+    ClearDialogue(); PromptRemaining=0.f; Notices.Reset();
     if(ASoraWorldBuilder* WorldBuilder=Mode().Arena())
     {
         WorldBuilder->ShowObjective(nullptr); WorldBuilder->ShowCaches({}); WorldBuilder->ClearKit();
@@ -1061,18 +1039,6 @@ void USoraCampaignDirector::ClearEncounter()
 const ASoraBoss* USoraCampaignDirector::CampaignBoss() const
 {
     return IsValid(BossActor)&&BossActor->IsAlive() ? BossActor.Get() : nullptr;
-}
-void USoraCampaignDirector::Enqueue(const TArray<int32>& Lines,bool bForce)
-{
-    const FSoraChapter& Chapter=*ActiveChapter();
-    for(const int32 Line:Lines)
-    {
-        // Lines never repeat in a round unless the script marks them repeatable.
-        if(!bForce&&Heard.Contains(Line)&&!Chapter.Dialogue[Line].bRepeatable) continue;
-        Heard.Add(Line);
-        if(Queue.IsEmpty()) LineRemaining=Chapter.Dialogue[Line].DurationSeconds;
-        Queue.Add(Line);
-    }
 }
 void USoraCampaignDirector::FireDialogueTrigger(FName Event)
 {
@@ -1112,7 +1078,7 @@ void USoraCampaignDirector::Fire(const FString& Event,int32 Beat)
             continue;
         FiredTriggers.Add(Index);
         if(GetWorld()) TriggerTimes.Add(Index,GetWorld()->GetTimeSeconds());
-        Enqueue(Trigger.Lines,false);
+        Enqueue(Trigger.Lines,false,Trigger.Mode);
     }
     ShowPrompt(Event,Beat);
     // A prompt keyed "<event>:first" shows on the event's first raise in the
@@ -1238,6 +1204,7 @@ void USoraCampaignDirector::HandleFailure(SoraBeatRules::ERetry Outcome,const FS
         break;
     }
     M.bDefeated=true;
+    ClearDialogue();
     const bool bFell=Event==TEXT("player_died");
     M.Notice=ChapterId==0?TEXT("立合いはここまで。Enter で稽古をやり直そう。")
         :bFell?TEXT("仲間は、あなたを待っている。Enter で最後の復旧記録から再開する。")
@@ -1297,16 +1264,16 @@ const FSoraDialogueCue* USoraCampaignDirector::CurrentDialogueCue() const
                 return &Chapter.Dialogue[Trigger.Lines[0]];
         return nullptr;
     }
-    return M.IsPlaying()&&!Queue.IsEmpty()?&Chapter.Dialogue[Queue[0]]:nullptr;
+    return !Queue.IsEmpty()?&Chapter.Dialogue[Queue[0].Line]:nullptr;
 }
 TArray<FSoraSubtitle> USoraCampaignDirector::QueuedSubtitles() const
 {
     TArray<FSoraSubtitle> Result;
     const FSoraChapter* Chapter=ActiveChapter();
     if(!Chapter||!Mode().bCampaign) return Result;
-    for(const int32 Line:Queue)
+    for(const FQueuedLine& Line:Queue)
     {
-        const FSoraDialogueCue& Cue=Chapter->Dialogue[Line];
+        const FSoraDialogueCue& Cue=Chapter->Dialogue[Line.Line];
         FSoraSubtitle& Row=Result.AddDefaulted_GetRef();
         Row.LineId=Cue.Id; Row.Japanese=Cue.Japanese; Row.English=Cue.English; Row.Seconds=Cue.DurationSeconds;
         if(const FSoraDialogueSpeaker* Speaker=FSoraCatalog::Get().DialogueSpeaker(Cue.SpeakerId))
@@ -1873,6 +1840,7 @@ void USoraCampaignDirector::PlayerKilled()
         return;
     }
     M.bDefeated=true;
+    ClearDialogue();
     M.Notice=TEXT("仲間は、あなたを待っている。Enter で最後の復旧記録から再開する。");
     M.NoticeEnglish=TEXT("The resistance remembers. Press Enter to retry from the latest checkpoint.");
 }
