@@ -1,6 +1,26 @@
 """Chapter eight's physical spiral. Proxy collision, independent of final art."""
 
-VERTICES = [(-1386, 0), (-693, -1200), (693, -1200), (1386, 0), (693, 1200), (-693, 1200)]
+import math
+
+WIDTH_CM, VOID_CM, HEIGHT_CM = 400, 1400, 2700
+APOTHEM = (VOID_CM + WIDTH_CM) / 2
+RADIUS = 2 * APOTHEM / math.sqrt(3)
+SIDES = round(HEIGHT_CM * 12 / RADIUS)
+SUBDIVISIONS = 3
+LANDINGS = [level * SIDES for level in range(4)]
+VERTICES = [(-RADIUS, 0), (-RADIUS/2, -APOTHEM), (RADIUS/2, -APOTHEM),
+            (RADIUS, 0), (RADIUS/2, APOTHEM), (-RADIUS/2, APOTHEM)]
+
+
+def route():
+    points = []
+    for n in range(SIDES * SUBDIVISIONS + 1):
+        edge = (-SIDES + n // SUBDIVISIONS) % 6
+        a, b = VERTICES[edge], VERTICES[(edge + 1) % 6]
+        f = (n % SUBDIVISIONS) / SUBDIVISIONS
+        points.append([round(a[0] + (b[0]-a[0])*f), round(a[1] + (b[1]-a[1])*f),
+                       round(n * HEIGHT_CM / (SIDES * SUBDIVISIONS))])
+    return points
 
 
 def place_spire(beats, records, zones, fail):
@@ -17,23 +37,24 @@ def place_spire(beats, records, zones, fail):
         fail(beat['id'], 'spire requires its authored level-specific wave contract')
     row, lift = by_id['ch08.b10'], by_id['ch08.b11']
     x, y = lift['anchor']
-    ramp = [[x + VERTICES[n % 6][0], y + VERTICES[n % 6][1], (n * 2700 + 12) // 24] for n in range(25)]
-    spawns = [[ramp[8][0] + dx, ramp[8][1] + dy, 900] for dx, dy in [(-100,-100),(-100,100),(100,-100),(100,100)]]
-    spawns += [[x-693,y+1200,900]]
-    spawns += [[ramp[16][0]+dx,ramp[16][1]+dy,1800] for dx,dy in [(-100,-100),(-100,100),(100,-100),(100,100)]]
+    ramp = [[x+px,y+py,z] for px,py,z in route()]
+    l2, l3, l4 = (ramp[n] for n in LANDINGS[1:])
+    spawns = [[l2[0] + dx, l2[1] + dy, 900] for dx, dy in [(-100,-100),(-100,100),(100,-100),(100,100)]]
+    spawns += [[2*x-l2[0],2*y-l2[1],900]]
+    spawns += [[l3[0]+dx,l3[1]+dy,1800] for dx,dy in [(-100,-100),(-100,100),(100,-100),(100,100)]]
     spawns += [[x+dx,y+dy,2100] for dx,dy in [(-300,-300),(300,-300),(-300,300),(300,300)]]
-    spawns += [[x-1000,y,2700],[x-1386,y-100,2700],[x-1386,y+100,2700]]
-    row['spire'] = {'center': [x,y], 'width_cm': 400, 'void_diameter_cm': 1400, 'ramp': ramp, 'spawns': spawns}
-    row['entry'] = [x-1500,y, -60]
-    row['anchor'] = [x-1386,y]
+    spawns += [[x-800,y,2700],[l4[0],y-100,2700],[l4[0],y+100,2700]]
+    row['spire'] = {'center': [x,y], 'width_cm': WIDTH_CM, 'void_diameter_cm': VOID_CM, 'landing_nodes': LANDINGS, 'ramp': ramp, 'spawns': spawns}
+    row['entry'] = ramp[0][:2] + [-120]
+    row['anchor'] = ramp[0][:2]
     row['spawns'] = [p[:2] for p in spawns]
     row['patrols'] = []
-    row['exit'] = {'center': [x-1100,y], 'size': [400,300], 'floor_cm': 2700}
+    row['exit'] = {'center': [x-800,y], 'size': [300,300], 'floor_cm': 2700}
     for volume in row['volumes']:
-        level = 16 if volume['event'] == 'volume_enter:vol_spire_L3' else 8
+        level = LANDINGS[2] if volume['event'] == 'volume_enter:vol_spire_L3' else LANDINGS[1]
         volume.update(center=ramp[level][:2], size=[500,500], floor_cm=ramp[level][2])
     for n, ally in enumerate(row['fieldcraft']['allies']):
-        ally['at'] = [x-1450+(n%2)*140,y-150+(n//2)*150]
+        ally['at'] = [ramp[0][0]-100+(n%2)*140,ramp[0][1]-100+(n//2)*150]
     zone = zones[row['zone']]
     zone.rect = (x-1900,y-1900,x+1900,y+2600)
     zone.entry = tuple(row['entry'])

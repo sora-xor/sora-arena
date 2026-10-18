@@ -4,6 +4,7 @@
 #include "SoraFieldcraftRules.h"
 #include "SoraMountRules.h"
 #include "SoraRegistry.h"
+#include "SoraSpireRules.h"
 
 struct FSoraWeapon
 {
@@ -525,7 +526,7 @@ struct FSoraSpireSpace
     FVector2D Center = FVector2D::ZeroVector;
     TArray<FVector> Ramp;
     TArray<FVector> Spawns;
-    bool Enabled() const { return Ramp.Num()==25; }
+    bool Enabled() const { return Ramp.Num()==SoraSpireRules::NodeCount; }
 };
 struct FSoraSummitSpace
 {

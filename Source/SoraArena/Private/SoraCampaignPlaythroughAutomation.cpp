@@ -1004,7 +1004,7 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 if(Beat.Space.Spire.Enabled())
                 {
                     const bool AtL3=Player(State)->GetActorLocation().Z>1700.f;
-                    if(!SoraSpireAutomation::Climb(*State.World,Beat.Space,AtL3?17:0,AtL3?24:16))
+                    if(!SoraSpireAutomation::Climb(*State.World,Beat.Space,AtL3?SoraSpireRules::Landing(2)+1:0,AtL3?SoraSpireRules::Landing(3):SoraSpireRules::Landing(2)))
                         return Fail(Test,State,TEXT("The spiral must be climbed through its physical route"));
                     if(AtL3&&!SoraLiftAutomation::Walk(*State.World,FVector(Beat.Space.Exit.Center,2700))) return false;
                 }

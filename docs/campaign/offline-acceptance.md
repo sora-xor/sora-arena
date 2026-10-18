@@ -266,8 +266,11 @@ presentation are outside this stamina/input slice.
 
 ### Chapter eight: spiral traversal (runtime qualification pending)
 
-Chapter 08 spiral source slice: the b10 collision proxy is a four-turn,
-400 cm wide hexagonal ramp through 0/900/1800/2700 cm landings. L2 has a
+Chapter 08 spiral source slice: the b10 collision proxy derives its hexagon
+from a 1400 cm clear inner aperture and 400 cm ramp width. The approximately
+1:12 grade derives 31 hexagon sides (5 1/6 turns), with four exact landings
+at 0/900/1800/2700 cm. Host/native route parity and loader checks measure
+the actual aperture and grade, rather than only validating metadata. L2 has a
 200 cm gantry and a reachable far marksman post; L4 connects to the parked
 lift. Spawn posts use real floor heights, and the L3 wave volume checks Z.
 All sixteen authored enemies must still be cleared, then the player must
@@ -278,7 +281,9 @@ the lower-floor combat-clear gate. It is authored but has not been run in
 Unreal by this source lane. The same route is used by the full playthrough
 fixture. These are functional collision proxies awaiting Claude's art;
 the auditor's L3 shortcut shutter and authored supply cache behavior are
-still open, as are visual windows, lighting and spire dressing.
+still open, as are visual windows, lighting and spire dressing. Companion
+fighters/guides still use direct 2D steering and melee reach; their vertical
+follow/combat behavior needs a separate implementation and runtime check.
 
 
 Chapter 08 summit traversal source slice: the gallery north opening feeds a
