@@ -3,6 +3,7 @@
 #include "SoraDojoRules.h"
 #include "SoraMountRules.h"
 #include "SoraCrankInputRules.h"
+#include "SoraRhythmRules.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -813,6 +814,80 @@ static void TestDecayFrames()
     std::cout << "hold and crank decay cost the same at every frame rate\n";
 }
 
+static void TestRhythmManufacture()
+{
+    FTask Tasks[MaxBeats]={}; ChapterTasks[4](Tasks);
+    for(int Beat:{7,10})
+    {
+        const FTask Task=Tasks[Beat];
+        const FStep Step=Task.Steps[1];
+        Expect(Step.PhraseStrikes==(Beat==7?8:1)&&Step.PhrasePass==(Beat==7?6:1),"phrase/pick contract lost");
+        auto State=Begin(Task,"rhythm manufacture"); State.Step=1;
+        SoraRhythmRules::FState Cue; SoraRhythmRules::Begin(Cue,State,Task);
+        const auto Phrase=[&](int Hits)
+        {
+            const int Before=State.StepDone;
+            for(int N=0;N<Step.PhraseStrikes;++N)
+            {
+                Tick(State,Task,At(Cue.DueMs-State.ElapsedMs));
+                if(N<Hits) Expect(SoraRhythmRules::Strike(Cue,State,Task),"on-beat cue failed");
+                if(N==0&&Hits>0) Expect(!SoraRhythmRules::Strike(Cue,State,Task),"one cue counted twice");
+                Expect(State.StepDone==Before,"six hits must not finish an eight-strike phrase early");
+                Tick(State,Task,At(Step.ToleranceMs+1));
+                SoraRhythmRules::Tick(Cue,State,Task,false);
+            }
+        };
+        Phrase(Step.PhrasePass);
+        Expect(State.StepDone==1,"a full passing phrase/pick must award one unit");
+        Phrase(Step.PhrasePass-1);
+        Expect(State.StepDone==1,"failed phrase/pick must preserve completed work");
+        Phrase(Step.PhraseStrikes);
+        Expect(State.StepDone==2,"the failed phrase/pick must be repeatable");
+        for(int Difficulty:{0,1,2})
+        {
+            FTask Effective=Task; ApplyRhythmDifficulty(Effective,Difficulty);
+            const int Window=Effective.Steps[1].ToleranceMs;
+            Expect(Window==(Difficulty==0?Step.ToleranceMs*3/2:Step.ToleranceMs)&&Effective.Steps[1].BeatMs==Step.BeatMs,"Easy tolerance must widen without slowing cues");
+            State=Begin(Effective,"rhythm tolerance");State.Step=1;SoraRhythmRules::Begin(Cue,State,Effective);
+            Tick(State,Effective,At(Step.BeatMs+Window));
+            Expect(SoraRhythmRules::Strike(Cue,State,Effective),"inclusive late tolerance rejected");
+            SoraRhythmRules::Begin(Cue,State,Effective); Tick(State,Effective,At(Step.BeatMs+Window+1));
+            Expect(!SoraRhythmRules::Strike(Cue,State,Effective),"late response outside tolerance accepted");
+        }
+        for(int FrameMs:{1,16,17,33,100,250,500})
+        {
+            FTask Long=Task; Long.Steps[1].Count=99;
+            State=Begin(Long,"rhythm assist");State.Step=1;SoraRhythmRules::Begin(Cue,State,Long);
+            const int StopAt=10*Step.PhraseStrikes*Step.BeatMs+Step.ToleranceMs+1;
+            int Units=0,Fractions=0;
+            while(State.ElapsedMs<StopAt)
+            {
+                Tick(State,Long,At((FrameMs<StopAt-State.ElapsedMs?FrameMs:StopAt-State.ElapsedMs)));
+                const auto Result=SoraRhythmRules::Tick(Cue,State,Long,true);
+                if(Result==EStroke::Counted) ++Units;
+                if(Result==EStroke::Credited) ++Fractions;
+            }
+            Expect(State.StepDone==7&&State.RhythmCarry==0&&Units==7&&Fractions==3,"ten assisted phrases/picks must earn exactly seven units, with no false completion events for fractional credit");
+            const int Before=State.StepDone; Cue={};
+            Tick(State,Long,At(5000)); SoraRhythmRules::Tick(Cue,State,Long,true);
+            Expect(State.StepDone==Before,"released/interrupted assist must not run in the background");
+            State=Begin(Long,"rhythm checkpoint");
+            Expect(State.RhythmCarry==0&&State.StepDone==0,"checkpoint reset must discard partial assisted credit");
+        }
+    }
+    const FTask Bellows=Tasks[5]; FTask Easy=Bellows;ApplyRhythmDifficulty(Easy,0);
+    Expect(Easy.MinTurnMs==702&&Easy.MaxTurnMs==1481,"Easy bellows rate band must expand by 1.5 about its midpoint");
+    auto State=Begin(Bellows,"bellows assist");
+    for(int N=0;N<10;++N)
+    {
+        Tick(State,Bellows,At(1000)); const auto Turned=PlayerTurn(State,Bellows,2,700);
+        Expect(Turned.Cost==2&&Turned.Result==ETurn::InBand,"assisted bellows cadence must stay affordable and in band");
+    }
+    Expect(State.Progress==7000,"ten assisted bellows cycles must earn seven turns");
+    const auto Before=State; Tick(State,Bellows,At(1000));
+    Expect(PlayerTurn(State,Bellows,1,700).Result==ETurn::Exhausted&&State.Progress==Before.Progress,"assist must not bypass stamina");
+}
+
 static void TestBellowsTreads()
 {
     using namespace SoraCrankInputRules;
@@ -1358,6 +1433,18 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
         if (GoalMet(State, Task))
             return Tick(State, Task, At(500));
         const FStep& Current = Task.Steps[State.Step];
+        if(Current.PhraseStrikes>0)
+        {
+            SoraRhythmRules::FState Cue; SoraRhythmRules::Begin(Cue,State,Task);
+            for(int Strike=0;Strike<Current.PhraseStrikes;++Strike)
+            {
+                Tick(State,Task,At(Cue.DueMs-State.ElapsedMs));
+                Expect(SoraRhythmRules::Strike(Cue,State,Task),Where+": authored response missed");
+                Tick(State,Task,At(Current.ToleranceMs+1));
+                SoraRhythmRules::Tick(Cue,State,Task,false);
+            }
+            return true;
+        }
         Tick(State, Task, At(Current.BeatMs > 0 && State.StepDone > 0 ? Current.BeatMs : 400));
         Expect(Stroke(State, Task) != EStroke::Missed, Where + ": an on-beat stroke missed");
         return true;
@@ -1779,6 +1866,7 @@ int main()
     TestProduction();
     TestDecayFrames();
     TestCooperativeCranks();
+    TestRhythmManufacture();
     TestBellowsTreads();
     TestPlayerCranks();
     TestRideExploreCollectible();

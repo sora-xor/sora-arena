@@ -245,6 +245,8 @@ void USoraFrontEnd::BuildSettingsRows()
         RowList.Add(Difficulty);
         RowList.Add(SwitchRow(EAction::AutoSteer, NSLOCTEXT("SoraArena.Settings", "AutoSteer", "騎乗の自動誘導"), Settings->AutoSteer(), OnText(), OffText(),
             NSLOCTEXT("SoraArena.Settings", "AutoSteer.Hint", "騎乗の場面で、馬が道筋をたどる。歩様と狙いは自分で操る。")));
+        RowList.Add(SwitchRow(EAction::RhythmAssist, NSLOCTEXT("SoraArena.Settings", "RhythmAssist", "調子合わせの補助"), Settings->RhythmAssist(), OnText(), OffText(),
+            NSLOCTEXT("SoraArena.Settings", "RhythmAssist.Hint", "第五章の踏鞴・相槌・空引きで、操作を押し続けると合図に合わせて働く。生産の速さは七割。踏鞴は体力を使う。")));
         RowList.Add(SwitchRow(EAction::HoldToCrank, NSLOCTEXT("SoraArena.Settings", "HoldToCrank", "押し続けて歯車を回す"), Settings->HoldToCrank(), OnText(), OffText(),
             NSLOCTEXT("SoraArena.Settings", "HoldToCrank.Hint", "第七章の制御輪で、操作を押し続けると毎秒〇・六回の調子で回す。体力を使い、手を離すか攻撃を受けると止まる。")));
         RowList.Add(SwitchRow(EAction::VolleyAutoOrder, NSLOCTEXT("SoraArena.Settings", "VolleyAutoOrder", "斉射の自動号令"), Settings->VolleyAutoOrder(),
@@ -407,6 +409,9 @@ bool USoraFrontEnd::AdjustSetting(const SoraUI::FRow& Row, int32 Direction)
         break;
     case EAction::AutoSteer:
         Settings.SetAutoSteer(!Settings.AutoSteer());
+        break;
+    case EAction::RhythmAssist:
+        Settings.SetRhythmAssist(!Settings.RhythmAssist());
         break;
     case EAction::HoldToCrank:
         Settings.SetHoldToCrank(!Settings.HoldToCrank());

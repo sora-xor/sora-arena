@@ -1559,37 +1559,49 @@
       "kind": "heat",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "heat",
       "count": 6,
       "beat_ms": 2000,
-      "tolerance_ms": 500
+      "tolerance_ms": 500,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "bend",
       "count": 6,
       "beat_ms": 700,
-      "tolerance_ms": 150
+      "tolerance_ms": 150,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "paste",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "assemble",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "inspect",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      }
     ],
     "targets": [],

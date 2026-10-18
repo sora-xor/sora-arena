@@ -120,7 +120,7 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
         Settings->SpeakerNames() && !Settings->SoundCaptions());
     TestTrue(TEXT("Defaults: standard telegraphs, held guard and sprint, normal difficulty, no auto-steer, the volley auto-order, flashes and full shake"),
         Settings->TelegraphPalette() == EPalette::Standard && !Settings->ToggleGuard() && !Settings->ToggleSprint() &&
-        Settings->CampaignDifficulty() == EDifficulty::Normal && !Settings->AutoSteer() && !Settings->HoldToCrank() && Settings->VolleyAutoOrder() &&
+        Settings->CampaignDifficulty() == EDifficulty::Normal && !Settings->AutoSteer() && !Settings->HoldToCrank() && !Settings->RhythmAssist() && Settings->VolleyAutoOrder() &&
         !Settings->ReduceFlashing() && Settings->CameraShake() == 100);
 
     // Everything below with the pad alone.
@@ -172,6 +172,8 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
     Scope.Key(Pad.Right);
     Scope.FocusOn(Pad, EAction::AutoSteer);
     Scope.Key(Pad.Accept);
+    Scope.FocusOn(Pad, EAction::RhythmAssist);
+    Scope.Key(Pad.Accept);
     Scope.FocusOn(Pad, EAction::HoldToCrank);
     Scope.Key(Pad.Accept);
     Scope.FocusOn(Pad, EAction::VolleyAutoOrder);
@@ -183,7 +185,7 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
         Scope.Key(Pad.Left);
     TestTrue(TEXT("Accessibility: red-green telegraphs, toggled guard and sprint, easy, auto-steer, no volley auto-order, reduced flashing, 70% shake"),
         Settings->TelegraphPalette() == EPalette::RedGreen && Settings->ToggleGuard() && Settings->ToggleSprint() &&
-        Settings->CampaignDifficulty() == EDifficulty::Easy && Settings->AutoSteer() && Settings->HoldToCrank() && !Settings->VolleyAutoOrder() &&
+        Settings->CampaignDifficulty() == EDifficulty::Easy && Settings->AutoSteer() && Settings->HoldToCrank() && Settings->RhythmAssist() && !Settings->VolleyAutoOrder() &&
         Settings->ReduceFlashing() && Settings->CameraShake() == 70);
     Scope.Key(Pad.Back);
     Scope.Key(Pad.Back);
@@ -200,7 +202,7 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
         !Scope.Mode()->bEnglishSubtitles && Settings->SubtitleSize() == ESubtitleSize::ExtraLarge && !Settings->SpeakerNames() &&
         Settings->SoundCaptions());
     TestTrue(TEXT("Accessibility settings survive"), Settings->TelegraphPalette() == EPalette::RedGreen && Settings->ToggleGuard() &&
-        Settings->ToggleSprint() && Settings->CampaignDifficulty() == EDifficulty::Easy && Settings->AutoSteer() && Settings->HoldToCrank() && !Settings->VolleyAutoOrder() &&
+        Settings->ToggleSprint() && Settings->CampaignDifficulty() == EDifficulty::Easy && Settings->AutoSteer() && Settings->HoldToCrank() && Settings->RhythmAssist() && !Settings->VolleyAutoOrder() &&
         Settings->ReduceFlashing() && Settings->CameraShake() == 70);
     Scope.Key(EKeys::F10);
     TestTrue(TEXT("F10 toggles English subtitles and saves them"), Scope.Mode()->bEnglishSubtitles && Settings->EnglishSubtitles());
@@ -230,7 +232,7 @@ bool FSoraSettingsPersistTest::RunTest(const FString& Parameters)
         return false;
     Settings = Scope.Mode()->Settings();
     return TestTrue(TEXT("A save of another schema is discarded for the defaults"), !Settings->ToggleGuard() && !Settings->ReduceFlashing() &&
-        Settings->EnglishSubtitles() && Settings->CampaignDifficulty() == EDifficulty::Normal && !Settings->AutoSteer() && !Settings->HoldToCrank() &&
+        Settings->EnglishSubtitles() && Settings->CampaignDifficulty() == EDifficulty::Normal && !Settings->AutoSteer() && !Settings->HoldToCrank() && !Settings->RhythmAssist() &&
         Settings->VolleyAutoOrder());
 }
 

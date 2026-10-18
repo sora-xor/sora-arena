@@ -201,7 +201,7 @@ def task_fields(task):
             fields.append(f"T.DropoffCapacities[{index}] = {task['dropoff_capacity'][name]};")
     fields.append(f"T.StepCount = {len(task['steps'])};")
     for index, step in enumerate(task["steps"]):
-        fields.append(f"T.Steps[{index}] = {{{step['count']}, {step['beat_ms']}, {step['tolerance_ms']}}};")
+        fields.append(f"T.Steps[{index}] = {{{step['count']}, {step['beat_ms']}, {step['tolerance_ms']}, {step['phrase_strikes']}, {step['phrase_pass']}}};")
     fields.append(f"T.TargetCount = {len(task['targets'])};")
     for index, target in enumerate(task["targets"]):
         fields.append(f"T.TargetHp[{index}] = {target['hp']};")

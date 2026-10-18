@@ -1897,25 +1897,33 @@
       "kind": "heat",
       "count": 4,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "hammer_rhythm",
       "count": 4,
       "beat_ms": 600,
-      "tolerance_ms": 90
+      "tolerance_ms": 90,
+      "phrase_strikes": 8,
+      "phrase_pass": 6
      },
      {
       "kind": "quench",
       "count": 4,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "inspect",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      }
     ],
     "targets": [],
@@ -2079,25 +2087,33 @@
       "kind": "inspect",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "assemble",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "assemble",
       "count": 2,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "inspect",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      }
     ],
     "targets": [],
@@ -2513,19 +2529,25 @@
       "kind": "inspect",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "weave_rhythm",
       "count": 24,
       "beat_ms": 750,
-      "tolerance_ms": 120
+      "tolerance_ms": 120,
+      "phrase_strikes": 1,
+      "phrase_pass": 1
      },
      {
       "kind": "inspect",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      }
     ],
     "targets": [],

@@ -1894,6 +1894,18 @@ msgctxt "SoraArena.Registry,Title"
 msgid "生産改帳"
 msgstr "Production registry"
 
+#. Key:	HammerCue
+#: Source/SoraArena/Private/Game/SoraCampaignRhythm.cpp
+msgctxt "SoraArena.Rhythm,HammerCue"
+msgid "〔小鎚の合図〕"
+msgstr "[Small-hammer cue]"
+
+#. Key:	LoomCue
+#: Source/SoraArena/Private/Game/SoraCampaignRhythm.cpp
+msgctxt "SoraArena.Rhythm,LoomCue"
+msgid "〔お絹の掛け声〕"
+msgstr "[Okinu's call]"
+
 #. Key:	AutoSteer
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
 msgctxt "SoraArena.Settings,AutoSteer"
@@ -2235,6 +2247,18 @@ msgstr "Resolution scale (TSR)"
 msgctxt "SoraArena.Settings,ResolutionScale.Hint"
 msgid "TSR がこの割合で描き、画面の解像度へ高精細に戻す。"
 msgstr "TSR renders at this share of the display resolution and upscales to it."
+
+#. Key:	RhythmAssist
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,RhythmAssist"
+msgid "調子合わせの補助"
+msgstr "Rhythm assist"
+
+#. Key:	RhythmAssist.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,RhythmAssist.Hint"
+msgid "第五章の踏鞴・相槌・空引きで、操作を押し続けると合図に合わせて働く。生産の速さは七割。踏鞴は体力を使う。"
+msgstr "Hold Interact for on-beat bellows, hammer and loom work in Chapter 5 at 70% production speed. Bellows still use stamina."
 
 #. Key:	Screen.Accessibility
 #: Source/SoraArena/Private/UI/SoraFrontEnd.cpp

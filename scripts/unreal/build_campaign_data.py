@@ -853,11 +853,24 @@ def normalize_task(beat):
             for index, step in enumerate(block["steps"]):
                 timing = step.get("timing") or {}
                 spot = f"{where}.steps[{index}]"
+                phrase_strikes, phrase_pass = 0, 0
+                if beat["id"] == "ch05.b08" and step["kind"] == "hammer_rhythm":
+                    phrase = beat["ext"].get("hammer_rhythm_phrase")
+                    if (beat["id"] != "ch05.b08" or phrase != {"strikes": 8, "pass_ratio": .75,
+                            "cue": "kozo_kozuchi_tap", "cue_to_strike_ms": 600} or
+                            timing != {"beat_ms": 600, "tolerance_ms": 90} or step["count"] != 4):
+                        fail(spot, "hammer rhythm requires four eight-strike phrases, six hits, and the authored cue timing")
+                    phrase_strikes, phrase_pass = 8, 6
+                elif beat["id"] == "ch05.b11" and step["kind"] == "weave_rhythm":
+                    if beat["id"] != "ch05.b11" or timing != {"beat_ms": 750, "tolerance_ms": 120} or step["count"] != 24:
+                        fail(spot, "weave rhythm requires twenty-four individual picks and the authored cue timing")
+                    phrase_strikes, phrase_pass = 1, 1
                 task["steps"].append({
                     "kind": expect(step["kind"], (str,), f"{spot}.kind"),
                     "count": expect_int(step["count"], f"{spot}.count", 1),
                     "beat_ms": expect_int(timing.get("beat_ms", 0), f"{spot}.beat_ms", 0),
-                    "tolerance_ms": expect_int(timing.get("tolerance_ms", 0), f"{spot}.tolerance_ms", 0)})
+                    "tolerance_ms": expect_int(timing.get("tolerance_ms", 0), f"{spot}.tolerance_ms", 0),
+                    "phrase_strikes": phrase_strikes, "phrase_pass": phrase_pass})
             task["goal"] = "steps"
         elif name == "defend":
             task["targets"] = [{"id": expect(target["actor"], (str,), f"{where}.targets"),
