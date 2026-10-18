@@ -38,7 +38,7 @@ bool FSoraSpireCompanionsTest::RunTest(const FString& Parameters)
     };
     // The hero walks the whole route with ordinary input; every companion
     // follows through swept movement and navigation, with no placement calls.
-    if(!ClearCombat()) return false;
+    if(!TestTrue(TEXT("The fixture clears all prior combat"),ClearCombat())) return false;
     for(int32 Level=1;Level<4;++Level)
     {
         const int32 From=Level==1?0:SoraSpireRules::Landing(Level-1)+1;
@@ -46,8 +46,12 @@ bool FSoraSpireCompanionsTest::RunTest(const FString& Parameters)
         SoraLiftAutomation::HoldThreats(*W.World);
         // Keep the airborne final-wave foes alive until all allies gather.
         // Fighters ignore them; the combat gate keeps staging stable at L4.
-        if(!ClearCombat(Level>=2)) return false;
+        if(!TestTrue(TEXT("The fixture clears ground combat while preserving airborne gate holders"),ClearCombat(Level>=2))) return false;
         for(int32 Frame=0;Frame<1800&&!Gathered();++Frame) if(!W.Tick(1)) return false;
+        if(!Gathered())
+            for(const ASoraCompanion* Ally:Allies)
+                AddInfo(FString::Printf(TEXT("L%d gather: hero=%s ally=%s position=%s down=%d"),Level+1,
+                    *W.Hero()->GetActorLocation().ToString(),*GetNameSafe(Ally),Ally?*Ally->GetActorLocation().ToString():TEXT("missing"),Ally&&Ally->IsDown()));
         if(!TestTrue(*FString::Printf(TEXT("All five allies physically reach L%d"),Level+1),Gathered())) return false;
     }
     TestEqual(TEXT("Following alone does not cross the L4 exit checkpoint"),W.Campaign()->ActiveBeat(),9);
@@ -64,7 +68,7 @@ bool FSoraSpireCompanionsTest::RunTest(const FString& Parameters)
     const FVector Low=Space.Spire.Ramp[L2]+FVector(0,0,90);
     W.Hero()->GetCharacterMovement()->StopMovementImmediately();
     W.Hero()->SetActorLocation(Low+FVector(0,200,0),false,nullptr,ETeleportType::TeleportPhysics);
-    if(!ClearCombat()) return false;
+    if(!TestTrue(TEXT("The fixture clears all prior combat"),ClearCombat())) return false;
     Fighter->GetCharacterMovement()->StopMovementImmediately();
     Fighter->GetCharacterMovement()->SetComponentTickEnabled(false);
     Fighter->SetActorLocation(Low,false,nullptr,ETeleportType::TeleportPhysics);
