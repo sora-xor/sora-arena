@@ -277,7 +277,10 @@ pub struct MeshStats {
     /// New frames refused while this peer held too many early messages.
     pub backpressured: u64,
     pub offers_sent: u64,
+    /// Authenticated channels installed, including replacements after an
+    /// unanswered offer expires or a peer restarts.
     pub handshakes: u64,
+    /// Installations that replaced an already established channel.
     pub replaced_channels: u64,
     /// Openings verified against an assembled set before certification.
     pub early_openings: u64,
@@ -2807,7 +2810,9 @@ mod tests {
         });
         assert_agree(&fixture, &reports);
         for report in &reports {
-            assert_eq!(report.mesh.handshakes, 2);
+            // A delayed durable answer can outlast OFFER_ATTEMPTS and cause
+            // a fresh offer, even without a crash or injected packet loss.
+            assert_eq!(report.mesh.handshakes - report.mesh.replaced_channels, 2);
             assert_eq!(report.mesh.rejected, 0);
             assert!(report.mesh.checkpoints_retained >= 1);
             // Each journal restores to the same terminal outcome.
@@ -2827,6 +2832,87 @@ mod tests {
             restored.session().terminal_outcome().unwrap(),
             reports[1].outcome
         );
+    }
+
+    #[test]
+    fn a_delayed_durable_answer_can_replace_a_channel_before_the_match_starts() {
+        let fixture = fixture(2, 20);
+        let mut initiator =
+            MeshPeer::start(fixture.admission(0, false, Impairment::default())).unwrap();
+        let mut responder =
+            MeshPeer::start(fixture.admission(1, false, Impairment::default())).unwrap();
+
+        initiator.transmit().unwrap();
+        responder.drain(Some(Duration::from_secs(5))).unwrap();
+        let Link::Up {
+            answered: Some(answer),
+            ..
+        } = &responder.remotes[0].link
+        else {
+            panic!("responder did not accept the first offer");
+        };
+        let old_offer = answer.offer;
+        let old_response = answer.response;
+        let first_records = answer.requires;
+        assert_eq!(responder.stats.handshakes, 1);
+        assert_eq!(responder.stats.replaced_channels, 0);
+
+        // Hold the journal writer rather than sleeping: every response must
+        // remain withheld while the initiator exhausts the retry budget.
+        for _ in 0..OFFER_ATTEMPTS {
+            let Link::Offering { sent, .. } = &mut initiator.remotes[0].link else {
+                panic!("initiator used a response before it became durable");
+            };
+            *sent = Some(Instant::now() - OFFER_RETRY);
+            initiator.transmit().unwrap();
+            responder.drain(Some(Duration::from_secs(5))).unwrap();
+            responder.transmit().unwrap();
+            assert_eq!(responder.stats.datagrams_sent, 0);
+            assert_eq!(responder.journal.durable_receipt().records, 0);
+        }
+        assert_eq!(responder.stats.handshakes, 2);
+        assert_eq!(responder.stats.replaced_channels, 1);
+        let Link::Up {
+            answered: Some(answer),
+            ..
+        } = &responder.remotes[0].link
+        else {
+            panic!("responder did not accept the fresh offer");
+        };
+        assert_ne!(answer.offer, old_offer);
+        assert!(answer.requires > first_records);
+        let fresh_offer = answer.offer;
+        let records = responder.journal.receipt().records;
+
+        // Retransmission repeats the current response without installing a
+        // new channel. An obsolete offer cannot undo the replacement, and
+        // the initiator cannot use an answer bound to its expired offer.
+        responder
+            .handle_handshake(0, HandshakeKind::Offer, 0, 1, &fresh_offer)
+            .unwrap();
+        responder
+            .handle_handshake(0, HandshakeKind::Offer, 0, 1, &old_offer)
+            .unwrap();
+        initiator
+            .handle_handshake(0, HandshakeKind::Response, 0, 1, &old_response)
+            .unwrap();
+        assert_eq!(responder.journal.receipt().records, records);
+        assert_eq!(responder.stats.handshakes, 2);
+        assert_eq!(responder.stats.rejected, 1);
+        assert_eq!(initiator.stats.rejected, 1);
+        assert!(matches!(initiator.remotes[0].link, Link::Offering { .. }));
+
+        let reports = thread::scope(|scope| {
+            let first = scope.spawn(move || run(initiator).unwrap());
+            let second = run(responder).unwrap();
+            [first.join().unwrap(), second]
+        });
+        assert_agree(&fixture, &reports);
+        for report in &reports {
+            assert_eq!(report.mesh.handshakes - report.mesh.replaced_channels, 1);
+            assert_eq!(report.mesh.rejected, 1);
+        }
+        assert!(reports[1].mesh.replaced_channels >= 1);
     }
 
     #[test]
@@ -2940,9 +3026,12 @@ mod tests {
             reports
         });
         assert_agree(&fixture, &reports);
-        assert_eq!(reports[2].mesh.handshakes, 2);
+        assert_eq!(
+            reports[2].mesh.handshakes - reports[2].mesh.replaced_channels,
+            2
+        );
         for report in &reports[..2] {
-            assert_eq!(report.mesh.replaced_channels, 1);
+            assert!(report.mesh.replaced_channels >= 1);
         }
     }
 
@@ -3335,10 +3424,13 @@ mod tests {
         assert_eq!(lost, [2, 4]);
         // The finished peer journaled the fresh offer and resent its final
         // signature, so both hold the final certified checkpoint.
-        assert_eq!(first.mesh.handshakes, 2);
-        assert_eq!(first.mesh.replaced_channels, 1);
+        assert_eq!(first.mesh.handshakes - first.mesh.replaced_channels, 1);
+        assert!(first.mesh.replaced_channels >= 1);
         assert_eq!(first.mesh.rejected, 0);
-        assert_eq!(restarted.mesh.handshakes, 1);
+        assert_eq!(
+            restarted.mesh.handshakes - restarted.mesh.replaced_channels,
+            1
+        );
         assert_agree(&fixture, &[first, restarted]);
     }
 
