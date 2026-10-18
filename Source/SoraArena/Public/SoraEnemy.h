@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "SoraCharacterBase.h"
 #include "SoraCombatRules.h"
+#include "SoraFieldcraftRules.h"
 #include "SoraStealthRules.h"
 #include "SoraEnemy.generated.h"
 enum class ESoraEnemyCue : uint8;
@@ -23,6 +24,13 @@ struct FSoraEnemyTuning
     // Negative keeps the archetype's value; a zero hearing is deaf.
     int32 DarkSightCm = -1;
     int32 HearingCm = -1;
+    // How readily it grows suspicious, x1000 of the reference; zero keeps the archetype's.
+    int32 SuspicionPermille = 0;
+    // At a post: the arc it sweeps and the ms a sweep takes (0: the brain's
+    // own look about), or how often it turns about (0: never).
+    int32 ScanDegrees = 0;
+    int32 ScanMs = 0;
+    int32 TurnMs = 0;
     // A scripted opponent that takes no damage (ch08's sweep-only walkers).
     bool bInvulnerable = false;
 };
@@ -71,6 +79,10 @@ public:
     FName ArchetypeId() const;
     FName VariantId() const { return Variant; }
     const SoraStealthRules::FPerception& Perception() const { return Senses; }
+    // How it watches from a post (FSoraEnemyTuning's scan and turn).
+    int32 PostScanDegrees() const { return ScanDegrees; }
+    int32 PostScanMs() const { return ScanMs; }
+    int32 PostTurnMs() const { return TurnMs; }
     bool IsBladeRetainer() const;
     bool IsDojoPupil() const { return bDojoPupil; }
     bool IsFlying() const;
@@ -117,7 +129,12 @@ public:
     void SetSummoner(ASoraBoss* Boss);
     ASoraBoss* Summoner() const;
     bool IsShieldOpen() const;
+    // A tower shield on its arm (enemies.json shield).
+    bool HasShield() const;
     int32 BarrierHealth() const { return BarrierMilli / 1000; }
+    // The kusarigama's weighted chain caught it (SoraFieldcraftRules::Snare):
+    // a blade bound, a shield's rim pulled aside, a drone dragged down.
+    void Snared(SoraFieldcraftRules::ESnare Kind, AActor* By);
 
     // 活人剣. A knocked-down conscript's collar can be cut within its window;
     // SoraDamage::Resolve calls Subdue for a blow that would kill it.
@@ -178,6 +195,9 @@ private:
     FName Variant;
     const FSoraEnemyVariant* VariantData = nullptr;
     SoraStealthRules::FPerception Senses = SoraStealthRules::Standard();
+    int32 ScanDegrees = 0;
+    int32 ScanMs = 0;
+    int32 TurnMs = 0;
     bool bInvulnerable = false;
     TWeakObjectPtr<ASoraBoss> SummonedBy;
     // The attack under way.

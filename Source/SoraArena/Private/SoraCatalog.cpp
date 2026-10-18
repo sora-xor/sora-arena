@@ -66,7 +66,8 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Nullable(O, TEXT("closing_event"), Beat.ClosingEvent) || !Nullable(O, TEXT("exit_event"), Beat.ExitEvent) ||
         !Nullable(O, TEXT("opponent"), Opponent) || !O.TryGetBoolField(TEXT("sparring"), Beat.bSparring) ||
         !Strings(Rows(O, TEXT("phase_events")), Beat.PhaseEvents) ||
-        !Int(O, TEXT("carry_speed_permille"), T.CarrySpeedPermille) ||
+        !Int(O, TEXT("carry_speed_permille"), T.CarrySpeedPermille) || !Int(O, TEXT("target_loss_limit"), T.TargetLossLimit) ||
+        !Int(O, TEXT("pickup_hold_ms"), T.PickupHoldMs) || T.PickupHoldMs < 0 ||
         !WeaponMask(Rows(O, TEXT("carry_weapons")), T.CarryWeaponsMask))
         return false;
     if (!TaskName.IsEmpty() && !Tasks.Contains(TaskName)) return false;
@@ -74,7 +75,7 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
     // A capture names the interaction that binds its boss, and a carry what
     // it moves; nothing else does.
     if ((T.Defeat == EDefeat::Capture) == Beat.CaptureEvent.IsEmpty() ||
-        (T.Task == ETask::Carry) == Beat.CarryItem.IsEmpty())
+        (T.Task == ETask::Carry) == Beat.CarryItem.IsEmpty() || (T.PickupHoldMs > 0 && T.Task != ETask::Carry))
         return false;
     const FJsonRows* RepRows = Rows(O, TEXT("form_reps"));
     if (!RepRows || RepRows->Num() != 4) return false;
@@ -87,9 +88,52 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
     T.LessonMask = static_cast<unsigned>(LessonMask);
     T.Pickups = Beat.Pickups.Num(); T.Dropoffs = Beat.Dropoffs.Num();
     Beat.Opponent = Opponent.IsEmpty() ? NAME_None : FName(*Opponent);
-    TArray<FString> GuardTypes;
-    if (!Strings(Rows(O, TEXT("guards")), GuardTypes)) return false;
-    for (const FString& Guard : GuardTypes) Beat.Guards.Add(FName(*Guard));
+    const FJsonRows* HoldRows = Rows(O, TEXT("objective_hold_ms"));
+    if (!HoldRows || HoldRows->Num() != Beat.Objectives.Num()) return false;
+    for (const auto& Row : *HoldRows)
+    {
+        double Number = 0; int32 Hold = 0;
+        if (!Row.IsValid() || !Row->TryGetNumber(Number) || !Whole(Number, Hold) || Hold < 0) return false;
+        Beat.ObjectiveHoldMs.Add(Hold);
+    }
+    const FJsonRows* GuardRows = Rows(O, TEXT("guards"));
+    if (!GuardRows) return false;
+    for (const auto& Row : *GuardRows)
+    {
+        const auto G = Row.IsValid() ? Row->AsObject() : nullptr;
+        FSoraGuard Guard; FString Type;
+        if (!G || !Str(*G, TEXT("type"), Type) || !Int(*G, TEXT("sight_cm"), Guard.SightCm) || Guard.SightCm < 0 ||
+            !Int(*G, TEXT("dark_sight_cm"), Guard.DarkSightCm) || Guard.DarkSightCm < -1 ||
+            !Int(*G, TEXT("view_deg"), Guard.ViewDegrees) || Guard.ViewDegrees < 0 || Guard.ViewDegrees > 360 ||
+            !Int(*G, TEXT("hearing_cm"), Guard.HearingCm) || Guard.HearingCm < -1 ||
+            !Int(*G, TEXT("suspicion_permille"), Guard.SuspicionPermille) || Guard.SuspicionPermille < 0 ||
+            Guard.SuspicionPermille > 1000 || !G->TryGetBoolField(TEXT("post"), Guard.bPost) ||
+            !Int(*G, TEXT("scan_deg"), Guard.ScanDegrees) || Guard.ScanDegrees < 0 || Guard.ScanDegrees > 360 ||
+            !Int(*G, TEXT("scan_ms"), Guard.ScanMs) || (Guard.ScanDegrees > 0) != (Guard.ScanMs > 0) ||
+            !Int(*G, TEXT("turn_ms"), Guard.TurnMs) || Guard.TurnMs < 0 || ((Guard.ScanDegrees > 0 || Guard.TurnMs > 0) && !Guard.bPost))
+            return false;
+        Guard.Type = FName(*Type);
+        Beat.Guards.Add(Guard);
+    }
+    // A zone's (or guarded work's) authored rules; null elsewhere.
+    const TSharedPtr<FJsonValue> StealthValue = O.TryGetField(TEXT("stealth"));
+    if (!StealthValue.IsValid()) return false;
+    Beat.bStealth = StealthValue->Type != EJson::Null;
+    if (Beat.bStealth)
+    {
+        const auto S = StealthValue->Type == EJson::Object ? StealthValue->AsObject() : nullptr;
+        FSoraStealthRulesData& Z = Beat.Stealth;
+        if (!S || !Int(*S, TEXT("rate_permille"), Z.RatePermille) || Z.RatePermille < 100 || Z.RatePermille > 4000 ||
+            !Int(*S, TEXT("suspicious_at_permille"), Z.SuspiciousAtPermille) || Z.SuspiciousAtPermille < 50 ||
+            Z.SuspiciousAtPermille > 950 || !Int(*S, TEXT("search_ms"), Z.SearchMs) || Z.SearchMs < 1000 ||
+            Z.SearchMs > 120000 || !Int(*S, TEXT("wary_permille"), Z.WaryPermille) || Z.WaryPermille < 1000 ||
+            Z.WaryPermille > 4000 || !S->TryGetBoolField(TEXT("rear_takedowns"), Z.bRearTakedowns) ||
+            !S->TryGetBoolField(TEXT("lethal_default"), Z.bLethalDefault) || !S->TryGetBoolField(TEXT("bodies"), Z.bBodies) ||
+            !S->TryGetBoolField(TEXT("drag"), Z.bDrag) || !Nullable(*S, TEXT("carryover_to"), Z.CarryoverTo))
+            return false;
+    }
+    // Every stealth zone and all work under guard carry their rules; nothing else does.
+    if (Beat.bStealth != (T.Type == EType::StealthZone || T.PauseWhenSeen)) return false;
 
     const FJsonRows* WaveRows = Rows(O, TEXT("waves"));
     if (!WaveRows || WaveRows->Num() > MaxWaves) return false;
@@ -112,7 +156,7 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
             const auto G = Row.IsValid() ? Row->AsObject() : nullptr;
             FSoraWaveGroup Group; FString Type;
             if (!G || !Str(*G, TEXT("type"), Type) || !Int(*G, TEXT("count"), Group.Count) || Group.Count < 1 ||
-                !G->TryGetBoolField(TEXT("lethal"), Group.bLethal))
+                !G->TryGetBoolField(TEXT("lethal"), Group.bLethal) || !G->TryGetBoolField(TEXT("invulnerable"), Group.bInvulnerable))
                 return false;
             Group.Type = FName(*Type);
             (Group.bLethal ? Lethal : Nonlethal) += Group.Count;
@@ -526,6 +570,11 @@ bool FSoraCatalog::LoadCampaign()
             if (Beat.Is(SoraBeatRules::EType::Dialogue) &&
                 (!LineRefs(Rows(*Params, TEXT("lines")), Beat.Lines) || Beat.Lines.Num() != Beat.Task.Count || Beat.LinesEvent.IsEmpty()))
                 return Bad(FString::Printf(TEXT("beat %s has invalid dialogue lines"), *Beat.Id));
+            // Blocking lines are some of the dialogue's own lines.
+            if (const TSharedPtr<FJsonObject> Ext = Child(*O, TEXT("ext")); Ext && Ext->HasField(TEXT("blocking_lines")) &&
+                (!LineRefs(Rows(*Ext, TEXT("blocking_lines")), Beat.BlockingLines) ||
+                 Beat.BlockingLines.ContainsByPredicate([&](int32 Line) { return !Beat.Lines.Contains(Line); })))
+                return Bad(FString::Printf(TEXT("beat %s has invalid blocking lines"), *Beat.Id));
             if (Beat.Is(SoraBeatRules::EType::ExploreOptional))
             {
                 TArray<FString> Rewards;

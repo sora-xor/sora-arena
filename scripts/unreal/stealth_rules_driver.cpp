@@ -64,6 +64,14 @@ int main()
     assert(HeardPermille(ENoise::Sprint, 800, false) > HeardPermille(ENoise::Footstep, 400, false));
     assert(HeardPermille(ENoise::Footstep, 600, false) == 0);
     assert(IsContinuous(ENoise::Footstep) && IsContinuous(ENoise::Sprint) && !IsContinuous(ENoise::Shot));
+    // A stone's landing carries 14 m and draws a look, less than a blade's clash.
+    assert(NoiseRadiusCm(ENoise::Lure) == 1400 && !IsContinuous(ENoise::Lure));
+    // A drop off a roof thuds 9 m around, as loud as a blade.
+    assert(NoiseRadiusCm(ENoise::Landing) == 900 && !IsContinuous(ENoise::Landing) &&
+        NoisePeakPermille(ENoise::Landing) == NoisePeakPermille(ENoise::Melee));
+    assert(HeardPermille(ENoise::Lure, 600, false) == 600 && HeardPermille(ENoise::Lure, 1401, false) == 0);
+    assert(HeardPermille(ENoise::Lure, 600, false) * AwarenessScale >= SuspiciousAt &&
+        HeardPermille(ENoise::Lure, 600, false) * AwarenessScale < AwarenessMax);
 
     // An unaware guard that sees the hero close by in daylight: suspicious,
     // then straight into combat because it still sees him.

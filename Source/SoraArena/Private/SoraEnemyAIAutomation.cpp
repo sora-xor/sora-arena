@@ -202,8 +202,8 @@ bool FSoraEnemyHearsShotTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("The near sentry cannot see the hero behind it"), NearBrain->CanSee(*Arena.Hero()));
     TestEqual(TEXT("A silent hero leaves the near sentry unaware"), static_cast<int32>(NearBrain->State()), static_cast<int32>(EState::Unaware));
 
-    // The carbine, readied, then one shot fired west, away from both sentries.
-    if (!Arena.World->PressKey(EKeys::One) || !Arena.Tick(30))
+    // The carbine, taken up on the firearms key, then one shot fired west, away from both sentries.
+    if (!Arena.World->TakeUpArm(1) || !Arena.Tick(30))
         return TestTrue(TEXT("The hero draws the carbine"), false);
     TestEqual(TEXT("The sentries ignore a hero changing weapons at rest"), static_cast<int32>(NearBrain->State()), static_cast<int32>(EState::Unaware));
     const int32 AmmoBefore = Arena.Hero()->GetEquipment()->Ammo;

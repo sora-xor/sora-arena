@@ -516,6 +516,19 @@ static void TestProduction()
     Expect(State.Progress == 4000, "hold: filled while contested or seen");
     Tick(State, Hold, At(6000, true));
     Expect(TaskComplete(State, Hold) && ProgressPermille(State, Hold) == Permille, "hold: did not fill");
+    // A cupped candle (ch06.b08) works the hold at half pace, the same at any frame rate.
+    for (const int FrameMs : {1, 3, 7, 17, 33, 250})
+    {
+        State = Begin(Hold, "cupped hold");
+        for (int Ms = 0; Ms < 6000; Ms += FrameMs)
+        {
+            FTick Step = At(FrameMs, true);
+            Step.RatePermille = 500;
+            Tick(State, Hold, Step);
+        }
+        const int Walked = (6000 + FrameMs - 1) / FrameMs * FrameMs;
+        Expect(State.Progress == Walked / 2, "cupped hold: half pace must not depend on the frame");
+    }
     Hold.Contest = EContest::Decay;
     Hold.DecayPermille = 100;
     State = Begin(Hold, "decaying hold");
@@ -649,6 +662,20 @@ static void TestProduction()
     Expect(DamageTarget(State, Defend, 1, 999) && !RepairTarget(State, Defend, 1, 50) && !DamageTarget(State, Defend, 1, 1),
         "defend: a destroyed target was repaired or destroyed twice");
     Expect(Fail(State, Defend, EFail::TargetDestroyed) == ERetry::Checkpoint, "defend: losing a target did not fail it");
+    // A defence that may lose two of three fails only at the second loss.
+    FTask Planters = Defend;
+    Planters.TargetCount = 3;
+    Planters.TargetHp[2] = 100;
+    Planters.TargetLossLimit = 2;
+    Expect(TaskValid(Planters), "defend: a loss limit refused");
+    FTaskState Planting = Begin(Planters, "defend (loss limit)");
+    Expect(DamageTarget(Planting, Planters, 2, 100) && TargetsLost(Planting, Planters) == 1 &&
+        Fail(Planting, Planters, EFail::TargetDestroyed) == ERetry::Continue, "defend: the first of two allowed losses failed it");
+    Expect(DamageTarget(Planting, Planters, 1, 999) && TargetsLost(Planting, Planters) == 2 &&
+        Fail(Planting, Planters, EFail::TargetDestroyed) == ERetry::Checkpoint, "defend: the last allowed loss did not fail it");
+    Bad = Planters;
+    Bad.TargetLossLimit = 4;
+    Expect(!TaskValid(Bad), "defend: a loss limit past the targets accepted");
     Tick(State, Defend, At(5000));
     Expect(TaskComplete(State, Defend), "defend: did not end on its clock");
     Bad = Defend;
@@ -1123,8 +1150,16 @@ static void TestAuthoredTasks(int Chapter, const FChapterFixture& Plan, const FT
         for (EFail Event : {EFail::TargetDestroyed, EFail::EscortDown, EFail::ConvoyLost, EFail::BossEvent})
         {
             State = StartTask(Task, 0);
-            Expect(Fail(State, Task, Event) == ((Task.FailMask & FailBit(Event)) != 0u ? ERetry::Checkpoint : ERetry::None),
-                Where + ": a failure row disagrees with its mask");
+            // A defence that may lose some targets fails only at its limit.
+            const bool Limited = Event == EFail::TargetDestroyed && Task.TargetLossLimit > 1;
+            Expect(Fail(State, Task, Event) == ((Task.FailMask & FailBit(Event)) == 0u ? ERetry::None :
+                Limited ? ERetry::Continue : ERetry::Checkpoint), Where + ": a failure row disagrees with its mask");
+            if (!Limited || (Task.FailMask & FailBit(Event)) == 0u)
+                continue;
+            for (int Target = 0; Target < Task.TargetLossLimit; ++Target)
+                DamageTarget(State, Task, Target, Task.TargetHp[Target]);
+            Expect(TargetsLost(State, Task) == Task.TargetLossLimit && Fail(State, Task, Event) == ERetry::Checkpoint,
+                Where + ": the last allowed loss did not fail the defence");
         }
         if (Task.Goal == EGoal::Points)
         {

@@ -1518,7 +1518,7 @@ The lethal total leaves out invulnerable scripted actors.
 | `ch08.b02.prompt.001` | `beat_start` | 馬上の槍：前と右へ突く | Mounted yari: thrust forward and to the right |
 | `ch08.b02.prompt.002` | `progress_at:0.05` | 馬上の弓：左側にだけ射てる | Mounted yumi: you can shoot to the left only |
 | `ch08.b02.prompt.003` | `pattern:walker_sweep_beam` | 手綱を引くと速度が落ちる | Pull the reins to slow down |
-| `ch08.b03.prompt.001` | `event:volley_tutorial` | 長押しで的を示し、離すと斉射 | Hold to mark a target, release to fire a volley |
+| `ch08.b03.prompt.001` | `event:volley_tutorial` | {Ability}長押しで的を示し、離すと斉射 | Hold {Ability} to mark a target, release to fire a volley |
 | `ch08.b03.prompt.002` | `event:wave_start_3` | 迫撃砲：弧の落下点を見て撃つ | Micro-Mortar: check where the arc lands |
 | `ch08.b06.prompt.001` | `beat_start` | 金棒：攻撃を押し続けると振り下ろす | Kanabō: keep holding attack to bring it down |
 | `ch08.b07.prompt.001` | `event:first_hide_signal` | 合図で民を隠す／進ませる | Signal the people to hide or to move |
@@ -3901,8 +3901,8 @@ ui_prompts:
   - id: ch08.b03.prompt.001
     beat: ch08.b03
     "on": "event:volley_tutorial"
-    ja: "長押しで的を示し、離すと斉射"
-    en: "Hold to mark a target, release to fire a volley"
+    ja: "{Ability}長押しで的を示し、離すと斉射"
+    en: "Hold {Ability} to mark a target, release to fire a volley"
   - id: ch08.b03.prompt.002
     beat: ch08.b03
     "on": "event:wave_start_3"
@@ -3915,9 +3915,9 @@ ui_prompts:
     en: "Kanabō: keep holding attack to bring it down"
   - id: ch08.b07.prompt.001
     beat: ch08.b07
-    "on": "event:first_hide_signal"
-    ja: "合図で民を隠す／進ませる"
-    en: "Signal the people to hide or to move"
+    "on": beat_start
+    ja: "{Ability}で合図：民を伏せさせる／進ませる"
+    en: "{Ability}: signal the people to hide or to move"
   - id: ch08.b07.prompt.002
     beat: ch08.b07
     "on": "npc_downed:any"

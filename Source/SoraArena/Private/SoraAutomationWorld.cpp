@@ -1,6 +1,7 @@
 #include "SoraAutomationWorld.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
+#include "SoraArmsRules.h"
 #include "SoraFrontEnd.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
@@ -136,6 +137,32 @@ bool FSoraAutomationWorld::InjectKey(const FKey& Key, EInputEvent Event) const
 bool FSoraAutomationWorld::InjectKeyPastFrontEnd(const FKey& Key, EInputEvent Event) const
 {
     return SendKey(Key, Event, false);
+}
+
+bool FSoraAutomationWorld::TakeUpArm(int32 WeaponId)
+{
+    static const FKey GroupKeys[SoraArmsRules::GroupCount] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six};
+    const int32 Group = SoraArmsRules::GroupOf(WeaponId);
+    const ASoraPlayerCharacter* Pawn = Player();
+    if (!Pawn || Group < 0)
+        return false;
+    for (int32 Press = 0; Press < SoraArmsRules::ArmsCount && Pawn->WeaponId != WeaponId; ++Press)
+        if (!PressKey(GroupKeys[Group]) || !Tick(20))
+            return false;
+    return Pawn->WeaponId == WeaponId;
+}
+
+bool FSoraAutomationWorld::InjectAxis(const FKey& Key, float Value) const
+{
+    ASoraPlayerCharacter* Pawn = Player();
+    APlayerController* Controller = Pawn ? Cast<APlayerController>(Pawn->GetController()) : nullptr;
+    UWorld* World = GetTestWorld();
+    if (!Controller || !Controller->PlayerInput || !World || !Pawn->InputComponent)
+        return false;
+    const TArray<UInputComponent*> Stack = {Pawn->InputComponent};
+    Controller->InputKey(FInputKeyEventArgs::CreateSimulated(Key, IE_Axis, Value, 1));
+    Controller->PlayerInput->ProcessInputStack(Stack, 1.f / 60.f, World->IsPaused());
+    return true;
 }
 
 bool FSoraAutomationWorld::SendKey(const FKey& Key, EInputEvent Event, bool bThroughFrontEnd) const

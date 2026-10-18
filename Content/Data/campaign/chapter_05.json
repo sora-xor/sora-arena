@@ -227,6 +227,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -241,12 +242,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "diegetic_text": [
@@ -446,7 +450,8 @@
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -480,6 +485,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "reinforce",
     "reinforce_wave": 0,
     "horse_down_retries": false,
@@ -494,19 +500,98 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [
-     "enforcer_rifle",
-     "enforcer_rifle",
-     "enforcer_rifle",
-     "drone",
-     "bound_conscript",
-     "bound_conscript"
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2200,
+      "dark_sight_cm": 900,
+      "view_deg": 90,
+      "hearing_cm": 1200,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2200,
+      "dark_sight_cm": 900,
+      "view_deg": 90,
+      "hearing_cm": 1200,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2200,
+      "dark_sight_cm": 900,
+      "view_deg": 90,
+      "hearing_cm": 1200,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "drone",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2500,
+      "dark_sight_cm": 2500,
+      "view_deg": 30,
+      "hearing_cm": 600,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "bound_conscript",
+      "post": true,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 600,
+      "dark_sight_cm": 400,
+      "view_deg": 60,
+      "hearing_cm": 300,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "bound_conscript",
+      "post": true,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 600,
+      "dark_sight_cm": 400,
+      "view_deg": 60,
+      "hearing_cm": 300,
+      "suspicion_permille": 0
+     }
     ],
+    "stealth": {
+     "rate_permille": 1000,
+     "suspicious_at_permille": 250,
+     "search_ms": 20000,
+     "wary_permille": 1200,
+     "rear_takedowns": true,
+     "lethal_default": true,
+     "bodies": true,
+     "drag": true,
+     "carryover_to": null
+    },
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "exit_volume": "vol_ch05_culvert",
@@ -603,6 +688,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -618,17 +704,74 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [
-     "enforcer_rifle",
-     "enforcer_rifle",
-     "drone",
-     "blade_retainer"
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2000,
+      "dark_sight_cm": 800,
+      "view_deg": 90,
+      "hearing_cm": 1000,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "enforcer_rifle",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2000,
+      "dark_sight_cm": 800,
+      "view_deg": 90,
+      "hearing_cm": 1000,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "drone",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 2200,
+      "dark_sight_cm": 2200,
+      "view_deg": 30,
+      "hearing_cm": 500,
+      "suspicion_permille": 0
+     },
+     {
+      "type": "blade_retainer",
+      "post": false,
+      "scan_deg": 0,
+      "scan_ms": 0,
+      "turn_ms": 0,
+      "sight_cm": 1600,
+      "dark_sight_cm": 700,
+      "view_deg": 100,
+      "hearing_cm": 900,
+      "suspicion_permille": 0
+     }
     ],
+    "stealth": {
+     "rate_permille": 1000,
+     "suspicious_at_permille": 250,
+     "search_ms": 12000,
+     "wary_permille": 1200,
+     "rear_takedowns": true,
+     "lethal_default": false,
+     "bodies": true,
+     "drag": true,
+     "carryover_to": null
+    },
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "pre_interacts": {
@@ -791,6 +934,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -805,12 +949,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "interacts": [
@@ -969,12 +1116,14 @@
        {
         "type": "blade_retainer",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -989,12 +1138,14 @@
        {
         "type": "bound_conscript",
         "count": 3,
-        "lethal": false
+        "lethal": false,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 2,
@@ -1009,17 +1160,20 @@
        {
         "type": "shield_enforcer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "drone",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1053,6 +1207,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1067,12 +1222,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "equip_on_start": {
@@ -1162,7 +1320,8 @@
        {
         "type": "drone",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 1,
@@ -1196,6 +1355,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1210,12 +1370,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "input": "alternate_left_right_tread (one turn = one L+R cycle)",
@@ -1368,7 +1531,8 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1383,12 +1547,14 @@
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "blade_retainer",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -1403,12 +1569,14 @@
        {
         "type": "drone",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1423,17 +1591,20 @@
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "shield_enforcer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1476,6 +1647,7 @@
       "hp": 300
      }
     ],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1491,12 +1663,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "kozo": {
@@ -1643,6 +1818,7 @@
      }
     ],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1657,12 +1833,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "weapon_grant_at": "beat_start",
@@ -1810,6 +1989,7 @@
      }
     ],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -1824,12 +2004,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "step_labels": [
@@ -1969,7 +2152,8 @@
        {
         "type": "enforcer_rifle",
         "count": 4,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -1984,12 +2168,14 @@
        {
         "type": "marksman",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "drone",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -2004,17 +2190,20 @@
        {
         "type": "shield_enforcer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -2048,6 +2237,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2062,12 +2252,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "equip_on_start": {
@@ -2202,6 +2395,7 @@
      }
     ],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2216,12 +2410,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "player_role": "sorabiki (drawboy on the figure harness)",
@@ -2308,6 +2505,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2322,12 +2520,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "site_restores_on": "sequence_end_or_skip",
@@ -2441,6 +2642,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2455,12 +2657,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -2539,6 +2744,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2553,12 +2759,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {}
   },
@@ -2672,12 +2881,14 @@
        {
         "type": "loom_automaton",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -2692,12 +2903,14 @@
        {
         "type": "loom_automaton",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "blade_retainer",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 3,
@@ -2712,17 +2925,20 @@
        {
         "type": "loom_automaton",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "grenadier",
         "count": 1,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        },
        {
         "type": "enforcer_rifle",
         "count": 2,
-        "lethal": true
+        "lethal": true,
+        "invulnerable": false
        }
       ],
       "lethal": 4,
@@ -2756,6 +2972,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2770,12 +2987,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "hazards": {
@@ -2892,6 +3112,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -2906,12 +3127,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": "boss_tarifa",
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "hp_normal": 3000,
@@ -3015,6 +3239,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -3029,6 +3254,7 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
@@ -3036,7 +3262,9 @@
     "carry_speed_permille": 800,
     "carry_weapons": [
      0
-    ]
+    ],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "routing": {
@@ -3124,6 +3352,7 @@
     "drop_on_hit": false,
     "steps": [],
     "targets": [],
+    "target_loss_limit": 0,
     "on_detected": "combat",
     "reinforce_wave": -1,
     "horse_down_retries": false,
@@ -3138,12 +3367,15 @@
     "closing_event": null,
     "exit_event": null,
     "guards": [],
+    "stealth": null,
     "opponent": null,
     "sparring": false,
     "phase_events": [],
     "carry_item": null,
     "carry_speed_permille": 1000,
-    "carry_weapons": []
+    "carry_weapons": [],
+    "pickup_hold_ms": 0,
+    "objective_hold_ms": []
    },
    "ext": {
     "chapter_complete_screen": "registry_page_ch05",
@@ -8661,7 +8893,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b02",
@@ -8802,7 +9056,137 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [
+      {
+       "id": "kagaribi_pond",
+       "kind": "brazier",
+       "radius_cm": 600,
+       "snuff": "hold",
+       "hold_ms": 1500,
+       "relight_ms": 0,
+       "at": [
+        13040,
+        -728
+       ]
+      },
+      {
+       "id": "kagaribi_hut",
+       "kind": "brazier",
+       "radius_cm": 600,
+       "snuff": "hold",
+       "hold_ms": 1500,
+       "relight_ms": 0,
+       "at": [
+        13040,
+        728
+       ]
+      },
+      {
+       "id": "flood_upper",
+       "kind": "floodlight",
+       "radius_cm": 1500,
+       "snuff": "shot",
+       "hold_ms": 0,
+       "relight_ms": 10000,
+       "at": [
+        10736,
+        -728
+       ]
+      }
+     ],
+     "surfaces": [
+      {
+       "kind": "running_water",
+       "center": [
+        10460,
+        -737
+       ],
+       "size": [
+        520,
+        360
+       ],
+       "height_cm": 0,
+       "step_permille": 500,
+       "crouch_permille": 500
+      },
+      {
+       "kind": "running_water",
+       "center": [
+        13130,
+        455
+       ],
+       "size": [
+        520,
+        360
+       ],
+       "height_cm": 0,
+       "step_permille": 500,
+       "crouch_permille": 500
+      },
+      {
+       "kind": "running_water",
+       "center": [
+        9830,
+        -281
+       ],
+       "size": [
+        520,
+        360
+       ],
+       "height_cm": 0,
+       "step_permille": 500,
+       "crouch_permille": 500
+      },
+      {
+       "kind": "gravel",
+       "center": [
+        11060,
+        0
+       ],
+       "size": [
+        400,
+        4160
+       ],
+       "height_cm": 0,
+       "step_permille": 1500,
+       "crouch_permille": 1500
+      },
+      {
+       "kind": "puddle",
+       "center": [
+        12499,
+        910
+       ],
+       "size": [
+        360,
+        360
+       ],
+       "height_cm": 0,
+       "step_permille": 1300,
+       "crouch_permille": 1300
+      }
+     ],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b03",
@@ -8897,16 +9281,195 @@
      "pickups": [],
      "dropoffs": [],
      "targets": [],
-     "party": [
-      "villager",
-      "villager",
-      "villager",
-      "villager",
-      "villager",
-      "villager"
-     ]
+     "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [
+      {
+       "id": "okinu",
+       "health": 120,
+       "revive_ms": 2000,
+       "bleedout_ms": 4000,
+       "lance_ms": 0,
+       "free_ms": 2000,
+       "release": -1
+      },
+      {
+       "id": "tetsugoro",
+       "health": 120,
+       "revive_ms": 2000,
+       "bleedout_ms": 4000,
+       "lance_ms": 0,
+       "free_ms": 2000,
+       "release": -1
+      },
+      {
+       "id": "reeler_a",
+       "health": 120,
+       "revive_ms": 2000,
+       "bleedout_ms": 4000,
+       "lance_ms": 0,
+       "free_ms": 2000,
+       "release": -1
+      },
+      {
+       "id": "reeler_b",
+       "health": 120,
+       "revive_ms": 2000,
+       "bleedout_ms": 4000,
+       "lance_ms": 0,
+       "free_ms": 2000,
+       "release": -1
+      },
+      {
+       "id": "reeler_c",
+       "health": 120,
+       "revive_ms": 2000,
+       "bleedout_ms": 4000,
+       "lance_ms": 0,
+       "free_ms": 2000,
+       "release": -1
+      },
+      {
+       "id": "bellows_boy",
+       "health": 120,
+       "revive_ms": 2000,
+       "bleedout_ms": 4000,
+       "lance_ms": 0,
+       "free_ms": 2000,
+       "release": -1
+      }
+     ],
+     "signal": true,
+     "hide_spots": [
+      [
+       10195,
+       -11261
+      ],
+      [
+       11189,
+       -12449
+      ],
+      [
+       12182,
+       -11037
+      ],
+      [
+       13176,
+       -12225
+      ],
+      [
+       15164,
+       -12398
+      ],
+      [
+       16157,
+       -11210
+      ],
+      [
+       17151,
+       -12622
+      ],
+      [
+       18145,
+       -11434
+      ],
+      [
+       19139,
+       -12846
+      ],
+      [
+       20132,
+       -11657
+      ],
+      [
+       22120,
+       -11719
+      ],
+      [
+       23113,
+       -12907
+      ],
+      [
+       24107,
+       -11495
+      ],
+      [
+       25101,
+       -12684
+      ],
+      [
+       26095,
+       -11272
+      ],
+      [
+       27088,
+       -12460
+      ],
+      [
+       28082,
+       -11048
+      ],
+      [
+       29076,
+       -12236
+      ],
+      [
+       31063,
+       -12387
+      ],
+      [
+       32057,
+       -11199
+      ],
+      [
+       33051,
+       -12611
+      ],
+      [
+       34045,
+       -11423
+      ],
+      [
+       35038,
+       -12834
+      ],
+      [
+       36032,
+       -11646
+      ],
+      [
+       38019,
+       -11730
+      ],
+      [
+       39013,
+       -12919
+      ],
+      [
+       40007,
+       -11507
+      ]
+     ],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b04",
@@ -9013,7 +9576,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b05",
@@ -9120,7 +9705,105 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "okinu",
+       "role": "fighter",
+       "weapon": 20,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32010,
+        0
+       ]
+      },
+      {
+       "id": "weaver_a",
+       "role": "fighter",
+       "weapon": 8,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32010,
+        240
+       ]
+      },
+      {
+       "id": "weaver_b",
+       "role": "fighter",
+       "weapon": 8,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32010,
+        -240
+       ]
+      },
+      {
+       "id": "weaver_c",
+       "role": "fighter",
+       "weapon": 8,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32010,
+        480
+       ]
+      },
+      {
+       "id": "weaver_d",
+       "role": "fighter",
+       "weapon": 8,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        32010,
+        -480
+       ]
+      }
+     ],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b06",
@@ -9227,7 +9910,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b07",
@@ -9342,11 +10047,42 @@
      "dropoffs": [],
      "targets": [
       "furnace",
-      "villager"
+      "person"
      ],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [
+      {
+       "id": "kozo",
+       "target": 1,
+       "at": [
+        39232,
+        588
+       ]
+      }
+     ],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b08",
@@ -9471,7 +10207,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b09",
@@ -9592,7 +10350,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b10",
@@ -9699,7 +10479,90 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [
+      {
+       "id": "tetsugoro",
+       "role": "shooter",
+       "weapon": 1,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": null,
+       "at": [
+        -2370,
+        0
+       ]
+      },
+      {
+       "id": "otane",
+       "role": "fighter",
+       "weapon": 2,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": "wave_start:3",
+       "at": [
+        -2370,
+        480
+       ]
+      },
+      {
+       "id": "league_teppo_a",
+       "role": "shooter",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": "wave_start:3",
+       "at": [
+        -2370,
+        -480
+       ]
+      },
+      {
+       "id": "league_teppo_b",
+       "role": "shooter",
+       "weapon": 5,
+       "health": 120,
+       "downable": true,
+       "revive_ms": 3000,
+       "detectable": true,
+       "rank": -1,
+       "joins": "wave_start:3",
+       "at": [
+        -2130,
+        0
+       ]
+      }
+     ],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b11",
@@ -9815,7 +10678,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b12",
@@ -9932,7 +10817,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b13",
@@ -10076,7 +10983,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b14",
@@ -10193,7 +11122,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b15",
@@ -10300,7 +11251,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b16",
@@ -10407,7 +11380,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b17",
@@ -10548,7 +11543,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    },
    {
     "beat": "ch05.b18",
@@ -10665,7 +11682,29 @@
      "targets": [],
      "party": []
     },
-    "mount": null
+    "mount": null,
+    "fieldcraft": {
+     "lamps": [],
+     "surfaces": [],
+     "water": null,
+     "climb": null,
+     "stones": null,
+     "candle": null,
+     "party": [],
+     "signal": false,
+     "hide_spots": [],
+     "releases": [],
+     "allies": [],
+     "people": [],
+     "volley": null,
+     "alarms": [],
+     "nets": null,
+     "searchlights": [],
+     "bell": null,
+     "fires": null,
+     "ladders": [],
+     "charge": null
+    }
    }
   ],
   "pickups": [

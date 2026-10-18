@@ -42,14 +42,19 @@ inline constexpr FAction Actions[] = {
     {TEXT("Sheathe"), Play},
     {TEXT("Block"), Play},
     {TEXT("Ability"), Play},
-    // Practice takes its loadout from the lobby; campaign play equips.
+    // Practice takes its loadout from the lobby; the training arena equips
+    // the class's three arms and the campaign its six groups of arms
+    // (SoraArmsRules.h), with the arms wheel and the mouse wheel stepping
+    // through every arm Nyaakoto can hold.
     {TEXT("WeaponOne"), Play},
     {TEXT("WeaponTwo"), Play},
     {TEXT("WeaponThree"), Play},
     {TEXT("WeaponFour"), Play},
     {TEXT("WeaponFive"), Play},
     {TEXT("WeaponSix"), Play},
-    {TEXT("CampaignWeaponNext"), Play},
+    {TEXT("ArmsWheel"), Play},
+    {TEXT("ArmsNext"), Play},
+    {TEXT("ArmsPrevious"), Play},
     // Held in play: the practice scoreboard of every seat.
     {TEXT("Scoreboard"), Play},
     // Esc/Start opens the pause menu; the front end closes it.
@@ -105,7 +110,9 @@ inline constexpr FRemappable Remappable[] = {
     {TEXT("WeaponFour"), 0},
     {TEXT("WeaponFive"), 0},
     {TEXT("WeaponSix"), 0},
-    {TEXT("CampaignWeaponNext"), 0},
+    {TEXT("ArmsWheel"), 0},
+    {TEXT("ArmsNext"), 0},
+    {TEXT("ArmsPrevious"), 0},
     {TEXT("Scoreboard"), 0},
 };
 inline constexpr int32 RemappableCount = UE_ARRAY_COUNT(Remappable);

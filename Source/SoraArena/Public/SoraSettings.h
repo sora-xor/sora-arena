@@ -143,6 +143,11 @@ public:
     // horse follows the route while the player keeps gait and aim.
     bool AutoSteer() const;
     void SetAutoSteer(bool bEnabled);
+    // On Easy (稽古), the League's volley ranks order themselves on the
+    // opponent nearest the hero when their front rank stands loaded (ch08
+    // easy_auto_order); no effect on Normal or Hard.
+    bool VolleyAutoOrder() const;
+    void SetVolleyAutoOrder(bool bEnabled);
     // Percent, 0 to 100.
     int32 CameraShake() const;
     void SetCameraShake(int32 Percent);

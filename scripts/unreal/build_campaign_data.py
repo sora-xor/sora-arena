@@ -199,9 +199,13 @@ FAIL_EVENTS = (
 )
 # A boss's intro or outro cue timed inside its sequence (ch02.b15).
 BOSS_CUE = re.compile(r"(intro|outro)@(\d+(?:\.\d+)?)")
-# Proposed events (ch03's x_ names) the director raises under its own name:
-# a wave's start, the boss's fall and an objective worked.
-RAISED_PROPOSALS = {"x_wave_start": "wave_start", "x_boss_defeated": "boss_defeated", "x_objective": "interact"}
+# Proposed events (ch03's x_ names) the runtime raises under its own name:
+# a wave's start, the boss's fall and an objective worked (the director); the
+# hero's signal to an escorted party, a downed member raised, one freed, and a
+# searching guard giving up (USoraFieldcraft and the guards' cues).
+RAISED_PROPOSALS = {"x_wave_start": "wave_start", "x_boss_defeated": "boss_defeated", "x_objective": "interact",
+                    "x_signal": "signal", "x_npc_revived": "npc_revived", "x_npc_freed": "npc_freed",
+                    "x_alert_state": "alert_state", "x_fire_out": "fire_out"}
 # A dialogue trigger may wait for a collectible found or a story flag set.
 REQUIRES_FLAG = re.compile(r"(collectible:ch0[1-8]\.c0[1-6]|story:[a-z_]+)")
 
@@ -495,11 +499,81 @@ def task_wave(wave, nonlethal, context):
     else:
         # Alarms, detection and scripted events: a reinforcement that may never come.
         kind, event = "event", trigger
-    members = [{"type": enemy["type"], "count": enemy["count"], "lethal": enemy["type"] not in nonlethal}
+    # A scripted opponent the wave marks invulnerable (ch08.b02's sweep-only walkers).
+    members = [{"type": enemy["type"], "count": enemy["count"], "lethal": enemy["type"] not in nonlethal,
+                "invulnerable": expect(enemy.get("invulnerable", False), (bool,), f"{context}.invulnerable")}
                for enemy in wave["enemies"]]
     return {"id": wave.get("id"), "trigger": kind, "value": value, "event": event, "members": members,
             "lethal": sum(member["count"] for member in members if member["lethal"]),
             "nonlethal": sum(member["count"] for member in members if not member["lethal"])}
+
+
+STATIC_SCAN = re.compile(r"static:\w+:scan_(\d+)deg_(\d+)s")
+
+
+def guard_row(guard, count_context):
+    """A guard as the zone posts it: its archetype, the senses the script
+    authors for it (sight {range_cm, dark_range_cm, cone_deg}, hearing_cm and
+    x_suspicion_mult; 0 (sight, cone, suspicion) or -1 (dark sight, hearing)
+    keeps the archetype's own, Content/Data/enemies.json), and how it watches:
+    a post it keeps (a static patrol or a post) rather than a round, the arc
+    it sweeps there and how long a sweep takes (x_scan_arc_deg and
+    x_scan_period_s, scan {sweep_deg, every_s}, a static patrol's
+    scan_<deg>deg_<s>s), or how often it turns about (x_turn_every_s)."""
+    sight = expect(guard.get("sight") or {}, (dict,), f"{count_context}.sight")
+    mult = guard.get("x_suspicion_mult")
+    patrol = guard.get("patrol") if isinstance(guard.get("patrol"), str) else ""
+    scan = expect(guard.get("scan") or {}, (dict,), f"{count_context}.scan")
+    static = STATIC_SCAN.fullmatch(patrol)
+    arc = guard.get("x_scan_arc_deg", scan.get("sweep_deg", int(static.group(1)) if static else 0))
+    period = guard.get("x_scan_period_s", scan.get("every_s", int(static.group(2)) if static else 0))
+    watch = {"post": patrol.startswith("static:") or "post" in guard,
+             "scan_deg": expect_int(arc, f"{count_context}.scan arc", 0),
+             "scan_ms": whole_ms(period, f"{count_context}.scan period"),
+             "turn_ms": whole_ms(guard.get("x_turn_every_s", 0), f"{count_context}.x_turn_every_s")}
+    if (watch["scan_deg"] > 0) != (watch["scan_ms"] > 0) or ((watch["scan_deg"] or watch["turn_ms"]) and not watch["post"]):
+        fail(count_context, f"a guard sweeps or turns only at its post: {watch}")
+    return {"type": expect(guard["type"], (str,), count_context), **watch,
+            "sight_cm": expect_int(sight.get("range_cm", 0), f"{count_context}.sight.range_cm", 0),
+            "dark_sight_cm": expect_int(sight.get("dark_range_cm", -1), f"{count_context}.sight.dark_range_cm", -1),
+            "view_deg": expect_int(sight.get("cone_deg", 0), f"{count_context}.sight.cone_deg", 0),
+            "hearing_cm": expect_int(guard.get("hearing_cm", -1), f"{count_context}.hearing_cm", -1),
+            "suspicion_permille": 0 if mult is None else permille(mult, f"{count_context}.x_suspicion_mult")}
+
+
+def stealth_block(beat, where):
+    """A stealth zone's, or guarded work's, authored rules (bible §12.2):
+    detection {suspicion_rate, suspicious_at, search_s, wary_after_search},
+    takedowns {rear, lethal_default}, x_bodies {discoverable, drag} and
+    x_on_detected_carryover, with the defaults SoraStealthRules::Watchful()
+    names where the script gives none."""
+    params, ext = beat["params"], beat["ext"]
+    detection = expect(params.get("detection") or {}, (dict,), f"{where}.detection")
+    takedowns = expect(params.get("takedowns") or {}, (dict,), f"{where}.takedowns")
+    bodies = expect(ext.get("bodies") or {}, (dict,), f"{where}.x_bodies")
+    if detection.get("alert_threshold", 1.0) != 1.0:
+        fail(where, "a guard is alert only at the full meter (alert_threshold 1.0)")
+    if bodies.get("drag_speed_mult", 0.5) != 0.5:
+        fail(where, "a body is dragged at half pace (SoraStealthRules::DragSpeedPermille)")
+    wary = (detection.get("wary_after_search") or {}).get("suspicion_rate_mult", 1.2)
+    expect(wary, (int, float), f"{where}.detection.wary_after_search")
+    if not 1 <= wary <= 4 or abs(wary * 1000 - round(wary * 1000)) > 1e-6:
+        fail(where, f"wary_after_search {wary} is not a whole-permille multiplier from 1 to 4")
+    rate = expect(detection.get("suspicion_rate", 1.0), (int, float), f"{where}.detection.suspicion_rate")
+    if not 0.1 <= rate <= 4 or abs(rate * 1000 - round(rate * 1000)) > 1e-6:
+        fail(where, f"suspicion_rate {rate} is not a whole-permille rate from 0.1 to 4")
+    carry = ext.get("on_detected_carryover")
+    if carry is not None and (carry.get("start_state") != "suspicious" or not isinstance(carry.get("beat"), str)):
+        fail(where, f"on_detected_carryover {carry} must start a later beat's guards suspicious")
+    return {"rate_permille": round(rate * 1000),
+            "suspicious_at_permille": permille(detection.get("suspicious_at", 0.25), f"{where}.detection.suspicious_at"),
+            "search_ms": whole_ms(detection.get("search_s", 12), f"{where}.detection.search_s"),
+            "wary_permille": round(wary * 1000),
+            "rear_takedowns": expect(takedowns.get("rear", True), (bool,), f"{where}.takedowns.rear"),
+            "lethal_default": expect(takedowns.get("lethal_default", False), (bool,), f"{where}.takedowns.lethal_default"),
+            "bodies": expect(bodies.get("discoverable", True), (bool,), f"{where}.x_bodies.discoverable"),
+            "drag": expect(bodies.get("drag", True), (bool,), f"{where}.x_bodies.drag"),
+            "carryover_to": carry["beat"] if carry else None}
 
 
 def ids_of(rows, context):
@@ -531,10 +605,12 @@ def normalize_task(beat):
         "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
         "max_turn_ms": 0, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
-        "drop_on_hit": False, "steps": [], "targets": [], "on_detected": "combat", "reinforce_wave": -1,
+        "drop_on_hit": False, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
+        "reinforce_wave": -1,
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
-        "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "opponent": None,
+        "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "stealth": None, "opponent": None,
         "sparring": False, "phase_events": [], "carry_item": None, "carry_speed_permille": 1000, "carry_weapons": [],
+        "pickup_hold_ms": 0, "objective_hold_ms": [],
     }
     nonlethal = params.get("nonlethal_types", DEFAULT_NONLETHAL)
     # Waves are what a beat throws at the hero. Only a fight to clear them
@@ -549,7 +625,7 @@ def normalize_task(beat):
         if guarded:
             for enemy in wave["enemies"]:
                 if "patrol" in enemy:
-                    task["guards"] += [expect(enemy["type"], (str,), f"{where}.waves[{index}]")] * \
+                    task["guards"] += [guard_row(enemy, f"{where}.waves[{index}]")] * \
                         expect_int(enemy["count"], f"{where}.waves[{index}].count", 1)
             wave = {**wave, "enemies": [enemy for enemy in wave["enemies"] if "patrol" not in enemy]}
             if not wave["enemies"]:
@@ -557,12 +633,17 @@ def normalize_task(beat):
         task["waves"].append(task_wave(wave, nonlethal, f"{where}.waves[{index}]"))
     if guarded:
         for index, guard in enumerate(beat["ext"].get("guards") or []):
-            task["guards"] += [expect(guard["type"], (str,), f"{where}.x_guards[{index}]")] * \
+            task["guards"] += [guard_row(guard, f"{where}.x_guards[{index}]")] * \
                 expect_int(guard.get("count", 1), f"{where}.x_guards[{index}].count", 1)
+        task["stealth"] = stealth_block(beat, where)
 
     def objectives(*sources):
         for source in sources:
             if source:
+                # An objective worked with Interact held (hold_s, interact_s),
+                # or at a press (0).
+                task["objective_hold_ms"] = [whole_ms(row.get("hold_s", row.get("interact_s", 0)), f"{where}.objectives")
+                                             if isinstance(row, dict) else 0 for row in source]
                 return ids_of(source, f"{where}.objectives")
         fail(where, "completion by objectives lists none")
 
@@ -628,7 +709,8 @@ def normalize_task(beat):
                 task["phases"].append(permille(event["at_hp_pct"] / 100, f"{where}.events[{index}]"))
                 task["phase_events"].append(expect(event["id"], (str,), f"{where}.events[{index}].id"))
     elif kind == "stealth_zone":
-        task["guards"] = [expect(guard["type"], (str,), f"{where}.guards") for guard in params["guards"]]
+        task["guards"] = [guard_row(guard, f"{where}.guards[{index}]") for index, guard in enumerate(params["guards"])]
+        task["stealth"] = stealth_block(beat, where)
         if complete["kind"] == "exit_reached":
             task.update(goal="exit", exit_event=volume_event(complete.get("volume")))
         elif complete["kind"] == "objectives":
@@ -676,6 +758,13 @@ def normalize_task(beat):
             if set(loadout) - {"katana_one_hand"}:
                 fail(where, f"carry loadout {loadout} has no runtime meaning")
             task["carry_weapons"] = [0] if loadout else []
+            # A load hoisted at its pickup (ch03.b05's 釣瓶, x_hoist) is an
+            # Interact held there; under guard it waits while a guard watches.
+            hoist = beat["ext"].get("hoist")
+            if hoist:
+                if hoist.get("per_item") is not True or hoist.get("interact") is None:
+                    fail(where, "a hoist lifts each load at its pickup")
+                task["pickup_hold_ms"] = whole_ms(hoist["hold_s"], f"{where}.x_hoist.hold_s")
         elif name == "manufacture":
             for index, step in enumerate(block["steps"]):
                 timing = step.get("timing") or {}
@@ -695,6 +784,11 @@ def normalize_task(beat):
                 task["goal"] = "waves_cleared"
             if expect(block["fail_on_target_destroyed"], (bool,), f"{where}.defend.fail_on_target_destroyed"):
                 task["fail_checkpoint"].append("target_destroyed")
+                # Some targets may be lost before the defence fails (ch04.b12: the third planter taken).
+                limit = expect_int(block.get("fail_after_targets_lost", 0), f"{where}.defend.fail_after_targets_lost", 0)
+                if limit > len(task["targets"]):
+                    fail(where, f"fails after {limit} of {len(task['targets'])} targets lost")
+                task["target_loss_limit"] = limit
     elif kind == "horseback_ride":
         task["horse_down_retries"] = expect_enum(params.get("on_horse_down"), ("checkpoint", "dismount_continue"),
                                                  f"{where}.on_horse_down") == "checkpoint"
@@ -1370,7 +1464,11 @@ def build_chapter(number, places):
                     for index, item in enumerate(expect(document["collectibles"], (list,), prefix))]
     layout = normalize_layout(document, prefix)
     chapter_map = expect_int(document["map"], f"{prefix}.map", 0)
-    space = derive_space({"prefix": prefix, "map": chapter_map}, beats, places, collectibles, triggers, layout, fail)
+    # A HUD prompt keyed by a volume needs that volume placed, as a line does.
+    prompted = [{"beat": beat_id, "on": row.get("on")} for row in document.get("ui_prompts") or []
+                for beat_id in [row.get("beat")] + list(row.get("x_also_beats") or [])]
+    space = derive_space({"prefix": prefix, "map": chapter_map}, beats, places, collectibles, triggers + prompted,
+                         layout, fail)
     return {
         "schema_version": SCHEMA_VERSION,
         "id": chapter_id,

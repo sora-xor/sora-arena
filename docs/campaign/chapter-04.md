@@ -968,7 +968,7 @@ Tokens in braces are input actions that L4 resolves to the current binding (keyb
 | `ui.ch04.b06.crank` | ch04.b06 beat_start | {Interact}を一定の調子で押して巻き上げる。速さを帯の中に保て | Press {Interact} at a steady pace to crank. Keep your speed inside the band. |
 | `ui.ch04.b07.hold` | ch04.b07 beat_start | 堰の周りに留まれ。敵が入ると水位が止まる | Stay by the weir. Enemies inside stop the water rising. |
 | `ui.ch04.b10.signal` | ch04.b10 beat_start | 同行者はあなたがそばにいる間だけ進む | The escort moves on only while you stay close. |
-| `ui.ch04.b12.net` | ch04.b12 first npc_downed | 網に捕らわれた者は{Interact}で解放。12秒で連れ去られる | {Interact} to free netted planters. They are taken after 12 s. |
+| `ui.ch04.b12.net` | ch04.b12 `npc_downed:any:first` | 網に捕らわれた早乙女のそばで{Interact}：網を切る。網のまま削られると連れ去られる | Press {Interact} beside a netted planter to cut the net. Worn down in it, they are taken. |
 | `ui.ch04.b13.registry` | ch04.b13 beat_complete | 生産改帳が開いた。{Menu}からいつでも見られる | The registry is open. View it any time from {Menu}. |
 | `ui.ch04.b14.pack` | ch04.b14 beat_start | 荷を積んだ駄馬がいる間は常歩と速歩のみ | While leading a laden pack horse you can only walk or trot. |
 | `ui.ch04.b16.ccw` | ch04.b16 beat_start | 左回りに走り、敵を弓手（左）に置け | Circle left to keep the target on your bow side. |
@@ -1673,6 +1673,16 @@ beats:
     hide_on_signal: true
     npc_health: 250
     down_revive_s: 6
+  x_seizure:
+    targets: [ox_cart_01]
+    net_windup_ms: 800
+    telegraph: cyan_lock_ring
+    lift_timer_s: 0
+    cut: {dismounted_interact_s: 1.0}
+    kill_tether_drone_cancels: true
+    halts_escort: true
+  x_cart: {actor: ox_cart_01, hp: 600}
+  fail: {'on': player_died|convoy_member_hp0, to: checkpoint}
   waves:
   - enemies:
     - {type: enforcer_rifle, count: 3, spawn: sp_paddy_bank_east}
@@ -2227,15 +2237,15 @@ lines:
 - {id: ch04.b18.nyaakoto.005, speaker: samurai, register: samurai_restrained, mode: cinematic, ja: ……虎之介。, en: …Toranosuke., duration_s: 2.0, repeatable: false}
 ui_prompts:
 - {id: ui.ch04.b02.bank_roads, beat: ch04.b02, "on": beat_start, ja: 畦は馬で通れない。土手道を進め, en: Horses cannot use paddy ridges. Keep to the bank roads.}
-- {id: ui.ch04.b03.hayago, beat: ch04.b03, "on": after weapon 5 unlock, ja: '{Reload}で早合を込める。カチッと鳴った瞬間にもう一度{Reload}で素早く締める', en: '{Reload} loads a hayagō. Press {Reload} again on the click to lock it faster.'}
-- {id: ui.ch04.b03.cheek, beat: ch04.b03, "on": first aim with weapon 5, ja: 頬付けで構える。馬上では鉄砲を使えない, en: Cheek-stocked aim. Firearms cannot be used on horseback.}
+- {id: ui.ch04.b03.hayago, beat: ch04.b03, "on": "equip:5", ja: '{Reload}で早合を込める。カチッと鳴った瞬間にもう一度{Reload}で素早く締める', en: '{Reload} loads a hayagō. Press {Reload} again on the click to lock it faster.'}
+- {id: ui.ch04.b03.cheek, beat: ch04.b03, "on": "fired:5", ja: 頬付けで構える。馬上では鉄砲を使えない, en: Cheek-stocked aim. Firearms cannot be used on horseback.}
 - {id: ui.ch04.b04.bind, beat: ch04.b04, "on": 'progress_at:0.15', ja: '鎖鎌の分銅は刃・盾・目録を絡め取る', en: 'The kusarigama weight snares a blade, shield or drone.'}
 - {id: ui.ch04.b04.barley, beat: ch04.b04, "on": beat_start, ja: 高い麦の中では互いに見えにくい。揺れる穂に注意, en: In tall barley no one sees far. Watch for swaying heads.}
 - {id: ui.ch04.b05.nonlethal, beat: ch04.b05, "on": beat_start, ja: '首輪の者は峰打ちで倒し、{Interact}長押しで首輪を断つ', en: 'Subdue the collared with the back of the blade, then hold {Interact} to cut the collar.'}
 - {id: ui.ch04.b06.crank, beat: ch04.b06, "on": beat_start, ja: '{Interact}を一定の調子で押して巻き上げる。速さを帯の中に保て', en: 'Press {Interact} at a steady pace to crank. Keep your speed inside the band.'}
 - {id: ui.ch04.b07.hold, beat: ch04.b07, "on": beat_start, ja: 堰の周りに留まれ。敵が入ると水位が止まる, en: Stay by the weir. Enemies inside stop the water rising.}
 - {id: ui.ch04.b10.signal, beat: ch04.b10, "on": beat_start, ja: '同行者はあなたがそばにいる間だけ進む', en: 'The escort moves on only while you stay close.'}
-- {id: ui.ch04.b12.net, beat: ch04.b12, "on": first npc_downed, ja: '網に捕らわれた者は{Interact}で解放。12秒で連れ去られる', en: '{Interact} to free netted planters. They are taken after 12 s.'}
+- {id: ui.ch04.b12.net, beat: ch04.b12, "on": "npc_downed:any:first", ja: '網に捕らわれた早乙女のそばで{Interact}：網を切る。網のまま削られると連れ去られる', en: 'Press {Interact} beside a netted planter to cut the net. Worn down in it, they are taken.'}
 - {id: ui.ch04.b13.registry, beat: ch04.b13, "on": beat_complete, ja: '生産改帳が開いた。{Menu}からいつでも見られる', en: 'The registry is open. View it any time from {Menu}.'}
 - {id: ui.ch04.b14.pack, beat: ch04.b14, "on": beat_start, ja: 荷を積んだ駄馬がいる間は常歩と速歩のみ, en: While leading a laden pack horse you can only walk or trot.}
 - {id: ui.ch04.b16.ccw, beat: ch04.b16, "on": beat_start, ja: 左回りに走り、敵を弓手（左）に置け, en: Circle left to keep the target on your bow side.}

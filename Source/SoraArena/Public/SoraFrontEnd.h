@@ -33,7 +33,7 @@ enum class EAction : uint8
     // Param is the ESoraAudioBus.
     Volume,
     Subtitles, SubtitleSize, SpeakerNames, SoundCaptions,
-    TelegraphPalette, ToggleGuard, ToggleSprint, CampaignDifficulty, AutoSteer, ReduceFlashing, CameraShake,
+    TelegraphPalette, ToggleGuard, ToggleSprint, CampaignDifficulty, AutoSteer, VolleyAutoOrder, ReduceFlashing, CameraShake,
     LookSensitivity, MouseSensitivity, InvertLook, MoveDeadZone, LookDeadZone,
     // Param is the SoraInput::Remappable entry.
     Binding, ResetControls, CaptureCancel,
@@ -99,6 +99,9 @@ SORAARENA_API SoraText::FLine ActionKey(const UObject* WorldContext, FName Actio
 // tradeoff as its subtitle (SoraArena.UI.PracticeLobby checks they match).
 // Empty for a weapon without one.
 SORAARENA_API FText SpecialTradeoff(int32 WeaponId);
+// The name of one of Nyaakoto's six groups of arms (SoraArmsRules::EGroup),
+// or empty for another number.
+SORAARENA_API FText ArmsGroupName(int32 Group);
 // Reads ThirdPartyNotices/*.md and *.txt under the project directory.
 SORAARENA_API bool LoadCredits(TArray<FCreditLine>& Out, SoraText::FLine& Error);
 // Smallest Slate font sizes (points at the 1080p reference); the game

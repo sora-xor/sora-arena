@@ -1833,13 +1833,13 @@ ui_prompts:
   - {id: "hud.ch06.swim_dive", beat: "ch06.b02", "on": "beat_start", ja: "潜る：{Crouch}　息は8秒まで", en: "Dive: {Crouch}. Breath lasts 8 s."}
   - {id: "hud.ch06.surface_cover", beat: "ch06.b02", "on": "volume_enter:vol_moat_lotus_1", ja: "蓮と葦の陰なら、浮いても見つかりにくい", en: "Lotus and reeds hide you at the surface."}
   - {id: "hud.ch06.float_line", beat: "ch06.b02", "on": "volume_enter:vol_moat_boom", ja: "浮き綱に触れると鳴る。下を潜る", en: "The float line rings if touched. Dive under it."}
-  - {id: "hud.ch06.climb", beat: "ch06.b03", "on": "volume_enter:vol_climb_start", ja: "手掛かりへ進む。握力に注意", en: "Reach for the holds. Watch your grip."}
+  - {id: "hud.ch06.climb", beat: "ch06.b03", "on": "volume_enter:vol_climb_start", ja: "{Jump}で手掛かりへ。握力に注意", en: "{Jump} to reach for the holds. Watch your grip."}
   - {id: "hud.ch06.climb_rest", beat: "ch06.b03", "on": "volume_enter:vol_rest_ledge_1", ja: "足場で握力が戻る", en: "Ledges restore grip."}
   - {id: "hud.ch06.ai_states", beat: "ch06.b04", "on": "alert_state:suspicious", ja: "頭上の印：不審・警戒・捜索", en: "Marks above heads: Suspicious, Alert, Search."}
   - {id: "hud.ch06.sweep_gap", beat: "ch06.b04", "on": "volume_enter:vol_relay_entry", ja: "柱の目が背を向けた隙に、{Interact}で節を抜く", en: "Pull a node with {Interact} while the eye faces away."}
   - {id: "hud.ch06.takedown", beat: "ch06.b04", "on": "ai_event:first_rear_reach", ja: "背後から当て身：{Melee}（殺さない）", en: "Rear takedown: {Melee}. Non-lethal."}
   - {id: "hud.ch06.drag", beat: "ch06.b04", "on": "ai_event:first_takedown", ja: "倒れた者を引きずる：{Interact}長押し", en: "Drag a body: hold {Interact}."}
-  - {id: "hud.ch06.tsubute", beat: "ch06.b06", "on": "volume_enter:vol_rubble_c1", ja: "礫（つぶて）：音で見張りを誘う", en: "Tsubute: lure a guard with noise."}
+  - {id: "hud.ch06.tsubute", beat: "ch06.b06", "on": "volume_enter:vol_rubble_c1", ja: "礫（つぶて）：{Interact}で拾い{Ability}で投げ、音で見張りを誘う", en: "Tsubute: pick up with {Interact}, throw with {Ability} to lure a guard."}
   - {id: "hud.ch06.nightingale", beat: "ch06.b06", "on": "volume_enter:vol_uguisu_entry", ja: "鶯張り：しゃがんで壁際の端を歩く", en: "Nightingale floor: crouch along the wall edge."}
   - {id: "hud.ch06.candle", beat: "ch06.b08", "on": "beat_start", ja: "蝋燭を覆う：{Block}長押し　写しは半速", en: "Cup the candle: hold {Block}. Copying slows."}
   - {id: "hud.ch06.copy_pause", beat: "ch06.b08", "on": "ai_event:copy_paused", ja: "見られている間は、写しが止まる", en: "Copying pauses while you are seen."}

@@ -323,11 +323,20 @@ def _length(points):
 
 
 def _volume_events(beat, chapter):
+    """The volumes a beat's events name: its task's, its lines' and its HUD
+    prompts', but those on a climbing face, which its fieldcraft raises."""
     task = beat["task"]
     events = {task[key] for key in ("lines_event", "closing_event", "exit_event")}
     events |= {wave["event"] for wave in task["waves"]}
     events |= {row["on"] for row in chapter["triggers"] if row["beat"] == beat["id"]}
-    return {event for event in events if event and event.startswith("volume_enter:")}
+    events |= {row["on"] for row in chapter["ui_prompts"] if beat["id"] in row["beats"]}
+    # A ride's road objectives (ch08.b02's seal stakes) stand in their volumes.
+    if beat["type"] == "horseback_ride":
+        events |= {f"volume_enter:{row['volume']}" for row in beat["params"].get("objectives") or [] if row.get("volume")}
+    record = next(row for row in chapter["space"]["beats"] if row["beat"] == beat["id"])
+    climb = record["fieldcraft"]["climb"]
+    owned = set(climb["ledge_events"]) | {climb["top_event"]} if climb else set()
+    return {event for event in events if event and event.startswith("volume_enter:") and event not in owned}
 
 
 def check_space(chapter, beats, rewards, labels, where):
@@ -442,6 +451,7 @@ def check_space(chapter, beats, rewards, labels, where):
                 margin = record["route"]["margin_cm"]
                 require(task["path_cm"] == round(length) - 2 * margin and task["path_cm"] > 0,
                         f"{what}: the escort walks {task['path_cm']} cm of a {length:.0f} cm route")
+        check_fieldcraft(beat, record, index, zones, zone_of, on_floor)
         mount = record["mount"]
         require((mount is not None) == (beat["type"] == "horseback_ride" or any(
             "mount" in phase for phase in beat["params"].get("phases", []))), f"{what}: horse")
@@ -465,6 +475,200 @@ def check_space(chapter, beats, rewards, labels, where):
         on_floor(pickup["zone"], pickup["at"], f"{where} pickup {pickup['collectible']}")
 
 
+GUARD_KEYS = {"type", "sight_cm", "dark_sight_cm", "view_deg", "hearing_cm", "suspicion_permille", "post", "scan_deg",
+              "scan_ms", "turn_ms"}
+STEALTH_KEYS = {"rate_permille", "suspicious_at_permille", "search_ms", "wary_permille", "rear_takedowns",
+                "lethal_default", "bodies", "drag", "carryover_to"}
+FIELDCRAFT_KEYS = {"lamps", "surfaces", "water", "climb", "stones", "candle", "party", "signal", "hide_spots",
+                   "releases", "allies", "people", "volley", "alarms", "nets", "searchlights", "bell", "fires", "ladders",
+                   "charge"}
+NET_KEYS = {"quarry", "windup_ms", "haul_ms", "cut_ms", "saddle_weapon", "saddle_side", "tether", "halts", "net_waves",
+            "nets_per_wave", "scout_waves", "cross_wave", "cross_at_cm", "lost_event"}
+LIGHT_KEYS = {"id", "at", "height_cm", "yaw", "reach_cm", "road_from_cm", "road_to_cm", "sweep_deg", "period_ms", "spot_cm",
+              "suspicious_ms", "alert_ms", "lock_ms", "active_on", "spooks"}
+# SoraStealthRules::NoiseRadiusCm(ENoise::Landing): the thud of a drop off a roof.
+LANDING_NOISE_CM = 900
+# The hold's reach round its anchor (SoraCampaignReach::Hold): a cook-fire is relit without leaving the hold.
+HOLD_REACH_CM = 420
+ALLY_KINDS = {"fighter", "shooter", "rank", "guide", "bystander"}
+VOLLEY_KEYS = {"ranks", "per_rank", "weapon", "order_delay_ms", "cycle_ms", "radius_cm", "range_cm", "smoke_ms", "auto_order"}
+
+
+def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
+    """The beat's fieldcraft (campaign_fieldcraft.py) is one USoraFieldcraft can play."""
+    craft, what = record["fieldcraft"], beat["id"]
+    rect, _ = zone_of(index)
+    require(set(craft) == FIELDCRAFT_KEYS, f"{what}: fieldcraft keys {sorted(craft)}")
+
+    def area(row, label):
+        require(_inside(rect, row["center"], 0) and min(row["size"]) > 0, f"{what}: {label} {row} is off its floor")
+
+    for lamp in craft["lamps"]:
+        require(lamp["snuff"] in ("hold", "shot", "none") and lamp["radius_cm"] > 0 and lamp["relight_ms"] >= 0 and
+                (lamp["snuff"] == "hold") == (lamp["hold_ms"] > 0), f"{what}: lamp {lamp['id']} rules")
+        on_floor(index, lamp["at"], f"{what} lamp {lamp['id']}")
+    roofs = {ladder["height_cm"] for ladder in craft["ladders"]}
+    for surface in craft["surfaces"]:
+        area(surface, f"{surface['kind']} floor")
+        require(0 <= surface["crouch_permille"] <= 10000 and 0 < surface["step_permille"] <= 10000 and
+                (surface["height_cm"] == 0 or surface["height_cm"] in roofs), f"{what}: {surface['kind']} floor loudness")
+    water = craft["water"]
+    if water:
+        area(water, "water")
+        require(min(water[key] for key in ("surface_cm_s", "dive_cm_s", "breath_ms", "recover_ms")) > 0 and
+                water["drown_hp_s"] >= 0 and water["surface_step_permille"] > 0, f"{what}: swimming rules")
+        for row in water["cover"] + water["lines"]:
+            area(row, "water cover or float line")
+    climb = craft["climb"]
+    if climb:
+        require(zones[index]["form"] != "route" and climb["holds"] > 0 and climb["holds"] < 32 and
+                0 < climb["grip_per_hold"] * climb["holds"] <= 100 and climb["regen_per_s"] >= 0 and
+                all(0 < hold < climb["holds"] for hold in climb["ledges"]) and
+                len(climb["ledges"]) == len(climb["ledge_events"]) and 0 < climb["hurt_cm"] < climb["lethal_cm"],
+                f"{what}: climbing rules")
+        x0, y0, x1, y1 = rect
+        require(climb["width_cm"] == y1 - y0 and climb["at"][0] + climb["depth_cm"] < x1 and
+                record["entry"][0] < climb["at"][0] and climb["at"][0] < record["exit"]["center"][0],
+                f"{what}: the climbing face must bar the way to the exit wall to wall, with the entry before it")
+    stones = craft["stones"]
+    if stones:
+        require(stones["max"] > 0 and 0 <= stones["carried"] <= stones["max"] and stones["noise_cm"] > 0 and
+                stones["investigate_ms"] > 0 and (stones["carried"] > 0 or stones["piles"]), f"{what}: tsubute")
+        for pile in stones["piles"]:
+            on_floor(index, pile, f"{what} rubble", 0)
+    candle = craft["candle"]
+    if candle:
+        require(candle["visibility_permille"] > candle["cupped_permille"] >= 1000 and
+                0 < candle["cupped_rate_permille"] < 1000 and candle["radius_cm"] > 0, f"{what}: candle")
+    escort = beat["task"]["goal"] == "escort"
+    ids = [member["id"] for member in craft["party"]]
+    require(len(ids) == len(set(ids)) and (not escort or ids), f"{what}: the escorted party")
+    require(not craft["party"] or escort, f"{what}: only an escort has a party")
+    for member in craft["party"]:
+        require(member["health"] > 0 and member["revive_ms"] > 0 and member["bleedout_ms"] >= 0 and
+                member["lance_ms"] >= 0 and -1 <= member["release"] < len(craft["releases"]) and
+                (member["release"] < 0 or member["free_ms"] == craft["releases"][member["release"]]["hold_ms"]),
+                f"{what}: party member {member['id']}")
+    require(craft["signal"] == bool(craft["hide_spots"]) and (not craft["signal"] or escort), f"{what}: hide on signal")
+    for spot in craft["hide_spots"]:
+        on_floor(index, spot, f"{what} hide spot")
+    for release in craft["releases"]:
+        require(release["hold_ms"] > 0, f"{what}: cell door {release['id']}")
+        on_floor(index, release["at"], f"{what} cell door {release['id']}")
+    ally_ids = [ally["id"] for ally in craft["allies"]]
+    require(len(ally_ids) == len(set(ally_ids)) and not set(ally_ids) & set(ids), f"{what}: allies repeat an id")
+    for ally in craft["allies"]:
+        require(ally["role"] in ALLY_KINDS and ally["health"] > 0 and ally["revive_ms"] > 0 and
+                (ally["weapon"] == -1) == (ally["role"] in ("guide", "bystander")) and -1 <= ally["weapon"] <= 20 and
+                (ally["rank"] >= 0) == (ally["role"] == "rank") and ally["rank"] < 4 and
+                (ally["joins"] is None or re.fullmatch(r"wave_start:\d+", ally["joins"]) and
+                 int(ally["joins"].split(":")[1]) <= len(beat["task"]["waves"])), f"{what}: ally {ally['id']}")
+        on_floor(index, ally["at"], f"{what} ally {ally['id']}")
+    # SoraFieldcraftRules::FVolleyRules: up to four ranks, each a full row of gunners with the volley's arm.
+    volley = craft["volley"]
+    gunners = [ally for ally in craft["allies"] if ally["role"] == "rank"]
+    require(bool(volley) == bool(gunners), f"{what}: volley ranks without a volley, or a volley without ranks")
+    if volley:
+        require(set(volley) == VOLLEY_KEYS and 0 < volley["ranks"] <= 4 and volley["per_rank"] > 0 and
+                volley["order_delay_ms"] >= 0 and min(volley["cycle_ms"], volley["radius_cm"], volley["range_cm"]) > 0 and
+                sorted({ally["rank"] for ally in gunners}) == list(range(volley["ranks"])) and
+                all(sum(ally["rank"] == rank for ally in gunners) == volley["per_rank"] for rank in range(volley["ranks"])) and
+                all(ally["weapon"] == volley["weapon"] and ally["joins"] is None for ally in gunners),
+                f"{what}: volley ranks")
+    check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor)
+    people = [person["target"] for person in craft["people"]]
+    kinds = record["kit"]["targets"]
+    require(len(people) == len(set(people)) and people == [index for index, kind in enumerate(kinds) if kind == "person"] and
+            all(person["at"] == record["targets"][person["target"]] for person in craft["people"]),
+            f"{what}: every defended person stands at its target")
+
+
+def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
+    """Alarm lecterns, seizure nets, searchlights, the bell, cook-fires,
+    ladders and the League's charge (campaign_fieldcraft.py)."""
+    what, task, params = beat["id"], beat["task"], beat["params"]
+    for alarm in craft["alarms"]:
+        on_floor(index, alarm["at"], f"{what} alarm {alarm['id']}")
+    nets = craft["nets"]
+    if nets:
+        require(set(nets) == NET_KEYS and nets["windup_ms"] > 0 and nets["haul_ms"] >= 0 and nets["cut_ms"] > 0 and
+                nets["quarry"] and not set(nets["net_waves"]) & set(nets["scout_waves"]), f"{what}: seizure nets")
+        kinds = {row["kind"] for row in nets["quarry"]}
+        require(len(kinds) == 1, f"{what}: one kind of quarry a beat")
+        kind = kinds.pop()
+        ids = [row["id"] for row in nets["quarry"]]
+        if kind == "pack_horse":
+            require(beat["type"] == "horseback_ride" and ids == [row["id"] for row in record["mount"]["pack"]] and
+                    nets["lost_event"] == "convoy_member_seized" and nets["haul_ms"] > 0 and
+                    nets["saddle_weapon"] in record["mount"]["weapons"] and nets["saddle_side"] in (-1, 1),
+                    f"{what}: a convoy's nets fall on its pack horses and a load seized loses it")
+        elif kind == "cart":
+            require(task["goal"] == "escort" and nets["halts"] and ids[0] in params["escort"]["npcs"] and
+                    nets["quarry"][0]["hp"] > 0, f"{what}: an escort's nets fall on its cart")
+        else:
+            require(kind == "person" and ids == [target["id"] for target in task["targets"]] and nets["haul_ms"] > 0 and
+                    [row["index"] for row in nets["quarry"]] == list(range(len(ids))), f"{what}: a defence's nets")
+        waves = params.get("waves") or []
+        for wave in nets["net_waves"]:
+            require(0 <= wave < len(waves) and any(enemy["type"] == "drone" for enemy in waves[wave]["enemies"]),
+                    f"{what}: net wave {wave} sends no drone")
+        # Each net wave nets with one to all of its drones (the rest scout).
+        require(len(nets["nets_per_wave"]) == len(nets["net_waves"]) and
+                all(1 <= count <= sum(enemy["count"] for enemy in waves[wave]["enemies"] if enemy["type"] == "drone")
+                    for wave, count in zip(nets["net_waves"], nets["nets_per_wave"])), f"{what}: drones that net per wave")
+        # One drone of a net wave may cross the road at a mark on it.
+        if nets["cross_wave"] == -1:
+            require(nets["cross_at_cm"] == 0, f"{what}: a crossing without its wave")
+        else:
+            require(nets["cross_wave"] in nets["net_waves"] and zones[index]["route"] and
+                    0 < nets["cross_at_cm"] <= _length(zones[index]["route"]), f"{what}: a drone crosses the road on it")
+    lights = craft["searchlights"]
+    for light in lights:
+        require(set(light) == LIGHT_KEYS and light["period_ms"] >= 2 and light["spot_cm"] > 0, f"{what}: searchlight {light['id']}")
+        if light["road_to_cm"]:
+            route = zones[index]["route"]
+            require(0 <= light["road_from_cm"] < light["road_to_cm"] <= _length(route) and light["spooks"] and
+                    re.fullmatch(r"wave_start:\d+", light["active_on"] or ""), f"{what}: a road searchlight's stretch")
+        else:
+            require(0 < light["sweep_deg"] <= 180 and 0 < light["suspicious_ms"] < light["alert_ms"] and light["reach_cm"] > 0 and
+                    light["height_cm"] > 0 and light["lock_ms"] >= 0, f"{what}: searchlight {light['id']} rules")
+            on_floor(index, light["at"], f"{what} searchlight {light['id']}", 0)
+    bell = craft["bell"]
+    if bell:
+        require(bell["radius_cm"] > 0 and bell["uses"] > 0 and bell["hold_ms"] > 0 and bell["height_cm"] > 0,
+                f"{what}: the bell")
+        on_floor(index, bell["at"], f"{what} bell", 0)
+    fires = craft["fires"]
+    if fires:
+        require(task["goal"] == "hold" and fires["relight_ms"] > 0 and fires["out_at"] == sorted(fires["out_at"]) and
+                all(0 < mark < 1000 for mark in fires["out_at"]), f"{what}: cook-fires")
+        for fire in fires["points"]:
+            on_floor(index, fire["at"], f"{what} cook-fire {fire['id']}")
+            require(math.hypot(fire["at"][0] - record["anchor"][0], fire["at"][1] - record["anchor"][1]) <= HOLD_REACH_CM,
+                    f"{what}: cook-fire {fire['id']} stands outside the hold")
+    for ladder in craft["ladders"]:
+        area(ladder["roof"], f"roof of {ladder['id']}")
+        on_floor(index, ladder["foot"], f"{what} ladder {ladder['id']}", 0)
+        if ladder["straw"]:
+            on_floor(index, ladder["straw"]["center"], f"{what} straw by {ladder['id']}", 0)
+        guards = params.get("guards") or []
+        # A drop is heard as far as the script says: a landing's thud
+        # (SoraStealthRules::NoiseRadiusCm(ENoise::Landing)) made that loud,
+        # at most the ten times the rules allow.
+        require(ladder["height_cm"] > 0 and 0 < ladder["drop_noise_cm"] <= 10 * LANDING_NOISE_CM and
+                all(0 <= guard < len(guards) for guard in ladder["guards"]), f"{what}: ladder {ladder['id']}")
+    charge = craft["charge"]
+    if charge:
+        route = zones[index]["route"]
+        require(beat["type"] == "horseback_ride" and charge["riders"] > 0 and 0 < charge["catch_up_cm_s"] < charge["pace_cm_s"] and
+                charge["stake_break_ms"] > 0 and charge["stakes"], f"{what}: the charge")
+        chainages = []
+        for stake in charge["stakes"]:
+            on_floor(index, stake["at"], f"{what} stake {stake['id']}", 0)
+            chainages.append(min(range(len(route) - 1), key=lambda n: math.hypot(route[n][0] - stake["at"][0], route[n][1] - stake["at"][1])))
+        require(chainages == sorted(chainages), f"{what}: the stakes stand along the road in order")
+
+
 def validate(catalog, campaign, chapters, legacy, roster):
     speakers = {speaker["id"] for speaker in catalog["dialogue_speakers"]}
     require(catalog["schema_version"] == 4 and "chapters" not in catalog,
@@ -485,6 +689,14 @@ def validate(catalog, campaign, chapters, legacy, roster):
     known_bosses = set(BOSSES) & {row["id"] for row in roster["bosses"]["bosses"]}
     require(known_bosses == set(BOSSES), f"bosses.json lacks {sorted(set(BOSSES) - known_bosses)}")
     archetypes = {row["id"] for row in roster["enemies"]["archetypes"]}
+    # A defence's nets lock for as long as the drone's own seizure net winds up.
+    drone_net = next(attack["windup_ms"] for row in roster["enemies"]["archetypes"] if row["id"] == "drone"
+                     for attack in row["attacks"] if attack["id"] == "seizure_net")
+    for chapter in chapters:
+        for record in chapter["space"]["beats"]:
+            nets = record["fieldcraft"]["nets"]
+            require(not nets or nets["quarry"][0]["kind"] != "person" or nets["windup_ms"] == drone_net,
+                    f"{record['beat']}: the planters' nets lock as long as the drone's seizure net winds up")
     require(archetypes == set(ENEMIES), f"enemies.json's roster {sorted(archetypes)} is not the bible's §7")
 
     # Story flags: set once each by a beat, read by a later chapter's conditional lines.
@@ -579,7 +791,14 @@ def validate(catalog, campaign, chapters, legacy, roster):
                 require(beat["type"] == "duel" and beat["task"]["opponent"] == fights[beat["id"]]["opponent"],
                         f"{beat['id']}: bosses.json stages {fights[beat['id']]['id']} against another opponent")
             for guard in beat["task"]["guards"]:
-                require(guard in archetypes, f"{beat['id']}: unknown guard type {guard!r}")
+                require(guard["type"] in archetypes, f"{beat['id']}: unknown guard type {guard['type']!r}")
+                # 0 (or -1 for dark sight and hearing) keeps the archetype's sense.
+                require(set(guard) == GUARD_KEYS and guard["sight_cm"] >= 0 and guard["dark_sight_cm"] >= -1 and
+                        0 <= guard["view_deg"] <= 360 and guard["hearing_cm"] >= -1 and
+                        0 <= guard["suspicion_permille"] <= 1000 and
+                        (guard["dark_sight_cm"] < 0 or guard["sight_cm"] == 0 or guard["dark_sight_cm"] <= guard["sight_cm"]) and
+                        0 <= guard["scan_deg"] <= 360 and (guard["scan_deg"] > 0) == (guard["scan_ms"] > 0) and guard["turn_ms"] >= 0 and
+                        (guard["post"] or not (guard["scan_deg"] or guard["turn_ms"])), f"{beat['id']}: guard senses {guard}")
             # Somebody watches every stealth zone and all work under guard: the
             # zone's guards, or the task's patrolling wave members and x_guards.
             guarded = beat["type"] == "production_task" and beat["task"]["pause_when_seen"]
@@ -591,8 +810,21 @@ def validate(catalog, campaign, chapters, legacy, roster):
                 posted += [guard["type"] for guard in beat["ext"].get("guards") or [] for _ in range(guard.get("count", 1))]
             else:
                 posted = []
-            require(sorted(beat["task"]["guards"]) == sorted(posted) and (posted or beat["type"] != "stealth_zone" and not guarded),
-                    f"{beat['id']}: guards {beat['task']['guards']} are not the {sorted(posted)} it posts")
+            types = sorted(guard["type"] for guard in beat["task"]["guards"])
+            require(types == sorted(posted) and (posted or beat["type"] != "stealth_zone" and not guarded),
+                    f"{beat['id']}: guards {types} are not the {sorted(posted)} it posts")
+            # The zone's authored rules travel with every zone and all work under guard.
+            stealth = beat["task"]["stealth"]
+            watched = beat["type"] == "stealth_zone" or guarded
+            require((stealth is not None) == watched, f"{beat['id']}: stealth rules without a zone, or a zone without them")
+            if stealth:
+                require(set(stealth) == STEALTH_KEYS and 100 <= stealth["rate_permille"] <= 4000 and
+                        50 <= stealth["suspicious_at_permille"] <= 950 and 1000 <= stealth["search_ms"] <= 120000 and
+                        1000 <= stealth["wary_permille"] <= 4000, f"{beat['id']}: stealth rules {stealth}")
+                later = [row["id"] for row in chapter["beats"] if row["type"] == "stealth_zone"]
+                require(stealth["carryover_to"] is None or (stealth["carryover_to"] in later and
+                        later.index(stealth["carryover_to"]) > later.index(beat["id"])),
+                        f"{beat['id']}: detection carries over to {stealth['carryover_to']}, not a later zone")
             waves = params.get("waves", [])
             lethal = 0
             for wave in waves:
@@ -839,13 +1071,23 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def guard_without_archetype(data):
         # Posted as authored, so only the archetype check can refuse it.
         target = beat(data, "ch03.b02")
-        target["params"]["guards"][0]["type"] = target["task"]["guards"][0] = "drone_sentinel"
+        target["params"]["guards"][0]["type"] = target["task"]["guards"][0]["type"] = "drone_sentinel"
 
     def unguarded_work(data):
         beat(data, "ch06.b08")["task"]["guards"] = []
 
     def guard_outside_stealth(data):
-        beat(data, "ch02.b02")["task"]["guards"] = ["enforcer_rifle"]
+        beat(data, "ch02.b02")["task"]["guards"] = [dict(beat(data, "ch03.b03")["task"]["guards"][3])]
+
+    def guard_sees_in_the_dark(data):
+        guard = beat(data, "ch06.b02")["task"]["guards"][0]
+        guard["dark_sight_cm"] = guard["sight_cm"] + 100
+
+    def zone_without_rules(data):
+        beat(data, "ch06.b06")["task"]["stealth"] = None
+
+    def carryover_backwards(data):
+        beat(data, "ch03.b03")["task"]["stealth"]["carryover_to"] = "ch03.b02"
 
     def prompt(data, prompt_id):
         chapter = data[2][int(prompt_id[2:4]) - 1]
@@ -917,6 +1159,44 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def short_escort(data):
         next(beat for beat in data[2][7]["beats"] if beat["id"] == "ch08.b07")["task"]["path_cm"] -= 400
 
+    def lamp_in_wall(data):
+        record = space(data, 2, "ch03.b02")
+        record["fieldcraft"]["lamps"][0]["at"] = [data[2][2]["space"]["zones"][record["zone"]]["rect"][0] - 50, 0]
+
+    def climb_around_the_face(data):
+        space(data, 5, "ch06.b03")["fieldcraft"]["climb"]["width_cm"] -= 400
+
+    def ally_joins_no_wave(data):
+        space(data, 4, "ch05.b10")["fieldcraft"]["allies"][2]["joins"] = "wave_start:9"
+
+    def volley_rank_short(data):
+        allies = space(data, 7, "ch08.b03")["fieldcraft"]["allies"]
+        allies.remove(next(ally for ally in allies if ally["rank"] == 1))
+
+    def net_wave_without_drones(data):
+        space(data, 3, "ch04.b10")["fieldcraft"]["nets"]["net_waves"] = [0]
+
+    def netters_beyond_the_wave(data):
+        space(data, 1, "ch02.b08")["fieldcraft"]["nets"]["nets_per_wave"][0] = 4
+
+    def crossing_off_the_road(data):
+        nets = space(data, 1, "ch02.b08")["fieldcraft"]["nets"]
+        nets["cross_at_cm"] = 10_000_000
+
+    def drop_heard_past_the_rules(data):
+        space(data, 2, "ch03.b03")["fieldcraft"]["ladders"][0]["drop_noise_cm"] = 10 * LANDING_NOISE_CM + 1
+
+    def fire_outside_the_hold(data):
+        fire = space(data, 2, "ch03.b14")["fieldcraft"]["fires"]["points"][0]
+        fire["at"] = [fire["at"][0] - 600, fire["at"][1]]
+
+    def stakes_out_of_order(data):
+        stakes = space(data, 7, "ch08.b02")["fieldcraft"]["charge"]["stakes"]
+        stakes[0]["at"], stakes[2]["at"] = stakes[2]["at"], stakes[0]["at"]
+
+    def party_without_escort(data):
+        space(data, 1, "ch02.b02")["fieldcraft"]["party"] = [dict(space(data, 2, "ch03.b07")["fieldcraft"]["party"][0])]
+
     validate(*copy.deepcopy((catalog, campaign, chapters, legacy, roster)))
     mutations = (anchor_in_wall, short_route, missing_volume, zones_collide, lost_collectible, unlabelled_step,
                  yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, cache_without_save,
@@ -925,7 +1205,11 @@ def self_test(catalog, campaign, chapters, legacy, roster):
                  unknown_speaker, legacy_edit, muto_everywhere, conscript_quota, pacing, registry_on_combat,
                  lost_pickup, unknown_boss, optional_site, blocking_speech, story_flag_twice, unmet_condition,
                  boss_at_the_wrong_beat, duel_against_another, unknown_archetype, guard_without_archetype,
-                 unguarded_work, guard_outside_stealth, unbound_key_token, bracketed_control)
+                 unguarded_work, guard_outside_stealth, guard_sees_in_the_dark, zone_without_rules, carryover_backwards,
+                 unbound_key_token, bracketed_control,
+                 lamp_in_wall, climb_around_the_face, ally_joins_no_wave, party_without_escort, volley_rank_short,
+                 net_wave_without_drones, netters_beyond_the_wave, crossing_off_the_road, drop_heard_past_the_rules,
+                 fire_outside_the_hold, stakes_out_of_order)
     for mutate in mutations:
         data = copy.deepcopy((catalog, campaign, chapters, legacy, roster))
         mutate(data)

@@ -18,6 +18,120 @@ msgctxt "SoraArena,MenuTitle"
 msgid "猫柳生"
 msgstr "Nyaagyu Rebellion"
 
+#. Key:	Bokken
+#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+msgctxt "SoraArena.Arms,Bokken"
+msgid "木刀 / 非致死の立合い"
+msgstr "Bokken / non-lethal sparring"
+
+#. Key:	Group.Bow
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Arms,Group.Bow"
+msgid "弓"
+msgstr "Bow"
+
+#. Key:	Group.ChainAndImpact
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Arms,Group.ChainAndImpact"
+msgid "鎖・打物"
+msgstr "Chain and striking arms"
+
+#. Key:	Group.FireAndSupport
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Arms,Group.FireAndSupport"
+msgid "火具・支援"
+msgstr "Explosives and support"
+
+#. Key:	Group.Firearms
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Arms,Group.Firearms"
+msgid "鉄砲"
+msgstr "Firearms"
+
+#. Key:	Group.Polearms
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Arms,Group.Polearms"
+msgid "長柄"
+msgstr "Polearms"
+
+#. Key:	Group.Swords
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Arms,Group.Swords"
+msgid "刀剣"
+msgstr "Swords"
+
+#. Key:	GroupEmpty
+#: Source/SoraArena/Private/Characters/SoraPlayerCharacter.cpp
+msgctxt "SoraArena.Arms,GroupEmpty"
+msgid "いま手にできる{Group}はない。"
+msgstr "No {Group} to hand right now."
+
+#. Key:	TakenUp
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Arms,TakenUp"
+msgid "{Group}　{Arm}"
+msgstr "{Group}: {Arm}"
+
+#. Key:	WheelTitle
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Arms,WheelTitle"
+msgid "武器の輪　視点を向けて選び、{Key} を離して持ち替える"
+msgstr "Arms wheel: look toward an arm, release {Key} to take it up"
+
+#. Key:	ArmsFull
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,ArmsFull"
+msgid "荷を抱えている。手にできるのは刀を片手で、が精一杯だ。"
+msgstr "Your arms are full: at most the katana in one paw."
+
+#. Key:	CannotDismount
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,CannotDismount"
+msgid "ここでは降りられない。"
+msgstr "You cannot dismount here."
+
+#. Key:	FoundCollectible
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,FoundCollectible"
+msgid "見つけた：{Category}"
+msgstr "Found: {Category}"
+
+#. Key:	MountFromRight
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,MountFromRight"
+msgid "馬には右側から乗る。右へ回り込もう。"
+msgstr "Mount from her right side, as riders do. Walk around to her right."
+
+#. Key:	NotFromSaddle
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,NotFromSaddle"
+msgid "馬上ではこの武器は使えない。"
+msgstr "That weapon cannot be used from the saddle."
+
+#. Key:	SaddleKatanaArc
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,SaddleKatanaArc"
+msgid "馬上の刀は右手側へ斬る。"
+msgstr "From the saddle the katana cuts to the right."
+
+#. Key:	SaddleYariArc
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,SaddleYariArc"
+msgid "馬上の槍は前と右へ突く。"
+msgstr "From the saddle the yari thrusts forward and to the right."
+
+#. Key:	SaddleYumiArc
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,SaddleYumiArc"
+msgid "馬上の弓は左手側へ射る。"
+msgstr "From the saddle the yumi shoots to the left."
+
+#. Key:	WhistleKurimaru
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,WhistleKurimaru"
+msgid "指笛で栗丸を呼んだ。"
+msgstr "You whistle for Kurimaru."
+
 #. Key:	Ahead
 #: Source/SoraArena/Private/HUD/SoraHUDCaptions.cpp
 msgctxt "SoraArena.Captions,Ahead"
@@ -259,17 +373,29 @@ msgctxt "SoraArena.Controls,Control.Ability"
 msgid "技"
 msgstr "Ability"
 
+#. Key:	Control.ArmsNext
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.ArmsNext"
+msgid "次の武器（物語）"
+msgstr "Next arm (campaign)"
+
+#. Key:	Control.ArmsPrevious
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.ArmsPrevious"
+msgid "前の武器（物語）"
+msgstr "Previous arm (campaign)"
+
+#. Key:	Control.ArmsWheel
+#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
+msgctxt "SoraArena.Controls,Control.ArmsWheel"
+msgid "武器の輪（押す：次、長押し：選ぶ）"
+msgstr "Arms wheel (tap: next, hold: choose)"
+
 #. Key:	Control.Block
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
 msgctxt "SoraArena.Controls,Control.Block"
 msgid "構え・受け"
 msgstr "Guard"
-
-#. Key:	Control.CampaignWeaponNext
-#: Source/SoraArena/Private/UI/SoraMenuInput.cpp
-msgctxt "SoraArena.Controls,Control.CampaignWeaponNext"
-msgid "次の武器（物語）"
-msgstr "Next weapon (campaign)"
 
 #. Key:	Control.Crouch
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
@@ -376,38 +502,38 @@ msgstr "the subtitle switch"
 #. Key:	Control.WeaponFive
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
 msgctxt "SoraArena.Controls,Control.WeaponFive"
-msgid "槍（物語）"
-msgstr "Yari (campaign)"
+msgid "鎖・打物（物語）"
+msgstr "Chain and striking arms (campaign)"
 
 #. Key:	Control.WeaponFour
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
 msgctxt "SoraArena.Controls,Control.WeaponFour"
-msgid "弓（物語）"
-msgstr "Yumi (campaign)"
+msgid "鉄砲（物語）"
+msgstr "Firearms (campaign)"
 
 #. Key:	Control.WeaponOne
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
 msgctxt "SoraArena.Controls,Control.WeaponOne"
-msgid "主武器"
-msgstr "Main weapon"
+msgid "主武器・物語は刀剣"
+msgstr "Main weapon; campaign: swords"
 
 #. Key:	Control.WeaponSix
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
 msgctxt "SoraArena.Controls,Control.WeaponSix"
-msgid "薙刀（物語）"
-msgstr "Naginata (campaign)"
+msgid "火具・支援（物語）"
+msgstr "Explosives and support (campaign)"
 
 #. Key:	Control.WeaponThree
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
 msgctxt "SoraArena.Controls,Control.WeaponThree"
-msgid "特殊武器"
-msgstr "Special weapon"
+msgid "特殊武器・物語は弓"
+msgstr "Special weapon; campaign: bow"
 
 #. Key:	Control.WeaponTwo
 #: Source/SoraArena/Private/UI/SoraMenuInput.cpp
 msgctxt "SoraArena.Controls,Control.WeaponTwo"
-msgid "近接武器"
-msgstr "Melee weapon"
+msgid "近接武器・物語は長柄"
+msgstr "Melee weapon; campaign: polearms"
 
 #. Key:	InvertLook
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
@@ -528,6 +654,198 @@ msgstr "Third-party notices are missing: {Directory}"
 msgctxt "SoraArena.Credits,Typeface"
 msgid "書体"
 msgstr "Typeface"
+
+#. Key:	AutoOrder
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,AutoOrder"
+msgid "自動号令：込め終えた組が一番近い敵へ放つ"
+msgstr "Auto-order: a loaded rank fires on the nearest opponent"
+
+#. Key:	Candle
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Candle"
+msgid "手燭が目立つ　{Key} 長押しで覆う"
+msgstr "Your candle shows. Hold {Key} to cup it"
+
+#. Key:	Charge
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Charge"
+msgid "騎馬 {Riders}　差押え杭 残り {Stakes}"
+msgstr "Riders {Riders}   Seal stakes left {Stakes}"
+
+#. Key:	Climbing
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Climbing"
+msgid "握力　前後で登り降り　{Key} で手を離す"
+msgstr "Grip. Forward and back to climb; {Key} to let go"
+
+#. Key:	Cupped
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Cupped"
+msgid "手燭を覆っている　写しは半速"
+msgstr "Candle cupped: copying at half speed"
+
+#. Key:	Diving
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Diving"
+msgid "潜水中　息　{Key} で浮かぶ"
+msgstr "Diving: breath. {Key} to surface"
+
+#. Key:	Downed
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Downed"
+msgid "倒れている"
+msgstr "Down"
+
+#. Key:	FireOut
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,FireOut"
+msgid "竈の火が消えた　{Key} 長押しで点け直すまで炊き出しは止まる"
+msgstr "A cook-fire went out. The kitchen stops until you hold {Key} to relight it"
+
+#. Key:	Free
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Free"
+msgid "{Key} 長押し：首輪を断つ"
+msgstr "Hold {Key}: cut the collar"
+
+#. Key:	HeldWork
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,HeldWork"
+msgid "{Key} を押さえたまま仕事を続ける"
+msgstr "Keep {Key} held to finish the work"
+
+#. Key:	Hoist
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Hoist"
+msgid "{Key} 長押し：釣瓶で引き上げる"
+msgstr "Hold {Key}: haul it up on the well bucket"
+
+#. Key:	HoistWatched
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,HoistWatched"
+msgid "見られている　{Key} を押さえたまま待て"
+msgstr "You are watched. Keep {Key} held and wait"
+
+#. Key:	InLight
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,InLight"
+msgid "探照灯に照らされている　潜れ"
+msgstr "Caught in a searchlight. Dive"
+
+#. Key:	Ladder
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Ladder"
+msgid "{Key}：梯子を使う"
+msgstr "{Key}: use the ladder"
+
+#. Key:	Ledge
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Ledge"
+msgid "足場で握力が戻る　{Key} で手を離す"
+msgstr "Grip returns on the ledge. {Key} to let go"
+
+#. Key:	NetCut
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,NetCut"
+msgid "{Key} 長押し：網を切る"
+msgstr "Hold {Key}: cut the net"
+
+#. Key:	Nets
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Nets"
+msgid "差押網 {Held}　網を切るか、吊る目録を落とせ"
+msgstr "Seizure nets {Held}   Cut the net, or bring down the drone that holds it"
+
+#. Key:	NoStones
+#: Source/SoraArena/Private/Game/SoraFieldcraft.cpp
+msgctxt "SoraArena.Fieldcraft,NoStones"
+msgid "礫がない。崩れた石垣で拾おう。"
+msgstr "No stones. Pick some up from the broken rampart."
+
+#. Key:	Release
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Release"
+msgid "{Key} 長押し：牢の戸を開ける"
+msgstr "Hold {Key}: open the cell"
+
+#. Key:	Relight
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Relight"
+msgid "{Key} 長押し：竈の火を点け直す"
+msgstr "Hold {Key}: relight the cook-fire"
+
+#. Key:	Revive
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Revive"
+msgid "{Key} 長押し：助け起こす"
+msgstr "Hold {Key}: help them up"
+
+#. Key:	SignalGo
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,SignalGo"
+msgid "仲間は伏せている　{Key}：進めの合図"
+msgstr "Your people are down. {Key}: signal them on"
+
+#. Key:	SignalHide
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,SignalHide"
+msgid "{Key}：伏せろの合図"
+msgstr "{Key}: signal them down"
+
+#. Key:	Snuff
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Snuff"
+msgid "{Key} 長押し：灯りを消す"
+msgstr "Hold {Key}: snuff the lamp"
+
+#. Key:	StartClimb
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,StartClimb"
+msgid "{Key}：手掛かりへ取り付く"
+msgstr "{Key}: reach for the holds"
+
+#. Key:	Stones
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Stones"
+msgid "礫 {Count} / {Max}　{Key} で投げる"
+msgstr "Stones {Count} / {Max}. {Key} to throw"
+
+#. Key:	Swimming
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Swimming"
+msgid "泳いでいる　息　{Key} で潜る"
+msgstr "Swimming: breath. {Key} to dive"
+
+#. Key:	TakeStones
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,TakeStones"
+msgid "{Key}：礫を拾う"
+msgstr "{Key}: pick up stones"
+
+#. Key:	Volley
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,Volley"
+msgid "輪番撃ち　{Key} 長押し：的を示す"
+msgstr "Rotation fire: hold {Key} to mark a target"
+
+#. Key:	VolleyLoading
+#: Source/SoraArena/Private/Game/SoraFieldcraft.cpp
+msgctxt "SoraArena.Fieldcraft,VolleyLoading"
+msgid "次の組はまだ込めている。"
+msgstr "The next rank is still loading."
+
+#. Key:	VolleyMarking
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,VolleyMarking"
+msgid "的を示している　{Key} を離して放て"
+msgstr "Marking the target: release {Key} to fire"
+
+#. Key:	VolleyOutOfReach
+#: Source/SoraArena/Private/Game/SoraFieldcraft.cpp
+msgctxt "SoraArena.Fieldcraft,VolleyOutOfReach"
+msgid "的が遠い。{Range} m 以内の地面を示せ。"
+msgstr "Too far. Mark the ground within {Range} m."
 
 #. Key:	Ammo.Arrows
 #: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
@@ -1987,6 +2305,18 @@ msgstr "VSync"
 msgctxt "SoraArena.Settings,VSync.Hint"
 msgid "画面の書き換えに合わせ、画面の裂けを防ぐ。遅延が少し増える。"
 msgstr "Waits for the display to prevent tearing, at a little extra latency."
+
+#. Key:	VolleyAutoOrder
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,VolleyAutoOrder"
+msgid "斉射の自動号令"
+msgstr "Volley auto-order"
+
+#. Key:	VolleyAutoOrder.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,VolleyAutoOrder.Hint"
+msgid "稽古の難易度でのみ、込め終えた鉄砲組が一番近い敵へ自ら斉射する。"
+msgstr "On Easy only, a loaded rank of gunners fires on the nearest opponent by itself."
 
 #. Key:	Window.Borderless
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp

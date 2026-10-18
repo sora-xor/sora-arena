@@ -3,7 +3,10 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraCombatRules.h"
+#include "SoraCompanion.h"
 #include "SoraEnemy.h"
+#include "SoraFieldcraft.h"
+#include "SoraFieldcraftRules.h"
 #include "SoraGameMode.h"
 #include "SoraGameEvents.h"
 #include "SoraHistoricalArms.h"
@@ -48,6 +51,10 @@ bool CanHold(const ASoraPlayerCharacter& Hero,int32 WeaponId)
 }
 }
 
+void USoraEquipmentComponent::RaiseBeatEvent(const FString& Event) const
+{
+    if (USoraCampaignDirector* Campaign = HeroCampaign(*Hero())) Campaign->FireDialogueTrigger(FName(*Event));
+}
 USoraEquipmentComponent::USoraEquipmentComponent()
 {
     // The hero's tick drives this component so its order within a frame is fixed.
@@ -61,6 +68,7 @@ void USoraEquipmentComponent::ResetForClass()
     AmmoByWeapon.SetNum(21); for(int32 I=0;I<21;++I) AmmoByWeapon[I]=FSoraCatalog::Get().Weapon(I).Magazine;
     bReloading=false; NextShot=0; bFireHeld=false; bBowDrawing=false; GuardStamina=100.f;
     bCommittedStrike=false; bHistoricalRecovery=false; CommittedWeaponId=INDEX_NONE;
+    bChainCast=false; ChainTarget.Reset();
     bSheathed=false; bStepping=false; Awased.Reset(); bZanshinDue=false;
 }
 void USoraEquipmentComponent::Hold(int32 WeaponId)
@@ -71,11 +79,11 @@ void USoraEquipmentComponent::Hold(int32 WeaponId)
 }
 void USoraEquipmentComponent::DropStance()
 {
-    bGuardHeld=false; bBowDrawing=false; bCommittedStrike=false; bHistoricalRecovery=false;
+    bGuardHeld=false; bBowDrawing=false; bCommittedStrike=false; bHistoricalRecovery=false; bChainCast=false;
 }
 void USoraEquipmentComponent::Halt()
 {
-    bBowDrawing=false; bCommittedStrike=false; bFireHeld=false; bGuardHeld=false; bStepping=false;
+    bBowDrawing=false; bCommittedStrike=false; bFireHeld=false; bGuardHeld=false; bStepping=false; bChainCast=false;
 }
 float USoraEquipmentComponent::BowDrawProgress() const
 {
@@ -101,7 +109,7 @@ void USoraEquipmentComponent::Stagger(float Seconds)
     const float Until=GetWorld()->GetTimeSeconds()+Seconds;
     StaggeredUntil=FMath::Max(StaggeredUntil,Until);
     bGuardHeld=false; bBowDrawing=false; bFireHeld=false;
-    bCommittedStrike=false; CommittedWeaponId=INDEX_NONE;
+    bCommittedStrike=false; CommittedWeaponId=INDEX_NONE; bChainCast=false;
     NextShot=FMath::Max(NextShot,StaggeredUntil);
 }
 bool USoraEquipmentComponent::IsStaggered() const { return GetWorld()&&GetWorld()->GetTimeSeconds()<StaggeredUntil; }
@@ -200,7 +208,9 @@ void USoraEquipmentComponent::TickWeapon()
 {
     TickStep();
     const float Now=GetWorld()->GetTimeSeconds();
-    if(bCommittedStrike&&Now>=CommittedStrikeAt) ResolveCommittedStrike();
+    if(bCommittedStrike&&Now>=CommittedStrikeAt) { if(bChainCast) ResolveChain(); else ResolveCommittedStrike(); }
+    // 会: the yumi at full draw.
+    if(bBowDrawing&&!bDrawCompleteRaised&&BowDrawProgress()>=1.f) { bDrawCompleteRaised=true; RaiseBeatEvent(TEXT("draw_complete")); }
     if(bHistoricalRecovery&&Now>=NextShot) bHistoricalRecovery=false;
     if(bReloading&&Now>=ReloadEnd) { Ammo=FSoraCatalog::Get().Weapon(Hero()->WeaponId).Magazine; bReloading=false; }
     if(bFireHeld) Fire();
@@ -217,7 +227,7 @@ void USoraEquipmentComponent::TriggerDown()
     if(W.Kind==TEXT("bow"))
     {
         if(!bBowDrawing&&!bReloading&&!H->IsSprinting()&&Ammo>0&&GetWorld()->GetTimeSeconds()>=NextShot)
-        { bBowDrawing=true; BowDrawStartedAt=GetWorld()->GetTimeSeconds(); }
+        { bBowDrawing=true; bDrawCompleteRaised=false; BowDrawStartedAt=GetWorld()->GetTimeSeconds(); }
         return;
     }
     if(!H->IsDojoTraining()&&SoraHistoricalArms::IsMelee(WeaponId)) { Fire(); return; }
@@ -234,6 +244,7 @@ void USoraEquipmentComponent::Fire()
     if(W.Kind==TEXT("bow")) return;
     if(Ammo<=0) { Reload(); return; }
     --Ammo; NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
+    RaiseBeatEvent(FString::Printf(TEXT("fired:%d"),H->WeaponId));
     const UCameraComponent* Camera=H->GetCamera();
     const FVector Start=Camera->GetComponentLocation(); const FVector Dir=Camera->GetForwardVector();
     FSoraWeaponFiredEvent Fired;
@@ -254,6 +265,9 @@ void USoraEquipmentComponent::Fire()
         SoraDamage::Beam(GetWorld(),Start+Dir*65+Camera->GetRightVector()*17-Camera->GetUpVector()*12,Hit.bBlockingHit?Hit.ImpactPoint:End,W.Special?FLinearColor(.08,.9,.9):FLinearColor(1,.68,.15));
         Fired.Kind=ESoraShotKind::Hitscan; Fired.Origin=Start; Fired.End=Hit.bBlockingHit?FVector(Hit.ImpactPoint):End;
         if(auto* Events=USoraGameEvents::Get(this)) Events->OnWeaponFired.Broadcast(Fired);
+        // The healing lance's round raises a downed companion (ch08.b07).
+        if(W.Kind==TEXT("healing")&&Cast<ASoraCompanion>(Hit.GetActor()))
+            if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->LanceHit(Hit.GetActor());
         if(Hit.GetActor())
         {
             SoraDamage::Strike(Hit.GetActor(),W.Damage,FSoraHit::Ranged(Start,H->WeaponId),Dir,Hit,H->GetController(),H);
@@ -276,6 +290,25 @@ void USoraEquipmentComponent::Melee()
     USoraGameEvents* Events=USoraGameEvents::Get(this);
     // Every melee arm strikes with commitment: a windup along a fixed line, one
     // contact, then recovery. Only the dojo bokken's lesson swing is swept.
+    // The kusarigama casts its weight at an opponent beyond the sickle's reach.
+    if(!H->IsDojoTraining()&&MeleeId==2)
+        if(ASoraEnemy* Quarry=ChainQuarry())
+        {
+            const float Now=GetWorld()->GetTimeSeconds();
+            bCommittedStrike=true; bChainCast=true; bHistoricalRecovery=true; H->StopSprint();
+            CommittedWeaponId=MeleeId; CommittedDirection=Camera->GetForwardVector(); ChainTarget=Quarry;
+            CommittedStrikeAt=Now+SoraFieldcraftRules::ChainWindupMs/1000.f;
+            NextShot=CommittedStrikeAt+SoraFieldcraftRules::ChainRecoveryMs/1000.f;
+            ++ChainCasts;
+            if(Events)
+            {
+                FSoraMeleeCommittedEvent Committed;
+                Committed.Attacker=H; Committed.WeaponId=MeleeId; Committed.Direction=CommittedDirection;
+                Committed.WindupSeconds=SoraFieldcraftRules::ChainWindupMs/1000.f;
+                Events->OnMeleeCommitted.Broadcast(Committed);
+            }
+            return;
+        }
     if(!H->IsDojoTraining()&&SoraHistoricalArms::IsMelee(MeleeId))
     {
         const auto Profile=SoraHistoricalArms::Profile(SoraHistoricalArms::FormFor(MeleeId));
@@ -386,6 +419,50 @@ void USoraEquipmentComponent::ResolveCommittedStrike()
     SoraDamage::Beam(GetWorld(),Start+CommittedDirection*40.f,End,
         StrikeWeapon==19?FLinearColor(.73f,.78f,.82f):FLinearColor(.55f,.75f,.82f),1.4f,.11f);
 }
+ASoraEnemy* USoraEquipmentComponent::ChainQuarry() const
+{
+    const ASoraPlayerCharacter* H=Hero();
+    const FVector Eye=H->GetCamera()->GetComponentLocation();
+    const FVector Forward=H->GetCamera()->GetForwardVector().GetSafeNormal2D();
+    const int32 Sickle=FMath::RoundToInt32(SoraHistoricalArms::Profile(SoraHistoricalArms::EForm::Kusarigama).MaximumDistanceCm);
+    ASoraEnemy* Best=nullptr;
+    float BestDistance=SoraFieldcraftRules::ChainReachCm+1.f;
+    for(TActorIterator<ASoraEnemy> It(GetWorld());It;++It)
+    {
+        if(!It->IsEnemy()||!It->IsAlive()||It->IsSubdued()) continue;
+        const FVector Delta=It->GetActorLocation()-H->GetActorLocation();
+        const float Distance=Delta.Size2D();
+        if(Distance>=BestDistance||FVector::DotProduct(Forward,Delta.GetSafeNormal2D())<.85f||
+            SoraFieldcraftRules::Snare(FMath::RoundToInt32(Distance),Sickle,It->IsFlying(),It->HasShield())==SoraFieldcraftRules::ESnare::None)
+            continue;
+        FHitResult Line; FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraChain),false,H);
+        GetWorld()->LineTraceSingleByChannel(Line,Eye,It->GetActorLocation(),ECC_Visibility,Query);
+        if(Line.bBlockingHit&&Line.GetActor()!=*It) continue;
+        Best=*It; BestDistance=Distance;
+    }
+    return Best;
+}
+void USoraEquipmentComponent::ResolveChain()
+{
+    ASoraPlayerCharacter* H=Hero();
+    bCommittedStrike=false; bChainCast=false; CommittedWeaponId=INDEX_NONE;
+    ASoraEnemy* Target=ChainTarget.Get();
+    ChainTarget.Reset();
+    if(!H->CanPlay()||!Target||!Target->IsAlive()) return;
+    const FVector Start=H->GetCamera()->GetComponentLocation();
+    const FVector Delta=Target->GetActorLocation()-H->GetActorLocation();
+    const int32 Sickle=FMath::RoundToInt32(SoraHistoricalArms::Profile(SoraHistoricalArms::EForm::Kusarigama).MaximumDistanceCm);
+    // The weight flies along the line it was cast on; a target that left it goes free.
+    const SoraFieldcraftRules::ESnare Snare=FVector::DotProduct(CommittedDirection.GetSafeNormal2D(),Delta.GetSafeNormal2D())<.7f
+        ?SoraFieldcraftRules::ESnare::None
+        :SoraFieldcraftRules::Snare(FMath::RoundToInt32(Delta.Size2D()),Sickle,Target->IsFlying(),Target->HasShield());
+    SoraDamage::Beam(GetWorld(),Start+CommittedDirection*40.f,Target->GetActorLocation(),FLinearColor(.5f,.52f,.55f),1.2f,.2f);
+    if(Snare==SoraFieldcraftRules::ESnare::None) return;
+    Target->Snared(Snare,H);
+    ++ChainHits;
+    RaiseBeatEvent(Snare==SoraFieldcraftRules::ESnare::Drone?TEXT("snare:drone"):Snare==SoraFieldcraftRules::ESnare::Shield
+        ?TEXT("snare:shield"):TEXT("snare:blade"));
+}
 void USoraEquipmentComponent::ReleaseBow()
 {
     ASoraPlayerCharacter* H=Hero();
@@ -401,6 +478,9 @@ void USoraEquipmentComponent::ReleaseBow()
     Arrow->bArrow=true; Arrow->Damage=W.Damage; Arrow->Velocity=Direction*W.ProjectileSpeed; Arrow->WeaponId=18;
     UGameplayStatics::FinishSpawningActor(Arrow,Arrow->GetActorTransform());
     --Ammo; NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
+    // The loose, and a quiver running low (ch02.b08's event:arrows_below:4).
+    RaiseBeatEvent(TEXT("release")); RaiseBeatEvent(TEXT("fired:18"));
+    RaiseBeatEvent(FString::Printf(TEXT("event:arrows_below:%d"),Ammo+1));
     if(auto* Events=USoraGameEvents::Get(this))
     {
         FSoraWeaponFiredEvent Fired;
@@ -436,6 +516,7 @@ bool USoraEquipmentComponent::EquipClassSlot(int32 Slot)
     bBowDrawing=false; bFireHeld=false; bGuardHeld=false; bSheathed=false;
     AmmoByWeapon[H->WeaponId]=Ammo; H->WeaponId=FSoraCatalog::Get().Class(H->ClassId).Weapons[Slot];
     Ammo=AmmoByWeapon[H->WeaponId]; NextShot=GetWorld()->GetTimeSeconds()+.25f; H->RebuildWeapon();
+    RaiseBeatEvent(FString::Printf(TEXT("equip:%d"),H->WeaponId));
     return true;
 }
 bool USoraEquipmentComponent::EquipCampaignWeapon(int32 NewWeaponId)
@@ -448,5 +529,6 @@ bool USoraEquipmentComponent::EquipCampaignWeapon(int32 NewWeaponId)
     AmmoByWeapon[H->WeaponId]=Ammo;
     H->WeaponId=NewWeaponId; Ammo=AmmoByWeapon[H->WeaponId];
     NextShot=GetWorld()->GetTimeSeconds()+.25f; H->RebuildWeapon();
+    RaiseBeatEvent(FString::Printf(TEXT("equip:%d"),NewWeaponId));
     return true;
 }

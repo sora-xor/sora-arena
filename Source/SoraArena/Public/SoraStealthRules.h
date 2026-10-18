@@ -15,8 +15,11 @@ namespace SoraStealthRules
 enum class EState { Unaware, Suspicious, Alert, Search, Combat, Retreat };
 // Footsteps (walking, sprinting or crouch-walking) are heard for as long as
 // they last; the others are single events. A call-out is an ally shouting
-// where the hero is; a takedown is the scuffle of one guard going down.
-enum class ENoise { Footstep, Sprint, Melee, Shot, Explosion, Callout, CrouchStep, Takedown };
+// where the hero is; a takedown is the scuffle of one guard going down; a
+// lure is a thrown stone landing or a float line ringing, which sends a guard
+// to look but never tells it the hero is there (SoraFieldcraftRules::LureImpulsePermille);
+// a landing is the thud of a drop off a roof.
+enum class ENoise { Footstep, Sprint, Melee, Shot, Explosion, Callout, CrouchStep, Takedown, Lure, Landing };
 // Blades close in with footwork; cover shooters hold a box and peek to fire;
 // flankers circle to the hero's side before taking cover.
 enum class ERole { Blade, CoverShooter, Flanker };
@@ -176,6 +179,10 @@ constexpr int NoiseRadiusCm(ENoise Noise)
     case ENoise::Callout: return 1800;
     case ENoise::CrouchStep: return 180;
     case ENoise::Takedown: return 220;
+    // ch06: a tsubute's impact and the moat's float line, 1,400.
+    case ENoise::Lure: return 1400;
+    // ch03.b03: the drop off the board roof, 900.
+    case ENoise::Landing: return 900;
     }
     return 0;
 }
@@ -192,6 +199,8 @@ constexpr int NoisePeakPermille(ENoise Noise)
     case ENoise::Explosion:
     case ENoise::Callout: return 1000;
     case ENoise::CrouchStep: return 200;
+    case ENoise::Lure: return 600;
+    case ENoise::Landing: return 650;
     }
     return 0;
 }

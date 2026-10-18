@@ -32,6 +32,8 @@ from __future__ import annotations
 import math
 import re
 
+from campaign_fieldcraft import derive_fieldcraft, owned_volumes
+
 # Mirrors of the arena build (SoraWorldBuilder.cpp) for hub beats: the floor
 # inside the perimeter walls, the gate where the hero starts, the east torii,
 # the central road clear of lantern posts and cover, the three production
@@ -230,13 +232,15 @@ class Zone:
 
 
 def _referenced_volumes(beat, triggers):
-    """Every volume the beat's events name, in the order they are first named."""
+    """Every volume the beat's events name, in the order they are first named,
+    but those on a climbing face, which its fieldcraft raises itself."""
     names = []
+    owned = owned_volumes(beat)
 
     def add(event):
         if event and event.startswith("volume_enter:"):
             name = event.split(":", 1)[1]
-            if name not in names:
+            if name not in names and name not in owned:
                 names.append(name)
     task = beat["task"]
     for key in ("lines_event", "closing_event", "exit_event"):
@@ -251,6 +255,10 @@ def _referenced_volumes(beat, triggers):
     add(f"volume_enter:{spook['volume']}" if spook.get("volume") else None)
     for forced in ext.get("forced_gait_volumes") or []:
         add(f"volume_enter:{forced['volume']}")
+    # A ride's objectives on the road (ch08.b02's seal stakes) stand in their volumes.
+    if beat["type"] == "horseback_ride":
+        for objective in beat["params"].get("objectives") or []:
+            add(f"volume_enter:{objective['volume']}" if objective.get("volume") else None)
     return names
 
 
@@ -269,26 +277,26 @@ def _point_kind(name):
 
 
 def _target_kind(actor):
+    """A defended target's kit: a pack horse, a furnace, the aid tent; a
+    person is the fieldcraft's own character (campaign_fieldcraft.py)."""
     if "pack_horse" in actor:
         return "horse"
     if "furnace" in actor or "forge" in actor:
         return "furnace"
     if actor == "aid_station":
         return "tent"
-    return "villager"
+    return "person"
 
 
 def _party(npcs):
+    """The escort's carts and horses, which the kit builds; its people are
+    the fieldcraft's party (campaign_fieldcraft.py)."""
     kinds = []
     for npc in npcs:
-        if isinstance(npc, dict):
-            kinds += ["villager"] * int(npc.get("count", 1))
-        elif "ox_cart" in npc:
+        if isinstance(npc, str) and "ox_cart" in npc:
             kinds.append("cart")
-        elif "pack_horse" in npc:
+        elif isinstance(npc, str) and "pack_horse" in npc:
             kinds.append("horse")
-        else:
-            kinds.append("villager")
     return kinds[:6]
 
 
@@ -528,9 +536,11 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
 
     records = []
     order_in_zone = {}
+    hub_cover = [box(((x0 + x1) // 2, (y0 + y1) // 2), (x1 - x0, y1 - y0), 0)
+                 for x0, y0, x1, y1 in arena_blockers(chapter_map)] if hub else []
     for position, beat in enumerate(beats):
         index = route_of.get(beat["id"], zone_of.get(beat["place"], -1))
-        records.append(_beat_space(beat, index, zones, sites, triggers, order_in_zone, fail))
+        records.append(_beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, fail))
         if beat["id"] in route_of and beat["task"]["goal"] == "escort":
             route = zones[index].route
             beat["task"]["path_cm"] = _i(polyline_length(route)) - 2 * ESCORT_MARGIN
@@ -644,7 +654,7 @@ def _zone_spots(zone):
     return [_frac(zone.rect, fx, fy) for fx in SPOT_X for fy in SPOT_Y]
 
 
-def _beat_space(beat, index, zones, sites, triggers, order_in_zone, fail):
+def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, fail):
     task = beat["task"]
     record = {"beat": beat["id"], "zone": index}
     count = order_in_zone.get(index, 0)
@@ -684,6 +694,7 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, fail):
         if site is not None:
             record["anchor"] = list(route[-1])
         record["route"] = {"zone": index, "margin_cm": ESCORT_MARGIN}
+        allocator = Allocator([], [])
     else:
         rect = zone.rect if zone else ARENA_RECT
         entry = zone.entry if zone else ARENA_ENTRY
@@ -765,6 +776,8 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, fail):
     if record["mount"]:
         at = record["entry"]
         record["mount"]["at"] = [at[0] + (200 if zone and zone.form == "route" else 300), at[1], 0]
+    record["fieldcraft"] = derive_fieldcraft(beat, record, zone, zone.rect if zone else ARENA_RECT,
+                                             zone.cover if zone else hub_cover, allocator, fail)
     return record
 
 
@@ -774,6 +787,12 @@ def beat_index(beat):
 
 def _volume_chainage(beat, name, number, count, length):
     ext = beat["ext"]
+    # A ride's road objectives (ch08.b02's three seal stakes) stand evenly
+    # between the barricade groups: at 23%, 50% and 77% of the road.
+    stakes = [row["volume"] for row in beat["params"].get("objectives") or [] if row.get("volume")] \
+        if beat["type"] == "horseback_ride" else []
+    if name in stakes:
+        return length * (0.1 + 0.8 * (stakes.index(name) + 0.5) / len(stakes))
     spook = ext.get("scripted_spook") or {}
     if spook.get("volume") == name and spook.get("at_m") is not None:
         return min(length - 600, _i(spook["at_m"] * 100))

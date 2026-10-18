@@ -496,12 +496,12 @@ bool FSoraIntegrationCampaignPromptsTest::RunTest(const FString& Parameters)
     if (!TestNotNull(TEXT("The armory opens on its prompt"), Prompt))
         return false;
     const SoraText::FLine Shown = SoraHUDPanels::KeyPrompt(World, Prompt->Japanese, Prompt->English);
-    TestEqual(TEXT("The prompt names the yari's keys"), Shown.English, FString(TEXT("Yari acquired. Press [5] or [RB] to switch.")));
-    TestTrue(TEXT("in Japanese too"), Shown.Japanese.Contains(TEXT("［5］／［RB］")));
+    TestEqual(TEXT("The prompt names the yari's keys"), Shown.English, FString(TEXT("Yari acquired. Press [2] (polearms) or [X] to switch.")));
+    TestTrue(TEXT("in Japanese too"), Shown.Japanese.Contains(TEXT("［2］（長柄）／［X］")));
     TestTrue(TEXT("The yari is kept only once the beat completes"), (Armory.Campaign()->Progress().WeaponsMask & (1u << 19)) == 0u);
-    if (!Armory.World->PressKey(EKeys::Five) || !Armory.Tick(1))
+    if (!Armory.World->PressKey(EKeys::Two) || !Armory.Tick(1))
         return false;
-    TestEqual(TEXT("5 takes up the yari in the beat that hands it over"), Armory.Hero()->WeaponId, 19);
+    TestEqual(TEXT("2, the polearms key, takes up the yari in the beat that hands it over"), Armory.Hero()->WeaponId, 19);
 
     // The result screen heads every ending in both languages.
     ASoraGameMode* Mode = Armory.Mode();

@@ -308,7 +308,7 @@ void USoraPracticeDirector::PollRespawnInput()
     // body is down and its combat handlers ignore them. A press counts once,
     // when a bound key goes down between two polls.
     static const TCHAR* const Actions[]={TEXT("WeaponOne"),TEXT("WeaponTwo"),TEXT("WeaponThree"),TEXT("Ability"),TEXT("Interact"),
-        TEXT("CampaignWeaponNext"),TEXT("Fire"),TEXT("Block")};
+        TEXT("ArmsWheel"),TEXT("Fire"),TEXT("Block")};
     uint32 Held=0;
     if(Controller&&Controller->PlayerInput)
         for(int32 Index=0;Index<UE_ARRAY_COUNT(Actions);++Index)

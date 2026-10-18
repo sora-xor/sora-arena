@@ -18,4 +18,8 @@ constexpr float PartySpacing = 150.f;
 // Opponents on a road enter this far ahead of the hero.
 constexpr float RoadSpawnNear = 2500.f;
 constexpr float RoadSpawnFar = 6500.f;
+// A rider thrown by a stumbling horse takes this much (chapter-04 b16), and
+// his whistle brings her back in this many seconds.
+constexpr float ThrownHp = 15.f;
+constexpr double WhistleSeconds = 3.0;
 }

@@ -6,6 +6,7 @@
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
+#include "SoraCompanion.h"
 #include "SoraEnemy.h"
 #include "ArenaKernelSubsystem.h"
 #include "SoraEquipmentComponent.h"
@@ -270,6 +271,14 @@ struct FRun
         }
         return (Mode() && Hero() && Mode()->Arena()) || Fail(TEXT("World lacks its mode, hero or arena"));
     }
+    // The beat's allies leave the field: a trace is the hero's own fight
+    // (SoraArena.Fieldcraft.Allies plays the allies).
+    bool StandAlliesAside()
+    {
+        for (TActorIterator<ASoraCompanion> It(Get()); It; ++It)
+            It->Destroy();
+        return true;
+    }
     bool Key(const FKey& Key) { return World->PressKey(Key) || Fail(TEXT("Key press failed")); }
     bool Down(const FKey& Key) { return World->InjectKey(Key, IE_Pressed) || Fail(TEXT("Key down failed")); }
     bool Up(const FKey& Key) { return World->InjectKey(Key, IE_Released) || Fail(TEXT("Key up failed")); }
@@ -379,7 +388,8 @@ constexpr int32 RetainerChapter = 4, RetainerBeat = 4;
 FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Retainer"), Log);
-    if (!Run.Seed(RetainerChapter, RetainerBeat) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
+    if (!Run.Seed(RetainerChapter, RetainerBeat) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter) ||
+        !Run.StandAlliesAside())
         return FString();
     if (!Test.TestTrue(TEXT("Retainer scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(160, 0, 0)))
         return FString();
@@ -399,12 +409,14 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         }
         if (ParryAt != INDEX_NONE && F == ParryAt + 14)
             return R.Up(EKeys::LeftControl);
+        // The naginata: the polearms key (2) twice, past the yari.
+        if (F >= 250 && F < 262)
+            return R.Hero()->WeaponId == 20 || F % 4 != 2 || R.Tap(EKeys::Two);
         switch (F)
         {
         case 5: return R.Down(EKeys::LeftControl);
         case 40: return R.Up(EKeys::LeftControl);
         case 60: case 150: case 200: return R.Aim(R.Foe(0)) && R.Tap(EKeys::LeftMouseButton);
-        case 250: return R.Tap(EKeys::Six);
         case 265: return R.Place(R.Foe(1), FVector(220, 0, 0)) && R.Aim(R.Foe(1));
         case 270: case 330: case 390: return R.Aim(R.Foe(1)) && R.Tap(EKeys::LeftMouseButton);
         default: break;
@@ -419,7 +431,7 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         if (DrawAt == INDEX_NONE)
         {
             if (Held != 18)
-                return F % 4 != 0 || R.Tap(EKeys::Four);
+                return F % 4 != 0 || R.Tap(EKeys::Three);
             if (ReadyAt == INDEX_NONE)
                 ReadyAt = F;
             if (F < ReadyAt + 20)
@@ -434,7 +446,7 @@ FString Retainer(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         if (F > DrawAt + 60 && ThrustAt == INDEX_NONE)
         {
             if (Held != 19)
-                return F % 4 != 0 || R.Tap(EKeys::Five);
+                return F % 4 != 0 || R.Tap(EKeys::Two);
             if (ReadyAt == INDEX_NONE)
                 ReadyAt = F;
             if (F < ReadyAt + 20)
@@ -474,7 +486,8 @@ constexpr int32 CarbineChapter = 4, CarbineBeat = 9, CarbineMagazine = 24;
 FString Carbine(FAutomationTestBase& Test, FEventLog* Log = nullptr)
 {
     FRun Run(Test, TEXT("Carbine"), Log);
-    if (!Run.Seed(CarbineChapter, CarbineBeat) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
+    if (!Run.Seed(CarbineChapter, CarbineBeat) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter) ||
+        !Run.StandAlliesAside())
         return FString();
     if (!Test.TestTrue(TEXT("Carbine scenario is in play"), Run.Mode()->IsPlaying()) ||
         !Test.TestNotNull(TEXT("The first enforcer stands"), Run.Foe(0)))
@@ -482,10 +495,9 @@ FString Carbine(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     int32 FellAt = INDEX_NONE, ReloadAt = INDEX_NONE, HitAt = INDEX_NONE;
     const bool bOk = Run.Play(480, [&](FRun& R, int32 F)
     {
-        if (F == 5)
-            return R.Tap(EKeys::One);
+        // The carbine: the firearms key (4) until it is in hand.
         if (F < 20)
-            return true;
+            return F < 5 || R.Hero()->WeaponId == 1 || F % 4 != 1 || R.Tap(EKeys::Four);
         FFoe* Target = R.Foe(0);
         if (FellAt == INDEX_NONE)
         {
@@ -653,9 +665,11 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
             TakenAt = F;
             return R.Up(EKeys::LeftControl);
         }
+        // The carbine: the firearms key (4) until it is in hand.
+        if (F >= 5 && F < 20)
+            return R.Hero()->WeaponId == 1 || F % 4 != 1 || R.Tap(EKeys::Four);
         switch (F)
         {
-        case 5: return R.Tap(EKeys::One);
         case 20: return R.Down(EKeys::D);
         case 60: return R.Up(EKeys::D);
         case 150: return R.Place(Foe, FVector(250, 0, 0)) && R.Aim(Foe);
@@ -666,7 +680,7 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
                 return R.Fail(TEXT("The collector is gone before his cane phase"));
             UGameplayStatics::ApplyDamage(Foe, Foe->Health - Foe->MaxHealth * .4f, R.Controller(), R.Hero(), UDamageType::StaticClass());
             return true;
-        case 332: return R.Tap(EKeys::Two);
+        case 332: return R.Tap(EKeys::One);
         case 334:
         {
             // The cane phase is fought at his arena's centre, the hero two

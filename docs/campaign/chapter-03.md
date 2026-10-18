@@ -1597,6 +1597,8 @@ beats:
     on_detected: combat
     complete: exit_reached
     x_exit: vol_b03_exit
+    x_ladders:
+      - {id: ladder_b03_shop, roof: vol_b03_shop_roof, height_cm: 320, drop_noise_cm: 900, straw: vol_b03_straw}
     unlocks: {mechanics: [takedown, seal_cut]}
     music: ch03_stealth
     dialogue:
@@ -1936,6 +1938,8 @@ beats:
       - {kind: puddle, volumes: [pud_b10_01, pud_b10_02, pud_b10_03, pud_b10_04]}
       - {kind: x_dobuita, mult: 1.5, volumes: [vol_b10_dobuita_n, vol_b10_dobuita_s], silent_edge: true}
       - {kind: x_board_roof, mult: 1.5, volumes: [vol_b10_roofs]}
+    x_ladders:
+      - {id: ladder_b10_pawnshop, roof: vol_b10_roofs, height_cm: 320, drop_noise_cm: 900, guards: [g_b10_m1]}
     on_detected: "reinforce:w_b10_reinforce"
     waves:
       - id: w_b10_reinforce
@@ -2606,22 +2610,22 @@ lines:
   - {id: ch03.b18.nyaakoto.006, speaker: samurai, ja: "……先生。一つ、灯りました。", en: "…Sensei. One light is lit.", register: samurai_polite, mode: cinematic, duration_s: 2.7, trigger: "cin@78"}
 ui_prompts:
   - {id: ui.ch03.crouch, beat: ch03.b02, ja: "しゃがむと足音が小さくなる", en: "Crouch to move quietly", x_shown: "First 10 s of b02"}
-  - {id: ui.ch03.puddle, beat: ch03.b02, ja: "水たまりは大きな音を立てる", en: "Puddles make noise", x_shown: "On vol_b02_puddles"}
-  - {id: ui.ch03.snuff, beat: ch03.b02, ja: "{Interact}長押し：灯りを消す", en: "Hold {Interact}: snuff the lamp", x_shown: "Near a snuffable lamp"}
-  - {id: ui.ch03.states, beat: ch03.b02, ja: "気配：不審 → 警戒 → 捜索", en: "Awareness: Suspicious → Alert → Searching", x_shown: "First suspicion"}
-  - {id: ui.ch03.takedown, beat: ch03.b03, ja: "背後から{Melee}：不意討ち", en: "From behind, {Melee}: takedown", x_shown: "Behind an unaware guard"}
+  - {id: ui.ch03.puddle, beat: ch03.b02, "on": "volume_enter:vol_b02_puddles", ja: "水たまりは大きな音を立てる", en: "Puddles make noise", x_shown: "On vol_b02_puddles"}
+  - {id: ui.ch03.snuff, beat: ch03.b02, "on": "look_at:andon", ja: "{Interact}長押し：灯りを消す", en: "Hold {Interact}: snuff the lamp", x_shown: "Near a snuffable lamp"}
+  - {id: ui.ch03.states, beat: ch03.b02, "on": "alert_state:suspicious:first", ja: "気配：不審 → 警戒 → 捜索", en: "Awareness: Suspicious → Alert → Searching", x_shown: "First suspicion"}
+  - {id: ui.ch03.takedown, beat: ch03.b03, "on": "ai_event:first_rear_reach", ja: "背後から{Melee}：不意討ち", en: "From behind, {Melee}: takedown", x_shown: "Behind an unaware guard"}
   - {id: ui.ch03.mineuchi, beat: ch03.b03, ja: "首輪の者には峰打ちになる", en: "Strikes on the collared use the blade's back", x_shown: "Aiming at a conscript"}
-  - {id: ui.ch03.sealcut, beat: ch03.b03, ja: "倒れた者のそばで{Interact}長押し：首輪を切る", en: "Hold {Interact} beside the downed: cut the collar", x_shown: "Downed conscript, 8 s window"}
-  - {id: ui.ch03.carry, beat: ch03.b05, ja: "運搬中：刀は片手、弓は使えない", en: "Carrying: katana one-handed, no bow", x_shown: "First pickup"}
+  - {id: ui.ch03.sealcut, beat: ch03.b03, "on": "conscript_downed", ja: "倒れた者のそばで{Interact}長押し：首輪を切る", en: "Hold {Interact} beside the downed: cut the collar", x_shown: "Downed conscript, 8 s window"}
+  - {id: ui.ch03.carry, beat: ch03.b05, "on": "event:first_pickup", ja: "運搬中：刀は片手、弓は使えない", en: "Carrying: katana one-handed, no bow", x_shown: "First pickup"}
   - {id: ui.ch03.signal, beat: ch03.b07, ja: "同行者はあなたがそばにいる間だけ進む", en: "The escort moves on only while you stay close", x_shown: "b07 start"}
-  - {id: ui.ch03.revive, beat: ch03.b07, ja: "{Interact}長押し：助け起こす", en: "Hold {Interact}: help them up", x_shown: "Escort downed"}
+  - {id: ui.ch03.revive, beat: ch03.b07, "on": "npc_downed:any", ja: "{Interact}長押し：助け起こす", en: "Hold {Interact}: help them up", x_shown: "Escort downed"}
   - {id: ui.ch03.bend, beat: ch03.b09, ja: "緑の間で離す", en: "Release in the green", x_shown: "First bend"}
-  - {id: ui.ch03.grenade, beat: ch03.b09, ja: "擲弾筒：弧を描いて飛ぶ。近いと自分も巻き込む", en: "Grenade Launcher: arcing shells. Close blasts hurt you too", x_shown: "Unlock"}
-  - {id: ui.ch03.glint, beat: ch03.b10, ja: "光が見えたら狙われている", en: "A glint means you are targeted", x_shown: "First marksman lock"}
-  - {id: ui.ch03.dobuita, beat: ch03.b10, ja: "溝板は端を歩けば鳴らない", en: "Walk the drain boards' edges to stay silent", x_shown: "On vol_b10_dobuita_*"}
-  - {id: ui.ch03.fuse, beat: ch03.b10, ja: "導火二十秒。離れよ", en: "Fuse: 20 s. Get clear", x_shown: "On lighting the fuse"}
-  - {id: ui.ch03.fire, beat: ch03.b14, ja: "消えた竈は{Interact}長押しで点け直す", en: "Hold {Interact} to relight a cook-fire", x_shown: "First guttered fire"}
-  - {id: ui.ch03.supply, beat: ch03.b14, ja: "補給所：持ち物を替えられる", en: "Supply point: change your loadout", x_shown: "On vol_b14_supply"}
+  - {id: ui.ch03.grenade, beat: ch03.b09, "on": "equip:7", ja: "擲弾筒：弧を描いて飛ぶ。近いと自分も巻き込む", en: "Grenade Launcher: arcing shells. Close blasts hurt you too", x_shown: "Unlock"}
+  - {id: ui.ch03.glint, beat: ch03.b10, "on": "pattern:marksman_lock:first", ja: "光が見えたら狙われている", en: "A glint means you are targeted", x_shown: "First marksman lock"}
+  - {id: ui.ch03.dobuita, beat: ch03.b10, "on": "volume_enter:vol_b10_dobuita", ja: "溝板は端を歩けば鳴らない", en: "Walk the drain boards' edges to stay silent", x_shown: "On vol_b10_dobuita_*"}
+  - {id: ui.ch03.fuse, beat: ch03.b10, "on": "interact:obj_light_fuse", ja: "導火二十秒。離れよ", en: "Fuse: 20 s. Get clear", x_shown: "On lighting the fuse"}
+  - {id: ui.ch03.fire, beat: ch03.b14, "on": "fire_out:first", ja: "消えた竈は{Interact}長押しで点け直す", en: "Hold {Interact} to relight a cook-fire", x_shown: "First guttered fire"}
+  - {id: ui.ch03.supply, beat: ch03.b14, "on": "volume_enter:vol_b14_supply", ja: "補給所：持ち物を替えられる", en: "Supply point: change your loadout", x_shown: "On vol_b14_supply"}
   - {id: ui.ch03.rope, beat: ch03.b17, ja: "綱を斬る：網を落とす", en: "Cut the rope: drop the net", x_shown: "稽古 (Easy) only, first time in the drop zone"}
   - {id: ui.ch03.vents, beat: ch03.b17, ja: "背の排気口が弱点", en: "The rear vents are the weak point", x_shown: "稽古 (Easy) only, after 4 blocked hits"}
 ```

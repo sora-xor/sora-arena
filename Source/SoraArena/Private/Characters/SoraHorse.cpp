@@ -281,11 +281,54 @@ void ASoraHorse::TickLed(int32,float DeltaSeconds)
 }
 void ASoraHorse::TickRoad(int32,float DeltaSeconds)
 {
-    // A convoy walks its road at its pace, and waits when told.
+    // A convoy walks its road at its pace, and waits when told; a League
+    // horse keeps its lane.
     if(!bWaiting) Chainage=FMath::Min(Chainage+PaceCmS*DeltaSeconds,Road->RouteLength);
     const bool bMoving=!bWaiting&&Chainage<Road->RouteLength;
     Ride.Gait=HorseGaitForPace(bMoving?PaceCmS:0.f);
-    SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Road->PointAlong(Chainage),HorseFrameZ),FRotator(0,Road->HeadingAt(Chainage),0));
+    const float Yaw=Road->HeadingAt(Chainage);
+    const FVector Lane=FRotator(0,Yaw+90.f,0).Vector()*LaneCm;
+    SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Road->PointAlong(Chainage),HorseFrameZ)+Lane,FRotator(0,Yaw,0));
+}
+void ASoraHorse::SetRoadChainage(float InChainage)
+{
+    if(!Road) return;
+    Chainage=FMath::Clamp(InChainage,0.f,Road->RouteLength);
+    const float Yaw=Road->HeadingAt(Chainage);
+    SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Road->PointAlong(Chainage),HorseFrameZ)+FRotator(0,Yaw+90.f,0).Vector()*LaneCm,
+        FRotator(0,Yaw,0));
+}
+void ASoraHorse::SeatRider(bool bRival)
+{
+    // The charge places its riders; they sweep against nothing.
+    Frame->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    // A League rider (a proxy until the rider rig lands): 陣笠 or the rival's
+    // kabuto, 当世具足 in the League's indigo, a yari couched forward and a
+    // sashimono with the SORA mon at his back.
+    const FLinearColor Armour=bRival?FLinearColor(.05f,.05f,.07f):FLinearColor(.08f,.12f,.3f);
+    const FLinearColor Lacing=bRival?FLinearColor(.45f,.08f,.05f):FLinearColor(.55f,.45f,.3f);
+    const FLinearColor Fur(.42f,.4f,.37f),Haft(.28f,.17f,.08f),Steel(.62f,.64f,.66f),Banner(.92f,.9f,.84f),Mon(.8f,.1f,.06f);
+    Part(Body,TEXT("RiderSeat"),HorseCube,FVector(0,0,140),FVector(.36f,.4f,.06f),Armour);
+    Part(Body,TEXT("RiderHips"),HorseCylinder,FVector(-2,0,152),FVector(.34f,.34f,.24f),Armour);
+    Part(Body,TEXT("RiderTorso"),HorseCylinder,FVector(2,0,184),FVector(.34f,.3f,.44f),Armour);
+    Part(Body,TEXT("RiderOdoshi"),HorseCylinder,FVector(2,0,172),FVector(.36f,.32f,.06f),Lacing);
+    Part(Body,TEXT("RiderHead"),HorseSphere,FVector(6,0,222),FVector(.24f,.22f,.24f),Fur);
+    for(int32 Side:{-1,1})
+    {
+        Part(Body,FString::Printf(TEXT("RiderEar%d"),Side),HorseCone,FVector(4,Side*8,238),FVector(.06f,.06f,.08f),Fur);
+        Part(Body,FString::Printf(TEXT("RiderThigh%d"),Side),HorseCylinder,FVector(8,Side*24,136),FVector(.14f,.14f,.36f),Armour,FRotator(0,0,Side*18));
+    }
+    if(bRival)
+    {
+        Part(Body,TEXT("RiderKabuto"),HorseSphere,FVector(6,0,232),FVector(.3f,.3f,.2f),Armour);
+        Part(Body,TEXT("RiderKuwagata"),HorseCube,FVector(18,0,246),FVector(.02f,.3f,.16f),FLinearColor(.75f,.6f,.2f));
+    }
+    else Part(Body,TEXT("RiderJingasa"),HorseCone,FVector(6,0,236),FVector(.46f,.46f,.1f),FLinearColor(.1f,.07f,.05f));
+    Part(Body,TEXT("RiderYari"),HorseCylinder,FVector(90,18,178),FVector(.035f,.035f,2.4f),Haft,FRotator(-80,0,0));
+    Part(Body,TEXT("RiderYariHead"),HorseCone,FVector(208,18,199),FVector(.05f,.05f,.2f),Steel,FRotator(-80,0,0));
+    Part(Body,TEXT("RiderSashimonoPole"),HorseCylinder,FVector(-22,0,236),FVector(.02f,.02f,1.1f),Haft);
+    Part(Body,TEXT("RiderSashimono"),HorseCube,FVector(-22,-18,262),FVector(.01f,.36f,.5f),Banner);
+    Part(Body,TEXT("RiderSashimonoMon"),HorseCylinder,FVector(-23,-18,266),FVector(.16f,.16f,.012f),Mon,FRotator(90,0,0));
 }
 void ASoraHorse::Move(const FVector& Delta,float Yaw)
 {

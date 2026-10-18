@@ -245,6 +245,9 @@ void USoraFrontEnd::BuildSettingsRows()
         RowList.Add(Difficulty);
         RowList.Add(SwitchRow(EAction::AutoSteer, NSLOCTEXT("SoraArena.Settings", "AutoSteer", "騎乗の自動誘導"), Settings->AutoSteer(), OnText(), OffText(),
             NSLOCTEXT("SoraArena.Settings", "AutoSteer.Hint", "騎乗の場面で、馬が道筋をたどる。歩様と狙いは自分で操る。")));
+        RowList.Add(SwitchRow(EAction::VolleyAutoOrder, NSLOCTEXT("SoraArena.Settings", "VolleyAutoOrder", "斉射の自動号令"), Settings->VolleyAutoOrder(),
+            OnText(), OffText(),
+            NSLOCTEXT("SoraArena.Settings", "VolleyAutoOrder.Hint", "稽古の難易度でのみ、込め終えた鉄砲組が一番近い敵へ自ら斉射する。")));
         RowList.Add(SwitchRow(EAction::ReduceFlashing, NSLOCTEXT("SoraArena.Settings", "ReduceFlashing", "点滅を抑える"), Settings->ReduceFlashing(), OnText(), OffText(),
             NSLOCTEXT("SoraArena.Settings", "ReduceFlashing.Hint", "被弾したときの赤い縁取りなど、画面の点滅を弱く穏やかにする。")));
         FRow Shake = NewOptionRow(EAction::CameraShake, NSLOCTEXT("SoraArena.Settings", "CameraShake", "画面の揺れ"), Percent(Settings->CameraShake()));
@@ -402,6 +405,9 @@ bool USoraFrontEnd::AdjustSetting(const SoraUI::FRow& Row, int32 Direction)
         break;
     case EAction::AutoSteer:
         Settings.SetAutoSteer(!Settings.AutoSteer());
+        break;
+    case EAction::VolleyAutoOrder:
+        Settings.SetVolleyAutoOrder(!Settings.VolleyAutoOrder());
         break;
     case EAction::ReduceFlashing:
         Settings.SetReduceFlashing(!Settings.ReduceFlashing());

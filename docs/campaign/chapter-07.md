@@ -2415,9 +2415,9 @@ lines:
 ui_prompts:
   - {id: ui.ch07.prompt.cut_junction, ja: "繋ぎ箱を切る", en: "Cut the junction", beat: ch07.b02}
   - {id: ui.ch07.prompt.leave_bale, ja: "俵から出る", en: "Leave the bale", beat: ch07.b04}
-  - {id: ui.ch07.prompt.throw_tsubute, ja: "礫を投げる", en: "Throw a stone", beat: ch07.b04}
-  - {id: ui.ch07.prompt.seal_cut, ja: "首輪を断つ", en: "Cut the collar", beat: ch07.b04}
-  - {id: ui.ch07.prompt.douse_lamp, ja: "灯りを消す", en: "Put out the lamp", beat: ch07.b04}
+  - {id: ui.ch07.prompt.throw_tsubute, "on": "alert_state:suspicious:first", ja: "{Ability}：礫を投げて見張りを誘う", en: "{Ability}: throw a stone to draw a guard", beat: ch07.b04}
+  - {id: ui.ch07.prompt.seal_cut, "on": "conscript_downed", ja: "{Interact}長押し：首輪を断つ", en: "Hold {Interact}: cut the collar", beat: ch07.b04}
+  - {id: ui.ch07.prompt.douse_lamp, "on": "look_at:lamp", ja: "{Interact}長押し：灯りを消す", en: "Hold {Interact}: put out the lamp", beat: ch07.b04}
   - {id: ui.ch07.prompt.key_slate, ja: "鍵板をかざす", en: "Use the key-slate", beat: ch07.b05, x_also_beats: [ch07.b11]}
   - {id: ui.ch07.prompt.peel_tags, ja: "番号札を剥がす", en: "Peel off the tags", beat: ch07.b05}
   - {id: ui.ch07.prompt.crank, ja: "輪を回す", en: "Turn the wheel", beat: ch07.b07}
