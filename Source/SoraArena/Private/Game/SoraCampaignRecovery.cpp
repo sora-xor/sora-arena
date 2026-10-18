@@ -1,4 +1,5 @@
 #include "SoraCampaignDirector.h"
+#include "Game/SoraCampaignReach.h"
 #include "SoraCatalog.h"
 #include "SoraEquipmentComponent.h"
 #include "SoraGameMode.h"
@@ -91,10 +92,15 @@ bool USoraCampaignDirector::InteractRecovery(ASoraPlayerCharacter& Hero)
         return true;
     }
     if(NeedsEquipmentRecovery())
-    {
-        Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","FindBundleFirst","先に空井戸の底から刀と弓を取り戻そう。")),3.f);
-        return true;
-    }
+        if(const FSoraBeatSpace* Space=ActiveSpace())
+            for(const FVector2D& Pickup:Space->Pickups)
+                if(Near(ASoraWorldBuilder::Floor(Pickup),SoraCampaignReach::Interact))
+                {
+                    // Recovery gates the hoist, not unrelated caches,
+                    // collectibles or other interactions elsewhere.
+                    Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","FindBundleFirst","先に空井戸の底から刀と弓を取り戻そう。")),3.f);
+                    return true;
+                }
     return false;
 }
 void USoraCampaignDirector::TickEquipmentRecovery(int32 DeltaMs)
