@@ -58,6 +58,10 @@ not copied over newer development files.
   a searchlight's lock deadline. Preserve their original behavior assertions.
 - Resolve automation output paths before launching Unreal so relative report
   directories are written where the wrapper expects them.
+- Record the roof at climb completion so an immediate drop retains its correct
+  landing-noise source. Separate current searchlight visibility from fading
+  suspicion, and lock lights to detection evidence. Repeated generic alert barks
+  must not reveal the hidden player's current position.
 
 The requested [Claude art handoff](../../art-direction/CLAUDE_ART_HANDOFF.md)
 is included with the recovered state, modeling/material requirements, historical
@@ -79,7 +83,7 @@ research obligations and in-engine visual evidence requirements.
 | Git LFS current-tree integrity | Passed; all 1,762 historical LFS objects needed by the recovered history were present locally |
 | UE 5.8.3 Mac Development Editor build | Passed after the audio unity fix |
 | Actual Unreal audio import and validation | Passed; 235 SoundWaves plus bus/mix assets, 267 packages loaded with expected types and routing; project Config unchanged |
-| Targeted Unreal automation | Pending at the time of this intermediate report |
+| Targeted Unreal automation | The initial 53-test run exposed seven failures; fixes were exercised in subsequent runs. The broader recheck passed 51/53, then both remaining Ladders/Searchlights cases passed focused verification. Final changed-subsystem regression at `0e58c02`: **35/35 passed** (27 Fieldcraft, full Campaign.Playthrough, six Stealth and Integration.StealthZone), zero assertion errors. The 431 final-run warnings are temporary-world `UWorld::DestroyActor` teardown warnings. |
 | Full source asset ledger | **Failed:** 216 stale weapon output records and 12 unrecorded renders belonging to intentionally withheld blockout weapons |
 
 The 228 ledger errors are confined to the recovered `Weapons/Runtime` WIP
@@ -94,3 +98,21 @@ Detailed local logs are under `Saved/Recovery/2026-10-18/` and remain outside
 source control.
 This integration does not constitute full game, rendering, Windows, economic,
 historical-accuracy or production-deployment qualification.
+
+## Parallel art production
+
+The running Claude session, **Sora photorealism and logo marketing**, acknowledged
+the handoff and created `claude/photoreal-art` in the separate
+`sora-arena-wt/art` worktree. Its first milestone is the SORA-branded first-person
+hero kit: Nyaakoto's skinned paws/forearms and sleeves, katana/saya fittings, then
+unedited gameplay captures at normal FOV. Claude owns source art, its import and
+provenance work, and visual review. Presentation-code changes are coordinated
+file by file before integration.
+
+Codex owns this recovery, gameplay fixes, validation and final master push.
+Local coordination uses separate author-owned files under
+`Local/Coordination/`; these operational messages are not distributable source.
+After the 35-test regression finished, Codex released the Unreal build/render
+slot to Claude. Future art changes remain on Claude's branch until reviewed and
+integrated; they are not represented as part of the recovered snapshot or as
+completed photoreal assets.
