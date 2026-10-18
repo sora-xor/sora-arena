@@ -131,6 +131,21 @@ PyYAML 6.0.3 (the chapter scripts' YAML, for `build_campaign_data.py` and
 `pip3 install --user -r scripts/requirements.txt`; the doctor does not check
 them yet.
 
+For an isolated worktree import, set `SORA_CC0_STORAGE_ROOT` to the absolute
+worktree directory containing its ignored `Local/ThirdPartyRaw/cc0` cache:
+
+```sh
+export SORA_CC0_STORAGE_ROOT="$PWD"
+scripts/toolchain/import-mac.sh
+```
+
+The CC0 host packer, source validator and editor importer inherit this override.
+Ledger paths remain relative to that directory, and every source hash and
+license/period-policy check still applies. A relative or nonexistent override
+fails rather than falling back to another checkout. Without the override,
+linked worktrees continue to read the main checkout's shared `Local/` cache.
+Generated ARM maps remain under the importing worktree's `Saved/` directory.
+
 The doctor checks the engine identity in the pin table (exact
 `Build.version` version, changelist, compatible changelist, branch and
 promoted/licensee flags; the installed-build marker; project plugin descriptor
