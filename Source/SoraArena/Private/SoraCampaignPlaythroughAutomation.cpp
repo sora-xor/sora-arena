@@ -769,7 +769,16 @@ bool RecordLessons(FAutomationTestBase& Test, FState& State, const FSoraBeat& Be
         }
     }
     if(Beat.Task.Maai.Count>0)
+    {
+        // The completist sweep visits loose collectibles in other zones.
+        // Return to this beat's authored entrance before the real-input
+        // lesson; never place the hero inside its measured distance band.
+        MoveTo(State,Beat.Space.Entry);
+        if(!Advance(Test,State,1)) return false;
+        bOk &= Test.TestTrue(TEXT("The dojo entrance is outside the distance band"),Director->MaaiDistance()>Beat.Task.Maai.OuterCm);
+        bOk &= Test.TestFalse(TEXT("Returning from collectibles grants no distance confirmation"),Director->TaskProgress().Maai.Acquired);
         bOk &= Test.TestTrue(TEXT("The distance lesson requires walking after every mentor step"),SoraMaaiAutomation::Walk(*State.World));
+    }
     return bOk || Fail(Test, State, Beat.Id + TEXT(": Nyaagyushinkageryuu forms did not follow the dojo rules"));
 }
 
