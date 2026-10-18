@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check actual packaged client automation, including selected native loading."""
+"""Check Unreal editor/client automation reports and selected native loading."""
 from __future__ import annotations
 import argparse
 import json
@@ -10,13 +10,13 @@ import sys
 NATIVE = 'SoraArena.Connect.NativeLoader'
 
 
-def problems(report, log, selected, status, bridge):
+def problems(report, log, selected, status, bridge, context='client'):
     issues = []
     tests = report.get('tests', [])
     names = [test.get('fullTestPath', '') for test in tests]
     found = re.findall(r"Found (\d+) automation tests based on '([^']*)'", log)
     if status:
-        issues.append(f'the package exited {status}')
+        issues.append(f'{context} exited {status}')
     if not tests:
         issues.append(f"no tests matched '{selected}'")
     if len(found) != 1 or found[0][1].casefold() != selected.casefold() or int(found[0][0]) != len(tests):
@@ -39,19 +39,19 @@ def problems(report, log, selected, status, bridge):
             issues.append('selected NativeLoader was not discovered and executed exactly once')
         else:
             messages = [entry.get('event', {}).get('message', '') for entry in matches[0].get('entries', [])]
-            paths = [message.removeprefix('NativeLoader context=client staged_library=')
-                     for message in messages if message.startswith('NativeLoader context=client staged_library=')]
+            prefix = f'NativeLoader context={context} staged_library='
+            paths = [message.removeprefix(prefix) for message in messages if message.startswith(prefix)]
             if len(paths) != 1 or Path(paths[0]).resolve() != bridge.resolve():
-                issues.append('NativeLoader did not identify the actual packaged client bridge path')
+                issues.append(f'NativeLoader did not identify the actual {context} bridge path')
             if 'NativeLoader ABI=30 research_builder=1 join_inspector=1 join_signing_blocked=1 buy_signing_blocked=1' not in messages:
                 issues.append('NativeLoader lacks ABI30 research-feature and signing-gate execution evidence')
     defaults = sorted(set(re.findall(
         r'LogMaterial: Warning: Material (\S+) missing usage flag (\w+)! Default Material will be used in game', log)))
-    if defaults:
+    if defaults and context == 'client':
         issues.append(f'{len(defaults)} cooked materials lack usage flags: {defaults}')
     fatal = re.findall(r'^.*(?:Fatal error|=== Critical error|Assertion failed|Ensure condition failed|LogOutputDevice: Error).*$', log, re.MULTILINE)
     if fatal:
-        issues.append(f'{len(fatal)} fatal, assertion or ensure lines during packaged automation')
+        issues.append(f'{len(fatal)} fatal, assertion or ensure lines during {context} automation')
     return issues
 
 
@@ -60,11 +60,12 @@ def main():
     parser.add_argument('report', type=Path); parser.add_argument('log', type=Path)
     parser.add_argument('filter'); parser.add_argument('status', type=int)
     parser.add_argument('results', type=Path); parser.add_argument('bridge', type=Path)
+    parser.add_argument('--context', choices=('editor', 'client'), default='client')
     args = parser.parse_args()
     try:
         report = json.loads(args.report.read_text(encoding='utf-8-sig'))
         log = args.log.read_text(errors='replace')
-        issues = problems(report, log, args.filter, args.status, args.bridge)
+        issues = problems(report, log, args.filter, args.status, args.bridge, args.context)
         rows = ['state\terrors\twarnings\tseconds\ttest']
         for test in sorted(report.get('tests', []), key=lambda item: item['fullTestPath']):
             events = [entry.get('event', {}) for entry in test.get('entries', [])]
@@ -72,13 +73,15 @@ def main():
             warnings = max(test.get('warnings', 0), sum(event.get('type') == 'Warning' for event in events))
             row = f"{test.get('state', 'Unknown')}\t{errors}\t{warnings}\t{test.get('duration', 0):.2f}\t{test['fullTestPath']}"
             rows.append(row); print(row)
+            for event in [event for event in events if event.get('type') == 'Error'][:5]:
+                print('  ' + event.get('message', '')[:220])
         args.results.write_text('\n'.join(rows) + '\n')
         if issues:
             raise ValueError('; '.join(issues))
     except (OSError, ValueError, KeyError, TypeError) as error:
-        print(f'FAIL packaged automation: {error}', file=sys.stderr)
+        print(f'FAIL {args.context} automation: {error}', file=sys.stderr)
         return 1
-    print(f"PASS: {len(report['tests'])} packaged client tests; report {args.report}")
+    print(f"PASS: {len(report['tests'])} {args.context} automation tests; report {args.report}")
     return 0
 
 

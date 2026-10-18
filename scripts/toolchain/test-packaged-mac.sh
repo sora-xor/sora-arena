@@ -231,5 +231,5 @@ launch automation -RenderOffscreen -ResX=1280 -ResY=720 -windowed \
 # Recheck after execution so the evidence cannot describe replaced artifacts.
 python3 "$SCRIPT_DIR/mac_candidate.py" verify "$APP" "$ARCHIVE_DIRECTORY/package-candidate.json" \
   "$OUTPUT/candidate-verified-after.json" "$SORA_CANDIDATE_SOURCE" "$SORA_CANDIDATE_NATIVE"
-python3 "$SCRIPT_DIR/verify_packaged_report.py" "$OUTPUT/app-data/report/index.json" "$OUTPUT/automation.log" \
+python3 "$SCRIPT_DIR/verify_automation_report.py" "$OUTPUT/app-data/report/index.json" "$OUTPUT/automation.log" \
   "$FILTER" "$(cat "$OUTPUT/automation.status")" "$OUTPUT/results.tsv" "$STAGED/Binaries/Mac/libconnect_norito_bridge.dylib"
