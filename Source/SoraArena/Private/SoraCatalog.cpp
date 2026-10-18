@@ -1,6 +1,7 @@
 #include "SoraCatalog.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalogJson.h"
+#include "SoraCatalogRegistry.h"
 
 namespace
 {
@@ -601,6 +602,8 @@ bool FSoraCatalog::LoadCampaign()
             Rule.PhaseCheckpoints = PhaseCheckpoints[BeatIndex];
             if (!ReadTask(*Task, TypeName, Beat) || !SoraBeatRules::TaskValid(Beat.Task))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid %s task"), *Beat.Id, *TypeName));
+            if (!SoraCatalogRegistry::Read(*O, Beat))
+                return Bad(FString::Printf(TEXT("beat %s has an invalid production registry entry"), *Beat.Id));
             for (const FString& Kind : Beat.StepKinds)
                 if (!StepLabels.Contains(Kind)) return Bad(FString::Printf(TEXT("beat %s has an unlabelled step %s"), *Beat.Id, *Kind));
             for (const FString& Target : Beat.Targets)

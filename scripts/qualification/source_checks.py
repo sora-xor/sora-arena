@@ -84,6 +84,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("gameplay", "maai-data", "scripts/unreal/test_maai_data.py")
     unit("gameplay", "equipment-recovery-data", "scripts/unreal/test_recovery_data.py")
     unit("gameplay", "epilogue-data", "scripts/unreal/test_epilogue_data.py")
+    unit("gameplay", "registry-data", "scripts/unreal/test_registry_data.py")
     for name, path in (
         ("connect-cancellation", "scripts/connect/verify-cancellation.py"),
         ("connect-recovery", "scripts/connect/verify-recovery.py"),

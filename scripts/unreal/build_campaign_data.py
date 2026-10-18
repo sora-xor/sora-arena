@@ -40,6 +40,7 @@ from pathlib import Path
 import yaml
 
 from campaign_space import derive_space, ride_mount
+from campaign_registry import validate_registry
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs/campaign"
@@ -1053,13 +1054,10 @@ def normalize_beat(raw, previous, chapter_prefix, number, lines, triggers):
     if site is not None:
         expect_enum(expect_int(site, f"{beat_id}.site"), (0, 1, 2), f"{beat_id}.site")
     registry = raw.get("registry")
-    if registry is not None:
-        expect(registry, (dict,), f"{beat_id}.registry")
-        if tuple(registry) != ("item_ja", "item_en", "qty", "unit_ja", "unit_en"):
-            fail(beat_id, f"registry takes item_ja, item_en, qty, unit_ja, unit_en, got {list(registry)}")
-        for key in ("item_ja", "item_en", "unit_ja", "unit_en"):
-            expect(registry[key], (str,), f"{beat_id}.registry.{key}")
-        expect_int(registry["qty"], f"{beat_id}.registry.qty", 1)
+    try:
+        validate_registry(registry, beat_type, raw, ext)
+    except ValueError as error:
+        fail(beat_id, str(error))
     beat = {
         "id": beat_id,
         "type": beat_type,

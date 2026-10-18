@@ -3,6 +3,7 @@
 #include "SoraBeatRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraMountRules.h"
+#include "SoraRegistry.h"
 
 struct FSoraWeapon
 {
@@ -595,6 +596,7 @@ struct FSoraBeat
     FString TitleEnglish;
     int32 TargetSeconds = 0;
     SoraBeatRules::FTask Task;
+    TOptional<FSoraRegistryEntry> Registry;
     TArray<FSoraWave> Waves;
     // Dialogue: its lines, the event that starts them ("beat_start",
     // "volume_enter:<id>", "interact:<id>") and, for one that ends at an
