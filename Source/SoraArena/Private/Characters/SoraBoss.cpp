@@ -7,6 +7,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
+#include "SoraSummitRules.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
@@ -86,7 +87,10 @@ ASoraBoss* ASoraBoss::SpawnBoss(UWorld& World, FName Id, int32 Slot, const FVect
 {
     FActorSpawnParameters Params;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-    ASoraBoss* Boss = World.SpawnActor<ASoraBoss>(Location, Rotation, Params);
+    // A saved P2 boundary has already completed its retreat. Spawn above the
+    // clear north dais stand and let gravity settle the new body onto it.
+    const FVector Spawn=InSetup.bSummit&&Id==TEXT("boss_val_amort")&&InSetup.Phase==1?InSetup.SummitDaisFloor+FVector(0,0,160):Location;
+    ASoraBoss* Boss = World.SpawnActor<ASoraBoss>(Spawn, Rotation, Params);
     if (Boss && !Boss->InitBoss(Id, Slot, InSetup))
     {
         Boss->Destroy();
@@ -107,6 +111,7 @@ bool ASoraBoss::InitBoss(FName Id, int32 Slot, const FSoraBossSetup& InSetup)
     }
     Info = Found;
     Setup = InSetup;
+    Setup.bSummit=Setup.bSummit&&Id==TEXT("boss_val_amort");
     Setup.Phase = FMath::Clamp(Setup.Phase, 0, Info->Phases.Num() - 1);
     InitScripted(Slot);
     SetActorScale3D(FVector(Info->ScalePermille / 1000.f));
@@ -286,7 +291,7 @@ bool ASoraBoss::IsInvulnerable() const
 {
     if (!Info || !GetWorld())
         return false;
-    if (NowMs() < InvulnerableUntilMs)
+    if (bSummitTransition || NowMs() < InvulnerableUntilMs)
         return true;
     const FSoraBossPhase* Current = CurrentPhase();
     return Current && Current->ShieldWhileAdds != INDEX_NONE && LiveAdds(Current->ShieldWhileAdds) > 0;
@@ -455,13 +460,16 @@ void ASoraBoss::EnterPhase(int32 Next)
     Step = 0; StepDone = 0; Picked = INDEX_NONE; HabitStep = 0;
     GetCharacterMovement()->MaxWalkSpeed = Entered.SpeedCmPerSecond;
     GetCharacterMovement()->MaxFlySpeed = Entered.SpeedCmPerSecond;
-    const int32 Settle = bOpening ? SoraBossBody::OpeningMs : Info->TransitionMs;
+    bSummitTransition=Setup.bSummit&&!bOpening&&Next>0;
+    const int32 Settle = bOpening ? SoraBossBody::OpeningMs : Setup.bSummit?SoraSummitRules::PhaseTransitionMs(Next):Info->TransitionMs;
     NextStartMs = Now + Settle;
-    if (!bOpening && Info->TransitionMs > 0)
+    if (!bOpening && Settle > 0)
     {
-        // The phase's roar: it cannot be hurt and does nothing meanwhile.
-        InvulnerableUntilMs = Now + Info->TransitionMs;
-        ASoraEnemy::Stagger(Info->TransitionMs);
+        // Phase changes protect the boss throughout their transition.
+        InvulnerableUntilMs = Now + Settle;
+        // P2 walks onto the actual dais while protected. A generic stagger
+        // would stop those footsteps; P3 retains its stationary draw interval.
+        if(!Setup.bSummit||Next!=1) ASoraEnemy::Stagger(Settle);
     }
     TimedDueMs.Reset();
     for (const FSoraBossTimed& Timed : Entered.Concurrent)
@@ -565,6 +573,7 @@ void ASoraBoss::TickPlay(float DeltaSeconds)
     if (!Info || bDefeated)
         return;
     SyncPhase();
+    if(TickSummitTransition()) return;
     RunTimers();
     ASoraCharacterBase* Target = Hero();
     const int32 Now = NowMs();
@@ -611,6 +620,7 @@ FSoraBossIntent ASoraBoss::Drive(ASoraCharacterBase& Target, float)
     FSoraBossIntent Intent;
     if (!Info || bDefeated || !bPhaseEntered)
         return Intent;
+    if(DriveSummit(Intent,Target)) return Intent;
     const FSoraBossPhase& Current = Info->Phases[PhaseNow];
     // Outflanked by a 転 step, it neither starts an attack nor turns until it can turn again.
     if (Run.Attack == INDEX_NONE && !IsStaggered() && !IsTurnLocked() && NowMs() >= InvulnerableUntilMs)
@@ -649,6 +659,9 @@ FSoraBossIntent ASoraBoss::Drive(ASoraCharacterBase& Target, float)
     Intent.TurnDegreesPerSecond = Current.TurnDegreesPerSecond;
     Intent.bFace = bKnows && !Delta.IsNearlyZero() && !IsTurnLocked();
     Intent.Facing = Delta;
+    // P2 stays at its dais stand even while exposed; the player approaches
+    // through the seizure field instead of drawing the collector off it.
+    if(Setup.bSummit&&PhaseNow==1) return Intent;
     switch (Current.Move)
     {
     case ESoraBossMove::Close:

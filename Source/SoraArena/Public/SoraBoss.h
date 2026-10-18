@@ -23,6 +23,9 @@ struct FSoraBossSetup
     bool bLockArena = false;
     // A phase checkpoint: the boss returns at that phase's start.
     int32 Phase = 0;
+    // Only the campaign's physical summit uses the authored dais retreat.
+    bool bSummit = false;
+    FVector SummitDaisFloor = FVector::ZeroVector;
 };
 
 // Where the boss wants to go and look this frame; its controller walks it.
@@ -86,6 +89,8 @@ public:
     FName BossId() const;
     SoraBossRules::EDifficulty Difficulty() const { return Setup.Difficulty; }
     int32 PhaseIndex() const { return PhaseNow; }
+    bool IsPhaseTransitioning() const { return bSummitTransition; }
+    bool IsOnSummitDais() const;
     const FSoraBossPhase* CurrentPhase() const;
     int32 HealthPermille() const;
     // The attack under way and its serial (INDEX_NONE and zero when idle).
@@ -208,6 +213,8 @@ private:
     int32 FloorPermille() const;
     void EnterPhase(int32 Next);
     void SyncPhase();
+    bool DriveSummit(FSoraBossIntent& Intent,const ASoraCharacterBase& Target) const;
+    bool TickSummitTransition();
     void RunTimers();
     ASoraCharacterBase* Hero() const;
     FVector TargetPoint(const ASoraCharacterBase& Target) const;
@@ -255,6 +262,7 @@ private:
     FSoraBossSetup Setup;
     int32 PhaseNow = 0;
     bool bPhaseEntered = false;
+    bool bSummitTransition = false;
     int32 PhaseStartedMs = 0;
     // A metronome counts its beats from the phase's first attack.
     int32 BeatOriginMs = -1;
