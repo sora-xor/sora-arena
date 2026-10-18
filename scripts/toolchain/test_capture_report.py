@@ -77,6 +77,7 @@ class CaptureArchiveTests(unittest.TestCase):
         self.source.parent.mkdir(parents=True)
         def chunk(kind, payload):
             return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", zlib.crc32(kind + payload))
+        self.chunk = chunk
         self.png = (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 2, 1, 8, 2, 0, 0, 0))
                     + chunk(b"IDAT", zlib.compress(b"\0\xff\0\0\0\xff\0")) + chunk(b"IEND", b""))
         self.source.write_bytes(self.png)
@@ -113,7 +114,8 @@ class CaptureArchiveTests(unittest.TestCase):
             self.archive(log="SORA_ART_REVIEW_FRAME " + str(outside))
 
     def test_truncated_corrupt_or_wrong_size_png_is_rejected(self):
-        for data in (self.png[:-12], self.png[:-1] + b"x", b"not png"):
+        missing_pixels = self.png[:33] + self.chunk(b"IDAT", zlib.compress(b"")) + self.chunk(b"IEND", b"")
+        for data in (self.png[:-12], self.png[:-1] + b"x", b"not png", missing_pixels):
             with self.subTest(data=data[-12:]):
                 self.source.write_bytes(data)
                 with self.assertRaises(ValueError):

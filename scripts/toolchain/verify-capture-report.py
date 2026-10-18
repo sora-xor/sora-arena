@@ -43,6 +43,7 @@ def png_dimensions(data: bytes) -> tuple[int, int]:
     if not data.startswith(b"\x89PNG\r\n\x1a\n"):
         raise ValueError("not a PNG")
     offset, dimensions, image_data = 8, None, bytearray()
+    row_sizes = []
     while offset + 12 <= len(data):
         size = struct.unpack_from(">I", data, offset)[0]
         kind = data[offset + 4:offset + 8]
@@ -58,16 +59,34 @@ def png_dimensions(data: bytes) -> tuple[int, int]:
             dimensions = struct.unpack_from(">II", payload)
             if not all(0 < value <= 16384 for value in dimensions):
                 raise ValueError("invalid PNG dimensions")
+            depth, color, compression, filtering, interlace = payload[8:]
+            depths = {0: (1, 2, 4, 8, 16), 2: (8, 16), 3: (1, 2, 4, 8), 4: (8, 16), 6: (8, 16)}
+            if depth not in depths.get(color, ()) or compression or filtering or interlace not in (0, 1):
+                raise ValueError("invalid PNG format")
+            bits = depth * {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color]
+            passes = ((0, 0, 1, 1),) if not interlace else (
+                (0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4),
+                (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2))
+            for x, y, dx, dy in passes:
+                columns = max(0, (dimensions[0] - x + dx - 1) // dx)
+                rows = max(0, (dimensions[1] - y + dy - 1) // dy)
+                if columns:
+                    row_sizes.extend([(columns * bits + 7) // 8] * rows)
         if kind == b"IDAT":
             image_data.extend(payload)
         if kind == b"IEND":
             if size or end != len(data) or not image_data:
                 raise ValueError("incomplete PNG image")
             decoder = zlib.decompressobj()
-            # The largest legal PNG pixel is 8 bytes; allow Adam7 filter rows.
-            decoder.decompress(image_data, dimensions[0] * dimensions[1] * 8 + dimensions[1] * 7 + 1)
-            if not decoder.eof or decoder.unused_data:
+            expected_bytes = sum(row_sizes) + len(row_sizes)
+            pixels = decoder.decompress(image_data, expected_bytes + 1)
+            if not decoder.eof or decoder.unused_data or len(pixels) != expected_bytes:
                 raise ValueError("incomplete or oversized PNG pixel stream")
+            row_start = 0
+            for row_size in row_sizes:
+                if pixels[row_start] > 4:
+                    raise ValueError("invalid PNG row filter")
+                row_start += row_size + 1
             return dimensions
         offset = end
     raise ValueError("PNG has no end chunk")
