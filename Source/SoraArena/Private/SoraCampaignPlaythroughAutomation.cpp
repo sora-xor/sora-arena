@@ -668,8 +668,9 @@ bool ExpectLinesQueued(FAutomationTestBase& Test, FState& State, const FSoraChap
 
 // A captured boss yields at zero health (bible §3.2: the final boss is
 // captured, not killed): it kneels upright where it fell and stays past a
-// fallen opponent's lifespan, the objective marks it for E, E from afar binds
-// nothing, and E at it ends the fight with the capture's own interaction.
+// fallen opponent's lifespan, and E from afar binds nothing. The final boss
+// ends only after the hero walks to the spine and holds the draw-cut; the
+// other captures use E beside the captive.
 bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& Beat)
 {
     USoraCampaignDirector* Director = Campaign(State);
@@ -683,7 +684,7 @@ bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& B
     bool bOk = Test.TestNotNull(*(Beat.Id + TEXT(": the yielded boss stays where it fell")), Captive) &&
         Test.TestTrue(*(Beat.Id + TEXT(": the yielded boss kneels upright and does not leave")),
             FMath::Abs(Captive->GetActorRotation().Roll) < 1.f && Captive->GetLifeSpan() == 0.f) &&
-        Test.TestTrue(*(Beat.Id + TEXT(": the captive is the objective, bound with E")),
+        Test.TestTrue(*(Beat.Id + TEXT(": the authored capture interaction is the objective")),
             Director->ObjectiveAnchor(At) && Director->AnchorTakesInteract() && (Spine
                 ?At.Equals(Mode(State)->Arena()->SummitSpinePoint(),1.f):FVector::Dist2D(At,Captive->GetActorLocation())<1.f));
     if (!bOk)

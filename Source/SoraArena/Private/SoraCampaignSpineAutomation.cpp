@@ -34,16 +34,17 @@ bool FSoraCampaignSpineTest::RunTest(const FString& Parameters)
         SoraSummitAutomation::FaceSpine(*W.World);
     };
     const FVector Approach=Arena->SummitSpineApproach();
-    Place(Approach-FVector(0,0,1800)+FVector(0,0,90));
-    W.Hero()->GetCharacterMovement()->DisableMovement();
-    if(!W.Hold(EKeys::E,110)) return false;
-    TestTrue(TEXT("Matching XY from the gallery floor cannot cut the spine"),W.Campaign()->AwaitingCapture());
+    // Query before the next world tick legitimately recovers a below-disc
+    // fall. Keep walking mode so the height gate, not MOVE_None, rejects it.
+    Place(FVector(Approach.X,Approach.Y,14290));
     W.Hero()->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+    TestFalse(TEXT("Matching XY on the gallery floor cannot reach the seam"),Arena->CanReachSummitSpine(*W.Hero()));
+    TestTrue(TEXT("A wrong-floor reach query cannot finish capture"),W.Campaign()->AwaitingCapture());
     Place(Approach+FVector(0,640,90));
     if(!W.Tick(2)) return false;
     TestFalse(TEXT("The far side of the solid spine blocks the seam"),Arena->CanReachSummitSpine(*W.Hero()));
     Place(Approach+FVector(0,-700,-30)); // Disc floor, south of the dais.
-    if(!W.Tick(4)||!SoraSummitAutomation::ApproachSpine(*W.World)) return false;
+    if(!W.Tick(95)||!SoraSummitAutomation::ApproachSpine(*W.World)) return false;
     TestTrue(TEXT("Normal movement climbs to a reachable seam"),Arena->CanReachSummitSpine(*W.Hero()));
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(45)) return false;
     TestTrue(TEXT("A partial hold shows progress without capture"),W.Campaign()->AwaitingCapture()&&W.Campaign()->HeldWorkProgress()>0);

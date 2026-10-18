@@ -328,9 +328,21 @@ Host `test_summit_rules.py` checks coverage, clipping, width, stage boundaries
 and masks. Engine compilation, procedural collision cooking, rendering,
 navigation updates and runtime fixtures still require root qualification.
 
-The P2 retreat onto the dais, held spine draw-cut, moving engine ring,
-phase-transition choreography and cinematic cast animation remain open.
-Functional tile meshes and edge bars are proxies for the art lane.
+The held spine draw-cut source candidate preserves the take-alive outcome.
+After the 1.5 s disarm interval, the hero must walk onto the dais, face the
+south seam within 260 cm with a clear collision trace, and hold Interact for
+the authored 1500 ms. Release, damage, loss of sight/reach, or a changed
+weapon discards partial work and requires a fresh press. The hold is never
+saved; the existing P3 checkpoint remains until the full cut starts b15.
+The seam and first-person draw-cut remain visual proxies; no finished
+animation is claimed. `SoraArena.Campaign.SpineDrawCut` covers ordinary
+dais traversal, wrong-height/occlusion rejection, interruptions, and the
+capture checkpoint. Its Unreal execution remains pending root qualification.
+Host checks cover the authored duration and transient hold at 1–500 ms steps.
+
+The P2 retreat onto the dais, moving engine ring, phase-transition choreography
+and cinematic cast animation remain open. Functional tile meshes and edge
+bars are proxies for the art lane.
 
 ### Alternating bellows treads and live flame gauge
 

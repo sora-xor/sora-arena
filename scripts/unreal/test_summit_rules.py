@@ -68,6 +68,14 @@ int main() {
     assert(Selected(2,2,-3,2,-3)); // Tally locks all three lines through the marked hero cell.
     assert(Selected(2,2,1,2,-3)&&Selected(2,-2,-3,2,-3)&&Selected(2,3,-2,2,-3));
     for(int frame:{1,7,16,33,100,500}) {
+        FCut distant;
+        assert(!Begin(distant,false,true));
+        assert(!TickCut(distant,2000,false,true,1500));
+        assert(!Begin(distant,true,true)); // Walking in while E remains down cannot start.
+        assert(!TickCut(distant,2000,true,true,1500));
+        TickCut(distant,1,true,false,1500);
+        assert(!Begin(distant,true,false));
+        assert(Begin(distant,true,true));
         FCut cut; assert(Begin(cut,true,true));
         int elapsed=0; bool done=false;
         while(!done) { done=TickCut(cut,frame,true,true,1500); elapsed+=frame; assert(elapsed<=1500+frame); }
