@@ -12,7 +12,7 @@
 
 namespace
 {
-// One row of the beat tracker: a Japanese label with its English beneath,
+// One row of the beat tracker: Japanese and optional English,
 // and a bar when Fraction is not negative.
 struct FTrackerRow
 {
@@ -20,6 +20,7 @@ struct FTrackerRow
     FString English;
     float Fraction = -1.f;
     FLinearColor Color = FLinearColor::White;
+    int32 Target = INDEX_NONE;
 };
 const TCHAR* const GaitJapanese[] = {TEXT("停止"), TEXT("常歩"), TEXT("速歩"), TEXT("駈歩"), TEXT("襲歩")};
 const TCHAR* const GaitEnglish[] = {TEXT("halt"), TEXT("walk"), TEXT("trot"), TEXT("canter"), TEXT("gallop")};
@@ -103,11 +104,14 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
     {
         Rows.Add({FString::Printf(TEXT("工程  %d / %d"),FMath::Min(State.Step+1,Task.StepCount),Task.StepCount),
             FString::Printf(TEXT("Step %d of %d"),FMath::Min(State.Step+1,Task.StepCount),Task.StepCount),Fraction,Frame.Teal});
-        for(int32 Step=0;Step<Beat->StepKinds.Num();++Step)
-            if(const FSoraLabel* Label=FSoraCatalog::Get().StepLabels.Find(Beat->StepKinds[Step]))
-                Rows.Add({FString::Printf(TEXT("%s %s ×%d"),Step<State.Step?TEXT("済"):Step==State.Step?TEXT("▶"):TEXT("・"),*Label->Japanese,Task.Steps[Step].Count),
-                    FString::Printf(TEXT("%s %s x%d"),Step<State.Step?TEXT("done"):Step==State.Step?TEXT("now"):TEXT("next"),*Label->English,Task.Steps[Step].Count),
-                    -1.f,Step<State.Step?Frame.Teal:Step==State.Step?Frame.Gold:Frame.Muted});
+        // The current operation needs its actual count. Listing every future
+        // operation repeats the recipe and pushes instructions off small screens.
+        if(Beat->StepKinds.IsValidIndex(State.Step)&&State.Step<Task.StepCount)
+            if(const FSoraLabel* Label=FSoraCatalog::Get().StepLabels.Find(Beat->StepKinds[State.Step]))
+                Rows.Add({FString::Printf(TEXT("▶ %s  %d / %d"),*Label->Japanese,State.StepDone,Task.Steps[State.Step].Count),
+                    FString::Printf(TEXT("Now: %s, %d of %d"),*Label->English,State.StepDone,Task.Steps[State.Step].Count),-1.f,Frame.Gold});
+        Rows.Add({FString::Printf(TEXT("工程一覧を要約：完了 %d・後続 %d"),FMath::Min(State.Step,Task.StepCount),FMath::Max(0,Task.StepCount-State.Step-1)),
+            FString::Printf(TEXT("Recipe summary: %d completed, %d later steps"),FMath::Min(State.Step,Task.StepCount),FMath::Max(0,Task.StepCount-State.Step-1)),-1.f,Frame.Muted});
         break;
     }
     default:
@@ -118,7 +122,7 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
         if(const FSoraLabel* Label=FSoraCatalog::Get().TargetLabels.Find(Beat->Targets[Target]))
         {
             const float Health=Task.TargetHp[Target]>0?static_cast<float>(State.TargetHp[Target])/Task.TargetHp[Target]:0.f;
-            Rows.Add({Label->Japanese,Label->English,Health,FMath::Lerp(FLinearColor(.78f,.12f,.08f),Frame.Teal,Health)});
+            Rows.Add({Label->Japanese,Label->English,Health,FMath::Lerp(FLinearColor(.78f,.12f,.08f),Frame.Teal,Health),Target});
         }
     // A hold fills only while the hero stands on the ground he holds.
     const ASoraPlayerCharacter* Holder=G.Hero();
@@ -149,62 +153,6 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
         }
     }
     return Rows;
-}
-// The beat tracker, top right under the bar.
-float DrawBeatTracker(const FSoraHUDFrame& Frame)
-{
-    ASoraHUD& HUD=Frame.HUD;
-    const ASoraGameMode& G=Frame.Mode;
-    const USoraCampaignDirector* Campaign=G.Campaign();
-    const float W=Frame.W,S=Frame.S,X=W-455*S,Width=435*S,Top=87*S;
-    if(!G.bCampaign||G.bDeterministicPractice||G.bChapterComplete||!Campaign->ActiveBeatData()||!Campaign->ActiveChapter()) return Top;
-    const TArray<FTrackerRow> Rows=TrackerRows(Frame);
-    const bool bEnglish=G.bEnglishSubtitles;
-    float Height=10*S;
-    for(const FTrackerRow& Row:Rows) Height+=24*S+(bEnglish?18*S:0.f)+(Row.Fraction>=0.f?9*S:0.f);
-    HUD.Panel(X,Top,Width,Height,FLinearColor(.013f,.027f,.033f,.8f));
-    float Y=Top+6*S;
-    for(const FTrackerRow& Row:Rows)
-    {
-        HUD.Label(Row.Japanese,X+12*S,Y,.44*S,Row.Color);
-        Y+=24*S;
-        if(bEnglish) { HUD.Label(Row.English,X+12*S,Y-2*S,.34*S,Frame.Muted); Y+=18*S; }
-        if(Row.Fraction>=0.f)
-        {
-            HUD.Panel(X+12*S,Y,Width-24*S,4*S,FLinearColor(.12f,.16f,.18f));
-            HUD.Panel(X+12*S,Y,(Width-24*S)*FMath::Clamp(Row.Fraction,0.f,1.f),4*S,Row.Color);
-            Y+=9*S;
-        }
-    }
-    return Top+Height;
-}
-// Unlocks, finds and restored sites, newest at the bottom, under the tracker.
-void DrawStoryNotices(const FSoraHUDFrame& Frame,float Top)
-{
-    ASoraHUD& HUD=Frame.HUD;
-    const ASoraGameMode& G=Frame.Mode;
-    const float W=Frame.W,S=Frame.S,X=W-455*S,Width=435*S;
-    if(!G.bCampaign||G.bDeterministicPractice) return;
-    float Y=Top+8*S;
-    for(const FSoraStoryNotice& Notice:G.Campaign()->StoryNotices())
-    {
-        const FLinearColor Accent=Notice.Kind==FSoraStoryNotice::EKind::Weapon?Frame.Gold
-            :Notice.Kind==FSoraStoryNotice::EKind::Collectible?Frame.Ivory:Frame.Teal;
-        const bool bDetail=!Notice.Detail.IsEmpty();
-        const float Height=12*S+26*S+(G.bEnglishSubtitles?20*S:0.f)+(bDetail?40*S+(G.bEnglishSubtitles?36*S:0.f):0.f);
-        const float Fade=FMath::Clamp(Notice.Remaining,0.f,1.f);
-        HUD.Panel(X,Y,Width,Height,FLinearColor(.015f,.035f,.045f,.9f*Fade));
-        HUD.Panel(X,Y,4*S,Height,Accent);
-        float Line=Y+6*S;
-        HUD.Label(Notice.Japanese,X+14*S,Line,.48*S,Accent); Line+=26*S;
-        if(G.bEnglishSubtitles) { HUD.Label(Notice.English,X+14*S,Line-2*S,.36*S,Frame.Muted); Line+=20*S; }
-        if(bDetail)
-        {
-            Line+=HUD.WrappedLabel(Notice.Detail,X+14*S,Line,.36*S,Frame.Ivory,Width-28*S,20*S,2)*20*S;
-            if(G.bEnglishSubtitles) HUD.WrappedLabel(Notice.DetailEnglish,X+14*S,Line,.32*S,Frame.Muted,Width-28*S,18*S,2);
-        }
-        Y+=Height+6*S;
-    }
 }
 // A line with its speaker: Japanese first, English beneath when enabled.
 void DrawLine(const FSoraHUDFrame& Frame,const FSoraDialogueCue& Line,float Bottom)
@@ -294,6 +242,233 @@ FLowerStoryLayout BuildLowerStoryLayout(const FSoraHUDFrame& F)
         AddStrip(L.Prompt,SoraHUDPanels::KeyPrompt(&F.HUD,Prompt->Japanese,Prompt->English));
     return L;
 }
+// The upper story stack uses the same measured glyphs for drawing and capture
+// qualification. Its bottom is the real lower-story/weapon boundary, not an
+// assumed number of rows. No critical task, warning or target row is optional.
+struct FUpperStoryText
+{
+    FString Text;
+    FVector2D At;
+    float Scale=0;
+    FLinearColor Color;
+};
+struct FUpperStoryRow
+{
+    FBox2D Bounds=FBox2D(ForceInit);
+    TArray<FUpperStoryText> Text;
+    float Fraction=-1;
+    FLinearColor Color;
+    int32 Target=INDEX_NONE;
+};
+struct FUpperStoryPanel
+{
+    FBox2D Bounds=FBox2D(ForceInit);
+    TArray<FUpperStoryRow> Rows;
+    FLinearColor Accent;
+    bool bNotice=false;
+    float Fade=1;
+};
+struct FUpperStoryLayout
+{
+    TArray<FUpperStoryPanel> Panels;
+    float Limit=0;
+    int32 Targets=0,NoticeTitles=0,NoticeDetails=0;
+    TArray<int32> NoticeIndices;
+    bool bCondensedNotices=false;
+};
+FUpperStoryRow MeasureUpperStoryRow(const FSoraHUDFrame& F,const FTrackerRow& Source,float X,float Y,float Width)
+{
+    FUpperStoryRow Row;
+    Row.Fraction=Source.Fraction; Row.Color=Source.Color; Row.Target=Source.Target;
+    const float JapaneseScale=FMath::Max(.44f*F.S,.60f),EnglishScale=FMath::Max(.34f*F.S,.55f),Gap=10*F.S;
+    float JapaneseLeading=22,EnglishLeading=20;
+    const TArray<FString> Japanese=StoryStripLines(F.HUD,Source.Japanese,JapaneseScale,Width,JapaneseLeading);
+    TArray<FString> English;
+    if(F.Mode.bEnglishSubtitles) English=StoryStripLines(F.HUD,Source.English,EnglishScale,Width,EnglishLeading);
+    const bool Inline=Japanese.Num()==1&&English.Num()==1&&
+        F.HUD.LabelWidth(Source.Japanese,JapaneseScale)+Gap+F.HUD.LabelWidth(Source.English,EnglishScale)<=Width;
+    float Next=Y;
+    for(const FString& Line:Japanese)
+    { Row.Text.Add({Line,FVector2D(X,Next),JapaneseScale,Source.Color}); Next+=JapaneseLeading; }
+    if(Inline)
+    {
+        Row.Text.Add({Source.English,FVector2D(X+F.HUD.LabelWidth(Source.Japanese,JapaneseScale)+Gap,Y),EnglishScale,F.Muted});
+        Next=Y+FMath::Max(JapaneseLeading,EnglishLeading);
+    }
+    else for(const FString& Line:English)
+    { Row.Text.Add({Line,FVector2D(X,Next),EnglishScale,F.Muted}); Next+=EnglishLeading; }
+    if(Source.Fraction>=0) Next+=9*F.S;
+    Row.Bounds=FBox2D(FVector2D(X,Y),FVector2D(X+Width,Next));
+    return Row;
+}
+FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F)
+{
+    FUpperStoryLayout L;
+    const USoraCampaignDirector* C=F.Mode.Campaign();
+    L.Limit=BuildLowerStoryLayout(F).Top-6*F.S;
+    if(!F.Mode.bCampaign||F.Mode.bDeterministicPractice) return L;
+    // Wider at 720p, while staying to the right of the objective's panel.
+    const float Width=FMath::Min(FMath::Max(435*F.S,540.f),F.W-902*F.S);
+    const float X=F.W-20*F.S-Width,Padding=10*F.S,Gap=6*F.S,Inner=Width-2*Padding;
+    float Y=87*F.S;
+    const auto& Notices=C->StoryNotices();
+    int32 DetailCount=0;
+    for(const FSoraStoryNotice& Notice:Notices)
+        if(!Notice.Detail.IsEmpty()||(F.Mode.bEnglishSubtitles&&!Notice.DetailEnglish.IsEmpty())) ++DetailCount;
+    if(!F.Mode.bChapterComplete&&C->ActiveBeatData()&&C->ActiveChapter())
+    {
+        TArray<FTrackerRow> Rows=TrackerRows(F);
+        const FTrackerRow FullHeading=Rows[0];
+        int32 Number=0,Required=0;
+        for(int32 I=0;I<C->ActiveChapter()->Rules.Num();++I)
+            if(!C->ActiveChapter()->Rules[I].Optional) { ++Required; if(I<=C->ActiveBeat()) ++Number; }
+        Rows[0]={FString::Printf(TEXT("第%d場 / %d"),Number,Required),FString::Printf(TEXT("Beat %d of %d"),Number,Required),-1,F.Ivory};
+        const auto Tracker=[&]()
+        {
+            FUpperStoryPanel Panel;
+            float At=Y+Padding;
+            for(int32 I=0;I<Rows.Num();++I)
+            {
+                if(Rows[I].Target==INDEX_NONE)
+                {
+                    Panel.Rows.Add(MeasureUpperStoryRow(F,Rows[I],X+Padding,At,Inner));
+                    At=Panel.Rows.Last().Bounds.Max.Y+Gap;
+                }
+                else
+                {
+                    // Every defended target keeps its own label and health.
+                    // Two columns avoid an eight-person list consuming the HUD.
+                    const float Cell=(Inner-Gap)*.5f;
+                    const FUpperStoryRow Left=MeasureUpperStoryRow(F,Rows[I],X+Padding,At,Cell);
+                    Panel.Rows.Add(Left);
+                    float End=Left.Bounds.Max.Y;
+                    if(I+1<Rows.Num()&&Rows[I+1].Target!=INDEX_NONE)
+                    {
+                        Panel.Rows.Add(MeasureUpperStoryRow(F,Rows[++I],X+Padding+Cell+Gap,At,Cell));
+                        End=FMath::Max(End,static_cast<float>(Panel.Rows.Last().Bounds.Max.Y));
+                    }
+                    At=End+Gap;
+                }
+            }
+            Panel.Bounds=FBox2D(FVector2D(X,Y),FVector2D(X+Width,At-Gap+Padding));
+            return Panel;
+        };
+        FUpperStoryPanel Panel=Tracker();
+        // The active operation and warnings take priority over the full beat
+        // title. Its chapter position remains visible even when condensed.
+        if(Notices.IsEmpty())
+        {
+            Rows[0]=FullHeading;
+            FUpperStoryPanel Full=Tracker();
+            if(Full.Bounds.Max.Y<=L.Limit) Panel=MoveTemp(Full);
+        }
+        for(const FUpperStoryRow& Row:Panel.Rows) if(Row.Target!=INDEX_NONE) ++L.Targets;
+        Y=Panel.Bounds.Max.Y+Gap;
+        L.Panels.Add(MoveTemp(Panel));
+    }
+    if(Notices.IsEmpty()) return L;
+    // Reserve titles before spending space on details. Every item is measured
+    // once; a layout trial only translates those rows. Nothing is truncated.
+    TArray<FUpperStoryRow> Titles,Details;
+    for(int32 I=Notices.Num()-1;I>=0;--I)
+    {
+        const FSoraStoryNotice& N=Notices[I];
+        const FLinearColor Accent=N.Kind==FSoraStoryNotice::EKind::Weapon?F.Gold:N.Kind==FSoraStoryNotice::EKind::Collectible?F.Ivory:F.Teal;
+        Titles.Add(MeasureUpperStoryRow(F,{N.Japanese,N.English,-1,Accent},X+Padding,0,Inner));
+        Details.Add(MeasureUpperStoryRow(F,{N.Detail,N.DetailEnglish,-1,F.Ivory},X+Padding,0,Inner));
+    }
+    const auto PlaceRow=[](FUpperStoryRow Row,float At)
+    {
+        const float Offset=At-Row.Bounds.Min.Y;
+        Row.Bounds.Min.Y+=Offset; Row.Bounds.Max.Y+=Offset;
+        for(FUpperStoryText& Text:Row.Text) Text.At.Y+=Offset;
+        return Row;
+    };
+    const auto NoticePanels=[&](int32 Count,const TArray<bool>& ShowDetails)
+    {
+        TArray<FUpperStoryPanel> Panels;
+        float At=Y;
+        int32 ShownDetails=0;
+        for(int32 I=0;I<Count;++I)
+        {
+            FUpperStoryPanel Panel;
+            Panel.bNotice=true; Panel.Accent=Titles[I].Color;
+            Panel.Fade=FMath::Clamp(Notices[Notices.Num()-1-I].Remaining,0.f,1.f);
+            Panel.Rows.Add(PlaceRow(Titles[I],At+Padding));
+            float End=Panel.Rows.Last().Bounds.Max.Y;
+            if(ShowDetails[I]&&!Details[I].Text.IsEmpty())
+            {
+                Panel.Rows.Add(PlaceRow(Details[I],End+Gap));
+                End=Panel.Rows.Last().Bounds.Max.Y;
+                ++ShownDetails;
+            }
+            Panel.Bounds=FBox2D(FVector2D(X,At),FVector2D(X+Width,End+Padding));
+            At=Panel.Bounds.Max.Y+Gap;
+            Panels.Add(MoveTemp(Panel));
+        }
+        if(Count<Notices.Num()||ShownDetails<DetailCount)
+        {
+            FUpperStoryPanel Panel;
+            Panel.bNotice=true; Panel.Accent=F.Teal;
+            Panel.Rows.Add(MeasureUpperStoryRow(F,{
+                FString::Printf(TEXT("通知を要約：ほか %d 件・詳細 %d 件"),Notices.Num()-Count,DetailCount-ShownDetails),
+                FString::Printf(TEXT("Condensed: %d more notices; %d details"),Notices.Num()-Count,DetailCount-ShownDetails),-1,F.Muted},X+Padding,At+Padding,Inner));
+            Panel.Bounds=FBox2D(FVector2D(X,At),FVector2D(X+Width,Panel.Rows.Last().Bounds.Max.Y+Padding));
+            Panels.Add(MoveTemp(Panel));
+        }
+        return Panels;
+    };
+    TArray<bool> ShowDetails;
+    ShowDetails.Init(true,Notices.Num());
+    int32 TitleCount=Notices.Num();
+    TArray<FUpperStoryPanel> Panels=NoticePanels(TitleCount,ShowDetails);
+    const auto Fits=[&](const TArray<FUpperStoryPanel>& Trial)
+        { return Trial.IsEmpty()||Trial.Last().Bounds.Max.Y<=L.Limit; };
+    if(!Fits(Panels))
+    {
+        ShowDetails.Init(false,Notices.Num());
+        Panels=NoticePanels(TitleCount,ShowDetails);
+        while(TitleCount>0&&!Fits(Panels)) Panels=NoticePanels(--TitleCount,ShowDetails);
+        for(int32 I=0;I<TitleCount;++I)
+        {
+            if(Details[I].Text.IsEmpty()) continue;
+            ShowDetails[I]=true;
+            TArray<FUpperStoryPanel> Trial=NoticePanels(TitleCount,ShowDetails);
+            if(Fits(Trial)) Panels=MoveTemp(Trial);
+            else ShowDetails[I]=false;
+        }
+    }
+    L.NoticeTitles=TitleCount;
+    for(int32 I=0;I<TitleCount;++I)
+    {
+        L.NoticeIndices.Add(Notices.Num()-1-I);
+        if(ShowDetails[I]&&!Details[I].Text.IsEmpty()) ++L.NoticeDetails;
+    }
+    L.bCondensedNotices=L.NoticeTitles<Notices.Num()||L.NoticeDetails<DetailCount;
+    L.Panels.Append(MoveTemp(Panels));
+    return L;
+}
+void DrawUpperStory(const FSoraHUDFrame& F)
+{
+    for(const FUpperStoryPanel& Panel:BuildUpperStoryLayout(F).Panels)
+    {
+        const FVector2D Size=Panel.Bounds.GetSize();
+        F.HUD.Panel(Panel.Bounds.Min.X,Panel.Bounds.Min.Y,Size.X,Size.Y,Panel.bNotice?
+            FLinearColor(.015f,.035f,.045f,.9f*Panel.Fade):FLinearColor(.013f,.027f,.033f,.8f));
+        if(Panel.bNotice) F.HUD.Panel(Panel.Bounds.Min.X,Panel.Bounds.Min.Y,4*F.S,Size.Y,Panel.Accent);
+        for(const FUpperStoryRow& Row:Panel.Rows)
+        {
+            for(const FUpperStoryText& Text:Row.Text) F.HUD.Label(Text.Text,Text.At.X,Text.At.Y,Text.Scale,Text.Color);
+            if(Row.Fraction>=0)
+            {
+                const float At=Row.Bounds.Max.Y-9*F.S,Width=Row.Bounds.GetSize().X;
+                F.HUD.Panel(Row.Bounds.Min.X,At,Width,4*F.S,FLinearColor(.12f,.16f,.18f));
+                F.HUD.Panel(Row.Bounds.Min.X,At,Width*FMath::Clamp(Row.Fraction,0.f,1.f),4*F.S,Row.Color);
+            }
+        }
+    }
+}
+
 void DrawStoryStrip(const FSoraHUDFrame& F,const FStoryStrip& Strip,FLinearColor Color,float Opacity)
 {
     if(!Strip.Bounds.bIsValid) return;
@@ -305,6 +480,52 @@ void DrawStoryStrip(const FSoraHUDFrame& F,const FStoryStrip& Strip,FLinearColor
 }
 
 float SoraHUDPanels::GameplayStoryTop(const FSoraHUDFrame& F) { return BuildLowerStoryLayout(F).Top; }
+bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
+{
+    const FUpperStoryLayout L=BuildUpperStoryLayout(F);
+    TArray<FBox2D> TextBounds;
+    float PreviousBottom=87*F.S;
+    for(const FUpperStoryPanel& Panel:L.Panels)
+    {
+        if(Panel.Bounds.Min.X<870*F.S||Panel.Bounds.Min.Y<PreviousBottom||Panel.Bounds.Max.X>F.W||Panel.Bounds.Max.Y>L.Limit)
+        { Why=TEXT("Measured tracker/notices exceed their space beside the objective and above lower story panels"); return false; }
+        PreviousBottom=Panel.Bounds.Max.Y;
+        for(const FUpperStoryRow& Row:Panel.Rows)
+        {
+            if(Row.Target!=INDEX_NONE)
+            {
+                const auto& Task=F.Mode.Campaign()->ActiveTask();
+                const auto& State=F.Mode.Campaign()->TaskProgress();
+                if(Row.Target>=Task.TargetCount||Task.TargetHp[Row.Target]<=0||
+                    !FMath::IsNearlyEqual(Row.Fraction,static_cast<float>(State.TargetHp[Row.Target])/Task.TargetHp[Row.Target]))
+                { Why=TEXT("A defended target's visible health does not match its live task state"); return false; }
+            }
+            for(const FUpperStoryText& Text:Row.Text)
+            {
+                int32 W=0,H=0;
+                UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),Text.Scale,Text.Scale,W,H,Text.Text);
+                const FBox2D Box(Text.At,Text.At+FVector2D(W,H));
+                const float TextBottom=Row.Bounds.Max.Y-(Row.Fraction>=0?9*F.S:0);
+                if(Text.Scale<.55f||Box.Min.X<Row.Bounds.Min.X||Box.Max.X>Row.Bounds.Max.X+.5f||Box.Max.Y>TextBottom+.5f)
+                { Why=TEXT("Tracker/notice text is too small or escapes its measured row"); return false; }
+                for(const FBox2D& Other:TextBounds)
+                    if(Box.Min.X<Other.Max.X&&Box.Max.X>Other.Min.X&&Box.Min.Y<Other.Max.Y&&Box.Max.Y>Other.Min.Y)
+                    { Why=TEXT("Measured tracker/notice labels overlap"); return false; }
+                TextBounds.Add(Box);
+            }
+        }
+    }
+    if(F.Mode.bCampaign&&!F.Mode.bDeterministicPractice&&!F.Mode.bChapterComplete&&
+        F.Mode.Campaign()->ActiveBeatData()&&L.Targets!=F.Mode.Campaign()->ActiveTask().TargetCount)
+    { Why=TEXT("The tracker dropped a defended target"); return false; }
+    for(int32 I=0;I<L.NoticeIndices.Num();++I)
+        if(L.NoticeIndices[I]!=F.Mode.Campaign()->StoryNotices().Num()-1-I)
+        { Why=TEXT("The visible notices do not prioritize the newest titles"); return false; }
+    if(L.NoticeTitles<F.Mode.Campaign()->StoryNotices().Num()&&!L.bCondensedNotices)
+    { Why=TEXT("Story notices were hidden without a visible condensed summary"); return false; }
+    return true;
+}
+
 bool SoraHUDPanels::BottomHUDLayoutFits(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero,FString& Why)
 {
     const FLowerStoryLayout L=BuildLowerStoryLayout(F);
@@ -438,7 +659,7 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
                     W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
     }
     // The beat tracker, and story notices beneath it.
-    DrawStoryNotices(Frame,DrawBeatTracker(Frame));
+    DrawUpperStory(Frame);
     // Story lines and notices share the lower third; play and objective
     // timers continue beneath a line.
     const auto* Cue=Campaign->CurrentDialogueCue();
