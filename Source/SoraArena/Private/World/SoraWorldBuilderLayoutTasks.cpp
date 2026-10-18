@@ -1,5 +1,6 @@
 #include "SoraWorldBuilder.h"
 #include "SoraCatalog.h"
+#include "SoraCampaignLift.h"
 #include "SoraHorse.h"
 #include "SoraPlayerCharacter.h"
 #include "Animation/AnimationAsset.h"
@@ -111,6 +112,7 @@ void ASoraWorldBuilder::KitItem(FName Item,FVector Location,int32 Index,TArray<T
     if(Item==TEXT("bale")) Mesh->SetRelativeRotation(FRotator(90,0,0));
     Into.Add(Mesh);
 }
+ASoraCampaignLift* ASoraWorldBuilder::CampaignLift() const { return Lift; }
 void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
 {
     ClearKit();
@@ -134,9 +136,14 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
         RecoveryBundle.Add(KitShape(TEXT("BowBag"),KitCube,P+FVector(-65,95,4),FVector(2.2f,.16f,.12f),FLinearColor(.24f,.27f,.2f)));
     }
     KitWork=Space.Work;
-    KitAnchor=Floor(Space.Anchor);
+    KitAnchor=Floor(Space.Anchor,Space.HeightCm);
     const FVector A=KitAnchor;
-    if(KitWork==TEXT("sluice"))
+    if(Space.Lift.bEnabled)
+    {
+        Lift=GetWorld()->SpawnActor<ASoraCampaignLift>();
+        if(Lift) { Lift->Build(Space.Anchor,Beat.Task.Count,Beat.Task.MinTurnMs); KitActors.Add(Lift); }
+    }
+    else if(KitWork==TEXT("sluice"))
     {
         // The weir's winch beside the anchor, and the channel it lets the water into.
         for(int32 Side:{-1,1}) KitShape(TEXT("WinchPost"),KitCube,A+FVector(0,Side*95,90),FVector(.2f,.2f,1.8f),KitTimber,TEXT("Timber"),true);
@@ -338,7 +345,7 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
 }
 float ASoraWorldBuilder::KitGaugeHeight() const
 {
-    return KitGauge?KitGauge->GetRelativeLocation().Z:0.f;
+    return Lift?Lift->Height():KitGauge?KitGauge->GetRelativeLocation().Z:0.f;
 }
 void ASoraWorldBuilder::ShowRecoveryBundle(bool Visible)
 {
@@ -357,7 +364,7 @@ void ASoraWorldBuilder::ClearKit()
     RecoveryBundle.Reset(); KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
     KitLooseLoads.Reset(); CarrySeal=nullptr;
-    KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr;
+    KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr; Lift=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
 }
 void ASoraWorldBuilder::ShowPickups(const FSoraChapter& Chapter,const TArray<int32>& Loose)

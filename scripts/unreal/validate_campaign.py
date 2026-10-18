@@ -374,8 +374,9 @@ def check_space(chapter, beats, rewards, labels, where):
     def zone_of(index):
         return (tuple(zones[index]["rect"]), zones[index]["cover"]) if index >= 0 else (ARENA_RECT, hub_blockers)
 
+    elevated_rect = None
     def on_floor(index, point, what, cover_margin=COVER_CLEAR):
-        rect, cover = zone_of(index)
+        rect, cover = (elevated_rect, []) if elevated_rect is not None else zone_of(index)
         require(_inside(rect, point, WALL_CLEAR) and _clear_of_cover(cover, point, cover_margin),
                 f"{what} at {point[:2]} is off its floor or inside a wall or cover")
 
@@ -393,6 +394,11 @@ def check_space(chapter, beats, rewards, labels, where):
             on_floor(index, point, f"{where} site {site}", 150)
     for beat, record in zip(beats, records):
         task, index, what = beat["task"], record["zone"], beat["id"]
+        elevated_rect = None
+        if what == "ch08.b12":
+            elevated_rect = next(row["lift"]["gallery_rect"] for row in records if row["beat"] == "ch08.b11")
+        require(record["height_cm"] == (2700 if what == "ch08.b11" else 14200 if what == "ch08.b12" else 0),
+                f"{what}: authored floor height")
         routed = beat["type"] == "horseback_ride" or task["goal"] == "escort"
         require(routed == (record["route"] is not None) and
                 (not routed or zones[index]["form"] == "route"), f"{what}: rides and escorts run on a route")
@@ -426,7 +432,7 @@ def check_space(chapter, beats, rewards, labels, where):
                 require(step["kind"] in labels["step_kinds"], f"{what}: step {step['kind']} has no label")
         for target in task["targets"]:
             require(target["id"] in labels["targets"], f"{what}: target {target['id']} has no label")
-        rect = zone_of(index)[0]
+        rect = elevated_rect if elevated_rect is not None else zone_of(index)[0]
         placed = {volume["event"] for volume in record["volumes"]}
         named = _volume_events(beat, chapter)
         if record["mount"]:
@@ -477,6 +483,7 @@ def check_space(chapter, beats, rewards, labels, where):
             on_floor(index, mount["at"], f"{what} horse")
             for spook in mount["spooks"]:
                 require(f"volume_enter:{spook}" in placed, f"{what}: spook volume {spook} is not placed")
+    elevated_rect = None
     found = [pickup["collectible"] for pickup in space["pickups"]]
     loose = [item["id"] for item in chapter["collectibles"] if item["id"] not in rewards]
     require(sorted(found) == sorted(loose), f"{where}: pickups {sorted(found)} for loose collectibles {sorted(loose)}")

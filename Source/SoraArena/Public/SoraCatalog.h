@@ -505,8 +505,19 @@ struct FSoraStealthRulesData
 // Where a beat happens: its zone (INDEX_NONE for the arena hub), where a
 // travel cut places the hero, its anchor and task points, trigger volumes,
 // opponent spawns and patrols, and what the world builds for its task.
+struct FSoraLiftSpace
+{
+    bool bEnabled=false;
+    FVector2D Size=FVector2D::ZeroVector;
+    int32 BottomCm=0,TopCm=0;
+    TArray<int32> GantryCm;
+    FBox2D Gallery;
+    FVector2D GalleryExit=FVector2D::ZeroVector;
+};
 struct FSoraBeatSpace
 {
+    int32 HeightCm=0;
+    FSoraLiftSpace Lift;
     int32 Zone = INDEX_NONE;
     FVector2D Entry = FVector2D::ZeroVector;
     float EntryYaw = 0.f;

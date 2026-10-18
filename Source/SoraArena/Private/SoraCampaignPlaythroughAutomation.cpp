@@ -10,6 +10,7 @@
 #include "SoraDojoRules.h"
 #include "SoraMaaiAutomation.h"
 #include "SoraRecoveryAutomation.h"
+#include "SoraLiftAutomation.h"
 #include "SoraCarryAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
@@ -312,7 +313,8 @@ void MoveTo(FState& State, const FVector& Location)
     }
     ASoraPlayerCharacter* Hero = Player(State);
     Hero->GetCharacterMovement()->StopMovementImmediately();
-    // Every floor of a chapter's space is at z 0.
+    // Ground-level fixture travel only. The spire uses SoraLiftAutomation's
+    // physical boarding, ride and gallery walk instead of this helper.
     const float Half = Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     Hero->SetActorLocation(FVector(Location.X, Location.Y, Half + 2.f), false, nullptr, ETeleportType::TeleportPhysics);
 }
@@ -1057,6 +1059,14 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Turns:
     case EGoal::Steps:
     {
+        if(Beat.Space.Lift.bEnabled)
+        {
+            if(!Test.TestTrue(TEXT("The full spire ride uses boarding and ordinary crank input"),SoraLiftAutomation::Ride(*State.World))||
+                !Test.TestTrue(TEXT("The gallery can be searched and left by walking"),SoraLiftAutomation::Gallery(*State.World,true))) return false;
+            ++State.CachesOpened;
+            ++State.GoalsPlayed.FindOrAdd(static_cast<int32>(SoraBeatRules::EGoal::Cache));
+            break;
+        }
         // A cargo ride delivers from the saddle.
         if (Beat.Is(SoraBeatRules::EType::HorsebackRide))
         {

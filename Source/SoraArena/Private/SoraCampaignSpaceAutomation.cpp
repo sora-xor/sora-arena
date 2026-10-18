@@ -7,6 +7,7 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraSaveGame.h"
 #include "SoraWorldBuilder.h"
+#include "SoraLiftRules.h"
 #include "Algo/AllOf.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -33,13 +34,14 @@ struct FProbe
     const AActor* Hero;
     int32 Points = 0;
     bool bOk = true;
-    // A trace down from above meets a floor at z 0 under Point.
+    float HeightCm = 0.f;
+    // A trace down meets the beat's authored floor, including the spire.
     bool Floor(const FVector2D& Point, const FString& What)
     {
         FHitResult Hit;
         FCollisionQueryParams Params(SCENE_QUERY_STAT(SpaceFloor), false, Hero);
-        const bool bHit = World.LineTraceSingleByChannel(Hit, FVector(Point.X, Point.Y, 60.f), FVector(Point.X, Point.Y, -200.f),
-            ECC_Visibility, Params) && FMath::IsNearlyZero(Hit.ImpactPoint.Z, 2.f);
+        const bool bHit = World.LineTraceSingleByChannel(Hit, FVector(Point.X, Point.Y, HeightCm+60.f), FVector(Point.X, Point.Y, HeightCm-200.f),
+            ECC_Visibility, Params) && FMath::IsNearlyEqual(Hit.ImpactPoint.Z,HeightCm,2.f);
         ++Points;
         return bHit || (bOk = Test.TestTrue(*(What + TEXT(" stands on a floor")), false));
     }
@@ -49,7 +51,7 @@ struct FProbe
         if (!Floor(Point, What))
             return false;
         FCollisionQueryParams Params(SCENE_QUERY_STAT(SpaceRoom), false, Hero);
-        const bool bBlocked = World.OverlapBlockingTestByChannel(FVector(Point.X, Point.Y, CapsuleHalfHeight + 4.f), FQuat::Identity,
+        const bool bBlocked = World.OverlapBlockingTestByChannel(FVector(Point.X, Point.Y, HeightCm+CapsuleHalfHeight + 4.f), FQuat::Identity,
             ECC_Pawn, FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight), Params);
         return !bBlocked || (bOk = Test.TestFalse(*(What + TEXT(" has room to stand")), true));
     }
@@ -92,13 +94,24 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
         {
             const FSoraBeatSpace& Space = Beat.Space;
             const FString What = Beat.Id;
+            if(Space.HeightCm>0&&!World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->StageKit(Data,10);
+            if(Space.HeightCm==0&&World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->ClearKit();
+            Probe.HeightCm=Space.HeightCm;
             Probe.Stand(Space.Entry, What + TEXT(" entry"));
             // A beat that restores a site is worked at the site's own base.
             if (!Data.Space.Sites.Contains(Space.Anchor))
-                Probe.Stand(Space.Anchor, What + TEXT(" anchor"));
-            for (const TArray<FVector2D>* Points : {&Space.Objectives, &Space.Pickups, &Space.Dropoffs, &Space.Targets, &Space.Stations, &Space.Spawns})
+                // The capstan occupies the anchor; its bars are worked from
+                // this clear deck position, as LiftMotion boards by input.
+                Probe.Stand(Space.Anchor+(Space.Lift.bEnabled?FVector2D(-180,0):FVector2D::ZeroVector), What + TEXT(" anchor"));
+            for (const TArray<FVector2D>* Points : {&Space.Objectives, &Space.Pickups, &Space.Dropoffs, &Space.Targets, &Space.Stations})
                 for (const FVector2D& Point : *Points)
                     Probe.Stand(Point, What + TEXT(" point"));
+            for(int32 Landing=0;Landing<(Space.Lift.bEnabled?3:1);++Landing)
+            {
+                Probe.HeightCm=Space.Lift.bEnabled?SoraLiftRules::Gantry(Landing+1):Space.HeightCm;
+                for(const FVector2D& Point:Space.Spawns) Probe.Stand(Point,What+TEXT(" spawn"));
+            }
+            Probe.HeightCm=Space.HeightCm;
             for (const TArray<FVector2D>& Loop : Space.Patrols)
                 for (const FVector2D& Post : Loop)
                     Probe.Stand(Post, What + TEXT(" patrol post"));
@@ -112,6 +125,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             if (Space.bMount)
                 Probe.Floor(Space.Mount.At, What + TEXT(" horse"));
         }
+        Probe.HeightCm=0;
         for (const FSoraPickup& Pickup : Data.Space.Pickups)
             Probe.Stand(Pickup.At, Name + TEXT(" ") + Data.Collectibles[Pickup.Collectible].Id);
         bOk &= Probe.bOk;
@@ -121,7 +135,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
         TArray<FVector> Caches;
         for (const FSoraBeat& Beat : Data.Beats)
             if (Beat.Space.bCache)
-                Caches.Add(ASoraWorldBuilder::Floor(Beat.Space.Cache));
+                Caches.Add(ASoraWorldBuilder::Floor(Beat.Space.Cache,Beat.Space.HeightCm));
         if (!Caches.IsEmpty())
         {
             ASoraWorldBuilder* Builder = World.Mode()->Arena();
