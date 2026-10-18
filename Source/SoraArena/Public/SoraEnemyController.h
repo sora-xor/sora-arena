@@ -6,6 +6,7 @@
 class ASoraBoss;
 class ASoraCharacterBase;
 class ASoraEnemy;
+class ASoraCampaignLift;
 class USoraGameEvents;
 struct FSoraDetonatedEvent;
 struct FSoraMeleeCommittedEvent;
@@ -95,7 +96,9 @@ public:
     // Facing, and neither patrols nor fights while the errand lasts. It still
     // notices the hero; one that only runs while calm (bWhileCalm) ends the
     // moment it is alerted. DurationMs 0 lasts until cleared.
-    void SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm);
+    void SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm,
+        bool bThreeDimensional = false, float AcceptanceCm = ErrandReachCm);
+    void AssignLift(ASoraCampaignLift& Lift,int32 Wave);
     // An errand's goal is reached within this (2D).
     static constexpr float ErrandReachCm = 120.f;
     void ClearErrand() { bErrand = false; }
@@ -206,11 +209,17 @@ private:
     bool bErrand = false;
     bool bErrandWhileCalm = false;
     bool bErrandReached = false;
+    bool bErrand3D = false;
+    float ErrandAcceptanceCm = ErrandReachCm;
     FVector ErrandGoal = FVector::ZeroVector;
     FVector ErrandFacing = FVector::ForwardVector;
     float ErrandPace = 1.f;
     int32 ErrandUntilMs = 0;
     bool RunErrand(ASoraEnemy& Enemy, float DeltaSeconds, int32 NowMs);
+    TWeakObjectPtr<ASoraCampaignLift> AssignedLift;
+    int32 LiftWave = INDEX_NONE;
+    bool bLiftJumped = false;
+    bool DriveLift(ASoraEnemy& Enemy,ASoraCharacterBase& Target,float Dt);
     // Stealth: the hero in view at the last tick, and evidence of a body.
     bool bSeesHero = false;
     int32 BodyEvidence = 0;

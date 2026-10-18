@@ -14,6 +14,7 @@
 #include "SoraSaveGame.h"
 #include "SoraText.h"
 #include "SoraWorldBuilder.h"
+#include "SoraCampaignLift.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Camera/PlayerCameraManager.h"
@@ -44,8 +45,9 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||Mode().bChapterComplete) return false;
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
+    if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }
     const FSoraBeatSpace& Space=Beat->Space;
-    const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point); bInteract=bWorks; return true; };
+    const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point,Space.HeightCm); bInteract=bWorks; return true; };
     const auto VolumeOf=[&](const FString& Event) { return Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Event; }); };
     if(Task.RecoveryWeapons!=0u&&(NeedsEquipmentRecovery()||AtRecoveryBottom()||IsClimbingRecoveryWell()))
     {
@@ -107,7 +109,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
                 if(!Fieldcraft->IsFireLit(Fire)) return At(Fieldcraft->Active()->Fires.Points[Fire],true);
         return At(Space.Anchor,false);
     case SoraBeatRules::EGoal::Turns:
-        return At(Space.Anchor,true);
+        Location=WorkAnchor(); bInteract=true; return true;
     case SoraBeatRules::EGoal::Steps:
         return Space.StepStations.IsValidIndex(TaskState.Step)&&At(Space.Stations[Space.StepStations[TaskState.Step]],true);
     case SoraBeatRules::EGoal::Survive:
@@ -185,18 +187,21 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
     const FSoraBeat* Beat=ActiveBeatData();
     if(!World||!Chapter||!Beat||!GetWorld()) return;
     const FSoraBeatSpace& Space=Beat->Space;
-    // Travel: a beat in another place than the hero cuts to its entry.
-    if(Hero&&Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone)
+    World->StageKit(*Chapter,BeatIndex);
+    // Travel: a new place, or the authored L4 landing on lift entry.
+    // The b10 spiral is still a separate traversal slice. Only this entry
+    // cut stages the landing; the whole 115 m lift ride is physical.
+    if(Hero&&(Space.Lift.bEnabled||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
     {
         ClearHorses();
+        Hero->SetBase(nullptr);
         Hero->GetCharacterMovement()->StopMovementImmediately();
         const FRotator Facing(0,Space.EntryYaw,0);
-        Hero->SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Space.Entry,120.f),Facing,false,nullptr,ETeleportType::TeleportPhysics);
+        Hero->SetActorLocationAndRotation(ASoraWorldBuilder::Floor(Space.Entry,Space.HeightCm+120.f),Facing,false,nullptr,ETeleportType::TeleportPhysics);
         if(AController* Controller=Hero->GetController()) Controller->SetControlRotation(Facing);
         if(APlayerController* Player=Cast<APlayerController>(Hero->GetController()))
             if(Player->PlayerCameraManager&&!bResumed) Player->PlayerCameraManager->StartCameraFade(1.f,0.f,.6f,FLinearColor::Black);
     }
-    World->StageKit(*Chapter,BeatIndex);
     LastEscortProgress=0;
     CarryChanged();
     if(Space.bMount&&Hero)
@@ -448,6 +453,7 @@ void USoraCampaignDirector::ShowKit()
             Fieldcraft->PlaceParty(People,View.PartyYaw,static_cast<float>(Task.SpeedCmS));
         }
     }
+    if(auto* Lift=World->CampaignLift()) Lift->SetWork(TaskState.Progress);
     World->ShowKit(View);
 }
 TArray<int32> USoraCampaignDirector::LoosePickups() const

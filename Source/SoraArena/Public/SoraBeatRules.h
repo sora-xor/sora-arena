@@ -487,6 +487,8 @@ struct FTick
     // The pace a hold fills at, x1000 (a cupped candle copies at half speed).
     int RatePermille = Permille;
     int CrankHelpers = 0;
+    // Live physical cutter contact on the lift hawser; ordinary cranks use 1.
+    int CrankDecayMultiplier = 1;
 };
 
 constexpr int Bits(unsigned Mask)
@@ -790,8 +792,9 @@ constexpr bool Tick(FTaskState& State, const FTask& Task, FTick Step)
             const int Slack = State.ElapsedMs - State.LastActionMs - Task.MaxTurnMs;
             const int DecayMs = Slack <= 0 || (Step.CrankHelpers > 0 && Task.CoopSuspendsDecay) ? 0 : Slack < Delta ? Slack : Delta;
             const int Helpers = Step.CrankHelpers < 0 ? 0 : Step.CrankHelpers > Task.CoopCount ? Task.CoopCount : Step.CrankHelpers;
+            const int DecayMultiplier=Step.CrankDecayMultiplier<1?1:Step.CrankDecayMultiplier>3?3:Step.CrankDecayMultiplier;
             const long long Total = State.CrankCarry + static_cast<long long>(Delta) * Helpers * Task.CoopMilliTurnsS * Task.CoopProgressPermille -
-                static_cast<long long>(Task.DecayPermille) * Task.Count * Permille * DecayMs;
+                static_cast<long long>(Task.DecayPermille) * Task.Count * Permille * DecayMs * DecayMultiplier;
             const int Change = static_cast<int>(Total / DecayUnit);
             State.CrankCarry = static_cast<int>(Total - static_cast<long long>(Change) * DecayUnit);
             State.Progress += Change;

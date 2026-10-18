@@ -297,6 +297,7 @@ void USoraCampaignDirector::ResetRound()
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
     // The hero comes down from the saddle before the world he stands in is rebuilt.
     ClearHorses();
+    bLiftGallery=false;
     EndCinematicCamera(0.f);
     Notices.Reset();
     Kills=0; KillsNeeded=0; bLinesStarted=false; bChapterOpening=false; CinematicSeconds=0.f; DojoLessonMask=0u;
@@ -420,7 +421,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     ResetCarryWork();
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
-    ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; ActiveCrankHelpers=0; bCrankHelperRetreating=false; bDetected=false; CinematicSeconds=0.f;
+    ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; ActiveCrankHelpers=0; bCrankHelperRetreating=false; bLiftGallery=false; bDetected=false; CinematicSeconds=0.f;
     VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset(); BeatEvents.Reset(); WhistleAt=-1.0;
     HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
     Scheduled.Reset(); bWorkWasSeen=false; GuardStates.Reset(); EventRaises.Reset();
@@ -526,6 +527,7 @@ void USoraCampaignDirector::CompleteActiveBeat()
     Fire(TEXT("beat_complete"));
     BroadcastBeat(false,false);
     Telemetry(TEXT("complete"));
+    if(BeginLiftGallery()) return;
     const int32 NextBeat=SoraBeatRules::NextBeat(BeatState,Chapter.Rules.GetData(),Chapter.Rules.Num());
     LeaveBeatSpace();
     if(NextBeat==INDEX_NONE) FinishChapter();
@@ -635,6 +637,7 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     const bool bWasBlocking=bDialogueHeld;
     TickDialogue(DeltaTime);
     if(ActiveBeatData()!=Beat||bWasBlocking||bDialogueHeld) return;
+    if(TickLiftGallery(DeltaTime)) return;
     TickSealCut();
     TickBeat(DeltaTime);
 }
@@ -665,6 +668,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         Stealth->TakedownTarget(*M.Hero()))
         Fire(TEXT("ai_event:first_rear_reach"));
     Step.CrankHelpers=CrankHelpers();
+    Step.CrankDecayMultiplier=LiftDecayMultiplier();
     SoraBeatRules::Tick(TaskState,Task,Step);
     TickMaai(DeltaMs);
     if(ActiveBeatData()!=&Beat) return;
@@ -805,7 +809,7 @@ void USoraCampaignDirector::Progressed(int32 PermilleBefore)
     }
     QueueWaves(SoraBeatRules::ReleaseWaves(TaskState,Task));
     SpawnPending();
-    if(SoraBeatRules::TaskComplete(TaskState,Task)) CompleteActiveBeat();
+    if(SoraBeatRules::TaskComplete(TaskState,Task)&&LiftReadyToComplete()) CompleteActiveBeat();
 }
 void USoraCampaignDirector::QueueWaves(unsigned Waves)
 {
@@ -979,7 +983,9 @@ void USoraCampaignDirector::SpawnPending()
     {
         const FPendingSpawn Next=Pending[0];
         Pending.RemoveAt(0);
-        if(ASoraEnemy* Enemy=SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable)) { AddOpponent(Enemy,Next.Wave); ++Alive; }
+        ASoraEnemy* Enemy=Beat->Space.Lift.bEnabled?SpawnLiftOpponent(Next.Type,Next.Wave,Spawned):
+            SpawnWaveOpponent(Next.Type,Beat->bSparring,Spawned,Next.bInvulnerable);
+        if(Enemy) { AddOpponent(Enemy,Next.Wave); ++Alive; }
         else
         {
             // A wave never waits on an opponent the world could not build.
@@ -1040,6 +1046,7 @@ void USoraCampaignDirector::ClearEncounter()
     ClearOpponents();
     ClearOfflineProjectiles();
     ClearHorses();
+    bLiftGallery=false;
     EndCinematicCamera(0.f);
     Kills=0;
     ClearDialogue(); PromptRemaining=0.f; Notices.Reset();
@@ -1342,6 +1349,7 @@ TArray<int32> USoraCampaignDirector::AvailableCaches() const
     if(!Chapter||!Mode().bCampaign||Mode().bChapterComplete) return Result;
     for(int32 Index=0;Index<Chapter->Beats.Num();++Index)
         if(Chapter->Beats[Index].Has(SoraBeatRules::EGoal::Cache)&&
+            (Chapter->Beats[Index].Space.HeightCm==0||bLiftGallery)&&
             SoraBeatRules::CanStartBeat(BeatState,Chapter->Rules.GetData(),Chapter->Rules.Num(),Index))
             Result.Add(Index);
     return Result;
@@ -1349,7 +1357,7 @@ TArray<int32> USoraCampaignDirector::AvailableCaches() const
 FVector USoraCampaignDirector::CacheLocation(int32 Beat) const
 {
     const FSoraChapter* Chapter=ActiveChapter();
-    return Chapter&&Chapter->Beats.IsValidIndex(Beat)?ASoraWorldBuilder::Floor(Chapter->Beats[Beat].Space.Cache):FVector::ZeroVector;
+    return Chapter&&Chapter->Beats.IsValidIndex(Beat)?ASoraWorldBuilder::Floor(Chapter->Beats[Beat].Space.Cache,Chapter->Beats[Beat].Space.HeightCm):FVector::ZeroVector;
 }
 void USoraCampaignDirector::UpdateObjective()
 {
@@ -1559,7 +1567,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
         }
         return Best;
     };
-    const bool bAtAnchor=Near(ASoraWorldBuilder::Floor(Space.Anchor),Reach);
+    const bool bAtAnchor=AtWorkAnchor(Reach);
     if(Task.Goal==SoraBeatRules::EGoal::Lines&&bAtAnchor&&!bLinesStarted&&Beat->LinesEvent.StartsWith(TEXT("interact:")))
     {
         StartLines(); Fire(Beat->LinesEvent);
@@ -1690,7 +1698,8 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     // (tack-up, mount, dismount).
     if(PickUp()) return;
     for(const int32 Cache:AvailableCaches())
-        if(Near(CacheLocation(Cache),SoraCampaignReach::Interact))
+        if((Space.HeightCm>0||ActiveChapter()->Beats[Cache].Space.HeightCm>0)?
+            NearFloor(CacheLocation(Cache),SoraCampaignReach::Interact):Near(CacheLocation(Cache),SoraCampaignReach::Interact))
         {
             // The cache's own task: opened, it completes its explore beat.
             SoraBeatRules::FTaskState Opened=SoraBeatRules::StartTask(ActiveChapter()->Tasks[Cache],0);
