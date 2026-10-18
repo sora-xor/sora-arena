@@ -5,7 +5,8 @@ from pathlib import Path
 import unittest
 
 from build_campaign_data import BuildError, fail
-from campaign_crank import cooperation
+from campaign_crank import cooperation, player_work
+from validate_campaign import CampaignError, check_crank_player
 from campaign_fieldcraft import _clear, _inside
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -79,6 +80,67 @@ class CrankDataTests(unittest.TestCase):
             bad["params"]["crank"]["coop_npc"] = raw
             with self.subTest(raw=raw), self.assertRaises(BuildError):
                 cooperation(bad, fail)
+
+
+    def test_player_contracts_are_exact_and_helpers_are_separate(self):
+        expected = {"ch04.b06": (6, 0, False, 0), "ch05.b06": (2, 2, False, 0),
+                    "ch07.b07": (8, 0, True, 600), "ch08.b11": (5, 0, False, 0)}
+        found = set()
+        for number in range(1, 9):
+            for beat in chapter(number)["beats"]:
+                contract = player_work(beat, fail)
+                self.assertEqual(beat["task"]["crank_player"], contract)
+                check_crank_player(beat)
+                if contract:
+                    found.add(beat["id"])
+                    self.assertEqual(tuple(contract.values()), expected[beat["id"]])
+                    helper_before = cooperation(beat, fail)
+                    beat["params"]["crank"]["stamina_per_turn"] = 1
+                    self.assertEqual(cooperation(beat, fail), helper_before)
+        self.assertEqual(found, set(expected))
+        self.assertTrue(all(beat["task"]["crank_player"] is None for beat in chapter(2)["beats"]))
+
+    def test_invalid_player_costs_and_assists_are_rejected(self):
+        original = chapter(7)["beats"][6]
+        for value in (True, 0, -1, 101, 8.5, None):
+            beat = deepcopy(original)
+            beat["params"]["crank"]["stamina_per_turn"] = value
+            with self.subTest(cost=value), self.assertRaises(BuildError):
+                player_work(beat, fail)
+        for key, value in (("two_handed", False), ("loadout_while_cranking", "katana"),
+                           ("overspeed", "progress"), ("accessibility_hold_to_crank_turns_s", True),
+                           ("accessibility_hold_to_crank_turns_s", 0), ("accessibility_hold_to_crank_turns_s", .2),
+                           ("accessibility_hold_to_crank_turns_s", 1), ("accessibility_hold_to_crank_turns_s", .5)):
+            beat = deepcopy(original)
+            beat["ext"]["override"][key] = value
+            with self.subTest(key=key, value=value), self.assertRaises(BuildError):
+                player_work(beat, fail)
+        del original["ext"]["override"]
+        with self.assertRaises(BuildError):
+            player_work(original, fail)
+        bellows = chapter(5)["beats"][5]
+        bellows["ext"]["flame_gauge"]["above"] = "no stamina cost"
+        with self.assertRaises(BuildError):
+            player_work(bellows, fail)
+
+
+    def test_normalized_player_contract_cannot_lose_authored_fields(self):
+        original = chapter(7)["beats"][6]
+        for key, value in (("stamina_per_turn", 0), ("stamina_per_turn", 6),
+                           ("overspeed_cost_multiplier", 2), ("two_handed", False), ("hold_milliturns_s", 0)):
+            beat = deepcopy(original)
+            beat["task"]["crank_player"][key] = value
+            with self.subTest(key=key, value=value), self.assertRaises(CampaignError):
+                check_crank_player(beat)
+        for beat in (original, chapter(2)["beats"][0]):
+            del beat["task"]["crank_player"]
+            with self.assertRaises(CampaignError):
+                check_crank_player(beat)
+        for invalid in ([], True, None):
+            beat = chapter(5)["beats"][5]
+            beat["ext"]["flame_gauge"] = invalid
+            with self.subTest(gauge=invalid), self.assertRaises(BuildError):
+                player_work(beat, fail)
 
 
 if __name__ == "__main__":

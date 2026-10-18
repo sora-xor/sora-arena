@@ -562,6 +562,11 @@ float USoraCampaignDirector::CarryPace() const
 bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 {
     if(!Mode().bCampaign||WeaponId<0||WeaponId>=SoraBeatRules::WeaponCount) return true;
+    if(CrankOccupiesHands())
+    {
+        if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","CrankHands","両手で輪を回している。手を離せば武器を使える。")),3.f);
+        return false;
+    }
     if(!SoraBeatRules::EquipmentAllows(TaskState,Task,WeaponId))
     {
         if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","HiddenArms","刀と弓は空井戸の底に隠してある。今は脇差だけだ。")),3.f);

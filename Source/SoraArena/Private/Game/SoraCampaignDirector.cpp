@@ -112,6 +112,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     const ASoraGameMode& M=Mode();
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
     if(bPryingCarryGate) bCarryGateHit=true;
+    StopPlayerCrank();
     // A pupil's cut landed while the awase was still to be met: a guard
     // raised just after it is late.
     const ASoraEnemy* Pupil=Cast<ASoraEnemy>(Event.Causer);
@@ -290,6 +291,7 @@ void USoraCampaignDirector::ResetRound()
     const bool bCampaign=M.bCampaign;
     EndRecoveryClimb();
     ResetCarryWork();
+    StopPlayerCrank(false);
     // A shell fired before death or chapter advance must never damage the
     // restored encounter or score a defeat against its fresh opponents.
     ClearOfflineProjectiles();
@@ -419,6 +421,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyCarryDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     ResetCarryWork();
+    StopPlayerCrank(false);
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; ActiveCrankHelpers=0; bCrankHelperRetreating=false; bLiftGallery=false; bDetected=false; CinematicSeconds=0.f;
@@ -472,6 +475,7 @@ void USoraCampaignDirector::RetryBeatInPlace()
     ASoraGameMode& M=Mode();
     // A lost sparring match starts over where it stands: fresh points, the
     // losses and the forms learned kept, the rival back on the floor.
+    StopPlayerCrank(false);
     TaskState=SoraBeatRules::RetryTask(TaskState,Task);
     Kills=0; ClearOpponents();
     if(ASoraPlayerCharacter* Player=M.Hero()) Player->Heal(Player->MaxHealth);
@@ -618,6 +622,7 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
         Notices.RemoveAll([](const FSoraStoryNotice& Notice) { return Notice.Remaining<=0.f; });
     }
     const FSoraBeat* Beat=ActiveBeatData();
+    TickPlayerCrank(0);
     if(!Beat||!Save||M.bDeterministicPractice||M.bMenu||M.bDefeated||M.bChapterComplete) return;
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed)
     {
@@ -696,6 +701,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     TickEquipmentRecovery(DeltaMs);
     TickCarryWork(DeltaMs);
     TickHeldWork(DeltaMs);
+    TickPlayerCrank(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // Horses, a siege on defended targets, the escorted party and the task's kit.
     TickSpace(DeltaMs);
@@ -1541,7 +1547,6 @@ void USoraCampaignDirector::SuspendDojo(bool bIncludeHero)
 void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
 {
     using SoraBeatRules::EStroke;
-    using SoraBeatRules::ETurn;
     ASoraGameMode& M=Mode();
     if(!M.bCampaign) { ArenaInteract(Player); return; }
     const FSoraBeat* Beat=ActiveBeatData();
@@ -1593,15 +1598,8 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     case SoraBeatRules::EGoal::Turns:
     {
         if(!bAtAnchor) break;
-        // Each E is one turn; the rate band decides whether it counts. A
-        // crank already full takes no turn and says nothing.
-        const ETurn Turned=SoraBeatRules::Turn(TaskState,Task);
-        if(Turned==ETurn::Refused) break;
-        bWorked=Turned==ETurn::InBand||Turned==ETurn::Slow;
-        Fire(Turned==ETurn::TooFast?TEXT("rate_band:above"):Turned==ETurn::Slow?TEXT("rate_band:below"):TEXT("rate_band:in"));
-        if(Turned==ETurn::TooFast)
-            Notify(TEXT("急ぎすぎだ。一定の調子で回せ。"),TEXT("Too fast: the crank slips. Keep a steady rhythm."),3.f);
-        if(bWorked) Fire(FString::Printf(TEXT("event:crank_turn_%d"),TaskState.Done));
+        bWorked=TurnPlayerCrank(true);
+        if(!bWorked) return; // The wheel consumes refused attempts too.
         break;
     }
     case SoraBeatRules::EGoal::Deliveries:

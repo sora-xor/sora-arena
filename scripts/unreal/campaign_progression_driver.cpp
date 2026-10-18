@@ -2,6 +2,7 @@
 #include "SoraCampaignRules.h"
 #include "SoraDojoRules.h"
 #include "SoraMountRules.h"
+#include "SoraCrankInputRules.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -612,6 +613,7 @@ static void TestProduction()
         "hold: a held ground decayed once its time was held");
 
     FTask Crank = Make(EType::ProductionTask, EGoal::Turns, ETask::Crank);
+    Crank.StaminaPerTurn = 6;
     Crank.Count = 3;
     Crank.MinTurnMs = 800;
     Crank.MaxTurnMs = 2500;
@@ -788,6 +790,7 @@ static void TestDecayFrames()
 {
     // ch04.b06 and ch08.b11: slow decays that whole-unit rounding per frame lost.
     FTask Crank = Make(EType::ProductionTask, EGoal::Turns, ETask::Crank);
+    Crank.StaminaPerTurn = 6;
     Crank.Count = 48;
     Crank.MinTurnMs = 400;
     Crank.MaxTurnMs = 1500;
@@ -808,6 +811,101 @@ static void TestDecayFrames()
             "decay: a hold decays differently at " + std::to_string(FrameMs) + " ms frames");
     }
     std::cout << "hold and crank decay cost the same at every frame rate\n";
+}
+
+static void TestPlayerCranks()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[6](Tasks); const FTask Wheel=Tasks[6];
+    ChapterTasks[4](Tasks); const FTask Bellows=Tasks[5];
+    Expect(Wheel.StaminaPerTurn==8 && Wheel.CrankTwoHanded && Wheel.HoldMilliTurnsS==600,
+        "override effort/input must match chapter seven");
+    for (int Chapter : {3,4,6,7})
+    {
+        ChapterTasks[Chapter](Tasks);
+        const FTask& Task=Tasks[Chapter==6?6:Chapter==7?10:5];
+        auto State=Begin(Task,"player crank costs");
+        auto Result=PlayerTurn(State,Task,Task.StaminaPerTurn-1);
+        Expect(Result.Result==ETurn::Exhausted && Result.Cost==0 && State.Progress==0 && State.LastActionMs==-1,
+            "exhaustion must not start work or its timing baseline");
+        Result=PlayerTurn(State,Task,Task.StaminaPerTurn);
+        Expect(Result.Result==ETurn::InBand && Result.Cost==Task.StaminaPerTurn && State.Progress==1000,
+            "first accepted turn must charge the exact authored amount");
+        Tick(State,Task,At(Task.MinTurnMs));
+        const auto Before=State;
+        Result=PlayerTurn(State,Task,0);
+        Expect(Result.Result==ETurn::Exhausted && Result.Cost==0 && State.Progress==Before.Progress && State.LastActionMs==Before.LastActionMs,
+            "an unaffordable turn must change neither progress nor rhythm");
+        Result=PlayerTurn(State,Task,Task.StaminaPerTurn);
+        Expect(Result.Result==ETurn::InBand && Result.Cost==Task.StaminaPerTurn,
+            "recovering resource at the same instant must admit the original cadence");
+        State.Progress=Task.Count*1000; State.Done=Task.Count;
+        Result=PlayerTurn(State,Task,100);
+        Expect(Result.Result==ETurn::Refused && Result.Cost==0,"a full crank must be free and inert");
+    }
+    auto State=Begin(Bellows,"bellows overspeed cost");
+    PlayerTurn(State,Bellows,2); Tick(State,Bellows,At(100));
+    const int Last=State.LastActionMs, Progress=State.Progress;
+    auto Result=PlayerTurn(State,Bellows,3);
+    Expect(Result.Result==ETurn::Exhausted && Result.Cost==0 && State.Progress==Progress && State.LastActionMs==Last,
+        "unaffordable bellows overspeed must not partly spend or reset cadence");
+    Result=PlayerTurn(State,Bellows,4);
+    Expect(Result.Result==ETurn::TooFast && Result.Cost==4 && State.Progress==Progress && State.LastActionMs==State.ElapsedMs,
+        "authored bellows overspeed must cost twice without progress");
+    Tick(State,Bellows,At(Bellows.MaxTurnMs+1));
+    Result=PlayerTurn(State,Bellows,2);
+    Expect(Result.Result==ETurn::Slow && Result.Cost==2,"a slow accepted turn has ordinary cost");
+    State=Begin(Wheel,"free wheel slip"); PlayerTurn(State,Wheel,8);
+    Result=PlayerTurn(State,Wheel,0);
+    Expect(Result.Result==ETurn::TooFast && Result.Cost==0 && State.Progress==1000,"override slip must remain free");
+    for (const int FrameMs : {1,2,3,7,16,17,33,50,100,250,500})
+    {
+        State=Begin(Wheel,"held assist cadence");
+        SoraCrankInputRules::FState Input;
+        Expect(SoraCrankInputRules::Begin(Input,true),"a fresh press starts work");
+        int Spent=PlayerTurn(State,Wheel,100).Cost, Accepted=1;
+        for(int AtMs=0;AtMs<10000;)
+        {
+            const int Dt=FrameMs<10000-AtMs?FrameMs:10000-AtMs;
+            AtMs+=Dt; Tick(State,Wheel,At(Dt));
+            if(SoraCrankInputRules::Tick(Input,Dt,true,true,Wheel.HoldMilliTurnsS))
+            {
+                Result=PlayerTurn(State,Wheel,100);
+                Expect(Result.Result==ETurn::InBand,"held assist must pass ordinary rhythm admission");
+                Spent+=Result.Cost; ++Accepted;
+            }
+        }
+        Expect(Accepted==7 && Spent==56 && State.Progress==7000,"0.6 turns/s changed with the frame size");
+        SoraCrankInputRules::Tick(Input,1,false,true,600);
+        Expect(!Input.Active && !SoraCrankInputRules::Tick(Input,5000,true,true,600),"release or arriving while held must not restart work");
+        SoraCrankInputRules::Begin(Input,true);
+        SoraCrankInputRules::Tick(Input,1000,true,false,600);
+        Expect(!Input.Active && !SoraCrankInputRules::Begin(Input,true),"leaving, menu or stagger needs a fresh release");
+        SoraCrankInputRules::Tick(Input,1,false,true,600);
+        Expect(SoraCrankInputRules::Begin(Input,true),"release restores eligibility");
+        SoraCrankInputRules::Stop(Input);
+        Expect(!Input.Active && !SoraCrankInputRules::Tick(Input,5000,true,true,600),"damage or reload must cancel held work without resuming");
+        Input={}; State=StartTask(Wheel,0);
+        Expect(!Input.Active && !Input.NeedsRelease && State.Progress==0 && State.LastActionMs==-1,
+            "checkpoint restart must discard input and partial work");
+    }
+    SoraCrankInputRules::FState Input;
+    SoraCrankInputRules::Begin(Input,true);
+    Expect(!SoraCrankInputRules::Tick(Input,10000,true,true,0),"normal held input must not repeat without authored opt-in");
+    State=Begin(Wheel,"assist cannot bypass rhythm"); PlayerTurn(State,Wheel,8);
+    Tick(State,Wheel,At(1500)); PlayerTurn(State,Wheel,8);
+    Tick(State,Wheel,At(167));
+    Result=PlayerTurn(State,Wheel,100);
+    Expect(Result.Result==ETurn::TooFast && Result.Cost==0 && State.Progress==2000,"an assisted attempt must not bypass a recent manual turn");
+    Expect(SoraCrankInputRules::Tick(Input,10000,true,true,600) && !SoraCrankInputRules::Tick(Input,0,true,true,600),
+        "a stalled frame must not queue a burst of turns");
+    // The helper applies progress through Tick, never player admission or stamina.
+    FTick Help; Help.DeltaMs=10000; Help.CrankHelpers=1;
+    const int Before=State.Progress;
+    Tick(State,Wheel,Help);
+    Expect(State.Progress==Before+1500,"helper work must remain independent of player resource");
+    FTask Bad=Wheel; Bad.StaminaPerTurn=0; Expect(!TaskValid(Bad),"missing stamina contract accepted");
+    Bad=Wheel; Bad.HoldMilliTurnsS=1000; Expect(!TaskValid(Bad),"assist outside the turn band accepted");
 }
 
 static void TestCooperativeCranks()
@@ -1646,6 +1744,7 @@ int main()
     TestProduction();
     TestDecayFrames();
     TestCooperativeCranks();
+    TestPlayerCranks();
     TestRideExploreCollectible();
     TestSiegeAndCarry();
     TestMountRules();

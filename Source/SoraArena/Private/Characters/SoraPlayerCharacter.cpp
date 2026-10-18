@@ -400,7 +400,11 @@ void ASoraPlayerCharacter::Interact()
     if(USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->Interact(*this)) return;
     if(auto* G=PlayerGameMode(this)) G->Interact(this);
 }
-void ASoraPlayerCharacter::InteractUp() { if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->EndDrag(); }
+void ASoraPlayerCharacter::InteractUp()
+{
+    if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->EndDrag();
+    if(auto* G=PlayerGameMode(this); G&&G->Campaign()) G->Campaign()->StopPlayerCrank(false);
+}
 void ASoraPlayerCharacter::CrouchPressed()
 {
     if(bKernelDriven||!CanPlay()) return;

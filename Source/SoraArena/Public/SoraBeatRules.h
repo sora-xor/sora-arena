@@ -361,6 +361,12 @@ struct FTask
     // A crank's rate band as turn intervals: faster slips, slower lets it decay.
     int MinTurnMs = 0;
     int MaxTurnMs = 0;
+    int StaminaPerTurn = 0;
+    // Zero except the bellows' authored x2 overspeed penalty.
+    int OverspeedCostMultiplier = 0;
+    bool CrankTwoHanded = false;
+    // Only an authored accessibility cadence may repeat held input.
+    int HoldMilliTurnsS = 0;
     // Each available named worker contributes this physical turn rate,
     // credited at the authored multiplier (the bellows boy: 40%).
     int CoopCount = 0;
@@ -975,7 +981,7 @@ constexpr bool WorkObjective(FTaskState& State, const FTask& Task, int Index)
     return true;
 }
 
-enum class ETurn : unsigned char { Refused, TooFast, InBand, Slow };
+enum class ETurn : unsigned char { Refused, TooFast, InBand, Slow, Exhausted };
 
 // One crank turn. A turn faster than the band slips and restarts the rhythm,
 // so hammering the crank never counts.
@@ -993,6 +999,24 @@ constexpr ETurn Turn(FTaskState& State, const FTask& Task)
     State.Done = State.Progress / Permille;
     return Since > Task.MaxTurnMs ? ETurn::Slow : ETurn::InBand;
 }
+struct FPlayerTurn
+{
+    ETurn Result = ETurn::Refused;
+    int Cost = 0;
+};
+// Preview on a copy: insufficient resource changes neither progress nor the
+// timing baseline. Affordable overspeed still resets rhythm, as Turn does.
+constexpr FPlayerTurn PlayerTurn(FTaskState& State, const FTask& Task, int AvailableStamina)
+{
+    FTaskState Next = State;
+    const ETurn Result = Turn(Next, Task);
+    const int Cost = Result == ETurn::TooFast ? Task.StaminaPerTurn * Task.OverspeedCostMultiplier :
+        Result == ETurn::InBand || Result == ETurn::Slow ? Task.StaminaPerTurn : 0;
+    if (AvailableStamina < Cost) return {ETurn::Exhausted, 0};
+    State = Next;
+    return {Result, Cost};
+}
+
 
 constexpr bool EquipmentReady(const FTaskState& State, const FTask& Task)
 {
@@ -1325,6 +1349,16 @@ constexpr bool PointsValid(int Count)
 // wave, phase and step can be met.
 constexpr bool TaskValid(const FTask& Task)
 {
+    if (Task.Task == ETask::Crank)
+    {
+        if (Task.StaminaPerTurn < 1 || Task.StaminaPerTurn > 100 ||
+            Task.OverspeedCostMultiplier < 0 || Task.OverspeedCostMultiplier > 2 ||
+            Task.StaminaPerTurn * Task.OverspeedCostMultiplier > 100 ||
+            Task.HoldMilliTurnsS < 0 || Task.HoldMilliTurnsS > 1000 ||
+            (Task.HoldMilliTurnsS > 0 && (1000000 / Task.HoldMilliTurnsS < Task.MinTurnMs ||
+                (1000000 + Task.HoldMilliTurnsS - 1) / Task.HoldMilliTurnsS > Task.MaxTurnMs))) return false;
+    }
+    else if (Task.StaminaPerTurn != 0 || Task.OverspeedCostMultiplier != 0 || Task.CrankTwoHanded || Task.HoldMilliTurnsS != 0) return false;
     if (!DropoffCapacitiesValid(Task)) return false;
     if (Task.CarryGateMs < 0 || Task.CarryGateMs > MaxClockMs || (Task.CarryGateMs > 0 && Task.Task != ETask::Carry)) return false;
     if (Task.CoopCount < 0 || Task.CoopCount > 3 || ((Task.CoopCount == 0) != (Task.CoopMilliTurnsS == 0)) ||

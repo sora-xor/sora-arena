@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "SoraBeatRules.h"
+#include "SoraCrankInputRules.h"
 #include "SoraDojoRules.h"
 #include "SoraRegistry.h"
 #include "SoraCampaignDirector.generated.h"
@@ -202,6 +203,9 @@ public:
     bool LiftExitPoint(FVector& Point) const;
     int32 WorkingCrankHelpers() const { return ActiveCrankHelpers; }
     bool CrankHelperRetreating() const { return bCrankHelperRetreating; }
+    bool IsWorkingCrank() const;
+    bool CrankOccupiesHands() const { return Task.CrankTwoHanded && IsWorkingCrank(); }
+    void StopPlayerCrank(bool bWaitForRelease=true);
     bool NeedsCarryGate() const { return !SoraBeatRules::CarryGateReady(TaskState,Task); }
     FVector LooseLoadLocation(int32 Slot) const;
     bool IsRecoveringEquipment() const { return bStringingBow; }
@@ -303,6 +307,10 @@ private:
     int32 ActiveCrankHelpers = 0;
     bool bCrankHelperRetreating = false;
     int32 CrankHelpers();
+    SoraCrankInputRules::FState CrankInput;
+    bool PlayerCrankEligible() const;
+    bool TurnPlayerCrank(bool bBegin);
+    void TickPlayerCrank(int32 DeltaMs);
     bool bLiftGallery=false;
     bool LiftReadyToComplete() const;
     bool BeginLiftGallery();

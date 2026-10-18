@@ -102,6 +102,12 @@ msgctxt "SoraArena.Campaign,CannotDismount"
 msgid "ここでは降りられない。"
 msgstr "You cannot dismount here."
 
+#. Key:	CrankHands
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,CrankHands"
+msgid "両手で輪を回している。手を離せば武器を使える。"
+msgstr "Both hands are on the wheel. Release it to use a weapon."
+
 #. Key:	FindBundleFirst
 #: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
 msgctxt "SoraArena.Campaign,FindBundleFirst"
@@ -2079,6 +2085,18 @@ msgstr "Off"
 msgctxt "SoraArena.Settings,Hold"
 msgid "長押し"
 msgstr "Hold"
+
+#. Key:	HoldToCrank
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,HoldToCrank"
+msgid "押し続けて歯車を回す"
+msgstr "Hold to crank"
+
+#. Key:	HoldToCrank.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,HoldToCrank.Hint"
+msgid "第七章の制御輪で、操作を押し続けると毎秒〇・六回の調子で回す。体力を使い、手を離すか攻撃を受けると止まる。"
+msgstr "On Chapter 7's override wheel, hold Interact to turn at 0.6 turns/s. Uses stamina; release or taking a hit stops work."
 
 #. Key:	Off
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
