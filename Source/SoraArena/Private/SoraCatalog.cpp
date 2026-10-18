@@ -499,7 +499,7 @@ bool FSoraCatalog::LoadCampaign()
             if (!IsNull(*O, TEXT("mode")) &&
                 (!Str(*O, TEXT("mode"), Line.Mode) ||
                  (Line.Mode != TEXT("blocking") && Line.Mode != TEXT("ambient") &&
-                  Line.Mode != TEXT("radio") && Line.Mode != TEXT("bark"))))
+                  Line.Mode != TEXT("radio") && Line.Mode != TEXT("bark") && Line.Mode != TEXT("cinematic"))))
                 return Bad(FString::Printf(TEXT("invalid dialogue mode for %s"), *Line.Id));
             LineIds.Add(Line.Id, C.Dialogue.Num());
             C.Dialogue.Add(MoveTemp(Line));
