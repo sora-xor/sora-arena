@@ -22,6 +22,12 @@ entries; later ordinary entries are inspected. Ch07.b07's 430 horse-loads are
 returned goods: they never gain a split tally. Ch05.b17's delivery and ch08.b16's
 posting do not add entries, because their goods were already recorded.
 
+Checkpoint flags save at a beat's start. A reload during ch05.b14 therefore
+returns to the saved ch05.b12 start, with its three goods recorded but the
+inspection not yet completed. After the following mandatory checkpoint at
+ch05.b15 starts, its saved completed-beat mask retains the inspection. Registry
+seals follow that ordinary rollback contract; they do not persist separately.
+
 Completing a goods task emits a bilingual registry notice. The three first-tally
 entries report their inspection when ch05.b12 ends. Registry notices wait through
 the following cinematic so the title-card renderer cannot consume them unseen.

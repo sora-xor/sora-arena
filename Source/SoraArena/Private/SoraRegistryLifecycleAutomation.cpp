@@ -36,6 +36,24 @@ bool FinishFoodDelivery(FBeatWorld& W)
     }
     return W.Test.TestEqual(TEXT("Three real deliveries finish the food task"),W.Campaign()->ActiveBeat(),11);
 }
+// Advance a real cinematic through its elapsed clock or its authored skip.
+bool FinishCinematic(FBeatWorld& W,bool Skip)
+{
+    const int32 Beat=W.Campaign()->ActiveBeat();
+    if(Skip) { if(!W.Press(EKeys::Enter)) return false; }
+    else
+    {
+        // UWorld clamps a requested .5 s tick to the engine's .4 s maximum.
+        // Advance below that clamp and budget from the authored time left.
+        constexpr float StepSeconds=.1f;
+        const float Remaining=W.Mode()->TitleCardTime;
+        const int32 Frames=FMath::CeilToInt(Remaining/StepSeconds)+2;
+        if(!W.Test.TestTrue(TEXT("The cinematic retains its authored duration"),Remaining>0.f)) return false;
+        for(int32 Frame=0;W.Campaign()->ActiveBeat()==Beat&&Frame<Frames;++Frame)
+            if(!W.Tick(1,StepSeconds)) return false;
+    }
+    return W.Test.TestTrue(TEXT("The cinematic finishes through its authored path"),W.Campaign()->ActiveBeat()>Beat);
+}
 // A disk fixture for a completed chapter, built through the same pure rules
 // that validate saved progress. This tests result recovery, not full playthrough.
 bool SaveFinishedChapter(FBeatWorld& W)
@@ -103,28 +121,39 @@ bool FSoraRegistryInspectionTest::RunTest(const FString& Parameters)
         if(!TestEqual(TEXT("The inspection cinematic is active"),W.Campaign()->ActiveBeat(),11)) return false;
         TestEqual(TEXT("Three goods precede inspection"),W.Campaign()->RegistryRows().Num(),3);
         for(const FSoraRegistryRow& Row:W.Campaign()->RegistryRows()) TestFalse(TEXT("No tally before the ceremony ends"),Row.HasSplitTally());
-        if(Skip) { if(!W.Press(EKeys::Enter)) return false; }
-        else
-        {
-            // UWorld clamps a requested .5 s tick to the engine's .4 s maximum.
-            // Advance below that clamp and budget from the authored time left.
-            constexpr float StepSeconds=.1f;
-            const float Remaining=W.Mode()->TitleCardTime;
-            const int32 Frames=FMath::CeilToInt(Remaining/StepSeconds)+2;
-            if(!TestTrue(TEXT("The inspection retains its authored duration"),Remaining>0.f)) return false;
-            for(int32 Frame=0;W.Campaign()->ActiveBeat()==11&&Frame<Frames;++Frame)
-                if(!W.Tick(1,StepSeconds)) return false;
-        }
-        if(!TestTrue(TEXT("The ceremony finishes through its authored path"),W.Campaign()->ActiveBeat()>11)) return false;
+        if(!FinishCinematic(W,Skip)||!TestEqual(TEXT("The next required beat is the channels cinematic"),W.Campaign()->ActiveBeat(),13)) return false;
         const auto Rows=W.Campaign()->RegistryRows();
         TestEqual(TEXT("The ceremony adds no fourth goods entry"),Rows.Num(),3);
         for(const FSoraRegistryRow& Row:Rows) TestTrue(TEXT("All three entries now have inspected split tallies"),Row.HasSplitTally());
         TestEqual(TEXT("The first inspection reports the three changed entries"),RegistryNotices(W),3);
         if(!W.Tick(20,.5f)) return false;
         TestEqual(TEXT("Registry feedback waits through the following cinematic"),RegistryNotices(W),3);
-        if(!W.Campaign()->LoadSave()) return false;
-        W.Mode()->ResetRound();
-        for(const FSoraRegistryRow& Row:W.Campaign()->RegistryRows()) TestTrue(TEXT("Checkpoint reload retains inspection"),Row.HasSplitTally());
+        // b12 checkpoints at its start, b13 is optional and b14 has no
+        // checkpoint. Until b15 starts, reload must replay the first tally.
+        const auto* Before=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
+        if(!TestNotNull(TEXT("The earlier checkpoint remains on disk"),Before)) return false;
+        TestEqual(TEXT("The channels cinematic has not advanced the saved checkpoint"),Before->CheckpointBeat,11);
+        TestFalse(TEXT("The saved start has not completed inspection"),
+            (static_cast<unsigned>(Before->CheckpointBeatsMask)&SoraBeatRules::BeatBit(11))!=0u);
+        if(!OpenSavedWorld(W)) return false;
+        if(!TestEqual(TEXT("Reload before b15 returns to the ceremony start"),W.Campaign()->ActiveBeat(),11)) return false;
+        TestEqual(TEXT("Rollback retains the same three goods"),W.Campaign()->RegistryRows().Num(),3);
+        for(const FSoraRegistryRow& Row:W.Campaign()->RegistryRows())
+            TestTrue(TEXT("Uncheckpointed inspection rolls back to recorded goods"),Row.State==ESoraRegistryState::Recorded);
+        TestEqual(TEXT("Reload does not replay inspection feedback"),RegistryNotices(W),0);
+        if(!FinishCinematic(W,Skip)||!TestEqual(TEXT("Replaying inspection returns to b14"),W.Campaign()->ActiveBeat(),13)) return false;
+        if(!FinishCinematic(W,Skip)||!TestEqual(TEXT("Finishing b14 reaches the actual b15 checkpoint"),W.Campaign()->ActiveBeat(),14)) return false;
+        const auto* After=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
+        if(!TestNotNull(TEXT("The next checkpoint is on disk"),After)) return false;
+        TestEqual(TEXT("The casting-floor checkpoint is saved"),After->CheckpointBeat,14);
+        TestTrue(TEXT("The new checkpoint includes the completed inspection"),
+            (static_cast<unsigned>(After->CheckpointBeatsMask)&SoraBeatRules::BeatBit(11))!=0u);
+        if(!OpenSavedWorld(W)) return false;
+        TestEqual(TEXT("Reload resumes the saved casting-floor checkpoint"),W.Campaign()->ActiveBeat(),14);
+        TestEqual(TEXT("The saved inspection still has only three goods"),W.Campaign()->RegistryRows().Num(),3);
+        for(const FSoraRegistryRow& Row:W.Campaign()->RegistryRows())
+            TestTrue(TEXT("Reload after the actual checkpoint retains inspection"),Row.HasSplitTally());
+        TestEqual(TEXT("Checkpoint recovery does not duplicate inspection feedback"),RegistryNotices(W),0);
     }
     return true;
 }
