@@ -304,10 +304,33 @@ and returns a surviving hero to a firm edge position in the same boss phase.
 `SoraArena.Campaign.SummitTraversal` covers the elevated checkpoint, cinematic
 skip, boss staging, dais access and fall recovery. The lift gallery fixtures
 now physically walk all stair flights before checking the b13 checkpoint.
-These Unreal fixtures remain unrun by the source lane. The disc is currently
-solid: physical seizure-tile disappearance, its three authored patterns,
-the held spine draw-cut, the moving engine ring and cinematic cast animation
-remain open. Existing seizure hazards must not be reported as physical holes.
+These Unreal fixtures remain unrun by the source lane.
+
+Chapter 08 seizure source slice replaces that disc with 132 convex collision
+tiles on a 300 cm grid, clipped to its 36 m diameter. The boundary follows a
+72-sided polygon (under 2 cm chord deviation). The existing P2 concurrent
+attack schedules checker thirds, an 800–1200 cm ring band, then three tally
+lines through the player cell at the mark. The tally interpretation is a row,
+column and rising diagonal; the lines lock at the mark and do not track.
+Marked tiles remain solid for the existing difficulty-scaled 1500 ms warning,
+then lose collision for 5000 ms and rise for 1000 ms before becoming solid.
+Amber edges pulse during warning/restoration. The dais and desk remain fixed.
+
+An actual fall costs 25 health, selects the nearest clear intact edge tile,
+and grants 1 s damage immunity. Ground constructs and the boss also recover,
+preserving health, so a construct below the arena cannot strand the shield.
+P3 restores every tile immediately. No partial tile state is added to saves;
+the existing boss phase checkpoint and native encounter gate remain in charge.
+`SoraArena.Campaign.SeizureTiles` checks real collision traces, a gravity-driven
+fall, recovery/immunity, the real nine-second attack cadence, all three
+patterns, construct recovery and phase shutoff. It is authored but unrun.
+Host `test_summit_rules.py` checks coverage, clipping, width, stage boundaries
+and masks. Engine compilation, procedural collision cooking, rendering,
+navigation updates and runtime fixtures still require root qualification.
+
+The P2 retreat onto the dais, held spine draw-cut, moving engine ring,
+phase-transition choreography and cinematic cast animation remain open.
+Functional tile meshes and edge bars are proxies for the art lane.
 
 ### Alternating bellows treads and live flame gauge
 

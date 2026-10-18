@@ -281,7 +281,12 @@ void ASoraPlayerCharacter::NoteDojoSwing(float StartedAt,float RecoveredAt,float
 }
 bool ASoraPlayerCharacter::AdmitDamage(float& Damage,FSoraHit& Hit,AActor* Causer)
 {
+    if(GetWorld()&&GetWorld()->GetTimeSeconds()<SummitFallProtectedUntil) return false;
     return SoraDefense::AdmitHero(*this,Damage,Hit,Causer);
+}
+void ASoraPlayerCharacter::ProtectAfterSummitFall()
+{
+    SummitFallProtectedUntil=GetWorld()->GetTimeSeconds()+1.f;
 }
 void ASoraPlayerCharacter::OnStartCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust)
 {

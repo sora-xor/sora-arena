@@ -3,6 +3,7 @@
 #include "SoraFieldcraftTestWorld.h"
 #include "SoraLiftAutomation.h"
 #include "SoraBoss.h"
+#include "SoraWorldBuilder.h"
 #include "World/SoraNavigation.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraCampaignSummitTest,"SoraArena.Campaign.SummitTraversal",
@@ -31,12 +32,17 @@ bool FSoraCampaignSummitTest::RunTest(const FString& Parameters)
     if(!SoraLiftAutomation::Walk(*W.World,Center+FVector(1200,0,0))) return false;
     const float Before=W.Hero()->Health;
     W.Look(FRotator::ZeroRotator);
+    FVector ExpectedRecovery;
+    bool bRecoveryFound=false;
     for(int32 Frame=0;Frame<600&&W.Hero()->Health==Before;++Frame)
+    {
+        bRecoveryFound=W.Mode()->Arena()->SummitSafePoint(W.Hero()->GetActorLocation(),*W.Hero(),ExpectedRecovery);
         if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!W.Tick(1)) return false;
+    }
     if(!W.World->InjectKey(EKeys::W,IE_Released)||!W.Tick(2)) return false;
     TestEqual(TEXT("A real edge fall applies exactly 25 damage"),Before-W.Hero()->Health,25.f);
     TestTrue(TEXT("A surviving fall returns to firm floor in the same boss phase"),
-        !W.Mode()->bDefeated&&W.Campaign()->ActiveBeat()==13&&FVector::Dist2D(W.Hero()->GetActorLocation(),Center+FVector(0,-1450,0))<50&&
+        !W.Mode()->bDefeated&&W.Campaign()->ActiveBeat()==13&&bRecoveryFound&&FVector::Dist2D(W.Hero()->GetActorLocation(),ExpectedRecovery)<50&&
         FMath::Abs(W.Hero()->GetActorLocation().Z-16090)<10.f);
     auto* Save=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
     TestTrue(TEXT("Fall recovery preserves the authored boss checkpoint"),Save&&Save->CheckpointBeat==13);

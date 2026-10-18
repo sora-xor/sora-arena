@@ -36,7 +36,7 @@ void ASoraCompanion::MoveOnSpire(const FVector& Goal,float Pace,float Acceptance
     }
     if(SpirePath.Num()<2)
     {
-        // A failed/partial route is not permission to steer through the void.
+        // No route is not permission to steer through the void.
         UpdateLocomotion(false,1.f);
         return;
     }
@@ -44,6 +44,7 @@ void ASoraCompanion::MoveOnSpire(const FVector& Goal,float Pace,float Acceptance
     while(SpirePathIndex<SpirePath.Num()-1&&FVector::Dist2D(Here,SpirePath[SpirePathIndex])<=40.f&&
         FMath::Abs(Feet-SpirePath[SpirePathIndex].Z)<90.f) ++SpirePathIndex;
     const FVector Next=SpirePath[SpirePathIndex];
+    // A partial path is followed to its last reachable segment, then held.
     if(SpirePathIndex==SpirePath.Num()-1&&FVector::Dist2D(Here,Next)<=40.f&&FMath::Abs(Feet-Next.Z)<90.f)
     {
         UpdateLocomotion(false,1.f);

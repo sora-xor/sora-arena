@@ -20,9 +20,7 @@ void ASoraWorldBuilder::BuildSummit(const FSoraBeat& Beat)
             FVector(Radius/50,Radius/50,Height/100),Metal,Collision);
         Pieces.Add(Part); return Part;
     };
-    // The 36 m structural disc is solid in this traversal slice. Physical
-    // seizure-tile removal is a separate boss-mechanics implementation.
-    Cylinder(TEXT("SummitDisc"),SummitCenter-FVector(0,0,20),1800,40,true);
+    BuildSummitTiles();
     Cylinder(TEXT("SummitDais"),SummitCenter+FVector(0,0,60),400,120,true);
     for(int32 Step=0;Step<3;++Step)
         Cylinder(TEXT("SummitDaisStep"),SummitCenter+FVector(0,0,(Step+1)*15),640-Step*80,(Step+1)*30,true);
@@ -73,15 +71,5 @@ void ASoraWorldBuilder::BuildSummit(const FSoraBeat& Beat)
 void ASoraWorldBuilder::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-    const auto* Mode=GetWorld()?GetWorld()->GetAuthGameMode<ASoraGameMode>():nullptr;
-    auto* Hero=Mode?Mode->Hero():nullptr;
-    if(!Mode||!Mode->IsPlaying()||Mode->bDefeated||!Hero||Hero->GetActorLocation().Z>=SummitCenter.Z-100) return;
-    // The open edge is a real fall. It applies the authored 25 damage once,
-    // then restores a surviving player to a firm edge position in this phase.
-    UGameplayStatics::ApplyDamage(Hero,25.f,nullptr,this,UDamageType::StaticClass());
-    if(Mode->bDefeated) return;
-    Hero->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
-    Hero->GetCharacterMovement()->StopMovementImmediately();
-    Hero->SetActorLocation(SummitCenter+FVector(0,-1450,Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+4),
-        false,nullptr,ETeleportType::TeleportPhysics);
+    TickSeizure();
 }

@@ -1,5 +1,6 @@
 #include "SoraBoss.h"
 #include "SoraSettings.h"
+#include "SoraGameMode.h"
 #include "Combat/SoraBossCatalog.h"
 #include "Combat/SoraBossHazard.h"
 #include "Combat/SoraDamage.h"
@@ -1546,6 +1547,8 @@ bool ASoraBoss::ZonePoints(int32 Index, int32 Serial, TArray<FVector>& Points) c
 void ASoraBoss::PlaceZones(int32 Index, int32 Serial, int32 WindupMs)
 {
     const FSoraBossAttack& Attack = AttackAt(Index);
+    if(Attack.Id==TEXT("amort_seizure_field"))
+        if(auto* Mode=GetWorld()->GetAuthGameMode<ASoraGameMode>();Mode&&Mode->Arena()&&Mode->Arena()->BeginSeizure(*this,Index,Serial,WindupMs)) return;
     TArray<FVector> Points;
     if (!ZonePoints(Index, Serial, Points))
         return;

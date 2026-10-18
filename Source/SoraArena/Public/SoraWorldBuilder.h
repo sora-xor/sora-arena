@@ -7,8 +7,11 @@ class AExponentialHeightFog;
 class ASkyLight;
 class ASoraHorse;
 class ASoraCampaignLift;
+class ASoraBoss;
+class UProceduralMeshComponent;
 class ASoraPlayerCharacter;
 class UTextureCube;
+class ACharacter;
 class USkeletalMeshComponent;
 class UStaticMeshComponent;
 class UTextRenderComponent;
@@ -49,6 +52,18 @@ struct FSoraKitView
     TArray<FVector> Party;
     float PartyYaw = 0.f;
     bool bPartyWalking = false;
+};
+
+USTRUCT()
+struct FSoraSummitTile
+{
+    GENERATED_BODY()
+    int32 X=0,Y=0,State=0;
+    bool bSelected=false;
+    FVector2D Stand=FVector2D::ZeroVector;
+    TArray<FVector2D> Outline;
+    UPROPERTY() TObjectPtr<UProceduralMeshComponent> Mesh;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Edges;
 };
 
 // Builds the world at runtime. The training arena's shared layout (ground,
@@ -101,6 +116,11 @@ public:
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
     ASoraCampaignLift* CampaignLift() const;
+    // The campaign summit owns the real seizure floor. Other arenas retain
+    // the generic boss zone implementation.
+    bool BeginSeizure(ASoraBoss& Boss,int32 Attack,int32 Serial,int32 WarningMs);
+    int32 SeizurePattern() const { return SummitPattern; }
+    bool SummitSafePoint(const FVector& From,const ACharacter& Body,FVector& Out) const;
     void ShowRecoveryBundle(bool Visible);
     void ShowEpilogue(bool SwordFound, bool SwordReturned, int32 Plaques);
     int32 RehungPlaques() const { return EpiloguePlaques; }
@@ -127,6 +147,15 @@ private:
     void BuildSpire(const FSoraBeat& Beat);
     void BuildSummit(const FSoraBeat& Beat);
     FVector SummitCenter=FVector::ZeroVector;
+    void BuildSummitTiles();
+    void ClearSummitTiles();
+    void ResetSeizure();
+    void TickSeizure();
+    UPROPERTY() TArray<FSoraSummitTile> SummitTiles;
+    TWeakObjectPtr<ASoraBoss> SummitBoss;
+    int32 SummitPattern=-1,SummitFieldStarted=-1,SummitWarningMs=1500,SummitFieldSerial=0;
+    int32 SummitAttackIndex=INDEX_NONE;
+    bool bSummitActive=false,bSummitStrikeAnnounced=false;
     void BuildZone(const FSoraZone& Zone, int32 Index, const FSoraBeat* Recovery = nullptr);
     void ZoneProp(const FSoraZone& Zone, const FSoraProp& Prop, int32 Index);
     void ZoneLantern(FVector Location, bool bLit);
