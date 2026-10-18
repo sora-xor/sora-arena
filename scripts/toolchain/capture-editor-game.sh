@@ -62,7 +62,9 @@ git -C "$PROJECT_ROOT" status --porcelain >"$OUTPUT/source-status.txt"
 START_NS="$(python3 -c 'import time; print(time.time_ns())')"
 echo "Game automation $FILTER at ${WIDTH}x${HEIGHT}, $SHADER_MODEL; log: $LOG" >&2
 set +e
-"$EDITOR" "$PROJECT" -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput \
+# Name the project's entry map before AppKit's bare YES argument can be
+# mistaken for the startup URL by Unreal's command-line parser.
+"$EDITOR" "$PROJECT" /Engine/Maps/Entry -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput \
   -RenderOffscreen "-ResX=$WIDTH" "-ResY=$HEIGHT" -windowed -NoTextureStreaming \
   "${SHADER_ARGS[@]}" "-ReportExportPath=$REPORT" \
   "-ExecCmds=${SORA_EXEC_PREFIX:-}Automation RunTests $FILTER;Quit" "${EDITOR_CONFIG_ARGS[@]}" -NSAppSleepDisabled YES >"$LOG" 2>&1

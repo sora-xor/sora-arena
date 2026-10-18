@@ -170,9 +170,8 @@ wait_idle() {
 # which waits by sleeping, held the game at 20-25 fps. The trailing
 # "-NSAppSleepDisabled YES" pair sets that AppKit default for this launch
 # only (NSUserDefaults' argument domain), after which the sleep takes 6 ms.
-# Unreal also reads the bare YES as a startup map, logs "Can't Find URL: YES"
-# and loads its default URL, /Engine/Maps/Entry?Name=Player, as it does
-# without the pair.
+# Explicitly name the project's entry map first, so Unreal does not mistake
+# AppKit's bare YES argument for the startup URL.
 launch() {
   local name="$1" filter="$2" status sampler
   echo "Launching the package ($name: $filter); log: $OUTPUT/$name.log" >&2
@@ -181,7 +180,7 @@ launch() {
   sampler=$!
   set +e
   /usr/bin/perl -e 'alarm shift @ARGV; exec @ARGV or die "exec failed: $!\n"' "$TIMEOUT_SECONDS" \
-    "$EXE" -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput -LLM \
+    "$EXE" /Engine/Maps/Entry -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput -LLM \
     -RenderOffscreen "-ResX=$WIDTH" "-ResY=$HEIGHT" -windowed \
     "-UserDir=$APP_DATA/$name-userdir" "-ExecCmds=Automation RunTests $filter;Quit" \
     "-ReportExportPath=$APP_DATA/$name-report" -NSAppSleepDisabled YES >"$OUTPUT/$name.log" 2>&1
