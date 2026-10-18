@@ -149,7 +149,12 @@
       "acquired_at_utc": "2026-09-25T11:35:17+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Matoba_HempLashing.MI_Matoba_HempLashing",
+        "/Game/Generated/Environment/CC0/Textures/Rope001/T_Rope001_ARM.T_Rope001_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Rope001/T_Rope001_BaseColor.T_Rope001_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Rope001/T_Rope001_Normal.T_Rope001_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -323,7 +328,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Rope002.MI_Eval_Rope002",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Rope002/T_Rope002_ARM.T_Rope002_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Rope002/T_Rope002_BaseColor.T_Rope002_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Rope002/T_Rope002_Normal.T_Rope002_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -486,7 +496,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Umaya_HempRope.MI_Umaya_HempRope",
+        "/Game/Generated/Environment/CC0/Textures/Rope003/T_Rope003_ARM.T_Rope003_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Rope003/T_Rope003_BaseColor.T_Rope003_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Rope003/T_Rope003_Normal.T_Rope003_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -652,7 +667,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Bamboo001A.MI_Eval_Bamboo001A",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001A/T_Bamboo001A_ARM.T_Bamboo001A_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001A/T_Bamboo001A_BaseColor.T_Bamboo001A_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001A/T_Bamboo001A_Normal.T_Bamboo001A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -841,7 +861,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Bamboo001B.MI_Eval_Bamboo001B",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001B/T_Bamboo001B_ARM.T_Bamboo001B_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001B/T_Bamboo001B_BaseColor.T_Bamboo001B_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001B/T_Bamboo001B_Normal.T_Bamboo001B_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -1031,7 +1056,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Bamboo001C.MI_Eval_Bamboo001C",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001C/T_Bamboo001C_ARM.T_Bamboo001C_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001C/T_Bamboo001C_BaseColor.T_Bamboo001C_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo001C/T_Bamboo001C_Normal.T_Bamboo001C_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -1212,7 +1242,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Bamboo002A.MI_Eval_Bamboo002A",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002A/T_Bamboo002A_ARM.T_Bamboo002A_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002A/T_Bamboo002A_BaseColor.T_Bamboo002A_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002A/T_Bamboo002A_Normal.T_Bamboo002A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -1393,7 +1428,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Bamboo002B.MI_Eval_Bamboo002B",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002B/T_Bamboo002B_ARM.T_Bamboo002B_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002B/T_Bamboo002B_BaseColor.T_Bamboo002B_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002B/T_Bamboo002B_Normal.T_Bamboo002B_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -1576,7 +1616,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Bamboo002C.MI_Eval_Bamboo002C",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002C/T_Bamboo002C_ARM.T_Bamboo002C_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002C/T_Bamboo002C_BaseColor.T_Bamboo002C_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Bamboo002C/T_Bamboo002C_Normal.T_Bamboo002C_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -1756,7 +1801,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_MossForestFloor.MI_IssosekiWood_MossForestFloor",
+        "/Game/Generated/Environment/CC0/Textures/Moss001/T_Moss001_ARM.T_Moss001_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Moss001/T_Moss001_BaseColor.T_Moss001_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Moss001/T_Moss001_Normal.T_Moss001_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -1915,7 +1965,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_EstateDay_RojiStonePath.MI_EstateDay_RojiStonePath",
+        "/Game/Generated/Environment/CC0/Textures/Moss002/T_Moss002_ARM.T_Moss002_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Moss002/T_Moss002_BaseColor.T_Moss002_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Moss002/T_Moss002_Normal.T_Moss002_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -2067,7 +2122,13 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_StackedStoneWall_MossJoints.MI_Eval_StackedStoneWall_MossJoints",
+        "/Game/Generated/Environment/CC0/Instances/MI_Kaido_MossBank.MI_Kaido_MossBank",
+        "/Game/Generated/Environment/CC0/Textures/Moss003/T_Moss003_ARM.T_Moss003_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Moss003/T_Moss003_BaseColor.T_Moss003_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Moss003/T_Moss003_Normal.T_Moss003_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -2219,7 +2280,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_MossyThatch.MI_Kakuredani_MossyThatch",
+        "/Game/Generated/Environment/CC0/Textures/Moss004/T_Moss004_ARM.T_Moss004_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Moss004/T_Moss004_BaseColor.T_Moss004_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Moss004/T_Moss004_Normal.T_Moss004_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -2374,7 +2440,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_EstateDay_Shikkui.MI_EstateDay_Shikkui",
+        "/Game/Generated/Environment/CC0/Textures/Plaster007/T_Plaster007_ARM.T_Plaster007_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Plaster007/T_Plaster007_BaseColor.T_Plaster007_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Plaster007/T_Plaster007_Normal.T_Plaster007_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -2541,7 +2612,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Plaster001.MI_Eval_Plaster001",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Plaster001/T_Plaster001_ARM.T_Plaster001_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Plaster001/T_Plaster001_BaseColor.T_Plaster001_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Plaster001/T_Plaster001_Normal.T_Plaster001_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -2685,7 +2761,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_RoofingTiles011A.MI_Eval_RoofingTiles011A",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles011A/T_RoofingTiles011A_ARM.T_RoofingTiles011A_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles011A/T_RoofingTiles011A_BaseColor.T_RoofingTiles011A_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles011A/T_RoofingTiles011A_Normal.T_RoofingTiles011A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -2863,7 +2944,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_RoofingTiles012A.MI_Eval_RoofingTiles012A",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles012A/T_RoofingTiles012A_ARM.T_RoofingTiles012A_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles012A/T_RoofingTiles012A_BaseColor.T_RoofingTiles012A_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles012A/T_RoofingTiles012A_Normal.T_RoofingTiles012A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -3041,7 +3127,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_RoofingTiles013A.MI_Eval_RoofingTiles013A",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles013A/T_RoofingTiles013A_ARM.T_RoofingTiles013A_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles013A/T_RoofingTiles013A_BaseColor.T_RoofingTiles013A_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles013A/T_RoofingTiles013A_Normal.T_RoofingTiles013A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -3220,7 +3311,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_RoofingTiles014A.MI_Eval_RoofingTiles014A",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles014A/T_RoofingTiles014A_ARM.T_RoofingTiles014A_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles014A/T_RoofingTiles014A_BaseColor.T_RoofingTiles014A_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles014A/T_RoofingTiles014A_Normal.T_RoofingTiles014A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -3399,7 +3495,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_RoofingTiles015A.MI_Eval_RoofingTiles015A",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles015A/T_RoofingTiles015A_ARM.T_RoofingTiles015A_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles015A/T_RoofingTiles015A_BaseColor.T_RoofingTiles015A_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles015A/T_RoofingTiles015A_Normal.T_RoofingTiles015A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -3578,7 +3679,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_RoofingTiles015B.MI_Eval_RoofingTiles015B",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles015B/T_RoofingTiles015B_ARM.T_RoofingTiles015B_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles015B/T_RoofingTiles015B_BaseColor.T_RoofingTiles015B_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/RoofingTiles015B/T_RoofingTiles015B_Normal.T_RoofingTiles015B_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -3759,7 +3865,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Umaya_TackLeather.MI_Umaya_TackLeather",
+        "/Game/Generated/Environment/CC0/Textures/Leather014/T_Leather014_ARM.T_Leather014_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Leather014/T_Leather014_BaseColor.T_Leather014_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Leather014/T_Leather014_Normal.T_Leather014_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -4039,7 +4150,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Bugugura_ArmorChestLeather.MI_Bugugura_ArmorChestLeather",
+        "/Game/Generated/Environment/CC0/Textures/Leather007/T_Leather007_ARM.T_Leather007_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Leather007/T_Leather007_BaseColor.T_Leather007_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Leather007/T_Leather007_Normal.T_Leather007_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -4597,7 +4713,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_PackWrapCloth.MI_Kakuredani_PackWrapCloth",
+        "/Game/Generated/Environment/CC0/Textures/Fabric011/T_Fabric011_ARM.T_Fabric011_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Fabric011/T_Fabric011_BaseColor.T_Fabric011_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Fabric011/T_Fabric011_Normal.T_Fabric011_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -4917,7 +5038,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Umaya_ShitaguraPad.MI_Umaya_ShitaguraPad",
+        "/Game/Generated/Environment/CC0/Textures/Fabric013/T_Fabric013_ARM.T_Fabric013_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Fabric013/T_Fabric013_BaseColor.T_Fabric013_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Fabric013/T_Fabric013_Normal.T_Fabric013_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -5077,7 +5203,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Fabric019.MI_Eval_Fabric019",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Fabric019/T_Fabric019_ARM.T_Fabric019_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Fabric019/T_Fabric019_BaseColor.T_Fabric019_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Fabric019/T_Fabric019_Normal.T_Fabric019_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -5241,7 +5372,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Umaya_WaraStraw.MI_Umaya_WaraStraw",
+        "/Game/Generated/Environment/CC0/Textures/ThatchedRoof001A/T_ThatchedRoof001A_ARM.T_ThatchedRoof001A_ARM",
+        "/Game/Generated/Environment/CC0/Textures/ThatchedRoof001A/T_ThatchedRoof001A_BaseColor.T_ThatchedRoof001A_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/ThatchedRoof001A/T_ThatchedRoof001A_Normal.T_ThatchedRoof001A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -5408,7 +5544,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Matoba_MakiwaraStraw.MI_Matoba_MakiwaraStraw",
+        "/Game/Generated/Environment/CC0/Textures/ThatchedRoof002A/T_ThatchedRoof002A_ARM.T_ThatchedRoof002A_ARM",
+        "/Game/Generated/Environment/CC0/Textures/ThatchedRoof002A/T_ThatchedRoof002A_BaseColor.T_ThatchedRoof002A_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/ThatchedRoof002A/T_ThatchedRoof002A_Normal.T_ThatchedRoof002A_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -5577,7 +5718,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_DojoSmithy_TakeKago.MI_DojoSmithy_TakeKago",
+        "/Game/Generated/Environment/CC0/Textures/Wicker013/T_Wicker013_ARM.T_Wicker013_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Wicker013/T_Wicker013_BaseColor.T_Wicker013_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Wicker013/T_Wicker013_Normal.T_Wicker013_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,
@@ -5744,7 +5890,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_Wicker005.MI_Eval_Wicker005",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Wicker005/T_Wicker005_ARM.T_Wicker005_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Wicker005/T_Wicker005_BaseColor.T_Wicker005_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/Wicker005/T_Wicker005_Normal.T_Wicker005_Normal"
+      ],
       "fallback": null,
       "priority": 7,
       "backlog_item": 7,

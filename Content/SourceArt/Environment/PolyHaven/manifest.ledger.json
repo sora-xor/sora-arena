@@ -529,7 +529,8 @@
       },
       "base_manifest": "Content/SourceArt/Environment/PolyHaven/WhitePlaster02/manifest.json",
       "used_by": [
-        "/Game/Generated/Environment/MI_Nyaagyu_Plaster.MI_Nyaagyu_Plaster"
+        "/Game/Generated/Environment/MI_Nyaagyu_Plaster.MI_Nyaagyu_Plaster",
+        "/Game/Generated/Environment/CC0/Instances/MI_EstateDay_Shikkui.MI_EstateDay_Shikkui"
       ],
       "files": [
         {

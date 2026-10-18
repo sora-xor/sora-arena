@@ -170,7 +170,13 @@
       "acquired_at_utc": "2026-09-25T11:35:17+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_EstateDay_EngawaHinoki.MI_EstateDay_EngawaHinoki",
+        "/Game/Generated/Environment/CC0/Instances/MI_TsumagizakaDojo_HinokiFloor.MI_TsumagizakaDojo_HinokiFloor",
+        "/Game/Generated/Environment/CC0/Textures/HinokiPlanks/T_HinokiPlanks_ARM.T_HinokiPlanks_ARM",
+        "/Game/Generated/Environment/CC0/Textures/HinokiPlanks/T_HinokiPlanks_BaseColor.T_HinokiPlanks_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/HinokiPlanks/T_HinokiPlanks_Normal.T_HinokiPlanks_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -290,7 +296,13 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_TsumagizakaDojo_SugiHameita.MI_TsumagizakaDojo_SugiHameita",
+        "/Game/Generated/Environment/CC0/Instances/MI_Umaya_SugiBoardWall.MI_Umaya_SugiBoardWall",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCedarPlanks/T_JapaneseCedarPlanks_ARM.T_JapaneseCedarPlanks_ARM",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCedarPlanks/T_JapaneseCedarPlanks_BaseColor.T_JapaneseCedarPlanks_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCedarPlanks/T_JapaneseCedarPlanks_Normal.T_JapaneseCedarPlanks_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -420,7 +432,13 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_EstateDay_Tsuchikabe.MI_EstateDay_Tsuchikabe",
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_CharcoalHutDaub.MI_Kakuredani_CharcoalHutDaub",
+        "/Game/Generated/Environment/CC0/Textures/ClayPlaster/T_ClayPlaster_ARM.T_ClayPlaster_ARM",
+        "/Game/Generated/Environment/CC0/Textures/ClayPlaster/T_ClayPlaster_BaseColor.T_ClayPlaster_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/ClayPlaster/T_ClayPlaster_Normal.T_ClayPlaster_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -543,7 +561,13 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_StackedStoneWall.MI_Eval_StackedStoneWall",
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_StackedStoneWall_MossJoints.MI_Eval_StackedStoneWall_MossJoints",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/StackedStoneWall/T_StackedStoneWall_ARM.T_StackedStoneWall_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/StackedStoneWall/T_StackedStoneWall_BaseColor.T_StackedStoneWall_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/StackedStoneWall/T_StackedStoneWall_Normal.T_StackedStoneWall_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -676,7 +700,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_CharcoalHutDaub.MI_Kakuredani_CharcoalHutDaub",
+        "/Game/Generated/Environment/CC0/Textures/PatternedClayPlaster/T_PatternedClayPlaster_ARM.T_PatternedClayPlaster_ARM",
+        "/Game/Generated/Environment/CC0/Textures/PatternedClayPlaster/T_PatternedClayPlaster_BaseColor.T_PatternedClayPlaster_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/PatternedClayPlaster/T_PatternedClayPlaster_Normal.T_PatternedClayPlaster_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -787,7 +816,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_DojoSmithy_ItabukiRoof.MI_DojoSmithy_ItabukiRoof",
+        "/Game/Generated/Environment/CC0/Textures/RoofPlanks/T_RoofPlanks_ARM.T_RoofPlanks_ARM",
+        "/Game/Generated/Environment/CC0/Textures/RoofPlanks/T_RoofPlanks_BaseColor.T_RoofPlanks_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/RoofPlanks/T_RoofPlanks_Normal.T_RoofPlanks_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -926,7 +960,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_KayabukiThatchField.MI_Kakuredani_KayabukiThatchField",
+        "/Game/Generated/Environment/CC0/Textures/ThatchRoofAngled/T_ThatchRoofAngled_ARM.T_ThatchRoofAngled_ARM",
+        "/Game/Generated/Environment/CC0/Textures/ThatchRoofAngled/T_ThatchRoofAngled_BaseColor.T_ThatchRoofAngled_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/ThatchRoofAngled/T_ThatchRoofAngled_Normal.T_ThatchRoofAngled_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -1046,7 +1085,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_ReedRoof03.MI_Eval_ReedRoof03",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/ReedRoof03/T_ReedRoof03_ARM.T_ReedRoof03_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/ReedRoof03/T_ReedRoof03_BaseColor.T_ReedRoof03_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/ReedRoof03/T_ReedRoof03_Normal.T_ReedRoof03_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -1155,7 +1199,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_LaneKit_AjiroTakegaki.MI_LaneKit_AjiroTakegaki",
+        "/Game/Generated/Environment/CC0/Textures/BambooWall02/T_BambooWall02_ARM.T_BambooWall02_ARM",
+        "/Game/Generated/Environment/CC0/Textures/BambooWall02/T_BambooWall02_BaseColor.T_BambooWall02_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/BambooWall02/T_BambooWall02_Normal.T_BambooWall02_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -1275,7 +1324,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Bugugura_TakegakiPanel.MI_Bugugura_TakegakiPanel",
+        "/Game/Generated/Environment/CC0/Textures/BambooWall03/T_BambooWall03_ARM.T_BambooWall03_ARM",
+        "/Game/Generated/Environment/CC0/Textures/BambooWall03/T_BambooWall03_BaseColor.T_BambooWall03_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/BambooWall03/T_BambooWall03_Normal.T_BambooWall03_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -1392,7 +1446,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_EstateDay_Tatami.MI_EstateDay_Tatami",
+        "/Game/Generated/Environment/CC0/Textures/TatamiMat/T_TatamiMat_ARM.T_TatamiMat_ARM",
+        "/Game/Generated/Environment/CC0/Textures/TatamiMat/T_TatamiMat_BaseColor.T_TatamiMat_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/TatamiMat/T_TatamiMat_Normal.T_TatamiMat_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -1510,7 +1569,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_LacqueredCherryWood.MI_Eval_LacqueredCherryWood",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/LacqueredCherryWood/T_LacqueredCherryWood_ARM.T_LacqueredCherryWood_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/LacqueredCherryWood/T_LacqueredCherryWood_BaseColor.T_LacqueredCherryWood_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/LacqueredCherryWood/T_LacqueredCherryWood_Normal.T_LacqueredCherryWood_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -1637,7 +1701,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_WoodInlaidStoneWall.MI_Eval_WoodInlaidStoneWall",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodInlaidStoneWall/T_WoodInlaidStoneWall_ARM.T_WoodInlaidStoneWall_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodInlaidStoneWall/T_WoodInlaidStoneWall_BaseColor.T_WoodInlaidStoneWall_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodInlaidStoneWall/T_WoodInlaidStoneWall_Normal.T_WoodInlaidStoneWall_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -1758,7 +1827,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_MossyStoneWall.MI_Eval_MossyStoneWall",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/MossyStoneWall/T_MossyStoneWall_ARM.T_MossyStoneWall_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/MossyStoneWall/T_MossyStoneWall_BaseColor.T_MossyStoneWall_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/MossyStoneWall/T_MossyStoneWall_Normal.T_MossyStoneWall_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -1890,7 +1964,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_JapaneseStoneWall.MI_Eval_JapaneseStoneWall",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/JapaneseStoneWall/T_JapaneseStoneWall_ARM.T_JapaneseStoneWall_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/JapaneseStoneWall/T_JapaneseStoneWall_BaseColor.T_JapaneseStoneWall_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/JapaneseStoneWall/T_JapaneseStoneWall_Normal.T_JapaneseStoneWall_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -2014,7 +2093,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_GraniteWall.MI_Eval_GraniteWall",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/GraniteWall/T_GraniteWall_ARM.T_GraniteWall_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/GraniteWall/T_GraniteWall_BaseColor.T_GraniteWall_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/GraniteWall/T_GraniteWall_Normal.T_GraniteWall_Normal"
+      ],
       "fallback": null,
       "priority": 3,
       "backlog_item": 3,
@@ -2135,7 +2219,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kaido_PackedEarthRoad.MI_Kaido_PackedEarthRoad",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround05/T_ForestGround05_ARM.T_ForestGround05_ARM",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround05/T_ForestGround05_BaseColor.T_ForestGround05_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround05/T_ForestGround05_Normal.T_ForestGround05_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -2253,7 +2342,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_SugiBark.MI_IssosekiWood_SugiBark",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCedarBark/T_JapaneseCedarBark_ARM.T_JapaneseCedarBark_ARM",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCedarBark/T_JapaneseCedarBark_BaseColor.T_JapaneseCedarBark_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCedarBark/T_JapaneseCedarBark_Normal.T_JapaneseCedarBark_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -2373,7 +2467,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kaido_GravelPitch.MI_Kaido_GravelPitch",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround04/T_ForestGround04_ARM.T_ForestGround04_ARM",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround04/T_ForestGround04_BaseColor.T_ForestGround04_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround04/T_ForestGround04_Normal.T_ForestGround04_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -2489,7 +2588,13 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_MossForestFloor.MI_IssosekiWood_MossForestFloor",
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_ValleyFloor.MI_Kakuredani_ValleyFloor",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround06/T_ForestGround06_ARM.T_ForestGround06_ARM",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround06/T_ForestGround06_BaseColor.T_ForestGround06_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/ForestGround06/T_ForestGround06_Normal.T_ForestGround06_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -2609,7 +2714,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_MuddyTracks.MI_Eval_MuddyTracks",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/MuddyTracks/T_MuddyTracks_ARM.T_MuddyTracks_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/MuddyTracks/T_MuddyTracks_BaseColor.T_MuddyTracks_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/MuddyTracks/T_MuddyTracks_Normal.T_MuddyTracks_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -2728,7 +2838,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Ishibashi_StreamBed.MI_Ishibashi_StreamBed",
+        "/Game/Generated/Environment/CC0/Textures/RiverSmallRocks/T_RiverSmallRocks_ARM.T_RiverSmallRocks_ARM",
+        "/Game/Generated/Environment/CC0/Textures/RiverSmallRocks/T_RiverSmallRocks_BaseColor.T_RiverSmallRocks_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/RiverSmallRocks/T_RiverSmallRocks_Normal.T_RiverSmallRocks_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -2842,7 +2957,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_EstateDay_MatsuBark.MI_EstateDay_MatsuBark",
+        "/Game/Generated/Environment/CC0/Textures/PineBark/T_PineBark_ARM.T_PineBark_ARM",
+        "/Game/Generated/Environment/CC0/Textures/PineBark/T_PineBark_BaseColor.T_PineBark_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/PineBark/T_PineBark_Normal.T_PineBark_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -2959,7 +3079,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_TsumagizakaDojo_KeyakiBark.MI_TsumagizakaDojo_KeyakiBark",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseZelkovaBark/T_JapaneseZelkovaBark_ARM.T_JapaneseZelkovaBark_ARM",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseZelkovaBark/T_JapaneseZelkovaBark_BaseColor.T_JapaneseZelkovaBark_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseZelkovaBark/T_JapaneseZelkovaBark_Normal.T_JapaneseZelkovaBark_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -3065,7 +3190,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_YamazakuraBark.MI_IssosekiWood_YamazakuraBark",
+        "/Game/Generated/Environment/CC0/Textures/SakuraBark/T_SakuraBark_ARM.T_SakuraBark_ARM",
+        "/Game/Generated/Environment/CC0/Textures/SakuraBark/T_SakuraBark_BaseColor.T_SakuraBark_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/SakuraBark/T_SakuraBark_Normal.T_SakuraBark_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -3175,7 +3305,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_MomijiBark.MI_IssosekiWood_MomijiBark",
+        "/Game/Generated/Environment/CC0/Textures/TridentMapleBark/T_TridentMapleBark_ARM.T_TridentMapleBark_ARM",
+        "/Game/Generated/Environment/CC0/Textures/TridentMapleBark/T_TridentMapleBark_BaseColor.T_TridentMapleBark_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/TridentMapleBark/T_TridentMapleBark_Normal.T_TridentMapleBark_Normal"
+      ],
       "fallback": null,
       "priority": 4,
       "backlog_item": 4,
@@ -3274,7 +3409,9 @@
       "acquired_at_utc": "2026-09-25T11:35:17+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/HDRI/HDRI_KloofendalMistyMorning.HDRI_KloofendalMistyMorning"
+      ],
       "fallback": null,
       "priority": 5,
       "backlog_item": 5,
@@ -3353,7 +3490,9 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/HDRI/HDRI_QwantaniDusk2.HDRI_QwantaniDusk2"
+      ],
       "fallback": null,
       "priority": 5,
       "backlog_item": 5,
@@ -3433,7 +3572,9 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/HDRI/HDRI_QwantaniNight.HDRI_QwantaniNight"
+      ],
       "fallback": null,
       "priority": 5,
       "backlog_item": 5,
@@ -3521,7 +3662,9 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/HDRI/HDRI_LookDev_NinomaruTeien.HDRI_LookDev_NinomaruTeien"
+      ],
       "fallback": null,
       "priority": 5,
       "backlog_item": 5,
@@ -3604,7 +3747,18 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_MossRockSet01.MI_IssosekiWood_MossRockSet01",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet01/SM_RockMossSet01_Rock01.SM_RockMossSet01_Rock01",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet01/SM_RockMossSet01_Rock02.SM_RockMossSet01_Rock02",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet01/SM_RockMossSet01_Rock03.SM_RockMossSet01_Rock03",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet01/SM_RockMossSet01_Rock04.SM_RockMossSet01_Rock04",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet01/SM_RockMossSet01_Rock05.SM_RockMossSet01_Rock05",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet01/SM_RockMossSet01_Rock06.SM_RockMossSet01_Rock06",
+        "/Game/Generated/Environment/CC0/Textures/RockMossSet01/T_RockMossSet01_ARM.T_RockMossSet01_ARM",
+        "/Game/Generated/Environment/CC0/Textures/RockMossSet01/T_RockMossSet01_BaseColor.T_RockMossSet01_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/RockMossSet01/T_RockMossSet01_Normal.T_RockMossSet01_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -3739,7 +3893,19 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Ishibashi_MossRockSet02.MI_Ishibashi_MossRockSet02",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet02/SM_RockMossSet02_Rock07.SM_RockMossSet02_Rock07",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet02/SM_RockMossSet02_Rock08.SM_RockMossSet02_Rock08",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet02/SM_RockMossSet02_Rock09.SM_RockMossSet02_Rock09",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet02/SM_RockMossSet02_Rock10.SM_RockMossSet02_Rock10",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet02/SM_RockMossSet02_Rock11.SM_RockMossSet02_Rock11",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet02/SM_RockMossSet02_Rock12.SM_RockMossSet02_Rock12",
+        "/Game/Generated/Environment/CC0/Meshes/RockMossSet02/SM_RockMossSet02_Rock13.SM_RockMossSet02_Rock13",
+        "/Game/Generated/Environment/CC0/Textures/RockMossSet02/T_RockMossSet02_ARM.T_RockMossSet02_ARM",
+        "/Game/Generated/Environment/CC0/Textures/RockMossSet02/T_RockMossSet02_BaseColor.T_RockMossSet02_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/RockMossSet02/T_RockMossSet02_Normal.T_RockMossSet02_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -3878,7 +4044,13 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_Boulder01.MI_IssosekiWood_Boulder01",
+        "/Game/Generated/Environment/CC0/Meshes/Boulder01/SM_Boulder01.SM_Boulder01",
+        "/Game/Generated/Environment/CC0/Textures/Boulder01/T_Boulder01_ARM.T_Boulder01_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Boulder01/T_Boulder01_BaseColor.T_Boulder01_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Boulder01/T_Boulder01_Normal.T_Boulder01_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -4022,7 +4194,13 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_RootCluster01.MI_IssosekiWood_RootCluster01",
+        "/Game/Generated/Environment/CC0/Meshes/RootCluster01/SM_RootCluster01.SM_RootCluster01",
+        "/Game/Generated/Environment/CC0/Textures/RootCluster01/T_RootCluster01_ARM.T_RootCluster01_ARM",
+        "/Game/Generated/Environment/CC0/Textures/RootCluster01/T_RootCluster01_BaseColor.T_RootCluster01_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/RootCluster01/T_RootCluster01_Normal.T_RootCluster01_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -4166,7 +4344,24 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_MossClump01.MI_IssosekiWood_MossClump01",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_A.SM_Moss01_A",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_B.SM_Moss01_B",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_C.SM_Moss01_C",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_D.SM_Moss01_D",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_E.SM_Moss01_E",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_F.SM_Moss01_F",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_G.SM_Moss01_G",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_H.SM_Moss01_H",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_I.SM_Moss01_I",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_J.SM_Moss01_J",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_TallA.SM_Moss01_TallA",
+        "/Game/Generated/Environment/CC0/Meshes/Moss01/SM_Moss01_TallB.SM_Moss01_TallB",
+        "/Game/Generated/Environment/CC0/Textures/Moss01/T_Moss01_ARM.T_Moss01_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Moss01/T_Moss01_BaseColor.T_Moss01_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Moss01/T_Moss01_Normal.T_Moss01_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -4309,7 +4504,13 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_IssosekiWood_TreeStump01.MI_IssosekiWood_TreeStump01",
+        "/Game/Generated/Environment/CC0/Meshes/TreeStump01/SM_TreeStump01.SM_TreeStump01",
+        "/Game/Generated/Environment/CC0/Textures/TreeStump01/T_TreeStump01_ARM.T_TreeStump01_ARM",
+        "/Game/Generated/Environment/CC0/Textures/TreeStump01/T_TreeStump01_BaseColor.T_TreeStump01_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/TreeStump01/T_TreeStump01_Normal.T_TreeStump01_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -4450,7 +4651,14 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_WoodenBucket01.MI_Eval_WoodenBucket01",
+        "/Game/Generated/Environment/CC0/Evaluation/Meshes/WoodenBucket01/SM_WoodenBucket01.SM_WoodenBucket01",
+        "/Game/Generated/Environment/CC0/Evaluation/Meshes/WoodenBucket01/SM_WoodenBucket01_Handle.SM_WoodenBucket01_Handle",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodenBucket01/T_WoodenBucket01_ARM.T_WoodenBucket01_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodenBucket01/T_WoodenBucket01_BaseColor.T_WoodenBucket01_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodenBucket01/T_WoodenBucket01_Normal.T_WoodenBucket01_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -4600,7 +4808,15 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_WoodenBucket02.MI_Eval_WoodenBucket02",
+        "/Game/Generated/Environment/CC0/Evaluation/Meshes/WoodenBucket02/SM_WoodenBucket02.SM_WoodenBucket02",
+        "/Game/Generated/Environment/CC0/Evaluation/Meshes/WoodenBucket02/SM_WoodenBucket02_Handle01.SM_WoodenBucket02_Handle01",
+        "/Game/Generated/Environment/CC0/Evaluation/Meshes/WoodenBucket02/SM_WoodenBucket02_Handle02.SM_WoodenBucket02_Handle02",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodenBucket02/T_WoodenBucket02_ARM.T_WoodenBucket02_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodenBucket02/T_WoodenBucket02_BaseColor.T_WoodenBucket02_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/WoodenBucket02/T_WoodenBucket02_Normal.T_WoodenBucket02_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -4745,7 +4961,13 @@
       "acquired_at_utc": "2026-09-25T11:35:17+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_KatanaStand01.MI_Eval_KatanaStand01",
+        "/Game/Generated/Environment/CC0/Evaluation/Meshes/KatanaStand01/SM_KatanaStand01.SM_KatanaStand01",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/KatanaStand01/T_KatanaStand01_ARM.T_KatanaStand01_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/KatanaStand01/T_KatanaStand01_BaseColor.T_KatanaStand01_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/KatanaStand01/T_KatanaStand01_Normal.T_KatanaStand01_Normal"
+      ],
       "fallback": null,
       "priority": 6,
       "backlog_item": 6,
@@ -4887,7 +5109,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Evaluation/MI_Eval_ReedRoof04.MI_Eval_ReedRoof04",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/ReedRoof04/T_ReedRoof04_ARM.T_ReedRoof04_ARM",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/ReedRoof04/T_ReedRoof04_BaseColor.T_ReedRoof04_BaseColor",
+        "/Game/Generated/Environment/CC0/Evaluation/Textures/ReedRoof04/T_ReedRoof04_Normal.T_ReedRoof04_Normal"
+      ],
       "fallback": null,
       "priority": 8,
       "backlog_item": null,
@@ -4994,7 +5221,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_MossyThatch.MI_Kakuredani_MossyThatch",
+        "/Game/Generated/Environment/CC0/Textures/Riet01/T_Riet01_ARM.T_Riet01_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Riet01/T_Riet01_BaseColor.T_Riet01_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Riet01/T_Riet01_Normal.T_Riet01_Normal"
+      ],
       "fallback": null,
       "priority": 8,
       "backlog_item": null,
@@ -5102,7 +5334,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kaido_KusunokiBark.MI_Kaido_KusunokiBark",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCamphorBark/T_JapaneseCamphorBark_ARM.T_JapaneseCamphorBark_ARM",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCamphorBark/T_JapaneseCamphorBark_BaseColor.T_JapaneseCamphorBark_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/JapaneseCamphorBark/T_JapaneseCamphorBark_Normal.T_JapaneseCamphorBark_Normal"
+      ],
       "fallback": null,
       "priority": 8,
       "backlog_item": null,
@@ -5314,7 +5551,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_AsaSacking.MI_Kakuredani_AsaSacking",
+        "/Game/Generated/Environment/CC0/Textures/Hessian230/T_Hessian230_ARM.T_Hessian230_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Hessian230/T_Hessian230_BaseColor.T_Hessian230_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Hessian230/T_Hessian230_Normal.T_Hessian230_Normal"
+      ],
       "fallback": null,
       "priority": 8,
       "backlog_item": null,
@@ -5424,7 +5666,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Umaya_AsaHorseBlanket.MI_Umaya_AsaHorseBlanket",
+        "/Game/Generated/Environment/CC0/Textures/Hessian380/T_Hessian380_ARM.T_Hessian380_ARM",
+        "/Game/Generated/Environment/CC0/Textures/Hessian380/T_Hessian380_BaseColor.T_Hessian380_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/Hessian380/T_Hessian380_Normal.T_Hessian380_Normal"
+      ],
       "fallback": null,
       "priority": 8,
       "backlog_item": null,
@@ -5540,7 +5787,12 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/Instances/MI_Kakuredani_JinmakuSilk.MI_Kakuredani_JinmakuSilk",
+        "/Game/Generated/Environment/CC0/Textures/CrepeSatin/T_CrepeSatin_ARM.T_CrepeSatin_ARM",
+        "/Game/Generated/Environment/CC0/Textures/CrepeSatin/T_CrepeSatin_BaseColor.T_CrepeSatin_BaseColor",
+        "/Game/Generated/Environment/CC0/Textures/CrepeSatin/T_CrepeSatin_Normal.T_CrepeSatin_Normal"
+      ],
       "fallback": null,
       "priority": 8,
       "backlog_item": null,
@@ -5645,7 +5897,9 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/HDRI/HDRI_LookDev_BambooTunnel.HDRI_LookDev_BambooTunnel"
+      ],
       "fallback": null,
       "priority": 8,
       "backlog_item": null,
@@ -5728,7 +5982,9 @@
       "acquired_at_utc": "2026-09-25T11:39:27+00:00",
       "acquired_by": "agent",
       "storage": "local-raw",
-      "used_by": [],
+      "used_by": [
+        "/Game/Generated/Environment/CC0/HDRI/HDRI_LookDev_SpookyBambooMorning.HDRI_LookDev_SpookyBambooMorning"
+      ],
       "fallback": null,
       "priority": 8,
       "backlog_item": null,

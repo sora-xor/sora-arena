@@ -57,6 +57,20 @@ if [[ -z "$EXPECTED_PACKAGES" ]]; then
   echo "Source art check did not report an expected package count: $SOURCE_CHECK" >&2
   exit 1
 fi
+# The CC0 environment library reads the first-slice ledgers' raw files from the
+# clone's Local/ tree (shared by git worktrees), checks every SHA-256 and the
+# period-accuracy policy, and packs the separate AO/roughness/metal maps into
+# ARM textures under Saved/ before the editor imports them.
+PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/unreal/pack_cc0_environment.py" >&2
+CC0_CHECK="$(PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/unreal/validate_cc0_environment.py" --source-only)"
+EXPECTED_CC0="$(sed -n 's/^SORA_CC0_SOURCE_CHECK_COMPLETE: \([0-9][0-9]*\) expected Unreal packages$/\1/p' <<<"$CC0_CHECK")"
+if [[ -z "$EXPECTED_CC0" ]]; then
+  echo "CC0 environment check did not report an expected package count: $CC0_CHECK" >&2
+  exit 1
+fi
+# The masters' Custom HLSL, wrapped as the 5.8 material translator wraps it,
+# must compile with the engine's own DXC before an editor builds the graphs.
+PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/unreal/check_cc0_custom_hlsl.py" >&2
 # The audio checks verify the runtime audio data against the game, then the
 # OWN audio hashes, loop chunks, bus tree and cue routing, and yield the audio
 # package count its editor validator must load.
@@ -67,6 +81,7 @@ if [[ -z "$EXPECTED_AUDIO_PACKAGES" ]]; then
   echo "Source audio check did not report an expected package count: $AUDIO_CHECK" >&2
   exit 1
 fi
+
 
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config
@@ -106,14 +121,19 @@ print(next(line.split('LogPython: ', 1)[1] for line in lines
 PY
 }
 
-# The palette step binds materials to meshes from the first step, and the
-# validator reads both; the order is fixed.
+# The palette step binds materials to meshes from the first step, the CC0
+# library binds the palette's plaster and stone-path maps, and the validators
+# read all three; the order is fixed.
 run_step import-original import_original_assets.py 'SORA_ASSET_IMPORT_COMPLETE: '
 run_step import-palette import_environment_palette.py 'NYAAGYU_PBR_READY: '
+run_step import-cc0 import_cc0_environment.py 'SORA_CC0_ENVIRONMENT_READY: '
 run_step validate validate_imported_assets.py \
   "SORA_ASSET_VALIDATION_COMPLETE: $EXPECTED_PACKAGES packages loaded with expected types"
+run_step validate-cc0 validate_cc0_environment.py \
+  "SORA_CC0_ENVIRONMENT_VALIDATED: $EXPECTED_CC0 packages loaded with expected types"
 # Audio is independent of the art: sound waves, then the bus tree and ducking.
 run_step import-audio import_audio.py 'SORA_AUDIO_IMPORT_COMPLETE: '
 run_step validate-audio validate_audio_import.py \
   "SORA_AUDIO_VALIDATION_COMPLETE: $EXPECTED_AUDIO_PACKAGES packages loaded with expected types and routing"
-echo "PASS: imported and loaded $EXPECTED_PACKAGES expected art packages and $EXPECTED_AUDIO_PACKAGES audio packages; logs: $OUTPUT"
+
+echo "PASS: imported and loaded $EXPECTED_PACKAGES art, $EXPECTED_CC0 CC0 environment and $EXPECTED_AUDIO_PACKAGES audio packages; logs: $OUTPUT"

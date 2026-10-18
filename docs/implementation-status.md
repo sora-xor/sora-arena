@@ -551,6 +551,60 @@ unverified.
   proxy props, lamps are engine shapes with point lights, and the wheel, ring
   and prompts have no screenshot review.
 
+## 2026-09-26 environment lane: CC0 material library
+
+The first-slice CC0 ledgers now feed a [material library](cc0-environment-library.md)
+under `/Game/Generated/Environment/CC0`: 220 hash-verified textures (DirectX
+normals, packed ARM, streaming virtual textures for the six 4K hero sets), six
+lighting-only HDRI cubemaps, 34 Nanite scan meshes, `MPC_EnvironmentWeather`
+(wetness, puddles, lantern intensity), seven masters (opaque PBR with
+world-aligned/mesh UVs, detail normal and macro variation; a two-layer height
+blend; two-sided foliage; cloth; emissive lantern paper) and 47 instances named
+for story-bible places plus 29 evaluation instances. The ledgers' period flags
+are enforced in code: flagged-inaccurate surfaces (mortared walls, tyre tracks,
+Western roof tiles, wire rope, possible moso bamboo, metal-hooped buckets) are
+evaluation-only, and medium-risk surfaces only fill the role their flag allows.
+`import-mac.sh` packs, checks, imports and validates it (wired in, but not yet run end to end; each step ran separately). Run: the host tests
+(19 library, 15 preset), the pack and source check (344 packages), the host
+compile of the masters' six Custom HLSL nodes with the engine's DXC (SPIR-V
+and DXIL, HLSL 2018 and 2021), and the headless 5.8.3 import and validator
+(`SORA_CC0_ENVIRONMENT_VALIDATED: 344 packages`). Those editor runs were
+`-nullrhi`, which neither translates nor compiles materials. Not yet run:
+compilation of the whole materials and the rendered dry/wet and distance
+look-development, because both render attempts ran out of disk before any
+capture (free space held at 28-33 GiB against the 32 GiB floor) and free space
+has since stayed below the 30 GiB floor. Also not yet run: the end-to-end
+import, cook, frame cost and the photoreal A/B gate. No gameplay code
+references the library or `scripts/unreal/environment_presets.py` (lighting
+presets, per-place surfaces, seeded scatter) yet.
+
+2026-09-27 review fixes (host-verified only; no editor run, because free disk
+stayed at 22-25 GiB against the 32 GiB floor):
+
+- **Cook.** The library is never cooked. `Config/DefaultGame.ini` always cooks
+  `/Game/Generated`, so it now also lists `/Game/Generated/Environment/CC0`
+  under `DirectoriesToNeverCook`. Without that, every package would have
+  shipped about 2.3 GB of unadmitted content, including the evaluation
+  surfaces, the look-development HDRIs and the look-development level.
+- **Height blend and puddles.** Both now threshold ranks within the AO and
+  macro distributions measured from the real maps, not raw values. On those
+  maps the old values showed no layer B on the shikkui, roji and thatch,
+  covered 99.98% of the daub, and flooded the whole road from
+  `PuddleAmount` 0.7. Each blend now covers its stated share within 0.03. The
+  road's flat share in puddles is 15% at 0.7, 21% at 0.8 and 35% at 1.0.
+- **Tatami and silk.** The tatami uses mesh UVs, one mat per UV square, so
+  mats can have ends and turn. The jinmaku silk has an eighth master,
+  `M_Env_Silk`, which is anisotropic with a shot-silk shift.
+- **Ledger.** Each ledger record's `used_by` now lists the packages built from
+  it. TextureCan Paper 0017 has a schema-2 record.
+- **Presets.** The One-Claw Stone Wood's shimenawa is no longer assigned
+  Rope001. Moss is scattered as cushions of sprigs. The scatter's integer
+  division matches C++.
+- **Importer.** It no longer presents a `-nullrhi` recompile as a compile
+  check.
+
+Details are in the [library doc](cc0-environment-library.md).
+
 ## Milestones and current evidence
 
 | Milestone | Current state | Completion evidence still required |
