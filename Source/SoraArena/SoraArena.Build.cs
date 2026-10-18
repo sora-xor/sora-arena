@@ -20,6 +20,11 @@ public class SoraArena : ModuleRules
         RuntimeDependencies.Add("$(ProjectDir)/Content/Data/...", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/OFL.txt", StagedFileType.NonUFS);
+        // UE 5.8's property matches WITH_DEV/PERF_AUTOMATION_TESTS, including
+        // force-enable flags and the force-disable override. HTML export reads
+        // this engine file from disk even in a packaged automation target.
+        if (Target.WithAutomationTests)
+            RuntimeDependencies.Add("$(EngineDir)/Content/Automation/Report-Template.html", StagedFileType.NonUFS);
         // The credits screen reads every third-party notice at runtime.
         RuntimeDependencies.Add("$(ProjectDir)/ThirdPartyNotices/...", StagedFileType.NonUFS);
         // Practice reads the kernel's arena data (wall labels, spawns, lanes)

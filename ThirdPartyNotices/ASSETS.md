@@ -10,7 +10,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 |---|---:|---:|---:|
 | PUB-CC0 | 191 | 2569 | 4,584,364,241 |
 | PUB-BY | 10 | 10 | 206,477,553 |
-| OWN | 9 | 405 | 567,065,338 |
+| OWN | 11 | 438 | 633,426,930 |
 | REF | 6 | 6 | 9,778,972 |
 
 ## Public domain and CC0 (PUB-CC0, PUB-PD)
@@ -320,8 +320,10 @@ Credit format (plan section 2.3): "Title" by Author, source link, license link, 
 - `Nyaagyu_PBR_Palette_Preview`: 1 files, generator `scripts/art/render_environment_palette.py`, derived from `wood_planks_dirt`, `stone_floor`, `brown_mud_leaves_01`, `rusty_metal_02`, `kloofendal_overcast_puresky`
 - `SM_NyaagyuFernGroundTransition:derived`: 3 files, generator `scripts/art/create_nyaagyu_fern_ground_transition.py`, derived from `fern_02`
 - `fern_02:derived`: 11 files, generator `scripts/art/create_nyaagyu_fern_shoulder.py`, derived from `fern_02`
+- `nyaagyu-dojo-kit`: 15 files, generator `scripts/art/create_nyaagyu_dojo_kit.py`, `scripts/art/sora_arch_lib.py`, `scripts/art/craft_textures.py`, `scripts/art/sora_mark.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/SourceArt/UI/sora_logo_NOtext2.svg`
 - `pine_sapling_small:derived`: 8 files, generator `scripts/art/create_nyaagyu_pine_saplings.py`, derived from `pine_sapling_small`
 - `runtime-weapons`: 218 files, generator `scripts/art/create_runtime_weapon_alien.py, scripts/art/create_runtime_weapon_blunt.py, scripts/art/create_runtime_weapon_build_all.py, scripts/art/create_runtime_weapon_firearms.py, scripts/art/create_runtime_weapon_kusarigama.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/create_runtime_weapon_nihonto.py, scripts/art/create_runtime_weapon_polearms.py, scripts/art/create_runtime_weapon_specs.py, scripts/art/create_runtime_weapon_validation.py, scripts/art/create_runtime_weapon_yumi.py`, derived from -
+- `sora-raden-bunko`: 18 files, generator `scripts/art/create_sora_raden_bunko.py`, `scripts/art/sora_prop_lib.py`, `scripts/art/craft_textures.py`, `scripts/art/sora_mark.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/SourceArt/UI/sora_logo_NOtext2.svg`
 - `tree_small_02:derived`: 4 files, generator `scripts/art/create_nyaagyu_photoreal_tree.py`, derived from `tree_small_02`
 
 ## Restricted and reference-only content (RST, REF, EXCL)
