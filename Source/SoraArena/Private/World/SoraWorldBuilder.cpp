@@ -186,6 +186,7 @@ void ASoraWorldBuilder::ClearArena()
     for(const auto& M:PickupPieces) if(M) M->DestroyComponent(); PickupPieces.Reset();
     for(const auto& A:PickupLights) if(A) A->Destroy(); PickupLights.Reset();
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
+    SummitSpine=nullptr; SummitSeam=nullptr;
     for(const auto& A:DecorActors) if(A) A->Destroy(); DecorActors.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset(); Activated.Reset(); NodePositions.Reset();
     bCampaignSpace=false; CampaignStart=FVector::ZeroVector; CampaignStartYaw=0.f;
 }

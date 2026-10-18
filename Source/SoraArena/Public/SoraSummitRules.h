@@ -71,4 +71,23 @@ inline double Offset(int Elapsed,int Warning=MarkMs)
     if(State==EStage::Restoring) return -400*(1-double(Elapsed-Warning-VoidMs)/RestoreMs);
     return 0;
 }
+// The finale hold is transient. Any interruption requires a fresh press;
+// neither a released partial cut nor an input held from afar can bank time.
+struct FCut { int HeldMs=0; bool Active=false,NeedsRelease=false; };
+constexpr void Interrupt(FCut& State) { State={0,false,true}; }
+constexpr bool Begin(FCut& State,bool Eligible,bool Held)
+{
+    if(!Eligible||!Held||State.NeedsRelease||State.Active) return false;
+    State={0,true,false}; return true;
+}
+constexpr bool TickCut(FCut& State,int DeltaMs,bool Eligible,bool Held,int RequiredMs)
+{
+    if(!Held) { State={}; return false; }
+    if(!Eligible) { Interrupt(State); return false; }
+    if(!State.Active||RequiredMs<=0||DeltaMs<=0) return false;
+    State.HeldMs+=DeltaMs;
+    if(State.HeldMs<RequiredMs) return false;
+    Interrupt(State); return true;
+}
+
 }
