@@ -515,6 +515,16 @@ bool FSoraAudioEventsTest::RunTest(const FString& Parameters)
     Probe.Expect(TEXT("Mounting"), Hear(TEXT("Horse"), FFacts().Text(TEXT("Action"), TEXT("Mounted")).Text(TEXT("Gait"), TEXT("Halt")), Other),
         {TEXT("horse.tack")});
 
+    // Workshop routing is separate from weapon swings. Actual phrase timing
+    // and accepted strikes are exercised by Campaign.RhythmWorkshop.
+    Probe.Expect(TEXT("The workshop count-in"), Hear(TEXT("Workshop"), FFacts().Text(TEXT("Action"), TEXT("HammerCue")), nullptr),
+        {TEXT("workshop.hammer.cue")});
+    Probe.Expect(TEXT("An admitted workshop strike"), Hear(TEXT("Workshop"), FFacts().Text(TEXT("Action"), TEXT("HammerHit")), nullptr),
+        {TEXT("workshop.hammer.hit")});
+    Probe.Expect(TEXT("The explicitly unvoiced loom call"), Hear(TEXT("Workshop"), FFacts().Text(TEXT("Action"), TEXT("LoomCall")), nullptr),
+        {TEXT("workshop.loom.call")});
+    Probe.Expect(TEXT("An unrelated workshop action"), Hear(TEXT("Workshop"), FFacts().Text(TEXT("Action"), TEXT("Miss")), nullptr), {});
+
     // Every rule of every family chose its cue at least once, each by its own
     // index (two rules playing one cue count apart), and every Kernel forward
     // carried a practice event to the family it sounds as.
