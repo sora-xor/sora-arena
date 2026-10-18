@@ -14,7 +14,7 @@ public class SoraArena : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Json", "JsonUtilities",
             "AIModule", "GameplayTasks", "NavigationSystem" });
         PrivateDependencyModuleNames.AddRange(new string[] { "HTTP", "WebSockets", "Slate", "SlateCore", "UMG", "RenderCore", "RHI",
-            "Niagara", "AudioMixer", "MetasoundEngine", "LevelSequence", "MovieScene", "CinematicCamera" });
+            "ProceduralMeshComponent", "Niagara", "AudioMixer", "MetasoundEngine", "LevelSequence", "MovieScene", "CinematicCamera" });
         PrivateIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "../../crates/arena-ffi/include")));
         // Content/Data is read from disk at runtime, never cooked: stage all of it.
         RuntimeDependencies.Add("$(ProjectDir)/Content/Data/...", StagedFileType.NonUFS);

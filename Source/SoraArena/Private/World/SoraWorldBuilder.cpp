@@ -182,7 +182,7 @@ void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 }
 void ASoraWorldBuilder::ClearArena()
 {
-    ShowObjective(nullptr); ShowCaches({}); ClearKit();
+    ShowObjective(nullptr); ShowCaches({}); ClearKit(); ClearSummitTiles();
     for(const auto& M:PickupPieces) if(M) M->DestroyComponent(); PickupPieces.Reset();
     for(const auto& A:PickupLights) if(A) A->Destroy(); PickupLights.Reset();
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
