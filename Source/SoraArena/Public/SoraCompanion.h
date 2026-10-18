@@ -86,6 +86,13 @@ private:
     void HoldRank(float DeltaSeconds);
     void WalkToGoal(float DeltaSeconds);
     void MoveToward(const FVector& Where, float Pace, float Acceptance);
+    bool UsesSpireRoute() const;
+    void MoveOnSpire(const FVector& Goal,float Pace,float Acceptance);
+    bool SpireContact(const ASoraEnemy& Enemy,float Reach) const;
+    TArray<FVector> SpirePath;
+    FVector SpirePathGoal=FVector::ZeroVector;
+    int32 SpirePathIndex=0;
+    float SpireRepathAt=0.f;
     float Now() const;
     FString Id;
     ERole Kind = ERole::Bystander;
