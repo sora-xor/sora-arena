@@ -186,6 +186,13 @@ bool FSoraCrankLiftCrewTest::RunTest(const FString& Parameters)
     const TArray<FString> Names={TEXT("tetsugoro"),TEXT("league_engineer_1"),TEXT("league_engineer_2")};
     for(int32 Index=0;Index<3;++Index)
         TestEqual(TEXT("Each helper has its authored identity"),Crew[Index]->CompanionId(),Names[Index]);
+    // Walking out of reach can finish before the authored 2.5-second
+    // minimum cadence expires. Measure steady idle decay only after that
+    // exact grace period; no decay is due during its remaining fraction.
+    for(int32 Frame=0;Frame<180&&!SoraBeatRules::CrankSlipping(W.Campaign()->TaskProgress(),W.Campaign()->ActiveTask());++Frame)
+        if(!W.Tick(1)) return false;
+    if(!TestTrue(TEXT("The last player turn's cadence window expires before measuring idle rates"),
+        SoraBeatRules::CrankSlipping(W.Campaign()->TaskProgress(),W.Campaign()->ActiveTask()))) return false;
     // Exercise the existing companion-availability states. This does not
     // claim a new authored injury or net attack against the lift crew.
     for(int32 Available=0;Available<=3;++Available)
@@ -195,8 +202,12 @@ bool FSoraCrankLiftCrewTest::RunTest(const FString& Parameters)
         if(!W.Tick(2)) return false;
         TestEqual(TEXT("Only available crew at their bars contribute"),W.Campaign()->WorkingCrankHelpers(),Available);
         const int32 Before=W.Campaign()->TaskProgress().Progress,At=W.Campaign()->TaskProgress().ElapsedMs;
+        const int32 CarryBefore=W.Campaign()->TaskProgress().CrankCarry;
         if(!W.Tick(300)) return false;
         const int32 Delta=W.Campaign()->TaskProgress().ElapsedMs-At;
+        AddInfo(FString::Printf(TEXT("Lift idle rate: available=%d actual=%d before=%d after=%d delta_ms=%d carry_before=%d carry_after=%d"),
+            Available,W.Campaign()->WorkingCrankHelpers(),Before,W.Campaign()->TaskProgress().Progress,Delta,
+            CarryBefore,W.Campaign()->TaskProgress().CrankCarry));
         TestTrue(TEXT("Per-person contribution retains full-goal decay with no perfect-hold waiver"),
             FMath::Abs(W.Campaign()->TaskProgress().Progress-Before-(Available*150-480)*Delta/1000)<=1);
         TestEqual(TEXT("The lift has no imported override ratchet"),W.Campaign()->TaskProgress().CrankFloor,0);
