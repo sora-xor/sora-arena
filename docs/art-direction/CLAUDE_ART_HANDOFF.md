@@ -80,7 +80,7 @@ layered dark indigo/blue and vermilion/oxblood armor, a katana and saya, an
 asymmetric Japanese yumi, and arrows. Preserve that identity while making the
 anatomy, fur and materials physically convincing. He studies
 **Nyaagyū Shinkage-ryū** in Nyaagyū. Japanese is the primary language; English
-subtitles are supported.
+subtitles are enabled by default.
 
 The world is Edo-inspired Japan with a deliberate science-fiction invasion by
 alien banker cats. Warm lanterns, weathered timber, lacquer, silk, stone, soil,
@@ -171,6 +171,10 @@ and Sequencer deliberately. Inspect actual Nanite representation, fallback LODs,
 Lumen Scene, Surface Cache, distance fields and indirect-light contribution.
 Resolve visible missing coverage or light leaks through geometry/material work.
 Feature flags and attractive lighting do not establish successful integration.
+The available M1 Ultra path requires software Lumen, conventional LODs and a
+working Nanite-disabled fallback; validate it separately from supported Windows
+rendering. Use Movie Render Graph for cinematic outputs, with gameplay captures
+kept separately identifiable.
 Use MegaLights only on supported configurations and keep experimental terrain
 features replaceable. Inspect the existing Sensei Terrain research; use it only
 if current free access and commercial-use terms are verified. Make no purchases.
