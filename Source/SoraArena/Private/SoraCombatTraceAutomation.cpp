@@ -627,9 +627,14 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     if (!Run.Seed(CollectorChapter, CollectorBeat) || !Run.Start() || !Run.Key(EKeys::Enter))
         return FString();
     if (!Test.TestTrue(TEXT("Collector scenario is in play"), Run.Mode()->IsPlaying()) ||
-        !Test.TestNotNull(TEXT("The collector waits at its checkpoint"), Run.Mode()->Campaign()->CampaignBoss()) ||
-        !Run.Place(Run.Foe(BossSlot), FVector(600, 0, 0)))
+        !Test.TestNotNull(TEXT("The collector waits at its checkpoint"), Run.Mode()->Campaign()->CampaignBoss()))
         return FString();
+    // Keep this isolated combat setup on clear summit floor, outside the
+    // central dais/spine and inside the open edge. Traversal is tested separately.
+    const FVector ArenaCenter=Run.Mode()->Campaign()->CampaignBoss()->ArenaCenter();
+    Run.Hero()->SetActorLocation(FVector(ArenaCenter.X-800,ArenaCenter.Y-900,Run.Hero()->GetActorLocation().Z),
+        false,nullptr,ETeleportType::TeleportPhysics);
+    if(!Run.Place(Run.Foe(BossSlot),FVector(600,0,0))) return FString();
     int32 TakenAt = INDEX_NONE, GuardAt = INDEX_NONE, Attempts = 0;
     const bool bOk = Run.Play(900, [&](FRun& R, int32 F)
     {
@@ -688,11 +693,11 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         case 332: return R.Tap(EKeys::One);
         case 334:
         {
-            // The cane phase is fought at his arena's centre, the hero two
-            // metres off, facing him.
+            // The cane phase stays clear of the physical spine and dais;
+            // the hero stands two metres off, facing him.
             if (!Boss)
                 return R.Fail(TEXT("The collector is gone before his cane phase"));
-            const FVector Stand(Boss->ArenaCenter().X, Boss->ArenaCenter().Y, Foe->GetActorLocation().Z);
+            const FVector Stand(Boss->ArenaCenter().X, Boss->ArenaCenter().Y-1000, Foe->GetActorLocation().Z);
             Foe->SetActorLocation(Stand, false, nullptr, ETeleportType::TeleportPhysics);
             MoveTo(Stand - FVector(220.f, 0.f, 0.f));
             return R.Aim(Foe);
@@ -726,19 +731,28 @@ FString Collector(FAutomationTestBase& Test, FEventLog* Log = nullptr)
         bOk && !Campaign->CampaignBoss() && Run.Mode()->Arena()->ActivatedMask() == 7 && Campaign->ActiveBeat() == 16);
     if (bOk && Log)
     {
-        // The festival's closing lines play on, then Nyaakoto rehangs the plaque
-        // and Enter skips the final cinematic into liberation.
-        for (int32 Frame = 0; Frame < 400 && Campaign->ActiveBeat() == 16 && Campaign->LinesQueued() > 0; ++Frame)
-            if (!Run.World->Tick(1, .5f))
-                return FString();
-        FVector Plaque;
-        if (!Campaign->ObjectiveAnchor(Plaque))
+        // Arrival at the torii starts walk-and-talk. Interact at the name
+        // board then starts the plaque exchange; only its final line unlocks
+        // the closing cinematic. Enter cannot replace either world event.
+        const auto WaitForLines=[&]()
         {
-            Run.Fail(TEXT("The plaque has no anchor"));
-            return FString();
-        }
-        Run.Hero()->SetActorLocation(FVector(Plaque.X, Plaque.Y, Run.Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
-        if (!Run.World->Tick(2) || !Run.Key(EKeys::Enter))
+            for(int32 Frame=0;Frame<600&&Campaign->LinesQueued()>0;++Frame)
+                if(!Run.World->Tick(1,.1f)) return false;
+            return Run.Expect(TEXT("the epilogue dialogue finishes without skipping"),Campaign->LinesQueued()==0);
+        };
+        if(!WaitForLines()) return FString();
+        FVector At;
+        if(!Run.Expect(TEXT("the epilogue first requires torii arrival"),
+            Campaign->ObjectiveAnchor(At)&&!Campaign->AnchorTakesInteract())) return FString();
+        Run.Hero()->SetActorLocation(FVector(At.X,At.Y,Run.Hero()->GetActorLocation().Z),false,nullptr,ETeleportType::TeleportPhysics);
+        if(!Run.World->Tick(2)||!WaitForLines()) return FString();
+        if(!Run.Expect(TEXT("the name board requires ordinary Interact"),
+            Campaign->ObjectiveAnchor(At)&&Campaign->AnchorTakesInteract())) return FString();
+        Run.Hero()->SetActorLocation(FVector(At.X,At.Y,Run.Hero()->GetActorLocation().Z),false,nullptr,ETeleportType::TeleportPhysics);
+        if(!Run.Key(EKeys::E)||!WaitForLines()||!Run.World->Tick(1)) return FString();
+        if(!Run.Expect(TEXT("the plaque exchange unlocks the closing cinematic"),
+            Campaign->ActiveBeat()==17&&Run.Mode()->Arena()->RehungPlaques()==2)) return FString();
+        if (!Run.Key(EKeys::Enter)||!Run.World->Tick(1))
             return FString();
         Run.Expect(TEXT("Nyaagyu is liberated"), Run.Mode()->bChapterComplete && Campaign->bCampaignComplete);
     }
@@ -852,7 +866,7 @@ bool FSoraCombatTraceTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("Dojo lessons and bouts complete"), Dojo(*this).IsEmpty());
     TestFalse(TEXT("Collector fight completes"), Collector(*this).IsEmpty());
     TestFalse(TEXT("Training arena fight completes"), Training(*this).IsEmpty());
-    return true;
+    return !HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -948,6 +962,8 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b14"));
     Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b15"));
     Expect(*this, CollectorLog, Scenario, TEXT("SiteRestored chapter=7 site=2 campaign=1"));
+    Expect(*this, CollectorLog, Scenario, TEXT("BeatCompleted chapter=7 beat=ch08.b17"));
+    Expect(*this, CollectorLog, Scenario, TEXT("BeatStarted chapter=7 beat=ch08.b18 resumed=0 phase=0"));
     Expect(*this, CollectorLog, Scenario, TEXT("ChapterCompleted chapter=7 liberated=1"));
 
     Scenario = TEXT("Training arena");
@@ -963,6 +979,7 @@ bool FSoraScriptedFightEventsTest::RunTest(const FString& Parameters)
     Expect(*this, TrainingLog, Scenario, TEXT("Resolved attacker=Hero target=Retainer0 weapon=6 hit=1"));
 
     KernelEvents(*this, KernelLog);
+    if(HasAnyErrors()) return false;
     UE_LOG(LogTemp, Display, TEXT("SORA_SCRIPTED_FIGHT_EVENTS_OK: invasion=%d carbine=%d dojo=%d collector=%d training=%d kernel=%d"),
         RetainerLog.Lines.Num(), CarbineLog.Lines.Num(), DojoLog.Lines.Num(), CollectorLog.Lines.Num(), TrainingLog.Lines.Num(), KernelLog.Lines.Num());
     return true;
