@@ -86,6 +86,24 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
             return false;
     }
     T.LessonMask = static_cast<unsigned>(LessonMask);
+    const TSharedPtr<FJsonValue> MaaiValue = O.TryGetField(TEXT("maai"));
+    if (!MaaiValue.IsValid()) return false;
+    if (MaaiValue->Type != EJson::Null)
+    {
+        const auto M = MaaiValue->Type == EJson::Object ? MaaiValue->AsObject() : nullptr;
+        const FJsonRows* Moves = M ? Rows(*M,TEXT("moves")) : nullptr;
+        if (!M || !Moves || Moves->IsEmpty() || Moves->Num() > SoraMaaiRules::MaxSteps ||
+            !Int(*M,TEXT("inner_cm"),T.Maai.InnerCm) || !Int(*M,TEXT("outer_cm"),T.Maai.OuterCm) ||
+            !Int(*M,TEXT("hold_ms"),T.Maai.HoldMs) || !Int(*M,TEXT("facing_permille"),T.Maai.FacingPermille) ||
+            !Int(*M,TEXT("hint_ms"),T.Maai.HintMs)) return false;
+        T.Maai.Count = Moves->Num();
+        for (int32 Index=0;Index<Moves->Num();++Index)
+        {
+            const auto Move = (*Moves)[Index].IsValid() ? (*Moves)[Index]->AsObject() : nullptr;
+            if (!Move || !Int(*Move,TEXT("forward_cm"),T.Maai.Moves[Index].ForwardCm) ||
+                !Int(*Move,TEXT("right_cm"),T.Maai.Moves[Index].RightCm)) return false;
+        }
+    }
     T.Pickups = Beat.Pickups.Num(); T.Dropoffs = Beat.Dropoffs.Num();
     Beat.Opponent = Opponent.IsEmpty() ? NAME_None : FName(*Opponent);
     const FJsonRows* HoldRows = Rows(O, TEXT("objective_hold_ms"));

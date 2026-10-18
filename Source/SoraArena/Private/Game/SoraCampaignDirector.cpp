@@ -405,7 +405,8 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     // Consecutive lesson duels keep their pupil on the floor; any other
     // change of beat clears the field.
     const auto Lesson=[](const FSoraBeat& Row) { return Row.Is(SoraBeatRules::EType::Duel)&&Row.bSparring&&Row.Has(SoraBeatRules::EGoal::Lessons); };
-    const bool bKeepPupil=Chapter.Beats.IsValidIndex(BeatIndex)&&Lesson(Chapter.Beats[BeatIndex])&&Lesson(Beat);
+    const bool bKeepPupil=Chapter.Beats.IsValidIndex(BeatIndex)&&Lesson(Chapter.Beats[BeatIndex])&&Lesson(Beat)&&
+        Chapter.Beats[BeatIndex].Task.Maai.Count==0&&Beat.Task.Maai.Count==0;
     if(Index!=0||bResumed) bChapterOpening=false;
     BeatIndex=Index; BeatPhase=Phase;
     Task=Beat.Task;
@@ -442,6 +443,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Stage(Beat);
     if(Task.Goal==SoraBeatRules::EGoal::Lines&&Beat.LinesEvent==TEXT("beat_start")) StartLines();
     SpawnCast(bKeepPupil);
+    ResetMaai();
     Fire(TEXT("beat_start"));
     // Until Sequencer lands, a boss's intro plays its lines as the fight opens.
     if(Beat.Is(SoraBeatRules::EType::Boss)&&Phase==0) Fire(TEXT("intro_cinematic"));
@@ -672,6 +674,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         Stealth->TakedownTarget(*M.Hero()))
         Fire(TEXT("ai_event:first_rear_reach"));
     SoraBeatRules::Tick(TaskState,Task,Step);
+    TickMaai(DeltaMs);
+    if(ActiveBeatData()!=&Beat) return;
     // Trigger volumes the hero walks or rides into raise their events: a
     // dialogue waiting on one starts, and the waves it names come.
     TickVolumes();
@@ -1825,10 +1829,15 @@ bool USoraCampaignDirector::RecordDojoLesson(SoraDojoRules::EAction Action,int32
         TEXT("Form three: parried. Swing your wooden sword, then let it fully recover."),
         TEXT("Form four: recovery mastered. You may now score the sparring bouts.")};
     const int32 Completed=DojoLessonStage()-1;
-    Notify(Japanese[Completed],English[Completed],8.f);
+    if(Task.Maai.Count==0) Notify(Japanese[Completed],English[Completed],8.f);
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Fire(FString(TEXT("gate_complete:"))+LessonGates[Completed]);
+    if(MaaiReady())
+    {
+        Fire(TEXT("gate_start:maai_step"));
+        Notify(DojoLessonText(false),DojoLessonText(true),8.f);
+    }
     // The lesson's next gate, or its first bout once every form is learned.
     for(int32 Next=Completed+1;Next<4;++Next)
         if((Task.LessonMask&(1u<<Next))!=0u)
@@ -2042,6 +2051,13 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
 FString USoraCampaignDirector::DojoLessonText(bool bEnglish) const
 {
     if(!Mode().bCampaign||ChapterId!=0||DojoLessonStage()>=4) return FString();
+    if(MaaiReady())
+    {
+        const SoraText::FLine Line=SoraText::Format(NSLOCTEXT("SoraArena.Campaign","MaaiLesson",
+            "間合い：師に向き、水月の輪を 0.5 秒保つ。{Done} / {Count} 歩"),
+            {{TEXT("Done"),TaskState.Maai.Done},{TEXT("Count"),Task.Maai.Count}});
+        return bEnglish?Line.English:Line.Japanese;
+    }
     static const TCHAR* Japanese[]={
         TEXT("壱・構え：防御を 0.6 秒保つ"),
         TEXT("弐・受け：相手に向き、防御を保って一撃を受ける"),

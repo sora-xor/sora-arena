@@ -8,6 +8,7 @@
 #include "SoraCampaignRules.h"
 #include "SoraCatalog.h"
 #include "SoraDojoRules.h"
+#include "SoraMaaiAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -750,6 +751,8 @@ bool RecordLessons(FAutomationTestBase& Test, FState& State, const FSoraBeat& Be
             break;
         }
     }
+    if(Beat.Task.Maai.Count>0)
+        bOk &= Test.TestTrue(TEXT("The distance lesson requires walking after every mentor step"),SoraMaaiAutomation::Walk(*State.World));
     return bOk || Fail(Test, State, Beat.Id + TEXT(": Nyaagyushinkageryuu forms did not follow the dojo rules"));
 }
 

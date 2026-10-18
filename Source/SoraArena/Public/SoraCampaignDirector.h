@@ -156,6 +156,12 @@ public:
     FString ObjectiveText() const;
     FString ObjectiveTextEnglish() const;
     FString DojoLessonText(bool bEnglish) const;
+    bool IsMaaiLesson() const;
+    bool MaaiReady() const;
+    bool MaaiInBand() const;
+    bool MaaiNeedsHelp() const;
+    float MaaiDistance() const;
+    ASoraEnemy* MaaiMentor() const;
     // Unlocks, finds and restored sites for the HUD, oldest first.
     const TArray<FSoraStoryNotice>& StoryNotices() const { return Notices; }
 
@@ -362,6 +368,12 @@ private:
     void Collect(int32 Beat);
     void UpdateObjective();
     void TickBeat(float DeltaSeconds);
+    void TickMaai(int32 DeltaMs);
+    void ResetMaai();
+    FVector MaaiTarget = FVector::ZeroVector;
+    FVector MaaiForward = FVector::ForwardVector;
+    bool bMaaiMoving = false;
+    bool bMaaiTooClose = false;
     void TickDialogue(float DeltaSeconds);
     // After any change to the task: plays the progress triggers crossed,
     // releases and spawns due waves and completes the beat once its task is done.

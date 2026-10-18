@@ -1,4 +1,5 @@
 #pragma once
+#include "SoraMaaiRules.h"
 
 // Offline chapter beat rules for catalog schema 4, shared by the Unreal
 // campaign director and a host-compiled acceptance driver. A chapter is an
@@ -348,6 +349,7 @@ struct FTask
     // repetitions each wants (awase ×2), and whether a bout scores only
     // straight after a 転 flank (ch01.b04).
     unsigned LessonMask = 0u;
+    SoraMaaiRules::FConfig Maai;
     int FormReps[4] = {1, 1, 1, 1};
     bool FlankBouts = false;
     ELoss Loss = ELoss::Checkpoint;
@@ -401,6 +403,7 @@ struct FTaskState
     int RivalPoints = 0;
     int Losses = 0;
     unsigned Forms = 0u;
+    SoraMaaiRules::FState Maai;
     // Clean repetitions of each form still being learned.
     int FormReps[4] = {};
     // Decay not yet worn into progress, in millionths of the hold or of the
@@ -536,8 +539,8 @@ constexpr int ProgressPermille(const FTaskState& State, const FTask& Task)
     case EGoal::Points:
     case EGoal::Deliveries: return Ratio(State.Done, Task.Count);
     case EGoal::Lessons:
-        return Ratio(Bits(State.Forms & Task.LessonMask) + (State.Done < Task.Count ? State.Done : Task.Count),
-            Bits(Task.LessonMask) + Task.Count);
+        return Ratio(Bits(State.Forms & Task.LessonMask) + (State.Done < Task.Count ? State.Done : Task.Count) + State.Maai.Done,
+            Bits(Task.LessonMask) + Task.Count + Task.Maai.Count);
     case EGoal::Survive:
     case EGoal::Hold: return Ratio(State.Progress, Task.DurationMs);
     case EGoal::OpponentDown: return Permille - (State.OpponentPermille < 0 ? 0 : State.OpponentPermille);
@@ -563,7 +566,7 @@ constexpr bool GoalMet(const FTaskState& State, const FTask& Task)
     case EGoal::Points:
     case EGoal::Deliveries: return Task.Count > 0 && State.Done >= Task.Count;
     case EGoal::Lessons:
-        return (State.Forms & Task.LessonMask) == Task.LessonMask && State.Done >= Task.Count;
+        return (State.Forms & Task.LessonMask) == Task.LessonMask && State.Done >= Task.Count && SoraMaaiRules::Complete(State.Maai,Task.Maai);
     case EGoal::Survive:
     case EGoal::Hold: return Task.DurationMs > 0 && State.Progress >= Task.DurationMs;
     case EGoal::OpponentDown: return State.OpponentPermille <= 0 && (Task.Defeat != EDefeat::Capture || State.Captured);
@@ -1172,6 +1175,8 @@ constexpr bool PointsValid(int Count)
 // wave, phase and step can be met.
 constexpr bool TaskValid(const FTask& Task)
 {
+    if (!SoraMaaiRules::Valid(Task.Maai) || (Task.Maai.Count > 0 &&
+        (Task.Type != EType::Duel || Task.Goal != EGoal::Lessons || Task.LessonMask != 1u || Task.Count != 0))) return false;
     if (!WavesValid(Task) || !PhasesValid(Task) || Task.Count < 0 || Task.Count > MaxGoalCount ||
         Task.DurationMs < 0 || Task.DurationMs > MaxClockMs || Task.DecayPermille < 0 ||
         Task.DecayPermille > Permille || (Task.Task != ETask::None) != (Task.Type == EType::ProductionTask) ||

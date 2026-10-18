@@ -203,6 +203,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -322,6 +323,27 @@
      1,
      1
     ],
+    "maai": {
+     "inner_cm": 166,
+     "outer_cm": 224,
+     "hold_ms": 500,
+     "facing_permille": 700,
+     "hint_ms": 6000,
+     "moves": [
+      {
+       "forward_cm": -120,
+       "right_cm": 0
+      },
+      {
+       "forward_cm": 0,
+       "right_cm": -150
+      },
+      {
+       "forward_cm": 80,
+       "right_cm": 0
+      }
+     ]
+    },
     "flank_bouts": false,
     "loss": "retry",
     "loss_limit": 0,
@@ -475,6 +497,7 @@
      2,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "retry",
     "loss_limit": 0,
@@ -623,6 +646,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": true,
     "loss": "retry",
     "loss_limit": 0,
@@ -754,6 +778,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -874,6 +899,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1107,6 +1133,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1262,6 +1289,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1424,6 +1452,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1580,6 +1609,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1690,6 +1720,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "continue_after",
     "loss_limit": 3,
@@ -1859,6 +1890,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,
@@ -1967,6 +1999,7 @@
      1,
      1
     ],
+    "maai": null,
     "flank_bouts": false,
     "loss": "checkpoint",
     "loss_limit": 0,

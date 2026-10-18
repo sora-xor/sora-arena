@@ -7,6 +7,7 @@
 #include "SoraCatalog.h"
 #include "SoraCombatRules.h"
 #include "SoraEquipmentComponent.h"
+#include "SoraEnemy.h"
 #include "SoraFrontEnd.h"
 #include "SoraGameMode.h"
 #include "SoraHistoricalArms.h"
@@ -14,6 +15,9 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraPracticeDirector.h"
 #include "SoraWorldBuilder.h"
+#include "SoraSettings.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/PlayerController.h"
 
 void SoraHUDPanels::DrawObjective(const FSoraHUDFrame& Frame)
 {
@@ -165,7 +169,8 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
     {
         // 水月: a faint moon ring round the reticle while the opponent it
         // points at stands in the drawn blade's maai.
-        if(Kit->InMaai())
+        const USoraCampaignDirector* Campaign=G->Campaign();
+        if(Campaign->IsMaaiLesson()?Campaign->MaaiInBand():Kit->InMaai())
         {
             const FLinearColor Moon(.78f,.86f,.95f,.6f);
             constexpr int32 Segments=24;
@@ -174,6 +179,30 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
             {
                 const float A=2.f*PI*I/Segments,B=2.f*PI*(I+1)/Segments;
                 HUD.DrawLine(CX+Radius*FMath::Cos(A),CY+Radius*FMath::Sin(A),CX+Radius*FMath::Cos(B),CY+Radius*FMath::Sin(B),Moon,1.2f);
+            }
+        }
+        if(Campaign->MaaiReady())
+        {
+            if(SoraAccessibility::CampaignDifficulty(G)==SoraAccessibility::EDifficulty::Easy)
+                HUD.Label(FString::Printf(TEXT("%.0f cm  [%d–%d cm]"),Campaign->MaaiDistance(),
+                    Campaign->ActiveTask().Maai.InnerCm,Campaign->ActiveTask().Maai.OuterCm),CX-74*S,CY+38*S,.38*S,Ivory);
+            const ASoraEnemy* Mentor=Campaign->MaaiMentor();
+            const APlayerController* Controller=HUD.GetOwningPlayerController();
+            if(Campaign->MaaiNeedsHelp()&&Mentor&&Controller)
+            {
+                // Project the two boundaries onto the dojo floor. This hint
+                // appears only after six seconds without a confirmed step.
+                const FVector Center=Mentor->GetActorLocation()-FVector(0,0,Mentor->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()-3.f);
+                const auto& Maai=Campaign->ActiveTask().Maai;
+                for(const float Radius:{static_cast<float>(Maai.InnerCm),static_cast<float>(Maai.OuterCm)})
+                    for(int32 Segment=0;Segment<64;++Segment)
+                    {
+                        const float A=2.f*PI*Segment/64.f,B=2.f*PI*(Segment+1)/64.f;
+                        FVector2D From,To;
+                        if(Controller->ProjectWorldLocationToScreen(Center+FVector(FMath::Cos(A)*Radius,FMath::Sin(A)*Radius,0),From)&&
+                            Controller->ProjectWorldLocationToScreen(Center+FVector(FMath::Cos(B)*Radius,FMath::Sin(B)*Radius,0),To))
+                            HUD.DrawLine(From.X,From.Y,To.X,To.Y,Frame.Teal,2.f*S);
+                    }
             }
         }
         // 転: the step is open (after an awase, or in a blow's last stretch).

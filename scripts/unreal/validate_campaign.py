@@ -106,7 +106,7 @@ DIRECTOR_FAMILIES = ("rate_band", "boss_phase", "duel_phase", "duel_event", "int
                      "awase_success", "awase_fail", "marobashi_miss", "gate_complete", "gate_start", "step_start",
                      "step_failed", "step_complete", "item_picked", "item_delivered", "crank_released",
                      "output_complete", "exit_reached", "site_restored", "point", "match_lost", "loss_continue",
-                     "collectible", "collectible_found")
+                     "collectible", "collectible_found", "maai_step_ok", "gate_retry")
 # Scripted proposals in those families that nothing raises yet, each listed
 # under "What the offline runtime does not do yet" in offline-acceptance.md.
 UNRAISED_PROPOSALS = {
@@ -252,6 +252,8 @@ def director_event_error(row, beat, offset, chapter):
         return None if ok else "no such awase"
     if family == "marobashi_miss":
         return None if task["flank_bouts"] else "raised only in a 転 lesson"
+    if family == "maai_step_ok" or family == "gate_retry" and rest == "maai_step":
+        return None if task["maai"] else "raised only in a measured maai lesson"
     if family in ("gate_complete", "gate_start"):
         gates = {gate["gate"] for gate in params.get("lesson_gates", [])}
         return None if rest in gates else "no such lesson gate"

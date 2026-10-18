@@ -2,6 +2,7 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
+#include "SoraMaaiAutomation.h"
 #include "Combat/SoraBossCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
@@ -549,7 +550,11 @@ FString Dojo(FAutomationTestBase& Test, FEventLog* Log = nullptr)
     FRun Run(Test, TEXT("Dojo"), Log);
     if (!Run.Seed(0, 1) || !Run.Start() || !Run.Key(EKeys::Enter) || !Run.Key(EKeys::Enter))
         return FString();
-    if (!Test.TestTrue(TEXT("Dojo scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(150, 0, 0)))
+    // The opening lesson is now a measured distance drill before any pupil
+    // attacks. Keep the trace's guard/parry section at its original start.
+    if(!Run.Down(EKeys::LeftControl)||!Run.World->Tick(45)||!Run.Up(EKeys::LeftControl)||
+        !SoraMaaiAutomation::Walk(*Run.World)) return FString();
+    if (!Test.TestTrue(TEXT("Dojo scenario is in play"), Run.Mode()->IsPlaying()) || !Run.Place(Run.Foe(0), FVector(150, 0, 0)) || !Run.Aim(Run.Foe(0)))
         return FString();
     double WindupAt = -1.0;
     bool bGuardUp = false, bSecondStepsIn = false;

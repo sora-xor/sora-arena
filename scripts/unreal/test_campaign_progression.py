@@ -143,6 +143,13 @@ def task_fields(task):
             fields.append(f"T.{name} = true;")
     if task["lesson_mask"]:
         fields.append(f"T.LessonMask = {task['lesson_mask']}u;")
+    if maai := task["maai"]:
+        for member, key in (("InnerCm", "inner_cm"), ("OuterCm", "outer_cm"), ("HoldMs", "hold_ms"),
+                            ("FacingPermille", "facing_permille"), ("HintMs", "hint_ms")):
+            fields.append(f"T.Maai.{member} = {maai[key]};")
+        fields.append(f"T.Maai.Count = {len(maai['moves'])};")
+        for index, move in enumerate(maai["moves"]):
+            fields.append(f"T.Maai.Moves[{index}] = {{{move['forward_cm']}, {move['right_cm']}}};")
     for form, reps in enumerate(task["form_reps"]):
         if reps != 1:
             fields.append(f"T.FormReps[{form}] = {reps};")

@@ -189,8 +189,6 @@ LINE_KEYS = ("id", "speaker", "ja", "en", "register", "duration_s")
 LINE_SCHEDULE_KEYS = ("beat", "on", "trigger")
 # Lesson gates that name a dojo form, in SoraDojoRules order.
 LESSON_FORMS = {"stance_hold": 0, "front_guard_survive": 1, "awase": 2, "recovery_complete": 3}
-# A lesson gate the runtime does not measure yet; its duel completes on its other gates.
-UNMEASURED_GATES = ("maai_step",)
 # `fail` events and the SoraBeatRules::EFail each one raises.
 FAIL_EVENTS = (
     (r"player_died", "player_died"), (r"match_lost", "match_lost"), (r"target_destroyed", "target_destroyed"),
@@ -590,6 +588,39 @@ def volume_event(volume):
     return None if volume is None else f"volume_enter:{volume}"
 
 
+def maai_lesson(raw, count, where):
+    """Integer runtime parameters for the authored distance-and-facing lesson."""
+    raw = expect(raw, (dict,), where)
+    keys = {"weapon_range_cm", "ring_inner_cm", "ring_outer_cm", "hold_ms", "facing_dot_min", "hint_after_s", "mentor_moves"}
+    if set(raw) != keys or not 1 <= count <= 8:
+        fail(where, "maai requires its complete distance, timing and mentor-step contract")
+    inner = expect_int(raw["ring_inner_cm"], where, 1)
+    outer = expect_int(raw["ring_outer_cm"], where, 1)
+    reach = expect_int(raw["weapon_range_cm"], where, 1)
+    hold = expect_int(raw["hold_ms"], where, 1)
+    facing = permille(raw["facing_dot_min"], where)
+    hint = whole_ms(raw["hint_after_s"], where)
+    if not inner < reach < outer <= 1000 or not 1 <= hold <= 10000 or not 1 <= facing <= 1000 or not 1 <= hint <= 60000:
+        fail(where, "invalid maai distance, facing or timing")
+    moves = expect(raw["mentor_moves"], (list,), where)
+    if len(moves) != count:
+        fail(where, "each maai confirmation needs its own mentor step")
+    result = []
+    directions = {"back": (-1, 0), "forward": (1, 0), "left": (0, -1), "right": (0, 1)}
+    for index, move in enumerate(moves):
+        expect(move, (dict,), where)
+        if set(move) != {"step", "move", "cm"}:
+            fail(where, "mentor step requires step, move and cm")
+        if expect_int(move["step"], where, 1) != index + 1 or expect(move["move"], (str,), where) not in directions:
+            fail(where, "mentor steps must be consecutive and have a known direction")
+        cm = expect_int(move["cm"], where, 1)
+        if cm > 500:
+            fail(where, "mentor step exceeds the lesson space")
+        forward, right = directions[move["move"]]
+        result.append({"forward_cm": forward * cm, "right_cm": right * cm})
+    return {"inner_cm": inner, "outer_cm": outer, "hold_ms": hold, "facing_permille": facing, "hint_ms": hint, "moves": result}
+
+
 def normalize_task(beat):
     """The beat's task in the integer units SoraBeatRules.h runs (§12.2).
 
@@ -602,7 +633,7 @@ def normalize_task(beat):
         "type": kind, "task": params.get("task"), "goal": None, "count": 0, "duration_ms": 0, "skippable": False,
         "anchor_after_lines": False, "pause_when_seen": params.get("stealth") is True,
         "max_alive": params.get("max_alive", 6), "waves": [], "phases": [1000], "defeat": "kill",
-        "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "flank_bouts": False,
+        "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "maai": None, "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
         "max_turn_ms": 0, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
         "drop_on_hit": False, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
@@ -692,13 +723,19 @@ def normalize_task(beat):
                     # Each of the lesson's bouts scores only straight after a 転 flank.
                     flanks = expect_int(gate.get("count"), f"{where}.marobashi_flank", 1)
                     task["flank_bouts"] = True
-                elif name not in UNMEASURED_GATES:
+                elif name == "maai_step":
+                    if task["maai"] is not None:
+                        fail(where, "duplicate maai gate")
+                    task["maai"] = maai_lesson(beat["ext"].get("maai"), expect_int(gate.get("count"), where, 1), where)
+                else:
                     fail(where, f"lesson gate {name!r}")
             # The lesson's scored bouts (x_scored_bouts); a 転 lesson scores one per flank.
             bouts = beat["ext"].get("scored_bouts")
             task["count"] = expect_int(bouts.get("count"), f"{where}.scored_bouts", 1) if bouts else flanks
             if flanks and flanks != task["count"]:
                 fail(where, f"{flanks} 転 flanks for {task['count']} scored bouts")
+            if task["maai"] and (task["lesson_mask"] != 1 or task["count"]):
+                fail(where, "maai follows stance in its own non-attacking lesson")
             if not task["lesson_mask"] and not task["count"]:
                 fail(where, "a lesson duel teaches nothing the runtime measures")
         else:
@@ -820,6 +857,8 @@ def normalize_task(beat):
         task["fail_events"][entry["on"]] = failure
         if entry["to"] != "retry" and failure not in task["fail_checkpoint"]:
             task["fail_checkpoint"].append(failure)
+    if (beat["ext"].get("maai") is not None) != (task["maai"] is not None):
+        fail(where, "maai parameters require a measured maai lesson gate")
     return task
 
 

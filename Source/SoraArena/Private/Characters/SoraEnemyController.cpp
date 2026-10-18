@@ -2,6 +2,8 @@
 #include "Combat/SoraEnemyCatalog.h"
 #include "Combat/SoraStealth.h"
 #include "SoraBoss.h"
+#include "SoraCampaignDirector.h"
+#include "SoraGameMode.h"
 #include "SoraCatalog.h"
 #include "SoraCompanion.h"
 #include "SoraEnemy.h"
@@ -1159,6 +1161,12 @@ bool ASoraEnemyController::Occluded(const FVector& From, const FVector& To, cons
 
 void ASoraEnemyController::DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float Dt)
 {
+    if(const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)); Mode&&Mode->Campaign()->IsMaaiLesson())
+    {
+        Enemy.SuspendDojoAction();
+        Enemy.GetCharacterMovement()->StopMovementImmediately();
+        return;
+    }
     // The chapter-one drill: face the hero, close to bokken distance around the
     // obstacle ahead, and strike on the pupil's own rhythm.
     // A pupil staggered by a meeting cut, or rolled past (転), stands where it is.

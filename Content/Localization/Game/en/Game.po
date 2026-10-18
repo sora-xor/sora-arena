@@ -96,6 +96,12 @@ msgctxt "SoraArena.Campaign,FoundCollectible"
 msgid "見つけた：{Category}"
 msgstr "Found: {Category}"
 
+#. Key:	MaaiLesson
+#: Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
+msgctxt "SoraArena.Campaign,MaaiLesson"
+msgid "間合い：師に向き、水月の輪を 0.5 秒保つ。{Done} / {Count} 歩"
+msgstr "MAAI: face Sensei; hold the moon ring for 0.5 s. Steps {Done} / {Count}"
+
 #. Key:	MountFromRight
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
 msgctxt "SoraArena.Campaign,MountFromRight"

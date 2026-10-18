@@ -157,6 +157,44 @@ static FTick At(int DeltaMs, bool AtTask = false, bool Contested = false, bool S
     return Step;
 }
 
+static void TestMaai()
+{
+    FTask Task=Make(EType::Duel,EGoal::Lessons);
+    Task.LessonMask=1;
+    Task.Maai={3,166,224,500,700,6000,{{-120,0},{0,-150},{80,0}}};
+    FTaskState S=Begin(Task,"maai lesson");
+    using SoraMaaiRules::EResult;
+    auto Step=[&](int Ms,double Cm=195,double Facing=1) {
+        return SoraMaaiRules::Tick(S.Maai,Task.Maai,Ms,Cm,Facing,(S.Forms&Task.LessonMask)==Task.LessonMask);
+    };
+    Expect(Step(500)==EResult::None&&!S.Maai.Acquired,"maai preceded stance");
+    RecordForms(S,Task,1);
+    Expect(!TaskComplete(S,Task),"stance alone completed maai");
+    Expect(Step(499)==EResult::None,"maai accepted a short hold");
+    Step(1,165.999);
+    Expect(S.Maai.HeldMs==0&&!S.Maai.InBand,"too close retained hold or ring");
+    Step(499); Step(1,224.001);
+    Expect(S.Maai.HeldMs==0&&!S.Maai.InBand,"too far retained hold or ring");
+    Step(499); Step(1,195,.6999);
+    Expect(S.Maai.HeldMs==0&&!S.Maai.InBand,"looking away retained hold or ring");
+    Expect(Step(500,166,.7)==EResult::Acquired&&S.Maai.Done==0,"initial band did not start mentor steps");
+    Expect(!TaskComplete(S,Task),"initial band completed the three-step lesson");
+    Step(5999,300); Expect(!SoraMaaiRules::Hint(S.Maai,Task.Maai),"floor help appeared early");
+    Step(1,300); Expect(SoraMaaiRules::Hint(S.Maai,Task.Maai),"floor help missing at six seconds");
+    Expect(Step(500,224)==EResult::Step&&S.Maai.Done==1&&!SoraMaaiRules::Hint(S.Maai,Task.Maai),"first recovered step/help reset");
+    Expect(Step(500)==EResult::Step&&S.Maai.Done==2&&!TaskComplete(S,Task),"second step finished early");
+    Expect(Step(500)==EResult::Complete&&S.Maai.Done==3&&TaskComplete(S,Task),"third step failed to finish");
+    Expect(Step(500)==EResult::None&&S.Maai.Done==3,"completed maai repeated");
+    S=StartTask(Task,0);
+    Expect(S.Forms==0&&!S.Maai.Acquired&&S.Maai.Done==0&&!TaskComplete(S,Task),"beat checkpoint skipped distance lesson");
+    FTask Bad=Task; Bad.Maai.InnerCm=Bad.Maai.OuterCm;
+    Expect(!TaskValid(Bad),"empty distance band accepted");
+    Bad=Task; Bad.Maai.Moves[2]={}; Expect(!TaskValid(Bad),"unmeasured third step accepted");
+    Bad=Task; Bad.Goal=EGoal::Points; Expect(!TaskValid(Bad),"distance gate on a scoring fight accepted");
+    Bad=Task; Bad.Maai.Count=9; Expect(!TaskValid(Bad),"out-of-bounds mentor moves accepted");
+    std::cout<<"maai: distance, facing, continuous hold, three moving steps, help and checkpoint reset passed\n";
+}
+
 static void TestCinematicAndDialogue()
 {
     FTask Card = Make(EType::Cinematic, EGoal::Elapsed);
@@ -1019,6 +1057,9 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
                     Expect(RecordForms(State, Task, 1u << Form), Where + ": a repeated form was not learned");
                 return true;
             }
+        if (!SoraMaaiRules::Complete(State.Maai,Task.Maai))
+            return SoraMaaiRules::Tick(State.Maai,Task.Maai,Task.Maai.HoldMs,
+                (Task.Maai.InnerCm+Task.Maai.OuterCm)/2.0,1.0,true) != SoraMaaiRules::EResult::None;
         // A 転 lesson's bout follows its flank.
         if (Task.FlankBouts)
             RecordFlank(State, Task);
@@ -1350,6 +1391,7 @@ int main()
     static_assert(sizeof(Chapters) / sizeof(Chapters[0]) == 8, "Eight chapters are required");
     TestDojoLessons();
     TestCampaignRules();
+    TestMaai();
     TestCinematicAndDialogue();
     TestWaves();
     TestDuels();
