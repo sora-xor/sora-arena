@@ -84,8 +84,10 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
             FString::Printf(TEXT("Hold the ground: %d of %d s"),State.Progress/1000,FMath::DivideAndRoundUp(Task.DurationMs,1000)),Fraction,Frame.Teal});
         break;
     case EGoal::Turns:
-        Rows.Add({FString::Printf(Task.AlternateTreads?TEXT("踏む（左右一組） %d / %d"):TEXT("回す  %d / %d"),State.Done,Task.Count),
-            FString::Printf(Task.AlternateTreads?TEXT("Tread pairs: %d of %d"):TEXT("Turn the crank: %d of %d"),State.Done,Task.Count),Fraction,Frame.Teal});
+        Rows.Add({Task.AlternateTreads?FString::Printf(TEXT("踏む（左右一組） %d / %d"),State.Done,Task.Count):
+                FString::Printf(TEXT("回す  %d / %d"),State.Done,Task.Count),
+            Task.AlternateTreads?FString::Printf(TEXT("Tread pairs: %d of %d"),State.Done,Task.Count):
+                FString::Printf(TEXT("Turn the crank: %d of %d"),State.Done,Task.Count),Fraction,Frame.Teal});
         if(Task.AlternateTreads)
         {
             const int32 Band=SoraBeatRules::CrankFlameNotches(State,Task);
