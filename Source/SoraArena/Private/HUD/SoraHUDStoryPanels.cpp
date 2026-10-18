@@ -8,6 +8,7 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"
 #include "Engine/Texture2D.h"
+#include "Engine/Canvas.h"
 
 namespace
 {
@@ -224,6 +225,103 @@ void DrawLine(const FSoraHUDFrame& Frame,const FSoraDialogueCue& Line,float Bott
     HUD.WrappedLabel(Line.Japanese,35*S,Top+Layout.JapaneseY,Frame.DialogueJapaneseScale,Frame.Ivory,W-70*S,Frame.DialogueJapaneseLineHeight,2);
     if(G->bEnglishSubtitles) HUD.WrappedLabel(Line.English,35*S,Top+Layout.EnglishY,Frame.DialogueEnglishScale,Frame.Muted,W-70*S,Frame.DialogueEnglishLineHeight,2);
 }
+struct FStoryStrip
+{
+    FBox2D Bounds=FBox2D(ForceInit);
+    TArray<FString> Japanese,English;
+    float JapaneseLeading=0,EnglishLeading=0;
+};
+struct FLowerStoryLayout
+{
+    FBox2D Dialogue=FBox2D(ForceInit);
+    FStoryStrip Notice,Prompt;
+    float Top=0;
+};
+TArray<FString> StoryStripLines(ASoraHUD& HUD,const FString& Text,float Scale,float Width,float& Leading)
+{
+    TArray<FString> Lines;
+    FString Line;
+    for(int32 I=0;I<Text.Len();++I)
+    {
+        int32 X=0,Y=0;
+        UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),Scale,Scale,X,Y,Line+Text.Mid(I,1));
+        if(Text[I]=='\n') { Lines.Add(Line); Line.Empty(); continue; }
+        if(!Line.IsEmpty()&&X>Width)
+        {
+            int32 Space=INDEX_NONE;
+            if(Line.FindLastChar(' ',Space)&&Space>0)
+            { Lines.Add(Line.Left(Space+1)); Line=Line.Mid(Space+1); }
+            else { Lines.Add(Line); Line.Empty(); }
+        }
+        Line+=Text.Mid(I,1);
+    }
+    if(!Line.IsEmpty()) Lines.Add(Line);
+    for(const FString& Wrapped:Lines)
+    {
+        int32 X=0,Y=0;
+        UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),Scale,Scale,X,Y,Wrapped);
+        Leading=FMath::Max(Leading,Y+4.f);
+    }
+    return Lines;
+}
+FLowerStoryLayout BuildLowerStoryLayout(const FSoraHUDFrame& F)
+{
+    FLowerStoryLayout L;
+    float Bottom=F.H-130*F.S;
+    if(const ASoraPlayerCharacter* Hero=F.Mode.Hero())
+        for(const FBox2D& Box:SoraHUDPanels::WeaponPanelBounds(F,*Hero))
+            Bottom=FMath::Min(Bottom,static_cast<float>(Box.Min.Y)-6*F.S);
+    L.Top=Bottom;
+    if(F.Mode.Campaign()->CurrentDialogueCue())
+    {
+        L.Dialogue=FBox2D(FVector2D(20*F.S,Bottom-F.DialogueLayout(F.Mode.bEnglishSubtitles).Height),FVector2D(F.W-20*F.S,Bottom));
+        L.Top=L.Dialogue.Min.Y; Bottom=L.Top-6*F.S;
+    }
+    const auto AddStrip=[&](FStoryStrip& Strip,const SoraText::FLine& Text)
+    {
+        Strip.JapaneseLeading=F.JapaneseSubtitleLineHeight; Strip.EnglishLeading=F.EnglishSubtitleLineHeight;
+        Strip.Japanese=StoryStripLines(F.HUD,Text.Japanese,F.JapaneseSubtitleScale,F.W-70*F.S,Strip.JapaneseLeading);
+        if(F.Mode.bEnglishSubtitles)
+            Strip.English=StoryStripLines(F.HUD,Text.English,F.EnglishSubtitleScale,F.W-70*F.S,Strip.EnglishLeading);
+        const float Height=10*F.S+Strip.Japanese.Num()*Strip.JapaneseLeading+Strip.English.Num()*Strip.EnglishLeading;
+        Strip.Bounds=FBox2D(FVector2D(20*F.S,Bottom-Height),FVector2D(F.W-20*F.S,Bottom));
+        L.Top=Bottom-Height; Bottom=L.Top-6*F.S;
+    };
+    if(F.Mode.NoticeTime>0) AddStrip(L.Notice,{F.Mode.Notice,F.Mode.NoticeEnglish});
+    if(const FSoraPrompt* Prompt=F.Mode.Campaign()->CurrentPrompt())
+        AddStrip(L.Prompt,SoraHUDPanels::KeyPrompt(&F.HUD,Prompt->Japanese,Prompt->English));
+    return L;
+}
+void DrawStoryStrip(const FSoraHUDFrame& F,const FStoryStrip& Strip,FLinearColor Color,float Opacity)
+{
+    if(!Strip.Bounds.bIsValid) return;
+    F.HUD.Panel(Strip.Bounds.Min.X,Strip.Bounds.Min.Y,Strip.Bounds.GetSize().X,Strip.Bounds.GetSize().Y,FLinearColor(.015,.035,.045,Opacity));
+    float Y=Strip.Bounds.Min.Y+5*F.S;
+    for(const FString& Line:Strip.Japanese) { F.HUD.Label(Line,35*F.S,Y,F.JapaneseSubtitleScale,Color); Y+=Strip.JapaneseLeading; }
+    for(const FString& Line:Strip.English) { F.HUD.Label(Line,35*F.S,Y,F.EnglishSubtitleScale,F.Muted); Y+=Strip.EnglishLeading; }
+}
+}
+
+float SoraHUDPanels::GameplayStoryTop(const FSoraHUDFrame& F) { return BuildLowerStoryLayout(F).Top; }
+bool SoraHUDPanels::BottomHUDLayoutFits(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero,FString& Why)
+{
+    const FLowerStoryLayout L=BuildLowerStoryLayout(F);
+    TArray<FBox2D> Panels=WeaponPanelBounds(F,Hero);
+    Panels.Add(FBox2D(FVector2D(25*F.S,F.H-110*F.S),FVector2D(365*F.S,F.H-30*F.S)));
+    for(const FBox2D& Story:{L.Dialogue,L.Notice.Bounds,L.Prompt.Bounds}) if(Story.bIsValid) Panels.Add(Story);
+    for(int32 I=0;I<Panels.Num();++I)
+    {
+        const FBox2D& A=Panels[I];
+        if(A.Min.X<0||A.Min.Y<0||A.Max.X>F.W||A.Max.Y>F.H)
+        { Why=TEXT("Bottom gameplay panel exceeds viewport"); return false; }
+        for(int32 J=0;J<I;++J)
+        {
+            const FBox2D& B=Panels[J];
+            if(A.Min.X<B.Max.X&&A.Max.X>B.Min.X&&A.Min.Y<B.Max.Y&&A.Max.Y>B.Min.Y)
+            { Why=TEXT("Weapon, windup, arm notice, vitals or lower story panels overlap"); return false; }
+        }
+    }
+    return true;
 }
 
 void SoraHUDPanels::DrawTitleCard(const FSoraHUDFrame& Frame,const FSoraChapter& Card)
@@ -288,8 +386,8 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
     ASoraHUD& HUD=Frame.HUD;
     const ASoraGameMode* G=&Frame.Mode;
     const USoraCampaignDirector* Campaign=G->Campaign();
-    const float W=Frame.W,H=Frame.H,S=Frame.S,JapaneseSubtitleScale=Frame.JapaneseSubtitleScale,EnglishSubtitleScale=Frame.EnglishSubtitleScale,JapaneseSubtitleLineHeight=Frame.JapaneseSubtitleLineHeight,EnglishSubtitleLineHeight=Frame.EnglishSubtitleLineHeight;
-    const FLinearColor Ivory=Frame.Ivory,Gold=Frame.Gold,Teal=Frame.Teal,Muted=Frame.Muted;
+    const float W=Frame.W,H=Frame.H,S=Frame.S;
+    const FLinearColor Ivory=Frame.Ivory,Gold=Frame.Gold,Teal=Frame.Teal;
     // The active beat's objective marker, and E when the hero can work it or
     // stands at an explore cache. Caches carry no marker (bible §12.2).
     const ASoraPlayerCharacter* Hero=G->Hero();
@@ -333,33 +431,10 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
     // Story lines and notices share the lower third; play and objective
     // timers continue beneath a line.
     const auto* Cue=Campaign->CurrentDialogueCue();
-    if(Cue) DrawLine(Frame,*Cue,H-130*S);
-    float StripBottom=Cue?H-130*S-Frame.DialogueLayout(G->bEnglishSubtitles).Height-6*S:H-130*S;
-    if(G->NoticeTime>0)
-    {
-        // A notice raised during a line takes one compact strip above it
-        // rather than flickering into the short gaps between lines.
-        const int32 Lines=Cue?1:2;
-        const float StripH=10*S+JapaneseSubtitleLineHeight*Lines+(G->bEnglishSubtitles?EnglishSubtitleLineHeight*Lines:0.f);
-        const float StripY=StripBottom-StripH;
-        HUD.Panel(20*S,StripY,W-40*S,StripH,FLinearColor(.015,.035,.045,.94));
-        HUD.WrappedLabel(G->Notice,35*S,StripY+5*S,JapaneseSubtitleScale,Ivory,W-70*S,JapaneseSubtitleLineHeight,Lines);
-        if(G->bEnglishSubtitles)
-            HUD.WrappedLabel(G->NoticeEnglish,35*S,StripY+5*S+JapaneseSubtitleLineHeight*Lines,EnglishSubtitleScale,Muted,W-70*S,EnglishSubtitleLineHeight,Lines);
-        StripBottom=StripY-6*S;
-    }
-    if(const FSoraPrompt* Prompt=Campaign->CurrentPrompt())
-    {
-        // HUD prompts are UI strings, set apart from voiced lines in teal.
-        const float StripH=10*S+JapaneseSubtitleLineHeight+(G->bEnglishSubtitles?EnglishSubtitleLineHeight:0.f);
-        const float StripY=StripBottom-StripH;
-        HUD.Panel(20*S,StripY,W-40*S,StripH,FLinearColor(.015,.035,.045,.90));
-        // Its keys are the player's own, following the device and rebinding.
-        const SoraText::FLine Line=KeyPrompt(&HUD,Prompt->Japanese,Prompt->English);
-        HUD.WrappedLabel(Line.Japanese,35*S,StripY+5*S,JapaneseSubtitleScale,Teal,W-70*S,JapaneseSubtitleLineHeight,1);
-        if(G->bEnglishSubtitles)
-            HUD.WrappedLabel(Line.English,35*S,StripY+5*S+JapaneseSubtitleLineHeight,EnglishSubtitleScale,Muted,W-70*S,EnglishSubtitleLineHeight,1);
-    }
+    const FLowerStoryLayout Lower=BuildLowerStoryLayout(Frame);
+    if(Cue) DrawLine(Frame,*Cue,Lower.Dialogue.Max.Y);
+    DrawStoryStrip(Frame,Lower.Notice,Ivory,.94f);
+    DrawStoryStrip(Frame,Lower.Prompt,Teal,.90f);
 }
 SoraText::FLine SoraHUDPanels::KeyPrompt(const UObject* WorldContext,const FString& Japanese,const FString& English)
 {

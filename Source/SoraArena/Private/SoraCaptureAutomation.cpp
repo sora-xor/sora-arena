@@ -2,6 +2,7 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "ArenaKernelSubsystem.h"
+#include "SoraArmsRules.h"
 #include "Combat/SoraBossCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
@@ -1351,8 +1352,9 @@ void QueueRegistryFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Ch
 // actions. They leave objectives, vitals, fieldcraft and action prompts on.
 void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Case,bool English)
 {
-    const int32 Chapter=Case==0?0:3,Beat=Case==0?8:10;
-    const FString Kind=Case==0?TEXT("Bokken"):Case==1?TEXT("Katana"):TEXT("BowDraw");
+    const bool Dojo=Case==0||Case==3;
+    const int32 Chapter=Dojo?0:3,Beat=Dojo?8:10;
+    const FString Kind=Case==0?TEXT("Bokken"):Case==1?TEXT("Katana"):Case==2?TEXT("BowDraw"):TEXT("BokkenDialogue");
     const FString Name=FString::Printf(TEXT("WeaponHUDFixture_%s_%s"),*Kind,English?TEXT("JA_EN"):TEXT("JA"));
     Queue([Test,Session,Chapter,Beat,Case,English]()
     {
@@ -1376,12 +1378,16 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
         Session->bShotLive=true;
     });
     // These manufacture checkpoints have ambient arrivals, no timed success
-    // or initial enemy wave. Let the actual lines finish; never skip dialogue.
+    // or initial enemy wave. Most frames let actual arrivals finish; the
+    // dialogue case retains its real ambient line to check the shared stack.
     Wait(.4);
-    ADD_LATENT_AUTOMATION_COMMAND(FUntil(40.0,[Session](double)
+    if(Case!=3)
     {
-        return !Session->bShotLive||!Session->Campaign()->CurrentDialogueCue();
-    },[Test,Session]() { Test->AddError(TEXT("Weapon HUD fixture arrival dialogue did not finish")); Session->bShotLive=false; }));
+        ADD_LATENT_AUTOMATION_COMMAND(FUntil(40.0,[Session](double)
+        {
+            return !Session->bShotLive||!Session->Campaign()->CurrentDialogueCue();
+        },[Test,Session]() { Test->AddError(TEXT("Weapon HUD fixture arrival dialogue did not finish")); Session->bShotLive=false; }));
+    }
     Queue([Test,Session,Case]()
     {
         if(!Session->bShotLive) return;
@@ -1389,9 +1395,14 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
         { Session->bShotLive=false; return; }
         if(Case==2)
         {
+            if(!Test->TestTrue(TEXT("A real arm-group action raises the arm-change notice"),
+                Session->Hero()->SelectArmsGroup(SoraArmsRules::GroupOf(Session->Hero()->WeaponId))))
+            { Session->bShotLive=false; return; }
             Session->Hero()->GetEquipment()->TriggerDown();
             Session->bShotLive=Test->TestTrue(TEXT("The bow draw indicator is active"),Session->Hero()->GetEquipment()->IsBowDrawing());
         }
+        if(Case==3)
+            Session->bShotLive=Test->TestNotNull(TEXT("The overlap fixture retains its actual ambient arrival line"),Session->Campaign()->CurrentDialogueCue());
     });
     Freeze(Session,true);
     StreamIn();
@@ -1426,8 +1437,14 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
             Test->TestEqual(TEXT("The fixture retains its weapon identity"),Session->Hero()->WeaponId,
                 Case==2?FSoraCatalog::Get().Hero().YumiId:FSoraCatalog::Get().Hero().KatanaId)&&
             Test->TestTrue(TEXT("Complete weapon text and windup fit their measured panel bounds"),
-                SoraHUDPanels::WeaponLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why));
+                SoraHUDPanels::WeaponLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why))&&
+            Test->TestTrue(TEXT("Weapon, windup, arm notice, vitals and actual narrative strips do not overlap"),
+                SoraHUDPanels::BottomHUDLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why));
         if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("Bow draw survives capture preparation"),Session->Hero()->GetEquipment()->IsBowDrawing());
+        if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("The actual arm-change notice remains active"),
+            M->GetWorld()->GetTimeSeconds()-Session->Hero()->ArmsTakenAt()<1.6f);
+        if(Case==0||Case==3) Session->bShotLive&=Test->TestNotNull(TEXT("Manufacturing instructions remain present in the frame"),Session->Campaign()->CurrentPrompt());
+        if(Case==3) Session->bShotLive&=Test->TestNotNull(TEXT("Dialogue remains present in the frame"),Session->Campaign()->CurrentDialogueCue());
         if(!Why.IsEmpty()) Test->AddError(Why);
     });
     SaveFrame(Test,Session,Name,true);
@@ -1546,15 +1563,15 @@ IMPLEMENT_COMPLEX_AUTOMATION_TEST(
 
 void FSoraCaptureWeaponHUDFixtureTest::GetTests(TArray<FString>& OutBeautifiedNames,TArray<FString>& OutTestCommands) const
 {
-    OutBeautifiedNames={TEXT("Bokken"),TEXT("Katana"),TEXT("BowDraw")};
-    OutTestCommands={TEXT("0"),TEXT("1"),TEXT("2")};
+    OutBeautifiedNames={TEXT("Bokken"),TEXT("Katana"),TEXT("BowDraw"),TEXT("BokkenDialogue")};
+    OutTestCommands={TEXT("0"),TEXT("1"),TEXT("2"),TEXT("3")};
 }
 bool FSoraCaptureWeaponHUDFixtureTest::RunTest(const FString& Parameters)
 {
     using namespace SoraCapture;
     const int32 Case=FCString::Atoi(*Parameters);
     const FSessionRef Session=MakeShared<FSession>();
-    if(!TestTrue(TEXT("A supported weapon HUD fixture"),Case>=0&&Case<3)||
+    if(!TestTrue(TEXT("A supported weapon HUD fixture"),Case>=0&&Case<4)||
         !OpenSession(*this,*Session,TEXT("WeaponHUDFixture"))) return false;
     APlayerController* PC=Session->M()->GetWorld()->GetFirstPlayerController();
     ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;

@@ -61,6 +61,12 @@ void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawWeapon(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 // Capture checks the same measured weapon layout that the live HUD draws.
 bool WeaponLayoutFits(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero, FString& Why);
+void DrawArmsNotice(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// Actual bottom-right rectangles, including active windup and arm-change notice.
+TArray<FBox2D> WeaponPanelBounds(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// Top of the lower full-width story stack; fieldcraft prompts stay above it.
+float GameplayStoryTop(const FSoraHUDFrame& Frame);
+bool BottomHUDLayoutFits(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero, FString& Why);
 // The campaign's arms wheel and the arm a key took up; the beat's fieldcraft:
 // the hand's work, breath, grip, stones, the candle, the signal and the
 // downed (SoraHUDFieldcraftPanel.cpp).
