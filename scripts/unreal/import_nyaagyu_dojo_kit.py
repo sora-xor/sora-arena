@@ -32,9 +32,11 @@ import unreal
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
+from cc0_environment_library import storage_root  # noqa: E402
 
 require_running_engine("Nyaagyu dojo kit import")
 ROOT = Path(unreal.Paths.project_dir()).resolve()
+RAW_STORAGE = storage_root(ROOT)
 KIT = ROOT / "Content/SourceArt/Environment/NyaagyuDojoKit"
 LEDGER = ROOT / "scripts/assets/manifests/polyhaven-first-slice.json"
 DEST = "/Game/Generated/Environment/DojoKit"
@@ -126,7 +128,7 @@ def scan_sets():
         require(rec["license"] == "CC0-1.0" and rec["agent_handling"] == "allowed", f"{asset_id} licence")
         files = {}
         for f in rec["files"]:
-            path = ROOT / (f.get("path") or f["file"])
+            path = RAW_STORAGE / (f.get("path") or f["file"])
             require(path.is_file(), f"missing raw scan {path} (run scripts/assets/fetch_cc0.py)")
             require(sha(path) == f["sha256"], f"{path.name} changed")
             stem = path.name
