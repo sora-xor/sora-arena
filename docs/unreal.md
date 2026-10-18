@@ -16,7 +16,8 @@ and [device-specific optimization guidance](https://dev.epicgames.com/documentat
 | --- | --- | --- |
 | Windows quality | DX12/SM6, Lumen GI/reflections, TSR, Virtual Shadow Maps, hardware-ray-tracing support, and MegaLights at Epic shadow tier (`sg.ShadowQuality=3`) | Supported RTX 4070-class reference hardware at 1440p |
 | Windows competitive | The same Windows cook at High scalability (`2`), with `r.MegaLights.Allow=0`, High shadow/GI/effects tiers, and no motion blur or gameplay depth of field | Lower-cost, readable combat presentation; requires profiling and tuning |
-| macOS M1 Ultra | Metal SM6, software Lumen with mesh distance fields, TSR, conventional shadowing, Nanite fallback meshes/LODs, and no MegaLights or hardware ray tracing | 1080p M1 Ultra reference path |
+| macOS M1 Ultra | `METAL_SM5` (UE 5.8.3 enables SM6 only on M2 and later), software Lumen with mesh distance fields, TSR, conventional shadowing, Nanite fallback meshes/LODs, and no MegaLights or hardware ray tracing | 1080p M1 Ultra reference path |
+| macOS M2 and later | `METAL_SM6` with Nanite (beta), otherwise the same as M1; virtual shadow maps stay off until measured | Not yet qualified; first run on an M2 Ultra |
 
 The existing common renderer settings enable Lumen, mesh distance fields and
 TSR. The Windows configuration targets DX12/SM6 only, with the DX11 fallback
@@ -34,11 +35,16 @@ measured.
 Epic's [UE 5.8 Mac requirements](https://dev.epicgames.com/documentation/unreal-engine/macos-development-requirements-for-unreal-engine)
 list software Lumen and TSR for M1+, while hardware Lumen/MegaLights require
 M2+ experimentally and Nanite/Virtual Shadow Maps require M2+ in beta. The Mac
-configuration therefore disables hardware ray tracing, MegaLights, Nanite, and
-Virtual Shadow Maps. It keeps the common Lumen and distance-field settings;
+configuration therefore disables hardware ray tracing, MegaLights and Virtual
+Shadow Maps. It leaves Nanite to the shader platform: UE 5.8.3 runs
+`METAL_SM6` only on Apple8 GPUs (M2 and later), which draw Nanite, while M1
+falls back to `METAL_SM5`, which cannot. It keeps the common Lumen and
+distance-field settings;
 [Lumen's software tracing path](https://dev.epicgames.com/documentation/unreal-engine/lumen-technical-details-in-unreal-engine)
 uses mesh distance fields. `r.Nanite.ProxyRenderMode=0` selects the ordinary
-fallback when Nanite is off, as described in Epic's [Nanite technical details](https://dev.epicgames.com/documentation/unreal-engine/nanite-technical-details).
+fallback where Nanite is unsupported, as described in Epic's [Nanite technical details](https://dev.epicgames.com/documentation/unreal-engine/nanite-technical-details).
+Mac C++ still selects the conventional `MAC` asset tier at compile time, so
+only Nanite meshes placed on every platform draw as Nanite on an M2.
 Every production asset must still provide a usable conventional LOD or fallback
 mesh and card-fur route. These files cannot create missing geometry or prove
 that the current prototype assets are visually acceptable.

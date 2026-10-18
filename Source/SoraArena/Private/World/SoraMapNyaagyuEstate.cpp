@@ -13,7 +13,7 @@
 void ASoraWorldBuilder::NyaagyuTerrain()
 {
 #if PLATFORM_MAC
-    // M1 uses authored conventional meshes; Nanite is disabled by MacEngine.ini.
+    // Mac uses the authored conventional tier; M1 (METAL_SM5) cannot run Nanite.
     const TCHAR* Tier=TEXT("MAC");
 #else
     const TCHAR* Tier=TEXT("HI");

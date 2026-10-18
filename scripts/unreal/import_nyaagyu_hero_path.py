@@ -56,7 +56,7 @@ if (record["schema_version"] != 1 or record["name"] != name
         or sha(source / record["fbx"]) != record["fbx_sha256"]):
     raise RuntimeError("Hero path identity, geometry, or collision policy changed")
 mac_config = (root / "Config/Mac/MacEngine.ini").read_text()
-if "r.Nanite=0" not in mac_config or "r.Nanite.ProxyRenderMode=0" not in mac_config:
+if "r.Nanite.ProxyRenderMode=0" not in mac_config:
     raise RuntimeError("Hero path Mac conventional fallback is not configured")
 bounds = record["bounds_m"]
 if (bounds["min"][0] < -3.01 or bounds["max"][0] > 3.01

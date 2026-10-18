@@ -66,7 +66,7 @@ for channel, expected in expected_names.items():
     if entry["file"] != expected or sha(source / "MossyRock" / expected) != entry["sha256"]:
         raise RuntimeError(f"Torii-foot pinned CC0 scan changed: {channel}")
 mac_config = (root / "Config/Mac/MacEngine.ini").read_text()
-if "r.Nanite=0" not in mac_config or "r.Nanite.ProxyRenderMode=0" not in mac_config:
+if "r.Nanite.ProxyRenderMode=0" not in mac_config:
     raise RuntimeError("Torii-foot conventional Mac fallback policy changed")
 
 destination = "/Game/Generated/ArtReview/ToriiFoot"

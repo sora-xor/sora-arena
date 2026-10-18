@@ -51,7 +51,7 @@ assert record["mac_conventional_fallback"]=={
     "generate_fallback":"Enabled",
     "render_config":"Config/Mac/MacEngine.ini"}
 mac_config=(ROOT/record["mac_conventional_fallback"]["render_config"]).read_text()
-assert "r.Nanite=0" in mac_config and "r.Nanite.ProxyRenderMode=0" in mac_config
+assert "r.Nanite.ProxyRenderMode=0" in mac_config
 assert record["pbr_manifest_sha256"]==sha(OUT/"PBR/manifest.json")
 assert Path(bpy.data.filepath).resolve()==(OUT/record["source_blend"]).resolve()
 for filename,key in ((record["source_blend"],"blend_sha256"),

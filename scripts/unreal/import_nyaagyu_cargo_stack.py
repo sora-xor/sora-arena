@@ -48,7 +48,7 @@ if (record["schema_version"]!=1 or record["name"]!=name
         or sha(source/record["fbx"])!=record["fbx_sha256"]):
     raise RuntimeError("Nyaagyu cargo geometry, collision envelope or package identity changed")
 mac_config=(root/record["mac_conventional_fallback"]["render_config"]).read_text()
-if "r.Nanite=0" not in mac_config or "r.Nanite.ProxyRenderMode=0" not in mac_config:
+if "r.Nanite.ProxyRenderMode=0" not in mac_config:
     raise RuntimeError("Nyaagyu cargo Mac conventional fallback policy changed")
 logo=(source/record["insignia_source"]).resolve()
 if sha(logo)!=record["insignia_sha256"] or len(record["exact_sora_kamon_objects"])!=2:

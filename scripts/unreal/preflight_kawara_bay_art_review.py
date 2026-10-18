@@ -69,7 +69,7 @@ def check_source(project: Path) -> None:
             logo["runtime_sha256"] == manifest["sora_logo_raster_sha256"] and
             sha256(project / LOGO_REL / logo["runtime_png"]) == logo["runtime_sha256"],
             "Supplied SORA logo identity changed")
-    require("r.Nanite=0" in (project / "Config/Mac/MacEngine.ini").read_text(),
+    require("r.Nanite.ProxyRenderMode=0" in (project / "Config/Mac/MacEngine.ini").read_text(),
             "Mac conventional mesh fallback policy changed")
 
 

@@ -88,14 +88,17 @@ Lit/Lumen frames above plus these five frames at the same two cameras:
 | `Estate_ToriiFoot_NaniteMask.png` | Nanite Visualization > Mask | ToriiFoot |
 
 Preserve the `NaniteStats List` output in `runtime.log` or `commands.txt`.
-Do not enable Nanite for the Mac run; its `Config/Mac/MacEngine.ini` explicitly
-sets `r.Nanite=0` and `r.Nanite.ProxyRenderMode=0`. Epic lists Nanite on Apple
-Silicon **M2+** as beta, while this machine is an **M1 Ultra**. The Mac run
-can inspect Lumen's software path, its distance-field representation, and
-the conventional Nanite fallback. It cannot establish Windows Nanite
-coverage, clusters, overdraw, culling cost, MegaLights quality, RTX frame
-rate, or the 1440p/60 fps production target. A Nanite-enabled source asset
-alone is not evidence that Nanite rendered in a particular frame.
+Record the shader platform from the log for every Mac run, and keep `METAL_SM5`
+and `METAL_SM6` results separate. An **M1** runs `METAL_SM5`, which cannot run
+Nanite; `r.Nanite.ProxyRenderMode=0` in `Config/Mac/MacEngine.ini` draws the
+conventional Nanite fallback there. An **M2 or later** runs `METAL_SM6` and
+draws Nanite, which Epic lists as beta on Apple Silicon. An M1 run can inspect
+Lumen's software path, its distance-field representation, and the
+conventional Nanite fallback. An SM6 run can also capture the Nanite frames
+above. Neither Mac run establishes Windows Nanite coverage, clusters,
+overdraw, culling cost, MegaLights quality, RTX frame rate, or the
+1440p/60 fps production target. A Nanite-enabled source asset alone is not
+evidence that Nanite rendered in a particular frame.
 
 Inspect the **Surface Cache** view for pink uncovered regions on the gate,
 walls, roofs, terrain edges, and nearby props. Compare **Lumen Scene** with

@@ -521,9 +521,10 @@ own pivot. The node scale is kept: `rock07` in set 02 is scaled by 0.679. The
 validator checks each mesh's bounding box against the glTF's own accessor
 extents times its scale, to 0.5%.
 
-Every slot binds the instance built from that scan's own maps. The Mac preset
-turns Nanite off (`Config/Mac/MacEngine.ini`), so the Mac renders Nanite's
-fallback mesh. No conventional LOD chain has been authored.
+Every slot binds the instance built from that scan's own maps. M1 Macs run
+`METAL_SM5`, which cannot run Nanite, so they render Nanite's fallback mesh
+(`r.Nanite.ProxyRenderMode=0` in `Config/Mac/MacEngine.ini`). No conventional
+LOD chain has been authored.
 
 ## Presets for applying the library
 

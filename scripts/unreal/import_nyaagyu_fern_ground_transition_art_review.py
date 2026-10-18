@@ -64,7 +64,7 @@ for dep in record["scan_dependencies"].values():
                 or not file["upstream_url"].startswith("https://dl.polyhaven.org/")):
             raise RuntimeError(f"Fern ground-transition PBR source changed: {path}")
 mac_config=(root/"Config/Mac/MacEngine.ini").read_text()
-if "r.Nanite=0" not in mac_config or "r.Nanite.ProxyRenderMode=0" not in mac_config:
+if "r.Nanite.ProxyRenderMode=0" not in mac_config:
     raise RuntimeError("Mac conventional fallback policy changed")
 
 dest="/Game/Generated/ArtReview/Fern02/GroundTransition"

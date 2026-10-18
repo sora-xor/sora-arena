@@ -106,7 +106,7 @@ def project_info(project_root: Path, system: str) -> dict:
     if system == "mac":
         mac_file = project_root / "Config/Mac/MacEngine.ini"
         mac_config = mac_file.read_text()
-        for line in ("r.RayTracing=False", "r.Nanite=0", "r.Nanite.ProxyRenderMode=0"):
+        for line in ("r.RayTracing=False", "r.Nanite.ProxyRenderMode=0"):
             if line not in mac_config:
                 raise ValueError(f"required Mac fallback setting absent: {line}")
         mac_config_sha = sha256(mac_file)

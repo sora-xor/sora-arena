@@ -54,7 +54,7 @@ if (record["schema_version"] != 1 or record["name"] != name
         or sha(source / record["fbx"]) != record["fbx_sha256"]):
     raise RuntimeError("Roadside identity, export, or collision policy changed")
 mac_config = (root / record["mac_conventional_fallback"]["render_config"]).read_text()
-if "r.Nanite=0" not in mac_config or "r.Nanite.ProxyRenderMode=0" not in mac_config:
+if "r.Nanite.ProxyRenderMode=0" not in mac_config:
     raise RuntimeError("Roadside Mac conventional fallback policy changed")
 bounds = record["bounds_m"]
 if (bounds["min"][0] < -2.2 or bounds["max"][0] > 2.2
