@@ -371,7 +371,7 @@ def sample_member(m: Member) -> Samples:
                 for ck in m.log.checks:
                     if ck.face != f or not (ck.z0 <= z <= ck.z1):
                         continue
-                    uc, wz, _ = _check_at(ck, z)
+                    uc, wz, _ = _check_at(ck, z, straight=m.fallback)
                     hw = max(wz / 2, 0.00012)
                     pts.append(uc + hw * np.array([-1.6, -1.0, -0.66, -0.33, 0.0, 0.33, 0.66, 1.0, 1.6]))
                     # Graded beyond the lips, so the face meets the check over
@@ -440,12 +440,14 @@ def _visible(m: Member, f, u):
     return vis is None or (vis[0] <= u <= vis[1])
 
 
-def _check_at(ck: Check, z):
-    """A check's centre across its face, opening and depth at height z."""
+def _check_at(ck: Check, z, straight=False):
+    """A check's centre across its face, opening and depth at height z.
+    ``straight`` drops the small wiggle: a coarse fallback's rows are too far
+    apart to follow it, and kink at every row if they try."""
     span = max(1e-6, ck.z1 - ck.z0)
     t = np.clip((np.asarray(z) - ck.z0) / span, 0.0, 1.0)
     taper = np.sin(math.pi * t) ** 0.55
-    wiggle = 0.0009 * np.sin(TAU * (np.asarray(z) - ck.z0) / 0.37 + ck.u0 * 300.0)
+    wiggle = 0.0 if straight else 0.0009 * np.sin(TAU * (np.asarray(z) - ck.z0) / 0.37 + ck.u0 * 300.0)
     uc = ck.u0 + ck.drift * (np.asarray(z) - ck.z0) + wiggle
     return uc, ck.width * taper, ck.depth * np.sqrt(taper)
 
@@ -603,7 +605,7 @@ def build_member(m: Member):
         sel = (S.seg == 2 * ck.face) & (S.z >= ck.z0) & (S.z <= ck.z1) & (S.detail > 0)
         if not sel.any():
             continue
-        uc, wz, dz = _check_at(ck, S.z[sel])
+        uc, wz, dz = _check_at(ck, S.z[sel], straight=m.fallback)
         hw = np.maximum(wz / 2, 1e-6)
         rel = np.abs(S.u[sel] - uc) / hw
         cut = dz * np.clip(1.0 - rel, 0.0, None) ** 1.15
@@ -660,12 +662,27 @@ def build_member(m: Member):
     faces = S.seg % 2 == 0
     # Distance into a face from its nearest arris, for wear falloff.
     half = np.where((S.seg // 2) % 2 == 0, m.depth / 2, m.width / 2)
-    near_corner[faces] = np.clip(1.0 - (half[faces] - np.abs(S.u[faces])) / 0.012, 0, 1)
+    from_arris = np.zeros(N)
+    from_arris[faces] = half[faces] - np.abs(S.u[faces])
+    near_corner[faces] = np.clip(1.0 - from_arris[faces] / 0.012, 0, 1)
+    broad = np.where(faces, np.clip(1.0 - from_arris / 0.045, 0, 1), 1.0)
     wear_noise = Waves(np.random.default_rng(m.seed + 77), 10, (0.02, 0.6), 0.5)
-    wear = np.clip((np.maximum(corner, near_corner) * 0.75 + 0.25) * handled * (0.7 + wear_noise(S.tau * 0.1, P[:, 2]))
-                   * (S.detail > 0), 0, 1)
+    shown = (S.detail > 0).astype(np.float64)
+    # G holds two things a hand does to lacquered timber: below 0.5 the grime
+    # and polish it leaves over a broad band (teaka), above 0.5 the lacquer
+    # rubbed through on the arris itself.
+    grime = np.clip(broad * handled * (0.75 + 0.5 * wear_noise(S.tau * 0.1, P[:, 2])), 0, 1)
+    edge = np.clip(np.maximum(corner, near_corner) * handled * (0.7 + wear_noise(S.tau * 0.1 + 3.0, P[:, 2])), 0, 1)
+    wear = np.clip(0.5 * grime + 0.5 * edge, 0, 1) * shown
+    # Soot builds towards the ceiling and runs down in streaks along the grain;
+    # dirt rises a little from the floor.
     soot_noise = Waves(np.random.default_rng(m.seed + 78), 10, (0.05, 1.5), 0.25)
-    soot = np.clip(smoothstep(m.soot_from, m.length, P[:, 2]) * 0.7 + cavity * 0.4 + soot_noise(S.tau * 0.1, P[:, 2]), 0, 1)
+    streak_field = Waves(np.random.default_rng(m.seed + 79), 14, (0.006, 0.05), 1.0)
+    streaks = np.clip((streak_field(s, P[:, 2] * 0.04) - 0.35) * 1.6, 0, 1) * smoothstep(m.soot_from * 0.6, m.length,
+                                                                                            P[:, 2])
+    floor_dirt = smoothstep(0.35, 0.0, P[:, 2]) * 0.55
+    soot = np.clip(smoothstep(m.soot_from, m.length, P[:, 2]) * 0.55 + streaks * 0.45 + floor_dirt + cavity * 0.4
+                   + soot_noise(S.tau * 0.1, P[:, 2]), 0, 1)
     knot_a = np.clip(mask * (0.55 + 0.45 * dead), 0, 1)
     colors = np.stack([cavity, wear, soot, knot_a], 1).astype(np.float32)
     seed01 = (m.log.seed % 997) / 997.0
@@ -846,7 +863,11 @@ def to_blender(name, B, m: Member, atlas_strips=3):
     me.polygons.add(nt)
     me.polygons.foreach_set("loop_start", np.arange(0, nt * 3, 3, dtype=np.int32))
     me.update(calc_edges=True)
-    me.polygons.foreach_set("use_smooth", np.ones(nt, bool))
+    # The sides are smooth; the end caps are flat (sharp faces), so their fans
+    # never bend the side normals at the end rows or bake a fan pattern.
+    me.polygons.foreach_set("use_smooth", np.arange(nt) < tris.shape[0])
+    slot = bpy.data.materials.get("M_Timber") or bpy.data.materials.new("M_Timber")
+    me.materials.append(slot)
     # Per-loop UVs.
     vi = all_tris.ravel()
     n_side = tris.shape[0] * 3
@@ -907,3 +928,49 @@ def to_blender(name, B, m: Member, atlas_strips=3):
     obj = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(obj)
     return obj
+
+
+DIGEST_VERSION = "sora-timber-geometry-v1"
+
+
+def canonical_digest(obj) -> str:
+    """SHA-256 of what Unreal imports from this mesh, independent of FBX headers:
+    topology, positions (1 um), corner normals (1e-4), every UV layer (1e-6),
+    the Masks colours (1e-4) and the material slots per triangle. Quantised so
+    last-ulp float noise between runs cannot change it."""
+    import hashlib
+
+    me = obj.data
+    h = hashlib.sha256(DIGEST_VERSION.encode())
+
+    def put(tag, arr):
+        a = np.ascontiguousarray(arr)
+        h.update(f"{tag}:{a.dtype.str}:{a.shape}".encode())
+        h.update(a.tobytes())
+
+    nv, nl, npoly = len(me.vertices), len(me.loops), len(me.polygons)
+    co = np.empty(nv * 3, np.float32)
+    me.vertices.foreach_get("co", co)
+    put("co", np.round(co.astype(np.float64) * 1e6).astype(np.int64))
+    vi = np.empty(nl, np.int32)
+    me.loops.foreach_get("vertex_index", vi)
+    put("loops", vi)
+    starts = np.empty(npoly, np.int32)
+    me.polygons.foreach_get("loop_start", starts)
+    put("starts", starts)
+    cn = np.empty(nl * 3, np.float32)
+    me.corner_normals.foreach_get("vector", cn)
+    put("normals", np.round(cn.astype(np.float64) * 1e4).astype(np.int32))
+    for layer in me.uv_layers:
+        uv = np.empty(nl * 2, np.float32)
+        layer.data.foreach_get("uv", uv)
+        put(f"uv:{layer.name}", np.round(uv.astype(np.float64) * 1e6).astype(np.int64))
+    for ca in me.color_attributes:
+        c = np.empty(len(ca.data) * 4, np.float32)
+        ca.data.foreach_get("color", c)
+        put(f"color:{ca.name}", np.round(c.astype(np.float64) * 1e4).astype(np.int32))
+    mi = np.empty(npoly, np.int32)
+    me.polygons.foreach_get("material_index", mi)
+    put("material_index", mi)
+    h.update(("slots:" + ",".join(m.name if m else "" for m in me.materials)).encode())
+    return h.hexdigest()

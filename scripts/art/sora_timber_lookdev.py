@@ -90,7 +90,7 @@ def timber_material(name: str, preset: str, shared: dict, fallback_maps: dict | 
     lw = nb.mul(late, nb.add(0.6, nb.mul(year, 0.4)))
     early = nb.mixc(nb.mul(f, 0.5), P["early"], tuple(c * 0.88 for c in P["early"]))
     base = nb.mixc(lw, early, P["late"])
-    tone = nb.add(nb.add(0.74, nb.mul(year, 0.12)), nb.add(nb.mul(fib, 0.12), nb.add(nb.mul(streak, 0.12), nb.mul(drift, 0.22))))
+    tone = nb.add(nb.add(0.68, nb.mul(year, 0.12)), nb.add(nb.mul(fib, 0.12), nb.add(nb.mul(streak, 0.12), nb.mul(drift, 0.34))))
     base = nb.hsv(base, v=tone)
     if fallback_maps:
         uv1 = nb.uv("UV1")
@@ -105,13 +105,18 @@ def timber_material(name: str, preset: str, shared: dict, fallback_maps: dict | 
         vc = nb.node("ShaderNodeVertexColor", layer_name="Masks")
         cav, wear, soot = nb.sep(vc.outputs["Color"])
         knot = vc.outputs["Alpha"]
+    # Wear: below 0.5 the hand's grime and polish (darker, glossier), above
+    # 0.5 the lacquer rubbed through on the arris (lighter, bare wood).
+    grime = nb.clamp01(nb.mul(wear, 2.0))
+    edge = nb.clamp01(nb.sub(nb.mul(wear, 2.0), 1.0))
     base = nb.mixc(nb.mul(knot, 0.92), base, P["knot"])
     base = nb.mixc(nb.mul(soot, P["soot_amount"]), base, P["soot"])
-    base = nb.mixc(nb.mul(wear, P["wear_color"]), base, P["worn"])
+    base = nb.mixc(nb.mul(grime, 0.55), base, tuple(c * 0.62 for c in P["early"]))
+    base = nb.mixc(nb.mul(edge, P["wear_color"]), base, P["worn"])
     base = nb.mixc(nb.mul(cav, 0.65), base, (0.0, 0.0, 0.0))
-    rough = nb.add(P["rough"], nb.add(nb.mul(lw, 0.06), nb.sub(nb.mul(soot, 0.15), nb.mul(wear, 0.12))))
+    rough = nb.add(P["rough"], nb.add(nb.mul(lw, 0.06), nb.sub(nb.mul(soot, 0.15), nb.mul(edge, 0.12))))
     rough = nb.add(rough, nb.mul(nb.sub(fib, 0.5), 0.12))
-    coat_rough = nb.clamp01(nb.add(P["coat_rough"], nb.sub(nb.mul(soot, 0.16), nb.mul(wear, 0.08))))
+    coat_rough = nb.clamp01(nb.add(P["coat_rough"], nb.sub(nb.mul(soot, 0.16), nb.mul(grime, 0.08))))
     coat_rough = nb.clamp01(nb.add(coat_rough, nb.mul(nb.sub(streak, 0.5), 0.10)))
     # Uzukuri: the soft earlywood wears away and the latewood stands as a
     # rounded ridge, eased on both flanks.
