@@ -633,6 +633,19 @@ def carry_drop_policy(value, where):
     return {name: expect(value[name], (bool,), f"{where}.{name}") for name in names}
 
 
+def carry_gate(raw, where):
+    if raw is None:
+        return None
+    expect(raw, (dict,), where)
+    points = ids_of(raw.get("interact_points"), where)
+    if len(points) != 1 or raw.get("contest") != "pause" or raw.get("tool") != "yari_ishizuki":
+        fail(where, "carry gate requires one seal, pause on hit and the yari iron butt")
+    hold = whole_ms(raw.get("per_point_s"), where)
+    if hold <= 0:
+        fail(where, "carry gate hold must be positive")
+    return {"point": points[0], "hold_ms": hold, "contest": "pause", "tool": "yari_ishizuki"}
+
+
 def normalize_task(beat):
     """The beat's task in the integer units SoraBeatRules.h runs (§12.2).
 
@@ -648,7 +661,7 @@ def normalize_task(beat):
         "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "maai": None, "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
         "max_turn_ms": 0, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
-        "drop_on_hit": carry_drop_policy(False, where), "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
+        "drop_on_hit": carry_drop_policy(False, where), "carry_gate": None, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
         "reinforce_wave": -1,
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
         "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "stealth": None, "opponent": None,
@@ -795,6 +808,7 @@ def normalize_task(beat):
             if expect(block["fail_on_npc_death"], (bool,), f"{where}.escort.fail_on_npc_death"):
                 task["fail_checkpoint"].append("escort_down")
         elif name == "carry":
+            task["carry_gate"] = carry_gate(beat["ext"].get("gate_interact"), f"{where}.carry_gate")
             task.update(goal="deliveries", count=block["count"], pickups=ids_of(block["pickups"], f"{where}.pickups"),
                         carry_item=expect(block["item"], (str,), f"{where}.carry.item"),
                         dropoffs=ids_of(block["dropoffs"], f"{where}.dropoffs"),
@@ -869,6 +883,8 @@ def normalize_task(beat):
             task["fail_checkpoint"].append(failure)
     if (beat["ext"].get("maai") is not None) != (task["maai"] is not None):
         fail(where, "maai parameters require a measured maai lesson gate")
+    if (beat["ext"].get("gate_interact") is not None) != (task["carry_gate"] is not None):
+        fail(where, "gate_interact requires a carry task")
     return task
 
 

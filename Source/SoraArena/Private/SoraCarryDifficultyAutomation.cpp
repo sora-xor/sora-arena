@@ -1,6 +1,7 @@
 #include "SoraGameMode.h"
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraRecoveryAutomation.h"
+#include "SoraCarryAutomation.h"
 #include "SoraCatalog.h"
 #include "SoraEnemy.h"
 #include "SoraSaveGame.h"
@@ -53,6 +54,7 @@ bool FSoraCarryDifficultyTest::RunTest(const FString& Parameters)
     };
     const auto Pickup=[&]() {
         auto* Campaign=World->Mode()->Campaign();
+        if(!SoraCarryAutomation::PrySeal(*World)) return false;
         const auto* Space=Campaign->ActiveSpace();
         if(!Space||Space->Pickups.Num()!=1) return false;
         const FVector At(Space->Pickups[0],World->Player()->GetActorLocation().Z);

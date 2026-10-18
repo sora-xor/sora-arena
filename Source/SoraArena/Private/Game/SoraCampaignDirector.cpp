@@ -111,6 +111,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
 {
     const ASoraGameMode& M=Mode();
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
+    if(bPryingCarryGate) bCarryGateHit=true;
     // A pupil's cut landed while the awase was still to be met: a guard
     // raised just after it is late.
     const ASoraEnemy* Pupil=Cast<ASoraEnemy>(Event.Causer);
@@ -288,6 +289,7 @@ void USoraCampaignDirector::ResetRound()
     ASoraWorldBuilder* WorldBuilder=M.Arena();
     const bool bCampaign=M.bCampaign;
     EndRecoveryClimb();
+    ResetCarryWork();
     // A shell fired before death or chapter advance must never damage the
     // restored encounter or score a defeat against its fresh opponents.
     ClearOfflineProjectiles();
@@ -415,6 +417,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     static_assert(static_cast<int32>(SoraAccessibility::EDifficulty::Count)==3);
     SoraBeatRules::ApplyCarryDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
+    ResetCarryWork();
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; bDetected=false; CinematicSeconds=0.f;
@@ -686,6 +689,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     }
     // Work held at a point: a load hoisted, an objective worked.
     TickEquipmentRecovery(DeltaMs);
+    TickCarryWork(DeltaMs);
     TickHeldWork(DeltaMs);
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // Horses, a siege on defended targets, the escorted party and the task's kit.
@@ -775,6 +779,7 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(bPryingCarryGate&&Task.CarryGateMs>0) return static_cast<float>(TaskState.CarryGateHeldMs)/Task.CarryGateMs;
     if(bStringingBow&&Task.RecoveryStringMs>0) return static_cast<float>(TaskState.RecoveryHeldMs)/Task.RecoveryStringMs;
     const FSoraBeat* Beat=ActiveBeatData();
     const int32 Need=HeldWork==EHeldWork::Hoist?Task.PickupHoldMs
@@ -1534,6 +1539,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(!Beat||M.bChapterComplete) return;
     if(InteractEpilogue(Player)) return;
     if(InteractRecovery(Player)) return;
+    if(InteractCarryGate(Player)) return;
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
     const FSoraBeatSpace& Space=Beat->Space;
@@ -1592,6 +1598,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     case SoraBeatRules::EGoal::Deliveries:
         if(Task.Task==SoraBeatRules::ETask::Carry&&!TaskState.Carrying)
         {
+            if((bWorked=TakeLooseLoad(Player))) break;
             // A store is revisited for every load; distinct goods are taken once each.
             const int32 Pickup=NearestOf(Space.Pickups,[&](int32 Index)
                 { return Task.Pickups<Task.Count||(TaskState.PointsMask&(1u<<Index))==0u; });
@@ -1618,6 +1625,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
                 // A delivery may call the waves that wait on it.
                 ReleaseEventWaves(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
             }
+            else if(Task.Task==SoraBeatRules::ETask::Carry) bWorked=SetDownLoad(Player);
         }
         break;
     case SoraBeatRules::EGoal::Steps:
@@ -1977,6 +1985,7 @@ FString USoraCampaignDirector::ObjectiveText() const
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("章を終えた");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(false);
+    if(NeedsCarryGate()) return TEXT("蔵の封印で操作を長押しし、槍の石突でこじ開ける");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("包みの前で操作を 3 秒長押しし、弓に弦を張る"):
         TEXT("空井戸の縄で操作を長押しし、底の刀の包みを取り戻す");
     if(IsClimbingRecoveryWell()||(Task.RecoveryWeapons!=0u&&AtRecoveryBottom())) return TEXT("縄で操作を長押しし、井戸から上がる");
@@ -2012,6 +2021,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("Chapter complete");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(true);
+    if(NeedsCarryGate()) return TEXT("Hold Interact at the granary seal to pry it off with the spear butt");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("Hold Interact at the bundle for 3 seconds to string the bow"):
         TEXT("Hold Interact at the dry-well rope to recover the sword bundle below");
     if(IsClimbingRecoveryWell()||(Task.RecoveryWeapons!=0u&&AtRecoveryBottom())) return TEXT("Hold Interact on the rope to climb out");

@@ -713,6 +713,10 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !Exit || !SpaceVolume(*Exit, B.Exit, false) || !Kit || !PatrolRows || !VolumeRows || !StationRows)
             return Bad(FString::Printf(TEXT("beat %s lacks a required field"), *Beat.Id));
         const auto Recovery = O->TryGetField(TEXT("recovery"));
+        const auto CarryGate = O->TryGetField(TEXT("carry_gate"));
+        if (!CarryGate.IsValid() || (Task.CarryGateMs>0)!=(CarryGate->Type!=EJson::Null) ||
+            (Task.CarryGateMs>0 && (!SpacePoint(CarryGate,B.CarryGate) || B.Pickups.IsEmpty() || B.CarryGate!=B.Pickups[0])))
+            return Bad(Beat.Id + TEXT(" carry seal"));
         if (!Recovery.IsValid() || (Task.RecoveryWeapons != 0u) != (Recovery->Type != EJson::Null) ||
             (Task.RecoveryWeapons != 0u && (!SpacePoint(Recovery,B.Recovery) || B.Zone < 0 ||
                 !S.Zones[B.Zone].Rect.IsInside(B.Recovery + FVector2D(350,350)) ||

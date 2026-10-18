@@ -787,6 +787,12 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
     record.setdefault("route", None)
     record.setdefault("dropoffs", [])
     record["recovery"] = None
+    record["carry_gate"] = list(record["pickups"][0]) if task["carry_gate"] else None
+    if task["carry_gate"]:
+        for volume in record["volumes"]:
+            if volume["event"] == "volume_enter:vol_kura_sw_door":
+                volume["center"] = list(record["carry_gate"])
+                volume["size"] = [400, 400]
     if task["recovery"]:
         if zone is None or zone.form == "route":
             fail(beat["id"], "a dry well needs its own clear courtyard")

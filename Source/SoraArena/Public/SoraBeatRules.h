@@ -379,6 +379,8 @@ struct FTask
     unsigned CarryWeaponsMask = 0u;
     // Each load is hoisted at its pickup with Interact held this long (0: taken at once).
     int PickupHoldMs = 0;
+    // A sealed store must be pried open before any load can leave it.
+    int CarryGateMs = 0;
     // Temporary chapter equipment restriction; recovery is earned at the
     // bottom of a real shaft before any goods can be hoisted.
     unsigned EquipmentMask = (1u << WeaponCount) - 1u;
@@ -436,6 +438,10 @@ struct FTaskState
     // Objectives worked, or distinct goods picked up.
     unsigned PointsMask = 0u;
     int CarriedFrom = -1;
+    int CarryGateHeldMs = 0;
+    bool CarryGateOpen = false;
+    unsigned LooseLoads = 0u;
+    int LooseFrom[MaxPoints] = {};
     int DropoffUses[MaxPoints] = {};
     unsigned Released = 0u;
     int Down[MaxWaves] = {};
@@ -604,7 +610,8 @@ constexpr bool GoalMet(const FTaskState& State, const FTask& Task)
 // standing when any other goal is met withdraw (bible §12.2, chapter-02 b06).
 constexpr bool TaskComplete(const FTaskState& State, const FTask& Task)
 {
-    return (Task.RecoveryWeapons == 0u || State.EquipmentRecovered) && (GoalMet(State, Task) || State.Conceded);
+    return (Task.RecoveryWeapons == 0u || State.EquipmentRecovered) &&
+        (Task.CarryGateMs == 0 || State.CarryGateOpen) && (GoalMet(State, Task) || State.Conceded);
 }
 
 constexpr int PhaseStartPermille(const FTask& Task, int Phase)
@@ -945,11 +952,27 @@ constexpr bool RecoverEquipment(FTaskState& State, const FTask& Task, int DeltaM
     return true;
 }
 
+constexpr bool CarryGateReady(const FTaskState& State, const FTask& Task)
+{
+    return Task.CarryGateMs == 0 || State.CarryGateOpen;
+}
+// The authored contest is pause: a hit, releasing Interact or leaving the
+// seal stops work without erasing it. Only checkpoint retry resets it.
+constexpr bool PryCarryGate(FTaskState& State, const FTask& Task, int DeltaMs, bool AtSeal, bool Held, bool Hit)
+{
+    if (Task.Task != ETask::Carry || CarryGateReady(State,Task) || DeltaMs <= 0 || !AtSeal || !Held || Hit) return false;
+    State.CarryGateHeldMs = DeltaMs >= Task.CarryGateMs - State.CarryGateHeldMs ? Task.CarryGateMs : State.CarryGateHeldMs + DeltaMs;
+    if (State.CarryGateHeldMs < Task.CarryGateMs) return false;
+    State.CarryGateOpen = true;
+    return true;
+}
+
 // Takes an item at a pickup. Distinct goods (a pickup per item) are each
 // taken once; a single store is revisited.
 constexpr bool Pickup(FTaskState& State, const FTask& Task, int Index)
 {
-    if (!EquipmentReady(State, Task) || Task.Task != ETask::Carry || State.Carrying || State.Done >= Task.Count || Index < 0 ||
+    if (!EquipmentReady(State, Task) || !CarryGateReady(State, Task) || Task.Task != ETask::Carry || State.Carrying ||
+        State.Done + Bits(State.LooseLoads) >= Task.Count || Index < 0 ||
         Index >= Task.Pickups || Index >= MaxPoints)
         return false;
     if (Task.Pickups >= Task.Count)
@@ -963,6 +986,31 @@ constexpr bool Pickup(FTaskState& State, const FTask& Task, int Index)
     return true;
 }
 
+// A manual set-down keeps the item out of its store and remembers its
+// original source. The world owns the reachable position for each slot.
+constexpr int SetDownCarried(FTaskState& State, const FTask& Task)
+{
+    if (Task.Task != ETask::Carry || !CarryGateReady(State,Task) || !State.Carrying) return -1;
+    for (int Slot = 0; Slot < MaxPoints; ++Slot)
+        if ((State.LooseLoads & (1u << Slot)) == 0u)
+        {
+            State.LooseLoads |= 1u << Slot;
+            State.LooseFrom[Slot] = State.CarriedFrom;
+            State.CarriedFrom = -1; State.Carrying = false;
+            return Slot;
+        }
+    return -1;
+}
+constexpr bool PickupLoose(FTaskState& State, const FTask& Task, int Slot)
+{
+    if (Task.Task != ETask::Carry || !EquipmentReady(State,Task) || !CarryGateReady(State,Task) || State.Carrying || State.Done>=Task.Count ||
+        Slot < 0 || Slot >= MaxPoints || (State.LooseLoads & (1u << Slot)) == 0u) return false;
+    State.CarriedFrom = State.LooseFrom[Slot];
+    State.LooseLoads &= ~(1u << Slot);
+    State.Carrying = true;
+    return true;
+}
+
 // Delivers the carried item, or a ride's cargo, at a drop-off with room left.
 constexpr bool Deliver(FTaskState& State, const FTask& Task, int Index)
 {
@@ -971,7 +1019,7 @@ constexpr bool Deliver(FTaskState& State, const FTask& Task, int Index)
         return false;
     if (Task.Task == ETask::Carry)
     {
-        if (!State.Carrying)
+        if (!CarryGateReady(State,Task) || !State.Carrying)
             return false;
         State.Carrying = false;
         State.CarriedFrom = -1;
@@ -1214,6 +1262,7 @@ constexpr bool PointsValid(int Count)
 // wave, phase and step can be met.
 constexpr bool TaskValid(const FTask& Task)
 {
+    if (Task.CarryGateMs < 0 || Task.CarryGateMs > MaxClockMs || (Task.CarryGateMs > 0 && Task.Task != ETask::Carry)) return false;
     const unsigned AllWeapons = (1u << WeaponCount) - 1u;
     if (Task.EquipmentMask == 0u || (Task.EquipmentMask & ~AllWeapons) != 0u) return false;
     if (Task.RecoveryWeapons != 0u)

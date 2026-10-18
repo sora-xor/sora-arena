@@ -118,6 +118,9 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
     const FSoraBeatSpace& Space=Beat.Space;
     StageEpilogue(Beat);
+    if(Beat.Task.CarryGateMs>0)
+        CarrySeal=KitShape(TEXT("GranarySeal"),KitCube,Floor(Space.CarryGate)+FVector(0,70,75),
+            FVector(.18f,.55f,.9f),KitTeal);
     if(RecoveryHatch)
     {
         const bool Open=Beat.Task.RecoveryWeapons!=0u;
@@ -280,6 +283,22 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     }
     else if(KitWork==TEXT("carry"))
     {
+        if(CarrySeal) CarrySeal->SetVisibility(!View.bCarryGateOpen);
+        for(int32 Slot=0;Slot<View.LooseLoads.Num();++Slot)
+        {
+            const bool Visible=(View.LooseMask&(1u<<Slot))!=0u;
+            if(Visible)
+                while(KitLooseLoads.Num()<=Slot)
+                {
+                    KitItem(KitItemKind,FVector::ZeroVector,0,KitLooseLoads);
+                    KitLooseLoads.Last()->SetVisibility(false);
+                }
+            if(KitLooseLoads.IsValidIndex(Slot)&&KitLooseLoads[Slot])
+            {
+                KitLooseLoads[Slot]->SetVisibility(Visible);
+                KitLooseLoads[Slot]->SetRelativeLocation(View.LooseLoads[Slot]+FVector(0,0,KitItemKind==TEXT("box")?12.f:KitItemKind==TEXT("bale")?24.f:20.f));
+            }
+        }
         // Loads leave their pickups as they are taken; drop-offs fill as they receive them.
         for(int32 Item=0;Item<KitLoads.Num();++Item)
             if(KitLoads[Item]) KitLoads[Item]->SetVisibility(!View.PickupTaken.IsValidIndex(Item)||!View.PickupTaken[Item]);
@@ -337,6 +356,7 @@ void ASoraWorldBuilder::ClearKit()
     ToranosukePlaque=nullptr; NyaakotoPlaque=nullptr; WashioSword.Reset(); EpiloguePlaques=0; bEpilogueSwordReturned=false;
     RecoveryBundle.Reset(); KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
+    KitLooseLoads.Reset(); CarrySeal=nullptr;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
 }
@@ -398,4 +418,10 @@ void ASoraWorldBuilder::ShowCarried(ASoraPlayerCharacter* Hero,FName Item)
     CarriedLoad=Shape(Hero,Hero->GetCamera(),TEXT("CarriedLoad"),Asset,FVector(60,0,-42),Scale,KitItemColor(Item));
     if(Item==TEXT("bale")) CarriedLoad->SetRelativeRotation(FRotator(0,0,90));
     CarriedLoad->SetCastShadow(false);
+}
+int32 ASoraWorldBuilder::LooseLoadVisualCount() const
+{
+    int32 Count=0;
+    for(const auto& Load:KitLooseLoads) if(Load&&Load->IsVisible()) ++Count;
+    return Count;
 }

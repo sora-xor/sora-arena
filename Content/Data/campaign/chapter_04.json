@@ -209,6 +209,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -333,6 +334,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -466,6 +468,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -710,6 +713,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -909,6 +913,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1172,6 +1177,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1403,6 +1409,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1515,6 +1522,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1646,6 +1654,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1836,6 +1845,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2013,6 +2023,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [
      {
       "kind": "assemble",
@@ -2339,6 +2350,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [
      {
@@ -2492,6 +2504,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2705,6 +2718,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2817,6 +2831,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2967,6 +2982,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3149,6 +3165,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -3263,6 +3280,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -8829,6 +8847,7 @@
     "cache": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -8994,6 +9013,7 @@
     "cache": null,
     "camera": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -9181,6 +9201,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -9311,6 +9332,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -9480,6 +9502,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -9653,6 +9676,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "sluice",
      "item": null,
@@ -9783,6 +9807,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "hold",
      "item": null,
@@ -9939,6 +9964,7 @@
     "cache": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10095,6 +10121,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10203,6 +10230,7 @@
     "cache": null,
     "camera": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "escort",
      "item": null,
@@ -10451,6 +10479,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "stations",
      "item": null,
@@ -10614,6 +10643,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "defend",
      "item": null,
@@ -10908,6 +10938,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11085,6 +11116,7 @@
     "cache": null,
     "camera": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11289,6 +11321,7 @@
     "cache": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11419,6 +11452,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11625,6 +11659,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "carry",
      "item": "bale",
@@ -11771,6 +11806,7 @@
     "cache": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,

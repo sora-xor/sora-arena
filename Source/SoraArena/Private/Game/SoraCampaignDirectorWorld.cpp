@@ -52,6 +52,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
         Location=AtRecoveryBottom()?RecoveryBottom()-FVector(0,0,100):RecoveryApproach()-FVector(0,0,100);
         bInteract=true; return true;
     }
+    if(NeedsCarryGate()) return At(Space.CarryGate,true);
     switch(Task.Goal)
     {
     case SoraBeatRules::EGoal::Lines:
@@ -88,6 +89,8 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     case SoraBeatRules::EGoal::Deliveries:
         if(Task.Task==SoraBeatRules::ETask::Carry&&!TaskState.Carrying)
         {
+            for(int32 Slot=0;Slot<SoraBeatRules::MaxPoints;++Slot)
+                if((TaskState.LooseLoads&(1u<<Slot))!=0u) { Location=LooseLoadAt[Slot]; bInteract=true; return true; }
             for(int32 Point=0;Point<Space.Pickups.Num();++Point)
                 if(Task.Pickups<Task.Count||(TaskState.PointsMask&(1u<<Point))==0u) return At(Space.Pickups[Point],true);
             return false;
@@ -418,7 +421,10 @@ void USoraCampaignDirector::ShowKit()
         if(Task.Pickups>=Task.Count)
             for(int32 Point=0;Point<Task.Pickups;++Point) View.PickupTaken.Add((TaskState.PointsMask&(1u<<Point))!=0u);
         else
-            for(int32 Item=0;Item<Task.Count;++Item) View.PickupTaken.Add(Item<TaskState.Done+(TaskState.Carrying?1:0));
+            for(int32 Item=0;Item<Task.Count;++Item) View.PickupTaken.Add(Item<TaskState.Done+(TaskState.Carrying?1:0)+SoraBeatRules::Bits(TaskState.LooseLoads));
+        View.LooseMask=TaskState.LooseLoads;
+        for(int32 Slot=0;Slot<SoraBeatRules::MaxPoints;++Slot) View.LooseLoads.Add(LooseLoadAt[Slot]);
+        View.bCarryGateOpen=SoraBeatRules::CarryGateReady(TaskState,Task);
     }
     for(int32 Point=0;Point<Task.Dropoffs;++Point) View.Delivered.Add(TaskState.DropoffUses[Point]);
     View.bContested=Contested();
@@ -569,7 +575,7 @@ bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 }
 bool USoraCampaignDirector::ArmsReady(int32 WeaponId,float AimYaw,bool bNotify)
 {
-    if(!CanHold(WeaponId,bNotify)||IsClimbingRecoveryWell()||bStringingBow) return false;
+    if(!CanHold(WeaponId,bNotify)||IsClimbingRecoveryWell()||bStringingBow||bPryingCarryGate) return false;
     if(!IsMounted()||SoraMountRules::ArcAllows(Horse->RideRules(),WeaponId,FMath::RoundToInt32(AimYaw),
         FMath::RoundToInt32(Horse->GetActorRotation().Yaw)))
         return true;

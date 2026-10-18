@@ -1126,6 +1126,7 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
     case EGoal::Escort: return Tick(State, Task, At(500, true));
     case EGoal::Deliveries:
         if (!EquipmentReady(State, Task)) return RecoverEquipment(State, Task, Task.RecoveryStringMs, true, true);
+        if (!CarryGateReady(State, Task)) return PryCarryGate(State,Task,Task.CarryGateMs,true,true,false);
         if (Task.Task == ETask::Carry && !State.Carrying)
         {
             for (int Point = 0; Point < Task.Pickups; ++Point)
@@ -1432,12 +1433,14 @@ static void TestAuthoredCarryDifficulty()
     {
         ApplyCarryDifficulty(Rice, Difficulty);
         FTaskState State = Begin(Rice, "seed rice difficulty");
+        Expect(PryCarryGate(State,Rice,Rice.CarryGateMs,true,true,false), "seed rice: seal did not open");
         Expect(Pickup(State, Rice, 0), "seed rice: pickup failed");
         const bool Drops = Difficulty == 2;
         Expect(DropCarried(State, Rice) == Drops && State.Carrying != Drops && State.Done == 0,
             "seed rice: hit used the wrong difficulty or delivered the load");
         if (Drops) Expect(Pickup(State, Rice, 0), "seed rice: dropped load could not be recovered");
         State = RetryTask(State, Rice);
+        Expect(!CarryGateReady(State,Rice) && PryCarryGate(State,Rice,Rice.CarryGateMs,true,true,false), "seed rice: retry did not reset seal");
         Expect(!State.Carrying && State.Done == 0 && Pickup(State, Rice, 0), "seed rice: retry retained partial carry state");
         Expect(DropCarried(State, Rice) == Drops, "seed rice: retry lost its difficulty policy");
     }
@@ -1445,6 +1448,42 @@ static void TestAuthoredCarryDifficulty()
     Expect(!Rice.DropOnHit, "seed rice: invalid difficulty did not use Normal");
     ApplyCarryDifficulty(Rice, 3);
     Expect(!Rice.DropOnHit, "seed rice: difficulty sentinel read beyond the policy");
+}
+
+static void TestCarrySealAndLooseLoads()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[1](Tasks);
+    FTask Rice=Tasks[4]; ApplyCarryDifficulty(Rice,2);
+    FTaskState State=Begin(Rice,"seed rice seal");
+    Expect(Rice.CarryGateMs==3000 && !Pickup(State,Rice,0),"sealed store allowed pickup");
+    FTaskState Forged=State; Forged.Carrying=true;
+    Expect(!Deliver(Forged,Rice,0) && SetDownCarried(Forged,Rice)<0,"closed seal admitted injected cargo");
+    Forged.Done=Rice.Count;
+    Expect(!TaskComplete(Forged,Rice),"closed seal admitted forged completion");
+    Expect(!PryCarryGate(State,Rice,1200,true,true,false) && State.CarryGateHeldMs==1200,"seal first work interval");
+    Expect(!PryCarryGate(State,Rice,1000,true,true,true) && State.CarryGateHeldMs==1200,"hit must pause seal work");
+    Expect(!PryCarryGate(State,Rice,1000,true,false,false) && State.CarryGateHeldMs==1200,"release must pause seal work");
+    Expect(!PryCarryGate(State,Rice,1000,false,true,false) && State.CarryGateHeldMs==1200,"leaving must pause seal work");
+    Expect(!PryCarryGate(State,Rice,1799,true,true,false) && !Pickup(State,Rice,0),"seal opened before three work seconds");
+    Expect(PryCarryGate(State,Rice,1,true,true,false) && !PryCarryGate(State,Rice,1,true,true,false),"seal completion is not one-time");
+    for(int Slot=0;Slot<4;++Slot)
+        Expect(Pickup(State,Rice,0) && SetDownCarried(State,Rice)==Slot && State.Done==0,"set-down delivered or lost a bale");
+    Expect(Bits(State.LooseLoads)==4 && !Pickup(State,Rice,0),"loose loads duplicated source stock");
+    Expect(PickupLoose(State,Rice,1) && !PickupLoose(State,Rice,1) && Bits(State.LooseLoads)==3,"loose pickup duplicated a bale");
+    Expect(DropCarried(State,Rice) && !State.Carrying && Pickup(State,Rice,0),"lost loose bale did not return to its source");
+    Expect(Deliver(State,Rice,0) && State.Done==1 && !Pickup(State,Rice,0),"new pickup after hit duplicated conserved stock");
+    for(int Slot:{0,2,3})
+        Expect(PickupLoose(State,Rice,Slot) && Deliver(State,Rice,Slot==0?0:1),"loose loads could not be delivered");
+    Expect(TaskComplete(State,Rice) && State.Done==4 && State.LooseLoads==0u,"four conserved bales did not complete");
+    State=RetryTask(State,Rice);
+    Expect(!CarryGateReady(State,Rice) && State.CarryGateHeldMs==0 && State.LooseLoads==0u && !State.Carrying && State.Done==0,
+        "retry retained seal or loose-load state");
+    FTask Distinct=Rice; Distinct.CarryGateMs=0; Distinct.Count=2; Distinct.Pickups=2;
+    State=Begin(Distinct,"distinct loose goods");
+    Expect(Pickup(State,Distinct,1) && SetDownCarried(State,Distinct)==0 && !Pickup(State,Distinct,1),"distinct source duplicated loose goods");
+    Expect(PickupLoose(State,Distinct,0) && DropCarried(State,Distinct) && Pickup(State,Distinct,1),"distinct loose hit restored wrong source");
+    std::cout << "carry: seal hold/hit/release/retry and loose-load stock conservation passed\n";
 }
 
 int main()
@@ -1466,6 +1505,7 @@ int main()
     TestMountRules();
     TestAuthoredRides();
     TestAuthoredCarryDifficulty();
+    TestCarrySealAndLooseLoads();
     unsigned RouteMinimum = 0u, AllEarlier = 0u, MechanicsEarlier = 0u, FlagsEarlier = 0u;
     FEntry Skipper{0u, 0u, 0u}, Completist{0u, 0u, 0u};
     FUnlockLog SkipperLog{}, CompletistLog{};

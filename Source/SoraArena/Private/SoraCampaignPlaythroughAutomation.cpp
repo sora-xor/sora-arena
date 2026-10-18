@@ -10,6 +10,7 @@
 #include "SoraDojoRules.h"
 #include "SoraMaaiAutomation.h"
 #include "SoraRecoveryAutomation.h"
+#include "SoraCarryAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -1073,6 +1074,11 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 if(!DefeatOne(Test,State)) return false;
             if(!FreeConscripts(Test,State)||!Test.TestTrue(TEXT("Dry-well equipment is recovered by real movement and held input"),
                 SoraRecoveryAutomation::Recover(*State.World))) return false;
+        }
+        if(Rules.CarryGateMs>0)
+        {
+            if(!ClearField(Test,State,Index)||!FreeConscripts(Test,State)||
+                !Test.TestTrue(TEXT("Granary seal is pried through real movement and held input"),SoraCarryAutomation::PrySeal(*State.World))) return false;
         }
         bool bSlipTested = false, bMissTested = false, bLoadTested = false;
         // A crank is turned, not fought over: it is done once full, whoever stands.

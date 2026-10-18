@@ -80,6 +80,17 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         if (!Value.IsValid() || Value->Type != EJson::Boolean || !Value->TryGetBool(T.DropOnHitByDifficulty[Difficulty])) return false;
     }
     ApplyCarryDifficulty(T, 1);
+    const auto CarryGate = O.TryGetField(TEXT("carry_gate"));
+    if (!CarryGate.IsValid()) return false;
+    if (CarryGate->Type != EJson::Null)
+    {
+        const auto Gate = CarryGate->Type == EJson::Object ? CarryGate->AsObject() : nullptr;
+        FString Contest, Tool;
+        if (!Gate || Gate->Values.Num()!=4 || !Str(*Gate,TEXT("point"),Beat.CarryGatePoint) ||
+            !Int(*Gate,TEXT("hold_ms"),T.CarryGateMs) || T.CarryGateMs<=0 ||
+            !Str(*Gate,TEXT("contest"),Contest) || Contest!=TEXT("pause") ||
+            !Str(*Gate,TEXT("tool"),Tool) || Tool!=TEXT("yari_ishizuki")) return false;
+    }
     if (!TaskName.IsEmpty() && !Tasks.Contains(TaskName)) return false;
     T.Task = TaskName.IsEmpty() ? ETask::None : Tasks[TaskName];
     // A capture names the interaction that binds its boss, and a carry what

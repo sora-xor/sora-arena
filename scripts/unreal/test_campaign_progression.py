@@ -145,6 +145,8 @@ def task_fields(task):
         if task["drop_on_hit"][name]:
             fields.append(f"T.DropOnHitByDifficulty[{index}] = true;")
     fields.append("ApplyCarryDifficulty(T, 1);")
+    if task["carry_gate"]:
+        fields.append(f"T.CarryGateMs = {task['carry_gate']['hold_ms']};")
     if task["lesson_mask"]:
         fields.append(f"T.LessonMask = {task['lesson_mask']}u;")
     if task["equipment_weapons"] is not None:

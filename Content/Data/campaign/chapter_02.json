@@ -217,6 +217,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -427,6 +428,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -607,6 +609,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -728,6 +731,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -935,6 +939,12 @@
      "easy": false,
      "normal": false,
      "hard": true
+    },
+    "carry_gate": {
+     "point": "seal_kura_sw",
+     "hold_ms": 3000,
+     "contest": "pause",
+     "tool": "yari_ishizuki"
     },
     "steps": [],
     "targets": [],
@@ -1181,6 +1191,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [
      {
@@ -1315,6 +1326,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1604,6 +1616,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1834,6 +1847,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -1968,6 +1982,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2108,6 +2123,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2223,6 +2239,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2346,6 +2363,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2492,6 +2510,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2636,6 +2655,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -2750,6 +2770,7 @@
      "normal": false,
      "hard": false
     },
+    "carry_gate": null,
     "steps": [],
     "targets": [],
     "target_loss_limit": 0,
@@ -10782,6 +10803,7 @@
     "cache": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -10912,6 +10934,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11100,6 +11123,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11242,6 +11266,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11308,12 +11333,12 @@
      {
       "event": "volume_enter:vol_kura_sw_door",
       "center": [
-       0,
-       0
+       -1650,
+       220
       ],
       "size": [
        400,
-       1100
+       400
       ]
      }
     ],
@@ -11398,6 +11423,10 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": [
+     -1650,
+     220
+    ],
     "kit": {
      "work": "carry",
      "item": "bale",
@@ -11542,6 +11571,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "defend",
      "item": null,
@@ -11685,6 +11715,7 @@
     "cache": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -11957,6 +11988,7 @@
     "cache": null,
     "camera": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12237,6 +12269,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12393,6 +12426,7 @@
     "cache": null,
     "camera": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12604,6 +12638,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": "carry",
      "item": "bale",
@@ -12752,6 +12787,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -12963,6 +12999,7 @@
     "cache": null,
     "camera": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13155,6 +13192,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13285,6 +13323,7 @@
     "camera": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,
@@ -13425,6 +13464,7 @@
     "cache": null,
     "route": null,
     "recovery": null,
+    "carry_gate": null,
     "kit": {
      "work": null,
      "item": null,

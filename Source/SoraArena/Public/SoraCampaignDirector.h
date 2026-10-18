@@ -197,6 +197,9 @@ public:
     // worked with Interact held (a charge planted, a relay node pulled).
     float HeldWorkProgress() const;
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
+    bool IsPryingCarryGate() const { return bPryingCarryGate; }
+    bool NeedsCarryGate() const { return !SoraBeatRules::CarryGateReady(TaskState,Task); }
+    FVector LooseLoadLocation(int32 Slot) const;
     bool IsRecoveringEquipment() const { return bStringingBow; }
     bool IsClimbingRecoveryWell() const { return RecoveryClimb != ERecoveryClimb::None; }
     bool NeedsEquipmentRecovery() const { return !SoraBeatRules::EquipmentReady(TaskState,Task); }
@@ -318,6 +321,14 @@ private:
     int32 HeldMs=0;
     bool bHeldWatched=false;
     bool TakeLoad(int32 Pickup);
+    bool bPryingCarryGate=false;
+    bool bCarryGateHit=false;
+    FVector LooseLoadAt[SoraBeatRules::MaxPoints] = {};
+    void ResetCarryWork();
+    bool InteractCarryGate(ASoraPlayerCharacter& Hero);
+    void TickCarryWork(int32 DeltaMs);
+    bool SetDownLoad(ASoraPlayerCharacter& Hero);
+    bool TakeLooseLoad(ASoraPlayerCharacter& Hero);
     bool WorkObjectiveAt(int32 Objective);
     void TickHeldWork(int32 DeltaMs);
     enum class ERecoveryClimb : uint8 { None, Enter, Down, Up, Exit };
