@@ -166,9 +166,51 @@ These wait for other lanes or later steps and are not claimed:
 - The playthrough strikes bosses and duellists to their phase thresholds with lethal damage and binds captives with E; it does not fight their counterplay (shields, weak points, floors, mutō-dori), which `SoraArena.Boss.*` and the combat trace's Val Amort check. A siege needs no targeting AI (opponents who come within 7 m of a target wear it down). A capture's interaction is worked at the yielded boss, not at a bulkhead lever or the engine's spine, until the level art places them.
 - A horse mesh and animation: no horse is imported into `Content/Generated`, so every horse is the primitive proxy with period tack described above; the lateral amble and every gait cycle need an equine animator. The ch08 charge's League riders and Toranosuke are the same proxies, each with a rider built from primitives. A ride steers itself only while the player's auto-steer setting is on.
 - ch04's ox cart is still a prop at the head of the party (its net and health are the fieldcraft's), and defended pack horses, furnaces and aid tents stay targets rather than characters; repairs mend a quarter of the worst-hit target. Nets, searchlights, the bell, cook-fires, ladders, roofs, stakes and smoke banks are engine shapes; the static ones wear the environment palette's CC0 PBR surfaces (timber, stone, metal, plaster), the net and the smoke bank a flat colour until the VFX lane's systems are wired in.
-- Cooperative cranks in ch04.b06, ch05.b06 and ch07.b07 are implemented with visible helpers, authored contribution rates, the bellows boy's net/free interaction, Kohagi's five-metre retreat to existing cover, and 25/50/75% ratchets. The host tests cover exact rates at multiple frame sizes, decay, waves and reset. `SoraArena.Campaign.CrankCooperation`, `CrankRatchets` and `CrankNets` pass in Unreal at `56b95f3`, with zero errors/warnings. The boy contributes 0.5 × 0.4 = 0.2 turns/s without a decay waiver: the 1% loss of 90 turns is 0.9 turns/s, so idle progress still loses 0.7 turns/s while he helps. ch08.b11 now explicitly gives each named crew member 0.15 turns/s: three available helpers contribute 0.45 against 0.48 turns/s idle loss, for a net slip of 0.03 turns/s. The 0–3 helper rates and checkpoint reset also pass `CrankLiftCrew` in that Unreal run. The 115 m physical lift travel and the hawser cutter-contact producer for authored decay ×3 remain outstanding; the integrated lift is still a small visual gauge. Crank stamina costs, ch07's two-handed loadout/hold-to-crank accessibility input and final helper work animations remain outstanding.
+- Cooperative cranks in ch04.b06, ch05.b06 and ch07.b07 are implemented with visible helpers, authored contribution rates, the bellows boy's net/free interaction, Kohagi's five-metre retreat to existing cover, and 25/50/75% ratchets. The host tests cover exact rates at multiple frame sizes, decay, waves and reset. `SoraArena.Campaign.CrankCooperation`, `CrankRatchets` and `CrankNets` pass in Unreal at `56b95f3`, with zero errors/warnings. The boy contributes 0.5 × 0.4 = 0.2 turns/s without a decay waiver: the 1% loss of 90 turns is 0.9 turns/s, so idle progress still loses 0.7 turns/s while he helps. ch08.b11 now explicitly gives each named crew member 0.15 turns/s: three available helpers contribute 0.45 against 0.48 turns/s idle loss, for a net slip of 0.03 turns/s. The 0–3 helper rates and checkpoint reset also pass `CrankLiftCrew` in that Unreal run. The physical lift, gallery and cutter contact implementation is described below; its new Unreal fixtures have not run yet. Crank stamina costs, ch07's two-handed loadout/hold-to-crank accessibility input and final helper work animations remain outstanding.
 - Blocking dialogue input holds and the production registry are implemented; their focused qualification is recorded separately. Diegetic registry presentation and final art, rendered and packaged acceptance remain outstanding.
 - Sequencer cinematics (C9): cinematics are a dollying camera over the place behind the letterboxed card with subtitles.
 - Authored layouts: the spaces are derived by rule. ch01–ch03's authored layout frames are not placed, so ch01's dojo, stable and range stand in separate zones rather than where the script's metres put them, and places are joined by travel cuts rather than walked between; the zones are blockout floors, walls and cover dressed with the imported props (C3 kits and C4 layouts replace them).
 - Pacing: two ch02 rides are authored longer than their pacing allows at any gait (above).
 - The 6–8 hour pacing, combat readability and visual quality, which need playtests and captures.
+
+
+### Chapter eight: physical freight lift (runtime qualification pending)
+
+The 6 × 6 m collision deck now moves continuously from L4 at 27 m to the
+heirloom gallery at 142 m, bounded by the fastest authored capstan cadence.
+The player walks from a fixed boarding landing onto an ordinary movement
+base; the three crew members stand and work on that same floor. No rider is
+repositioned during travel. The bars require the player to be aboard, idle
+loss lowers the floor, the side gates only open at their landings, and a fall
+below the shaft returns through the existing player-death checkpoint.
+
+The gantry heights are now 55.75, 84.50 and 113.25 m, derived from 25%, 50%
+and 75% of the 115 m travel above L4. The source prose and YAML use those
+same heights. Waves spawn on those real landings: the first wave's drones
+fly to the hawser in three dimensions, riflemen hold the second gantry, and
+the shield enforcer and two retainers launch normal gravity-driven jumps
+when the deck physically reaches the third landing. Only a living, flying,
+unstaggered drone whose visible cutter tip touches the hawser segment
+multiplies ordinary idle decay by three. Other drone errands retain their
+existing ground-relative hover behavior. The rope, cutter and structure
+are gameplay shapes awaiting final art.
+
+Full work cannot complete ch08.b11 until the moving floor reaches 142 m.
+Completion unlocks ch08.b12's cache at that height and leaves the player in
+the gallery; the north exit volume starts ch08.b13. Searching remains
+optional. The saved checkpoint stays at b11 until the exit, while found
+collectibles save immediately. A fresh-world reload repeats the lift and
+keeps those finds. No mid-lift save representation was added. The b10
+spiral and b13 summit remain separate layout work.
+
+Four host `test_lift_data.py` checks pass: exact generated heights, landing
+and crew clearances, rejection of changed wave/platform contracts, and a
+compiled C++ driver covering bounded continuous motion and exact ordinary
+versus triple decay with zero to three helpers at six frame sizes. The
+133-task host progression driver also passes. New Unreal fixtures
+`SoraArena.Campaign.LiftMotion`, `LiftEncounters`, `LiftGallery` and
+`LiftReload`, plus the updated `Spaces`, `CrankLiftCrew` and `Playthrough`,
+await the integration engine run. Motion/gallery fixtures hold threats
+still to isolate traversal; `LiftEncounters` leaves their AI live. These
+source checks do not establish movement-base, jump, rendered, packaged or
+platform acceptance.

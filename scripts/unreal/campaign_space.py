@@ -28,6 +28,7 @@ that routes are as long as the script asks. The authored ch01-ch03 layout
 frames stay in the chapter file's ``layout`` block for the level artists.
 """
 from __future__ import annotations
+from campaign_lift import place_lift
 
 import math
 import re
@@ -574,8 +575,9 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
                 fail(item["id"], f"zone {item['place']} has no nook left")
             at = _frac(zones[index].rect, *NOOK_AT[taken])
         pickups.append({"collectible": item["id"], "zone": index, "at": list(at)})
+    place_lift(beats, records, fail)
     return {
-        "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+        "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
         "hub": chapter_map if hub else None,
         "hub_place": hub,
         "start": list(first["entry"]),

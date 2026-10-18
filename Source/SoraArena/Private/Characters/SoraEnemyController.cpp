@@ -299,6 +299,7 @@ void ASoraEnemyController::Tick(float Dt)
         DrivePupil(*Enemy, *Target, Dt);
         return;
     }
+    if (DriveLift(*Enemy,*Target,Dt)) return;
     if (Enemy->Archetype())
         Think(*Enemy, *Target, Dt);
 }
@@ -425,11 +426,14 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     Act(Enemy, Target, bSees, Dt, NowMs);
 }
 
-void ASoraEnemyController::SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm)
+void ASoraEnemyController::SetErrand(const FVector& Goal, const FVector& Facing, float Pace, int32 DurationMs, bool bWhileCalm,
+    bool bThreeDimensional,float AcceptanceCm)
 {
     bErrand = true;
     bErrandWhileCalm = bWhileCalm;
     bErrandReached = false;
+    bErrand3D = bThreeDimensional;
+    ErrandAcceptanceCm = FMath::Max(1.f,AcceptanceCm);
     ErrandGoal = Goal;
     ErrandFacing = Facing.IsNearlyZero() ? FVector::ForwardVector : Facing.GetSafeNormal2D();
     ErrandPace = FMath::Clamp(Pace, .1f, 1.f);
@@ -446,7 +450,8 @@ bool ASoraEnemyController::RunErrand(ASoraEnemy& Enemy, float Dt, int32 NowMs)
         bErrand = false;
         return false;
     }
-    bErrandReached = WalkTo(Enemy, ErrandGoal, ErrandPace, ErrandReachCm, NowMs) != EMove::Moving;
+    const EMove Move=WalkTo(Enemy,ErrandGoal,ErrandPace,ErrandAcceptanceCm,NowMs);
+    bErrandReached=bErrand3D?Move==EMove::Arrived:Move!=EMove::Moving;
     Face(Enemy, bErrandReached ? ErrandFacing : Heading, Dt, 5.f);
     if (bErrandReached && bErrandWhileCalm)
         LookAround(Enemy, ErrandFacing.Rotation().Yaw, 40.f, Dt, NowMs);
@@ -928,7 +933,7 @@ bool ASoraEnemyController::Claimed(const FVector& Spot) const
 ASoraEnemyController::EMove ASoraEnemyController::WalkTo(ASoraEnemy& Enemy, const FVector& Goal, float Speed, float Acceptance, int32 NowMs)
 {
     const FVector Here = Enemy.GetActorLocation();
-    if (FVector::Dist2D(Here, Goal) <= Acceptance)
+    if ((bErrand&&bErrand3D?FVector::Dist(Here,Goal):FVector::Dist2D(Here,Goal)) <= Acceptance)
     {
         ClearPath();
         return EMove::Arrived;
@@ -986,7 +991,8 @@ ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const
     // Straight at the goal at its hover height over the ground below, stepping
     // aside from what is ahead; no path is needed in the air.
     const FVector Here = Enemy.GetActorLocation();
-    FVector Direction = (Goal - Here).GetSafeNormal2D();
+    const bool bVolume=bErrand&&bErrand3D;
+    FVector Direction = bVolume?(Goal-Here).GetSafeNormal():(Goal - Here).GetSafeNormal2D();
     FCollisionQueryParams Query(SCENE_QUERY_STAT(BotNavigation), false, &Enemy);
     FCollisionObjectQueryParams Solid;
     Solid.AddObjectTypesToQuery(ECC_WorldStatic);
@@ -996,7 +1002,7 @@ ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const
         Direction = FVector(-Direction.Y, Direction.X, 0.f) * (Slot % 2 ? 1.f : -1.f);
     FHitResult Ground;
     float Climb = 0.f;
-    if (GetWorld()->LineTraceSingleByObjectType(Ground, Here, Here - FVector(0.f, 0.f, 5000.f), Solid, Query))
+    if (!bVolume&&GetWorld()->LineTraceSingleByObjectType(Ground, Here, Here - FVector(0.f, 0.f, 5000.f), Solid, Query))
     {
         const float Height = Enemy.Archetype()->HoverCm + Enemy.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
         Climb = FMath::Clamp((Ground.ImpactPoint.Z + Height - Here.Z) / 100.f, -1.f, 1.f);
@@ -1011,7 +1017,7 @@ ASoraEnemyController::EMove ASoraEnemyController::FlyTo(ASoraEnemy& Enemy, const
 
 bool ASoraEnemyController::Stuck(const FVector& Here, int32 NowMs)
 {
-    const int32 Moved = FMath::RoundToInt32(FVector::Dist2D(Here, StuckFrom));
+    const int32 Moved = FMath::RoundToInt32(bErrand&&bErrand3D?FVector::Dist(Here,StuckFrom):FVector::Dist2D(Here, StuckFrom));
     switch (Stealth::Progress(Walked, NowMs, Moved))
     {
     case Stealth::EProgress::Restarted:

@@ -4,6 +4,8 @@
 #include "SoraEnemy.h"
 #include "SoraFieldcraft.h"
 #include "SoraWorldBuilder.h"
+#include "SoraCampaignLift.h"
+#include "SoraGameMode.h"
 #include "EngineUtils.h"
 
 int32 USoraCampaignDirector::CrankHelpers()
@@ -22,6 +24,8 @@ int32 USoraCampaignDirector::CrankHelpers()
         for(const auto& Person:Craft->PeopleInPlay())
             if(IsValid(Person)&&Person->CompanionId()==Npc) { Helper=Person; break; }
         if(!Helper||Helper->Condition()!=SoraFieldcraftRules::EState::Up||!Helper->IsJoined()) continue;
+        const auto* Lift=Mode().Arena()?Mode().Arena()->CampaignLift():nullptr;
+        if(Lift&&!Lift->Aboard(*Helper)) continue;
         const FVector Work=ASoraWorldBuilder::Floor(Spec->At,Helper->GetActorLocation().Z);
         bool bRetreat=false;
         if(Task.CoopRetreatCm>0)
@@ -36,7 +40,7 @@ int32 USoraCampaignDirector::CrankHelpers()
         const FVector Goal=bRetreat?ASoraWorldBuilder::Floor(Spec->Cover,Work.Z):Work;
         Helper->SetGoal(Goal,(ASoraWorldBuilder::Floor(Beat->Space.Anchor)-Work).Rotation().Yaw,180.f);
         if(!bRetreat&&FVector::Dist2D(Helper->GetActorLocation(),Work)<=40.f&&
-            TaskState.LastActionMs>=0&&!Near(ASoraWorldBuilder::Floor(Beat->Space.Anchor),SoraCampaignReach::Interact))
+            TaskState.LastActionMs>=0&&!AtWorkAnchor(SoraCampaignReach::Interact))
             ++ActiveCrankHelpers;
     }
     return ActiveCrankHelpers;

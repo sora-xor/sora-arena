@@ -198,6 +198,8 @@ public:
     float HeldWorkProgress() const;
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
+    bool InLiftGallery() const { return bLiftGallery; }
+    bool LiftExitPoint(FVector& Point) const;
     int32 WorkingCrankHelpers() const { return ActiveCrankHelpers; }
     bool CrankHelperRetreating() const { return bCrankHelperRetreating; }
     bool NeedsCarryGate() const { return !SoraBeatRules::CarryGateReady(TaskState,Task); }
@@ -301,6 +303,15 @@ private:
     int32 ActiveCrankHelpers = 0;
     bool bCrankHelperRetreating = false;
     int32 CrankHelpers();
+    bool bLiftGallery=false;
+    bool LiftReadyToComplete() const;
+    bool BeginLiftGallery();
+    bool TickLiftGallery(float DeltaSeconds);
+    FVector WorkAnchor() const;
+    bool NearFloor(const FVector& Location,float Radius) const;
+    bool AtWorkAnchor(float Radius) const;
+    ASoraEnemy* SpawnLiftOpponent(FName Type,int32 Wave,int32 Slot);
+    int32 LiftDecayMultiplier() const;
     bool bDetected = false;
     float CinematicSeconds = 0.f;
     unsigned DojoLessonMask = 0u;

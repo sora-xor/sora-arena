@@ -2631,7 +2631,7 @@
        {
         "type": "drone",
         "count": 3,
-        "spawn": "sp_lift_gantry_50m",
+        "spawn": "sp_lift_gantry_5575cm",
         "behavior": "cut_rope"
        }
       ]
@@ -2642,7 +2642,7 @@
        {
         "type": "enforcer_rifle",
         "count": 3,
-        "spawn": "sp_lift_gantry_75m"
+        "spawn": "sp_lift_gantry_8450cm"
        }
       ]
      },
@@ -2652,13 +2652,13 @@
        {
         "type": "shield_enforcer",
         "count": 1,
-        "spawn": "sp_lift_gantry_100m",
+        "spawn": "sp_lift_gantry_11325cm",
         "behavior": "board_platform"
        },
        {
         "type": "blade_retainer",
         "count": 2,
-        "spawn": "sp_lift_gantry_100m",
+        "spawn": "sp_lift_gantry_11325cm",
         "behavior": "board_platform"
        }
       ]
@@ -7967,7 +7967,7 @@
   "ext": {}
  },
  "space": {
-  "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+  "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
   "hub": 3,
   "hub_place": "pl_outer_bailey",
   "start": [
@@ -11610,7 +11610,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b02",
@@ -12096,7 +12098,9 @@
        }
       ]
      }
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b03",
@@ -12553,7 +12557,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b04",
@@ -12802,7 +12808,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b05",
@@ -12957,7 +12965,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b06",
@@ -13319,7 +13329,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b07",
@@ -13631,7 +13643,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b08",
@@ -13772,7 +13786,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b09",
@@ -13918,7 +13934,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b10",
@@ -14148,14 +14166,16 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b11",
     "zone": 3,
     "entry": [
-     32480,
-     0,
+     32918,
+     364,
      0
     ],
     "anchor": [
@@ -14169,79 +14189,30 @@
     "volumes": [],
     "exit": {
      "center": [
-      35400,
-      0
+      32918,
+      364
      ],
      "size": [
-      500,
-      2080
+      300,
+      300
      ]
     },
     "closing": null,
     "spawns": [
      [
-      35584,
-      -1118
+      34218,
+      214
      ],
      [
-      35584,
-      1118
+      34218,
+      364
      ],
      [
-      35008,
-      -1118
-     ],
-     [
-      35008,
-      1118
-     ],
-     [
-      34000,
-      -1118
-     ],
-     [
-      34000,
-      1118
+      34218,
+      514
      ]
     ],
-    "patrols": [
-     [
-      [
-       33280,
-       -520
-      ],
-      [
-       34900,
-       -520
-      ],
-      [
-       34900,
-       520
-      ],
-      [
-       33280,
-       520
-      ]
-     ],
-     [
-      [
-       33820,
-       -260
-      ],
-      [
-       34432,
-       -260
-      ],
-      [
-       34432,
-       260
-      ],
-      [
-       33820,
-       260
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
@@ -14316,19 +14287,43 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "height_cm": 2700,
+    "lift": {
+     "size_cm": [
+      600,
+      600
+     ],
+     "bottom_cm": 2700,
+     "top_cm": 14200,
+     "gantry_cm": [
+      5575,
+      8450,
+      11325
+     ],
+     "gallery_rect": [
+      33868,
+      -1636,
+      34868,
+      2364
+     ],
+     "gallery_exit": [
+      34368,
+      2164
+     ]
     }
    },
    {
     "beat": "ch08.b12",
     "zone": 3,
     "entry": [
-     32480,
-     0,
-     0
+     34068,
+     364,
+     90
     ],
     "anchor": [
-     34720,
-     0
+     34368,
+     364
     ],
     "objectives": [],
     "pickups": [],
@@ -14338,93 +14333,31 @@
      {
       "event": "volume_enter:vol_heirloom_hall",
       "center": [
-       34180,
-       0
+       34368,
+       364
       ],
       "size": [
-       400,
-       2080
+       1000,
+       4000
       ]
      }
     ],
     "exit": {
      "center": [
-      35400,
-      0
+      34368,
+      2164
      ],
      "size": [
-      500,
-      2080
+      600,
+      300
      ]
     },
     "closing": null,
-    "spawns": [
-     [
-      35584,
-      -1118
-     ],
-     [
-      35584,
-      1118
-     ],
-     [
-      35008,
-      -1118
-     ],
-     [
-      35008,
-      1118
-     ],
-     [
-      34000,
-      -1118
-     ],
-     [
-      34000,
-      1118
-     ]
-    ],
-    "patrols": [
-     [
-      [
-       33280,
-       -520
-      ],
-      [
-       34900,
-       -520
-      ],
-      [
-       34900,
-       520
-      ],
-      [
-       33280,
-       520
-      ]
-     ],
-     [
-      [
-       33820,
-       -260
-      ],
-      [
-       34432,
-       -260
-      ],
-      [
-       34432,
-       260
-      ],
-      [
-       33820,
-       260
-      ]
-     ]
-    ],
+    "spawns": [],
+    "patrols": [],
     "cache": [
-     32560,
-     -988
+     34368,
+     -1036
     ],
     "stations": [],
     "step_stations": [],
@@ -14462,7 +14395,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 14200,
+    "lift": null
    },
    {
     "beat": "ch08.b13",
@@ -14603,7 +14538,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b14",
@@ -14734,7 +14671,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b15",
@@ -14875,7 +14814,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b16",
@@ -15076,7 +15017,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b17",
@@ -15222,7 +15165,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    },
    {
     "beat": "ch08.b18",
@@ -15363,7 +15308,9 @@
      "fires": null,
      "ladders": [],
      "charge": null
-    }
+    },
+    "height_cm": 0,
+    "lift": null
    }
   ],
   "pickups": [

@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "SoraWorldBuilder.generated.h"
 class ASoraHorse;
+class ASoraCampaignLift;
 class ASoraPlayerCharacter;
 class USkeletalMeshComponent;
 class UStaticMeshComponent;
@@ -88,6 +89,7 @@ public:
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
+    ASoraCampaignLift* CampaignLift() const;
     void ShowRecoveryBundle(bool Visible);
     void ShowEpilogue(bool SwordFound, bool SwordReturned, int32 Plaques);
     int32 RehungPlaques() const { return EpiloguePlaques; }
@@ -134,6 +136,7 @@ private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> RecoveryBundle;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> RecoveryHatch;
     UPROPERTY() TArray<TObjectPtr<AActor>> KitActors;
+    UPROPERTY() TObjectPtr<ASoraCampaignLift> Lift;
     // The escorted party: one root per member, a villager or a cart under it.
     UPROPERTY() TArray<TObjectPtr<USceneComponent>> KitParty;
     UPROPERTY() TArray<TObjectPtr<USkeletalMeshComponent>> KitWalkers;

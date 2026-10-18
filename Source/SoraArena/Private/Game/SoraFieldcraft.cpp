@@ -487,7 +487,7 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
         Spec.Role = TEXT("bystander");
         Spec.bDetectable = false;
         Spec.Rules = {100, false, 3000, 0, 0, false, 0};
-        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Layout::Floor(F.People[Index].At, 90.f),
+        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Layout::Floor(F.People[Index].At, Beat.Space.HeightCm+90.f),
             FRotator(0.f, Index * 45.f, 0.f), Params);
         if (!Companion) continue;
         Companion->Init(Spec, Index);
