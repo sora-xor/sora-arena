@@ -220,7 +220,9 @@ void DrawLine(const FSoraHUDFrame& Frame,const FSoraDialogueCue& Line,float Bott
     if(const auto* Speaker=Frame.bSpeakerNames?FSoraCatalog::Get().DialogueSpeaker(Line.SpeakerId):nullptr)
     {
         HUD.Label(Speaker->Japanese,35*S,Top+Layout.SpeakerY,Frame.DialogueJapaneseSpeakerScale,Frame.Gold);
-        if(G->bEnglishSubtitles) HUD.Label(Speaker->English,W-285*S,Top+Layout.SpeakerY,Frame.DialogueEnglishSpeakerScale,Frame.Muted);
+        if(G->bEnglishSubtitles)
+            HUD.Label(Speaker->English,W-35*S-HUD.LabelWidth(Speaker->English,Frame.DialogueEnglishSpeakerScale),
+                Top+Layout.SpeakerY,Frame.DialogueEnglishSpeakerScale,Frame.Muted);
     }
     HUD.WrappedLabel(Line.Japanese,35*S,Top+Layout.JapaneseY,Frame.DialogueJapaneseScale,Frame.Ivory,W-70*S,Frame.DialogueJapaneseLineHeight,2);
     if(G->bEnglishSubtitles) HUD.WrappedLabel(Line.English,35*S,Top+Layout.EnglishY,Frame.DialogueEnglishScale,Frame.Muted,W-70*S,Frame.DialogueEnglishLineHeight,2);
@@ -306,6 +308,15 @@ float SoraHUDPanels::GameplayStoryTop(const FSoraHUDFrame& F) { return BuildLowe
 bool SoraHUDPanels::BottomHUDLayoutFits(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero,FString& Why)
 {
     const FLowerStoryLayout L=BuildLowerStoryLayout(F);
+    if(F.bSpeakerNames)
+        if(const FSoraDialogueCue* Cue=F.Mode.Campaign()->CurrentDialogueCue())
+            if(const auto* Speaker=FSoraCatalog::Get().DialogueSpeaker(Cue->SpeakerId))
+            {
+                const float JapaneseRight=35*F.S+F.HUD.LabelWidth(Speaker->Japanese,F.DialogueJapaneseSpeakerScale);
+                const float EnglishLeft=F.W-35*F.S-F.HUD.LabelWidth(Speaker->English,F.DialogueEnglishSpeakerScale);
+                if(JapaneseRight>F.W-35*F.S||(F.Mode.bEnglishSubtitles&&EnglishLeft<JapaneseRight+14*F.S))
+                { Why=TEXT("Dialogue speaker names exceed their row or overlap"); return false; }
+            }
     TArray<FBox2D> Panels=WeaponPanelBounds(F,Hero);
     Panels.Add(FBox2D(FVector2D(25*F.S,F.H-110*F.S),FVector2D(365*F.S,F.H-30*F.S)));
     for(const FBox2D& Story:{L.Dialogue,L.Notice.Bounds,L.Prompt.Bounds}) if(Story.bIsValid) Panels.Add(Story);
