@@ -27,14 +27,18 @@ void ASoraWorldBuilder::BuildZone(const FSoraZone& Zone,int32 Index)
     // estate hall and iron plate in an alien one.
     const TCHAR* FloorRole=bHall&&bAlien?TEXT("Metal"):bField||bRoute?TEXT("Soil"):bHall?TEXT("Timber"):TEXT("Stone");
     const FVector2D Center=Zone.Rect.GetCenter(),Size=Zone.Rect.GetSize();
-    Box(Name+TEXT("Floor"),FVector(Center.X,Center.Y,-50.f),FVector(Size.X+160.f,Size.Y+160.f,100.f),
-        FLinearColor(.18f,.19f,.16f),true,FRotator::ZeroRotator,FloorRole);
+    // An estate hall's floor and walls become its authored interior's
+    // collision once the whole kit loads (SoraWorldBuilderDojoHall.cpp).
+    TArray<UStaticMeshComponent*> HallProxies;
+    HallProxies.Add(Box(Name+TEXT("Floor"),FVector(Center.X,Center.Y,-50.f),FVector(Size.X+160.f,Size.Y+160.f,100.f),
+        FLinearColor(.18f,.19f,.16f),true,FRotator::ZeroRotator,FloorRole));
     const TCHAR* WallRole=bAlien?TEXT("Metal"):bHall||bRoute?TEXT("Timber"):TEXT("Stone");
     for(int32 WallIndex=0;WallIndex<Zone.Walls.Num();++WallIndex)
     {
         const FSoraBox& Wall=Zone.Walls[WallIndex];
         auto* Mesh=Box(FString::Printf(TEXT("%sWall%d"),*Name,WallIndex),FVector(Wall.Center.X,Wall.Center.Y,Wall.Height*.5f),
             FVector(Wall.Size.X,Wall.Size.Y,Wall.Height),FLinearColor(.2f,.23f,.23f),true,FRotator::ZeroRotator,WallRole);
+        HallProxies.Add(Mesh);
         if(!bEstate||bHall||bField||bRoute) continue;
         // The estate's four-metre wall module repeats inside the wall volume;
         // the box stays the collision and hides once every module is in place.
@@ -50,6 +54,8 @@ void ASoraWorldBuilder::BuildZone(const FSoraZone& Zone,int32 Index)
         }
         if(bComplete) Mesh->SetVisibility(false);
     }
+    if(bEstate&&bHall&&HallInterior(Zone,Index))
+        for(UStaticMeshComponent* Proxy:HallProxies) Proxy->SetVisibility(false);
     if(bRoute)
     {
         // The road: a slightly raised strip of packed earth along each stretch.
