@@ -23,65 +23,84 @@ they are now included in the regular import pipeline. All 324 raw CC0 files
 were SHA-1 checked in the isolated cache. The `SORA_CC0_STORAGE_ROOT` override
 keeps builds independent of the shared checkout.
 
-Paired rendered runs on clean `640529d` each pass three tests and preserve six
-original 1920×1080 PNGs, with source/device metadata and frame hashes:
+The first paired real SM5/SM6 dojo runs at `640529d` preserved six original
+1920×1080 frames each and exposed missing material permutations, coarse block
+sampling, clipped lighting and placeholder props. Explicit Nanite and instanced
+mesh usage flags in `45f2ab2` now pass actual imported-material validation;
+the negative check rejected the old cargo material before reimport. Original,
+palette, craft and dojo reimports all pass. Same-source `2bb3e36` captures at
+`Saved/Capture/20261018T102719Z-sm6-84692` and
+`Saved/Capture/20261018T103442Z-sm5-95857` show resolved wood grain and ceiling
+emblems on both paths, without the prior missing-usage warnings. All twelve
+dojo frames were inspected. Repetitive textured boxes, clipped openings/lights,
+unfinished restoration props and red cylinders still fail photoreal acceptance.
+These captures do not independently validate Claude's pending UV interpolation
+change or prove visible Nanite geometry. Earlier capability tests confirm SM6
+eligibility/HI selection and SM5 conventional MAC selection on this M2 Ultra.
+Forced SM5 on M2 does not qualify M1; editor-game frames are not packages.
 
-- `Saved/Capture/20261018T094629Z-sm5-43550`: actual Metal SM5, conventional MAC
-  asset tier, Nanite ineligible.
-- `Saved/Capture/20261018T094953Z-sm6-50039`: actual Metal SM6, HI asset tier,
-  Nanite eligible. Eligibility does not prove Nanite draws.
+All 57 campaign, fieldcraft and Connect editor tests pass at clean `13ec0cd`,
+with zero test errors or warnings. This includes the complete 8-chapter,
+133-beat scripted traversal, maai movement, equipment recovery and optional
+caches, guarded hoist, both saved endings, all dialogue checks, the three carry
+difficulty settings, and actual ABI 30 loading inside Unreal. Clearing
+fieldcraft during world EndPlay resolves the earlier 187 teardown warnings.
+The first-inspection fixture now verifies the authored checkpoint boundary:
+a reload before b15 replays the b12 ceremony; the later checkpoint retains it.
+Evidence: `Saved/Qualification/2026-10-18-m2-resume/campaign-fieldcraft-native/`.
 
-All twelve frames were inspected. Both paths retain conspicuous checker/blocky
-materials on the floor, walls and ceiling, clipped openings/lamp hotspots,
-and placeholder restoration props. This is the old imported DojoKit, before
-Claude's current timber/material work. Neither path passes photoreal acceptance.
-Forced SM5 on M2 does not qualify M1 hardware; these are uncooked editor-game
-captures, not release packages. The capture launcher archives acknowledged
-PNGs byte-for-byte and rejects stale, duplicate, corrupt or wrong-size images;
-its fifteen regression tests pass, including separate registry UI fixture scope.
+The authored three-second granary seal pry and manual cargo set-down are now
+implemented. Damage pauses the pry without erasing partial work; release and
+leaving also preserve it until checkpoint retry. Loose loads remain reachable,
+conserve source stock, can be recovered and delivered once, and are cleared on
+retry/reload. `CarrySealAndSetDown`, `CarryDifficulty` and full `Playthrough`
+all pass at clean `16b7762`, with zero errors or warnings. The archived traversal
+records 133 beats, 8 caches, 28 pickups, 120 checkpoint reads, 61 checkpoint
+reloads and 13 phase reloads. Evidence is under `carry-seal/` beside the earlier
+suite. These tests exercise real inputs where stated, but the accelerated full
+traversal does not establish normal pacing or difficulty. Named carry capacities
+and co-operative crank/ratchet rules remain in development.
 
-Directed UE tests now pass maai's real movement/mentor steps, equipment recovery,
-guarded hoist, all five dialogue tests and both saved ending routes. The full
-campaign suite on `44a03ce` passes 21/22, including CombatTrace; its playthrough
-stopped because the completist driver attempted maai from another zone after
-collectible detours. Correcting that fixture and its assumed katana return
-exposed a real recovery-handler bug that consumed unrelated cache interaction.
-The narrowed handler and dedicated cache/mandatory-recovery regression pass at
-`e22203b`. The full playthrough also passes: 8 chapters, 133 beats, 125 required
-beats, 8 caches, 28 pickups, 120 checkpoint reads, 61 checkpoint reloads and
-13 phase reloads. Its original telemetry is archived beside the report at
-`Saved/Qualification/2026-10-18-m2-resume/campaign-recovery-cache/`. That run
-retains 187 world teardown warnings; a lifecycle fix is integrated and awaits
-engine verification. These headless checks do not establish ordinary-input pacing.
+The offline registry preserves all 16 authored goods/count entries and derives
+its chapter page from existing completion bits, without wallet or extra ledger
+state. Six actual Japanese/bilingual registry fixtures pass at 1080p; after
+measured row composition, all six pass at 720p too. Visual review confirms
+readable counts/status/inspection roles, with English word-boundary polish still
+pending. The weapon panel now wraps complete text within measured bounds;
+three weapon fixtures pass at both sizes. Visual review found an instruction
+strip overlapping the taller bilingual bokken panel, so overall HUD acceptance
+remains open. Top-right task rows are also too small at 720p. Captures and
+`visual-review.json` retain these defects at `20261018T103738Z-sm6-1041` and
+`20261018T104126Z-sm6-7980`. These are prepared UI fixtures, not playthrough
+proof. The archive verifier's 20 host regressions pass, including original
+frame acknowledgements distinguished from failed-test log replays.
 
-The offline registry now preserves all 16 authored goods/count entries and
-builds its current chapter page from existing completed-beat save bits, with
-no extra ledger or wallet state. Data validation, production/retry and saved
-result recovery tests pass. Both elapsed and skipped ceremonies now complete;
-the reload fixture is being corrected to respect the authored checkpoint:
-reloading before b15 replays the b12 ceremony and restores unsealed goods.
-Actual registry page captures remain in validation. Difficulty-specific carry behavior and
-co-operative crank rules still need implementation and engine verification.
-
-All 28 gameplay/tooling source checks pass on clean `44a03ce`, with unchanged
-source identity (`Saved/SourceChecks/integrated-registry-44a03ce/report.json`).
+All 30 gameplay/tooling source checks pass on clean `16b7762`, with unchanged
+source (`Saved/SourceChecks/integrated-carry-seal-16b7762/report.json`).
 The clean Rust lane passes 279 tests; five long research tests remain ignored.
-The delayed durable handshake regression changes counter expectations, not the
-network protocol. The rebuilt kernel passes all 94 parity cases / 99,043 ticks
-and ABI 4 staging; its qualification flag remains false.
+The rebuilt kernel passes all 94 parity cases / 99,043 ticks and ABI 4 staging;
+its release qualification flag remains false.
 
-The signed clean native source `75e4ca15` builds a 59,933,872-byte ABI 30 bridge.
-Its frozen-library consumer smoke passes 26 declarations, seven builders/eight
-canonical cases and 282 malformed requests, exact payload/fee bindings and a
-non-authorizing Join inspector. The sealed library and original build sidecar
-are now staged in the integration worktree after all four consumer file hashes,
-native source input hashes and both artifact hashes matched. A fresh runtime
-smoke on that copy passes all eight cases and 282 malformed-request rejections
-(`Saved/Qualification/2026-10-18-m2-resume/connect-abi30-integration/`). The UE
-consumer now requires ABI 30; its actual engine/package loading still needs
-verification. Native Rust unit tests need the separately reviewed P2P compile fix;
-Windows is blocked by the native non-Unix custody guard. This does not establish
-live signing, financial authorization, settlement or full execution proofs.
+The signed clean native `75e4ca15` builds the staged 59,933,872-byte ABI 30 bridge
+with SHA-256 `50f4b5a8dcdbef1f3751ce76874b46a05ef8f836a903b205da1c8c1d24780aed`.
+The original source-bound build sidecar remains unchanged. Consumer smoke passes
+26 declarations, seven native builders/eight canonical cases and 282 malformed
+requests; the UE six-action signing allowlist still excludes StakeGameItemV1.
+`SoraArena.Connect.NativeLoader` actually loads that library in Unreal and checks
+local canonical JSON/hash behavior. The later consumer requalification is a
+separate record, not a relabeled original manifest, under
+`Saved/Qualification/2026-10-18-m2-resume/connect-abi30-integration/`.
+Native test closure now passes all 29 directed checks on signed clean
+`10ad7daddf`: seven P2P identity/mapping/backpressure regressions, 19 detached
+scaffold tests and three Join inspection tests. That later source's fresh
+release artifact is building separately. Package loading, Windows custody,
+live signing, authorization and settlement remain unqualified.
+
+The first fresh Mac cook at clean `16b7762` succeeds with 1,314 packages cooked,
+seven skipped by platform, 385 materials, zero errors and zero warnings. Its
+log/source hashes are recorded under `Saved/Qualification/2026-10-18-m2-resume/`
+as `cook-16b7762.log` and `cook-16b7762-source.json`. Game build, staging and
+actual packaged tests remain pending; a successful cook is not a release.
 
 Claude's Nanite policy and OWN ledgers are integrated. The ledger retains 228
 errors on recovered runtime weapons. Fresh Blender CPU metrics pass 10/17
