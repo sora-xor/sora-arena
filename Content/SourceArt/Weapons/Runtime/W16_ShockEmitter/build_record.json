@@ -1,0 +1,152 @@
+{
+ "id": 16,
+ "key": "W16_ShockEmitter",
+ "ja": "電撃放射器",
+ "en": "Shock Emitter",
+ "faction": "Alien security arm (ch07)",
+ "builder": "scripts/art/create_runtime_weapon_alien.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3447.261922209819,
+  "p05": 3238.237716474359,
+  "uv_coverage": 0.776067552443476
+ },
+ "notes": {
+  "overall_m": 0.724,
+  "emissive": "Mask R: capacitor gaps, electrode tips, ledger lines, sigil"
+ },
+ "assets": {
+  "SM_Weapon_16": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16.fbx",
+     "triangles": 12024,
+     "sha256": "f66403a87d08e769dca280bc3a4453c9a2a34d16bed085e093610246274b531e"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16_LOD1.fbx",
+     "triangles": 5050,
+     "sha256": "53ea49b25019da6eaf9d6adcc6e11e48896b5beec7a2a32c02c70bf036c43506"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16_LOD2.fbx",
+     "triangles": 1922,
+     "sha256": "9073d64f280c498b7a5c26c76aeef92355d13afe063796070a427e4368bfa05c"
+    }
+   ],
+   "bounds_m": [
+    0.724,
+    0.072,
+    0.18057
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.18,
+     0.0,
+     -0.031
+    ],
+    "Muzzle": [
+     0.524,
+     0.0,
+     0.034
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_SE_Ledger",
+    "linear_rgb": [
+     0.12,
+     0.85,
+     1.0
+    ],
+    "srgb_hex": "#61EDFF",
+    "strength": 8.0
+   }
+  ],
+  "note": "League glows are warm; only alien arms are cyan"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/T_Weapon_16_BaseColor.png",
+   "sha256": "0549ba567c60e06b9c0b783fef8750f7488d8b0c1ef56c4a2f7a408954be8584"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/T_Weapon_16_ORM.png",
+   "sha256": "d24f6e339f71babd49fa7ebb894b83fcfed3d7e3632cff7cd2eb01a4e1eb58c3"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/T_Weapon_16_Mask.png",
+   "sha256": "c0435cdca8a5cb4206e91215750472e143f2c1cdc657b9467303e09d6808634f"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/T_Weapon_16_NormalDX.png",
+   "sha256": "86510e8d66bb790b29bb875ddfce806d5c47df3b81b0b3f18bf63a291d29f4dc"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_16",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0215,
+  "normal_tilt_p90_all_texels": 0.0583,
+  "by_material": {
+   "M_SE_Graphite": {
+    "tilt": 0.0352,
+    "area_m2": 0.10862
+   },
+   "M_SE_PanelGraphite": {
+    "tilt": 0.0538,
+    "area_m2": 0.03318
+   },
+   "M_SE_Titanium": {
+    "tilt": 0.0084,
+    "area_m2": 0.08163
+   },
+   "M_SE_BlackGlass": {
+    "tilt": 0.0018,
+    "area_m2": 0.03549
+   },
+   "M_SE_Ledger": {
+    "tilt": 0.003,
+    "area_m2": 0.01499
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16.blend",
+  "sha256": "945fd8173af8a90c959c604cc1dca63e1b018465a3c399ef02f353abf0d2929f"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Estate_1m.png"
+ ]
+}

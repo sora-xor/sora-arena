@@ -1,0 +1,3067 @@
+{
+  "schema": "sora-arena-recovered-art-inventory/1",
+  "recovery_date": "2026-10-18",
+  "recovery_date_timezone": "Asia/Tokyo",
+  "source_branch": "codex/claude-recovery-2026-10-18",
+  "source_head": "bf964f09517e88b75316eaaef9a07dcdc4a817c9",
+  "scope": "Main-checkout modified and untracked authored art and art scripts. This records recovered bytes; it does not qualify or admit assets to the game. Attribution to a particular assistant is not inferred from file contents.",
+  "files_count": 343,
+  "bytes_total": 697474790,
+  "files": [
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/CatBaseV6.blend",
+      "working_tree_status": "modified",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 58530578,
+      "sha256": "1da4d628c1cd55f56a6e1531b478c167c04d33751255d1b8b3ee27bf6639a390"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/CatBaseV6_ViewmodelPaw.blend",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 15852434,
+      "sha256": "fa7e1d1ef8715369a1cca48711728582679f56e1534d746e1bd1eef93264d9d0"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/README.md",
+      "working_tree_status": "modified",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 231032,
+      "sha256": "c2299e8cfc2e08081667403ad4bd8f3c63db186bc91721c4307a17bde721ee8e"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Overcast_CloseFront.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2651916,
+      "sha256": "e603501c66b91ae957fe07a582630796c6278ef0459ba83b537fcfbda2687c9e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Overcast_CloseThreeQuarter.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2748691,
+      "sha256": "e7d9f9f515705707c8a1d948613b495aa0d66b7371cec173107dc22d951d6d3e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Overcast_Front.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2404323,
+      "sha256": "bc1d38f85dec34bc332f715cbd7ce70a96959dbcbbc6deac9a764198177baf71",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Overcast_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2421774,
+      "sha256": "3639fcfc5c4e61f89284ec3b0e848c3c09c4b9a2f271a0ac2b0e4d03db90e07e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Overcast_ThreeQuarter.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2406193,
+      "sha256": "3f95bea5120364bb4ecf68873cd3ae9b9cc60362e3424b12cfddacd2a3ff2d03",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Studio_CloseFront.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2698191,
+      "sha256": "12919c60e61d5293346184ae37d0a386f56ea9ccabb758b791b836fa18c9bb22",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Studio_CloseThreeQuarter.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2839400,
+      "sha256": "93c23d8c00a27a50dc9e9a6ed9d9ea41c818ab724ddfce848382c597cdc0ae91",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Studio_Front.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2447915,
+      "sha256": "a2142dc22a9edd5940ee0efacf6350151d07d52df3a8f768e74a7a912fd4f666",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Studio_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2186521,
+      "sha256": "325240df91fe2688bf57a7f5d49feb72a9009b62ed63377cacbb0d71770aad71",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_Studio_ThreeQuarter.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2480483,
+      "sha256": "20e7f37c76092eae4c6359c10518ff2bb8612e66ec9d5e2bce241c801c96803d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Renders/round_9/CatBaseV6_R9_ThreePoint_Front.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2571385,
+      "sha256": "b61d877b88bbc58da1de5b7c08db7d7530cf7d44892fad2ad8e97da52ba37f6c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Coat.png",
+      "working_tree_status": "modified",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2136992,
+      "sha256": "77b0d63dc6d7df36c4c53d55a845da7fc120d72721dcc742eb4279083a4db2a7",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Detail.png",
+      "working_tree_status": "modified",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 469554,
+      "sha256": "b3eb49de4e430f6f77a5b1cc918c4fc2010ea764aad8ef1ddc623030ba40c60f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_FurMask.png",
+      "working_tree_status": "modified",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 424122,
+      "sha256": "6438a6c437b7d359eaefee3b72015e07bf823f82d5a0595349f3b87209d5f419",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Iris.png",
+      "working_tree_status": "modified",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 2716749,
+      "sha256": "cba625e35fe6f861f1ef490621180745cc99892aeb53e7742229688236103d07",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Paw_Coat.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 236550,
+      "sha256": "b9fb1f06083c1b90953c8e5597e19f9fcc5ce42e94641a538ac6bb075925fce9",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Paw_FurMask.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 124102,
+      "sha256": "6d0cf91e427e59d45dca723fa8f1f7a106ef56f10c98ddf18be020cf33300105",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Paw_Regions.png",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 149742,
+      "sha256": "1a07a949f831f80ed8a96e8829154a7e0afaca70ec434533617050d3342b9420",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Regions.png",
+      "working_tree_status": "modified",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 723030,
+      "sha256": "15efc89600a2b80daed87e82fa0c27da636c178657c24a4accc931f85f69b2ed",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_black_urushi_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 2014054,
+      "sha256": "cb50e7a00c1bc3777974045be75197c190e1fd7be2c55a97fa580337fbae5b6f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_black_urushi_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1846061,
+      "sha256": "7ecbb74d1eee0fb12d535cbd70d4d9d7449b148dca68f584dbbbee4b0f1e1f15",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_black_urushi_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1452080,
+      "sha256": "1de3d54a601930bea7875a3ba647b7221dd239ca8a67dce13aea3711cef4e8d6",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_braided_silk_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 2318802,
+      "sha256": "e471e72de1492f180d121873cea1d1c1e9d2324607f196a7f8840375662a0ba7",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_braided_silk_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1334087,
+      "sha256": "bf11ea5d423d3e55d22138757dca3aac5bb090f671cffa45654032139ab5ba66",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_braided_silk_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1455805,
+      "sha256": "e3932f2719822ea555b589a1df69df92b6abcf0317da8523b944498863f2097b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_forged_iron_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 2537259,
+      "sha256": "870be8fad35180c6d02d28042a563f00d68c5bdb07e13a10239f19d4ef8d747d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_forged_iron_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1834304,
+      "sha256": "c9f3acc16cd6e73c1aeb046564e0768527882c19ca2446890cc82ac82279a710",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_forged_iron_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 2068614,
+      "sha256": "f703a87bede145e3c9765bcc4e2edb95ea3e7aa194416ab0a18d3c058579f9fa",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_oiled_leather_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 2423060,
+      "sha256": "570ce96050a24ba0f5107f08b195b03980db221a635e09627f81bfb03c841380",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_oiled_leather_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1716036,
+      "sha256": "089dee561848e6ced8cf46d620388d57cdb93aa425f3f54ff67ef9e728553160",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_oiled_leather_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1709215,
+      "sha256": "7467c8fa123dce39900078f2974f5e9f71f26eee8ae0a503d8cb55185fd6085b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_red_urushi_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 2022195,
+      "sha256": "a3bce0edfa52a59bc8e6f675b9b6a305a9fde635b41f126b7b660a3354448ca8",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_red_urushi_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1846153,
+      "sha256": "cfe41b641508acb888163455e577a976066c735fef04129e20039671b53396ed",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/T_Nyaagyu_red_urushi_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 1453643,
+      "sha256": "6e22348bcc37f0309e04bbd91a47c6afd88474b3b75ade147abe015afb58f49e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Horses/NyaagyuAbumiTazunaStudy/textures_manifest.json",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 2944,
+      "sha256": "7e97c20d917cada7e90818a59ec7424ef239ea72486130278a2774591c189eaa",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Bamboo_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 386057,
+      "sha256": "0b88176785a21f78b7ce6ff01217fcb387130ceea1b061630d349a55b7fee03d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Bamboo_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 1830734,
+      "sha256": "f85e7bdaac64813502485c3893b864c8bc8f271e06f0712f7f6b8aa82580de99",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Bamboo_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 177062,
+      "sha256": "684f2a76d26222374999b6661c1693861e0244642c3a0ae1f9267634836e7c5a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/BlackLacquer_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 96295,
+      "sha256": "a100c7ce740a1448908c64cb1382328f61c05708d5bdd41f1aadf91690e1937f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/BlackLacquer_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 1794800,
+      "sha256": "14395f91eb7d85902664c0772cebd85f1417e769c50c9033e9ebff6f619e9eea",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/BlackLacquer_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 970860,
+      "sha256": "9c1b7f6be25a9f68f17bf979d43ca66211846730bdbdca6f765ea4039862214d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Fletching_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 380132,
+      "sha256": "2531f0e131080ea02342b094010c8e25a5aa0e02351f3b9148221a78df07c57a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Fletching_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 1621819,
+      "sha256": "b820aa1c3264f87c69899f05a1d49e56c0546472047bc18c052ca67daf53b998",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Fletching_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 151369,
+      "sha256": "9be207e24784cb0e8c0995edd978ca92990d0298fadb6fcb00d4bdcdea5e60a2",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/ForgedIron_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 295657,
+      "sha256": "4735c26b483f8985bef1e11429726b7c21262d47767d289df11c753f2072ca3a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/ForgedIron_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 1469661,
+      "sha256": "42a6a5ebc15e1522cef70a98be995e565990c2d424ef81c7b9d1f4d42f566394",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/ForgedIron_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 129526,
+      "sha256": "458cfed8b605276afffd5d9fbf9d91712f5fa7e03b9b932cf93c476ad65ae370",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Rattan_Albedo.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 259691,
+      "sha256": "d8532a48987541d0cbe77700f861dfb6991d980ac59b2449c97ef98effae3f36",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Rattan_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 1696632,
+      "sha256": "7b5592a088f20fd13444edf43ea8572752247c32de4886a334c9f1ffaca92374",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/Rattan_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 112430,
+      "sha256": "05440e77a549f507a36d7bd742c32e27e86062c1938641644eef00f37c329285",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/NyaagyuYumi/HistoricalStudy/Textures/texture_manifest.json",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 2144,
+      "sha256": "07fb47652d6a7f060b0fcd1a3f4c3ecd30f4faeaa7102855845192a884b8a291",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/README.md",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 17051,
+      "sha256": "e0b2ff4de6af58e863cd6b75c5a3b7b896e7a4eb859cadbf593ef4f55ec03e71"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3181890,
+      "sha256": "01fad9ecf15da76deba02daec01915e352a18c8281c4b8d29ae70c395f9d7c90",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1315267,
+      "sha256": "3e00e77e8d7c05141998a27215a56c2c746ed3f4d3038512647d443cd6d55d6c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 974175,
+      "sha256": "82324bc214c2984304ea8589d489e25e5d3b08fe8f6ea6e23219e70e8701628f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3200674,
+      "sha256": "52043f7bf82af2fdfcceba0e2144ec5d9c2edc36811a03eb8d1245f16b9e859e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1367912,
+      "sha256": "3ff18681e08263516630dff1815d445a318f37fa2a937ec51bcda798136c8960",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 994410,
+      "sha256": "61f554bc3d36a7b51f322a05757a4c1b4defa1280ce4f29d290227c943cca3cf",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3000683,
+      "sha256": "6444387a482865579de3b7c184d5b736acad194c3ebe97dd29bd70477db19eea",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1350103,
+      "sha256": "13372713197ea06f78867761403f379f76d5822342d5806c7c3e5f30d9908965",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 968679,
+      "sha256": "bddeedd3a131f019dd3fbc11e223d5a32105929b7417c0036052010fc4266cb4",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3153529,
+      "sha256": "50b89d89be1d8d5070972535406734be2baad195f30d83cbd28973c37e961553",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1258665,
+      "sha256": "f4d27a1a0a02065a147ce8fe011386ef9e755d02029399e106dfbd14f5ad8156",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 996683,
+      "sha256": "bc7db70670110e828e3a3a81fb256589524a73a920fe00bebaae69ed26fb8360",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3185231,
+      "sha256": "03876da9774222521ca4e067f39a912699c01ae817c8bc5123ed6333fb335576",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1260401,
+      "sha256": "290b7b4f9f00b22b7da472230b8820046e1fcbd810a49a94fc8ee3a6cda70d2a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1036170,
+      "sha256": "08b66068ec5ece417c8dd170bfc6f30cace8333397460aa0a0a9f2065a30c54b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3151818,
+      "sha256": "f8fc1d49cb23f3bc982d4a973f50a9bf4cbf7ed61feff663a6872ee14985c0fe",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1337399,
+      "sha256": "7ceba857f6710f3b94c7aba35fe385125968aa5289571fd5a6029e7420ea8e9a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 926276,
+      "sha256": "0a789ede3241f4e857fd1cf50c02399bfba53d50b9fdd7d6f3bebe7796583326",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3047231,
+      "sha256": "f7bb9984cf4c7571424995d9bc10a22687af97969f0960703a2f7bec2d1d47c5",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1422868,
+      "sha256": "98f0a8085e2c3988f10370a59bb5ae39e0c8a856aeb990f5f895bca333e5b4dc",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 925192,
+      "sha256": "0717fb68f878a532e53b798071c168cacd56cf63685253726bbbc6e3bec71391",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3102529,
+      "sha256": "b9e06e148fb51d8c530fa60a641236a4985da9282dc4f056980085058d38dccc",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1385601,
+      "sha256": "b4719dd8b7642d9a67b008a46176d39eb3a907d98175b7c69623324a67da5922",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1084384,
+      "sha256": "03f103515dcad2ee67216db3439670522104aca2dfeb26b125fc923c0913a8c3",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3105077,
+      "sha256": "b3ad6dd12f2de7dab2d8aefcfa622f2e478e584a599bb0f1186bf11914c103ce",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1241756,
+      "sha256": "bcca67bffacdad1e506a8f20431b48c98a6942013aa434d0a914a3c4b7520d81",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 912536,
+      "sha256": "0d22060f0c4cc05f14571f180426c300a6bcd1e71a27918791198d7cc493c02e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3114362,
+      "sha256": "3550b8a7e1b5cee52a9c1b118f3aed4853a8355561b202574e6bef22f0ae2563",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1338720,
+      "sha256": "d1eb33b114dffa0e0aa09c9f3e9ed95f78ded9451a6c519eecfb292d6c5a62d0",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 892094,
+      "sha256": "4d677445e7d321925b9c1fc1ca4828ca25c9a859eb9565e9a43815c071d4dea8",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3186147,
+      "sha256": "58cd7b9bb7a97a3a520cc18726afe7a41c7206aa9f25cb26222f4d45a55a260c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1218363,
+      "sha256": "f88c34eefcbc421835a9c272f7d608ebbb9280aec56e68026cf3a92582b6bdcc",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1049653,
+      "sha256": "666fcab787f3ab9f480a776b136ad055f0ec3433a799a1bae373f66d879f356d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3123816,
+      "sha256": "8be1af72719c4a15a6bc93456698da20f23c22b3dcf27231a31264024486d1f5",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1315986,
+      "sha256": "6108bfe46c58288ab24f56599e6a2c89852be9f4c5624ade85a3a008019aa316",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 970373,
+      "sha256": "a9aadf07c9c6867c251e7772d651757eab3bcf7897a0d90dbb6fe9c862f8570e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_12_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3180487,
+      "sha256": "ea455546384817eb4bb57cc803a4b9b7139917f1e21a44706d438fdf23b971e6",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_12_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1244310,
+      "sha256": "e86f6ffb65f1b2be59e0cafea86d8a3482cee9998fbec804815477f594f4d22d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_12_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 830977,
+      "sha256": "749488c67cd68916c45c49bbd2a81f7f7576dd02f8792f370809bcace4926dd2",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3131089,
+      "sha256": "0c3f57961efdffdb15f49cbcb123aeb38ba4132a4fae18c4efe9a53fea1219d3",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1280974,
+      "sha256": "9df7f48dc8b9e59af12eaf8c7c6285dbb6ff3bf79bad1960f8d6e8e38706ba8c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 980222,
+      "sha256": "5fc17052479e08f9724cc6f9cc88e3b7b4ec550420af0e153db5994eb3206c0c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3136588,
+      "sha256": "03f3e0ef633e9c2cf131565dec103d8e3ca8746eeaaaa0c6e54e950e89362135",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 65536,
+      "sha256": "6385c16bca26357976cd416661006d8f956157bb633564d61aef1eb606640c17",
+      "png_chunk_crc_validation": "truncated IDAT chunk at byte 58136: needs 66340 bytes, file has 65536"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 896254,
+      "sha256": "41957232dc28ee4e438c6b4ee571eea4350e2f713a4e4436f88c19c5227ea5ea",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3047153,
+      "sha256": "41ce5ac20a9dcc317c521c49855b14b82a521f5eb5aadeaecc3460893f343b08",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1340850,
+      "sha256": "898cda0d0d0ac0c172dc49e281baa20bc955f57048de2f4336179d07f3ba4ea1",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1137608,
+      "sha256": "c4da65229eac107e7eacce66703d0c1e410ecf85afff47bbad5a74d3cd78055c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3146300,
+      "sha256": "97d0ec3072b710a494b1c923810c5a7b425384dbe5278940880cf32ec13f3a4a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1305083,
+      "sha256": "381de01905db6d28677ed73f3b3222a726f945e3736a2bd32dcfb4b513a525d7",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 983928,
+      "sha256": "169a3adb7a3251d7b5a53a2af21f655919a701afd2c3e8902cb9d5d4961525ed",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3174523,
+      "sha256": "1601211a626f15c050338414bbe2558ee2c7931965b2a8eee4b2ed878e06cc0b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1212649,
+      "sha256": "2b090229bc8fba324e4261a6371e6392bc2070b307ac234a22e497635f1d5841",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 852154,
+      "sha256": "bda2fde54684b2083086f83fbde2bbdba27a8fe7e6dd103dd691672acf215324",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3195194,
+      "sha256": "c0533c330264fcca74118cda2a71d4931e2699d9eeae33ea105bacef73990ee7",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1364432,
+      "sha256": "915b26d99080443059cca1c5e4b89ad526c02113bfdd62665ac4ac997784b094",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 817480,
+      "sha256": "0187a637060c4a5c2ba56c7507e796f7ff4ea025e9e509381f7c1b46ffb85506",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3142276,
+      "sha256": "bddd0789f3052132f89354e3901a68680a328b8fd86a00f68f6279a872aac821",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1197211,
+      "sha256": "8add18c090116bb33a3805bfea699696b67a95970c0ee2a2044815cf2aa23c9e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 823610,
+      "sha256": "177242057b203226ee96fe6063953ba1f56717a4b6cbfc81d6b1c3ac90b36fff",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_20_Estate_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3175577,
+      "sha256": "1ac042e80fc383695295ee905e266be2374674b47f0ee9db3f155d7cefd930c8",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_20_Neutral_1m.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1176087,
+      "sha256": "db31de187b1f1b9eecfce3a32c74d5da2334527017484b44a55432859f96581a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_20_Profile.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 821542,
+      "sha256": "c73fefb671708a32976267bdb832dc32056231ba39c978750c87a467dada480b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 8450247,
+      "sha256": "49ea9465cbc2d3fb892790eb3ebeb47755b65df5c63155c19a7923159f1057d0"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 7850540,
+      "sha256": "2631bad6a4c5e2436916410b4d2d93a9d6d4bb2166bab57005254498c8e085f9"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3838108,
+      "sha256": "4845a80d9a4291839b2a94574249c246d733ab7ce445af92d19193793b8f7116"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1588988,
+      "sha256": "1e94856bc9430f5dfd630bb90d6a069fed8eed4e3500d68dcdfb3df1e04f7f87"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2845420,
+      "sha256": "c85210574b2b25a0f951af37188b5c3d08a96f0f40a342ec0f8be7f07c1c91cd"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1496700,
+      "sha256": "7e600103e5a5a7e34cee3bf1f8824aa23d747e343685623ab92815151e267e2e"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 644396,
+      "sha256": "1634cc8c1bd1c4377ee9c01fdee5edcdc773a5038097dad07cf5234226144b2e"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2489776,
+      "sha256": "021c283c7dd5af609bbb6bfbdd9701cfb60cc6d6d2c1f7784553d2a3f47c5515",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1877360,
+      "sha256": "4b5dff47fa74088d9c5c0d374b53e58760fda5d5d310718dd517bc7c634a567f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5173311,
+      "sha256": "ff7ff1b4080111b9690bb31566596fbb5b424162035b311b2541e9846246c2e5",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3765479,
+      "sha256": "0d0fb6473a6ba8381eab7db81824f4ea9cba391ee3350229b607dc8506d1ccad",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 6443,
+      "sha256": "abb0fa88aa5e68174e8f0d4309a17a9c9d90fa6c023aada75e0a5184d3a25efe",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2998662,
+      "sha256": "5bbb58ceb97bb98ff09932eccb04a6cfbcfd6f90f6638df64de230284fc657a8"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4488332,
+      "sha256": "fe6731a19ca6fad58f423752db4390b5d5ff38c68960f8f817f52e477ae43e1e"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2430428,
+      "sha256": "a026f4d5051be5b8d60b8d03443780a77a7ea39ab7c1808b687dc646adc87e17"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 880940,
+      "sha256": "9f4e023d87bf8b26f052815018e380b9a51656389a1ac093cb2cd155b1270e0d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3455151,
+      "sha256": "afcbd41dd529b83562f91018456394ff085e266b093faca549a64548eff579a0",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2613477,
+      "sha256": "fea460a8ab5609ea9436c67ea02a6906905684deed244c88bf9a9c6211b35eff",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4127206,
+      "sha256": "731323b8a4fd52cd021ba3d2d5cc85e5cff208ed9e67679b6a9f48810b43e1b6",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4037295,
+      "sha256": "20ea3216f552f1ae61f25895c694b91665655f2840a8af3339c0cf8ad2d761c6",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5106,
+      "sha256": "69a119fff82666da8a1027e85d83690434ccace7b04fa1f8e109265aa9803666",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3382547,
+      "sha256": "b5ade2748db8277f750541dc8f6bda765e7edcf3b21ae0b146fde2c3c9db9e94"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 462412,
+      "sha256": "7bafa3ee11a13e3e9315f38b01a63a21d31a12ae771da127981f21fa3271a39b"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4310540,
+      "sha256": "8c25b5624e6007f95f50b9d989b08417217d5b7ea3938d08c2de777af19b0395"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2645516,
+      "sha256": "b1aac1901958451c2d9e540266a876a38d3b2356cb48001dca2bc33ab30c124b"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1173308,
+      "sha256": "e96695d7c197442520d42e27af230c1bda405c03138c08b32fe3d21d9e6c3bc6"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 231500,
+      "sha256": "c192953e151d357c28008908a3d1ebd5182b0a77ed21972d1e1c59f584b3959d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 91068,
+      "sha256": "bb664904e3d34fce7f3116c7627938938d8c5638df7a680c8d7454330bb3dad4"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2908433,
+      "sha256": "a2e073b382bb7953999c77c204a9a20117628c9083e9a52aec623b8d2bdc0d8f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2039208,
+      "sha256": "feb6f8d3589a33c31f149e6fcb948ab1e4a93f4fd12a7736599ef88f4f2f1e76",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3927885,
+      "sha256": "2495243a47c06f02a6e0c1772a2b7c6a7dd1444b71a0e54542c3cbcb2b0bb03e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3134239,
+      "sha256": "0759c5eb72075bce2ee2269723eaf6d3b5783dfb1c075b5f4f657fbec51f5618",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5856,
+      "sha256": "4639627c3663a1e02ef101e9bf95eae95c12343afa5e694889668d79bfe3c1af",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 779354,
+      "sha256": "5485975c837a74e904f64c02f5e96429e824aec52de8db105d8c7bf32db0744b"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1135276,
+      "sha256": "e2ac9186232365a25ea7eec66586fee726b1e979983a9b3648c359bbdf03306c"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 587676,
+      "sha256": "fdbb77a2e71288dd488dc53288da5293b38f02a3a29597a56284878e9ba56ef9"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 239884,
+      "sha256": "bc83a6cc07eeed9f96b8b5c6c76b4f445c9925f5eb490bd598042ec478eff8cd"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/T_Weapon_03_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1922213,
+      "sha256": "1cd074da6797f1dd32f0728deb2ce1ccc68f7e68f7da2d58e7aeaacd8739fc1d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/T_Weapon_03_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 824706,
+      "sha256": "4898a1f1dc9e94604ee936a7227d7b4251397f8c9129a744bd6b3f0c585798da",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/T_Weapon_03_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3805323,
+      "sha256": "ee521dcb23d7376c232831db45ceb091307298cb7d09f1f78f021cf9afcd288b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/T_Weapon_03_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2464125,
+      "sha256": "ef8403c34833a8f31307e696fca2af784bee606a3b7b6e473db372ca486d540e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4232,
+      "sha256": "2a11947e132c79ac87344d743ced9b8610825101a59e78f159298fdc25aaaba1",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 6316198,
+      "sha256": "2e5a927bf552510e12030e78f5a5d030f5cf381ff366a73a4a5caf17377d5232"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5872732,
+      "sha256": "5412c5d8fa2ab9b450f2e6ce831200535838fe2bd92f237d02c41eee98fcb99f"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2869948,
+      "sha256": "ef3061b9f8d87b4266fa2007b8fb3348f88a0fe6f1e8dfbd90fed2acc427b608"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1209004,
+      "sha256": "0358731c552a9f7d89126a47349cb574cc2149049e725ccb04ffcba039f0ba5e"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2289420,
+      "sha256": "8a3c8e96ee40fa8d44132465313ac3b8776819d99ca550596cb54bdb9ace115a"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1192252,
+      "sha256": "ea0c428e7a512045258b0acedf5a5198dd9a6b3f3ccf94b6ee2f113d5d4a732d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 521388,
+      "sha256": "b89f25871d3f95805133414a0a5db84de58620c6ca4c2a6e923153af882d0708"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2355541,
+      "sha256": "d7f1f4a22b75840c8290cdd888db45525a6b1715a92f4003c3b4069bc0dffad6",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1749616,
+      "sha256": "bf8f3e1f971b69489ab57882d21fa963573c10d43b7120fbeafc771bf219b6ce",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4950197,
+      "sha256": "25c4f21414cf9af35d009f415887dd900fe0b785a68abf5005e2321a6ae9a5fd",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3465670,
+      "sha256": "7bfc74d87dc6e353857ca933fbf0115aee9ea07a70c1941a2c9ede1a825bf30f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 6269,
+      "sha256": "8234cdc6507c7eff50d41bed97ff57a20caa29b0a550510a2029181166392a25",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3343689,
+      "sha256": "3b011e7f9d4785e31736558c5178d38677617b4003d55ffc10ba2c0933f34a9d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4283420,
+      "sha256": "98557c042574829a3b241a41df14f02982f119a9fce94f213eceb8c363a3ec4c"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2310220,
+      "sha256": "c985ff85774e6a2b325de2036232d27398a33d9dcee97d4549a4c9827523524d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 979756,
+      "sha256": "76b98b6680a736dc879f756c1c0cfae3f5de5cf8f0a48229899b59197a0c126a"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3114289,
+      "sha256": "4b1acedc668e1f6c3d8d31567a82b8072e7a05fa2f31aa00d96ac7e3c98b1172",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2569399,
+      "sha256": "9c763a8c8882c9ecce6c4ad8f91338be4dd8215c2fc406154ca49b03e8c9af64",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3822316,
+      "sha256": "b3839d92497d51c430360fb7e0fd10bc063792a5a16e9dff2aa49f66e8487b1e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3066462,
+      "sha256": "5c3fb3087041cb379ec8f6da8f76138be15c886d5d5f831f8a05b71b524635e6",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5725,
+      "sha256": "00d6c5d133b4e57edb077157c19ebbb16799d0249d9019291dbf9c014501e950",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4355712,
+      "sha256": "922a66c66b9f4ab2dc5075c7ce7160e89d4c8028152717cae59eb5da87353da1"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 6399692,
+      "sha256": "95caa016ffae4e4cb3ff2507b4c9841e603efdc09c16c10f395851ad7406c70d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3166876,
+      "sha256": "35862e01172f54f7e15888b04d10a5391908217e3eab0ac04961ee6dd2034e52"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1446252,
+      "sha256": "3abff5b627c57fbcdd647d327dcf4eb9b5ea6b623e2ed7af1bc766aa5cfd8f48"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3672155,
+      "sha256": "9d5b1c5239944ddb2c9dbcc09d9748716318b166115d4f4a55dffa37aa530a9b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2632521,
+      "sha256": "e3e270ed412f6580b4035f60dd5ab9cb3f536fd5dc9d74642f3cab87ece513b8",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5277273,
+      "sha256": "9b570614868160a46ff414cf8a0266b5fff6852177fb3fbc7d9a06048627a29f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3907886,
+      "sha256": "da66e2f910bcbfce76159d2ad1ea051d174b8ccc5e40eb9908b7d1aa7463e81d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4970,
+      "sha256": "23c8ab4a153a663a49b936398bec67bf0c42d1714f6a0ae57fe8893efd7aeea2",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5386134,
+      "sha256": "b36ef2ed59188bbf01007581e47123cc36c31ae991597acf840faa1651342976"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 6337388,
+      "sha256": "ce7a08f78d87165fa6c65ef62612e618fa1ed15ed4202cfb07c2828fc48f1c1b"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4410428,
+      "sha256": "a837f6912002df8b5c55c58ff394b13e477d086444bf7d9972c94a721dc14e5d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1689980,
+      "sha256": "e0fe08be5b620ce2e940d3651d2850b40dda0f2ef203bd63acbd0427f428e19f"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4997832,
+      "sha256": "8e9fbeb124d56bf49903145b9b8290dc29a8b0a11747d6c848f25ba244a9c65a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2919686,
+      "sha256": "d1a29d2388cc71f4a6ca3d28caa291e73cd969aabc69b761654c9c50dcd2e594",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 6232790,
+      "sha256": "c5dd16cdba73cde99e1e5f6deb902e02ff69ad5151e9f17506247bf07c268468",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4146761,
+      "sha256": "dcaac4b856b93da5682a5c4cdc74a65a4a93b1daa0994209fa74311e4dca45d6",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5176,
+      "sha256": "6159b7d6be8bec4be2006678b0c3fdced4c3ae3a939686ec5b26b5c0bcb7cb3b",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 447247,
+      "sha256": "b4067f29b97bfd3ea5c3efac9b4c9296d20fee125ea37160daf90b89aa59caf0"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 506204,
+      "sha256": "bd513b0cced41d792bd6a057df0e077197bebc2725acd9fc39bd31c70d0f1a80"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 249372,
+      "sha256": "9de5ffacd48d06c89e62cdd6c875f43160a157b6bc8b982ad90e14ff5151e548"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 95180,
+      "sha256": "31c5fa1456c98b87ecba7e06cd7ac27fc04e0770e0dd409f605a7dfdc65fa68f"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1447658,
+      "sha256": "1a6a39025b60989a0f152c580a91ee891bee40e0fb3a24ce7588398c2c66b33b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 678566,
+      "sha256": "c024626e38100b7bbf189f11d0f9257766a8aee620cfde100dad58e680a428a7",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2911601,
+      "sha256": "5dd9724360b9658f658e902f9b53b3a59d23e02e491f7105bd3cfc6c2d93a805",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1548526,
+      "sha256": "13ef695fb7156e970f7f0a1b8309389d5ffbe00068a8b38b6d516a801650b195",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4217,
+      "sha256": "b2c118fa3cc2ddac135594552278ea0ced6a43895c104e58de2b8129a75b2daa",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2579830,
+      "sha256": "767450a633bee64d8d2458fa2866411236d4de983b3e764d04545e7497ea1525"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3561276,
+      "sha256": "e891f3d30d5d491872f49187ea533989ca171556271fb789c3ea30b193fdb840"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1754572,
+      "sha256": "846fa944ac141c7ea587b2f9aa718678401ced939901096c1c93040aaf6e896d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 693820,
+      "sha256": "c6de564240fe12f4ee78f470a91b05628073c1218884499ed654004c096258d1"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2766768,
+      "sha256": "612e9ce58a8af978f3b9b9168d765d2aca162870a0be4ed666ea90706bc22bd3",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2121499,
+      "sha256": "692af08714e60c3ad5e8ceafc336c42897131eda6ff940a72118700ae7ffd451",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3457609,
+      "sha256": "baa380f43bdc46a2e9213a08d3a8dee6780a9b4add7074c95b934eb31eb9ce5a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2798487,
+      "sha256": "cc662f2341c3cba11ab3eaeaf42c4a3b737c0a58f7f8ea1e2499d87ec548189d",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4481,
+      "sha256": "7220d698afb2004fd4e0489505e30a28b62a7aafb3733227b3bfd6b3c870969c",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2221956,
+      "sha256": "6f0ee135841f86a5530e27b765ce2f7498a9ef7c4bf0835fd93f56c0709ccb12"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1268988,
+      "sha256": "1711779cdc03aabd4902d05dfeee61464d05d68c8366f46492d4248586d850ab"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 579996,
+      "sha256": "91d346fdee5f365fcdb094c4e038f64df107dca629c482403fc47d03800d4373"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 249596,
+      "sha256": "32b3252fe1414c8dd911902568b932818b377cf7715185d4d65c7bc53c5d7d35"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1610956,
+      "sha256": "fe4d9f73332d0eeacbe50e343d0b8f1673504bfe1d9920a90e6ed15d2873ab01"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 844348,
+      "sha256": "80524f688ecfbbb7e52aa839d8020496e7ea7f476f099c0df1cd2250c66fe0c5"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 372284,
+      "sha256": "127f1306be985390064bf1178e5d34b911ae4e8283ffb2c001a2299bd10142e0"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1312916,
+      "sha256": "44254ae96b3bfed2defb8739d48043e2eaab44a26227f88bba97dd6dd9b9657a",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1314591,
+      "sha256": "5175df8e04ea250878c9f00c3741f9eee5e26f880eaec89b2c4560a9da8778fb",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3694405,
+      "sha256": "ef30e44cee38d8118a4382edd87d4547b9e2cf7db75fdec94bac859359620b98",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2439483,
+      "sha256": "59d8db8633d88df786640f9fb318016c6de1cc1e30d4bafa949bad9d9761d499",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5819,
+      "sha256": "9dfdc63a627dd49e5d32755bcf4be7867dabf24cabd88d642cfc24dc6aabedd0",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1084037,
+      "sha256": "43666901039a64e2633a80f92c24ef294aa4518cd06fee01fb669ccebd4ea92e"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1686620,
+      "sha256": "5ae78277bee9f71e5345d39e0bdfc92445bfe6666521ddc067eabda20ed807ae"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 866940,
+      "sha256": "c50476abe559c3b919dc5ce1da41954095f2d5ab47a8e801860d7dbd66ce9e25"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 337452,
+      "sha256": "3aac48d5a15b900d2cf4368412a236f676a40968b7cb617839b9853fa13d6dd1"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/T_Weapon_11_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2015771,
+      "sha256": "1b3d2011f879c5a73702133071bf1c8eedee6898f500d7f4bd865384d677c3da",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/T_Weapon_11_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 938059,
+      "sha256": "703bb24109f709211ec733d6521a27646b37fd4b11533b1d351db51708e17c98",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/T_Weapon_11_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3426297,
+      "sha256": "9a9e8a2ca1a566b05664f33aef5cdf5663960dc349cd91a7013078a72cc5fc33",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/T_Weapon_11_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2558337,
+      "sha256": "f79d6009df76438ed59be6e9c662263c73fac1c4de4e1f9b8a143bb5fc64d0a4",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4276,
+      "sha256": "28a5268415e8f2db4799f98b210068e73f407e5aca48bad99edb5d4d4e449ddd",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4046167,
+      "sha256": "5ac90658f10623de4474fc8f3bf1e6d09095dca1a121ba1518b76539a2ed1998"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5247276,
+      "sha256": "2c45fd89fdc8a5213118c85e900bc1568b6cc74de18532f2aa286fdd23e471e8"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2847756,
+      "sha256": "04b4230b25ba5802491c0973c409929a1198977b8c025fbf1125dfba81ad9f2a"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 992076,
+      "sha256": "09ac88b3db542906a386f52771d2cb3fc092a411f770721e4a0485b5ce57d8bd"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/T_Weapon_12_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1715864,
+      "sha256": "2e738e30cecb3e82863c8774d62baf5266b21e4c4aa8eab00d30a4c3869b5df1",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/T_Weapon_12_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1124809,
+      "sha256": "272ef136bd2ef72b188fc1f0c2045ac1aaa2a3770c079229ead2ab93c6afcba3",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/T_Weapon_12_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3230701,
+      "sha256": "c5e02d0e8df84f1242e37047f957993be19342a3abee814120b5aa7f62195d83",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/T_Weapon_12_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2330595,
+      "sha256": "928482f2e28b6bb099585c3fd2c70e6399b90ace4a2331821eb33f24f97af359",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5766,
+      "sha256": "7d35ddde95b1c3a9abade3e8d8dbb2dbf9e186d0f17d0928cc0a1e2a485ad6ae",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 666291,
+      "sha256": "dbb6a5e454e7b7b49a86637faf20f6d8cf5bf9ca808818caf947d650ee3bae5d"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 940524,
+      "sha256": "af294dec16fe0d2cd829be856a6eb6a305741501b6273bd2e8b58df8dc4d7f41"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 479612,
+      "sha256": "b03abbca6fbef5f971c42dbe64e07e2ebd4af3a95df6601760ce697804499c74"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 191164,
+      "sha256": "1215cd0b62febc240950bb830aaaf65f6614d9f4b4dfa8def924730f59acf704"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/T_Weapon_13_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1918375,
+      "sha256": "0cfe7e770c868fe10301152921461f2328aaa016b628090293a808fdc9284d3e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/T_Weapon_13_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 727247,
+      "sha256": "5f1d7ee021a267ac2e7f7c649ec4948b5ead7b831ee5ae2a6f715f563ab3d091",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/T_Weapon_13_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3416814,
+      "sha256": "bd3cf5f319a26ba5b6d32bfef2d14b139445f7957887b8e6606eb42bd4b7c7de",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/T_Weapon_13_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2417353,
+      "sha256": "43c8bac46a103cfc7374b4b4be77a4559d67adcfe1f6ebb41964848d01704d92",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4224,
+      "sha256": "0800990384cc3946be7a72cf30748077136af0dd2f9e70ee232b9bd4dccaab0e",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2097201,
+      "sha256": "c668100702e2bf2dd6b6a19a557b4bfc38edc40ff6fec3814f3e70d19aa85656"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2821996,
+      "sha256": "9e22eccfb0daa8a3b3146e20374c38d52751da8e3f4ada588de8c8712efdd707"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1640204,
+      "sha256": "19e20b99e288fae2be8fa8b3caa235e343eb8d49b04549e985d5e6989fb6c8ed"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 656572,
+      "sha256": "b6c0ec827387e031f346fa6f59c77e654e6b65cf45873a2c75e2bb4df93d7413"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2098607,
+      "sha256": "4605cddbae180bc255d75aa704f1e60aea443d23ea89c5e20d666b4b6cbf99e2",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1100489,
+      "sha256": "e92da0b05dfd906a8a94070772d877f9b8e6b91a0511f488976487c60a770a77",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4342575,
+      "sha256": "b2087f140e6906d7115f18282d313479143801f77ab4be9d5cba198dcf732de2",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2810808,
+      "sha256": "5379b817e84dc5475f7580b4f6548db639ece6e74f10f344c1ca42bb89e1340c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4351,
+      "sha256": "878f2e8f62b6a12c92866f05504f7f9eeef4fa2e34e707b0b3ad7e8f87bb1f0c",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1075295,
+      "sha256": "e06faccf4ef06d748aeceb5437be7d4bf3bffda0a53f39e9eda1003a1172ec53"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1540028,
+      "sha256": "781583bb73e8b1f8cd04d38122e1955e2cb91c5d8088debba70ef71332682ed5"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 798204,
+      "sha256": "c82ff813ede6d25ba10acfd29d0689a8e1d756532e923fb37b6d6e6c9433d7c3"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 332780,
+      "sha256": "43003bb60c85b8788140a57644282b8fbf1005f28b2cf0dc8a960816a6a0fd49"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2499576,
+      "sha256": "8d19d4dae30bb88dac89ae99514feaaf4d3ba260d9373fc51a23b6aff38085ab",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1445944,
+      "sha256": "684bd908c9216a83ff29ad29161c5b3a3caa22c8f160db66a608d32647653d5b",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3867503,
+      "sha256": "a9b3c81372a48e089ed90c78302c094445b58201b0c7e6f86a98e2ae5e950616",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2983950,
+      "sha256": "4c4c95ff9323d343f3ec3b0a9eba5aa313da18bcfa82078c12a8286317b73e06",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4673,
+      "sha256": "41be5fc604cc179505c50bb14341467d6e2de5df2ac54dbfdfa321a73c5fd26d",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1000314,
+      "sha256": "945fd8173af8a90c959c604cc1dca63e1b018465a3c399ef02f353abf0d2929f"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1497052,
+      "sha256": "f66403a87d08e769dca280bc3a4453c9a2a34d16bed085e093610246274b531e"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 774060,
+      "sha256": "53ea49b25019da6eaf9d6adcc6e11e48896b5beec7a2a32c02c70bf036c43506"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/SM_Weapon_16_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 327804,
+      "sha256": "9073d64f280c498b7a5c26c76aeef92355d13afe063796070a427e4368bfa05c"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/T_Weapon_16_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1867995,
+      "sha256": "0549ba567c60e06b9c0b783fef8750f7488d8b0c1ef56c4a2f7a408954be8584",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/T_Weapon_16_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 940217,
+      "sha256": "c0435cdca8a5cb4206e91215750472e143f2c1cdc657b9467303e09d6808634f",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/T_Weapon_16_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3235545,
+      "sha256": "86510e8d66bb790b29bb875ddfce806d5c47df3b81b0b3f18bf63a291d29f4dc",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/T_Weapon_16_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2590282,
+      "sha256": "d24f6e339f71babd49fa7ebb894b83fcfed3d7e3632cff7cd2eb01a4e1eb58c3",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4272,
+      "sha256": "16292621147f6b98cfa31b22156f8ac4f01e5b4dd73d3be16b6fa956e37fd10e",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2946499,
+      "sha256": "7badf7d132cc46e8037ff10a35d054634f4c0bc7e08e24cc74db8234bcbfa200"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4208044,
+      "sha256": "34d59a959f4f2e6797ee07a9e9d956572b298d241decba7dd17604719d012fa8"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2471900,
+      "sha256": "c8e2baaaffb5267b0ddb68e8e4b58244b71761c80f5188059ce165abca478f70"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1065436,
+      "sha256": "06c44240d3b8cc605551ef5306336f7fed02e842837d5665df3d1ffded877c59"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3041723,
+      "sha256": "ca583cef74c63a618a27c40e51eb08b1bb382ee7e2279d00de04e32944798a01",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1240862,
+      "sha256": "2295f8c26eb8414f98db0196856b9edcb6b315d58e050446415118d96b5206d6",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4558124,
+      "sha256": "1af0c279fa2555ff06e2d03d3b26229d90db1d71641a5d2feb38c35a05051eaa",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3302256,
+      "sha256": "876e6b4af0f739fd1369b08ac4f8dd9069908d5d782f506136d777a25eb5512c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4780,
+      "sha256": "0a0aed1341398a1e413aef06c480faca19b30bcb91ad84b920ce84111cf94187",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 5830879,
+      "sha256": "819443f6f45bbfd19c80abc709d23dc0d18d40728e4c6b09d89f0741493903eb"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 7048732,
+      "sha256": "96ffd4ac042e9dd4a39290c34c4fd855dc47f57b4c09428fe005f3cecd55df39"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3886572,
+      "sha256": "8e5a958d82dd659b7f58b3ef8085aa34140daf793abda5ade3dc9f0f5ac32fda"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1229900,
+      "sha256": "db77d7acaad4222dba3198941b71cb795fdff6e30b7b3fbec3cd0e5fddd32435"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 542236,
+      "sha256": "3fbec542158e1aa6a7fd20b36a4cb12ed749a2a4296a96c59637476560604b40"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 269852,
+      "sha256": "0959b762d0dd41efd76a33ce29fdbb152cc33b9010a48ac7fc13cd7dd23483b8"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 110316,
+      "sha256": "7c2b12fb34d1eff28aa8cbc2d0a0b3a0b264b6044152d4fa8ecec02c0f4852f3"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3135441,
+      "sha256": "fa11a626c3aae65628f297a40a6805bea9ab3e65dd1474d8548c9b2f5e25ab77",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1149255,
+      "sha256": "54b2a437879d65a5bec0c507f60dc93b288ba6401211c0e7c4e7a831c5ae787c",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4129235,
+      "sha256": "acdfec9fb6f9cf0cc0715a356099ffd917280719c10ca203225eef5b5969069e",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3506471,
+      "sha256": "874ffc195150fdf97adacc99e3a3389bb8e81638fe54dcec36ecf4794f6a1af4",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 6332,
+      "sha256": "e598a0df54d4ec06ab9bdff59f8ed0b812b8576729ea17aa87cf85ec20b83fe8",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1153243,
+      "sha256": "ac083d54e3385b0f075936a5737df7c77d157e2b7cb8599cd9ca0d310ca967a3"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1406396,
+      "sha256": "1325df31fdb759598b6de6f1a352280adfc437f7b217e40d5ee2aedcd3fc8045"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 675372,
+      "sha256": "fdc00879e05e4362d835ba4d89ab45bc8ae86a561785967c448f817c306abaf9"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 300924,
+      "sha256": "9c1e521c2ad3fdb1f9afded84079becf23684cbcdb25f3bcf3d9a384c5314840"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1159804,
+      "sha256": "604fc2464146615cdea4690af94ea292b161a5aa7869627cf6b2a8990dc2a888",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 606411,
+      "sha256": "4ca940446bc2cc93ea26fad51065d8ac8b149df6acfa7c16bb9b0b48150593ca",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3075590,
+      "sha256": "ae72c73aba7a66b97bf75daf7508c0220ad571b7965fbd5a4b15f319d2b6a9e9",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2342552,
+      "sha256": "639a752aefced065c574846fce167ef942c6bdd4ac28c5c47a3ad7cb9f686e06",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4279,
+      "sha256": "d9fe909033d2e2eb4aed30ef5b6fc1b7aeb5ccee1f1637f43dfd17b5785a312c",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.blend",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1863304,
+      "sha256": "99e302451a7aabf03de8810b8227713b210f63e46b329ac446ed4582c47a624a"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2344876,
+      "sha256": "14bc7cddd44eba4ae423277b0e0f9fd06056a9f16017c585cefff2351615f5f5"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20_LOD1.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1120700,
+      "sha256": "0c30a04348c0169527b61bcc81c5956a4c51ab6580af3c1e9ae1e27162a32fd2"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20_LOD2.fbx",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 485052,
+      "sha256": "ffb8409a40d1037411cf81ac334dc77e3384e17c91ee0dc84493c13163142dfe"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/T_Weapon_20_BaseColor.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 1429564,
+      "sha256": "02b99470f1b1411134a7e55c63080fbfd1fe4b853dc3e5a7c28ea0da3373ea44",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/T_Weapon_20_Mask.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 860677,
+      "sha256": "885795039b7539400fb618e5d677baa62289b28ede3f8090842d17142e37d8a5",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/T_Weapon_20_NormalDX.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 3460163,
+      "sha256": "bf27b011a35df23e59f0fbe02be6f0dd6f76b1de3fd9f3899dedc788156517f0",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/T_Weapon_20_ORM.png",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 2598579,
+      "sha256": "8483046d631aa3510649dbc9c7156da01a697ded5f87fb3fe6d840a427454f54",
+      "png_chunk_crc_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/build_record.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 4698,
+      "sha256": "06548c8b390250fca44462b075be5f8264b8428585af34946b976d493e552751",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/manifest.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 46094,
+      "sha256": "0b032d0c3cecaad9cc27b8e14209b7772af09d1b41ec5d06fe1464770afe7bb8",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/metric_report.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 27332,
+      "sha256": "4a0c5264f4a7293b98987514d5b9444333a8928c8e2e2f0482e79c226c860a99",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/sources_manifest.json",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 10046,
+      "sha256": "da2d92de34bc41a503361bdad99beb3fe57cc46f0b33289d5a8de8f5af983045",
+      "json_parse_validation": "pass"
+    },
+    {
+      "path": "docs/art-direction/NYAAKOTO_PHOTOREAL_TARGET.md",
+      "working_tree_status": "modified",
+      "group": "art_direction",
+      "bytes": 3162,
+      "sha256": "efcead8be3e8a9e8fcfe923582f3c86acd0712b2599bdd427d15fe7ce37f84f2"
+    },
+    {
+      "path": "scripts/art/build_nyaagyu_yumi_museum_maps.py",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 6781,
+      "sha256": "ad7292116f9e758292064354cefa6b6dff83ae98682dec77b4b42b1221dbdb32",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_cat_base_v11.py",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 78127,
+      "sha256": "52f8a625cf7432e264e858c4dd5bbf7c3b9e15288020c07f1d9f21c50384aaf7",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_cat_base_v12.py",
+      "working_tree_status": "untracked",
+      "group": "cat_round9_and_round10_generator",
+      "bytes": 88160,
+      "sha256": "d0f356be07ddecff7304956f9c8bb827140329008ba7e988e8ad04df46c59907",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_nyaagyu_abumi_tazuna_study.py",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 18564,
+      "sha256": "01a5adb104fba25329bdaa438941b6fb7e0fc040ee115d4c2545077c2263efad",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_nyaagyu_abumi_tazuna_textures.py",
+      "working_tree_status": "untracked",
+      "group": "abumi_tazuna_study",
+      "bytes": 4258,
+      "sha256": "8d58ab2fd897bcd019048ba6a7705b328e9fd4f6b292c2327279c7b20165e5f5",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_nyaagyu_yumi_museum_study.py",
+      "working_tree_status": "untracked",
+      "group": "yumi_historical_study",
+      "bytes": 23159,
+      "sha256": "c267b8584fbac0c18dbb0e792df18174c9b9043af880a23f99b505337b79508b",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_alien.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 29396,
+      "sha256": "f0121875fa367966c5e0481fecd112b7f2787b7c32a0f5e149104f8fda38b8ad",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_blunt.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 15439,
+      "sha256": "d270f15d560b7d8ea9208b88b23618b06c8310849f8913a8fa7d6ea63f42dd28",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_build_all.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 26597,
+      "sha256": "f258a75a5b947c69edc8cb33538c47bf3de10e417e80f4101ab91b48671f9fc9",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_firearms.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 53382,
+      "sha256": "d07537d8518af03f2f0820ce0c43ec10a65160bb28b3fad7b2293660be964cb5",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_kusarigama.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 13378,
+      "sha256": "866f8aa75add166df043f6efe40784cc169c01f550e74d09983cea97dc86567c",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_lib.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 151277,
+      "sha256": "1068e8c096a6860de657f722add2c45ed5cc7f20757d07ab4d2d058af111fc86",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_nihonto.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 42722,
+      "sha256": "8f4781a79f22f1c3695296cf4797e9f00ddb094da04b152b4eb672b23f8405e7",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_polearms.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 26377,
+      "sha256": "8fb7406ce5ec01a05077e4cf5e768bccffee767550449d6b064c5f43cf4d88c2",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_specs.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 19732,
+      "sha256": "4ce55e9cae49f1dc5dcb029d512cad616c759a1356631e81c0981e45b44a108c",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_validation.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 18475,
+      "sha256": "fa90b6b09174b2294cd43dc6e8b1c1239ba2faef4c2e638a7ddb6238ef17e00a",
+      "python_ast_validation": "pass"
+    },
+    {
+      "path": "scripts/art/create_runtime_weapon_yumi.py",
+      "working_tree_status": "untracked",
+      "group": "runtime_weapon_source_studies",
+      "bytes": 18007,
+      "sha256": "5c4c6b6a082f67483b152af72921258dfcdc15d20a7fac241353fc40ed78d9f3",
+      "python_ast_validation": "pass"
+    }
+  ],
+  "existing_manifest_checks": [
+    {
+      "path": "Content/SourceArt/Characters/CatBaseV6/manifest.json",
+      "recorded_entries": 174,
+      "mismatched_paths": [
+        "Content/SourceArt/Characters/CatBaseV6/CatBaseV6.blend",
+        "Content/SourceArt/Characters/CatBaseV6/README.md",
+        "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Coat.png",
+        "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Detail.png",
+        "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_FurMask.png",
+        "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Iris.png",
+        "Content/SourceArt/Characters/CatBaseV6/Textures/T_CatBaseV6_Regions.png"
+      ],
+      "missing_paths": []
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/manifest.json",
+      "recorded_entries": 218,
+      "mismatched_paths": [
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_12_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_12_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_12_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_20_Estate_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_20_Neutral_1m.png",
+        "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_20_Profile.png",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.blend",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W00_Katana/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.blend",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.blend",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.blend",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.blend",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.blend",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W06_Kanabo/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.blend",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.blend",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.blend",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W09_Repeater/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.blend",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W10_Tanto/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.blend",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12.fbx",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/SM_Weapon_12_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/T_Weapon_12_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/T_Weapon_12_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/T_Weapon_12_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/T_Weapon_12_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.blend",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.blend",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.blend",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W17_HealingLance/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.blend",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.blend",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W19_Yari/build_record.json",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.blend",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20.fbx",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/SM_Weapon_20_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/T_Weapon_20_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/T_Weapon_20_Mask.png",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/T_Weapon_20_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/T_Weapon_20_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W20_Naginata/build_record.json"
+      ],
+      "missing_paths": []
+    },
+    {
+      "path": "Content/SourceArt/Weapons/Runtime/sources_manifest.json",
+      "recorded_entries": 26,
+      "mismatched_paths": [],
+      "missing_paths": []
+    }
+  ],
+  "runtime_weapon_build_record_checks": [
+    {
+      "id": 0,
+      "path": "Content/SourceArt/Weapons/Runtime/W00_Katana/build_record.json",
+      "recorded_hash_entries": 11,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 1,
+      "path": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 2,
+      "path": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/build_record.json",
+      "recorded_hash_entries": 11,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 3,
+      "path": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 4,
+      "path": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/build_record.json",
+      "recorded_hash_entries": 11,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 5,
+      "path": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 6,
+      "path": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 7,
+      "path": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 8,
+      "path": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 9,
+      "path": "Content/SourceArt/Weapons/Runtime/W09_Repeater/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 10,
+      "path": "Content/SourceArt/Weapons/Runtime/W10_Tanto/build_record.json",
+      "recorded_hash_entries": 11,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 11,
+      "path": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 12,
+      "path": "Content/SourceArt/Weapons/Runtime/W12_MonofilamentNaginata/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 13,
+      "path": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 14,
+      "path": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD1.fbx",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD2.fbx",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_BaseColor.png",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_ORM.png",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_NormalDX.png",
+        "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.blend"
+      ],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 15,
+      "path": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 16,
+      "path": "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 17,
+      "path": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 18,
+      "path": "Content/SourceArt/Weapons/Runtime/W18_Yumi/build_record.json",
+      "recorded_hash_entries": 11,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 19,
+      "path": "Content/SourceArt/Weapons/Runtime/W19_Yari/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    },
+    {
+      "id": 20,
+      "path": "Content/SourceArt/Weapons/Runtime/W20_Naginata/build_record.json",
+      "recorded_hash_entries": 8,
+      "mismatched_paths": [],
+      "has_textures_and_renders_record": true
+    }
+  ],
+  "known_incomplete": {
+    "cat": "Round 9 has 11 of 21 fixed review frames, no final paw renders, and stale round-8 manifest. Generator v12 is round-10 source; no round-10 source art output or render was found.",
+    "runtime_weapons": "All 21 folders and 63 render paths exist. IDs 3, 11, 13 and 16 are explicitly held back as blockout by current specs. Existing metric_report and top-level manifest predate rebuilt outputs. W14 has 7 build-record hash mismatches and a truncated Neutral_1m PNG.",
+    "abumi_tazuna": "Five original texture sets and generators exist. No study .blend, FBX, render, or generated mesh manifest was found. All 15 texture hashes match textures_manifest.json.",
+    "yumi_historical": "Five original texture sets and generators exist. No study .blend, FBX, render, or generated mesh manifest was found."
+  },
+  "validation_scope": "Read-only SHA-256, file existence, Python AST parsing, JSON parsing, PNG chunk/CRC/IEND checks. No Blender build/render, mesh reimport, Unreal import, runtime tests, photoreal approval, or historical signoff.",
+  "exclusions": [
+    "Ignored Local/ caches, raw third-party scans, private snapshots and logs",
+    "Ignored Blender .blend1 backups",
+    "Generated Unreal Content/Generated and Content/ArtReview outputs",
+    "All unrelated already-committed files and unrelated worktrees"
+  ]
+}

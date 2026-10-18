@@ -1,0 +1,169 @@
+{
+ "id": 17,
+ "key": "W17_HealingLance",
+ "ja": "治癒の槍",
+ "en": "Healing Lance",
+ "faction": "League special (Okuzu the apothecary, ch08)",
+ "builder": "scripts/art/create_runtime_weapon_polearms.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 2995.64131215299,
+  "p05": 2879.6526142833836,
+  "uv_coverage": 0.6479816414493744
+ },
+ "notes": {
+  "overall_m": 1.85,
+  "fiction": "catalog special 17; Okuzu's apothecary lance (ch08)",
+  "glow": "remedy Mask R, warm honey-gold (League glows are warm)"
+ },
+ "assets": {
+  "SM_Weapon_17": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.fbx",
+     "triangles": 38282,
+     "sha256": "34d59a959f4f2e6797ee07a9e9d956572b298d241decba7dd17604719d012fa8"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD1.fbx",
+     "triangles": 16078,
+     "sha256": "c8e2baaaffb5267b0ddb68e8e4b58244b71761c80f5188059ce165abca478f70"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17_LOD2.fbx",
+     "triangles": 6124,
+     "sha256": "06c44240d3b8cc605551ef5306336f7fed02e842837d5665df3d1ffded877c59"
+    }
+   ],
+   "bounds_m": [
+    1.851,
+    0.03478,
+    0.03476
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.73,
+     0.0,
+     0.0
+    ],
+    "Muzzle": [
+     1.45,
+     0.0,
+     0.0
+    ],
+    "Remedy": [
+     1.125,
+     0.0,
+     0.0
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/polyhaven/rough_linen/rough_linen_arm_2k.exr",
+  "Local/ThirdPartyRaw/cc0/polyhaven/rough_linen/rough_linen_diff_2k.jpg",
+  "Local/ThirdPartyRaw/cc0/polyhaven/rough_linen/rough_linen_nor_dx_2k.exr"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_Lance_Remedy",
+    "linear_rgb": [
+     1.0,
+     0.62,
+     0.3
+    ],
+    "srgb_hex": "#FFCE95",
+    "strength": 5.0
+   }
+  ],
+  "note": "remedy Mask R, warm honey-gold (League glows are warm)"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_BaseColor.png",
+   "sha256": "ca583cef74c63a618a27c40e51eb08b1bb382ee7e2279d00de04e32944798a01"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_ORM.png",
+   "sha256": "876e6b4af0f739fd1369b08ac4f8dd9069908d5d782f506136d777a25eb5512c"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_Mask.png",
+   "sha256": "2295f8c26eb8414f98db0196856b9edcb6b315d58e050446415118d96b5206d6"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/T_Weapon_17_NormalDX.png",
+   "sha256": "1af0c279fa2555ff06e2d03d3b26229d90db1d71641a5d2feb38c35a05051eaa"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_17",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0365,
+  "normal_tilt_p90_all_texels": 0.0874,
+  "by_material": {
+   "M_Lance_Needle": {
+    "tilt": 0.0558,
+    "area_m2": 0.0051
+   },
+   "M_Lance_Brass": {
+    "tilt": 0.0257,
+    "area_m2": 0.00728
+   },
+   "M_Lance_Remedy": {
+    "tilt": 0.0048,
+    "area_m2": 0.0108
+   },
+   "M_Lance_Cage": {
+    "tilt": 0.0141,
+    "area_m2": 0.00657
+   },
+   "M_Lance_Bronze": {
+    "tilt": 0.0265,
+    "area_m2": 0.01629
+   },
+   "M_Lance_ShuShaft": {
+    "tilt": 0.034,
+    "area_m2": 0.12734
+   },
+   "M_Lance_CottonWrap": {
+    "tilt": 0.0707,
+    "area_m2": 0.12948
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W17_HealingLance/SM_Weapon_17.blend",
+  "sha256": "7badf7d132cc46e8037ff10a35d054634f4c0bc7e08e24cc74db8234bcbfa200"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_17_Estate_1m.png"
+ ]
+}

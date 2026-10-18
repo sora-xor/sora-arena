@@ -1,0 +1,152 @@
+{
+ "id": 11,
+ "key": "W11_PulseCarbine",
+ "ja": "パルス・カービン",
+ "en": "Pulse Carbine",
+ "faction": "Alien levy carbine (enforcers)",
+ "builder": "scripts/art/create_runtime_weapon_alien.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3143.9724963786416,
+  "p05": 3034.1525180644044,
+  "uv_coverage": 0.8303839599888856
+ },
+ "notes": {
+  "overall_m": 0.851,
+  "emissive": "Mask R: handguard ledger lines, muzzle, sigil"
+ },
+ "assets": {
+  "SM_Weapon_11": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11.fbx",
+     "triangles": 12852,
+     "sha256": "5ae78277bee9f71e5345d39e0bdfc92445bfe6666521ddc067eabda20ed807ae"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11_LOD1.fbx",
+     "triangles": 5396,
+     "sha256": "c50476abe559c3b919dc5ce1da41954095f2d5ab47a8e801860d7dbd66ce9e25"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11_LOD2.fbx",
+     "triangles": 2056,
+     "sha256": "3aac48d5a15b900d2cf4368412a236f676a40968b7cb617839b9853fa13d6dd1"
+    }
+   ],
+   "bounds_m": [
+    0.8506,
+    0.04957,
+    0.18758
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.34,
+     0.0,
+     0.01
+    ],
+    "Muzzle": [
+     0.5606,
+     0.0,
+     0.032
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_PC_Ledger",
+    "linear_rgb": [
+     0.12,
+     0.85,
+     1.0
+    ],
+    "srgb_hex": "#61EDFF",
+    "strength": 8.0
+   }
+  ],
+  "note": "League glows are warm; only alien arms are cyan"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/T_Weapon_11_BaseColor.png",
+   "sha256": "1b3d2011f879c5a73702133071bf1c8eedee6898f500d7f4bd865384d677c3da"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/T_Weapon_11_ORM.png",
+   "sha256": "f79d6009df76438ed59be6e9c662263c73fac1c4de4e1f9b8a143bb5fc64d0a4"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/T_Weapon_11_Mask.png",
+   "sha256": "703bb24109f709211ec733d6521a27646b37fd4b11533b1d351db51708e17c98"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/T_Weapon_11_NormalDX.png",
+   "sha256": "9a9e8a2ca1a566b05664f33aef5cdf5663960dc349cd91a7013078a72cc5fc33"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_11",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0226,
+  "normal_tilt_p90_all_texels": 0.0588,
+  "by_material": {
+   "M_PC_Graphite": {
+    "tilt": 0.0324,
+    "area_m2": 0.17007
+   },
+   "M_PC_Titanium": {
+    "tilt": 0.0089,
+    "area_m2": 0.1122
+   },
+   "M_PC_PanelGraphite": {
+    "tilt": 0.0432,
+    "area_m2": 0.0352
+   },
+   "M_PC_Ledger": {
+    "tilt": 0.0122,
+    "area_m2": 0.00734
+   },
+   "M_PC_BlackGlass": {
+    "tilt": 0.0009,
+    "area_m2": 0.02754
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/SM_Weapon_11.blend",
+  "sha256": "43666901039a64e2633a80f92c24ef294aa4518cd06fee01fb669ccebd4ea92e"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Estate_1m.png"
+ ]
+}

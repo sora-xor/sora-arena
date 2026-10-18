@@ -1,0 +1,157 @@
+{
+ "id": 14,
+ "key": "W14_PlasmaMatchlock",
+ "ja": "プラズマ火縄銃",
+ "en": "Plasma Matchlock",
+ "faction": "Alien-built, captured (ch07)",
+ "builder": "scripts/art/create_runtime_weapon_alien.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 2591.1849019378346,
+  "p05": 2504.4982160627196,
+  "uv_coverage": 0.7463381934792135
+ },
+ "notes": {
+  "overall_m": 1.324,
+  "emissive": "Mask R: coil, ledger lines, sigil, muzzle"
+ },
+ "assets": {
+  "SM_Weapon_14": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
+     "triangles": 23048,
+     "sha256": "40abf94c2569c50818c9d8871ac01d59a82184eb29e3836afd477a588d6f3a99"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD1.fbx",
+     "triangles": 9680,
+     "sha256": "238eb34fcc858f4d0cd55509b0a8638f97f326a9db13343a670253be6d66500b"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD2.fbx",
+     "triangles": 3686,
+     "sha256": "2c3db35188b98de3f45a20e6b74047a1d3deddceffa07289a0d362a7cdbb97db"
+    }
+   ],
+   "bounds_m": [
+    1.32651,
+    0.0394,
+    0.17396
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.3,
+     0.0,
+     0.012
+    ],
+    "Muzzle": [
+     0.9646,
+     0.0,
+     0.032
+    ],
+    "Charge": [
+     0.085,
+     0.0,
+     0.035
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_PM_Ledger",
+    "linear_rgb": [
+     0.12,
+     0.85,
+     1.0
+    ],
+    "srgb_hex": "#61EDFF",
+    "strength": 8.0
+   }
+  ],
+  "note": "League glows are warm; only alien arms are cyan"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_BaseColor.png",
+   "sha256": "ea0be89c1baa63dd60a544a57c5eabc511f348fa27704abb5173a829526a3f0f"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_ORM.png",
+   "sha256": "86f7304dab408446eaa5cc050350c68c0e831c19d09a2966dab4d8e193ab27d5"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_Mask.png",
+   "sha256": "e92da0b05dfd906a8a94070772d877f9b8e6b91a0511f488976487c60a770a77"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_NormalDX.png",
+   "sha256": "d8a899aa5a8382fdedc24071e8dc5997c14eb0aac6ec5b6958b8818d02401f16"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_14",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0405,
+  "normal_tilt_p90_all_texels": 0.1,
+  "by_material": {
+   "M_PM_Graphite": {
+    "tilt": 0.0509,
+    "area_m2": 0.14258
+   },
+   "M_PM_PanelGraphite": {
+    "tilt": 0.0725,
+    "area_m2": 0.15486
+   },
+   "M_PM_Titanium": {
+    "tilt": 0.0272,
+    "area_m2": 0.12396
+   },
+   "M_PM_BlackGlass": {
+    "tilt": 0.003,
+    "area_m2": 0.02359
+   },
+   "M_PM_Ledger": {
+    "tilt": 0.0111,
+    "area_m2": 0.02125
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.blend",
+  "sha256": "661381faea4c0093593695b8d6481d2b4b4aea41ac8bcc6aceff8c977b51ad1e"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Estate_1m.png"
+ ]
+}

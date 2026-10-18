@@ -1,0 +1,206 @@
+{
+ "id": 2,
+ "key": "W02_Kusarigama",
+ "ja": "鎖鎌",
+ "en": "Kusarigama",
+ "faction": "League (Otane's farm sickle on a chain)",
+ "builder": "scripts/art/create_runtime_weapon_kusarigama.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3379.116317267335,
+  "p05": 2880.1452916391568,
+  "uv_coverage": 0.4526005267445865
+ },
+ "notes": {
+  "chain": {
+   "asset": "SM_Weapon_02_Chain",
+   "links": 154,
+   "modelled_m": 2.7,
+   "link": {
+    "pitch_m": 0.0175,
+    "pitch_variance": 0.1,
+    "wire_m": 0.0042,
+    "outer_width_m": 0.0145
+   },
+   "rest_pose": "loose flat coil on the floor; Unreal drives it from Chain_Anchor",
+   "fundo_m": [
+    0.058,
+    0.026
+   ]
+  },
+  "handle_m": 0.45,
+  "blade_m": 0.175,
+  "bevel_m": 0.0062,
+  "spine_m": 0.0056
+ },
+ "assets": {
+  "SM_Weapon_02": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.fbx",
+     "triangles": 3794,
+     "sha256": "7bafa3ee11a13e3e9315f38b01a63a21d31a12ae771da127981f21fa3271a39b"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_LOD1.fbx",
+     "triangles": 1592,
+     "sha256": "c192953e151d357c28008908a3d1ebd5182b0a77ed21972d1e1c59f584b3959d"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_LOD2.fbx",
+     "triangles": 606,
+     "sha256": "bb664904e3d34fce7f3116c7627938938d8c5638df7a680c8d7454330bb3dad4"
+    }
+   ],
+   "bounds_m": [
+    0.4719,
+    0.0294,
+    0.2024
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.06,
+     0.23,
+     -0.03
+    ],
+    "Muzzle": [
+     0.2826,
+     0.0012,
+     -0.187
+    ],
+    "Chain_Anchor": [
+     -0.111,
+     0.0,
+     0.0
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  },
+  "SM_Weapon_02_Chain": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain.fbx",
+     "triangles": 35100,
+     "sha256": "8c25b5624e6007f95f50b9d989b08417217d5b7ea3938d08c2de777af19b0395"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain_LOD1.fbx",
+     "triangles": 14742,
+     "sha256": "b1aac1901958451c2d9e540266a876a38d3b2356cb48001dca2bc33ab30c124b"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02_Chain_LOD2.fbx",
+     "triangles": 5616,
+     "sha256": "e96695d7c197442520d42e27af230c1bda405c03138c08b32fe3d21d9e6c3bc6"
+    }
+   ],
+   "bounds_m": [
+    0.36058,
+    0.33613,
+    0.02657
+   ],
+   "sockets": {
+    "Anchor": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Fundo": [
+     0.26609,
+     0.11607,
+     0.0109
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_arm_4k.exr",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_diff_4k.jpg",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_nor_dx_4k.exr"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_BaseColor.png",
+   "sha256": "a2e073b382bb7953999c77c204a9a20117628c9083e9a52aec623b8d2bdc0d8f"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_ORM.png",
+   "sha256": "0759c5eb72075bce2ee2269723eaf6d3b5783dfb1c075b5f4f657fbec51f5618"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_Mask.png",
+   "sha256": "feb6f8d3589a33c31f149e6fcb948ab1e4a93f4fd12a7736599ef88f4f2f1e76"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/T_Weapon_02_NormalDX.png",
+   "sha256": "2495243a47c06f02a6e0c1772a2b7c6a7dd1444b71a0e54542c3cbcb2b0bb03e"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_02",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0823,
+  "normal_tilt_p90_all_texels": 0.2015,
+  "by_material": {
+   "M_Kama_Handle": {
+    "tilt": 0.0287,
+    "area_m2": 0.03779
+   },
+   "M_Kama_Iron": {
+    "tilt": 0.159,
+    "area_m2": 0.01378
+   },
+   "M_Kama_Kurouchi": {
+    "tilt": 0.2316,
+    "area_m2": 0.00988
+   },
+   "M_Kama_Bevel": {
+    "tilt": 0.0036,
+    "area_m2": 0.00115
+   },
+   "M_Kama_Chain": {
+    "tilt": 0.1319,
+    "area_m2": 0.10365
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W02_Kusarigama/SM_Weapon_02.blend",
+  "sha256": "b5ade2748db8277f750541dc8f6bda765e7edcf3b21ae0b146fde2c3c9db9e94"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_02_Estate_1m.png"
+ ]
+}

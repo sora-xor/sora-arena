@@ -1,0 +1,149 @@
+{
+ "id": 15,
+ "key": "W15_MicroMortar",
+ "ja": "小型迫撃砲",
+ "en": "Micro-Mortar",
+ "faction": "League siege train (Tamakichi, ch08; cast SORA mon)",
+ "builder": "scripts/art/create_runtime_weapon_firearms.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 2550.929866643257,
+  "p05": 2158.896355944381,
+  "uv_coverage": 0.7039299472934704
+ },
+ "notes": {
+  "overall_m": 0.64,
+  "bore_m": 0.075,
+  "bronze": "cast, brown-green patina (base ~0.35/0.25/0.15), parting-line flash, pits",
+  "basis": "hand-held bronze mortar after the Edo 抱え大筒 (fictional League siege arm)"
+ },
+ "assets": {
+  "SM_Weapon_15": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.fbx",
+     "triangles": 12194,
+     "sha256": "781583bb73e8b1f8cd04d38122e1955e2cb91c5d8088debba70ef71332682ed5"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD1.fbx",
+     "triangles": 5120,
+     "sha256": "c82ff813ede6d25ba10acfd29d0689a8e1d756532e923fb37b6d6e6c9433d7c3"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15_LOD2.fbx",
+     "triangles": 1950,
+     "sha256": "43003bb60c85b8788140a57644282b8fbf1005f28b2cf0dc8a960816a6a0fd49"
+    }
+   ],
+   "bounds_m": [
+    0.64,
+    0.14485,
+    0.2057
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.222,
+     0.0,
+     -0.04
+    ],
+    "Muzzle": [
+     0.632,
+     0.0,
+     0.07
+    ],
+    "Fuse": [
+     0.19,
+     0.01,
+     0.164
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_Color.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_NormalDX.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_Roughness.jpg"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_BaseColor.png",
+   "sha256": "8d19d4dae30bb88dac89ae99514feaaf4d3ba260d9373fc51a23b6aff38085ab"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_ORM.png",
+   "sha256": "4c4c95ff9323d343f3ec3b0a9eba5aa313da18bcfa82078c12a8286317b73e06"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_Mask.png",
+   "sha256": "684bd908c9216a83ff29ad29161c5b3a3caa22c8f160db66a608d32647653d5b"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/T_Weapon_15_NormalDX.png",
+   "sha256": "a9b3c81372a48e089ed90c78302c094445b58201b0c7e6f86a98e2ae5e950616"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_15",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0346,
+  "normal_tilt_p90_all_texels": 0.0776,
+  "by_material": {
+   "M_MM_Bronze": {
+    "tilt": 0.0228,
+    "area_m2": 0.27028
+   },
+   "M_MM_MonGilt": {
+    "tilt": 0.0068,
+    "area_m2": 0.00359
+   },
+   "M_MM_Cradle": {
+    "tilt": 0.0421,
+    "area_m2": 0.13675
+   },
+   "M_MM_Iron": {
+    "tilt": 0.1878,
+    "area_m2": 0.04263
+   },
+   "M_MM_Fuse": {
+    "tilt": 0.178,
+    "area_m2": 0.00047
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W15_MicroMortar/SM_Weapon_15.blend",
+  "sha256": "e06faccf4ef06d748aeceb5437be7d4bf3bffda0a53f39e9eda1003a1172ec53"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_15_Estate_1m.png"
+ ]
+}

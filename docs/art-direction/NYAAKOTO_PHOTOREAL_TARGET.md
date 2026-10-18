@@ -14,6 +14,9 @@ The newer [four-view photoreal concept](../../Content/SourceArt/Characters/Hero/
 adds front, side and back material/silhouette cues. It is generated art rather
 than measured anatomy or a shippable asset; its short yumi and fittings must
 not override the separately researched and modeled weapon sources.
+The [wet-dojo look-development frame](../../Content/SourceArt/Characters/Hero/Reference/Nyaakoto_WetDojo_LookDev_v3.png)
+tests fur, fabric, lacquer, and ground contact under exterior overcast light.
+It is another 2D reference; its bow carry and armor joinery are not measured.
 
 The current Blender and packaged UE character remains visibly stylized. Closing
 the gap requires original source-asset work, followed by repeatable in-engine

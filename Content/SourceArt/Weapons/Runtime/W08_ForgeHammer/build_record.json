@@ -1,0 +1,138 @@
+{
+ "id": 8,
+ "key": "W08_ForgeHammer",
+ "ja": "鍛冶槌",
+ "en": "Forge Hammer",
+ "faction": "League (向こう鎚 striker's sledge, ch05)",
+ "builder": "scripts/art/create_runtime_weapon_blunt.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 4663.0209913190265,
+  "p05": 4657.254675458671,
+  "uv_coverage": 0.6108178324850244
+ },
+ "notes": {
+  "handle_m": 0.8,
+  "head_m": [
+   0.165,
+   0.056,
+   0.056
+  ],
+  "butt_x": -0.2,
+  "lip_overhang_m": 0.0025,
+  "basis": "向こう鎚 striker's sledge proportions (design values)"
+ },
+ "assets": {
+  "SM_Weapon_08": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.fbx",
+     "triangles": 4408,
+     "sha256": "bd513b0cced41d792bd6a057df0e077197bebc2725acd9fc39bd31c70d0f1a80"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD1.fbx",
+     "triangles": 1850,
+     "sha256": "9de5ffacd48d06c89e62cdd6c875f43160a157b6bc8b982ad90e14ff5151e548"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08_LOD2.fbx",
+     "triangles": 704,
+     "sha256": "31c5fa1456c98b87ecba7e06cd7ac27fc04e0770e0dd409f605a7dfdc65fa68f"
+    }
+   ],
+   "bounds_m": [
+    0.8019,
+    0.06116,
+    0.1666
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     -0.15,
+     0.0,
+     0.0
+    ],
+    "Muzzle": [
+     0.5675,
+     0.0,
+     -0.0825
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_BaseColor.png",
+   "sha256": "1a6a39025b60989a0f152c580a91ee891bee40e0fb3a24ce7588398c2c66b33b"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_ORM.png",
+   "sha256": "13ef695fb7156e970f7f0a1b8309389d5ffbe00068a8b38b6d516a801650b195"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_Mask.png",
+   "sha256": "c024626e38100b7bbf189f11d0f9257766a8aee620cfde100dad58e680a428a7"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/T_Weapon_08_NormalDX.png",
+   "sha256": "5dd9724360b9658f658e902f9b53b3a59d23e02e491f7105bd3cfc6c2d93a805"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_08",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0399,
+  "normal_tilt_p90_all_texels": 0.1153,
+  "by_material": {
+   "M_Hammer_Head": {
+    "tilt": 0.0962,
+    "area_m2": 0.04289
+   },
+   "M_Hammer_Handle": {
+    "tilt": 0.04,
+    "area_m2": 0.07459
+   },
+   "M_Hammer_Wedge": {
+    "tilt": 0.1046,
+    "area_m2": 0.00035
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W08_ForgeHammer/SM_Weapon_08.blend",
+  "sha256": "b4067f29b97bfd3ea5c3efac9b4c9296d20fee125ea37160daf90b89aa59caf0"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_08_Estate_1m.png"
+ ]
+}

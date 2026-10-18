@@ -1,0 +1,146 @@
+{
+ "id": 19,
+ "key": "W19_Yari",
+ "ja": "槍",
+ "en": "Yari",
+ "faction": "Nyaakoto (su-yari)",
+ "builder": "scripts/art/create_runtime_weapon_polearms.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3888.683644671522,
+  "p05": 3888.6207459755806,
+  "uv_coverage": 0.7291960112038617
+ },
+ "notes": {
+  "overall_m": 2.13,
+  "blade_m": 0.206,
+  "section": "sankaku (triangular) with a hi on the flat",
+  "butt_x": -0.42,
+  "machi_x": 1.504,
+  "shaft_diameter_m": {
+   "head": 0.0344,
+   "butt": 0.0276
+  }
+ },
+ "assets": {
+  "SM_Weapon_19": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.fbx",
+     "triangles": 12626,
+     "sha256": "1325df31fdb759598b6de6f1a352280adfc437f7b217e40d5ee2aedcd3fc8045"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD1.fbx",
+     "triangles": 5302,
+     "sha256": "fdc00879e05e4362d835ba4d89ab45bc8ae86a561785967c448f817c306abaf9"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19_LOD2.fbx",
+     "triangles": 2020,
+     "sha256": "9c1e521c2ad3fdb1f9afded84079becf23684cbcdb25f3bcf3d9a384c5314840"
+    }
+   ],
+   "bounds_m": [
+    2.13,
+    0.03667,
+    0.03667
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.72,
+     0.0,
+     0.0
+    ],
+    "Muzzle": [
+     1.71,
+     0.0,
+     0.0
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_BaseColor.png",
+   "sha256": "604fc2464146615cdea4690af94ea292b161a5aa7869627cf6b2a8990dc2a888"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_ORM.png",
+   "sha256": "639a752aefced065c574846fce167ef942c6bdd4ac28c5c47a3ad7cb9f686e06"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_Mask.png",
+   "sha256": "4ca940446bc2cc93ea26fad51065d8ac8b149df6acfa7c16bb9b0b48150593ca"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/T_Weapon_19_NormalDX.png",
+   "sha256": "ae72c73aba7a66b97bf75daf7508c0220ad571b7965fbd5a4b15f319d2b6a9e9"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_19",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0428,
+  "normal_tilt_p90_all_texels": 0.1189,
+  "by_material": {
+   "M_Yari_Steel": {
+    "tilt": 0.0021,
+    "area_m2": 0.00974
+   },
+   "M_Yari_Habaki": {
+    "tilt": 0.0526,
+    "area_m2": 0.00175
+   },
+   "M_Yari_Iron": {
+    "tilt": 0.1245,
+    "area_m2": 0.01536
+   },
+   "M_Yari_Sendanmaki": {
+    "tilt": 0.1496,
+    "area_m2": 0.02996
+   },
+   "M_Yari_Shaft_Roiro": {
+    "tilt": 0.0288,
+    "area_m2": 0.14543
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W19_Yari/SM_Weapon_19.blend",
+  "sha256": "ac083d54e3385b0f075936a5737df7c77d157e2b7cb8599cd9ca0d310ca967a3"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_19_Estate_1m.png"
+ ]
+}

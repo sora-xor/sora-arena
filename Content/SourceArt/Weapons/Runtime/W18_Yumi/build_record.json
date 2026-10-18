@@ -1,0 +1,219 @@
+{
+ "id": 18,
+ "key": "W18_Yumi",
+ "ja": "和弓",
+ "en": "Yumi",
+ "faction": "Nyaakoto (shigetō war bow)",
+ "builder": "scripts/art/create_runtime_weapon_yumi.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_L",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 2952.644880552842,
+  "p05": 2899.9105012993555,
+  "uv_coverage": 0.6603551959608249
+ },
+ "notes": {
+  "bow_length_m": 2.21,
+  "grip_centre_from_lower_tip_m": 0.7367,
+  "brace_height_m": 0.15,
+  "string_chord_m": 2.1346,
+  "rattan_bands": 41,
+  "nocking_point_z_m": 0.07
+ },
+ "assets": {
+  "SM_Weapon_18": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.fbx",
+     "triangles": 61556,
+     "sha256": "96ffd4ac042e9dd4a39290c34c4fd855dc47f57b4c09428fe005f3cecd55df39"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD1.fbx",
+     "triangles": 25852,
+     "sha256": "8e5a958d82dd659b7f58b3ef8085aa34140daf793abda5ade3dc9f0f5ac32fda"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_LOD2.fbx",
+     "triangles": 9848,
+     "sha256": "db77d7acaad4222dba3198941b71cb795fdff6e30b7b3fbec3cd0e5fddd32435"
+    }
+   ],
+   "bounds_m": [
+    0.20284,
+    0.03649,
+    2.16103
+   ],
+   "sockets": {
+    "Grip_L": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_R": [
+     -0.16646,
+     0.0,
+     0.07
+    ],
+    "Muzzle": [
+     0.01475,
+     -0.01975,
+     0.07
+    ],
+    "String_Lower": [
+     -0.16387,
+     0.0,
+     -0.69409
+    ],
+    "String_Upper": [
+     -0.1711,
+     0.0,
+     1.44045
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  },
+  "SM_Weapon_18_Ya": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya.fbx",
+     "triangles": 4382,
+     "sha256": "3fbec542158e1aa6a7fd20b36a4cb12ed749a2a4296a96c59637476560604b40"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD1.fbx",
+     "triangles": 1840,
+     "sha256": "0959b762d0dd41efd76a33ce29fdbb152cc33b9010a48ac7fc13cd7dd23483b8"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18_Ya_LOD2.fbx",
+     "triangles": 700,
+     "sha256": "7c2b12fb34d1eff28aa8cbc2d0a0b3a0b264b6044152d4fa8ecec02c0f4852f3"
+    }
+   ],
+   "bounds_m": [
+    0.982,
+    0.03791,
+    0.03283
+   ],
+   "sockets": {
+    "Nock": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Tip": [
+     0.98,
+     0.0,
+     0.0
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_Color.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_NormalDX.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_Roughness.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_Color.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_NormalDX.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_Roughness.jpg",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_arm_4k.exr",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_diff_4k.jpg",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_nor_dx_4k.exr"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_BaseColor.png",
+   "sha256": "fa11a626c3aae65628f297a40a6805bea9ab3e65dd1474d8548c9b2f5e25ab77"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_ORM.png",
+   "sha256": "874ffc195150fdf97adacc99e3a3389bb8e81638fe54dcec36ecf4794f6a1af4"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_Mask.png",
+   "sha256": "54b2a437879d65a5bec0c507f60dc93b288ba6401211c0e7c4e7a831c5ae787c"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/T_Weapon_18_NormalDX.png",
+   "sha256": "acdfec9fb6f9cf0cc0715a356099ffd917280719c10ca203225eef5b5969069e"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_18",
+  "BaseColor": "sRGB, A = opacity mask (masked blend)",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0412,
+  "normal_tilt_p90_all_texels": 0.1065,
+  "by_material": {
+   "M_Yumi_Urushi": {
+    "tilt": 0.025,
+    "area_m2": 0.15237
+   },
+   "M_Yumi_Nigiri": {
+    "tilt": 0.0559,
+    "area_m2": 0.03608
+   },
+   "M_Yumi_Rattan": {
+    "tilt": 0.0377,
+    "area_m2": 0.04471
+   },
+   "M_Yumi_Hazu": {
+    "tilt": 0.0128,
+    "area_m2": 0.00555
+   },
+   "M_Yumi_Tsuru": {
+    "tilt": 0.1976,
+    "area_m2": 0.0355
+   },
+   "M_Ya_Yadake": {
+    "tilt": 0.0145,
+    "area_m2": 0.02527
+   },
+   "M_Ya_Silk": {
+    "tilt": 0.0215,
+    "area_m2": 0.00201
+   },
+   "M_Ya_Hane": {
+    "tilt": 0.1055,
+    "area_m2": 0.01487
+   },
+   "M_Ya_Yajiri": {
+    "tilt": 0.0605,
+    "area_m2": 0.00134
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W18_Yumi/SM_Weapon_18.blend",
+  "sha256": "819443f6f45bbfd19c80abc709d23dc0d18d40728e4c6b09d89f0741493903eb"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_18_Estate_1m.png"
+ ]
+}

@@ -1,0 +1,152 @@
+{
+ "id": 3,
+ "key": "W03_NeedleSMG",
+ "ja": "ニードル短機関銃",
+ "en": "Needle SMG",
+ "faction": "Alien (given by Iota, ch06)",
+ "builder": "scripts/art/create_runtime_weapon_alien.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 4129.706848778719,
+  "p05": 3997.0439188736214,
+  "uv_coverage": 0.8366162772540067
+ },
+ "notes": {
+  "overall_m": 0.572,
+  "emissive": "Mask R: needle window, ledger lines, sigil"
+ },
+ "assets": {
+  "SM_Weapon_03": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03.fbx",
+     "triangles": 8848,
+     "sha256": "e2ac9186232365a25ea7eec66586fee726b1e979983a9b3648c359bbdf03306c"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03_LOD1.fbx",
+     "triangles": 3716,
+     "sha256": "fdbb77a2e71288dd488dc53288da5293b38f02a3a29597a56284878e9ba56ef9"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03_LOD2.fbx",
+     "triangles": 1414,
+     "sha256": "bc83a6cc07eeed9f96b8b5c6c76b4f445c9925f5eb490bd598042ec478eff8cd"
+    }
+   ],
+   "bounds_m": [
+    0.572,
+    0.0551,
+    0.19761
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.095,
+     0.0,
+     -0.06
+    ],
+    "Muzzle": [
+     0.36,
+     0.0,
+     0.034
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_NS_Ledger",
+    "linear_rgb": [
+     0.12,
+     0.85,
+     1.0
+    ],
+    "srgb_hex": "#61EDFF",
+    "strength": 8.0
+   }
+  ],
+  "note": "League glows are warm; only alien arms are cyan"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/T_Weapon_03_BaseColor.png",
+   "sha256": "1cd074da6797f1dd32f0728deb2ce1ccc68f7e68f7da2d58e7aeaacd8739fc1d"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/T_Weapon_03_ORM.png",
+   "sha256": "ef8403c34833a8f31307e696fca2af784bee606a3b7b6e473db372ca486d540e"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/T_Weapon_03_Mask.png",
+   "sha256": "4898a1f1dc9e94604ee936a7227d7b4251397f8c9129a744bd6b3f0c585798da"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/T_Weapon_03_NormalDX.png",
+   "sha256": "ee521dcb23d7376c232831db45ceb091307298cb7d09f1f78f021cf9afcd288b"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_03",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0312,
+  "normal_tilt_p90_all_texels": 0.08,
+  "by_material": {
+   "M_NS_Graphite": {
+    "tilt": 0.0337,
+    "area_m2": 0.0937
+   },
+   "M_NS_PanelGraphite": {
+    "tilt": 0.0439,
+    "area_m2": 0.05103
+   },
+   "M_NS_Titanium": {
+    "tilt": 0.0091,
+    "area_m2": 0.0254
+   },
+   "M_NS_BlackGlass": {
+    "tilt": 0.0014,
+    "area_m2": 0.02356
+   },
+   "M_NS_Ledger": {
+    "tilt": 0.004,
+    "area_m2": 0.01207
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/SM_Weapon_03.blend",
+  "sha256": "5485975c837a74e904f64c02f5e96429e824aec52de8db105d8c7bf32db0744b"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Estate_1m.png"
+ ]
+}

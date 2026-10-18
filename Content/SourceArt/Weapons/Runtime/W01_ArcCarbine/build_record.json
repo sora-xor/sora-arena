@@ -1,0 +1,167 @@
+{
+ "id": 1,
+ "key": "W01_ArcCarbine",
+ "ja": "アーク・カービン",
+ "en": "Arc Carbine",
+ "faction": "League-built (Tetsugorō, ch05; SORA mon on the receiver cheeks)",
+ "builder": "scripts/art/create_runtime_weapon_firearms.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3797.8931771187677,
+  "p05": 3716.9485225964745,
+  "uv_coverage": 0.7968603539437313
+ },
+ "notes": {
+  "overall_m": 0.865,
+  "glow": "Mask R on the arc gaps; warm white, not cyan (League glows are warm)",
+  "language": "short negoro dai stock with cheek butt, pinned barrel, brass karakuri cheek plates"
+ },
+ "assets": {
+  "SM_Weapon_01": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.fbx",
+     "triangles": 37860,
+     "sha256": "fe6731a19ca6fad58f423752db4390b5d5ff38c68960f8f817f52e477ae43e1e"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD1.fbx",
+     "triangles": 15900,
+     "sha256": "a026f4d5051be5b8d60b8d03443780a77a7ea39ab7c1808b687dc646adc87e17"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01_LOD2.fbx",
+     "triangles": 6056,
+     "sha256": "9f4e023d87bf8b26f052815018e380b9a51656389a1ac093cb2cd155b1270e0d"
+    }
+   ],
+   "bounds_m": [
+    0.865,
+    0.04613,
+    0.10593
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.33,
+     0.0,
+     -0.01199
+    ],
+    "Muzzle": [
+     0.5615,
+     0.0,
+     0.03
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_arm_4k.exr",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_diff_4k.jpg",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_nor_dx_4k.exr"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_Arc_Glow",
+    "linear_rgb": [
+     1.0,
+     0.86,
+     0.7
+    ],
+    "srgb_hex": "#FFEFDA",
+    "strength": 4.0
+   }
+  ],
+  "note": "Mask R on the arc gaps; warm white, not cyan (League glows are warm)"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_BaseColor.png",
+   "sha256": "afcbd41dd529b83562f91018456394ff085e266b093faca549a64548eff579a0"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_ORM.png",
+   "sha256": "20ea3216f552f1ae61f25895c694b91665655f2840a8af3339c0cf8ad2d761c6"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_Mask.png",
+   "sha256": "fea460a8ab5609ea9436c67ea02a6906905684deed244c88bf9a9c6211b35eff"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/T_Weapon_01_NormalDX.png",
+   "sha256": "731323b8a4fd52cd021ba3d2d5cc85e5cff208ed9e67679b6a9f48810b43e1b6"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_01",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0335,
+  "normal_tilt_p90_all_texels": 0.0733,
+  "by_material": {
+   "M_Arc_Negoro": {
+    "tilt": 0.0368,
+    "area_m2": 0.10053
+   },
+   "M_Arc_Brass": {
+    "tilt": 0.0456,
+    "area_m2": 0.02172
+   },
+   "M_Arc_Iron": {
+    "tilt": 0.0661,
+    "area_m2": 0.03046
+   },
+   "M_Arc_Bronze": {
+    "tilt": 0.0274,
+    "area_m2": 0.03051
+   },
+   "M_Arc_Coil": {
+    "tilt": 0.016,
+    "area_m2": 0.04071
+   },
+   "M_Arc_Glow": {
+    "tilt": 0.0053,
+    "area_m2": 0.00662
+   },
+   "M_Arc_MonGold": {
+    "tilt": 0.0098,
+    "area_m2": 0.00117
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W01_ArcCarbine/SM_Weapon_01.blend",
+  "sha256": "5bbb58ceb97bb98ff09932eccb04a6cfbcfd6f90f6638df64de230284fc657a8"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_01_Estate_1m.png"
+ ]
+}

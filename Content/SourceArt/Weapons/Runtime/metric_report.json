@@ -1,0 +1,1295 @@
+{
+ "weapons": {
+  "0": {
+   "id": 0,
+   "key": "W00_Katana",
+   "checks": [
+    {
+     "name": "SM_Weapon_00_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.3597
+    },
+    {
+     "name": "SM_Weapon_00_fbx_bounds_parity_m",
+     "measured": 9.195644225246102e-09,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_00_lod_triangles",
+     "measured": [
+      56494,
+      23726,
+      9038
+     ],
+     "budget_lod0": 90000,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_00_Saya_uv0_overlap",
+     "measured": 9e-05,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.253
+    },
+    {
+     "name": "SM_Weapon_00_Saya_fbx_bounds_parity_m",
+     "measured": 1.9207256708730913e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_00_Saya_lod_triangles",
+     "measured": [
+      12360,
+      5190,
+      1976
+     ],
+     "budget_lod0": 90000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 3081.4,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "nagasa",
+     "method": "blade_nagasa",
+     "measured": 0.7267,
+     "expected": 0.727,
+     "tol": 0.003,
+     "basis": "reference",
+     "source": "docs/historical-arms.md: Met Edo katana (638804) 72.7 cm cutting edge",
+     "pass": true
+    },
+    {
+     "name": "sori",
+     "method": "blade_sori",
+     "measured": 0.0147,
+     "expected": 0.015,
+     "tol": 0.002,
+     "basis": "period",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: Met 24378 curvature 0.9 cm; shallow Keichō-shintō sori chosen",
+     "pass": true
+    },
+    {
+     "name": "mounted_length",
+     "method": "extent_x",
+     "measured": 1.00715,
+     "expected": 0.998,
+     "tol": 0.015,
+     "basis": "reference",
+     "source": "docs/historical-arms.md: Met Edo katana (638804) 99.8 cm overall",
+     "pass": true
+    },
+    {
+     "name": "tsuka_length",
+     "method": "span_x",
+     "measured": 0.24242,
+     "expected": 0.24242400000000003,
+     "tol": 0.003,
+     "basis": "period",
+     "source": "8 sun uchigatana tsuka (fuchi face to kashira end)",
+     "pass": true
+    },
+    {
+     "name": "tsuba_height",
+     "method": "extent_z",
+     "measured": 0.073,
+     "expected": 0.073,
+     "tol": 0.002,
+     "basis": "period",
+     "source": "maru-gata iron tsuba",
+     "pass": true
+    },
+    {
+     "name": "tsuba_width",
+     "method": "extent_y",
+     "measured": 0.076,
+     "expected": 0.076,
+     "tol": 0.002,
+     "basis": "period",
+     "source": "maru-gata iron tsuba",
+     "pass": true
+    },
+    {
+     "name": "saya_length",
+     "method": "extent_x",
+     "measured": 0.78399,
+     "expected": 0.786,
+     "tol": 0.012,
+     "basis": "derived",
+     "source": "habaki + nagasa + kojiri clearance",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "1": {
+   "id": 1,
+   "key": "W01_ArcCarbine",
+   "checks": [
+    {
+     "name": "SM_Weapon_01_uv0_overlap",
+     "measured": 0.00014,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.7568
+    },
+    {
+     "name": "SM_Weapon_01_fbx_bounds_parity_m",
+     "measured": 2.3177856533357355e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_01_lod_triangles",
+     "measured": [
+      16312,
+      6850,
+      2608
+     ],
+     "budget_lod0": 90000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 2735.4,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 0.87,
+     "expected": 0.86,
+     "tol": 0.015,
+     "basis": "design",
+     "source": "fictional League carbine",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "2": {
+   "id": 2,
+   "key": "W02_Kusarigama",
+   "checks": [
+    {
+     "name": "SM_Weapon_02_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.4833
+    },
+    {
+     "name": "SM_Weapon_02_fbx_bounds_parity_m",
+     "measured": 5.254653776855245e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_02_lod_triangles",
+     "measured": [
+      29726,
+      12484,
+      4756
+     ],
+     "budget_lod0": 90000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 2964.8,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "handle_length",
+     "method": "span_x",
+     "measured": 0.45,
+     "expected": 0.45,
+     "tol": 0.004,
+     "basis": "period",
+     "source": "farm-sickle handle 1.5 shaku, butt cap to ferrule (design value)",
+     "pass": true
+    },
+    {
+     "name": "blade_overall",
+     "method": "extent_z",
+     "measured": 0.197,
+     "expected": 0.197,
+     "tol": 0.006,
+     "basis": "period",
+     "source": "17.5 cm below the handle plus 2.2 cm set into its head (design value)",
+     "pass": true
+    },
+    {
+     "name": "chain_length",
+     "method": "chain_length",
+     "measured": 2.66454,
+     "expected": 2.7,
+     "tol": 0.08,
+     "basis": "period",
+     "source": "9 shaku chain (design value)",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "3": {
+   "id": 3,
+   "key": "W03_NeedleSMG",
+   "checks": [
+    {
+     "name": "SM_Weapon_03_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.836
+    },
+    {
+     "name": "SM_Weapon_03_fbx_bounds_parity_m",
+     "measured": 1.5552567678156493e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_03_lod_triangles",
+     "measured": [
+      8848,
+      3716,
+      1414
+     ],
+     "budget_lod0": 80000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 3747.8,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 0.572,
+     "expected": 0.56,
+     "tol": 0.015,
+     "basis": "design",
+     "source": "compact SMG",
+     "pass": true
+    }
+   ],
+   "errors": [
+    "SM_Weapon_03.fbx: sha256 differs from build_record",
+    "SM_Weapon_03.fbx: 8848 triangles, record says 6024",
+    "SM_Weapon_03_LOD1.fbx: sha256 differs from build_record",
+    "SM_Weapon_03_LOD1.fbx: 3716 triangles, record says 2530",
+    "SM_Weapon_03_LOD2.fbx: sha256 differs from build_record",
+    "SM_Weapon_03_LOD2.fbx: 1414 triangles, record says 962",
+    "no baked textures recorded"
+   ],
+   "pass": false
+  },
+  "4": {
+   "id": 4,
+   "key": "W04_Wakizashi",
+   "checks": [
+    {
+     "name": "SM_Weapon_04_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.3631
+    },
+    {
+     "name": "SM_Weapon_04_fbx_bounds_parity_m",
+     "measured": 7.610188458573308e-09,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_04_lod_triangles",
+     "measured": [
+      40538,
+      17024,
+      6486
+     ],
+     "budget_lod0": 70000,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_04_Saya_uv0_overlap",
+     "measured": 0.00016,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.2562
+    },
+    {
+     "name": "SM_Weapon_04_Saya_fbx_bounds_parity_m",
+     "measured": 1.469462655029341e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_04_Saya_lod_triangles",
+     "measured": [
+      10120,
+      4250,
+      1618
+     ],
+     "budget_lod0": 70000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 3750.4,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "nagasa",
+     "method": "blade_nagasa",
+     "measured": 0.44782,
+     "expected": 0.448,
+     "tol": 0.003,
+     "basis": "reference",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: Met 21880 wakizashi blade 44.8 cm",
+     "pass": true
+    },
+    {
+     "name": "tsuka_length",
+     "method": "span_x",
+     "measured": 0.16667,
+     "expected": 0.16666650000000002,
+     "tol": 0.003,
+     "basis": "period",
+     "source": "5.5 sun wakizashi tsuka",
+     "pass": true
+    },
+    {
+     "name": "tsuba_height",
+     "method": "extent_z",
+     "measured": 0.065,
+     "expected": 0.065,
+     "tol": 0.002,
+     "basis": "period",
+     "source": "plain iron maru tsuba",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "5": {
+   "id": 5,
+   "key": "W05_CoilMatchlock",
+   "checks": [
+    {
+     "name": "SM_Weapon_05_uv0_overlap",
+     "measured": 9e-05,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.2623
+    },
+    {
+     "name": "SM_Weapon_05_fbx_bounds_parity_m",
+     "measured": 1.2532652256258547e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_05_lod_triangles",
+     "measured": [
+      19170,
+      8050,
+      3066
+     ],
+     "budget_lod0": 90000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 1880.8,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 1.04075,
+     "expected": 1.038,
+     "tol": 0.012,
+     "basis": "reference",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: Met 22492 tanegashima overall 103.8 cm",
+     "pass": true
+    },
+    {
+     "name": "barrel_length",
+     "method": "extent_x",
+     "measured": 0.73,
+     "expected": 0.73,
+     "tol": 0.006,
+     "basis": "reference",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: Met 22492 barrel 73 cm",
+     "pass": true
+    },
+    {
+     "name": "bore",
+     "method": "bore_diameter",
+     "measured": 0.016,
+     "expected": 0.016,
+     "tol": 0.0008,
+     "basis": "reference",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: Met 22492 16 mm bore",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "6": {
+   "id": 6,
+   "key": "W06_Kanabo",
+   "checks": [
+    {
+     "name": "SM_Weapon_06_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.8162
+    },
+    {
+     "name": "SM_Weapon_06_fbx_bounds_parity_m",
+     "measured": 1.6133902133730338e-07,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_06_lod_triangles",
+     "measured": [
+      38324,
+      16096,
+      6130
+     ],
+     "budget_lod0": 80000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 2412.3,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 1.52,
+     "expected": 1.52,
+     "tol": 0.01,
+     "basis": "design",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: kanabō dimensions are a documented gap (TNM F-15962/3, F-16879 have no size data)",
+     "pass": true
+    },
+    {
+     "name": "head_across_flats",
+     "method": "max_across_flats",
+     "measured": 0.08793,
+     "expected": 0.088,
+     "tol": 0.003,
+     "basis": "design",
+     "source": "octagonal oak body",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "7": {
+   "id": 7,
+   "key": "W07_GrenadeLauncher",
+   "checks": [
+    {
+     "name": "SM_Weapon_07_uv0_overlap",
+     "measured": 0.00043,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.6735
+    },
+    {
+     "name": "SM_Weapon_07_fbx_bounds_parity_m",
+     "measured": 2.6424264998325953e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_07_lod_triangles",
+     "measured": [
+      36758,
+      15438,
+      5880
+     ],
+     "budget_lod0": 80000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 1590.3,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 0.84,
+     "expected": 0.84,
+     "tol": 0.015,
+     "basis": "design",
+     "source": "rope-bound bamboo hand tube after the Edo 手筒花火 (design)",
+     "pass": true
+    },
+    {
+     "name": "bore",
+     "method": "bore_diameter",
+     "measured": 0.056,
+     "expected": 0.056,
+     "tol": 0.002,
+     "basis": "design",
+     "source": "festival-shell bore",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "8": {
+   "id": 8,
+   "key": "W08_ForgeHammer",
+   "checks": [
+    {
+     "name": "SM_Weapon_08_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.7182
+    },
+    {
+     "name": "SM_Weapon_08_fbx_bounds_parity_m",
+     "measured": 8.997235956265115e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_08_lod_triangles",
+     "measured": [
+      3556,
+      1492,
+      568
+     ],
+     "budget_lod0": 40000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 5098.6,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "handle_length",
+     "method": "extent_x",
+     "measured": 0.7999,
+     "expected": 0.8,
+     "tol": 0.006,
+     "basis": "period",
+     "source": "mukōzuchi handle (design value)",
+     "pass": true
+    },
+    {
+     "name": "head_length",
+     "method": "extent_z",
+     "measured": 0.165,
+     "expected": 0.165,
+     "tol": 0.003,
+     "basis": "period",
+     "source": "mukōzuchi head ~3.7 kg steel (design value)",
+     "pass": true
+    },
+    {
+     "name": "head_mass_kg",
+     "method": "mass",
+     "measured": 4.0075,
+     "expected": 3.9,
+     "tol": 0.5,
+     "basis": "period",
+     "source": "7.85 g/cm3 steel",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "9": {
+   "id": 9,
+   "key": "W09_Repeater",
+   "checks": [
+    {
+     "name": "SM_Weapon_09_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.656
+    },
+    {
+     "name": "SM_Weapon_09_fbx_bounds_parity_m",
+     "measured": 3.0199159839483514e-09,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_09_lod_triangles",
+     "measured": [
+      18324,
+      7696,
+      2930
+     ],
+     "budget_lod0": 90000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 2494.6,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 1.12131,
+     "expected": 1.12,
+     "tol": 0.015,
+     "basis": "design",
+     "source": "fictional League repeater",
+     "pass": true
+    },
+    {
+     "name": "bore",
+     "method": "bore_diameter",
+     "measured": 0.0125,
+     "expected": 0.0125,
+     "tol": 0.0008,
+     "basis": "design",
+     "source": "reduced-calibre drum repeater",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "10": {
+   "id": 10,
+   "key": "W10_Tanto",
+   "checks": [
+    {
+     "name": "SM_Weapon_10_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.3426
+    },
+    {
+     "name": "SM_Weapon_10_fbx_bounds_parity_m",
+     "measured": 2.3761150408363463e-09,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_10_lod_triangles",
+     "measured": [
+      9226,
+      3872,
+      1476
+     ],
+     "budget_lod0": 40000,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_10_Saya_uv0_overlap",
+     "measured": 0.00029,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.4127
+    },
+    {
+     "name": "SM_Weapon_10_Saya_fbx_bounds_parity_m",
+     "measured": 1.4000706854283562e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_10_Saya_lod_triangles",
+     "measured": [
+      8360,
+      3510,
+      1336
+     ],
+     "budget_lod0": 40000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 7098.4,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "nagasa",
+     "method": "blade_nagasa",
+     "measured": 0.22683,
+     "expected": 0.22727250000000002,
+     "tol": 0.003,
+     "basis": "period",
+     "source": "yoroidōshi tantō under 1 shaku; 7.5 sun design value",
+     "pass": true
+    },
+    {
+     "name": "kasane",
+     "method": "extent_y_at_base",
+     "measured": 0.0098,
+     "expected": 0.0098,
+     "tol": 0.0008,
+     "basis": "period",
+     "source": "thick yoroidōshi kasane (design value)",
+     "pass": true
+    },
+    {
+     "name": "tsuka_length",
+     "method": "span_x",
+     "measured": 0.10606,
+     "expected": 0.10606050000000002,
+     "tol": 0.003,
+     "basis": "period",
+     "source": "aikuchi tsuka 3.5 sun",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "11": {
+   "id": 11,
+   "key": "W11_PulseCarbine",
+   "checks": [],
+   "errors": [
+    "missing build_record.json"
+   ]
+  },
+  "12": {
+   "id": 12,
+   "key": "W12_MonofilamentNaginata",
+   "checks": [
+    {
+     "name": "SM_Weapon_12_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.7559
+    },
+    {
+     "name": "SM_Weapon_12_fbx_bounds_parity_m",
+     "measured": 1.9399498701194728e-07,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_12_lod_triangles",
+     "measured": [
+      19058,
+      8004,
+      3048
+     ],
+     "budget_lod0": 70000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 3662.1,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 2.31,
+     "expected": 2.31,
+     "tol": 0.015,
+     "basis": "design",
+     "source": "Content/SourceArt/Weapons/MonofilamentNaginata (2.31 m source study)",
+     "pass": true
+    },
+    {
+     "name": "blade_length",
+     "method": "blade_nagasa",
+     "measured": 0.53905,
+     "expected": 0.54,
+     "tol": 0.004,
+     "basis": "design",
+     "source": "fictional special blade",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "13": {
+   "id": 13,
+   "key": "W13_PhantomSMG",
+   "checks": [],
+   "errors": [
+    "missing build_record.json"
+   ]
+  },
+  "14": {
+   "id": 14,
+   "key": "W14_PlasmaMatchlock",
+   "checks": [
+    {
+     "name": "SM_Weapon_14_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.7307
+    },
+    {
+     "name": "SM_Weapon_14_fbx_bounds_parity_m",
+     "measured": 2.1063911014723713e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_14_lod_triangles",
+     "measured": [
+      22032,
+      9252,
+      3524
+     ],
+     "budget_lod0": 90000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 2519.4,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 1.32651,
+     "expected": 1.32,
+     "tol": 0.02,
+     "basis": "design",
+     "source": "long matchlock silhouette (ch07 asset table)",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "15": {
+   "id": 15,
+   "key": "W15_MicroMortar",
+   "checks": [
+    {
+     "name": "SM_Weapon_15_uv0_overlap",
+     "measured": 0.0003,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.7292
+    },
+    {
+     "name": "SM_Weapon_15_fbx_bounds_parity_m",
+     "measured": 3.925890722233927e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_15_lod_triangles",
+     "measured": [
+      10380,
+      4358,
+      1660
+     ],
+     "budget_lod0": 80000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 2257.5,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 0.64,
+     "expected": 0.64,
+     "tol": 0.015,
+     "basis": "design",
+     "source": "hand-held bronze mortar after 抱え大筒 (design)",
+     "pass": true
+    },
+    {
+     "name": "bore",
+     "method": "bore_diameter",
+     "measured": 0.075,
+     "expected": 0.075,
+     "tol": 0.002,
+     "basis": "design",
+     "source": "mortar bore",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "16": {
+   "id": 16,
+   "key": "W16_ShockEmitter",
+   "checks": [],
+   "errors": [
+    "missing build_record.json"
+   ]
+  },
+  "17": {
+   "id": 17,
+   "key": "W17_HealingLance",
+   "checks": [
+    {
+     "name": "SM_Weapon_17_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.7115
+    },
+    {
+     "name": "SM_Weapon_17_fbx_bounds_parity_m",
+     "measured": 4.930012930878802e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_17_lod_triangles",
+     "measured": [
+      16442,
+      6904,
+      2630
+     ],
+     "budget_lod0": 70000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 3661.6,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 1.851,
+     "expected": 1.85,
+     "tol": 0.015,
+     "basis": "design",
+     "source": "fictional apothecary lance",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "18": {
+   "id": 18,
+   "key": "W18_Yumi",
+   "checks": [
+    {
+     "name": "SM_Weapon_18_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.5715
+    },
+    {
+     "name": "SM_Weapon_18_fbx_bounds_parity_m",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_18_lod_triangles",
+     "measured": [
+      30600,
+      12852,
+      4896
+     ],
+     "budget_lod0": 80000,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_18_Ya_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.0985
+    },
+    {
+     "name": "SM_Weapon_18_Ya_fbx_bounds_parity_m",
+     "measured": 1.6851131063450042e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_18_Ya_lod_triangles",
+     "measured": [
+      3902,
+      1638,
+      624
+     ],
+     "budget_lod0": 80000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 3138.1,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "bow_length",
+     "method": "yumi_length",
+     "measured": 2.21209,
+     "expected": 2.21,
+     "tol": 0.012,
+     "basis": "reference",
+     "source": "docs/historical-arms.md: All Japan Kyudo Federation standard 221 cm (Cleveland 1921.403: 220.9 cm)",
+     "pass": true
+    },
+    {
+     "name": "grip_from_lower_tip",
+     "method": "yumi_grip_ratio",
+     "measured": 0.3333,
+     "expected": 0.3333333333333333,
+     "tol": 0.03,
+     "basis": "reference",
+     "source": "docs/historical-arms.md: grip about one-third from the lower end",
+     "pass": true
+    },
+    {
+     "name": "brace_height",
+     "method": "yumi_brace",
+     "measured": 0.1535,
+     "expected": 0.15,
+     "tol": 0.015,
+     "basis": "period",
+     "source": "~15 cm bow-to-string brace (NyaagyuYumi study sources)",
+     "pass": true
+    },
+    {
+     "name": "arrow_length",
+     "method": "extent_x",
+     "measured": 0.982,
+     "expected": 0.98,
+     "tol": 0.01,
+     "basis": "period",
+     "source": "war arrow for a ~90 cm draw (design)",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "19": {
+   "id": 19,
+   "key": "W19_Yari",
+   "checks": [
+    {
+     "name": "SM_Weapon_19_uv0_overlap",
+     "measured": 0.0002,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.7399
+    },
+    {
+     "name": "SM_Weapon_19_fbx_bounds_parity_m",
+     "measured": 5.005510760047738e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_19_lod_triangles",
+     "measured": [
+      12054,
+      5062,
+      1928
+     ],
+     "budget_lod0": 50000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 3805.6,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 2.13,
+     "expected": 2.13,
+     "tol": 0.015,
+     "basis": "reference",
+     "source": "docs/historical-arms.md: Met 1727 foot yari note, foot spears commonly ~7 ft",
+     "pass": true
+    },
+    {
+     "name": "blade_length",
+     "method": "blade_nagasa",
+     "measured": 0.20495,
+     "expected": 0.206,
+     "tol": 0.003,
+     "basis": "reference",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: Met 30843 su-yari blade 20.6 cm",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  },
+  "20": {
+   "id": 20,
+   "key": "W20_Naginata",
+   "checks": [
+    {
+     "name": "SM_Weapon_20_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.7838
+    },
+    {
+     "name": "SM_Weapon_20_fbx_bounds_parity_m",
+     "measured": 1.8000118544650445e-07,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_20_lod_triangles",
+     "measured": [
+      16750,
+      7034,
+      2680
+     ],
+     "budget_lod0": 60000,
+     "pass": true
+    },
+    {
+     "name": "texel_density_p05_px_per_m",
+     "measured": 3908.9,
+     "expected_min": 1024.0,
+     "pass": true
+    },
+    {
+     "name": "blade_length",
+     "method": "blade_nagasa",
+     "measured": 0.46613,
+     "expected": 0.467,
+     "tol": 0.004,
+     "basis": "reference",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: ColBase F-20202 blade 46.7 cm",
+     "pass": true
+    },
+    {
+     "name": "sori",
+     "method": "blade_sori",
+     "measured": 0.02057,
+     "expected": 0.021,
+     "tol": 0.003,
+     "basis": "reference",
+     "source": "docs/art-research/free-asset-acquisition-plan.md section 3.8: ColBase F-20202 curvature 2.1 cm",
+     "pass": true
+    },
+    {
+     "name": "overall_length",
+     "method": "extent_x",
+     "measured": 2.15,
+     "expected": 2.15,
+     "tol": 0.02,
+     "basis": "period",
+     "source": "Edo women's naginata (design value)",
+     "pass": true
+    }
+   ],
+   "errors": [],
+   "pass": true
+  }
+ },
+ "summary": {
+  "weapons": 21,
+  "passed": 17,
+  "validator": "scripts/art/create_runtime_weapon_validation.py",
+  "blender": "5.2.2 LTS",
+  "seconds": 28.0
+ }
+}

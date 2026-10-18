@@ -1,0 +1,158 @@
+{
+ "id": 7,
+ "key": "W07_GrenadeLauncher",
+ "ja": "擲弾筒",
+ "en": "Grenade Launcher",
+ "faction": "League (Tamakichi's 花火筒 hand-mortar, ch03)",
+ "builder": "scripts/art/create_runtime_weapon_firearms.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 2010.1300864232528,
+  "p05": 1903.3273293707964,
+  "uv_coverage": 0.7542654676274239
+ },
+ "notes": {
+  "overall_m": 0.84,
+  "bore_m": 0.056,
+  "culm_diameter_m": 0.076,
+  "nawa": "two-ply rice straw, ~9.5 mm, hand-laid (pitch/thickness jitter), loose fibre cards",
+  "handle": "turned oak plug handle, lashed and nailed into the culm base",
+  "basis": "Edo 手筒花火 rope-bound bamboo tube; fictional weapon"
+ },
+ "assets": {
+  "SM_Weapon_07": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.fbx",
+     "triangles": 53360,
+     "sha256": "ce7a08f78d87165fa6c65ef62612e618fa1ed15ed4202cfb07c2828fc48f1c1b"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD1.fbx",
+     "triangles": 22410,
+     "sha256": "a837f6912002df8b5c55c58ff394b13e477d086444bf7d9972c94a721dc14e5d"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07_LOD2.fbx",
+     "triangles": 8536,
+     "sha256": "e0fe08be5b620ce2e940d3651d2850b40dda0f2ef203bd63acbd0427f428e19f"
+    }
+   ],
+   "bounds_m": [
+    0.84,
+    0.12171,
+    0.18336
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.3,
+     0.0,
+     -0.0475
+    ],
+    "Muzzle": [
+     0.64,
+     0.0,
+     0.0
+    ],
+    "Fuse": [
+     0.002,
+     0.012,
+     0.06
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_Color.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_NormalDX.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_Roughness.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/ThatchedRoof001A/ThatchedRoof001A_2K-JPG_Color.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/ThatchedRoof001A/ThatchedRoof001A_2K-JPG_NormalDX.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/ThatchedRoof001A/ThatchedRoof001A_2K-JPG_Roughness.jpg"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_BaseColor.png",
+   "sha256": "8e9fbeb124d56bf49903145b9b8290dc29a8b0a11747d6c848f25ba244a9c65a"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_ORM.png",
+   "sha256": "dcaac4b856b93da5682a5c4cdc74a65a4a93b1daa0994209fa74311e4dca45d6"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_Mask.png",
+   "sha256": "d1a29d2388cc71f4a6ca3d28caa291e73cd969aabc69b761654c9c50dcd2e594"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/T_Weapon_07_NormalDX.png",
+   "sha256": "c5dd16cdba73cde99e1e5f6deb902e02ff69ad5151e9f17506247bf07c268468"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_07",
+  "BaseColor": "sRGB, A = opacity mask (masked blend)",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0784,
+  "normal_tilt_p90_all_texels": 0.1994,
+  "by_material": {
+   "M_GL_Madake": {
+    "tilt": 0.0133,
+    "area_m2": 0.25872
+   },
+   "M_GL_Nawa": {
+    "tilt": 0.1321,
+    "area_m2": 0.45762
+   },
+   "M_GL_NawaFibre": {
+    "tilt": 0.0358,
+    "area_m2": 0.01909
+   },
+   "M_GL_PlugHandle": {
+    "tilt": 0.0332,
+    "area_m2": 0.0466
+   },
+   "M_GL_Iron": {
+    "tilt": 0.11,
+    "area_m2": 0.00024
+   },
+   "M_GL_Fuse": {
+    "tilt": 0.1681,
+    "area_m2": 0.00068
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W07_GrenadeLauncher/SM_Weapon_07.blend",
+  "sha256": "b36ef2ed59188bbf01007581e47123cc36c31ae991597acf840faa1651342976"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_07_Estate_1m.png"
+ ]
+}

@@ -1,0 +1,217 @@
+{
+ "id": 10,
+ "key": "W10_Tanto",
+ "ja": "短刀",
+ "en": "Tantō",
+ "faction": "Toranosuke's pledge (ch06)",
+ "builder": "scripts/art/create_runtime_weapon_nihonto.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 6800.7761459488775,
+  "p05": 6544.519913473798,
+  "uv_coverage": 0.710248642616701
+ },
+ "notes": {
+  "nagasa_m": 0.22727250000000002,
+  "sori_m": -0.001,
+  "arc_m": 0.22728,
+  "machi_x": 0.064,
+  "fuchi_face_x": 0.04,
+  "kashira_end_x": -0.06606,
+  "same": {
+   "nodules_mm": [
+    0.4,
+    1.2
+   ],
+   "oyatsubu_x_m": null
+  },
+  "sageo": {
+   "length_m": 0.612,
+   "width_m": 0.009,
+   "tie": "through the kurikata; crossing spiral down the saya, knot and two tails"
+  }
+ },
+ "assets": {
+  "SM_Weapon_10": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.fbx",
+     "triangles": 10908,
+     "sha256": "1711779cdc03aabd4902d05dfeee61464d05d68c8366f46492d4248586d850ab"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD1.fbx",
+     "triangles": 4580,
+     "sha256": "91d346fdee5f365fcdb094c4e038f64df107dca629c482403fc47d03800d4373"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_LOD2.fbx",
+     "triangles": 1744,
+     "sha256": "32b3252fe1414c8dd911902568b932818b377cf7715185d4d65c7bc53c5d7d35"
+    }
+   ],
+   "bounds_m": [
+    0.3573,
+    0.02514,
+    0.0314
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     -0.04406,
+     0.0,
+     0.0
+    ],
+    "Muzzle": [
+     0.29124,
+     0.0,
+     0.0084
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  },
+  "SM_Weapon_10_Saya": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya.fbx",
+     "triangles": 13820,
+     "sha256": "fe4d9f73332d0eeacbe50e343d0b8f1673504bfe1d9920a90e6ed15d2873ab01"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD1.fbx",
+     "triangles": 5804,
+     "sha256": "80524f688ecfbbb7e52aa839d8020496e7ea7f476f099c0df1cd2250c66fe0c5"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10_Saya_LOD2.fbx",
+     "triangles": 2210,
+     "sha256": "127f1306be985390064bf1178e5d34b911ae4e8283ffb2c001a2299bd10142e0"
+    }
+   ],
+   "bounds_m": [
+    0.27117,
+    0.03891,
+    0.03646
+   ],
+   "sockets": {
+    "Koiguchi": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Kurikata": [
+     0.07484,
+     -0.01066,
+     -0.01139
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/polyhaven/crepe_satin/crepe_satin_nor_dx_2k.exr"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_BaseColor.png",
+   "sha256": "44254ae96b3bfed2defb8739d48043e2eaab44a26227f88bba97dd6dd9b9657a"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_ORM.png",
+   "sha256": "59d8db8633d88df786640f9fb318016c6de1cc1e30d4bafa949bad9d9761d499"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_Mask.png",
+   "sha256": "5175df8e04ea250878c9f00c3741f9eee5e26f880eaec89b2c4560a9da8778fb"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/T_Weapon_10_NormalDX.png",
+   "sha256": "ef30e44cee38d8118a4382edd87d4547b9e2cf7db75fdec94bac859359620b98"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_10",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0731,
+  "normal_tilt_p90_all_texels": 0.304,
+  "by_material": {
+   "M_Nihonto_Steel": {
+    "tilt": 0.0027,
+    "area_m2": 0.01082
+   },
+   "M_Habaki_Suaka": {
+    "tilt": 0.0457,
+    "area_m2": 0.00206
+   },
+   "M_Fuchi_Horn": {
+    "tilt": 0.017,
+    "area_m2": 0.00431
+   },
+   "M_Menuki_Shakudo": {
+    "tilt": 0.1316,
+    "area_m2": 0.00105
+   },
+   "M_KuroSame": {
+    "tilt": 0.1853,
+    "area_m2": 0.00772
+   },
+   "M_Mekugi_Bamboo": {
+    "tilt": 0.0217,
+    "area_m2": 0.00042
+   },
+   "M_Saya_Roiro": {
+    "tilt": 0.0282,
+    "area_m2": 0.01917
+   },
+   "M_Saya_Horn": {
+    "tilt": 0.0154,
+    "area_m2": 0.00654
+   },
+   "M_Gold_Inlay": {
+    "tilt": 0.0087,
+    "area_m2": 0.00035
+   },
+   "M_Sageo": {
+    "tilt": 0.2781,
+    "area_m2": 0.01198
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W10_Tanto/SM_Weapon_10.blend",
+  "sha256": "6f0ee135841f86a5530e27b765ce2f7498a9ef7c4bf0835fd93f56c0709ccb12"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_10_Estate_1m.png"
+ ]
+}

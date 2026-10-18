@@ -1,0 +1,236 @@
+{
+ "id": 4,
+ "key": "W04_Wakizashi",
+ "ja": "脇差",
+ "en": "Wakizashi",
+ "faction": "League (ch03 travel mount)",
+ "builder": "scripts/art/create_runtime_weapon_nihonto.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 4122.911046703194,
+  "p05": 3694.9606632580617,
+  "uv_coverage": 0.6857766269440007
+ },
+ "notes": {
+  "nagasa_m": 0.448,
+  "sori_m": 0.011,
+  "arc_m": 0.44872,
+  "machi_x": 0.0797,
+  "fuchi_face_x": 0.045,
+  "kashira_end_x": -0.12167,
+  "same": {
+   "nodules_mm": [
+    0.4,
+    1.2
+   ],
+   "oyatsubu_x_m": -0.0188
+  },
+  "ito_pitch_m": 0.01795,
+  "ito_crossings_per_face": 7,
+  "kashira": "domed oval with shitodome; ito crosses it (kashira-kake)",
+  "sageo": {
+   "length_m": 1.1,
+   "width_m": 0.009,
+   "tie": "through the kurikata; crossing spiral down the saya, knot and two tails"
+  }
+ },
+ "assets": {
+  "SM_Weapon_04": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.fbx",
+     "triangles": 49300,
+     "sha256": "5412c5d8fa2ab9b450f2e6ce831200535838fe2bd92f237d02c41eee98fcb99f"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD1.fbx",
+     "triangles": 20706,
+     "sha256": "ef3061b9f8d87b4266fa2007b8fb3348f88a0fe6f1e8dfbd90fed2acc427b608"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_LOD2.fbx",
+     "triangles": 7888,
+     "sha256": "0358731c552a9f7d89126a47349cb574cc2149049e725ccb04ffcba039f0ba5e"
+    }
+   ],
+   "bounds_m": [
+    0.64971,
+    0.065,
+    0.09289
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     -0.09967,
+     0.0,
+     0.0
+    ],
+    "Muzzle": [
+     0.52554,
+     0.0,
+     0.05889
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  },
+  "SM_Weapon_04_Saya": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya.fbx",
+     "triangles": 19900,
+     "sha256": "8a3c8e96ee40fa8d44132465313ac3b8776819d99ca550596cb54bdb9ace115a"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD1.fbx",
+     "triangles": 8358,
+     "sha256": "ea0c428e7a512045258b0acedf5a5198dd9a6b3f3ccf94b6ee2f113d5d4a732d"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04_Saya_LOD2.fbx",
+     "triangles": 3182,
+     "sha256": "b89f25871d3f95805133414a0a5db84de58620c6ca4c2a6e923153af882d0708"
+    }
+   ],
+   "bounds_m": [
+    0.49679,
+    0.0343,
+    0.08882
+   ],
+   "sockets": {
+    "Koiguchi": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Kurikata": [
+     0.07555,
+     -0.01192,
+     -0.01421
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/polyhaven/crepe_satin/crepe_satin_nor_dx_2k.exr"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_BaseColor.png",
+   "sha256": "d7f1f4a22b75840c8290cdd888db45525a6b1715a92f4003c3b4069bc0dffad6"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_ORM.png",
+   "sha256": "7bfc74d87dc6e353857ca933fbf0115aee9ea07a70c1941a2c9ede1a825bf30f"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_Mask.png",
+   "sha256": "bf8f3e1f971b69489ab57882d21fa963573c10d43b7120fbeafc771bf219b6ce"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/T_Weapon_04_NormalDX.png",
+   "sha256": "25c4f21414cf9af35d009f415887dd900fe0b785a68abf5005e2321a6ae9a5fd"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_04",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.102,
+  "normal_tilt_p90_all_texels": 0.3408,
+  "by_material": {
+   "M_Nihonto_Steel": {
+    "tilt": 0.0017,
+    "area_m2": 0.02487
+   },
+   "M_Habaki_Suaka": {
+    "tilt": 0.0518,
+    "area_m2": 0.00247
+   },
+   "M_Seppa_Suaka": {
+    "tilt": 0.0161,
+    "area_m2": 0.00463
+   },
+   "M_Tsuba_Iron": {
+    "tilt": 0.2072,
+    "area_m2": 0.00665
+   },
+   "M_Tsuba_Mimi": {
+    "tilt": 0.1272,
+    "area_m2": 0.00281
+   },
+   "M_Fuchi_Iron": {
+    "tilt": 0.1414,
+    "area_m2": 0.00588
+   },
+   "M_Menuki_Shakudo": {
+    "tilt": 0.1204,
+    "area_m2": 0.00101
+   },
+   "M_Samegawa": {
+    "tilt": 0.1864,
+    "area_m2": 0.01259
+   },
+   "M_Tsuka_Ito": {
+    "tilt": 0.2607,
+    "area_m2": 0.03257
+   },
+   "M_Mekugi_Bamboo": {
+    "tilt": 0.0172,
+    "area_m2": 0.00045
+   },
+   "M_Saya_Roiro": {
+    "tilt": 0.0234,
+    "area_m2": 0.04496
+   },
+   "M_Saya_Horn": {
+    "tilt": 0.0127,
+    "area_m2": 0.0087
+   },
+   "M_Gold_Inlay": {
+    "tilt": 0.0112,
+    "area_m2": 0.00035
+   },
+   "M_Sageo": {
+    "tilt": 0.2689,
+    "area_m2": 0.02126
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W04_Wakizashi/SM_Weapon_04.blend",
+  "sha256": "2e5a927bf552510e12030e78f5a5d030f5cf381ff366a73a4a5caf17377d5232"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_04_Estate_1m.png"
+ ]
+}

@@ -1,0 +1,152 @@
+{
+ "id": 13,
+ "key": "W13_PhantomSMG",
+ "ja": "幻影短機関銃",
+ "en": "Phantom SMG",
+ "faction": "Alien vault armory (ch06)",
+ "builder": "scripts/art/create_runtime_weapon_alien.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3554.532958127684,
+  "p05": 3441.251791426484,
+  "uv_coverage": 0.7665509380850053
+ },
+ "notes": {
+  "overall_m": 0.64,
+  "emissive": "Mask R: dim ledger lines and sigil"
+ },
+ "assets": {
+  "SM_Weapon_13": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13.fbx",
+     "triangles": 6908,
+     "sha256": "af294dec16fe0d2cd829be856a6eb6a305741501b6273bd2e8b58df8dc4d7f41"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13_LOD1.fbx",
+     "triangles": 2900,
+     "sha256": "b03abbca6fbef5f971c42dbe64e07e2ebd4af3a95df6601760ce697804499c74"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13_LOD2.fbx",
+     "triangles": 1104,
+     "sha256": "1215cd0b62febc240950bb830aaaf65f6614d9f4b4dfa8def924730f59acf704"
+    }
+   ],
+   "bounds_m": [
+    0.64,
+    0.0476,
+    0.171
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.075,
+     0.0,
+     -0.06
+    ],
+    "Muzzle": [
+     0.42,
+     0.0,
+     0.03
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_PS_Ledger",
+    "linear_rgb": [
+     0.12,
+     0.85,
+     1.0
+    ],
+    "srgb_hex": "#61EDFF",
+    "strength": 8.0
+   }
+  ],
+  "note": "League glows are warm; only alien arms are cyan"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/T_Weapon_13_BaseColor.png",
+   "sha256": "0cfe7e770c868fe10301152921461f2328aaa016b628090293a808fdc9284d3e"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/T_Weapon_13_ORM.png",
+   "sha256": "43c8bac46a103cfc7374b4b4be77a4559d67adcfe1f6ebb41964848d01704d92"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/T_Weapon_13_Mask.png",
+   "sha256": "5f1d7ee021a267ac2e7f7c649ec4948b5ead7b831ee5ae2a6f715f563ab3d091"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/T_Weapon_13_NormalDX.png",
+   "sha256": "bd3cf5f319a26ba5b6d32bfef2d14b139445f7957887b8e6606eb42bd4b7c7de"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_13",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0251,
+  "normal_tilt_p90_all_texels": 0.0674,
+  "by_material": {
+   "M_PS_Graphite": {
+    "tilt": 0.0339,
+    "area_m2": 0.1762
+   },
+   "M_PS_BlackGlass": {
+    "tilt": 0.0007,
+    "area_m2": 0.06129
+   },
+   "M_PS_Titanium": {
+    "tilt": 0.0098,
+    "area_m2": 0.0006
+   },
+   "M_PS_PanelGraphite": {
+    "tilt": 0.0487,
+    "area_m2": 0.01391
+   },
+   "M_PS_Ledger": {
+    "tilt": 0.0115,
+    "area_m2": 0.00247
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/SM_Weapon_13.blend",
+  "sha256": "dbb6a5e454e7b7b49a86637faf20f6d8cf5bf9ca808818caf947d650ee3bae5d"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Estate_1m.png"
+ ]
+}

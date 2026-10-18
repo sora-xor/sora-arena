@@ -1,0 +1,235 @@
+{
+ "id": 0,
+ "key": "W00_Katana",
+ "ja": "刀",
+ "en": "Katana",
+ "faction": "League hero (Nyaakoto)",
+ "builder": "scripts/art/create_runtime_weapon_nihonto.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3506.2329943171635,
+  "p05": 3186.862129264755,
+  "uv_coverage": 0.7354293996784382
+ },
+ "notes": {
+  "nagasa_m": 0.727,
+  "sori_m": 0.015,
+  "arc_m": 0.72783,
+  "machi_x": 0.0952,
+  "fuchi_face_x": 0.055,
+  "kashira_end_x": -0.18742,
+  "same": {
+   "nodules_mm": [
+    0.4,
+    1.2
+   ],
+   "oyatsubu_x_m": -0.0341
+  },
+  "ito_pitch_m": 0.01964,
+  "ito_crossings_per_face": 10,
+  "kashira": "domed oval with shitodome; ito crosses it (kashira-kake)",
+  "sageo": {
+   "length_m": 1.416,
+   "width_m": 0.009,
+   "tie": "through the kurikata; crossing spiral down the saya, knot and two tails"
+  }
+ },
+ "assets": {
+  "SM_Weapon_00": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.fbx",
+     "triangles": 65272,
+     "sha256": "2631bad6a4c5e2436916410b4d2d93a9d6d4bb2166bab57005254498c8e085f9"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD1.fbx",
+     "triangles": 27414,
+     "sha256": "4845a80d9a4291839b2a94574249c246d733ab7ce445af92d19193793b8f7116"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_LOD2.fbx",
+     "triangles": 10442,
+     "sha256": "1e94856bc9430f5dfd630bb90d6a069fed8eed4e3500d68dcdfb3df1e04f7f87"
+    }
+   ],
+   "bounds_m": [
+    1.00965,
+    0.073,
+    0.1139
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     -0.14242,
+     0.0,
+     0.0
+    ],
+    "Muzzle": [
+     0.81973,
+     0.0,
+     0.0759
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  },
+  "SM_Weapon_00_Saya": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya.fbx",
+     "triangles": 25020,
+     "sha256": "c85210574b2b25a0f951af37188b5c3d08a96f0f40a342ec0f8be7f07c1c91cd"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD1.fbx",
+     "triangles": 10508,
+     "sha256": "7e600103e5a5a7e34cee3bf1f8824aa23d747e343685623ab92815151e267e2e"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00_Saya_LOD2.fbx",
+     "triangles": 4002,
+     "sha256": "1634cc8c1bd1c4377ee9c01fdee5edcdc773a5038097dad07cf5234226144b2e"
+    }
+   ],
+   "bounds_m": [
+    0.78399,
+    0.03491,
+    0.10705
+   ],
+   "sockets": {
+    "Koiguchi": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Kurikata": [
+     0.10546,
+     -0.01214,
+     -0.0147
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/polyhaven/crepe_satin/crepe_satin_nor_dx_2k.exr",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_arm_4k.exr",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_diff_4k.jpg",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_nor_dx_4k.exr"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_BaseColor.png",
+   "sha256": "021c283c7dd5af609bbb6bfbdd9701cfb60cc6d6d2c1f7784553d2a3f47c5515"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_ORM.png",
+   "sha256": "0d0fb6473a6ba8381eab7db81824f4ea9cba391ee3350229b607dc8506d1ccad"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_Mask.png",
+   "sha256": "4b5dff47fa74088d9c5c0d374b53e58760fda5d5d310718dd517bc7c634a567f"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/T_Weapon_00_NormalDX.png",
+   "sha256": "ff7ff1b4080111b9690bb31566596fbb5b424162035b311b2541e9846246c2e5"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_00",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0946,
+  "normal_tilt_p90_all_texels": 0.3286,
+  "by_material": {
+   "M_Nihonto_Steel": {
+    "tilt": 0.0016,
+    "area_m2": 0.04221
+   },
+   "M_Habaki_Kinkise": {
+    "tilt": 0.0515,
+    "area_m2": 0.00304
+   },
+   "M_Seppa_Kinkise": {
+    "tilt": 0.018,
+    "area_m2": 0.005
+   },
+   "M_Tsuba_Iron": {
+    "tilt": 0.2095,
+    "area_m2": 0.0085
+   },
+   "M_Tsuba_Mimi": {
+    "tilt": 0.1221,
+    "area_m2": 0.00339
+   },
+   "M_Gold_Inlay": {
+    "tilt": 0.0141,
+    "area_m2": 0.00384
+   },
+   "M_Fuchi_Shakudo": {
+    "tilt": 0.1226,
+    "area_m2": 0.00663
+   },
+   "M_Samegawa": {
+    "tilt": 0.1764,
+    "area_m2": 0.01951
+   },
+   "M_Tsuka_Ito": {
+    "tilt": 0.2475,
+    "area_m2": 0.04673
+   },
+   "M_Mekugi_Bamboo": {
+    "tilt": 0.0146,
+    "area_m2": 0.00048
+   },
+   "M_Saya_Roiro": {
+    "tilt": 0.0221,
+    "area_m2": 0.07446
+   },
+   "M_Saya_Horn": {
+    "tilt": 0.0133,
+    "area_m2": 0.00983
+   },
+   "M_Sageo": {
+    "tilt": 0.2588,
+    "area_m2": 0.02729
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W00_Katana/SM_Weapon_00.blend",
+  "sha256": "49ea9465cbc2d3fb892790eb3ebeb47755b65df5c63155c19a7923159f1057d0"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_00_Estate_1m.png"
+ ]
+}

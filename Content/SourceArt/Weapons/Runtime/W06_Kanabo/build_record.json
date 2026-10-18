@@ -1,0 +1,152 @@
+{
+ "id": 6,
+ "key": "W06_Kanabo",
+ "ja": "金棒",
+ "en": "Kanabō",
+ "faction": "League (Kōzō's gate breaker, ch08)",
+ "builder": "scripts/art/create_runtime_weapon_blunt.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 1961.5667185613997,
+  "p05": 1851.2561023326093,
+  "uv_coverage": 0.5735550841507406
+ },
+ "notes": {
+  "overall_m": 1.52,
+  "studs": 208,
+  "stud_row_pitch_m": 0.033,
+  "across_flats_max_m": 0.088,
+  "across_flats_grip_m": 0.058,
+  "taper": 0.341,
+  "butt_x": -0.25,
+  "basis": "design values (kanabō size records are a documented gap)"
+ },
+ "assets": {
+  "SM_Weapon_06": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.fbx",
+     "triangles": 49484,
+     "sha256": "95caa016ffae4e4cb3ff2507b4c9841e603efdc09c16c10f395851ad7406c70d"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD1.fbx",
+     "triangles": 20782,
+     "sha256": "35862e01172f54f7e15888b04d10a5391908217e3eab0ac04961ee6dd2034e52"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06_LOD2.fbx",
+     "triangles": 7916,
+     "sha256": "3abff5b627c57fbcdd647d327dcf4eb9b5ea6b623e2ed7af1bc766aa5cfd8f48"
+    }
+   ],
+   "bounds_m": [
+    1.5217,
+    0.11387,
+    0.18029
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     -0.13,
+     0.0,
+     0.0
+    ],
+    "Muzzle": [
+     1.03616,
+     0.0,
+     0.055
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_Color.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_NormalDX.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_Roughness.jpg",
+  "Local/ThirdPartyRaw/cc0/polyhaven/crepe_satin/crepe_satin_nor_dx_2k.exr",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_arm_4k.exr",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_diff_4k.jpg",
+  "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_nor_dx_4k.exr"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_BaseColor.png",
+   "sha256": "9d5b1c5239944ddb2c9dbcc09d9748716318b166115d4f4a55dffa37aa530a9b"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_ORM.png",
+   "sha256": "da66e2f910bcbfce76159d2ad1ea051d174b8ccc5e40eb9908b7d1aa7463e81d"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_Mask.png",
+   "sha256": "e3e270ed412f6580b4035f60dd5ab9cb3f536fd5dc9d74642f3cab87ece513b8"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/T_Weapon_06_NormalDX.png",
+   "sha256": "9b570614868160a46ff414cf8a0266b5fff6852177fb3fbc7d9a06048627a29f"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_06",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0908,
+  "normal_tilt_p90_all_texels": 0.2244,
+  "by_material": {
+   "M_Kanabo_Iron": {
+    "tilt": 0.2502,
+    "area_m2": 0.08077
+   },
+   "M_Kanabo_TekubiCord": {
+    "tilt": 0.2063,
+    "area_m2": 0.00647
+   },
+   "M_Kanabo_Oak": {
+    "tilt": 0.052,
+    "area_m2": 0.31671
+   },
+   "M_Kanabo_GripLeather": {
+    "tilt": 0.0654,
+    "area_m2": 0.13352
+   },
+   "M_Kanabo_Studs": {
+    "tilt": 0.1676,
+    "area_m2": 0.08773
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W06_Kanabo/SM_Weapon_06.blend",
+  "sha256": "922a66c66b9f4ab2dc5075c7ce7160e89d4c8028152717cae59eb5da87353da1"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_06_Estate_1m.png"
+ ]
+}

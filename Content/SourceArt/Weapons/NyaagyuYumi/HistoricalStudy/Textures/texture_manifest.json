@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "license": "Original project-authored mathematical texture fields; no external pixels",
+  "normal_convention": "DirectX/downward green",
+  "orm_channels": {
+    "R": "ambient occlusion",
+    "G": "roughness",
+    "B": "metallic"
+  },
+  "surfaces": [
+    {
+      "name": "Bamboo",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "files": {
+        "Albedo": "Bamboo_Albedo.png",
+        "NormalDX": "Bamboo_NormalDX.png",
+        "ORM": "Bamboo_ORM.png"
+      },
+      "roughness_min_max": [
+        0.459,
+        0.79
+      ],
+      "metallic_min_max": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "BlackLacquer",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "files": {
+        "Albedo": "BlackLacquer_Albedo.png",
+        "NormalDX": "BlackLacquer_NormalDX.png",
+        "ORM": "BlackLacquer_ORM.png"
+      },
+      "roughness_min_max": [
+        0.16,
+        0.501
+      ],
+      "metallic_min_max": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Rattan",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "files": {
+        "Albedo": "Rattan_Albedo.png",
+        "NormalDX": "Rattan_NormalDX.png",
+        "ORM": "Rattan_ORM.png"
+      },
+      "roughness_min_max": [
+        0.575,
+        0.794
+      ],
+      "metallic_min_max": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Fletching",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "files": {
+        "Albedo": "Fletching_Albedo.png",
+        "NormalDX": "Fletching_NormalDX.png",
+        "ORM": "Fletching_ORM.png"
+      },
+      "roughness_min_max": [
+        0.783,
+        0.98
+      ],
+      "metallic_min_max": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "ForgedIron",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "files": {
+        "Albedo": "ForgedIron_Albedo.png",
+        "NormalDX": "ForgedIron_NormalDX.png",
+        "ORM": "ForgedIron_ORM.png"
+      },
+      "roughness_min_max": [
+        0.3,
+        0.585
+      ],
+      "metallic_min_max": [
+        0.9,
+        0.9
+      ]
+    }
+  ]
+}

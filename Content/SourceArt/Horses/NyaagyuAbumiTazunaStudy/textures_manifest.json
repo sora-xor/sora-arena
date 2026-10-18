@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/art/create_nyaagyu_abumi_tazuna_textures.py",
+  "resolution": [
+    2048,
+    2048
+  ],
+  "normal_convention": "DirectX; green channel is negative V",
+  "orm_channels": "R=ambient occlusion, G=roughness, B=metallic",
+  "sets": {
+    "black_urushi": [
+      {
+        "file": "T_Nyaagyu_black_urushi_Albedo.png",
+        "sha256": "cb50e7a00c1bc3777974045be75197c190e1fd7be2c55a97fa580337fbae5b6f"
+      },
+      {
+        "file": "T_Nyaagyu_black_urushi_ORM.png",
+        "sha256": "1de3d54a601930bea7875a3ba647b7221dd239ca8a67dce13aea3711cef4e8d6"
+      },
+      {
+        "file": "T_Nyaagyu_black_urushi_NormalDX.png",
+        "sha256": "7ecbb74d1eee0fb12d535cbd70d4d9d7449b148dca68f584dbbbee4b0f1e1f15"
+      }
+    ],
+    "red_urushi": [
+      {
+        "file": "T_Nyaagyu_red_urushi_Albedo.png",
+        "sha256": "a3bce0edfa52a59bc8e6f675b9b6a305a9fde635b41f126b7b660a3354448ca8"
+      },
+      {
+        "file": "T_Nyaagyu_red_urushi_ORM.png",
+        "sha256": "6e22348bcc37f0309e04bbd91a47c6afd88474b3b75ade147abe015afb58f49e"
+      },
+      {
+        "file": "T_Nyaagyu_red_urushi_NormalDX.png",
+        "sha256": "cfe41b641508acb888163455e577a976066c735fef04129e20039671b53396ed"
+      }
+    ],
+    "forged_iron": [
+      {
+        "file": "T_Nyaagyu_forged_iron_Albedo.png",
+        "sha256": "870be8fad35180c6d02d28042a563f00d68c5bdb07e13a10239f19d4ef8d747d"
+      },
+      {
+        "file": "T_Nyaagyu_forged_iron_ORM.png",
+        "sha256": "f703a87bede145e3c9765bcc4e2edb95ea3e7aa194416ab0a18d3c058579f9fa"
+      },
+      {
+        "file": "T_Nyaagyu_forged_iron_NormalDX.png",
+        "sha256": "c9f3acc16cd6e73c1aeb046564e0768527882c19ca2446890cc82ac82279a710"
+      }
+    ],
+    "oiled_leather": [
+      {
+        "file": "T_Nyaagyu_oiled_leather_Albedo.png",
+        "sha256": "570ce96050a24ba0f5107f08b195b03980db221a635e09627f81bfb03c841380"
+      },
+      {
+        "file": "T_Nyaagyu_oiled_leather_ORM.png",
+        "sha256": "7467c8fa123dce39900078f2974f5e9f71f26eee8ae0a503d8cb55185fd6085b"
+      },
+      {
+        "file": "T_Nyaagyu_oiled_leather_NormalDX.png",
+        "sha256": "089dee561848e6ced8cf46d620388d57cdb93aa425f3f54ff67ef9e728553160"
+      }
+    ],
+    "braided_silk": [
+      {
+        "file": "T_Nyaagyu_braided_silk_Albedo.png",
+        "sha256": "e471e72de1492f180d121873cea1d1c1e9d2324607f196a7f8840375662a0ba7"
+      },
+      {
+        "file": "T_Nyaagyu_braided_silk_ORM.png",
+        "sha256": "e3932f2719822ea555b589a1df69df92b6abcf0317da8523b944498863f2097b"
+      },
+      {
+        "file": "T_Nyaagyu_braided_silk_NormalDX.png",
+        "sha256": "bf11ea5d423d3e55d22138757dca3aac5bb090f671cffa45654032139ab5ba66"
+      }
+    ]
+  },
+  "method": "Deterministic first-party procedural material estimates; no museum imagery or purchased texture used.",
+  "qualification": "Source-art estimate, not measured BRDF or certified scanned material."
+}

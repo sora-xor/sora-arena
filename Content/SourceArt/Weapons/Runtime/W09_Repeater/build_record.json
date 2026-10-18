@@ -1,0 +1,151 @@
+{
+ "id": 9,
+ "key": "W09_Repeater",
+ "ja": "連発銃",
+ "en": "Repeater",
+ "faction": "League foundry-built (bronze, iron, timber; SORA mon)",
+ "builder": "scripts/art/create_runtime_weapon_firearms.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3414.053178448682,
+  "p05": 3389.997737275843,
+  "uv_coverage": 0.7704626293017791
+ },
+ "notes": {
+  "overall_m": 1.125,
+  "barrel_m": 0.7000000000000001,
+  "bore_m": 0.0125,
+  "magazine": "36-round side drum",
+  "language": "dai stock with cheek butt, mekugi-pinned barrel, brass karakuri, no trigger guard"
+ },
+ "assets": {
+  "SM_Weapon_09": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.fbx",
+     "triangles": 29088,
+     "sha256": "e891f3d30d5d491872f49187ea533989ca171556271fb789c3ea30b193fdb840"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD1.fbx",
+     "triangles": 12216,
+     "sha256": "846fa944ac141c7ea587b2f9aa718678401ced939901096c1c93040aaf6e896d"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09_LOD2.fbx",
+     "triangles": 4654,
+     "sha256": "c6de564240fe12f4ee78f470a91b05628073c1218884499ed654004c096258d1"
+    }
+   ],
+   "bounds_m": [
+    1.125,
+    0.09918,
+    0.13601
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.3,
+     0.0,
+     0.0
+    ],
+    "Muzzle": [
+     0.7815,
+     0.0,
+     0.034
+    ],
+    "Magazine": [
+     0.04,
+     0.018,
+     0.03
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_BaseColor.png",
+   "sha256": "612e9ce58a8af978f3b9b9168d765d2aca162870a0be4ed666ea90706bc22bd3"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_ORM.png",
+   "sha256": "cc662f2341c3cba11ab3eaeaf42c4a3b737c0a58f7f8ea1e2499d87ec548189d"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_Mask.png",
+   "sha256": "692af08714e60c3ad5e8ceafc336c42897131eda6ff940a72118700ae7ffd451"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/T_Weapon_09_NormalDX.png",
+   "sha256": "baa380f43bdc46a2e9213a08d3a8dee6780a9b4add7074c95b934eb31eb9ce5a"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_09",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.0291,
+  "normal_tilt_p90_all_texels": 0.0669,
+  "by_material": {
+   "M_Rep_Stock": {
+    "tilt": 0.021,
+    "area_m2": 0.13593
+   },
+   "M_Rep_Brass": {
+    "tilt": 0.0285,
+    "area_m2": 0.00885
+   },
+   "M_Rep_Barrel": {
+    "tilt": 0.0651,
+    "area_m2": 0.05694
+   },
+   "M_Rep_Bronze": {
+    "tilt": 0.0292,
+    "area_m2": 0.07305
+   },
+   "M_Rep_MonGold": {
+    "tilt": 0.0099,
+    "area_m2": 0.00143
+   },
+   "M_Rep_Knob": {
+    "tilt": 0.004,
+    "area_m2": 0.00104
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W09_Repeater/SM_Weapon_09.blend",
+  "sha256": "767450a633bee64d8d2458fa2866411236d4de983b3e764d04545e7497ea1525"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_09_Estate_1m.png"
+ ]
+}

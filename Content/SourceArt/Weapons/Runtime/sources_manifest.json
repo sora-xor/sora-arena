@@ -1,0 +1,246 @@
+{
+ "schema": "sora-arena-source-ledger/2-draft",
+ "purpose": "Third-party inputs read by the runtime weapon authoring materials and review renders. Raw CC0 files stay in the gitignored Local/ThirdPartyRaw tree; committed palette files are already recorded in the Poly Haven ledger extension.",
+ "ledger": [
+  "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+  "scripts/assets/manifests/ambientcg-first-slice.json",
+  "scripts/assets/manifests/polyhaven-first-slice.json"
+ ],
+ "generated_at_utc": "2026-09-26T11:52:51+00:00",
+ "inputs": [
+  {
+   "file": "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+   "sha256": "77ade807bd208195073a51b970dea574fa70cd80cf666aeedf5cd416ab5c8abd",
+   "bytes": 16953534,
+   "tier": "PUB-CC0",
+   "ledger_record": "kloofendal_overcast_puresky",
+   "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+   "sha256": "4d36db2e58b4f044f70b3547f5917ce84f783f5d5543a83ed72884f8542930a3",
+   "bytes": 5067593,
+   "tier": "PUB-CC0",
+   "ledger_record": "rusty_metal_02",
+   "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+   "sha256": "4c887dd400ed8a5964377c65e20654262307d6888443eae85feb80cc6e72287a",
+   "bytes": 1952454,
+   "tier": "PUB-CC0",
+   "ledger_record": "rusty_metal_02",
+   "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+   "sha256": "c1d4c83f14a6ba123f017f1022fca8b92899b577da443c68b3741b6ee9b5b999",
+   "bytes": 3897295,
+   "tier": "PUB-CC0",
+   "ledger_record": "rusty_metal_02",
+   "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+   "sha256": "556835168ffb105f31666add0237f7fb7a11a5d6d05d4cfa5979a4e957b9da63",
+   "bytes": 43070227,
+   "tier": "PUB-CC0",
+   "ledger_record": "wood_planks_dirt",
+   "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+   "sha256": "5c8640bbd63e56dbca947dbd2d0be380c661feb556c2949ec95d842ce7f31a59",
+   "bytes": 14364491,
+   "tier": "PUB-CC0",
+   "ledger_record": "wood_planks_dirt",
+   "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+   "sha256": "958c93dbd644dc7ea925bff951cbe6275c4066f60000417e1abef2c1b9a3e6fc",
+   "bytes": 16555698,
+   "tier": "PUB-CC0",
+   "ledger_record": "wood_planks_dirt",
+   "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Fabric001/Fabric001_2K-JPG_Color.jpg",
+   "sha256": "da64a6ab2fe6a93844a4d6e11a3fe54cd3b65de166ed02976e0bddcf3a214360",
+   "bytes": 4566198,
+   "tier": "PUB-CC0",
+   "ledger_record": "Fabric001",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Fabric001/Fabric001_2K-JPG_NormalDX.jpg",
+   "sha256": "dad99058af45472f63261c7895f6fa971513311d786971f3d9c4827e5c171dc0",
+   "bytes": 6613366,
+   "tier": "PUB-CC0",
+   "ledger_record": "Fabric001",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Fabric001/Fabric001_2K-JPG_Roughness.jpg",
+   "sha256": "72efeb74b9554110fbff4fa89d97b195b5473857ac8bd58d1c1a47ac5bfb64f9",
+   "bytes": 2896211,
+   "tier": "PUB-CC0",
+   "ledger_record": "Fabric001",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_Color.jpg",
+   "sha256": "2fa4bc209d1ebd32ab3274a07bb41b73708717ab40096b077d4d76717a1407d8",
+   "bytes": 6146191,
+   "tier": "PUB-CC0",
+   "ledger_record": "Leather014",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_NormalDX.jpg",
+   "sha256": "7f7fdbe7e8b28b3c25f2b4b21dc0a469bb8ef4962a7bcb8eb65f77398f089565",
+   "bytes": 7266706,
+   "tier": "PUB-CC0",
+   "ledger_record": "Leather014",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Leather014/Leather014_2K-JPG_Roughness.jpg",
+   "sha256": "d2c6e22c8bc9873cdc5e3ee7a8c1ab5139058b3969fd9538141f979f43fdca67",
+   "bytes": 2236728,
+   "tier": "PUB-CC0",
+   "ledger_record": "Leather014",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_Color.jpg",
+   "sha256": "b3c6341dd0dbda13747fa4c652eb53a3774900368899b89bb1286475a13a4808",
+   "bytes": 2109415,
+   "tier": "PUB-CC0",
+   "ledger_record": "Rope001",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_NormalDX.jpg",
+   "sha256": "a9c4ceef4ef13321ab2033f6716637cff7cc3e47b111a95cd6d792ba6af4fc3b",
+   "bytes": 3540507,
+   "tier": "PUB-CC0",
+   "ledger_record": "Rope001",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_Roughness.jpg",
+   "sha256": "73bfe960cf7210623b9c11fd8da1a090115dfa075d946d4bb3177de2cfb52cfb",
+   "bytes": 901933,
+   "tier": "PUB-CC0",
+   "ledger_record": "Rope001",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_Color.jpg",
+   "sha256": "97d51bd322a90f77eed44a79c5be401224019b9b22b962e62924a9a7767de78b",
+   "bytes": 1879843,
+   "tier": "PUB-CC0",
+   "ledger_record": "Rope002",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_NormalDX.jpg",
+   "sha256": "c806556923e51d9fcfad28646a735d1ffb78e600c5b2ed53d252505b7b148cc2",
+   "bytes": 3591498,
+   "tier": "PUB-CC0",
+   "ledger_record": "Rope002",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_Roughness.jpg",
+   "sha256": "4010f5854c19f4fd46bb7cf4ec7715162fd4f594e04622cf2f057e02c84681ce",
+   "bytes": 892960,
+   "tier": "PUB-CC0",
+   "ledger_record": "Rope002",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/polyhaven/crepe_satin/crepe_satin_nor_dx_2k.exr",
+   "sha256": "aba46d8721659217572eca58611728b61c85e0fe2bb9699ac81d6c5863d1eb4f",
+   "bytes": 8270986,
+   "tier": "PUB-CC0",
+   "ledger_record": "crepe_satin",
+   "ledger_document": "scripts/assets/manifests/polyhaven-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_arm_4k.exr",
+   "sha256": "2bd19c705c5fd6ce9d96e30f4a6eca3c65ae9e765e49e0ece68232d4068837cc",
+   "bytes": 23585722,
+   "tier": "PUB-CC0",
+   "ledger_record": "japanese_cedar_planks",
+   "ledger_document": "scripts/assets/manifests/polyhaven-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_diff_4k.jpg",
+   "sha256": "37d5acc6cfeee1908701a2d2d8ee08addae4446e91cfb917f332e9e15f787ea4",
+   "bytes": 10221817,
+   "tier": "PUB-CC0",
+   "ledger_record": "japanese_cedar_planks",
+   "ledger_document": "scripts/assets/manifests/polyhaven-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/polyhaven/japanese_cedar_planks/japanese_cedar_planks_nor_dx_4k.exr",
+   "sha256": "456afcc32240945c4acfc08e5b8f6a35f02a385233085ead093a542a399be0bd",
+   "bytes": 36044287,
+   "tier": "PUB-CC0",
+   "ledger_record": "japanese_cedar_planks",
+   "ledger_document": "scripts/assets/manifests/polyhaven-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/polyhaven/rough_linen/rough_linen_arm_2k.exr",
+   "sha256": "17e11f887457956f439b1184b2a537008dc1d1409b5918c1be62e8c938f54a17",
+   "bytes": 10066915,
+   "tier": "PUB-CC0",
+   "ledger_record": "rough_linen",
+   "ledger_document": "scripts/assets/manifests/polyhaven-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/polyhaven/rough_linen/rough_linen_diff_2k.jpg",
+   "sha256": "e71016e08dfebea1dd4e8a2a675e3b617a889a782af782f1abb795906f4db1b4",
+   "bytes": 3607181,
+   "tier": "PUB-CC0",
+   "ledger_record": "rough_linen",
+   "ledger_document": "scripts/assets/manifests/polyhaven-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/polyhaven/rough_linen/rough_linen_nor_dx_2k.exr",
+   "sha256": "3725d62a2b9297eca62f5f0378308a984ab30ab930bb74ef7dd6ffe039e7b437",
+   "bytes": 8074548,
+   "tier": "PUB-CC0",
+   "ledger_record": "rough_linen",
+   "ledger_document": "scripts/assets/manifests/polyhaven-first-slice.json",
+   "license": "CC0-1.0"
+  }
+ ]
+}

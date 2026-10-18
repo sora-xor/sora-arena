@@ -1,0 +1,196 @@
+{
+ "id": 5,
+ "key": "W05_CoilMatchlock",
+ "ja": "コイル火縄銃",
+ "en": "Coil Matchlock",
+ "faction": "League village gun with an alien coil breech (ch04; no SORA mon)",
+ "builder": "scripts/art/create_runtime_weapon_firearms.py",
+ "library": "scripts/art/create_runtime_weapon_lib.py",
+ "units": "metres in Blender; FBX exported with apply_unit_scale (Unreal imports centimetres)",
+ "axes": "+X line of action, +Z up, +Y wielder's left (Unreal: -Y)",
+ "origin": "Grip_R",
+ "texture_res": 2048,
+ "texel_density_px_per_m": {
+  "mean": 3509.2736875079795,
+  "p05": 3468.502407654776,
+  "uv_coverage": 0.7525304804740592
+ },
+ "notes": {
+  "overall_m": 1.038,
+  "barrel_m": 0.73,
+  "bore_m": 0.016,
+  "reference": "Met 22492 (plan 3.8)",
+  "coil_breech": "fictional alien graft (story bible 4.4)",
+  "stock": "slim cheek daijiri, 6.4 cm deep at the butt, curved underline; shunkei lacquer",
+  "lock": "brass karakuri on the right (-Y); hibasami pivoted behind the pan, cocked"
+ },
+ "assets": {
+  "SM_Weapon_05": {
+   "lods": [
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.fbx",
+     "triangles": 36236,
+     "sha256": "98557c042574829a3b241a41df14f02982f119a9fce94f213eceb8c363a3ec4c"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD1.fbx",
+     "triangles": 15218,
+     "sha256": "c985ff85774e6a2b325de2036232d27398a33d9dcee97d4549a4c9827523524d"
+    },
+    {
+     "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05_LOD2.fbx",
+     "triangles": 5797,
+     "sha256": "76b98b6680a736dc879f756c1c0cfae3f5de5cf8f0a48229899b59197a0c126a"
+    }
+   ],
+   "bounds_m": [
+    1.038,
+    0.06251,
+    0.12729
+   ],
+   "sockets": {
+    "Grip_R": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "Grip_L": [
+     0.3,
+     0.0,
+     0.004
+    ],
+    "Muzzle": [
+     0.775,
+     0.0,
+     0.03
+    ],
+    "Pan": [
+     0.062,
+     -0.0167,
+     0.035
+    ],
+    "MatchTip": [
+     0.0238,
+     -0.0224,
+     0.0379
+    ]
+   },
+   "screen_sizes": [
+    1.0,
+    0.35,
+    0.12
+   ]
+  }
+ },
+ "sources": [
+  "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_arm_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_diff_2k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/rusty_metal_02/rusty_metal_02_nor_dx_2k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+  "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_Color.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_NormalDX.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope001/Rope001_2K-JPG_Roughness.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_Color.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_NormalDX.jpg",
+  "Local/ThirdPartyRaw/cc0/ambientcg/Rope002/Rope002_2K-JPG_Roughness.jpg"
+ ],
+ "emissive": {
+  "mask": "Mask R",
+  "glows": [
+   {
+    "material": "M_ML_Ember",
+    "linear_rgb": [
+     1.0,
+     0.32,
+     0.05
+    ],
+    "srgb_hex": "#FF993F",
+    "strength": 6.0
+   }
+  ],
+  "note": "League glows are warm; only alien arms are cyan"
+ },
+ "textures": {
+  "BaseColor": {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_BaseColor.png",
+   "sha256": "4b1acedc668e1f6c3d8d31567a82b8072e7a05fa2f31aa00d96ac7e3c98b1172"
+  },
+  "ORM": {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_ORM.png",
+   "sha256": "5c3fb3087041cb379ec8f6da8f76138be15c886d5d5f831f8a05b71b524635e6"
+  },
+  "Mask": {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_Mask.png",
+   "sha256": "9c763a8c8882c9ecce6c4ad8f91338be4dd8215c2fc406154ca49b03e8c9af64"
+  },
+  "Normal": {
+   "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/T_Weapon_05_NormalDX.png",
+   "sha256": "b3839d92497d51c430360fb7e0fd10bc063792a5a16e9dff2aa49f66e8487b1e"
+  }
+ },
+ "material": {
+  "name": "M_Weapon_05",
+  "BaseColor": "sRGB",
+  "NormalDX": "tangent, DirectX (green down), MikkTSpace from the exported mesh",
+  "ORM": "R ambient occlusion, G roughness, B metallic",
+  "Mask": "R hamon / emissive, G lacquer-or-edge wear, B cavity dirt"
+ },
+ "microsurface": {
+  "normal_tilt_mean_all_texels": 0.047,
+  "normal_tilt_p90_all_texels": 0.094,
+  "by_material": {
+   "M_ML_Barrel": {
+    "tilt": 0.0676,
+    "area_m2": 0.06576
+   },
+   "M_ML_Stock": {
+    "tilt": 0.0189,
+    "area_m2": 0.12968
+   },
+   "M_ML_Horn": {
+    "tilt": 0.0131,
+    "area_m2": 0.00205
+   },
+   "M_ML_Brass": {
+    "tilt": 0.0277,
+    "area_m2": 0.01086
+   },
+   "M_ML_Hinawa": {
+    "tilt": 0.2342,
+    "area_m2": 0.00923
+   },
+   "M_ML_Ember": {
+    "tilt": 0.0055,
+    "area_m2": 8e-05
+   },
+   "M_ML_AlienSleeve": {
+    "tilt": 0.0711,
+    "area_m2": 0.01238
+   },
+   "M_ML_CoilCopper": {
+    "tilt": 0.0153,
+    "area_m2": 0.01414
+   },
+   "M_ML_Clamp": {
+    "tilt": 0.1641,
+    "area_m2": 0.00588
+   },
+   "M_ML_Hemp": {
+    "tilt": 0.2646,
+    "area_m2": 0.00624
+   }
+  }
+ },
+ "blend": {
+  "file": "Content/SourceArt/Weapons/Runtime/W05_CoilMatchlock/SM_Weapon_05.blend",
+  "sha256": "3b011e7f9d4785e31736558c5178d38677617b4003d55ffc10ba2c0933f34a9d"
+ },
+ "renders": [
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Neutral_1m.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Profile.png",
+  "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_05_Estate_1m.png"
+ ]
+}
