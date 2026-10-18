@@ -165,6 +165,7 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
             !Int(*R,TEXT("quiver"),T.RecoveryQuiver) || !WeaponMask(Rows(*R,TEXT("weapons")),T.RecoveryWeapons)) return false;
     }
     T.Pickups = Beat.Pickups.Num(); T.Dropoffs = Beat.Dropoffs.Num();
+    if (T.Dropoffs > MaxPoints) return false; // Bound fixed capacity storage before indexing it.
     const auto CapacityValue = O.TryGetField(TEXT("dropoff_capacity"));
     if (!CapacityValue.IsValid()) return false;
     if (CapacityValue->Type != EJson::Null)
