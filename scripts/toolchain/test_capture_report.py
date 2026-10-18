@@ -136,6 +136,22 @@ class CaptureArchiveTests(unittest.TestCase):
                                        self.project, self.engine_base, self.root / "capability", self.started, 2, 1)
         self.assertEqual(frames, [])
 
+    def test_registry_fixture_keeps_original_bytes_and_labels_its_scope(self):
+        self.report = {"tests": [{"fullTestPath": "SoraCapture.RegistryFixture.Chapter5"}]}
+        frames = self.archive(log="SORA_REGISTRY_FIXTURE_FRAME " + str(self.source))
+        self.assertEqual((self.root / "run-sm6" / frames[0]["path"]).read_bytes(), self.png)
+        self.assertEqual(frames[0]["sha256"], hashlib.sha256(self.png).hexdigest())
+        self.assertEqual(frames[0]["capture_kind"], "completed-save registry UI fixture; not playthrough evidence")
+
+    def test_an_art_frame_cannot_stand_in_for_a_missing_registry_capture(self):
+        self.report["tests"].append({"fullTestPath": "SoraCapture.RegistryFixture.Chapter4"})
+        with self.assertRaisesRegex(ValueError, "RegistryFixture.*no screenshot"):
+            self.archive()
+
+    def test_different_capture_markers_cannot_hide_a_reused_path(self):
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            self.archive(log=self.log + "\nSORA_REGISTRY_FIXTURE_FRAME " + str(self.source))
+
 
 if __name__ == "__main__":
     unittest.main()

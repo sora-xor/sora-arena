@@ -94,22 +94,27 @@ def png_dimensions(data: bytes) -> tuple[int, int]:
 
 def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
                    output: Path, start_ns: int, width: int, height: int) -> list[dict]:
-    """Copy only this run's explicitly acknowledged art-review frames."""
-    names = re.findall(r"SORA_ART_REVIEW_FRAME ([^\r\n]+)", log)
-    if not names and any(test.get("fullTestPath", "").startswith("SoraCapture.ArtReview.")
-                         for test in report.get("tests", [])):
-        raise ValueError("art review reported no screenshot paths")
+    """Copy acknowledged original frames, retaining each fixture's scope."""
+    kinds = {
+        "SORA_ART_REVIEW_FRAME": ("SoraCapture.ArtReview.", "art-review"),
+        "SORA_REGISTRY_FIXTURE_FRAME": ("SoraCapture.RegistryFixture.", "completed-save registry UI fixture; not playthrough evidence"),
+    }
+    names = re.findall(r"(" + "|".join(kinds) + r") ([^\r\n]+)", log)
+    for marker, (prefix, _) in kinds.items():
+        if not any(kind == marker for kind, _ in names) and any(
+                test.get("fullTestPath", "").startswith(prefix) for test in report.get("tests", [])):
+            raise ValueError(f"{prefix} reported no screenshot paths")
     screenshot_root = (project / "Saved/Screenshots").resolve()
     frames = []
     seen = set()
-    for name in names:
+    for marker, name in names:
         path = (engine_base / name.strip()).resolve()
         relative = path.relative_to(screenshot_root)
         if relative in seen:
-            raise ValueError(f"duplicate/overwritten art-review frame: {relative}")
+            raise ValueError(f"duplicate/overwritten capture frame: {relative}")
         seen.add(relative)
         if path.stat().st_mtime_ns < start_ns:
-            raise ValueError(f"stale art-review frame: {relative}")
+            raise ValueError(f"stale capture frame: {relative}")
         data = path.read_bytes()
         if png_dimensions(data) != (width, height):
             raise ValueError(f"unexpected screenshot dimensions: {relative}")
@@ -118,7 +123,8 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         with target.open("xb") as stream:
             stream.write(data)
         frames.append({"path": str(target.relative_to(output)), "source": str(path),
-                       "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
+                       "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+                       "capture_kind": kinds[marker][1]})
     return frames
 
 
