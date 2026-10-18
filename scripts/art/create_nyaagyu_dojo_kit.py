@@ -145,12 +145,11 @@ def panel_bay(kind, seed):
     if kind in ("Panel", "RenjiHigh"):
         parts += boards(f"{kind}_Low", x0, x1, 0.0, NAGESHI[0], INFILL, seed=seed)
         parts.append(slab(f"{kind}_LowSlab", x0, x1, 0.0, NAGESHI[0]))
-        parts.append(h_member(f"{kind}_Koshi", KOSHI[0], KOSHI[1], KOSHI[2], half=HALF_IN))
     elif kind == "Renji":
         win = (1.00, NAGESHI[0] - 0.05)
         parts += boards(f"{kind}_Low", x0, x1, 0.0, KOSHI[0], INFILL, seed=seed)
         parts.append(slab(f"{kind}_LowSlab", x0, x1, 0.0, KOSHI[0]))
-        parts.append(h_member(f"{kind}_Koshi", KOSHI[0], KOSHI[1], KOSHI[2], half=HALF_IN))
+        parts.append(slab(f"{kind}_KoshiBack", x0, x1, KOSHI[0], KOSHI[1]))
         parts += renji(f"{kind}_Win", -0.62, 0.62, win[0] + 0.05, win[1])
         # Boards either side of the window.
         parts += boards(f"{kind}_SideL", x0, -0.67, KOSHI[1], NAGESHI[0], INFILL, width=0.11, batten=False, seed=seed + 1)
@@ -186,12 +185,15 @@ def panel_bay(kind, seed):
         parts.append(A.metric_uv0(soffit))
         parts.append(A.metric_uv0(A.block(f"{kind}_Garden", -BAY_W / 2, BAY_W / 2, 1.48, 5.0, -0.56, -0.50, "Stone",
                                           bevel=0.0)))
-    # Nageshi and the upper wall.
-    parts.append(A.metric_uv0(h_member(f"{kind}_Nageshi", NAGESHI[0], NAGESHI[1], NAGESHI[2])))
+    # The upper wall. The rails (nageshi, nuki, cornice, and koshi below) are
+    # separate members placed per bay (SM_DojoRail_*, or timber logs); each
+    # bay keeps a backing slab behind them so no rail zone ever leaks light.
+    parts.append(slab(f"{kind}_NageshiBack", x0, x1, NAGESHI[0], NAGESHI[1]))
+    parts.append(slab(f"{kind}_NukiBack", x0, x1, NUKI[0], NUKI[1]))
+    parts.append(slab(f"{kind}_CorniceBack", x0, x1, CORNICE[0], CORNICE[1]))
     if kind == "RenjiHigh":
         wz0, wz1 = 4.55, 5.75
         parts.append(plaster(f"{kind}_UpA", x0, x1, NAGESHI[1], NUKI[0]))
-        parts.append(A.metric_uv0(h_member(f"{kind}_Nuki", NUKI[0], NUKI[1], NUKI[2], half=HALF_IN)))
         parts.append(plaster(f"{kind}_UpB", x0, x1, NUKI[1], wz0 - 0.05))
         parts += renji(f"{kind}_HighWin", -0.62, 0.62, wz0, wz1)
         parts.append(plaster(f"{kind}_UpL", x0, -0.67, wz0 - 0.05, wz1 + 0.05))
@@ -199,9 +201,7 @@ def panel_bay(kind, seed):
         parts.append(plaster(f"{kind}_UpC", x0, x1, wz1 + 0.05, CORNICE[0]))
     else:
         parts.append(plaster(f"{kind}_UpA", x0, x1, NAGESHI[1], NUKI[0]))
-        parts.append(A.metric_uv0(h_member(f"{kind}_Nuki", NUKI[0], NUKI[1], NUKI[2], half=HALF_IN)))
         parts.append(plaster(f"{kind}_UpB", x0, x1, NUKI[1], CORNICE[0]))
-    parts.append(A.metric_uv0(h_member(f"{kind}_Cornice", CORNICE[0], CORNICE[1], CORNICE[2])))
     for p in parts:
         if p.get("rw_needs_unwrap", True):
             A.metric_uv0(p)
@@ -212,6 +212,22 @@ def column():
     c = A.block("Column", -COL / 2, COL / 2, COL_FRONT, COL_FRONT + COL, 0.0, WALL_H, "DarkTimber", bevel=0.010,
                 segments=2)
     return [A.metric_uv0(c)]
+
+
+# Rails, placed per bay by HallInterior: (z0, z1, face_y, half-length). Nageshi
+# and cornice run the full bay in front of the columns; koshi and nuki span
+# between them. The box versions are the last fallback for the timber logs.
+RAILS = {
+    "Nageshi": (NAGESHI[0], NAGESHI[1], NAGESHI[2], BAY_W / 2),
+    "Cornice": (CORNICE[0], CORNICE[1], CORNICE[2], BAY_W / 2),
+    "Koshi": (KOSHI[0], KOSHI[1], KOSHI[2], HALF_IN),
+    "Nuki": (NUKI[0], NUKI[1], NUKI[2], HALF_IN),
+}
+
+
+def rail(kind):
+    z0, z1, face_y, half = RAILS[kind]
+    return [A.metric_uv0(h_member(f"Rail_{kind}", z0, z1, face_y, half=half))]
 
 
 def floor_tile(seed, size=(3.6, 2.6), board_w=1.89 / 13, plank_rows=13, tex_m=1.89):
@@ -424,6 +440,12 @@ def build():
                                    record={"role": "column at bay boundaries"}))
     for p in parts:
         bpy.data.objects.remove(p, do_unlink=True)
+    for kind in RAILS:
+        parts = rail(kind)
+        modules.append(A.export_module(f"SM_DojoRail_{kind}", parts, OUT, lod_ratios=(1.0,),
+                                       record={"role": f"{kind.lower()} rail per bay (box fallback for the timber logs)"}))
+        for p in parts:
+            bpy.data.objects.remove(p, do_unlink=True)
     for v in range(4):
         parts = floor_tile(100 + v)
         modules.append(A.export_module(f"SM_DojoFloor_{v}", parts, OUT, lod_ratios=(1.0,),

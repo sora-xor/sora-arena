@@ -2,7 +2,7 @@
  "schema_version": 1,
  "kit": "NyaagyuDojoKit",
  "generator": "scripts/art/create_nyaagyu_dojo_kit.py",
- "generator_sha256": "e3579576f388436d8e5ba4ec81b502d0f811ba8337cbd9ff53fafb5f84aa4efe",
+ "generator_sha256": "78aaa0dddb64b0caf2a877341017461b734e5846ee1f3c54591860d081d20dcd",
  "units": "metres in Blender; FBX apply_unit_scale (Unreal centimetres)",
  "frame": "wall modules: +X along the wall, +Y outward into the wall, Z up; room at -Y; origin at floor on the inner wall plane",
  "uv0": "continuous metre-scale projection (1 UV = 1 m) for tiling scan materials, except where noted",
@@ -12,18 +12,18 @@
    "lods": [
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_Panel.fbx",
-     "triangles": 704,
-     "sha256": "26f7fdbda39c37e3606d093a2ab5e987d224fe244ea1d5cea2e666bc76cb3ffd"
+     "triangles": 660,
+     "sha256": "8305c0b3679a4180816e44614bffac918af5c7153d84c16612f2aa2e56b4d08b"
     }
    ],
    "bounds_m": {
     "min": [
-     -0.9,
-     -0.08,
+     -0.78,
+     0.004,
      0.0
     ],
     "max": [
-     0.9,
+     0.78,
      0.21,
      7.0
     ]
@@ -42,17 +42,17 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_Renji.fbx",
      "triangles": 1672,
-     "sha256": "2cdbc634ca39356aa582f1983a482dd482484a77a50575cf6bf2c1e9bab7e969"
+     "sha256": "ee088b845a58f117d15958c965377d131bd7b1eedae41801f73719d0e7f58ddb"
     }
    ],
    "bounds_m": {
     "min": [
-     -0.9,
-     -0.08,
+     -0.78,
+     -0.03,
      0.0
     ],
     "max": [
-     0.9,
+     0.78,
      0.21,
      7.0
     ]
@@ -71,18 +71,18 @@
    "lods": [
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_RenjiHigh.fbx",
-     "triangles": 1628,
-     "sha256": "290f575548b72346b6289bd0bd39577a075adf275ba992f1d2fa568b519f7a40"
+     "triangles": 1584,
+     "sha256": "a44740e200e5443a90d1f68c55fa65319ea05e909f686f6b13941bd393a86ccf"
     }
    ],
    "bounds_m": {
     "min": [
-     -0.9,
-     -0.08,
+     -0.78,
+     -0.03,
      0.0
     ],
     "max": [
-     0.9,
+     0.78,
      0.21,
      7.0
     ]
@@ -102,17 +102,17 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_Shoji.fbx",
      "triangles": 1256,
-     "sha256": "52f19ea553af968c5436996bcf9b0ab2584e3ed3ba7421c3058d2b2e84ebbd89"
+     "sha256": "3c20c30e68fa4aec17ce4403db599b62aa5cf90e3b2ba2492d9b1674baa24124"
     }
    ],
    "bounds_m": {
     "min": [
-     -0.9,
-     -0.08,
+     -0.78,
+     -0.02,
      -0.01
     ],
     "max": [
-     0.9,
+     0.78,
      0.21,
      7.0
     ]
@@ -133,13 +133,13 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_DoorOpen.fbx",
      "triangles": 948,
-     "sha256": "b48d41597e1fd2887fa6b3234c803851ec9f00489bdf7793a39f4d3802cea1ec"
+     "sha256": "f99f3a2cc012e26cc1f020d6052fce67c87a3122a066bedbdb1ba86f01850972"
     }
    ],
    "bounds_m": {
     "min": [
      -0.9,
-     -0.08,
+     -0.02,
      -0.56
     ],
     "max": [
@@ -164,7 +164,7 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoColumn.fbx",
      "triangles": 108,
-     "sha256": "7b9b094b4014dc5306b2656a308ed085e1cc4a0d03e1e55103b9d8cada0ae725"
+     "sha256": "2b8de279fdd81ab17757929b14009952894105140f0e4d4b68426a99fd77419d"
     }
    ],
    "bounds_m": {
@@ -185,12 +185,116 @@
    "role": "column at bay boundaries"
   },
   {
+   "asset": "SM_DojoRail_Nageshi",
+   "lods": [
+    {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoRail_Nageshi.fbx",
+     "triangles": 44,
+     "sha256": "ba53fd1ecc89d0cbde59199cc1e9a52485e541dcc9f05e6397d4040ba05a0b78"
+    }
+   ],
+   "bounds_m": {
+    "min": [
+     -0.9,
+     -0.07,
+     2.1
+    ],
+    "max": [
+     0.9,
+     0.03,
+     2.3
+    ]
+   },
+   "material_slots": [
+    "M_Arch_DarkTimber"
+   ],
+   "role": "nageshi rail per bay (box fallback for the timber logs)"
+  },
+  {
+   "asset": "SM_DojoRail_Cornice",
+   "lods": [
+    {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoRail_Cornice.fbx",
+     "triangles": 44,
+     "sha256": "31e10e0bc8e49d2242b7fba470746019f0aae5848461926d6594f7bbf2132822"
+    }
+   ],
+   "bounds_m": {
+    "min": [
+     -0.9,
+     -0.08,
+     6.78
+    ],
+    "max": [
+     0.9,
+     0.03,
+     7.0
+    ]
+   },
+   "material_slots": [
+    "M_Arch_DarkTimber"
+   ],
+   "role": "cornice rail per bay (box fallback for the timber logs)"
+  },
+  {
+   "asset": "SM_DojoRail_Koshi",
+   "lods": [
+    {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoRail_Koshi.fbx",
+     "triangles": 44,
+     "sha256": "1bb97325a150a239bb259a04818edf38895228487bf846efd1ef13c1dba3217f"
+    }
+   ],
+   "bounds_m": {
+    "min": [
+     -0.78,
+     -0.005,
+     0.88
+    ],
+    "max": [
+     0.78,
+     0.03,
+     1.0
+    ]
+   },
+   "material_slots": [
+    "M_Arch_DarkTimber"
+   ],
+   "role": "koshi rail per bay (box fallback for the timber logs)"
+  },
+  {
+   "asset": "SM_DojoRail_Nuki",
+   "lods": [
+    {
+     "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoRail_Nuki.fbx",
+     "triangles": 44,
+     "sha256": "435cb10730b12116fd990291593cd71baa02a4ab45edc4846e5d2fa3642974b1"
+    }
+   ],
+   "bounds_m": {
+    "min": [
+     -0.78,
+     0.0,
+     4.3
+    ],
+    "max": [
+     0.78,
+     0.03,
+     4.42
+    ]
+   },
+   "material_slots": [
+    "M_Arch_DarkTimber"
+   ],
+   "role": "nuki rail per bay (box fallback for the timber logs)"
+  },
+  {
    "asset": "SM_DojoFloor_0",
    "lods": [
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoFloor_0.fbx",
      "triangles": 1584,
-     "sha256": "0def6323858b849f50ec7c5de49c9c0e6f7a826ac7b8e734b8e33d303fb07e84"
+     "sha256": "8d05f482fc97906927299633fe694cb30006aa677579d616c0e0c40936a660ee"
     }
    ],
    "bounds_m": {
@@ -217,7 +321,7 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoFloor_1.fbx",
      "triangles": 1584,
-     "sha256": "0c7410d982be5ff439044706f769fed0fc891f217d68cfb9b632a8f977a7971c"
+     "sha256": "e99071057f34b37d700f791a9717332e93c5405177448339f9d69e4ec147a81e"
     }
    ],
    "bounds_m": {
@@ -244,7 +348,7 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoFloor_2.fbx",
      "triangles": 1584,
-     "sha256": "8299ce274e02a12505fc21e64f57f7120a22487d8cbd556b7126969a55a2e63d"
+     "sha256": "ed740c6523d5031216ad4dfebf69982daf17e8c9eb1bd59bf790a5a1c3480401"
     }
    ],
    "bounds_m": {
@@ -271,7 +375,7 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoFloor_3.fbx",
      "triangles": 1584,
-     "sha256": "c5812b8b642f07cbe2f34c198c64366ae9630608a13103583440b35ced56bf23"
+     "sha256": "2ab836d649090a612e8554879cc2b3381a2a0e08357aa5ed9688bda07b10be3e"
     }
    ],
    "bounds_m": {
@@ -298,7 +402,7 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoCeiling.fbx",
      "triangles": 708,
-     "sha256": "1a33515469a606be23903665edd86cb6c5d354e6fa665fd76417637aa41a0af5"
+     "sha256": "44b1c73a37d1ec9c5311eb522ab136a22bc228e25f297988b41bf922abd34803"
     }
    ],
    "bounds_m": {
@@ -327,7 +431,7 @@
     {
      "file": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoKamiza.fbx",
      "triangles": 8624,
-     "sha256": "d8cd4fe25f5893eee770810315a6d9731b464ca0a5e27bb37437ab7965c38d75"
+     "sha256": "ca72a8036f4b690ad7eb619042821de2568ebc9e54f5839440bd54a7e9f7e42a"
     }
    ],
    "bounds_m": {
