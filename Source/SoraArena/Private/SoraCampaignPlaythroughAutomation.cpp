@@ -773,7 +773,7 @@ bool RecordLessons(FAutomationTestBase& Test, FState& State, const FSoraBeat& Be
         // The completist sweep visits loose collectibles in other zones.
         // Return to this beat's authored entrance before the real-input
         // lesson; never place the hero inside its measured distance band.
-        MoveTo(State,Beat.Space.Entry);
+        MoveTo(State,ASoraWorldBuilder::Floor(Beat.Space.Entry));
         if(!Advance(Test,State,1)) return false;
         bOk &= Test.TestTrue(TEXT("The dojo entrance is outside the distance band"),Director->MaaiDistance()>Beat.Task.Maai.OuterCm);
         bOk &= Test.TestFalse(TEXT("Returning from collectibles grants no distance confirmation"),Director->TaskProgress().Maai.Acquired);
