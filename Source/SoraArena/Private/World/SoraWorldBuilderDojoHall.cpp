@@ -273,15 +273,23 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
         TEXT("%d rails, %d own log, %d pool, %d box, %d missing"),
         ZoneIndex,*Zone.Id,bNanite?1:0,Columns,OwnLogs,PoolColumns,WallPool.Num(),OpenPool.Num(),Columns-OwnLogs-PoolColumns,
         Rails,OwnRails,PoolRails,BoxRailCount,Rails-OwnRails-PoolRails-BoxRailCount);
-    // Floor tiles cover the hall exactly (each stretched by a few percent),
-    // in four board layouts so no two neighbours repeat.
+    // Floor tiles cover the hall exactly (each stretched by a few percent).
+    // Timber tiles (scripts/art/create_nyaagyu_dojo_floor.py: every board its
+    // own log; the tiles repeat) with Nanite, else their baked pool, else the
+    // kit's four box layouts; a stable pick per tile, no neighbour alike.
+    TArray<UStaticMesh*> FloorSet;
+    for(int32 I=0;I<100&&bNanite;++I)
+        if(UStaticMesh* Mesh=TimberMesh(FString::Printf(TEXT("SM_DojoTimberFloor_%02d"),I))) FloorSet.Add(Mesh); else break;
+    for(int32 I=0;I<100&&FloorSet.Num()==0;++I)
+        if(UStaticMesh* Mesh=TimberMesh(FString::Printf(TEXT("SM_DojoTimberFloor_MAC_%02d"),I))) FloorSet.Add(Mesh); else break;
+    if(FloorSet.Num()==0) FloorSet.Append(Floors,4);
     const int32 NX=FMath::Max(1,FMath::RoundToInt32((Max.X-Min.X)/FloorTileX)),NY=FMath::Max(1,FMath::RoundToInt32((Max.Y-Min.Y)/FloorTileY));
     const float TX=(Max.X-Min.X)/NX,TY=(Max.Y-Min.Y)/NY;
     for(int32 X=0;X<NX;++X) for(int32 Y=0;Y<NY;++Y)
     {
-        const int32 Variant=(X*7+Y*13+ZoneIndex)%4;
+        const int32 Variant=(X*7+Y*13+ZoneIndex)%FloorSet.Num();
         const FTransform Tile(FRotator::ZeroRotator,FVector(Min.X+(X+.5f)*TX,Min.Y+(Y+.5f)*TY,0.f),FVector(TX/FloorTileX,TY/FloorTileY,1.f));
-        if(bInstanced) Instances(Floors[Variant])->AddInstance(Tile,true); else Singles(Floors[Variant])->AddInstance(Tile,true);
+        if(bInstanced) Instances(FloorSet[Variant])->AddInstance(Tile,true); else Singles(FloorSet[Variant])->AddInstance(Tile,true);
     }
     // The coffered ceiling at the walls' height (the tile is modelled at 7 m).
     const int32 CX=FMath::Max(1,FMath::RoundToInt32((Max.X-Min.X)/BayCm)),CY=FMath::Max(1,FMath::RoundToInt32((Max.Y-Min.Y)/BayCm));
