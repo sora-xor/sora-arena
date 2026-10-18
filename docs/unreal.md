@@ -52,6 +52,13 @@ alone is not evidence that Nanite drew visible geometry. Changing rendering
 settings requires rebuilding the world to reselect these assets.
 The Mac cook explicitly targets both `SF_METAL_SM5` and `SF_METAL_SM6`;
 `SoraArena.Rendering.MacShaderTargets` checks the resolved configuration.
+For separate uncooked Metal checks, run
+`scripts/toolchain/capture-editor-game.sh SoraArena.Rendering 1280 720 sm6`
+and the same command ending in `sm5`. The wrapper builds the current module,
+exports each run's automation report under `Saved/Capture/`, and requires
+complete successful results with the requested shader model and Metal RHI.
+Use `SoraCapture.ArtReview.Dojo` for the fixed in-game art views after importing
+the dojo kit. Forced SM5 on M2 remains distinct from testing M1 hardware.
 Every production asset must still provide a usable conventional LOD or fallback
 mesh and card-fur route. These files cannot create missing geometry or prove
 that the current prototype assets are visually acceptable.

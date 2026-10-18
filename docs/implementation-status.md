@@ -34,6 +34,24 @@ Claude continues unique timber geometry, fallbacks and visual review in the art
 worktree. Campaign maai and repeatable source-validation slices are undergoing
 integration. The [release plan](complete-release-plan.md) lists the remaining work.
 
+The maai slice and source-validation runner are now integrated, and the updated
+editor compiles. A delayed durable handshake answer can legitimately cause an
+offer retry and channel replacement. A deterministic regression verifies that
+the response waits for durability, stale offers/responses are rejected and both
+peers reach the reference state. The clean source-validation lane passes all
+four Rust gates: 279 tests pass, five long research tests stay explicitly ignored.
+This changes test assumptions and counter documentation, not the network protocol.
+The rebuilt integration kernel again passes all 94 parity cases / 99,043 ticks.
+
+Claude's raden-bunko and dojo-kit OWN ledgers are integrated. The remaining 228
+ledger errors concern recovered runtime weapons. A fresh Blender 5.2.2 metric
+audit passes 10 of the 17 non-blockout weapons; IDs 1, 2, 5, 9, 14, 15 and 17 fail
+normal-relief, chain-length, UV or recorded-file checks. IDs 3, 11, 13 and 16
+remain held-back blockouts. The interrupted W14 review image remains invalid.
+The fresh report is `Saved/Qualification/2026-10-18-m2-resume/weapon-metrics.json`;
+the old committed metric report has not been overwritten or presented as current.
+No weapon's provenance hash has been refreshed to conceal these defects.
+
 ## 2026-10-18 generic staged hit proof and Claude coordination
 
 The native Iroha research relation now selects the exact nearest eligible hit
