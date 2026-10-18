@@ -11,6 +11,8 @@
 
 ASoraWorldBuilder::ASoraWorldBuilder()
 {
+    PrimaryActorTick.bCanEverTick=true;
+    PrimaryActorTick.bStartWithTickEnabled=false;
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ArenaRoot"));
 }
 UStaticMeshComponent* ASoraWorldBuilder::Shape(AActor* Owner, USceneComponent* Parent, const FString& Name, const TCHAR* Asset, FVector Location, FVector Scale, FLinearColor Color, bool Collision)

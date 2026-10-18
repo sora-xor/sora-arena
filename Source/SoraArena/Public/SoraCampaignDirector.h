@@ -304,6 +304,7 @@ private:
     bool bCrankHelperRetreating = false;
     int32 CrankHelpers();
     bool bLiftGallery=false;
+    int32 GalleryStairNode=0;
     bool LiftReadyToComplete() const;
     bool SpireReadyToComplete() const;
     bool BeginLiftGallery();

@@ -685,6 +685,16 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpaceBoxes(Rows(*O, TEXT("cover")), Zone.Cover) || !SpacePoints(Rows(*O, TEXT("route")), Zone.Route) ||
             (Form == TEXT("route")) != (Zone.Route.Num() >= 2) || (Zone.Route.Num() == 1))
             return Bad(FString::Printf(TEXT("invalid zone %d"), S.Zones.Num()));
+        Zone.bHeightBounds=O->HasField(TEXT("z_bounds_cm"));
+        if(Zone.bHeightBounds)
+        {
+            double Z[2]={}; if(!SpaceVector(O->TryGetField(TEXT("z_bounds_cm")),2,Z)||Z[0]>=Z[1]) return Bad(Zone.Id+TEXT(" height bounds"));
+            Zone.MinZ=static_cast<int32>(Z[0]); Zone.MaxZ=static_cast<int32>(Z[1]);
+        }
+        const bool Lower=C.Id.StartsWith(TEXT("ch08_"))&&Zone.Place==TEXT("pl_ledger_spire");
+        const bool Upper=C.Id.StartsWith(TEXT("ch08_"))&&Zone.Place==TEXT("pl_ledger_engine");
+        if(Zone.bHeightBounds!=(Lower||Upper)||(Lower&&(Zone.MinZ!=-500||Zone.MaxZ!=15800))||
+            (Upper&&(Zone.MinZ!=15800||Zone.MaxZ!=20000))) return Bad(Zone.Id+TEXT(" authored vertical place"));
         Zone.Style = FName(*Style); Zone.Form = FName(*Form); Zone.WallHeight = static_cast<float>(Wall);
         Zone.Rect = FBox2D(FVector2D(Rect[0], Rect[1]), FVector2D(Rect[2], Rect[3]));
         if (!Zone.Rect.IsInside(Zone.Entry)) return Bad(Zone.Id + TEXT(" entry is outside its floor"));
@@ -724,6 +734,26 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpacePoints(Rows(*O, TEXT("stations")), B.Stations) || !SpacePoints(Rows(*O, TEXT("spawns")), B.Spawns) ||
             !Exit || !SpaceVolume(*Exit, B.Exit, false) || !Kit || !PatrolRows || !VolumeRows || !StationRows)
             return Bad(FString::Printf(TEXT("beat %s lacks a required field"), *Beat.Id));
+        const bool SummitBeat=Beat.Id==TEXT("ch08.b13")||Beat.Id==TEXT("ch08.b14")||Beat.Id==TEXT("ch08.b15");
+        const auto Summit=Child(*O,TEXT("summit"));
+        if(Summit.IsValid()!=SummitBeat) return Bad(Beat.Id+TEXT(" physical summit"));
+        if(Summit)
+        {
+            int32 Height=0,Radius=0,Dais=0;
+            const auto* Stairs=Rows(*Summit,TEXT("stairs"));
+            if(!SpacePoint(Summit->TryGetField(TEXT("center")),B.Summit.Center)||
+                !Int(*Summit,TEXT("height_cm"),Height)||Height!=16000||!Int(*Summit,TEXT("radius_cm"),Radius)||Radius!=1800||
+                !Int(*Summit,TEXT("dais_cm"),Dais)||Dais!=120||!Stairs||Stairs->Num()!=6) return Bad(Beat.Id+TEXT(" summit dimensions"));
+            const FVector Expected[]={{800,1800,14200},{800,2200,14200},{-2000,2200,14800},{-2000,-2200,15400},{0,-2200,16000},{0,-1650,16000}};
+            for(int32 N=0;N<6;++N)
+            {
+                double P[3]={}; if(!SpaceVector((*Stairs)[N],3,P)) return Bad(Beat.Id+TEXT(" summit stair"));
+                const FVector At(P[0],P[1],P[2]);
+                if(At!=FVector(B.Summit.Center,0)+Expected[N]) return Bad(Beat.Id+TEXT(" summit stair endpoint"));
+                B.Summit.Stairs.Add(At);
+            }
+            if(B.Summit.Center!=C.Beats[10].Space.Anchor||B.Entry!=B.Summit.Center+FVector2D(0,-1650)||B.EntryYaw!=90) return Bad(Beat.Id+TEXT(" summit entry"));
+        }
         const auto Spire=Child(*O,TEXT("spire"));
         if(Spire.IsValid()!=(Beat.Id==TEXT("ch08.b10"))) return Bad(Beat.Id+TEXT(" physical spiral"));
         if(Spire)
@@ -750,7 +780,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         }
         const auto Lift=O->TryGetField(TEXT("lift"));
         if(!Int(*O,TEXT("height_cm"),B.HeightCm)||!Lift.IsValid()||
-            B.HeightCm!=(Beat.Id==TEXT("ch08.b11")?2700:Beat.Id==TEXT("ch08.b12")?14200:0))
+            B.HeightCm!=(Beat.Id==TEXT("ch08.b11")?2700:Beat.Id==TEXT("ch08.b12")?14200:SummitBeat?16000:0))
             return Bad(Beat.Id+TEXT(" floor height"));
         B.Lift.bEnabled=Lift->Type!=EJson::Null;
         if(B.Lift.bEnabled!=(Beat.Id==TEXT("ch08.b11"))) return Bad(Beat.Id+TEXT(" physical lift"));
