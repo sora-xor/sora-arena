@@ -46,14 +46,16 @@ bool FSoraCampaignLiftMotionTest::RunTest(const FString& Parameters)
     if(!W.Tick(2)||!W.Mode()->bDefeated||!W.Press(EKeys::Enter)||!W.Tick(30)) return false;
     Lift=W.Mode()->Arena()->CampaignLift();
     TestTrue(TEXT("Retry discards the old lift actor"),!Old.IsValid()||Old->IsActorBeingDestroyed());
-    TestTrue(TEXT("Retry clears any stale movement base"),W.Hero()->GetMovementBase()&&W.Hero()->GetMovementBase()->GetOwner()==Lift);
+    const auto* RetryBase=Cast<UPrimitiveComponent>(W.Hero()->GetMovementBaseObject());
+    TestTrue(TEXT("Retry clears any stale movement base"),RetryBase&&RetryBase->GetOwner()==Lift);
     TestEqual(TEXT("Retry builds at the real L4 landing"),Lift->Height(),2700.f);
     TestEqual(TEXT("Retry discards partial turns"),W.Campaign()->TaskProgress().Progress,0);
     TWeakObjectPtr<ASoraCampaignLift> Last=Lift;
     TWeakObjectPtr<ASoraPlayerCharacter> LastHero=W.Hero();
     if(!W.World->EndPlayInTestWorld()) return false;
     TestTrue(TEXT("End-play releases the physical stage"),!Last.IsValid()||!Last->HasActorBegunPlay());
-    TestTrue(TEXT("End-play leaves no base owned by the released stage"),!LastHero.IsValid()||!LastHero->GetMovementBase()||LastHero->GetMovementBase()->GetOwner()!=Last.Get());
+    const auto* LastBase=LastHero.IsValid()?Cast<UPrimitiveComponent>(LastHero->GetMovementBaseObject()):nullptr;
+    TestTrue(TEXT("End-play leaves no base owned by the released stage"),!LastBase||LastBase->GetOwner()!=Last.Get());
     return !HasAnyErrors();
 }
 

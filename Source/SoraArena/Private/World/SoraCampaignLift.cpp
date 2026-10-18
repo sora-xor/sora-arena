@@ -84,7 +84,7 @@ float ASoraCampaignLift::Height() const { return Deck->GetComponentLocation().Z+
 bool ASoraCampaignLift::Arrived() const { return SoraLiftRules::At(Height(),SoraLiftRules::TopCm); }
 bool ASoraCampaignLift::Aboard(const ACharacter& Rider) const
 {
-    const auto* Base=Rider.GetMovementBase();
+    const auto* Base=Cast<UPrimitiveComponent>(Rider.GetMovementBaseObject());
     return Base&&(Base==Deck.Get()||Base->IsAttachedTo(Deck.Get()));
 }
 FVector ASoraCampaignLift::BoardingPoint() const { return GetActorLocation()+FVector(-650,0,SoraLiftRules::BottomCm); }
@@ -165,6 +165,7 @@ void ASoraCampaignLift::EndPlay(const EEndPlayReason::Type Reason)
 {
     if(GetWorld())
         for(TActorIterator<ACharacter> It(GetWorld());It;++It)
-            if(It->GetMovementBase()&&It->GetMovementBase()->GetOwner()==this) It->SetBase(nullptr);
+            if(const auto* Base=Cast<UPrimitiveComponent>(It->GetMovementBaseObject());Base&&Base->GetOwner()==this)
+                It->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
     Super::EndPlay(Reason);
 }
