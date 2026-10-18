@@ -43,6 +43,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
 {
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||Mode().bChapterComplete) return false;
+    if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
     const FSoraBeatSpace& Space=Beat->Space;
     const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point); bInteract=bWorks; return true; };
     const auto VolumeOf=[&](const FString& Event) { return Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Event; }); };

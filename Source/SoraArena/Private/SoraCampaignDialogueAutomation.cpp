@@ -161,7 +161,41 @@ bool FSoraDialogueCombatAndPlaqueTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Rehanging the plaque starts its authored hold"),W.Campaign()->IsDialogueBlocking());
     TestEqual(TEXT("The plaque's four lines are queued"),W.Campaign()->LinesQueued(),4);
     if(!Until(W,[&] { return !W.Campaign()->IsDialogueBlocking(); },201)) return false;
-    TestFalse(TEXT("Missing sword-return lines cannot be silently completed"),W.Campaign()->TaskProgress().LinesDone);
+    TestFalse(TEXT("The missing arrival at the torii cannot be silently completed"),W.Campaign()->TaskProgress().LinesDone);
+    TestFalse(TEXT("This directed hold case has no optional Washio sword"),W.Campaign()->HasWashioSword());
+    return true;
+}
+// A future edit or several queued blocking events must not extend control
+// capture beyond the global cap. Restore the catalog value before leaving.
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraDialogueCapTest,"SoraArena.Campaign.Dialogue.CapAndReset",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraDialogueCapTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
+    FSoraDialogueCue* Cue=FSoraCatalog::Get().Chapters[0].Dialogue.FindByPredicate([](const FSoraDialogueCue& Line)
+        { return Line.Id==TEXT("ch01.b12.sekireisai.003"); });
+    if(!TestNotNull(TEXT("The gift has its first blocking line"),Cue)) return false;
+    struct FRestoreDuration
+    {
+        FSoraDialogueCue& Cue; float Before;
+        ~FRestoreDuration() { Cue.DurationSeconds=Before; }
+    } Restore{*Cue,Cue->DurationSeconds};
+    Cue->DurationSeconds=25.f;
+    FBeatWorld W(*this,TEXT("DialogueCap"),0,11);
+    if(!W.Start()||!StartAtAnchor(W)) return false;
+    TestTrue(TEXT("The scene holds before a checkpoint reset"),W.Campaign()->IsDialogueBlocking());
+    W.Mode()->ResetRound();
+    TestTrue(TEXT("Reset cancels the active scene and waits for its interaction again"),
+        !W.Campaign()->IsDialogueBlocking()&&!W.Campaign()->LinesStarted()&&W.Campaign()->LinesQueued()==0);
+    if(!W.Tick(1)||!StartAtAnchor(W)) return false;
+    int32 Frames=0;
+    while(W.Campaign()->IsDialogueBlocking()&&Frames<202)
+    { if(!W.Tick(1,.1f)) return false; ++Frames; }
+    TestTrue(TEXT("An overlong scene releases control by the cap"),Frames<=201&&W.Mode()->IsPlaying());
+    TestEqual(TEXT("The cap does not skip the unfinished line"),LineId(W),Cue->Id);
+    TestEqual(TEXT("The cap preserves the whole triggered queue"),W.Campaign()->LinesQueued(),4);
+    TestFalse(TEXT("Releasing control never completes unfinished dialogue"),W.Campaign()->TaskProgress().LinesDone);
     return true;
 }
 #endif

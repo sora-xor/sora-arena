@@ -7,6 +7,7 @@
 #include "Components/PointLightComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Engine/PointLight.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/World.h"
@@ -116,6 +117,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     if(!Chapter.Beats.IsValidIndex(BeatIndex)) return;
     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
     const FSoraBeatSpace& Space=Beat.Space;
+    StageEpilogue(Beat);
     if(RecoveryHatch)
     {
         const bool Open=Beat.Task.RecoveryWeapons!=0u;
@@ -325,11 +327,14 @@ void ASoraWorldBuilder::ShowRecoveryBundle(bool Visible)
 }
 void ASoraWorldBuilder::ClearKit()
 {
+    for(const auto& Label:EpilogueLabels) if(Label) Label->DestroyComponent();
+    EpilogueLabels.Reset();
     for(const auto& Mesh:KitPieces) if(Mesh) Mesh->DestroyComponent();
     for(const auto& Walker:KitWalkers) if(Walker) Walker->DestroyComponent();
     for(const auto& Member:KitParty) if(Member) Member->DestroyComponent();
     for(const auto& Actor:KitActors) if(Actor) Actor->Destroy();
     if(KitLight) KitLight->Destroy();
+    ToranosukePlaque=nullptr; NyaakotoPlaque=nullptr; WashioSword.Reset(); EpiloguePlaques=0; bEpilogueSwordReturned=false;
     RecoveryBundle.Reset(); KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr;

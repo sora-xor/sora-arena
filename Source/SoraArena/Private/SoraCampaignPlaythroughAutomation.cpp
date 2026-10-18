@@ -920,7 +920,12 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                     const FSoraVolume& Volume=Beat.Space.Volumes[DialogueVolume++];
                     MoveTo(State,FVector(Volume.Center.X,Volume.Center.Y,0.f));
                 }
-                else if (Rules.AnchorAfterLines && Director->ObjectiveAnchor(Anchor)) MoveTo(State, Anchor);
+                else if (Director->ObjectiveAnchor(Anchor))
+                {
+                    MoveTo(State,Anchor);
+                    if(!Advance(Test,State,1)) return false;
+                    if(Director->AnchorTakesInteract()&&!State.World->PressKey(EKeys::E)) return false;
+                }
                 else if (!Director->TaskProgress().LinesDone)
                     return Fail(Test,State,Beat.Id+TEXT(" is waiting for authored dialogue events without a tested world interaction"));
             }

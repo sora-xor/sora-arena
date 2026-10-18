@@ -6,6 +6,7 @@ class ASoraHorse;
 class ASoraPlayerCharacter;
 class USkeletalMeshComponent;
 class UStaticMeshComponent;
+class UTextRenderComponent;
 class UMaterialInterface;
 struct FSoraPracticeMap;
 struct FSoraChapter;
@@ -85,6 +86,9 @@ public:
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
     void ShowRecoveryBundle(bool Visible);
+    void ShowEpilogue(bool SwordFound, bool SwordReturned, int32 Plaques);
+    int32 RehungPlaques() const { return EpiloguePlaques; }
+    bool WashioSwordReturned() const { return bEpilogueSwordReturned; }
     // The chapter's collectibles still lying loose (indices into its pickups).
     void ShowPickups(const FSoraChapter& Chapter, const TArray<int32>& Loose);
     // A carried load in the hero's arms (NAME_None: nothing).
@@ -114,6 +118,15 @@ private:
     float CampaignStartYaw = 0.f;
     // Task kit, pickups and the carried load (SoraWorldBuilderLayoutTasks.cpp).
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitPieces;
+    void StageEpilogue(const FSoraBeat& Beat);
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> ToranosukePlaque;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> NyaakotoPlaque;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WashioSword;
+    UPROPERTY() TArray<TObjectPtr<UTextRenderComponent>> EpilogueLabels;
+    FVector EpilogueBoard = FVector::ZeroVector;
+    FVector EpilogueSwordStand = FVector::ZeroVector;
+    int32 EpiloguePlaques = 0;
+    bool bEpilogueSwordReturned = false;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> RecoveryBundle;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> RecoveryHatch;
     UPROPERTY() TArray<TObjectPtr<AActor>> KitActors;

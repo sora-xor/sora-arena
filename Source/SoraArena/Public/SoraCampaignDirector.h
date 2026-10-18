@@ -149,6 +149,10 @@ public:
     // the dialogue queue.
     const FSoraDialogueCue* CurrentDialogueCue() const;
     bool IsDialogueBlocking() const { return bDialogueHeld; }
+    bool IsToriiEpilogue() const;
+    bool HasWashioSword() const;
+    bool HasReturnedWashioSword() const;
+    bool HasRehungPlaques() const;
     // The dialogue queue, head first.
     TArray<FSoraSubtitle> QueuedSubtitles() const;
     // The active beat's HUD prompt while it shows.
@@ -403,6 +407,11 @@ private:
     void HandleFailure(SoraBeatRules::ERetry Outcome, const FString& Event);
     bool FailureOf(const FString& Event, SoraBeatRules::EFail& Failure) const;
     void StartLines();
+    bool EpilogueObjective(FVector& Location, bool& bInteract) const;
+    FString EpilogueObjectiveText(bool bEnglish) const;
+    bool InteractEpilogue(ASoraPlayerCharacter& Player);
+    void EpilogueLineFinished(const FString& Id);
+    void ShowEpilogue();
     // Plays the triggers and shows the HUD prompt an event raises in Beat
     // (the active beat by default) and the chapter's bark pools.
     void Fire(const FString& Event, int32 Beat = INDEX_NONE);

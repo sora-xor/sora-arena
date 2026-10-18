@@ -447,6 +447,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SpawnCast(bKeepPupil);
     ResetMaai();
     ResetEquipmentRecovery();
+    ShowEpilogue();
     Fire(TEXT("beat_start"));
     // Until Sequencer lands, a boss's intro plays its lines as the fight opens.
     if(Beat.Is(SoraBeatRules::EType::Boss)&&Phase==0) Fire(TEXT("intro_cinematic"));
@@ -666,10 +667,10 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     const FSoraBeatSpace& Space=Beat.Space;
     const FVector Hero=M.Hero()?M.Hero()->GetActorLocation():FVector::ZeroVector;
     const FSoraVolume* Closing=Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Beat.ClosingEvent; });
-    const bool bAtClosing=Near(ASoraWorldBuilder::Floor(Space.Closing),SoraCampaignReach::Arrive)||(Closing&&Closing->Contains(Hero));
+    const bool bAtClosing=IsToriiEpilogue()?HasRehungPlaques():Near(ASoraWorldBuilder::Floor(Space.Closing),SoraCampaignReach::Arrive)||(Closing&&Closing->Contains(Hero));
     // A closing volume raised its own event as the hero entered it; an
     // "event:" closing is raised here.
-    if(Task.AnchorAfterLines&&TaskState.LinesDone&&!TaskState.Reached&&bAtClosing&&SoraBeatRules::Reach(TaskState,Task)&&!Closing)
+    if(Task.AnchorAfterLines&&TaskState.LinesDone&&!TaskState.Reached&&bAtClosing&&SoraBeatRules::Reach(TaskState,Task)&&!Closing&&!BeatEvents.Contains(Beat.ClosingEvent))
         Fire(Beat.ClosingEvent);
     if(Task.Goal==SoraBeatRules::EGoal::Exit&&M.Hero())
     {
@@ -1525,6 +1526,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(!M.bCampaign) { ArenaInteract(Player); return; }
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||M.bChapterComplete) return;
+    if(InteractEpilogue(Player)) return;
     if(InteractRecovery(Player)) return;
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
@@ -1968,6 +1970,7 @@ FString USoraCampaignDirector::ObjectiveText() const
             M.Arena()?M.Arena()->ActiveNodes():0,Kills,KillsNeeded);
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("章を終えた");
+    if(IsToriiEpilogue()) return EpilogueObjectiveText(false);
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("包みの前で操作を 3 秒長押しし、弓に弦を張る"):
         TEXT("空井戸の縄で操作を長押しし、底の刀の包みを取り戻す");
     if(IsClimbingRecoveryWell()||(Task.RecoveryWeapons!=0u&&AtRecoveryBottom())) return TEXT("縄で操作を長押しし、井戸から上がる");
@@ -2002,6 +2005,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
             M.Arena()?M.Arena()->ActiveNodes():0,Kills,KillsNeeded);
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("Chapter complete");
+    if(IsToriiEpilogue()) return EpilogueObjectiveText(true);
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("Hold Interact at the bundle for 3 seconds to string the bow"):
         TEXT("Hold Interact at the dry-well rope to recover the sword bundle below");
     if(IsClimbingRecoveryWell()||(Task.RecoveryWeapons!=0u&&AtRecoveryBottom())) return TEXT("Hold Interact on the rope to climb out");

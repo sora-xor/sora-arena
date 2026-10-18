@@ -72,6 +72,7 @@ void USoraCampaignDirector::TickDialogue(float DeltaSeconds)
         const FQueuedLine Finished=Queue[0];
         Queue.RemoveAt(0);
         FinishedLines.Add(Finished.Line);
+        if(Finished.Beat==BeatIndex) EpilogueLineFinished(Chapter->Dialogue[Finished.Line].Id);
         // Establish the new head before firing callbacks: an empty queue can
         // be filled reentrantly, and its first line gets exactly its own time.
         LineRemaining=Queue.IsEmpty()?0.f:Chapter->Dialogue[Queue[0].Line].DurationSeconds;
@@ -92,13 +93,20 @@ bool USoraCampaignDirector::DialogueLinesDone() const
     for(const int32 Line:Beat->Lines)
     {
         if(FinishedLines.Contains(Line)) continue;
-        // A branch-only line (the gift's lost-bout response) is conditional.
-        // All main lines must actually finish, even if their event comes later.
-        const bool bBranchOnly=Chapter->Triggers.ContainsByPredicate([&](const FSoraDialogueTrigger& Trigger)
-            { return Trigger.Beat==BeatIndex&&Trigger.On.StartsWith(TEXT("branch:"))&&Trigger.Lines.Contains(Line); })&&
-            !Chapter->Triggers.ContainsByPredicate([&](const FSoraDialogueTrigger& Trigger)
-            { return Trigger.Beat==BeatIndex&&!Trigger.On.StartsWith(TEXT("branch:"))&&Trigger.Lines.Contains(Line); });
-        if(!bBranchOnly) return false;
+        // A branch response or collectible-gated exchange is optional only
+        // when no eligible non-branch trigger can produce it. Once queued,
+        // it must finish even if a condition changes meanwhile.
+        if(Heard.Contains(Line)) return false;
+        bool bHasTrigger=false,bRequired=false;
+        for(const FSoraDialogueTrigger& Trigger:Chapter->Triggers)
+        {
+            if(Trigger.Beat!=BeatIndex||!Trigger.Lines.Contains(Line)) continue;
+            bHasTrigger=true;
+            if(!Trigger.On.StartsWith(TEXT("branch:"))&&
+                (CollectedMask()&Trigger.RequiresCollectible)==Trigger.RequiresCollectible&&
+                (BeatState.FlagsMask&Trigger.RequiresFlags)==Trigger.RequiresFlags) bRequired=true;
+        }
+        if(!bHasTrigger||bRequired) return false;
     }
     return true;
 }
