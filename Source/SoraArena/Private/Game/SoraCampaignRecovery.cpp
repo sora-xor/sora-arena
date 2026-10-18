@@ -12,7 +12,11 @@ FVector USoraCampaignDirector::RecoveryApproach() const
 {
     const auto* Space=ActiveSpace();
     const auto* Hero=Mode().Hero();
-    const float Height=Hero?Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+4.f:100.f;
+    // MOVE_Walking snaps a capsule to the midpoint of UE's floor-distance
+    // band. Target that same height so ending a swept climb adds no snap to
+    // its last movement step (and both landings remain exactly 700 cm apart).
+    const float FloorGap=(UCharacterMovementComponent::MIN_FLOOR_DIST+UCharacterMovementComponent::MAX_FLOOR_DIST)*.5f;
+    const float Height=Hero?Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+FloorGap:100.f;
     return Space?FVector(Space->Recovery.X+270.f,Space->Recovery.Y+110.f,Height):FVector::ZeroVector;
 }
 FVector USoraCampaignDirector::RecoveryBottom() const
