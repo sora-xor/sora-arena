@@ -1,10 +1,13 @@
 #pragma once
+#include <cmath>
 
 // Four authored landings are connected at approximately 1:12. The opening
 // and walk width determine the hexagon, then the grade determines its turns.
 namespace SoraSpireRules
 {
 constexpr int WidthCm=400,VoidDiameterCm=1400,HeightCm=2700;
+constexpr double LandingHalfCm=300,MarksmanHalfCm=200,GantryWidthCm=200;
+constexpr double RailOverlapCm=35,RouteRadiusCm=34;
 constexpr double Sqrt3=1.7320508075688772935;
 constexpr double CenterApothem=(VoidDiameterCm+WidthCm)*.5;
 constexpr double SideCm=2*CenterApothem/Sqrt3;
@@ -13,6 +16,16 @@ constexpr int Subdivisions=3,NodeCount=Sides*Subdivisions+1;
 constexpr int Landing(int Level) { return Level*Sides; }
 constexpr bool IsLanding(int Node) { return Node%Sides==0; }
 struct FPoint { double X,Y,Z; };
+// The gantry rails must begin beyond a landing, including their end-cap
+// overlap and the pawn's radius. Clear the entire axis-aligned pad on the
+// dominant travel axis; the rail's side offset contributes on that axis too.
+inline double GantryRailInset(double DX,double DY,double PadHalfCm)
+{
+    if(PadHalfCm<=0) return 0;
+    const double Length=std::hypot(DX,DY),X=std::abs(DX)/Length,Y=std::abs(DY)/Length;
+    const double Major=X>Y?X:Y,Minor=X>Y?Y:X;
+    return (PadHalfCm+RouteRadiusCm+Minor*GantryWidthCm*.5)/Major+RailOverlapCm*.5;
+}
 constexpr FPoint Vertex(int Index,double Apothem=CenterApothem)
 {
     const double R=2*Apothem/Sqrt3;

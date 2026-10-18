@@ -79,6 +79,64 @@ int main() {
     def zones(self):
         return [Zone(z['id'],z['place'],z['style'],z['form'],z['rect'],z['wall_cm']) for z in self.chapter['space']['zones']]
 
+    def test_gantry_rails_clear_incoming_and_outgoing_capsules(self):
+        # Exercise the production inset and the full rail OBB, including its
+        # longitudinal overlap. The original untrimmed L2 rail intersected
+        # the outgoing ramp even though the gantry itself remained walkable.
+        source = r'''#include "SoraSpireRules.h"
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+using namespace SoraSpireRules;
+double distance(FPoint p,FPoint a,FPoint b,int sign,double insetA,double insetB) {
+    const double length=std::hypot(b.X-a.X,b.Y-a.Y);
+    const double dx=(b.X-a.X)/length,dy=(b.Y-a.Y)/length;
+    const double along=(p.X-a.X)*dx+(p.Y-a.Y)*dy;
+    const double side=-(p.X-a.X)*dy+(p.Y-a.Y)*dx-sign*(GantryWidthCm*.5-10);
+    const double x=std::max({insetA-RailOverlapCm*.5-along,along-(length-insetB+RailOverlapCm*.5),0.0});
+    const double y=std::max(std::abs(side)-10,0.0);
+    return std::hypot(x,y);
+}
+int main() {
+    bool originalObstructed=false;
+    for(int level:{1,3}) {
+        const int node=Landing(level); const auto a=Point(node);
+        const FPoint b=level==1?FPoint{-a.X,-a.Y,a.Z}:FPoint{-300,0,a.Z};
+        const double ia=GantryRailInset(b.X-a.X,b.Y-a.Y,LandingHalfCm);
+        const double ib=GantryRailInset(b.X-a.X,b.Y-a.Y,level==1?MarksmanHalfCm:0);
+        assert(ia+ib<std::hypot(b.X-a.X,b.Y-a.Y));
+        for(int neighbour:{node-1,node+1}) {
+            if(neighbour>=NodeCount) continue;
+            const auto end=Point(neighbour);
+            for(int n=0;n<=1000;++n) {
+                const double t=n/1000.0;
+                const FPoint p{a.X+(end.X-a.X)*t,a.Y+(end.Y-a.Y)*t,a.Z+(end.Z-a.Z)*t};
+                for(int sign:{-1,1}) {
+                    if(level==1&&distance(p,a,b,sign,0,0)<RouteRadiusCm) originalObstructed=true;
+                    assert(distance(p,a,b,sign,ia,ib)>RouteRadiusCm);
+                }
+            }
+        }
+        // The opening retains the complete two-metre bridge path in both
+        // directions and onto the far post / parked lift approach.
+        for(int n=0;n<=1000;++n) {
+            const double t=n/1000.0;
+            const FPoint p{a.X+(b.X-a.X)*t,a.Y+(b.Y-a.Y)*t,a.Z};
+            for(int sign:{-1,1}) assert(distance(p,a,b,sign,ia,ib)>RouteRadiusCm);
+        }
+    }
+    assert(originalObstructed);
+    std::cout<<"L2 and L4 incoming, outgoing and gantry capsule routes clear\n";
+}'''
+        compiler=os.environ.get('CXX') or shutil.which('clang++') or shutil.which('c++')
+        self.assertIsNotNone(compiler, 'Host C++ compiler is required for collision geometry')
+        with tempfile.TemporaryDirectory() as tmp:
+            cpp=Path(tmp)/'clearance.cpp'; binary=Path(tmp)/'clearance'
+            cpp.write_text(source)
+            subprocess.run([compiler,'-std=c++17','-I',str(ROOT/'Source/SoraArena/Public'),str(cpp),'-o',str(binary)],check=True,capture_output=True,text=True)
+            result=subprocess.run([str(binary)],capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+
     def test_preserves_task_and_checkpoint_semantics_and_is_deterministic(self):
         beats=deepcopy(self.chapter['beats']); rows=deepcopy(self.chapter['space']['beats'])
         original=deepcopy(beats)

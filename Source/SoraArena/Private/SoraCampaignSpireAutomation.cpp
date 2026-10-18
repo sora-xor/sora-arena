@@ -15,6 +15,7 @@ bool FSoraCampaignSpireTest::RunTest(const FString& Parameters)
     if(!W.Start()||!W.Tick(30)) return false;
     W.Harden();
     const auto Space=W.Campaign()->ActiveBeatData()->Space;
+    if(!TestTrue(TEXT("Both gantry landings leave incoming and outgoing capsules clear"),SoraSpireAutomation::GantryClearance(*W.World,Space))) return false;
     const int32 L2=SoraSpireRules::Landing(1),L3=SoraSpireRules::Landing(2),L4=SoraSpireRules::Landing(3);
     const int32 LowerL3=L3%(6*SoraSpireRules::Subdivisions);
     const auto ClearCombat=[&]()

@@ -10,15 +10,20 @@ void ASoraWorldBuilder::BuildSpire(const FSoraBeat& Beat)
     const FVector C(S.Center,0);
     const FLinearColor Metal(.10f,.14f,.17f),Rail(.22f,.32f,.36f),Glass(.12f,.35f,.40f);
     Box(TEXT("SpireBase"),C+FVector(0,0,-30),FVector(3600,3600,60),Metal,true);
-    const auto Segment=[&](const FString& Name,const FVector& A,const FVector& B,float Width,bool Railed)
+    const auto Segment=[&](const FString& Name,const FVector& A,const FVector& B,float Width,bool Railed,float StartPad=0,float EndPad=0)
     {
         const FVector D=B-A,Side=FVector::CrossProduct(FVector::UpVector,D).GetSafeNormal();
         const FRotator Rotation=D.Rotation();
         Box(Name,(A+B)*.5f-FVector(0,0,15),FVector(D.Size()+30,Width,30),Metal,true,Rotation);
         if(Railed)
+        {
+            const FVector Along=D.GetSafeNormal();
+            const FVector RailA=A+Along*SoraSpireRules::GantryRailInset(D.X,D.Y,StartPad);
+            const FVector RailB=B-Along*SoraSpireRules::GantryRailInset(D.X,D.Y,EndPad);
             for(int32 Sign:{-1,1})
-                Box(Name+FString::FromInt(Sign)+TEXT("Rail"),(A+B)*.5f+Side*(Sign*(Width*.5f-10))+FVector(0,0,75),
-                    FVector(D.Size()+35,20,150),Rail,true,Rotation);
+                Box(Name+FString::FromInt(Sign)+TEXT("Rail"),(RailA+RailB)*.5f+Side*(Sign*(Width*.5f-10))+FVector(0,0,75),
+                    FVector((RailB-RailA).Size()+SoraSpireRules::RailOverlapCm,20,150),Rail,true,Rotation);
+        }
     };
     for(int32 N=1;N<S.Ramp.Num();++N)
     {
@@ -37,17 +42,17 @@ void ASoraWorldBuilder::BuildSpire(const FSoraBeat& Beat)
     for(int32 L=0;L<4;++L)
     {
         const int32 N=SoraSpireRules::Landing(L);
-        Box(FString::Printf(TEXT("SpireLanding%d"),N),S.Ramp[N]-FVector(0,0,20),FVector(600,600,40),Metal,true);
+        Box(FString::Printf(TEXT("SpireLanding%d"),N),S.Ramp[N]-FVector(0,0,20),FVector(2*SoraSpireRules::LandingHalfCm,2*SoraSpireRules::LandingHalfCm,40),Metal,true);
     }
     // L2 crosses the 14 m void. Its far marksman platform is an intentional
     // dead end reached along the bridge, never a spawn floating over ground.
     const FVector L2=S.Ramp[SoraSpireRules::Landing(1)];
     const FVector Far(2*C.X-L2.X,2*C.Y-L2.Y,L2.Z);
-    Segment(TEXT("SpireL2Gantry"),L2,Far,200,true);
-    Box(TEXT("SpireMarksmanPost"),Far-FVector(0,0,20),FVector(400,400,40),Glass,true);
+    Segment(TEXT("SpireL2Gantry"),L2,Far,SoraSpireRules::GantryWidthCm,true,SoraSpireRules::LandingHalfCm,SoraSpireRules::MarksmanHalfCm);
+    Box(TEXT("SpireMarksmanPost"),Far-FVector(0,0,20),FVector(2*SoraSpireRules::MarksmanHalfCm,2*SoraSpireRules::MarksmanHalfCm,40),Glass,true);
     // L4's middle is the parked lift. The short crossing is staged only for
     // b10 and removed before the moving deck takes its place in b11.
-    Segment(TEXT("SpireL4West"),S.Ramp.Last(),C+FVector(-300,0,2700),200,true);
+    Segment(TEXT("SpireL4West"),S.Ramp.Last(),C+FVector(-300,0,2700),SoraSpireRules::GantryWidthCm,true,SoraSpireRules::LandingHalfCm);
     Segment(TEXT("SpireL4East"),C+FVector(300,0,2700),C+FVector(-SoraSpireRules::Point(SoraSpireRules::NodeCount-1).X,0,2700),200,true);
     for(int32 N=0;N<6;++N)
     {

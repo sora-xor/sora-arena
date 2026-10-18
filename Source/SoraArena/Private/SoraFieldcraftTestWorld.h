@@ -68,16 +68,27 @@ struct FBeatWorld
         if(!UGameplayStatics::SaveGameToSlot(Save, Slot, 0))
             return Test.TestTrue(TEXT("The beat's checkpoint is seeded"), false);
         World = MakeUnique<FSoraAutomationWorld>();
-        if (!World->Start(Slot) || !World->Tick(1) || !World->EnableKeyInput() || !World->PressKey(EKeys::Enter) ||
-            !World->PressKey(EKeys::Enter) || !World->PressKey(EKeys::Enter))
+        bool Started=World->Start(Slot)&&World->Tick(1)&&World->EnableKeyInput();
+        const bool Cinematic=FSoraCatalog::Get().Chapter(Chapter).Beats[StartBeat].Has(SoraBeatRules::EGoal::Elapsed);
+        for(int32 Press=0;Started&&Press<3;++Press)
+        {
+            // Continuing a cinematic checkpoint already opens its card. A
+            // third unconditional Enter would skip the beat under test.
+            if(Cinematic&&Campaign()->ActiveBeat()==StartBeat&&Mode()->InputState()==SoraInput::Card) break;
+            Started=World->PressKey(EKeys::Enter);
+        }
+        if (!Started)
         {
             World->ForwardErrorMessages(&Test);
             return Test.TestTrue(TEXT("The beat's world starts"), false);
         }
         if (USoraFieldcraft* Craft = Fieldcraft())
             EventsHandle = Craft->OnEvent.AddLambda([this](FName Event) { Events.Add(Event.ToString()); });
-        return Test.TestTrue(TEXT("The beat is active, including authored dialogue holds"),
-            (Mode()->IsPlaying() || Mode()->InputState() == SoraInput::Dialogue) && Campaign()->ActiveBeat() == StartBeat);
+        const bool Active=(Mode()->IsPlaying()||Mode()->InputState()==SoraInput::Dialogue||
+            (Cinematic&&Mode()->InputState()==SoraInput::Card))&&Campaign()->ActiveBeat()==StartBeat;
+        if(!Active) Test.AddError(FString::Printf(TEXT("Beat setup mismatch: requested=%d actual=%d input=%d menu=%d card_seconds=%.3f"),
+            StartBeat,Campaign()->ActiveBeat(),int32(Mode()->InputState()),Mode()->bMenu,Mode()->TitleCardTime));
+        return Test.TestTrue(TEXT("The beat is active, including authored dialogue and cinematic holds"),Active);
     }
     bool Tick(int32 Frames, float DeltaSeconds = 1.f / 60.f)
     {
