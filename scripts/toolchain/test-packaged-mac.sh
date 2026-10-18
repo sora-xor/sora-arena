@@ -8,7 +8,9 @@
 # 2. A startup smoke with -NullRHI: the default map loads with SoraGameMode,
 #    the game culture is Japanese, the app quits with status 0 and logs no
 #    fatal error or ensure (one engine exit race is named as known; see below).
-# 3. The project's client-context Unreal automation inside the package with
+# 3. An isolated rendered fresh-startup test, before any input/reset, with
+#    Title, focus, prepared paused world and one untouched screenshot.
+# 4. The project's client-context Unreal automation inside the package with
 #    -RenderOffscreen (Metal, no window), so the rendered front-end test runs
 #    too. It fails unless every test reports Success in Unreal's exported JSON
 #    report and no cooked material falls back to the default material for a
@@ -223,6 +225,14 @@ if problems:
     sys.exit('FAIL startup smoke: ' + '; '.join(problems) + f'; see {log_path}')
 print('PASS startup smoke: /Engine/Maps/Entry with SoraGameMode, language ja, exit 0')
 PY
+
+# A separate, empty-UserDir process checks the untouched rendered title.
+# Fail before the full suite's navigation fixture can normalize its screen.
+launch fresh-startup -RenderOffscreen -ResX=1280 -ResY=720 -windowed \
+  "-ExecCmds=Automation RunTests SoraStartup.RenderedFreshLaunch;Quit" "-ReportExportPath=$APP_DATA/fresh-startup-report"
+python3 "$SCRIPT_DIR/verify_fresh_startup.py" "$OUTPUT/app-data/fresh-startup-report/index.json" \
+  "$OUTPUT/fresh-startup.log" "$(cat "$OUTPUT/fresh-startup.status")" \
+  "$OUTPUT/app-data/fresh-startup-userdir/Saved/Screenshots/SoraStartup/1280x720/01_Title.png" 1280 720
 
 REPORT="$APP_DATA/report"
 launch automation -RenderOffscreen -ResX=1280 -ResY=720 -windowed \

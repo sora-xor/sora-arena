@@ -4,11 +4,12 @@
 # renders), never -NullRHI, at 1920x1080 under the platform's graphics preset.
 #
 # 1. The bundle: identifier org.sora.soraarena and a strict code signature.
-# 2. frontend: SoraArena.UIRendered.FrontEndScreens at 1920x1080, which saves
+# 2. fresh-startup: isolated untouched Title/focus assertion and one frame.
+# 3. frontend: SoraArena.UIRendered.FrontEndScreens at 1920x1080, which saves
 #    the title, main menu, chapter select, practice lobby, wallet, settings,
 #    graphics, audio, subtitles, controls and rebind, accessibility, credits,
 #    quit and pause screens.
-# 3. capture: SoraCapture (Source/SoraArena/Private/SoraCaptureAutomation.cpp):
+# 4. capture: SoraCapture (Source/SoraArena/Private/SoraCaptureAutomation.cpp):
 #    campaign beats in every chapter and each arena in practice, with frame
 #    time measured in practice combat.
 #
@@ -203,6 +204,18 @@ launch() {
 
 LAUNCHES=()
 if [[ "$FRONTEND" != 0 ]]; then
+  launch fresh-startup SoraStartup.RenderedFreshLaunch
+  if ! python3 "$SCRIPT_DIR/verify_fresh_startup.py" "$APP_DATA/fresh-startup-report/index.json" \
+    "$OUTPUT/fresh-startup.log" "$(cat "$OUTPUT/fresh-startup.status")" \
+    "$APP_DATA/fresh-startup-userdir/Saved/Screenshots/SoraStartup/${WIDTH}x${HEIGHT}/01_Title.png" "$WIDTH" "$HEIGHT"; then
+    # Preserve the failed startup before aborting; successful runs are cloned
+    # once below, after navigation and capture have finished.
+    if [[ "$APP_DATA" != "$OUTPUT/app-data" && -d "$APP_DATA" ]]; then
+      /bin/cp -cRp "$APP_DATA" "$OUTPUT/app-data"
+    fi
+    exit 1
+  fi
+  LAUNCHES+=(fresh-startup)
   launch frontend SoraArena.UIRendered
   LAUNCHES+=(frontend)
 fi
