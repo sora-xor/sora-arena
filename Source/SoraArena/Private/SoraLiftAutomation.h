@@ -74,8 +74,14 @@ inline bool Gallery(FSoraAutomationWorld& W,bool OpenCache)
     if(!GalleryFloor(W)) return false;
     if(OpenCache)
         if(!Walk(W,Lift->GalleryCache()+FVector(-150,0,0))||!W.PressKey(EKeys::E)) return false;
-    const FVector Exit=Lift->GalleryExit();
-    // Stop after the ordinary exit volume takes over with its travel cut.
+    const auto* Summit=Director->ActiveChapter()->Beats.FindByPredicate([](const FSoraBeat& B) { return B.Space.Summit.Enabled(); });
+    if(!Summit) return false;
+    const TArray<FVector> Stairs=Summit->Space.Summit.Stairs;
+    for(int32 Node=0;Node<Stairs.Num()-1;++Node)
+        if(!Walk(W,Stairs[Node])||!Director->InLiftGallery()||
+            FMath::Abs(W.Player()->GetActorLocation().Z-Stairs[Node].Z-90.f)>30.f) return false;
+    const FVector Exit=Stairs.Last();
+    // Stop when the real summit stair-head volume starts its cinematic.
     for(int32 Frame=0;Frame<1800&&Director->InLiftGallery();++Frame)
     {
         auto* Hero=W.Player();

@@ -30,6 +30,7 @@ frames stay in the chapter file's ``layout`` block for the level artists.
 from __future__ import annotations
 from campaign_lift import place_lift
 from campaign_spire import place_spire
+from campaign_summit import place_summit
 
 import math
 import re
@@ -230,7 +231,8 @@ class Zone:
         return {"id": self.id, "place": self.place, "style": self.style, "form": self.form,
                 "rect": list(self.rect), "wall_cm": self.wall, "entry": list(self.entry),
                 "walls": _walls(self.rect, self.wall), "cover": self.cover, "props": self.props,
-                "route": [list(point) for point in self.route]}
+                "route": [list(point) for point in self.route],
+                **({"z_bounds_cm": list(self.z_bounds)} if hasattr(self,"z_bounds") else {})}
 
 
 def _referenced_volumes(beat, triggers):
@@ -578,6 +580,7 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         pickups.append({"collectible": item["id"], "zone": index, "at": list(at)})
     place_lift(beats, records, fail)
     place_spire(beats, records, zones, fail)
+    place_summit(beats, records, zones, fail)
     return {
         "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
         "hub": chapter_map if hub else None,

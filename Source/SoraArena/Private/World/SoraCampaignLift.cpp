@@ -37,7 +37,13 @@ void ASoraCampaignLift::Landing(const TCHAR* Name,FVector Center,FVector2D Size,
 {
     Box(Name,Scene,Center-FVector(0,0,20),FVector(Size,40),true);
     for(int32 Side:{-1,1})
-        Box(TEXT("LandingSideRail"),Scene,Center+FVector(0,Side*(Size.Y*.5f-8),65),FVector(Size.X,16,130),true);
+    {
+        if(Size.Y>1000&&Side>0)
+            for(int32 End:{-1,1})
+                Box(TEXT("GalleryNorthExitRail"),Scene,Center+FVector(End*(Size.X*.25f+75),Side*(Size.Y*.5f-8),65),
+                    FVector(Size.X*.5f-150,16,130),true);
+        else Box(TEXT("LandingSideRail"),Scene,Center+FVector(0,Side*(Size.Y*.5f-8),65),FVector(Size.X,16,130),true);
+    }
     const float WallX=(WestOpening?1.f:-1.f)*(Size.X*.5f-8);
     if(!Through) Box(TEXT("LandingEndRail"),Scene,Center+FVector(WallX,0,65),FVector(16,Size.Y,130),true);
     else for(int32 Side:{-1,1})

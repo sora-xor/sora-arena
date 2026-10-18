@@ -76,10 +76,12 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             FVector2D::Distance(FVector2D(Hero->GetActorLocation()), Data.Space.Start) < 50.f);
         for (const FSoraZone& Zone : Data.Space.Zones)
         {
+            Probe.HeightCm=Zone.bHeightBounds&&Zone.MinZ>0?16000:0;
             Probe.Stand(Zone.Entry, Name + TEXT(" ") + Zone.Id + TEXT(" entry"));
             for (const FVector2D& Node : Zone.Route)
                 Probe.Floor(Node, Name + TEXT(" ") + Zone.Id + TEXT(" road"));
         }
+        Probe.HeightCm=0;
         for (int32 Site = 0; Site < Data.Space.Sites.Num(); ++Site)
         {
             // A trace down meets the site's base above the floor.
@@ -95,8 +97,9 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             const FSoraBeatSpace& Space = Beat.Space;
             const FString What = Beat.Id;
             if(Space.Spire.Enabled()) World.Mode()->Arena()->StageKit(Data,9);
-            if(Space.HeightCm>0&&!World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->StageKit(Data,10);
+            if(Space.HeightCm>0&&!Space.Summit.Enabled()&&!World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->StageKit(Data,10);
             if(Space.HeightCm==0&&World.Mode()->Arena()->CampaignLift()) World.Mode()->Arena()->ClearKit();
+            if(Space.Summit.Enabled()) World.Mode()->Arena()->ClearKit();
             Probe.HeightCm=Space.HeightCm;
             Probe.Stand(Space.Entry, What + TEXT(" entry"));
             // A beat that restores a site is worked at the site's own base.
@@ -131,6 +134,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
             }
             Probe.HeightCm=Space.Exit.bHeight?Space.Exit.FloorCm:Space.HeightCm;
             Probe.Floor(Space.Exit.Center, What + TEXT(" exit"));
+            Probe.HeightCm=Space.HeightCm;
             if (Space.bClosing)
                 Probe.Floor(Space.Closing, What + TEXT(" closing anchor"));
             if (Space.bCache)

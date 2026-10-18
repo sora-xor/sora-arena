@@ -120,6 +120,10 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
     const FSoraBeatSpace& Space=Beat.Space;
     StageEpilogue(Beat);
+    SetActorTickEnabled(Space.Summit.Enabled());
+    if(Space.Summit.Enabled()&&Beat.Is(SoraBeatRules::EType::Boss))
+        KitShape(TEXT("SummitStairSeal"),KitCube,FVector(Space.Summit.Center,16000)+FVector(0,-1850,125),
+            FVector(3.4,.16,2.5),KitTeal,TEXT("Metal"),true);
     if(Space.Spire.Enabled())
     {
         const FVector C(Space.Spire.Center,2700);
@@ -360,6 +364,7 @@ void ASoraWorldBuilder::ShowRecoveryBundle(bool Visible)
 }
 void ASoraWorldBuilder::ClearKit()
 {
+    SetActorTickEnabled(false);
     for(const auto& Label:EpilogueLabels) if(Label) Label->DestroyComponent();
     EpilogueLabels.Reset();
     for(const auto& Mesh:KitPieces) if(Mesh) Mesh->DestroyComponent();

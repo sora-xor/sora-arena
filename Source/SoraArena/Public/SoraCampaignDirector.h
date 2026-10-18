@@ -312,6 +312,7 @@ private:
     bool TurnPlayerCrank(bool bBegin);
     void TickPlayerCrank(int32 DeltaMs);
     bool bLiftGallery=false;
+    int32 GalleryStairNode=0;
     bool LiftReadyToComplete() const;
     bool SpireReadyToComplete() const;
     bool BeginLiftGallery();

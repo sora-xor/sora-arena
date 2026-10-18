@@ -197,11 +197,11 @@ are gameplay shapes awaiting final art.
 
 Full work cannot complete ch08.b11 until the moving floor reaches 142 m.
 Completion unlocks ch08.b12's cache at that height and leaves the player in
-the gallery; the north exit volume starts ch08.b13. Searching remains
+the gallery; the physical north stair climbs another 18 m before its summit exit starts ch08.b13. Searching remains
 optional. The saved checkpoint stays at b11 until the exit, while found
 collectibles save immediately. A fresh-world reload repeats the lift and
 keeps those finds. No mid-lift save representation was added. The b10
-spiral now has a separate source implementation, described below; b13 summit remains separate layout work.
+spiral now has a separate source implementation, described below; b13 summit now has a separate source implementation, described below.
 
 Four host `test_lift_data.py` checks pass: exact generated heights, landing
 and crew clearances, rejection of changed wave/platform contracts, and a
@@ -279,3 +279,21 @@ Unreal by this source lane. The same route is used by the full playthrough
 fixture. These are functional collision proxies awaiting Claude's art;
 the auditor's L3 shortcut shutter and authored supply cache behavior are
 still open, as are visual windows, lighting and spire dressing.
+
+
+Chapter 08 summit traversal source slice: the gallery north opening feeds a
+railed stair with 18 cm maximum risers, climbing from 14200 to 16000 cm. Its
+turn landings keep both walking routes open. The b11 checkpoint remains active
+through the gallery and stair; only the real summit stair-head volume begins
+b13. Height-bounded place zones keep the summit directly above the spire.
+The 36 m disc, 1.2 m dais, 4 m by 22 m spine, desk/plinth and 60 m overhead
+ring are functional proxies; cinematic camera coordinates and the boss spawn
+now use the elevated floor. An actual open-edge fall deals 25 damage once
+and returns a surviving hero to a firm edge position in the same boss phase.
+`SoraArena.Campaign.SummitTraversal` covers the elevated checkpoint, cinematic
+skip, boss staging, dais access and fall recovery. The lift gallery fixtures
+now physically walk all stair flights before checking the b13 checkpoint.
+These Unreal fixtures remain unrun by the source lane. The disc is currently
+solid: physical seizure-tile disappearance, its three authored patterns,
+the held spine draw-cut, the moving engine ring and cinematic cast animation
+remain open. Existing seizure hazards must not be reported as physical holes.

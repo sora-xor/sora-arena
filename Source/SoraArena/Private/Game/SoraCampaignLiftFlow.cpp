@@ -47,12 +47,19 @@ bool USoraCampaignDirector::LiftExitPoint(FVector& Point) const
 {
     const auto* Lift=Mode().Arena()?Mode().Arena()->CampaignLift():nullptr;
     if(!Lift) return false;
+    if(const auto* Chapter=ActiveChapter())
+        for(const auto& Beat:Chapter->Beats)
+            if(Beat.Space.Summit.Enabled())
+            {
+                Point=Beat.Space.Summit.Stairs[FMath::Clamp(GalleryStairNode,0,Beat.Space.Summit.Stairs.Num()-1)];
+                return true;
+            }
     Point=Lift->GalleryExit(); return true;
 }
 bool USoraCampaignDirector::BeginLiftGallery()
 {
     if(!ActiveSpace()||!ActiveSpace()->Lift.bEnabled) return false;
-    bLiftGallery=true;
+    bLiftGallery=true; GalleryStairNode=0;
     IdleMs=0;
     // Completion and its bark fire only once, before this phase. Its cache
     // is now unlocked, while the saved checkpoint remains the lift's start.
@@ -65,14 +72,14 @@ bool USoraCampaignDirector::TickLiftGallery(float DeltaSeconds)
     FVector Exit;
     if(!LiftExitPoint(Exit)||!Mode().Hero()) return true;
     const auto* Chapter=ActiveChapter();
+    if(NearFloor(Exit,100.f)&&GalleryStairNode<5) { ++GalleryStairNode; UpdateObjective(); }
     bool bAtExit=false;
     IdleMs=FMath::Min(IdleMs+FMath::RoundToInt32(DeltaSeconds*1000.f),SoraBeatRules::MaxClockMs);
     for(int32 Index=0;Index<Chapter->Beats.Num();++Index)
     {
         const auto& Optional=Chapter->Beats[Index];
         if(Optional.Id==TEXT("ch08.b12"))
-            bAtExit=Optional.Space.Exit.Contains(Mode().Hero()->GetActorLocation())&&
-                FMath::Abs(Mode().Hero()->GetActorLocation().Z-Optional.Space.HeightCm)<180.f;
+            bAtExit=Optional.Space.Exit.Contains(Mode().Hero()->GetActorLocation());
         if(Optional.Id==TEXT("ch08.b12")&&IdleMs>=60000&&!BeatEvents.Contains(TEXT("gallery_exit_hint")))
         {
             BeatEvents.Add(TEXT("gallery_exit_hint")); Fire(TEXT("idle_s:60"),Index);

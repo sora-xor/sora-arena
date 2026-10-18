@@ -314,10 +314,12 @@ void MoveTo(FState& State, const FVector& Location)
     }
     ASoraPlayerCharacter* Hero = Player(State);
     Hero->GetCharacterMovement()->StopMovementImmediately();
-    // Ground-level fixture travel only. The spire uses SoraLiftAutomation's
-    // physical boarding, ride and gallery walk instead of this helper.
+    // Flat-floor fixture positioning. The spiral, lift and gallery stair
+    // use ordinary movement helpers; summit combat stays at its real Z.
     const float Half = Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-    Hero->SetActorLocation(FVector(Location.X, Location.Y, Half + 2.f), false, nullptr, ETeleportType::TeleportPhysics);
+    const auto* Beat=Director?Director->ActiveBeatData():nullptr;
+    const float Floor=Beat&&Beat->Space.Summit.Enabled()?Beat->Space.HeightCm:0.f;
+    Hero->SetActorLocation(FVector(Location.X, Location.Y, Floor+Half+2.f), false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 // Every checkpoint beat writes the slot as it starts, and a long boss or duel

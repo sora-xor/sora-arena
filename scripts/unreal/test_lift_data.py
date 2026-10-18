@@ -31,7 +31,8 @@ class LiftDataTests(unittest.TestCase):
         self.assertEqual(lift["spawns"], [[x + 650, y + offset] for offset in (-150, 0, 150)])
         self.assertEqual(gallery["height_cm"], 14200)
         self.assertEqual(gallery["cache"], [x + 800, y - 1400])
-        self.assertEqual(gallery["exit"]["center"], lift["lift"]["gallery_exit"])
+        self.assertEqual(gallery["exit"]["center"], self.chapter["space"]["beats"][12]["summit"]["stairs"][-1][:2])
+        self.assertEqual(gallery["exit"]["floor_cm"],16000)
         self.assertEqual(self.chapter["beats"][11]["requires"], ["ch08.b11"])
         for person in lift["fieldcraft"]["people"]:
             self.assertLess(abs(person["at"][0] - x) + 34, 284)
@@ -42,9 +43,14 @@ class LiftDataTests(unittest.TestCase):
             chapter = json.loads(path.read_text())
             records = deepcopy(chapter["space"]["beats"])
             place_lift(chapter["beats"], records, fail)
+            for before,after in zip(chapter["space"]["beats"],records):
+                if before["beat"]=="ch08.b12": after["exit"]=before["exit"]
+                if before.get("summit"): after["height_cm"]=before["height_cm"]
             self.assertEqual(records, chapter["space"]["beats"])
             for record in records:
-                if record["beat"] not in ("ch08.b11", "ch08.b12"):
+                if record.get("summit"):
+                    self.assertEqual(record["height_cm"],16000)
+                elif record["beat"] not in ("ch08.b11", "ch08.b12"):
                     self.assertEqual(record["height_cm"], 0)
                     self.assertIsNone(record["lift"])
 

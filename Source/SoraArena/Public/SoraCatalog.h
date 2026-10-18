@@ -169,7 +169,10 @@ struct FSoraZone
     TArray<FVector2D> Route;
     float RouteLength = 0.f;
     bool IsRoute() const { return Route.Num() >= 2; }
-    bool Contains(const FVector& Location) const { return Rect.IsInside(FVector2D(Location)); }
+    bool bHeightBounds = false;
+    int32 MinZ = 0, MaxZ = 0;
+    bool Contains(const FVector& Location) const
+    { return Rect.IsInside(FVector2D(Location))&&(!bHeightBounds||(Location.Z>=MinZ&&Location.Z<MaxZ)); }
     // The road's point Chainage cm from its start, and how far along the road
     // a point stands (projected onto its nearest stretch).
     FVector2D PointAlong(float Chainage) const;
@@ -524,8 +527,15 @@ struct FSoraSpireSpace
     TArray<FVector> Spawns;
     bool Enabled() const { return Ramp.Num()==25; }
 };
+struct FSoraSummitSpace
+{
+    FVector2D Center = FVector2D::ZeroVector;
+    TArray<FVector> Stairs;
+    bool Enabled() const { return Stairs.Num()==6; }
+};
 struct FSoraBeatSpace
 {
+    FSoraSummitSpace Summit;
     FSoraSpireSpace Spire;
     int32 HeightCm=0;
     FSoraLiftSpace Lift;

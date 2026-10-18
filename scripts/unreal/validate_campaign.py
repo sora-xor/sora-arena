@@ -351,10 +351,15 @@ def check_space(chapter, beats, rewards, labels, where):
     require(space["hub"] in (None, chapter["map"]), f"{where}: the hub is not the chapter's arena")
     for number, a in enumerate(rects):
         require(a[0] < a[2] and a[1] < a[3], f"{where}: zone {number} has an empty floor")
-        for b in rects[number + 1:]:
+        for other,b in enumerate(rects[number + 1:],number+1):
             apart = a[2] + ZONE_GAP <= b[0] or b[2] + ZONE_GAP <= a[0] or a[3] + ZONE_GAP <= b[1] or b[3] + ZONE_GAP <= a[1]
+            if not apart and number<len(zones) and other<len(zones):
+                za,zb=zones[number].get('z_bounds_cm'),zones[other].get('z_bounds_cm')
+                apart=bool(za and zb and (za[1]<=zb[0] or zb[1]<=za[0]))
             require(apart, f"{where}: zones {a} and {b} overlap or touch")
     for zone in zones:
+        expected_z = [-500,15800] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_spire" else [15800,20000] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_engine" else None
+        require(zone.get("z_bounds_cm")==expected_z,f"{where}: authored vertical place {zone['id']}")
         rect, cover = zone["rect"], zone["cover"]
         require(zone["style"] in ("estate", "ward", "foundry", "citadel") and
                 zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
@@ -398,7 +403,7 @@ def check_space(chapter, beats, rewards, labels, where):
         elevated_rect = None
         if what == "ch08.b12":
             elevated_rect = next(row["lift"]["gallery_rect"] for row in records if row["beat"] == "ch08.b11")
-        require(record["height_cm"] == (2700 if what == "ch08.b11" else 14200 if what == "ch08.b12" else 0),
+        require(record["height_cm"] == (2700 if what == "ch08.b11" else 14200 if what == "ch08.b12" else 16000 if record.get("summit") else 0),
                 f"{what}: authored floor height")
         routed = beat["type"] == "horseback_ride" or task["goal"] == "escort"
         require(routed == (record["route"] is not None) and
@@ -441,7 +446,8 @@ def check_space(chapter, beats, rewards, labels, where):
             named |= {f"volume_enter:{entry['volume']}" for entry in record["mount"]["forced"]}
         require(placed == named, f"{what}: volumes {sorted(placed)} differ from its events {sorted(named)}")
         for volume in record["volumes"] + [record["exit"]]:
-            require(_inside(rect, volume["center"], 0) and min(volume["size"]) >= 300, f"{what}: volume {volume}")
+            volume_rect = zones[next(r["zone"] for r in records if r["beat"]=="ch08.b13")]["rect"] if what=="ch08.b12" and volume.get("floor_cm")==16000 else rect
+            require(_inside(volume_rect, volume["center"], 0) and min(volume["size"]) >= 300, f"{what}: volume {volume}")
         # Match SoraCatalogSpace's presence checks in both directions: a
         # cinematic cannot acquire an interaction anchor just for set dressing.
         require((record["closing"] is not None) == task["anchor_after_lines"], f"{what}: closing anchor must match its task")

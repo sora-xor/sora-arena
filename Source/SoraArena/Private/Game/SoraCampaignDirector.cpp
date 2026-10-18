@@ -952,6 +952,11 @@ ASoraBoss* USoraCampaignDirector::SpawnBoss(FName Boss,int32 Slot)
     if(!GetWorld()) return nullptr;
     FSoraBossSetup Setup;
     Setup.Difficulty=BossDifficulty(this); Setup.Phase=TaskState.Phase;
+    if(const auto* Space=ActiveSpace();Space&&Space->Summit.Enabled())
+    {
+        Setup.bHasArenaCenter=true; Setup.ArenaCenter=FVector(Space->Summit.Center,Space->HeightCm+90);
+        Setup.ArenaRadiusCm=1800;
+    }
     return ASoraBoss::SpawnBoss(*GetWorld(),Boss,Slot,SpawnLocation(Slot),FRotator(0,180,0),Setup);
 }
 void USoraCampaignDirector::SpawnCast(bool bKeepPupil)

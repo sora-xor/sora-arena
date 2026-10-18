@@ -59,6 +59,7 @@ class SORAARENA_API ASoraWorldBuilder : public AActor
     GENERATED_BODY()
 public:
     ASoraWorldBuilder();
+    virtual void Tick(float DeltaSeconds) override;
     void Build(int32 MapId, const FSoraChapter* Chapter = nullptr);
     void BuildPractice(int32 MapId, const FSoraPracticeMap& Map);
     // The practice arena's dressing kit (Private/World/SoraPracticeArena.h).
@@ -114,6 +115,8 @@ private:
     void BuildArena(int32 MapId, bool bSites);
     void BuildCampaign(const FSoraChapter& Chapter);
     void BuildSpire(const FSoraBeat& Beat);
+    void BuildSummit(const FSoraBeat& Beat);
+    FVector SummitCenter=FVector::ZeroVector;
     void BuildZone(const FSoraZone& Zone, int32 Index, const FSoraBeat* Recovery = nullptr);
     void ZoneProp(const FSoraZone& Zone, const FSoraProp& Prop, int32 Index);
     void ZoneLantern(FVector Location, bool bLit);

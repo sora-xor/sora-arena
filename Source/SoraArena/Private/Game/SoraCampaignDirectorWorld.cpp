@@ -179,7 +179,7 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
         const int32 Pick=Ahead.IsEmpty()?Space->Spawns.Num()-1:Ahead[Slot%Ahead.Num()];
         return ASoraWorldBuilder::Floor(Space->Spawns[Pick],120.f);
     }
-    return ASoraWorldBuilder::Floor(Space->Spawns[FMath::Abs(Slot)%Space->Spawns.Num()],120.f);
+    return ASoraWorldBuilder::Floor(Space->Spawns[FMath::Abs(Slot)%Space->Spawns.Num()],Space->HeightCm+120.f);
 }
 void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
 {
@@ -194,7 +194,8 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
     // Fresh checkpoint entry may need a cut to L4. Normal spiral traversal
     // reaches the same landing on foot and continues onto the lift.
     const bool NeedsLiftEntry=Space.Lift.bEnabled&&Hero&&FMath::Abs(Hero->GetActorLocation().Z-Space.HeightCm)>180.f;
-    if(Hero&&(NeedsLiftEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
+    const bool NeedsSummitEntry=Space.Summit.Enabled()&&Beat->Is(SoraBeatRules::EType::Boss);
+    if(Hero&&(NeedsLiftEntry||NeedsSummitEntry||Chapter->Space.ZoneAt(Hero->GetActorLocation())!=Space.Zone))
     {
         ClearHorses();
         Hero->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
