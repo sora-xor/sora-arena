@@ -49,6 +49,11 @@ copies for that comparison, allowing the archive's resource seal to change
 without accepting different executable code. Normal strict bundle-signature
 verification remains required. `package-candidate.json` beside the archived
 app records the final hashes of every bundled file and the input receipts.
+UE's staging step adds `Metadata/Crypto.json` inside the cook directory before
+running UnrealPak. The stage verifier permits that exact new file and records
+its hash separately; the original cook receipt is preserved. Every recorded
+cook file must remain identical, and any other addition, deletion or change
+still fails qualification. No crypto key contents are copied into the report.
 
 Packaged tests verify those files before and after execution and save the
 candidate evidence with their report. The existing Japanese startup smoke,

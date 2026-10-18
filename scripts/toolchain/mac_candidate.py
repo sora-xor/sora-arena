@@ -29,6 +29,7 @@ CONSUMERS = ('scripts/connect/check-abi.py', 'scripts/connect/verify-bridge.py',
 ALLOWED_CONSUMERS = set(CONSUMERS) | {'scripts/connect/build-bridge.sh'}
 SCHEMA = 'sora.mac.artifact.v1'
 CANDIDATE = 'sora.mac.package_candidate.v1'
+STAGE_CRYPTO = 'Saved/Cooked/Mac/SoraArena/Metadata/Crypto.json'
 NON_UFS = ['Content/Data', 'Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf',
            'Content/SourceArt/Fonts/OFL.txt', 'ThirdPartyNotices',
            'crates/arena-core/data/arena-map-v1.json']
@@ -149,12 +150,20 @@ def artifact_paths(phase):
     return ['Saved/Cooked/Mac']
 
 
-def receipt(root, phase):
+def receipt(root, phase, *, staging=False):
     value = read(root / RECEIPTS / f'{phase}.json')
     require(value.get('schema') == SCHEMA and value.get('phase') == phase, f'Invalid {phase} receipt.')
     require(value['source'] == source(root), f'{phase} receipt belongs to another source; rerun its wrapper.')
     require(value['inputs'] == inputs(root, phase), f'{phase} inputs changed; rerun its wrapper.')
-    require(value['artifacts'] == files(root, artifact_paths(phase)), f'{phase} artifact bytes changed; rerun its wrapper.')
+    actual = files(root, artifact_paths(phase))
+    # UE 5.8.3 CreatePaks writes this settings cache into the cook metadata
+    # directory immediately before UnrealPak (CopyBuildToStagingDirectory,
+    # CryptoSettings.Save). It is a staging output, not a changed cooked asset.
+    # Permit only its addition during this controlled stage; every recorded
+    # file, including a pre-existing cache, must still match exactly.
+    if staging and phase == 'cook' and STAGE_CRYPTO not in value['artifacts']:
+        actual.pop(STAGE_CRYPTO, None)
+    require(value['artifacts'] == actual, f'{phase} artifact bytes changed; rerun its wrapper.')
     return value
 
 
@@ -213,7 +222,7 @@ def stage_finish(root, start, app, output):
     # UAT may sign the app executable differently when adding its resource
     # seal; the controlled stage records its final bytes separately. Inputs
     # and the cooked payload must remain those validated before UAT.
-    require(before['cook'] == receipt(root, 'cook'), 'Cook inputs changed during staging.')
+    require(before['cook'] == receipt(root, 'cook', staging=True), 'Cook inputs changed during staging.')
     staged = app / 'Contents/UE/SoraArena'
     require(executable_code(app / 'Contents/MacOS/SoraArena') == before['game']['executable_code_sha256'],
             'Staged executable code differs from the source-bound game build.')
@@ -222,6 +231,7 @@ def stage_finish(root, start, app, output):
     require(digest(staged / KERNEL) == before['game']['inputs']['kernel_sha256'], 'Staged kernel differs from game build input.')
     value = {'schema': CANDIDATE, 'source': before['source'], 'native': before['native'],
              'build': before['game'], 'cook': before['cook'], 'app_name': app.name,
+             'staging_metadata': files(root, [STAGE_CRYPTO]) if (root / STAGE_CRYPTO).exists() else {},
              'app_files': files(app, ['.']), 'staged_at': datetime.now(timezone.utc).isoformat(),
              'evidence': 'local source-bound Mac package candidate; not release or live-network qualification'}
     write(output, value)

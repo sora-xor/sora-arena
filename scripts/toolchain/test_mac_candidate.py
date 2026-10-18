@@ -109,6 +109,41 @@ class MacCandidateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Staged bridge/sidecar differs'):
             candidate.stage_finish(self.root, self.root / candidate.RECEIPTS / 'stage-start.json', app, record)
 
+    def test_stage_records_added_crypto_cache_without_rewriting_cook(self):
+        app, record, source = self.stage()
+        cook = self.root / candidate.RECEIPTS / 'cook.json'
+        before = cook.read_bytes()
+        cache = self.put(candidate.STAGE_CRYPTO, '{"bEnablePakSigning":false}')
+        # The exception belongs only to the controlled staging comparison.
+        with self.assertRaisesRegex(ValueError, 'artifact bytes changed'):
+            candidate.receipt(self.root, 'cook')
+        candidate.stage_finish(self.root, self.root / candidate.RECEIPTS / 'stage-start.json', app, record)
+        self.assertEqual(before, cook.read_bytes())
+        evidence = candidate.read(record)
+        self.assertEqual(evidence['staging_metadata'][candidate.STAGE_CRYPTO]['sha256'], candidate.digest(cache))
+
+    def test_crypto_addition_does_not_hide_other_cook_changes(self):
+        app, record, source = self.stage()
+        self.put(candidate.STAGE_CRYPTO, '{}')
+        extra = self.put('Saved/Cooked/Mac/SoraArena/Metadata/Other.json', '{}')
+        with self.assertRaisesRegex(ValueError, 'artifact bytes changed'):
+            candidate.stage_finish(self.root, self.root / candidate.RECEIPTS / 'stage-start.json', app, record)
+        extra.unlink()
+        store = self.root / 'Saved/Cooked/Mac/ue.projectstore'
+        store.write_text('replaced cooked content')
+        with self.assertRaisesRegex(ValueError, 'artifact bytes changed'):
+            candidate.stage_finish(self.root, self.root / candidate.RECEIPTS / 'stage-start.json', app, record)
+        store.unlink()
+        with self.assertRaisesRegex(ValueError, 'artifact bytes changed'):
+            candidate.stage_finish(self.root, self.root / candidate.RECEIPTS / 'stage-start.json', app, record)
+
+    def test_preexisting_crypto_cache_cannot_be_changed_during_stage(self):
+        self.put(candidate.STAGE_CRYPTO, '{"before":true}')
+        app, record, source = self.stage()
+        self.put(candidate.STAGE_CRYPTO, '{"after":true}')
+        with self.assertRaisesRegex(ValueError, 'artifact bytes changed'):
+            candidate.stage_finish(self.root, self.root / candidate.RECEIPTS / 'stage-start.json', app, record)
+
     def test_wrong_declared_source_or_native_rejects(self):
         app, record, source = self.stage()
         for expected_source, expected_native in [('3' * 40, self.native), (source, '4' * 40)]:
