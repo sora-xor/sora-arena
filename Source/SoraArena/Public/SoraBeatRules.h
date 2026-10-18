@@ -365,6 +365,7 @@ struct FTask
     // Zero except the bellows' authored x2 overspeed penalty.
     int OverspeedCostMultiplier = 0;
     bool CrankTwoHanded = false;
+    bool AlternateTreads = false;
     // Only an authored accessibility cadence may repeat held input.
     int HoldMilliTurnsS = 0;
     // Each available named worker contributes this physical turn rate,
@@ -456,6 +457,8 @@ struct FTaskState
     int StepDone = 0;
     // The last counted crank turn or rhythm stroke, or -1.
     int LastActionMs = -1;
+    // Last affordable player cycle: 1 below, 2 in band, 3 above. Helpers do not set this.
+    int CrankNotches = 1;
     // Objectives worked, or distinct goods picked up.
     unsigned PointsMask = 0u;
     int CarriedFrom = -1;
@@ -992,12 +995,18 @@ constexpr ETurn Turn(FTaskState& State, const FTask& Task)
     const int Since = State.LastActionMs < 0 ? -1 : State.ElapsedMs - State.LastActionMs;
     State.LastActionMs = State.ElapsedMs;
     if (Since >= 0 && Since < Task.MinTurnMs)
-        return ETurn::TooFast;
+    { State.CrankNotches = 3; return ETurn::TooFast; }
+    State.CrankNotches = Since > Task.MaxTurnMs ? 1 : 2;
     const int Full = Task.Count * Permille;
     State.Progress = State.Progress + Permille > Full ? Full : State.Progress + Permille;
     LatchCrank(State, Task);
     State.Done = State.Progress / Permille;
     return Since > Task.MaxTurnMs ? ETurn::Slow : ETurn::InBand;
+}
+// A live rate gauge, independent of accumulated production. Idle cools to one notch.
+constexpr int CrankFlameNotches(const FTaskState& State, const FTask& Task)
+{
+    return State.LastActionMs < 0 || State.ElapsedMs - State.LastActionMs > Task.MaxTurnMs ? 1 : State.CrankNotches;
 }
 struct FPlayerTurn
 {
@@ -1358,7 +1367,7 @@ constexpr bool TaskValid(const FTask& Task)
             (Task.HoldMilliTurnsS > 0 && (1000000 / Task.HoldMilliTurnsS < Task.MinTurnMs ||
                 (1000000 + Task.HoldMilliTurnsS - 1) / Task.HoldMilliTurnsS > Task.MaxTurnMs))) return false;
     }
-    else if (Task.StaminaPerTurn != 0 || Task.OverspeedCostMultiplier != 0 || Task.CrankTwoHanded || Task.HoldMilliTurnsS != 0) return false;
+    else if (Task.StaminaPerTurn != 0 || Task.OverspeedCostMultiplier != 0 || Task.CrankTwoHanded || Task.AlternateTreads || Task.HoldMilliTurnsS != 0) return false;
     if (!DropoffCapacitiesValid(Task)) return false;
     if (Task.CarryGateMs < 0 || Task.CarryGateMs > MaxClockMs || (Task.CarryGateMs > 0 && Task.Task != ETask::Carry)) return false;
     if (Task.CoopCount < 0 || Task.CoopCount > 3 || ((Task.CoopCount == 0) != (Task.CoopMilliTurnsS == 0)) ||

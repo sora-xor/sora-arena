@@ -263,3 +263,30 @@ cooperation, ratchet, bellows-net, lift and full campaign suites should accompan
 them. No UE build, render, packaged or performance result is claimed. The
 bellows' distinct alternating left/right tread controls and flame-gauge
 presentation are outside this stamina/input slice.
+
+### Alternating bellows treads and live flame gauge
+
+Chapter 05 b06's input and all three `x_flame_gauge` states are normalized and
+validated exactly (`chapter-05.md:480–493`, `1793–1825`). Hold Interact at the
+station, then press left and right using the existing movement mappings. One
+left/right pair is one turn; each tread must return to neutral. A held key,
+right-first press, stick crossing without neutral, or Interact alone adds no
+production. Release, hit, departure and retry discard an unfinished pair.
+Completed pairs use the same stamina and rate admission as other crank work.
+
+The furnace shows the current rate: dull red with one notch when slow/idle,
+山吹 gold with two in band, white with three and a capped eight-spark pool when
+too fast. Idle cools the gauge independently of accumulated production. HUD
+text repeats the rate and next foot, including mapped keyboard or pad labels.
+The two separate tread boards and furnace are functional primitive proxies;
+bespoke foot/cloth animation, final art, tone-mapped readability and hardware
+haptics are not proven by this source slice.
+
+Host coverage checks analog hysteresis, held/repeated/wrong-foot input,
+interrupted half-cycles, frame sizes 1–250 ms, stamina rejection, paid overspeed,
+idle gauge cooling and checkpoint reset. The directed UE fixture
+`SoraArena.Campaign.BellowsTreads` exercises keyboard and pad, physical notch
+visibility and capped sparks; crank cost/net fixtures and campaign playthrough
+now use actual pairs. UE compilation, execution and HUD capture remain with
+the root lane. Source reports: `Saved/SourceChecks/bellows-treads` and
+`Saved/SourceChecks/bellows-treads-final` in the producing worktree.

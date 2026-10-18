@@ -65,6 +65,7 @@ bool USoraCampaignDirector::IsWorkingCrank() const
 void USoraCampaignDirector::StopPlayerCrank(bool bWaitForRelease)
 {
     CrankInput={};
+    BellowsTreads={};
     if(bWaitForRelease) SoraCrankInputRules::Stop(CrankInput);
     if(auto* Hero=Mode().Hero()) Hero->GetViewmodel()->SetHiddenInGame(false,true);
 }
@@ -73,6 +74,11 @@ bool USoraCampaignDirector::TurnPlayerCrank(bool bBegin)
     using SoraBeatRules::ETurn;
     if(!PlayerCrankEligible()) { StopPlayerCrank(); return false; }
     if(bBegin&&!SoraCrankInputRules::Begin(CrankInput,true)) return false;
+    if(bBegin&&Task.AlternateTreads)
+    {
+        SoraCrankInputRules::BeginTreads(BellowsTreads,FMath::RoundToInt(Mode().Hero()->GetInputAxisValue(TEXT("MoveRight"))*1000.f));
+        return false; // Interact engages the station; only a completed L+R pair turns it.
+    }
     auto* Kit=Mode().Hero()->GetEquipment();
     const auto Turned=SoraBeatRules::PlayerTurn(TaskState,Task,FMath::FloorToInt32(Kit->GuardReserve()));
     if(Turned.Result==ETurn::Exhausted)
@@ -95,6 +101,20 @@ bool USoraCampaignDirector::TurnPlayerCrank(bool bBegin)
     if(bWorked) Fire(FString::Printf(TEXT("event:crank_turn_%d"),TaskState.Done));
     if(SoraBeatRules::GoalMet(TaskState,Task)) StopPlayerCrank();
     return bWorked;
+}
+bool USoraCampaignDirector::PlayerBellowsAxis(float Axis)
+{
+    if(!Task.AlternateTreads||!IsWorkingCrank()) return false;
+    if(SoraCrankInputRules::Tread(BellowsTreads,FMath::RoundToInt(Axis*1000.f)))
+    {
+        const int32 DoneBefore=TaskState.Done;
+        if(TurnPlayerCrank(false))
+        {
+            if(DoneBefore==0&&TaskState.Done>0) Fire(TEXT("interact_start"));
+            UpdateObjective(); Progressed();
+        }
+    }
+    return true;
 }
 void USoraCampaignDirector::TickPlayerCrank(int32 DeltaMs)
 {

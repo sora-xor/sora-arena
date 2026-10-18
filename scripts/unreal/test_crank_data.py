@@ -83,8 +83,8 @@ class CrankDataTests(unittest.TestCase):
 
 
     def test_player_contracts_are_exact_and_helpers_are_separate(self):
-        expected = {"ch04.b06": (6, 0, False, 0), "ch05.b06": (2, 2, False, 0),
-                    "ch07.b07": (8, 0, True, 600), "ch08.b11": (5, 0, False, 0)}
+        expected = {"ch04.b06": (6, 0, False, 0, False), "ch05.b06": (2, 2, False, 0, True),
+                    "ch07.b07": (8, 0, True, 600, False), "ch08.b11": (5, 0, False, 0, False)}
         found = set()
         for number in range(1, 9):
             for beat in chapter(number)["beats"]:
@@ -123,6 +123,22 @@ class CrankDataTests(unittest.TestCase):
         with self.assertRaises(BuildError):
             player_work(bellows, fail)
 
+
+    def test_bellows_tread_and_all_gauge_states_are_required(self):
+        original = chapter(5)["beats"][5]
+        for key in ("below", "in", "above"):
+            beat = deepcopy(original)
+            beat["ext"]["flame_gauge"][key] = "progress color"
+            with self.subTest(key=key), self.assertRaises(BuildError):
+                player_work(beat, fail)
+        for value in (None, "press interact", "alternate_right_left_tread"):
+            beat = deepcopy(original)
+            beat["ext"]["input"] = value
+            with self.subTest(value=value), self.assertRaises(BuildError):
+                player_work(beat, fail)
+        original["task"]["crank_player"]["alternate_treads"] = False
+        with self.assertRaises(CampaignError):
+            check_crank_player(original)
 
     def test_normalized_player_contract_cannot_lose_authored_fields(self):
         original = chapter(7)["beats"][6]

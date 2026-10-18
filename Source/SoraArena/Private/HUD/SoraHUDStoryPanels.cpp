@@ -2,6 +2,7 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraFrontEnd.h"
+#include "SoraInputStates.h"
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
 #include "SoraHUD.h"
@@ -83,7 +84,23 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
             FString::Printf(TEXT("Hold the ground: %d of %d s"),State.Progress/1000,FMath::DivideAndRoundUp(Task.DurationMs,1000)),Fraction,Frame.Teal});
         break;
     case EGoal::Turns:
-        Rows.Add({FString::Printf(TEXT("回す  %d / %d"),State.Done,Task.Count),FString::Printf(TEXT("Turn the crank: %d of %d"),State.Done,Task.Count),Fraction,Frame.Teal});
+        Rows.Add({FString::Printf(Task.AlternateTreads?TEXT("踏む（左右一組） %d / %d"):TEXT("回す  %d / %d"),State.Done,Task.Count),
+            FString::Printf(Task.AlternateTreads?TEXT("Tread pairs: %d of %d"):TEXT("Turn the crank: %d of %d"),State.Done,Task.Count),Fraction,Frame.Teal});
+        if(Task.AlternateTreads)
+        {
+            const int32 Band=SoraBeatRules::CrankFlameNotches(State,Task);
+            Rows.Add({Band==1?TEXT("火勢 I — 遅い／休止"):Band==2?TEXT("火勢 II — 適正"):TEXT("火勢 III — 速すぎ・体力２倍"),
+                Band==1?TEXT("Flame I: slow / idle"):Band==2?TEXT("Flame II: in rhythm"):TEXT("Flame III: too fast, double stamina"),-1.f,
+                Band==1?FLinearColor(.9f,.35f,.2f):Band==2?Frame.Gold:Frame.Ivory});
+            const bool bPad=G.FrontEnd()&&G.FrontEnd()->Device()==SoraUI::EDevice::Gamepad;
+            const auto Hold=SoraUI::ActionKey(&G,TEXT("Interact"));
+            const auto Left=bPad?SoraText::FLine{TEXT("左スティック左"),TEXT("left stick left")}:SoraUI::KeyLabel(G.Hero()->ControlKey(SoraInput::FindRemappable(TEXT("MoveRight"),-1),false));
+            const auto Right=bPad?SoraText::FLine{TEXT("左スティック右"),TEXT("left stick right")}:SoraUI::KeyLabel(G.Hero()->ControlKey(SoraInput::FindRemappable(TEXT("MoveRight"),1),false));
+            Rows.Add({FString::Printf(TEXT("%s 長押し＋左 %s → 右 %s（毎回離す）"),*Hold.Japanese,*Left.Japanese,*Right.Japanese),
+                FString::Printf(TEXT("Hold %s + left %s then right %s; release each tread"),*Hold.English,*Left.English,*Right.English),-1.f,Frame.Muted});
+            if(Campaign->IsWorkingCrank()) Rows.Add({Campaign->BellowsRightNext()?TEXT("次は右足"):TEXT("次は左足"),
+                Campaign->BellowsRightNext()?TEXT("Next: right tread"):TEXT("Next: left tread"),-1.f,Frame.Teal});
+        }
         if(SoraBeatRules::CrankSlipping(State,Task))
             Rows.Add({TEXT("緩んでいる。一定の調子で回し続けろ"),TEXT("Slipping back: keep a steady rhythm"),-1.f,FLinearColor(.9f,.35f,.2f)});
         break;
