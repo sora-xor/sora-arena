@@ -52,6 +52,21 @@ The fresh report is `Saved/Qualification/2026-10-18-m2-resume/weapon-metrics.jso
 the old committed metric report has not been overwritten or presented as current.
 No weapon's provenance hash has been refreshed to conceal these defects.
 
+Chapter-three dry-well recovery and authored blocking-dialogue control are now
+integrated. The latter preserves event order and per-line modes, clears held
+inputs at transitions, and holds characters/projectiles while dialogue remains
+visible. Their directed UE tests are written but have not yet run. All 26
+selected gameplay/tooling source checks pass on clean integration commit
+`666c23d`, with unchanged source identity; the report is
+`Saved/SourceChecks/integrated-dialogue-recovery/report.json`.
+
+The original and CC0 asset imports have completed. VFX compilation is running
+on actual `METAL_SM6` / feature level SM6 with the pinned Xcode toolchain. This
+establishes renderer startup, not Nanite drawing, acceptable imagery or a
+completed import pipeline. Art-review capture tooling now archives original
+PNG bytes per run with source/device metadata and SHA-256 hashes; all twelve
+report/archive regression tests pass. Actual SM5/SM6 captures remain pending.
+
 ## 2026-10-18 generic staged hit proof and Claude coordination
 
 The native Iroha research relation now selects the exact nearest eligible hit
