@@ -1,16 +1,41 @@
 # Audio: cue list, buses, loudness and sources
 
-**Status (2026-09-25):**
+**Status (2026-09-27):**
 
 - **Built:**
   - a reproducible audio pipeline;
   - 133 original SFX, 3 music loops (8 WAV renders, including stems), 6 stingers and 3 MIDI scores;
-  - a CC0 source library of about 3 GB, with a SHA-256 ledger;
-  - a 104-cue proposal in [`Content/SourceArt/Audio/cues.proposed.json`](../Content/SourceArt/Audio/cues.proposed.json).
-- **Not done:** nothing is imported into Unreal yet. No MetaSound, SoundClass or Submix assets exist.
-- **Not heard:** no one has listened to any file. All QA is numerical (section 4.3).
-
-The engineering lane owns the import and moves the approved cue data into `Content/Data`.
+  - a raw CC0 source library of about 3 GB in `Local/`, with a SHA-256 ledger;
+  - 86 CC0 derivatives (101 MB) in `Content/SourceArt/Audio/CC0`, cut, levelled and looped from 12 of those
+    sources by `scripts/audio/build_cc0_audio.py`, with their own schema-2 PUB-CC0 ledger (section 1). They
+    voice 21 cues that were silent: the yumi, the repeater, grenade launcher and micro-mortar, explosions, katana
+    draw and sheathe, footsteps on earth, stone and water, the estate, rain, typhoon, fire and festival beds,
+    and thunder. Four of the 21 are Kenney placeholders: body hits, enemy deaths, and steps on grass and tatami;
+  - a 104-cue proposal in [`Content/SourceArt/Audio/cues.proposed.json`](../Content/SourceArt/Audio/cues.proposed.json),
+    kept as the record of what was proposed;
+  - the Unreal import (section 2.1): `scripts/toolchain/import-mac.sh` imports the 149 OWN WAVs and the 86 CC0
+    derivatives as SoundWaves, builds the bus tree below as SoundClasses and SoundSubmixes with the Master
+    limiter and three passive ducking SoundMixes, and loads all 267 packages back with their expected types and
+    routing;
+  - the runtime (section 2.2): [`Content/Data/audio.json`](../Content/Data/audio.json) (112 cues, 96 of them
+    voiced, 102 rules in 22 event families, 133 beats) and `USoraAudioSubsystem`, which plays every
+    `USoraGameEvents` announcement, the practice kernel's events, the front end, footsteps, horses and the hero's
+    weapon actions through those rules; runs the music (menu, exploration, stealth, combat, boss) on Quartz with
+    its stems and stingers and the ambience by place and weather; sets the five non-Master submixes from the
+    volume settings with a telegraph floor; and shows bilingual sound captions.
+- **Not done:**
+  - 16 of the 112 cues have no sound yet. Eleven are bound, so their events play nothing: night insects (the
+    bed of 27 beats), footsteps on gravel and on the ship's gantry grating, the six bound horse cues (walk,
+    trot, canter, gallop, whinny, tack), 転 and the healing lance. The other five are unbound as well: the
+    nock, the arrow pass-by, the stream and forge emitters, and the horse's snort. None of the 16 has a usable
+    CC0 source in the ledger (section 7).
+  - There is no MetaSound: the `needs-assembly` cues play their OWN layers alone.
+- **Not heard:** no one has listened to any file or to the game's mix, the CC0 derivatives included; their
+  windows and takes were picked by level analysis, not by ear. All QA is numerical (section 4.3).
+- **Not run:** the code and data of this revision have compiled (editor target) and pass their host checks, but
+  have not run in Unreal: the disk has had under 30 GiB free, and the automation and import scripts refuse to
+  start below that. The CC0 derivatives are not imported yet. What the last Unreal runs covered, and what they
+  did not, is in section 2.2.
 
 Related: [free-asset plan §3.11–3.12 and §4](art-research/free-asset-acquisition-plan.md), the
 [story bible](campaign/story-bible.md) (L5 music states and captioned barks), and the chapter scripts
@@ -21,7 +46,8 @@ Related: [free-asset plan §3.11–3.12 and §4](art-research/free-asset-acquisi
 | Tier | What | Where | Committed |
 |---|---|---|---|
 | **OWN** | Synthesised SFX (`scripts/audio/synth/*.py`), original scores, and their renders (`scripts/audio/music/`) | `Content/SourceArt/Audio/**` (WAV via LFS) | Yes |
-| **PUB-CC0** | VCSL instruments; the 8 Kenney audio packs; 40 OpenGameArt items; Wikimedia Commons `File:Shakuhachi-flute-440Hz.ogg` | `Local/ThirdPartyRaw/audio/**` (gitignored) | Only the ledger: `scripts/assets/manifests/audio_*.json` |
+| **PUB-CC0** (raw) | VCSL instruments; the 8 Kenney audio packs; 40 OpenGameArt items; Wikimedia Commons `File:Shakuhachi-flute-440Hz.ogg` | `Local/ThirdPartyRaw/audio/**` (gitignored) | Only the ledger: `scripts/assets/manifests/audio_*.json` |
+| **PUB-CC0** (derivatives) | 86 WAVs cut, levelled and looped from 12 of those sources (see below) | `Content/SourceArt/Audio/CC0/<Category>/` (WAV via LFS) | Yes, with the ledger `Content/SourceArt/Audio/CC0/manifest.json` |
 | **REF** | Wikimedia Commons `File:02 Taiko2 (short).oga` (see below) | `Local/ThirdPartyRaw/audio/wikimedia/` | Only the restricted record: `scripts/assets/restricted/audio_wikimedia_reference.json` |
 
 **Why the taiko file is REF.** The recording is CC0, but it performs Scott Harding's composition *Taiko*, whose
@@ -42,6 +68,36 @@ under `upstream`:
 
 `ThirdPartyNotices/ASSETS.md` lists every source, generated from these records by
 `scripts/assets/generate_asset_notices.py`.
+
+**CC0 in the repository.** The free-asset plan commits PUB-CC0 sources the game uses (section 2.1 tier table:
+`Content/SourceArt/<area>/<source>/`, LFS) and allows up to 0.5 GB of audio sources in the repository (section
+5). The raw library stays in `Local/`; what the game plays is admitted as derivatives.
+`scripts/audio/build_cc0_audio.py --local-root <tree holding Local/>`:
+
+- reads each raw file only after checking its SHA-256 against the raw ledger, and only from PUB-CC0 / CC0-1.0
+  records;
+- cuts single takes on the envelope, or the loudest windows of a continuous texture (the bow creaks);
+- resamples to 48 kHz / 24-bit, removes DC, trims, fades and levels to the section 4 targets like the OWN renders;
+- layers a close bang over a distant muffled blast for the explosions, and a tube's thump over a cannon's
+  low body for the grenade launcher;
+- makes beds seamless by an equal-power crossfade of a window's tail into its head, levelled by gain alone;
+- writes `Content/SourceArt/Audio/CC0/manifest.json`: one schema-2 PUB-CC0 record per upstream asset
+  (`storage: repo-lfs`), each file with its cue, the raw files and spans it came from, its target and its QA.
+
+`--check` rebuilds in a temporary folder and compares every SHA-256. `validate_audio.py` checks each derivative
+against the raw ledger and the 0.5 GB budget (101 MB used).
+
+| Cues | Derivatives | From |
+|---|---|---|
+| `weapon.fired.repeater` | 8 reports | Free Firearm Sound Library: Model 1894 and Marlin 336 |
+| `weapon.fired.grenade_launcher`, `weapon.fired.micro_mortar` | 3 and 5 | "25 CC0 bang / firework SFX" shots and cannons over "Cannon fire" |
+| `weapon.yumi.draw`, `weapon.fired.yumi` | 4 creaks, 4 releases | Medieval sound effects: English longbow and Scythian recurve (a yumi's own draw and tsurune are still to be recorded) |
+| `melee.katana.draw`, `melee.katana.sheathe` | 6 and 5 | Medieval sound effects: katana draw and sheath, fast takes |
+| `explosion.detonated` | 6 | Firework bangs over "Muffled Distant Explosion" |
+| `foot.earth`, `foot.stone`, `foot.water` | 6 each | Fantozzi's sand and stone steps; "6 short water splashes" |
+| `amb.estate.day`, `amb.typhoon` | 75 s and 43 s loops | "Park ambiences": birds before rain (rumble below 80 Hz removed); the windiest wind under rain |
+| `amb.rain`, `amb.thunder`, `amb.fire`, `amb.festival` | 2 loops, a far roll, 2 loops | "Rain (loopable)", "Rain + Long Thunder", "Fireplace Sound loop", the fireworks loop with bursts scattered over it |
+| `melee.strike.hit_body`, `enemy.died`, `foot.grass`, `foot.tatami` | 5 each | **Placeholders:** Kenney Impact Sounds (heavy punch, heavy soft impact, grass and carpet steps). The ledger allows Kenney only as "placeholder / layering, never a hero sound", so these cues are `placeholder-cc0` and name what replaces them |
 
 **Fetching.** `scripts/audio/fetch_cc0_audio.py`:
 
@@ -88,9 +144,9 @@ Buses map to UE SoundClasses and Submixes. The user sliders are **Master, Music,
 | SFX_Explosions | SFX | -3 dB | Detonations |
 | SFX_Foley | SFX | -4 dB | Footsteps, horse, handling |
 | SFX_Alien | SFX | -4 dB | Drones, fields, terminals |
-| SFX_Telegraph | SFX | 0 dB | Boss audio telegraphs. **Never ducked or virtualised.** They stay audible at Music 0 and at low SFX settings (accessibility), and use a separate "Telegraph volume" floor |
+| SFX_Telegraph | SFX | 0 dB | Boss audio telegraphs. **Never ducked or virtualised.** They stay audible at Music 0 and at low SFX settings (accessibility): their level follows SFX but never drops below a -12 dB floor, so their submix feeds Master directly |
 | Voice | Master | 0 dB | Dialogue VO (Japanese primary, English subtitles) |
-| Voice_Barks | Voice | 0 dB | Captioned boss barks: these are telegraphs too |
+| Voice_Barks | Voice | 0 dB | Captioned boss barks: these are telegraphs too, with the same -12 dB floor under the Voice slider |
 | UI | Master | -4 dB | Menus, wallet, registry |
 | Ambience | Master | -3 dB | Beds and emitters |
 
@@ -107,10 +163,212 @@ Buses map to UE SoundClasses and Submixes. The user sliders are **Master, Music,
 `stealth_noise` (radius equals the AI hearing radius), `explosion` (150 m), `flyby` (Doppler), `drone`,
 `ambient_emitter` and `far` (thunder, with distance delay). The full values are in the JSON.
 
+### 2.1 In Unreal
+
+`scripts/unreal/import_audio.py` builds everything under `/Game/Generated/Audio` from `Content/Data/audio.json`
+and the two OWN manifests. `scripts/toolchain/import-mac.sh` runs it after the art import, then
+`scripts/unreal/validate_audio_import.py`. Both read their rules from `scripts/unreal/sora_audio_spec.py`.
+
+| Assets | Path | What they do |
+|---|---|---|
+| 235 SoundWaves | `Original/<category>/<file>`, `Music/<piece>/<file>`, `CC0/<category>/<file>` | One per OWN WAV (149) and CC0 derivative (86), each hash-checked. Each is in the class of the bus its cues play it on and has no submix of its own |
+| 14 SoundClasses | `Buses/SC_<bus>` | The bus tree above. Each carries its bus's default level (Music 0.398 = -8 dB), its loading behaviour and its submix |
+| 14 SoundSubmixes | `Buses/SMX_<bus>` | The same tree at unity gain, except that `SMX_SFX_Telegraph` and `SMX_Voice_Barks` feed `SMX_Master` directly for their floor. `SMX_Master` feeds the engine's main submix. The runtime sets the slider buses' output (section 2.2) |
+| 1 limiter | `Buses/SFXP_MasterLimiter` | On `SMX_Master`: a peak limiter at -1 dBFS, 5 ms look-ahead, 1 ms attack, 100 ms release |
+| 3 SoundMixes | `Buses/SMIX_Duck_<trigger>` | The ducking table, as passive modifiers of each trigger bus and its sub-buses |
+
+- **Levels.** The default levels are SoundClass volumes, which multiply down the tree; the imported submixes
+  stay at 0 dB. Master's slider is the audio device volume (`USoraSettings::ApplyAudio`); the runtime sets the
+  other five sliders as submix output volumes (section 2.2).
+- **Limiter.** Unreal's limiter reads sample peaks, not true peaks. The -1 dBTP target of section 2 is still to
+  be measured on a packaged mix (section 4.1).
+- **Routing.** A class's Default Submix routes its sounds. Waves set no submix, so a MetaSound or cue in the
+  same class routes the same way.
+- **Ducking.** Unreal pushes a class's passive SoundMix while a sound of that class plays and pops it when the
+  last one stops; the attack and release are the mix's fade-in and fade-out. Passive modifiers key on a
+  sound's own class, so `Voice_Barks` carries the Voice duck too. The spec refuses any duck of Telegraph,
+  Voice_Barks or their ancestors.
+- **Telegraphs.** `SC_SFX_Telegraph` and `SC_Voice_Barks` are Always Play. Telegraph waves play when silent
+  instead of virtualising, and keep their first chunk resident (Retain On Load). Their classes stay under SFX
+  and Voice; their submixes feed Master, where the runtime keeps them at or above the -12 dB floor.
+- **Loops.** The 25 loops (19 OWN, 6 CC0 beds) loop the whole file. Unreal also reads each `smpl` loop as a loop region, but it
+  treats the RIFF end as exclusive, so that region is one frame shorter than the file. Nothing loops by it: a
+  looping SoundWave repeats the whole file, and a MetaSound Wave Player loops by its own Loop Start and Loop
+  Duration inputs (the whole wave by default). Music loops and stems play when silent, so a muted stem stays
+  sample-locked with the others.
+- **Loading.** Music and Voice load on demand, SFX and Ambience prime on load, and UI and Telegraph retain
+  their first chunk. Compression is the project default, which the import logs as Bink Audio at quality 80.
+- **One class per wave.** A wave shared by several cues takes the class of its ready cues: the parry body
+  layers are on Melee. The one cue that plays a wave imported for another bus, `player.damaged` (SFX_Impacts,
+  the Melee body layers), reaches its own bus through the audio component's SoundClass override at runtime.
+  `site.restored` now plays only its stinger, on Music; the soroban credit is `ui.xor.credited`. The healing
+  lance no longer borrows the Telegraph bus's `shd_barrier_regen`.
+- **CC0.** The import takes the CC0 derivatives from their ledger (`CC0/manifest.json`) like the OWN WAVs. Every
+  raw `scripts/assets/manifests/audio_*.json` record stays `storage: local-private`, and the spec fails if a raw
+  record is marked committed or a derivative is not a PUB-CC0 record in repo LFS.
+- **Validation.** `validate_audio_import.py --source-only` checks the hashes, the WAV loop chunks, the bus tree,
+  the submix routing, the ducking and the cue routing on the host, and reports the expected package count (267). In
+  the editor it fails unless `/Game/Generated/Audio` holds exactly those packages and every tree link, level,
+  flag, loading behaviour, submix, ducking mix, loop flag and loop region matches the spec.
+  `scripts/unreal/test_audio_spec.py` checks the counts and that the spec's refusals fire (11 host tests).
+
+### 2.2 At runtime
+
+**Data.** [`Content/Data/audio.json`](../Content/Data/audio.json) is built by `scripts/audio/build_audio_data.py`
+from the proposal, the CC0 derivatives' ledger and the game's own data (the chapter files, `bosses.json`,
+`enemies.json`), and checked by
+`scripts/audio/validate_audio_data.py` (section 6). It holds:
+
+- the buses, ducking and 3D presets;
+- every cue with the waves it plays (OWN renders or CC0 derivatives), its status, bus, preset, concurrency,
+  variation, caption key and, for a cue whose sound is missing or a placeholder, what it needs;
+- the **rules**: for each event family, ordered conditions on the event's fields that pick a cue;
+- the music pieces and states, and every beat's music state, sparring weapon, ambience bed, weather and
+  default footstep surface (each practice arena has the same);
+- the telegraph class of every boss and enemy attack.
+
+The file is staged with the rest of `Content/Data` and read once, fail-closed.
+
+**Event families.** `USoraAudioSubsystem` (a world subsystem, `Source/SoraArena/Public/SoraAudio.h`) hears:
+
+- every `USoraGameEvents` delegate: weapons, melee, strikes, guards and parries, 転, damage, deaths,
+  detonations, enemy cues, sites, chapters, boss phases and beats;
+- `OnKernelEvent`: practice shots, hits, deaths, guards, ripostes, respawns, objectives and the winner. A shot,
+  hit, death or guard is handed to the rules of the family it sounds as, so a practice katana swing sounds like
+  a campaign one;
+- `OnUISound`, which `USoraFrontEnd` raises: focus, click, confirm, back, refusal, option, slider, and the
+  pause menu opening and closing.
+
+It also polls what has no event:
+
+- the hero's and practice players' weapon actions: reload, charge and held charge, bow draw, sheathe and draw;
+- footsteps of every character within 25 m, by pace (crouch, walk, run) and surface. A stealth floor as loud as
+  a nightingale floor wins; otherwise the floor's material role (`MI_Nyaagyu_<Role>`), then the place's surface;
+- horses within 60 m, with hoofbeats by gait, spooking, mounting and dismounting;
+- loops that ride on drones and seizure walkers while they live.
+
+**Playback.**
+
+- Round-robin cues shuffle without repeats, with the pitch and level ranges in the data.
+- Spatial cues play at their source with a `USoundAttenuation` built from their preset (distance, low-pass,
+  reverb send), with the far preset's distance delay and a Doppler shift on moving loops.
+- A `USoundConcurrency` per cue carries its instance limit.
+- Shots repeated within a sustain gap run a loop and end with a release: the Shock Emitter and beams. A shot
+  after the gap first lets go of the last burst (its loop stops and its release plays), even when it arrives
+  before the subsystem's own tick has seen that burst end, as it does when shooters tick first.
+- Every component the subsystem or the music creates is destroyed when its sound ends, a loop once its fade-out
+  is done, so none stays on the world settings or its carrier.
+- A telegraph is lined up with the scaled windup (Easy ×1.3, Hard ×0.85): held back when the windup is longer
+  than the file's 900 or 1500 ms strike mark, or started part-way when it is shorter. It is never pitched.
+- A missing wave is logged once and skipped.
+
+**Music.**
+
+| State | When | Piece and stems |
+|---|---|---|
+| Menu | A front-end screen outside the pause menu | Wind over Nyaagyū: intro, then the loop 4 bars later on its Quartz clock (sample 698,182) |
+| Exploration | Cinematic, dialogue, explore, production, ride and sparring beats; after a boss falls; a completed chapter | Wind over Nyaagyū loop |
+| Stealth | Stealth beats, and production under guard | Occupied Streets: base; + pulse when a guard is suspicious; + pulse + search while guards search |
+| Combat | Combat beats, a stealth zone whose guards are alert or fighting, practice | Occupied Streets: base + pulse + perc |
+| Boss | Boss beats and rival duels to the death, from the boss's arrival | The Compound-Interest Flagship: synth, then synth + taiko, then taiko, by the boss's phase |
+
+- The pause menu keeps the round's music.
+- Each piece has its own Quartz clock, and all its stems start on its first bar; a state change within a piece
+  only moves stem gains, so stealth into combat and back never loses the bar. A stem out of the mix is held at
+  -80 dB, never at zero: Unreal treats a fade to within `UE_SMALL_NUMBER` of silence as a fade-out and stops
+  the sound when it ends, which would drop that stem for good (it did so before 2026-09-27, whenever a mix
+  removed a stem or a stinger ducked the bed). Fades: 250 ms into alert, 2.5 s
+  out of it, 1.2 s otherwise and between pieces.
+- A stinger ducks the stems by 6 dB for its length; a second stinger while one sounds is dropped.
+- Music and interface sounds keep playing while a menu pauses the world.
+
+**Ambience.** The place's bed and the weather's bed loop in 2D and cross-fade over 2 s when the beat's place or
+weather changes: the old bed fades out and the new one fades in over the same 2 s. A storm plays thunder on the chapter's lightning schedule, far off and delayed by its
+distance. The title screen has none.
+
+**Volumes.** The subsystem re-reads `USoraSettings` whenever it changes:
+
+- Music, SFX, Voice, UI and Ambience set their submix's output gain on the settings' squared curve.
+- `SFX_Telegraph` and `Voice_Barks` take the larger of their parent's gain and -12 dB.
+- Master stays the device volume.
+- Each gain goes to the `SMX_<bus>` submix loaded from `/Game/Generated/Audio/Buses`; the subsystem reports any
+  bus whose submix did not load.
+- Only settings attached to the engine touch the device; automation's detached settings only compute the
+  gains, so no test changes the editor's mix. `DriveSubmixesForTesting` lets a device test drive the real
+  submixes and puts them back to unity.
+
+**Captions.** A cue with a caption key shows it through `USoraCaptions` in Japanese with its English subtitle
+(an `NSLOCTEXT` in `Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp`, English in `Game.po`), with its
+direction. The HUD draws it while the Sound captions setting is on. `USoraCaptions` already captions other
+combatants' shots and swings, blades meeting, explosions and a boss's arrival, windups and defeat, so these
+add what it does not hear:
+
+- a cell ejecting;
+- a barrier shattering;
+- a marksman's lock;
+- the Credit House alarm;
+- the sky splitting and the debt seals clamping;
+- the nightingale floor, which is captioned for the hero's own steps too.
+
+**Automation** (`Source/SoraArena/Private/SoraAudioAutomation.cpp`, `SoraArena.Audio.*`, 8 tests):
+
+- **Data:** every wave is imported in a bus class and loops as its cue does, every telegraph's strike mark falls
+  inside each of its waves, and every stem is a whole number of bars.
+- **EventsPlayCues:** each rule of all 22 families is raised with its event and must play exactly its cue.
+  Coverage counts each rule by its index, so two rules that play one cue count apart, and each Kernel forward
+  by its own index. A Shock Emitter tap after a burst, raised before the subsystem's tick, must play the
+  release and then the shot and leave no loop running.
+- **PolledSounds:** real footsteps from a walking hero, an energy reload, a trotting horse's hoofbeats and a
+  drone's loop.
+- **VolumesSetSubmixGains:** the slider curve, the telegraph floor, and every driven bus's submix asset loading
+  by the runtime's path, with the device untouched. With a device, the test drives the submixes and checks
+  that each gain went to a submix the world's mixer has registered, then puts them back. Unreal has no getter
+  for a submix's output volume, so the render thread's volume itself is not read back.
+- **MusicStates:** menu, exploration, the stealth mixes, combat, boss phases and defeat, the pause menu, and
+  stinger ducking and dropping. After every mix change and under a stinger, each stem of the piece must be held
+  (the mix at the bed's gain, the rest just above silence); with a device each must be playing, neither fading
+  out nor virtualised, and every audio component on the world settings must destroy itself when it stops.
+- **AmbienceByPlaceAndWeather:** estate, rain (fading in over 2 s as the estate's bed goes), typhoon, the
+  flagship's engine bed, and the burning estate.
+- **SoundCaptions:** bilingual captions with their source while the setting is on, and none for the hero's own
+  sounds except the nightingale floor.
+- **FrontEndSounds:** menu keys and the pause menu through the real front end.
+
+The runner uses `-nosound`, so its tests check the subsystem's record of what played. With an audio device,
+each voiced cue must also be playing in its bus's class, unless it is a short 3D one-shot out of earshot of the
+device's listener, which Unreal culls at creation; and every stem of the piece must have its voice. A test runs
+inside one engine frame, so the audio device does not advance during it: device checks read the components'
+state on the game thread (playing, fading out, virtualised, auto-destroy), never a finished fade.
+
+**What has run.** On 2026-09-26 the 8 tests passed headless (`-nosound`) and in a muted device run of an
+earlier revision, and `import-mac.sh` passed before the submix re-parenting (see `docs/unreal.md`). Since then,
+none of these has run in Unreal:
+
+- the later runtime changes: the automatic loop keys, `StemVoices`, the late-shot sustain release, the stems held
+  at -80 dB, auto-destroyed components, the bed fade-in and the submix checks;
+- the revised tests and the full `SoraArena` suite;
+- the current `import-mac.sh`, with its `validate_audio_data.py` step and the 86 CC0 derivatives.
+
+This revision compiles (editor target, 2026-09-27) and passes every host check (section 6). The disk has had
+under 30 GiB free, the floor below which the import and automation scripts refuse to start, so the Unreal
+runs are still owed. Until the import runs, the Data test fails on the CC0 waves it cannot load.
+
 ## 3. Cue list (gameplay event → files)
 
 Events are the `USoraGameEvents` delegates in `Source/SoraArena/Public/SoraGameEvents.h`. Weapon ids come from
-`Content/Data/catalog.json`.
+`Content/Data/catalog.json`. These tables are the proposal. What the game plays is `Content/Data/audio.json`
+(section 2.2), which differs from them as follows:
+
+- **Split cues.** The Shock Emitter and beam cues play their start file; the loop and stop are
+  `weapon.loop.*` and `weapon.release.*`, which run while shots repeat. `site.restored` is the stinger alone,
+  and its soroban is `ui.xor.credited`. `boss.windup.area_1500` is the amber 1500 ms file, and Collatera's
+  margin call has its own `boss.windup.margin_call`.
+- **Beams.** `boss.strike.beam` is dropped: the beam sounds through `projectile.beam`.
+- **New cues.** `weapon.fired.boss_round` (a boss's rounds), `enemy.windup.lock` (an ordinary opponent's
+  cyan attack), `melee.marobashi` (転, still to be made) and `horse.canter`.
+- **Telegraph classes.** The boss telegraph a windup plays comes from its attack's colour and windup in
+  `bosses.json`: cyan is the lock; amber is the cleave, or the 1500 ms file from 1200 ms up; summons and
+  exposes have none. A rival duellist's blows sound only as his blade.
 
 **Status key:**
 
@@ -118,6 +376,9 @@ Events are the `USoraGameEvents` delegates in `Source/SoraArena/Public/SoraGameE
 - **needs-assembly:** OWN renders plus CC0 layers, combined in a MetaSound.
 - **layers-cc0:** CC0 recordings only; import and trim them.
 - **needed:** nothing usable yet.
+- **ready-cc0** (`audio.json` only): voiced by CC0 derivatives (section 1). `needs` may still name what would
+  make it right, such as a real yumi's tsurune.
+- **placeholder-cc0** (`audio.json` only): voiced by a Kenney placeholder until the sound it names exists.
 - **blocked:** waits on a named user step.
 
 Round-robin cues use `shuffle_no_repeat` with a small random pitch and volume range, as given in the JSON.
@@ -302,7 +563,7 @@ The six stingers (section 3.5, plus death and duel point) use the same instrumen
 | Full game mix | **-24 LUFS integrated ±2 LU, ≤ -1 dBTP** over 30+ minutes of play (Sony ASWG-R001 home-console guideline) | To measure in a packaged build |
 | Music loop beds | **-16 LUFS integrated, ≤ -1 dBTP** | All three loops -16.0 LUFS, -1.2 dBTP. The master limiter took 2.6–4.7 dB off the loudest taiko hits (see note 1) |
 | Music stingers | Max momentary -16 LUFS, ≤ -1 dBTP | -16.0 M; true peak -1.1 to -6.7 dBTP |
-| Ambience beds | -26 LUFS integrated, ≤ -3 dBTP | CC0 beds are imported and levelled at import (not done yet) |
+| Ambience beds | -26 LUFS integrated, ≤ -3 dBTP | CC0 derivatives, gain only: estate and rain -26.0; fire -28.8 and festival -28.3 (held at -3 dBTP); typhoon -23.0 (its own target, a storm) |
 | Alien machinery loops | -24 LUFS integrated (debt terminal -28) | -24.0 / -28.0 |
 | Weapon loops and beams | -18 to -22 LUFS integrated | -18.0 / -20.0 / -22.0 |
 | Sustained one-shots (whooshes, charges, shields, telegraphs, alien events) | Max momentary -12 to -21 LUFS by category | On target (the manifest lists each file) |
@@ -352,23 +613,28 @@ For every WAV the script measures:
 - an all-silent file;
 - a loop click (a wrap jump or curvature above 3× the file's own 99.9th percentile).
 
-**Current result: 149 WAVs (19 of them loops), 0 failures.**
+**Current result: 235 WAVs (25 of them loops): 149 OWN and 86 CC0 derivatives, 0 failures.** The CC0 beds'
+largest wrap jump is 0.64× the percentile (rain) and their largest wrap curvature 0.39×; the derivatives'
+largest DC estimate is -57.3 dBFS and their highest true peak -1.0 dBTP. The OWN figures:
 
 - The largest wrap jump is 1.0× the percentile. That is the flagship synth stem and mix, whose loop starts on
   note onsets, as music at bar 1 does. Every other loop is at or below 0.77× (the energy beam).
 - The largest DC estimate is -55.1 dBFS (a UI bell tail; the limit is -54).
 - The highest true peak is -1.0 dBTP.
 
-`scripts/audio/validate_audio.py` also re-hashes the 2,119 raw CC0 files against the ledger. It checks that
-every file under `Content/SourceArt/Audio` has an OWN record with a matching SHA-256, that `Local/` is ignored
-and untracked, and that every path in the cue proposal exists.
+`scripts/audio/validate_audio.py` also re-hashes the 2,119 raw CC0 files against the ledger (`--local-root` names
+the tree that holds `Local/`, as a worktree has none). It checks that every file under `Content/SourceArt/Audio`
+has an OWN or CC0 derivative record with a matching SHA-256, that each derivative names raw files and spans the
+raw ledger records, that the derivatives stay within 0.5 GB, that `Local/` is ignored and untracked, and that
+every path in the cue proposal exists.
 
 ## 5. Accessibility
 
 - **Captions:** telegraph and stealth-critical cues carry a caption (`［照準固定音］`, `［鶯張りが鳴る］`,
-  `［障壁が砕ける］` …). Captions are shown in Japanese first with English subtitles, following bible §18.
-- **Telegraph bus:** boss telegraphs have their own bus with a minimum-volume floor. They are never ducked or
-  virtualised.
+  `［障壁が砕ける］` …). Captions are shown in Japanese first with English subtitles, following bible §18,
+  through `USoraCaptions` while the Sound captions setting is on (section 2.2).
+- **Telegraph bus:** boss telegraphs have their own bus with a -12 dB minimum-volume floor under the SFX slider
+  (barks likewise under Voice). They are never ducked or virtualised.
 - **Music at 0:** gameplay-timing sounds (Dunark tally clicks, bellows and press beats) must stay on SFX
   buses, so they remain audible when music is off.
 - **Mono and headroom:** mono downmix and a "night mode" (lower Master dynamic range) apply at the Master
@@ -385,21 +651,40 @@ and untracked, and that every path in the cue proposal exists.
 | `scripts/audio/qa_audio.py`, `validate_audio.py`, `build_cue_proposal.py` | QA, ledger validation, cue proposal |
 | `scripts/assets/manifests/audio_{vcsl,kenney,opengameart,wikimedia}.json` | Schema-2 ledger records for the raw CC0 sources |
 | `Content/SourceArt/Audio/` | The OWN renders, their manifests and [README](../Content/SourceArt/Audio/README.md) |
+| `scripts/audio/build_cc0_audio.py` | Cuts, levels and loops the CC0 derivatives from the raw ledger into `Content/SourceArt/Audio/CC0` with their PUB-CC0 ledger (`--local-root` names the tree holding `Local/`; `--check` rebuilds and compares) |
+| `scripts/audio/build_audio_data.py`, `validate_audio_data.py` | Builds `Content/Data/audio.json` from the proposal, the CC0 derivatives and the game data (`--check` compares), and validates it against the event delegates, kernel events, catalog weapons, chapter beats and places, bosses, enemies, captions and the OWN and CC0 waves (section 2.2) |
+| `scripts/unreal/import_audio.py`, `validate_audio_import.py`, `sora_audio_spec.py`, `test_audio_spec.py` | Unreal import of the SoundWaves, bus tree and ducking, and its validator (section 2.1) |
+| `Source/SoraArena/Private/Audio/SoraAudioImportLibrary.*` | Editor-only links the importer uses to parent submixes and sound classes (Python cannot set a submix's parent) |
+| `Source/SoraArena/Public/SoraAudio.h`, `Private/Audio/SoraAudio{Subsystem,Music,Polling}.cpp`, `SoraAudioData.*`, `SoraSoundCaptions.cpp` | The runtime: `USoraAudioSubsystem`, the data it loads and the caption texts (section 2.2) |
+| `Source/SoraArena/Private/SoraAudioAutomation.cpp` | `SoraArena.Audio.*` automation (section 2.2) |
 
 ## 7. Gaps, in priority order
 
-1. **Import into UE 5.8.** This belongs to the engineering lane. Import the 149 WAVs as SoundWaves, build
-   SoundClasses and Submixes from §2, build MetaSounds for the multi-layer cues (`needs-assembly`), and set up
-   Quartz music transitions. It also means moving the approved `cues.proposed.json` into `Content/Data`.
-2. **Human listening and mix review** of everything here (plan §4.3). No file has been auditioned.
-3. **User steps:**
+1. **Import and run.** Run `scripts/toolchain/import-mac.sh`, which brings in the 86 CC0 derivatives and
+   rebuilds the re-parented submixes, then the `SoraArena` automation suite, headless and with a muted device
+   (section 2.2). Both need 30 GiB free.
+2. **Sounds for the 16 silent cues and the 4 placeholders** (status above). No CC0 source in the ledger fits
+   night insects, gravel, the gantry grating, horses, 転 or the healing lance. They need Freesound (U2), our
+   own recordings, or OWN synthesis (the insects and the lance). The Kenney placeholders under body hits, enemy
+   deaths, grass and tatami need own foley.
+3. **Human listening and mix review** of everything here (plan §4.3). No file has been auditioned, the CC0
+   takes and bed windows included, and the game mix has not been heard.
+4. **Finish the UE 5.8 integration.** Done: the SoundWaves, the bus tree, the limiter, the ducking (section
+   2.1) and the runtime (section 2.2). Still to do:
+   - MetaSounds for the multi-layer cues (`needs-assembly`) and the parry layers;
+   - Easy and Hard renders of the telegraphs, which are now lined up with the windup rather than
+     time-stretched;
+   - sources for the unbound cues: arrow pass-by, stream, forge and terminal emitters, the boss shield state,
+     wallet approval, the Credit House denial and the horse's snort;
+   - cinematic timing for the sky seam and the debt seals, which play at their beat's start.
+5. **User steps:**
    - Freesound OAuth (U2) unblocks horse, gravel, insects, tatami, crowd and tsurune.
    - The Sonniss acknowledgement (U6) unblocks professional melee and foley layers (RST, with an OWN or CC0
      fallback required).
-4. **Own foley and performances:**
+6. **Own foley and performances:**
    - suri-ashi on hinoki;
    - armour and cloth;
    - tsurune;
    - nōtō click;
    - a real koto, shakuhachi and taiko session for the final score (the path to AAA in plan §3.12).
-5. **The remaining 105 music states**, the per-boss telegraph voices, and VO (B6 / B7).
+7. **The remaining 105 music states**, the per-boss telegraph voices, and VO (B6 / B7).

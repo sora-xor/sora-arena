@@ -1,0 +1,6553 @@
+{
+ "schema_version": 1,
+ "source": "scripts/audio/build_audio_data.py from Content/SourceArt/Audio/cues.proposed.json, Content/Data/campaign, bosses.json and enemies.json",
+ "sample_rate_hz": 48000,
+ "buses": [
+  {
+   "id": "Master",
+   "parent": "",
+   "submix_parent": "",
+   "default_db": 0.0,
+   "slider": "Master",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "Music",
+   "parent": "Master",
+   "submix_parent": "Master",
+   "default_db": -8.0,
+   "slider": "Music",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "SFX",
+   "parent": "Master",
+   "submix_parent": "Master",
+   "default_db": 0.0,
+   "slider": "SFX",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "SFX_Weapons",
+   "parent": "SFX",
+   "submix_parent": "SFX",
+   "default_db": -2.0,
+   "slider": "",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "SFX_Melee",
+   "parent": "SFX",
+   "submix_parent": "SFX",
+   "default_db": -1.0,
+   "slider": "",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "SFX_Impacts",
+   "parent": "SFX",
+   "submix_parent": "SFX",
+   "default_db": -2.0,
+   "slider": "",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "SFX_Explosions",
+   "parent": "SFX",
+   "submix_parent": "SFX",
+   "default_db": -3.0,
+   "slider": "",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "SFX_Foley",
+   "parent": "SFX",
+   "submix_parent": "SFX",
+   "default_db": -4.0,
+   "slider": "",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "SFX_Alien",
+   "parent": "SFX",
+   "submix_parent": "SFX",
+   "default_db": -4.0,
+   "slider": "",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "SFX_Telegraph",
+   "parent": "SFX",
+   "submix_parent": "Master",
+   "default_db": 0.0,
+   "slider": "",
+   "floor_of": "SFX",
+   "floor_db": -12.0
+  },
+  {
+   "id": "Voice",
+   "parent": "Master",
+   "submix_parent": "Master",
+   "default_db": 0.0,
+   "slider": "Voice",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "Voice_Barks",
+   "parent": "Voice",
+   "submix_parent": "Master",
+   "default_db": 0.0,
+   "slider": "",
+   "floor_of": "Voice",
+   "floor_db": -12.0
+  },
+  {
+   "id": "UI",
+   "parent": "Master",
+   "submix_parent": "Master",
+   "default_db": -4.0,
+   "slider": "UI",
+   "floor_of": "",
+   "floor_db": 0.0
+  },
+  {
+   "id": "Ambience",
+   "parent": "Master",
+   "submix_parent": "Master",
+   "default_db": -3.0,
+   "slider": "Ambience",
+   "floor_of": "",
+   "floor_db": 0.0
+  }
+ ],
+ "ducking": [
+  {
+   "trigger": "Voice",
+   "target": "Music",
+   "db": -6.0,
+   "attack_ms": 80,
+   "release_ms": 450
+  },
+  {
+   "trigger": "Voice",
+   "target": "Ambience",
+   "db": -4.0,
+   "attack_ms": 80,
+   "release_ms": 450
+  },
+  {
+   "trigger": "SFX_Telegraph",
+   "target": "Music",
+   "db": -3.0,
+   "attack_ms": 20,
+   "release_ms": 300
+  },
+  {
+   "trigger": "SFX_Explosions",
+   "target": "Ambience",
+   "db": -6.0,
+   "attack_ms": 10,
+   "release_ms": 800
+  }
+ ],
+ "attenuation": {
+  "weapon_long": {
+   "inner_m": 3,
+   "falloff_m": 80,
+   "lpf_far_hz": 3500,
+   "reverb_send": true,
+   "doppler": false,
+   "distance_delay": false
+  },
+  "weapon_mid": {
+   "inner_m": 2,
+   "falloff_m": 45,
+   "lpf_far_hz": 4000,
+   "reverb_send": false,
+   "doppler": false,
+   "distance_delay": false
+  },
+  "melee_close": {
+   "inner_m": 1,
+   "falloff_m": 25,
+   "lpf_far_hz": 5000,
+   "reverb_send": false,
+   "doppler": false,
+   "distance_delay": false
+  },
+  "foley_short": {
+   "inner_m": 0.5,
+   "falloff_m": 15,
+   "lpf_far_hz": 0,
+   "reverb_send": false,
+   "doppler": false,
+   "distance_delay": false
+  },
+  "foley_mid": {
+   "inner_m": 1,
+   "falloff_m": 30,
+   "lpf_far_hz": 0,
+   "reverb_send": false,
+   "doppler": false,
+   "distance_delay": false
+  },
+  "stealth_noise": {
+   "inner_m": 1,
+   "falloff_m": 20,
+   "lpf_far_hz": 0,
+   "reverb_send": false,
+   "doppler": false,
+   "distance_delay": false
+  },
+  "explosion": {
+   "inner_m": 5,
+   "falloff_m": 150,
+   "lpf_far_hz": 2500,
+   "reverb_send": false,
+   "doppler": false,
+   "distance_delay": false
+  },
+  "flyby": {
+   "inner_m": 0.5,
+   "falloff_m": 12,
+   "lpf_far_hz": 0,
+   "reverb_send": false,
+   "doppler": true,
+   "distance_delay": false
+  },
+  "drone": {
+   "inner_m": 2,
+   "falloff_m": 40,
+   "lpf_far_hz": 0,
+   "reverb_send": false,
+   "doppler": true,
+   "distance_delay": false
+  },
+  "ambient_emitter": {
+   "inner_m": 3,
+   "falloff_m": 35,
+   "lpf_far_hz": 0,
+   "reverb_send": false,
+   "doppler": false,
+   "distance_delay": false
+  },
+  "far": {
+   "inner_m": 50,
+   "falloff_m": 3000,
+   "lpf_far_hz": 0,
+   "reverb_send": false,
+   "doppler": false,
+   "distance_delay": true
+  }
+ },
+ "cues": [
+  {
+   "id": "amb.alien.debt_terminal",
+   "bus": "SFX_Alien",
+   "status": "ready-own",
+   "waves": [
+    "Original/Alien/amb_alien_debt_terminal_loop"
+   ],
+   "spatial": true,
+   "attenuation": "ambient_emitter",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "a positioned emitter at debt terminals; the layouts name none yet",
+   "notes": ""
+  },
+  {
+   "id": "amb.alien.drone",
+   "bus": "SFX_Alien",
+   "status": "ready-own",
+   "waves": [
+    "Original/Alien/amb_alien_drone_hover_loop_01",
+    "Original/Alien/amb_alien_drone_hover_loop_02"
+   ],
+   "spatial": true,
+   "attenuation": "drone",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -30,
+    30
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "amb.alien.flagship_engine",
+   "bus": "Ambience",
+   "status": "ready-own",
+   "waves": [
+    "Original/Alien/amb_alien_engine_core_loop"
+   ],
+   "spatial": true,
+   "attenuation": "ambient_emitter",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "amb.alien.ledger_engine",
+   "bus": "Ambience",
+   "status": "ready-own",
+   "waves": [
+    "Original/Alien/amb_alien_ledger_engine_loop"
+   ],
+   "spatial": true,
+   "attenuation": "ambient_emitter",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "amb.alien.seizure_field",
+   "bus": "SFX_Alien",
+   "status": "ready-own",
+   "waves": [
+    "Original/Alien/amb_alien_seizure_field_loop"
+   ],
+   "spatial": true,
+   "attenuation": "ambient_emitter",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "amb.estate.day",
+   "bus": "Ambience",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Ambience/cc0_amb_estate_day_loop"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "uguisu and pheasant calls over the CC0 park birds",
+   "unbound": "",
+   "notes": "Long CC0 field recordings (8+ min, 48 kHz); cut seamless loops at import. Uguisu / pheasant still needed (plan §3.11)."
+  },
+  {
+   "id": "amb.festival",
+   "bus": "Ambience",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Ambience/cc0_amb_festival_loop"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "crowd and 祭囃子 under the CC0 fireworks",
+   "unbound": "",
+   "notes": "Fireworks exist (CC0); crowd murmur and diegetic 祭囃子 are needed (crowd VO blocked on B6)."
+  },
+  {
+   "id": "amb.fire",
+   "bus": "Ambience",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Ambience/cc0_amb_fire_loop"
+   ],
+   "spatial": true,
+   "attenuation": "ambient_emitter",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "amb.night_insects",
+   "bus": "Ambience",
+   "status": "needed",
+   "waves": [],
+   "spatial": false,
+   "attenuation": "",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "night insects and frogs",
+   "unbound": "",
+   "notes": "Bell crickets, frogs, higurashi at dawn: Freesound CC0 after U2, or own field recording."
+  },
+  {
+   "id": "amb.rain",
+   "bus": "Ambience",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Ambience/cc0_amb_rain_loop_01",
+    "CC0/Ambience/cc0_amb_rain_loop_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Plus eave-drip emitters from the drip loop. Heavy typhoon rain (ch07) still needed."
+  },
+  {
+   "id": "amb.smithy",
+   "bus": "Ambience",
+   "status": "layers-cc0",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "ambient_emitter",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "CC0 workshop hammering and anvils",
+   "unbound": "a positioned emitter at forges; the chapter layouts name no forge emitters yet",
+   "notes": "Anvil strikes double as the ch05 aizuchi percussion (100 BPM)."
+  },
+  {
+   "id": "amb.stream",
+   "bus": "Ambience",
+   "status": "layers-cc0",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "ambient_emitter",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "CC0 small-river recording",
+   "unbound": "a positioned emitter at streams; the chapter layouts name no stream emitters yet",
+   "notes": ""
+  },
+  {
+   "id": "amb.thunder",
+   "bus": "Ambience",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Ambience/cc0_amb_thunder_01"
+   ],
+   "spatial": true,
+   "attenuation": "far",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Delay by distance; respect the flash-reduction setting for the paired lightning."
+  },
+  {
+   "id": "amb.typhoon",
+   "bus": "Ambience",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Ambience/cc0_amb_typhoon_loop"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "wind beds in three intensities and a gust riser; CC0 park wind and rain stand in",
+   "unbound": "",
+   "notes": "Park wind is only a base; needs storm-strength beds."
+  },
+  {
+   "id": "amb.vault",
+   "bus": "Ambience",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Alien/amb_alien_ledger_engine_loop"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "CC0 drips over the low-passed Ledger Engine (plays the engine alone for now)",
+   "unbound": "",
+   "notes": "Engine loop low-passed 800 Hz, -12 dB, as a far bed."
+  },
+  {
+   "id": "barrier.hum",
+   "bus": "SFX_Alien",
+   "status": "ready-own",
+   "waves": [
+    "Original/Shields/shd_barrier_hum_loop"
+   ],
+   "spatial": true,
+   "attenuation": "ambient_emitter",
+   "loop": true,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "needs the boss shield state; ASoraBoss exposes only its shield events",
+   "notes": ""
+  },
+  {
+   "id": "boss.arrived",
+   "bus": "Music",
+   "status": "ready-own",
+   "waves": [
+    "Music/Stingers/mus_sting_boss_phase"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 1,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": true,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "boss.defeated",
+   "bus": "Music",
+   "status": "needed",
+   "waves": [
+    "Music/Stingers/mus_sting_boss_phase"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": true,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "a release sting per boss (placeholder: the boss phase sting)",
+   "unbound": "",
+   "notes": "Placeholder: needs a bespoke release sting per boss (catharsis, League motif)."
+  },
+  {
+   "id": "boss.shield.break",
+   "bus": "SFX_Impacts",
+   "status": "ready-own",
+   "waves": [
+    "Original/Shields/shd_barrier_break_01",
+    "Original/Shields/shd_barrier_break_02"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "BarrierShatters",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "boss.shield.hit",
+   "bus": "SFX_Impacts",
+   "status": "ready-own",
+   "waves": [
+    "Original/Shields/shd_barrier_hit_01",
+    "Original/Shields/shd_barrier_hit_02",
+    "Original/Shields/shd_barrier_hit_03",
+    "Original/Shields/shd_barrier_hit_04"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "boss.shield.regen",
+   "bus": "SFX_Telegraph",
+   "status": "ready-own",
+   "waves": [
+    "Original/Shields/shd_barrier_regen"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "BarrierRecharging",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "ASoraBoss announces a shield breaking, not regenerating",
+   "notes": ""
+  },
+  {
+   "id": "boss.strike.cleave",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_whoosh_kanabo_01",
+    "Original/Melee/mel_whoosh_kanabo_02"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "boss.windup.area_1500",
+   "bus": "SFX_Telegraph",
+   "status": "ready-own",
+   "waves": [
+    "Original/Telegraphs/tel_cleave_amber_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 1500,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "boss.windup.beam",
+   "bus": "SFX_Telegraph",
+   "status": "ready-own",
+   "waves": [
+    "Original/Telegraphs/tel_lock_cyan_900ms"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": false,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 900,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Audible at Music 0; never ducked; the strike lands 900 ms after file start (Normal). Easy +30 % / Hard -15 %: time-stretch in the MetaSound, do not pitch."
+  },
+  {
+   "id": "boss.windup.cleave",
+   "bus": "SFX_Telegraph",
+   "status": "ready-own",
+   "waves": [
+    "Original/Telegraphs/tel_cleave_amber_01"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 900,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "boss.windup.margin_call",
+   "bus": "SFX_Telegraph",
+   "status": "ready-own",
+   "waves": [
+    "Original/Telegraphs/tel_margin_call_riser_1500ms"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 2,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 1500,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Collatera's 追証 margin call: the riser ends clipped at the 1500 ms strike."
+  },
+  {
+   "id": "chapter.completed",
+   "bus": "Music",
+   "status": "ready-own",
+   "waves": [
+    "Music/Stingers/mus_sting_chapter_complete"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 1,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": true,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "chapter.started",
+   "bus": "Music",
+   "status": "ready-own",
+   "waves": [
+    "Music/Stingers/mus_sting_chapter_start"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 1,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": true,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Title card: the vermillion seal lands on the odaiko + gong hit at 1.0 s."
+  },
+  {
+   "id": "enemy.died",
+   "bus": "SFX_Impacts",
+   "status": "placeholder-cc0",
+   "waves": [
+    "CC0/Impacts/cc0_imp_body_fall_01",
+    "CC0/Impacts/cc0_imp_body_fall_02",
+    "CC0/Impacts/cc0_imp_body_fall_03",
+    "CC0/Impacts/cc0_imp_body_fall_04",
+    "CC0/Impacts/cc0_imp_body_fall_05"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "a body fall and armour rattle of our own; Kenney's heavy soft impact stands in",
+   "unbound": "",
+   "notes": "Body fall on wood / earth / stone and armour rattle; needs own foley."
+  },
+  {
+   "id": "enemy.windup.lock",
+   "bus": "SFX_Telegraph",
+   "status": "ready-own",
+   "waves": [
+    "Original/Telegraphs/tel_lock_cyan_900ms"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 3,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "TargetingLock",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 900,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "A cyan (locked-aim) attack of an ordinary opponent: marksman lock, walker beam, drone net."
+  },
+  {
+   "id": "explosion.detonated",
+   "bus": "SFX_Explosions",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Explosions/cc0_exp_detonation_01",
+    "CC0/Explosions/cc0_exp_detonation_02",
+    "CC0/Explosions/cc0_exp_detonation_03",
+    "CC0/Explosions/cc0_exp_detonation_04",
+    "CC0/Explosions/cc0_exp_detonation_05",
+    "CC0/Explosions/cc0_exp_detonation_06"
+   ],
+   "spatial": true,
+   "attenuation": "explosion",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "a debris layer over the CC0 bang and muffled body",
+   "unbound": "",
+   "notes": "Scale layers by Radius / Damage: close crack + body (bang_*), distant tail (muffled), sub drop synthesised in the MetaSound. Needs a debris layer (wood / tile) for the Edo spaces."
+  },
+  {
+   "id": "foot.earth",
+   "bus": "SFX_Foley",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Foley/cc0_fol_step_earth_01",
+    "CC0/Foley/cc0_fol_step_earth_02",
+    "CC0/Foley/cc0_fol_step_earth_03",
+    "CC0/Foley/cc0_fol_step_earth_04",
+    "CC0/Foley/cc0_fol_step_earth_05",
+    "CC0/Foley/cc0_fol_step_earth_06"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 6,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "foot.grass",
+   "bus": "SFX_Foley",
+   "status": "placeholder-cc0",
+   "waves": [
+    "CC0/Foley/cc0_fol_step_grass_01",
+    "CC0/Foley/cc0_fol_step_grass_02",
+    "CC0/Foley/cc0_fol_step_grass_03",
+    "CC0/Foley/cc0_fol_step_grass_04",
+    "CC0/Foley/cc0_fol_step_grass_05"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 6,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "grass steps of our own; Kenney's grass steps stand in",
+   "unbound": "",
+   "notes": "Placeholder."
+  },
+  {
+   "id": "foot.gravel",
+   "bus": "SFX_Foley",
+   "status": "needed",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "gravel steps",
+   "unbound": "",
+   "notes": "Gravel is a stealth noise surface; needs own recording (plan: Freesound CC0 after U2)."
+  },
+  {
+   "id": "foot.metal_grating",
+   "bus": "SFX_Foley",
+   "status": "needed",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "gantry grating steps",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "foot.nightingale_floor",
+   "bus": "SFX_Foley",
+   "status": "ready-own",
+   "waves": [
+    "Original/Foley/fol_nightingale_floor_01",
+    "Original/Foley/fol_nightingale_floor_02",
+    "Original/Foley/fol_nightingale_floor_03",
+    "Original/Foley/fol_nightingale_floor_04",
+    "Original/Foley/fol_nightingale_floor_05",
+    "Original/Foley/fol_nightingale_floor_06"
+   ],
+   "spatial": true,
+   "attenuation": "stealth_noise",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "NightingaleFloor",
+   "caption_hero": true,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Silent on the edge-walk strip. Deliberately unlike real birdsong."
+  },
+  {
+   "id": "foot.stone",
+   "bus": "SFX_Foley",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Foley/cc0_fol_step_stone_01",
+    "CC0/Foley/cc0_fol_step_stone_02",
+    "CC0/Foley/cc0_fol_step_stone_03",
+    "CC0/Foley/cc0_fol_step_stone_04",
+    "CC0/Foley/cc0_fol_step_stone_05",
+    "CC0/Foley/cc0_fol_step_stone_06"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 6,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "foot.tatami",
+   "bus": "SFX_Foley",
+   "status": "placeholder-cc0",
+   "waves": [
+    "CC0/Foley/cc0_fol_step_tatami_01",
+    "CC0/Foley/cc0_fol_step_tatami_02",
+    "CC0/Foley/cc0_fol_step_tatami_03",
+    "CC0/Foley/cc0_fol_step_tatami_04",
+    "CC0/Foley/cc0_fol_step_tatami_05"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "tatami (igusa) steps of our own; Kenney's carpet steps stand in",
+   "unbound": "",
+   "notes": "Placeholder only."
+  },
+  {
+   "id": "foot.water",
+   "bus": "SFX_Foley",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Foley/cc0_fol_step_water_01",
+    "CC0/Foley/cc0_fol_step_water_02",
+    "CC0/Foley/cc0_fol_step_water_03",
+    "CC0/Foley/cc0_fol_step_water_04",
+    "CC0/Foley/cc0_fol_step_water_05",
+    "CC0/Foley/cc0_fol_step_water_06"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 6,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Stealth noise class \"puddle\" (loud)."
+  },
+  {
+   "id": "foot.wood",
+   "bus": "SFX_Foley",
+   "status": "layers-cc0",
+   "waves": [
+    "Original/Foley/fol_board_creak_01",
+    "Original/Foley/fol_board_creak_02",
+    "Original/Foley/fol_board_creak_03"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 6,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "suri-ashi on hinoki (the board creak is only its quiet stealth layer)",
+   "unbound": "",
+   "notes": "Kenney steps are placeholder; board creak (OWN) is a quiet stealth layer. Needs own suri-ashi foley."
+  },
+  {
+   "id": "horse.canter",
+   "bus": "SFX_Foley",
+   "status": "blocked",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "unshod three-beat canter footfalls (Freesound U2 or own recording)",
+   "unbound": "",
+   "notes": "Three-beat canter footfalls."
+  },
+  {
+   "id": "horse.gallop",
+   "bus": "SFX_Foley",
+   "status": "blocked",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "unshod hooves (Freesound U2 or own recording)",
+   "unbound": "",
+   "notes": "Blocked on Freesound U2 (CC0 gallop 135 / snort 34 / whinny 40 sounds) or own recordings."
+  },
+  {
+   "id": "horse.snort",
+   "bus": "SFX_Foley",
+   "status": "blocked",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "snorts (Freesound U2)",
+   "unbound": "no calm-down event on the horse yet",
+   "notes": "Blocked on Freesound U2 (CC0 gallop 135 / snort 34 / whinny 40 sounds) or own recordings."
+  },
+  {
+   "id": "horse.tack",
+   "bus": "SFX_Foley",
+   "status": "blocked",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "bit, abumi and saddle creak",
+   "unbound": "",
+   "notes": "Blocked on Freesound U2 (CC0 gallop 135 / snort 34 / whinny 40 sounds) or own recordings."
+  },
+  {
+   "id": "horse.trot",
+   "bus": "SFX_Foley",
+   "status": "blocked",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "unshod hooves (Freesound U2 or own recording)",
+   "unbound": "",
+   "notes": "Placeholder (jacket-on-bottle foley). Unshod hooves on earth / wood, snorts, bit and abumi jingle: blocked on the Freesound login (U2) or our own recordings."
+  },
+  {
+   "id": "horse.walk",
+   "bus": "SFX_Foley",
+   "status": "blocked",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "unshod hooves (Freesound U2 or own recording)",
+   "unbound": "",
+   "notes": "Blocked on Freesound U2 (CC0 gallop 135 / snort 34 / whinny 40 sounds) or own recordings."
+  },
+  {
+   "id": "horse.whinny",
+   "bus": "SFX_Foley",
+   "status": "blocked",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "whinnies (Freesound U2)",
+   "unbound": "",
+   "notes": "Blocked on Freesound U2 (CC0 gallop 135 / snort 34 / whinny 40 sounds) or own recordings."
+  },
+  {
+   "id": "melee.committed.bokuto",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_whoosh_bokuto_01",
+    "Original/Melee/mel_whoosh_bokuto_02",
+    "Original/Melee/mel_whoosh_bokuto_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.fukuro_shinai",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_whoosh_fukuro_shinai_01",
+    "Original/Melee/mel_whoosh_fukuro_shinai_02",
+    "Original/Melee/mel_whoosh_fukuro_shinai_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.kanabo",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_whoosh_kanabo_01",
+    "Original/Melee/mel_whoosh_kanabo_02"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Forge Hammer (8) shares the club whoosh; its hits use the workshop hammering layers."
+  },
+  {
+   "id": "melee.committed.katana",
+   "bus": "SFX_Melee",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_whoosh_katana_light_01",
+    "Original/Melee/mel_whoosh_katana_light_02",
+    "Original/Melee/mel_whoosh_katana_light_03",
+    "Original/Melee/mel_whoosh_katana_light_04"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -60,
+    60
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/medieval-sound-effects-weapon-textures) are local-private",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.katana.heavy",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_whoosh_katana_heavy_01",
+    "Original/Melee/mel_whoosh_katana_heavy_02",
+    "Original/Melee/mel_whoosh_katana_heavy_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.kusarigama",
+   "bus": "SFX_Melee",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_whoosh_kusarigama_chain_01",
+    "Original/Melee/mel_whoosh_kusarigama_chain_02"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/chain-winch-sounds) are local-private",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.naginata",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_whoosh_naginata_sweep_01",
+    "Original/Melee/mel_whoosh_naginata_sweep_02",
+    "Original/Melee/mel_whoosh_naginata_sweep_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.tanto",
+   "bus": "SFX_Melee",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_whoosh_katana_light_01",
+    "Original/Melee/mel_whoosh_katana_light_02",
+    "Original/Melee/mel_whoosh_katana_light_03",
+    "Original/Melee/mel_whoosh_katana_light_04"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    40,
+    160
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/medieval-sound-effects-weapon-textures) are local-private",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.tanto.heavy",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_whoosh_katana_heavy_01",
+    "Original/Melee/mel_whoosh_katana_heavy_02",
+    "Original/Melee/mel_whoosh_katana_heavy_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.wakizashi",
+   "bus": "SFX_Melee",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_whoosh_katana_light_01",
+    "Original/Melee/mel_whoosh_katana_light_02",
+    "Original/Melee/mel_whoosh_katana_light_03",
+    "Original/Melee/mel_whoosh_katana_light_04"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    40,
+    160
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/medieval-sound-effects-weapon-textures) are local-private",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.wakizashi.heavy",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_whoosh_katana_heavy_01",
+    "Original/Melee/mel_whoosh_katana_heavy_02",
+    "Original/Melee/mel_whoosh_katana_heavy_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.committed.yari",
+   "bus": "SFX_Melee",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_whoosh_yari_thrust_01",
+    "Original/Melee/mel_whoosh_yari_thrust_02",
+    "Original/Melee/mel_whoosh_yari_thrust_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/medieval-sound-effects-weapon-textures) are local-private",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.dojo.clack",
+   "bus": "SFX_Melee",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_bokuto_clack_01",
+    "Original/Melee/mel_bokuto_clack_02",
+    "Original/Melee/mel_bokuto_clack_03",
+    "Original/Melee/mel_bokuto_clack_04"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/35-wooden-crackshitsdestructions) are local-private",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.guard",
+   "bus": "SFX_Melee",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_guard_block_01",
+    "Original/Melee/mel_guard_block_02",
+    "Original/Melee/mel_guard_block_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/medieval-sound-effects-weapon-impacts) are local-private",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.katana.draw",
+   "bus": "SFX_Foley",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Melee/cc0_mel_katana_draw_01",
+    "CC0/Melee/cc0_mel_katana_draw_02",
+    "CC0/Melee/cc0_mel_katana_draw_03",
+    "CC0/Melee/cc0_mel_katana_draw_04",
+    "CC0/Melee/cc0_mel_katana_draw_05",
+    "CC0/Melee/cc0_mel_katana_draw_06"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "the nōtō click needs close foley",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "melee.katana.sheathe",
+   "bus": "SFX_Foley",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Melee/cc0_mel_katana_sheathe_01",
+    "CC0/Melee/cc0_mel_katana_sheathe_02",
+    "CC0/Melee/cc0_mel_katana_sheathe_03",
+    "CC0/Melee/cc0_mel_katana_sheathe_04",
+    "CC0/Melee/cc0_mel_katana_sheathe_05"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "the nōtō click needs close foley",
+   "unbound": "",
+   "notes": "The noto \"click\" of the habaki seating needs a close foley layer."
+  },
+  {
+   "id": "melee.marobashi",
+   "bus": "SFX_Foley",
+   "status": "needed",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 2,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "cloth and armour roll foley for 転",
+   "unbound": "",
+   "notes": "The hero rolls to the flank (OnMarobashi)."
+  },
+  {
+   "id": "melee.parry",
+   "bus": "SFX_Melee",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_parry_full_light_01",
+    "Original/Melee/mel_parry_full_light_02",
+    "Original/Melee/mel_parry_full_light_03",
+    "Original/Melee/mel_parry_full_heavy_01",
+    "Original/Melee/mel_parry_full_heavy_02",
+    "Original/Melee/mel_parry_full_heavy_03"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/medieval-sound-effects-weapon-impacts) are local-private",
+   "unbound": "",
+   "notes": "Heavy variant when the parried attack was a committed heavy; add mel_parry_layer_sparks_* for awase."
+  },
+  {
+   "id": "melee.parry.layers",
+   "bus": "SFX_Melee",
+   "status": "ready-own",
+   "waves": [
+    "Original/Melee/mel_parry_layer_body_01",
+    "Original/Melee/mel_parry_layer_body_02",
+    "Original/Melee/mel_parry_layer_clang_01",
+    "Original/Melee/mel_parry_layer_clang_02",
+    "Original/Melee/mel_parry_layer_clang_03",
+    "Original/Melee/mel_parry_layer_clang_04",
+    "Original/Melee/mel_parry_layer_scrape_01",
+    "Original/Melee/mel_parry_layer_scrape_02",
+    "Original/Melee/mel_parry_layer_scrape_03",
+    "Original/Melee/mel_parry_layer_sparks_01",
+    "Original/Melee/mel_parry_layer_sparks_02",
+    "Original/Melee/mel_parry_layer_sparks_03",
+    "Original/Melee/mel_parry_layer_sparks_04"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "clang, scrape, sparks and body layers for the parry MetaSound (scaled by parry quality)",
+   "notes": ""
+  },
+  {
+   "id": "melee.strike.hit_body",
+   "bus": "SFX_Melee",
+   "status": "placeholder-cc0",
+   "waves": [
+    "CC0/Melee/cc0_mel_body_hit_01",
+    "CC0/Melee/cc0_mel_body_hit_02",
+    "CC0/Melee/cc0_mel_body_hit_03",
+    "CC0/Melee/cc0_mel_body_hit_04",
+    "CC0/Melee/cc0_mel_body_hit_05"
+   ],
+   "spatial": true,
+   "attenuation": "melee_close",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "own cloth, armour and cut foley; Kenney's heavy punch stands in",
+   "unbound": "",
+   "notes": "Placeholder (Kenney, stylised). Needs our own cloth / armour / cut foley sessions (lacquer plates, silk lacing, leather) — no photoreal CC0 source found."
+  },
+  {
+   "id": "player.damaged",
+   "bus": "SFX_Impacts",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Melee/mel_parry_layer_body_01",
+    "Original/Melee/mel_parry_layer_body_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (kenney/impact-sounds) are local-private",
+   "unbound": "",
+   "notes": "Low thump + short tinnitus-free muffle (SFX bus low-pass 1.5 s at < 25% health). Pain efforts are VO (blocked on B6)."
+  },
+  {
+   "id": "player.died",
+   "bus": "Music",
+   "status": "ready-own",
+   "waves": [
+    "Music/Stingers/mus_sting_player_death"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 1,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": true,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "projectile.arrow.flyby",
+   "bus": "SFX_Weapons",
+   "status": "layers-cc0",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "flyby",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "CC0 arrow pass-by layers",
+   "unbound": "needs a pass-by detector for arrows near the listener",
+   "notes": ""
+  },
+  {
+   "id": "projectile.beam",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_energy_beam_start"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 3,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": {
+    "loop": "weapon.loop.beam",
+    "release": "weapon.release.beam",
+    "gap_ms": 450
+   },
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "sfx.alien.debt_seal_clamp",
+   "bus": "SFX_Alien",
+   "status": "ready-own",
+   "waves": [
+    "Original/Alien/sfx_alien_debt_seal_clamp_01",
+    "Original/Alien/sfx_alien_debt_seal_clamp_02"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "DebtSealsClamp",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "sfx.alien.sky_seam",
+   "bus": "SFX_Alien",
+   "status": "ready-own",
+   "waves": [
+    "Original/Alien/sfx_alien_sky_seam_tear"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 1,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "SkySplits",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "site.restored",
+   "bus": "Music",
+   "status": "ready-own",
+   "waves": [
+    "Music/Stingers/mus_sting_site_restored"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": true,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Stinger on the Music bus + soroban/rin on UI when the registry entry is written."
+  },
+  {
+   "id": "sparring.point",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Music/Stingers/mus_sting_duel_point"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": true,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.alien.chime",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_alien_chime_01",
+    "Original/UI/ui_alien_chime_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "CreditHouseChime",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.alien.deny",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_alien_deny"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "no Credit House terminal refuses the hero yet",
+   "notes": ""
+  },
+  {
+   "id": "ui.back",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_back_wood_01",
+    "Original/UI/ui_back_wood_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.click",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_click_wood_01",
+    "Original/UI/ui_click_wood_02",
+    "Original/UI/ui_click_wood_03",
+    "Original/UI/ui_click_wood_04"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.confirm",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_confirm_rin"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.error",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_error_knock_01",
+    "Original/UI/ui_error_knock_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.hover",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_hover_wood_01",
+    "Original/UI/ui_hover_wood_02",
+    "Original/UI/ui_hover_wood_03"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.menu.close",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_menu_close_fusuma"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.menu.open",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_menu_open_fusuma"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.notify",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_notify_bell_01",
+    "Original/UI/ui_notify_bell_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.objective",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_objective_update_rin"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.slider",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_slider_tick"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.tab",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_tab_paper_01",
+    "Original/UI/ui_tab_paper_02",
+    "Original/UI/ui_tab_paper_03"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "ui.wallet.signed",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_wallet_seal_stamp_01",
+    "Original/UI/ui_wallet_seal_stamp_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "the wallet screen does not announce an approved signature yet",
+   "notes": ""
+  },
+  {
+   "id": "ui.xor.credited",
+   "bus": "UI",
+   "status": "ready-own",
+   "waves": [
+    "Original/UI/ui_xor_credit_soroban_01",
+    "Original/UI/ui_xor_credit_soroban_02"
+   ],
+   "spatial": false,
+   "attenuation": "",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -20,
+    20
+   ],
+   "volume_db": [
+    -0.5,
+    0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "weapon.charge.plasma_matchlock",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_plasma_matchlock_charge"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 2,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "The full-charge lock click lands at 1.55 s; keep the charge time in the kernel and the file in sync (re-render if balance changes the charge)."
+  },
+  {
+   "id": "weapon.fired.arc_carbine",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_arc_carbine_fire_01",
+    "Original/Weapons/wpn_arc_carbine_fire_02",
+    "Original/Weapons/wpn_arc_carbine_fire_03",
+    "Original/Weapons/wpn_arc_carbine_fire_04"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 6,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "weapon.fired.boss_round",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_pulse_carbine_fire_01",
+    "Original/Weapons/wpn_pulse_carbine_fire_02",
+    "Original/Weapons/wpn_pulse_carbine_fire_03",
+    "Original/Weapons/wpn_pulse_carbine_fire_04"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 6,
+   "shuffle": true,
+   "pitch_cents": [
+    -180,
+    -120
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "A boss's own rounds (WeaponId none): the pulse carbine a whole tone down until each boss has its voice."
+  },
+  {
+   "id": "weapon.fired.coil_matchlock",
+   "bus": "SFX_Weapons",
+   "status": "needs-assembly",
+   "waves": [
+    "Original/Weapons/wpn_coil_matchlock_whine"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "its CC0 layers (opengameart/flare-ignition, opengameart/the-free-firearm-sound-library) are local-private",
+   "unbound": "",
+   "notes": "Order: coil whine (0-0.9 s) -> pan flash (flare ignition, pitched down) -> ~40 ms -> report built from the Arisaka (E_*) and Mosin-Nagant (M_*) bolt-action recordings, low-passed 7 kHz, plus a long outdoor tail. Black powder has more low-mid bloom and less crack than smokeless."
+  },
+  {
+   "id": "weapon.fired.grenade_launcher",
+   "bus": "SFX_Weapons",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Weapons/cc0_wpn_grenade_launcher_fire_01",
+    "CC0/Weapons/cc0_wpn_grenade_launcher_fire_02",
+    "CC0/Weapons/cc0_wpn_grenade_launcher_fire_03"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "a launcher tube layer over the CC0 shot and cannon body",
+   "unbound": "",
+   "notes": "Launch \"thoonk\": cannon layer pitched up, short; needs an original tube resonance layer before shipping."
+  },
+  {
+   "id": "weapon.fired.healing_lance",
+   "bus": "SFX_Weapons",
+   "status": "needed",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "a warm heal voice of our own",
+   "unbound": "",
+   "notes": "Placeholder only (shield regen). Needs a warm, clearly non-hostile heal voice (League palette: bell / breath, never the cold alien glass)."
+  },
+  {
+   "id": "weapon.fired.micro_mortar",
+   "bus": "SFX_Weapons",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Weapons/cc0_wpn_micro_mortar_fire_01",
+    "CC0/Weapons/cc0_wpn_micro_mortar_fire_02",
+    "CC0/Weapons/cc0_wpn_micro_mortar_fire_03",
+    "CC0/Weapons/cc0_wpn_micro_mortar_fire_04",
+    "CC0/Weapons/cc0_wpn_micro_mortar_fire_05"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "weapon.fired.needle_smg",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_needle_smg_fire_01",
+    "Original/Weapons/wpn_needle_smg_fire_02",
+    "Original/Weapons/wpn_needle_smg_fire_03",
+    "Original/Weapons/wpn_needle_smg_fire_04"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 8,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "weapon.fired.phantom_smg",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_needle_smg_fire_01",
+    "Original/Weapons/wpn_needle_smg_fire_02",
+    "Original/Weapons/wpn_needle_smg_fire_03",
+    "Original/Weapons/wpn_needle_smg_fire_04"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 8,
+   "shuffle": true,
+   "pitch_cents": [
+    -250,
+    -150
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Special sidegrade: same source, MetaSound pitch -2 st, 3 kHz low-pass and a short reverse pre-echo so it reads as \"phantom\". Replace with a bespoke render if playtests confuse it."
+  },
+  {
+   "id": "weapon.fired.plasma_matchlock",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_plasma_matchlock_fire_01",
+    "Original/Weapons/wpn_plasma_matchlock_fire_02",
+    "Original/Weapons/wpn_plasma_matchlock_fire_03"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "weapon.fired.pulse_carbine",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_pulse_carbine_fire_01",
+    "Original/Weapons/wpn_pulse_carbine_fire_02",
+    "Original/Weapons/wpn_pulse_carbine_fire_03",
+    "Original/Weapons/wpn_pulse_carbine_fire_04"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 6,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "weapon.fired.repeater",
+   "bus": "SFX_Weapons",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Weapons/cc0_wpn_repeater_fire_01",
+    "CC0/Weapons/cc0_wpn_repeater_fire_02",
+    "CC0/Weapons/cc0_wpn_repeater_fire_03",
+    "CC0/Weapons/cc0_wpn_repeater_fire_04",
+    "CC0/Weapons/cc0_wpn_repeater_fire_05",
+    "CC0/Weapons/cc0_wpn_repeater_fire_06",
+    "CC0/Weapons/cc0_wpn_repeater_fire_07",
+    "CC0/Weapons/cc0_wpn_repeater_fire_08"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Model 1894 (L_*) and Marlin 336 (I_*) lever-action reports: mechanical repeater identity."
+  },
+  {
+   "id": "weapon.fired.shock_emitter",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_shock_emitter_start"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 3,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": {
+    "loop": "weapon.loop.shock_emitter",
+    "release": "weapon.release.shock_emitter",
+    "gap_ms": 450
+   },
+   "needs": "",
+   "unbound": "",
+   "notes": "start -> loop while firing -> stop (MetaSound with a trigger-on-release)."
+  },
+  {
+   "id": "weapon.fired.yumi",
+   "bus": "SFX_Weapons",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Weapons/cc0_wpn_yumi_release_01",
+    "CC0/Weapons/cc0_wpn_yumi_release_02",
+    "CC0/Weapons/cc0_wpn_yumi_release_03",
+    "CC0/Weapons/cc0_wpn_yumi_release_04"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "the tsurune and yugaeri of a real yumi (own recording); CC0 longbow and recurve releases stand in",
+   "unbound": "",
+   "notes": "The yumi's tsurune (string ring) and yugaeri (bow rotation) are missing: record our own (plan §3.11 item 19) or use Freesound CC BY after the U2 login; longbow/recurve are stand-ins."
+  },
+  {
+   "id": "weapon.hold.plasma_matchlock",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_plasma_matchlock_hold_loop"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": true,
+   "max_instances": 2,
+   "shuffle": true,
+   "pitch_cents": [
+    0,
+    0
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "weapon.loop.beam",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_energy_beam_loop"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": true,
+   "max_instances": 3,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Sustain loop while a beam keeps firing (projectile.beam)."
+  },
+  {
+   "id": "weapon.loop.shock_emitter",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_shock_emitter_loop"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": true,
+   "max_instances": 3,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Sustain loop while the Shock Emitter keeps firing (weapon.fired.shock_emitter)."
+  },
+  {
+   "id": "weapon.release.beam",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_energy_beam_stop"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_long",
+   "loop": false,
+   "max_instances": 3,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Tail when a beam stops."
+  },
+  {
+   "id": "weapon.release.shock_emitter",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_shock_emitter_stop"
+   ],
+   "spatial": true,
+   "attenuation": "weapon_mid",
+   "loop": false,
+   "max_instances": 3,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Tail when the Shock Emitter stops firing."
+  },
+  {
+   "id": "weapon.reload.cell_eject",
+   "bus": "SFX_Weapons",
+   "status": "ready-own",
+   "waves": [
+    "Original/Weapons/wpn_cell_eject_01",
+    "Original/Weapons/wpn_cell_eject_02"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "CellEjects",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "",
+   "unbound": "",
+   "notes": "Also the Collatera reload-window telegraph."
+  },
+  {
+   "id": "weapon.yumi.draw",
+   "bus": "SFX_Weapons",
+   "status": "ready-cc0",
+   "waves": [
+    "CC0/Weapons/cc0_wpn_yumi_draw_01",
+    "CC0/Weapons/cc0_wpn_yumi_draw_02",
+    "CC0/Weapons/cc0_wpn_yumi_draw_03",
+    "CC0/Weapons/cc0_wpn_yumi_draw_04"
+   ],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "a yumi's own draw (own recording); CC0 longbow and recurve creaks stand in",
+   "unbound": "",
+   "notes": ""
+  },
+  {
+   "id": "weapon.yumi.nock",
+   "bus": "SFX_Weapons",
+   "status": "layers-cc0",
+   "waves": [],
+   "spatial": true,
+   "attenuation": "foley_short",
+   "loop": false,
+   "max_instances": 4,
+   "shuffle": true,
+   "pitch_cents": [
+    -40,
+    40
+   ],
+   "volume_db": [
+    -1.5,
+    0.0
+   ],
+   "caption": "",
+   "caption_hero": false,
+   "stinger": false,
+   "strike_ms": 0,
+   "sustain": null,
+   "needs": "CC0 nock layers",
+   "unbound": "no nock event yet: the hero nocks as part of the draw",
+   "notes": ""
+  }
+ ],
+ "bindings": {
+  "WeaponFired": [
+   {
+    "when": {
+     "Kind": "Beam"
+    },
+    "cue": "projectile.beam",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": -1,
+     "Kind": "Hitscan"
+    },
+    "cue": "weapon.fired.boss_round",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 1
+    },
+    "cue": "weapon.fired.arc_carbine",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 3
+    },
+    "cue": "weapon.fired.needle_smg",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 5
+    },
+    "cue": "weapon.fired.coil_matchlock",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 7
+    },
+    "cue": "weapon.fired.grenade_launcher",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 9
+    },
+    "cue": "weapon.fired.repeater",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 11
+    },
+    "cue": "weapon.fired.pulse_carbine",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 13
+    },
+    "cue": "weapon.fired.phantom_smg",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 14
+    },
+    "cue": "weapon.fired.plasma_matchlock",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 15
+    },
+    "cue": "weapon.fired.micro_mortar",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 16
+    },
+    "cue": "weapon.fired.shock_emitter",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 17
+    },
+    "cue": "weapon.fired.healing_lance",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 18
+    },
+    "cue": "weapon.fired.yumi",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "MeleeCommitted": [
+   {
+    "when": {
+     "Sparring": "bokuto"
+    },
+    "cue": "melee.committed.bokuto",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sparring": "fukuro_shinai"
+    },
+    "cue": "melee.committed.fukuro_shinai",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 0,
+     "WindupSeconds": ">=0.5"
+    },
+    "cue": "melee.committed.katana.heavy",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 0
+    },
+    "cue": "melee.committed.katana",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 4,
+     "WindupSeconds": ">=0.5"
+    },
+    "cue": "melee.committed.wakizashi.heavy",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 4
+    },
+    "cue": "melee.committed.wakizashi",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 10,
+     "WindupSeconds": ">=0.5"
+    },
+    "cue": "melee.committed.tanto.heavy",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 10
+    },
+    "cue": "melee.committed.tanto",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": [
+      12,
+      20
+     ]
+    },
+    "cue": "melee.committed.naginata",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 19
+    },
+    "cue": "melee.committed.yari",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": 2
+    },
+    "cue": "melee.committed.kusarigama",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "WeaponId": [
+      6,
+      8
+     ]
+    },
+    "cue": "melee.committed.kanabo",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "StrikeResolved": [
+   {
+    "when": {
+     "bHit": true,
+     "Sparring": [
+      "bokuto",
+      "fukuro_shinai"
+     ]
+    },
+    "cue": "melee.dojo.clack",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "bHit": true
+    },
+    "cue": "melee.strike.hit_body",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Guarded": [
+   {
+    "when": {
+     "bDojo": true
+    },
+    "cue": "melee.dojo.clack",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {},
+    "cue": "melee.guard",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Parried": [
+   {
+    "when": {
+     "bDojo": true
+    },
+    "cue": "melee.dojo.clack",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {},
+    "cue": "melee.parry",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Marobashi": [
+   {
+    "when": {},
+    "cue": "melee.marobashi",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Damaged": [
+   {
+    "when": {
+     "VictimIsHero": true
+    },
+    "cue": "player.damaged",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Died": [
+   {
+    "when": {
+     "bSparring": true
+    },
+    "cue": "sparring.point",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "VictimIsHero": true
+    },
+    "cue": "player.died",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {},
+    "cue": "enemy.died",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Detonated": [
+   {
+    "when": {},
+    "cue": "explosion.detonated",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "EnemyCue": [
+   {
+    "when": {
+     "Cue": "AttackWindup",
+     "Telegraph": "lock"
+    },
+    "cue": "enemy.windup.lock",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Cue": "BarrierBroken"
+    },
+    "cue": "boss.shield.break",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Cue": "ShieldTurned"
+    },
+    "cue": "boss.shield.hit",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Cue": "Alarm"
+    },
+    "cue": "ui.alien.chime",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "SiteRestored": [
+   {
+    "when": {},
+    "cue": "site.restored",
+    "continue": true,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "bCampaign": true
+    },
+    "cue": "ui.xor.credited",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "ChapterStarted": [
+   {
+    "when": {
+     "bResumed": false
+    },
+    "cue": "chapter.started",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "ChapterCompleted": [
+   {
+    "when": {},
+    "cue": "chapter.completed",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "BossPhase": [
+   {
+    "when": {
+     "Phase": "Arrived"
+    },
+    "cue": "boss.arrived",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Windup",
+     "Telegraph": "reload"
+    },
+    "cue": "weapon.reload.cell_eject",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Windup",
+     "Telegraph": "lock"
+    },
+    "cue": "boss.windup.beam",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Windup",
+     "Telegraph": "margin_call"
+    },
+    "cue": "boss.windup.margin_call",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Windup",
+     "Telegraph": "area"
+    },
+    "cue": "boss.windup.area_1500",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Windup",
+     "Telegraph": "cleave"
+    },
+    "cue": "boss.windup.cleave",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Strike",
+     "bBeam": false,
+     "Telegraph": [
+      "cleave",
+      "area"
+     ]
+    },
+    "cue": "boss.strike.cleave",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Event",
+     "Detail": [
+      "shield_broken",
+      "barrier_broken",
+      "mantle_down",
+      "ward_broken",
+      "wards_broken",
+      "weakpoint_destroyed",
+      "shield_down",
+      "barrier_burnout"
+     ]
+    },
+    "cue": "boss.shield.break",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Event",
+     "Detail": [
+      "deflected",
+      "front_blocked",
+      "ward_blocked"
+     ]
+    },
+    "cue": "boss.shield.hit",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Countered"
+    },
+    "cue": "melee.parry",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Phase": "Defeated"
+    },
+    "cue": "boss.defeated",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "BeatStarted": [
+   {
+    "when": {
+     "BeatId": "ch01.b13",
+     "bResumed": false
+    },
+    "cue": "sfx.alien.sky_seam",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "BeatId": "ch02.b01",
+     "bResumed": false
+    },
+    "cue": "sfx.alien.debt_seal_clamp",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "BeatCompleted": [
+   {
+    "when": {
+     "bOptional": false
+    },
+    "cue": "ui.objective",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "BeatFailed": [],
+  "Kernel": [
+   {
+    "when": {
+     "Kind": "Shot",
+     "WeaponKind": "melee"
+    },
+    "as": "MeleeCommitted",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "Shot"
+    },
+    "as": "WeaponFired",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": [
+      "Damage",
+      "HazardDamage"
+     ]
+    },
+    "as": "Damaged",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "Death"
+    },
+    "as": "Died",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "Guarded",
+     "Detail": 1
+    },
+    "as": "Parried",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "Guarded"
+    },
+    "as": "Guarded",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "Riposte"
+    },
+    "cue": "melee.parry",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "Respawn",
+     "TargetIsHero": true
+    },
+    "cue": "ui.notify",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "EntityDestroyed",
+     "Detail": 1
+    },
+    "cue": "boss.shield.break",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": [
+      "ObjectiveCaptured",
+      "Checkpoint"
+     ]
+    },
+    "cue": "ui.objective",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "Overtime"
+    },
+    "cue": "ui.notify",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Kind": "MatchWinner",
+     "HeroWon": true
+    },
+    "cue": "chapter.completed",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "UI": [
+   {
+    "when": {
+     "Sound": "Hover"
+    },
+    "cue": "ui.hover",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sound": "Click"
+    },
+    "cue": "ui.click",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sound": "Confirm"
+    },
+    "cue": "ui.confirm",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sound": "Back"
+    },
+    "cue": "ui.back",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sound": "Error"
+    },
+    "cue": "ui.error",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sound": "Option"
+    },
+    "cue": "ui.tab",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sound": "Slider"
+    },
+    "cue": "ui.slider",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sound": "MenuOpen"
+    },
+    "cue": "ui.menu.open",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Sound": "MenuClose"
+    },
+    "cue": "ui.menu.close",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Hero": [
+   {
+    "when": {
+     "Action": "ReloadStarted",
+     "WeaponId": [
+      1,
+      3,
+      11,
+      13,
+      14,
+      16,
+      17
+     ]
+    },
+    "cue": "weapon.reload.cell_eject",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "ChargeStarted",
+     "WeaponId": 14
+    },
+    "cue": "weapon.charge.plasma_matchlock",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "ChargeHeld",
+     "WeaponId": 14
+    },
+    "cue": "weapon.hold.plasma_matchlock",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "BowDrawn"
+    },
+    "cue": "weapon.yumi.draw",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "Sheathed"
+    },
+    "cue": "melee.katana.sheathe",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "Drawn"
+    },
+    "cue": "melee.katana.draw",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Footstep": [
+   {
+    "when": {
+     "Surface": "wood"
+    },
+    "cue": "foot.wood",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Surface": "tatami"
+    },
+    "cue": "foot.tatami",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Surface": "earth"
+    },
+    "cue": "foot.earth",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Surface": "stone"
+    },
+    "cue": "foot.stone",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Surface": "grass"
+    },
+    "cue": "foot.grass",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Surface": "water"
+    },
+    "cue": "foot.water",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Surface": "gravel"
+    },
+    "cue": "foot.gravel",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Surface": "nightingale_floor"
+    },
+    "cue": "foot.nightingale_floor",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Surface": "metal_grating"
+    },
+    "cue": "foot.metal_grating",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ],
+  "Horse": [
+   {
+    "when": {
+     "Action": "Hoof",
+     "Gait": "Walk"
+    },
+    "cue": "horse.walk",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "Hoof",
+     "Gait": "Trot"
+    },
+    "cue": "horse.trot",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "Hoof",
+     "Gait": "Canter"
+    },
+    "cue": "horse.canter",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "Hoof",
+     "Gait": "Gallop"
+    },
+    "cue": "horse.gallop",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": "Spooked"
+    },
+    "cue": "horse.whinny",
+    "continue": false,
+    "delay_ms": 0
+   },
+   {
+    "when": {
+     "Action": [
+      "Mounted",
+      "Dismounted"
+     ]
+    },
+    "cue": "horse.tack",
+    "continue": false,
+    "delay_ms": 0
+   }
+  ]
+ },
+ "unbound_events": {
+  "BeatFailed": "the hero falling already plays player.died; the checkpoint reload needs no sound",
+  "Kernel.Terminal": "the match winner plays first; terminal only closes the step",
+  "Kernel.Healed": "the lance's own shot sounds (weapon.fired.healing_lance)",
+  "Kernel.Ability": "the class abilities have no sounds yet",
+  "Kernel.Marked": "the Teppō mark has no sound yet",
+  "Kernel.EntitySpawned": "deployables have no placement sounds yet",
+  "Kernel.EntityDamaged": "deployables have no damage sounds yet",
+  "Kernel.EntityRepaired": "deployables have no repair sounds yet"
+ },
+ "music": {
+  "pieces": {
+   "title": {
+    "bpm": 66,
+    "beats_per_bar": 4,
+    "intro": "Music/mus_title_nyaagyu_wind/mus_title_nyaagyu_wind_intro",
+    "handoff_bars": 4,
+    "handoff_sample": 698182,
+    "stems": {
+     "main": "Music/mus_title_nyaagyu_wind/mus_title_nyaagyu_wind_loop"
+    },
+    "full": ""
+   },
+   "occupation": {
+    "bpm": 84,
+    "beats_per_bar": 4,
+    "intro": "",
+    "handoff_bars": 0,
+    "handoff_sample": 0,
+    "stems": {
+     "base": "Music/mus_ch03_occupation_stealth/mus_ch03_occupation_stealth_stem_base",
+     "pulse": "Music/mus_ch03_occupation_stealth/mus_ch03_occupation_stealth_stem_pulse",
+     "perc": "Music/mus_ch03_occupation_stealth/mus_ch03_occupation_stealth_stem_perc",
+     "search": "Music/mus_ch03_occupation_stealth/mus_ch03_occupation_stealth_stem_search"
+    },
+    "full": "Music/mus_ch03_occupation_stealth/mus_ch03_occupation_stealth_loop"
+   },
+   "flagship": {
+    "bpm": 132,
+    "beats_per_bar": 4,
+    "intro": "",
+    "handoff_bars": 0,
+    "handoff_sample": 0,
+    "stems": {
+     "synth": "Music/mus_ch07_flagship_battle/mus_ch07_flagship_battle_stem_synth",
+     "taiko": "Music/mus_ch07_flagship_battle/mus_ch07_flagship_battle_stem_taiko"
+    },
+    "full": "Music/mus_ch07_flagship_battle/mus_ch07_flagship_battle_loop"
+   }
+  },
+  "states": {
+   "menu": {
+    "piece": "title",
+    "intro": true,
+    "mixes": {
+     "default": [
+      "main"
+     ]
+    },
+    "phase_mixes": []
+   },
+   "exploration": {
+    "piece": "title",
+    "intro": false,
+    "mixes": {
+     "default": [
+      "main"
+     ]
+    },
+    "phase_mixes": []
+   },
+   "stealth": {
+    "piece": "occupation",
+    "intro": false,
+    "mixes": {
+     "default": [
+      "base"
+     ],
+     "unaware": [
+      "base"
+     ],
+     "suspicious": [
+      "base",
+      "pulse"
+     ],
+     "search": [
+      "base",
+      "pulse",
+      "search"
+     ]
+    },
+    "phase_mixes": []
+   },
+   "combat": {
+    "piece": "occupation",
+    "intro": false,
+    "mixes": {
+     "default": [
+      "base",
+      "pulse",
+      "perc"
+     ]
+    },
+    "phase_mixes": []
+   },
+   "boss": {
+    "piece": "flagship",
+    "intro": false,
+    "mixes": {
+     "default": [
+      "synth"
+     ]
+    },
+    "phase_mixes": [
+     [
+      "synth"
+     ],
+     [
+      "synth",
+      "taiko"
+     ],
+     [
+      "taiko"
+     ]
+    ]
+   }
+  },
+  "alert_levels": {
+   "unaware": 0,
+   "retreat": 0,
+   "suspicious": 1,
+   "search": 2,
+   "alert": 3,
+   "combat": 3
+  },
+  "crossfade_ms": {
+   "into_alert": 250,
+   "out_of_alert": 2500,
+   "stems": 1200,
+   "piece": 1200
+  },
+  "stinger_duck_db": -6.0
+ },
+ "beats": {
+  "ch01.b01": {
+   "chapter": 1,
+   "place": "pl_tsumagizaka_dojo",
+   "music_id": "ch01_dawn",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch01.b02": {
+   "chapter": 1,
+   "place": "pl_tsumagizaka_dojo",
+   "music_id": "ch01_keiko",
+   "state": "exploration",
+   "sparring": "bokuto",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch01.b03": {
+   "chapter": 1,
+   "place": "pl_tsumagizaka_dojo",
+   "music_id": "ch01_keiko",
+   "state": "exploration",
+   "sparring": "bokuto",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch01.b04": {
+   "chapter": 1,
+   "place": "pl_tsumagizaka_dojo",
+   "music_id": "ch01_keiko",
+   "state": "exploration",
+   "sparring": "bokuto",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch01.b05": {
+   "chapter": 1,
+   "place": "pl_tsumagizaka_dojo",
+   "music_id": "ch01_veranda",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch01.b06": {
+   "chapter": 1,
+   "place": "pl_umaya",
+   "music_id": "ch01_ride",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch01.b07": {
+   "chapter": 1,
+   "place": "pl_matoba",
+   "music_id": "ch01_matoba",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch01.b08": {
+   "chapter": 1,
+   "place": "pl_issoseki_wood",
+   "music_id": "ch01_wood",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "grass",
+   "thunder_s": []
+  },
+  "ch01.b09": {
+   "chapter": 1,
+   "place": "pl_dojo_smithy",
+   "music_id": "ch01_smithy",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch01.b10": {
+   "chapter": 1,
+   "place": "pl_estate_day",
+   "music_id": "ch01_veranda",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch01.b11": {
+   "chapter": 1,
+   "place": "pl_estate_day",
+   "music_id": "ch01_duel_rival",
+   "state": "exploration",
+   "sparring": "fukuro_shinai",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch01.b12": {
+   "chapter": 1,
+   "place": "pl_estate_day",
+   "music_id": "ch01_katana",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch01.b13": {
+   "chapter": 1,
+   "place": "pl_estate_day",
+   "music_id": "ch01_sky_splits",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b01": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_descent",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b02": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_combat_estate",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b03": {
+   "chapter": 2,
+   "place": "pl_bugugura",
+   "music_id": "ch02_combat_estate",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b04": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_resolve",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b05": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_combat_estate",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b06": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_combat_estate",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b07": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_ride",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b08": {
+   "chapter": 2,
+   "place": "pl_kaido",
+   "music_id": "ch02_ride",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b09": {
+   "chapter": 2,
+   "place": "pl_ishibashi",
+   "music_id": "ch02_combat_bridge",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch02.b10": {
+   "chapter": 2,
+   "place": "pl_kaido",
+   "music_id": "ch02_dawn_quiet",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b11": {
+   "chapter": 2,
+   "place": "pl_kakuredani",
+   "music_id": "ch02_dawn_quiet",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b12": {
+   "chapter": 2,
+   "place": "pl_kakuredani",
+   "music_id": "ch02_dread",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b13": {
+   "chapter": 2,
+   "place": "pl_kaido",
+   "music_id": "ch02_ride_return",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b14": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_estate_burning",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b15": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_boss_dunark",
+   "state": "boss",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch02.b16": {
+   "chapter": 2,
+   "place": "pl_estate_night",
+   "music_id": "ch02_collateral_lament",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fire",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch03.b01": {
+   "chapter": 3,
+   "place": "pl_horiwari",
+   "music_id": "ch03_canal_rain",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch03.b02": {
+   "chapter": 3,
+   "place": "pl_horiwari",
+   "music_id": "ch03_stealth",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch03.b03": {
+   "chapter": 3,
+   "place": "pl_kido",
+   "music_id": "ch03_stealth",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch03.b04": {
+   "chapter": 3,
+   "place": "pl_ura_nagaya",
+   "music_id": "ch03_ward_explore",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch03.b05": {
+   "chapter": 3,
+   "place": "pl_ura_nagaya",
+   "music_id": "ch03_ward_explore",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch03.b06": {
+   "chapter": 3,
+   "place": "pl_ura_nagaya",
+   "music_id": "ch03_hideout",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch03.b07": {
+   "chapter": 3,
+   "place": "pl_lantern_ward_rain",
+   "music_id": "ch03_escort",
+   "state": "combat",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch03.b08": {
+   "chapter": 3,
+   "place": "pl_chochin_kobo",
+   "music_id": "ch03_combat",
+   "state": "combat",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "tatami",
+   "thunder_s": []
+  },
+  "ch03.b09": {
+   "chapter": 3,
+   "place": "pl_chochin_kobo",
+   "music_id": "ch03_craft",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "tatami",
+   "thunder_s": []
+  },
+  "ch03.b10": {
+   "chapter": 3,
+   "place": "pl_kosatsuba",
+   "music_id": "ch03_stealth",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch03.b11": {
+   "chapter": 3,
+   "place": "pl_kosatsuba",
+   "music_id": "ch03_blackout",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch03.b12": {
+   "chapter": 3,
+   "place": "pl_kosatsuba",
+   "music_id": "ch03_oyuki",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch03.b13": {
+   "chapter": 3,
+   "place": "pl_ura_nagaya",
+   "music_id": "ch03_oath",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch03.b14": {
+   "chapter": 3,
+   "place": "pl_ura_nagaya",
+   "music_id": "ch03_craft",
+   "state": "combat",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch03.b15": {
+   "chapter": 3,
+   "place": "pl_chochin_gashi",
+   "music_id": "ch03_rival",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch03.b16": {
+   "chapter": 3,
+   "place": "pl_lantern_ward_rain",
+   "music_id": "ch03_combat",
+   "state": "combat",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch03.b17": {
+   "chapter": 3,
+   "place": "pl_chochin_gashi",
+   "music_id": "boss_penalta",
+   "state": "boss",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch03.b18": {
+   "chapter": 3,
+   "place": "pl_lantern_ward_rain",
+   "music_id": "ch03_lanterns_relit",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "rain",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch04.b01": {
+   "chapter": 4,
+   "place": "pl_shoya_yashiki",
+   "music_id": "ch04_fields_morning",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "tatami",
+   "thunder_s": []
+  },
+  "ch04.b02": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_ride_scout",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch04.b03": {
+   "chapter": 4,
+   "place": "pl_shoya_yashiki",
+   "music_id": "ch04_fields_morning",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "tatami",
+   "thunder_s": []
+  },
+  "ch04.b04": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_combat_barley",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch04.b05": {
+   "chapter": 4,
+   "place": "pl_otameike",
+   "music_id": "ch04_stealth_dam",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch04.b06": {
+   "chapter": 4,
+   "place": "pl_otameike",
+   "music_id": "ch04_crank",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch04.b07": {
+   "chapter": 4,
+   "place": "pl_otameike",
+   "music_id": "ch04_hold",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch04.b08": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_water_release",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch04.b09": {
+   "chapter": 4,
+   "place": "pl_tanada",
+   "music_id": "ch04_explore_terraces",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "grass",
+   "thunder_s": []
+  },
+  "ch04.b10": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_escort_sunshower",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "sun_shower",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch04.b11": {
+   "chapter": 4,
+   "place": "pl_suisha_goya",
+   "music_id": "ch04_mill_repair",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch04.b12": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_planting_defend",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch04.b13": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_registry",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch04.b14": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_harvest_ride",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch04.b15": {
+   "chapter": 4,
+   "place": "pl_gogura",
+   "music_id": "ch04_hakari_reveal",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch04.b16": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_boss_hakari",
+   "state": "boss",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch04.b17": {
+   "chapter": 4,
+   "place": "pl_gogura",
+   "music_id": "ch04_return_harvest",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch04.b18": {
+   "chapter": 4,
+   "place": "pl_shimomura",
+   "music_id": "ch04_dusk_fireflies",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b01": {
+   "chapter": 5,
+   "place": "pl_silk_foundry",
+   "music_id": "ch05_ridge_night",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b02": {
+   "chapter": 5,
+   "place": "pl_kanna_nagashi",
+   "music_id": "ch05_stealth_water",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "water",
+   "thunder_s": []
+  },
+  "ch05.b03": {
+   "chapter": 5,
+   "place": "pl_itotoriba",
+   "music_id": "ch05_escort_hush",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch05.b04": {
+   "chapter": 5,
+   "place": "pl_sumigoya",
+   "music_id": "ch05_refuge",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b05": {
+   "chapter": 5,
+   "place": "pl_hataba",
+   "music_id": "ch05_uprising",
+   "state": "combat",
+   "sparring": "",
+   "bed": "",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch05.b06": {
+   "chapter": 5,
+   "place": "pl_takadono",
+   "music_id": "ch05_bellows",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.fire",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b07": {
+   "chapter": 5,
+   "place": "pl_takadono",
+   "music_id": "ch05_defend_furnace",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.fire",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b08": {
+   "chapter": 5,
+   "place": "pl_okaji",
+   "music_id": "ch05_aizuchi",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.fire",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b09": {
+   "chapter": 5,
+   "place": "pl_okaji",
+   "music_id": "ch05_gunsmith",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.fire",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b10": {
+   "chapter": 5,
+   "place": "pl_silk_foundry",
+   "music_id": "ch05_yard_counter",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b11": {
+   "chapter": 5,
+   "place": "pl_hataba",
+   "music_id": "ch05_sorabiki",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch05.b12": {
+   "chapter": 5,
+   "place": "pl_aratamejo",
+   "music_id": "ch05_first_xor",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch05.b13": {
+   "chapter": 5,
+   "place": "pl_toritategura",
+   "music_id": "ch05_storehouse_storm",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch05.b14": {
+   "chapter": 5,
+   "place": "pl_imonoba",
+   "music_id": "ch05_storm_break",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.fire",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b15": {
+   "chapter": 5,
+   "place": "pl_imonoba",
+   "music_id": "ch05_casting_floor",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.fire",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b16": {
+   "chapter": 5,
+   "place": "pl_takadono",
+   "music_id": "boss_tarifa",
+   "state": "boss",
+   "sparring": "",
+   "bed": "amb.fire",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b17": {
+   "chapter": 5,
+   "place": "pl_silk_foundry",
+   "music_id": "ch05_dawn_loading",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch05.b18": {
+   "chapter": 5,
+   "place": "pl_silk_foundry",
+   "music_id": "ch05_nobori_dawn",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch06.b01": {
+   "chapter": 6,
+   "place": "pl_citadel_moat",
+   "music_id": "ch06_briefing",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fog",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch06.b02": {
+   "chapter": 6,
+   "place": "pl_citadel_moat",
+   "music_id": "ch06_moat_stealth",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fog",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch06.b03": {
+   "chapter": 6,
+   "place": "pl_ishigaki",
+   "music_id": "ch06_moat_stealth",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fog",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch06.b04": {
+   "chapter": 6,
+   "place": "pl_relay_room",
+   "music_id": "ch06_vault_stealth",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch06.b05": {
+   "chapter": 6,
+   "place": "pl_ledger_corridors",
+   "music_id": "ch06_iota",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch06.b06": {
+   "chapter": 6,
+   "place": "pl_ledger_corridors",
+   "music_id": "ch06_vault_stealth",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch06.b07": {
+   "chapter": 6,
+   "place": "pl_uguisu_hall",
+   "music_id": "ch06_vault_stealth",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "nightingale_floor",
+   "thunder_s": []
+  },
+  "ch06.b08": {
+   "chapter": 6,
+   "place": "pl_uguisu_hall",
+   "music_id": "ch06_copy",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "nightingale_floor",
+   "thunder_s": []
+  },
+  "ch06.b09": {
+   "chapter": 6,
+   "place": "pl_archive",
+   "music_id": "ch06_duel_toranosuke",
+   "state": "boss",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch06.b10": {
+   "chapter": 6,
+   "place": "pl_archive",
+   "music_id": "ch06_pledge",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch06.b11": {
+   "chapter": 6,
+   "place": "pl_press_hall",
+   "music_id": "ch06_press",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "wood",
+   "thunder_s": []
+  },
+  "ch06.b12": {
+   "chapter": 6,
+   "place": "pl_vault_core",
+   "music_id": "ch06_boss_eskro_intro",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch06.b13": {
+   "chapter": 6,
+   "place": "pl_vault_core",
+   "music_id": "ch06_boss_eskro",
+   "state": "boss",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch06.b14": {
+   "chapter": 6,
+   "place": "pl_citadel_moat",
+   "music_id": "ch06_exfil",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fog",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch06.b15": {
+   "chapter": 6,
+   "place": "pl_citadel_moat",
+   "music_id": "ch06_numbers",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "fog",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch06.b16": {
+   "chapter": 6,
+   "place": "pl_kosatsuba",
+   "music_id": "ch06_dawn_kosatsu",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch07.b01": {
+   "chapter": 7,
+   "place": "pl_kakuredani",
+   "music_id": "mus_ch07_council",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch07.b02": {
+   "chapter": 7,
+   "place": "pl_anchor_bastion",
+   "music_id": "mus_ch07_bastion_storm",
+   "state": "combat",
+   "sparring": "",
+   "bed": "",
+   "weather": "typhoon",
+   "surface": "stone",
+   "thunder_s": [
+    17,
+    23,
+    15,
+    21
+   ]
+  },
+  "ch07.b03": {
+   "chapter": 7,
+   "place": "pl_anchor_bastion",
+   "music_id": "mus_ch07_ascent",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "typhoon",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch07.b04": {
+   "chapter": 7,
+   "place": "pl_cargo_hold",
+   "music_id": "mus_ch07_hold_stealth",
+   "state": "stealth",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b05": {
+   "chapter": 7,
+   "place": "pl_seized_vault",
+   "music_id": "mus_ch07_vault_quiet",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b06": {
+   "chapter": 7,
+   "place": "pl_reckoning_engine",
+   "music_id": "mus_ch07_engine",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b07": {
+   "chapter": 7,
+   "place": "pl_reckoning_engine",
+   "music_id": "mus_ch07_engine_crank",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b08": {
+   "chapter": 7,
+   "place": "pl_hangar",
+   "music_id": "mus_ch07_hangar",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b09": {
+   "chapter": 7,
+   "place": "pl_hangar",
+   "music_id": "mus_ch07_radio",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b10": {
+   "chapter": 7,
+   "place": "pl_hull_ridge",
+   "music_id": "mus_ch07_ridge",
+   "state": "combat",
+   "sparring": "",
+   "bed": "",
+   "weather": "typhoon",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b11": {
+   "chapter": 7,
+   "place": "pl_bridge_approach",
+   "music_id": "mus_ch07_approach",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b12": {
+   "chapter": 7,
+   "place": "pl_bridge",
+   "music_id": "mus_ch07_collatera_intro",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b13": {
+   "chapter": 7,
+   "place": "pl_bridge",
+   "music_id": "mus_boss_collatera",
+   "state": "boss",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b14": {
+   "chapter": 7,
+   "place": "pl_bridge",
+   "music_id": "mus_ch07_helm",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b15": {
+   "chapter": 7,
+   "place": "pl_hangar",
+   "music_id": "mus_ch07_fall",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.alien.flagship_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch07.b16": {
+   "chapter": 7,
+   "place": "pl_kayanohara",
+   "music_id": "mus_ch07_aftermath",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "",
+   "weather": "typhoon",
+   "surface": "grass",
+   "thunder_s": []
+  },
+  "ch08.b01": {
+   "chapter": 8,
+   "place": "pl_kakuredani",
+   "music_id": "ch08_council",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch08.b02": {
+   "chapter": 8,
+   "place": "pl_causeway",
+   "music_id": "ch08_charge",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth",
+   "thunder_s": []
+  },
+  "ch08.b03": {
+   "chapter": 8,
+   "place": "pl_outer_bailey",
+   "music_id": "ch08_siege",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "fire",
+   "surface": "gravel",
+   "thunder_s": []
+  },
+  "ch08.b04": {
+   "chapter": 8,
+   "place": "pl_outer_bailey",
+   "music_id": "ch08_forge",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "fire",
+   "surface": "gravel",
+   "thunder_s": []
+  },
+  "ch08.b05": {
+   "chapter": 8,
+   "place": "pl_outer_bailey",
+   "music_id": "ch08_siege_low",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "fire",
+   "surface": "gravel",
+   "thunder_s": []
+  },
+  "ch08.b06": {
+   "chapter": 8,
+   "place": "pl_otemon",
+   "music_id": "ch08_gate",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "fire",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch08.b07": {
+   "chapter": 8,
+   "place": "pl_collateral_cells",
+   "music_id": "ch08_cells",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch08.b08": {
+   "chapter": 8,
+   "place": "pl_collateral_cells",
+   "music_id": "ch08_reunion",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch08.b09": {
+   "chapter": 8,
+   "place": "pl_collateral_cells",
+   "music_id": "ch08_reunion_walk",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.vault",
+   "weather": "clear",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch08.b10": {
+   "chapter": 8,
+   "place": "pl_ledger_spire",
+   "music_id": "ch08_spire",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch08.b11": {
+   "chapter": 8,
+   "place": "pl_ledger_spire",
+   "music_id": "ch08_lift",
+   "state": "combat",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch08.b12": {
+   "chapter": 8,
+   "place": "pl_ledger_spire",
+   "music_id": "ch08_heirlooms",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch08.b13": {
+   "chapter": 8,
+   "place": "pl_ledger_engine",
+   "music_id": "ch08_amort_intro",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch08.b14": {
+   "chapter": 8,
+   "place": "pl_ledger_engine",
+   "music_id": "ch08_amort",
+   "state": "boss",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch08.b15": {
+   "chapter": 8,
+   "place": "pl_ledger_engine",
+   "music_id": "ch08_release",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.alien.ledger_engine",
+   "weather": "clear",
+   "surface": "metal_grating",
+   "thunder_s": []
+  },
+  "ch08.b16": {
+   "chapter": 8,
+   "place": "pl_lantern_ward_festival",
+   "music_id": "ch08_festival",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.night_insects",
+   "weather": "festival",
+   "surface": "stone",
+   "thunder_s": []
+  },
+  "ch08.b17": {
+   "chapter": 8,
+   "place": "pl_higashi_torii",
+   "music_id": "ch08_torii_dawn",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "gravel",
+   "thunder_s": []
+  },
+  "ch08.b18": {
+   "chapter": 8,
+   "place": "pl_higashi_torii",
+   "music_id": "credits_main",
+   "state": "exploration",
+   "sparring": "",
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "gravel",
+   "thunder_s": []
+  }
+ },
+ "maps": {
+  "0": {
+   "bed": "amb.estate.day",
+   "weather": "clear",
+   "surface": "earth"
+  },
+  "1": {
+   "bed": "",
+   "weather": "rain",
+   "surface": "stone"
+  },
+  "2": {
+   "bed": "amb.night_insects",
+   "weather": "clear",
+   "surface": "earth"
+  },
+  "3": {
+   "bed": "amb.vault",
+   "weather": "fog",
+   "surface": "stone"
+  }
+ },
+ "weather": {
+  "clear": "",
+  "fog": "",
+  "rain": "amb.rain",
+  "sun_shower": "amb.rain",
+  "typhoon": "amb.typhoon",
+  "fire": "amb.fire",
+  "festival": "amb.festival"
+ },
+ "footsteps": {
+  "materials": {
+   "Timber": "wood",
+   "Stone": "stone",
+   "Metal": "metal_grating",
+   "Plaster": "stone",
+   "Kawara": "stone",
+   "Soil": "earth",
+   "TerrainSoil": "earth",
+   "TerrainStone": "stone",
+   "ToriiLacquer": "wood"
+  },
+  "nightingale_permille": 3000,
+  "surfaces": {
+   "wood": "foot.wood",
+   "tatami": "foot.tatami",
+   "earth": "foot.earth",
+   "stone": "foot.stone",
+   "grass": "foot.grass",
+   "water": "foot.water",
+   "gravel": "foot.gravel",
+   "nightingale_floor": "foot.nightingale_floor",
+   "metal_grating": "foot.metal_grating"
+  },
+  "stride_cm": {
+   "crouch": 55,
+   "walk": 80,
+   "run": 115
+  },
+  "run_speed_cm_s": 450,
+  "min_speed_cm_s": 40,
+  "pace_db": {
+   "crouch": -9.0,
+   "walk": -3.0,
+   "run": 0.0
+  },
+  "range_m": 25
+ },
+ "horses": {
+  "hoofbeats_per_s": {
+   "Walk": 3.4,
+   "Trot": 2.8,
+   "Canter": 4.2,
+   "Gallop": 7.2
+  },
+  "range_m": 60
+ },
+ "attached": {
+  "drone": "amb.alien.drone",
+  "seizure_walker": "amb.alien.seizure_field"
+ },
+ "telegraphs": {
+  "boss": {
+   "boss_dunark/quick_cut": {
+    "class": "cleave",
+    "windup_ms": 500
+   },
+   "boss_dunark/heavy_overhead": {
+    "class": "cleave",
+    "windup_ms": 900
+   },
+   "boss_dunark/thrust": {
+    "class": "cleave",
+    "windup_ms": 700
+   },
+   "boss_dunark/feint_overhead": {
+    "class": "cleave",
+    "windup_ms": 900
+   },
+   "boss_dunark/burning_beam": {
+    "class": "area",
+    "windup_ms": 1500
+   },
+   "boss_penalta/shield_bash": {
+    "class": "cleave",
+    "windup_ms": 600
+   },
+   "boss_penalta/hammer_slam": {
+    "class": "cleave",
+    "windup_ms": 1000
+   },
+   "boss_penalta/hammer_spin": {
+    "class": "area",
+    "windup_ms": 1200
+   },
+   "boss_penalta/seal_trap": {
+    "class": "cleave",
+    "windup_ms": 700
+   },
+   "boss_hakari/step_plant": {
+    "class": "none",
+    "windup_ms": 0
+   },
+   "boss_hakari/seizure_net": {
+    "class": "lock",
+    "windup_ms": 800
+   },
+   "boss_hakari/sweep_beam": {
+    "class": "lock",
+    "windup_ms": 1100
+   },
+   "boss_hakari/plant_stomp": {
+    "class": "cleave",
+    "windup_ms": 1000
+   },
+   "boss_hakari/drone_release": {
+    "class": "none",
+    "windup_ms": 1200
+   },
+   "boss_hakari/drone_pair": {
+    "class": "none",
+    "windup_ms": 800
+   },
+   "boss_hakari/assessment_kneel": {
+    "class": "none",
+    "windup_ms": 1500
+   },
+   "boss_hakari/claw_sweep": {
+    "class": "cleave",
+    "windup_ms": 1000
+   },
+   "boss_tarifa/tether_lash": {
+    "class": "lock",
+    "windup_ms": 700
+   },
+   "boss_tarifa/double_lash": {
+    "class": "lock",
+    "windup_ms": 700
+   },
+   "boss_tarifa/rod_sweep": {
+    "class": "cleave",
+    "windup_ms": 500
+   },
+   "boss_tarifa/quota_slam": {
+    "class": "cleave",
+    "windup_ms": 900
+   },
+   "boss_tarifa/channel_cycle": {
+    "class": "area",
+    "windup_ms": 2000
+   },
+   "boss_tarifa/loom_call": {
+    "class": "none",
+    "windup_ms": 800
+   },
+   "boss_tarifa/steam_burst": {
+    "class": "cleave",
+    "windup_ms": 900
+   },
+   "boss_tarifa/full_open": {
+    "class": "area",
+    "windup_ms": 1500
+   },
+   "boss_eskro/reconcile_pulse": {
+    "class": "lock",
+    "windup_ms": 700
+   },
+   "boss_eskro/pounce": {
+    "class": "cleave",
+    "windup_ms": 600
+   },
+   "boss_eskro/double_pounce": {
+    "class": "cleave",
+    "windup_ms": 600
+   },
+   "boss_eskro/claw_flurry": {
+    "class": "cleave",
+    "windup_ms": 500
+   },
+   "boss_eskro/shelf_rake": {
+    "class": "cleave",
+    "windup_ms": 900
+   },
+   "boss_eskro/wade_charge": {
+    "class": "cleave",
+    "windup_ms": 700
+   },
+   "boss_eskro/hound_release": {
+    "class": "none",
+    "windup_ms": 600
+   },
+   "boss_collatera/twin_burst": {
+    "class": "lock",
+    "windup_ms": 400
+   },
+   "boss_collatera/sidestep_burst": {
+    "class": "lock",
+    "windup_ms": 400
+   },
+   "boss_collatera/reload": {
+    "class": "reload",
+    "windup_ms": 0
+   },
+   "boss_collatera/margin_call": {
+    "class": "margin_call",
+    "windup_ms": 1500
+   },
+   "boss_collatera/slide_props": {
+    "class": "cleave",
+    "windup_ms": 700
+   },
+   "boss_collatera/drone_call": {
+    "class": "none",
+    "windup_ms": 800
+   },
+   "boss_collatera/cut_pair": {
+    "class": "cleave",
+    "windup_ms": 450
+   },
+   "boss_collatera/fleche_lunge": {
+    "class": "cleave",
+    "windup_ms": 800
+   },
+   "boss_collatera/offhand_shot": {
+    "class": "lock",
+    "windup_ms": 400
+   },
+   "boss_val_amort/amort_ledger_beam": {
+    "class": "lock",
+    "windup_ms": 1450
+   },
+   "boss_val_amort/amort_cleave": {
+    "class": "area",
+    "windup_ms": 1200
+   },
+   "boss_val_amort/amort_seizure_field": {
+    "class": "area",
+    "windup_ms": 1500
+   },
+   "boss_val_amort/construct_spawn": {
+    "class": "none",
+    "windup_ms": 800
+   },
+   "boss_val_amort/amort_cane_pair": {
+    "class": "cleave",
+    "windup_ms": 500
+   },
+   "boss_val_amort/amort_cane_thrust": {
+    "class": "lock",
+    "windup_ms": 600
+   },
+   "boss_val_amort/amort_final_foreclosure": {
+    "class": "cleave",
+    "windup_ms": 1000
+   },
+   "duel_toranosuke_fukuro/tora_men": {
+    "class": "none",
+    "windup_ms": 500
+   },
+   "duel_toranosuke_fukuro/tora_kote": {
+    "class": "none",
+    "windup_ms": 380
+   },
+   "duel_toranosuke_fukuro/tora_kesa": {
+    "class": "none",
+    "windup_ms": 600
+   },
+   "duel_toranosuke_fukuro/tora_feint": {
+    "class": "none",
+    "windup_ms": 250
+   },
+   "duel_toranosuke_fukuro/tora_nidan": {
+    "class": "none",
+    "windup_ms": 380
+   },
+   "duel_toranosuke_fukuro/tora_seme": {
+    "class": "none",
+    "windup_ms": 0
+   },
+   "duel_toranosuke_steel/kesa_combo": {
+    "class": "none",
+    "windup_ms": 450
+   },
+   "duel_toranosuke_steel/morote_tsuki": {
+    "class": "none",
+    "windup_ms": 600
+   },
+   "duel_toranosuke_steel/feint_jodan": {
+    "class": "none",
+    "windup_ms": 300
+   },
+   "duel_toranosuke_steel/do_cut": {
+    "class": "none",
+    "windup_ms": 500
+   },
+   "duel_toranosuke_steel/taiatari": {
+    "class": "none",
+    "windup_ms": 400
+   },
+   "duel_toranosuke_steel/makko_giri": {
+    "class": "none",
+    "windup_ms": 800
+   },
+   "duel_toranosuke_steel/kiriotoshi_rush": {
+    "class": "none",
+    "windup_ms": 700
+   },
+   "duel_toranosuke_steel/nidan_makko": {
+    "class": "none",
+    "windup_ms": 800
+   }
+  },
+  "enemy": {
+   "rifle_burst": {
+    "class": "none",
+    "windup_ms": 600
+   },
+   "retainer_warning": {
+    "class": "none",
+    "windup_ms": 420
+   },
+   "shield_bash": {
+    "class": "none",
+    "windup_ms": 450
+   },
+   "shield_baton": {
+    "class": "none",
+    "windup_ms": 600
+   },
+   "grenadier_fire": {
+    "class": "none",
+    "windup_ms": 500
+   },
+   "marksman_lock": {
+    "class": "lock",
+    "windup_ms": 900
+   },
+   "net_windup": {
+    "class": "lock",
+    "windup_ms": 800
+   },
+   "conscript_attack": {
+    "class": "none",
+    "windup_ms": 700
+   },
+   "automaton_slam": {
+    "class": "none",
+    "windup_ms": 1100
+   },
+   "automaton_thrust": {
+    "class": "none",
+    "windup_ms": 800
+   },
+   "walker_sweep_beam": {
+    "class": "lock",
+    "windup_ms": 1100
+   }
+  },
+  "windup_permille": [
+   1300,
+   1000,
+   850
+  ]
+ }
+}

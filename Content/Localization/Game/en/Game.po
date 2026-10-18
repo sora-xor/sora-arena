@@ -2360,6 +2360,54 @@ msgctxt "SoraArena.Settings,WindowMode"
 msgid "表示モード"
 msgstr "Window mode"
 
+#. Key:	BarrierRecharging
+#: Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp
+msgctxt "SoraArena.SoundCaptions,BarrierRecharging"
+msgid "障壁の再生音"
+msgstr "Barrier recharging"
+
+#. Key:	BarrierShatters
+#: Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp
+msgctxt "SoraArena.SoundCaptions,BarrierShatters"
+msgid "障壁が砕ける"
+msgstr "Barrier shatters"
+
+#. Key:	CellEjects
+#: Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp
+msgctxt "SoraArena.SoundCaptions,CellEjects"
+msgid "セル排出音"
+msgstr "Cell ejects"
+
+#. Key:	CreditHouseChime
+#: Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp
+msgctxt "SoraArena.SoundCaptions,CreditHouseChime"
+msgid "信用院の警報音"
+msgstr "Credit House alarm chime"
+
+#. Key:	DebtSealsClamp
+#: Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp
+msgctxt "SoraArena.SoundCaptions,DebtSealsClamp"
+msgid "債務の封印が締まる音"
+msgstr "Debt seals clamp shut"
+
+#. Key:	NightingaleFloor
+#: Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp
+msgctxt "SoraArena.SoundCaptions,NightingaleFloor"
+msgid "鶯張りが鳴る"
+msgstr "Nightingale floor chirps"
+
+#. Key:	SkySplits
+#: Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp
+msgctxt "SoraArena.SoundCaptions,SkySplits"
+msgid "空が裂ける音"
+msgstr "The sky tears open"
+
+#. Key:	TargetingLock
+#: Source/SoraArena/Private/Audio/SoraSoundCaptions.cpp
+msgctxt "SoraArena.SoundCaptions,TargetingLock"
+msgid "照準固定音"
+msgstr "Targeting lock"
+
 #. Key:	ApprovedAccount
 #: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
 msgctxt "SoraArena.Wallet,ApprovedAccount"

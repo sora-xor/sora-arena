@@ -1,8 +1,10 @@
 # Source audio
 
-Source audio for *SORA Arena: Nyaagyu Rebellion*. Everything in this folder is **project-owned (tier OWN)** and
-regenerates from the scripts in `scripts/audio/`. No third-party recording is stored here. The CC0 recordings
-that the music renders use as instruments, and the CC0 layers the cue list points to, stay in the gitignored
+Source audio for *SORA Arena: Nyaagyu Rebellion*. `Original/` and `Music/` are **project-owned (tier OWN)** and
+regenerate from the scripts in `scripts/audio/`. `CC0/` holds the **CC0 derivatives** the game plays (tier
+PUB-CC0): takes cut, levelled and looped from raw CC0 recordings by `scripts/audio/build_cc0_audio.py`, each
+with its sources and spans in `CC0/manifest.json`. The raw CC0 recordings themselves, including those the music
+renders use as instruments and the other layers the cue list points to, stay in the gitignored
 `Local/ThirdPartyRaw/audio/`. Their ledger records (URL, license evidence, SHA-256, retrieval date) are in
 `scripts/assets/manifests/audio_*.json`.
 
@@ -25,6 +27,11 @@ machine-readable proposal is [`cues.proposed.json`](cues.proposed.json). The eng
 | `Music/mus_ch03_occupation_stealth/` | 「占領の街」 stealth loop, 4 synchronous stems + alert mix, MIDI | 5 WAV + MIDI |
 | `Music/mus_ch07_flagship_battle/` | 「複利号」 flagship battle loop, synth + taiko stems + mix, MIDI | 3 WAV + MIDI |
 | `Music/Stingers/` | Chapter start/complete, site restored, boss phase, player death, duel point | 6 |
+| `CC0/Weapons/` | Lever-action reports, grenade launcher and micro-mortar shots, yumi draws and releases (CC0) | 24 |
+| `CC0/Melee/`, `CC0/Impacts/` | Katana draws and sheathes (CC0); body hits and falls (Kenney placeholders) | 21 |
+| `CC0/Explosions/` | Close bangs over a distant muffled blast (CC0) | 6 |
+| `CC0/Foley/` | Steps on earth, stone and water (CC0); on grass and tatami (Kenney placeholders) | 28 |
+| `CC0/Ambience/` | Estate, rain, typhoon, fire and festival bed loops, far thunder (CC0) | 7 |
 
 Each music folder also has a `<name>.json` sidecar with tempo, bars, loop length and handoff sample, the stem
 list and measured loudness. `Original/manifest.json` and `Music/manifest.json` hold one record per file. Each
@@ -32,7 +39,7 @@ record has the SHA-256, the generator function and seed, the loudness target and
 
 ## Formats
 
-- **WAV:** 48 kHz, 24-bit PCM, stereo.
+- **WAV:** 48 kHz, 24-bit PCM, stereo (CC0 derivatives keep their recording's mono or stereo).
 - **Loops:** each loop carries a RIFF `smpl` loop over the whole file and is periodic by construction, so the
   wrap is sample-exact:
   - noise is filtered circularly (FFT);

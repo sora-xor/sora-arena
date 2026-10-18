@@ -44,7 +44,7 @@ TRANSLATIONS = TARGET / "en/Game.po"
 TITLE = ("SoraArena", "MenuTitle", "猫柳生")
 # Interface sources whose every Japanese string literal must be an NSLOCTEXT.
 LOCALIZED = (
-    "Private/UI/*.cpp", "Private/UI/*.h", "Private/HUD/SoraHUD.cpp", "Private/HUD/SoraHUDCaptions.cpp",
+    "Private/UI/*.cpp", "Private/UI/*.h", "Private/Audio/*.cpp", "Private/HUD/SoraHUD.cpp", "Private/HUD/SoraHUDCaptions.cpp",
     "Private/HUD/SoraHUDFieldcraftPanel.cpp", "Private/Game/SoraCampaignDirectorWorld.cpp",
     "Private/HUD/SoraHUDPanels.h", "Private/Game/SoraGameMode.cpp", "Public/SoraFrontEnd.h", "Public/SoraText.h",
     "Public/SoraCaptions.h", "Public/SoraSettings.h", "Public/SoraPracticeLobby.h",

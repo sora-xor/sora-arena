@@ -179,6 +179,23 @@ struct FSoraChapterEvent
     UPROPERTY() bool bLiberated = false;
 };
 
+// What the front end just did, for its sound: focus moved, a row pressed or a
+// commitment confirmed, back, a refused press, an option or slider stepped,
+// and the pause menu opened or closed over play.
+UENUM()
+enum class ESoraUISound : uint8
+{
+    Hover,
+    Click,
+    Confirm,
+    Back,
+    Error,
+    Option,
+    Slider,
+    MenuOpen,
+    MenuClose,
+};
+
 // A campaign beat of catalog schema 4 (Content/Data/campaign/chapter_0N.json).
 USTRUCT()
 struct FSoraBeatEvent
@@ -227,6 +244,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FSoraSiteRestoredSignature, const FSoraSiteR
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraChapterSignature, const FSoraChapterEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraBossPhaseSignature, const FSoraBossPhaseEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSoraBeatSignature, const FSoraBeatEvent&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSoraUISoundSignature, ESoraUISound);
 // One deterministic-practice event from the Rust kernel and the tick it ended.
 DECLARE_MULTICAST_DELEGATE_TwoParams(FSoraKernelEventSignature, const FSoraPracticeEvent&, uint32);
 
@@ -262,6 +280,8 @@ public:
     FSoraBeatSignature OnBeatCompleted;
     FSoraBeatSignature OnBeatFailed;
     FSoraKernelEventSignature OnKernelEvent;
+    // USoraFrontEnd's screens, keys and clicks.
+    FSoraUISoundSignature OnUISound;
 
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
