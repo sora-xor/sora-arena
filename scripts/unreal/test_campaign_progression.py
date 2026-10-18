@@ -155,6 +155,7 @@ def task_fields(task):
         for member, key in (("StaminaPerTurn", "stamina_per_turn"), ("OverspeedCostMultiplier", "overspeed_cost_multiplier"), ("HoldMilliTurnsS", "hold_milliturns_s")):
             fields.append(f"T.{member} = {player[key]};")
         fields.append(f"T.CrankTwoHanded = {flag(player['two_handed'])};")
+        fields.append(f"T.AlternateTreads = {flag(player['alternate_treads'])};")
     if task["crank_coop"]:
         coop = task["crank_coop"]
         fields.append(f"T.CoopCount = {len(coop['npcs'])};")

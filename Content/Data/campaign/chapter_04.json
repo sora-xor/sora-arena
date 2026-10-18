@@ -1196,7 +1196,8 @@
      "stamina_per_turn": 6,
      "overspeed_cost_multiplier": 0,
      "two_handed": false,
-     "hold_milliturns_s": 0
+     "hold_milliturns_s": 0,
+     "alternate_treads": false
     },
     "speed_cm_s": 0,
     "wait_cm": 0,

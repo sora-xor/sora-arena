@@ -23,4 +23,20 @@ constexpr bool Tick(FState& State,int DeltaMs,bool Held,bool Eligible,int MilliT
     State.Credit%=1000000;
     return true;
 }
+// One L+R cycle, with a neutral return between edges. Hysteresis prevents
+// analog stick noise or a held key from generating repeated treads.
+struct FTreads { bool RightNext=false; int LatchedSide=0; };
+constexpr int Side(int Axis) { return Axis<=-500?-1:Axis>=500?1:0; }
+constexpr void BeginTreads(FTreads& State,int Axis) { State={false,Side(Axis)}; }
+constexpr bool Tread(FTreads& State,int Axis)
+{
+    if(Axis>=-200&&Axis<=200) { State.LatchedSide=0; return false; }
+    const int Press=Side(Axis);
+    if(!Press||State.LatchedSide) return false;
+    State.LatchedSide=Press;
+    if(Press<0) { State.RightNext=true; return false; }
+    const bool Cycle=State.RightNext;
+    State.RightNext=false;
+    return Cycle;
+}
 }

@@ -314,6 +314,7 @@ void ASoraPlayerCharacter::Forward(float V)
 void ASoraPlayerCharacter::Strafe(float V)
 {
     if(bKernelDriven) { InputRight=V; return; }
+    if(auto* G=PlayerGameMode(this); G&&G->Campaign()&&G->Campaign()->PlayerBellowsAxis(V)) return;
     if(bVaulting) return;
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HoldsHero()) return;
     if(CanPlay()) AddMovementInput(GetActorRightVector(),V);

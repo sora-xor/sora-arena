@@ -543,6 +543,10 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     MoveTo(State, Anchor);
     if (!Advance(Test, State, 1))
         return false;
+    if(Director->ActiveTask().AlternateTreads)
+        return State.World->InjectKey(EKeys::E,IE_Pressed)&&State.World->InjectKey(EKeys::A,IE_Pressed)&&
+            State.World->InjectKey(EKeys::A,IE_Released)&&State.World->InjectKey(EKeys::D,IE_Pressed)&&
+            State.World->InjectKey(EKeys::D,IE_Released)&&State.World->InjectKey(EKeys::E,IE_Released);
     Mode(State)->Interact(Player(State));
     if (Director->HeldWorkProgress() < 0.f)
         return true;
@@ -1141,7 +1145,11 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 if (!bSlipTested && Task.Done == 1 && Active())
                 {
                     bSlipTested = true;
-                    GameMode->Interact(Player(State));
+                    if(Rules.AlternateTreads)
+                    {
+                        if(!WorkAtAnchor(Test,State)) return false;
+                    }
+                    else GameMode->Interact(Player(State));
                     bOk &= Test.TestEqual(*(Beat.Id + TEXT(": a hurried turn slips")), Director->TaskProgress().Done, 1);
                 }
             }

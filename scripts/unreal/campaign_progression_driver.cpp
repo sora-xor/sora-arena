@@ -813,6 +813,41 @@ static void TestDecayFrames()
     std::cout << "hold and crank decay cost the same at every frame rate\n";
 }
 
+static void TestBellowsTreads()
+{
+    using namespace SoraCrankInputRules;
+    FTask Tasks[MaxBeats]={}; ChapterTasks[4](Tasks); const FTask Task=Tasks[5];
+    Expect(Task.AlternateTreads,"bellows must retain the authored alternating input");
+    for(int FrameMs:{1,16,17,33,100,250})
+    {
+        auto State=Begin(Task,"bellows treads"); FTreads Feet;
+        Expect(CrankFlameNotches(State,Task)==1,"untouched furnace must be dull red");
+        BeginTreads(Feet,-1000);
+        Expect(!Tread(Feet,-1000)&&!Tread(Feet,1000),"already held direction must not engage a tread");
+        Tread(Feet,0);
+        Expect(!Tread(Feet,1000),"right before left must not turn the bellows");
+        Tread(Feet,0); Tread(Feet,-1000);
+        for(int Ms=0;Ms<1000;Ms+=FrameMs) Expect(!Tread(Feet,-900),"held tread must not repeat");
+        Expect(!Tread(Feet,-300)&&!Tread(Feet,600),"noisy or crossed stick must return neutral first");
+        Tread(Feet,0); Expect(Tread(Feet,1000),"one neutral-separated L+R pair must make one turn");
+        auto Paid=PlayerTurn(State,Task,2);
+        Expect(Paid.Cost==2&&State.Progress==1000&&CrankFlameNotches(State,Task)==2,"first pair must charge two and show two notches");
+        Tick(State,Task,At(200));
+        auto Before=State;
+        auto Refused=PlayerTurn(State,Task,3);
+        Expect(Refused.Result==ETurn::Exhausted&&State.LastActionMs==Before.LastActionMs&&State.CrankNotches==2,"unaffordable overspeed must not alter rate or progress");
+        Paid=PlayerTurn(State,Task,4);
+        Expect(Paid.Result==ETurn::TooFast&&Paid.Cost==4&&State.Progress==Before.Progress&&CrankFlameNotches(State,Task)==3,"affordable overspeed must show white/sparks without progress");
+        int Elapsed=0;
+        while(Elapsed<=Task.MaxTurnMs) { Tick(State,Task,At(FrameMs)); Elapsed+=FrameMs; }
+        Expect(CrankFlameNotches(State,Task)==1,"idle gauge must cool independently of accumulated production");
+        BeginTreads(Feet,0); Tread(Feet,-1000); Feet={}; // release, hit, leave or checkpoint reset
+        Tread(Feet,0); Expect(!Tread(Feet,1000),"a discarded half-cycle must not survive interruption");
+        State=Begin(Task,"bellows retry");
+        Expect(State.Progress==0&&CrankFlameNotches(State,Task)==1,"retry resets both production and rate gauge");
+    }
+}
+
 static void TestPlayerCranks()
 {
     FTask Tasks[MaxBeats] = {};
@@ -1744,6 +1779,7 @@ int main()
     TestProduction();
     TestDecayFrames();
     TestCooperativeCranks();
+    TestBellowsTreads();
     TestPlayerCranks();
     TestRideExploreCollectible();
     TestSiegeAndCarry();

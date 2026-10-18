@@ -65,7 +65,8 @@ def player_work(beat, fail):
         # Chapter 05 b06 prose and x_flame_gauge.above explicitly charge
         # double for overspeed, despite the gear making no progress.
         gauge = ext.get("flame_gauge")
-        if not isinstance(gauge, dict) or gauge.get("above") != "white with sparks + 3 notches; stamina cost x2":
+        if not isinstance(gauge, dict) or gauge != {"below": "dull_red + 1 notch", "in": "golden_yellow (山吹) + 2 notches",
+                "above": "white with sparks + 3 notches; stamina cost x2"} or ext.get("input") != "alternate_left_right_tread (one turn = one L+R cycle)":
             fail(where, "bellows overspeed stamina exception must remain explicit")
         overspeed = 2
     if cost * overspeed > 100:
@@ -85,4 +86,4 @@ def player_work(beat, fail):
             fail(where, "override requires two hands, no loadout, free overspeed and authored 0.6 turns/s assist")
         hold_rate = round(rate * 1000)
     return {"stamina_per_turn": cost, "overspeed_cost_multiplier": overspeed,
-            "two_handed": two_handed, "hold_milliturns_s": hold_rate}
+            "two_handed": two_handed, "hold_milliturns_s": hold_rate, "alternate_treads": beat["id"] == "ch05.b06"}

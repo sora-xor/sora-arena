@@ -8,6 +8,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraSettings.h"
 #include "SoraViewmodelComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "EngineUtils.h"
 #include "GameFramework/DamageType.h"
 #include "Misc/AutomationTest.h"
@@ -44,12 +45,20 @@ void Freeze(ASoraEnemy& Enemy)
     Enemy.GetCharacterMovement()->SetComponentTickEnabled(false);
     if(AController* Brain=Enemy.GetController()) Brain->SetActorTickEnabled(false);
 }
+bool PlayerTurn(FBeatWorld& W)
+{
+    if(!W.Campaign()->ActiveTask().AlternateTreads)
+        return W.World->InjectKey(EKeys::E,IE_Pressed)&&W.World->InjectKey(EKeys::E,IE_Released);
+    return W.World->InjectKey(EKeys::E,IE_Pressed)&&W.World->InjectKey(EKeys::A,IE_Pressed)&&
+        W.World->InjectKey(EKeys::A,IE_Released)&&W.World->InjectKey(EKeys::D,IE_Pressed)&&
+        W.World->InjectKey(EKeys::D,IE_Released)&&W.World->InjectKey(EKeys::E,IE_Released);
+}
 bool Turns(FBeatWorld& W,int32 Count,bool bFreeze=false)
 {
     const int32 Frames=FMath::CeilToInt(W.Campaign()->ActiveTask().MinTurnMs*60.f/1000.f)+2;
     for(int32 Turn=0;Turn<Count;++Turn)
     {
-        if(!W.Tick(Frames)||!W.Press(EKeys::E)) return false;
+        if(!W.Tick(Frames)||!PlayerTurn(W)) return false;
         if(bFreeze) for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It) SoraCrankAutomation::Freeze(**It);
     }
     return true;
@@ -248,22 +257,22 @@ bool FSoraCrankPlayerCostTest::RunTest(const FString& Parameters)
         auto* C=W.Campaign(); auto* Kit=W.Hero()->GetEquipment();
         const int32 Cost=C->ActiveTask().StaminaPerTurn;
         Kit->SpendGuard(100.f);
-        C->Interact(*W.Hero());
+        if(!PlayerTurn(W)) return false;
         TestEqual(TEXT("Exhausted input makes no progress"),C->TaskProgress().Progress,0);
         TestEqual(TEXT("Exhausted input does not start the rhythm"),C->TaskProgress().LastActionMs,-1);
         TestFalse(TEXT("Exhaustion leaves the hands free"),C->IsWorkingCrank());
         if(!W.Tick(60)) return false;
         Kit->SpendGuard(Kit->GuardReserve()-Cost);
-        C->Interact(*W.Hero());
+        if(!PlayerTurn(W)) return false;
         TestEqual(TEXT("One accepted turn advances one physical turn"),C->TaskProgress().Progress,1000);
         TestTrue(TEXT("The exact authored cost spends the existing resource"),FMath::IsNearlyZero(Kit->GuardReserve()));
         const int32 Last=C->TaskProgress().LastActionMs;
-        C->Interact(*W.Hero());
+        if(!PlayerTurn(W)) return false;
         TestEqual(TEXT("Overspeed never gains progress"),C->TaskProgress().Progress,1000);
         TestEqual(TEXT("An immediate overspeed does not move the clock"),C->TaskProgress().LastActionMs,Last);
         if(!W.Tick(15)) return false;
         const float Reserve=Kit->GuardReserve();
-        C->Interact(*W.Hero());
+        if(!PlayerTurn(W)) return false;
         TestTrue(TEXT("Only bellows overspeed has the authored double charge"),
             FMath::IsNearlyEqual(Reserve-Kit->GuardReserve(),Cost*C->ActiveTask().OverspeedCostMultiplier));
         TestEqual(TEXT("Paid or free overspeed still adds no work"),C->TaskProgress().Progress,1000);
@@ -277,6 +286,52 @@ bool FSoraCrankPlayerCostTest::RunTest(const FString& Parameters)
             TestTrue(TEXT("Un-authored assist adds no repeated turns"),C->TaskProgress().Done<=AfterPress);
         }
     }
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraBellowsTreadTest,"SoraArena.Campaign.BellowsTreads",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraBellowsTreadTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraCrankAutomation;
+    FBeatWorld W(*this,TEXT("BellowsTreads"),4,5);
+    if(!Ready(W)) return false;
+    auto* C=W.Campaign();
+    const auto Visible=[&](FName Tag)
+    {
+        TArray<UStaticMeshComponent*> Meshes; W.Mode()->Arena()->GetComponents(Meshes);
+        int32 Count=0; for(auto* Mesh:Meshes) if(Mesh->ComponentHasTag(Tag)&&Mesh->IsVisible()) ++Count;
+        return Count;
+    };
+    if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(90)) return false;
+    TestEqual(TEXT("Interact alone cannot pump the bellows"),C->TaskProgress().Progress,0);
+    TestEqual(TEXT("An idle furnace shows one physical notch"),Visible(TEXT("BellowsFlameNotch")),1);
+    if(!W.Press(EKeys::D)||!W.World->InjectKey(EKeys::A,IE_Pressed)||!W.Tick(60)) return false;
+    TestEqual(TEXT("A right-first or held left tread adds no cycle"),C->TaskProgress().Progress,0);
+    if(!W.World->InjectKey(EKeys::A,IE_Released)||!W.Press(EKeys::D)) return false;
+    TestEqual(TEXT("The completed left-right pair makes one cycle"),C->TaskProgress().Progress,1000);
+    TestEqual(TEXT("The in-band flame has two physical notches"),Visible(TEXT("BellowsFlameNotch")),2);
+    if(!W.Press(EKeys::A)||!W.Press(EKeys::D)) return false;
+    TestEqual(TEXT("Overspeed makes no production"),C->TaskProgress().Progress,1000);
+    TestEqual(TEXT("Overspeed flame has three notches"),Visible(TEXT("BellowsFlameNotch")),3);
+    TestEqual(TEXT("White flame uses a capped eight-spark pool"),Visible(TEXT("BellowsFlameSpark")),8);
+    if(!W.Tick(90)) return false;
+    TestEqual(TEXT("An idle gauge cools before production is complete"),Visible(TEXT("BellowsFlameNotch")),1);
+    if(!W.Press(EKeys::A)) return false;
+    UGameplayStatics::ApplyDamage(W.Hero(),1.f,nullptr,nullptr,UDamageType::StaticClass());
+    const int32 Before=C->TaskProgress().Done;
+    if(!W.Press(EKeys::D)) return false;
+    TestTrue(TEXT("Damage discards the half-cycle"),C->TaskProgress().Done<=Before);
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(120)||!W.World->InjectKey(EKeys::Gamepad_FaceButton_Top,IE_Pressed)) return false;
+    const int32 PadBefore=C->TaskProgress().Progress;
+    if(!W.World->InjectAxis(EKeys::Gamepad_LeftX,-1.f)||!W.World->InjectAxis(EKeys::Gamepad_LeftX,0.f)||
+       !W.World->InjectAxis(EKeys::Gamepad_LeftX,1.f)||!W.World->InjectAxis(EKeys::Gamepad_LeftX,0.f)) return false;
+    TestEqual(TEXT("Pad stick uses the same neutral-separated pair"),C->TaskProgress().Progress,PadBefore+1000);
+    W.World->InjectKey(EKeys::Gamepad_FaceButton_Top,IE_Released);
+    if(!Reload(W)) return false;
+    TestEqual(TEXT("Reload resets production and tread engagement"),C->TaskProgress().Progress,0);
+    TestFalse(TEXT("Checkpoint never restores an active tread"),C->IsWorkingCrank());
     return !HasAnyErrors();
 }
 

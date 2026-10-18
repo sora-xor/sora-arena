@@ -420,6 +420,8 @@ void USoraCampaignDirector::ShowKit()
     FSoraKitView View;
     View.ProgressPermille=SoraBeatRules::ProgressPermille(TaskState,Task);
     View.Step=TaskState.Step;
+    View.BellowsNotches=SoraBeatRules::CrankFlameNotches(TaskState,Task);
+    View.BellowsFoot=IsWorkingCrank()?BellowsTreads.LatchedSide:0;
     View.Strokes=Task.Goal==SoraBeatRules::EGoal::Steps?TaskState.Done:0;
     for(int32 Target=0;Target<Task.TargetCount;++Target)
         View.TargetHealth.Add(Task.TargetHp[Target]>0?static_cast<float>(TaskState.TargetHp[Target])/Task.TargetHp[Target]:0.f);

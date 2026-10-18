@@ -76,10 +76,11 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
     if (PlayerValue->Type != EJson::Null)
     {
         const auto Player = PlayerValue->Type == EJson::Object ? PlayerValue->AsObject() : nullptr;
-        if (!Player || Player->Values.Num() != 4 ||
+        if (!Player || Player->Values.Num() != 5 ||
             !Int(*Player, TEXT("stamina_per_turn"), T.StaminaPerTurn) ||
             !Int(*Player, TEXT("overspeed_cost_multiplier"), T.OverspeedCostMultiplier) ||
             !Player->TryGetBoolField(TEXT("two_handed"), T.CrankTwoHanded) ||
+            !Player->TryGetBoolField(TEXT("alternate_treads"), T.AlternateTreads) ||
             !Int(*Player, TEXT("hold_milliturns_s"), T.HoldMilliTurnsS)) return false;
     }
     const auto CoopValue = O.TryGetField(TEXT("crank_coop"));

@@ -167,6 +167,20 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     }
     else if(KitWork==TEXT("bellows"))
     {
+        // Independent tread boards, not the later seesaw bellows. Functional
+        // proxies: the bespoke foot/cloth animation remains an art deliverable.
+        for(int32 Side:{-1,1})
+            BellowsFeet.Add(KitShape(TEXT("Tread"),KitCube,A+FVector(Side*48,-40,15),FVector(.7f,1.3f,.16f),KitTimber,TEXT("Timber")));
+        for(int32 N=0;N<3;++N)
+        {
+            auto* Notch=KitShape(TEXT("FlameNotch"),KitCube,A+FVector(-22+N*22,-254,126),FVector(.12f,.07f,.22f),KitGold);
+            Notch->ComponentTags.Add(TEXT("BellowsFlameNotch")); BellowsNotches.Add(Notch);
+        }
+        for(int32 N=0;N<8;++N)
+        {
+            auto* Spark=KitShape(TEXT("FlameSpark"),KitCube,A+FVector(0,-253,95),FVector(.025f,.025f,.11f),FLinearColor(1.f,.9f,.6f));
+            Spark->ComponentTags.Add(TEXT("BellowsFlameSpark")); Spark->SetVisibility(false); BellowsSparks.Add(Spark);
+        }
         // The tatara's bellows and the furnace mouth they feed.
         KitShape(TEXT("Bellows"),KitCube,A+FVector(0,-150,60),FVector(1.6f,.9f,1.2f),KitTimber,TEXT("Timber"),true);
         KitShape(TEXT("Furnace"),KitCube,A+FVector(0,-360,110),FVector(1.9f,1.9f,2.2f),FLinearColor(.25f,.22f,.2f),TEXT("Stone"),true);
@@ -277,8 +291,27 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     }
     else if(KitWork==TEXT("bellows")&&KitGauge)
     {
-        Tint(KitGauge,FMath::Lerp(FLinearColor(.2f,.05f,.02f),FLinearColor(1.f,.55f,.12f),Progress));
-        if(auto* Light=Cast<APointLight>(KitLight.Get())) Light->PointLightComponent->SetIntensity(3200.f*Progress);
+        const int32 Band=FMath::Clamp(View.BellowsNotches,1,3);
+        if(BellowsShownBand!=Band)
+        {
+            BellowsShownBand=Band;
+            Tint(KitGauge,Band==1?FLinearColor(.24f,.025f,.012f):Band==2?FLinearColor(1.f,.62f,.03f):FLinearColor::White);
+            for(int32 N=0;N<BellowsNotches.Num();++N) BellowsNotches[N]->SetVisibility(N<Band);
+            if(auto* Light=Cast<APointLight>(KitLight.Get()))
+            {
+                Light->PointLightComponent->SetIntensity(Band==1?350.f:Band==2?2600.f:4000.f);
+                Light->PointLightComponent->SetTemperature(Band==1?1500.f:Band==2?2600.f:6500.f);
+            }
+        }
+        for(int32 N=0;N<BellowsFeet.Num();++N)
+            BellowsFeet[N]->SetRelativeRotation(FRotator(View.BellowsFoot==(N==0?-1:1)?-8.f:0.f,0,0));
+        // Fixed pool: no spawned actors or new materials in the per-frame path.
+        for(int32 N=0;N<BellowsSparks.Num();++N)
+        {
+            BellowsSparks[N]->SetVisibility(Band==3);
+            const float Phase=FMath::Fmod(GetWorld()->GetTimeSeconds()*1.8f+N*.137f,1.f);
+            BellowsSparks[N]->SetRelativeLocation(KitAnchor+FVector((N%2?1:-1)*(8.f+Phase*(12.f+N*2)), -252.f,90.f+Phase*75.f));
+        }
     }
     else if(KitWork==TEXT("lift")&&KitGauge&&KitWheel)
     {
@@ -376,6 +409,7 @@ void ASoraWorldBuilder::ClearKit()
     RecoveryBundle.Reset(); KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
     KitLooseLoads.Reset(); CarrySeal=nullptr;
+    BellowsNotches.Reset(); BellowsSparks.Reset(); BellowsFeet.Reset(); BellowsShownBand=0;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr; Lift=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
 }

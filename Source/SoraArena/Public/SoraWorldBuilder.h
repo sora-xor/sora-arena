@@ -23,6 +23,8 @@ struct FSoraKitView
     // A manufacture's current step, and how many strokes are done in all.
     int32 Step = 0;
     int32 Strokes = 0;
+    int32 BellowsNotches = 1;
+    int32 BellowsFoot = 0;
     // Each defended target's health, 0-1.
     TArray<float> TargetHealth;
     // Carry: the load in hand, loads taken from each pickup, delivered to each drop-off.
@@ -146,6 +148,10 @@ private:
     UPROPERTY() TArray<TObjectPtr<USkeletalMeshComponent>> KitWalkers;
     // Pieces the kit moves or tints as the task goes on.
     UPROPERTY() TObjectPtr<UStaticMeshComponent> KitGauge;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> BellowsNotches;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> BellowsSparks;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> BellowsFeet;
+    int32 BellowsShownBand = 0;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> KitWheel;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> KitFill;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitStations;

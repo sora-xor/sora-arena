@@ -204,6 +204,8 @@ public:
     int32 WorkingCrankHelpers() const { return ActiveCrankHelpers; }
     bool CrankHelperRetreating() const { return bCrankHelperRetreating; }
     bool IsWorkingCrank() const;
+    bool PlayerBellowsAxis(float Axis);
+    bool BellowsRightNext() const { return BellowsTreads.RightNext; }
     bool CrankOccupiesHands() const { return Task.CrankTwoHanded && IsWorkingCrank(); }
     void StopPlayerCrank(bool bWaitForRelease=true);
     bool NeedsCarryGate() const { return !SoraBeatRules::CarryGateReady(TaskState,Task); }
@@ -308,6 +310,7 @@ private:
     bool bCrankHelperRetreating = false;
     int32 CrankHelpers();
     SoraCrankInputRules::FState CrankInput;
+    SoraCrankInputRules::FTreads BellowsTreads;
     bool PlayerCrankEligible() const;
     bool TurnPlayerCrank(bool bBegin);
     void TickPlayerCrank(int32 DeltaMs);
