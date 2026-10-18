@@ -41,11 +41,17 @@ FTextBlock Wrap(ASoraHUD& HUD,const FString& Text,float Scale,float Leading,floa
     for(int32 Index=0;Index<Text.Len();++Index)
     {
         const FString Character=Text.Mid(Index,1);
-        if(Text[Index]=='\n'||(!Line.IsEmpty()&&RegistryTextSize(HUD,Line+Character,Scale).X>Width))
+        if(Text[Index]=='\n') { Block.Lines.Add(Line); Line.Empty(); continue; }
+        if(!Line.IsEmpty()&&RegistryTextSize(HUD,Line+Character,Scale).X>Width)
         {
-            Block.Lines.Add(Line); Line.Empty();
+            int32 Space=INDEX_NONE;
+            if(Line.FindLastChar(' ',Space)&&Space>0)
+            {
+                Block.Lines.Add(Line.Left(Space+1)); Line=Line.Mid(Space+1);
+            }
+            else { Block.Lines.Add(Line); Line.Empty(); }
         }
-        if(Text[Index]!='\n') Line+=Character;
+        Line+=Character;
     }
     if(!Line.IsEmpty()) Block.Lines.Add(Line);
     for(const FString& Wrapped:Block.Lines)
