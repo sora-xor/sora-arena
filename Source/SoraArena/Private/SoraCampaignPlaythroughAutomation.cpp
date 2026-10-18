@@ -1198,6 +1198,9 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
     ASoraPlayerCharacter* Hero = Player(State);
     USoraEquipmentComponent* Kit = Hero->GetEquipment();
     const int32 Held = Hero->WeaponId;
+    // Chapter three begins with only the wakizashi. Its unlock is still
+    // checked here, but returning from that check cannot equip the lost kit.
+    const int32 ReturnWeapon = Director->CanHold(0,false) ? 0 : Held;
     if (!Holdable(WeaponId))
         return Fail(Test, State, FString::Printf(TEXT("Weapon %d has no campaign slot"), WeaponId));
     const bool bEquipped = Kit->EquipCampaignWeapon(WeaponId);
@@ -1205,9 +1208,9 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
     bool bOk = Test.TestEqual(*What, bEquipped, bUnlocked) && Test.TestEqual(*(What + TEXT(" (held)")), Hero->WeaponId, bUnlocked ? WeaponId : Held);
     if (!bUnlocked)
         bOk &= Test.TestTrue(*(What + TEXT(" with a notice")), Mode(State)->NoticeTime > 0.f && !Mode(State)->NoticeEnglish.IsEmpty());
-    // Back to the katana, after the equip delay.
-    if (!Advance(Test, State, 20) || (bEquipped && !Kit->EquipClassSlot(0)))
-        return Fail(Test, State, What + TEXT(": could not return to the katana"));
+    // Back to the available weapon, after the equip delay.
+    if (!Advance(Test, State, 20) || (bEquipped && !Kit->EquipCampaignWeapon(ReturnWeapon)))
+        return Fail(Test, State, What + TEXT(": could not return to the available weapon"));
     // Every unlocked arm is in reach of the player's own keys: its group key,
     // pressed until it comes up, and a place on the arms wheel's ring.
     const int32 Group = SoraArmsRules::GroupOf(WeaponId);
@@ -1218,8 +1221,8 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
             Hero->SelectArmsGroup(Group);
         bOk &= Test.TestEqual(*(What + TEXT(" on its group key")), Hero->WeaponId, WeaponId);
         bOk &= Test.TestTrue(*(What + TEXT(" on the arms wheel")), SoraArmsRules::Holds(Hero->HoldableArms(), WeaponId));
-        if (!Advance(Test, State, 20) || !Kit->EquipClassSlot(0))
-            return Fail(Test, State, What + TEXT(": could not return to the katana"));
+        if (!Advance(Test, State, 20) || !Kit->EquipCampaignWeapon(ReturnWeapon))
+            return Fail(Test, State, What + TEXT(": could not return to the available weapon"));
     }
     else
         bOk &= Test.TestFalse(*(What + TEXT(" is not on the arms wheel")), SoraArmsRules::Holds(Hero->HoldableArms(), WeaponId));
