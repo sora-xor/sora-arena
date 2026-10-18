@@ -1,8 +1,11 @@
 # First-release implementation record
 
-The release goal remains incomplete. Development is paused at the user's
-2026-10-18 request to commit current work to master and stop. This is a progress
-record, not a claim that the release is complete. Backward compatibility,
+The release goal remains incomplete. The user resumed development on 2026-10-18
+and requested completion of the full game in collaboration with Claude's
+Photoreal art WIP checkpoint. The [complete-release plan](complete-release-plan.md)
+tracks ownership, milestones and required evidence; the earlier stop checkpoint
+remains a historical recovery record. This is a progress record, not a claim
+that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
 ## 2026-10-18 generic staged hit proof and Claude coordination

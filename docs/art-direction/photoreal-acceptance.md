@@ -5,8 +5,9 @@ flag, a material graph, and a Blender render do not establish that outcome.
 This record names the current **in-game visual failures** and the captures
 needed before art is admitted to the playable release. The separate
 [render protocol](../render-qualification/estate-lumen-nanite.md) covers Lumen
-and Nanite diagnostics. The release engine is UE 5.8.2; UE 5.8.3 evidence is
-interim only.
+and Nanite diagnostics. The release engine is the pinned UE 5.8.3 / CL 58210709.
+Historical captures retain their original source and platform scope; they do
+not establish acceptance for the current candidate.
 
 | Subject | Current checked evidence | Admission gate |
 | --- | --- | --- |
@@ -14,7 +15,7 @@ interim only.
 | First-person sword and paws | [Packaged bokutō A/B](../visual-reviews/dojo-bokuto-form/README.md) improves the side silhouette, but normal pose hides grip/guard and has zero visible paw components. A [new source rig](../../Content/SourceArt/Characters/NyaakotoBokutoViewmodel/README.md) is entirely offscreen at the unchanged idle pose and still reads as a glove close up. | In actual gameplay FOV and attack/parry animations, both paws contact the tsuka without floating, clipping, glove-like digits or obscuring combat. Scanned wood must retain detail under real scene light. Capture a fixed neutral pose and representative motion on both platforms. |
 | Estate architecture and roof lighting | [Mac Lumen Surface Cache](../render-qualification/estate-ue583-m1-20260924/README.md) has pink upper roof/eave and foliage gaps. A [packaged frontage check](../visual-reviews/dojo-frontage-yaw/README.md) confirms that the current road-facing Dojo shows its modeled shōji grid and steps; the broad plain panels in an earlier close frame were its rear side. Roof repetition, dark flat facade surfaces and sparse midground detail remain. | Modular, physically plausible roof/eave geometry with photographed or authored calibrated materials; no prominent visible pink gaps in entrance and close-foot Surface Cache views, and matching Lumen Scene/DF representation. Windows Nanite mask/cluster/stats and Mac fallback captures must be inspected separately. |
 | Ground and foliage | [Road variation A/B](../visual-reviews/road-variation-study/README.md) reduces scan repetition, while [fern contact A/B](../visual-reviews/fern02-ground-transition/README.md) fails on raised bright soil and card-like clumps. | 1 m, 3 m and entrance views show coherent wet stone, soil, moss, leaf contact and no obvious tile/card repeats; inspect Lumen contribution, shadowing, LOD transition and material physical scale. |
-| Complete frame and performance | Current [Estate Lit frame](../render-qualification/estate-ue583-m1-20260924/Estate_Entrance_Lit.png) is a prototype, not a photoreal approval. | Representative combat and traversal on the pinned 5.8.2 builds: 1440p/60 fps RTX 4070-class Windows quality target, 1080p/60 fps M1 Ultra Mac preset target, with recorded CPU/GPU frame times and memory. Capture cinematic shots independently of gameplay and verify offline save/play flow. |
+| Complete frame and performance | Current [Estate Lit frame](../render-qualification/estate-ue583-m1-20260924/Estate_Entrance_Lit.png) is a prototype, not a photoreal approval. | Representative combat and traversal on the pinned 5.8.3 builds: 1440p/60 fps RTX 4070-class Windows quality target, 1080p/60 fps M1 Ultra Mac preset target, with recorded CPU/GPU frame times and memory. Capture cinematic shots independently of gameplay and verify offline save/play flow. |
 
 Each visual candidate stays in ArtReview or source-only status until a fixed
 camera A/B in the packaged game shows an improvement in normal play, the
