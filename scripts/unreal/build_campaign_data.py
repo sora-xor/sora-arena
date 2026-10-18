@@ -634,6 +634,20 @@ def carry_drop_policy(value, where):
     return {name: expect(value[name], (bool,), f"{where}.{name}") for name in names}
 
 
+def carry_dropoff_capacity(raw, names, count, where):
+    """Preserve an authored name-to-capacity map, never dictionary order."""
+    expect(raw, (dict,), where)
+    expect_int(count, f"{where}.count", 1)
+    if count > 99 or not 1 <= len(names) <= 8 or any(not name for name in names) or len(set(names)) != len(names):
+        fail(where, "carry count must be 1-99 with 1-8 unique drop-offs")
+    if set(raw) != set(names):
+        fail(where, "capacity keys must exactly match the named drop-offs")
+    capacities = {name: expect_int(raw[name], f"{where}.{name}", 1) for name in names}
+    if any(value > 99 for value in capacities.values()) or sum(capacities.values()) < count:
+        fail(where, "capacities must be 1-99 and hold all required goods")
+    return capacities
+
+
 def carry_gate(raw, where):
     if raw is None:
         return None
@@ -662,7 +676,7 @@ def normalize_task(beat):
         "capture_event": None, "lesson_mask": 0, "form_reps": [1, 1, 1, 1], "maai": None, "flank_bouts": False,
         "loss": "checkpoint", "loss_limit": 0, "contest": "none", "decay_permille": 0, "min_turn_ms": 0,
         "max_turn_ms": 0, "crank_coop": None, "speed_cm_s": 0, "wait_cm": 0, "path_cm": 0, "pickups": [], "dropoffs": [],
-        "drop_on_hit": carry_drop_policy(False, where), "carry_gate": None, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
+        "dropoff_capacity": None, "drop_on_hit": carry_drop_policy(False, where), "carry_gate": None, "steps": [], "targets": [], "target_loss_limit": 0, "on_detected": "combat",
         "reinforce_wave": -1,
         "horse_down_retries": False, "fail_checkpoint": [], "fail_events": {}, "objectives": [],
         "lines_event": None, "closing_event": None, "exit_event": None, "guards": [], "stealth": None, "opponent": None,
@@ -815,6 +829,12 @@ def normalize_task(beat):
                         carry_item=expect(block["item"], (str,), f"{where}.carry.item"),
                         dropoffs=ids_of(block["dropoffs"], f"{where}.dropoffs"),
                         drop_on_hit=carry_drop_policy(block.get("drop_on_hit", False), f"{where}.carry.drop_on_hit"))
+            expect_int(task["count"], f"{where}.carry.count", 1)
+            if task["count"] > 99:
+                fail(where, "carry count exceeds the runtime limit of 99")
+            if "x_dropoff_capacity" in block:
+                task["dropoff_capacity"] = carry_dropoff_capacity(block["x_dropoff_capacity"], task["dropoffs"],
+                                                                 task["count"], f"{where}.carry.x_dropoff_capacity")
             # The load slows the hero and leaves at most the katana in one paw.
             task["carry_speed_permille"] = permille(block.get("move_speed_mult", 1), f"{where}.carry.move_speed_mult")
             loadout = expect(block.get("loadout_while_carrying", []), (list,), f"{where}.carry.loadout_while_carrying")

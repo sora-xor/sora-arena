@@ -1568,6 +1568,69 @@ static void TestCarrySealAndLooseLoads()
     std::cout << "carry: seal hold/hit/release/retry and loose-load stock conservation passed\n";
 }
 
+static void TestNamedDropoffCapacities()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[1](Tasks);
+    FTask Carry=Tasks[4];
+    Expect(Carry.DropoffCapacityCount==2 && DropoffCapacity(Carry,0)==2 && DropoffCapacity(Carry,1)==2,
+        "authored named pack-horse capacities were lost");
+    Carry.CarryGateMs=0; Carry.DropOnHit=true;
+    Carry.DropoffCapacities[0]=1; Carry.DropoffCapacities[1]=3;
+    FTaskState State=Begin(Carry,"asymmetric named drop-offs");
+    Expect(TaskCheckpointValid(Carry,0) && !TaskCheckpointValid(Carry,1),"carry checkpoint phase contract changed");
+    Expect(DropoffCapacity(Carry,-1)==0 && DropoffCapacity(Carry,2)==0 &&
+        !DropoffHasRoom(State,Carry,-1) && !DropoffHasRoom(State,Carry,MaxPoints),"invalid drop-off index admitted");
+    Expect(Pickup(State,Carry,0) && Deliver(State,Carry,0) && !DropoffHasRoom(State,Carry,0) &&
+        DropoffHasRoom(State,Carry,1),"asymmetric first destination did not fill after one load");
+    Expect(Pickup(State,Carry,0),"second load could not leave source");
+    const FTaskState Before=State;
+    Expect(!Deliver(State,Carry,0) && State.Done==Before.Done && State.Carrying && State.CarriedFrom==Before.CarriedFrom &&
+        State.DropoffUses[0]==Before.DropoffUses[0] && State.DropoffUses[1]==0,"full destination consumed or duplicated carried stock");
+    Expect(SetDownCarried(State,Carry)==0 && Pickup(State,Carry,0) && SetDownCarried(State,Carry)==1 &&
+        Pickup(State,Carry,0) && SetDownCarried(State,Carry)==2 && Bits(State.LooseLoads)==3 && !Pickup(State,Carry,0),
+        "asymmetric capacities duplicated source or loose stock");
+    Expect(PickupLoose(State,Carry,1) && DropCarried(State,Carry) && Pickup(State,Carry,0) &&
+        Deliver(State,Carry,1) && !Pickup(State,Carry,0),"hit-returned loose load changed total stock");
+    for(int Slot:{0,2})
+        Expect(PickupLoose(State,Carry,Slot) && Deliver(State,Carry,1),"three-load destination refused conserved goods");
+    Expect(State.Done==4 && State.DropoffUses[0]==1 && State.DropoffUses[1]==3 && State.LooseLoads==0u &&
+        TaskComplete(State,Carry) && !Pickup(State,Carry,0) && !Deliver(State,Carry,1),"named capacities did not conserve four goods");
+    State=RetryTask(State,Carry);
+    Expect(State.Done==0 && !State.Carrying && State.LooseLoads==0u && State.DropoffUses[0]==0 && State.DropoffUses[1]==0 &&
+        DropoffHasRoom(State,Carry,0) && DropoffHasRoom(State,Carry,1),"checkpoint retry retained destination occupancy");
+    for(int Value:{-1,0,100})
+    {
+        FTask Bad=Carry; Bad.DropoffCapacities[0]=Value;
+        Expect(!TaskValid(Bad) && !TaskCheckpointValid(Bad,0),"invalid capacity entered task or checkpoint");
+    }
+    for(int Count:{-1,0,1,3,MaxPoints+1})
+    {
+        FTask Bad=Carry; Bad.DropoffCapacityCount=Count;
+        Expect(!TaskValid(Bad) && !TaskCheckpointValid(Bad,0),"missing or extra capacity accepted");
+    }
+    FTask Bad=Carry; Bad.DropoffCapacities[1]=2;
+    Expect(!TaskValid(Bad) && !TaskCheckpointValid(Bad,0),"insufficient total destination space accepted");
+    Bad=Carry; Bad.DropoffCapacities[2]=1;
+    Expect(!TaskValid(Bad) && !TaskCheckpointValid(Bad,0),"capacity beyond named points accepted");
+    FTask Derived=Make(EType::ProductionTask,EGoal::Deliveries,ETask::Carry);
+    Derived.Count=5; Derived.Pickups=1; Derived.Dropoffs=2;
+    State=Begin(Derived,"legacy derived capacity");
+    Expect(DropoffCapacity(Derived,0)==3 && DropoffCapacity(Derived,1)==3,"absent map lost equal ceiling share");
+    for(int Item=0;Item<5;++Item)
+        Expect(Pickup(State,Derived,0) && Deliver(State,Derived,Item<3?0:1),"derived destinations refused goods");
+    Expect(TaskComplete(State,Derived) && !DropoffHasRoom(State,Derived,1),"spare capacity created a sixth good");
+    FTask Cargo=Make(EType::HorsebackRide,EGoal::Deliveries);
+    Cargo.Count=3; Cargo.Dropoffs=3;
+    State=Begin(Cargo,"cargo capacity compatibility");
+    for(int Point=0;Point<3;++Point)
+        Expect(DropoffCapacity(Cargo,Point)==1 && Deliver(State,Cargo,Point) && !Deliver(State,Cargo,Point),
+            "horseback cargo changed its one-load-per-destination rule");
+    Cargo.DropoffCapacityCount=3; Cargo.DropoffCapacities[0]=Cargo.DropoffCapacities[1]=Cargo.DropoffCapacities[2]=1;
+    Expect(!TaskValid(Cargo) && !TaskCheckpointValid(Cargo,0),"carry-only explicit map leaked into horseback cargo");
+    std::cout << "carry: named 1/3 capacities, full-destination refusal, stock conservation, checkpoint reset and cargo compatibility passed\n";
+}
+
 int main()
 {
     static_assert(sizeof(Chapters) / sizeof(Chapters[0]) == 8, "Eight chapters are required");
@@ -1589,6 +1652,7 @@ int main()
     TestAuthoredRides();
     TestAuthoredCarryDifficulty();
     TestCarrySealAndLooseLoads();
+    TestNamedDropoffCapacities();
     unsigned RouteMinimum = 0u, AllEarlier = 0u, MechanicsEarlier = 0u, FlagsEarlier = 0u;
     FEntry Skipper{0u, 0u, 0u}, Completist{0u, 0u, 0u};
     FUnlockLog SkipperLog{}, CompletistLog{};

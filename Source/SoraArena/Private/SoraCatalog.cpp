@@ -165,6 +165,24 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
             !Int(*R,TEXT("quiver"),T.RecoveryQuiver) || !WeaponMask(Rows(*R,TEXT("weapons")),T.RecoveryWeapons)) return false;
     }
     T.Pickups = Beat.Pickups.Num(); T.Dropoffs = Beat.Dropoffs.Num();
+    const auto CapacityValue = O.TryGetField(TEXT("dropoff_capacity"));
+    if (!CapacityValue.IsValid()) return false;
+    if (CapacityValue->Type != EJson::Null)
+    {
+        const auto Capacities = CapacityValue->Type == EJson::Object ? CapacityValue->AsObject() : nullptr;
+        if (!Capacities || T.Task != ETask::Carry || T.Dropoffs < 1 || Capacities->Values.Num() != T.Dropoffs) return false;
+        T.DropoffCapacityCount = T.Dropoffs;
+        for (int32 Index = 0; Index < T.Dropoffs; ++Index)
+        {
+            const FString& Name = Beat.Dropoffs[Index];
+            const auto Value = Capacities->TryGetField(Name);
+            double Number = 0;
+            if (Beat.Dropoffs.Find(Name) != Index || !Value.IsValid() || Value->Type != EJson::Number ||
+                !Value->TryGetNumber(Number) || !Whole(Number, T.DropoffCapacities[Index])) return false;
+            Beat.DropoffCapacities.Add(Name, T.DropoffCapacities[Index]);
+        }
+    }
+    if (!DropoffCapacitiesValid(T)) return false;
     Beat.Opponent = Opponent.IsEmpty() ? NAME_None : FName(*Opponent);
     const FJsonRows* HoldRows = Rows(O, TEXT("objective_hold_ms"));
     if (!HoldRows || HoldRows->Num() != Beat.Objectives.Num()) return false;

@@ -691,6 +691,26 @@ def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
         require(chainages == sorted(chainages), f"{what}: the stakes stand along the road in order")
 
 
+def check_dropoff_capacity(beat):
+    task, where = beat["task"], beat["id"]
+    require("dropoff_capacity" in task, f"{where}: missing drop-off capacity field")
+    capacities = task["dropoff_capacity"]
+    carry = beat["type"] == "production_task" and task["task"] == "carry"
+    source = beat["params"].get("carry", {})
+    if not carry or "x_dropoff_capacity" not in source:
+        require(capacities is None, f"{where}: only an authored carry may name capacities")
+        return
+    names, count = task["dropoffs"], task["count"]
+    require(isinstance(capacities, dict) and capacities == source["x_dropoff_capacity"],
+            f"{where}: normalized capacities must preserve the authored map")
+    require(1 <= len(names) <= 8 and all(isinstance(name, str) and name for name in names) and
+            len(set(names)) == len(names) and set(capacities) == set(names),
+            f"{where}: capacity keys must exactly match the named drop-offs")
+    require(type(count) is int and 1 <= count <= 99 and
+            all(type(value) is int and 1 <= value <= 99 for value in capacities.values()) and
+            sum(capacities.values()) >= count, f"{where}: invalid or insufficient drop-off capacities")
+
+
 def validate(catalog, campaign, chapters, legacy, roster):
     speakers = {speaker["id"] for speaker in catalog["dialogue_speakers"]}
     require(catalog["schema_version"] == 4 and "chapters" not in catalog,
@@ -787,6 +807,7 @@ def validate(catalog, campaign, chapters, legacy, roster):
 
         # Rules 3 and 5, mechanics, bosses, enemies and rule 7.
         for beat in beats:
+            check_dropoff_capacity(beat)
             unlocks += [(weapon, beat["id"]) for weapon in beat["unlocks"]["weapons"]]
             mechanics += beat["unlocks"]["mechanics"]
             if beat["optional"] and (beat["unlocks"]["weapons"] or beat["unlocks"]["mechanics"]):

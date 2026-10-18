@@ -186,6 +186,10 @@ def task_fields(task):
     for index, start in enumerate(task["phases"]):
         fields.append(f"T.PhaseStart[{index}] = {start};")
     fields.append(f"T.Pickups = {len(task['pickups'])}; T.Dropoffs = {len(task['dropoffs'])};")
+    if task["dropoff_capacity"] is not None:
+        fields.append(f"T.DropoffCapacityCount = {len(task['dropoffs'])};")
+        for index, name in enumerate(task["dropoffs"]):
+            fields.append(f"T.DropoffCapacities[{index}] = {task['dropoff_capacity'][name]};")
     fields.append(f"T.StepCount = {len(task['steps'])};")
     for index, step in enumerate(task["steps"]):
         fields.append(f"T.Steps[{index}] = {{{step['count']}, {step['beat_ms']}, {step['tolerance_ms']}}};")

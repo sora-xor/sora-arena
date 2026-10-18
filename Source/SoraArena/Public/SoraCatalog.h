@@ -618,6 +618,8 @@ struct FSoraBeat
     TArray<FString> Objectives;
     TArray<FString> Pickups;
     TArray<FString> Dropoffs;
+    // Exact authored map; Task capacities use this array of drop-off names.
+    TMap<FString, int32> DropoffCapacities;
     // What a carry moves ("barley_load"): its pickups and deliveries also
     // raise item_picked:<item> and item_delivered:<item>.
     FString CarryItem;

@@ -375,9 +375,12 @@ struct FTask
     int SpeedCmS = 0;
     int WaitCm = 0;
     int PathCm = 0;
-    // Carry or cargo points; every drop-off takes an equal share of the goods.
+    // Carry or cargo points. Explicit capacities follow the named drop-off
+    // order; an absent map (count 0) retains the derived equal ceiling share.
     int Pickups = 0;
     int Dropoffs = 0;
+    int DropoffCapacityCount = 0;
+    int DropoffCapacities[MaxPoints] = {};
     // Easy, Normal, Hard. The effective policy is chosen when a beat starts,
     // including checkpoint retry/reload, like boss and stealth difficulty.
     bool DropOnHitByDifficulty[3] = {};
@@ -559,9 +562,38 @@ constexpr bool RequiredWavesReleased(const FTaskState& State, const FTask& Task)
     return true;
 }
 
-constexpr int DropoffShare(const FTask& Task)
+constexpr bool DropoffCapacitiesValid(const FTask& Task)
 {
-    return Task.Dropoffs <= 0 ? 0 : (Task.Count + Task.Dropoffs - 1) / Task.Dropoffs;
+    if (Task.DropoffCapacityCount < 0 || Task.DropoffCapacityCount > MaxPoints) return false;
+    if (Task.DropoffCapacityCount > 0 && (Task.Type != EType::ProductionTask || Task.Task != ETask::Carry ||
+        Task.Goal != EGoal::Deliveries || Task.Dropoffs != Task.DropoffCapacityCount ||
+        Task.Count < 1 || Task.Count > MaxGoalCount)) return false;
+    int Total = 0;
+    for (int Index = 0; Index < MaxPoints; ++Index)
+    {
+        const int Capacity = Task.DropoffCapacities[Index];
+        if (Index < Task.DropoffCapacityCount)
+        {
+            if (Capacity < 1 || Capacity > MaxGoalCount) return false;
+            Total += Capacity;
+        }
+        else if (Capacity != 0) return false;
+    }
+    return Task.DropoffCapacityCount == 0 || Total >= Task.Count;
+}
+
+constexpr int DropoffCapacity(const FTask& Task, int Index)
+{
+    if (Index < 0 || Index >= Task.Dropoffs || Task.Dropoffs > MaxPoints || Task.Count < 1 || Task.Count > MaxGoalCount)
+        return 0;
+    return Task.DropoffCapacityCount == 0 ? (Task.Count + Task.Dropoffs - 1) / Task.Dropoffs :
+        Task.DropoffCapacityCount == Task.Dropoffs ? Task.DropoffCapacities[Index] : 0;
+}
+
+constexpr bool DropoffHasRoom(const FTaskState& State, const FTask& Task, int Index)
+{
+    return Index >= 0 && Index < Task.Dropoffs && Index < MaxPoints && State.Done < Task.Count &&
+        State.DropoffUses[Index] < DropoffCapacity(Task, Index);
 }
 
 constexpr int ProgressPermille(const FTaskState& State, const FTask& Task)
@@ -1043,8 +1075,7 @@ constexpr bool PickupLoose(FTaskState& State, const FTask& Task, int Slot)
 // Delivers the carried item, or a ride's cargo, at a drop-off with room left.
 constexpr bool Deliver(FTaskState& State, const FTask& Task, int Index)
 {
-    if (Index < 0 || Index >= Task.Dropoffs || Index >= MaxPoints || State.Done >= Task.Count ||
-        State.DropoffUses[Index] >= DropoffShare(Task))
+    if (!DropoffHasRoom(State, Task, Index))
         return false;
     if (Task.Task == ETask::Carry)
     {
@@ -1224,8 +1255,8 @@ constexpr FTaskState RetryTask(const FTaskState& State, const FTask& Task)
 // Only a boss, or a duel fought to its end, saves at a later phase.
 constexpr bool TaskCheckpointValid(const FTask& Task, int Phase)
 {
-    return Phase == 0 || ((Task.Type == EType::Boss || Task.Type == EType::Duel) &&
-        Task.Goal == EGoal::OpponentDown && Phase > 0 && Phase < Task.PhaseCount);
+    return DropoffCapacitiesValid(Task) && (Phase == 0 || ((Task.Type == EType::Boss || Task.Type == EType::Duel) &&
+        Task.Goal == EGoal::OpponentDown && Phase > 0 && Phase < Task.PhaseCount));
 }
 
 constexpr bool WavesValid(const FTask& Task)
@@ -1291,6 +1322,7 @@ constexpr bool PointsValid(int Count)
 // wave, phase and step can be met.
 constexpr bool TaskValid(const FTask& Task)
 {
+    if (!DropoffCapacitiesValid(Task)) return false;
     if (Task.CarryGateMs < 0 || Task.CarryGateMs > MaxClockMs || (Task.CarryGateMs > 0 && Task.Task != ETask::Carry)) return false;
     if (Task.CoopCount < 0 || Task.CoopCount > 3 || ((Task.CoopCount == 0) != (Task.CoopMilliTurnsS == 0)) ||
         (Task.CoopCount == 0 && (Task.CoopSuspendsDecay || Task.CoopRetreatCm > 0)) ||
