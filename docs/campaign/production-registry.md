@@ -92,6 +92,14 @@ minimum text scale and retained text. The resulting images still need visual
 inspection for readable typography, seal placement and overall composition at
 both sizes.
 
+Goods and their English translation share a baseline when both measured strings
+fit the row; otherwise the translation wraps beneath. Status remains complete
+on the following line(s). This recovers vertical space at 720p without shrinking
+the readable text floors. The page centers within the usable region below the
+top bar, with the existing top and bottom bounds still enforced. Fit diagnostics
+include actual page height and available bounds so a failed capture identifies
+the overflow rather than permitting a clipped screenshot.
+
 Before each registry screenshot the fixture waits for asynchronous asset
 compilation to remain idle for two seconds, allowing engine preparation
 messages to disappear naturally. A 120-second timeout fails the fixture instead
