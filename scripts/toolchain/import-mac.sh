@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Import the pinned source art with the headless Mac editor, then load every
-# expected package with the editor validator. UnrealEditor-Cmd can exit 0 after
+# Import the pinned art, environment, VFX and audio with the Mac editor, then
+# load every expected package with its validator. UnrealEditor-Cmd can exit 0 after
 # a Python exception, so each step must also log its completion marker and no
 # Python error.
 # Usage: import-mac.sh [log-directory]
@@ -72,7 +72,7 @@ fi
 # must compile with the engine's own DXC before an editor builds the graphs.
 PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/unreal/check_cc0_custom_hlsl.py" >&2
 # The audio checks verify the runtime audio data against the game, then the
-# OWN audio hashes, loop chunks, bus tree and cue routing, and yield the audio
+# OWN and CC0 audio hashes, loop chunks, bus tree and cue routing, and yield the audio
 # package count its editor validator must load.
 PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/audio/validate_audio_data.py"
 AUDIO_CHECK="$(PYTHONDONTWRITEBYTECODE=1 python3 "$PROJECT_ROOT/scripts/unreal/validate_audio_import.py" --source-only)"
@@ -87,7 +87,6 @@ fi
 # and the step must report as many systems as the builder's SYSTEMS list holds.
 unset SORA_VFX_ONLY SORA_VFX_REUSE_MATERIALS
 EXPECTED_VFX_SYSTEMS="$(PYTHONDONTWRITEBYTECODE=1 python3 "$SCRIPT_DIR/vfx_system_count.py")" || exit 1
-
 
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config
@@ -130,14 +129,13 @@ print(next(line.split('LogPython: ', 1)[1] for line in lines
 PY
 }
 
-# The palette step binds materials to meshes from the first step, the CC0
-# library binds the palette's plaster and stone-path maps, and the validators
-# read all three; the order is fixed.
+# The palette binds materials to the original meshes. The CC0 library uses
+# palette maps, and VFX uses them for debris. Their validators run afterwards;
+# audio import and routing validation follow independently.
 run_step import-original import_original_assets.py 'SORA_ASSET_IMPORT_COMPLETE: '
 run_step import-palette import_environment_palette.py 'NYAAGYU_PBR_READY: '
 run_step import-cc0 import_cc0_environment.py 'SORA_CC0_ENVIRONMENT_READY: '
 run_step import-vfx create_sora_vfx.py "SORA_VFX_READY: $EXPECTED_VFX_SYSTEMS systems" rhi
-
 run_step validate validate_imported_assets.py \
   "SORA_ASSET_VALIDATION_COMPLETE: $EXPECTED_PACKAGES packages loaded with expected types"
 run_step validate-cc0 validate_cc0_environment.py \
