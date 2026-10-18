@@ -434,11 +434,13 @@ def check_space(chapter, beats, rewards, labels, where):
         require(placed == named, f"{what}: volumes {sorted(placed)} differ from its events {sorted(named)}")
         for volume in record["volumes"] + [record["exit"]]:
             require(_inside(rect, volume["center"], 0) and min(volume["size"]) >= 300, f"{what}: volume {volume}")
+        # Match SoraCatalogSpace's presence checks in both directions: a
+        # cinematic cannot acquire an interaction anchor just for set dressing.
+        require((record["closing"] is not None) == task["anchor_after_lines"], f"{what}: closing anchor must match its task")
         if task["anchor_after_lines"]:
-            require(record["closing"] is not None, f"{what}: a dialogue that ends at an anchor needs one")
             on_floor(index, record["closing"], f"{what} closing anchor", 0)
+        require((record["cache"] is not None) == (beat["type"] == "explore_optional"), f"{what}: optional cache must match its task")
         if beat["type"] == "explore_optional":
-            require(record["cache"] is not None, f"{what}: an explore beat needs its cache")
             on_floor(index, record["cache"], f"{what} cache")
         require((record["camera"] is not None) == (beat["type"] == "cinematic"), f"{what}: cinematic camera")
         kit = record["kit"]
@@ -1134,6 +1136,25 @@ def self_test(catalog, campaign, chapters, legacy, roster):
     def missing_volume(data):
         space(data, 0, "ch01.b05")["volumes"].pop()
 
+    def cinematic_with_closing_anchor(data):
+        space(data, 7, "ch08.b18")["closing"] = list(space(data, 7, "ch08.b17")["closing"])
+
+    def dialogue_without_closing_anchor(data):
+        space(data, 7, "ch08.b17")["closing"] = None
+
+    def cinematic_with_cache(data):
+        record = space(data, 7, "ch08.b18")
+        record["cache"] = list(record["anchor"])
+
+    def explore_without_cache(data):
+        space(data, 0, "ch01.b08")["cache"] = None
+
+    def cinematic_without_camera(data):
+        space(data, 7, "ch08.b18")["camera"] = None
+
+    def dialogue_with_camera(data):
+        space(data, 7, "ch08.b17")["camera"] = list(space(data, 7, "ch08.b18")["camera"])
+
     def zones_collide(data):
         data[2][4]["space"]["zones"][1]["rect"] = list(data[2][4]["space"]["zones"][0]["rect"])
 
@@ -1205,6 +1226,8 @@ def self_test(catalog, campaign, chapters, legacy, roster):
 
     validate(*copy.deepcopy((catalog, campaign, chapters, legacy, roster)))
     mutations = (anchor_in_wall, short_route, missing_volume, zones_collide, lost_collectible, unlabelled_step,
+                 cinematic_with_closing_anchor, dialogue_without_closing_anchor, cinematic_with_cache,
+                 explore_without_cache, cinematic_without_camera, dialogue_with_camera,
                  yumi_to_the_right, short_escort, spawn_in_building, swap_unlock, fast_line, long_gap, cache_without_save,
                  boss_cue_time, unraised_rate_band, bout_numbered_per_beat,
                  gun_on_horse, site_table_mismatch, site_chain_broken, orphan_line, dangling_line,

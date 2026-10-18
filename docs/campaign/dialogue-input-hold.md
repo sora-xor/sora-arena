@@ -54,3 +54,7 @@ proxies. It does not claim finished photoreal art or bespoke character animation
 The heirloom changes location without consuming its codex entry or changing
 Nyaakoto’s weapon unlocks. `scripts/unreal/test_epilogue_data.py` checks the
 conditional trigger, hold duration and board placement beside the west pillar.
+The final cinematic reuses b17's board staging without a closing interaction
+anchor of its own. Host spatial validation rejects both missing required and
+unexpected closing anchors, caches and cinematic cameras, matching the runtime
+catalog's task-presence contract.
