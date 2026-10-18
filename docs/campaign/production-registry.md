@@ -48,3 +48,35 @@ for the full campaign playthrough. Adding tests is not execution evidence.
 
 The functional seal and tally marks are not bespoke final art. The diegetic ch05
 branding press and ch06/ch08 posted-page world interactions remain separate work.
+
+Rendered UI fixtures are a separate review gate. `SoraCapture.RegistryFixture`
+contains `Chapter4`, `Chapter5` and `Chapter7`; each loads a throwaway, validated
+completed save through Continue and captures Japanese alone and Japanese with
+English enabled. It verifies four recorded entries, three inspected entries and
+one return-only entry respectively, including exact quantities and tally state.
+These constructed saves are **UI fixtures, not campaign completion evidence**.
+The lifecycle tests and capture fixtures share the same completed-save builder.
+
+Run the rendering wrapper once at each review size after integrating the source:
+
+```sh
+scripts/toolchain/capture-editor-game.sh SoraCapture.RegistryFixture 1920 1080 sm6
+scripts/toolchain/capture-editor-game.sh SoraCapture.RegistryFixture 1280 720 sm6
+```
+
+Each successful run writes six PNGs under
+`Saved/Screenshots/SoraCapture/<width>x<height>/`, with names such as
+`RegistryFixture_Chapter4_JA.png` and `RegistryFixture_Chapter4_JA_EN.png`.
+`index.tsv` labels their language, row count and fixture provenance. The log emits
+`SORA_REGISTRY_FIXTURE_FRAME <absolute PNG path>` only after a fresh screenshot
+write succeeds; the qualification wrapper archives those acknowledged frames.
+A failed save/load, wrong entry state, text overflow or missing fresh PNG fails
+the fixture. Existing player save slots and HUD visibility are restored.
+
+The row names, quantities, status notes and footer prompts use measured wrapping
+with no line-count truncation. Chapter and row heights grow to retain every
+character. English footer prompts occupy their own wrapped lines. Captures check
+the same measured layout used to draw, including viewport margins and retained
+text; the resulting images still need visual inspection for readable typography,
+seal placement and overall composition at both sizes. SM5, SM6, packaged output
+and full campaign completion remain distinct evidence gates.

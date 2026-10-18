@@ -67,6 +67,8 @@ void DrawDialogue(const FSoraHUDFrame& Frame);
 void DrawResult(const FSoraHUDFrame& Frame);
 bool ShowsRegistry(const ASoraGameMode& Mode);
 void DrawRegistry(const FSoraHUDFrame& Frame);
+// Capture qualification uses the same measured, fully wrapped layout as draw.
+bool RegistryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 void DrawCaptions(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter* Hero);
 // Deterministic practice, drawn last (SoraHUDPracticePanels.cpp).
 void DrawPractice(const FSoraHUDFrame& Frame);

@@ -5,6 +5,7 @@
 #include "SoraGameMode.h"
 #include "SoraHUD.h"
 #include "Engine/Texture2D.h"
+#include "Engine/Canvas.h"
 
 bool SoraHUDPanels::ShowsRegistry(const ASoraGameMode& Mode)
 {
@@ -39,41 +40,143 @@ void Inspection(const FSoraHUDFrame& F,float X,float Y)
         if(F.Mode.bEnglishSubtitles) HUD.Label(Roles[Index].English,At,Y+52*S,.24f*S,F.Muted);
     }
 }
-}
-void SoraHUDPanels::DrawRegistry(const FSoraHUDFrame& F)
+// Use the same static font measure as UCanvas::TextSize, including its pixel
+// rounding. It also works between draw calls in the capture verification.
+float TextWidth(ASoraHUD& HUD,const FString& Text,float Scale)
 {
-    ASoraHUD& HUD=F.HUD;
-    const auto* Campaign=F.Mode.Campaign();
-    const FSoraChapter* Chapter=Campaign->ActiveChapter();
-    if(!Chapter) return;
-    const auto Rows=Campaign->RegistryRows();
-    const bool English=F.Mode.bEnglishSubtitles;
-    const float S=F.S,Width=FMath::Min(1240*S,F.W-80*S),RowHeight=(English?110.f:84.f)*S;
-    const float Height=200*S+Rows.Num()*RowHeight,Left=(F.W-Width)*.5f,Top=(F.H-Height)*.5f;
-    const float X=Left+36*S,TextWidth=Width-350*S;
-    HUD.Panel(Left,Top,Width,Height,FLinearColor(.012f,.026f,.034f,.97f));
-    HUD.Panel(Left,Top,5*S,Height,F.Teal);
-    const SoraText::FLine Title=SoraText::Line(NSLOCTEXT("SoraArena.Registry","Title","生産改帳"));
-    HUD.Label(Title.Japanese,X,Top+20*S,.95f*S,F.Ivory);
-    if(English) HUD.Label(Title.English,X+200*S,Top+35*S,.46f*S,F.Muted);
-    HUD.Label(Chapter->Title,X,Top+72*S,.6f*S,F.Teal);
-    if(English) HUD.Label(Chapter->TitleEnglish,X,Top+104*S,.4f*S,F.Muted);
-    if(UTexture2D* Logo=HUD.ResistanceLogo())
-        HUD.DrawTexture(Logo,Left+Width-105*S,Top+25*S,65*S,65*S,0,0,1,1,FLinearColor(.73f,.22f,.13f));
-    float Y=Top+142*S;
-    for(const FSoraRegistryRow& Row:Rows)
+    int32 Width=0,Height=0;
+    UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),Scale,Scale,Width,Height,Text);
+    return Width;
+}
+struct FTextBlock
+{
+    TArray<FString> Lines;
+    FString Source;
+    float Scale=0,Leading=0,Width=0;
+    FLinearColor Color;
+    float Height() const { return Lines.Num()*Leading; }
+    void Draw(ASoraHUD& HUD,float X,float& Y) const
     {
-        HUD.Panel(X,Y-8*S,Width-72*S,1*S,FLinearColor(.2f,.27f,.28f));
-        HUD.WrappedLabel(Row.Entry.Japanese(),X,Y,.62f*S,F.Ivory,TextWidth,30*S,1);
-        if(English) HUD.WrappedLabel(Row.Entry.English(),X,Y+32*S,.42f*S,F.Muted,TextWidth,24*S,1);
+        for(const FString& Line:Lines) { HUD.Label(Line,X,Y,Scale,Color); Y+=Leading; }
+    }
+};
+FTextBlock Wrap(ASoraHUD& HUD,const FString& Text,float Scale,float Leading,float Width,FLinearColor Color)
+{
+    FTextBlock Block;
+    Block.Source=Text; Block.Scale=Scale; Block.Leading=Leading; Block.Width=Width; Block.Color=Color;
+    FString Line;
+    for(int32 Index=0;Index<Text.Len();++Index)
+    {
+        const FString Character=Text.Mid(Index,1);
+        if(Text[Index]=='\n'||(!Line.IsEmpty()&&TextWidth(HUD,Line+Character,Scale)>Width))
+        {
+            Block.Lines.Add(Line); Line.Empty();
+        }
+        if(Text[Index]!='\n') Line+=Character;
+    }
+    if(!Line.IsEmpty()) Block.Lines.Add(Line);
+    return Block;
+}
+struct FRegistryRowLayout
+{
+    TArray<FTextBlock> Text;
+    float Height=0;
+    bool bTally=false;
+};
+struct FRegistryLayout
+{
+    float Width=0,Height=0,Left=0,Top=0,HeaderHeight=0;
+    TArray<FTextBlock> Chapter,Footer;
+    TArray<FRegistryRowLayout> Rows;
+};
+FRegistryLayout Layout(const FSoraHUDFrame& F)
+{
+    FRegistryLayout Page;
+    ASoraHUD& HUD=F.HUD;
+    const float S=F.S;
+    const bool English=F.Mode.bEnglishSubtitles;
+    const FSoraChapter* Chapter=F.Mode.Campaign()->ActiveChapter();
+    Page.Width=FMath::Min(1240*S,F.W-80*S);
+    if(!Chapter) return Page;
+    Page.Chapter.Add(Wrap(HUD,Chapter->Title,.6f*S,32*S,Page.Width-160*S,F.Teal));
+    if(English) Page.Chapter.Add(Wrap(HUD,Chapter->TitleEnglish,.4f*S,24*S,Page.Width-160*S,F.Muted));
+    Page.HeaderHeight=72*S;
+    for(const FTextBlock& Block:Page.Chapter) Page.HeaderHeight+=Block.Height();
+    Page.HeaderHeight=FMath::Max(142*S,Page.HeaderHeight+14*S);
+    Page.Height=Page.HeaderHeight;
+    for(const FSoraRegistryRow& Row:F.Mode.Campaign()->RegistryRows())
+    {
+        FRegistryRowLayout Item;
+        const float Width=Page.Width-350*S;
+        Item.Text.Add(Wrap(HUD,Row.Entry.Japanese(),.62f*S,32*S,Width,F.Ivory));
+        if(English) Item.Text.Add(Wrap(HUD,Row.Entry.English(),.42f*S,28*S,Width,F.Muted));
         const SoraText::FLine Status=SoraRegistry::Status(Row.State);
-        const float StatusY=Y+(English?62:34)*S;
-        HUD.WrappedLabel(Status.Japanese,X,StatusY,.36f*S,F.Gold,TextWidth,20*S,1);
-        if(English) HUD.WrappedLabel(Status.English,X,StatusY+21*S,.32f*S,F.Muted,TextWidth,18*S,1);
-        if(Row.HasSplitTally()) Inspection(F,Left+Width-285*S,Y);
-        Y+=RowHeight;
+        Item.Text.Add(Wrap(HUD,Status.Japanese,.36f*S,22*S,Width,F.Gold));
+        if(English) Item.Text.Add(Wrap(HUD,Status.English,.32f*S,20*S,Width,F.Muted));
+        for(const FTextBlock& Block:Item.Text) Item.Height+=Block.Height();
+        Item.Height=FMath::Max((English?110.f:84.f)*S,Item.Height+14*S);
+        Item.bTally=Row.HasSplitTally();
+        Page.Height+=Item.Height;
+        Page.Rows.Add(MoveTemp(Item));
     }
     const SoraText::FLine Next=SoraText::Format(NSLOCTEXT("SoraArena.HUD","Result.Next","{Enter}  続ける    |    {Menu}  メニュー"),
         {{TEXT("Enter"),SoraUI::ActionKey(&HUD,TEXT("Enter"))},{TEXT("Menu"),SoraUI::ActionKey(&HUD,TEXT("Menu"))}});
-    HUD.Label(English?Next.Japanese+TEXT("    ")+Next.English:Next.Japanese,X,Top+Height-36*S,.45f*S,F.Muted);
+    Page.Footer.Add(Wrap(HUD,Next.Japanese,.45f*S,27*S,Page.Width-72*S,F.Muted));
+    if(English) Page.Footer.Add(Wrap(HUD,Next.English,.36f*S,24*S,Page.Width-72*S,F.Muted));
+    for(const FTextBlock& Block:Page.Footer) Page.Height+=Block.Height();
+    Page.Height+=24*S;
+    Page.Left=(F.W-Page.Width)*.5f; Page.Top=(F.H-Page.Height)*.5f;
+    return Page;
+}
+}
+
+bool SoraHUDPanels::RegistryLayoutFits(const FSoraHUDFrame& F,FString& Why)
+{
+    const FRegistryLayout Page=Layout(F);
+    Why.Empty();
+    if(Page.Rows.IsEmpty()||TextWidth(F.HUD,TEXT("米"),F.S)<=0)
+        Why=TEXT("Registry rows or font measurements are missing");
+    else if(Page.Left<0||Page.Top<64*F.S||Page.Left+Page.Width>F.W||Page.Top+Page.Height>F.H-24*F.S)
+        Why=TEXT("Registry page exceeds its viewport margins");
+    const auto Check=[&](const FTextBlock& Block)
+    {
+        FString Joined;
+        for(const FString& Line:Block.Lines)
+        {
+            Joined+=Line;
+            if(TextWidth(F.HUD,Line,Block.Scale)>Block.Width+1.f) Why=TEXT("Registry text exceeds its column");
+        }
+        if(Joined!=Block.Source.Replace(TEXT("\n"),TEXT(""))) Why=TEXT("Registry wrapping dropped authored text");
+    };
+    for(const FTextBlock& Block:Page.Chapter) Check(Block);
+    for(const FRegistryRowLayout& Row:Page.Rows) for(const FTextBlock& Block:Row.Text) Check(Block);
+    for(const FTextBlock& Block:Page.Footer) Check(Block);
+    return Why.IsEmpty();
+}
+
+void SoraHUDPanels::DrawRegistry(const FSoraHUDFrame& F)
+{
+    ASoraHUD& HUD=F.HUD;
+    if(!F.Mode.Campaign()->ActiveChapter()) return;
+    const FRegistryLayout Page=Layout(F);
+    const float S=F.S,X=Page.Left+36*S;
+    HUD.Panel(Page.Left,Page.Top,Page.Width,Page.Height,FLinearColor(.012f,.026f,.034f,.97f));
+    HUD.Panel(Page.Left,Page.Top,5*S,Page.Height,F.Teal);
+    const SoraText::FLine Title=SoraText::Line(NSLOCTEXT("SoraArena.Registry","Title","生産改帳"));
+    HUD.Label(Title.Japanese,X,Page.Top+20*S,.95f*S,F.Ivory);
+    if(F.Mode.bEnglishSubtitles) HUD.Label(Title.English,X+200*S,Page.Top+35*S,.46f*S,F.Muted);
+    float Y=Page.Top+72*S;
+    for(const FTextBlock& Block:Page.Chapter) Block.Draw(HUD,X,Y);
+    if(UTexture2D* Logo=HUD.ResistanceLogo())
+        HUD.DrawTexture(Logo,Page.Left+Page.Width-105*S,Page.Top+25*S,65*S,65*S,0,0,1,1,FLinearColor(.73f,.22f,.13f));
+    Y=Page.Top+Page.HeaderHeight;
+    for(const FRegistryRowLayout& Row:Page.Rows)
+    {
+        HUD.Panel(X,Y-8*S,Page.Width-72*S,1*S,FLinearColor(.2f,.27f,.28f));
+        float TextY=Y;
+        for(const FTextBlock& Block:Row.Text) Block.Draw(HUD,X,TextY);
+        if(Row.bTally) Inspection(F,Page.Left+Page.Width-285*S,Y);
+        Y+=Row.Height;
+    }
+    for(const FTextBlock& Block:Page.Footer) Block.Draw(HUD,X,Y);
 }
