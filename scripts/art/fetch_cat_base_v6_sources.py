@@ -24,6 +24,10 @@ private ledger ``Local/ThirdPartyRaw/_ledger/cat_base_v6_ledger.json``:
   draft read by ``scripts/art/create_cat_base_v6.py``; the validator requires
   each file it lists to appear in the ledger with the same hash and tier.
 
+Acquisition preserves later derivative change statements already recorded in
+the central ledger for the same scan bytes. It does not infer an art build's
+round from the newest generator or generate derivative art itself.
+
 The Objaverse 1.0 mirror on Hugging Face is itself a dataset under ODC-By 1.0;
 ``mirror`` re-reads that record (it must be ungated and ODC-By) and every scan
 record carries it as ``mirror_license``.
@@ -598,6 +602,35 @@ def write_json(path: Path, doc: dict) -> None:
     print(f"wrote {path.relative_to(ROOT)}")
 
 
+def preserve_scan_derivative_changes(scan_recs: dict, ledger_path: Path) -> None:
+    """Retain reviewed history that was added after this acquisition script.
+
+    Only append-only statements for the same source identity may be retained.
+    Conflicting histories or changed source bytes require an explicit review
+    before any manifest is written; copying them silently could misattribute
+    a different scan. A fresh ledger keeps SCAN_USE's baseline statements.
+    """
+    if not ledger_path.is_file():
+        return
+    previous = {r["asset_id"]: r for r in json.loads(ledger_path.read_text(encoding="utf-8"))["records"]}
+    for rec in scan_recs.values():
+        old = previous.get(rec["asset_id"])
+        if not old or old.get("changes") == rec["changes"]:
+            continue
+        identity = ("origin_url", "license", "derived_art")
+        old_files = {(f["path"], f["sha256"]) for f in old.get("files", [])}
+        new_files = {(f["path"], f["sha256"]) for f in rec["files"]}
+        if any(old.get(k) != rec.get(k) for k in identity) or old_files != new_files:
+            raise SystemExit(f"{rec['asset_id']}: source identity changed; review existing derivative attribution")
+        old_changes = old.get("changes")
+        if not isinstance(old_changes, str) or not old_changes:
+            raise SystemExit(f"{rec['asset_id']}: invalid existing derivative attribution")
+        if old_changes.startswith(rec["changes"]):
+            rec["changes"] = old_changes
+        elif not rec["changes"].startswith(old_changes):
+            raise SystemExit(f"{rec['asset_id']}: conflicting derivative histories; reconcile attribution before writing")
+
+
 def write_manifest(ledger: dict) -> None:
     mirror = ledger.get("mirror")
     scans = {uid: v for uid, v in ledger["scans"].items() if v.get("status") != "refused"}
@@ -606,6 +639,7 @@ def write_manifest(ledger: dict) -> None:
     photos = {t: v for t, v in ledger["photos"].items() if v.get("status") != "refused"}
     hdris = {k: v for k, v in ledger.get("hdris", {}).items() if v.get("status") != "refused"}
     scan_recs = {uid: scan_record(uid, v, mirror) for uid, v in scans.items()}
+    preserve_scan_derivative_changes(scan_recs, LEDGER_DOC)
     photo_recs = {t: photo_record(t, v) for t, v in photos.items()}
     hdri_recs = {k: hdri_record(v) for k, v in hdris.items()}
     stamps = [v["acquired_at_utc"] for v in [*scans.values(), *photos.values(), *hdris.values()]]
