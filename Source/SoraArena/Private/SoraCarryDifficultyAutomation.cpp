@@ -40,10 +40,14 @@ bool FSoraCarryDifficultyTest::RunTest(const FString& Parameters)
     };
     const auto Start=[&](int32 Difficulty=-1) {
         World=MakeUnique<FSoraAutomationWorld>();
-        if(!World->Start(Slot)||!World->Tick(1)||!World->EnableKeyInput()) return false;
+        if(!World->Start(Slot)) return false;
+        // ResetRound prepares the saved beat on the first world tick, even
+        // behind the title. Select the fixture's tier before that beat starts.
         if(Difficulty>=0) World->Mode()->Settings()->SetCampaignDifficulty(static_cast<SoraAccessibility::EDifficulty>(Difficulty));
-        if(!World->PressKey(EKeys::Enter)||!World->PressKey(EKeys::Enter)||!World->Mode()->IsPlaying()||
+        if(!World->Tick(1)||!World->EnableKeyInput()||!World->PressKey(EKeys::Enter)||!World->PressKey(EKeys::Enter)||!World->Mode()->IsPlaying()||
             World->Mode()->Campaign()->ActiveChapter()!=&FSoraCatalog::Get().Chapter(1)||World->Mode()->Campaign()->ActiveBeat()!=4) return false;
+        const bool ExpectedDrop=World->Mode()->Settings()->CampaignDifficulty()==SoraAccessibility::EDifficulty::Hard;
+        if(!TestEqual(TEXT("Beat start selects the saved settings tier"),World->Mode()->Campaign()->ActiveTask().DropOnHit,ExpectedDrop)) return false;
         HoldOpponents();
         return true;
     };
