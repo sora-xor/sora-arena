@@ -38,6 +38,29 @@ UStaticMesh* KitMesh(const TCHAR* Name)
     return LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
 }
 
+// Unique timber columns (scripts/art/create_nyaagyu_dojo_timbers.py, imported by
+// scripts/unreal/import_nyaagyu_dojo_timbers.py): each is cut from its own seeded
+// log, drawn by Nanite on SM6 and by its baked conventional fallback on SM5, with
+// the box column's section, height and pivot. "Wall" variants detail the room
+// face and the strip of each side in front of the infill; "Open" variants, beside
+// door and engawa bays, detail every face. Variants load by index until one is
+// missing; with none, the hall keeps the box column.
+const TCHAR* DojoTimbers=TEXT("/Game/Generated/Environment/DojoTimbers/");
+
+TArray<UStaticMesh*> TimberColumns(const TCHAR* Kind)
+{
+    TArray<UStaticMesh*> Out;
+    for(int32 I=0;I<64;++I)
+    {
+        const FString Name=FString::Printf(TEXT("SM_DojoTimberColumn_%s_%02d"),Kind,I);
+        UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*FString::Printf(TEXT("%s%s.%s"),DojoTimbers,*Name,*Name),
+            nullptr,LOAD_NoWarn|LOAD_Quiet);
+        if(!Mesh) break;
+        Out.Add(Mesh);
+    }
+    return Out;
+}
+
 // Which bay a wall's Index-th of Count bays is. Side: 0 south, 1 east, 2 north, 3 west.
 EBay BayFor(int32 Side,int32 Index,int32 Count)
 {
@@ -106,6 +129,13 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
     };
     const FVector2D Min=Zone.Rect.Min,Max=Zone.Rect.Max;
     const float Height=Zone.WallHeight>0.f?Zone.WallHeight:KitWallCm,ZScale=Height/KitWallCm;
+    const TArray<UStaticMesh*> WallTimbers=TimberColumns(TEXT("Wall")),OpenTimbers=TimberColumns(TEXT("Open"));
+    if(WallTimbers.Num()==0)
+        UE_LOG(LogTemp,Warning,TEXT("SORA dojo timber columns are missing; run scripts/unreal/import_nyaagyu_dojo_timbers.py. The hall uses the box column."));
+    int32 Counts[4];
+    for(int32 Side=0;Side<4;++Side)
+        Counts[Side]=FMath::Max(1,FMath::RoundToInt32(((Side%2==0)?Max.X-Min.X:Max.Y-Min.Y)/BayCm));
+    UStaticMesh* LastTimber=nullptr;
     // Walls, each walked from its first inner corner with the room on the
     // module's local +Y: south (+X), east (+Y), north (-X), west (-Y).
     const FVector2D Start[4]={FVector2D(Min.X,Min.Y),FVector2D(Max.X,Min.Y),FVector2D(Max.X,Max.Y),FVector2D(Min.X,Max.Y)};
@@ -114,7 +144,7 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
     for(int32 Side=0;Side<4;++Side)
     {
         const float Length=(Side%2==0)?Max.X-Min.X:Max.Y-Min.Y;
-        const int32 Count=FMath::Max(1,FMath::RoundToInt32(Length/BayCm));
+        const int32 Count=Counts[Side];
         const float Width=Length/Count;
         int32 Index=0;
         while(Index<Count)
@@ -129,8 +159,27 @@ bool ASoraWorldBuilder::HallInterior(const FSoraZone& Zone,int32 ZoneIndex)
             for(int32 Inner=0;Inner<Span;++Inner)
                 if(Inner==0)
                 {
-                    const FTransform Post(FRotator(0,Yaw[Side],0),FVector(Start[Side]+Along[Side]*(Index+Inner)*Width,0.f),FVector(1.f,1.f,ZScale));
-                    if(bInstanced) Instances(Column)->AddInstance(Post,true); else Singles(Column)->AddInstance(Post,true);
+                    // Beside a door or engawa bay every face of the column shows.
+                    const int32 Prev=(Side+3)%4;
+                    const EBay Before=Index>0?BayFor(Side,Index-1,Count):BayFor(Prev,Counts[Prev]-1,Counts[Prev]);
+                    const bool bOpen=Kind==EBay::DoorOpen||Before==EBay::DoorOpen;
+                    const TArray<UStaticMesh*>& Pool=(bOpen&&OpenTimbers.Num())?OpenTimbers:WallTimbers;
+                    UStaticMesh* Mesh=Column;
+                    bool bMirror=false;
+                    if(Pool.Num())
+                    {
+                        // A stable pick per bay; no two neighbours alike, and a
+                        // mirrored copy (room face still -Y) reads as another column.
+                        const uint32 H=HashCombine(HashCombine(GetTypeHash(ZoneIndex),GetTypeHash(Side)),GetTypeHash(Index));
+                        const uint32 N=(uint32)Pool.Num();
+                        Mesh=Pool[(int32)(H%N)];
+                        if(Mesh==LastTimber&&N>1) Mesh=Pool[(int32)((H+1)%N)];
+                        bMirror=((H>>8)&1u)!=0;
+                        LastTimber=Mesh;
+                    }
+                    const FTransform Post(FRotator(0,Yaw[Side],0),FVector(Start[Side]+Along[Side]*(Index+Inner)*Width,0.f),
+                        FVector(bMirror?-1.f:1.f,1.f,ZScale));
+                    if(bInstanced) Instances(Mesh)->AddInstance(Post,true); else Singles(Mesh)->AddInstance(Post,true);
                 }
             Index+=Span;
         }
