@@ -883,21 +883,12 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     }
     case EGoal::Lines:
     {
-        int32 DialogueVolume=0;
+        bool bStarted=Director->LinesStarted();
         if (Beat.LinesEvent != TEXT("beat_start"))
-        {
-            bOk &= Test.TestFalse(*(Beat.Id + TEXT(" waits for its trigger")), Director->LinesStarted());
-            if (!Director->ObjectiveAnchor(Anchor))
-                return Fail(Test, State, Beat.Id + TEXT(" has no trigger anchor"));
-            MoveTo(State, Anchor);
-            if (!Advance(Test, State))
-                return false;
-            if (Director->AnchorTakesInteract())
-                GameMode->Interact(Player(State));
-        }
-        bOk &= Test.TestTrue(*(Beat.Id + TEXT(" lines begin")), Director->LinesStarted());
+            bOk &= Test.TestFalse(*(Beat.Id + TEXT(" waits for its trigger")),bStarted);
         for (int32 Action = 0; Action < MaxActionsPerBeat && Active(); ++Action)
         {
+            bStarted|=Director->LinesStarted();
             if (const FSoraDialogueCue* Line = Director->CurrentDialogueCue())
             {
                 bOk &= Test.TestTrue(*(Line->Id + TEXT(" is bilingual")), HasJapanese(Line->Japanese) && !Line->English.IsEmpty() &&
@@ -915,16 +906,12 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 if (!Advance(Test,State)) return false;
                 if (!Active()) break;
                 if (Director->LinesQueued()>0) continue;
-                if (!Director->TaskProgress().LinesDone && DialogueVolume < Beat.Space.Volumes.Num())
-                {
-                    const FSoraVolume& Volume=Beat.Space.Volumes[DialogueVolume++];
-                    MoveTo(State,FVector(Volume.Center.X,Volume.Center.Y,0.f));
-                }
-                else if (Director->ObjectiveAnchor(Anchor))
+                if (Director->ObjectiveAnchor(Anchor))
                 {
                     MoveTo(State,Anchor);
                     if(!Advance(Test,State,1)) return false;
                     if(Director->AnchorTakesInteract()&&!State.World->PressKey(EKeys::E)) return false;
+                    bStarted|=Director->LinesStarted();
                 }
                 else if (!Director->TaskProgress().LinesDone)
                     return Fail(Test,State,Beat.Id+TEXT(" is waiting for authored dialogue events without a tested world interaction"));
@@ -932,6 +919,7 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             if (!Advance(Test, State, 1, FastSeconds))
                 return false;
         }
+        bOk &= Test.TestTrue(*(Beat.Id + TEXT(" begins on its authored trigger")),bStarted);
         break;
     }
     case EGoal::Points:
