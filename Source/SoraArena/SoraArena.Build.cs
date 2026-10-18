@@ -49,6 +49,16 @@ public class SoraArena : ModuleRules
         if (File.Exists(NativePath))
         {
             RuntimeDependencies.Add(NativePath, StagedFileType.NonUFS);
+            // Preserve the native producer's original source/byte evidence.
+            // Mac candidate wrappers validate it before build and staging.
+            if (BinaryPath == "Mac/libconnect_norito_bridge.dylib")
+            {
+                string ManifestPath = NativePath + ".build.json";
+                if (File.Exists(ManifestPath))
+                    RuntimeDependencies.Add(ManifestPath, StagedFileType.NonUFS);
+                else if (Target.Type != TargetType.Editor)
+                    throw new BuildException("The Connect bridge build manifest is missing at {0}; rerun scripts/connect/build-bridge.sh.", ManifestPath);
+            }
             return;
         }
         if (Target.Type != TargetType.Editor)

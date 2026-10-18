@@ -77,7 +77,9 @@ record.update({'schema': 'sora.connect.bridge_build.v2', 'verified_at_utc': date
                'cargo': subprocess.check_output(['cargo', '--version'], cwd=source, text=True).strip(),
                'consumer_checks_sha256': {name: hashlib.sha256((project / name).read_bytes()).hexdigest()
                    for name in ('scripts/connect/check-abi.py', 'scripts/connect/verify-bridge.py',
-                                'scripts/connect/build-bridge.sh', 'Source/SoraArena/Private/ArenaWalletSubsystem.cpp')},
+                                'scripts/connect/build-bridge.sh', 'scripts/unreal/kernel_abi.py',
+                                'crates/arena-ffi/include/arena.h', 'Source/SoraArena/Private/ArenaKernelSubsystem.cpp',
+                                'Source/SoraArena/Private/ArenaWalletSubsystem.cpp')},
                'note': 'Clean committed source and local native verification only. No live wallet, settlement, Windows runtime, or release-signing qualification.'})
 destination = project / 'Binaries' / platform / built.name
 destination.parent.mkdir(parents=True, exist_ok=True)

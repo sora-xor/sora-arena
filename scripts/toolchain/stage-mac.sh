@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Stage and archive a previously built/cooked Mac game with pinned toolchains.
 set -euo pipefail
+# Explicit commit IDs are shared with test-packaged-mac.sh; a successful
+# package cannot quietly change the candidate under qualification.
+: "${SORA_CANDIDATE_SOURCE:?Set the full game source commit ID}"
+: "${SORA_CANDIDATE_NATIVE:?Set the full native bridge source commit ID}"
 if [[ $# -ne 1 ]]; then
   echo "usage: $0 ARCHIVE_DIRECTORY" >&2
   exit 2
@@ -39,6 +43,12 @@ if [[ ! -f "$PROJECT_ROOT/Binaries/Mac/SoraArena.target" ]]; then
 fi
 if [[ ! -f "$PROJECT_ROOT/Saved/Cooked/Mac/ue.projectstore" ]]; then
   echo "Mac cooked content is missing; run scripts/toolchain/cook-mac.sh first." >&2
+  exit 1
+fi
+CANDIDATE_START="$PROJECT_ROOT/Saved/Qualification/MacArtifacts/stage-start.json"
+python3 "$SCRIPT_DIR/mac_candidate.py" stage-begin "$CANDIDATE_START" "$SORA_CANDIDATE_SOURCE" "$SORA_CANDIDATE_NATIVE"
+if [[ -d "$ARCHIVE_DIRECTORY" && -n "$(ls -A "$ARCHIVE_DIRECTORY")" ]]; then
+  echo 'Candidate staging needs an empty archive directory; preserve earlier candidates separately.' >&2
   exit 1
 fi
 UAT="$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh"
@@ -97,3 +107,4 @@ if [[ "$ACTUAL_BUNDLE_ID" != 'org.sora.soraarena' ]]; then
   exit 1
 fi
 echo "Verified Mac bundle identifier: $ACTUAL_BUNDLE_ID; app: $APP"
+python3 "$SCRIPT_DIR/mac_candidate.py" stage-finish "$CANDIDATE_START" "$APP" "$ARCHIVE_DIRECTORY/package-candidate.json"
