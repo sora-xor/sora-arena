@@ -1,6 +1,7 @@
 """The authored maai contract must survive generation and fail closed."""
 import copy
 import json
+import math
 from pathlib import Path
 import unittest
 
@@ -47,6 +48,31 @@ class MaaiDataTests(unittest.TestCase):
             bad = copy.deepcopy(self.beat)
             bad["task"]["maai"] = None
             self.assertIsNotNone(director_event_error({"on": event}, bad, 0, self.chapter))
+
+    def test_full_lesson_has_clear_floor_away_from_the_training_site(self):
+        space = self.chapter["space"]
+        beat = space["beats"][1]
+        zone = space["zones"][beat["zone"]]
+        maai = self.beat["task"]["maai"]
+        # Include the mentor's full authored route, a hero at the outside
+        # of the band in any facing, and the ordinary 34 cm capsule radius.
+        forward = right = radius = 0
+        for move in maai["moves"]:
+            forward += move["forward_cm"]
+            right += move["right_cm"]
+            radius = max(radius, math.hypot(forward, right))
+        radius += maai["outer_cm"] + 34
+        x, y = beat["anchor"]
+        x0, y0, x1, y1 = zone["rect"]
+        self.assertGreater(min(x - x0, x1 - x, y - y0, y1 - y), radius)
+        boxes = list(zone["cover"])
+        # The training site's 200 cm base, central core and side racks
+        # fit inside this conservative footprint (SiteStructure).
+        boxes += [[sx, sy, 320, 320, 360] for sx, sy in space["sites"]]
+        for bx, by, width, depth, _ in boxes:
+            distance = math.hypot(max(abs(x - bx) - width / 2, 0),
+                                  max(abs(y - by) - depth / 2, 0))
+            self.assertGreater(distance, radius, (beat["anchor"], [bx, by]))
 
 
 if __name__ == "__main__":

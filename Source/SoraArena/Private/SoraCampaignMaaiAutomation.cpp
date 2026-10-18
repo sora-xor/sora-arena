@@ -40,6 +40,8 @@ bool FSoraCampaignMaaiTest::RunTest(const FString& Parameters)
     const FVector OriginalMentor=Mentor->GetActorLocation();
     const float OriginalHealth=Hero->Health;
     if(!World->Tick(120)) return false;
+    TestTrue(TEXT("Mentor stands on the same clear floor as the hero"),Mentor->GetCharacterMovement()->IsMovingOnGround()&&
+        FMath::Abs(Mentor->GetActorLocation().Z-Hero->GetActorLocation().Z)<3.f);
     TestEqual(TEXT("Waiting cannot bypass stance"),Campaign->DojoLessonStage(),0);
     TestFalse(TEXT("Mentor does not attack during his distance lesson"),Mentor->IsPupilWindup());
     TestEqual(TEXT("Hero is unharmed"),Hero->Health,OriginalHealth);

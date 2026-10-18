@@ -706,6 +706,11 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
         allocator = Allocator(spots, avoid if zone else [])
         start = (count * 5) % len(allocator.spots) if zone else (beat_index(beat) * 3) % len(allocator.spots)
         anchor = tuple(site) if site else allocator.take(start)
+        if task["maai"]:
+            # The restored training site has a raised collision base, core
+            # and sword racks. The mentor's measured steps belong on the
+            # clear dojo floor, independently of that restoration marker.
+            anchor = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
         record["anchor"] = list(anchor)
         west = lambda i: allocator.spots[i][0]
         east = lambda i: -allocator.spots[i][0]
