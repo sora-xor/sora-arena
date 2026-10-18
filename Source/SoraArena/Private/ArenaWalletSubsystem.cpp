@@ -38,7 +38,7 @@ constexpr int32 MaxFrameBytes = 1024 * 1024;
 constexpr int32 MaxSessionJsonBytes = 32 * 1024;
 constexpr int32 MaxTransactionStatusJsonBytes = 4096;
 constexpr int32 MaxTransactionPolls = 90;
-constexpr uint32 BridgeAbi = 23;
+constexpr uint32 BridgeAbi = 30;
 enum class EChainObservation : uint8 { Invalid, Absent, InFlight, Applied, Rejected };
 struct FIngressBudget
 {
@@ -479,7 +479,8 @@ struct FArenaConnectNative
         ARENA_BIND(Finalize, "connect_norito_detached_transaction_scaffold_finalize_ed25519_v1");
 #undef ARENA_BIND
         Bind(BuildTransaction, TEXT("connect_norito_native_transaction_scaffold_build_v1"));
-        // Optional research inspector; ABI 23 alone does not prove this symbol is present.
+        // Feature-negotiated research inspector; ABI 30 alone does not identify the Arena port.
+        // The staging verifier requires it, but its presence never authorizes Join or Buy.
         Bind(JoinTermsInspect, TEXT("connect_norito_arena_join_terms_inspect_v1"));
         return true;
     }
