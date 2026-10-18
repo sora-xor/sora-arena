@@ -89,7 +89,7 @@ struct FRegistryLayout
     TArray<FTextBlock> Chapter,Footer;
     TArray<FRegistryRowLayout> Rows;
 };
-FRegistryLayout Layout(const FSoraHUDFrame& F)
+FRegistryLayout BuildRegistryLayout(const FSoraHUDFrame& F)
 {
     FRegistryLayout Page;
     ASoraHUD& HUD=F.HUD;
@@ -132,7 +132,7 @@ FRegistryLayout Layout(const FSoraHUDFrame& F)
 
 bool SoraHUDPanels::RegistryLayoutFits(const FSoraHUDFrame& F,FString& Why)
 {
-    const FRegistryLayout Page=Layout(F);
+    const FRegistryLayout Page=BuildRegistryLayout(F);
     Why.Empty();
     if(Page.Rows.IsEmpty()||TextWidth(F.HUD,TEXT("米"),F.S)<=0)
         Why=TEXT("Registry rows or font measurements are missing");
@@ -158,7 +158,7 @@ void SoraHUDPanels::DrawRegistry(const FSoraHUDFrame& F)
 {
     ASoraHUD& HUD=F.HUD;
     if(!F.Mode.Campaign()->ActiveChapter()) return;
-    const FRegistryLayout Page=Layout(F);
+    const FRegistryLayout Page=BuildRegistryLayout(F);
     const float S=F.S,X=Page.Left+36*S;
     HUD.Panel(Page.Left,Page.Top,Page.Width,Page.Height,FLinearColor(.012f,.026f,.034f,.97f));
     HUD.Panel(Page.Left,Page.Top,5*S,Page.Height,F.Teal);
