@@ -106,7 +106,9 @@ bool FSoraCampaignRecoveryTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Death retry restores walking above ground"),Hero->GetCharacterMovement()->IsMovingOnGround()&&Hero->GetActorLocation().Z>0.f);
     TestTrue(TEXT("Death retry has not recovered any equipment"),Campaign->NeedsEquipmentRecovery());
     Destroy();
-    if(!TestTrue(TEXT("Next beat's checkpoint loads"),Seed(5)&&Start())) return false;
+    // ch03.b06 is a dialogue transition without a checkpoint. The next
+    // authored checkpoint is ch03.b07, after that conversation.
+    if(!TestTrue(TEXT("Next authored checkpoint loads"),Seed(6)&&Start())) return false;
     Campaign=World->Mode()->Campaign(); Hero=World->Player();
     TestFalse(TEXT("Later checkpoint does not replay retrieval"),Campaign->NeedsEquipmentRecovery());
     TestTrue(TEXT("Later checkpoint restores katana and bow availability"),Campaign->CanHold(0,false)&&Campaign->CanHold(18,false));

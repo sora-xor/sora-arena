@@ -37,7 +37,7 @@ bool USoraCampaignDirector::MaaiNeedsHelp() const
 }
 void USoraCampaignDirector::ResetMaai()
 {
-    bMaaiMoving=false; bMaaiTooClose=false;
+    bMaaiMoving=false; bMaaiTooClose=false; bMaaiObstructionReported=false;
     if(ASoraEnemy* Mentor=MaaiMentor())
     {
         // The lesson's anchor is in the clear central floor, with room for
@@ -62,7 +62,16 @@ void USoraCampaignDirector::TickMaai(int32 DeltaMs)
         // A visible, swept step, not a teleport or a count granted by a timer.
         MaaiTarget.Z=Mentor->GetActorLocation().Z;
         const FVector Next=FMath::VInterpConstantTo(Mentor->GetActorLocation(),MaaiTarget,DeltaMs/1000.f,120.f);
-        Mentor->SetActorLocation(Next,true);
+        FHitResult Hit;
+        Mentor->SetActorLocation(Next,true,&Hit);
+        if(Hit.bBlockingHit&&!bMaaiObstructionReported)
+        {
+            bMaaiObstructionReported=true;
+            UE_LOG(LogTemp,Warning,TEXT("Maai step obstructed: mentor=%s target=%s actor=%s component=%s normal=%s penetration=%d depth=%.3f mode=%d"),
+                *Mentor->GetActorLocation().ToString(),*MaaiTarget.ToString(),*GetNameSafe(Hit.GetActor()),
+                *GetNameSafe(Hit.GetComponent()),*Hit.Normal.ToString(),Hit.bStartPenetrating,Hit.PenetrationDepth,
+                static_cast<int32>(Mentor->GetCharacterMovement()->MovementMode));
+        }
         bMaaiMoving=FVector::DistSquared2D(Mentor->GetActorLocation(),MaaiTarget)>.01f;
         TaskState.Maai.HeldMs=0; TaskState.Maai.InBand=false;
         return;
@@ -84,7 +93,7 @@ void USoraCampaignDirector::TickMaai(int32 DeltaMs)
         const auto& Move=Task.Maai.Moves[TaskState.Maai.Done];
         const FVector Right=FVector::CrossProduct(FVector::UpVector,MaaiForward);
         MaaiTarget=Mentor->GetActorLocation()+MaaiForward*Move.ForwardCm+Right*Move.RightCm;
-        bMaaiMoving=true;
+        bMaaiMoving=true; bMaaiObstructionReported=false;
     }
     Progressed(Before);
 }

@@ -396,6 +396,7 @@ private:
     FVector MaaiTarget = FVector::ZeroVector;
     FVector MaaiForward = FVector::ForwardVector;
     bool bMaaiMoving = false;
+    bool bMaaiObstructionReported = false;
     bool bMaaiTooClose = false;
     void TickDialogue(float DeltaSeconds);
     // After any change to the task: plays the progress triggers crossed,
