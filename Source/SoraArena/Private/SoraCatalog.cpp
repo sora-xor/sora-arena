@@ -78,11 +78,14 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         const auto Coop = CoopValue->Type == EJson::Object ? CoopValue->AsObject() : nullptr;
         const FJsonRows* Locks = Coop ? Rows(*Coop, TEXT("ratchets_permille")) : nullptr;
         if (!Coop || Coop->Values.Num() != 6 || !Locks || Locks->Num() > 3 ||
-            !Str(*Coop, TEXT("npc"), Beat.CrankNpc) || Beat.CrankNpc.IsEmpty() ||
-            !Int(*Coop, TEXT("rate_milliturns_s"), T.CoopMilliTurnsS) || T.CoopMilliTurnsS <= 0 ||
+            !Points(*Coop, TEXT("npcs"), Beat.CrankNpcs) || Beat.CrankNpcs.IsEmpty() || Beat.CrankNpcs.Num()>3 ||
+            !Int(*Coop, TEXT("per_npc_milliturns_s"), T.CoopMilliTurnsS) || T.CoopMilliTurnsS <= 0 ||
             !Int(*Coop, TEXT("progress_permille"), T.CoopProgressPermille) ||
             !Coop->TryGetBoolField(TEXT("suspends_decay"), T.CoopSuspendsDecay) ||
             !Int(*Coop, TEXT("retreat_cm"), T.CoopRetreatCm)) return false;
+        for (int32 Index = 0; Index < Beat.CrankNpcs.Num(); ++Index)
+            if (Beat.CrankNpcs.Find(Beat.CrankNpcs[Index]) != Index) return false;
+        T.CoopCount = Beat.CrankNpcs.Num();
         T.RatchetCount = Locks->Num();
         for (int32 Index = 0; Index < Locks->Num(); ++Index)
         {

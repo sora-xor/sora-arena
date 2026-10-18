@@ -189,7 +189,14 @@ def _crank_people(beat, record, rect, cover, fail):
         if not candidates:
             fail(beat["id"], "crank helper has no reachable existing cover")
         refuge = min(candidates, key=lambda p: (p[0]-at[0])**2+(p[1]-at[1])**2)
-    return [{"id": coop["npc"], "target": -1, "at": at, "cover": [_i(v) for v in refuge]}]
+    offsets = [(0, 220)] if len(coop["npcs"]) == 1 else [(0, 220), (-190, -110), (190, -110)]
+    people = []
+    for npc, offset in zip(coop["npcs"], offsets):
+        point = [anchor[0]+offset[0], anchor[1]+offset[1]]
+        if not _inside(rect, point, 80) or not _clear(point, cover, 80):
+            fail(beat["id"], "crank crew has no clear work position")
+        people.append({"id": npc, "target": -1, "at": point, "cover": [_i(v) for v in refuge] if coop["retreat_cm"] else point})
+    return people
 
 def owned_volumes(beat):
     """Volumes on a climbing face the fieldcraft raises itself as the climber

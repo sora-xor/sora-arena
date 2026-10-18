@@ -323,7 +323,7 @@ bool SpaceReadFieldcraftSets(const FJsonObject& O, const FSoraBeat& Beat, FSoraF
         // An escort's net falls on its one cart; a defence's on its people.
         if ((Nets.Kind == FSoraNets::EKind::Cart && (Beat.Task.Goal != SoraBeatRules::EGoal::Escort || Nets.Quarry.Num() != 1)) ||
             (Nets.Kind == FSoraNets::EKind::Person && Beat.Task.Task != SoraBeatRules::ETask::Defend &&
-             !(Beat.Task.Task == SoraBeatRules::ETask::Crank && Nets.Quarry.Num() == 1 && Nets.Quarry[0].Id == Beat.CrankNpc && Nets.Rules.HaulMs == 0)))
+             !(Beat.Task.Task == SoraBeatRules::ETask::Crank && Nets.Quarry.Num() == 1 && Beat.CrankNpcs.Num() == 1 && Nets.Quarry[0].Id == Beat.CrankNpcs[0] && Nets.Rules.HaulMs == 0)))
             return false;
     }
     for (const auto& Row : *LightRows)
@@ -570,7 +570,7 @@ bool SpaceReadFieldcraft(const FJsonObject& O, const FSoraBeat& Beat, FSoraField
             !SpacePoint(P->TryGetField(TEXT("at")), Person.At)) return false;
         if (Person.Target == INDEX_NONE)
         {
-            if (Beat.CrankNpc.IsEmpty() || Person.Id != Beat.CrankNpc ||
+            if (!Beat.CrankNpcs.Contains(Person.Id) ||
                 !SpacePoint(P->TryGetField(TEXT("cover")), Person.Cover)) return false;
         }
         else if (Person.Target < 0 || Person.Target >= Beat.Task.TargetCount || Person.At != Beat.Space.Targets[Person.Target]) return false;
@@ -578,8 +578,9 @@ bool SpaceReadFieldcraft(const FJsonObject& O, const FSoraBeat& Beat, FSoraField
         if (bSeen) return false;
         F.People.Add(MoveTemp(Person));
     }
-    if (!Beat.CrankNpc.IsEmpty() && !F.People.ContainsByPredicate([&](const FSoraDefendedPerson& Person)
-        { return Person.Target == INDEX_NONE && Person.Id == Beat.CrankNpc; })) return false;
+    for (const FString& Npc : Beat.CrankNpcs)
+        if (!F.People.ContainsByPredicate([&](const FSoraDefendedPerson& Person)
+            { return Person.Target == INDEX_NONE && Person.Id == Npc; })) return false;
     // Volley ranks: each a full row of gunners with the volley's arm, from the start.
     F.bVolley = !IsNull(O, TEXT("volley"));
     TArray<int32> Gunners;

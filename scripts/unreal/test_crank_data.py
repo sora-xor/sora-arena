@@ -23,7 +23,7 @@ class CrankDataTests(unittest.TestCase):
                 (7, 6, "kohagi", 150, 1000, True, 500, [250, 500, 750])):
             data = chapter(number)
             beat, space = data["beats"][index], data["space"]["beats"][index]
-            coop = {"npc": npc, "rate_milliturns_s": rate, "progress_permille": credit,
+            coop = {"npcs": [npc], "per_npc_milliturns_s": rate, "progress_permille": credit,
                     "suspends_decay": suspend, "retreat_cm": retreat, "ratchets_permille": locks}
             self.assertEqual(beat["task"]["crank_coop"], coop)
             self.assertEqual(cooperation(beat, fail), coop)
@@ -54,8 +54,31 @@ class CrankDataTests(unittest.TestCase):
             with self.subTest(key=key, value=value), self.assertRaises(BuildError):
                 cooperation(beat, fail)
 
-    def test_lift_resolution_is_separate(self):
-        self.assertIsNone(chapter(8)["beats"][10]["task"]["crank_coop"])
+    def test_lift_rate_is_explicitly_per_named_person(self):
+        data = chapter(8)
+        beat, space = data["beats"][10], data["space"]["beats"][10]
+        coop = beat["task"]["crank_coop"]
+        names = ["tetsugoro", "league_engineer_1", "league_engineer_2"]
+        self.assertEqual(coop, {"npcs": names, "per_npc_milliturns_s": 150, "progress_permille": 1000,
+                                "suspends_decay": False, "retreat_cm": 0, "ratchets_permille": []})
+        self.assertEqual(cooperation(beat, fail), coop)
+        self.assertEqual(beat["params"]["crank"]["coop_npc"], {"npcs": names, "turns_per_s_per_npc": .15})
+        self.assertEqual([person["id"] for person in space["fieldcraft"]["people"]], names)
+        self.assertEqual(beat["task"]["decay_permille"] * beat["task"]["count"], 480)
+        self.assertEqual(3 * coop["per_npc_milliturns_s"] - 480, -30)
+        self.assertEqual(beat["params"]["crank"]["moving_platform"]["travel_cm"], 11500)
+        self.assertIn("decay x3", beat["params"]["crank"]["rope_hazard"]["rule"])
+        zone = data["space"]["zones"][space["zone"]]
+        for person in space["fieldcraft"]["people"]:
+            self.assertTrue(_inside(zone["rect"], person["at"], 80))
+            self.assertTrue(_clear(person["at"], zone["cover"], 80))
+        for raw in ({"npcs": names, "turns_per_s": .15}, {"npcs": [], "turns_per_s_per_npc": .15},
+                    {"npcs": [names[0], names[0]], "turns_per_s_per_npc": .15},
+                    {"npcs": names, "turns_per_s_per_npc": 0}, {"npcs": names, "turns_per_s_per_npc": True}):
+            bad = deepcopy(beat)
+            bad["params"]["crank"]["coop_npc"] = raw
+            with self.subTest(raw=raw), self.assertRaises(BuildError):
+                cooperation(bad, fail)
 
 
 if __name__ == "__main__":

@@ -594,7 +594,7 @@ struct FSoraWave
 struct FSoraBeat
 {
     FString Id;
-    FString CrankNpc;
+    TArray<FString> CrankNpcs;
     FString Place;
     FString Title;
     FString TitleEnglish;

@@ -14,7 +14,7 @@ using SoraFieldcraftAutomation::FBeatWorld;
 ASoraCompanion* Helper(const FBeatWorld& W)
 {
     for(const auto& Person:W.Fieldcraft()->PeopleInPlay())
-        if(IsValid(Person)&&Person->CompanionId()==W.BeatData().CrankNpc) return Person;
+        if(IsValid(Person)&&Person->CompanionId()==W.BeatData().CrankNpcs[0]) return Person;
     return nullptr;
 }
 FVector Anchor(const FBeatWorld& W) { return FVector(W.BeatData().Space.Anchor,W.Hero()->GetActorLocation().Z); }
@@ -167,6 +167,47 @@ bool FSoraCrankNetTest::RunTest(const FString& Parameters)
     if(!W.Tick(120)) return false;
     TestTrue(TEXT("His credited 0.2 turns/s slows the authored 0.9 turns/s idle loss"),
         FMath::Abs(W.Campaign()->TaskProgress().Progress-After+(W.Campaign()->TaskProgress().ElapsedMs-At)*7/10)<=1);
+    return !HasAnyErrors();
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraCrankLiftCrewTest,"SoraArena.Campaign.CrankLiftCrew",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FSoraCrankLiftCrewTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    using namespace SoraCrankAutomation;
+    FBeatWorld W(*this,TEXT("CrankLiftCrew"),7,10);
+    if(!Ready(W)||!Turns(W,20,true)||!Walk(W,Anchor(W)+FVector(-650,0,0))) return false;
+    const auto Crew=W.Fieldcraft()->PeopleInPlay();
+    if(!TestEqual(TEXT("All three named crew members are staged"),Crew.Num(),3)) return false;
+    const TArray<FString> Names={TEXT("tetsugoro"),TEXT("league_engineer_1"),TEXT("league_engineer_2")};
+    for(int32 Index=0;Index<3;++Index)
+        TestEqual(TEXT("Each helper has its authored identity"),Crew[Index]->CompanionId(),Names[Index]);
+    // Exercise the existing companion-availability states. This does not
+    // claim a new authored injury or net attack against the lift crew.
+    for(int32 Available=0;Available<=3;++Available)
+    {
+        for(int32 Index=0;Index<3;++Index)
+            Crew[Index]->Present(Index<Available?SoraFieldcraftRules::EState::Up:SoraFieldcraftRules::EState::Down);
+        if(!W.Tick(2)) return false;
+        TestEqual(TEXT("Only available crew at their bars contribute"),W.Campaign()->WorkingCrankHelpers(),Available);
+        const int32 Before=W.Campaign()->TaskProgress().Progress,At=W.Campaign()->TaskProgress().ElapsedMs;
+        if(!W.Tick(300)) return false;
+        const int32 Delta=W.Campaign()->TaskProgress().ElapsedMs-At;
+        TestTrue(TEXT("Per-person contribution retains full-goal decay with no perfect-hold waiver"),
+            FMath::Abs(W.Campaign()->TaskProgress().Progress-Before-(Available*150-480)*Delta/1000)<=1);
+        TestEqual(TEXT("The lift has no imported override ratchet"),W.Campaign()->TaskProgress().CrankFloor,0);
+    }
+    UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health+1000.f,nullptr,nullptr,UDamageType::StaticClass());
+    if(!W.Tick(2)||!W.Mode()->bDefeated||!W.Press(EKeys::Enter)||!W.Tick(30)) return false;
+    TestEqual(TEXT("Lift death retry resets partial work"),W.Campaign()->TaskProgress().Progress,0);
+    W.Harden();
+    if(!Walk(W,Anchor(W)+FVector(-180,0,0))||!Turns(W,2)) return false;
+    W.Fieldcraft()->PeopleInPlay()[0]->Present(SoraFieldcraftRules::EState::Down);
+    if(!Reload(W)) return false;
+    TestEqual(TEXT("Fresh-world reload resets partial lift work"),W.Campaign()->TaskProgress().Progress,0);
+    TestEqual(TEXT("Reload stages all three crew members"),W.Fieldcraft()->PeopleInPlay().Num(),3);
+    for(const auto& Person:W.Fieldcraft()->PeopleInPlay())
+        TestTrue(TEXT("Reload restores the crew's initial availability"),Person->Condition()==SoraFieldcraftRules::EState::Up);
     return !HasAnyErrors();
 }
 #endif

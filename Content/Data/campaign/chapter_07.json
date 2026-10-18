@@ -1625,8 +1625,10 @@
     "min_turn_ms": 1111,
     "max_turn_ms": 3333,
     "crank_coop": {
-     "npc": "kohagi",
-     "rate_milliturns_s": 150,
+     "npcs": [
+      "kohagi"
+     ],
+     "per_npc_milliturns_s": 150,
      "progress_permille": 1000,
      "suspends_decay": true,
      "retreat_cm": 500,

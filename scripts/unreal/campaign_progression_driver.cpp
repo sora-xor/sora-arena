@@ -870,6 +870,25 @@ static void TestCooperativeCranks()
     Expect(Released(S, 0), "cooperative quarter progress did not release its wave");
     for (int I=0; I<6; ++I) { Tick(S, Weir, Help); ReleaseWaves(S, Weir); }
     Expect(TaskComplete(S, Weir), "cooperation cannot complete the crank");
+    ChapterTasks[7](Tasks); const FTask Lift = Tasks[10];
+    Expect(Lift.CoopCount == 3 && Lift.CoopMilliTurnsS == 150 && !Lift.CoopSuspendsDecay && Lift.RatchetCount == 0 && Lift.DecayPermille == 10,
+        "lift crew must be per person, without a decay waiver or ratchet");
+    for (int Helpers=0; Helpers<=3; ++Helpers)
+        for (int Frame : {1, 7, 17, 33, 250, 1000, 10000})
+        {
+            FTaskState LiftState=StartTask(Lift,0);
+            LiftState.Progress=20000; LiftState.LastActionMs=0; LiftState.ElapsedMs=Lift.MaxTurnMs;
+            FTick Work; Work.CrankHelpers=Helpers;
+            for (int Ms=0; Ms<10000; Ms+=Frame)
+            {
+                Work.DeltaMs=Frame<10000-Ms?Frame:10000-Ms;
+                Tick(LiftState,Lift,Work);
+            }
+            Expect(LiftState.Progress==20000+(Helpers*150-480)*10, "lift did not apply the available crew's exact net rate");
+            LiftState=RetryTask(LiftState,Lift);
+            Expect(LiftState.Progress==0 && LiftState.CrankCarry==0 && LiftState.CrankFloor==0 && LiftState.LastActionMs<0,
+                "lift retry retained work or helper rate carry");
+        }
     std::cout << "cooperative cranks: exact frame-independent rates, idle loss, ratchets, waves and checkpoint reset passed\n";
 }
 

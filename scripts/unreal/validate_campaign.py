@@ -593,9 +593,10 @@ def check_fieldcraft(beat, record, index, zones, zone_of, on_floor):
             f"{what}: every defended person stands at its target")
     helpers = [person for person in craft["people"] if person["target"] == -1]
     coop = beat["task"]["crank_coop"]
-    require(len(helpers) == (1 if coop else 0), f"{what}: exactly the authored crank helper is staged")
+    require(len(helpers) == (len(coop["npcs"]) if coop else 0), f"{what}: exactly the authored crank helper is staged")
+    require([helper["id"] for helper in helpers] == (coop["npcs"] if coop else []), f"{what}: helper identities and order")
     for helper in helpers:
-        require(set(helper) == {"id", "target", "at", "cover"} and helper["id"] == coop["npc"], f"{what}: crank helper identity")
+        require(set(helper) == {"id", "target", "at", "cover"} and helper["id"] in coop["npcs"], f"{what}: crank helper identity")
         on_floor(index, helper["at"], f"{what}: crank helper work")
         on_floor(index, helper["cover"], f"{what}: crank helper cover")
 
@@ -623,7 +624,7 @@ def check_fieldcraft_sets(beat, record, index, zones, craft, area, on_floor):
             require(task["goal"] == "escort" and nets["halts"] and ids[0] in params["escort"]["npcs"] and
                     nets["quarry"][0]["hp"] > 0, f"{what}: an escort's nets fall on its cart")
         elif task["goal"] == "turns":
-            require(what == "ch05.b06" and kind == "person" and ids == [task["crank_coop"]["npc"]] == [person["id"] for person in craft["people"]] and
+            require(what == "ch05.b06" and kind == "person" and ids == task["crank_coop"]["npcs"] == [person["id"] for person in craft["people"]] and
                     nets["haul_ms"] == 0 and nets["cut_ms"] == 1000 and nets["windup_ms"] == 800 and
                     [row["index"] for row in nets["quarry"]] == [0], f"{what}: bellows boy's net/free contract")
         else:

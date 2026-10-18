@@ -149,7 +149,8 @@ def task_fields(task):
         fields.append(f"T.CarryGateMs = {task['carry_gate']['hold_ms']};")
     if task["crank_coop"]:
         coop = task["crank_coop"]
-        for name, key in (("CoopMilliTurnsS", "rate_milliturns_s"), ("CoopProgressPermille", "progress_permille"), ("CoopRetreatCm", "retreat_cm")):
+        fields.append(f"T.CoopCount = {len(coop['npcs'])};")
+        for name, key in (("CoopMilliTurnsS", "per_npc_milliturns_s"), ("CoopProgressPermille", "progress_permille"), ("CoopRetreatCm", "retreat_cm")):
             fields.append(f"T.{name} = {coop[key]};")
         fields.append(f"T.CoopSuspendsDecay = {flag(coop['suspends_decay'])};")
         fields.append(f"T.RatchetCount = {len(coop['ratchets_permille'])};")

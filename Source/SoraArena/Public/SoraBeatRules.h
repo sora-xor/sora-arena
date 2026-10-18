@@ -361,6 +361,9 @@ struct FTask
     // A crank's rate band as turn intervals: faster slips, slower lets it decay.
     int MinTurnMs = 0;
     int MaxTurnMs = 0;
+    // Each available named worker contributes this physical turn rate,
+    // credited at the authored multiplier (the bellows boy: 40%).
+    int CoopCount = 0;
     int CoopMilliTurnsS = 0;
     int CoopProgressPermille = Permille;
     bool CoopSuspendsDecay = false;
@@ -754,7 +757,7 @@ constexpr bool Tick(FTaskState& State, const FTask& Task, FTick Step)
         {
             const int Slack = State.ElapsedMs - State.LastActionMs - Task.MaxTurnMs;
             const int DecayMs = Slack <= 0 || (Step.CrankHelpers > 0 && Task.CoopSuspendsDecay) ? 0 : Slack < Delta ? Slack : Delta;
-            const int Helpers = Step.CrankHelpers < 0 ? 0 : Step.CrankHelpers > 3 ? 3 : Step.CrankHelpers;
+            const int Helpers = Step.CrankHelpers < 0 ? 0 : Step.CrankHelpers > Task.CoopCount ? Task.CoopCount : Step.CrankHelpers;
             const long long Total = State.CrankCarry + static_cast<long long>(Delta) * Helpers * Task.CoopMilliTurnsS * Task.CoopProgressPermille -
                 static_cast<long long>(Task.DecayPermille) * Task.Count * Permille * DecayMs;
             const int Change = static_cast<int>(Total / DecayUnit);
@@ -1289,9 +1292,11 @@ constexpr bool PointsValid(int Count)
 constexpr bool TaskValid(const FTask& Task)
 {
     if (Task.CarryGateMs < 0 || Task.CarryGateMs > MaxClockMs || (Task.CarryGateMs > 0 && Task.Task != ETask::Carry)) return false;
-    if (Task.CoopMilliTurnsS < 0 || Task.CoopMilliTurnsS > 10000 || Task.CoopProgressPermille <= 0 || Task.CoopProgressPermille > Permille ||
+    if (Task.CoopCount < 0 || Task.CoopCount > 3 || ((Task.CoopCount == 0) != (Task.CoopMilliTurnsS == 0)) ||
+        (Task.CoopCount == 0 && (Task.CoopSuspendsDecay || Task.CoopRetreatCm > 0)) ||
+        Task.CoopMilliTurnsS < 0 || Task.CoopMilliTurnsS > 10000 || Task.CoopProgressPermille <= 0 || Task.CoopProgressPermille > Permille ||
         Task.CoopRetreatCm < 0 || Task.CoopRetreatCm > 10000 || Task.RatchetCount < 0 || Task.RatchetCount > 3 ||
-        ((Task.CoopMilliTurnsS > 0 || Task.RatchetCount > 0) && Task.Task != ETask::Crank)) return false;
+        ((Task.CoopMilliTurnsS > 0 || Task.RatchetCount > 0 || Task.CoopSuspendsDecay || Task.CoopRetreatCm > 0) && Task.Task != ETask::Crank)) return false;
     for (int Index = 0; Index < Task.RatchetCount; ++Index)
         if (Task.Ratchets[Index] <= 0 || Task.Ratchets[Index] >= Permille || (Index > 0 && Task.Ratchets[Index] <= Task.Ratchets[Index-1])) return false;
     const unsigned AllWeapons = (1u << WeaponCount) - 1u;

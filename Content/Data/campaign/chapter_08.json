@@ -2597,7 +2597,7 @@
        "league_engineer_1",
        "league_engineer_2"
       ],
-      "turns_per_s": 0.15
+      "turns_per_s_per_npc": 0.15
      },
      "moving_platform": {
       "actor": "freight_lift_platform",
@@ -2744,7 +2744,18 @@
     "decay_permille": 10,
     "min_turn_ms": 1000,
     "max_turn_ms": 2500,
-    "crank_coop": null,
+    "crank_coop": {
+     "npcs": [
+      "tetsugoro",
+      "league_engineer_1",
+      "league_engineer_2"
+     ],
+     "per_npc_milliturns_s": 150,
+     "progress_permille": 1000,
+     "suspends_decay": false,
+     "retreat_cm": 0,
+     "ratchets_permille": []
+    },
     "speed_cm_s": 0,
     "wait_cm": 0,
     "path_cm": 0,
@@ -14241,7 +14252,44 @@
      "hide_spots": [],
      "releases": [],
      "allies": [],
-     "people": [],
+     "people": [
+      {
+       "id": "tetsugoro",
+       "target": -1,
+       "at": [
+        33568,
+        584
+       ],
+       "cover": [
+        33568,
+        584
+       ]
+      },
+      {
+       "id": "league_engineer_1",
+       "target": -1,
+       "at": [
+        33378,
+        254
+       ],
+       "cover": [
+        33378,
+        254
+       ]
+      },
+      {
+       "id": "league_engineer_2",
+       "target": -1,
+       "at": [
+        33758,
+        254
+       ],
+       "cover": [
+        33758,
+        254
+       ]
+      }
+     ],
      "volley": null,
      "alarms": [],
      "nets": null,
@@ -15350,7 +15398,7 @@
    "horseback_ride: charge{}, objectives[], waves[], arcs_deg{}, route_length_m, horse_stamina{} as object",
    "combat_wave: complete.objectives[] (same shape as stealth_zone), volley_command{}, scripted{}",
    "production_task: release{} (pre-escort seal-cuts), escort.bleedout_s, escort.healing_lance_revive_s, escort.path_length_m",
-   "production_task.crank: moving_platform{}, rope_hazard{}; coop_npc as {npcs, turns_per_s}",
+   "production_task.crank: moving_platform{}, rope_hazard{}; coop_npc as {npcs, turns_per_s_per_npc}",
    "production_task.carry: dropped_item_returns_after_s, post_interact{}; beat-level crowd{}, combat:false",
    "supply_point on beats that host a League 補給所",
    "boss: hp{}, finisher, lethal_finisher, post_defeat{}, phases[].target_s, pattern_tables (L3 owns the table content)",

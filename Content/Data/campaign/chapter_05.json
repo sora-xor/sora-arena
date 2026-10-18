@@ -1394,8 +1394,10 @@
     "min_turn_ms": 769,
     "max_turn_ms": 1250,
     "crank_coop": {
-     "npc": "bellows_boy",
-     "rate_milliturns_s": 500,
+     "npcs": [
+      "bellows_boy"
+     ],
+     "per_npc_milliturns_s": 500,
      "progress_permille": 400,
      "suspends_decay": false,
      "retreat_cm": 0,

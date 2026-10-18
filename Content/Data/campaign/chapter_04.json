@@ -1173,8 +1173,10 @@
     "min_turn_ms": 833,
     "max_turn_ms": 2500,
     "crank_coop": {
-     "npc": "otane",
-     "rate_milliturns_s": 200,
+     "npcs": [
+      "otane"
+     ],
+     "per_npc_milliturns_s": 200,
      "progress_permille": 1000,
      "suspends_decay": true,
      "retreat_cm": 0,
