@@ -148,6 +148,7 @@ public:
     // The line on screen: a cinematic subtitle on the card, else the head of
     // the dialogue queue.
     const FSoraDialogueCue* CurrentDialogueCue() const;
+    bool IsDialogueBlocking() const { return bDialogueHeld; }
     // The dialogue queue, head first.
     TArray<FSoraSubtitle> QueuedSubtitles() const;
     // The active beat's HUD prompt while it shows.
@@ -335,8 +336,13 @@ private:
     int32 LastEscortProgress = 0;
     // Dialogue: lines waiting, the head's remaining time, lines heard this
     // round, triggers already fired in it and when repeatable ones last played.
-    TArray<int32> Queue;
+    struct FQueuedLine { int32 Line; int32 Beat; bool bBlocking; };
+    TArray<FQueuedLine> Queue;
     float LineRemaining = 0.f;
+    float BlockingSeconds = 0.f;
+    bool bDialogueHeld = false;
+    bool bBlockingLimitReached = false;
+    TSet<int32> FinishedLines;
     TSet<int32> Heard;
     TSet<int32> FiredTriggers;
     TMap<int32, double> TriggerTimes;
@@ -401,7 +407,10 @@ private:
     // (the active beat by default) and the chapter's bark pools.
     void Fire(const FString& Event, int32 Beat = INDEX_NONE);
     bool TriggerAllowed(int32 Index) const;
-    void Enqueue(const TArray<int32>& Lines, bool bForce);
+    void Enqueue(const TArray<int32>& Lines, bool bForce, const FString& TriggerMode);
+    void RefreshDialogueHold();
+    void ClearDialogue();
+    bool DialogueLinesDone() const;
     void ShowPrompt(const FString& Event, int32 Beat);
     void Notify(const FString& Japanese, const FString& English, float Seconds);
     // A notice from an NSLOCTEXT line (SoraText::Line or Format).

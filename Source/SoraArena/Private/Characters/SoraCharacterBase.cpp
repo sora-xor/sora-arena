@@ -59,6 +59,17 @@ bool ASoraCharacterBase::CanPlay() const
 void ASoraCharacterBase::Tick(float Dt)
 {
     Super::Tick(Dt); LifeTime+=Dt; DamageFlash=FMath::Max(0.f,DamageFlash-Dt); HitMarkerTime=FMath::Max(0.f,HitMarkerTime-Dt);
+    const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
+    const bool bHold=!bKernelDriven&&Mode&&Mode->InputState()==SoraInput::Dialogue;
+    if(bHold!=bDialogueMovementHeld)
+    {
+        UCharacterMovementComponent* Movement=GetCharacterMovement();
+        if(bHold) bMovementTickBeforeDialogue=Movement->IsComponentTickEnabled();
+        ConsumeMovementInputVector();
+        Movement->StopMovementImmediately();
+        Movement->SetComponentTickEnabled(!bHold&&!bKernelDriven&&bMovementTickBeforeDialogue);
+        bDialogueMovementHeld=bHold;
+    }
     if(bKernelDriven) return;
     if(!FSoraCatalog::Get().IsReady()) return;
     if(!CanPlay()) { HaltActions(); return; }

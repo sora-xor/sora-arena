@@ -286,6 +286,19 @@ bool Advance(FAutomationTestBase& Test, FState& State, int32 Frames = 2, float D
     return true;
 }
 
+// Observe real blocking dialogue before the next gameplay action. Never clear
+// or skip the queue: the director must release control within its authored cap.
+bool WaitForDialogue(FAutomationTestBase& Test,FState& State)
+{
+    for(int32 Frame=0;Campaign(State)->IsDialogueBlocking()&&Frame<202;++Frame)
+    {
+        if(!Test.TestNotNull(TEXT("A blocking scene keeps its subtitle cue"),Campaign(State)->CurrentDialogueCue())||
+            !Advance(Test,State,1,.1f)) return false;
+        ++State.LinesShown;
+    }
+    return !Campaign(State)->IsDialogueBlocking()||Fail(Test,State,Where(State)+TEXT(": dialogue held control past twenty seconds"));
+}
+
 // Places the hero on the floor at Location; a mounted hero rides there (the
 // horse is placed and carries him).
 void MoveTo(FState& State, const FVector& Location)
@@ -336,6 +349,7 @@ bool ExpectCheckpoint(FAutomationTestBase& Test, FState& State)
 // OpponentDefeated in play.
 bool DefeatOne(FAutomationTestBase& Test, FState& State)
 {
+    if(!WaitForDialogue(Test,State)) return false;
     ASoraPlayerCharacter* Hero = Player(State);
     const TArray<ASoraEnemy*> Enemies = LiveEnemies(State);
     if (Enemies.IsEmpty())
@@ -356,6 +370,7 @@ bool DefeatOne(FAutomationTestBase& Test, FState& State)
 // Interact held beside it, so none contests a hold or rises to fight again.
 bool FreeConscripts(FAutomationTestBase& Test, FState& State)
 {
+    if(!WaitForDialogue(Test,State)) return false;
     const bool bLearned = Campaign(State)->IsMechanicInPlay(TEXT("seal_cut"));
     UWorld* World = State.World ? State.World->GetTestWorld() : nullptr;
     for (int32 Round = 0; World && Round < 16; ++Round)
@@ -514,6 +529,7 @@ bool Wait(FAutomationTestBase& Test, FState& State, int32 Milliseconds)
 // fills only while E stays down, so E is held until it is done.
 bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
 {
+    if(!WaitForDialogue(Test,State)) return false;
     USoraCampaignDirector* Director = Campaign(State);
     FVector Anchor;
     if (!Director->ObjectiveAnchor(Anchor))
@@ -839,6 +855,7 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     const auto Active = [&]() { return Director->ActiveBeat() == Index && !GameMode->bChapterComplete; };
     FVector Anchor;
     bool bOk = true;
+    if(Rules.Goal!=EGoal::Lines&&Rules.Goal!=EGoal::Elapsed&&!WaitForDialogue(Test,State)) return false;
     switch (Rules.Goal)
     {
     case EGoal::Elapsed:
@@ -865,6 +882,8 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
         break;
     }
     case EGoal::Lines:
+    {
+        int32 DialogueVolume=0;
         if (Beat.LinesEvent != TEXT("beat_start"))
         {
             bOk &= Test.TestFalse(*(Beat.Id + TEXT(" waits for its trigger")), Director->LinesStarted());
@@ -889,12 +908,27 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                     Queued[0].Seconds == Line->DurationSeconds);
                 ++State.LinesShown;
             }
-            if (Director->LinesQueued() == 0 && Rules.AnchorAfterLines && Director->ObjectiveAnchor(Anchor))
-                MoveTo(State, Anchor);
+            if (Director->LinesQueued() == 0)
+            {
+                // The frame that releases a hold does not also advance the
+                // task clock. Give its ordinary next step a chance to finish.
+                if (!Advance(Test,State)) return false;
+                if (!Active()) break;
+                if (Director->LinesQueued()>0) continue;
+                if (!Director->TaskProgress().LinesDone && DialogueVolume < Beat.Space.Volumes.Num())
+                {
+                    const FSoraVolume& Volume=Beat.Space.Volumes[DialogueVolume++];
+                    MoveTo(State,FVector(Volume.Center.X,Volume.Center.Y,0.f));
+                }
+                else if (Rules.AnchorAfterLines && Director->ObjectiveAnchor(Anchor)) MoveTo(State, Anchor);
+                else if (!Director->TaskProgress().LinesDone)
+                    return Fail(Test,State,Beat.Id+TEXT(" is waiting for authored dialogue events without a tested world interaction"));
+            }
             if (!Advance(Test, State, 1, FastSeconds))
                 return false;
         }
         break;
+    }
     case EGoal::Points:
         if (!LoseMatch(Test, State))
             return false;
@@ -1306,8 +1340,8 @@ bool Resume(FAutomationTestBase& Test, FState& State)
     bool bOk = Test.TestFalse(TEXT("Enter closes the menu"), GameMode->bMenu);
     bOk &= Test.TestFalse(TEXT("Closing the menu unpauses the world"), Paused(State));
     bOk &= Test.TestFalse(TEXT("A resumed checkpoint skips the title card"), Campaign(State)->IsChapterOpening());
-    bOk &= Test.TestTrue(TEXT("A resumed checkpoint is in play or its cinematic"),
-        GameMode->IsPlaying() || (Beat && Beat->Is(SoraBeatRules::EType::Cinematic)));
+    bOk &= Test.TestTrue(TEXT("A resumed checkpoint is in play, dialogue or its cinematic"),
+        GameMode->IsPlaying() || GameMode->InputState()==SoraInput::Dialogue || (Beat && Beat->Is(SoraBeatRules::EType::Cinematic)));
     return (bOk || Fail(Test, State, TEXT("Resuming a checkpoint did not return to play"))) && Advance(Test, State);
 }
 

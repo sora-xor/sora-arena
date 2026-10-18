@@ -496,6 +496,11 @@ bool FSoraCatalog::LoadCampaign()
                 !O->TryGetBoolField(TEXT("repeatable"), Line.bRepeatable))
                 return Bad(FString::Printf(TEXT("invalid line %s"), *Line.Id));
             Line.DurationSeconds = static_cast<float>(Duration);
+            if (!IsNull(*O, TEXT("mode")) &&
+                (!Str(*O, TEXT("mode"), Line.Mode) ||
+                 (Line.Mode != TEXT("blocking") && Line.Mode != TEXT("ambient") &&
+                  Line.Mode != TEXT("radio") && Line.Mode != TEXT("bark"))))
+                return Bad(FString::Printf(TEXT("invalid dialogue mode for %s"), *Line.Id));
             LineIds.Add(Line.Id, C.Dialogue.Num());
             C.Dialogue.Add(MoveTemp(Line));
         }

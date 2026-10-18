@@ -72,7 +72,8 @@ struct FBeatWorld
         }
         if (USoraFieldcraft* Craft = Fieldcraft())
             EventsHandle = Craft->OnEvent.AddLambda([this](FName Event) { Events.Add(Event.ToString()); });
-        return Test.TestTrue(TEXT("The beat is in play"), Mode()->IsPlaying() && Campaign()->ActiveBeat() == Beat);
+        return Test.TestTrue(TEXT("The beat is active, including authored dialogue holds"),
+            (Mode()->IsPlaying() || Mode()->InputState() == SoraInput::Dialogue) && Campaign()->ActiveBeat() == Beat);
     }
     bool Tick(int32 Frames, float DeltaSeconds = 1.f / 60.f)
     {

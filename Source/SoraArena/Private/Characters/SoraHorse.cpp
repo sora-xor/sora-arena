@@ -224,6 +224,8 @@ void ASoraHorse::Lead(ASoraHorse* InLeader,float SpacingCm)
 void ASoraHorse::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+    const ASoraGameMode* Mode=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode());
+    if(Mode&&Mode->InputState()==SoraInput::Dialogue) return;
     // The rules' clock counts whole milliseconds; the fraction carries over.
     ClockCarryMs+=DeltaSeconds*1000.f;
     const int32 DeltaMs=FMath::FloorToInt32(ClockCarryMs);

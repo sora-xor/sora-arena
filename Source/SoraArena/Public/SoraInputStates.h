@@ -18,6 +18,7 @@ enum EState : uint8
     Card = 1 << 2,     // chapter title card, before dialogue and the round timer
     Play = 1 << 3,     // live combat
     Result = 1 << 4,   // defeat, chapter-complete or practice-complete screen
+    Dialogue = 1 << 5, // an authored blocking line; dialogue and audio continue
 };
 struct FAction
 {
@@ -58,10 +59,10 @@ inline constexpr FAction Actions[] = {
     // Held in play: the practice scoreboard of every seat.
     {TEXT("Scoreboard"), Play},
     // Esc/Start opens the pause menu; the front end closes it.
-    {TEXT("Menu"), Card | Play | Result},
+    {TEXT("Menu"), Card | Play | Result | Dialogue},
     // Enter skips the chapter card and continues a result.
     {TEXT("Enter"), Card | Result},
-    {TEXT("Subtitles"), Card | Play | Result},
+    {TEXT("Subtitles"), Card | Play | Result | Dialogue},
 };
 
 // An action without a row has no states, so it can never act. Names come from
