@@ -30,6 +30,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Engine/GameInstance.h"
 #include "Misc/AutomationTest.h"
+#include "Misc/ScopeExit.h"
 #endif
 
 namespace ArenaConnect
@@ -678,9 +679,12 @@ bool UArenaWalletSubsystem::TickSession(float DeltaTime)
     return true;
 }
 
-bool UArenaWalletSubsystem::LoadNativeBridge()
+namespace ArenaConnect
 {
-    if (Native) return true;
+// One path resolver for normal loading and the staged-library qualification.
+// No candidate search: a missing or mismatched selected library fails closed.
+FString NativeBridgePath()
+{
     FString Path = FPlatformMisc::GetEnvironmentVariable(TEXT("SORA_CONNECT_BRIDGE"));
     if (Path.IsEmpty())
     {
@@ -691,12 +695,24 @@ bool UArenaWalletSubsystem::LoadNativeBridge()
 #elif PLATFORM_LINUX
         Path = FPaths::Combine(FPaths::ProjectDir(), TEXT("Binaries/Linux/libconnect_norito_bridge.so"));
 #else
-        Fail(TEXT("この環境ではウォレット接続を利用できません。"), EArenaWalletState::Unavailable);
-        return false;
+        return FString();
 #endif
     }
+    return FPaths::ConvertRelativePathToFull(Path);
+}
+}
+
+bool UArenaWalletSubsystem::LoadNativeBridge()
+{
+    if (Native) return true;
+    const FString Path = ArenaConnect::NativeBridgePath();
+    if (Path.IsEmpty())
+    {
+        Fail(TEXT("この環境ではウォレット接続を利用できません。"), EArenaWalletState::Unavailable);
+        return false;
+    }
     auto Candidate = MakeUnique<FArenaConnectNative>();
-    if (!Candidate->Load(FPaths::ConvertRelativePathToFull(Path)))
+    if (!Candidate->Load(Path))
     {
         Fail(TEXT("署名検証用のネイティブライブラリがありません。オンライン決済は利用できません。"), EArenaWalletState::Unavailable);
         return false;
@@ -1525,6 +1541,91 @@ void UArenaWalletSubsystem::CancelTransactionRequest()
 }
 
 #if WITH_DEV_AUTOMATION_TESTS
+// This invokes the actual staged library but no transport or transaction API.
+// The subsystem is deliberately not initialized: no recovery files or ticker.
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FArenaConnectNativeLoaderTest, "SoraArena.Connect.NativeLoader",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+bool FArenaConnectNativeLoaderTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    if (!TestTrue(TEXT("Staged-library qualification requires SORA_CONNECT_BRIDGE unset"),
+        FPlatformMisc::GetEnvironmentVariable(TEXT("SORA_CONNECT_BRIDGE")).IsEmpty())) return false;
+    const FString Path = ArenaConnect::NativeBridgePath();
+    AddInfo(FString::Printf(TEXT("NativeLoader context=%s staged_library=%s"), GIsEditor ? TEXT("editor") : TEXT("client"), *Path));
+    if (!TestTrue(TEXT("The platform's staged bridge exists"), !Path.IsEmpty() && IFileManager::Get().FileExists(*Path))) return false;
+    UArenaWalletSubsystem* Wallet = NewObject<UArenaWalletSubsystem>(NewObject<UGameInstance>());
+    // This calls the production resolver, ABI gate and every required binding.
+    if (!TestTrue(TEXT("The production bridge loader resolves ABI and all mandatory symbols"), Wallet->LoadNativeBridge())) return false;
+    ON_SCOPE_EXIT { Wallet->Native.Reset(); };
+    FArenaConnectNative& Api = *Wallet->Native;
+    TestEqual(TEXT("The loaded bridge reports ABI 30"), Api.Abi(), uint32(30));
+    const bool Builder = Api.BuildTransaction != nullptr, Inspector = Api.JoinTermsInspect != nullptr;
+    const bool JoinBlocked = ArenaConnect::RequiresQualifiedTermsReview(TEXT("JoinGameSessionV1"));
+    const bool BuyBlocked = ArenaConnect::RequiresQualifiedTermsReview(TEXT("BuyNftV1"));
+    AddInfo(FString::Printf(TEXT("NativeLoader ABI=%u research_builder=%d join_inspector=%d join_signing_blocked=%d buy_signing_blocked=%d"),
+        Api.Abi(), Builder ? 1 : 0, Inspector ? 1 : 0, JoinBlocked ? 1 : 0, BuyBlocked ? 1 : 0));
+    // Production treats these as feature-negotiated. Qualification of the
+    // staged Arena research port requires both, without invoking either one.
+    TestTrue(TEXT("The staged research transaction builder is present"), Builder);
+    TestTrue(TEXT("The staged non-authorizing Join inspector is present"), Inspector);
+    TestTrue(TEXT("Join signing still requires unavailable qualified terms review"), JoinBlocked);
+    TestTrue(TEXT("Buy signing still requires unavailable qualified terms review"), BuyBlocked);
+    for (const TCHAR* Allowed : {TEXT("OpenGameSessionV1"), TEXT("JoinGameSessionV1"), TEXT("ClaimGamePayoutV1"),
+        TEXT("OfferNftV1"), TEXT("BuyNftV1"), TEXT("CancelNftOfferV1")})
+        TestTrue(TEXT("An existing Arena instruction remains allowlisted"), ArenaConnect::IsAllowedInstruction(Allowed));
+    for (const TCHAR* Rejected : {TEXT("StakeGameNftV1"), TEXT("Transfer"), TEXT("instructions"), TEXT("joinGameSessionV1")})
+        TestFalse(TEXT("Loading the research bridge does not broaden the Arena allowlist"), ArenaConnect::IsAllowedInstruction(Rejected));
+
+    const auto Input = ArenaConnect::Utf8(TEXT("{ \"z\": [3,2,1], \"a\": {\"y\":true,\"x\":null} }"));
+    const FString Expected = TEXT("{\"a\":{\"x\":null,\"y\":true},\"z\":[3,2,1]}");
+    FNativeBytes Canonical(Api), Digest(Api), Reordered(Api);
+    uint8 CanonicalHash[32] = {}, ReorderedHash[32] = {};
+    if (!TestEqual(TEXT("Native canonical JSON accepts the harmless fixture"),
+        Api.CanonicalJson(Input.GetData(), Input.Num(), &Canonical.Data, &Canonical.Size, CanonicalHash, 32), 0) ||
+        !TestTrue(TEXT("Canonical JSON is bounded"), Canonical.Bounded(1024))) return false;
+    TestTrue(TEXT("Canonical bytes are exactly sorted and compact"),
+        ArenaConnect::Exact(ArenaConnect::Text(Canonical.Data, static_cast<int32>(Canonical.Size)), Expected));
+    if (!TestEqual(TEXT("The separate native hash binding accepts canonical bytes"),
+        Api.Hash(Canonical.Data, Canonical.Size, &Digest.Data, &Digest.Size), 0) ||
+        !TestTrue(TEXT("The native digest contains exactly 32 bytes"), Digest.Bounded(32) && Digest.Size == 32)) return false;
+    TestTrue(TEXT("Canonical JSON digest equals the hash of its exact output bytes"), FMemory::Memcmp(CanonicalHash, Digest.Data, 32) == 0);
+    const auto OrderedInput = ArenaConnect::Utf8(Expected);
+    if (!TestEqual(TEXT("Already canonical input is accepted"),
+        Api.CanonicalJson(OrderedInput.GetData(), OrderedInput.Num(), &Reordered.Data, &Reordered.Size, ReorderedHash, 32), 0) ||
+        !TestTrue(TEXT("Canonical reprocessing stays bounded"), Reordered.Bounded(1024))) return false;
+    TestTrue(TEXT("Object ordering and whitespace do not change the canonical hash"), FMemory::Memcmp(CanonicalHash, ReorderedHash, 32) == 0);
+    TestTrue(TEXT("Canonical reprocessing preserves the exact bytes"),
+        Reordered.Size == Canonical.Size && FMemory::Memcmp(Canonical.Data, Reordered.Data, Canonical.Size) == 0);
+    const auto ChangedInput = ArenaConnect::Utf8(TEXT("{\"a\":{\"x\":null,\"y\":false},\"z\":[3,2,1]}"));
+    FNativeBytes Changed(Api);
+    uint8 ChangedHash[32] = {};
+    if (!TestEqual(TEXT("A changed harmless value is accepted"),
+        Api.CanonicalJson(ChangedInput.GetData(), ChangedInput.Num(), &Changed.Data, &Changed.Size, ChangedHash, 32), 0) ||
+        !TestTrue(TEXT("Changed canonical output is bounded"), Changed.Bounded(1024))) return false;
+    TestTrue(TEXT("Changing a value changes its canonical digest"), FMemory::Memcmp(CanonicalHash, ChangedHash, 32) != 0);
+    for (const TCHAR* Invalid : {TEXT("{\"a\":1,\"a\":2}"), TEXT("{\"outer\":{\"a\":1,\"a\":2}}"), TEXT("{\"a\":1} trailing")})
+    {
+        const auto Bytes = ArenaConnect::Utf8(Invalid);
+        FNativeBytes Rejected(Api);
+        uint8 RejectedHash[32]; FMemory::Memset(RejectedHash, 0xA5, sizeof(RejectedHash));
+        TestTrue(TEXT("Native strict JSON rejects duplicate keys and trailing data"),
+            Api.CanonicalJson(Bytes.GetData(), Bytes.Num(), &Rejected.Data, &Rejected.Size, RejectedHash, 32) != 0);
+        TestTrue(TEXT("Rejected JSON returns no canonical buffer"), Rejected.Data == nullptr && Rejected.Size == 0);
+        const uint8 Zero[32] = {};
+        TestTrue(TEXT("Rejected JSON clears the caller's digest"), FMemory::Memcmp(RejectedHash, Zero, 32) == 0);
+    }
+    TestTrue(TEXT("Qualification creates no network requests, sockets, or session ticker"),
+        !Wallet->SessionRequest.IsValid() && !Wallet->SubmissionRequest.IsValid() && !Wallet->StatusRequest.IsValid() &&
+        !Wallet->Socket.IsValid() && !Wallet->TickerHandle.IsValid());
+    TestTrue(TEXT("Qualification creates no session keys or signing payload"),
+        Wallet->AppPrivateKey.IsEmpty() && Wallet->AppDirectionKey.IsEmpty() && Wallet->WalletDirectionKey.IsEmpty() &&
+        Wallet->SessionId.IsEmpty() && Wallet->PendingScaffold.IsEmpty() && Wallet->LastSignedTransactionBase64.IsEmpty());
+    TestTrue(TEXT("Loading leaves wallet and transaction state idle"),
+        Wallet->State == EArenaWalletState::Idle && Wallet->TransactionState == EArenaTransactionState::None);
+    AddInfo(TEXT("NativeLoader checks only local loading, bindings, canonical JSON and hashing; no pairing, signing, submission or finality evidence."));
+    return true;
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FArenaConnectBindingTest, "SoraArena.Connect.LaunchBindings", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FArenaConnectBindingTest::RunTest(const FString& Parameters)
 {

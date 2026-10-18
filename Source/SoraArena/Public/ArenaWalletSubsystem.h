@@ -134,5 +134,6 @@ private:
     void ReceiveEncrypted(const TArray<uint8>& Frame, uint64 Sequence);
 #if WITH_DEV_AUTOMATION_TESTS
     friend class FArenaCancelledSignatureLatchTest;
+    friend class FArenaConnectNativeLoaderTest;
 #endif
 };
