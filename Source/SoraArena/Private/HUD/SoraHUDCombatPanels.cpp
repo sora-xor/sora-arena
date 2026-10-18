@@ -222,78 +222,7 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
     HUD.Label(FString::Printf(TEXT("%03d"),FMath::CeilToInt(P->Health)),45*S,H-103*S,1.5*S,Ivory);
     HUD.Label(FSoraCatalog::Get().Class(P->ClassId).Name,140*S,H-82*S,.65*S,Teal);
     HUD.Panel(45*S,H-45*S,290*S,4*S,FLinearColor(.12,.19,.21)); HUD.Panel(45*S,H-45*S,290*S*FMath::Clamp(P->Health/P->MaxHealth,0.f,1.f),4*S,Teal);
-    const auto& Weapon=FSoraCatalog::Get().Weapon(P->WeaponId);
-    HUD.Panel(W-390*S,H-110*S,365*S,80*S,FLinearColor(.015,.035,.05,.9));
-    const bool bBokken=G->bCampaign&&G->Campaign()->ChapterId==0;
-    const SoraText::FLine Arm=bBokken?SoraText::Line(NSLOCTEXT("SoraArena.Arms","Bokken","木刀 / 非致死の立合い"))
-        :SoraText::FLine{Weapon.Name,Weapon.NameEnglish};
-    HUD.Label(Arm.Japanese,W-365*S,H-96*S,.72*S,Ivory);
-    // The arm's English name beside it while subtitles are on.
-    if(G->bEnglishSubtitles) HUD.Label(Arm.English,W-365*S+HUD.LabelWidth(Arm.Japanese,.72*S)+12*S,H-86*S,.36*S,Muted);
-    if(G->bDeterministicPractice)
-    {
-        if(auto* K=G->Kernel()) if(K->PracticePlayers.Num()>0)
-        {
-            const auto& State=K->PracticePlayers[0];
-            // Keys in prompts are the player's own, on the device in hand.
-            const SoraText::FLine Ammunition=State.Magazine==0
-                ?SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.Swordplay","剣術　{Melee}"),{{TEXT("Melee"),SoraUI::ActionKey(&HUD,TEXT("Melee"))}})
-                :State.ReloadTicks>0
-                ?SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.ReloadingFor","装填中 {Seconds} 秒   {Ammo} / {Magazine}"),
-                    {{TEXT("Seconds"),FString::Printf(TEXT("%.1f"),State.ReloadTicks/60.f)},{TEXT("Ammo"),State.Ammo},{TEXT("Magazine"),State.Magazine}})
-                :SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.Rounds","弾数 {Ammo} / {Magazine}   {Reload} 装填"),
-                    {{TEXT("Ammo"),FString::Printf(TEXT("%02d"),State.Ammo)},{TEXT("Magazine"),FString::Printf(TEXT("%02d"),State.Magazine)},
-                    {TEXT("Reload"),SoraUI::ActionKey(&HUD,TEXT("Reload"))}});
-            Frame.LabelWithEnglish(Ammunition,W-365*S,H-71*S,.46*S,Gold);
-            HUD.Label(FString::Printf(TEXT("気力 %d / 100    待機 %.2f 秒"),State.Stamina,State.Cooldown/60.f),W-365*S,H-48*S,.33*S,Muted);
-            if(State.Alive&&State.ChargeRequired>0&&State.ChargeTicks>0)
-            {
-                const float Progress=FMath::Clamp(static_cast<float>(State.ChargeTicks)/State.ChargeRequired,0.f,1.f);
-                HUD.Panel(W-390*S,H-145*S,365*S,29*S,FLinearColor(.015,.035,.05,.92));
-                HUD.Label(FString::Printf(TEXT("構え %d / %d"),State.ChargeTicks,State.ChargeRequired),W-365*S,H-142*S,.37*S,Gold);
-                if(G->bEnglishSubtitles) HUD.Label(TEXT("WINDUP"),W-125*S,H-141*S,.28*S,Muted);
-                HUD.Panel(W-365*S,H-122*S,320*S,4*S,FLinearColor(.12,.19,.21));
-                HUD.Panel(W-365*S,H-122*S,320*S*Progress,4*S,Gold);
-            }
-            // The respawn countdown and loadout choice: SoraHUDPracticePanels.cpp.
-            if(G->Practice()->bSlowed) HUD.Label(TEXT("処理負荷により、稽古時間を減速しています"),30*S,200*S,.4*S,Gold);
-        }
-    }
-    else
-    {
-        if(Kit->IsSheathing())
-        {
-            // 納刀: the sheathed hand guards nothing; its guard press is mutō-dori.
-            Frame.LabelWithEnglish(Kit->IsSheathed()?SoraText::Line(NSLOCTEXT("SoraArena.HUD","Ammo.Sheathed","納刀 ― 無刀の構え"))
-                :SoraText::Line(NSLOCTEXT("SoraArena.HUD","Ammo.Sheathing","納刀中……")),W-365*S,H-59*S,.54*S,Gold);
-        }
-        else
-        {
-            const FString Ammo=FString::Printf(TEXT("%02d"),Kit->Ammo),Magazine=FString::Printf(TEXT("%02d"),Weapon.Magazine);
-            Frame.LabelWithEnglish(Kit->bReloading?SoraText::Line(NSLOCTEXT("SoraArena.HUD","Ammo.Reloading","装填中"))
-                :Weapon.Kind==TEXT("melee")?SoraText::Line(NSLOCTEXT("SoraArena.HUD","Ammo.Melee","間合い / 斬突と残心"))
-                :Weapon.Kind==TEXT("bow")?SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.Arrows","矢 {Ammo} / {Magazine}   {Fire} 長押し→離して射る"),
-                    {{TEXT("Ammo"),Ammo},{TEXT("Magazine"),Magazine},{TEXT("Fire"),SoraUI::ActionKey(&HUD,TEXT("Fire"))}})
-                :SoraText::Format(NSLOCTEXT("SoraArena.HUD","Ammo.Magazine","{Ammo} / {Magazine}   {Reload} 装填"),
-                    {{TEXT("Ammo"),Ammo},{TEXT("Magazine"),Magazine},{TEXT("Reload"),SoraUI::ActionKey(&HUD,TEXT("Reload"))}}),
-                W-365*S,H-59*S,.54*S,Gold);
-        }
-        if(Kit->IsBowDrawing()||Kit->IsCommittedStrike())
-        {
-            const bool bDraw=Kit->IsBowDrawing();
-            const float Progress=bDraw?Kit->BowDrawProgress():Kit->StrikeWindupProgress();
-            HUD.Panel(W-390*S,H-145*S,365*S,29*S,FLinearColor(.015,.035,.05,.92));
-            HUD.Label(bDraw?TEXT("会 / 引き分け"):TEXT("打突の構え"),W-365*S,H-142*S,.37*S,Gold);
-            if(G->bEnglishSubtitles) HUD.Label(bDraw?TEXT("DRAW / RELEASE"):TEXT("COMMITTED STRIKE"),W-160*S,H-141*S,.28*S,Muted);
-            HUD.Panel(W-365*S,H-122*S,320*S,4*S,FLinearColor(.12,.19,.21));
-            HUD.Panel(W-365*S,H-122*S,320*S*Progress,4*S,Gold);
-        }
-        if(G->bCampaign&&G->Campaign()->ChapterId>0&&SoraHistoricalArms::IsMelee(P->WeaponId))
-        {
-            HUD.Panel(W-365*S,H-35*S,320*S,3*S,FLinearColor(.12,.19,.21));
-            HUD.Panel(W-365*S,H-35*S,320*S*FMath::Clamp(Kit->GuardReserve()/100.f,0.f,1.f),3*S,Teal);
-        }
-    }
+    DrawWeapon(Frame,Hero);
     if(G->Arena()&&!G->bDeterministicPractice)
     {
         for(int32 I=0;I<G->Arena()->NodePositions.Num();++I)

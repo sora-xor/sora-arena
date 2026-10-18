@@ -58,6 +58,9 @@ void DrawDojoLesson(const FSoraHUDFrame& Frame);
 void DrawBoss(const FSoraHUDFrame& Frame);
 void DrawStealth(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+void DrawWeapon(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+// Capture checks the same measured weapon layout that the live HUD draws.
+bool WeaponLayoutFits(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero, FString& Why);
 // The campaign's arms wheel and the arm a key took up; the beat's fieldcraft:
 // the hand's work, breath, grip, stones, the candle, the signal and the
 // downed (SoraHUDFieldcraftPanel.cpp).

@@ -19,7 +19,7 @@ msgid "猫柳生"
 msgstr "Nyaagyu Rebellion"
 
 #. Key:	Bokken
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.Arms,Bokken"
 msgid "木刀 / 非致死の立合い"
 msgstr "Bokken / non-lethal sparring"
@@ -896,55 +896,55 @@ msgid "的が遠い。{Range} m 以内の地面を示せ。"
 msgstr "Too far. Mark the ground within {Range} m."
 
 #. Key:	Ammo.Arrows
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Arrows"
 msgid "矢 {Ammo} / {Magazine}   {Fire} 長押し→離して射る"
 msgstr "Arrows {Ammo} / {Magazine}   hold {Fire}, release to loose"
 
 #. Key:	Ammo.Magazine
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Magazine"
 msgid "{Ammo} / {Magazine}   {Reload} 装填"
 msgstr "{Ammo} / {Magazine}   {Reload} reload"
 
 #. Key:	Ammo.Melee
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Melee"
 msgid "間合い / 斬突と残心"
 msgstr "Distance: cut, thrust, zanshin"
 
 #. Key:	Ammo.Reloading
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Reloading"
 msgid "装填中"
 msgstr "Reloading"
 
 #. Key:	Ammo.ReloadingFor
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.ReloadingFor"
 msgid "装填中 {Seconds} 秒   {Ammo} / {Magazine}"
 msgstr "Reloading {Seconds} s   {Ammo} / {Magazine}"
 
 #. Key:	Ammo.Rounds
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Rounds"
 msgid "弾数 {Ammo} / {Magazine}   {Reload} 装填"
 msgstr "Rounds {Ammo} / {Magazine}   {Reload} reload"
 
 #. Key:	Ammo.Sheathed
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Sheathed"
 msgid "納刀 ― 無刀の構え"
 msgstr "Sheathed: mutō-dori stance"
 
 #. Key:	Ammo.Sheathing
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Sheathing"
 msgid "納刀中……"
 msgstr "Sheathing…"
 
 #. Key:	Ammo.Swordplay
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Swordplay"
 msgid "剣術　{Melee}"
 msgstr "Swordplay: {Melee}"

@@ -152,6 +152,35 @@ class CaptureArchiveTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate"):
             self.archive(log=self.log + "\nSORA_REGISTRY_FIXTURE_FRAME " + str(self.source))
 
+    def test_weapon_fixture_keeps_original_bytes_and_labels_its_scope(self):
+        self.report = {"tests": [{"fullTestPath": "SoraCapture.WeaponHUDFixture.BowDraw"}]}
+        frames = self.archive(log="SORA_WEAPON_HUD_FIXTURE_FRAME " + str(self.source))
+        self.assertEqual((self.root / "run-sm6" / frames[0]["path"]).read_bytes(), self.png)
+        self.assertEqual(frames[0]["sha256"], hashlib.sha256(self.png).hexdigest())
+        self.assertEqual(frames[0]["capture_kind"], "prepared gameplay UI fixture; not playthrough evidence")
+
+    def test_capture_families_require_their_own_markers(self):
+        families = (("ArtReview.Dojo", "SORA_ART_REVIEW_FRAME"),
+                    ("RegistryFixture.Chapter4", "SORA_REGISTRY_FIXTURE_FRAME"),
+                    ("WeaponHUDFixture.Katana", "SORA_WEAPON_HUD_FIXTURE_FRAME"))
+        for required, marker in families:
+            for other, wrong_marker in families:
+                if required == other:
+                    continue
+                with self.subTest(required=required, wrong_marker=wrong_marker):
+                    self.report = {"tests": [{"fullTestPath": "SoraCapture." + required}]}
+                    with self.assertRaisesRegex(ValueError, "no screenshot"):
+                        self.archive(log=wrong_marker + " " + str(self.source))
+
+    def test_weapon_fixture_retains_png_and_duplicate_validation(self):
+        self.report = {"tests": [{"fullTestPath": "SoraCapture.WeaponHUDFixture.Katana"}]}
+        marker = "SORA_WEAPON_HUD_FIXTURE_FRAME " + str(self.source)
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            self.archive(output="duplicate", log=marker + "\n" + marker)
+        self.source.write_bytes(self.png[:-12])
+        with self.assertRaisesRegex(ValueError, "PNG"):
+            self.archive(output="incomplete", log=marker)
+
 
 if __name__ == "__main__":
     unittest.main()
