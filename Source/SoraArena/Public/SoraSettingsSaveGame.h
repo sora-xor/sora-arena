@@ -46,6 +46,7 @@ public:
     UPROPERTY(SaveGame) bool ReduceFlashing = false;
     UPROPERTY(SaveGame) bool AutoSteer = false;
     UPROPERTY(SaveGame) bool HoldToCrank = false;
+    UPROPERTY(SaveGame) bool RhythmAssist = false;
     UPROPERTY(SaveGame) bool VolleyAutoOrder = true;
     // Percent, 0 to 100.
     UPROPERTY(SaveGame) int32 CameraShake = 100;

@@ -1156,6 +1156,14 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             else if (Rules.Goal == EGoal::Steps)
             {
                 const SoraBeatRules::FStep& Step = Rules.Steps[Task.Step];
+                if(Step.PhraseStrikes>0)
+                {
+                    if(!SoraRhythmRules::Active(Director->RhythmState(),Task,Rules))
+                    { if(!WorkAtAnchor(Test,State)) return false; }
+                    const int32 Until=FMath::Max(0,Director->RhythmState().DueMs-Director->TaskProgress().ElapsedMs);
+                    if(!Wait(Test,State,Until)||!WorkAtAnchor(Test,State)||!Wait(Test,State,Step.ToleranceMs+20)) return false;
+                    continue;
+                }
                 const bool bRhythm = Step.BeatMs > 0 && Task.StepDone > 0;
                 // One stroke off the beat restarts the rhythm step.
                 const bool bMiss = bRhythm && !bMissTested && Task.StepDone == 1;

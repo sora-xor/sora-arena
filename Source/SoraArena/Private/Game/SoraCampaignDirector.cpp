@@ -292,6 +292,7 @@ void USoraCampaignDirector::ResetRound()
     EndRecoveryClimb();
     ResetCarryWork();
     StopPlayerCrank(false);
+    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1;
     // A shell fired before death or chapter advance must never damage the
     // restored encounter or score a defeat against its fresh opponents.
     ClearOfflineProjectiles();
@@ -419,9 +420,11 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     Task=Beat.Task;
     static_assert(static_cast<int32>(SoraAccessibility::EDifficulty::Count)==3);
     SoraBeatRules::ApplyCarryDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
+    SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
     ResetCarryWork();
     StopPlayerCrank(false);
+    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1;
     SoraBeatRules::RecordForms(TaskState,Task,DojoLessonMask);
     Kills=0; KillsNeeded=Task.Goal==SoraBeatRules::EGoal::Points||Task.Goal==SoraBeatRules::EGoal::Lessons?Task.Count:SoraBeatRules::TotalLethal(Task);
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; ActiveCrankHelpers=0; bCrankHelperRetreating=false; bLiftGallery=false; bDetected=false; CinematicSeconds=0.f;
@@ -476,6 +479,7 @@ void USoraCampaignDirector::RetryBeatInPlace()
     // A lost sparring match starts over where it stands: fresh points, the
     // losses and the forms learned kept, the rival back on the floor.
     StopPlayerCrank(false);
+    RhythmClock={}; RhythmInput={}; RhythmCueShown=-1;
     TaskState=SoraBeatRules::RetryTask(TaskState,Task);
     Kills=0; ClearOpponents();
     if(ASoraPlayerCharacter* Player=M.Hero()) Player->Heal(Player->MaxHealth);
@@ -623,6 +627,7 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     }
     const FSoraBeat* Beat=ActiveBeatData();
     TickPlayerCrank(0);
+    if(!PlayerRhythmEligible()&&(RhythmClock.Step>=0||RhythmInput.Active)) StopPlayerRhythm(true);
     if(!Beat||!Save||M.bDeterministicPractice||M.bMenu||M.bDefeated||M.bChapterComplete) return;
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed)
     {
@@ -702,6 +707,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     TickCarryWork(DeltaMs);
     TickHeldWork(DeltaMs);
     TickPlayerCrank(DeltaMs);
+    TickPlayerRhythm();
     if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // Horses, a siege on defended targets, the escorted party and the task's kit.
     TickSpace(DeltaMs);
@@ -1649,6 +1655,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
         if(!Space.StepStations.IsValidIndex(Step)||
             !Near(ASoraWorldBuilder::Floor(Space.Stations[Space.StepStations[Step]]),Reach))
             break;
+        if(SoraRhythmRules::Supported(TaskState,Task)) { WorkPlayerRhythm(); return; }
         const EStroke Struck=SoraBeatRules::Stroke(TaskState,Task);
         bWorked=Struck!=EStroke::Refused;
         if(Struck==EStroke::Missed)

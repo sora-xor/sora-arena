@@ -64,6 +64,7 @@ bool USoraCampaignDirector::IsWorkingCrank() const
 }
 void USoraCampaignDirector::StopPlayerCrank(bool bWaitForRelease)
 {
+    StopPlayerRhythm(bWaitForRelease);
     CrankInput={};
     BellowsTreads={};
     if(bWaitForRelease) SoraCrankInputRules::Stop(CrankInput);
@@ -76,11 +77,14 @@ bool USoraCampaignDirector::TurnPlayerCrank(bool bBegin)
     if(bBegin&&!SoraCrankInputRules::Begin(CrankInput,true)) return false;
     if(bBegin&&Task.AlternateTreads)
     {
+        BellowsCueStarted=TaskState.ElapsedMs; RhythmCueShown=-1;
         SoraCrankInputRules::BeginTreads(BellowsTreads,FMath::RoundToInt(Mode().Hero()->GetInputAxisValue(TEXT("MoveRight"))*1000.f));
         return false; // Interact engages the station; only a completed L+R pair turns it.
     }
     auto* Kit=Mode().Hero()->GetEquipment();
-    const auto Turned=SoraBeatRules::PlayerTurn(TaskState,Task,FMath::FloorToInt32(Kit->GuardReserve()));
+    const int32 DoneBefore=TaskState.Done;
+    const int32 Credit=Task.AlternateTreads&&Mode().Settings()&&Mode().Settings()->RhythmAssist()?700:1000;
+    const auto Turned=SoraBeatRules::PlayerTurn(TaskState,Task,FMath::FloorToInt32(Kit->GuardReserve()),Credit);
     if(Turned.Result==ETurn::Exhausted)
     {
         StopPlayerCrank();
@@ -98,13 +102,14 @@ bool USoraCampaignDirector::TurnPlayerCrank(bool bBegin)
     Fire(Turned.Result==ETurn::TooFast?TEXT("rate_band:above"):Turned.Result==ETurn::Slow?TEXT("rate_band:below"):TEXT("rate_band:in"));
     if(Turned.Result==ETurn::TooFast)
         Notify(TEXT("急ぎすぎだ。一定の調子で回せ。"),TEXT("Too fast: the crank slips. Keep a steady rhythm."),3.f);
-    if(bWorked) Fire(FString::Printf(TEXT("event:crank_turn_%d"),TaskState.Done));
+    if(bWorked&&TaskState.Done>DoneBefore) Fire(FString::Printf(TEXT("event:crank_turn_%d"),TaskState.Done));
     if(SoraBeatRules::GoalMet(TaskState,Task)) StopPlayerCrank();
     return bWorked;
 }
 bool USoraCampaignDirector::PlayerBellowsAxis(float Axis)
 {
     if(!Task.AlternateTreads||!IsWorkingCrank()) return false;
+    if(Mode().Settings()&&Mode().Settings()->RhythmAssist()) return true;
     if(SoraCrankInputRules::Tread(BellowsTreads,FMath::RoundToInt(Axis*1000.f)))
     {
         const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
@@ -121,13 +126,15 @@ void USoraCampaignDirector::TickPlayerCrank(int32 DeltaMs)
 {
     const auto& M=Mode();
     const auto* Hero=M.Hero();
-    const int32 Rate=M.Settings()&&M.Settings()->HoldToCrank()?Task.HoldMilliTurnsS:0;
+    const int32 Rate=Task.AlternateTreads&&M.Settings()&&M.Settings()->RhythmAssist()?1000:
+        M.Settings()&&M.Settings()->HoldToCrank()?Task.HoldMilliTurnsS:0;
     if(SoraCrankInputRules::Tick(CrankInput,DeltaMs,Hero&&Hero->IsActionHeld(TEXT("Interact")),PlayerCrankEligible(),Rate))
     {
-        const int32 DoneBefore=TaskState.Done;
-        if(TurnPlayerCrank(false)&&DoneBefore==0&&TaskState.Done>0)
+        const int32 ProgressBefore=TaskState.Progress;
+        if(TurnPlayerCrank(false)&&ProgressBefore==0&&TaskState.Progress>0)
             Fire(TEXT("interact_start"));
         // TickBeat owns UpdateObjective/Progressed and the completion/wave edge.
     }
+    if(Task.AlternateTreads&&IsWorkingCrank()) PresentRhythmCue();
     if(Hero) Hero->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands(),true);
 }

@@ -3,6 +3,7 @@
 #include "SoraCatalog.h"
 #include "SoraFrontEnd.h"
 #include "SoraInputStates.h"
+#include "SoraSettings.h"
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
 #include "SoraHUD.h"
@@ -98,9 +99,12 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
             const auto Hold=SoraUI::ActionKey(&G,TEXT("Interact"));
             const auto Left=bPad?SoraText::FLine{TEXT("左スティック左"),TEXT("left stick left")}:SoraUI::KeyLabel(G.Hero()->ControlKey(SoraInput::FindRemappable(TEXT("MoveRight"),-1),false));
             const auto Right=bPad?SoraText::FLine{TEXT("左スティック右"),TEXT("left stick right")}:SoraUI::KeyLabel(G.Hero()->ControlKey(SoraInput::FindRemappable(TEXT("MoveRight"),1),false));
-            Rows.Add({FString::Printf(TEXT("%s 長押し＋左 %s → 右 %s（毎回離す）"),*Hold.Japanese,*Left.Japanese,*Right.Japanese),
+            if(G.Settings()&&G.Settings()->RhythmAssist())
+                Rows.Add({FString::Printf(TEXT("%s 長押し：調子合わせ補助・生産７割"),*Hold.Japanese),
+                    FString::Printf(TEXT("Hold %s: rhythm assist, 70%% production speed"),*Hold.English),-1.f,Frame.Muted});
+            else Rows.Add({FString::Printf(TEXT("%s 長押し＋左 %s → 右 %s（毎回離す）"),*Hold.Japanese,*Left.Japanese,*Right.Japanese),
                 FString::Printf(TEXT("Hold %s + left %s then right %s; release each tread"),*Hold.English,*Left.English,*Right.English),-1.f,Frame.Muted});
-            if(Campaign->IsWorkingCrank()) Rows.Add({Campaign->BellowsRightNext()?TEXT("次は右足"):TEXT("次は左足"),
+            if(Campaign->IsWorkingCrank()&&!(G.Settings()&&G.Settings()->RhythmAssist())) Rows.Add({Campaign->BellowsRightNext()?TEXT("次は右足"):TEXT("次は左足"),
                 Campaign->BellowsRightNext()?TEXT("Next: right tread"):TEXT("Next: left tread"),-1.f,Frame.Teal});
         }
         if(SoraBeatRules::CrankSlipping(State,Task))
@@ -129,6 +133,19 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
             if(const FSoraLabel* Label=FSoraCatalog::Get().StepLabels.Find(Beat->StepKinds[State.Step]))
                 Rows.Add({FString::Printf(TEXT("▶ %s  %d / %d"),*Label->Japanese,State.StepDone,Task.Steps[State.Step].Count),
                     FString::Printf(TEXT("Now: %s, %d of %d"),*Label->English,State.StepDone,Task.Steps[State.Step].Count),-1.f,Frame.Gold});
+        if(SoraRhythmRules::Supported(State,Task))
+        {
+            const auto& Cue=Campaign->RhythmState();
+            const auto& Step=Task.Steps[State.Step];
+            const auto Key=SoraUI::ActionKey(&G,TEXT("Interact"));
+            const bool Assist=G.Settings()&&G.Settings()->RhythmAssist();
+            const bool Active=Cue.Step==State.Step;
+            Rows.Add({Assist?FString::Printf(TEXT("%s 長押し：調子合わせ補助・生産７割"),*Key.Japanese):Active?FString::Printf(TEXT("%s：合図の輪に合わせて一打"),*Key.Japanese):FString::Printf(TEXT("%s：最初の合図を始める"),*Key.Japanese),
+                Assist?FString::Printf(TEXT("Hold %s: rhythm assist, 70%% production speed"),*Key.English):Active?FString::Printf(TEXT("%s: one response as the cue ring closes"),*Key.English):FString::Printf(TEXT("%s: ask for the first cue"),*Key.English),-1.f,Frame.Muted});
+            if(Cue.Step==State.Step&&Step.PhraseStrikes>1)
+                Rows.Add({FString::Printf(TEXT("一節 %d / %d 打・的中 %d（%d 以上）"),Cue.Attempts,Step.PhraseStrikes,Cue.Hits,Step.PhrasePass),
+                    FString::Printf(TEXT("Phrase: %d of %d responses; %d hits, need %d"),Cue.Attempts,Step.PhraseStrikes,Cue.Hits,Step.PhrasePass),-1.f,Frame.Teal});
+        }
         Rows.Add({FString::Printf(TEXT("工程一覧を要約：完了 %d・後続 %d"),FMath::Min(State.Step,Task.StepCount),FMath::Max(0,Task.StepCount-State.Step-1)),
             FString::Printf(TEXT("Recipe summary: %d completed, %d later steps"),FMath::Min(State.Step,Task.StepCount),FMath::Max(0,Task.StepCount-State.Step-1)),-1.f,Frame.Muted});
         break;
@@ -676,6 +693,20 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
             if(FVector::Dist2D(Campaign->PickupLocation(Pickup),Hero->GetActorLocation())<260.f)
                 Frame.LabelWithEnglish(SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.PickUp","{Interact}  拾う"),{{TEXT("Interact"),Interact}}),
                     W*.5f-75*S,H*.5f+60*S,.65*S,Gold);
+    }
+    // A continuously closing, shape-based metronome; no flashing or color-only
+    // signal. At the work station it surrounds the action cue below the reticle.
+    const int32 CuePeriod=Campaign->RhythmCuePeriodMs();
+    if(CuePeriod>0)
+    {
+        const float Radius=22.f+30.f*Campaign->RhythmCueRemainingMs()/CuePeriod;
+        const FVector2D Center(W*.5f,H*.5f+105*S);
+        for(int32 Segment=0;Segment<48;++Segment)
+        {
+            const float A=Segment*2.f*PI/48.f,B=(Segment+1)*2.f*PI/48.f;
+            HUD.DrawLine(Center.X+FMath::Cos(A)*Radius,Center.Y+FMath::Sin(A)*Radius,
+                Center.X+FMath::Cos(B)*Radius,Center.Y+FMath::Sin(B)*Radius,Frame.Gold,2.f);
+        }
     }
     // The beat tracker, and story notices beneath it.
     DrawUpperStory(Frame);

@@ -1865,37 +1865,49 @@
       "kind": "bend",
       "count": 6,
       "beat_ms": 800,
-      "tolerance_ms": 160
+      "tolerance_ms": 160,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "paste",
       "count": 4,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "assemble",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "paste",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "assemble",
       "count": 3,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      },
      {
       "kind": "inspect",
       "count": 1,
       "beat_ms": 0,
-      "tolerance_ms": 0
+      "tolerance_ms": 0,
+      "phrase_strikes": 0,
+      "phrase_pass": 0
      }
     ],
     "targets": [],

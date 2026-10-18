@@ -335,3 +335,50 @@ visibility and capped sparks; crank cost/net fixtures and campaign playthrough
 now use actual pairs. UE compilation, execution and HUD capture remain with
 the root lane. Source reports: `Saved/SourceChecks/bellows-treads` and
 `Saved/SourceChecks/bellows-treads-final` in the producing worktree.
+
+### Shared rhythm assist and chapter-five phrase/pick rules
+
+The off-by-default, persisted **Rhythm assist** option applies to ch05 b06,
+b08 and b11 (`chapter-05.md:694–706`). It holds the ordinary on-beat cadence
+and credits successful production at 700/1000: ten bellows cycles or successful
+phrases/picks earn seven units. Bellows remain at one cycle/s, within the
+normal band, and every assisted cycle still pays two stamina. Insufficient
+reserve stops input without granting progress. Chapter seven's separate
+0.6-turn/s hold option and other ordinary manufacturing retain their controls.
+
+The hammer extension (`chapter-05.md:523`, `1897–1923`) now actually requires
+four phrases of eight response windows, with six hits needed per phrase.
+All eight windows close before judging; the sixth early hit never ends a
+phrase. Failure repeats only the current phrase. Weaving (`560`, `2031–2035`)
+requires twenty-four successful individual picks; a miss repeats that pick.
+The first Interact asks for a cue, then the same button strikes/pulls on the
+600/750 ms clock. Easy widens ±90/±120 ms to ±135/±180 without slowing cues;
+bellows' .8–1.3 band expands by 1.5 about its midpoint to .675–1.425 turns/s.
+Other difficulties retain the original windows. Difficulty is applied to a
+fresh task copy at beat entry; it cannot compound across retries.
+
+A continuously closing HUD ring supplies a shape cue. Hammer/loom cue
+captions use localized text; native force-feedback requests are emitted once
+per cue. The checked-in audio catalog does not yet connect Kōzō's small-hammer
+tap or Okinu's call to these events, so actual cue recordings and workshop
+animation remain outstanding. Hardware vibration, final ring placement,
+small-screen legibility and audio timing require Unreal review; no rendered
+or controller-device result is claimed here.
+
+Holding Interact with assist on answers cues at their nominal times; source
+coverage includes 1/16/17/33/100/250/500 ms frames, exactly 70% credit, the
+inclusive/outside timing edges, all-eight-window gating, six-hit success,
+five-hit failure, repeat-pick preservation, release/interruption and checkpoint
+reset. Completed units and earned fractional credit remain after a release;
+an unfinished phrase and held input do not. A fresh checkpoint starts clean.
+No long stalled frame synthesizes a backlog of assisted actions.
+
+Prepared UE checks: `SoraArena.Campaign.RhythmPhrases`, `RhythmAssist`, expanded
+`SoraArena.UI.SettingsPersist`, and the full campaign playthrough's actual cue
+responses. `SoraCapture.WeaponHUDFixture.BellowsKeyboard` and `.BellowsGamepad`
+load the real bellows checkpoint, collect actual notice-producing pickups,
+perform a mapped L/R pair and leave a right tread pending. Both JA and JA+EN
+frames retain the actual tracker, notices and bottom HUD; the pad case checks
+its displayed left-stick directions against the live axis binding. Root owns
+720p/1080p captures and all UE builds/execution. Source checks are recorded at
+`Saved/SourceChecks/rhythm-assist` in the producing worktree.

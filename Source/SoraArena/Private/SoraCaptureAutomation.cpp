@@ -1,4 +1,8 @@
 #include "SoraGameMode.h"
+#include "SoraSettings.h"
+#include "Components/InputComponent.h"
+#include "GameFramework/PlayerInput.h"
+#include "SoraInputStates.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "ArenaKernelSubsystem.h"
@@ -1353,13 +1357,16 @@ void QueueRegistryFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Ch
 void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Case,bool English)
 {
     const bool Dojo=Case==0||Case==3||Case==4;
-    const int32 Chapter=Dojo?0:3,Beat=Dojo?8:Case==5?11:10;
+    const int32 Chapter=Dojo?0:Case>=6?4:3,Beat=Dojo?8:Case>=6?5:Case==5?11:10;
     const FString Kind=Case==0?TEXT("Bokken"):Case==1?TEXT("Katana"):Case==2?TEXT("BowDraw"):
-        Case==3?TEXT("BokkenDialogue"):Case==4?TEXT("PickupNotices"):TEXT("EightTargets");
+        Case==3?TEXT("BokkenDialogue"):Case==4?TEXT("PickupNotices"):Case==5?TEXT("EightTargets"):Case==6?TEXT("BellowsKeyboard"):TEXT("BellowsGamepad");
     const FString Name=FString::Printf(TEXT("WeaponHUDFixture_%s_%s"),*Kind,English?TEXT("JA_EN"):TEXT("JA"));
-    Queue([Test,Session,Chapter,Beat,Case,English]()
+    const TSharedRef<bool> PreviousRhythmAssist=MakeShared<bool>(false);
+    Queue([Test,Session,Chapter,Beat,Case,English,PreviousRhythmAssist]()
     {
         Session->bShotLive=false;
+        *PreviousRhythmAssist=Session->M()->Settings()->RhythmAssist();
+        if(Case>=6) Session->M()->Settings()->SetRhythmAssist(false);
         ASoraGameMode* M=Session->M();
         auto* Save=NewObject<USoraSaveGame>();
         if(!M||!USoraCampaignDirector::SeedCheckpoint(*Save,Chapter,Beat))
@@ -1433,6 +1440,45 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
             Place(Hero,Space.Stations[Space.StepStations[1]]);
             Session->bShotLive=Test->TestEqual(TEXT("Four pickup notices coexist in the gameplay HUD"),Campaign.StoryNotices().Num(),4);
         }
+        if(Case>=6)
+        {
+            auto& C=*Session->Campaign(); auto& Hero=*Session->Hero();
+            const auto Pickups=C.LoosePickups();
+            if(!Test->TestTrue(TEXT("Bellows fixture has actual pickups for notice pressure"),Pickups.Num()>=2))
+            { Session->bShotLive=false; return; }
+            for(int32 N=0;N<FMath::Min(3,Pickups.Num());++N)
+            { Place(Hero,FVector2D(C.PickupLocation(Pickups[N]))); Session->M()->Interact(&Hero); }
+            Place(Hero,C.ActiveSpace()->Anchor+FVector2D(-160,0));
+            auto* PC=Cast<APlayerController>(Hero.GetController());
+            if(!PC||!PC->PlayerInput||!Hero.InputComponent) { Session->bShotLive=false; return; }
+            const bool Pad=Case==7;
+            FKey Interact=EKeys::Invalid;
+            for(const FKey& Key:Hero.GetActionKeys(TEXT("Interact"))) if(Key.IsGamepadKey()==Pad) { Interact=Key; break; }
+            const TArray<UInputComponent*> Stack={Hero.InputComponent};
+            const auto Key=[&](FKey K,EInputEvent Event)
+            {
+                PC->InputKey(FInputKeyEventArgs::CreateSimulated(K,Event,Event==IE_Pressed?1.f:0.f));
+                PC->PlayerInput->ProcessInputStack(Stack,1.f/60.f,false);
+            };
+            Key(Interact,IE_Pressed);
+            if(Pad)
+            {
+                Session->bShotLive&=Test->TestTrue(TEXT("Pad left/right prompt matches the actual movement binding"),
+                    PC->PlayerInput->AxisMappings.ContainsByPredicate([](const FInputAxisKeyMapping& Map)
+                        { return Map.AxisName==TEXT("MoveRight")&&Map.Key==EKeys::Gamepad_LeftX&&Map.Scale==1.f; }));
+                for(float V:{-1.f,0.f,1.f,0.f,-1.f,0.f})
+                { PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::Gamepad_LeftX,IE_Axis,V,1)); PC->PlayerInput->ProcessInputStack(Stack,1.f/60.f,false); }
+            }
+            else
+            {
+                const FKey Left=Hero.ControlKey(SoraInput::FindRemappable(TEXT("MoveRight"),-1),false);
+                const FKey Right=Hero.ControlKey(SoraInput::FindRemappable(TEXT("MoveRight"),1),false);
+                Key(Left,IE_Pressed); Key(Left,IE_Released); Key(Right,IE_Pressed); Key(Right,IE_Released); Key(Left,IE_Pressed); Key(Left,IE_Released);
+            }
+            Session->M()->FrontEnd()->NoteDevice(Pad?SoraUI::EDevice::Gamepad:SoraUI::EDevice::KeyboardMouse);
+            Session->bShotLive&=Test->TestTrue(TEXT("Bellows capture has a live pair, next-right cue and real notices"),
+                C.TaskProgress().Progress==1000&&C.IsWorkingCrank()&&C.BellowsRightNext()&&C.StoryNotices().Num()>=2);
+        }
         if(Case==5)
         {
             USoraCampaignDirector& Campaign=*Session->Campaign();
@@ -1447,6 +1493,7 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
             }
         }
     });
+    if(Case>=6) Wait(.05); // let the actual world kit show the just-worked rate
     Freeze(Session,true);
     StreamIn();
     const TSharedRef<double> QuietSince=MakeShared<double>(-1.0);
@@ -1492,6 +1539,7 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
         if(Case==3) Session->bShotLive&=Test->TestNotNull(TEXT("Dialogue remains present in the frame"),Session->Campaign()->CurrentDialogueCue());
         if(Case==4) Session->bShotLive&=Test->TestEqual(TEXT("All four actual pickup notices survive capture preparation"),Session->Campaign()->StoryNotices().Num(),4);
         if(Case==5) Session->bShotLive&=Test->TestEqual(TEXT("All eight defended targets survive capture preparation"),Session->Campaign()->ActiveTask().TargetCount,8);
+        if(Case>=6) Session->bShotLive&=Test->TestTrue(TEXT("Bellows input and next-foot tracker survive capture preparation"),Session->Campaign()->IsWorkingCrank()&&Session->Campaign()->BellowsRightNext());
         if(!Why.IsEmpty()) Test->AddError(Why);
     });
     SaveFrame(Test,Session,Name,true);
@@ -1508,6 +1556,16 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
         UE_LOG(LogTemp,Display,TEXT("SORA_WEAPON_HUD_FIXTURE_FRAME %s"),*FPaths::ConvertRelativePathToFull(Session->File));
     });
     Queue([Session]() { if(Session->Hero()) Session->Hero()->GetEquipment()->Halt(); });
+    Queue([Session,Case,PreviousRhythmAssist]()
+    {
+        if(Case>=6)
+        {
+            auto* Hero=Session->Hero(); auto* PC=Hero?Cast<APlayerController>(Hero->GetController()):nullptr;
+            if(PC&&PC->PlayerInput) PC->PlayerInput->FlushPressedKeys();
+            Session->Campaign()->StopPlayerCrank(false);
+            Session->M()->Settings()->SetRhythmAssist(*PreviousRhythmAssist);
+        }
+    });
     Freeze(Session,false);
 }
 
@@ -1611,15 +1669,15 @@ IMPLEMENT_COMPLEX_AUTOMATION_TEST(
 
 void FSoraCaptureWeaponHUDFixtureTest::GetTests(TArray<FString>& OutBeautifiedNames,TArray<FString>& OutTestCommands) const
 {
-    OutBeautifiedNames={TEXT("Bokken"),TEXT("Katana"),TEXT("BowDraw"),TEXT("BokkenDialogue"),TEXT("PickupNotices"),TEXT("EightTargets")};
-    OutTestCommands={TEXT("0"),TEXT("1"),TEXT("2"),TEXT("3"),TEXT("4"),TEXT("5")};
+    OutBeautifiedNames={TEXT("Bokken"),TEXT("Katana"),TEXT("BowDraw"),TEXT("BokkenDialogue"),TEXT("PickupNotices"),TEXT("EightTargets"),TEXT("BellowsKeyboard"),TEXT("BellowsGamepad")};
+    OutTestCommands={TEXT("0"),TEXT("1"),TEXT("2"),TEXT("3"),TEXT("4"),TEXT("5"),TEXT("6"),TEXT("7")};
 }
 bool FSoraCaptureWeaponHUDFixtureTest::RunTest(const FString& Parameters)
 {
     using namespace SoraCapture;
     const int32 Case=FCString::Atoi(*Parameters);
     const FSessionRef Session=MakeShared<FSession>();
-    if(!TestTrue(TEXT("A supported weapon HUD fixture"),Case>=0&&Case<6)||
+    if(!TestTrue(TEXT("A supported weapon HUD fixture"),Case>=0&&Case<8)||
         !OpenSession(*this,*Session,TEXT("WeaponHUDFixture"))) return false;
     APlayerController* PC=Session->M()->GetWorld()->GetFirstPlayerController();
     ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;

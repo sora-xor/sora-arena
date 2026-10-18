@@ -291,7 +291,8 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         const auto S = (*StepRows)[Index].IsValid() ? (*StepRows)[Index]->AsObject() : nullptr;
         FString StepKind; FStep& Step = T.Steps[Index];
         if (!S || !Str(*S, TEXT("kind"), StepKind) || !Int(*S, TEXT("count"), Step.Count) ||
-            !Int(*S, TEXT("beat_ms"), Step.BeatMs) || !Int(*S, TEXT("tolerance_ms"), Step.ToleranceMs))
+            !Int(*S, TEXT("beat_ms"), Step.BeatMs) || !Int(*S, TEXT("tolerance_ms"), Step.ToleranceMs) ||
+            !Int(*S, TEXT("phrase_strikes"), Step.PhraseStrikes) || !Int(*S, TEXT("phrase_pass"), Step.PhrasePass))
             return false;
         Beat.StepKinds.Add(StepKind);
     }

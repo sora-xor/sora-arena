@@ -427,6 +427,13 @@ void USoraSettings::SetAutoSteer(bool bEnabled)
     Changed();
 }
 
+bool USoraSettings::RhythmAssist() const { return Read().RhythmAssist; }
+void USoraSettings::SetRhythmAssist(bool bEnabled)
+{
+    Write().RhythmAssist = bEnabled;
+    Changed();
+}
+
 bool USoraSettings::HoldToCrank() const { return Read().HoldToCrank; }
 void USoraSettings::SetHoldToCrank(bool bEnabled)
 {

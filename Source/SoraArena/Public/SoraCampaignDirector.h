@@ -3,6 +3,7 @@
 #include "Components/ActorComponent.h"
 #include "SoraBeatRules.h"
 #include "SoraCrankInputRules.h"
+#include "SoraRhythmRules.h"
 #include "SoraDojoRules.h"
 #include "SoraRegistry.h"
 #include "SoraCampaignDirector.generated.h"
@@ -205,6 +206,10 @@ public:
     bool CrankHelperRetreating() const { return bCrankHelperRetreating; }
     bool IsWorkingCrank() const;
     bool PlayerBellowsAxis(float Axis);
+    const SoraRhythmRules::FState& RhythmState() const { return RhythmClock; }
+    bool RhythmAssistActive() const;
+    int32 RhythmCueRemainingMs() const;
+    int32 RhythmCuePeriodMs() const;
     bool BellowsRightNext() const { return BellowsTreads.RightNext; }
     bool CrankOccupiesHands() const { return Task.CrankTwoHanded && IsWorkingCrank(); }
     void StopPlayerCrank(bool bWaitForRelease=true);
@@ -314,6 +319,16 @@ private:
     bool PlayerCrankEligible() const;
     bool TurnPlayerCrank(bool bBegin);
     void TickPlayerCrank(int32 DeltaMs);
+    SoraRhythmRules::FState RhythmClock;
+    SoraCrankInputRules::FState RhythmInput;
+    int32 RhythmCueShown = -1;
+    int32 BellowsCueStarted = 0;
+    bool PlayerRhythmEligible() const;
+    void StopPlayerRhythm(bool bWaitForRelease);
+    void WorkPlayerRhythm();
+    void TickPlayerRhythm();
+    void RhythmResult(SoraBeatRules::EStroke Result,int32 Step);
+    void PresentRhythmCue();
     bool bLiftGallery=false;
     int32 GalleryStairNode=0;
     bool LiftReadyToComplete() const;

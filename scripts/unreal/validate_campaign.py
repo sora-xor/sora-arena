@@ -712,6 +712,17 @@ def check_crank_player(beat):
             f"{beat['id']}: exact authored player crank contract")
 
 
+def check_rhythm_steps(beat):
+    # Compare normalized phrase sizes, passing thresholds and cue timing with
+    # the authored source; a hand-edited catalog cannot erase the contract.
+    from build_campaign_data import normalize_task, BuildError
+    try:
+        expected = normalize_task(beat)["steps"]
+    except BuildError as error:
+        raise CampaignError(str(error)) from error
+    require(beat["task"]["steps"] == expected, f"{beat['id']}: exact authored manufacturing rhythm contract")
+
+
 def check_dropoff_capacity(beat):
     task, where = beat["task"], beat["id"]
     require("dropoff_capacity" in task, f"{where}: missing drop-off capacity field")
@@ -830,6 +841,7 @@ def validate(catalog, campaign, chapters, legacy, roster):
         for beat in beats:
             check_dropoff_capacity(beat)
             check_crank_player(beat)
+            check_rhythm_steps(beat)
             unlocks += [(weapon, beat["id"]) for weapon in beat["unlocks"]["weapons"]]
             mechanics += beat["unlocks"]["mechanics"]
             if beat["optional"] and (beat["unlocks"]["weapons"] or beat["unlocks"]["mechanics"]):

@@ -301,6 +301,9 @@ struct FStep
     // A rhythm step: every stroke after the first lands BeatMs after the last, within ToleranceMs.
     int BeatMs = 0;
     int ToleranceMs = 0;
+    // Authored call/response units: hammer phrases 8/6, weaving picks 1/1.
+    int PhraseStrikes = 0;
+    int PhrasePass = 0;
 };
 enum class EContest : unsigned char { None, Pause, Decay };
 // How a boss, or a duel fought to its end, ends (bible §3.2, §8): the
@@ -455,6 +458,7 @@ struct FTaskState
     int RateCarry = 0;
     int Step = 0;
     int StepDone = 0;
+    int RhythmCarry = 0;
     // The last counted crank turn or rhythm stroke, or -1.
     int LastActionMs = -1;
     // Last affordable player cycle: 1 below, 2 in band, 3 above. Helpers do not set this.
@@ -988,7 +992,7 @@ enum class ETurn : unsigned char { Refused, TooFast, InBand, Slow, Exhausted };
 
 // One crank turn. A turn faster than the band slips and restarts the rhythm,
 // so hammering the crank never counts.
-constexpr ETurn Turn(FTaskState& State, const FTask& Task)
+constexpr ETurn Turn(FTaskState& State, const FTask& Task, int Credit = Permille)
 {
     if (Task.Goal != EGoal::Turns || GoalMet(State, Task))
         return ETurn::Refused;
@@ -998,7 +1002,7 @@ constexpr ETurn Turn(FTaskState& State, const FTask& Task)
     { State.CrankNotches = 3; return ETurn::TooFast; }
     State.CrankNotches = Since > Task.MaxTurnMs ? 1 : 2;
     const int Full = Task.Count * Permille;
-    State.Progress = State.Progress + Permille > Full ? Full : State.Progress + Permille;
+    State.Progress = State.Progress + Credit > Full ? Full : State.Progress + Credit;
     LatchCrank(State, Task);
     State.Done = State.Progress / Permille;
     return Since > Task.MaxTurnMs ? ETurn::Slow : ETurn::InBand;
@@ -1015,10 +1019,10 @@ struct FPlayerTurn
 };
 // Preview on a copy: insufficient resource changes neither progress nor the
 // timing baseline. Affordable overspeed still resets rhythm, as Turn does.
-constexpr FPlayerTurn PlayerTurn(FTaskState& State, const FTask& Task, int AvailableStamina)
+constexpr FPlayerTurn PlayerTurn(FTaskState& State, const FTask& Task, int AvailableStamina, int Credit = Permille)
 {
     FTaskState Next = State;
-    const ETurn Result = Turn(Next, Task);
+    const ETurn Result = Turn(Next, Task, Credit);
     const int Cost = Result == ETurn::TooFast ? Task.StaminaPerTurn * Task.OverspeedCostMultiplier :
         Result == ETurn::InBand || Result == ETurn::Slow ? Task.StaminaPerTurn : 0;
     if (AvailableStamina < Cost) return {ETurn::Exhausted, 0};
@@ -1139,7 +1143,7 @@ constexpr bool DropCarried(FTaskState& State, const FTask& Task)
     return true;
 }
 
-enum class EStroke : unsigned char { Refused, Counted, Missed, StepDone, Finished };
+enum class EStroke : unsigned char { Refused, Counted, Missed, StepDone, Finished, Credited };
 
 // One stroke at the current manufacturing step. Off the beat, a rhythm step
 // starts again from that stroke (pass or fail, no quality grades).
@@ -1148,6 +1152,7 @@ constexpr EStroke Stroke(FTaskState& State, const FTask& Task)
     if (Task.Goal != EGoal::Steps || State.Step >= Task.StepCount || State.Step >= MaxSteps)
         return EStroke::Refused;
     const FStep& Current = Task.Steps[State.Step];
+    if (Current.PhraseStrikes > 0) return EStroke::Refused; // resolved by the cue/phrase clock
     if (Current.BeatMs > 0 && State.StepDone > 0)
     {
         const int Off = State.ElapsedMs - State.LastActionMs - Current.BeatMs;
@@ -1324,6 +1329,21 @@ constexpr bool PhasesValid(const FTask& Task)
     return true;
 }
 
+// Easy widens timing tolerance, never slows the authored cue clock.
+constexpr void ApplyRhythmDifficulty(FTask& Task,int Difficulty)
+{
+    if(Difficulty!=0) return;
+    for(int Step=0;Step<Task.StepCount;++Step)
+        if(Task.Steps[Step].PhraseStrikes>0) Task.Steps[Step].ToleranceMs=Task.Steps[Step].ToleranceMs*3/2;
+    if(Task.AlternateTreads&&Task.MinTurnMs>0&&Task.MaxTurnMs<=MaxClockMs&&5LL*Task.MinTurnMs>Task.MaxTurnMs)
+    {
+        // Widen the rate band by 1.5 about its midpoint; convert back to
+        // bounded integer intervals. .8–1.3 becomes .675–1.425 turns/s.
+        const long long Min=Task.MinTurnMs,Max=Task.MaxTurnMs;
+        Task.MinTurnMs=(4*Min*Max+(5*Max-Min)-1)/(5*Max-Min);
+        Task.MaxTurnMs=4*Min*Max/(5*Min-Max);
+    }
+}
 constexpr bool StepsValid(const FTask& Task)
 {
     if (Task.StepCount < 1 || Task.StepCount > MaxSteps)
@@ -1332,7 +1352,8 @@ constexpr bool StepsValid(const FTask& Task)
     {
         const FStep& Row = Task.Steps[Step];
         if (Row.Count < 1 || Row.Count > MaxGoalCount || Row.BeatMs < 0 || Row.ToleranceMs < 0 ||
-            (Row.BeatMs == 0 && Row.ToleranceMs != 0) || (Row.BeatMs > 0 && Row.ToleranceMs >= Row.BeatMs))
+            (Row.PhraseStrikes != 0 && (Row.BeatMs <= 0 || Row.PhraseStrikes < 1 || Row.PhraseStrikes > 8 || Row.PhrasePass < 1 || Row.PhrasePass > Row.PhraseStrikes)) ||
+            (Row.PhraseStrikes == 0 && Row.PhrasePass != 0) || (Row.BeatMs == 0 && Row.ToleranceMs != 0) || (Row.BeatMs > 0 && Row.ToleranceMs >= Row.BeatMs))
             return false;
     }
     return true;
