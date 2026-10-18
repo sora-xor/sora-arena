@@ -117,6 +117,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     if(!Chapter.Beats.IsValidIndex(BeatIndex)) return;
     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
     const FSoraBeatSpace& Space=Beat.Space;
+    BeatLight(Beat);   // the beat's authored sun and sky (SoraWorldBuilderLighting.cpp)
     StageEpilogue(Beat);
     if(Beat.Task.CarryGateMs>0)
         CarrySeal=KitShape(TEXT("GranarySeal"),KitCube,Floor(Space.CarryGate)+FVector(0,70,75),
