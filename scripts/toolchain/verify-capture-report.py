@@ -2,10 +2,14 @@
 """Require complete Unreal automation results from a rendered editor-game run."""
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
+import struct
 import sys
+import zlib
 
 
 def problems(report: dict, log: str, status: int, shader_model: str) -> list[str]:
@@ -34,9 +38,82 @@ def problems(report: dict, log: str, status: int, shader_model: str) -> list[str
     return failures
 
 
+def png_dimensions(data: bytes) -> tuple[int, int]:
+    """Reject truncated/corrupt screenshots without changing their pixels."""
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise ValueError("not a PNG")
+    offset, dimensions, image_data = 8, None, bytearray()
+    while offset + 12 <= len(data):
+        size = struct.unpack_from(">I", data, offset)[0]
+        kind = data[offset + 4:offset + 8]
+        end = offset + 12 + size
+        if end > len(data):
+            raise ValueError("truncated PNG chunk")
+        payload = data[offset + 8:end - 4]
+        if zlib.crc32(kind + payload) != struct.unpack_from(">I", data, end - 4)[0]:
+            raise ValueError("PNG chunk checksum mismatch")
+        if dimensions is None:
+            if kind != b"IHDR" or size != 13:
+                raise ValueError("PNG has no valid header")
+            dimensions = struct.unpack_from(">II", payload)
+            if not all(0 < value <= 16384 for value in dimensions):
+                raise ValueError("invalid PNG dimensions")
+        if kind == b"IDAT":
+            image_data.extend(payload)
+        if kind == b"IEND":
+            if size or end != len(data) or not image_data:
+                raise ValueError("incomplete PNG image")
+            decoder = zlib.decompressobj()
+            # The largest legal PNG pixel is 8 bytes; allow Adam7 filter rows.
+            decoder.decompress(image_data, dimensions[0] * dimensions[1] * 8 + dimensions[1] * 7 + 1)
+            if not decoder.eof or decoder.unused_data:
+                raise ValueError("incomplete or oversized PNG pixel stream")
+            return dimensions
+        offset = end
+    raise ValueError("PNG has no end chunk")
+
+
+def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
+                   output: Path, start_ns: int, width: int, height: int) -> list[dict]:
+    """Copy only this run's explicitly acknowledged art-review frames."""
+    names = re.findall(r"SORA_ART_REVIEW_FRAME ([^\r\n]+)", log)
+    if not names and any(test.get("fullTestPath", "").startswith("SoraCapture.ArtReview.")
+                         for test in report.get("tests", [])):
+        raise ValueError("art review reported no screenshot paths")
+    screenshot_root = (project / "Saved/Screenshots").resolve()
+    frames = []
+    seen = set()
+    for name in names:
+        path = (engine_base / name.strip()).resolve()
+        relative = path.relative_to(screenshot_root)
+        if relative in seen:
+            raise ValueError(f"duplicate/overwritten art-review frame: {relative}")
+        seen.add(relative)
+        if path.stat().st_mtime_ns < start_ns:
+            raise ValueError(f"stale art-review frame: {relative}")
+        data = path.read_bytes()
+        if png_dimensions(data) != (width, height):
+            raise ValueError(f"unexpected screenshot dimensions: {relative}")
+        target = output / "frames" / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open("xb") as stream:
+            stream.write(data)
+        frames.append({"path": str(target.relative_to(output)), "source": str(path),
+                       "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
+    return frames
+
+
 def main() -> int:
-    report_path, log_path = map(Path, sys.argv[1:3])
-    status, shader_model = int(sys.argv[3]), sys.argv[4]
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("report", type=Path)
+    parser.add_argument("log", type=Path)
+    parser.add_argument("status", type=int)
+    parser.add_argument("shader_model", choices=("auto", "sm5", "sm6"))
+    parser.add_argument("--archive", nargs=7,
+                        metavar=("PROJECT", "ENGINE_BASE", "OUTPUT", "START_NS", "WIDTH", "HEIGHT", "FILTER"))
+    args = parser.parse_args()
+    report_path, log_path = args.report, args.log
+    status, shader_model = args.status, args.shader_model
     try:
         report = json.loads(report_path.read_text(encoding="utf-8-sig"))
         log = log_path.read_text(errors="replace")
@@ -44,6 +121,23 @@ def main() -> int:
         print(f"FAIL: missing or invalid capture report: {error}", file=sys.stderr)
         return 1
     failures = problems(report, log, status, shader_model)
+    if args.archive:
+        project, engine_base, output = map(Path, args.archive[:3])
+        start_ns, width, height = map(int, args.archive[3:6])
+        frames = []
+        try:
+            frames = archive_frames(log, report, project, engine_base, output, start_ns, width, height)
+        except (OSError, ValueError, zlib.error) as error:
+            failures.append(f"screenshot archive: {error}")
+        manifest = {"source_commit": (output / "source-commit.txt").read_text().strip(),
+                    "source_status": (output / "source-status.txt").read_text(),
+                    "filter": args.archive[6], "requested_shader_model": shader_model,
+                    "devices": report.get("devices", []), "started_ns": start_ns,
+                    "viewport": [width, height], "frames": frames, "failures": failures,
+                    "evidence": "uncooked editor-game", "release_qualified": False,
+                    "report_sha256": hashlib.sha256(report_path.read_bytes()).hexdigest(),
+                    "log_sha256": hashlib.sha256(log_path.read_bytes()).hexdigest()}
+        (output / "capture.json").write_text(json.dumps(manifest, indent=2) + "\n")
     for test in report.get("tests", []):
         print(f"{test.get('state', 'Unknown')}: {test.get('fullTestPath', '<unnamed>')}")
     print(f"Report: {report_path}")

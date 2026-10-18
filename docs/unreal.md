@@ -59,6 +59,12 @@ exports each run's automation report under `Saved/Capture/`, and requires
 complete successful results with the requested shader model and Metal RHI.
 Use `SoraCapture.ArtReview.Dojo` for the fixed in-game art views after importing
 the dojo kit. Forced SM5 on M2 remains distinct from testing M1 hardware.
+Each art-review run also copies its acknowledged, newly written PNGs unchanged
+into that run's `frames/` directory. `capture.json` records their SHA-256 hashes,
+the source commit and working-tree state, viewport, actual renderer device,
+report/log hashes and any failures. Missing, stale, corrupt or wrongly sized
+frames fail verification. Later SM5/SM6 runs may replace the engine's ordinary
+`Saved/Screenshots/` files, but cannot overwrite these archived comparisons.
 Every production asset must still provide a usable conventional LOD or fallback
 mesh and card-fur route. These files cannot create missing geometry or prove
 that the current prototype assets are visually acceptable.

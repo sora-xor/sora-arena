@@ -57,6 +57,9 @@ if ! "$SCRIPT_DIR/build-mac.sh" Development Editor >"$OUTPUT/build.log" 2>&1; th
 fi
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config
+git -C "$PROJECT_ROOT" rev-parse HEAD >"$OUTPUT/source-commit.txt"
+git -C "$PROJECT_ROOT" status --porcelain >"$OUTPUT/source-status.txt"
+START_NS="$(python3 -c 'import time; print(time.time_ns())')"
 echo "Game automation $FILTER at ${WIDTH}x${HEIGHT}, $SHADER_MODEL; log: $LOG" >&2
 set +e
 "$EDITOR" "$PROJECT" -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput \
@@ -65,4 +68,5 @@ set +e
   "-ExecCmds=${SORA_EXEC_PREFIX:-}Automation RunTests $FILTER;Quit" "${EDITOR_CONFIG_ARGS[@]}" -NSAppSleepDisabled YES >"$LOG" 2>&1
 STATUS=$?
 set -e
-python3 "$SCRIPT_DIR/verify-capture-report.py" "$REPORT/index.json" "$LOG" "$STATUS" "$SHADER_MODEL"
+python3 "$SCRIPT_DIR/verify-capture-report.py" "$REPORT/index.json" "$LOG" "$STATUS" "$SHADER_MODEL" \
+  --archive "$PROJECT_ROOT" "$(dirname -- "$EDITOR")/../../.." "$OUTPUT" "$START_NS" "$WIDTH" "$HEIGHT" "$FILTER"
