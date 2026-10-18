@@ -119,6 +119,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     if(!Chapter.Beats.IsValidIndex(BeatIndex)) return;
     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
     const FSoraBeatSpace& Space=Beat.Space;
+    BeatLight(Beat);   // the beat's authored sun and sky (SoraWorldBuilderLighting.cpp)
     StageEpilogue(Beat);
     SetActorTickEnabled(Space.Summit.Enabled());
     if(Space.Summit.Enabled()&&Beat.Is(SoraBeatRules::EType::Boss))

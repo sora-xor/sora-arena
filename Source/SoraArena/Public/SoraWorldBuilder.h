@@ -2,9 +2,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SoraWorldBuilder.generated.h"
+class ADirectionalLight;
+class AExponentialHeightFog;
+class ASkyLight;
 class ASoraHorse;
 class ASoraCampaignLift;
 class ASoraPlayerCharacter;
+class UTextureCube;
 class USkeletalMeshComponent;
 class UStaticMeshComponent;
 class UTextRenderComponent;
@@ -210,6 +214,20 @@ private:
     void ClearArena();
     // Sun, sky, fog and grade per map (SoraWorldBuilderLighting.cpp).
     void Lighting(int32 MapId);
+    // The map's rig, re-aimed for an authored campaign beat: sun bearing and
+    // colour temperature, overcast dome or atmospheric sky. Intensities, sky
+    // light, exposure and fog never change; one rig serves every beat and retry.
+    void BeatLight(const FSoraBeat& Beat);
+    UPROPERTY() TObjectPtr<ADirectionalLight> RigSun;
+    UPROPERTY() TObjectPtr<ASkyLight> RigSky;
+    UPROPERTY() TObjectPtr<AExponentialHeightFog> RigFog;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> RigDome;
+    UPROPERTY() TObjectPtr<UTextureCube> RigOvercast;
+    FRotator RigDefaultRotation=FRotator::ZeroRotator;
+    FLinearColor RigDefaultColor=FLinearColor::White;
+    bool bRigDefaultRealTimeCapture=true;
+    bool bRigAuthored=false;
+    FString RigBeat;
     // Nyaagyu Estate, map 0 (SoraMapNyaagyuEstate.cpp).
     void NyaagyuTerrain();
     void NyaagyuTree(FVector Location, FRotator Rotation, float Scale);
