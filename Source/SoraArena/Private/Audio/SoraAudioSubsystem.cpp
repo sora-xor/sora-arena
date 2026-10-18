@@ -1,6 +1,7 @@
 #include "SoraAudio.h"
 #include "ArenaKernelSubsystem.h"
 #include "Audio/SoraAudioData.h"
+#include "Audio/SoraAudioMath.h"
 #include "AudioDevice.h"
 #include "Components/AudioComponent.h"
 #include "Engine/Engine.h"
@@ -33,16 +34,12 @@ const TCHAR* const KernelKinds[] = {TEXT("Shot"), TEXT("Damage"), TEXT("Death"),
     TEXT("ObjectiveCaptured"), TEXT("Overtime"), TEXT("Checkpoint"), TEXT("MatchWinner")};
 constexpr uint32 KernelWinnerTeam = 1u, KernelWinnerSlot = 2u;
 constexpr int32 MaxPlays = 512;
-// Sound in air, centimetres per second.
-constexpr float SpeedOfSoundCmS = 34300.f;
 
 template <typename TEnum>
 FString EnumName(TEnum Value)
 {
     return StaticEnum<TEnum>()->GetNameStringByValue(static_cast<int64>(Value));
 }
-
-float DbToGain(float Db) { return FMath::Pow(10.f, Db / 20.f); }
 
 FString KernelWeaponKind(int32 WeaponId)
 {
@@ -265,7 +262,7 @@ void USoraAudioSubsystem::ApplyBusGains()
         if (Bus.Slider > static_cast<int32>(ESoraAudioBus::Master))
             Gain = Slider(Bus.Slider);
         else if (const FBus* Of = Bus.FloorOf.IsNone() ? nullptr : D->Bus(Bus.FloorOf))
-            Gain = FMath::Max(Slider(Of->Slider), DbToGain(Bus.FloorDb));
+            Gain = FMath::Max(Slider(Of->Slider), SoraAudioMath::DbToGain(Bus.FloorDb));
         else
             continue;
         SubmixGains.Add(Bus.Id, Gain);
@@ -428,12 +425,12 @@ int32 USoraAudioSubsystem::Play(FName CueId, const FRequest& Request, float Rule
     Record.Time = Now;
     if (Cue->IsVoiced())
         Record.Wave = Cue->Waves[PickWave(*Cue)];
-    Record.Volume = DbToGain(Random.FRandRange(Cue->VolumeDb[0], Cue->VolumeDb[1]) + Request.ExtraDb);
+    Record.Volume = SoraAudioMath::DbToGain(Random.FRandRange(Cue->VolumeDb[0], Cue->VolumeDb[1]) + Request.ExtraDb);
     Record.Pitch = FMath::Pow(2.f, Random.FRandRange(Cue->PitchCents[0], Cue->PitchCents[1]) / 1200.f);
     Record.DelaySeconds = RuleDelaySeconds;
     if (const FAttenuation* Preset = Record.bSpatial ? D->Attenuation.Find(Cue->Attenuation) : nullptr)
         if (Preset->bDistanceDelay)
-            Record.DelaySeconds += FVector::Dist(Listener(), Request.Location) / SpeedOfSoundCmS;
+            Record.DelaySeconds += FVector::Dist(Listener(), Request.Location) / SoraAudioMath::SpeedOfSoundCmS;
     // A telegraph's strike lands with the blow whatever the windup: held back
     // for a longer one, started part-way for a shorter one, never pitched.
     if (Cue->StrikeMs > 0 && Request.WindupMs > 0)

@@ -1,6 +1,7 @@
 // USoraAudioSubsystem: music and ambience.
 #include "SoraAudio.h"
 #include "Audio/SoraAudioData.h"
+#include "Audio/SoraAudioMath.h"
 #include "Components/AudioComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -25,7 +26,6 @@ constexpr float ThunderDistanceCm = 150000.f;
 // The alert level at which a stealth zone's music turns to combat.
 constexpr int32 CombatAlert = 3;
 
-float DbToGain(float Db) { return FMath::Pow(10.f, Db / 20.f); }
 }
 
 double USoraAudioSubsystem::MusicClock() const
@@ -293,7 +293,7 @@ bool USoraAudioSubsystem::StartStinger(FSoraAudioPlay& Record, const FCue& Cue)
         return true;
     MusicNow.Stinger = Record.Cue;
     MusicNow.StingerEnds = Now + Wave->Duration;
-    MusicNow.BedGain = DbToGain(FData::Get()->StingerDuckDb);
+    MusicNow.BedGain = SoraAudioMath::DbToGain(FData::Get()->StingerDuckDb);
     SetStemGains(.08f);
     return true;
 }

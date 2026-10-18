@@ -4,6 +4,7 @@
 #include "SoraAudio.h"
 #include "ArenaKernelSubsystem.h"
 #include "Audio/SoraAudioData.h"
+#include "Audio/SoraAudioMath.h"
 #include "Combat/SoraStealth.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -30,7 +31,6 @@ const FString RolePrefix(TEXT("MI_Nyaagyu_"));
 // A step longer than this in one frame is a teleport, not a stride.
 constexpr float TeleportCm = 300.f;
 constexpr float AttachedScanSeconds = .5f;
-constexpr float SpeedOfSoundCmS = 34300.f;
 }
 
 void USoraAudioSubsystem::TickHero()
@@ -319,6 +319,7 @@ void USoraAudioSubsystem::TickDoppler(float DeltaTime)
         const float Closing = FVector::DotProduct((At - Loop.LastLocation) / DeltaTime, (Ear - At).GetSafeNormal());
         Loop.LastLocation = At;
         if (UAudioComponent* Component = Loop.Component.Get())
-            Component->SetPitchMultiplier(FMath::Clamp(SpeedOfSoundCmS / FMath::Max(SpeedOfSoundCmS - Closing, 1.f), .8f, 1.25f));
+            Component->SetPitchMultiplier(FMath::Clamp(SoraAudioMath::SpeedOfSoundCmS /
+                FMath::Max(SoraAudioMath::SpeedOfSoundCmS - Closing, 1.f), .8f, 1.25f));
     }
 }
