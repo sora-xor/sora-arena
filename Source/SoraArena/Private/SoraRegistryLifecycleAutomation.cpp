@@ -1,5 +1,6 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraFieldcraftTestWorld.h"
+#include "SoraRegistryTesting.h"
 #include "HUD/SoraHUDPanels.h"
 
 using namespace SoraFieldcraftAutomation;
@@ -40,21 +41,7 @@ bool FinishFoodDelivery(FBeatWorld& W)
 bool SaveFinishedChapter(FBeatWorld& W)
 {
     auto* Save=NewObject<USoraSaveGame>();
-    if(!USoraCampaignDirector::SeedCheckpoint(*Save,W.Chapter,0)) return false;
-    const FSoraChapter& Chapter=FSoraCatalog::Get().Chapter(W.Chapter);
-    SoraBeatRules::FProgress State{0u,0u,static_cast<unsigned>(Save->ChapterEntryWeapons),
-        static_cast<unsigned>(Save->ChapterEntryMechanics),static_cast<unsigned>(Save->ChapterEntryFlags),false};
-    for(int32 Index=0;Index<Chapter.Rules.Num();++Index)
-        if(!Chapter.Rules[Index].Optional&&!SoraBeatRules::CompleteBeat(State,Chapter.Rules.GetData(),Chapter.Rules.Num(),Index)) return false;
-    if(!SoraBeatRules::FinishChapter(State,Chapter.Rules.GetData(),Chapter.Rules.Num())||
-        !SoraBeatRules::ProgressValid(State,Chapter.Rules.GetData(),Chapter.Rules.Num(),Save->ChapterEntryWeapons,
-            Save->ChapterEntryMechanics,Save->ChapterEntryFlags)) return false;
-    Save->HighestChapter=W.Chapter+1;
-    Save->CheckpointBeat=INDEX_NONE; Save->CheckpointPhase=0; Save->CheckpointComplete=true;
-    Save->CheckpointBeatsMask=static_cast<int32>(State.CompletedMask); Save->CheckpointSitesMask=static_cast<int32>(State.SitesMask);
-    Save->CheckpointWeapons=static_cast<int32>(State.WeaponsMask); Save->CheckpointMechanics=static_cast<int32>(State.MechanicsMask);
-    Save->CheckpointFlags=static_cast<int32>(State.FlagsMask);
-    return UGameplayStatics::SaveGameToSlot(Save,W.Slot,0);
+    return SoraRegistryTesting::CompletedFixture(*Save,W.Chapter)&&UGameplayStatics::SaveGameToSlot(Save,W.Slot,0);
 }
 }
 

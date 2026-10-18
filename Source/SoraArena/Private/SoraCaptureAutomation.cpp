@@ -14,6 +14,9 @@
 #include "SoraPracticeDirector.h"
 #include "SoraPracticeLobby.h"
 #include "SoraSaveGame.h"
+#include "SoraHUD.h"
+#include "HUD/SoraHUDPanels.h"
+#include "SoraRegistryTesting.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -204,6 +207,7 @@ struct FSession
     int32 WalkFrames = 0;
     FString File;
     FDateTime Previous;
+    bool bFrameWritten = false;
     TArray<FTiming> Timings;
     ~FSession()
     {
@@ -551,17 +555,22 @@ void Freeze(FSessionRef Session, bool bFrozen)
 
 // Requests the viewport with its HUD and Slate, then waits for the file to
 // be written (or rewritten, when an earlier run left one there).
-void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Name)
+void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Name, bool bRequireLive = false)
 {
-    Queue([Session, Name]()
+    Queue([Session, Name, bRequireLive]()
     {
+        Session->bFrameWritten = false;
+        if (bRequireLive && !Session->bShotLive) return;
         Session->File = Session->Folder / (Name + TEXT(".png"));
         Session->Previous = IFileManager::Get().GetTimeStamp(*Session->File);
         FScreenshotRequest::RequestScreenshot(Session->File, true, false);
     });
-    ADD_LATENT_AUTOMATION_COMMAND(FUntil(15.0, [Session](double)
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(15.0, [Session, bRequireLive](double)
     {
-        return IFileManager::Get().FileSize(*Session->File) > 0 && IFileManager::Get().GetTimeStamp(*Session->File) != Session->Previous;
+        if (bRequireLive && !Session->bShotLive) return true;
+        Session->bFrameWritten = IFileManager::Get().FileSize(*Session->File) > 0 &&
+            IFileManager::Get().GetTimeStamp(*Session->File) != Session->Previous;
+        return Session->bFrameWritten;
     }, [Test, Session]()
     {
         Test->AddError(FString::Printf(TEXT("No screenshot was written to %s"), *Session->File));
@@ -1232,6 +1241,84 @@ void QueueArena(FAutomationTestBase* Test, FSessionRef Session, const FArena& Ar
             Kernel->bPracticeAutopilot = false;
     });
 }
+// Completed-save fixtures use the real catalog, progress validator, disk load,
+// Continue action and HUD. They are UI evidence, never played-campaign proof.
+void QueueRegistryFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Chapter,bool English)
+{
+    const FString Name=FString::Printf(TEXT("RegistryFixture_Chapter%d_%s"),Chapter+1,English?TEXT("JA_EN"):TEXT("JA"));
+    Queue([Test,Session,Chapter,English]()
+    {
+        Session->bShotLive=false;
+        ASoraGameMode* M=Session->M();
+        auto* Save=NewObject<USoraSaveGame>();
+        if(!M||!SoraRegistryTesting::CompletedFixture(*Save,Chapter))
+        {
+            Test->AddError(TEXT("Registry fixture could not construct valid completed progress")); return;
+        }
+        Save->EnglishSubtitles=English;
+        if(!UGameplayStatics::SaveGameToSlot(Save,Session->Slot,0))
+        {
+            Test->AddError(TEXT("Registry fixture could not save its throwaway checkpoint")); return;
+        }
+        if(!M->bMenu) M->SetMenuOpen(true);
+        M->SaveSlotName=Session->Slot; M->bDeterministicPractice=false; M->bCampaign=true;
+        if(!M->Campaign()->LoadSave()) { Test->AddError(TEXT("Registry fixture did not load")); return; }
+        M->ResetRound();
+        if(!Test->TestTrue(TEXT("Continue opens the completed registry"),M->ContinueCampaign()&&SoraHUDPanels::ShowsRegistry(*M))||
+            !Test->TestEqual(TEXT("Continue preserves the fixture chapter"),M->Campaign()->ChapterId,Chapter)||
+            !Test->TestEqual(TEXT("The fixture keeps its language choice"),M->bEnglishSubtitles,English)) return;
+        const TArray<FSoraRegistryRow> Rows=M->Campaign()->RegistryRows();
+        const TArray<int32> Counts=Chapter==3?TArray<int32>{12,1,30,120}:Chapter==4?TArray<int32>{24,3,1}:TArray<int32>{430};
+        if(!Test->TestEqual(TEXT("All authored entries are present once"),Rows.Num(),Counts.Num())) return;
+        const ESoraRegistryState State=Chapter==3?ESoraRegistryState::Recorded:Chapter==4?ESoraRegistryState::Inspected:ESoraRegistryState::Returned;
+        for(int32 Index=0;Index<Rows.Num();++Index)
+        {
+            if(!Test->TestEqual(TEXT("The authored count is intact"),Rows[Index].Entry.Quantity,Counts[Index])||
+                !Test->TestTrue(TEXT("The chapter has its correct inspection state"),Rows[Index].State==State)||
+                !Test->TestEqual(TEXT("Only inspected goods have tally marks"),Rows[Index].HasSplitTally(),Chapter==4)) return;
+        }
+        if(Chapter==6)
+        {
+            const SoraText::FLine Note=SoraRegistry::Status(State);
+            if(!Test->TestEqual(TEXT("The return note remains exact in Japanese"),Note.Japanese,FString(TEXT("返還のみ記帳・札は切らず")))||
+                !Test->TestEqual(TEXT("The return note remains exact in English"),Note.English,FString(TEXT("Recorded as returned. No tally cut.")))) return;
+        }
+        M->Notice.Reset(); M->NoticeEnglish.Reset(); M->NoticeTime=0.f;
+        Session->bShotLive=true;
+    });
+    StreamIn();
+    Wait(1.0);
+    Queue([Test,Session]()
+    {
+        if(!Session->bShotLive) return;
+        ASoraGameMode* M=Session->M();
+        APlayerController* PC=M?M->GetWorld()->GetFirstPlayerController():nullptr;
+        ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+        UGameViewportClient* Viewport=M?M->GetWorld()->GetGameViewport():nullptr;
+        if(!Test->TestNotNull(TEXT("The fixture uses the actual game HUD"),HUD)||!Viewport)
+        {
+            Session->bShotLive=false; return;
+        }
+        FVector2D Size; Viewport->GetViewportSize(Size);
+        FString Why;
+        Session->bShotLive=Test->TestTrue(TEXT("All registry text fits without dropped counters or footer text"),
+            SoraHUDPanels::RegistryLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why));
+        if(!Why.IsEmpty()) Test->AddError(Why);
+    });
+    SaveFrame(Test,Session,Name,true);
+    Queue([Session,Chapter,English,Name]()
+    {
+        if(!Session->bShotLive||!Session->bFrameWritten) return;
+        const FSoraChapter& Data=FSoraCatalog::Get().Chapter(Chapter);
+        const FString Note=FString::Printf(TEXT("validated completed-save UI fixture; not playthrough evidence; language=%s; rows=%d; text bounds passed"),
+            English?TEXT("JA+EN"):TEXT("JA"),Session->Campaign()->RegistryRows().Num());
+        AppendIndex(*Session,FString::Printf(TEXT("%s.png\t%d\tcompleted-save-fixture\t%s\t%s\tregistry UI fixture\t%s"),
+            *Name,Chapter+1,*Data.Title,*Data.TitleEnglish,*Note));
+        UE_LOG(LogTemp,Display,TEXT("SORA_REGISTRY_FIXTURE %s"),*Note);
+        UE_LOG(LogTemp,Display,TEXT("SORA_REGISTRY_FIXTURE_FRAME %s"),*FPaths::ConvertRelativePathToFull(Session->File));
+    });
+}
+
 } // namespace SoraCapture
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
@@ -1292,4 +1379,37 @@ bool FSoraCapturePracticeTest::RunTest(const FString& Parameters)
     CloseSession(Session);
     return true;
 }
+IMPLEMENT_COMPLEX_AUTOMATION_TEST(
+    FSoraCaptureRegistryFixtureTest,
+    "SoraCapture.RegistryFixture",
+    EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+void FSoraCaptureRegistryFixtureTest::GetTests(TArray<FString>& OutBeautifiedNames,TArray<FString>& OutTestCommands) const
+{
+    for(const int32 Chapter:{3,4,6})
+    {
+        OutBeautifiedNames.Add(FString::Printf(TEXT("Chapter%d"),Chapter+1));
+        OutTestCommands.Add(FString::FromInt(Chapter));
+    }
+}
+bool FSoraCaptureRegistryFixtureTest::RunTest(const FString& Parameters)
+{
+    using namespace SoraCapture;
+    const int32 Chapter=FCString::Atoi(*Parameters);
+    const FSessionRef Session=MakeShared<FSession>();
+    if(!TestTrue(TEXT("A supported registry fixture chapter"),Chapter==3||Chapter==4||Chapter==6)||
+        !OpenSession(*this,*Session,TEXT("RegistryFixture"))) return false;
+    APlayerController* PC=Session->M()->GetWorld()->GetFirstPlayerController();
+    ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+    if(!TestNotNull(TEXT("The fixture has the game HUD"),HUD)) return false;
+    const TWeakObjectPtr<ASoraHUD> WeakHUD=HUD;
+    const bool PreviousVisibility=HUD->bShowHUD;
+    HUD->bShowHUD=true;
+    QueueRegistryFixture(this,Session,Chapter,false);
+    QueueRegistryFixture(this,Session,Chapter,true);
+    Queue([WeakHUD,PreviousVisibility]() { if(ASoraHUD* Live=WeakHUD.Get()) Live->bShowHUD=PreviousVisibility; });
+    CloseSession(Session);
+    return true;
+}
+
 #endif
