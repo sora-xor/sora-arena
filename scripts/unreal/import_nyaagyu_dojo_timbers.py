@@ -319,6 +319,27 @@ def timber_master(name, shared, fallback: bool):
     return m
 
 
+# Finishes, mirroring scripts/art/sora_timber_lookdev.py PRESETS (keep in step).
+PRESETS = {
+    "column_fukiurushi": dict(EarlyColor=(0.066, 0.035, 0.020), LateColor=(0.040, 0.020, 0.012),
+                              KnotColor=(0.016, 0.008, 0.005), SootColor=(0.012, 0.010, 0.009),
+                              WornColor=(0.15, 0.090, 0.050), Roughness=0.55, ClearCoat=1.0, ClearCoatRoughness=0.17,
+                              RaiseMeters=0.00002, FibreMeters=0.000012, SootAmount=0.55, WearColorAmount=0.45),
+    "floor_hinoki": dict(EarlyColor=(0.42, 0.29, 0.17), LateColor=(0.25, 0.15, 0.080), KnotColor=(0.12, 0.060, 0.030),
+                         SootColor=(0.20, 0.14, 0.09), WornColor=(0.50, 0.37, 0.24), Roughness=0.45, ClearCoat=0.65,
+                         ClearCoatRoughness=0.09, RaiseMeters=0.00022, FibreMeters=0.00002, SootAmount=0.25,
+                         WearColorAmount=0.35),
+}
+
+
+def apply_preset(mi, preset):
+    for key, value in PRESETS[preset].items():
+        if isinstance(value, tuple):
+            lib.set_material_instance_vector_parameter_value(mi, key, unreal.LinearColor(*value, 1.0))
+        else:
+            lib.set_material_instance_scalar_parameter_value(mi, key, value)
+
+
 def instance(name, parent):
     path = f"{DEST}/{name}"
     mi = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
@@ -384,12 +405,13 @@ def import_mesh(fbx: Path, name: str, nanite: bool):
     return mesh
 
 
-def import_placement(rec, parent, evidence):
+def import_placement(rec, parent, evidence, preset="column_fukiurushi"):
     name = rec["asset"]
     fbx = ROOT / rec["cache_fbx"]
     verified(fbx, rec["digest"], evidence, name)
     mesh = import_mesh(fbx, name, True)
     mi = instance(f"MI_{name}", parent)
+    apply_preset(mi, preset)
     lib.set_material_instance_scalar_parameter_value(mi, "RingWidth", rec["ring_width_m"])
     assets.save_loaded_asset(mi)
     mesh.set_material(0, mi)
@@ -397,7 +419,7 @@ def import_placement(rec, parent, evidence):
     return name, rec["triangles"]
 
 
-def import_pool(rec, parent, evidence):
+def import_pool(rec, parent, evidence, preset="column_fukiurushi"):
     name = rec["asset"]
     fbx = ROOT / rec["fallback_fbx"]
     require(fbx.is_file() and sha(fbx) == rec["fallback_fbx_sha256"], f"{name}: committed fallback FBX changed")
@@ -409,6 +431,7 @@ def import_pool(rec, parent, evidence):
         require(path.is_file() and sha(path) == rec["fallback_maps"][kind]["sha256"], f"{name}: {kind} changed")
         maps[kind] = import_texture(path, path.stem, "Normal" if kind == "NormalDX" else "Masks")
     mi = instance(f"MI_{name}", parent)
+    apply_preset(mi, preset)
     lib.set_material_instance_scalar_parameter_value(mi, "RingWidth", rec["ring_width_m"])
     lib.set_material_instance_texture_parameter_value(mi, "NormalMap", maps["NormalDX"])
     lib.set_material_instance_texture_parameter_value(mi, "MasksMap", maps["Masks"])
@@ -454,6 +477,13 @@ def main():
         triangles += sum(t for _, t in rail_placed)
         report.append(f"rails: {len(rail_placed)} placement logs ({rails['coverage']['with_own_log']} of "
                       f"{rails['coverage']['estate_rail_placements']}), {len(rail_pool)} pool")
+    # The floor tiles (create_nyaagyu_dojo_floor.py): boards unique within a tile.
+    if (KIT / "Floor/manifest.json").is_file():
+        floor, floor_evidence = load_kit(KIT / "Floor", CACHE / "Floor")
+        floor_pool = [import_pool(rec, base, floor_evidence, "floor_hinoki") for rec in floor["pool"]]
+        floor_tiles = [import_placement(rec, nanite, floor_evidence, "floor_hinoki") for rec in floor["tiles"]]
+        triangles += sum(t for _, t in floor_tiles)
+        report.append(f"floor: {len(floor_tiles)} Nanite tiles, {len(floor_pool)} pool")
     assets.save_directory(DEST, only_if_is_dirty=False, recursive=True)
     unreal.log(f"NYAAGYU_DOJO_TIMBERS_READY: {'; '.join(report)}; {triangles} Nanite source triangles")
 
