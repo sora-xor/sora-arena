@@ -228,6 +228,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -615,6 +616,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -925,6 +927,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -1217,6 +1220,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -1421,6 +1425,7 @@
      "do_squad_mid",
      "do_squad_east"
     ],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": true,
      "normal": true,
@@ -1731,6 +1736,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2006,6 +2012,7 @@
     "path_cm": 17000,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2132,6 +2139,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2250,6 +2258,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2510,6 +2519,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2761,6 +2771,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2902,6 +2913,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3013,6 +3025,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3152,6 +3165,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3282,6 +3296,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3412,6 +3427,7 @@
     "dropoffs": [
      "do_kosatsu_board"
     ],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3542,6 +3558,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3656,6 +3673,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,

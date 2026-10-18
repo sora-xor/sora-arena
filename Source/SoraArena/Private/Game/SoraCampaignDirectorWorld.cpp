@@ -96,7 +96,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
             return false;
         }
         for(int32 Point=0;Point<Space.Dropoffs.Num();++Point)
-            if(TaskState.DropoffUses[Point]<SoraBeatRules::DropoffShare(Task)) return At(Space.Dropoffs[Point],true);
+            if(SoraBeatRules::DropoffHasRoom(TaskState,Task,Point)) return At(Space.Dropoffs[Point],true);
         return false;
     case SoraBeatRules::EGoal::Exit:
         return !TaskState.Reached&&At(Space.Exit.Center,false);

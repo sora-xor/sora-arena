@@ -205,6 +205,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -331,6 +332,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -466,6 +468,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -712,6 +715,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -913,6 +917,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -1187,6 +1192,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -1420,6 +1426,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -1534,6 +1541,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -1667,6 +1675,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -1859,6 +1868,7 @@
     "path_cm": 14840,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2038,6 +2048,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2366,6 +2377,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2521,6 +2533,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2736,6 +2749,7 @@
      "hamlet_naka",
      "hamlet_shimo"
     ],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -2850,6 +2864,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3002,6 +3017,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3186,6 +3202,7 @@
     "dropoffs": [
      "dp_gogura_door"
     ],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,
@@ -3302,6 +3319,7 @@
     "path_cm": 0,
     "pickups": [],
     "dropoffs": [],
+    "dropoff_capacity": null,
     "drop_on_hit": {
      "easy": false,
      "normal": false,

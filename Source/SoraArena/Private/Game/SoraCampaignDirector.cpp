@@ -1615,7 +1615,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
         else
         {
             const int32 Dropoff=NearestOf(Space.Dropoffs,[&](int32 Index)
-                { return TaskState.DropoffUses[Index]<SoraBeatRules::DropoffShare(Task); });
+                { return SoraBeatRules::DropoffHasRoom(TaskState,Task,Index); });
             if((bWorked=SoraBeatRules::Deliver(TaskState,Task,Dropoff)))
             {
                 if(Task.Task==SoraBeatRules::ETask::Carry) CarryChanged();
