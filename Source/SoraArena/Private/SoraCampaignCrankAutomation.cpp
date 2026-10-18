@@ -21,6 +21,10 @@ FVector Anchor(const FBeatWorld& W) { return FVector(W.BeatData().Space.Anchor,W
 bool Walk(FBeatWorld& W,const FVector& To) { return SoraRecoveryAutomation::WalkTo(*W.World,To); }
 bool Ready(FBeatWorld& W)
 {
+    if(!W.Test.TestTrue(TEXT("The offline catalog loads before seeding a checkpoint"),FSoraCatalog::Get().Load())) return false;
+    const auto& Chapter=FSoraCatalog::Get().Chapter(W.Chapter);
+    if(!W.Test.TestTrue(TEXT("The crank starts at its authored checkpoint"),
+        Chapter.Rules.IsValidIndex(W.Beat)&&Chapter.Rules[W.Beat].Checkpoint)) return false;
     if(!W.Start()) return false;
     W.Harden();
     for(int32 Frame=0;Frame<1800&&!W.Mode()->IsPlaying();++Frame) if(!W.Tick(1)) return false;
