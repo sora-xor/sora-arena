@@ -204,6 +204,9 @@ void ASoraHUD::DrawHUD()
         return;
     }
     SoraHUDPanels::DrawTopBar(Frame);
+    // A successful campaign result owns the page. Gameplay readouts, the
+    // objective and arms wheel must not remain underneath or over its text.
+    if(SoraHUDPanels::ShowsRegistry(*G)) { SoraHUDPanels::DrawRegistry(Frame); return; }
     // The chapter opens on its title card; dialogue and the round timer start
     // when it closes.
     if(const FSoraChapter* Card=G->TitleCardChapter()) { SoraHUDPanels::DrawTitleCard(Frame,*Card); return; }

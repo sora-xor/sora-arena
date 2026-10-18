@@ -21,6 +21,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ContentStreaming.h"
+#include "AssetCompilingManager.h"
 #include "DynamicRHI.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -1241,6 +1242,32 @@ void QueueArena(FAutomationTestBase* Test, FSessionRef Session, const FArena& Ar
             Kernel->bPracticeAutopilot = false;
     });
 }
+// Let actual asynchronous asset work finish and its preparation messages
+// disappear naturally. Keep editor diagnostics enabled and fail on a timeout.
+void WaitForRegistryAssets(FAutomationTestBase* Test,FSessionRef Session)
+{
+    const TSharedRef<double> QuietSince=MakeShared<double>(-1.0);
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(120.0,[Test,Session,QuietSince](double Elapsed)
+    {
+        if(!Session->bShotLive) return true;
+        FAssetCompilingManager& Assets=FAssetCompilingManager::Get();
+        Assets.ProcessAsyncTasks(true);
+        if(Assets.GetNumRemainingAssets()!=0)
+        {
+            *QuietSince=-1.0;
+            return false;
+        }
+        if(*QuietSince<0.0) *QuietSince=Elapsed;
+        if(Elapsed-*QuietSince<2.0) return false;
+        Test->AddInfo(TEXT("Registry capture: asset compilation idle for two seconds; diagnostics remain enabled"));
+        return true;
+    },[Test,Session]()
+    {
+        Test->AddError(FString::Printf(TEXT("Registry capture asset compilation did not settle; %d assets remain"),
+            FAssetCompilingManager::Get().GetNumRemainingAssets()));
+        Session->bShotLive=false;
+    }));
+}
 // Completed-save fixtures use the real catalog, progress validator, disk load,
 // Continue action and HUD. They are UI evidence, never played-campaign proof.
 void QueueRegistryFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Chapter,bool English)
@@ -1287,7 +1314,7 @@ void QueueRegistryFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Ch
         Session->bShotLive=true;
     });
     StreamIn();
-    Wait(1.0);
+    WaitForRegistryAssets(Test,Session);
     Queue([Test,Session]()
     {
         if(!Session->bShotLive) return;
@@ -1310,7 +1337,7 @@ void QueueRegistryFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Ch
     {
         if(!Session->bShotLive||!Session->bFrameWritten) return;
         const FSoraChapter& Data=FSoraCatalog::Get().Chapter(Chapter);
-        const FString Note=FString::Printf(TEXT("validated completed-save UI fixture; not playthrough evidence; language=%s; rows=%d; text bounds passed"),
+        const FString Note=FString::Printf(TEXT("validated completed-save UI fixture; not playthrough evidence; language=%s; rows=%d; measured text and role bounds passed; assets idle"),
             English?TEXT("JA+EN"):TEXT("JA"),Session->Campaign()->RegistryRows().Num());
         AppendIndex(*Session,FString::Printf(TEXT("%s.png\t%d\tcompleted-save-fixture\t%s\t%s\tregistry UI fixture\t%s"),
             *Name,Chapter+1,*Data.Title,*Data.TitleEnglish,*Note));
