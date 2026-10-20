@@ -108,7 +108,7 @@ bool FSoraCampaignConstructTest::RunTest(const FString& Parameters)
     if(!W.Tick(10)||!W.World->InjectKey(EKeys::E,IE_Released)) return false;
     if(!TestTrue(TEXT("The held seal releases intact goods"),!Seal->IsAlive()&&Seal->HasReleasedGoods())) return false;
     TestEqual(TEXT("The boss removes exactly one live add"),Boss->LiveAdds(),1);
-    TestTrue(TEXT("One remaining construct keeps the seizure shield up"),Boss->IsShieldUp());
+    TestTrue(TEXT("One remaining construct keeps the seizure shield up"),Boss->IsInvulnerable());
     TArray<UStaticMeshComponent*> Parts; Seal->GetComponents(Parts);
     TMap<UStaticMeshComponent*,FVector> From;
     for(auto* Part:Parts) if(Part->GetName().Contains(TEXT("Proxy"))&&!Part->GetName().Contains(TEXT("Core"))) From.Add(Part,Part->GetComponentLocation());
@@ -149,7 +149,7 @@ bool FSoraCampaignConstructTest::RunTest(const FString& Parameters)
     if(!W.Tick(35)||!W.Press(EKeys::LeftMouseButton)||!W.Tick(17)) return false;
     TestTrue(TEXT("Exactly two heavy contacts release the second assembly"),!Heavy->IsAlive()&&Heavy->HasReleasedGoods());
     TestEqual(TEXT("Both release routes preserve add accounting"),Boss->LiveAdds(),0);
-    TestFalse(TEXT("The existing shield drops when the last construct releases"),Boss->IsShieldUp());
+    TestFalse(TEXT("The existing shield drops when the last construct releases"),Boss->IsInvulnerable());
     TestFalse(TEXT("The released core cannot be credited twice"),Heavy->CutSeal(W.Hero()));
     // A normal loom still exposes its own authored attack and takes ordinary
     // body damage. It never receives the summit core or collateral release.
