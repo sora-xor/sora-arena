@@ -500,8 +500,7 @@ placeholders, not finished rice bales, lacquer chests, plough, loom or cart art;
 cyan assembly fields, the core seal, proper slam/cut animation and the finished
 release presentation remain Claude's art work. Released actors do not count as
 live adds and leave when the encounter is removed. Ordinary loom automatons,
-other summons, the boss's existing shield/respawn and campaign kill contracts
-remain unchanged.
+other summons and campaign kill contracts remain unchanged.
 
 `SoraArena.Campaign.CollateralConstruct` covers the real summoned pair, slam
 windup/damage and radius escape, visible/height-gated core contact, mapped held
@@ -510,3 +509,18 @@ accounting, floor settling and encounter cleanup. `test_construct_rules.py`
 checks authored constants, exact core hit admission, ordinary loom catalog
 values and smooth release bounds. Source checks do not qualify Unreal
 collision, compilation, rendering or runtime; root owns those checks.
+
+The summit collector's construct respawn now belongs to P2's seizure group.
+Clearing it retains the ten-second exposed interval; entering P3 cancels its
+pending deadline, and add deaths cannot schedule a group absent from the
+current phase. While constructs shield P2, its normal ledger/cleave pattern
+cannot begin or finish a pending windup. Concurrent seizure fields and summon
+thresholds continue on their existing clocks. These guards apply only to the
+chapter 08 summit collector; generic boss arenas retain their prior behavior.
+`SoraArena.Campaign.SeizurePhaseOwnership` covers a live shield with ongoing
+hazards, ordinary AI attacks during exposure, a late beam cancelled by the
+returning shield, the real ten-second respawn, and a same-encounter P2-to-P3
+transition followed past the old deadline and reloaded from the actual save.
+`test_summit_data.py` checks that only P2 owns this group and preserves the
+55% summon and nine-second hazard cadence. Engine execution remains for root
+qualification; camera/ring/cast presentation is still separate art work.

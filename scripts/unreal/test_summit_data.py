@@ -42,6 +42,23 @@ class SummitDataTests(unittest.TestCase):
         for row in self.c['beats']:
             if row['id']!='ch08.b14': self.assertEqual(row['task']['capture_hold_ms'],0)
 
+    def test_only_seizure_phase_owns_the_construct_group(self):
+        bosses=json.loads((ROOT/'Content/Data/bosses.json').read_text())['bosses']
+        boss=next(b for b in bosses if b['id']=='boss_val_amort')
+        self.assertEqual([(g['id'],g['variant'],g['respawn_ms']) for g in boss['adds']],
+                         [('constructs','collateral_construct',10000)])
+        p1,p2,p3=boss['phases']
+        self.assertEqual(p2['shield_while_adds'],'constructs')
+        self.assertEqual(p2['summons'],[{'attack':'construct_spawn','at_permille':700},
+                                        {'attack':'construct_spawn','at_permille':550}])
+        self.assertEqual(p2['concurrent'],[{'attack':'amort_seizure_field','every_ms':9000,'first_ms':2000}])
+        for phase in (p1,p3):
+            self.assertEqual(phase['summons'],[])
+            self.assertEqual(phase['shield_while_adds'],'')
+        self.assertEqual(p3['concurrent'],[])
+        self.assertEqual(set(p3['pattern']['attacks']),
+                         {'amort_final_foreclosure','amort_cane_pair','amort_cane_thrust'})
+
     def test_overlapping_places_are_separated_by_height(self):
         a=self.c['space']['zones'][self.rows[9]['zone']]
         b=self.c['space']['zones'][self.rows[12]['zone']]
