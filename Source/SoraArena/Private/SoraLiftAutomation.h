@@ -45,13 +45,13 @@ inline void HoldThreats(FSoraAutomationWorld& W)
         if(auto* Brain=It->GetController()) Brain->SetActorTickEnabled(false);
     }
 }
-inline bool Ride(FSoraAutomationWorld& W)
+inline bool Ride(FSoraAutomationWorld& W,const FKey& Interact=EKeys::E)
 {
     auto* Director=W.Mode()->Campaign();
     if(!Board(W)) return false;
     for(int32 Turn=0;Turn<60&&!Director->InLiftGallery();++Turn)
     {
-        if(!W.Tick(66)||!W.PressKey(EKeys::E)) return false;
+        if(!W.Tick(66)||!W.PressKey(Interact)) return false;
         HoldThreats(W);
     }
     return Director->InLiftGallery()&&W.Mode()->Arena()->CampaignLift()->Arrived();

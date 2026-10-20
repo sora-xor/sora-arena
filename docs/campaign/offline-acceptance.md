@@ -631,3 +631,41 @@ positive displacement establish flight. It logs those states and stops on a
 failed precondition instead of cascading. Production reach rules are unchanged.
 Teardown also asserts that global action/axis mappings are unchanged and the
 isolated rebound profile has been deleted. Unreal requalification is pending.
+
+## Seized-goods gallery lore
+
+Chapter eight b12's `poi_child_toy` and `poi_covered_mon` are separate physical
+interactions on the 142 m gallery. The catalog retains all six authored POI
+identities, interaction text and collectible references. These two objects sit
+on graphite plinths beside the east rail, clear of the existing cache and north
+stair path, with warm 3,800 K light and no objective markers. Mapped Interact
+requires a grounded capsule on the same floor, within 260 cm and an unobstructed
+visibility trace to the actual object. The toy raises `event:poi_child_toy` and
+the exact `ch08.b12.nyaakoto.002` line. Interacting with the jinbaori hides its
+seizure label and reveals the existing pinned SVG mon mesh; the mon remains
+hidden before the label is torn.
+
+The additive schema-6 `GalleryPoiMask` defaults to zero for an older tagged
+save. Only its two known bits are valid, and a nonzero mask requires chapter
+eight to have been reached. These are durable lore discoveries, like codex
+finds, rather than beat-derived story flags: immediate `SaveProgress` keeps the
+existing b11 start checkpoint. Retry, fresh-world reload and chapter replay
+retain them; New Campaign clears them. Repeated input does not replay the toy
+line, tear the label again, award collectibles, alter weapons or complete the
+optional beat. The existing cache still awards ch08.c03/c04/c05; its completion
+does not disable the two lore objects. The north stair remains optional-gallery
+exit and starts the b13 checkpoint.
+
+`SoraArena.Campaign.GalleryPois` covers actual capstan travel and walking,
+wrong-floor/airborne/wall rejection, a real Interact rebind, exact toy dialogue,
+repeat use, unchanged inventory, cache independence, ordinary death/retry,
+fresh-world reload, a second mapped-key ride and the normal summit exit.
+SaveRoundTrip and ForgedSaves cover the new field, including malformed bits and
+replay of an earlier chapter after discovering the gallery. Host `gallery-rules`
+checks the authored identities/dialogue/rewards, mask transitions and physical
+clearance from the existing route/cache. Unreal qualification remains pending.
+
+The paper toy, jinbaori, plinths and seizure label are explicitly functional
+proxies. Detailed paper craft, textile/label art, valuation lettering, the
+tearing animation, the other display cases and the cloud-window vista remain
+presentation work; this slice does not claim those assets are finished.

@@ -706,6 +706,30 @@ bool FSoraCatalog::LoadCampaign()
                 return Bad(FString::Printf(TEXT("beat %s has invalid blocking lines"), *Beat.Id));
             if (Beat.Is(SoraBeatRules::EType::ExploreOptional))
             {
+                if (Params->HasField(TEXT("pois")))
+                {
+                    const auto* Pois=Rows(*Params,TEXT("pois"));
+                    if(!Pois) return Bad(FString::Printf(TEXT("beat %s has invalid points of interest"),*Beat.Id));
+                    for(const auto& Value:*Pois)
+                    {
+                        const auto Poi=Value->AsObject();
+                        FSoraExplorePoi Point;
+                        if(!Poi||!Str(*Poi,TEXT("id"),Point.Id)||Point.Id.IsEmpty()||
+                            !Str(*Poi,TEXT("kind"),Point.Kind)||Point.Kind.IsEmpty()||
+                            Beat.Pois.ContainsByPredicate([&](const FSoraExplorePoi& P) { return P.Id==Point.Id; }))
+                            return Bad(FString::Printf(TEXT("beat %s has an invalid or repeated point of interest"),*Beat.Id));
+                        if(Poi->HasField(TEXT("interact"))&&!Str(*Poi,TEXT("interact"),Point.Interaction))
+                            return Bad(FString::Printf(TEXT("point %s has an invalid interaction"),*Point.Id));
+                        if(Poi->HasField(TEXT("collectible")))
+                        {
+                            FString Id;
+                            if(!Str(*Poi,TEXT("collectible"),Id)) return Bad(TEXT("invalid point collectible"));
+                            Point.Collectible=C.Collectibles.IndexOfByPredicate([&](const FSoraCollectible& Item) { return Item.Id==Id; });
+                            if(Point.Collectible==INDEX_NONE) return Bad(FString::Printf(TEXT("point %s names an unknown collectible"),*Point.Id));
+                        }
+                        Beat.Pois.Add(MoveTemp(Point));
+                    }
+                }
                 TArray<FString> Rewards;
                 if (!Strings(Rows(*Params, TEXT("rewards")), Rewards)) return Bad(FString::Printf(TEXT("beat %s has invalid rewards"), *Beat.Id));
                 // Arrows and other pickups refill at the cache; collectibles enter the codex.

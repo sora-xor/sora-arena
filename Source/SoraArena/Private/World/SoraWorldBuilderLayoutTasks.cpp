@@ -122,6 +122,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     BeatLight(Beat);   // the beat's authored sun and sky (SoraWorldBuilderLighting.cpp)
     StageEpilogue(Beat);
     StageSupply(Beat);
+    StageGalleryPois(Chapter,Beat);
     bSummitActive=Space.Summit.Enabled();
     ResetSpireAlarm(Space.Spire.Enabled());
     ShowSummitSpine(false,Beat.Id==TEXT("ch08.b15")?1.f:0.f);
@@ -407,6 +408,7 @@ void ASoraWorldBuilder::ClearKit()
     SetActorTickEnabled(false);
     ResetSpireAlarm(false);
     SupplyCrate=nullptr; SupplyId.Reset();
+    GalleryTargets.Reset(); GalleryIds.Reset(); GalleryFloors.Reset(); GalleryLabel=nullptr; GalleryMon=nullptr;
     bSummitActive=false; ResetSeizure();
     for(const auto& Label:EpilogueLabels) if(Label) Label->DestroyComponent();
     EpilogueLabels.Reset();

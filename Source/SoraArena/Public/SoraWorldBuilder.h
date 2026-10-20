@@ -119,6 +119,11 @@ public:
     ASoraCampaignLift* CampaignLift() const;
     bool SupplyFloor(const FString& Id,FVector& Out) const;
     bool CanReachSupply(const FString& Id,const ASoraPlayerCharacter& Hero) const;
+    bool GalleryPoiFloor(FName Id,FVector& Out) const;
+    bool CanReachGalleryPoi(FName Id,const ASoraPlayerCharacter& Hero) const;
+    void ShowGalleryPois(int32 FoundMask);
+    bool GalleryLabelVisible() const;
+    bool GalleryMonVisible() const;
     // Only an active spire's hunting auditors use these physical L3 panels.
     // A shout never closes the shortcut; arrival checks the actual floor.
     bool SpireAlarmGoal(const ASoraEnemy& Auditor,FVector& Out) const;
@@ -160,6 +165,12 @@ private:
     void BuildCampaign(const FSoraChapter& Chapter);
     void BuildSpire(const FSoraBeat& Beat);
     void StageSupply(const FSoraBeat& Beat);
+    void StageGalleryPois(const FSoraChapter& Chapter,const FSoraBeat& Beat);
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> GalleryTargets;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> GalleryLabel;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> GalleryMon;
+    TArray<FName> GalleryIds;
+    TArray<FVector> GalleryFloors;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> SupplyCrate;
     FString SupplyId;
     FVector SupplyAt=FVector::ZeroVector;

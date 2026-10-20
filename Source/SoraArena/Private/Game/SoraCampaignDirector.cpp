@@ -11,6 +11,7 @@
 #include "SoraFieldcraft.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
+#include "SoraGalleryRules.h"
 #include "SoraHorse.h"
 #include "SoraInputStates.h"
 #include "SoraPlayerCharacter.h"
@@ -272,6 +273,7 @@ bool USoraCampaignDirector::LoadSave()
         static_cast<unsigned>(Save->ChapterEntryMechanics)==Catalog.EarlierMechanics(Save->CurrentChapter)&&
         SoraBeatRules::EntryValid(static_cast<unsigned>(Save->ChapterEntryFlags),0u,Catalog.EarlierFlags(Save->CurrentChapter))&&
         SoraCampaignRules::CollectiblesValid(static_cast<unsigned long long>(Save->Collectibles),Save->HighestChapter)&&
+        SoraGalleryRules::Valid(Save->GalleryPoiMask,Save->HighestChapter)&&
         (!Save->CampaignComplete||Save->CurrentChapter==LastChapter);
     if(!bReadable)
     {
@@ -1433,7 +1435,7 @@ void USoraCampaignDirector::StartOver()
 {
     bCampaignComplete=false; ChapterId=0;
     EntryWeapons=0u; EntryMechanics=0u; EntryFlags=0u; DojoLessonMask=0u;
-    if(Save) { Save->HighestChapter=0; Save->Collectibles=0; }
+    if(Save) { Save->HighestChapter=0; Save->Collectibles=0; Save->GalleryPoiMask=0; }
     ClearCheckpoint();
     SaveProgress();
 }
@@ -1604,6 +1606,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
     if(InteractSupply(Player)) return;
+    if(InteractGalleryPoi(Player)) return;
     const FSoraBeatSpace& Space=Beat->Space;
     IdleMs=0;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);

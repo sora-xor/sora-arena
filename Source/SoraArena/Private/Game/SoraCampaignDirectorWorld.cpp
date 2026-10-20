@@ -193,6 +193,7 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
     if(!World||!Chapter||!Beat||!GetWorld()) return;
     const FSoraBeatSpace& Space=Beat->Space;
     World->StageKit(*Chapter,BeatIndex);
+    World->ShowGalleryPois(GalleryPoiMask());
     // Fresh checkpoint entry may need a cut to L4. Normal spiral traversal
     // reaches the same landing on foot and continues onto the lift.
     const bool NeedsLiftEntry=Space.Lift.bEnabled&&Hero&&FMath::Abs(Hero->GetActorLocation().Z-Space.HeightCm)>180.f;

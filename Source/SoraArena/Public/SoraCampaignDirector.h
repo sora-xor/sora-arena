@@ -207,6 +207,8 @@ public:
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
     bool InLiftGallery() const { return bLiftGallery; }
+    int32 GalleryPoiMask() const;
+    bool HasGalleryPoi(FName Id) const;
     bool LiftExitPoint(FVector& Point) const;
     int32 WorkingCrankHelpers() const { return ActiveCrankHelpers; }
     bool CrankHelperRetreating() const { return bCrankHelperRetreating; }
@@ -354,6 +356,8 @@ private:
     bool SpireReadyToComplete() const;
     bool BeginLiftGallery();
     bool TickLiftGallery(float DeltaSeconds);
+    void TickGalleryPois();
+    bool InteractGalleryPoi(ASoraPlayerCharacter& Player);
     FVector WorkAnchor() const;
     bool NearFloor(const FVector& Location,float Radius) const;
     bool AtWorkAnchor(float Radius) const;

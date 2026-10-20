@@ -621,6 +621,15 @@ struct FSoraWave
     TArray<FSoraWaveGroup> Groups;
 };
 
+// Authored optional exploration identities. Place-specific implementations
+// can stage a physical interaction without replacing the cache's rewards.
+struct FSoraExplorePoi
+{
+    FString Id;
+    FString Kind;
+    FString Interaction;
+    int32 Collectible=INDEX_NONE;
+};
 // A beat of a chapter. Its task (SoraBeatRules.h) decides what completes it,
 // which waves it releases, its phases and what a failure does; the rest names
 // the lines, points and opponents the director puts in the world.
@@ -683,6 +692,7 @@ struct FSoraBeat
     TMap<FString, SoraBeatRules::EFail> FailEvents;
     // Collectibles in an explore beat's cache.
     TArray<int32> Rewards;
+    TArray<FSoraExplorePoi> Pois;
     FSoraBeatSpace Space;
     bool Is(SoraBeatRules::EType Type) const { return Task.Type == Type; }
     bool Has(SoraBeatRules::EGoal Goal) const { return Task.Goal == Goal; }
