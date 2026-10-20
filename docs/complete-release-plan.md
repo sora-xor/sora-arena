@@ -28,12 +28,22 @@ history below. The release remains incomplete.
   before and after scrolling. The original reviews are retained with an
   explicit superseding correction; temporary layout probes were reverted.
   A separate editor diagnostic records 21 missing-Arabic-glyph warnings from
-  a credited filename; font coverage remains under repair. Title tracing shows
+  a credited filename. The later shared font composite adds the existing Noto
+  Arabic face with an explicit package rule and complete license notice;
+  Japanese/English retain their original face. At `44ffc35`, actual mixed-script
+  shaping with last-resort fallback disabled and 720p readability both pass.
+  The unchanged SM6 menu tour passes with zero selected-test warnings/errors.
+  All 19 fresh frames are archived; the two Credits views were reviewed and
+  retain readable Back labels and footer controls. The Arabic-title line is
+  outside those two views. Actual packaged font/license staging remains pending.
+  Title tracing shows
   the tour's injected Enter; it does not establish the historical full-suite
   initial-state cause.
 - All five CI source groups pass for `298ed9e` in run `39416677000`. The tested
   merge `3e45733` has the same tree as that head, and all downloaded reports
-  record unchanged source. The later gallery-cache candidate `a8dfcf7` passes
+  record unchanged source. Run `39420723898` also passes all five groups for
+  `7990cac`; tested merge `9e063f7` has the same tree and unchanged source.
+  The later gallery-cache candidate `a8dfcf7` passes
   45 local gameplay/tooling source checks. At `383d113`, eight of nine directed
   editor tests pass; one passing LiftReload test retains an HTTP connectivity
   warning. The new `GalleryCache` test passes actual equip/shot/Interact,
@@ -50,21 +60,30 @@ history below. The release remains incomplete.
   connectivity-probe warning; there are no selected-test errors. The generated
   campaign and five host spire checks also pass. A rebuilt package remains
   unqualified.
-- Chapter-one source audit finds a release blocker missed by accelerated
-  traversal: b07 dispatches its archery targets as sparring pupils, and dojo
-  controls cannot equip the bow. Six-shot scoring, swinging targets, finite
-  arrows/retrieval and the six-usable/six-bent smithy handoff require
-  implementation. Normal b01–b06 controls are source-feasible but have not
+- The chapter-one archery blocker is repaired in candidate `44ffc35`: physical
+  targets replace sparring pupils, mapped key 3 equips the unlocked yumi,
+  six resolved near shots require four hits, and three swinging targets require
+  distinct arrow impacts. Timed retrieval, finite chapter-one arrows and the
+  six-usable/six-bent smithy handoff are implemented. ArcheryLesson, ArcheryReload
+  and the aggregate Playthrough pass actual editor execution with zero selected
+  warnings/errors, alongside the two font tests above. The integrated source
+  at `8fb35cf` passes all 46 gameplay/tooling checks; its original compile
+  failure is retained, with explicit wave scopes and a direct catalog include
+  fixing both causes at `44ffc35`. This candidate's fresh full Mac package is
+  running. Authored aim sway after four seconds, the optional clapper challenge,
+  other chapters' reserve contracts and final target/weapon art remain open.
+  Normal b01–b06 controls are source-feasible but have not
   been qualified by a continuous ordinary-input run. Also open: the real
   awase event does not start the missed-marobashi hint timer, dojo play skips
   passive zanshin, and pupil windups lack the authored variation. Directly
   recorded forms, synthetic marobashi and lethal test damage establish none
   of those authored interactions.
-- Frozen native research has completed four actual component proofs:
+- Frozen native research has completed five actual component proofs:
   parry (3,027,008 bytes), marked ward (3,014,624), and simultaneous contact
-  (3,012,512), and stance (3,010,688). Each has separate verification and rejected
+  (3,012,512), stance (3,010,688), and plasma (3,005,120).
+  Each has separate verification and rejected
   statement/proof mutations; root checked the proof and six source hashes.
-  Plasma and seven actual prover-negative checks remain pending. This is unregistered
+  The seven actual prover-negative checks are still running. This is unregistered
   research, not the staged bridge, a complete accepted-control/World proof,
   settlement or reference-M1 qualification.
 - Saved-source W09 diagnostics reproduce the original two out-of-range UV
@@ -72,9 +91,14 @@ history below. The release remains incomplete.
   in three in-memory weighted-collapse variants. Protecting all barrel chart
   boundaries retains all 270 exact boundary geometry/UV signatures. Uniform
   weights alone also change the result, so the experiment does not establish
-  that pinning is the unique cause or qualify a repair. Shape/distortion,
-  reproducibility and the existing normal metric failure remain open; no art
-  bytes, textures or acceptance thresholds changed.
+  that pinning is the unique cause or qualify a repair. All six controls repeat
+  exactly across reversed order and two fresh Blender processes. Sampled overall
+  shape error is at most 0.224 mm, but chart-constrained error reaches 183 mm:
+  texture-chart migration remains even with barrel-only pins. Uniform weights
+  worsen maximum UV0 anisotropy; the existing normal metric also still fails.
+  An experiment protecting all UV0/UVMetric seams and measuring correspondence
+  at identical atlas coordinates is prepared but has not run. No art bytes,
+  textures or acceptance thresholds changed.
 
 ## Milestones and evidence
 

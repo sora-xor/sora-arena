@@ -797,3 +797,16 @@ remain presentation work. Authored visible aim sway after four full-draw
 seconds is also still unimplemented; this change does not substitute an
 invisible random release penalty. The b08 clapper challenge and the remaining
 chapter-specific reserve/pickup contracts remain separate gameplay gaps.
+
+The integrated candidate `44ffc35` subsequently builds and passes
+`ArcheryLesson`, `ArcheryReload` and the complete accelerated `Playthrough`
+in the actual M2 Ultra UE 5.8.3 editor, with zero selected errors/warnings.
+The range fixtures walk around instructor collision, equip/draw/release through
+mapped input at 60 Hz, score real arrow impacts and expiry, reject an actual
+off-line target hit, wait retrieval, exhaust and recover the hanging-stage
+quiver, and repair the batch after a fresh-world smithy load. The aggregate
+fixture also uses these real arrows for b07. This is automated editor evidence,
+not human pacing, rendered range art or packaged qualification. The fresh Mac
+package remains running. Source-only checks pass 46/46 at preceding `8fb35cf`;
+its original compile failure is retained, and the narrow explicit-scopes/header
+repair has its separate successful editor build receipt at `44ffc35`.
