@@ -63,13 +63,16 @@ constexpr FPoint AlarmApproach(int Panel)
 struct FLine { FPoint A,B; };
 struct FPadRails { FLine Lines[16]{}; int Count=0; };
 // Guard the square pads' exposed edges, omitting only the footprints of the
-// two adjoining ramp segments and the shortcut. Trimming long gantry rails
-// for capsule clearance alone leaves the pad corners open to the void.
+// adjoining ramp footprint and the shortcut. A 600 cm square pad extends
+// beyond the nearest 346 cm node on a diagonal: include the next segment
+// too, or its guard cap narrows the continuing ramp below navmesh clearance.
+// Trimming long gantry rails alone leaves the pad corners open to the void.
 inline FPadRails ShortcutPadRails(int Node)
 {
     FPadRails Out;
     const auto P=Point(Node);
-    const FLine Corridors[]={{P,Point(Node-1)},{P,Point(Node+1)},
+    const FLine Corridors[]={{Point(Node-2),Point(Node-1)},{Point(Node-1),P},
+        {P,Point(Node+1)},{Point(Node+1),Point(Node+2)},
         {P,Point(Node==ShortcutStart?ShortcutEnd:ShortcutStart)}};
     const double Half=LandingHalfCm-10;
     const FPoint Corners[]={{P.X-Half,P.Y-Half,P.Z},{P.X+Half,P.Y-Half,P.Z},
@@ -77,9 +80,9 @@ inline FPadRails ShortcutPadRails(int Node)
     for(int Edge=0;Edge<4;++Edge)
     {
         const auto A=Corners[Edge],B=Corners[(Edge+1)%4];
-        struct FInterval { double Low,High; } Open[3];
+        struct FInterval { double Low,High; } Open[5];
         int Count=0;
-        for(int Route=0;Route<3;++Route)
+        for(int Route=0;Route<5;++Route)
         {
             const auto C=Corridors[Route];
             const double Length=std::hypot(C.B.X-C.A.X,C.B.Y-C.A.Y);
@@ -93,7 +96,7 @@ inline FPadRails ShortcutPadRails(int Node)
                 Low=std::max(Low,T0); High=std::min(High,T1);
                 return Low<=High;
             };
-            const double Width=(Route==2?GantryWidthCm:WidthCm)*.5;
+            const double Width=(Route==4?GantryWidthCm:WidthCm)*.5;
             if(Clip((A.X-C.A.X)*DX+(A.Y-C.A.Y)*DY,(B.X-A.X)*DX+(B.Y-A.Y)*DY,-15,Length+15)&&
                 Clip(-(A.X-C.A.X)*DY+(A.Y-C.A.Y)*DX,-(B.X-A.X)*DY+(B.Y-A.Y)*DX,-Width,Width))
                 Open[Count++]={Low,High};
