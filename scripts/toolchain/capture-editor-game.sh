@@ -31,6 +31,7 @@ case "$SHADER_MODEL" in
 esac
 OUTPUT="$PROJECT_ROOT/Saved/Capture/$(date -u +%Y%m%dT%H%M%SZ)-$SHADER_MODEL-$$"
 LOG="$OUTPUT/editor.log"
+LOG_COMPLETION="$OUTPUT/log-completion.json"
 REPORT="$OUTPUT/report"
 mkdir -p "$OUTPUT"
 TOOLCHAIN_EXPORTS="$(PYTHONDONTWRITEBYTECODE=1 python3 - "$SCRIPT_DIR" <<'PY'
@@ -64,11 +65,15 @@ echo "Game automation $FILTER at ${WIDTH}x${HEIGHT}, $SHADER_MODEL; log: $LOG" >
 set +e
 # Name the project's entry map before AppKit's bare YES argument can be
 # mistaken for the startup URL by Unreal's command-line parser.
-"$EDITOR" "$PROJECT" /Engine/Maps/Entry -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput \
+# A sponsored trace child can write after the editor exits. The collector owns
+# the file and waits for the inherited pipe's EOF before any manifest hashes it.
+python3 "$SCRIPT_DIR/run_logged_process.py" --log "$LOG" --receipt "$LOG_COMPLETION" -- \
+  "$EDITOR" "$PROJECT" /Engine/Maps/Entry -game -unattended -nopause -nosplash -nosound -stdout -FullStdOutLogOutput \
   -RenderOffscreen "-ResX=$WIDTH" "-ResY=$HEIGHT" -windowed -NoTextureStreaming \
   "${SHADER_ARGS[@]}" "-ReportExportPath=$REPORT" \
-  "-ExecCmds=${SORA_EXEC_PREFIX:-}Automation RunTests $FILTER;Quit" "${EDITOR_CONFIG_ARGS[@]}" -NSAppSleepDisabled YES >"$LOG" 2>&1
+  "-ExecCmds=${SORA_EXEC_PREFIX:-}Automation RunTests $FILTER;Quit" "${EDITOR_CONFIG_ARGS[@]}" -NSAppSleepDisabled YES
 STATUS=$?
 set -e
 python3 "$SCRIPT_DIR/verify-capture-report.py" "$REPORT/index.json" "$LOG" "$STATUS" "$SHADER_MODEL" \
+  --log-completion "$LOG_COMPLETION" \
   --archive "$PROJECT_ROOT" "$(dirname -- "$EDITOR")/../../.." "$OUTPUT" "$START_NS" "$WIDTH" "$HEIGHT" "$FILTER"

@@ -111,6 +111,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         ("capture-report-guards", "scripts/toolchain/test_capture_report.py"),
         ("mac-candidate-guards", "scripts/toolchain/test_mac_candidate.py"),
         ("automation-report-guards", "scripts/toolchain/test_packaged_report.py"),
+        ("capture-log-completion", "scripts/toolchain/test_logged_process.py"),
         ("fresh-startup", "scripts/toolchain/test_fresh_startup.py"),
         ("parity-source-identity", "scripts/unreal/test_parity_guards.py"),
         ("vfx-preview-guards", "scripts/unreal/test_vfx_preview_shots.py"),
