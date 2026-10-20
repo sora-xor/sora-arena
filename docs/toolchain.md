@@ -78,6 +78,17 @@ do not change global settings. This avoids mixing the Xcode 26 linker with the
 host's inherited Command Line Tools 27 SDK.
 Xcode 27 is a pin mismatch, not a claim that every use with UE 5.8 is impossible.
 
+On the M2 Ultra host on **2026-10-20**, global `xcode-select` instead points to
+`/Applications/Xcode.app/Contents/Developer`, reporting **Xcode 27.1 / 27A9275**.
+The project still selects its separate **26.1.1 / 17B100** installation. Installed
+UE 5.8.3's `Engine/Config/Apple/Apple_SDK.json` names 26.1.1 as its main version
+and allows versions from 15.2 through 27.9; the project doctor's exact 26.1.1
+pin is stricter. Passing that version range does not establish compiler, Metal,
+cook or package compatibility. Builds and cooking have passed with 26.1.1;
+this project has not qualified 27.1. Epic's
+[current Mac requirements](https://dev.epicgames.com/documentation/unreal-engine/macos-development-requirements-for-unreal-engine)
+recommend 26.1.1 for UE 5.8 and specifically flag 26.4 as incompatible.
+
 ### Installation blockers actually observed
 
 - The currently authenticated GitHub account receives **HTTP 404** for
