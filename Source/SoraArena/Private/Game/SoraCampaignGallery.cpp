@@ -1,6 +1,7 @@
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraFrontEnd.h"
+#include "SoraEquipmentComponent.h"
 #include "SoraGalleryRules.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
@@ -17,6 +18,21 @@ int32 GalleryIndex(FName Id)
 }
 }
 int32 USoraCampaignDirector::GalleryPoiMask() const { return Save?Save->GalleryPoiMask:0; }
+bool USoraCampaignDirector::GalleryArrowsClaimed() const { return Save&&Save->GalleryArrowsClaimed; }
+bool USoraCampaignDirector::ClaimGalleryArrows(int32 Index)
+{
+    const auto* Chapter=ActiveChapter();
+    if(!Save||!Chapter||!Chapter->Beats.IsValidIndex(Index)) return false;
+    const auto& Cache=Chapter->Beats[Index];
+    if(Cache.Id!=TEXT("ch08.b12")||Cache.GalleryArrowReward<=0||Save->GalleryArrowsClaimed) return true;
+    auto* Hero=Mode().Hero();
+    auto* Equipment=Hero?Hero->GetEquipment():nullptr;
+    if(!Equipment||Equipment->GrantArrows(Cache.GalleryArrowReward,BeatState.WeaponsMask)<0) return false;
+    // A full quiver still consumes this one pickup. Completion collects its
+    // three codex entries before SaveProgress persists the claim together.
+    Save->GalleryArrowsClaimed=true;
+    return true;
+}
 bool USoraCampaignDirector::HasGalleryPoi(FName Id) const
 {
     return (GalleryPoiMask()&SoraGalleryRules::Bit(GalleryIndex(Id)))!=0;

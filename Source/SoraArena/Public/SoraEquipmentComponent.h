@@ -52,6 +52,9 @@ public:
     // Supply cache: fill only unlocked ranged magazines, preserving the held
     // weapon and every action timer. -1 while busy, otherwise weapons refilled.
     int32 RestockUnlocked(unsigned Weapons);
+    // Finite authored pickup, capped to the yumi magazine. Same busy-state
+    // protection as supplies; returns -1 when it cannot be claimed.
+    int32 GrantArrows(int32 Count,unsigned Weapons);
     // Guard reserve drains while held and recovers otherwise (not in the dojo);
     // a 残心 hold after a defeat restores it instead.
     void TickGuard(float DeltaSeconds);
@@ -96,6 +99,7 @@ public:
     bool bReloading = false;
     TArray<int32> AmmoByWeapon;
 private:
+    bool CanRestock() const;
     ASoraPlayerCharacter* Hero() const;
     void Fire();
     void ReleaseBow();

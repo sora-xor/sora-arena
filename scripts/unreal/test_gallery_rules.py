@@ -36,6 +36,10 @@ class GalleryRulesTests(unittest.TestCase):
         self.assertTrue(any(row["on"] == "event:poi_child_toy" and
                             row["lines"] == ["ch08.b12.nyaakoto.002"]
                             for row in data["triggers"]))
+        for event, line in (("event:collectible_ch08_c03", "ch08.b12.nyaakoto.003"),
+                            ("event:collectible_ch08_c05", "ch08.b12.sekireisai.004")):
+            self.assertTrue(any(row["on"] == event and row["lines"] == [line] and row["beat"] == "ch08.b12"
+                                for row in data["triggers"]))
         self.assertEqual(data["space"]["beats"][11]["height_cm"], 14200)
         self.assertEqual(data["space"]["beats"][11]["exit"]["floor_cm"], 16000)
 
@@ -46,6 +50,11 @@ class GalleryRulesTests(unittest.TestCase):
 #include <cmath>
 int main() {
     using namespace SoraGalleryRules;
+    for(int highest=0;highest<8;++highest) for(unsigned mask=0;mask<8;++mask) {
+        const auto finds=static_cast<unsigned long long>(mask)<<(7*6+2);
+        assert(ClaimValid(false,highest,finds)); // Old saves do not imply a claim.
+        assert(ClaimValid(true,highest,finds)==(highest==7&&mask==7));
+    }
     for(int highest=0;highest<8;++highest)
         for(int mask=-16;mask<32;++mask)
             assert(Valid(mask,highest)==(mask==0||(highest==7&&mask>0&&mask<=3)));
@@ -80,6 +89,51 @@ int main() {
         self.assertIsNotNone(compiler, "Host C++ compiler is required")
         with tempfile.TemporaryDirectory() as tmp:
             cpp, binary = Path(tmp) / "gallery.cpp", Path(tmp) / "gallery"
+            cpp.write_text(source)
+            subprocess.run([compiler, "-std=c++17", "-I", str(ROOT / "Source/SoraArena/Public"),
+                            str(cpp), "-o", str(binary)], check=True, capture_output=True, text=True)
+            result = subprocess.run([str(binary)], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_finite_arrows_preserve_other_inventory_and_cap(self):
+        source = r'''
+#include "SoraGalleryRules.h"
+#include "SoraSupplyRules.h"
+#include <array>
+#include <cassert>
+#include <climits>
+int main() {
+    using namespace SoraGalleryRules;
+    constexpr int Count=21;
+    std::array<int,Count> caps{}; caps[ArrowWeapon]=12;
+    for(int held=0;held<Count;++held) for(int before=0;before<=12;++before)
+    for(int amount: {1,12,INT_MAX}) {
+        std::array<int,Count> stored; stored.fill(37);
+        stored[ArrowWeapon]=held==ArrowWeapon?12:before;
+        int live=held==ArrowWeapon?before:9;
+        const auto initial=stored; const int oldLive=live;
+        const int added=amount<12-before?amount:12-before;
+        assert(SoraSupplyRules::AddAmmo(stored.data(),caps.data(),Count,1u<<ArrowWeapon,
+            held,live,ArrowWeapon,amount)==added);
+        for(int n=0;n<Count;++n) assert(stored[n]==(n==ArrowWeapon?before+added:initial[n]));
+        assert(live==(held==ArrowWeapon?before+added:oldLive));
+    }
+    for(int bad: {-1,0,Count}) {
+        std::array<int,Count> stored{}; int live=2;
+        assert(SoraSupplyRules::AddAmmo(stored.data(),caps.data(),Count,~0u,0,live,bad,12)==-1);
+        assert(live==2); for(int n:stored) assert(n==0);
+    }
+    std::array<int,Count> stored{}; const auto initial=stored; int live=2;
+    assert(SoraSupplyRules::AddAmmo(stored.data(),caps.data(),Count,0,0,live,ArrowWeapon,12)==-1);
+    assert(stored==initial&&live==2);
+    assert(SoraSupplyRules::AddAmmo(stored.data(),caps.data(),Count,~0u,0,live,ArrowWeapon,0)==-1);
+    assert(stored==initial&&live==2);
+}
+'''
+        compiler = os.environ.get("CXX") or shutil.which("clang++") or shutil.which("c++")
+        self.assertIsNotNone(compiler, "Host C++ compiler is required")
+        with tempfile.TemporaryDirectory() as tmp:
+            cpp, binary = Path(tmp) / "arrows.cpp", Path(tmp) / "arrows"
             cpp.write_text(source)
             subprocess.run([compiler, "-std=c++17", "-I", str(ROOT / "Source/SoraArena/Public"),
                             str(cpp), "-o", str(binary)], check=True, capture_output=True, text=True)

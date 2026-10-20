@@ -3,6 +3,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
 #include "SoraCampaignDirector.h"
+#include "SoraGalleryRules.h"
 #include "SoraCatalog.h"
 #include "SoraGameMode.h"
 #include "SoraWorldBuilder.h"
@@ -22,6 +23,7 @@ void Copy(const USoraSaveGame& From, USoraSaveGame& To)
     To.ChapterEntryFlags = From.ChapterEntryFlags;
     To.Collectibles = From.Collectibles; To.CheckpointChapter = From.CheckpointChapter; To.CheckpointBeat = From.CheckpointBeat;
     To.GalleryPoiMask = From.GalleryPoiMask;
+    To.GalleryArrowsClaimed = From.GalleryArrowsClaimed;
     To.CheckpointPhase = From.CheckpointPhase; To.CheckpointBeatsMask = From.CheckpointBeatsMask;
     To.CheckpointSitesMask = From.CheckpointSitesMask; To.CheckpointWeapons = From.CheckpointWeapons;
     To.CheckpointMechanics = From.CheckpointMechanics; To.CheckpointFlags = From.CheckpointFlags;
@@ -41,6 +43,7 @@ bool Same(FAutomationTestBase& Test, const FString& Context, const USoraSaveGame
     bOk &= Test.TestEqual(*(Context + TEXT(": entry story flags")), A.ChapterEntryFlags, B.ChapterEntryFlags);
     bOk &= Test.TestEqual(*(Context + TEXT(": collectibles")), A.Collectibles, B.Collectibles);
     bOk &= Test.TestEqual(*(Context + TEXT(": gallery lore")), A.GalleryPoiMask, B.GalleryPoiMask);
+    bOk &= Test.TestEqual(*(Context + TEXT(": gallery arrows")), A.GalleryArrowsClaimed, B.GalleryArrowsClaimed);
     bOk &= Test.TestEqual(*(Context + TEXT(": checkpoint chapter")), A.CheckpointChapter, B.CheckpointChapter);
     bOk &= Test.TestEqual(*(Context + TEXT(": checkpoint beat")), A.CheckpointBeat, B.CheckpointBeat);
     bOk &= Test.TestEqual(*(Context + TEXT(": checkpoint phase")), A.CheckpointPhase, B.CheckpointPhase);
@@ -70,11 +73,13 @@ bool FSoraCampaignSaveRoundTripTest::RunTest(const FString& Parameters)
     // from the first and last chapters.
     USoraSaveGame* Original = NewObject<USoraSaveGame>();
     TestEqual(TEXT("A fresh save defaults to no gallery discoveries"),Original->GalleryPoiMask,0);
+    TestFalse(TEXT("A fresh save defaults to unclaimed gallery arrows"),Original->GalleryArrowsClaimed);
     if (!TestTrue(TEXT("A valid dojo checkpoint is seeded"), USoraCampaignDirector::SeedCheckpoint(*Original, 0, 3)))
         return false;
     Original->HighestChapter = 7;
-    Original->Collectibles = static_cast<int64>(1ull << 47 | 1ull << 3);
+    Original->Collectibles = static_cast<int64>(1ull << 47 | 1ull << 3 | SoraGalleryRules::CacheFinds);
     Original->GalleryPoiMask = 3;
+    Original->GalleryArrowsClaimed = true;
     Original->EnglishSubtitles = false;
     TestEqual(TEXT("Seeded schema"), Original->SaveSchema, USoraSaveGame::Schema);
     TestEqual(TEXT("Seeded dojo forms"), Original->CheckpointDojoLessonMask, 15);
@@ -195,6 +200,15 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
         {TEXT("Valid final-chapter checkpoint with a story flag"), 7, 3, 0, [](USoraSaveGame&) {}, EOutcome::Restored},
         {TEXT("Chapter replay retains discovered gallery lore"), 0, 3, 0,
             [](USoraSaveGame& Save) { Save.HighestChapter=7; Save.GalleryPoiMask=3; }, EOutcome::Restored},
+        {TEXT("Chapter replay retains a claimed gallery bundle"), 0, 3, 0,
+            [](USoraSaveGame& Save) { Save.HighestChapter=7; Save.Collectibles=SoraGalleryRules::CacheFinds;
+                Save.GalleryArrowsClaimed=true; }, EOutcome::Restored},
+        {TEXT("Old gallery finds do not invent a missing arrow claim"), 7, 10, 0,
+            [](USoraSaveGame& Save) { Save.Collectibles=SoraGalleryRules::CacheFinds; }, EOutcome::Restored},
+        {TEXT("Arrow claim without the gallery's finds"), 7, 10, 0,
+            [](USoraSaveGame& Save) { Save.GalleryArrowsClaimed=true; }, EOutcome::FreshCampaign},
+        {TEXT("Arrow claim before chapter eight"), 5, 7, 0,
+            [](USoraSaveGame& Save) { Save.GalleryArrowsClaimed=true; }, EOutcome::FreshCampaign},
         {TEXT("Negative gallery lore mask"), 7, 10, 0,
             [](USoraSaveGame& Save) { Save.GalleryPoiMask=-1; }, EOutcome::FreshCampaign},
         {TEXT("Unknown gallery lore bit"), 7, 10, 0,
@@ -264,6 +278,7 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
             TestEqual(*(Name + TEXT(": story flags")), static_cast<int32>(Campaign->Progress().FlagsMask), Seed->CheckpointFlags);
             TestEqual(*(Name + TEXT(": sites")), Mode->Arena()->ActivatedMask(), Seed->CheckpointSitesMask);
             TestEqual(*(Name + TEXT(": gallery lore")),Campaign->GalleryPoiMask(),Seed->GalleryPoiMask);
+            TestEqual(*(Name + TEXT(": gallery arrows")),Campaign->GalleryArrowsClaimed(),Seed->GalleryArrowsClaimed);
             break;
         case EOutcome::ChapterStart:
             TestEqual(*(Name + TEXT(": chapter kept")), Campaign->ChapterId, Case.Chapter);
@@ -279,6 +294,7 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
             TestEqual(*(Name + TEXT(": no weapons")), static_cast<int32>(Campaign->Progress().WeaponsMask), 0);
             TestEqual(*(Name + TEXT(": no collectibles")), static_cast<int64>(Campaign->CollectedMask()), static_cast<int64>(0));
             TestEqual(*(Name + TEXT(": no gallery lore")),Campaign->GalleryPoiMask(),0);
+            TestFalse(*(Name + TEXT(": no gallery arrow claim")),Campaign->GalleryArrowsClaimed());
             break;
         }
         World->DestroyTestWorld(true);
