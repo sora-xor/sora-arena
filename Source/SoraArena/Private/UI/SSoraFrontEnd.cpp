@@ -71,6 +71,14 @@ void SSoraFrontEnd::Construct(const FArguments& InArgs)
 
 void SSoraFrontEnd::Refresh()
 {
+#if WITH_DEV_AUTOMATION_TESTS
+    CreditsLabelProbes.Reset();
+    if (bCreditsRowDiagnostics)
+    {
+        ++DiagnosticRefreshes;
+        DiagnosticRefreshFrame = GFrameCounter;
+    }
+#endif
     Retired = ChildSlot.GetWidget();
     FontSizes.Reset();
     DrawnLines.Reset();
@@ -156,9 +164,20 @@ FSlateFontInfo SSoraFrontEnd::Font(float Size)
     return FCoreStyle::GetDefaultFontStyle(TEXT("Regular"), Size);
 }
 
-TSharedRef<SWidget> SSoraFrontEnd::Text(const FString& Line, float Size, const FLinearColor& Color, bool bWrap)
+TSharedRef<SWidget> SSoraFrontEnd::Text(const FString& Line, float Size, const FLinearColor& Color, bool bWrap,
+    const TCHAR* DiagnosticLanguage)
 {
     DrawnLines.Add(Line);
+#if WITH_DEV_AUTOMATION_TESTS
+    if (bCreditsRowDiagnostics && DiagnosticLanguage && FrontEnd.IsValid() && FrontEnd->Screen() == SoraUI::EScreen::Credits)
+    {
+        TSharedRef<FSoraCreditsLabelProbe> Probe = MakeShared<FSoraCreditsLabelProbe>();
+        Probe->Language = DiagnosticLanguage;
+        Probe->ExpectedText = Line;
+        CreditsLabelProbes.Add(Probe);
+        return SoraCreditsProbeText(Line, Font(Size), Color, bWrap, Probe);
+    }
+#endif
     return SNew(STextBlock)
         .Text(FText::FromString(Line))
         .Font(Font(Size))
@@ -405,10 +424,10 @@ TSharedRef<SWidget> SSoraFrontEnd::BuildRow(int32 Index, const SoraUI::FRow& Row
             + SVerticalBox::Slot().AutoHeight()[bEnglish ? Text(Row.English, SoraMenuStyle::Small, SoraMenuStyle::Muted, Row.bBinding) : SNullWidget::NullWidget]
         : StaticCastSharedRef<SWidget>(SNew(SWrapBox)
             .UseAllottedSize(true)
-            + SWrapBox::Slot().VAlign(VAlign_Center).Padding(0, 0, 18, 0)[Text(Row.Japanese, SoraMenuStyle::RowText, Label)]
+            + SWrapBox::Slot().VAlign(VAlign_Center).Padding(0, 0, 18, 0)[Text(Row.Japanese, SoraMenuStyle::RowText, Label, false, TEXT("ja"))]
             + SWrapBox::Slot().VAlign(VAlign_Center).Padding(0, 4, 0, 0)
             [
-                bEnglish ? Text(Row.English, SoraMenuStyle::Small, SoraMenuStyle::Muted) : SNullWidget::NullWidget
+                bEnglish ? Text(Row.English, SoraMenuStyle::Small, SoraMenuStyle::Muted, false, TEXT("en")) : SNullWidget::NullWidget
             ]);
     TSharedRef<SHorizontalBox> Line = SNew(SHorizontalBox)
         + SHorizontalBox::Slot().AutoWidth()
@@ -684,6 +703,37 @@ TSharedRef<SWidget> SSoraFrontEnd::BuildCredits()
         CreditsScroll->ScrollDescendantIntoView(Lines[Model->CreditsScroll], false, EDescendantScrollDestination::TopOrLeft);
     return CreditsScroll.ToSharedRef();
 }
+
+#if WITH_DEV_AUTOMATION_TESTS
+bool SSoraFrontEnd::InspectCreditsRow(TArray<FString>& Diagnostics) const
+{
+    const USoraFrontEnd* Model = FrontEnd.Get();
+    if (!bCreditsRowDiagnostics || !Model || Model->Screen() != SoraUI::EScreen::Credits ||
+        Model->Rows().Num() != 1 || RowWidgets.Num() != 1)
+    {
+        Diagnostics.Add(TEXT("credits_row_precondition=0 glyph_pixels_verified=0"));
+        return false;
+    }
+    const SoraUI::FRow& Row = Model->Rows()[0];
+    const FSlateRect Bounds = RowWidgets[0]->GetCachedGeometry().GetRenderBoundingRect();
+    Diagnostics.Add(FString::Printf(TEXT("scroll=%d focus=%d model_ja=\"%s\" model_en=\"%s\" probes=%d refreshes=%u last_refresh_frame=%llu current_frame=%llu glyph_pixels_verified=0"),
+        Model->CreditsScroll, Model->Focus(), *Row.Japanese, *Row.English, CreditsLabelProbes.Num(), DiagnosticRefreshes,
+        static_cast<unsigned long long>(DiagnosticRefreshFrame), static_cast<unsigned long long>(GFrameCounter)));
+    bool bValid = CreditsLabelProbes.Num() == (Model->ShowsEnglish() ? 2 : 1) &&
+        !Row.Japanese.IsEmpty() && Row.Action == SoraUI::EAction::Back;
+    bool bFoundJapanese = false;
+    for (const TSharedRef<FSoraCreditsLabelProbe>& Probe : CreditsLabelProbes)
+    {
+        FString Detail;
+        const bool bLabelValid = SoraInspectCreditsLabel(*Probe, Bounds, Detail);
+        Diagnostics.Add(MoveTemp(Detail));
+        const bool bJapanese = Probe->Language == TEXT("ja");
+        bFoundJapanese |= bJapanese;
+        bValid &= bLabelValid && Probe->ExpectedText == (bJapanese ? Row.Japanese : Row.English);
+    }
+    return bValid && bFoundJapanese;
+}
+#endif
 
 TSharedRef<SWidget> SSoraFrontEnd::BuildBanner()
 {

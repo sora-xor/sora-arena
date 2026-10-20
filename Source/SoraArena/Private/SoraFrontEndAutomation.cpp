@@ -621,12 +621,27 @@ bool FSoraFrontEndRenderedTest::RunTest(const FString& Parameters)
     {
         ADD_LATENT_AUTOMATION_COMMAND(FFunctionLatentCommand([Action]() { Action(); return true; }));
     };
-    const auto Shot = [Folder](const TCHAR* Name)
+    const auto Shot = [this, FrontEnd, Folder](const TCHAR* Name)
     {
         ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(.75f));
         const FString File = Folder / (FString(Name) + TEXT(".png"));
-        ADD_LATENT_AUTOMATION_COMMAND(FFunctionLatentCommand([File]()
+        ADD_LATENT_AUTOMATION_COMMAND(FFunctionLatentCommand([this, FrontEnd, File]()
         {
+            if (FrontEnd.IsValid() && FrontEnd->Screen() == SoraUI::EScreen::Credits)
+            {
+                const TSharedPtr<SWidget> Focused = FSlateApplication::Get().GetKeyboardFocusedWidget();
+                if (TestTrue(TEXT("Credits diagnostics observe the live front-end widget"),
+                    Focused.IsValid() && Focused->GetType() == FName(TEXT("SSoraFrontEnd"))))
+                {
+                    const TSharedPtr<SSoraFrontEnd> Widget = StaticCastSharedPtr<SSoraFrontEnd>(Focused);
+                    TArray<FString> Diagnostics;
+                    const bool bRowLayoutValid = Widget->InspectCreditsRow(Diagnostics);
+                    for (const FString& Detail : Diagnostics)
+                        UE_LOG(LogTemp, Display, TEXT("SORA_CREDITS_ROW frame=%s %s"), *FPaths::GetBaseFilename(File), *Detail);
+                    TestTrue(TEXT("Credits Back labels retain text, allocated bounds, clipping clearance and paint invocation; glyph pixels require image review"),
+                        bRowLayoutValid);
+                }
+            }
             FScreenshotRequest::RequestScreenshot(File, true, false);
             return true;
         }));
@@ -698,6 +713,16 @@ bool FSoraFrontEndRenderedTest::RunTest(const FString& Parameters)
     for (const TPair<EAction, const TCHAR*>& Screen : Screens)
     {
         const EAction Action = Screen.Key;
+        if (Action == EAction::Credits)
+        {
+            Step([this]()
+            {
+                const TSharedPtr<SWidget> Focused = FSlateApplication::Get().GetKeyboardFocusedWidget();
+                if (TestTrue(TEXT("Credits diagnostics attach before the screen is built"),
+                    Focused.IsValid() && Focused->GetType() == FName(TEXT("SSoraFrontEnd"))))
+                    StaticCastSharedPtr<SSoraFrontEnd>(Focused)->SetCreditsRowDiagnosticsEnabled(true);
+            });
+        }
         Step([Open, Action]() { Open(Action); });
         Shot(Screen.Value);
         if (Action == EAction::Credits)
@@ -705,10 +730,16 @@ bool FSoraFrontEndRenderedTest::RunTest(const FString& Parameters)
             Step([Press]() { for (int32 Line = 0; Line < 8; ++Line) Press(EKeys::Down); });
             Shot(TEXT("08_CreditsScrolled"));
         }
-        Step([this, FrontEnd, Press]()
+        Step([this, FrontEnd, Press, Action]()
         {
             Press(EKeys::Escape);
             TestTrue(TEXT("Esc returns to the main menu"), FrontEnd.IsValid() && FrontEnd->Screen() == SoraUI::EScreen::Main);
+            if (Action == EAction::Credits)
+            {
+                const TSharedPtr<SWidget> Focused = FSlateApplication::Get().GetKeyboardFocusedWidget();
+                if (Focused.IsValid() && Focused->GetType() == FName(TEXT("SSoraFrontEnd")))
+                    StaticCastSharedPtr<SSoraFrontEnd>(Focused)->SetCreditsRowDiagnosticsEnabled(false);
+            }
         });
     }
     // The settings screens and the rebind dialog. Nothing is changed, so the
