@@ -105,15 +105,16 @@ bool FSoraDojoAwaseHintTest::RunTest(const FString& Parameters)
     }
     {
         FBeatWorld W(*this,TEXT("DojoAwaseRetry"),0,3);
-        // Reach b04 from the real b03 checkpoint, earning every prerequisite
-        // with input, so Retry proves the authored checkpoint boundary.
+        // Reach b04 from b03 with input, so Retry proves that the real
+        // newly-written b04 checkpoint preserves forms but clears its attempt.
         if(!W.Start(0,2)||!W.Tick(30)||!LearnRecovery(W)||
             !StrikePupil(*this,*W.World)||!StrikePupil(*this,*W.World)||
             !TestEqual(TEXT("Two real lesson points open b04"),W.Campaign()->ActiveBeat(),3)) return false;
         FMeeting Met;
         if(!Meet(*this,*W.World,true,Met)||!W.Press(EKeys::Escape)||
             !Menu(W,SoraUI::EAction::Restart)||!Menu(W,SoraUI::EAction::ConfirmYes)||!W.Tick(40)) return false;
-        TestEqual(TEXT("Checkpoint retry restores b03, the real checkpoint before b04"),W.Campaign()->ActiveBeat(),2);
+        TestEqual(TEXT("Checkpoint retry restores the authored b04 checkpoint"),W.Campaign()->ActiveBeat(),3);
+        TestEqual(TEXT("The completed b03 forms survive retry"),W.Campaign()->DojoLessonStage(),4);
         TestEqual(TEXT("A pre-retry awase cannot leak its hint into the restored lesson"),HintCount(*W.Campaign()),0);
     }
     return !HasAnyErrors();
@@ -158,10 +159,19 @@ bool FSoraDojoZanshinTest::RunTest(const FString& Parameters)
         if(!W.Tick(15)) return false;
         TestEqual(TEXT("Continuing the same hold cannot award twice"),Kit->LastZanshinAt(),AwardedAt);
         TestTrue(TEXT("Ordinary stamina drain resumes after the passive"),Kit->GuardReserve()<Reserve+15.f);
+        // The winning point arms a fresh opportunity. Reload before its
+        // half-second can complete, so this also tests pending-state cleanup.
+        if(!StrikePupil(*this,*W.World)||
+            !TestEqual(TEXT("The winning actual point opens the yard"),W.Campaign()->ActiveBeat(),3)) return false;
+        TestEqual(TEXT("The new point has not already awarded a second recovery"),Kit->LastZanshinAt(),AwardedAt);
         W.Campaign()->SaveProgress();
+        const auto* Saved=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
+        if(!TestNotNull(TEXT("The real checkpoint save exists"),Saved)||
+            !TestEqual(TEXT("The yard transition saves the authored b04 checkpoint"),Saved->CheckpointBeat,3)) return false;
         if(!Reload(W)) return false;
         Kit=W.Hero()->GetEquipment();
-        TestEqual(TEXT("Reload replays the real checkpoint's unlearned recovery form"),W.Campaign()->DojoLessonStage(),1);
+        TestEqual(TEXT("Reload retains the real checkpoint's completed recovery form"),W.Campaign()->DojoLessonStage(),4);
+        TestEqual(TEXT("Reload restores b04 with no partial points"),W.Campaign()->TaskProgress().Done,0);
         TestTrue(TEXT("Fresh-world load has no previous reward or pending point"),Kit->LastZanshinAt()<0.f);
         if(!W.Hold(EKeys::LeftControl,36)) return false;
         TestTrue(TEXT("A checkpoint's old point cannot be replayed for stamina"),Kit->LastZanshinAt()<0.f);
