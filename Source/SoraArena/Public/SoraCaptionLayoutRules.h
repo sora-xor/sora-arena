@@ -37,6 +37,17 @@ inline FLabelPlacement PlaceLabel(const FRect& Label,const FRect& View,const FRe
     }
     return Best;
 }
+struct FBackedLabelPlacement { bool Fits=false; FRect Bounds; float TextX=0,TextY=0; };
+inline FBackedLabelPlacement PlaceBackedLabel(const FRect& Text,const FRect& View,
+    const FRect* Obstacles,int Count,float Gap,float Scale)
+{
+    const float PadX=6.f*Scale,PadY=4.f*Scale;
+    const auto Panel=PlaceLabel({Text.X-PadX,Text.Y-PadY,Text.W+2*PadX,Text.H+2*PadY},
+        View,Obstacles,Count,Gap);
+    // Collision, draw and subsequent labels all use the full backing;
+    // the unchanged text is inset from that same resolved rectangle.
+    return {Panel.Fits,Panel.Bounds,Panel.Bounds.X+PadX,Panel.Bounds.Y+PadY};
+}
 struct FPlan { bool Fits=false; int Region[MaxCaptions]={}; FRect Bounds[MaxCaptions]={}; };
 inline bool Search(int Index,int Count,const FRect* Regions,int RegionCount,
     const float (&Heights)[MaxCaptions][MaxRegions],float Gap,FPlan& Plan)

@@ -280,7 +280,7 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
                     const FString SiteName=G->bCampaign?FSoraCatalog::Get().Chapter(G->Campaign()->ChapterId).Sites[I].Name:FString::Printf(TEXT("工房 %d"),I+1);
                     const FString Text=FString::Printf(TEXT("%s / %dm"),*SiteName,M);
                     int32 TW=0,TH=0; UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),.42*S,.42*S,TW,TH,Text);
-                    const auto At=WorldMarkerPosition(Frame,{Screen.X-75*S,Screen.Y},{static_cast<float>(TW),static_cast<float>(TH)});
+                    const auto At=DrawWorldLabelBacking(Frame,{Screen.X-75*S,Screen.Y},{static_cast<float>(TW),static_cast<float>(TH)});
                     HUD.Label(Text,At.X,At.Y,.42*S,Teal);
                 }
             }
@@ -295,7 +295,7 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
             int32 JW=0,JH=0,EW=0,EH=0;
             UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),.65*S,.65*S,JW,JH,Line.Japanese);
             if(G->bEnglishSubtitles) UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),.52*S,.52*S,EW,EH,Line.English);
-            const auto At=WorldMarkerPosition(Frame,{CX-75*S,CY+60*S},
+            const auto At=DrawWorldLabelBacking(Frame,{CX-75*S,CY+60*S},
                 {static_cast<float>(JW)+(G->bEnglishSubtitles?14*S+EW:0),FMath::Max(static_cast<float>(JH),EH+3.9f*S)});
             Frame.LabelWithEnglish(Line,At.X,At.Y,.65*S,Gold);
         }

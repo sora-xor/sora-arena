@@ -100,8 +100,9 @@ FSoraCaptionLayout CaptionLayout(const FSoraHUDFrame& Frame);
 // Actual upper gameplay panels are excluded from caption fallback columns.
 TArray<FBox2D> UpperGameplayPanelBounds(const FSoraHUDFrame& Frame);
 bool CaptionStoryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
-// Keep projected site/objective labels clear of measured fixed HUD panels.
-FVector2D WorldMarkerPosition(const FSoraHUDFrame& Frame, FVector2D Desired, FVector2D Size);
+// Place and draw a dark backing, reserving its padded bounds against every
+// measured HUD panel and earlier world label. Returns the inset text origin.
+FVector2D DrawWorldLabelBacking(const FSoraHUDFrame& Frame, FVector2D Desired, FVector2D Size);
 void DrawCaptions(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter* Hero);
 // Deterministic practice, drawn last (SoraHUDPracticePanels.cpp).
 void DrawPractice(const FSoraHUDFrame& Frame);
