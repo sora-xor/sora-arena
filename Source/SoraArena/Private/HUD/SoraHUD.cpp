@@ -153,9 +153,13 @@ int32 ASoraHUD::WrappedLabel(const FString& Text,float X,float Y,float Scale,FLi
     return Count;
 }
 void ASoraHUD::Panel(float X,float Y,float W,float H,FLinearColor C) { DrawRect(C,X,Y,W,H); }
-float ASoraHUD::LabelWidth(const FString& Text,float Scale) const
+float ASoraHUD::LabelWidth(const FString& Text,float Scale)
 {
-    float Width=0,Height=0; GetTextSize(Text,Width,Height,JapaneseFont,Scale);
+    // AHUD::GetTextSize requires a live DrawHUD Canvas. Layout qualification
+    // also runs between frames; use the same TextSize metric without that
+    // draw-only guard, and initialize the font for a first measurement.
+    int32 Width=0,Height=0;
+    UCanvas::ClippedStrLen(JapaneseFontObject(),Scale,Scale,Width,Height,Text);
     return Width;
 }
 UTexture2D* ASoraHUD::ResistanceLogo()

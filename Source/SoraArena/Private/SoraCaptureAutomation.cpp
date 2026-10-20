@@ -1,6 +1,7 @@
 #include "SoraGameMode.h"
 #include "SoraSettings.h"
 #include "SoraCaptions.h"
+#include "Engine/Canvas.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/PlayerInput.h"
 #include "SoraInputStates.h"
@@ -1540,8 +1541,15 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
         if(!Test->TestNotNull(TEXT("The gameplay fixture uses the actual HUD"),HUD)||!Viewport)
         { Session->bShotLive=false; return; }
         FVector2D Size; Viewport->GetViewportSize(Size);
+        // This latent check deliberately executes outside DrawHUD. The same
+        // label width used for inline placement must remain available here.
+        const FString Probe=TEXT("SORA HUD 123");
+        int32 ProbeWidth=0,ProbeHeight=0;
+        UCanvas::ClippedStrLen(HUD->JapaneseFontObject(),.6f,.6f,ProbeWidth,ProbeHeight,Probe);
         FString Why;
-        Session->bShotLive=InBeat(Test,*Session,Chapter,Beat,TEXT("Weapon HUD capture"))&&
+        Session->bShotLive=Test->TestTrue(TEXT("Text metrics are available between DrawHUD frames"),
+            ProbeWidth>0&&HUD->LabelWidth(Probe,.6f)==ProbeWidth)&&
+            InBeat(Test,*Session,Chapter,Beat,TEXT("Weapon HUD capture"))&&
             Test->TestEqual(TEXT("The requested language remains active"),M->bEnglishSubtitles,English)&&
             Test->TestEqual(TEXT("The fixture retains its weapon identity"),Session->Hero()->WeaponId,
                 Case==2?FSoraCatalog::Get().Hero().YumiId:FSoraCatalog::Get().Hero().KatanaId)&&
