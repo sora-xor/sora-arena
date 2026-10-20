@@ -565,3 +565,17 @@ grade, shorter length and both endpoint rail clearances. Actual UE execution
 is pending root qualification. Panels and the shutter are explicit functional
 proxies; finished architecture, shutter drop animation and alarm presentation
 remain art work.
+
+The first actual root run at `a8d541d` failed the new shutter fixture and
+existing spire navigation/companion fixtures; the playthrough and ch06 alarm
+fixture passed. Normal player ramp movement still passed, but a new pad rail
+cap left only 47 cm centerline clearance beyond the nearest ramp node. The
+guard calculation now clips the entire local ramp footprint, with host
+regressions checking two neighboring segments in each direction and a capsule
+plus two navigation cells of clearance. That check fails against the original
+`32e8697` geometry. The physical blocker queries now include WorldDynamic:
+builder boxes inherit that engine collision object type, so the old
+WorldStatic-only query could not see the corner guard or shutter. Runtime
+failures now report the exact first blocker and incomplete navigation sections.
+These corrections await a fresh root Unreal run; they do not erase the failed
+qualification evidence.

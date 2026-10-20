@@ -110,10 +110,17 @@ bool FSoraSpireAlarmTest::RunTest(const FString& Parameters)
     FHitResult CornerHit;
     const auto Body=FCollisionShape::MakeCapsule(W.Hero()->GetCapsuleComponent()->GetScaledCapsuleRadius(),
         W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+    FCollisionObjectQueryParams Solid(ECC_WorldStatic);
+    // Builder boxes inherit UStaticMeshComponent's BlockAllDynamic profile.
+    // Pawns are excluded, but both kinds of physical world geometry count.
+    Solid.AddObjectTypesToQuery(ECC_WorldDynamic);
     const FCollisionQueryParams CornerQuery(SCENE_QUERY_STAT(SpirePadCornerFixture),false,W.Hero());
-    TestTrue(TEXT("The new pad's exposed corner has a real capsule guard rail"),
-        W.World->GetTestWorld()->SweepSingleByObjectType(CornerHit,B+FVector(0,0,150),B+FVector(-350,-300,150),
-            FQuat::Identity,FCollisionObjectQueryParams(ECC_WorldStatic),Body,CornerQuery)&&CornerHit.GetComponent()&&
+    const bool CornerBlocked=W.World->GetTestWorld()->SweepSingleByObjectType(CornerHit,B+FVector(0,0,150),B+FVector(-350,-300,150),
+        FQuat::Identity,Solid,Body,CornerQuery);
+    AddInfo(FString::Printf(TEXT("Shortcut corner: blocked=%d start_penetrating=%d actor=%s component=%s impact=%s"),
+        CornerBlocked,CornerHit.bStartPenetrating,*GetNameSafe(CornerHit.GetActor()),*GetNameSafe(CornerHit.GetComponent()),
+        *CornerHit.ImpactPoint.ToString()));
+    TestTrue(TEXT("The new pad's exposed corner has a real capsule guard rail"),CornerBlocked&&CornerHit.GetComponent()&&
             CornerHit.GetComponent()->GetName().StartsWith(TEXT("SpireShortcutPadRail")));
     if(!TestTrue(TEXT("The shortcut is also walkable downhill"),SoraLiftAutomation::Walk(*W.World,A)&&
         FMath::Abs(W.Hero()->GetActorLocation().Z-A.Z-90)<40)) return false;
@@ -157,7 +164,7 @@ bool FSoraSpireAlarmTest::RunTest(const FString& Parameters)
         const auto Capsule=FCollisionShape::MakeCapsule(W.Hero()->GetCapsuleComponent()->GetScaledCapsuleRadius(),
             W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
         const bool HitDoor=W.World->GetTestWorld()->SweepSingleByObjectType(Hit,Door-Along*100+FVector(0,0,150),
-            Door+Along*100+FVector(0,0,150),FQuat::Identity,FCollisionObjectQueryParams(ECC_WorldStatic),Capsule,Query);
+            Door+Along*100+FVector(0,0,150),FQuat::Identity,Solid,Capsule,Query);
         return HitDoor&&Hit.GetComponent()&&Hit.GetComponent()->GetName().StartsWith(TEXT("SpireShortcutShutter"));
     };
     TestTrue(TEXT("The closed shortcut has real capsule-blocking collision"),DoorBlocks());

@@ -156,6 +156,18 @@ int main() {
         const auto pad=Point(node);
         const auto guards=ShortcutPadRails(node);
         assert(guards.Count>0&&guards.Count<=16);
+        // A square pad reaches beyond the nearest node on a diagonal.
+        // Test both full adjacent ramp spans, with two Recast 19 cm cells
+        // beyond the capsule radius, not only capsule fit at that node.
+        for(int edge=node-1;edge<=node+2;++edge) {
+            const auto from=Point(edge-1),to=Point(edge);
+            for(int n=0;n<=1000;++n) {
+                const double t=n/1000.0;
+                const FPoint p{from.X+(to.X-from.X)*t,from.Y+(to.Y-from.Y)*t,0};
+                for(int r=0;r<guards.Count;++r)
+                    assert(distance(p,guards.Lines[r].A,guards.Lines[r].B,0,0,0,20,0)>RouteRadiusCm+38);
+            }
+        }
         for(int neighbour:{node-1,node+1,node==ShortcutStart?ShortcutEnd:ShortcutStart}) {
             const auto end=Point(neighbour);
             for(int n=0;n<=1000;++n) {

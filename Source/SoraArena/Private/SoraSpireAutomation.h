@@ -11,7 +11,8 @@ inline bool GantryClearance(FSoraAutomationWorld& W,const FSoraBeatSpace& Space)
 {
     const auto* Hero=W.Player();
     const auto Capsule=FCollisionShape::MakeCapsule(Hero->GetCapsuleComponent()->GetScaledCapsuleRadius(),Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-    const FCollisionObjectQueryParams Objects(ECC_WorldStatic);
+    FCollisionObjectQueryParams Objects(ECC_WorldStatic);
+    Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
     const FCollisionQueryParams Query(SCENE_QUERY_STAT(SpireLandingClearance),false,Hero);
     for(int32 Level:{1,3})
     {

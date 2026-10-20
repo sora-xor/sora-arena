@@ -39,9 +39,27 @@ bool FSoraCampaignSpireTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("The L3 wave stays unreleased below its floor"),SoraBeatRules::Released(W.Campaign()->TaskProgress(),2));
     auto* Nav=USoraNavigation::Get(W.Mode());
     TArray<FVector> Route;
-    TestTrue(TEXT("Navigation sees a continuous route from the lower ramp to L4"),Nav&&Nav->Settle()&&
+    const bool FullRoute=Nav&&Nav->Settle()&&
         Nav->FindPath(W.Hero()->GetActorLocation(),Space.Spire.Ramp.Last()+FVector(0,0,90),*W.Hero(),Route)&&
-        !Route.IsEmpty()&&FMath::Abs(Route.Last().Z-2700)<100.f);
+        !Route.IsEmpty()&&FMath::Abs(Route.Last().Z-2700)<100.f;
+    if(!FullRoute)
+    {
+        AddInfo(FString::Printf(TEXT("Spire nav incomplete: hero=%s goal=%s points=%d end=%s"),
+            *W.Hero()->GetActorLocation().ToString(),*Space.Spire.Ramp.Last().ToString(),Route.Num(),
+            Route.IsEmpty()?TEXT("none"):*Route.Last().ToString()));
+        // Keep full-route failure intact, but identify which local section
+        // disconnects. A returned partial route is never a successful section.
+        for(int32 N=1;N<Space.Spire.Ramp.Num();++N)
+        {
+            TArray<FVector> Section;
+            const FVector A=Space.Spire.Ramp[N-1],B=Space.Spire.Ramp[N];
+            const bool Found=Nav&&Nav->FindPath(A+FVector(0,0,90),B+FVector(0,0,90),*W.Hero(),Section);
+            if(!Found||Section.IsEmpty()||FVector::Dist2D(Section.Last(),B)>80||FMath::Abs(Section.Last().Z-B.Z)>100)
+                AddInfo(FString::Printf(TEXT("Spire nav section %d..%d incomplete: start=%s goal=%s points=%d end=%s"),
+                    N-1,N,*A.ToString(),*B.ToString(),Section.Num(),Section.IsEmpty()?TEXT("none"):*Section.Last().ToString()));
+        }
+    }
+    TestTrue(TEXT("Navigation sees a continuous route from the lower ramp to L4"),FullRoute);
     if(!TestTrue(TEXT("L2 is reached by walking the ramp"),SoraSpireAutomation::Climb(*W.World,Space,LowerL3+1,L2))) return false;
     if(!TestTrue(TEXT("The two-metre L2 gantry reaches its far marksman post"),
         SoraLiftAutomation::Walk(*W.World,Space.Spire.Spawns[4])&&FMath::Abs(W.Hero()->GetActorLocation().Z-990)<10.f&&
