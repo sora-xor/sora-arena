@@ -22,10 +22,15 @@ history below. The release remains incomplete.
   pass. The full Metal suite completes 148 tests: **147 pass, one fails, zero
   test warnings**. `Campaign.Spaces` fails four chapter-eight spawn-floor checks.
   `ScriptedFight`, `FrontEndScreens`, `GalleryPois` and `NativeLoader` pass.
-  This package fails qualification. Its 19 front-end frames were viewed; the
-  scrolled Credits Back button loses Japanese `戻る`, although English `Back`
-  remains. Title tracing shows the tour's injected Enter; it does not establish
-  the historical full-suite initial-state cause.
+  This package fails qualification. Its 19 front-end frames were viewed.
+  A prior missing-Credits-label finding was incorrect: comparison of the
+  original PNG pixels and an enlarged crop confirms both `戻る` and `Back`
+  before and after scrolling. The original reviews are retained with an
+  explicit superseding correction; temporary layout probes were reverted.
+  A separate editor diagnostic records 21 missing-Arabic-glyph warnings from
+  a credited filename; font coverage remains under repair. Title tracing shows
+  the tour's injected Enter; it does not establish the historical full-suite
+  initial-state cause.
 - All five CI source groups pass for `298ed9e` in run `39416677000`. The tested
   merge `3e45733` has the same tree as that head, and all downloaded reports
   record unchanged source. The later gallery-cache candidate `a8dfcf7` passes
@@ -55,11 +60,11 @@ history below. The release remains incomplete.
   passive zanshin, and pupil windups lack the authored variation. Directly
   recorded forms, synthetic marobashi and lethal test damage establish none
   of those authored interactions.
-- Frozen native research has completed three actual component proofs:
+- Frozen native research has completed four actual component proofs:
   parry (3,027,008 bytes), marked ward (3,014,624), and simultaneous contact
-  (3,012,512). Each has separate verification and rejected statement/proof
-  mutations; root checked the proof and six source hashes. Stance, plasma
-  and seven actual prover-negative checks remain pending. This is unregistered
+  (3,012,512), and stance (3,010,688). Each has separate verification and rejected
+  statement/proof mutations; root checked the proof and six source hashes.
+  Plasma and seven actual prover-negative checks remain pending. This is unregistered
   research, not the staged bridge, a complete accepted-control/World proof,
   settlement or reference-M1 qualification.
 - Saved-source W09 diagnostics reproduce the original two out-of-range UV
