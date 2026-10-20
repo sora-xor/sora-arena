@@ -30,6 +30,8 @@
 # Usage: test-packaged-mac.sh ARCHIVE_DIRECTORY [Filter[+Filter...]] [output-directory]
 #   ARCHIVE_DIRECTORY is the directory given to stage-mac.sh.
 #   SORA_PACKAGED_TIMEOUT_SECONDS bounds each launch (default 3600).
+#   SORA_TRACE_FRONTEND_INPUT=1 enables bounded Title-to-Main diagnostics only
+#   in the full-suite launch; the untouched fresh-startup gate is unchanged.
 set -euo pipefail
 : "${SORA_CANDIDATE_SOURCE:?Set the full game source commit ID}"
 : "${SORA_CANDIDATE_NATIVE:?Set the full native bridge source commit ID}"
@@ -52,6 +54,12 @@ esac
 TIMEOUT_SECONDS="${SORA_PACKAGED_TIMEOUT_SECONDS:-3600}"
 case "$TIMEOUT_SECONDS" in
   ''|*[!0-9]*|0) echo 'SORA_PACKAGED_TIMEOUT_SECONDS must be a positive number of seconds.' >&2; exit 2;;
+esac
+AUTOMATION_RENDER_ARGS=(-RenderOffscreen -ResX=1280 -ResY=720 -windowed)
+case "${SORA_TRACE_FRONTEND_INPUT-0}" in
+  0) ;;
+  1) AUTOMATION_RENDER_ARGS+=(-SoraTraceFrontEndInput) ;;
+  *) echo 'SORA_TRACE_FRONTEND_INPUT must be 0 or 1.' >&2; exit 2;;
 esac
 MIN_FREE_GIB="${SORA_MIN_FREE_GIB:-30}"
 FREE_GIB="$(df -Pk "$PROJECT_ROOT" | awk 'NR==2 {print int($4/1048576)}')"
@@ -235,7 +243,7 @@ python3 "$SCRIPT_DIR/verify_fresh_startup.py" "$OUTPUT/app-data/fresh-startup-re
   "$OUTPUT/app-data/fresh-startup-userdir/Saved/Screenshots/SoraStartup/1280x720/01_Title.png" 1280 720
 
 REPORT="$APP_DATA/report"
-launch automation -RenderOffscreen -ResX=1280 -ResY=720 -windowed \
+launch automation "${AUTOMATION_RENDER_ARGS[@]}" \
   "-ExecCmds=Automation RunTests $FILTER;Quit" "-ReportExportPath=$REPORT"
 
 # Recheck after execution so the evidence cannot describe replaced artifacts.

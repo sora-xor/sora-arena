@@ -1,4 +1,5 @@
 #include "UI/SSoraFrontEnd.h"
+#include "UI/SoraFrontEndInputTrace.h"
 #include "ArenaWalletSubsystem.h"
 #include "SoraGameMode.h"
 #include "SoraSettings.h"
@@ -90,6 +91,9 @@ FReply SSoraFrontEnd::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& In
     USoraFrontEnd* Model = FrontEnd.Get();
     if (!Model || !Model->IsOpen())
         return FReply::Unhandled();
+#if WITH_DEV_AUTOMATION_TESTS
+    SoraFrontEndInputTrace::FScope InputTrace(Model, TEXT("slate-key"), InKeyEvent.GetKey().GetFName(), InKeyEvent.IsRepeat());
+#endif
     Model->HandleKey(InKeyEvent.GetKey(), InKeyEvent.IsRepeat());
     // An open screen owns every key, so none falls through to play or to
     // Slate's own focus navigation.
@@ -112,6 +116,9 @@ FReply SSoraFrontEnd::OnMouseButtonDown(const FGeometry& MyGeometry, const FPoin
     USoraFrontEnd* Model = FrontEnd.Get();
     if (!Model || !Model->IsOpen())
         return FReply::Unhandled();
+#if WITH_DEV_AUTOMATION_TESTS
+    SoraFrontEndInputTrace::FScope InputTrace(Model, TEXT("slate-button"), MouseEvent.GetEffectingButton().GetFName());
+#endif
     // A rebind takes the button itself; the dialog's own Cancel handles its clicks first.
     if (Model->IsCapturing())
     {
@@ -708,6 +715,9 @@ TSharedRef<SWidget> SSoraFrontEnd::Prompt(SoraUI::ECommand Command, const FText&
         {
             if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !Weak.IsValid())
                 return FReply::Unhandled();
+#if WITH_DEV_AUTOMATION_TESTS
+            SoraFrontEndInputTrace::FScope InputTrace(Weak.Get(), TEXT("slate-prompt-button"), Event.GetEffectingButton().GetFName());
+#endif
             Weak->NoteDevice(SoraUI::EDevice::KeyboardMouse);
             Weak->Command(Command);
             return FReply::Handled();

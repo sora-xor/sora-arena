@@ -1,5 +1,6 @@
 #include "SoraFrontEnd.h"
 #include "UI/SoraFrontEndRows.h"
+#include "UI/SoraFrontEndInputTrace.h"
 #include "ArenaWalletSubsystem.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
@@ -93,6 +94,9 @@ void USoraFrontEnd::ShowTitle()
 }
 void USoraFrontEnd::ShowMain(const FString& InBannerJapanese, const FString& InBannerEnglish)
 {
+#if WITH_DEV_AUTOMATION_TESTS
+    SoraFrontEndInputTrace::TitleToMain(*this);
+#endif
     Stack = {{SoraUI::EScreen::Main, 0}};
     BuildRows();
     Stack.Last().Focus = FirstEnabled();
@@ -196,6 +200,9 @@ void USoraFrontEnd::NoteDevice(SoraUI::EDevice Device)
 
 bool USoraFrontEnd::HandleKey(const FKey& Key, bool bRepeat)
 {
+#if WITH_DEV_AUTOMATION_TESTS
+    SoraFrontEndInputTrace::FScope InputTrace(this, TEXT("model-key"), Key.GetFName(), bRepeat);
+#endif
     if (!IsOpen())
         return false;
     // A rebind takes the key itself, whatever its menu meaning.
@@ -213,6 +220,9 @@ bool USoraFrontEnd::HandleKey(const FKey& Key, bool bRepeat)
 }
 bool USoraFrontEnd::Command(SoraUI::ECommand Pressed)
 {
+#if WITH_DEV_AUTOMATION_TESTS
+    SoraFrontEndInputTrace::FScope InputTrace(this, TEXT("direct-command"), NAME_None, false, static_cast<int32>(Pressed));
+#endif
     if (!IsOpen())
         return false;
     const SoraUI::EScreen Current = Screen();
