@@ -69,7 +69,7 @@ bool Contains(const FSlateRect& Outer, const FSlateRect& Inner)
         Inner.Right <= Outer.Right + Rounding && Inner.Bottom <= Outer.Bottom + Rounding;
 }
 
-FString Rect(const FSlateRect& Value)
+FString DescribeCreditsRect(const FSlateRect& Value)
 {
     return FString::Printf(TEXT("[%.2f,%.2f,%.2f,%.2f]"), Value.Left, Value.Top, Value.Right, Value.Bottom);
 }
@@ -107,8 +107,8 @@ bool SoraInspectCreditsLabel(const FSoraCreditsLabelProbe& Probe, const FSlateRe
     Diagnostic = FString::Printf(
         TEXT("language=%s expected=\"%s\" actual=\"%s\" widget=%p font_object=%s font_size=%.2f face=%s desired=[%.2f,%.2f] cached=%s paint=%s row=%s cull=%s scissor=%s stencil=%d visible=%d opacity=%.3f tint=[%.3f,%.3f,%.3f,%.3f] parent_enabled=%d paint_calls=%u last_paint_frame=%llu current_frame=%llu inside_row=%d inside_cull=%d inside_scissor=%d glyph_pixels_verified=0"),
         *Probe.Language, *Probe.ExpectedText, *ActualText, Widget.Get(), *GetPathNameSafe(Font.FontObject), Font.Size,
-        *Font.TypefaceFontName.ToString(), Desired.X, Desired.Y, *Rect(Cached), *Rect(Probe.PaintBounds), *Rect(RowBounds),
-        *Rect(Probe.CullingBounds), Probe.ScissorBounds.IsSet() ? *Rect(*Probe.ScissorBounds) : TEXT("<none>"),
+        *Font.TypefaceFontName.ToString(), Desired.X, Desired.Y, *DescribeCreditsRect(Cached), *DescribeCreditsRect(Probe.PaintBounds), *DescribeCreditsRect(RowBounds),
+        *DescribeCreditsRect(Probe.CullingBounds), Probe.ScissorBounds.IsSet() ? *DescribeCreditsRect(*Probe.ScissorBounds) : TEXT("<none>"),
         Probe.bStencilClip ? 1 : 0, bVisible ? 1 : 0, Widget->GetRenderOpacity(),
         Probe.PaintTint.R, Probe.PaintTint.G, Probe.PaintTint.B, Probe.PaintTint.A, Probe.bParentEnabled ? 1 : 0,
         Probe.PaintCalls, static_cast<unsigned long long>(Probe.LastPaintFrame), static_cast<unsigned long long>(GFrameCounter),
