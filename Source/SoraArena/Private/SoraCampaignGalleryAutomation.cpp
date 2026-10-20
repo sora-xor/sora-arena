@@ -56,14 +56,26 @@ bool FSoraGalleryPoisTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Arrival alone does not inspect the toy"),W.Campaign()->GalleryPoiMask(),0);
     const FVector Ground=W.Hero()->GetActorLocation();
     auto* Movement=W.Hero()->GetCharacterMovement();
+    // A real lower floor isolates the height gate without crossing the lift's
+    // lethal fall boundary (600 cm below the deck).
+    auto* LowerFloor=W.World->GetTestWorld()->SpawnActor<AActor>();
+    auto* LowerBox=NewObject<UBoxComponent>(LowerFloor);
+    LowerFloor->SetRootComponent(LowerBox); LowerBox->SetBoxExtent(FVector(240,240,10));
+    LowerBox->SetCollisionProfileName(TEXT("BlockAll")); LowerBox->RegisterComponent(); LowerFloor->AddInstanceComponent(LowerBox);
+    LowerFloor->SetActorLocation(FVector(Ground.X,Ground.Y,ToyAt.Z-310));
     W.Hero()->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
     Movement->StopMovementImmediately();
-    W.Hero()->SetActorLocation(Ground-FVector(0,0,900),false,nullptr,ETeleportType::TeleportPhysics);
+    W.Hero()->SetActorLocation(Ground-FVector(0,0,300),false,nullptr,ETeleportType::TeleportPhysics);
     Movement->SetMovementMode(MOVE_Walking);
-    if(!TestFalse(TEXT("Matching XY on a lower floor cannot inspect the toy"),Arena->CanReachGalleryPoi(Toy,*W.Hero()))||
-        !W.Press(EKeys::E)||!TestEqual(TEXT("Wrong-floor mapped input discovers nothing"),W.Campaign()->GalleryPoiMask(),0)) return false;
+    if(!W.Tick(3)||!TestTrue(TEXT("The wrong-floor check starts alive and grounded"),W.Hero()->CanPlay()&&Movement->IsMovingOnGround())||
+        !TestFalse(TEXT("Matching XY on a lower floor cannot inspect the toy"),Arena->CanReachGalleryPoi(Toy,*W.Hero()))||
+        !W.Press(EKeys::E)||!TestEqual(TEXT("Wrong-floor mapped input discovers nothing"),W.Campaign()->GalleryPoiMask(),0)||
+        !TestTrue(TEXT("Wrong-floor input remains in ordinary play"),W.Hero()->CanPlay())) return false;
+    W.Hero()->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
+    LowerFloor->Destroy();
     W.Hero()->SetActorLocation(Ground,false,nullptr,ETeleportType::TeleportPhysics);
     Movement->StopMovementImmediately();
+    if(!W.Tick(3)) return false;
     for(int32 Frame=0;Frame<120&&(!Movement->IsMovingOnGround()||!W.Hero()->CanJump());++Frame)
         if(!W.Tick(1)) return false;
     W.Look((Ground-ToyAt).GetSafeNormal2D().Rotation());
@@ -88,7 +100,7 @@ bool FSoraGalleryPoisTest::RunTest(const FString& Parameters)
             Equipment->bReloading,W.Campaign()->IsDialogueBlocking()));
     };
     LogJump(TEXT("setup"),0);
-    if(!TestTrue(TEXT("The gallery jump starts grounded and eligible"),Movement->IsMovingOnGround()&&W.Hero()->CanJump())||
+    if(!TestTrue(TEXT("The gallery jump starts grounded and eligible"),W.Hero()->CanPlay()&&Movement->IsMovingOnGround()&&W.Hero()->CanJump())||
         !W.World->InjectKey(EKeys::SpaceBar,IE_Pressed)) return false;
     LogJump(TEXT("pressed"),0);
     int32 JumpFrames=0;

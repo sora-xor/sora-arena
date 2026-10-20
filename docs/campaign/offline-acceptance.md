@@ -678,3 +678,14 @@ airborne interaction leak nor the cause of the failed jump. A fixture-only
 follow-up records setup, key press, every held frame and result with actual
 movement/input/equipment state. Its timing and flight assertion are unchanged;
 the cause and remaining gallery checks await root's diagnostic rerun.
+
+The diagnostic rerun at `3c6da0f` fails the same assertion and identifies a
+fixture setup error: every jump sample has `CanPlay=0`, input state 16
+(`Result`), grounded/CanJump true and no vault or equipment commitment. The
+mapped Space key is held, but jumping is correctly blocked. The preceding
+900 cm downward teleport crosses the unchanged lift's lethal boundary, 600 cm
+below its deck. The follow-up uses a real temporary floor 300 cm below the
+gallery and requires ordinary play and grounded movement around the wrong-floor
+input. It preserves the flight assertion and production fall protection.
+Input conflict checks, two gallery rule tests and fourteen source-runner tests
+pass; the repaired fixture still requires an actual Unreal run.
