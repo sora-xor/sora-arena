@@ -9,6 +9,7 @@
 #include "SoraCatalog.h"
 #include "SoraDojoRules.h"
 #include "SoraMaaiAutomation.h"
+#include "SoraArcheryAutomation.h"
 #include "SoraRecoveryAutomation.h"
 #include "SoraLiftAutomation.h"
 #include "SoraSpireAutomation.h"
@@ -1022,6 +1023,12 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     }
     case EGoal::WavesCleared:
     case EGoal::Survive:
+        if(Beat.bArcheryLesson)
+        {
+            if(!SoraArcheryAutomation::Complete(Test,*State.World))
+                return Fail(Test,State,TEXT("The range must complete through actual arrow impacts"));
+            break;
+        }
         // Fight what the waves send; walk into the volume that brings the next
         // one; let the clock run for timed waves and survivals.
         for (int32 Action = 0; Action < MaxActionsPerBeat * 4 && Active(); ++Action)

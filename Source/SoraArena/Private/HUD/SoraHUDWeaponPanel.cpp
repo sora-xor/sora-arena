@@ -83,7 +83,7 @@ FLayout Build(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero)
     const USoraEquipmentComponent* Kit=Hero.GetEquipment();
     const FSoraWeapon& Weapon=FSoraCatalog::Get().Weapon(Hero.WeaponId);
     Main.Width=365*F.S; Main.Padding=25*F.S; Main.X=F.W-25*F.S-Main.Width; Main.Height=10*F.S;
-    const SoraText::FLine Arm=G.bCampaign&&G.Campaign()->ChapterId==0
+    const SoraText::FLine Arm=G.bCampaign&&G.Campaign()->ChapterId==0&&Hero.WeaponId==0
         ?SoraText::Line(NSLOCTEXT("SoraArena.Arms","Bokken","木刀 / 非致死の立合い"))
         :SoraText::FLine{Weapon.Name,Weapon.NameEnglish};
     AddText(F,Main,Arm.Japanese,FMath::Max(.72f*F.S,.6f),F.Ivory);

@@ -757,8 +757,8 @@ The mapped Bow action (default key 3) now equips the unlocked yumi in chapter
 one; key 1 or the existing key 2 returns to the training sword. Equip loads
 the yumi proxy instead of the authored bokken mesh. The later b11 sparring
 match retains its melee-only training slot. That slot still renders a bokken
-proxy: it is **not** an art-qualified fukuro-shinai. The separate root HUD
-integration must also limit its chapter-one bokken label to weapon 0.
+proxy: it is **not** an art-qualified fukuro-shinai. The integrated HUD limits
+its chapter-one bokken label to weapon 0, so the yumi retains its own label.
 
 Chapter-one R no longer creates arrows. B07 starts with the own twelve-arrow
 quiver. A failed six-arrow set pauses shooting for the authored eight-second
@@ -779,7 +779,7 @@ paused/rebound input, hanging exhaustion/recovery, fresh b09 reload and
 normal station interactions to repair the batch. `ArcheryReload` covers
 pre-unlock/b11 loadout boundaries, ordinary menu checkpoint retry and a
 fresh-world load without reseeding. `SoraArcheryAutomation::Complete` is
-provided for the aggregate playthrough to replace its former generic enemy
+integrated into the aggregate playthrough in place of its former generic enemy
 damage shortcut. Spaces and CombatTrace fixtures were not edited.
 The host `archery-rules` gate checks all 64 six-shot hit patterns in all
 720 resolution orders, retrieval boundaries at 1–500 ms, duplicate/stale
