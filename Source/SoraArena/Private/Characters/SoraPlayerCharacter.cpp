@@ -408,7 +408,11 @@ void ASoraPlayerCharacter::Interact()
 void ASoraPlayerCharacter::InteractUp()
 {
     if(USoraStealth* Stealth=USoraStealth::Get(this)) Stealth->EndDrag();
-    if(auto* G=PlayerGameMode(this)) G->Campaign()->CancelSpineCut();
+    if(auto* G=PlayerGameMode(this))
+    {
+        G->Campaign()->CancelSpineCut();
+        G->Campaign()->CancelConstructCut();
+    }
 }
 void ASoraPlayerCharacter::CrouchPressed()
 {

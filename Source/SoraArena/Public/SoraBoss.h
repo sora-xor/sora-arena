@@ -313,6 +313,7 @@ private:
     int32 WardRespawnAtMs = 0;
     UPROPERTY() TArray<TObjectPtr<ASoraBossHazard>> Zones;
     UPROPERTY() TArray<TObjectPtr<ASoraEnemy>> Adds;
+    UPROPERTY() TArray<TObjectPtr<ASoraEnemy>> ReleasedGoods;
     TArray<int32> AddGroups;
     TArray<int32> GroupRespawnAtMs;
     TArray<TPair<FName, FVector>> Anchors;

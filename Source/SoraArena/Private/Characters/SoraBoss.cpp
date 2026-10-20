@@ -1597,6 +1597,7 @@ void ASoraBoss::Summon(int32 Group)
         if (!Add)
             continue;
         Add->SetSummoner(this);
+        if(Setup.bSummit&&Spec.Variant==TEXT("collateral_construct")) Add->EnableCollateralConstruct();
         Adds.Add(Add);
         AddGroups.Add(Group);
     }
@@ -1610,6 +1611,7 @@ void ASoraBoss::AddDefeated(ASoraEnemy& Add)
     if (Index == INDEX_NONE)
         return;
     const int32 Group = AddGroups[Index];
+    if(Add.HasReleasedGoods()) ReleasedGoods.Add(&Add);
     Adds.RemoveAt(Index);
     AddGroups.RemoveAt(Index);
     if (LiveAdds(Group) > 0 || bDefeated)
@@ -2077,6 +2079,9 @@ void ASoraBoss::OnDefeated(AActor* Causer)
 
 void ASoraBoss::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    // Released collateral stays through capture, and leaves with this encounter.
+    for(ASoraEnemy* Goods:ReleasedGoods) if(IsValid(Goods)) Goods->Destroy();
+    ReleasedGoods.Reset();
     // A boss removed from the world takes its wards, zones, adds and lock with it.
     ClearWards();
     for (ASoraBossHazard* Zone : Zones)
