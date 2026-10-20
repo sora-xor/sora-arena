@@ -31,7 +31,8 @@ bool IsViewportModel(const USoraFrontEnd& Front)
 {
     const UWorld* World = Front.Mode().GetWorld();
     const UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr;
-    return World && World->WorldType == EWorldType::Game && Viewport && Viewport->GetWorld() == World;
+    return Front.Mode().FrontEnd() == &Front && World && World->WorldType == EWorldType::Game &&
+        Viewport && Viewport->GetWorld() == World;
 }
 }
 
