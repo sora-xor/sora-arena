@@ -68,9 +68,36 @@ bool FSoraGalleryPoisTest::RunTest(const FString& Parameters)
         if(!W.Tick(1)) return false;
     W.Look((Ground-ToyAt).GetSafeNormal2D().Rotation());
     const float StartZ=W.Hero()->GetActorLocation().Z;
+    const auto LogJump=[&](const TCHAR* Stage,int32 HeldFrames)
+    {
+        const auto* Hero=W.Hero();
+        const auto* Equipment=Hero->GetEquipment();
+        TArray<FString> Keys;
+        for(const FKey& Key:Hero->GetActionKeys(TEXT("Jump"))) Keys.Add(Key.ToString());
+        AddInfo(FString::Printf(TEXT("Gallery jump %s: frames=%d at=%s rise=%.3f mode=%d velocity=%s grounded=%d can_jump=%d can_play=%d input=%d vault=%d"),
+            Stage,HeldFrames,*Hero->GetActorLocation().ToString(),Hero->GetActorLocation().Z-StartZ,
+            int32(Movement->MovementMode),*Movement->Velocity.ToString(),Movement->IsMovingOnGround(),
+            Hero->CanJump(),Hero->CanPlay(),int32(W.Mode()->InputState()),Hero->IsVaulting()));
+        AddInfo(FString::Printf(TEXT("Gallery jump controls %s: keys=%s held=%d pressed_jump=%d jump_count=%d/%d actor_tick=%d movement_tick=%d movement_active=%d base=%s floor=%s floor_distance=%.3f yaw=%.3f axis=(%.3f,%.3f) committed=%d draw=%d step=%d stagger=%d reload=%d dialogue=%d"),
+            Stage,*FString::Join(Keys,TEXT(",")),Hero->IsActionHeld(TEXT("Jump")),Hero->bPressedJump,
+            Hero->JumpCurrentCount,Hero->JumpMaxCount,Hero->IsActorTickEnabled(),Movement->IsComponentTickEnabled(),
+            Movement->IsActive(),*GetNameSafe(Hero->GetMovementBaseObject()),
+            *GetNameSafe(Movement->CurrentFloor.HitResult.GetComponent()),Movement->CurrentFloor.FloorDist,
+            Hero->GetActorRotation().Yaw,Hero->GetInputAxisValue(TEXT("MoveForward")),Hero->GetInputAxisValue(TEXT("MoveRight")),
+            Equipment->IsCommittedStrike(),Equipment->IsBowDrawing(),Equipment->IsStepping(),Equipment->IsStaggered(),
+            Equipment->bReloading,W.Campaign()->IsDialogueBlocking()));
+    };
+    LogJump(TEXT("setup"),0);
     if(!TestTrue(TEXT("The gallery jump starts grounded and eligible"),Movement->IsMovingOnGround()&&W.Hero()->CanJump())||
         !W.World->InjectKey(EKeys::SpaceBar,IE_Pressed)) return false;
-    for(int32 Frame=0;Frame<12&&W.Hero()->GetActorLocation().Z<StartZ+5;++Frame) if(!W.Tick(1)) return false;
+    LogJump(TEXT("pressed"),0);
+    int32 JumpFrames=0;
+    for(;JumpFrames<12&&W.Hero()->GetActorLocation().Z<StartZ+5;)
+    {
+        if(!W.Tick(1)) return false;
+        LogJump(TEXT("held"),++JumpFrames);
+    }
+    LogJump(TEXT("result"),JumpFrames);
     if(!TestTrue(TEXT("Mapped Jump establishes actual upward flight"),Movement->IsFalling()&&Movement->Velocity.Z>0&&
         W.Hero()->GetActorLocation().Z>StartZ+5)||!W.Press(EKeys::E)||
         !TestEqual(TEXT("Airborne input discovers nothing"),W.Campaign()->GalleryPoiMask(),0)) return false;
