@@ -49,6 +49,9 @@ public:
     void ReleaseTrigger() { bFireHeld = false; }
     bool EquipClassSlot(int32 Slot);
     bool EquipCampaignWeapon(int32 WeaponId);
+    // Supply cache: fill only unlocked ranged magazines, preserving the held
+    // weapon and every action timer. -1 while busy, otherwise weapons refilled.
+    int32 RestockUnlocked(unsigned Weapons);
     // Guard reserve drains while held and recovers otherwise (not in the dojo);
     // a 残心 hold after a defeat restores it instead.
     void TickGuard(float DeltaSeconds);
