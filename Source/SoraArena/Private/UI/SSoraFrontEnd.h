@@ -5,6 +5,9 @@
 #include "SoraFrontEnd.h"
 #include "Styling/SlateBrush.h"
 #include "Widgets/SCompoundWidget.h"
+#if WITH_DEV_AUTOMATION_TESTS
+#include "UI/SoraCreditsRowDiagnostics.h"
+#endif
 class SScrollBox;
 class UTexture2D;
 
@@ -35,6 +38,12 @@ public:
     // Every font size and every line of text the last Refresh used.
     const TArray<float>& FontSizesUsed() const { return FontSizes; }
     const TArray<FString>& LinesDrawn() const { return DrawnLines; }
+#if WITH_DEV_AUTOMATION_TESTS
+    // Opted into by the rendered tour before it opens Credits. Observes its
+    // two labels without changing the ordinary widget/font/refresh policies.
+    void SetCreditsRowDiagnosticsEnabled(bool bEnabled) { bCreditsRowDiagnostics = bEnabled; }
+    bool InspectCreditsRow(TArray<FString>& Diagnostics) const;
+#endif
 
     virtual bool SupportsKeyboardFocus() const override { return true; }
     virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
@@ -57,9 +66,16 @@ private:
     TArray<TSharedPtr<SWidget>> RowWidgets;
     TArray<float> FontSizes;
     TArray<FString> DrawnLines;
+#if WITH_DEV_AUTOMATION_TESTS
+    bool bCreditsRowDiagnostics = false;
+    uint32 DiagnosticRefreshes = 0;
+    uint64 DiagnosticRefreshFrame = 0;
+    TArray<TSharedRef<FSoraCreditsLabelProbe>> CreditsLabelProbes;
+#endif
 
     FSlateFontInfo Font(float Size);
-    TSharedRef<SWidget> Text(const FString& Line, float Size, const FLinearColor& Color, bool bWrap = false);
+    TSharedRef<SWidget> Text(const FString& Line, float Size, const FLinearColor& Color, bool bWrap = false,
+        const TCHAR* DiagnosticLanguage = nullptr);
     // A Japanese line with its English subtitle, if subtitles are on.
     TSharedRef<SWidget> Bilingual(const FString& Japanese, const FString& English, float JapaneseSize, float EnglishSize,
         const FLinearColor& JapaneseColor, bool bWrap = true);
