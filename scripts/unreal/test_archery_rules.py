@@ -75,9 +75,12 @@ int main() {
                 int shot=order[n]; auto result=Resolve(s,shot+1,(mask&(1u<<shot))?0:-1);
                 assert(result!=EResult::Ignored);
                 assert(s.LastHit==bool(mask&(1u<<shot)));
+                assert(s.LastResolvedId==static_cast<unsigned long long>(shot+1));
+                assert(s.LastTarget==((mask&(1u<<shot))?0:-1));
                 const auto copy=s;
                 assert(Resolve(s,shot+1,0)==EResult::Ignored);
                 assert(s.Hits==copy.Hits&&s.Resolved==copy.Resolved&&s.Stage==copy.Stage);
+                assert(s.LastResolvedId==copy.LastResolvedId&&s.LastTarget==copy.LastTarget);
                 if(n<5) assert(s.Stage==EStage::Near&&s.FetchRemainingMs==0);
             }
             assert(Pending(s)==0);

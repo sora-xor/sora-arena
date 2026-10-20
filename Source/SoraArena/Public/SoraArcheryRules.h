@@ -20,6 +20,8 @@ struct FState
     int Issued=0,Resolved=0,Hits=0,FetchRemainingMs=0;
     unsigned HangingHits=0;
     bool LastHit=false;
+    unsigned long long LastResolvedId=0;
+    int LastTarget=-1;
     FShot Shots[Quiver]{};
 };
 inline int Pending(const FState& S)
@@ -49,6 +51,7 @@ inline EResult Resolve(FState& S,unsigned long long Id,int Target)
     if(!Id||S.Stage==EStage::Done||S.FetchRemainingMs>0) return EResult::Ignored;
     for(auto& Shot:S.Shots) if(Shot.Id==Id) { Found=&Shot; break; }
     if(!Found) return EResult::Ignored;
+    S.LastResolvedId=Id; S.LastTarget=Target;
     const bool Eligible=Found->Eligible;
     *Found={}; ++S.Resolved;
     const bool Hit=Eligible&&(S.Stage==EStage::Near?Target==0:

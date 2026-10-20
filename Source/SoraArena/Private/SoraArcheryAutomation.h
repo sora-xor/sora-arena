@@ -78,13 +78,15 @@ inline bool Loose(FAutomationTestBase& Test,FSoraAutomationWorld& W,int32 Target
         if(!W.Tick(1)) return false;
     }
     const bool Resolved=!Flight.IsValid()||Flight->IsActorBeingDestroyed()||Flight->ArcheryShotId==0;
+    if(C->IsArcheryLesson()&&!Test.TestEqual(TEXT("The issued arrow identity is the one actually resolved"),
+        C->ArcheryProgress().LastResolvedId,Id)) return false;
     if(!Resolved)
         Test.AddError(FString::Printf(TEXT("Unresolved arrow id=%llu target=%d origin=%s now=%s velocity=%s stage=%d issued=%d resolved=%d"),
             Id,TargetIndex,*Origin.ToString(),*Flight->GetActorLocation().ToString(),*Flight->Velocity.ToString(),
             int32(C->ArcheryProgress().Stage),C->ArcheryProgress().Issued,C->ArcheryProgress().Resolved));
     if(!W.Tick(1)) return false;
-    UE_LOG(LogTemp,Display,TEXT("Archery actual shot id=%llu aimed_target=%d origin=%s last_flight=%s hero=%s beat=%d stage=%d issued=%d resolved=%d hits=%d hanging=%u ammo=%d"),
-        Id,TargetIndex,*Origin.ToString(),*Last.ToString(),*Hero->GetActorLocation().ToString(),C->ActiveBeat(),
+    UE_LOG(LogTemp,Display,TEXT("Archery actual shot id=%llu aimed_target=%d resolved_target=%d origin=%s last_flight=%s hero=%s beat=%d stage=%d issued=%d resolved=%d hits=%d hanging=%u ammo=%d"),
+        Id,TargetIndex,C->ArcheryProgress().LastTarget,*Origin.ToString(),*Last.ToString(),*Hero->GetActorLocation().ToString(),C->ActiveBeat(),
         int32(C->ArcheryProgress().Stage),C->ArcheryProgress().Issued,C->ArcheryProgress().Resolved,C->ArcheryProgress().Hits,
         C->ArcheryProgress().HangingHits,Kit->Ammo);
     return Test.TestTrue(TEXT("The actual projectile resolves once through impact or flight expiry"),Resolved);
