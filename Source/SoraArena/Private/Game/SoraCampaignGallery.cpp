@@ -32,8 +32,11 @@ void USoraCampaignDirector::TickGalleryPois()
         if(HasGalleryPoi(Id)||BeatEvents.Contains(Event)||!Arena->CanReachGalleryPoi(Id,*Hero)) continue;
         const auto Key=SoraUI::ActionKey(this,TEXT("Interact"));
         const bool Toy=Id==GalleryIds[SoraGalleryRules::Toy];
-        Notify(FString::Printf(Toy?TEXT("張子の玩具：%s で調べる。"):TEXT("陣羽織：%s で差押札を剥がす。"),*Key.Japanese),
-            FString::Printf(Toy?TEXT("Paper toy: %s to inspect."):TEXT("Jinbaori: %s to tear off the seizure label."),*Key.English),6.f);
+        const FString Japanese=Toy?FString::Printf(TEXT("張子の玩具：%s で調べる。"),*Key.Japanese):
+            FString::Printf(TEXT("陣羽織：%s で差押札を剥がす。"),*Key.Japanese);
+        const FString English=Toy?FString::Printf(TEXT("Paper toy: %s to inspect."),*Key.English):
+            FString::Printf(TEXT("Jinbaori: %s to tear off the seizure label."),*Key.English);
+        Notify(Japanese,English,6.f);
         BeatEvents.Add(Event);
         return;
     }
