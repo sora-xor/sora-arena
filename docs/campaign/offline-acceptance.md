@@ -669,3 +669,12 @@ The paper toy, jinbaori, plinths and seizure label are explicitly functional
 proxies. Detailed paper craft, textile/label art, valuation lettering, the
 tearing animation, the other display cases and the cloud-window vista remain
 presentation work; this slice does not claim those assets are finished.
+
+The first root gallery runtime at `a26bae5` passed ForgedSaves, LiftGallery,
+LiftReload, Playthrough, SaveRoundTrip and SummitTraversal. GalleryPois stopped
+at its actual-jump precondition, before the positive lore-interaction cases.
+That run contained no jump state diagnostics, so it establishes neither an
+airborne interaction leak nor the cause of the failed jump. A fixture-only
+follow-up records setup, key press, every held frame and result with actual
+movement/input/equipment state. Its timing and flight assertion are unchanged;
+the cause and remaining gallery checks await root's diagnostic rerun.
