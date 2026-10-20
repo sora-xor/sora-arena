@@ -4,6 +4,18 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+bool ASoraBoss::CanRespawnAddGroup(int32 Group) const
+{
+    // The summit's constructs belong to its seizure phase. Other bosses
+    // retain their existing encounter-wide add/respawn contracts.
+    const auto* Phase=CurrentPhase();
+    return !Setup.bSummit||(Phase&&Phase->ShieldWhileAdds==Group);
+}
+bool ASoraBoss::IsSummitSeizureShielded() const
+{
+    const auto* Phase=CurrentPhase();
+    return Setup.bSummit&&Phase&&Phase->ShieldWhileAdds!=INDEX_NONE&&LiveAdds(Phase->ShieldWhileAdds)>0;
+}
 bool ASoraBoss::IsOnSummitDais() const
 {
     if(!Setup.bSummit||!GetCharacterMovement()->IsMovingOnGround()) return false;

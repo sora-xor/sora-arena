@@ -472,6 +472,9 @@ void ASoraBoss::EnterPhase(int32 Next)
         if(!Setup.bSummit||Next!=1) ASoraEnemy::Stagger(Settle);
     }
     TimedDueMs.Reset();
+    // A pending ten-second seizure respawn must not cross into the cane duel.
+    for(int32 Group=0;Group<GroupRespawnAtMs.Num();++Group)
+        if(!CanRespawnAddGroup(Group)) GroupRespawnAtMs[Group]=0;
     for (const FSoraBossTimed& Timed : Entered.Concurrent)
         TimedDueMs.Add(Now + Settle + Timed.FirstMs);
     SummonDone.Init(false, Entered.Summons.Num());
@@ -528,7 +531,7 @@ void ASoraBoss::RunTimers()
             StartSide(Current.OnceBelow[Index].Attack);
         }
     for (int32 Group = 0; Group < GroupRespawnAtMs.Num(); ++Group)
-        if (GroupRespawnAtMs[Group] > 0 && Now >= GroupRespawnAtMs[Group])
+        if (GroupRespawnAtMs[Group] > 0 && Now >= GroupRespawnAtMs[Group] && CanRespawnAddGroup(Group))
         {
             GroupRespawnAtMs[Group] = 0;
             Summon(Group);
@@ -592,7 +595,10 @@ void ASoraBoss::TickPlay(float DeltaSeconds)
         }
     }
     AdvanceSides();
-    Advance();
+    // Summons and seizure fields keep their own clocks. A returning shield
+    // cancels even a beam/cleave already winding up in the exposed interval.
+    if(IsSummitSeizureShielded()) Run=FRun();
+    else Advance();
     // A shield advance shoves the hero aside; it never hurts.
     if (Target && IsShieldUp() && Run.Attack == INDEX_NONE && GetVelocity().Size2D() > 20.f && Now >= NextPushMs)
     {
@@ -623,7 +629,8 @@ FSoraBossIntent ASoraBoss::Drive(ASoraCharacterBase& Target, float)
     if(DriveSummit(Intent,Target)) return Intent;
     const FSoraBossPhase& Current = Info->Phases[PhaseNow];
     // Outflanked by a 転 step, it neither starts an attack nor turns until it can turn again.
-    if (Run.Attack == INDEX_NONE && !IsStaggered() && !IsTurnLocked() && NowMs() >= InvulnerableUntilMs)
+    if (Run.Attack == INDEX_NONE && !IsStaggered() && !IsTurnLocked() && NowMs() >= InvulnerableUntilMs &&
+        !IsSummitSeizureShielded())
     {
         bool bPattern = false;
         int32 Next = INDEX_NONE;
@@ -1616,7 +1623,7 @@ void ASoraBoss::AddDefeated(ASoraEnemy& Add)
     AddGroups.RemoveAt(Index);
     if (LiveAdds(Group) > 0 || bDefeated)
         return;
-    if (Info->Adds[Group].RespawnMs > 0)
+    if (Info->Adds[Group].RespawnMs > 0 && CanRespawnAddGroup(Group))
         GroupRespawnAtMs[Group] = NowMs() + Info->Adds[Group].RespawnMs;
     const FSoraBossPhase* Current = CurrentPhase();
     if (Current && Current->ShieldWhileAdds == Group)

@@ -215,6 +215,8 @@ private:
     void SyncPhase();
     bool DriveSummit(FSoraBossIntent& Intent,const ASoraCharacterBase& Target) const;
     bool TickSummitTransition();
+    bool CanRespawnAddGroup(int32 Group) const;
+    bool IsSummitSeizureShielded() const;
     void RunTimers();
     ASoraCharacterBase* Hero() const;
     FVector TargetPoint(const ASoraCharacterBase& Target) const;
