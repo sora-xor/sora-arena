@@ -7,6 +7,8 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/DamageType.h"
+#include "GameFramework/InputSettings.h"
+#include "Misc/ScopeExit.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraSpireSupplyTest,"SoraArena.Campaign.SpireSupply",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
@@ -17,7 +19,24 @@ bool FSoraSpireSupplyTest::RunTest(const FString& Parameters)
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
     TestEqual(TEXT("The existing object-form supply keeps its identity"),
         Catalog.Chapter(2).Beats[13].SupplyPoint,FString(TEXT("vol_b14_supply")));
+    // RemapCombatAction changes this pawn's PlayerInput and isolated control
+    // slot only. Declare this guard before W so it checks after world teardown
+    // and deletion of the fixture's save/profile, including on early returns.
+    const auto GlobalActions=GetDefault<UInputSettings>()->GetActionMappings();
+    const auto GlobalAxes=GetDefault<UInputSettings>()->GetAxisMappings();
+    FString ControlSlot;
+    ON_SCOPE_EXIT
+    {
+        TestTrue(TEXT("Fixture teardown preserves global action mappings"),
+            GetDefault<UInputSettings>()->GetActionMappings()==GlobalActions);
+        TestTrue(TEXT("Fixture teardown preserves global axis mappings"),
+            GetDefault<UInputSettings>()->GetAxisMappings()==GlobalAxes);
+        if(!ControlSlot.IsEmpty())
+            TestFalse(TEXT("Fixture teardown removes its isolated rebound profile"),
+                UGameplayStatics::DoesSaveGameExist(ControlSlot,0));
+    };
     SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("SpireSupply"),7,9);
+    ControlSlot=FSoraAutomationWorld::ControlSlot(W.Slot);
     if(!W.Start()||!W.Tick(30)) return false;
     const auto Freeze=[&]()
     {
@@ -67,11 +86,34 @@ bool FSoraSpireSupplyTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Wrong-floor input cannot refill"),Kit->Ammo,0);
     W.Hero()->SetActorLocation(Ground,false,nullptr,ETeleportType::TeleportPhysics);
     W.Hero()->GetCharacterMovement()->StopMovementImmediately();
-    if(!W.Tick(3)||!W.Press(EKeys::SpaceBar)||!W.Tick(3)) return false;
-    TestFalse(TEXT("A jumping hero cannot use supplies"),Arena->CanReachSupply(Id,*W.Hero()));
-    if(!W.Press(EKeys::E)) return false;
-    TestEqual(TEXT("Airborne input cannot refill"),Kit->Ammo,0);
-    if(!W.Tick(100)) return false;
+    auto* Movement=W.Hero()->GetCharacterMovement();
+    // The wrong-floor setup has entered falling. Teleporting the capsule
+    // back does not reset its cached floor: wait for an actual landing before
+    // pressing Jump, and face away so low-cover vaulting cannot consume it.
+    for(int32 Frame=0;Frame<120&&(!Movement->IsMovingOnGround()||!W.Hero()->CanJump());++Frame)
+        if(!W.Tick(1)) return false;
+    W.Look((W.Hero()->GetActorLocation()-Cache).GetSafeNormal2D().Rotation());
+    const FVector JumpStart=W.Hero()->GetActorLocation();
+    AddInfo(FString::Printf(TEXT("Supply jump setup: at=%s mode=%d can_jump=%d vault=%d base=%s"),
+        *JumpStart.ToString(),int32(Movement->MovementMode),W.Hero()->CanJump(),W.Hero()->IsVaulting(),
+        *GetNameSafe(W.Hero()->GetMovementBaseObject())));
+    if(!TestTrue(TEXT("The jump begins on a real grounded floor"),Movement->IsMovingOnGround()&&W.Hero()->CanJump())||
+        !TestTrue(TEXT("Space is the live mapped Jump key"),W.Hero()->GetActionKeys(TEXT("Jump")).Contains(EKeys::SpaceBar))||
+        !W.World->InjectKey(EKeys::SpaceBar,IE_Pressed)) return false;
+    for(int32 Frame=0;Frame<12&&!(Movement->IsFalling()&&W.Hero()->GetActorLocation().Z>JumpStart.Z+5);++Frame)
+        if(!W.Tick(1)) return false;
+    const bool Airborne=Movement->IsFalling()&&Movement->Velocity.Z>0&&W.Hero()->GetActorLocation().Z>JumpStart.Z+5;
+    AddInfo(FString::Printf(TEXT("Supply jump result: at=%s rise=%.2f mode=%d velocity=%s held=%d vault=%d reach=%d"),
+        *W.Hero()->GetActorLocation().ToString(),W.Hero()->GetActorLocation().Z-JumpStart.Z,int32(Movement->MovementMode),
+        *Movement->Velocity.ToString(),W.Hero()->IsActionHeld(TEXT("Jump")),W.Hero()->IsVaulting(),
+        Arena->CanReachSupply(Id,*W.Hero())));
+    if(!TestTrue(TEXT("Mapped Jump actually raises the falling capsule"),Airborne)||
+        !TestFalse(TEXT("A jumping hero cannot use supplies"),Arena->CanReachSupply(Id,*W.Hero()))||
+        !W.Press(EKeys::E)||!TestEqual(TEXT("Airborne input cannot refill"),Kit->Ammo,0)) return false;
+    if(!W.World->InjectKey(EKeys::SpaceBar,IE_Released)) return false;
+    for(int32 Frame=0;Frame<180&&!Movement->IsMovingOnGround();++Frame) if(!W.Tick(1)) return false;
+    if(!TestTrue(TEXT("The jump lands naturally before the wall test"),Movement->IsMovingOnGround())||
+        !TestEqual(TEXT("Landing alone never replenishes ammunition"),Kit->Ammo,0)) return false;
     auto* Wall=W.World->GetTestWorld()->SpawnActor<AActor>();
     auto* Box=NewObject<UBoxComponent>(Wall);
     Wall->SetRootComponent(Box); Box->SetBoxExtent(FVector(10,100,100));
@@ -79,7 +121,7 @@ bool FSoraSpireSupplyTest::RunTest(const FString& Parameters)
     Wall->SetActorLocation(Cache+FVector(-85,0,100));
     TestFalse(TEXT("A solid obstruction blocks the actual supply crate"),Arena->CanReachSupply(Id,*W.Hero()));
     if(!W.Press(EKeys::E)) return false;
-    TestEqual(TEXT("Input through a wall cannot refill"),Kit->Ammo,0);
+    if(!TestEqual(TEXT("Input through a wall cannot refill"),Kit->Ammo,0)) return false;
     Wall->Destroy();
     if(!W.Tick(3)||!TestTrue(TEXT("Removing the obstruction restores reach"),Arena->CanReachSupply(Id,*W.Hero()))) return false;
     // Reload remains a real action. Supply cannot finish it or replenish

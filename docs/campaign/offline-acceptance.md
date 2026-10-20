@@ -619,3 +619,15 @@ airborne and real-wall rejection; preserves a sheathed katana; rebinds
 Interact; and restocks again after ordinary death/retry. Supply Unreal and
 rendered acceptance remain pending root qualification. The crate, cloth,
 arrows and cartridges are functional proxies awaiting the art lane.
+
+The first root supply run at `5f7958f` passed EquipmentRecovery, Playthrough,
+SpireTraversal and SpireCompanions, but SpireSupply failed at the assumed
+jump and then reported three dependent ammo/reload failures. The fixture had
+teleported back from its wrong-floor check and tapped Jump after a fixed
+three-frame wait without verifying a landing or an actual jump. Its follow-up
+waits for a real grounded, jump-eligible capsule, faces away from low-cover
+vaulting, and holds the mapped key until falling mode, upward velocity and
+positive displacement establish flight. It logs those states and stops on a
+failed precondition instead of cascading. Production reach rules are unchanged.
+Teardown also asserts that global action/axis mappings are unchanged and the
+isolated rebound profile has been deleted. Unreal requalification is pending.
