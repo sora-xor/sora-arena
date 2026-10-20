@@ -135,6 +135,11 @@ class SourceChecks(unittest.TestCase):
         ledger = next(check for check in checks if check.name == "asset-ledger")
         self.assertIn("scripts/assets/validate_asset_ledger.py", ledger.command)
         self.assertNotIn("--require-local", ledger.command)
+        images = next(check for check in checks if check.name == "source-images")
+        self.assertEqual(images.group, "assets")
+        self.assertIn("scripts/unreal/validate_source_images.py", images.command)
+        self.assertIn("--json", images.command)
+        self.assertTrue(any(check.name == "source-content" for check in checks))
         self.assertFalse(any("UnrealEditor" in token or "build-bridge" in token for check in checks for token in check.command))
 
 
