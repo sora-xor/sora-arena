@@ -732,11 +732,14 @@ bool FSoraCatalog::LoadCampaign()
                 }
                 TArray<FString> Rewards;
                 if (!Strings(Rows(*Params, TEXT("rewards")), Rewards)) return Bad(FString::Printf(TEXT("beat %s has invalid rewards"), *Beat.Id));
-                // Arrows and other pickups refill at the cache; collectibles enter the codex.
+                // Collectibles enter the codex. The seized gallery also
+                // declares a finite arrow pickup; other pickup contracts
+                // remain owned by their chapter implementations.
                 for (const FString& Reward : Rewards)
                 {
                     const int32 Item = C.Collectibles.IndexOfByPredicate([&](const FSoraCollectible& Candidate) { return Candidate.Id == Reward; });
                     if (Item != INDEX_NONE) Beat.Rewards.Add(Item);
+                    if (Beat.Id==TEXT("ch08.b12")&&Reward==TEXT("arrows_12")) Beat.GalleryArrowReward=12;
                 }
             }
             C.Rules.Add(Rule);

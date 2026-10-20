@@ -274,6 +274,7 @@ bool USoraCampaignDirector::LoadSave()
         SoraBeatRules::EntryValid(static_cast<unsigned>(Save->ChapterEntryFlags),0u,Catalog.EarlierFlags(Save->CurrentChapter))&&
         SoraCampaignRules::CollectiblesValid(static_cast<unsigned long long>(Save->Collectibles),Save->HighestChapter)&&
         SoraGalleryRules::Valid(Save->GalleryPoiMask,Save->HighestChapter)&&
+        SoraGalleryRules::ClaimValid(Save->GalleryArrowsClaimed,Save->HighestChapter,static_cast<uint64>(Save->Collectibles))&&
         (!Save->CampaignComplete||Save->CurrentChapter==LastChapter);
     if(!bReadable)
     {
@@ -582,6 +583,7 @@ void USoraCampaignDirector::CompleteOptional(int32 Index)
     const FSoraChapter& Chapter=*ActiveChapter();
     SoraBeatRules::FProgress Next=BeatState;
     if(!Chapter.Rules[Index].Optional||!SoraBeatRules::CompleteBeat(Next,Chapter.Rules.GetData(),Chapter.Rules.Num(),Index)) return;
+    if(!ClaimGalleryArrows(Index)) return;
     const unsigned NewWeapons=Next.WeaponsMask&~BeatState.WeaponsMask;
     BeatState=Next;
     Collect(Index);
@@ -619,6 +621,9 @@ void USoraCampaignDirector::Collect(int32 Beat)
                 Tell(FSoraStoryNotice::EKind::Collectible,TEXT("見つけた：")+Category.Japanese,TEXT("Found: ")+Category.English,
                     Item.Codex,Item.CodexEnglish);
         Fire(TEXT("collectible:")+Item.Id,Beat); Fire(TEXT("collectible_found:")+Item.Id,Beat);
+        // Preserve the original event contracts and also raise the exact
+        // authored alias used by the seized-gallery memory lines.
+        Fire(TEXT("event:collectible_")+Item.Id.Replace(TEXT("."),TEXT("_")),Beat);
     }
 }
 void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FActorComponentTickFunction* ThisTickFunction)
@@ -1435,7 +1440,7 @@ void USoraCampaignDirector::StartOver()
 {
     bCampaignComplete=false; ChapterId=0;
     EntryWeapons=0u; EntryMechanics=0u; EntryFlags=0u; DojoLessonMask=0u;
-    if(Save) { Save->HighestChapter=0; Save->Collectibles=0; Save->GalleryPoiMask=0; }
+    if(Save) { Save->HighestChapter=0; Save->Collectibles=0; Save->GalleryPoiMask=0; Save->GalleryArrowsClaimed=false; }
     ClearCheckpoint();
     SaveProgress();
 }

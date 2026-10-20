@@ -208,6 +208,7 @@ public:
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
     bool InLiftGallery() const { return bLiftGallery; }
     int32 GalleryPoiMask() const;
+    bool GalleryArrowsClaimed() const;
     bool HasGalleryPoi(FName Id) const;
     bool LiftExitPoint(FVector& Point) const;
     int32 WorkingCrankHelpers() const { return ActiveCrankHelpers; }
@@ -471,6 +472,7 @@ private:
     void TellRegistry(int32 CompletedBeat);
     void FinishChapter();
     void CompleteOptional(int32 Index);
+    bool ClaimGalleryArrows(int32 Index);
     void Collect(int32 Beat);
     void UpdateObjective();
     void TickBeat(float DeltaSeconds);

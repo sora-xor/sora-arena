@@ -689,3 +689,53 @@ gallery and requires ordinary play and grounded movement around the wrong-floor
 input. It preserves the flight assertion and production fall protection.
 Input conflict checks, two gallery rule tests and fourteen source-runner tests
 pass; the repaired fixture still requires an actual Unreal run.
+
+Root's repaired `298ed9e` run passed GalleryPois: **1/1, zero errors and
+warnings, 9.354923 s**. Mapped Jump raised the capsule **8.363 cm** in
+`MOVE_Falling` with vertical velocity **493.667 cm/s**, while ordinary play
+remained active. The positive interactions, persistence and exit checks
+completed. The earlier build failure and both failed runtime receipts remain
+retained evidence; this result does not finish the visual proxies.
+
+## Seized-gallery cache contract (source candidate)
+
+The existing optional b12 cache now retains its declared `arrows_12` reward.
+Opening it grants up to twelve arrows to the unlocked bow, capped by the
+catalog's twelve-arrow magazine. The live held count is authoritative when
+holding the bow; otherwise only its stored magazine changes. Other ammo,
+held weapon, sheathing, health and unlocks are preserved. A draw, reload,
+strike or other equipment busy state refuses the unclaimed bundle before
+cache completion or collectibles change, leaving it available for a later
+explicit interaction.
+
+The additive schema-6 `GalleryArrowsClaimed` property defaults to false,
+including for older saves that already contain the three gallery finds.
+A true claim requires chapter eight to have been reached and all three
+gallery collectible bits. The claim and finds save together through the
+existing optional completion path, retaining the b11 lower-landing checkpoint.
+The bundle is consumed even when the quiver is full, and cannot refill again
+after spending, retry, reload or chapter replay. New Campaign clears it.
+This tracks one cache pickup: ammo itself keeps the existing checkpoint
+full-magazine reset and ordinary reload behavior; this slice adds no reserve
+inventory system.
+
+Newly collected items retain both existing `collectible:<id>` and
+`collectible_found:<id>` events and also raise the authored
+`event:collectible_<id with underscores>` name. The gallery therefore queues
+the exact `ch08.b12.nyaakoto.003` Washio line and
+`ch08.b12.sekireisai.004` life-giving-sword memory through their existing
+script rows. Their collectible-bit guard prevents repeats after input,
+retry or fresh-world load. Existing saves with those finds do not replay
+the discoveries when collecting the newly available arrows.
+
+`SoraArena.Campaign.GalleryCache` covers normal lift travel and cache walking,
+actual remapped input, live-draw rejection, empty/partial/full held or stowed
+quivers, exact dialogue lines, other inventory and sheath preservation,
+immediate disk state, repeat input, death/retry, fresh-world reload, chapter
+replay and New Campaign. SaveRoundTrip and ForgedSaves cover the additive
+claim and invalid combinations. Host gallery rules exercise all ownership
+combinations and finite pickups across held slots/counts, including overflow
+amounts and locked weapons. This candidate still needs root's Unreal run.
+The three collectible POIs still share the existing functional cache; separate
+display interactions, final props, memory voice presentation and the gallery's
+remaining art are not completed by this change.

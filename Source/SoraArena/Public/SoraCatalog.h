@@ -692,6 +692,7 @@ struct FSoraBeat
     TMap<FString, SoraBeatRules::EFail> FailEvents;
     // Collectibles in an explore beat's cache.
     TArray<int32> Rewards;
+    int32 GalleryArrowReward=0;
     TArray<FSoraExplorePoi> Pois;
     FSoraBeatSpace Space;
     bool Is(SoraBeatRules::EType Type) const { return Task.Type == Type; }
