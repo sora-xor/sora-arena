@@ -752,10 +752,19 @@ TArray<SoraText::FLine> InteractionPrompts(const FSoraHUDFrame& F)
     return Lines;
 }
 TArray<FBox2D> WorldLabelObstacles(const FSoraHUDFrame& F);
-SoraCaptionLayoutRules::FLabelPlacement PlaceWorldLabel(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size);
+SoraCaptionLayoutRules::FBackedLabelPlacement PlaceWorldLabel(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size);
+FBox2D WorldLabelBox(const SoraCaptionLayoutRules::FBackedLabelPlacement& Plan)
+{
+    return FBox2D({Plan.Bounds.X,Plan.Bounds.Y},{Plan.Bounds.X+Plan.Bounds.W,Plan.Bounds.Y+Plan.Bounds.H});
+}
+void DrawWorldBacking(const FSoraHUDFrame& F,const FBox2D& Box)
+{
+    F.HUD.Panel(Box.Min.X,Box.Min.Y,Box.GetSize().X,Box.GetSize().Y,FLinearColor(.015f,.035f,.045f,.96f));
+}
 struct FInteractionLayout
 {
     SoraRhythmHUDLayout::FLayout At;
+    FBox2D Backing{ForceInit};
     float Width=0.f, Height=0.f, Scale=0.f, StoryTop=0.f,EnglishY=0.f;
     bool bStackEnglish=false,bFits=true;
 };
@@ -791,7 +800,8 @@ FInteractionLayout BuildInteractionLayout(const FSoraHUDFrame& F)
         // former center position could be painted over by the coaching strip.
         // This branch cannot recurse through RhythmPanelBounds: no cue is live.
         const auto Plan=PlaceWorldLabel(F,{F.W*.5f-75.f*F.S,F.H*.5f+60.f*F.S},{L.Width,L.Height});
-        L.At.PromptX=Plan.Bounds.X; L.At.PromptY=Plan.Bounds.Y; L.bFits=Plan.Fits;
+        L.At.PromptX=Plan.TextX; L.At.PromptY=Plan.TextY; L.bFits=Plan.Fits;
+        L.Backing=WorldLabelBox(Plan);
         return L;
     }
     const float TrackerWidth=FMath::Min(FMath::Max(435*F.S,540.f),F.W-902*F.S);
@@ -814,7 +824,11 @@ void DrawInteractionLabel(const FSoraHUDFrame& F,const SoraText::FLine& Line,con
     // the frame's rhythm group was measured. Resolve ordinary cues at draw.
     const auto At=bRhythm?L:BuildInteractionLayout(F);
     ensureMsgf(At.bFits,TEXT("Measured interaction prompt cannot fit around the visible HUD panels"));
-    if(!bRhythm) F.WorldMarkerBounds.Add(FBox2D({At.At.PromptX,At.At.PromptY},{At.At.PromptX+At.Width,At.At.PromptY+At.Height}));
+    if(!bRhythm)
+    {
+        F.WorldMarkerBounds.Add(At.Backing);
+        DrawWorldBacking(F,At.Backing);
+    }
     if(!At.bStackEnglish) { F.LabelWithEnglish(Line,At.At.PromptX,At.At.PromptY,At.Scale,Color); return; }
     F.HUD.Label(Line.Japanese,At.At.PromptX,At.At.PromptY,At.Scale,Color);
     F.HUD.Label(Line.English,At.At.PromptX,At.At.PromptY+At.EnglishY,At.Scale*.8f,F.Muted);
@@ -841,26 +855,27 @@ TArray<FBox2D> WorldLabelObstacles(const FSoraHUDFrame& F)
     Occupied.Append(F.WorldMarkerBounds);
     return Occupied;
 }
-SoraCaptionLayoutRules::FLabelPlacement PlaceWorldLabel(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size)
+SoraCaptionLayoutRules::FBackedLabelPlacement PlaceWorldLabel(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size)
 {
     const auto Occupied=WorldLabelObstacles(F);
     TArray<SoraCaptionLayoutRules::FRect> Obstacles;
     for(const auto& Box:Occupied) Obstacles.Add({static_cast<float>(Box.Min.X),static_cast<float>(Box.Min.Y),
         static_cast<float>(Box.GetSize().X),static_cast<float>(Box.GetSize().Y)});
-    return SoraCaptionLayoutRules::PlaceLabel({static_cast<float>(Desired.X),static_cast<float>(Desired.Y),
+    return SoraCaptionLayoutRules::PlaceBackedLabel({static_cast<float>(Desired.X),static_cast<float>(Desired.Y),
         static_cast<float>(Size.X),static_cast<float>(Size.Y)},
-        {20*F.S,87*F.S,F.W-40*F.S,F.H-207*F.S},Obstacles.GetData(),Obstacles.Num(),4*F.S);
+        {20*F.S,87*F.S,F.W-40*F.S,F.H-207*F.S},Obstacles.GetData(),Obstacles.Num(),4*F.S,F.S);
 }
 }
-FVector2D SoraHUDPanels::WorldMarkerPosition(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size)
+FVector2D SoraHUDPanels::DrawWorldLabelBacking(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size)
 {
     const auto Plan=PlaceWorldLabel(F,Desired,Size);
     // Preserve the label if an unsupported screen has no free region, but
     // surface the capacity failure to development/capture qualification.
     ensureMsgf(Plan.Fits,TEXT("Projected world label cannot fit around the measured HUD panels"));
-    const FVector2D At(Plan.Bounds.X,Plan.Bounds.Y);
-    F.WorldMarkerBounds.Add(FBox2D(At,At+Size));
-    return At;
+    const auto Box=WorldLabelBox(Plan);
+    F.WorldMarkerBounds.Add(Box);
+    DrawWorldBacking(F,Box);
+    return {Plan.TextX,Plan.TextY};
 }
 FSoraCaptionLayout SoraHUDPanels::CaptionLayout(const FSoraHUDFrame& F) { return BuildUpperStoryLayout(F).Captions; }
 bool SoraHUDPanels::CaptionStoryLayoutFits(const FSoraHUDFrame& F,FString& Why)
@@ -912,9 +927,12 @@ bool SoraHUDPanels::InteractionPromptLayoutFits(const FSoraHUDFrame& F,FString& 
     for(int32 Index=0;Index<Prompts.Num();++Index)
     {
         const auto L=BuildInteractionLayout(Probe);
-        const FBox2D Box({L.At.PromptX,L.At.PromptY},{L.At.PromptX+L.Width,L.At.PromptY+L.Height});
+        const FBox2D Box=L.Backing;
         if(!L.bFits||L.Width<=0||L.Height<=0||Box.Min.X<0||Box.Min.Y<0||Box.Max.X>F.W||Box.Max.Y>F.H)
-        { Why=TEXT("A visible ordinary interaction prompt cannot fit at its measured text size"); return false; }
+        { Why=TEXT("A visible ordinary interaction prompt cannot fit with its measured text and backing"); return false; }
+        if(L.At.PromptX<=Box.Min.X||L.At.PromptY<=Box.Min.Y||
+            L.At.PromptX+L.Width>=Box.Max.X||L.At.PromptY+L.Height>=Box.Max.Y)
+        { Why=TEXT("The interaction prompt backing does not contain the full measured text with padding"); return false; }
         for(const auto& Other:WorldLabelObstacles(Probe))
             if(Box.Intersect(Other))
             {
@@ -1103,7 +1121,7 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
                 const int32 Distance=FMath::RoundToInt32(Metres);
                 const FString Text=G->bEnglishSubtitles?FString::Printf(TEXT("目標 / %dm   Objective"),Distance):FString::Printf(TEXT("目標 / %dm"),Distance);
                 int32 TW=0,TH=0; UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),.42*S,.42*S,TW,TH,Text);
-                const auto At=WorldMarkerPosition(Frame,{Screen.X-60*S,Screen.Y},{static_cast<float>(TW),static_cast<float>(TH)});
+                const auto At=DrawWorldLabelBacking(Frame,{Screen.X-60*S,Screen.Y},{static_cast<float>(TW),static_cast<float>(TH)});
                 HUD.Label(Text,At.X,At.Y,.42*S,Gold);
             }
         }

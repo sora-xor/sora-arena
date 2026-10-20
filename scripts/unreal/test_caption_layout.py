@@ -226,6 +226,29 @@ class CaptionLayoutTests(unittest.TestCase):
         values = subprocess.check_output([str(self.binary), 'marker'], input=data, text=True).split()
         return bool(int(values[0])), tuple(map(float, values[1:]))
 
+    def backed_marker(self, label, view, obstacles, scale):
+        data = ' '.join(map(str, (*label, *view, len(obstacles), 4 * scale))) + '\n'
+        data += '\n'.join(' '.join(map(str, o)) for o in obstacles) + '\n' + str(scale) + '\n'
+        values = subprocess.check_output([str(self.binary), 'backed-marker'], input=data, text=True).split()
+        fits, placed = bool(int(values[0])), tuple(map(float, values[1:]))
+        self.assertTrue(fits)
+        x, y, w, h, tx, ty = placed
+        # The unchanged text lies strictly inside the drawn backing, which
+        # itself must fit. No expected placement or padding constants here.
+        self.assertGreater(tx, x)
+        self.assertGreater(ty, y)
+        self.assertLess(tx + label[2], x + w)
+        self.assertLess(ty + label[3], y + h)
+        vx, vy, vw, vh = view
+        self.assertGreaterEqual(x + .01, vx)
+        self.assertGreaterEqual(y + .01, vy)
+        self.assertLessEqual(x + w, vx + vw + .01)
+        self.assertLessEqual(y + h, vy + vh + .01)
+        for ox, oy, ow, oh in obstacles:
+            self.assertTrue(x + w + 4 * scale <= ox + .01 or ox + ow + 4 * scale <= x + .01 or
+                            y + h + 4 * scale <= oy + .01 or oy + oh + 4 * scale <= y + .01)
+        return placed
+
     def test_projected_marker_keeps_text_clear_of_the_work_prompt(self):
         # Observed 720p regression: cyan site marker at x586/y359 crosses
         # the gold working cue. Use real Noto dimensions, then vary viewport.
@@ -291,14 +314,49 @@ class CaptionLayoutTests(unittest.TestCase):
                 # Retain an earlier world marker too; it must not be painted
                 # over when the ordinary action moves above the story strip.
                 obstacles.append((x, cy - text_height - 8 * scale, width('道場の鍛冶場 / 4m', .42 * scale), font.font.height * .42 * scale))
-                fits, placed = self.marker(desired, (20 * scale, 87 * scale, W - 40 * scale, H - 207 * scale), obstacles, 4 * scale)
-                self.assertTrue(fits)
-                self.assertAlmostEqual(placed[2], text_width, delta=.01)
-                self.assertAlmostEqual(placed[3], text_height, delta=.01)
-                x, y, w, h = placed
-                for ox, oy, ow, oh in obstacles:
-                    self.assertTrue(x + w + 4 * scale <= ox + .01 or ox + ow + 4 * scale <= x + .01 or
-                                    y + h + 4 * scale <= oy + .01 or oy + oh + 4 * scale <= y + .01)
+                self.backed_marker(desired, (20 * scale, 87 * scale, W - 40 * scale, H - 207 * scale), obstacles, scale)
+
+    def test_backing_cannot_use_a_gap_that_only_fits_the_text(self):
+        # Text fits at its requested point with a gap; the panel around it
+        # would cross the obstruction unless placement includes the padding.
+        text = (100, 40, 80, 20)
+        obstacle = (80, 64, 140, 20)
+        fits, bare = self.marker(text, (0, 0, 300, 150), [obstacle])
+        self.assertTrue(fits)
+        self.assertEqual(bare, text)
+        backed = self.backed_marker(text, (0, 0, 300, 150), [obstacle], 1)
+        self.assertNotEqual(backed[4:], text[:2])
+
+    def test_backed_bellows_world_labels_clear_actual_panels_in_both_languages(self):
+        global font
+        # Fixed panel/rhythm rectangles read from the immutable 495170d
+        # 720p and 1080p captures. Camera/lighting stay unchanged.
+        cases = [
+            (1280, 720, False, [(14, 62, 612, 67), (726, 62, 540, 328),
+                               (466, 317, 242, 108), (14, 434, 1252, 173), (999, 612, 263, 86)]),
+            (1280, 720, True, [(14, 62, 612, 111), (726, 62, 540, 200),
+                              (14, 177, 448, 116), (466, 186, 242, 108),
+                              (14, 305, 1252, 209), (999, 518, 263, 180)]),
+            (1920, 1080, False, [(22, 94, 918, 97), (1358, 94, 540, 572),
+                                (760, 570, 248, 108), (22, 692, 1876, 242), (1499, 941, 394, 107)]),
+            (1920, 1080, True, [(22, 94, 918, 143), (1358, 94, 540, 465),
+                               (760, 474, 338, 108), (22, 592, 1876, 280), (1499, 879, 394, 169)]),
+        ]
+        for pixels, (W, H, en, fixed), key in itertools.product((37, 38), cases, ('E', 'Y')):
+            font = ImageFont.truetype(str(FONT), pixels)
+            scale = min(W / 1600, H / 1000)
+            view = (20 * scale, 87 * scale, W - 40 * scale, H - 207 * scale)
+            obstacles = list(fixed)
+            labels = [('生産の記録台 / 136m', '', .42 * scale, H * .5),
+                      *[(j.replace('{Interact}', key), e.replace('{Interact}', key), .65 * scale, H * .5 + 60 * scale)
+                        for j, e in [strings['SoraArena.HUD,Prompt.Examine']]],
+                      ('目標 / 16m' + ('   Objective' if en else ''), '', .42 * scale, H * .5)]
+            for ja, english, z, y in labels:
+                tw = width(ja, z) + (14 * scale + width(english, .8 * z) if en and english else 0)
+                th = max(font.font.height * z, font.font.height * .8 * z + 6 * z if en and english else 0)
+                with self.subTest(pixels=pixels, resolution=(W, H), english=en, key=key, label=ja):
+                    placed = self.backed_marker((W * .5 - 75 * scale, y, tw, th), view, obstacles, scale)
+                    obstacles.append(placed[:4])
 
     def test_projected_markers_can_use_viewport_edges_without_dropping_text(self):
         fits, placed = self.marker((-15, 30, 80, 25), (0, 0, 200, 100), [])
