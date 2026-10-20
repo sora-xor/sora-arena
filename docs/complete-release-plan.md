@@ -11,6 +11,66 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 20 qualification update
+
+These results supersede the running-state descriptions in the retained milestone
+history below. The release remains incomplete.
+
+- Mac candidate `298ed9e`, native `10ad7daddf`, passes Game build, full cook
+  (1,316 packages, zero cook errors/warnings), staging, strict signatures and
+  before/after artifact identity. Startup smoke and the untouched rendered title
+  pass. The full Metal suite completes 148 tests: **147 pass, one fails, zero
+  test warnings**. `Campaign.Spaces` fails four chapter-eight spawn-floor checks.
+  `ScriptedFight`, `FrontEndScreens`, `GalleryPois` and `NativeLoader` pass.
+  This package fails qualification. Its 19 front-end frames were viewed; the
+  scrolled Credits Back button loses Japanese `戻る`, although English `Back`
+  remains. Title tracing shows the tour's injected Enter; it does not establish
+  the historical full-suite initial-state cause.
+- All five CI source groups pass for `298ed9e` in run `39416677000`. The tested
+  merge `3e45733` has the same tree as that head, and all downloaded reports
+  record unchanged source. The later gallery-cache candidate `a8dfcf7` passes
+  45 local gameplay/tooling source checks. At `383d113`, eight of nine directed
+  editor tests pass; one passing LiftReload test retains an HTTP connectivity
+  warning. The new `GalleryCache` test passes actual equip/shot/Interact,
+  bounded arrow reward, exact memory dialogue, repeated-use rejection and
+  retry/save/reload checks. `Spaces` remains the sole failure.
+- Collision diagnostics at `383d113` establish the four floor mismatches:
+  spawns 1/3 hit `SpireRamp32` at 911.490/903.123 cm rather than 900;
+  spawn 7 hits `SpireRamp63` at 1808.410 rather than 1800; spawn 8 hits
+  `SpireL3Shortcut` at 1814.035 rather than 1800. These are overlapping rising
+  surfaces, not absent floors. Candidate `51f1c25` moves the formations onto
+  the incoming flat landing approaches, retaining the strict floor and capsule
+  checks. All six directed editor tests pass: Spaces, Playthrough, SpireTraversal,
+  SpireAuditorShutter, SpireSupply and SpireCompanions. The last retains one HTTP
+  connectivity-probe warning; there are no selected-test errors. The generated
+  campaign and five host spire checks also pass. A rebuilt package remains
+  unqualified.
+- Chapter-one source audit finds a release blocker missed by accelerated
+  traversal: b07 dispatches its archery targets as sparring pupils, and dojo
+  controls cannot equip the bow. Six-shot scoring, swinging targets, finite
+  arrows/retrieval and the six-usable/six-bent smithy handoff require
+  implementation. Normal b01–b06 controls are source-feasible but have not
+  been qualified by a continuous ordinary-input run. Also open: the real
+  awase event does not start the missed-marobashi hint timer, dojo play skips
+  passive zanshin, and pupil windups lack the authored variation. Directly
+  recorded forms, synthetic marobashi and lethal test damage establish none
+  of those authored interactions.
+- Frozen native research has completed three actual component proofs:
+  parry (3,027,008 bytes), marked ward (3,014,624), and simultaneous contact
+  (3,012,512). Each has separate verification and rejected statement/proof
+  mutations; root checked the proof and six source hashes. Stance, plasma
+  and seven actual prover-negative checks remain pending. This is unregistered
+  research, not the staged bridge, a complete accepted-control/World proof,
+  settlement or reference-M1 qualification.
+- Saved-source W09 diagnostics reproduce the original two out-of-range UV
+  corners on the barrel, then obtain 4,654 faces and zero out-of-range corners
+  in three in-memory weighted-collapse variants. Protecting all barrel chart
+  boundaries retains all 270 exact boundary geometry/UV signatures. Uniform
+  weights alone also change the result, so the experiment does not establish
+  that pinning is the unique cause or qualify a repair. Shape/distortion,
+  reproducibility and the existing normal metric failure remain open; no art
+  bytes, textures or acceptance thresholds changed.
+
 ## Milestones and evidence
 
 | ID | Deliverable | Owner | Current state / completion evidence |
