@@ -545,9 +545,27 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     if (!Advance(Test, State, 1))
         return false;
     if(Director->ActiveTask().AlternateTreads)
+    {
+        // The bellows wave nets the boy beside this station. Interact gives
+        // that rescue priority, so finish its held cut before pumping again.
+        // Leave the attacking wave alive: production still ends the beat.
+        if(auto* Craft=USoraFieldcraft::Get(Player(State));
+            Craft&&Craft->Readout(*Player(State)).HoldHere==FSoraFieldcraftReadout::EHold::NetCut)
+        {
+            const int32 NetsBefore=Craft->Readout(*Player(State)).NetsHeld;
+            if(!State.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+            bool bHeld=true;
+            for(int32 Frame=0;Frame<180&&bHeld&&Craft->Readout(*Player(State)).NetsHeld>=NetsBefore;++Frame)
+                bHeld=Advance(Test,State,1);
+            State.World->InjectKey(EKeys::E,IE_Released);
+            if(!bHeld||!Test.TestTrue(TEXT("The bellows helper is released with a held net cut"),
+                Craft->Readout(*Player(State)).NetsHeld<NetsBefore)||!Advance(Test,State,1)) return false;
+            Test.AddInfo(TEXT("Cut the bellows helper's net through held input before resuming production."));
+        }
         return State.World->InjectKey(EKeys::E,IE_Pressed)&&State.World->InjectKey(EKeys::A,IE_Pressed)&&
             State.World->InjectKey(EKeys::A,IE_Released)&&State.World->InjectKey(EKeys::D,IE_Pressed)&&
             State.World->InjectKey(EKeys::D,IE_Released)&&State.World->InjectKey(EKeys::E,IE_Released);
+    }
     Mode(State)->Interact(Player(State));
     if (Director->HeldWorkProgress() < 0.f)
         return true;
