@@ -4121,7 +4121,27 @@
     "Versilian Studios LLC and VCSL contributors"
    ],
    "license_evidence": {
-    "see": "top-level license_evidence (repository LICENSE at pinned commit)"
+    "see": "top-level license_evidence (repository LICENSE at pinned commit)",
+    "source_ledger": "scripts/assets/manifests/audio_vcsl.json",
+    "source_document": {
+     "LICENSE_first_lines": [
+      "Creative Commons Legal Code",
+      "",
+      "CC0 1.0 Universal"
+     ],
+     "README_statement": "This collection is under a Creative Commons 0 license. Essentially it's Public Domain- you can do whatever you want with these sounds (even make commercial software), no royalties, no credit, no special terms.",
+     "LICENSE_snapshot": {
+      "path": "Local/ThirdPartyRaw/_licenses/audio/vcsl-LICENSE-2026-09-25.html",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "captured_at_utc": "2026-09-25T11:34:21+00:00"
+     },
+     "README_snapshot": {
+      "path": "Local/ThirdPartyRaw/_licenses/audio/vcsl-README-2026-09-25.html",
+      "sha256": "6f7214a188f106c917d6503748485413c3e47cf56bce69f82beb9d16aa0894a9",
+      "captured_at_utc": "2026-09-25T11:34:21+00:00"
+     },
+     "verified_at_utc": "2026-09-25T11:40:53+00:00"
+    }
    },
    "role": "sfx/music: smithy anvil, forge percussion",
    "raw_ledger": "scripts/assets/manifests/audio_vcsl.json",

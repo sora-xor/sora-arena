@@ -7,6 +7,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts/unreal'))
+sys.path.insert(0, str(ROOT / 'scripts/assets'))
+from asset_ledger import check_record  # noqa: E402
 from sora_audio_spec import resolve_buses, wav_layout  # noqa: E402
 
 
@@ -46,6 +48,8 @@ class WorkshopAudioTests(unittest.TestCase):
         self.assertEqual(self.record['tier'], 'PUB-CC0')
         self.assertEqual(self.record['license'], 'CC0-1.0')
         self.assertEqual(self.record['origin_url'], source['origin_url'])
+        self.assertEqual(self.record['license_evidence']['source_document'], raw['license_evidence'])
+        self.assertEqual(check_record(self.record, 'workshop derivative'), [])
         self.assertEqual(self.record['storage'], 'repo-lfs')
         self.assertEqual(len(self.record['files']), 2)
         for row in self.record['files']:

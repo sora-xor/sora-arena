@@ -80,8 +80,11 @@ class Raw:
     def __init__(self, local_root: Path):
         self.local_root = local_root
         self.rows: dict[str, tuple[dict, dict, str]] = {}
+        self.documents: dict[str, dict] = {}
         for ledger in sorted(RAW_LEDGERS.glob('audio_*.json')):
-            for record in json.loads(ledger.read_text(encoding='utf-8'))['assets']:
+            document = json.loads(ledger.read_text(encoding='utf-8'))
+            self.documents[str(ledger.relative_to(ROOT))] = document
+            for record in document['assets']:
                 for row in list(record.get('files', [])) + list(record.get('downloads', [])):
                     self.rows[row['file']] = (record, row, str(ledger.relative_to(ROOT)))
         self.cache: dict[str, tuple[np.ndarray, int]] = {}
@@ -471,6 +474,15 @@ def manifest(raw: Raw, rows: list[dict]) -> dict:
                 'layered_into': [],
                 'files': [],
             })
+            # A derivative is a separate ledger document: a source record's
+            # 'see top-level' reference alone loses the acquisition evidence.
+            source_evidence = raw.documents[record['raw_ledger']].get('license_evidence')
+            if source_evidence:
+                record['license_evidence'] = {
+                    **raw_record.get('license_evidence', {}),
+                    'source_ledger': record['raw_ledger'],
+                    'source_document': source_evidence,
+                }
             if position == 0:
                 record['files'].append({
                     'file': rel, 'bytes': row['bytes'], 'sha256': row['sha256'], 'cue': item['cue'],
