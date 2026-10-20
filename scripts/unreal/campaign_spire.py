@@ -23,6 +23,16 @@ def route():
     return points
 
 
+def landing_formation(ramp, node, side_offsets):
+    """Keep grounded wave capsules on the flat, incoming half of a landing."""
+    p, previous = ramp[node], ramp[node - 1]
+    length = math.dist(p[:2], previous[:2])
+    dx, dy = (p[0] - previous[0]) / length, (p[1] - previous[1]) / length
+    return [[round(p[0] - dx * back - dy * side),
+             round(p[1] - dy * back + dx * side), p[2]]
+            for back in (100, 240) for side in side_offsets]
+
+
 def place_spire(beats, records, zones, fail):
     by_id = {row['beat']: row for row in records}
     if 'ch08.b10' not in by_id:
@@ -39,9 +49,14 @@ def place_spire(beats, records, zones, fail):
     x, y = lift['anchor']
     ramp = [[x+px,y+py,z] for px,py,z in route()]
     l2, l3, l4 = (ramp[n] for n in LANDINGS[1:])
-    spawns = [[l2[0] + dx, l2[1] + dy, 900] for dx, dy in [(-100,-100),(-100,100),(100,-100),(100,100)]]
+    # The rising ramp overlaps the square landing. A symmetric grid around
+    # its center puts some capsules below the actual walk surface. Place the
+    # two ranks down the incoming run, clear of its side rails and pad edges.
+    spawns = landing_formation(ramp, LANDINGS[1], (-80, 80))
     spawns += [[2*x-l2[0],2*y-l2[1],900]]
-    spawns += [[l3[0]+dx,l3[1]+dy,1800] for dx,dy in [(-100,-100),(-100,100),(100,-100),(100,100)]]
+    # L3 also has an ascending shortcut across its northern half; both ranks
+    # stay south of it, within the incoming ramp's clear width.
+    spawns += landing_formation(ramp, LANDINGS[2], (-120, -20))
     spawns += [[x+dx,y+dy,2100] for dx,dy in [(-300,-300),(300,-300),(-300,300),(300,300)]]
     spawns += [[x-800,y,2700],[l4[0],y-100,2700],[l4[0],y+100,2700]]
     row['spire'] = {'center': [x,y], 'width_cm': WIDTH_CM, 'void_diameter_cm': VOID_CM, 'landing_nodes': LANDINGS, 'ramp': ramp, 'spawns': spawns}
