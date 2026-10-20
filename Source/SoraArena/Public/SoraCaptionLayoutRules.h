@@ -13,6 +13,30 @@ inline bool Overlaps(const FRect& A,const FRect& B,float Gap=0)
     return A.X<B.X+B.W+Gap-Epsilon&&A.X+A.W+Gap>B.X+Epsilon&&
         A.Y<B.Y+B.H+Gap-Epsilon&&A.Y+A.H+Gap>B.Y+Epsilon;
 }
+struct FLabelPlacement { bool Fits=false; FRect Bounds; };
+inline FLabelPlacement PlaceLabel(const FRect& Label,const FRect& View,const FRect* Obstacles,int Count,float Gap)
+{
+    FLabelPlacement Best{false,Label}; float Distance=0.f;
+    // Candidate edges are measured panel boundaries, never magic screen
+    // offsets. The nearest clear position retains the full label dimensions.
+    for(int XI=0;XI<=2*Count+2;++XI) for(int YI=0;YI<=2*Count+2;++YI)
+    {
+        FRect At=Label;
+        if(XI==1) At.X=View.X;
+        else if(XI==2) At.X=View.X+View.W-Label.W;
+        else if(XI>2) { const auto& O=Obstacles[(XI-3)/2]; At.X=XI%2?O.X-Label.W-Gap:O.X+O.W+Gap; }
+        if(YI==1) At.Y=View.Y;
+        else if(YI==2) At.Y=View.Y+View.H-Label.H;
+        else if(YI>2) { const auto& O=Obstacles[(YI-3)/2]; At.Y=YI%2?O.Y-Label.H-Gap:O.Y+O.H+Gap; }
+        if(At.X<View.X||At.Y<View.Y||At.X+At.W>View.X+View.W||At.Y+At.H>View.Y+View.H) continue;
+        bool Clear=true;
+        for(int I=0;I<Count&&Clear;++I) Clear=!Overlaps(At,Obstacles[I],Gap);
+        if(!Clear) continue;
+        const float DX=At.X-Label.X,DY=At.Y-Label.Y,D=DX*DX+DY*DY;
+        if(!Best.Fits||D<Distance) { Best={true,At}; Distance=D; if(D==0.f) return Best; }
+    }
+    return Best;
+}
 struct FPlan { bool Fits=false; int Region[MaxCaptions]={}; FRect Bounds[MaxCaptions]={}; };
 inline bool Search(int Index,int Count,const FRect* Regions,int RegionCount,
     const float (&Heights)[MaxCaptions][MaxRegions],float Gap,FPlan& Plan)

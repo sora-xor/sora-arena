@@ -278,7 +278,10 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
                 if(Screen.X>0&&Screen.X<W&&Screen.Y>170*S&&Screen.Y<H-120*S)
                 {
                     const FString SiteName=G->bCampaign?FSoraCatalog::Get().Chapter(G->Campaign()->ChapterId).Sites[I].Name:FString::Printf(TEXT("工房 %d"),I+1);
-                    HUD.Label(FString::Printf(TEXT("%s / %dm"),*SiteName,M),Screen.X-75*S,Screen.Y,.42*S,Teal);
+                    const FString Text=FString::Printf(TEXT("%s / %dm"),*SiteName,M);
+                    int32 TW=0,TH=0; UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),.42*S,.42*S,TW,TH,Text);
+                    const auto At=WorldMarkerPosition(Frame,{Screen.X-75*S,Screen.Y},{static_cast<float>(TW),static_cast<float>(TH)});
+                    HUD.Label(Text,At.X,At.Y,.42*S,Teal);
                 }
             }
         }
@@ -286,7 +289,15 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
         bool Near=NearSite;
         Near|=FVector::Dist2D(G->Arena()->ExitPoint(),P->GetActorLocation())<270;
         if(Near)
-            Frame.LabelWithEnglish(SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.Examine","{Interact}  調べる"),
-                {{TEXT("Interact"),SoraUI::ActionKey(&HUD,TEXT("Interact"))}}),CX-75*S,CY+60*S,.65*S,Gold);
+        {
+            const auto Line=SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.Examine","{Interact}  調べる"),
+                {{TEXT("Interact"),SoraUI::ActionKey(&HUD,TEXT("Interact"))}});
+            int32 JW=0,JH=0,EW=0,EH=0;
+            UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),.65*S,.65*S,JW,JH,Line.Japanese);
+            if(G->bEnglishSubtitles) UCanvas::ClippedStrLen(HUD.JapaneseFontObject(),.52*S,.52*S,EW,EH,Line.English);
+            const auto At=WorldMarkerPosition(Frame,{CX-75*S,CY+60*S},
+                {static_cast<float>(JW)+(G->bEnglishSubtitles?14*S+EW:0),FMath::Max(static_cast<float>(JH),EH+3.9f*S)});
+            Frame.LabelWithEnglish(Line,At.X,At.Y,.65*S,Gold);
+        }
     }
 }

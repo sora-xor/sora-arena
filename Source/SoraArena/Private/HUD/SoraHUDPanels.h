@@ -34,6 +34,8 @@ struct FSoraHUDFrame
     // Flashes fade gently instead of blinking.
     bool bReduceFlashing = false;
     FLinearColor Ivory, Gold, Teal, Muted;
+    // Draw-local occupancy: later projected labels also clear earlier labels.
+    mutable TArray<FBox2D> WorldMarkerBounds;
     FSoraHUDFrame(ASoraHUD& InHUD, const ASoraGameMode& InMode, float Width, float Height);
     // The dialogue panel for up to two lines of each language.
     FSoraDialogueLayout DialogueLayout(bool bEnglish) const;
@@ -96,6 +98,8 @@ FSoraCaptionLayout CaptionLayout(const FSoraHUDFrame& Frame);
 // Actual upper gameplay panels are excluded from caption fallback columns.
 TArray<FBox2D> UpperGameplayPanelBounds(const FSoraHUDFrame& Frame);
 bool CaptionStoryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+// Keep projected site/objective labels clear of measured fixed HUD panels.
+FVector2D WorldMarkerPosition(const FSoraHUDFrame& Frame, FVector2D Desired, FVector2D Size);
 void DrawCaptions(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter* Hero);
 // Deterministic practice, drawn last (SoraHUDPracticePanels.cpp).
 void DrawPractice(const FSoraHUDFrame& Frame);
