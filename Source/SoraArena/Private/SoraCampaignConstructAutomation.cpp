@@ -4,12 +4,15 @@
 #include "SoraBoss.h"
 #include "SoraConstructRules.h"
 #include "SoraEquipmentComponent.h"
+#include "SoraGameEvents.h"
+#include "SoraHistoricalArms.h"
 #include "SoraSettings.h"
 #include "Combat/SoraEnemyCatalog.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/DamageType.h"
+#include "Misc/ScopeExit.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraCampaignConstructTest,"SoraArena.Campaign.CollateralConstruct",
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
@@ -154,14 +157,57 @@ bool FSoraCampaignConstructTest::RunTest(const FString& Parameters)
     auto* Kit=W.Hero()->GetEquipment();
     if(!TestTrue(TEXT("The chapter has unlocked the heavy forge hammer"),Kit->EquipCampaignWeapon(8))) return false;
     Kit->Sheathe(false);
+    USoraGameEvents* Events=USoraGameEvents::Get(W.World->GetTestWorld());
+    if(!TestNotNull(TEXT("Actual heavy commitments and contacts are observable"),Events)) return false;
+    const auto Hammer=SoraHistoricalArms::Profile(SoraHistoricalArms::EForm::ForgeHammer);
+    float HammerReadyAt=0.f;
+    int32 HammerCommits=0,HammerContacts=0,HammerResolves=0;
+    AActor* HammerTarget=nullptr;
+    const auto HammerNow=[&]() { return W.World->GetTestWorld()->GetTimeSeconds(); };
+    const FDelegateHandle Committed=Events->OnMeleeCommitted.AddLambda([&](const FSoraMeleeCommittedEvent& E)
+    {
+        if(E.Attacker!=W.Hero()||E.WeaponId!=8) return;
+        ++HammerCommits; HammerReadyAt=HammerNow()+E.WindupSeconds+Hammer.RecoverySeconds;
+        AddInfo(FString::Printf(TEXT("Hammer commit %d: game=%.4f windup=%.3f recovery=%.3f ready=%.4f core=%d health=%.1f"),
+            HammerCommits,HammerNow(),E.WindupSeconds,Hammer.RecoverySeconds,HammerReadyAt,Heavy->IsConstructCoreOpen(),Heavy->Health));
+    });
+    const FDelegateHandle Resolved=Events->OnStrikeResolved.AddLambda([&](const FSoraStrikeResolvedEvent& E)
+    {
+        if(E.Attacker!=W.Hero()||E.WeaponId!=8) return;
+        ++HammerResolves; HammerTarget=E.Target;
+        HammerContacts+=E.Target==Heavy&&E.Damage==130.f;
+        AddInfo(FString::Printf(TEXT("Hammer resolved: game=%.4f target=%s damage=%.1f hit=%d core=%d health=%.1f"),
+            HammerNow(),*GetNameSafe(E.Target),E.Damage,E.bHit,Heavy->IsConstructCoreOpen(),Heavy->Health));
+    });
+    ON_SCOPE_EXIT { Events->OnMeleeCommitted.Remove(Committed); Events->OnStrikeResolved.Remove(Resolved); };
     // Closed core, then two real committed heavy sweeps into the exposed
     // component. No direct damage call supplies the gameplay heavy contacts.
-    if(!W.Press(EKeys::LeftMouseButton)||!W.Tick(55)) return false;
-    TestEqual(TEXT("A closed core rejects a heavy swing"),Heavy->Health,260.f);
+    if(!W.Tick(16)||!W.Press(EKeys::LeftMouseButton)||!W.Tick(55)) return false;
+    if(!TestTrue(TEXT("A closed core rejects an actually committed and resolved heavy swing"),
+        HammerCommits==1&&HammerResolves==1&&HammerTarget==Heavy&&Heavy->Health==260.f)) return false;
     if(!Open(*Heavy)||!W.Press(EKeys::LeftMouseButton)||!W.Tick(17)) return false;
     if(!TestEqual(TEXT("The first physical heavy contact removes half the core"),Heavy->Health,130.f)) return false;
-    if(!W.Tick(35)||!W.Press(EKeys::LeftMouseButton)||!W.Tick(17)) return false;
-    TestTrue(TEXT("Exactly two heavy contacts release the second assembly"),!Heavy->IsAlive()&&Heavy->HasReleasedGoods());
+    if(!W.Tick(35)) return false;
+    // Retain a sample at the former fixed-frame press. Successful heavy
+    // contact adds real-time hit-stop, so frame count alone is not cooldown.
+    AddInfo(FString::Printf(TEXT("Second hammer boundary: game=%.4f ready=%.4f remaining=%.4f commits=%d contacts=%d committed=%d staggered=%d core=%d health=%.1f"),
+        HammerNow(),HammerReadyAt,HammerReadyAt-HammerNow(),HammerCommits,HammerContacts,Kit->IsCommittedStrike(),
+        Kit->IsStaggered(),Heavy->IsConstructCoreOpen(),Heavy->Health));
+    for(int32 Frame=0;Frame<120&&HammerNow()<HammerReadyAt+.001f;++Frame) if(!W.Tick(1)) return false;
+    if(!TestTrue(TEXT("The next real press follows the hammer's game-time recovery"),
+        HammerNow()>=HammerReadyAt&&!Kit->IsCommittedStrike()&&!Kit->IsStaggered()&&Heavy->IsConstructCoreOpen())) return false;
+    const int32 CommitsBefore=HammerCommits;
+    if(!W.Press(EKeys::LeftMouseButton)) return false;
+    if(!TestEqual(TEXT("The second press actually commits a new heavy swing"),HammerCommits,CommitsBefore+1)) return false;
+    for(int32 Frame=0;Frame<120&&Kit->IsCommittedStrike();++Frame) if(!W.Tick(1)) return false;
+    if(!TestTrue(TEXT("Exactly two physical heavy contacts release the second assembly"),
+        HammerContacts==2&&!Heavy->IsAlive()&&Heavy->HasReleasedGoods()))
+    {
+        AddError(FString::Printf(TEXT("Second hammer state: game=%.4f ready=%.4f commits=%d contacts=%d committed=%d core=%d health=%.1f hero=%s core_point=%s eye_direction=%s"),
+            HammerNow(),HammerReadyAt,HammerCommits,HammerContacts,Kit->IsCommittedStrike(),Heavy->IsConstructCoreOpen(),Heavy->Health,
+            *W.Hero()->GetActorLocation().ToString(),*Heavy->ConstructCorePoint().ToString(),*W.Hero()->GetCamera()->GetForwardVector().ToString()));
+        return false;
+    }
     TestEqual(TEXT("Both release routes preserve add accounting"),Boss->LiveAdds(),0);
     TestFalse(TEXT("The existing shield drops when the last construct releases"),Boss->IsInvulnerable());
     TestFalse(TEXT("The released core cannot be credited twice"),Heavy->CutSeal(W.Hero()));
