@@ -96,12 +96,26 @@ bool FSoraCampaignConstructTest::RunTest(const FString& Parameters)
     Wall->Destroy();
     // Release/repress between ticks must discard partial work. The second
     // hold begins too late to finish before this recovery window closes.
-    if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(20)) return false;
+    const float PartialStarted=W.World->GetTestWorld()->GetTimeSeconds();
+    if(!W.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+    // Use the live game clock, including hit-stop. Restart after 550 ms:
+    // 550 + 1000 exceeds the authored 1400 ms exposure. The former 333 ms
+    // restart legitimately fit and released the construct.
+    for(int32 Frame=0;Frame<120&&W.World->GetTestWorld()->GetTimeSeconds()-PartialStarted<.55f;++Frame)
+        if(!W.Tick(1)) return false;
     if(!TestTrue(TEXT("Mapped E input begins the exposed core cut"),W.Campaign()->SealBeingCut()==Seal)) return false;
+    if(!TestTrue(TEXT("The interrupted cut has consumed more than 400 ms of its recovery window"),
+        W.Campaign()->SealCutProgress()>=.55f&&W.Campaign()->SealCutProgress()<.7f)) return false;
     if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(40)) return false;
     TestTrue(TEXT("Release discards earlier time instead of banking a completed seal cut"),Seal->IsAlive()&&W.Campaign()->SealCutProgress()<.8f);
     if(!W.Tick(30)||!W.World->InjectKey(EKeys::E,IE_Released)) return false;
-    TestTrue(TEXT("Recovery expiry cancels a late cut"),Seal->IsAlive()&&!Seal->CanCutSeal()&&!W.Campaign()->SealBeingCut());
+    if(!TestTrue(TEXT("Recovery expiry cancels a late cut"),Seal->IsAlive()&&!Seal->CanCutSeal()&&!W.Campaign()->SealBeingCut()))
+    {
+        AddError(FString::Printf(TEXT("Late-cut state: health=%.1f released=%d core_open=%d target=%s progress=%.3f elapsed=%.3f"),
+            Seal->Health,Seal->HasReleasedGoods(),Seal->IsConstructCoreOpen(),*GetNameSafe(W.Campaign()->SealBeingCut()),
+            W.Campaign()->SealCutProgress(),W.World->GetTestWorld()->GetTimeSeconds()-PartialStarted));
+        return false;
+    }
     if(!Open(*Seal)) return false;
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(55)) return false;
     TestTrue(TEXT("A fresh core cut requires the full second"),Seal->IsAlive()&&W.Campaign()->SealBeingCut()==Seal);
