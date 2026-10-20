@@ -4,6 +4,9 @@ Copyright 2013 Google Inc. All Rights Reserved.
 Unmodified font distributed with Unreal Engine 5.8.3:
 Engine/Content/Slate/Fonts/NotoNaskhArabicUI-Regular.ttf
 Version 1.06 uh; SHA256 f3878be872cc1d4ad9bd63535db480e3c5752c6313842656208872275cb32226
+The identical bytes are bundled at
+Content/SourceArt/Fonts/NotoNaskhArabicUI-Regular.ttf so source checks and the
+packaged game use the same font independently of the host's engine files.
 
 Used for Arabic asset attribution text in the Japanese and bilingual credits.
 The Japanese and Latin UI continue to use Noto Sans CJK JP.

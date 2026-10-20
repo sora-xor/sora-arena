@@ -1,0 +1,52 @@
+{
+  "schema_version": 2,
+  "source": "Google Noto Fonts",
+  "purpose": "Hash-pinned Arabic attribution font used by source CI and the game",
+  "assets": [
+    {
+      "asset_id": "noto-naskh-arabic-ui-regular-1.06",
+      "name": "Noto Naskh Arabic UI Regular",
+      "kind": "font",
+      "tier": "PUB-BY",
+      "license": "OFL-1.1",
+      "license_url": "https://openfontlicense.org/open-font-license-official-text/",
+      "origin_url": "https://github.com/notofonts/noto-fonts",
+      "mirror_url": null,
+      "authors": [
+        "Google Inc."
+      ],
+      "commercial_use": true,
+      "redistribution": "no-standalone",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": "Noto Naskh Arabic UI Regular, Copyright 2013 Google Inc. Licensed under the SIL Open Font License 1.1.",
+      "changes": "None. Exact font bytes from the installed Unreal Engine 5.8.3 Content/Slate/Fonts/NotoNaskhArabicUI-Regular.ttf; redistributed under the font's own OFL 1.1 terms.",
+      "access": "user-supplied",
+      "acquired_at_utc": "2026-10-20T12:57:55.599121+00:00",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "used_by": [],
+      "runtime_use": "SoraUI::CreateUIFont for Arabic credits in Japanese and bilingual interfaces; staged NonUFS.",
+      "fallback": null,
+      "license_evidence": {
+        "path": "ThirdPartyNotices/NotoNaskhArabicUI.txt",
+        "sha256": "a4b65292d981d9dc1bbc3471f075fa04e410279b2a05ce538ede45562344cd68",
+        "upstream_evidence": "UE 5.8.3 Engine/Content/Slate/Fonts/Noto.tps; Engine/Source/ThirdParty/Licenses/Noto_License.txt; font embedded copyright and license names"
+      },
+      "files": [
+        {
+          "path": "Content/SourceArt/Fonts/NotoNaskhArabicUI-Regular.ttf",
+          "bytes": 146548,
+          "sha256": "f3878be872cc1d4ad9bd63535db480e3c5752c6313842656208872275cb32226"
+        },
+        {
+          "path": "ThirdPartyNotices/NotoNaskhArabicUI.txt",
+          "bytes": 5265,
+          "sha256": "a4b65292d981d9dc1bbc3471f075fa04e410279b2a05ce538ede45562344cd68"
+        }
+      ]
+    }
+  ]
+}

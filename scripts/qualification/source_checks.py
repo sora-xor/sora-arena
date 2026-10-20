@@ -123,6 +123,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         unit("tooling", name, path)
     script("assets", "lfs-materialized", SELF, "--lfs-materialized")
     script("assets", "source-content", "scripts/unreal/validate_content.py")
+    unit("assets", "ui-fonts-tests", "scripts/unreal/test_ui_fonts.py")
     script("assets", "source-images", "scripts/unreal/validate_source_images.py", "--json")
     unit("assets", "source-images-tests", "scripts/unreal/test_source_images.py")
     script("assets", "asset-ledger", "scripts/assets/validate_asset_ledger.py", "--json")

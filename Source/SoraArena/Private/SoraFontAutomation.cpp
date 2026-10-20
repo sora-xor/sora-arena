@@ -54,7 +54,8 @@ bool FSoraCreditsFontCoverageTest::RunTest(const FString& Parameters)
             float Scale = 0;
             const FFontData& Selected = Cache.GetFontDataForCodepoint(Info, Character, Scale);
             TestEqual(TEXT("Arabic credit letters select the shipped Arabic face"),
-                FPaths::GetCleanFilename(Selected.GetFontFilename()), FString(TEXT("NotoNaskhArabicUI-Regular.ttf")));
+                Selected.GetFontFilename(),
+                FPaths::ProjectContentDir() / TEXT("SourceArt/Fonts/NotoNaskhArabicUI-Regular.ttf"));
             TestTrue(*FString::Printf(TEXT("Credit U+%04X loads without fallback"), static_cast<uint32>(Character)),
                 Cache.CanLoadCodepoint(Selected, Character));
         }

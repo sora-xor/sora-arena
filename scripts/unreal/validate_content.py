@@ -625,13 +625,15 @@ assert "T_SoraResistanceLogo.T_SoraResistanceLogo" in (private_source / "HUD/Sor
 assert hashlib.sha256(font.read_bytes()).hexdigest() == "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5"
 assert hashlib.sha256(font.read_bytes()).hexdigest() == street["font_sha256"]
 assert "SIL OPEN FONT LICENSE" in (font.parent / "OFL.txt").read_text()
-from fontTools.ttLib import TTFont
-cmap = TTFont(font).getBestCmap()
+from validate_ui_fonts import validate_font_coverage
 text = json.dumps(catalog,ensure_ascii=False)
 text += "".join(path.read_text() for path in sorted((content / "Data/campaign").glob("*.json")))
 text += "".join(p.read_text() for p in (ROOT / "Source/SoraArena").rglob("*.cpp"))
-absent = sorted({ch for ch in text if ord(ch)>127 and ord(ch) not in cmap})
-assert not absent, f"Bundled font lacks glyphs: {absent}"
+# These files are also rendered by LoadCredits; checking only source literals
+# previously missed Arabic titles until a runtime regression test named one.
+text += "".join(p.read_text() for p in sorted((ROOT / "ThirdPartyNotices").iterdir())
+                if p.suffix in {".md", ".txt"})
+validate_font_coverage(ROOT, text)
 fbx_count = sum(1 for _ in (content / "SourceArt").rglob("*.fbx"))
 print(input_summary)
 print(campaign_summary)
