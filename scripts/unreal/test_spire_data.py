@@ -88,12 +88,12 @@ int main() {
 #include <cassert>
 #include <iostream>
 using namespace SoraSpireRules;
-double distance(FPoint p,FPoint a,FPoint b,int sign,double insetA,double insetB) {
+double distance(FPoint p,FPoint a,FPoint b,int sign,double insetA,double insetB,double width=GantryWidthCm,double overlap=RailOverlapCm) {
     const double length=std::hypot(b.X-a.X,b.Y-a.Y);
     const double dx=(b.X-a.X)/length,dy=(b.Y-a.Y)/length;
     const double along=(p.X-a.X)*dx+(p.Y-a.Y)*dy;
-    const double side=-(p.X-a.X)*dy+(p.Y-a.Y)*dx-sign*(GantryWidthCm*.5-10);
-    const double x=std::max({insetA-RailOverlapCm*.5-along,along-(length-insetB+RailOverlapCm*.5),0.0});
+    const double side=-(p.X-a.X)*dy+(p.Y-a.Y)*dx-sign*(width*.5-10);
+    const double x=std::max({insetA-overlap*.5-along,along-(length-insetB+overlap*.5),0.0});
     const double y=std::max(std::abs(side)-10,0.0);
     return std::hypot(x,y);
 }
@@ -126,6 +126,83 @@ int main() {
         }
     }
     assert(originalObstructed);
+    const auto a=Point(ShortcutStart),b=Point(ShortcutEnd);
+    for(int panel=0;panel<2;++panel) {
+        const auto goal=AlarmApproach(panel);
+        assert(goal.Z==1800);
+        assert(std::abs(goal.X-a.X)<LandingHalfCm-RouteRadiusCm);
+        assert(std::abs(goal.Y-a.Y)<WidthCm*.5-RouteRadiusCm-20);
+        const auto rails=ShortcutPadRails(ShortcutStart);
+        for(int n=0;n<=1000;++n) {
+            const double t=n/1000.0;
+            const FPoint p{a.X+(goal.X-a.X)*t,a.Y+(goal.Y-a.Y)*t,0};
+            for(int r=0;r<rails.Count;++r)
+                assert(distance(p,rails.Lines[r].A,rails.Lines[r].B,0,0,0,20,0)>RouteRadiusCm);
+        }
+    }
+    const double chord=std::hypot(b.X-a.X,b.Y-a.Y);
+    assert(ShortcutStart==Landing(2)&&ShortcutEnd<Landing(3));
+    assert(IsAccessPad(ShortcutStart)&&IsAccessPad(ShortcutEnd));
+    assert((b.Z-a.Z)/chord<.15); // ordinary walkable shortcut grade
+    double spiral=0;
+    for(int n=ShortcutStart+1;n<=ShortcutEnd;++n) {
+        const auto p=Point(n-1),q=Point(n);
+        spiral+=std::hypot(q.X-p.X,q.Y-p.Y);
+    }
+    assert(chord+200<spiral); // actually shortens the physical route
+    const double inset=GantryRailInset(b.X-a.X,b.Y-a.Y,LandingHalfCm);
+    assert(2*inset<chord);
+    for(int node:{ShortcutStart,ShortcutEnd}) {
+        const auto pad=Point(node);
+        const auto guards=ShortcutPadRails(node);
+        assert(guards.Count>0&&guards.Count<=16);
+        for(int neighbour:{node-1,node+1,node==ShortcutStart?ShortcutEnd:ShortcutStart}) {
+            const auto end=Point(neighbour);
+            for(int n=0;n<=1000;++n) {
+                const double t=n/1000.0;
+                const FPoint p{pad.X+(end.X-pad.X)*t,pad.Y+(end.Y-pad.Y)*t,0};
+                for(int r=0;r<guards.Count;++r)
+                    assert(distance(p,guards.Lines[r].A,guards.Lines[r].B,0,0,0,20,0)>RouteRadiusCm);
+            }
+        }
+        if(node==ShortcutEnd) {
+            // Regression: this previously unguarded pad corner points into
+            // the void, away from all three connected walking corridors.
+            const FPoint outside{pad.X-350,pad.Y-300,0};
+            bool stopped=false;
+            for(int n=0;n<=1000;++n) {
+                const double t=n/1000.0;
+                const FPoint p{pad.X+(outside.X-pad.X)*t,pad.Y+(outside.Y-pad.Y)*t,0};
+                for(int r=0;r<guards.Count;++r)
+                    stopped|=distance(p,guards.Lines[r].A,guards.Lines[r].B,0,0,0,20,0)<RouteRadiusCm;
+            }
+            assert(stopped);
+        }
+        for(int neighbour:{node-1,node+1}) {
+            const auto end=Point(neighbour);
+            for(int n=0;n<=1000;++n) {
+                const double t=n/1000.0;
+                const FPoint p{pad.X+(end.X-pad.X)*t,pad.Y+(end.Y-pad.Y)*t,0};
+                for(int sign:{-1,1}) assert(distance(p,a,b,sign,inset,inset)>RouteRadiusCm);
+            }
+        }
+    }
+    // The ramp's own rails must also admit the shortcut from either pad.
+    // Limit to adjacent rails at the two endpoints: other windings have
+    // over five metres of vertical separation.
+    for(int n=0;n<=1000;++n) {
+        const double t=n/1000.0;
+        const FPoint p{a.X+(b.X-a.X)*t,a.Y+(b.Y-a.Y)*t,0};
+        for(int node:{ShortcutStart,ShortcutEnd})
+            for(int edge:{node,node+1}) {
+                const auto r=Point(edge-1),s=Point(edge);
+                for(int sign:{-1,1}) {
+                    const double from=sign>0?InnerRailInset(edge-1):0;
+                    const double to=sign>0?InnerRailInset(edge):0;
+                    assert(distance(p,r,s,sign,from,to,WidthCm)>RouteRadiusCm);
+                }
+            }
+    }
     std::cout<<"L2 and L4 incoming, outgoing and gantry capsule routes clear\n";
 }'''
         compiler=os.environ.get('CXX') or shutil.which('clang++') or shutil.which('c++')

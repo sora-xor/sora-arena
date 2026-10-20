@@ -122,8 +122,9 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     BeatLight(Beat);   // the beat's authored sun and sky (SoraWorldBuilderLighting.cpp)
     StageEpilogue(Beat);
     bSummitActive=Space.Summit.Enabled();
+    ResetSpireAlarm(Space.Spire.Enabled());
     ShowSummitSpine(false,Beat.Id==TEXT("ch08.b15")?1.f:0.f);
-    SetActorTickEnabled(bSummitActive);
+    SetActorTickEnabled(bSummitActive||bSpireActive);
     if(Space.Summit.Enabled()&&Beat.Is(SoraBeatRules::EType::Boss))
         KitShape(TEXT("SummitStairSeal"),KitCube,FVector(Space.Summit.Center,16000)+FVector(0,-1850,125),
             FVector(3.4,.16,2.5),KitTeal,TEXT("Metal"),true);
@@ -403,6 +404,7 @@ void ASoraWorldBuilder::ShowRecoveryBundle(bool Visible)
 void ASoraWorldBuilder::ClearKit()
 {
     SetActorTickEnabled(false);
+    ResetSpireAlarm(false);
     bSummitActive=false; ResetSeizure();
     for(const auto& Label:EpilogueLabels) if(Label) Label->DestroyComponent();
     EpilogueLabels.Reset();

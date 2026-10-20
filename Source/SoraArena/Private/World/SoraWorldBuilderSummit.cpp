@@ -74,6 +74,7 @@ void ASoraWorldBuilder::BuildSummit(const FSoraBeat& Beat)
 void ASoraWorldBuilder::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+    TickSpireAlarm();
     TickSeizure();
 }
 

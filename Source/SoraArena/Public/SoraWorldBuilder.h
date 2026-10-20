@@ -8,6 +8,7 @@ class ASkyLight;
 class ASoraHorse;
 class ASoraCampaignLift;
 class ASoraBoss;
+class ASoraEnemy;
 class UProceduralMeshComponent;
 class ASoraPlayerCharacter;
 class UTextureCube;
@@ -116,6 +117,13 @@ public:
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
     ASoraCampaignLift* CampaignLift() const;
+    // Only an active spire's hunting auditors use these physical L3 panels.
+    // A shout never closes the shortcut; arrival checks the actual floor.
+    bool SpireAlarmGoal(const ASoraEnemy& Auditor,FVector& Out) const;
+    bool TrySpireAlarm(const ASoraEnemy& Auditor);
+    bool SpireShortcutClosed() const { return bSpireClosed; }
+    bool SpireAlarmPending() const { return bSpireAlarmPending; }
+    FVector SpireShutterFloor() const { return SpireShutterAt-FVector(0,0,150); }
     // The campaign summit owns the real seizure floor. Other arenas retain
     // the generic boss zone implementation.
     bool BeginSeizure(ASoraBoss& Boss,int32 Attack,int32 Serial,int32 WarningMs);
@@ -149,6 +157,14 @@ private:
     void BuildArena(int32 MapId, bool bSites);
     void BuildCampaign(const FSoraChapter& Chapter);
     void BuildSpire(const FSoraBeat& Beat);
+    void ResetSpireAlarm(bool Active);
+    void TickSpireAlarm();
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> SpireShutter;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> SpirePanels;
+    TArray<FVector> SpirePanelGoals;
+    FVector SpireShutterAt=FVector::ZeroVector;
+    FRotator SpireShutterRotation=FRotator::ZeroRotator;
+    bool bSpireActive=false,bSpireClosed=false,bSpireAlarmPending=false;
     void BuildSummit(const FSoraBeat& Beat);
     FVector SummitCenter=FVector::ZeroVector;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> SummitSpine;

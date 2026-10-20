@@ -540,3 +540,28 @@ dialogue queue with the earlier memory, tests foreign-event rejection, uses
 mapped weapon/sheath/guard inputs against real foreclosure attacks for three
 wrong arms and the katana, and checks first-only memory, floor reminders and
 the unchanged pending spine-cut checkpoint. Root owns Unreal qualification.
+### Chapter-eight auditor shortcut shutter (source candidate)
+
+The authored b10 alarm now has a functional proxy: a railed two-metre chord
+connects the L3 landing to the ramp two hexagon sides above it. An auditor's
+alarm closes only this shortcut; all original ramp segments remain available.
+The upper connection has its own capsule-tested inner-rail clearance, and both
+pads have perimeter rails outside the three connected walking corridors. The
+existing L2/L4 crossings, wave triggers and L4 completion boundary are retained.
+
+Only hunting auditors in the active spire descend from the L4 office to the
+L3 panel approaches (the authored level table places the alarm at 18 m).
+Arrival requires a living auditor on the actual panel floor; a generic shout,
+death en route or matching XY on a lower winding cannot operate the shutter.
+The future door volume must be clear of every pawn before collision is enabled.
+Retry/staging clears both pending alarms and the solid shutter. The ch06 stealth
+lectern path is unchanged.
+
+`SoraArena.Campaign.SpireAuditorShutter` covers real auditor travel, interception,
+lower-floor and shout rejection, normal-input shortcut crossings, occupied-door
+deferral, capsule collision, dynamic navigation's longer route, ordinary ramp
+traversal and death/retry reset. Host geometry checks cover the chord's width,
+grade, shorter length and both endpoint rail clearances. Actual UE execution
+is pending root qualification. Panels and the shutter are explicit functional
+proxies; finished architecture, shutter drop animation and alarm presentation
+remain art work.

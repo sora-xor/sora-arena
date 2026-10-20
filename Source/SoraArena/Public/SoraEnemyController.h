@@ -133,6 +133,7 @@ private:
     void LookForBodies(ASoraEnemy& Enemy, int32 DtMs);
     void CallOut(const ASoraEnemy& Enemy) const;
     void AlarmRun(ASoraEnemy& Enemy, const ASoraCharacterBase& Target, float DeltaSeconds, int32 NowMs);
+    bool DriveSpireAlarm(ASoraEnemy& Enemy,float DeltaSeconds,int32 NowMs);
     void AnnounceState(const ASoraEnemy& Enemy) const;
     void Act(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
     void Fight(ASoraEnemy& Enemy, ASoraCharacterBase& Target, bool bSees, float DeltaSeconds, int32 NowMs);
