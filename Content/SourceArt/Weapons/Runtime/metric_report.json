@@ -10,7 +10,7 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.3597
+     "coverage": 0.4076
     },
     {
      "name": "SM_Weapon_00_fbx_bounds_parity_m",
@@ -22,24 +22,24 @@
     {
      "name": "SM_Weapon_00_lod_triangles",
      "measured": [
-      56494,
-      23726,
-      9038
+      65272,
+      27414,
+      10442
      ],
      "budget_lod0": 90000,
      "pass": true
     },
     {
      "name": "SM_Weapon_00_Saya_uv0_overlap",
-     "measured": 9e-05,
+     "measured": 8e-05,
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.253
+     "coverage": 0.3284
     },
     {
      "name": "SM_Weapon_00_Saya_fbx_bounds_parity_m",
-     "measured": 1.9207256708730913e-08,
+     "measured": 2.013701149404523e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -47,16 +47,23 @@
     {
      "name": "SM_Weapon_00_Saya_lod_triangles",
      "measured": [
-      12360,
-      5190,
-      1976
+      25020,
+      10508,
+      4002
      ],
      "budget_lod0": 90000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0959,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.1131
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 3081.4,
+     "measured": 3186.9,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -83,7 +90,7 @@
     {
      "name": "mounted_length",
      "method": "extent_x",
-     "measured": 1.00715,
+     "measured": 1.00965,
      "expected": 0.998,
      "tol": 0.015,
      "basis": "reference",
@@ -103,18 +110,18 @@
     {
      "name": "tsuba_height",
      "method": "extent_z",
-     "measured": 0.073,
-     "expected": 0.073,
+     "measured": 0.076,
+     "expected": 0.076,
      "tol": 0.002,
      "basis": "period",
-     "source": "maru-gata iron tsuba",
+     "source": "maru-gata iron tsuba, height (edge to spine) >= width",
      "pass": true
     },
     {
      "name": "tsuba_width",
      "method": "extent_y",
-     "measured": 0.076,
-     "expected": 0.076,
+     "measured": 0.073,
+     "expected": 0.073,
      "tol": 0.002,
      "basis": "period",
      "source": "maru-gata iron tsuba",
@@ -140,15 +147,15 @@
    "checks": [
     {
      "name": "SM_Weapon_01_uv0_overlap",
-     "measured": 0.00014,
+     "measured": 0.0,
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.7568
+     "coverage": 0.7971
     },
     {
      "name": "SM_Weapon_01_fbx_bounds_parity_m",
-     "measured": 2.3177856533357355e-08,
+     "measured": 5.165687932962015e-09,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -156,23 +163,30 @@
     {
      "name": "SM_Weapon_01_lod_triangles",
      "measured": [
-      16312,
-      6850,
-      2608
+      37860,
+      15900,
+      6056
      ],
      "budget_lod0": 90000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0342,
+     "expected_min": 0.04,
+     "pass": false,
+     "covered_texels_mean": 0.038
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 2735.4,
+     "measured": 3716.9,
      "expected_min": 1024.0,
      "pass": true
     },
     {
      "name": "overall_length",
      "method": "extent_x",
-     "measured": 0.87,
+     "measured": 0.865,
      "expected": 0.86,
      "tol": 0.015,
      "basis": "design",
@@ -181,7 +195,7 @@
     }
    ],
    "errors": [],
-   "pass": true
+   "pass": false
   },
   "2": {
    "id": 2,
@@ -193,11 +207,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.4833
+     "coverage": 0.1542
     },
     {
      "name": "SM_Weapon_02_fbx_bounds_parity_m",
-     "measured": 5.254653776855245e-08,
+     "measured": 5.037219740454402e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -205,16 +219,48 @@
     {
      "name": "SM_Weapon_02_lod_triangles",
      "measured": [
-      29726,
-      12484,
-      4756
+      3794,
+      1592,
+      606
      ],
      "budget_lod0": 90000,
      "pass": true
     },
     {
+     "name": "SM_Weapon_02_Chain_uv0_overlap",
+     "measured": 0.0,
+     "expected": 0.0,
+     "tol": 0.004,
+     "pass": true,
+     "coverage": 0.2983
+    },
+    {
+     "name": "SM_Weapon_02_Chain_fbx_bounds_parity_m",
+     "measured": 2.662967540922878e-08,
+     "expected": 0.0,
+     "tol": 0.0001,
+     "pass": true
+    },
+    {
+     "name": "SM_Weapon_02_Chain_lod_triangles",
+     "measured": [
+      35100,
+      14742,
+      5616
+     ],
+     "budget_lod0": 90000,
+     "pass": true
+    },
+    {
+     "name": "normal_tilt_mean",
+     "measured": 0.084,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.1192
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 2964.8,
+     "measured": 2880.1,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -241,72 +287,15 @@
     {
      "name": "chain_length",
      "method": "chain_length",
-     "measured": 2.66454,
+     "measured": 2.79771,
      "expected": 2.7,
      "tol": 0.08,
      "basis": "period",
      "source": "9 shaku chain (design value)",
-     "pass": true
+     "pass": false
     }
    ],
    "errors": [],
-   "pass": true
-  },
-  "3": {
-   "id": 3,
-   "key": "W03_NeedleSMG",
-   "checks": [
-    {
-     "name": "SM_Weapon_03_uv0_overlap",
-     "measured": 0.0,
-     "expected": 0.0,
-     "tol": 0.004,
-     "pass": true,
-     "coverage": 0.836
-    },
-    {
-     "name": "SM_Weapon_03_fbx_bounds_parity_m",
-     "measured": 1.5552567678156493e-08,
-     "expected": 0.0,
-     "tol": 0.0001,
-     "pass": true
-    },
-    {
-     "name": "SM_Weapon_03_lod_triangles",
-     "measured": [
-      8848,
-      3716,
-      1414
-     ],
-     "budget_lod0": 80000,
-     "pass": true
-    },
-    {
-     "name": "texel_density_p05_px_per_m",
-     "measured": 3747.8,
-     "expected_min": 1024.0,
-     "pass": true
-    },
-    {
-     "name": "overall_length",
-     "method": "extent_x",
-     "measured": 0.572,
-     "expected": 0.56,
-     "tol": 0.015,
-     "basis": "design",
-     "source": "compact SMG",
-     "pass": true
-    }
-   ],
-   "errors": [
-    "SM_Weapon_03.fbx: sha256 differs from build_record",
-    "SM_Weapon_03.fbx: 8848 triangles, record says 6024",
-    "SM_Weapon_03_LOD1.fbx: sha256 differs from build_record",
-    "SM_Weapon_03_LOD1.fbx: 3716 triangles, record says 2530",
-    "SM_Weapon_03_LOD2.fbx: sha256 differs from build_record",
-    "SM_Weapon_03_LOD2.fbx: 1414 triangles, record says 962",
-    "no baked textures recorded"
-   ],
    "pass": false
   },
   "4": {
@@ -319,7 +308,7 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.3631
+     "coverage": 0.3805
     },
     {
      "name": "SM_Weapon_04_fbx_bounds_parity_m",
@@ -331,24 +320,24 @@
     {
      "name": "SM_Weapon_04_lod_triangles",
      "measured": [
-      40538,
-      17024,
-      6486
+      49300,
+      20706,
+      7888
      ],
      "budget_lod0": 70000,
      "pass": true
     },
     {
      "name": "SM_Weapon_04_Saya_uv0_overlap",
-     "measured": 0.00016,
+     "measured": 0.00012,
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.2562
+     "coverage": 0.3055
     },
     {
      "name": "SM_Weapon_04_Saya_fbx_bounds_parity_m",
-     "measured": 1.469462655029341e-08,
+     "measured": 1.539917305649896e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -356,16 +345,23 @@
     {
      "name": "SM_Weapon_04_Saya_lod_triangles",
      "measured": [
-      10120,
-      4250,
-      1618
+      19900,
+      8358,
+      3182
      ],
      "budget_lod0": 70000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.1034,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.1262
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 3750.4,
+     "measured": 3695.0,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -392,6 +388,16 @@
     {
      "name": "tsuba_height",
      "method": "extent_z",
+     "measured": 0.068,
+     "expected": 0.068,
+     "tol": 0.002,
+     "basis": "period",
+     "source": "plain iron maru tsuba, height (edge to spine) >= width",
+     "pass": true
+    },
+    {
+     "name": "tsuba_width",
+     "method": "extent_y",
      "measured": 0.065,
      "expected": 0.065,
      "tol": 0.002,
@@ -409,15 +415,15 @@
    "checks": [
     {
      "name": "SM_Weapon_05_uv0_overlap",
-     "measured": 9e-05,
+     "measured": 0.0,
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.2623
+     "coverage": 0.7523
     },
     {
      "name": "SM_Weapon_05_fbx_bounds_parity_m",
-     "measured": 1.2532652256258547e-08,
+     "measured": 1.3568721271561834e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -425,23 +431,30 @@
     {
      "name": "SM_Weapon_05_lod_triangles",
      "measured": [
-      19170,
-      8050,
-      3066
+      36236,
+      15218,
+      5797
      ],
      "budget_lod0": 90000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0478,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0528
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 1880.8,
+     "measured": 3468.5,
      "expected_min": 1024.0,
      "pass": true
     },
     {
      "name": "overall_length",
      "method": "extent_x",
-     "measured": 1.04075,
+     "measured": 1.038,
      "expected": 1.038,
      "tol": 0.012,
      "basis": "reference",
@@ -469,8 +482,10 @@
      "pass": true
     }
    ],
-   "errors": [],
-   "pass": true
+   "errors": [
+    "SM_Weapon_05_LOD2.fbx: UV0 outside 0..1"
+   ],
+   "pass": false
   },
   "6": {
    "id": 6,
@@ -482,11 +497,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.8162
+     "coverage": 0.574
     },
     {
      "name": "SM_Weapon_06_fbx_bounds_parity_m",
-     "measured": 1.6133902133730338e-07,
+     "measured": 1.621665040446585e-07,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -494,23 +509,30 @@
     {
      "name": "SM_Weapon_06_lod_triangles",
      "measured": [
-      38324,
-      16096,
-      6130
+      49484,
+      20782,
+      7916
      ],
      "budget_lod0": 80000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0917,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0979
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 2412.3,
+     "measured": 1851.3,
      "expected_min": 1024.0,
      "pass": true
     },
     {
      "name": "overall_length",
      "method": "extent_x",
-     "measured": 1.52,
+     "measured": 1.5217,
      "expected": 1.52,
      "tol": 0.01,
      "basis": "design",
@@ -520,11 +542,11 @@
     {
      "name": "head_across_flats",
      "method": "max_across_flats",
-     "measured": 0.08793,
+     "measured": 0.08797,
      "expected": 0.088,
      "tol": 0.003,
      "basis": "design",
-     "source": "octagonal oak body",
+     "source": "octagonal oak body tapering by a third to the grip",
      "pass": true
     }
    ],
@@ -537,15 +559,15 @@
    "checks": [
     {
      "name": "SM_Weapon_07_uv0_overlap",
-     "measured": 0.00043,
+     "measured": 0.0,
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.6735
+     "coverage": 0.7546
     },
     {
      "name": "SM_Weapon_07_fbx_bounds_parity_m",
-     "measured": 2.6424264998325953e-08,
+     "measured": 2.5167529345282436e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -553,16 +575,23 @@
     {
      "name": "SM_Weapon_07_lod_triangles",
      "measured": [
-      36758,
-      15438,
-      5880
+      53360,
+      22410,
+      8536
      ],
      "budget_lod0": 80000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.079,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0897
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 1590.3,
+     "measured": 1903.3,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -600,11 +629,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.7182
+     "coverage": 0.6106
     },
     {
      "name": "SM_Weapon_08_fbx_bounds_parity_m",
-     "measured": 8.997235956265115e-08,
+     "measured": 8.940441133253874e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -612,23 +641,30 @@
     {
      "name": "SM_Weapon_08_lod_triangles",
      "measured": [
-      3556,
-      1492,
-      568
+      4408,
+      1850,
+      704
      ],
      "budget_lod0": 40000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0418,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0622
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 5098.6,
+     "measured": 4657.3,
      "expected_min": 1024.0,
      "pass": true
     },
     {
      "name": "handle_length",
      "method": "extent_x",
-     "measured": 0.7999,
+     "measured": 0.8005,
      "expected": 0.8,
      "tol": 0.006,
      "basis": "period",
@@ -638,7 +674,7 @@
     {
      "name": "head_length",
      "method": "extent_z",
-     "measured": 0.165,
+     "measured": 0.1666,
      "expected": 0.165,
      "tol": 0.003,
      "basis": "period",
@@ -648,7 +684,7 @@
     {
      "name": "head_mass_kg",
      "method": "mass",
-     "measured": 4.0075,
+     "measured": 4.12655,
      "expected": 3.9,
      "tol": 0.5,
      "basis": "period",
@@ -669,11 +705,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.656
+     "coverage": 0.7694
     },
     {
      "name": "SM_Weapon_09_fbx_bounds_parity_m",
-     "measured": 3.0199159839483514e-09,
+     "measured": 4.0768864950635475e-09,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -681,23 +717,30 @@
     {
      "name": "SM_Weapon_09_lod_triangles",
      "measured": [
-      18324,
-      7696,
-      2930
+      29088,
+      12216,
+      4654
      ],
      "budget_lod0": 90000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0299,
+     "expected_min": 0.04,
+     "pass": false,
+     "covered_texels_mean": 0.0322
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 2494.6,
+     "measured": 3390.0,
      "expected_min": 1024.0,
      "pass": true
     },
     {
      "name": "overall_length",
      "method": "extent_x",
-     "measured": 1.12131,
+     "measured": 1.125,
      "expected": 1.12,
      "tol": 0.015,
      "basis": "design",
@@ -715,8 +758,10 @@
      "pass": true
     }
    ],
-   "errors": [],
-   "pass": true
+   "errors": [
+    "SM_Weapon_09_LOD2.fbx: UV0 outside 0..1"
+   ],
+   "pass": false
   },
   "10": {
    "id": 10,
@@ -728,11 +773,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.3426
+     "coverage": 0.291
     },
     {
      "name": "SM_Weapon_10_fbx_bounds_parity_m",
-     "measured": 2.3761150408363463e-09,
+     "measured": 2.5573102593878794e-09,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -740,24 +785,24 @@
     {
      "name": "SM_Weapon_10_lod_triangles",
      "measured": [
-      9226,
-      3872,
-      1476
+      10908,
+      4580,
+      1744
      ],
      "budget_lod0": 40000,
      "pass": true
     },
     {
      "name": "SM_Weapon_10_Saya_uv0_overlap",
-     "measured": 0.00029,
+     "measured": 0.00025,
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.4127
+     "coverage": 0.4193
     },
     {
      "name": "SM_Weapon_10_Saya_fbx_bounds_parity_m",
-     "measured": 1.4000706854283562e-08,
+     "measured": 3.432458641275393e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -765,23 +810,30 @@
     {
      "name": "SM_Weapon_10_Saya_lod_triangles",
      "measured": [
-      8360,
-      3510,
-      1336
+      13820,
+      5804,
+      2210
      ],
      "budget_lod0": 40000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0748,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0916
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 7098.4,
+     "measured": 6544.5,
      "expected_min": 1024.0,
      "pass": true
     },
     {
      "name": "nagasa",
      "method": "blade_nagasa",
-     "measured": 0.22683,
+     "measured": 0.22682,
      "expected": 0.22727250000000002,
      "tol": 0.003,
      "basis": "period",
@@ -812,14 +864,6 @@
    "errors": [],
    "pass": true
   },
-  "11": {
-   "id": 11,
-   "key": "W11_PulseCarbine",
-   "checks": [],
-   "errors": [
-    "missing build_record.json"
-   ]
-  },
   "12": {
    "id": 12,
    "key": "W12_MonofilamentNaginata",
@@ -830,7 +874,7 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.7559
+     "coverage": 0.7137
     },
     {
      "name": "SM_Weapon_12_fbx_bounds_parity_m",
@@ -842,16 +886,23 @@
     {
      "name": "SM_Weapon_12_lod_triangles",
      "measured": [
-      19058,
-      8004,
-      3048
+      46010,
+      19324,
+      7360
      ],
      "budget_lod0": 70000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0433,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0485
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 3662.1,
+     "measured": 3518.2,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -879,14 +930,6 @@
    "errors": [],
    "pass": true
   },
-  "13": {
-   "id": 13,
-   "key": "W13_PhantomSMG",
-   "checks": [],
-   "errors": [
-    "missing build_record.json"
-   ]
-  },
   "14": {
    "id": 14,
    "key": "W14_PlasmaMatchlock",
@@ -897,7 +940,7 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.7307
+     "coverage": 0.7466
     },
     {
      "name": "SM_Weapon_14_fbx_bounds_parity_m",
@@ -909,16 +952,23 @@
     {
      "name": "SM_Weapon_14_lod_triangles",
      "measured": [
-      22032,
-      9252,
-      3524
+      23048,
+      9680,
+      3686
      ],
      "budget_lod0": 90000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0414,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0465
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 2519.4,
+     "measured": 2504.5,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -942,15 +992,15 @@
    "checks": [
     {
      "name": "SM_Weapon_15_uv0_overlap",
-     "measured": 0.0003,
+     "measured": 0.0,
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.7292
+     "coverage": 0.7035
     },
     {
      "name": "SM_Weapon_15_fbx_bounds_parity_m",
-     "measured": 3.925890722233927e-08,
+     "measured": 3.337007248305213e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -958,16 +1008,23 @@
     {
      "name": "SM_Weapon_15_lod_triangles",
      "measured": [
-      10380,
-      4358,
-      1660
+      12194,
+      5120,
+      1950
      ],
      "budget_lod0": 80000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0359,
+     "expected_min": 0.04,
+     "pass": false,
+     "covered_texels_mean": 0.0438
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 2257.5,
+     "measured": 2158.9,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -993,15 +1050,7 @@
     }
    ],
    "errors": [],
-   "pass": true
-  },
-  "16": {
-   "id": 16,
-   "key": "W16_ShockEmitter",
-   "checks": [],
-   "errors": [
-    "missing build_record.json"
-   ]
+   "pass": false
   },
   "17": {
    "id": 17,
@@ -1013,11 +1062,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.7115
+     "coverage": 0.6482
     },
     {
      "name": "SM_Weapon_17_fbx_bounds_parity_m",
-     "measured": 4.930012930878802e-08,
+     "measured": 1.2396044081139368e-07,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -1025,16 +1074,23 @@
     {
      "name": "SM_Weapon_17_lod_triangles",
      "measured": [
-      16442,
-      6904,
-      2630
+      38282,
+      16078,
+      6124
      ],
      "budget_lod0": 70000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0378,
+     "expected_min": 0.04,
+     "pass": false,
+     "covered_texels_mean": 0.0499
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 3661.6,
+     "measured": 2879.7,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -1050,7 +1106,7 @@
     }
    ],
    "errors": [],
-   "pass": true
+   "pass": false
   },
   "18": {
    "id": 18,
@@ -1062,11 +1118,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.5715
+     "coverage": 0.5682
     },
     {
      "name": "SM_Weapon_18_fbx_bounds_parity_m",
-     "measured": 0.0,
+     "measured": 3.279897083097172e-10,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -1074,9 +1130,9 @@
     {
      "name": "SM_Weapon_18_lod_triangles",
      "measured": [
-      30600,
-      12852,
-      4896
+      61556,
+      25852,
+      9848
      ],
      "budget_lod0": 80000,
      "pass": true
@@ -1087,11 +1143,11 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.0985
+     "coverage": 0.0918
     },
     {
      "name": "SM_Weapon_18_Ya_fbx_bounds_parity_m",
-     "measured": 1.6851131063450042e-08,
+     "measured": 1.7233653486908862e-08,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -1099,16 +1155,23 @@
     {
      "name": "SM_Weapon_18_Ya_lod_triangles",
      "measured": [
-      3902,
-      1638,
-      624
+      4382,
+      1840,
+      700
      ],
      "budget_lod0": 80000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0423,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0539
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 3138.1,
+     "measured": 2899.9,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -1162,15 +1225,15 @@
    "checks": [
     {
      "name": "SM_Weapon_19_uv0_overlap",
-     "measured": 0.0002,
+     "measured": 0.0,
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.7399
+     "coverage": 0.729
     },
     {
      "name": "SM_Weapon_19_fbx_bounds_parity_m",
-     "measured": 5.005510760047738e-08,
+     "measured": 2.1773595199753304e-07,
      "expected": 0.0,
      "tol": 0.0001,
      "pass": true
@@ -1178,16 +1241,23 @@
     {
      "name": "SM_Weapon_19_lod_triangles",
      "measured": [
-      12054,
-      5062,
-      1928
+      12626,
+      5302,
+      2020
      ],
      "budget_lod0": 50000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0442,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0537
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 3805.6,
+     "measured": 3888.6,
      "expected_min": 1024.0,
      "pass": true
     },
@@ -1204,7 +1274,7 @@
     {
      "name": "blade_length",
      "method": "blade_nagasa",
-     "measured": 0.20495,
+     "measured": 0.20485,
      "expected": 0.206,
      "tol": 0.003,
      "basis": "reference",
@@ -1225,7 +1295,7 @@
      "expected": 0.0,
      "tol": 0.004,
      "pass": true,
-     "coverage": 0.7838
+     "coverage": 0.7817
     },
     {
      "name": "SM_Weapon_20_fbx_bounds_parity_m",
@@ -1237,23 +1307,30 @@
     {
      "name": "SM_Weapon_20_lod_triangles",
      "measured": [
-      16750,
-      7034,
-      2680
+      20446,
+      8586,
+      3270
      ],
      "budget_lod0": 60000,
      "pass": true
     },
     {
+     "name": "normal_tilt_mean",
+     "measured": 0.0429,
+     "expected_min": 0.04,
+     "pass": true,
+     "covered_texels_mean": 0.0467
+    },
+    {
      "name": "texel_density_p05_px_per_m",
-     "measured": 3908.9,
+     "measured": 3917.5,
      "expected_min": 1024.0,
      "pass": true
     },
     {
      "name": "blade_length",
      "method": "blade_nagasa",
-     "measured": 0.46613,
+     "measured": 0.46612,
      "expected": 0.467,
      "tol": 0.004,
      "basis": "reference",
@@ -1286,10 +1363,10 @@
   }
  },
  "summary": {
-  "weapons": 21,
-  "passed": 17,
+  "weapons": 17,
+  "passed": 11,
   "validator": "scripts/art/create_runtime_weapon_validation.py",
   "blender": "5.2.2 LTS",
-  "seconds": 28.0
+  "seconds": 46.4
  }
 }

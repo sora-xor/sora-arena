@@ -336,8 +336,7 @@ asset ledger and listed with their SHA-256 in `sources_manifest.json`:
   tsuchime, forge scale, casting pits and lacquer are original procedural
   masks, because no CC0 polished steel scan is in the local library;
 - fabric and cord: Poly Haven `crepe_satin` and `rough_linen` (photo scans);
-  ambientCG `Fabric001` (surface-approximated), `Rope001` and `Rope002` (upstream
-  procedural);
+  ambientCG `Rope001` and `Rope002` (upstream procedural);
 - straw: ambientCG `ThatchedRoof001A` (the nawa's fibre);
 - leather: ambientCG `Leather014` (surface-approximated);
 - render environment only: the Estate `kloofendal_overcast_puresky` HDRI and
