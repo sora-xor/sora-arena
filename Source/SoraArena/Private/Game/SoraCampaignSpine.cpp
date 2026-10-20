@@ -11,6 +11,13 @@ bool USoraCampaignDirector::IsSpineCapture() const
     const auto* Beat=ActiveBeatData();
     return Beat&&Beat->Space.Summit.Enabled()&&Beat->CaptureEvent==TEXT("interact:engine_spine")&&Beat->CaptureHoldMs>0;
 }
+void USoraCampaignDirector::CancelSpineCut()
+{
+    const auto* Hero=Mode().Hero();
+    // A boundary while Interact is down needs a release before a new press.
+    // An actual release can arrive while paused, with no TickSpineCut call.
+    SpineCut={0,false,Hero&&Hero->IsActionHeld(TEXT("Interact"))};
+}
 void USoraCampaignDirector::BeginSpineCapture()
 {
     SpineCut={}; SpineReadyMs=TaskState.ElapsedMs+1500; bSpinePromptShown=false; bSpineMutoRaised=false;

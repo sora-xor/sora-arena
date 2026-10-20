@@ -46,6 +46,34 @@ bool FSoraCampaignSpineTest::RunTest(const FString& Parameters)
     Place(Approach+FVector(0,-700,-30)); // Disc floor, south of the dais.
     if(!W.Tick(95)||!SoraSummitAutomation::ApproachSpine(*W.World)) return false;
     TestTrue(TEXT("Normal movement climbs to a reachable seam"),Arena->CanReachSummitSpine(*W.Hero()));
+    if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(20)) return false;
+    const float ShortHold=W.Campaign()->HeldWorkProgress();
+    if(!TestTrue(TEXT("The boundary fixture begins with a partial cut"),ShortHold>0)) return false;
+    // No gameplay tick between release and re-press: the release itself must
+    // discard time, rather than relying on polling the final held key state.
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(20)) return false;
+    TestTrue(TEXT("A release and re-press between ticks starts a fresh cut"),
+        W.Campaign()->HeldWorkProgress()>0&&W.Campaign()->HeldWorkProgress()<=ShortHold+.02f);
+    if(!W.Press(EKeys::Escape)) return false;
+    TestTrue(TEXT("Opening the real pause menu immediately discards the partial cut"),
+        W.Mode()->bMenu&&W.Campaign()->HeldWorkProgress()<0);
+    // Deliver physical key state even if a front-end widget would consume it;
+    // the ordinary input state gate must still reject the press in Menu.
+    if(!W.World->InjectKeyPastFrontEnd(EKeys::E,IE_Released)||
+        !W.World->InjectKeyPastFrontEnd(EKeys::E,IE_Pressed)||!W.Tick(100)) return false;
+    W.Mode()->ResumePlay();
+    if(!W.Tick(100)) return false;
+    TestTrue(TEXT("A key re-pressed while paused cannot resume banked cut time"),
+        W.Campaign()->AwaitingCapture()&&W.Campaign()->HeldWorkProgress()<0);
+    if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1)||
+        !W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(20)) return false;
+    if(!TestTrue(TEXT("A fresh press after pause begins again"),W.Campaign()->HeldWorkProgress()>0)) return false;
+    // RefreshDialogueHold calls this same input boundary on dialogue entry
+    // and exit. It flushes keys even when TickBeat cannot run.
+    W.Hero()->ResetDialogueInput();
+    TestTrue(TEXT("The dialogue input boundary immediately discards the cut"),W.Campaign()->HeldWorkProgress()<0);
+    if(!W.Tick(100)) return false;
+    TestTrue(TEXT("Dialogue input reset cannot finish the cut"),W.Campaign()->AwaitingCapture());
     if(!W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(45)) return false;
     TestTrue(TEXT("A partial hold shows progress without capture"),W.Campaign()->AwaitingCapture()&&W.Campaign()->HeldWorkProgress()>0);
     if(!W.World->InjectKey(EKeys::E,IE_Released)||!W.Tick(1)) return false;
@@ -75,6 +103,23 @@ bool FSoraCampaignSpineTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The full authored 1.5 seconds are required"),W.Campaign()->AwaitingCapture());
     auto* Before=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
     TestTrue(TEXT("Partial cut never saves a partial capture"),Before&&Before->CheckpointBeat==13&&Before->CheckpointPhase==2);
+    // Reload the actual saved slot, without reseeding it. Neither the dead
+    // captive nor the transient partial cut belongs to the P3 checkpoint.
+    W.Fieldcraft()->OnEvent.Remove(W.EventsHandle);
+    if(!W.World->DestroyTestWorld(true)) return false;
+    W.World->ForwardErrorMessages(this); W.World.Reset(); W.EventsHandle.Reset();
+    W.World=MakeUnique<FSoraAutomationWorld>();
+    if(!W.World->Start(W.Slot)||!W.Tick(1)||!W.World->EnableKeyInput()||
+        !W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)||!W.Press(EKeys::Enter)||!W.Tick(30)) return false;
+    Boss=const_cast<ASoraBoss*>(W.Campaign()->CampaignBoss()); Arena=W.Mode()->Arena(); W.Harden();
+    if(!TestTrue(TEXT("The saved partial cut reloads a living P3 boss"),
+        Boss&&Boss->IsAlive()&&Boss->PhaseIndex()==2&&!W.Campaign()->AwaitingCapture())) return false;
+    TestTrue(TEXT("A fresh world restores no held cut progress"),W.Campaign()->HeldWorkProgress()<0);
+    SoraLiftAutomation::HoldThreats(*W.World);
+    UGameplayStatics::ApplyDamage(Boss,Boss->Health,W.Hero()->GetController(),W.Hero(),UDamageType::StaticClass());
+    if(!W.Tick(95)||!SoraSummitAutomation::ApproachSpine(*W.World)||
+        !W.World->InjectKey(EKeys::E,IE_Pressed)||!W.Tick(84)) return false;
+    TestTrue(TEXT("Reload requires a whole new 1.5 second cut"),W.Campaign()->AwaitingCapture());
     if(!W.Tick(10)||!W.World->InjectKey(EKeys::E,IE_Released)) return false;
     TestEqual(TEXT("The held draw-cut starts the seals-dark cinematic"),W.Campaign()->ActiveBeat(),14);
     auto* After=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));
