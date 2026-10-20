@@ -38,6 +38,26 @@ def problems(report: dict, log: str, status: int, shader_model: str) -> list[str
     return failures
 
 
+def log_completion_problems(receipt: dict, data: bytes, status: int) -> list[str]:
+    """A quiet or merely exited editor does not establish a completed log."""
+    failures = []
+    if receipt.get("stream_eof") is not True:
+        failures.append("capture log stream did not reach EOF")
+    if receipt.get("failure"):
+        failures.append(f"capture log collection: {receipt['failure']}")
+    code = receipt.get("process_returncode")
+    if type(code) is not int:
+        failures.append("capture log receipt has no process exit status")
+    elif not receipt.get("failure") and receipt.get("runner_status") != (code if code >= 0 else 128 - code):
+        failures.append("capture log receipt has inconsistent process/runner status")
+    if receipt.get("runner_status") != status:
+        failures.append("capture runner exit differs from log receipt")
+    if (receipt.get("log_bytes") != len(data)
+            or receipt.get("log_sha256") != hashlib.sha256(data).hexdigest()):
+        failures.append("capture log differs from completed stream receipt")
+    return failures
+
+
 def png_dimensions(data: bytes) -> tuple[int, int]:
     """Reject truncated/corrupt screenshots without changing their pixels."""
     if not data.startswith(b"\x89PNG\r\n\x1a\n"):
@@ -140,6 +160,8 @@ def main() -> int:
     parser.add_argument("log", type=Path)
     parser.add_argument("status", type=int)
     parser.add_argument("shader_model", choices=("auto", "sm5", "sm6"))
+    parser.add_argument("--log-completion", type=Path,
+                        help="owned stream receipt; required when archiving a capture")
     parser.add_argument("--archive", nargs=7,
                         metavar=("PROJECT", "ENGINE_BASE", "OUTPUT", "START_NS", "WIDTH", "HEIGHT", "FILTER"))
     args = parser.parse_args()
@@ -147,11 +169,32 @@ def main() -> int:
     status, shader_model = args.status, args.shader_model
     try:
         report = json.loads(report_path.read_text(encoding="utf-8-sig"))
-        log = log_path.read_text(errors="replace")
+        log_data = log_path.read_bytes()
+        # Match read_text's universal-newline parsing while hashing raw bytes.
+        log = log_data.decode(errors="replace").replace("\r\n", "\n").replace("\r", "\n")
     except (OSError, ValueError) as error:
         print(f"FAIL: missing or invalid capture report: {error}", file=sys.stderr)
         return 1
-    failures = problems(report, log, status, shader_model)
+    completion = None
+    completion_sha256 = None
+    failures = []
+    if args.log_completion:
+        try:
+            receipt_data = args.log_completion.read_bytes()
+            parsed = json.loads(receipt_data)
+            if not isinstance(parsed, dict):
+                raise ValueError("receipt is not an object")
+            completion = parsed
+            completion_sha256 = hashlib.sha256(receipt_data).hexdigest()
+            failures.extend(log_completion_problems(completion, log_data, status))
+        except (OSError, ValueError) as error:
+            failures.append(f"missing or invalid log completion receipt: {error}")
+    elif args.archive:
+        failures.append("capture archive requires a log completion receipt")
+    # A collection timeout is not an editor failure: retain its actual exit
+    # separately and report the failed EOF gate above.
+    editor_status = completion.get("process_returncode") if completion else None
+    failures.extend(problems(report, log, editor_status if type(editor_status) is int else status, shader_model))
     if args.archive:
         project, engine_base, output = map(Path, args.archive[:3])
         start_ns, width, height = map(int, args.archive[3:6])
@@ -167,7 +210,8 @@ def main() -> int:
                     "viewport": [width, height], "frames": frames, "failures": failures,
                     "evidence": "uncooked editor-game", "release_qualified": False,
                     "report_sha256": hashlib.sha256(report_path.read_bytes()).hexdigest(),
-                    "log_sha256": hashlib.sha256(log_path.read_bytes()).hexdigest()}
+                    "log_sha256": hashlib.sha256(log_data).hexdigest(),
+                    "log_completion": completion, "log_completion_sha256": completion_sha256}
         (output / "capture.json").write_text(json.dumps(manifest, indent=2) + "\n")
     for test in report.get("tests", []):
         print(f"{test.get('state', 'Unknown')}: {test.get('fullTestPath', '<unnamed>')}")

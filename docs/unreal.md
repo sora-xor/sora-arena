@@ -65,6 +65,12 @@ the source commit and working-tree state, viewport, actual renderer device,
 report/log hashes and any failures. Missing, stale, corrupt or wrongly sized
 frames fail verification. Later SM5/SM6 runs may replace the engine's ordinary
 `Saved/Screenshots/` files, but cannot overwrite these archived comparisons.
+The editor capture runner owns the log file and drains an inherited stdout/stderr
+pipe until EOF, including trace-server output after editor exit. It records the
+actual process status and completed raw-log hash in `log-completion.json`, which
+the manifest verifier checks and binds. If the pipe remains open for 60 seconds
+after editor exit, the retained log is marked incomplete and the capture fails;
+the runner does not terminate descendant or unrelated trace processes.
 Every production asset must still provide a usable conventional LOD or fallback
 mesh and card-fur route. These files cannot create missing geometry or prove
 that the current prototype assets are visually acceptable.

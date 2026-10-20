@@ -2,9 +2,12 @@
 import copy
 import hashlib
 import importlib.util
+import json
 import os
 from pathlib import Path
 import struct
+import subprocess
+import sys
 import tempfile
 import unittest
 import zlib
@@ -63,6 +66,80 @@ class CaptureReportTests(unittest.TestCase):
                 self.assertTrue(self.check(report=report))
         self.report["devices"] = []
         self.assertTrue(self.check(shader="auto"))
+
+
+class LogCompletionTests(unittest.TestCase):
+    def setUp(self):
+        self.data = b"editor\nchild\xff\n"
+        self.receipt = {"process_returncode": 0, "runner_status": 0, "stream_eof": True,
+                        "failure": None, "log_bytes": len(self.data),
+                        "log_sha256": hashlib.sha256(self.data).hexdigest()}
+
+    def check(self, **changes):
+        return VERIFY.log_completion_problems(dict(self.receipt, **changes), self.data,
+                                               changes.get("runner_status", 0))
+
+    def test_complete_stream_binds_raw_bytes(self):
+        self.assertEqual(self.check(), [])
+        self.assertTrue(VERIFY.log_completion_problems(self.receipt, self.data + b"late", 0))
+
+    def test_missing_eof_and_collection_deadline_fail_despite_editor_exit_zero(self):
+        self.assertTrue(self.check(stream_eof=False))
+        failures = self.check(stream_eof=False, runner_status=125, failure="EOF deadline exceeded")
+        self.assertIn("capture log collection: EOF deadline exceeded", failures)
+
+    def test_missing_or_inconsistent_exit_status_cannot_pass(self):
+        self.assertTrue(self.check(process_returncode=None))
+        self.assertTrue(self.check(process_returncode=7))
+        self.assertTrue(VERIFY.log_completion_problems(self.receipt, self.data, 7))
+
+    def test_archive_requires_and_retains_completed_log_receipt(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            log = root / "editor.log"
+            data = b"Found 1 automation tests based on 'SoraExample'\r\nchild\xff\r\n"
+            log.write_bytes(data)
+            report = root / "report.json"
+            report.write_text(json.dumps({"devices": [{"rHI": "Metal", "renderMode": "SM6"}],
+                                         "tests": [{"fullTestPath": "SoraExample", "state": "Success"}]}))
+            (root / "source-commit.txt").write_text("test")
+            (root / "source-status.txt").write_text("")
+            command = [sys.executable, str(Path(VERIFY.__file__)), str(report), str(log), "0", "sm6",
+                       "--archive", str(root), str(root), str(root), "0", "2", "1", "SoraExample"]
+            missing = subprocess.run(command, capture_output=True)
+            self.assertNotEqual(missing.returncode, 0)
+            self.assertIn(b"requires a log completion receipt", missing.stderr)
+            receipt = root / "completion.json"
+            receipt.write_text('["not a receipt"]')
+            malformed = subprocess.run(command + ["--log-completion", str(receipt)], capture_output=True)
+            self.assertNotEqual(malformed.returncode, 0)
+            self.assertIn(b"receipt is not an object", malformed.stderr)
+            self.assertNotIn(b"Traceback", malformed.stderr)
+            receipt.write_text(json.dumps(dict(self.receipt, log_bytes=len(data),
+                                              log_sha256=hashlib.sha256(data).hexdigest())))
+            complete = subprocess.run(command + ["--log-completion", str(receipt)], capture_output=True)
+            self.assertEqual(complete.returncode, 0, complete.stderr)
+            manifest = json.loads((root / "capture.json").read_text())
+            self.assertEqual(manifest["log_sha256"], hashlib.sha256(data).hexdigest())
+            self.assertEqual(manifest["log_completion"], json.loads(receipt.read_text()))
+            self.assertEqual(manifest["log_completion_sha256"], hashlib.sha256(receipt.read_bytes()).hexdigest())
+            # Collection failure is distinct from the launched process's status.
+            receipt.write_text(json.dumps(dict(self.receipt, stream_eof=False, runner_status=125,
+                                              failure="EOF deadline exceeded", log_bytes=len(data),
+                                              log_sha256=hashlib.sha256(data).hexdigest())))
+            failed_command = command.copy()
+            failed_command[4] = "125"
+            failed = subprocess.run(failed_command + ["--log-completion", str(receipt)], capture_output=True)
+            self.assertNotEqual(failed.returncode, 0)
+            self.assertIn(b"EOF deadline exceeded", failed.stderr)
+            self.assertNotIn(b"editor exited", failed.stderr)
+            # A later append is rejected even if the automation report passed.
+            receipt.write_text(json.dumps(dict(self.receipt, log_bytes=len(data),
+                                              log_sha256=hashlib.sha256(data).hexdigest())))
+            log.write_bytes(data + b"late")
+            appended = subprocess.run(command + ["--log-completion", str(receipt)], capture_output=True)
+            self.assertNotEqual(appended.returncode, 0)
+            self.assertIn(b"log differs from completed stream receipt", appended.stderr)
 
 
 class CaptureArchiveTests(unittest.TestCase):
