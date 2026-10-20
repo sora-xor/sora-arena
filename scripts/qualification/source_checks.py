@@ -103,6 +103,7 @@ def checks(python: str = sys.executable) -> list[Check]:
         script("gameplay", name, path)
     for name, path in (
         ("runner-guards", "scripts/qualification/test_source_checks.py"),
+        ("caption-hud-layout", "scripts/unreal/test_caption_layout.py"),
         ("engine-pin-guards", "scripts/toolchain/test_doctor_pin.py"),
         ("rust-pin-guards", "scripts/toolchain/test_doctor_rust.py"),
         ("import-vfx-guards", "scripts/toolchain/test_import_vfx_gate.py"),

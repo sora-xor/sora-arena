@@ -205,18 +205,21 @@ msgid "後ろ"
 msgstr "behind"
 
 #. Key:	BladeBlocked
+#: Source/SoraArena/Private/SoraCaptureAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraCaptions.cpp
 msgctxt "SoraArena.Captions,BladeBlocked"
 msgid "刃を受け止める音"
 msgstr "Blade blocked"
 
 #. Key:	BladeDrawnBack
+#: Source/SoraArena/Private/SoraCaptureAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraCaptions.cpp
 msgctxt "SoraArena.Captions,BladeDrawnBack"
 msgid "刃を振りかぶる音"
 msgstr "Blade drawn back"
 
 #. Key:	BladesClash
+#: Source/SoraArena/Private/SoraCaptureAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraCaptions.cpp
 msgctxt "SoraArena.Captions,BladesClash"
 msgid "刃の打ち合う音"
@@ -265,6 +268,7 @@ msgid "爆発"
 msgstr "Explosion"
 
 #. Key:	Gunfire
+#: Source/SoraArena/Private/SoraCaptureAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraCaptions.cpp
 msgctxt "SoraArena.Captions,Gunfire"
 msgid "銃声"

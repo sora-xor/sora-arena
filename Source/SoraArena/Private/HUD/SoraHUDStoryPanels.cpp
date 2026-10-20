@@ -4,6 +4,8 @@
 #include "SoraFrontEnd.h"
 #include "SoraInputStates.h"
 #include "SoraRhythmHUDLayout.h"
+#include "SoraCaptionLayoutRules.h"
+#include "SoraCaptions.h"
 #include "SoraSettings.h"
 #include "SoraGameMode.h"
 #include "SoraHorse.h"
@@ -222,7 +224,7 @@ struct FLowerStoryLayout
 {
     FBox2D Dialogue=FBox2D(ForceInit);
     FStoryStrip Notice,Prompt;
-    float Top=0;
+    float Top=0,Bottom=0;
 };
 TArray<FString> StoryStripLines(ASoraHUD& HUD,const FString& Text,float Scale,float Width,float& Leading)
 {
@@ -258,7 +260,7 @@ FLowerStoryLayout BuildLowerStoryLayout(const FSoraHUDFrame& F)
     if(const ASoraPlayerCharacter* Hero=F.Mode.Hero())
         for(const FBox2D& Box:SoraHUDPanels::WeaponPanelBounds(F,*Hero))
             Bottom=FMath::Min(Bottom,static_cast<float>(Box.Min.Y)-6*F.S);
-    L.Top=Bottom;
+    L.Top=Bottom; L.Bottom=Bottom;
     if(F.Mode.Campaign()->CurrentDialogueCue())
     {
         L.Dialogue=FBox2D(FVector2D(20*F.S,Bottom-F.DialogueLayout(F.Mode.bEnglishSubtitles).Height),FVector2D(F.W-20*F.S,Bottom));
@@ -288,6 +290,7 @@ struct FUpperStoryText
     FVector2D At;
     float Scale=0;
     FLinearColor Color;
+    bool bInkBounds=false;
 };
 struct FUpperStoryRow
 {
@@ -296,6 +299,7 @@ struct FUpperStoryRow
     float Fraction=-1;
     FLinearColor Color;
     int32 Target=INDEX_NONE;
+    bool bCompact=false;
 };
 struct FUpperStoryPanel
 {
@@ -305,8 +309,10 @@ struct FUpperStoryPanel
     bool bNotice=false;
     float Fade=1;
 };
+FBox2D RhythmPanelBounds(const FSoraHUDFrame& F);
 struct FUpperStoryLayout
 {
+    FSoraCaptionLayout Captions;
     TArray<FUpperStoryPanel> Panels;
     float Limit=0;
     int32 Targets=0,NoticeTitles=0,NoticeDetails=0;
@@ -317,37 +323,177 @@ FUpperStoryRow MeasureUpperStoryRow(const FSoraHUDFrame& F,const FTrackerRow& So
 {
     FUpperStoryRow Row;
     Row.Fraction=Source.Fraction; Row.Color=Source.Color; Row.Target=Source.Target;
+    const auto* Captions=F.bSoundCaptions?USoraCaptions::Get(&F.Mode):nullptr;
+    Row.bCompact=Captions&&!Captions->Live().IsEmpty();
     const float JapaneseScale=FMath::Max(.44f*F.S,.60f),EnglishScale=FMath::Max(.34f*F.S,.55f),Gap=10*F.S;
     float JapaneseLeading=22,EnglishLeading=20;
     const TArray<FString> Japanese=StoryStripLines(F.HUD,Source.Japanese,JapaneseScale,Width,JapaneseLeading);
     TArray<FString> English;
     if(F.Mode.bEnglishSubtitles) English=StoryStripLines(F.HUD,Source.English,EnglishScale,Width,EnglishLeading);
+    if(Row.bCompact)
+    {
+        // Runtime fonts reserve ascent/descent for every glyph in the font.
+        // With live captions use the visible glyph bounds, keeping the same
+        // readable type and enough leading for every actual wrapped line.
+        JapaneseLeading=22; EnglishLeading=20;
+        for(const auto& Line:Japanese) JapaneseLeading=FMath::Max(JapaneseLeading,
+            static_cast<float>(SoraHUDPanels::CaptionGlyphBounds(F,Line,JapaneseScale).GetSize().Y)+3.f);
+        for(const auto& Line:English) EnglishLeading=FMath::Max(EnglishLeading,
+            static_cast<float>(SoraHUDPanels::CaptionGlyphBounds(F,Line,EnglishScale).GetSize().Y)+3.f);
+    }
+    const auto AddText=[&](const FString& Text,FVector2D At,float Scale,FLinearColor Color)
+    {
+        if(Row.bCompact) At-=SoraHUDPanels::CaptionGlyphBounds(F,Text,Scale).Min;
+        Row.Text.Add({Text,At,Scale,Color,Row.bCompact});
+    };
     const bool Inline=Japanese.Num()==1&&English.Num()==1&&
         F.HUD.LabelWidth(Source.Japanese,JapaneseScale)+Gap+F.HUD.LabelWidth(Source.English,EnglishScale)<=Width;
     float Next=Y;
     for(const FString& Line:Japanese)
-    { Row.Text.Add({Line,FVector2D(X,Next),JapaneseScale,Source.Color}); Next+=JapaneseLeading; }
+    { AddText(Line,{X,Next},JapaneseScale,Source.Color); Next+=JapaneseLeading; }
     if(Inline)
     {
-        Row.Text.Add({Source.English,FVector2D(X+F.HUD.LabelWidth(Source.Japanese,JapaneseScale)+Gap,Y),EnglishScale,F.Muted});
+        AddText(Source.English,{X+F.HUD.LabelWidth(Source.Japanese,JapaneseScale)+Gap,Y},EnglishScale,F.Muted);
         Next=Y+FMath::Max(JapaneseLeading,EnglishLeading);
     }
     else for(const FString& Line:English)
-    { Row.Text.Add({Line,FVector2D(X,Next),EnglishScale,F.Muted}); Next+=EnglishLeading; }
-    if(Source.Fraction>=0) Next+=9*F.S;
+    { AddText(Line,{X,Next},EnglishScale,F.Muted); Next+=EnglishLeading; }
+    // Compact target bars occupy the trailing line gap with one clear pixel
+    // above them. Other progress rows retain their separate bar space.
+    if(Source.Fraction>=0&&!(Row.bCompact&&Row.Target!=INDEX_NONE)) Next+=Row.bCompact?4.f:9*F.S;
     Row.Bounds=FBox2D(FVector2D(X,Y),FVector2D(X+Width,Next));
     return Row;
+}
+void PlaceCaption(FSoraCaptionPanel Panel,FVector2D At,FSoraCaptionLayout& Out)
+{
+    Panel.Bounds.Min+=At; Panel.Bounds.Max+=At;
+    for(auto& Text:Panel.Text) Text.At+=At;
+    Out.Panels.Add(MoveTemp(Panel));
+}
+void ReserveCaptions(const FSoraHUDFrame& F,FUpperStoryLayout& L,float X,float Width,float NoticeReserve,float& NextY)
+{
+    const auto Captions=SoraHUDPanels::MeasureCaptions(F,Width);
+    if(Captions.IsEmpty()) return;
+    const float Gap=6*F.S,Top=87*F.S;
+    float Height=0;
+    for(const auto& Panel:Captions) Height+=Panel.Bounds.GetSize().Y+Gap;
+    auto Obstacles=SoraHUDPanels::UpperGameplayPanelBounds(F);
+    const auto Rhythm=RhythmPanelBounds(F);
+    if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
+    bool Clear=true; float ProbeY=Top;
+    for(const auto& Panel:Captions)
+    {
+        const FBox2D Box({X,ProbeY},{X+Width,ProbeY+Panel.Bounds.GetSize().Y});
+        for(const auto& Other:Obstacles) if(Box.Intersect(Other)) Clear=false;
+        ProbeY=Box.Max.Y+Gap;
+    }
+    for(const auto& Panel:L.Panels)
+    {
+        const FBox2D Shifted(Panel.Bounds.Min+FVector2D(0,Height),Panel.Bounds.Max+FVector2D(0,Height));
+        for(const auto& Other:Obstacles) if(Shifted.Intersect(Other)) Clear=false;
+    }
+    // Ordinary load: captions first in the right column, with the entire
+    // measured tracker translated below them. Nothing changes its data.
+    if(Clear&&NextY+Height+NoticeReserve<=L.Limit)
+    {
+        float Y=Top;
+        for(const auto& Panel:Captions) { PlaceCaption(Panel,{X,Y},L.Captions); Y+=Panel.Bounds.GetSize().Y+Gap; }
+        for(auto& Panel:L.Panels)
+        {
+            Panel.Bounds.Min.Y+=Height; Panel.Bounds.Max.Y+=Height;
+            for(auto& Row:Panel.Rows)
+            {
+                Row.Bounds.Min.Y+=Height; Row.Bounds.Max.Y+=Height;
+                for(auto& Text:Row.Text) Text.At.Y+=Height;
+            }
+        }
+        NextY+=Height;
+        return;
+    }
+    // Dense accessible HUD: preserve the tracker at the top right, then
+    // search measured free columns beside/below the actual gameplay panels.
+    // The wide lower region permits inline bilingual captions when narrow
+    // columns would need extra lines. Panels in overlapping regions still
+    // cannot overlap one another.
+    using namespace SoraCaptionLayoutRules;
+    const float Left=20*F.S,LeftRight=X-Gap,Right=F.W-20*F.S;
+    float LeftTop=Top,AllTop=Top,BesideRight=LeftRight,RightTop=NextY,AboveCenter=L.Limit,RightBottom=L.Limit;
+    for(const auto& Box:Obstacles)
+    {
+        AllTop=FMath::Max(AllTop,static_cast<float>(Box.Max.Y)+Gap);
+        if(Box.Min.X<Right&&Box.Max.X>X)
+        {
+            RightTop=FMath::Max(RightTop,static_cast<float>(Box.Max.Y)+Gap);
+            if(Box.Min.Y>NextY) RightBottom=FMath::Min(RightBottom,static_cast<float>(Box.Min.Y)-Gap);
+        }
+        if(Box.Min.X<LeftRight&&Box.Max.X>Left)
+        {
+            if(Box.Min.X<=Left+10*F.S) LeftTop=FMath::Max(LeftTop,static_cast<float>(Box.Max.Y)+Gap);
+            else
+            {
+                BesideRight=FMath::Min(BesideRight,static_cast<float>(Box.Min.X)-Gap);
+                AboveCenter=FMath::Min(AboveCenter,static_cast<float>(Box.Min.Y)-Gap);
+            }
+        }
+    }
+    FRect Regions[MaxRegions]; int32 Count=0;
+    const auto Region=[&](float RX,float RY,float RW,float Bottom)
+    { if(RW>=150.f&&Bottom>RY&&Count<MaxRegions) Regions[Count++]={RX,RY,RW,Bottom-RY}; };
+    Region(Left,LeftTop,BesideRight-Left,L.Limit);
+    if(AboveCenter<L.Limit) Region(Left,LeftTop,LeftRight-Left,AboveCenter);
+    if(AllTop>LeftTop) Region(Left,AllTop,LeftRight-Left,L.Limit);
+    if(RightBottom<L.Limit) Region(X,NextY,Width,RightBottom-NoticeReserve);
+    Region(X,RightTop,Width,L.Limit-NoticeReserve);
+    Region(Left,FMath::Max(AllTop,NextY),Right-Left,L.Limit-NoticeReserve);
+    // Full-width story panels end above the weapon stack. The open area
+    // beside that stack and above health is usable without moving dialogue,
+    // changing speaker alignment or covering any lower HUD information.
+    if(const auto* Hero=F.Mode.Hero())
+    {
+        float WeaponLeft=Right;
+        for(const auto& Box:SoraHUDPanels::WeaponPanelBounds(F,*Hero)) WeaponLeft=FMath::Min(WeaponLeft,static_cast<float>(Box.Min.X)-Gap);
+        const float BottomTop=BuildLowerStoryLayout(F).Bottom+Gap;
+        Region(Left,BottomTop,WeaponLeft-Left,F.H-110*F.S-Gap);
+        const float HealthRight=365*F.S+Gap;
+        Region(HealthRight,BottomTop,WeaponLeft-HealthRight,F.H-30*F.S);
+    }
+    TArray<FSoraCaptionPanel> Measured[MaxRegions];
+    float Heights[MaxCaptions][MaxRegions]={};
+    for(int32 R=0;R<Count;++R)
+    {
+        Measured[R]=SoraHUDPanels::MeasureCaptions(F,Regions[R].W);
+        for(int32 C=0;C<Measured[R].Num()&&C<MaxCaptions;++C) Heights[C][R]=Measured[R][C].Bounds.GetSize().Y;
+    }
+    const auto Plan=Arrange(Captions.Num(),Regions,Count,Heights,Gap);
+    L.Captions.bFits=Plan.Fits;
+    if(Plan.Fits)
+    {
+        for(int32 C=0;C<Captions.Num();++C)
+        {
+            const auto& At=Plan.Bounds[C];
+            PlaceCaption(Measured[Plan.Region[C]][C],{At.X,At.Y},L.Captions);
+            if(At.Y<L.Limit&&At.X+At.W>X) NextY=FMath::Max(NextY,At.Y+At.H+Gap);
+        }
+    }
+    else
+    {
+        // Preserve the text even outside a supported layout; the capture
+        // assertion reports the actual capacity failure rather than hiding it.
+        float Y=Top;
+        for(const auto& Panel:Captions) { PlaceCaption(Panel,{X,Y},L.Captions); Y+=Panel.Bounds.GetSize().Y+Gap; }
+    }
 }
 FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F)
 {
     FUpperStoryLayout L;
     const USoraCampaignDirector* C=F.Mode.Campaign();
     L.Limit=BuildLowerStoryLayout(F).Top-6*F.S;
-    if(!F.Mode.bCampaign||F.Mode.bDeterministicPractice) return L;
     // Wider at 720p, while staying to the right of the objective's panel.
     const float Width=FMath::Min(FMath::Max(435*F.S,540.f),F.W-902*F.S);
     const float X=F.W-20*F.S-Width,Padding=10*F.S,Gap=6*F.S,Inner=Width-2*Padding;
     float Y=87*F.S;
+    if(!F.Mode.bCampaign||F.Mode.bDeterministicPractice)
+    { ReserveCaptions(F,L,X,Width,0.f,Y); return L; }
     const auto& Notices=C->StoryNotices();
     int32 DetailCount=0;
     for(const FSoraStoryNotice& Notice:Notices)
@@ -360,16 +506,19 @@ FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F)
         for(int32 I=0;I<C->ActiveChapter()->Rules.Num();++I)
             if(!C->ActiveChapter()->Rules[I].Optional) { ++Required; if(I<=C->ActiveBeat()) ++Number; }
         Rows[0]={FString::Printf(TEXT("第%d場 / %d"),Number,Required),FString::Printf(TEXT("Beat %d of %d"),Number,Required),-1,F.Ivory};
+        const bool HasCaptions=!SoraHUDPanels::MeasureCaptions(F,Width).IsEmpty();
+        const float RowGap=HasCaptions?FMath::Max(2*F.S,1.5f):Gap;
+        const float VerticalPadding=HasCaptions?3*F.S:Padding;
         const auto Tracker=[&]()
         {
             FUpperStoryPanel Panel;
-            float At=Y+Padding;
+            float At=Y+VerticalPadding;
             for(int32 I=0;I<Rows.Num();++I)
             {
                 if(Rows[I].Target==INDEX_NONE)
                 {
                     Panel.Rows.Add(MeasureUpperStoryRow(F,Rows[I],X+Padding,At,Inner));
-                    At=Panel.Rows.Last().Bounds.Max.Y+Gap;
+                    At=Panel.Rows.Last().Bounds.Max.Y+RowGap;
                 }
                 else
                 {
@@ -384,16 +533,16 @@ FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F)
                         Panel.Rows.Add(MeasureUpperStoryRow(F,Rows[++I],X+Padding+Cell+Gap,At,Cell));
                         End=FMath::Max(End,static_cast<float>(Panel.Rows.Last().Bounds.Max.Y));
                     }
-                    At=End+Gap;
+                    At=End+RowGap;
                 }
             }
-            Panel.Bounds=FBox2D(FVector2D(X,Y),FVector2D(X+Width,At-Gap+Padding));
+            Panel.Bounds=FBox2D(FVector2D(X,Y),FVector2D(X+Width,At-RowGap+VerticalPadding));
             return Panel;
         };
         FUpperStoryPanel Panel=Tracker();
         // The active operation and warnings take priority over the full beat
         // title. Its chapter position remains visible even when condensed.
-        if(Notices.IsEmpty())
+        if(Notices.IsEmpty()&&!HasCaptions)
         {
             Rows[0]=FullHeading;
             FUpperStoryPanel Full=Tracker();
@@ -403,6 +552,17 @@ FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F)
         Y=Panel.Bounds.Max.Y+Gap;
         L.Panels.Add(MoveTemp(Panel));
     }
+    float NoticeReserve=0.f;
+    if(!Notices.IsEmpty())
+    {
+        const auto& Newest=Notices.Last();
+        NoticeReserve=MeasureUpperStoryRow(F,{Newest.Japanese,Newest.English,-1,F.Ivory},0,0,Inner).Bounds.GetSize().Y+2*Padding+Gap;
+        if(Notices.Num()>1||DetailCount>0)
+            NoticeReserve+=MeasureUpperStoryRow(F,{
+                FString::Printf(TEXT("通知を要約：ほか %d 件・詳細 %d 件"),Notices.Num()-1,DetailCount),
+                FString::Printf(TEXT("Condensed: %d more notices; %d details"),Notices.Num()-1,DetailCount),-1,F.Muted},0,0,Inner).Bounds.GetSize().Y+2*Padding+Gap;
+    }
+    ReserveCaptions(F,L,X,Width,NoticeReserve,Y);
     if(Notices.IsEmpty()) return L;
     // Reserve titles before spending space on details. Every item is measured
     // once; a layout trial only translates those rows. Nothing is truncated.
@@ -498,9 +658,11 @@ void DrawUpperStory(const FSoraHUDFrame& F)
             for(const FUpperStoryText& Text:Row.Text) F.HUD.Label(Text.Text,Text.At.X,Text.At.Y,Text.Scale,Text.Color);
             if(Row.Fraction>=0)
             {
-                const float At=Row.Bounds.Max.Y-9*F.S,Width=Row.Bounds.GetSize().X;
-                F.HUD.Panel(Row.Bounds.Min.X,At,Width,4*F.S,FLinearColor(.12f,.16f,.18f));
-                F.HUD.Panel(Row.Bounds.Min.X,At,Width*FMath::Clamp(Row.Fraction,0.f,1.f),4*F.S,Row.Color);
+                const bool CompactTarget=Row.bCompact&&Row.Target!=INDEX_NONE;
+                const float BarHeight=Row.bCompact?FMath::Min(4*F.S,2.f):4*F.S;
+                const float At=Row.Bounds.Max.Y-(CompactTarget?BarHeight:Row.bCompact?4.f:9*F.S),Width=Row.Bounds.GetSize().X;
+                F.HUD.Panel(Row.Bounds.Min.X,At,Width,BarHeight,FLinearColor(.12f,.16f,.18f));
+                F.HUD.Panel(Row.Bounds.Min.X,At,Width*FMath::Clamp(Row.Fraction,0.f,1.f),BarHeight,Row.Color);
             }
         }
     }
@@ -555,6 +717,47 @@ FInteractionLayout BuildInteractionLayout(const FSoraHUDFrame& F)
     L.At=SoraRhythmHUDLayout::Place(F.W,F.H,F.S,L.Width,L.Height,L.StoryTop);
     return L;
 }
+FBox2D RhythmPanelBounds(const FSoraHUDFrame& F)
+{
+    if(F.Mode.Campaign()->RhythmCuePeriodMs()<=0) return FBox2D(ForceInit);
+    const auto L=BuildInteractionLayout(F);
+    const float R=SoraRhythmHUDLayout::Radius+SoraRhythmHUDLayout::Stroke;
+    return FBox2D({L.At.CenterX-R,FMath::Min(L.At.CenterY-R,L.At.PromptY)},
+        {L.At.PromptX+L.Width,FMath::Max(L.At.CenterY+R,L.At.PromptY+L.Height)});
+}
+}
+FSoraCaptionLayout SoraHUDPanels::CaptionLayout(const FSoraHUDFrame& F) { return BuildUpperStoryLayout(F).Captions; }
+bool SoraHUDPanels::CaptionStoryLayoutFits(const FSoraHUDFrame& F,FString& Why)
+{
+    const auto L=BuildUpperStoryLayout(F);
+    if(!L.Captions.bFits) { Why=TEXT("Visible captions cannot fit in the available measured HUD regions"); return false; }
+    const auto* Owner=F.bSoundCaptions?USoraCaptions::Get(&F.Mode):nullptr;
+    if(L.Captions.Panels.Num()!=(Owner?Owner->Live().Num():0))
+    { Why=TEXT("The caption layout dropped a live caption"); return false; }
+    TArray<FBox2D> Occupied=SoraHUDPanels::UpperGameplayPanelBounds(F);
+    const auto Rhythm=RhythmPanelBounds(F);
+    if(Rhythm.bIsValid) Occupied.Add(Rhythm);
+    for(const auto& Panel:L.Panels) Occupied.Add(Panel.Bounds);
+    const auto Lower=BuildLowerStoryLayout(F);
+    for(const auto& Box:{Lower.Dialogue,Lower.Notice.Bounds,Lower.Prompt.Bounds}) if(Box.bIsValid) Occupied.Add(Box);
+    if(const auto* Hero=F.Mode.Hero()) Occupied.Append(WeaponPanelBounds(F,*Hero));
+    Occupied.Add(FBox2D({25*F.S,F.H-110*F.S},{365*F.S,F.H-30*F.S}));
+    for(const auto& Panel:L.Captions.Panels)
+    {
+        if(Panel.Bounds.Min.X<0||Panel.Bounds.Max.X>F.W||Panel.Bounds.Min.Y<87*F.S||Panel.Bounds.Max.Y>F.H)
+        { Why=TEXT("A visible caption exceeds the screen"); return false; }
+        for(const auto& Other:Occupied)
+            if(Panel.Bounds.Intersect(Other)) { Why=TEXT("A caption overlaps a measured gameplay/story panel"); return false; }
+        Occupied.Add(Panel.Bounds);
+        for(const auto& Text:Panel.Text)
+        {
+            const auto Ink=CaptionGlyphBounds(F,Text.Text,Text.Scale);
+            const auto Min=Text.At+Ink.Min,Max=Text.At+Ink.Max;
+            if(Min.X<Panel.Bounds.Min.X||Min.Y<Panel.Bounds.Min.Y||Max.X>Panel.Bounds.Max.X+.5f||Max.Y>Panel.Bounds.Max.Y+.5f)
+            { Why=TEXT("A caption glyph exceeds its measured panel"); return false; }
+        }
+    }
+    return true;
 }
 float SoraHUDPanels::GameplayStoryTop(const FSoraHUDFrame& F) { return BuildLowerStoryLayout(F).Top; }
 bool SoraHUDPanels::RhythmCueLayoutFits(const FSoraHUDFrame& F,FString& Why)
@@ -589,8 +792,11 @@ bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
             {
                 int32 W=0,H=0;
                 UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),Text.Scale,Text.Scale,W,H,Text.Text);
-                const FBox2D Box(Text.At,Text.At+FVector2D(W,H));
-                const float TextBottom=Row.Bounds.Max.Y-(Row.Fraction>=0?9*F.S:0);
+                FBox2D Box(Text.At,Text.At+FVector2D(W,H));
+                if(Text.bInkBounds)
+                { const auto Ink=CaptionGlyphBounds(F,Text.Text,Text.Scale); Box=FBox2D(Text.At+Ink.Min,Text.At+Ink.Max); }
+                const float BarSpace=Row.bCompact?(Row.Target!=INDEX_NONE?FMath::Min(4*F.S,2.f):4.f):9*F.S;
+                const float TextBottom=Row.Bounds.Max.Y-(Row.Fraction>=0?BarSpace:0);
                 if(Text.Scale<.55f||Box.Min.X<Row.Bounds.Min.X||Box.Max.X>Row.Bounds.Max.X+.5f||Box.Max.Y>TextBottom+.5f)
                 { Why=TEXT("Tracker/notice text is too small or escapes its measured row"); return false; }
                 for(const FBox2D& Other:TextBounds)
