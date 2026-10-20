@@ -105,6 +105,8 @@ TArray<FTrackerRow> TrackerRows(const FSoraHUDFrame& Frame)
             if(G.Settings()&&G.Settings()->RhythmAssist())
                 Rows.Add({FString::Printf(TEXT("%s 長押し：調子合わせ補助・生産７割"),*Hold.Japanese),
                     FString::Printf(TEXT("Hold %s: rhythm assist, 70%% production speed"),*Hold.English),-1.f,Frame.Muted});
+            else if(bPad) Rows.Add({FString::Printf(TEXT("%s 長押し＋左スティック 左→右（毎回中央へ）"),*Hold.Japanese),
+                FString::Printf(TEXT("Hold %s + left stick: left then right; center after each tread"),*Hold.English),-1.f,Frame.Muted});
             else Rows.Add({FString::Printf(TEXT("%s 長押し＋左 %s → 右 %s（毎回離す）"),*Hold.Japanese,*Left.Japanese,*Right.Japanese),
                 FString::Printf(TEXT("Hold %s + left %s then right %s; release each tread"),*Hold.English,*Left.English,*Right.English),-1.f,Frame.Muted});
             if(Campaign->IsWorkingCrank()&&!(G.Settings()&&G.Settings()->RhythmAssist())) Rows.Add({Campaign->BellowsRightNext()?TEXT("次は右足"):TEXT("次は左足"),
@@ -729,22 +731,39 @@ void DrawStoryStrip(const FSoraHUDFrame& F,const FStoryStrip& Strip,FLinearColor
 
 namespace
 {
+TArray<SoraText::FLine> InteractionPrompts(const FSoraHUDFrame& F)
+{
+    TArray<SoraText::FLine> Lines;
+    const auto* Hero=F.Mode.Hero();
+    if(!Hero||!F.Mode.bCampaign||F.Mode.bDeterministicPractice) return Lines;
+    const auto* Campaign=F.Mode.Campaign();
+    const auto Key=SoraUI::ActionKey(&F.HUD,TEXT("Interact"));
+    FVector Anchor;
+    if(Campaign->ObjectiveAnchor(Anchor)&&Campaign->AnchorTakesInteract()&&
+        FVector::Dist2D(Anchor,Hero->GetActorLocation())<260.f)
+        Lines.Add(SoraText::Format(Campaign->AwaitingCapture()?NSLOCTEXT("SoraArena.HUD","Prompt.Capture","{Interact}  捕らえる")
+            :NSLOCTEXT("SoraArena.HUD","Prompt.Work","{Interact}  作業する"),{{TEXT("Interact"),Key}}));
+    for(const int32 Cache:Campaign->AvailableCaches())
+        if(FVector::Dist2D(Campaign->CacheLocation(Cache),Hero->GetActorLocation())<260.f)
+            Lines.Add(SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.Search","{Interact}  調べる"),{{TEXT("Interact"),Key}}));
+    for(const int32 Pickup:Campaign->LoosePickups())
+        if(FVector::Dist2D(Campaign->PickupLocation(Pickup),Hero->GetActorLocation())<260.f)
+            Lines.Add(SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.PickUp","{Interact}  拾う"),{{TEXT("Interact"),Key}}));
+    return Lines;
+}
+TArray<FBox2D> WorldLabelObstacles(const FSoraHUDFrame& F);
+SoraCaptionLayoutRules::FLabelPlacement PlaceWorldLabel(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size);
 struct FInteractionLayout
 {
     SoraRhythmHUDLayout::FLayout At;
     float Width=0.f, Height=0.f, Scale=0.f, StoryTop=0.f,EnglishY=0.f;
-    bool bStackEnglish=false;
+    bool bStackEnglish=false,bFits=true;
 };
 FInteractionLayout BuildInteractionLayout(const FSoraHUDFrame& F)
 {
     FInteractionLayout L;
-    if(F.Mode.Campaign()->RhythmCuePeriodMs()<=0)
-    {
-        L.Scale=.65f*F.S;
-        L.At.PromptX=F.W*.5f-75.f*F.S; L.At.PromptY=F.H*.5f+60.f*F.S;
-        return L;
-    }
-    L.Scale=FMath::Max(.65f*F.S,.65f);
+    const bool bRhythm=F.Mode.Campaign()->RhythmCuePeriodMs()>0;
+    L.Scale=bRhythm?FMath::Max(.65f*F.S,.65f):.65f*F.S;
     // Reserve whichever real localized action label is widest/tallest,
     // including rebound keyboard and current gamepad names.
     const auto Key=SoraUI::ActionKey(&F.HUD,TEXT("Interact"));
@@ -766,6 +785,15 @@ FInteractionLayout BuildInteractionLayout(const FSoraHUDFrame& F)
             14.f*F.S+F.HUD.LabelWidth(Line.English,L.Scale*.8f):0.f));
         L.Height=FMath::Max(L.Height,FMath::Max(static_cast<float>(JH),F.Mode.bEnglishSubtitles?EH+6.f*L.Scale:0.f));
     }
+    if(!bRhythm)
+    {
+        // Ordinary work/search/pickup cues also need measured space. Their
+        // former center position could be painted over by the coaching strip.
+        // This branch cannot recurse through RhythmPanelBounds: no cue is live.
+        const auto Plan=PlaceWorldLabel(F,{F.W*.5f-75.f*F.S,F.H*.5f+60.f*F.S},{L.Width,L.Height});
+        L.At.PromptX=Plan.Bounds.X; L.At.PromptY=Plan.Bounds.Y; L.bFits=Plan.Fits;
+        return L;
+    }
     const float TrackerWidth=FMath::Min(FMath::Max(435*F.S,540.f),F.W-902*F.S);
     const float TrackerLeft=F.W-20*F.S-TrackerWidth;
     if(F.Mode.bEnglishSubtitles&&F.W*.5f-75*F.S+L.Width>TrackerLeft-6*F.S)
@@ -781,9 +809,15 @@ FInteractionLayout BuildInteractionLayout(const FSoraHUDFrame& F)
 }
 void DrawInteractionLabel(const FSoraHUDFrame& F,const SoraText::FLine& Line,const FInteractionLayout& L,FLinearColor Color)
 {
-    if(!L.bStackEnglish) { F.LabelWithEnglish(Line,L.At.PromptX,L.At.PromptY,L.Scale,Color); return; }
-    F.HUD.Label(Line.Japanese,L.At.PromptX,L.At.PromptY,L.Scale,Color);
-    F.HUD.Label(Line.English,L.At.PromptX,L.At.PromptY+L.EnglishY,L.Scale*.8f,F.Muted);
+    const bool bRhythm=F.Mode.Campaign()->RhythmCuePeriodMs()>0;
+    // Earlier site/objective labels and prompts may have claimed space since
+    // the frame's rhythm group was measured. Resolve ordinary cues at draw.
+    const auto At=bRhythm?L:BuildInteractionLayout(F);
+    ensureMsgf(At.bFits,TEXT("Measured interaction prompt cannot fit around the visible HUD panels"));
+    if(!bRhythm) F.WorldMarkerBounds.Add(FBox2D({At.At.PromptX,At.At.PromptY},{At.At.PromptX+At.Width,At.At.PromptY+At.Height}));
+    if(!At.bStackEnglish) { F.LabelWithEnglish(Line,At.At.PromptX,At.At.PromptY,At.Scale,Color); return; }
+    F.HUD.Label(Line.Japanese,At.At.PromptX,At.At.PromptY,At.Scale,Color);
+    F.HUD.Label(Line.English,At.At.PromptX,At.At.PromptY+At.EnglishY,At.Scale*.8f,F.Muted);
 }
 FBox2D RhythmPanelBounds(const FSoraHUDFrame& F)
 {
@@ -793,23 +827,34 @@ FBox2D RhythmPanelBounds(const FSoraHUDFrame& F)
     return FBox2D({L.At.CenterX-R,FMath::Min(L.At.CenterY-R,L.At.PromptY)},
         {L.At.PromptX+L.Width,FMath::Max(L.At.CenterY+R,L.At.PromptY+L.Height)});
 }
-}
-FVector2D SoraHUDPanels::WorldMarkerPosition(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size)
+TArray<FBox2D> WorldLabelObstacles(const FSoraHUDFrame& F)
 {
-    auto Occupied=UpperGameplayPanelBounds(F);
+    auto Occupied=SoraHUDPanels::UpperGameplayPanelBounds(F);
     const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Occupied.Add(Rhythm);
     const auto Upper=BuildUpperStoryLayout(F);
     for(const auto& Panel:Upper.Panels) Occupied.Add(Panel.Bounds);
     for(const auto& Panel:Upper.Captions.Panels) Occupied.Add(Panel.Bounds);
     const auto Lower=BuildLowerStoryLayout(F);
     for(const auto& Box:{Lower.Dialogue,Lower.Notice.Bounds,Lower.Prompt.Bounds}) if(Box.bIsValid) Occupied.Add(Box);
+    if(const auto* Hero=F.Mode.Hero()) Occupied.Append(SoraHUDPanels::WeaponPanelBounds(F,*Hero));
+    Occupied.Add(FBox2D({25*F.S,F.H-110*F.S},{365*F.S,F.H-30*F.S}));
     Occupied.Append(F.WorldMarkerBounds);
+    return Occupied;
+}
+SoraCaptionLayoutRules::FLabelPlacement PlaceWorldLabel(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size)
+{
+    const auto Occupied=WorldLabelObstacles(F);
     TArray<SoraCaptionLayoutRules::FRect> Obstacles;
     for(const auto& Box:Occupied) Obstacles.Add({static_cast<float>(Box.Min.X),static_cast<float>(Box.Min.Y),
         static_cast<float>(Box.GetSize().X),static_cast<float>(Box.GetSize().Y)});
-    const auto Plan=SoraCaptionLayoutRules::PlaceLabel({static_cast<float>(Desired.X),static_cast<float>(Desired.Y),
+    return SoraCaptionLayoutRules::PlaceLabel({static_cast<float>(Desired.X),static_cast<float>(Desired.Y),
         static_cast<float>(Size.X),static_cast<float>(Size.Y)},
         {20*F.S,87*F.S,F.W-40*F.S,F.H-207*F.S},Obstacles.GetData(),Obstacles.Num(),4*F.S);
+}
+}
+FVector2D SoraHUDPanels::WorldMarkerPosition(const FSoraHUDFrame& F,FVector2D Desired,FVector2D Size)
+{
+    const auto Plan=PlaceWorldLabel(F,Desired,Size);
     // Preserve the label if an unsupported screen has no free region, but
     // surface the capacity failure to development/capture qualification.
     ensureMsgf(Plan.Fits,TEXT("Projected world label cannot fit around the measured HUD panels"));
@@ -857,6 +902,28 @@ bool SoraHUDPanels::RhythmCueLayoutFits(const FSoraHUDFrame& F,FString& Why)
     const auto L=BuildInteractionLayout(F);
     if(!SoraRhythmHUDLayout::Fits(L.At,F.W,F.H,L.Width,L.Height,L.StoryTop))
     { Why=TEXT("Rhythm ring or measured Interact text exceeds the viewport or lower story boundary"); return false; }
+    return true;
+}
+bool SoraHUDPanels::InteractionPromptLayoutFits(const FSoraHUDFrame& F,FString& Why)
+{
+    if(F.Mode.Campaign()->RhythmCuePeriodMs()>0) return RhythmCueLayoutFits(F,Why);
+    FSoraHUDFrame Probe=F;
+    const auto Prompts=InteractionPrompts(F);
+    for(int32 Index=0;Index<Prompts.Num();++Index)
+    {
+        const auto L=BuildInteractionLayout(Probe);
+        const FBox2D Box({L.At.PromptX,L.At.PromptY},{L.At.PromptX+L.Width,L.At.PromptY+L.Height});
+        if(!L.bFits||L.Width<=0||L.Height<=0||Box.Min.X<0||Box.Min.Y<0||Box.Max.X>F.W||Box.Max.Y>F.H)
+        { Why=TEXT("A visible ordinary interaction prompt cannot fit at its measured text size"); return false; }
+        for(const auto& Other:WorldLabelObstacles(Probe))
+            if(Box.Intersect(Other))
+            {
+                Why=FString::Printf(TEXT("Interaction prompt [%.2f,%.2f]-[%.2f,%.2f] overlaps HUD panel [%.2f,%.2f]-[%.2f,%.2f]"),
+                    Box.Min.X,Box.Min.Y,Box.Max.X,Box.Max.Y,Other.Min.X,Other.Min.Y,Other.Max.X,Other.Max.Y);
+                return false;
+            }
+        Probe.WorldMarkerBounds.Add(Box);
+    }
     return true;
 }
 bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
@@ -1040,26 +1107,10 @@ void SoraHUDPanels::DrawDialogue(const FSoraHUDFrame& Frame)
                 HUD.Label(Text,At.X,At.Y,.42*S,Gold);
             }
         }
-        // Interact binds a yielded boss; elsewhere it works the task.
-        const bool bCapture=Campaign->AwaitingCapture();
-        if(Campaign->AnchorTakesInteract()&&Metres<2.6f)
-            DrawInteractionLabel(Frame,SoraText::Format(bCapture?NSLOCTEXT("SoraArena.HUD","Prompt.Capture","{Interact}  捕らえる")
-                :NSLOCTEXT("SoraArena.HUD","Prompt.Work","{Interact}  作業する"),{{TEXT("Interact"),SoraUI::ActionKey(&HUD,TEXT("Interact"))}}),
-                Interaction,Gold);
     }
-    if(Hero&&G->bCampaign&&!G->bDeterministicPractice)
-    {
-        const SoraText::FLine Interact=SoraUI::ActionKey(&HUD,TEXT("Interact"));
-        for(const int32 Cache:Campaign->AvailableCaches())
-            if(FVector::Dist2D(Campaign->CacheLocation(Cache),Hero->GetActorLocation())<260.f)
-                DrawInteractionLabel(Frame,SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.Search","{Interact}  調べる"),{{TEXT("Interact"),Interact}}),
-                    Interaction,Gold);
-        // A loose collectible within reach.
-        for(const int32 Pickup:Campaign->LoosePickups())
-            if(FVector::Dist2D(Campaign->PickupLocation(Pickup),Hero->GetActorLocation())<260.f)
-                DrawInteractionLabel(Frame,SoraText::Format(NSLOCTEXT("SoraArena.HUD","Prompt.PickUp","{Interact}  拾う"),{{TEXT("Interact"),Interact}}),
-                    Interaction,Gold);
-    }
+    // Capture/work, nearby caches and loose pickups use the same eligibility
+    // and measured placement in live drawing and capture qualification.
+    for(const auto& Line:InteractionPrompts(Frame)) DrawInteractionLabel(Frame,Line,Interaction,Gold);
     // A continuously closing, shape-based metronome; no flashing or color-only
     // signal. Its entire sweep stays beside the measured action cue.
     const int32 CuePeriod=Campaign->RhythmCuePeriodMs();
