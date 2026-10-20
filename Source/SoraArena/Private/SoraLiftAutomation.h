@@ -3,6 +3,7 @@
 #include "SoraAutomationWorld.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCampaignLift.h"
+#include "SoraCatalog.h"
 #include "SoraGameMode.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraWorldBuilder.h"

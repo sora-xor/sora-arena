@@ -860,13 +860,22 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
         if((Waves&(1u<<Wave))==0u) continue;
         // Debt-bound conscripts fight beside the wave but never count toward
         // it: a lethal blow only knocks one down, and cutting its seal frees it.
-        if(!IsArcheryLesson()) for(const FSoraWaveGroup& Group:Beat->Waves[Wave].Groups)
-            if(Group.bLethal)
-                for(int32 Member=0;Member<Group.Count;++Member) Pending.Add({Wave,Group.Type,Group.bInvulnerable});
-            else if(!Beat->bSparring&&GetWorld())
-                for(int32 Member=0;Member<Group.Count;++Member)
-                    if(ASoraEnemy* Conscript=ASoraEnemy::SpawnArchetype(*GetWorld(),Group.Type,Spawned,SpawnLocation(Spawned),FRotator(0,180,0)))
-                        AddOpponent(Conscript,INDEX_NONE);
+        if(!IsArcheryLesson())
+        {
+            for(const FSoraWaveGroup& Group:Beat->Waves[Wave].Groups)
+            {
+                if(Group.bLethal)
+                {
+                    for(int32 Member=0;Member<Group.Count;++Member) Pending.Add({Wave,Group.Type,Group.bInvulnerable});
+                }
+                else if(!Beat->bSparring&&GetWorld())
+                {
+                    for(int32 Member=0;Member<Group.Count;++Member)
+                        if(ASoraEnemy* Conscript=ASoraEnemy::SpawnArchetype(*GetWorld(),Group.Type,Spawned,SpawnLocation(Spawned),FRotator(0,180,0)))
+                            AddOpponent(Conscript,INDEX_NONE);
+                }
+            }
+        }
         Fire(FString::Printf(TEXT("wave_start:%d"),Wave+1));
         Fire(FString::Printf(TEXT("event:wave_start_%d"),Wave+1));
         Fire(TEXT("wave_spawned"));
