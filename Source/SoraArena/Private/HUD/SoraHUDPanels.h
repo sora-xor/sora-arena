@@ -43,6 +43,12 @@ struct FSoraHUDFrame
     void LabelWithEnglish(const SoraText::FLine& Line, float X, float Y, float Scale, FLinearColor Color) const;
 };
 
+// Every visible sound caption keeps its measured text; the story layout
+// chooses a clear column and the late caption draw uses those same bounds.
+struct FSoraCaptionText { FString Text; FVector2D At; float Scale=0.f; bool bEnglish=false; };
+struct FSoraCaptionPanel { FBox2D Bounds=FBox2D(ForceInit); TArray<FSoraCaptionText> Text; };
+struct FSoraCaptionLayout { TArray<FSoraCaptionPanel> Panels; bool bFits=true; };
+
 // Panels in draw order during play; menus are the Slate front end in
 // Private/UI. Title card, dialogue, notices and results:
 // SoraHUDStoryPanels.cpp. Objective, dojo, boss and the hero's combat
@@ -57,6 +63,7 @@ void DrawObjective(const FSoraHUDFrame& Frame);
 void DrawDojoLesson(const FSoraHUDFrame& Frame);
 void DrawBoss(const FSoraHUDFrame& Frame);
 void DrawStealth(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
+TArray<FBox2D> StealthPanelBounds(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawWeapon(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 // Capture checks the same measured weapon layout that the live HUD draws.
@@ -82,6 +89,13 @@ bool ShowsRegistry(const ASoraGameMode& Mode);
 void DrawRegistry(const FSoraHUDFrame& Frame);
 // Capture qualification uses the same measured, fully wrapped layout as draw.
 bool RegistryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+// Relative caption rows at a candidate column width; no truncation.
+FBox2D CaptionGlyphBounds(const FSoraHUDFrame& Frame, const FString& Text, float Scale);
+TArray<FSoraCaptionPanel> MeasureCaptions(const FSoraHUDFrame& Frame, float Width);
+FSoraCaptionLayout CaptionLayout(const FSoraHUDFrame& Frame);
+// Actual upper gameplay panels are excluded from caption fallback columns.
+TArray<FBox2D> UpperGameplayPanelBounds(const FSoraHUDFrame& Frame);
+bool CaptionStoryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 void DrawCaptions(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter* Hero);
 // Deterministic practice, drawn last (SoraHUDPracticePanels.cpp).
 void DrawPractice(const FSoraHUDFrame& Frame);

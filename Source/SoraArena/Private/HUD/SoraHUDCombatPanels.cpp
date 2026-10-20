@@ -17,7 +17,51 @@
 #include "SoraWorldBuilder.h"
 #include "SoraSettings.h"
 #include "Components/CapsuleComponent.h"
+#include "Engine/Canvas.h"
 #include "GameFramework/PlayerController.h"
+
+namespace
+{
+FBox2D ObjectivePanelBounds(const FSoraHUDFrame& F)
+{
+    const float S=F.S,Width=FMath::Min(F.W-40*S,850*S);
+    float Bottom=(F.Mode.bEnglishSubtitles?212.f:177.f)*S;
+    int32 TW=0,TH=0;
+    UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),.52f*S,.52f*S,TW,TH,F.Mode.ObjectiveText());
+    Bottom=FMath::Max(Bottom,137*S+TH+4*S);
+    if(F.Mode.bEnglishSubtitles)
+    {
+        // DrawObjective permits two English lines. Reserve their actual font
+        // height as well as the requested advance, even at the 720p floor.
+        UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),F.EnglishSubtitleScale,F.EnglishSubtitleScale,TW,TH,F.Mode.ObjectiveTextEnglish());
+        Bottom=FMath::Max(Bottom,164*S+F.EnglishSubtitleLineHeight+TH+4*S);
+    }
+    return FBox2D({20*S,87*S},{20*S+Width,Bottom});
+}
+FBox2D DojoPanelBounds(const FSoraHUDFrame& F)
+{
+    if(!F.Mode.bCampaign||F.Mode.Campaign()->ChapterId!=0||F.Mode.Campaign()->DojoLessonStage()>=4) return FBox2D(ForceInit);
+    const float Top=F.Mode.bEnglishSubtitles?FMath::Max(217*F.S,164*F.S+2*F.EnglishSubtitleLineHeight+8*F.S):169*F.S;
+    return FBox2D({25*F.S,Top},{745*F.S,Top+(F.Mode.bEnglishSubtitles?72:47)*F.S});
+}
+FBox2D BossPanelBounds(const FSoraHUDFrame& F)
+{
+    const auto* Boss=F.Mode.Campaign()->CampaignBoss(); const auto* Info=Boss?Boss->Data():nullptr;
+    if(!Info) return FBox2D(ForceInit);
+    const auto* Attack=Boss->BossAttack();
+    const bool Hint=Attack&&Boss->IsBossTelegraphing()&&((Attack->bMuto&&Info->bMutoFinisher)||Attack->MarobashiMs>0);
+    const float Width=FMath::Min(F.W-20.f,FMath::Max(600.f*F.S,480.f));
+    const float X=(F.W-Width)*.5f,Y=FMath::Max(F.Mode.bEnglishSubtitles?222.f*F.S:178.f*F.S,165.f);
+    return FBox2D({X,Y},{X+Width,Y+(F.Mode.bEnglishSubtitles?142.f:116.f)+(Hint?(F.Mode.bEnglishSubtitles?40.f:22.f):0.f)});
+}
+}
+TArray<FBox2D> SoraHUDPanels::UpperGameplayPanelBounds(const FSoraHUDFrame& F)
+{
+    TArray<FBox2D> Bounds={ObjectivePanelBounds(F)};
+    for(const auto& Box:{DojoPanelBounds(F),BossPanelBounds(F)}) if(Box.bIsValid) Bounds.Add(Box);
+    if(const auto* Hero=F.Mode.Hero()) Bounds.Append(SoraHUDPanels::StealthPanelBounds(F,*Hero));
+    return Bounds;
+}
 
 void SoraHUDPanels::DrawObjective(const FSoraHUDFrame& Frame)
 {
@@ -25,8 +69,8 @@ void SoraHUDPanels::DrawObjective(const FSoraHUDFrame& Frame)
     const ASoraGameMode* G=&Frame.Mode;
     const float W=Frame.W,S=Frame.S,EnglishSubtitleScale=Frame.EnglishSubtitleScale,EnglishSubtitleLineHeight=Frame.EnglishSubtitleLineHeight;
     const FLinearColor Ivory=Frame.Ivory,Teal=Frame.Teal,Muted=Frame.Muted;
-    HUD.Panel(20*S,87*S,FMath::Min(W-40*S,850*S),G->bEnglishSubtitles?125*S:90*S,
-        FLinearColor(.013f,.027f,.033f,.78f));
+    const auto Objective=ObjectivePanelBounds(Frame);
+    HUD.Panel(Objective.Min.X,Objective.Min.Y,Objective.GetSize().X,Objective.GetSize().Y,FLinearColor(.013f,.027f,.033f,.78f));
     const FString HeaderTitle=G->bCampaign?FSoraCatalog::Get().Chapter(G->Campaign()->ChapterId).Title:FSoraCatalog::Get().Map(G->MapId).Name;
     HUD.Label(HeaderTitle,30*S,95*S,.82*S,Ivory);
     if(G->bEnglishSubtitles)
@@ -50,7 +94,8 @@ void SoraHUDPanels::DrawDojoLesson(const FSoraHUDFrame& Frame)
     {
         const float LessonTop=G->bEnglishSubtitles
             ?FMath::Max(217*S,164*S+2*EnglishSubtitleLineHeight+8*S):169*S;
-        HUD.Panel(25*S,LessonTop,720*S,G->bEnglishSubtitles?72*S:47*S,FLinearColor(.013,.027,.033,.88f));
+        const auto Panel=DojoPanelBounds(Frame);
+        HUD.Panel(Panel.Min.X,Panel.Min.Y,Panel.GetSize().X,Panel.GetSize().Y,FLinearColor(.013,.027,.033,.88f));
         HUD.Label(G->Campaign()->DojoLessonText(false),40*S,LessonTop+6*S,.46*S,Ivory);
         if(G->bEnglishSubtitles) HUD.Label(G->Campaign()->DojoLessonText(true),40*S,LessonTop+36*S,.34*S,Muted);
     }
@@ -59,7 +104,7 @@ void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
 {
     ASoraHUD& HUD=Frame.HUD;
     const ASoraGameMode* G=&Frame.Mode;
-    const float W=Frame.W,S=Frame.S,JapaneseSubtitleScale=Frame.JapaneseSubtitleScale,EnglishSubtitleScale=Frame.EnglishSubtitleScale;
+    const float JapaneseSubtitleScale=Frame.JapaneseSubtitleScale,EnglishSubtitleScale=Frame.EnglishSubtitleScale;
     const FLinearColor Ivory=Frame.Ivory,Gold=Frame.Gold,Teal=Frame.Teal,Muted=Frame.Muted;
     const ASoraBoss* Boss=G->Campaign()->CampaignBoss();
     const FSoraBossData* Info=Boss?Boss->Data():nullptr;
@@ -67,9 +112,8 @@ void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
     // Name, health with its phase marks, then the defenses in play and the
     // captioned telegraph of the attack under way (bosses.json, bilingual).
     const FLinearColor Amber(1.f,.68f,.16f),Cyan(.04f,.85f,.95f);
-    const float BossWidth=FMath::Min(W-20.f,FMath::Max(600.f*S,480.f));
-    const float BossX=(W-BossWidth)*.5f,
-        BossY=FMath::Max(G->bEnglishSubtitles?222.f*S:178.f*S,165.f);
+    const auto BossBounds=BossPanelBounds(Frame);
+    const float BossWidth=BossBounds.GetSize().X,BossX=BossBounds.Min.X,BossY=BossBounds.Min.Y;
     const bool bEnglish=G->bEnglishSubtitles;
     // The answer the attack under way allows, by the actions that give it:
     // mutō-dori from a sheathed hand, or 転 in its last stretch.
@@ -89,8 +133,7 @@ void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
         HintEnglish=TEXT("Marobashi: Left/Right + [Jump] just before it lands to reach the flank");
     }
     const float Base=bEnglish?142.f:116.f;
-    const float Hints=HintJapanese.IsEmpty()?0.f:bEnglish?40.f:22.f;
-    HUD.Panel(BossX,BossY,BossWidth,Base+Hints,FLinearColor(.013f,.027f,.033f,.91f));
+    HUD.Panel(BossX,BossY,BossWidth,BossBounds.GetSize().Y,FLinearColor(.013f,.027f,.033f,.91f));
     if(!HintJapanese.IsEmpty())
     {
         HUD.Label(HintJapanese,BossX+17.f,BossY+Base,.36f,Gold);
