@@ -25,7 +25,7 @@ public:
     void Label(const FString& Text,float X,float Y,float Scale,FLinearColor Color);
     int32 WrappedLabel(const FString& Text,float X,float Y,float Scale,FLinearColor Color,float MaxWidth,float LineHeight,int32 MaxLines = 3);
     void Panel(float X,float Y,float W,float H,FLinearColor Color);
-    float LabelWidth(const FString& Text,float Scale) const;
+    float LabelWidth(const FString& Text,float Scale);
     // The runtime Noto Sans CJK JP font, shared by the canvas and the front end.
     UFont* JapaneseFontObject();
     // Imported UI art, resolved once; null before the art is imported.
