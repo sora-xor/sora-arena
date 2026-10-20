@@ -7,12 +7,12 @@
 #include "SoraSettings.h"
 #include "SoraText.h"
 #include "UI/SSoraFrontEnd.h"
+#include "UI/SoraUIFont.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
-#include "Fonts/CompositeFont.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerInput.h"
@@ -123,11 +123,7 @@ UFont* ASoraHUD::JapaneseFontObject()
 {
     if(!JapaneseFont)
     {
-        JapaneseFont=NewObject<UFont>(this);
-        JapaneseFont->FontCacheType=EFontCacheType::Runtime;
-        JapaneseFont->LegacyFontSize=28;
-        JapaneseFont->LegacyFontName=FName(TEXT("Regular"));
-        JapaneseFont->GetMutableInternalCompositeFont()=FCompositeFont(FName(TEXT("Regular")),FPaths::ProjectContentDir()/TEXT("SourceArt/Fonts/NotoSansCJKjp-Regular.otf"),EFontHinting::Default,EFontLoadingPolicy::LazyLoad);
+        JapaneseFont=SoraUI::CreateUIFont(this);
     }
     return JapaneseFont;
 }
