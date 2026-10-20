@@ -220,6 +220,156 @@ class CaptionLayoutTests(unittest.TestCase):
                 for line in lines:
                     self.assertLessEqual(width(line, z), 240 + 0.01)
 
+    def marker(self, label, view, obstacles, gap=4):
+        data = ' '.join(map(str, (*label, *view, len(obstacles), gap))) + '\n'
+        data += '\n'.join(' '.join(map(str, o)) for o in obstacles) + '\n'
+        values = subprocess.check_output([str(self.binary), 'marker'], input=data, text=True).split()
+        return bool(int(values[0])), tuple(map(float, values[1:]))
+
+    def test_projected_marker_keeps_text_clear_of_the_work_prompt(self):
+        # Observed 720p regression: cyan site marker at x586/y359 crosses
+        # the gold working cue. Use real Noto dimensions, then vary viewport.
+        for W, H in ((1280, 720), (1920, 1080)):
+            scale = min(W / 1600, H / 1000)
+            text = '生産の作業場 / 16m'
+            label = (W * .5 - 75 * scale, H * .5, width(text, .42 * scale), font.font.height * .42 * scale)
+            prompt = (W * .5 - 75 * scale, H * .5 - 5, width('E 作業する', .65), font.font.height * .65)
+            view = (20 * scale, 87 * scale, W - 40 * scale, H - 207 * scale)
+            fits, placed = self.marker(label, view, [prompt])
+            self.assertTrue(fits)
+            self.assertAlmostEqual(placed[2], label[2], places=3)
+            self.assertAlmostEqual(placed[3], label[3], places=3)
+            x, y, w, h = placed
+            px, py, pw, ph = prompt
+            self.assertTrue(x + w + 4 <= px + .01 or px + pw + 4 <= x + .01 or y + h + 4 <= py + .01 or py + ph + 4 <= y + .01)
+            self.assertEqual(self.marker(label, view, [prompt]), (fits, placed))
+
+    def test_relocated_site_and_examine_labels_do_not_overlap_each_other(self):
+        obstacles = [(466, 317, 242, 108), (14, 434, 1252, 173), (726, 62, 540, 328)]
+        view = (14, 62, 1252, 571)
+        for text, position, z in [('生産の作業場 / 16m', (586, 359), .42 * .72),
+                                  ('E 調べる', (586, 403), .65 * .72),
+                                  ('目標 / 16m', (596, 363), .42 * .72)]:
+            label = (*position, width(text, z), font.font.height * z)
+            fits, placed = self.marker(label, view, obstacles)
+            self.assertTrue(fits)
+            x, y, w, h = placed
+            self.assertAlmostEqual(w, label[2], places=3)
+            self.assertAlmostEqual(h, label[3], places=3)
+            for ox, oy, ow, oh in obstacles:
+                self.assertTrue(x + w + 4 <= ox + .01 or ox + ow + 4 <= x + .01 or y + h + 4 <= oy + .01 or oy + oh + 4 <= y + .01)
+            obstacles.append(placed)
+
+    def test_projected_markers_can_use_viewport_edges_without_dropping_text(self):
+        fits, placed = self.marker((-15, 30, 80, 25), (0, 0, 200, 100), [])
+        self.assertTrue(fits)
+        self.assertGreaterEqual(placed[0], 0)
+        self.assertEqual(placed[2:], (80, 25))
+        fits, placed = self.marker((70, 40, 80, 25), (0, 0, 200, 100), [(50, 40, 150, 60)])
+        self.assertTrue(fits)
+        self.assertGreaterEqual(placed[0], 0)
+        self.assertGreaterEqual(placed[1], 0)
+        self.assertLessEqual(placed[0] + placed[2], 200)
+        self.assertLessEqual(placed[1] + placed[3], 100)
+        fits, placed = self.marker((0, 0, 80, 25), (0, 0, 200, 100), [(0, 0, 200, 100)])
+        self.assertFalse(fits)
+        self.assertEqual(placed[2:], (80, 25))
+
+    def test_bilingual_bellows_uses_measured_compact_rows_and_notice_column(self):
+        global font
+        chapter = json.loads((R / 'Content/Data/campaign/chapter_05.json').read_text())
+        prompt = next(p for p in chapter['ui_prompts'] if p['id'] == 'ui.ch05.tut.08')
+        count = chapter['beats'][5]['task']['count']
+        for pixels, (W, H), pad, en in itertools.product((37, 38), ((1280, 720), (1920, 1080)), (False, True), (False, True)):
+            font = ImageFont.truetype(str(FONT), pixels)
+            with self.subTest(pixels=pixels, resolution=(W, H), gamepad=pad, english=en):
+                _, _, _, info = model(W, H, 1, en, ())
+                scale = info['s']; gap = 6 * scale
+                panel_width = min(max(435 * scale, 540), W - 902 * scale)
+                inner = panel_width - 20 * scale
+                key = 'Y' if pad else 'E'
+                left, right = ('左スティック左', '左スティック右') if pad else ('A', 'D')
+                el, er = ('left stick left', 'left stick right') if pad else ('A', 'D')
+                lines = [('第6場 / 17', 'Beat 6 of 17'),
+                    (f'踏む（左右一組） 1 / {count}', f'Tread pairs: 1 of {count}'),
+                    ('火勢 II — 適正', 'Flame II: in rhythm'),
+                    (f'{key} 長押し＋左 {left} → 右 {right}（毎回離す）', f'Hold {key} + left {el} then right {er}; release each tread'),
+                    ('次は右足', 'Next: right tread')]
+                prompt_height = 10 * scale
+                for text, z in [(prompt['ja'], max(.65 * scale, .65)), *([(prompt['en'], max(.6 * scale, .6))] if en else [])]:
+                    prompt_height += len(wrap(text, z, W - 70 * scale)) * (font.font.height * z + 4)
+                limit = info['limit'] - prompt_height - gap
+                tracker_bottom = 87 * scale + 6 * scale + 4 * max(2 * scale, 1.5)
+                tracker_bottom += sum(row(ja, english, inner, scale, en, frac=i == 1) for i, (ja, english) in enumerate(lines))
+                self.assertLessEqual(tracker_bottom, limit)
+                if en:
+                    prompts = [strings['SoraArena.HUD,Prompt.' + p] for p in ('Capture', 'Work', 'Search', 'PickUp')]
+                    z = max(.65 * scale, .65)
+                    jw = max(width(j.replace('{Interact}', key), z) for j, _ in prompts)
+                    ew = max(width(e.replace('{Interact}', key), z * .8) for _, e in prompts)
+                    inline = jw + 14 * scale + ew
+                    prompt_x = W * .5 - 75 * scale
+                    tracker_x = W - 20 * scale - panel_width
+                    actual_width = max(jw, ew) if prompt_x + inline > tracker_x - gap else inline
+                    self.assertLessEqual(prompt_x + actual_width, tracker_x - gap)
+
+                # The longest pad instruction and newest title keep every
+                # character; no expected line count or baked position.
+                for ja, english in lines:
+                    self.assertEqual(''.join(wrap(ja, max(.44 * scale, .6), inner)), ja)
+                    self.assertEqual(''.join(wrap(english, max(.34 * scale, .55), inner)), english)
+                notices = [('見つけた：伝書の断簡', 'Found: Scroll fragment'), ('通知を要約：ほか 2 件・詳細 3 件', 'Condensed: 2 more notices; 3 details')]
+                right_heights = [[row(*text, inner, scale, en) + 6 * scale] for text in notices]
+                right_region = (W - 20 * scale - panel_width, tracker_bottom + gap, panel_width, limit - tracker_bottom - gap)
+                plan = self.arrange([right_region], right_heights, gap)
+                if plan is None:
+                    # The ring has a fixed 54px outer radius and 12px gap.
+                    # This is the actual free column left of that whole group.
+                    left_width = W * .5 - 75 * scale - 12 - 108 - gap - 20 * scale
+                    top = info['objbottom'] + gap
+                    regions = [(20 * scale, top, left_width, limit - top)]
+                    heights = [[row(*text, left_width - 20 * scale, scale, en) + 6 * scale] for text in notices]
+                    self.assert_clear(regions, heights, gap, self.arrange(regions, heights, gap))
+                else:
+                    self.assert_clear([right_region], right_heights, gap, plan)
+
+    def test_bokken_arrival_retains_all_manufacturing_rows_at_readable_sizes(self):
+        global font
+        chapter = json.loads((R / 'Content/Data/campaign/chapter_01.json').read_text())
+        campaign = json.loads((R / 'Content/Data/campaign/campaign.json').read_text())
+        task = chapter['beats'][8]['task']
+        prompt = next(p for p in chapter['ui_prompts'] if p['id'] == 'ch01.b09.prompt.02')
+        step = next(s for s in campaign['step_kinds'] if s['id'] == task['steps'][0]['kind'])
+        n = len(task['steps'])
+        required = sum(not beat.get('optional', False) for beat in chapter['beats'])
+        number = sum(not beat.get('optional', False) for beat in chapter['beats'][:9])
+        rows = [(f'第{number}場 / {required}', f'Beat {number} of {required}'),
+                (f'工程 1 / {n}', f'Step 1 of {n}'),
+                (f'▶ {step["ja"]} 0 / {task["steps"][0]["count"]}', f'Now: {step["en"]}, 0 of {task["steps"][0]["count"]}'),
+                (f'工程一覧を要約：完了 0・後続 {n-1}', f'Recipe summary: 0 completed, {n-1} later steps')]
+        for pixels, (W, H), en in itertools.product((37, 38), ((1280, 720), (1920, 1080)), (False, True)):
+            font = ImageFont.truetype(str(FONT), pixels)
+            scale = min(W / 1600, H / 1000)
+            with self.subTest(pixels=pixels, resolution=(W, H), english=en):
+                weapon_height = (10 + 4 + 8 + 3) * scale
+                ja, english = strings['SoraArena.Arms,Bokken']
+                texts = [(ja, max(.72 * scale, .6)), *([(english, max(.36 * scale, .5))] if en else []),
+                         (strings['SoraArena.HUD,Ammo.Melee'][0], max(.54 * scale, .55)),
+                         *([(strings['SoraArena.HUD,Ammo.Melee'][1], max(.54 * .8 * scale, .5))] if en else [])]
+                for text, z in texts:
+                    weapon_height += len(wrap(text, z, 315 * scale)) * (font.font.height * z + 4)
+                bottom = min(H - 130 * scale, H - 30 * scale - weapon_height - 6 * scale)
+                limit = bottom - 170 * scale - 12 * scale - 10 * scale
+                for text, z in [(prompt['ja'], max(.65 * scale, .65)), *([(prompt['en'], max(.6 * scale, .6))] if en else [])]:
+                    limit -= len(wrap(text, z, W - 70 * scale)) * (font.font.height * z + 4)
+                inner = min(max(435 * scale, 540), W - 902 * scale) - 20 * scale
+                height = 6 * scale + (len(rows) - 1) * max(2 * scale, 1.5)
+                height += sum(row(ja, english, inner, scale, en, frac=i == 1) for i, (ja, english) in enumerate(rows))
+                self.assertLessEqual(87 * scale + height, limit)
+                for ja, english in rows:
+                    self.assertEqual(''.join(wrap(ja, max(.44 * scale, .6), inner)), ja)
+                    self.assertEqual(''.join(wrap(english, max(.34 * scale, .55), inner)), english)
+
     def test_backtracks_when_first_caption_uses_needed_column(self):
         regions = [(0, 0, 200, 80), (210, 0, 200, 40)]
         heights = [[40, 40], [70, 70]]

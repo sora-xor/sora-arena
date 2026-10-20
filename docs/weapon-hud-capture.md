@@ -70,8 +70,15 @@ unchanged. Bilingual captions retain both sound and direction translations and
 show the shared repeat count once. The compact tracker trims empty font padding
 while retaining every target name and health bar; ordinary caption-free tracker
 spacing stays unchanged. The lower story/weapon reservation stays unchanged.
-The runtime fixture checks that every caption clears the actual fixed gameplay
-panels, rhythm cue, tracker/notices and lower story stack. These source changes
+When bilingual dialogue leaves too little height, the tracker retries the
+same measured compact spacing even without sound captions. Notices can use
+the clear column below the objective and beside the rhythm cue. The action
+translation stacks beneath its Japanese label when inline text would cross
+into the tracker. Projected site/objective labels and the site examine prompt
+retain their text and move to the nearest measured free region, including
+clearance from each other. The runtime fixture checks that every caption
+clears the actual fixed gameplay panels, rhythm cue, tracker/notices and lower
+story stack. These source changes
 still require fresh 720p/1080p captures and visual review.
 
 Host-only font/packing and archive regression (materialize the tracked Noto
