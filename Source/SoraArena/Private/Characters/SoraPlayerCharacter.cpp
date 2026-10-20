@@ -228,7 +228,10 @@ void ASoraPlayerCharacter::BuildHeroSaya()
 }
 void ASoraPlayerCharacter::TickPlay(float Dt)
 {
-    if(!bDojoTraining) Equipment->TickGuard(Dt);
+    // The first forms keep their existing training guard. Completing the
+    // recovery form enables the normal stamina cycle and passive 残心.
+    const auto* G=PlayerGameMode(this);
+    if(!bDojoTraining||(G&&G->Campaign()->CanScoreDojoBout())) Equipment->TickGuard(Dt);
     if(bDojoTraining) TickDojoLessons();
     Equipment->TickWeapon();
     TickArmsWheel();

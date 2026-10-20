@@ -5,6 +5,7 @@
 #include "SoraBoss.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalog.h"
+#include "SoraCombatRules.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -37,7 +38,7 @@ constexpr float PromptSeconds = 8.f;
 const TCHAR* const LessonGates[] = {TEXT("stance_hold"), TEXT("front_guard_survive"), TEXT("awase"), TEXT("recovery_complete")};
 // 転 answers an awase within this window (bible §3.2), and an awase pressed
 // this long after the cut landed is only late.
-constexpr int32 MarobashiWindowMs = 400;
+constexpr int32 MarobashiWindowMs = SoraCombatRules::MarobashiWindowMs;
 constexpr double LateAwaseSeconds = .5;
 
 // The dojo forms a chapter's completed lesson duels taught; a checkpoint
@@ -96,7 +97,7 @@ void USoraCampaignDirector::BeginPlay()
     if(USoraGameEvents* Events=USoraGameEvents::Get(this))
     {
         Events->OnDamaged.AddUObject(this,&USoraCampaignDirector::HeroDamaged);
-        Events->OnGuarded.AddUObject(this,&USoraCampaignDirector::HeroGuarded);
+        Events->OnParried.AddUObject(this,&USoraCampaignDirector::HeroParried);
         Events->OnMarobashi.AddUObject(this,&USoraCampaignDirector::HeroRolled);
         Events->OnEnemyCue.AddUObject(this,&USoraCampaignDirector::EnemyCue);
         Events->OnBossPhase.AddUObject(this,&USoraCampaignDirector::CollectorCue);
@@ -231,10 +232,10 @@ void USoraCampaignDirector::StealthBodyFound(ASoraEnemy* Body,ASoraEnemy* Finder
 {
     if(ActiveBeatData()) RaiseBeatEvent(TEXT("ai_event:body_found"));
 }
-void USoraCampaignDirector::HeroGuarded(const FSoraDefenseEvent& Event)
+void USoraCampaignDirector::HeroParried(const FSoraDefenseEvent& Event)
 {
     // The awase a 転 lesson's flank must follow: a sparring cut met within the parry window.
-    if(!ActiveBeatData()||!Event.bDojo||Event.Defender!=Mode().Hero()||Event.HeldMs>SoraDojoRules::ParryWindowMs||
+    if(!ActiveBeatData()||!Event.bDojo||Event.Defender!=Mode().Hero()||Event.HeldMs<0||Event.HeldMs>SoraDojoRules::ParryWindowMs||
         !Task.FlankBouts||TaskState.Flanked||(TaskState.Forms&Task.LessonMask)!=Task.LessonMask)
         return;
     AwaseAtMs=TaskState.ElapsedMs;
@@ -1817,6 +1818,9 @@ void USoraCampaignDirector::OpponentDefeated(ASoraEnemy* Opponent)
         const bool bLesson=Task.Goal==SoraBeatRules::EGoal::Lessons;
         if(Point==EPoint::Scored||Point==EPoint::Won)
         {
+            // A dojo knockdown without the required flank is not a scored
+            // point and cannot grant the passive taught by the recovery form.
+            if(CanScoreDojoBout()&&M.Hero()) M.Hero()->GetEquipment()->NoteDefeat();
             // Lesson bouts are numbered across the dojo (ch01.b04 scores bouts 3 and 4).
             Fire(FString::Printf(TEXT("bout_scored:%d"),(bLesson?BoutOffset:0)+TaskState.Done));
             Fire(TEXT("point:player"));
