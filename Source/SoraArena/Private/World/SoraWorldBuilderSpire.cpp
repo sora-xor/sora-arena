@@ -29,8 +29,8 @@ void ASoraWorldBuilder::BuildSpire(const FSoraBeat& Beat)
     {
         const FVector A=S.Ramp[N-1],B=S.Ramp[N],D=(B-A).GetSafeNormal();
         Segment(FString::Printf(TEXT("SpireRamp%d"),N),A,B,SoraSpireRules::WidthCm,false);
-        // Leave the inside of the named landings open to their gantries.
-        const FVector RailA=A+D*(SoraSpireRules::IsLanding(N-1)?230:0),RailB=B-D*(SoraSpireRules::IsLanding(N)?230:0);
+        // Leave the inside of access pads open to their railed crossings.
+        const FVector RailA=A+D*SoraSpireRules::InnerRailInset(N-1),RailB=B-D*SoraSpireRules::InnerRailInset(N);
         const FVector Side=FVector::CrossProduct(FVector::UpVector,D).GetSafeNormal();
         for(int32 Sign:{-1,1})
         {
@@ -39,6 +39,28 @@ void ASoraWorldBuilder::BuildSpire(const FSoraBeat& Beat)
                 FVector((End-Start).Size()+35,20,150),Rail,true,D.Rotation());
         }
     }
+    const FVector ShortcutA=S.Ramp[SoraSpireRules::ShortcutStart],ShortcutB=S.Ramp[SoraSpireRules::ShortcutEnd];
+    Box(TEXT("SpireShortcutPad"),ShortcutB-FVector(0,0,20),
+        FVector(2*SoraSpireRules::LandingHalfCm,2*SoraSpireRules::LandingHalfCm,40),Metal,true);
+    Segment(TEXT("SpireL3Shortcut"),ShortcutA,ShortcutB,SoraSpireRules::GantryWidthCm,true,
+        SoraSpireRules::LandingHalfCm,SoraSpireRules::LandingHalfCm);
+    for(int32 Node:{SoraSpireRules::ShortcutStart,SoraSpireRules::ShortcutEnd})
+    {
+        const auto Guard=SoraSpireRules::ShortcutPadRails(Node);
+        for(int32 N=0;N<Guard.Count;++N)
+        {
+            const auto Line=Guard.Lines[N];
+            const FVector A=C+FVector(Line.A.X,Line.A.Y,Line.A.Z),B=C+FVector(Line.B.X,Line.B.Y,Line.B.Z);
+            Box(FString::Printf(TEXT("SpireShortcutPadRail%d_%d"),Node,N),(A+B)*.5f+FVector(0,0,75),
+                FVector(FVector::Dist2D(A,B),20,150),Rail,true,(B-A).Rotation());
+        }
+    }
+    // Functional shutter proxy: its future solid volume is tested for pawns
+    // before enabling collision. Final drop animation remains art work.
+    SpireShutterAt=(ShortcutA+ShortcutB)*.5f+FVector(0,0,150);
+    SpireShutterRotation=FRotator(0,(ShortcutB-ShortcutA).Rotation().Yaw,0);
+    SpireShutter=Box(TEXT("SpireShortcutShutter"),SpireShutterAt,FVector(40,220,360),
+        FLinearColor(.25f,.09f,.03f),true,SpireShutterRotation);
     for(int32 L=0;L<4;++L)
     {
         const int32 N=SoraSpireRules::Landing(L);
@@ -54,6 +76,17 @@ void ASoraWorldBuilder::BuildSpire(const FSoraBeat& Beat)
     // b10 and removed before the moving deck takes its place in b11.
     Segment(TEXT("SpireL4West"),S.Ramp.Last(),C+FVector(-300,0,2700),SoraSpireRules::GantryWidthCm,true,SoraSpireRules::LandingHalfCm);
     Segment(TEXT("SpireL4East"),C+FVector(300,0,2700),C+FVector(-SoraSpireRules::Point(SoraSpireRules::NodeCount-1).X,0,2700),200,true);
+    for(int32 Sign:{-1,1})
+    {
+        // The authored level table places the alarm on L3. Auditors start
+        // in the L4 office and must walk down to these guarded approaches.
+        const auto Approach=SoraSpireRules::AlarmApproach(Sign<0?0:1);
+        const FVector Goal=C+FVector(Approach.X,Approach.Y,Approach.Z);
+        SpirePanelGoals.Add(Goal);
+        SpirePanels.Add(Box(TEXT("SpireAlarmPanel")+FString::FromInt(Sign),Goal+FVector(0,-110,190),
+            FVector(60,20,70),Glass,false));
+    }
+    ResetSpireAlarm(false);
     for(int32 N=0;N<6;++N)
     {
         const auto A=SoraSpireRules::Vertex(N,1500),B=SoraSpireRules::Vertex(N+1,1500);

@@ -401,6 +401,8 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     // A scripted errand takes it where the beat sends it instead.
     if (RunErrand(Enemy, Dt, NowMs))
         return;
+    if (DriveSpireAlarm(Enemy,Dt,NowMs))
+        return;
     // In a fight it may turn on someone beside the hero: the nearest companion
     // it can see that stands clearly nearer than he does.
     if (Mind.State == Stealth::EState::Combat)
