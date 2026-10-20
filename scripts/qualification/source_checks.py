@@ -119,6 +119,8 @@ def checks(python: str = sys.executable) -> list[Check]:
         unit("tooling", name, path)
     script("assets", "lfs-materialized", SELF, "--lfs-materialized")
     script("assets", "source-content", "scripts/unreal/validate_content.py")
+    script("assets", "source-images", "scripts/unreal/validate_source_images.py", "--json")
+    unit("assets", "source-images-tests", "scripts/unreal/test_source_images.py")
     script("assets", "asset-ledger", "scripts/assets/validate_asset_ledger.py", "--json")
     script("assets", "asset-notices", "scripts/assets/generate_asset_notices.py", "--check")
     for name in ("asset_ledger", "fetch_cc0", "fetch_cat_base_v6_sources", "lane_records"):

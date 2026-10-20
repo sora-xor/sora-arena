@@ -43,7 +43,7 @@ Local/source-checks-venv/bin/python scripts/qualification/source_checks.py --gro
 | `rust` | Exact compiler pin, workspace formatting, strict Clippy, locked workspace tests |
 | `gameplay` | Campaign generation, mutation and maai-contract checks, enemies, localization, input, catalog parity, host C++ campaign/combat/boss/stealth/fieldcraft/arms rules, cancellation/recovery and quote comparison |
 | `tooling` | Runner failure handling, engine/Rust pin guards, VFX import/preview and rendered-capture report guards, parity source-identity inventory, environment policy/preset source tests |
-| `assets` | Current LFS materialization, authored content and asset hashes, full existing ledger validator, notices freshness and ledger/acquisition regression tests |
+| `assets` | Current LFS materialization, authored content and asset hashes, tracked source PNG/JPEG integrity, full existing ledger validator, notices freshness and ledger/acquisition regression tests |
 | `audio` | Audio data freshness/routing/localization, import specifications, DSP regressions and measured source WAV quality |
 
 Each run creates a fresh `Saved/SourceChecks/<UTC timestamp>/` with `report.json`
@@ -68,6 +68,15 @@ bless their hashes. The existing ledger's ordinary policy is retained (legacy
 records produce warnings); this is not its stricter schema-migration gate.
 The separate LFS gate prevents its pointer warnings from looking like complete
 asset-byte verification.
+
+The independent `source-images` check fully decodes every tracked PNG/JPEG
+under `Content/SourceArt` with pinned Pillow. PNGs also pass the capture
+validator's complete chunk/CRC, IEND, DEFLATE and scanline checks. Missing files,
+LFS pointers, truncated images and corrupt pixel streams fail. The check reads
+assets without changing bytes or ledger hashes; passing it approves neither
+provenance nor visual quality. HDR, SVG and other formats are outside this
+focused image gate. The existing `source-content` and `asset-ledger` checks
+remain separate.
 
 Six environment-library/preset tests require untracked `Local/ThirdPartyRaw`
 files. Their exact test IDs are declared in `RAW_TESTS` in the runner and in
