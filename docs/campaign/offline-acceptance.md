@@ -331,13 +331,15 @@ navigation updates and runtime fixtures still require root qualification.
 The held spine draw-cut source candidate preserves the take-alive outcome.
 After the 1.5 s disarm interval, the hero must walk onto the dais, face the
 south seam within 260 cm with a clear collision trace, and hold Interact for
-the authored 1500 ms. Release, damage, loss of sight/reach, or a changed
-weapon discards partial work and requires a fresh press. The hold is never
+the authored 1500 ms. Release, damage, loss of sight/reach, a changed
+weapon, or a menu/dialogue input boundary discards partial work and requires
+a fresh press. Releases clear work immediately even while paused. The hold is never
 saved; the existing P3 checkpoint remains until the full cut starts b15.
 The seam and first-person draw-cut remain visual proxies; no finished
 animation is claimed. `SoraArena.Campaign.SpineDrawCut` covers ordinary
-dais traversal, wrong-height/occlusion rejection, interruptions, and the
-capture checkpoint. Its Unreal execution remains pending root qualification.
+dais traversal, wrong-height/occlusion rejection, interruptions, paused input,
+and reloading the saved P3 checkpoint after a partial cut before completing
+a new full cut. Its Unreal execution remains pending root qualification.
 Host checks cover the authored duration and transient hold at 1–500 ms steps.
 
 The P2 retreat source candidate uses the normal enemy navigation/controller
