@@ -59,6 +59,20 @@ class SummitDataTests(unittest.TestCase):
         self.assertEqual(set(p3['pattern']['attacks']),
                          {'amort_final_foreclosure','amort_cane_pair','amort_cane_thrust'})
 
+    def test_foreclosure_memory_reuses_a_previously_heard_line(self):
+        prompt=next(p for p in self.c['ui_prompts'] if p['id']=='ch08.b14.prompt.002')
+        self.assertEqual(prompt['on'],'event:first_foreclosure')
+        triggers=self.c['triggers']
+        recall=next(t for t in triggers if t['beat']=='ch08.b14' and t['on']=='event:first_foreclosure')
+        self.assertEqual(recall['mode'],'ambient')
+        self.assertFalse(recall['repeatable'])
+        self.assertEqual(recall['lines'],['ch08.b09.sekireisai.003'])
+        self.assertTrue(any(t['beat']=='ch08.b09' and recall['lines'][0] in t['lines'] for t in triggers))
+        # The memory requires explicit once-only replay; marking the original
+        # line globally repeatable would change its earlier dialogue contract.
+        line=next(l for l in self.c['lines'] if l['id']==recall['lines'][0])
+        self.assertFalse(line['repeatable'])
+
     def test_overlapping_places_are_separated_by_height(self):
         a=self.c['space']['zones'][self.rows[9]['zone']]
         b=self.c['space']['zones'][self.rows[12]['zone']]

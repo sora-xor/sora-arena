@@ -1887,6 +1887,13 @@ bool ASoraBoss::Disarm(AActor* By)
     const FSoraBossAttack* Attack = BossAttack();
     if (!Info || !Info->bMutoFinisher || bDefeated || !Attack || !Attack->bMuto)
         return false;
+    // The Collector finale requires the katana in its scabbard. Other
+    // opponents retain the shared sheathed-hand combat contract.
+    if(Setup.bSummit)
+    {
+        const auto* Player=Cast<ASoraPlayerCharacter>(By);
+        if(!Player||Player->WeaponId!=0||!Player->GetEquipment()->IsSheathed()) return false;
+    }
     // 無刀取り: the blade is taken; the fight is over at any health.
     bTakenByMuto = true;
     Health = 0.f;

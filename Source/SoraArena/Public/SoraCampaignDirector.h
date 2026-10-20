@@ -23,6 +23,7 @@ struct FSoraDefenseEvent;
 struct FSoraDialogueCue;
 struct FSoraGuard;
 struct FSoraEnemyCueEvent;
+struct FSoraBossPhaseEvent;
 struct FSoraMarobashiEvent;
 struct FSoraStealthDetection;
 struct FSoraPrompt;
@@ -455,6 +456,7 @@ private:
     // Opponents' cues the scripts key: alert_state:<state> barks, a retreat,
     // an alarm run, a takedown, a conscript knocked down or freed.
     void EnemyCue(const FSoraEnemyCueEvent& Event);
+    void CollectorCue(const FSoraBossPhaseEvent& Event);
     void TickScheduled();
     void HeroRolled(const FSoraMarobashiEvent& Event);
     // The next bout of a lesson duel opens, numbered across the chapter.
@@ -492,7 +494,9 @@ private:
     void ShowEpilogue();
     // Plays the triggers and shows the HUD prompt an event raises in Beat
     // (the active beat by default) and the chapter's bark pools.
-    void Fire(const FString& Event, int32 Beat = INDEX_NONE);
+    // Explicit memories may replay a line heard in an earlier beat; trigger
+    // eligibility and once-per-event guards still apply.
+    void Fire(const FString& Event, int32 Beat = INDEX_NONE, bool bReplayLines = false);
     bool TriggerAllowed(int32 Index) const;
     void Enqueue(const TArray<int32>& Lines, bool bForce, const FString& TriggerMode);
     void RefreshDialogueHold();

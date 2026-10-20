@@ -524,3 +524,19 @@ transition followed past the old deadline and reloaded from the actual save.
 `test_summit_data.py` checks that only P2 owns this group and preserves the
 55% summon and nine-second hazard cadence. Engine execution remains for root
 qualification; camera/ring/cast presentation is still separate art work.
+
+The summit Collector's mutō-dori now requires the katana already sheathed.
+Correctly timed guards with a sheathed hammer, kanabō or other blade cannot
+capture him and retain the foreclosure's full damage. Other opponents and
+the shared 700 ms sheathing rule are unchanged; the chapter's older 600 ms
+animation wording remains a design/presentation discrepancy.
+
+The actual first foreclosure windup raises its authored tutorial prompt and
+replays the nonblocking mentor memory from b09 once, even when that line has
+already been heard earlier in the chapter. Later windups at the 1% floor
+refresh only the prompt. Generic dialogue deduplication and unrelated boss
+events remain unchanged. `SoraArena.Campaign.CollectorCapture` primes the real
+dialogue queue with the earlier memory, tests foreign-event rejection, uses
+mapped weapon/sheath/guard inputs against real foreclosure attacks for three
+wrong arms and the katana, and checks first-only memory, floor reminders and
+the unchanged pending spine-cut checkpoint. Root owns Unreal qualification.

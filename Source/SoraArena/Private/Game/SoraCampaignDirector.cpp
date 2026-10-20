@@ -98,6 +98,7 @@ void USoraCampaignDirector::BeginPlay()
         Events->OnGuarded.AddUObject(this,&USoraCampaignDirector::HeroGuarded);
         Events->OnMarobashi.AddUObject(this,&USoraCampaignDirector::HeroRolled);
         Events->OnEnemyCue.AddUObject(this,&USoraCampaignDirector::EnemyCue);
+        Events->OnBossPhase.AddUObject(this,&USoraCampaignDirector::CollectorCue);
     }
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this))
         Fieldcraft->OnEvent.AddUObject(this,&USoraCampaignDirector::FieldcraftEvent);
@@ -1109,7 +1110,7 @@ bool USoraCampaignDirector::TriggerAllowed(int32 Index) const
     const double* Last=TriggerTimes.Find(Index);
     return !Last||!GetWorld()||GetWorld()->GetTimeSeconds()-*Last>=Trigger.CooldownSeconds;
 }
-void USoraCampaignDirector::Fire(const FString& Event,int32 Beat)
+void USoraCampaignDirector::Fire(const FString& Event,int32 Beat,bool bReplayLines)
 {
     const FSoraChapter* Chapter=ActiveChapter();
     if(Beat==INDEX_NONE) Beat=BeatIndex;
@@ -1132,7 +1133,7 @@ void USoraCampaignDirector::Fire(const FString& Event,int32 Beat)
             continue;
         FiredTriggers.Add(Index);
         if(GetWorld()) TriggerTimes.Add(Index,GetWorld()->GetTimeSeconds());
-        Enqueue(Trigger.Lines,false,Trigger.Mode);
+        Enqueue(Trigger.Lines,bReplayLines,Trigger.Mode);
     }
     ShowPrompt(Event,Beat);
     // A prompt keyed "<event>:first" shows on the event's first raise in the
