@@ -1215,6 +1215,14 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 !ClearField(Test, State, Index))
                 return false;
         }
+        if(Active()&&Rules.Goal==EGoal::Turns)
+        {
+            FVector Point; Director->ObjectiveAnchor(Point);
+            Test.AddError(FString::Printf(TEXT("%s crank stalled: progress=%d done=%d elapsed=%d last_action=%d working=%d stagger=%d guard=%.2f hero=%s anchor=%s enemies=%d"),
+                *Beat.Id,Director->TaskProgress().Progress,Director->TaskProgress().Done,Director->TaskProgress().ElapsedMs,
+                Director->TaskProgress().LastActionMs,Director->IsWorkingCrank(),Player(State)->GetEquipment()->IsStaggered(),
+                Player(State)->GetEquipment()->GuardReserve(),*Player(State)->GetActorLocation().ToString(),*Point.ToString(),LiveEnemies(State).Num()));
+        }
         // ch04.b06's shape: the crank turned full while its waves stand ends
         // the beat at once, and nothing slips back while they stand.
         if (Rules.Goal == EGoal::Turns && Rules.WaveCount > 0)
