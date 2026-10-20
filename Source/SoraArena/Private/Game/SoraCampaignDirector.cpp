@@ -668,6 +668,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     CheckPhase();
     if(ActiveBeatData()!=&Beat) return;
     SaveArrivedSummitPhase();
+    TickSupplyHint();
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
     SoraBeatRules::FTick Step;
     // Work under guard pauses while any guard sees the hero or is alarmed,
@@ -1602,6 +1603,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(InteractSpine()) return;
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
+    if(InteractSupply(Player)) return;
     const FSoraBeatSpace& Space=Beat->Space;
     IdleMs=0;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);

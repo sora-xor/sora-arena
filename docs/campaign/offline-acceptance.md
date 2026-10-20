@@ -280,8 +280,8 @@ wrong-floor trigger rejection, the L2 bridge, navigation reachability and
 the lower-floor combat-clear gate. It is authored but has not been run in
 Unreal by this source lane. The same route is used by the full playthrough
 fixture. These are functional collision proxies awaiting Claude's art;
-the auditor's L3 shortcut shutter and authored supply cache behavior are
-still open, as are visual windows, lighting and spire dressing. The spire's two fighters and three guides now follow navigation paths
+the auditor's L3 shortcut shutter and L1 supply cache are described below.
+Visual windows, lighting and spire dressing remain open. The spire's two fighters and three guides now follow navigation paths
 with height-aware arrival; the fighters keep their combat leash around the
 climbing hero. Failed paths stop them instead of steering across the void.
 Their committed melee hits require 3D reach, same-floor height and an actual
@@ -579,3 +579,43 @@ WorldStatic-only query could not see the corner guard or shutter. Runtime
 failures now report the exact first blocker and incomplete navigation sections.
 These corrections await a fresh root Unreal run; they do not erase the failed
 qualification evidence.
+
+Root subsequently qualified the repair at `62d6fe6`: SpireAuditorShutter,
+SpireTraversal, SpireCompanions, the full Playthrough and AlarmLectern all
+passed. The run retained one HTTP connectivity-probe timeout warning and no
+selected-test errors. Its receipt is under
+`Saved/Qualification/2026-10-20/spire-shutter-62d6fe6-directed` in the root
+qualification checkout.
+
+### Chapter-eight L1 supply cache (source candidate)
+
+The authored `sp_spire_base` engineers' cache is a physical crate beside the
+first ramp landing. Its nearby bilingual notice names the current Interact
+binding. Walking past never refills equipment: explicit Interact requires
+grounded same-floor reach and a visibility trace to that crate. Another
+floor, an intervening wall, reload, bow draw, guard, strike/recovery, stagger,
+step, sheathing transition or weapon cooldown refuses the refill.
+
+The cache refills only unlocked ranged weapons to their existing catalog
+magazine caps, including the twelve-arrow yumi. The held weapon's live
+ammunition is authoritative even while its stored copy is stale. Equipped
+weapon, completed sheath state, health, guard reserve, unlocks and checkpoint
+progress are preserved. Full magazines make repeated use a no-op. Stock is
+unlimited as an explicit implementation choice: the authored cache has no
+finite quantity. There are no new healing or unlock rewards. Existing reload
+and campaign loadout permissions are unchanged; the proposed five-slot
+loadout redesign is outside this slice.
+
+The catalog retains chapter three's object-form supply identity and later
+string identities. Only this spire cache is staged in this slice; the other
+named stations still need their place-specific implementation. Clearing or
+retrying a beat removes/rebuilds the cache without adding save state.
+
+Host `test_supply_rules.py` exercises catalog-derived caps, each held weapon,
+locked and melee inventory preservation, stale held copies, repeated use and
+spending between visits. `SoraArena.Campaign.SpireSupply` uses normal approach,
+mapped interaction and actual reload/draw/guard/shot controls; checks floor,
+airborne and real-wall rejection; preserves a sheathed katana; rebinds
+Interact; and restocks again after ordinary death/retry. Supply Unreal and
+rendered acceptance remain pending root qualification. The crate, cloth,
+arrows and cartridges are functional proxies awaiting the art lane.

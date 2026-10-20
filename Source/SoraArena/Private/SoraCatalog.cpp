@@ -690,6 +690,16 @@ bool FSoraCatalog::LoadCampaign()
                 (!LineRefs(Rows(*Params, TEXT("lines")), Beat.Lines) || Beat.Lines.Num() != Beat.Task.Count || Beat.LinesEvent.IsEmpty()))
                 return Bad(FString::Printf(TEXT("beat %s has invalid dialogue lines"), *Beat.Id));
             // Blocking lines are some of the dialogue's own lines.
+            if (const TSharedPtr<FJsonObject> Ext = Child(*O, TEXT("ext")); Ext && Ext->HasField(TEXT("supply_point")))
+            {
+                // Chapter three names an object with slots/refill metadata;
+                // later chapters use a bare station id. Preserve both forms.
+                const TSharedPtr<FJsonObject> Supply = Child(*Ext, TEXT("supply_point"));
+                const bool Named = Supply ? Supply->TryGetStringField(TEXT("id"), Beat.SupplyPoint)
+                    : Ext->TryGetStringField(TEXT("supply_point"), Beat.SupplyPoint);
+                if (!Named || Beat.SupplyPoint.IsEmpty())
+                    return Bad(FString::Printf(TEXT("beat %s has an invalid supply point"), *Beat.Id));
+            }
             if (const TSharedPtr<FJsonObject> Ext = Child(*O, TEXT("ext")); Ext && Ext->HasField(TEXT("blocking_lines")) &&
                 (!LineRefs(Rows(*Ext, TEXT("blocking_lines")), Beat.BlockingLines) ||
                  Beat.BlockingLines.ContainsByPredicate([&](int32 Line) { return !Beat.Lines.Contains(Line); })))

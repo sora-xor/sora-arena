@@ -117,6 +117,8 @@ public:
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
     ASoraCampaignLift* CampaignLift() const;
+    bool SupplyFloor(const FString& Id,FVector& Out) const;
+    bool CanReachSupply(const FString& Id,const ASoraPlayerCharacter& Hero) const;
     // Only an active spire's hunting auditors use these physical L3 panels.
     // A shout never closes the shortcut; arrival checks the actual floor.
     bool SpireAlarmGoal(const ASoraEnemy& Auditor,FVector& Out) const;
@@ -157,6 +159,10 @@ private:
     void BuildArena(int32 MapId, bool bSites);
     void BuildCampaign(const FSoraChapter& Chapter);
     void BuildSpire(const FSoraBeat& Beat);
+    void StageSupply(const FSoraBeat& Beat);
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> SupplyCrate;
+    FString SupplyId;
+    FVector SupplyAt=FVector::ZeroVector;
     void ResetSpireAlarm(bool Active);
     void TickSpireAlarm();
     UPROPERTY() TObjectPtr<UStaticMeshComponent> SpireShutter;

@@ -659,6 +659,8 @@ struct FSoraBeat
     FString CarryGatePoint;
     FString RecoveryItem;
     FString RecoveryInteract;
+    // Authored supply station identity; it grants ammunition, never unlocks.
+    FString SupplyPoint;
     TArray<FString> Targets;
     TArray<FString> StepKinds;
     // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.

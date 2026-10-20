@@ -559,6 +559,8 @@ private:
     // E on a loose collectible within reach, or on the horse (tack-up, mount, dismount); true when used.
     bool PickUp();
     bool InteractSpace(ASoraPlayerCharacter& Player);
+    bool InteractSupply(ASoraPlayerCharacter& Player);
+    void TickSupplyHint();
     void Dismount();
     void ClearHorses();
     void ShowKit();
