@@ -10,7 +10,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 |---|---:|---:|---:|
 | PUB-CC0 | 192 | 2571 | 4,584,606,249 |
 | PUB-BY | 10 | 10 | 206,477,553 |
-| OWN | 11 | 438 | 633,426,930 |
+| OWN | 12 | 453 | 764,793,721 |
 | REF | 6 | 6 | 9,778,972 |
 
 ## Public domain and CC0 (PUB-CC0, PUB-PD)
@@ -323,7 +323,8 @@ Credit format (plan section 2.3): "Title" by Author, source link, license link, 
 - `fern_02:derived`: 11 files, generator `scripts/art/create_nyaagyu_fern_shoulder.py`, derived from `fern_02`
 - `nyaagyu-dojo-kit`: 15 files, generator `scripts/art/create_nyaagyu_dojo_kit.py`, `scripts/art/sora_arch_lib.py`, `scripts/art/craft_textures.py`, `scripts/art/sora_mark.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/SourceArt/UI/sora_logo_NOtext2.svg`
 - `pine_sapling_small:derived`: 8 files, generator `scripts/art/create_nyaagyu_pine_saplings.py`, derived from `pine_sapling_small`
-- `runtime-weapons`: 218 files, generator `scripts/art/create_runtime_weapon_alien.py, scripts/art/create_runtime_weapon_blunt.py, scripts/art/create_runtime_weapon_build_all.py, scripts/art/create_runtime_weapon_firearms.py, scripts/art/create_runtime_weapon_kusarigama.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/create_runtime_weapon_nihonto.py, scripts/art/create_runtime_weapon_polearms.py, scripts/art/create_runtime_weapon_specs.py, scripts/art/create_runtime_weapon_validation.py, scripts/art/create_runtime_weapon_yumi.py`, derived from -
+- `runtime-weapon-held-back-renders`: 12 files, generator `scripts/art/create_runtime_weapon_alien.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/create_runtime_weapon_specs.py`, derived from -
+- `runtime-weapons`: 221 files, generator `scripts/art/create_runtime_weapon_alien.py, scripts/art/create_runtime_weapon_blunt.py, scripts/art/create_runtime_weapon_build_all.py, scripts/art/create_runtime_weapon_firearms.py, scripts/art/create_runtime_weapon_kusarigama.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/create_runtime_weapon_nihonto.py, scripts/art/create_runtime_weapon_polearms.py, scripts/art/create_runtime_weapon_specs.py, scripts/art/create_runtime_weapon_validation.py, scripts/art/create_runtime_weapon_yumi.py`, derived from -
 - `sora-raden-bunko`: 18 files, generator `scripts/art/create_sora_raden_bunko.py`, `scripts/art/sora_prop_lib.py`, `scripts/art/craft_textures.py`, `scripts/art/sora_mark.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/SourceArt/UI/sora_logo_NOtext2.svg`
 - `tree_small_02:derived`: 4 files, generator `scripts/art/create_nyaagyu_photoreal_tree.py`, derived from `tree_small_02`
 

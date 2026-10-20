@@ -6,7 +6,7 @@
   "scripts/assets/manifests/ambientcg-first-slice.json",
   "scripts/assets/manifests/polyhaven-first-slice.json"
  ],
- "generated_at_utc": "2026-09-26T11:52:51+00:00",
+ "generated_at_utc": "2026-10-20T10:39:31+00:00",
  "inputs": [
   {
    "file": "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
@@ -69,33 +69,6 @@
    "tier": "PUB-CC0",
    "ledger_record": "wood_planks_dirt",
    "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
-   "license": "CC0-1.0"
-  },
-  {
-   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Fabric001/Fabric001_2K-JPG_Color.jpg",
-   "sha256": "da64a6ab2fe6a93844a4d6e11a3fe54cd3b65de166ed02976e0bddcf3a214360",
-   "bytes": 4566198,
-   "tier": "PUB-CC0",
-   "ledger_record": "Fabric001",
-   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
-   "license": "CC0-1.0"
-  },
-  {
-   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Fabric001/Fabric001_2K-JPG_NormalDX.jpg",
-   "sha256": "dad99058af45472f63261c7895f6fa971513311d786971f3d9c4827e5c171dc0",
-   "bytes": 6613366,
-   "tier": "PUB-CC0",
-   "ledger_record": "Fabric001",
-   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
-   "license": "CC0-1.0"
-  },
-  {
-   "file": "Local/ThirdPartyRaw/cc0/ambientcg/Fabric001/Fabric001_2K-JPG_Roughness.jpg",
-   "sha256": "72efeb74b9554110fbff4fa89d97b195b5473857ac8bd58d1c1a47ac5bfb64f9",
-   "bytes": 2896211,
-   "tier": "PUB-CC0",
-   "ledger_record": "Fabric001",
-   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
    "license": "CC0-1.0"
   },
   {
@@ -176,6 +149,33 @@
    "bytes": 892960,
    "tier": "PUB-CC0",
    "ledger_record": "Rope002",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/ThatchedRoof001A/ThatchedRoof001A_2K-JPG_Color.jpg",
+   "sha256": "267ae86a8fb25cbe0ada4eaecf535949dc300d6a4ca8ed3601847bad14539884",
+   "bytes": 4616359,
+   "tier": "PUB-CC0",
+   "ledger_record": "ThatchedRoof001A",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/ThatchedRoof001A/ThatchedRoof001A_2K-JPG_NormalDX.jpg",
+   "sha256": "b453592b2db1dfc0997cfa94359df91cd299f1dc45013fb0ce2cb23c35203f45",
+   "bytes": 9151558,
+   "tier": "PUB-CC0",
+   "ledger_record": "ThatchedRoof001A",
+   "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
+   "license": "CC0-1.0"
+  },
+  {
+   "file": "Local/ThirdPartyRaw/cc0/ambientcg/ThatchedRoof001A/ThatchedRoof001A_2K-JPG_Roughness.jpg",
+   "sha256": "84d1e2739bca3be8aa75821883ff6039bf8ea7d542d4c59b3e51fa9a69b92254",
+   "bytes": 2119482,
+   "tier": "PUB-CC0",
+   "ledger_record": "ThatchedRoof001A",
    "ledger_document": "scripts/assets/manifests/ambientcg-first-slice.json",
    "license": "CC0-1.0"
   },

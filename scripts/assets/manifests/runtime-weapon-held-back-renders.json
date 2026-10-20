@@ -1,0 +1,118 @@
+{
+  "schema_version": 2,
+  "tier": "OWN",
+  "asset_id": "runtime-weapon-held-back-renders",
+  "name": "Recovered blockout weapon source previews (W03, W11, W13, W16)",
+  "license": "Project-owned procedural geometry and materials, with CC0 environment inputs referenced below. This inventory records provenance, not visual acceptance.",
+  "generator_scripts": [
+    "scripts/art/create_runtime_weapon_alien.py",
+    "scripts/art/create_runtime_weapon_lib.py",
+    "scripts/art/create_runtime_weapon_specs.py"
+  ],
+  "storage": "repo-lfs",
+  "generated_at_utc": null,
+  "used_by": [],
+  "admission": "Recovered source-art previews; blockout; not admitted to runtime, photoreal, historical or release acceptance. These weapons remain excluded from the runtime weapon manifest.",
+  "evidence": {
+    "recovery_inventory": "docs/recovery/claude-2026-10-18/art-inventory.json",
+    "build_records": [
+      "Content/SourceArt/Weapons/Runtime/W03_NeedleSMG/build_record.json",
+      "Content/SourceArt/Weapons/Runtime/W11_PulseCarbine/build_record.json",
+      "Content/SourceArt/Weapons/Runtime/W13_PhantomSMG/build_record.json",
+      "Content/SourceArt/Weapons/Runtime/W16_ShockEmitter/build_record.json"
+    ],
+    "external_inputs": [
+      {
+        "file": "Content/SourceArt/Environment/PolyHaven/kloofendal_overcast_puresky/kloofendal_overcast_puresky_4k.hdr",
+        "sha256": "77ade807bd208195073a51b970dea574fa70cd80cf666aeedf5cd416ab5c8abd",
+        "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+        "ledger_record": "kloofendal_overcast_puresky",
+        "license": "CC0-1.0"
+      },
+      {
+        "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_arm_4k.png",
+        "sha256": "556835168ffb105f31666add0237f7fb7a11a5d6d05d4cfa5979a4e957b9da63",
+        "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+        "ledger_record": "wood_planks_dirt",
+        "license": "CC0-1.0"
+      },
+      {
+        "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_diff_4k.jpg",
+        "sha256": "5c8640bbd63e56dbca947dbd2d0be380c661feb556c2949ec95d842ce7f31a59",
+        "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+        "ledger_record": "wood_planks_dirt",
+        "license": "CC0-1.0"
+      },
+      {
+        "file": "Content/SourceArt/Environment/PolyHaven/wood_planks_dirt/wood_planks_dirt_nor_dx_4k.png",
+        "sha256": "958c93dbd644dc7ea925bff951cbe6275c4066f60000417e1abef2c1b9a3e6fc",
+        "ledger_document": "Content/SourceArt/Environment/PolyHaven/manifest.ledger.json",
+        "ledger_record": "wood_planks_dirt",
+        "license": "CC0-1.0"
+      }
+    ],
+    "limitations": "The recovery inventory records recovered bytes; it does not establish individual assistant authorship or exact reproduction by the current generator. Exact generation time is unknown."
+  },
+  "files": [
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Estate_1m.png",
+      "bytes": 3153529,
+      "sha256": "50b89d89be1d8d5070972535406734be2baad195f30d83cbd28973c37e961553"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Neutral_1m.png",
+      "bytes": 1258665,
+      "sha256": "f4d27a1a0a02065a147ce8fe011386ef9e755d02029399e106dfbd14f5ad8156"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_03_Profile.png",
+      "bytes": 996683,
+      "sha256": "bc7db70670110e828e3a3a81fb256589524a73a920fe00bebaae69ed26fb8360"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Estate_1m.png",
+      "bytes": 3123816,
+      "sha256": "8be1af72719c4a15a6bc93456698da20f23c22b3dcf27231a31264024486d1f5"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Neutral_1m.png",
+      "bytes": 1315986,
+      "sha256": "6108bfe46c58288ab24f56599e6a2c89852be9f4c5624ade85a3a008019aa316"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_11_Profile.png",
+      "bytes": 970373,
+      "sha256": "a9aadf07c9c6867c251e7772d651757eab3bcf7897a0d90dbb6fe9c862f8570e"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Estate_1m.png",
+      "bytes": 3131089,
+      "sha256": "0c3f57961efdffdb15f49cbcb123aeb38ba4132a4fae18c4efe9a53fea1219d3"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Neutral_1m.png",
+      "bytes": 1280974,
+      "sha256": "9df7f48dc8b9e59af12eaf8c7c6285dbb6ff3bf79bad1960f8d6e8e38706ba8c"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_13_Profile.png",
+      "bytes": 980222,
+      "sha256": "5fc17052479e08f9724cc6f9cc88e3b7b4ec550420af0e153db5994eb3206c0c"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Estate_1m.png",
+      "bytes": 3146300,
+      "sha256": "97d0ec3072b710a494b1c923810c5a7b425384dbe5278940880cf32ec13f3a4a"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Neutral_1m.png",
+      "bytes": 1305083,
+      "sha256": "381de01905db6d28677ed73f3b3222a726f945e3736a2bd32dcfb4b513a525d7"
+    },
+    {
+      "file": "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_16_Profile.png",
+      "bytes": 983928,
+      "sha256": "169a3adb7a3251d7b5a53a2af21f655919a701afd2c3e8902cb9d5d4961525ed"
+    }
+  ]
+}
