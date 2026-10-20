@@ -9,6 +9,7 @@
 #include "SoraWorldBuilder.h"
 #include "SoraLiftRules.h"
 #include "Algo/AllOf.h"
+#include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/AutomationTest.h"
@@ -40,8 +41,14 @@ struct FProbe
     {
         FHitResult Hit;
         FCollisionQueryParams Params(SCENE_QUERY_STAT(SpaceFloor), false, Hero);
-        const bool bHit = World.LineTraceSingleByChannel(Hit, FVector(Point.X, Point.Y, HeightCm+60.f), FVector(Point.X, Point.Y, HeightCm-200.f),
-            ECC_Visibility, Params) && FMath::IsNearlyEqual(Hit.ImpactPoint.Z,HeightCm,2.f);
+        const bool bTraced = World.LineTraceSingleByChannel(Hit, FVector(Point.X, Point.Y, HeightCm+60.f), FVector(Point.X, Point.Y, HeightCm-200.f),
+            ECC_Visibility, Params);
+        const bool bHit = bTraced && FMath::IsNearlyEqual(Hit.ImpactPoint.Z,HeightCm,2.f);
+        if (!bHit)
+            Test.AddInfo(FString::Printf(TEXT("SORA_SPACE_FLOOR: %s xy=(%.3f,%.3f) expected_z=%.3f traced=%d blocking=%d start_penetrating=%d actor=%s component=%s impact=%s normal=%s"),
+                *What, Point.X, Point.Y, HeightCm, bTraced, Hit.bBlockingHit, Hit.bStartPenetrating,
+                *GetNameSafe(Hit.GetActor()), *GetNameSafe(Hit.GetComponent()),
+                *Hit.ImpactPoint.ToString(), *Hit.ImpactNormal.ToString()));
         ++Points;
         return bHit || (bOk = Test.TestTrue(*(What + TEXT(" stands on a floor")), false));
     }
@@ -120,7 +127,7 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
                         if(Spawn>=9&&Spawn<=12) continue; // Drones occupy real air, checked in SpireTraversal.
                         Probe.HeightCm=Space.Spire.Spawns[Spawn].Z;
                     }
-                    Probe.Stand(Space.Spawns[Spawn],What+TEXT(" spawn"));
+                    Probe.Stand(Space.Spawns[Spawn],FString::Printf(TEXT("%s spawn %d landing %d"),*What,Spawn,Landing));
                 }
             }
             Probe.HeightCm=Space.HeightCm;
