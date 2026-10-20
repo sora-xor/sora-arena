@@ -1561,6 +1561,8 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
                 SoraHUDPanels::StoryTrackerLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
             Test->TestTrue(TEXT("The entire rhythm ring clears the measured Interact prompt and lower story panels"),
                 SoraHUDPanels::RhythmCueLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
+            Test->TestTrue(TEXT("Visible interaction prompts clear coaching, dialogue, captions and other measured HUD panels"),
+                SoraHUDPanels::InteractionPromptLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
             Test->TestTrue(TEXT("Every visible caption clears the measured gameplay, tracker and lower story panels"),
                 SoraHUDPanels::CaptionStoryLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why));
         if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("Bow draw survives capture preparation"),Session->Hero()->GetEquipment()->IsBowDrawing());
@@ -1569,6 +1571,13 @@ void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 C
         if(Case==0||Case==3||Case==4) Session->bShotLive&=Test->TestNotNull(TEXT("Manufacturing instructions remain present in the frame"),Session->Campaign()->CurrentPrompt());
         if(Case==3||Case==8) Session->bShotLive&=Test->TestNotNull(TEXT("Dialogue remains present in the frame"),Session->Campaign()->CurrentDialogueCue());
         if(Case==4) Session->bShotLive&=Test->TestEqual(TEXT("All four actual pickup notices survive capture preparation"),Session->Campaign()->StoryNotices().Num(),4);
+        if(Case==4)
+        {
+            FVector WorkAnchor;
+            Session->bShotLive&=Test->TestTrue(TEXT("Pickup notice coverage includes the ordinary Work prompt beside coaching"),
+                Session->Campaign()->RhythmCuePeriodMs()<=0&&Session->Campaign()->AnchorTakesInteract()&&
+                Session->Campaign()->ObjectiveAnchor(WorkAnchor)&&FVector::Dist2D(WorkAnchor,Session->Hero()->GetActorLocation())<260.f);
+        }
         if(Case==5||Case==8) Session->bShotLive&=Test->TestEqual(TEXT("All eight defended targets survive capture preparation"),Session->Campaign()->ActiveTask().TargetCount,8);
         if(Case==8)
         {

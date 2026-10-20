@@ -78,6 +78,8 @@ float GameplayStoryTop(const FSoraHUDFrame& Frame);
 // The measured tracker/notices must fit above the lower story stack, retaining all targets.
 // Full rhythm sweep and measured localized Interact label share no pixels.
 bool RhythmCueLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+// Ordinary work/search/pickup cues also clear coaching, dialogue and captions.
+bool InteractionPromptLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 bool StoryTrackerLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 bool BottomHUDLayoutFits(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero, FString& Why);
 // The campaign's arms wheel and the arm a key took up; the beat's fieldcraft:

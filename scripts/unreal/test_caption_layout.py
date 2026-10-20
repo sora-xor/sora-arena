@@ -260,6 +260,46 @@ class CaptionLayoutTests(unittest.TestCase):
                 self.assertTrue(x + w + 4 <= ox + .01 or ox + ow + 4 <= x + .01 or y + h + 4 <= oy + .01 or oy + oh + 4 <= y + .01)
             obstacles.append(placed)
 
+    def test_ordinary_interactions_clear_captured_coaching_and_other_panels(self):
+        global font
+        # Panel rectangles observed in febb516's immutable PickupNotices
+        # captures (20261020T094956Z at 720p, 20261020T095611Z at 1080p).
+        # These are regression inputs, not expected placement coordinates.
+        cases = [
+            (1280, 720, False, (14, 563, 1252, 47), (999, 614, 263, 84), (726, 62, 540, 453)),
+            (1280, 720, True, (14, 403, 1252, 82), (999, 489, 263, 209), (726, 62, 540, 310)),
+            (1920, 1080, False, (22, 886, 1876, 52), (1499, 944, 394, 104), (1358, 94, 540, 765)),
+            (1920, 1080, True, (22, 786, 1876, 90), (1499, 883, 394, 165), (1358, 94, 540, 582)),
+        ]
+        for pixels, (W, H, en, coaching, weapon, tracker), action in itertools.product(
+                (37, 38), cases, ('Work', 'Capture', 'Search', 'PickUp')):
+            font = ImageFont.truetype(str(FONT), pixels)
+            scale = min(W / 1600, H / 1000)
+            ja, english = strings['SoraArena.HUD,Prompt.' + action]
+            ja, english = ja.replace('{Interact}', 'E'), english.replace('{Interact}', 'E')
+            z = .65 * scale
+            text_width = width(ja, z) + (14 * scale + width(english, .8 * z) if en else 0)
+            text_height = max(font.font.height * z, font.font.height * .8 * z + 6 * z if en else 0)
+            desired = (W * .5 - 75 * scale, H * .5 + 60 * scale, text_width, text_height)
+            x, y, w, h = desired
+            cx, cy, cw, ch = coaching
+            with self.subTest(pixels=pixels, resolution=(W, H), english=en, action=action):
+                if W == 1280 and en:
+                    self.assertTrue(x < cx + cw and x + w > cx and y < cy + ch and y + h > cy,
+                                    'The former fixed center position must reproduce the observed overlap')
+                obstacles = [coaching, weapon, tracker, (25 * scale, H - 110 * scale, 340 * scale, 80 * scale)]
+                # Retain an earlier world marker too; it must not be painted
+                # over when the ordinary action moves above the story strip.
+                obstacles.append((x, cy - text_height - 8 * scale, width('道場の鍛冶場 / 4m', .42 * scale), font.font.height * .42 * scale))
+                fits, placed = self.marker(desired, (20 * scale, 87 * scale, W - 40 * scale, H - 207 * scale), obstacles, 4 * scale)
+                self.assertTrue(fits)
+                self.assertAlmostEqual(placed[2], text_width, delta=.01)
+                self.assertAlmostEqual(placed[3], text_height, delta=.01)
+                x, y, w, h = placed
+                for ox, oy, ow, oh in obstacles:
+                    self.assertTrue(x + w + 4 * scale <= ox + .01 or ox + ow + 4 * scale <= x + .01 or
+                                    y + h + 4 * scale <= oy + .01 or oy + oh + 4 * scale <= y + .01)
+
     def test_projected_markers_can_use_viewport_edges_without_dropping_text(self):
         fits, placed = self.marker((-15, 30, 80, 25), (0, 0, 200, 100), [])
         self.assertTrue(fits)
@@ -293,7 +333,10 @@ class CaptionLayoutTests(unittest.TestCase):
                 lines = [('第6場 / 17', 'Beat 6 of 17'),
                     (f'踏む（左右一組） 1 / {count}', f'Tread pairs: 1 of {count}'),
                     ('火勢 II — 適正', 'Flame II: in rhythm'),
-                    (f'{key} 長押し＋左 {left} → 右 {right}（毎回離す）', f'Hold {key} + left {el} then right {er}; release each tread'),
+                    ((f'{key} 長押し＋左スティック 左→右（毎回中央へ）',
+                      f'Hold {key} + left stick: left then right; center after each tread') if pad else
+                     (f'{key} 長押し＋左 {left} → 右 {right}（毎回離す）',
+                      f'Hold {key} + left {el} then right {er}; release each tread')),
                     ('次は右足', 'Next: right tread')]
                 prompt_height = 10 * scale
                 for text, z in [(prompt['ja'], max(.65 * scale, .65)), *([(prompt['en'], max(.6 * scale, .6))] if en else [])]:
