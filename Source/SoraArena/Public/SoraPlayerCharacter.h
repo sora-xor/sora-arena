@@ -137,7 +137,7 @@ protected:
     virtual void ResetLoadout() override;
     virtual void OnKernelSnapshot(const FSoraPracticePlayer& State) override;
     virtual bool IsFirstPersonHero() const override { return true; }
-    virtual bool WieldsDojoBokken() const override { return bDojoTraining; }
+    virtual bool WieldsDojoBokken() const override { return bDojoTraining&&WeaponId==0; }
     virtual void OnBodyRebuilt() override;
 private:
     float SummitFallProtectedUntil=0.f;

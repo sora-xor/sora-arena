@@ -226,6 +226,7 @@ void USoraEquipmentComponent::TriggerDown()
     if(!ArmsReady(*H,WeaponId)) return;
     if(W.Kind==TEXT("bow"))
     {
+        if(const auto* Campaign=HeroCampaign(*H); Campaign&&!Campaign->CanLooseArcheryArrow()) return;
         if(!bBowDrawing&&!bReloading&&!H->IsSprinting()&&Ammo>0&&GetWorld()->GetTimeSeconds()>=NextShot)
         { bBowDrawing=true; bDrawCompleteRaised=false; BowDrawStartedAt=GetWorld()->GetTimeSeconds(); }
         return;
@@ -469,6 +470,8 @@ void USoraEquipmentComponent::ReleaseBow()
     bBowDrawing=false;
     if(!H->CanPlay()||H->WeaponId!=18||bReloading||H->IsSprinting()||Ammo<=0||
         GetWorld()->GetTimeSeconds()-BowDrawStartedAt<.65f||!ArmsReady(*H,18)) return;
+    auto* Campaign=HeroCampaign(*H);
+    if(Campaign&&!Campaign->CanLooseArcheryArrow()) return;
     const auto& W=FSoraCatalog::Get().Weapon(18);
     const FVector Direction=H->GetCamera()->GetForwardVector();
     const FVector Origin=H->GetCamera()->GetComponentLocation()+Direction*65.f;
@@ -476,6 +479,11 @@ void USoraEquipmentComponent::ReleaseBow()
         FTransform(Direction.Rotation(),Origin),H,H,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
     if(!Arrow) return;
     Arrow->bArrow=true; Arrow->Damage=W.Damage; Arrow->Velocity=Direction*W.ProjectileSpeed; Arrow->WeaponId=18;
+    if(Campaign&&Campaign->IsArcheryLesson())
+    {
+        Arrow->ArcheryShotId=Campaign->RegisterArcheryArrow(*Arrow);
+        if(!Arrow->ArcheryShotId) { Arrow->Destroy(); return; }
+    }
     UGameplayStatics::FinishSpawningActor(Arrow,Arrow->GetActorTransform());
     --Ammo; NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;
     // The loose, and a quiver running low (ch02.b08's event:arrows_below:4).
@@ -492,6 +500,10 @@ void USoraEquipmentComponent::Reload()
 {
     ASoraPlayerCharacter* H=Hero();
     if(!H->CanPlay()||bReloading) return; const auto& W=FSoraCatalog::Get().Weapon(H->WeaponId);
+    if(H->WeaponId==18) if(auto* Campaign=HeroCampaign(*H); Campaign&&Campaign->UsesDojoQuiver())
+    {
+        Campaign->ExplainDojoQuiver(); return;
+    }
     if(W.Kind==TEXT("melee")||Ammo>=W.Magazine) return; bReloading=true; ReloadEnd=GetWorld()->GetTimeSeconds()+W.Reload;
 }
 void USoraEquipmentComponent::GuardDown(bool bDojo,bool bCampaignHero)

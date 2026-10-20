@@ -45,6 +45,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||Mode().bChapterComplete) return false;
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
+    if(IsArcheryLesson()) { Location=ArcheryLine(); bInteract=false; return !AtArcheryLine(); }
     if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }
     const FSoraBeatSpace& Space=Beat->Space;
     const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point,Space.HeightCm); bInteract=bWorks; return true; };
@@ -569,6 +570,12 @@ float USoraCampaignDirector::CarryPace() const
 bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
 {
     if(!Mode().bCampaign||WeaponId<0||WeaponId>=SoraBeatRules::WeaponCount) return true;
+    if(UsesDojoQuiver()&&ActiveBeatData()&&ActiveBeatData()->bSparring&&
+        Task.Type==SoraBeatRules::EType::Duel&&WeaponId!=0)
+    {
+        if(bNotify) Notify(TEXT("この立合いは稽古刀で行う。"),TEXT("This sparring bout uses the practice sword."),3.f);
+        return false;
+    }
     if(!SoraBeatRules::EquipmentAllows(TaskState,Task,WeaponId))
     {
         if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","HiddenArms","刀と弓は空井戸の底に隠してある。今は脇差だけだ。")),3.f);
