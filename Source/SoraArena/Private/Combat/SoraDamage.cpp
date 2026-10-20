@@ -107,7 +107,9 @@ float SoraDamage::Resolve(ASoraCharacterBase& Victim,float Damage,const FDamageE
         // 残心: an opponent the hero fells, or knocks down, starts his lingering guard.
         ASoraPlayerCharacter* Hero=Cast<ASoraPlayerCharacter>(Causer);
         if(!Hero&&Causer) Hero=Cast<ASoraPlayerCharacter>(Causer->GetInstigator());
-        if(Hero&&Hero!=&Victim&&Victim.IsEnemy()) Hero->GetEquipment()->NoteDefeat();
+        // Chapter-one bouts arm this only after the director accepts the
+        // point; a knockdown refused for missing 転 earns no passive recovery.
+        if(Hero&&Hero!=&Victim&&Victim.IsEnemy()&&!Hero->IsDojoTraining()) Hero->GetEquipment()->NoteDefeat();
         // 活人剣: a debt-bound conscript is knocked down, never killed.
         if(auto* Conscript=Cast<ASoraEnemy>(&Victim); Conscript&&Conscript->IsNonlethal())
         {

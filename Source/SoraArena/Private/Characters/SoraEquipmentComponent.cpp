@@ -69,7 +69,7 @@ void USoraEquipmentComponent::ResetForClass()
     bReloading=false; NextShot=0; bFireHeld=false; bBowDrawing=false; GuardStamina=100.f;
     bCommittedStrike=false; bHistoricalRecovery=false; CommittedWeaponId=INDEX_NONE;
     bChainCast=false; ChainTarget.Reset();
-    bSheathed=false; bStepping=false; Awased.Reset(); bZanshinDue=false;
+    bSheathed=false; bStepping=false; Awased.Reset(); bZanshinDue=false; ZanshinAt=-1000.f;
 }
 void USoraEquipmentComponent::Hold(int32 WeaponId)
 {

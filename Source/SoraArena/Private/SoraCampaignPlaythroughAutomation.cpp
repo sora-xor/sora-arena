@@ -8,6 +8,7 @@
 #include "SoraCampaignRules.h"
 #include "SoraCatalog.h"
 #include "SoraDojoRules.h"
+#include "SoraDojoAutomation.h"
 #include "SoraMaaiAutomation.h"
 #include "SoraArcheryAutomation.h"
 #include "SoraRecoveryAutomation.h"
@@ -841,13 +842,9 @@ bool MissFlank(FAutomationTestBase& Test, FState& State, const FSoraBeat& Beat)
 {
     USoraCampaignDirector* Director = Campaign(State);
     const TArray<ASoraEnemy*> Pupils = LiveEnemies(State);
-    USoraGameEvents* Events = USoraGameEvents::Get(Player(State));
-    if (Pupils.IsEmpty() || !Events)
+    if (Pupils.IsEmpty())
         return Fail(Test, State, Beat.Id + TEXT(" has no pupil to meet"));
-    FSoraDefenseEvent Met;
-    Met.Defender = Player(State); Met.Attacker = Pupils[0]; Met.HeldMs = SoraDojoRules::ParryWindowMs / 2; Met.bDojo = true;
-    Events->OnGuarded.Broadcast(Met);
-    if (!Advance(Test, State, 40))
+    if (!SoraDojoAutomation::MissFlank(Test,*State.World))
         return false;
     const int32 Index = Director->ActiveBeat();
     bool bOk = ExpectLinesQueued(Test, State, ChapterData(State), Index, TEXT("marobashi_miss"));

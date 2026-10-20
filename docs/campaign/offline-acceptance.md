@@ -810,3 +810,43 @@ not human pacing, rendered range art or packaged qualification. The fresh Mac
 package remains running. Source-only checks pass 46/46 at preceding `8fb35cf`;
 its original compile failure is retained, and the narrow explicit-scopes/header
 repair has its separate successful editor build receipt at `44ffc35`.
+
+## Dojo awase feedback and passive zanshin candidate (source only, 2026-10-20)
+
+Chapter 01 §b04 requires Sekireisai's `ch01.b04.sekireisai.003` when a
+successful awase is not followed by Step inside 400 ms. Real dojo parries
+publish `OnParried`; the director incorrectly subscribed to `OnGuarded`,
+and the former aggregate fixture fabricated that wrong event. The director
+now listens to the actual parry event. Its existing gameplay clock pauses
+in menus, an actual after-awase Step cancels the pending hint, and beat
+restart clears it. The authored line and 15-second repeat cooldown remain
+unchanged. Playthrough's missed-step case now uses a live pupil, its observed
+telegraph, mapped Guard, and normal 60 Hz ticks.
+
+Chapter 01 §b03 enables passive 残心 after the recovery lesson: a continuous
+500 ms guard after a scored point restores 15 stamina. The hero previously
+skipped the guard/stamina tick during every dojo frame. Completing all four
+forms now enables that existing stamina cycle. The early forms retain their
+prior training behavior. A dojo reward is armed only after the director
+accepts a `Scored` or `Won` point; a pupil knocked down without b04's required
+flank earns none. Ordinary non-dojo defeats retain their existing path.
+Reward state is transient and reset with the class/checkpoint loadout.
+
+`SoraArena.Campaign.DojoGuardLessons` receives actual pupil contacts and
+learns Guard, two Parry repetitions, and Recovery through mapped input at
+each difficulty. `DojoAwaseHint` covers ordinary guard rejection, the
+400 ms opportunity, menu pause, an actual swept Step, and retry from b04
+back to the b03 checkpoint reached through normal lessons and cuts.
+`DojoZanshin` spends stamina through held guard, scores with real return
+cuts during actual awase stagger, and checks a broken/restarted hold,
+exactly +15 once, resumed drain, fresh save reload, and a refused bout.
+No combat event, damage, score or stamina write substitutes for input in
+those paths. **Unreal qualification is pending; CPU checks are not runtime
+evidence.**
+
+The existing pupil attack variation is still incomplete: `PupilAttack`
+uses a fixed 550 ms windup and 1450 ms post-windup delay for all lessons.
+The authored b04 `pupil_kesa` 600 ms/1000 ms timing and Easy ×1.30 / Hard
+×0.85 windup scaling are not implemented by this repair. Tests respond to
+the observed telegraph and validate the guard/parry gates; they do not
+qualify those missing attack variations or the final animation.
