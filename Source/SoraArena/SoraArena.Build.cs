@@ -20,6 +20,9 @@ public class SoraArena : ModuleRules
         RuntimeDependencies.Add("$(ProjectDir)/Content/Data/...", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/OFL.txt", StagedFileType.NonUFS);
+        // Arabic credit titles use the same OFL font as Slate's default
+        // composite. Keep it in UFS with the engine's other Slate fonts.
+        RuntimeDependencies.Add("$(EngineDir)/Content/Slate/Fonts/NotoNaskhArabicUI-Regular.ttf", StagedFileType.UFS);
         // UE 5.8's property matches WITH_DEV/PERF_AUTOMATION_TESTS, including
         // force-enable flags and the force-disable override. HTML export reads
         // this engine file from disk even in a packaged automation target.

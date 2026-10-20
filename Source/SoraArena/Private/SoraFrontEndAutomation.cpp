@@ -13,12 +13,12 @@
 #include "SoraSaveGame.h"
 #include "SoraSettings.h"
 #include "UI/SSoraFrontEnd.h"
+#include "UI/SoraUIFont.h"
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/UserInterfaceSettings.h"
 #include "Engine/World.h"
-#include "Fonts/CompositeFont.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerInput.h"
 #include "Framework/Application/SlateApplication.h"
@@ -499,10 +499,7 @@ bool FSoraFrontEndReadableTest::RunTest(const FString& Parameters)
         return false;
     ASoraGameMode* Mode = Scope.Mode();
     USoraFrontEnd* FrontEnd = Scope.FrontEnd();
-    TStrongObjectPtr<UFont> Font(NewObject<UFont>(GetTransientPackage()));
-    Font->FontCacheType = EFontCacheType::Runtime;
-    Font->GetMutableInternalCompositeFont() = FCompositeFont(FName(TEXT("Regular")),
-        FPaths::ProjectContentDir() / TEXT("SourceArt/Fonts/NotoSansCJKjp-Regular.otf"), EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
+    TStrongObjectPtr<UFont> Font(SoraUI::CreateUIFont(GetTransientPackage()));
     TSharedRef<SSoraFrontEnd> Widget = SNew(SSoraFrontEnd).FrontEnd(FrontEnd).Font(Font.Get());
     const auto Screen = [&](const TCHAR* Name)
     {
