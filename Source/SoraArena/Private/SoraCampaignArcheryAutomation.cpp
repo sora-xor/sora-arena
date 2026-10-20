@@ -111,6 +111,7 @@ bool FSoraArcheryLessonTest::RunTest(const FString& Parameters)
     if(!SoraLiftAutomation::Walk(*W.World,C->ArcheryLine()+FVector(0,-350,0))||
         !TestFalse(TEXT("The wrong lane position is not the shooting line"),C->AtArcheryLine())||
         !SoraArcheryAutomation::Loose(*this,*W.World,0)) return false;
+    if(!TestEqual(TEXT("The off-line arrow really impacted the scoring circle"),C->ArcheryProgress().LastTarget,0)) return false;
     TestEqual(TEXT("Even a real target impact outside the line scores a miss"),C->ArcheryProgress().Hits,0);
     if(!SoraLiftAutomation::Walk(*W.World,C->ArcheryLine())) return false;
     for(int32 Shot=0;Shot<3;++Shot)
