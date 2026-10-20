@@ -21,6 +21,7 @@ void Copy(const USoraSaveGame& From, USoraSaveGame& To)
     To.ChapterEntryWeapons = From.ChapterEntryWeapons; To.ChapterEntryMechanics = From.ChapterEntryMechanics;
     To.ChapterEntryFlags = From.ChapterEntryFlags;
     To.Collectibles = From.Collectibles; To.CheckpointChapter = From.CheckpointChapter; To.CheckpointBeat = From.CheckpointBeat;
+    To.GalleryPoiMask = From.GalleryPoiMask;
     To.CheckpointPhase = From.CheckpointPhase; To.CheckpointBeatsMask = From.CheckpointBeatsMask;
     To.CheckpointSitesMask = From.CheckpointSitesMask; To.CheckpointWeapons = From.CheckpointWeapons;
     To.CheckpointMechanics = From.CheckpointMechanics; To.CheckpointFlags = From.CheckpointFlags;
@@ -39,6 +40,7 @@ bool Same(FAutomationTestBase& Test, const FString& Context, const USoraSaveGame
     bOk &= Test.TestEqual(*(Context + TEXT(": entry mechanics")), A.ChapterEntryMechanics, B.ChapterEntryMechanics);
     bOk &= Test.TestEqual(*(Context + TEXT(": entry story flags")), A.ChapterEntryFlags, B.ChapterEntryFlags);
     bOk &= Test.TestEqual(*(Context + TEXT(": collectibles")), A.Collectibles, B.Collectibles);
+    bOk &= Test.TestEqual(*(Context + TEXT(": gallery lore")), A.GalleryPoiMask, B.GalleryPoiMask);
     bOk &= Test.TestEqual(*(Context + TEXT(": checkpoint chapter")), A.CheckpointChapter, B.CheckpointChapter);
     bOk &= Test.TestEqual(*(Context + TEXT(": checkpoint beat")), A.CheckpointBeat, B.CheckpointBeat);
     bOk &= Test.TestEqual(*(Context + TEXT(": checkpoint phase")), A.CheckpointPhase, B.CheckpointPhase);
@@ -67,10 +69,12 @@ bool FSoraCampaignSaveRoundTripTest::RunTest(const FString& Parameters)
     // parry and recovery forms taught, two sites restored, and collectibles
     // from the first and last chapters.
     USoraSaveGame* Original = NewObject<USoraSaveGame>();
+    TestEqual(TEXT("A fresh save defaults to no gallery discoveries"),Original->GalleryPoiMask,0);
     if (!TestTrue(TEXT("A valid dojo checkpoint is seeded"), USoraCampaignDirector::SeedCheckpoint(*Original, 0, 3)))
         return false;
     Original->HighestChapter = 7;
     Original->Collectibles = static_cast<int64>(1ull << 47 | 1ull << 3);
+    Original->GalleryPoiMask = 3;
     Original->EnglishSubtitles = false;
     TestEqual(TEXT("Seeded schema"), Original->SaveSchema, USoraSaveGame::Schema);
     TestEqual(TEXT("Seeded dojo forms"), Original->CheckpointDojoLessonMask, 15);
@@ -189,6 +193,14 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
         {TEXT("Valid ledger-vault checkpoint"), 5, 7, 0, [](USoraSaveGame&) {}, EOutcome::Restored},
         {TEXT("Valid boss phase"), 1, 14, 1, [](USoraSaveGame&) {}, EOutcome::Restored},
         {TEXT("Valid final-chapter checkpoint with a story flag"), 7, 3, 0, [](USoraSaveGame&) {}, EOutcome::Restored},
+        {TEXT("Chapter replay retains discovered gallery lore"), 0, 3, 0,
+            [](USoraSaveGame& Save) { Save.HighestChapter=7; Save.GalleryPoiMask=3; }, EOutcome::Restored},
+        {TEXT("Negative gallery lore mask"), 7, 10, 0,
+            [](USoraSaveGame& Save) { Save.GalleryPoiMask=-1; }, EOutcome::FreshCampaign},
+        {TEXT("Unknown gallery lore bit"), 7, 10, 0,
+            [](USoraSaveGame& Save) { Save.GalleryPoiMask=4; }, EOutcome::FreshCampaign},
+        {TEXT("Gallery lore before reaching chapter eight"), 5, 7, 0,
+            [](USoraSaveGame& Save) { Save.GalleryPoiMask=1; }, EOutcome::FreshCampaign},
         {TEXT("Schema-5 save"), 5, 7, 0, [](USoraSaveGame& Save) { Save.SaveSchema = 5; }, EOutcome::FreshCampaign},
         {TEXT("Entry weapon from a later chapter"), 2, 4, 0,
             [](USoraSaveGame& Save) { Save.ChapterEntryWeapons |= 1 << 17; }, EOutcome::FreshCampaign},
@@ -251,6 +263,7 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
             TestEqual(*(Name + TEXT(": weapons")), static_cast<int32>(Campaign->Progress().WeaponsMask), Seed->CheckpointWeapons);
             TestEqual(*(Name + TEXT(": story flags")), static_cast<int32>(Campaign->Progress().FlagsMask), Seed->CheckpointFlags);
             TestEqual(*(Name + TEXT(": sites")), Mode->Arena()->ActivatedMask(), Seed->CheckpointSitesMask);
+            TestEqual(*(Name + TEXT(": gallery lore")),Campaign->GalleryPoiMask(),Seed->GalleryPoiMask);
             break;
         case EOutcome::ChapterStart:
             TestEqual(*(Name + TEXT(": chapter kept")), Campaign->ChapterId, Case.Chapter);
@@ -265,6 +278,7 @@ bool FSoraCampaignForgedSaveTest::RunTest(const FString& Parameters)
             TestEqual(*(Name + TEXT(": no reach")), Campaign->HighestChapter(), 0);
             TestEqual(*(Name + TEXT(": no weapons")), static_cast<int32>(Campaign->Progress().WeaponsMask), 0);
             TestEqual(*(Name + TEXT(": no collectibles")), static_cast<int64>(Campaign->CollectedMask()), static_cast<int64>(0));
+            TestEqual(*(Name + TEXT(": no gallery lore")),Campaign->GalleryPoiMask(),0);
             break;
         }
         World->DestroyTestWorld(true);

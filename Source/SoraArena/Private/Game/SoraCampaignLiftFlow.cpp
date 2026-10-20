@@ -63,6 +63,7 @@ bool USoraCampaignDirector::BeginLiftGallery()
     if(!ActiveSpace()||!ActiveSpace()->Lift.bEnabled) return false;
     bLiftGallery=true; GalleryStairNode=0;
     IdleMs=0;
+    if(auto* Arena=Mode().Arena()) Arena->ShowGalleryPois(GalleryPoiMask());
     // Completion and its bark fire only once, before this phase. Its cache
     // is now unlocked, while the saved checkpoint remains the lift's start.
     UpdateObjective();
@@ -95,6 +96,7 @@ bool USoraCampaignDirector::TickLiftGallery(float DeltaSeconds)
             if(!BeatEvents.Contains(Event)) { BeatEvents.Add(Event); Fire(Event,Index); }
         }
     }
+    TickGalleryPois();
     if(!bAtExit) return true;
     bLiftGallery=false;
     const int32 Next=SoraBeatRules::NextBeat(BeatState,Chapter->Rules.GetData(),Chapter->Rules.Num());
