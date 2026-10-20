@@ -482,3 +482,31 @@ importer for the two new SoundWaves, then compile/run these fixtures and
 inspect/listen to the station in-game; no UE, listening, render or controller
 verification is claimed by this source slice. Reports live under
 `Saved/SourceChecks/workshop-cues` in the producing worktree.
+
+### Summit collateral constructs
+
+The chapter 08 collateral source candidate gives only the summit's summoned
+`collateral_construct` its authored 900 ms amber slam, 250 cm radius, 25 damage,
+and 1400 ms recovery (windup retains the shared difficulty scale). Its exposed
+core stays still during recovery. A visible physical core accepts a one-second
+held Interact cut, or exactly two heavy contacts from the kanabō/forge hammer.
+Body shots, closed-core hits and lighter arms cannot bypass it. The cut checks
+grounded height, facing and visibility, and discards partial time on release,
+damage, pause, dialogue or recovery expiry. No partial construct state is saved.
+
+Released collateral remains as five intact named functional goods proxies
+which settle smoothly onto queried solid floor. These are engine primitive
+placeholders, not finished rice bales, lacquer chests, plough, loom or cart art;
+cyan assembly fields, the core seal, proper slam/cut animation and the finished
+release presentation remain Claude's art work. Released actors do not count as
+live adds and leave when the encounter is removed. Ordinary loom automatons,
+other summons, the boss's existing shield/respawn and campaign kill contracts
+remain unchanged.
+
+`SoraArena.Campaign.CollateralConstruct` covers the real summoned pair, slam
+windup/damage and radius escape, visible/height-gated core contact, mapped held
+input and release interruption, two actual forge-hammer sweeps, add/shield
+accounting, floor settling and encounter cleanup. `test_construct_rules.py`
+checks authored constants, exact core hit admission, ordinary loom catalog
+values and smooth release bounds. Source checks do not qualify Unreal
+collision, compilation, rendering or runtime; root owns those checks.

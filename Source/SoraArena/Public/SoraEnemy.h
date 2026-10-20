@@ -102,8 +102,10 @@ public:
     bool TryAttack(ASoraCharacterBase& Target, float Distance);
     bool IsAttacking() const { return Phase != EPhase::Idle; }
     bool IsWindingUp() const { return Phase == EPhase::Windup; }
-    // Winding up or firing: the opponent holds its line until the attack is out.
-    bool IsCommitted() const { return Phase == EPhase::Windup || Phase == EPhase::Firing; }
+    // Winding up or firing; collateral also holds still during its exposed
+    // recovery, so the hero can maintain contact with the core.
+    bool IsCommitted() const { return Phase == EPhase::Windup || Phase == EPhase::Firing ||
+        (bCollateralConstruct && Phase == EPhase::Recovery); }
     const FSoraEnemyAttack* CurrentAttack() const;
     float WindupProgress() const;
     // The farthest reach of its melee attacks, for footwork.
@@ -128,6 +130,13 @@ public:
     // beat's defeat count.
     void SetSummoner(ASoraBoss* Boss);
     ASoraBoss* Summoner() const;
+    // Chapter 08 summit adds only. No mutation of the shared loom archetype.
+    void EnableCollateralConstruct();
+    bool IsCollateralConstruct() const { return bCollateralConstruct; }
+    bool IsConstructCoreOpen() const;
+    FVector ConstructCorePoint() const;
+    bool CanReachConstructCore(const ASoraCharacterBase& By) const;
+    bool HasReleasedGoods() const { return bGoodsReleased; }
     bool IsShieldOpen() const;
     // A tower shield on its arm (enemies.json shield).
     bool HasShield() const;
@@ -172,6 +181,22 @@ protected:
     bool bDojoPupil = false;
     int32 EnemyIndex = 0;
 private:
+    const TArray<FSoraEnemyAttack>& AttackSet() const;
+    void ResetConstruct();
+    bool AdmitConstructDamage(float& Damage, FSoraHit& Hit);
+    void ReleaseConstructGoods();
+    void TickConstruct(float DeltaSeconds);
+    void ConstructSlam(const FSoraEnemyAttack& Attack);
+    bool bCollateralConstruct = false;
+    bool bConstructSlamReleased = false;
+    bool bGoodsReleased = false;
+    bool bCoreWasOpen = false;
+    float GoodsReleaseSeconds = 0.f;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> ConstructCore;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> ConstructGoods;
+    TArray<FVector> GoodsAssembled;
+    TArray<FVector> GoodsReleaseFrom;
+    TArray<FVector> GoodsReleaseTo;
     enum class EPhase : uint8 { Idle, Windup, Firing, Recovery };
     void Commit(int32 Index, ASoraCharacterBase& Target);
     void AdvanceAttack();

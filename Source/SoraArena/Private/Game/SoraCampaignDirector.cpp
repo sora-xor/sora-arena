@@ -20,6 +20,7 @@
 #include "SoraText.h"
 #include "SoraWorldBuilder.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "HAL/FileManager.h"
@@ -114,6 +115,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     if(bPryingCarryGate) bCarryGateHit=true;
     StopPlayerCrank();
     if(SpineCut.Active) SoraSummitRules::Interrupt(SpineCut);
+    CancelConstructCut();
     // A pupil's cut landed while the awase was still to be met: a guard
     // raised just after it is late.
     const ASoraEnemy* Pupil=Cast<ASoraEnemy>(Event.Causer);
@@ -1520,10 +1522,24 @@ bool USoraCampaignDirector::BeginSealCut(ASoraPlayerCharacter& Player)
             const float Distance=FVector::Dist2D(Enemy->GetActorLocation(),Player.GetActorLocation());
             if(Distance<Best) { Best=Distance; Nearest=Enemy; }
         }
+    // Boss adds are deliberately outside the beat's enemy list. Only the
+    // authored collateral core joins this held interaction; no new kill credit.
+    for(TActorIterator<ASoraEnemy> It(GetWorld());It;++It)
+        if(It->IsCollateralConstruct()&&It->Summoner()==CampaignBoss()&&It->CanReachConstructCore(Player))
+        {
+            const float Distance=FVector::Dist2D(It->GetActorLocation(),Player.GetActorLocation());
+            if(Distance<Best) { Best=Distance; Nearest=*It; }
+        }
     if(!Nearest) return false;
     SealTarget=Nearest; SealStartedAt=GetWorld()->GetTimeSeconds();
-    Notify(TEXT("借財の封印を断つ……そのまま押さえていよう。"),TEXT("Cutting the debt seal... keep holding."),Nearest->SealCutHoldMs()/1000.f+1.f);
+    if(Nearest->IsCollateralConstruct())
+        Notify(TEXT("核の封印を断つ……そのまま押さえていよう。"),TEXT("Cutting the exposed core seal... hold for one second."),2.f);
+    else Notify(TEXT("借財の封印を断つ……そのまま押さえていよう。"),TEXT("Cutting the debt seal... keep holding."),Nearest->SealCutHoldMs()/1000.f+1.f);
     return true;
+}
+void USoraCampaignDirector::CancelConstructCut()
+{
+    if(const auto* Target=SealTarget.Get();Target&&Target->IsCollateralConstruct()) SealTarget.Reset();
 }
 float USoraCampaignDirector::SealCutProgress() const
 {
@@ -1541,7 +1557,7 @@ void USoraCampaignDirector::TickSealCut()
     bool bHeld=false;
     if(Controller)
         for(const FKey& Key:Hero->GetActionKeys(TEXT("Interact"))) bHeld|=Controller->IsInputKeyDown(Key);
-    if(!bHeld||!Target->CanCutSeal()||FVector::Dist2D(Target->GetActorLocation(),Hero->GetActorLocation())>SoraCampaignReach::Interact+50.f)
+    if(!bHeld||!Hero||!Target->CanCutSeal()||(Target->IsCollateralConstruct()&&!Target->CanReachConstructCore(*Hero))||FVector::Dist2D(Target->GetActorLocation(),Hero->GetActorLocation())>SoraCampaignReach::Interact+50.f)
     {
         SealTarget.Reset();
         return;
@@ -1550,7 +1566,9 @@ void USoraCampaignDirector::TickSealCut()
     SealTarget.Reset();
     if(!Target->CutSeal(Hero)) return;
     Fire(TEXT("seal_cut"));
-    Notify(TEXT("封印を断った。この者はもう借財に縛られない。"),TEXT("The seal is cut. No debt binds them now."),5.f);
+    if(Target->IsCollateralConstruct())
+        Notify(TEXT("担保の封印を断った。荷は解き放たれた。"),TEXT("The collateral seal is cut. The goods are released."),5.f);
+    else Notify(TEXT("封印を断った。この者はもう借財に縛られない。"),TEXT("The seal is cut. No debt binds them now."),5.f);
 }
 bool USoraCampaignDirector::IsStoryFlagSet(FName Flag) const
 {

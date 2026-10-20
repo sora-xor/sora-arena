@@ -92,6 +92,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("gameplay", "spire-data", "scripts/unreal/test_spire_data.py")
     unit("gameplay", "summit-data", "scripts/unreal/test_summit_data.py")
     unit("gameplay", "summit-rules", "scripts/unreal/test_summit_rules.py")
+    unit("gameplay", "construct-rules", "scripts/unreal/test_construct_rules.py")
     unit("gameplay", "epilogue-data", "scripts/unreal/test_epilogue_data.py")
     unit("gameplay", "registry-data", "scripts/unreal/test_registry_data.py")
     for name, path in (

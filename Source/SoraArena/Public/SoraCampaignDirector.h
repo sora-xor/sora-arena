@@ -123,6 +123,7 @@ public:
     // Input releases and menu/dialogue boundaries discard the transient cut
     // immediately, including when the gameplay clock cannot tick.
     void CancelSpineCut();
+    void CancelConstructCut();
     // Enter on a cinematic: skips it and starts the next beat now.
     void SkipCinematic();
     void OpponentDefeated(ASoraEnemy* Opponent);

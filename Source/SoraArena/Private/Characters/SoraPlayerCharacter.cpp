@@ -413,6 +413,7 @@ void ASoraPlayerCharacter::InteractUp()
     {
         G->Campaign()->StopPlayerCrank(false);
         G->Campaign()->CancelSpineCut();
+        G->Campaign()->CancelConstructCut();
     }
 }
 void ASoraPlayerCharacter::CrouchPressed()
