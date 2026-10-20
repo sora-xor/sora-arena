@@ -7,6 +7,7 @@
 #include "SoraPlayerCharacter.h"
 #include "SoraProjectile.h"
 #include "SoraSettings.h"
+#include "SoraText.h"
 #include "SoraWorldBuilder.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -156,25 +157,26 @@ void USoraCampaignDirector::TickArchery(int32 DeltaMs)
 }
 void USoraCampaignDirector::ExplainDojoQuiver()
 {
-    Notify(TEXT("矢は有限だ。的場では矢取りを待ち、曲がった矢は鍛冶場で直す。"),
-        TEXT("Arrows are finite. At the range, wait for retrieval; repair bent arrows at the smithy."),5.f);
+    Notify(SoraText::Line(NSLOCTEXT("SoraArena.Archery","FiniteArrows",
+        "矢は有限だ。的場では矢取りを待ち、曲がった矢は鍛冶場で直す。")),5.f);
 }
 FString USoraCampaignDirector::ArcheryText(bool English) const
 {
+    const auto Text=[&](const SoraText::FLine& Line) { return English?Line.English:Line.Japanese; };
     if(Archery.FetchRemainingMs>0)
-        return English?FString::Printf(TEXT("Arrow retrieval: %d s"),FMath::DivideAndRoundUp(Archery.FetchRemainingMs,1000)):
-            FString::Printf(TEXT("矢取り：残り %d 秒"),FMath::DivideAndRoundUp(Archery.FetchRemainingMs,1000));
+        return Text(SoraText::Format(NSLOCTEXT("SoraArena.Archery","Fetching","矢取り：残り {Seconds} 秒"),
+            {{TEXT("Seconds"),FMath::DivideAndRoundUp(Archery.FetchRemainingMs,1000)}}));
     if(Mode().Hero()&&Mode().Hero()->WeaponId!=18)
     {
         const auto Key=SoraUI::ActionKey(this,TEXT("WeaponThree"));
-        return English?FString::Printf(TEXT("Select the yumi with %s, then stand on the gold shooting line."),*Key.English):
-            FString::Printf(TEXT("%s で弓を選び、金色の射位に立つ。"),*Key.Japanese);
+        return Text(SoraText::Format(NSLOCTEXT("SoraArena.Archery","EquipBow","{Key} で弓を選び、金色の射位に立つ。"),
+            {{TEXT("Key"),Key}}));
     }
-    if(!AtArcheryLine()) return English?TEXT("Stand on the gold shooting line; select Bow, hold Attack, then release."):
-        TEXT("金色の射位に立つ。弓を選び、攻撃を長押しして放す。");
+    if(!AtArcheryLine()) return Text(SoraText::Line(NSLOCTEXT("SoraArena.Archery","LineInstructions",
+        "金色の射位に立つ。弓を選び、攻撃を長押しして放す。")));
     if(Archery.Stage==SoraArcheryRules::EStage::Near)
-        return English?FString::Printf(TEXT("Near target: %d / 6 arrows resolved, %d / 4 hits"),Archery.Resolved,Archery.Hits):
-            FString::Printf(TEXT("近的：六射中 %d 射、四中まで %d 中"),Archery.Resolved,Archery.Hits);
-    return English?FString::Printf(TEXT("Hanging targets: %d / 3 — lead the swing and arrow drop"),SoraBeatRules::Defeated(TaskState,Task)-1):
-        FString::Printf(TEXT("吊り的：%d / 3 — 揺れと矢の落下を読む"),SoraBeatRules::Defeated(TaskState,Task)-1);
+        return Text(SoraText::Format(NSLOCTEXT("SoraArena.Archery","NearProgress","近的：六射中 {Resolved} 射、四中まで {Hits} 中"),
+            {{TEXT("Resolved"),Archery.Resolved},{TEXT("Hits"),Archery.Hits}}));
+    return Text(SoraText::Format(NSLOCTEXT("SoraArena.Archery","HangingProgress","吊り的：{Hits} / 3 — 揺れと矢の落下を読む"),
+        {{TEXT("Hits"),SoraBeatRules::Defeated(TaskState,Task)-1}}));
 }

@@ -18,6 +18,48 @@ msgctxt "SoraArena,MenuTitle"
 msgid "猫柳生"
 msgstr "Nyaagyu Rebellion"
 
+#. Key:	EquipBow
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,EquipBow"
+msgid "{Key} で弓を選び、金色の射位に立つ。"
+msgstr "Select the yumi with {Key}, then stand on the gold shooting line."
+
+#. Key:	Fetching
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,Fetching"
+msgid "矢取り：残り {Seconds} 秒"
+msgstr "Arrow retrieval: {Seconds} s"
+
+#. Key:	FiniteArrows
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,FiniteArrows"
+msgid "矢は有限だ。的場では矢取りを待ち、曲がった矢は鍛冶場で直す。"
+msgstr "Arrows are finite. At the range, wait for retrieval; repair bent arrows at the smithy."
+
+#. Key:	HangingProgress
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,HangingProgress"
+msgid "吊り的：{Hits} / 3 — 揺れと矢の落下を読む"
+msgstr "Hanging targets: {Hits} / 3 — lead the swing and arrow drop"
+
+#. Key:	LineInstructions
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,LineInstructions"
+msgid "金色の射位に立つ。弓を選び、攻撃を長押しして放す。"
+msgstr "Stand on the gold shooting line; select Bow, hold Attack, then release."
+
+#. Key:	NearProgress
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,NearProgress"
+msgid "近的：六射中 {Resolved} 射、四中まで {Hits} 中"
+msgstr "Near target: {Resolved} / 6 arrows resolved, {Hits} / 4 hits"
+
+#. Key:	TrainingOnly
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Archery,TrainingOnly"
+msgid "この立合いは稽古刀で行う。"
+msgstr "This sparring bout uses the practice sword."
+
 #. Key:	Bokken
 #: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.Arms,Bokken"

@@ -46,6 +46,7 @@ TITLE = ("SoraArena", "MenuTitle", "猫柳生")
 LOCALIZED = (
     "Private/UI/*.cpp", "Private/UI/*.h", "Private/Audio/*.cpp", "Private/HUD/SoraHUD.cpp", "Private/HUD/SoraHUDCaptions.cpp",
     "Private/HUD/SoraHUDFieldcraftPanel.cpp", "Private/Game/SoraCampaignDirectorWorld.cpp",
+    "Private/Game/SoraCampaignArchery.cpp",
     "Private/HUD/SoraHUDPanels.h", "Private/Game/SoraGameMode.cpp", "Public/SoraFrontEnd.h", "Public/SoraText.h",
     "Public/SoraCaptions.h", "Public/SoraSettings.h", "Public/SoraPracticeLobby.h",
 )

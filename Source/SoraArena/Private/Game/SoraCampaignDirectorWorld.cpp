@@ -587,7 +587,7 @@ bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
     if(UsesDojoQuiver()&&ActiveBeatData()&&ActiveBeatData()->bSparring&&
         Task.Type==SoraBeatRules::EType::Duel&&WeaponId!=0)
     {
-        if(bNotify) Notify(TEXT("この立合いは稽古刀で行う。"),TEXT("This sparring bout uses the practice sword."),3.f);
+        if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Archery","TrainingOnly","この立合いは稽古刀で行う。")),3.f);
         return false;
     }
     if(!SoraBeatRules::EquipmentAllows(TaskState,Task,WeaponId))
