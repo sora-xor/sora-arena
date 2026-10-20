@@ -675,6 +675,7 @@ struct FSoraBeat
     // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.
     FName Opponent;
     bool bSparring = false;
+    bool bArcheryLesson = false;
     // Each objective's hold (ms of Interact held to work it; 0: a press).
     TArray<int32> ObjectiveHoldMs;
     // The guards a stealth zone, or a production task under guard, posts on

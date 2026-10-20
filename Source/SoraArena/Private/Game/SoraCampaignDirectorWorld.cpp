@@ -45,6 +45,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||Mode().bChapterComplete) return false;
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
+    if(IsArcheryLesson()) { Location=ArcheryLine(); bInteract=false; return !AtArcheryLine(); }
     if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }
     const FSoraBeatSpace& Space=Beat->Space;
     const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point,Space.HeightCm); bInteract=bWorks; return true; };
@@ -581,6 +582,12 @@ bool USoraCampaignDirector::CanHold(int32 WeaponId,bool bNotify)
     if(CrankOccupiesHands())
     {
         if(bNotify) Notify(SoraText::Line(NSLOCTEXT("SoraArena.Campaign","CrankHands","両手で輪を回している。手を離せば武器を使える。")),3.f);
+        return false;
+    }
+    if(UsesDojoQuiver()&&ActiveBeatData()&&ActiveBeatData()->bSparring&&
+        Task.Type==SoraBeatRules::EType::Duel&&WeaponId!=0)
+    {
+        if(bNotify) Notify(TEXT("この立合いは稽古刀で行う。"),TEXT("This sparring bout uses the practice sword."),3.f);
         return false;
     }
     if(!SoraBeatRules::EquipmentAllows(TaskState,Task,WeaponId))

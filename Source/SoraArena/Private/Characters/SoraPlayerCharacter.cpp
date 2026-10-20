@@ -485,6 +485,16 @@ void ASoraPlayerCharacter::WeaponKey(int32 Group,int32 Slot)
 {
     if(bKernelDriven||!CanPlay()||Wheel.bOpen) return;
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
+    if(bDojoTraining)
+    {
+        if(Group==2)
+        {
+            if(auto* G=PlayerGameMode(this); G&&G->bCampaign&&G->Campaign()->IsWeaponUnlocked(18))
+                Equipment->EquipCampaignWeapon(18);
+        }
+        else if(Group==0||Group==1) Equipment->EquipClassSlot(0);
+        return;
+    }
     if(bCampaignHero&&!bDojoTraining) { SelectArmsGroup(Group); return; }
     if(Slot!=INDEX_NONE) Equipment->EquipClassSlot(Slot);
 }

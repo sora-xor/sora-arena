@@ -3,6 +3,7 @@
 #include "SoraCombatRules.h"
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
+#include "SoraCampaignDirector.h"
 #include "SoraWorldBuilder.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -39,6 +40,7 @@ void ASoraProjectile::Tick(float Dt)
     Super::Tick(Dt);
     const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
     if(Mode&&Mode->InputState()==SoraInput::Dialogue) return;
+    if(ArcheryShotId&&Mode&&!Mode->IsPlaying()) return;
     Age+=Dt; Velocity.Z-=(bArrow?980.f:Gravity)*Dt;
     if(bArrow) SetActorRotation(Velocity.Rotation());
     const FVector Before=GetActorLocation();
@@ -48,14 +50,28 @@ void ASoraProjectile::Tick(float Dt)
     {
         if(Hit.bBlockingHit)
         {
+            if(ArcheryShotId&&Mode) Mode->Campaign()->ResolveArcheryArrow(*this,&Hit);
             if(Hit.GetActor()&&Hit.GetActor()!=GetOwner())
                 SoraDamage::Strike(Hit.GetActor(),Damage,FSoraHit::Ranged(Before,WeaponId),Velocity.GetSafeNormal(),Hit,
                     GetInstigatorController(),this);
             Destroy();
         }
-        else if(Age>2.f) Destroy();
+        else if(Age>2.f)
+        {
+            if(ArcheryShotId&&Mode) Mode->Campaign()->ResolveArcheryArrow(*this,nullptr);
+            Destroy();
+        }
     }
     else if(Hit.bBlockingHit||Age>4.f) Detonate();
+}
+void ASoraProjectile::EndPlay(const EEndPlayReason::Type Reason)
+{
+    // Unexpected projectile removal is a miss, not an eternally pending
+    // sixth arrow. Session teardown invalidates its identities first.
+    if(ArcheryShotId&&Reason==EEndPlayReason::Destroyed)
+        if(auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)))
+            Mode->Campaign()->ResolveArcheryArrow(*this,nullptr);
+    Super::EndPlay(Reason);
 }
 void ASoraProjectile::Detonate()
 {

@@ -468,6 +468,13 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SpawnCast(bKeepPupil);
     ResetMaai();
     ResetEquipmentRecovery();
+    if(UsesDojoQuiver()&&(bResumed||Beat.Id==TEXT("ch01.b07")||Beat.Id==TEXT("ch01.b09"))) RestoreDojoQuiver();
+    BeginArchery();
+    if(UsesDojoQuiver()&&Beat.bSparring&&Beat.Is(SoraBeatRules::EType::Duel)&&M.Hero()&&M.Hero()->WeaponId!=0)
+    {
+        M.Hero()->GetEquipment()->DropStance();
+        M.Hero()->GetEquipment()->EquipClassSlot(0);
+    }
     ShowEpilogue();
     Fire(TEXT("beat_start"));
     // Until Sequencer lands, a boss's intro plays its lines as the fight opens.
@@ -509,6 +516,7 @@ void USoraCampaignDirector::CompleteActiveBeat()
     if(!SoraBeatRules::CompleteBeat(Next,Chapter.Rules.GetData(),Chapter.Rules.Num(),Index)) return;
     const unsigned NewWeapons=Next.WeaponsMask&~BeatState.WeaponsMask;
     BeatState=Next;
+    if(UsesDojoQuiver()&&(Index==6||Index==8)) RestoreDojoQuiver();
     if(Task.Goal==SoraBeatRules::EGoal::Elapsed) M.TitleCardTime=0.f;
     const int32 Site=Chapter.Rules[Index].Site;
     FString Japanese,English;
@@ -695,6 +703,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     Step.CrankHelpers=CrankHelpers();
     Step.CrankDecayMultiplier=LiftDecayMultiplier();
     SoraBeatRules::Tick(TaskState,Task,Step);
+    TickArchery(DeltaMs);
     TickMaai(DeltaMs);
     if(ActiveBeatData()!=&Beat) return;
     // Trigger volumes the hero walks or rides into raise their events: a
@@ -851,7 +860,7 @@ void USoraCampaignDirector::QueueWaves(unsigned Waves)
         if((Waves&(1u<<Wave))==0u) continue;
         // Debt-bound conscripts fight beside the wave but never count toward
         // it: a lethal blow only knocks one down, and cutting its seal frees it.
-        for(const FSoraWaveGroup& Group:Beat->Waves[Wave].Groups)
+        if(!IsArcheryLesson()) for(const FSoraWaveGroup& Group:Beat->Waves[Wave].Groups)
             if(Group.bLethal)
                 for(int32 Member=0;Member<Group.Count;++Member) Pending.Add({Wave,Group.Type,Group.bInvulnerable});
             else if(!Beat->bSparring&&GetWorld())
@@ -1059,6 +1068,7 @@ int32 USoraCampaignDirector::LiveWaveOpponents() const
 }
 void USoraCampaignDirector::ClearOpponents()
 {
+    ClearArchery();
     // A falling opponent removes itself after its lifespan. Everyone else
     // leaves now: the living, a captive the hero has bound, a knocked-down
     // conscript (whose collar would drag it up with nobody tracking it) and a
@@ -2010,6 +2020,7 @@ void USoraCampaignDirector::SaveProgress()
 }
 void USoraCampaignDirector::ClearOfflineProjectiles()
 {
+    ClearArchery();
     TArray<AActor*> Projectiles;
     UGameplayStatics::GetAllActorsOfClass(this,ASoraProjectile::StaticClass(),Projectiles);
     for(auto* Projectile:Projectiles) if(IsValid(Projectile)) Projectile->Destroy();
@@ -2051,6 +2062,7 @@ FString USoraCampaignDirector::ObjectiveText() const
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("章を終えた");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(false);
+    if(IsArcheryLesson()) return ArcheryText(false);
     if(NeedsCarryGate()) return TEXT("蔵の封印で操作を長押しし、槍の石突でこじ開ける");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("包みの前で操作を 3 秒長押しし、弓に弦を張る"):
         TEXT("空井戸の縄で操作を長押しし、底の刀の包みを取り戻す");
@@ -2087,6 +2099,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("Chapter complete");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(true);
+    if(IsArcheryLesson()) return ArcheryText(true);
     if(NeedsCarryGate()) return TEXT("Hold Interact at the granary seal to pry it off with the spear butt");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("Hold Interact at the bundle for 3 seconds to string the bow"):
         TEXT("Hold Interact at the dry-well rope to recover the sword bundle below");

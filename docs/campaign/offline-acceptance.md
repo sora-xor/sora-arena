@@ -739,3 +739,61 @@ amounts and locked weapons. This candidate still needs root's Unreal run.
 The three collectible POIs still share the existing functional cache; separate
 display interactions, final props, memory voice presentation and the gallery's
 remaining art are not completed by this change.
+
+## Chapter-one b07 archery candidate (source only, 2026-10-20)
+
+The range now uses physical paper/straw target proxies instead of generic
+sparring pupils. The existing chapter contract is validated at catalog load:
+one 28 m, 36 cm near face (25/21/18 cm scoring radius by difficulty), six
+resolved arrows with at least four hits, then three 45 cm hanging faces at
+40/50/60 m, each moving ±150 cm on a 3.2 s period. A target scores only an
+actual yumi projectile registered when released from the grounded shooting
+line. Other damage, off-line releases, repeated completed targets, stale
+identities and duplicate resolutions grant no progress. Collisions and
+two-second flight expiry both resolve shots. All six near arrows must resolve
+before either passing or failing the set.
+
+The mapped Bow action (default key 3) now equips the unlocked yumi in chapter
+one; key 1 or the existing key 2 returns to the training sword. Equip loads
+the yumi proxy instead of the authored bokken mesh. The later b11 sparring
+match retains its melee-only training slot. That slot still renders a bokken
+proxy: it is **not** an art-qualified fukuro-shinai. The separate root HUD
+integration must also limit its chapter-one bokken label to weapon 0.
+
+Chapter-one R no longer creates arrows. B07 starts with the own twelve-arrow
+quiver. A failed six-arrow set pauses shooting for the authored eight-second
+keeper retrieval, then restores those twelve arrows. The script does not
+define a recovery after misses exhaust the hanging stage; the explicit
+implementation choice is the same eight-second retrieval after the last
+in-flight arrow resolves, retaining earned hanging hits and awarding no
+progress. Menu/dialogue time does not advance retrieval. Completion
+reconstructs the authored six usable and six bent arrows; b09 checkpoint
+retry/reload restores that same batch. Only completion of b09's existing
+manufacturing task restores twelve usable and zero bent arrows. There is no
+new partial-target or per-arrow save state. Other chapters' reload/reserve
+contracts and deterministic practice/kernel are unchanged by this slice.
+
+`SoraArena.Campaign.ArcheryLesson` uses normal 60 Hz walking, mapped equip,
+650 ms draw and release, actual projectile flight, failed-set retrieval,
+paused/rebound input, hanging exhaustion/recovery, fresh b09 reload and
+normal station interactions to repair the batch. `ArcheryReload` covers
+pre-unlock/b11 loadout boundaries, ordinary menu checkpoint retry and a
+fresh-world load without reseeding. `SoraArcheryAutomation::Complete` is
+provided for the aggregate playthrough to replace its former generic enemy
+damage shortcut. Spaces and CombatTrace fixtures were not edited.
+The host `archery-rules` gate checks all 64 six-shot hit patterns in all
+720 resolution orders, retrieval boundaries at 1–500 ms, duplicate/stale
+identities, exhausted-stage recovery, inventory reconstruction, and range
+clearance against the current authored zone. **Unreal execution is pending
+root qualification; source tests are not runtime evidence.**
+
+The shooting line sits 420 cm beyond the existing range entry, beyond the two
+instructors. Three hanging lanes have offsets −600/0/+600 cm; all centers are
+40 cm above the flat range floor. Those lane placements and hanging height
+are functional proxy choices inside the existing space. Final shajō/azuchi,
+support frames, paper/straw surfaces, keeper retrieval animation, yumi and
+arrow-rest rigging, first-equip shooting forms and yugaeri/follow-through
+remain presentation work. Authored visible aim sway after four full-draw
+seconds is also still unimplemented; this change does not substitute an
+invisible random release penalty. The b08 clapper challenge and the remaining
+chapter-specific reserve/pickup contracts remain separate gameplay gaps.

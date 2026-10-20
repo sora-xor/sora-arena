@@ -6,6 +6,7 @@
 #include "SoraCrankInputRules.h"
 #include "SoraRhythmRules.h"
 #include "SoraDojoRules.h"
+#include "SoraArcheryRules.h"
 #include "SoraRegistry.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
@@ -14,6 +15,8 @@ class ASoraEnemy;
 class ASoraGameMode;
 class ASoraHorse;
 class ASoraPlayerCharacter;
+class ASoraProjectile;
+class ASoraArcheryTarget;
 class USoraSaveGame;
 struct FSoraBeat;
 struct FSoraBeatSpace;
@@ -139,6 +142,20 @@ public:
         bool bFacingAttacker = true, int32 RecoveryMs = 0);
     bool CanScoreDojoBout() const;
     int32 DojoLessonStage() const;
+    bool IsArcheryLesson() const;
+    bool UsesDojoQuiver() const;
+    bool CanLooseArcheryArrow() const;
+    bool AtArcheryLine() const;
+    FVector ArcheryLine() const;
+    ASoraArcheryTarget* ArcheryTarget(int32 Index) const;
+    const SoraArcheryRules::FState& ArcheryProgress() const { return Archery; }
+    int32 ArcheryClockMs() const { return ArcheryMs; }
+    int32 BentArrows() const { return SoraArcheryRules::Bent(BeatState.CompletedMask); }
+    unsigned long long RegisterArcheryArrow(ASoraProjectile& Arrow);
+    void ResolveArcheryArrow(ASoraProjectile& Arrow,const FHitResult* Hit);
+    // R cannot manufacture chapter-one arrows. Recovery belongs to the
+    // range keeper and the authored smithy output.
+    void ExplainDojoQuiver();
     void SaveProgress();
 
     // Events. FireDialogueTrigger plays the lines and HUD prompt an event
@@ -478,6 +495,18 @@ private:
     void TickBeat(float DeltaSeconds);
     void TickMaai(int32 DeltaMs);
     void ResetMaai();
+    SoraArcheryRules::FState Archery;
+    unsigned long long NextArcheryShot=0;
+    int32 ArcheryMs=0;
+    UPROPERTY() TArray<TObjectPtr<ASoraArcheryTarget>> ArcheryTargets;
+    UPROPERTY() TObjectPtr<AActor> ArcheryLineMarker;
+    void ClearArchery();
+    void BeginArchery();
+    void TickArchery(int32 DeltaMs);
+    void StageArcheryTargets();
+    void SetDojoArrows(int32 Count);
+    void RestoreDojoQuiver();
+    FString ArcheryText(bool bEnglish) const;
     FVector MaaiTarget = FVector::ZeroVector;
     FVector MaaiForward = FVector::ForwardVector;
     bool bMaaiMoving = false;

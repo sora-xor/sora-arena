@@ -2,6 +2,7 @@
 #include "SoraCampaignRules.h"
 #include "SoraCatalogJson.h"
 #include "SoraCatalogRegistry.h"
+#include "SoraCatalogArchery.h"
 
 namespace
 {
@@ -681,6 +682,8 @@ bool FSoraCatalog::LoadCampaign()
                 return Bad(FString::Printf(TEXT("beat %s has an invalid %s task"), *Beat.Id, *TypeName));
             if (!SoraCatalogRegistry::Read(*O, Beat))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid production registry entry"), *Beat.Id));
+            if (!SoraCatalogArchery::Read(*O, Beat))
+                return Bad(FString::Printf(TEXT("beat %s has invalid authored archery rules"), *Beat.Id));
             for (const FString& Kind : Beat.StepKinds)
                 if (!StepLabels.Contains(Kind)) return Bad(FString::Printf(TEXT("beat %s has an unlabelled step %s"), *Beat.Id, *Kind));
             for (const FString& Target : Beat.Targets)
