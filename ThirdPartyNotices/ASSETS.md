@@ -9,7 +9,7 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 | Tier | Records | Files | Bytes recorded |
 |---|---:|---:|---:|
 | PUB-CC0 | 192 | 2571 | 4,584,606,249 |
-| PUB-BY | 10 | 10 | 206,477,553 |
+| PUB-BY | 11 | 12 | 206,629,366 |
 | OWN | 12 | 453 | 764,793,721 |
 | REF | 6 | 6 | 9,778,972 |
 
@@ -267,6 +267,12 @@ These assets are dedicated to the public domain under CC0 1.0 (<https://creative
 ## Attribution required (PUB-BY)
 
 Credit format (plan section 2.3): "Title" by Author, source link, license link, and the changes made. Raw PUB-BY files stay private in `Local/ThirdPartyRaw`; only derived art is committed, and it keeps these credits here and in the in-game credits.
+
+### Google Noto Fonts
+
+- "Noto Naskh Arabic UI Regular" by Google Inc., <https://github.com/notofonts/noto-fonts>, OFL-1.1 <https://openfontlicense.org/open-font-license-official-text/>
+  - Credit: Noto Naskh Arabic UI Regular, Copyright 2013 Google Inc. Licensed under the SIL Open Font License 1.1.
+  - Changes: None. Exact font bytes from the installed Unreal Engine 5.8.3 Content/Slate/Fonts/NotoNaskhArabicUI-Regular.ttf; redistributed under the font's own OFL 1.1 terms.
 
 ### CatBaseV6 anatomy inputs
 

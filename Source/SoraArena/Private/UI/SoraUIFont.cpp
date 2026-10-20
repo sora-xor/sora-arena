@@ -30,7 +30,7 @@ UFont* SoraUI::CreateUIFont(UObject* Outer)
     // No culture filter: an Arabic attribution must also render in the
     // Japanese and bilingual credits screens.
     Arabic.Typeface.AppendFont(FName(TEXT("Regular")),
-        FPaths::EngineContentDir() / TEXT("Slate/Fonts/NotoNaskhArabicUI-Regular.ttf"),
+        FPaths::ProjectContentDir() / TEXT("SourceArt/Fonts/NotoNaskhArabicUI-Regular.ttf"),
         EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
     return Font;
 }
