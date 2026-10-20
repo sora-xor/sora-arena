@@ -835,11 +835,12 @@ Reward state is transient and reset with the class/checkpoint loadout.
 `SoraArena.Campaign.DojoGuardLessons` receives actual pupil contacts and
 learns Guard, two Parry repetitions, and Recovery through mapped input at
 each difficulty. `DojoAwaseHint` covers ordinary guard rejection, the
-400 ms opportunity, menu pause, an actual swept Step, and retry from b04
-back to the b03 checkpoint reached through normal lessons and cuts.
+400 ms opportunity, menu pause, an actual swept Step, and retry at the b04
+checkpoint reached through normal b03 lessons and cuts.
 `DojoZanshin` spends stamina through held guard, scores with real return
 cuts during actual awase stagger, and checks a broken/restarted hold,
-exactly +15 once, resumed drain, fresh save reload, and a refused bout.
+exactly +15 once, resumed drain, reload while the winning point's next
+reward is still pending, and a refused bout.
 No combat event, damage, score or stamina write substitutes for input in
 those paths. **Unreal qualification is pending; CPU checks are not runtime
 evidence.**
