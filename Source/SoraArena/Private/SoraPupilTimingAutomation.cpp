@@ -51,6 +51,42 @@ bool FSoraPupilTimingTest::RunTest(const FString& Parameters)
     KesaPattern->SetNumberField(TEXT("recovery_ms"),1000);
     KesaPattern->SetStringField(TEXT("id"),TEXT("pupil_men"));
     TestFalse(TEXT("A swapped lesson pattern is rejected"),SoraCatalogDojo::Read(*Kesa,Probe));
+    KesaPattern->SetStringField(TEXT("id"),TEXT("pupil_kesa"));
+    for(const int32 BeatIndex:{2,3})
+    {
+        const auto Object=(*Beats)[BeatIndex]->AsObject();
+        const auto Pattern=SoraCatalogJson::Child(*SoraCatalogJson::Child(*Object,TEXT("ext")),TEXT("opponent_pattern"));
+        const TArray<FString> Fields=BeatIndex==2
+            ? TArray<FString>{TEXT("windup_ms"),TEXT("repeat_s"),TEXT("stagger_on_awase_s")}
+            : TArray<FString>{TEXT("windup_ms"),TEXT("recovery_ms")};
+        FSoraBeat TypedProbe=Chapter.Beats[BeatIndex];
+        for(const FString& Field:Fields)
+        {
+            const auto Original=Pattern->TryGetField(Field);
+            double Number=0;
+            if(!TestTrue(TEXT("The original timing field is numeric"),Original&&Original->TryGetNumber(Number))) return false;
+            Pattern->SetBoolField(Field,true);
+            TestFalse(FString::Printf(TEXT("Boolean %s is not a timing number"),*Field),SoraCatalogDojo::Read(*Object,TypedProbe));
+            Pattern->SetStringField(Field,FString::SanitizeFloat(Number));
+            TestFalse(FString::Printf(TEXT("Numeric string %s is not a timing number"),*Field),SoraCatalogDojo::Read(*Object,TypedProbe));
+            Pattern->SetField(Field,MakeShared<FJsonValueNull>());
+            TestFalse(FString::Printf(TEXT("Null %s is not a timing number"),*Field),SoraCatalogDojo::Read(*Object,TypedProbe));
+            Pattern->SetField(Field,Original);
+            TestTrue(TEXT("Restoring the numeric field restores valid timing"),SoraCatalogDojo::Read(*Object,TypedProbe));
+        }
+    }
+    const auto Maai=(*Beats)[1]->AsObject();
+    const auto MaaiExt=SoraCatalogJson::Child(*Maai,TEXT("ext"));
+    FSoraBeat MaaiProbe=Chapter.Beats[1];
+    const TArray<TSharedPtr<FJsonValue>> WrongPatterns={MakeShared<FJsonValueBoolean>(false),
+        MakeShared<FJsonValueNull>(),MakeShared<FJsonValueString>(TEXT("pupil_men"))};
+    for(const auto& WrongPattern:WrongPatterns)
+    {
+        MaaiExt->SetField(TEXT("opponent_pattern"),WrongPattern);
+        TestFalse(TEXT("A malformed pattern is not silently absent outside attack lessons"),SoraCatalogDojo::Read(*Maai,MaaiProbe));
+    }
+    MaaiExt->RemoveField(TEXT("opponent_pattern"));
+    TestTrue(TEXT("Maai remains valid without an attack pattern"),SoraCatalogDojo::Read(*Maai,MaaiProbe));
 
     constexpr int32 MenWindups[]={715,550,468},KesaWindups[]={780,600,510};
     constexpr float FrameSeconds=1.f/60.f,Tolerance=.035f;
