@@ -879,3 +879,30 @@ invalid cadence boundaries. **This is source evidence only until the root
 lane executes the directed Unreal test.** The existing straight telegraph
 and weapon animation remain presentation proxies; this timing slice does
 not qualify the authored diagonal kesa edge or final animation.
+
+## October 23 actual dojo qualification
+
+Integrated `c841a8d` passes eight source-bound editor tests covering real awase
+feedback, learned guard/recovery, zanshin, both maai paths, physical archery and
+the full accelerated campaign traversal, with zero selected errors/warnings.
+The same source passes 57 gameplay/tooling/asset CPU checks and the uncooked
+Metal SM6 front-end tour. Its 19 menu frames are archived; only two Credits
+views were reviewed in this run. These results supersede the source-only
+qualification status above without establishing human pacing or final art.
+
+Pupil timing `876f539` passes all 58 gameplay/tooling/asset CPU checks and nine
+source-bound editor tests, including `PupilTiming`, the three dojo regressions,
+both maai paths, physical archery, Playthrough and ScriptedFight. All nine
+have zero selected errors/warnings. Real contact and telegraph timestamps
+verify both authored cadences at every difficulty. Follow-up `24f27f9`
+requires actual JSON numbers before conversion and rejects malformed pattern
+presence outside attacking lessons. Its fresh actual `PupilTiming` run passes
+the malformed-loader cases and all six lesson/difficulty combinations with
+zero selected errors/warnings.
+
+The earlier `44ffc35` Mac package passes build, cook, stage, untouched Title
+startup and all 152 client tests with zero selected errors/warnings. That
+package includes physical archery, but predates these latest dojo timing,
+recovery and bundled-font changes. A new package is still required for them.
+All evidence here is from this M2 Ultra; M1, Windows, normal-control pacing,
+straight/diagonal animation and final visual acceptance remain separate.

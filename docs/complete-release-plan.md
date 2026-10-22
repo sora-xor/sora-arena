@@ -11,7 +11,88 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
-## October 20 qualification update
+## October 23 qualification update
+
+These results supersede the October 20 running states below. The release remains
+incomplete; each result retains its exact source and platform.
+
+- Mac Development candidate `44ffc35`, native `10ad7dad`, passes Game build,
+  cook (1,323 packages, zero errors/warnings), staging, strict signature checks,
+  startup smoke, untouched rendered Title, and **152 client automation tests
+  with zero selected errors/warnings**, including the rendered front-end tour.
+  The former tower floor-placement failure is resolved in this package.
+  All 60 app files match the same candidate hashes before and after execution.
+  Nineteen original menu frames are retained; Title and both Credits views were
+  reviewed in this run. The Back glyph masks match before/after scrolling.
+  This is local M2 Ultra evidence, not clean-machine, M1, Windows, performance,
+  final art or ordinary-control campaign acceptance.
+- CI run `39424130199` at `44ffc35` passes gameplay, Rust, tooling and audio;
+  assets fail only because the old source checker requires Arabic credit letters
+  in the Japanese font. Its tested merge has the exact same tree and unchanged
+  source. Repair `efec4a8` bundles the identical 146,548-byte OFL Arabic font,
+  records its rights and hash, and makes source checks and runtime use the same
+  project file. Coverage now includes staged credits and routes each character
+  through the actual composite's Unicode blocks. Independent review and all
+  25 asset/tooling CPU gates pass at the equivalent isolated `e31e249` source.
+- Integrated `c841a8d` fixes the real `OnParried` missed-step hint and enables
+  the learned dojo guard/stamina cycle. Only accepted points arm zanshin;
+  a continuous 500 ms guard grants +15 once, while refused flank bouts earn
+  none. Actual-input tests cover guard/parry/recovery, hint delay and pause,
+  swept Step, retry, pending-reward fresh load, finite archery and traversal.
+  The first seven-test editor run passed on October 21 but omitted the optional
+  source-bound artifact receipt; it is retained as ordinary development evidence.
+  The fresh October 23 run builds with the exact candidate declaration and
+  passes eight tests (adding Campaign.Maai), with zero selected errors/warnings.
+  Its source, module and artifact receipt are retained together. The same clean
+  source passes all 57 gameplay/tooling/asset source gates and a fresh Metal
+  SM6 front-end tour with zero selected errors/warnings. Nineteen original
+  frames are archived; only the two Credits views were reviewed in this run.
+  Exact original-pixel Japanese/English Back masks agree across the scroll.
+  The Arabic filename lies outside those two views; its coverage is established
+  by the separate shaping test, not visual review of that line.
+- Pupil candidate `876f539` loads the actual b03/b04 timing fields and scales
+  windups by difficulty. b03 repeats every 1,450 ms from onset; b04 has a
+  600 ms base windup and 1,000 ms recovery from actual contact. The visible
+  telegraph lifetime matches each scaled windup, with stagger/turn locks still
+  delaying the next attack. All 58 gameplay/tooling/assets source checks and
+  nine actual source-bound editor tests pass with zero selected errors/warnings,
+  including real timing/contact/guard/parry observations on all difficulties.
+  Independent review found coercible JSON numeric fields; the strict-type
+  correction `24f27f9` passes its fresh source-bound actual loader/timing
+  regression with zero selected errors/warnings. Boolean, numeric-string and
+  null timing fields and malformed non-lesson pattern fields are rejected.
+  Final straight/diagonal presentation and human pacing remain open.
+- Signed native research `47db4112437ad34e8a6ca1f47dd67dfddf060b31` completes five
+  actual component proofs, separate verification, 44 statement mutations and
+  ten corrupt/truncated-proof rejections, seven exact native prover `Constraint`
+  rejections, and 16 unit/regression checks. The whole cohort took 8,198.529 s
+  with 1,350,336,512-byte peak RSS on this M2 Ultra using two workers. Root
+  verified the signed commit, proven source blobs and all 18 artifact hashes.
+  The staged bridge remains `10ad7dad`. This supplied-boundary two-player
+  component is unregistered; canonical control authority, complete World/history
+  composition, full-match proof, settlement and reference-M1 gates remain open.
+- W09's all-UV0-boundary collapse reaches 4,654 triangles with zero out-of-range
+  corners but introduces 34 orientation reversals and 1,011 positive-area atlas
+  overlaps. Protecting both UV fields retains every pinned signature but yields
+  4,766 triangles (112 over budget), 37 reversals and 3,516 overlaps. Both are
+  rejected as repairs. The source and original control have zero such overlaps.
+  No asset bytes or acceptance thresholds changed. The next experiment prevents
+  interior orientation reversals before each collapse. Its first bounded run
+  retains every protected signature, zero UV0 atlas overlap and zero winding
+  reversals in either UV field, with unchanged source bytes. It stops at the
+  400,000-operation cap after 6.907 s at 6,028 triangles, 1,374 above target;
+  391,397 heap entries were stale. The largest same-atlas XYZ error is
+  2.759 mm and UVMetric error 0.000127. This improves the diagnostic but does
+  not meet the triangle target or resolve the independent normal-map failure.
+  No production asset has changed.
+- Claude's branch remains `b17453d` with uncommitted timber/curtain/importer work.
+  Its last confirmed weekly limit is October 24 at 22:00 JST. Existing requests
+  remain queued, and the coordination mailbox carries the latest integration
+  evidence. No new Claude output has been admitted. Pupil attack presentation,
+  visible bow sway, optional wood/clapper play, remaining reserve rules, final
+  art, normal-control play and all remaining release gates still require work.
+
+## October 20 qualification update (historical)
 
 These results supersede the running-state descriptions in the retained milestone
 history below. The release remains incomplete.
