@@ -1,4 +1,5 @@
 #pragma once
+#include "SoraBowRules.h"
 
 // Chapter-one range only. A shot has an identity until impact or expiry;
 // duplicate/late resolutions cannot score another arrow or another set.
@@ -9,7 +10,7 @@ constexpr int Quiver=12,SetSize=6,RequiredHits=4,FetchMs=8000;
 constexpr int NearCm=2800,HangingCm[3]={4000,5000,6000};
 constexpr int HangingLaneCm[3]={-600,0,600};
 constexpr int HitRadius[3]={25,21,18};
-constexpr int SwingCm=150,PeriodMs=3200,DrawMs=650;
+constexpr int SwingCm=150,PeriodMs=3200,DrawMs=SoraBowRules::DrawMs;
 constexpr int UsableAfter=6,BentAfter=6;
 enum class EStage : unsigned char { Near,Hanging,Done };
 enum class EResult : unsigned char { Ignored,Miss,Hit,FailedSet,NearComplete,Complete };

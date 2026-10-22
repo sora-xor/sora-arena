@@ -794,8 +794,8 @@ are functional proxy choices inside the existing space. Final shajō/azuchi,
 support frames, paper/straw surfaces, keeper retrieval animation, yumi and
 arrow-rest rigging, first-equip shooting forms and yugaeri/follow-through
 remain presentation work. Authored visible aim sway after four full-draw
-seconds is also still unimplemented; this change does not substitute an
-invisible random release penalty. The b08 clapper challenge and the remaining
+seconds remained unimplemented in this archery checkpoint; the later sway
+candidate is described below. The b08 clapper challenge and the remaining
 chapter-specific reserve/pickup contracts remain separate gameplay gaps.
 
 The integrated candidate `44ffc35` subsequently builds and passes
@@ -810,6 +810,40 @@ not human pacing, rendered range art or packaged qualification. The fresh Mac
 package remains running. Source-only checks pass 46/46 at preceding `8fb35cf`;
 its original compile failure is retained, and the narrow explicit-scopes/header
 repair has its separate successful editor build receipt at `44ffc35`.
+
+## Visible yumi aim sway candidate (source only, 2026-10-23)
+
+Chapter 01 §b07 / `x_shaho` specifies the 650 ms draw and sway after four
+seconds at full draw: onset is 4.65 seconds after Attack is pressed. It does
+not specify strength, periods or a ramp. The named `SoraBowRules` defaults
+are explicit **provisional implementation choices**, awaiting actual play and
+visual review: pitch ±0.18°, yaw ±0.28°, periods 2.6/3.4 seconds, and a
+one-second smoothstep ramp. All difficulties initially use the same profile.
+Both waves start at zero and use the current draw's absolute elapsed time;
+there is no random release roll or frame-accumulated drift.
+
+The camera and control rotation stay stable. The HUD projects the bow's
+current aim ray and the held proxy receives its camera-local angular offset.
+The released projectile and ordinary shot event use that same ray, sampled
+before clearing draw state. The reticle describes initial aim, not a gravity
+or moving-target impact prediction. Pausing, dialogue input reset, switching
+weapons, stagger, checkpoint retry and fresh-world load discard the draw and
+its phase. There is no new serialized state or change to arrow inventory,
+target scoring, keeper retrieval, lesson progression or practice/kernel.
+
+`SoraArena.Campaign.BowAimSway` uses mapped equip/draw/release and normal
+60 Hz ticks on all three difficulties. It records full-draw/onset times,
+checks visible proxy rotation and unchanged camera input, compares actual
+projectile initial velocity/origin with the visible ray and shot event, and
+waits for a real miss resolution. `BowAimCancellation` covers paused and
+remapped Attack, weapon change, dialogue and stagger cancellation, ordinary
+menu retry and fresh-world reload with a held draw. Cancelled draws must
+spend no arrow or issue a shot identity, and each new draw starts steady.
+The host `bow-aim-rules` gate covers exact onset, independent numerical
+samples, bounded long holds, smooth ramp joins and frame partition invariance.
+**These are source changes and unexecuted Unreal fixtures until root records
+the actual engine run.** Reticle legibility and tuning, final bow/hand rigging,
+right-side arrow rest and yugaeri still need their respective visual/art review.
 
 ## Dojo awase feedback and passive zanshin candidate (source only, 2026-10-20)
 

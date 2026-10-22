@@ -251,7 +251,7 @@ void ASoraPlayerCharacter::TickPlay(float Dt)
     const float Moving=FMath::Clamp(GetVelocity().Size2D()/500.f,0.f,1.f);
     Viewmodel->Sway(LifeTime,Moving,
         Equipment->bReloading?-30.f:Equipment->IsCommittedStrike()?25.f:Equipment->IsBowDrawing()?-15.f:0.f,
-        bSprint?-15.f:0.f);
+        bSprint?-15.f:0.f,Equipment->BowAimOffset());
 }
 void ASoraPlayerCharacter::TickDojoLessons()
 {
