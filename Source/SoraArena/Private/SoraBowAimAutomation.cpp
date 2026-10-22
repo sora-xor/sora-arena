@@ -10,7 +10,7 @@
 #include "GameFramework/InputSettings.h"
 #include "Misc/ScopeExit.h"
 
-namespace
+namespace SoraBowAimAutomation
 {
 using SoraFieldcraftAutomation::FBeatWorld;
 bool BeginDraw(FBeatWorld& W,const FKey& Key)
@@ -49,6 +49,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraBowAimSwayTest,"SoraArena.Campaign.BowAimS
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraBowAimSwayTest::RunTest(const FString& Parameters)
 {
+    using namespace SoraBowAimAutomation;
     (void)Parameters;
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
     for(int32 Difficulty=0;Difficulty<3;++Difficulty)
@@ -121,6 +122,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraBowAimCancellationTest,"SoraArena.Campaign
     EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraBowAimCancellationTest::RunTest(const FString& Parameters)
 {
+    using namespace SoraBowAimAutomation;
     (void)Parameters;
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
     const auto Actions=GetDefault<UInputSettings>()->GetActionMappings();
