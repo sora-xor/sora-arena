@@ -16,6 +16,7 @@
 #include "SoraPracticeDirector.h"
 #include "SoraWorldBuilder.h"
 #include "SoraSettings.h"
+#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/PlayerController.h"
@@ -206,7 +207,15 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
         const float Edge=Frame.bReduceFlashing?.25f*FMath::Clamp(P->DamageFlash/.3f,0.f,1.f):.65f;
         HUD.Panel(0,0,12*S,H,FLinearColor(.8,0,0,Edge)); HUD.Panel(W-12*S,0,12*S,H,FLinearColor(.8,0,0,Edge));
     }
-    const float CX=W*.5f,CY=H*.5f; const FLinearColor Cross=P->HitMarkerTime>0?Gold:Ivory;
+    float CX=W*.5f,CY=H*.5f;
+    if(!G->bDeterministicPractice&&P->WeaponId==18&&Kit->IsBowDrawing())
+    {
+        // Project the same camera-origin ray ReleaseBow uses. This is aim,
+        // not an impact predictor: ordinary arrow drop remains visible.
+        const FVector Aim=HUD.Project(P->GetCamera()->GetComponentLocation()+Kit->BowAimDirection()*10000.f);
+        CX=Aim.X; CY=Aim.Y;
+    }
+    const FLinearColor Cross=P->HitMarkerTime>0?Gold:Ivory;
     HUD.DrawLine(CX-10,CY,CX-4,CY,Cross,1.5); HUD.DrawLine(CX+4,CY,CX+10,CY,Cross,1.5); HUD.DrawLine(CX,CY-10,CX,CY-4,Cross,1.5); HUD.DrawLine(CX,CY+4,CX,CY+10,Cross,1.5);
     if(!G->bDeterministicPractice)
     {

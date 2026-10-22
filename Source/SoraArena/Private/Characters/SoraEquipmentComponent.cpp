@@ -1,6 +1,7 @@
 #include "SoraEquipmentComponent.h"
 #include "Combat/SoraDamage.h"
 #include "SoraCampaignDirector.h"
+#include "SoraBowRules.h"
 #include "SoraCatalog.h"
 #include "SoraCombatRules.h"
 #include "SoraCompanion.h"
@@ -87,7 +88,17 @@ void USoraEquipmentComponent::Halt()
 }
 float USoraEquipmentComponent::BowDrawProgress() const
 {
-    return bBowDrawing&&GetWorld()?FMath::Clamp((GetWorld()->GetTimeSeconds()-BowDrawStartedAt)/.65f,0.f,1.f):0.f;
+    return bBowDrawing&&GetWorld()?FMath::Clamp((GetWorld()->GetTimeSeconds()-BowDrawStartedAt)*1000.0/SoraBowRules::DrawMs,0.0,1.0):0.f;
+}
+FRotator USoraEquipmentComponent::BowAimOffset() const
+{
+    if(!bBowDrawing||Hero()->WeaponId!=18||!Hero()->CanPlay()) return FRotator::ZeroRotator;
+    const auto Aim=SoraBowRules::AimSway(GetWorld()->GetTimeSeconds()-BowDrawStartedAt);
+    return FRotator(Aim.Pitch,Aim.Yaw,0);
+}
+FVector USoraEquipmentComponent::BowAimDirection() const
+{
+    return Hero()->GetCamera()->GetComponentQuat().RotateVector(BowAimOffset().Vector());
 }
 float USoraEquipmentComponent::StrikeWindupProgress() const
 {
@@ -468,13 +479,15 @@ void USoraEquipmentComponent::ResolveChain()
 void USoraEquipmentComponent::ReleaseBow()
 {
     ASoraPlayerCharacter* H=Hero();
+    // Sample the visible aim before ending this draw, including releases
+    // between world ticks. Ending it first would silently recenter the shot.
+    const FVector Direction=BowAimDirection();
     bBowDrawing=false;
     if(!H->CanPlay()||H->WeaponId!=18||bReloading||H->IsSprinting()||Ammo<=0||
-        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<.65f||!ArmsReady(*H,18)) return;
+        GetWorld()->GetTimeSeconds()-BowDrawStartedAt<SoraBowRules::DrawMs/1000.0||!ArmsReady(*H,18)) return;
     auto* Campaign=HeroCampaign(*H);
     if(Campaign&&!Campaign->CanLooseArcheryArrow()) return;
     const auto& W=FSoraCatalog::Get().Weapon(18);
-    const FVector Direction=H->GetCamera()->GetForwardVector();
     const FVector Origin=H->GetCamera()->GetComponentLocation()+Direction*65.f;
     auto* Arrow=GetWorld()->SpawnActorDeferred<ASoraProjectile>(ASoraProjectile::StaticClass(),
         FTransform(Direction.Rotation(),Origin),H,H,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);

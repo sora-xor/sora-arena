@@ -78,6 +78,10 @@ public:
     float MoveScale(bool bSprinting) const;
     bool IsBowDrawing() const { return bBowDrawing; }
     float BowDrawProgress() const;
+    // Camera-local visible sway and its world aim ray. HUD, held bow and
+    // released projectile share these; no hidden accuracy roll on release.
+    FRotator BowAimOffset() const;
+    FVector BowAimDirection() const;
     bool IsCommittedStrike() const { return bCommittedStrike; }
     // The committed action is the kusarigama's chain, not a cut.
     bool IsChainCast() const { return bCommittedStrike && bChainCast; }
@@ -112,7 +116,7 @@ private:
     void RaiseBeatEvent(const FString& Event) const;
     bool bFireHeld = false;
     bool bBowDrawing = false;
-    float BowDrawStartedAt = 0.f;
+    double BowDrawStartedAt = 0.0;
     bool bCommittedStrike = false;
     bool bChainCast = false;
     TWeakObjectPtr<ASoraEnemy> ChainTarget;
