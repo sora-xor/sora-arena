@@ -851,3 +851,31 @@ The authored b04 `pupil_kesa` 600 ms/1000 ms timing and Easy ×1.30 / Hard
 ×0.85 windup scaling are not implemented by this repair. Tests respond to
 the observed telegraph and validate the guard/parry gates; they do not
 qualify those missing attack variations or the final animation.
+
+### Authored pupil timing candidate (2026-10-23; runtime pending)
+
+The subsequent timing slice reads the two `ext.opponent_pattern` rows
+instead of sharing one drill. In b03, `pupil_men` starts every 1450 ms:
+`repeat_s` is an onset-to-onset interval, not another 1450 ms after impact.
+Its Normal windup is 550 ms. In b04, `pupil_kesa` has a 600 ms Normal
+windup followed by a full 1000 ms recovery measured from actual contact.
+Windups alone scale by Easy ×1.30 or Hard ×0.85, rounded half up to integer
+milliseconds. The real telegraph and committed event carry that same
+duration. Stagger and turn lock continue to defer an otherwise due attack.
+The maai teacher remains non-attacking; Toranosuke retains his separate
+boss-catalog attack patterns. No save, input binding or kernel rule changes.
+
+`SoraArena.Campaign.PupilTiming` reads the real catalog and rejects malformed
+or conflicting pattern fields through its loader. For both lessons on all
+three difficulties, it approaches using mapped movement, holds two real
+early guards, then answers the third observed telegraph with a mapped
+awase. At normal 60 Hz it records attack onset, telegraph lifetime, contact,
+guard age, and the next attack after recovery/stagger. It asserts the
+350 ms early-guard opportunity even on Hard, the separate repeat/recovery
+cadences, and the real 1200 ms stagger delay. It does not move actors,
+synthesize combat events, shorten clocks, grant points, or change health.
+The `dojo-timing` CPU gate checks authored data, shared timing math and
+invalid cadence boundaries. **This is source evidence only until the root
+lane executes the directed Unreal test.** The existing straight telegraph
+and weapon animation remain presentation proxies; this timing slice does
+not qualify the authored diagonal kesa edge or final animation.

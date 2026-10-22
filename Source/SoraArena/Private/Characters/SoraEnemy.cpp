@@ -166,11 +166,12 @@ void ASoraEnemy::InitScripted(int32 Id)
     ApplyClass(Id%6);
     BuildCat();
 }
-void ASoraEnemy::InitDojoPupil(int32 Id)
+void ASoraEnemy::InitDojoPupil(int32 Id, const SoraDojoRules::FPupilTiming& Timing)
 {
     ResetConstruct();
     Kind=nullptr; Variant=NAME_None; VariantData=nullptr;
     bDojoPupil=true; EnemyIndex=Id;
+    PupilTiming=Timing;
     StaggerUntil=-1.f; StrikeStaggerImmuneUntil=-1.f; BarrierMilli=0; BarrierMaxMilli=0;
     bPupilWindup=false; NextPupilStrike=Now()+1.4f+Id*.35f;
     ApplyClass(0);
@@ -755,6 +756,9 @@ void ASoraEnemy::PupilAttack(ASoraCharacterBase& Target,float Dist)
     {
         if(Time<PupilWindupEndsAt) return;
         bPupilWindup=false;
+        // Recovery is counted from the actual contact frame, never shortened
+        // by the fractional frame between the deadline and this resolution.
+        if(PupilTiming.RecoveryMs>0) NextPupilStrike=Time+PupilTiming.RecoveryMs/1000.f;
         FHitResult Hit; FCollisionQueryParams PupilTrace(SCENE_QUERY_STAT(DojoSpar),false,this);
         const FVector To=From+PupilLockedDirection*200.f;
         GetWorld()->LineTraceSingleByChannel(Hit,From,To,ECC_Visibility,PupilTrace);
@@ -775,14 +779,17 @@ void ASoraEnemy::PupilAttack(ASoraCharacterBase& Target,float Dist)
         return;
     }
     if(Time<NextPupilStrike||Dist>190.f) return;
-    bPupilWindup=true; PupilWindupEndsAt=Time+.55f; NextPupilStrike=PupilWindupEndsAt+1.45f;
+    const int32 Difficulty=static_cast<int32>(SoraAccessibility::CampaignDifficulty(this));
+    const float Windup=SoraDojoRules::PupilWindupMs(PupilTiming,Difficulty)/1000.f;
+    bPupilWindup=true; PupilWindupEndsAt=Time+Windup;
+    NextPupilStrike=Time+SoraDojoRules::PupilStartIntervalMs(PupilTiming,Difficulty)/1000.f;
     PupilLockedDirection=(Target.GetActorLocation()+FVector(0,0,50)-From).GetSafeNormal();
     // The dojo teaches reading this windup: it takes the settings' palette like every telegraph.
-    SoraDamage::Beam(GetWorld(),From,From+PupilLockedDirection*200.f,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),2.f,.55f);
+    SoraDamage::Beam(GetWorld(),From,From+PupilLockedDirection*200.f,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),2.f,Windup);
     if(Events)
     {
         FSoraMeleeCommittedEvent Committed;
-        Committed.Attacker=this; Committed.WeaponId=WeaponId; Committed.Direction=PupilLockedDirection; Committed.WindupSeconds=.55f;
+        Committed.Attacker=this; Committed.WeaponId=WeaponId; Committed.Direction=PupilLockedDirection; Committed.WindupSeconds=Windup;
         Events->OnMeleeCommitted.Broadcast(Committed);
     }
 }

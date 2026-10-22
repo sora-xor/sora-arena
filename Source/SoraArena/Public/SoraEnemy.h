@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "SoraCharacterBase.h"
 #include "SoraCombatRules.h"
+#include "SoraDojoRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraStealthRules.h"
 #include "SoraEnemy.generated.h"
@@ -68,7 +69,7 @@ public:
     static ASoraEnemy* SpawnInvader(UWorld& World, int32 Slot, const FVector& Location, const FRotator& Rotation,
         const FSoraPatrolRoute* Patrol = nullptr);
     // Nonlethal sparring with the bokken; a defeated pupil yields.
-    void InitDojoPupil(int32 Slot);
+    void InitDojoPupil(int32 Slot, const SoraDojoRules::FPupilTiming& Timing = {});
     void SuspendDojoAction();
     virtual bool IsEnemy() const override { return !IsFreed(); }
     virtual bool IsSparring() const override { return bDojoPupil; }
@@ -256,6 +257,7 @@ private:
     bool bUnconscious = false;
     bool bSeized = false;
     // The sparring pupil's drill.
+    SoraDojoRules::FPupilTiming PupilTiming;
     bool bPupilWindup = false;
     float PupilWindupEndsAt = 0.f;
     FVector PupilLockedDirection = FVector::ForwardVector;
