@@ -82,6 +82,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     for name in ("campaign_progression", "combat_rules", "boss_rules", "stealth_rules", "fieldcraft_rules", "historical_arms"):
         script("gameplay", name.replace("_", "-"), f"scripts/unreal/test_{name}.py")
     unit("gameplay", "maai-data", "scripts/unreal/test_maai_data.py")
+    unit("gameplay", "dojo-timing", "scripts/unreal/test_dojo_timing.py")
     unit("gameplay", "equipment-recovery-data", "scripts/unreal/test_recovery_data.py")
     unit("gameplay", "carry-difficulty-data", "scripts/unreal/test_carry_difficulty_data.py")
     unit("gameplay", "carry-work-data", "scripts/unreal/test_carry_work_data.py")

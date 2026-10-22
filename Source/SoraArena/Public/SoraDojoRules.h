@@ -17,6 +17,31 @@ constexpr int StanceHoldMs = 600;
 constexpr int GuardHoldMs = 350;
 constexpr int ParryWindowMs = 260;
 
+// A pupil_men repeat is measured from windup onset, whereas pupil_kesa
+// specifies recovery after contact. Zero selects the other cadence. The
+// default retains the unconfigured training-arena pupil's existing drill.
+struct FPupilTiming
+{
+    int WindupMs = 550;
+    int RecoveryMs = 1450;
+    int RepeatMs = 0;
+};
+constexpr int PupilWindupMs(const FPupilTiming& Timing, int Difficulty)
+{
+    const int Permille = Difficulty == 0 ? 1300 : Difficulty == 2 ? 850 : 1000;
+    return (Timing.WindupMs * Permille + 500) / 1000;
+}
+constexpr bool PupilTimingValid(const FPupilTiming& Timing)
+{
+    return Timing.WindupMs > 0 && Timing.WindupMs <= 10000 &&
+        ((Timing.RecoveryMs > 0 && Timing.RecoveryMs <= 60000 && Timing.RepeatMs == 0) ||
+         (Timing.RecoveryMs == 0 && Timing.RepeatMs > PupilWindupMs(Timing, 0) && Timing.RepeatMs <= 60000));
+}
+constexpr int PupilStartIntervalMs(const FPupilTiming& Timing, int Difficulty)
+{
+    return Timing.RepeatMs > 0 ? Timing.RepeatMs : PupilWindupMs(Timing, Difficulty) + Timing.RecoveryMs;
+}
+
 constexpr bool ProgressValid(FProgress Progress)
 {
     return Progress.CompletedMask == 0u || Progress.CompletedMask == 1u ||

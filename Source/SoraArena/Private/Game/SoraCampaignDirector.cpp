@@ -69,12 +69,13 @@ int32 Threshold(const FString& On, int32 PrefixLength, double Scale)
 }
 // A chapter-one sparring pupil (bokuto bouts and the matoba's targets), or
 // the training arena's invader of this slot.
-ASoraEnemy* SpawnPrototype(UWorld& World, const FVector& Location, bool bPupil, int32 Slot)
+ASoraEnemy* SpawnPrototype(UWorld& World, const FVector& Location, bool bPupil, int32 Slot,
+    const SoraDojoRules::FPupilTiming& PupilTiming = {})
 {
     FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
     ASoraEnemy* Enemy=World.SpawnActor<ASoraEnemy>(Location,FRotator(0,180,0),Params);
     if(!Enemy) return nullptr;
-    if(bPupil) Enemy->InitDojoPupil(Slot);
+    if(bPupil) Enemy->InitDojoPupil(Slot,PupilTiming);
     else Enemy->InitInvader(Slot);
     return Enemy;
 }
@@ -991,7 +992,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnDuelOpponent(FName Opponent,bool bSparri
         Setup.Difficulty=BossDifficulty(this); Setup.Phase=TaskState.Phase;
         return ASoraBoss::SpawnBoss(*World,Duel->Id,Slot,SpawnLocation(Slot),FRotator(0,180,0),Setup);
     }
-    return SpawnPrototype(*World,SpawnLocation(Slot),bSparring,Slot);
+    return SpawnPrototype(*World,SpawnLocation(Slot),bSparring,Slot,Beat?Beat->PupilTiming:SoraDojoRules::FPupilTiming{});
 }
 ASoraBoss* USoraCampaignDirector::SpawnBoss(FName Boss,int32 Slot)
 {

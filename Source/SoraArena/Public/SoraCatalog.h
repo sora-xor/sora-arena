@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "SoraBeatRules.h"
+#include "SoraDojoRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraMountRules.h"
 #include "SoraRegistry.h"
@@ -675,6 +676,7 @@ struct FSoraBeat
     // A duel's opponent or the boss; sparring beats use bokuto, shinai or targets.
     FName Opponent;
     bool bSparring = false;
+    SoraDojoRules::FPupilTiming PupilTiming;
     bool bArcheryLesson = false;
     // Each objective's hold (ms of Interact held to work it; 0: a press).
     TArray<int32> ObjectiveHoldMs;
