@@ -8,6 +8,23 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-23 cargo unloading and timer checkpoint
+
+At `d21013d`, cargo requires its authored three-second hold before delivery or
+the delivery-triggered ambush. All five directed cargo/mount/carry/Playthrough
+editor tests and all 43 gameplay source gates pass. Mount retains one HTTP
+connectivity timeout warning. At `4db3ce3`, fractional clock handling restores
+20-second guard searches; ten editor regressions pass. At `fea8842`, the
+gallery hint follows 60 active seconds at both 60 and 120 Hz, freezes through
+pause and resets on retry. Earlier failures remain archived.
+
+Native `01d4e46` completes actual crate compilation and 31 CPU tests, with two
+proof tests ignored; its separate proof cohort is still running. Latest CI
+`39983299505` passes 79 gates at `3b00f40` and predates the cargo/timer changes.
+The [current checkpoint](complete-release-plan.md#october-23-cargo-unloading-and-timer-qualification)
+records exact evidence and limitations. New source is uncooked; ordinary play,
+photoreal art, platform performance and full native execution remain unfinished.
+
 ## 2026-10-23 campaign integration and GI investigation
 
 The [latest release-plan update](complete-release-plan.md#october-23-campaign-traversal-and-lighting-investigation)

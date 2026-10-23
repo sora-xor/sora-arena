@@ -11,6 +11,53 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 23 cargo unloading and timer qualification
+
+At `d21013d`, chapter-four cargo requires the authored uninterrupted three-second
+unload hold before delivery credit or the Naka ambush. Release, departure and
+retry cancel partial work; pause freezes it. A fresh hold owns its fractional
+clock, so time before the press cannot complete unloading early. Ordinary
+carrying and the authored option to continue on foot remain available.
+
+All five selected Mac editor tests pass: CargoUnload, Mount,
+CarrySealAndSetDown, CarryDifficulty and the full campaign Playthrough. The
+source-bound build passes in 47.33 seconds and the runtime exits zero at EOF
+with unchanged source. Mount retains one HTTP connectivity timeout warning;
+the other four tests have no selected warnings or errors. All 43 gameplay
+source gates pass at the same clean source. The directed cargo fixture freezes
+threats and does not qualify ordinary encounter pacing or carrier presentation.
+
+`4db3ce3` carries fractional milliseconds through stealth and gallery clocks
+instead of rounding every frame. Ten actual editor regressions pass with zero
+selected warnings/errors; four guard searches each take 20.000001 active world
+seconds over 1,200 frames. At `fea8842`, the gallery hint appears once after
+60.000003 active seconds at both 60 and 120 Hz; a 65-second menu pause advances
+no world time, and retry resets the timer. The first gallery fixture's retained
+failure came from an extra capstan input after arrival resetting idle time;
+the correction stops that input without relaxing the timing bound.
+
+Signed native `01d4e46` also completes actual privacy-crate compilation, exact
+test listing and 31 CPU tests, with two proof tests explicitly ignored. All
+five phases terminate at EOF with zero exits in 1,180.368 seconds overall.
+The maximum measured wire bound across 48 canonical cases is 3,149,632 bytes;
+this is a bound, not a proof size. Source and executable hashes are independently
+authenticated. One separate native proof/adversarial cohort is running against
+that exact executable; no successful proof is yet claimed. This research does
+not change the production bridge or establish full World or settlement parity.
+
+CI `39983299505` passes 79 gates in five jobs at `3b00f40`, with identical
+source/tested-merge trees and verified artifact digests. It predates these cargo
+and timer changes. New source remains uncooked; the latest package is still
+`c655b6b`. Art, ordinary-control play, platform/performance and the remaining
+native/network/settlement criteria remain open.
+
+Exact archives under `Saved/Qualification/2026-10-23/` are
+`campaign-cargo-d21013d/`, `gameplay-clock-4db3ce3/`,
+`gameplay-gallery-180e093/`, `gameplay-gallery-fea8842/`, `ci-3b00f40/` and
+`native-carbine-adapter-01d4e46/`. Earlier evidence below retains its source
+scope; the historical timer quantization and pending native compile are
+superseded by this checkpoint.
+
 ## October 23 campaign traversal and lighting investigation
 
 The ridge/wind, helm and flood implementations are now integrated and have

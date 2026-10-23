@@ -1,11 +1,14 @@
 # Offline campaign progression acceptance
 
-The latest directed Mac editor checkpoint is `54008a8`: physical moat senses,
-patrols and traversal plus the full eight-chapter/133-beat campaign pass, with
-zero selected warnings/errors. All 59 gameplay/tooling source gates pass at
-that clean source. The replay includes 28 loose pickups, 120 checkpoint checks,
-61 reloads and 13 phase reloads. Earlier failures and exact source/build receipts
-are retained in the [release plan](../complete-release-plan.md#october-23-campaign-traversal-and-lighting-investigation).
+The latest directed Mac editor checkpoint is `d21013d`: CargoUnload, Mount,
+CarrySealAndSetDown, CarryDifficulty and the full campaign Playthrough pass.
+Mount retains one HTTP connectivity timeout warning; all five have zero errors.
+All 43 gameplay source gates pass at that clean source. Cargo now requires its
+authored uninterrupted three-second hold before delivery credit and ambush
+release. At `4db3ce3`, guard searches last 20 active seconds; at `fea8842`,
+gallery hints follow 60 active seconds at both 60 and 120 Hz through pause and
+retry. Earlier failures and exact source/build receipts are retained in the
+[release plan](../complete-release-plan.md#october-23-cargo-unloading-and-timer-qualification).
 These assisted NullRHI fixtures do not establish ordinary play pacing, final
 art, a new package or platform/performance acceptance.
 
@@ -55,7 +58,7 @@ The chapter scripts in `docs/campaign/chapter-0N.md` are the authored source. Ea
 | · carry | N deliveries | `Pickup`, `Deliver` (named capacities, or a derived equal ceiling share), `DropCarried` on a hit where the carry drops | as above |
 | · manufacture | every step in order | `Stroke`: an off-beat stroke restarts its rhythm step | as above |
 | · defend | `duration_s` survived, or the waves cleared | `DamageTarget`, `RepairTarget` | a destroyed target (`fail_on_target_destroyed`) |
-| `horseback_ride` | the destination, or every cargo drop-off | `Travel` (ambushes come as the rider passes their mark), `Reach`, `Deliver` | `on_horse_down`: checkpoint or on foot |
+| `horseback_ride` | the destination, or every cargo drop-off | `Travel` (ambushes come as the rider passes their mark), `Reach`, `Deliver` after the cargo's authored `unload_hold_ms` | `on_horse_down`: checkpoint or on foot |
 | `explore_optional` | its cache opened | `OpenCache` | — |
 | `collectible` | picked up | `Find` | — |
 
