@@ -42,15 +42,17 @@ The ceiling-only control at `50ef7d6` likewise leaves the broad room dark;
 its six phases completed, all six originals were inspected and all candidate
 files restored. Only the ceiling's measured SDF/card representation changed.
 
-CI `39967468401` passes 77 gates in five jobs at `5c8b775`, with an identical
-source/tested-merge tree and 98 root-authenticated evidence files. It predates
-the subsequent climb and foundry changes. Initial climb runs at `c5f5799` and
+CI `39975724835` passes 78 gates in five jobs at `c3ba8ef`, with an identical
+source/tested-merge tree and 99 root-authenticated evidence files. It predates
+the subsequent climb-fall and moat changes. Initial climb runs at `c5f5799` and
 `623b683` retain their failures at supporting ledge lips. The swept lift/cross/
 settle correction at `c26b0e1` preserves collision and authored endpoints;
 Corner, Extrusion, Guide and Sentry now pass, as do seven further regressions
-including Playthrough. Two fall tests still fail. Safe release onto a rest
-works, but a subsequent walk off the shelf does not start a new measured fall.
-That runtime defect and the fixtures' old rest-release assumption remain open.
+including Playthrough. The retained two fall failures led to actual support/
+feet sampling at `b94e5d7`: later shelf walk-offs start a new fall, applying
+30 HP once at 550 cm and lethal damage at 1,100 cm. Both fixtures pass. At
+`7409833`, all eight climb fixtures and four shared regressions pass; its only
+failure is the moat step in Playthrough, subsequently corrected below.
 
 The foundry at `4019fe6` passes all five directed mechanic tests and four shared
 hand-control regressions. This covers finite clay repairs, interrupted work,
@@ -67,7 +69,26 @@ takes 833.839 seconds overall; all three phases have authenticated EOF and
 zero exits. The earlier 30 GiB reserve stop remains archived. This adds no
 new proof: the prior preparation proof remains bound to `c99ee46e`, and the
 game bridge is unchanged. Earlier package, art and platform results retain
-their source scope. Physical moat source is under independent review.
+their source scope.
+
+The physical moat's initial run passes 12/14 tests. Retained diagnostics expose
+an off-route pickup sweep in Playthrough, insufficient stationary searchlight
+exposure in Senses, a slow drone descent, colliding reinforcement assignments
+and suspicion without an investigation arrival. The fixture now swims from
+the actual entry and collects the moat mark on its gate approach. At
+`54008a8`, corrected physical guard movement passes Senses, Patrols, Traversal
+and the full eight-chapter/133-beat Playthrough, with zero selected warnings or
+errors. All five guards return to Unaware; four searches run the complete
+configured timer, subject to the existing 17 ms tick quantization described in
+the release plan. All 59 gameplay/tooling source gates pass at that clean
+source. Independent authentication retains every earlier failed run.
+
+Native `01d4e46` separately passes 55 standalone CPU tests and nine provenance
+checks for its four-ray carbine adapter, with independent source review.
+Actual crate compilation is running; wire bounds and new native proofs remain
+pending. It is still unregistered bounded research, with no production bridge
+or settlement change. New campaign source has not been packaged; ordinary
+control pacing, art, M1/Windows and performance remain open.
 The complete release remains unfinished.
 
 ## 2026-10-23 package, Codex and Nanite checkpoint

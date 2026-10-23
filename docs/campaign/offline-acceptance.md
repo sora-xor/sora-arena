@@ -1,5 +1,14 @@
 # Offline campaign progression acceptance
 
+The latest directed Mac editor checkpoint is `54008a8`: physical moat senses,
+patrols and traversal plus the full eight-chapter/133-beat campaign pass, with
+zero selected warnings/errors. All 59 gameplay/tooling source gates pass at
+that clean source. The replay includes 28 loose pickups, 120 checkpoint checks,
+61 reloads and 13 phase reloads. Earlier failures and exact source/build receipts
+are retained in the [release plan](../complete-release-plan.md#october-23-campaign-traversal-and-lighting-investigation).
+These assisted NullRHI fixtures do not establish ordinary play pacing, final
+art, a new package or platform/performance acceptance.
+
 ## Campaign data (catalog schema 4)
 
 The chapter scripts in `docs/campaign/chapter-0N.md` are the authored source. Each carries one YAML block written to the story bible's beat taxonomy (§12.1, §12.2) and chapter-YAML conventions (§12.5). `python3 scripts/unreal/build_campaign_data.py` turns block N into `Content/Data/campaign/chapter_0N.json`; `--check` fails when a committed file differs from a fresh build. The importer needs PyYAML (`pip3 install --user -r scripts/requirements.txt`). It rejects duplicate YAML keys, non-JSON values, keys outside the §12 contract without an `x_` prefix, unknown beat, task, ride, defeat, scoring and dialogue-mode values, registers with no §18 family, times finer than a millisecond, fractions finer than a permille, `fail` rows the runtime cannot act on, and dialogue conditions that are neither `collectible:<id>` nor `story:<flag>`. Its self-test must reject 17 bad inputs, among them a horse mounted from the left, a matchlock in the saddle, a capture that names no interaction to bind its boss and 転 flanks that do not match their lesson's bouts. Each chapter file holds:

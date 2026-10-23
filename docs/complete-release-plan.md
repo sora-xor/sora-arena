@@ -130,10 +130,14 @@ across supporting lips while keeping the authored endpoints, duration and
 collision. Kohagi's final downward sweep requires an actual upward support
 face. Corner, Extrusion, Guide and Sentry pass in the actual editor. Seven more
 regressions pass, including Playthrough, Spaces, hand control and pause/retry.
-Two fall tests fail: a safe release on a real rest ends the initial fall, but
-walking off that rest does not arm a new fall. The runtime omission and old
-fixture assumption are assigned for correction; the source has 11/13 unique
-passes, not complete climb qualification.
+The two retained fall failures exposed a safe shelf release ending the initial
+fall without arming a later walk-off. At `b94e5d7`, actual feet/support sampling
+starts each new fall, and both corrected fixtures pass: a 550 cm fall applies
+30 HP once, while an 1,100 cm fall is lethal and freezes correctly during pause.
+At `7409833`, all eight climb fixtures and four shared climb/space/input/pause
+regressions pass together. That run's only failure is the newly integrated
+moat step in Playthrough, subsequently corrected below. Authored thresholds,
+geometry and collision remain unchanged; ordinary play balance is unqualified.
 
 The foundry encounter is integrated at `4019fe6`: a 1,500 HP furnace, 180-second
 defense, three once-only 150 HP clay repairs, Kozo's four-second rescue and
@@ -150,12 +154,47 @@ EOF. There are zero selected-test errors/warnings; startup engine diagnostics
 and appended TraceServer output are retained separately. These are directed
 mechanic tests, not ordinary encounter balance, final art or a new package.
 
-CI `39967468401` separately passes all 77 source gates in five jobs at
-`5c8b775`, with an identical source/tested-merge tree. Root authenticated
-98 referenced evidence files. This run predates the compiler correction,
-guide and diagnostic commits and cannot qualify their runtime behavior.
-Chapter-six b02's physical moat depth/gate mechanism is under independent source
-review and has not run in Unreal.
+CI `39975724835` passes all 78 source gates in five jobs at `c3ba8ef`, with
+identical source/tested-merge trees and 99 root-authenticated evidence files.
+It predates the newer climb-fall and moat integration; private raw assets and
+native parity remain excluded.
+
+Chapter-six b02's physical moat is integrated at `9f963f0`. Twelve of fourteen
+initial editor tests pass, including depth, float, submerged gate/retry, guide,
+hands, loader, patrols, pause/reload and traversal. Senses and Playthrough fail;
+all original reports remain archived. The aggregate pickup sweep had moved the
+hero to unrelated chapter zones before swimming. At `4ec2430`, the fixture
+starts at the real entry, swims to the moat mark, saves its mapped pickup and
+crosses the submerged gate before collecting other finds later. Playthrough
+and standalone traversal both pass, covering eight chapters, 133 beats,
+28 loose pickups, 120 checkpoint checks, 61 reloads and 13 phase reloads.
+
+The corrected searchlight fixture exposes the real head through a sweep
+reversal. Subsequent actual diagnostics identify a drone spending its movement
+budget on distant horizontal pursuit, two reinforcement capsules blocking one
+another because their patrol assignments reverse their spawn order, and an
+unconfirmed suspicious guard never receiving an investigation-arrival signal.
+At `54008a8`, physical spawn order assigns the posts, altitude gets priority
+within the existing swept 300 cm/s flight budget, and suspicious guards retain
+their usual look delay and careful approach before actual arrival permits
+decay. Senses, Patrols, Traversal and full Playthrough all pass with zero
+selected errors/warnings. The drone reaches 300 cm within 90 frames and moves
+at most 5 cm per frame; all five guards return to Unaware with zero awareness.
+Four observed searches each take 1,177 frames: the existing brain rounds each
+60 Hz step to 17 ms, so its configured 20,000 ms timer is 19.616668 world seconds.
+This records the existing quantization, not exact wall-clock pacing acceptance.
+All 59 gameplay/tooling source gates also pass at clean `54008a8`. Runtime and
+source receipts are independently authenticated through terminal EOF.
+
+Signed native `01d4e46` adds a separate bounded carbine research adapter with
+all four ray schedules and verifier-owned fixed selectors. Its 55 standalone
+CPU tests, nine provenance tests and 48 canonical cases pass; independent
+source review finds no actionable defect. The managed-note totals are 908 base
+columns and 2,670 constraints, within unchanged limits. Earlier over-limit
+and fixture failures remain recorded. Actual crate compilation is in progress;
+backend wire bounds and new proofs are not yet qualified. The prior native
+binaries, preparation proof and production bridge retain their original scope.
+
 Photoreal art, ordinary-control campaign acceptance,
 new packages, actual M1/Windows performance and the remaining native/network/
 settlement criteria remain open. Claude's art ownership and queued requests
@@ -180,6 +219,12 @@ Climb failures and source-bound build receipts are under
 `campaign-foundry-5026836/` and `campaign-foundry-4019fe6/` respectively.
 The native retry is `native-carbine-a984a5c/actual-crate-2/`;
 CI is under `ci-5c8b775/`.
+The newer CI archive is `ci-c3ba8ef/`. Climb fall/regression receipts are under
+`campaign-climb-b94e5d7/` and `campaign-climb-7409833/`. Moat failures and
+corrections are under `campaign-moat-9f963f0/`, `campaign-moat-198f616/`,
+`campaign-moat-4ec2430/`, `campaign-moat-defebfc/` and `campaign-moat-54008a8/`.
+The native adapter archive is `native-carbine-adapter-01d4e46/`, with independent
+review under `native-carbine-01d4e46/`.
 
 ## October 23 package, Codex and Nanite qualification
 
