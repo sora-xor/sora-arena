@@ -72,3 +72,37 @@ second of cinematic completion, with its positive notice lifetime still intact.
 Pending root: Unreal compilation, rendered automation at the declared actual
 shader model, independent original PNG review, and any needed camera adjustment.
 This source checkpoint claims none of those results.
+
+## Corrections from the first actual rendered attempt
+
+The initial SM6 1280×720 run exposed the English objective drawing at viewport
+width outside its narrower header panel. It also paused 20/10 during delivery
+barks, covering the drying stands. Its final screenshot was refused because the
+Registry notice crossed the unchanged lower-story limit beside the b16 tracker,
+boss readout and dialogue. The three original failed-run PNGs remain evidence;
+there was no final-zero PNG and no accepted rendered sequence.
+
+Objective drawing and its new runtime layout gate now share complete wrapped
+rows measured against the panel's inner width, actual font heights and padding.
+Upper gameplay obstacles and the adjacent dojo panel consume those same bounds.
+The notice fallback searches actual free rectangles above the existing lower
+story limit, checks all fixed panels, and first tries complete titles/details:
+omitting a short Registry detail can otherwise add a taller condensed summary.
+No subtitle, notice or HUD content is hidden to satisfy the capture.
+
+The source capture waits for real delivery dialogue and its queue to clear on
+ordinary active time before pausing 20/10. Metadata schema v2 records that quiet
+state; its verifier requires it for all three cargo-stock originals. The final
+zero timing and screenshot policy are unchanged. New host tests use independent
+37/38 px measurements of the shipped Noto font and the existing production
+free-region planner; they are capacity checks, not Canvas or image acceptance.
+
+The prepared side-camera aim also moves the horses below the tracker. The v2
+capture checks each horse's complete projected actor bounds against the actual
+upper gameplay/tracker/notice/caption rectangles, and archives those rectangles.
+This addresses the pack horse head/ears covered in the first failed originals;
+mesh occlusion, overall composition and art still require original-image review.
+
+The final-zero sidecar also requires the specific Registry title index in the
+actual drawn layout's retained notice rows. A condensed-only summary cannot
+qualify merely because an unseen zero string remains in StoryNotices.

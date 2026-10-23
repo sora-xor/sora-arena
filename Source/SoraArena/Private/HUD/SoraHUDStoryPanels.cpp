@@ -805,15 +805,13 @@ FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F,bool ForceCompact
     const auto Fits=[&](const TArray<FUpperStoryPanel>& Trial)
     {
         if(!Trial.IsEmpty()&&Trial.Last().Bounds.Max.Y>L.Limit) return false;
-        if(UsesAimLayout(F))
-        {
-            auto Obstacles=SoraHUDPanels::UpperGameplayPanelBounds(F);
-            Obstacles.Add(AimWindow(F));
-            for(const auto& Panel:BuildLowerStoryLayout(F).Measured) Obstacles.Add(Panel.Bounds);
-            for(const auto& Panel:L.Captions.Panels) Obstacles.Add(Panel.Bounds);
-            for(const auto& Panel:L.Panels) Obstacles.Add(Panel.Bounds);
-            for(const auto& Panel:Trial) for(const auto& Box:Obstacles) if(Panel.Bounds.Intersect(Box)) return false;
-        }
+        auto Obstacles=SoraHUDPanels::UpperGameplayPanelBounds(F);
+        const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
+        if(UsesAimLayout(F)) Obstacles.Add(AimWindow(F));
+        for(const auto& Panel:BuildLowerStoryLayout(F).Measured) Obstacles.Add(Panel.Bounds);
+        for(const auto& Panel:L.Captions.Panels) Obstacles.Add(Panel.Bounds);
+        for(const auto& Panel:L.Panels) Obstacles.Add(Panel.Bounds);
+        for(const auto& Panel:Trial) for(const auto& Box:Obstacles) if(Panel.Bounds.Intersect(Box)) return false;
         return true;
     };
     if(!Fits(Panels))
@@ -833,45 +831,34 @@ FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F,bool ForceCompact
     if((!Fits(Panels)||TitleCount==0)&&!Compact) return BuildUpperStoryLayout(F,true);
     if(!Fits(Panels)||TitleCount==0)
     {
-        // The lower story stack is immutable. Use the free column below the
-        // objective and left of the rhythm group before losing the newest
-        // notice title. Captions and all fixed gameplay panels are obstacles.
-        const float Left=20*F.S;
-        float Top=87*F.S,Right=X-Gap;
+        // Search the actual free rectangles, including space above/beside
+        // a boss readout. A single left-column edge throws those gaps away.
+        // Try the complete notice first: hiding its short detail can create
+        // a longer bilingual "condensed" summary and make fitting worse.
+        using namespace SoraCaptionLayoutRules;
         auto Obstacles=SoraHUDPanels::UpperGameplayPanelBounds(F);
-        const auto Rhythm=RhythmPanelBounds(F);
-        if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
+        const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
+        if(UsesAimLayout(F)) Obstacles.Add(AimWindow(F));
+        for(const auto& Panel:L.Panels) Obstacles.Add(Panel.Bounds);
         for(const auto& Panel:L.Captions.Panels) Obstacles.Add(Panel.Bounds);
-        if(UsesAimLayout(F))
-        {
-            Obstacles.Add(AimWindow(F));
-            for(const auto& Panel:BuildLowerStoryLayout(F).Measured) Obstacles.Add(Panel.Bounds);
-        }
-        for(const auto& Box:Obstacles)
-            if(Box.Min.X<Right&&Box.Max.X>Left)
-            {
-                if(Box.Min.X<=Left+10*F.S) Top=FMath::Max(Top,static_cast<float>(Box.Max.Y)+Gap);
-                else Right=FMath::Min(Right,static_cast<float>(Box.Min.X)-Gap);
-            }
-        if(Right-Left>=150.f&&Top<L.Limit)
-        {
-            const auto Previous=Panels; const auto PreviousDetails=ShowDetails; const int32 PreviousCount=TitleCount;
-            NoticeX=Left; NoticeWidth=Right-Left; NoticeY=Top; MeasureNotices();
-            ShowDetails.Init(false,Notices.Num()); TitleCount=Notices.Num();
-            auto Trial=NoticePanels(TitleCount,ShowDetails);
-            while(TitleCount>1&&!Fits(Trial)) Trial=NoticePanels(--TitleCount,ShowDetails);
-            if(Fits(Trial))
-            {
-                Panels=MoveTemp(Trial);
-                for(int32 I=0;I<TitleCount;++I)
+        TArray<FRect> Blocks;
+        for(const auto& Box:Obstacles) Blocks.Add({static_cast<float>(Box.Min.X),static_cast<float>(Box.Min.Y),
+            static_cast<float>(Box.GetSize().X),static_cast<float>(Box.GetSize().Y)});
+        const auto Regions=SoraAimHUDLayout::FreeRegions({20*F.S,87*F.S,F.W-40*F.S,L.Limit-87*F.S},Blocks.GetData(),Blocks.Num(),Gap);
+        bool Placed=false;
+        for(int32 Count=Notices.Num();Count>0&&!Placed;--Count)
+            for(int32 DetailsPass=0;DetailsPass<2&&!Placed;++DetailsPass)
+                for(int32 R=0;R<Regions.Count&&!Placed;++R)
                 {
-                    if(Details[I].Text.IsEmpty()) continue;
-                    ShowDetails[I]=true; Trial=NoticePanels(TitleCount,ShowDetails);
-                    if(Fits(Trial)) Panels=MoveTemp(Trial); else ShowDetails[I]=false;
+                    const auto& Region=Regions.Bounds[R];
+                    NoticeX=Region.X; NoticeY=Region.Y; NoticeWidth=Region.W; MeasureNotices();
+                    TArray<bool> TrialDetails; TrialDetails.Init(DetailsPass==0,Notices.Num());
+                    auto Trial=NoticePanels(Count,TrialDetails);
+                    if(!Trial.IsEmpty()&&Trial.Last().Bounds.Max.Y<=Region.Y+Region.H&&Fits(Trial))
+                    {
+                        Panels=MoveTemp(Trial); ShowDetails=MoveTemp(TrialDetails); TitleCount=Count; Placed=true;
+                    }
                 }
-            }
-            else { Panels=Previous; ShowDetails=PreviousDetails; TitleCount=PreviousCount; }
-        }
     }
     L.NoticeTitles=TitleCount;
     for(int32 I=0;I<TitleCount;++I)
@@ -1133,8 +1120,20 @@ bool SoraHUDPanels::InteractionPromptLayoutFits(const FSoraHUDFrame& F,FString& 
     }
     return true;
 }
+TArray<FBox2D> SoraHUDPanels::UpperStoryPanelBounds(const FSoraHUDFrame& F)
+{
+    const auto L=BuildUpperStoryLayout(F); TArray<FBox2D> Result;
+    for(const auto& Panel:L.Panels) Result.Add(Panel.Bounds);
+    for(const auto& Panel:L.Captions.Panels) Result.Add(Panel.Bounds);
+    return Result;
+}
+bool SoraHUDPanels::StoryNoticeTitleVisible(const FSoraHUDFrame& F,int32 NoticeIndex)
+{
+    return BuildUpperStoryLayout(F).NoticeIndices.Contains(NoticeIndex);
+}
 bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
 {
+    if(!ObjectiveLayoutFits(F,Why)) return false;
     const FUpperStoryLayout L=BuildUpperStoryLayout(F);
     TArray<FBox2D> TextBounds;
     TArray<FBox2D> PanelBounds;
@@ -1148,7 +1147,7 @@ bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
         }
         for(const auto& Previous:PanelBounds)
             if(Panel.Bounds.Intersect(Previous)) { Why=TEXT("Measured tracker/notice panels overlap"); return false; }
-        if(Panel.bNotice&&Panel.Bounds.Min.X<870*F.S)
+        if(Panel.bNotice)
         {
             auto Obstacles=UpperGameplayPanelBounds(F);
             const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Obstacles.Add(Rhythm);

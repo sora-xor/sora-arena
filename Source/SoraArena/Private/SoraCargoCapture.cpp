@@ -104,7 +104,13 @@ public:
             else if(C()->ActiveBeat()!=13||C()->TaskProgress().Done!=Point||!C()->IsUnloadingCargo()||Now-HoldWall>8)
                 Fail(TEXT("The mapped hold stopped or changed its unique delivery unexpectedly"));
         }
-        else if(Stage==EStage::Accepted&&Now-QuietAt>=.3) PauseFrame();
+        else if(Stage==EStage::Accepted)
+        {
+            // Let the real delivery bark and its queue finish on ordinary
+            // active time before freezing the transferred load for review.
+            if(C()->CurrentDialogueCue()||C()->LinesQueued()>0) QuietAt=Now;
+            else if(Now-QuietAt>=.3) PauseFrame();
+        }
         else if(Stage==EStage::Cinema&&CinemaEnded)
         {
             if(C()->ActiveBeat()!=15||!Terminal.IsValid()||CinemaElapsedMs!=90000||CinemaWorldEnd-CinemaWorldStart<89.9||
@@ -188,7 +194,7 @@ private:
         Hero()->SetActorLocation(Dropoff+FVector(0,-180,Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2));
         C()->Steed()->Place(Dropoff+FVector(-80,450,0),0);
         C()->PackHorses()[0]->Place(Dropoff+FVector(-380,450,0),0);
-        SetCamera(Dropoff+FVector(-450,-1150,480),Dropoff+FVector(-130,170,105));
+        SetCamera(Dropoff+FVector(-450,-1150,480),Dropoff+FVector(-130,170,210));
         auto J=MakeShared<FJsonObject>(); J->SetNumberField(TEXT("destination"),Point);
         Vector(J,TEXT("dropoff"),Dropoff); Vector(J,TEXT("hero"),Hero()->GetActorLocation());
         Vector(J,TEXT("steed"),C()->Steed()->GetActorLocation()); Vector(J,TEXT("pack"),C()->PackHorses()[0]->GetActorLocation());
@@ -297,10 +303,12 @@ private:
         Last->SetNumberField(TEXT("world_s"),WorldTime()); Last->SetNumberField(TEXT("wall_s"),FPlatformTime::Seconds()-BeganWall);
         Last->SetBoolField(TEXT("paused"),true); Last->SetBoolField(TEXT("english"),M->bEnglishSubtitles);
         Last->SetBoolField(TEXT("hud_drawn"),true); Last->SetBoolField(TEXT("interact_held"),PC()->PlayerInput->IsPressed(Interact));
+        Last->SetBoolField(TEXT("dialogue_active"),C()->CurrentDialogueCue()!=nullptr); Last->SetNumberField(TEXT("queued_lines"),C()->LinesQueued());
         Last->SetNumberField(TEXT("beat"),C()->ActiveBeat()); Last->SetNumberField(TEXT("destination"),Point);
         Vector(Last,TEXT("camera"),Camera->GetActorLocation());
         if(Phase<3)
         {
+            if(C()->CurrentDialogueCue()||C()->LinesQueued()>0) { Fail(TEXT("Cargo stock frame still has live delivery dialogue")); return; }
             const auto Observation=Stock(Phase); if(!Observation.IsValid()) return;
             Last->SetObjectField(TEXT("stock"),Observation);
             // Project real horse/stand/rope centers into the screenshot. This
@@ -330,6 +338,44 @@ private:
         if(!SoraHUDPanels::BottomHUDLayoutFits(Layout,*Hero(),Why)||!SoraHUDPanels::StoryTrackerLayoutFits(Layout,Why)||
             !SoraHUDPanels::CaptionStoryLayoutFits(Layout,Why)||!SoraHUDPanels::InteractionPromptLayoutFits(Layout,Why))
         { Fail(*(TEXT("Cargo HUD layout: ")+Why)); return; }
+        if(Phase==3)
+        {
+            // One Registry notice was identified above. A condensed-only
+            // summary must not stand in for its actual zero title row.
+            const bool Visible=SoraHUDPanels::StoryNoticeTitleVisible(Layout,0);
+            Last->SetBoolField(TEXT("notice_title_retained"),Visible);
+            if(!Visible) { Fail(TEXT("The final zero title is absent from the drawn notice layout")); return; }
+        }
+        if(Phase<3)
+        {
+            auto Obstacles=SoraHUDPanels::UpperGameplayPanelBounds(Layout);
+            Obstacles.Append(SoraHUDPanels::UpperStoryPanelBounds(Layout));
+            TArray<TSharedPtr<FJsonValue>> HorseBounds,HUDParts;
+            const auto Rect=[](const FBox2D& Box) {
+                return MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{
+                    MakeShared<FJsonValueNumber>(Box.Min.X),MakeShared<FJsonValueNumber>(Box.Min.Y),
+                    MakeShared<FJsonValueNumber>(Box.Max.X),MakeShared<FJsonValueNumber>(Box.Max.Y)});
+            };
+            for(const auto& Box:Obstacles) HUDParts.Add(Rect(Box));
+            for(auto* Horse:{C()->Steed(),C()->PackHorses()[0]})
+            {
+                FVector Origin,Extent; Horse->GetActorBounds(false,Origin,Extent);
+                FBox2D Box(ForceInit);
+                for(int32 X:{-1,1}) for(int32 Y:{-1,1}) for(int32 Z:{-1,1})
+                {
+                    FVector2D Screen;
+                    if(!PC()->ProjectWorldLocationToScreen(Origin+Extent*FVector(X,Y,Z),Screen))
+                    { Fail(TEXT("The whole cargo horse bounds cannot be projected")); return; }
+                    Box+=Screen;
+                }
+                if(Box.Min.X<40||Box.Max.X>Viewport.X-40||Box.Min.Y<80||Box.Max.Y>Viewport.Y-100)
+                { Fail(TEXT("A whole cargo horse falls outside the prepared frame")); return; }
+                for(const auto& Other:Obstacles) if(Box.Intersect(Other))
+                { Fail(TEXT("The objective/tracker/caption obscures a cargo horse")); return; }
+                HorseBounds.Add(Rect(Box));
+            }
+            Last->SetArrayField(TEXT("horse_screen_bounds"),HorseBounds); Last->SetArrayField(TEXT("upper_hud_bounds"),HUDParts);
+        }
         PendingFile=Folder/(FString(Phases[Phase])+TEXT(".png")); FScreenshotRequest::RequestScreenshot(PendingFile,true,false);
     }
     void Captured()
@@ -379,7 +425,7 @@ private:
         const bool Deleted=Slot.IsEmpty()||!UGameplayStatics::DoesSaveGameExist(Slot,0);
         if(!Profiles||!Mappings||!Released||!Deleted) Fail(TEXT("Cargo capture failed profile/mapping/input/temporary-slot cleanup"));
         if(Folder.IsEmpty()) return;
-        auto J=MakeShared<FJsonObject>(); J->SetStringField(TEXT("schema"),TEXT("sora-arena.cargo-capture.v1")); J->SetStringField(TEXT("scope"),Scope);
+        auto J=MakeShared<FJsonObject>(); J->SetStringField(TEXT("schema"),TEXT("sora-arena.cargo-capture.v2")); J->SetStringField(TEXT("scope"),Scope);
         J->SetBoolField(TEXT("passed"),!Failed&&Phase==4); J->SetBoolField(TEXT("prepared_checkpoint"),true); J->SetBoolField(TEXT("frozen_ai"),true);
         J->SetBoolField(TEXT("mapped_start_dismount"),Dismounted); J->SetBoolField(TEXT("ordinary_clock"),true);
         J->SetBoolField(TEXT("profiles_preserved"),Profiles); J->SetBoolField(TEXT("mappings_preserved"),Mappings);

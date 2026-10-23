@@ -23,26 +23,72 @@
 
 namespace
 {
-FBox2D ObjectivePanelBounds(const FSoraHUDFrame& F)
+struct FObjectiveText
 {
-    const float S=F.S,Width=FMath::Min(F.W-40*S,850*S);
-    float Bottom=(F.Mode.bEnglishSubtitles?212.f:177.f)*S;
-    int32 TW=0,TH=0;
-    UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),.52f*S,.52f*S,TW,TH,F.Mode.ObjectiveText());
-    Bottom=FMath::Max(Bottom,137*S+TH+4*S);
+    FString Text;
+    FVector2D At;
+    float Scale=0;
+    FLinearColor Color;
+    int32 Group=0;
+};
+struct FObjectiveLayout
+{
+    FBox2D Bounds=FBox2D(ForceInit);
+    TArray<FObjectiveText> Text;
+    FString Original[4];
+};
+FObjectiveLayout ObjectiveLayout(const FSoraHUDFrame& F)
+{
+    FObjectiveLayout L;
+    const float S=F.S,Left=30*S,Right=20*S+FMath::Min(F.W-40*S,850*S)-10*S,Gap=4*S;
+    const auto Add=[&](int32 Group,float X,float Y,float Scale,float Advance,FLinearColor Color)
+    {
+        TArray<FString> Lines; FString Line;
+        const auto& Text=L.Original[Group];
+        for(int32 I=0;I<Text.Len();++I)
+        {
+            if(Text[I]=='\n') { Lines.Add(Line); Line.Empty(); continue; }
+            if(!Line.IsEmpty()&&F.HUD.LabelWidth(Line+Text.Mid(I,1),Scale)>Right-X)
+            {
+                int32 Space=INDEX_NONE;
+                if(Line.FindLastChar(' ',Space)&&Space>0) { Lines.Add(Line.Left(Space+1)); Line=Line.Mid(Space+1); }
+                else { Lines.Add(Line); Line.Empty(); }
+            }
+            Line+=Text.Mid(I,1);
+        }
+        if(!Line.IsEmpty()) Lines.Add(Line);
+        float Bottom=Y;
+        for(const auto& Row:Lines)
+        {
+            int32 W=0,H=0; UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),Scale,Scale,W,H,Row);
+            L.Text.Add({Row,{X,Y},Scale,Color,Group}); Bottom=Y+H; Y+=FMath::Max(Advance,H+Gap);
+        }
+        return Bottom;
+    };
+    L.Original[0]=F.Mode.bCampaign?FSoraCatalog::Get().Chapter(F.Mode.Campaign()->ChapterId).Title:FSoraCatalog::Get().Map(F.Mode.MapId).Name;
+    float HeaderBottom=Add(0,Left,95*S,.82f*S,26*S,F.Ivory);
     if(F.Mode.bEnglishSubtitles)
     {
-        // DrawObjective permits two English lines. Reserve their actual font
-        // height as well as the requested advance, even at the 720p floor.
-        UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),F.EnglishSubtitleScale,F.EnglishSubtitleScale,TW,TH,F.Mode.ObjectiveTextEnglish());
-        Bottom=FMath::Max(Bottom,164*S+F.EnglishSubtitleLineHeight+TH+4*S);
+        L.Original[1]=F.Mode.bCampaign?FSoraCatalog::Get().Chapter(F.Mode.Campaign()->ChapterId).TitleEnglish:FSoraCatalog::Get().Map(F.Mode.MapId).NameEnglish;
+        const float InlineX=Left+F.HUD.LabelWidth(L.Original[0],.82f*S)+18*S;
+        const bool Inline=Right-InlineX>=150*S;
+        HeaderBottom=FMath::Max(HeaderBottom,Add(1,Inline?InlineX:Left,Inline?106*S:HeaderBottom+Gap,.45f*S,18*S,F.Muted));
     }
-    return FBox2D({20*S,87*S},{20*S+Width,Bottom});
+    L.Original[2]=F.Mode.ObjectiveText();
+    float Bottom=Add(2,Left,FMath::Max(137*S,HeaderBottom+Gap),.52f*S,20*S,F.Teal);
+    if(F.Mode.bEnglishSubtitles)
+    {
+        L.Original[3]=F.Mode.ObjectiveTextEnglish();
+        Bottom=Add(3,Left,FMath::Max(164*S,Bottom+Gap),F.EnglishSubtitleScale,F.EnglishSubtitleLineHeight,F.Muted);
+    }
+    L.Bounds=FBox2D({20*S,87*S},{Right+10*S,FMath::Max((F.Mode.bEnglishSubtitles?212.f:177.f)*S,Bottom+Gap)});
+    return L;
 }
+FBox2D ObjectivePanelBounds(const FSoraHUDFrame& F) { return ObjectiveLayout(F).Bounds; }
 FBox2D DojoPanelBounds(const FSoraHUDFrame& F)
 {
     if(!F.Mode.bCampaign||F.Mode.Campaign()->ChapterId!=0||F.Mode.Campaign()->DojoLessonStage()>=4) return FBox2D(ForceInit);
-    const float Top=F.Mode.bEnglishSubtitles?FMath::Max(217*F.S,164*F.S+2*F.EnglishSubtitleLineHeight+8*F.S):169*F.S;
+    const float Top=FMath::Max(static_cast<float>(ObjectivePanelBounds(F).Max.Y)+4*F.S,F.Mode.bEnglishSubtitles?FMath::Max(217*F.S,164*F.S+2*F.EnglishSubtitleLineHeight+8*F.S):169*F.S);
     return FBox2D({25*F.S,Top},{745*F.S,Top+(F.Mode.bEnglishSubtitles?72:47)*F.S});
 }
 FBox2D BossPanelBounds(const FSoraHUDFrame& F)
@@ -66,36 +112,42 @@ TArray<FBox2D> SoraHUDPanels::UpperGameplayPanelBounds(const FSoraHUDFrame& F)
 
 void SoraHUDPanels::DrawObjective(const FSoraHUDFrame& Frame)
 {
-    ASoraHUD& HUD=Frame.HUD;
-    const ASoraGameMode* G=&Frame.Mode;
-    const float W=Frame.W,S=Frame.S,EnglishSubtitleScale=Frame.EnglishSubtitleScale,EnglishSubtitleLineHeight=Frame.EnglishSubtitleLineHeight;
-    const FLinearColor Ivory=Frame.Ivory,Teal=Frame.Teal,Muted=Frame.Muted;
-    const auto Objective=ObjectivePanelBounds(Frame);
-    HUD.Panel(Objective.Min.X,Objective.Min.Y,Objective.GetSize().X,Objective.GetSize().Y,FLinearColor(.013f,.027f,.033f,.78f));
-    const FString HeaderTitle=G->bCampaign?FSoraCatalog::Get().Chapter(G->Campaign()->ChapterId).Title:FSoraCatalog::Get().Map(G->MapId).Name;
-    HUD.Label(HeaderTitle,30*S,95*S,.82*S,Ivory);
-    if(G->bEnglishSubtitles)
+    const auto L=ObjectiveLayout(Frame);
+    Frame.HUD.Panel(L.Bounds.Min.X,L.Bounds.Min.Y,L.Bounds.GetSize().X,L.Bounds.GetSize().Y,FLinearColor(.013f,.027f,.033f,.78f));
+    for(const auto& Row:L.Text) Frame.HUD.Label(Row.Text,Row.At.X,Row.At.Y,Row.Scale,Row.Color);
+}
+bool SoraHUDPanels::ObjectiveLayoutFits(const FSoraHUDFrame& F,FString& Why)
+{
+    // Validate the exact rows DrawObjective renders, including retained text,
+    // actual font dimensions, panel padding and separation from each other.
+    const auto L=ObjectiveLayout(F); TArray<FBox2D> Occupied; FString Joined[4];
+    if(L.Bounds.Min.X<0||L.Bounds.Max.X>F.W||L.Bounds.Min.Y<0||L.Bounds.Max.Y>F.H)
+    { Why=TEXT("Objective panel exceeds the viewport"); return false; }
+    for(const auto& Row:L.Text)
     {
-        const float TitleW=HUD.LabelWidth(HeaderTitle,.82*S);
-        HUD.Label(G->bCampaign?FSoraCatalog::Get().Chapter(G->Campaign()->ChapterId).TitleEnglish:FSoraCatalog::Get().Map(G->MapId).NameEnglish,
-            30*S+TitleW+18*S,106*S,.45*S,Muted);
+        int32 W=0,H=0; UCanvas::ClippedStrLen(F.HUD.JapaneseFontObject(),Row.Scale,Row.Scale,W,H,Row.Text);
+        const FBox2D Box(Row.At,Row.At+FVector2D(W,H));
+        if(Box.Min.X<L.Bounds.Min.X+10*F.S-.5f||Box.Max.X>L.Bounds.Max.X-10*F.S+.5f||
+            Box.Min.Y<L.Bounds.Min.Y||Box.Max.Y>L.Bounds.Max.Y+.5f)
+        { Why=TEXT("Measured objective text escapes its allocated panel width or height"); return false; }
+        for(const auto& Other:Occupied) if(Box.Intersect(Other))
+        { Why=TEXT("Measured objective text rows overlap"); return false; }
+        Occupied.Add(Box); Joined[Row.Group]+=Row.Text;
     }
-    HUD.Label(G->ObjectiveText(),30*S,137*S,.52*S,Teal);
-    if(G->bEnglishSubtitles)
-        HUD.WrappedLabel(G->ObjectiveTextEnglish(),30*S,164*S,EnglishSubtitleScale,Muted,
-            W-60*S,EnglishSubtitleLineHeight,2);
+    for(int32 I=0;I<4;++I) if(Joined[I]!=L.Original[I].Replace(TEXT("\n"),TEXT("")))
+    { Why=TEXT("Objective wrapping lost localized text"); return false; }
+    return true;
 }
 void SoraHUDPanels::DrawDojoLesson(const FSoraHUDFrame& Frame)
 {
     ASoraHUD& HUD=Frame.HUD;
     const ASoraGameMode* G=&Frame.Mode;
-    const float S=Frame.S,EnglishSubtitleLineHeight=Frame.EnglishSubtitleLineHeight;
+    const float S=Frame.S;
     const FLinearColor Ivory=Frame.Ivory,Muted=Frame.Muted;
     if(G->bCampaign&&G->Campaign()->ChapterId==0&&G->Campaign()->DojoLessonStage()<4)
     {
-        const float LessonTop=G->bEnglishSubtitles
-            ?FMath::Max(217*S,164*S+2*EnglishSubtitleLineHeight+8*S):169*S;
         const auto Panel=DojoPanelBounds(Frame);
+        const float LessonTop=Panel.Min.Y;
         HUD.Panel(Panel.Min.X,Panel.Min.Y,Panel.GetSize().X,Panel.GetSize().Y,FLinearColor(.013,.027,.033,.88f));
         HUD.Label(G->Campaign()->DojoLessonText(false),40*S,LessonTop+6*S,.46*S,Ivory);
         if(G->bEnglishSubtitles) HUD.Label(G->Campaign()->DojoLessonText(true),40*S,LessonTop+36*S,.34*S,Muted);

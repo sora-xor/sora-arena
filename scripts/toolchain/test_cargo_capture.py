@@ -39,11 +39,12 @@ def observations():
         row = dict(name=phase, file=phase+".png", request_frame=100+index*100,
                    screenshot_processed_frame=100+index*100, world_s=[10,14,18,109.02][index],
                    wall_s=[13,20,27,123.02][index], paused=True, english=True, hud_drawn=True,
-                   interact_held=False, beat=13 if index<3 else 15, destination=max(0,index-1), camera=[-450,-1150,480])
+                   interact_held=False, dialogue_active=False, queued_lines=0, beat=13 if index<3 else 15, destination=max(0,index-1), camera=[-450,-1150,480])
         if index<3:
-            row.update(stock=stock(index), projected_subjects=[[200+i*100, 300] for i in range(5)])
+            row.update(stock=stock(index), horse_screen_bounds=[[350,300,550,480],[600,300,900,480]],
+                       upper_hud_bounds=[[15,63,626,190],[725,63,1265,280]], projected_subjects=[[200+i*100, 300] for i in range(5)])
         else:
-            row.update(pack_count=0, stand_count=0, notice_ja="登録 | 麦 残り 0束", notice_en="Registered / Barley: 0 sheaves left", notice_remaining_s=6.99, notice_count=1)
+            row.update(pack_count=0, stand_count=0, notice_ja="登録 | 麦 残り 0束", notice_en="Registered / Barley: 0 sheaves left", notice_remaining_s=6.99, notice_count=1, notice_title_retained=True)
         data["frames"].append(row)
     for index in range(3):
         start_world, end_world = [(10,13.01),(14.5,17.51),(18,21.01)][index]
@@ -150,7 +151,7 @@ class CargoCaptureTests(unittest.TestCase):
     def test_final_zero_is_real_post_cinematic_feedback_and_not_surviving_props(self):
         original=copy.deepcopy(self.data)
         cases=[("notice_ja","麦 残り 10束"),("notice_en","Barley: 10 sheaves left"),("notice_remaining_s",0),
-               ("notice_remaining_s",8),("notice_count",2),("pack_count",1),("stand_count",3),("beat",14),("stock",stock(3)),
+               ("notice_remaining_s",8),("notice_count",2),("notice_title_retained",False),("pack_count",1),("stand_count",3),("beat",14),("stock",stock(3)),
                ("world_s",100),("wall_s",100)]
         for key,bad in cases:
             with self.subTest(key=key):
@@ -166,8 +167,8 @@ class CargoCaptureTests(unittest.TestCase):
                         ("before",1),("after",3),("destination",2),("start_world_s",1),("end_world_s",200)):
             self.data=copy.deepcopy(original); self.data["holds"][0][key]=bad
             with self.subTest(key=key),self.assertRaises(ValueError): self.verify()
-        for key,bad in (("paused",False),("english",False),("hud_drawn",False),("interact_held",True),
-                        ("request_frame",True),("screenshot_processed_frame",101),("projected_subjects",[[1,1]]*5)):
+        for key,bad in (("paused",False),("dialogue_active",True),("queued_lines",1),("english",False),("hud_drawn",False),("interact_held",True),
+                        ("request_frame",True),("horse_screen_bounds",[[350,300,550,480],[600,260,900,480]]),("upper_hud_bounds",[]),("screenshot_processed_frame",101),("projected_subjects",[[1,1]]*5)):
             self.data=copy.deepcopy(original); self.data["frames"][0][key]=bad
             with self.subTest(key=key),self.assertRaises(ValueError): self.verify()
         self.data=copy.deepcopy(original); self.data["preparations"][0]["hero"]=[999,999,98]

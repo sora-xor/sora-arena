@@ -62,6 +62,8 @@ namespace SoraHUDPanels
 void DrawTopBar(const FSoraHUDFrame& Frame);
 void DrawTitleCard(const FSoraHUDFrame& Frame, const FSoraChapter& Card);
 void DrawObjective(const FSoraHUDFrame& Frame);
+// Exact wrapped objective rows must remain inside their allocated header panel.
+bool ObjectiveLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 void DrawDojoLesson(const FSoraHUDFrame& Frame);
 void DrawBoss(const FSoraHUDFrame& Frame);
 void DrawStealth(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
@@ -81,6 +83,10 @@ bool RhythmCueLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 // Ordinary work/search/pickup cues also clear coaching, dialogue and captions.
 bool InteractionPromptLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 bool StoryTrackerLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+// The exact tracker/notice/caption rectangles, for rendered subject framing checks.
+TArray<FBox2D> UpperStoryPanelBounds(const FSoraHUDFrame& Frame);
+// True only when this notice title is retained by the layout actually drawn.
+bool StoryNoticeTitleVisible(const FSoraHUDFrame& Frame, int32 NoticeIndex);
 bool BottomHUDLayoutFits(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero, FString& Why);
 // The campaign's arms wheel and the arm a key took up; the beat's fieldcraft:
 // the hand's work, breath, grip, stones, the candle, the signal and the

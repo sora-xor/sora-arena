@@ -6,7 +6,7 @@ original PNGs; no pixels are transformed or inferred from component getters.
 import math
 
 PHASES = ("remaining-30", "remaining-20", "remaining-10", "remaining-0")
-SCHEMA = "sora-arena.cargo-capture.v1"
+SCHEMA = "sora-arena.cargo-capture.v2"
 SCOPE = ("prepared cargo checkpoint/positions/camera and frozen AI; mapped active-time unloads; "
          "paused original frames; not playthrough or art acceptance")
 
@@ -92,6 +92,8 @@ def verify_sequence(metadata, filenames, width, height):
             raise ValueError("cargo frame comes from the wrong destination or beat")
         vector(row.get("camera"))
         if index < 3:
+            if row.get("dialogue_active") is not False or number(row, "queued_lines", True) != 0:
+                raise ValueError("cargo stock frame froze a live delivery dialogue")
             stock(row.get("stock"), index)
             subjects = row.get("projected_subjects")
             if not isinstance(subjects, list) or len(subjects) != 5:
@@ -100,7 +102,22 @@ def verify_sequence(metadata, filenames, width, height):
                 x, y = vector(subject, 2)
                 if not 40 <= x <= width - 40 or not 80 <= y <= height - 100:
                     raise ValueError("cargo subject falls outside its prepared frame")
+            horses, hud = row.get("horse_screen_bounds"), row.get("upper_hud_bounds")
+            if not isinstance(horses, list) or len(horses) != 2 or not isinstance(hud, list) or not hud:
+                raise ValueError("cargo lacks whole-horse/HUD framing observations")
+            for box in hud:
+                left, top, right, bottom = vector(box, 4)
+                if not 0 <= left < right <= width or not 0 <= top < bottom <= height:
+                    raise ValueError("invalid cargo HUD obstacle bounds")
+            for box in horses:
+                left, top, right, bottom = vector(box, 4)
+                if not 40 <= left < right <= width - 40 or not 80 <= top < bottom <= height - 100:
+                    raise ValueError("whole cargo horse is outside its prepared frame")
+                if any(left < r and l < right and top < b and t < bottom for l, t, r, b in hud):
+                    raise ValueError("cargo horse is obscured by an upper HUD panel")
         else:
+            if row.get("notice_title_retained") is not True:
+                raise ValueError("cargo zero title is not retained in the drawn notice layout")
             if "stock" in row or number(row, "pack_count", True) != 0 or number(row, "stand_count", True) != 0:
                 raise ValueError("final cargo frame must acknowledge natural prop teardown")
             for key, text in (("notice_ja", "麦 残り 0束"), ("notice_en", "Barley: 0 sheaves left")):
