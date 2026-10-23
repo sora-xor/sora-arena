@@ -106,3 +106,42 @@ mesh occlusion, overall composition and art still require original-image review.
 The final-zero sidecar also requires the specific Registry title index in the
 actual drawn layout's retained notice rows. A condensed-only summary cannot
 qualify merely because an unseen zero string remains in StoryNotices.
+
+## Boss overlap found in the second rendered attempt
+
+The subsequent 720p suite passed its automation checks, but original-image
+review rejected the final cargo image: the fixed boss panel crossed the tracker,
+which covered its English name and description. The zero notice itself was
+visible. The passing test result is not acceptance of that original sequence.
+
+The shared boss readout now measures complete names, live defenses/weak points,
+styles, active tells, countdowns and Muto/Marobashi hints at their existing sizes.
+It keeps health, phase, barrier and warning meters. Story panels are allocated
+around fixed objective/dojo/stealth bounds first; the boss then uses a measured
+free region around the actual tracker, notices, captions, lower-story strips,
+weapon/vitals, rhythm and aim area. That includes clear space below dialogue.
+Later projected labels reserve the resulting boss rectangle. An unsupported
+layout keeps all content and fails qualification instead of omitting rows.
+
+The shared screenshot gate checks the exact boss draw rows, retained strings,
+meters and every obstacle, and the existing campaign boss-telegraph screenshot
+path invokes it from the actual HUD draw before requesting a frame. It requires
+a visible HUD, the unchanged paused world time at native double precision, and
+a processed PNG in the same engine frame, with delegate cleanup after every
+shot or timeout. New host tests cover the rejected
+geometry, all authored boss tells, conservative defense/weak-point/ward strings,
+both action hints, JA/bilingual modes and 720p/1080p font capacity. These are
+source/host checks only. The idle final cargo image does not qualify rendered
+telegraphs, barrier/ward states or Muto/Marobashi hints; those need separate
+actual captures. All previous failed originals and receipts stay unchanged.
+
+Campaign originals use the existing capture archive. The verifier reads the
+shot inventory and authored beat IDs from Git blobs at the recorded source
+commit, requires the complete requested chapter sequence, and accepts only
+original `LogTemp` acknowledgements of accepted fresh frames. It archives the
+unchanged PNGs and their hashes with the exact assisted observation notes and
+source/catalog identities. Missing, stale, duplicate, reordered, mismatched or
+replayed records fail; already authenticated fresh partial originals remain
+associated as failure evidence. A note naming a telegraph does not independently
+prove its pixels or qualify other attack states. The campaign continuation now
+omits both the success marker and index row after any rejected or missing frame.

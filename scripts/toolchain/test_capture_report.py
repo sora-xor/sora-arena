@@ -163,8 +163,111 @@ class CaptureArchiveTests(unittest.TestCase):
         self.report = {"tests": [{"fullTestPath": "SoraCapture.ArtReview.Dojo"}]}
 
     def archive(self, output="run-sm6", log=None):
+        if hasattr(self,"campaign_commit"):
+            folder=self.root/output; folder.mkdir(parents=True,exist_ok=True)
+            (folder/'source-commit.txt').write_text(self.campaign_commit+'\n')
         return VERIFY.archive_frames(self.log if log is None else log, self.report, self.project,
                                      self.engine_base, self.root / output, self.started, 2, 1)
+
+    def campaign(self):
+        """A real tiny Git repo binds the archive inventory to a fixed commit."""
+        source_name='Source/SoraArena/Private/SoraCaptureAutomation.cpp'
+        catalog_name='Content/Data/campaign/chapter_04.json'
+        repo=Path(__file__).resolve().parents[2]
+        for name in (source_name,catalog_name):
+            target=self.project/name; target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_bytes((repo/name).read_bytes())
+        def git(*args):
+            return subprocess.check_output(['git','-C',str(self.project),*args],stderr=subprocess.DEVNULL,text=True).strip()
+        git('init','--quiet'); git('add',source_name,catalog_name)
+        git('-c','user.name=Archive Test','-c','user.email=archive@example.invalid','-c','commit.gpgsign=false',
+            'commit','--quiet','-m','Frozen capture inventory')
+        self.campaign_commit=git('rev-parse','HEAD')
+        self.report={'tests':[{'fullTestPath':'SoraCapture.Campaign.Chapter4'}]}
+        self.campaign_paths=[]; records=[]
+        catalog=json.loads((self.project/catalog_name).read_text())
+        for name,beat,subject in [('C4_02_BankRoadRide',1,'ride'),
+                                  ('C4_11_Waterwheel',10,'task'),
+                                  ('C4_16_AssessorTelegraph',15,'boss telegraph')]:
+            path=self.project/'Saved/Screenshots/SoraCapture/2x1'/(name+'.png')
+            path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(self.png); self.campaign_paths.append(path)
+            records.append(f'LogTemp: Display: SORA_CAPTURE {name} chapter 4 {catalog["beats"][beat]["id"]} ({subject}): assisted camera; actual observed state')
+        self.log='\n'.join(records)
+        return source_name
+
+    def test_campaign_uses_committed_inventory_and_preserves_original_scope(self):
+        source_name=self.campaign()
+        # A later mutable source file cannot redefine the frozen run's shots.
+        (self.project/source_name).write_text('not the committed inventory')
+        frames=self.archive()
+        self.assertEqual(len(frames),3)
+        for frame in frames:
+            self.assertEqual((self.root/'run-sm6'/frame['path']).read_bytes(),self.png)
+            self.assertEqual(frame['campaign']['source_commit'],self.campaign_commit)
+            self.assertIn('assisted camera',frame['campaign']['observed'])
+            self.assertIn('not playthrough',frame['capture_kind'])
+        self.assertEqual(frames[-1]['campaign']['subject'],'boss telegraph')
+
+    def test_campaign_stale_or_missing_original_cannot_be_associated(self):
+        self.campaign()
+        os.utime(self.campaign_paths[0],ns=(self.started-1,self.started-1))
+        with self.assertRaisesRegex(VERIFY.CampaignCaptureEvidenceError,'stale') as failure:
+            self.archive('stale-campaign')
+        self.assertEqual(len(failure.exception.frames),2)
+        self.campaign_paths[0].unlink()
+        with self.assertRaises(VERIFY.CampaignCaptureEvidenceError) as failure:
+            self.archive('missing-campaign')
+        self.assertEqual(len(failure.exception.frames),2)
+
+    def test_campaign_requires_complete_inventory_and_rejects_replayed_records(self):
+        self.campaign(); records=self.log.splitlines()
+        invalid=[records[:2],records+[records[-1]],records[::-1],
+                 ['LogAutomationController: '+record+' [log]' for record in records],
+                 [record+' [log]' for record in records],
+                 ['LogTemp: Display: SORA_CAPTURE_BOSS 5 s: actual state'],
+                 records[:2]+['LogTemp: Display: SORA_CAPTURE_REJECTED C4_16_AssessorTelegraph: no accepted fresh original']]
+        for index,lines in enumerate(invalid):
+            with self.subTest(index=index),self.assertRaises(VERIFY.CampaignCaptureEvidenceError) as failure:
+                self.archive(f'incomplete-{index}',log='\n'.join(lines))
+            if index==0: self.assertEqual(len(failure.exception.frames),2)
+        with self.assertRaises(VERIFY.CampaignCaptureEvidenceError):
+            self.archive('wrong-subject',log=self.log.replace('(boss telegraph)','(objective)'))
+        with self.assertRaises(VERIFY.CampaignCaptureEvidenceError):
+            self.archive('wrong-chapter',log=self.log.replace('chapter 4','chapter 5'))
+        with self.assertRaises(VERIFY.CampaignCaptureEvidenceError):
+            self.archive('wrong-beat',log=self.log.replace('ch04.b16','ch04.b15'))
+        with self.assertRaises(VERIFY.CampaignCaptureEvidenceError):
+            self.archive('wrong-name',log=self.log.replace('C4_16_AssessorTelegraph','C4_16_OldImage'))
+
+    def test_campaign_reused_filename_never_associates_final_bytes_with_first_observation(self):
+        self.campaign(); first=self.log.splitlines()[-1]
+        for index,second in enumerate((first.replace('actual observed state','a later different attack'),
+                                      first.replace('chapter 4','chapter 5'))):
+            with self.assertRaisesRegex(VERIFY.CampaignCaptureEvidenceError,'ambiguous') as failure:
+                self.archive(f'reused-campaign-{index}',log=self.log+'\n'+second)
+            self.assertEqual(len(failure.exception.frames),2)
+            self.assertTrue(all('AssessorTelegraph' not in frame['source'] for frame in failure.exception.frames))
+        # A symlink cannot substitute another basename's bytes either.
+        self.campaign_paths[-1].unlink(); self.campaign_paths[-1].symlink_to(self.campaign_paths[0])
+        with self.assertRaisesRegex(VERIFY.CampaignCaptureEvidenceError,'symlink') as failure:
+            self.archive('aliased-original')
+        self.assertEqual(len(failure.exception.frames),2)
+
+    def test_campaign_requires_authentic_inventory_and_requested_chapter(self):
+        source_name=self.campaign()
+        self.report['tests']=[{'fullTestPath':'SoraCapture.Campaign.Chapter3'}]
+        with self.assertRaisesRegex(ValueError,'authenticate'):
+            self.archive('uncommitted-chapter')
+        self.report['tests']=[{'fullTestPath':'SoraCapture.ArtReview.Dojo'}]
+        with self.assertRaisesRegex(ValueError,'no screenshot'):
+            self.archive('unrequested')
+        self.report['tests']=[{'fullTestPath':'SoraCapture.Campaign.Chapter4'}]*2
+        with self.assertRaisesRegex(ValueError,'duplicate'):
+            self.archive('duplicate-report')
+        self.report['tests']=[{'fullTestPath':'SoraCapture.Campaign.Chapter4'}]
+        self.campaign_commit='0'*40
+        with self.assertRaisesRegex(ValueError,'authenticate'):
+            self.archive('bad-commit')
 
     def test_original_bytes_survive_later_shader_model_capture(self):
         first = self.archive()

@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import importlib.util
 import json
 from pathlib import Path
 import re
 import struct
+import subprocess
 import sys
 import zlib
 
@@ -40,6 +42,94 @@ class CargoCaptureEvidenceError(ValueError):
     def __init__(self, message, frames):
         super().__init__(message)
         self.frames = frames
+
+
+class CampaignCaptureEvidenceError(ValueError):
+    """Retain authenticated fresh campaign originals on incomplete associations."""
+    def __init__(self, message, frames):
+        super().__init__(message)
+        self.frames = frames
+
+
+def campaign_frames(log: str, report: dict, project: Path, output: Path,
+                    width: int, height: int) -> tuple[list[tuple[str, dict]], list[str]]:
+    """Bind original campaign acknowledgements to exact committed shot/catalog data."""
+    tests = [test.get("fullTestPath", "") for test in report.get("tests", [])
+             if test.get("fullTestPath", "").startswith("SoraCapture.Campaign.")]
+    records = re.findall(r"^(?:\[[^\]\r\n]*\])*[ \t]*LogTemp: Display: SORA_CAPTURE "
+                         r"([A-Za-z0-9_]+) chapter ([0-9]+) ([^\s]+) \(([^)\r\n]+)\): ([^\r\n]*)$",
+                         log, re.MULTILINE)
+    if not tests and not records:
+        return [], []
+    chapters = []
+    for test in tests:
+        match = re.fullmatch(r"SoraCapture\.Campaign\.Chapter([1-8])", test)
+        if not match or int(match[1]) in chapters:
+            raise ValueError("invalid or duplicate Campaign chapter report")
+        chapters.append(int(match[1]))
+    commit = (output / "source-commit.txt").read_text().strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ValueError("Campaign archive requires its exact source commit")
+
+    def blob(name):
+        result = subprocess.run(["git", "-C", str(project), "show", f"{commit}:{name}"], capture_output=True)
+        if result.returncode:
+            raise ValueError(f"cannot authenticate Campaign source blob: {name}")
+        return result.stdout
+
+    source_path = "Source/SoraArena/Private/SoraCaptureAutomation.cpp"
+    source_raw = blob(source_path)
+    source = source_raw.decode()
+    table = re.search(r"const FShot Shots\[\] = \{(.*?)\n\};", source, re.DOTALL)
+    pattern = r'\{(\d+),\s*(\d+),\s*ESubject::(\w+),\s*TEXT\("([A-Za-z0-9_]+)"\)(?:,\s*\d+)?\}'
+    if not table or re.sub(pattern, "", table[1]).strip(" \r\n\t,"):
+        raise ValueError("unsupported committed Campaign shot inventory")
+    subjects = dict(re.findall(r'case ESubject::(\w+):\s*return TEXT\("([^"\r\n]+)"\);', source))
+    expected = {}; chapter_names = {chapter: [] for chapter in chapters}; catalog_hashes = {}
+    for chapter in chapters:
+        catalog_path = f"Content/Data/campaign/chapter_{chapter:02d}.json"
+        raw = blob(catalog_path); catalog = json.loads(raw)
+        catalog_hashes[chapter] = hashlib.sha256(raw).hexdigest()
+        for ch, beat, kind, name in re.findall(pattern, table[1]):
+            if int(ch) + 1 != chapter:
+                continue
+            if name in expected or kind not in subjects:
+                raise ValueError("ambiguous committed Campaign shot inventory")
+            try:
+                beat_id = catalog["beats"][int(beat)]["id"]
+            except (KeyError, IndexError, TypeError) as error:
+                raise ValueError("Campaign shot does not identify a committed catalog beat") from error
+            expected[name] = (chapter, beat_id, subjects[kind]); chapter_names[chapter].append(name)
+        if not chapter_names[chapter]:
+            raise ValueError("reported Campaign chapter has no committed shots")
+    # A repeated basename can have been overwritten by its later capture.
+    # Exclude every association for that name, even if the later record has
+    # mismatched fields. Replayed log events are not new acknowledgements.
+    records = [record for record in records if not record[-1].endswith(" [log]")]
+    counts = Counter(record[0] for record in records)
+    ambiguous = {name for name, count in counts.items() if count > 1}
+    frames = []; errors = [f"duplicate/ambiguous Campaign acknowledgement: {name}" for name in sorted(ambiguous)]
+    actual = {chapter: [] for chapter in chapters}
+    for name, chapter_text, beat, subject, note in records:
+        if name in ambiguous:
+            continue
+        chapter = int(chapter_text)
+        if expected.get(name) != (chapter, beat, subject):
+            errors.append(f"Campaign acknowledgement differs from committed chapter/beat/subject/name: {name}")
+            continue
+        actual[chapter].append(name)
+        folder = (project / "Saved/Screenshots/SoraCapture" / f"{width}x{height}").resolve()
+        path = folder / (name + ".png")
+        if path.resolve() != path:
+            errors.append(f"Campaign original filename is a symlink: {name}")
+            continue
+        frames.append((str(path), dict(chapter=chapter, beat=beat, subject=subject, observed=note,
+            source_commit=commit, shot_inventory_path=source_path, shot_inventory_sha256=hashlib.sha256(source_raw).hexdigest(),
+            catalog_path=f"Content/Data/campaign/chapter_{chapter:02d}.json", catalog_sha256=catalog_hashes[chapter])))
+    for chapter in chapters:
+        if actual[chapter] != chapter_names[chapter]:
+            errors.append(f"Campaign Chapter{chapter} is missing, reordered or has rejected screenshot acknowledgements")
+    return frames, errors
 
 
 def problems(report: dict, log: str, status: int, shader_model: str) -> list[str]:
@@ -164,6 +254,10 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         if not any(kind == marker for kind, _ in names) and any(
                 test.get("fullTestPath", "").startswith(prefix) for test in report.get("tests", [])):
             raise ValueError(f"{prefix} reported no screenshot paths")
+    campaign, campaign_errors = campaign_frames(log, report, project, output, width, height)
+    campaign_metadata = {path: data for path, data in campaign}
+    names.extend(("SORA_CAPTURE", path) for path, _ in campaign)
+    kinds["SORA_CAPTURE"] = ("SoraCapture.Campaign.", "assisted campaign checkpoint/camera capture; not playthrough or art acceptance")
     screenshot_root = (project / "Saved/Screenshots").resolve()
     frames = []
     bow_sequences = {}
@@ -172,16 +266,22 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
     nanite_sequences = {}
     seen = set()
     for marker, name in names:
-        path = (engine_base / name.strip()).resolve()
-        relative = path.relative_to(screenshot_root)
-        if relative in seen:
-            raise ValueError(f"duplicate/overwritten capture frame: {relative}")
-        seen.add(relative)
-        if path.stat().st_mtime_ns < start_ns:
-            raise ValueError(f"stale capture frame: {relative}")
-        data = path.read_bytes()
-        if png_dimensions(data) != (width, height):
-            raise ValueError(f"unexpected screenshot dimensions: {relative}")
+        try:
+            path = (engine_base / name.strip()).resolve()
+            relative = path.relative_to(screenshot_root)
+            if relative in seen:
+                raise ValueError(f"duplicate/overwritten capture frame: {relative}")
+            seen.add(relative)
+            if path.stat().st_mtime_ns < start_ns:
+                raise ValueError(f"stale capture frame: {relative}")
+            data = path.read_bytes()
+            if png_dimensions(data) != (width, height):
+                raise ValueError(f"unexpected screenshot dimensions: {relative}")
+        except (OSError, ValueError, zlib.error) as error:
+            if marker != "SORA_CAPTURE":
+                raise
+            campaign_errors.append(str(error))
+            continue
         target = output / "frames" / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open("xb") as stream:
@@ -189,6 +289,8 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         frame = {"path": str(target.relative_to(output)), "source": str(path),
                        "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
                        "capture_kind": kinds[marker][1]}
+        if marker == "SORA_CAPTURE":
+            frame["campaign"] = campaign_metadata[name]
         if marker == "SORA_BOW_AIM_FRAME":
             sidecar = path.with_suffix(".json")
             if sidecar.stat().st_mtime_ns < start_ns:
@@ -296,6 +398,8 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
             raise NaniteDrawEvidenceError("Nanite draw evidence: " + "; ".join(result["errors"]), frames)
     for sequence in bow_sequences.values():
         bow_capture_validation.verify_sequence(sequence)
+    if campaign_errors:
+        raise CampaignCaptureEvidenceError("; ".join(campaign_errors), frames)
     return frames
 
 
@@ -347,7 +451,7 @@ def main() -> int:
         try:
             frames = archive_frames(log, report, project, engine_base, output, start_ns, width, height)
         except (OSError, ValueError, zlib.error) as error:
-            if isinstance(error, (NaniteDrawEvidenceError, CargoCaptureEvidenceError)):
+            if isinstance(error, (NaniteDrawEvidenceError, CargoCaptureEvidenceError, CampaignCaptureEvidenceError)):
                 frames = error.frames
             failures.append(f"screenshot archive: {error}")
         manifest = {"source_commit": (output / "source-commit.txt").read_text().strip(),

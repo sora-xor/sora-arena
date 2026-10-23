@@ -3,6 +3,7 @@
 #include "Combat/SoraBossCatalog.h"
 #include "Combat/SoraDefense.h"
 #include "SoraBoss.h"
+#include "SoraAimHUDLayout.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraCombatRules.h"
@@ -91,22 +92,173 @@ FBox2D DojoPanelBounds(const FSoraHUDFrame& F)
     const float Top=FMath::Max(static_cast<float>(ObjectivePanelBounds(F).Max.Y)+4*F.S,F.Mode.bEnglishSubtitles?FMath::Max(217*F.S,164*F.S+2*F.EnglishSubtitleLineHeight+8*F.S):169*F.S);
     return FBox2D({25*F.S,Top},{745*F.S,Top+(F.Mode.bEnglishSubtitles?72:47)*F.S});
 }
-FBox2D BossPanelBounds(const FSoraHUDFrame& F)
+struct FBossRect { FBox2D Bounds; FLinearColor Color; };
+struct FBossLayout
 {
+    FBox2D Bounds=FBox2D(ForceInit);
+    TArray<FObjectiveText> Text;
+    TArray<FString> Original;
+    TArray<FBossRect> Rects;
+    bool bFits=false;
+};
+FBossLayout MeasureBoss(const FSoraHUDFrame& F,float Width)
+{
+    FBossLayout L;
     const auto* Boss=F.Mode.Campaign()->CampaignBoss(); const auto* Info=Boss?Boss->Data():nullptr;
-    if(!Info) return FBox2D(ForceInit);
+    if(!Info) return L;
+    const float Padding=17.f,Inner=Width-2*Padding,Gap=4.f;
+    float Y=7.f;
+    const auto TextWidth=[&](const FString& Text,float Scale)
+    { return FMath::Max(F.HUD.LabelWidth(Text,Scale),static_cast<float>(SoraHUDPanels::CaptionGlyphBounds(F,Text,Scale).GetSize().X)); };
+    const auto Row=[&](const FString& Text,float X,float At,float Scale,FLinearColor Color,int32 Group)
+    {
+        const auto Ink=SoraHUDPanels::CaptionGlyphBounds(F,Text,Scale);
+        L.Text.Add({Text,FVector2D(X,At)-Ink.Min,Scale,Color,Group});
+        return static_cast<float>(Ink.GetSize().Y);
+    };
+    const auto Block=[&](const FString& Text,float Scale,FLinearColor Color,int32 Group)
+    {
+        TArray<FString> Lines; FString Line;
+        for(int32 I=0;I<Text.Len();++I)
+        {
+            if(Text[I]=='\n') { Lines.Add(Line); Line.Empty(); continue; }
+            if(!Line.IsEmpty()&&TextWidth(Line+Text.Mid(I,1),Scale)>Inner)
+            {
+                int32 Space=INDEX_NONE;
+                if(Line.FindLastChar(' ',Space)&&Space>0) { Lines.Add(Line.Left(Space+1)); Line=Line.Mid(Space+1); }
+                else { Lines.Add(Line); Line.Empty(); }
+            }
+            Line+=Text.Mid(I,1);
+        }
+        if(!Line.IsEmpty()) Lines.Add(Line);
+        for(const auto& Part:Lines) Y+=Row(Part,Padding,Y,Scale,Color,Group)+Gap;
+    };
+    const auto Pair=[&](const FString& JA,const FString& EN,float JS,float ES,FLinearColor Color)
+    {
+        const int32 J=L.Original.Add(JA),E=F.Mode.bEnglishSubtitles?L.Original.Add(EN):INDEX_NONE;
+        // Use complete inline translations when they fit; otherwise wrap the
+        // same text at the existing sizes. Trim only empty font ascent/descent.
+        if(E!=INDEX_NONE&&!JA.IsEmpty()&&!EN.IsEmpty()&&!JA.Contains(TEXT("\n"))&&!EN.Contains(TEXT("\n"))&&
+            TextWidth(JA,JS)+14.f+TextWidth(EN,ES)<=Inner)
+        {
+            const float JH=Row(JA,Padding,Y,JS,Color,J);
+            const float EH=Row(EN,Padding+TextWidth(JA,JS)+14.f,Y,ES,F.Muted,E);
+            Y+=FMath::Max(JH,EH)+Gap;
+        }
+        else { Block(JA,JS,Color,J); if(E!=INDEX_NONE) Block(EN,ES,F.Muted,E); }
+    };
+    const auto Rect=[&](float X,float At,float W,float H,FLinearColor Color)
+    { L.Rects.Add({FBox2D({X,At},{X+W,At+H}),Color}); };
+    Pair(Info->NameJapanese,Info->NameEnglish,F.JapaneseSubtitleScale,F.EnglishSubtitleScale,F.Gold);
+    Y+=3.f; // Phase marks extend three pixels above/below the health bar.
+    Rect(Padding,Y,Inner,7.f,FLinearColor(.15f,.18f,.20f));
+    Rect(Padding,Y,Inner*FMath::Clamp(Boss->Health/Boss->MaxHealth,0.f,1.f),7.f,Boss->IsInvulnerable()?F.Muted:F.Gold);
+    for(int32 I=1;I<Info->Phases.Num();++I)
+        Rect(Padding+Inner*Info->Phases[I].FromPermille/1000.f-1.f,Y-3.f,2.f,13.f,F.Ivory);
+    if(Boss->HasBarrier()&&Info->Barrier.Health>0)
+    {
+        Rect(Padding,Y+10.f,Inner,3.f,FLinearColor(.15f,.18f,.20f));
+        Rect(Padding,Y+10.f,Inner*FMath::Clamp(Boss->BarrierPoints()/static_cast<float>(Info->Barrier.Health),0.f,1.f),3.f,FLinearColor(.78f,.74f,.92f));
+    }
+    Y+=17.f;
+    TArray<FString> Japanese,English;
+    if(Boss->IsInvulnerable()) { Japanese.Add(TEXT("無敵")); English.Add(TEXT("INVULNERABLE")); }
+    if(Boss->IsShieldUp()) { Japanese.Add(TEXT("大盾：正面不可")); English.Add(TEXT("SHIELD: front blocked")); }
+    if(Boss->HasBarrier()) { Japanese.Add(Boss->IsBarrierOffline()?TEXT("障壁：停止中"):TEXT("障壁")); English.Add(Boss->IsBarrierOffline()?TEXT("BARRIER: down"):TEXT("BARRIER")); }
+    if(Boss->IsMantleUp()) { Japanese.Add(TEXT("冷却外套：被害七割減")); English.Add(TEXT("MANTLE: 70% less damage")); }
+    if(Boss->IsStaggered()) { Japanese.Add(TEXT("崩れ：好機")); English.Add(TEXT("STAGGERED: strike now")); }
+    for(int32 I=0;I<Info->WeakPoints.Num();++I)
+        if(Boss->IsWeakPointOpen(I)) { Japanese.Add(Info->WeakPoints[I].NameJapanese); English.Add(Info->WeakPoints[I].NameEnglish); }
+    if(Boss->LiveWards()>0&&Info->Wards.IsValidIndex(Boss->CurrentPhase()->Ward))
+    {
+        const auto& Ward=Info->Wards[Boss->CurrentPhase()->Ward];
+        Japanese.Add(FString::Printf(TEXT("%s ×%d"),*Ward.NameJapanese,Boss->LiveWards()));
+        English.Add(FString::Printf(TEXT("%s x%d"),*Ward.NameEnglish,Boss->LiveWards()));
+    }
+    for(const auto& Limited:Info->Attacks) if(Limited.EventLimit>0)
+    {
+        Japanese.Add(FString::Printf(TEXT("差押え %d / %d"),Boss->Seals(),Limited.EventLimit));
+        English.Add(FString::Printf(TEXT("SEIZED %d / %d"),Boss->Seals(),Limited.EventLimit));
+    }
+    Pair(FString::Join(Japanese,TEXT("　")),FString::Join(English,TEXT("  ")),.34f,.30f,F.Teal);
     const auto* Attack=Boss->BossAttack();
-    const bool Hint=Attack&&Boss->IsBossTelegraphing()&&((Attack->bMuto&&Info->bMutoFinisher)||Attack->MarobashiMs>0);
+    if(Attack&&Boss->IsBossTelegraphing())
+    {
+        const FLinearColor Warning=Attack->Telegraph==ESoraBossTelegraph::Cyan?FLinearColor(.04f,.85f,.95f):FLinearColor(1.f,.68f,.16f);
+        Pair(Attack->TellJapanese,Attack->TellEnglish,F.JapaneseSubtitleScale,F.EnglishSubtitleScale,
+            Attack->Telegraph==ESoraBossTelegraph::None?F.Ivory:Warning);
+        Pair(FString::Printf(TEXT("%.1f s"),Boss->BossWarningSeconds()),FString(),.48f,.48f,F.Gold);
+        Rect(Padding,Y,Inner,4.f,FLinearColor(.15f,.18f,.20f));
+        Rect(Padding,Y,Inner*Boss->BossWarningProgress(),4.f,Warning); Y+=4.f+Gap;
+        const auto* Hero=Cast<ASoraPlayerCharacter>(F.HUD.GetOwningPawn());
+        if(Attack->bMuto&&Info->bMutoFinisher)
+        {
+            const bool Sheathed=Hero&&Hero->GetEquipment()->IsSheathing();
+            Pair(Sheathed?TEXT("納刀済 ― 斬撃の寸前に［防御］で無刀取り"):TEXT("［納刀］で納め、斬撃の寸前に［防御］で無刀取り"),
+                Sheathed?TEXT("Sheathed: [Guard] just before the cut lands for mutō-dori"):TEXT("[Sheathe], then [Guard] just before the cut lands for mutō-dori"),.36f,.32f,F.Gold);
+        }
+        else if(Attack->MarobashiMs>0)
+            Pair(TEXT("転 ― 着く寸前に 左右＋［跳躍］で脇へ"),TEXT("Marobashi: Left/Right + [Jump] just before it lands to reach the flank"),.36f,.32f,F.Gold);
+    }
+    else if(!Info->StyleJapanese.IsEmpty()) Pair(Info->StyleJapanese,Info->StyleEnglish,.42f,.34f,F.Muted);
+    L.Bounds=FBox2D({0,0},{Width,Y+7.f});
+    return L;
+}
+FBossLayout BossLayout(const FSoraHUDFrame& F)
+{
     const float Width=FMath::Min(F.W-20.f,FMath::Max(600.f*F.S,480.f));
-    const float X=(F.W-Width)*.5f,Y=FMath::Max(F.Mode.bEnglishSubtitles?222.f*F.S:178.f*F.S,165.f);
-    return FBox2D({X,Y},{X+Width,Y+(F.Mode.bEnglishSubtitles?142.f:116.f)+(Hint?(F.Mode.bEnglishSubtitles?40.f:22.f):0.f)});
+    auto L=MeasureBoss(F,Width); if(!L.Bounds.bIsValid) return L;
+    const auto Obstacles=SoraHUDPanels::BossLayoutObstacles(F);
+    const float Gap=6*F.S;
+    const FBox2D View({20*F.S,87*F.S},{F.W-20*F.S,F.H-30*F.S});
+    const auto Place=[](FBossLayout Layout,FVector2D At)
+    {
+        Layout.Bounds.Min+=At; Layout.Bounds.Max+=At;
+        for(auto& Row:Layout.Text) Row.At+=At;
+        for(auto& Rect:Layout.Rects) { Rect.Bounds.Min+=At; Rect.Bounds.Max+=At; }
+        return Layout;
+    };
+    const auto Clear=[&](const FBossLayout& Candidate)
+    {
+        const auto& B=Candidate.Bounds;
+        if(B.Min.X<View.Min.X||B.Min.Y<View.Min.Y||B.Max.X>View.Max.X||B.Max.Y>View.Max.Y) return false;
+        for(const auto& Other:Obstacles) if(B.Intersect(Other)) return false;
+        return true;
+    };
+    auto Preferred=Place(L,{(F.W-Width)*.5f,FMath::Max(F.Mode.bEnglishSubtitles?222.f*F.S:178.f*F.S,165.f)});
+    if(Clear(Preferred)) { Preferred.bFits=true; return Preferred; }
+    using namespace SoraCaptionLayoutRules;
+    TArray<FRect> Blocks;
+    for(const auto& Box:Obstacles) Blocks.Add({static_cast<float>(Box.Min.X),static_cast<float>(Box.Min.Y),
+        static_cast<float>(Box.GetSize().X),static_cast<float>(Box.GetSize().Y)});
+    const auto Regions=SoraAimHUDLayout::FreeRegions({static_cast<float>(View.Min.X),static_cast<float>(View.Min.Y),
+        static_cast<float>(View.GetSize().X),static_cast<float>(View.GetSize().Y)},Blocks.GetData(),Blocks.Num(),Gap);
+    for(int32 I=0;I<Regions.Count;++I)
+    {
+        const auto& R=Regions.Bounds[I];
+        auto Trial=MeasureBoss(F,R.W);
+        if(Trial.Bounds.GetSize().Y>R.H) continue;
+        Trial=Place(MoveTemp(Trial),{R.X,R.Y});
+        if(Clear(Trial)) { Trial.bFits=true; return Trial; }
+    }
+    // Preserve all content when capacity is unsupported. Shared render
+    // qualification reports failure rather than silently hiding boss text.
+    return Preferred;
 }
+FBox2D BossPanelBounds(const FSoraHUDFrame& F) { return BossLayout(F).Bounds; }
 }
-TArray<FBox2D> SoraHUDPanels::UpperGameplayPanelBounds(const FSoraHUDFrame& F)
+TArray<FBox2D> SoraHUDPanels::FixedGameplayPanelBounds(const FSoraHUDFrame& F)
 {
     TArray<FBox2D> Bounds={ObjectivePanelBounds(F)};
-    for(const auto& Box:{DojoPanelBounds(F),BossPanelBounds(F)}) if(Box.bIsValid) Bounds.Add(Box);
+    const auto Dojo=DojoPanelBounds(F); if(Dojo.bIsValid) Bounds.Add(Dojo);
     if(const auto* Hero=F.Mode.Hero()) Bounds.Append(SoraHUDPanels::StealthPanelBounds(F,*Hero));
+    return Bounds;
+}
+
+TArray<FBox2D> SoraHUDPanels::UpperGameplayPanelBounds(const FSoraHUDFrame& F)
+{
+    auto Bounds=FixedGameplayPanelBounds(F);
+    const auto Boss=BossPanelBounds(F); if(Boss.bIsValid) Bounds.Add(Boss);
     return Bounds;
 }
 
@@ -155,96 +307,45 @@ void SoraHUDPanels::DrawDojoLesson(const FSoraHUDFrame& Frame)
 }
 void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
 {
-    ASoraHUD& HUD=Frame.HUD;
-    const ASoraGameMode* G=&Frame.Mode;
-    const float JapaneseSubtitleScale=Frame.JapaneseSubtitleScale,EnglishSubtitleScale=Frame.EnglishSubtitleScale;
-    const FLinearColor Ivory=Frame.Ivory,Gold=Frame.Gold,Teal=Frame.Teal,Muted=Frame.Muted;
-    const ASoraBoss* Boss=G->Campaign()->CampaignBoss();
-    const FSoraBossData* Info=Boss?Boss->Data():nullptr;
-    if(!Info) return;
-    // Name, health with its phase marks, then the defenses in play and the
-    // captioned telegraph of the attack under way (bosses.json, bilingual).
-    const FLinearColor Amber(1.f,.68f,.16f),Cyan(.04f,.85f,.95f);
-    const auto BossBounds=BossPanelBounds(Frame);
-    const float BossWidth=BossBounds.GetSize().X,BossX=BossBounds.Min.X,BossY=BossBounds.Min.Y;
-    const bool bEnglish=G->bEnglishSubtitles;
-    // The answer the attack under way allows, by the actions that give it:
-    // mutō-dori from a sheathed hand, or 転 in its last stretch.
-    const FSoraBossAttack* Attack=Boss->BossAttack();
-    const auto* Hero=Cast<ASoraPlayerCharacter>(HUD.GetOwningPawn());
-    FString HintJapanese,HintEnglish;
-    if(Attack&&Boss->IsBossTelegraphing()&&Attack->bMuto&&Info->bMutoFinisher)
+    const auto L=BossLayout(Frame); if(!L.Bounds.bIsValid) return;
+    Frame.HUD.Panel(L.Bounds.Min.X,L.Bounds.Min.Y,L.Bounds.GetSize().X,L.Bounds.GetSize().Y,FLinearColor(.013f,.027f,.033f,.91f));
+    for(const auto& Rect:L.Rects)
+        Frame.HUD.Panel(Rect.Bounds.Min.X,Rect.Bounds.Min.Y,Rect.Bounds.GetSize().X,Rect.Bounds.GetSize().Y,Rect.Color);
+    for(const auto& Row:L.Text) Frame.HUD.Label(Row.Text,Row.At.X,Row.At.Y,Row.Scale,Row.Color);
+}
+bool SoraHUDPanels::BossLayoutFits(const FSoraHUDFrame& F,FString& Why)
+{
+    const auto L=BossLayout(F); if(!L.Bounds.bIsValid) return true;
+    if(!L.bFits) { Why=TEXT("Complete boss readout cannot fit around the measured gameplay/story panels"); return false; }
+    // Validate the actual draw rows/meters and every story rectangle, not an
+    // assumed upper-story limit. Boss placement may use space below dialogue.
+    if(L.Bounds.Min.X<20*F.S||L.Bounds.Min.Y<87*F.S||L.Bounds.Max.X>F.W-20*F.S||L.Bounds.Max.Y>F.H-30*F.S)
+    { Why=TEXT("Measured boss panel exceeds the gameplay viewport"); return false; }
+    for(const auto& Other:BossLayoutObstacles(F)) if(L.Bounds.Intersect(Other))
     {
-        const bool bSheathed=Hero&&Hero->GetEquipment()->IsSheathing();
-        HintJapanese=bSheathed?TEXT("納刀済 ― 斬撃の寸前に［防御］で無刀取り"):TEXT("［納刀］で納め、斬撃の寸前に［防御］で無刀取り");
-        HintEnglish=bSheathed?TEXT("Sheathed: [Guard] just before the cut lands for mutō-dori"):
-            TEXT("[Sheathe], then [Guard] just before the cut lands for mutō-dori");
+        Why=FString::Printf(TEXT("Measured boss panel [%.2f,%.2f]-[%.2f,%.2f] overlaps HUD panel [%.2f,%.2f]-[%.2f,%.2f]"),
+            L.Bounds.Min.X,L.Bounds.Min.Y,L.Bounds.Max.X,L.Bounds.Max.Y,Other.Min.X,Other.Min.Y,Other.Max.X,Other.Max.Y);
+        return false;
     }
-    else if(Attack&&Boss->IsBossTelegraphing()&&Attack->MarobashiMs>0)
+    TArray<FBox2D> InkBounds; TArray<FString> Joined; Joined.SetNum(L.Original.Num());
+    const auto Contains=[&](const FBox2D& Box)
+    { return Box.Min.X>=L.Bounds.Min.X&&Box.Min.Y>=L.Bounds.Min.Y&&Box.Max.X<=L.Bounds.Max.X+.5f&&Box.Max.Y<=L.Bounds.Max.Y+.5f; };
+    for(const auto& Rect:L.Rects) if(!Contains(Rect.Bounds))
+    { Why=TEXT("Boss health, phase, barrier or warning meter escapes its measured panel"); return false; }
+    for(const auto& Row:L.Text)
     {
-        HintJapanese=TEXT("転 ― 着く寸前に 左右＋［跳躍］で脇へ");
-        HintEnglish=TEXT("Marobashi: Left/Right + [Jump] just before it lands to reach the flank");
+        const auto Ink=CaptionGlyphBounds(F,Row.Text,Row.Scale);
+        const FBox2D Box(Row.At+Ink.Min,Row.At+Ink.Max);
+        if(!Contains(Box)) { Why=TEXT("Boss text escapes its measured panel"); return false; }
+        for(const auto& Other:InkBounds) if(Box.Intersect(Other))
+        { Why=TEXT("Measured boss text rows overlap"); return false; }
+        for(const auto& Rect:L.Rects) if(Box.Intersect(Rect.Bounds))
+        { Why=TEXT("Measured boss text overlaps a health, phase, barrier or warning meter"); return false; }
+        InkBounds.Add(Box); Joined[Row.Group]+=Row.Text;
     }
-    const float Base=bEnglish?142.f:116.f;
-    HUD.Panel(BossX,BossY,BossWidth,BossBounds.GetSize().Y,FLinearColor(.013f,.027f,.033f,.91f));
-    if(!HintJapanese.IsEmpty())
-    {
-        HUD.Label(HintJapanese,BossX+17.f,BossY+Base,.36f,Gold);
-        if(bEnglish) HUD.Label(HintEnglish,BossX+17.f,BossY+Base+19.f,.32f,Muted);
-    }
-    HUD.Label(Info->NameJapanese,BossX+17.f,BossY+7.f,JapaneseSubtitleScale,Gold);
-    if(bEnglish) HUD.Label(Info->NameEnglish,BossX+BossWidth-17.f-HUD.LabelWidth(Info->NameEnglish,EnglishSubtitleScale),BossY+9.f,EnglishSubtitleScale,Muted);
-    const float BarX=BossX+17.f,BarW=BossWidth-34.f,BarY=BossY+36.f;
-    HUD.Panel(BarX,BarY,BarW,7.f,FLinearColor(.15f,.18f,.20f));
-    HUD.Panel(BarX,BarY,BarW*FMath::Clamp(Boss->Health/Boss->MaxHealth,0.f,1.f),7.f,Boss->IsInvulnerable()?Muted:Gold);
-    for(int32 Index=1;Index<Info->Phases.Num();++Index)
-        HUD.Panel(BarX+BarW*Info->Phases[Index].FromPermille/1000.f-1.f,BarY-3.f,2.f,13.f,Ivory);
-    if(Boss->HasBarrier()&&Info->Barrier.Health>0)
-    {
-        HUD.Panel(BarX,BarY+10.f,BarW,3.f,FLinearColor(.15f,.18f,.20f));
-        HUD.Panel(BarX,BarY+10.f,BarW*FMath::Clamp(Boss->BarrierPoints()/static_cast<float>(Info->Barrier.Health),0.f,1.f),3.f,
-            FLinearColor(.78f,.74f,.92f));
-    }
-    // What is open or closed right now, in both languages.
-    TArray<FString> Japanese,English;
-    if(Boss->IsInvulnerable()) { Japanese.Add(TEXT("無敵")); English.Add(TEXT("INVULNERABLE")); }
-    if(Boss->IsShieldUp()) { Japanese.Add(TEXT("大盾：正面不可")); English.Add(TEXT("SHIELD: front blocked")); }
-    if(Boss->HasBarrier()) { Japanese.Add(Boss->IsBarrierOffline()?TEXT("障壁：停止中"):TEXT("障壁")); English.Add(Boss->IsBarrierOffline()?TEXT("BARRIER: down"):TEXT("BARRIER")); }
-    if(Boss->IsMantleUp()) { Japanese.Add(TEXT("冷却外套：被害七割減")); English.Add(TEXT("MANTLE: 70% less damage")); }
-    if(Boss->IsStaggered()) { Japanese.Add(TEXT("崩れ：好機")); English.Add(TEXT("STAGGERED: strike now")); }
-    for(int32 Index=0;Index<Info->WeakPoints.Num();++Index)
-        if(Boss->IsWeakPointOpen(Index)) { Japanese.Add(Info->WeakPoints[Index].NameJapanese); English.Add(Info->WeakPoints[Index].NameEnglish); }
-    if(Boss->LiveWards()>0&&Info->Wards.IsValidIndex(Boss->CurrentPhase()->Ward))
-    {
-        const FSoraBossWard& Ward=Info->Wards[Boss->CurrentPhase()->Ward];
-        Japanese.Add(FString::Printf(TEXT("%s ×%d"),*Ward.NameJapanese,Boss->LiveWards()));
-        English.Add(FString::Printf(TEXT("%s x%d"),*Ward.NameEnglish,Boss->LiveWards()));
-    }
-    for(const FSoraBossAttack& Limited:Info->Attacks)
-        if(Limited.EventLimit>0)
-        {
-            Japanese.Add(FString::Printf(TEXT("差押え %d / %d"),Boss->Seals(),Limited.EventLimit));
-            English.Add(FString::Printf(TEXT("SEIZED %d / %d"),Boss->Seals(),Limited.EventLimit));
-        }
-    if(Japanese.Num())
-        HUD.Label(FString::Join(Japanese,TEXT("　")),BarX,BarY+15.f,.34f,Teal);
-    if(bEnglish&&English.Num())
-        HUD.Label(FString::Join(English,TEXT("  ")),BarX+BarW*.5f,BarY+16.f,.3f,Muted);
-    if(Attack&&Boss->IsBossTelegraphing())
-    {
-        const FLinearColor Warning=Attack->Telegraph==ESoraBossTelegraph::Cyan?Cyan:Amber;
-        HUD.Label(Attack->TellJapanese,BossX+17.f,BossY+66.f,JapaneseSubtitleScale,Attack->Telegraph==ESoraBossTelegraph::None?Ivory:Warning);
-        if(bEnglish)
-            HUD.Label(Attack->TellEnglish,BossX+17.f,BossY+93.f,EnglishSubtitleScale,Muted);
-        HUD.Label(FString::Printf(TEXT("%.1f s"),Boss->BossWarningSeconds()),BossX+BossWidth-88.f,BossY+(bEnglish?112.f:88.f),.48f,Gold);
-        HUD.Panel(BossX+BossWidth-108.f,BossY+(bEnglish?134.f:110.f),90.f,4.f,FLinearColor(.15f,.18f,.20f));
-        HUD.Panel(BossX+BossWidth-108.f,BossY+(bEnglish?134.f:110.f),90.f*Boss->BossWarningProgress(),4.f,Warning);
-    }
-    else if(!Info->StyleJapanese.IsEmpty())
-    {
-        HUD.Label(Info->StyleJapanese,BossX+17.f,BossY+66.f,.42f,Muted);
-        if(bEnglish) HUD.Label(Info->StyleEnglish,BossX+17.f,BossY+93.f,.34f,Muted);
-    }
+    for(int32 I=0;I<Joined.Num();++I) if(Joined[I]!=L.Original[I].Replace(TEXT("\n"),TEXT("")))
+    { Why=TEXT("Boss wrapping lost localized content"); return false; }
+    return true;
 }
 void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharacter& Hero)
 {
