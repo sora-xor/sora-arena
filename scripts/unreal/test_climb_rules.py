@@ -213,6 +213,38 @@ int main() {
     assert(!AtSupport(false,1,0,.1,.02));
     assert(!AtSupport(true,1,1,0,0) && !AtSupport(false,1,1,.251,1));
     assert(!AtSupport(false,1,1,0,-.001) && !AtSupport(false,1,1,0,3.001));
+    // Release onto the real shelf is harmless. It must not disable a later
+    // supported->airborne->landing transition or charge height twice.
+    FFall fall=FallAt(550);
+    assert(SampleFall(fall,550,false,false,true)==0);
+    assert(SampleFall(fall,552.15,false,true,false)==0 && !fall.Airborne);
+    assert(SampleFall(fall,552.15,false,true,false)==0);
+    assert(SampleFall(fall,549,false,false,true)==0 && fall.Airborne);
+    assert(SampleFall(fall,200,false,false,true)==0);
+    const int lowerDrop=SampleFall(fall,2.15,false,true,false);
+    assert(lowerDrop==550 && FallDamage(GripRules(false),lowerDrop)==30 && !fall.Airborne);
+    assert(SampleFall(fall,2.15,false,true,false)==0);
+    // A real intermediate shelf ends that fall: two 5.5m falls are not one
+    // 11m fall. A clear drop to the terrace is, and must be lethal.
+    fall=FallAt(1102.15);
+    SampleFall(fall,1090,false,false,true);
+    assert(SampleFall(fall,552.15,false,true,false)==550);
+    SampleFall(fall,540,false,false,true);
+    assert(SampleFall(fall,2.15,false,true,false)==550);
+    fall=FallAt(1102.15);
+    SampleFall(fall,1090,false,false,true);
+    SampleFall(fall,550,false,false,true);
+    const int upperDrop=SampleFall(fall,2.15,false,true,false);
+    assert(upperDrop==1100 && FallDamage(GripRules(false),upperDrop)<0);
+    // Grounded crouch changes body height, not feet height. A genuine jump
+    // records its physical apex; acquiring holds/reset discards old peaks.
+    fall=FallAt(552.15);
+    assert(SampleFall(fall,552.15,false,true,false)==0);
+    SampleFall(fall,600,false,false,true);SampleFall(fall,580,false,false,true);
+    assert(SampleFall(fall,552.15,false,true,false)==48);
+    SampleFall(fall,500,false,false,true);
+    assert(SampleFall(fall,440,true,false,false)==0 && !fall.Airborne && fall.PeakZ==440);
+    fall={};assert(SampleFall(fall,2.15,false,true,false)==0 && !fall.Airborne);
     for(bool extrusion:{false,true}) {
         const auto rules=GripRules(extrusion);
         assert(ClimbValid(rules));

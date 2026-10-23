@@ -46,6 +46,8 @@ FString USoraFieldcraft::ClimbDiagnostic() const
         *O.ToString(),ClimbClockMs,ClimbRoute,Grip.Hold,ClimbStepTarget,ClimbStepAlpha,bClimbing,bFalling,bClimbMounting,bClimbReachedTop,
         bClimbCrawl,bClimbCrawlWish,bClimbCrawlEntered,bClimbCrawled,Grip.GripMilli,*ClimbStepStart.ToString(),
         *(ClimbSweepFrom-O).ToString(),*(ClimbSweepWanted-O).ToString(),bClimbSweepAccepted,*HitText(ClimbSweepHit));
+    Out+=FString::Printf(TEXT(" fall_initialized=%d fall_airborne=%d fall_last_feet_z=%.4f fall_peak_z=%.4f"),
+        ClimbFall.Initialized,ClimbFall.Airborne,ClimbFall.LastFeetZ,ClimbFall.PeakZ);
     if(const auto* P=Hero())
     {
         const auto* Move=P->GetCharacterMovement();
@@ -86,6 +88,7 @@ bool USoraFieldcraft::BeginClimbRoute(ASoraPlayerCharacter& Player)
     int32 Route=INDEX_NONE;if(!AtClimbRoute(Player,Route)) return false;
     if(auto* Kit=Player.GetEquipment()) Kit->Halt();
     ClimbRoute=Route;Grip=SoraFieldcraftRules::StartClimb();ClimbStepTarget=0;ClimbStepAlpha=0;
+    ClimbFall=SoraClimbRules::FallAt(SoraClimbRuntime::Feet(Player).Z);
     ClimbStepStart=SoraClimbRuntime::Feet(Player)-FVector(ClimbSpace->Origin,0);
     bClimbing=true;bFalling=false;bClimbMounting=false;LedgesReached.Reset();Player.StopSprint();
     Player.GetCharacterMovement()->StopMovementImmediately();Player.GetCharacterMovement()->SetMovementMode(MOVE_Flying);
@@ -106,6 +109,7 @@ void USoraFieldcraft::ClearClimbRoutes()
     if(ClimbGuide.IsValid())
     { ClimbGuide->GetCharacterMovement()->StopMovementImmediately();ClimbGuide->GetCharacterMovement()->SetMovementMode(MOVE_Walking); }
     ClimbGuide.Reset();ClimbGuidePath.Reset();ClimbGuidePoint=0;bClimbGuideWaiting=false;
+    ClimbFall={};
     ClimbSweepHit=ClimbGuideVerticalHit=ClimbGuideHorizontalHit=ClimbSentryMoveHit=FHitResult();
     ClimbSweepFrom=ClimbSweepWanted=ClimbSentryMoveGoal=FVector::ZeroVector;bClimbSweepAccepted=false;
     if(bClimbCrawl)
@@ -237,16 +241,17 @@ void USoraFieldcraft::TickClimbRoutes(float DeltaTime,int32 DtMs)
             { Move->SetCrouchedHalfHeight(ClimbOldCrouchHalf);P->UnCrouch();Move->UnCrouch(false);bClimbCrawl=P->IsCrouched(); }
         }
     }
-    const auto* R=CurrentClimbRoute();if(!R) return;
     const auto Rules=SoraClimbRules::GripRules(ClimbRoute==1);
-    if(bFalling&&!bClimbing&&Move->IsMovingOnGround())
+    const int32 Drop=SoraClimbRules::SampleFall(ClimbFall,SoraClimbRuntime::Feet(*P).Z,bClimbing,
+        Move->IsMovingOnGround(),Move->IsFalling());
+    bFalling=ClimbFall.Airborne;
+    const int32 Damage=SoraFieldcraftRules::FallDamage(Rules,Drop);
+    if(Damage!=0)
     {
-        bFalling=false;
-        const int32 Damage=SoraFieldcraftRules::FallDamage(Rules,FMath::RoundToInt32(FallFromZ-P->GetActorLocation().Z));
-        if(Damage!=0)
-        { FHitResult Hit;Hit.ImpactPoint=P->GetActorLocation();Hit.Location=Hit.ImpactPoint;
-          SoraDamage::Strike(P,Damage<0?P->Health+1000.f:float(Damage),FSoraHit::Hazard(Hit.Location),FVector::UpVector,Hit,nullptr,nullptr); }
+        FHitResult Hit;Hit.ImpactPoint=P->GetActorLocation();Hit.Location=Hit.ImpactPoint;
+        SoraDamage::Strike(P,Damage<0?P->Health+1000.f:float(Damage),FSoraHit::Hazard(Hit.Location),FVector::UpVector,Hit,nullptr,nullptr);
     }
+    const auto* R=CurrentClimbRoute();if(!R) return;
     if(!bClimbing||!P->IsAlive()) return;
     const float Up=FMath::Clamp(P->GetInputAxisValue(TEXT("MoveForward")),-1.f,1.f);
     if(ClimbStepTarget==INDEX_NONE)

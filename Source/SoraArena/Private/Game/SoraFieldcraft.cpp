@@ -893,6 +893,7 @@ void USoraFieldcraft::LetGo(ASoraPlayerCharacter& Player, bool bFell)
     bClimbing = false;
     bFalling = true;
     FallFromZ = Player.GetActorLocation().Z;
+    if(ClimbSpace) ClimbFall=SoraClimbRules::FallAt(FallFromZ-Player.GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
     UCharacterMovementComponent* Movement = Player.GetCharacterMovement();
     Movement->StopMovementImmediately();
     Movement->SetMovementMode(MOVE_Falling);

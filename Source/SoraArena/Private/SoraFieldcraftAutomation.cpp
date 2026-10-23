@@ -525,24 +525,28 @@ bool FSoraFieldcraftClimbTest::RunTest(const FString& Parameters)
     ASoraPlayerCharacter* Hero = W.Hero();
     const FSoraClimbFace& Face = W.Craft().Climb;
     for (TActorIterator<ASoraEnemy> It(W.World->GetTestWorld()); It; ++It) It->Destroy();
-    Hero->MaxHealth = 1000.f; Hero->Health = 1000.f;
-    W.Stand(Floor(Face.At + FVector2D(-90.f, 0.f)), 0.f);
-    if (!W.Tick(2) || !W.Press(EKeys::SpaceBar))
+    if (!W.Tick(2) || !SoraClimbAutomation::Begin(*W.World))
         return false;
     if (!TestTrue(TEXT("Jump at the face's foot reaches for the holds"), Fieldcraft->IsClimbing() && W.Raised(TEXT("climb_start"))))
         return false;
-    // The authored lower rest is now 5.5 m: its fall still costs 30 HP.
-    // The 11 m upper rest is lethal; the directed route fixture covers it.
+    // The shelf is real support. Release is safe; walking off it creates
+    // the actual >4 m drop that costs 30 HP.
     if (!TestEqual(TEXT("The face has its two ledges"), Face.LedgeEvents.Num(), 2) ||
         !SoraClimbAutomation::ToHold(*W.World,5)) return false;
     TestTrue(TEXT("The first ledge raises its event"), W.Raised(Face.LedgeEvents[0]));
     TestTrue(TEXT("Each hold spends grip"), Fieldcraft->Readout(*Hero).Grip < 1.f);
     const float Before = Hero->Health;
-    if (!W.Press(EKeys::SpaceBar)) return false;
-    for (int32 Frame = 0; Frame < 240 && !Hero->GetCharacterMovement()->IsMovingOnGround(); ++Frame)
-        if (!W.Tick(1)) return false;
-    TestTrue(TEXT("Letting go from the lower rest falls and hurts"), !Fieldcraft->IsClimbing() &&
-        FMath::IsNearlyEqual(Before - Hero->Health, 30.f));
+    if (!W.Press(SoraClimbAutomation::Key(*Hero,TEXT("Jump")))||!W.Tick(30)) return false;
+    if(!TestTrue(TEXT("Releasing onto the lower supporting shelf is safe"),!Fieldcraft->IsClimbing()&&
+        Hero->GetCharacterMovement()->IsMovingOnGround()&&!Fieldcraft->IsClimbFalling()&&Hero->Health==Before&&
+        FMath::Abs(Hero->GetActorLocation().Z-640)<4)) return false;
+    SoraClimbAutomation::FObservedFall Fall;
+    if(!TestTrue(TEXT("Ordinary input walks off the lower shelf"),SoraClimbAutomation::WalkOff(*W.World,Fall))) return false;
+    TestTrue(TEXT("An actual 4-to-8m lower-rest drop costs exactly 30 HP"),!Fieldcraft->IsClimbing()&&
+        Fall.PeakFeet-Fall.LandingFeet>400&&Fall.PeakFeet-Fall.LandingFeet<=800&&
+        FMath::IsNearlyEqual(Before-Hero->Health,30.f)&&!Fieldcraft->IsClimbFalling());
+    if(!W.Tick(60)) return false;
+    TestEqual(TEXT("Remaining supported cannot apply the same fall twice"),Hero->Health,Before-30.f);
     if(!SoraClimbAutomation::Traverse(*W.World)) return false;
     TestNotEqual(TEXT("Climb plus the actual low gap is the exit"),W.Campaign()->ActiveBeat(),W.Beat);
     return true;

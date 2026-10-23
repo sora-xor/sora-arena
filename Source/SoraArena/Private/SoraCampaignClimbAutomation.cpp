@@ -245,17 +245,24 @@ bool FSoraClimbFallTest::RunTest(const FString&)
     SoraLiftAutomation::HoldThreats(*W.World);
     if(!SoraClimbAutomation::Begin(*W.World)||!SoraClimbAutomation::ToHold(*W.World,9)) return false;
     TestTrue(TEXT("The lethal drop begins at the actual 11m rest"),FMath::Abs(W.Hero()->GetActorLocation().Z-1188)<2);
-    if(!W.Press(SoraClimbAutomation::Key(*W.Hero(),TEXT("Jump")))) return false;
-    // Air-control away from the wall clears the lower shelf. Landing on that
-    // shelf would correctly count only the actual 5.5m drop, not the height
-    // above the terrace; this check requires the full physical fall.
-    if(!W.World->InjectKey(EKeys::S,IE_Pressed)) return false;
-    for(int32 F=0;F<300&&!W.Mode()->bDefeated;++F) if(!W.Tick(1)) return false;
-    if(!W.World->InjectKey(EKeys::S,IE_Released)) return false;
-    TestTrue(TEXT("A real fall exceeding 8m is lethal even with fixture health"),W.Mode()->bDefeated&&!W.Hero()->IsAlive()&&W.Hero()->GetActorLocation().Z<100);
+    const float Before=W.Hero()->Health;
+    if(!W.Press(SoraClimbAutomation::Key(*W.Hero(),TEXT("Jump")))||!W.Tick(30)) return false;
+    if(!TestTrue(TEXT("Releasing on the upper supporting shelf is safe"),!W.Fieldcraft()->IsClimbing()&&
+        W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&!W.Fieldcraft()->IsClimbFalling()&&W.Hero()->Health==Before&&
+        FMath::Abs(W.Hero()->GetActorLocation().Z-1190)<4)) return false;
+    // Walking off is a new fall even after releasing safely onto support.
+    // Real backward input carries the capsule beyond the lower shelf too.
+    SoraClimbAutomation::FObservedFall Fall;
+    if(!TestTrue(TEXT("Ordinary input leaves support and reaches an actual landing"),SoraClimbAutomation::WalkOff(*W.World,Fall,true))) return false;
+    TestTrue(TEXT("Menu freezes a real airborne fall without losing its peak"),Fall.PauseChecked&&Fall.PauseStable);
+    TestTrue(TEXT("A real fall exceeding 8m is lethal even with fixture health"),Fall.PeakFeet-Fall.LandingFeet>800&&
+        W.Mode()->bDefeated&&!W.Hero()->IsAlive()&&W.Hero()->GetActorLocation().Z<100);
     if(!W.Press(EKeys::Enter)||!W.Tick(30)) return false;
     TestTrue(TEXT("The ordinary retry clears fall and route state"),!W.Mode()->bDefeated&&W.Hero()->IsAlive()&&
-        W.Fieldcraft()->ClimbRouteIndex()==INDEX_NONE&&!W.Fieldcraft()->IsClimbing()&&!W.Fieldcraft()->ClimbExitReady());
+        W.Fieldcraft()->ClimbRouteIndex()==INDEX_NONE&&!W.Fieldcraft()->IsClimbing()&&!W.Fieldcraft()->IsClimbFalling()&&!W.Fieldcraft()->ClimbExitReady());
+    if(!SoraClimbTest::Reload(W)) return false;
+    TestTrue(TEXT("Fresh load cannot inherit the upper drop's peak"),!W.Fieldcraft()->IsClimbFalling()&&W.Fieldcraft()->ClimbFallPeak()<20&&
+        W.Fieldcraft()->ClimbRouteIndex()==INDEX_NONE&&W.Hero()->IsAlive()&&!W.Mode()->bDefeated);
     return !HasAnyErrors();
 }
 
