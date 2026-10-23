@@ -36,6 +36,19 @@ void Sample(FWorld& W,const TCHAR* Label)
         Craft->Readout(*Hero).Breath,Craft->FloodPassageStage(),Craft->FloodExitReady(),
         HasFloor,*GetNameSafe(Floor.GetComponent()),*(Floor.ImpactPoint-Origin).ToString(),
         HasRoof,*GetNameSafe(Roof.GetComponent()),*(Roof.ImpactPoint-Origin).ToString()));
+    for(const auto& Ally:Craft->AlliesInPlay()) if(IsValid(Ally))
+    {
+        const FVector Position=Ally->GetActorLocation();const auto* Movement=Ally->GetCharacterMovement();
+        const auto* Body=Ally->GetCapsuleComponent();FHitResult Support,Ceiling;
+        const bool HasSupport=W.World->GetTestWorld()->LineTraceSingleByChannel(Support,Position,Position-FVector(0,0,1000),ECC_WorldStatic,Query);
+        const bool HasCeiling=W.World->GetTestWorld()->LineTraceSingleByChannel(Ceiling,Position,Position+FVector(0,0,1000),ECC_WorldStatic,Query);
+        W.Test.AddInfo(FString::Printf(TEXT("Flood companion %s id=%s local=%s velocity=%s mode=%d crouched=%d wants_crouch=%d half=%.2f gravity=%.2f move_tick=%d actor_tick=%d parent=%s support=%d/%s/%s ceiling=%d/%s/%s"),
+            Label,*Ally->CompanionId(),*(Position-Origin).ToString(),*Movement->Velocity.ToString(),
+            int32(Movement->MovementMode),Ally->IsCrouched(),Movement->bWantsToCrouch,Body->GetScaledCapsuleHalfHeight(),
+            Movement->GravityScale,Movement->IsComponentTickEnabled(),Ally->IsActorTickEnabled(),*GetNameSafe(Ally->GetAttachParentActor()),
+            HasSupport,*GetNameSafe(Support.GetComponent()),*(Support.ImpactPoint-Origin).ToString(),
+            HasCeiling,*GetNameSafe(Ceiling.GetComponent()),*(Ceiling.ImpactPoint-Origin).ToString()));
+    }
 }
 bool Walk(FWorld& W,const FVector& Local)
 {
@@ -155,7 +168,9 @@ bool Cross(FWorld& W,const FKey& Dive,bool Late)
         if(Ally->CompanionId()==TEXT("npc_iota")) Iota=Ally;
     }
     if(!W.Test.TestNotNull(TEXT("Toranosuke remains in play"),Carrier)||!W.Test.TestNotNull(TEXT("Iota remains in play"),Iota)) return false;
+    Sample(W,TEXT("carrier wait begin"));
     for(int32 Frame=0;Frame<600&&!OnBank(*Carrier,O);++Frame) if(!W.Tick(1)) return false;
+    Sample(W,TEXT("carrier wait end"));
     if(!W.Test.TestTrue(TEXT("The carrier walks onto bank support with Iota still attached"),
         OnBank(*Carrier,O)&&Iota->GetAttachParentActor()==Carrier)) return false;
     W.Test.TestEqual(TEXT("Both submerged legs, the moat and bank ascent incur no drowning damage"),Drowning,0.f);
