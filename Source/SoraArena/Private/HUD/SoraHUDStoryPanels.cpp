@@ -290,7 +290,7 @@ FLowerStoryLayout BuildAimStoryLayout(const FSoraHUDFrame& F)
     float WeaponLeft=F.W-20*F.S,ObjectiveBottom=87*F.S;
     for(const auto& Box:SoraHUDPanels::WeaponPanelBounds(F,*F.Mode.Hero()))
         WeaponLeft=FMath::Min(WeaponLeft,static_cast<float>(Box.Min.X));
-    for(const auto& Box:SoraHUDPanels::UpperGameplayPanelBounds(F))
+    for(const auto& Box:SoraHUDPanels::FixedGameplayPanelBounds(F))
         if(Box.Min.X<AimWindow(F).Min.X) ObjectiveBottom=FMath::Max(ObjectiveBottom,static_cast<float>(Box.Max.Y));
     FRect Regions[MaxRegions]{};
     const int32 Count=SoraAimHUDLayout::LowerRegions(F.W,F.H,F.S,ObjectiveBottom,WeaponLeft,Regions);
@@ -501,7 +501,7 @@ void ReserveCaptions(const FSoraHUDFrame& F,FUpperStoryLayout& L,float X,float W
     if(UsesAimLayout(F))
     {
         using namespace SoraCaptionLayoutRules;
-        auto Occupied=SoraHUDPanels::UpperGameplayPanelBounds(F);
+        auto Occupied=SoraHUDPanels::FixedGameplayPanelBounds(F);
         Occupied.Add(AimWindow(F));
         Occupied.Append(SoraHUDPanels::WeaponPanelBounds(F,*F.Mode.Hero()));
         Occupied.Add(FBox2D({25*F.S,F.H-110*F.S},{365*F.S,F.H-30*F.S}));
@@ -542,7 +542,7 @@ void ReserveCaptions(const FSoraHUDFrame& F,FUpperStoryLayout& L,float X,float W
     }
     float Height=0;
     for(const auto& Panel:Captions) Height+=Panel.Bounds.GetSize().Y+Gap;
-    auto Obstacles=SoraHUDPanels::UpperGameplayPanelBounds(F);
+    auto Obstacles=SoraHUDPanels::FixedGameplayPanelBounds(F);
     const auto Rhythm=RhythmPanelBounds(F);
     if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
     bool Clear=true; float ProbeY=Top;
@@ -805,7 +805,7 @@ FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F,bool ForceCompact
     const auto Fits=[&](const TArray<FUpperStoryPanel>& Trial)
     {
         if(!Trial.IsEmpty()&&Trial.Last().Bounds.Max.Y>L.Limit) return false;
-        auto Obstacles=SoraHUDPanels::UpperGameplayPanelBounds(F);
+        auto Obstacles=SoraHUDPanels::FixedGameplayPanelBounds(F);
         const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
         if(UsesAimLayout(F)) Obstacles.Add(AimWindow(F));
         for(const auto& Panel:BuildLowerStoryLayout(F).Measured) Obstacles.Add(Panel.Bounds);
@@ -836,7 +836,7 @@ FUpperStoryLayout BuildUpperStoryLayout(const FSoraHUDFrame& F,bool ForceCompact
         // Try the complete notice first: hiding its short detail can create
         // a longer bilingual "condensed" summary and make fitting worse.
         using namespace SoraCaptionLayoutRules;
-        auto Obstacles=SoraHUDPanels::UpperGameplayPanelBounds(F);
+        auto Obstacles=SoraHUDPanels::FixedGameplayPanelBounds(F);
         const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Obstacles.Add(Rhythm);
         if(UsesAimLayout(F)) Obstacles.Add(AimWindow(F));
         for(const auto& Panel:L.Panels) Obstacles.Add(Panel.Bounds);
@@ -1127,6 +1127,20 @@ TArray<FBox2D> SoraHUDPanels::UpperStoryPanelBounds(const FSoraHUDFrame& F)
     for(const auto& Panel:L.Captions.Panels) Result.Add(Panel.Bounds);
     return Result;
 }
+TArray<FBox2D> SoraHUDPanels::BossLayoutObstacles(const FSoraHUDFrame& F)
+{
+    // All of these layouts use fixed gameplay bounds, never the boss. The
+    // boss is allocated last; later projected labels reserve its final box.
+    auto Result=FixedGameplayPanelBounds(F);
+    Result.Append(UpperStoryPanelBounds(F));
+    const auto Lower=BuildLowerStoryLayout(F);
+    for(const auto& Box:{Lower.Dialogue,Lower.Notice.Bounds,Lower.Prompt.Bounds}) if(Box.bIsValid) Result.Add(Box);
+    const auto Rhythm=RhythmPanelBounds(F); if(Rhythm.bIsValid) Result.Add(Rhythm);
+    const auto Aim=AimWindow(F); if(Aim.bIsValid) Result.Add(Aim);
+    if(const auto* Hero=F.Mode.Hero()) Result.Append(WeaponPanelBounds(F,*Hero));
+    Result.Add(FBox2D({25*F.S,F.H-110*F.S},{365*F.S,F.H-30*F.S}));
+    return Result;
+}
 bool SoraHUDPanels::StoryNoticeTitleVisible(const FSoraHUDFrame& F,int32 NoticeIndex)
 {
     return BuildUpperStoryLayout(F).NoticeIndices.Contains(NoticeIndex);
@@ -1134,6 +1148,7 @@ bool SoraHUDPanels::StoryNoticeTitleVisible(const FSoraHUDFrame& F,int32 NoticeI
 bool SoraHUDPanels::StoryTrackerLayoutFits(const FSoraHUDFrame& F,FString& Why)
 {
     if(!ObjectiveLayoutFits(F,Why)) return false;
+    if(!BossLayoutFits(F,Why)) return false;
     const FUpperStoryLayout L=BuildUpperStoryLayout(F);
     TArray<FBox2D> TextBounds;
     TArray<FBox2D> PanelBounds;

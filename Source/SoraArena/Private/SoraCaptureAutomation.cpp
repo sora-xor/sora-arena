@@ -217,9 +217,22 @@ struct FSession
     FString File;
     FDateTime Previous;
     bool bFrameWritten = false;
+    bool bFrameLayoutRejected = false;
+    bool bBossFrameGuard = false;
+    TWeakObjectPtr<ASoraHUD> BossFrameHUD;
+    FDelegateHandle BossDrawHandle, BossProcessedHandle;
+    uint64 BossRequestFrame = 0;
+    double BossPausedWorld = 0;
+    void CloseBossFrameGuard()
+    {
+        if(BossFrameHUD.IsValid()) BossFrameHUD->OnReticleDrawn.Remove(BossDrawHandle);
+        FScreenshotRequest::OnScreenshotRequestProcessed().Remove(BossProcessedHandle);
+        BossFrameHUD.Reset(); BossDrawHandle.Reset(); BossProcessedHandle.Reset();
+    }
     TArray<FTiming> Timings;
     ~FSession()
     {
+        CloseBossFrameGuard();
         if (!Slot.IsEmpty() && UGameplayStatics::DoesSaveGameExist(Slot, 0))
             UGameplayStatics::DeleteGameInSlot(Slot, 0);
     }
@@ -566,17 +579,78 @@ void Freeze(FSessionRef Session, bool bFrozen)
 // be written (or rewritten, when an earlier run left one there).
 void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Name, bool bRequireLive = false)
 {
-    Queue([Session, Name, bRequireLive]()
+    Queue([Test, Session, Name, bRequireLive]()
     {
+        Session->CloseBossFrameGuard();
         Session->bFrameWritten = false;
+        Session->bFrameLayoutRejected = false;
+        Session->bBossFrameGuard = false;
+        Session->BossRequestFrame = 0;
         if (bRequireLive && !Session->bShotLive) return;
         Session->File = Session->Folder / (Name + TEXT(".png"));
         Session->Previous = IFileManager::Get().GetTimeStamp(*Session->File);
+        // Campaign boss shots freeze the real telegraph before this request.
+        // Bind to the actual HUD draw and processed screenshot, as Cargo/Bow
+        // do: no hidden HUD, stale Canvas or unpaused transition can qualify.
+        ASoraGameMode* M=Session->M();
+        if(M&&M->Campaign()->CampaignBoss()&&!M->bMenu&&!M->TitleCardChapter()&&!SoraHUDPanels::ShowsRegistry(*M))
+        {
+            APlayerController* PC=M->GetWorld()->GetFirstPlayerController();
+            ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+            if(!HUD||!HUD->bShowHUD||!M->GetWorld()->IsPaused())
+            {
+                Test->AddError(Name+TEXT(": a boss screenshot requires a visible HUD in the paused world"));
+                Session->bFrameLayoutRejected=true;
+                return;
+            }
+            Session->bBossFrameGuard=true;
+            Session->BossFrameHUD=HUD;
+            Session->BossPausedWorld=M->GetWorld()->GetTimeSeconds();
+            const TWeakPtr<FSession> Weak=Session;
+            Session->BossDrawHandle=HUD->OnReticleDrawn.AddLambda([Test,Weak,Name](const FVector2D&)
+            {
+                const auto Current=Weak.Pin();
+                if(!Current||Current->bFrameLayoutRejected||Current->BossRequestFrame!=0) return;
+                auto* Mode=Current->M(); auto* DrawHUD=Current->BossFrameHUD.Get();
+                auto* Viewport=Mode?Mode->GetWorld()->GetGameViewport():nullptr;
+                FString Why=TEXT("The boss HUD draw no longer matches its visible paused state");
+                bool Fits=false;
+                if(Mode&&DrawHUD&&DrawHUD->bShowHUD&&Viewport&&Mode->GetWorld()->IsPaused()&&
+                    Mode->GetWorld()->GetTimeSeconds()==Current->BossPausedWorld&&Mode->Campaign()->CampaignBoss()&&
+                    !Mode->bMenu&&!Mode->TitleCardChapter()&&!SoraHUDPanels::ShowsRegistry(*Mode))
+                {
+                    FVector2D Size; Viewport->GetViewportSize(Size);
+                    Fits=SoraHUDPanels::StoryTrackerLayoutFits(FSoraHUDFrame(*DrawHUD,*Mode,Size.X,Size.Y),Why);
+                }
+                if(!Fits)
+                {
+                    Test->AddError(Name+TEXT(": ")+Why); Current->bFrameLayoutRejected=true; return;
+                }
+                Current->BossRequestFrame=GFrameCounter;
+                FScreenshotRequest::RequestScreenshot(Current->File,true,false);
+            });
+            Session->BossProcessedHandle=FScreenshotRequest::OnScreenshotRequestProcessed().AddLambda([Test,Weak,Name]()
+            {
+                const auto Current=Weak.Pin();
+                if(!Current||Current->bFrameLayoutRejected||Current->BossRequestFrame==0) return;
+                const auto* Mode=Current->M(); const auto* DrawHUD=Current->BossFrameHUD.Get();
+                Current->bFrameWritten=Mode&&DrawHUD&&DrawHUD->bShowHUD&&Mode->GetWorld()->IsPaused()&&
+                    Current->BossRequestFrame==GFrameCounter&&Mode->GetWorld()->GetTimeSeconds()==Current->BossPausedWorld&&
+                    IFileManager::Get().FileSize(*Current->File)>0&&IFileManager::Get().GetTimeStamp(*Current->File)!=Current->Previous;
+                if(!Current->bFrameWritten)
+                {
+                    Test->AddError(Name+TEXT(": the boss original does not match its observed paused HUD frame"));
+                    Current->bFrameLayoutRejected=true;
+                }
+            });
+            return;
+        }
         FScreenshotRequest::RequestScreenshot(Session->File, true, false);
     });
     ADD_LATENT_AUTOMATION_COMMAND(FUntil(15.0, [Session, bRequireLive](double)
     {
-        if (bRequireLive && !Session->bShotLive) return true;
+        if (Session->bFrameLayoutRejected || (bRequireLive && !Session->bShotLive)) return true;
+        if (Session->bBossFrameGuard) return Session->bFrameWritten;
         Session->bFrameWritten = IFileManager::Get().FileSize(*Session->File) > 0 &&
             IFileManager::Get().GetTimeStamp(*Session->File) != Session->Previous;
         return Session->bFrameWritten;
@@ -584,6 +658,7 @@ void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Na
     {
         Test->AddError(FString::Printf(TEXT("No screenshot was written to %s"), *Session->File));
     }));
+    Queue([Session]() { Session->CloseBossFrameGuard(); });
 }
 
 FString BossSeen(const ASoraBoss& Boss)
@@ -901,6 +976,11 @@ void QueueShot(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot
     SaveFrame(Test, Session, Shot.Name);
     Queue([Test, Session, Shot, Where]()
     {
+        if(!Session->bFrameWritten||Session->bFrameLayoutRejected)
+        {
+            UE_LOG(LogTemp,Display,TEXT("SORA_CAPTURE_REJECTED %s: no accepted fresh original"),Shot.Name);
+            return;
+        }
         USoraCampaignDirector* Campaign = Session->Campaign();
         const FSoraChapter& Chapter = FSoraCatalog::Get().Chapter(Shot.Chapter);
         const FSoraBeat& Beat = Chapter.Beats[Shot.Beat];

@@ -66,6 +66,9 @@ void DrawObjective(const FSoraHUDFrame& Frame);
 bool ObjectiveLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 void DrawDojoLesson(const FSoraHUDFrame& Frame);
 void DrawBoss(const FSoraHUDFrame& Frame);
+// The exact complete boss rows and meters, placed after story panels.
+bool BossLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
+TArray<FBox2D> BossLayoutObstacles(const FSoraHUDFrame& Frame);
 void DrawStealth(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 TArray<FBox2D> StealthPanelBounds(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
 void DrawHero(const FSoraHUDFrame& Frame, const ASoraPlayerCharacter& Hero);
@@ -103,7 +106,10 @@ bool RegistryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 FBox2D CaptionGlyphBounds(const FSoraHUDFrame& Frame, const FString& Text, float Scale);
 TArray<FSoraCaptionPanel> MeasureCaptions(const FSoraHUDFrame& Frame, float Width);
 FSoraCaptionLayout CaptionLayout(const FSoraHUDFrame& Frame);
-// Actual upper gameplay panels are excluded from caption fallback columns.
+// Story is allocated first around fixed gameplay panels; the boss is placed
+// around that finished story layout. This explicit order avoids recursion.
+TArray<FBox2D> FixedGameplayPanelBounds(const FSoraHUDFrame& Frame);
+// All gameplay panels, including the boss, for validation and later world labels.
 TArray<FBox2D> UpperGameplayPanelBounds(const FSoraHUDFrame& Frame);
 bool CaptionStoryLayoutFits(const FSoraHUDFrame& Frame, FString& Why);
 // Place and draw a dark backing, reserving its padded bounds against every
