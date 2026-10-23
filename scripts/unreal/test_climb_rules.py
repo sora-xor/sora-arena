@@ -109,6 +109,16 @@ int main() {
     static_assert(Watching(20000) && Watching(23999) && !Watching(24000));
     static_assert(!Watching(39999) && Watching(40000) && Watching(43999) && !Watching(44000));
     assert(std::abs(WallX(600)-600/std::sqrt(3.0))<1e-8);
+    // The real patrol follows connected deck segments, reaches the authored
+    // far end, and returns to the bay at each exact look-down boundary.
+    for(int t=0;t<60000;++t) {
+        const auto p=PatrolAt(t), next=PatrolAt(t+1);
+        assert(p.X>=360 && p.X<=650 && p.Y>=-3800 && p.Y<=-300);
+        assert(std::abs(p.Y+300)<1e-8 || std::abs(p.X-650)<1e-8);
+        assert(std::hypot(next.X-p.X,next.Y-p.Y)<=.4741);
+        if(Watching(t)) assert(p.X==360 && p.Y==-300);
+    }
+    assert(PatrolAt(10000).Y==-3800 && PatrolAt(32000).Y==-3800);
     for(bool extrusion:{false,true}) {
         const auto rules=GripRules(extrusion);
         assert(ClimbValid(rules));
