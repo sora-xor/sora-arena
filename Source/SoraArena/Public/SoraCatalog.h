@@ -101,6 +101,8 @@ struct FSoraCollectible
     TArray<int32> Beats;
     // Otherwise it lies loose in the world: its FSoraSpace pickup.
     int32 Pickup = INDEX_NONE;
+    // Optional authored titles; absent pairs use a neutral UI category label.
+    FString Title, TitleEnglish;
     FString Codex;
     FString CodexEnglish;
 };

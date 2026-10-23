@@ -77,6 +77,8 @@ void SSoraFrontEnd::Refresh()
     RowWidgets.Reset();
     RowScroll.Reset();
     CreditsScroll.Reset();
+    CodexScroll.Reset();
+    CodexContent.Reset();
     ChildSlot[BuildScreen()];
 }
 
@@ -84,7 +86,13 @@ void SSoraFrontEnd::Tick(const FGeometry& AllottedGeometry, const double InCurre
 {
     SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
     Retired.Reset();
+    if (CodexScroll && FrontEnd.IsValid())
+        CodexScroll->SetScrollOffset(CodexScroll->GetScrollOffsetOfEnd() * FrontEnd->CodexScrollFraction());
 }
+float SSoraFrontEnd::CodexScrollOffset() const { return CodexScroll ? CodexScroll->GetScrollOffset() : 0.f; }
+float SSoraFrontEnd::CodexScrollEnd() const { return CodexScroll ? CodexScroll->GetScrollOffsetOfEnd() : 0.f; }
+FGeometry SSoraFrontEnd::CodexViewportGeometry() const { return CodexScroll ? CodexScroll->GetCachedGeometry() : FGeometry(); }
+FGeometry SSoraFrontEnd::CodexContentGeometry() const { return CodexContent ? CodexContent->GetCachedGeometry() : FGeometry(); }
 
 FReply SSoraFrontEnd::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
@@ -305,6 +313,10 @@ TSharedRef<SWidget> SSoraFrontEnd::BuildMenu()
         Body = SNew(SVerticalBox)
             + SVerticalBox::Slot().FillHeight(1.f)[BuildCredits()]
             + SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left).Padding(0, 20, 0, 0)[SNew(SBox).WidthOverride(560.f)[BuildRows()]];
+    else if (Model->Screen() == SoraUI::EScreen::CodexEntry)
+        Body = SNew(SVerticalBox)
+            + SVerticalBox::Slot().FillHeight(1.f)[BuildCodexReader()]
+            + SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left).Padding(0, 20, 0, 0)[SNew(SBox).WidthOverride(560.f)[BuildRows()]];
     else if (!IsDialog(Model->Screen()))
     {
         // The Controls list carries two key columns, so it takes more of the width.
@@ -387,6 +399,7 @@ TSharedRef<SWidget> SSoraFrontEnd::BuildRows()
 
 TSharedRef<SWidget> SSoraFrontEnd::BuildRow(int32 Index, const SoraUI::FRow& Row, bool bFocused)
 {
+    USoraFrontEnd* Model = FrontEnd.Get();
     const bool bEnglish = FrontEnd->ShowsEnglish();
     if (Row.bHeading)
         return BuildHeading(Row);
@@ -399,7 +412,12 @@ TSharedRef<SWidget> SSoraFrontEnd::BuildRow(int32 Index, const SoraUI::FRow& Row
     // clips rather than overlap. A binding row's label wraps beside its keys.
     const bool bStacked = Row.bOption || Row.bBinding;
     const FString ValueEnglish = Row.ValueEnglish == Row.ValueJapanese ? FString() : Row.ValueEnglish;
-    TSharedRef<SWidget> Title = bStacked
+    const bool bCodex = Model->Screen() == SoraUI::EScreen::Codex;
+    const float CodexScale = bCodex && Model->Mode().Settings()
+        ? SoraAccessibility::SubtitleScale(Model->Mode().Settings()->SubtitleSize()) : 1.f;
+    TSharedRef<SWidget> Title = bCodex
+        ? Bilingual(Row.Japanese, Row.English, SoraMenuStyle::RowText * CodexScale, SoraMenuStyle::Small * CodexScale, Label)
+        : bStacked
         ? SNew(SVerticalBox)
             + SVerticalBox::Slot().AutoHeight()[Text(Row.Japanese, SoraMenuStyle::Value, Label, Row.bBinding)]
             + SVerticalBox::Slot().AutoHeight()[bEnglish ? Text(Row.English, SoraMenuStyle::Small, SoraMenuStyle::Muted, Row.bBinding) : SNullWidget::NullWidget]
@@ -537,6 +555,9 @@ TSharedRef<SWidget> SSoraFrontEnd::BuildDetail()
 {
     USoraFrontEnd* Model = FrontEnd.Get();
     TSharedRef<SVerticalBox> Detail = SNew(SVerticalBox);
+    if (Model->Screen() == SoraUI::EScreen::Codex)
+        Detail->AddSlot().AutoHeight().Padding(0, 0, 0, 28)
+            [Bilingual(Model->CodexSummary(), SoraMenuStyle::Hint, SoraMenuStyle::HintEnglish, SoraMenuStyle::Gold)];
     const TArray<SoraUI::FRow>& Rows = Model->Rows();
     if (Rows.IsValidIndex(Model->Focus()))
     {
@@ -736,6 +757,38 @@ TSharedRef<SWidget> SSoraFrontEnd::Prompt(SoraUI::ECommand Command, const FText&
         ];
 }
 
+TSharedRef<SWidget> SSoraFrontEnd::BuildCodexReader()
+{
+    USoraFrontEnd* Model = FrontEnd.Get();
+    const auto* Entry = Model->SelectedCodexEntry();
+    if (!Entry) return SNullWidget::NullWidget;
+    const auto* Settings = Model->Mode().Settings();
+    const float Scale = Settings ? SoraAccessibility::SubtitleScale(Settings->SubtitleSize()) : 1.f;
+    // Wrap against the allotted viewport, at the player's selected size. The
+    // title and both complete bodies are inside the same explicitly scrolled
+    // region, so extra-large text never covers the Back row or key prompts.
+    CodexContent = SNew(SVerticalBox)
+        + SVerticalBox::Slot().AutoHeight()[Bilingual(Entry->Context, SoraMenuStyle::Body * Scale, SoraMenuStyle::Small * Scale, SoraMenuStyle::Muted)]
+        + SVerticalBox::Slot().AutoHeight().Padding(0, 16, 0, 32)[Bilingual(Entry->Title, 36.f * Scale, 28.f * Scale, SoraMenuStyle::Gold)]
+        + SVerticalBox::Slot().AutoHeight()[Bilingual(Entry->Body, 28.f * Scale, 24.f * Scale, SoraMenuStyle::Ivory)];
+    return SNew(SBox).HAlign(HAlign_Center)
+        [SNew(SBox).MaxDesiredWidth(1120.f)
+        [SAssignNew(CodexScroll, SScrollBox)
+            .ConsumeMouseWheel(EConsumeMouseWheel::Never)
+            .ScrollBarVisibility(EVisibility::Visible)
+            .OnUserScrolled_Lambda([this](float Offset)
+            {
+                if (FrontEnd.IsValid() && CodexScroll)
+                {
+                    const float End = CodexScroll->GetScrollOffsetOfEnd();
+                    FrontEnd->SetCodexScrollFraction(End > 0.f ? Offset / End : 0.f);
+                }
+            })
+            + SScrollBox::Slot().Padding(0, 0, 20, 32)
+            [CodexContent.ToSharedRef()]
+        ]];
+}
+
 TSharedRef<SWidget> SSoraFrontEnd::BuildPrompts()
 {
     USoraFrontEnd* Model = FrontEnd.Get();
@@ -751,6 +804,13 @@ TSharedRef<SWidget> SSoraFrontEnd::BuildPrompts()
     {
         // Every other key is the new binding; only Esc or Start cancels.
         Add(SoraUI::ECommand::Start, NSLOCTEXT("SoraArena.Menu", "Cancel", "やめる"));
+        return Prompts;
+    }
+    if (Screen == SoraUI::EScreen::CodexEntry)
+    {
+        Add(SoraUI::ECommand::Up, NSLOCTEXT("SoraArena.Codex", "ScrollUp", "上へ"));
+        Add(SoraUI::ECommand::Down, NSLOCTEXT("SoraArena.Codex", "ScrollDown", "下へ"));
+        Add(SoraUI::ECommand::Back, NSLOCTEXT("SoraArena.Menu", "Back", "戻る"));
         return Prompts;
     }
     if (Screen == SoraUI::EScreen::Credits)

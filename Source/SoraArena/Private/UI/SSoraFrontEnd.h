@@ -35,6 +35,11 @@ public:
     // Every font size and every line of text the last Refresh used.
     const TArray<float>& FontSizesUsed() const { return FontSizes; }
     const TArray<FString>& LinesDrawn() const { return DrawnLines; }
+    // Actual laid-out reader extent, used by the normal-input readability test.
+    float CodexScrollOffset() const;
+    float CodexScrollEnd() const;
+    FGeometry CodexViewportGeometry() const;
+    FGeometry CodexContentGeometry() const;
 
     virtual bool SupportsKeyboardFocus() const override { return true; }
     virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
@@ -54,6 +59,8 @@ private:
     TSharedPtr<SWidget> Retired;
     TSharedPtr<SScrollBox> RowScroll;
     TSharedPtr<SScrollBox> CreditsScroll;
+    TSharedPtr<SScrollBox> CodexScroll;
+    TSharedPtr<SWidget> CodexContent;
     TArray<TSharedPtr<SWidget>> RowWidgets;
     TArray<float> FontSizes;
     TArray<FString> DrawnLines;
@@ -79,6 +86,7 @@ private:
     TSharedRef<SWidget> BuildPalette();
     TSharedRef<SWidget> BuildWallet();
     TSharedRef<SWidget> BuildCredits();
+    TSharedRef<SWidget> BuildCodexReader();
     TSharedRef<SWidget> BuildBanner();
     // Device-aware prompts for the open screen, and the build notes (with the
     // key-visual disclaimer on the title and main menu).

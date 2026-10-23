@@ -234,7 +234,12 @@ bool USoraFrontEnd::Command(SoraUI::ECommand Pressed)
         return false;
     case SoraUI::ECommand::Up:
     case SoraUI::ECommand::Down:
-        if (Current == SoraUI::EScreen::Credits)
+        if (Current == SoraUI::EScreen::CodexEntry)
+        {
+            CodexScroll = FMath::Clamp(CodexScroll + (Pressed == SoraUI::ECommand::Up ? -.2f : .2f), 0.f, 1.f);
+            Changed();
+        }
+        else if (Current == SoraUI::EScreen::Credits)
         {
             CreditsScroll = FMath::Clamp(CreditsScroll + (Pressed == SoraUI::ECommand::Up ? -3 : 3), 0, FMath::Max(CreditLines.Num() - 1, 0));
             Changed();
@@ -429,6 +434,16 @@ void USoraFrontEnd::Activate(const SoraUI::FRow& Row)
     case SoraUI::EAction::Settings:
         Push(SoraUI::EScreen::Settings);
         return;
+    case SoraUI::EAction::Codex:
+        CodexKey = INDEX_NONE;
+        CodexScroll = 0.f;
+        Push(SoraUI::EScreen::Codex);
+        return;
+    case SoraUI::EAction::CodexEntry:
+        CodexKey = Row.Param;
+        CodexScroll = 0.f;
+        Push(SoraUI::EScreen::CodexEntry);
+        return;
     case SoraUI::EAction::Credits:
         if (!bCreditsLoaded)
         {
@@ -564,6 +579,8 @@ SoraText::FLine USoraFrontEnd::TitleText() const
     case SoraUI::EScreen::Practice: return SoraText::Line(NSLOCTEXT("SoraArena.Menu", "Screen.Practice", "武芸稽古"));
     case SoraUI::EScreen::Wallet: return SoraText::Line(NSLOCTEXT("SoraArena.Menu", "Screen.Wallet", "IrohaConnect ウォレット"));
     case SoraUI::EScreen::Settings: return SoraText::Line(SettingsLabel());
+    case SoraUI::EScreen::Codex:
+    case SoraUI::EScreen::CodexEntry: return SoraText::Line(NSLOCTEXT("SoraArena.Codex", "Title", "図鑑"));
     case SoraUI::EScreen::Credits: return SoraText::Line(NSLOCTEXT("SoraArena.Menu", "Screen.Credits", "制作・権利表記"));
     case SoraUI::EScreen::Graphics: return SoraText::Line(NSLOCTEXT("SoraArena.Settings", "Screen.Graphics", "画質"));
     case SoraUI::EScreen::Audio: return SoraText::Line(NSLOCTEXT("SoraArena.Settings", "Screen.Audio", "音量"));
@@ -649,6 +666,13 @@ void USoraFrontEnd::BuildRows()
             NSLOCTEXT("SoraArena.Menu", "Main.Practice.Hint", "形式・舞台・流儀を選び、ボットと稽古する。XOR は使わない。")));
         RowList.Add(NewMenuRow(SoraUI::EAction::Wallet, NSLOCTEXT("SoraArena.Menu", "Screen.Wallet", "IrohaConnect ウォレット"),
             NSLOCTEXT("SoraArena.Menu", "Main.Wallet.Hint", "ウォレットとの接続は、資産の預け入れではない。")));
+        if (Screen() == SoraUI::EScreen::Main || Game.bCampaign)
+        {
+            SoraUI::FRow Codex = NewMenuRow(SoraUI::EAction::Codex, NSLOCTEXT("SoraArena.Codex", "Title", "図鑑"),
+                NSLOCTEXT("SoraArena.Codex", "OpenHint", "見つけた品と、達成した通し矢の記録を読む。"));
+            Codex.bEnabled = Catalog.IsReady() && Game.Campaign() != nullptr;
+            RowList.Add(Codex);
+        }
         RowList.Add(NewMenuRow(SoraUI::EAction::Settings, SettingsLabel(), SettingsHint()));
         RowList.Add(NewMenuRow(SoraUI::EAction::Credits, NSLOCTEXT("SoraArena.Menu", "Main.Credits", "制作・権利表記"),
             NSLOCTEXT("SoraArena.Menu", "Main.Credits.Hint", "制作と、使用している素材の権利表記。")));
@@ -666,12 +690,23 @@ void USoraFrontEnd::BuildRows()
         RowList.Add(bPractice
             ? NewMenuRow(SoraUI::EAction::Restart, NSLOCTEXT("SoraArena.Menu", "Pause.RestartPractice", "稽古をやり直す"))
             : NewMenuRow(SoraUI::EAction::Restart, NSLOCTEXT("SoraArena.Menu", "Pause.RestartCheckpoint", "チェックポイントからやり直す")));
+        if (Screen() == SoraUI::EScreen::Main || Game.bCampaign)
+        {
+            SoraUI::FRow Codex = NewMenuRow(SoraUI::EAction::Codex, NSLOCTEXT("SoraArena.Codex", "Title", "図鑑"),
+                NSLOCTEXT("SoraArena.Codex", "OpenHint", "見つけた品と、達成した通し矢の記録を読む。"));
+            Codex.bEnabled = Catalog.IsReady() && Game.Campaign() != nullptr;
+            RowList.Add(Codex);
+        }
         RowList.Add(NewMenuRow(SoraUI::EAction::Settings, SettingsLabel(), SettingsHint()));
         RowList.Add(NewMenuRow(SoraUI::EAction::ReturnToTitle, NSLOCTEXT("SoraArena.Menu", "Pause.ReturnToTitle", "タイトルへ戻る")));
         RowList.Add(NewMenuRow(SoraUI::EAction::Quit, QuitLabel()));
         RowList[1].bEnabled = bReady;
         return;
     }
+    case SoraUI::EScreen::Codex:
+    case SoraUI::EScreen::CodexEntry:
+        BuildCodexRows();
+        return;
     case SoraUI::EScreen::ChapterSelect:
     {
         const int32 Highest = Game.HighestChapterReached();

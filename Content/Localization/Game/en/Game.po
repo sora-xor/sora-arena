@@ -340,6 +340,66 @@ msgctxt "SoraArena.Captions,WoodenSwordsKnock"
 msgid "木刀の打ち合う音"
 msgstr "Wooden swords knock"
 
+#. Key:	Challenge
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Challenge"
+msgid "弓の挑戦"
+msgstr "Archery challenge"
+
+#. Key:	Context
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Context"
+msgid "第{Chapter}章 · {Category}"
+msgstr "Chapter {Chapter} · {Category}"
+
+#. Key:	Empty
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Empty"
+msgid "まだ記録を見つけていない。"
+msgstr "No records discovered yet."
+
+#. Key:	OpenHint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Codex,OpenHint"
+msgid "見つけた品と、達成した通し矢の記録を読む。"
+msgstr "Read the items you have found and the Toshiya challenge you have completed."
+
+#. Key:	ScrollDown
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Codex,ScrollDown"
+msgid "下へ"
+msgstr "Scroll down"
+
+#. Key:	ScrollUp
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Codex,ScrollUp"
+msgid "上へ"
+msgstr "Scroll up"
+
+#. Key:	Summary
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Summary"
+msgid "収集品 {Count} / 48\n見つけた記録を選んで読む。"
+msgstr "Collectibles {Count} / 48\nSelect a discovered record to read."
+
+#. Key:	Title
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Codex,Title"
+msgid "図鑑"
+msgstr "Codex"
+
+#. Key:	Toshiya
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Toshiya"
+msgid "通し矢"
+msgstr "Toshiya"
+
+#. Key:	Untitled
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Untitled"
+msgid "第{Chapter}章 · {Category} · {Number}"
+msgstr "Chapter {Chapter} · {Category} · {Number}"
+
 #. Key:	Banner.MovementByKeyboard
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
 msgctxt "SoraArena.Controls,Banner.MovementByKeyboard"
@@ -1262,6 +1322,7 @@ msgstr "View"
 
 #. Key:	Back
 #: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
 #: Source/SoraArena/Private/UI/SoraFrontEndRows.h
 msgctxt "SoraArena.Menu,Back"
 msgid "戻る"

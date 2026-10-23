@@ -5,6 +5,7 @@
 #include "SoraCatalogArchery.h"
 #include "SoraCatalogDojo.h"
 #include "SoraCatalogWood.h"
+#include "SoraCatalogCollectibles.h"
 
 namespace
 {
@@ -608,7 +609,8 @@ bool FSoraCatalog::LoadCampaign()
                 !CollectibleCategories.ContainsByPredicate([&](const FSoraCollectibleCategory& Category) { return Category.Id == Item.Category; }) ||
                 !Int(*O, TEXT("mask_bit"), Item.MaskBit) || Item.MaskBit < 0 || Item.MaskBit >= CollectiblesPerChapter ||
                 (CollectibleBits & (1u << Item.MaskBit)) != 0u || !Strings(Rows(*O, TEXT("beats")), Beats) ||
-                !Str(*O, TEXT("place"), Item.Place) || !Str(*Codex, TEXT("ja"), Item.Codex) || !Str(*Codex, TEXT("en"), Item.CodexEnglish))
+                !Str(*O, TEXT("place"), Item.Place) ||
+                !SoraCatalogCollectibles::ReadTitles(*O, Item) || !Str(*Codex, TEXT("ja"), Item.Codex) || !Str(*Codex, TEXT("en"), Item.CodexEnglish))
                 return Bad(FString::Printf(TEXT("invalid collectible %s"), *Item.Id));
             for (const FString& Beat : Beats)
             {
