@@ -49,9 +49,14 @@ The script does not specify these implementation choices; they are provisional:
   capsule's upper hemisphere also clears the shelf underside; descending
   lowers first before moving inward. The source gate samples the production
   interpolation in both directions against both physical shelf envelopes.
+  Shelf and parapet crossings lift the feet 6 cm above the support, cross,
+  then settle at the unchanged authored endpoint height. Descending a shelf
+  lifts first and crosses outward before lowering. Input reversal follows
+  the same continuous path. This clearance avoids the observed time-zero
+  side-face hits when a rounded capsule crossed exactly at the top plane.
 - Player sweep completion admits ordinary support separation only for a
-  non-penetrating flat upward contact (normal Z at least 0.99), no more than
-  0.25 cm lateral error and 0–3 cm feet above the requested point. Side,
+  non-penetrating flat upward contact (capsule and face impact normal Z both
+  at least 0.99), no more than 0.25 cm lateral error and 0–3 cm feet above the requested point. Side,
   underside, penetrating or more distant hits still stop the step.
 - Each hold move and final mount lasts 1.8 seconds. The same cadence makes the
   eight-hold route faster. These numbers do not accept the three-minute beat
@@ -99,6 +104,12 @@ nondetectability remains unchanged. The 140 cm/s demonstration pace, outside
 roof approach and exact roof slab bounds are provisional implementation
 geometry. A waypoint accepts at most 3 cm of actual proximity to accommodate
 normal floor-contact separation, without ignoring or disabling collision.
+Her shelf, parapet and roof crossings use the same 6 cm foot clearance;
+even the existing 3 cm waypoint radius leaves positive crossing clearance.
+The final roof waypoint settles vertically to 24 m and requires an actual
+upward-facing support hit before waiting begins. Its speed-limited downward
+sweep aims 6 cm beyond the support plane; the collision must stop it within
+the unchanged 0–3 cm above-plane bound. A missing roof cannot grant waiting.
 Pause freezes the active movement; retry/fresh load restarts it, and leaving
 the beat clears the owned route and actor. `SoraArena.Campaign.ClimbGuide`
 observes all fourteen holds, bounded movement, active pause, real roof

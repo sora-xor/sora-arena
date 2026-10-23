@@ -25,7 +25,7 @@ bool SweepFeet(ASoraPlayerCharacter& P,const FVector& To,FHitResult& Hit)
     const FVector Reached=Feet(P);
     // Flat support contact may retain the engine's small floor separation.
     // Neither a lateral obstruction nor the underside of a shelf qualifies.
-    return !Hit.bBlockingHit||SoraClimbRules::AtSupport(Hit.bStartPenetrating,Hit.Normal.Z,
+    return !Hit.bBlockingHit||SoraClimbRules::AtSupport(Hit.bStartPenetrating,Hit.Normal.Z,Hit.ImpactNormal.Z,
         FVector::Dist2D(Reached,To),Reached.Z-To.Z);
 }
 }
@@ -147,10 +147,15 @@ bool USoraFieldcraft::MoveClimbCompanion(ASoraCompanion& Companion,float Dt)
             const FVector Point=ClimbSpace->Corner.Points[H];
             if(ClimbSpace->Corner.RestHolds.Contains(H+1))
                 ClimbGuidePath.Add(FVector(Point.X,Point.Y,ClimbSpace->Corner.Points[H-1].Z));
-            if(ClimbSpace->Corner.RestHolds.Contains(H)) ClimbGuidePath.Add(Point-FVector(210,0,0));
+            if(ClimbSpace->Corner.RestHolds.Contains(H))
+            {
+                ClimbGuidePath.Add(Point+FVector(-210,0,SoraClimbRules::SupportLiftCm));
+                ClimbGuidePath.Add(Point+FVector(0,0,SoraClimbRules::SupportLiftCm));
+            }
             ClimbGuidePath.Add(Point);
         }
-        ClimbGuidePath.Add(FVector(650,70,1600));
+        ClimbGuidePath.Add(ClimbSpace->Corner.Points.Last()+FVector(0,0,SoraClimbRules::SupportLiftCm));
+        ClimbGuidePath.Add(FVector(650,70,1600+SoraClimbRules::SupportLiftCm));
         // Provisional route around the turret's outside wall, then over its
         // roof edge. Every segment is swept against the actual shell.
         for(const auto& Point:SoraClimbRules::GuideRoofPath)
@@ -161,7 +166,11 @@ bool USoraFieldcraft::MoveClimbCompanion(ASoraCompanion& Companion,float Dt)
     Move->SetMovementMode(MOVE_Flying);
     const float Half=Companion.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     const FVector Target=O+ClimbGuidePath[ClimbGuidePoint]+FVector(0,0,Half);
-    const FVector Delta=Target-Companion.GetActorLocation();
+    const bool Final=ClimbGuidePoint==ClimbGuidePath.Num()-1;
+    // The final bounded downward sweep crosses the nominal support plane
+    // so an endpoint merely tangent to the roof cannot masquerade as a hit.
+    const FVector SweepTarget=Target-(Final?FVector(0,0,SoraClimbRules::SupportLiftCm):FVector::ZeroVector);
+    const FVector Delta=SweepTarget-Companion.GetActorLocation();
     const FVector Step=Delta.GetClampedToMaxSize(SoraClimbRules::GuideSpeed*Dt);
     // Resolve vertical support first so a floor contact cannot consume the
     // sideways part of the same bounded step across a shelf or parapet.
@@ -171,7 +180,13 @@ bool USoraFieldcraft::MoveClimbCompanion(ASoraCompanion& Companion,float Dt)
     if(!Delta.IsNearlyZero()) Companion.SetActorRotation(FRotator(0,Delta.Rotation().Yaw,0));
     // A collision may stop at the normal floor-contact separation. Only
     // actual proximity advances a waypoint; a remote blocker never does.
-    if(FVector::Dist(Companion.GetActorLocation(),Target)<=3.f)
+    const FVector Reached=Companion.GetActorLocation();
+    // The final waypoint lowers onto the roof. Waiting requires a real top
+    // contact; proximity to the raised crossing point alone is insufficient.
+    const bool Supported=ClimbGuideVerticalHit.bBlockingHit&&SoraClimbRules::AtSupport(
+        ClimbGuideVerticalHit.bStartPenetrating,ClimbGuideVerticalHit.Normal.Z,ClimbGuideVerticalHit.ImpactNormal.Z,
+        FVector::Dist2D(Reached,Target),Reached.Z-Target.Z);
+    if(FVector::Dist(Reached,Target)<=3.f&&(!Final||Supported))
         if(++ClimbGuidePoint==ClimbGuidePath.Num())
         { bClimbGuideWaiting=true;Move->SetMovementMode(MOVE_Walking);Companion.SetActorRotation(FRotator(0,180,0)); }
     return true;
@@ -253,7 +268,7 @@ void USoraFieldcraft::TickClimbRoutes(float DeltaTime,int32 DtMs)
     const float NextAlpha=FMath::Clamp(ClimbStepAlpha+Direction*DeltaTime*1000.f/R->StepMs,0.f,1.f);
     FVector Target=R->Points[ClimbStepTarget];
     if(bClimbMounting) Target=FVector(650,R->Points.Last().Y,1600);
-    SoraClimbRules::EHoldPath Path=SoraClimbRules::EHoldPath::Direct;
+    SoraClimbRules::EHoldPath Path=bClimbMounting?SoraClimbRules::EHoldPath::Mount:SoraClimbRules::EHoldPath::Direct;
     // Approach a real rest shelf around its outer lip, then move inward with
     // feet above its support; never phase a capsule through the shelf.
     if(!bClimbMounting&&R->RestHolds.Contains(ClimbStepTarget)&&ClimbStepTarget>Grip.Hold)
