@@ -18,6 +18,16 @@ BOW_SPEC.loader.exec_module(bow_capture_validation)
 CODEX_SPEC = importlib.util.spec_from_file_location("codex_capture_validation", Path(__file__).with_name("codex_capture_validation.py"))
 codex_capture_validation = importlib.util.module_from_spec(CODEX_SPEC)
 CODEX_SPEC.loader.exec_module(codex_capture_validation)
+NANITE_SPEC = importlib.util.spec_from_file_location("nanite_capture_validation", Path(__file__).with_name("nanite_capture_validation.py"))
+nanite_capture_validation = importlib.util.module_from_spec(NANITE_SPEC)
+NANITE_SPEC.loader.exec_module(nanite_capture_validation)
+
+
+class NaniteDrawEvidenceError(ValueError):
+    """The originals are complete, but their visible-draw gate failed."""
+    def __init__(self, message, frames):
+        super().__init__(message)
+        self.frames = frames
 
 
 def problems(report: dict, log: str, status: int, shader_model: str) -> list[str]:
@@ -129,6 +139,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         "SORA_WEAPON_HUD_FIXTURE_FRAME": ("SoraCapture.WeaponHUDFixture.", "prepared gameplay UI fixture; not playthrough evidence"),
         "SORA_BOW_AIM_FRAME": ("SoraCapture.BowAim.", "live mapped bow aim from prepared checkpoint/view; not playthrough or art acceptance"),
         "SORA_CODEX_FRAME": ("SoraCapture.Codex.", codex_capture_validation.SCOPE),
+        "SORA_NANITE_DRAW_FRAME": ("SoraCapture.NaniteDraw.", nanite_capture_validation.SCOPE),
     }
     # Failed automation replays captured log events through
     # LogAutomationController, appending " [log]". Those are not new frame
@@ -144,6 +155,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
     frames = []
     bow_sequences = {}
     codex_sequences = {}
+    nanite_sequences = {}
     seen = set()
     for marker, name in names:
         path = (engine_base / name.strip()).resolve()
@@ -180,6 +192,8 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
                          observations_sha256=hashlib.sha256(metadata_bytes).hexdigest(), reticle_pixels=pixels)
         if marker == "SORA_CODEX_FRAME":
             codex_sequences.setdefault(path.parent, []).append((path, target, frame))
+        if marker == "SORA_NANITE_DRAW_FRAME":
+            nanite_sequences.setdefault(path.parent, []).append((path, target, frame))
         frames.append(frame)
     if codex_sequences:
         if len(codex_sequences) != 1:
@@ -199,6 +213,47 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
             for path, _, frame in sequence:
                 frame.update(observations=str(metadata_target.relative_to(output)), observations_source=str(sidecar),
                              observations_sha256=hashlib.sha256(metadata_bytes).hexdigest(), codex_phase=path.stem)
+    expected_nanite = [test.get("fullTestPath") for test in report.get("tests", [])
+                       if test.get("fullTestPath", "").startswith("SoraCapture.NaniteDraw.")]
+    if nanite_sequences and (len(expected_nanite) != len(nanite_sequences) or len(set(expected_nanite)) != len(expected_nanite)):
+        raise ValueError("Nanite original sequences do not match the requested diagnostic tests")
+    for folder, sequence in nanite_sequences.items():
+        sidecar = (folder / "capture.json").resolve()
+        if sidecar.parent != folder:
+            raise ValueError("Nanite source metadata escapes its original frame folder")
+        if sidecar.stat().st_mtime_ns < max(start_ns, *(path.stat().st_mtime_ns for path, _, _ in sequence)):
+            raise ValueError("stale Nanite source capture metadata")
+        raw = sidecar.read_bytes()
+        target = sequence[0][1].parent / "capture.json"
+        with target.open("xb") as stream:
+            stream.write(raw)
+        # Archive original metadata before the draw gate, retaining genuine
+        # zero-coverage failure evidence alongside its untouched PNGs.
+        metadata = json.loads(raw)
+        if not isinstance(metadata, dict):
+            raise ValueError("Nanite source metadata is not an object")
+        actual_test = "SoraCapture.NaniteDraw.DojoSM6" if metadata.get("sm6_requested") is True else "SoraCapture.NaniteDraw.DojoSM5"
+        if actual_test not in expected_nanite:
+            raise ValueError("Nanite metadata does not match the requested SM6/SM5 test")
+        expected_nanite.remove(actual_test)
+        actual_model = "sm6" if metadata.get("sm6_requested") is True else "sm5"
+        if any(device.get("renderMode", "").lower() != actual_model for device in report.get("devices", [])):
+            raise ValueError("Nanite metadata differs from actual automation device shader model")
+        asset_identities = nanite_capture_validation.asset_identities(metadata, project)
+        result = nanite_capture_validation.inspect(metadata,
+            {path.name: destination.read_bytes() for path, destination, _ in sequence},
+            width, height, bow_capture_validation.rgb8)
+        result["asset_files"] = asset_identities
+        review = target.with_name("pixel-review.json")
+        with review.open("x") as stream:
+            stream.write(json.dumps(result, indent=2) + "\n")
+        for path, _, frame in sequence:
+            frame.update(observations=str(target.relative_to(output)), observations_source=str(sidecar),
+                         observations_sha256=hashlib.sha256(raw).hexdigest(),
+                         pixel_review=str(review.relative_to(output)),
+                         pixel_review_sha256=hashlib.sha256(review.read_bytes()).hexdigest(), nanite_phase=path.stem)
+        if result["errors"]:
+            raise NaniteDrawEvidenceError("Nanite draw evidence: " + "; ".join(result["errors"]), frames)
     for sequence in bow_sequences.values():
         bow_capture_validation.verify_sequence(sequence)
     return frames
@@ -252,6 +307,8 @@ def main() -> int:
         try:
             frames = archive_frames(log, report, project, engine_base, output, start_ns, width, height)
         except (OSError, ValueError, zlib.error) as error:
+            if isinstance(error, NaniteDrawEvidenceError):
+                frames = error.frames
             failures.append(f"screenshot archive: {error}")
         manifest = {"source_commit": (output / "source-commit.txt").read_text().strip(),
                     "source_status": (output / "source-status.txt").read_text(),
