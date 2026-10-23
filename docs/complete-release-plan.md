@@ -11,6 +11,53 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 24 cargo timing and campaign HUD checkpoint
+
+At clean `eeaf2ed`, the Mac editor builds in 19.26 seconds and all five selected
+SM6 1280×720 captures pass with zero selected errors/warnings: Cargo.Transfer,
+BokkenDialogue, BowDraw, PickupNotices and CaptionPressure. The process reaches
+natural EOF without a resource breach. All twelve original PNGs were inspected.
+The 30/20/10 stock frames retain readable counters, horse/rope framing and visible
+stand transfers. The final zero Registry title is visible, and the complete idle
+Assessor readout now sits below the dialogue without covering the tracker.
+This closes the specific final-frame collision observed at `235e810`.
+
+The earlier `812d70c` cargo attempt is retained as a failure: world time was
+3.000953 seconds but wall time was 2.891395 seconds, below the unchanged 2.9-second
+gate. The capture pressed Interact directly from the screenshot-processed
+callback after resuming the world. `eeaf2ed` sends that first press through the
+same ordinary unpaused settling stage used by later transfers. Its v3 sidecar
+binds resume, press and acceptance frames to the original screenshots. The three
+holds measure 3.000092/3.000132/3.000090 world seconds and
+2.998619/2.999462/2.991158 wall seconds; the complete cinematic measures
+90.006284 world / 90.004961 wall seconds. Gameplay clocks, mapped controls,
+duration gates and the cinematic remain unchanged; profile/input/save cleanup
+passes. Evidence is retained under
+`Saved/Qualification/2026-10-24/cargo-resume-8ab751a/`, including root visual
+review `617503e1` and independent review `7f4ade39`. This is prepared uncooked M2 Ultra SM6 evidence, not ordinary
+play, final art, 1080p or package acceptance.
+
+Separately, clean `812d70c` passes all seven existing Campaign.Chapter2–8 capture
+tests and archives all 22 originals against committed shot/catalog identities.
+Every original was inspected. Seven primary bosses reach phase-one, full-health
+telegraphs: quick_cut, hammer_slam, seizure_net, tether_lash, claw_flurry,
+twin_burst and amort_ledger_beam. Their readouts clear the other measured HUD
+panels, but **overall visual acceptance fails**: Tarifa's English Marobashi hint
+crosses the ordinary center reticle, and LandingStealth, LedgerAisles and CargoHold
+place stealth status under the tracker. These functional layout defects are being
+corrected. Dark or obstructed subjects and broad HUD coverage also leave combat
+presentation and art unqualified. No Muto, later phases, full campaign play or
+new package is established. Independent review `35b9ce00` and root review
+`5c59e8e8` retain these findings under `cargo-boss-campaign-93a8d8e/`.
+
+CI run `40008222267` succeeds at the earlier pushed `71b9d2d`: five jobs,
+82 source gates, 279 Rust tests passed and five explicitly ignored. Its tested
+merge tree equals that source tree; original ZIPs/logs and exclusions are
+authenticated under `ci-71b9d2d/`. This run does not qualify `812d70c`, `eeaf2ed`
+or later changes. The separate native `cd9263628d` actual-crate plan remains
+unrun: the unchanged 55 GiB launch reserve and compiler-exclusion conditions
+have not been met. The full release goal remains open.
+
 ## October 24 rendered cargo and final-death source checkpoint
 
 At clean `235e810`, the Mac editor builds in 21.03 seconds and all five selected

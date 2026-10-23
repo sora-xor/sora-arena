@@ -8,6 +8,21 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-24 cargo timing and campaign HUD
+
+At `eeaf2ed`, all five selected SM6 720p cargo/HUD captures pass and all twelve
+originals were inspected. The final zero notice and complete idle boss readout
+fit without the prior tracker collision. The capture's first press now follows
+ordinary unpaused settling; all original hold/cinematic thresholds remain
+unchanged. The earlier wall-time failure is preserved. Separate `812d70c`
+Campaign.Chapter2–8 captures pass seven tests but their 22 originals expose a
+Tarifa reticle/hint collision and three stealth/tracker collisions. Those fixes
+remain in progress; art, combat presentation, later boss states, ordinary play,
+1080p and a current package remain unqualified. See the
+[exact checkpoint](complete-release-plan.md#october-24-cargo-timing-and-campaign-hud-checkpoint).
+CI passes 82 source gates at earlier `71b9d2d`; later changes do not inherit that
+result. Native `cd9263628d` actual crate/proof execution remains unrun.
+
 ## 2026-10-24 rendered cargo and final-death source
 
 At `235e810`, the five selected SM6 720p capture tests pass, but inspection of

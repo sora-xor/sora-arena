@@ -1,6 +1,16 @@
 # Offline campaign progression acceptance
 
-The latest rendered cargo checkpoint is `235e810`. Five selected SM6 720p
+The latest prepared cargo checkpoint is `eeaf2ed`: five selected SM6 720p
+captures pass, including all three unchanged-duration holds, the complete
+cinematic and the final zero notice with an unobscured idle boss readout.
+All twelve originals were inspected. Separate `812d70c` campaign captures pass
+seven tests but remain visually rejected for Tarifa's reticle/hint collision
+and three stealth/tracker collisions. The
+[current checkpoint](../complete-release-plan.md#october-24-cargo-timing-and-campaign-hud-checkpoint)
+preserves failures, exact scope and remaining work. Ordinary campaign play,
+combat presentation, final art, 1080p and a current package remain open.
+
+The preceding rendered cargo checkpoint is `235e810`. Five selected SM6 720p
 capture tests pass and all twelve originals were inspected, but final visual
 acceptance fails because the tracker obscures the boss readout. The counter,
 horse framing, stand visibility and final zero notice improved; the measured
