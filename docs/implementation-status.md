@@ -8,6 +8,24 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-23 bow and optional wood checkpoint
+
+The [current release-plan update](complete-release-plan.md#october-23-bow-wood-and-source-qualification)
+records the latest source-bound results and the retained limitations. CI
+`39872957667` passes all five source groups (67 checks) for `53d972c`, with an
+identical tested merge tree. Bow source `8ea1446` passes five directed editor
+tests. Its later real 720p Metal capture at `8ea8dcd` fails image qualification
+because production story panels cover the reticle and target; the four original
+frames and release telemetry are preserved. A production HUD repair is pending.
+
+At `fa9d353`, all nine directed wood/campaign editor tests pass with zero selected
+errors/warnings. The physical junction, optional wood discoveries, distinct
+collectibles, actual-arrow clapper reward, exit-only beat completion and smithy
+bypass survive fresh-world reloads. This is functional editor evidence, not
+finished terrain/art, persistent codex browsing, human pacing or a new package.
+The latest packaged baseline remains `44ffc35` with 152 passing client tests;
+it predates the later font, dojo, bow and wood changes.
+
 ## 2026-10-18 M2 Ultra development resumed
 
 The isolated integration worktree builds the editor with UE 5.8.3 /

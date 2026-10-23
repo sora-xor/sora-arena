@@ -11,7 +11,74 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
-## October 23 qualification update
+## October 23 bow, wood and source qualification
+
+This update supersedes the running states in the historical updates below. The
+release remains incomplete, and the latest packaged baseline is still `44ffc35`.
+
+- CI run `39872957667` passes all five source groups for `53d972c`: 67 checks
+  across gameplay, assets, tooling, audio and Rust. The tested merge `26d5f7a`
+  has the exact same tree as the PR head. Root verified the downloaded reports,
+  unchanged source and artifact hashes. This resolves the earlier Arabic font
+  checker failure; later commits require their own CI evidence.
+- Bow candidate `8ea1446` passes five source-bound editor tests with zero
+  selected errors/warnings. Full draw takes 650 ms, followed by four steady
+  seconds; the observed 60 Hz onset is 4.666667 seconds. The reticle, held yumi
+  and released arrow use the same camera-local aim ray. Sway amplitude, periods
+  and ramp are explicitly provisional tuning, not authored numerical values.
+  The live Metal SM6 capture at `8ea8dcd` passes its runtime test but fails
+  rendered qualification: the real 720p story panels cover the central target
+  and reticle, so the four-arm pixel check correctly rejects it. All four
+  original frames and metadata are preserved, including the actual release
+  ray and finite ammunition change. Production HUD repair is in progress;
+  neither capture-only hiding nor weaker image thresholds qualifies a repair.
+- Wood candidate `fa9d353` builds and passes all nine source-bound editor tests,
+  with zero selected errors/warnings: WoodExplore, WoodExitOnly, WoodLoader,
+  ArcheryLesson, ArcheryReload, Playthrough, SaveRoundTrip, ForgedSaves and Spaces.
+  The completed range opens a walkable junction with an optional wood route
+  and a smithy bypass. Discoveries and collectibles persist independently;
+  a real arrow from the 45 m vista unlocks the clapper codex reward, while
+  misses, melee and shots from outside the vista do not. Only the authored exit
+  completes the optional beat. The imported source passes 60 gameplay/tooling/
+  asset checks at `db5aea1`; the subsequent compiler-shadow and actual arrow
+  registration corrections are covered by the `fa9d353` engine run. Terrain,
+  POI props, clapper sound/craft and ordinary-control pacing remain unfinished.
+  Durable codex navigation is being audited separately from the unlock API.
+- Signed native research `357c722` passes 28 standalone actual-source field
+  checks and five provenance guards for a bounded two-player, two-tick
+  preparation slice. Root verified all committed/captured source hashes and
+  the signed checkpoint. Actual privacy-crate compilation and all ten exact
+  preparation tests pass (4.12 seconds, 72,450,048-byte peak test RSS). The
+  original report collector fails on multiline test diagnostics; that failure
+  is preserved, and root independently verifies each test block, process exit,
+  terminal summary and frozen binary/source hashes. These checks bind accepted
+  controls and the incoming state for supported cases;
+  they do not establish a native proof, registered profile, full World/history
+  execution or settlement. The staged bridge remains `10ad7dad`.
+- The bounded W09 oriented reducer reaches the unchanged 4,654-triangle target
+  with all 2,177 joint-boundary pins preserved and zero UV0 overlaps or winding
+  reversals in either UV field. Maximum same-UV XYZ error is 13.694 mm. Six
+  source renders compare LOD0, the actual saved LOD2 and the candidate at close
+  and distant views. Root reviewed all six: close brass highlights/faceting
+  change, and still images do not establish a satisfactory LOD transition.
+  The independent normal metric remains 0.0299 below the unchanged 0.04 floor.
+  This is an unadmitted diagnostic; no production asset bytes changed. A new
+  correspondence-priority experiment passes 30 CPU checks and reaches the same
+  4,654-triangle target with all pins intact, zero UV0 overlaps/reversals and
+  unchanged source. Maximum same-UV XYZ error falls to 8.357 mm; UVMetric's
+  maximum is unchanged and anisotropy percentiles do not uniformly improve.
+  Its rendered comparison is pending. These are diagnostics, not admission.
+- Claude's last confirmed weekly limit remains October 24 at 22:00 JST; the
+  existing requests are queued. Its uncommitted timber/curtain work has not
+  been admitted. Final art, remaining authored mechanics, ordinary-control
+  campaign acceptance, Windows/M1 execution and performance, full native proof
+  and real settlement remain required.
+
+Exact local evidence is retained under `Saved/Qualification/2026-10-23/`, the
+failed `Saved/Capture/20261023T000254Z-sm6-49156/` archive, and the isolated
+source-validation worktree's `Saved/Qualification/lod-uv-diagnostic-20261020/`.
+
+## October 23 earlier qualification update (historical)
 
 These results supersede the October 20 running states below. The release remains
 incomplete; each result retains its exact source and platform.
