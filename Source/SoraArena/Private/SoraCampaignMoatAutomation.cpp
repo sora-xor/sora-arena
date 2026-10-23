@@ -30,6 +30,17 @@ void Sample(FWorld& W,const TCHAR* Stage)
         W.Hero()->GetCapsuleComponent()->GetScaledCapsuleRadius(),W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
         int32(W.Hero()->GetCharacterMovement()->MovementMode),W.Hero()->Health));
 }
+void GuardSample(FWorld& W,const TCHAR* Stage)
+{
+    const FVector O(W.BeatData().Space.Moat.Origin,0);
+    for(TActorIterator<ASoraEnemyController> I(W.World->GetTestWorld());I;++I)
+        if(const auto* E=Cast<ASoraEnemy>(I->GetPawn());E&&W.Fieldcraft()->IsMoatGuard(*E))
+            W.Test.AddInfo(FString::Printf(TEXT("SORA_MOAT_GUARD: %s time=%.3f actor=%s kind=%s xyz=%s known=%s state=%d sees=%d hunting=%d awareness=%d alive=%d radius=%.2f half=%.2f mode=%d velocity=%s"),
+                Stage,W.World->GetTestWorld()->GetTimeSeconds(),*E->GetName(),*E->ArchetypeId().ToString(),
+                *(E->GetActorLocation()-O).ToString(),*(I->LastKnownLocation()-O).ToString(),int32(I->State()),I->SeesHero(),I->IsHunting(),I->AwarenessPermille(),E->IsAlive(),
+                E->GetCapsuleComponent()->GetScaledCapsuleRadius(),E->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+                int32(E->GetCharacterMovement()->MovementMode),*E->GetVelocity().ToString()));
+}
 bool Walk(FWorld& W,const FVector& Local,bool Finish=false)
 {
     const bool OK=SoraMoatAutomation::Swim(*W.World,FVector(W.BeatData().Space.Moat.Origin,0)+Local,Finish);
@@ -172,7 +183,9 @@ bool FSoraMoatSenses::RunTest(const FString&)
         LongestLitFrames,W.Raised(TEXT("ai_event:searchlight_suspicious")),W.Raised(TEXT("ai_event:searchlight_alert"))));
     TestTrue(TEXT("Real head exposure reaches both authored light thresholds"),W.Raised(TEXT("ai_event:searchlight_suspicious"))&&W.Raised(TEXT("ai_event:searchlight_alert"))&&W.Stealth()->IsDetected());
     TestTrue(TEXT("Actual traced searchlight exposure supplies the guard light-range input"),C->MoatHeadLit());
+    SoraMoatTest::GuardSample(W,TEXT("alarm"));
     if(!W.Tick(90))return false;
+    SoraMoatTest::GuardSample(W,TEXT("alarm plus90 frames"));
     int32 Rifle=0;ASoraEnemy* Drone=nullptr;
     for(TActorIterator<ASoraEnemy> I(W.World->GetTestWorld());I;++I)if(C->IsMoatGuard(**I)&&I->IsAlive())
     { if(I->ArchetypeId()==TEXT("drone"))Drone=*I;else ++Rifle; }
@@ -187,9 +200,14 @@ bool FSoraMoatSenses::RunTest(const FString&)
         !SoraMoatAutomation::Posture(*W.World,false)||!SoraMoatTest::Walk(W,FVector(Exposed.X,1300,0)))return false;
     TestTrue(TEXT("Surfacing beneath real lotus cover hides the head and restores air"),!C->IsDiving()&&C->HeroExposure(1000)==0);
     TestFalse(TEXT("Cover cannot retain the searchlight range bonus"),C->MoatHeadLit());
+    SoraMoatTest::GuardSample(W,TEXT("lotus arrival"));
     // Search itself is20s; a remote parapet guard first walks to its
     // reachable investigation point. Keep that physical travel in the test.
-    if(!W.Tick(3600))return false;
+    for(int32 I=0;I<6;++I)
+    {
+        if(!W.Tick(600))return false;
+        SoraMoatTest::GuardSample(W,*FString::Printf(TEXT("lotus plus%d frames"),(I+1)*600));
+    }
     bool AnySeeing=false,AnyCombat=false;
     for(TActorIterator<ASoraEnemyController> I(W.World->GetTestWorld());I;++I)
         if(const auto* E=Cast<ASoraEnemy>(I->GetPawn());E&&C->IsMoatGuard(*E))
