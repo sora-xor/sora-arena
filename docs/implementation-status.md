@@ -44,8 +44,11 @@ files restored. Only the ceiling's measured SDF/card representation changed.
 
 CI `39962705267` passes 76 gates in five jobs at `50ef7d6`; its tested merge has
 the same source tree, including both helm pause commits. Root authenticated
-all 99 referenced local evidence files. The chapter-six authored climb remains
-under implementation, with runtime validation still required. Earlier
+all 99 referenced local evidence files. The chapter-six player climb, sentry
+and crawl source is integrated at `ba35d36`, matching reviewed `855972c` with
+57 passing gameplay/tooling source checks. Seven new engine fixtures and
+existing campaign regressions remain unexecuted. Kohagi's climb-first and
+roof-wait behavior is still being implemented. Earlier
 package, native, art and platform results retain their separate source scope.
 Native `a984a5c` passes standalone composition/provenance checks and the
 independent canonical replay, but its actual privacy-crate compile stopped

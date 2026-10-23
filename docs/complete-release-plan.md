@@ -99,9 +99,17 @@ No actual-crate test or native proof has completed for this candidate. The
 earlier `c99ee46e` preparation proof and current game bridge retain their own
 source scope; this new relation is not registered or used for settlement.
 
-Chapter-six b03 still needs its authored two climb routes, resting shelves,
-timed downward sentry sweep and physical crawl exit. That source work is in
-progress in separate campaign worktrees. Photoreal art, ordinary-control campaign acceptance,
+Chapter-six b03's two climb routes, resting shelves, timed downward sentry and
+physical crawl exit are integrated at `ba35d36` from reviewed `855972c`.
+All 57 gameplay/tooling source checks pass at the clean candidate, and all
+30 changed source files match the integrated copies. Seven new directed
+engine fixtures and the existing climb, space and complete-playthrough
+regressions still require actual Unreal execution; the host checks do not
+establish physical traversal or visibility. Kohagi's climb-first/roof-wait
+behavior remains the next source substep. Chapter-six b02's physical depth/gate
+mechanism and chapter-five b07's finite repairs, rescue and bellows pressure
+are also under implementation after an authored-mechanic audit.
+Photoreal art, ordinary-control campaign acceptance,
 new packages, actual M1/Windows performance and the remaining native/network/
 settlement criteria remain open. Claude's art ownership and queued requests
 are unchanged during the confirmed weekly limit through October 24, 22:00 JST.
