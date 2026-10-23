@@ -61,7 +61,9 @@ bool FSoraWoodExploreTest::RunTest(const FString& Parameters)
     if(!ReloadWood(W)) return false;
     C=W.Campaign();
     TestTrue(TEXT("Fresh-world reload retains the separate toshiya codex"),C->HasToshiyaCodex());
-    TestTrue(TEXT("Provisional codex copy remains accessible"),C->ToshiyaCodex(true).Contains(TEXT("early 1600s")));
+    TestTrue(TEXT("Sourced Toshiya history remains accessible after reload"),
+        C->ToshiyaCodex(true).Contains(TEXT("Keichō 11 (1606)"))&&C->ToshiyaCodex(true).Contains(TEXT("51 arrows through from 100 shots"))&&
+        C->ToshiyaCodex(false).Contains(TEXT("百本のうち五十一本")));
     const int32 Notices=C->StoryNotices().Num();
     if(!SoraWoodAutomation::Arrow(*this,*W.World,true)) return false;
     TestTrue(TEXT("A repeated real clapper hit creates no second reward notice"),C->StoryNotices().Num()<=Notices);

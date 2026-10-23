@@ -1,4 +1,4 @@
-"""Bind the prepared Codex UI capture's eight original frames to its observations.
+"""Bind the prepared Codex UI capture's nine original frames to its observations.
 
 This validates capture identity/completeness and the observed input/layout gates;
 original PNG review is still required. It does not claim earned unlocks or art
@@ -8,8 +8,8 @@ import math
 import re
 
 PHASES = ("empty", "index-first", "index-last", "reader-standard", "reader-xl-top",
-          "reader-xl-end", "reader-ja-only", "toshiya")
-SCHEMA = "sora-arena.codex-capture.v1"
+          "reader-xl-end", "reader-ja-only", "toshiya", "toshiya-end")
+SCHEMA = "sora-arena.codex-capture.v2"
 SCOPE = "prepared Codex discovery ledger; not playthrough or art acceptance"
 
 
@@ -38,10 +38,10 @@ def verify_sequence(metadata, filenames, width, height):
         raise ValueError("Codex metadata viewport mismatch")
     rows = metadata.get("frames")
     if not isinstance(rows, list) or len(rows) != len(PHASES) or number(metadata, "frame_count", True) != len(PHASES):
-        raise ValueError("Codex capture requires exactly eight frame observations")
+        raise ValueError("Codex capture requires exactly nine frame observations")
     expected_files = [phase + ".png" for phase in PHASES]
     if filenames != expected_files:
-        raise ValueError("Codex acknowledgements must identify eight unique phases in order")
+        raise ValueError("Codex acknowledgements must identify nine unique phases in order")
     previous_frame = -1
     longest = None
     for index, (phase, row) in enumerate(zip(PHASES, rows)):
@@ -65,7 +65,7 @@ def verify_sequence(metadata, filenames, width, height):
         if index < 3:
             continue
         entry = row.get("entry_id")
-        if index == 7:
+        if index >= 7:
             if entry != "codex_toshiya" or number(row, "entry_key", True) != 48:
                 raise ValueError("Codex final reader is not the Toshiya challenge")
         else:
@@ -80,9 +80,14 @@ def verify_sequence(metadata, filenames, width, height):
         bottom, viewport = number(row, "content_bottom"), number(row, "viewport_height")
         if offset < 0 or end < 0 or offset > end + 1 or viewport <= 0:
             raise ValueError("invalid Codex arranged scroll bounds")
-        if index == 5:
+        if phase in ("reader-xl-end", "toshiya-end"):
             if end <= 1 or abs(offset - end) > 1 or not 0 <= bottom <= viewport + 1:
                 raise ValueError("Codex extra-large tail is not reached inside its clip")
+            top = rows[index - 1]
+            if (abs(end - number(top, "scroll_end")) > 1 or
+                    abs(viewport - number(top, "viewport_height")) > 1 or
+                    abs(bottom + offset - number(top, "content_bottom")) > 1):
+                raise ValueError("Codex end phase changed its top-phase content or viewport")
         elif abs(offset) >= 1:
             raise ValueError("Codex top phase is not at the top of its reader")
     return {phase: row for phase, row in zip(PHASES, rows)}

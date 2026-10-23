@@ -68,7 +68,7 @@ bool FSoraCodexEarnedTest::RunTest(const FString& Parameters)
     if (!W.Press(EKeys::Escape)) return false;
     TestEqual(TEXT("Back restores the index's selected record"),Menu->Rows()[Menu->Focus()].Param,0);
     if (!Choose(*W.World,EAction::CodexEntry,48) || !Read(*this,*Menu,48)) return false;
-    TestEqual(TEXT("Toshiya retains the existing provisional history verbatim"),Menu->SelectedCodexEntry()->Body.English,C->ToshiyaCodex(true));
+    TestEqual(TEXT("Toshiya reader shows the complete sourced history"),Menu->SelectedCodexEntry()->Body.English,C->ToshiyaCodex(true));
     for (int32 I=0; I<3; ++I)
         if (!W.Press(EKeys::Escape) || !W.Press(EKeys::Enter)) return false;
     TestEqual(TEXT("Repeated reading never changes collectibles"),static_cast<int64>(C->CollectedMask()),Found);
