@@ -59,6 +59,17 @@ int main() {
     static_assert(Floor(7300)==0&&Floor(7400)==-100&&Floor(7500)==-200);
     static_assert(RoofedDeep(7800)&&!RoofedDeep(8250)&&RoofedDeep(8600));
     static_assert(Immersed(10,40)&&!Immersed(50,40));
+    // The descent top joins the two authored floors without the old gap or
+    // a thickness-induced offset. UE negative pitch lowers local +X.
+    const auto descent=DescentRamp();
+    const double pitch=descent.PitchDegrees*std::acos(-1.0)/180.0;
+    const auto descent_top=[&](double x) {
+        return std::pair<double,double>{descent.CenterX+x*std::cos(pitch)-DescentThickness*.5*std::sin(pitch),
+            descent.CenterZ+x*std::sin(pitch)+DescentThickness*.5*std::cos(pitch)};
+    };
+    const auto wading=descent_top(-descent.Length*.5),deep=descent_top(descent.Length*.5);
+    assert(std::abs(wading.first-7300)<1e-8&&std::abs(wading.second)<1e-8);
+    assert(std::abs(deep.first-7500)<1e-8&&std::abs(deep.second+200)<1e-8);
     // Transform the actual production slab's upper corners using UE's roll
     // convention: its support surface must meet the existing moat and bank.
     const auto ramp=BankRamp();

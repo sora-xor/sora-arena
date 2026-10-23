@@ -54,6 +54,17 @@ bool BankLayout(FWorld& W)
 {
     const FVector O(W.BeatData().Space.Flood.Origin,0);
     FCollisionQueryParams Q(SCENE_QUERY_STAT(FloodBankLayout),false,W.Hero());
+    // Probe below the ceiling on both sides of the old floor gap and the
+    // descent joins. XY-only arrival cannot establish supported traversal.
+    for(const FVector2D Point:{FVector2D(7199,0),FVector2D(7201,0),FVector2D(7299,0),
+        FVector2D(7301,-1),FVector2D(7400,-100),FVector2D(7499,-199),FVector2D(7501,-200)})
+    {
+        FHitResult Hit;
+        if(!W.Test.TestTrue(TEXT("The wading floor and descent have continuous production collision"),
+            W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,O+FVector(Point.X,0,Point.Y+20),
+                O+FVector(Point.X,0,Point.Y-50),ECC_WorldStatic,Q)&&
+            FMath::Abs(Hit.ImpactPoint.Z-Point.Y)<2.f&&Hit.ImpactNormal.Z>.7f)) return false;
+    }
     // Trace the production collision on both sides of each join, rather than
     // merely asserting the ramp's configured angle or a coordinate volume.
     for(const FVector2D Point:{FVector2D(-3599,-200),FVector2D(-3601,-199.333),

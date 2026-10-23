@@ -9,8 +9,10 @@ void ASoraWorldBuilder::BuildFlood(const FSoraBeat& Beat)
     const auto Slab=[&](const TCHAR* Name,float X,float Y,float Z,float SX,float SY,float SZ,const FRotator& R=FRotator::ZeroRotator)
     { return Box(Name,O+FVector(X,Y,Z),FVector(SX,SY,SZ),Stone,true,R,TEXT("Stone")); };
     // No generic zone floor covers the submerged channel.
-    Slab(TEXT("FloodWalkFloor"),3550,0,-20,7300,240,40);
-    Slab(TEXT("FloodDescent"),7400,0,-110.61f,282.843f,240,30,FRotator(-45,0,0));
+    Slab(TEXT("FloodWalkFloor"),(SoraFloodRules::DescentStart-100)*.5f,0,-20,SoraFloodRules::DescentStart+100,240,40);
+    const auto Descent=SoraFloodRules::DescentRamp();
+    Slab(TEXT("FloodDescent"),Descent.CenterX,0,Descent.CenterZ,Descent.Length,240,
+        SoraFloodRules::DescentThickness,FRotator(Descent.PitchDegrees,0,0));
     Slab(TEXT("FloodDeepFloor"),8250,0,-220,1500,240,40);
     for(int32 Side:{-1,1}) Slab(TEXT("FloodCulvertWall"),4500,Side*140,0,9200,40,480);
     Slab(TEXT("FloodVaultEnd"),-120,0,110,40,320,260);

@@ -11,7 +11,19 @@ constexpr int DeepStart=7500, PocketStart=8150, PocketEnd=8350;
 constexpr int DeepFloor=-200, DeepRoof=20, RiseMs=150000;
 constexpr int FromCm=40, ToCm=160, SwimDepth=140;
 constexpr int DiveSpeed=140, SurfaceSpeed=180, BreathMs=8000, RecoverMs=3000, DrownHpS=10;
+constexpr int DescentStart=7300, DescentThickness=30;
 constexpr int BankWaterY=-3600, BankEdgeY=-4200, BankTop=200, BankRampThickness=30;
+struct FDescentRamp { double CenterX,CenterZ,Length,PitchDegrees; };
+inline FDescentRamp DescentRamp()
+{
+    // A negative UE pitch lowers local +X. Put the top surface, rather than
+    // the slab centre, exactly between the wading floor and deep floor.
+    const double Run=DeepStart-DescentStart,Rise=-DeepFloor;
+    const double SlopeLength=std::sqrt(Run*Run+Rise*Rise);
+    return {(DescentStart+DeepStart)*.5-DescentThickness*.5*Rise/SlopeLength,
+        DeepFloor*.5-DescentThickness*.5*Run/SlopeLength,
+        SlopeLength,-std::atan2(Rise,Run)*180.0/std::acos(-1.0)};
+}
 struct FBankRamp { double CenterY,CenterZ,Length,RollDegrees; };
 inline FBankRamp BankRamp()
 {
