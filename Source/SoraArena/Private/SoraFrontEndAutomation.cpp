@@ -127,7 +127,7 @@ bool Tour(FAutomationTestBase& Test, const FKeys& Keys)
     for (const SoraUI::FRow& Row : FrontEnd->Rows())
         Main.Add(Row.Action);
     Check(TEXT("the main menu lists every entry in order"), Main == TArray<EAction>({EAction::Continue, EAction::NewCampaign,
-        EAction::ChapterSelect, EAction::Practice, EAction::Wallet, EAction::Settings, EAction::Credits, EAction::Quit}));
+        EAction::ChapterSelect, EAction::Practice, EAction::Wallet, EAction::Codex, EAction::Settings, EAction::Credits, EAction::Quit}));
     Check(TEXT("every main menu row has Japanese and English"), !FrontEnd->Rows().ContainsByPredicate([](const SoraUI::FRow& Row)
     {
         return Row.Japanese.IsEmpty() || Row.English.IsEmpty();
@@ -535,7 +535,7 @@ bool FSoraFrontEndReadableTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The widget moves focus with the arrow keys"), Press(EKeys::Down) && FrontEnd->Focus() == Focus + 1);
     TestEqual(TEXT("A keyboard key switches prompts back"), SoraUI::PromptKey(SoraUI::ECommand::Accept, FrontEnd->Device()), FString(TEXT("Enter")));
     TestTrue(TEXT("The widget swallows keys without menu meaning"), Press(EKeys::M) && Scope.On(EScreen::Main));
-    for (const EAction Action : {EAction::ChapterSelect, EAction::Practice, EAction::Wallet, EAction::Settings, EAction::Credits, EAction::Quit})
+    for (const EAction Action : {EAction::ChapterSelect, EAction::Practice, EAction::Wallet, EAction::Codex, EAction::Settings, EAction::Credits, EAction::Quit})
     {
         Scope.FocusOn(Keyboard, Action);
         Press(EKeys::Enter);
