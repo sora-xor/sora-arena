@@ -4,12 +4,17 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
 import struct
 import sys
 import zlib
+
+BOW_SPEC = importlib.util.spec_from_file_location("bow_capture_validation", Path(__file__).with_name("bow_capture_validation.py"))
+bow_capture_validation = importlib.util.module_from_spec(BOW_SPEC)
+BOW_SPEC.loader.exec_module(bow_capture_validation)
 
 
 def problems(report: dict, log: str, status: int, shader_model: str) -> list[str]:
@@ -119,6 +124,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         "SORA_ART_REVIEW_FRAME": ("SoraCapture.ArtReview.", "art-review"),
         "SORA_REGISTRY_FIXTURE_FRAME": ("SoraCapture.RegistryFixture.", "completed-save registry UI fixture; not playthrough evidence"),
         "SORA_WEAPON_HUD_FIXTURE_FRAME": ("SoraCapture.WeaponHUDFixture.", "prepared gameplay UI fixture; not playthrough evidence"),
+        "SORA_BOW_AIM_FRAME": ("SoraCapture.BowAim.", "live mapped bow aim from prepared checkpoint/view; not playthrough or art acceptance"),
     }
     # Failed automation replays captured log events through
     # LogAutomationController, appending " [log]". Those are not new frame
@@ -132,6 +138,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
             raise ValueError(f"{prefix} reported no screenshot paths")
     screenshot_root = (project / "Saved/Screenshots").resolve()
     frames = []
+    bow_sequences = {}
     seen = set()
     for marker, name in names:
         path = (engine_base / name.strip()).resolve()
@@ -148,9 +155,27 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open("xb") as stream:
             stream.write(data)
-        frames.append({"path": str(target.relative_to(output)), "source": str(path),
+        frame = {"path": str(target.relative_to(output)), "source": str(path),
                        "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
-                       "capture_kind": kinds[marker][1]})
+                       "capture_kind": kinds[marker][1]}
+        if marker == "SORA_BOW_AIM_FRAME":
+            sidecar = path.with_suffix(".json")
+            if sidecar.stat().st_mtime_ns < start_ns:
+                raise ValueError("stale bow frame observations")
+            metadata_bytes = sidecar.read_bytes()
+            metadata = json.loads(metadata_bytes)
+            if not isinstance(metadata, dict) or metadata.get("phase") != path.stem:
+                raise ValueError("bow frame observations do not identify their original PNG")
+            pixels = bow_capture_validation.verify_frame(metadata, data, width, height)
+            bow_sequences.setdefault(path.parent, []).append((metadata, pixels))
+            metadata_target = target.with_suffix(".json")
+            with metadata_target.open("xb") as stream:
+                stream.write(metadata_bytes)
+            frame.update(observations=str(metadata_target.relative_to(output)),
+                         observations_sha256=hashlib.sha256(metadata_bytes).hexdigest(), reticle_pixels=pixels)
+        frames.append(frame)
+    for sequence in bow_sequences.values():
+        bow_capture_validation.verify_sequence(sequence)
     return frames
 
 
