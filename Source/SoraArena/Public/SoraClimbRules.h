@@ -19,6 +19,16 @@ constexpr int CornerZ[]={0,110,220,330,440,550,680,820,960,1100,1200,1300,1400,1
 constexpr int ExtrusionZ[]={0,200,400,600,800,1000,1200,1400,1600};
 constexpr bool Watching(int ClockMs) { return ClockMs>=PeriodMs && ClockMs%PeriodMs<WatchMs; }
 constexpr int CircuitMs(int ClockMs) { return (ClockMs+PeriodMs-WatchMs)%PeriodMs; }
+struct FPatrolPoint { double X,Y; };
+inline FPatrolPoint PatrolAt(int ClockMs)
+{
+    if(Watching(ClockMs)) return {360,-300};
+    const double T=ClockMs<PeriodMs?double(ClockMs)/PeriodMs:double((ClockMs-WatchMs)%PeriodMs)/(PeriodMs-WatchMs);
+    const double Out=T<.5?T*2:(1-T)*2;
+    const double Distance=Out*3790; // 290 cm bay arm + 500 cm approach + 30 m parapet.
+    if(Distance<290) return {360+Distance,-300};
+    return {650,-300-(Distance-290)};
+}
 constexpr SoraFieldcraftRules::FClimbRules GripRules(bool Extrusion)
 {
     return {Extrusion?8:14,Height,6,25,Extrusion?0u:(1u<<5)|(1u<<9),400,30,800};

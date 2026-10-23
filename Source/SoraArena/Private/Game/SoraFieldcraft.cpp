@@ -894,7 +894,7 @@ void USoraFieldcraft::LetGo(ASoraPlayerCharacter& Player, bool bFell)
     Movement->StopMovementImmediately();
     Movement->SetMovementMode(MOVE_Falling);
     // Pushed off the face so he falls clear of its ledges.
-    Player.AddActorWorldOffset(FVector(-Layout::ClimbOffset * .5f, 0.f, 0.f), true);
+    Player.AddActorWorldOffset(FVector(ClimbSpace?-210.f:-Layout::ClimbOffset * .5f, 0.f, 0.f), true);
     Raise(bFell ? TEXT("climb_fell") : TEXT("climb_let_go"));
 }
 
