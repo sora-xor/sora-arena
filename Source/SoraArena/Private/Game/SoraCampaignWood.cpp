@@ -30,9 +30,9 @@ bool USoraCampaignDirector::IsWoodExplore() const
 FString USoraCampaignDirector::ToshiyaCodex(bool English) const
 {
     if(!HasToshiyaCodex()) return FString();
-    // Provisional editorial copy: no invented named record or combat bonus.
-    return English?TEXT("Toshiya — provisional codex draft. Long-distance archery contests were held in Japan in the early 1600s. Archers practiced sustaining accuracy over many shots."):
-        TEXT("通し矢 — 図鑑仮稿。十七世紀初めの日本では、遠くへ矢を通す競技が行われた。射手は繰り返し射ながら正確さを保つ技を磨いた。");
+    // Institutional sources and the 1623 editorial limits: docs/campaign/codex.md.
+    return English?TEXT("At Kyoto's Sanjūsangen-dō, archers competed to send arrows along the western veranda, a distance of about 120 metres. A record from Keichō 11 (1606) describes an archer sending 51 arrows through from 100 shots."):
+        TEXT("京都の三十三間堂では、西の縁側に沿って約百二十メートル先まで矢を通し、その本数を競った。慶長十一年（一六〇六）には、百本のうち五十一本を通した射手の記録が残る。");
 }
 bool USoraCampaignDirector::BeginWoodTransit()
 {

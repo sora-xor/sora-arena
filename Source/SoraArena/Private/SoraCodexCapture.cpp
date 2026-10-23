@@ -32,7 +32,7 @@ namespace SoraCodexCapture
 using SoraUI::EAction;
 using SoraUI::EScreen;
 const TCHAR* Names[]={TEXT("empty"),TEXT("index-first"),TEXT("index-last"),TEXT("reader-standard"),
-    TEXT("reader-xl-top"),TEXT("reader-xl-end"),TEXT("reader-ja-only"),TEXT("toshiya")};
+    TEXT("reader-xl-top"),TEXT("reader-xl-end"),TEXT("reader-ja-only"),TEXT("toshiya"),TEXT("toshiya-end")};
 class FRun final : public IAutomationLatentCommand
 {
 public:
@@ -137,14 +137,15 @@ private:
     {
         auto View=Widget(); if (!View) return;
         const bool Reader=Step>=3;
+        const bool ReaderEnd=Step==5||Step==8;
         const auto ExpectedSize=Step<4?SoraAccessibility::ESubtitleSize::Standard:SoraAccessibility::ESubtitleSize::ExtraLarge;
         const auto* Selected=Menu()->SelectedCodexEntry();
         const bool RightScreen=Menu()->Screen()==(Reader?EScreen::CodexEntry:EScreen::Codex);
-        const bool RightEntry=!Reader||(Selected&&Selected->Key==(Step==7?48:LongestKey));
+        const bool RightEntry=!Reader||(Selected&&Selected->Key==(Step>=7?48:LongestKey));
         const bool RightLanguage=Menu()->ShowsEnglish()==(Step!=6);
         const bool RightSize=M->Settings()->SubtitleSize()==ExpectedSize;
         const bool RightCount=Menu()->CodexEntries().Num()==(Step==0?0:49);
-        const bool Top=!Reader||Step==5||(Menu()->CodexScrollFraction()==0.f&&FMath::Abs(View->CodexScrollOffset())<1.f);
+        const bool Top=!Reader||ReaderEnd||(Menu()->CodexScrollFraction()==0.f&&FMath::Abs(View->CodexScrollOffset())<1.f);
         const bool RightIndex=(Step!=1&&Step!=2)||(Menu()->Rows().IsValidIndex(Menu()->Focus())&&
             Menu()->Rows()[Menu()->Focus()].Action==EAction::CodexEntry&&Menu()->Rows()[Menu()->Focus()].Param==(Step==1?0:48));
         if (!RightScreen||!RightEntry||!RightLanguage||!RightSize||!RightCount||!Top||!RightIndex)
@@ -175,7 +176,7 @@ private:
             const FVector2D Max=Clip.AbsoluteToLocal(Content.LocalToAbsolute(Content.GetLocalSize()));
             Test.TestTrue(TEXT("Reader content stays within the horizontal clip"),Min.X>=-1&&Max.X<=Clip.GetLocalSize().X+1);
             Test.TestTrue(TEXT("Reader viewport has actual positive arranged size"),Clip.GetLocalSize().X>0&&Clip.GetLocalSize().Y>0);
-            if (Step==5)
+            if (ReaderEnd)
             {
                 Test.TestTrue(TEXT("Extra-large actual content exercises scrolling"),View->CodexScrollEnd()>1);
                 Test.TestTrue(TEXT("Normal Down input reaches the actual end"),FMath::IsNearlyEqual(View->CodexScrollOffset(),View->CodexScrollEnd(),1.f));
@@ -248,6 +249,12 @@ private:
         }
         if (Step==6) { Press(EKeys::F10); for (int32 I=0;I<6;++I) Press(EKeys::Up); }
         if (Step==7) { Press(EKeys::F10); Press(EKeys::Escape); Choose(EAction::CodexEntry,48); }
+        if (Step==8)
+        {
+            // Capture the actual Toshiya English ending through normal reader
+            // input, with the same arranged end/clip gates as the long record.
+            for (int32 I=0;I<6;++I) Press(EKeys::Gamepad_DPad_Down);
+        }
         ChangedAt=FPlatformTime::Seconds();
     }
     void Cleanup()
@@ -282,7 +289,7 @@ private:
         if (!Folder.IsEmpty())
         {
             auto Report=MakeShared<FJsonObject>(); Report->SetArrayField(TEXT("frames"),Frames);
-            Report->SetStringField(TEXT("schema"),TEXT("sora-arena.codex-capture.v1"));
+            Report->SetStringField(TEXT("schema"),TEXT("sora-arena.codex-capture.v2"));
             Report->SetStringField(TEXT("scope"),TEXT("prepared Codex discovery ledger; not playthrough or art acceptance"));
             Report->SetBoolField(TEXT("prepared_discoveries"),true);
             Report->SetNumberField(TEXT("frame_count"),Frames.Num());

@@ -416,7 +416,7 @@ class CodexCaptureTests(unittest.TestCase):
         self.report = {"tests": [{"fullTestPath": "SoraCapture.Codex.Live"}]}
         self.metadata = {"schema": VERIFY.codex_capture_validation.SCHEMA,
                          "scope": VERIFY.codex_capture_validation.SCOPE,
-                         "prepared_discoveries": True, "passed": True, "frame_count": 8,
+                         "prepared_discoveries": True, "passed": True, "frame_count": 9,
                          "viewport": [2, 1], "frames": []}
         for index, phase in enumerate(VERIFY.codex_capture_validation.PHASES):
             frame = dict(name=phase, file=phase + ".png", prepared_discoveries=True,
@@ -425,9 +425,9 @@ class CodexCaptureTests(unittest.TestCase):
                          english=index != 6, text_scale=1 if index < 4 else 1.5,
                          entries=0 if index == 0 else 49, focus=1 if index == 0 else 48 if index == 2 else 0)
             if index >= 3:
-                frame.update(entry_id="codex_toshiya" if index == 7 else "ch04.c06",
-                             entry_key=48 if index == 7 else 23, scroll_offset=80 if index == 5 else 0,
-                             scroll_end=80, content_bottom=120 if index == 5 else 200, viewport_height=120)
+                frame.update(entry_id="codex_toshiya" if index >= 7 else "ch04.c06",
+                             entry_key=48 if index >= 7 else 23, scroll_offset=80 if index in (5, 8) else 0,
+                             scroll_end=80, content_bottom=120 if index in (5, 8) else 200, viewport_height=120)
             self.metadata["frames"].append(frame)
         self.sidecar = self.folder / "capture.json"
         self.write_metadata()
@@ -445,10 +445,10 @@ class CodexCaptureTests(unittest.TestCase):
         return output, VERIFY.archive_frames(self.log() if log is None else log, self.report, self.project,
                                               self.root, output, self.started, 2, 1)
 
-    def test_exact_eight_original_frames_and_source_metadata_are_archived(self):
+    def test_exact_nine_original_frames_and_source_metadata_are_archived(self):
         output, frames = self.archive()
         original = self.sidecar.read_bytes()
-        self.assertEqual(len(frames), 8)
+        self.assertEqual(len(frames), 9)
         self.assertEqual([frame["codex_phase"] for frame in frames], list(VERIFY.codex_capture_validation.PHASES))
         self.assertEqual(len({frame["observations"] for frame in frames}), 1)
         for frame in frames:
@@ -464,7 +464,7 @@ class CodexCaptureTests(unittest.TestCase):
         self.assertEqual((output / frames[0]["path"]).read_bytes(), self.png)
 
     def test_empty_partial_duplicate_and_replayed_acknowledgements_fail(self):
-        for log, error in (("", "no screenshot"), (self.log(self.paths[:-1]), "eight unique"),
+        for log, error in (("", "no screenshot"), (self.log(self.paths[:-1]), "nine unique"),
                            (self.log(self.paths + self.paths[:1]), "duplicate"),
                            (self.log().replace("LogTemp: Display:", "LogAutomationController: Display:") + " [log]", "no screenshot"),
                            (self.log().replace("LogTemp: Display:", "LogAutomationController: Display:"), "no screenshot")):
@@ -495,7 +495,7 @@ class CodexCaptureTests(unittest.TestCase):
     def test_failed_wrong_schema_scope_count_or_viewport_reports_fail(self):
         for key, bad, error in (("passed", False, "did not pass"), ("passed", 1, "did not pass"),
                                 ("schema", "unknown", "schema"), ("prepared_discoveries", False, "scope"),
-                                ("scope", "earned all collectibles", "scope"), ("frame_count", 7, "eight"),
+                                ("scope", "earned all collectibles", "scope"), ("frame_count", 8, "nine"),
                                 ("frame_count", True, "frame_count"), ("viewport", [1920, 1080], "viewport"),
                                 ("viewport", [2, True], "viewport")):
             with self.subTest(key=key, bad=bad):
@@ -517,11 +517,11 @@ class CodexCaptureTests(unittest.TestCase):
             with self.subTest(names=[row["name"] for row in rows]):
                 self.metadata["frames"] = rows
                 self.write_metadata()
-                with self.assertRaisesRegex(ValueError, "eight|phase/filename"):
+                with self.assertRaisesRegex(ValueError, "nine|phase/filename"):
                     self.archive()
         self.metadata["frames"] = original
         self.write_metadata()
-        with self.assertRaisesRegex(ValueError, "eight unique"):
+        with self.assertRaisesRegex(ValueError, "nine unique"):
             self.archive(self.log(list(reversed(self.paths))))
 
     def test_phase_state_frame_identity_and_actual_tail_must_match(self):
@@ -540,6 +540,46 @@ class CodexCaptureTests(unittest.TestCase):
                     self.archive()
                 self.metadata["frames"][index][key] = original
 
+    def test_toshiya_end_requires_its_own_entry_language_and_visible_tail(self):
+        cases = [("entry_id", "ch04.c06"), ("entry_key", 23), ("english", False),
+                 ("text_scale", 1), ("scroll_offset", 0), ("scroll_end", 0),
+                 ("content_bottom", 200), ("content_bottom", -1),
+                 ("viewport_height", float("nan")), ("request_frame", 170)]
+        original = copy.deepcopy(self.metadata["frames"][-1])
+        for key, bad in cases:
+            with self.subTest(key=key, bad=bad):
+                self.metadata["frames"][-1] = dict(original, **{key: bad})
+                self.write_metadata()
+                with self.assertRaises(ValueError):
+                    self.archive()
+        self.metadata["frames"][-1] = original
+
+    def test_toshiya_end_cannot_substitute_a_different_content_extent(self):
+        # Each false tail is individually within its declared clip and at its
+        # declared end, but no longer belongs to the preceding Toshiya top.
+        original = copy.deepcopy(self.metadata["frames"][-1])
+        for changes in ({"scroll_offset": 90, "scroll_end": 90},
+                        {"viewport_height": 140}, {"content_bottom": 100}):
+            with self.subTest(changes=changes):
+                self.metadata["frames"][-1] = dict(original, **changes)
+                self.write_metadata()
+                with self.assertRaisesRegex(ValueError, "top-phase"):
+                    self.archive()
+        self.metadata["frames"][-1] = original
+
+    def test_former_eight_frame_success_cannot_claim_toshiya_end(self):
+        self.metadata["schema"] = "sora-arena.codex-capture.v1"
+        self.metadata["frame_count"] = 8
+        self.metadata["frames"] = self.metadata["frames"][:-1]
+        self.write_metadata()
+        with self.assertRaisesRegex(ValueError, "schema"):
+            self.archive(self.log(self.paths[:-1]))
+        # Relabelling an old receipt with the current schema is insufficient.
+        self.metadata["schema"] = VERIFY.codex_capture_validation.SCHEMA
+        self.write_metadata()
+        with self.assertRaisesRegex(ValueError, "nine"):
+            self.archive(self.log(self.paths[:-1]))
+
     def test_multiple_run_folders_cannot_hide_duplicate_phases(self):
         other = self.folder.parent / "another"
         other.mkdir()
@@ -549,7 +589,7 @@ class CodexCaptureTests(unittest.TestCase):
             target.write_bytes(self.png)
             paths.append(target)
         (other / "capture.json").write_text(json.dumps(self.metadata))
-        with self.assertRaisesRegex(ValueError, "one eight-frame"):
+        with self.assertRaisesRegex(ValueError, "one nine-frame"):
             self.archive(self.log(self.paths + paths))
 
     def test_successful_automation_without_codex_frames_fails_the_cli_archive(self):

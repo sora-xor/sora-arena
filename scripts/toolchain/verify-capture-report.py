@@ -197,7 +197,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         frames.append(frame)
     if codex_sequences:
         if len(codex_sequences) != 1:
-            raise ValueError("Codex capture requires one eight-frame sequence, not multiple runs")
+            raise ValueError("Codex capture requires one nine-frame sequence, not multiple runs")
         for folder, sequence in codex_sequences.items():
             sidecar = (folder / "capture.json").resolve()
             if sidecar.parent != folder:
