@@ -552,6 +552,25 @@ struct FSoraWindSpace
     bool Enabled() const { return !Kind.IsNone(); }
     bool Ridge() const { return Kind==TEXT("ridge"); }
 };
+// Chapter 6's two authored wall routes. Points are local feet positions;
+// point zero is the ground and the remaining points are reached holds.
+struct FSoraClimbRoute
+{
+    FName Id;
+    TArray<FVector> Points;
+    TArray<int32> RestHolds;
+    int32 StepMs=0;
+    bool bExposed=false;
+};
+struct FSoraClimbSpace
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+    int32 HeightCm=0;
+    FSoraClimbRoute Corner, Extrusion;
+    int32 LookPeriodMs=0, LookHoldMs=0, GuardIndex=INDEX_NONE;
+    int32 CrawlFloorCm=0, CrawlHeightCm=0, CrawlHalfWidthCm=0, CrawlEntryX=0, CrawlExitX=0;
+};
 struct FSoraFloodSpace
 {
     bool bEnabled=false;
@@ -562,6 +581,7 @@ struct FSoraBeatSpace
     FSoraHelmSpace Helm;
     FSoraWindSpace Wind;
     FSoraFloodSpace Flood;
+    FSoraClimbSpace Climb;
     FSoraSummitSpace Summit;
     FSoraSpireSpace Spire;
     int32 HeightCm=0;
