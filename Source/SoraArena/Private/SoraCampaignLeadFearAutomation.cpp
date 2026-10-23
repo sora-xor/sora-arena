@@ -5,6 +5,9 @@
 #include "SoraRecoveryAutomation.h"
 #include "SoraFrontEnd.h"
 #include "SoraHorse.h"
+#include "SoraLeadRopeComponent.h"
+#include "SoraLeadRopeRules.h"
+#include "Components/SceneComponent.h"
 #include "SoraSettings.h"
 #include "Combat/SoraCombatEffects.h"
 #include "SoraGameEvents.h"
@@ -14,12 +17,32 @@
 namespace SoraLeadFearTest
 {
 using FWorld=SoraFieldcraftAutomation::FBeatWorld;
+bool RopeTracks(FWorld& W)
+{
+    if(W.Campaign()->ActiveBeat()!=13) return true;
+    const auto Pack=W.Campaign()->PackHorses();
+    if(!W.Test.TestTrue(TEXT("A cargo lead has its real horse pair"),Pack.Num()==1&&IsValid(Pack[0])&&IsValid(W.Campaign()->Steed()))) return false;
+    const auto* Rope=Pack[0]->LeadRope();
+    FVector Halter,Tie,ShownHalter,ShownTie;
+    TInlineComponentArray<USceneComponent*> PackParts(Pack[0]),LeaderParts(W.Campaign()->Steed());
+    USceneComponent* const* HalterPart=PackParts.FindByPredicate([](const USceneComponent* Part)
+        { return Part->GetName().StartsWith(TEXT("LeadHalter")); });
+    USceneComponent* const* TiePart=LeaderParts.FindByPredicate([](const USceneComponent* Part)
+        { return Part->GetName().StartsWith(TEXT("LeadTie")); });
+    return W.Test.TestTrue(TEXT("Late visual tick joins animated halter and tack with twelve collision-free segments"),
+        Rope&&Rope->VisibleSegments()==SoraLeadRopeRules::Segments&&!Rope->HasCollision()&&
+        Rope->PrimaryComponentTick.TickGroup==TG_PostUpdateWork&&Rope->Anchors(Halter,Tie)&&Rope->RenderedEndpoints(ShownHalter,ShownTie)&&
+        HalterPart&&TiePart&&(*HalterPart)->GetAttachParent()&&(*HalterPart)->GetAttachParent()->GetName().StartsWith(TEXT("Head"))&&
+        (*TiePart)->GetAttachParent()&&(*TiePart)->GetAttachParent()->GetName()==TEXT("Body")&&
+        FVector::Dist(Halter,(*HalterPart)->GetComponentLocation())<.01&&FVector::Dist(Tie,(*TiePart)->GetComponentLocation())<.01&&
+        FVector::Dist(Halter,ShownHalter)<.01&&FVector::Dist(Tie,ShownTie)<.01);
+}
 bool Tick(FWorld& W,int32 Frames,float Dt=1.f/60.f)
 {
     for(int32 Frame=0;Frame<Frames;++Frame)
     {
         SoraLiftAutomation::HoldThreats(*W.World);
-        if(!W.Tick(1,Dt)) return false;
+        if(!W.Tick(1,Dt)||!RopeTracks(W)) return false;
     }
     return true;
 }
@@ -159,6 +182,8 @@ bool Lifecycle(FAutomationTestBase& Test)
     auto* C=W.Campaign();auto* Horse=C->Steed();auto* Pack=Bunta(W);
     if(!FreshFear(W,*Drone,1.f/60.f)||!W.World->InjectKey(EKeys::D,IE_Pressed)||!Tick(W,12)||!W.Press(EKeys::Escape)) return false;
     const int32 Tug=Horse->LeadTugMs(),Fear=Pack->LeadFearMs();
+    FVector RopeHalter,RopeTie;
+    if(!Test.TestTrue(TEXT("The paused lead has rendered endpoints"),Pack->LeadRope()->RenderedEndpoints(RopeHalter,RopeTie))) return false;
     const FVector At=Horse->GetActorLocation(),PackAt=Pack->GetActorLocation();
     // FRotator uses double precision. Narrowing this baseline to float makes
     // an exact comparison fail even when pause preserves the original yaw.
@@ -174,6 +199,9 @@ bool Lifecycle(FAutomationTestBase& Test)
     Test.TestTrue(TEXT("Pause exactly preserves Kurimaru's position"),Horse->GetActorLocation()==At);
     Test.TestTrue(TEXT("Pause exactly preserves Bunta's position"),Pack->GetActorLocation()==PackAt);
     Test.TestTrue(TEXT("Pause exactly preserves Kurimaru's full-precision yaw"),Horse->GetActorRotation().Yaw==Yaw);
+    FVector PausedHalter,PausedTie;
+    Test.TestTrue(TEXT("Pause preserves the actual rendered lead endpoints"),Pack->LeadRope()->RenderedEndpoints(PausedHalter,PausedTie)&&
+        PausedHalter.Equals(RopeHalter,.01)&&PausedTie.Equals(RopeTie,.01));
     if(!W.Press(EKeys::Escape)||!W.Press(EKeys::E)) return false;
     Test.TestTrue(TEXT("Ordinary dismount clears the steering tug without dropping cargo"),
         !C->IsMounted()&&Horse->LeadTugMs()==0&&Pack->IsLed()&&C->TaskProgress().Done==0);
@@ -192,7 +220,9 @@ bool Lifecycle(FAutomationTestBase& Test)
     Test.TestTrue(TEXT("A fresh Bunta fear while on foot cannot bank a saddle interruption"),Pack->LeadFearMs()==2500&&Horse->LeadTugMs()==0);
     if(!W.Press(EKeys::E)) return false;
     Test.TestTrue(TEXT("Ordinary remount restores steering without a stale tug"),C->IsMounted()&&Horse->LeadTugMs()==0);
+    const TWeakObjectPtr<const USoraLeadRopeComponent> OldRope=Pack->LeadRope();
     if(!Restart(W)) return false;
+    Test.TestTrue(TEXT("Retry destroys the previous lead presentation"),!OldRope.IsValid()||OldRope->VisibleSegments()==0);
     Test.TestTrue(TEXT("Checkpoint retry recreates a calm led mare and clear reins"),C->ActiveBeat()==13&&
         C->IsMounted()&&Bunta(W)&&Bunta(W)->LeadFearMs()==0&&C->Steed()->LeadTugMs()==0&&C->TaskProgress().Done==0);
     // Independent post-retry setup near Kami. Dismount outside the delivery
@@ -207,6 +237,17 @@ bool Lifecycle(FAutomationTestBase& Test)
         !W.World->InjectKey(EKeys::E,IE_Released)) return false;
     Test.TestTrue(TEXT("A complete ordinary hold still unloads once while on foot"),
         !C->IsMounted()&&C->TaskProgress().Done==1&&C->TaskProgress().DropoffUses[0]==1);
+    // Lifecycle API cleanup only, after the ordinary gameplay assertions.
+    // Replacing or removing a lead must not leave independent rope meshes.
+    auto* FreshPack=Bunta(W);
+    FreshPack->Lead(nullptr,300);
+    Test.TestTrue(TEXT("Removing a lead immediately destroys its rendered connection"),
+        !FreshPack->IsLed()&&FreshPack->LeadRope()->VisibleSegments()==0&&!FreshPack->LeadRope()->IsComponentTickEnabled());
+    FreshPack->Lead(C->Steed(),300,2500);
+    if(!Tick(W,1)) return false;
+    FreshPack->FollowRoad(nullptr,0,0);
+    Test.TestTrue(TEXT("Switching from led to road-following removes the old rope"),
+        !FreshPack->IsLed()&&FreshPack->LeadRope()->VisibleSegments()==0&&!FreshPack->LeadRope()->IsComponentTickEnabled());
     return !Test.HasAnyErrors();
 }
 
@@ -317,7 +358,7 @@ bool FSoraBuntaLeadFearTest::RunTest(const FString&)
 {
     if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
     const bool A=SoraLeadFearTest::Timing(*this,60),B=SoraLeadFearTest::Timing(*this,120),C=SoraLeadFearTest::Lifecycle(*this);
-    if(A&&B&&C&&!HasAnyErrors()) UE_LOG(LogTemp,Display,TEXT("SORA_BUNTA_LEAD_OK: Bunta-only radius, 60/120Hz active timers, mapped steering, pause, dismount, whistle, retry, foot unloading"));
+    if(A&&B&&C&&!HasAnyErrors()) UE_LOG(LogTemp,Display,TEXT("SORA_BUNTA_LEAD_OK: Bunta-only radius, 60/120Hz active timers, mapped steering, pause, dismount, whistle, retry, foot unloading; late rope endpoint tracking and cleanup"));
     return A&&B&&C&&!HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraKurimaruSpookDismountTest,"SoraArena.Campaign.KurimaruSpookDismount",

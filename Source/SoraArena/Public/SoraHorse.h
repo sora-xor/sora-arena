@@ -8,6 +8,7 @@ class ASoraPlayerCharacter;
 class UBoxComponent;
 class USceneComponent;
 class UStaticMeshComponent;
+class USoraLeadRopeComponent;
 struct FSoraMount;
 struct FSoraZone;
 
@@ -58,6 +59,7 @@ public:
     FString PackId;
     void Lead(ASoraHorse* InLeader, float SpacingCm, int32 FearRecoveryMs = 0);
     bool IsLed() const { return Leader.IsValid(); }
+    const USoraLeadRopeComponent* LeadRope() const { return LeadVisual; }
     // Functional WIP: each paired bundle represents one validated delivery share.
     void ConfigureCargo(int32 Shares, int32 UnitsPerShare);
     void ShowCargo(int32 SharesRemaining);
@@ -90,6 +92,8 @@ private:
     UPROPERTY() TObjectPtr<UBoxComponent> Frame;
     UPROPERTY() TObjectPtr<USceneComponent> Body;
     UPROPERTY() TObjectPtr<USceneComponent> Head;
+    UPROPERTY() TObjectPtr<USceneComponent> LeadAnchor;
+    UPROPERTY() TObjectPtr<USoraLeadRopeComponent> LeadVisual;
     UPROPERTY() TArray<TObjectPtr<USceneComponent>> Hips;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Parts;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> TackParts;
