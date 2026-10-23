@@ -4,6 +4,7 @@
 #include "SoraLiftAutomation.h"
 #include "SoraFrontEnd.h"
 #include "SoraHorse.h"
+#include "SoraLeadRopeComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraRecoveryAutomation.h"
 #include "SoraSettings.h"
@@ -49,6 +50,9 @@ bool CargoShown(FWorld& W,int32 Delivered)
         C->PackHorses().Num()==1&&IsValid(C->PackHorses()[0])&&Kit&&Kit->CargoStandCount()==3)) return false;
     bool Okay=W.Test.TestEqual(TEXT("Visible pack load matches accepted unique deliveries"),
         C->PackHorses()[0]->CargoQuantityShown(),30-10*Delivered);
+    Okay=W.Test.TestTrue(TEXT("The objective HUD exposes the remaining sheaves in Japanese and English"),
+        C->ObjectiveText().Contains(FString::Printf(TEXT("麦 残り %d束"),30-10*Delivered))&&
+        C->ObjectiveTextEnglish().Contains(FString::Printf(TEXT("Barley: %d sheaves left"),30-10*Delivered)))&&Okay;
     int32 Total=C->PackHorses()[0]->CargoQuantityShown();
     for(int32 Point=0;Point<3;++Point)
     {
@@ -176,6 +180,7 @@ bool FSoraCargoUnloadTest::RunTest(const FString& Parameters)
         !C->IsMounted()&&C->TaskProgress().Done==1&&FVector::Dist2D(C->PackHorses()[0]->GetActorLocation(),Kami)>420.f);
     if(!Restart(W)||!CargoShown(W,0)) return false;
     if(!AtFirstHamlet(W,-100)) return false;
+    const TWeakObjectPtr<const USoraLeadRopeComponent> CompletedRope=C->PackHorses()[0]->LeadRope();
     // All three deliveries now occur in one attempt. No direct task/event
     // calls or witness progress mutations are used to finish a destination.
     for(int32 Point=0;Point<3;++Point)
@@ -204,6 +209,21 @@ bool FSoraCargoUnloadTest::RunTest(const FString& Parameters)
         C->ActiveBeat()==14&&(C->Progress().CompletedMask&SoraBeatRules::BeatBit(13))!=0);
     TestEqual(TEXT("Cargo completed exactly once"),CargoCompletions,1);
     TestEqual(TEXT("The next beat removes the cargo destination display"),W.Mode()->Arena()->CargoStandCount(),0);
+    TestTrue(TEXT("The completed ride removes its lead presentation"),!CompletedRope.IsValid()||CompletedRope->VisibleSegments()==0);
+    const auto ZeroNotice=[&]() -> const FSoraStoryNotice*
+    {
+        return C->StoryNotices().FindByPredicate([](const FSoraStoryNotice& Notice)
+        { return Notice.Kind==FSoraStoryNotice::EKind::Registry&&Notice.Japanese.Contains(TEXT("麦 残り 0束"))&&
+            Notice.English.Contains(TEXT("Barley: 0 sheaves left")); });
+    };
+    if(!TestNotNull(TEXT("The final zero survives immediate beat teardown in existing completion feedback"),ZeroNotice())) return false;
+    const float NoticeTime=ZeroNotice()->Remaining;
+    if(!Tick(W,300)) return false;
+    TestTrue(TEXT("The following cinematic preserves the zero notice until ordinary HUD drawing resumes"),
+        W.Mode()->InputState()==SoraInput::Card&&ZeroNotice()&&ZeroNotice()->Remaining==NoticeTime&&NoticeTime>0);
+    if(!W.Press(EKeys::Enter)||!Tick(W,1)) return false;
+    TestTrue(TEXT("Existing completion feedback still contains zero after the cinematic is skipped normally"),
+        W.Mode()->InputState()!=SoraInput::Card&&ZeroNotice()&&ZeroNotice()->Remaining>0);
     if(!HasAnyErrors()) UE_LOG(LogTemp,Display,TEXT("SORA_CARGO_UNLOAD_OK: mapped hold=3000ms, short hold refused, release/leave cancel, menu frozen, retry reset, three unique deliveries, Naka event gated, visible load 30->20->10->0, each stand 0->10, completed on-foot transfer resets on retry"));
     return !HasAnyErrors();
 }

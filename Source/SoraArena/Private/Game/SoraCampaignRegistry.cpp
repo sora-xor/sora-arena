@@ -53,8 +53,18 @@ void USoraCampaignDirector::TellRegistry(int32 CompletedBeat)
         // The first inspection changes three existing entries; it creates no
         // goods. A later delivery or posting with no registry writes nothing.
         if(Row.BeatId!=Id&&Id!=TEXT("ch05.b12")) continue;
-        const SoraText::FLine Heading=SoraText::Format(NSLOCTEXT("SoraArena.Registry","Notice","生産改帳：{Goods}"),
+        SoraText::FLine Heading=SoraText::Format(NSLOCTEXT("SoraArena.Registry","Notice","生産改帳：{Goods}"),
             {{TEXT("Goods"),{Row.Entry.Japanese(),Row.Entry.English()}}});
+        const FSoraBeat& Completed=Chapter->Beats[CompletedBeat];
+        if(Row.BeatId==Id&&Completed.Cargo.Total>0)
+        {
+            // The last transfer immediately enters a cinematic. Registry
+            // notices retain their visible duration through that card, so
+            // the authored zero count is still shown when the HUD returns.
+            const int32 Left=SoraCargoRules::Remaining(Completed.Cargo,Completed.Task.Count,TaskState.Done);
+            Heading.Japanese+=FString::Printf(TEXT("  |  麦 残り %d束"),Left);
+            Heading.English+=FString::Printf(TEXT(" / Barley: %d sheaves left"),Left);
+        }
         const SoraText::FLine Detail=SoraRegistry::Status(Row.State);
         Tell(FSoraStoryNotice::EKind::Registry,Heading.Japanese,Heading.English,Detail.Japanese,Detail.English);
     }

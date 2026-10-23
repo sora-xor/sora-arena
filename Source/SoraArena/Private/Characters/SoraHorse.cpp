@@ -1,4 +1,5 @@
 #include "SoraHorse.h"
+#include "SoraLeadRopeComponent.h"
 #include "SoraCatalog.h"
 #include "SoraGameMode.h"
 #include "SoraSettings.h"
@@ -58,6 +59,7 @@ ASoraHorse::ASoraHorse()
     Body=CreateDefaultSubobject<USceneComponent>(TEXT("Body"));
     Body->SetupAttachment(Frame);
     Body->SetRelativeLocation(FVector(0,0,-HorseFrameZ));
+    LeadVisual=CreateDefaultSubobject<USoraLeadRopeComponent>(TEXT("LeadVisual"));
 }
 UStaticMeshComponent* ASoraHorse::Part(USceneComponent* Parent,const FString& Name,const TCHAR* Shape,FVector Location,FVector Scale,FLinearColor Color,FRotator Rotation)
 {
@@ -76,6 +78,9 @@ USceneComponent* ASoraHorse::Joint(USceneComponent* Parent,const FString& Name,F
 }
 void ASoraHorse::Build(FName Coat,ETack Tack)
 {
+    LeadVisual->ClearLead();
+    if(LeadAnchor) LeadAnchor->DestroyComponent();
+    LeadAnchor=nullptr;
     for(const auto& Mesh:Parts) if(Mesh) Mesh->DestroyComponent();
     for(const auto& Hip:Hips) if(Hip) Hip->DestroyComponent();
     if(Head) Head->DestroyComponent();
@@ -110,6 +115,7 @@ void ASoraHorse::Build(FName Coat,ETack Tack)
     }
     if(Tack==ETack::Riding) BuildRidingTack();
     else if(Tack==ETack::Pack) BuildPackSaddle();
+    if(Leader.IsValid()) LeadVisual->AttachLead(LeadAnchor,Leader->LeadAnchor,LeadSpacing);
 }
 void ASoraHorse::BuildRidingTack()
 {
@@ -125,6 +131,9 @@ void ASoraHorse::BuildRidingTack()
     for(int32 Side:{-1,1}) Tack(FString::Printf(TEXT("Aori%d"),Side),Body,HorseCube,FVector(0,Side*35,112),FVector(.5f,.02f,.4f),FLinearColor(.18f,.1f,.06f));
     Tack(TEXT("Maewa"),Body,HorseCube,FVector(22,0,145),FVector(.07f,.5f,.22f),Lacquer);
     Tack(TEXT("Shizuwa"),Body,HorseCube,FVector(-20,0,143),FVector(.07f,.5f,.18f),Lacquer);
+    // Provisional visual tie beside the rear saddle arch. Its final equine
+    // attachment and handoff animation remain part of the art review.
+    LeadAnchor=Joint(Body,TEXT("LeadTie"),FVector(-20,45,143));
     Tack(TEXT("Igi"),Body,HorseCube,FVector(1,0,137),FVector(.42f,.36f,.05f),Leather);
     const int32 Kura=TackParts.Num();
     // Group 1, 腹帯 haruobi: the girth around the barrel.
@@ -153,6 +162,9 @@ void ASoraHorse::BuildRidingTack()
 }
 void ASoraHorse::BuildPackSaddle()
 {
+    LeadAnchor=Joint(Head,TEXT("LeadHalter"),FVector(30,14,-34));
+    Part(Head,TEXT("PackHalter"),HorseCylinder,FVector(30,0,-34),FVector(.25f,.25f,.025f),
+        FLinearColor(.55f,.45f,.3f),FRotator(0,0,90));
     // 荷鞍 with a 振り分け load: two bales slung either side and roped over.
     Part(Body,TEXT("Niguraa"),HorseCube,FVector(0,0,138),FVector(.6f,.62f,.18f),FLinearColor(.45f,.32f,.18f));
     for(int32 Side:{-1,1})
@@ -246,6 +258,7 @@ void ASoraHorse::Dismount()
 }
 void ASoraHorse::FollowRoad(const FSoraZone* InRoad,float StartChainage,int32 InPace)
 {
+    LeadVisual->ClearLead();
     Road=InRoad&&InRoad->IsRoute()?InRoad:nullptr;
     Chainage=StartChainage; PaceCmS=InPace; Leader=nullptr;
     if(Road) Place(ASoraWorldBuilder::Floor(Road->PointAlong(Chainage)),Road->HeadingAt(Chainage));
@@ -254,6 +267,7 @@ void ASoraHorse::Lead(ASoraHorse* InLeader,float SpacingCm,int32 FearRecoveryMs)
 {
     Leader=InLeader; LeadSpacing=SpacingCm; Road=nullptr; PaceCmS=0;
     LeadRecoveryMs=FearRecoveryMs; LeadFear={}; LeadFearClock.Reset(); LeadFearFrame=MAX_uint64;
+    LeadVisual->AttachLead(LeadAnchor,InLeader?InLeader->LeadAnchor.Get():nullptr,SpacingCm);
 }
 void ASoraHorse::ClearLeadTug()
 {

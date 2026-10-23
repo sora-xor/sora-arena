@@ -3,13 +3,16 @@
 #include "SoraDojoRules.h"
 #include "SoraMountRules.h"
 #include "SoraCargoRules.h"
+#include "SoraLeadRopeRules.h"
 #include "SoraMillisecondClock.h"
 #include "SoraCrankInputRules.h"
 #include "SoraRhythmRules.h"
 #include "SoraWorkshopRules.h"
 
 #include <cstdlib>
+#include <algorithm>
 #include <climits>
+#include <limits>
 #include <iostream>
 #include <string>
 
@@ -1127,6 +1130,31 @@ static void TestCooperativeCranks()
 
 static void TestRideExploreCollectible()
 {
+    // Geometry only: the presentation keeps exact attachments, bounded
+    // segments and nominal slack without feeding any horse simulation.
+    using SoraLeadRopeRules::FPoint;
+    const FPoint RopeStart{12000,-16000,145};
+    for(double Span:{.1,100.,200.,300.,700.})
+        for(double Rise:{-60.,0.,45.})
+        {
+            const FPoint End{RopeStart.X+Span,RopeStart.Y+25,RopeStart.Z+Rise};
+            const auto Line=SoraLeadRopeRules::Curve(RopeStart,End,300);
+            const double Direct=SoraLeadRopeRules::Distance(RopeStart,End);
+            Expect(Line.Visible&&Line.Points.size()==13&&
+                SoraLeadRopeRules::Distance(Line.Points.front(),RopeStart)==0&&
+                SoraLeadRopeRules::Distance(Line.Points.back(),End)==0,
+                "lead rope: attachment positions or bounded geometry changed");
+            Expect(std::abs(SoraLeadRopeRules::Length(Line)-std::max(300.,Direct))<.000001,
+                "lead rope: nominal slack or taut separation is incorrect");
+            for(const auto Point:Line.Points) Expect(SoraLeadRopeRules::Finite(Point),"lead rope: nonfinite geometry");
+        }
+    for(double Invalid:{0.,-1.,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN()})
+        Expect(!SoraLeadRopeRules::Curve(RopeStart,{12200,-16000,145},Invalid).Visible,
+            "lead rope: invalid nominal length rendered");
+    Expect(!SoraLeadRopeRules::Curve(RopeStart,RopeStart,300).Visible&&
+        !SoraLeadRopeRules::Curve({std::numeric_limits<double>::quiet_NaN(),0,0},RopeStart,300).Visible,
+        "lead rope: coincident or invalid attachments rendered");
+    std::cout << "lead rope presentation: bounded samples, exact endpoints, nominal slack, taut separation and invalid-input refusal passed\n";
     FTask Ride = Make(EType::HorsebackRide, EGoal::Exit);
     Ride.HorseDownRetries = true;
     Ride.WaveCount = 2;

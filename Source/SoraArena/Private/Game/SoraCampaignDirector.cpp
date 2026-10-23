@@ -2199,7 +2199,11 @@ FString USoraCampaignDirector::ObjectiveText() const
     case SoraBeatRules::EGoal::Hold: Progress=FString::Printf(TEXT("持ちこたえる %d / %d 秒"),S.Progress/1000,FMath::DivideAndRoundUp(Task.DurationMs,1000)); break;
     case SoraBeatRules::EGoal::Turns: Progress=FString::Printf(TEXT("回す %d / %d"),S.Done,Task.Count); break;
     case SoraBeatRules::EGoal::Escort: Progress=FString::Printf(TEXT("護衛 %d%%"),Percent); break;
-    case SoraBeatRules::EGoal::Deliveries: Progress=FString::Printf(TEXT("運ぶ %d / %d%s"),S.Done,Task.Count,S.Carrying?TEXT("（運搬中）"):TEXT("")); break;
+    case SoraBeatRules::EGoal::Deliveries:
+        Progress=Beat->Cargo.Total>0
+            ?FString::Printf(TEXT("麦 残り %d束（配達 %d / %d）"),SoraCargoRules::Remaining(Beat->Cargo,Task.Count,S.Done),S.Done,Task.Count)
+            :FString::Printf(TEXT("運ぶ %d / %d%s"),S.Done,Task.Count,S.Carrying?TEXT("（運搬中）"):TEXT(""));
+        break;
     case SoraBeatRules::EGoal::Steps: Progress=FString::Printf(TEXT("工程 %d / %d"),FMath::Min(S.Step+1,Task.StepCount),Task.StepCount); break;
     case SoraBeatRules::EGoal::OpponentDown: if(SoraBeatRules::AwaitsCapture(S,Task)) Progress=TEXT("捕らえる"); break;
     default: break;
@@ -2239,7 +2243,11 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     case SoraBeatRules::EGoal::Hold: Progress=FString::Printf(TEXT("Hold %d of %d s"),S.Progress/1000,FMath::DivideAndRoundUp(Task.DurationMs,1000)); break;
     case SoraBeatRules::EGoal::Turns: Progress=FString::Printf(TEXT("Turns %d of %d"),S.Done,Task.Count); break;
     case SoraBeatRules::EGoal::Escort: Progress=FString::Printf(TEXT("Escort %d%%"),Percent); break;
-    case SoraBeatRules::EGoal::Deliveries: Progress=FString::Printf(TEXT("Delivered %d of %d%s"),S.Done,Task.Count,S.Carrying?TEXT(" (carrying)"):TEXT("")); break;
+    case SoraBeatRules::EGoal::Deliveries:
+        Progress=Beat->Cargo.Total>0
+            ?FString::Printf(TEXT("Barley: %d sheaves left / Delivered %d of %d"),SoraCargoRules::Remaining(Beat->Cargo,Task.Count,S.Done),S.Done,Task.Count)
+            :FString::Printf(TEXT("Delivered %d of %d%s"),S.Done,Task.Count,S.Carrying?TEXT(" (carrying)"):TEXT(""));
+        break;
     case SoraBeatRules::EGoal::Steps: Progress=FString::Printf(TEXT("Step %d of %d"),FMath::Min(S.Step+1,Task.StepCount),Task.StepCount); break;
     case SoraBeatRules::EGoal::OpponentDown: if(SoraBeatRules::AwaitsCapture(S,Task)) Progress=TEXT("Capture"); break;
     default: break;
