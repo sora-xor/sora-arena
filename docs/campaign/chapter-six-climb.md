@@ -78,7 +78,21 @@ This is a source checkpoint. No Unreal compilation or runtime pass, art
 approval, render, package, platform or performance result is claimed here.
 Root owns those execution gates. In particular, contact at exact support
 heights and runtime sentry visibility require the supplied engine replay.
-Kohagi's authored climb-first and turret-roof wait are the next separate
-source substep: the current companion still has generic Guide following.
 Final masonry, unique stones, character climb/crawl animation, bow-stringing
 animation and ordinary-control pacing remain unaccepted.
+
+The separate guide follow-up replaces generic following for b03 Kohagi only.
+She starts at the actual corner foot, climbs its fourteen physical points
+(including both shelf approaches), mounts the parapet, climbs the outside
+turret face and waits on a colliding roof at 24 m. Every move sweeps her
+ordinary capsule; blockers stop progress. The final roof state uses ordinary
+walking support and never grants the player's crawl completion. Her authored
+nondetectability remains unchanged. The 140 cm/s demonstration pace, outside
+roof approach and exact roof slab bounds are provisional implementation
+geometry. A waypoint accepts at most 3 cm of actual proximity to accommodate
+normal floor-contact separation, without ignoring or disabling collision.
+Pause freezes the active movement; retry/fresh load restarts it, and leaving
+the beat clears the owned route and actor. `SoraArena.Campaign.ClimbGuide`
+observes all fourteen holds, bounded movement, active pause, real roof
+support/waiting, nondetectability, death retry, fresh load and player-triggered
+beat teardown. This follow-up still requires Unreal execution.

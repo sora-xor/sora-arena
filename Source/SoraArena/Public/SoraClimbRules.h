@@ -8,6 +8,14 @@ constexpr int Height=1600, PeriodMs=20000, WatchMs=4000, StepMs=1800;
 constexpr int CrawlFloor=1650, CrawlHeight=60, CrawlRadius=28, CrawlHalfHeight=28;
 constexpr int CrawlEntry=1100, CrawlExit=1400, CrawlHalfWidth=60;
 constexpr float CrawlSpeed=90.f;
+// Provisional companion staging and roof approach; the script specifies
+// climbing first and waiting on the 24 m turret roof, not these coordinates.
+constexpr float GuideSpeed=140.f;
+constexpr int GuideRoofHeight=2400;
+struct FGuidePoint { int X,Y,Z; };
+constexpr FGuidePoint GuideRoofPath[]={
+    {900,500,1600},{1040,500,1600},{1040,500,1800},{1040,500,2000},
+    {1040,500,2200},{1040,500,2400},{1500,500,2400}};
 // Implementation geometry/timing, not authored hold coordinates: the wall
 // uses two slope segments; art may curve the upper profile within this shell.
 inline double WallX(double Z)

@@ -501,7 +501,10 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
     for (int32 Index = 0; Index < F.Allies.Num(); ++Index)
     {
         const FSoraCompanionSpec& Spec = F.Allies[Index];
-        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Layout::Floor(Spec.At, FloodSpace&&Spec.Id==TEXT("npc_kohagi")?290.f:90.f), FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
+        const FVector At=ClimbSpace&&Spec.Id==TEXT("npc_kohagi")?
+            FVector(ClimbSpace->Origin,90)+ClimbSpace->Corner.Points[0]:
+            Layout::Floor(Spec.At, FloodSpace&&Spec.Id==TEXT("npc_kohagi")?290.f:90.f);
+        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(At, FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
         if (!Companion) continue;
         Companion->Init(Spec, Index);
         Allies.Add(Companion);

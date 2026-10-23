@@ -119,6 +119,17 @@ int main() {
         if(Watching(t)) assert(p.X==360 && p.Y==-300);
     }
     assert(PatrolAt(10000).Y==-3800 && PatrolAt(32000).Y==-3800);
+    static_assert(GuideRoofHeight==2400 && GuideSpeed>0 && GuideSpeed<420);
+    for(unsigned i=0;i<sizeof(GuideRoofPath)/sizeof(*GuideRoofPath);++i) {
+        const auto p=GuideRoofPath[i];
+        assert(p.Z>=1600 && p.Z<=GuideRoofHeight);
+        // Before the final roof mount, the capsule stays outside the
+        // colliding turret front at x1100, including its 34 cm radius.
+        if(p.Z<GuideRoofHeight) assert(p.X+34<1100);
+        if(i) assert(p.Z>=GuideRoofPath[i-1].Z);
+    }
+    const auto roof=GuideRoofPath[sizeof(GuideRoofPath)/sizeof(*GuideRoofPath)-1];
+    assert(roof.X>1100+34 && roof.X<2100-34 && roof.Y>-800+34 && roof.Y<700-34 && roof.Z==2400);
     for(bool extrusion:{false,true}) {
         const auto rules=GripRules(extrusion);
         assert(ClimbValid(rules));

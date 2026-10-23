@@ -1,5 +1,6 @@
 #include "SoraFieldcraft.h"
 #include "SoraClimbRules.h"
+#include "SoraCompanion.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -62,6 +63,9 @@ bool USoraFieldcraft::ClimbObjective(FVector& At) const
 }
 void USoraFieldcraft::ClearClimbRoutes()
 {
+    if(ClimbGuide.IsValid())
+    { ClimbGuide->GetCharacterMovement()->StopMovementImmediately();ClimbGuide->GetCharacterMovement()->SetMovementMode(MOVE_Walking); }
+    ClimbGuide.Reset();ClimbGuidePath.Reset();ClimbGuidePoint=0;bClimbGuideWaiting=false;
     if(bClimbCrawl)
         if(auto* P=Hero())
         {
@@ -85,6 +89,47 @@ void USoraFieldcraft::ClearClimbRoutes()
     ClimbSentry.Reset();
     if(IsValid(ClimbSentryLamp)) ClimbSentryLamp->DestroyComponent();ClimbSentryLamp=nullptr;
     for(const auto& Light:ClimbStripLights) if(IsValid(Light)) Light->Destroy();ClimbStripLights.Reset();
+}
+
+bool USoraFieldcraft::MoveClimbCompanion(ASoraCompanion& Companion,float Dt)
+{
+    if(!ClimbSpace||Companion.CompanionId()!=TEXT("npc_kohagi")) return false;
+    const FVector O(ClimbSpace->Origin,0);
+    if(!ClimbGuide.IsValid())
+    {
+        ClimbGuide=&Companion;
+        // She starts at the real foot and demonstrates the same corner
+        // holds, including the collision-safe approach outside each shelf.
+        for(int32 H=1;H<ClimbSpace->Corner.Points.Num();++H)
+        {
+            const FVector Point=ClimbSpace->Corner.Points[H];
+            if(ClimbSpace->Corner.RestHolds.Contains(H)) ClimbGuidePath.Add(Point-FVector(210,0,0));
+            ClimbGuidePath.Add(Point);
+        }
+        ClimbGuidePath.Add(FVector(650,70,1600));
+        // Provisional route around the turret's outside wall, then over its
+        // roof edge. Every segment is swept against the actual shell.
+        for(const auto& Point:SoraClimbRules::GuideRoofPath)
+            ClimbGuidePath.Add(FVector(Point.X,Point.Y,Point.Z));
+    }
+    auto* Move=Companion.GetCharacterMovement();Move->StopMovementImmediately();
+    if(bClimbGuideWaiting) { Move->SetMovementMode(MOVE_Walking);return true; }
+    Move->SetMovementMode(MOVE_Flying);
+    const float Half=Companion.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    const FVector Target=O+ClimbGuidePath[ClimbGuidePoint]+FVector(0,0,Half);
+    const FVector Delta=Target-Companion.GetActorLocation();
+    const FVector Step=Delta.GetClampedToMaxSize(SoraClimbRules::GuideSpeed*Dt);
+    // Resolve vertical support first so a floor contact cannot consume the
+    // sideways part of the same bounded step across a shelf or parapet.
+    Companion.SetActorLocation(Companion.GetActorLocation()+FVector(0,0,Step.Z),true);
+    Companion.SetActorLocation(Companion.GetActorLocation()+FVector(Step.X,Step.Y,0),true);
+    if(!Delta.IsNearlyZero()) Companion.SetActorRotation(FRotator(0,Delta.Rotation().Yaw,0));
+    // A collision may stop at the normal floor-contact separation. Only
+    // actual proximity advances a waypoint; a remote blocker never does.
+    if(FVector::Dist(Companion.GetActorLocation(),Target)<=3.f)
+        if(++ClimbGuidePoint==ClimbGuidePath.Num())
+        { bClimbGuideWaiting=true;Move->SetMovementMode(MOVE_Walking);Companion.SetActorRotation(FRotator(0,180,0)); }
+    return true;
 }
 bool USoraFieldcraft::ClimbCrouch(ASoraPlayerCharacter& Player)
 {
