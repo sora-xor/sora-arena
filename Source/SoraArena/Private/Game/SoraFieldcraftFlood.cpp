@@ -201,6 +201,9 @@ bool USoraFieldcraft::MoveFloodCompanion(ASoraCompanion& Companion,float Dt)
     if(Companion.GetAttachParentActor()) return true;
     const FVector O(FloodSpace->Origin,0),P=Companion.GetActorLocation()-O,H=Hero()->GetActorLocation()-O;
     auto* Move=Companion.GetCharacterMovement();
+    FVector Goal(FMath::Clamp(H.X-180.f,100.f,9500.f),0,0);
+    if(H.Y<-300&&P.X>=9400) Goal=FVector(9500,FMath::Min(-100.f,H.Y+180.f),0);
+    else if(H.Y<-300) Goal=FVector(9500,0,0);
     const auto BankSupport=[&](const FVector& Local,FHitResult& Hit)
     {
         if(Local.Y>Flood::BankWaterY) return false;
@@ -211,22 +214,32 @@ bool USoraFieldcraft::MoveFloodCompanion(ASoraCompanion& Companion,float Dt)
             O+FVector(Local.X,Local.Y,-1000),ECC_WorldStatic,Query)&&Hit.ImpactNormal.Z>=Move->GetWalkableFloorZ();
     };
     FHitResult Underfoot;
-    const float Feet=P.Z-Companion.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-    if(P.Y<Flood::BankEdgeY-Companion.GetCapsuleComponent()->GetScaledCapsuleRadius()&&
-        BankSupport(P,Underfoot)&&FMath::Abs(Underfoot.ImpactPoint.Z-Flood::BankTop)<1.f&&
-        FMath::Abs(Feet-Flood::BankTop)<8.f)
+    FFindFloorResult BankFloor;
+    if(BankSupport(P,Underfoot)) Move->FindFloor(Companion.GetActorLocation(),BankFloor,false);
+    if(BankFloor.IsWalkableFloor()&&BankFloor.GetDistanceToFloor()<=Move->MaxStepHeight)
     {
-        // Back on the bank, ordinary guide walking owns gravity and support.
+        // A distant endpoint can aim a straight swimming sweep into the
+        // slope. Actual nearby capsule support hands the climb to walking,
+        // which supplies floor adjustment, sliding and swept ramp movement.
         Move->GravityScale=1; Move->SetMovementMode(MOVE_Walking);
-        return false;
+        Companion.UnCrouch();
+        const float Feet=P.Z-Companion.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+        if(P.Y<Flood::BankEdgeY-Companion.GetCapsuleComponent()->GetScaledCapsuleRadius()&&
+            FMath::Abs(Underfoot.ImpactPoint.Z-Flood::BankTop)<1.f&&FMath::Abs(Feet-Flood::BankTop)<8.f)
+            return false; // Ordinary guide following resumes on the flat bank.
+        const FVector Direction=(Goal-P).GetSafeNormal2D();
+        if(FVector::Dist2D(Goal,P)>=90.f)
+        {
+            Move->MaxWalkSpeed=240.f;
+            Companion.AddMovementInput(Direction,1.f);
+            Companion.SetActorRotation(FRotator(0,Direction.Rotation().Yaw,0));
+        }
+        return true;
     }
     Move->GetNavAgentPropertiesRef().bCanCrouch=true; Move->SetCrouchedHalfHeight(44);
     const bool Deep=P.X>=7250&&P.X<=9034;
     if(Deep) Companion.Crouch(); else Companion.UnCrouch();
     Move->GravityScale=0; Move->SetMovementMode(MOVE_Falling); Move->Velocity=FVector::ZeroVector;
-    FVector Goal(FMath::Clamp(H.X-180.f,100.f,9500.f),0,0);
-    if(H.Y<-300&&P.X>=9400) Goal=FVector(9500,FMath::Min(-100.f,H.Y+180.f),0);
-    else if(H.Y<-300) Goal=FVector(9500,0,0);
     const float Half=Companion.GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     const float Water=Flood::Surface(FloodClockMs);
     Goal.Z=Deep?FMath::Max(-200+Half+3,FMath::Min(Water-140.f,20-Half-8)):
