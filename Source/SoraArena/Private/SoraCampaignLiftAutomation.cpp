@@ -168,4 +168,103 @@ bool FSoraCampaignLiftGalleryTest::RunTest(const FString& Parameters)
     }
     return !HasAnyErrors();
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraCampaignLiftGalleryTimingTest,"SoraArena.Campaign.LiftGalleryTiming",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraCampaignLiftGalleryTimingTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    if(!TestTrue(TEXT("Catalog loads"),FSoraCatalog::Get().Load())) return false;
+    SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("LiftGalleryTiming"),7,10);
+    if(!W.Start()) return false;
+    auto* const Director=W.Campaign();
+    constexpr auto Hint=TEXT("ch08.b12.iota.005");
+    for(int32 Entry=0;Entry<2;++Entry)
+    {
+        if(Entry)
+        {
+            UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health+1000.f,nullptr,nullptr,UDamageType::StaticClass());
+            if(!W.Tick(2)||!TestTrue(TEXT("Death opens the ordinary retry flow"),W.Mode()->bDefeated)||
+                !W.Press(EKeys::Enter)||!W.Tick(30)) return false;
+            if(!TestTrue(TEXT("Retry reuses the director with a fresh lift phase"),W.Campaign()==Director&&
+                Director->ActiveBeat()==10&&!Director->InLiftGallery())) return false;
+        }
+        W.Harden();
+        const float DeltaSeconds=Entry?1.f/120.f:1.f/60.f;
+        double ActiveSeconds=0.,EntryWorldSeconds=-1.,HintSeconds=-1.;
+        int32 HintEntries=0;
+        bool bHintQueued=false,bHintShown=false;
+        // Observe every world step, including the last turn's arrival. The
+        // clock starts at the real gallery transition, never at Ride's return.
+        const auto Tick=[&](int32 Frames,float Delta)
+        {
+            for(int32 Frame=0;Frame<Frames;++Frame)
+            {
+                const bool bGallery=Director->InLiftGallery();
+                const bool bActive=bGallery&&W.Mode()->IsPlaying();
+                const double Before=W.World->GetTestWorld()->GetTimeSeconds();
+                if(bGallery&&EntryWorldSeconds<0.) EntryWorldSeconds=Before;
+                if(!W.Tick(1,Delta)) return false;
+                const double Now=W.World->GetTestWorld()->GetTimeSeconds();
+                if(bActive) ActiveSeconds+=Now-Before;
+                if(!bGallery&&Director->InLiftGallery()) EntryWorldSeconds=Now;
+                if(bGallery&&!Director->InLiftGallery())
+                    return TestTrue(TEXT("Idle timing remains in the physical gallery"),false);
+                const bool bQueued=Director->QueuedSubtitles().ContainsByPredicate([&](const FSoraSubtitle& Line)
+                    { return Line.LineId==Hint; });
+                if(bQueued&&!bHintQueued)
+                {
+                    ++HintEntries;
+                    if(HintSeconds<0.) HintSeconds=ActiveSeconds;
+                }
+                bHintQueued=bQueued;
+                const auto* Cue=Director->CurrentDialogueCue();
+                bHintShown|=Cue&&Cue->Id==Hint;
+            }
+            return true;
+        };
+        const auto Press=[&](const FKey& Key,float Delta)
+        {
+            return W.World->InjectKey(Key,IE_Pressed)&&Tick(1,Delta)&&
+                W.World->InjectKey(Key,IE_Released)&&Tick(1,Delta);
+        };
+        if(!SoraLiftAutomation::Board(*W.World)) return false;
+        for(int32 Turn=0;Turn<60&&!Director->InLiftGallery();++Turn)
+        {
+            if(!Tick(66,1.f/60.f)||!Press(EKeys::E,1.f/60.f)) return false;
+            SoraLiftAutomation::HoldThreats(*W.World);
+        }
+        if(!TestTrue(TEXT("Mapped capstan turns enter the actual gallery"),Director->InLiftGallery()&&
+            W.Mode()->Arena()->CampaignLift()->Arrived()&&EntryWorldSeconds>=0.)) return false;
+        TestEqual(TEXT("A fresh gallery has not inherited the previous exit hint"),HintEntries,0);
+        for(int32 Frame=0;Frame<(Entry?3602:1802)&&ActiveSeconds<30.;++Frame)
+            if(!Tick(1,DeltaSeconds)) return false;
+        if(!TestTrue(TEXT("The gallery retains ordinary play for thirty active seconds before its hint"),
+            W.Mode()->IsPlaying()&&ActiveSeconds>=30.)) return false;
+        if(!Press(EKeys::Escape,DeltaSeconds)) return false;
+        if(!TestTrue(TEXT("Mapped Escape pauses the gallery world"),W.Mode()->bMenu&&W.World->GetTestWorld()->IsPaused())) return false;
+        const double PausedWorldSeconds=W.World->GetTestWorld()->GetTimeSeconds(),PausedActiveSeconds=ActiveSeconds;
+        // Longer than the entire authored delay: neither paused ticks nor
+        // a wall-time catch-up on resume may produce the hint.
+        const int32 PauseFrames=Entry?7800:3900;
+        if(!Tick(PauseFrames,DeltaSeconds)) return false;
+        const double PauseWorldDelta=W.World->GetTestWorld()->GetTimeSeconds()-PausedWorldSeconds;
+        TestEqual(TEXT("The gallery world stays frozen throughout pause"),W.World->GetTestWorld()->GetTimeSeconds(),PausedWorldSeconds);
+        TestEqual(TEXT("Paused frames contribute no gallery active time"),ActiveSeconds,PausedActiveSeconds);
+        TestEqual(TEXT("No idle hint is queued under the pause menu"),HintEntries,0);
+        if(!Press(EKeys::Escape,DeltaSeconds)) return false;
+        TestTrue(TEXT("Mapped resume restores ordinary gallery play"),W.Mode()->IsPlaying()&&!W.World->GetTestWorld()->IsPaused());
+        TestEqual(TEXT("Resume does not catch up the paused interval"),HintEntries,0);
+        for(int32 Frame=0;Frame<(Entry?3602:1802)&&HintSeconds<0.&&ActiveSeconds<=60.+DeltaSeconds+.001;++Frame)
+            if(!Tick(1,DeltaSeconds)) return false;
+        TestTrue(TEXT("The observed exit hint starts at sixty active seconds within one world step"),
+            HintSeconds>=60.-.001&&HintSeconds<=60.+DeltaSeconds+.001);
+        if(!Tick(Entry?1200:600,DeltaSeconds)) return false;
+        TestTrue(TEXT("The authored exit hint reaches the displayed dialogue cue"),bHintShown);
+        TestEqual(TEXT("The idle hint is queued exactly once per gallery entry"),HintEntries,1);
+        AddInfo(FString::Printf(TEXT("SORA_GALLERY_IDLE: entry=%d fps=%d cue=%s entry_world_seconds=%.6f hint_active_seconds=%.6f pause_requested_seconds=%.6f pause_world_delta=%.6f hint_entries=%d displayed=%d"),
+            Entry+1,Entry?120:60,Hint,EntryWorldSeconds,HintSeconds,PauseFrames*static_cast<double>(DeltaSeconds),
+            PauseWorldDelta,HintEntries,bHintShown));
+    }
+    return !HasAnyErrors();
+}
 #endif
