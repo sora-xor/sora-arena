@@ -169,7 +169,9 @@ bool USoraFieldcraft::MoveMoatCompanion(ASoraCompanion& Companion,float Dt)
 }
 void USoraFieldcraft::AssignMoatGuard(ASoraEnemy& Enemy,int32 Index)
 {
-    if(!MoatSpace)return;MoatGuards.Add(&Enemy,Index);
+    if(!MoatSpace)return;
+    if(Index>=3)Index=Moat::ReinforcementPost(Enemy.GetActorLocation().X-MoatSpace->Origin.X);
+    MoatGuards.Add(&Enemy,Index);
     if(Index>=3)
         if(auto* Brain=Cast<ASoraEnemyController>(Enemy.GetController()))
         {
@@ -188,7 +190,8 @@ FVector USoraFieldcraft::MoatGuardAim(const ASoraEnemy& Enemy) const
 {
     if(!MoatSpace)return Enemy.GetActorLocation()+Enemy.GetActorForwardVector()*1000;
     const auto* Brain=Cast<ASoraEnemyController>(Enemy.GetController());
-    if(Brain&&(Brain->State()==SoraStealthRules::EState::Combat||Brain->State()==SoraStealthRules::EState::Alert))return Brain->LastKnownLocation();
+    if(Brain&&(Brain->State()==SoraStealthRules::EState::Combat||Brain->State()==SoraStealthRules::EState::Alert||
+        Brain->State()==SoraStealthRules::EState::Suspicious))return Brain->LastKnownLocation();
     const FVector At=Enemy.GetActorLocation();
     return Enemy.ArchetypeId()==TEXT("drone")?At-FVector(0,0,1000):FVector(At.X,MoatSpace->Origin.Y+2800,0);
 }
@@ -198,7 +201,9 @@ bool USoraFieldcraft::DriveMoatGuard(ASoraEnemy& Enemy,float Dt,bool& Reached)
     const FVector O(MoatSpace->Origin,0);auto* M=Enemy.GetCharacterMovement();
     const auto* Brain=Cast<ASoraEnemyController>(Enemy.GetController());
     const bool Combat=Brain&&(Brain->State()==SoraStealthRules::EState::Combat||Brain->State()==SoraStealthRules::EState::Alert);
-    const bool Investigating=Brain&&Brain->State()==SoraStealthRules::EState::Alert;
+    const bool Suspicious=Brain&&Brain->State()==SoraStealthRules::EState::Suspicious;
+    const bool Looking=Suspicious&&Brain->StateElapsedMs()<SoraStealthRules::LookMs;
+    const bool Investigating=Brain&&(Brain->State()==SoraStealthRules::EState::Alert||Suspicious);
     Reached=false;FVector Goal=Enemy.GetActorLocation();
     if(*Index==2)
     {
@@ -220,15 +225,24 @@ bool USoraFieldcraft::DriveMoatGuard(ASoraEnemy& Enemy,float Dt,bool& Reached)
         const float X=Investigating?FMath::Clamp(float(Brain->LastKnownLocation().X-O.X),Start,End):Start+(Along<=Length?Along:Length*2-Along);
         Goal=O+FVector(X,Moat::ParapetY,Moat::ParapetWalk+Enemy.GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2);
     }
-    if(!Combat||Investigating||*Index==2)
+    if(!Looking&&(!Combat||Investigating||*Index==2))
     {
         M->StopMovementImmediately();const FVector Delta=Goal-Enemy.GetActorLocation();
-        FHitResult Hit;Enemy.SetActorLocation(Enemy.GetActorLocation()+Delta.GetClampedToMaxSize(300.f*Dt),true,&Hit);
+        // Suspicion retains the ordinary look delay and careful approach
+        // pace; an alarm still has the existing 300cm/s movement limit.
+        const float Speed=Suspicious?M->MaxWalkSpeed*SoraStealthRules::InvestigatePacePermille/1000.f:300.f;
+        FVector Step=Delta.GetClampedToMaxSize(Speed*Dt);
+        if(*Index==2)
+        {
+            const auto Flight=Moat::FlightStep(Delta.X,Delta.Y,Delta.Z,Speed*Dt);
+            Step=FVector(Flight.X,Flight.Y,Flight.Z);
+        }
+        FHitResult Hit;Enemy.SetActorLocation(Enemy.GetActorLocation()+Step,true,&Hit);
     }
     else M->StopMovementImmediately();
     // Feed ordinary perception its actual investigation arrival. Without
     // this geometry-backed receipt an Alert guard could never begin Search.
-    if(Investigating)Reached=FVector::Dist(Enemy.GetActorLocation(),Goal)<12;
+    if(Investigating&&!Looking)Reached=FVector::Dist(Enemy.GetActorLocation(),Goal)<12;
     const FVector Aim=MoatGuardAim(Enemy);Enemy.SetActorRotation(FRotator(0,(Aim-Enemy.GetActorLocation()).Rotation().Yaw,0));
     if(Combat&&Brain&&Brain->SeesHero()&&Hero())Enemy.TryAttack(*Hero(),FVector::Dist(Enemy.GetActorLocation(),Hero()->GetActorLocation()));
     return true;

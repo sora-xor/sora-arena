@@ -10,6 +10,22 @@ constexpr int GateBottom=-180,GateTop=-120,FloatClearDepth=80,HitscanClearDepth=
 constexpr int Radius=28,HalfHeight=28,HeadOffset=18,SurfaceCenter=-6,DiveCenter=-150;
 constexpr int ParapetWalk=1750,ParapetY=4860;
 constexpr int SurfaceSpeed=180,DiveSpeed=140,BreathMs=8000,RecoverMs=3000,DrownHp=10;
+// Reinforcements join in wave-slot order, which need not be west-to-east.
+// Keep their posts in spawn order so two capsules never have to swap places
+// on the same narrow parapet line to investigate the alarm.
+constexpr int ReinforcementPost(double SpawnX) { return SpawnX<20000?3:4; }
+struct FFlightStep { double X,Y,Z; };
+inline FFlightStep FlightStep(double X,double Y,double Z,double Budget)
+{
+    if(Budget<=0)return {0,0,0};
+    // Reach the authored altitude first; horizontal flight consumes only
+    // the remaining 3D distance budget, never an extra movement allowance.
+    const double Vertical=Z<-Budget?-Budget:Z>Budget?Budget:Z;
+    const double Horizontal=std::sqrt(Budget*Budget-Vertical*Vertical);
+    const double Distance=std::hypot(X,Y);
+    const double Share=Distance>Horizontal&&Distance>0?Horizontal/Distance:1.;
+    return {X*Share,Y*Share,Vertical};
+}
 struct FBankRamp { double CenterY,CenterZ,Length,RollDegrees; };
 inline FBankRamp BankRamp()
 {

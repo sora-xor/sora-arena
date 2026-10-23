@@ -82,6 +82,7 @@ public:
     // The hero is in the view cone, within sight range and unobstructed.
     bool CanSee(const ASoraCharacterBase& Target) const;
     SoraStealthRules::EState State() const { return Mind.State; }
+    int32 StateElapsedMs() const { return Mind.StateMs; }
     int32 AwarenessPermille() const { return Mind.Awareness / SoraStealthRules::AwarenessScale; }
     bool IsHunting() const { return bHunting; }
     SoraStealthRules::ERole CombatRole() const { return Role; }
