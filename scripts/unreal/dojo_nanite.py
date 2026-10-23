@@ -6,6 +6,7 @@ establishes actual Nanite raster coverage or M1/package qualification.
 import hashlib
 import json
 import math
+from pathlib import Path
 
 
 def require(condition, message):
@@ -85,6 +86,12 @@ def prepare_conventional(mesh, subsystem):
     if settings.get_editor_property("enabled"):
         settings.set_editor_property("enabled", False)
         subsystem.set_nanite_settings(mesh, settings, True)
+    # A previous import's dedicated Nanite source must not survive the new
+    # ordinary FBX import. The engine removes its source data when this named
+    # source is cleared; a false/ineffective reset is not an admissible base.
+    if subsystem.get_nanite_source_filename(mesh):
+        require(subsystem.update_nanite_source_filename(mesh, ""), "could not remove previous Nanite source")
+    require(not subsystem.get_nanite_source_filename(mesh), "previous Nanite source remained after reset")
     require(subsystem.get_nanite_settings(mesh).get_editor_property("enabled") is False,
             "could not establish the conventional import baseline")
 
@@ -152,7 +159,24 @@ def material_audit(material, unreal, library):
             "two_sided": bool(prop("two_sided") if prop("override_two_sided") else parent.get_editor_property("two_sided"))}
 
 
-def enable_full_fallback(mesh, module, subsystem, unreal, library, assets):
+def verify_lod0_source(module, source_root):
+    source = (Path(source_root) / module["lods"][0]["file"]).resolve()
+    require(source.is_file(), f"{module['asset']}: original LOD0 source is missing")
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    require(digest == module["lods"][0]["sha256"], f"{module['asset']}: original LOD0 source hash changed")
+    return source, digest
+
+
+def require_nanite_source(mesh, subsystem, source):
+    filename = subsystem.get_nanite_source_filename(mesh)
+    require(bool(filename) and Path(filename).resolve() == source, "dedicated Nanite source filename differs from verified LOD0")
+    return str(filename)
+
+
+def enable_full_fallback(mesh, module, subsystem, unreal, library, assets, source_root):
+    source, source_digest = verify_lod0_source(module, source_root)
+    require(subsystem.get_nanite_settings(mesh).get_editor_property("enabled") is False and
+            not subsystem.get_nanite_source_filename(mesh), "ordinary baseline must precede dedicated Nanite source import")
     require(assets.save_loaded_asset(mesh, only_if_is_dirty=False), f"{module['asset']}: could not save conventional baseline")
     before, before_geometry = conventional(mesh, subsystem, unreal.ProceduralMeshLibrary)
     expected = [lod["triangles"] for lod in module["lods"]]
@@ -169,12 +193,22 @@ def enable_full_fallback(mesh, module, subsystem, unreal, library, assets):
               "fallback_target": unreal.NaniteFallbackTarget.PERCENT_TRIANGLES, "fallback_percent_triangles": 1.0,
               "fallback_relative_error": 0.0, "keep_percent_triangles": 1.0, "trim_relative_error": 0.0}
     for key, value in values.items(): settings.set_editor_property(key, value)
+    # At full fallback the Nanite input builder still uses different corner
+    # overlap rules than ordinary LOD0. Keep the verified FBX as a dedicated
+    # Nanite source so conventional LODs retain their ordinary build path.
+    # Capture before_geometry above BEFORE this API can change the asset.
+    subsystem.set_nanite_settings(mesh, settings, False)
+    verify_lod0_source(module, source_root)
+    require(subsystem.import_nanite_hi_res_mesh(mesh, str(source), False), f"{module['asset']}: dedicated Nanite source import failed")
+    source_readback = require_nanite_source(mesh, subsystem, source)
     subsystem.set_nanite_settings(mesh, settings, True)
     # The Nanite build can zero render screen sizes even though source-model
     # thresholds remain. Saving alone does not reliably restore them. The
     # engine setter updates source and render thresholds without rebuilding.
     require(subsystem.set_lod_screen_sizes(mesh, before["screen_sizes"]), f"{module['asset']}: could not restore source LOD screen sizes")
     require(assets.save_loaded_asset(mesh, only_if_is_dirty=False), f"{module['asset']}: could not save Nanite/fallback mesh before final audit")
+    source_readback = require_nanite_source(mesh, subsystem, source)
+    verify_lod0_source(module, source_root)
     actual = subsystem.get_nanite_settings(mesh)
     for key, value in values.items():
         require(actual.get_editor_property(key) == value, f"{module['asset']}: Nanite setting {key} was not retained")
@@ -197,6 +231,8 @@ def enable_full_fallback(mesh, module, subsystem, unreal, library, assets):
     require(materials == [material_audit(mesh.get_material(index), unreal, library) for index in range(len(before["slot_names"]))],
             f"{module['asset']}: material behavior changed during Nanite build")
     return {"asset": module["asset"], "nanite_input_triangles": nanite_triangles, "nanite_input_vertices": nanite_vertices,
+            "nanite_source": {"mode": "dedicated source; identical verified LOD0 FBX", "file": module["lods"][0]["file"],
+                              "resolved_file": str(source), "readback_file": source_readback, "sha256": source_digest},
             "settings": {key: value if isinstance(value, (bool, float)) else str(value) for key, value in values.items()},
             "conventional_before": before, "conventional_after": after, "materials": materials,
             "geometry_readback": {"method": "ProceduralMeshLibrary.get_section_from_static_mesh", "editor_only": True,

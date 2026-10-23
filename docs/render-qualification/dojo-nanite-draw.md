@@ -200,7 +200,17 @@ overrides the engine's Nanite bounds. A changed composite center can affect
 same-camera SM5 original-image comparison remains necessary.
 
 The helper force-saves the conventional baseline before reading it, applies
-the Nanite settings, explicitly restores the original LOD screen thresholds
+the Nanite settings without an intermediate rebuild, imports the same
+hash-verified LOD0 FBX as a dedicated Nanite source, then builds. It requires
+the HiRes import to return true and its source filename to resolve to that
+exact file both immediately and after the final save. The source hash is
+checked before import and after save. Crucially, the ordinary geometry
+snapshot precedes the HiRes import API, so that API's side effects are also
+covered by the preservation audit. Repeat imports disable Nanite and clear
+any prior named HiRes source before reimporting the ordinary source FBX.
+An ineffective removal or an already-enabled baseline fails the audit.
+
+After the Nanite build, the helper explicitly restores the original LOD screen thresholds
 with `set_lod_screen_sizes`, requires the setter to succeed, and force-saves
 the result before the final audit. Saving alone did not restore the thresholds
 in the engine probe. The post-save audit retains the existing screen-size
@@ -242,6 +252,45 @@ qualification. Earlier `original-restore` probe artifacts lacked the required
 material usage and had zero Nanite resource data; they remain diagnostic
 failures and are not evidence of Nanite persistence.
 
+The subsequent full-kit attempt with revision `b00a282` passed the panel but
+failed the shoji module's exact geometry gate. A narrow root probe measured
+position-only changes in shoji LOD0 sections 0 and 1 (880 and 88 triangles),
+while normals, UV0, tangent X and handedness matched. For example, one Z
+coordinate changed from `209.79998779296875` to `209.8000030517578`; another
+changed from `0.19999998807907104` to `0.20000000298023224`. Nanite had 1256
+input triangles. These measured changes are not admitted by a tolerance.
+
+Full fallback reuses newly built Nanite input rather than the previous
+conventional buffers (`NaniteBuilder.cpp:791–795`). The two input paths have
+different overlap/degenerate rules: `MeshDescriptionHelper.cpp:41,53,68,83–86`
+uses `THRESH_POINTS_ARE_SAME` for ordinary meshes when remove-degenerates is
+enabled, but zero for Nanite. That overlap list affects vertex deduplication
+in `StaticMeshBuilder.cpp:1723–1731`. The differences are consistent with the
+measured near-coincident position substitutions; they do not imply Nanite
+triangle simplification at 100 percent. Enabling explicit tangents alone
+does not change this: full fallback already requires tangents at
+`StaticMeshBuilder.cpp:297–302`.
+
+The revised candidate therefore uses the same original FBX as a dedicated
+Nanite source; "HiRes" is the engine API's name, not a claim of additional
+detail. `StaticMeshBuilder.cpp:633–634,895–899` leaves conventional LOD0 on
+the ordinary builder when a valid separate source exists. On a target without
+Nanite support, the early return at `:179–188` also leaves LOD0 unsimplified.
+The importer retains all seven explicit settings and exact geometry checks;
+this changes the build path, not the accepted error.
+
+The root lane's `probe-dojo-shoji-hires.json` and corresponding log at source
+revision `8d8fac4` subsequently recorded 1256 built Nanite input triangles,
+exact pre/post conventional oriented geometry and matching metadata, with
+the dedicated source resolving to the original shoji FBX. Its SHA256 was
+`52f19ea553af968c5436996bcf9b0ab2584e3ed3ba7421c3058d2b2e84ebbd89`.
+This probe inherited `[0.0]` screen sizes from the preceding failed asset:
+it proves the one-mesh geometry mechanism, not preservation of the authored
+screen threshold. The complete candidate run must restore original generated
+assets, freshly reimport ordinary source geometry, and audit that baseline.
+Neither the full-kit candidate nor its repeated import has passed in-engine
+as part of this source revision.
+
 Only the required Nanite usage permutation is added to each existing base
 material using the pinned engine's `set_base_material_usage`; material graphs,
 slot order, textures, blend/shading behavior and sidedness are retained.
@@ -254,12 +303,14 @@ have to establish that every intended section renders correctly.
 
 Each successful module writes a `SORA_DOJO_NANITE_IMPORT` JSON audit into the
 original editor log. Existing source FBX/texture hashes remain enforced.
-The seventeen host tests exercise rejected settings, missing built resources,
+The twenty-two host tests exercise rejected settings, missing built resources,
 reimport reset, LOD reduction/loss, UV loss, slot remapping, collision and
 material changes, malformed/nonfinite geometry, same-count position/normal/
 UV0/tangent/handedness/connectivity changes, reversed winding, duplicate
 triangle multiplicity, permitted ordering changes, enclosing culling bounds,
-failed threshold restoration and save-time mutations. They use explicit fake
+failed threshold restoration, save-time mutations, corrupt/missing/mutated
+source files, false API success/source readbacks, repeated source removal,
+and HiRes API side effects against the pre-import baseline. They use explicit fake
 editor objects; they do not execute the importer, build an asset or prove
 runtime behavior.
 
