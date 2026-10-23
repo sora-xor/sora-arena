@@ -188,7 +188,7 @@ private:
         // Bounds/asset validity are identities, never a visible-draw counter.
         for (TObjectIterator<UStaticMeshComponent> It;It;++It)
         {
-            auto* C=*It; auto* Mesh=C->GetStaticMesh();
+            auto* C=*It; auto* Mesh=C->GetStaticMesh().Get();
             if (C->GetWorld()!=M->GetWorld()||!C->IsRegistered()||!C->IsVisible()||!Mesh||
                 !Mesh->GetPathName().StartsWith(TEXT("/Game/Generated/Environment/DojoKit/"))) continue;
             auto O=MakeShared<FJsonObject>(); O->SetStringField(TEXT("component"),C->GetPathName());
