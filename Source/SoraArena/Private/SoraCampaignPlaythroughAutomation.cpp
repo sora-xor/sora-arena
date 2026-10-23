@@ -15,6 +15,7 @@
 #include "SoraArcheryAutomation.h"
 #include "SoraRecoveryAutomation.h"
 #include "SoraLiftAutomation.h"
+#include "SoraFloodAutomation.h"
 #include "SoraSpireAutomation.h"
 #include "SoraSummitAutomation.h"
 #include "SoraCarryAutomation.h"
@@ -1057,6 +1058,11 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Hold:
     case EGoal::Escort:
     {
+        if(Beat.Space.Flood.bEnabled)
+        {
+            if(!Test.TestTrue(TEXT("The flood exit requires actual swimming, breathing and gate passage"),SoraFloodAutomation::Exit(*State.World))) return false;
+            break;
+        }
         if(Director->IsWoodExplore())
         {
             if(!SoraWoodAutomation::Poi(*State.World,SoraWoodRules::Stone)||

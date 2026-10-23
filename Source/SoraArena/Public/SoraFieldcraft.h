@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "SoraCatalog.h"
 #include "SoraFieldcraftRules.h"
+#include "SoraFloodRules.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "SoraFieldcraft.generated.h"
 class APointLight;
@@ -91,6 +92,8 @@ struct FSoraFieldcraftReadout
     bool bSwimming = false;
     bool bDiving = false;
     float Breath = 1.f;
+    bool bFloodPassage=false;
+    bool bFloodAirShaft=false;
     // On the wall: grip left (0-1), at a ledge.
     bool bClimbing = false;
     float Grip = 1.f;
@@ -171,6 +174,13 @@ public:
     static USoraFieldcraft* Get(const UObject* WorldContext);
     void Stage(const FSoraBeat& Beat);
     void Clear();
+    bool FloodExitReady() const { return !FloodSpace || SoraFloodRules::Ready(FloodRoute); }
+    int32 FloodElapsedMs() const { return FloodClockMs; }
+    int32 FloodPassageStage() const { return FloodRoute.Stage; }
+    bool FloodCarriesIota() const;
+    bool FloodObjective(FVector& At) const;
+    bool MoveFloodCompanion(ASoraCompanion& Companion,float Dt);
+    int32 FloodFootstepPermille(const FVector& Feet) const;
     bool IsStaged() const { return Staged != nullptr; }
     const FSoraFieldcraft* Active() const { return Staged; }
     // Every event raised for the beat: npc_downed:<id>, npc_revived:any,
@@ -320,6 +330,12 @@ private:
     void TickCompanions(int32 DtMs);
     void TickLamps(int32 DtMs);
     void TickWater(int32 DtMs);
+    void StageFlood(const FSoraBeat& Beat);
+    void ClearFlood();
+    void TickFloodWater(int32 DtMs);
+    void TickFloodCompanions(int32 DtMs);
+    float FloodSurfaceAt(const FVector& At) const;
+    bool InFloodWater(const FVector& At) const;
     void TickClimb(float DeltaTime, int32 DtMs);
     void TickCandle();
     void TickLooks();
@@ -377,6 +393,16 @@ private:
     FHold Holding;
     float ClockCarryMs = 0.f;
     // Water.
+    const FSoraFloodSpace* FloodSpace=nullptr;
+    int32 FloodClockMs=0;
+    SoraFloodRules::FRoute FloodRoute;
+    FVector FloodLast=FVector::ZeroVector;
+    bool bFloodFloating=false;
+    float FloodOldGravity=1.f, FloodOldAirControl=.05f, FloodOldFriction=0.f;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> FloodSurfaces;
+    UPROPERTY() TArray<TObjectPtr<APointLight>> FloodLights;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> FloodBoat;
+    bool bFloodCarrying=false;
     bool bSwimming = false;
     bool bDiving = false;
     SoraFieldcraftRules::FBreath Breath{0, 0, 0};

@@ -244,7 +244,12 @@ void ASoraPlayerCharacter::TickPlay(float Dt)
         GetCharacterMovement()->MaxWalkSpeed=FMath::Min(GetCharacterMovement()->MaxWalkSpeed,Craft->HeroPace());
         bSprint=false;
     }
-    GetCharacterMovement()->MaxWalkSpeedCrouched=GetCharacterMovement()->MaxWalkSpeed*SoraStealthRules::CrouchSpeedPermille/1000.f;
+    // Diving already has its authored stroke pace; the land crouch multiplier
+    // must not turn 140 cm/s into 63 cm/s. Land crouching remains unchanged.
+    const USoraFieldcraft* WaterCraft=HeroFieldcraft(*this);
+    GetCharacterMovement()->MaxWalkSpeedCrouched=WaterCraft&&WaterCraft->HeroPace()>0.f
+        ?GetCharacterMovement()->MaxWalkSpeed
+        :GetCharacterMovement()->MaxWalkSpeed*SoraStealthRules::CrouchSpeedPermille/1000.f;
     // A sprint stands the hero up; the eye settles to his stance.
     if(bSprint&&GetCharacterMovement()->bWantsToCrouch) UnCrouch();
     Eye->SetRelativeLocation(FVector(4.f,0.f,FMath::FInterpTo(Eye->GetRelativeLocation().Z,IsCrouched()?CrouchedEyeZ:StandingEyeZ,Dt,12.f)));

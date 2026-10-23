@@ -552,10 +552,16 @@ struct FSoraWindSpace
     bool Enabled() const { return !Kind.IsNone(); }
     bool Ridge() const { return Kind==TEXT("ridge"); }
 };
+struct FSoraFloodSpace
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+};
 struct FSoraBeatSpace
 {
     FSoraHelmSpace Helm;
     FSoraWindSpace Wind;
+    FSoraFloodSpace Flood;
     FSoraSummitSpace Summit;
     FSoraSpireSpace Spire;
     int32 HeightCm=0;

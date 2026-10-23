@@ -29,6 +29,7 @@ frames stay in the chapter file's ``layout`` block for the level artists.
 """
 from __future__ import annotations
 from campaign_lift import place_lift
+from campaign_flood import place_flood
 from campaign_spire import place_spire
 from campaign_summit import place_summit
 from campaign_wood import connect_wood
@@ -590,6 +591,7 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_helm(beats, records, [zone.record() for zone in zones], fail)
     place_wind(beats, records, zones, fail)
     place_lift(beats, records, fail)
+    place_flood(beats, records, zones, fail)
     place_spire(beats, records, zones, fail)
     place_summit(beats, records, zones, fail)
     result = {

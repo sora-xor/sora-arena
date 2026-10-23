@@ -294,6 +294,7 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    ClearFlood();
     ASoraPlayerCharacter* Player = Hero();
     if (bClimbing && Player) LetGo(*Player, false);
     // Off a ladder he was on, as off the wall: the flying the ladder held him
@@ -347,8 +348,10 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     Props->SetRootComponent(Root);
     Root->RegisterComponent();
     Props->AddInstanceComponent(Root);
+    FloodSpace=Beat.Space.Flood.bEnabled?&Beat.Space.Flood:nullptr;
     StageWorld(Beat);
     StageCompanions(Beat);
+    StageFlood(Beat);
     StageNets();
     StageWatch();
     StageCharge();
@@ -385,7 +388,7 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
         Piece(FString::Printf(TEXT("Floor%d"), Index), Layout::Cube, Layout::Floor(Patch.Area.Center, Height + 1.f + Index * .1f),
             FVector(Patch.Area.Size.X / 100.f, Patch.Area.Size.Y / 100.f, .015f), Color, false, Surface);
     }
-    if (F.bWater)
+    if (F.bWater && !FloodSpace)
     {
         const FSoraWater& Water = F.Water;
         bDiving = false;
@@ -496,7 +499,7 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
     for (int32 Index = 0; Index < F.Allies.Num(); ++Index)
     {
         const FSoraCompanionSpec& Spec = F.Allies[Index];
-        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Layout::Floor(Spec.At, 90.f), FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
+        ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Layout::Floor(Spec.At, FloodSpace&&Spec.Id==TEXT("npc_kohagi")?290.f:90.f), FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
         if (!Companion) continue;
         Companion->Init(Spec, Index);
         Allies.Add(Companion);
@@ -804,6 +807,7 @@ void USoraFieldcraft::TickWater(int32 DtMs)
 {
     ASoraPlayerCharacter* Player = Hero();
     if (!Staged->bWater || !Player) return;
+    if(FloodSpace) { TickFloodWater(DtMs); return; }
     const FSoraWater& Water = Staged->Water;
     const bool bWasSwimming = bSwimming;
     bSwimming = Water.Area.Contains(Player->GetActorLocation());
@@ -1380,6 +1384,12 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
     Out.bActive = true;
     Out.bSwimming = bSwimming;
     Out.bDiving = bSwimming && bDiving;
+    if(FloodSpace)
+    {
+        const FVector Local=Player.GetActorLocation()-FVector(FloodSpace->Origin,0);
+        Out.bFloodPassage=Local.X>7100&&Local.X<9100&&FMath::Abs(Local.Y)<120;
+        Out.bFloodAirShaft=Local.X>8150&&Local.X<8350&&FMath::Abs(Local.Y)<120;
+    }
     Out.Breath = Staged->bWater ? static_cast<float>(Breath.BreathMs) / FMath::Max(1, Staged->Water.Rules.BreathMs) : 1.f;
     Out.bClimbing = bClimbing;
     Out.Grip = static_cast<float>(Grip.GripMilli) / (Craft::GripMax * 1000.f);

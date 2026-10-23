@@ -48,6 +48,8 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
     if(IsArcheryLesson()) { Location=ArcheryLine(); bInteract=false; return !AtArcheryLine(); }
     if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }
+    if(Beat->Space.Flood.bEnabled)
+        if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->FloodObjective(Location)) { bInteract=false; return true; }
     const FSoraBeatSpace& Space=Beat->Space;
     const auto At=[&](const FVector2D& Point,bool bWorks) { Location=ASoraWorldBuilder::Floor(Point,Space.HeightCm); bInteract=bWorks; return true; };
     const auto VolumeOf=[&](const FString& Event) { return Space.Volumes.FindByPredicate([&](const FSoraVolume& Volume) { return Volume.Event==Event; }); };
@@ -188,6 +190,11 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
         // The authored point locates a group. Separate its capsules along
         // the hull so members never begin intersecting one another.
         return FVector(Space->Wind.Origin,0)+FVector((Group==0?2000:Group==1?9000:16000)+Member*120,Group==0?-2500:Group==1?0:2000,Group==0?600:Group==1?1500:800);
+    }
+    if(Space->Flood.bEnabled)
+    {
+        const int32 Pick=FMath::Abs(Slot)%Space->Spawns.Num();
+        return FVector(Space->Spawns[Pick],Pick<3?320.f:Pick==3?380.f:216.f);
     }
     if(Space->Spire.Enabled()) return Space->Spire.Spawns[FMath::Abs(Slot)%Space->Spire.Spawns.Num()]+FVector(0,0,120);
     if(Space->bRoute&&Chapter&&Hero)

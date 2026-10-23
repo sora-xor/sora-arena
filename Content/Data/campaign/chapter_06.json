@@ -9620,6 +9620,57 @@
      }
     ],
     "route": []
+   },
+   {
+    "id": "ch06_flood_exfil",
+    "place": "pl_citadel_moat",
+    "style": "citadel",
+    "form": "hall",
+    "rect": [
+     65200,
+     -4600,
+     87400,
+     600
+    ],
+    "wall_cm": 300,
+    "entry": [
+     76600,
+     0,
+     0
+    ],
+    "walls": [
+     [
+      65170,
+      -2000,
+      60,
+      5320,
+      300
+     ],
+     [
+      87430,
+      -2000,
+      60,
+      5320,
+      300
+     ],
+     [
+      76300,
+      -4630,
+      22200,
+      60,
+      300
+     ],
+     [
+      76300,
+      630,
+      22200,
+      60,
+      300
+     ]
+    ],
+    "cover": [],
+    "props": [],
+    "route": []
    }
   ],
   "sites": [
@@ -12065,15 +12116,15 @@
    },
    {
     "beat": "ch06.b14",
-    "zone": -1,
+    "zone": 8,
     "entry": [
-     -2700,
+     76600,
      0,
      0
     ],
     "anchor": [
-     2050,
-     -220
+     85900,
+     -4300
     ],
     "objectives": [],
     "pickups": [],
@@ -12083,123 +12134,87 @@
      {
       "event": "volume_enter:vol_ankyo_start",
       "center": [
-       -1080,
+       76700,
        0
       ],
       "size": [
-       400,
-       1100
+       600,
+       240
       ]
      },
      {
       "event": "volume_enter:vol_ankyo_grate_1",
       "center": [
-       -360,
+       78400,
        0
       ],
       "size": [
-       400,
-       1100
+       300,
+       240
       ]
      },
      {
       "event": "volume_enter:vol_ankyo_deep",
       "center": [
-       360,
+       83900,
        0
       ],
       "size": [
-       400,
-       1100
+       150,
+       240
       ]
      },
      {
       "event": "volume_enter:vol_water_gate_exit",
       "center": [
-       1080,
-       0
+       85900,
+       -400
       ],
       "size": [
        400,
-       1100
+       150
       ]
      }
     ],
     "exit": {
      "center": [
-      2000,
-      0
+      85900,
+      -4300
      ],
      "size": [
-      500,
-      900
-     ]
+      400,
+      300
+     ],
+     "floor_cm": 200
     },
     "closing": null,
     "spawns": [
      [
-      2700,
-      -1100
+      78400,
+      0
      ],
      [
-      2700,
-      1100
+      80900,
+      0
      ],
      [
-      500,
-      1800
+      83400,
+      0
      ],
      [
-      -500,
-      -1850
+      85900,
+      -700
      ],
      [
-      2100,
-      450
+      80400,
+      -2100
      ],
      [
-      500,
-      -1400
+      80550,
+      -2100
      ]
     ],
-    "patrols": [
-     [
-      [
-       -1650,
-       -330
-      ],
-      [
-       1650,
-       -330
-      ],
-      [
-       1650,
-       330
-      ],
-      [
-       -1650,
-       330
-      ]
-     ],
-     [
-      [
-       -900,
-       -330
-      ],
-      [
-       900,
-       -330
-      ],
-      [
-       900,
-       330
-      ],
-      [
-       -900,
-       330
-      ]
-     ]
-    ],
+    "patrols": [],
     "stations": [],
     "step_stations": [],
     "cache": null,
@@ -12218,29 +12233,14 @@
     "mount": null,
     "fieldcraft": {
      "lamps": [],
-     "surfaces": [
-      {
-       "kind": "running_water",
-       "center": [
-        0,
-        0
-       ],
-       "size": [
-        6000,
-        4800
-       ],
-       "height_cm": 0,
-       "step_permille": 500,
-       "crouch_permille": 500
-      }
-     ],
+     "surfaces": [],
      "water": {
       "center": [
-       0,
-       0
+       76300,
+       -2000
       ],
       "size": [
-       6000,
+       22000,
        4800
       ],
       "surface_cm_s": 180,
@@ -12249,7 +12249,18 @@
       "recover_ms": 3000,
       "drown_hp_s": 10,
       "surface_step_permille": 2000,
-      "cover": [],
+      "cover": [
+       {
+        "center": [
+         85900,
+         -3900
+        ],
+        "size": [
+         1600,
+         300
+        ]
+       }
+      ],
       "lines": []
      },
      "climb": null,
@@ -12271,7 +12282,7 @@
        "rank": -1,
        "joins": null,
        "at": [
-        -2370,
+        76500,
         0
        ]
       },
@@ -12286,8 +12297,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        -2370,
-        480
+        76500,
+        0
        ]
       },
       {
@@ -12301,8 +12312,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        -2370,
-        -480
+        86250,
+        -230
        ]
       }
      ],
@@ -12310,14 +12321,95 @@
      "volley": null,
      "alarms": [],
      "nets": null,
-     "searchlights": [],
+     "searchlights": [
+      {
+       "id": "grate_lamp_1",
+       "at": [
+        78400,
+        0
+       ],
+       "height_cm": 210,
+       "yaw": 0,
+       "reach_cm": 1,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 1,
+       "period_ms": 6000,
+       "spot_cm": 180,
+       "suspicious_ms": 400,
+       "alert_ms": 1100,
+       "lock_ms": 0,
+       "active_on": null,
+       "spooks": false
+      },
+      {
+       "id": "grate_lamp_2",
+       "at": [
+        80900,
+        0
+       ],
+       "height_cm": 210,
+       "yaw": 0,
+       "reach_cm": 1,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 1,
+       "period_ms": 6000,
+       "spot_cm": 180,
+       "suspicious_ms": 400,
+       "alert_ms": 1100,
+       "lock_ms": 0,
+       "active_on": null,
+       "spooks": false
+      },
+      {
+       "id": "grate_lamp_3",
+       "at": [
+        83400,
+        0
+       ],
+       "height_cm": 210,
+       "yaw": 0,
+       "reach_cm": 1,
+       "road_from_cm": 0,
+       "road_to_cm": 0,
+       "sweep_deg": 1,
+       "period_ms": 6000,
+       "spot_cm": 180,
+       "suspicious_ms": 400,
+       "alert_ms": 1100,
+       "lock_ms": 0,
+       "active_on": null,
+       "spooks": false
+      }
+     ],
      "bell": null,
      "fires": null,
      "ladders": [],
      "charge": null
     },
     "height_cm": 0,
-    "lift": null
+    "lift": null,
+    "flood": {
+     "origin": [
+      76400,
+      0
+     ],
+     "length_cm": 9000,
+     "width_cm": 240,
+     "height_cm": 220,
+     "deep_start_cm": 7500,
+     "deep_floor_cm": -200,
+     "deep_roof_cm": 20,
+     "air_shaft_cm": [
+      8150,
+      8350
+     ],
+     "from_cm": 40,
+     "to_cm": 160,
+     "rise_ms": 150000,
+     "provisional_air_shaft": true
+    }
    },
    {
     "beat": "ch06.b15",

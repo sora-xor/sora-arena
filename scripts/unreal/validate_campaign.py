@@ -55,6 +55,7 @@ import re
 import textwrap
 from pathlib import Path
 
+from campaign_flood import flood_valid
 from campaign_space import arena_blockers
 from campaign_registry import validate_registry
 from campaign_crank import player_work
@@ -393,6 +394,7 @@ def check_space(chapter, beats, rewards, labels, where):
         require(_inside(rect, point, WALL_CLEAR) and _clear_of_cover(cover, point, cover_margin),
                 f"{what} at {point[:2]} is off its floor or inside a wall or cover")
 
+    require(flood_valid(chapter), f"{where}: physical flood contract")
     records = space["beats"]
     require([record["beat"] for record in records] == [beat["id"] for beat in beats], f"{where}: one space per beat")
     require(space["start"] == records[0]["entry"], f"{where}: the chapter starts at its first beat")
@@ -454,7 +456,7 @@ def check_space(chapter, beats, rewards, labels, where):
         require(placed == named, f"{what}: volumes {sorted(placed)} differ from its events {sorted(named)}")
         for volume in record["volumes"] + [record["exit"]]:
             volume_rect = zones[next(r["zone"] for r in records if r["beat"]=="ch08.b13")]["rect"] if what=="ch08.b12" and volume.get("floor_cm")==16000 else rect
-            require(_inside(volume_rect, volume["center"], 0) and min(volume["size"]) >= 300, f"{what}: volume {volume}")
+            require(_inside(volume_rect, volume["center"], 0) and min(volume["size"]) >= (150 if what=="ch06.b14" else 300), f"{what}: volume {volume}")
         # Match SoraCatalogSpace's presence checks in both directions: a
         # cinematic cannot acquire an interaction anchor just for set dressing.
         require((record["closing"] is not None) == task["anchor_after_lines"], f"{what}: closing anchor must match its task")

@@ -740,7 +740,9 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     {
         // The way to the exit, so ambushes along a route come as the hero passes them.
         SoraBeatRules::Travel(TaskState,Task,RoadPermille());
-        if(Space.Exit.Contains(Hero)&&(!IsWoodExplore()||AtWoodExit())&&SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
+        if(Space.Exit.Contains(Hero)&&(!IsWoodExplore()||AtWoodExit())&&
+            (!Space.Flood.bEnabled||(USoraFieldcraft::Get(this)&&USoraFieldcraft::Get(this)->FloodExitReady()))&&
+            SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
     }
     // Work held at a point: a load hoisted, an objective worked.
     TickEquipmentRecovery(DeltaMs);

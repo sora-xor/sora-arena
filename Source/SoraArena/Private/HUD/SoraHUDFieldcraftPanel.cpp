@@ -161,6 +161,10 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
     if (R.bSwimming)
         Status(Keyed(HUD, R.bDiving ? NSLOCTEXT("SoraArena.Fieldcraft", "Diving", "潜水中　息　{Key} で浮かぶ")
             : NSLOCTEXT("SoraArena.Fieldcraft", "Swimming", "泳いでいる　息　{Key} で潜る"), TEXT("Crouch")), Frame.Ivory, R.Breath);
+    if(R.bFloodPassage)
+        Status(Keyed(HUD,R.bFloodAirShaft
+            ?NSLOCTEXT("SoraArena.Fieldcraft","FloodAirShaft","頭上に空気　{Key} で浮かび、息を整えろ")
+            :NSLOCTEXT("SoraArena.Fieldcraft","FloodDeepPassage","{Key} で潜れ　途中の明るい縦穴で息継ぎ"),TEXT("Crouch")),Frame.Teal,-1.f);
     if (R.bClimbing)
         Status(Keyed(HUD, R.bLedge ? NSLOCTEXT("SoraArena.Fieldcraft", "Ledge", "足場で握力が戻る　{Key} で手を離す")
             : NSLOCTEXT("SoraArena.Fieldcraft", "Climbing", "握力　前後で登り降り　{Key} で手を離す"), TEXT("Jump")), Frame.Ivory, R.Grip);
