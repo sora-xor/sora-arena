@@ -11,6 +11,77 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 23 horse behavior and bounded proof checkpoint
+
+Bunta's own proximity fear now starts her authored 2.5-second recovery and a
+one-second steering interruption for her mounted leader. The leader can still
+move and rein; manual and automatic steering resume after the complete tug.
+Remaining beside the same threat does not continually restart either clock.
+Kurimaru's separate `on_spook: dismount_continue` policy applies only to
+ch04.b14: his actual own-spook onset dismounts without new damage or cargo loss.
+The existing simultaneous net branch retains its thrown damage and priority.
+The other seven mounts retain their ordinary spook behavior.
+
+At `2ab5d01`, the source-bound Mac editor build and seven of eight selected
+tests pass. Bunta's exact pause checks preserve both timers, positions and
+full-precision yaw. At 60/120 Hz, steering resumes at 1.016666720/1.008333386
+active seconds and fear ends at 2.500000130 seconds. Kurimaru passes both actor
+tick orders, same-encounter remount, pause/retry, damage-free spook and net
+priority. Whistle recall takes 3.000000156 active seconds in both orders.
+Mount, Playthrough, Searchlights, HorseDown and ConvoyNets pass too. All 43
+gameplay source gates pass at this exact source.
+
+CargoUnload initially returns false while riding to Shimo. Diagnostic
+`d6d51b0` identifies a real spook dismount at frame 561; the old fixture assumed
+the horse would remain mounted. `3a3a3d3` uses the rebound Interact key to remount
+normally and completes all three deliveries. CargoUnload, BuntaLeadFear and
+KurimaruSpookDismount pass together at this source, with zero selected errors
+or warnings and a zero terminal exit at EOF. The earlier Bunta pause failure
+at `abfa730` is also retained: its fixture narrowed double yaw to float before
+exact comparison. The correction preserves native precision and adds separate
+exact checks. No production timing, fear, damage or collision rule is waived.
+These fixtures freeze opponents and assist setup; ordinary encounter pacing
+and cargo presentation remain unqualified. Visible cargo transfer and the
+connecting lead are still being completed separately.
+
+The actual native `01d4e46` carbine cohort has finished naturally. Its retained
+executable produces one 3,005,248-byte proof, separately verifies it, rejects
+45 public mutations plus corrupt and truncated proofs, and receives actual
+prover `Constraint` failures for eight invalid witnesses. Proving takes
+725.802387 seconds and verification 18.843102 seconds; the native test exits
+zero after 3,469.49 seconds. **Overall qualification fails:** the observational
+guard records one fall below the unchanged 30 GiB disk reserve and returns
+125. The enclosing runner records failure after 3,475.657 seconds. Functional
+evidence is retained without waiving that resource failure or rerunning the
+proof. This remains an unregistered two-player/two-tick research relation;
+Core authority, full World/history, full-match and settlement acceptance remain
+open, and the production bridge is unchanged.
+
+The twelve-module SM5 GI-source experiment at `e34edc8` stops before replacement
+rendering because Kamiza's public bounds change during rebuild. The equality
+gate remains strict. A separate eleven-module experiment at `abfa730` leaves
+Kamiza unchanged and completes all six functional phases. Its recorded
+geometry/material/Nanite/culling controls match within the replacement pair;
+only ten targeted meshes' SDF/card data change, while the column matches.
+The floor and nearby cargo brighten, but the broad room remains dark. All six
+original frames were inspected. This attempt also fails its 30 GiB resource
+reserve. Both experiments restore and verify all 48 candidate files and remove
+their unique temporary proxies. Neither admits a production art or lighting
+repair; the twelve-module hypothesis remains unresolved.
+
+CI `39988965609` authenticates 80 gates in five jobs at `e34edc8`, with identical
+source/tested-merge trees, including 279 Rust passes and five explicitly ignored
+research tests. It includes the prior cargo/timer work but predates these horse
+changes. Private raw-asset exclusions and source-only native parity remain
+explicit. New source is uncooked; `c655b6b` remains the latest packaged baseline.
+
+Evidence under `Saved/Qualification/2026-10-23/` includes
+`campaign-bunta-abfa730/`, `campaign-kurimaru-2ab5d01/`,
+`campaign-cargo-d6d51b0/`, `campaign-cargo-3a3a3d3/`,
+`native-carbine-adapter-01d4e46/native-proof-attempt-1/`,
+`dojo-room-gi-replacement/`, `dojo-architecture11-gi-replacement/` and `ci-e34edc8/`.
+The following sections retain their historical source and pending states.
+
 ## October 23 cargo unloading and timer qualification
 
 At `d21013d`, chapter-four cargo requires the authored uninterrupted three-second

@@ -8,6 +8,30 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-23 horse behavior and native cohort checkpoint
+
+Bunta's fear and steering tug, and Kurimaru's separate cargo-ride spook
+dismount, now have actual Mac editor evidence. Seven selected tests pass at
+`2ab5d01`, along with all 43 gameplay source gates. The cargo fixture's real
+spook dismount is diagnosed at `d6d51b0`; mapped remount at `3a3a3d3` restores
+all three deliveries. CargoUnload, BuntaLeadFear and KurimaruSpookDismount pass
+together with zero selected errors/warnings. Earlier failures remain retained.
+Visible cargo transfer and the connecting lead remain under implementation.
+
+Native `01d4e46` produces and separately verifies one 3,005,248-byte carbine
+proof, with 47 verifier rejections and eight actual prover Constraint cases.
+Its native test exits zero, but the overall attempt fails the unchanged 30 GiB
+disk reserve. No resource or release acceptance is claimed. The twelve-module
+lighting control stops at Kamiza's changed bounds; a distinct eleven-module
+control brightens the floor but leaves the broad room dark and also fails its
+resource reserve. All 48 assets are restored after each experiment.
+
+CI `39988965609` passes 80 gates at `e34edc8`, before the horse changes. The
+[checkpoint evidence](complete-release-plan.md#october-23-horse-behavior-and-bounded-proof-checkpoint)
+records exact scope, failures and artifacts. New source remains uncooked;
+photoreal art, ordinary play, platform/performance and full native execution
+remain unfinished.
+
 ## 2026-10-23 cargo unloading and timer checkpoint
 
 At `d21013d`, cargo requires its authored three-second hold before delivery or

@@ -1,6 +1,17 @@
 # Offline campaign progression acceptance
 
-The latest directed Mac editor checkpoint is `d21013d`: CargoUnload, Mount,
+The latest directed horse checkpoint is `3a3a3d3`: CargoUnload, BuntaLeadFear
+and KurimaruSpookDismount pass together with zero selected errors/warnings.
+The cargo fixture remounts normally after the authored Shimo-route spook;
+three unique deliveries still require their full holds. At `2ab5d01`, Mount,
+Playthrough, Searchlights, HorseDown and ConvoyNets also pass, and all 43
+gameplay source gates pass. Both actor orders preserve Kurimaru's once-only
+spook dismount, net priority and three-second pause-aware recall. Earlier
+failed assertions and the diagnosed cargo traversal failure are preserved in
+the [horse checkpoint](../complete-release-plan.md#october-23-horse-behavior-and-bounded-proof-checkpoint).
+Visible cargo transfer and the connecting lead remain open.
+
+The earlier `d21013d` checkpoint passes CargoUnload, Mount,
 CarrySealAndSetDown, CarryDifficulty and the full campaign Playthrough pass.
 Mount retains one HTTP connectivity timeout warning; all five have zero errors.
 All 43 gameplay source gates pass at that clean source. Cargo now requires its
