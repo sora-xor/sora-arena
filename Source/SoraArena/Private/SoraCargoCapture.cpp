@@ -391,7 +391,7 @@ private:
         J->SetNumberField(TEXT("cinematic_world_s"),CinemaWorldEnd-CinemaWorldStart); J->SetNumberField(TEXT("cinematic_wall_s"),CinemaWallEnd-CinemaWallStart);
         J->SetNumberField(TEXT("cinematic_start_world_s"),CinemaWorldStart); J->SetNumberField(TEXT("cinematic_start_wall_s"),CinemaWallStart-BeganWall);
         J->SetNumberField(TEXT("cinematic_end_world_s"),CinemaWorldEnd); J->SetNumberField(TEXT("cinematic_end_wall_s"),CinemaWallEnd-BeganWall);
-        FString Text; FJsonSerializer::Serialize(J.ToSharedRef(),TJsonWriterFactory<>::Create(&Text));
+        FString Text; FJsonSerializer::Serialize(J,TJsonWriterFactory<>::Create(&Text));
         if(!FFileHelper::SaveStringToFile(Text,*(Folder/TEXT("capture.json")),FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM)) Fail(TEXT("Could not write cargo original-frame observations"));
     }
 };
