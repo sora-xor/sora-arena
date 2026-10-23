@@ -79,7 +79,7 @@ void ASoraHorse::Build(FName Coat,ETack Tack)
     for(const auto& Mesh:Parts) if(Mesh) Mesh->DestroyComponent();
     for(const auto& Hip:Hips) if(Hip) Hip->DestroyComponent();
     if(Head) Head->DestroyComponent();
-    Parts.Reset(); TackParts.Reset(); Hips.Reset();
+    Parts.Reset(); TackParts.Reset(); Hips.Reset(); PackLoads.Reset(); CargoLoads.Reset(); CargoUnitsPerShare=0;
     const FLinearColor Hide=HorseCoatColor(Coat),Points=HorsePointsColor(Coat),Mane=Coat==TEXT("chestnut")?FLinearColor(.55f,.3f,.13f):Points;
     // A native horse's proportions: a deep barrel on short legs, 130 cm at the withers.
     Part(Body,TEXT("Barrel"),HorseCylinder,FVector(0,0,100),FVector(.72f,.62f,1.45f),Hide,FRotator(90,0,0));
@@ -156,8 +156,34 @@ void ASoraHorse::BuildPackSaddle()
     // 荷鞍 with a 振り分け load: two bales slung either side and roped over.
     Part(Body,TEXT("Niguraa"),HorseCube,FVector(0,0,138),FVector(.6f,.62f,.18f),FLinearColor(.45f,.32f,.18f));
     for(int32 Side:{-1,1})
-        Part(Body,FString::Printf(TEXT("Load%d"),Side),HorseCylinder,FVector(0,Side*44,118),FVector(.4f,.4f,.62f),FLinearColor(.72f,.6f,.33f),FRotator(90,0,0));
+        PackLoads.Add(Part(Body,FString::Printf(TEXT("Load%d"),Side),HorseCylinder,FVector(0,Side*44,118),FVector(.4f,.4f,.62f),FLinearColor(.72f,.6f,.33f),FRotator(90,0,0)));
     Part(Body,TEXT("LoadRope"),HorseCube,FVector(0,0,150),FVector(.04f,1.f,.03f),FLinearColor(.55f,.45f,.3f));
+}
+void ASoraHorse::ConfigureCargo(int32 Shares,int32 UnitsPerShare)
+{
+    if(!CargoLoads.IsEmpty()||Shares<1||Shares>SoraBeatRules::MaxPoints||UnitsPerShare<=0||UnitsPerShare>MAX_int32/Shares) return;
+    CargoUnitsPerShare=UnitsPerShare;
+    for(const auto& Load:PackLoads) if(Load) Load->SetVisibility(false);
+    // These are state-bearing WIP bundles, not final barley art. Allocation
+    // is bounded by destinations, never by an authored sheaf quantity.
+    for(int32 Share=0;Share<Shares;++Share)
+        for(int32 Side:{-1,1})
+            CargoLoads.Add(Part(Body,FString::Printf(TEXT("Cargo%d_%d"),Share,Side),HorseCylinder,
+                FVector((Share-(Shares-1)*.5f)*20.f,Side*44,118),FVector(.18f,.24f,.55f),
+                FLinearColor(.72f,.6f,.33f),FRotator(90,0,0)));
+}
+void ASoraHorse::ShowCargo(int32 SharesRemaining)
+{
+    const int32 Visible=FMath::Clamp(SharesRemaining,0,CargoLoads.Num()/2);
+    for(int32 PartIndex=0;PartIndex<CargoLoads.Num();++PartIndex)
+        if(CargoLoads[PartIndex]) CargoLoads[PartIndex]->SetVisibility(PartIndex/2<Visible);
+}
+int32 ASoraHorse::CargoQuantityShown() const
+{
+    int32 Shares=0;
+    for(int32 Index=0;Index+1<CargoLoads.Num();Index+=2)
+        if(CargoLoads[Index]&&CargoLoads[Index+1]&&CargoLoads[Index]->IsVisible()&&CargoLoads[Index+1]->IsVisible()) ++Shares;
+    return Shares*CargoUnitsPerShare;
 }
 void ASoraHorse::ShowTack(int32 Pieces)
 {

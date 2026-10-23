@@ -60,6 +60,7 @@ from campaign_climb import climb_valid
 from campaign_foundry_defense import foundry_valid, CREW
 from campaign_moat import moat_valid
 from campaign_space import arena_blockers, spook_dismount
+from campaign_cargo import cargo_manifest
 from campaign_registry import validate_registry
 from campaign_crank import player_work
 
@@ -494,6 +495,7 @@ def check_space(chapter, beats, rewards, labels, where):
             "mount" in phase for phase in beat["params"].get("phases", []))), f"{what}: horse")
         if mount:
             check_spook_dismount(beat, mount)
+            check_cargo_manifest(beat, mount, kit)
             require(set(mount["weapons"]) <= MOUNTED_WEAPONS, f"{what}: mounted weapons {mount['weapons']}")
             require(set(mount["gaits"]) <= set(GAITS) and mount["gaits"], f"{what}: gaits {mount['gaits']}")
             speeds = mount["speeds_cm_s"]
@@ -751,11 +753,35 @@ def check_spook_dismount(beat, mount):
             f"{beat['id']}: normalized spook dismount must match the authored policy")
 
 
+def check_cargo_manifest(beat, mount, kit):
+    def reject(where, message):
+        raise CampaignError(f"{where}: {message}")
+    expected = cargo_manifest(beat, reject)
+    require("cargo" in mount and mount["cargo"] == expected, f"{beat['id']}: exact normalized cargo manifest required")
+    require((kit.get("work") == "cargo") == (expected is not None), f"{beat['id']}: cargo kit requires authored cargo")
+    if expected is not None:
+        row = mount["cargo"]
+        require(type(row.get("total")) is int and type(row.get("per_dropoff")) is int,
+                f"{beat['id']}: normalized cargo quantities must be integers")
+        require(mount["pack"] == [{"id": "pack_horse_cargo", "follow": "lead", "speed_cm_s": 0,
+                                   "spacing_cm": 300, "hp": 0}], f"{beat['id']}: cargo has one led carrier")
+        require(kit == {"work": "cargo", "item": "bale", "pickups": [],
+                        "dropoffs": ["drying_stand"] * len(beat["task"]["dropoffs"]), "targets": [], "party": []},
+                f"{beat['id']}: cargo requires one drying stand per destination")
+
+
 def check_cargo_unload(beat):
     task, where = beat["task"], beat["id"]
+    def reject(where, message):
+        raise CampaignError(f"{where}: {message}")
+    manifest = cargo_manifest(beat, reject)
     value = task.get("unload_hold_ms")
     require(type(value) is int, f"{where}: missing or noninteger cargo unload duration")
     cargo = beat["type"] == "horseback_ride" and task["goal"] == "deliveries"
+    require(cargo == (manifest is not None), f"{where}: cargo task must match its authored mode")
+    if cargo:
+        require(task["dropoffs"] == beat["params"]["cargo"]["dropoffs"] and task["count"] == len(task["dropoffs"]),
+                f"{where}: cargo destinations must retain authored order and quantity")
     if not cargo:
         require(value == 0, f"{where}: only cargo rides have an unload hold")
         return

@@ -830,6 +830,7 @@ bool USoraCampaignDirector::DeliverLoad(int32 Dropoff,int32 HeldDurationMs)
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||!SoraBeatRules::Deliver(TaskState,Task,Dropoff,HeldDurationMs)) return false;
     if(Task.Task==SoraBeatRules::ETask::Carry) CarryChanged();
+    if(Beat->Cargo.Total>0) ShowKit(); // Commit both visible sides before emitting delivery/teardown events.
     // Only a completed delivery emits credit or releases its waiting ambush.
     Fire(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
     if(!Beat->CarryItem.IsEmpty()) Fire(TEXT("item_delivered:")+Beat->CarryItem);

@@ -4,6 +4,7 @@
 #include "SoraDojoRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraMountRules.h"
+#include "SoraCargoRules.h"
 #include "SoraRegistry.h"
 #include "SoraSpireRules.h"
 #include "SoraHelmRules.h"
@@ -703,6 +704,7 @@ struct FSoraBeat
     FString TitleEnglish;
     int32 TargetSeconds = 0;
     SoraBeatRules::FTask Task;
+    SoraCargoRules::FCargo Cargo;
     TOptional<FSoraRegistryEntry> Registry;
     TArray<FSoraWave> Waves;
     // Dialogue: its lines, the event that starts them ("beat_start",

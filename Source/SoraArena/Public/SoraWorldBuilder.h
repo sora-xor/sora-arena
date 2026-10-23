@@ -170,6 +170,8 @@ public:
     float KitGaugeHeight() const;
     bool IsCarryingLoad() const { return CarriedLoad != nullptr; }
     int32 LooseLoadVisualCount() const;
+    int32 CargoStandCount() const { return CargoStandLoads.Num()/2; }
+    int32 CargoQuantityShownAt(int32 Destination) const;
     static FVector Floor(const FVector2D& Point, float Height = 0.f) { return FVector(Point.X, Point.Y, Height); }
     static UStaticMeshComponent* Shape(AActor* Owner, USceneComponent* Parent, const FString& Name, const TCHAR* Asset, FVector Location, FVector Scale, FLinearColor Color, bool Collision = false);
     static void Tint(UStaticMeshComponent* Mesh, FLinearColor Color);
@@ -273,6 +275,8 @@ private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitStacks;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitLoads;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> KitLooseLoads;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> CargoStandLoads;
+    int32 CargoUnitsPerShare = 0;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> CarrySeal;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> PickupPieces;
     UPROPERTY() TArray<TObjectPtr<AActor>> PickupLights;

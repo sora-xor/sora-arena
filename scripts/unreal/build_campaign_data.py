@@ -39,6 +39,7 @@ from pathlib import Path
 
 import yaml
 from campaign_crank import cooperation, player_work
+from campaign_cargo import cargo_manifest
 
 from campaign_space import derive_space, ride_mount
 from campaign_registry import validate_registry
@@ -668,6 +669,7 @@ def normalize_task(beat):
     are milliseconds, fractions permille and distances centimetres. The loader
     in SoraCatalog.cpp reads this block and the host driver plays it."""
     where, kind, params = beat["id"], beat["type"], beat["params"]
+    cargo_manifest(beat, fail)
     complete = params.get("complete") or {}
     task = {
         "type": kind, "task": params.get("task"), "goal": None, "count": 0, "duration_ms": 0, "skippable": False,

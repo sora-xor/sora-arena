@@ -291,6 +291,7 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
                     Beast->Place(Behind,Yaw);
                     Beast->PackId=Row.Id;
                     Beast->Lead(Front,Row.SpacingCm,Mount.Rules.FearRecoverMs);
+                    if(Beat->Cargo.Total>0) Beast->ConfigureCargo(Task.Count,Beat->Cargo.PerDropoff);
                     Front=Beast;
                     Pack.Add(Beast);
                 }
@@ -488,6 +489,11 @@ void USoraCampaignDirector::ShowKit()
     const FSoraChapter* Chapter=ActiveChapter();
     const FSoraBeatSpace* Space=ActiveSpace();
     if(!World||!Chapter||!Space) return;
+    const FSoraBeat* Beat=ActiveBeatData();
+    if(Beat&&Beat->Cargo.Total>0)
+        for(const auto& Beast:Pack)
+            if(IsValid(Beast)&&Beast->PackId==TEXT("pack_horse_cargo"))
+                Beast->ShowCargo(SoraCargoRules::Remaining(Beat->Cargo,Task.Count,TaskState.Done)/Beat->Cargo.PerDropoff);
     FSoraKitView View;
     View.ProgressPermille=SoraBeatRules::ProgressPermille(TaskState,Task);
     View.Step=TaskState.Step;

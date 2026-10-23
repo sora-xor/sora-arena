@@ -11,6 +11,32 @@ namespace
 {
 using namespace SoraCatalogJson;
 
+bool ReadCargo(const FJsonObject& Params, FSoraBeat& Beat)
+{
+    const bool Active=Beat.Is(SoraBeatRules::EType::HorsebackRide)&&Beat.Has(SoraBeatRules::EGoal::Deliveries);
+    FString RideMode;
+    if(Beat.Is(SoraBeatRules::EType::HorsebackRide)&&
+        (!Str(Params,TEXT("mode"),RideMode)||((RideMode==TEXT("cargo"))!=Active))) return false;
+    if(!Active) return !Params.HasField(TEXT("cargo"));
+    const auto Cargo=Child(Params,TEXT("cargo"));
+    FString Mode,Item,Carrier;
+    TArray<FString> Dropoffs;
+    const auto Integer=[&](const TCHAR* Key,int& Out)
+    {
+        const auto Value=Cargo?Cargo->TryGetField(Key):nullptr;
+        return Value&&Value->Type==EJson::Number&&Int(*Cargo,Key,Out);
+    };
+    if(!Cargo||!Str(Params,TEXT("mode"),Mode)||Mode!=TEXT("cargo")||
+        !Str(*Cargo,TEXT("item"),Item)||Item!=TEXT("barley_sheaf")||
+        !Str(*Cargo,TEXT("carrier"),Carrier)||Carrier!=TEXT("pack_horse")||
+        !Integer(TEXT("qty"),Beat.Cargo.Total)||!Integer(TEXT("per_dropoff"),Beat.Cargo.PerDropoff)||
+        !Strings(Rows(*Cargo,TEXT("dropoffs")),Dropoffs)||Dropoffs!=Beat.Dropoffs||
+        !SoraCargoRules::Valid(Beat.Cargo,Beat.Task.Dropoffs)) return false;
+    TSet<FString> Unique;
+    for(const auto& Point:Dropoffs) { if(Unique.Contains(Point)) return false; Unique.Add(Point); }
+    return true;
+}
+
 // A beat's task block (build_campaign_data.py normalize_task): the goal and
 // its integer parameters for SoraBeatRules, and the names the director uses.
 // Every key is required; SoraBeatRules::TaskValid then checks the numbers.
@@ -685,6 +711,7 @@ bool FSoraCatalog::LoadCampaign()
             Rule.PhaseCheckpoints = PhaseCheckpoints[BeatIndex];
             if (!ReadTask(*Task, TypeName, Beat) || !SoraBeatRules::TaskValid(Beat.Task))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid %s task"), *Beat.Id, *TypeName));
+            if (!ReadCargo(*Params, Beat)) return Bad(Beat.Id+TEXT(" has invalid authored cargo quantities"));
             if (!SoraCatalogRegistry::Read(*O, Beat))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid production registry entry"), *Beat.Id));
             if (!SoraCatalogArchery::Read(*O, Beat))

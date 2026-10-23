@@ -97,9 +97,10 @@ bool SpaceGait(const FString& Name, SoraMountRules::EGait& Out)
     return Found != nullptr;
 }
 // The horse under the hero: gaits, wind, fear, arcs and what goes with her.
-bool SpaceReadMount(const FJsonObject& O, const SoraBeatRules::FTask& Task, FSoraMount& M)
+bool SpaceReadMount(const FJsonObject& O, const FSoraBeat& Beat, FSoraMount& M)
 {
     using namespace SoraMountRules;
+    const auto& Task=Beat.Task;
     FString Horse, Coat;
     TArray<FString> Gaits;
     const TSharedPtr<FJsonObject> Stamina = Child(O, TEXT("stamina"));
@@ -203,6 +204,20 @@ bool SpaceReadMount(const FJsonObject& O, const SoraBeatRules::FTask& Task, FSor
         Task.Goal!=SoraBeatRules::EGoal::Deliveries || Task.UnloadHoldMs<=0 || Task.HorseDownRetries ||
         !M.bDismount || M.FearRadiusCm<=0 || M.Rules.FearRecoverMs<=0 ||
         !M.Pack.ContainsByPredicate([](const FSoraPackHorse& P) { return P.Follow==TEXT("lead"); }))) return false;
+    if(Beat.Cargo.Total>0)
+    {
+        const auto Cargo=Child(O,TEXT("cargo")); FString Item;
+        SoraCargoRules::FCargo Value;
+        const auto Total=Cargo?Cargo->TryGetField(TEXT("total")):nullptr;
+        const auto Per=Cargo?Cargo->TryGetField(TEXT("per_dropoff")):nullptr;
+        if(!Cargo||Cargo->Values.Num()!=3||!Str(*Cargo,TEXT("item"),Item)||Item!=TEXT("barley_sheaf")||
+            !Total||Total->Type!=EJson::Number||!Per||Per->Type!=EJson::Number||
+            !Int(*Cargo,TEXT("total"),Value.Total)||!Int(*Cargo,TEXT("per_dropoff"),Value.PerDropoff)||
+            !SoraCargoRules::Valid(Value,Task.Dropoffs)||Value.Total!=Beat.Cargo.Total||Value.PerDropoff!=Beat.Cargo.PerDropoff||
+            M.Pack.Num()!=1||M.Pack[0].Id!=TEXT("pack_horse_cargo")||M.Pack[0].Follow!=TEXT("lead")||
+            M.Pack[0].Hp!=0||M.Pack[0].SpacingCm!=300||M.Pack[0].SpeedCmS!=0) return false;
+    }
+    else if(!IsNull(O,TEXT("cargo"))) return false;
     return true;
 }
 // An area on the floor: {center, size}.
@@ -948,8 +963,13 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         B.bMount = !IsNull(*O, TEXT("mount"));
         const TSharedPtr<FJsonObject> Mount = B.bMount ? Child(*O, TEXT("mount")) : nullptr;
         if (B.bMount != (Beat.Is(SoraBeatRules::EType::HorsebackRide) || (Mount.IsValid() && Beat.Is(SoraBeatRules::EType::Boss))) ||
-            (B.bMount && (!Mount || !SpaceReadMount(*Mount, Task, B.Mount))))
+            (B.bMount && (!Mount || !SpaceReadMount(*Mount, Beat, B.Mount))))
             return Bad(Beat.Id + TEXT(" horse"));
+        if(Beat.Cargo.Total>0 && (!B.bMount||B.Work!=TEXT("cargo")||B.Item!=TEXT("bale")||
+            B.DropoffKinds.Num()!=Task.Dropoffs||!B.PickupKinds.IsEmpty()||!B.TargetKinds.IsEmpty()||!B.Party.IsEmpty()||
+            B.DropoffKinds.ContainsByPredicate([](FName Kind) { return Kind!=TEXT("drying_stand"); })))
+            return Bad(Beat.Id+TEXT(" cargo drying stands"));
+        if(Beat.Cargo.Total==0 && B.Work==TEXT("cargo")) return Bad(Beat.Id+TEXT(" unexpected cargo kit"));
         if(Beat.Id==TEXT("ch07.b14"))
         {
             const auto H=Child(*O,TEXT("helm"));
