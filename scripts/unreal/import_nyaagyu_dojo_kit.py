@@ -392,11 +392,12 @@ def import_module(module, instances):
             # SetBaseMaterialUsage itself recompiles when the flag changes.
             lib.set_base_material_usage(parent, unreal.MaterialUsage.MATUSAGE_NANITE, True)
             require(assets.save_loaded_asset(parent), f"{name}: could not save Nanite material usage")
-    audit = enable_full_fallback(mesh, module, meshes, unreal, lib)
     # Distance fields stand in for this geometry in software Lumen: thin
     # members need a finer field than the default.
     mesh.set_editor_property("distance_field_self_shadow_bias", 0.5)
-    require(assets.save_loaded_asset(mesh), f"{name}: could not save audited Nanite/fallback mesh")
+    # The helper saves both baselines, restores source LOD thresholds after
+    # the Nanite build, then audits final saved geometry before success.
+    audit = enable_full_fallback(mesh, module, meshes, unreal, lib, assets)
     unreal.log("SORA_DOJO_NANITE_IMPORT " + json.dumps(audit, sort_keys=True))
     return name, slots
 

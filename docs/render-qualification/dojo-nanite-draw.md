@@ -159,7 +159,7 @@ present repeated modules/boxes into the requested individually sculpted beams
 with adze marks, checks, raised grain, knots, end grain and worn chamfers.
 That art, its provenance, admission and performance remain separate work.
 
-## Separate source importer candidate (not executed)
+## Importer preservation audit and isolated engine probes
 
 The follow-up importer uses `dojo_nanite.py` after binding the same LODs and
 materials. It intentionally retains a conventional initial FBX import, then
@@ -169,17 +169,78 @@ sets all seven explicit Nanite/full-fallback controls and reads each back.
 existing mesh's Nanite flag. This makes repeat imports start from a real
 conventional source baseline instead of a previously reduced fallback.
 
-The helper records before/after conventional triangle and vertex counts,
-UV-channel counts, section-to-material mapping, section collision and shadow
-flags, LOD screen sizes, ordered material names/bindings, bounds, simple
-collision count and collision complexity. Any mismatch stops the import.
+The first real import exposed two distinct effects of a Nanite build. For
+`SM_DojoBay_Panel`, the render LOD screen threshold changed from `[2.0]` to
+`[0.0]`, and the overall mesh bounds expanded to include the Nanite hierarchy.
+The failed audit remains a failure. Matching counts alone would not establish
+that the conventional fallback retained the original geometry.
+
+The revised helper reads every conventional render LOD/section with
+`ProceduralMeshLibrary.get_section_from_static_mesh`. It compares exact
+oriented triangles containing position, normal, UV0, tangent X and tangent
+handedness. Triangle order, vertex/index numbering and cyclic corner order
+may change; winding, connectivity, attributes and duplicate multiplicity must
+remain identical. Equality compares the complete canonical content directly;
+per-section SHA256 values are compact report aids. No coordinate rounding or
+geometry tolerance is applied. Signed zero is normalized to numeric zero.
+The API exposes UV0 only: this does **not** establish UV1+ value equality,
+vertex-color equality or raw buffer byte identity. UV-channel counts remain
+checked independently. The editor may warn that CPU access is needed for a
+cooked conversion; the audit records that limitation and preserves the actual
+`allow_cpu_access` flag instead of changing it to suppress the warning.
+
+Before/after triangle and vertex counts, UV-channel counts, section-to-material
+mapping, section collision and shadow flags, ordered material names/bindings,
+simple collision count and collision complexity must still match. Exact
+geometry-derived bounds must also match. Overall composite culling bounds are
+reported separately: they may expand, but must be finite, nonnegative in
+extent and contain all conventional geometry. The importer never shrinks or
+overrides the engine's Nanite bounds. A changed composite center can affect
+`ObjectPositionWS` material variation despite identical fallback vertices;
+same-camera SM5 original-image comparison remains necessary.
+
+The helper force-saves the conventional baseline before reading it, applies
+the Nanite settings, explicitly restores the original LOD screen thresholds
+with `set_lod_screen_sizes`, requires the setter to succeed, and force-saves
+the result before the final audit. Saving alone did not restore the thresholds
+in the engine probe. The post-save audit retains the existing screen-size
+comparison and all other preservation checks; no success line is emitted
+before these checks pass.
+
 It requires actual positive `get_num_nanite_triangles/vertices` after the
 build: installed UE `StaticMesh.cpp:5024–5051` returns zero unless Nanite page
 and root data exists, and `GetRenderData` waits for its asynchronous property.
 Those are built input-resource counts, **not visible triangle counters**.
 `MeshBuilder/Private/StaticMeshBuilder.cpp:296–302` identifies full fallback
 input reuse when percentage is 1 and relative error is 0; the candidate sets
-both explicitly. It does not claim to compare every rebuilt vertex byte.
+both explicitly.
+
+Installed UE 5.8.3 source explains the audited behavior:
+
+- `Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponent/Private/KismetProceduralMeshLibrary.cpp:402–500`
+  copies the conventional position/index buffers, normal, UV channel 0,
+  tangent X and handedness into section-local arrays of referenced vertices.
+- `Source/Runtime/Engine/Private/StaticMesh.cpp:2493,3085` resolves section
+  information and LOD screen thresholds during serialization.
+- `Source/Editor/StaticMeshEditor/Private/StaticMeshEditorSubsystem.cpp:1020–1100`
+  updates source and render screen sizes without requesting a mesh rebuild.
+- `Source/Developer/MeshBuilder/Private/StaticMeshBuilder.cpp:885–897` includes
+  the simplified Nanite hierarchy in overall bounds. This is culling data,
+  not evidence that the conventional triangle positions changed.
+
+On 2026-10-23 the root execution lane tested the original panel with required
+Nanite material usage enabled. All three sections retained exactly the same
+oriented geometry/attributes (704 triangles, 770 vertices), CPU access stayed
+false, and explicit threshold restoration plus save yielded `[2.0]` with
+704 built Nanite input triangles. A fresh editor process reloaded that asset
+with `[2.0]`, 704 Nanite input triangles and CPU access false. Original
+artifacts are `Saved/Qualification/2026-10-23/probe-dojo-nanite-geometry-verified.json`
+and `probe-dojo-nanite-reload-verified.json`, with their corresponding logs,
+in the root execution worktree. This is an isolated one-mesh mechanism probe,
+not a successful run of the revised importer across all modules or a draw
+qualification. Earlier `original-restore` probe artifacts lacked the required
+material usage and had zero Nanite resource data; they remain diagnostic
+failures and are not evidence of Nanite persistence.
 
 Only the required Nanite usage permutation is added to each existing base
 material using the pinned engine's `set_base_material_usage`; material graphs,
@@ -193,12 +254,17 @@ have to establish that every intended section renders correctly.
 
 Each successful module writes a `SORA_DOJO_NANITE_IMPORT` JSON audit into the
 original editor log. Existing source FBX/texture hashes remain enforced.
-The ten host tests exercise rejected settings, missing built resources,
-reimport reset, LOD reduction/loss, UV loss, slot remapping, collision/bounds
-changes and material overrides using explicit fake editor objects. They do
-not execute the importer, build an asset or prove runtime behavior.
+The seventeen host tests exercise rejected settings, missing built resources,
+reimport reset, LOD reduction/loss, UV loss, slot remapping, collision and
+material changes, malformed/nonfinite geometry, same-count position/normal/
+UV0/tangent/handedness/connectivity changes, reversed winding, duplicate
+triangle multiplicity, permitted ordering changes, enclosing culling bounds,
+failed threshold restoration and save-time mutations. They use explicit fake
+editor objects; they do not execute the importer, build an asset or prove
+runtime behavior.
 
-Root must first run the untouched baseline diagnostic, then review this
-separate source commit before importing. No generated asset changed with this
-source candidate. An actual import, cooked fallback availability, unchanged
-SM5 imagery/collision and visible SM6 Nanite remain unqualified until run.
+No generated asset is changed by this source-only revision. The root execution
+lane must review and import it across the complete kit, preserve the original
+baseline/candidate evidence, then perform the draw and fallback qualifications.
+Full import, cooked fallback availability, unchanged SM5 imagery/collision,
+visible SM6 Nanite and real M1 behavior remain unqualified until run.
