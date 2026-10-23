@@ -11,6 +11,7 @@
 #include "SoraSettings.h"
 #include "SoraFrontEnd.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
 namespace FoundryRules=SoraFoundryDefenseRules;
 bool USoraCampaignDirector::IsFoundryDefense() const
@@ -49,7 +50,7 @@ FVector USoraCampaignDirector::FoundryWorkPoint(FoundryRules::EWork Work,int32 I
 bool USoraCampaignDirector::FoundryWorkEligible(FoundryRules::EWork Work,int32 Index) const
 {
     const auto* Hero=Mode().Hero(); const auto* Kit=Hero?Hero->GetEquipment():nullptr;
-    if(!IsFoundryDefense()||!Hero||!Hero->CanPlay()||Kit->IsStaggered()||Kit->IsCommittedStrike()||Kit->IsStepping()||Kit->bReloading) return false;
+    if(!IsFoundryDefense()||!Hero||!Hero->CanPlay()||!Hero->GetCharacterMovement()->IsMovingOnGround()||Kit->IsStaggered()||Kit->IsCommittedStrike()||Kit->IsStepping()||Kit->bReloading) return false;
     const auto* Craft=USoraFieldcraft::Get(this);
     if(Work==FoundryRules::EWork::Repair&&(!FoundryRules::Available(Foundry,Index)||TaskState.TargetHp[0]<=0||TaskState.TargetHp[0]>=FoundryRules::FurnaceHp)) return false;
     if(Work==FoundryRules::EWork::Revive&&(Index!=0||!FoundryKozo()||!FoundryKozo()->IsDown())) return false;
@@ -107,6 +108,7 @@ void USoraCampaignDirector::TickFoundry(int32 DeltaMs)
         TaskState.TargetHp[0]=FMath::Min(FoundryRules::FurnaceHp,TaskState.TargetHp[0]+FoundryRules::RepairHp);
         FoundryFurnace()->Health=TaskState.TargetHp[0];
         Fire(TEXT("interact_done:")+FString(Result.Repair==0?TEXT("clay_tub_w"):Result.Repair==1?TEXT("clay_tub_e"):TEXT("clay_tub_n")));
+        if(ActiveBeatData()!=Beat||Mode().bDefeated) return;
         Notify(TEXT("粘土で炉を補修した。"),TEXT("Clay applied to the furnace."),3);
     }
     if(Result.Drain>0) DamageDefendedTarget(0,Result.Drain);
