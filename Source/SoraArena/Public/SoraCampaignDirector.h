@@ -11,6 +11,7 @@
 #include "SoraHelmRules.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
+class UStaticMeshComponent;
 class ASoraBoss;
 class ASoraEnemy;
 class ASoraGameMode;
@@ -128,6 +129,13 @@ public:
     // Input releases and menu/dialogue boundaries discard the transient cut
     // immediately, including when the gameplay clock cannot tick.
     void CancelSpineCut();
+    void ReleaseWindBrace();
+    bool IsWindBraced() const { return WindAnchor!=INDEX_NONE; }
+    bool InWindLee() const { return bWindLee; }
+    int32 WindClockMs() const { return WindMs; }
+    int32 RidgeRecoveries() const { return RidgeFalls; }
+    int32 RidgeLastAnchor() const { return LastBraceAnchor; }
+    FVector ProjectileWind(const FVector& Point,bool Arrow,int32 Weapon) const;
     void CancelConstructCut();
     // Enter on a cinematic: skips it and starts the next beat now.
     void SkipCinematic();
@@ -308,6 +316,14 @@ public:
     int32 KillsNeeded = 0;
     bool bCampaignComplete = false;
 private:
+    void ResetWind();
+    void TickWind(int32 DeltaMs);
+    bool InteractWind(ASoraPlayerCharacter& Hero);
+    bool WindAt(const FVector& Point) const;
+    bool RidgeReadyToComplete() const;
+    int32 WindMs=0,WindWarningSerial=0,WindGustSerial=0,WindAnchor=INDEX_NONE,RidgeFalls=0,LastBraceAnchor=0;
+    bool bWindLee=false,bWindHint=false;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> WindStrip;
     // One opponent a released wave still has to put on the field.
     struct FPendingSpawn
     {

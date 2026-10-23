@@ -317,6 +317,7 @@ void ASoraPlayerCharacter::Forward(float V)
     // On the wall the fieldcraft reads the axis to climb; a vault carries him.
     if(bVaulting) return;
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HoldsHero()) return;
+    if(const auto* G=PlayerGameMode(this); G&&G->Campaign()->IsWindBraced()) return;
     if(CanPlay()) AddMovementInput(GetActorForwardVector(),V);
 }
 void ASoraPlayerCharacter::Strafe(float V)
@@ -325,6 +326,7 @@ void ASoraPlayerCharacter::Strafe(float V)
     if(auto* G=PlayerGameMode(this); G&&G->Campaign()&&G->Campaign()->PlayerBellowsAxis(V)) return;
     if(bVaulting) return;
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->HoldsHero()) return;
+    if(const auto* G=PlayerGameMode(this); G&&G->Campaign()->IsWindBraced()) return;
     if(CanPlay()) AddMovementInput(GetActorRightVector(),V);
 }
 // While the arms wheel is open, look input moves its cursor instead of the view.
@@ -360,6 +362,7 @@ void ASoraPlayerCharacter::FireDown()
     if(const USoraFieldcraft* Craft=HeroFieldcraft(*this); Craft&&Craft->ArmsStowed()) return;
     // A held sprint blocks the trigger until released; a toggled one ends here.
     if(TogglesSprint()) bSprint=false;
+    if(auto* G=PlayerGameMode(this)) G->Campaign()->ReleaseWindBrace();
     Equipment->TriggerDown();
 }
 void ASoraPlayerCharacter::FireUp() { KernelHeldButtons&=~1u; Equipment->TriggerUp(); }
@@ -375,6 +378,7 @@ void ASoraPlayerCharacter::JumpDown()
 {
     if(bKernelDriven) { if(CanPlay()) KernelQueuedButtons|=8; return; }
     if(!CanPlay()||bVaulting) return;
+    if(auto* G=PlayerGameMode(this)) G->Campaign()->ReleaseWindBrace();
     // Left or Right with Jump inside a 転 window rolls to the opponent's flank instead.
     if(SoraDefense::Marobashi(*this,GetInputAxisValue(TEXT("MoveRight")))) return;
     // At the climbing face's foot Jump reaches for the holds; on the wall it lets go.
@@ -418,6 +422,7 @@ void ASoraPlayerCharacter::InteractUp()
         G->Campaign()->CancelHelm();
         G->Campaign()->CancelSpineCut();
         G->Campaign()->CancelConstructCut();
+        G->Campaign()->ReleaseWindBrace();
     }
 }
 void ASoraPlayerCharacter::CrouchPressed()

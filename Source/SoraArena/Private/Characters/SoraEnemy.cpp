@@ -95,6 +95,7 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
     }
     ResetConstruct();
     Kind=Found; Variant=VariantName; VariantData=Chosen;
+    NetRootOverrideMs=Kind->Behavior==ESoraEnemyBehavior::Drone&&Tuning?FMath::Max(0,Tuning->NetRootMs):0;
     bDojoPupil=false; EnemyIndex=Slot; RangedShots=0; ShotsSinceRelocation=0;
     // Perception: the archetype's, then its variant's, then the beat's.
     Senses=Kind->Perception;
@@ -287,6 +288,11 @@ void ASoraEnemy::TickPlay(float Dt)
 void ASoraEnemy::HaltActions()
 {
     CancelAttack();
+}
+void ASoraEnemy::DisruptWindAim(int32 Milliseconds)
+{
+    if(!Kind||Kind->Behavior!=ESoraEnemyBehavior::Drone) return;
+    CancelAttack(); NextAttackAt=FMath::Max(NextAttackAt,Now()+Milliseconds/1000.f);
 }
 bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
 {
@@ -557,7 +563,7 @@ void ASoraEnemy::CastNet(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Targ
     SoraDamage::Ring(GetWorld(),LockedPoint+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::StrikeColor(this,SoraAccessibility::ETelegraph::Lock),.25f);
     // Only a target still inside the lock ring is caught.
     if(FVector::Dist2D(Feet(Target),LockedPoint)>Attack.RadiusCm) return;
-    if(USoraCombatEffects* Effects=USoraCombatEffects::Get(this)) Effects->Root(Target,Attack.RootMs);
+    if(USoraCombatEffects* Effects=USoraCombatEffects::Get(this)) Effects->Root(Target,NetRootOverrideMs>0?NetRootOverrideMs:Attack.RootMs);
     if(Attack.Damage>0)
     {
         FSoraHit Hit=FSoraHit::Ranged(Eye(),INDEX_NONE);

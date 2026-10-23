@@ -36,7 +36,9 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
             { return B.Space.Zone==Index&&B.Space.Spire.Enabled(); });
         const FSoraBeat* Summit=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
             { return B.Space.Zone==Index&&B.Space.Summit.Enabled(); });
-        if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
+        const FSoraBeat* Wind=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Wind.Enabled(); });
+        if(Wind) BuildWindSpace(*Wind); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
     }
     BuildChapterWood(Chapter);
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();

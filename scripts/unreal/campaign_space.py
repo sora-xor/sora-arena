@@ -32,6 +32,7 @@ from campaign_lift import place_lift
 from campaign_spire import place_spire
 from campaign_summit import place_summit
 from campaign_wood import connect_wood
+from campaign_ridge import place_wind
 
 import math
 import re
@@ -231,7 +232,7 @@ class Zone:
     def record(self):
         return {"id": self.id, "place": self.place, "style": self.style, "form": self.form,
                 "rect": list(self.rect), "wall_cm": self.wall, "entry": list(self.entry),
-                "walls": _walls(self.rect, self.wall), "cover": self.cover, "props": self.props,
+                "walls": getattr(self, "walls", _walls(self.rect, self.wall)), "cover": self.cover, "props": self.props,
                 "route": [list(point) for point in self.route],
                 **({"z_bounds_cm": list(self.z_bounds)} if hasattr(self,"z_bounds") else {})}
 
@@ -482,6 +483,10 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         width, height, wall = FORMS[form]
         if prefix == "ch01" and place_id == "pl_issoseki_wood":
             width, height = 11000, 8500
+        if prefix == "ch07" and place_id == "pl_hull_ridge":
+            width, height = 18000, 2400
+        if prefix == "ch07" and place_id == "pl_hangar":
+            width, height = 8000, 4500
         if place_id in hosts_boss:
             width, height = max(width, BOSS_SIZE[0]), max(height, BOSS_SIZE[1])
         rect = (x, -height // 2, x + width, height // 2)
@@ -583,6 +588,7 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         pickups.append({"collectible": item["id"], "zone": index, "at": list(at)})
     from campaign_helm import place_helm
     place_helm(beats, records, [zone.record() for zone in zones], fail)
+    place_wind(beats, records, zones, fail)
     place_lift(beats, records, fail)
     place_spire(beats, records, zones, fail)
     place_summit(beats, records, zones, fail)

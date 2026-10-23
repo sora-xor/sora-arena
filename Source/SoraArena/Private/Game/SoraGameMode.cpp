@@ -123,6 +123,7 @@ void ASoraGameMode::SetMenuOpen(bool bOpen)
             CampaignDirector->StopPlayerCrank();
             CampaignDirector->CancelSpineCut();
             CampaignDirector->CancelConstructCut();
+            CampaignDirector->ReleaseWindBrace();
         }
         // Menu time is discarded; practice resumes on a fresh 60 Hz step.
         PracticeDirector->ResetClock();

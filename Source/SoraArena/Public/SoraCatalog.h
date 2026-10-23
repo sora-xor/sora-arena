@@ -545,9 +545,17 @@ struct FSoraHelmSpace
     FSoraVolume Hold;
     FVector2D Wheel=FVector2D::ZeroVector,Beacon=FVector2D::ZeroVector;
 };
+struct FSoraWindSpace
+{
+    FName Kind;
+    FVector2D Origin=FVector2D::ZeroVector;
+    bool Enabled() const { return !Kind.IsNone(); }
+    bool Ridge() const { return Kind==TEXT("ridge"); }
+};
 struct FSoraBeatSpace
 {
     FSoraHelmSpace Helm;
+    FSoraWindSpace Wind;
     FSoraSummitSpace Summit;
     FSoraSpireSpace Spire;
     int32 HeightCm=0;

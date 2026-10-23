@@ -1,5 +1,6 @@
 #include "SoraGameMode.h"
 #include "SoraHelmAutomation.h"
+#include "SoraRidgeAutomation.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
@@ -1034,7 +1035,12 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             if (!LiveEnemies(State).IsEmpty()) { if (!DefeatOne(Test, State)) return false; continue; }
             if (Director->ObjectiveAnchor(Anchor) && Rules.Goal == EGoal::WavesCleared)
             {
-                if(Beat.Space.Spire.Enabled())
+                if(Beat.Space.Wind.Ridge())
+                {
+                    if(!SoraRidgeAutomation::Walk(*State.World,Beat.Space,Anchor.X-Beat.Space.Wind.Origin.X,Test))
+                        return Fail(Test,State,TEXT("The ridge requires real traversal and mapped vaults"));
+                }
+                else if(Beat.Space.Spire.Enabled())
                 {
                     const bool AtL3=Player(State)->GetActorLocation().Z>1700.f;
                     if(!SoraSpireAutomation::Climb(*State.World,Beat.Space,AtL3?SoraSpireRules::Landing(2)+1:0,AtL3?SoraSpireRules::Landing(3):SoraSpireRules::Landing(2)))

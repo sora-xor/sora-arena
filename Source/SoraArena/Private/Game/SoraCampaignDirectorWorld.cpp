@@ -85,7 +85,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
         for(int32 Wave=0;Wave<Task.WaveCount;++Wave)
             if(Task.Waves[Wave].Trigger==SoraBeatRules::EWaveTrigger::Volume&&!SoraBeatRules::Released(TaskState,Wave))
                 if(const FSoraVolume* Volume=VolumeOf(Beat->Waves[Wave].Event)) { Location=ASoraWorldBuilder::Floor(Volume->Center,Volume->bHeight?Volume->FloorCm:Space.HeightCm); bInteract=false; return true; }
-        if(Space.Spire.Enabled()&&SoraBeatRules::TaskComplete(TaskState,Task))
+        if((Space.Spire.Enabled()||Space.Wind.Ridge())&&SoraBeatRules::TaskComplete(TaskState,Task))
             { Location=ASoraWorldBuilder::Floor(Space.Exit.Center,Space.Exit.FloorCm); bInteract=false; return true; }
         return false;
     case SoraBeatRules::EGoal::Objectives:
@@ -168,6 +168,24 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
     const FSoraBeatSpace* Space=ActiveSpace();
     const ASoraPlayerCharacter* Hero=Mode().Hero();
     if(!Space||Space->Spawns.IsEmpty()) return Mode().Arena()?Mode().Arena()->SpawnPoint(Slot):FVector::ZeroVector;
+    if(Space->Wind.Kind==TEXT("hangar"))
+    {
+        FVector P(7200,2200,120);
+        if(Slot==3) P=FVector(4000,200,920);
+        else if(Slot==4||Slot==5) P=FVector(4000+(Slot-4)*180,3500,120);
+        else if(Slot==8) P=FVector(6600,200,920);
+        else if(Slot==9||Slot==10) P=FVector(4000+(Slot-9)*180,5200,600);
+        else P.X-=Slot*100;
+        return FVector(Space->Wind.Origin,0)+P;
+    }
+    if(Space->Wind.Ridge())
+    {
+        const int32 Group=Slot<2?0:Slot<5?1:2;
+        const int32 Member=Slot-(Group==0?0:Group==1?2:5);
+        // The authored point locates a group. Separate its capsules along
+        // the hull so members never begin intersecting one another.
+        return FVector(Space->Wind.Origin,0)+FVector((Group==0?2000:Group==1?9000:16000)+Member*120,Group==0?-2500:Group==1?0:2000,Group==0?600:Group==1?1500:800);
+    }
     if(Space->Spire.Enabled()) return Space->Spire.Spawns[FMath::Abs(Slot)%Space->Spire.Spawns.Num()]+FVector(0,0,120);
     if(Space->bRoute&&Chapter&&Hero)
     {
@@ -267,6 +285,7 @@ void USoraCampaignDirector::EnterBeatSpace(bool bResumed)
 }
 void USoraCampaignDirector::LeaveBeatSpace()
 {
+    ResetWind();
     const FSoraBeat* Beat=ActiveBeatData();
     if(Beat&&Beat->Is(SoraBeatRules::EType::Cinematic)) EndCinematicCamera(.6f);
     // The beat's lamps, water, face and company leave with it.

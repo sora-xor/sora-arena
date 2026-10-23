@@ -41,6 +41,7 @@ void ASoraProjectile::Tick(float Dt)
     const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
     if(Mode&&Mode->InputState()==SoraInput::Dialogue) return;
     if((ArcheryShotId||WoodShotId)&&Mode&&!Mode->IsPlaying()) return;
+    if(Mode&&Mode->Campaign()) Velocity+=Mode->Campaign()->ProjectileWind(GetActorLocation(),bArrow,WeaponId)*Dt;
     Age+=Dt; Velocity.Z-=(bArrow?980.f:Gravity)*Dt;
     if(bArrow) SetActorRotation(Velocity.Rotation());
     const FVector Before=GetActorLocation();

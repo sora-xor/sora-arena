@@ -345,6 +345,8 @@ def _volume_events(beat, chapter):
 
 def check_space(chapter, beats, rewards, labels, where):
     """The chapter's space is one the world builder can build and the hero can play."""
+    from campaign_ridge import wind_valid
+    require(wind_valid(chapter), f"{where}: exposed ridge/wind contract")
     from campaign_wood import wood_valid
     require(wood_valid(chapter), f"{where}: optional wood physical/reward contract")
     space = chapter["space"]
@@ -360,12 +362,13 @@ def check_space(chapter, beats, rewards, labels, where):
                 apart=bool(za and zb and (za[1]<=zb[0] or zb[1]<=za[0]))
             require(apart, f"{where}: zones {a} and {b} overlap or touch")
     for zone in zones:
-        expected_z = [-500,15800] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_spire" else [15800,20000] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_engine" else None
+        expected_z = [-500,15800] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_spire" else [15800,20000] if chapter["id"].startswith("ch08_") and zone["place"]=="pl_ledger_engine" else [-2000,2500] if chapter["id"].startswith("ch07_") and zone["place"]=="pl_hull_ridge" else None
         require(zone.get("z_bounds_cm")==expected_z,f"{where}: authored vertical place {zone['id']}")
         rect, cover = zone["rect"], zone["cover"]
         require(zone["style"] in ("estate", "ward", "foundry", "citadel") and
                 zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
         wood_counts = {"pl_matoba": 5, "pl_issoseki_wood": 0, "pl_dojo_smithy": 5} if chapter["id"].startswith("ch01_") else {}
+        if chapter["id"].startswith("ch07_"): wood_counts.update(pl_hull_ridge=0,pl_hangar=0)
         require(len(zone["walls"]) == wood_counts.get(zone["place"], 4) and zone["wall_cm"] >= 200,
                 f"{where}: zone {zone['id']} wall/door contract")
         for piece in cover:
