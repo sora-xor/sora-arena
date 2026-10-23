@@ -1022,7 +1022,7 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Survive:
         if(Beat.bArcheryLesson)
         {
-            if(!SoraArcheryAutomation::Complete(Test,*State.World))
+            if(!SoraArcheryAutomation::Complete(Test,*State.World,true))
                 return Fail(Test,State,TEXT("The range must complete through actual arrow impacts"));
             break;
         }
@@ -1050,6 +1050,13 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Hold:
     case EGoal::Escort:
     {
+        if(Director->IsWoodExplore())
+        {
+            if(!SoraWoodAutomation::Poi(*State.World,SoraWoodRules::Stone)||
+                !SoraWoodAutomation::Poi(*State.World,SoraWoodRules::Boundary)||
+                !SoraWoodAutomation::Exit(*State.World)) return false;
+            break;
+        }
         // Rides are ridden: a horse to tack up is mounted from her right,
         // the others start in the saddle.
         if (Beat.Is(SoraBeatRules::EType::HorsebackRide))
@@ -1790,9 +1797,9 @@ bool CheckTelemetry(FAutomationTestBase& Test, FState& State)
             const int32* Times = Completed.Find(Id);
             bOk &= Test.TestEqual(*(Id + TEXT(" completes once in the telemetry")), Times ? *Times : 0, 1);
             ++Beats;
-            Required += !Data.Chapter(Chapter).Rules[Index].Optional;
+            Required += !Data.Chapter(Chapter).Rules[Index].Optional||Data.Chapter(Chapter).Wood.Beat==Index;
         }
-    bOk &= Test.TestEqual(TEXT("Telemetry: every required beat starts once"), Count(TEXT("start")), Required);
+    bOk &= Test.TestEqual(TEXT("Telemetry: every required beat and the walkable wood starts once"), Count(TEXT("start")), Required);
     bOk &= Test.TestEqual(TEXT("Telemetry: every beat completes"), Count(TEXT("complete")), Beats);
     bOk &= Test.TestEqual(TEXT("Telemetry: every chapter completes"), Count(TEXT("chapter_complete")), LastChapter + 1);
     bOk &= Test.TestEqual(TEXT("Telemetry: every cinematic is skipped with Enter"), Count(TEXT("skip")), State.CinematicShots);

@@ -119,6 +119,8 @@ public:
     ASoraCampaignLift* CampaignLift() const;
     bool SupplyFloor(const FString& Id,FVector& Out) const;
     bool CanReachSupply(const FString& Id,const ASoraPlayerCharacter& Hero) const;
+    bool CanReachWoodPoi(int32 Index,const ASoraPlayerCharacter& Hero) const;
+    bool IsWoodClapperHit(const FHitResult& Hit) const;
     bool GalleryPoiFloor(FName Id,FVector& Out) const;
     bool CanReachGalleryPoi(FName Id,const ASoraPlayerCharacter& Hero) const;
     void ShowGalleryPois(int32 FoundMask);
@@ -163,6 +165,10 @@ private:
     // Campaign spaces (SoraWorldBuilderLayout.cpp, SoraWorldBuilderLayoutZones.cpp).
     void BuildArena(int32 MapId, bool bSites);
     void BuildCampaign(const FSoraChapter& Chapter);
+    void BuildChapterWood(const FSoraChapter& Chapter);
+    TArray<FVector> WoodFloors;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WoodTargets;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> WoodClapper;
     void BuildSpire(const FSoraBeat& Beat);
     void StageSupply(const FSoraBeat& Beat);
     void StageGalleryPois(const FSoraChapter& Chapter,const FSoraBeat& Beat);

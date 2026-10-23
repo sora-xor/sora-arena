@@ -30,6 +30,11 @@ public:
     // retain zero. These discoveries survive a checkpoint retry, like codex
     // finds, but never grant collectibles, unlocks or completed beats.
     UPROPERTY(SaveGame) int32 GalleryPoiMask = 0;
+    // Chapter-one stone, vista, boundary, shrine and arrow-only toshiya lore.
+    // Additive: omitted by older schema-6 saves; never grants combat stats.
+    UPROPERTY(SaveGame) int32 WoodPoiMask = 0;
+    // Completed b07, with the wood/terrace choice still ahead of the hero.
+    UPROPERTY(SaveGame) bool WoodJunction = false;
     // Finite b12 arrows, claimed once even if its earlier lift checkpoint is
     // retried. Older schema-6 saves default to unclaimed. Ammo itself follows
     // the existing full-magazine checkpoint reset, not a new inventory save.

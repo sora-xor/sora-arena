@@ -6,6 +6,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraGameMode.h"
 #include "SoraLiftAutomation.h"
+#include "SoraWoodAutomation.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraProjectile.h"
 #include "Camera/CameraComponent.h"
@@ -91,7 +92,7 @@ inline bool Loose(FAutomationTestBase& Test,FSoraAutomationWorld& W,int32 Target
         C->ArcheryProgress().HangingHits,Kit->Ammo);
     return Test.TestTrue(TEXT("The actual projectile resolves once through impact or flight expiry"),Resolved);
 }
-inline bool Complete(FAutomationTestBase& Test,FSoraAutomationWorld& W)
+inline bool Complete(FAutomationTestBase& Test,FSoraAutomationWorld& W,bool VisitWood=false)
 {
     auto* C=W.Mode()->Campaign();
     if(!EnterLine(W)) return Test.TestTrue(TEXT("Normal walking and key 3 reach the archery line with the yumi"),false);
@@ -100,7 +101,9 @@ inline bool Complete(FAutomationTestBase& Test,FSoraAutomationWorld& W)
     if(!Test.TestTrue(TEXT("Six resolved near shots open the hanging targets"),C->ArcheryProgress().Stage==SoraArcheryRules::EStage::Hanging)) return false;
     for(int32 Target=1;Target<=3;++Target)
         if(!Loose(Test,W,Target)) return false;
-    return Test.TestEqual(TEXT("Three real hanging impacts complete b07"),C->ActiveBeat(),8);
+    if(!Test.TestTrue(TEXT("Three real hanging impacts complete b07 at a physical choice"),C->IsWoodTransit()&&
+        (C->Progress().CompletedMask&SoraBeatRules::BeatBit(6))!=0)) return false;
+    return VisitWood?SoraWoodAutomation::Enter(W):SoraWoodAutomation::Terrace(W);
 }
 }
 #endif

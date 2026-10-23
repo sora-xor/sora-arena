@@ -1,4 +1,5 @@
 #include "SoraCampaignDirector.h"
+#include "SoraWoodRules.h"
 #include "Game/SoraCampaignReach.h"
 #include "Combat/SoraBossCatalog.h"
 #include "Combat/SoraStealth.h"
@@ -275,6 +276,7 @@ bool USoraCampaignDirector::LoadSave()
         static_cast<unsigned>(Save->ChapterEntryMechanics)==Catalog.EarlierMechanics(Save->CurrentChapter)&&
         SoraBeatRules::EntryValid(static_cast<unsigned>(Save->ChapterEntryFlags),0u,Catalog.EarlierFlags(Save->CurrentChapter))&&
         SoraCampaignRules::CollectiblesValid(static_cast<unsigned long long>(Save->Collectibles),Save->HighestChapter)&&
+        SoraWoodRules::LedgerValid(Save->WoodPoiMask,static_cast<uint64>(Save->Collectibles))&&
         SoraGalleryRules::Valid(Save->GalleryPoiMask,Save->HighestChapter)&&
         SoraGalleryRules::ClaimValid(Save->GalleryArrowsClaimed,Save->HighestChapter,static_cast<uint64>(Save->Collectibles))&&
         (!Save->CampaignComplete||Save->CurrentChapter==LastChapter);
@@ -309,7 +311,7 @@ void USoraCampaignDirector::ResetRound()
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
     // The hero comes down from the saddle before the world he stands in is rebuilt.
     ClearHorses();
-    bLiftGallery=false;
+    bLiftGallery=false; bWoodTransit=false;
     EndCinematicCamera(0.f);
     Notices.Reset();
     Kills=0; KillsNeeded=0; bLinesStarted=false; bChapterOpening=false; CinematicSeconds=0.f; DojoLessonMask=0u;
@@ -364,6 +366,7 @@ void USoraCampaignDirector::ResetRound()
     const int32 Phase=bResumed?BeatPhase:0;
     // A fresh chapter opens on its first cinematic, which carries the title card.
     bChapterOpening=!bResumed; BeatIndex=INDEX_NONE;
+    if(bResumed&&ResumeWoodJunction()) return;
     BeginBeat(Beat,Phase,bResumed);
     if(bResumed&&M.NoticeTime<=0.f)
         Notify(TEXT("復旧記録から再開した。"),TEXT("Checkpoint restored."),6.f);
@@ -384,13 +387,14 @@ bool USoraCampaignDirector::LoadCheckpoint()
     // what its completed beats earn from the chapter's entry unlocks and flags.
     bool bValid=Beat==INDEX_NONE
         ?Saved.Complete&&Phase==0&&SoraBeatRules::ProgressValid(Saved,Gates,Count,EntryWeapons,EntryMechanics,EntryFlags)
-        :!Saved.Complete&&Chapter.Rules.IsValidIndex(Beat)&&!Chapter.Rules[Beat].Optional&&
+        :!Saved.Complete&&Chapter.Rules.IsValidIndex(Beat)&&(!Chapter.Rules[Beat].Optional||Beat==Chapter.Wood.Beat)&&
             SoraBeatRules::CheckpointValid(Saved,Gates,Count,EntryWeapons,EntryMechanics,EntryFlags,Beat,Phase)&&
             SoraBeatRules::TaskCheckpointValid(Chapter.Tasks[Beat],Phase);
     // Chapter one's forms are exactly those its completed lesson duels taught.
     bValid&=ChapterId==0
         ?SoraDojoRules::CheckpointValid({Lessons},0,Saved.SitesMask)&&Lessons==LessonsTaught(Chapter,Saved.CompletedMask)
         :Lessons==0u;
+    bValid&=SoraWoodRules::JunctionValid(Save->WoodJunction,ChapterId,Beat,Saved.CompletedMask);
     if(!bValid) { ClearCheckpoint(); return false; }
     BeatState=Saved; DojoLessonMask=Lessons;
     BeatIndex=Beat; BeatPhase=Phase;
@@ -418,6 +422,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     ASoraGameMode& M=Mode();
     const FSoraChapter& Chapter=*ActiveChapter();
     const FSoraBeat& Beat=Chapter.Beats[Index];
+    if(Save) Save->WoodJunction=false;
     // Consecutive lesson duels keep their pupil on the floor; any other
     // change of beat clears the field.
     const auto Lesson=[](const FSoraBeat& Row) { return Row.Is(SoraBeatRules::EType::Duel)&&Row.bSparring&&Row.Has(SoraBeatRules::EGoal::Lessons); };
@@ -554,7 +559,7 @@ void USoraCampaignDirector::CompleteActiveBeat()
     Fire(TEXT("beat_complete"));
     BroadcastBeat(false,false);
     Telemetry(TEXT("complete"));
-    if(BeginLiftGallery()) return;
+    if(BeginWoodTransit()||BeginLiftGallery()) return;
     const int32 NextBeat=SoraBeatRules::NextBeat(BeatState,Chapter.Rules.GetData(),Chapter.Rules.Num());
     LeaveBeatSpace();
     if(NextBeat==INDEX_NONE) FinishChapter();
@@ -620,6 +625,8 @@ void USoraCampaignDirector::CompleteOptional(int32 Index)
 void USoraCampaignDirector::Collect(int32 Beat)
 {
     const FSoraChapter& Chapter=*ActiveChapter();
+    // Wood finds belong to their physical POIs, never its exit completion.
+    if(Beat==Chapter.Wood.Beat) return;
     // An explore beat's cache holds its collectibles; each goes to the codex.
     for(const FSoraCollectible& Item:Chapter.Collectibles)
     {
@@ -670,7 +677,7 @@ void USoraCampaignDirector::TickComponent(float DeltaTime,ELevelTick TickType,FA
     const bool bWasBlocking=bDialogueHeld;
     TickDialogue(DeltaTime);
     if(ActiveBeatData()!=Beat||bWasBlocking||bDialogueHeld) return;
-    if(TickLiftGallery(DeltaTime)) return;
+    if(TickWoodTransit()||TickLiftGallery(DeltaTime)) return;
     TickSealCut();
     TickBeat(DeltaTime);
 }
@@ -726,7 +733,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     {
         // The way to the exit, so ambushes along a route come as the hero passes them.
         SoraBeatRules::Travel(TaskState,Task,RoadPermille());
-        if(Space.Exit.Contains(Hero)&&SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
+        if(Space.Exit.Contains(Hero)&&(!IsWoodExplore()||AtWoodExit())&&SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
     }
     // Work held at a point: a load hoisted, an objective worked.
     TickEquipmentRecovery(DeltaMs);
@@ -1110,7 +1117,7 @@ void USoraCampaignDirector::ClearEncounter()
     ClearOpponents();
     ClearOfflineProjectiles();
     ClearHorses();
-    bLiftGallery=false;
+    bLiftGallery=false; bWoodTransit=false;
     EndCinematicCamera(0.f);
     Kills=0;
     ClearDialogue(); PromptRemaining=0.f; Notices.Reset();
@@ -1461,7 +1468,7 @@ void USoraCampaignDirector::StartOver()
 {
     bCampaignComplete=false; ChapterId=0;
     EntryWeapons=0u; EntryMechanics=0u; EntryFlags=0u; DojoLessonMask=0u;
-    if(Save) { Save->HighestChapter=0; Save->Collectibles=0; Save->GalleryPoiMask=0; Save->GalleryArrowsClaimed=false; }
+    if(Save) { Save->HighestChapter=0; Save->Collectibles=0; Save->GalleryPoiMask=0; Save->WoodPoiMask=0; Save->GalleryArrowsClaimed=false; }
     ClearCheckpoint();
     SaveProgress();
 }
@@ -1492,7 +1499,7 @@ bool USoraCampaignDirector::SelectChapter(int32 Chapter)
 bool USoraCampaignDirector::HasProgress() const
 {
     // The dojo's opening checkpoint, with no beat done, is where New Campaign begins.
-    return Save&&(Save->CurrentChapter>0||Save->HighestChapter>0||Save->CampaignComplete||Save->Collectibles!=0||
+    return Save&&(Save->CurrentChapter>0||Save->HighestChapter>0||Save->CampaignComplete||Save->Collectibles!=0||Save->WoodPoiMask!=0||
         (Save->CheckpointChapter>=0&&Save->CheckpointBeatsMask!=0));
 }
 bool USoraCampaignDirector::SeedCheckpoint(USoraSaveGame& Target,int32 Chapter,int32 Beat,int32 Phase)
@@ -1504,13 +1511,13 @@ bool USoraCampaignDirector::SeedCheckpoint(USoraSaveGame& Target,int32 Chapter,i
     SoraBeatRules::FProgress State{0u,0u,Weapons,Mechanics,Flags,false};
     for(int32 Index=0;Index<Beat&&Index<Data.Rules.Num();++Index)
         if(!Data.Rules[Index].Optional&&!SoraBeatRules::CompleteBeat(State,Data.Rules.GetData(),Data.Rules.Num(),Index)) return false;
-    if(!Data.Rules.IsValidIndex(Beat)||Data.Rules[Beat].Optional||
+    if(!Data.Rules.IsValidIndex(Beat)||(Data.Rules[Beat].Optional&&Beat!=Data.Wood.Beat)||
         !SoraBeatRules::CheckpointValid(State,Data.Rules.GetData(),Data.Rules.Num(),Weapons,Mechanics,Flags,Beat,Phase)||
         !SoraBeatRules::TaskCheckpointValid(Data.Tasks[Beat],Phase))
         return false;
     Target.SaveSchema=USoraSaveGame::Schema;
     Target.CurrentChapter=Chapter; Target.HighestChapter=FMath::Max(Target.HighestChapter,Chapter);
-    Target.CampaignComplete=false;
+    Target.CampaignComplete=false; Target.WoodJunction=false;
     Target.ChapterEntryWeapons=static_cast<int32>(Weapons); Target.ChapterEntryMechanics=static_cast<int32>(Mechanics);
     Target.ChapterEntryFlags=static_cast<int32>(Flags);
     Target.CheckpointChapter=Chapter; Target.CheckpointBeat=Beat; Target.CheckpointPhase=Phase;
@@ -1632,7 +1639,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     // A knocked-down conscript within reach: Interact held cuts its seal.
     if(BeginSealCut(Player)) return;
     if(InteractSupply(Player)) return;
-    if(InteractGalleryPoi(Player)) return;
+    if(InteractWood(Player)||InteractGalleryPoi(Player)) return;
     const FSoraBeatSpace& Space=Beat->Space;
     IdleMs=0;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
@@ -1965,6 +1972,7 @@ void USoraCampaignDirector::BroadcastBeat(bool bStarted,bool bResumed)
     USoraGameEvents* Events=USoraGameEvents::Get(this);
     if(!Beat||!Events) return;
     FSoraBeatEvent Event;
+    Event.bOptional=ActiveChapter()->Rules[BeatIndex].Optional;
     Event.ChapterId=ChapterId; Event.BeatIndex=BeatIndex; Event.BeatId=Beat->Id; Event.bResumed=bResumed; Event.Phase=BeatPhase;
     (bStarted?Events->OnBeatStarted:Events->OnBeatCompleted).Broadcast(Event);
 }
@@ -1987,13 +1995,13 @@ void USoraCampaignDirector::Telemetry(const TCHAR* Event,int32 Beat) const
     FFileHelper::SaveStringToFile(Line,*(FPaths::ProjectSavedDir()/TEXT("Telemetry/campaign_beats.jsonl")),
         FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM,&IFileManager::Get(),FILEWRITE_Append);
 }
-void USoraCampaignDirector::SaveCheckpoint()
+void USoraCampaignDirector::SaveCheckpoint(int32 AtBeat)
 {
     ASoraGameMode& M=Mode();
     if(!M.bCampaign||!Save) return;
     Save->CheckpointChapter=ChapterId;
-    Save->CheckpointBeat=BeatState.Complete?INDEX_NONE:BeatIndex;
-    Save->CheckpointPhase=BeatState.Complete?0:BeatPhase;
+    Save->CheckpointBeat=BeatState.Complete?INDEX_NONE:AtBeat==INDEX_NONE?BeatIndex:AtBeat;
+    Save->CheckpointPhase=BeatState.Complete||AtBeat!=INDEX_NONE?0:BeatPhase;
     Save->CheckpointBeatsMask=static_cast<int32>(BeatState.CompletedMask);
     Save->CheckpointSitesMask=static_cast<int32>(BeatState.SitesMask);
     Save->CheckpointWeapons=static_cast<int32>(BeatState.WeaponsMask);
@@ -2016,6 +2024,7 @@ bool USoraCampaignDirector::CanCheckpointHere() const
 void USoraCampaignDirector::ClearCheckpoint()
 {
     if(!Save) return;
+    Save->WoodJunction=false;
     Save->CheckpointChapter=-1; Save->CheckpointBeat=-1; Save->CheckpointPhase=0;
     Save->CheckpointBeatsMask=0; Save->CheckpointSitesMask=0; Save->CheckpointWeapons=0; Save->CheckpointMechanics=0;
     Save->CheckpointFlags=0; Save->CheckpointComplete=false; Save->CheckpointDojoLessonMask=0;
@@ -2034,6 +2043,7 @@ void USoraCampaignDirector::SaveProgress()
 }
 void USoraCampaignDirector::ClearOfflineProjectiles()
 {
+    WoodShots.Reset();
     ClearArchery();
     TArray<AActor*> Projectiles;
     UGameplayStatics::GetAllActorsOfClass(this,ASoraProjectile::StaticClass(),Projectiles);
@@ -2075,6 +2085,7 @@ FString USoraCampaignDirector::ObjectiveText() const
             M.Arena()?M.Arena()->ActiveNodes():0,Kills,KillsNeeded);
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("章を終えた");
+    if(bWoodTransit) return TEXT("林を散策するか、南の道から鍛冶場へ進む");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(false);
     if(IsArcheryLesson()) return ArcheryText(false);
     if(NeedsCarryGate()) return TEXT("蔵の封印で操作を長押しし、槍の石突でこじ開ける");
@@ -2112,6 +2123,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
             M.Arena()?M.Arena()->ActiveNodes():0,Kills,KillsNeeded);
     const FSoraBeat* Beat=ActiveBeatData();
     if(M.bChapterComplete||!Beat) return TEXT("Chapter complete");
+    if(bWoodTransit) return TEXT("Explore the wood, or take the south terrace to the smithy");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(true);
     if(IsArcheryLesson()) return ArcheryText(true);
     if(NeedsCarryGate()) return TEXT("Hold Interact at the granary seal to pry it off with the spear butt");

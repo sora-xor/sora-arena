@@ -4,6 +4,7 @@
 #include "SoraCatalogRegistry.h"
 #include "SoraCatalogArchery.h"
 #include "SoraCatalogDojo.h"
+#include "SoraCatalogWood.h"
 
 namespace
 {
@@ -756,7 +757,7 @@ bool FSoraCatalog::LoadCampaign()
         // Every task valid, the chapter opens on a cinematic (its title card),
         // only explore beats are optional and only bosses and duels save per phase.
         if (!SoraBeatRules::TasksValid(C.Rules.GetData(), C.Tasks.GetData(), C.Rules.Num())) return Bad(TEXT("beat tasks violate SoraBeatRules"));
-        // A collectible lies in an explore beat's cache or loose in the world
+        // A collectible belongs to an explore beat (cache or individual POI), or lies in the world
         // at its pickup (read with the space); the script's beats only hint
         // at when it is found.
         for (int32 Item = 0; Item < C.Collectibles.Num(); ++Item)
@@ -768,6 +769,7 @@ bool FSoraCatalog::LoadCampaign()
         }
         const TSharedPtr<FJsonObject> Space = Child(*Data, TEXT("space"));
         if (!Space || !LoadSpace(*Space, C)) return false;
+        if (!SoraCatalogWood::Read(*Data,C)) return Bad(TEXT("invalid chapter-one wood contract"));
         for (const FSoraCollectible& Collectible : C.Collectibles)
             if (Collectible.Beats.IsEmpty() == (Collectible.Pickup == INDEX_NONE))
                 return Bad(FString::Printf(TEXT("collectible %s must lie in one cache or at one pickup"), *Collectible.Id));

@@ -693,7 +693,7 @@ struct FSoraBeat
     int32 CaptureHoldMs=0;
     // The beat's `fail` rows by event.
     TMap<FString, SoraBeatRules::EFail> FailEvents;
-    // Collectibles in an explore beat's cache.
+    // Collectibles associated with an explore beat; wood POIs claim them separately.
     TArray<int32> Rewards;
     int32 GalleryArrowReward=0;
     TArray<FSoraExplorePoi> Pois;
@@ -703,6 +703,15 @@ struct FSoraBeat
 };
 struct FSoraChapter
 {
+    struct FWood
+    {
+        int32 Beat=INDEX_NONE;
+        TArray<FVector2D> Pois,Approach,Trail,Terrace,Bridge;
+        FVector2D Entry=FVector2D::ZeroVector,Arrival=FVector2D::ZeroVector;
+        FVector Naruko=FVector::ZeroVector;
+        FVector2D FaceCm=FVector2D::ZeroVector;
+        bool Enabled() const { return Beat!=INDEX_NONE; }
+    } Wood;
     FString Id;
     FString Title;
     FString TitleEnglish;
