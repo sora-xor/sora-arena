@@ -38,6 +38,7 @@ void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
             { return B.Space.Zone==Index&&B.Space.Summit.Enabled(); });
         if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
     }
+    BuildChapterWood(Chapter);
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();
     const FLinearColor Accent=FSoraCatalog::Get().Map(Chapter.Map).Accent;
     for(int32 Site=0;Site<Space.Sites.Num();++Site)

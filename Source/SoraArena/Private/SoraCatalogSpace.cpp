@@ -681,7 +681,9 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !Str(*O, TEXT("form"), Form) || !Styles.Contains(FName(*Style)) || !Forms.Contains(FName(*Form)) ||
             !SpaceVector(O->TryGetField(TEXT("rect")), 4, Rect) || Rect[0] >= Rect[2] || Rect[1] >= Rect[3] ||
             !Int(*O, TEXT("wall_cm"), Wall) || Wall <= 0 || !SpacePose(*O, TEXT("entry"), Zone.Entry, Zone.EntryYaw) ||
-            !SpaceBoxes(Rows(*O, TEXT("walls")), Zone.Walls) || Zone.Walls.Num() != 4 ||
+            !SpaceBoxes(Rows(*O, TEXT("walls")), Zone.Walls) ||
+            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch01_"))&&Zone.Place==TEXT("pl_issoseki_wood")?0:
+                C.Id.StartsWith(TEXT("ch01_"))&&(Zone.Place==TEXT("pl_matoba")||Zone.Place==TEXT("pl_dojo_smithy"))?5:4) ||
             !SpaceBoxes(Rows(*O, TEXT("cover")), Zone.Cover) || !SpacePoints(Rows(*O, TEXT("route")), Zone.Route) ||
             (Form == TEXT("route")) != (Zone.Route.Num() >= 2) || (Zone.Route.Num() == 1))
             return Bad(FString::Printf(TEXT("invalid zone %d"), S.Zones.Num()));
@@ -870,7 +872,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if ((B.bClosing && !SpacePoint(O->TryGetField(TEXT("closing")), B.Closing)) ||
             (B.bCache && !SpacePoint(O->TryGetField(TEXT("cache")), B.Cache)) ||
             (B.bCamera && !SpaceVector(O->TryGetField(TEXT("camera")), 9, Camera)) ||
-            B.bClosing != Task.AnchorAfterLines || B.bCache != Beat.Is(SoraBeatRules::EType::ExploreOptional) ||
+            B.bClosing != Task.AnchorAfterLines || B.bCache != Beat.Has(SoraBeatRules::EGoal::Cache) ||
             B.bCamera != Beat.Is(SoraBeatRules::EType::Cinematic))
             return Bad(Beat.Id + TEXT(" closing anchor, cache or camera"));
         B.CameraFrom = FVector(Camera[0], Camera[1], Camera[2]);

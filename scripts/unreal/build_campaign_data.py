@@ -912,6 +912,17 @@ def normalize_task(beat):
                     fail(where, "the engine spine needs a positive held draw-cut")
     elif kind == "explore_optional":
         task["goal"] = "cache"
+        if beat["id"] == "ch01.b08":
+            completion = beat["ext"].get("complete", {})
+            if completion != {"volume_enter": "vol_ch01_wood_exit"}:
+                fail(where, "wood completes only at its authored exit")
+            task.update(goal="exit", exit_event="volume_enter:vol_ch01_wood_exit")
+            # Chapter §3.5 places these finds separately; the YAML reward list
+            # is an association, not a single cache claim.
+            for poi in beat["params"]["pois"]:
+                item = {"poi_ch01_issoseki": "ch01.c01", "poi_ch01_sakaiishi": "ch01.c02"}.get(poi["id"])
+                if item:
+                    poi["collectible"] = item
 
     for entry in beat["fail"]:
         failure = next((name for pattern, name in FAIL_EVENTS if re.fullmatch(pattern, entry["on"])), None)

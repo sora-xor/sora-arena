@@ -43,7 +43,7 @@ int32 USoraCampaignDirector::HeroZone() const
 bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) const
 {
     const FSoraBeat* Beat=ActiveBeatData();
-    if(!Beat||Mode().bChapterComplete) return false;
+    if(!Beat||Mode().bChapterComplete||bWoodTransit) return false;
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
     if(IsArcheryLesson()) { Location=ArcheryLine(); bInteract=false; return !AtArcheryLine(); }
     if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }
@@ -315,7 +315,7 @@ void USoraCampaignDirector::TickVolumes()
     for(int32 Index=0;Index<Space.Volumes.Num();++Index)
     {
         const FSoraVolume& Volume=Space.Volumes[Index];
-        if(VolumesEntered.Contains(Index)||!Volume.Contains(At)) continue;
+        if(VolumesEntered.Contains(Index)||!Volume.Contains(At)||(IsWoodExplore()&&!AtWoodExit())) continue;
         VolumesEntered.Add(Index);
         // A dialogue waiting on the volume starts; its lines and the waves it
         // names follow the event.

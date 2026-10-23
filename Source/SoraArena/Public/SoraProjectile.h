@@ -28,6 +28,7 @@ public:
     int32 WeaponId = INDEX_NONE;
     // Assigned only by the active chapter-one range after a real release.
     unsigned long long ArcheryShotId=0;
+    unsigned long long WoodShotId=0;
     float TraveledCm() const { return Traveled; }
 private:
     UPROPERTY() TObjectPtr<USphereComponent> Collision;

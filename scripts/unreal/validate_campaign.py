@@ -345,6 +345,8 @@ def _volume_events(beat, chapter):
 
 def check_space(chapter, beats, rewards, labels, where):
     """The chapter's space is one the world builder can build and the hero can play."""
+    from campaign_wood import wood_valid
+    require(wood_valid(chapter), f"{where}: optional wood physical/reward contract")
     space = chapter["space"]
     zones = space["zones"]
     rects = [tuple(zone["rect"]) for zone in zones] + ([ARENA_RECT] if space["hub"] is not None else [])
@@ -363,7 +365,9 @@ def check_space(chapter, beats, rewards, labels, where):
         rect, cover = zone["rect"], zone["cover"]
         require(zone["style"] in ("estate", "ward", "foundry", "citadel") and
                 zone["form"] in ("hall", "yard", "field", "route"), f"{where}: zone {zone['id']} style or form")
-        require(len(zone["walls"]) == 4 and zone["wall_cm"] >= 200, f"{where}: zone {zone['id']} must be walled in")
+        wood_counts = {"pl_matoba": 5, "pl_issoseki_wood": 0, "pl_dojo_smithy": 5} if chapter["id"].startswith("ch01_") else {}
+        require(len(zone["walls"]) == wood_counts.get(zone["place"], 4) and zone["wall_cm"] >= 200,
+                f"{where}: zone {zone['id']} wall/door contract")
         for piece in cover:
             require(_inside(rect, piece, max(piece[2], piece[3]) / 2 + WALL_CLEAR),
                     f"{where}: cover {piece[:2]} of {zone['id']} leaves no way past the wall")
@@ -453,8 +457,8 @@ def check_space(chapter, beats, rewards, labels, where):
         require((record["closing"] is not None) == task["anchor_after_lines"], f"{what}: closing anchor must match its task")
         if task["anchor_after_lines"]:
             on_floor(index, record["closing"], f"{what} closing anchor", 0)
-        require((record["cache"] is not None) == (beat["type"] == "explore_optional"), f"{what}: optional cache must match its task")
-        if beat["type"] == "explore_optional":
+        require((record["cache"] is not None) == (task["goal"] == "cache"), f"{what}: optional cache must match its task")
+        if task["goal"] == "cache":
             on_floor(index, record["cache"], f"{what} cache")
         require((record["camera"] is not None) == (beat["type"] == "cinematic"), f"{what}: cinematic camera")
         kit = record["kit"]
@@ -1216,7 +1220,7 @@ def self_test(catalog, campaign, chapters, legacy, roster):
         record["cache"] = list(record["anchor"])
 
     def explore_without_cache(data):
-        space(data, 0, "ch01.b08")["cache"] = None
+        space(data, 0, "ch01.b08")["cache"] = [0, 0]
 
     def cinematic_without_camera(data):
         space(data, 7, "ch08.b18")["camera"] = None

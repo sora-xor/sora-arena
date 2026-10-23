@@ -985,3 +985,41 @@ package includes physical archery, but predates these latest dojo timing,
 recovery and bundled-font changes. A new package is still required for them.
 All evidence here is from this M2 Ultra; M1, Windows, normal-control pacing,
 straight/diagonal animation and final visual acceptance remain separate.
+
+## Chapter-one optional wood: source implementation, runtime pending
+
+The post-range choice now has continuous collision floors and door openings.
+Completing b07 leaves the hero on the range; walking into the wood starts b08,
+while the south terrace reaches b09 with b08 incomplete. The wood's authored
+exit alone completes b08, and the final bridge is walked to the smithy.
+B09 still requires b07 alone. There is no live route teleport. Checkpoint
+restoration explicitly spawns at the junction, wood entrance or smithy.
+
+The stone grants c01 and the boundary stone grants c02 independently. Vista
+and shrine interactions are separate lore discoveries. The clapper is a real
+collision target: only a registered, player-owned yumi arrow released on the
+vista floor can earn `codex_toshiya` on impact. Neither ordinary Interact,
+melee, entering the wood, its exit, a missed arrow, nor a release outside the
+vista grants that codex. It has a separate saved ledger bit and provisional
+bilingual early-1600s copy, with no combat or registry-goods reward. Existing
+schema-6 saves default the additive `WoodPoiMask` and `WoodJunction` fields to
+zero/false. Retry retains discoveries, clears pending projectile identities,
+and cannot regrant a discovery. New Campaign clears the ledger.
+
+`test_wood_rules.py` checks the translated authored positions, separate
+terrace, capsule clearance at the real door openings, malformed data, exact
+45 m origin-to-target centers and exhaustive native ledger/junction cases.
+`WoodExplore`, `WoodExitOnly` and `WoodLoader` are actual editor fixtures;
+`ArcheryLesson` now reloads the saved physical junction and walks the terrace,
+and `Playthrough` walks into the wood and visits its two separate finds.
+These new fixtures are prepared but have **not been run in Unreal** in this
+source-only slice. No build, render, Blender, packaged or performance proof
+is claimed here.
+
+Collision terrain remains flat and the POIs/clapper use primitive proxies.
+The final 10-to-6 m slope, stone hollow, shrine, forest, vista composition,
+clapper craft/sound and trail dressing are still art/layout work. The clapper
+azimuth (south) and 30-by-40 cm face are configurable provisional values;
+the standing-origin radius is 150 cm. The six authored trail points measure
+142.92 m, whereas the prose says approximately 170 m; the points are retained.
+These limitations do not qualify the authored final environment or pacing.

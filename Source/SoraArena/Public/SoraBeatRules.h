@@ -1454,7 +1454,7 @@ constexpr bool TaskValid(const FTask& Task)
         return Task.Goal == EGoal::Exit ||
             (Task.Goal == EGoal::Deliveries && PointsValid(Task.Dropoffs) && Task.Count == Task.Dropoffs);
     case EType::Boss: return Task.Goal == EGoal::OpponentDown && NoWaves;
-    case EType::ExploreOptional: return Task.Goal == EGoal::Cache && NoWaves;
+    case EType::ExploreOptional: return (Task.Goal == EGoal::Cache || Task.Goal == EGoal::Exit) && NoWaves;
     case EType::Collectible: return Task.Goal == EGoal::Found && NoWaves;
     }
     return false;

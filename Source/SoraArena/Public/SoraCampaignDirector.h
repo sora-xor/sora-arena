@@ -224,6 +224,11 @@ public:
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
     bool InLiftGallery() const { return bLiftGallery; }
+    int32 WoodPoiMask() const;
+    bool IsWoodExplore() const;
+    bool IsWoodTransit() const { return bWoodTransit; }
+    bool HasToshiyaCodex() const;
+    FString ToshiyaCodex(bool English) const;
     int32 GalleryPoiMask() const;
     bool GalleryArrowsClaimed() const;
     bool HasGalleryPoi(FName Id) const;
@@ -374,6 +379,16 @@ private:
     bool SpireReadyToComplete() const;
     bool BeginLiftGallery();
     bool TickLiftGallery(float DeltaSeconds);
+    bool bWoodTransit=false;
+    TMap<uint64,TWeakObjectPtr<ASoraProjectile>> WoodShots;
+    uint64 NextWoodShot=0;
+    bool BeginWoodTransit();
+    bool ResumeWoodJunction();
+    bool AtWoodExit() const;
+    bool TickWoodTransit();
+    bool InteractWood(ASoraPlayerCharacter& Player);
+    void RegisterWoodArrow(ASoraProjectile& Arrow);
+    void ResolveWoodArrow(ASoraProjectile& Arrow,const FHitResult* Hit);
     void TickGalleryPois();
     bool InteractGalleryPoi(ASoraPlayerCharacter& Player);
     FVector WorkAnchor() const;
@@ -571,7 +586,7 @@ private:
     void BroadcastBeat(bool bStarted, bool bResumed);
     // A telemetry row for the active beat, or for Beat (an optional beat completed beside it).
     void Telemetry(const TCHAR* Event, int32 Beat = INDEX_NONE) const;
-    void SaveCheckpoint();
+    void SaveCheckpoint(int32 AtBeat=INDEX_NONE);
     void ClearCheckpoint();
     void ClearOfflineProjectiles();
     // Training arena rounds (not campaign).

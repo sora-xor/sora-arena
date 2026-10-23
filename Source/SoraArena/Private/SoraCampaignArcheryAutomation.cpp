@@ -159,7 +159,13 @@ bool FSoraArcheryLessonTest::RunTest(const FString& Parameters)
     if(!TestTrue(TEXT("Exhaustion recovery prevents a hanging-stage softlock"),Fetch(W))) return false;
     TestEqual(TEXT("Recovery grants no target progress"),C->ArcheryProgress().HangingHits,1u);
     for(int32 Target=2;Target<=3;++Target) if(!SoraArcheryAutomation::Loose(*this,*W.World,Target)) return false;
-    if(!TestEqual(TEXT("Three independently earned hanging hits open the smithy"),C->ActiveBeat(),8)) return false;
+    if(!TestTrue(TEXT("Three independently earned hanging hits open the physical route choice"),C->IsWoodTransit())) return false;
+    if(!ReloadWorld(W)) return false;
+    C=W.Campaign(); Kit=W.Hero()->GetEquipment();
+    if(!TestTrue(TEXT("Fresh-world reload retains completed b07 and the physical choice"),C->IsWoodTransit()&&
+        (C->Progress().CompletedMask&SoraBeatRules::BeatBit(6))!=0)) return false;
+    if(!TestTrue(TEXT("Actual terrace walking reaches the smithy without completing wood"),SoraWoodAutomation::Terrace(*W.World))) return false;
+    TestEqual(TEXT("The terrace preserves optional b08"),C->Progress().CompletedMask&SoraBeatRules::BeatBit(7),0u);
     TestEqual(TEXT("The authored stone-damaged batch has six usable arrows"),W.Hero()->GetEquipment()->AmmoByWeapon[18],6);
     TestEqual(TEXT("Six bent arrows motivate manufacture"),C->BentArrows(),6);
     auto* Saved=Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(W.Slot,0));

@@ -20,7 +20,7 @@ bool USoraCampaignDirector::UsesDojoQuiver() const
 }
 bool USoraCampaignDirector::IsArcheryLesson() const
 {
-    return UsesDojoQuiver()&&ActiveBeatData()&&ActiveBeatData()->bArcheryLesson;
+    return UsesDojoQuiver()&&!bWoodTransit&&ActiveBeatData()&&ActiveBeatData()->bArcheryLesson;
 }
 bool USoraCampaignDirector::CanLooseArcheryArrow() const
 {
@@ -109,6 +109,7 @@ void USoraCampaignDirector::StageArcheryTargets()
 }
 unsigned long long USoraCampaignDirector::RegisterArcheryArrow(ASoraProjectile& Arrow)
 {
+    RegisterWoodArrow(Arrow);
     if(!IsArcheryLesson()||!Mode().Hero()||Arrow.GetOwner()!=Mode().Hero()||!Arrow.bArrow||Arrow.WeaponId!=18||
         !SoraArcheryRules::CanLoose(Archery)||NextArcheryShot==MAX_uint64) return 0;
     const auto Id=++NextArcheryShot;
@@ -117,6 +118,7 @@ unsigned long long USoraCampaignDirector::RegisterArcheryArrow(ASoraProjectile& 
 }
 void USoraCampaignDirector::ResolveArcheryArrow(ASoraProjectile& Arrow,const FHitResult* Impact)
 {
+    ResolveWoodArrow(Arrow,Impact);
     const auto Id=Arrow.ArcheryShotId;
     Arrow.ArcheryShotId=0; // Impact and EndPlay share exactly one resolution.
     if(!IsArcheryLesson()||Arrow.GetOwner()!=Mode().Hero()||!Arrow.bArrow||Arrow.WeaponId!=18) return;

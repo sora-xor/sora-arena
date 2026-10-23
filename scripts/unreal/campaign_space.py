@@ -31,6 +31,7 @@ from __future__ import annotations
 from campaign_lift import place_lift
 from campaign_spire import place_spire
 from campaign_summit import place_summit
+from campaign_wood import connect_wood
 
 import math
 import re
@@ -479,6 +480,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
             continue
         form = place_form(place_id)
         width, height, wall = FORMS[form]
+        if prefix == "ch01" and place_id == "pl_issoseki_wood":
+            width, height = 11000, 8500
         if place_id in hosts_boss:
             width, height = max(width, BOSS_SIZE[0]), max(height, BOSS_SIZE[1])
         rect = (x, -height // 2, x + width, height // 2)
@@ -581,7 +584,7 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
     place_lift(beats, records, fail)
     place_spire(beats, records, zones, fail)
     place_summit(beats, records, zones, fail)
-    return {
+    result = {
         "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
         "hub": chapter_map if hub else None,
         "hub_place": hub,
@@ -591,6 +594,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         "beats": records,
         "pickups": pickups,
     }
+    connect_wood(result, beats, layout)
+    return result
 
 
 ESCORT_MARGIN = 500
@@ -763,7 +768,7 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
             [list(_frac(rect, fx, fy)) for fx, fy in SPAWN_AT]
         record["patrols"] = [[list(point) for point in loop] for loop in ARENA_PATROLS] if zone is None else \
             [[list(_frac(rect, fx, fy)) for fx, fy in loop] for loop in PATROL_AT]
-        if beat["type"] == "explore_optional":
+        if beat["task"]["goal"] == "cache":
             record["cache"] = list(ARENA_CACHES[beat_index(beat) % len(ARENA_CACHES)] if zone is None else
                                    _frac(rect, *CACHE_AT))
         if beat["type"] == "cinematic":
