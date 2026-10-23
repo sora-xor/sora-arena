@@ -4,8 +4,9 @@ import json
 from pathlib import Path
 import unittest
 
-from build_campaign_data import BuildError, normalize_task
-from validate_campaign import CampaignError, check_cargo_unload
+from build_campaign_data import BuildError, normalize_task, fail
+from campaign_space import ride_mount
+from validate_campaign import CampaignError, check_cargo_unload, check_spook_dismount
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -48,6 +49,58 @@ class CargoUnloadDataTests(unittest.TestCase):
         self.assertEqual(mount["fear"], {"radius_cm": 900, "recover_ms": 2500})
         self.assertTrue(mount["dismount"])
         self.assertFalse(self.beat["task"]["horse_down_retries"])
+
+    def test_only_authored_cargo_spook_dismounts(self):
+        found, mounts = [], 0
+        for path in (ROOT / "Content/Data/campaign").glob("chapter_*.json"):
+            chapter = json.loads(path.read_text())
+            for beat, space in zip(chapter["beats"], chapter["space"]["beats"]):
+                mount = space["mount"]
+                if mount is None:
+                    continue
+                mounts += 1
+                check_spook_dismount(beat, mount)
+                if mount["spook_dismount"]:
+                    found.append(beat["id"])
+                else:
+                    forged = {**mount, "spook_dismount": True}
+                    with self.subTest(beat=beat["id"]), self.assertRaises(CampaignError):
+                        check_spook_dismount(beat, forged)
+        self.assertEqual(mounts, 8)
+        self.assertEqual(found, ["ch04.b14"])
+        self.assertEqual(self.beat["params"]["on_spook"], "dismount_continue")
+        self.assertTrue(ride_mount(self.beat, fail)["spook_dismount"])
+
+    def test_spook_policy_rejects_bad_values_and_incompatible_rides(self):
+        for value in (None, True, False, 1, "checkpoint", "", [], {}):
+            beat = copy.deepcopy(self.beat)
+            beat["params"]["on_spook"] = value
+            with self.subTest(value=value), self.assertRaises(BuildError):
+                ride_mount(beat, fail)
+        for key, value in (("mode", "travel"), ("dismount_allowed", False),
+                           ("on_horse_down", "checkpoint"), ("fear", None),
+                           ("fear", {"spook_radius_cm": 900, "recover_s": False}),
+                           ("fear", {"spook_radius_cm": 900, "recover_s": float("inf")}),
+                           ("cargo", {"carrier": "kurimaru"})):
+            beat = copy.deepcopy(self.beat)
+            beat["params"][key] = value
+            with self.subTest(key=key, value=value), self.assertRaises(BuildError):
+                ride_mount(beat, fail)
+
+    def test_normalized_spook_policy_is_required_and_exact(self):
+        mount = ride_mount(self.beat, fail)
+        for value in (None, 0, 1, "true", False):
+            forged = {**mount, "spook_dismount": value}
+            with self.subTest(value=value), self.assertRaises(CampaignError):
+                check_spook_dismount(self.beat, forged)
+        del mount["spook_dismount"]
+        with self.assertRaises(CampaignError):
+            check_spook_dismount(self.beat, mount)
+        beat = copy.deepcopy(self.beat)
+        del beat["params"]["on_spook"]
+        self.assertFalse(ride_mount(beat, fail)["spook_dismount"])
+        beat["params"]["on_spook"] = "shy"
+        self.assertFalse(ride_mount(beat, fail)["spook_dismount"])
 
     def test_invalid_authored_hold_is_rejected(self):
         for value in (None, True, False, "3", [], 0, -1, .0004, 1e-10, 3.0004,

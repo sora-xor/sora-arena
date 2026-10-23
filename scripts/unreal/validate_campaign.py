@@ -59,7 +59,7 @@ from campaign_flood import flood_valid
 from campaign_climb import climb_valid
 from campaign_foundry_defense import foundry_valid, CREW
 from campaign_moat import moat_valid
-from campaign_space import arena_blockers
+from campaign_space import arena_blockers, spook_dismount
 from campaign_registry import validate_registry
 from campaign_crank import player_work
 
@@ -493,6 +493,7 @@ def check_space(chapter, beats, rewards, labels, where):
         require((mount is not None) == (beat["type"] == "horseback_ride" or any(
             "mount" in phase for phase in beat["params"].get("phases", []))), f"{what}: horse")
         if mount:
+            check_spook_dismount(beat, mount)
             require(set(mount["weapons"]) <= MOUNTED_WEAPONS, f"{what}: mounted weapons {mount['weapons']}")
             require(set(mount["gaits"]) <= set(GAITS) and mount["gaits"], f"{what}: gaits {mount['gaits']}")
             speeds = mount["speeds_cm_s"]
@@ -740,6 +741,14 @@ def check_rhythm_steps(beat):
     except BuildError as error:
         raise CampaignError(str(error)) from error
     require(beat["task"]["steps"] == expected, f"{beat['id']}: exact authored manufacturing rhythm contract")
+
+
+def check_spook_dismount(beat, mount):
+    def reject(where, message):
+        raise CampaignError(f"{where}: {message}")
+    expected = spook_dismount(beat, reject)
+    require(type(mount.get("spook_dismount")) is bool and mount["spook_dismount"] == expected,
+            f"{beat['id']}: normalized spook dismount must match the authored policy")
 
 
 def check_cargo_unload(beat):

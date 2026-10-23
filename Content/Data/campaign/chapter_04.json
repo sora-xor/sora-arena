@@ -2676,6 +2676,7 @@
     "auto_steer": "setting",
     "dismount_allowed": true,
     "on_horse_down": "dismount_continue",
+    "on_spook": "dismount_continue",
     "cargo": {
      "item": "barley_sheaf",
      "qty": 30,
@@ -9187,6 +9188,7 @@
      },
      "dismount": false,
      "auto_steer": true,
+     "spook_dismount": false,
      "until_phase": 0,
      "pack": [],
      "at": [
@@ -11326,6 +11328,7 @@
      },
      "dismount": true,
      "auto_steer": true,
+     "spook_dismount": true,
      "until_phase": 0,
      "pack": [
       {
@@ -11668,6 +11671,7 @@
      },
      "dismount": true,
      "auto_steer": false,
+     "spook_dismount": false,
      "until_phase": 1,
      "pack": [],
      "at": [
