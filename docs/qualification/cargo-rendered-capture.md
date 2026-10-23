@@ -193,3 +193,23 @@ empty-file and stale-file rejection. Host geometry/font cases cover the four
 observed defects, projected/ring reticles and relocated tracker/caption capacity.
 They do not establish actual Canvas placement or visible-image acceptance.
 Root owns compilation, current-frame capture and original PNG review.
+
+
+### Tarifa capacity follow-up
+
+The subsequent SM6/720p attempt at `c139192` rejected Tarifa before requesting
+an original: the complete boss readout had no measured clear placement. The
+previous host model left only about 1.4 pixels of spare height in its useful
+regions. Those old image envelopes and FreeType metrics do not identify the
+new Canvas measurements; the generic failure did not record them.
+
+Boss layout now exhausts normal spacing before trying complete rows with two
+pixels of inter-row clearance instead of four. Font sizes, strings, panel
+padding, phase/health/barrier/warning dimensions and all layout gates remain
+unchanged. Unsupported capacity still retains the full readout and fails.
+The failure diagnostic now records actual boss/phase/health/attack identity,
+viewport, each trial region and panel, every row's glyph bounds and scale,
+all meter rectangles, and the actual obstacles. A host case deliberately adds
+one pixel to each glyph row to expose the earlier fragile fit; it is a stress
+case, not a claim to reproduce unrecorded Canvas geometry. Rendered review of
+the corrected candidate remains required.
