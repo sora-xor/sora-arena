@@ -153,11 +153,23 @@ bool FSoraMoatSenses::RunTest(const FString&)
     SoraMoatTest::FWorld W(*this,TEXT("MoatSenses"),5,1);if(!SoraMoatTest::Start(W))return false;
     auto* C=W.Fieldcraft();const FVector O(W.BeatData().Space.Moat.Origin,0);
     const FVector Initial=C->SpotOf(0);
-    if(!SoraMoatTest::Walk(W,FVector(3000,200,0))||!SoraMoatTest::Walk(W,FVector(6000,1800,0)))return false;
+    // Seven degrees inside the left sweep endpoint, rather than the centre
+    // crossing: the real spot remains on this open water through the reversal
+    // for about2.09s (400cm radius,3000cm reach,14degrees/s). The centre and
+    // exact endpoint expose a stationary head for only about1.09s per pass.
+    const FVector Exposed(4592,2151,0);
+    if(!SoraMoatTest::Walk(W,FVector(3000,200,0))||!SoraMoatTest::Walk(W,Exposed))return false;
     TestTrue(TEXT("The two authored lamps physically sweep the water"),C->LightCount()==2&&C->IsLightOn(0)&&C->IsLightOn(1)&&FVector::Dist2D(Initial,C->SpotOf(0))>100);
     // No frozen guards, moved lamps, injected detection or repositioning.
-    for(int32 F=0;F<1800&&!W.Raised(TEXT("ai_event:searchlight_alert"));++F)if(!W.Tick(1))return false;
+    int32 LitFrames=0,LongestLitFrames=0;
+    for(int32 F=0;F<1800&&!W.Raised(TEXT("ai_event:searchlight_alert"));++F)
+    {
+        if(!W.Tick(1))return false;
+        LitFrames=C->MoatHeadLit()?LitFrames+1:0;LongestLitFrames=FMath::Max(LongestLitFrames,LitFrames);
+    }
     SoraMoatTest::Sample(W,TEXT("live searchlight detection"));
+    AddInfo(FString::Printf(TEXT("SORA_MOAT: real lamp exposure longest_frames=%d suspicious=%d alert=%d"),
+        LongestLitFrames,W.Raised(TEXT("ai_event:searchlight_suspicious")),W.Raised(TEXT("ai_event:searchlight_alert"))));
     TestTrue(TEXT("Real head exposure reaches both authored light thresholds"),W.Raised(TEXT("ai_event:searchlight_suspicious"))&&W.Raised(TEXT("ai_event:searchlight_alert"))&&W.Stealth()->IsDetected());
     TestTrue(TEXT("Actual traced searchlight exposure supplies the guard light-range input"),C->MoatHeadLit());
     if(!W.Tick(90))return false;
@@ -169,7 +181,10 @@ bool FSoraMoatSenses::RunTest(const FString&)
     TestTrue(TEXT("Alarm physically descends the drone to3m"),FMath::Abs(Drone->GetActorLocation().Z-300)<5);
     const FVector Seen=W.Hero()->GetActorLocation();
     TestTrue(TEXT("Both lamps lock the actual detection position"),FVector::Dist2D(C->SpotOf(0),Seen)<30&&FVector::Dist2D(C->SpotOf(1),Seen)<30);
-    if(!SoraMoatAutomation::Posture(*W.World,true)||!SoraMoatTest::Walk(W,FVector(6000,1300,-150))||!SoraMoatAutomation::Posture(*W.World,false))return false;
+    // Leave the locked400cm spot underwater, then surface in real open air
+    // before the8s breath budget expires and swim beneath the nearby lotus.
+    if(!SoraMoatAutomation::Posture(*W.World,true)||!SoraMoatTest::Walk(W,FVector(Exposed.X,1700,-150))||
+        !SoraMoatAutomation::Posture(*W.World,false)||!SoraMoatTest::Walk(W,FVector(Exposed.X,1300,0)))return false;
     TestTrue(TEXT("Surfacing beneath real lotus cover hides the head and restores air"),!C->IsDiving()&&C->HeroExposure(1000)==0);
     TestFalse(TEXT("Cover cannot retain the searchlight range bonus"),C->MoatHeadLit());
     // Search itself is20s; a remote parapet guard first walks to its
