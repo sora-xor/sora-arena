@@ -10390,11 +10390,67 @@
         39232,
         588
        ]
+      },
+      {
+       "id": "bellows_boy",
+       "target": -1,
+       "at": [
+        39968,
+        700
+       ],
+       "cover": [
+        39968,
+        700
+       ]
+      },
+      {
+       "id": "bellows_worker",
+       "target": -1,
+       "at": [
+        40288,
+        700
+       ],
+       "cover": [
+        40288,
+        700
+       ]
       }
      ],
      "volley": null,
      "alarms": [],
-     "nets": null,
+     "nets": {
+      "quarry": [
+       {
+        "id": "bellows_boy",
+        "kind": "person",
+        "index": 1,
+        "hp": 0
+       },
+       {
+        "id": "bellows_worker",
+        "kind": "person",
+        "index": 2,
+        "hp": 0
+       }
+      ],
+      "windup_ms": 800,
+      "haul_ms": 0,
+      "cut_ms": 1000,
+      "saddle_weapon": -1,
+      "saddle_side": 0,
+      "tether": true,
+      "halts": false,
+      "net_waves": [
+       2
+      ],
+      "nets_per_wave": [
+       2
+      ],
+      "scout_waves": [],
+      "cross_wave": -1,
+      "cross_at_cm": 0,
+      "lost_event": null
+     },
      "searchlights": [],
      "bell": null,
      "fires": null,
@@ -10402,7 +10458,56 @@
      "charge": null
     },
     "height_cm": 0,
-    "lift": null
+    "lift": null,
+    "foundry_defense": {
+     "furnace_target": 0,
+     "kozo_target": 1,
+     "repair_ms": 3000,
+     "repair_hp": 150,
+     "revive_ms": 4000,
+     "down_limit_ms": 25000,
+     "crew_drain_hp_s": 5,
+     "tubs": [
+      {
+       "id": "clay_tub_w",
+       "at": [
+        39748,
+        -380
+       ]
+      },
+      {
+       "id": "clay_tub_e",
+       "at": [
+        40508,
+        -380
+       ]
+      },
+      {
+       "id": "clay_tub_n",
+       "at": [
+        40128,
+        380
+       ]
+      }
+     ],
+     "crew": [
+      {
+       "id": "bellows_boy",
+       "at": [
+        39968,
+        700
+       ]
+      },
+      {
+       "id": "bellows_worker",
+       "at": [
+        40288,
+        700
+       ]
+      }
+     ],
+     "provisional_placement": true
+    }
    },
    {
     "beat": "ch05.b08",

@@ -268,6 +268,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     }
     else if(KitWork==TEXT("defend"))
     {
+        BuildFoundryDefense(Space);
         for(int32 Target=0;Target<Space.Targets.Num();++Target)
         {
             const FVector P=Floor(Space.Targets[Target]);
@@ -275,7 +276,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
             if(Kind==TEXT("horse")) KitHorse(P,90.f,TEXT("bay"),true);
             else if(Kind==TEXT("furnace"))
             {
-                KitShape(TEXT("TargetFurnace"),KitCube,P+FVector(0,0,110),FVector(1.8f,1.8f,2.2f),FLinearColor(.25f,.22f,.2f),TEXT("Stone"),true);
+                if(!Space.FoundryDefense.bEnabled) KitShape(TEXT("TargetFurnace"),KitCube,P+FVector(0,0,110),FVector(1.8f,1.8f,2.2f),FLinearColor(.25f,.22f,.2f),TEXT("Stone"),true);
                 KitShape(TEXT("TargetFurnaceMouth"),KitCube,P+FVector(-92,0,70),FVector(.08f,.7f,.5f),FLinearColor(.9f,.35f,.08f));
             }
             else if(Kind==TEXT("tent"))
@@ -429,6 +430,7 @@ void ASoraWorldBuilder::ShowRecoveryBundle(bool Visible)
 }
 void ASoraWorldBuilder::ClearKit()
 {
+    FoundryActor.Reset(); FoundryTubs.Reset(); FoundryBellows.Reset(); FoundryUsedShown=~0u;
     SetActorTickEnabled(false);
     ResetSpireAlarm(false);
     SupplyCrate=nullptr; SupplyId.Reset();
