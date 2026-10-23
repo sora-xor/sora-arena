@@ -22,17 +22,27 @@ pass with zero selected errors/warnings. The traversal covers eight chapters,
 133 beats and fresh checkpoint/phase reloads. The retained earlier failures
 led to a verified exit-transition helper and grade-aware support checks plus
 clear hangar markers. This is assisted functional automation, not ordinary
-play balance or a package of the latest source. Active-held helm pause remains
-under correction and separate validation.
+play balance or a package of the latest source. At `75708f3`, all eight directed
+helm/pause/input editor tests pass with zero selected errors/warnings. Opening
+the menu cancels partial correction; both release/repress and actual held-key
+repeat reconciliation require a fresh full two seconds after resume. This is
+not a guarantee that the player must physically release the key first.
 
 Normal-GI SM5 controls show that the darker entry follows the rebuilt mesh
 assets. Disabling diffuse indirect lighting removes the large visible
 difference; the new observer measures changed SDF/card data for 11/12 meshes
 with equal conventional source/material/section observations. The exact cause
-and repair remain open. All four new originals were reviewed and all candidate
-asset bytes restored. No lighting setting or art was admitted by the controls.
+and repair remain open. Later single-floor and four-floor replacement-source
+controls preserve recorded geometry, materials, Nanite settings and culling
+bounds within each pair. Only the targeted floor SDF/card observations change;
+the floor brightens but the broad room defect remains. Original images were
+reviewed and all 48 candidate files independently rehashed after restoration.
+No lighting setting, production asset change or art was admitted by the controls.
 
-CI `39908298194` passes 73 gates at `d1790c5`, before this integration. Earlier
+CI `39916293154` passes 76 gates in five jobs at `fc9628a`; its tested merge has
+the same source tree. This includes the earlier campaign integration but
+predates the two helm pause commits. The chapter-six authored climb remains
+under implementation, with runtime validation still required. Earlier
 package, native, art and platform results retain their separate source scope.
 The complete release remains unfinished.
 

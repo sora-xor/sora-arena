@@ -398,5 +398,52 @@ Floor finest-mip bricks change from 70 to 88, with Z bounds expanding from
 OBBs differ. These measurements do not distinguish SDF versus card causality.
 
 All 48 candidate files are restored and hash-verified after each successful
-or failed control. Existing art remains unadmitted. A proposed single-floor
-GI-source experiment is still a diagnostic plan, not an implemented repair.
+or failed control. Existing art remains unadmitted. The bounded floor controls
+below supersede the earlier single-floor plan; neither is a production repair.
+
+## Bounded floor GI-source controls at 75708f3
+
+The root lane executed a single-floor control, followed by a separate control
+of all four floor variants. Each duplicates the original ordinary mesh into a
+unique temporary diagnostic package, restores the candidate, and first rebuilds
+it with identical build settings. That baseline is necessary: an unchanged
+build refreshes serialized public bounds to include the Nanite hierarchy.
+The earlier attempt correctly failed the unchanged-bounds gate and remains
+archived; no culling property was written or bound shrunk to make it pass.
+The rebuilt bounds conservatively contain the old public bounds and all
+recorded conventional and raw source geometry. All other recorded controls
+and all twelve existing SDF/card observations remain equal at this stage.
+
+After the rebuilt baseline capture, a fresh editor process verifies the saved
+baseline, assigns only `distance_field_replacement_mesh` to the corresponding
+ordinary proxy, saves and audits again. Exact conventional geometry, source
+groups, materials, Nanite settings/counts and public culling bounds remain
+unchanged. The rendered pairs also match all 24 component controls/bounds.
+Only the targeted floors' SDF/card observations change; all other mesh
+observations and all unrelated package bytes match. These observations do not
+establish encoded Nanite resource byte identity, unread streamed SDF payload
+identity or current GPU card allocation.
+
+- The single-floor pair is `20261023T074613Z-sm5-10729` and
+  `20261023T074737Z-sm5-11804`. Only Floor_0 changes; its measured SDF/card
+  fields match the original ordinary Floor_0. Root inspected both originals
+  in each capture. Entry brightness increases modestly, while the broad room
+  remains dark and the ceiling appears comparable. Entry/ceiling mean absolute
+  eight-bit channel differences are 1.6186/0.2702.
+- The four-floor pair is `20261023T132622Z-sm5-62176` and
+  `20261023T132721Z-sm5-63902`. Only Floor_0 through Floor_3 change; the other
+  eight meshes match. Root inspected all four originals. The floor brightens
+  more, but this still does not restore the broad brighter appearance of the
+  original twelve-mesh control. Entry/ceiling channel differences are
+  5.9573/0.5298. These are descriptive measurements, not acceptance thresholds.
+
+Both five-phase controls exited successfully with complete EOF receipts.
+Root independently rehashed all 48 restored candidate files, verified source
+and Config unchanged, and confirmed removal of the unique temporary packages.
+The archives are `rebuilt-run-20261023T074510Z-8aa16f3b/` and
+`four-floor-run-20261023T132517Z-93dd66ad/` under
+`Saved/Qualification/2026-10-23/dojo-floor0-replacement/`. Their root-review
+SHA256 values are `c1a8d8873e801601c3af44663048861300f4c8c7f573b28a693d6ec21aafd511`
+and `c4e4fc111d533801568c58fead803e45f24c9c1efb14a094403b06ffcadf2995`.
+The result narrows the affected geometry; it does not separate SDF from card
+causality or qualify a production fix, SM6 behavior, cooking, M1 or performance.

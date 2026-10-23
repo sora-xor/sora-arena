@@ -59,8 +59,33 @@ ordinary play balance, final art or a newly packaged build.
   This narrows the investigation; it does not identify a production repair.
   All four new originals were reviewed and all 48 candidate files restored.
 
-Active-held helm pause behavior still needs its explicit cancellation policy
-and directed regression. Photoreal art, ordinary-control campaign acceptance,
+At `75708f3`, opening a menu cancels partial helm correction immediately and
+restores the player's hands and weapon visibility. Deadline, grace and hold
+progress remain frozen during pause. Both release/repress and Unreal's actual
+held-key flush/repeat reconciliation must earn a fresh two-second correction;
+the policy does not require a new physical key release. All eight directed
+editor tests pass with zero selected errors/warnings: the four helm fixtures,
+held crank, dialogue gift hold, input gating and world pause. The source-bound
+editor build and independent receipt authentication pass too.
+
+CI `39916293154` separately passes 76 gates in five jobs at `fc9628a`, with
+the tested merge tree identical to the source tree. This includes 279 Rust
+passes and five explicitly ignored research tests; private raw assets and
+native parity remain outside its scope. Root authenticated all 97 referenced
+local evidence files. This CI run predates the two helm pause commits.
+
+The single-floor and four-floor GI-source controls at `75708f3` both completed.
+Each used an identical-settings rebuild baseline before changing only the
+floor meshes' distance-field replacement source. Recorded geometry, materials,
+Nanite controls and public/component culling bounds match within each pair;
+only the targeted floors' SDF/card observations change. The entry floor becomes
+brighter, but neither experiment repairs the broad room appearance. All new
+originals were inspected and all 48 candidate files restored and independently
+rehashed. No production asset or lighting change is accepted from these controls.
+
+Chapter-six b03 still needs its authored two climb routes, resting shelves,
+timed downward sentry sweep and physical crawl exit. That source work is in
+progress in separate campaign worktrees. Photoreal art, ordinary-control campaign acceptance,
 new packages, actual M1/Windows performance and the remaining native/network/
 settlement criteria remain open. Claude's art ownership and queued requests
 are unchanged during the confirmed weekly limit through October 24, 22:00 JST.
@@ -71,6 +96,10 @@ Archives: `campaign-integration-9107ea7/`, `campaign-flood-9ebcf87/`,
 The exact normal-GI captures are `20261023T065542Z-sm5-50677` and
 `20261023T065708Z-sm5-52741`; the GI-off control pair is
 `20261023T062604Z-sm5-12647` and `20261023T062706Z-sm5-14737`.
+The helm archive is `campaign-helm-75708f3/runtime-targeted/`, CI is
+`ci-fc9628a/`, and the bounded floor controls are under
+`dojo-floor0-replacement/`. Their exact captures and limitations are recorded
+in [the renderer diagnostic](render-qualification/dojo-nanite-draw.md#bounded-floor-gi-source-controls-at-75708f3).
 
 ## October 23 package, Codex and Nanite qualification
 

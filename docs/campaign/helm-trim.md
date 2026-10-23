@@ -82,12 +82,23 @@ Their opponents are deliberately isolated to test the mechanism. Aggregate
 campaign traversal now works the actual wheel rather than crediting the hold
 without corrections.
 
-At this source checkpoint no Unreal compilation, engine fixture run, render,
-package, platform performance or human pacing result is claimed. Root owns
-those execution gates. The original implementation's first CPU/source run
+Root execution at `75708f3` passes the source-bound Mac editor build and all
+eight requested tests: the four helm fixtures above, `CrankHeldInput`,
+`Dialogue.GiftInputHold`, `Input.StateGatedKeys` and `Menu.PausesWorld`.
+The selected tests report zero errors and warnings. The pause fixture runs
+with the actual engine reconciliation setting enabled, checks ten paused
+seconds without clock credit, and rejects completion after only one new
+second of work. Independent authentication binds the original report and
+exact editor/native receipts under
+`Saved/Qualification/2026-10-23/campaign-helm-75708f3/runtime-targeted/`.
+Late TraceServer output remains preserved separately from the authenticated
+original log prefix. These headless fixtures do not establish rendered art,
+ordinary encounter pacing, platform performance or a newly packaged build.
+
+The original implementation's first CPU/source run
 preserved 50 passes and two font-dependent failures caused by an
 unmaterialized tracked LFS font; after materializing it, all 52 source gates
 passed. The hands/floor correction's first source run preserved 51 passes
 and one localization refusal; its hands notice now reuses the existing
-localized wheel notice. Source reports and their hashes accompany the
-handoff; none establishes an Unreal compilation or runtime result.
+localized wheel notice. Those historical source reports and hashes accompany
+the handoff; by themselves they establish no Unreal compilation or runtime result.
