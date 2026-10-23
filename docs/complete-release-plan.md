@@ -11,7 +11,74 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
-## October 23 bow, wood and source qualification
+## October 23 package, Codex and Nanite qualification
+
+This update supersedes the running and pending states in the historical
+October 23 sections below. The release remains incomplete.
+
+- The completed Mac Development package is `c655b6b`, with native bridge
+  `10ad7dad`. Game build, cooking (1,323 packages, zero cook errors/warnings),
+  staging, strict signature validation, startup smoke, all 164 client tests
+  and a separate untouched rendered Title test pass. All 62 packaged files
+  retain their hashes. The independent review resolves the original cook
+  receipt reference against the exact archived receipt; original evidence is
+  retained. Four Metal converter include warnings and the successful existing
+  Xcode-scheme retry remain recorded. Root inspected all 19 front-end frames
+  and the separate fresh Title. This is M2 Ultra development-package evidence,
+  not clean-machine, M1, Windows, performance or normal-control acceptance.
+- The package exposed a translucent Title backdrop that allowed paused-world
+  geometry to show through. `770a618` makes the backdrop opaque. Its fresh
+  isolated-profile Title and five directed editor gameplay/UI tests pass;
+  root inspected the original fresh Title. The Codex now has sourced Toshiya
+  copy and explicit end-of-reader capture. All nine original frames at each
+  of 720p and 1080p pass their scoped readability/scroll/footer review. The
+  49-entry capture ledger is prepared; earning and reloading have separate
+  directed tests. This newer UI source has not been repackaged.
+- The bow HUD correction at `92011bb` passes the unchanged pixel gates and
+  original-frame review at 720p and 1080p, resolving the historical target
+  obstruction below. An initial missing-glyph diagnosis was retracted after
+  inspecting intact original pixels; no font repair was made.
+- CI run `39886033451` authenticates all 72 source gates across five jobs at
+  `770a618`; merge `3ebb5fe4` has the exact same source tree. Downloaded artifact
+  IDs, sizes, hashes and raw job logs agree. Five explicit Rust research tests
+  and six private-asset tests remain outside this source suite. Later importer
+  revisions require separate qualification.
+- The real production-dojo baseline at `6e0e99c` passes its runtime fixture but
+  fails the SM6 Nanite draw gate: all 12 recorded DojoKit assets lack Nanite
+  resources, the ceiling has zero qualifying Mask/Triangles coverage, and
+  green entry coverage belongs to cargo props. The separate SM5 conventional
+  capture passes its limited diagnostic. Root inspected all six SM6 originals
+  and both SM5 originals. The earlier compile, cached-bounds and pixel-gate
+  failures are retained. A separate importer fix is in engine qualification;
+  enablement alone does not satisfy unique-beam geometry or photoreal art.
+- Signed native `c99ee46e` completed one actual preparation proof, separate
+  verification with a rebuilt adapter, 27 public-input mutation rejections,
+  two corrupt/truncated-proof rejections and eight actual prover Constraint
+  rejections. The proof is 2,717,600 bytes; proving took 762.916 seconds and
+  verification 17.239 seconds. The cohort took 3,127.68 seconds with
+  1,246,937,088-byte peak RSS. Independent terminal authentication passes;
+  the stale running snapshot is superseded by terminal receipts. This is an
+  unregistered, caller-bound two-player/two-tick preparation component, not
+  Core authority, full World/history, a full match, registry, settlement or M1
+  qualification. The staged native bridge is unchanged.
+- The W09 correspondence-priority diagnostic's six source renders have now
+  been inspected. It still fails the unchanged normal requirement and remains
+  unadmitted. The historical statement that these renders were pending is
+  superseded; no production geometry was replaced.
+
+Source-only chapter-seven ridge/wind and helm work and chapter-six flood work
+are under review. Their engine execution, final geometry/art/audio and normal
+pacing remain open. Claude's last confirmed weekly limit remains October 24
+at 22:00 JST, with the existing art requests queued. Its uncommitted timber and
+curtain work is untouched and unadmitted. Final art, remaining authored
+mechanics, ordinary-control acceptance, new packages, Windows and actual M1
+performance, full native execution and settlement remain required.
+
+Exact local archives include `Saved/Qualification/2026-10-23/package-c655b6b/`,
+`ui-770a618-bound/`, `ci-770a618/`, `native-c99ee46e-terminal-review/`, and the
+source-bound original captures under `Saved/Capture/`.
+
+## October 23 bow, wood and source qualification (historical)
 
 This update supersedes the running states in the historical updates below. The
 release remains incomplete, and the latest packaged baseline is still `44ffc35`.

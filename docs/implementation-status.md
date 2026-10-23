@@ -8,7 +8,39 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
-## 2026-10-23 bow and optional wood checkpoint
+## 2026-10-23 package, Codex and Nanite checkpoint
+
+The [current release-plan update](complete-release-plan.md#october-23-package-codex-and-nanite-qualification)
+supersedes the pending states below. Mac Development package `c655b6b` passes
+build/cook/stage/signature, startup smoke, 164 client tests and a separate
+untouched rendered Title test; all 62 bundle files remain unchanged. Root
+reviewed all 19 front-end frames plus the fresh Title. This remains local M2
+Ultra development evidence, with the documented build warnings/retry retained.
+
+The newer `770a618` opaque Title and sourced Toshiya reader pass a fresh Title,
+five directed editor tests and all 18 original Codex frames across 720p/1080p.
+CI `39886033451` authenticates 72 source gates in five jobs for that exact tree.
+These UI changes have not been recooked. The earlier bow HUD obstruction is
+resolved at `92011bb`; the missing-glyph diagnosis was retracted.
+
+Actual production-dojo Nanite diagnostic `6e0e99c` fails its SM6 draw gate:
+all 12 DojoKit assets lack Nanite data. Separate SM5 originals pass their limited
+conventional-render scope. Importer enablement is under real-engine review;
+it does not produce the requested unique sculpted beams or establish M1.
+
+Signed native `c99ee46e` completes one actual two-player/two-tick preparation
+proof, separate rebuilt-adapter verification, 27 public-input rejections, two
+proof-corruption rejections and eight actual Constraint rejections. Terminal
+receipts and independent authentication supersede its stale running snapshot.
+It is unregistered bounded research, not Core authority, full World/history,
+a full-match proof, settlement, M1 or release acceptance.
+
+Source-only ridge/wind, flood and helm implementations still require integration
+review and Unreal execution. Art, ordinary-control campaign acceptance,
+packaging of later changes, Windows/M1 performance and the other complete-release
+gates remain open. Exact source/archive identities are in the linked plan.
+
+## 2026-10-23 bow and optional wood checkpoint (historical)
 
 The [current release-plan update](complete-release-plan.md#october-23-bow-wood-and-source-qualification)
 records the latest source-bound results and the retained limitations. CI
