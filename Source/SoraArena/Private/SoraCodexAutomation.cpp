@@ -159,7 +159,7 @@ bool FSoraCodexLibraryTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Chapter replay retains all saved lore"),Menu->CodexEntries().Num(),49);
     Scope.Key(Keyboard.Back);
     if (!Scope.Choose(Keyboard,EAction::ReturnToTitle)||!Scope.Choose(Keyboard,EAction::ConfirmYes)) return false;
-    Scope.Key(Keyboard.Accept);
+    if (!TestTrue(TEXT("Returning from replay opens Main without another title key"),Scope.On(EScreen::Main))) return false;
     if (!Scope.Choose(Keyboard,EAction::NewCampaign)||!Scope.Choose(Keyboard,EAction::ConfirmYes)) return false;
     Scope.Mode()->OpenPauseMenu();
     if (!Scope.Choose(Keyboard,EAction::Codex)) return false;
