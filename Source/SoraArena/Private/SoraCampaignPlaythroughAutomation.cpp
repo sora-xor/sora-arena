@@ -649,6 +649,8 @@ bool OpenCaches(FAutomationTestBase& Test, FState& State)
 bool PickUpAll(FAutomationTestBase& Test, FState& State)
 {
     USoraCampaignDirector* Director = Campaign(State);
+    const bool Moat=Director->ActiveBeatData()&&Director->ActiveBeatData()->Space.Moat.bEnabled;
+    if(Moat)SoraMoatAutomation::Sample(*State.World,TEXT("before aggregate pickup sweep"));
     if (!Mode(State)->IsPlaying() || Director->IsMounted())
         return true;
     const FSoraChapter& Chapter = ChapterData(State);
@@ -656,6 +658,7 @@ bool PickUpAll(FAutomationTestBase& Test, FState& State)
     {
         const FSoraCollectible& Item = Chapter.Collectibles[Chapter.Space.Pickups[Pickup].Collectible];
         MoveTo(State, Director->PickupLocation(Pickup));
+        if(Moat)SoraMoatAutomation::Sample(*State.World,TEXT("aggregate pickup placement"),Director->PickupLocation(Pickup));
         Mode(State)->Interact(Player(State));
         const uint64 Bit = SoraCampaignRules::CollectibleBit(Director->ChapterId, Item.MaskBit);
         const USoraSaveGame* Saved = Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(State.Slot, 0));
