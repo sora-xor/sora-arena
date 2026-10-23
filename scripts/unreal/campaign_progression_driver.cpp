@@ -1356,6 +1356,61 @@ static void TestMountRules()
 // Every authored horse is valid, and every ride reaches the end of its route
 // at the best pace its gaits, caps and wind allow, within its target time or,
 // where the script's route length outruns it, half as long again (reported).
+static void TestLeadFear()
+{
+    using namespace SoraMountRules;
+    FLeadFear Fear;
+    FLeadTug Tug;
+    Expect(!ObserveLeadFear(Fear,false,2500) && ObserveLeadFear(Fear,true,2500),"lead: first threat entry did not spook");
+    Expect(StartLeadTug(Tug) && Tug.RemainingMs==1000 && Fear.RemainingMs==2500,"lead: authored windows changed");
+    StepLeadFear(Fear,500); StepLeadTug(Tug,500);
+    Expect(!ObserveLeadFear(Fear,true,2500) && !StartLeadTug(Tug) && Fear.RemainingMs==2000 && Tug.RemainingMs==500,
+        "lead: a continuous hazard extended fear or steering loss");
+    ObserveLeadFear(Fear,false,2500);
+    Expect(!ObserveLeadFear(Fear,true,2500),"lead: re-entry during recovery restarted fear");
+    StepLeadFear(Fear,2000); StepLeadTug(Tug,500);
+    Expect(!ObserveLeadFear(Fear,true,2500) && Fear.RemainingMs==0 && Tug.RemainingMs==0,
+        "lead: remaining inside the radius caused indefinite steering loss");
+    ObserveLeadFear(Fear,false,2500);
+    Expect(ObserveLeadFear(Fear,true,2500),"lead: a new encounter after recovery could not spook");
+    const int Before=Fear.RemainingMs;
+    StepLeadFear(Fear,0); StepLeadFear(Fear,-1);
+    Expect(Fear.RemainingMs==Before,"lead: a zero or negative tick fabricated time");
+    Tug={};
+    Expect(!StepLeadTug(Tug,1000),"lead: dismount/reset preserved a phantom tug");
+    for(const int Fps:{30,60,120,144})
+    {
+        Fear={}; Tug={}; FSoraMillisecondClock FearClock,TugClock;
+        // Fractions before the source enters belong to neither new timer.
+        FearClock.Advance(1.0/2048); TugClock.Advance(1.0/2048);
+        ObserveLeadFear(Fear,true,2500); StartLeadTug(Tug);
+        FearClock.Reset(); TugClock.Reset();
+        const float Dt=1.f/Fps;
+        double Seconds=0, TugDone=-1, FearDone=-1;
+        for(int Frame=0;Frame<3*Fps;++Frame)
+        {
+            StepLeadFear(Fear,FearClock.Advance(Dt));
+            StepLeadTug(Tug,TugClock.Advance(Dt));
+            Seconds+=Dt;
+            if(TugDone<0&&Tug.RemainingMs==0) TugDone=Seconds;
+            if(FearDone<0&&Fear.RemainingMs==0) FearDone=Seconds;
+            Expect(Seconds>=1.0 || Tug.RemainingMs>0,"lead: steering returned before one active second");
+            Expect(Seconds>=2.5 || Fear.RemainingMs>0,"lead: fear ended before 2.5 active seconds");
+            Expect(!ObserveLeadFear(Fear,true,2500),"lead: continuous observation retriggered fear");
+        }
+        Expect(TugDone>=1.0 && TugDone<=1.0+Dt+.001 && FearDone>=2.5 && FearDone<=2.5+Dt+.001,
+            "lead: active-time duration drifted at "+std::to_string(Fps)+" Hz");
+    }
+    // Binary-exact sub-millisecond onset: neither timer may inherit prior time.
+    FSoraMillisecondClock Clock;
+    Clock.Advance(1.0/2048); Clock.Reset(); Tug={}; StartLeadTug(Tug);
+    StepLeadTug(Tug,Clock.Advance(1.0-1.0/4096));
+    Expect(Tug.RemainingMs==1,"lead: a fresh tug inherited a pre-trigger fraction");
+    StepLeadTug(Tug,Clock.Advance(1.0/4096));
+    Expect(Tug.RemainingMs==0,"lead: exact one-second tug did not recover");
+    std::cout << "lead mare: bounded 1000ms steering/2500ms fear, edge rearm, resets and 30/60/120/144Hz active clocks passed\n";
+}
+
 static void TestAuthoredRides()
 {
     using namespace SoraMountRules;
@@ -1930,6 +1985,7 @@ int main()
     TestRideExploreCollectible();
     TestSiegeAndCarry();
     TestMountRules();
+    TestLeadFear();
     TestAuthoredRides();
     TestAuthoredCarryDifficulty();
     TestCarrySealAndLooseLoads();

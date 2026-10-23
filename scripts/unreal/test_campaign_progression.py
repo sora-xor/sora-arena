@@ -81,7 +81,8 @@ world = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp").r
 for gate in ("SoraBeatRules::SiegeDamage", "SoraMountRules::CanMount", "SoraMountRules::ArcAllows", "SoraMountRules::Slower"):
     assert gate in world, f"The campaign director no longer uses tested {gate}"
 horse = (ROOT / "Source/SoraArena/Private/Characters/SoraHorse.cpp").read_text()
-for gate in ("Step(Ride,Rules", "SoraMountRules::SpeedCmS", "TurnDegS"):
+for gate in ("Step(Ride,Rules", "SoraMountRules::SpeedCmS", "TurnDegS", "SoraMountRules::ObserveLeadFear",
+             "SoraMountRules::StartLeadTug", "SoraMountRules::StepLeadTug", "SoraMountRules::StepLeadFear"):
     assert gate in horse or gate.replace("SoraMountRules::", "") in horse, f"The horse no longer rides by tested {gate}"
 space_loader = (ROOT / "Source/SoraArena/Private/SoraCatalogSpace.cpp").read_text()
 assert "HorseValid(M.Rules)" in space_loader, "The space loader no longer refuses an invalid horse"
