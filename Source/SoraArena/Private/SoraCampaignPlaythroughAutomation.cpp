@@ -646,20 +646,35 @@ bool OpenCaches(FAutomationTestBase& Test, FState& State)
 }
 
 // Walks to every loose collectible and picks it up; each goes to the save.
-bool PickUpAll(FAutomationTestBase& Test, FState& State)
+bool PickUpAll(FAutomationTestBase& Test, FState& State,bool AlongMoatRoute=false)
 {
     USoraCampaignDirector* Director = Campaign(State);
-    const bool Moat=Director->ActiveBeatData()&&Director->ActiveBeatData()->Space.Moat.bEnabled;
+    const auto* Space=Director->ActiveSpace();
+    const bool Moat=Space&&Space->Moat.bEnabled;
     if(Moat)SoraMoatAutomation::Sample(*State.World,TEXT("before aggregate pickup sweep"));
     if (!Mode(State)->IsPlaying() || Director->IsMounted())
         return true;
+    // These physical routes must begin at their actual entry. The moat's
+    // mark is reached during its gate approach; off-route chapter finds
+    // stay loose until the later ordinary collection sweep after the climb.
+    if((Moat&&!AlongMoatRoute)||(Space&&Space->Climb.bEnabled))return true;
     const FSoraChapter& Chapter = ChapterData(State);
     for (const int32 Pickup : Director->LoosePickups())
     {
+        if(Moat&&Chapter.Space.Pickups[Pickup].Zone!=Space->Zone)continue;
         const FSoraCollectible& Item = Chapter.Collectibles[Chapter.Space.Pickups[Pickup].Collectible];
-        MoveTo(State, Director->PickupLocation(Pickup));
-        if(Moat)SoraMoatAutomation::Sample(*State.World,TEXT("aggregate pickup placement"),Director->PickupLocation(Pickup));
-        Mode(State)->Interact(Player(State));
+        if(Moat)
+        {
+            if(!SoraMoatAutomation::Swim(*State.World,Director->PickupLocation(Pickup)))
+                return Fail(Test,State,TEXT("The moat mark must be reached by actual swimming"));
+            SoraMoatAutomation::Sample(*State.World,TEXT("actual moat pickup approach"),Director->PickupLocation(Pickup));
+            if(!State.World->PressKey(SoraMoatAutomation::Key(*Player(State),TEXT("Interact"))))return false;
+        }
+        else
+        {
+            MoveTo(State, Director->PickupLocation(Pickup));
+            Mode(State)->Interact(Player(State));
+        }
         const uint64 Bit = SoraCampaignRules::CollectibleBit(Director->ChapterId, Item.MaskBit);
         const USoraSaveGame* Saved = Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(State.Slot, 0));
         if (!Test.TestTrue(*(Item.Id + TEXT(" is picked up and kept at once")), (Director->CollectedMask() & Bit) != 0ull &&
@@ -1066,7 +1081,10 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     {
         if(Beat.Space.Moat.bEnabled)
         {
-            if(!Test.TestTrue(TEXT("The moat requires real swimming and submerged gate passage"),SoraMoatAutomation::Exit(*State.World)))return false;
+            SoraMoatAutomation::Sample(*State.World,TEXT("aggregate route entry"));
+            if(!SoraMoatAutomation::ToGate(*State.World)||!PickUpAll(Test,State,true)||
+                !Test.TestTrue(TEXT("The moat requires real swimming and submerged gate passage"),SoraMoatAutomation::ThroughGate(*State.World)))
+                return Fail(Test,State,TEXT("The moat traversal or its physical collectible approach failed"));
             break;
         }
         if(Beat.Space.Climb.bEnabled)
