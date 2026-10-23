@@ -19,6 +19,11 @@ namespace Construct = SoraConstructRules;
 
 const TArray<FSoraEnemyAttack>& ASoraEnemy::AttackSet() const
 {
+    static const TArray<FSoraEnemyAttack> ClimbShot=[] {
+        FSoraEnemyAttack A;A.Id=TEXT("yagura_sentry_shot");A.Cue=A.Id;
+        A.Kind=ESoraEnemyAttackKind::LockShot;A.Damage=12;A.WindupMs=200;A.RecoveryMs=1000;A.MaxRangeCm=1800;
+        return TArray<FSoraEnemyAttack>{A};
+    }();
     static const TArray<FSoraEnemyAttack> Slam = [] {
         FSoraEnemyAttack A;
         A.Id=TEXT("collateral_slam"); A.Cue=TEXT("collateral_slam");
@@ -30,7 +35,7 @@ const TArray<FSoraEnemyAttack>& ASoraEnemy::AttackSet() const
         return TArray<FSoraEnemyAttack>{A};
     }();
     static const TArray<FSoraEnemyAttack> Empty;
-    return bCollateralConstruct?Slam:Kind?Kind->Attacks:Empty;
+    return bClimbSentry?ClimbShot:bCollateralConstruct?Slam:Kind?Kind->Attacks:Empty;
 }
 
 void ASoraEnemy::ResetConstruct()

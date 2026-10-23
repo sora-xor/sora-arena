@@ -401,6 +401,7 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     // A staggered opponent still notices, but neither moves nor strikes.
     if (Enemy.IsStaggered())
         return;
+    if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->DriveClimbSentry(Enemy,Dt)) return;
     // A scripted errand takes it where the beat sends it instead.
     if (RunErrand(Enemy, Dt, NowMs))
         return;
@@ -1086,6 +1087,15 @@ Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraC
     Stealth::FSight Sight{};
     Sight.DistanceCm = FMath::RoundToInt32(Flat.Size());
     Sight.FacingMilli = FMath::RoundToInt32(FVector::DotProduct(Enemy.GetActorForwardVector().GetSafeNormal2D(), Flat.GetSafeNormal()) * 1000.f);
+    if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->IsClimbSentry(Enemy))
+    {
+        const bool Combat=Mind.State==Stealth::EState::Combat||Mind.State==Stealth::EState::Alert;
+        if(!Craft->ClimbSentryWatching()&&!Combat&&There.Z<Eye.Z-250) return Sight;
+        const FVector Aim=Combat?LastKnown:Craft->ClimbSentryWatching()?Craft->ClimbSentryAim():Eye+Enemy.GetActorForwardVector()*1000;
+        const FVector Delta=There-Eye;
+        Sight.DistanceCm=FMath::RoundToInt32(Delta.Size());
+        Sight.FacingMilli=FMath::RoundToInt32(FVector::DotProduct((Aim-Eye).GetSafeNormal(),Delta.GetSafeNormal())*1000.f);
+    }
     Sight.TargetMoving = Target.GetVelocity().Size2D() > 30.f;
     Sight.Crouched = Target.IsCrouched();
     Sight.VisibilityPermille = Zone && Cast<ASoraPlayerCharacter>(&Target) ? Zone->HeroVisibility() : 1000;

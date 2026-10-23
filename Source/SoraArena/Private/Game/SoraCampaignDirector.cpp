@@ -741,6 +741,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         // The way to the exit, so ambushes along a route come as the hero passes them.
         SoraBeatRules::Travel(TaskState,Task,RoadPermille());
         if(Space.Exit.Contains(Hero)&&(!IsWoodExplore()||AtWoodExit())&&
+            (!Space.Climb.bEnabled||(USoraFieldcraft::Get(this)&&USoraFieldcraft::Get(this)->ClimbExitReady()))&&
             (!Space.Flood.bEnabled||(USoraFieldcraft::Get(this)&&USoraFieldcraft::Get(this)->FloodExitReady()))&&
             SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
     }
@@ -973,6 +974,8 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     if(Points)
         for(const FVector2D& Point:*Points) Route.Points.Add(ASoraWorldBuilder::Floor(Point,90.f));
     FVector Post=Points&&!Points->IsEmpty()?ASoraWorldBuilder::Floor((*Points)[0],120.f):SpawnLocation(Slot);
+    if(Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
+    { Post=FVector(Space->Climb.Origin,0)+FVector(650,-3800,1690);Route.Points={Post}; }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
     // A route of two points is walked back and forth; a longer one loops. A
     // guard the chapter posts keeps the first point of its round as its post.
@@ -993,7 +996,10 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     Senses.SightCm=Guard.SightCm; Senses.DarkSightCm=Guard.DarkSightCm; Senses.ViewDegrees=Guard.ViewDegrees;
     Senses.HearingCm=Guard.HearingCm; Senses.SuspicionPermille=Guard.SuspicionPermille;
     Senses.ScanDegrees=Guard.ScanDegrees; Senses.ScanMs=Guard.ScanMs; Senses.TurnMs=Guard.TurnMs;
-    return ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
+    auto* Spawned=ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
+    if(Spawned&&Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
+        if(auto* Craft=USoraFieldcraft::Get(this)) Craft->AssignClimbSentry(*Spawned);
+    return Spawned;
 }
 ASoraEnemy* USoraCampaignDirector::SpawnDuelOpponent(FName Opponent,bool bSparring,int32 Slot)
 {

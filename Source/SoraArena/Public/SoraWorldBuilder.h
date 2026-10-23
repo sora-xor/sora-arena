@@ -117,6 +117,7 @@ public:
     void ShowHelm(bool NeedsTrim,float HeldFraction);
     bool CanReachHelm(const ASoraPlayerCharacter& Hero) const;
     void BuildFlood(const FSoraBeat& Beat);
+    void BuildClimb(const FSoraBeat& Beat);
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
