@@ -17,10 +17,25 @@
 
 void USoraCampaignDirector::ResetWind()
 {
+    // Terminal falls keep the existing pawn still on the result screen. The
+    // ordinary checkpoint reset can then put that pawn back onto its floor.
+    if(bWindFallHeld)
+        if(auto* Hero=Mode().Hero()) Hero->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+    bWindFallHeld=false;
     WindMs=0; WindWarningSerial=0; WindGustSerial=0; WindAnchor=INDEX_NONE;
     RidgeFalls=0; LastBraceAnchor=0; bWindLee=false; bWindHint=false;
     if(WindStrip) WindStrip->DestroyComponent();
     WindStrip=nullptr;
+}
+void USoraCampaignDirector::FinishWindFall(ASoraPlayerCharacter& Hero)
+{
+    ReleaseWindBrace();
+    Hero.ResetDialogueInput();
+    Hero.SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));
+    Hero.GetCharacterMovement()->DisableMovement();
+    bWindFallHeld=true;
+    Hero.Health=0;
+    PlayerKilled();
 }
 void USoraCampaignDirector::ReleaseWindBrace() { WindAnchor=INDEX_NONE; }
 bool USoraCampaignDirector::WindAt(const FVector& Point) const
@@ -94,11 +109,15 @@ void USoraCampaignDirector::TickWind(int32 DeltaMs)
         // residual drift on release, pause, a root/net or a cable anchor.
         if(Push>0) { FHitResult Hit; Hero->AddActorWorldOffset(FVector(0,Push,0),true,&Hit); }
     }
+    // Beyond the open hangar mouth, a deliberate walk/jump falls to the
+    // checkpoint defeat. It never receives the ridge's cable recovery.
+    if(S->Wind.Kind==TEXT("hangar")&&P.Z<-550)
+    { FinishWindFall(*Hero); return; }
     if(S->Wind.Ridge()&&P.Z<SoraRidgeRules::Height(FMath::Clamp(P.X,0.,18000.))-550)
     {
         ReleaseWindBrace();
         if(RidgeFalls>=SoraRidgeRules::Recoveries||Hero->Health<=SoraRidgeRules::FallCost)
-        { Hero->Health=0; PlayerKilled(); return; }
+        { FinishWindFall(*Hero); return; }
         ++RidgeFalls; Hero->Health-=SoraRidgeRules::FallCost;
         Hero->ResetDialogueInput();
         Hero->SetBase(static_cast<FMovementBaseInterfaceData*>(nullptr));

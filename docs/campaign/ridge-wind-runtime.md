@@ -29,10 +29,15 @@ yet been compiled, run, rendered, packaged, or performance-qualified in Unreal.
 - Actual arrows, grenade shells, and enemy shells receive lateral
   acceleration of 35 cm/s² per m/s of wind. Hitscan does not call this path.
   A projectile's physical lee trace suppresses drift while it is sheltered.
-- Deliberate falls return to the last used anchor for 25 HP, at most three
+- Deliberate ridge falls return to the last used anchor for 25 HP, at most three
   times per checkpoint. Insufficient health or a fourth fall triggers the
   existing defeat/retry flow. Retry starts a new gust cycle and recovery
   allowance. A held brace never persists across a save/reload.
+- A deliberate hangar-mouth fall uses ordinary checkpoint defeat, with no
+  cable recovery. Terminal ridge and hangar falls clear held input and stop
+  movement on the result screen so the controlled pawn cannot fall onward
+  to the engine's destructive KillZ. Reset restores its movement mode before
+  the normal checkpoint placement.
 - Ridge waves retain their eight drones, authored group positions and
   mid/forward volume triggers. The rear hatch must be reached on the ground
   after the waves are cleared. Gust onset interrupts exposed drone aim for
@@ -65,6 +70,9 @@ Unreal traversal, combat, and visual review before they are accepted:
   anchor is the fallback before the first brace. A recovery occurs 5.5 m
   below the local crown; the return is offset 1 m along and inboard of its
   anchor to avoid the post. End posts are inset 60 cm for capsule support.
+- Hangar defeat is detected when the pawn centre is 5.5 m below its flat
+  deck. This detection depth is provisional; the authored death/retry
+  behavior and wind-only lip guard are retained.
 - Drone drift is 120 cm/s during gusts; the chapter names drift but gives no
   speed. Members of a ridge group start 120 cm apart along X to avoid
   overlapping capsules at the authored group point.
@@ -74,6 +82,10 @@ Unreal traversal, combat, and visual review before they are accepted:
 - The hangar uses a flat deck and shuttle boxes with provisional 4.6 m
   height, rather than complete shuttle interiors. Shield troops appear
   just outside shuttle 2's proxy instead of inside its solid collider. The
+  five forward rifles use the clear aisle beyond shuttle 3 at local X=76 m,
+  Y=19/22/25/28/31 m, because their original group point was inside that
+  solid proxy. These provisional placements preserve roster and triggers
+  and require actual capsule/support/line-of-sight verification in Unreal. The
   existing loose collectible placement is still generic. The failing force
   curtain, shuttle ramps/cockpit, sleds, canisters, doors, roof, moon/cloud
   vista, hull materials, wind roar and spindrift remain art/gameplay work.
@@ -87,13 +99,19 @@ values. The broader gameplay source gate checks deterministic data generation,
 campaign validation, localization and existing rule regressions. These host
 checks do not validate UE collision, input dispatch, rendering or C++ APIs.
 
-Four Unreal fixtures are supplied but not yet executed in this worktree:
+Six Unreal fixtures are supplied but not yet executed in this worktree:
 
 - `SoraArena.Campaign.RidgeWind`: mapped brace and remapping, crouch and lee,
   root interaction, pause, gust timing and a fresh-world checkpoint reload.
 - `SoraArena.Campaign.RidgeTraversal`: actual collision traces, the full
   route with mapped movement/vaults, wave triggers, last-anchor recovery,
-  the three-fall cap and the normal retry action.
+  the three-fall cap, a twenty-second defeat-screen wait and normal retry.
+- `SoraArena.Campaign.HangarFalls`: mapped walking from the checkpoint to
+  the opening, passive wind held at the lip, then separate real walking and
+  jumping departures, a twenty-second result wait, retained pawn and retry.
+- `SoraArena.Campaign.HangarSpawnClearance`: actual capsule overlap and
+  nearby floor support for all eleven wave members. Controlled direct damage
+  advances the existing wave queue; this does not prove live combat balance.
 - `SoraArena.Campaign.WindProjectiles`: real mapped arrow/grenade fire,
   an ordinary enemy shell, unchanged hitscan, and hangar/lee boundaries.
 - `SoraArena.Campaign.RidgeDroneWind`: a real wave drone's net delivery,
