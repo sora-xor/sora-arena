@@ -45,6 +45,14 @@ The script does not specify these implementation choices; they are provisional:
   straight 60/80-degree two-course shell, bay projection and aperture approach.
   Route points are feet positions. The two holds immediately below rest shelves
   sit 210 cm outside the following rest centre, clearing the 130 cm shelf lip.
+  Approaching either of those holds moves outward before rising so the
+  capsule's upper hemisphere also clears the shelf underside; descending
+  lowers first before moving inward. The source gate samples the production
+  interpolation in both directions against both physical shelf envelopes.
+- Player sweep completion admits ordinary support separation only for a
+  non-penetrating flat upward contact (normal Z at least 0.99), no more than
+  0.25 cm lateral error and 0–3 cm feet above the requested point. Side,
+  underside, penetrating or more distant hits still stop the step.
 - Each hold move and final mount lasts 1.8 seconds. The same cadence makes the
   eight-hold route faster. These numbers do not accept the three-minute beat
   target or ordinary encounter pacing.

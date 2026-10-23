@@ -22,7 +22,11 @@ bool SweepFeet(ASoraPlayerCharacter& P,const FVector& To)
     FHitResult Hit;
     P.SetActorLocation(To+FVector(0,0,P.GetCapsuleComponent()->GetScaledCapsuleHalfHeight()),true,&Hit);
     P.GetCharacterMovement()->Velocity=FVector::ZeroVector;
-    return !Hit.bBlockingHit;
+    const FVector Reached=Feet(P);
+    // Flat support contact may retain the engine's small floor separation.
+    // Neither a lateral obstruction nor the underside of a shelf qualifies.
+    return !Hit.bBlockingHit||SoraClimbRules::AtSupport(Hit.bStartPenetrating,Hit.Normal.Z,
+        FVector::Dist2D(Reached,To),Reached.Z-To.Z);
 }
 }
 
@@ -103,6 +107,8 @@ bool USoraFieldcraft::MoveClimbCompanion(ASoraCompanion& Companion,float Dt)
         for(int32 H=1;H<ClimbSpace->Corner.Points.Num();++H)
         {
             const FVector Point=ClimbSpace->Corner.Points[H];
+            if(ClimbSpace->Corner.RestHolds.Contains(H+1))
+                ClimbGuidePath.Add(FVector(Point.X,Point.Y,ClimbSpace->Corner.Points[H-1].Z));
             if(ClimbSpace->Corner.RestHolds.Contains(H)) ClimbGuidePath.Add(Point-FVector(210,0,0));
             ClimbGuidePath.Add(Point);
         }
@@ -208,19 +214,22 @@ void USoraFieldcraft::TickClimbRoutes(float DeltaTime,int32 DtMs)
     const float NextAlpha=FMath::Clamp(ClimbStepAlpha+Direction*DeltaTime*1000.f/R->StepMs,0.f,1.f);
     FVector Target=R->Points[ClimbStepTarget];
     if(bClimbMounting) Target=FVector(650,R->Points.Last().Y,1600);
-    FVector Wanted=FMath::Lerp(ClimbStepStart,Target,NextAlpha);
+    SoraClimbRules::EHoldPath Path=SoraClimbRules::EHoldPath::Direct;
     // Approach a real rest shelf around its outer lip, then move inward with
     // feet above its support; never phase a capsule through the shelf.
     if(!bClimbMounting&&R->RestHolds.Contains(ClimbStepTarget)&&ClimbStepTarget>Grip.Hold)
-    {
-        const FVector Outside(Target.X-210,Target.Y,Target.Z);
-        Wanted=NextAlpha<.8f?FMath::Lerp(ClimbStepStart,Outside,NextAlpha/.8f):FMath::Lerp(Outside,Target,(NextAlpha-.8f)/.2f);
-    }
+        Path=SoraClimbRules::EHoldPath::OntoRest;
     else if(!bClimbMounting&&R->RestHolds.Contains(Grip.Hold)&&ClimbStepTarget<Grip.Hold)
-    {
-        const FVector Outside(ClimbStepStart.X-210,ClimbStepStart.Y,ClimbStepStart.Z);
-        Wanted=NextAlpha<.2f?FMath::Lerp(ClimbStepStart,Outside,NextAlpha/.2f):FMath::Lerp(Outside,Target,(NextAlpha-.2f)/.8f);
-    }
+        Path=SoraClimbRules::EHoldPath::OffRest;
+    else if(!bClimbMounting&&R->RestHolds.Contains(ClimbStepTarget+1)&&ClimbStepTarget>Grip.Hold)
+        Path=SoraClimbRules::EHoldPath::BeforeRest;
+    else if(!bClimbMounting&&R->RestHolds.Contains(Grip.Hold+1)&&ClimbStepTarget<Grip.Hold)
+        Path=SoraClimbRules::EHoldPath::FromBeforeRest;
+    // The capsule's upper hemisphere also needs clearance on the hold before
+    // a shelf: get outside while low, then rise; reverse by lowering first.
+    const auto Point=SoraClimbRules::HoldPath({ClimbStepStart.X,ClimbStepStart.Y,ClimbStepStart.Z},
+        {Target.X,Target.Y,Target.Z},NextAlpha,Path);
+    const FVector Wanted(Point.X,Point.Y,Point.Z);
     if(!SoraClimbRuntime::SweepFeet(*P,O+Wanted)) return;
     ClimbStepAlpha=NextAlpha;
     if(NextAlpha==0&&Direction<0) { ClimbStepTarget=INDEX_NONE;bClimbMounting=false;return; }

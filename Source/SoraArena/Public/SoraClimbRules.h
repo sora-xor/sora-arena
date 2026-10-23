@@ -16,6 +16,27 @@ struct FGuidePoint { int X,Y,Z; };
 constexpr FGuidePoint GuideRoofPath[]={
     {900,500,1600},{1040,500,1600},{1040,500,1800},{1040,500,2000},
     {1040,500,2200},{1040,500,2400},{1500,500,2400}};
+struct FPathPoint { double X,Y,Z; };
+enum class EHoldPath { Direct, OntoRest, OffRest, BeforeRest, FromBeforeRest };
+inline FPathPoint Mix(FPathPoint A,FPathPoint B,double T)
+{ return {A.X+(B.X-A.X)*T,A.Y+(B.Y-A.Y)*T,A.Z+(B.Z-A.Z)*T}; }
+inline FPathPoint HoldPath(FPathPoint A,FPathPoint B,double T,EHoldPath Path)
+{
+    switch(Path)
+    {
+    case EHoldPath::OntoRest:
+    { const FPathPoint Outside{B.X-210,B.Y,B.Z};return T<.8?Mix(A,Outside,T/.8):Mix(Outside,B,(T-.8)/.2); }
+    case EHoldPath::OffRest:
+    { const FPathPoint Outside{A.X-210,A.Y,A.Z};return T<.2?Mix(A,Outside,T/.2):Mix(Outside,B,(T-.2)/.8); }
+    case EHoldPath::BeforeRest:
+    { const FPathPoint Outside{B.X,B.Y,A.Z};return T<.2?Mix(A,Outside,T/.2):Mix(Outside,B,(T-.2)/.8); }
+    case EHoldPath::FromBeforeRest:
+    { const FPathPoint Below{A.X,A.Y,B.Z};return T<.8?Mix(A,Below,T/.8):Mix(Below,B,(T-.8)/.2); }
+    default:return Mix(A,B,T);
+    }
+}
+inline bool AtSupport(bool Penetrating,double NormalZ,double LateralError,double AboveTarget)
+{ return !Penetrating&&NormalZ>=.99&&LateralError<=.25&&AboveTarget>=0&&AboveTarget<=3; }
 // Implementation geometry/timing, not authored hold coordinates: the wall
 // uses two slope segments; art may curve the upper profile within this shell.
 inline double WallX(double Z)
