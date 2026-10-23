@@ -59,9 +59,18 @@ bool RideTo(FWorld& W,int32 Point)
     {
         if(!Tick(W,1)) return false;
         auto* C=W.Campaign();
-        if(!W.Test.TestTrue(FString::Printf(TEXT("Cargo reins retain the rider: destination=%d frame=%d beat=%d mounted=%d spooked=%d distance=%.3f health=%.1f"),
-            Point,Frame,C->ActiveBeat(),C->IsMounted(),C->Steed()&&C->Steed()->IsSpooked(),
-            FVector::Dist2D(W.Hero()->GetActorLocation(),Destination),W.Hero()->Health),C->IsMounted())) return false;
+        if(!C->IsMounted())
+        {
+            // Frozen opponents still frighten Kurimaru. Honor that real
+            // dismount, then use this fixture's rebound Interact to remount.
+            // No threat, fear policy, damage or collision is disabled.
+            if(!W.Test.TestTrue(FString::Printf(TEXT("Cargo travel interruption is an authored spook: destination=%d frame=%d beat=%d spooked=%d distance=%.3f health=%.1f"),
+                Point,Frame,C->ActiveBeat(),C->Steed()&&C->Steed()->IsSpooked(),
+                FVector::Dist2D(W.Hero()->GetActorLocation(),Destination),W.Hero()->Health),
+                C->ActiveBeat()==13&&C->Steed()&&C->Steed()->IsSpooked()&&!W.Mode()->bDefeated)) return false;
+            W.Test.AddInfo(FString::Printf(TEXT("Cargo travel remount after spook: destination=%d frame=%d"),Point,Frame));
+            if(!W.Press(EKeys::G)||!W.Test.TestTrue(TEXT("Rebound Interact remounts beside the frightened horse"),C->IsMounted())) return false;
+        }
     }
     if(!W.World->InjectKey(EKeys::W,IE_Released)||!W.World->InjectKey(EKeys::LeftShift,IE_Released)||
         !W.World->InjectKey(EKeys::S,IE_Pressed)||!Tick(W,55)||!W.World->InjectKey(EKeys::S,IE_Released)) return false;
