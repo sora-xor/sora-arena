@@ -217,7 +217,11 @@ void USoraCampaignDirector::StealthDetected(const FSoraStealthDetection& Detecti
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this))
     {
         Fieldcraft->PartyDetected();
-        if(Detection.KnownLocation.IsSet()) Fieldcraft->LockSearchlights(Detection.KnownLocation.GetValue());
+        if(Detection.KnownLocation.IsSet())
+        {
+            Fieldcraft->LockSearchlights(Detection.KnownLocation.GetValue());
+            Fieldcraft->MoatDetected(Detection.KnownLocation.GetValue());
+        }
     }
     // A later zone the script names starts suspicious and wary.
     if(const FSoraBeat* Beat=ActiveBeatData(); Beat->bStealth&&!Beat->Stealth.CarryoverTo.IsEmpty())
@@ -748,6 +752,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
         // The way to the exit, so ambushes along a route come as the hero passes them.
         SoraBeatRules::Travel(TaskState,Task,RoadPermille());
         if(Space.Exit.Contains(Hero)&&(!IsWoodExplore()||AtWoodExit())&&
+            (!Space.Moat.bEnabled||(USoraFieldcraft::Get(this)&&USoraFieldcraft::Get(this)->MoatExitReady()))&&
             (!Space.Climb.bEnabled||(USoraFieldcraft::Get(this)&&USoraFieldcraft::Get(this)->ClimbExitReady()))&&
             (!Space.Flood.bEnabled||(USoraFieldcraft::Get(this)&&USoraFieldcraft::Get(this)->FloodExitReady()))&&
             SoraBeatRules::Reach(TaskState,Task)) Fire(TEXT("exit_reached"));
@@ -982,6 +987,12 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     if(Points)
         for(const FVector2D& Point:*Points) Route.Points.Add(ASoraWorldBuilder::Floor(Point,90.f));
     FVector Post=Points&&!Points->IsEmpty()?ASoraWorldBuilder::Floor((*Points)[0],120.f):SpawnLocation(Slot);
+    if(Space->Moat.bEnabled)
+    {
+        const float Z=GuardIndex==2?600.f:1840.f;
+        for(auto& Point:Route.Points)Point.Z=Z;
+        if(!Route.Points.IsEmpty())Post=Route.Points[0];
+    }
     if(Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
     { Post=FVector(Space->Climb.Origin,0)+FVector(360,-300,1690);Route.Points={Post}; }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
@@ -1005,6 +1016,8 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
     Senses.HearingCm=Guard.HearingCm; Senses.SuspicionPermille=Guard.SuspicionPermille;
     Senses.ScanDegrees=Guard.ScanDegrees; Senses.ScanMs=Guard.ScanMs; Senses.TurnMs=Guard.TurnMs;
     auto* GuardActor=ASoraEnemy::SpawnArchetype(*GetWorld(),Guard.Type,Slot,Post,FRotator(0,180,0),&Route,&Senses);
+    if(GuardActor&&Space->Moat.bEnabled)
+        if(auto* Craft=USoraFieldcraft::Get(this))Craft->AssignMoatGuard(*GuardActor,GuardIndex);
     if(GuardActor&&Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
         if(auto* Craft=USoraFieldcraft::Get(this)) Craft->AssignClimbSentry(*GuardActor);
     return GuardActor;

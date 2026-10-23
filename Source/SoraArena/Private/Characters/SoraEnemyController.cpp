@@ -332,12 +332,13 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     const UCharacterMovementComponent* Walk = Target.GetCharacterMovement();
     const auto* WaterCraft=USoraFieldcraft::Get(&Target);
     const FVector StepFeet=There-FVector(0.f,0.f,Target.GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-    const bool bFloodStroke=WaterCraft&&WaterCraft->FloodFootstepPermille(StepFeet)>=0;
+    const bool bMoatStroke=WaterCraft&&WaterCraft->MoatFootstepPermille(StepFeet)>=0;
+    const bool bFloodStroke=WaterCraft&&(WaterCraft->FloodFootstepPermille(StepFeet)>=0||bMoatStroke);
     if (Target.GetVelocity().Size2D() > 150.f && Walk && (Walk->IsMovingOnGround()||bFloodStroke))
     {
         const auto* Hero = Cast<ASoraPlayerCharacter>(&Target);
         const Stealth::ENoise Steps = Stealth::Steps(Hero && Hero->IsSprinting(),
-            Target.IsCrouched() ? Stealth::EStance::Crouched : Stealth::EStance::Standing);
+            Target.IsCrouched()&&!bMoatStroke ? Stealth::EStance::Crouched : Stealth::EStance::Standing);
         const FVector Feet = There - FVector(0.f, 0.f, Target.GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
         const int32 Loudness = Zone && Zone->IsZoneActive() ? Stealth::StepLoudnessPermille(Steps, Zone->SurfaceAt(Feet)) : 1000;
         const int32 Distance = FMath::RoundToInt32(FVector::Dist(There, Ear));
@@ -403,6 +404,7 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     if (Enemy.IsStaggered())
         return;
     if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->DriveClimbSentry(Enemy,Dt)) return;
+    if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->DriveMoatGuard(Enemy,Dt,bGoalDone)) return;
     // A scripted errand takes it where the beat sends it instead.
     if (RunErrand(Enemy, Dt, NowMs))
         return;
@@ -1105,6 +1107,12 @@ Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraC
         const FVector Delta=There-Eye;
         Sight.DistanceCm=FMath::RoundToInt32(Delta.Size());
         Sight.FacingMilli=FMath::RoundToInt32(FVector::DotProduct((Aim-Eye).GetSafeNormal(),Delta.GetSafeNormal())*1000.f);
+    }
+    if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->IsMoatGuard(Enemy))
+    {
+        const FVector Delta=There-Eye;
+        Sight.DistanceCm=FMath::RoundToInt32(Delta.Size());
+        Sight.FacingMilli=FMath::RoundToInt32(FVector::DotProduct((Craft->MoatGuardAim(Enemy)-Eye).GetSafeNormal(),Delta.GetSafeNormal())*1000.f);
     }
     Sight.TargetMoving = Target.GetVelocity().Size2D() > 30.f;
     Sight.Crouched = Target.IsCrouched();

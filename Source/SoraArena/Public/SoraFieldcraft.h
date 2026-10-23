@@ -6,6 +6,7 @@
 #include "SoraFieldcraftRules.h"
 #include "SoraFloodRules.h"
 #include "SoraClimbRules.h"
+#include "SoraMoatRules.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "SoraFieldcraft.generated.h"
 class APointLight;
@@ -176,6 +177,20 @@ public:
     static USoraFieldcraft* Get(const UObject* WorldContext);
     void Stage(const FSoraBeat& Beat);
     void Clear();
+    bool IsMoatSwimming() const { return MoatSpace&&bMoatPosture; }
+    bool MoatExitReady() const { return !MoatSpace||bMoatGateCrossed; }
+    bool MoatCrouch(ASoraPlayerCharacter& Player);
+    FVector MoatHead() const;
+    float MoatDepth() const;
+    bool MoatBlocksHitscan() const;
+    bool MoatObjective(FVector& At) const;
+    bool MoveMoatCompanion(ASoraCompanion& Companion,float Dt);
+    void AssignMoatGuard(ASoraEnemy& Enemy,int32 Index);
+    bool IsMoatGuard(const ASoraEnemy& Enemy) const;
+    FVector MoatGuardAim(const ASoraEnemy& Enemy) const;
+    bool DriveMoatGuard(ASoraEnemy& Enemy,float Dt,bool& Reached);
+    void MoatDetected(const FVector& Evidence);
+    int32 MoatFootstepPermille(const FVector& Feet) const;
     bool FloodExitReady() const { return !FloodSpace || SoraFloodRules::Ready(FloodRoute); }
     bool ClimbExitReady() const { return !ClimbSpace || bClimbCrawled; }
     bool ClimbObjective(FVector& At) const;
@@ -351,6 +366,10 @@ private:
     void TickCompanions(int32 DtMs);
     void TickLamps(int32 DtMs);
     void TickWater(int32 DtMs);
+    void StageMoat();
+    void ClearMoat();
+    void TickMoatWater(int32 DtMs);
+    bool RestoreMoatPosture(bool Reset);
     void StageFlood(const FSoraBeat& Beat);
     void ClearFlood();
     void TickFloodWater(int32 DtMs);
@@ -419,6 +438,13 @@ private:
     FHold Holding;
     float ClockCarryMs = 0.f;
     // Water.
+    const FSoraMoatSpace* MoatSpace=nullptr;
+    bool bMoatPosture=false,bMoatDiveWish=false,bMoatGateCrossed=false,bMoatAlarm=false;
+    float MoatOldRadius=34,MoatOldCrouchHalf=44,MoatOldGravity=1,MoatOldAirControl=.05f,MoatOldFriction=0;
+    float MoatPace=180;
+    FVector MoatLast=FVector::ZeroVector,MoatAlarmAt=FVector::ZeroVector;
+    int32 MoatClockMs=0,MoatGuidePoint=0;
+    TMap<TWeakObjectPtr<ASoraEnemy>,int32> MoatGuards;
     const FSoraFloodSpace* FloodSpace=nullptr;
     int32 FloodClockMs=0;
     SoraFloodRules::FRoute FloodRoute;

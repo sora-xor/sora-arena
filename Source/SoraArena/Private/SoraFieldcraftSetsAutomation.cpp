@@ -594,9 +594,11 @@ bool FSoraFieldcraftSearchlightTest::RunTest(const FString& Parameters)
         // five seconds here can trigger the alarm at the sweep's turnaround
         // before Follow starts, and exhaust its six-second lock before the
         // later assertion.
-        if (!W.Press(EKeys::C) || !W.Tick(2))
-            return false;
-        TestFalse(TEXT("The hero has surfaced before measuring light exposure"), Fieldcraft->IsDiving());
+        if (!W.Press(EKeys::C)) return false;
+        // This legacy lamp-isolation test keeps its moving spot target, but
+        // waits for actual swept ascent rather than granting air on the wish.
+        for(int32 F=0;F<240&&Fieldcraft->IsDiving();++F)if(!Follow(1))return false;
+        TestFalse(TEXT("The hero has physically surfaced before measuring light exposure"), Fieldcraft->IsDiving());
         // A head in the spot: half a second makes the guards look, a second and a half raises the alarm.
         if (!Follow(40))
             return false;

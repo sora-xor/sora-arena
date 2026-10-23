@@ -38,6 +38,7 @@
 // falls; tsubute lures; the cupped candle; vaulting low cover; and the
 // kusarigama's weighted chain.
 #include "SoraFieldcraftTestWorld.h"
+#include "SoraMoatAutomation.h"
 #include "SoraClimbAutomation.h"
 
 
@@ -449,62 +450,27 @@ bool FSoraFieldcraftWaterTest::RunTest(const FString& Parameters)
     (void)Parameters;
     if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
         return false;
-    // ch06.b02: the moat, eight seconds of breath, reeds and the float line.
-    FBeatWorld W(*this, TEXT("FieldcraftWater"), 5, 1);
-    if (!W.Start())
-        return false;
-    USoraFieldcraft* Fieldcraft = W.Fieldcraft();
-    ASoraPlayerCharacter* Hero = W.Hero();
-    const FSoraWater& Water = W.Craft().Water;
-    for (TActorIterator<ASoraEnemy> It(W.World->GetTestWorld()); It; ++It) It->Destroy();
-    // Open water: clear of the reeds and the float line.
-    FVector Open = FVector::ZeroVector;
-    for (const FVector2D Fraction : {FVector2D(-.3f, .35f), FVector2D(.3f, -.35f), FVector2D(-.3f, -.35f), FVector2D(.3f, .35f)})
-    {
-        const FVector At = Floor(Water.Area.Center + Water.Area.Size * Fraction);
-        const auto Near = [&](const FSoraVolume& Volume) { return Volume.Contains(At) || FVector::Dist2D(Floor(Volume.Center), At) < 600.f; };
-        if (!Water.Cover.ContainsByPredicate(Near) && !Water.Lines.ContainsByPredicate(Near)) { Open = At; break; }
-    }
-    if (!TestFalse(TEXT("The moat has open water"), Open.IsZero()))
-        return false;
-    W.Stand(Open);
-    if (!W.Tick(2))
-        return false;
-    TestTrue(TEXT("In the moat the hero swims at its pace"), Fieldcraft->IsSwimming() &&
-        FMath::IsNearlyEqual(Fieldcraft->HeroPace(), static_cast<float>(Water.Rules.SurfaceCmS)) &&
-        Hero->GetCharacterMovement()->MaxWalkSpeed <= Water.Rules.SurfaceCmS + .5f);
-    TestEqual(TEXT("At the surface only his head shows"), Fieldcraft->HeroExposure(1000), 450);
-    if (!W.Press(EKeys::C) || !W.Tick(2))
-        return false;
-    TestTrue(TEXT("Crouch dives"), Fieldcraft->IsDiving() && FMath::IsNearlyEqual(Fieldcraft->HeroPace(), static_cast<float>(Water.Rules.DiveCmS)));
-    TestEqual(TEXT("Under the water nothing of him shows"), Fieldcraft->HeroExposure(1000), 0);
-    const float Health = Hero->Health;
-    if (!W.Tick(28, .25f))
-        return false;
-    TestEqual(TEXT("Seven seconds under costs nothing but breath"), Hero->Health, Health);
-    if (!W.Tick(12, .25f))
-        return false;
-    TestTrue(TEXT("Past eight seconds he drowns"), Hero->Health < Health);
-    // Surfaced, his breath comes back (in three seconds of world time; each
-    // drowning blow's hit-stop slowed the world a moment before).
-    if (!W.Press(EKeys::C))
-        return false;
-    for (int32 Frame = 0; Frame < 40 && Fieldcraft->Readout(*Hero).Breath < 1.f; ++Frame)
-        if (!W.Tick(1, .25f)) return false;
-    if (!TestTrue(TEXT("At the surface his breath comes back"), !Fieldcraft->IsDiving() && Fieldcraft->Readout(*Hero).Breath >= 1.f))
-        AddInfo(FString::Printf(TEXT("Surfaced: alive %d, playing %d, crouched %d (wanted %d), swimming %d, diving %d, breath %.2f, health %.0f"),
-            Hero->IsAlive(), W.Mode()->IsPlaying(), Hero->IsCrouched(), Hero->GetCharacterMovement()->bWantsToCrouch,
-            Fieldcraft->IsSwimming(), Fieldcraft->IsDiving(), Fieldcraft->Readout(*Hero).Breath, Hero->Health));
-    TestTrue(TEXT("No arm is used in the water"), Fieldcraft->ArmsStowed());
-    // Brushing the float line at the surface rings it.
-    if (TestTrue(TEXT("The moat has its float line"), Water.Lines.Num() > 0))
-    {
-        W.Stand(Floor(Water.Lines[0].Center));
-        if (!W.Tick(2))
-            return false;
-        TestTrue(TEXT("The float line rings"), W.Raised(TEXT("ai_event:float_line")));
-    }
-    return true;
+    // Compatibility gate now drives the real moat; it cannot make a dive by
+    // toggling a boolean over the former hub floor.
+    FBeatWorld W(*this,TEXT("FieldcraftWater"),5,1);if(!W.Start())return false;W.Harden();
+    for(int32 F=0;F<600&&!W.Hero()->CanPlay();++F)if(!W.Tick(1))return false;
+    if(!W.Tick(120))return false;
+    const FVector O(W.BeatData().Space.Moat.Origin,0);
+    if(!TestTrue(TEXT("Ordinary input reaches open water"),SoraMoatAutomation::Swim(*W.World,O+FVector(3000,200,0))))return false;
+    auto* C=W.Fieldcraft();
+    TestTrue(TEXT("Actual surface swimming has the authored pace and exposed head"),C->IsSwimming()&&!C->IsDiving()&&C->HeroPace()==180&&C->HeroExposure(1000)==450);
+    if(!SoraMoatAutomation::Posture(*W.World,true))return false;
+    TestTrue(TEXT("Mapped crouch physically submerges the head"),C->IsDiving()&&C->MoatDepth()>130&&C->HeroExposure(1000)==0);
+    const float Hp=W.Hero()->Health;
+    if(!W.Tick(300))return false;
+    TestEqual(TEXT("Five seconds after the physical descent still consumes only breath"),W.Hero()->Health,Hp);
+    if(!W.Tick(180))return false;
+    TestTrue(TEXT("Beyond the full eight-second air supply real drowning damages health"),W.Hero()->Health<Hp);
+    if(!SoraMoatAutomation::Posture(*W.World,false)||!SoraMoatAutomation::Recover(*W.World))return false;
+    TestTrue(TEXT("Real surface air recovers breath while arms remain stowed"),!C->IsDiving()&&C->Readout(*W.Hero()).Breath==1&&C->ArmsStowed());
+    if(!TestTrue(TEXT("Ordinary surface swimming reaches the float"),SoraMoatAutomation::Swim(*W.World,O+FVector(13200,200,0))))return false;
+    TestTrue(TEXT("Actual surface contact rings the float line"),W.Raised(TEXT("ai_event:float_line")));
+    return !HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(

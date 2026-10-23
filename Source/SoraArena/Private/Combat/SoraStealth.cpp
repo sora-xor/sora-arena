@@ -98,6 +98,8 @@ StealthRules::FSurface USoraStealth::SurfaceAt(const FVector& Feet) const
 {
     if(const auto* Craft=USoraFieldcraft::Get(this))
     {
+        const int32 MoatSteps=Craft->MoatFootstepPermille(Feet);
+        if(MoatSteps>=0)return {MoatSteps,MoatSteps};
         const int32 FloodSteps=Craft->FloodFootstepPermille(Feet);
         if(FloodSteps>=0) return {FloodSteps,FloodSteps};
     }

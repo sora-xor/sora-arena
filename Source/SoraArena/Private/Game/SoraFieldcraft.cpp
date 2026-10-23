@@ -296,6 +296,7 @@ void USoraFieldcraft::Clear()
 {
     ClearClimbRoutes();
     ClearFlood();
+    ClearMoat();
     ASoraPlayerCharacter* Player = Hero();
     if (bClimbing && Player) LetGo(*Player, false);
     // Off a ladder he was on, as off the wall: the flying the ladder held him
@@ -351,9 +352,11 @@ void USoraFieldcraft::Stage(const FSoraBeat& Beat)
     Root->RegisterComponent();
     Props->AddInstanceComponent(Root);
     FloodSpace=Beat.Space.Flood.bEnabled?&Beat.Space.Flood:nullptr;
+    MoatSpace=Beat.Space.Moat.bEnabled?&Beat.Space.Moat:nullptr;
     StageWorld(Beat);
     StageCompanions(Beat);
     StageFlood(Beat);
+    StageMoat();
     StageNets();
     StageWatch();
     StageCharge();
@@ -390,7 +393,7 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
         Piece(FString::Printf(TEXT("Floor%d"), Index), Layout::Cube, Layout::Floor(Patch.Area.Center, Height + 1.f + Index * .1f),
             FVector(Patch.Area.Size.X / 100.f, Patch.Area.Size.Y / 100.f, .015f), Color, false, Surface);
     }
-    if (F.bWater && !FloodSpace)
+    if (F.bWater && !FloodSpace && !MoatSpace)
     {
         const FSoraWater& Water = F.Water;
         bDiving = false;
@@ -508,7 +511,7 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
         const FSoraCompanionSpec& Spec = F.Allies[Index];
         const FVector At=ClimbSpace&&Spec.Id==TEXT("npc_kohagi")?
             FVector(ClimbSpace->Origin,90)+ClimbSpace->Corner.Points[0]:
-            Layout::Floor(Spec.At, FloodSpace&&Spec.Id==TEXT("npc_kohagi")?290.f:90.f);
+            Layout::Floor(Spec.At, MoatSpace?SoraMoatRules::SurfaceCenter:FloodSpace&&Spec.Id==TEXT("npc_kohagi")?290.f:90.f);
         ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(At, FRotator(0.f, Beat.Space.EntryYaw, 0.f), Params);
         if (!Companion) continue;
         Companion->Init(Spec, Index);
@@ -798,6 +801,7 @@ void USoraFieldcraft::TickLamps(int32 DtMs)
 float USoraFieldcraft::HeroPace() const
 {
     if(bClimbCrawl) return 90.f;
+    if(MoatSpace&&bSwimming) return MoatPace;
     return bSwimming && Staged ? static_cast<float>(bDiving ? Staged->Water.Rules.DiveCmS : Staged->Water.Rules.SurfaceCmS) : 0.f;
 }
 
@@ -805,6 +809,7 @@ int32 USoraFieldcraft::HeroExposure(int32 ExposurePermille) const
 {
     if (!bSwimming || !Staged) return ExposurePermille;
     if (bDiving) return 0;
+    if(MoatSpace&&Hero()&&UnderCover(Hero()->GetActorLocation()))return 0;
     // At the surface only a head shows; among reeds and lotus barely that.
     const ASoraPlayerCharacter* Player = Hero();
     return ExposurePermille * (Player && UnderCover(Player->GetActorLocation()) ? 150 : 450) / 1000;
@@ -821,6 +826,7 @@ void USoraFieldcraft::TickWater(int32 DtMs)
     ASoraPlayerCharacter* Player = Hero();
     if (!Staged->bWater || !Player) return;
     if(FloodSpace) { TickFloodWater(DtMs); return; }
+    if(MoatSpace) { TickMoatWater(DtMs); return; }
     const FSoraWater& Water = Staged->Water;
     const bool bWasSwimming = bSwimming;
     bSwimming = Water.Area.Contains(Player->GetActorLocation());
@@ -872,6 +878,7 @@ bool USoraFieldcraft::AtFace(const ASoraPlayerCharacter& Player) const
 
 bool USoraFieldcraft::Jump(ASoraPlayerCharacter& Player)
 {
+    if(MoatSpace&&bSwimming) { bMoatDiveWish=false;return true; }
     if (!Staged) return false;
     // At a ladder's foot, or its top on the roof, Jump takes the ladder.
     if (LadderJump(Player)) return true;

@@ -571,6 +571,12 @@ struct FSoraClimbSpace
     int32 LookPeriodMs=0, LookHoldMs=0, GuardIndex=INDEX_NONE;
     int32 CrawlFloorCm=0, CrawlHeightCm=0, CrawlHalfWidthCm=0, CrawlEntryX=0, CrawlExitX=0;
 };
+struct FSoraMoatSpace
+{
+    bool bEnabled=false;
+    FVector2D Origin=FVector2D::ZeroVector;
+    int32 FloatClearDepthCm=0, HitscanClearDepthCm=0;
+};
 struct FSoraFloodSpace
 {
     bool bEnabled=false;
@@ -587,6 +593,7 @@ struct FSoraBeatSpace
     FSoraHelmSpace Helm;
     FSoraWindSpace Wind;
     FSoraFloodSpace Flood;
+    FSoraMoatSpace Moat;
     FSoraClimbSpace Climb;
     FSoraSummitSpace Summit;
     FSoraSpireSpace Spire;

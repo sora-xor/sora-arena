@@ -9,6 +9,7 @@
 #include "SoraWorldBuilder.h"
 #include "SoraLiftRules.h"
 #include "SoraFloodRules.h"
+#include "SoraMoatRules.h"
 #include "SoraRidgeRules.h"
 #include "Algo/AllOf.h"
 #include "Components/PrimitiveComponent.h"
@@ -44,6 +45,11 @@ struct FProbe
     const FSoraBeatSpace* SupportSpace = nullptr;
     float FloorHeight(const FVector2D& Point) const
     {
+        if(SupportSpace&&SupportSpace->Moat.bEnabled)
+        {
+            const FVector2D P=Point-SupportSpace->Moat.Origin;
+            return P.Y>=4800?1750.f:SoraMoatRules::Floor(P.X,P.Y);
+        }
         if(SupportSpace&&SupportSpace->Climb.bEnabled)
         {
             const FVector2D Local=Point-SupportSpace->Climb.Origin;
@@ -96,6 +102,19 @@ struct FProbe
         if (!Floor(Point, What))
             return false;
         FCollisionQueryParams Params(SCENE_QUERY_STAT(SpaceRoom), false, Hero);
+        if(SupportSpace&&SupportSpace->Moat.bEnabled)
+        {
+            const FVector2D Local=Point-SupportSpace->Moat.Origin;
+            if(SoraMoatRules::Water(Local.X,Local.Y)&&FloorHeight(Point)<-90)
+            {
+                // This authored marker is a swimming location. Preserve its
+                // actual bed trace and test the route's physical surface body.
+                // Grounded sentry posts retain the standing test below.
+                const bool Blocked=World.OverlapBlockingTestByChannel(FVector(Point,SoraMoatRules::SurfaceCenter),FQuat::Identity,ECC_Pawn,
+                    FCollisionShape::MakeCapsule(SoraMoatRules::Radius,SoraMoatRules::HalfHeight),Params);
+                return !Blocked||(bOk=Test.TestFalse(*(What+TEXT(" has room for the authored swimmer")),true));
+            }
+        }
         const bool bBlocked = World.OverlapBlockingTestByChannel(FVector(Point.X, Point.Y, FloorHeight(Point)+CapsuleHalfHeight + 4.f), FQuat::Identity,
             ECC_Pawn, FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight), Params);
         return !bBlocked || (bOk = Test.TestFalse(*(What + TEXT(" has room to stand")), true));
@@ -107,7 +126,7 @@ const FSoraBeatSpace* SupportForZone(const FSoraChapter& Chapter,int32 Zone)
     // A later beat can revisit a previously built hangar without enabling
     // wind. Its support still belongs to the same physical place.
     for(const FSoraBeat& Beat:Chapter.Beats)
-        if(Beat.Space.Zone==Zone && (Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled || Beat.Space.Climb.bEnabled)) return &Beat.Space;
+        if(Beat.Space.Zone==Zone && (Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled || Beat.Space.Climb.bEnabled || Beat.Space.Moat.bEnabled)) return &Beat.Space;
     return nullptr;
 }
 
@@ -181,9 +200,20 @@ bool CheckChapter(FAutomationTestBase& Test, int32 Chapter)
                 }
             }
             Probe.HeightCm=Space.HeightCm;
-            for (const TArray<FVector2D>& Loop : Space.Patrols)
-                for (const FVector2D& Post : Loop)
-                    Probe.Stand(Post, What + TEXT(" patrol post"));
+            for(int32 Route=0;Route<Space.Patrols.Num();++Route)
+                for(const FVector2D& Post:Space.Patrols[Route])
+                {
+                    Probe.Stand(Post,What+TEXT(" patrol post support"));
+                    if(Space.Moat.bEnabled&&Route==2)
+                    {
+                        // Retain the bed/support probe and also check the
+                        // drone's actual authored altitude, not a ground spawn.
+                        FCollisionQueryParams Q(SCENE_QUERY_STAT(MoatDroneRoom),false,Hero);
+                        bOk&=Test.TestFalse(TEXT("Moat drone patrol has real air clearance at six metres"),
+                            World.GetTestWorld()->OverlapBlockingTestByChannel(FVector(Post,600),FQuat::Identity,ECC_Pawn,
+                                FCollisionShape::MakeCapsule(34,88),Q));
+                    }
+                }
             for (const FSoraVolume& Volume : Space.Volumes)
             {
                 Probe.HeightCm=Volume.bHeight?Volume.FloorCm:Space.HeightCm;

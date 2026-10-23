@@ -1,3 +1,4 @@
+#include "SoraFieldcraft.h"
 #include "Combat/SoraDefense.h"
 #include "Combat/SoraDamage.h"
 #include "SoraBoss.h"
@@ -32,6 +33,8 @@ void Announce(USoraGameEvents* Events, bool bParried, ASoraPlayerCharacter& Hero
 
 bool SoraDefense::AdmitHero(ASoraPlayerCharacter& Hero, float& Damage, FSoraHit& Hit, AActor* Causer)
 {
+    if(Hit.bHitscan)
+        if(const auto* Craft=USoraFieldcraft::Get(&Hero);Craft&&Craft->MoatBlocksHitscan()) { Damage=0;return false; }
     USoraEquipmentComponent* Kit = Hero.GetEquipment();
     USoraGameEvents* Events = USoraGameEvents::Get(&Hero);
     const int32 HeldMs = FMath::RoundToInt32((Hero.GetWorld()->GetTimeSeconds() - Kit->GuardPressedAt()) * 1000.f);

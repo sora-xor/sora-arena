@@ -253,7 +253,7 @@ void ASoraPlayerCharacter::TickPlay(float Dt)
     // A sprint stands the hero up; the eye settles to his stance.
     if(bSprint&&GetCharacterMovement()->bWantsToCrouch) UnCrouch();
     const auto* CrawlCraft=HeroFieldcraft(*this);
-    const float EyeZ=CrawlCraft&&CrawlCraft->IsClimbCrawling()?18.f:IsCrouched()?CrouchedEyeZ:StandingEyeZ;
+    const float EyeZ=CrawlCraft&&(CrawlCraft->IsClimbCrawling()||CrawlCraft->IsMoatSwimming())?18.f:IsCrouched()?CrouchedEyeZ:StandingEyeZ;
     Eye->SetRelativeLocation(FVector(4.f,0.f,FMath::FInterpTo(Eye->GetRelativeLocation().Z,EyeZ,Dt,12.f)));
     const float Moving=FMath::Clamp(GetVelocity().Size2D()/500.f,0.f,1.f);
     Viewmodel->Sway(LifeTime,Moving,
@@ -305,7 +305,7 @@ void ASoraPlayerCharacter::OnStartCrouch(float HalfHeightAdjust,float ScaledHalf
     // eye starts where it was before TickPlay settles it lower.
     GetMesh()->SetRelativeLocation(FVector(0.f,0.f,-88.f+HalfHeightAdjust));
     Eye->AddRelativeLocation(FVector(0.f,0.f,HalfHeightAdjust));
-    if(const auto* Craft=HeroFieldcraft(*this);Craft&&Craft->IsClimbCrawling()) Eye->SetRelativeLocation(FVector(4,0,18));
+    if(const auto* Craft=HeroFieldcraft(*this);Craft&&(Craft->IsClimbCrawling()||Craft->IsMoatSwimming())) Eye->SetRelativeLocation(FVector(4,0,18));
 }
 void ASoraPlayerCharacter::OnEndCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust)
 {
@@ -438,7 +438,7 @@ void ASoraPlayerCharacter::InteractUp()
 void ASoraPlayerCharacter::CrouchPressed()
 {
     if(bKernelDriven||!CanPlay()) return;
-    if(USoraFieldcraft* Craft=HeroFieldcraft(*this);Craft&&Craft->ClimbCrouch(*this)) return;
+    if(USoraFieldcraft* Craft=HeroFieldcraft(*this);Craft&&(Craft->MoatCrouch(*this)||Craft->ClimbCrouch(*this))) return;
     // The wish, not the stance: under a low ceiling the stand waits for headroom.
     if(GetCharacterMovement()->bWantsToCrouch) { UnCrouch(); return; }
     bSprint=false; Crouch();

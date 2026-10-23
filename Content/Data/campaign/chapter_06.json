@@ -9722,6 +9722,57 @@
     "cover": [],
     "props": [],
     "route": []
+   },
+   {
+    "id": "ch06_physical_moat",
+    "place": "pl_citadel_moat",
+    "style": "citadel",
+    "form": "yard",
+    "rect": [
+     128600,
+     -1000,
+     152600,
+     5500
+    ],
+    "wall_cm": 360,
+    "entry": [
+     130600,
+     -100,
+     0
+    ],
+    "walls": [
+     [
+      128570,
+      2250,
+      60,
+      6620,
+      360
+     ],
+     [
+      152630,
+      2250,
+      60,
+      6620,
+      360
+     ],
+     [
+      140600,
+      -1030,
+      24000,
+      60,
+      360
+     ],
+     [
+      140600,
+      5530,
+      24000,
+      60,
+      360
+     ]
+    ],
+    "cover": [],
+    "props": [],
+    "route": []
    }
   ],
   "sites": [
@@ -9884,15 +9935,15 @@
    },
    {
     "beat": "ch06.b02",
-    "zone": -1,
+    "zone": 10,
     "entry": [
-     -2700,
-     0,
+     130600,
+     -100,
      0
     ],
     "anchor": [
-     -400,
-     -220
+     150400,
+     3400
     ],
     "objectives": [],
     "pickups": [],
@@ -9900,122 +9951,124 @@
     "targets": [],
     "volumes": [
      {
-      "event": "volume_enter:vol_moat_pilings",
       "center": [
-       -1080,
-       0
+       138800,
+       1800
       ],
       "size": [
-       400,
-       1100
-      ]
+       800,
+       2800
+      ],
+      "event": "volume_enter:vol_moat_pilings"
      },
      {
-      "event": "volume_enter:vol_moat_boom",
       "center": [
-       -360,
-       0
+       142800,
+       1800
       ],
       "size": [
        400,
-       1100
-      ]
+       3600
+      ],
+      "event": "volume_enter:vol_moat_boom"
      },
      {
-      "event": "volume_enter:vol_moat_wallbase",
       "center": [
-       360,
-       0
+       141100,
+       3300
       ],
       "size": [
-       400,
-       1100
-      ]
+       17000,
+       600
+      ],
+      "event": "volume_enter:vol_moat_wallbase"
      },
      {
-      "event": "volume_enter:vol_moat_lotus_1",
       "center": [
-       1080,
-       0
+       135100,
+       900
       ],
       "size": [
-       400,
-       1100
-      ]
+       3000,
+       1000
+      ],
+      "event": "volume_enter:vol_moat_lotus_1"
      }
     ],
     "exit": {
      "center": [
-      2000,
-      0
+      150500,
+      4100
      ],
      "size": [
-      500,
-      900
+      1000,
+      800
      ]
     },
     "closing": null,
     "spawns": [
      [
-      2700,
-      -1100
+      149100,
+      4860
      ],
      [
-      2700,
-      1100
-     ],
-     [
-      500,
-      1800
-     ],
-     [
-      -500,
-      -1850
-     ],
-     [
-      2100,
-      450
-     ],
-     [
-      500,
-      -1400
+      150100,
+      4860
      ]
     ],
     "patrols": [
      [
       [
-       -1650,
-       -330
+       132600,
+       4860
       ],
       [
-       1650,
-       -330
-      ],
-      [
-       1650,
-       330
-      ],
-      [
-       -1650,
-       330
+       139600,
+       4860
       ]
      ],
      [
       [
-       -900,
-       -330
+       140600,
+       4860
       ],
       [
-       900,
-       -330
+       148600,
+       4860
+      ]
+     ],
+     [
+      [
+       133600,
+       1800
       ],
       [
-       900,
-       330
+       137100,
+       2800
       ],
       [
-       -900,
-       330
+       140600,
+       1800
+      ],
+      [
+       144100,
+       800
+      ],
+      [
+       147600,
+       1800
+      ],
+      [
+       144100,
+       2800
+      ],
+      [
+       140600,
+       1800
+      ],
+      [
+       137100,
+       800
       ]
      ]
     ],
@@ -10040,12 +10093,12 @@
      "surfaces": [],
      "water": {
       "center": [
-       0,
-       0
+       140600,
+       2050
       ],
       "size": [
-       6000,
-       4800
+       22000,
+       4900
       ],
       "surface_cm_s": 180,
       "dive_cm_s": 140,
@@ -10056,74 +10109,54 @@
       "cover": [
        {
         "center": [
-         -1549,
-         -276
+         130600,
+         -100
         ],
         "size": [
-         520,
-         420
+         2000,
+         600
         ]
        },
        {
         "center": [
-         1080,
-         0
+         135100,
+         900
         ],
         "size": [
-         400,
+         3000,
+         1000
+        ]
+       },
+       {
+        "center": [
+         140850,
+         2600
+        ],
+        "size": [
+         2500,
+         1200
+        ]
+       },
+       {
+        "center": [
+         147100,
          1100
-        ]
-       },
-       {
-        "center": [
-         1679,
-         171
         ],
         "size": [
-         520,
-         420
-        ]
-       },
-       {
-        "center": [
-         -1760,
-         -105
-        ],
-        "size": [
-         520,
-         420
-        ]
-       },
-       {
-        "center": [
-         -1080,
-         0
-        ],
-        "size": [
-         400,
-         1100
-        ]
-       },
-       {
-        "center": [
-         -527,
-         -1104
-        ],
-        "size": [
-         520,
-         420
+         2000,
+         1000
         ]
        }
       ],
       "lines": [
        {
         "center": [
-         -360,
-         0
+         142800,
+         1800
         ],
         "size": [
          400,
-         1100
+         3600
         ],
         "noise_cm": 1400
        }
@@ -10148,8 +10181,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        -2370,
-        0
+        130800,
+        -50
        ]
       }
      ],
@@ -10161,12 +10194,12 @@
       {
        "id": "s_searchlight_1",
        "at": [
-        -1050,
-        2300
+        135600,
+        4800
        ],
        "height_cm": 1750,
        "yaw": -90,
-       "reach_cm": 2300,
+       "reach_cm": 3000,
        "road_from_cm": 0,
        "road_to_cm": 0,
        "sweep_deg": 70,
@@ -10181,12 +10214,12 @@
       {
        "id": "s_searchlight_2",
        "at": [
-        1050,
-        2300
+        144600,
+        4800
        ],
        "height_cm": 1750,
        "yaw": -90,
-       "reach_cm": 2300,
+       "reach_cm": 3000,
        "road_from_cm": 0,
        "road_to_cm": 0,
        "sweep_deg": 70,
@@ -10205,7 +10238,38 @@
      "charge": null
     },
     "height_cm": 0,
-    "lift": null
+    "lift": null,
+    "moat": {
+     "origin": [
+      129600,
+      0
+     ],
+     "length_cm": 22000,
+     "width_cm": 3600,
+     "surface_cm": 0,
+     "bed_cm": -240,
+     "gate_bed_cm": -300,
+     "parapet_walk_cm": 1750,
+     "parapet_y_cm": 4860,
+     "gate_x_cm": [
+      20600,
+      21000
+     ],
+     "gate_y_cm": [
+      3560,
+      3640
+     ],
+     "gate_bottom_cm": -180,
+     "gate_top_cm": -120,
+     "float_clear_depth_cm": 80,
+     "hitscan_clear_depth_cm": 100,
+     "swim_radius_cm": 28,
+     "swim_half_height_cm": 28,
+     "head_offset_cm": 18,
+     "surface_center_cm": -6,
+     "dive_center_cm": -150,
+     "provisional_posture": true
+    }
    },
    {
     "beat": "ch06.b03",
@@ -12845,10 +12909,10 @@
   "pickups": [
    {
     "collectible": "ch06.c01",
-    "zone": -1,
+    "zone": 10,
     "at": [
-     -1850,
-     700
+     150400,
+     3500
     ]
    },
    {
