@@ -98,8 +98,15 @@ class ClimbTests(unittest.TestCase):
 #include <cassert>
 #include <cmath>
 #include <initializer_list>
+#include <algorithm>
 using namespace SoraClimbRules;
 using namespace SoraFieldcraftRules;
+/* ROUTE_POINTS */
+double CapsuleShelfDistance2(FPathPoint feet,FPathPoint shelf) {
+    const double dx=std::max({shelf.X-130-feet.X,0.0,feet.X-shelf.X-130});
+    const double dz=std::max({shelf.Z-20-(feet.Z+142),0.0,feet.Z+34-shelf.Z});
+    return dx*dx+dz*dz; // radius34; vertical capsule segment centres feet+34..142.
+}
 int main() {
     static_assert(Height==1600 && CornerZ[5]==550 && CornerZ[9]==1100);
     static_assert(sizeof(CornerZ)/sizeof(*CornerZ)==15 && sizeof(ExtrusionZ)/sizeof(*ExtrusionZ)==9);
@@ -130,6 +137,28 @@ int main() {
     }
     const auto roof=GuideRoofPath[sizeof(GuideRoofPath)/sizeof(*GuideRoofPath)-1];
     assert(roof.X>1100+34 && roof.X<2100-34 && roof.Y>-800+34 && roof.Y<700-34 && roof.Z==2400);
+    // The previous straight approach really intersects the lower shelf.
+    const auto old=HoldPath(Route[3],Route[4],6629.0/18989,EHoldPath::Direct);
+    assert(CapsuleShelfDistance2(old,Route[5])<34*34);
+    for(int from=0;from<15;++from) for(int direction:{-1,1}) {
+        const int to=from+direction;if(to<0||to>=15) continue;
+        const auto rest=[](int h) { return h==5||h==9; };
+        EHoldPath path=EHoldPath::Direct;
+        if(direction>0&&rest(to)) path=EHoldPath::OntoRest;
+        else if(direction<0&&rest(from)) path=EHoldPath::OffRest;
+        else if(direction>0&&rest(to+1)) path=EHoldPath::BeforeRest;
+        else if(direction<0&&rest(from+1)) path=EHoldPath::FromBeforeRest;
+        // Sample the production interpolation densely, including both
+        // directions and all actual generated coordinates, not just endpoints.
+        for(int sample=0;sample<=4096;++sample) {
+            const auto at=HoldPath(Route[from],Route[to],sample/4096.0,path);
+            for(int shelf:{5,9}) assert(CapsuleShelfDistance2(at,Route[shelf])>=34*34-1e-7);
+        }
+    }
+    assert(AtSupport(false,1,0,2.2));
+    assert(!AtSupport(false,-1,0,0) && !AtSupport(false,0,.1,1));
+    assert(!AtSupport(true,1,0,0) && !AtSupport(false,1,.251,1));
+    assert(!AtSupport(false,1,0,-.001) && !AtSupport(false,1,0,3.001));
     for(bool extrusion:{false,true}) {
         const auto rules=GripRules(extrusion);
         assert(ClimbValid(rules));
@@ -152,6 +181,9 @@ int main() {
     }
 }
 '''
+        points = self.chapter["space"]["beats"][2]["climb_routes"]["corner"]["points_cm"]
+        source = source.replace("/* ROUTE_POINTS */", "constexpr FPathPoint Route[]={" +
+                                ",".join("{" + ",".join(map(str, point)) + "}" for point in points) + "};")
         compiler = os.environ.get("CXX") or shutil.which("clang++") or shutil.which("c++")
         self.assertIsNotNone(compiler)
         with tempfile.TemporaryDirectory(prefix="sora-climb-rules-") as directory:

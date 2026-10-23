@@ -73,11 +73,13 @@ bool FSoraClimbCornerTest::RunTest(const FString&)
     if(!TestTrue(TEXT("Mapped backward input clears the lower shelf before descending"),SoraClimbAutomation::DownToHold(*W.World,4))) return false;
     TestTrue(TEXT("Descending reaches the real prior hold outside the shelf"),
         (W.Hero()->GetActorLocation()-FVector(Contract.Origin,88)).Equals(Contract.Corner.Points[4],2));
+    if(!TestTrue(TEXT("The lower approach reverses down before moving back under the shelf"),SoraClimbAutomation::DownToHold(*W.World,3))) return false;
     if(!SoraClimbAutomation::ToHold(*W.World,5)) return false;
     if(!SoraClimbAutomation::ToHold(*W.World,9)) return false;
     TestTrue(TEXT("Upper rest is at 11m"),C->IsClimbResting()&&FMath::Abs(W.Hero()->GetActorLocation().Z-1188)<2);
     SoraClimbTest::Support(W,Contract.Corner.Points[9],1100,TEXT("Upper rest is real supporting collision"));
-    if(!TestTrue(TEXT("The upper shelf also supports an ordinary downward retreat"),SoraClimbAutomation::DownToHold(*W.World,8))||
+    if(!W.Tick(240)) return false; // Real rest pays for the added retreat/re-ascent moves.
+    if(!TestTrue(TEXT("The upper shelf and its approach also support downward retreat"),SoraClimbAutomation::DownToHold(*W.World,7))||
         !SoraClimbAutomation::ToHold(*W.World,14)) return false;
     const FVector LastHold=W.Hero()->GetActorLocation();
     if(!W.Hold(EKeys::W,30)) return false;
