@@ -118,7 +118,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
     const ASoraGameMode& M=Mode();
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
     if(bPryingCarryGate) bCarryGateHit=true;
-    if(IsHelmHold()) SoraHelmRules::Cancel(Helm);
+    if(IsHelmHold()) CancelHelm();
     StopPlayerCrank();
     if(SpineCut.Active) SoraSummitRules::Interrupt(SpineCut);
     CancelConstructCut();
@@ -1116,6 +1116,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 }
 void USoraCampaignDirector::ClearEncounter()
 {
+    CancelHelm();
     Helm={};
     CloseStealthZone();
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();

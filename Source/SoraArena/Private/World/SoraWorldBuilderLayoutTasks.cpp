@@ -19,7 +19,7 @@
 //   rises in the channel with every turn;
 // - bellows: the tatara's mouth glows brighter as the bellows are worked;
 // - lift: a wheel turns and a platform of goods rises with the turns;
-// - hold: a ring on the ground fills as the ground is held, red when contested;
+// - hold: the hold boundary fills as it is held, red when contested;
 // - stations: one bench per manufacturing station, the current step's in gold,
 //   finished ones in teal, and the output stacking beside the anchor;
 // - carry: the loads at each pickup (a pack horse, or a stack that empties)
@@ -214,6 +214,16 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
             KitPieces.Add(Goods);
         }
     }
+    else if(KitWork==TEXT("hold")&&Space.Helm.bEnabled)
+    {
+        KitAnchor=Floor(Space.Helm.Hold.Center,Space.HeightCm);
+        KitHoldSize=Space.Helm.Hold.Size;
+        auto* Floor=KitShape(TEXT("HelmHoldFloor"),KitCube,KitAnchor+FVector(0,0,1),
+            FVector(KitHoldSize.X/100,KitHoldSize.Y/100,.01),FLinearColor(.05f,.12f,.12f));
+        Floor->ComponentTags.Add(TEXT("HelmHoldFloor"));
+        KitFill=KitShape(TEXT("HelmHoldFill"),KitCube,KitAnchor+FVector(0,0,2),FVector(.01,KitHoldSize.Y/100,.012),KitGold);
+        KitFill->ComponentTags.Add(TEXT("HelmHoldFill"));
+    }
     else if(KitWork==TEXT("hold"))
     {
         // The ground to hold: its edge posts, a dark ring and a fill that grows.
@@ -328,8 +338,21 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     }
     else if(KitWork==TEXT("hold")&&KitFill)
     {
-        const float Radius=KitHoldRadius/50.f*FMath::Max(Progress,.01f);
-        KitFill->SetRelativeScale3D(FVector(Radius,Radius,.012f));
+        if(KitHoldSize.X>0)
+        {
+            KitFill->SetVisibility(Progress>0);
+            if(Progress>0)
+            {
+                const float Width=KitHoldSize.X*Progress;
+                KitFill->SetRelativeLocation(KitAnchor+FVector((Width-KitHoldSize.X)*.5,0,2));
+                KitFill->SetRelativeScale3D(FVector(Width/100,KitHoldSize.Y/100,.012f));
+            }
+        }
+        else
+        {
+            const float Radius=KitHoldRadius/50.f*FMath::Max(Progress,.01f);
+            KitFill->SetRelativeScale3D(FVector(Radius,Radius,.012f));
+        }
         Tint(KitFill,View.bContested?KitLost:Progress>=1.f?KitTeal:KitGold);
     }
     else if(KitWork==TEXT("stations"))
@@ -427,6 +450,7 @@ void ASoraWorldBuilder::ClearKit()
     HelmWheel=nullptr; HelmNeedle=nullptr;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr; Lift=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
+    KitHoldSize=FVector2D::ZeroVector;
 }
 void ASoraWorldBuilder::ShowPickups(const FSoraChapter& Chapter,const TArray<int32>& Loose)
 {

@@ -5,6 +5,9 @@
 #include "SoraSettings.h"
 #include "SoraFrontEnd.h"
 #include "SoraWorldBuilder.h"
+#include "SoraEquipmentComponent.h"
+#include "SoraHistoricalArms.h"
+#include "SoraViewmodelComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -14,8 +17,15 @@ bool USoraCampaignDirector::IsHelmHold() const
 }
 void USoraCampaignDirector::ResetHelm()
 {
+    CancelHelm();
     Helm={};
     if(IsHelmHold()) Helm.DeadlineMs=ActiveSpace()->Helm.Contract.DeadlineMs[static_cast<int32>(SoraAccessibility::CampaignDifficulty(this))];
+}
+void USoraCampaignDirector::CancelHelm()
+{
+    const bool Working=Helm.Working;
+    SoraHelmRules::Cancel(Helm);
+    if(Working&&Mode().Hero()) Mode().Hero()->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands(),true);
 }
 FVector USoraCampaignDirector::HelmWheelPoint() const
 {
@@ -32,7 +42,26 @@ bool USoraCampaignDirector::AtHelmWheel() const
 bool USoraCampaignDirector::InteractHelm(ASoraPlayerCharacter& Player)
 {
     if(!HelmNeedsTrim()||!Mode().IsPlaying()||!Player.CanPlay()||!AtHelmWheel()) return false;
-    if(!Helm.Working) { Helm.Working=true; Helm.HeldMs=0; Fire(TEXT("interact_start:helm_trim_wheel")); }
+    auto* Kit=Player.GetEquipment();
+    if(Kit->IsStaggered()||Kit->IsCommittedStrike()||Kit->IsStepping()||Kit->bReloading)
+    {
+        Notify(TEXT("動作を終えてから舵輪に手を添えよう。"),TEXT("Finish the current action before taking the wheel."),3.f);
+        return true;
+    }
+    if(SoraHistoricalArms::IsMelee(Player.WeaponId)&&!Kit->IsSheathed())
+    {
+        const auto Key=SoraUI::ActionKey(this,TEXT("Sheathe"));
+        Notify(FString::Printf(TEXT("まず %s で納刀し、武器を収めてから舵輪を操作しよう。"),*Key.Japanese),
+            FString::Printf(TEXT("Use %s to stow the blade, then hold Interact at the wheel."),*Key.English),3.f);
+        return true;
+    }
+    if(!Helm.Working)
+    {
+        Kit->Halt(); Kit->DropStance(); Player.StopSprint();
+        Helm.Working=true; Helm.HeldMs=0;
+        Player.GetViewmodel()->SetHiddenInGame(true,true);
+        Fire(TEXT("interact_start:helm_trim_wheel"));
+    }
     return true;
 }
 bool USoraCampaignDirector::TickHelm(SoraBeatRules::FTick Step)
@@ -40,8 +69,14 @@ bool USoraCampaignDirector::TickHelm(SoraBeatRules::FTick Step)
     if(!IsHelmHold()) return false;
     auto* Hero=Mode().Hero();
     const unsigned Raised=Helm.Raised,Corrected=Helm.Corrected;
-    const bool Held=Hero&&Hero->CanPlay()&&Hero->IsActionHeld(TEXT("Interact"))&&AtHelmWheel();
+    const auto* Kit=Hero?Hero->GetEquipment():nullptr;
+    const bool Held=Hero&&Hero->CanPlay()&&Hero->IsActionHeld(TEXT("Interact"))&&AtHelmWheel()&&
+        !Kit->IsStaggered()&&!Kit->IsCommittedStrike()&&!Kit->IsStepping()&&!Kit->bReloading&&
+        (!SoraHistoricalArms::IsMelee(Hero->WeaponId)||Kit->IsSheathed());
+    if(!Held) CancelHelm();
+    const bool WasWorking=Helm.Working;
     SoraHelmRules::Tick(Helm,ActiveSpace()->Helm.Contract,TaskState,Task,Step,Held);
+    if(WasWorking&&!Helm.Working&&Hero) Hero->GetViewmodel()->SetHiddenInGame(CrankOccupiesHands(),true);
     if(Helm.Failed)
     {
         Fire(TEXT("timer_expired"));

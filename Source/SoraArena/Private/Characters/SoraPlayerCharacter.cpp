@@ -415,6 +415,7 @@ void ASoraPlayerCharacter::InteractUp()
     if(auto* G=PlayerGameMode(this); G&&G->Campaign())
     {
         G->Campaign()->StopPlayerCrank(false);
+        G->Campaign()->CancelHelm();
         G->Campaign()->CancelSpineCut();
         G->Campaign()->CancelConstructCut();
     }

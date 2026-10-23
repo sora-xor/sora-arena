@@ -227,6 +227,8 @@ public:
     const SoraHelmRules::FState& HelmState() const { return Helm; }
     FVector HelmWheelPoint() const;
     bool AtHelmWheel() const;
+    bool HelmOccupiesHands() const { return IsHelmHold()&&Helm.Working; }
+    void CancelHelm();
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
     bool InLiftGallery() const { return bLiftGallery; }
