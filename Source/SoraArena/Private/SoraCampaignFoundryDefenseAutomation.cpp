@@ -117,6 +117,8 @@ bool FSoraFoundryRepairTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("A real hit cancels held repair immediately"),!C->FoundryOccupiesHands()&&C->FoundryState().HeldMs==0);
     if(!SoraFoundryTest::Tick(W,185)||!W.World->InjectKey(Use,IE_Released)) return false;
     TestEqual(TEXT("The still-held key after damage earns no automatic repair"),C->TaskProgress().TargetHp[0],900);
+    // Face away from the nearby clay tub so Jump tests a jump, not its low-cover vault.
+    W.Look(FRotator(0,180,0));
     const auto Jump=SoraFoundryTest::Action(W,TEXT("Jump"));
     if(!W.World->InjectKey(Use,IE_Pressed)||!SoraFoundryTest::Tick(W,30)||!W.World->InjectKey(Jump,IE_Pressed)||!SoraFoundryTest::Tick(W,2)) return false;
     const float Feet=W.Hero()->GetActorLocation().Z-W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
