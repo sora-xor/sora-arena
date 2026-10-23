@@ -46,20 +46,21 @@ def text_rows(boss,scale,english,attack=None,hint=None):
     return [(ja,en if english else '',js,es) for ja,en,js,es in rows]
 
 
-def measured_height(rows,width,telegraph=False):
+def measured_height(rows,width,telegraph=False,compact=False,glyph_margin=0):
     # Pair rows keep their entire strings. The font's glyph heights are an
     # independent bound, with the same 17px panel padding and 4px row clearance.
     inner=width-34
-    height=14+20+(8 if telegraph else 0)  # padding + health/phase/barrier + warning meter
+    gap=2 if compact else 4
+    height=14+20+(4+gap if telegraph else 0)  # padding + health/phase/barrier + warning meter
     for ja,en,js,es in rows:
         jl=c.wrap(ja,js,inner); el=c.wrap(en,es,inner)
         assert ''.join(jl)==ja and ''.join(el)==en
         assert all(c.width(t,js)<=inner+.01 for t in jl)
         assert all(c.width(t,es)<=inner+.01 for t in el)
         if len(jl)==len(el)==1 and c.width(ja,js)+14+c.width(en,es)<=inner:
-            height+=max(c.ink(ja,js),c.ink(en,es))+4
+            height+=max(c.ink(ja,js),c.ink(en,es))+glyph_margin+gap
         else:
-            height+=sum(c.ink(t,js)+4 for t in jl)+sum(c.ink(t,es)+4 for t in el)
+            height+=sum(c.ink(t,js)+glyph_margin+gap for t in jl)+sum(c.ink(t,es)+glyph_margin+gap for t in el)
     return height
 
 
@@ -122,6 +123,44 @@ class BossHUDLayoutTests(unittest.TestCase):
                     scenarios+=1
         self.assertGreater(scenarios,400)
 
+    def test_tarifa_raster_margin_requires_complete_compact_spacing(self):
+        # The actual c139192 720p capture rejected Tarifa before requesting a
+        # fresh frame. Its log did not retain Canvas geometry. Reuse the prior
+        # original's obstacle envelopes and stress the host model by one extra
+        # pixel per glyph row; this is a deliberate capacity margin, not a
+        # claim to reproduce the unknown Canvas metrics exactly.
+        boss=next(x for x in BOSSES if x['id']=='boss_tarifa')
+        attack=next(x for x in boss['attacks'] if x['id']=='tether_lash')
+        c.font=ImageFont.truetype(str(c.FONT),38)
+        blocks=[(14.4,62.64,612,98),(725.6,62.64,540,163),
+                (14.4,392,1251.2,122),(999.2,518,262.8,180.4),(18,640.8,244.8,57.6),
+                (629.25,349.25,21.5,21.5)]
+        regions=self.regions(1280,720,blocks)
+        rows=[(boss['name_ja'],boss['name_en'],.65,.60),
+              ('冷却外套：被害七割減','MANTLE: 70% less damage',.34,.30),
+              (attack['tell_ja'],attack['tell_en'],.65,.60),('0.5 s','',.48,.48),(*MAROBASHI,.36,.32)]
+        normal=[r for r in regions if measured_height(rows,r[2],True,glyph_margin=1)<=r[3]]
+        compact=[r for r in regions if measured_height(rows,r[2],True,compact=True,glyph_margin=1)<=r[3]]
+        self.assertFalse(normal,'One pixel per row consumes the earlier host-only fit')
+        self.assertTrue(compact,'Whitespace fallback must retain capacity with the extra row margin')
+        for region in compact:
+            placed=(*region[:3],measured_height(rows,region[2],True,compact=True,glyph_margin=1))
+            self.assertTrue(all(not overlaps(placed,block) for block in blocks))
+        # No smaller type, missing row or changed meter can manufacture a fit.
+        combat=(c.R/'Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp').read_text()
+        measure=combat[combat.index('FBossLayout MeasureBoss'):combat.index('FBossLayout BossLayout')]
+        self.assertEqual(measure.count('Compact?'),1) # only the gap changes by mode
+        self.assertIn('Gap=Compact?2.f:4.f',measure)
+        for token in ('Y+=3.f','Inner,7.f','2.f,13.f','Inner,3.f','Y+=17.f','Inner,4.f'):
+            self.assertIn(token,measure)
+        layout=combat[combat.index('FBossLayout BossLayout'):combat.index('FBox2D BossPanelBounds')]
+        self.assertLess(layout.index('if(Clear(Preferred))'),layout.index('Pass<2'))
+        self.assertIn('const bool Compact=Pass==1',layout)
+        self.assertIn('if(Trial.Bounds.GetSize().Y>R.H) continue',layout)
+        for field in ('boss=%s phase_index=%d health=','attack=%s serial=','free_region_%d','rows=%d meters=%d',
+                      'row group=%d scale=','obstacle_%d='):
+            self.assertIn(field,layout)
+
     def test_no_capacity_is_a_failure_not_hidden_content(self):
         blocks=[(0,0,1280,720)]
         self.assertEqual(self.regions(1280,720,blocks),[])
@@ -134,7 +173,7 @@ class BossHUDLayoutTests(unittest.TestCase):
         combat=(c.R/'Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp').read_text()
         story=(c.R/'Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp').read_text()
         self.assertIn('const auto L=BossLayout(Frame);',combat)
-        self.assertIn('const auto L=BossLayout(F);',combat)
+        self.assertIn('const auto L=BossLayout(F,&Why);',combat)
         self.assertIn('if(!BossLayoutFits(F,Why)) return false;',story)
         builders=story[:story.index('void DrawUpperStory(')]
         self.assertNotIn('UpperGameplayPanelBounds',builders)

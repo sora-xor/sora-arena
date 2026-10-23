@@ -147,12 +147,14 @@ struct FBossLayout
     TArray<FBossRect> Rects;
     bool bFits=false;
 };
-FBossLayout MeasureBoss(const FSoraHUDFrame& F,float Width)
+FBossLayout MeasureBoss(const FSoraHUDFrame& F,float Width,bool Compact=false)
 {
     FBossLayout L;
     const auto* Boss=F.Mode.Campaign()->CampaignBoss(); const auto* Info=Boss?Boss->Data():nullptr;
     if(!Info) return L;
-    const float Padding=17.f,Inner=Width-2*Padding,Gap=4.f;
+    // Compact placement spends only inter-row whitespace. Glyph scales,
+    // strings, panel padding and all meter dimensions are unchanged.
+    const float Padding=17.f,Inner=Width-2*Padding,Gap=Compact?2.f:4.f;
     float Y=7.f;
     const auto TextWidth=[&](const FString& Text,float Scale)
     { return FMath::Max(F.HUD.LabelWidth(Text,Scale),static_cast<float>(SoraHUDPanels::CaptionGlyphBounds(F,Text,Scale).GetSize().X)); };
@@ -250,7 +252,7 @@ FBossLayout MeasureBoss(const FSoraHUDFrame& F,float Width)
     L.Bounds=FBox2D({0,0},{Width,Y+7.f});
     return L;
 }
-FBossLayout BossLayout(const FSoraHUDFrame& F)
+FBossLayout BossLayout(const FSoraHUDFrame& F,FString* Failure=nullptr)
 {
     const float Width=FMath::Min(F.W-20.f,FMath::Max(600.f*F.S,480.f));
     auto L=MeasureBoss(F,Width); if(!L.Bounds.bIsValid) return L;
@@ -279,13 +281,63 @@ FBossLayout BossLayout(const FSoraHUDFrame& F)
         static_cast<float>(Box.GetSize().X),static_cast<float>(Box.GetSize().Y)});
     const auto Regions=SoraAimHUDLayout::FreeRegions({static_cast<float>(View.Min.X),static_cast<float>(View.Min.Y),
         static_cast<float>(View.GetSize().X),static_cast<float>(View.GetSize().Y)},Blocks.GetData(),Blocks.Num(),Gap);
-    for(int32 I=0;I<Regions.Count;++I)
+    // Keep every existing normal-spacing placement ahead of the compact
+    // fallback. Each trial remeasures all unchanged text at its actual width.
+    for(int32 Pass=0;Pass<2;++Pass)
     {
-        const auto& R=Regions.Bounds[I];
-        auto Trial=MeasureBoss(F,R.W);
-        if(Trial.Bounds.GetSize().Y>R.H) continue;
-        Trial=Place(MoveTemp(Trial),{R.X,R.Y});
-        if(Clear(Trial)) { Trial.bFits=true; return Trial; }
+        const bool Compact=Pass==1;
+        if(Compact)
+        {
+            auto Trial=Place(MeasureBoss(F,Width,true),Preferred.Bounds.Min);
+            if(Clear(Trial)) { Trial.bFits=true; return Trial; }
+        }
+        for(int32 I=0;I<Regions.Count;++I)
+        {
+            const auto& R=Regions.Bounds[I];
+            auto Trial=MeasureBoss(F,R.W,Compact);
+            if(Trial.Bounds.GetSize().Y>R.H) continue;
+            Trial=Place(MoveTemp(Trial),{R.X,R.Y});
+            if(Clear(Trial)) { Trial.bFits=true; return Trial; }
+        }
+    }
+    if(Failure)
+    {
+        const auto* Boss=F.Mode.Campaign()->CampaignBoss(); const auto* Attack=Boss->BossAttack();
+        *Failure=FString::Printf(TEXT("Complete boss readout cannot fit around the measured gameplay/story panels; boss=%s phase_index=%d health=%.3f/%.3f permille=%d attack=%s serial=%d telegraph=%d warning_s=%.3f warning_progress=%.6f viewport=%.1fx%.1f english=%d subtitle_scales=%.3f/%.3f"),
+            *Boss->BossId().ToString(),Boss->PhaseIndex(),Boss->Health,Boss->MaxHealth,Boss->HealthPermille(),
+            Attack?*Attack->Id.ToString():TEXT("none"),Boss->AttackSerial(),Boss->IsBossTelegraphing(),
+            Boss->BossWarningSeconds(),Boss->BossWarningProgress(),F.W,F.H,F.Mode.bEnglishSubtitles,F.JapaneseSubtitleScale,F.EnglishSubtitleScale);
+        const auto Describe=[&](const TCHAR* Kind,bool Compact,const FBox2D& Region,FBossLayout Trial)
+        {
+            Trial=Place(MoveTemp(Trial),Region.Min);
+            *Failure+=FString::Printf(TEXT("\n%s compact=%d region=[%.3f,%.3f,%.3f,%.3f] panel=[%.3f,%.3f,%.3f,%.3f] rows=%d meters=%d"),
+                Kind,Compact,Region.Min.X,Region.Min.Y,Region.GetSize().X,Region.GetSize().Y,
+                Trial.Bounds.Min.X,Trial.Bounds.Min.Y,Trial.Bounds.GetSize().X,Trial.Bounds.GetSize().Y,Trial.Text.Num(),Trial.Rects.Num());
+            for(const auto& Row:Trial.Text)
+            {
+                const auto Ink=SoraHUDPanels::CaptionGlyphBounds(F,Row.Text,Row.Scale);
+                const auto At=Row.At+Ink.Min;
+                *Failure+=FString::Printf(TEXT("\n row group=%d scale=%.3f ink=[%.3f,%.3f,%.3f,%.3f] text=%s"),
+                    Row.Group,Row.Scale,At.X,At.Y,Ink.GetSize().X,Ink.GetSize().Y,*Row.Text);
+            }
+            for(const auto& Rect:Trial.Rects)
+                *Failure+=FString::Printf(TEXT("\n meter=[%.3f,%.3f,%.3f,%.3f]"),Rect.Bounds.Min.X,Rect.Bounds.Min.Y,Rect.Bounds.GetSize().X,Rect.Bounds.GetSize().Y);
+        };
+        for(int32 Pass=0;Pass<2;++Pass)
+        {
+            const bool Compact=Pass==1;
+            Describe(TEXT("preferred"),Compact,FBox2D(Preferred.Bounds.Min,{Preferred.Bounds.Max.X,View.Max.Y}),MeasureBoss(F,Width,Compact));
+            for(int32 I=0;I<Regions.Count;++I)
+            {
+                const auto& R=Regions.Bounds[I];
+                Describe(*FString::Printf(TEXT("free_region_%d"),I),Compact,FBox2D({R.X,R.Y},{R.X+R.W,R.Y+R.H}),MeasureBoss(F,R.W,Compact));
+            }
+        }
+        for(int32 I=0;I<Obstacles.Num();++I)
+        {
+            const auto& B=Obstacles[I];
+            *Failure+=FString::Printf(TEXT("\n obstacle_%d=[%.3f,%.3f,%.3f,%.3f]"),I,B.Min.X,B.Min.Y,B.GetSize().X,B.GetSize().Y);
+        }
     }
     // Preserve all content when capacity is unsupported. Shared render
     // qualification reports failure rather than silently hiding boss text.
@@ -361,8 +413,8 @@ void SoraHUDPanels::DrawBoss(const FSoraHUDFrame& Frame)
 }
 bool SoraHUDPanels::BossLayoutFits(const FSoraHUDFrame& F,FString& Why)
 {
-    const auto L=BossLayout(F); if(!L.Bounds.bIsValid) return true;
-    if(!L.bFits) { Why=TEXT("Complete boss readout cannot fit around the measured gameplay/story panels"); return false; }
+    const auto L=BossLayout(F,&Why); if(!L.Bounds.bIsValid) return true;
+    if(!L.bFits) return false;
     // Validate the actual draw rows/meters and every story rectangle, not an
     // assumed upper-story limit. Boss placement may use space below dialogue.
     if(L.Bounds.Min.X<20*F.S||L.Bounds.Min.Y<87*F.S||L.Bounds.Max.X>F.W-20*F.S||L.Bounds.Max.Y>F.H-30*F.S)
