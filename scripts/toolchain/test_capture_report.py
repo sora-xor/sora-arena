@@ -239,7 +239,8 @@ class CaptureArchiveTests(unittest.TestCase):
     def test_capture_families_require_their_own_markers(self):
         families = (("ArtReview.Dojo", "SORA_ART_REVIEW_FRAME"),
                     ("RegistryFixture.Chapter4", "SORA_REGISTRY_FIXTURE_FRAME"),
-                    ("WeaponHUDFixture.Katana", "SORA_WEAPON_HUD_FIXTURE_FRAME"))
+                    ("WeaponHUDFixture.Katana", "SORA_WEAPON_HUD_FIXTURE_FRAME"),
+                    ("BowAim.Live", "SORA_BOW_AIM_FRAME"))
         for required, marker in families:
             for other, wrong_marker in families:
                 if required == other:
@@ -281,6 +282,117 @@ class CaptureArchiveTests(unittest.TestCase):
             with self.subTest(log=malformed):
                 with self.assertRaisesRegex(ValueError, "no screenshot"):
                     self.archive(log=malformed)
+
+
+class BowCaptureTests(unittest.TestCase):
+    """Synthetic framebuffer unit inputs; never presented as engine evidence."""
+    @staticmethod
+    def png(cx, cy, blank=False, width=160, height=90):
+        rows = [bytearray([32, 32, 32] * width) for _ in range(height)]
+        if not blank:
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                for length in range(4, 11):
+                    x, y = cx + length * dx, cy + length * dy
+                    rows[y][x * 3:x * 3 + 3] = bytes((244, 237, 220))
+        def chunk(kind, data):
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+        return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)) + chunk(
+            b"IDAT", zlib.compress(b"".join(b"\0" + row for row in rows))) + chunk(b"IEND", b"")
+
+    def observations(self):
+        result = []
+        for index, phase in enumerate(VERIFY.bow_capture_validation.PHASES):
+            center = ([80, 45], [82, 44], [78, 46], [80, 45])[index]
+            offset = ([0, 0], [.14, .23], [-.14, -.23], [0, 0])[index]
+            meta = dict(phase=phase, viewport=[160, 90], frame=[100, 350, 420, 421][index],
+                        draw_age_s=[1, 5.6, 6.8, 6.82][index], wall_elapsed_s=[1.1, 5.7, 6.9, 6.92][index],
+                        drawing=index < 3, attack_held=index < 3, ammo=12 if index < 3 else 11,
+                        reticle=center, projected=center.copy(), target=[80, 45], camera=[0, 0, 152], rotation=[0, 0, 0],
+                        offset_degrees=offset, ray=[1, 0, 0], bow_quat=[0, 0, 0, 1])
+            if phase == "negative":
+                meta["shot_ray"] = meta["ray"].copy()
+                meta.update(sample_world_s=100, release_world_s=100, release_delay_s=0,
+                            release_wall_elapsed_s=meta["wall_elapsed_s"]+.001, release_frame=meta["frame"],
+                            shot_world_s=100, shot_frame=meta["frame"],
+                            release_ray=meta["ray"].copy(), release_projected=center.copy(), shot_matches_render_sample=True)
+            result.append((meta, self.png(*center)))
+        return result
+
+    def test_original_cross_pixels_and_complete_live_sequence(self):
+        frames = [(meta, VERIFY.bow_capture_validation.verify_frame(meta, png, 160, 90)) for meta, png in self.observations()]
+        VERIFY.bow_capture_validation.verify_sequence(frames)
+        for meta, measured in frames:
+            self.assertEqual(measured["center"], meta["reticle"])
+
+    def test_unmoved_hidden_or_misprojected_reticle_cannot_pass(self):
+        meta, png = self.observations()[1]
+        for changed, pixels in ((dict(meta, projected=[80, 45]), png),
+                                (meta, self.png(80, 45)), (meta, self.png(82, 44, blank=True)),
+                                (dict(meta, draw_age_s=8), png), (dict(meta, attack_held=False), png)):
+            with self.subTest(changed=changed):
+                with self.assertRaises(ValueError):
+                    VERIFY.bow_capture_validation.verify_frame(changed, pixels, 160, 90)
+
+    def test_shot_recenter_missing_phase_and_camera_motion_are_rejected(self):
+        data = self.observations()
+        wrong_shot = dict(data[2][0], shot_ray=[0, 1, 0])
+        with self.assertRaisesRegex(ValueError, "released shot"):
+            VERIFY.bow_capture_validation.verify_frame(wrong_shot, data[2][1], 160, 90)
+        frames = [(meta, VERIFY.bow_capture_validation.verify_frame(meta, png, 160, 90)) for meta, png in data]
+        with self.assertRaisesRegex(ValueError, "exactly"):
+            VERIFY.bow_capture_validation.verify_sequence(frames[:-1])
+        frames[2][0]["camera"] = [100, 0, 152]
+        with self.assertRaisesRegex(ValueError, "camera"):
+            VERIFY.bow_capture_validation.verify_sequence(frames)
+
+    def test_archive_binds_original_png_and_observation_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            project, output = root / "project", root / "out"
+            folder = project / "Saved/Screenshots/SoraBowAim/160x90/unique"
+            folder.mkdir(parents=True)
+            markers = []
+            for meta, png in self.observations():
+                image = folder / (meta["phase"] + ".png")
+                image.write_bytes(png)
+                image.with_suffix(".json").write_text(json.dumps(meta))
+                markers.append("LogTemp: Display: SORA_BOW_AIM_FRAME " + str(image))
+            report = {"tests": [{"fullTestPath": "SoraCapture.BowAim.Live"}]}
+            frames = VERIFY.archive_frames("\n".join(markers), report, project, root, output, 0, 160, 90)
+            self.assertEqual(len(frames), 4)
+            for frame in frames:
+                self.assertEqual(hashlib.sha256((output / frame["observations"]).read_bytes()).hexdigest(), frame["observations_sha256"])
+                self.assertEqual((output / frame["path"]).read_bytes(), Path(frame["source"]).read_bytes())
+                self.assertIn("not playthrough or art acceptance", frame["capture_kind"])
+            with self.assertRaisesRegex(ValueError, "exactly"):
+                VERIFY.archive_frames("\n".join(markers[:-1]), report, project, root, root / "partial", 0, 160, 90)
+
+    def test_callback_delay_is_measured_without_claiming_same_rendered_ray(self):
+        meta, png = self.observations()[2]
+        meta.update(release_world_s=100.02, release_delay_s=.02, release_wall_elapsed_s=6.95,
+                    release_frame=421, shot_world_s=100.02, shot_frame=421,
+                    release_ray=[.999, .001, 0], shot_ray=[.999, .001, 0],
+                    release_projected=[78.1, 46], shot_matches_render_sample=False)
+        VERIFY.bow_capture_validation.verify_frame(meta, png, 160, 90)
+        for changed in (dict(meta, shot_matches_render_sample=True), dict(meta, release_delay_s=0),
+                        dict(meta, shot_world_s=100.03)):
+            with self.assertRaises(ValueError):
+                VERIFY.bow_capture_validation.verify_frame(changed, png, 160, 90)
+
+    def test_all_png_row_filters_preserve_original_rgb(self):
+        expected = [bytearray((10, 20, 30, 40, 50, 60)), bytearray((12, 22, 32, 42, 52, 62))]
+        encoded = ((expected[0], expected[1]),
+                   ([10, 20, 30, 30, 30, 30], [12, 22, 32, 30, 30, 30]),
+                   (expected[0], [2]*6),
+                   ([10, 20, 30, 35, 40, 45], [7, 12, 17, 16, 16, 16]),
+                   ([10, 20, 30, 30, 30, 30], [2]*6))
+        def chunk(kind, data):
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+        for mode, rows in enumerate(encoded):
+            png = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 2, 2, 8, 2, 0, 0, 0)) + chunk(
+                b"IDAT", zlib.compress(b"".join(bytes([mode])+bytes(row) for row in rows))) + chunk(b"IEND", b"")
+            self.assertEqual(VERIFY.png_dimensions(png), (2, 2))
+            self.assertEqual(VERIFY.bow_capture_validation.rgb8(png), (2, 2, 3, expected))
 
 
 if __name__ == "__main__":

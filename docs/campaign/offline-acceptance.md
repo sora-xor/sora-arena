@@ -845,6 +845,49 @@ samples, bounded long holds, smooth ramp joins and frame partition invariance.
 the actual engine run.** Reticle legibility and tuning, final bow/hand rigging,
 right-side arrow rest and yugaeri still need their respective visual/art review.
 
+The separate source-only `SoraCapture.BowAim.Live` fixture prepares the actual
+b07 checkpoint and grounded range view, then uses the current mapped Bow and
+Attack keys in the running game. It waits for assets before starting the draw;
+world time then advances normally, with no freeze, manual tick, timestamp
+assignment or aim override. It requests original framebuffer screenshots on
+actual HUD draw frames: steady full draw before the threshold, positive sway,
+negative sway, and the centered reticle after a real release. The target must
+be unobstructed, the held yumi proxy visible, camera/control rotation fixed,
+and the viewmodel pose consistent with the aim offset. Fixed-step simulation
+and time dilation are rejected. This is a prepared capture, not a normal
+chapter playthrough or final art acceptance.
+
+The HUD observation records the submitted reticle position. The fixture
+independently projects the shared ray with the player controller and compares
+those coordinates. PNG-adjacent JSON retains frame number, world/draw/wall
+times, camera, ray, offset, bow rotation, target projection, actual held input
+and ammunition. It records release and emitted-shot frames/times/rays
+separately, including any screenshot-callback delay and whether the shot also
+matched the rendered sample; callback timing alone is not an equality claim.
+The mapped release must emit exactly one shot and leave eleven arrows.
+Cleanup drops held inputs, removes delegates, restores HUD/title/save-slot
+state, removes the throwaway save and checks control mappings and saved
+control/settings bytes, restoring bytes if a failed check detects a change.
+
+Run each viewport separately on the exclusive engine lane:
+
+```sh
+scripts/toolchain/capture-editor-game.sh SoraCapture.BowAim.Live 1280 720 sm6
+scripts/toolchain/capture-editor-game.sh SoraCapture.BowAim.Live 1920 1080 sm6
+```
+
+`verify-capture-report.py` requires this fixture's own `SORA_BOW_AIM_FRAME`
+markers and all four phases. It preserves original PNG and observation bytes
+with hashes, checks timing/projection/shot consistency, and locates the four
+crosshair arms in the actual PNG using local line contrast. Pixel centers
+must match the submitted reticle within 1.5 pixels, show both sway directions
+and return after release. Invisible/ambiguous arms fail rather than being
+painted over or inferred from metadata. The verifier's synthetic unit images
+test decoding and failure paths; they are not rendered evidence. **Neither
+viewport has been executed for this source candidate.** Human review still
+decides whether the small motion is perceptible and comfortable, and whether
+the final bow/hand/target art is acceptable.
+
 ## Dojo awase feedback and passive zanshin candidate (source only, 2026-10-20)
 
 Chapter 01 §b04 requires Sekireisai's `ch01.b04.sekireisai.003` when a

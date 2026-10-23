@@ -217,6 +217,9 @@ void SoraHUDPanels::DrawHero(const FSoraHUDFrame& Frame,const ASoraPlayerCharact
     }
     const FLinearColor Cross=P->HitMarkerTime>0?Gold:Ivory;
     HUD.DrawLine(CX-10,CY,CX-4,CY,Cross,1.5); HUD.DrawLine(CX+4,CY,CX+10,CY,Cross,1.5); HUD.DrawLine(CX,CY-10,CX,CY-4,Cross,1.5); HUD.DrawLine(CX,CY+4,CX,CY+10,Cross,1.5);
+#if WITH_DEV_AUTOMATION_TESTS
+    HUD.OnReticleDrawn.Broadcast(FVector2D(CX,CY));
+#endif
     if(!G->bDeterministicPractice)
     {
         // 水月: a faint moon ring round the reticle while the opponent it
