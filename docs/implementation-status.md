@@ -8,6 +8,16 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-24 cargo counter and lead rope
+
+At `67cc9a0`, the bilingual remaining-sheaf counter and animated visual lead are
+integrated. Five directed editor tests and all 43 gameplay source gates pass;
+independent source/build/EOF authentication is recorded in the
+[counter and rope checkpoint](complete-release-plan.md#october-24-cargo-counter-and-lead-rope-checkpoint).
+Rendered readability, final craft/animation, ordinary pacing and a new package
+remain open. Separate native `6fd03be8` has reviewed standalone Katana-fallback
+source evidence; actual crate compilation, proof and wire bounds remain unrun.
+
 ## 2026-10-24 functional cargo transfer
 
 At `ec91382`, all seven selected cargo/horse/carry/Playthrough editor tests
@@ -16,8 +26,9 @@ The pack and drying stands conserve 30 sheaves across accepted ten-sheaf
 transfers, including on-foot unloading, pause/cancellation and checkpoint retry.
 Independent authentication and [exact scope](complete-release-plan.md#october-24-cargo-transfer-checkpoint)
 are recorded. These are assisted functional checks of basic mesh visibility.
-Rendered readability, cargo HUD/lead rope, final art and ordinary pacing remain
-open; newer source has not been packaged.
+The later counter/rope checkpoint above supersedes that presentation gap.
+Rendered readability, final art and ordinary pacing remain open; newer source
+has not been packaged.
 
 ## 2026-10-23 horse behavior and native cohort checkpoint
 

@@ -1,14 +1,22 @@
 # Offline campaign progression acceptance
 
-The latest directed cargo checkpoint is `ec91382`: seven cargo, horse, carry
+The latest counter/rope checkpoint is `67cc9a0`: CargoUnload, BuntaLeadFear,
+KurimaruSpookDismount, Mount and Playthrough pass with zero selected
+errors/warnings, plus all 43 gameplay source gates. The bilingual counter and
+visual lead have independent source/build/log authentication in the
+[counter and rope checkpoint](../complete-release-plan.md#october-24-cargo-counter-and-lead-rope-checkpoint).
+Actual rendered readability, final art, ordinary pacing and a current package
+remain unqualified.
+
+The preceding directed cargo checkpoint is `ec91382`: seven cargo, horse, carry
 and Playthrough tests pass with zero selected errors/warnings, along with all
 43 gameplay source gates. Actual pack/stand components show accepted transfers
 30 → 20 → 10 → 0, including a foot unload, checkpoint reconstruction, and final
 state before teardown. Source/build/EOF/log authentication is recorded in the
 [cargo transfer checkpoint](../complete-release-plan.md#october-24-cargo-transfer-checkpoint).
 The fixtures still use assisted placement and frozen threats. Rendered
-readability, numeric HUD, connecting lead rope, ordinary pacing and final art
-remain unqualified.
+readability, ordinary pacing and final art remain unqualified; the later
+checkpoint separately verifies the numeric HUD and connecting lead components.
 
 The preceding directed horse checkpoint is `3a3a3d3`: CargoUnload, BuntaLeadFear
 and KurimaruSpookDismount pass together with zero selected errors/warnings.
