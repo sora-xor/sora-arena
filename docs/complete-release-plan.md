@@ -11,6 +11,67 @@ production. Work runs in isolated worktrees, with a single coordinated Unreal
 and GPU rendering lane. The shared checkout is not a build or render workspace.
 The local coordination mailboxes record current ownership, commits and lane use.
 
+## October 23 campaign traversal and lighting investigation
+
+The ridge/wind, helm and flood implementations are now integrated and have
+actual Mac editor evidence. The release remains incomplete; these directed
+fixtures isolate combat or assist health where documented, and do not establish
+ordinary play balance, final art or a newly packaged build.
+
+- At `9107ea7`, all three helm and six ridge/wind tests pass, along with held
+  crank, input gating, pause and legacy water checks. The original unity-build
+  failure and subsequent flood failures remain archived.
+- Flood replay exposed an 89.4 cm floor gap before the descent and two companion
+  collision stalls. `60ab8ee` joins the actual ramp support; `575de7e` resolves
+  vertical and horizontal companion sweeps separately without disabling
+  collision. At `9ebcf87`, all five flood fixtures plus legacy Water pass,
+  with zero selected errors/warnings. Both early and fully risen water routes
+  cross the submerged legs and gate, recover breath in real air, reach solid
+  bank support with Iota attached to Toranosuke, incur no drowning damage and
+  advance through the actual exit. Retry, fresh load and senses pass too.
+- The first broader run retained two failures: the ridge traversal helper
+  waited for an old exit center after the game had already advanced, and the
+  space audit assumed flat floors and found obstructed hangar markers.
+  `78d3ca0` recognizes only verified completion of the explicitly requested
+  final exit leg and adds a real-wave/real-exit regression. Its Playthrough,
+  RidgeExit and RidgeTraversal tests all pass.
+- `6d038f4` checks actual support at authored ridge/flood heights and moves
+  hangar markers into clear aisles. It retains every floor/capsule probe and
+  additionally rejects traces starting inside geometry. Spaces, both hangar
+  tests, RidgeExit and Playthrough all pass, with zero selected errors/warnings.
+  The complete scripted traversal records eight chapters, 133 beats, 120
+  checkpoint reads, 61 fresh checkpoint reloads and 13 phase reloads. This is
+  assisted functional traversal, not a normal-control difficulty review.
+- All 56 gameplay/tooling source gates pass at clean `9ebcf87`. CI
+  `39908298194` separately authenticates 73 gates in five jobs at `d1790c5`;
+  it predates this mechanics integration. Startup engine self-test diagnostics
+  remain in the logs. The earlier `60ab8ee` run also retains one HTTP timeout
+  warning. Post-exit TraceServer output is preserved with authenticated
+  original log prefixes; no prior receipt has been rewritten.
+- Same-source SM5 controls reproduce the darker entry with the rebuilt meshes
+  and restore the brighter entry using the original twelve meshes with the
+  candidate materials/textures. A separate controlled pair with Lumen diffuse
+  indirect lighting disabled removes the large visible difference. Normal-GI
+  observer captures at `9ebcf87` show changed distance-field payloads and card
+  geometry in 11/12 meshes, despite equal fallback source descriptions,
+  material assignments and section flags. The column matches. All four floor
+  fields grow from 70 to 88 finest-mip bricks and gain expanded Z bounds.
+  This narrows the investigation; it does not identify a production repair.
+  All four new originals were reviewed and all 48 candidate files restored.
+
+Active-held helm pause behavior still needs its explicit cancellation policy
+and directed regression. Photoreal art, ordinary-control campaign acceptance,
+new packages, actual M1/Windows performance and the remaining native/network/
+settlement criteria remain open. Claude's art ownership and queued requests
+are unchanged during the confirmed weekly limit through October 24, 22:00 JST.
+
+Archives: `campaign-integration-9107ea7/`, `campaign-flood-9ebcf87/`,
+`campaign-ridge-78d3ca0/`, `campaign-spaces-6d038f4/`, and
+`dojo-sm5-appearance-control/` under `Saved/Qualification/2026-10-23/`.
+The exact normal-GI captures are `20261023T065542Z-sm5-50677` and
+`20261023T065708Z-sm5-52741`; the GI-off control pair is
+`20261023T062604Z-sm5-12647` and `20261023T062706Z-sm5-14737`.
+
 ## October 23 package, Codex and Nanite qualification
 
 This update supersedes the running and pending states in the historical
@@ -83,8 +144,9 @@ October 23 sections below. The release remains incomplete.
   unadmitted. The historical statement that these renders were pending is
   superseded; no production geometry was replaced.
 
-Source-only chapter-seven ridge/wind and helm work and chapter-six flood work
-are under review. Ridge follow-up `7d72c94` fixes terminal falls destroying the
+At the earlier checkpoint, chapter-seven ridge/wind and helm work and
+chapter-six flood work were still under review. Their later integration and
+runtime results are recorded in the update above. Ridge follow-up `7d72c94` fixes terminal falls destroying the
 pawn before retry and five spawns inside a shuttle proxy. Helm `3a1fef7` fixes
 its visible hold boundary and reserves the player's hands during wheel work.
 Flood `d8d4a01` fixes the bank ramp and gate opening; its companion ascent stall

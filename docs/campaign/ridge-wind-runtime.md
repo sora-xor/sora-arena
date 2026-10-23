@@ -2,8 +2,11 @@
 
 This is a functional source checkpoint for [chapter 7](chapter-07.md) §§2.3,
 3, and 6.10. It replaces the generic walled ridge room with the authored
-180 m route and adds physical wind to the 80 × 45 m hangar mouth. It has not
-yet been compiled, run, rendered, packaged, or performance-qualified in Unreal.
+180 m route and adds physical wind to the 80 × 45 m hangar mouth. Root compiled and ran its six directed fixtures at `9107ea7`. The added
+RidgeExit regression and full scripted campaign pass at `78d3ca0`; the later
+`6d038f4` marker/support correction passes Spaces, both hangar tests, RidgeExit
+and Playthrough. Rendering, ordinary-control pacing, packaging and platform
+performance remain unqualified.
 
 ## Authored behavior implemented
 

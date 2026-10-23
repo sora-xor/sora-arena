@@ -353,8 +353,50 @@ and Windows results, final material appearance and unique detailed beams are
 still required. Earlier failed imports and the failed baseline draw remain
 available beside the successful receipts.
 
-No generated asset is changed by this source-only revision. The root execution
-lane must review and import it across the complete kit, preserve the original
-baseline/candidate evidence, then perform the draw and fallback qualifications.
-Full import, cooked fallback availability, unchanged SM5 imagery/collision,
-visible SM6 Nanite and real M1 behavior remain unqualified until run.
+The diagnostic itself does not modify generated assets. The import and SM6
+results above supersede the earlier source-only state; appearance parity,
+cooked fallback, performance and actual M1 behavior remain open.
+
+## SM5 diffuse-lighting controls and existing-data observer
+
+At `d1790c5`, repeated same-camera controls show the dark entry follows the
+rebuilt mesh files: original twelve meshes restore brighter floor/props while
+keeping all 36 candidate material/texture files. Actual saved property reads
+find identical conventional oriented geometry, UV0, normals/tangents, nineteen
+LOD build settings and five mesh properties. All twelve old saved screen
+thresholds are two; fresh candidate thresholds are zero. The candidate also
+enables Nanite and adds the separate HiRes source. These observations alone
+cannot attribute the lighting change to any one setting.
+
+At `9107ea7`, a separate same-source pair sets only the launch-time
+`r.Lumen.DiffuseIndirect.Allow=0`; actual console readbacks confirm it. All four
+originals were inspected: the large entry brightness difference disappears.
+Entry/ceiling mean absolute eight-bit channel differences are 0.2995/0.1747,
+diagnostic measurements without an acceptance threshold. The setting was not
+saved to production configuration. A separate Nanite-disabled experiment
+failed the DoorOpen bounds audit before rendering and remains a failed control.
+
+The read-only observer integrated at `9ebcf87` records each of twelve meshes
+once after compilation: existing CPU SDF validity/bounds/mip descriptors and
+exact always-loaded byte MD5; streamable size/residency without loading its
+payload; existing card bounds and OBBs; material/section/DF flags and Nanite
+voxel masks; raw LOD0/HiRes source group bounds/counts/material correspondence.
+Source getters may deserialize/cache descriptions and indexes. They do not
+rebuild or save render geometry, SDFs or cards. CPU observations are not GPU
+atlas residency or surface-cache coverage. The initial link failure is retained;
+direct editor-only MeshDescription/StaticMeshDescription dependencies repair it.
+
+Normal-GI paired captures at that source both pass runtime/restoration checks:
+`20261023T065542Z-sm5-50677` (candidate) and
+`20261023T065708Z-sm5-52741` (original twelve meshes). All four originals were
+viewed; the same entry brightness difference remains. Eleven of twelve SDF
+always-loaded payloads and card representations differ; the column matches.
+All twelve raw LOD0 descriptions, material properties, section mappings/flags
+and voxel masks match; all 37 candidate HiRes group mappings match LOD0.
+Floor finest-mip bricks change from 70 to 88, with Z bounds expanding from
+[-3,0] cm to approximately [-5.9,2.87] cm. Card counts are unchanged but their
+OBBs differ. These measurements do not distinguish SDF versus card causality.
+
+All 48 candidate files are restored and hash-verified after each successful
+or failed control. Existing art remains unadmitted. A proposed single-floor
+GI-source experiment is still a diagnostic plan, not an implemented repair.

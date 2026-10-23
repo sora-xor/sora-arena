@@ -8,6 +8,34 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-23 campaign integration and GI investigation
+
+The [latest release-plan update](complete-release-plan.md#october-23-campaign-traversal-and-lighting-investigation)
+records executed helm, ridge/wind and flood integration. At `9ebcf87`, all six
+flood/water tests pass after repairing the descent gap and companion collision
+stalls. Both water levels permit the complete physical route, carried Iota,
+zero drowning damage and actual exit completion. All 56 gameplay/tooling source
+gates also pass at that source.
+
+At `6d038f4`, the full scripted campaign, Spaces, both hangar tests and RidgeExit
+pass with zero selected errors/warnings. The traversal covers eight chapters,
+133 beats and fresh checkpoint/phase reloads. The retained earlier failures
+led to a verified exit-transition helper and grade-aware support checks plus
+clear hangar markers. This is assisted functional automation, not ordinary
+play balance or a package of the latest source. Active-held helm pause remains
+under correction and separate validation.
+
+Normal-GI SM5 controls show that the darker entry follows the rebuilt mesh
+assets. Disabling diffuse indirect lighting removes the large visible
+difference; the new observer measures changed SDF/card data for 11/12 meshes
+with equal conventional source/material/section observations. The exact cause
+and repair remain open. All four new originals were reviewed and all candidate
+asset bytes restored. No lighting setting or art was admitted by the controls.
+
+CI `39908298194` passes 73 gates at `d1790c5`, before this integration. Earlier
+package, native, art and platform results retain their separate source scope.
+The complete release remains unfinished.
+
 ## 2026-10-23 package, Codex and Nanite checkpoint
 
 The [current release-plan update](complete-release-plan.md#october-23-package-codex-and-nanite-qualification)
