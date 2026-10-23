@@ -93,11 +93,16 @@ and independently rehashed. This is another negative control, not a repair.
 Native candidate `a984a5c` composes the bounded two-player/two-tick preparation,
 carbine selection, wall/protection checks and nonlethal state updates. Its 49
 standalone Rust tests, nine Python provenance tests and 52-case independent
-canonical replay pass. The actual privacy-crate compile stopped at the owned
-30 GiB disk reserve, with an authenticated EOF receipt and no compiler error.
-No actual-crate test or native proof has completed for this candidate. The
-earlier `c99ee46e` preparation proof and current game bridge retain their own
-source scope; this new relation is not registered or used for settlement.
+canonical replay pass. The first actual privacy-crate compile stopped at the
+owned 30 GiB disk reserve; its EOF receipt is retained. A later single-job retry
+completes compilation, actual test listing and 23 CPU tests, with one proof
+experiment explicitly ignored. All three phases exit zero at EOF, taking
+833.839 seconds overall; the CPU tests take 24.83 seconds with 194,936,832-byte
+peak RSS. Independent authentication verifies the signed source, 30 source
+files, logs and exact 132,161,600-byte executable. An existing dead-code warning
+remains recorded. No new proof follows from these tests. The earlier `c99ee46e`
+preparation proof and current game bridge retain their own source scope; this
+new relation is not registered or used for settlement.
 
 Chapter-six b03's two climb routes, resting shelves, timed downward sentry and
 physical crawl exit are integrated from reviewed `855972c`. Kohagi's physical
@@ -120,12 +125,37 @@ the support surface height. Sentry timing reaches the first look-down at
 its observation position. This is evidence for a swept-path correction,
 not traversal acceptance. Collision remains enabled; no failed test is waived.
 
+The subsequent `c26b0e1` correction adds a six-centimetre swept clearance path
+across supporting lips while keeping the authored endpoints, duration and
+collision. Kohagi's final downward sweep requires an actual upward support
+face. Corner, Extrusion, Guide and Sentry pass in the actual editor. Seven more
+regressions pass, including Playthrough, Spaces, hand control and pause/retry.
+Two fall tests fail: a safe release on a real rest ends the initial fall, but
+walking off that rest does not arm a new fall. The runtime omission and old
+fixture assumption are assigned for correction; the source has 11/13 unique
+passes, not complete climb qualification.
+
+The foundry encounter is integrated at `4019fe6`: a 1,500 HP furnace, 180-second
+defense, three once-only 150 HP clay repairs, Kozo's four-second rescue and
+25-second deadline, real grenadier furnace targeting and netted bellows pressure.
+All 58 gameplay/tooling source gates pass at its initial integrated `5026836`.
+The first actual run passes 11/12 selected tests and exposes foundry hand
+reservation being overwritten by shared crank/helm handling, plus a fixture
+walking directly into a clay tub. The corrected source includes foundry work
+in shared hand/weapon reservation and walks clear aisles with ordinary input.
+At `4019fe6`, all five foundry mechanic tests and four shared crank/helm hand
+regressions pass across two source-bound editor runs. Independent terminal
+authentication verifies both reports, exact source/artifacts, zero exits and
+EOF. There are zero selected-test errors/warnings; startup engine diagnostics
+and appended TraceServer output are retained separately. These are directed
+mechanic tests, not ordinary encounter balance, final art or a new package.
+
 CI `39967468401` separately passes all 77 source gates in five jobs at
 `5c8b775`, with an identical source/tested-merge tree. Root authenticated
 98 referenced evidence files. This run predates the compiler correction,
 guide and diagnostic commits and cannot qualify their runtime behavior.
-Chapter-six b02's physical depth/gate mechanism and chapter-five b07's finite
-repairs, rescue and bellows pressure remain under implementation.
+Chapter-six b02's physical moat depth/gate mechanism is under independent source
+review and has not run in Unreal.
 Photoreal art, ordinary-control campaign acceptance,
 new packages, actual M1/Windows performance and the remaining native/network/
 settlement criteria remain open. Claude's art ownership and queued requests
@@ -145,7 +175,11 @@ The ceiling archive is `dojo-ceiling-replacement/` and the native source/test
 review and retained resource stop are under `native-carbine-a984a5c/`.
 Climb failures and source-bound build receipts are under
 `campaign-climb-c5f5799/runtime-targeted/` and
-`campaign-climb-623b683/runtime-targeted/`; CI is under `ci-5c8b775/`.
+`campaign-climb-623b683/runtime-targeted/`; corrected climb runs are under
+`campaign-climb-c26b0e1/`. Foundry failures and corrected passes are under
+`campaign-foundry-5026836/` and `campaign-foundry-4019fe6/` respectively.
+The native retry is `native-carbine-a984a5c/actual-crate-2/`;
+CI is under `ci-5c8b775/`.
 
 ## October 23 package, Codex and Nanite qualification
 

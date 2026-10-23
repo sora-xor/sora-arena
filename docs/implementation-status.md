@@ -44,19 +44,30 @@ files restored. Only the ceiling's measured SDF/card representation changed.
 
 CI `39967468401` passes 77 gates in five jobs at `5c8b775`, with an identical
 source/tested-merge tree and 98 root-authenticated evidence files. It predates
-the subsequent compiler correction, Kohagi guide and diagnostic changes.
-Chapter-six climb candidate `c5f5799` builds in the actual editor, but nine of
-thirteen selected tests fail; Loader, Spaces, input gating and pause pass.
-Diagnostic-only `623b683` reproduces four focused failures and records the
-player/guide stopping at supporting ledge lips. Sentry timing passes its
-initial checks but its fixture later fails during player traversal. The
-physical route correction is pending, and all original failures are retained.
-Earlier package, native, art and platform results retain their source scope.
-Native `a984a5c` passes standalone composition/provenance checks and the
-independent canonical replay, but its actual privacy-crate compile stopped
-at the 30 GiB disk reserve before tests. No compiler error or completed proof
-is claimed from that attempt. The prior preparation proof remains bound to
-`c99ee46e`; the game bridge is unchanged.
+the subsequent climb and foundry changes. Initial climb runs at `c5f5799` and
+`623b683` retain their failures at supporting ledge lips. The swept lift/cross/
+settle correction at `c26b0e1` preserves collision and authored endpoints;
+Corner, Extrusion, Guide and Sentry now pass, as do seven further regressions
+including Playthrough. Two fall tests still fail. Safe release onto a rest
+works, but a subsequent walk off the shelf does not start a new measured fall.
+That runtime defect and the fixtures' old rest-release assumption remain open.
+
+The foundry at `4019fe6` passes all five directed mechanic tests and four shared
+hand-control regressions. This covers finite clay repairs, interrupted work,
+weapon reservation, Kozo rescue/deadline, grenadier furnace priority and netted
+bellows pressure. An earlier run's hidden-hands/weapon and tub-approach failures
+are preserved. The correction includes the foundry in shared hand reservation
+and walks the fixture through clear aisles. Both terminal runs are independently
+authenticated with zero selected-test errors/warnings; startup diagnostics
+remain in the logs. Ordinary encounter balance and final art are unqualified.
+
+Native `a984a5c` now completes the actual privacy-crate compile, test listing
+and 23 CPU tests, with one proof experiment explicitly ignored. The retry
+takes 833.839 seconds overall; all three phases have authenticated EOF and
+zero exits. The earlier 30 GiB reserve stop remains archived. This adds no
+new proof: the prior preparation proof remains bound to `c99ee46e`, and the
+game bridge is unchanged. Earlier package, art and platform results retain
+their source scope. Physical moat source is under independent review.
 The complete release remains unfinished.
 
 ## 2026-10-23 package, Codex and Nanite checkpoint
