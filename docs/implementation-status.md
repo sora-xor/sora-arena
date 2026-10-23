@@ -38,12 +38,20 @@ bounds within each pair. Only the targeted floor SDF/card observations change;
 the floor brightens but the broad room defect remains. Original images were
 reviewed and all 48 candidate files independently rehashed after restoration.
 No lighting setting, production asset change or art was admitted by the controls.
+The ceiling-only control at `50ef7d6` likewise leaves the broad room dark;
+its six phases completed, all six originals were inspected and all candidate
+files restored. Only the ceiling's measured SDF/card representation changed.
 
-CI `39916293154` passes 76 gates in five jobs at `fc9628a`; its tested merge has
-the same source tree. This includes the earlier campaign integration but
-predates the two helm pause commits. The chapter-six authored climb remains
+CI `39962705267` passes 76 gates in five jobs at `50ef7d6`; its tested merge has
+the same source tree, including both helm pause commits. Root authenticated
+all 99 referenced local evidence files. The chapter-six authored climb remains
 under implementation, with runtime validation still required. Earlier
 package, native, art and platform results retain their separate source scope.
+Native `a984a5c` passes standalone composition/provenance checks and the
+independent canonical replay, but its actual privacy-crate compile stopped
+at the 30 GiB disk reserve before tests. No compiler error or completed proof
+is claimed from that attempt. The prior preparation proof remains bound to
+`c99ee46e`; the game bridge is unchanged.
 The complete release remains unfinished.
 
 ## 2026-10-23 package, Codex and Nanite checkpoint

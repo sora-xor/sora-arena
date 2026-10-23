@@ -447,3 +447,27 @@ SHA256 values are `c1a8d8873e801601c3af44663048861300f4c8c7f573b28a693d6ec21aafd
 and `c4e4fc111d533801568c58fead803e45f24c9c1efb14a094403b06ffcadf2995`.
 The result narrows the affected geometry; it does not separate SDF from card
 causality or qualify a production fix, SM6 behavior, cooking, M1 or performance.
+
+## Ceiling-only GI-source control at 50ef7d6
+
+The same procedure was applied to Ceiling, with a fresh intact capture,
+identical-settings rebuild baseline and ordinary replacement source. The
+rebuild conservatively refreshes the ceiling's public bounds while retaining
+all twelve SDF/card observations. The replacement then preserves those bounds,
+all 24 component controls and the recorded geometry/material/Nanite controls.
+Only Ceiling's SDF/card observations change; the other eleven mesh observations
+and 47 unrelated package files match.
+
+Root viewed all six originals from `20261023T134617Z-sm5-88010` (intact),
+`20261023T134759Z-sm5-89438` (rebuilt) and `20261023T134903Z-sm5-90565`
+(replacement). All three pairs remain broadly similar, with no repair of the
+dark entry. Rebuilt-to-replacement entry/ceiling mean absolute channel
+differences are 0.5067/0.3985; these are descriptive, not acceptance thresholds.
+
+All six phases completed with successful EOF receipts. Source and Config
+remained unchanged, all 48 candidate files were restored and independently
+rehashed, and the temporary proxy was removed. The archive is
+`Saved/Qualification/2026-10-23/dojo-ceiling-replacement/ceiling-run-20261023T134617Z-6b6ecc32/`;
+root-review SHA256 is `ab5f0d3af6ddb8b9530b5ca00a87a06d770f47bceb04cb464dea83803fba84a1`.
+This negative control does not accept a production change or separate SDF
+from card causality. The broader appearance regression remains unresolved.

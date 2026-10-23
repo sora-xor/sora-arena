@@ -68,11 +68,11 @@ editor tests pass with zero selected errors/warnings: the four helm fixtures,
 held crank, dialogue gift hold, input gating and world pause. The source-bound
 editor build and independent receipt authentication pass too.
 
-CI `39916293154` separately passes 76 gates in five jobs at `fc9628a`, with
+CI `39962705267` passes 76 gates in five jobs at `50ef7d6`, with
 the tested merge tree identical to the source tree. This includes 279 Rust
 passes and five explicitly ignored research tests; private raw assets and
-native parity remain outside its scope. Root authenticated all 97 referenced
-local evidence files. This CI run predates the two helm pause commits.
+native parity remain outside its scope. Root authenticated all 99 referenced
+local evidence files. This run includes the two helm pause commits.
 
 The single-floor and four-floor GI-source controls at `75708f3` both completed.
 Each used an identical-settings rebuild baseline before changing only the
@@ -82,6 +82,22 @@ only the targeted floors' SDF/card observations change. The entry floor becomes
 brighter, but neither experiment repairs the broad room appearance. All new
 originals were inspected and all 48 candidate files restored and independently
 rehashed. No production asset or lighting change is accepted from these controls.
+
+The ceiling-only control at `50ef7d6` also completed all six phases with EOF
+receipts. Its identical-settings rebuild and replacement captures preserve
+recorded geometry, materials, Nanite settings and culling bounds; only the
+ceiling's SDF/card observations change. Root inspected all six originals:
+the broad room appearance remains dark. All 48 candidate files were restored
+and independently rehashed. This is another negative control, not a repair.
+
+Native candidate `a984a5c` composes the bounded two-player/two-tick preparation,
+carbine selection, wall/protection checks and nonlethal state updates. Its 49
+standalone Rust tests, nine Python provenance tests and 52-case independent
+canonical replay pass. The actual privacy-crate compile stopped at the owned
+30 GiB disk reserve, with an authenticated EOF receipt and no compiler error.
+No actual-crate test or native proof has completed for this candidate. The
+earlier `c99ee46e` preparation proof and current game bridge retain their own
+source scope; this new relation is not registered or used for settlement.
 
 Chapter-six b03 still needs its authored two climb routes, resting shelves,
 timed downward sentry sweep and physical crawl exit. That source work is in
@@ -97,9 +113,11 @@ The exact normal-GI captures are `20261023T065542Z-sm5-50677` and
 `20261023T065708Z-sm5-52741`; the GI-off control pair is
 `20261023T062604Z-sm5-12647` and `20261023T062706Z-sm5-14737`.
 The helm archive is `campaign-helm-75708f3/runtime-targeted/`, CI is
-`ci-fc9628a/`, and the bounded floor controls are under
+`ci-50ef7d6/`, and the bounded floor controls are under
 `dojo-floor0-replacement/`. Their exact captures and limitations are recorded
 in [the renderer diagnostic](render-qualification/dojo-nanite-draw.md#bounded-floor-gi-source-controls-at-75708f3).
+The ceiling archive is `dojo-ceiling-replacement/` and the native source/test
+review and retained resource stop are under `native-carbine-a984a5c/`.
 
 ## October 23 package, Codex and Nanite qualification
 
