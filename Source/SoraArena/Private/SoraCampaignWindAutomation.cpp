@@ -215,6 +215,43 @@ bool FSoraRidgeTraversalTest::RunTest(const FString& Parameters)
     return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraRidgeExitTest,"SoraArena.Campaign.RidgeExit",
+ EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraRidgeExitTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+    if(!FSoraCatalog::Get().Load()) return false;
+    SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("RidgeExit"),6,9);
+    if(!SoraWindAutomation::Ready(W)) return false;
+    const auto Space=W.BeatData().Space;
+    // Unlike RidgeTraversal, clear each released wave through production
+    // damage. The last real exit entry must complete and travel the beat,
+    // so the helper cannot require arrival at the old center after that cut.
+    // Combat is isolated; movement, vaults and volume events remain live.
+    for(int Leg=0;Leg<3;++Leg)
+    {
+        FVector Anchor;
+        for(int Frame=0;Frame<600&&!W.Campaign()->ObjectiveAnchor(Anchor);++Frame)
+        {
+            SoraWindAutomation::Freeze(W);
+            for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+                if(It->IsAlive()&&It->IsEnemy()&&!It->IsNonlethal())
+                    UGameplayStatics::ApplyDamage(*It,It->Health,W.Hero()->GetController(),W.Hero(),UDamageType::StaticClass());
+            if(!W.Tick(1)) return false;
+        }
+        if(!TestEqual(TEXT("Wave clearance alone cannot leave the ridge"),W.Campaign()->ActiveBeat(),9)||
+            !TestTrue(TEXT("The real wave queue exposes the next route objective"),W.Campaign()->ObjectiveAnchor(Anchor))) return false;
+        const bool FinishBeat=SoraBeatRules::TaskComplete(W.Campaign()->TaskProgress(),W.Campaign()->ActiveTask());
+        if(!TestEqual(TEXT("Only the final cleared wave enables the exit leg"),FinishBeat,Leg==2)||
+            !TestEqual(TEXT("Every preceding wave was released by its actual route"),W.Campaign()->TaskProgress().Released,(1u<<(Leg+1))-1u)) return false;
+        if(!SoraRidgeAutomation::Walk(*W.World,Space,Anchor.X-Space.Wind.Origin.X,*this,true,FinishBeat)) return false;
+    }
+    TestEqual(TEXT("Walking into the real ridge exit advances to the next authored beat"),W.Campaign()->ActiveBeat(),10);
+    TestTrue(TEXT("The director recorded the ridge complete before the travel cut"),
+        (W.Campaign()->Progress().CompletedMask&SoraBeatRules::BeatBit(9))!=0u);
+    return !HasAnyErrors();
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHangarFallsTest,"SoraArena.Campaign.HangarFalls",
  EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FSoraHangarFallsTest::RunTest(const FString& Parameters)

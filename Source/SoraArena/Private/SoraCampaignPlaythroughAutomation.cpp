@@ -1038,7 +1038,8 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
             {
                 if(Beat.Space.Wind.Ridge())
                 {
-                    if(!SoraRidgeAutomation::Walk(*State.World,Beat.Space,Anchor.X-Beat.Space.Wind.Origin.X,Test))
+                    const bool AtExit=SoraBeatRules::TaskComplete(Director->TaskProgress(),Rules);
+                    if(!SoraRidgeAutomation::Walk(*State.World,Beat.Space,Anchor.X-Beat.Space.Wind.Origin.X,Test,false,AtExit))
                         return Fail(Test,State,TEXT("The ridge requires real traversal and mapped vaults"));
                 }
                 else if(Beat.Space.Spire.Enabled())
