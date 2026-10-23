@@ -95,7 +95,11 @@ bool USoraFieldcraft::ClimbCrouch(ASoraPlayerCharacter& Player)
     ClimbOldCrouchHalf=Player.GetCharacterMovement()->GetCrouchedHalfHeight();
     Player.StopSprint();Player.GetCapsuleComponent()->SetCapsuleRadius(SoraClimbRules::CrawlRadius);
     Player.GetCharacterMovement()->SetCrouchedHalfHeight(SoraClimbRules::CrawlHalfHeight);
-    Player.Crouch();bClimbCrawl=bClimbCrawlWish=true;bClimbCrawlEntered=false;return true;
+    Player.Crouch();bClimbCrawl=bClimbCrawlWish=true;bClimbCrawlEntered=false;
+    // A normally crouched approach is already marked crouched, so the
+    // movement tick will not call Crouch again merely because its configured
+    // height changed. Apply the same CMC resize path explicitly here.
+    Player.GetCharacterMovement()->Crouch(false);return true;
 }
 
 void USoraFieldcraft::TickClimbRoutes(float DeltaTime,int32 DtMs)
@@ -140,8 +144,9 @@ void USoraFieldcraft::TickClimbRoutes(float DeltaTime,int32 DtMs)
     if(ClimbStepTarget==INDEX_NONE)
     {
         if(FMath::Abs(Up)<.2f) { SoraFieldcraftRules::Rest(Grip,Rules,DtMs);return; }
-        const int32 Next=FMath::Clamp(Grip.Hold+(Up>0?1:-1),0,R->Points.Num()-1);
-        if(Next==Grip.Hold) return;
+        bClimbMounting=Grip.Hold==R->Points.Num()-1&&Up>0;
+        const int32 Next=bClimbMounting?Grip.Hold:FMath::Clamp(Grip.Hold+(Up>0?1:-1),0,R->Points.Num()-1);
+        if(Next==Grip.Hold&&!bClimbMounting) return;
         ClimbStepStart=SoraClimbRuntime::Feet(*P)-O;ClimbStepTarget=Next;ClimbStepAlpha=0;
     }
     // Releasing forward pauses at the actual point; no hold or paused time is
@@ -160,9 +165,14 @@ void USoraFieldcraft::TickClimbRoutes(float DeltaTime,int32 DtMs)
         const FVector Outside(Target.X-210,Target.Y,Target.Z);
         Wanted=NextAlpha<.8f?FMath::Lerp(ClimbStepStart,Outside,NextAlpha/.8f):FMath::Lerp(Outside,Target,(NextAlpha-.8f)/.2f);
     }
+    else if(!bClimbMounting&&R->RestHolds.Contains(Grip.Hold)&&ClimbStepTarget<Grip.Hold)
+    {
+        const FVector Outside(ClimbStepStart.X-210,ClimbStepStart.Y,ClimbStepStart.Z);
+        Wanted=NextAlpha<.2f?FMath::Lerp(ClimbStepStart,Outside,NextAlpha/.2f):FMath::Lerp(Outside,Target,(NextAlpha-.2f)/.8f);
+    }
     if(!SoraClimbRuntime::SweepFeet(*P,O+Wanted)) return;
     ClimbStepAlpha=NextAlpha;
-    if(NextAlpha==0&&Direction<0) { ClimbStepTarget=INDEX_NONE;return; }
+    if(NextAlpha==0&&Direction<0) { ClimbStepTarget=INDEX_NONE;bClimbMounting=false;return; }
     if(NextAlpha<1) return;
     if(bClimbMounting)
     { bClimbMounting=false;bClimbing=false;bClimbReachedTop=true;ClimbStepTarget=INDEX_NONE;Move->SetMovementMode(MOVE_Walking);Raise(TEXT("climb_top"));return; }
@@ -213,20 +223,21 @@ FVector USoraFieldcraft::ClimbSentryAim() const
 bool USoraFieldcraft::DriveClimbSentry(ASoraEnemy& Enemy,float Dt)
 {
     if(!IsClimbSentry(Enemy)) return false;
-    const FVector O(ClimbSpace->Origin,0),Bay(360,-300,1690),Near(650,-800,1690),Far(650,-3800,1690);
+    const FVector O(ClimbSpace->Origin,0),Bay(360,-300,1690);
     const auto* Brain=Cast<ASoraEnemyController>(Enemy.GetController());
     const bool Combat=Brain&&(Brain->State()==SoraStealthRules::EState::Combat||Brain->State()==SoraStealthRules::EState::Alert);
     const bool Watch=SoraClimbRules::Watching(ClimbClockMs);
     FVector Goal=Bay;
+    if(Combat&&Enemy.GetActorLocation().X-O.X>500&&FMath::Abs(Enemy.GetActorLocation().Y-O.Y+300)>3)
+        Goal=FVector(650,-300,1690);
     if(!Watch&&!Combat)
     {
-        const float T=ClimbClockMs<20000?ClimbClockMs/20000.f:float((ClimbClockMs-4000)%20000)/16000.f;
-        const float Out=T<.5f?T*2:(1-T)*2;
-        Goal=Out<.15f?FMath::Lerp(Bay,Near,Out/.15f):FMath::Lerp(Near,Far,(Out-.15f)/.85f);
+        const auto Point=SoraClimbRules::PatrolAt(ClimbClockMs);
+        Goal=FVector(Point.X,Point.Y,1690);
     }
     auto* Move=Enemy.GetCharacterMovement();Move->StopMovementImmediately();
-    FHitResult Hit;Enemy.SetActorLocation(Enemy.GetActorLocation()+(O+Goal-Enemy.GetActorLocation()).GetClampedToMaxSize(700.f*Dt),true,&Hit);
     FVector Facing=(O+Goal-Enemy.GetActorLocation());
+    FHitResult Hit;Enemy.SetActorLocation(Enemy.GetActorLocation()+Facing.GetClampedToMaxSize(700.f*Dt),true,&Hit);
     if(ClimbSentryWatching()) Facing=ClimbSentryAim()-Enemy.GetActorLocation();
     if(Combat&&Hero()) Facing=Hero()->GetActorLocation()-Enemy.GetActorLocation();
     if(!Facing.IsNearlyZero()) Enemy.SetActorRotation(FRotator(0,Facing.Rotation().Yaw,0));

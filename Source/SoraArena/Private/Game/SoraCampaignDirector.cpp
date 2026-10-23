@@ -975,7 +975,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int
         for(const FVector2D& Point:*Points) Route.Points.Add(ASoraWorldBuilder::Floor(Point,90.f));
     FVector Post=Points&&!Points->IsEmpty()?ASoraWorldBuilder::Floor((*Points)[0],120.f):SpawnLocation(Slot);
     if(Space->Climb.bEnabled&&GuardIndex==Space->Climb.GuardIndex)
-    { Post=FVector(Space->Climb.Origin,0)+FVector(650,-3800,1690);Route.Points={Post}; }
+    { Post=FVector(Space->Climb.Origin,0)+FVector(360,-300,1690);Route.Points={Post}; }
     if(Route.Points.IsEmpty()) Route.Points.Add(FVector(Post.X,Post.Y,90.f));
     // A route of two points is walked back and forth; a longer one loops. A
     // guard the chapter posts keeps the first point of its round as its post.
