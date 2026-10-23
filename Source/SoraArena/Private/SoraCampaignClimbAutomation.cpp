@@ -22,8 +22,8 @@ bool Start(FWorld& W)
     // Preserve the live sentry in traversal tests; health only isolates the
     // route from difficulty/aim balance, which this fixture does not accept.
     W.Harden();
-    for(int32 F=0;F<600&&!W.Hero()->CanPlay();++F) if(!W.Tick(1)) return false;
-    return W.Tick(30)&&W.Hero()->CanPlay();
+    for(int32 F=0;F<600&&!W.Hero()->CanPlay();++F) if(!W.Tick(1)) return SoraClimbAutomation::Note(*W.World,TEXT("Fixture.Start.wait"),false);
+    return SoraClimbAutomation::Note(*W.World,TEXT("Fixture.Start.ready"),W.Tick(30)&&W.Hero()->CanPlay());
 }
 ASoraEnemy* Sentry(FWorld& W)
 {
@@ -138,6 +138,8 @@ bool FSoraClimbSentryTest::RunTest(const FString&)
             TestTrue(TEXT("Look-down occurs only at the physically reached bay"),FVector::Dist2D(Local,FVector(360,-300,0))<55);
         }
     }
+    UE_LOG(LogTemp,Display,TEXT("CLIMB_DIAGNOSTIC sentry_timing first_watch=%d watch_frames=%d low_y=%.4f high_y=%.4f first_aim=%s"),FirstWatch,WatchFrames,LowY,HighY,*FirstAim.ToString());
+    SoraClimbAutomation::Note(*W.World,TEXT("Sentry.watch_end"),true);
     TestTrue(TEXT("First look-down begins at 20s within one editor frame"),FirstWatch>=20000&&FirstWatch<=20034);
     TestTrue(TEXT("The look-down lasts four seconds"),WatchFrames>=238&&WatchFrames<=242);
     TestTrue(TEXT("The actual patrol covers the full 30m parapet segment"),LowY<-3750&&HighY>-850);
@@ -275,6 +277,11 @@ bool FSoraClimbGuideTest::RunTest(const FString&)
         TestTrue(TEXT("Every guide movement remains bounded, with no relocation"),FVector::Dist(At,Previous)<=SoraClimbRules::GuideSpeed/60.f+3.f);
         Previous=At;
         for(int32 H=1;H<Route.Points.Num();++H) if(Feet.Equals(Route.Points[H],5)) Reached|=1u<<H;
+        if(F%600==599)
+        {
+            UE_LOG(LogTemp,Display,TEXT("CLIMB_DIAGNOSTIC guide_progress reached_mask=%08x frame=%d"),Reached,F);
+            SoraClimbAutomation::Note(*W.World,TEXT("Guide.progress"),true,FVector::ZeroVector,INDEX_NONE,F);
+        }
         if(!Paused&&Feet.Z>300)
         {
             const int32 Clock=C->ClimbClock();W.Mode()->SetMenuOpen(true);
@@ -283,6 +290,8 @@ bool FSoraClimbGuideTest::RunTest(const FString&)
             W.Mode()->SetMenuOpen(false);Paused=true;
         }
     }
+    UE_LOG(LogTemp,Display,TEXT("CLIMB_DIAGNOSTIC guide_end reached_mask=%08x"),Reached);
+    SoraClimbAutomation::Note(*W.World,TEXT("Guide.end"),Reached==0x7ffeu&&C->ClimbGuideWaiting());
     if(!TestTrue(TEXT("Kohagi physically reaches all fourteen corner holds and the roof"),Reached==0x7ffeu&&C->ClimbGuideWaiting())||!W.Tick(30)) return false;
     FHitResult Floor;FCollisionQueryParams Q(SCENE_QUERY_STAT(ClimbGuideRoofFixture),false,Guide);Q.AddIgnoredActor(W.Hero());
     const FVector Feet=Guide->GetActorLocation()-FVector(0,0,Guide->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());

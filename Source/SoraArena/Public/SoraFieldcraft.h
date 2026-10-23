@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "Engine/HitResult.h"
 #include "GameFramework/Actor.h"
 #include "SoraCatalog.h"
 #include "SoraFieldcraftRules.h"
@@ -190,6 +191,7 @@ public:
     void AssignClimbSentry(ASoraEnemy& Enemy);
     bool MoveClimbCompanion(ASoraCompanion& Companion,float Dt);
     bool ClimbGuideWaiting() const { return ClimbSpace&&bClimbGuideWaiting; }
+    FString ClimbDiagnostic() const;
     int32 FloodElapsedMs() const { return FloodClockMs; }
     int32 FloodPassageStage() const { return FloodRoute.Stage; }
     bool FloodCarriesIota() const;
@@ -448,6 +450,11 @@ private:
     TArray<FVector> ClimbGuidePath;
     int32 ClimbGuidePoint=0;
     bool bClimbGuideWaiting=false;
+    // Read-only fixture diagnostics: the exact most recent movement requests
+    // and returned contacts, never used to choose or advance movement.
+    FHitResult ClimbSweepHit,ClimbGuideVerticalHit,ClimbGuideHorizontalHit,ClimbSentryMoveHit;
+    FVector ClimbSweepFrom=FVector::ZeroVector,ClimbSweepWanted=FVector::ZeroVector,ClimbSentryMoveGoal=FVector::ZeroVector;
+    bool bClimbSweepAccepted=false;
     // Stones and the candle.
     int32 Stones = 0;
     bool bCupped = false;
