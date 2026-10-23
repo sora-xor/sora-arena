@@ -17,13 +17,37 @@
 namespace SoraFloodTest
 {
 using FWorld=SoraFieldcraftAutomation::FBeatWorld;
+void Sample(FWorld& W,const TCHAR* Label)
+{
+    const FVector Origin(W.BeatData().Space.Flood.Origin,0);
+    const auto* Hero=W.Hero();const auto* Move=Hero->GetCharacterMovement();
+    const auto* Capsule=Hero->GetCapsuleComponent();const auto* Craft=W.Fieldcraft();
+    const FVector At=Hero->GetActorLocation(),Eye=Hero->GetCamera()->GetComponentLocation();
+    FCollisionQueryParams Query(SCENE_QUERY_STAT(FloodFixtureSample),false,Hero);
+    for(const auto& Ally:Craft->AlliesInPlay()) if(IsValid(Ally)) Query.AddIgnoredActor(Ally);
+    FHitResult Floor,Roof;
+    const bool HasFloor=W.World->GetTestWorld()->LineTraceSingleByChannel(Floor,At,At-FVector(0,0,1000),ECC_WorldStatic,Query);
+    const bool HasRoof=W.World->GetTestWorld()->LineTraceSingleByChannel(Roof,At,At+FVector(0,0,1000),ECC_WorldStatic,Query);
+    W.Test.AddInfo(FString::Printf(TEXT("Flood sample %s local=%s eye=%s velocity=%s mode=%d crouched=%d wants_crouch=%d half=%.2f radius=%.2f collision=%d static_response=%d clock=%d water=%d swim=%d dive=%d breath=%.4f stage=%d gate=%d floor=%d/%s/%s roof=%d/%s/%s"),
+        Label,*(At-Origin).ToString(),*(Eye-Origin).ToString(),*Move->Velocity.ToString(),int32(Move->MovementMode),
+        Hero->IsCrouched(),Move->bWantsToCrouch,Capsule->GetScaledCapsuleHalfHeight(),Capsule->GetScaledCapsuleRadius(),
+        int32(Capsule->GetCollisionEnabled()),int32(Capsule->GetCollisionResponseToChannel(ECC_WorldStatic)),
+        Craft->FloodElapsedMs(),SoraFloodRules::Surface(Craft->FloodElapsedMs()),Craft->IsSwimming(),Craft->IsDiving(),
+        Craft->Readout(*Hero).Breath,Craft->FloodPassageStage(),Craft->FloodExitReady(),
+        HasFloor,*GetNameSafe(Floor.GetComponent()),*(Floor.ImpactPoint-Origin).ToString(),
+        HasRoof,*GetNameSafe(Roof.GetComponent()),*(Roof.ImpactPoint-Origin).ToString()));
+}
 bool Walk(FWorld& W,const FVector& Local)
 {
     const FVector Goal=FVector(W.BeatData().Space.Flood.Origin,0)+Local;
     const FVector Start=W.Hero()->GetActorLocation();
     const int32 Steps=FMath::Max(1,FMath::CeilToInt(FVector::Dist2D(Start,Goal)/1000));
     for(int32 I=1;I<=Steps;++I)
-        if(!SoraLiftAutomation::Walk(*W.World,FMath::Lerp(Start,Goal,float(I)/Steps))) return false;
+        if(!SoraLiftAutomation::Walk(*W.World,FMath::Lerp(Start,Goal,float(I)/Steps)))
+        {
+            Sample(W,*FString::Printf(TEXT("Walk failed target=%s segment=%d/%d"),*Local.ToString(),I,Steps));
+            return false;
+        }
     return true;
 }
 bool BankLayout(FWorld& W)
@@ -67,16 +91,21 @@ bool Cross(FWorld& W,const FKey& Dive,bool Late)
     if(Late&&!W.Tick(9100)) return false;
     if(!W.Test.TestEqual(TEXT("Early wading becomes late surface swimming"),Craft->Readout(*W.Hero()).bSwimming,Late)) return false;
     if(!Walk(W,FVector(7400,0,0))) return false;
+    Sample(W,TEXT("approach"));
     W.Look(FRotator::ZeroRotator);
     if(!W.Hold(EKeys::W,90)) return false;
+    Sample(W,TEXT("after surfaced W hold"));
     W.Test.TestTrue(TEXT("A surfaced capsule cannot pass the real submerged roof"),
         W.Hero()->GetActorLocation().X-W.BeatData().Space.Flood.Origin.X<7500);
     if(!W.Press(Dive)||!Walk(W,FVector(8250,0,0))) return false;
+    Sample(W,TEXT("shaft submerged arrival"));
     W.Test.TestEqual(TEXT("Normal input crossed the first submerged leg"),Craft->FloodPassageStage(),2);
     const float Before=Craft->Readout(*W.Hero()).Breath;
     if(!W.Tick(6)) return false;
+    Sample(W,TEXT("shaft after underwater wait"));
     W.Test.TestTrue(TEXT("Being inside the shaft underwater does not restore breath"),Craft->Readout(*W.Hero()).Breath<Before);
     if(!W.Press(Dive)||!W.Tick(240)) return false;
+    Sample(W,TEXT("shaft after surface recovery"));
     W.Test.TestFalse(TEXT("The actual head rises into air"),Craft->IsDiving());
     W.Test.TestTrue(TEXT("Three seconds of real air restores breath"),Craft->Readout(*W.Hero()).Breath>.99f);
     const int32 Clock=Craft->FloodElapsedMs();
@@ -86,6 +115,7 @@ bool Cross(FWorld& W,const FKey& Dive,bool Late)
         FVector::Dist(Position,W.Hero()->GetActorLocation())<2);
     // Clear the roof by more than the capsule radius plus Walk's tolerance.
     if(!W.Press(EKeys::Escape)||!W.Press(Dive)||!Walk(W,FVector(9100,0,0))||!W.Press(Dive)||!W.Tick(70)) return false;
+    Sample(W,TEXT("culvert emergence"));
     W.Test.TestEqual(TEXT("Normal input crossed the second submerged leg"),Craft->FloodPassageStage(),4);
     W.Test.TestFalse(TEXT("Emerging from the culvert alone does not authorize exit"),Craft->FloodExitReady());
     W.Test.TestTrue(TEXT("Toranosuke physically carries Iota"),Craft->FloodCarriesIota());
@@ -93,14 +123,17 @@ bool Cross(FWorld& W,const FKey& Dive,bool Late)
     if(!Walk(W,FVector(9150,0,0))) return false;
     W.Look(FRotator(0,-90,0));
     if(!W.Hold(EKeys::W,120)) return false;
+    Sample(W,TEXT("former gap after W hold"));
     W.Test.TestTrue(TEXT("Ordinary strokes cannot leave through the former gap beside the gate"),
         W.Hero()->GetActorLocation().Y-W.BeatData().Space.Flood.Origin.Y>-400&&!Craft->FloodExitReady());
     if(!Walk(W,FVector(9150,0,0))) return false;
     if(!Walk(W,FVector(9500,0,0))||!Walk(W,FVector(9500,-600,0))) return false;
+    Sample(W,TEXT("gate crossing"));
     W.Test.TestTrue(TEXT("Actual movement crosses the half-open gate"),Craft->FloodExitReady());
     // Ascend outside the exit's X bounds first. Completion cannot hide an
     // unwalkable join, a floating body or guides stranded below the bank.
     if(!Walk(W,FVector(9200,-3900,0))||!Walk(W,FVector(9200,-4550,0))) return false;
+    Sample(W,TEXT("outer bank arrival"));
     const FVector O(W.BeatData().Space.Flood.Origin,0);
     if(!W.Test.TestTrue(TEXT("Normal movement reaches the supported outer bank before entering the exit"),
         W.Campaign()->ActiveBeat()==13&&OnBank(*W.Hero(),O))) return false;
@@ -160,8 +193,10 @@ bool FSoraFloodRetryTest::RunTest(const FString&)
     if(!W.Start()||!W.Tick(30)) return false;
     W.Harden();
     if(!SoraFloodTest::Walk(W,FVector(7400,0,0))||!W.Press(EKeys::C)||!SoraFloodTest::Walk(W,FVector(7800,0,0))) return false;
+    SoraFloodTest::Sample(W,TEXT("retry submerged approach"));
     const float Before=W.Fieldcraft()->Readout(*W.Hero()).Breath;
     if(!W.Press(EKeys::C)||!W.Tick(12)) return false;
+    SoraFloodTest::Sample(W,TEXT("retry uncrouch under stone"));
     TestTrue(TEXT("An uncrouch wish under stone cannot create air"),W.Fieldcraft()->IsDiving()&&W.Fieldcraft()->Readout(*W.Hero()).Breath<Before);
     UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health+1000,nullptr,nullptr,UDamageType::StaticClass());
     if(!W.Tick(2)||!TestTrue(TEXT("Death opens retry"),W.Mode()->bDefeated)||!W.Press(EKeys::Enter)||!W.Tick(30)) return false;
