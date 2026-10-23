@@ -43,7 +43,8 @@ bool AtFirstHamlet(FWorld& W,float Offset)
     // Fixture setup once per checkpoint attempt. Subsequent travel to Naka
     // and Shimo uses the ordinary reins and the authored auto-steer road.
     auto* C=W.Campaign();
-    if(!C->IsMounted()||C->ActiveBeat()!=13) return false;
+    if(!W.Test.TestTrue(FString::Printf(TEXT("Cargo hamlet setup requires its mounted checkpoint: beat=%d mounted=%d offset=%.1f"),
+        C->ActiveBeat(),C->IsMounted(),Offset),C->IsMounted()&&C->ActiveBeat()==13)) return false;
     const auto& Road=C->ActiveChapter()->Space.Zones[C->ActiveSpace()->Zone];
     const FVector2D Point=C->ActiveSpace()->Dropoffs[0];
     const float Along=Road.ChainageOf(Point);
@@ -55,7 +56,13 @@ bool RideTo(FWorld& W,int32 Point)
     const FVector Destination(W.Campaign()->ActiveSpace()->Dropoffs[Point],0);
     if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!W.World->InjectKey(EKeys::LeftShift,IE_Pressed)) return false;
     for(int32 Frame=0;Frame<6000&&FVector::Dist2D(W.Hero()->GetActorLocation(),Destination)>320.f;++Frame)
-        if(!Tick(W,1)||!W.Campaign()->IsMounted()) return false;
+    {
+        if(!Tick(W,1)) return false;
+        auto* C=W.Campaign();
+        if(!W.Test.TestTrue(FString::Printf(TEXT("Cargo reins retain the rider: destination=%d frame=%d beat=%d mounted=%d spooked=%d distance=%.3f health=%.1f"),
+            Point,Frame,C->ActiveBeat(),C->IsMounted(),C->Steed()&&C->Steed()->IsSpooked(),
+            FVector::Dist2D(W.Hero()->GetActorLocation(),Destination),W.Hero()->Health),C->IsMounted())) return false;
+    }
     if(!W.World->InjectKey(EKeys::W,IE_Released)||!W.World->InjectKey(EKeys::LeftShift,IE_Released)||
         !W.World->InjectKey(EKeys::S,IE_Pressed)||!Tick(W,55)||!W.World->InjectKey(EKeys::S,IE_Released)) return false;
     return W.Test.TestTrue(TEXT("Ordinary reins stop within the named hamlet's saddle reach"),
