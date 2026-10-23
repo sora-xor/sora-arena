@@ -8,6 +8,19 @@ remains a historical recovery record. This is a progress record, not a claim
 that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
 
+## 2026-10-24 rendered cargo and final-death source
+
+At `235e810`, the five selected SM6 720p capture tests pass, but inspection of
+all twelve original images rejects the final cargo frame: its tracker obscures
+boss text. The objective overflow, horse framing and delivery-caption obstruction
+are corrected, and the final zero notice is visible after the full 90-second
+scene. The boss layout correction remains in progress; no 1080p or packaged
+result is claimed. Separate native `cd9263628d` has independently reviewed
+final-tick death/account/terminal source, 70 standalone CPU and 18 provenance
+passes; actual crate/proof/wire bounds remain unrun. The
+[exact checkpoint](complete-release-plan.md#october-24-rendered-cargo-and-final-death-source-checkpoint)
+retains failed attempts and scope limits.
+
 ## 2026-10-24 cargo counter and lead rope
 
 At `67cc9a0`, the bilingual remaining-sheaf counter and animated visual lead are

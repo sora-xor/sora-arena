@@ -1,5 +1,13 @@
 # Offline campaign progression acceptance
 
+The latest rendered cargo checkpoint is `235e810`. Five selected SM6 720p
+capture tests pass and all twelve originals were inspected, but final visual
+acceptance fails because the tracker obscures the boss readout. The counter,
+horse framing, stand visibility and final zero notice improved; the measured
+boss layout correction is pending. See the
+[rendered checkpoint](../complete-release-plan.md#october-24-rendered-cargo-and-final-death-source-checkpoint).
+These prepared captures do not qualify ordinary campaign play or a new package.
+
 The latest counter/rope checkpoint is `67cc9a0`: CargoUnload, BuntaLeadFear,
 KurimaruSpookDismount, Mount and Playthrough pass with zero selected
 errors/warnings, plus all 43 gameplay source gates. The bilingual counter and
