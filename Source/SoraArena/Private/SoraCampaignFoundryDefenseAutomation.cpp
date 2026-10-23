@@ -117,6 +117,15 @@ bool FSoraFoundryRepairTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("A real hit cancels held repair immediately"),!C->FoundryOccupiesHands()&&C->FoundryState().HeldMs==0);
     if(!SoraFoundryTest::Tick(W,185)||!W.World->InjectKey(Use,IE_Released)) return false;
     TestEqual(TEXT("The still-held key after damage earns no automatic repair"),C->TaskProgress().TargetHp[0],900);
+    const auto Jump=SoraFoundryTest::Action(W,TEXT("Jump"));
+    if(!W.World->InjectKey(Use,IE_Pressed)||!SoraFoundryTest::Tick(W,30)||!W.World->InjectKey(Jump,IE_Pressed)||!SoraFoundryTest::Tick(W,2)) return false;
+    const float Feet=W.Hero()->GetActorLocation().Z-W.Hero()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    TestTrue(TEXT("Normal jump cancels work while still within the old 60 cm height tolerance"),
+        !W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&Feet>0&&Feet<60&&!C->FoundryOccupiesHands()&&C->FoundryState().HeldMs==0);
+    if(!W.World->InjectKey(Use,IE_Released)||!W.World->InjectKey(Use,IE_Pressed)||!SoraFoundryTest::Tick(W,2)) return false;
+    TestFalse(TEXT("A fresh mapped Interact cannot admit airborne work"),C->FoundryOccupiesHands());
+    if(!W.World->InjectKey(Jump,IE_Released)||!SoraFoundryTest::Tick(W,90)||!W.World->InjectKey(Use,IE_Released)) return false;
+    TestTrue(TEXT("Landing requires a fresh hold and preserves unused clay"),W.Hero()->GetCharacterMovement()->IsMovingOnGround()&&C->FoundryState().Used==0&&!C->FoundryOccupiesHands());
     if(!W.World->InjectKey(Use,IE_Pressed)||!SoraFoundryTest::Tick(W,60)||!W.Press(EKeys::Escape)) return false;
     TestTrue(TEXT("Opening the real menu cancels the active hold"),W.Mode()->bMenu&&!C->FoundryOccupiesHands()&&C->FoundryState().HeldMs==0);
     const int32 Clock=C->TaskProgress().ElapsedMs;

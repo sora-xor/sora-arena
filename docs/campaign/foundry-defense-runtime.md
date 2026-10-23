@@ -23,7 +23,7 @@ The following choices are provisional because b07 does not specify detailed plac
 
 Directed actual-input engine fixtures (root execution pending):
 
-- `SoraArena.Campaign.FoundryRepairHolds`: real furnace damage, normal walking and mapped Interact, full-health refusal, partial/release/hit/menu/leave cancellation, weapon reservation, exactly three repairs, repeated-tub refusal, supply persistence, actual hero death/retry and fresh checkpoint load.
+- `SoraArena.Campaign.FoundryRepairHolds`: real furnace damage, normal walking and mapped Interact, full-health refusal, partial/release/hit/menu/leave/jump cancellation and airborne admission refusal, weapon reservation, exactly three repairs, repeated-tub refusal, supply persistence, actual hero death/retry and fresh checkpoint load.
 - `SoraArena.Campaign.FoundryKozoRescue`: actual companion downing, insufficient partial hold, 4 second revival to 150 HP a later timely rescue, and an outstanding rescue across the actual 180 second completion boundary.
 - `SoraArena.Campaign.FoundryKozoDeadline`: actual downing, 24 second survival, failed late hold at 25 seconds, defeat-screen wait and normal Enter retry preserving the pawn.
 - `SoraArena.Campaign.FoundryGrenadierPriority`: the authored 40 second wave, live AI, actual shell launch target and blast damage; actual furnace destruction and normal retry.
