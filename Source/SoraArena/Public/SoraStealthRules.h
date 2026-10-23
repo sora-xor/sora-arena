@@ -47,6 +47,7 @@ constexpr int DarkFloorPermille = 200;
 constexpr int CrouchedOutlinePermille = 550;
 
 constexpr int LookMs = 900;
+constexpr int InvestigatePacePermille = 420;
 constexpr int CombatMemoryMs = 1500;
 constexpr int SearchMs = 12000;
 constexpr int RetreatHealthPermille = 350;

@@ -87,6 +87,28 @@ int main(){using namespace SoraMoatRules;
  // Gate approach (1.5m descent at70cm/s + 2.5m traversal at140cm/s)
  // fits the real8s breath window, with3s recovery possible on either side.
  assert((144./70.+250./140.)*1000<8000);
+ // Reproduce the live reversed join order: the east reinforcement joined
+ // first. Their assigned patrol ranges must remain in physical west/east
+ // order rather than sending two34cm capsules through each other.
+ assert(ReinforcementPost(20500)==4&&ReinforcementPost(19500)==3);
+ assert(ReinforcementPost(20495)==4&&ReinforcementPost(19505)==3);
+ // The retained alarm trace was8187.673cm away horizontally and300cm high.
+ // A full-rate descent must still finish at3m without exceeding the shared
+ // 300cm/s flight budget or overshooting the target at a fractional step.
+ double X=12778.521,Y=1291.851,Z=600.;
+ for(int Frame=0;Frame<90;++Frame){
+   const auto S=FlightStep(4590.848-X,2149.587-Y,300.-Z,300./60.);
+   assert(std::sqrt(S.X*S.X+S.Y*S.Y+S.Z*S.Z)<=300./60.+1e-9);
+   X+=S.X;Y+=S.Y;Z+=S.Z;assert(Z>=300.);
+   if(Frame==59)assert(Z==300.);
+ }
+ assert(Z==300.&&X<12778.521);
+ for(double Height:{-.001,-3.,3.,300.}){
+   const auto S=FlightStep(300.,-400.,Height,5.);
+   assert(std::sqrt(S.X*S.X+S.Y*S.Y+S.Z*S.Z)<=5.+1e-9);
+   assert(std::abs(S.Z)<=std::abs(Height));
+ }
+ const auto Still=FlightStep(300.,400.,-300.,0.);assert(Still.X==0&&Still.Y==0&&Still.Z==0);
 }
 '''
         with tempfile.TemporaryDirectory(prefix='sora-moat-') as folder:

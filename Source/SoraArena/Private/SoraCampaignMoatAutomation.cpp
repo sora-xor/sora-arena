@@ -6,6 +6,7 @@
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
+#include "SoraGameEvents.h"
 #include "Dom/JsonObject.h"
 #include "GameFramework/DamageType.h"
 #include "Misc/FileHelper.h"
@@ -41,6 +42,28 @@ void GuardSample(FWorld& W,const TCHAR* Stage)
                 E->GetCapsuleComponent()->GetScaledCapsuleRadius(),E->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
                 int32(E->GetCharacterMovement()->MovementMode),*E->GetVelocity().ToString()));
 }
+struct FSearchAudit
+{
+    struct FGuard { bool Detected=false,Completed=false;FName Previous;double SearchAt=0;int32 SearchFrames=0; };
+    FWorld& W;TWeakObjectPtr<USoraGameEvents> Bus;FDelegateHandle Handle;TMap<FString,FGuard> Guards;
+    explicit FSearchAudit(FWorld& World):W(World),Bus(USoraGameEvents::Get(World.Hero()))
+    {
+        if(Bus.IsValid())Handle=Bus->OnEnemyCue.AddLambda([this](const FSoraEnemyCueEvent& Event)
+        {
+            const auto* E=Cast<ASoraEnemy>(Event.Enemy);
+            if(Event.Cue!=ESoraEnemyCue::AlertState||!E||!W.Fieldcraft()->IsMoatGuard(*E))return;
+            FGuard& G=Guards.FindOrAdd(E->GetName());const double Now=W.World->GetTestWorld()->GetTimeSeconds();
+            G.Detected|=Event.Detail==TEXT("alert")||Event.Detail==TEXT("combat");
+            if(Event.Detail==TEXT("search"))G.SearchAt=Now;
+            if(Event.Detail==TEXT("unaware")&&G.Previous==TEXT("search"))
+            { G.Completed=true;G.SearchFrames=FMath::RoundToInt32((Now-G.SearchAt)*60.); }
+            W.Test.AddInfo(FString::Printf(TEXT("SORA_MOAT_SEARCH: actor=%s time=%.6f state=%s search_seconds=%.6f search_frames=%d"),
+                *E->GetName(),Now,*Event.Detail.ToString(),G.Completed?Now-G.SearchAt:0.,G.SearchFrames));
+            G.Previous=Event.Detail;
+        });
+    }
+    ~FSearchAudit() { if(Bus.IsValid())Bus->OnEnemyCue.Remove(Handle); }
+};
 bool Walk(FWorld& W,const FVector& Local,bool Finish=false)
 {
     const bool OK=SoraMoatAutomation::Swim(*W.World,FVector(W.BeatData().Space.Moat.Origin,0)+Local,Finish);
@@ -162,6 +185,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraMoatSenses,"SoraArena.Campaign.MoatSenses"
 bool FSoraMoatSenses::RunTest(const FString&)
 {
     SoraMoatTest::FWorld W(*this,TEXT("MoatSenses"),5,1);if(!SoraMoatTest::Start(W))return false;
+    SoraMoatTest::FSearchAudit Search(W);
     auto* C=W.Fieldcraft();const FVector O(W.BeatData().Space.Moat.Origin,0);
     const FVector Initial=C->SpotOf(0);
     // Seven degrees inside the left sweep endpoint, rather than the centre
@@ -184,7 +208,16 @@ bool FSoraMoatSenses::RunTest(const FString&)
     TestTrue(TEXT("Real head exposure reaches both authored light thresholds"),W.Raised(TEXT("ai_event:searchlight_suspicious"))&&W.Raised(TEXT("ai_event:searchlight_alert"))&&W.Stealth()->IsDetected());
     TestTrue(TEXT("Actual traced searchlight exposure supplies the guard light-range input"),C->MoatHeadLit());
     SoraMoatTest::GuardSample(W,TEXT("alarm"));
-    if(!W.Tick(90))return false;
+    ASoraEnemy* Flight=nullptr;
+    for(TActorIterator<ASoraEnemy> I(W.World->GetTestWorld());I;++I)
+        if(C->IsMoatGuard(**I)&&I->ArchetypeId()==TEXT("drone")&&I->IsAlive())Flight=*I;
+    double MaxFlightStep=0;
+    for(int32 F=0;F<90;++F)
+    {
+        const FVector Before=Flight?Flight->GetActorLocation():FVector::ZeroVector;
+        if(!W.Tick(1))return false;
+        if(Flight)MaxFlightStep=FMath::Max(MaxFlightStep,FVector::Dist(Before,Flight->GetActorLocation()));
+    }
     SoraMoatTest::GuardSample(W,TEXT("alarm plus90 frames"));
     int32 Rifle=0;ASoraEnemy* Drone=nullptr;
     for(TActorIterator<ASoraEnemy> I(W.World->GetTestWorld());I;++I)if(C->IsMoatGuard(**I)&&I->IsAlive())
@@ -192,6 +225,7 @@ bool FSoraMoatSenses::RunTest(const FString&)
     TestEqual(TEXT("Detection adds two real parapet riflemen"),Rifle,4);
     if(!TestNotNull(TEXT("The living figure-eight drone remains"),Drone))return false;
     TestTrue(TEXT("Alarm physically descends the drone to3m"),FMath::Abs(Drone->GetActorLocation().Z-300)<5);
+    TestTrue(TEXT("Alarm descent shares the original300cm/s swept flight budget"),MaxFlightStep<=300.f/60.f+UE_KINDA_SMALL_NUMBER);
     const FVector Seen=W.Hero()->GetActorLocation();
     TestTrue(TEXT("Both lamps lock the actual detection position"),FVector::Dist2D(C->SpotOf(0),Seen)<30&&FVector::Dist2D(C->SpotOf(1),Seen)<30);
     // Leave the locked400cm spot underwater, then surface in real open air
@@ -208,11 +242,32 @@ bool FSoraMoatSenses::RunTest(const FString&)
         if(!W.Tick(600))return false;
         SoraMoatTest::GuardSample(W,*FString::Printf(TEXT("lotus plus%d frames"),(I+1)*600));
     }
-    bool AnySeeing=false,AnyCombat=false;
+    bool AnySeeing=false,AnyCombat=false,AllUnaware=true;
     for(TActorIterator<ASoraEnemyController> I(W.World->GetTestWorld());I;++I)
         if(const auto* E=Cast<ASoraEnemy>(I->GetPawn());E&&C->IsMoatGuard(*E))
-        { AnySeeing|=I->SeesHero();AnyCombat|=I->State()==SoraStealthRules::EState::Combat||I->State()==SoraStealthRules::EState::Alert; }
+        { AnySeeing|=I->SeesHero();AnyCombat|=I->State()==SoraStealthRules::EState::Combat||I->State()==SoraStealthRules::EState::Alert;
+          AllUnaware&=I->State()==SoraStealthRules::EState::Unaware; }
     TestTrue(TEXT("Actual cover and20s search end the live pursuit"),!AnySeeing&&!AnyCombat&&C->Readout(*W.Hero()).Breath==1);
+    TestTrue(TEXT("Investigation arrivals also let unconfirmed suspicion decay"),AllUnaware);
+    // The brain rounds each 1/60s tick to17ms. Measure its real state cues,
+    // including searches that began during the escape, using that exact
+    // timer quantization and the active zone's difficulty-scaled vigilance.
+    const int32 SearchMs=W.Stealth()->Vigilance().SearchDurationMs,TickMs=FMath::RoundToInt32(1000.f/60.f);
+    const int32 ExpectedSearchFrames=(SearchMs+TickMs-1)/TickMs;
+    int32 CompletedSearches=0;
+    for(const auto& Pair:Search.Guards)if(Pair.Value.Detected)
+    {
+        const auto& G=Pair.Value;
+        TestTrue(*FString::Printf(TEXT("Detected guard %s physically arrives and finishes its timed search"),*Pair.Key),G.Completed);
+        if(G.Completed)
+        {
+            ++CompletedSearches;
+            TestEqual(*FString::Printf(TEXT("Guard %s searches for the active vigilance timer"),*Pair.Key),G.SearchFrames,ExpectedSearchFrames);
+        }
+    }
+    TestTrue(TEXT("The alarm produces observed completed guard searches"),CompletedSearches>0);
+    AddInfo(FString::Printf(TEXT("SORA_MOAT_SEARCH: timer_ms=%d tick_ms=%d expected_frames=%d completed=%d max_flight_step_cm=%.6f"),
+        SearchMs,TickMs,ExpectedSearchFrames,CompletedSearches,MaxFlightStep));
     // An actual wall blocks a ray from the water to the lower terrace.
     FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(MoatWallSight),false,W.Hero());
     TestTrue(TEXT("Stone occludes a water-level line of sight"),W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,O+FVector(10000,3400,20),O+FVector(10000,4000,20),ECC_Visibility,Q));

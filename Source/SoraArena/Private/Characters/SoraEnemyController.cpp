@@ -31,7 +31,7 @@ constexpr float BodySamples[] = {.75f, .2f, -.4f};
 // Movement input scales: a patrol walk, a careful approach, a hunter's pace,
 // combat repositioning (the first invaders' pace) and a retreat.
 constexpr float PatrolSpeed = .35f;
-constexpr float InvestigateSpeed = .42f;
+constexpr float InvestigateSpeed = Stealth::InvestigatePacePermille / 1000.f;
 constexpr float HuntSpeed = .6f;
 constexpr float CombatSpeed = .55f;
 constexpr float RetreatSpeed = .75f;
