@@ -86,11 +86,13 @@ int32 ASoraEnemyController::WorldMs() const
 void ASoraEnemyController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
+    ThinkClock.Reset();
     Listen(true);
 }
 
 void ASoraEnemyController::OnUnPossess()
 {
+    ThinkClock.Reset();
     Listen(false);
     Super::OnUnPossess();
 }
@@ -221,6 +223,7 @@ int32 ASoraEnemyController::MeterPermille() const
 
 void ASoraEnemyController::Prepare(bool bHunt)
 {
+    ThinkClock.Reset();
     const ASoraEnemy* Enemy = GetPawn<ASoraEnemy>();
     bHunting = bHunt;
     Mind = bHunt ? Stealth::Hunting() : Stealth::Calm();
@@ -311,7 +314,7 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
     if (USoraNavigation* Nav = USoraNavigation::Get(this))
         Nav->Settle();
     const int32 NowMs = WorldMs();
-    const int32 DtMs = FMath::Max(1, FMath::RoundToInt32(Dt * 1000.f));
+    const int32 DtMs = ThinkClock.Advance(Dt);
     const FVector Here = Enemy.GetActorLocation();
     const FVector Ear = Here + FVector(0.f, 0.f, SoraEnemyBrain::EyeHeight * Enemy.GetActorScale3D().Z);
     const FVector There = Target.GetActorLocation();

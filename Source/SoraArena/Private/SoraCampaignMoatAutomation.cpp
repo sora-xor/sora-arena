@@ -44,7 +44,7 @@ void GuardSample(FWorld& W,const TCHAR* Stage)
 }
 struct FSearchAudit
 {
-    struct FGuard { bool Detected=false,Completed=false;FName Previous;double SearchAt=0;int32 SearchFrames=0; };
+    struct FGuard { bool Detected=false,Completed=false;FName Previous;double SearchAt=0,SearchSeconds=0;int32 SearchFrames=0; };
     FWorld& W;TWeakObjectPtr<USoraGameEvents> Bus;FDelegateHandle Handle;TMap<FString,FGuard> Guards;
     explicit FSearchAudit(FWorld& World):W(World),Bus(USoraGameEvents::Get(World.Hero()))
     {
@@ -56,7 +56,7 @@ struct FSearchAudit
             G.Detected|=Event.Detail==TEXT("alert")||Event.Detail==TEXT("combat");
             if(Event.Detail==TEXT("search"))G.SearchAt=Now;
             if(Event.Detail==TEXT("unaware")&&G.Previous==TEXT("search"))
-            { G.Completed=true;G.SearchFrames=FMath::RoundToInt32((Now-G.SearchAt)*60.); }
+            { G.Completed=true;G.SearchSeconds=Now-G.SearchAt;G.SearchFrames=FMath::RoundToInt32(G.SearchSeconds*60.); }
             W.Test.AddInfo(FString::Printf(TEXT("SORA_MOAT_SEARCH: actor=%s time=%.6f state=%s search_seconds=%.6f search_frames=%d"),
                 *E->GetName(),Now,*Event.Detail.ToString(),G.Completed?Now-G.SearchAt:0.,G.SearchFrames));
             G.Previous=Event.Detail;
@@ -249,11 +249,11 @@ bool FSoraMoatSenses::RunTest(const FString&)
           AllUnaware&=I->State()==SoraStealthRules::EState::Unaware; }
     TestTrue(TEXT("Actual cover and20s search end the live pursuit"),!AnySeeing&&!AnyCombat&&C->Readout(*W.Hero()).Breath==1);
     TestTrue(TEXT("Investigation arrivals also let unconfirmed suspicion decay"),AllUnaware);
-    // The brain rounds each 1/60s tick to17ms. Measure its real state cues,
-    // including searches that began during the escape, using that exact
-    // timer quantization and the active zone's difficulty-scaled vigilance.
-    const int32 SearchMs=W.Stealth()->Vigilance().SearchDurationMs,TickMs=FMath::RoundToInt32(1000.f/60.f);
-    const int32 ExpectedSearchFrames=(SearchMs+TickMs-1)/TickMs;
+    // Measure real state cues against authored active time. A state change
+    // may land on the next frame; millisecond carry may differ by <1ms at
+    // entry. Neither allows the former cumulative per-frame rounding drift.
+    const int32 SearchMs=W.Stealth()->Vigilance().SearchDurationMs;
+    const double SearchSeconds=SearchMs/1000.;
     int32 CompletedSearches=0;
     for(const auto& Pair:Search.Guards)if(Pair.Value.Detected)
     {
@@ -262,12 +262,13 @@ bool FSoraMoatSenses::RunTest(const FString&)
         if(G.Completed)
         {
             ++CompletedSearches;
-            TestEqual(*FString::Printf(TEXT("Guard %s searches for the active vigilance timer"),*Pair.Key),G.SearchFrames,ExpectedSearchFrames);
+            TestTrue(*FString::Printf(TEXT("Guard %s searches for the active vigilance timer"),*Pair.Key),
+                G.SearchSeconds>=SearchSeconds-.001&&G.SearchSeconds<=SearchSeconds+1./60.+.001);
         }
     }
     TestTrue(TEXT("The alarm produces observed completed guard searches"),CompletedSearches>0);
-    AddInfo(FString::Printf(TEXT("SORA_MOAT_SEARCH: timer_ms=%d tick_ms=%d expected_frames=%d completed=%d max_flight_step_cm=%.6f"),
-        SearchMs,TickMs,ExpectedSearchFrames,CompletedSearches,MaxFlightStep));
+    AddInfo(FString::Printf(TEXT("SORA_MOAT_SEARCH: timer_ms=%d authored_seconds=%.6f completed=%d max_flight_step_cm=%.6f"),
+        SearchMs,SearchSeconds,CompletedSearches,MaxFlightStep));
     // An actual wall blocks a ray from the water to the lower terrace.
     FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(MoatWallSight),false,W.Hero());
     TestTrue(TEXT("Stone occludes a water-level line of sight"),W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,O+FVector(10000,3400,20),O+FVector(10000,4000,20),ECC_Visibility,Q));

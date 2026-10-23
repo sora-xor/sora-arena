@@ -62,6 +62,7 @@ bool USoraCampaignDirector::BeginLiftGallery()
 {
     if(!ActiveSpace()||!ActiveSpace()->Lift.bEnabled) return false;
     bLiftGallery=true; GalleryStairNode=0;
+    GalleryClock.Reset();
     IdleMs=0;
     if(auto* Arena=Mode().Arena()) Arena->ShowGalleryPois(GalleryPoiMask());
     // Completion and its bark fire only once, before this phase. Its cache
@@ -77,7 +78,7 @@ bool USoraCampaignDirector::TickLiftGallery(float DeltaSeconds)
     const auto* Chapter=ActiveChapter();
     if(NearFloor(Exit,100.f)&&GalleryStairNode<5) { ++GalleryStairNode; UpdateObjective(); }
     bool bAtExit=false;
-    IdleMs=FMath::Min(IdleMs+FMath::RoundToInt32(DeltaSeconds*1000.f),SoraBeatRules::MaxClockMs);
+    IdleMs+=FMath::Min(GalleryClock.Advance(DeltaSeconds),SoraBeatRules::MaxClockMs-IdleMs);
     for(int32 Index=0;Index<Chapter->Beats.Num();++Index)
     {
         const auto& Optional=Chapter->Beats[Index];

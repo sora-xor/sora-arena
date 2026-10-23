@@ -10,6 +10,7 @@
 #include "SoraRegistry.h"
 #include "SoraHelmRules.h"
 #include "SoraFoundryDefenseRules.h"
+#include "SoraMillisecondClock.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
 class UStaticMeshComponent;
@@ -416,6 +417,7 @@ private:
     void PresentRhythmResponse(int32 Step);
     void WorkshopSound(FName Action,int32 Step);
     bool bLiftGallery=false;
+    FSoraMillisecondClock GalleryClock;
     int32 GalleryStairNode=0;
     bool LiftReadyToComplete() const;
     bool SpireReadyToComplete() const;

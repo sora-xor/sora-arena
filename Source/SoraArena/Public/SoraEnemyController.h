@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "SoraStealthRules.h"
+#include "SoraMillisecondClock.h"
 #include "SoraEnemyController.generated.h"
 class ASoraBoss;
 class ASoraCharacterBase;
@@ -124,6 +125,7 @@ private:
         int32 LoudnessPermille = 1000;
     };
     void Prepare(bool bHunt);
+    FSoraMillisecondClock ThinkClock;
     void Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
     void DrivePupil(ASoraEnemy& Enemy, ASoraCharacterBase& Target, float DeltaSeconds);
     void DriveBoss(ASoraBoss& Boss, ASoraCharacterBase& Target, float DeltaSeconds);
