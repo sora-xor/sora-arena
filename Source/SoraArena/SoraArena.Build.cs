@@ -18,7 +18,12 @@ public class SoraArena : ModuleRules
         // Editor-only SDF/card observation headers include MeshUtilities.h;
         // the diagnostic reads their public data without invoking a builder.
         if (Target.bBuildEditor)
+        {
             PrivateIncludePathModuleNames.Add("MeshUtilities");
+            // Source-description readers call exported indexer and slot-name
+            // symbols; Engine's public includes do not link these modules.
+            PrivateDependencyModuleNames.AddRange(new string[] { "MeshDescription", "StaticMeshDescription" });
+        }
         PrivateIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "../../crates/arena-ffi/include")));
         // Content/Data is read from disk at runtime, never cooked: stage all of it.
         RuntimeDependencies.Add("$(ProjectDir)/Content/Data/...", StagedFileType.NonUFS);
