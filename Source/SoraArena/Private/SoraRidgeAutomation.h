@@ -22,7 +22,7 @@ inline bool Walk(FSoraAutomationWorld& W,const FSoraBeatSpace& Space,double Loca
         return W.InjectKey(EKeys::W,IE_Released)&&W.Tick(2)&&FVector::Dist2D(W.Player()->GetActorLocation(),Point)<35;
     };
     const double Start=W.Player()->GetActorLocation().X-O.X;
-    for(int Rib=1200;Rib<18000&&Rib<LocalX;++Rib)
+    for(int Rib=1200;Rib<18000&&Rib<LocalX;Rib+=1200)
     {
         if(Rib<Start-50) continue;
         const FVector Before=O+FVector(Rib-100,0,SoraRidgeRules::Height(Rib-100));

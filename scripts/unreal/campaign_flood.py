@@ -27,7 +27,7 @@ def place_flood(beats, records, zones, fail):
                 'provisional_air_shaft':True}
     r['volumes']=[{'event':'volume_enter:'+n,'center':[x+a,b],'size':[w,h]}
        for n,a,b,w,h in [('vol_ankyo_start',300,0,600,240),('vol_ankyo_grate_1',2000,0,300,240),
-        
+
         ('vol_ankyo_deep',7500,0,150,240),('vol_water_gate_exit',9500,-400,400,150)]]
     r['spawns']=[[x+a,b] for a,b in [(2000,0),(4500,0),(7000,0),(9500,-700),(4000,-2100),(4150,-2100)]]
     r['patrols']=[]

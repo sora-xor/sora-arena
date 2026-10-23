@@ -721,7 +721,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     TickArchery(DeltaMs);
     TickMaai(DeltaMs);
     TickWind(DeltaMs);
-    if(ActiveBeatData()!=&Beat) return;
+    if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     // Trigger volumes the hero walks or rides into raise their events: a
     // dialogue waiting on one starts, and the waves it names come.
     TickVolumes();
