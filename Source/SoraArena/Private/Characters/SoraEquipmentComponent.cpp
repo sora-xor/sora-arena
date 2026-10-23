@@ -493,10 +493,12 @@ void USoraEquipmentComponent::ReleaseBow()
         FTransform(Direction.Rotation(),Origin),H,H,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
     if(!Arrow) return;
     Arrow->bArrow=true; Arrow->Damage=W.Damage; Arrow->Velocity=Direction*W.ProjectileSpeed; Arrow->WeaponId=18;
-    if(Campaign&&Campaign->IsArcheryLesson())
+    if(Campaign)
     {
+        // Both the range lesson and the optional wood challenge observe the
+        // actual released projectile. Only the lesson requires a range-shot ID.
         Arrow->ArcheryShotId=Campaign->RegisterArcheryArrow(*Arrow);
-        if(!Arrow->ArcheryShotId) { Arrow->Destroy(); return; }
+        if(Campaign->IsArcheryLesson()&&!Arrow->ArcheryShotId) { Arrow->Destroy(); return; }
     }
     UGameplayStatics::FinishSpawningActor(Arrow,Arrow->GetActorTransform());
     --Ammo; NextShot=GetWorld()->GetTimeSeconds()+W.Cooldown;

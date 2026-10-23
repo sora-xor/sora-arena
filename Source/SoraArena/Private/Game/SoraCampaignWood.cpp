@@ -134,8 +134,8 @@ void USoraCampaignDirector::RegisterWoodArrow(ASoraProjectile& Arrow)
 void USoraCampaignDirector::ResolveWoodArrow(ASoraProjectile& Arrow,const FHitResult* Hit)
 {
     const uint64 Id=Arrow.WoodShotId; Arrow.WoodShotId=0;
-    const auto* Pending=WoodShots.Find(Id);
-    const bool Issued=Pending&&Pending->Get()==&Arrow;
+    const auto* PendingShot=WoodShots.Find(Id);
+    const bool Issued=PendingShot&&PendingShot->Get()==&Arrow;
     WoodShots.Remove(Id);
     const auto* Arena=Mode().Arena();
     if(!Issued||!IsWoodExplore()||!Save||!Arena||Arrow.GetOwner()!=Mode().Hero()||!Arrow.bArrow||Arrow.WeaponId!=18||
