@@ -1,5 +1,5 @@
-#include "SoraFieldcraft.h"
 #include "Combat/SoraDefense.h"
+#include "SoraFieldcraft.h"
 #include "Combat/SoraDamage.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
