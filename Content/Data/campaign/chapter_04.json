@@ -9191,6 +9191,7 @@
      "spook_dismount": false,
      "until_phase": 0,
      "pack": [],
+     "cargo": null,
      "at": [
       9898,
       -11966,
@@ -11272,10 +11273,14 @@
     "recovery": null,
     "carry_gate": null,
     "kit": {
-     "work": null,
-     "item": null,
+     "work": "cargo",
+     "item": "bale",
      "pickups": [],
-     "dropoffs": [],
+     "dropoffs": [
+      "drying_stand",
+      "drying_stand",
+      "drying_stand"
+     ],
      "targets": [],
      "party": []
     },
@@ -11339,6 +11344,11 @@
        "hp": 0
       }
      ],
+     "cargo": {
+      "item": "barley_sheaf",
+      "total": 30,
+      "per_dropoff": 10
+     },
      "at": [
       9898,
       -21966,
@@ -11674,6 +11684,7 @@
      "spook_dismount": false,
      "until_phase": 1,
      "pack": [],
+     "cargo": null,
      "at": [
       15180,
       0,

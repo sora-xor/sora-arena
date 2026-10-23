@@ -392,6 +392,8 @@ def _mount(beat, ride, fail):
     """The horse a ride or a mounted boss phase puts under the hero."""
     where = beat["id"]
     dismount_on_spook = spook_dismount(beat, fail)
+    from campaign_cargo import cargo_manifest
+    manifest = cargo_manifest(beat, fail)
     if beat["type"] == "boss":
         mounted = [(index, phase["mount"]) for index, phase in enumerate(beat["params"]["phases"]) if "mount" in phase]
         if not mounted:
@@ -445,7 +447,7 @@ def _mount(beat, ride, fail):
         "weapons": weapons, "arcs": {str(weapon): arc for weapon, arc in sorted(arcs.items())},
         "dismount": bool(params.get("dismount_allowed", until_phase > 0)), "auto_steer": ride,
         "spook_dismount": dismount_on_spook,
-        "until_phase": until_phase, "pack": pack,
+        "until_phase": until_phase, "pack": pack, "cargo": manifest,
     }
 
 
@@ -883,6 +885,9 @@ def _kit(beat):
     """What the world builds for the beat's task, by kind."""
     params = beat["params"]
     kit = {"work": None, "item": None, "pickups": [], "dropoffs": [], "targets": [], "party": []}
+    if beat["type"] == "horseback_ride" and params.get("mode") == "cargo":
+        kit.update(work="cargo", item="bale", dropoffs=["drying_stand"] * len(params["cargo"]["dropoffs"]))
+        return kit
     if beat["type"] != "production_task":
         return kit
     name = params["task"]

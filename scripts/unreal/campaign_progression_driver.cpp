@@ -2,12 +2,14 @@
 #include "SoraCampaignRules.h"
 #include "SoraDojoRules.h"
 #include "SoraMountRules.h"
+#include "SoraCargoRules.h"
 #include "SoraMillisecondClock.h"
 #include "SoraCrankInputRules.h"
 #include "SoraRhythmRules.h"
 #include "SoraWorkshopRules.h"
 
 #include <cstdlib>
+#include <climits>
 #include <iostream>
 #include <string>
 
@@ -1150,6 +1152,45 @@ static void TestRideExploreCollectible()
     Cargo.Dropoffs = 3;
     Cargo.UnloadHoldMs = 3000;
     State = Begin(Cargo, "cargo ride");
+    const SoraCargoRules::FCargo Manifest{30,10};
+    Expect(SoraCargoRules::Valid(Manifest,3),"cargo: authored thirty sheaves rejected");
+    for(const auto Invalid : {SoraCargoRules::FCargo{0,10},{-1,10},{30,0},{30,-1},{31,10},{INT_MAX,INT_MAX}})
+        Expect(!SoraCargoRules::Valid(Invalid,3),"cargo: invalid or overflowing manifest accepted");
+    Expect(!SoraCargoRules::Valid(Manifest,0)&&!SoraCargoRules::Valid({90,10},9)&&
+        SoraCargoRules::Valid({INT_MAX,INT_MAX},1)&&SoraCargoRules::Valid({2147483646,715827882},3),
+        "cargo: destination bounds or wide product admission failed");
+    Expect(SoraCargoRules::Remaining(Manifest,3,-1)==0&&SoraCargoRules::Remaining(Manifest,3,4)==0,
+        "cargo: impossible credit count generated cargo");
+    // All permutations conserve the original quantity. A refused hold,
+    // duplicate, on-foot continuation or retry must not invent a new stock.
+    for(int First=0;First<3;++First)
+        for(int Second=0;Second<3;++Second)
+        {
+            if(First==Second) continue;
+            auto Transfer=Begin(Cargo,"cargo quantity permutation");
+            const int Order[]={First,Second,3-First-Second};
+            for(int Done=0;Done<3;++Done)
+            {
+                const int Point=Order[Done];
+                Expect(SoraCargoRules::Remaining(Manifest,3,Transfer.Done)==30-Done*10&&
+                    !Deliver(Transfer,Cargo,Point,2999)&&Transfer.Done==Done,
+                    "cargo: partial unload altered the remaining stock");
+                Expect(Fail(Transfer,Cargo,EFail::HorseDown)==ERetry::Continue&&Transfer.Done==Done,
+                    "cargo: on-foot continuation discarded an accepted share");
+                Expect(Deliver(Transfer,Cargo,Point,3000)&&!Deliver(Transfer,Cargo,Point,3000)&&
+                    SoraCargoRules::Remaining(Manifest,3,Transfer.Done)==20-Done*10,
+                    "cargo: accepted unique share did not remove exactly ten sheaves");
+                int Received=0;
+                for(int Destination=0;Destination<3;++Destination)
+                    Received+=Transfer.DropoffUses[Destination]*Manifest.PerDropoff;
+                Expect(Received+SoraCargoRules::Remaining(Manifest,3,Transfer.Done)==30,
+                    "cargo: pack and destination quantities are not conserved");
+            }
+            Transfer=Begin(Cargo,"cargo quantity checkpoint retry");
+            Expect(SoraCargoRules::Remaining(Manifest,3,Transfer.Done)==30&&
+                Transfer.DropoffUses[0]+Transfer.DropoffUses[1]+Transfer.DropoffUses[2]==0,
+                "cargo: retry retained delivered goods or lost the pack load");
+        }
     // Binary-exact seconds put the old global clock just over 3000 ms
     // while the fresh cargo hold is still 1/4096 s short. The runtime owns
     // this same resettable clock rather than inheriting TickBeat's fraction.

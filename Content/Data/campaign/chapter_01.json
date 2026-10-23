@@ -8249,6 +8249,7 @@
      "spook_dismount": false,
      "until_phase": 0,
      "pack": [],
+     "cargo": null,
      "at": [
       9898,
       -11966,

@@ -58,6 +58,10 @@ public:
     FString PackId;
     void Lead(ASoraHorse* InLeader, float SpacingCm, int32 FearRecoveryMs = 0);
     bool IsLed() const { return Leader.IsValid(); }
+    // Functional WIP: each paired bundle represents one validated delivery share.
+    void ConfigureCargo(int32 Shares, int32 UnitsPerShare);
+    void ShowCargo(int32 SharesRemaining);
+    int32 CargoQuantityShown() const;
     bool ObserveLeadThreat(bool bNear);
     int32 LeadFearMs() const { return LeadFear.RemainingMs; }
     int32 LeadTugMs() const { return LeadTug.RemainingMs; }
@@ -91,6 +95,9 @@ private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> TackParts;
     TWeakObjectPtr<ASoraPlayerCharacter> RiderPawn;
     TWeakObjectPtr<ASoraHorse> Leader;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> PackLoads;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> CargoLoads;
+    int32 CargoUnitsPerShare = 0;
     SoraMountRules::FHorse Rules;
     SoraMountRules::FRide Ride;
     const FSoraZone* Road = nullptr;

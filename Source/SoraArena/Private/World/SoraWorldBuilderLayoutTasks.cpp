@@ -246,6 +246,25 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
         }
         StageWorkshop(Beat);
     }
+    else if(KitWork==TEXT("cargo"))
+    {
+        CargoUnitsPerShare=Beat.Cargo.PerDropoff;
+        // Authored 稲架 destinations, built from existing scene components.
+        // Functional WIP presentation only; final art remains a separate gate.
+        for(int32 Point=0;Point<Space.Dropoffs.Num();++Point)
+        {
+            const FVector P=Floor(Space.Dropoffs[Point]);
+            for(int32 Side:{-1,1})
+                KitShape(TEXT("DryingPost"),KitCylinder,P+FVector(Side*90,0,65),FVector(.12f,.12f,1.3f),KitTimber,TEXT("Timber"));
+            KitShape(TEXT("DryingRail"),KitCube,P+FVector(0,0,125),FVector(2.f,.12f,.12f),KitTimber,TEXT("Timber"));
+            for(int32 Side:{-1,1})
+            {
+                auto* Load=KitShape(TEXT("DeliveredBarleyShare"),KitCylinder,P+FVector(Side*35,0,94),
+                    FVector(.28f,.28f,.65f),KitStraw);
+                Load->SetVisibility(false); CargoStandLoads.Add(Load);
+            }
+        }
+    }
     else if(KitWork==TEXT("carry"))
     {
         KitItemKind=Space.Item;
@@ -365,6 +384,12 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
         const int32 Wanted=FMath::Min(View.Strokes,KitStackVisible);
         while(KitStacks.Num()<Wanted) KitItem(TEXT("crate"),KitAnchor+FVector(0,190,0),KitStacks.Num(),KitStacks);
     }
+    else if(KitWork==TEXT("cargo"))
+    {
+        for(int32 PartIndex=0;PartIndex<CargoStandLoads.Num();++PartIndex)
+            if(CargoStandLoads[PartIndex]) CargoStandLoads[PartIndex]->SetVisibility(
+                View.Delivered.IsValidIndex(PartIndex/2)&&View.Delivered[PartIndex/2]==1);
+    }
     else if(KitWork==TEXT("carry"))
     {
         if(CarrySeal) CarrySeal->SetVisibility(!View.bCarryGateOpen);
@@ -446,13 +471,20 @@ void ASoraWorldBuilder::ClearKit()
     ToranosukePlaque=nullptr; NyaakotoPlaque=nullptr; WashioSword.Reset(); EpiloguePlaques=0; bEpilogueSwordReturned=false;
     RecoveryBundle.Reset(); KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
-    KitLooseLoads.Reset(); CarrySeal=nullptr;
+    KitLooseLoads.Reset(); CarrySeal=nullptr; CargoStandLoads.Reset(); CargoUnitsPerShare=0;
     BellowsNotches.Reset(); BellowsSparks.Reset(); BellowsFeet.Reset(); BellowsShownBand=0;
     WorkshopParts.Reset(); WorkshopRing.Reset(); WorkshopStep=-1; bWorkshopHammer=false;
     HelmWheel=nullptr; HelmNeedle=nullptr;
     KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr; Lift=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
     KitHoldSize=FVector2D::ZeroVector;
+}
+int32 ASoraWorldBuilder::CargoQuantityShownAt(int32 Destination) const
+{
+    if(Destination<0||Destination>=CargoStandLoads.Num()/2) return 0;
+    const int32 Index=Destination*2;
+    return CargoStandLoads[Index]&&CargoStandLoads[Index+1]&&
+        CargoStandLoads[Index]->IsVisible()&&CargoStandLoads[Index+1]->IsVisible()?CargoUnitsPerShare:0;
 }
 void ASoraWorldBuilder::ShowPickups(const FSoraChapter& Chapter,const TArray<int32>& Loose)
 {
