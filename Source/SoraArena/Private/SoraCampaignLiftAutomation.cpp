@@ -230,11 +230,16 @@ bool FSoraCampaignLiftGalleryTimingTest::RunTest(const FString& Parameters)
         if(!SoraLiftAutomation::Board(*W.World)) return false;
         for(int32 Turn=0;Turn<60&&!Director->InLiftGallery();++Turn)
         {
-            if(!Tick(66,1.f/60.f)||!Press(EKeys::E,1.f/60.f)) return false;
+            if(!Tick(66,1.f/60.f)) return false;
+            // Arrival can occur during the wait. Another E would reset
+            // production IdleMs, so stop turning once the gallery opens.
+            if(Director->InLiftGallery()) break;
+            if(!Press(EKeys::E,1.f/60.f)) return false;
             SoraLiftAutomation::HoldThreats(*W.World);
         }
         if(!TestTrue(TEXT("Mapped capstan turns enter the actual gallery"),Director->InLiftGallery()&&
             W.Mode()->Arena()->CampaignLift()->Arrived()&&EntryWorldSeconds>=0.)) return false;
+        const double RideTailSeconds=ActiveSeconds;
         TestEqual(TEXT("A fresh gallery has not inherited the previous exit hint"),HintEntries,0);
         for(int32 Frame=0;Frame<(Entry?3602:1802)&&ActiveSeconds<30.;++Frame)
             if(!Tick(1,DeltaSeconds)) return false;
@@ -261,8 +266,8 @@ bool FSoraCampaignLiftGalleryTimingTest::RunTest(const FString& Parameters)
         if(!Tick(Entry?1200:600,DeltaSeconds)) return false;
         TestTrue(TEXT("The authored exit hint reaches the displayed dialogue cue"),bHintShown);
         TestEqual(TEXT("The idle hint is queued exactly once per gallery entry"),HintEntries,1);
-        AddInfo(FString::Printf(TEXT("SORA_GALLERY_IDLE: entry=%d fps=%d cue=%s entry_world_seconds=%.6f hint_active_seconds=%.6f pause_requested_seconds=%.6f pause_world_delta=%.6f hint_entries=%d displayed=%d"),
-            Entry+1,Entry?120:60,Hint,EntryWorldSeconds,HintSeconds,PauseFrames*static_cast<double>(DeltaSeconds),
+        AddInfo(FString::Printf(TEXT("SORA_GALLERY_IDLE: entry=%d fps=%d cue=%s entry_world_seconds=%.6f ride_tail_active_seconds=%.6f hint_active_seconds=%.6f pause_requested_seconds=%.6f pause_world_delta=%.6f hint_entries=%d displayed=%d"),
+            Entry+1,Entry?120:60,Hint,EntryWorldSeconds,RideTailSeconds,HintSeconds,PauseFrames*static_cast<double>(DeltaSeconds),
             PauseWorldDelta,HintEntries,bHintShown));
     }
     return !HasAnyErrors();
