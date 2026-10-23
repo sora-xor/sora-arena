@@ -1,5 +1,6 @@
 #include "SoraCatalogFlood.h"
 #include "SoraCatalogClimb.h"
+#include "SoraCatalogFoundryDefense.h"
 #include "SoraCatalog.h"
 #include "SoraCatalogJson.h"
 #include "SoraStealthRules.h"
@@ -307,10 +308,10 @@ bool SpaceReadFieldcraftSets(const FJsonObject& O, const FSoraBeat& Beat, FSoraF
             const auto Q = (*QuarryRows)[Index].IsValid() ? (*QuarryRows)[Index]->AsObject() : nullptr;
             FSoraNetQuarry Quarry; FSoraNets::EKind Kind = FSoraNets::EKind::Person;
             if (!Q || !Str(*Q, TEXT("id"), Quarry.Id) || !Named(*Q, TEXT("kind"), Kinds, Kind) || (Index > 0 && Kind != Nets.Kind) ||
-                !Int(*Q, TEXT("index"), Quarry.Index) || Quarry.Index != Index || !Int(*Q, TEXT("hp"), Quarry.Hp) || Quarry.Hp < 0 ||
+                !Int(*Q, TEXT("index"), Quarry.Index) || Quarry.Index != Index+(Beat.Id==TEXT("ch05.b07")?1:0) || !Int(*Q, TEXT("hp"), Quarry.Hp) || Quarry.Hp < 0 ||
                 (Kind == FSoraNets::EKind::Person) != (Quarry.Hp == 0) ||
                 (Kind == FSoraNets::EKind::Person && (Quarry.Index >= F.People.Num() || F.People[Quarry.Index].Id != Quarry.Id ||
-                 (Beat.Task.Task == SoraBeatRules::ETask::Defend && F.People[Quarry.Index].Target != Quarry.Index))))
+                 (Beat.Task.Task == SoraBeatRules::ETask::Defend && Beat.Id!=TEXT("ch05.b07") && F.People[Quarry.Index].Target != Quarry.Index))))
                 return false;
             Nets.Kind = Kind;
             Nets.Quarry.Add(MoveTemp(Quarry));
@@ -575,7 +576,8 @@ bool SpaceReadFieldcraft(const FJsonObject& O, const FSoraBeat& Beat, FSoraField
             !SpacePoint(P->TryGetField(TEXT("at")), Person.At)) return false;
         if (Person.Target == INDEX_NONE)
         {
-            if (!Beat.CrankNpcs.Contains(Person.Id) ||
+            if ((!Beat.CrankNpcs.Contains(Person.Id) && !(Beat.Id==TEXT("ch05.b07") &&
+                (Person.Id==TEXT("bellows_boy")||Person.Id==TEXT("bellows_worker")))) ||
                 !SpacePoint(P->TryGetField(TEXT("cover")), Person.Cover)) return false;
         }
         else if (Person.Target < 0 || Person.Target >= Beat.Task.TargetCount || Person.At != Beat.Space.Targets[Person.Target]) return false;
@@ -970,6 +972,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         const TSharedPtr<FJsonObject> Fieldcraft = Child(*O, TEXT("fieldcraft"));
         if (!Fieldcraft || !SpaceReadFieldcraft(*Fieldcraft, Beat, B.Fieldcraft))
             return Bad(Beat.Id + TEXT(" fieldcraft"));
+        if(!SoraCatalogFoundryDefense::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" foundry defense"));
         if(!SoraCatalogFlood::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" flood route"));
         if(!SoraCatalogClimb::Read(*O,Beat,S)) return Bad(Beat.Id+TEXT(" climb routes"));
         for (const FSoraDefendedPerson& Person : B.Fieldcraft.People)

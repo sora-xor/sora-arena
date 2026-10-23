@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SoraWorldBuilder.generated.h"
+class ASoraFoundryFurnace;
 class ADirectionalLight;
 class AExponentialHeightFog;
 class ASkyLight;
@@ -20,6 +21,7 @@ class UMaterialInterface;
 struct FSoraPracticeMap;
 struct FSoraChapter;
 struct FSoraBeat;
+struct FSoraBeatSpace;
 struct FSoraZone;
 struct FSoraProp;
 
@@ -121,6 +123,8 @@ public:
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
+    ASoraFoundryFurnace* FoundryTarget() const;
+    void ShowFoundrySupplies(unsigned Used,unsigned Netted);
     ASoraCampaignLift* CampaignLift() const;
     FVector RidgeAnchorFloor(int Index) const;
     int32 ReachRidgeCable(const ASoraPlayerCharacter& Hero) const;
@@ -236,6 +240,10 @@ private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> RecoveryBundle;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> RecoveryHatch;
     UPROPERTY() TArray<TObjectPtr<AActor>> KitActors;
+    TWeakObjectPtr<ASoraFoundryFurnace> FoundryActor;
+    TArray<TWeakObjectPtr<UStaticMeshComponent>> FoundryTubs,FoundryBellows;
+    unsigned FoundryUsedShown=~0u;
+    void BuildFoundryDefense(const FSoraBeatSpace& Space);
     UPROPERTY() TObjectPtr<ASoraCampaignLift> Lift;
     // The escorted party: one root per member, a villager or a cart under it.
     UPROPERTY() TArray<TObjectPtr<USceneComponent>> KitParty;

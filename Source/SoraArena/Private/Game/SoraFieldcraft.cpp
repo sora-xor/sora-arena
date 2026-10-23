@@ -492,6 +492,11 @@ void USoraFieldcraft::StageCompanions(const FSoraBeat& Beat)
         Spec.Role = TEXT("bystander");
         Spec.bDetectable = false;
         Spec.Rules = {100, false, 3000, 0, 0, false, 0};
+        if(Beat.Space.FoundryDefense.bEnabled&&Index==0)
+        {
+            Spec.bDetectable=true;
+            Spec.Rules={300,true,4000,0,0,false,0}; // The director owns the 25 s deadline.
+        }
         ASoraCompanion* Companion = GetWorld()->SpawnActor<ASoraCompanion>(Layout::Floor(F.People[Index].At, Beat.Space.HeightCm+90.f),
             FRotator(0.f, Index * 45.f, 0.f), Params);
         if (!Companion) continue;
@@ -706,6 +711,8 @@ void USoraFieldcraft::LanceHit(AActor* Target)
 
 void USoraFieldcraft::TargetChanged(int32 Target, int32 HealthPermille)
 {
+    const auto* Mode=GetWorld()?Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()):nullptr;
+    if(Mode&&Mode->Campaign()&&Mode->Campaign()->IsFoundryDefense()&&Target==1) return;
     if (!Staged) return;
     for (int32 Index = 0; Index < Staged->People.Num() && Index < People.Num(); ++Index)
     {

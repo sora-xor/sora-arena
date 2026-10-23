@@ -435,3 +435,11 @@ void USoraFieldcraft::TickScouts()
     bDroneCrossed = true;
     Raise(TEXT("ai:drone_crossed_right"));
 }
+
+bool USoraFieldcraft::FinishFoundryNetCut(int32 Quarry)
+{
+    const auto* Mode=GetWorld()?Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()):nullptr;
+    if(!Mode||!Mode->Campaign()||!Mode->Campaign()->IsFoundryDefense()||!QuarryStates.IsValidIndex(Quarry)) return false;
+    if(!Craft::CutNet(QuarryStates[Quarry].Net)) return false;
+    NetChanged(Quarry,Craft::ENetChange::Freed); return true;
+}

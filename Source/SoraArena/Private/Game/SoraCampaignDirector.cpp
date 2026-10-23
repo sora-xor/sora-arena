@@ -1,4 +1,7 @@
 #include "SoraCampaignDirector.h"
+#include "SoraFoundryFurnace.h"
+#include "SoraCompanion.h"
+#include "Combat/SoraDamage.h"
 #include "SoraRidgeRules.h"
 #include "SoraWoodRules.h"
 #include "Game/SoraCampaignReach.h"
@@ -118,6 +121,7 @@ void USoraCampaignDirector::HeroDamaged(const FSoraDamagedEvent& Event)
 {
     const ASoraGameMode& M=Mode();
     if(!ActiveBeatData()||Event.Victim!=M.Hero()) return;
+    CancelFoundryWork();
     if(bPryingCarryGate) bCarryGateHit=true;
     if(IsHelmHold()) CancelHelm();
     StopPlayerCrank();
@@ -440,6 +444,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     SoraBeatRules::ApplyCarryDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     SoraBeatRules::ApplyRhythmDifficulty(Task,static_cast<int32>(SoraAccessibility::CampaignDifficulty(this)));
     TaskState=SoraBeatRules::StartTask(Task,Phase);
+    ResetFoundry();
     ResetHelm();
     SpineCut={}; SpineReadyMs=0; bSpinePromptShown=false; bSpineMutoRaised=false;
     PendingSummitPhaseSave=INDEX_NONE;
@@ -718,6 +723,8 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     Step.CrankDecayMultiplier=LiftDecayMultiplier();
     if(!TickHelm(Step)) SoraBeatRules::Tick(TaskState,Task,Step);
     if(M.bDefeated) return;
+    TickFoundry(DeltaMs);
+    if(ActiveBeatData()!=&Beat||M.bDefeated) return;
     TickArchery(DeltaMs);
     TickMaai(DeltaMs);
     TickWind(DeltaMs);
@@ -841,6 +848,7 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs)
 }
 float USoraCampaignDirector::HeldWorkProgress() const
 {
+    if(FoundryOccupiesHands()) return float(Foundry.HeldMs)/SoraFoundryDefenseRules::Need(Foundry.Work);
     if(IsHelmHold()&&Helm.Working) return static_cast<float>(Helm.HeldMs)/ActiveSpace()->Helm.Contract.WorkMs;
     if(SpineCut.Active&&ActiveBeatData()&&ActiveBeatData()->CaptureHoldMs>0)
         return static_cast<float>(SpineCut.HeldMs)/ActiveBeatData()->CaptureHoldMs;
@@ -869,7 +877,7 @@ void USoraCampaignDirector::Progressed(int32 PermilleBefore)
     }
     QueueWaves(SoraBeatRules::ReleaseWaves(TaskState,Task));
     SpawnPending();
-    if(SoraBeatRules::TaskComplete(TaskState,Task)&&LiftReadyToComplete()&&SpireReadyToComplete()&&RidgeReadyToComplete()) CompleteActiveBeat();
+    if(SoraBeatRules::TaskComplete(TaskState,Task)&&LiftReadyToComplete()&&SpireReadyToComplete()&&RidgeReadyToComplete()&&FoundryReadyToComplete()) CompleteActiveBeat();
 }
 void USoraCampaignDirector::QueueWaves(unsigned Waves)
 {
@@ -1129,6 +1137,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 }
 void USoraCampaignDirector::ClearEncounter()
 {
+    ResetFoundry();
     CancelHelm();
     Helm={};
     ResetWind();
@@ -1314,6 +1323,7 @@ void USoraCampaignDirector::HandleFailure(SoraBeatRules::ERetry Outcome,const FS
     case ERetry::Checkpoint:
         break;
     }
+    CancelFoundryWork();
     M.bDefeated=true;
     ClearDialogue();
     const bool bFell=Event==TEXT("player_died");
@@ -1335,6 +1345,15 @@ bool USoraCampaignDirector::DamageDefendedTarget(int32 Target,int32 Hp)
 {
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||!Beat->Targets.IsValidIndex(Target)||Mode().bDefeated) return false;
+    if(IsFoundryDefense()&&Target==1)
+    {
+        if(auto* Kozo=FoundryKozo())
+        {
+            SoraDamage::Strike(Kozo,Hp,FSoraHit::Hazard(Kozo->GetActorLocation()),FVector::ZeroVector,FHitResult(),nullptr,nullptr);
+            TaskState.TargetHp[1]=FMath::RoundToInt32(Kozo->Health);
+        }
+        return false; // Downing starts the authored rescue deadline, not target destruction.
+    }
     const int32 Full=Task.TargetHp[Target],Before=TaskState.TargetHp[Target];
     const bool bDestroyed=SoraBeatRules::DamageTarget(TaskState,Task,Target,Hp);
     const int32 After=TaskState.TargetHp[Target];
@@ -1350,6 +1369,7 @@ bool USoraCampaignDirector::DamageDefendedTarget(int32 Target,int32 Hp)
         const int32 At=FMath::RoundToInt32(FCString::Atod(*Fraction)*1000.0);
         if(Before*1000>At*Full&&After*1000<=At*Full) Fire(Trigger.On);
     }
+    if(IsFoundryDefense()) if(auto* Furnace=FoundryFurnace()) Furnace->Health=After;
     if(bDestroyed) RaiseBeatEvent(FName(TEXT("target_destroyed:")+Beat->Targets[Target]));
     return bDestroyed;
 }
@@ -1648,6 +1668,7 @@ void USoraCampaignDirector::SuspendDojo(bool bIncludeHero)
 }
 void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
 {
+    if(InteractFoundry(Player)) return;
     using SoraBeatRules::EStroke;
     ASoraGameMode& M=Mode();
     if(!M.bCampaign) { ArenaInteract(Player); return; }
@@ -2111,6 +2132,7 @@ FString USoraCampaignDirector::ObjectiveText() const
     if(bWoodTransit) return TEXT("林を散策するか、南の道から鍛冶場へ進む");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(false);
     if(IsArcheryLesson()) return ArcheryText(false);
+    if(IsFoundryDefense()) return FoundryText(false);
     if(IsHelmHold()) return HelmText(false);
     if(NeedsCarryGate()) return TEXT("蔵の封印で操作を長押しし、槍の石突でこじ開ける");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("包みの前で操作を 3 秒長押しし、弓に弦を張る"):
@@ -2150,6 +2172,7 @@ FString USoraCampaignDirector::ObjectiveTextEnglish() const
     if(bWoodTransit) return TEXT("Explore the wood, or take the south terrace to the smithy");
     if(IsToriiEpilogue()) return EpilogueObjectiveText(true);
     if(IsArcheryLesson()) return ArcheryText(true);
+    if(IsFoundryDefense()) return FoundryText(true);
     if(IsHelmHold()) return HelmText(true);
     if(NeedsCarryGate()) return TEXT("Hold Interact at the granary seal to pry it off with the spear butt");
     if(NeedsEquipmentRecovery()) return AtRecoveryBottom()?TEXT("Hold Interact at the bundle for 3 seconds to string the bow"):

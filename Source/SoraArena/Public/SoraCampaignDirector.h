@@ -9,9 +9,12 @@
 #include "SoraArcheryRules.h"
 #include "SoraRegistry.h"
 #include "SoraHelmRules.h"
+#include "SoraFoundryDefenseRules.h"
 #include "SoraCampaignDirector.generated.h"
 class ACameraActor;
 class UStaticMeshComponent;
+class ASoraFoundryFurnace;
+class ASoraCompanion;
 class ASoraBoss;
 class ASoraEnemy;
 class ASoraGameMode;
@@ -230,6 +233,14 @@ public:
     // pickup (ch03.b05's 釣瓶, waiting while a guard watches) or an objective
     // worked with Interact held (a charge planted, a relay node pulled).
     float HeldWorkProgress() const;
+    bool IsFoundryDefense() const;
+    ASoraFoundryFurnace* FoundryFurnace() const;
+    ASoraCompanion* FoundryKozo() const;
+    bool InteractFoundry(ASoraPlayerCharacter& Hero);
+    void CancelFoundryWork();
+    bool FoundryOccupiesHands() const { return IsFoundryDefense()&&Foundry.Work!=SoraFoundryDefenseRules::EWork::None; }
+    const SoraFoundryDefenseRules::FState& FoundryState() const { return Foundry; }
+    FVector FoundryWorkPoint(SoraFoundryDefenseRules::EWork Work,int32 Index) const;
     bool IsHelmHold() const;
     bool HelmNeedsTrim() const { return IsHelmHold()&&Helm.Pending>=0; }
     const SoraHelmRules::FState& HelmState() const { return Helm; }
@@ -316,6 +327,12 @@ public:
     int32 KillsNeeded = 0;
     bool bCampaignComplete = false;
 private:
+    SoraFoundryDefenseRules::FState Foundry;
+    void ResetFoundry();
+    void TickFoundry(int32 DeltaMs);
+    bool FoundryWorkEligible(SoraFoundryDefenseRules::EWork Work,int32 Index) const;
+    bool FoundryReadyToComplete() const;
+    FString FoundryText(bool English) const;
     void ResetWind();
     void FinishWindFall(ASoraPlayerCharacter& Hero);
     void TickWind(int32 DeltaMs);

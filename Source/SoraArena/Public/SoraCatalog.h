@@ -576,8 +576,14 @@ struct FSoraFloodSpace
     bool bEnabled=false;
     FVector2D Origin=FVector2D::ZeroVector;
 };
+struct FSoraFoundryDefenseSpace
+{
+    bool bEnabled=false;
+    TArray<FVector2D> Tubs, Crew;
+};
 struct FSoraBeatSpace
 {
+    FSoraFoundryDefenseSpace FoundryDefense;
     FSoraHelmSpace Helm;
     FSoraWindSpace Wind;
     FSoraFloodSpace Flood;

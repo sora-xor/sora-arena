@@ -1,4 +1,5 @@
 #include "SoraEnemyController.h"
+#include "SoraFoundryFurnace.h"
 #include "Combat/SoraEnemyCatalog.h"
 #include "Combat/SoraStealth.h"
 #include "SoraBoss.h"
@@ -407,6 +408,15 @@ void ASoraEnemyController::Think(ASoraEnemy& Enemy, ASoraCharacterBase& Target, 
         return;
     if (DriveSpireAlarm(Enemy,Dt,NowMs))
         return;
+    // Only this authored defense gives grenadiers a structural quarry.
+    // Normal perception/telegraph/range/cover/projectile code remains in Fight.
+    if(Enemy.ArchetypeId()==TEXT("grenadier"))
+        if(const auto* M=Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()); M&&M->Campaign())
+            if(auto* Furnace=M->Campaign()->FoundryFurnace(); Furnace&&Furnace->IsAlive())
+            {
+                Fight(Enemy,*Furnace,CanSee(*Furnace),Dt,NowMs);
+                return;
+            }
     // In a fight it may turn on someone beside the hero: the nearest companion
     // it can see that stands clearly nearer than he does.
     if (Mind.State == Stealth::EState::Combat)

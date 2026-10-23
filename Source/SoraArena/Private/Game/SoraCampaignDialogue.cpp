@@ -41,6 +41,7 @@ void USoraCampaignDirector::RefreshDialogueHold()
     bDialogueHeld=bWanted;
     if(bWanted)
     {
+        CancelFoundryWork();
         HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
         SealTarget.Reset();
     }

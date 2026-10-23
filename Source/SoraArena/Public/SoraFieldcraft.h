@@ -290,6 +290,7 @@ public:
     int32 QuarryCount() const { return QuarryStates.Num(); }
     SoraFieldcraftRules::ENet NetOf(int32 Quarry) const;
     int32 QuarryHealth(int32 Quarry) const;
+    bool FinishFoundryNetCut(int32 Quarry);
     FVector QuarryLocation(int32 Quarry) const;
     ASoraEnemy* TetherOf(int32 Quarry) const;
     // A netting drone reloading after its net was cut; the drones that net.
