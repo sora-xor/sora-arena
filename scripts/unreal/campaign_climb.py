@@ -32,7 +32,15 @@ def exact(actual, expected):
 def route_points(heights, y):
     def face(z):
         return min(z, 600) / math.tan(math.radians(60)) + max(0, z - 600) / math.tan(math.radians(80))
-    return [[round(face(z)) - 70, y, z] for z in heights]
+    points = [[round(face(z)) - 70, y, z] for z in heights]
+    if y == 70:
+        # Provisional swept path: approach each solid rest shelf outside its
+        # 130 cm lip, raise there, then move inward at the authored rest height.
+        # Moving the preceding hold inward would put a standing capsule into
+        # the shelf underside before the runtime can begin that transition.
+        for hold in (4, 8):
+            points[hold][0] = points[hold + 1][0] - 210
+    return points
 
 
 def contract(origin):

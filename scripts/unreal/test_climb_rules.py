@@ -29,6 +29,11 @@ class ClimbTests(unittest.TestCase):
         self.assertEqual(len(corner["points_cm"]) - 1, 14)
         self.assertEqual(len(extrusion["points_cm"]) - 1, 8)
         self.assertEqual([corner["points_cm"][i][2] for i in corner["rest_holds"]], [550, 1100])
+        for approach, rest in ((4, 5), (8, 9)):
+            # Shelf lip extends 130 cm; capsule radius34 plus a clear margin
+            # must fit before raising outside the shelf, then moving inward.
+            self.assertEqual(corner["points_cm"][rest][0] - corner["points_cm"][approach][0], 210)
+            self.assertGreater(210 - 130, 34)
         self.assertEqual(extrusion["rest_holds"], [])
         self.assertTrue(extrusion["exposed"])
         self.assertFalse(corner["exposed"])
@@ -62,6 +67,8 @@ class ClimbTests(unittest.TestCase):
             self.rejected(lambda c: c["space"]["beats"][2]["climb_routes"][name].update(step_ms=1))
         self.rejected(lambda c: c["space"]["beats"][2]["climb_routes"]["corner"].update(rest_holds=[4, 9]))
         self.rejected(lambda c: c["space"]["beats"][2]["climb_routes"]["corner"]["points_cm"][5].__setitem__(2, 549))
+        self.rejected(lambda c: c["space"]["beats"][2]["climb_routes"]["corner"]["points_cm"][4].__setitem__(0, 184))
+        self.rejected(lambda c: c["space"]["beats"][2]["climb_routes"]["corner"]["points_cm"][8].__setitem__(0, 340))
         self.rejected(lambda c: c["space"]["beats"][2]["climb_routes"]["extrusion"].update(rest_holds=[3]))
         self.rejected(lambda c: c["space"]["beats"][2]["climb_routes"]["extrusion"].update(exposed=False))
 
