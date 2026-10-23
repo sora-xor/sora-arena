@@ -117,6 +117,10 @@ public:
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
     ASoraCampaignLift* CampaignLift() const;
+    FVector RidgeAnchorFloor(int Index) const;
+    int32 ReachRidgeCable(const ASoraPlayerCharacter& Hero) const;
+    bool WindLee(const ASoraPlayerCharacter& Hero) const;
+    bool WindShelteredPoint(const FVector& Point) const;
     bool SupplyFloor(const FString& Id,FVector& Out) const;
     bool CanReachSupply(const FString& Id,const ASoraPlayerCharacter& Hero) const;
     bool CanReachWoodPoi(int32 Index,const ASoraPlayerCharacter& Hero) const;
@@ -169,6 +173,9 @@ private:
     TArray<FVector> WoodFloors;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> WoodTargets;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> WoodClapper;
+    void BuildWindSpace(const FSoraBeat& Beat);
+    FVector2D RidgeOrigin=FVector2D::ZeroVector;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> RidgeAnchors;
     void BuildSpire(const FSoraBeat& Beat);
     void StageSupply(const FSoraBeat& Beat);
     void StageGalleryPois(const FSoraChapter& Chapter,const FSoraBeat& Beat);

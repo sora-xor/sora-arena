@@ -1,4 +1,5 @@
 #include "SoraCampaignDirector.h"
+#include "SoraRidgeRules.h"
 #include "SoraWoodRules.h"
 #include "Game/SoraCampaignReach.h"
 #include "Combat/SoraBossCatalog.h"
@@ -297,6 +298,7 @@ bool USoraCampaignDirector::LoadSave()
 }
 void USoraCampaignDirector::ResetRound()
 {
+    ResetWind();
     ASoraGameMode& M=Mode();
     ASoraWorldBuilder* WorldBuilder=M.Arena();
     const bool bCampaign=M.bCampaign;
@@ -430,6 +432,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
         Chapter.Beats[BeatIndex].Task.Maai.Count==0&&Beat.Task.Maai.Count==0;
     if(Index!=0||bResumed) bChapterOpening=false;
     EndRecoveryClimb();
+    ResetWind();
     BeatIndex=Index; BeatPhase=Phase;
     Task=Beat.Task;
     static_assert(static_cast<int32>(SoraAccessibility::EDifficulty::Count)==3);
@@ -714,6 +717,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     SoraBeatRules::Tick(TaskState,Task,Step);
     TickArchery(DeltaMs);
     TickMaai(DeltaMs);
+    TickWind(DeltaMs);
     if(ActiveBeatData()!=&Beat) return;
     // Trigger volumes the hero walks or rides into raise their events: a
     // dialogue waiting on one starts, and the waves it names come.
@@ -858,7 +862,7 @@ void USoraCampaignDirector::Progressed(int32 PermilleBefore)
     }
     QueueWaves(SoraBeatRules::ReleaseWaves(TaskState,Task));
     SpawnPending();
-    if(SoraBeatRules::TaskComplete(TaskState,Task)&&LiftReadyToComplete()&&SpireReadyToComplete()) CompleteActiveBeat();
+    if(SoraBeatRules::TaskComplete(TaskState,Task)&&LiftReadyToComplete()&&SpireReadyToComplete()&&RidgeReadyToComplete()) CompleteActiveBeat();
 }
 void USoraCampaignDirector::QueueWaves(unsigned Waves)
 {
@@ -949,6 +953,7 @@ ASoraEnemy* USoraCampaignDirector::SpawnWaveOpponent(FName Type,bool bSparring,i
     if(bSparring) return SpawnPrototype(*World,SpawnLocation(Slot),true,Slot);
     FSoraEnemyTuning Tuning;
     Tuning.bInvulnerable=bInvulnerable;
+    if(const auto* Space=ActiveSpace();Space&&Space->Wind.Ridge()) Tuning.NetRootMs=SoraRidgeRules::NetRootMs;
     return ASoraEnemy::SpawnArchetype(*World,Type,Slot,SpawnLocation(Slot),FRotator(0,180,0),nullptr,&Tuning);
 }
 ASoraEnemy* USoraCampaignDirector::SpawnStealthGuard(const FSoraGuard& Guard,int32 GuardIndex,int32 Slot)
@@ -1112,6 +1117,7 @@ bool USoraCampaignDirector::AwaitingCapture() const
 }
 void USoraCampaignDirector::ClearEncounter()
 {
+    ResetWind();
     CloseStealthZone();
     if(USoraFieldcraft* Fieldcraft=USoraFieldcraft::Get(this)) Fieldcraft->Clear();
     ClearOpponents();
@@ -1632,6 +1638,7 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
     if(!M.bCampaign) { ArenaInteract(Player); return; }
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||M.bChapterComplete) return;
+    if(InteractWind(Player)) return;
     if(InteractEpilogue(Player)) return;
     if(InteractRecovery(Player)) return;
     if(InteractCarryGate(Player)) return;

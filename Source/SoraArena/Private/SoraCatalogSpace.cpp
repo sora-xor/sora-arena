@@ -682,7 +682,7 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpaceVector(O->TryGetField(TEXT("rect")), 4, Rect) || Rect[0] >= Rect[2] || Rect[1] >= Rect[3] ||
             !Int(*O, TEXT("wall_cm"), Wall) || Wall <= 0 || !SpacePose(*O, TEXT("entry"), Zone.Entry, Zone.EntryYaw) ||
             !SpaceBoxes(Rows(*O, TEXT("walls")), Zone.Walls) ||
-            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch01_"))&&Zone.Place==TEXT("pl_issoseki_wood")?0:
+            Zone.Walls.Num() != (C.Id.StartsWith(TEXT("ch07_"))&&(Zone.Place==TEXT("pl_hull_ridge")||Zone.Place==TEXT("pl_hangar"))?0:C.Id.StartsWith(TEXT("ch01_"))&&Zone.Place==TEXT("pl_issoseki_wood")?0:
                 C.Id.StartsWith(TEXT("ch01_"))&&(Zone.Place==TEXT("pl_matoba")||Zone.Place==TEXT("pl_dojo_smithy"))?5:4) ||
             !SpaceBoxes(Rows(*O, TEXT("cover")), Zone.Cover) || !SpacePoints(Rows(*O, TEXT("route")), Zone.Route) ||
             (Form == TEXT("route")) != (Zone.Route.Num() >= 2) || (Zone.Route.Num() == 1))
@@ -695,7 +695,8 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         }
         const bool Lower=C.Id.StartsWith(TEXT("ch08_"))&&Zone.Place==TEXT("pl_ledger_spire");
         const bool Upper=C.Id.StartsWith(TEXT("ch08_"))&&Zone.Place==TEXT("pl_ledger_engine");
-        if(Zone.bHeightBounds!=(Lower||Upper)||(Lower&&(Zone.MinZ!=-500||Zone.MaxZ!=15800))||
+        const bool Ridge=C.Id.StartsWith(TEXT("ch07_"))&&Zone.Place==TEXT("pl_hull_ridge");
+        if(Zone.bHeightBounds!=(Lower||Upper||Ridge)||(Ridge&&(Zone.MinZ!=-2000||Zone.MaxZ!=2500))||(Lower&&(Zone.MinZ!=-500||Zone.MaxZ!=15800))||
             (Upper&&(Zone.MinZ!=15800||Zone.MaxZ!=20000))) return Bad(Zone.Id+TEXT(" authored vertical place"));
         Zone.Style = FName(*Style); Zone.Form = FName(*Form); Zone.WallHeight = static_cast<float>(Wall);
         Zone.Rect = FBox2D(FVector2D(Rect[0], Rect[1]), FVector2D(Rect[2], Rect[3]));
@@ -736,6 +737,40 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
             !SpacePoints(Rows(*O, TEXT("stations")), B.Stations) || !SpacePoints(Rows(*O, TEXT("spawns")), B.Spawns) ||
             !Exit || !SpaceVolume(*Exit, B.Exit, false) || !Kit || !PatrolRows || !VolumeRows || !StationRows)
             return Bad(FString::Printf(TEXT("beat %s lacks a required field"), *Beat.Id));
+        const auto WindField=O->TryGetField(TEXT("wind"));
+        const bool RidgeBeat=Beat.Id==TEXT("ch07.b10");
+        const bool WindBeat=RidgeBeat||Beat.Id==TEXT("ch07.b08")||Beat.Id==TEXT("ch07.b09");
+        if(WindField.IsValid()!=WindBeat) return Bad(Beat.Id+TEXT(" wind presence"));
+        if(WindBeat)
+        {
+            const auto Wind=WindField->Type==EJson::Object?WindField->AsObject():nullptr;
+            FString Kind;
+            const auto Exact=[&](const TCHAR* Key,int Expected)
+            { int Value=0; const auto V=Wind?Wind->TryGetField(Key):nullptr; return V&&V->Type==EJson::Number&&Int(*Wind,Key,Value)&&Value==Expected; };
+            const auto Vector=[&](const TCHAR* Key,int Count,double* Out)
+            {
+                const auto V=Wind?Wind->TryGetField(Key):nullptr;
+                if(!V||V->Type!=EJson::Array) return false;
+                for(const auto& Number:V->AsArray()) if(!Number||Number->Type!=EJson::Number) return false;
+                return SpaceVector(V,Count,Out);
+            };
+            double Schedule[5]={},Push[4]={},Origin[2]={};
+            if(!Wind||!Wind->TryGetField(TEXT("kind"))||Wind->TryGetField(TEXT("kind"))->Type!=EJson::String||!Str(*Wind,TEXT("kind"),Kind)||Kind!=(RidgeBeat?TEXT("ridge"):TEXT("hangar"))||
+                !Vector(TEXT("origin"),2,Origin)||
+                !Exact(TEXT("base_mps"),8)||!Exact(TEXT("gust_mps"),18)||!Exact(TEXT("warning_ms"),1000)||
+                !Exact(TEXT("hold_ms"),2500)||!Exact(TEXT("acceleration_cm_s2_per_mps"),35)||
+                !Exact(TEXT("fall_cost"),25)||!Exact(TEXT("recoveries"),3)||
+                !Vector(TEXT("gust_schedule_ms"),5,Schedule)||
+                !Vector(TEXT("push_cm_s"),4,Push)) return Bad(Beat.Id+TEXT(" wind contract"));
+            const int Expected[5]={11000,9000,14000,10000,12000};
+            for(int N=0;N<5;++N) if(Schedule[N]!=Expected[N]) return Bad(Beat.Id+TEXT(" gust schedule"));
+            if(Push[0]!=120||Push[1]!=60||Push[2]!=0||Push[3]!=0) return Bad(Beat.Id+TEXT(" wind push"));
+            B.Wind.Origin=FVector2D(Origin[0],Origin[1]);
+            const auto& Zone=S.Zones[B.Zone];
+            if(Zone.Rect.GetSize()!=FVector2D(RidgeBeat?18000:8000,RidgeBeat?2400:4500)||
+                B.Wind.Origin!=FVector2D(Zone.Rect.Min.X,RidgeBeat?0:Zone.Rect.Min.Y)) return Bad(Beat.Id+TEXT(" wind space dimensions"));
+            B.Wind.Kind=FName(*Kind);
+        }
         const bool SummitBeat=Beat.Id==TEXT("ch08.b13")||Beat.Id==TEXT("ch08.b14")||Beat.Id==TEXT("ch08.b15");
         const auto Summit=Child(*O,TEXT("summit"));
         if(Summit.IsValid()!=SummitBeat) return Bad(Beat.Id+TEXT(" physical summit"));

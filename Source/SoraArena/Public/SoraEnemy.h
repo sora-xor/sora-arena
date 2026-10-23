@@ -20,6 +20,8 @@ struct FSoraEnemyTuning
     FName Variant;
     // Zero keeps the archetype's (or variant's) value.
     int32 Health = 0;
+    // Zero keeps the archetype's hold; chapter 07's ridge specifies 1.2 s.
+    int32 NetRootMs = 0;
     int32 SightCm = 0;
     int32 ViewDegrees = 0;
     // Negative keeps the archetype's value; a zero hearing is deaf.
@@ -100,6 +102,7 @@ public:
     // Attacks. TryAttack commits the first of the archetype's attacks whose
     // range holds Distance and whose cooldown has passed, when none is under
     // way; the pawn's own tick then winds it up, strikes and recovers.
+    void DisruptWindAim(int32 Milliseconds);
     bool TryAttack(ASoraCharacterBase& Target, float Distance);
     bool IsAttacking() const { return Phase != EPhase::Idle; }
     bool IsWindingUp() const { return Phase == EPhase::Windup; }
@@ -238,6 +241,7 @@ private:
     FVector LockedDirection = FVector::ForwardVector;
     FVector LockedPoint = FVector::ZeroVector;
     float NextAttackAt = 0.f;
+    int32 NetRootOverrideMs = 0;
     TArray<float> AttackReadyAt;
     int32 RangedShots = 0;
     int32 ShotsSinceRelocation = 0;

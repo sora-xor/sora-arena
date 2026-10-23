@@ -537,8 +537,16 @@ struct FSoraSummitSpace
     TArray<FVector> Stairs;
     bool Enabled() const { return Stairs.Num()==6; }
 };
+struct FSoraWindSpace
+{
+    FName Kind;
+    FVector2D Origin=FVector2D::ZeroVector;
+    bool Enabled() const { return !Kind.IsNone(); }
+    bool Ridge() const { return Kind==TEXT("ridge"); }
+};
 struct FSoraBeatSpace
 {
+    FSoraWindSpace Wind;
     FSoraSummitSpace Summit;
     FSoraSpireSpace Spire;
     int32 HeightCm=0;
