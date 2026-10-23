@@ -19,14 +19,21 @@ Ultra development evidence, with the documented build warnings/retry retained.
 
 The newer `770a618` opaque Title and sourced Toshiya reader pass a fresh Title,
 five directed editor tests and all 18 original Codex frames across 720p/1080p.
-CI `39886033451` authenticates 72 source gates in five jobs for that exact tree.
+Later CI `39905369237` authenticates 73 source gates in five jobs at `783a3eb`;
+the tested merge has the identical tree. It predates the latest importer work.
 These UI changes have not been recooked. The earlier bow HUD obstruction is
 resolved at `92011bb`; the missing-glyph diagnosis was retracted.
 
-Actual production-dojo Nanite diagnostic `6e0e99c` fails its SM6 draw gate:
-all 12 DojoKit assets lack Nanite data. Separate SM5 originals pass their limited
-conventional-render scope. Importer enablement is under real-engine review;
-it does not produce the requested unique sculpted beams or establish M1.
+The retained production-dojo baseline `6e0e99c` fails its SM6 draw gate because
+all 12 DojoKit assets lack Nanite data. At `a8ecee6`, a separate hash-verified
+Nanite source preserves the ordinary fallback builder and exact geometry
+checks. All 12 assets pass import, fresh-process reload and repeat import, with
+21,984 Nanite input triangles and identical repeated audits. The actual SM6
+draw gate passes; all six originals show dojo wall/floor/ceiling coverage.
+The SM5 runtime capture also passes, but the entry floor and some props are
+darker than the old SM5 baseline. Both original pairs were reviewed; appearance
+parity remains unresolved. This is uncooked M2 Ultra evidence, with cooked
+fallback, M1, performance and requested unique sculpted beams still open.
 
 Signed native `c99ee46e` completes one actual two-player/two-tick preparation
 proof, separate rebuilt-adapter verification, 27 public-input rejections, two

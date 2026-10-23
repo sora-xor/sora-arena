@@ -288,8 +288,8 @@ This probe inherited `[0.0]` screen sizes from the preceding failed asset:
 it proves the one-mesh geometry mechanism, not preservation of the authored
 screen threshold. The complete candidate run must restore original generated
 assets, freshly reimport ordinary source geometry, and audit that baseline.
-Neither the full-kit candidate nor its repeated import has passed in-engine
-as part of this source revision.
+At the source-only `d04f246` checkpoint, neither the full-kit candidate nor its
+repeated import had passed in-engine. Subsequent root execution is recorded below.
 
 Only the required Nanite usage permutation is added to each existing base
 material using the pinned engine's `set_base_material_usage`; material graphs,
@@ -313,6 +313,45 @@ source files, false API success/source readbacks, repeated source removal,
 and HiRes API side effects against the pre-import baseline. They use explicit fake
 editor objects; they do not execute the importer, build an asset or prove
 runtime behavior.
+
+## Root execution at a8ecee6
+
+On October 23, root restored and SHA256-verified all 48 original generated
+files (490,372,208 bytes), then executed the importer in the isolated integration
+worktree. All 12 module audits passed, with 21,984 built Nanite input triangles.
+A separate editor process loaded the saved assets and matched geometry-report
+hashes, metadata, material behavior, settings, source identity and Nanite counts.
+A second complete import passed too; its twelve audit objects exactly match
+the first run. Source and Config stayed unchanged. The current twelve modules
+each have one ordinary LOD with a fresh-import screen threshold of zero; these
+results preserve that fresh conventional baseline through HiRes import. They
+do not establish preservation across reimport of older saved thresholds. The
+earlier one-panel probe has separate evidence for retaining two. Editor CPU-access warnings remain recorded;
+the CPU flag was not enabled. Startup automation self-test diagnostics are also
+retained, so these are not claimed as logs without warnings or errors.
+
+Actual Metal captures at the same source subsequently passed:
+
+- `Saved/Capture/20261023T054521Z-sm6-60895`: METAL_SM6 on Apple M2 Ultra,
+  1280×720. Root inspected all six originals. Walls, floors and ceiling have
+  broad green Mask coverage and corresponding colored triangle geometry;
+  the hero and other conventional objects remain red/black in those modes.
+  The conservative central-region check found 319,293 green candidates at
+  entry and 331,776 at ceiling, with 299,177 and 325,846 corresponding changed
+  triangle pixels. These are pixel diagnostics, not GPU triangle counters.
+  All 24 recorded components across the 12 assets have Nanite and fallback data.
+- `Saved/Capture/20261023T054701Z-sm5-62942`: METAL_SM5 on the same M2 Ultra,
+  two Lit originals. Runtime, restoration and archive checks pass. Root also
+  viewed the old `20261023T013947Z-sm5-44044` originals: the candidate entry
+  floor and some props are visibly darker, while the ceiling is comparable.
+  Camera, recorded cvars and shader platform match; the cause remains open.
+  This is not an appearance-parity pass or M1 hardware evidence.
+
+The root reviews bind original PNGs, reports, runtime logs and imported mesh
+bytes. Existing art remains unadmitted. Cooked fallback, performance, real M1
+and Windows results, final material appearance and unique detailed beams are
+still required. Earlier failed imports and the failed baseline draw remain
+available beside the successful receipts.
 
 No generated asset is changed by this source-only revision. The root execution
 lane must review and import it across the complete kit, preserve the original

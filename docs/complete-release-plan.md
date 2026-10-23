@@ -38,8 +38,8 @@ October 23 sections below. The release remains incomplete.
   original-frame review at 720p and 1080p, resolving the historical target
   obstruction below. An initial missing-glyph diagnosis was retracted after
   inspecting intact original pixels; no font repair was made.
-- CI run `39886033451` authenticates all 72 source gates across five jobs at
-  `770a618`; merge `3ebb5fe4` has the exact same source tree. Downloaded artifact
+- CI run `39905369237` authenticates all 73 source gates across five jobs at
+  `783a3eb`; merge `183c9abc` has the exact same source tree. Downloaded artifact
   IDs, sizes, hashes and raw job logs agree. Five explicit Rust research tests
   and six private-asset tests remain outside this source suite. Later importer
   revisions require separate qualification.
@@ -49,8 +49,25 @@ October 23 sections below. The release remains incomplete.
   green entry coverage belongs to cargo props. The separate SM5 conventional
   capture passes its limited diagnostic. Root inspected all six SM6 originals
   and both SM5 originals. The earlier compile, cached-bounds and pixel-gate
-  failures are retained. A separate importer fix is in engine qualification;
-  enablement alone does not satisfy unique-beam geometry or photoreal art.
+  failures are retained.
+- Importer `a8ecee6` now builds Nanite from the same hash-verified FBX as a
+  separate source, keeping ordinary LODs on their original builder. All 12
+  modules pass actual import, fresh-process reload and repeat import; the
+  repeated audit objects match exactly. They contain 21,984 Nanite input
+  triangles. Exact oriented conventional geometry, UV0, normals, tangents,
+  materials, collision metadata and fresh-import screen thresholds are
+  preserved. UV1+ values and vertex colors are outside this readback. Earlier
+  API and shoji geometry failures remain recorded; the geometry check was not
+  weakened. All current modules have one LOD with fresh-import threshold zero;
+  this does not claim preservation of the previous saved asset's threshold.
+- The actual M2 Ultra SM6 draw diagnostic at `a8ecee6` passes. Root inspected
+  six originals: broad Mask and Triangles coverage now belongs to the dojo's
+  walls, floor and ceiling. All 24 registered components have Nanite data and
+  conventional fallback data. The separate SM5 runtime/capture also passes,
+  but its entry floor and some props look darker than the previous SM5
+  baseline. Root inspected both before/after pairs; the appearance difference
+  remains unresolved. Neither this renderer result nor the 22 importer host
+  tests establish photoreal art, unique beams, cooked fallback, M1 or performance.
 - Signed native `c99ee46e` completed one actual preparation proof, separate
   verification with a rebuilt adapter, 27 public-input mutation rejections,
   two corrupt/truncated-proof rejections and eight actual prover Constraint
@@ -67,7 +84,12 @@ October 23 sections below. The release remains incomplete.
   superseded; no production geometry was replaced.
 
 Source-only chapter-seven ridge/wind and helm work and chapter-six flood work
-are under review. Their engine execution, final geometry/art/audio and normal
+are under review. Ridge follow-up `7d72c94` fixes terminal falls destroying the
+pawn before retry and five spawns inside a shuttle proxy. Helm `3a1fef7` fixes
+its visible hold boundary and reserves the player's hands during wheel work.
+Flood `d8d4a01` fixes the bank ramp and gate opening; its companion ascent stall
+has a separate `f58528c` correction using actual capsule support and walking.
+These source reviews do not establish engine behavior. Their engine execution, final geometry/art/audio and normal
 pacing remain open. Claude's last confirmed weekly limit remains October 24
 at 22:00 JST, with the existing art requests queued. Its uncommitted timber and
 curtain work is untouched and unadmitted. Final art, remaining authored
@@ -75,8 +97,10 @@ mechanics, ordinary-control acceptance, new packages, Windows and actual M1
 performance, full native execution and settlement remain required.
 
 Exact local archives include `Saved/Qualification/2026-10-23/package-c655b6b/`,
-`ui-770a618-bound/`, `ci-770a618/`, `native-c99ee46e-terminal-review/`, and the
-source-bound original captures under `Saved/Capture/`.
+`ui-770a618-bound/`, `ci-783a3eb/`, `native-c99ee46e-terminal-review/`,
+`dojo-nanite-import-a8ecee6/`, `dojo-nanite-import-a8ecee6-repeat/`, and the
+source-bound original captures under `Saved/Capture/`. The new renderer archives
+are `20261023T054521Z-sm6-60895` and `20261023T054701Z-sm5-62942`.
 
 ## October 23 bow, wood and source qualification (historical)
 
