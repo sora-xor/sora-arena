@@ -15,6 +15,9 @@ import zlib
 BOW_SPEC = importlib.util.spec_from_file_location("bow_capture_validation", Path(__file__).with_name("bow_capture_validation.py"))
 bow_capture_validation = importlib.util.module_from_spec(BOW_SPEC)
 BOW_SPEC.loader.exec_module(bow_capture_validation)
+CODEX_SPEC = importlib.util.spec_from_file_location("codex_capture_validation", Path(__file__).with_name("codex_capture_validation.py"))
+codex_capture_validation = importlib.util.module_from_spec(CODEX_SPEC)
+CODEX_SPEC.loader.exec_module(codex_capture_validation)
 
 
 def problems(report: dict, log: str, status: int, shader_model: str) -> list[str]:
@@ -125,6 +128,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         "SORA_REGISTRY_FIXTURE_FRAME": ("SoraCapture.RegistryFixture.", "completed-save registry UI fixture; not playthrough evidence"),
         "SORA_WEAPON_HUD_FIXTURE_FRAME": ("SoraCapture.WeaponHUDFixture.", "prepared gameplay UI fixture; not playthrough evidence"),
         "SORA_BOW_AIM_FRAME": ("SoraCapture.BowAim.", "live mapped bow aim from prepared checkpoint/view; not playthrough or art acceptance"),
+        "SORA_CODEX_FRAME": ("SoraCapture.Codex.", codex_capture_validation.SCOPE),
     }
     # Failed automation replays captured log events through
     # LogAutomationController, appending " [log]". Those are not new frame
@@ -139,6 +143,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
     screenshot_root = (project / "Saved/Screenshots").resolve()
     frames = []
     bow_sequences = {}
+    codex_sequences = {}
     seen = set()
     for marker, name in names:
         path = (engine_base / name.strip()).resolve()
@@ -173,7 +178,27 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
                 stream.write(metadata_bytes)
             frame.update(observations=str(metadata_target.relative_to(output)),
                          observations_sha256=hashlib.sha256(metadata_bytes).hexdigest(), reticle_pixels=pixels)
+        if marker == "SORA_CODEX_FRAME":
+            codex_sequences.setdefault(path.parent, []).append((path, target, frame))
         frames.append(frame)
+    if codex_sequences:
+        if len(codex_sequences) != 1:
+            raise ValueError("Codex capture requires one eight-frame sequence, not multiple runs")
+        for folder, sequence in codex_sequences.items():
+            sidecar = (folder / "capture.json").resolve()
+            if sidecar.parent != folder:
+                raise ValueError("Codex source metadata escapes its original frame folder")
+            if sidecar.stat().st_mtime_ns < max(start_ns, *(path.stat().st_mtime_ns for path, _, _ in sequence)):
+                raise ValueError("stale Codex source capture metadata")
+            metadata_bytes = sidecar.read_bytes()
+            metadata = json.loads(metadata_bytes)
+            codex_capture_validation.verify_sequence(metadata, [path.name for path, _, _ in sequence], width, height)
+            metadata_target = sequence[0][1].parent / "capture.json"
+            with metadata_target.open("xb") as stream:
+                stream.write(metadata_bytes)
+            for path, _, frame in sequence:
+                frame.update(observations=str(metadata_target.relative_to(output)), observations_source=str(sidecar),
+                             observations_sha256=hashlib.sha256(metadata_bytes).hexdigest(), codex_phase=path.stem)
     for sequence in bow_sequences.values():
         bow_capture_validation.verify_sequence(sequence)
     return frames

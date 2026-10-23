@@ -69,6 +69,13 @@ reader at Standard and Extra large top/end, Japanese-only, and Toshiya. It
 checks actual arranged positive scroll extent, final offset, the content tail
 inside the reader clip, and Back inside the viewport. The original PNGs and
 `capture.json` are under `Saved/Screenshots/SoraCodex/<resolution>/<run-id>/`.
+Each successfully written original emits `LogTemp: Display: SORA_CODEX_FRAME`.
+The capture wrapper requires all eight unique phases in order and archives the
+unchanged PNGs plus the original source `capture.json`. The metadata must be
+fresh (including after the PNGs), passed, schema/viewport/count/filename matched,
+and explicitly scoped as a prepared discovery ledger. Frame IDs, language,
+selected entry and actual end-scroll observations are checked. Missing,
+duplicate, stale, failed or inconsistent evidence cannot qualify an archive.
 Prepared discovery ledgers are explicitly labeled; these images cannot prove
 all records were earned. The fixture preserves original campaign, control and
 settings bytes/existence, restores current subtitle preferences, and releases
