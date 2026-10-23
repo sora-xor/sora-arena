@@ -160,11 +160,20 @@ bool Lifecycle(FAutomationTestBase& Test)
     if(!FreshFear(W,*Drone,1.f/60.f)||!W.World->InjectKey(EKeys::D,IE_Pressed)||!Tick(W,12)||!W.Press(EKeys::Escape)) return false;
     const int32 Tug=Horse->LeadTugMs(),Fear=Pack->LeadFearMs();
     const FVector At=Horse->GetActorLocation(),PackAt=Pack->GetActorLocation();
-    const float Yaw=Horse->GetActorRotation().Yaw;
+    // FRotator uses double precision. Narrowing this baseline to float makes
+    // an exact comparison fail even when pause preserves the original yaw.
+    const auto Yaw=Horse->GetActorRotation().Yaw;
     if(!Tick(W,240)||!W.World->InjectKeyPastFrontEnd(EKeys::D,IE_Released)) return false;
-    Test.TestTrue(TEXT("The real pause menu freezes both clocks and both horses"),W.Mode()->bMenu&&
-        Horse->LeadTugMs()==Tug&&Pack->LeadFearMs()==Fear&&Horse->GetActorLocation()==At&&
-        Pack->GetActorLocation()==PackAt&&Horse->GetActorRotation().Yaw==Yaw);
+    Test.AddInfo(FString::Printf(TEXT("Bunta pause menu=%d tug=%d/%d fear=%d/%d horse_delta=%.17g pack_delta=%.17g yaw_before=%.17g yaw_after=%.17g"),
+        W.Mode()->bMenu,Tug,Horse->LeadTugMs(),Fear,Pack->LeadFearMs(),
+        FVector::Dist(At,Horse->GetActorLocation()),FVector::Dist(PackAt,Pack->GetActorLocation()),
+        double(Yaw),double(Horse->GetActorRotation().Yaw)));
+    Test.TestTrue(TEXT("The real pause menu remains open"),W.Mode()->bMenu);
+    Test.TestEqual(TEXT("Pause freezes every remaining tug millisecond"),Horse->LeadTugMs(),Tug);
+    Test.TestEqual(TEXT("Pause freezes every remaining fear millisecond"),Pack->LeadFearMs(),Fear);
+    Test.TestTrue(TEXT("Pause exactly preserves Kurimaru's position"),Horse->GetActorLocation()==At);
+    Test.TestTrue(TEXT("Pause exactly preserves Bunta's position"),Pack->GetActorLocation()==PackAt);
+    Test.TestTrue(TEXT("Pause exactly preserves Kurimaru's full-precision yaw"),Horse->GetActorRotation().Yaw==Yaw);
     if(!W.Press(EKeys::Escape)||!W.Press(EKeys::E)) return false;
     Test.TestTrue(TEXT("Ordinary dismount clears the steering tug without dropping cargo"),
         !C->IsMounted()&&Horse->LeadTugMs()==0&&Pack->IsLed()&&C->TaskProgress().Done==0);
