@@ -16,6 +16,11 @@ frees the hands for ordinary shooting. Taking a new hold, starting the route
 or entering the crawl cancels held equipment actions without releasing a shot.
 Letting go uses gravity and actual landing height: a drop over 4 m costs
 30 HP and over 8 m is lethal. Landing on a lower shelf counts only that drop.
+Releasing onto a supporting shelf is safe. A later walk off that shelf starts
+a new fall; the runtime observes support, airborne feet/apex and the actual
+landing throughout this climb space, including after reaching the parapet.
+Capsule-height changes do not change the measured foot height. Each landing
+ends its fall, pause freezes the sample state, and retry/teardown clears it.
 
 The sentry physically travels the connected parapet and projecting bay.
 The twenty-second clock pauses with play; each four-second watch begins only
@@ -86,6 +91,11 @@ movement from encounter balance. Hands and fall fixtures freeze threats to
 isolate those mechanisms. The existing `SoraArena.Fieldcraft.Climb` keeps the
 30 HP lower-drop regression. Aggregate playthrough now uses the same real
 climb and crawl helper; space checks use the dedicated support elevations.
+The lower-drop regression now walks to the route with ordinary controls,
+releases safely onto the real shelf, then walks off and measures the actual
+4–8 m fall before requiring exactly 30 HP once. `ClimbFalls` similarly verifies
+safe support at 11 m, pauses during a real walk-off fall, then requires an
+observed drop greater than 8 m, lethal landing, retry and fresh-load cleanup.
 
 This is a source checkpoint. No Unreal compilation or runtime pass, art
 approval, render, package, platform or performance result is claimed here.

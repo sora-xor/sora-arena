@@ -52,6 +52,28 @@ inline FPathPoint HoldPath(FPathPoint A,FPathPoint B,double T,EHoldPath Path)
 }
 inline bool AtSupport(bool Penetrating,double NormalZ,double ImpactNormalZ,double LateralError,double AboveTarget)
 { return !Penetrating&&NormalZ>=.99&&ImpactNormalZ>=.99&&LateralError<=.25&&AboveTarget>=0&&AboveTarget<=3; }
+// A supported release is safe, but does not exempt a subsequent walk-off.
+// Heights are actual feet, independent of standing/crouched capsule size.
+struct FFall { bool Initialized=false,Airborne=false;double LastFeetZ=0,PeakZ=0; };
+inline FFall FallAt(double FeetZ) { return {true,false,FeetZ,FeetZ}; }
+inline int SampleFall(FFall& Fall,double FeetZ,bool Climbing,bool Grounded,bool Falling)
+{
+    if(!Fall.Initialized) Fall=FallAt(FeetZ);
+    if(Climbing) { Fall=FallAt(FeetZ);return 0; }
+    if(Grounded)
+    {
+        const int Drop=Fall.Airborne?int(std::lround(std::fmax(0.,Fall.PeakZ-FeetZ))):0;
+        Fall=FallAt(FeetZ);return Drop;
+    }
+    if(Falling)
+    {
+        if(!Fall.Airborne) Fall.PeakZ=std::fmax(Fall.LastFeetZ,FeetZ);
+        else Fall.PeakZ=std::fmax(Fall.PeakZ,FeetZ);
+        Fall.Airborne=true;Fall.LastFeetZ=FeetZ;
+    }
+    else Fall=FallAt(FeetZ);
+    return 0;
+}
 // Implementation geometry/timing, not authored hold coordinates: the wall
 // uses two slope segments; art may curve the upper profile within this shell.
 inline double WallX(double Z)

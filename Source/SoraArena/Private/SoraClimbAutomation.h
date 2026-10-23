@@ -79,5 +79,43 @@ inline bool Exit(FSoraAutomationWorld& W,bool Pad=false)
 }
 inline bool Traverse(FSoraAutomationWorld& W,int32 Route=0,bool Pad=false)
 { return Begin(W,Route,Pad)&&Top(W)&&Approach(W)&&Exit(W,Pad); }
+struct FObservedFall
+{
+    double SupportFeet=0,PeakFeet=0,LandingFeet=0;
+    bool Airborne=false,PauseChecked=false,PauseStable=false;
+};
+inline bool WalkOff(FSoraAutomationWorld& W,FObservedFall& Observed,bool Pause=false)
+{
+    auto* Hero=W.Player();auto* Move=Hero->GetCharacterMovement();auto* C=USoraFieldcraft::Get(W.GetTestWorld());
+    const auto Feet=[&]() { return Hero->GetActorLocation().Z-Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(); };
+    if(!Move->IsMovingOnGround()) return Note(W,TEXT("Fall.support_admission"),false);
+    Observed.SupportFeet=Observed.PeakFeet=Feet();
+    Hero->GetController()->SetControlRotation(FRotator::ZeroRotator);Hero->FaceRotation(FRotator::ZeroRotator,0);
+    if(!W.InjectKey(EKeys::S,IE_Pressed)) return false;
+    int32 AirFrames=0,F=0;
+    for(;F<360&&!W.Mode()->bDefeated;++F)
+    {
+        if(!W.Tick(1)) return false;
+        Observed.PeakFeet=FMath::Max(Observed.PeakFeet,Feet());
+        if(Move->IsFalling()) { Observed.Airborne=true;++AirFrames; }
+        if(Pause&&AirFrames==10&&!Observed.PauseChecked)
+        {
+            if(!W.InjectKey(EKeys::S,IE_Released)||!W.PressKey(EKeys::Escape)||!W.Mode()->bMenu) return false;
+            const FVector At=Hero->GetActorLocation();const double Peak=C->ClimbFallPeak();const float Hp=Hero->Health;
+            if(!W.Tick(120)) return false;
+            Observed.PauseChecked=true;Observed.PauseStable=C->IsClimbFalling()&&C->ClimbFallPeak()==Peak&&
+                Hero->GetActorLocation().Equals(At,.01f)&&Hero->Health==Hp;
+            if(!W.PressKey(EKeys::Escape)||W.Mode()->bMenu) return false;
+            if(!W.InjectKey(EKeys::S,IE_Pressed)) return false;
+        }
+        if(Observed.Airborne&&Move->IsMovingOnGround()) break;
+    }
+    if(!W.InjectKey(EKeys::S,IE_Released)||!W.Tick(2)) return false;
+    Observed.LandingFeet=Feet();
+    UE_LOG(LogTemp,Display,TEXT("CLIMB_DIAGNOSTIC fall support_feet=%.4f peak_feet=%.4f landing_feet=%.4f actual_drop=%.4f airborne=%d pause_checked=%d pause_stable=%d health=%.3f"),
+        Observed.SupportFeet,Observed.PeakFeet,Observed.LandingFeet,Observed.PeakFeet-Observed.LandingFeet,
+        Observed.Airborne,Observed.PauseChecked,Observed.PauseStable,Hero->Health);
+    return Note(W,TEXT("Fall.walk_off_end"),Observed.Airborne&&(Move->IsMovingOnGround()||W.Mode()->bDefeated),FVector::ZeroVector,INDEX_NONE,F);
+}
 }
 #endif

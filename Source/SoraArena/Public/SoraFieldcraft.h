@@ -5,6 +5,7 @@
 #include "SoraCatalog.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraFloodRules.h"
+#include "SoraClimbRules.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "SoraFieldcraft.generated.h"
 class APointLight;
@@ -183,6 +184,8 @@ public:
     int32 ClimbRouteIndex() const { return ClimbRoute; }
     int32 ClimbHoldIndex() const { return Grip.Hold; }
     bool IsClimbResting() const;
+    bool IsClimbFalling() const { return ClimbSpace&&ClimbFall.Airborne; }
+    double ClimbFallPeak() const { return ClimbFall.PeakZ; }
     int32 ClimbClock() const { return ClimbClockMs; }
     bool ClimbSentryWatching() const;
     FVector ClimbSentryAim() const;
@@ -438,6 +441,7 @@ private:
     float FallFromZ = 0.f;
     TSet<int32> LedgesReached;
     const FSoraClimbSpace* ClimbSpace=nullptr;
+    SoraClimbRules::FFall ClimbFall;
     int32 ClimbRoute=INDEX_NONE, ClimbClockMs=0, ClimbStepTarget=INDEX_NONE;
     float ClimbStepAlpha=0.f;
     FVector ClimbStepStart=FVector::ZeroVector;
