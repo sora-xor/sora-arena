@@ -162,6 +162,12 @@ msgctxt "SoraArena.Campaign,FoundCollectible"
 msgid "見つけた：{Category}"
 msgstr "Found: {Category}"
 
+#. Key:	FoundryHands
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,FoundryHands"
+msgid "作業中は両手を使う。手を離せば武器を使える。"
+msgstr "Your hands are busy. Release the work before drawing a weapon."
+
 #. Key:	HiddenArms
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
 msgctxt "SoraArena.Campaign,HiddenArms"

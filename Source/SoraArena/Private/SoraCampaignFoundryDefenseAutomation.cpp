@@ -45,6 +45,18 @@ FKey Action(FBeatWorld& W,const TCHAR* Name)
     for(const FKey& K:W.Hero()->GetActionKeys(Name)) if(!K.IsGamepadKey()) return K;
     return FKey();
 }
+void RepairState(FBeatWorld& W,const TCHAR* Label,int Index=0)
+{
+    const auto* C=W.Campaign();const auto* H=W.Hero();const auto* K=H->GetEquipment();const auto& S=C->FoundryState();
+    const FVector Target=C->FoundryWorkPoint(Work::Repair,Index);FHitResult Hit;
+    const bool Blocked=W.World->GetTestWorld()->LineTraceSingleByChannel(Hit,H->GetEye()->GetComponentLocation(),
+        Target+FVector(0,0,35),ECC_Visibility,FCollisionQueryParams(SCENE_QUERY_STAT(FoundryRepairState),false,H));
+    W.Test.AddInfo(FString::Printf(TEXT("Foundry repair %s: elapsed=%d hp=%d work=%d index=%d held_ms=%d used=%u input=%d can_play=%d dialogue=%d key=%d grounded=%d hidden=%d weapon=%d ammo=%d guard=%d reload=%d strike=%d step=%d stagger=%d distance=%.3f hero=%s blocked=%d actor=%s component=%s"),
+        Label,C->TaskProgress().ElapsedMs,C->TaskProgress().TargetHp[0],int(S.Work),S.Index,S.HeldMs,S.Used,int(W.Mode()->InputState()),H->CanPlay(),C->IsDialogueBlocking(),
+        H->IsActionHeld(TEXT("Interact")),H->GetCharacterMovement()->IsMovingOnGround(),H->GetViewmodel()->bHiddenInGame,H->WeaponId,K->Ammo,
+        K->IsGuardHeld(),K->bReloading,K->IsCommittedStrike(),K->IsStepping(),K->IsStaggered(),FVector::Dist2D(H->GetActorLocation(),Target),
+        *H->GetActorLocation().ToString(),Blocked,*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent())));
+}
 bool WalkTo(FBeatWorld& W,const FVector& At,FName Keep=NAME_None)
 {
     auto* Hero=W.Hero();auto* Nav=USoraNavigation::Get(Hero);TArray<FVector> Path;
@@ -58,7 +70,17 @@ bool WalkTo(FBeatWorld& W,const FVector& At,FName Keep=NAME_None)
             Hero->GetController()->SetControlRotation(Facing);Hero->FaceRotation(Facing,0);
             if(!W.World->InjectKey(EKeys::W,IE_Pressed)||!Tick(W,1,Keep)) return false;
         }
-        if(FVector::Dist2D(Hero->GetActorLocation(),Point)>40) { W.World->InjectKey(EKeys::W,IE_Released);return false; }
+        if(FVector::Dist2D(Hero->GetActorLocation(),Point)>40)
+        {
+            FHitResult Hit;const auto* Capsule=Hero->GetCapsuleComponent();
+            const FVector Start=Hero->GetActorLocation(),End(Point.X,Point.Y,Start.Z);
+            const bool Blocked=W.World->GetTestWorld()->SweepSingleByChannel(Hit,Start,End,FQuat::Identity,ECC_Pawn,
+                FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Capsule->GetScaledCapsuleHalfHeight()),
+                FCollisionQueryParams(SCENE_QUERY_STAT(FoundryWalkBlocked),false,Hero));
+            W.Test.AddInfo(FString::Printf(TEXT("Foundry walk stalled: hero=%s waypoint=%s blocked=%d actor=%s component=%s impact=%s"),
+                *Start.ToString(),*Point.ToString(),Blocked,*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()),*Hit.ImpactPoint.ToString()));
+            W.World->InjectKey(EKeys::W,IE_Released);return false;
+        }
     }
     return W.World->InjectKey(EKeys::W,IE_Released)&&Tick(W,4,Keep);
 }
@@ -66,6 +88,21 @@ bool Walk(FBeatWorld& W,Work Kind,int Index)
 {
     // Walk the real capsule to an exposed approach; never edit location or task progress.
     FVector At=W.Campaign()->FoundryWorkPoint(Kind,Index)+FVector(-140,0,0); At.Z=0;
+    if(Kind==Work::Repair)
+    {
+        // The nav path can cross the 50 cm tub even though the real capsule
+        // cannot step onto it. Walk through the open aisles around the kit;
+        // retain collision and the same final approach/acceptance distances.
+        const FVector Furnace=W.Campaign()->FoundryFurnace()->GetActorLocation();
+        const float South=Furnace.Y-620,North=Furnace.Y+600,East=Furnace.X+600;
+        if(!WalkTo(W,FVector(W.Hero()->GetActorLocation().X,South,0))) return false;
+        if(Index==2)
+        {
+            if(!WalkTo(W,FVector(East,South,0))||!WalkTo(W,FVector(East,North,0))||
+                !WalkTo(W,FVector(At.X,North,0))) return false;
+        }
+        else if(!WalkTo(W,FVector(At.X,South,0))) return false;
+    }
     const bool Reached=WalkTo(W,At,Kind==Work::Net?FName(TEXT("drone")):NAME_None);
     if(!Reached) W.Test.AddError(FString::Printf(TEXT("Foundry approach failed: kind=%d index=%d hero=%s goal=%s"),
         int(Kind),Index,*W.Hero()->GetActorLocation().ToString(),*At.ToString()));
@@ -100,7 +137,9 @@ bool FSoraFoundryRepairTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("A full furnace refuses consumption"),C->FoundryState().Used,0u);
     SoraFoundryTest::FBeatWorld::Hurt(*C->FoundryFurnace(),600);
     if(!TestEqual(TEXT("Ordinary actor damage reaches the defended furnace"),C->TaskProgress().TargetHp[0],900)) return false;
+    SoraFoundryTest::RepairState(W,TEXT("before_partial"));
     if(!W.World->InjectKey(Use,IE_Pressed)||!SoraFoundryTest::Tick(W,90)) return false;
+    SoraFoundryTest::RepairState(W,TEXT("after_partial"));
     TestTrue(TEXT("Mapped held input reserves hands and earns partial work"),C->FoundryOccupiesHands()&&C->FoundryState().HeldMs>=1400&&W.Hero()->GetViewmodel()->bHiddenInGame);
     if(!W.World->InjectKey(Use,IE_Released)) return false;
     TestTrue(TEXT("Release immediately discards all partial credit"),!C->FoundryOccupiesHands()&&C->FoundryState().HeldMs==0&&C->FoundryState().Used==0);
@@ -110,6 +149,7 @@ bool FSoraFoundryRepairTest::RunTest(const FString& Parameters)
     const int32 Weapon=W.Hero()->WeaponId,Ammo=W.Hero()->GetEquipment()->Ammo;
     for(const TCHAR* Name:{TEXT("Fire"),TEXT("Melee"),TEXT("Reload"),TEXT("Block"),TEXT("WeaponThree")})
         if(!W.Press(SoraFoundryTest::Action(W,Name))) return false;
+    SoraFoundryTest::RepairState(W,TEXT("after_reserved_inputs"));
     TestTrue(TEXT("Working hands cannot attack, guard, reload or change the selected arm"),
         C->FoundryOccupiesHands()&&!W.Hero()->GetEquipment()->IsCommittedStrike()&&!W.Hero()->GetEquipment()->IsGuardHeld()&&
         !W.Hero()->GetEquipment()->bReloading&&W.Hero()->WeaponId==Weapon&&W.Hero()->GetEquipment()->Ammo==Ammo);
