@@ -103,13 +103,13 @@ Paths below are relative to the pinned engine's `Engine/` directory.
   Nanite resource data as nonempty page-streaming states. It does not prove
   any particular component submitted visible raster work.
 
-## Known production blocker and minimal future enablement plan
+## Baseline production blocker and enablement plan
 
-This plan is **not implemented by the diagnostic**. Current
-`scripts/unreal/import_nyaagyu_dojo_kit.py:20` says Nanite stays off, and
-`:342` sets `build_nanite=False`. `SoraWorldBuilderDojoHall.cpp:28–38,56–70`
+This plan is **not implemented by the diagnostic commit `81eb31a`**. At that
+baseline, `scripts/unreal/import_nyaagyu_dojo_kit.py:20` says Nanite stays off,
+and `:342` sets `build_nanite=False`. `SoraWorldBuilderDojoHall.cpp:28–38,56–70`
 loads those same DojoKit meshes on both platforms; it does not choose the
-estate HI/MAC assets. Therefore the current source predicts no Nanite dojo
+estate HI/MAC assets. Therefore the baseline source predicts no Nanite dojo
 resource data, even when the M2 selects METAL_SM6. The renderer diagnostic
 must retain an honest failed gate if that is what its original pixels show.
 
@@ -158,3 +158,47 @@ SM5/SM6 and eventual **real M1** checks separately. None of this converts the
 present repeated modules/boxes into the requested individually sculpted beams
 with adze marks, checks, raised grain, knots, end grain and worn chamfers.
 That art, its provenance, admission and performance remain separate work.
+
+## Separate source importer candidate (not executed)
+
+The follow-up importer uses `dojo_nanite.py` after binding the same LODs and
+materials. It intentionally retains a conventional initial FBX import, then
+sets all seven explicit Nanite/full-fallback controls and reads each back.
+`prepare_conventional` also resets an existing asset before reimport: UE
+`FbxStaticMeshImport.cpp:1789` otherwise replaces the import option with the
+existing mesh's Nanite flag. This makes repeat imports start from a real
+conventional source baseline instead of a previously reduced fallback.
+
+The helper records before/after conventional triangle and vertex counts,
+UV-channel counts, section-to-material mapping, section collision and shadow
+flags, LOD screen sizes, ordered material names/bindings, bounds, simple
+collision count and collision complexity. Any mismatch stops the import.
+It requires actual positive `get_num_nanite_triangles/vertices` after the
+build: installed UE `StaticMesh.cpp:5024–5051` returns zero unless Nanite page
+and root data exists, and `GetRenderData` waits for its asynchronous property.
+Those are built input-resource counts, **not visible triangle counters**.
+`MeshBuilder/Private/StaticMeshBuilder.cpp:296–302` identifies full fallback
+input reuse when percentage is 1 and relative error is 0; the candidate sets
+both explicitly. It does not claim to compare every rebuilt vertex byte.
+
+Only the required Nanite usage permutation is added to each existing base
+material using the pinned engine's `set_base_material_usage`; material graphs,
+slot order, textures, blend/shading behavior and sidedness are retained.
+The readback audits actual instance blend/shading/sidedness overrides and
+requires surface, opaque/masked, DefaultLit or TwoSidedFoliage plus instanced
+and Nanite usage. Unsupported/overridden cases fail rather than changing the
+material. This conservative importer audit is not the engine's complete
+runtime material audit; the engine log and original render comparisons still
+have to establish that every intended section renders correctly.
+
+Each successful module writes a `SORA_DOJO_NANITE_IMPORT` JSON audit into the
+original editor log. Existing source FBX/texture hashes remain enforced.
+The ten host tests exercise rejected settings, missing built resources,
+reimport reset, LOD reduction/loss, UV loss, slot remapping, collision/bounds
+changes and material overrides using explicit fake editor objects. They do
+not execute the importer, build an asset or prove runtime behavior.
+
+Root must first run the untouched baseline diagnostic, then review this
+separate source commit before importing. No generated asset changed with this
+source candidate. An actual import, cooked fallback availability, unchanged
+SM5 imagery/collision and visible SM6 Nanite remain unqualified until run.
