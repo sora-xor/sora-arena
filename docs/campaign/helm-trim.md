@@ -50,9 +50,11 @@ The following choices resolve details the script does not specify:
   if it coincides with completion.
 - The deadline clock, grace and ordinary hold progress freeze with the paused
   game. Opening a menu cancels partial wheel correction immediately, frees both
-  hands and restores weapon visibility. Resuming requires a fresh Interact
-  press and a full uninterrupted correction; keeping the key down across the
-  menu does not restart work. This follows the existing held-action focus policy.
+  hands and restores weapon visibility. After resume, an accepted Interact
+  event starts a new full uninterrupted correction. Unreal may reconcile a
+  physically held key's auto-repeat into a press after the HUD flushes input,
+  so that repeat can start a new attempt. Neither old partial work nor paused
+  time counts toward it. The ordinary input policy remains unchanged.
   Beat state is temporary: deadline failure, death retry and fresh checkpoint load restart
   the hold, all trim thresholds and the difficulty deadline. Partial work
   does not create an additional save or alter the save schema.
@@ -73,7 +75,9 @@ and an ordinary reload that must finish before wheel admission.
 The active-hold pause fixture opens the menu before releasing a real partial
 correction, checks immediate hand/visibility restoration and exact frozen
 elapsed/grace/progress values, then exercises release during pause and a held
-key across resume. A fresh press must earn the full correction after both.
+key's real engine flush/repeat path across resume. Accepted input must earn a
+full new correction after both; the fixture reads the engine reconciliation
+setting without changing it.
 Their opponents are deliberately isolated to test the mechanism. Aggregate
 campaign traversal now works the actual wheel rather than crediting the hold
 without corrections.
