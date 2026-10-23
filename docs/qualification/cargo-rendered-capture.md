@@ -164,3 +164,32 @@ the resume to match its original paused frame, a later active press after at lea
 one wall second, and acceptance before the following original. The existing
 three-second and whole-cinematic thresholds remain unchanged. Production input,
 timers and gameplay are untouched; the failed original and v2 sidecar are kept.
+
+## Campaign reticle and stealth overlap follow-up
+
+The subsequent Chapter 2–8 SM6/720p run passed seven automation tests and retained
+22 originals, but original-image review rejected four frames. Tarifa's English
+Marobashi hint crossed the ordinary katana reticle at (640,360); the Landing,
+Ledger Aisles and Cargo Hold trackers covered the existing stealth readout.
+Those originals and their passing test records remain failure evidence.
+
+Boss placement now reserves the same reticle measurement used by drawing:
+ordinary or projected bow center, full crosshair stroke, active maai ring and
+nearby combat-hint glyphs. Tracker placement measures its rows in free regions
+around objective, dojo, stealth, reticle, rhythm and lower-story bounds. Every
+tracker and notice is checked against actual gameplay panels and captions;
+caption packing reserves a tracker's actual location after it moves. Existing
+font sizes and all chosen rows remain intact. The existing compact tracker
+heading policy remains available under caption/notice pressure, with the full
+beat title retained in ordinary objective paths, including these observed stealth
+scenes. Specialized objectives retain their existing wording. Every selected row
+is checked for exact localized text after wrapping.
+
+The paused current-HUD-draw/processed-frame capture guard now covers ordinary
+Campaign gameplay shots with or without a boss. Cinematic/title cards, menus,
+registry results and practice keep their existing capture paths. A small shared
+capture rule has host negatives for hidden/unpaused/stale-world, wrong-frame,
+empty-file and stale-file rejection. Host geometry/font cases cover the four
+observed defects, projected/ring reticles and relocated tracker/caption capacity.
+They do not establish actual Canvas placement or visible-image acceptance.
+Root owns compilation, current-frame capture and original PNG review.
