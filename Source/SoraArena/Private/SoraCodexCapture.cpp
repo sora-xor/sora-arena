@@ -60,6 +60,7 @@ private:
     bool OriginalEnglish=true,WasCampaign=false,WasPractice=false;
     SoraAccessibility::ESubtitleSize OriginalSize=SoraAccessibility::ESubtitleSize::Standard;
     int32 Step=0,LongestKey=0;
+    FVector2D CaptureViewport;
     double StartedAt=0,ChangedAt=0;
     FDelegateHandle Screenshot;
     APlayerController* PC() const { return M.IsValid()&&M->Hero()?Cast<APlayerController>(M->Hero()->GetController()):nullptr; }
@@ -103,6 +104,7 @@ private:
         { Fail(TEXT("Codex capture requires a rendering game with its live Slate front end")); return; }
         FVector2D Size; M->GetWorld()->GetGameViewport()->GetViewportSize(Size);
         if (Size!=FVector2D(1280,720)&&Size!=FVector2D(1920,1080)) { Fail(TEXT("Capture requires 1280x720 or 1920x1080")); return; }
+        CaptureViewport=Size;
         OriginalSlot=M->SaveSlotName; Controls=M->ControlSlotName; Settings=M->SettingsSlotName;
         for (int32 I=0;I<3;++I)
         {
@@ -157,6 +159,7 @@ private:
         Record->SetBoolField(TEXT("prepared_discoveries"),true);
         Record->SetNumberField(TEXT("request_frame"),double(GFrameCounter));
         Record->SetNumberField(TEXT("screen"),int32(Menu()->Screen()));
+        Record->SetStringField(TEXT("screen_name"),Menu()->Screen()==EScreen::CodexEntry?TEXT("reader"):TEXT("index"));
         Record->SetNumberField(TEXT("focus"),Menu()->Focus());
         Record->SetNumberField(TEXT("entries"),Menu()->CodexEntries().Num());
         Record->SetBoolField(TEXT("english"),Menu()->ShowsEnglish());
@@ -187,6 +190,7 @@ private:
             Test.TestTrue(TEXT("Back remains visible below the reader and within the viewport"),
                 BackMin.Y>=ReaderBottom-1&&BackMax.Y<=Parent.GetLocalSize().Y+1&&BackMax.X<=Parent.GetLocalSize().X+1&&BackGeometry.GetLocalSize().Y>0);
             Record->SetStringField(TEXT("entry_id"),Entry->Id);
+            Record->SetNumberField(TEXT("entry_key"),Entry->Key);
             Record->SetNumberField(TEXT("scroll_offset"),View->CodexScrollOffset());
             Record->SetNumberField(TEXT("scroll_end"),View->CodexScrollEnd());
             Record->SetNumberField(TEXT("content_bottom"),Max.Y);
@@ -202,6 +206,7 @@ private:
         if (IFileManager::Get().FileSize(*Pending)<=0) { Fail(TEXT("Original Codex screenshot was not written")); return; }
         Frames.Last()->AsObject()->SetNumberField(TEXT("screenshot_processed_frame"),double(GFrameCounter));
         Frames.Last()->AsObject()->SetStringField(TEXT("file"),FPaths::GetCleanFilename(Pending));
+        UE_LOG(LogTemp,Display,TEXT("SORA_CODEX_FRAME %s"),*Pending);
         Pending.Reset(); Waiting=false; ++Step;
         if (Step==UE_ARRAY_COUNT(Names)) return;
         if (Step==1)
@@ -277,6 +282,11 @@ private:
         if (!Folder.IsEmpty())
         {
             auto Report=MakeShared<FJsonObject>(); Report->SetArrayField(TEXT("frames"),Frames);
+            Report->SetStringField(TEXT("schema"),TEXT("sora-arena.codex-capture.v1"));
+            Report->SetStringField(TEXT("scope"),TEXT("prepared Codex discovery ledger; not playthrough or art acceptance"));
+            Report->SetBoolField(TEXT("prepared_discoveries"),true);
+            Report->SetNumberField(TEXT("frame_count"),Frames.Num());
+            Report->SetArrayField(TEXT("viewport"),{MakeShared<FJsonValueNumber>(CaptureViewport.X),MakeShared<FJsonValueNumber>(CaptureViewport.Y)});
             Report->SetBoolField(TEXT("passed"),!Failed&&!Test.HasAnyErrors()&&Step==UE_ARRAY_COUNT(Names));
             FString Json; FJsonSerializer::Serialize(Report,TJsonWriterFactory<>::Create(&Json));
             Test.TestTrue(TEXT("Capture writes its source-observation report"),FFileHelper::SaveStringToFile(Json,*(Folder/TEXT("capture.json"))));

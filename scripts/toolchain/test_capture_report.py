@@ -240,7 +240,8 @@ class CaptureArchiveTests(unittest.TestCase):
         families = (("ArtReview.Dojo", "SORA_ART_REVIEW_FRAME"),
                     ("RegistryFixture.Chapter4", "SORA_REGISTRY_FIXTURE_FRAME"),
                     ("WeaponHUDFixture.Katana", "SORA_WEAPON_HUD_FIXTURE_FRAME"),
-                    ("BowAim.Live", "SORA_BOW_AIM_FRAME"))
+                    ("BowAim.Live", "SORA_BOW_AIM_FRAME"),
+                    ("Codex.Live", "SORA_CODEX_FRAME"))
         for required, marker in families:
             for other, wrong_marker in families:
                 if required == other:
@@ -393,6 +394,196 @@ class BowCaptureTests(unittest.TestCase):
                 b"IDAT", zlib.compress(b"".join(bytes([mode])+bytes(row) for row in rows))) + chunk(b"IEND", b"")
             self.assertEqual(VERIFY.png_dimensions(png), (2, 2))
             self.assertEqual(VERIFY.bow_capture_validation.rgb8(png), (2, 2, 3, expected))
+
+
+class CodexCaptureTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name).resolve()
+        self.project = self.root / "project with spaces"
+        self.folder = self.project / "Saved/Screenshots/SoraCodex/2x1/unique"
+        self.folder.mkdir(parents=True)
+        self.output_number = 0
+        def chunk(kind, payload):
+            return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", zlib.crc32(kind + payload))
+        self.png = (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 2, 1, 8, 2, 0, 0, 0))
+                    + chunk(b"IDAT", zlib.compress(b"\0\xff\0\0\0\xff\0")) + chunk(b"IEND", b""))
+        self.paths = [self.folder / (phase + ".png") for phase in VERIFY.codex_capture_validation.PHASES]
+        for path in self.paths:
+            path.write_bytes(self.png)
+        self.started = min(path.stat().st_mtime_ns for path in self.paths) - 1
+        self.report = {"tests": [{"fullTestPath": "SoraCapture.Codex.Live"}]}
+        self.metadata = {"schema": VERIFY.codex_capture_validation.SCHEMA,
+                         "scope": VERIFY.codex_capture_validation.SCOPE,
+                         "prepared_discoveries": True, "passed": True, "frame_count": 8,
+                         "viewport": [2, 1], "frames": []}
+        for index, phase in enumerate(VERIFY.codex_capture_validation.PHASES):
+            frame = dict(name=phase, file=phase + ".png", prepared_discoveries=True,
+                         screen_name="reader" if index >= 3 else "index",
+                         request_frame=100 + 10 * index, screenshot_processed_frame=102 + 10 * index,
+                         english=index != 6, text_scale=1 if index < 4 else 1.5,
+                         entries=0 if index == 0 else 49, focus=1 if index == 0 else 48 if index == 2 else 0)
+            if index >= 3:
+                frame.update(entry_id="codex_toshiya" if index == 7 else "ch04.c06",
+                             entry_key=48 if index == 7 else 23, scroll_offset=80 if index == 5 else 0,
+                             scroll_end=80, content_bottom=120 if index == 5 else 200, viewport_height=120)
+            self.metadata["frames"].append(frame)
+        self.sidecar = self.folder / "capture.json"
+        self.write_metadata()
+
+    def write_metadata(self):
+        self.sidecar.write_text(json.dumps(self.metadata, indent=2) + "\n")
+
+    def log(self, paths=None):
+        return "\n".join("[2026.10.23-01.00.00:000][  1]LogTemp: Display: SORA_CODEX_FRAME " + str(path)
+                         for path in (self.paths if paths is None else paths))
+
+    def archive(self, log=None):
+        self.output_number += 1
+        output = self.root / f"archive-{self.output_number}"
+        return output, VERIFY.archive_frames(self.log() if log is None else log, self.report, self.project,
+                                              self.root, output, self.started, 2, 1)
+
+    def test_exact_eight_original_frames_and_source_metadata_are_archived(self):
+        output, frames = self.archive()
+        original = self.sidecar.read_bytes()
+        self.assertEqual(len(frames), 8)
+        self.assertEqual([frame["codex_phase"] for frame in frames], list(VERIFY.codex_capture_validation.PHASES))
+        self.assertEqual(len({frame["observations"] for frame in frames}), 1)
+        for frame in frames:
+            self.assertEqual((output / frame["path"]).read_bytes(), self.png)
+            self.assertEqual(frame["sha256"], hashlib.sha256(self.png).hexdigest())
+            self.assertEqual((output / frame["observations"]).read_bytes(), original)
+            self.assertEqual(frame["observations_source"], str(self.sidecar))
+            self.assertEqual(frame["observations_sha256"], hashlib.sha256(original).hexdigest())
+            self.assertEqual(frame["capture_kind"], VERIFY.codex_capture_validation.SCOPE)
+        self.sidecar.write_text("overwritten by a later run")
+        self.paths[0].write_bytes(b"later frame")
+        self.assertEqual((output / frames[0]["observations"]).read_bytes(), original)
+        self.assertEqual((output / frames[0]["path"]).read_bytes(), self.png)
+
+    def test_empty_partial_duplicate_and_replayed_acknowledgements_fail(self):
+        for log, error in (("", "no screenshot"), (self.log(self.paths[:-1]), "eight unique"),
+                           (self.log(self.paths + self.paths[:1]), "duplicate"),
+                           (self.log().replace("LogTemp: Display:", "LogAutomationController: Display:") + " [log]", "no screenshot"),
+                           (self.log().replace("LogTemp: Display:", "LogAutomationController: Display:"), "no screenshot")):
+            with self.subTest(error=error, log=log[:50]), self.assertRaisesRegex(ValueError, error):
+                self.archive(log)
+
+    def test_missing_stale_or_external_metadata_cannot_qualify_fresh_pngs(self):
+        self.sidecar.unlink()
+        with self.assertRaises(OSError):
+            self.archive()
+        self.write_metadata()
+        os.utime(self.sidecar, ns=(self.started - 1, self.started - 1))
+        with self.assertRaisesRegex(ValueError, "stale Codex"):
+            self.archive()
+        # Fresh since run start but older than a later overwritten PNG is also stale.
+        self.write_metadata()
+        newer = self.sidecar.stat().st_mtime_ns + 10
+        os.utime(self.paths[0], ns=(newer, newer))
+        with self.assertRaisesRegex(ValueError, "stale Codex"):
+            self.archive()
+        self.sidecar.unlink()
+        outside = self.root / "outside.json"
+        outside.write_text(json.dumps(self.metadata))
+        self.sidecar.symlink_to(outside)
+        with self.assertRaisesRegex(ValueError, "escapes"):
+            self.archive()
+
+    def test_failed_wrong_schema_scope_count_or_viewport_reports_fail(self):
+        for key, bad, error in (("passed", False, "did not pass"), ("passed", 1, "did not pass"),
+                                ("schema", "unknown", "schema"), ("prepared_discoveries", False, "scope"),
+                                ("scope", "earned all collectibles", "scope"), ("frame_count", 7, "eight"),
+                                ("frame_count", True, "frame_count"), ("viewport", [1920, 1080], "viewport"),
+                                ("viewport", [2, True], "viewport")):
+            with self.subTest(key=key, bad=bad):
+                original = self.metadata[key]
+                self.metadata[key] = bad
+                self.write_metadata()
+                with self.assertRaisesRegex(ValueError, error):
+                    self.archive()
+                self.metadata[key] = original
+
+    def test_missing_duplicate_wrong_filename_and_out_of_order_phases_fail(self):
+        original = copy.deepcopy(self.metadata["frames"])
+        variants = [original[:-1], original + original[:1], original[:1] + original[:1] + original[2:],
+                    [original[1], original[0]] + original[2:]]
+        wrong_file = copy.deepcopy(original)
+        wrong_file[2]["file"] = "../index-last.png"
+        variants.append(wrong_file)
+        for rows in variants:
+            with self.subTest(names=[row["name"] for row in rows]):
+                self.metadata["frames"] = rows
+                self.write_metadata()
+                with self.assertRaisesRegex(ValueError, "eight|phase/filename"):
+                    self.archive()
+        self.metadata["frames"] = original
+        self.write_metadata()
+        with self.assertRaisesRegex(ValueError, "eight unique"):
+            self.archive(self.log(list(reversed(self.paths))))
+
+    def test_phase_state_frame_identity_and_actual_tail_must_match(self):
+        cases = [(6, "english", True), (4, "text_scale", 1), (2, "focus", 0), (1, "entries", 48),
+                 (3, "screen_name", "index"), (7, "entry_id", "ch04.c06"), (3, "entry_key", 0),
+                 (6, "entry_id", "ch03.c06"), (3, "request_frame", 1), (3, "screenshot_processed_frame", 1),
+                 (4, "request_frame", True), (5, "scroll_end", 0), (5, "scroll_offset", 0),
+                 (5, "content_bottom", 200), (4, "scroll_offset", 20), (5, "viewport_height", float("nan")),
+                 (0, "prepared_discoveries", False)]
+        for index, key, bad in cases:
+            with self.subTest(phase=index, key=key):
+                original = self.metadata["frames"][index][key]
+                self.metadata["frames"][index][key] = bad
+                self.write_metadata()
+                with self.assertRaises(ValueError):
+                    self.archive()
+                self.metadata["frames"][index][key] = original
+
+    def test_multiple_run_folders_cannot_hide_duplicate_phases(self):
+        other = self.folder.parent / "another"
+        other.mkdir()
+        paths = []
+        for path in self.paths:
+            target = other / path.name
+            target.write_bytes(self.png)
+            paths.append(target)
+        (other / "capture.json").write_text(json.dumps(self.metadata))
+        with self.assertRaisesRegex(ValueError, "one eight-frame"):
+            self.archive(self.log(self.paths + paths))
+
+    def test_successful_automation_without_codex_frames_fails_the_cli_archive(self):
+        output = self.root / "cli-archive"
+        output.mkdir()
+        (output / "source-commit.txt").write_text("test source")
+        (output / "source-status.txt").write_text("")
+        log = self.root / "editor.log"
+        data = b"Found 1 automation tests based on 'SoraCapture.Codex.Live'\n"
+        log.write_bytes(data)
+        report = self.root / "report.json"
+        report.write_text(json.dumps({"devices": [{"rHI": "Metal", "renderMode": "SM6"}],
+                                      "tests": [{"fullTestPath": "SoraCapture.Codex.Live", "state": "Success"}]}))
+        receipt = self.root / "log-completion.json"
+        receipt.write_text(json.dumps({"process_returncode": 0, "runner_status": 0, "stream_eof": True,
+                                       "failure": None, "log_bytes": len(data), "log_sha256": hashlib.sha256(data).hexdigest()}))
+        command = [sys.executable, str(Path(VERIFY.__file__)), str(report), str(log), "0", "sm6",
+                   "--archive", str(self.project), str(self.root), str(output), str(self.started), "2", "1", "SoraCapture.Codex.Live",
+                   "--log-completion", str(receipt)]
+        result = subprocess.run(command, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        manifest = json.loads((output / "capture.json").read_text())
+        self.assertEqual(manifest["frames"], [])
+        self.assertTrue(any("Codex." in error and "no screenshot" in error for error in manifest["failures"]))
+
+    def test_verifier_phases_and_scope_match_the_actual_fixture(self):
+        import re
+        root = Path(__file__).resolve().parents[2]
+        source = (root / "Source/SoraArena/Private/SoraCodexCapture.cpp").read_text()
+        declaration = re.search(r"const TCHAR\* Names\[\]=\{(.*?)\};", source, re.S).group(1)
+        self.assertEqual(tuple(re.findall(r'TEXT\("([^"\n]+)"\)', declaration)), VERIFY.codex_capture_validation.PHASES)
+        self.assertIn(VERIFY.codex_capture_validation.SCHEMA, source)
+        self.assertIn(VERIFY.codex_capture_validation.SCOPE, source)
+        self.assertIn('UE_LOG(LogTemp,Display,TEXT("SORA_CODEX_FRAME %s"),*Pending);', source)
 
 
 if __name__ == "__main__":
