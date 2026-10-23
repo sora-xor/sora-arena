@@ -212,7 +212,7 @@ private:
             !SoraHUDPanels::StoryTrackerLayoutFits(Layout,LayoutWhy)||
             !SoraHUDPanels::CaptionStoryLayoutFits(Layout,LayoutWhy)||
             !SoraHUDPanels::InteractionPromptLayoutFits(Layout,LayoutWhy))
-        { Fail(TEXT("Live bow HUD layout: ")+LayoutWhy); return; }
+        { Fail(*(TEXT("Live bow HUD layout: ")+LayoutWhy)); return; }
         PendingFile=Folder/(FString(Phases[Phase])+TEXT(".png"));
         FScreenshotRequest::RequestScreenshot(PendingFile,true,false);
     }
