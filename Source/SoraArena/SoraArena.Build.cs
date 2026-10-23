@@ -15,6 +15,10 @@ public class SoraArena : ModuleRules
             "AIModule", "GameplayTasks", "NavigationSystem" });
         PrivateDependencyModuleNames.AddRange(new string[] { "HTTP", "WebSockets", "Slate", "SlateCore", "UMG", "RenderCore", "RHI",
             "ProceduralMeshComponent", "Niagara", "AudioMixer", "MetasoundEngine", "LevelSequence", "MovieScene", "CinematicCamera" });
+        // Editor-only SDF/card observation headers include MeshUtilities.h;
+        // the diagnostic reads their public data without invoking a builder.
+        if (Target.bBuildEditor)
+            PrivateIncludePathModuleNames.Add("MeshUtilities");
         PrivateIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "../../crates/arena-ffi/include")));
         // Content/Data is read from disk at runtime, never cooked: stage all of it.
         RuntimeDependencies.Add("$(ProjectDir)/Content/Data/...", StagedFileType.NonUFS);
