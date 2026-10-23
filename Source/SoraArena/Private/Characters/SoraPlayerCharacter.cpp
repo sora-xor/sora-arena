@@ -429,6 +429,7 @@ void ASoraPlayerCharacter::InteractUp()
     {
         G->Campaign()->StopPlayerCrank(false);
         G->Campaign()->CancelFoundryWork();
+        G->Campaign()->CancelCargoUnload();
         G->Campaign()->CancelHelm();
         G->Campaign()->CancelSpineCut();
         G->Campaign()->CancelConstructCut();

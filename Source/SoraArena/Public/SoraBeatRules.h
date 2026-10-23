@@ -401,6 +401,8 @@ struct FTask
     unsigned CarryWeaponsMask = 0u;
     // Each load is hoisted at its pickup with Interact held this long (0: taken at once).
     int PickupHoldMs = 0;
+    // Cargo rides unload one share at each destination with a continuous hold.
+    int UnloadHoldMs = 0;
     // A sealed store must be pried open before any load can leave it.
     int CarryGateMs = 0;
     // Temporary chapter equipment restriction; recovery is earned at the
@@ -1113,7 +1115,7 @@ constexpr bool PickupLoose(FTaskState& State, const FTask& Task, int Slot)
 }
 
 // Delivers the carried item, or a ride's cargo, at a drop-off with room left.
-constexpr bool Deliver(FTaskState& State, const FTask& Task, int Index)
+constexpr bool Deliver(FTaskState& State, const FTask& Task, int Index, int HeldMs = 0)
 {
     if (!DropoffHasRoom(State, Task, Index))
         return false;
@@ -1124,7 +1126,8 @@ constexpr bool Deliver(FTaskState& State, const FTask& Task, int Index)
         State.Carrying = false;
         State.CarriedFrom = -1;
     }
-    else if (Task.Type != EType::HorsebackRide || Task.Goal != EGoal::Deliveries)
+    else if (Task.Type != EType::HorsebackRide || Task.Goal != EGoal::Deliveries ||
+        Task.UnloadHoldMs <= 0 || HeldMs < Task.UnloadHoldMs)
         return false;
     ++State.DropoffUses[Index];
     ++State.Done;
@@ -1390,6 +1393,9 @@ constexpr bool TaskValid(const FTask& Task)
     }
     else if (Task.StaminaPerTurn != 0 || Task.OverspeedCostMultiplier != 0 || Task.CrankTwoHanded || Task.AlternateTreads || Task.HoldMilliTurnsS != 0) return false;
     if (!DropoffCapacitiesValid(Task)) return false;
+    const bool Cargo = Task.Type == EType::HorsebackRide && Task.Goal == EGoal::Deliveries;
+    if (Task.UnloadHoldMs < 0 || Task.UnloadHoldMs > MaxClockMs ||
+        (Cargo ? Task.UnloadHoldMs == 0 : Task.UnloadHoldMs != 0)) return false;
     if (Task.CarryGateMs < 0 || Task.CarryGateMs > MaxClockMs || (Task.CarryGateMs > 0 && Task.Task != ETask::Carry)) return false;
     if (Task.CoopCount < 0 || Task.CoopCount > 3 || ((Task.CoopCount == 0) != (Task.CoopMilliTurnsS == 0)) ||
         (Task.CoopCount == 0 && (Task.CoopSuspendsDecay || Task.CoopRetreatCm > 0)) ||

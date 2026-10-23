@@ -250,6 +250,8 @@ public:
     bool HelmOccupiesHands() const { return IsHelmHold()&&Helm.Working; }
     void CancelHelm();
     bool IsHoisting() const { return HeldWork == EHeldWork::Hoist; }
+    bool IsUnloadingCargo() const { return HeldWork == EHeldWork::CargoUnload; }
+    void CancelCargoUnload();
     bool IsPryingCarryGate() const { return bPryingCarryGate; }
     bool InLiftGallery() const { return bLiftGallery; }
     int32 WoodPoiMask() const;
@@ -465,12 +467,14 @@ private:
     bool InteractHelm(ASoraPlayerCharacter& Player);
     bool InHelmFloor(const FVector& At) const;
     FString HelmText(bool English) const;
-    enum class EHeldWork : uint8 { None, Hoist, Objective };
+    enum class EHeldWork : uint8 { None, Hoist, Objective, CargoUnload };
     EHeldWork HeldWork=EHeldWork::None;
     int32 HeldPoint=INDEX_NONE;
     int32 HeldMs=0;
+    FSoraMillisecondClock CargoClock;
     bool bHeldWatched=false;
     bool TakeLoad(int32 Pickup);
+    bool DeliverLoad(int32 Dropoff, int32 HeldDurationMs = 0);
     bool bPryingCarryGate=false;
     bool bCarryGateHit=false;
     FVector LooseLoadAt[SoraBeatRules::MaxPoints] = {};
@@ -480,7 +484,7 @@ private:
     bool SetDownLoad(ASoraPlayerCharacter& Hero);
     bool TakeLooseLoad(ASoraPlayerCharacter& Hero);
     bool WorkObjectiveAt(int32 Objective);
-    void TickHeldWork(int32 DeltaMs);
+    void TickHeldWork(int32 DeltaMs,float DeltaSeconds);
     enum class ERecoveryClimb : uint8 { None, Enter, Down, Up, Exit };
     ERecoveryClimb RecoveryClimb=ERecoveryClimb::None;
     bool bStringingBow=false;

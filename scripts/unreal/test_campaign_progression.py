@@ -135,7 +135,8 @@ def task_fields(task):
                ("LossLimit", "loss_limit", 0), ("DecayPermille", "decay_permille", 0),
                ("MinTurnMs", "min_turn_ms", 0), ("MaxTurnMs", "max_turn_ms", 0), ("SpeedCmS", "speed_cm_s", 0),
                ("WaitCm", "wait_cm", 0), ("PathCm", "path_cm", 0), ("ReinforceWave", "reinforce_wave", -1),
-               ("CarrySpeedPermille", "carry_speed_permille", 1000), ("TargetLossLimit", "target_loss_limit", 0), ("PickupHoldMs", "pickup_hold_ms", 0))
+               ("CarrySpeedPermille", "carry_speed_permille", 1000), ("TargetLossLimit", "target_loss_limit", 0),
+               ("PickupHoldMs", "pickup_hold_ms", 0), ("UnloadHoldMs", "unload_hold_ms", 0))
     for name, key, default in scalars:
         if task[key] != default:
             fields.append(f"T.{name} = {task[key]};")

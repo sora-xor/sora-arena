@@ -460,6 +460,7 @@ void USoraCampaignDirector::BeginBeat(int32 Index,int32 Phase,bool bResumed)
     ClockCarryMs=0.f; IdleMs=0; bLinesStarted=false; bCrankSlack=false; ActiveCrankHelpers=0; bCrankHelperRetreating=false; bLiftGallery=false; bDetected=false; CinematicSeconds=0.f;
     VolumesEntered.Reset(); TackSteps=0; TackRefused=0; Frightening.Reset(); BeatEvents.Reset(); WhistleAt=-1.0;
     HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
+    CargoClock.Reset();
     Scheduled.Reset(); bWorkWasSeen=false; GuardStates.Reset(); EventRaises.Reset();
     AwaseAtMs=INDEX_NONE; LateHitAt=-1.0; BoutOffset=0;
     // The dojo numbers its bouts across the chapter's lesson duels.
@@ -760,7 +761,7 @@ void USoraCampaignDirector::TickBeat(float DeltaSeconds)
     // Work held at a point: a load hoisted, an objective worked.
     TickEquipmentRecovery(DeltaMs);
     TickCarryWork(DeltaMs);
-    TickHeldWork(DeltaMs);
+    TickHeldWork(DeltaMs,DeltaSeconds);
     TickPlayerCrank(DeltaMs);
     TickPlayerRhythm();
     if(ActiveBeatData()!=&Beat) return;
@@ -818,21 +819,44 @@ bool USoraCampaignDirector::WorkObjectiveAt(int32 Objective)
     Fire(TEXT("event:objective_done_")+Beat->Objectives[Objective]);
     return true;
 }
-void USoraCampaignDirector::TickHeldWork(int32 DeltaMs)
+void USoraCampaignDirector::CancelCargoUnload()
+{
+    if(!IsUnloadingCargo()) return;
+    HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
+    CargoClock.Reset();
+}
+bool USoraCampaignDirector::DeliverLoad(int32 Dropoff,int32 HeldDurationMs)
+{
+    const FSoraBeat* Beat=ActiveBeatData();
+    if(!Beat||!SoraBeatRules::Deliver(TaskState,Task,Dropoff,HeldDurationMs)) return false;
+    if(Task.Task==SoraBeatRules::ETask::Carry) CarryChanged();
+    // Only a completed delivery emits credit or releases its waiting ambush.
+    Fire(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
+    if(!Beat->CarryItem.IsEmpty()) Fire(TEXT("item_delivered:")+Beat->CarryItem);
+    Fire(FString::Printf(TEXT("item_delivered:load_%02d"),TaskState.Done));
+    ReleaseEventWaves(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
+    return true;
+}
+void USoraCampaignDirector::TickHeldWork(int32 DeltaMs,float DeltaSeconds)
 {
     const FSoraBeat* Beat=ActiveBeatData();
     const FSoraBeatSpace* Space=ActiveSpace();
     ASoraPlayerCharacter* Hero=Mode().Hero();
     if(HeldWork==EHeldWork::None||!Beat||!Space||!Hero) return;
     const bool bHoist=HeldWork==EHeldWork::Hoist;
-    const TArray<FVector2D>& Points=bHoist?Space->Pickups:Space->Objectives;
-    const int32 Need=bHoist?Task.PickupHoldMs:Beat->ObjectiveHoldMs.IsValidIndex(HeldPoint)?Beat->ObjectiveHoldMs[HeldPoint]:0;
+    const bool bCargo=IsUnloadingCargo();
+    const TArray<FVector2D>& Points=bHoist?Space->Pickups:bCargo?Space->Dropoffs:Space->Objectives;
+    const int32 Need=bHoist?Task.PickupHoldMs:bCargo?Task.UnloadHoldMs:
+        Beat->ObjectiveHoldMs.IsValidIndex(HeldPoint)?Beat->ObjectiveHoldMs[HeldPoint]:0;
+    const float Reach=bCargo&&IsMounted()?SoraCampaignReach::Saddle:SoraCampaignReach::Interact;
     // The work holds while Interact stays down at its point. A hoist under
     // guard waits (without letting the load fall) while a guard watches.
     if(!Hero->IsActionHeld(TEXT("Interact"))||!Points.IsValidIndex(HeldPoint)||
-        !Near(ASoraWorldBuilder::Floor(Points[HeldPoint]),SoraCampaignReach::Interact+60.f))
+        !Near(ASoraWorldBuilder::Floor(Points[HeldPoint]),Reach+60.f)||
+        (bCargo&&!SoraBeatRules::DropoffHasRoom(TaskState,Task,HeldPoint)))
     {
         HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
+        CargoClock.Reset();
         return;
     }
     const USoraStealth* Stealth=USoraStealth::Get(this);
@@ -840,13 +864,20 @@ void USoraCampaignDirector::TickHeldWork(int32 DeltaMs)
     if(bWatched&&!bHeldWatched) Fire(TEXT("ai_event:hoist_paused"));
     bHeldWatched=bWatched;
     if(bWatched) return;
-    HeldMs+=DeltaMs;
+    // Cargo owns a clock from the press: TickBeat's earlier fraction must
+    // never count toward a new unload. Other held work keeps its timing.
+    if(bCargo) HeldMs+=FMath::Clamp(CargoClock.Advance(DeltaSeconds),0,FMath::Max(0,Need-HeldMs));
+    else HeldMs+=DeltaMs;
     if(HeldMs<Need) return;
     const int32 Before=SoraBeatRules::ProgressPermille(TaskState,Task);
+    const int32 DoneBefore=TaskState.Done;
     const int32 Point=HeldPoint;
+    const int32 Duration=HeldMs;
     HeldWork=EHeldWork::None; HeldPoint=INDEX_NONE; HeldMs=0; bHeldWatched=false;
-    if(bHoist?TakeLoad(Point):WorkObjectiveAt(Point))
+    CargoClock.Reset();
+    if(bHoist?TakeLoad(Point):bCargo?DeliverLoad(Point,Duration):WorkObjectiveAt(Point))
     {
+        if(bCargo&&DoneBefore==0&&TaskState.Done>0) Fire(TEXT("interact_start"));
         UpdateObjective();
         Progressed(Before);
     }
@@ -861,6 +892,7 @@ float USoraCampaignDirector::HeldWorkProgress() const
     if(bStringingBow&&Task.RecoveryStringMs>0) return static_cast<float>(TaskState.RecoveryHeldMs)/Task.RecoveryStringMs;
     const FSoraBeat* Beat=ActiveBeatData();
     const int32 Need=HeldWork==EHeldWork::Hoist?Task.PickupHoldMs
+        :IsUnloadingCargo()?Task.UnloadHoldMs
         :Beat&&Beat->ObjectiveHoldMs.IsValidIndex(HeldPoint)?Beat->ObjectiveHoldMs[HeldPoint]:0;
     return HeldWork!=EHeldWork::None&&Need>0?FMath::Clamp(static_cast<float>(HeldMs)/Need,0.f,1.f):-1.f;
 }
@@ -1763,17 +1795,16 @@ void USoraCampaignDirector::Interact(ASoraPlayerCharacter& Player)
         {
             const int32 Dropoff=NearestOf(Space.Dropoffs,[&](int32 Index)
                 { return SoraBeatRules::DropoffHasRoom(TaskState,Task,Index); });
-            if((bWorked=SoraBeatRules::Deliver(TaskState,Task,Dropoff)))
+            if(Dropoff!=INDEX_NONE&&Task.UnloadHoldMs>0)
             {
-                if(Task.Task==SoraBeatRules::ETask::Carry) CarryChanged();
-                // A delivery raises its drop-off, what was carried and which load it was ("load_01").
-                Fire(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
-                if(!Beat->CarryItem.IsEmpty()) Fire(TEXT("item_delivered:")+Beat->CarryItem);
-                Fire(FString::Printf(TEXT("item_delivered:load_%02d"),TaskState.Done));
-                // A delivery may call the waves that wait on it.
-                ReleaseEventWaves(TEXT("item_delivered:")+Beat->Dropoffs[Dropoff]);
+                // A fresh press starts the whole unload. Release, including
+                // release/repress between ticks, discards its partial time.
+                HeldWork=EHeldWork::CargoUnload; HeldPoint=Dropoff; HeldMs=0;
+                CargoClock.Reset();
+                return;
             }
-            else if(Task.Task==SoraBeatRules::ETask::Carry) bWorked=SetDownLoad(Player);
+            bWorked=DeliverLoad(Dropoff);
+            if(!bWorked&&Task.Task==SoraBeatRules::ETask::Carry) bWorked=SetDownLoad(Player);
         }
         break;
     case SoraBeatRules::EGoal::Steps:

@@ -2,6 +2,7 @@
 #include "SoraCampaignRules.h"
 #include "SoraDojoRules.h"
 #include "SoraMountRules.h"
+#include "SoraMillisecondClock.h"
 #include "SoraCrankInputRules.h"
 #include "SoraRhythmRules.h"
 #include "SoraWorkshopRules.h"
@@ -1147,10 +1148,43 @@ static void TestRideExploreCollectible()
     FTask Cargo = Make(EType::HorsebackRide, EGoal::Deliveries);
     Cargo.Count = 3;
     Cargo.Dropoffs = 3;
+    Cargo.UnloadHoldMs = 3000;
     State = Begin(Cargo, "cargo ride");
-    Expect(Deliver(State, Cargo, 0) && !Deliver(State, Cargo, 0) && Deliver(State, Cargo, 2) && !TaskComplete(State, Cargo),
+    // Binary-exact seconds put the old global clock just over 3000 ms
+    // while the fresh cargo hold is still 1/4096 s short. The runtime owns
+    // this same resettable clock rather than inheriting TickBeat's fraction.
+    FSoraMillisecondClock BeatClock, CargoClock;
+    Expect(BeatClock.Advance(1.0/2048)==0,"cargo clock setup fabricated a millisecond");
+    const double ShortHold=3.0-1.0/4096;
+    int Held=CargoClock.Advance(ShortHold);
+    Expect(BeatClock.Advance(ShortHold)==3000 && Held==2999 && !Deliver(State,Cargo,0,Held),
+        "cargo: pre-press clock fraction credited an early delivery");
+    // A paused frame never calls Advance; no wall-clock catch-up is owed.
+    Expect(Held==2999 && !Deliver(State,Cargo,0,Held),"cargo: paused work completed");
+    Held+=CargoClock.Advance(1.0/4096);
+    Expect(Held==3000 && Deliver(State,Cargo,0,Held),"cargo: exactly three active seconds did not deliver");
+    State=Begin(Cargo,"cargo after cancelled fractional hold");
+    CargoClock.Advance(1.0/2048);
+    CargoClock.Reset();
+    Expect(CargoClock.Advance(ShortHold)==2999 && State.Done==0,
+        "cargo: cancelled fractional work leaked into the next hold");
+    for (const int Duration : {-1, 0, 1, 1000, 2999})
+        Expect(!Deliver(State, Cargo, 0, Duration) && State.Done == 0 && State.DropoffUses[0] == 0,
+            "cargo: an incomplete hold credited a delivery");
+    Expect(Deliver(State, Cargo, 0, 3000) && !Deliver(State, Cargo, 0, 3000) &&
+        Deliver(State, Cargo, 2, 3000) && !TaskComplete(State, Cargo),
         "cargo: a hamlet took two loads");
-    Expect(Deliver(State, Cargo, 1) && TaskComplete(State, Cargo), "cargo: three hamlets did not finish it");
+    Expect(Deliver(State, Cargo, 1, 3000) && TaskComplete(State, Cargo), "cargo: three hamlets did not finish it");
+    State = Begin(Cargo, "cargo retry");
+    Expect(State.Done == 0 && !Deliver(State,Cargo,1,2999) && Deliver(State,Cargo,1,3000),
+        "cargo: retry carried delivery credit or bypassed the whole hold");
+    for (const int Duration : {-1, 0, MaxClockMs+1})
+    {
+        FTask Invalid=Cargo; Invalid.UnloadHoldMs=Duration;
+        Expect(!TaskValid(Invalid),"cargo: invalid hold duration accepted");
+    }
+    FTask NonCargo=Ride; NonCargo.UnloadHoldMs=3000;
+    Expect(!TaskValid(NonCargo),"cargo: hold duration leaked into an ordinary ride");
     Cargo.Count = 2;
     Expect(!TaskValid(Cargo), "cargo: loads that do not match the hamlets accepted");
 
@@ -1447,7 +1481,9 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
             return Tick(State, Task, At(500));
         }
         for (int Point = 0; Point < Task.Dropoffs; ++Point)
-            if (Deliver(State, Task, Point))
+            // The abstract progression driver supplies completed held time;
+            // mapped input, cancellation and pause are runtime fixtures.
+            if (Deliver(State, Task, Point, Task.UnloadHoldMs))
                 return true;
         return Tick(State, Task, At(500));
     case EGoal::Steps:
@@ -1863,10 +1899,10 @@ static void TestNamedDropoffCapacities()
         Expect(Pickup(State,Derived,0) && Deliver(State,Derived,Item<3?0:1),"derived destinations refused goods");
     Expect(TaskComplete(State,Derived) && !DropoffHasRoom(State,Derived,1),"spare capacity created a sixth good");
     FTask Cargo=Make(EType::HorsebackRide,EGoal::Deliveries);
-    Cargo.Count=3; Cargo.Dropoffs=3;
+    Cargo.Count=3; Cargo.Dropoffs=3; Cargo.UnloadHoldMs=3000;
     State=Begin(Cargo,"cargo capacity compatibility");
     for(int Point=0;Point<3;++Point)
-        Expect(DropoffCapacity(Cargo,Point)==1 && Deliver(State,Cargo,Point) && !Deliver(State,Cargo,Point),
+        Expect(DropoffCapacity(Cargo,Point)==1 && Deliver(State,Cargo,Point,3000) && !Deliver(State,Cargo,Point,3000),
             "horseback cargo changed its one-load-per-destination rule");
     Cargo.DropoffCapacityCount=3; Cargo.DropoffCapacities[0]=Cargo.DropoffCapacities[1]=Cargo.DropoffCapacities[2]=1;
     Expect(!TaskValid(Cargo) && !TaskCheckpointValid(Cargo,0),"carry-only explicit map leaked into horseback cargo");
