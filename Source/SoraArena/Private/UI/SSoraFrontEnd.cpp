@@ -213,7 +213,7 @@ TSharedRef<SWidget> SSoraFrontEnd::Backdrop()
             SNew(SScaleBox)
             .Stretch(EStretch::ScaleToFill)
             [
-                SNew(SImage).Image(&TitleBrush).ColorAndOpacity(FLinearColor(1.f, 1.f, 1.f, .8f))
+                SNew(SImage).Image(&TitleBrush).ColorAndOpacity(FLinearColor::White)
             ]
         ];
     Layers->AddSlot()
