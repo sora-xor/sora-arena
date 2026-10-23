@@ -1,5 +1,6 @@
 #pragma once
 #include "SoraFieldcraftRules.h"
+#include <cmath>
 
 // ch06.b14. The two-metre inspection shaft is an explicit provisional layout
 // addition, not an authored historical claim. All distances are centimetres.
@@ -10,6 +11,18 @@ constexpr int DeepStart=7500, PocketStart=8150, PocketEnd=8350;
 constexpr int DeepFloor=-200, DeepRoof=20, RiseMs=150000;
 constexpr int FromCm=40, ToCm=160, SwimDepth=140;
 constexpr int DiveSpeed=140, SurfaceSpeed=180, BreathMs=8000, RecoverMs=3000, DrownHpS=10;
+constexpr int BankWaterY=-3600, BankEdgeY=-4200, BankTop=200, BankRampThickness=30;
+struct FBankRamp { double CenterY,CenterZ,Length,RollDegrees; };
+inline FBankRamp BankRamp()
+{
+    // UE positive roll maps local +Y toward -Z. Offset the solid down its
+    // normal so its TOP, not its centre plane, meets both adjoining floors.
+    const double Run=BankWaterY-BankEdgeY,Rise=BankTop-DeepFloor;
+    const double Length=std::sqrt(Run*Run+Rise*Rise);
+    return {(BankWaterY+BankEdgeY)*.5-BankRampThickness*.5*Rise/Length,
+        (DeepFloor+BankTop)*.5-BankRampThickness*.5*Run/Length,
+        Length,std::atan2(Rise,Run)*180.0/std::acos(-1.0)};
+}
 constexpr int Clamp(int V,int Lo,int Hi) { return V<Lo?Lo:V>Hi?Hi:V; }
 constexpr int Surface(int ClockMs) { return FromCm+(ToCm-FromCm)*static_cast<long long>(Clamp(ClockMs,0,RiseMs))/RiseMs; }
 constexpr bool Pocket(int X) { return X>=PocketStart&&X<=PocketEnd; }

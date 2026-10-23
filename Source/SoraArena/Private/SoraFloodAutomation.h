@@ -35,7 +35,7 @@ inline bool Exit(FSoraAutomationWorld& W)
     };
     if(Hero->GetCharacterMovement()->bWantsToCrouch&&!W.PressKey(EKeys::C)) return false;
     if(!Walk(FVector(7440,0,0))||!W.PressKey(EKeys::C)||!Walk(FVector(8250,0,0))||
-        !W.PressKey(EKeys::C)||!Tick(240)||!W.PressKey(EKeys::C)||!Walk(FVector(9050,0,0))||
+        !W.PressKey(EKeys::C)||!Tick(240)||!W.PressKey(EKeys::C)||!Walk(FVector(9100,0,0))||
         !W.PressKey(EKeys::C)||!Tick(70)||!Walk(FVector(9500,0,0))||!Walk(FVector(9500,-600,0))||
         !Walk(FVector(9500,-3900,0))) return false;
     const FRotator Facing(0,-90,0);Hero->GetController()->SetControlRotation(Facing);Hero->FaceRotation(Facing,0);

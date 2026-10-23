@@ -52,12 +52,27 @@ class FloodTests(unittest.TestCase):
 #include <cassert>
 #include <cmath>
 #include <initializer_list>
+#include <utility>
 using namespace SoraFloodRules;
 int main() {
     static_assert(Surface(-1)==40&&Surface(0)==40&&Surface(75000)==100&&Surface(150000)==160&&Surface(999999)==160);
     static_assert(Floor(7300)==0&&Floor(7400)==-100&&Floor(7500)==-200);
     static_assert(RoofedDeep(7800)&&!RoofedDeep(8250)&&RoofedDeep(8600));
     static_assert(Immersed(10,40)&&!Immersed(50,40));
+    // Transform the actual production slab's upper corners using UE's roll
+    // convention: its support surface must meet the existing moat and bank.
+    const auto ramp=BankRamp();
+    const double angle=ramp.RollDegrees*std::acos(-1.0)/180.0;
+    const double sin=std::sin(angle),cos=std::cos(angle);
+    const auto top=[&](double y) {
+        return std::pair<double,double>{ramp.CenterY+y*cos+BankRampThickness*.5*sin,
+            ramp.CenterZ-y*sin+BankRampThickness*.5*cos};
+    };
+    const auto water=top(ramp.Length*.5),bank=top(-ramp.Length*.5);
+    assert(std::abs(water.first-BankWaterY)<1e-8&&std::abs(water.second-DeepFloor)<1e-8);
+    assert(std::abs(bank.first-BankEdgeY)<1e-8&&std::abs(bank.second-BankTop)<1e-8);
+    assert(ramp.RollDegrees>0&&ramp.RollDegrees<44.0);
+    assert(cos>std::cos(44.0*std::acos(-1.0)/180.0));
     for(int dt:{8,16,17,33,50}) {
         FRoute r; float x=7499;
         for(;x<8250;) { float p=x;x+=140*dt/1000.f;Travel(r,p,x,0,true,x-p,dt); }
