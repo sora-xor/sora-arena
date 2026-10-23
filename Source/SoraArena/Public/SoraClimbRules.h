@@ -12,12 +12,16 @@ constexpr float CrawlSpeed=90.f;
 // climbing first and waiting on the 24 m turret roof, not these coordinates.
 constexpr float GuideSpeed=140.f;
 constexpr int GuideRoofHeight=2400;
+// Provisional foot clearance for crossing a support edge. Exact tangency
+// catches the rounded capsule on the side face even without penetration.
+constexpr int SupportLiftCm=6;
 struct FGuidePoint { int X,Y,Z; };
 constexpr FGuidePoint GuideRoofPath[]={
-    {900,500,1600},{1040,500,1600},{1040,500,1800},{1040,500,2000},
-    {1040,500,2200},{1040,500,2400},{1500,500,2400}};
+    {900,500,1600+SupportLiftCm},{1040,500,1600+SupportLiftCm},{1040,500,1800},{1040,500,2000},
+    {1040,500,2200},{1040,500,GuideRoofHeight+SupportLiftCm},
+    {1500,500,GuideRoofHeight+SupportLiftCm},{1500,500,GuideRoofHeight}};
 struct FPathPoint { double X,Y,Z; };
-enum class EHoldPath { Direct, OntoRest, OffRest, BeforeRest, FromBeforeRest };
+enum class EHoldPath { Direct, OntoRest, OffRest, BeforeRest, FromBeforeRest, Mount };
 inline FPathPoint Mix(FPathPoint A,FPathPoint B,double T)
 { return {A.X+(B.X-A.X)*T,A.Y+(B.Y-A.Y)*T,A.Z+(B.Z-A.Z)*T}; }
 inline FPathPoint HoldPath(FPathPoint A,FPathPoint B,double T,EHoldPath Path)
@@ -25,18 +29,29 @@ inline FPathPoint HoldPath(FPathPoint A,FPathPoint B,double T,EHoldPath Path)
     switch(Path)
     {
     case EHoldPath::OntoRest:
-    { const FPathPoint Outside{B.X-210,B.Y,B.Z};return T<.8?Mix(A,Outside,T/.8):Mix(Outside,B,(T-.8)/.2); }
+    {
+        const FPathPoint Outside{B.X-210,B.Y,B.Z+SupportLiftCm},Above{B.X,B.Y,B.Z+SupportLiftCm};
+        return T<.7?Mix(A,Outside,T/.7):T<.9?Mix(Outside,Above,(T-.7)/.2):Mix(Above,B,(T-.9)/.1);
+    }
     case EHoldPath::OffRest:
-    { const FPathPoint Outside{A.X-210,A.Y,A.Z};return T<.2?Mix(A,Outside,T/.2):Mix(Outside,B,(T-.2)/.8); }
+    {
+        const FPathPoint Above{A.X,A.Y,A.Z+SupportLiftCm},Outside{A.X-210,A.Y,A.Z+SupportLiftCm};
+        return T<.1?Mix(A,Above,T/.1):T<.3?Mix(Above,Outside,(T-.1)/.2):Mix(Outside,B,(T-.3)/.7);
+    }
     case EHoldPath::BeforeRest:
     { const FPathPoint Outside{B.X,B.Y,A.Z};return T<.2?Mix(A,Outside,T/.2):Mix(Outside,B,(T-.2)/.8); }
     case EHoldPath::FromBeforeRest:
     { const FPathPoint Below{A.X,A.Y,B.Z};return T<.8?Mix(A,Below,T/.8):Mix(Below,B,(T-.8)/.2); }
+    case EHoldPath::Mount:
+    {
+        const FPathPoint Lifted{A.X,A.Y,A.Z+SupportLiftCm},Above{B.X,B.Y,B.Z+SupportLiftCm};
+        return T<.15?Mix(A,Lifted,T/.15):T<.85?Mix(Lifted,Above,(T-.15)/.7):Mix(Above,B,(T-.85)/.15);
+    }
     default:return Mix(A,B,T);
     }
 }
-inline bool AtSupport(bool Penetrating,double NormalZ,double LateralError,double AboveTarget)
-{ return !Penetrating&&NormalZ>=.99&&LateralError<=.25&&AboveTarget>=0&&AboveTarget<=3; }
+inline bool AtSupport(bool Penetrating,double NormalZ,double ImpactNormalZ,double LateralError,double AboveTarget)
+{ return !Penetrating&&NormalZ>=.99&&ImpactNormalZ>=.99&&LateralError<=.25&&AboveTarget>=0&&AboveTarget<=3; }
 // Implementation geometry/timing, not authored hold coordinates: the wall
 // uses two slope segments; art may curve the upper profile within this shell.
 inline double WallX(double Z)

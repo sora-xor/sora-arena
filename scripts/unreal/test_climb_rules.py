@@ -102,10 +102,16 @@ class ClimbTests(unittest.TestCase):
 using namespace SoraClimbRules;
 using namespace SoraFieldcraftRules;
 /* ROUTE_POINTS */
-double CapsuleShelfDistance2(FPathPoint feet,FPathPoint shelf) {
-    const double dx=std::max({shelf.X-130-feet.X,0.0,feet.X-shelf.X-130});
-    const double dz=std::max({shelf.Z-20-(feet.Z+142),0.0,feet.Z+34-shelf.Z});
+double CapsuleRectDistance2(FPathPoint feet,double left,double right,double bottom,double top) {
+    const double dx=std::max({left-feet.X,0.0,feet.X-right});
+    const double dz=std::max({bottom-(feet.Z+142),0.0,feet.Z+34-top});
     return dx*dx+dz*dz; // radius34; vertical capsule segment centres feet+34..142.
+}
+double CapsuleShelfDistance2(FPathPoint feet,FPathPoint shelf) {
+    return CapsuleRectDistance2(feet,shelf.X-130,shelf.X+130,shelf.Z-20,shelf.Z);
+}
+double Distance(FPathPoint a,FPathPoint b) {
+    return std::sqrt((a.X-b.X)*(a.X-b.X)+(a.Y-b.Y)*(a.Y-b.Y)+(a.Z-b.Z)*(a.Z-b.Z));
 }
 int main() {
     static_assert(Height==1600 && CornerZ[5]==550 && CornerZ[9]==1100);
@@ -127,13 +133,25 @@ int main() {
     }
     assert(PatrolAt(10000).Y==-3800 && PatrolAt(32000).Y==-3800);
     static_assert(GuideRoofHeight==2400 && GuideSpeed>0 && GuideSpeed<420);
+    static_assert(SupportLiftCm>3); // guide may advance at <=3 cm actual proximity.
     for(unsigned i=0;i<sizeof(GuideRoofPath)/sizeof(*GuideRoofPath);++i) {
         const auto p=GuideRoofPath[i];
-        assert(p.Z>=1600 && p.Z<=GuideRoofHeight);
+        assert(p.Z>=1600+SupportLiftCm && p.Z<=GuideRoofHeight+SupportLiftCm);
         // Before the final roof mount, the capsule stays outside the
         // colliding turret front at x1100, including its 34 cm radius.
         if(p.Z<GuideRoofHeight) assert(p.X+34<1100);
-        if(i) assert(p.Z>=GuideRoofPath[i-1].Z);
+        if(i) {
+            const auto previous=GuideRoofPath[i-1];
+            // Only the last, vertical support-settle leg goes downward.
+            if(p.Z<previous.Z) assert(p.X==previous.X && p.Y==previous.Y && p.Z==GuideRoofHeight);
+            for(int sample=0;sample<=4096;++sample) {
+                const auto at=Mix({double(previous.X),double(previous.Y),double(previous.Z)},
+                    {double(p.X),double(p.Y),double(p.Z)},sample/4096.0);
+                assert(CapsuleRectDistance2(at,1100,2100,2360,2400)>=34*34-1e-7);
+            }
+            if(p.X>previous.X && p.Z==GuideRoofHeight+SupportLiftCm)
+                assert(CapsuleRectDistance2({1200,500,double(p.Z)},1100,2100,2360,2400)==(34+SupportLiftCm)*(34+SupportLiftCm));
+        }
     }
     const auto roof=GuideRoofPath[sizeof(GuideRoofPath)/sizeof(*GuideRoofPath)-1];
     assert(roof.X>1100+34 && roof.X<2100-34 && roof.Y>-800+34 && roof.Y<700-34 && roof.Z==2400);
@@ -153,12 +171,48 @@ int main() {
         for(int sample=0;sample<=4096;++sample) {
             const auto at=HoldPath(Route[from],Route[to],sample/4096.0,path);
             for(int shelf:{5,9}) assert(CapsuleShelfDistance2(at,Route[shelf])>=34*34-1e-7);
+            if(sample) {
+                const auto previous=HoldPath(Route[from],Route[to],(sample-1)/4096.0,path);
+                assert(Distance(at,previous)<=600*1.8/4096+1e-7);
+            }
         }
     }
-    assert(AtSupport(false,1,0,2.2));
-    assert(!AtSupport(false,-1,0,0) && !AtSupport(false,0,.1,1));
-    assert(!AtSupport(true,1,0,0) && !AtSupport(false,1,.251,1));
-    assert(!AtSupport(false,1,0,-.001) && !AtSupport(false,1,0,3.001));
+    for(int rest:{5,9}) {
+        // Regression: crossing at the authored support plane is exactly
+        // tangent (the real UE capsule stopped on the shelf side at time0).
+        const FPathPoint edge{Route[rest].X-130,Route[rest].Y,Route[rest].Z};
+        assert(CapsuleShelfDistance2(edge,Route[rest])==34*34);
+        for(int sample=0;sample<=4096;++sample) {
+            const double t=sample/4096.0;
+            const auto onto=HoldPath(Route[rest-1],Route[rest],.7+.2*t,EHoldPath::OntoRest);
+            const auto off=HoldPath(Route[rest],Route[rest-1],.1+.2*t,EHoldPath::OffRest);
+            assert(CapsuleShelfDistance2(onto,Route[rest])>=(34+SupportLiftCm)*(34+SupportLiftCm)-1e-7);
+            assert(CapsuleShelfDistance2(off,Route[rest])>=(34+SupportLiftCm)*(34+SupportLiftCm)-1e-7);
+            // Exact reverse motion keeps input reversal on the same safe path.
+            const auto reverse=HoldPath(Route[rest],Route[rest-1],1-t,EHoldPath::OffRest);
+            const auto forward=HoldPath(Route[rest-1],Route[rest],t,EHoldPath::OntoRest);
+            assert(Distance(reverse,forward)<1e-7);
+        }
+    }
+    const FPathPoint mountFrom=Route[14],mountTo{650,mountFrom.Y,1600};
+    assert(CapsuleRectDistance2({500,mountFrom.Y,1600},500,1200,1560,1600)==34*34);
+    for(int sample=0;sample<=4096;++sample) {
+        const double t=sample/4096.0;
+        const auto at=HoldPath(mountFrom,mountTo,t,EHoldPath::Mount);
+        assert(CapsuleRectDistance2(at,500,1200,1560,1600)>=34*34-1e-7);
+        if(t>=.15 && t<=.85)
+            assert(CapsuleRectDistance2(at,500,1200,1560,1600)>=(34+SupportLiftCm)*(34+SupportLiftCm)-1e-7);
+        if(sample) assert(Distance(at,HoldPath(mountFrom,mountTo,(sample-1)/4096.0,EHoldPath::Mount))<=600*1.8/4096+1e-7);
+    }
+    assert(Distance(HoldPath(mountFrom,mountTo,0,EHoldPath::Mount),mountFrom)<1e-7);
+    assert(Distance(HoldPath(mountFrom,mountTo,1,EHoldPath::Mount),mountTo)<1e-7);
+    assert(AtSupport(false,1,1,0,2.2));
+    assert(!AtSupport(false,-1,1,0,0) && !AtSupport(false,0,1,.1,1));
+    // Actual side contacts had a near-upward capsule normal but a -X face
+    // impact normal. Even a tiny residual must not classify those as support.
+    assert(!AtSupport(false,1,0,.1,.02));
+    assert(!AtSupport(true,1,1,0,0) && !AtSupport(false,1,1,.251,1));
+    assert(!AtSupport(false,1,1,0,-.001) && !AtSupport(false,1,1,0,3.001));
     for(bool extrusion:{false,true}) {
         const auto rules=GripRules(extrusion);
         assert(ClimbValid(rules));
