@@ -317,12 +317,13 @@ public:
     bool bCampaignComplete = false;
 private:
     void ResetWind();
+    void FinishWindFall(ASoraPlayerCharacter& Hero);
     void TickWind(int32 DeltaMs);
     bool InteractWind(ASoraPlayerCharacter& Hero);
     bool WindAt(const FVector& Point) const;
     bool RidgeReadyToComplete() const;
     int32 WindMs=0,WindWarningSerial=0,WindGustSerial=0,WindAnchor=INDEX_NONE,RidgeFalls=0,LastBraceAnchor=0;
-    bool bWindLee=false,bWindHint=false;
+    bool bWindLee=false,bWindHint=false,bWindFallHeld=false;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> WindStrip;
     // One opponent a released wave still has to put on the field.
     struct FPendingSpawn

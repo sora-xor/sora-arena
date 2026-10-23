@@ -170,12 +170,15 @@ FVector USoraCampaignDirector::SpawnLocation(int32 Slot) const
     if(!Space||Space->Spawns.IsEmpty()) return Mode().Arena()?Mode().Arena()->SpawnPoint(Slot):FVector::ZeroVector;
     if(Space->Wind.Kind==TEXT("hangar"))
     {
-        FVector P(7200,2200,120);
+        // The authored forward group point lies inside shuttle 3's solid
+        // proxy. Use its clear forward aisle until the shuttle has interiors;
+        // never rely on spawn depenetration to choose the fighting position.
+        FVector P(7600,1900,120);
         if(Slot==3) P=FVector(4000,200,920);
         else if(Slot==4||Slot==5) P=FVector(4000+(Slot-4)*180,3500,120);
         else if(Slot==8) P=FVector(6600,200,920);
         else if(Slot==9||Slot==10) P=FVector(4000+(Slot-9)*180,5200,600);
-        else P.X-=Slot*100;
+        else P.Y+=(Slot<3?Slot:Slot-3)*300;
         return FVector(Space->Wind.Origin,0)+P;
     }
     if(Space->Wind.Ridge())

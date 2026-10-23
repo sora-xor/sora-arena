@@ -11,6 +11,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/InputSettings.h"
+#include "GameFramework/DamageType.h"
 #include "Misc/ScopeExit.h"
 
 namespace SoraWindAutomation
@@ -41,6 +42,26 @@ bool Reload(SoraFieldcraftAutomation::FBeatWorld& W)
     if(!W.World->Start(W.Slot)||!W.World->Tick(1)||!W.World->EnableKeyInput()) return false;
     for(int N=0;N<3;++N) if(!W.World->PressKey(EKeys::Enter)) return false;
     Freeze(W);return W.Tick(30)&&W.Campaign()->ActiveBeat()==9;
+}
+bool WaitOnDefeatAndRetry(SoraFieldcraftAutomation::FBeatWorld& W,int CheckpointBeat)
+{
+    auto* Hero=W.Hero();
+    if(!W.Test.TestTrue(TEXT("A terminal fall offers the ordinary checkpoint result"),
+        IsValid(Hero)&&W.Mode()->bDefeated&&Hero->Health==0&&Hero->GetCharacterMovement()->MovementMode==MOVE_None)) return false;
+    const FVector Stopped=Hero->GetActorLocation();
+    const int Clock=W.Campaign()->WindClockMs();
+    // Waiting at the result must not let gravity carry this pawn to KillZ.
+    if(!W.Tick(1200)||!W.Test.TestTrue(TEXT("Waiting on defeat preserves the controlled pawn"),
+        IsValid(Hero)&&W.Hero()==Hero&&!Hero->IsActorBeingDestroyed())) return false;
+    W.Test.TestTrue(TEXT("The falling body stays stopped for twenty seconds on the result screen"),
+        Hero->GetActorLocation().Equals(Stopped,1.f)&&Hero->GetCharacterMovement()->Velocity.IsZero());
+    W.Test.TestEqual(TEXT("The result screen does not advance wind"),W.Campaign()->WindClockMs(),Clock);
+    if(!W.Press(EKeys::Enter)) return false;
+    Freeze(W);
+    if(!W.Tick(30)) return false;
+    return W.Test.TestTrue(TEXT("The real retry key restores that pawn and its grounded checkpoint"),
+        W.Hero()==Hero&&Hero->IsAlive()&&!W.Mode()->bDefeated&&W.Campaign()->ActiveBeat()==CheckpointBeat&&
+        Hero->GetCharacterMovement()->IsMovingOnGround());
 }
 }
 
@@ -188,9 +209,105 @@ bool FSoraRidgeTraversalTest::RunTest(const FString& Parameters)
         }
         else TestTrue(TEXT("Fourth deliberate fall requests checkpoint retry"),W.Mode()->bDefeated);
     }
-    if(!W.Press(EKeys::Enter)||!W.Tick(30)) return false;
+    if(!WaitOnDefeatAndRetry(W,9)) return false;
     TestEqual(TEXT("Actual retry restarts b10"),W.Campaign()->ActiveBeat(),9);
     TestEqual(TEXT("Retry resets its bounded recovery allowance"),W.Campaign()->RidgeRecoveries(),0);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHangarFallsTest,"SoraArena.Campaign.HangarFalls",
+ EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraHangarFallsTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;using namespace SoraWindAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("HangarFalls"),6,7);
+    if(!Ready(W)) return false;
+    const FVector O(W.BeatData().Space.Wind.Origin,0);
+    for(bool Jump:{false,true})
+    {
+        // Walk from the real checkpoint around the stairs and shuttle 1.
+        // No relocation, movement-mode override or synthetic fall event.
+        for(const FVector P:{FVector(400,1400,0),FVector(2500,1400,0),FVector(2500,4000,0)})
+            if(!SoraLiftAutomation::Walk(*W.World,O+P)) return false;
+        if(!W.Tick(720)) return false;
+        auto* Hero=W.Hero();
+        if(!TestTrue(TEXT("Passive hangar wind stops at the exposed lip without defeat"),
+            Hero->GetCharacterMovement()->IsMovingOnGround()&&!W.Mode()->bDefeated&&
+            Hero->GetActorLocation().Y-O.Y>4400&&Hero->GetActorLocation().Y-O.Y<4500)) return false;
+        W.Look(FRotator(0,90,0));
+        if(!W.World->InjectKey(EKeys::W,IE_Pressed)) return false;
+        if(Jump)
+        {
+            const double Z=Hero->GetActorLocation().Z;
+            if(!W.Press(EKeys::SpaceBar)||!W.Tick(3)||
+                !TestTrue(TEXT("The normal Jump key launches through the open mouth"),
+                    Hero->GetCharacterMovement()->IsFalling()&&Hero->GetActorLocation().Z>Z)) return false;
+        }
+        bool CrossedMouth=false;
+        for(int Frame=0;Frame<360&&!W.Mode()->bDefeated;++Frame)
+        {
+            if(!W.Tick(1)) return false;
+            CrossedMouth|=Hero->GetActorLocation().Y-O.Y>4500;
+        }
+        if(!W.World->InjectKey(EKeys::W,IE_Released)) return false;
+        TestTrue(Jump?TEXT("A deliberate jump exits real hangar collision"):TEXT("A deliberate walk exits real hangar collision"),CrossedMouth);
+        TestEqual(TEXT("A hangar fall never spends or grants a ridge cable recovery"),W.Campaign()->RidgeRecoveries(),0);
+        if(!WaitOnDefeatAndRetry(W,7)) return false;
+        TestTrue(TEXT("Retry returns to the hangar checkpoint entry"),
+            FVector::Dist2D(W.Hero()->GetActorLocation(),FVector(W.BeatData().Space.Entry,0))<100);
+    }
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraHangarSpawnClearanceTest,"SoraArena.Campaign.HangarSpawnClearance",
+ EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraHangarSpawnClearanceTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;using namespace SoraWindAutomation;
+    if(!FSoraCatalog::Get().Load()) return false;
+    SoraFieldcraftAutomation::FBeatWorld W(*this,TEXT("HangarSpawnClearance"),6,7);
+    if(!Ready(W)) return false;
+    const FVector O(W.BeatData().Space.Wind.Origin,0);
+    TSet<int32> Checked;int Rifles=0;
+    // Isolate layout and the real wave queue: production damage defeats one
+    // frozen opponent at a time. This is not an ordinary-combat acceptance.
+    for(int Pass=0;Pass<12&&W.Campaign()->ActiveBeat()==7;++Pass)
+    {
+        Freeze(W);ASoraEnemy* Next=nullptr;
+        for(TActorIterator<ASoraEnemy> It(W.World->GetTestWorld());It;++It)
+        {
+            if(!It->IsAlive()) continue;
+            Next=*It;
+            const int Slot=It->EnemySlot();if(Checked.Contains(Slot)) continue;
+            Checked.Add(Slot);
+            const FVector At=It->GetActorLocation();const auto* Capsule=It->GetCapsuleComponent();
+            FCollisionQueryParams Q(SCENE_QUERY_STAT(HangarSpawnClearance),false,*It);
+            TestFalse(FString::Printf(TEXT("Wave slot %d has a clear actual capsule"),Slot),
+                W.World->GetTestWorld()->OverlapBlockingTestByChannel(At,Capsule->GetComponentQuat(),ECC_Pawn,
+                    FCollisionShape::MakeCapsule(Capsule->GetScaledCapsuleRadius(),Capsule->GetScaledCapsuleHalfHeight()),Q));
+            if(!It->IsFlying())
+            {
+                FHitResult Support;
+                const FVector Feet=At-FVector(0,0,Capsule->GetScaledCapsuleHalfHeight());
+                TestTrue(FString::Printf(TEXT("Grounded wave slot %d has real nearby deck/gallery support"),Slot),
+                    W.World->GetTestWorld()->LineTraceSingleByChannel(Support,Feet+FVector(0,0,5),Feet-FVector(0,0,150),ECC_Visibility,Q)&&
+                    Support.ImpactNormal.Z>.9f);
+            }
+            if(It->ArchetypeId()==TEXT("enforcer_rifle"))
+            {
+                ++Rifles;
+                const FVector Planned=O+FVector(7600,1900+(Slot<3?Slot:Slot-3)*300,120);
+                TestTrue(TEXT("The forward rifle spawns on its explicit clear aisle instead of an adjusted proxy face"),FVector::Dist2D(At,Planned)<10);
+            }
+        }
+        if(!TestNotNull(TEXT("The real wave queue supplies its next opponent"),Next)) return false;
+        UGameplayStatics::ApplyDamage(Next,100000.f,W.Hero()->GetController(),W.Hero(),UDamageType::StaticClass());
+        Freeze(W);if(!W.Tick(1)) return false;
+    }
+    TestEqual(TEXT("All eleven authored hangar wave members receive collision checks"),Checked.Num(),11);
+    TestEqual(TEXT("Both waves contain the same five authored rifles"),Rifles,5);
+    TestEqual(TEXT("Defeating the unchanged roster advances into the hangar radio beat"),W.Campaign()->ActiveBeat(),8);
     return !HasAnyErrors();
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraWindProjectilesTest,"SoraArena.Campaign.WindProjectiles",
