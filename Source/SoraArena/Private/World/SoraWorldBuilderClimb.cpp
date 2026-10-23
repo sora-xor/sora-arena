@@ -65,6 +65,10 @@ void ASoraWorldBuilder::BuildClimb(const FSoraBeat& Beat)
     Slab(TEXT("ClimbCrawlLintel"),FVector(1250,0,1805),FVector(300,120,190),Stone);
     Slab(TEXT("ClimbCrawlLeft"),FVector(1250,-2180,1900),FVector(300,4240,600),Stone);
     Slab(TEXT("ClimbCrawlRight"),FVector(1250,455,1900),FVector(300,790,600),Stone);
+    Slab(TEXT("ClimbTurretUpperWall"),FVector(1250,455,2300),FVector(300,790,200),Stone);
+    Slab(TEXT("ClimbTurretRoof"),FVector(1600,-50,SoraClimbRules::GuideRoofHeight-20),FVector(1000,1500,40),Stone);
+    for(int32 Z:{1800,2000,2200,2400})
+        Box(TEXT("ClimbGuideRoofHold"),O+FVector(1090,500,Z-30),FVector(20,45,14),Stone,false);
     // A short rail prevents stepping around the aperture off its approach.
     for(int32 Side:{-1,1}) Slab(TEXT("ClimbApproachRail"),FVector(980,Side*280,1730),FVector(240,40,260),Stone);
     Box(TEXT("ClimbExtrusionStrip"),O+FVector(450,-1000,1100),FVector(22,22,1000),FLinearColor(.05f,.7f,.85f),false);

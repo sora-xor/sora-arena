@@ -188,6 +188,8 @@ public:
     bool DriveClimbSentry(ASoraEnemy& Enemy,float Dt);
     bool IsClimbSentry(const ASoraEnemy& Enemy) const;
     void AssignClimbSentry(ASoraEnemy& Enemy);
+    bool MoveClimbCompanion(ASoraCompanion& Companion,float Dt);
+    bool ClimbGuideWaiting() const { return ClimbSpace&&bClimbGuideWaiting; }
     int32 FloodElapsedMs() const { return FloodClockMs; }
     int32 FloodPassageStage() const { return FloodRoute.Stage; }
     bool FloodCarriesIota() const;
@@ -442,6 +444,10 @@ private:
     UPROPERTY() TWeakObjectPtr<ASoraEnemy> ClimbSentry;
     UPROPERTY() TObjectPtr<USpotLightComponent> ClimbSentryLamp;
     UPROPERTY() TArray<TObjectPtr<APointLight>> ClimbStripLights;
+    UPROPERTY() TWeakObjectPtr<ASoraCompanion> ClimbGuide;
+    TArray<FVector> ClimbGuidePath;
+    int32 ClimbGuidePoint=0;
+    bool bClimbGuideWaiting=false;
     // Stones and the candle.
     int32 Stones = 0;
     bool bCupped = false;

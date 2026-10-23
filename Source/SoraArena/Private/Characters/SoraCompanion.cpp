@@ -404,6 +404,7 @@ void ASoraCompanion::TickPlay(float Dt)
         return;
     }
     if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->MoveFloodCompanion(*this,Dt)) return;
+    if(auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->MoveClimbCompanion(*this,Dt)) return;
     // The spire's skirmishers accompany the climb instead of defending
     // their original L1 spawn forever. Other chapters retain fixed posts.
     if(UsesSpireRoute())

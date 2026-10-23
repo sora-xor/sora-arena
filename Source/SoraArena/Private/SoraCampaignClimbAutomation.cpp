@@ -31,6 +31,12 @@ ASoraEnemy* Sentry(FWorld& W)
         if(W.Fieldcraft()->IsClimbSentry(**It)) return *It;
     return nullptr;
 }
+ASoraCompanion* Guide(FWorld& W)
+{
+    for(TActorIterator<ASoraCompanion> It(W.World->GetTestWorld());It;++It)
+        if(It->CompanionId()==TEXT("npc_kohagi")) return *It;
+    return nullptr;
+}
 bool Support(FWorld& W,const FVector& Local,float Expected,const TCHAR* Label)
 {
     const FVector O(W.BeatData().Space.Climb.Origin,0);FHitResult Hit;
@@ -246,6 +252,55 @@ bool FSoraClimbFallTest::RunTest(const FString&)
     if(!W.Press(EKeys::Enter)||!W.Tick(30)) return false;
     TestTrue(TEXT("The ordinary retry clears fall and route state"),!W.Mode()->bDefeated&&W.Hero()->IsAlive()&&
         W.Fieldcraft()->ClimbRouteIndex()==INDEX_NONE&&!W.Fieldcraft()->IsClimbing()&&!W.Fieldcraft()->ClimbExitReady());
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoraClimbGuideTest,"SoraArena.Campaign.ClimbGuide",
+ EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FSoraClimbGuideTest::RunTest(const FString&)
+{
+    SoraClimbTest::FWorld W(*this,TEXT("ClimbGuide"),5,2);if(!SoraClimbTest::Start(W)) return false;
+    auto* Guide=SoraClimbTest::Guide(W);auto* C=W.Fieldcraft();
+    if(!TestNotNull(TEXT("The authored guide is staged"),Guide)) return false;
+    const auto& Route=W.BeatData().Space.Climb.Corner;const FVector O(W.BeatData().Space.Climb.Origin,0);
+    TestTrue(TEXT("Kohagi starts climbing before the waiting hero"),Guide->GetActorLocation().Z>W.Hero()->GetActorLocation().Z+20&&!C->IsClimbing());
+    TestFalse(TEXT("The scripted guide remains nondetectable"),Guide->IsExposed(0));
+    uint32 Reached=0;bool Paused=false;FVector Previous=Guide->GetActorLocation();
+    for(int32 F=0;F<3600&&!C->ClimbGuideWaiting();++F)
+    {
+        if(!W.Tick(1)) return false;
+        const FVector At=Guide->GetActorLocation(),Feet=At-O-FVector(0,0,Guide->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+        TestTrue(TEXT("Every guide movement remains bounded, with no relocation"),FVector::Dist(At,Previous)<=SoraClimbRules::GuideSpeed/60.f+3.f);
+        Previous=At;
+        for(int32 H=1;H<Route.Points.Num();++H) if(Feet.Equals(Route.Points[H],5)) Reached|=1u<<H;
+        if(!Paused&&Feet.Z>300)
+        {
+            const int32 Clock=C->ClimbClock();W.Mode()->SetMenuOpen(true);
+            if(!W.Tick(120)) return false;
+            TestTrue(TEXT("Menu freezes the active guide and shared watch clock"),Guide->GetActorLocation().Equals(At,.01f)&&C->ClimbClock()==Clock);
+            W.Mode()->SetMenuOpen(false);Paused=true;
+        }
+    }
+    if(!TestTrue(TEXT("Kohagi physically reaches all fourteen corner holds and the roof"),Reached==0x7ffeu&&C->ClimbGuideWaiting())||!W.Tick(30)) return false;
+    FHitResult Floor;FCollisionQueryParams Q(SCENE_QUERY_STAT(ClimbGuideRoofFixture),false,Guide);Q.AddIgnoredActor(W.Hero());
+    const FVector Feet=Guide->GetActorLocation()-FVector(0,0,Guide->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+    const bool Supported=W.World->GetTestWorld()->LineTraceSingleByChannel(Floor,Feet+FVector(0,0,20),Feet-FVector(0,0,60),ECC_WorldStatic,Q);
+    TestTrue(TEXT("The roof wait stands on real 24m support"),Supported&&!Floor.bStartPenetrating&&Floor.ImpactNormal.Z>.9&&
+        FMath::Abs(Floor.ImpactPoint.Z-SoraClimbRules::GuideRoofHeight)<2&&Guide->GetCharacterMovement()->IsMovingOnGround());
+    const FVector Waiting=Guide->GetActorLocation();if(!W.Tick(600)) return false;
+    TestTrue(TEXT("The roof guide waits instead of falling back to generic following"),C->ClimbGuideWaiting()&&Guide->GetActorLocation().Equals(Waiting,2));
+    TestFalse(TEXT("The guide cannot credit the player's crawl exit"),C->ClimbExitReady());
+    UGameplayStatics::ApplyDamage(W.Hero(),W.Hero()->Health+1000,nullptr,nullptr,UDamageType::StaticClass());
+    if(!W.Tick(2)||!W.Press(EKeys::Enter)||!W.Tick(30)) return false;
+    Guide=SoraClimbTest::Guide(W);C=W.Fieldcraft();
+    TestTrue(TEXT("Death retry restarts the guide at the lower route"),Guide&&!C->ClimbGuideWaiting()&&Guide->GetActorLocation().Z<500);
+    if(!SoraClimbTest::Reload(W)) return false;
+    Guide=SoraClimbTest::Guide(W);C=W.Fieldcraft();
+    TestTrue(TEXT("A fresh checkpoint world cannot retain the previous roof wait"),Guide&&!C->ClimbGuideWaiting()&&Guide->GetActorLocation().Z<500);
+    const TWeakObjectPtr<ASoraCompanion> OldGuide=Guide;W.Harden();
+    if(!TestTrue(TEXT("The player's ordinary route still completes with the guide present"),SoraClimbAutomation::Traverse(*W.World))) return false;
+    TestTrue(TEXT("Beat transition destroys the old scoped guide and clears the wait"),
+        (!OldGuide.IsValid()||OldGuide->IsActorBeingDestroyed())&&!W.Fieldcraft()->ClimbGuideWaiting());
     return !HasAnyErrors();
 }
 #endif
