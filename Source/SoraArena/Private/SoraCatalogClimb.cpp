@@ -40,7 +40,12 @@ bool Route(const FJsonObject& Object, bool Extrusion, FSoraClimbRoute& Out)
     {
         int32 XYZ[3]={};
         const int32 Z=Extrusion?SoraClimbRules::ExtrusionZ[I]:SoraClimbRules::CornerZ[I];
-        if(!Point((*Points)[I],3,XYZ) || XYZ[0]!=FMath::RoundToInt32(SoraClimbRules::WallX(Z))-70 ||
+        // These two provisional approach holds clear the solid rest-shelf
+        // lip before the swept runtime rises and moves inward onto the rest.
+        const int32 X=!Extrusion&&(I==4||I==8)
+            ? FMath::RoundToInt32(SoraClimbRules::WallX(SoraClimbRules::CornerZ[I+1]))-70-210
+            : FMath::RoundToInt32(SoraClimbRules::WallX(Z))-70;
+        if(!Point((*Points)[I],3,XYZ) || XYZ[0]!=X ||
             XYZ[1]!=(Extrusion?-1000:70) || XYZ[2]!=Z) return false;
         Out.Points.Add(FVector(XYZ[0],XYZ[1],XYZ[2]));
     }
