@@ -11118,7 +11118,7 @@
      0
     ],
     "anchor": [
-     66216,
+     66400,
      0
     ],
     "objectives": [],
@@ -11240,8 +11240,8 @@
        "rank": -1,
        "joins": null,
        "at": [
-        62010,
-        0
+        66200,
+        600
        ]
       }
      ],
@@ -11254,6 +11254,37 @@
      "fires": null,
      "ladders": [],
      "charge": null
+    },
+    "helm": {
+     "threshold_permille": [
+      250,
+      500,
+      750
+     ],
+     "work_ms": 2000,
+     "grace_ms": 8000,
+     "decay_permille": 20,
+     "deadline_ms": [
+      200000,
+      150000,
+      130000
+     ],
+     "center": [
+      66400,
+      0
+     ],
+     "size": [
+      600,
+      1600
+     ],
+     "wheel": [
+      66400,
+      -500
+     ],
+     "beacon": [
+      66400,
+      600
+     ]
     },
     "height_cm": 0,
     "lift": null

@@ -6,6 +6,7 @@
 #include "SoraMountRules.h"
 #include "SoraRegistry.h"
 #include "SoraSpireRules.h"
+#include "SoraHelmRules.h"
 
 struct FSoraWeapon
 {
@@ -537,8 +538,16 @@ struct FSoraSummitSpace
     TArray<FVector> Stairs;
     bool Enabled() const { return Stairs.Num()==6; }
 };
+struct FSoraHelmSpace
+{
+    bool bEnabled=false;
+    SoraHelmRules::FContract Contract;
+    FSoraVolume Hold;
+    FVector2D Wheel=FVector2D::ZeroVector,Beacon=FVector2D::ZeroVector;
+};
 struct FSoraBeatSpace
 {
+    FSoraHelmSpace Helm;
     FSoraSummitSpace Summit;
     FSoraSpireSpace Spire;
     int32 HeightCm=0;

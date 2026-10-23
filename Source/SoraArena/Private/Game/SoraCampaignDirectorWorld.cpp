@@ -44,6 +44,7 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
 {
     const FSoraBeat* Beat=ActiveBeatData();
     if(!Beat||Mode().bChapterComplete||bWoodTransit) return false;
+    if(HelmNeedsTrim()) { Location=HelmWheelPoint(); bInteract=true; return true; }
     if(IsToriiEpilogue()) return EpilogueObjective(Location,bInteract);
     if(IsArcheryLesson()) { Location=ArcheryLine(); bInteract=false; return !AtArcheryLine(); }
     if(bLiftGallery) { bInteract=false; return LiftExitPoint(Location); }

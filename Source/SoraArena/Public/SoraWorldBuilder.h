@@ -113,6 +113,9 @@ public:
     float PlayerStartYaw() const { return bCampaignSpace ? CampaignStartYaw : 0.f; }
     // The active beat's task kit (SoraWorldBuilderLayoutTasks.cpp): built as
     // the beat starts, shown as its task goes on, cleared with the beat.
+    void StageHelm(const FSoraBeat& Beat);
+    void ShowHelm(bool NeedsTrim,float HeldFraction);
+    bool CanReachHelm(const ASoraPlayerCharacter& Hero) const;
     void StageKit(const FSoraChapter& Chapter, int32 Beat);
     void ShowKit(const FSoraKitView& View);
     void ClearKit();
@@ -229,6 +232,9 @@ private:
     UPROPERTY() TArray<TObjectPtr<USceneComponent>> KitParty;
     UPROPERTY() TArray<TObjectPtr<USkeletalMeshComponent>> KitWalkers;
     // Pieces the kit moves or tints as the task goes on.
+    FVector HelmAt=FVector::ZeroVector;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> HelmWheel;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> HelmNeedle;
     UPROPERTY() TObjectPtr<UStaticMeshComponent> KitGauge;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> BellowsNotches;
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> BellowsSparks;

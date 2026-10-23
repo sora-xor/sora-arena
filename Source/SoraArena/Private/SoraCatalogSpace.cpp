@@ -905,6 +905,31 @@ bool FSoraCatalog::LoadSpace(const FJsonObject& Data, FSoraChapter& C)
         if (B.bMount != (Beat.Is(SoraBeatRules::EType::HorsebackRide) || (Mount.IsValid() && Beat.Is(SoraBeatRules::EType::Boss))) ||
             (B.bMount && (!Mount || !SpaceReadMount(*Mount, Task, B.Mount))))
             return Bad(Beat.Id + TEXT(" horse"));
+        if(Beat.Id==TEXT("ch07.b14"))
+        {
+            const auto H=Child(*O,TEXT("helm"));
+            const auto Thresholds=H?Rows(*H,TEXT("threshold_permille")):nullptr;
+            const auto Deadlines=H?Rows(*H,TEXT("deadline_ms")):nullptr;
+            auto& R=B.Helm.Contract;
+            if(!H||!Thresholds||Thresholds->Num()!=3||!Deadlines||Deadlines->Num()!=3||
+                !SpaceArea(*H,B.Helm.Hold)||!SpacePoint(H->TryGetField(TEXT("wheel")),B.Helm.Wheel)||
+                !SpacePoint(H->TryGetField(TEXT("beacon")),B.Helm.Beacon)||
+                !Int(*H,TEXT("work_ms"),R.WorkMs)||!Int(*H,TEXT("grace_ms"),R.GraceMs)||
+                !Int(*H,TEXT("decay_permille"),R.DecayPermille)) return Bad(Beat.Id+TEXT(" helm"));
+            for(int32 Index=0;Index<3;++Index)
+            {
+                double Value=0;
+                if(!SpaceNumber((*Thresholds)[Index],Value)) return Bad(Beat.Id+TEXT(" helm threshold"));
+                R.Threshold[Index]=static_cast<int>(Value);
+                if(!SpaceNumber((*Deadlines)[Index],Value)) return Bad(Beat.Id+TEXT(" helm deadline"));
+                R.DeadlineMs[Index]=static_cast<int>(Value);
+                if(R.DeadlineMs[Index]<=Beat.Task.DurationMs) return Bad(Beat.Id+TEXT(" helm deadline duration"));
+            }
+            if(!SoraHelmRules::Valid(R)||!B.Helm.Hold.Contains(FVector(B.Helm.Wheel,B.HeightCm))||
+                !Beat.Has(SoraBeatRules::EGoal::Hold)) return Bad(Beat.Id+TEXT(" helm contract"));
+            B.Helm.bEnabled=true;
+        }
+        else if(O->HasField(TEXT("helm"))) return Bad(Beat.Id+TEXT(" unexpected helm"));
         const TSharedPtr<FJsonObject> Fieldcraft = Child(*O, TEXT("fieldcraft"));
         if (!Fieldcraft || !SpaceReadFieldcraft(*Fieldcraft, Beat, B.Fieldcraft))
             return Bad(Beat.Id + TEXT(" fieldcraft"));

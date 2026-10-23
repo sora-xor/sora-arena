@@ -86,6 +86,7 @@ def checks(python: str = sys.executable) -> list[Check]:
     unit("gameplay", "equipment-recovery-data", "scripts/unreal/test_recovery_data.py")
     unit("gameplay", "carry-difficulty-data", "scripts/unreal/test_carry_difficulty_data.py")
     unit("gameplay", "carry-work-data", "scripts/unreal/test_carry_work_data.py")
+    unit("gameplay", "helm-data", "scripts/unreal/test_helm_data.py")
     unit("gameplay", "crank-data", "scripts/unreal/test_crank_data.py")
     unit("gameplay", "rhythm-data", "scripts/unreal/test_rhythm_data.py")
     script("gameplay", "rhythm-hud-layout", "scripts/unreal/test_rhythm_hud_layout.py")
