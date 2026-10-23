@@ -56,8 +56,11 @@ def material_audit(material, unreal, library):
     parent = material.get_base_material()
     require(parent is not None, "bound material has no base")
     overrides = material.get_editor_property("base_property_overrides")
-    blend = overrides.blend_mode if overrides.override_blend_mode else parent.get_editor_property("blend_mode")
-    shading = overrides.shading_model if overrides.override_shading_model else parent.get_editor_property("shading_model")
+    # These reflected UPROPERTY fields are editor-only in the Python wrapper;
+    # direct attribute access is not generated for them in the pinned engine.
+    prop = overrides.get_editor_property
+    blend = prop("blend_mode") if prop("override_blend_mode") else parent.get_editor_property("blend_mode")
+    shading = prop("shading_model") if prop("override_shading_model") else parent.get_editor_property("shading_model")
     require(parent.get_editor_property("material_domain") == unreal.MaterialDomain.MD_SURFACE, "non-surface dojo material")
     require(blend in (unreal.BlendMode.BLEND_OPAQUE, unreal.BlendMode.BLEND_MASKED), "unsupported dojo blend; keep this section conventional pending review")
     require(shading in (unreal.MaterialShadingModel.MSM_DEFAULT_LIT, unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE),
@@ -65,7 +68,7 @@ def material_audit(material, unreal, library):
     require(library.has_material_usage(material, unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES), "missing instanced material usage")
     require(library.has_material_usage(material, unreal.MaterialUsage.MATUSAGE_NANITE), "missing/overridden Nanite material usage")
     return {"material": material.get_path_name(), "parent": parent.get_path_name(), "blend": str(blend), "shading": str(shading),
-            "two_sided": bool(overrides.two_sided if overrides.override_two_sided else parent.get_editor_property("two_sided"))}
+            "two_sided": bool(prop("two_sided") if prop("override_two_sided") else parent.get_editor_property("two_sided"))}
 
 
 def enable_full_fallback(mesh, module, subsystem, unreal, library):

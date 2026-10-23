@@ -23,11 +23,21 @@ class Settings:
     def set_editor_property(self, name, value): self.values[name] = value
 
 
+class Overrides:
+    # Match the engine's editor reflection surface. No direct field attributes.
+    __slots__ = ("values",)
+    def __init__(self):
+        self.values = dict(override_blend_mode=False, blend_mode="Translucent", override_shading_model=False,
+                           shading_model="Water", override_two_sided=False, two_sided=False)
+    def get_editor_property(self, name): return self.values[name]
+    def set_editor_property(self, name, value): self.values[name] = value
+
+
 class Material:
     def __init__(self, name, foliage=False):
         self.name = name
         self.props = dict(material_domain="Surface", blend_mode="Opaque", shading_model="TwoSidedFoliage" if foliage else "DefaultLit", two_sided=foliage)
-        self.overrides = NS(override_blend_mode=False, blend_mode="Translucent", override_shading_model=False, shading_model="Water", override_two_sided=False, two_sided=False)
+        self.overrides = Overrides()
         self.usages = {"Instanced", "Nanite"}
     def get_base_material(self): return self
     def get_editor_property(self, name): return self.overrides if name == "base_property_overrides" else self.props[name]
@@ -145,7 +155,7 @@ class DojoNaniteTests(unittest.TestCase):
 
     def test_unreviewed_material_models_and_instance_overrides_are_not_rewritten(self):
         for change in (lambda m: m.props.update(blend_mode="Translucent"), lambda m: m.props.update(material_domain="PostProcess"),
-                       lambda m: m.props.update(shading_model="Water"), lambda m: setattr(m.overrides, "override_blend_mode", True),
+                       lambda m: m.props.update(shading_model="Water"), lambda m: m.overrides.set_editor_property("override_blend_mode", True),
                        lambda m: setattr(m.overrides, "override_shading_model", True), lambda m: m.usages.remove("Nanite"),
                        lambda m: m.usages.remove("Instanced")):
             self.setUp(); change(self.mesh.materials[0])
