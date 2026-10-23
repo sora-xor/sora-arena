@@ -159,6 +159,7 @@ bool FSoraMoatSenses::RunTest(const FString&)
     for(int32 F=0;F<1800&&!W.Raised(TEXT("ai_event:searchlight_alert"));++F)if(!W.Tick(1))return false;
     SoraMoatTest::Sample(W,TEXT("live searchlight detection"));
     TestTrue(TEXT("Real head exposure reaches both authored light thresholds"),W.Raised(TEXT("ai_event:searchlight_suspicious"))&&W.Raised(TEXT("ai_event:searchlight_alert"))&&W.Stealth()->IsDetected());
+    TestTrue(TEXT("Actual traced searchlight exposure supplies the guard light-range input"),C->MoatHeadLit());
     if(!W.Tick(90))return false;
     int32 Rifle=0;ASoraEnemy* Drone=nullptr;
     for(TActorIterator<ASoraEnemy> I(W.World->GetTestWorld());I;++I)if(C->IsMoatGuard(**I)&&I->IsAlive())
@@ -170,6 +171,7 @@ bool FSoraMoatSenses::RunTest(const FString&)
     TestTrue(TEXT("Both lamps lock the actual detection position"),FVector::Dist2D(C->SpotOf(0),Seen)<30&&FVector::Dist2D(C->SpotOf(1),Seen)<30);
     if(!SoraMoatAutomation::Posture(*W.World,true)||!SoraMoatTest::Walk(W,FVector(6000,1300,-150))||!SoraMoatAutomation::Posture(*W.World,false))return false;
     TestTrue(TEXT("Surfacing beneath real lotus cover hides the head and restores air"),!C->IsDiving()&&C->HeroExposure(1000)==0);
+    TestFalse(TEXT("Cover cannot retain the searchlight range bonus"),C->MoatHeadLit());
     // Search itself is20s; a remote parapet guard first walks to its
     // reachable investigation point. Keep that physical travel in the test.
     if(!W.Tick(3600))return false;

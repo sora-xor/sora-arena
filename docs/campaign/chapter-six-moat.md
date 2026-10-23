@@ -69,7 +69,10 @@ Both rifle sentries patrol their authored x ranges on supported collision.
 The drone follows the figure-eight extents at6m, with a physical descent to3m
 on detection. Their sight uses an actual 3D cone and ordinary visibility traces.
 The existing light controller retains the70°/10s sweep,400cm radius,
-0.5s/1.5s suspicion/alert thresholds and6s lock on actual last-seen evidence.
+0.5s/1.5s suspicion/alert thresholds and6s lock on actual last-seen evidence. Its
+actual head/cover/lamp-LOS sample also supplies the guard's lit-range input:
+these component lights are absent from the general actor-light scan. The guard
+still requires its own 3D cone, authored range and visibility ray.
 
 Detection releases the existing two-rifle wave onto the parapet. Those actors
 become finite-search guards, not omniscient generic wave hunters. Alert movement
