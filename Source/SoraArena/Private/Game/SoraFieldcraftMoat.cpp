@@ -38,6 +38,12 @@ float USoraFieldcraft::MoatDepth() const
 { return MoatSpace&&bMoatPosture?Moat::Surface-MoatHead().Z:0.f; }
 bool USoraFieldcraft::MoatBlocksHitscan() const
 { return MoatSpace&&bSwimming&&MoatDepth()>MoatSpace->HitscanClearDepthCm; }
+bool USoraFieldcraft::MoatHeadLit() const
+{
+    if(!MoatSpace||!bMoatPosture||MoatDepth()>0)return false;
+    for(const FLightState& Light:LightStates)if(Light.bOn&&Light.bSeesHero)return true;
+    return false;
+}
 bool USoraFieldcraft::MoatCrouch(ASoraPlayerCharacter&)
 { if(!MoatSpace||!bSwimming)return false;bMoatDiveWish=!bMoatDiveWish;return true; }
 

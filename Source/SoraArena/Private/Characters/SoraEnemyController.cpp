@@ -1137,7 +1137,13 @@ Stealth::FSight ASoraEnemyController::Look(const ASoraEnemy& Enemy, const ASoraC
     if (Fieldcraft && Cast<ASoraPlayerCharacter>(&Target))
         Sight.ExposurePermille = Fieldcraft->HeroExposure(Sight.ExposurePermille);
     if (Sight.ExposurePermille > 0)
+    {
         Sight.LightPermille = Zone ? Zone->LightAt(There) : 1000;
+        // These lamps are components, so the general ALight scan cannot see
+        // them. Use the real head/cover/lamp-LOS sample; guard LOS still applies.
+        if (Fieldcraft && Fieldcraft->IsMoatGuard(Enemy) && Cast<ASoraPlayerCharacter>(&Target) && Fieldcraft->MoatHeadLit())
+            Sight.LightPermille = 1000;
+    }
     return Sight;
 }
 

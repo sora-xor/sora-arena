@@ -183,6 +183,7 @@ public:
     FVector MoatHead() const;
     float MoatDepth() const;
     bool MoatBlocksHitscan() const;
+    bool MoatHeadLit() const;
     bool MoatObjective(FVector& At) const;
     bool MoveMoatCompanion(ASoraCompanion& Companion,float Dt);
     void AssignMoatGuard(ASoraEnemy& Enemy,int32 Index);
