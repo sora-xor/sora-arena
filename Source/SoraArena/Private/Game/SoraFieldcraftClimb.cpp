@@ -17,9 +17,9 @@ namespace SoraClimbRuntime
 {
 FVector Feet(const ASoraPlayerCharacter& P)
 { return P.GetActorLocation()-FVector(0,0,P.GetCapsuleComponent()->GetScaledCapsuleHalfHeight()); }
-bool SweepFeet(ASoraPlayerCharacter& P,const FVector& To)
+bool SweepFeet(ASoraPlayerCharacter& P,const FVector& To,FHitResult& Hit)
 {
-    FHitResult Hit;
+    Hit=FHitResult();
     P.SetActorLocation(To+FVector(0,0,P.GetCapsuleComponent()->GetScaledCapsuleHalfHeight()),true,&Hit);
     P.GetCharacterMovement()->Velocity=FVector::ZeroVector;
     const FVector Reached=Feet(P);
@@ -32,6 +32,42 @@ bool SweepFeet(ASoraPlayerCharacter& P,const FVector& To)
 
 const FSoraClimbRoute* USoraFieldcraft::CurrentClimbRoute() const
 { return !ClimbSpace||ClimbRoute==INDEX_NONE?nullptr:ClimbRoute==0?&ClimbSpace->Corner:&ClimbSpace->Extrusion; }
+
+FString USoraFieldcraft::ClimbDiagnostic() const
+{
+    const FVector O=ClimbSpace?FVector(ClimbSpace->Origin,0):FVector::ZeroVector;
+    const auto HitText=[](const FHitResult& Hit)
+    {
+        return FString::Printf(TEXT("blocking=%d penetrating=%d actor=%s component=%s normal=%s impact_normal=%s time=%.6f depth=%.4f location=%s impact=%s"),
+            Hit.bBlockingHit,Hit.bStartPenetrating,*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()),
+            *Hit.Normal.ToString(),*Hit.ImpactNormal.ToString(),Hit.Time,Hit.PenetrationDepth,*Hit.Location.ToString(),*Hit.ImpactPoint.ToString());
+    };
+    FString Out=FString::Printf(TEXT("origin=%s clock=%d route=%d hold=%d step=%d alpha=%.6f climbing=%d falling=%d mounting=%d top=%d crawl=%d crawl_wish=%d entered=%d exited=%d grip_milli=%d step_start=%s last_from=%s last_wanted=%s last_accepted=%d last_hit={%s}"),
+        *O.ToString(),ClimbClockMs,ClimbRoute,Grip.Hold,ClimbStepTarget,ClimbStepAlpha,bClimbing,bFalling,bClimbMounting,bClimbReachedTop,
+        bClimbCrawl,bClimbCrawlWish,bClimbCrawlEntered,bClimbCrawled,Grip.GripMilli,*ClimbStepStart.ToString(),
+        *(ClimbSweepFrom-O).ToString(),*(ClimbSweepWanted-O).ToString(),bClimbSweepAccepted,*HitText(ClimbSweepHit));
+    if(const auto* P=Hero())
+    {
+        const auto* Move=P->GetCharacterMovement();
+        Out+=FString::Printf(TEXT(" hero_feet=%s hero_center=%s velocity=%s mode=%d custom=%d forward_axis=%.4f right_axis=%.4f can_play=%d alive=%d crouched=%d wants_crouch=%d half=%.3f radius=%.3f floor={%s}"),
+            *(SoraClimbRuntime::Feet(*P)-O).ToString(),*P->GetActorLocation().ToString(),*Move->Velocity.ToString(),int32(Move->MovementMode),int32(Move->CustomMovementMode),
+            P->GetInputAxisValue(TEXT("MoveForward")),P->GetInputAxisValue(TEXT("MoveRight")),P->CanPlay(),P->IsAlive(),P->IsCrouched(),Move->bWantsToCrouch,
+            P->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),P->GetCapsuleComponent()->GetScaledCapsuleRadius(),*HitText(Move->CurrentFloor.HitResult));
+    }
+    if(ClimbGuide.IsValid())
+    {
+        const auto* G=ClimbGuide.Get();const auto* Move=G->GetCharacterMovement();const float Half=G->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+        const FVector Goal=ClimbGuidePath.IsValidIndex(ClimbGuidePoint)?ClimbGuidePath[ClimbGuidePoint]:FVector::ZeroVector;
+        Out+=FString::Printf(TEXT(" guide_feet=%s guide_target=%s guide_point=%d/%d guide_wait=%d guide_mode=%d guide_velocity=%s guide_half=%.3f guide_radius=%.3f guide_vertical={%s} guide_horizontal={%s}"),
+            *(G->GetActorLocation()-O-FVector(0,0,Half)).ToString(),*Goal.ToString(),ClimbGuidePoint,ClimbGuidePath.Num(),bClimbGuideWaiting,
+            int32(Move->MovementMode),*Move->Velocity.ToString(),Half,G->GetCapsuleComponent()->GetScaledCapsuleRadius(),*HitText(ClimbGuideVerticalHit),*HitText(ClimbGuideHorizontalHit));
+    }
+    if(ClimbSentry.IsValid())
+        Out+=FString::Printf(TEXT(" sentry_center=%s sentry_goal=%s sentry_mode=%d watching=%d aim=%s sentry_hit={%s}"),
+            *(ClimbSentry->GetActorLocation()-O).ToString(),*(ClimbSentryMoveGoal-O).ToString(),int32(ClimbSentry->GetCharacterMovement()->MovementMode),
+            ClimbSentryWatching(),*(ClimbSentryAim()-O).ToString(),*HitText(ClimbSentryMoveHit));
+    return Out;
+}
 
 bool USoraFieldcraft::AtClimbRoute(const ASoraPlayerCharacter& Player,int32& Route) const
 {
@@ -70,6 +106,8 @@ void USoraFieldcraft::ClearClimbRoutes()
     if(ClimbGuide.IsValid())
     { ClimbGuide->GetCharacterMovement()->StopMovementImmediately();ClimbGuide->GetCharacterMovement()->SetMovementMode(MOVE_Walking); }
     ClimbGuide.Reset();ClimbGuidePath.Reset();ClimbGuidePoint=0;bClimbGuideWaiting=false;
+    ClimbSweepHit=ClimbGuideVerticalHit=ClimbGuideHorizontalHit=ClimbSentryMoveHit=FHitResult();
+    ClimbSweepFrom=ClimbSweepWanted=ClimbSentryMoveGoal=FVector::ZeroVector;bClimbSweepAccepted=false;
     if(bClimbCrawl)
         if(auto* P=Hero())
         {
@@ -127,8 +165,9 @@ bool USoraFieldcraft::MoveClimbCompanion(ASoraCompanion& Companion,float Dt)
     const FVector Step=Delta.GetClampedToMaxSize(SoraClimbRules::GuideSpeed*Dt);
     // Resolve vertical support first so a floor contact cannot consume the
     // sideways part of the same bounded step across a shelf or parapet.
-    Companion.SetActorLocation(Companion.GetActorLocation()+FVector(0,0,Step.Z),true);
-    Companion.SetActorLocation(Companion.GetActorLocation()+FVector(Step.X,Step.Y,0),true);
+    ClimbGuideVerticalHit=ClimbGuideHorizontalHit=FHitResult();
+    Companion.SetActorLocation(Companion.GetActorLocation()+FVector(0,0,Step.Z),true,&ClimbGuideVerticalHit);
+    Companion.SetActorLocation(Companion.GetActorLocation()+FVector(Step.X,Step.Y,0),true,&ClimbGuideHorizontalHit);
     if(!Delta.IsNearlyZero()) Companion.SetActorRotation(FRotator(0,Delta.Rotation().Yaw,0));
     // A collision may stop at the normal floor-contact separation. Only
     // actual proximity advances a waypoint; a remote blocker never does.
@@ -230,7 +269,9 @@ void USoraFieldcraft::TickClimbRoutes(float DeltaTime,int32 DtMs)
     const auto Point=SoraClimbRules::HoldPath({ClimbStepStart.X,ClimbStepStart.Y,ClimbStepStart.Z},
         {Target.X,Target.Y,Target.Z},NextAlpha,Path);
     const FVector Wanted(Point.X,Point.Y,Point.Z);
-    if(!SoraClimbRuntime::SweepFeet(*P,O+Wanted)) return;
+    ClimbSweepFrom=SoraClimbRuntime::Feet(*P);ClimbSweepWanted=O+Wanted;
+    bClimbSweepAccepted=SoraClimbRuntime::SweepFeet(*P,O+Wanted,ClimbSweepHit);
+    if(!bClimbSweepAccepted) return;
     ClimbStepAlpha=NextAlpha;
     if(NextAlpha==0&&Direction<0) { ClimbStepTarget=INDEX_NONE;bClimbMounting=false;return; }
     if(NextAlpha<1) return;
@@ -297,7 +338,8 @@ bool USoraFieldcraft::DriveClimbSentry(ASoraEnemy& Enemy,float Dt)
     }
     auto* Move=Enemy.GetCharacterMovement();Move->StopMovementImmediately();
     FVector Facing=(O+Goal-Enemy.GetActorLocation());
-    FHitResult Hit;Enemy.SetActorLocation(Enemy.GetActorLocation()+Facing.GetClampedToMaxSize(700.f*Dt),true,&Hit);
+    ClimbSentryMoveGoal=O+Goal;ClimbSentryMoveHit=FHitResult();
+    Enemy.SetActorLocation(Enemy.GetActorLocation()+Facing.GetClampedToMaxSize(700.f*Dt),true,&ClimbSentryMoveHit);
     if(ClimbSentryWatching()) Facing=ClimbSentryAim()-Enemy.GetActorLocation();
     if(Combat&&Hero()) Facing=Hero()->GetActorLocation()-Enemy.GetActorLocation();
     if(!Facing.IsNearlyZero()) Enemy.SetActorRotation(FRotator(0,Facing.Rotation().Yaw,0));
