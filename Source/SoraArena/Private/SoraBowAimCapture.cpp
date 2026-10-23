@@ -7,6 +7,7 @@
 #include "SoraFrontEnd.h"
 #include "SoraGameEvents.h"
 #include "SoraHUD.h"
+#include "HUD/SoraHUDPanels.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraSaveGame.h"
 #include "SoraViewmodelComponent.h"
@@ -204,6 +205,14 @@ private:
             Phase==2?(Last.Drawing&&Last.Held&&Last.Offset.Pitch<-.12&&Last.Offset.Yaw<-.18):
             (!Last.Drawing&&!Last.Held&&Last.Offset.IsZero()&&Last.Ammo==11&&Shots==1);
         if(!Ready) return;
+        int32 ViewW=0,ViewH=0; PC()->GetViewportSize(ViewW,ViewH);
+        const FSoraHUDFrame Layout(*HUD.Get(),*M.Get(),ViewW,ViewH);
+        FString LayoutWhy;
+        if(!SoraHUDPanels::BottomHUDLayoutFits(Layout,*Hero(),LayoutWhy)||
+            !SoraHUDPanels::StoryTrackerLayoutFits(Layout,LayoutWhy)||
+            !SoraHUDPanels::CaptionStoryLayoutFits(Layout,LayoutWhy)||
+            !SoraHUDPanels::InteractionPromptLayoutFits(Layout,LayoutWhy))
+        { Fail(TEXT("Live bow HUD layout: ")+LayoutWhy); return; }
         PendingFile=Folder/(FString(Phases[Phase])+TEXT(".png"));
         FScreenshotRequest::RequestScreenshot(PendingFile,true,false);
     }
