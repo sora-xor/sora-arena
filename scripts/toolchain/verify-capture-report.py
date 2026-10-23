@@ -23,8 +23,20 @@ nanite_capture_validation = importlib.util.module_from_spec(NANITE_SPEC)
 NANITE_SPEC.loader.exec_module(nanite_capture_validation)
 
 
+CARGO_SPEC = importlib.util.spec_from_file_location("cargo_capture_validation", Path(__file__).with_name("cargo_capture_validation.py"))
+cargo_capture_validation = importlib.util.module_from_spec(CARGO_SPEC)
+CARGO_SPEC.loader.exec_module(cargo_capture_validation)
+
+
 class NaniteDrawEvidenceError(ValueError):
     """The originals are complete, but their visible-draw gate failed."""
+    def __init__(self, message, frames):
+        super().__init__(message)
+        self.frames = frames
+
+
+class CargoCaptureEvidenceError(ValueError):
+    """Retain authenticated originals when observed cargo semantics fail."""
     def __init__(self, message, frames):
         super().__init__(message)
         self.frames = frames
@@ -138,6 +150,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
         "SORA_REGISTRY_FIXTURE_FRAME": ("SoraCapture.RegistryFixture.", "completed-save registry UI fixture; not playthrough evidence"),
         "SORA_WEAPON_HUD_FIXTURE_FRAME": ("SoraCapture.WeaponHUDFixture.", "prepared gameplay UI fixture; not playthrough evidence"),
         "SORA_BOW_AIM_FRAME": ("SoraCapture.BowAim.", "live mapped bow aim from prepared checkpoint/view; not playthrough or art acceptance"),
+        "SORA_CARGO_FRAME": ("SoraCapture.Cargo.", cargo_capture_validation.SCOPE),
         "SORA_CODEX_FRAME": ("SoraCapture.Codex.", codex_capture_validation.SCOPE),
         "SORA_NANITE_DRAW_FRAME": ("SoraCapture.NaniteDraw.", nanite_capture_validation.SCOPE),
     }
@@ -155,6 +168,7 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
     frames = []
     bow_sequences = {}
     codex_sequences = {}
+    cargo_sequences = {}
     nanite_sequences = {}
     seen = set()
     for marker, name in names:
@@ -190,11 +204,37 @@ def archive_frames(log: str, report: dict, project: Path, engine_base: Path,
                 stream.write(metadata_bytes)
             frame.update(observations=str(metadata_target.relative_to(output)),
                          observations_sha256=hashlib.sha256(metadata_bytes).hexdigest(), reticle_pixels=pixels)
+        if marker == "SORA_CARGO_FRAME":
+            cargo_sequences.setdefault(path.parent, []).append((path, target, frame))
         if marker == "SORA_CODEX_FRAME":
             codex_sequences.setdefault(path.parent, []).append((path, target, frame))
         if marker == "SORA_NANITE_DRAW_FRAME":
             nanite_sequences.setdefault(path.parent, []).append((path, target, frame))
         frames.append(frame)
+    if cargo_sequences:
+        expected = [test.get("fullTestPath") for test in report.get("tests", [])
+                    if test.get("fullTestPath", "").startswith("SoraCapture.Cargo.")]
+        if len(cargo_sequences) != 1 or expected != ["SoraCapture.Cargo.Transfer"]:
+            raise ValueError("cargo capture requires one matching four-frame Transfer run")
+        for folder, sequence in cargo_sequences.items():
+            sidecar = (folder / "capture.json").resolve()
+            if sidecar.parent != folder:
+                raise ValueError("cargo source metadata escapes its original frame folder")
+            if sidecar.stat().st_mtime_ns < max(start_ns, *(path.stat().st_mtime_ns for path, _, _ in sequence)):
+                raise ValueError("stale cargo source capture metadata")
+            raw = sidecar.read_bytes()
+            target = sequence[0][1].parent / "capture.json"
+            # Preserve the untouched originals and sidecar before semantic
+            # checks. A failure must not erase the actual review evidence.
+            with target.open("xb") as stream:
+                stream.write(raw)
+            for path, _, frame in sequence:
+                frame.update(observations=str(target.relative_to(output)), observations_source=str(sidecar),
+                             observations_sha256=hashlib.sha256(raw).hexdigest(), cargo_phase=path.stem)
+            try:
+                cargo_capture_validation.verify_sequence(json.loads(raw), [path.name for path, _, _ in sequence], width, height)
+            except ValueError as error:
+                raise CargoCaptureEvidenceError(str(error), frames) from error
     if codex_sequences:
         if len(codex_sequences) != 1:
             raise ValueError("Codex capture requires one nine-frame sequence, not multiple runs")
@@ -307,7 +347,7 @@ def main() -> int:
         try:
             frames = archive_frames(log, report, project, engine_base, output, start_ns, width, height)
         except (OSError, ValueError, zlib.error) as error:
-            if isinstance(error, NaniteDrawEvidenceError):
+            if isinstance(error, (NaniteDrawEvidenceError, CargoCaptureEvidenceError)):
                 frames = error.frames
             failures.append(f"screenshot archive: {error}")
         manifest = {"source_commit": (output / "source-commit.txt").read_text().strip(),
