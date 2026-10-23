@@ -1023,3 +1023,46 @@ azimuth (south) and 30-by-40 cm face are configurable provisional values;
 the standing-origin radius is 150 cm. The six authored trail points measure
 142.92 m, whereas the prose says approximately 170 m; the points are retained.
 These limitations do not qualify the authored final environment or pacing.
+
+### Chapter-one archery HUD target clearance (source checkpoint)
+
+The live b07 lesson now reserves a centered 20%-wide, 24%-high target window
+(256 × 173 pixels at 1280 × 720), including while an arrow is released or
+retrieved. Dialogue, tutorial prompts and ordinary notices use measured side
+and bottom regions instead of a full-width stack lifted above the weapon.
+Every Japanese and enabled English line remains present. Dialogue keeps the
+selected subtitle size and speaker-name setting; glyph bounds remove only
+empty font ascent/descent. Captions and projected labels avoid that same
+window. The tracker reports the real near-target resolved arrows and hits,
+unique hanging-target hits, and fetch countdown, rather than the task's
+placeholder invader-defeat goal. Other lesson and chapter layouts retain
+their previous path.
+
+An additional synthetic load—four combat captions, the longest b07 line,
+tutorial, worst-catalog locked-weapon refusal, fetch tracker, 720p and extra-
+large subtitles—exceeds the measured allocator's capacity. It is not a
+qualified configuration. The ordinary range does not generate those four
+combat captions, and hero arrow sounds are excluded from `USoraCaptions`.
+No text is dropped if such an overload is created; production layout
+qualification returns failure. This limit is retained, not reported as a pass.
+
+`test_aim_hud_layout.py` gives the shared C++ allocator independent 37/38-pixel
+FreeType metrics from the shipped Noto font. It checks all ten authored b07
+lines, both prompts, Japanese/English, all subtitle sizes, speaker settings,
+mouse/gamepad labels, and 720p/1080p. It also checks simultaneous locked-weapon
+refusals using every catalog weapon name as a conservative height envelope,
+four live sound captions alongside dialogue/prompt (two when the refusal
+notice is also active), actual arrow-resolution/fetch state transitions,
+and rejection of the old captured center-overlap rectangles and insufficient
+capacity. Existing chapter-four caption and rhythm-layout tests remain
+separate regression gates. These CPU results do not establish Unreal font
+rasterization or rendered contrast.
+
+`SoraCapture.BowAim.Live` now checks the production bottom, tracker, caption
+and interaction layouts on each real frame requested for a screenshot.
+The existing pixel archive verifier and its contrast thresholds are unchanged.
+Fresh 720p/1080p capture/archive passes and visual review remain required;
+this source checkpoint does not supersede the earlier failed images.
+The reservation is scoped to `IsArcheryLesson()`. General bow use, especially
+the b08 wood clapper, is still **unqualified/open** for HUD clearance. Wood
+NullRHI gameplay tests provide no evidence about that view.
