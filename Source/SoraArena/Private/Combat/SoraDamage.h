@@ -19,6 +19,8 @@ struct FSoraHit
     // The eye a blade or ray left, or where a shell went off.
     FVector Origin = FVector::ZeroVector;
     bool bHasOrigin = false;
+    // True only for traced rounds; arrows, blasts and drowning remain distinct.
+    bool bHitscan = false;
     // A catalog weapon, or INDEX_NONE for an opponent's attack.
     int32 WeaponId = INDEX_NONE;
     // The opponent's attack (Content/Data/enemies.json), if any.

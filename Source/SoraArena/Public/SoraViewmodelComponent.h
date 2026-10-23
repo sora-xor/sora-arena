@@ -16,8 +16,8 @@ public:
     // Rest offset from the eye.
     static FVector RestLocation() { return FVector(40,18,-18); }
     void Build(int32 WeaponId, bool bDojoBokken, bool bFirstPerson);
-    // The hero's walking bob and action tilt.
-    void Sway(float LifeTime, float Moving, float Pitch, float Roll);
+    // Walking bob and action tilt, rotated by the bow's visible local aim.
+    void Sway(float LifeTime, float Moving, float Pitch, float Roll, const FRotator& AimOffset);
     // A kernel snapshot's charge lift, or the reload tilt.
     void KernelPose(float Windup, bool bReloading);
 private:

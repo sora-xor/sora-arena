@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "SoraCharacterBase.h"
 #include "SoraCombatRules.h"
+#include "SoraDojoRules.h"
 #include "SoraFieldcraftRules.h"
 #include "SoraStealthRules.h"
 #include "SoraEnemy.generated.h"
@@ -19,6 +20,8 @@ struct FSoraEnemyTuning
     FName Variant;
     // Zero keeps the archetype's (or variant's) value.
     int32 Health = 0;
+    // Zero keeps the archetype's hold; chapter 07's ridge specifies 1.2 s.
+    int32 NetRootMs = 0;
     int32 SightCm = 0;
     int32 ViewDegrees = 0;
     // Negative keeps the archetype's value; a zero hearing is deaf.
@@ -68,7 +71,7 @@ public:
     static ASoraEnemy* SpawnInvader(UWorld& World, int32 Slot, const FVector& Location, const FRotator& Rotation,
         const FSoraPatrolRoute* Patrol = nullptr);
     // Nonlethal sparring with the bokken; a defeated pupil yields.
-    void InitDojoPupil(int32 Slot);
+    void InitDojoPupil(int32 Slot, const SoraDojoRules::FPupilTiming& Timing = {});
     void SuspendDojoAction();
     virtual bool IsEnemy() const override { return !IsFreed(); }
     virtual bool IsSparring() const override { return bDojoPupil; }
@@ -99,11 +102,14 @@ public:
     // Attacks. TryAttack commits the first of the archetype's attacks whose
     // range holds Distance and whose cooldown has passed, when none is under
     // way; the pawn's own tick then winds it up, strikes and recovers.
+    void DisruptWindAim(int32 Milliseconds);
     bool TryAttack(ASoraCharacterBase& Target, float Distance);
     bool IsAttacking() const { return Phase != EPhase::Idle; }
     bool IsWindingUp() const { return Phase == EPhase::Windup; }
-    // Winding up or firing: the opponent holds its line until the attack is out.
-    bool IsCommitted() const { return Phase == EPhase::Windup || Phase == EPhase::Firing; }
+    // Winding up or firing; collateral also holds still during its exposed
+    // recovery, so the hero can maintain contact with the core.
+    bool IsCommitted() const { return Phase == EPhase::Windup || Phase == EPhase::Firing ||
+        (bCollateralConstruct && Phase == EPhase::Recovery); }
     const FSoraEnemyAttack* CurrentAttack() const;
     float WindupProgress() const;
     // The farthest reach of its melee attacks, for footwork.
@@ -128,6 +134,14 @@ public:
     // beat's defeat count.
     void SetSummoner(ASoraBoss* Boss);
     ASoraBoss* Summoner() const;
+    // Chapter 08 summit adds only. No mutation of the shared loom archetype.
+    void EnableCollateralConstruct();
+    void EnableClimbSentry() { bClimbSentry=true; }
+    bool IsCollateralConstruct() const { return bCollateralConstruct; }
+    bool IsConstructCoreOpen() const;
+    FVector ConstructCorePoint() const;
+    bool CanReachConstructCore(const ASoraCharacterBase& By) const;
+    bool HasReleasedGoods() const { return bGoodsReleased; }
     bool IsShieldOpen() const;
     // A tower shield on its arm (enemies.json shield).
     bool HasShield() const;
@@ -172,6 +186,23 @@ protected:
     bool bDojoPupil = false;
     int32 EnemyIndex = 0;
 private:
+    const TArray<FSoraEnemyAttack>& AttackSet() const;
+    void ResetConstruct();
+    bool AdmitConstructDamage(float& Damage, FSoraHit& Hit);
+    void ReleaseConstructGoods();
+    void TickConstruct(float DeltaSeconds);
+    void ConstructSlam(const FSoraEnemyAttack& Attack);
+    bool bCollateralConstruct = false;
+    bool bClimbSentry=false;
+    bool bConstructSlamReleased = false;
+    bool bGoodsReleased = false;
+    bool bCoreWasOpen = false;
+    float GoodsReleaseSeconds = 0.f;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> ConstructCore;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> ConstructGoods;
+    TArray<FVector> GoodsAssembled;
+    TArray<FVector> GoodsReleaseFrom;
+    TArray<FVector> GoodsReleaseTo;
     enum class EPhase : uint8 { Idle, Windup, Firing, Recovery };
     void Commit(int32 Index, ASoraCharacterBase& Target);
     void AdvanceAttack();
@@ -212,6 +243,7 @@ private:
     FVector LockedDirection = FVector::ForwardVector;
     FVector LockedPoint = FVector::ZeroVector;
     float NextAttackAt = 0.f;
+    int32 NetRootOverrideMs = 0;
     TArray<float> AttackReadyAt;
     int32 RangedShots = 0;
     int32 ShotsSinceRelocation = 0;
@@ -231,6 +263,7 @@ private:
     bool bUnconscious = false;
     bool bSeized = false;
     // The sparring pupil's drill.
+    SoraDojoRules::FPupilTiming PupilTiming;
     bool bPupilWindup = false;
     float PupilWindupEndsAt = 0.f;
     FVector PupilLockedDirection = FVector::ForwardVector;

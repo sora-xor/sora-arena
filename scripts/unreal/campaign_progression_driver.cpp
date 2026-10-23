@@ -2,8 +2,17 @@
 #include "SoraCampaignRules.h"
 #include "SoraDojoRules.h"
 #include "SoraMountRules.h"
+#include "SoraCargoRules.h"
+#include "SoraLeadRopeRules.h"
+#include "SoraMillisecondClock.h"
+#include "SoraCrankInputRules.h"
+#include "SoraRhythmRules.h"
+#include "SoraWorkshopRules.h"
 
 #include <cstdlib>
+#include <algorithm>
+#include <climits>
+#include <limits>
 #include <iostream>
 #include <string>
 
@@ -155,6 +164,44 @@ static FTick At(int DeltaMs, bool AtTask = false, bool Contested = false, bool S
     Step.Contested = Contested;
     Step.Seen = Seen;
     return Step;
+}
+
+static void TestMaai()
+{
+    FTask Task=Make(EType::Duel,EGoal::Lessons);
+    Task.LessonMask=1;
+    Task.Maai={3,166,224,500,700,6000,{{-120,0},{0,-150},{80,0}}};
+    FTaskState S=Begin(Task,"maai lesson");
+    using SoraMaaiRules::EResult;
+    auto Step=[&](int Ms,double Cm=195,double Facing=1) {
+        return SoraMaaiRules::Tick(S.Maai,Task.Maai,Ms,Cm,Facing,(S.Forms&Task.LessonMask)==Task.LessonMask);
+    };
+    Expect(Step(500)==EResult::None&&!S.Maai.Acquired,"maai preceded stance");
+    RecordForms(S,Task,1);
+    Expect(!TaskComplete(S,Task),"stance alone completed maai");
+    Expect(Step(499)==EResult::None,"maai accepted a short hold");
+    Step(1,165.999);
+    Expect(S.Maai.HeldMs==0&&!S.Maai.InBand,"too close retained hold or ring");
+    Step(499); Step(1,224.001);
+    Expect(S.Maai.HeldMs==0&&!S.Maai.InBand,"too far retained hold or ring");
+    Step(499); Step(1,195,.6999);
+    Expect(S.Maai.HeldMs==0&&!S.Maai.InBand,"looking away retained hold or ring");
+    Expect(Step(500,166,.7)==EResult::Acquired&&S.Maai.Done==0,"initial band did not start mentor steps");
+    Expect(!TaskComplete(S,Task),"initial band completed the three-step lesson");
+    Step(5999,300); Expect(!SoraMaaiRules::Hint(S.Maai,Task.Maai),"floor help appeared early");
+    Step(1,300); Expect(SoraMaaiRules::Hint(S.Maai,Task.Maai),"floor help missing at six seconds");
+    Expect(Step(500,224)==EResult::Step&&S.Maai.Done==1&&!SoraMaaiRules::Hint(S.Maai,Task.Maai),"first recovered step/help reset");
+    Expect(Step(500)==EResult::Step&&S.Maai.Done==2&&!TaskComplete(S,Task),"second step finished early");
+    Expect(Step(500)==EResult::Complete&&S.Maai.Done==3&&TaskComplete(S,Task),"third step failed to finish");
+    Expect(Step(500)==EResult::None&&S.Maai.Done==3,"completed maai repeated");
+    S=StartTask(Task,0);
+    Expect(S.Forms==0&&!S.Maai.Acquired&&S.Maai.Done==0&&!TaskComplete(S,Task),"beat checkpoint skipped distance lesson");
+    FTask Bad=Task; Bad.Maai.InnerCm=Bad.Maai.OuterCm;
+    Expect(!TaskValid(Bad),"empty distance band accepted");
+    Bad=Task; Bad.Maai.Moves[2]={}; Expect(!TaskValid(Bad),"unmeasured third step accepted");
+    Bad=Task; Bad.Goal=EGoal::Points; Expect(!TaskValid(Bad),"distance gate on a scoring fight accepted");
+    Bad=Task; Bad.Maai.Count=9; Expect(!TaskValid(Bad),"out-of-bounds mentor moves accepted");
+    std::cout<<"maai: distance, facing, continuous hold, three moving steps, help and checkpoint reset passed\n";
 }
 
 static void TestCinematicAndDialogue()
@@ -501,6 +548,40 @@ static void TestBossAndStealth()
     std::cout << "beat tasks: boss phases and failures, stealth exit, objectives and detection passed\n";
 }
 
+static void TestEquipmentRecovery()
+{
+    FTask T = Make(EType::ProductionTask,EGoal::Deliveries,ETask::Carry);
+    T.Count=3; T.Pickups=1; T.Dropoffs=1;
+    T.EquipmentMask=1u<<4; T.RecoveryWeapons=(1u<<0)|(1u<<4)|(1u<<18);
+    T.RecoveryDepthCm=700; T.RecoveryStringMs=3000; T.RecoveryQuiver=12;
+    FTaskState S=Begin(T,"dry-well recovery");
+    for(int W=0;W<WeaponCount;++W)
+        Expect(EquipmentAllows(S,T,W)==(W==4),"only the wakizashi before pickup");
+    Expect(!Pickup(S,T,0),"cannot hoist before recovering equipment");
+    Expect(!RecoverEquipment(S,T,3000,false,true)&&S.RecoveryHeldMs==0,"surface interaction cannot recover gear");
+    Expect(!RecoverEquipment(S,T,2999,true,true),"bow cannot be strung early");
+    Expect(!EquipmentAllows(S,T,18),"bow cannot fire during stringing");
+    Expect(!RecoverEquipment(S,T,1,true,false)&&S.RecoveryHeldMs==0,"releasing interrupts stringing");
+    Expect(!RecoverEquipment(S,T,2000,true,true),"partial stringing remains partial");
+    Expect(!RecoverEquipment(S,T,1000,false,true)&&S.RecoveryHeldMs==0,"leaving the bundle interrupts stringing");
+    Expect(RecoverEquipment(S,T,3000,true,true),"three continuous seconds recovers equipment");
+    Expect(!RecoverEquipment(S,T,3000,true,true),"pickup cannot repeat its event");
+    Expect(EquipmentAllows(S,T,0)&&EquipmentAllows(S,T,4)&&EquipmentAllows(S,T,18)&&Pickup(S,T,0),"restored gear permits carrying");
+    S=StartTask(T,0);
+    Expect(!S.EquipmentRecovered&&S.RecoveryHeldMs==0&&!Pickup(S,T,0),"beat checkpoint replays retrieval");
+    S.Done=T.Count;
+    Expect(!TaskComplete(S,T),"forged delivery progress cannot bypass recovery");
+    for(int Invalid=0;Invalid<4;++Invalid)
+    {
+        FTask Bad=T;
+        if(Invalid==0) Bad.RecoveryDepthCm=0;
+        if(Invalid==1) Bad.RecoveryStringMs=2999;
+        if(Invalid==2) Bad.RecoveryQuiver=0;
+        if(Invalid==3) Bad.EquipmentMask|=1u<<18;
+        Expect(!TaskValid(Bad),"malformed recovery config refused");
+    }
+}
+
 static void TestProduction()
 {
     FTask Hold = Make(EType::ProductionTask, EGoal::Hold, ETask::Hold);
@@ -540,6 +621,7 @@ static void TestProduction()
         "hold: a held ground decayed once its time was held");
 
     FTask Crank = Make(EType::ProductionTask, EGoal::Turns, ETask::Crank);
+    Crank.StaminaPerTurn = 6;
     Crank.Count = 3;
     Crank.MinTurnMs = 800;
     Crank.MaxTurnMs = 2500;
@@ -716,6 +798,7 @@ static void TestDecayFrames()
 {
     // ch04.b06 and ch08.b11: slow decays that whole-unit rounding per frame lost.
     FTask Crank = Make(EType::ProductionTask, EGoal::Turns, ETask::Crank);
+    Crank.StaminaPerTurn = 6;
     Crank.Count = 48;
     Crank.MinTurnMs = 400;
     Crank.MaxTurnMs = 1500;
@@ -738,8 +821,340 @@ static void TestDecayFrames()
     std::cout << "hold and crank decay cost the same at every frame rate\n";
 }
 
+static void TestRhythmManufacture()
+{
+    FTask Tasks[MaxBeats]={}; ChapterTasks[4](Tasks);
+    for(int Beat:{7,10})
+    {
+        const FTask Task=Tasks[Beat];
+        const FStep Step=Task.Steps[1];
+        Expect(Step.PhraseStrikes==(Beat==7?8:1)&&Step.PhrasePass==(Beat==7?6:1),"phrase/pick contract lost");
+        auto State=Begin(Task,"rhythm manufacture"); State.Step=1;
+        SoraRhythmRules::FState Cue; SoraRhythmRules::Begin(Cue,State,Task);
+        const auto Phrase=[&](int Hits)
+        {
+            const int Before=State.StepDone;
+            for(int N=0;N<Step.PhraseStrikes;++N)
+            {
+                Tick(State,Task,At(Cue.DueMs-State.ElapsedMs));
+                if(N<Hits) Expect(SoraRhythmRules::Strike(Cue,State,Task),"on-beat cue failed");
+                if(N==0&&Hits>0) Expect(!SoraRhythmRules::Strike(Cue,State,Task),"one cue counted twice");
+                Expect(State.StepDone==Before,"six hits must not finish an eight-strike phrase early");
+                Tick(State,Task,At(Step.ToleranceMs+1));
+                SoraRhythmRules::Tick(Cue,State,Task,false);
+            }
+        };
+        Phrase(Step.PhrasePass);
+        Expect(State.StepDone==1,"a full passing phrase/pick must award one unit");
+        Phrase(Step.PhrasePass-1);
+        Expect(State.StepDone==1,"failed phrase/pick must preserve completed work");
+        Phrase(Step.PhraseStrikes);
+        Expect(State.StepDone==2,"the failed phrase/pick must be repeatable");
+        for(int Difficulty:{0,1,2})
+        {
+            FTask Effective=Task; ApplyRhythmDifficulty(Effective,Difficulty);
+            const int Window=Effective.Steps[1].ToleranceMs;
+            Expect(Window==(Difficulty==0?Step.ToleranceMs*3/2:Step.ToleranceMs)&&Effective.Steps[1].BeatMs==Step.BeatMs,"Easy tolerance must widen without slowing cues");
+            State=Begin(Effective,"rhythm tolerance");State.Step=1;SoraRhythmRules::Begin(Cue,State,Effective);
+            Tick(State,Effective,At(Step.BeatMs+Window));
+            Expect(SoraRhythmRules::Strike(Cue,State,Effective),"inclusive late tolerance rejected");
+            SoraRhythmRules::Begin(Cue,State,Effective); Tick(State,Effective,At(Step.BeatMs+Window+1));
+            Expect(!SoraRhythmRules::Strike(Cue,State,Effective),"late response outside tolerance accepted");
+        }
+        for(int FrameMs:{1,16,17,33,100,250,500})
+        {
+            FTask Long=Task; Long.Steps[1].Count=99;
+            State=Begin(Long,"rhythm assist");State.Step=1;SoraRhythmRules::Begin(Cue,State,Long);
+            const int StopAt=10*Step.PhraseStrikes*Step.BeatMs+Step.ToleranceMs+1;
+            int Units=0,Fractions=0,Responses=0;
+            while(State.ElapsedMs<StopAt)
+            {
+                Tick(State,Long,At((FrameMs<StopAt-State.ElapsedMs?FrameMs:StopAt-State.ElapsedMs)));
+                bool AutoStruck=false;
+                const auto Result=SoraRhythmRules::Tick(Cue,State,Long,true,&AutoStruck);
+                if(AutoStruck) ++Responses;
+                if(Result==EStroke::Counted) ++Units;
+                if(Result==EStroke::Credited) ++Fractions;
+            }
+            Expect(State.StepDone==7&&State.RhythmCarry==0&&Units==7&&Fractions==3,"ten assisted phrases/picks must earn exactly seven units, with no false completion events for fractional credit");
+            Expect(Responses==10*Step.PhraseStrikes,"workshop response must sound once per actual strike, not per completed phrase");
+            const int Before=State.StepDone; Cue={};
+            bool AutoStruck=true;
+            Tick(State,Long,At(5000)); SoraRhythmRules::Tick(Cue,State,Long,true,&AutoStruck);
+            Expect(!AutoStruck,"an interrupted clock must not emit workshop impacts");
+            Expect(State.StepDone==Before,"released/interrupted assist must not run in the background");
+            State=Begin(Long,"rhythm checkpoint");
+            Expect(State.RhythmCarry==0&&State.StepDone==0,"checkpoint reset must discard partial assisted credit");
+        }
+    }
+    const FTask Bellows=Tasks[5]; FTask Easy=Bellows;ApplyRhythmDifficulty(Easy,0);
+    Expect(Easy.MinTurnMs==702&&Easy.MaxTurnMs==1481,"Easy bellows rate band must expand by 1.5 about its midpoint");
+    auto State=Begin(Bellows,"bellows assist");
+    for(int N=0;N<10;++N)
+    {
+        Tick(State,Bellows,At(1000)); const auto Turned=PlayerTurn(State,Bellows,2,700);
+        Expect(Turned.Cost==2&&Turned.Result==ETurn::InBand,"assisted bellows cadence must stay affordable and in band");
+    }
+    Expect(State.Progress==7000,"ten assisted bellows cycles must earn seven turns");
+    const auto Before=State; Tick(State,Bellows,At(1000));
+    Expect(PlayerTurn(State,Bellows,1,700).Result==ETurn::Exhausted&&State.Progress==Before.Progress,"assist must not bypass stamina");
+    for(int Period:{600,750})
+    {
+        for(int Ms=0;Ms<Period*10;++Ms)
+        {
+            const auto Pose=SoraWorkshopRules::Pose(true,Ms,Period,Ms-Period);
+            Expect(Pose.CueTap>=0&&Pose.CueTap<=1&&Pose.Response>=0&&Pose.Response<=1&&Pose.Shuttle>=-1&&Pose.Shuttle<=1&&Pose.Ring>=0&&Pose.Ring<=1,"workshop pose must remain bounded");
+        }
+        const auto CuePose=SoraWorkshopRules::Pose(true,0,Period,-1);
+        Expect(CuePose.CueTap==1&&CuePose.Response==0&&CuePose.Glint,"count-in taps without inventing a player response");
+        const auto HitPose=SoraWorkshopRules::Pose(true,Period,Period,0);
+        Expect(HitPose.Response==1,"actual accepted hit must drive the response prop immediately");
+        const auto Reset=SoraWorkshopRules::Pose(false,Period,Period,0);
+        Expect(Reset.CueTap==0&&Reset.Response==0&&!Reset.Glint,"release, interruption and checkpoint must restore idle props");
+        Expect(SoraWorkshopRules::Pose(true,Period-1,Period,-1).Ring<.002f,"anvil ring must close at response time");
+        Expect(SoraWorkshopRules::Pose(true,0,0,0).Response==0,"invalid cue period must be idle");
+    }
+}
+
+static void TestBellowsTreads()
+{
+    using namespace SoraCrankInputRules;
+    FTask Tasks[MaxBeats]={}; ChapterTasks[4](Tasks); const FTask Task=Tasks[5];
+    Expect(Task.AlternateTreads,"bellows must retain the authored alternating input");
+    for(int FrameMs:{1,16,17,33,100,250})
+    {
+        auto State=Begin(Task,"bellows treads"); FTreads Feet;
+        Expect(CrankFlameNotches(State,Task)==1,"untouched furnace must be dull red");
+        BeginTreads(Feet,-1000);
+        Expect(!Tread(Feet,-1000)&&!Tread(Feet,1000),"already held direction must not engage a tread");
+        Tread(Feet,0);
+        Expect(!Tread(Feet,1000),"right before left must not turn the bellows");
+        Tread(Feet,0); Tread(Feet,-1000);
+        for(int Ms=0;Ms<1000;Ms+=FrameMs) Expect(!Tread(Feet,-900),"held tread must not repeat");
+        Expect(!Tread(Feet,-300)&&!Tread(Feet,600),"noisy or crossed stick must return neutral first");
+        Tread(Feet,0); Expect(Tread(Feet,1000),"one neutral-separated L+R pair must make one turn");
+        auto Paid=PlayerTurn(State,Task,2);
+        Expect(Paid.Cost==2&&State.Progress==1000&&CrankFlameNotches(State,Task)==2,"first pair must charge two and show two notches");
+        Tick(State,Task,At(200));
+        auto Before=State;
+        auto Refused=PlayerTurn(State,Task,3);
+        Expect(Refused.Result==ETurn::Exhausted&&State.LastActionMs==Before.LastActionMs&&State.CrankNotches==2,"unaffordable overspeed must not alter rate or progress");
+        Paid=PlayerTurn(State,Task,4);
+        Expect(Paid.Result==ETurn::TooFast&&Paid.Cost==4&&State.Progress==Before.Progress&&CrankFlameNotches(State,Task)==3,"affordable overspeed must show white/sparks without progress");
+        int Elapsed=0;
+        while(Elapsed<=Task.MaxTurnMs) { Tick(State,Task,At(FrameMs)); Elapsed+=FrameMs; }
+        Expect(CrankFlameNotches(State,Task)==1,"idle gauge must cool independently of accumulated production");
+        BeginTreads(Feet,0); Tread(Feet,-1000); Feet={}; // release, hit, leave or checkpoint reset
+        Tread(Feet,0); Expect(!Tread(Feet,1000),"a discarded half-cycle must not survive interruption");
+        State=Begin(Task,"bellows retry");
+        Expect(State.Progress==0&&CrankFlameNotches(State,Task)==1,"retry resets both production and rate gauge");
+    }
+}
+
+static void TestPlayerCranks()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[6](Tasks); const FTask Wheel=Tasks[6];
+    ChapterTasks[4](Tasks); const FTask Bellows=Tasks[5];
+    Expect(Wheel.StaminaPerTurn==8 && Wheel.CrankTwoHanded && Wheel.HoldMilliTurnsS==600,
+        "override effort/input must match chapter seven");
+    for (int Chapter : {3,4,6,7})
+    {
+        ChapterTasks[Chapter](Tasks);
+        const FTask& Task=Tasks[Chapter==6?6:Chapter==7?10:5];
+        auto State=Begin(Task,"player crank costs");
+        auto Result=PlayerTurn(State,Task,Task.StaminaPerTurn-1);
+        Expect(Result.Result==ETurn::Exhausted && Result.Cost==0 && State.Progress==0 && State.LastActionMs==-1,
+            "exhaustion must not start work or its timing baseline");
+        Result=PlayerTurn(State,Task,Task.StaminaPerTurn);
+        Expect(Result.Result==ETurn::InBand && Result.Cost==Task.StaminaPerTurn && State.Progress==1000,
+            "first accepted turn must charge the exact authored amount");
+        Tick(State,Task,At(Task.MinTurnMs));
+        const auto Before=State;
+        Result=PlayerTurn(State,Task,0);
+        Expect(Result.Result==ETurn::Exhausted && Result.Cost==0 && State.Progress==Before.Progress && State.LastActionMs==Before.LastActionMs,
+            "an unaffordable turn must change neither progress nor rhythm");
+        Result=PlayerTurn(State,Task,Task.StaminaPerTurn);
+        Expect(Result.Result==ETurn::InBand && Result.Cost==Task.StaminaPerTurn,
+            "recovering resource at the same instant must admit the original cadence");
+        State.Progress=Task.Count*1000; State.Done=Task.Count;
+        Result=PlayerTurn(State,Task,100);
+        Expect(Result.Result==ETurn::Refused && Result.Cost==0,"a full crank must be free and inert");
+    }
+    auto State=Begin(Bellows,"bellows overspeed cost");
+    PlayerTurn(State,Bellows,2); Tick(State,Bellows,At(100));
+    const int Last=State.LastActionMs, Progress=State.Progress;
+    auto Result=PlayerTurn(State,Bellows,3);
+    Expect(Result.Result==ETurn::Exhausted && Result.Cost==0 && State.Progress==Progress && State.LastActionMs==Last,
+        "unaffordable bellows overspeed must not partly spend or reset cadence");
+    Result=PlayerTurn(State,Bellows,4);
+    Expect(Result.Result==ETurn::TooFast && Result.Cost==4 && State.Progress==Progress && State.LastActionMs==State.ElapsedMs,
+        "authored bellows overspeed must cost twice without progress");
+    Tick(State,Bellows,At(Bellows.MaxTurnMs+1));
+    Result=PlayerTurn(State,Bellows,2);
+    Expect(Result.Result==ETurn::Slow && Result.Cost==2,"a slow accepted turn has ordinary cost");
+    State=Begin(Wheel,"free wheel slip"); PlayerTurn(State,Wheel,8);
+    Result=PlayerTurn(State,Wheel,0);
+    Expect(Result.Result==ETurn::TooFast && Result.Cost==0 && State.Progress==1000,"override slip must remain free");
+    for (const int FrameMs : {1,2,3,7,16,17,33,50,100,250,500})
+    {
+        State=Begin(Wheel,"held assist cadence");
+        SoraCrankInputRules::FState Input;
+        Expect(SoraCrankInputRules::Begin(Input,true),"a fresh press starts work");
+        int Spent=PlayerTurn(State,Wheel,100).Cost, Accepted=1;
+        for(int AtMs=0;AtMs<10000;)
+        {
+            const int Dt=FrameMs<10000-AtMs?FrameMs:10000-AtMs;
+            AtMs+=Dt; Tick(State,Wheel,At(Dt));
+            if(SoraCrankInputRules::Tick(Input,Dt,true,true,Wheel.HoldMilliTurnsS))
+            {
+                Result=PlayerTurn(State,Wheel,100);
+                Expect(Result.Result==ETurn::InBand,"held assist must pass ordinary rhythm admission");
+                Spent+=Result.Cost; ++Accepted;
+            }
+        }
+        Expect(Accepted==7 && Spent==56 && State.Progress==7000,"0.6 turns/s changed with the frame size");
+        SoraCrankInputRules::Tick(Input,1,false,true,600);
+        Expect(!Input.Active && !SoraCrankInputRules::Tick(Input,5000,true,true,600),"release or arriving while held must not restart work");
+        SoraCrankInputRules::Begin(Input,true);
+        SoraCrankInputRules::Tick(Input,1000,true,false,600);
+        Expect(!Input.Active && !SoraCrankInputRules::Begin(Input,true),"leaving, menu or stagger needs a fresh release");
+        SoraCrankInputRules::Tick(Input,1,false,true,600);
+        Expect(SoraCrankInputRules::Begin(Input,true),"release restores eligibility");
+        SoraCrankInputRules::Stop(Input);
+        Expect(!Input.Active && !SoraCrankInputRules::Tick(Input,5000,true,true,600),"damage or reload must cancel held work without resuming");
+        Input={}; State=StartTask(Wheel,0);
+        Expect(!Input.Active && !Input.NeedsRelease && State.Progress==0 && State.LastActionMs==-1,
+            "checkpoint restart must discard input and partial work");
+    }
+    SoraCrankInputRules::FState Input;
+    SoraCrankInputRules::Begin(Input,true);
+    Expect(!SoraCrankInputRules::Tick(Input,10000,true,true,0),"normal held input must not repeat without authored opt-in");
+    State=Begin(Wheel,"assist cannot bypass rhythm"); PlayerTurn(State,Wheel,8);
+    Tick(State,Wheel,At(1500)); PlayerTurn(State,Wheel,8);
+    Tick(State,Wheel,At(167));
+    Result=PlayerTurn(State,Wheel,100);
+    Expect(Result.Result==ETurn::TooFast && Result.Cost==0 && State.Progress==2000,"an assisted attempt must not bypass a recent manual turn");
+    Expect(SoraCrankInputRules::Tick(Input,10000,true,true,600) && !SoraCrankInputRules::Tick(Input,0,true,true,600),
+        "a stalled frame must not queue a burst of turns");
+    // The helper applies progress through Tick, never player admission or stamina.
+    FTick Help; Help.DeltaMs=10000; Help.CrankHelpers=1;
+    const int Before=State.Progress;
+    Tick(State,Wheel,Help);
+    Expect(State.Progress==Before+1500,"helper work must remain independent of player resource");
+    FTask Bad=Wheel; Bad.StaminaPerTurn=0; Expect(!TaskValid(Bad),"missing stamina contract accepted");
+    Bad=Wheel; Bad.HoldMilliTurnsS=1000; Expect(!TaskValid(Bad),"assist outside the turn band accepted");
+}
+
+static void TestCooperativeCranks()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[3](Tasks); const FTask Weir = Tasks[5];
+    ChapterTasks[4](Tasks); const FTask Bellows = Tasks[5];
+    ChapterTasks[6](Tasks); const FTask Override = Tasks[6];
+    Expect(Weir.CoopMilliTurnsS == 200 && Weir.CoopSuspendsDecay && Weir.CoopRetreatCm == 0, "Otane's authored rules");
+    Expect(Bellows.CoopMilliTurnsS == 500 && Bellows.CoopProgressPermille == 400 && !Bellows.CoopSuspendsDecay, "bellows boy's authored credited contribution");
+    Expect(Override.CoopMilliTurnsS == 150 && Override.CoopSuspendsDecay && Override.CoopRetreatCm == 500 && Override.RatchetCount == 3, "Kohagi's authored rules");
+    for (const FTask* Task : {&Weir, &Bellows, &Override})
+    {
+        int Expected = -1;
+        for (int Frame : {1, 7, 17, 33, 250, 1000, 60000})
+        {
+            FTaskState S = StartTask(*Task, 0);
+            FTick Step; Step.CrankHelpers = 1; Step.DeltaMs = 1000;
+            Tick(S, *Task, Step);
+            Expect(S.Progress == 0, "helper started an untouched task");
+            S.Progress = Task == &Bellows ? 20000 : 2000;
+            S.LastActionMs = 0; S.ElapsedMs = Task->MaxTurnMs;
+            for (int Ms = 0; Ms < 10000; Ms += Frame)
+            {
+                Step.DeltaMs = Frame < 10000-Ms ? Frame : 10000-Ms;
+                Tick(S, *Task, Step);
+            }
+            const int Authored = Task == &Weir ? 4000 : Task == &Bellows ? 13000 : 3500;
+            Expect(S.Progress == Authored, "cooperation changed the authored net rate or its units");
+            if (Expected >= 0) Expect(S.Progress == Expected, "cooperation depends on frame size");
+            Expected = S.Progress;
+        }
+    }
+    FTaskState S = StartTask(Override, 0);
+    for (int Lock : {4000, 8000, 12000})
+    {
+        while (S.Progress < Lock)
+        {
+            Tick(S, Override, At(Override.MinTurnMs));
+            Expect(Turn(S, Override) == ETurn::InBand, "ratchet turn rejected");
+        }
+        Expect(S.CrankFloor == Lock, "quarter threshold failed to latch");
+        Tick(S, Override, At(Override.MinTurnMs)); Turn(S, Override);
+        Tick(S, Override, At(60000));
+        Expect(S.Progress == Lock && S.CrankFloor == Lock, "abandoned wheel slipped below its pawl");
+        // Re-enter its rhythm after the long retreat.
+        S.LastActionMs = S.ElapsedMs-Override.MinTurnMs;
+    }
+    const int Floor = S.CrankFloor;
+    Expect(Turn(S, Override) == ETurn::InBand, "return from retreat failed");
+    Expect(Turn(S, Override) == ETurn::TooFast && S.CrankFloor == Floor, "overspeed bypassed or released a ratchet");
+    S = RetryTask(S, Override);
+    Expect(S.Progress == 0 && S.CrankFloor == 0 && S.CrankCarry == 0 && S.LastActionMs < 0, "checkpoint retained crank work");
+    FTask Bad = Override; Bad.Ratchets[1] = Bad.Ratchets[0]; Expect(!TaskValid(Bad), "duplicate ratchet accepted");
+    Bad = Override; Bad.CoopProgressPermille = 0; Expect(!TaskValid(Bad), "zero helper credit accepted");
+    // Helper work crosses ordinary progress triggers and finishes normally.
+    S = StartTask(Weir, 0); Turn(S, Weir);
+    FTick Help; Help.DeltaMs=10000; Help.CrankHelpers=1;
+    Tick(S, Weir, Help); ReleaseWaves(S, Weir);
+    Expect(Released(S, 0), "cooperative quarter progress did not release its wave");
+    for (int I=0; I<6; ++I) { Tick(S, Weir, Help); ReleaseWaves(S, Weir); }
+    Expect(TaskComplete(S, Weir), "cooperation cannot complete the crank");
+    ChapterTasks[7](Tasks); const FTask Lift = Tasks[10];
+    Expect(Lift.CoopCount == 3 && Lift.CoopMilliTurnsS == 150 && !Lift.CoopSuspendsDecay && Lift.RatchetCount == 0 && Lift.DecayPermille == 10,
+        "lift crew must be per person, without a decay waiver or ratchet");
+    for (int Helpers=0; Helpers<=3; ++Helpers)
+        for (int Frame : {1, 7, 17, 33, 250, 1000, 10000})
+        {
+            FTaskState LiftState=StartTask(Lift,0);
+            LiftState.Progress=20000; LiftState.LastActionMs=0; LiftState.ElapsedMs=Lift.MaxTurnMs;
+            FTick Work; Work.CrankHelpers=Helpers;
+            for (int Ms=0; Ms<10000; Ms+=Frame)
+            {
+                Work.DeltaMs=Frame<10000-Ms?Frame:10000-Ms;
+                Tick(LiftState,Lift,Work);
+            }
+            Expect(LiftState.Progress==20000+(Helpers*150-480)*10, "lift did not apply the available crew's exact net rate");
+            LiftState=RetryTask(LiftState,Lift);
+            Expect(LiftState.Progress==0 && LiftState.CrankCarry==0 && LiftState.CrankFloor==0 && LiftState.LastActionMs<0,
+                "lift retry retained work or helper rate carry");
+        }
+    std::cout << "cooperative cranks: exact frame-independent rates, idle loss, ratchets, waves and checkpoint reset passed\n";
+}
+
 static void TestRideExploreCollectible()
 {
+    // Geometry only: the presentation keeps exact attachments, bounded
+    // segments and nominal slack without feeding any horse simulation.
+    using SoraLeadRopeRules::FPoint;
+    const FPoint RopeStart{12000,-16000,145};
+    for(double Span:{.1,100.,200.,300.,700.})
+        for(double Rise:{-60.,0.,45.})
+        {
+            const FPoint End{RopeStart.X+Span,RopeStart.Y+25,RopeStart.Z+Rise};
+            const auto Line=SoraLeadRopeRules::Curve(RopeStart,End,300);
+            const double Direct=SoraLeadRopeRules::Distance(RopeStart,End);
+            Expect(Line.Visible&&Line.Points.size()==13&&
+                SoraLeadRopeRules::Distance(Line.Points.front(),RopeStart)==0&&
+                SoraLeadRopeRules::Distance(Line.Points.back(),End)==0,
+                "lead rope: attachment positions or bounded geometry changed");
+            Expect(std::abs(SoraLeadRopeRules::Length(Line)-std::max(300.,Direct))<.000001,
+                "lead rope: nominal slack or taut separation is incorrect");
+            for(const auto Point:Line.Points) Expect(SoraLeadRopeRules::Finite(Point),"lead rope: nonfinite geometry");
+        }
+    for(double Invalid:{0.,-1.,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN()})
+        Expect(!SoraLeadRopeRules::Curve(RopeStart,{12200,-16000,145},Invalid).Visible,
+            "lead rope: invalid nominal length rendered");
+    Expect(!SoraLeadRopeRules::Curve(RopeStart,RopeStart,300).Visible&&
+        !SoraLeadRopeRules::Curve({std::numeric_limits<double>::quiet_NaN(),0,0},RopeStart,300).Visible,
+        "lead rope: coincident or invalid attachments rendered");
+    std::cout << "lead rope presentation: bounded samples, exact endpoints, nominal slack, taut separation and invalid-input refusal passed\n";
     FTask Ride = Make(EType::HorsebackRide, EGoal::Exit);
     Ride.HorseDownRetries = true;
     Ride.WaveCount = 2;
@@ -763,10 +1178,82 @@ static void TestRideExploreCollectible()
     FTask Cargo = Make(EType::HorsebackRide, EGoal::Deliveries);
     Cargo.Count = 3;
     Cargo.Dropoffs = 3;
+    Cargo.UnloadHoldMs = 3000;
     State = Begin(Cargo, "cargo ride");
-    Expect(Deliver(State, Cargo, 0) && !Deliver(State, Cargo, 0) && Deliver(State, Cargo, 2) && !TaskComplete(State, Cargo),
+    const SoraCargoRules::FCargo Manifest{30,10};
+    Expect(SoraCargoRules::Valid(Manifest,3),"cargo: authored thirty sheaves rejected");
+    for(const auto Invalid : {SoraCargoRules::FCargo{0,10},{-1,10},{30,0},{30,-1},{31,10},{INT_MAX,INT_MAX}})
+        Expect(!SoraCargoRules::Valid(Invalid,3),"cargo: invalid or overflowing manifest accepted");
+    Expect(!SoraCargoRules::Valid(Manifest,0)&&!SoraCargoRules::Valid({90,10},9)&&
+        SoraCargoRules::Valid({INT_MAX,INT_MAX},1)&&SoraCargoRules::Valid({2147483646,715827882},3),
+        "cargo: destination bounds or wide product admission failed");
+    Expect(SoraCargoRules::Remaining(Manifest,3,-1)==0&&SoraCargoRules::Remaining(Manifest,3,4)==0,
+        "cargo: impossible credit count generated cargo");
+    // All permutations conserve the original quantity. A refused hold,
+    // duplicate, on-foot continuation or retry must not invent a new stock.
+    for(int First=0;First<3;++First)
+        for(int Second=0;Second<3;++Second)
+        {
+            if(First==Second) continue;
+            auto Transfer=Begin(Cargo,"cargo quantity permutation");
+            const int Order[]={First,Second,3-First-Second};
+            for(int Done=0;Done<3;++Done)
+            {
+                const int Point=Order[Done];
+                Expect(SoraCargoRules::Remaining(Manifest,3,Transfer.Done)==30-Done*10&&
+                    !Deliver(Transfer,Cargo,Point,2999)&&Transfer.Done==Done,
+                    "cargo: partial unload altered the remaining stock");
+                Expect(Fail(Transfer,Cargo,EFail::HorseDown)==ERetry::Continue&&Transfer.Done==Done,
+                    "cargo: on-foot continuation discarded an accepted share");
+                Expect(Deliver(Transfer,Cargo,Point,3000)&&!Deliver(Transfer,Cargo,Point,3000)&&
+                    SoraCargoRules::Remaining(Manifest,3,Transfer.Done)==20-Done*10,
+                    "cargo: accepted unique share did not remove exactly ten sheaves");
+                int Received=0;
+                for(int Destination=0;Destination<3;++Destination)
+                    Received+=Transfer.DropoffUses[Destination]*Manifest.PerDropoff;
+                Expect(Received+SoraCargoRules::Remaining(Manifest,3,Transfer.Done)==30,
+                    "cargo: pack and destination quantities are not conserved");
+            }
+            Transfer=Begin(Cargo,"cargo quantity checkpoint retry");
+            Expect(SoraCargoRules::Remaining(Manifest,3,Transfer.Done)==30&&
+                Transfer.DropoffUses[0]+Transfer.DropoffUses[1]+Transfer.DropoffUses[2]==0,
+                "cargo: retry retained delivered goods or lost the pack load");
+        }
+    // Binary-exact seconds put the old global clock just over 3000 ms
+    // while the fresh cargo hold is still 1/4096 s short. The runtime owns
+    // this same resettable clock rather than inheriting TickBeat's fraction.
+    FSoraMillisecondClock BeatClock, CargoClock;
+    Expect(BeatClock.Advance(1.0/2048)==0,"cargo clock setup fabricated a millisecond");
+    const double ShortHold=3.0-1.0/4096;
+    int Held=CargoClock.Advance(ShortHold);
+    Expect(BeatClock.Advance(ShortHold)==3000 && Held==2999 && !Deliver(State,Cargo,0,Held),
+        "cargo: pre-press clock fraction credited an early delivery");
+    // A paused frame never calls Advance; no wall-clock catch-up is owed.
+    Expect(Held==2999 && !Deliver(State,Cargo,0,Held),"cargo: paused work completed");
+    Held+=CargoClock.Advance(1.0/4096);
+    Expect(Held==3000 && Deliver(State,Cargo,0,Held),"cargo: exactly three active seconds did not deliver");
+    State=Begin(Cargo,"cargo after cancelled fractional hold");
+    CargoClock.Advance(1.0/2048);
+    CargoClock.Reset();
+    Expect(CargoClock.Advance(ShortHold)==2999 && State.Done==0,
+        "cargo: cancelled fractional work leaked into the next hold");
+    for (const int Duration : {-1, 0, 1, 1000, 2999})
+        Expect(!Deliver(State, Cargo, 0, Duration) && State.Done == 0 && State.DropoffUses[0] == 0,
+            "cargo: an incomplete hold credited a delivery");
+    Expect(Deliver(State, Cargo, 0, 3000) && !Deliver(State, Cargo, 0, 3000) &&
+        Deliver(State, Cargo, 2, 3000) && !TaskComplete(State, Cargo),
         "cargo: a hamlet took two loads");
-    Expect(Deliver(State, Cargo, 1) && TaskComplete(State, Cargo), "cargo: three hamlets did not finish it");
+    Expect(Deliver(State, Cargo, 1, 3000) && TaskComplete(State, Cargo), "cargo: three hamlets did not finish it");
+    State = Begin(Cargo, "cargo retry");
+    Expect(State.Done == 0 && !Deliver(State,Cargo,1,2999) && Deliver(State,Cargo,1,3000),
+        "cargo: retry carried delivery credit or bypassed the whole hold");
+    for (const int Duration : {-1, 0, MaxClockMs+1})
+    {
+        FTask Invalid=Cargo; Invalid.UnloadHoldMs=Duration;
+        Expect(!TaskValid(Invalid),"cargo: invalid hold duration accepted");
+    }
+    FTask NonCargo=Ride; NonCargo.UnloadHoldMs=3000;
+    Expect(!TaskValid(NonCargo),"cargo: hold duration leaked into an ordinary ride");
     Cargo.Count = 2;
     Expect(!TaskValid(Cargo), "cargo: loads that do not match the hamlets accepted");
 
@@ -938,6 +1425,61 @@ static void TestMountRules()
 // Every authored horse is valid, and every ride reaches the end of its route
 // at the best pace its gaits, caps and wind allow, within its target time or,
 // where the script's route length outruns it, half as long again (reported).
+static void TestLeadFear()
+{
+    using namespace SoraMountRules;
+    FLeadFear Fear;
+    FLeadTug Tug;
+    Expect(!ObserveLeadFear(Fear,false,2500) && ObserveLeadFear(Fear,true,2500),"lead: first threat entry did not spook");
+    Expect(StartLeadTug(Tug) && Tug.RemainingMs==1000 && Fear.RemainingMs==2500,"lead: authored windows changed");
+    StepLeadFear(Fear,500); StepLeadTug(Tug,500);
+    Expect(!ObserveLeadFear(Fear,true,2500) && !StartLeadTug(Tug) && Fear.RemainingMs==2000 && Tug.RemainingMs==500,
+        "lead: a continuous hazard extended fear or steering loss");
+    ObserveLeadFear(Fear,false,2500);
+    Expect(!ObserveLeadFear(Fear,true,2500),"lead: re-entry during recovery restarted fear");
+    StepLeadFear(Fear,2000); StepLeadTug(Tug,500);
+    Expect(!ObserveLeadFear(Fear,true,2500) && Fear.RemainingMs==0 && Tug.RemainingMs==0,
+        "lead: remaining inside the radius caused indefinite steering loss");
+    ObserveLeadFear(Fear,false,2500);
+    Expect(ObserveLeadFear(Fear,true,2500),"lead: a new encounter after recovery could not spook");
+    const int Before=Fear.RemainingMs;
+    StepLeadFear(Fear,0); StepLeadFear(Fear,-1);
+    Expect(Fear.RemainingMs==Before,"lead: a zero or negative tick fabricated time");
+    Tug={};
+    Expect(!StepLeadTug(Tug,1000),"lead: dismount/reset preserved a phantom tug");
+    for(const int Fps:{30,60,120,144})
+    {
+        Fear={}; Tug={}; FSoraMillisecondClock FearClock,TugClock;
+        // Fractions before the source enters belong to neither new timer.
+        FearClock.Advance(1.0/2048); TugClock.Advance(1.0/2048);
+        ObserveLeadFear(Fear,true,2500); StartLeadTug(Tug);
+        FearClock.Reset(); TugClock.Reset();
+        const float Dt=1.f/Fps;
+        double Seconds=0, TugDone=-1, FearDone=-1;
+        for(int Frame=0;Frame<3*Fps;++Frame)
+        {
+            StepLeadFear(Fear,FearClock.Advance(Dt));
+            StepLeadTug(Tug,TugClock.Advance(Dt));
+            Seconds+=Dt;
+            if(TugDone<0&&Tug.RemainingMs==0) TugDone=Seconds;
+            if(FearDone<0&&Fear.RemainingMs==0) FearDone=Seconds;
+            Expect(Seconds>=1.0 || Tug.RemainingMs>0,"lead: steering returned before one active second");
+            Expect(Seconds>=2.5 || Fear.RemainingMs>0,"lead: fear ended before 2.5 active seconds");
+            Expect(!ObserveLeadFear(Fear,true,2500),"lead: continuous observation retriggered fear");
+        }
+        Expect(TugDone>=1.0 && TugDone<=1.0+Dt+.001 && FearDone>=2.5 && FearDone<=2.5+Dt+.001,
+            "lead: active-time duration drifted at "+std::to_string(Fps)+" Hz");
+    }
+    // Binary-exact sub-millisecond onset: neither timer may inherit prior time.
+    FSoraMillisecondClock Clock;
+    Clock.Advance(1.0/2048); Clock.Reset(); Tug={}; StartLeadTug(Tug);
+    StepLeadTug(Tug,Clock.Advance(1.0-1.0/4096));
+    Expect(Tug.RemainingMs==1,"lead: a fresh tug inherited a pre-trigger fraction");
+    StepLeadTug(Tug,Clock.Advance(1.0/4096));
+    Expect(Tug.RemainingMs==0,"lead: exact one-second tug did not recover");
+    std::cout << "lead mare: bounded 1000ms steering/2500ms fear, edge rearm, resets and 30/60/120/144Hz active clocks passed\n";
+}
+
 static void TestAuthoredRides()
 {
     using namespace SoraMountRules;
@@ -1019,6 +1561,9 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
                     Expect(RecordForms(State, Task, 1u << Form), Where + ": a repeated form was not learned");
                 return true;
             }
+        if (!SoraMaaiRules::Complete(State.Maai,Task.Maai))
+            return SoraMaaiRules::Tick(State.Maai,Task.Maai,Task.Maai.HoldMs,
+                (Task.Maai.InnerCm+Task.Maai.OuterCm)/2.0,1.0,true) != SoraMaaiRules::EResult::None;
         // A 転 lesson's bout follows its flank.
         if (Task.FlankBouts)
             RecordFlank(State, Task);
@@ -1050,6 +1595,8 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
     }
     case EGoal::Escort: return Tick(State, Task, At(500, true));
     case EGoal::Deliveries:
+        if (!EquipmentReady(State, Task)) return RecoverEquipment(State, Task, Task.RecoveryStringMs, true, true);
+        if (!CarryGateReady(State, Task)) return PryCarryGate(State,Task,Task.CarryGateMs,true,true,false);
         if (Task.Task == ETask::Carry && !State.Carrying)
         {
             for (int Point = 0; Point < Task.Pickups; ++Point)
@@ -1058,7 +1605,9 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
             return Tick(State, Task, At(500));
         }
         for (int Point = 0; Point < Task.Dropoffs; ++Point)
-            if (Deliver(State, Task, Point))
+            // The abstract progression driver supplies completed held time;
+            // mapped input, cancellation and pause are runtime fixtures.
+            if (Deliver(State, Task, Point, Task.UnloadHoldMs))
                 return true;
         return Tick(State, Task, At(500));
     case EGoal::Steps:
@@ -1066,6 +1615,18 @@ static bool Act(FTaskState& State, const FTask& Task, const std::string& Where)
         if (GoalMet(State, Task))
             return Tick(State, Task, At(500));
         const FStep& Current = Task.Steps[State.Step];
+        if(Current.PhraseStrikes>0)
+        {
+            SoraRhythmRules::FState Cue; SoraRhythmRules::Begin(Cue,State,Task);
+            for(int Strike=0;Strike<Current.PhraseStrikes;++Strike)
+            {
+                Tick(State,Task,At(Cue.DueMs-State.ElapsedMs));
+                Expect(SoraRhythmRules::Strike(Cue,State,Task),Where+": authored response missed");
+                Tick(State,Task,At(Current.ToleranceMs+1));
+                SoraRhythmRules::Tick(Cue,State,Task,false);
+            }
+            return true;
+        }
         Tick(State, Task, At(Current.BeatMs > 0 && State.StepDone > 0 ? Current.BeatMs : 400));
         Expect(Stroke(State, Task) != EStroke::Missed, Where + ": an on-beat stroke missed");
         return true;
@@ -1345,22 +1906,159 @@ static void ExpectUnlockOrder(const FUnlockLog& Log, bool Completist)
     Expect(Completist ? Moved == 0 : Moved == 1, "the skipper's route moves other than the one optional pickup");
 }
 
+static void TestAuthoredCarryDifficulty()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[1](Tasks);
+    FTask Rice = Tasks[4];
+    Expect(!Rice.DropOnHitByDifficulty[0] && !Rice.DropOnHitByDifficulty[1] && Rice.DropOnHitByDifficulty[2],
+        "seed rice: authored Easy/Normal/Hard drop policy was discarded");
+    for (int Difficulty = 0; Difficulty < 3; ++Difficulty)
+    {
+        ApplyCarryDifficulty(Rice, Difficulty);
+        FTaskState State = Begin(Rice, "seed rice difficulty");
+        Expect(PryCarryGate(State,Rice,Rice.CarryGateMs,true,true,false), "seed rice: seal did not open");
+        Expect(Pickup(State, Rice, 0), "seed rice: pickup failed");
+        const bool Drops = Difficulty == 2;
+        Expect(DropCarried(State, Rice) == Drops && State.Carrying != Drops && State.Done == 0,
+            "seed rice: hit used the wrong difficulty or delivered the load");
+        if (Drops) Expect(Pickup(State, Rice, 0), "seed rice: dropped load could not be recovered");
+        State = RetryTask(State, Rice);
+        Expect(!CarryGateReady(State,Rice) && PryCarryGate(State,Rice,Rice.CarryGateMs,true,true,false), "seed rice: retry did not reset seal");
+        Expect(!State.Carrying && State.Done == 0 && Pickup(State, Rice, 0), "seed rice: retry retained partial carry state");
+        Expect(DropCarried(State, Rice) == Drops, "seed rice: retry lost its difficulty policy");
+    }
+    ApplyCarryDifficulty(Rice, -1);
+    Expect(!Rice.DropOnHit, "seed rice: invalid difficulty did not use Normal");
+    ApplyCarryDifficulty(Rice, 3);
+    Expect(!Rice.DropOnHit, "seed rice: difficulty sentinel read beyond the policy");
+}
+
+static void TestCarrySealAndLooseLoads()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[1](Tasks);
+    FTask Rice=Tasks[4]; ApplyCarryDifficulty(Rice,2);
+    FTaskState State=Begin(Rice,"seed rice seal");
+    Expect(Rice.CarryGateMs==3000 && !Pickup(State,Rice,0),"sealed store allowed pickup");
+    FTaskState Forged=State; Forged.Carrying=true;
+    Expect(!Deliver(Forged,Rice,0) && SetDownCarried(Forged,Rice)<0,"closed seal admitted injected cargo");
+    Forged.Done=Rice.Count;
+    Expect(!TaskComplete(Forged,Rice),"closed seal admitted forged completion");
+    Expect(!PryCarryGate(State,Rice,1200,true,true,false) && State.CarryGateHeldMs==1200,"seal first work interval");
+    Expect(!PryCarryGate(State,Rice,1000,true,true,true) && State.CarryGateHeldMs==1200,"hit must pause seal work");
+    Expect(!PryCarryGate(State,Rice,1000,true,false,false) && State.CarryGateHeldMs==1200,"release must pause seal work");
+    Expect(!PryCarryGate(State,Rice,1000,false,true,false) && State.CarryGateHeldMs==1200,"leaving must pause seal work");
+    Expect(!PryCarryGate(State,Rice,1799,true,true,false) && !Pickup(State,Rice,0),"seal opened before three work seconds");
+    Expect(PryCarryGate(State,Rice,1,true,true,false) && !PryCarryGate(State,Rice,1,true,true,false),"seal completion is not one-time");
+    for(int Slot=0;Slot<4;++Slot)
+        Expect(Pickup(State,Rice,0) && SetDownCarried(State,Rice)==Slot && State.Done==0,"set-down delivered or lost a bale");
+    Expect(Bits(State.LooseLoads)==4 && !Pickup(State,Rice,0),"loose loads duplicated source stock");
+    Expect(PickupLoose(State,Rice,1) && !PickupLoose(State,Rice,1) && Bits(State.LooseLoads)==3,"loose pickup duplicated a bale");
+    Expect(DropCarried(State,Rice) && !State.Carrying && Pickup(State,Rice,0),"lost loose bale did not return to its source");
+    Expect(Deliver(State,Rice,0) && State.Done==1 && !Pickup(State,Rice,0),"new pickup after hit duplicated conserved stock");
+    for(int Slot:{0,2,3})
+        Expect(PickupLoose(State,Rice,Slot) && Deliver(State,Rice,Slot==0?0:1),"loose loads could not be delivered");
+    Expect(TaskComplete(State,Rice) && State.Done==4 && State.LooseLoads==0u,"four conserved bales did not complete");
+    State=RetryTask(State,Rice);
+    Expect(!CarryGateReady(State,Rice) && State.CarryGateHeldMs==0 && State.LooseLoads==0u && !State.Carrying && State.Done==0,
+        "retry retained seal or loose-load state");
+    FTask Distinct=Rice; Distinct.CarryGateMs=0; Distinct.Count=2; Distinct.Pickups=2;
+    State=Begin(Distinct,"distinct loose goods");
+    Expect(Pickup(State,Distinct,1) && SetDownCarried(State,Distinct)==0 && !Pickup(State,Distinct,1),"distinct source duplicated loose goods");
+    Expect(PickupLoose(State,Distinct,0) && DropCarried(State,Distinct) && Pickup(State,Distinct,1),"distinct loose hit restored wrong source");
+    std::cout << "carry: seal hold/hit/release/retry and loose-load stock conservation passed\n";
+}
+
+static void TestNamedDropoffCapacities()
+{
+    FTask Tasks[MaxBeats] = {};
+    ChapterTasks[1](Tasks);
+    FTask Carry=Tasks[4];
+    Expect(Carry.DropoffCapacityCount==2 && DropoffCapacity(Carry,0)==2 && DropoffCapacity(Carry,1)==2,
+        "authored named pack-horse capacities were lost");
+    Carry.CarryGateMs=0; Carry.DropOnHit=true;
+    Carry.DropoffCapacities[0]=1; Carry.DropoffCapacities[1]=3;
+    FTaskState State=Begin(Carry,"asymmetric named drop-offs");
+    Expect(TaskCheckpointValid(Carry,0) && !TaskCheckpointValid(Carry,1),"carry checkpoint phase contract changed");
+    Expect(DropoffCapacity(Carry,-1)==0 && DropoffCapacity(Carry,2)==0 &&
+        !DropoffHasRoom(State,Carry,-1) && !DropoffHasRoom(State,Carry,MaxPoints),"invalid drop-off index admitted");
+    Expect(Pickup(State,Carry,0) && Deliver(State,Carry,0) && !DropoffHasRoom(State,Carry,0) &&
+        DropoffHasRoom(State,Carry,1),"asymmetric first destination did not fill after one load");
+    Expect(Pickup(State,Carry,0),"second load could not leave source");
+    const FTaskState Before=State;
+    Expect(!Deliver(State,Carry,0) && State.Done==Before.Done && State.Carrying && State.CarriedFrom==Before.CarriedFrom &&
+        State.DropoffUses[0]==Before.DropoffUses[0] && State.DropoffUses[1]==0,"full destination consumed or duplicated carried stock");
+    Expect(SetDownCarried(State,Carry)==0 && Pickup(State,Carry,0) && SetDownCarried(State,Carry)==1 &&
+        Pickup(State,Carry,0) && SetDownCarried(State,Carry)==2 && Bits(State.LooseLoads)==3 && !Pickup(State,Carry,0),
+        "asymmetric capacities duplicated source or loose stock");
+    Expect(PickupLoose(State,Carry,1) && DropCarried(State,Carry) && Pickup(State,Carry,0) &&
+        Deliver(State,Carry,1) && !Pickup(State,Carry,0),"hit-returned loose load changed total stock");
+    for(int Slot:{0,2})
+        Expect(PickupLoose(State,Carry,Slot) && Deliver(State,Carry,1),"three-load destination refused conserved goods");
+    Expect(State.Done==4 && State.DropoffUses[0]==1 && State.DropoffUses[1]==3 && State.LooseLoads==0u &&
+        TaskComplete(State,Carry) && !Pickup(State,Carry,0) && !Deliver(State,Carry,1),"named capacities did not conserve four goods");
+    State=RetryTask(State,Carry);
+    Expect(State.Done==0 && !State.Carrying && State.LooseLoads==0u && State.DropoffUses[0]==0 && State.DropoffUses[1]==0 &&
+        DropoffHasRoom(State,Carry,0) && DropoffHasRoom(State,Carry,1),"checkpoint retry retained destination occupancy");
+    for(int Value:{-1,0,100})
+    {
+        FTask Bad=Carry; Bad.DropoffCapacities[0]=Value;
+        Expect(!TaskValid(Bad) && !TaskCheckpointValid(Bad,0),"invalid capacity entered task or checkpoint");
+    }
+    for(int Count:{-1,0,1,3,MaxPoints+1})
+    {
+        FTask Bad=Carry; Bad.DropoffCapacityCount=Count;
+        Expect(!TaskValid(Bad) && !TaskCheckpointValid(Bad,0),"missing or extra capacity accepted");
+    }
+    FTask Bad=Carry; Bad.DropoffCapacities[1]=2;
+    Expect(!TaskValid(Bad) && !TaskCheckpointValid(Bad,0),"insufficient total destination space accepted");
+    Bad=Carry; Bad.DropoffCapacities[2]=1;
+    Expect(!TaskValid(Bad) && !TaskCheckpointValid(Bad,0),"capacity beyond named points accepted");
+    FTask Derived=Make(EType::ProductionTask,EGoal::Deliveries,ETask::Carry);
+    Derived.Count=5; Derived.Pickups=1; Derived.Dropoffs=2;
+    State=Begin(Derived,"legacy derived capacity");
+    Expect(DropoffCapacity(Derived,0)==3 && DropoffCapacity(Derived,1)==3,"absent map lost equal ceiling share");
+    for(int Item=0;Item<5;++Item)
+        Expect(Pickup(State,Derived,0) && Deliver(State,Derived,Item<3?0:1),"derived destinations refused goods");
+    Expect(TaskComplete(State,Derived) && !DropoffHasRoom(State,Derived,1),"spare capacity created a sixth good");
+    FTask Cargo=Make(EType::HorsebackRide,EGoal::Deliveries);
+    Cargo.Count=3; Cargo.Dropoffs=3; Cargo.UnloadHoldMs=3000;
+    State=Begin(Cargo,"cargo capacity compatibility");
+    for(int Point=0;Point<3;++Point)
+        Expect(DropoffCapacity(Cargo,Point)==1 && Deliver(State,Cargo,Point,3000) && !Deliver(State,Cargo,Point,3000),
+            "horseback cargo changed its one-load-per-destination rule");
+    Cargo.DropoffCapacityCount=3; Cargo.DropoffCapacities[0]=Cargo.DropoffCapacities[1]=Cargo.DropoffCapacities[2]=1;
+    Expect(!TaskValid(Cargo) && !TaskCheckpointValid(Cargo,0),"carry-only explicit map leaked into horseback cargo");
+    std::cout << "carry: named 1/3 capacities, full-destination refusal, stock conservation, checkpoint reset and cargo compatibility passed\n";
+}
+
 int main()
 {
     static_assert(sizeof(Chapters) / sizeof(Chapters[0]) == 8, "Eight chapters are required");
     TestDojoLessons();
     TestCampaignRules();
+    TestMaai();
     TestCinematicAndDialogue();
     TestWaves();
     TestDuels();
     TestDefeatsAndLessons();
     TestBossAndStealth();
+    TestEquipmentRecovery();
     TestProduction();
     TestDecayFrames();
+    TestCooperativeCranks();
+    TestRhythmManufacture();
+    TestBellowsTreads();
+    TestPlayerCranks();
     TestRideExploreCollectible();
     TestSiegeAndCarry();
     TestMountRules();
+    TestLeadFear();
     TestAuthoredRides();
+    TestAuthoredCarryDifficulty();
+    TestCarrySealAndLooseLoads();
+    TestNamedDropoffCapacities();
     unsigned RouteMinimum = 0u, AllEarlier = 0u, MechanicsEarlier = 0u, FlagsEarlier = 0u;
     FEntry Skipper{0u, 0u, 0u}, Completist{0u, 0u, 0u};
     FUnlockLog SkipperLog{}, CompletistLog{};

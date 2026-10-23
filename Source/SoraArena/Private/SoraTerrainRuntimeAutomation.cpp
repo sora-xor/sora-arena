@@ -1,5 +1,6 @@
 #include "SoraWorldBuilder.h"
 #include "SoraCatalog.h"
+#include "World/SoraPresentationCapabilities.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "ArenaKernelSubsystem.h"
@@ -34,11 +35,8 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     // Inspect the spawned components, not the manifest or source text. Missing
     // imports, wrong platform selection, or changed component setup must fail.
     Builder->Build(0);
-#if PLATFORM_MAC
-    const TCHAR* Tier = TEXT("MAC");
-#else
-    const TCHAR* Tier = TEXT("HI");
-#endif
+    const TCHAR* Tier = SoraPresentation::EnvironmentAssetTier(World);
+    const bool bNaniteTier = SoraPresentation::UsesNaniteEnvironment(World);
     TInlineComponentArray<UStaticMeshComponent*> CampaignMeshes;
     Builder->GetComponents(CampaignMeshes);
     int32 TerrainCount = 0;
@@ -51,9 +49,22 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
     int32 WallVisualCount = 0;
     int32 RoadsideVisualCount = 0;
     int32 HiddenBoundaryColliders = 0;
+    int32 FoliageCount = 0;
     for (UStaticMeshComponent* Component : CampaignMeshes)
     {
         if (!Component) continue;
+        const UStaticMesh* Foliage = Component->GetStaticMesh();
+        if (Foliage && (Foliage->GetName().StartsWith(TEXT("SM_NyaagyuTree_")) ||
+            Foliage->GetName().StartsWith(TEXT("SM_NyaagyuPine_"))))
+        {
+            ++FoliageCount;
+            TestTrue(TEXT("Foliage uses the same runtime tier as terrain"),
+                Foliage->GetName().EndsWith(FString(TEXT("_")) + Tier));
+            TestTrue(TEXT("Foliage tier cannot change collision"),
+                Component->GetCollisionEnabled() == ECollisionEnabled::NoCollision);
+            TestFalse(TEXT("Foliage tier cannot change navigation"),
+                Component->CanEverAffectNavigation());
+        }
         bBlockoutRoadPresent |= Component->GetName().StartsWith(TEXT("CentralRoad"));
         if (Component->GetName().StartsWith(TEXT("SM_Nyaagyu_CargoStack")))
         {
@@ -133,13 +144,8 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
                     Bound->GetPathName(), FString::Printf(TEXT("/Game/Generated/Environment/%s.%s"), *MaterialName, *MaterialName));
         }
 #if WITH_EDITORONLY_DATA
-#if PLATFORM_MAC
-        TestFalse(*FString::Printf(TEXT("Mac tile %s uses conventional geometry"), *Name),
-            Mesh->GetNaniteSettings().bEnabled);
-#else
-        TestTrue(*FString::Printf(TEXT("High-detail tile %s enables Nanite"), *Name),
-            Mesh->GetNaniteSettings().bEnabled);
-#endif
+        TestEqual(*FString::Printf(TEXT("Tile %s authoring matches its runtime tier"), *Name),
+            Mesh->GetNaniteSettings().bEnabled != 0, bNaniteTier);
 #endif // Nanite authoring settings are stripped from packaged game targets.
         TestTrue(*FString::Printf(TEXT("Terrain tile %s does not change collision"), *Name),
             Component->GetCollisionEnabled() == ECollisionEnabled::NoCollision);
@@ -153,6 +159,7 @@ bool FSoraNyaagyuTerrainRuntimeTest::RunTest(const FString& Parameters)
         TestTrue(*FString::Printf(TEXT("Terrain tile %s is registered"), *Name), Component->IsRegistered());
     }
     TestEqual(TEXT("Campaign has exactly sixteen authored terrain tiles"), TerrainCount, 16);
+    TestTrue(TEXT("Campaign tier checks include actual foliage components"), FoliageCount > 0);
     TestEqual(TEXT("Campaign has twelve authored cargo visuals"), CargoVisualCount, 12);
     TestEqual(TEXT("Campaign retains twelve hidden cover colliders"), HiddenCoverColliders, 12);
     TestEqual(TEXT("Campaign has fifty-eight authored perimeter modules"), WallVisualCount, 58);

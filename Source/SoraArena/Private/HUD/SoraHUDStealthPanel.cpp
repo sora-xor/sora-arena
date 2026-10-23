@@ -47,6 +47,17 @@ void CenteredLabel(ASoraHUD& HUD,const FString& Text,float X,float Y,float Scale
 }
 }
 
+TArray<FBox2D> SoraHUDPanels::StealthPanelBounds(const FSoraHUDFrame& F,const ASoraPlayerCharacter& Hero)
+{
+    const auto* Stealth=USoraStealth::Get(&Hero);
+    if(!Stealth||!Stealth->IsZoneActive()||F.Mode.bDeterministicPractice) return {};
+    const float S=F.S,Width=340*S,X=F.W-Width-25*S,Y=87*S,Height=(F.Mode.bEnglishSubtitles?104:84)*S;
+    TArray<FBox2D> Bounds={FBox2D({X,Y},{X+Width,Y+Height})};
+    if(Stealth->Readout(Hero).bAlarm)
+        Bounds.Add(FBox2D({X,Y+Height+4*S},{X+Width,Y+Height+4*S+(F.Mode.bEnglishSubtitles?48:32)*S}));
+    return Bounds;
+}
+
 void SoraHUDPanels::DrawStealth(const FSoraHUDFrame& Frame,const ASoraPlayerCharacter& Hero)
 {
     const USoraStealth* Stealth=USoraStealth::Get(&Hero);
@@ -59,7 +70,8 @@ void SoraHUDPanels::DrawStealth(const FSoraHUDFrame& Frame,const ASoraPlayerChar
 
     // The detection meter, top right: the most alarmed guard's state and fill,
     // then the hero's stance and how lit he stands, his carried light included.
-    const float PW=340*S,PX=W-PW-25*S,PY=87*S,PH=bEnglish?104*S:84*S;
+    const auto Panels=StealthPanelBounds(Frame,Hero);
+    const float PW=Panels[0].GetSize().X,PX=Panels[0].Min.X,PY=Panels[0].Min.Y,PH=Panels[0].GetSize().Y;
     const FLinearColor Tint=StateTint(Readout.Worst,Frame);
     const FStealthText Text=StateText(Readout.Worst);
     HUD.Panel(PX,PY,PW,PH,Back);
@@ -78,7 +90,7 @@ void SoraHUDPanels::DrawStealth(const FSoraHUDFrame& Frame,const ASoraPlayerChar
     if(Readout.bAlarm)
     {
         const FLinearColor Red=StateTint(EState::Combat,Frame);
-        HUD.Panel(PX,PY+PH+4*S,PW,bEnglish?48*S:32*S,FLinearColor(.20f,.02f,.02f,.88f));
+        HUD.Panel(Panels[1].Min.X,Panels[1].Min.Y,Panels[1].GetSize().X,Panels[1].GetSize().Y,FLinearColor(.20f,.02f,.02f,.88f));
         HUD.Label(TEXT("警報発令"),PX+16*S,PY+PH+7*S,.46*S,Red);
         if(bEnglish) HUD.Label(TEXT("ALARM RAISED"),PX+16*S,PY+PH+32*S,.30*S,Frame.Ivory);
     }

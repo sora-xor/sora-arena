@@ -118,6 +118,15 @@ void ASoraGameMode::SetMenuOpen(bool bOpen)
     bMenu=bOpen;
     if(bOpen)
     {
+        if(CampaignDirector)
+        {
+            CampaignDirector->StopPlayerCrank();
+            CampaignDirector->CancelFoundryWork();
+            CampaignDirector->CancelHelm();
+            CampaignDirector->CancelSpineCut();
+            CampaignDirector->CancelConstructCut();
+            CampaignDirector->ReleaseWindBrace();
+        }
         // Menu time is discarded; practice resumes on a fresh 60 Hz step.
         PracticeDirector->ResetClock();
         // A director that stops play (liberation, a refused practice step)
@@ -141,7 +150,8 @@ SoraInput::EState ASoraGameMode::InputState() const
 {
     if(bMenu) return SoraInput::Menu;
     if(bDefeated||bChapterComplete) return SoraInput::Result;
-    return TitleCardTime>0.f?SoraInput::Card:SoraInput::Play;
+    if(TitleCardTime>0.f) return SoraInput::Card;
+    return bCampaign&&CampaignDirector->IsDialogueBlocking()?SoraInput::Dialogue:SoraInput::Play;
 }
 const FSoraChapter* ASoraGameMode::TitleCardChapter() const
 {
@@ -164,6 +174,9 @@ bool ASoraGameMode::ContinueCampaign()
         CampaignDirector->ResumeSavedChapter();
         ResetRound();
     }
+    // Continuing a saved completion reopens its chapter registry. The next
+    // Enter on that result advances; resuming from the menu must not skip it.
+    if(bChapterComplete) { SetMenuOpen(false); return true; }
     BeginRound();
     return !bMenu;
 }
@@ -252,7 +265,7 @@ void ASoraGameMode::QuitGame()
 void ASoraGameMode::ToggleSubtitles() { SettingsState->SetEnglishSubtitles(!bEnglishSubtitles); }
 void ASoraGameMode::Interact(ASoraPlayerCharacter* Player)
 {
-    if(bDeterministicPractice) return;
+    if(bDeterministicPractice||!IsPlaying()) return;
     if(!WorldBuilder||!Player) return;
     CampaignDirector->Interact(*Player);
 }

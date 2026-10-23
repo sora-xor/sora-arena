@@ -62,13 +62,16 @@ for gate in ("Record", "CheckpointValid", "CanScoreBout"):
 for gate in ("CompleteBeat", "NextBeat", "FinishChapter", "ProgressValid", "CheckpointValid", "EntryValid",
              "CanStartBeat", "StartTask", "ReleaseWaves", "ReleaseWave", "Tick", "TaskComplete", "Skip",
              "FinishLines", "Reach", "Travel", "RecordDefeat", "ScorePoint", "RecordForms", "OpponentHealth", "WorkObjective",
-             "Turn", "Pickup", "Deliver", "DropCarried", "Stroke", "DamageTarget", "RepairTarget", "OpenCache",
+             "Pickup", "Deliver", "DropCarried", "Stroke", "DamageTarget", "RepairTarget", "OpenCache",
              "Fail", "RetryTask", "ProgressPermille", "CrankSlipping", "PhaseStartPermille", "RepeatForm", "RecordFlank",
              "AwaitsCapture", "Capture", "InPlayWeapons", "InPlayMechanics"):
     assert re.search(rf"SoraBeatRules::{gate}\b", director), f"The campaign director no longer uses tested beat {gate} rule"
 for gate in ("AdvanceChapter", "CampaignLiberated", "CollectibleBit", "CollectiblesValid", "RecordArenaDefeat",
              "RestoreArenaSite", "FinishArena"):
     assert f"SoraCampaignRules::{gate}" in director, f"The campaign director no longer uses tested campaign {gate} gate"
+crank_source = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignCrank.cpp").read_text()
+for gate in ("SoraBeatRules::PlayerTurn", "SoraCrankInputRules::Tick", "Kit->GuardReserve()", "Kit->SpendGuard(Turned.Cost)"):
+    assert gate in crank_source, f"The player crank no longer uses {gate}"
 catalog_loader = (ROOT / "Source/SoraArena/Private/SoraCatalog.cpp").read_text()
 for gate in ("ChapterValid", "TasksValid"):
     assert f"SoraBeatRules::{gate}" in catalog_loader, f"The catalog loader no longer refuses chapters by {gate}"
@@ -78,7 +81,8 @@ world = (ROOT / "Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp").r
 for gate in ("SoraBeatRules::SiegeDamage", "SoraMountRules::CanMount", "SoraMountRules::ArcAllows", "SoraMountRules::Slower"):
     assert gate in world, f"The campaign director no longer uses tested {gate}"
 horse = (ROOT / "Source/SoraArena/Private/Characters/SoraHorse.cpp").read_text()
-for gate in ("Step(Ride,Rules", "SoraMountRules::SpeedCmS", "TurnDegS"):
+for gate in ("Step(Ride,Rules", "SoraMountRules::SpeedCmS", "TurnDegS", "SoraMountRules::ObserveLeadFear",
+             "SoraMountRules::StartLeadTug", "SoraMountRules::StepLeadTug", "SoraMountRules::StepLeadFear"):
     assert gate in horse or gate.replace("SoraMountRules::", "") in horse, f"The horse no longer rides by tested {gate}"
 space_loader = (ROOT / "Source/SoraArena/Private/SoraCatalogSpace.cpp").read_text()
 assert "HorseValid(M.Rules)" in space_loader, "The space loader no longer refuses an invalid horse"
@@ -132,17 +136,52 @@ def task_fields(task):
                ("LossLimit", "loss_limit", 0), ("DecayPermille", "decay_permille", 0),
                ("MinTurnMs", "min_turn_ms", 0), ("MaxTurnMs", "max_turn_ms", 0), ("SpeedCmS", "speed_cm_s", 0),
                ("WaitCm", "wait_cm", 0), ("PathCm", "path_cm", 0), ("ReinforceWave", "reinforce_wave", -1),
-               ("CarrySpeedPermille", "carry_speed_permille", 1000), ("TargetLossLimit", "target_loss_limit", 0), ("PickupHoldMs", "pickup_hold_ms", 0))
+               ("CarrySpeedPermille", "carry_speed_permille", 1000), ("TargetLossLimit", "target_loss_limit", 0),
+               ("PickupHoldMs", "pickup_hold_ms", 0), ("UnloadHoldMs", "unload_hold_ms", 0))
     for name, key, default in scalars:
         if task[key] != default:
             fields.append(f"T.{name} = {task[key]};")
     for name, key in (("Skippable", "skippable"), ("AnchorAfterLines", "anchor_after_lines"),
-                      ("PauseWhenSeen", "pause_when_seen"), ("DropOnHit", "drop_on_hit"),
+                      ("PauseWhenSeen", "pause_when_seen"),
                       ("HorseDownRetries", "horse_down_retries"), ("FlankBouts", "flank_bouts")):
         if task[key]:
             fields.append(f"T.{name} = true;")
+    for index, name in enumerate(("easy", "normal", "hard")):
+        if task["drop_on_hit"][name]:
+            fields.append(f"T.DropOnHitByDifficulty[{index}] = true;")
+    fields.append("ApplyCarryDifficulty(T, 1);")
+    if task["carry_gate"]:
+        fields.append(f"T.CarryGateMs = {task['carry_gate']['hold_ms']};")
+    if task["crank_player"]:
+        player = task["crank_player"]
+        for member, key in (("StaminaPerTurn", "stamina_per_turn"), ("OverspeedCostMultiplier", "overspeed_cost_multiplier"), ("HoldMilliTurnsS", "hold_milliturns_s")):
+            fields.append(f"T.{member} = {player[key]};")
+        fields.append(f"T.CrankTwoHanded = {flag(player['two_handed'])};")
+        fields.append(f"T.AlternateTreads = {flag(player['alternate_treads'])};")
+    if task["crank_coop"]:
+        coop = task["crank_coop"]
+        fields.append(f"T.CoopCount = {len(coop['npcs'])};")
+        for name, key in (("CoopMilliTurnsS", "per_npc_milliturns_s"), ("CoopProgressPermille", "progress_permille"), ("CoopRetreatCm", "retreat_cm")):
+            fields.append(f"T.{name} = {coop[key]};")
+        fields.append(f"T.CoopSuspendsDecay = {flag(coop['suspends_decay'])};")
+        fields.append(f"T.RatchetCount = {len(coop['ratchets_permille'])};")
+        for index, lock in enumerate(coop['ratchets_permille']):
+            fields.append(f"T.Ratchets[{index}] = {lock};")
     if task["lesson_mask"]:
         fields.append(f"T.LessonMask = {task['lesson_mask']}u;")
+    if task["equipment_weapons"] is not None:
+        fields.append(f"T.EquipmentMask = {mask(task['equipment_weapons'])}u;")
+    if recovery := task["recovery"]:
+        fields.append(f"T.RecoveryWeapons = {mask(recovery['weapons'])}u;")
+        for member, key in (("RecoveryDepthCm", "depth_cm"), ("RecoveryStringMs", "string_ms"), ("RecoveryQuiver", "quiver")):
+            fields.append(f"T.{member} = {recovery[key]};")
+    if maai := task["maai"]:
+        for member, key in (("InnerCm", "inner_cm"), ("OuterCm", "outer_cm"), ("HoldMs", "hold_ms"),
+                            ("FacingPermille", "facing_permille"), ("HintMs", "hint_ms")):
+            fields.append(f"T.Maai.{member} = {maai[key]};")
+        fields.append(f"T.Maai.Count = {len(maai['moves'])};")
+        for index, move in enumerate(maai["moves"]):
+            fields.append(f"T.Maai.Moves[{index}] = {{{move['forward_cm']}, {move['right_cm']}}};")
     for form, reps in enumerate(task["form_reps"]):
         if reps != 1:
             fields.append(f"T.FormReps[{form}] = {reps};")
@@ -158,9 +197,13 @@ def task_fields(task):
     for index, start in enumerate(task["phases"]):
         fields.append(f"T.PhaseStart[{index}] = {start};")
     fields.append(f"T.Pickups = {len(task['pickups'])}; T.Dropoffs = {len(task['dropoffs'])};")
+    if task["dropoff_capacity"] is not None:
+        fields.append(f"T.DropoffCapacityCount = {len(task['dropoffs'])};")
+        for index, name in enumerate(task["dropoffs"]):
+            fields.append(f"T.DropoffCapacities[{index}] = {task['dropoff_capacity'][name]};")
     fields.append(f"T.StepCount = {len(task['steps'])};")
     for index, step in enumerate(task["steps"]):
-        fields.append(f"T.Steps[{index}] = {{{step['count']}, {step['beat_ms']}, {step['tolerance_ms']}}};")
+        fields.append(f"T.Steps[{index}] = {{{step['count']}, {step['beat_ms']}, {step['tolerance_ms']}, {step['phrase_strikes']}, {step['phrase_pass']}}};")
     fields.append(f"T.TargetCount = {len(task['targets'])};")
     for index, target in enumerate(task["targets"]):
         fields.append(f"T.TargetHp[{index}] = {target['hp']};")

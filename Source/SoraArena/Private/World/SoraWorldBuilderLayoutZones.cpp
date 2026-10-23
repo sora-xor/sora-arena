@@ -18,7 +18,7 @@ const FLinearColor ZoneWeathered(.55f,.52f,.47f);
 bool ZoneIsAlien(FName Style) { return Style==TEXT("citadel")||Style==TEXT("foundry"); }
 }
 
-void ASoraWorldBuilder::BuildZone(const FSoraZone& Zone,int32 Index)
+void ASoraWorldBuilder::BuildZone(const FSoraZone& Zone,int32 Index,const FSoraBeat* Recovery)
 {
     const FString Name=FString::Printf(TEXT("Zone%d"),Index);
     const bool bRoute=Zone.IsRoute(),bHall=Zone.Form==TEXT("hall"),bField=Zone.Form==TEXT("field");
@@ -30,8 +30,48 @@ void ASoraWorldBuilder::BuildZone(const FSoraZone& Zone,int32 Index)
     // An estate hall's floor and walls become its authored interior's
     // collision once the whole kit loads (SoraWorldBuilderDojoHall.cpp).
     TArray<UStaticMeshComponent*> HallProxies;
-    HallProxies.Add(Box(Name+TEXT("Floor"),FVector(Center.X,Center.Y,-50.f),FVector(Size.X+160.f,Size.Y+160.f,100.f),
-        FLinearColor(.18f,.19f,.16f),true,FRotator::ZeroRotator,FloorRole));
+    if(!Recovery)
+        HallProxies.Add(Box(Name+TEXT("Floor"),FVector(Center.X,Center.Y,-50.f),FVector(Size.X+160.f,Size.Y+160.f,100.f),
+            FLinearColor(.18f,.19f,.16f),true,FRotator::ZeroRotator,FloorRole));
+    else
+    {
+        // Four slabs leave a real 340 cm opening. No invisible floor spans
+        // the shaft: the rope traversal sweeps the ordinary hero capsule.
+        const FVector2D P=Recovery->Space.Recovery;
+        const float X0=Zone.Rect.Min.X-80.f,X1=Zone.Rect.Max.X+80.f;
+        const float Y0=Zone.Rect.Min.Y-80.f,Y1=Zone.Rect.Max.Y+80.f;
+        const auto Slab=[&](const TCHAR* S,float A,float B,float C,float D)
+        {
+            Box(Name+S,FVector((A+C)*.5f,(B+D)*.5f,-50),FVector(C-A,D-B,100),
+                FLinearColor(.18f,.19f,.16f),true,FRotator::ZeroRotator,FloorRole);
+        };
+        Slab(TEXT("FloorWest"),X0,Y0,P.X-170,Y1);
+        Slab(TEXT("FloorEast"),P.X+170,Y0,X1,Y1);
+        Slab(TEXT("FloorSouth"),P.X-170,Y0,P.X+170,P.Y-170);
+        Slab(TEXT("FloorNorth"),P.X-170,P.Y+170,P.X+170,Y1);
+        // Closed outside the retrieval beat, so the persistent courtyard
+        // cannot strand a player in a shaft with no active rope interaction.
+        RecoveryHatch=Box(Name+TEXT("WellCover"),FVector(P.X,P.Y,-10),FVector(340,340,20),
+            FLinearColor(.3f,.23f,.15f),true,FRotator::ZeroRotator,TEXT("Timber"));
+        const float Depth=Recovery->Task.RecoveryDepthCm;
+        const FLinearColor Stone(.15f,.2f,.16f);
+        for(int32 Side:{-1,1})
+        {
+            Box(Name+FString::Printf(TEXT("WellX%d"),Side),FVector(P.X+Side*185,P.Y,-Depth*.5f),
+                FVector(30,400,Depth),Stone,true,FRotator::ZeroRotator,TEXT("Stone"));
+            Box(Name+FString::Printf(TEXT("WellY%d"),Side),FVector(P.X,P.Y+Side*185,-Depth*.5f),
+                FVector(340,30,Depth),Stone,true,FRotator::ZeroRotator,TEXT("Stone"));
+        }
+        Box(Name+TEXT("WellBottom"),FVector(P.X,P.Y,-Depth-25),FVector(400,400,50),Stone,true,FRotator::ZeroRotator,TEXT("Stone"));
+        // The rope hangs west of the capsule's climb path. The approach is
+        // east of the opening, without a rim blocking the dismount sweep.
+        Box(Name+TEXT("RopeBeam"),FVector(P.X,P.Y,260),FVector(460,30,30),FLinearColor(.25f,.16f,.08f),true);
+        for(int32 Side:{-1,1})
+            Box(Name+FString::Printf(TEXT("RopePost%d"),Side),FVector(P.X+Side*215,P.Y,125),FVector(20,30,250),FLinearColor(.25f,.16f,.08f),true);
+        Box(Name+TEXT("KnottedRope"),FVector(P.X-100,P.Y,(240-Depth)*.5f),FVector(5,5,Depth+240),FLinearColor(.5f,.4f,.23f),false);
+        for(int32 Z=-static_cast<int32>(Depth)+30;Z<230;Z+=35)
+            Box(Name+FString::Printf(TEXT("RopeKnot%d"),Z),FVector(P.X-100,P.Y,Z),FVector(12,12,9),FLinearColor(.45f,.35f,.2f),false);
+    }
     const TCHAR* WallRole=bAlien?TEXT("Metal"):bHall||bRoute?TEXT("Timber"):TEXT("Stone");
     for(int32 WallIndex=0;WallIndex<Zone.Walls.Num();++WallIndex)
     {
@@ -93,6 +133,7 @@ void ASoraWorldBuilder::ZoneProp(const FSoraZone& Zone,const FSoraProp& Prop,int
         ZoneLantern(At,!Zone.IsRoute()||Index%3==0);
         return;
     }
+    if(Prop.Mesh==TEXT("torii")) { Torii(At,Prop.Yaw); return; }
     if(Prop.Mesh==TEXT("pine")) { NyaagyuPine(At,Facing,1.5f+.1f*(Index%4),Index%3); return; }
     if(Prop.Mesh==TEXT("tree")) { NyaagyuTree(At,Facing,.9f+.05f*(Index%5)); return; }
     if(Prop.Mesh==TEXT("building")||Prop.Mesh==TEXT("building_hightech"))

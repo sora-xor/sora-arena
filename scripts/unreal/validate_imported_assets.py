@@ -864,6 +864,16 @@ def validate_loaded_assets(unreal, specs):
         require(isinstance(asset, expected_class),
                 f"Wrong Unreal class for {path}: expected {class_name}, "
                 f"got {type(asset).__name__}")
+        if isinstance(asset, unreal.StaticMesh) and asset.get_editor_property("nanite_settings").get_editor_property("enabled"):
+            # Validate the material actually assigned to every Nanite slot,
+            # including inherited instances. Editor auto-recompiles cannot
+            # supply missing permutations in an uncooked game or package.
+            for slot in asset.get_editor_property("static_materials"):
+                interface = slot.get_editor_property("material_interface")
+                require(interface is not None, f"{path}: Nanite slot has no material")
+                master = interface.get_base_material()
+                require(master is not None and bool(master.get_editor_property("used_with_nanite")),
+                        f"{path}: {interface.get_path_name()} lacks the Nanite material permutation")
     validate_hero_katana_loaded(unreal, asset_library)
     pbr = nyaakoto_pbr_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")
     iris_name = nyaakoto_iris_source(Path(unreal.Paths.project_dir()).resolve() / "Content/SourceArt")

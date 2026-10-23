@@ -2,11 +2,14 @@
 #include "Combat/SoraDamage.h"
 #include "SoraCombatRules.h"
 #include "SoraGameEvents.h"
+#include "SoraGameMode.h"
+#include "SoraCampaignDirector.h"
 #include "SoraWorldBuilder.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 
 ASoraProjectile::ASoraProjectile()
 {
@@ -34,7 +37,12 @@ void ASoraProjectile::BeginPlay()
 }
 void ASoraProjectile::Tick(float Dt)
 {
-    Super::Tick(Dt); Age+=Dt; Velocity.Z-=(bArrow?980.f:Gravity)*Dt;
+    Super::Tick(Dt);
+    const auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this));
+    if(Mode&&Mode->InputState()==SoraInput::Dialogue) return;
+    if((ArcheryShotId||WoodShotId)&&Mode&&!Mode->IsPlaying()) return;
+    if(Mode&&Mode->Campaign()) Velocity+=Mode->Campaign()->ProjectileWind(GetActorLocation(),bArrow,WeaponId)*Dt;
+    Age+=Dt; Velocity.Z-=(bArrow?980.f:Gravity)*Dt;
     if(bArrow) SetActorRotation(Velocity.Rotation());
     const FVector Before=GetActorLocation();
     FHitResult Hit; AddActorWorldOffset(Velocity*Dt,true,&Hit);
@@ -43,14 +51,28 @@ void ASoraProjectile::Tick(float Dt)
     {
         if(Hit.bBlockingHit)
         {
+            if((ArcheryShotId||WoodShotId)&&Mode) Mode->Campaign()->ResolveArcheryArrow(*this,&Hit);
             if(Hit.GetActor()&&Hit.GetActor()!=GetOwner())
                 SoraDamage::Strike(Hit.GetActor(),Damage,FSoraHit::Ranged(Before,WeaponId),Velocity.GetSafeNormal(),Hit,
                     GetInstigatorController(),this);
             Destroy();
         }
-        else if(Age>2.f) Destroy();
+        else if(Age>2.f)
+        {
+            if((ArcheryShotId||WoodShotId)&&Mode) Mode->Campaign()->ResolveArcheryArrow(*this,nullptr);
+            Destroy();
+        }
     }
     else if(Hit.bBlockingHit||Age>4.f) Detonate();
+}
+void ASoraProjectile::EndPlay(const EEndPlayReason::Type Reason)
+{
+    // Unexpected projectile removal is a miss, not an eternally pending
+    // sixth arrow. Session teardown invalidates its identities first.
+    if((ArcheryShotId||WoodShotId)&&Reason==EEndPlayReason::Destroyed)
+        if(auto* Mode=Cast<ASoraGameMode>(UGameplayStatics::GetGameMode(this)))
+            Mode->Campaign()->ResolveArcheryArrow(*this,nullptr);
+    Super::EndPlay(Reason);
 }
 void ASoraProjectile::Detonate()
 {

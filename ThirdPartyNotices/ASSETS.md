@@ -8,9 +8,9 @@ Policy: `docs/art-research/free-asset-acquisition-plan.md` section 2. Every asse
 
 | Tier | Records | Files | Bytes recorded |
 |---|---:|---:|---:|
-| PUB-CC0 | 191 | 2569 | 4,584,364,241 |
-| PUB-BY | 10 | 10 | 206,477,553 |
-| OWN | 9 | 405 | 567,065,338 |
+| PUB-CC0 | 192 | 2571 | 4,584,606,249 |
+| PUB-BY | 11 | 12 | 206,629,366 |
+| OWN | 12 | 453 | 764,793,721 |
 | REF | 6 | 6 | 9,778,972 |
 
 ## Public domain and CC0 (PUB-CC0, PUB-PD)
@@ -93,6 +93,7 @@ These assets are dedicated to the public domain under CC0 1.0 (<https://creative
 | opengameart/rain-long-thunder | Rain + Long Thunder | WuxiaScrub | CC0-1.0 | repository (LFS) | 1 | <https://opengameart.org/content/rain-long-thunder> |
 | opengameart/rain-loopable | Rain (loopable) | Ylmir | CC0-1.0 | repository (LFS) | 2 | <https://opengameart.org/content/rain-loopable> |
 | opengameart/the-free-firearm-sound-library | The Free Firearm Sound Library | Ben Jaszczak, et al. | CC0-1.0 | repository (LFS) | 8 | <https://opengameart.org/content/the-free-firearm-sound-library> |
+| vcsl/Idiophones/Struck Idiophones/Anvil | Anvil | Versilian Studios LLC and VCSL contributors | CC0-1.0 | repository (LFS) | 2 | <https://github.com/sgossner/VCSL/tree/c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e/Idiophones/Struck%20Idiophones/Anvil> |
 
 ### VCSL — Versilian Community Sample Library
 
@@ -267,6 +268,12 @@ These assets are dedicated to the public domain under CC0 1.0 (<https://creative
 
 Credit format (plan section 2.3): "Title" by Author, source link, license link, and the changes made. Raw PUB-BY files stay private in `Local/ThirdPartyRaw`; only derived art is committed, and it keeps these credits here and in the in-game credits.
 
+### Google Noto Fonts
+
+- "Noto Naskh Arabic UI Regular" by Google Inc., <https://github.com/notofonts/noto-fonts>, OFL-1.1 <https://openfontlicense.org/open-font-license-official-text/>
+  - Credit: Noto Naskh Arabic UI Regular, Copyright 2013 Google Inc. Licensed under the SIL Open Font License 1.1.
+  - Changes: None. Exact font bytes from the installed Unreal Engine 5.8.3 Content/Slate/Fonts/NotoNaskhArabicUI-Regular.ttf; redistributed under the font's own OFL 1.1 terms.
+
 ### CatBaseV6 anatomy inputs
 
 - HDRIs: Powered by Poly Haven - https://polyhaven.com (CC0 1.0).
@@ -320,8 +327,11 @@ Credit format (plan section 2.3): "Title" by Author, source link, license link, 
 - `Nyaagyu_PBR_Palette_Preview`: 1 files, generator `scripts/art/render_environment_palette.py`, derived from `wood_planks_dirt`, `stone_floor`, `brown_mud_leaves_01`, `rusty_metal_02`, `kloofendal_overcast_puresky`
 - `SM_NyaagyuFernGroundTransition:derived`: 3 files, generator `scripts/art/create_nyaagyu_fern_ground_transition.py`, derived from `fern_02`
 - `fern_02:derived`: 11 files, generator `scripts/art/create_nyaagyu_fern_shoulder.py`, derived from `fern_02`
+- `nyaagyu-dojo-kit`: 15 files, generator `scripts/art/create_nyaagyu_dojo_kit.py`, `scripts/art/sora_arch_lib.py`, `scripts/art/craft_textures.py`, `scripts/art/sora_mark.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/SourceArt/UI/sora_logo_NOtext2.svg`
 - `pine_sapling_small:derived`: 8 files, generator `scripts/art/create_nyaagyu_pine_saplings.py`, derived from `pine_sapling_small`
-- `runtime-weapons`: 218 files, generator `scripts/art/create_runtime_weapon_alien.py, scripts/art/create_runtime_weapon_blunt.py, scripts/art/create_runtime_weapon_build_all.py, scripts/art/create_runtime_weapon_firearms.py, scripts/art/create_runtime_weapon_kusarigama.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/create_runtime_weapon_nihonto.py, scripts/art/create_runtime_weapon_polearms.py, scripts/art/create_runtime_weapon_specs.py, scripts/art/create_runtime_weapon_validation.py, scripts/art/create_runtime_weapon_yumi.py`, derived from -
+- `runtime-weapon-held-back-renders`: 12 files, generator `scripts/art/create_runtime_weapon_alien.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/create_runtime_weapon_specs.py`, derived from -
+- `runtime-weapons`: 221 files, generator `scripts/art/create_runtime_weapon_alien.py, scripts/art/create_runtime_weapon_blunt.py, scripts/art/create_runtime_weapon_build_all.py, scripts/art/create_runtime_weapon_firearms.py, scripts/art/create_runtime_weapon_kusarigama.py, scripts/art/create_runtime_weapon_lib.py, scripts/art/create_runtime_weapon_nihonto.py, scripts/art/create_runtime_weapon_polearms.py, scripts/art/create_runtime_weapon_specs.py, scripts/art/create_runtime_weapon_validation.py, scripts/art/create_runtime_weapon_yumi.py`, derived from -
+- `sora-raden-bunko`: 18 files, generator `scripts/art/create_sora_raden_bunko.py`, `scripts/art/sora_prop_lib.py`, `scripts/art/craft_textures.py`, `scripts/art/sora_mark.py`, `scripts/art/create_runtime_weapon_lib.py`, derived from `Content/SourceArt/UI/sora_logo_NOtext2.svg`
 - `tree_small_02:derived`: 4 files, generator `scripts/art/create_nyaagyu_photoreal_tree.py`, derived from `tree_small_02`
 
 ## Restricted and reference-only content (RST, REF, EXCL)

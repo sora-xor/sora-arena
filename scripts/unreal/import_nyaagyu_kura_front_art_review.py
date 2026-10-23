@@ -42,7 +42,7 @@ if (record["schema_version"] != 1
         or record["source_triangles"] != 59342
         or not record["collision"].startswith("Visual only")):
     raise RuntimeError("Kura front source, identity or collision policy changed")
-if not (root / "Config/Mac/MacEngine.ini").read_text().count("r.Nanite=0"):
+if "r.Nanite.ProxyRenderMode=0" not in (root / "Config/Mac/MacEngine.ini").read_text():
     raise RuntimeError("Mac conventional fallback policy changed")
 for role, item in texture_record["atlas_files"].items():
     if role not in ("Albedo", "NormalDX", "ARM") or sha(source / item["file"]) != item["sha256"]:

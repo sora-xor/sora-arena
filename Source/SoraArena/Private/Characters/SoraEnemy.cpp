@@ -1,5 +1,6 @@
 #include "SoraEnemy.h"
 #include "SoraSettings.h"
+#include "SoraConstructRules.h"
 #include "SoraBoss.h"
 #include "Combat/SoraCombatEffects.h"
 #include "Combat/SoraBossCatalog.h"
@@ -13,6 +14,7 @@
 #include "SoraGameEvents.h"
 #include "SoraGameMode.h"
 #include "SoraProjectile.h"
+#include "SoraPlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -92,7 +94,10 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
             Catalog.IsReady()?TEXT("not in Content/Data/enemies.json"):*Catalog.Error);
         return false;
     }
+    ResetConstruct();
+    bClimbSentry=false;
     Kind=Found; Variant=VariantName; VariantData=Chosen;
+    NetRootOverrideMs=Kind->Behavior==ESoraEnemyBehavior::Drone&&Tuning?FMath::Max(0,Tuning->NetRootMs):0;
     bDojoPupil=false; EnemyIndex=Slot; RangedShots=0; ShotsSinceRelocation=0;
     // Perception: the archetype's, then its variant's, then the beat's.
     Senses=Kind->Perception;
@@ -118,7 +123,7 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
     BarrierMaxMilli=Chosen?Chosen->Barrier.Health*1000:0;
     BarrierMilli=BarrierMaxMilli; BarrierAtLastHitMilli=BarrierMaxMilli; LastHitAt=-1000.f;
     Phase=EPhase::Idle; AttackIndex=INDEX_NONE; AttackTarget=nullptr; NextAttackAt=0.f;
-    AttackReadyAt.Init(0.f,Kind->Attacks.Num());
+    AttackReadyAt.Init(0.f,AttackSet().Num());
     StaggerUntil=-1.f; StrikeStaggerImmuneUntil=-1.f; ShieldOpenUntil=-1.f;
     Conscript=Rules::EConscript::Standing; bUnconscious=false; bSeized=false;
     SetActorScale3D(FVector(Kind->ScalePermille/1000.f));
@@ -156,6 +161,7 @@ ASoraEnemy* ASoraEnemy::SpawnInvader(UWorld& World,int32 Id,const FVector& Locat
 }
 void ASoraEnemy::InitScripted(int32 Id)
 {
+    ResetConstruct();
     Kind=nullptr; Variant=NAME_None; VariantData=nullptr;
     bDojoPupil=false; EnemyIndex=Id; RangedShots=0;
     Phase=EPhase::Idle; AttackIndex=INDEX_NONE; StaggerUntil=-1.f; StrikeStaggerImmuneUntil=-1.f;
@@ -163,10 +169,12 @@ void ASoraEnemy::InitScripted(int32 Id)
     ApplyClass(Id%6);
     BuildCat();
 }
-void ASoraEnemy::InitDojoPupil(int32 Id)
+void ASoraEnemy::InitDojoPupil(int32 Id, const SoraDojoRules::FPupilTiming& Timing)
 {
+    ResetConstruct();
     Kind=nullptr; Variant=NAME_None; VariantData=nullptr;
     bDojoPupil=true; EnemyIndex=Id;
+    PupilTiming=Timing;
     StaggerUntil=-1.f; StrikeStaggerImmuneUntil=-1.f; BarrierMilli=0; BarrierMaxMilli=0;
     bPupilWindup=false; NextPupilStrike=Now()+1.4f+Id*.35f;
     ApplyClass(0);
@@ -189,8 +197,8 @@ bool ASoraEnemy::IsFlying() const { return Kind&&Kind->Behavior==ESoraEnemyBehav
 bool ASoraEnemy::IsNonlethal() const { return Kind&&!Kind->bLethal; }
 bool ASoraEnemy::UsesAlienBody() const { return Kind?Kind->Body!=ESoraEnemyBody::Local:!bDojoPupil; }
 bool ASoraEnemy::RangedShotMisses(int32 Slot,int32 Shot) { return Rules::RoundMisses(Slot,Shot); }
-int32 ASoraEnemy::AttackDamage(int32 Index) const { return Kind&&Kind->Attacks.IsValidIndex(Index)?Kind->Attacks[Index].Damage:0; }
-int32 ASoraEnemy::SealCutHoldMs() const { return Kind?Kind->SealCutHoldMs:0; }
+int32 ASoraEnemy::AttackDamage(int32 Index) const { return Kind&&AttackSet().IsValidIndex(Index)?AttackSet()[Index].Damage:0; }
+int32 ASoraEnemy::SealCutHoldMs() const { return bCollateralConstruct?SoraConstructRules::SealCutMs:Kind?Kind->SealCutHoldMs:0; }
 bool ASoraEnemy::IsBody() const { return Kind&&!IsAlive()&&!IsFreed()&&!IsActorBeingDestroyed(); }
 bool ASoraEnemy::CanBeTakenDown() const
 {
@@ -233,7 +241,7 @@ void ASoraEnemy::Snared(SoraFieldcraftRules::ESnare Snare,AActor* By)
 }
 const FSoraEnemyAttack* ASoraEnemy::CurrentAttack() const
 {
-    return Kind&&Phase!=EPhase::Idle&&Kind->Attacks.IsValidIndex(AttackIndex)?&Kind->Attacks[AttackIndex]:nullptr;
+    return Kind&&Phase!=EPhase::Idle&&AttackSet().IsValidIndex(AttackIndex)?&AttackSet()[AttackIndex]:nullptr;
 }
 float ASoraEnemy::WindupProgress() const
 {
@@ -243,7 +251,7 @@ float ASoraEnemy::WindupProgress() const
 float ASoraEnemy::MeleeReachCm() const
 {
     float Reach=0.f;
-    if(Kind) for(const FSoraEnemyAttack& Attack:Kind->Attacks)
+    if(Kind) for(const FSoraEnemyAttack& Attack:AttackSet())
         if(Attack.Kind==ESoraEnemyAttackKind::Melee) Reach=FMath::Max(Reach,static_cast<float>(Attack.MaxRangeCm));
     return Reach;
 }
@@ -259,6 +267,7 @@ void ASoraEnemy::Announce(ESoraEnemyCue Cue,FName Detail) const
 void ASoraEnemy::Tick(float Dt)
 {
     Super::Tick(Dt);
+    if(bCollateralConstruct) TickConstruct(Dt);
     // A knocked-down conscript cannot play, so its collar's pull is timed here.
     if(IsSubdued()&&Kind&&!bKernelDriven)
     {
@@ -282,13 +291,18 @@ void ASoraEnemy::HaltActions()
 {
     CancelAttack();
 }
+void ASoraEnemy::DisruptWindAim(int32 Milliseconds)
+{
+    if(!Kind||Kind->Behavior!=ESoraEnemyBehavior::Drone) return;
+    CancelAttack(); NextAttackAt=FMath::Max(NextAttackAt,Now()+Milliseconds/1000.f);
+}
 bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
 {
     if(!Kind||Phase!=EPhase::Idle||IsStaggered()||IsTurnLocked()||!Target.IsAlive()||Now()<NextAttackAt) return false;
     const int32 Facing=SoraDamage::FacingMilli(*this,Target.GetActorLocation());
-    for(int32 Index=0;Index<Kind->Attacks.Num();++Index)
+    for(int32 Index=0;Index<AttackSet().Num();++Index)
     {
-        const FSoraEnemyAttack& Attack=Kind->Attacks[Index];
+        const FSoraEnemyAttack& Attack=AttackSet()[Index];
         if(Now()<AttackReadyAt[Index]||Distance<Attack.MinRangeCm||Distance>Attack.MaxRangeCm) continue;
         // A committed blow starts only toward what is inside its arc; every
         // other attack at least toward the front.
@@ -302,7 +316,7 @@ bool ASoraEnemy::TryAttack(ASoraCharacterBase& Target,float Distance)
 }
 void ASoraEnemy::Commit(int32 Index,ASoraCharacterBase& Target)
 {
-    const FSoraEnemyAttack& Attack=Kind->Attacks[Index];
+    const FSoraEnemyAttack& Attack=AttackSet()[Index];
     const float Time=Now();
     // The settings' campaign difficulty scales every windup as it scales the
     // bosses' (bosses.json: +30% on Easy, -15% on Hard); damage never changes.
@@ -310,6 +324,8 @@ void ASoraEnemy::Commit(int32 Index,ASoraCharacterBase& Target)
     const int32 WindupMs=Bosses.IsReady()||Bosses.Load()?SoraBossRules::ForDifficulty(Attack.WindupMs,
         static_cast<SoraBossRules::EDifficulty>(static_cast<uint8>(SoraAccessibility::CampaignDifficulty(this))),
         Bosses.EasyWindupPermille,Bosses.HardWindupPermille):Attack.WindupMs;
+    bConstructSlamReleased=false;
+    if(bCollateralConstruct) GetCharacterMovement()->StopMovementImmediately();
     AttackIndex=Index; AttackTarget=&Target; Phase=EPhase::Windup;
     PhaseStartedAt=Time; PhaseEndsAt=Time+WindupMs/1000.f; NextLaserAt=Time;
     LockedDirection=(Target.GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::ChestHeight)-Eye()).GetSafeNormal();
@@ -358,8 +374,8 @@ void ASoraEnemy::Telegraph(const FSoraEnemyAttack& Attack,float Life)
 void ASoraEnemy::AdvanceAttack()
 {
     if(Phase==EPhase::Idle) return;
-    if(!Kind||!Kind->Attacks.IsValidIndex(AttackIndex)) { CancelAttack(); return; }
-    const FSoraEnemyAttack& Attack=Kind->Attacks[AttackIndex];
+    if(!Kind||!AttackSet().IsValidIndex(AttackIndex)) { CancelAttack(); return; }
+    const FSoraEnemyAttack& Attack=AttackSet()[AttackIndex];
     ASoraCharacterBase* Target=AttackTarget.Get();
     const float Time=Now();
     if(Phase!=EPhase::Recovery&&(!Target||!Target->IsAlive()))
@@ -406,7 +422,9 @@ void ASoraEnemy::Release(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Targ
     }
     // The attack is out: its recovery starts before it resolves, so a parry's
     // stagger lands on that recovery instead of cancelling a spent windup.
+    if(bCollateralConstruct) bConstructSlamReleased=true;
     Recover(Attack);
+    if(bCollateralConstruct) { ConstructSlam(Attack); return; }
     switch(Attack.Kind)
     {
     case ESoraEnemyAttackKind::Melee: StrikeMelee(Attack,Target); return;
@@ -430,6 +448,7 @@ void ASoraEnemy::Recover(const FSoraEnemyAttack& Attack)
 void ASoraEnemy::CancelAttack()
 {
     Phase=EPhase::Idle; AttackIndex=INDEX_NONE; AttackTarget=nullptr; RoundsLeft=0;
+    bConstructSlamReleased=false;
 }
 void ASoraEnemy::StrikeMelee(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)
 {
@@ -464,7 +483,8 @@ void ASoraEnemy::StrikeMelee(const FSoraEnemyAttack& Attack,ASoraCharacterBase& 
 void ASoraEnemy::FireRound(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target,bool bPattern)
 {
     const FVector From=Eye();
-    const FVector To=Target.GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::ChestHeight);
+    const auto* WaterCraft=USoraFieldcraft::Get(this);
+    const FVector To=WaterCraft&&WaterCraft->IsMoatSwimming()&&Cast<ASoraPlayerCharacter>(&Target)?WaterCraft->MoatHead():Target.GetActorLocation()+FVector(0.f,0.f,SoraEnemyBody::ChestHeight);
     FHitResult Trace;
     FCollisionQueryParams Query(SCENE_QUERY_STAT(BotNavigation),false,this);
     GetWorld()->LineTraceSingleByChannel(Trace,From,To,ECC_Visibility,Query);
@@ -485,7 +505,7 @@ void ASoraEnemy::FireRound(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Ta
     }
     if(bMiss) return;
     FSoraHit Hit=FSoraHit::Ranged(From,INDEX_NONE);
-    Hit.AttackId=Attack.Id;
+    Hit.AttackId=Attack.Id;Hit.bHitscan=true;
     SoraDamage::Strike(&Target,Attack.Damage,Hit,Direction,Trace,GetController(),this);
 }
 void ASoraEnemy::Lob(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Target)
@@ -546,7 +566,7 @@ void ASoraEnemy::CastNet(const FSoraEnemyAttack& Attack,ASoraCharacterBase& Targ
     SoraDamage::Ring(GetWorld(),LockedPoint+FVector(0.f,0.f,3.f),Attack.RadiusCm,SoraAccessibility::StrikeColor(this,SoraAccessibility::ETelegraph::Lock),.25f);
     // Only a target still inside the lock ring is caught.
     if(FVector::Dist2D(Feet(Target),LockedPoint)>Attack.RadiusCm) return;
-    if(USoraCombatEffects* Effects=USoraCombatEffects::Get(this)) Effects->Root(Target,Attack.RootMs);
+    if(USoraCombatEffects* Effects=USoraCombatEffects::Get(this)) Effects->Root(Target,NetRootOverrideMs>0?NetRootOverrideMs:Attack.RootMs);
     if(Attack.Damage>0)
     {
         FSoraHit Hit=FSoraHit::Ranged(Eye(),INDEX_NONE);
@@ -576,6 +596,7 @@ bool ASoraEnemy::AdmitDamage(float& Damage,FSoraHit& Hit,AActor* Causer)
         if(!G||!G->Campaign()->CanScoreDojoBout()) return false;
     }
     if(bInvulnerable||IsFreed()) return false;
+    if(bCollateralConstruct) return AdmitConstructDamage(Damage,Hit);
     const float Time=Now();
     const int32 Facing=Hit.bHasOrigin?SoraDamage::FacingMilli(*this,Hit.Origin):-1000;
     // A squared tower shield stops the hit; a yari thrust on its rim turns it aside.
@@ -646,7 +667,8 @@ void ASoraEnemy::OnDefeated(AActor* Causer)
     // encounter ends), and a combat wave's fallen clear away.
     const auto* Brain=Cast<ASoraEnemyController>(GetController());
     const bool bBody=Kind&&Brain&&Brain->IsGuard();
-    if(bBody) LieDown(true);
+    if(bCollateralConstruct) ReleaseConstructGoods();
+    else if(bBody) LieDown(true);
     else
     {
         SetActorEnableCollision(false);
@@ -700,11 +722,20 @@ void ASoraEnemy::Seize(bool bHeld)
 }
 bool ASoraEnemy::CanCutSeal() const
 {
+    if(bCollateralConstruct) return IsConstructCoreOpen();
     return Kind&&Rules::CanCutSeal(Conscript,SoraEnemyBody::Milliseconds(Now()-DownAt),Kind->SubdueWindowMs);
 }
 bool ASoraEnemy::CutSeal(AActor* By)
 {
     if(!CanCutSeal()) return false;
+    if(bCollateralConstruct)
+    {
+        const auto* Cutter=Cast<ASoraCharacterBase>(By);
+        if(!Cutter||!CanReachConstructCore(*Cutter)) return false;
+        FHitResult Contact; Contact.ImpactPoint=ConstructCorePoint();
+        FSoraHit Cut; // Scripted finish after the director's complete held interaction.
+        return SoraDamage::Strike(this,Health,Cut,FVector::ZeroVector,Contact,By->GetInstigatorController(),By)>0;
+    }
     Conscript=Rules::EConscript::Freed; Health=MaxHealth;
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn,ECR_Block);
     GetCharacterMovement()->SetMovementMode(MOVE_Walking);
@@ -734,6 +765,9 @@ void ASoraEnemy::PupilAttack(ASoraCharacterBase& Target,float Dist)
     {
         if(Time<PupilWindupEndsAt) return;
         bPupilWindup=false;
+        // Recovery is counted from the actual contact frame, never shortened
+        // by the fractional frame between the deadline and this resolution.
+        if(PupilTiming.RecoveryMs>0) NextPupilStrike=Time+PupilTiming.RecoveryMs/1000.f;
         FHitResult Hit; FCollisionQueryParams PupilTrace(SCENE_QUERY_STAT(DojoSpar),false,this);
         const FVector To=From+PupilLockedDirection*200.f;
         GetWorld()->LineTraceSingleByChannel(Hit,From,To,ECC_Visibility,PupilTrace);
@@ -754,14 +788,17 @@ void ASoraEnemy::PupilAttack(ASoraCharacterBase& Target,float Dist)
         return;
     }
     if(Time<NextPupilStrike||Dist>190.f) return;
-    bPupilWindup=true; PupilWindupEndsAt=Time+.55f; NextPupilStrike=PupilWindupEndsAt+1.45f;
+    const int32 Difficulty=static_cast<int32>(SoraAccessibility::CampaignDifficulty(this));
+    const float Windup=SoraDojoRules::PupilWindupMs(PupilTiming,Difficulty)/1000.f;
+    bPupilWindup=true; PupilWindupEndsAt=Time+Windup;
+    NextPupilStrike=Time+SoraDojoRules::PupilStartIntervalMs(PupilTiming,Difficulty)/1000.f;
     PupilLockedDirection=(Target.GetActorLocation()+FVector(0,0,50)-From).GetSafeNormal();
     // The dojo teaches reading this windup: it takes the settings' palette like every telegraph.
-    SoraDamage::Beam(GetWorld(),From,From+PupilLockedDirection*200.f,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),2.f,.55f);
+    SoraDamage::Beam(GetWorld(),From,From+PupilLockedDirection*200.f,SoraAccessibility::TelegraphColor(this,SoraAccessibility::ETelegraph::Cleave),2.f,Windup);
     if(Events)
     {
         FSoraMeleeCommittedEvent Committed;
-        Committed.Attacker=this; Committed.WeaponId=WeaponId; Committed.Direction=PupilLockedDirection; Committed.WindupSeconds=.55f;
+        Committed.Attacker=this; Committed.WeaponId=WeaponId; Committed.Direction=PupilLockedDirection; Committed.WindupSeconds=Windup;
         Events->OnMeleeCommitted.Broadcast(Committed);
     }
 }

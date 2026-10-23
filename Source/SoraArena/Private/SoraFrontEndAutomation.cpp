@@ -13,12 +13,12 @@
 #include "SoraSaveGame.h"
 #include "SoraSettings.h"
 #include "UI/SSoraFrontEnd.h"
+#include "UI/SoraUIFont.h"
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/UserInterfaceSettings.h"
 #include "Engine/World.h"
-#include "Fonts/CompositeFont.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerInput.h"
 #include "Framework/Application/SlateApplication.h"
@@ -127,7 +127,7 @@ bool Tour(FAutomationTestBase& Test, const FKeys& Keys)
     for (const SoraUI::FRow& Row : FrontEnd->Rows())
         Main.Add(Row.Action);
     Check(TEXT("the main menu lists every entry in order"), Main == TArray<EAction>({EAction::Continue, EAction::NewCampaign,
-        EAction::ChapterSelect, EAction::Practice, EAction::Wallet, EAction::Settings, EAction::Credits, EAction::Quit}));
+        EAction::ChapterSelect, EAction::Practice, EAction::Wallet, EAction::Codex, EAction::Settings, EAction::Credits, EAction::Quit}));
     Check(TEXT("every main menu row has Japanese and English"), !FrontEnd->Rows().ContainsByPredicate([](const SoraUI::FRow& Row)
     {
         return Row.Japanese.IsEmpty() || Row.English.IsEmpty();
@@ -499,10 +499,7 @@ bool FSoraFrontEndReadableTest::RunTest(const FString& Parameters)
         return false;
     ASoraGameMode* Mode = Scope.Mode();
     USoraFrontEnd* FrontEnd = Scope.FrontEnd();
-    TStrongObjectPtr<UFont> Font(NewObject<UFont>(GetTransientPackage()));
-    Font->FontCacheType = EFontCacheType::Runtime;
-    Font->GetMutableInternalCompositeFont() = FCompositeFont(FName(TEXT("Regular")),
-        FPaths::ProjectContentDir() / TEXT("SourceArt/Fonts/NotoSansCJKjp-Regular.otf"), EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
+    TStrongObjectPtr<UFont> Font(SoraUI::CreateUIFont(GetTransientPackage()));
     TSharedRef<SSoraFrontEnd> Widget = SNew(SSoraFrontEnd).FrontEnd(FrontEnd).Font(Font.Get());
     const auto Screen = [&](const TCHAR* Name)
     {
@@ -538,7 +535,7 @@ bool FSoraFrontEndReadableTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The widget moves focus with the arrow keys"), Press(EKeys::Down) && FrontEnd->Focus() == Focus + 1);
     TestEqual(TEXT("A keyboard key switches prompts back"), SoraUI::PromptKey(SoraUI::ECommand::Accept, FrontEnd->Device()), FString(TEXT("Enter")));
     TestTrue(TEXT("The widget swallows keys without menu meaning"), Press(EKeys::M) && Scope.On(EScreen::Main));
-    for (const EAction Action : {EAction::ChapterSelect, EAction::Practice, EAction::Wallet, EAction::Settings, EAction::Credits, EAction::Quit})
+    for (const EAction Action : {EAction::ChapterSelect, EAction::Practice, EAction::Wallet, EAction::Codex, EAction::Settings, EAction::Credits, EAction::Quit})
     {
         Scope.FocusOn(Keyboard, Action);
         Press(EKeys::Enter);
@@ -602,6 +599,15 @@ bool FSoraFrontEndRenderedTest::RunTest(const FString& Parameters)
     const FString Folder = FPaths::ProjectSavedDir() / TEXT("Screenshots/SoraFrontEnd") /
         FString::Printf(TEXT("%dx%d"), FMath::RoundToInt(Size.X), FMath::RoundToInt(Size.Y));
     TWeakObjectPtr<USoraFrontEnd> FrontEnd = Mode->FrontEnd();
+    if(!TestNotNull(TEXT("The rendered game has its front end"),FrontEnd.Get())) return false;
+    // This navigation tour may run after the entire client suite, with the
+    // live viewport receiving input for many minutes. Establish its title
+    // precondition explicitly; an untouched launch is checked separately.
+    AddInfo(FString::Printf(TEXT("Front-end tour initial screen=%d; returning to title for navigation"),
+        static_cast<int32>(FrontEnd->Screen())));
+    Mode->SetMenuOpen(true);
+    FrontEnd->ShowTitle();
+    FrontEnd->NoteDevice(SoraUI::EDevice::KeyboardMouse);
     const auto Press = [](const FKey& Key)
     {
         const FKeyEvent Event(Key, FSlateApplication::Get().GetModifierKeys(), 0, false, 0, 0);

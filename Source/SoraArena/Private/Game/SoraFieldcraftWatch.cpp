@@ -62,9 +62,11 @@ void USoraFieldcraft::StageWatch()
         FLightState& State = LightStates.AddDefaulted_GetRef();
         State.bOn = Row.ActiveOn.IsEmpty();
         const FVector Mount = Row.IsRoad() ? FVector::ZeroVector : FVector(Row.At, Row.HeightCm);
-        if (!Row.IsRoad())
+        if (!Row.IsRoad() && !FloodSpace)
         {
-            Piece(TEXT("SearchlightPost_") + Row.Id, Layout::Cylinder, FVector(Row.At, Row.HeightCm * .5f), FVector(.25f, .25f, Row.HeightCm / 100.f),
+            // The physical moat owns an offset support behind its patrol
+            // aisle. A second post at the optical mount would block guards.
+            if(!MoatSpace) Piece(TEXT("SearchlightPost_") + Row.Id, Layout::Cylinder, FVector(Row.At, Row.HeightCm * .5f), FVector(.25f, .25f, Row.HeightCm / 100.f),
                 FLinearColor(.38f, .38f, .4f), true, Layout::Metal);
             Piece(TEXT("SearchlightHousing_") + Row.Id, Layout::Cylinder, Mount + FVector(0.f, 0.f, 40.f), FVector(.9f, .9f, .7f),
                 FLinearColor(.34f, .38f, .42f), false, Layout::Metal);
@@ -216,7 +218,7 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
             State.LockedMs = FMath::Max(0, State.LockedMs - DtMs);
             const float Bearing = Row.Yaw + Craft::BeamMilliDeg(Row.Rules, LightClockMs, Index * (Row.Rules.PeriodMs / 2)) / 1000.f;
             At = State.LockedMs > 0 ? State.LockedAt : FVector(Row.At, 0.f) + FRotator(0.f, Bearing, 0.f).Vector() * Row.ReachCm;
-            At.Z = (Staged->bWater && Staged->Water.Area.Contains(At) ? Layout::WaterLevel : 0.f) + 2.f;
+            At.Z = MoatSpace ? 2.f : FloodSpace ? FloodSurfaceAt(At)+2.f : (Staged->bWater && Staged->Water.Area.Contains(At) ? Layout::WaterLevel : 0.f) + 2.f;
             From = FVector(Row.At, Row.HeightCm);
         }
         Spot->SetWorldLocation(At);
@@ -254,8 +256,8 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
         }
         // A head in the spot, above the water, not under the reeds' and
         // lotus' leaves (ch06.b02), and in a clear line from the lamp.
-        const FVector Head = Player->GetCamera()->GetComponentLocation();
-        bool bInSpot = !IsDiving() && !UnderCover(Player->GetActorLocation()) && FVector::Dist2D(Head, At) <= Row.Rules.SpotCm * .5f;
+        const FVector Head = MoatSpace&&bMoatPosture?MoatHead():Player->GetCamera()->GetComponentLocation();
+        bool bInSpot = !(MoatSpace?MoatDepth()>0:IsDiving()) && !UnderCover(Player->GetActorLocation()) && FVector::Dist2D(Head, At) <= Row.Rules.SpotCm * .5f;
         if (bInSpot)
         {
             FCollisionQueryParams Query(SCENE_QUERY_STAT(SoraSearchlight), false, Player);
@@ -264,7 +266,7 @@ void USoraFieldcraft::TickSearchlights(int32 DtMs)
                 for (const auto& Companion : *List)
                     if (IsValid(Companion)) Query.AddIgnoredActor(Companion);
             FHitResult Hit;
-            bInSpot = !GetWorld()->LineTraceSingleByChannel(Hit, From + (Head - From).GetSafeNormal() * 100.f, Head, ECC_Visibility, Query);
+            bInSpot = !GetWorld()->LineTraceSingleByChannel(Hit, From + (Head - From).GetSafeNormal() * ((FloodSpace||MoatSpace)?2.f:100.f), Head, ECC_Visibility, Query);
         }
         State.bSeesHero = bInSpot;
         const Craft::ESpotted Seen = Craft::Spotted(State.InSpotMs, bInSpot, DtMs, Row.Rules);

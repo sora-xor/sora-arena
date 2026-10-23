@@ -32,6 +32,14 @@ mkdir -p "$(dirname -- "$COOK_LOG")"
 echo "Cook log: $COOK_LOG" >&2
 source "$SCRIPT_DIR/editor-config-guard.sh"
 guard_config
+python3 "$SCRIPT_DIR/mac_candidate.py" invalidate cook
+CANDIDATE_START=""
+if [[ -n "${SORA_CANDIDATE_SOURCE:-}" ]]; then
+  : "${SORA_CANDIDATE_NATIVE:?Set the full native bridge source commit ID}"
+  CANDIDATE_START="$PROJECT_ROOT/Saved/Qualification/MacArtifacts/cook-start.json"
+  python3 "$SCRIPT_DIR/mac_candidate.py" begin cook "$CANDIDATE_START" \
+    --source "$SORA_CANDIDATE_SOURCE" --native "$SORA_CANDIDATE_NATIVE"
+fi
 "$EDITOR_CMD" "$PROJECT" -run=Cook -TargetPlatform=Mac \
   -Unattended -NullRHI -NoSplash -NoSound -stdout -FullStdOutLogOutput \
   "${EDITOR_CONFIG_ARGS[@]}" "$@" 2>&1 | tee "$COOK_LOG"
@@ -49,3 +57,6 @@ if shader_failures:
         print(line, file=sys.stderr)
     sys.exit(1)
 PY
+if [[ -n "$CANDIDATE_START" ]]; then
+  python3 "$SCRIPT_DIR/mac_candidate.py" finish "$CANDIDATE_START"
+fi

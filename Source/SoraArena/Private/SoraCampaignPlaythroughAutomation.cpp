@@ -1,4 +1,8 @@
 #include "SoraGameMode.h"
+#include "SoraHelmAutomation.h"
+#include "SoraRidgeAutomation.h"
+#include "SoraClimbAutomation.h"
+#include "SoraMoatAutomation.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
@@ -8,6 +12,15 @@
 #include "SoraCampaignRules.h"
 #include "SoraCatalog.h"
 #include "SoraDojoRules.h"
+#include "SoraDojoAutomation.h"
+#include "SoraMaaiAutomation.h"
+#include "SoraArcheryAutomation.h"
+#include "SoraRecoveryAutomation.h"
+#include "SoraLiftAutomation.h"
+#include "SoraFloodAutomation.h"
+#include "SoraSpireAutomation.h"
+#include "SoraSummitAutomation.h"
+#include "SoraCarryAutomation.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
 #include "SoraEquipmentComponent.h"
@@ -284,6 +297,19 @@ bool Advance(FAutomationTestBase& Test, FState& State, int32 Frames = 2, float D
     return true;
 }
 
+// Observe real blocking dialogue before the next gameplay action. Never clear
+// or skip the queue: the director must release control within its authored cap.
+bool WaitForDialogue(FAutomationTestBase& Test,FState& State)
+{
+    for(int32 Frame=0;Campaign(State)->IsDialogueBlocking()&&Frame<202;++Frame)
+    {
+        if(!Test.TestNotNull(TEXT("A blocking scene keeps its subtitle cue"),Campaign(State)->CurrentDialogueCue())||
+            !Advance(Test,State,1,.1f)) return false;
+        ++State.LinesShown;
+    }
+    return !Campaign(State)->IsDialogueBlocking()||Fail(Test,State,Where(State)+TEXT(": dialogue held control past twenty seconds"));
+}
+
 // Places the hero on the floor at Location; a mounted hero rides there (the
 // horse is placed and carries him).
 void MoveTo(FState& State, const FVector& Location)
@@ -296,9 +322,12 @@ void MoveTo(FState& State, const FVector& Location)
     }
     ASoraPlayerCharacter* Hero = Player(State);
     Hero->GetCharacterMovement()->StopMovementImmediately();
-    // Every floor of a chapter's space is at z 0.
+    // Flat-floor fixture positioning. The spiral, lift and gallery stair
+    // use ordinary movement helpers; summit combat stays at its real Z.
     const float Half = Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-    Hero->SetActorLocation(FVector(Location.X, Location.Y, Half + 2.f), false, nullptr, ETeleportType::TeleportPhysics);
+    const auto* Beat=Director?Director->ActiveBeatData():nullptr;
+    const float Floor=Beat&&Beat->Space.Summit.Enabled()?Beat->Space.HeightCm:0.f;
+    Hero->SetActorLocation(FVector(Location.X, Location.Y, Floor+Half+2.f), false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 // Every checkpoint beat writes the slot as it starts, and a long boss or duel
@@ -334,6 +363,7 @@ bool ExpectCheckpoint(FAutomationTestBase& Test, FState& State)
 // OpponentDefeated in play.
 bool DefeatOne(FAutomationTestBase& Test, FState& State)
 {
+    if(!WaitForDialogue(Test,State)) return false;
     ASoraPlayerCharacter* Hero = Player(State);
     const TArray<ASoraEnemy*> Enemies = LiveEnemies(State);
     if (Enemies.IsEmpty())
@@ -354,6 +384,7 @@ bool DefeatOne(FAutomationTestBase& Test, FState& State)
 // Interact held beside it, so none contests a hold or rises to fight again.
 bool FreeConscripts(FAutomationTestBase& Test, FState& State)
 {
+    if(!WaitForDialogue(Test,State)) return false;
     const bool bLearned = Campaign(State)->IsMechanicInPlay(TEXT("seal_cut"));
     UWorld* World = State.World ? State.World->GetTestWorld() : nullptr;
     for (int32 Round = 0; World && Round < 16; ++Round)
@@ -512,6 +543,7 @@ bool Wait(FAutomationTestBase& Test, FState& State, int32 Milliseconds)
 // fills only while E stays down, so E is held until it is done.
 bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
 {
+    if(!WaitForDialogue(Test,State)) return false;
     USoraCampaignDirector* Director = Campaign(State);
     FVector Anchor;
     if (!Director->ObjectiveAnchor(Anchor))
@@ -519,13 +551,37 @@ bool WorkAtAnchor(FAutomationTestBase& Test, FState& State)
     MoveTo(State, Anchor);
     if (!Advance(Test, State, 1))
         return false;
+    if(Director->ActiveTask().AlternateTreads)
+    {
+        // The bellows wave nets the boy beside this station. Interact gives
+        // that rescue priority, so finish its held cut before pumping again.
+        // Leave the attacking wave alive: production still ends the beat.
+        if(auto* Craft=USoraFieldcraft::Get(Player(State));
+            Craft&&Craft->Readout(*Player(State)).HoldHere==FSoraFieldcraftReadout::EHold::NetCut)
+        {
+            const int32 NetsBefore=Craft->Readout(*Player(State)).NetsHeld;
+            if(!State.World->InjectKey(EKeys::E,IE_Pressed)) return false;
+            bool bHeld=true;
+            for(int32 Frame=0;Frame<180&&bHeld&&Craft->Readout(*Player(State)).NetsHeld>=NetsBefore;++Frame)
+                bHeld=Advance(Test,State,1);
+            State.World->InjectKey(EKeys::E,IE_Released);
+            if(!bHeld||!Test.TestTrue(TEXT("The bellows helper is released with a held net cut"),
+                Craft->Readout(*Player(State)).NetsHeld<NetsBefore)||!Advance(Test,State,1)) return false;
+            Test.AddInfo(TEXT("Cut the bellows helper's net through held input before resuming production."));
+        }
+        return State.World->InjectKey(EKeys::E,IE_Pressed)&&State.World->InjectKey(EKeys::A,IE_Pressed)&&
+            State.World->InjectKey(EKeys::A,IE_Released)&&State.World->InjectKey(EKeys::D,IE_Pressed)&&
+            State.World->InjectKey(EKeys::D,IE_Released)&&State.World->InjectKey(EKeys::E,IE_Released);
+    }
     Mode(State)->Interact(Player(State));
     if (Director->HeldWorkProgress() < 0.f)
         return true;
     // Worked once its point is marked done, or the beat it finished has moved on.
     const int32 BeatBefore = Director->ActiveBeat();
     const unsigned Before = Director->TaskProgress().PointsMask;
-    const auto Worked = [&]() { return Director->ActiveBeat() != BeatBefore || Director->TaskProgress().PointsMask != Before; };
+    const int32 DeliveredBefore=Director->TaskProgress().Done;
+    const auto Worked = [&]() { return Director->ActiveBeat() != BeatBefore || Director->TaskProgress().PointsMask != Before ||
+        Director->TaskProgress().Done != DeliveredBefore; };
     State.World->InjectKey(EKeys::E, IE_Pressed);
     bool bHeld = true;
     for (int32 Quarter = 0; Quarter < 40 && bHeld && !Worked(); ++Quarter)
@@ -592,17 +648,35 @@ bool OpenCaches(FAutomationTestBase& Test, FState& State)
 }
 
 // Walks to every loose collectible and picks it up; each goes to the save.
-bool PickUpAll(FAutomationTestBase& Test, FState& State)
+bool PickUpAll(FAutomationTestBase& Test, FState& State,bool AlongMoatRoute=false)
 {
     USoraCampaignDirector* Director = Campaign(State);
+    const auto* Space=Director->ActiveSpace();
+    const bool Moat=Space&&Space->Moat.bEnabled;
+    if(Moat)SoraMoatAutomation::Sample(*State.World,TEXT("before aggregate pickup sweep"));
     if (!Mode(State)->IsPlaying() || Director->IsMounted())
         return true;
+    // These physical routes must begin at their actual entry. The moat's
+    // mark is reached during its gate approach; off-route chapter finds
+    // stay loose until the later ordinary collection sweep after the climb.
+    if((Moat&&!AlongMoatRoute)||(Space&&Space->Climb.bEnabled))return true;
     const FSoraChapter& Chapter = ChapterData(State);
     for (const int32 Pickup : Director->LoosePickups())
     {
+        if(Moat&&Chapter.Space.Pickups[Pickup].Zone!=Space->Zone)continue;
         const FSoraCollectible& Item = Chapter.Collectibles[Chapter.Space.Pickups[Pickup].Collectible];
-        MoveTo(State, Director->PickupLocation(Pickup));
-        Mode(State)->Interact(Player(State));
+        if(Moat)
+        {
+            if(!SoraMoatAutomation::Swim(*State.World,Director->PickupLocation(Pickup)))
+                return Fail(Test,State,TEXT("The moat mark must be reached by actual swimming"));
+            SoraMoatAutomation::Sample(*State.World,TEXT("actual moat pickup approach"),Director->PickupLocation(Pickup));
+            if(!State.World->PressKey(SoraMoatAutomation::Key(*Player(State),TEXT("Interact"))))return false;
+        }
+        else
+        {
+            MoveTo(State, Director->PickupLocation(Pickup));
+            Mode(State)->Interact(Player(State));
+        }
         const uint64 Bit = SoraCampaignRules::CollectibleBit(Director->ChapterId, Item.MaskBit);
         const USoraSaveGame* Saved = Cast<USoraSaveGame>(UGameplayStatics::LoadGameFromSlot(State.Slot, 0));
         if (!Test.TestTrue(*(Item.Id + TEXT(" is picked up and kept at once")), (Director->CollectedMask() & Bit) != 0ull &&
@@ -639,8 +713,9 @@ bool ExpectLinesQueued(FAutomationTestBase& Test, FState& State, const FSoraChap
 
 // A captured boss yields at zero health (bible §3.2: the final boss is
 // captured, not killed): it kneels upright where it fell and stays past a
-// fallen opponent's lifespan, the objective marks it for E, E from afar binds
-// nothing, and E at it ends the fight with the capture's own interaction.
+// fallen opponent's lifespan, and E from afar binds nothing. The final boss
+// ends only after the hero walks to the spine and holds the draw-cut; the
+// other captures use E beside the captive.
 bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& Beat)
 {
     USoraCampaignDirector* Director = Campaign(State);
@@ -649,12 +724,14 @@ bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& B
         for (TActorIterator<ASoraEnemy> It(World); It; ++It)
             if (!It->IsAlive() && !It->IsActorBeingDestroyed() && Director->IsCaptive(**It))
                 Captive = *It;
+    const bool Spine=Beat.CaptureEvent==TEXT("interact:engine_spine");
     FVector At;
     bool bOk = Test.TestNotNull(*(Beat.Id + TEXT(": the yielded boss stays where it fell")), Captive) &&
         Test.TestTrue(*(Beat.Id + TEXT(": the yielded boss kneels upright and does not leave")),
             FMath::Abs(Captive->GetActorRotation().Roll) < 1.f && Captive->GetLifeSpan() == 0.f) &&
-        Test.TestTrue(*(Beat.Id + TEXT(": the captive is the objective, bound with E")),
-            Director->ObjectiveAnchor(At) && Director->AnchorTakesInteract() && FVector::Dist2D(At, Captive->GetActorLocation()) < 1.f);
+        Test.TestTrue(*(Beat.Id + TEXT(": the authored capture interaction is the objective")),
+            Director->ObjectiveAnchor(At) && Director->AnchorTakesInteract() && (Spine
+                ?At.Equals(Mode(State)->Arena()->SummitSpinePoint(),1.f):FVector::Dist2D(At,Captive->GetActorLocation())<1.f));
     if (!bOk)
         return Fail(Test, State, Beat.Id + TEXT(": the captured boss did not yield"));
     MoveTo(State, FarAway(State));
@@ -663,12 +740,18 @@ bool CaptureYielded(FAutomationTestBase& Test, FState& State, const FSoraBeat& B
     Mode(State)->Interact(Player(State));
     bOk &= Test.TestTrue(*(Beat.Id + TEXT(": E from afar binds nothing, and the captive waits")),
         Director->AwaitingCapture() && IsValid(Captive) && !Captive->IsActorBeingDestroyed());
-    MoveTo(State, At);
-    if (!Advance(Test, State, 1))
-        return false;
     const int32 Index = Director->ActiveBeat();
-    Mode(State)->Interact(Player(State));
-    bOk &= Test.TestTrue(*(Beat.Id + TEXT(": E at the captive binds it and ends the fight")),
+    if(Spine)
+    {
+        if(!SoraSummitAutomation::CutSpine(*State.World)) return Fail(Test,State,TEXT("The held spine cut is unreachable or incomplete"));
+    }
+    else
+    {
+        MoveTo(State,At);
+        if(!Advance(Test,State,1)) return false;
+        Mode(State)->Interact(Player(State));
+    }
+    bOk &= Test.TestTrue(*(Beat.Id + TEXT(": the capture interaction ends the fight")),
         !Director->AwaitingCapture() && (Director->ActiveBeat() != Index || Mode(State)->bChapterComplete));
     bOk &= ExpectLinesQueued(Test, State, ChapterData(State), Index, *Beat.CaptureEvent);
     ++State.Captures;
@@ -750,6 +833,17 @@ bool RecordLessons(FAutomationTestBase& Test, FState& State, const FSoraBeat& Be
             break;
         }
     }
+    if(Beat.Task.Maai.Count>0)
+    {
+        // The completist sweep visits loose collectibles in other zones.
+        // Return to this beat's authored entrance before the real-input
+        // lesson; never place the hero inside its measured distance band.
+        MoveTo(State,ASoraWorldBuilder::Floor(Beat.Space.Entry));
+        if(!Advance(Test,State,1)) return false;
+        bOk &= Test.TestTrue(TEXT("The dojo entrance is outside the distance band"),Director->MaaiDistance()>Beat.Task.Maai.OuterCm);
+        bOk &= Test.TestFalse(TEXT("Returning from collectibles grants no distance confirmation"),Director->TaskProgress().Maai.Acquired);
+        bOk &= Test.TestTrue(TEXT("The distance lesson requires walking after every mentor step"),SoraMaaiAutomation::Walk(*State.World));
+    }
     return bOk || Fail(Test, State, Beat.Id + TEXT(": Nyaagyushinkageryuu forms did not follow the dojo rules"));
 }
 
@@ -773,13 +867,9 @@ bool MissFlank(FAutomationTestBase& Test, FState& State, const FSoraBeat& Beat)
 {
     USoraCampaignDirector* Director = Campaign(State);
     const TArray<ASoraEnemy*> Pupils = LiveEnemies(State);
-    USoraGameEvents* Events = USoraGameEvents::Get(Player(State));
-    if (Pupils.IsEmpty() || !Events)
+    if (Pupils.IsEmpty())
         return Fail(Test, State, Beat.Id + TEXT(" has no pupil to meet"));
-    FSoraDefenseEvent Met;
-    Met.Defender = Player(State); Met.Attacker = Pupils[0]; Met.HeldMs = SoraDojoRules::ParryWindowMs / 2; Met.bDojo = true;
-    Events->OnGuarded.Broadcast(Met);
-    if (!Advance(Test, State, 40))
+    if (!SoraDojoAutomation::MissFlank(Test,*State.World))
         return false;
     const int32 Index = Director->ActiveBeat();
     bool bOk = ExpectLinesQueued(Test, State, ChapterData(State), Index, TEXT("marobashi_miss"));
@@ -835,6 +925,7 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     const auto Active = [&]() { return Director->ActiveBeat() == Index && !GameMode->bChapterComplete; };
     FVector Anchor;
     bool bOk = true;
+    if(Rules.Goal!=EGoal::Lines&&Rules.Goal!=EGoal::Elapsed&&!WaitForDialogue(Test,State)) return false;
     switch (Rules.Goal)
     {
     case EGoal::Elapsed:
@@ -861,20 +952,13 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
         break;
     }
     case EGoal::Lines:
+    {
+        bool bStarted=Director->LinesStarted();
         if (Beat.LinesEvent != TEXT("beat_start"))
-        {
-            bOk &= Test.TestFalse(*(Beat.Id + TEXT(" waits for its trigger")), Director->LinesStarted());
-            if (!Director->ObjectiveAnchor(Anchor))
-                return Fail(Test, State, Beat.Id + TEXT(" has no trigger anchor"));
-            MoveTo(State, Anchor);
-            if (!Advance(Test, State))
-                return false;
-            if (Director->AnchorTakesInteract())
-                GameMode->Interact(Player(State));
-        }
-        bOk &= Test.TestTrue(*(Beat.Id + TEXT(" lines begin")), Director->LinesStarted());
+            bOk &= Test.TestFalse(*(Beat.Id + TEXT(" waits for its trigger")),bStarted);
         for (int32 Action = 0; Action < MaxActionsPerBeat && Active(); ++Action)
         {
+            bStarted|=Director->LinesStarted();
             if (const FSoraDialogueCue* Line = Director->CurrentDialogueCue())
             {
                 bOk &= Test.TestTrue(*(Line->Id + TEXT(" is bilingual")), HasJapanese(Line->Japanese) && !Line->English.IsEmpty() &&
@@ -885,12 +969,29 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                     Queued[0].Seconds == Line->DurationSeconds);
                 ++State.LinesShown;
             }
-            if (Director->LinesQueued() == 0 && Rules.AnchorAfterLines && Director->ObjectiveAnchor(Anchor))
-                MoveTo(State, Anchor);
+            if (Director->LinesQueued() == 0)
+            {
+                // The frame that releases a hold does not also advance the
+                // task clock. Give its ordinary next step a chance to finish.
+                if (!Advance(Test,State)) return false;
+                if (!Active()) break;
+                if (Director->LinesQueued()>0) continue;
+                if (Director->ObjectiveAnchor(Anchor))
+                {
+                    MoveTo(State,Anchor);
+                    if(!Advance(Test,State,1)) return false;
+                    if(Director->AnchorTakesInteract()&&!State.World->PressKey(EKeys::E)) return false;
+                    bStarted|=Director->LinesStarted();
+                }
+                else if (!Director->TaskProgress().LinesDone)
+                    return Fail(Test,State,Beat.Id+TEXT(" is waiting for authored dialogue events without a tested world interaction"));
+            }
             if (!Advance(Test, State, 1, FastSeconds))
                 return false;
         }
+        bOk &= Test.TestTrue(*(Beat.Id + TEXT(" begins on its authored trigger")),bStarted);
         break;
+    }
     case EGoal::Points:
         if (!LoseMatch(Test, State))
             return false;
@@ -944,12 +1045,34 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     }
     case EGoal::WavesCleared:
     case EGoal::Survive:
+        if(Beat.bArcheryLesson)
+        {
+            if(!SoraArcheryAutomation::Complete(Test,*State.World,true))
+                return Fail(Test,State,TEXT("The range must complete through actual arrow impacts"));
+            break;
+        }
         // Fight what the waves send; walk into the volume that brings the next
         // one; let the clock run for timed waves and survivals.
         for (int32 Action = 0; Action < MaxActionsPerBeat * 4 && Active(); ++Action)
         {
             if (!LiveEnemies(State).IsEmpty()) { if (!DefeatOne(Test, State)) return false; continue; }
-            if (Director->ObjectiveAnchor(Anchor) && Rules.Goal == EGoal::WavesCleared) MoveTo(State, Anchor);
+            if (Director->ObjectiveAnchor(Anchor) && Rules.Goal == EGoal::WavesCleared)
+            {
+                if(Beat.Space.Wind.Ridge())
+                {
+                    const bool AtExit=SoraBeatRules::TaskComplete(Director->TaskProgress(),Rules);
+                    if(!SoraRidgeAutomation::Walk(*State.World,Beat.Space,Anchor.X-Beat.Space.Wind.Origin.X,Test,false,AtExit))
+                        return Fail(Test,State,TEXT("The ridge requires real traversal and mapped vaults"));
+                }
+                else if(Beat.Space.Spire.Enabled())
+                {
+                    const bool AtL3=Player(State)->GetActorLocation().Z>1700.f;
+                    if(!SoraSpireAutomation::Climb(*State.World,Beat.Space,AtL3?SoraSpireRules::Landing(2)+1:0,AtL3?SoraSpireRules::Landing(3):SoraSpireRules::Landing(2)))
+                        return Fail(Test,State,TEXT("The spiral must be climbed through its physical route"));
+                    if(AtL3&&!SoraLiftAutomation::Walk(*State.World,FVector(Beat.Space.Exit.Center,2700))) return false;
+                }
+                else MoveTo(State, Anchor);
+            }
             if (!Advance(Test, State, 1, FastSeconds))
                 return false;
         }
@@ -958,6 +1081,31 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Hold:
     case EGoal::Escort:
     {
+        if(Beat.Space.Moat.bEnabled)
+        {
+            SoraMoatAutomation::Sample(*State.World,TEXT("aggregate route entry"));
+            if(!SoraMoatAutomation::ToGate(*State.World)||!PickUpAll(Test,State,true)||
+                !Test.TestTrue(TEXT("The moat requires real swimming and submerged gate passage"),SoraMoatAutomation::ThroughGate(*State.World)))
+                return Fail(Test,State,TEXT("The moat traversal or its physical collectible approach failed"));
+            break;
+        }
+        if(Beat.Space.Climb.bEnabled)
+        {
+            if(!Test.TestTrue(TEXT("The wall exit requires real holds and swept crawl input"),SoraClimbAutomation::Traverse(*State.World))) return false;
+            break;
+        }
+        if(Beat.Space.Flood.bEnabled)
+        {
+            if(!Test.TestTrue(TEXT("The flood exit requires actual swimming, breathing and gate passage"),SoraFloodAutomation::Exit(*State.World))) return false;
+            break;
+        }
+        if(Director->IsWoodExplore())
+        {
+            if(!SoraWoodAutomation::Poi(*State.World,SoraWoodRules::Stone)||
+                !SoraWoodAutomation::Poi(*State.World,SoraWoodRules::Boundary)||
+                !SoraWoodAutomation::Exit(*State.World)) return false;
+            break;
+        }
         // Rides are ridden: a horse to tack up is mounted from her right,
         // the others start in the saddle.
         if (Beat.Is(SoraBeatRules::EType::HorsebackRide))
@@ -998,10 +1146,16 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 return false;
             if (Rules.Goal == EGoal::Hold && !TendFires(Test, State))
                 return false;
+            if(Director->HelmNeedsTrim()&&!SoraHelmAutomation::Correct(*State.World))
+                return Fail(Test,State,TEXT("The helm requires its actual wheel correction"));
             Standing.Reset();
             for (ASoraEnemy* Enemy : LiveEnemies(State))
                 Standing.Add(Enemy);
-            if (Director->ObjectiveAnchor(Anchor)) MoveTo(State, Anchor);
+            if (Director->ObjectiveAnchor(Anchor))
+            {
+                if(Director->IsHelmHold()) { if(!SoraRecoveryAutomation::WalkTo(*State.World,Anchor)) return false; }
+                else MoveTo(State,Anchor);
+            }
             if (!Advance(Test, State, 1, FastSeconds))
                 return false;
         }
@@ -1016,6 +1170,14 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Turns:
     case EGoal::Steps:
     {
+        if(Beat.Space.Lift.bEnabled)
+        {
+            if(!Test.TestTrue(TEXT("The full spire ride uses boarding and ordinary crank input"),SoraLiftAutomation::Ride(*State.World))||
+                !Test.TestTrue(TEXT("The gallery can be searched and left by walking"),SoraLiftAutomation::Gallery(*State.World,true))) return false;
+            ++State.CachesOpened;
+            ++State.GoalsPlayed.FindOrAdd(static_cast<int32>(SoraBeatRules::EGoal::Cache));
+            break;
+        }
         // A cargo ride delivers from the saddle.
         if (Beat.Is(SoraBeatRules::EType::HorsebackRide))
         {
@@ -1025,6 +1187,20 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
         MoveTo(State, FarAway(State));
         GameMode->Interact(Player(State));
         bOk &= Test.TestEqual(*(Beat.Id + TEXT(" cannot be worked from afar")), Director->TaskProgress().Done, 0);
+        if(Rules.RecoveryWeapons!=0u)
+        {
+            // Deal with the patrol using the currently available wakizashi
+            // before entering the rope. Recovery itself uses no state edits.
+            for(int32 Action=0;Action<MaxActionsPerBeat&&!LiveEnemies(State).IsEmpty();++Action)
+                if(!DefeatOne(Test,State)) return false;
+            if(!FreeConscripts(Test,State)||!Test.TestTrue(TEXT("Dry-well equipment is recovered by real movement and held input"),
+                SoraRecoveryAutomation::Recover(*State.World))) return false;
+        }
+        if(Rules.CarryGateMs>0)
+        {
+            if(!ClearField(Test,State,Index)||!FreeConscripts(Test,State)||
+                !Test.TestTrue(TEXT("Granary seal is pried through real movement and held input"),SoraCarryAutomation::PrySeal(*State.World))) return false;
+        }
         bool bSlipTested = false, bMissTested = false, bLoadTested = false;
         // A crank is turned, not fought over: it is done once full, whoever stands.
         TArray<TWeakObjectPtr<ASoraEnemy>> Standing;
@@ -1063,13 +1239,25 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 if (!bSlipTested && Task.Done == 1 && Active())
                 {
                     bSlipTested = true;
-                    GameMode->Interact(Player(State));
+                    if(Rules.AlternateTreads)
+                    {
+                        if(!WorkAtAnchor(Test,State)) return false;
+                    }
+                    else GameMode->Interact(Player(State));
                     bOk &= Test.TestEqual(*(Beat.Id + TEXT(": a hurried turn slips")), Director->TaskProgress().Done, 1);
                 }
             }
             else if (Rules.Goal == EGoal::Steps)
             {
                 const SoraBeatRules::FStep& Step = Rules.Steps[Task.Step];
+                if(Step.PhraseStrikes>0)
+                {
+                    if(!SoraRhythmRules::Active(Director->RhythmState(),Task,Rules))
+                    { if(!WorkAtAnchor(Test,State)) return false; }
+                    const int32 Until=FMath::Max(0,Director->RhythmState().DueMs-Director->TaskProgress().ElapsedMs);
+                    if(!Wait(Test,State,Until)||!WorkAtAnchor(Test,State)||!Wait(Test,State,Step.ToleranceMs+20)) return false;
+                    continue;
+                }
                 const bool bRhythm = Step.BeatMs > 0 && Task.StepDone > 0;
                 // One stroke off the beat restarts the rhythm step.
                 const bool bMiss = bRhythm && !bMissTested && Task.StepDone == 1;
@@ -1111,6 +1299,14 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
                 !ClearField(Test, State, Index))
                 return false;
         }
+        if(Active()&&Rules.Goal==EGoal::Turns)
+        {
+            FVector Point; Director->ObjectiveAnchor(Point);
+            Test.AddError(FString::Printf(TEXT("%s crank stalled: progress=%d done=%d elapsed=%d last_action=%d working=%d stagger=%d guard=%.2f hero=%s anchor=%s enemies=%d"),
+                *Beat.Id,Director->TaskProgress().Progress,Director->TaskProgress().Done,Director->TaskProgress().ElapsedMs,
+                Director->TaskProgress().LastActionMs,Director->IsWorkingCrank(),Player(State)->GetEquipment()->IsStaggered(),
+                Player(State)->GetEquipment()->GuardReserve(),*Player(State)->GetActorLocation().ToString(),*Point.ToString(),LiveEnemies(State).Num()));
+        }
         // ch04.b06's shape: the crank turned full while its waves stand ends
         // the beat at once, and nothing slips back while they stand.
         if (Rules.Goal == EGoal::Turns && Rules.WaveCount > 0)
@@ -1149,6 +1345,9 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
     ASoraPlayerCharacter* Hero = Player(State);
     USoraEquipmentComponent* Kit = Hero->GetEquipment();
     const int32 Held = Hero->WeaponId;
+    // Chapter three begins with only the wakizashi. Its unlock is still
+    // checked here, but returning from that check cannot equip the lost kit.
+    const int32 ReturnWeapon = Campaign(State)->CanHold(0,false) ? 0 : Held;
     if (!Holdable(WeaponId))
         return Fail(Test, State, FString::Printf(TEXT("Weapon %d has no campaign slot"), WeaponId));
     const bool bEquipped = Kit->EquipCampaignWeapon(WeaponId);
@@ -1156,9 +1355,9 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
     bool bOk = Test.TestEqual(*What, bEquipped, bUnlocked) && Test.TestEqual(*(What + TEXT(" (held)")), Hero->WeaponId, bUnlocked ? WeaponId : Held);
     if (!bUnlocked)
         bOk &= Test.TestTrue(*(What + TEXT(" with a notice")), Mode(State)->NoticeTime > 0.f && !Mode(State)->NoticeEnglish.IsEmpty());
-    // Back to the katana, after the equip delay.
-    if (!Advance(Test, State, 20) || (bEquipped && !Kit->EquipClassSlot(0)))
-        return Fail(Test, State, What + TEXT(": could not return to the katana"));
+    // Back to the available weapon, after the equip delay.
+    if (!Advance(Test, State, 20) || (bEquipped && !Kit->EquipCampaignWeapon(ReturnWeapon)))
+        return Fail(Test, State, What + TEXT(": could not return to the available weapon"));
     // Every unlocked arm is in reach of the player's own keys: its group key,
     // pressed until it comes up, and a place on the arms wheel's ring.
     const int32 Group = SoraArmsRules::GroupOf(WeaponId);
@@ -1169,8 +1368,8 @@ bool ExpectWeapon(FAutomationTestBase& Test, FState& State, int32 WeaponId, bool
             Hero->SelectArmsGroup(Group);
         bOk &= Test.TestEqual(*(What + TEXT(" on its group key")), Hero->WeaponId, WeaponId);
         bOk &= Test.TestTrue(*(What + TEXT(" on the arms wheel")), SoraArmsRules::Holds(Hero->HoldableArms(), WeaponId));
-        if (!Advance(Test, State, 20) || !Kit->EquipClassSlot(0))
-            return Fail(Test, State, What + TEXT(": could not return to the katana"));
+        if (!Advance(Test, State, 20) || !Kit->EquipCampaignWeapon(ReturnWeapon))
+            return Fail(Test, State, What + TEXT(": could not return to the available weapon"));
     }
     else
         bOk &= Test.TestFalse(*(What + TEXT(" is not on the arms wheel")), SoraArmsRules::Holds(Hero->HoldableArms(), WeaponId));
@@ -1293,8 +1492,8 @@ bool Resume(FAutomationTestBase& Test, FState& State)
     bool bOk = Test.TestFalse(TEXT("Enter closes the menu"), GameMode->bMenu);
     bOk &= Test.TestFalse(TEXT("Closing the menu unpauses the world"), Paused(State));
     bOk &= Test.TestFalse(TEXT("A resumed checkpoint skips the title card"), Campaign(State)->IsChapterOpening());
-    bOk &= Test.TestTrue(TEXT("A resumed checkpoint is in play or its cinematic"),
-        GameMode->IsPlaying() || (Beat && Beat->Is(SoraBeatRules::EType::Cinematic)));
+    bOk &= Test.TestTrue(TEXT("A resumed checkpoint is in play, dialogue or its cinematic"),
+        GameMode->IsPlaying() || GameMode->InputState()==SoraInput::Dialogue || (Beat && Beat->Is(SoraBeatRules::EType::Cinematic)));
     return (bOk || Fail(Test, State, TEXT("Resuming a checkpoint did not return to play"))) && Advance(Test, State);
 }
 
@@ -1335,6 +1534,14 @@ bool PlayPhases(FAutomationTestBase& Test, FState& State)
         UGameplayStatics::ApplyDamage(Opponent, Opponent->Health - Left, Player(State)->GetController(), Player(State), UDamageType::StaticClass());
         if (!Advance(Test, State))
             return false;
+        if(Beat.Space.Summit.Enabled())
+        {
+            const auto* Boss=Cast<ASoraBoss>(Opponent);
+            for(int32 Frame=0;Boss&&Frame<1800&&(Boss->PhaseIndex()!=Phase||Boss->IsPhaseTransitioning()||
+                (Phase==1&&!Boss->IsOnSummitDais()));++Frame)
+                if(!Advance(Test,State,1,FrameSeconds)) return false;
+            if(!Advance(Test,State,2,FrameSeconds)) return false;
+        }
         if (!Test.TestEqual(*(Context + TEXT(" begins")), Campaign(State)->ActivePhase(), Phase) || !ExpectCheckpoint(Test, State))
             return Fail(Test, State, Context + TEXT(" was not saved"));
         ++State.PhaseReloads;
@@ -1645,9 +1852,9 @@ bool CheckTelemetry(FAutomationTestBase& Test, FState& State)
             const int32* Times = Completed.Find(Id);
             bOk &= Test.TestEqual(*(Id + TEXT(" completes once in the telemetry")), Times ? *Times : 0, 1);
             ++Beats;
-            Required += !Data.Chapter(Chapter).Rules[Index].Optional;
+            Required += !Data.Chapter(Chapter).Rules[Index].Optional||Data.Chapter(Chapter).Wood.Beat==Index;
         }
-    bOk &= Test.TestEqual(TEXT("Telemetry: every required beat starts once"), Count(TEXT("start")), Required);
+    bOk &= Test.TestEqual(TEXT("Telemetry: every required beat and the walkable wood starts once"), Count(TEXT("start")), Required);
     bOk &= Test.TestEqual(TEXT("Telemetry: every beat completes"), Count(TEXT("complete")), Beats);
     bOk &= Test.TestEqual(TEXT("Telemetry: every chapter completes"), Count(TEXT("chapter_complete")), LastChapter + 1);
     bOk &= Test.TestEqual(TEXT("Telemetry: every cinematic is skipped with Enter"), Count(TEXT("skip")), State.CinematicShots);

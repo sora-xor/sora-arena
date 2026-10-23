@@ -50,17 +50,7 @@ void SoraHUDPanels::DrawArmsWheel(const FSoraHUDFrame& Frame, const ASoraPlayerC
     const ASoraPlayerCharacter::FArmsWheel& Wheel = Hero.ArmsWheel();
     if (!Wheel.bOpen)
     {
-        // A group key, a step or the wheel took up an arm: its group and name, briefly.
-        const float Since = Hero.GetWorld()->GetTimeSeconds() - Hero.ArmsTakenAt();
-        const int32 Group = SoraArmsRules::GroupOf(Hero.WeaponId);
-        if (Since < 1.6f && Group >= 0 && Hero.IsCampaignHero())
-        {
-            const SoraText::FLine Line = SoraText::Format(NSLOCTEXT("SoraArena.Arms", "TakenUp", "{Group}　{Arm}"),
-                {{TEXT("Group"), SoraText::Line(SoraUI::ArmsGroupName(Group))}, {TEXT("Arm"), ArmName(Hero.WeaponId)}});
-            HUD.Panel(W - 390 * S, H - 182 * S, 365 * S, bEnglish ? 58 * S : 34 * S, FLinearColor(.015f, .035f, .05f, .9f * FMath::Clamp(1.6f - Since, 0.f, 1.f)));
-            HUD.Label(Line.Japanese, W - 375 * S, H - 178 * S, .5f * S, Frame.Gold);
-            if (bEnglish) HUD.Label(Line.English, W - 375 * S, H - 150 * S, .36f * S, Frame.Muted);
-        }
+        DrawArmsNotice(Frame,Hero);
         return;
     }
     const float CX = W * .5f, CY = H * .5f, Radius = FMath::Min(300.f * S, H * .34f);
@@ -107,25 +97,37 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
     if (!Fieldcraft || Hero.ArmsWheel().bOpen) return;
     const float W = Frame.W, H = Frame.H, S = Frame.S;
     const float PromptX = W * .5f - 170 * S;
-    float PromptY = H * .5f + 100 * S;
+    struct FPromptRow { SoraText::FLine Line; FLinearColor Color; float Fraction=-1.f; };
+    TArray<FPromptRow> Prompts;
     const auto Prompt = [&](const SoraText::FLine& Line, const FLinearColor& Color)
     {
-        Frame.LabelWithEnglish(Line, PromptX, PromptY, .5f * S, Color);
-        PromptY += 30 * S;
+        Prompts.Add({Line,Color,-1.f});
+    };
+    const auto DrawPrompts = [&]()
+    {
+        float Height=0;
+        for(const FPromptRow& Row:Prompts) Height+=(Row.Fraction>=0.f?38:30)*S;
+        float Y=FMath::Min(H*.5f+100*S,GameplayStoryTop(Frame)-6*S-Height);
+        for(const FPromptRow& Row:Prompts)
+        {
+            Frame.LabelWithEnglish(Row.Line,PromptX,Y,.5f*S,Row.Color);
+            if(Row.Fraction>=0.f) Bar(HUD,PromptX,Y+26*S,300*S,S,Row.Fraction,Frame.Gold);
+            Y+=(Row.Fraction>=0.f?38:30)*S;
+        }
     };
     // Work held at a point: a load hoisted on the well's 釣瓶 (it waits while a
     // guard watches), or an objective worked with Interact held.
     if (const USoraCampaignDirector* Campaign = G.Campaign(); Campaign && Campaign->HeldWorkProgress() >= 0.f)
     {
         const FText Pattern = Campaign->IsHeldWorkWatched() ? NSLOCTEXT("SoraArena.Fieldcraft", "HoistWatched", "見られている　{Key} を押さえたまま待て")
+            : Campaign->IsRecoveringEquipment() ? NSLOCTEXT("SoraArena.Fieldcraft", "StringBow", "{Key} 長押し：弓に弦を張る")
             : Campaign->IsHoisting() ? NSLOCTEXT("SoraArena.Fieldcraft", "Hoist", "{Key} 長押し：釣瓶で引き上げる")
             : NSLOCTEXT("SoraArena.Fieldcraft", "HeldWork", "{Key} を押さえたまま仕事を続ける");
         Prompt(Keyed(HUD, Pattern, TEXT("Interact")), Campaign->IsHeldWorkWatched() ? FLinearColor(.95f, .35f, .2f) : Frame.Gold);
-        Bar(HUD, PromptX, PromptY - 4 * S, 300 * S, S, Campaign->HeldWorkProgress(), Frame.Gold);
-        PromptY += 8 * S;
+        Prompts.Last().Fraction=Campaign->HeldWorkProgress();
     }
     const FSoraFieldcraftReadout R = Fieldcraft->Readout(Hero);
-    if (!R.bActive) return;
+    if (!R.bActive) { DrawPrompts(); return; }
     // What the hero's hand can do here, and how far a held piece of it has come.
     using EHold = FSoraFieldcraftReadout::EHold;
     const EHold Work = R.Holding != EHold::None ? R.Holding : R.HoldHere;
@@ -140,15 +142,15 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
         Prompt(Keyed(HUD, Pattern, TEXT("Interact")), Frame.Gold);
         if (R.Holding != EHold::None)
         {
-            Bar(HUD, PromptX, PromptY - 4 * S, 300 * S, S, R.HoldProgress, Frame.Gold);
-            PromptY += 8 * S;
+            Prompts.Last().Fraction=R.HoldProgress;
         }
     }
     if (R.bAtPile) Prompt(Keyed(HUD, NSLOCTEXT("SoraArena.Fieldcraft", "TakeStones", "{Key}：礫を拾う"), TEXT("Interact")), Frame.Gold);
     if (R.bAtFace) Prompt(Keyed(HUD, NSLOCTEXT("SoraArena.Fieldcraft", "StartClimb", "{Key}：手掛かりへ取り付く"), TEXT("Jump")), Frame.Gold);
     if (R.bAtLadder) Prompt(Keyed(HUD, NSLOCTEXT("SoraArena.Fieldcraft", "Ladder", "{Key}：梯子を使う"), TEXT("Jump")), Frame.Gold);
+    DrawPrompts();
     // The left column above the health panel: breath, grip, stones, the candle, the signal.
-    float Y = H - 150 * S;
+    float Y = FMath::Min(H - 150 * S,GameplayStoryTop(Frame)-6*S);
     const float X = 30 * S;
     const auto Status = [&](const SoraText::FLine& Line, const FLinearColor& Color, float Fraction)
     {
@@ -159,6 +161,10 @@ void SoraHUDPanels::DrawFieldcraft(const FSoraHUDFrame& Frame, const ASoraPlayer
     if (R.bSwimming)
         Status(Keyed(HUD, R.bDiving ? NSLOCTEXT("SoraArena.Fieldcraft", "Diving", "潜水中　息　{Key} で浮かぶ")
             : NSLOCTEXT("SoraArena.Fieldcraft", "Swimming", "泳いでいる　息　{Key} で潜る"), TEXT("Crouch")), Frame.Ivory, R.Breath);
+    if(R.bFloodPassage)
+        Status(Keyed(HUD,R.bFloodAirShaft
+            ?NSLOCTEXT("SoraArena.Fieldcraft","FloodAirShaft","頭上に空気　{Key} で浮かび、息を整えろ")
+            :NSLOCTEXT("SoraArena.Fieldcraft","FloodDeepPassage","{Key} で潜れ　途中の明るい縦穴で息継ぎ"),TEXT("Crouch")),Frame.Teal,-1.f);
     if (R.bClimbing)
         Status(Keyed(HUD, R.bLedge ? NSLOCTEXT("SoraArena.Fieldcraft", "Ledge", "足場で握力が戻る　{Key} で手を離す")
             : NSLOCTEXT("SoraArena.Fieldcraft", "Climbing", "握力　前後で登り降り　{Key} で手を離す"), TEXT("Jump")), Frame.Ivory, R.Grip);

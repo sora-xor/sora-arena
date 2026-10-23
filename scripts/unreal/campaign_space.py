@@ -28,6 +28,14 @@ that routes are as long as the script asks. The authored ch01-ch03 layout
 frames stay in the chapter file's ``layout`` block for the level artists.
 """
 from __future__ import annotations
+from campaign_lift import place_lift
+from campaign_flood import place_flood
+from campaign_climb import place_climb
+from campaign_moat import place_moat
+from campaign_spire import place_spire
+from campaign_summit import place_summit
+from campaign_wood import connect_wood
+from campaign_ridge import place_wind
 
 import math
 import re
@@ -227,8 +235,9 @@ class Zone:
     def record(self):
         return {"id": self.id, "place": self.place, "style": self.style, "form": self.form,
                 "rect": list(self.rect), "wall_cm": self.wall, "entry": list(self.entry),
-                "walls": _walls(self.rect, self.wall), "cover": self.cover, "props": self.props,
-                "route": [list(point) for point in self.route]}
+                "walls": getattr(self, "walls", _walls(self.rect, self.wall)), "cover": self.cover, "props": self.props,
+                "route": [list(point) for point in self.route],
+                **({"z_bounds_cm": list(self.z_bounds)} if hasattr(self,"z_bounds") else {})}
 
 
 def _referenced_volumes(beat, triggers):
@@ -361,9 +370,30 @@ def _stamina(stamina, fail, where):
     return {"max": 100, "per_s": per_s, "lockout": STAMINA_LOCKOUT[0], "recover": STAMINA_LOCKOUT[1]}
 
 
+def spook_dismount(beat, fail):
+    """An explicit cargo policy, independent of the ordinary horse-down rule."""
+    params = beat["params"]
+    response = params.get("on_spook", "shy")
+    if type(response) is not str or response not in ("shy", "dismount_continue"):
+        fail(beat["id"], "on_spook must be shy or dismount_continue")
+    if response == "shy":
+        return False
+    fear = params.get("fear")
+    if (beat["type"] != "horseback_ride" or params.get("mode") != "cargo" or
+            params.get("dismount_allowed") is not True or params.get("on_horse_down") != "dismount_continue" or
+            not isinstance(params.get("cargo"), dict) or params["cargo"].get("carrier") != "pack_horse" or
+            not isinstance(fear, dict) or any(type(fear.get(key)) not in (int, float) or
+                not math.isfinite(fear[key]) or fear[key] <= 0 for key in ("spook_radius_cm", "recover_s"))):
+        fail(beat["id"], "spook dismount requires a fearful cargo mount, a led pack horse and foot continuation")
+    return True
+
+
 def _mount(beat, ride, fail):
     """The horse a ride or a mounted boss phase puts under the hero."""
     where = beat["id"]
+    dismount_on_spook = spook_dismount(beat, fail)
+    from campaign_cargo import cargo_manifest
+    manifest = cargo_manifest(beat, fail)
     if beat["type"] == "boss":
         mounted = [(index, phase["mount"]) for index, phase in enumerate(beat["params"]["phases"]) if "mount" in phase]
         if not mounted:
@@ -416,7 +446,8 @@ def _mount(beat, ride, fail):
         "spooks": [spook] if spook else [], "gait_caps": caps, "forced": forced,
         "weapons": weapons, "arcs": {str(weapon): arc for weapon, arc in sorted(arcs.items())},
         "dismount": bool(params.get("dismount_allowed", until_phase > 0)), "auto_steer": ride,
-        "until_phase": until_phase, "pack": pack,
+        "spook_dismount": dismount_on_spook,
+        "until_phase": until_phase, "pack": pack, "cargo": manifest,
     }
 
 
@@ -475,6 +506,12 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
             continue
         form = place_form(place_id)
         width, height, wall = FORMS[form]
+        if prefix == "ch01" and place_id == "pl_issoseki_wood":
+            width, height = 11000, 8500
+        if prefix == "ch07" and place_id == "pl_hull_ridge":
+            width, height = 18000, 2400
+        if prefix == "ch07" and place_id == "pl_hangar":
+            width, height = 8000, 4500
         if place_id in hosts_boss:
             width, height = max(width, BOSS_SIZE[0]), max(height, BOSS_SIZE[1])
         rect = (x, -height // 2, x + width, height // 2)
@@ -574,8 +611,19 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
                 fail(item["id"], f"zone {item['place']} has no nook left")
             at = _frac(zones[index].rect, *NOOK_AT[taken])
         pickups.append({"collectible": item["id"], "zone": index, "at": list(at)})
-    return {
-        "frame": "Unreal world cm; origin at the arena centre; every floor at z 0",
+    from campaign_helm import place_helm
+    place_helm(beats, records, [zone.record() for zone in zones], fail)
+    place_wind(beats, records, zones, fail)
+    place_lift(beats, records, fail)
+    place_flood(beats, records, zones, fail)
+    from campaign_foundry_defense import place_foundry_defense
+    place_foundry_defense(beats, records, fail)
+    place_spire(beats, records, zones, fail)
+    place_summit(beats, records, zones, fail)
+    place_climb(beats, records, zones, fail)
+    place_moat(beats, records, zones, pickups, fail)
+    result = {
+        "frame": "Unreal world cm; origin at the arena centre; per-beat height_cm overrides floor z 0",
         "hub": chapter_map if hub else None,
         "hub_place": hub,
         "start": list(first["entry"]),
@@ -584,6 +632,8 @@ def derive_space(chapter, beats, places, collectibles, triggers, layout, fail):
         "beats": records,
         "pickups": pickups,
     }
+    connect_wood(result, beats, layout)
+    return result
 
 
 ESCORT_MARGIN = 500
@@ -605,6 +655,8 @@ def _dress_zone(zone, combat, site_points):
     if zone.form == "hall":
         return
     x0, y0, x1, y1 = rect
+    if zone.place == "pl_higashi_torii":
+        zone.props.append({"mesh": "torii", "at": [x1 - 900, 0, 0]})
     if zone.style == "estate":
         zone.props.append({"mesh": "SM_Nyaagyu_ProvisionKura", "at": [_i(x0 + (x1 - x0) * 0.3), y0 - 700, 0]})
         zone.props.append({"mesh": "SM_Nyaagyu_EstateDojo", "at": [_i(x0 + (x1 - x0) * 0.68), y1 + 750, 180]})
@@ -704,6 +756,11 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
         allocator = Allocator(spots, avoid if zone else [])
         start = (count * 5) % len(allocator.spots) if zone else (beat_index(beat) * 3) % len(allocator.spots)
         anchor = tuple(site) if site else allocator.take(start)
+        if task["maai"]:
+            # The restored training site has a raised collision base, core
+            # and sword racks. The mentor's measured steps belong on the
+            # clear dojo floor, independently of that restoration marker.
+            anchor = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
         record["anchor"] = list(anchor)
         west = lambda i: allocator.spots[i][0]
         east = lambda i: -allocator.spots[i][0]
@@ -749,7 +806,7 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
             [list(_frac(rect, fx, fy)) for fx, fy in SPAWN_AT]
         record["patrols"] = [[list(point) for point in loop] for loop in ARENA_PATROLS] if zone is None else \
             [[list(_frac(rect, fx, fy)) for fx, fy in loop] for loop in PATROL_AT]
-        if beat["type"] == "explore_optional":
+        if beat["task"]["goal"] == "cache":
             record["cache"] = list(ARENA_CACHES[beat_index(beat) % len(ARENA_CACHES)] if zone is None else
                                    _frac(rect, *CACHE_AT))
         if beat["type"] == "cinematic":
@@ -759,6 +816,15 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
                 focus = tuple(site) if site else _frac(rect, 0.6, 0.5)
                 record["camera"] = [x0 + 350, _i(y0 + (y1 - y0) * 0.22), 480, x0 + 900, _i(y0 + (y1 - y0) * 0.34),
                                     420, focus[0], focus[1], 180]
+    if beat["id"] in ("ch08.b17", "ch08.b18"):
+        # +X follows the approach north, +Y is east. The board is 3 m
+        # south of the west pillar (235 cm off the shrine axis).
+        gate_x = rect[2] - 900
+        record["anchor"] = [gate_x - 100, 500]  # Toranosuke and the sword
+        if beat["id"] == "ch08.b17":
+            record["closing"] = [gate_x - 300, -235]  # freestanding name board
+            record["volumes"] = [{"event": "volume_enter:vol_torii",
+                                  "center": [gate_x - 500, 0], "size": [1000, 2000]}]
     record.setdefault("objectives", [])
     record.setdefault("pickups", [])
     record.setdefault("targets", [])
@@ -770,6 +836,22 @@ def _beat_space(beat, index, zones, sites, triggers, order_in_zone, hub_cover, f
     record.setdefault("camera", None)
     record.setdefault("route", None)
     record.setdefault("dropoffs", [])
+    record["recovery"] = None
+    record["carry_gate"] = list(record["pickups"][0]) if task["carry_gate"] else None
+    if task["carry_gate"]:
+        for volume in record["volumes"]:
+            if volume["event"] == "volume_enter:vol_kura_sw_door":
+                volume["center"] = list(record["carry_gate"])
+                volume["size"] = [400, 400]
+    if task["recovery"]:
+        if zone is None or zone.form == "route":
+            fail(beat["id"], "a dry well needs its own clear courtyard")
+        # Reserve an unused clear work spot: the 340 cm opening and its
+        # east-side rope approach fit within the same allocator clearance.
+        point = allocator.take(start)
+        if point is None:
+            fail(beat["id"], "no clear spot for the recovery well")
+        record["recovery"] = list(point)
     record["kit"] = _kit(beat)
     ride = beat["type"] == "horseback_ride"
     record["mount"] = _mount(beat, ride, fail) if ride or beat["type"] == "boss" else None
@@ -803,6 +885,9 @@ def _kit(beat):
     """What the world builds for the beat's task, by kind."""
     params = beat["params"]
     kit = {"work": None, "item": None, "pickups": [], "dropoffs": [], "targets": [], "party": []}
+    if beat["type"] == "horseback_ride" and params.get("mode") == "cargo":
+        kit.update(work="cargo", item="bale", dropoffs=["drying_stand"] * len(params["cargo"]["dropoffs"]))
+        return kit
     if beat["type"] != "production_task":
         return kit
     name = params["task"]

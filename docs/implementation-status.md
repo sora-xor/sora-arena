@@ -1,9 +1,376 @@
 # First-release implementation record
 
-The release goal remains incomplete. Development is paused at the user's
-2026-10-18 request to commit current work to master and stop. This is a progress
-record, not a claim that the release is complete. Backward compatibility,
+The release goal remains incomplete. The user resumed development on 2026-10-18
+and requested completion of the full game in collaboration with Claude's
+Photoreal art WIP checkpoint. The [complete-release plan](complete-release-plan.md)
+tracks ownership, milestones and required evidence; the earlier stop checkpoint
+remains a historical recovery record. This is a progress record, not a claim
+that the release is complete. Backward compatibility,
 legacy formats, aliases, and fallback decoders are prohibited.
+
+## 2026-10-24 cargo timing and campaign HUD
+
+At `eeaf2ed`, all five selected SM6 720p cargo/HUD captures pass and all twelve
+originals were inspected. The final zero notice and complete idle boss readout
+fit without the prior tracker collision. The capture's first press now follows
+ordinary unpaused settling; all original hold/cinematic thresholds remain
+unchanged. The earlier wall-time failure is preserved. Separate `812d70c`
+Campaign.Chapter2–8 captures pass seven tests but their 22 originals expose a
+Tarifa reticle/hint collision and three stealth/tracker collisions. Those fixes
+remain in progress; art, combat presentation, later boss states, ordinary play,
+1080p and a current package remain unqualified. See the
+[exact checkpoint](complete-release-plan.md#october-24-cargo-timing-and-campaign-hud-checkpoint).
+CI passes 82 source gates at earlier `71b9d2d`; later changes do not inherit that
+result. Native `cd9263628d` actual crate/proof execution remains unrun.
+
+## 2026-10-24 rendered cargo and final-death source
+
+At `235e810`, the five selected SM6 720p capture tests pass, but inspection of
+all twelve original images rejects the final cargo frame: its tracker obscures
+boss text. The objective overflow, horse framing and delivery-caption obstruction
+are corrected, and the final zero notice is visible after the full 90-second
+scene. The boss layout correction remains in progress; no 1080p or packaged
+result is claimed. Separate native `cd9263628d` has independently reviewed
+final-tick death/account/terminal source, 70 standalone CPU and 18 provenance
+passes; actual crate/proof/wire bounds remain unrun. The
+[exact checkpoint](complete-release-plan.md#october-24-rendered-cargo-and-final-death-source-checkpoint)
+retains failed attempts and scope limits.
+
+## 2026-10-24 cargo counter and lead rope
+
+At `67cc9a0`, the bilingual remaining-sheaf counter and animated visual lead are
+integrated. Five directed editor tests and all 43 gameplay source gates pass;
+independent source/build/EOF authentication is recorded in the
+[counter and rope checkpoint](complete-release-plan.md#october-24-cargo-counter-and-lead-rope-checkpoint).
+Rendered readability, final craft/animation, ordinary pacing and a new package
+remain open. Separate native `6fd03be8` has reviewed standalone Katana-fallback
+source evidence; actual crate compilation, proof and wire bounds remain unrun.
+
+## 2026-10-24 functional cargo transfer
+
+At `ec91382`, all seven selected cargo/horse/carry/Playthrough editor tests
+pass with zero selected errors/warnings, and all 43 gameplay source gates pass.
+The pack and drying stands conserve 30 sheaves across accepted ten-sheaf
+transfers, including on-foot unloading, pause/cancellation and checkpoint retry.
+Independent authentication and [exact scope](complete-release-plan.md#october-24-cargo-transfer-checkpoint)
+are recorded. These are assisted functional checks of basic mesh visibility.
+The later counter/rope checkpoint above supersedes that presentation gap.
+Rendered readability, final art and ordinary pacing remain open; newer source
+has not been packaged.
+
+## 2026-10-23 horse behavior and native cohort checkpoint
+
+Bunta's fear and steering tug, and Kurimaru's separate cargo-ride spook
+dismount, now have actual Mac editor evidence. Seven selected tests pass at
+`2ab5d01`, along with all 43 gameplay source gates. The cargo fixture's real
+spook dismount is diagnosed at `d6d51b0`; mapped remount at `3a3a3d3` restores
+all three deliveries. CargoUnload, BuntaLeadFear and KurimaruSpookDismount pass
+together with zero selected errors/warnings. Earlier failures remain retained.
+Visible cargo transfer and the connecting lead remain under implementation.
+
+Native `01d4e46` produces and separately verifies one 3,005,248-byte carbine
+proof, with 47 verifier rejections and eight actual prover Constraint cases.
+Its native test exits zero, but the overall attempt fails the unchanged 30 GiB
+disk reserve. No resource or release acceptance is claimed. The twelve-module
+lighting control stops at Kamiza's changed bounds; a distinct eleven-module
+control brightens the floor but leaves the broad room dark and also fails its
+resource reserve. All 48 assets are restored after each experiment.
+
+CI `39988965609` passes 80 gates at `e34edc8`, before the horse changes. The
+[checkpoint evidence](complete-release-plan.md#october-23-horse-behavior-and-bounded-proof-checkpoint)
+records exact scope, failures and artifacts. New source remains uncooked;
+photoreal art, ordinary play, platform/performance and full native execution
+remain unfinished.
+
+## 2026-10-23 cargo unloading and timer checkpoint
+
+At `d21013d`, cargo requires its authored three-second hold before delivery or
+the delivery-triggered ambush. All five directed cargo/mount/carry/Playthrough
+editor tests and all 43 gameplay source gates pass. Mount retains one HTTP
+connectivity timeout warning. At `4db3ce3`, fractional clock handling restores
+20-second guard searches; ten editor regressions pass. At `fea8842`, the
+gallery hint follows 60 active seconds at both 60 and 120 Hz, freezes through
+pause and resets on retry. Earlier failures remain archived.
+
+Native `01d4e46` completes actual crate compilation and 31 CPU tests, with two
+proof tests ignored; its separate proof cohort is still running. Latest CI
+`39983299505` passes 79 gates at `3b00f40` and predates the cargo/timer changes.
+The [current checkpoint](complete-release-plan.md#october-23-cargo-unloading-and-timer-qualification)
+records exact evidence and limitations. New source is uncooked; ordinary play,
+photoreal art, platform performance and full native execution remain unfinished.
+
+## 2026-10-23 campaign integration and GI investigation
+
+The [latest release-plan update](complete-release-plan.md#october-23-campaign-traversal-and-lighting-investigation)
+records executed helm, ridge/wind and flood integration. At `9ebcf87`, all six
+flood/water tests pass after repairing the descent gap and companion collision
+stalls. Both water levels permit the complete physical route, carried Iota,
+zero drowning damage and actual exit completion. All 56 gameplay/tooling source
+gates also pass at that source.
+
+At `6d038f4`, the full scripted campaign, Spaces, both hangar tests and RidgeExit
+pass with zero selected errors/warnings. The traversal covers eight chapters,
+133 beats and fresh checkpoint/phase reloads. The retained earlier failures
+led to a verified exit-transition helper and grade-aware support checks plus
+clear hangar markers. This is assisted functional automation, not ordinary
+play balance or a package of the latest source. At `75708f3`, all eight directed
+helm/pause/input editor tests pass with zero selected errors/warnings. Opening
+the menu cancels partial correction; both release/repress and actual held-key
+repeat reconciliation require a fresh full two seconds after resume. This is
+not a guarantee that the player must physically release the key first.
+
+Normal-GI SM5 controls show that the darker entry follows the rebuilt mesh
+assets. Disabling diffuse indirect lighting removes the large visible
+difference; the new observer measures changed SDF/card data for 11/12 meshes
+with equal conventional source/material/section observations. The exact cause
+and repair remain open. Later single-floor and four-floor replacement-source
+controls preserve recorded geometry, materials, Nanite settings and culling
+bounds within each pair. Only the targeted floor SDF/card observations change;
+the floor brightens but the broad room defect remains. Original images were
+reviewed and all 48 candidate files independently rehashed after restoration.
+No lighting setting, production asset change or art was admitted by the controls.
+The ceiling-only control at `50ef7d6` likewise leaves the broad room dark;
+its six phases completed, all six originals were inspected and all candidate
+files restored. Only the ceiling's measured SDF/card representation changed.
+
+CI `39975724835` passes 78 gates in five jobs at `c3ba8ef`, with an identical
+source/tested-merge tree and 99 root-authenticated evidence files. It predates
+the subsequent climb-fall and moat changes. Initial climb runs at `c5f5799` and
+`623b683` retain their failures at supporting ledge lips. The swept lift/cross/
+settle correction at `c26b0e1` preserves collision and authored endpoints;
+Corner, Extrusion, Guide and Sentry now pass, as do seven further regressions
+including Playthrough. The retained two fall failures led to actual support/
+feet sampling at `b94e5d7`: later shelf walk-offs start a new fall, applying
+30 HP once at 550 cm and lethal damage at 1,100 cm. Both fixtures pass. At
+`7409833`, all eight climb fixtures and four shared regressions pass; its only
+failure is the moat step in Playthrough, subsequently corrected below.
+
+The foundry at `4019fe6` passes all five directed mechanic tests and four shared
+hand-control regressions. This covers finite clay repairs, interrupted work,
+weapon reservation, Kozo rescue/deadline, grenadier furnace priority and netted
+bellows pressure. An earlier run's hidden-hands/weapon and tub-approach failures
+are preserved. The correction includes the foundry in shared hand reservation
+and walks the fixture through clear aisles. Both terminal runs are independently
+authenticated with zero selected-test errors/warnings; startup diagnostics
+remain in the logs. Ordinary encounter balance and final art are unqualified.
+
+Native `a984a5c` now completes the actual privacy-crate compile, test listing
+and 23 CPU tests, with one proof experiment explicitly ignored. The retry
+takes 833.839 seconds overall; all three phases have authenticated EOF and
+zero exits. The earlier 30 GiB reserve stop remains archived. This adds no
+new proof: the prior preparation proof remains bound to `c99ee46e`, and the
+game bridge is unchanged. Earlier package, art and platform results retain
+their source scope.
+
+The physical moat's initial run passes 12/14 tests. Retained diagnostics expose
+an off-route pickup sweep in Playthrough, insufficient stationary searchlight
+exposure in Senses, a slow drone descent, colliding reinforcement assignments
+and suspicion without an investigation arrival. The fixture now swims from
+the actual entry and collects the moat mark on its gate approach. At
+`54008a8`, corrected physical guard movement passes Senses, Patrols, Traversal
+and the full eight-chapter/133-beat Playthrough, with zero selected warnings or
+errors. All five guards return to Unaware; four searches run the complete
+configured timer, subject to the existing 17 ms tick quantization described in
+the release plan. All 59 gameplay/tooling source gates pass at that clean
+source. Independent authentication retains every earlier failed run.
+
+Native `01d4e46` separately passes 55 standalone CPU tests and nine provenance
+checks for its four-ray carbine adapter, with independent source review.
+Actual crate compilation is running; wire bounds and new native proofs remain
+pending. It is still unregistered bounded research, with no production bridge
+or settlement change. New campaign source has not been packaged; ordinary
+control pacing, art, M1/Windows and performance remain open.
+The complete release remains unfinished.
+
+## 2026-10-23 package, Codex and Nanite checkpoint
+
+The [current release-plan update](complete-release-plan.md#october-23-package-codex-and-nanite-qualification)
+supersedes the pending states below. Mac Development package `c655b6b` passes
+build/cook/stage/signature, startup smoke, 164 client tests and a separate
+untouched rendered Title test; all 62 bundle files remain unchanged. Root
+reviewed all 19 front-end frames plus the fresh Title. This remains local M2
+Ultra development evidence, with the documented build warnings/retry retained.
+
+The newer `770a618` opaque Title and sourced Toshiya reader pass a fresh Title,
+five directed editor tests and all 18 original Codex frames across 720p/1080p.
+Later CI `39905369237` authenticates 73 source gates in five jobs at `783a3eb`;
+the tested merge has the identical tree. It predates the latest importer work.
+These UI changes have not been recooked. The earlier bow HUD obstruction is
+resolved at `92011bb`; the missing-glyph diagnosis was retracted.
+
+The retained production-dojo baseline `6e0e99c` fails its SM6 draw gate because
+all 12 DojoKit assets lack Nanite data. At `a8ecee6`, a separate hash-verified
+Nanite source preserves the ordinary fallback builder and exact geometry
+checks. All 12 assets pass import, fresh-process reload and repeat import, with
+21,984 Nanite input triangles and identical repeated audits. The actual SM6
+draw gate passes; all six originals show dojo wall/floor/ceiling coverage.
+The SM5 runtime capture also passes, but the entry floor and some props are
+darker than the old SM5 baseline. Both original pairs were reviewed; appearance
+parity remains unresolved. This is uncooked M2 Ultra evidence, with cooked
+fallback, M1, performance and requested unique sculpted beams still open.
+
+Signed native `c99ee46e` completes one actual two-player/two-tick preparation
+proof, separate rebuilt-adapter verification, 27 public-input rejections, two
+proof-corruption rejections and eight actual Constraint rejections. Terminal
+receipts and independent authentication supersede its stale running snapshot.
+It is unregistered bounded research, not Core authority, full World/history,
+a full-match proof, settlement, M1 or release acceptance.
+
+Source-only ridge/wind, flood and helm implementations still require integration
+review and Unreal execution. Art, ordinary-control campaign acceptance,
+packaging of later changes, Windows/M1 performance and the other complete-release
+gates remain open. Exact source/archive identities are in the linked plan.
+
+## 2026-10-23 bow and optional wood checkpoint (historical)
+
+The [current release-plan update](complete-release-plan.md#october-23-bow-wood-and-source-qualification)
+records the latest source-bound results and the retained limitations. CI
+`39872957667` passes all five source groups (67 checks) for `53d972c`, with an
+identical tested merge tree. Bow source `8ea1446` passes five directed editor
+tests. Its later real 720p Metal capture at `8ea8dcd` fails image qualification
+because production story panels cover the reticle and target; the four original
+frames and release telemetry are preserved. A production HUD repair is pending.
+
+At `fa9d353`, all nine directed wood/campaign editor tests pass with zero selected
+errors/warnings. The physical junction, optional wood discoveries, distinct
+collectibles, actual-arrow clapper reward, exit-only beat completion and smithy
+bypass survive fresh-world reloads. This is functional editor evidence, not
+finished terrain/art, persistent codex browsing, human pacing or a new package.
+The latest packaged baseline remains `44ffc35` with 152 passing client tests;
+it predates the later font, dojo, bow and wood changes.
+
+## 2026-10-18 M2 Ultra development resumed
+
+The isolated integration worktree builds the editor with UE 5.8.3 /
+CL 58210709, Xcode 26.1.1 / 17B100 and SDK 26.1. Apple's signature and
+first-launch checks pass; Metal component 17B54 supplies compiler 32023.830.
+Xcode 27 remains the global developer selection. The installed engine accepts
+Xcode versions through 27.9.0, but the project selects 26.1.1 for reproducible
+builds; no project qualification with Xcode 27 is claimed. Epic's current
+[Mac requirements](https://dev.epicgames.com/documentation/unreal-engine/macos-development-requirements-for-unreal-engine)
+recommend 26.1.1 and explicitly exclude 26.4. Passing the installed engine's
+version range is not equivalent to a tested compiler/SDK combination.
+
+Full imports and validators pass for 280 original-art, 345 CC0 and 267 audio
+packages and 27 Niagara systems. The craft prop and 12 dojo modules import too;
+they are now included in the regular import pipeline. All 324 raw CC0 files
+were SHA-1 checked in the isolated cache. The `SORA_CC0_STORAGE_ROOT` override
+keeps builds independent of the shared checkout.
+
+The first paired real SM5/SM6 dojo runs at `640529d` preserved six original
+1920×1080 frames each and exposed missing material permutations, coarse block
+sampling, clipped lighting and placeholder props. Explicit Nanite and instanced
+mesh usage flags in `45f2ab2` now pass actual imported-material validation;
+the negative check rejected the old cargo material before reimport. Original,
+palette, craft and dojo reimports all pass. Same-source `2bb3e36` captures at
+`Saved/Capture/20261018T102719Z-sm6-84692` and
+`Saved/Capture/20261018T103442Z-sm5-95857` show resolved wood grain and ceiling
+emblems on both paths, without the prior missing-usage warnings. All twelve
+dojo frames were inspected. Repetitive textured boxes, clipped openings/lights,
+unfinished restoration props and red cylinders still fail photoreal acceptance.
+These captures do not independently validate Claude's pending UV interpolation
+change or prove visible Nanite geometry. Earlier capability tests confirm SM6
+eligibility/HI selection and SM5 conventional MAC selection on this M2 Ultra.
+Forced SM5 on M2 does not qualify M1; editor-game frames are not packages.
+
+All 62 campaign, fieldcraft and Connect editor tests pass at clean `56b95f3`,
+with zero test errors or warnings. This includes the complete 8-chapter,
+133-beat scripted traversal, maai movement, equipment recovery and optional
+caches, guarded hoist, both saved endings, all dialogue checks, the three carry
+difficulty settings, and actual ABI 30 loading inside Unreal. Clearing
+fieldcraft during world EndPlay resolves the earlier 187 teardown warnings.
+The first-inspection fixture now verifies the authored checkpoint boundary:
+a reload before b15 replays the b12 ceremony; the later checkpoint retains it.
+The four new crank fixtures verify cooperative contribution, the bellows-boy
+net/rescue, Kohagi's retreat and ratchets, and all zero-to-three lift-crew rates.
+Evidence: `Saved/Qualification/2026-10-18-m2-resume/candidate-campaign-fieldcraft-native/`,
+including the original report, exact editor receipt, native identity and
+133-beat telemetry. This remains editor evidence.
+
+The authored three-second granary seal pry and manual cargo set-down are now
+implemented. Damage pauses the pry without erasing partial work; release and
+leaving also preserve it until checkpoint retry. Loose loads remain reachable,
+conserve source stock, can be recovered and delivered once, and are cleared on
+retry/reload. `CarrySealAndSetDown`, `CarryDifficulty` and full `Playthrough`
+all pass at clean `16b7762`, with zero errors or warnings. The archived traversal
+records 133 beats, 8 caches, 28 pickups, 120 checkpoint reads, 61 checkpoint
+reloads and 13 phase reloads. Evidence is under `carry-seal/` beside the earlier
+suite. These tests exercise real inputs where stated, but the accelerated full
+traversal does not establish normal pacing or difficulty. Named carry capacities,
+crank stamina/accessibility input and the physical chapter-eight lift remain
+in development; the cooperative contribution and ratchet rules now pass Unreal.
+
+The offline registry preserves all 16 authored goods/count entries and derives
+its chapter page from existing completion bits, without wallet or extra ledger
+state. Six actual Japanese/bilingual registry fixtures pass at 1080p; after
+measured row composition, all six pass at 720p too. English word-boundary
+wrapping and the shared lower instruction/dialogue/weapon stack are fixed.
+At clean `0a7743b`, seven tests produce fourteen original frames at each size;
+all 28 were inspected and pass their registry/weapon/speaker scope. Reviews
+are saved in `20261018T110323Z-sm6-47738` (720p) and
+`20261018T110822Z-sm6-60150` (1080p). Earlier failed frames remain preserved.
+Top-right tracker rows are still too small at 720p; the separate HUD slice
+`e462b55` awaits integration, compilation and visual review. Overall HUD
+acceptance remains open. These are prepared UI fixtures, not playthrough
+proof. The archive verifier's 20 host regressions pass, including original
+frame acknowledgements distinguished from failed-test log replays.
+
+All 33 gameplay/tooling source checks pass on clean `56b95f3`, with unchanged
+source (`Saved/SourceChecks/candidate-56b95f3/report.json`). This includes the
+portable package provenance and strict automation-report guards.
+The clean Rust lane passes 279 tests; five long research tests remain ignored.
+The rebuilt kernel passes all 94 parity cases / 99,043 ticks and ABI 4 staging;
+its release qualification flag remains false.
+
+The signed clean native `75e4ca15` builds the staged 59,933,872-byte ABI 30 bridge
+with SHA-256 `50f4b5a8dcdbef1f3751ce76874b46a05ef8f836a903b205da1c8c1d24780aed`.
+The original source-bound build sidecar remains unchanged. Consumer smoke passes
+26 declarations, seven native builders/eight canonical cases and 282 malformed
+requests; the UE six-action signing allowlist still excludes StakeGameItemV1.
+`SoraArena.Connect.NativeLoader` actually loads that library in Unreal and checks
+local canonical JSON/hash behavior. The later consumer requalification is a
+separate record, not a relabeled original manifest, under
+`Saved/Qualification/2026-10-18-m2-resume/connect-abi30-integration/`.
+Native test closure now passes all 29 directed checks on signed clean
+`10ad7daddf`: seven P2P identity/mapping/backpressure regressions, 19 detached
+scaffold tests and three Join inspection tests. Its fresh release build is now
+frozen and staged with the original sidecar, SHA-256
+`349d4d2265331b5929c205173632c76018d8b3cec9cea279c45c3e71aa3ba9cb`.
+The binary is byte-identical to the earlier library, but its provenance comes
+from this new build, not a rewritten earlier manifest. All 29 frozen files
+and six consumer hashes were verified before staging. Unreal's NativeLoader
+passes with it at `56b95f3`; evidence is under `connect-native-10ad7d/` and the
+62-test report above. Package loading, Windows custody,
+live signing, authorization and settlement remain unqualified.
+
+The first fresh Mac cook at clean `16b7762` succeeds with 1,314 packages cooked,
+seven skipped by platform, 385 materials, zero errors and zero warnings. Its
+log/source hashes are recorded under `Saved/Qualification/2026-10-18-m2-resume/`
+as `cook-16b7762.log` and `cook-16b7762-source.json`. Declared Game build and
+full cook also pass at `56b95f3` with native `10ad7dad`; the cook again reports
+1,314 cooked packages and seven platform skips, zero UE errors/warnings.
+UAT produces a strictly signed local app, but candidate verification rejects
+this first archive because UAT adds `Metadata/Crypto.json` after cooking.
+The delta records that all 43 original cook files are unchanged. The verifier
+now records that exact staging addition separately while preserving the cook
+receipt and rejecting other changes. A fresh candidate is required after this
+fix. The rejected archive and original receipts are preserved under
+`rejected-candidate-56b95f3/`; packaged execution remains unqualified.
+
+Claude's Nanite policy and OWN ledgers are integrated. The ledger retains 228
+errors on recovered runtime weapons. Fresh Blender CPU metrics pass 10/17
+non-blockout weapons; IDs 1, 2, 5, 9, 14, 15 and 17 fail relief, chain length,
+UV or file checks, and IDs 3, 11, 13 and 16 remain blockouts. W14's truncated
+review image and mismatched hashes remain explicit; no manifest refresh hides
+them. Report: `Saved/Qualification/2026-10-18-m2-resume/weapon-metrics.json`.
+Claude's art session has resumed CPU timber generation and fallback work.
+Placement-to-seed/digest coverage across the estate, horizontal beams, final
+dressing and actual Unreal/Nanite evidence remain open. Ownership and the
+single Unreal lane are coordinated through the shared mailbox and the
+authorized Claude chat. Root continues independent implementation and validation.
+
+All paths above are relative to the isolated integration worktree. Historical
+records below keep their original source, hardware and scope.
 
 ## 2026-10-18 generic staged hit proof and Claude coordination
 

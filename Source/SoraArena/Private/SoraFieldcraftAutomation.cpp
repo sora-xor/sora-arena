@@ -38,6 +38,8 @@
 // falls; tsubute lures; the cupped candle; vaulting low cover; and the
 // kusarigama's weighted chain.
 #include "SoraFieldcraftTestWorld.h"
+#include "SoraMoatAutomation.h"
+#include "SoraClimbAutomation.h"
 
 
 using namespace SoraFieldcraftAutomation;
@@ -448,62 +450,27 @@ bool FSoraFieldcraftWaterTest::RunTest(const FString& Parameters)
     (void)Parameters;
     if (!TestTrue(TEXT("Offline catalog loads"), FSoraCatalog::Get().Load()))
         return false;
-    // ch06.b02: the moat, eight seconds of breath, reeds and the float line.
-    FBeatWorld W(*this, TEXT("FieldcraftWater"), 5, 1);
-    if (!W.Start())
-        return false;
-    USoraFieldcraft* Fieldcraft = W.Fieldcraft();
-    ASoraPlayerCharacter* Hero = W.Hero();
-    const FSoraWater& Water = W.Craft().Water;
-    for (TActorIterator<ASoraEnemy> It(W.World->GetTestWorld()); It; ++It) It->Destroy();
-    // Open water: clear of the reeds and the float line.
-    FVector Open = FVector::ZeroVector;
-    for (const FVector2D Fraction : {FVector2D(-.3f, .35f), FVector2D(.3f, -.35f), FVector2D(-.3f, -.35f), FVector2D(.3f, .35f)})
-    {
-        const FVector At = Floor(Water.Area.Center + Water.Area.Size * Fraction);
-        const auto Near = [&](const FSoraVolume& Volume) { return Volume.Contains(At) || FVector::Dist2D(Floor(Volume.Center), At) < 600.f; };
-        if (!Water.Cover.ContainsByPredicate(Near) && !Water.Lines.ContainsByPredicate(Near)) { Open = At; break; }
-    }
-    if (!TestFalse(TEXT("The moat has open water"), Open.IsZero()))
-        return false;
-    W.Stand(Open);
-    if (!W.Tick(2))
-        return false;
-    TestTrue(TEXT("In the moat the hero swims at its pace"), Fieldcraft->IsSwimming() &&
-        FMath::IsNearlyEqual(Fieldcraft->HeroPace(), static_cast<float>(Water.Rules.SurfaceCmS)) &&
-        Hero->GetCharacterMovement()->MaxWalkSpeed <= Water.Rules.SurfaceCmS + .5f);
-    TestEqual(TEXT("At the surface only his head shows"), Fieldcraft->HeroExposure(1000), 450);
-    if (!W.Press(EKeys::C) || !W.Tick(2))
-        return false;
-    TestTrue(TEXT("Crouch dives"), Fieldcraft->IsDiving() && FMath::IsNearlyEqual(Fieldcraft->HeroPace(), static_cast<float>(Water.Rules.DiveCmS)));
-    TestEqual(TEXT("Under the water nothing of him shows"), Fieldcraft->HeroExposure(1000), 0);
-    const float Health = Hero->Health;
-    if (!W.Tick(28, .25f))
-        return false;
-    TestEqual(TEXT("Seven seconds under costs nothing but breath"), Hero->Health, Health);
-    if (!W.Tick(12, .25f))
-        return false;
-    TestTrue(TEXT("Past eight seconds he drowns"), Hero->Health < Health);
-    // Surfaced, his breath comes back (in three seconds of world time; each
-    // drowning blow's hit-stop slowed the world a moment before).
-    if (!W.Press(EKeys::C))
-        return false;
-    for (int32 Frame = 0; Frame < 40 && Fieldcraft->Readout(*Hero).Breath < 1.f; ++Frame)
-        if (!W.Tick(1, .25f)) return false;
-    if (!TestTrue(TEXT("At the surface his breath comes back"), !Fieldcraft->IsDiving() && Fieldcraft->Readout(*Hero).Breath >= 1.f))
-        AddInfo(FString::Printf(TEXT("Surfaced: alive %d, playing %d, crouched %d (wanted %d), swimming %d, diving %d, breath %.2f, health %.0f"),
-            Hero->IsAlive(), W.Mode()->IsPlaying(), Hero->IsCrouched(), Hero->GetCharacterMovement()->bWantsToCrouch,
-            Fieldcraft->IsSwimming(), Fieldcraft->IsDiving(), Fieldcraft->Readout(*Hero).Breath, Hero->Health));
-    TestTrue(TEXT("No arm is used in the water"), Fieldcraft->ArmsStowed());
-    // Brushing the float line at the surface rings it.
-    if (TestTrue(TEXT("The moat has its float line"), Water.Lines.Num() > 0))
-    {
-        W.Stand(Floor(Water.Lines[0].Center));
-        if (!W.Tick(2))
-            return false;
-        TestTrue(TEXT("The float line rings"), W.Raised(TEXT("ai_event:float_line")));
-    }
-    return true;
+    // Compatibility gate now drives the real moat; it cannot make a dive by
+    // toggling a boolean over the former hub floor.
+    FBeatWorld W(*this,TEXT("FieldcraftWater"),5,1);if(!W.Start())return false;W.Harden();
+    for(int32 F=0;F<600&&!W.Hero()->CanPlay();++F)if(!W.Tick(1))return false;
+    if(!W.Tick(120))return false;
+    const FVector O(W.BeatData().Space.Moat.Origin,0);
+    if(!TestTrue(TEXT("Ordinary input reaches open water"),SoraMoatAutomation::Swim(*W.World,O+FVector(3000,200,0))))return false;
+    auto* C=W.Fieldcraft();
+    TestTrue(TEXT("Actual surface swimming has the authored pace and exposed head"),C->IsSwimming()&&!C->IsDiving()&&C->HeroPace()==180&&C->HeroExposure(1000)==450);
+    if(!SoraMoatAutomation::Posture(*W.World,true))return false;
+    TestTrue(TEXT("Mapped crouch physically submerges the head"),C->IsDiving()&&C->MoatDepth()>130&&C->HeroExposure(1000)==0);
+    const float Hp=W.Hero()->Health;
+    if(!W.Tick(300))return false;
+    TestEqual(TEXT("Five seconds after the physical descent still consumes only breath"),W.Hero()->Health,Hp);
+    if(!W.Tick(180))return false;
+    TestTrue(TEXT("Beyond the full eight-second air supply real drowning damages health"),W.Hero()->Health<Hp);
+    if(!SoraMoatAutomation::Posture(*W.World,false)||!SoraMoatAutomation::Recover(*W.World))return false;
+    TestTrue(TEXT("Real surface air recovers breath while arms remain stowed"),!C->IsDiving()&&C->Readout(*W.Hero()).Breath==1&&C->ArmsStowed());
+    if(!TestTrue(TEXT("Ordinary surface swimming reaches the float"),SoraMoatAutomation::Swim(*W.World,O+FVector(13200,200,0))))return false;
+    TestTrue(TEXT("Actual surface contact rings the float line"),W.Raised(TEXT("ai_event:float_line")));
+    return !HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -524,44 +491,30 @@ bool FSoraFieldcraftClimbTest::RunTest(const FString& Parameters)
     ASoraPlayerCharacter* Hero = W.Hero();
     const FSoraClimbFace& Face = W.Craft().Climb;
     for (TActorIterator<ASoraEnemy> It(W.World->GetTestWorld()); It; ++It) It->Destroy();
-    Hero->MaxHealth = 1000.f; Hero->Health = 1000.f;
-    W.Stand(Floor(Face.At + FVector2D(-90.f, 0.f)), 0.f);
-    if (!W.Tick(2) || !W.Press(EKeys::SpaceBar))
+    if (!W.Tick(2) || !SoraClimbAutomation::Begin(*W.World))
         return false;
     if (!TestTrue(TEXT("Jump at the face's foot reaches for the holds"), Fieldcraft->IsClimbing() && W.Raised(TEXT("climb_start"))))
         return false;
-    // Up past the first ledge (3.2 m) to the second (5.8 m), then let go:
-    // a fall of over four metres hurts.
-    if (!TestEqual(TEXT("The face has its two ledges"), Face.LedgeEvents.Num(), 2) || !W.World->InjectKey(EKeys::W, IE_Pressed))
-        return false;
-    for (int32 Frame = 0; Frame < 600 && !W.Raised(Face.LedgeEvents[0]); ++Frame)
-        if (!W.Tick(1)) return false;
-    TestTrue(TEXT("The first ledge raises its volume's event"), W.Raised(Face.LedgeEvents[0]));
-    TestTrue(TEXT("and shows its prompt"), W.PromptOn(*Face.LedgeEvents[0]));
-    for (int32 Frame = 0; Frame < 600 && !W.Raised(Face.LedgeEvents[1]); ++Frame)
-        if (!W.Tick(1)) return false;
-    if (!W.World->InjectKey(EKeys::W, IE_Released) || !W.Tick(2))
-        return false;
-    TestTrue(TEXT("The second ledge raises its volume's event"), W.Raised(Face.LedgeEvents[1]));
+    // The shelf is real support. Release is safe; walking off it creates
+    // the actual >4 m drop that costs 30 HP.
+    if (!TestEqual(TEXT("The face has its two ledges"), Face.LedgeEvents.Num(), 2) ||
+        !SoraClimbAutomation::ToHold(*W.World,5)) return false;
+    TestTrue(TEXT("The first ledge raises its event"), W.Raised(Face.LedgeEvents[0]));
     TestTrue(TEXT("Each hold spends grip"), Fieldcraft->Readout(*Hero).Grip < 1.f);
     const float Before = Hero->Health;
-    if (!W.Press(EKeys::SpaceBar))
-        return false;
-    for (int32 Frame = 0; Frame < 240 && !Hero->GetCharacterMovement()->IsMovingOnGround(); ++Frame)
-        if (!W.Tick(1)) return false;
-    if (!W.Tick(2))
-        return false;
-    TestTrue(TEXT("Letting go from the ledge is a fall that hurts"), !Fieldcraft->IsClimbing() &&
-        FMath::IsNearlyEqual(Before - Hero->Health, static_cast<float>(Face.Rules.HurtHp)));
-    // All the way up: over the top is the zone's exit.
-    W.Stand(Floor(Face.At + FVector2D(-90.f, 0.f)), 0.f);
-    if (!W.Tick(2) || !W.Press(EKeys::SpaceBar) || !W.World->InjectKey(EKeys::W, IE_Pressed))
-        return false;
-    for (int32 Frame = 0; Frame < 1200 && W.Campaign()->ActiveBeat() == W.Beat; ++Frame)
-        if (!W.Tick(1)) return false;
-    W.World->InjectKey(EKeys::W, IE_Released);
-    TestTrue(TEXT("Over the top the climb ends on the stones"), W.Raised(TEXT("climb_top")) && !Fieldcraft->IsClimbing());
-    TestNotEqual(TEXT("and reaching the top is the stealth zone's exit"), W.Campaign()->ActiveBeat(), W.Beat);
+    if (!W.Press(SoraClimbAutomation::Key(*Hero,TEXT("Jump")))||!W.Tick(30)) return false;
+    if(!TestTrue(TEXT("Releasing onto the lower supporting shelf is safe"),!Fieldcraft->IsClimbing()&&
+        Hero->GetCharacterMovement()->IsMovingOnGround()&&!Fieldcraft->IsClimbFalling()&&Hero->Health==Before&&
+        FMath::Abs(Hero->GetActorLocation().Z-640)<4)) return false;
+    SoraClimbAutomation::FObservedFall Fall;
+    if(!TestTrue(TEXT("Ordinary input walks off the lower shelf"),SoraClimbAutomation::WalkOff(*W.World,Fall))) return false;
+    TestTrue(TEXT("An actual 4-to-8m lower-rest drop costs exactly 30 HP"),!Fieldcraft->IsClimbing()&&
+        Fall.PeakFeet-Fall.LandingFeet>400&&Fall.PeakFeet-Fall.LandingFeet<=800&&
+        FMath::IsNearlyEqual(Before-Hero->Health,30.f)&&!Fieldcraft->IsClimbFalling());
+    if(!W.Tick(60)) return false;
+    TestEqual(TEXT("Remaining supported cannot apply the same fall twice"),Hero->Health,Before-30.f);
+    if(!SoraClimbAutomation::Traverse(*W.World)) return false;
+    TestNotEqual(TEXT("Climb plus the actual low gap is the exit"),W.Campaign()->ActiveBeat(),W.Beat);
     return true;
 }
 

@@ -34,8 +34,8 @@ CHARACTER = SOURCE / "Private/Characters/SoraPlayerCharacter.cpp"
 CLASS = "ASoraPlayerCharacter"
 
 # Bit 1 is unused; the values match SoraInput::EState.
-STATES = {"Menu": 1, "Card": 4, "Play": 8, "Result": 16}
-OUTSIDE_PLAY = STATES["Menu"] | STATES["Card"] | STATES["Result"]
+STATES = {"Menu": 1, "Card": 4, "Play": 8, "Result": 16, "Dialogue": 32}
+OUTSIDE_PLAY = STATES["Menu"] | STATES["Card"] | STATES["Result"] | STATES["Dialogue"]
 STICK_CLICKS = {"gamepad_leftthumbstick", "gamepad_rightthumbstick"}
 MODIFIERS = ("bShift", "bCtrl", "bAlt", "bCmd")
 # FBoolProperty's import compares without case against these (and localized True/Yes).
@@ -279,6 +279,8 @@ def check(ini_text, table_text, character_text=None, sources=()):
             errors.append(f"{name} has no states and could never act")
         if mask & STATES["Menu"]:
             errors.append(f"{name} acts in Menu, where the Slate front end holds input, so it could never fire")
+        if mask & STATES["Dialogue"] and name not in {"Menu", "Subtitles"}:
+            errors.append(f"{name} acts during blocking Dialogue; only Menu and Subtitles may act")
     by_key, labels = {}, {}
     for _, name, key, label in mappings:
         by_key.setdefault(key, [])
@@ -400,6 +402,12 @@ def self_test():
     # The pause key acts in play, so it can never share a key with a play action.
     menu_share = good + '+ActionMappings=(ActionName="Jump",Key=Gamepad_Special_Right)\n'
     expect_error(check(menu_share, SELF_TEST_TABLE), "triggers Menu and Jump together in Play")
+    dialogue = SELF_TEST_TABLE.replace('"Menu"), Card | Play | Result', '"Menu"), Card | Result | Dialogue')
+    assert check(good, dialogue) == [], check(good, dialogue)
+    expect_error(check(menu_share, dialogue.replace('"Jump"), Play', '"Jump"), Play | Dialogue')),
+                 "triggers Menu and Jump together in Dialogue")
+    expect_error(check(good, dialogue.replace('"Jump"), Play', '"Jump"), Play | Dialogue')),
+                 "only Menu and Subtitles may act")
     # Unlisted actions and stale rows fail closed.
     expect_error(check(good + '+ActionMappings=(ActionName="Fire",Key=Z)\n', SELF_TEST_TABLE), "no row")
     stale = SELF_TEST_TABLE.replace("};", '    {TEXT("Ability"), Play},\n};')

@@ -42,6 +42,13 @@ def md_cell(text) -> str:
     return str(text if text is not None else "-").replace("|", "\\|").replace("\n", " ")
 
 
+def code_references(value) -> str:
+    """Render legacy strings and schema-2 path objects as readable references."""
+    items = value if isinstance(value, list) else [value]
+    paths = [item.get("path") if isinstance(item, dict) else item for item in items]
+    return ", ".join(f"`{md_cell(path)}`" for path in paths if isinstance(path, str) and path) or "-"
+
+
 def content_files(record: dict) -> List[dict]:
     """The asset's content files: extracted/recorded ``files``, else its direct ``downloads``."""
     return list(record.get("files") or record.get("downloads") or [])
@@ -216,9 +223,10 @@ def render(root: Path) -> str:
     lines += ["## Project-owned work recorded in the ledger (OWN)", ""]
     if own:
         for _, _, record in sorted(own, key=lambda e: e[2].get("asset_id", "")):
-            derived = ", ".join(f"`{d}`" for d in record.get("derived_from", []) or []) or "-"
+            derived = code_references(record.get("derived_from"))
+            generators = code_references(record.get("generator") or record.get("origin_url"))
             lines.append(f"- `{record.get('asset_id')}`: {len(record.get('files', []))} files, generator "
-                         f"`{record.get('generator') or record.get('origin_url')}`, derived from {derived}")
+                         f"{generators}, derived from {derived}")
     else:
         lines.append("None.")
     lines.append("")

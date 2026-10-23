@@ -7,12 +7,12 @@
 #include "SoraSettings.h"
 #include "SoraText.h"
 #include "UI/SSoraFrontEnd.h"
+#include "UI/SoraUIFont.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
-#include "Fonts/CompositeFont.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerInput.h"
@@ -123,11 +123,7 @@ UFont* ASoraHUD::JapaneseFontObject()
 {
     if(!JapaneseFont)
     {
-        JapaneseFont=NewObject<UFont>(this);
-        JapaneseFont->FontCacheType=EFontCacheType::Runtime;
-        JapaneseFont->LegacyFontSize=28;
-        JapaneseFont->LegacyFontName=FName(TEXT("Regular"));
-        JapaneseFont->GetMutableInternalCompositeFont()=FCompositeFont(FName(TEXT("Regular")),FPaths::ProjectContentDir()/TEXT("SourceArt/Fonts/NotoSansCJKjp-Regular.otf"),EFontHinting::Default,EFontLoadingPolicy::LazyLoad);
+        JapaneseFont=SoraUI::CreateUIFont(this);
     }
     return JapaneseFont;
 }
@@ -153,9 +149,13 @@ int32 ASoraHUD::WrappedLabel(const FString& Text,float X,float Y,float Scale,FLi
     return Count;
 }
 void ASoraHUD::Panel(float X,float Y,float W,float H,FLinearColor C) { DrawRect(C,X,Y,W,H); }
-float ASoraHUD::LabelWidth(const FString& Text,float Scale) const
+float ASoraHUD::LabelWidth(const FString& Text,float Scale)
 {
-    float Width=0,Height=0; GetTextSize(Text,Width,Height,JapaneseFont,Scale);
+    // AHUD::GetTextSize requires a live DrawHUD Canvas. Layout qualification
+    // also runs between frames; use the same TextSize metric without that
+    // draw-only guard, and initialize the font for a first measurement.
+    int32 Width=0,Height=0;
+    UCanvas::ClippedStrLen(JapaneseFontObject(),Scale,Scale,Width,Height,Text);
     return Width;
 }
 UTexture2D* ASoraHUD::ResistanceLogo()
@@ -204,6 +204,9 @@ void ASoraHUD::DrawHUD()
         return;
     }
     SoraHUDPanels::DrawTopBar(Frame);
+    // A successful campaign result owns the page. Gameplay readouts, the
+    // objective and arms wheel must not remain underneath or over its text.
+    if(SoraHUDPanels::ShowsRegistry(*G)) { SoraHUDPanels::DrawRegistry(Frame); return; }
     // The chapter opens on its title card; dialogue and the round timer start
     // when it closes.
     if(const FSoraChapter* Card=G->TitleCardChapter()) { SoraHUDPanels::DrawTitleCard(Frame,*Card); return; }

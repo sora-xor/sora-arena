@@ -25,17 +25,17 @@
     {
      "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.fbx",
      "triangles": 23048,
-     "sha256": "40abf94c2569c50818c9d8871ac01d59a82184eb29e3836afd477a588d6f3a99"
+     "sha256": "2ebadea5743f61694a17a4223ebdf5ff657e1fea9067bddc216845f7262bccf8"
     },
     {
      "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD1.fbx",
      "triangles": 9680,
-     "sha256": "238eb34fcc858f4d0cd55509b0a8638f97f326a9db13343a670253be6d66500b"
+     "sha256": "d414b384680d398a239ffe34100b470e7b5c660bcae50d2006e8251132c68f85"
     },
     {
      "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14_LOD2.fbx",
      "triangles": 3686,
-     "sha256": "2c3db35188b98de3f45a20e6b74047a1d3deddceffa07289a0d362a7cdbb97db"
+     "sha256": "443f7323b217e69126b54ffb17f0adc7d1830800d434f67039e6bbdf5509958b"
     }
    ],
    "bounds_m": [
@@ -97,19 +97,19 @@
  "textures": {
   "BaseColor": {
    "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_BaseColor.png",
-   "sha256": "ea0be89c1baa63dd60a544a57c5eabc511f348fa27704abb5173a829526a3f0f"
+   "sha256": "b8b90b9656ed23b99a27cae81adc8aacded18d1b06bbdc9c8190180e921be499"
   },
   "ORM": {
    "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_ORM.png",
-   "sha256": "86f7304dab408446eaa5cc050350c68c0e831c19d09a2966dab4d8e193ab27d5"
+   "sha256": "9efeb9bc6a538b72bfdf4ffe2b4557848f302d9bed23cb1bfd28f906a1c422e4"
   },
   "Mask": {
    "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_Mask.png",
-   "sha256": "e92da0b05dfd906a8a94070772d877f9b8e6b91a0511f488976487c60a770a77"
+   "sha256": "867fd7dae067c32fabb6947cfbcd511c0073d2ec04233253a06941f4bffd4454"
   },
   "Normal": {
    "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/T_Weapon_14_NormalDX.png",
-   "sha256": "d8a899aa5a8382fdedc24071e8dc5997c14eb0aac6ec5b6958b8818d02401f16"
+   "sha256": "b4bb3f3ecca0857ab9f9a2300c8535f1e6bf088e4008d417bae8cb7b839f1f0e"
   }
  },
  "material": {
@@ -147,7 +147,7 @@
  },
  "blend": {
   "file": "Content/SourceArt/Weapons/Runtime/W14_PlasmaMatchlock/SM_Weapon_14.blend",
-  "sha256": "661381faea4c0093593695b8d6481d2b4b4aea41ac8bcc6aceff8c977b51ad1e"
+  "sha256": "162c5915d3f7853064ab838a66a037698b2afa9ba0554c740134d2402d36e2ec"
  },
  "renders": [
   "Content/SourceArt/Weapons/Runtime/Renders/SM_Weapon_14_Neutral_1m.png",

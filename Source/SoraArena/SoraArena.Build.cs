@@ -14,12 +14,29 @@ public class SoraArena : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Json", "JsonUtilities",
             "AIModule", "GameplayTasks", "NavigationSystem" });
         PrivateDependencyModuleNames.AddRange(new string[] { "HTTP", "WebSockets", "Slate", "SlateCore", "UMG", "RenderCore", "RHI",
-            "Niagara", "AudioMixer", "MetasoundEngine", "LevelSequence", "MovieScene", "CinematicCamera" });
+            "ProceduralMeshComponent", "Niagara", "AudioMixer", "MetasoundEngine", "LevelSequence", "MovieScene", "CinematicCamera" });
+        // Editor-only SDF/card observation headers include MeshUtilities.h;
+        // the diagnostic reads their public data without invoking a builder.
+        if (Target.bBuildEditor)
+        {
+            PrivateIncludePathModuleNames.Add("MeshUtilities");
+            // Source-description readers call exported indexer and slot-name
+            // symbols; Engine's public includes do not link these modules.
+            PrivateDependencyModuleNames.AddRange(new string[] { "MeshDescription", "StaticMeshDescription" });
+        }
         PrivateIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "../../crates/arena-ffi/include")));
         // Content/Data is read from disk at runtime, never cooked: stage all of it.
         RuntimeDependencies.Add("$(ProjectDir)/Content/Data/...", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/NotoSansCJKjp-Regular.otf", StagedFileType.NonUFS);
         RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/OFL.txt", StagedFileType.NonUFS);
+        // Keep the exact Arabic credit face in the project so source CI and
+        // packaged runtime validate and use the same licensed bytes.
+        RuntimeDependencies.Add("$(ProjectDir)/Content/SourceArt/Fonts/NotoNaskhArabicUI-Regular.ttf", StagedFileType.NonUFS);
+        // UE 5.8's property matches WITH_DEV/PERF_AUTOMATION_TESTS, including
+        // force-enable flags and the force-disable override. HTML export reads
+        // this engine file from disk even in a packaged automation target.
+        if (Target.WithAutomationTests)
+            RuntimeDependencies.Add("$(EngineDir)/Content/Automation/Report-Template.html", StagedFileType.NonUFS);
         // The credits screen reads every third-party notice at runtime.
         RuntimeDependencies.Add("$(ProjectDir)/ThirdPartyNotices/...", StagedFileType.NonUFS);
         // Practice reads the kernel's arena data (wall labels, spawns, lanes)
@@ -49,6 +66,16 @@ public class SoraArena : ModuleRules
         if (File.Exists(NativePath))
         {
             RuntimeDependencies.Add(NativePath, StagedFileType.NonUFS);
+            // Preserve the native producer's original source/byte evidence.
+            // Mac candidate wrappers validate it before build and staging.
+            if (BinaryPath == "Mac/libconnect_norito_bridge.dylib")
+            {
+                string ManifestPath = NativePath + ".build.json";
+                if (File.Exists(ManifestPath))
+                    RuntimeDependencies.Add(ManifestPath, StagedFileType.NonUFS);
+                else if (Target.Type != TargetType.Editor)
+                    throw new BuildException("The Connect bridge build manifest is missing at {0}; rerun scripts/connect/build-bridge.sh.", ManifestPath);
+            }
             return;
         }
         if (Target.Type != TargetType.Editor)

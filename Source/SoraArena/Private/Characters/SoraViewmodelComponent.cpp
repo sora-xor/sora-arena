@@ -79,10 +79,10 @@ void USoraViewmodelComponent::Build(int32 WeaponId,bool bDojoBokken,bool bFirstP
     }
     Add(TEXT("FurPaw"),FVector(-13,-2,-10),FVector(.13,.15,.13),FLinearColor(.69,.47,.25));
 }
-void USoraViewmodelComponent::Sway(float LifeTime,float Moving,float Pitch,float Roll)
+void USoraViewmodelComponent::Sway(float LifeTime,float Moving,float Pitch,float Roll,const FRotator& AimOffset)
 {
     SetRelativeLocation(FVector(40,18+FMath::Sin(LifeTime*8)*Moving*.7,-18+FMath::Cos(LifeTime*16)*Moving*.6));
-    SetRelativeRotation(FRotator(Pitch,0,Roll));
+    SetRelativeRotation(AimOffset.Quaternion()*FRotator(Pitch,0,Roll).Quaternion());
 }
 void USoraViewmodelComponent::KernelPose(float Windup,bool bReloading)
 {

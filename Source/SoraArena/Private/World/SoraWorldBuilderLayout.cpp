@@ -24,10 +24,29 @@ int32 ZoneStyleMap(FName Style)
 void ASoraWorldBuilder::BuildCampaign(const FSoraChapter& Chapter)
 {
     const FSoraSpace& Space=Chapter.Space;
+    RecoveryHatch=nullptr;
     // The hub arena brings its own light; a chapter without one is lit as its map.
     if(Space.Hub!=INDEX_NONE) BuildArena(Space.Hub,false);
     else Lighting(Chapter.Map);
-    for(int32 Index=0;Index<Space.Zones.Num();++Index) BuildZone(Space.Zones[Index],Index);
+    for(int32 Index=0;Index<Space.Zones.Num();++Index)
+    {
+        const FSoraBeat* Recovery=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Task.RecoveryWeapons!=0u; });
+        const FSoraBeat* Spire=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Spire.Enabled(); });
+        const FSoraBeat* Summit=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Summit.Enabled(); });
+        const FSoraBeat* Wind=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Wind.Enabled(); });
+        const FSoraBeat* Flood=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Flood.bEnabled; });
+        const FSoraBeat* Climb=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Climb.bEnabled; });
+        const FSoraBeat* Moat=Chapter.Beats.FindByPredicate([Index](const FSoraBeat& B)
+            { return B.Space.Zone==Index&&B.Space.Moat.bEnabled; });
+        if(Moat) BuildMoat(*Moat); else if(Climb) BuildClimb(*Climb); else if(Wind) BuildWindSpace(*Wind); else if(Flood) BuildFlood(*Flood); else if(Spire) BuildSpire(*Spire); else if(Summit) BuildSummit(*Summit); else BuildZone(Space.Zones[Index],Index,Recovery);
+    }
+    BuildChapterWood(Chapter);
     NodePositions.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset();
     const FLinearColor Accent=FSoraCatalog::Get().Map(Chapter.Map).Accent;
     for(int32 Site=0;Site<Space.Sites.Num();++Site)
@@ -56,7 +75,7 @@ void ASoraWorldBuilder::ShowObjective(const FVector* Location)
             FVector::ZeroVector,FVector(.22f,.22f,3.2f),FLinearColor(.94f,.65f,.21f));
         ObjectiveMarker->SetCastShadow(false);
     }
-    ObjectiveMarker->SetRelativeLocation(FVector(Location->X,Location->Y,160.f));
+    ObjectiveMarker->SetRelativeLocation(*Location+FVector(0,0,160.f));
     ObjectiveMarker->SetVisibility(true);
 }
 void ASoraWorldBuilder::ShowCaches(const TArray<FVector>& Locations)

@@ -1,6 +1,7 @@
 #include "SoraWorldBuilder.h"
 #include "ArenaKernelSubsystem.h"
 #include "World/SoraPracticeArena.h"
+#include "World/SoraPresentationCapabilities.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
@@ -12,12 +13,8 @@
 // this file) loads none of this campaign art.
 void ASoraWorldBuilder::NyaagyuTerrain()
 {
-#if PLATFORM_MAC
-    // M1 uses authored conventional meshes; Nanite is disabled by MacEngine.ini.
-    const TCHAR* Tier=TEXT("MAC");
-#else
-    const TCHAR* Tier=TEXT("HI");
-#endif
+    const TCHAR* Tier=SoraPresentation::EnvironmentAssetTier(GetWorld());
+    SoraPresentation::LogEnvironmentAssetTier(GetWorld());
     auto* Soil=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/MI_Nyaagyu_TerrainSoil.MI_Nyaagyu_TerrainSoil"),nullptr,LOAD_NoWarn);
     auto* Stone=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Generated/Environment/M_NyaagyuRoadScanVariation_PBR.M_NyaagyuRoadScanVariation_PBR"),nullptr,LOAD_NoWarn);
     if (!Soil || !Stone)
@@ -58,11 +55,7 @@ void ASoraWorldBuilder::NyaagyuTerrain()
 }
 void ASoraWorldBuilder::NyaagyuTree(FVector Location, FRotator Rotation, float Scale)
 {
-#if PLATFORM_MAC
-    const TCHAR* Tier=TEXT("MAC");
-#else
-    const TCHAR* Tier=TEXT("HI");
-#endif
+    const TCHAR* Tier=SoraPresentation::EnvironmentAssetTier(GetWorld());
     const FString Name=FString::Printf(TEXT("SM_NyaagyuTree_%s"),Tier);
     const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Foliage/%s.%s"),*Name,*Name);
     auto* Asset=LoadObject<UStaticMesh>(nullptr,*Path,nullptr,LOAD_NoWarn);
@@ -87,11 +80,7 @@ void ASoraWorldBuilder::NyaagyuTree(FVector Location, FRotator Rotation, float S
 }
 void ASoraWorldBuilder::NyaagyuPine(FVector Location, FRotator Rotation, float Scale, int32 Variant)
 {
-#if PLATFORM_MAC
-    const TCHAR* Tier=TEXT("MAC");
-#else
-    const TCHAR* Tier=TEXT("HI");
-#endif
+    const TCHAR* Tier=SoraPresentation::EnvironmentAssetTier(GetWorld());
     const TCHAR* Form=Variant==0?TEXT("A"):Variant==1?TEXT("B"):TEXT("C");
     const FString Name=FString::Printf(TEXT("SM_NyaagyuPine_%s_%s"),Form,Tier);
     const FString Path=FString::Printf(TEXT("/Game/Generated/Environment/Foliage/%s.%s"),*Name,*Name);

@@ -43,8 +43,8 @@ UnrealEditor-Cmd SoraArena.uproject -ExecutePythonScript=scripts/unreal/import_n
 
 It creates `/Game/Generated/Environment/Props/SM_Nyaagyu_CargoStack` and its
 exact material instances. The import builds Nanite data for supported Windows
-hardware and keeps a full conventional static-mesh fallback for the Mac path,
-where `Config/Mac/MacEngine.ini` disables Nanite. The WorldBuilder must place
+hardware and keeps a full conventional static-mesh fallback for M1 Macs,
+whose `METAL_SM5` path cannot run Nanite. The WorldBuilder must place
 the visual above its unchanged collision proxy separately.
 
 Compare the same-camera [plain cube](Nyaagyu_CoverProxy_Before_Blender.png) and

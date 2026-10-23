@@ -335,6 +335,22 @@ class RestrictedChecker(RepoCase):
 
 
 class Notices(RepoCase):
+    def test_own_generator_lists_and_source_objects_read_as_paths(self):
+        self.ledger("project", [
+            record("crafted", [], tier="OWN", license_id="project-owned",
+                   generator=["scripts/art/craft.py", "scripts/art/mark.py"],
+                   derived_from=[{"path": "Content/SourceArt/UI/mark.svg", "sha256": "b" * 64}, "wood_planks"]),
+            record("legacy", [], tier="OWN", license_id="project-owned", generator="scripts/art/legacy.py"),
+            record("fallback", [], tier="OWN", license_id="project-owned", origin_url="scripts/art/fallback.py")])
+        self.add("scripts")
+        text = generate_asset_notices.render(self.tmp)
+        self.assertIn("generator `scripts/art/craft.py`, `scripts/art/mark.py`, derived from `Content/SourceArt/UI/mark.svg`, `wood_planks`", text)
+        self.assertIn("generator `scripts/art/legacy.py`, derived from -", text)
+        self.assertIn("generator `scripts/art/fallback.py`, derived from -", text)
+        self.assertNotIn("['", text)
+        self.assertNotIn("{'path'", text)
+
+
     def test_render_lists_credit_attribution_and_check(self):
         data = b"jpg"
         self.write("Content/SourceArt/Env/a.jpg", data)

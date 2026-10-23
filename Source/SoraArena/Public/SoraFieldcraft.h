@@ -1,8 +1,12 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "Engine/HitResult.h"
 #include "GameFramework/Actor.h"
 #include "SoraCatalog.h"
 #include "SoraFieldcraftRules.h"
+#include "SoraFloodRules.h"
+#include "SoraClimbRules.h"
+#include "SoraMoatRules.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "SoraFieldcraft.generated.h"
 class APointLight;
@@ -91,6 +95,8 @@ struct FSoraFieldcraftReadout
     bool bSwimming = false;
     bool bDiving = false;
     float Breath = 1.f;
+    bool bFloodPassage=false;
+    bool bFloodAirShaft=false;
     // On the wall: grip left (0-1), at a ledge.
     bool bClimbing = false;
     float Grip = 1.f;
@@ -171,6 +177,46 @@ public:
     static USoraFieldcraft* Get(const UObject* WorldContext);
     void Stage(const FSoraBeat& Beat);
     void Clear();
+    bool IsMoatSwimming() const { return MoatSpace&&bMoatPosture; }
+    bool MoatExitReady() const { return !MoatSpace||bMoatGateCrossed; }
+    bool MoatCrouch(ASoraPlayerCharacter& Player);
+    FVector MoatHead() const;
+    float MoatDepth() const;
+    bool MoatBlocksHitscan() const;
+    bool MoatHeadLit() const;
+    bool MoatObjective(FVector& At) const;
+    bool MoveMoatCompanion(ASoraCompanion& Companion,float Dt);
+    void AssignMoatGuard(ASoraEnemy& Enemy,int32 Index);
+    bool IsMoatGuard(const ASoraEnemy& Enemy) const;
+    FVector MoatGuardAim(const ASoraEnemy& Enemy) const;
+    bool DriveMoatGuard(ASoraEnemy& Enemy,float Dt,bool& Reached);
+    void MoatDetected(const FVector& Evidence);
+    int32 MoatFootstepPermille(const FVector& Feet) const;
+    bool FloodExitReady() const { return !FloodSpace || SoraFloodRules::Ready(FloodRoute); }
+    bool ClimbExitReady() const { return !ClimbSpace || bClimbCrawled; }
+    bool ClimbObjective(FVector& At) const;
+    bool ClimbCrouch(ASoraPlayerCharacter& Player);
+    bool IsClimbCrawling() const { return bClimbCrawl; }
+    int32 ClimbRouteIndex() const { return ClimbRoute; }
+    int32 ClimbHoldIndex() const { return Grip.Hold; }
+    bool IsClimbResting() const;
+    bool IsClimbFalling() const { return ClimbSpace&&ClimbFall.Airborne; }
+    double ClimbFallPeak() const { return ClimbFall.PeakZ; }
+    int32 ClimbClock() const { return ClimbClockMs; }
+    bool ClimbSentryWatching() const;
+    FVector ClimbSentryAim() const;
+    bool DriveClimbSentry(ASoraEnemy& Enemy,float Dt);
+    bool IsClimbSentry(const ASoraEnemy& Enemy) const;
+    void AssignClimbSentry(ASoraEnemy& Enemy);
+    bool MoveClimbCompanion(ASoraCompanion& Companion,float Dt);
+    bool ClimbGuideWaiting() const { return ClimbSpace&&bClimbGuideWaiting; }
+    FString ClimbDiagnostic() const;
+    int32 FloodElapsedMs() const { return FloodClockMs; }
+    int32 FloodPassageStage() const { return FloodRoute.Stage; }
+    bool FloodCarriesIota() const;
+    bool FloodObjective(FVector& At) const;
+    bool MoveFloodCompanion(ASoraCompanion& Companion,float Dt);
+    int32 FloodFootstepPermille(const FVector& Feet) const;
     bool IsStaged() const { return Staged != nullptr; }
     const FSoraFieldcraft* Active() const { return Staged; }
     // Every event raised for the beat: npc_downed:<id>, npc_revived:any,
@@ -187,9 +233,10 @@ public:
     // foot, or lets go of the wall. Each returns whether it took the press.
     bool Ability(ASoraPlayerCharacter& Hero);
     bool Interact(ASoraPlayerCharacter& Hero);
+    void CancelHeldInteraction();
     bool Jump(ASoraPlayerCharacter& Hero);
     // In the water or on the wall no arm is used and no weapon changes hands.
-    bool ArmsStowed() const { return bSwimming || bClimbing || LadderClimb != INDEX_NONE; }
+    bool ArmsStowed() const { return bSwimming || (bClimbing&&!IsClimbResting()) || bClimbCrawl || LadderClimb != INDEX_NONE; }
     // The hero's own movement input is ignored (the wall moves him).
     bool HoldsHero() const { return bClimbing || LadderClimb != INDEX_NONE; }
     // A cap on the hero's pace in cm/s (the water), or 0.
@@ -262,6 +309,7 @@ public:
     int32 QuarryCount() const { return QuarryStates.Num(); }
     SoraFieldcraftRules::ENet NetOf(int32 Quarry) const;
     int32 QuarryHealth(int32 Quarry) const;
+    bool FinishFoundryNetCut(int32 Quarry);
     FVector QuarryLocation(int32 Quarry) const;
     ASoraEnemy* TetherOf(int32 Quarry) const;
     // A netting drone reloading after its net was cut; the drones that net.
@@ -295,6 +343,7 @@ public:
 
     virtual void Tick(float DeltaTime) override;
     virtual TStatId GetStatId() const override;
+    virtual void OnWorldEndPlay(UWorld& InWorld) override;
     virtual void Deinitialize() override;
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
@@ -318,7 +367,22 @@ private:
     void TickCompanions(int32 DtMs);
     void TickLamps(int32 DtMs);
     void TickWater(int32 DtMs);
+    void StageMoat();
+    void ClearMoat();
+    void TickMoatWater(int32 DtMs);
+    bool RestoreMoatPosture(bool Reset);
+    void StageFlood(const FSoraBeat& Beat);
+    void ClearFlood();
+    void TickFloodWater(int32 DtMs);
+    void TickFloodCompanions(int32 DtMs);
+    float FloodSurfaceAt(const FVector& At) const;
+    bool InFloodWater(const FVector& At) const;
     void TickClimb(float DeltaTime, int32 DtMs);
+    void TickClimbRoutes(float DeltaTime,int32 DtMs);
+    void ClearClimbRoutes();
+    bool BeginClimbRoute(ASoraPlayerCharacter& Player);
+    bool AtClimbRoute(const ASoraPlayerCharacter& Player,int32& Route) const;
+    const FSoraClimbRoute* CurrentClimbRoute() const;
     void TickCandle();
     void TickLooks();
     void TickVolley(int32 DtMs);
@@ -375,6 +439,23 @@ private:
     FHold Holding;
     float ClockCarryMs = 0.f;
     // Water.
+    const FSoraMoatSpace* MoatSpace=nullptr;
+    bool bMoatPosture=false,bMoatDiveWish=false,bMoatGateCrossed=false,bMoatAlarm=false;
+    float MoatOldRadius=34,MoatOldCrouchHalf=44,MoatOldGravity=1,MoatOldAirControl=.05f,MoatOldFriction=0;
+    float MoatPace=180;
+    FVector MoatLast=FVector::ZeroVector,MoatAlarmAt=FVector::ZeroVector;
+    int32 MoatClockMs=0,MoatGuidePoint=0;
+    TMap<TWeakObjectPtr<ASoraEnemy>,int32> MoatGuards;
+    const FSoraFloodSpace* FloodSpace=nullptr;
+    int32 FloodClockMs=0;
+    SoraFloodRules::FRoute FloodRoute;
+    FVector FloodLast=FVector::ZeroVector;
+    bool bFloodFloating=false;
+    float FloodOldGravity=1.f, FloodOldAirControl=.05f, FloodOldFriction=0.f;
+    UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> FloodSurfaces;
+    UPROPERTY() TArray<TObjectPtr<APointLight>> FloodLights;
+    UPROPERTY() TObjectPtr<UStaticMeshComponent> FloodBoat;
+    bool bFloodCarrying=false;
     bool bSwimming = false;
     bool bDiving = false;
     SoraFieldcraftRules::FBreath Breath{0, 0, 0};
@@ -386,6 +467,26 @@ private:
     bool bFalling = false;
     float FallFromZ = 0.f;
     TSet<int32> LedgesReached;
+    const FSoraClimbSpace* ClimbSpace=nullptr;
+    SoraClimbRules::FFall ClimbFall;
+    int32 ClimbRoute=INDEX_NONE, ClimbClockMs=0, ClimbStepTarget=INDEX_NONE;
+    float ClimbStepAlpha=0.f;
+    FVector ClimbStepStart=FVector::ZeroVector;
+    bool bClimbMounting=false,bClimbReachedTop=false,bClimbCrawl=false,bClimbCrawlWish=false,bClimbCrawled=false;
+    bool bClimbCrawlEntered=false,bClimbWatchRaised=false;
+    float ClimbOldRadius=0.f,ClimbOldCrouchHalf=0.f;
+    UPROPERTY() TWeakObjectPtr<ASoraEnemy> ClimbSentry;
+    UPROPERTY() TObjectPtr<USpotLightComponent> ClimbSentryLamp;
+    UPROPERTY() TArray<TObjectPtr<APointLight>> ClimbStripLights;
+    UPROPERTY() TWeakObjectPtr<ASoraCompanion> ClimbGuide;
+    TArray<FVector> ClimbGuidePath;
+    int32 ClimbGuidePoint=0;
+    bool bClimbGuideWaiting=false;
+    // Read-only fixture diagnostics: the exact most recent movement requests
+    // and returned contacts, never used to choose or advance movement.
+    FHitResult ClimbSweepHit,ClimbGuideVerticalHit,ClimbGuideHorizontalHit,ClimbSentryMoveHit;
+    FVector ClimbSweepFrom=FVector::ZeroVector,ClimbSweepWanted=FVector::ZeroVector,ClimbSentryMoveGoal=FVector::ZeroVector;
+    bool bClimbSweepAccepted=false;
     // Stones and the candle.
     int32 Stones = 0;
     bool bCupped = false;

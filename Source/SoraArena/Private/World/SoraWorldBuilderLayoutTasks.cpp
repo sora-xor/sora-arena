@@ -1,5 +1,6 @@
 #include "SoraWorldBuilder.h"
 #include "SoraCatalog.h"
+#include "SoraCampaignLift.h"
 #include "SoraHorse.h"
 #include "SoraPlayerCharacter.h"
 #include "Animation/AnimationAsset.h"
@@ -7,6 +8,7 @@
 #include "Components/PointLightComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Engine/PointLight.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/World.h"
@@ -17,7 +19,7 @@
 //   rises in the channel with every turn;
 // - bellows: the tatara's mouth glows brighter as the bellows are worked;
 // - lift: a wheel turns and a platform of goods rises with the turns;
-// - hold: a ring on the ground fills as the ground is held, red when contested;
+// - hold: the hold boundary fills as it is held, red when contested;
 // - stations: one bench per manufacturing station, the current step's in gold,
 //   finished ones in teal, and the output stacking beside the anchor;
 // - carry: the loads at each pickup (a pack horse, or a stack that empties)
@@ -110,16 +112,56 @@ void ASoraWorldBuilder::KitItem(FName Item,FVector Location,int32 Index,TArray<T
     if(Item==TEXT("bale")) Mesh->SetRelativeRotation(FRotator(90,0,0));
     Into.Add(Mesh);
 }
+ASoraCampaignLift* ASoraWorldBuilder::CampaignLift() const { return Lift; }
 void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
 {
     ClearKit();
     if(!Chapter.Beats.IsValidIndex(BeatIndex)) return;
     const FSoraBeat& Beat=Chapter.Beats[BeatIndex];
     const FSoraBeatSpace& Space=Beat.Space;
+    BeatLight(Beat);   // the beat's authored sun and sky (SoraWorldBuilderLighting.cpp)
+    StageEpilogue(Beat);
+    StageSupply(Beat);
+    StageHelm(Beat);
+    StageGalleryPois(Chapter,Beat);
+    bSummitActive=Space.Summit.Enabled();
+    ResetSpireAlarm(Space.Spire.Enabled());
+    ShowSummitSpine(false,Beat.Id==TEXT("ch08.b15")?1.f:0.f);
+    SetActorTickEnabled(bSummitActive||bSpireActive);
+    if(Space.Summit.Enabled()&&Beat.Is(SoraBeatRules::EType::Boss))
+        KitShape(TEXT("SummitStairSeal"),KitCube,FVector(Space.Summit.Center,16000)+FVector(0,-1850,125),
+            FVector(3.4,.16,2.5),KitTeal,TEXT("Metal"),true);
+    if(Space.Spire.Enabled())
+    {
+        const FVector C(Space.Spire.Center,2700);
+        KitShape(TEXT("ParkedSpireBridge"),KitCube,C-FVector(0,0,15),FVector(6,2,.3),KitIron,TEXT("Metal"),true);
+        for(int32 Sign:{-1,1})
+            KitShape(TEXT("ParkedSpireRail"),KitCube,C+FVector(0,Sign*90,75),FVector(6,.2,1.5),KitIron,TEXT("Metal"),true);
+    }
+    if(Beat.Task.CarryGateMs>0)
+        CarrySeal=KitShape(TEXT("GranarySeal"),KitCube,Floor(Space.CarryGate)+FVector(0,70,75),
+            FVector(.18f,.55f,.9f),KitTeal);
+    if(RecoveryHatch)
+    {
+        const bool Open=Beat.Task.RecoveryWeapons!=0u;
+        RecoveryHatch->SetVisibility(!Open);
+        RecoveryHatch->SetCollisionEnabled(Open?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryAndPhysics);
+    }
+    if(Beat.Task.RecoveryWeapons!=0u)
+    {
+        const FVector P=Floor(Space.Recovery,-Beat.Task.RecoveryDepthCm+12.f);
+        RecoveryBundle.Add(KitShape(TEXT("SwordBundle"),KitCube,P+FVector(-65,65,5),FVector(1.1f,.35f,.2f),FLinearColor(.38f,.3f,.16f),TEXT("Timber")));
+        RecoveryBundle.Add(KitShape(TEXT("BowBag"),KitCube,P+FVector(-65,95,4),FVector(2.2f,.16f,.12f),FLinearColor(.24f,.27f,.2f)));
+    }
     KitWork=Space.Work;
-    KitAnchor=Floor(Space.Anchor);
+    KitAnchor=Floor(Space.Anchor,Space.HeightCm);
     const FVector A=KitAnchor;
-    if(KitWork==TEXT("sluice"))
+    if(Space.Lift.bEnabled)
+    {
+        Lift=GetWorld()->SpawnActor<ASoraCampaignLift>();
+        if(Lift) { Lift->Build(Space.Anchor,Beat.Task.Count,Beat.Task.MinTurnMs); KitActors.Add(Lift); }
+    }
+    else if(KitWork==TEXT("sluice"))
     {
         // The weir's winch beside the anchor, and the channel it lets the water into.
         for(int32 Side:{-1,1}) KitShape(TEXT("WinchPost"),KitCube,A+FVector(0,Side*95,90),FVector(.2f,.2f,1.8f),KitTimber,TEXT("Timber"),true);
@@ -132,6 +174,20 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     }
     else if(KitWork==TEXT("bellows"))
     {
+        // Independent tread boards, not the later seesaw bellows. Functional
+        // proxies: the bespoke foot/cloth animation remains an art deliverable.
+        for(int32 Side:{-1,1})
+            BellowsFeet.Add(KitShape(TEXT("Tread"),KitCube,A+FVector(Side*48,-40,15),FVector(.7f,1.3f,.16f),KitTimber,TEXT("Timber")));
+        for(int32 N=0;N<3;++N)
+        {
+            auto* Notch=KitShape(TEXT("FlameNotch"),KitCube,A+FVector(-22+N*22,-254,126),FVector(.12f,.07f,.22f),KitGold);
+            Notch->ComponentTags.Add(TEXT("BellowsFlameNotch")); BellowsNotches.Add(Notch);
+        }
+        for(int32 N=0;N<8;++N)
+        {
+            auto* Spark=KitShape(TEXT("FlameSpark"),KitCube,A+FVector(0,-253,95),FVector(.025f,.025f,.11f),FLinearColor(1.f,.9f,.6f));
+            Spark->ComponentTags.Add(TEXT("BellowsFlameSpark")); Spark->SetVisibility(false); BellowsSparks.Add(Spark);
+        }
         // The tatara's bellows and the furnace mouth they feed.
         KitShape(TEXT("Bellows"),KitCube,A+FVector(0,-150,60),FVector(1.6f,.9f,1.2f),KitTimber,TEXT("Timber"),true);
         KitShape(TEXT("Furnace"),KitCube,A+FVector(0,-360,110),FVector(1.9f,1.9f,2.2f),FLinearColor(.25f,.22f,.2f),TEXT("Stone"),true);
@@ -158,6 +214,16 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
             KitPieces.Add(Goods);
         }
     }
+    else if(KitWork==TEXT("hold")&&Space.Helm.bEnabled)
+    {
+        KitAnchor=Floor(Space.Helm.Hold.Center,Space.HeightCm);
+        KitHoldSize=Space.Helm.Hold.Size;
+        auto* Floor=KitShape(TEXT("HelmHoldFloor"),KitCube,KitAnchor+FVector(0,0,1),
+            FVector(KitHoldSize.X/100,KitHoldSize.Y/100,.01),FLinearColor(.05f,.12f,.12f));
+        Floor->ComponentTags.Add(TEXT("HelmHoldFloor"));
+        KitFill=KitShape(TEXT("HelmHoldFill"),KitCube,KitAnchor+FVector(0,0,2),FVector(.01,KitHoldSize.Y/100,.012),KitGold);
+        KitFill->ComponentTags.Add(TEXT("HelmHoldFill"));
+    }
     else if(KitWork==TEXT("hold"))
     {
         // The ground to hold: its edge posts, a dark ring and a fill that grows.
@@ -177,6 +243,26 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
             const FVector P=Floor(Space.Stations[Station]);
             KitShape(TEXT("Bench"),KitCube,P+FVector(0,0,40),FVector(1.2f,.8f,.8f),KitTimber,TEXT("Timber"),true);
             KitStations.Add(KitShape(TEXT("StationMark"),KitCube,P+FVector(0,0,84),FVector(.9f,.5f,.06f),KitDim));
+        }
+        StageWorkshop(Beat);
+    }
+    else if(KitWork==TEXT("cargo"))
+    {
+        CargoUnitsPerShare=Beat.Cargo.PerDropoff;
+        // Authored 稲架 destinations, built from existing scene components.
+        // Functional WIP presentation only; final art remains a separate gate.
+        for(int32 Point=0;Point<Space.Dropoffs.Num();++Point)
+        {
+            const FVector P=Floor(Space.Dropoffs[Point]);
+            for(int32 Side:{-1,1})
+                KitShape(TEXT("DryingPost"),KitCylinder,P+FVector(Side*90,0,65),FVector(.12f,.12f,1.3f),KitTimber,TEXT("Timber"));
+            KitShape(TEXT("DryingRail"),KitCube,P+FVector(0,0,125),FVector(2.f,.12f,.12f),KitTimber,TEXT("Timber"));
+            for(int32 Side:{-1,1})
+            {
+                auto* Load=KitShape(TEXT("DeliveredBarleyShare"),KitCylinder,P+FVector(Side*35,0,94),
+                    FVector(.28f,.28f,.65f),KitStraw);
+                Load->SetVisibility(false); CargoStandLoads.Add(Load);
+            }
         }
     }
     else if(KitWork==TEXT("carry"))
@@ -201,6 +287,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
     }
     else if(KitWork==TEXT("defend"))
     {
+        BuildFoundryDefense(Space);
         for(int32 Target=0;Target<Space.Targets.Num();++Target)
         {
             const FVector P=Floor(Space.Targets[Target]);
@@ -208,7 +295,7 @@ void ASoraWorldBuilder::StageKit(const FSoraChapter& Chapter,int32 BeatIndex)
             if(Kind==TEXT("horse")) KitHorse(P,90.f,TEXT("bay"),true);
             else if(Kind==TEXT("furnace"))
             {
-                KitShape(TEXT("TargetFurnace"),KitCube,P+FVector(0,0,110),FVector(1.8f,1.8f,2.2f),FLinearColor(.25f,.22f,.2f),TEXT("Stone"),true);
+                if(!Space.FoundryDefense.bEnabled) KitShape(TEXT("TargetFurnace"),KitCube,P+FVector(0,0,110),FVector(1.8f,1.8f,2.2f),FLinearColor(.25f,.22f,.2f),TEXT("Stone"),true);
                 KitShape(TEXT("TargetFurnaceMouth"),KitCube,P+FVector(-92,0,70),FVector(.08f,.7f,.5f),FLinearColor(.9f,.35f,.08f));
             }
             else if(Kind==TEXT("tent"))
@@ -242,8 +329,27 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     }
     else if(KitWork==TEXT("bellows")&&KitGauge)
     {
-        Tint(KitGauge,FMath::Lerp(FLinearColor(.2f,.05f,.02f),FLinearColor(1.f,.55f,.12f),Progress));
-        if(auto* Light=Cast<APointLight>(KitLight.Get())) Light->PointLightComponent->SetIntensity(3200.f*Progress);
+        const int32 Band=FMath::Clamp(View.BellowsNotches,1,3);
+        if(BellowsShownBand!=Band)
+        {
+            BellowsShownBand=Band;
+            Tint(KitGauge,Band==1?FLinearColor(.24f,.025f,.012f):Band==2?FLinearColor(1.f,.62f,.03f):FLinearColor::White);
+            for(int32 N=0;N<BellowsNotches.Num();++N) BellowsNotches[N]->SetVisibility(N<Band);
+            if(auto* Light=Cast<APointLight>(KitLight.Get()))
+            {
+                Light->PointLightComponent->SetIntensity(Band==1?350.f:Band==2?2600.f:4000.f);
+                Light->PointLightComponent->SetTemperature(Band==1?1500.f:Band==2?2600.f:6500.f);
+            }
+        }
+        for(int32 N=0;N<BellowsFeet.Num();++N)
+            BellowsFeet[N]->SetRelativeRotation(FRotator(View.BellowsFoot==(N==0?-1:1)?-8.f:0.f,0,0));
+        // Fixed pool: no spawned actors or new materials in the per-frame path.
+        for(int32 N=0;N<BellowsSparks.Num();++N)
+        {
+            BellowsSparks[N]->SetVisibility(Band==3);
+            const float Phase=FMath::Fmod(GetWorld()->GetTimeSeconds()*1.8f+N*.137f,1.f);
+            BellowsSparks[N]->SetRelativeLocation(KitAnchor+FVector((N%2?1:-1)*(8.f+Phase*(12.f+N*2)), -252.f,90.f+Phase*75.f));
+        }
     }
     else if(KitWork==TEXT("lift")&&KitGauge&&KitWheel)
     {
@@ -252,20 +358,56 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
     }
     else if(KitWork==TEXT("hold")&&KitFill)
     {
-        const float Radius=KitHoldRadius/50.f*FMath::Max(Progress,.01f);
-        KitFill->SetRelativeScale3D(FVector(Radius,Radius,.012f));
+        if(KitHoldSize.X>0)
+        {
+            KitFill->SetVisibility(Progress>0);
+            if(Progress>0)
+            {
+                const float Width=KitHoldSize.X*Progress;
+                KitFill->SetRelativeLocation(KitAnchor+FVector((Width-KitHoldSize.X)*.5,0,2));
+                KitFill->SetRelativeScale3D(FVector(Width/100,KitHoldSize.Y/100,.012f));
+            }
+        }
+        else
+        {
+            const float Radius=KitHoldRadius/50.f*FMath::Max(Progress,.01f);
+            KitFill->SetRelativeScale3D(FVector(Radius,Radius,.012f));
+        }
         Tint(KitFill,View.bContested?KitLost:Progress>=1.f?KitTeal:KitGold);
     }
     else if(KitWork==TEXT("stations"))
     {
+        ShowWorkshop(View);
         for(int32 Station=0;Station<KitStations.Num();++Station)
             if(KitStations[Station]) Tint(KitStations[Station],Station<View.Step?KitTeal:Station==View.Step?KitGold:KitDim);
         // The output stacks beside the anchor, a piece for every stroke.
         const int32 Wanted=FMath::Min(View.Strokes,KitStackVisible);
         while(KitStacks.Num()<Wanted) KitItem(TEXT("crate"),KitAnchor+FVector(0,190,0),KitStacks.Num(),KitStacks);
     }
+    else if(KitWork==TEXT("cargo"))
+    {
+        for(int32 PartIndex=0;PartIndex<CargoStandLoads.Num();++PartIndex)
+            if(CargoStandLoads[PartIndex]) CargoStandLoads[PartIndex]->SetVisibility(
+                View.Delivered.IsValidIndex(PartIndex/2)&&View.Delivered[PartIndex/2]==1);
+    }
     else if(KitWork==TEXT("carry"))
     {
+        if(CarrySeal) CarrySeal->SetVisibility(!View.bCarryGateOpen);
+        for(int32 Slot=0;Slot<View.LooseLoads.Num();++Slot)
+        {
+            const bool Visible=(View.LooseMask&(1u<<Slot))!=0u;
+            if(Visible)
+                while(KitLooseLoads.Num()<=Slot)
+                {
+                    KitItem(KitItemKind,FVector::ZeroVector,0,KitLooseLoads);
+                    KitLooseLoads.Last()->SetVisibility(false);
+                }
+            if(KitLooseLoads.IsValidIndex(Slot)&&KitLooseLoads[Slot])
+            {
+                KitLooseLoads[Slot]->SetVisibility(Visible);
+                KitLooseLoads[Slot]->SetRelativeLocation(View.LooseLoads[Slot]+FVector(0,0,KitItemKind==TEXT("box")?12.f:KitItemKind==TEXT("bale")?24.f:20.f));
+            }
+        }
         // Loads leave their pickups as they are taken; drop-offs fill as they receive them.
         for(int32 Item=0;Item<KitLoads.Num();++Item)
             if(KitLoads[Item]) KitLoads[Item]->SetVisibility(!View.PickupTaken.IsValidIndex(Item)||!View.PickupTaken[Item]);
@@ -305,19 +447,44 @@ void ASoraWorldBuilder::ShowKit(const FSoraKitView& View)
 }
 float ASoraWorldBuilder::KitGaugeHeight() const
 {
-    return KitGauge?KitGauge->GetRelativeLocation().Z:0.f;
+    return Lift?Lift->Height():KitGauge?KitGauge->GetRelativeLocation().Z:0.f;
+}
+void ASoraWorldBuilder::ShowRecoveryBundle(bool Visible)
+{
+    for(const auto& Piece:RecoveryBundle) if(Piece) Piece->SetVisibility(Visible);
 }
 void ASoraWorldBuilder::ClearKit()
 {
+    FoundryActor.Reset(); FoundryTubs.Reset(); FoundryBellows.Reset(); FoundryUsedShown=~0u;
+    SetActorTickEnabled(false);
+    ResetSpireAlarm(false);
+    SupplyCrate=nullptr; SupplyId.Reset();
+    GalleryTargets.Reset(); GalleryIds.Reset(); GalleryFloors.Reset(); GalleryLabel=nullptr; GalleryMon=nullptr;
+    bSummitActive=false; ResetSeizure();
+    for(const auto& Label:EpilogueLabels) if(Label) Label->DestroyComponent();
+    EpilogueLabels.Reset();
     for(const auto& Mesh:KitPieces) if(Mesh) Mesh->DestroyComponent();
     for(const auto& Walker:KitWalkers) if(Walker) Walker->DestroyComponent();
     for(const auto& Member:KitParty) if(Member) Member->DestroyComponent();
     for(const auto& Actor:KitActors) if(Actor) Actor->Destroy();
     if(KitLight) KitLight->Destroy();
-    KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
+    ToranosukePlaque=nullptr; NyaakotoPlaque=nullptr; WashioSword.Reset(); EpiloguePlaques=0; bEpilogueSwordReturned=false;
+    RecoveryBundle.Reset(); KitPieces.Reset(); KitWalkers.Reset(); KitParty.Reset(); KitActors.Reset(); KitStations.Reset(); KitTargets.Reset();
     KitStacks.Reset(); KitLoads.Reset(); KitDropoffs.Reset(); KitDeliveredShown.Reset(); KitItemKind=NAME_None;
-    KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr;
+    KitLooseLoads.Reset(); CarrySeal=nullptr; CargoStandLoads.Reset(); CargoUnitsPerShare=0;
+    BellowsNotches.Reset(); BellowsSparks.Reset(); BellowsFeet.Reset(); BellowsShownBand=0;
+    WorkshopParts.Reset(); WorkshopRing.Reset(); WorkshopStep=-1; bWorkshopHammer=false;
+    HelmWheel=nullptr; HelmNeedle=nullptr;
+    KitGauge=nullptr; KitWheel=nullptr; KitFill=nullptr; KitLight=nullptr; Lift=nullptr;
     KitWork=NAME_None; KitHoldRadius=0.f;
+    KitHoldSize=FVector2D::ZeroVector;
+}
+int32 ASoraWorldBuilder::CargoQuantityShownAt(int32 Destination) const
+{
+    if(Destination<0||Destination>=CargoStandLoads.Num()/2) return 0;
+    const int32 Index=Destination*2;
+    return CargoStandLoads[Index]&&CargoStandLoads[Index+1]&&
+        CargoStandLoads[Index]->IsVisible()&&CargoStandLoads[Index+1]->IsVisible()?CargoUnitsPerShare:0;
 }
 void ASoraWorldBuilder::ShowPickups(const FSoraChapter& Chapter,const TArray<int32>& Loose)
 {
@@ -377,4 +544,10 @@ void ASoraWorldBuilder::ShowCarried(ASoraPlayerCharacter* Hero,FName Item)
     CarriedLoad=Shape(Hero,Hero->GetCamera(),TEXT("CarriedLoad"),Asset,FVector(60,0,-42),Scale,KitItemColor(Item));
     if(Item==TEXT("bale")) CarriedLoad->SetRelativeRotation(FRotator(0,0,90));
     CarriedLoad->SetCastShadow(false);
+}
+int32 ASoraWorldBuilder::LooseLoadVisualCount() const
+{
+    int32 Count=0;
+    for(const auto& Load:KitLooseLoads) if(Load&&Load->IsVisible()) ++Count;
+    return Count;
 }

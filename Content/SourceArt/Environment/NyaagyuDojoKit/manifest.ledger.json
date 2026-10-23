@@ -1,0 +1,134 @@
+{
+  "schema_version": 2,
+  "kind": "asset-ledger",
+  "ledger_id": "own-nyaagyu-dojo-kit",
+  "source": "project",
+  "purpose": "OWN record for the first-pass dojo hall kit modules and coffer design atlas. Its scan textures are CC0 Poly Haven records in scripts/assets/manifests/polyhaven-first-slice.json, imported from the local raw cache, not stored here.",
+  "generator": "scripts/assets/write_own_ledger.py",
+  "extends": [
+    {
+      "manifest": "Content/SourceArt/Environment/NyaagyuDojoKit/manifest.json",
+      "sha256": "466cd4155eb4c9ecb3a7d67eb0d4316cc5e5137bb1ee68f527c13aca0fa5c7bc",
+      "schema_version": 1
+    }
+  ],
+  "policy": "The extended schema-1 manifest stays byte-identical; regenerate this record after a rebuild.",
+  "records": [
+    {
+      "asset_id": "nyaagyu-dojo-kit",
+      "name": "Tsumagizaka dojo hall kit (box-module first pass)",
+      "kind": "generated-art",
+      "tier": "OWN",
+      "license": "project-owned",
+      "license_url": null,
+      "origin_url": "scripts/art/create_nyaagyu_dojo_kit.py, scripts/art/sora_arch_lib.py, scripts/art/craft_textures.py, scripts/art/sora_mark.py, scripts/art/create_runtime_weapon_lib.py",
+      "mirror_url": null,
+      "commercial_use": true,
+      "redistribution": "unrestricted",
+      "derivatives": true,
+      "platform_restriction": null,
+      "ai_terms": "none",
+      "agent_handling": "allowed",
+      "attribution_text": null,
+      "changes": null,
+      "access": "generated",
+      "acquired_at_utc": "2026-10-18T05:35:59Z",
+      "acquired_by": "agent",
+      "storage": "repo-lfs",
+      "used_by": [
+        "/Game/Generated/Environment/DojoKit"
+      ],
+      "fallback": null,
+      "generator": [
+        "scripts/art/create_nyaagyu_dojo_kit.py",
+        "scripts/art/sora_arch_lib.py",
+        "scripts/art/craft_textures.py",
+        "scripts/art/sora_mark.py",
+        "scripts/art/create_runtime_weapon_lib.py"
+      ],
+      "derived_from": [
+        {
+          "path": "Content/SourceArt/UI/sora_logo_NOtext2.svg",
+          "sha256": "d66413a71b70e25dcb8b2f118dcfe846a6446ed1db3de53ce88fc70c16ac0910"
+        }
+      ],
+      "files": [
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_DoorOpen.fbx",
+          "bytes": 125116,
+          "sha256": "b48d41597e1fd2887fa6b3234c803851ec9f00489bdf7793a39f4d3802cea1ec"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_Panel.fbx",
+          "bytes": 90892,
+          "sha256": "26f7fdbda39c37e3606d093a2ab5e987d224fe244ea1d5cea2e666bc76cb3ffd"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_Renji.fbx",
+          "bytes": 222684,
+          "sha256": "2cdbc634ca39356aa582f1983a482dd482484a77a50575cf6bf2c1e9bab7e969"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_RenjiHigh.fbx",
+          "bytes": 217948,
+          "sha256": "290f575548b72346b6289bd0bd39577a075adf275ba992f1d2fa568b519f7a40"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoBay_Shoji.fbx",
+          "bytes": 163468,
+          "sha256": "52f19ea553af968c5436996bcf9b0ab2584e3ed3ba7421c3058d2b2e84ebbd89"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoCeiling.fbx",
+          "bytes": 80252,
+          "sha256": "1a33515469a606be23903665edd86cb6c5d354e6fa665fd76417637aa41a0af5"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoColumn.fbx",
+          "bytes": 28076,
+          "sha256": "7b9b094b4014dc5306b2656a308ed085e1cc4a0d03e1e55103b9d8cada0ae725"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoFloor_0.fbx",
+          "bytes": 177724,
+          "sha256": "0def6323858b849f50ec7c5de49c9c0e6f7a826ac7b8e734b8e33d303fb07e84"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoFloor_1.fbx",
+          "bytes": 176748,
+          "sha256": "0c7410d982be5ff439044706f769fed0fc891f217d68cfb9b632a8f977a7971c"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoFloor_2.fbx",
+          "bytes": 173692,
+          "sha256": "8299ce274e02a12505fc21e64f57f7120a22487d8cbd556b7126969a55a2e63d"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoFloor_3.fbx",
+          "bytes": 175692,
+          "sha256": "c5812b8b642f07cbe2f34c198c64366ae9630608a13103583440b35ced56bf23"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/SM_DojoKamiza.fbx",
+          "bytes": 950540,
+          "sha256": "d8cd4fe25f5893eee770810315a6d9731b464ca0a5e27bb37437ab7965c38d75"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/T_DojoCoffer_BaseColor.png",
+          "bytes": 388938,
+          "sha256": "1a1e53e270d4da15881cb95ca9295b1f26f1b383a5ab8b94ba4bb4834293eb48"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/T_DojoCoffer_Mask.png",
+          "bytes": 47309,
+          "sha256": "b32c8d680bedbe65180ac15bc574981acdd53655152326da6d702d533121e007"
+        },
+        {
+          "path": "Content/SourceArt/Environment/NyaagyuDojoKit/T_DojoCoffer_ORM.png",
+          "bytes": 267226,
+          "sha256": "0668123c045022e15c181a6457dcfcb02850fda6cae6171445a5f05456ab3877"
+        }
+      ]
+    }
+  ]
+}

@@ -128,7 +128,7 @@ public:
 
     // Runs Family's rules on an event's fields as the pollers do, for a
     // sound at Location (from Source when it is set). The families without a
-    // broadcast (Hero, Footstep, Horse) come through here.
+    // broadcast (Hero, Footstep, Horse, Workshop) come through here.
     void Hear(FName Family, const SoraAudioData::FFacts& Facts, AActor* Source, const FVector& Location);
 
     // What played, oldest first (the last 512).

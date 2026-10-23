@@ -75,6 +75,7 @@ void USoraFieldcraft::StageNets()
 
 void USoraFieldcraft::OpponentJoined(ASoraEnemy& Enemy, int32 Wave)
 {
+    if(MoatSpace) { AssignMoatGuard(Enemy,MoatGuards.Num());return; }
     if (!Staged || !Staged->bNets || Enemy.ArchetypeId() != TEXT("drone")) return;
     const FSoraNets& Nets = Staged->Nets;
     // A net wave's first drones, as many as it nets with, take quarry; the
@@ -434,4 +435,12 @@ void USoraFieldcraft::TickScouts()
     if (FVector::DotProduct(Offset, Right) <= Layout::CrossedCm) return;
     bDroneCrossed = true;
     Raise(TEXT("ai:drone_crossed_right"));
+}
+
+bool USoraFieldcraft::FinishFoundryNetCut(int32 Quarry)
+{
+    const auto* Mode=GetWorld()?Cast<ASoraGameMode>(GetWorld()->GetAuthGameMode()):nullptr;
+    if(!Mode||!Mode->Campaign()||!Mode->Campaign()->IsFoundryDefense()||!QuarryStates.IsValidIndex(Quarry)) return false;
+    if(!Craft::CutNet(QuarryStates[Quarry].Net)) return false;
+    NetChanged(Quarry,Craft::ENetChange::Freed); return true;
 }

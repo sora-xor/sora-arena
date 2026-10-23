@@ -11,6 +11,8 @@
 
 ASoraWorldBuilder::ASoraWorldBuilder()
 {
+    PrimaryActorTick.bCanEverTick=true;
+    PrimaryActorTick.bStartWithTickEnabled=false;
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ArenaRoot"));
 }
 UStaticMeshComponent* ASoraWorldBuilder::Shape(AActor* Owner, USceneComponent* Parent, const FString& Name, const TCHAR* Asset, FVector Location, FVector Scale, FLinearColor Color, bool Collision)
@@ -180,10 +182,14 @@ void ASoraWorldBuilder::Torii(FVector L,float Yaw)
 }
 void ASoraWorldBuilder::ClearArena()
 {
-    ShowObjective(nullptr); ShowCaches({}); ClearKit();
+    ShowObjective(nullptr); ShowCaches({}); ClearKit(); ClearSummitTiles();
     for(const auto& M:PickupPieces) if(M) M->DestroyComponent(); PickupPieces.Reset();
     for(const auto& A:PickupLights) if(A) A->Destroy(); PickupLights.Reset();
     for(const auto& M:Pieces) if(M) M->DestroyComponent(); Pieces.Reset();
+    WoodTargets.Reset(); WoodFloors.Reset(); WoodClapper=nullptr;
+    RidgeAnchors.Reset(); RidgeOrigin=FVector2D::ZeroVector;
+    SummitSpine=nullptr; SummitSeam=nullptr;
+    SpireShutter=nullptr; SpirePanels.Reset(); SpirePanelGoals.Reset();
     for(const auto& A:DecorActors) if(A) A->Destroy(); DecorActors.Reset(); Nodes.Reset(); SiteEffects.Reset(); SiteRestoredColors.Reset(); Activated.Reset(); NodePositions.Reset();
     bCampaignSpace=false; CampaignStart=FVector::ZeroVector; CampaignStartYaw=0.f;
 }

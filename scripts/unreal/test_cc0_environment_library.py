@@ -11,12 +11,14 @@ from __future__ import annotations
 from dataclasses import replace
 import io
 import json
+import os
 from pathlib import Path
 import re
 import struct
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import zlib
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -33,6 +35,34 @@ def ledger_sets():
     sets = {L.camel(record.asset_id): L._record_set(record, [], False)
             for record in records.values() if L.is_environment(record) and record.data["kind"] != "hdri"}
     return records, sets
+
+
+class StorageRootTest(unittest.TestCase):
+    def test_override_uses_isolated_cache_without_git_metadata(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache = Path(directory) / "isolated"
+            cache.mkdir()
+            with patch.dict(os.environ, {"SORA_CC0_STORAGE_ROOT": str(cache)}):
+                self.assertEqual(L.storage_root(Path(directory) / "project"), cache.resolve())
+
+    def test_invalid_override_does_not_fall_back_to_shared_checkout(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for invalid in ("relative/cache", str(Path(directory) / "missing")):
+                with self.subTest(override=invalid), patch.dict(os.environ, {"SORA_CC0_STORAGE_ROOT": invalid}):
+                    with self.assertRaisesRegex(RuntimeError, "existing absolute directory"):
+                        L.storage_root(ROOT)
+
+    def test_default_main_and_linked_worktrees_share_the_original_cache(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"SORA_CC0_STORAGE_ROOT": ""}):
+            checkout = Path(directory) / "main"
+            gitdir = checkout / ".git" / "worktrees" / "isolated"
+            gitdir.mkdir(parents=True)
+            (gitdir / "commondir").write_text("../..\n")
+            linked = Path(directory) / "linked"
+            linked.mkdir()
+            (linked / ".git").write_text(f"gitdir: {gitdir}\n")
+            self.assertEqual(L.storage_root(checkout), checkout)
+            self.assertEqual(L.storage_root(linked), checkout.resolve())
 
 
 class PolicyTest(unittest.TestCase):
@@ -358,18 +388,6 @@ class NamingTest(unittest.TestCase):
         self.assertTrue(sets["Moss01"].channels["Normal"].flip_green)  # only an OpenGL glTF normal
         self.assertEqual(hessian.tile_cm, (26.88, 26.72))
         self.assertEqual(sets["JapaneseCedarBark"].tile_cm, (100.0, 200.0))
-
-    def test_storage_root_of_a_worktree(self):
-        with tempfile.TemporaryDirectory() as scratch:
-            main = Path(scratch, "main")
-            (main / ".git/worktrees/lane").mkdir(parents=True)
-            (main / ".git/worktrees/lane/commondir").write_text("../..\n")
-            tree = Path(scratch, "lane")
-            tree.mkdir()
-            (tree / ".git").write_text(f"gitdir: {main}/.git/worktrees/lane\n")
-            self.assertEqual(L.storage_root(tree), main.resolve())
-            self.assertEqual(L.storage_root(main), main)
-
 
 class PlanTest(unittest.TestCase):
     @unittest.skipUnless((L.storage_root(ROOT) / "Local/ThirdPartyRaw/cc0").is_dir(),

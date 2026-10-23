@@ -18,7 +18,9 @@ module and texture hash, and imports:
   binding slots M_Arch_<Role> to their instances. The coffer panels use
   M_SoraCraft with the kit's own design atlas.
 
-Nanite stays off (the Mac renders these conventional LODs).
+Nanite uses the same verified LOD0 FBX as a separate source after capturing
+the conventional baseline, retaining the same authored LODs on SM5. This is renderer
+enablement of existing modules, not unique-beam art or runtime acceptance.
 """
 
 from __future__ import annotations
@@ -32,9 +34,12 @@ import unreal
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sora_engine_pin import require_running_engine  # noqa: E402
+from cc0_environment_library import storage_root  # noqa: E402
+from dojo_nanite import enable_full_fallback, prepare_conventional  # noqa: E402
 
 require_running_engine("Nyaagyu dojo kit import")
 ROOT = Path(unreal.Paths.project_dir()).resolve()
+RAW_STORAGE = storage_root(ROOT)
 KIT = ROOT / "Content/SourceArt/Environment/NyaagyuDojoKit"
 LEDGER = ROOT / "scripts/assets/manifests/polyhaven-first-slice.json"
 DEST = "/Game/Generated/Environment/DojoKit"
@@ -126,7 +131,7 @@ def scan_sets():
         require(rec["license"] == "CC0-1.0" and rec["agent_handling"] == "allowed", f"{asset_id} licence")
         files = {}
         for f in rec["files"]:
-            path = ROOT / (f.get("path") or f["file"])
+            path = RAW_STORAGE / (f.get("path") or f["file"])
             require(path.is_file(), f"missing raw scan {path} (run scripts/assets/fetch_cc0.py)")
             require(sha(path) == f["sha256"], f"{path.name} changed")
             stem = path.name
@@ -142,6 +147,7 @@ def arch_master(name, defaults, two_sided):
     path = f"{DEST}/{name}"
     m = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
         name, DEST, unreal.Material, unreal.MaterialFactoryNew())
+    m.set_editor_property("used_with_instanced_static_meshes", True)
     for old in list(lib.get_material_expressions(m)):
         lib.delete_material_expression(m, old)
     if two_sided:
@@ -253,6 +259,7 @@ def flat_master():
     path = f"{DEST}/M_SoraArchFlat"
     m = assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(
         "M_SoraArchFlat", DEST, unreal.Material, unreal.MaterialFactoryNew())
+    m.set_editor_property("used_with_instanced_static_meshes", True)
     for old in list(lib.get_material_expressions(m)):
         lib.delete_material_expression(m, old)
     col = node(m, unreal.MaterialExpressionVectorParameter, -500, -100, parameter_name="BaseColor",
@@ -335,6 +342,8 @@ def fbx_options():
     data.combine_meshes = True
     data.generate_lightmap_u_vs = False
     data.auto_generate_collision = False
+    # First observe the unmodified conventional source. Enable Nanite below
+    # only after explicit full-fallback settings and preservation checks.
     data.set_editor_property("build_nanite", False)
     return options
 
@@ -345,6 +354,11 @@ def import_module(module, instances):
     for lod in lods:
         path = ROOT / lod["file"]
         require(path.is_file() and sha(path) == lod["sha256"], f"{name}: {lod['file']} changed")
+    path = f"{DEST}/{name}"
+    if assets.does_asset_exist(path):
+        existing = assets.load_asset(path)
+        require(isinstance(existing, unreal.StaticMesh), f"{name}: existing asset is not a static mesh")
+        prepare_conventional(existing, meshes)
     task = unreal.AssetImportTask()
     task.filename = str(ROOT / lods[0]["file"])
     task.destination_path = DEST
@@ -356,6 +370,7 @@ def import_module(module, instances):
     tools.import_asset_tasks([task])
     mesh = assets.load_asset(f"{DEST}/{name}")
     require(isinstance(mesh, unreal.StaticMesh), f"{name}: import failed")
+    prepare_conventional(mesh, meshes)
     for index, lod in enumerate(lods[1:], start=1):
         require(meshes.import_lod(mesh, index, str(ROOT / lod["file"])) == index, f"{name}: LOD{index}")
     # Authored LODs switch late; a one-LOD module keeps LOD0 everywhere (and
@@ -368,10 +383,22 @@ def import_module(module, instances):
     for i, slot in enumerate(slots):
         require(slot in instances, f"{name}: unknown slot {slot}")
         mesh.set_material(i, instances[slot])
+        parent = mesh.get_material(i).get_base_material()
+        require(parent is not None and bool(parent.get_editor_property("used_with_instanced_static_meshes")),
+                f"{name}: {slot} lacks the instanced-static-mesh material permutation")
+        # Only add the required permutation. Preserve graph, blend, shading,
+        # sidedness, textures and actual material-slot order (including craft).
+        if not lib.has_material_usage(parent, unreal.MaterialUsage.MATUSAGE_NANITE):
+            # SetBaseMaterialUsage itself recompiles when the flag changes.
+            lib.set_base_material_usage(parent, unreal.MaterialUsage.MATUSAGE_NANITE, True)
+            require(assets.save_loaded_asset(parent), f"{name}: could not save Nanite material usage")
     # Distance fields stand in for this geometry in software Lumen: thin
     # members need a finer field than the default.
     mesh.set_editor_property("distance_field_self_shadow_bias", 0.5)
-    assets.save_loaded_asset(mesh)
+    # The helper saves both baselines, restores source LOD thresholds after
+    # the Nanite build, then audits final saved geometry before success.
+    audit = enable_full_fallback(mesh, module, meshes, unreal, lib, assets, ROOT)
+    unreal.log("SORA_DOJO_NANITE_IMPORT " + json.dumps(audit, sort_keys=True))
     return name, slots
 
 

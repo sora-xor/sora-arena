@@ -1,23 +1,35 @@
 #include "SoraGameMode.h"
+#include "SoraSettings.h"
+#include "SoraCaptions.h"
+#include "Engine/Canvas.h"
+#include "Components/InputComponent.h"
+#include "GameFramework/PlayerInput.h"
+#include "SoraInputStates.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "ArenaKernelSubsystem.h"
+#include "SoraArmsRules.h"
 #include "Combat/SoraBossCatalog.h"
 #include "SoraBoss.h"
 #include "SoraCampaignDirector.h"
 #include "SoraCatalog.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
+#include "SoraEquipmentComponent.h"
 #include "SoraFrontEnd.h"
 #include "SoraHorse.h"
 #include "SoraPlayerCharacter.h"
 #include "SoraPracticeDirector.h"
 #include "SoraPracticeLobby.h"
 #include "SoraSaveGame.h"
+#include "SoraHUD.h"
+#include "HUD/SoraHUDPanels.h"
+#include "SoraRegistryTesting.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ContentStreaming.h"
+#include "AssetCompilingManager.h"
 #include "DynamicRHI.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -204,9 +216,23 @@ struct FSession
     int32 WalkFrames = 0;
     FString File;
     FDateTime Previous;
+    bool bFrameWritten = false;
+    bool bFrameLayoutRejected = false;
+    bool bBossFrameGuard = false;
+    TWeakObjectPtr<ASoraHUD> BossFrameHUD;
+    FDelegateHandle BossDrawHandle, BossProcessedHandle;
+    uint64 BossRequestFrame = 0;
+    double BossPausedWorld = 0;
+    void CloseBossFrameGuard()
+    {
+        if(BossFrameHUD.IsValid()) BossFrameHUD->OnReticleDrawn.Remove(BossDrawHandle);
+        FScreenshotRequest::OnScreenshotRequestProcessed().Remove(BossProcessedHandle);
+        BossFrameHUD.Reset(); BossDrawHandle.Reset(); BossProcessedHandle.Reset();
+    }
     TArray<FTiming> Timings;
     ~FSession()
     {
+        CloseBossFrameGuard();
         if (!Slot.IsEmpty() && UGameplayStatics::DoesSaveGameExist(Slot, 0))
             UGameplayStatics::DeleteGameInSlot(Slot, 0);
     }
@@ -551,21 +577,88 @@ void Freeze(FSessionRef Session, bool bFrozen)
 
 // Requests the viewport with its HUD and Slate, then waits for the file to
 // be written (or rewritten, when an earlier run left one there).
-void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Name)
+void SaveFrame(FAutomationTestBase* Test, FSessionRef Session, const FString& Name, bool bRequireLive = false)
 {
-    Queue([Session, Name]()
+    Queue([Test, Session, Name, bRequireLive]()
     {
+        Session->CloseBossFrameGuard();
+        Session->bFrameWritten = false;
+        Session->bFrameLayoutRejected = false;
+        Session->bBossFrameGuard = false;
+        Session->BossRequestFrame = 0;
+        if (bRequireLive && !Session->bShotLive) return;
         Session->File = Session->Folder / (Name + TEXT(".png"));
         Session->Previous = IFileManager::Get().GetTimeStamp(*Session->File);
+        // Campaign boss shots freeze the real telegraph before this request.
+        // Bind to the actual HUD draw and processed screenshot, as Cargo/Bow
+        // do: no hidden HUD, stale Canvas or unpaused transition can qualify.
+        ASoraGameMode* M=Session->M();
+        if(M&&M->Campaign()->CampaignBoss()&&!M->bMenu&&!M->TitleCardChapter()&&!SoraHUDPanels::ShowsRegistry(*M))
+        {
+            APlayerController* PC=M->GetWorld()->GetFirstPlayerController();
+            ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+            if(!HUD||!HUD->bShowHUD||!M->GetWorld()->IsPaused())
+            {
+                Test->AddError(Name+TEXT(": a boss screenshot requires a visible HUD in the paused world"));
+                Session->bFrameLayoutRejected=true;
+                return;
+            }
+            Session->bBossFrameGuard=true;
+            Session->BossFrameHUD=HUD;
+            Session->BossPausedWorld=M->GetWorld()->GetTimeSeconds();
+            const TWeakPtr<FSession> Weak=Session;
+            Session->BossDrawHandle=HUD->OnReticleDrawn.AddLambda([Test,Weak,Name](const FVector2D&)
+            {
+                const auto Current=Weak.Pin();
+                if(!Current||Current->bFrameLayoutRejected||Current->BossRequestFrame!=0) return;
+                auto* Mode=Current->M(); auto* DrawHUD=Current->BossFrameHUD.Get();
+                auto* Viewport=Mode?Mode->GetWorld()->GetGameViewport():nullptr;
+                FString Why=TEXT("The boss HUD draw no longer matches its visible paused state");
+                bool Fits=false;
+                if(Mode&&DrawHUD&&DrawHUD->bShowHUD&&Viewport&&Mode->GetWorld()->IsPaused()&&
+                    Mode->GetWorld()->GetTimeSeconds()==Current->BossPausedWorld&&Mode->Campaign()->CampaignBoss()&&
+                    !Mode->bMenu&&!Mode->TitleCardChapter()&&!SoraHUDPanels::ShowsRegistry(*Mode))
+                {
+                    FVector2D Size; Viewport->GetViewportSize(Size);
+                    Fits=SoraHUDPanels::StoryTrackerLayoutFits(FSoraHUDFrame(*DrawHUD,*Mode,Size.X,Size.Y),Why);
+                }
+                if(!Fits)
+                {
+                    Test->AddError(Name+TEXT(": ")+Why); Current->bFrameLayoutRejected=true; return;
+                }
+                Current->BossRequestFrame=GFrameCounter;
+                FScreenshotRequest::RequestScreenshot(Current->File,true,false);
+            });
+            Session->BossProcessedHandle=FScreenshotRequest::OnScreenshotRequestProcessed().AddLambda([Test,Weak,Name]()
+            {
+                const auto Current=Weak.Pin();
+                if(!Current||Current->bFrameLayoutRejected||Current->BossRequestFrame==0) return;
+                const auto* Mode=Current->M(); const auto* DrawHUD=Current->BossFrameHUD.Get();
+                Current->bFrameWritten=Mode&&DrawHUD&&DrawHUD->bShowHUD&&Mode->GetWorld()->IsPaused()&&
+                    Current->BossRequestFrame==GFrameCounter&&Mode->GetWorld()->GetTimeSeconds()==Current->BossPausedWorld&&
+                    IFileManager::Get().FileSize(*Current->File)>0&&IFileManager::Get().GetTimeStamp(*Current->File)!=Current->Previous;
+                if(!Current->bFrameWritten)
+                {
+                    Test->AddError(Name+TEXT(": the boss original does not match its observed paused HUD frame"));
+                    Current->bFrameLayoutRejected=true;
+                }
+            });
+            return;
+        }
         FScreenshotRequest::RequestScreenshot(Session->File, true, false);
     });
-    ADD_LATENT_AUTOMATION_COMMAND(FUntil(15.0, [Session](double)
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(15.0, [Session, bRequireLive](double)
     {
-        return IFileManager::Get().FileSize(*Session->File) > 0 && IFileManager::Get().GetTimeStamp(*Session->File) != Session->Previous;
+        if (Session->bFrameLayoutRejected || (bRequireLive && !Session->bShotLive)) return true;
+        if (Session->bBossFrameGuard) return Session->bFrameWritten;
+        Session->bFrameWritten = IFileManager::Get().FileSize(*Session->File) > 0 &&
+            IFileManager::Get().GetTimeStamp(*Session->File) != Session->Previous;
+        return Session->bFrameWritten;
     }, [Test, Session]()
     {
         Test->AddError(FString::Printf(TEXT("No screenshot was written to %s"), *Session->File));
     }));
+    Queue([Session]() { Session->CloseBossFrameGuard(); });
 }
 
 FString BossSeen(const ASoraBoss& Boss)
@@ -883,6 +976,11 @@ void QueueShot(FAutomationTestBase* Test, FSessionRef Session, const FShot& Shot
     SaveFrame(Test, Session, Shot.Name);
     Queue([Test, Session, Shot, Where]()
     {
+        if(!Session->bFrameWritten||Session->bFrameLayoutRejected)
+        {
+            UE_LOG(LogTemp,Display,TEXT("SORA_CAPTURE_REJECTED %s: no accepted fresh original"),Shot.Name);
+            return;
+        }
         USoraCampaignDirector* Campaign = Session->Campaign();
         const FSoraChapter& Chapter = FSoraCatalog::Get().Chapter(Shot.Chapter);
         const FSoraBeat& Beat = Chapter.Beats[Shot.Beat];
@@ -1232,6 +1330,381 @@ void QueueArena(FAutomationTestBase* Test, FSessionRef Session, const FArena& Ar
             Kernel->bPracticeAutopilot = false;
     });
 }
+// Let actual asynchronous asset work finish and its preparation messages
+// disappear naturally. Keep editor diagnostics enabled and fail on a timeout.
+void WaitForRegistryAssets(FAutomationTestBase* Test,FSessionRef Session)
+{
+    const TSharedRef<double> QuietSince=MakeShared<double>(-1.0);
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(120.0,[Test,Session,QuietSince](double Elapsed)
+    {
+        if(!Session->bShotLive) return true;
+        FAssetCompilingManager& Assets=FAssetCompilingManager::Get();
+        Assets.ProcessAsyncTasks(true);
+        if(Assets.GetNumRemainingAssets()!=0)
+        {
+            *QuietSince=-1.0;
+            return false;
+        }
+        if(*QuietSince<0.0) *QuietSince=Elapsed;
+        if(Elapsed-*QuietSince<2.0) return false;
+        Test->AddInfo(TEXT("Registry capture: asset compilation idle for two seconds; diagnostics remain enabled"));
+        return true;
+    },[Test,Session]()
+    {
+        Test->AddError(FString::Printf(TEXT("Registry capture asset compilation did not settle; %d assets remain"),
+            FAssetCompilingManager::Get().GetNumRemainingAssets()));
+        Session->bShotLive=false;
+    }));
+}
+// Completed-save fixtures use the real catalog, progress validator, disk load,
+// Continue action and HUD. They are UI evidence, never played-campaign proof.
+void QueueRegistryFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Chapter,bool English)
+{
+    const FString Name=FString::Printf(TEXT("RegistryFixture_Chapter%d_%s"),Chapter+1,English?TEXT("JA_EN"):TEXT("JA"));
+    Queue([Test,Session,Chapter,English]()
+    {
+        Session->bShotLive=false;
+        ASoraGameMode* M=Session->M();
+        auto* Save=NewObject<USoraSaveGame>();
+        if(!M||!SoraRegistryTesting::CompletedFixture(*Save,Chapter))
+        {
+            Test->AddError(TEXT("Registry fixture could not construct valid completed progress")); return;
+        }
+        Save->EnglishSubtitles=English;
+        if(!UGameplayStatics::SaveGameToSlot(Save,Session->Slot,0))
+        {
+            Test->AddError(TEXT("Registry fixture could not save its throwaway checkpoint")); return;
+        }
+        if(!M->bMenu) M->SetMenuOpen(true);
+        M->SaveSlotName=Session->Slot; M->bDeterministicPractice=false; M->bCampaign=true;
+        if(!M->Campaign()->LoadSave()) { Test->AddError(TEXT("Registry fixture did not load")); return; }
+        M->ResetRound();
+        if(!Test->TestTrue(TEXT("Continue opens the completed registry"),M->ContinueCampaign()&&SoraHUDPanels::ShowsRegistry(*M))||
+            !Test->TestEqual(TEXT("Continue preserves the fixture chapter"),M->Campaign()->ChapterId,Chapter)||
+            !Test->TestEqual(TEXT("The fixture keeps its language choice"),M->bEnglishSubtitles,English)) return;
+        const TArray<FSoraRegistryRow> Rows=M->Campaign()->RegistryRows();
+        const TArray<int32> Counts=Chapter==3?TArray<int32>{12,1,30,120}:Chapter==4?TArray<int32>{24,3,1}:TArray<int32>{430};
+        if(!Test->TestEqual(TEXT("All authored entries are present once"),Rows.Num(),Counts.Num())) return;
+        const ESoraRegistryState State=Chapter==3?ESoraRegistryState::Recorded:Chapter==4?ESoraRegistryState::Inspected:ESoraRegistryState::Returned;
+        for(int32 Index=0;Index<Rows.Num();++Index)
+        {
+            if(!Test->TestEqual(TEXT("The authored count is intact"),Rows[Index].Entry.Quantity,Counts[Index])||
+                !Test->TestTrue(TEXT("The chapter has its correct inspection state"),Rows[Index].State==State)||
+                !Test->TestEqual(TEXT("Only inspected goods have tally marks"),Rows[Index].HasSplitTally(),Chapter==4)) return;
+        }
+        if(Chapter==6)
+        {
+            const SoraText::FLine Note=SoraRegistry::Status(State);
+            if(!Test->TestEqual(TEXT("The return note remains exact in Japanese"),Note.Japanese,FString(TEXT("返還のみ記帳・札は切らず")))||
+                !Test->TestEqual(TEXT("The return note remains exact in English"),Note.English,FString(TEXT("Recorded as returned. No tally cut.")))) return;
+        }
+        M->Notice.Reset(); M->NoticeEnglish.Reset(); M->NoticeTime=0.f;
+        Session->bShotLive=true;
+    });
+    StreamIn();
+    WaitForRegistryAssets(Test,Session);
+    Queue([Test,Session]()
+    {
+        if(!Session->bShotLive) return;
+        ASoraGameMode* M=Session->M();
+        APlayerController* PC=M?M->GetWorld()->GetFirstPlayerController():nullptr;
+        ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+        UGameViewportClient* Viewport=M?M->GetWorld()->GetGameViewport():nullptr;
+        if(!Test->TestNotNull(TEXT("The fixture uses the actual game HUD"),HUD)||!Viewport)
+        {
+            Session->bShotLive=false; return;
+        }
+        FVector2D Size; Viewport->GetViewportSize(Size);
+        FString Why;
+        Session->bShotLive=Test->TestTrue(TEXT("All registry text fits without dropped counters or footer text"),
+            SoraHUDPanels::RegistryLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why));
+        if(!Why.IsEmpty()) Test->AddError(Why);
+    });
+    SaveFrame(Test,Session,Name,true);
+    Queue([Session,Chapter,English,Name]()
+    {
+        if(!Session->bShotLive||!Session->bFrameWritten) return;
+        const FSoraChapter& Data=FSoraCatalog::Get().Chapter(Chapter);
+        const FString Note=FString::Printf(TEXT("validated completed-save UI fixture; not playthrough evidence; language=%s; rows=%d; measured text and role bounds passed; assets idle"),
+            English?TEXT("JA+EN"):TEXT("JA"),Session->Campaign()->RegistryRows().Num());
+        AppendIndex(*Session,FString::Printf(TEXT("%s.png\t%d\tcompleted-save-fixture\t%s\t%s\tregistry UI fixture\t%s"),
+            *Name,Chapter+1,*Data.Title,*Data.TitleEnglish,*Note));
+        UE_LOG(LogTemp,Display,TEXT("SORA_REGISTRY_FIXTURE %s"),*Note);
+        UE_LOG(LogTemp,Display,TEXT("SORA_REGISTRY_FIXTURE_FRAME %s"),*FPaths::ConvertRelativePathToFull(Session->File));
+    });
+}
+
+// Prepared gameplay UI fixtures use ordinary checkpoint load and equipment
+// actions. They leave objectives, vitals, fieldcraft and action prompts on.
+void QueueWeaponHUDFixture(FAutomationTestBase* Test,FSessionRef Session,int32 Case,bool English)
+{
+    const bool Dojo=Case==0||Case==3||Case==4;
+    const int32 Chapter=Dojo?0:(Case==6||Case==7)?4:3,Beat=Dojo?8:(Case==6||Case==7)?5:(Case==5||Case==8)?11:10;
+    const FString Kind=Case==0?TEXT("Bokken"):Case==1?TEXT("Katana"):Case==2?TEXT("BowDraw"):
+        Case==3?TEXT("BokkenDialogue"):Case==4?TEXT("PickupNotices"):Case==5?TEXT("EightTargets"):Case==6?TEXT("BellowsKeyboard"):Case==7?TEXT("BellowsGamepad"):TEXT("CaptionPressure");
+    const FString Name=FString::Printf(TEXT("WeaponHUDFixture_%s_%s"),*Kind,English?TEXT("JA_EN"):TEXT("JA"));
+    const TSharedRef<bool> PreviousRhythmAssist=MakeShared<bool>(false);
+    const TSharedRef<bool> PreviousCaptions=MakeShared<bool>(false);
+    const auto PreviousSubtitleSize=MakeShared<SoraAccessibility::ESubtitleSize>(SoraAccessibility::ESubtitleSize::Standard);
+    Queue([Test,Session,Chapter,Beat,Case,English,PreviousRhythmAssist,PreviousCaptions,PreviousSubtitleSize]()
+    {
+        Session->bShotLive=false;
+        ASoraGameMode* M=Session->M();
+        auto* Save=NewObject<USoraSaveGame>();
+        if(!M||!USoraCampaignDirector::SeedCheckpoint(*Save,Chapter,Beat))
+        { Test->AddError(TEXT("Weapon HUD fixture checkpoint is invalid")); return; }
+        *PreviousRhythmAssist=M->Settings()->RhythmAssist();
+        *PreviousCaptions=M->Settings()->SoundCaptions(); *PreviousSubtitleSize=M->Settings()->SubtitleSize();
+        if(Case==8) { M->Settings()->SetSoundCaptions(true); M->Settings()->SetSubtitleSize(SoraAccessibility::ESubtitleSize::ExtraLarge); }
+        if(Case>=6) M->Settings()->SetRhythmAssist(false);
+        Save->EnglishSubtitles=English;
+        if(!UGameplayStatics::SaveGameToSlot(Save,Session->Slot,0))
+        { Test->AddError(TEXT("Weapon HUD fixture checkpoint was not saved")); return; }
+        if(!M->bMenu) M->SetMenuOpen(true);
+        M->SaveSlotName=Session->Slot; M->bDeterministicPractice=false; M->bCampaign=true;
+        if(!M->Campaign()->LoadSave()) { Test->AddError(TEXT("Weapon HUD fixture checkpoint did not load")); return; }
+        M->ResetRound(); M->BeginRound();
+        ASoraPlayerCharacter* Hero=Session->Hero();
+        if(!InBeat(Test,*Session,Chapter,Beat,TEXT("Weapon HUD fixture"))||!Hero) return;
+        const int32 WeaponId=Case==2?FSoraCatalog::Get().Hero().YumiId:FSoraCatalog::Get().Hero().KatanaId;
+        if(!Test->TestTrue(TEXT("The fixture equips an actually unlocked arm"),Hero->GetEquipment()->EquipCampaignWeapon(WeaponId))) return;
+        M->Notice.Reset(); M->NoticeEnglish.Reset(); M->NoticeTime=0.f;
+        Session->bShotLive=true;
+    });
+    // The manufacture checkpoints have no timed success or initial wave.
+    // Most frames let arrivals finish. Dialogue and eight-target defence
+    // retain their arrival line; defence freezes before its wave can resolve.
+    Wait(.4);
+    if(Case!=3&&Case!=5&&Case!=8)
+    {
+        ADD_LATENT_AUTOMATION_COMMAND(FUntil(40.0,[Session](double)
+        {
+            return !Session->bShotLive||!Session->Campaign()->CurrentDialogueCue();
+        },[Test,Session]() { Test->AddError(TEXT("Weapon HUD fixture arrival dialogue did not finish")); Session->bShotLive=false; }));
+    }
+    Queue([Test,Session,Case]()
+    {
+        if(!Session->bShotLive) return;
+        if(!Test->TestTrue(TEXT("Weapon HUD remains in actual gameplay"),Session->M()->IsPlaying()))
+        { Session->bShotLive=false; return; }
+        if(Case==2)
+        {
+            if(!Test->TestTrue(TEXT("A real arm-group action raises the arm-change notice"),
+                Session->Hero()->SelectArmsGroup(SoraArmsRules::GroupOf(Session->Hero()->WeaponId))))
+            { Session->bShotLive=false; return; }
+            Session->Hero()->GetEquipment()->TriggerDown();
+            Session->bShotLive=Test->TestTrue(TEXT("The bow draw indicator is active"),Session->Hero()->GetEquipment()->IsBowDrawing());
+        }
+        if(Case==3)
+            Session->bShotLive=Test->TestNotNull(TEXT("The overlap fixture retains its actual ambient arrival line"),Session->Campaign()->CurrentDialogueCue());
+        if(Case==4)
+        {
+            USoraCampaignDirector& Campaign=*Session->Campaign();
+            ASoraPlayerCharacter& Hero=*Session->Hero();
+            const FSoraBeatSpace& Space=*Campaign.ActiveSpace();
+            // Advance a real manufacturing operation to a nonzero partial
+            // count, then collect four actual world pickups through Interact.
+            for(int32 Step=0;Step<2;++Step)
+            {
+                Place(Hero,Space.Stations[Space.StepStations[Step]]);
+                Session->M()->Interact(&Hero);
+            }
+            if(!Test->TestEqual(TEXT("The notice fixture reached its second operation"),Campaign.TaskProgress().Step,1)||
+                !Test->TestEqual(TEXT("The active operation has a real partial count"),Campaign.TaskProgress().StepDone,1))
+            { Session->bShotLive=false; return; }
+            const TArray<int32> Pickups=Campaign.LoosePickups();
+            if(!Test->TestEqual(TEXT("Four actual collectibles are available"),Pickups.Num(),4))
+            { Session->bShotLive=false; return; }
+            for(const int32 Pickup:Pickups)
+            {
+                const unsigned long long Before=Campaign.CollectedMask();
+                Place(Hero,FVector2D(Campaign.PickupLocation(Pickup)));
+                Session->M()->Interact(&Hero);
+                if(!Test->TestTrue(TEXT("Interact collected the real pickup"),Campaign.CollectedMask()!=Before))
+                { Session->bShotLive=false; return; }
+            }
+            Place(Hero,Space.Stations[Space.StepStations[1]]);
+            Session->bShotLive=Test->TestEqual(TEXT("Four pickup notices coexist in the gameplay HUD"),Campaign.StoryNotices().Num(),4);
+        }
+        if(Case==6||Case==7)
+        {
+            auto& C=*Session->Campaign(); auto& Hero=*Session->Hero();
+            const auto Pickups=C.LoosePickups();
+            if(!Test->TestTrue(TEXT("Bellows fixture has actual pickups for notice pressure"),Pickups.Num()>=2))
+            { Session->bShotLive=false; return; }
+            for(int32 N=0;N<FMath::Min(3,Pickups.Num());++N)
+            { Place(Hero,FVector2D(C.PickupLocation(Pickups[N]))); Session->M()->Interact(&Hero); }
+            Place(Hero,C.ActiveSpace()->Anchor+FVector2D(-160,0));
+            auto* PC=Cast<APlayerController>(Hero.GetController());
+            if(!PC||!PC->PlayerInput||!Hero.InputComponent) { Session->bShotLive=false; return; }
+            const bool Pad=Case==7;
+            FKey Interact=EKeys::Invalid;
+            for(const FKey& Key:Hero.GetActionKeys(TEXT("Interact"))) if(Key.IsGamepadKey()==Pad) { Interact=Key; break; }
+            const TArray<UInputComponent*> Stack={Hero.InputComponent};
+            const auto Key=[&](FKey K,EInputEvent Event)
+            {
+                PC->InputKey(FInputKeyEventArgs::CreateSimulated(K,Event,Event==IE_Pressed?1.f:0.f));
+                PC->PlayerInput->ProcessInputStack(Stack,1.f/60.f,false);
+            };
+            Key(Interact,IE_Pressed);
+            if(Pad)
+            {
+                Session->bShotLive&=Test->TestTrue(TEXT("Pad left/right prompt matches the actual movement binding"),
+                    PC->PlayerInput->AxisMappings.ContainsByPredicate([](const FInputAxisKeyMapping& Map)
+                        { return Map.AxisName==TEXT("MoveRight")&&Map.Key==EKeys::Gamepad_LeftX&&Map.Scale==1.f; }));
+                for(float V:{-1.f,0.f,1.f,0.f,-1.f,0.f})
+                { PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::Gamepad_LeftX,IE_Axis,V,1)); PC->PlayerInput->ProcessInputStack(Stack,1.f/60.f,false); }
+            }
+            else
+            {
+                const FKey Left=Hero.ControlKey(SoraInput::FindRemappable(TEXT("MoveRight"),-1),false);
+                const FKey Right=Hero.ControlKey(SoraInput::FindRemappable(TEXT("MoveRight"),1),false);
+                Key(Left,IE_Pressed); Key(Left,IE_Released); Key(Right,IE_Pressed); Key(Right,IE_Released); Key(Left,IE_Pressed); Key(Left,IE_Released);
+            }
+            Session->M()->FrontEnd()->NoteDevice(Pad?SoraUI::EDevice::Gamepad:SoraUI::EDevice::KeyboardMouse);
+            Session->bShotLive&=Test->TestTrue(TEXT("Bellows capture has a live pair, next-right cue and real notices"),
+                C.TaskProgress().Progress==1000&&C.IsWorkingCrank()&&C.BellowsRightNext()&&C.StoryNotices().Num()>=2);
+        }
+        if(Case==5||Case==8)
+        {
+            USoraCampaignDirector& Campaign=*Session->Campaign();
+            if(!Test->TestEqual(TEXT("The authored defence has eight named targets"),Campaign.ActiveTask().TargetCount,8))
+            { Session->bShotLive=false; return; }
+            for(int32 Target=0;Target<8;++Target)
+            {
+                const int32 Before=Campaign.TaskProgress().TargetHp[Target],Damage=(Target+1)*7;
+                Campaign.DamageDefendedTarget(Target,Damage);
+                if(!Test->TestEqual(TEXT("Each target retains its own live damaged health"),Campaign.TaskProgress().TargetHp[Target],Before-Damage))
+                { Session->bShotLive=false; return; }
+            }
+        }
+    });
+    if(Case==8) Queue([Test,Session]()
+    {
+        if(!Session->bShotLive) return;
+        auto* Captions=USoraCaptions::Get(Session->M());
+        if(!Test->TestNotNull(TEXT("Caption pressure uses the real presentation owner"),Captions)) { Session->bShotLive=false; return; }
+        const FVector Behind=Session->Hero()->GetActorLocation()-Session->Hero()->GetActorForwardVector()*300.f;
+        // Sounds available during this actual defence, including count and
+        // direction. This is a prepared UI fixture, not a combat trace.
+        const FText Sounds[]={NSLOCTEXT("SoraArena.Captions","Gunfire","銃声"),
+            NSLOCTEXT("SoraArena.Captions","BladeDrawnBack","刃を振りかぶる音"),
+            NSLOCTEXT("SoraArena.Captions","BladeBlocked","刃を受け止める音"),NSLOCTEXT("SoraArena.Captions","BladesClash","刃の打ち合う音")};
+        for(const auto& Sound:Sounds) { Captions->Show(Sound,&Behind,30.f); Captions->Show(Sound,&Behind,30.f); }
+        Session->bShotLive&=Test->TestEqual(TEXT("All four captions are live at the largest subtitle size"),Captions->Live().Num(),USoraCaptions::MaxLive);
+    });
+    if(Case==6||Case==7) Wait(.05); // let the actual world kit show the just-worked rate
+    Freeze(Session,true);
+    StreamIn();
+    const TSharedRef<double> QuietSince=MakeShared<double>(-1.0);
+    ADD_LATENT_AUTOMATION_COMMAND(FUntil(120.0,[Session,QuietSince](double Elapsed)
+    {
+        if(!Session->bShotLive) return true;
+        FAssetCompilingManager& Assets=FAssetCompilingManager::Get();
+        Assets.ProcessAsyncTasks(true);
+        if(Assets.GetNumRemainingAssets()!=0) { *QuietSince=-1.0; return false; }
+        if(*QuietSince<0.0) *QuietSince=Elapsed;
+        return Elapsed-*QuietSince>=2.0;
+    },[Test,Session]()
+    {
+        Test->AddError(FString::Printf(TEXT("Weapon HUD capture asset compilation did not settle; %d assets remain"),
+            FAssetCompilingManager::Get().GetNumRemainingAssets()));
+        Session->bShotLive=false;
+    }));
+    Queue([Test,Session,Chapter,Beat,Case,English]()
+    {
+        if(!Session->bShotLive) return;
+        ASoraGameMode* M=Session->M();
+        APlayerController* PC=M->GetWorld()->GetFirstPlayerController();
+        ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+        UGameViewportClient* Viewport=M->GetWorld()->GetGameViewport();
+        if(!Test->TestNotNull(TEXT("The gameplay fixture uses the actual HUD"),HUD)||!Viewport)
+        { Session->bShotLive=false; return; }
+        FVector2D Size; Viewport->GetViewportSize(Size);
+        // This latent check deliberately executes outside DrawHUD. The same
+        // label width used for inline placement must remain available here.
+        const FString Probe=TEXT("SORA HUD 123");
+        int32 ProbeWidth=0,ProbeHeight=0;
+        UCanvas::ClippedStrLen(HUD->JapaneseFontObject(),.6f,.6f,ProbeWidth,ProbeHeight,Probe);
+        FString Why;
+        Session->bShotLive=Test->TestTrue(TEXT("Text metrics are available between DrawHUD frames"),
+            ProbeWidth>0&&HUD->LabelWidth(Probe,.6f)==ProbeWidth)&&
+            InBeat(Test,*Session,Chapter,Beat,TEXT("Weapon HUD capture"))&&
+            Test->TestEqual(TEXT("The requested language remains active"),M->bEnglishSubtitles,English)&&
+            Test->TestEqual(TEXT("The fixture retains its weapon identity"),Session->Hero()->WeaponId,
+                Case==2?FSoraCatalog::Get().Hero().YumiId:FSoraCatalog::Get().Hero().KatanaId)&&
+            Test->TestTrue(TEXT("Complete weapon text and windup fit their measured panel bounds"),
+                SoraHUDPanels::WeaponLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why))&&
+            Test->TestTrue(TEXT("Weapon, windup, arm notice, vitals and actual narrative strips do not overlap"),
+                SoraHUDPanels::BottomHUDLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),*Session->Hero(),Why))&&
+            Test->TestTrue(TEXT("Readable tracker and newest notices fit above the lower stack, retaining every target"),
+                SoraHUDPanels::StoryTrackerLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
+            Test->TestTrue(TEXT("The entire rhythm ring clears the measured Interact prompt and lower story panels"),
+                SoraHUDPanels::RhythmCueLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
+            Test->TestTrue(TEXT("Visible interaction prompts clear coaching, dialogue, captions and other measured HUD panels"),
+                SoraHUDPanels::InteractionPromptLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why))&&
+            Test->TestTrue(TEXT("Every visible caption clears the measured gameplay, tracker and lower story panels"),
+                SoraHUDPanels::CaptionStoryLayoutFits(FSoraHUDFrame(*HUD,*M,Size.X,Size.Y),Why));
+        if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("Bow draw survives capture preparation"),Session->Hero()->GetEquipment()->IsBowDrawing());
+        if(Case==2) Session->bShotLive&=Test->TestTrue(TEXT("The actual arm-change notice remains active"),
+            M->GetWorld()->GetTimeSeconds()-Session->Hero()->ArmsTakenAt()<1.6f);
+        if(Case==0||Case==3||Case==4) Session->bShotLive&=Test->TestNotNull(TEXT("Manufacturing instructions remain present in the frame"),Session->Campaign()->CurrentPrompt());
+        if(Case==3||Case==8) Session->bShotLive&=Test->TestNotNull(TEXT("Dialogue remains present in the frame"),Session->Campaign()->CurrentDialogueCue());
+        if(Case==4) Session->bShotLive&=Test->TestEqual(TEXT("All four actual pickup notices survive capture preparation"),Session->Campaign()->StoryNotices().Num(),4);
+        if(Case==4)
+        {
+            FVector WorkAnchor;
+            Session->bShotLive&=Test->TestTrue(TEXT("Pickup notice coverage includes the ordinary Work prompt beside coaching"),
+                Session->Campaign()->RhythmCuePeriodMs()<=0&&Session->Campaign()->AnchorTakesInteract()&&
+                Session->Campaign()->ObjectiveAnchor(WorkAnchor)&&FVector::Dist2D(WorkAnchor,Session->Hero()->GetActorLocation())<260.f);
+        }
+        if(Case==5||Case==8) Session->bShotLive&=Test->TestEqual(TEXT("All eight defended targets survive capture preparation"),Session->Campaign()->ActiveTask().TargetCount,8);
+        if(Case==8)
+        {
+            const auto* Captions=USoraCaptions::Get(M);
+            Session->bShotLive&=Test->TestTrue(TEXT("Four captions and the largest subtitle size survive capture preparation"),
+                Captions&&Captions->Live().Num()==USoraCaptions::MaxLive&&M->Settings()->SubtitleSize()==SoraAccessibility::ESubtitleSize::ExtraLarge);
+        }
+        if(Case==6||Case==7) Session->bShotLive&=Test->TestTrue(TEXT("Bellows input and next-foot tracker survive capture preparation"),Session->Campaign()->IsWorkingCrank()&&Session->Campaign()->BellowsRightNext());
+        if(!Why.IsEmpty()) Test->AddError(Why);
+    });
+    SaveFrame(Test,Session,Name,true);
+    Queue([Session,Chapter,Beat,English,Name]()
+    {
+        if(!Session->bShotLive||!Session->bFrameWritten) return;
+        const FSoraBeat& Data=FSoraCatalog::Get().Chapter(Chapter).Beats[Beat];
+        const FString Note=FString::Printf(TEXT("prepared gameplay UI fixture; not playthrough evidence; language=%s; normal checkpoint and equipment actions; complete measured weapon/tracker text; targets=%d; notices=%d; step=%d; step_done=%d; asset compilation idle; gameplay overlays retained"),
+            English?TEXT("JA+EN"):TEXT("JA"),Session->Campaign()->ActiveTask().TargetCount,Session->Campaign()->StoryNotices().Num(),
+            Session->Campaign()->TaskProgress().Step,Session->Campaign()->TaskProgress().StepDone);
+        AppendIndex(*Session,FString::Printf(TEXT("%s.png\t%d\t%s\t%s\t%s\tweapon HUD fixture\t%s"),
+            *Name,Chapter+1,*Data.Id,*Data.Title,*Data.TitleEnglish,*Note));
+        UE_LOG(LogTemp,Display,TEXT("SORA_WEAPON_HUD_FIXTURE %s"),*Note);
+        UE_LOG(LogTemp,Display,TEXT("SORA_WEAPON_HUD_FIXTURE_FRAME %s"),*FPaths::ConvertRelativePathToFull(Session->File));
+    });
+    Queue([Session]() { if(Session->Hero()) Session->Hero()->GetEquipment()->Halt(); });
+    Queue([Session,Case,PreviousRhythmAssist,PreviousCaptions,PreviousSubtitleSize]()
+    {
+        if(Case>=6)
+        {
+            auto* Hero=Session->Hero(); auto* PC=Hero?Cast<APlayerController>(Hero->GetController()):nullptr;
+            if(PC&&PC->PlayerInput) PC->PlayerInput->FlushPressedKeys();
+            Session->Campaign()->StopPlayerCrank(false);
+            Session->M()->Settings()->SetRhythmAssist(*PreviousRhythmAssist);
+        }
+        if(Case==8)
+        {
+            if(auto* Captions=USoraCaptions::Get(Session->M()))
+                for(const auto& Text:{NSLOCTEXT("SoraArena.Captions","Gunfire","銃声"),
+                    NSLOCTEXT("SoraArena.Captions","BladeDrawnBack","刃を振りかぶる音"),
+                    NSLOCTEXT("SoraArena.Captions","BladeBlocked","刃を受け止める音"),NSLOCTEXT("SoraArena.Captions","BladesClash","刃の打ち合う音")})
+                    Captions->Show(Text,nullptr,0.f);
+            Session->M()->Settings()->SetSoundCaptions(*PreviousCaptions);
+            Session->M()->Settings()->SetSubtitleSize(*PreviousSubtitleSize);
+        }
+    });
+    Freeze(Session,false);
+}
+
 } // namespace SoraCapture
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
@@ -1292,4 +1765,67 @@ bool FSoraCapturePracticeTest::RunTest(const FString& Parameters)
     CloseSession(Session);
     return true;
 }
+IMPLEMENT_COMPLEX_AUTOMATION_TEST(
+    FSoraCaptureRegistryFixtureTest,
+    "SoraCapture.RegistryFixture",
+    EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+void FSoraCaptureRegistryFixtureTest::GetTests(TArray<FString>& OutBeautifiedNames,TArray<FString>& OutTestCommands) const
+{
+    for(const int32 Chapter:{3,4,6})
+    {
+        OutBeautifiedNames.Add(FString::Printf(TEXT("Chapter%d"),Chapter+1));
+        OutTestCommands.Add(FString::FromInt(Chapter));
+    }
+}
+bool FSoraCaptureRegistryFixtureTest::RunTest(const FString& Parameters)
+{
+    using namespace SoraCapture;
+    const int32 Chapter=FCString::Atoi(*Parameters);
+    const FSessionRef Session=MakeShared<FSession>();
+    if(!TestTrue(TEXT("A supported registry fixture chapter"),Chapter==3||Chapter==4||Chapter==6)||
+        !OpenSession(*this,*Session,TEXT("RegistryFixture"))) return false;
+    APlayerController* PC=Session->M()->GetWorld()->GetFirstPlayerController();
+    ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+    if(!TestNotNull(TEXT("The fixture has the game HUD"),HUD)) return false;
+    const TWeakObjectPtr<ASoraHUD> WeakHUD=HUD;
+    const bool PreviousVisibility=HUD->bShowHUD;
+    HUD->bShowHUD=true;
+    QueueRegistryFixture(this,Session,Chapter,false);
+    QueueRegistryFixture(this,Session,Chapter,true);
+    Queue([WeakHUD,PreviousVisibility]() { if(ASoraHUD* Live=WeakHUD.Get()) Live->bShowHUD=PreviousVisibility; });
+    CloseSession(Session);
+    return true;
+}
+
+IMPLEMENT_COMPLEX_AUTOMATION_TEST(
+    FSoraCaptureWeaponHUDFixtureTest,
+    "SoraCapture.WeaponHUDFixture",
+    EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+
+void FSoraCaptureWeaponHUDFixtureTest::GetTests(TArray<FString>& OutBeautifiedNames,TArray<FString>& OutTestCommands) const
+{
+    OutBeautifiedNames={TEXT("Bokken"),TEXT("Katana"),TEXT("BowDraw"),TEXT("BokkenDialogue"),TEXT("PickupNotices"),TEXT("EightTargets"),TEXT("BellowsKeyboard"),TEXT("BellowsGamepad"),TEXT("CaptionPressure")};
+    OutTestCommands={TEXT("0"),TEXT("1"),TEXT("2"),TEXT("3"),TEXT("4"),TEXT("5"),TEXT("6"),TEXT("7"),TEXT("8")};
+}
+bool FSoraCaptureWeaponHUDFixtureTest::RunTest(const FString& Parameters)
+{
+    using namespace SoraCapture;
+    const int32 Case=FCString::Atoi(*Parameters);
+    const FSessionRef Session=MakeShared<FSession>();
+    if(!TestTrue(TEXT("A supported weapon HUD fixture"),Case>=0&&Case<9)||
+        !OpenSession(*this,*Session,TEXT("WeaponHUDFixture"))) return false;
+    APlayerController* PC=Session->M()->GetWorld()->GetFirstPlayerController();
+    ASoraHUD* HUD=PC?Cast<ASoraHUD>(PC->GetHUD()):nullptr;
+    if(!TestNotNull(TEXT("The fixture has the game HUD"),HUD)) return false;
+    const TWeakObjectPtr<ASoraHUD> WeakHUD=HUD;
+    const bool PreviousVisibility=HUD->bShowHUD;
+    HUD->bShowHUD=true;
+    QueueWeaponHUDFixture(this,Session,Case,false);
+    QueueWeaponHUDFixture(this,Session,Case,true);
+    Queue([WeakHUD,PreviousVisibility]() { if(ASoraHUD* Live=WeakHUD.Get()) Live->bShowHUD=PreviousVisibility; });
+    CloseSession(Session);
+    return true;
+}
+
 #endif

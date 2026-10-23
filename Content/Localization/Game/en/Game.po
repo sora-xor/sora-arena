@@ -18,8 +18,50 @@ msgctxt "SoraArena,MenuTitle"
 msgid "猫柳生"
 msgstr "Nyaagyu Rebellion"
 
+#. Key:	EquipBow
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,EquipBow"
+msgid "{Key} で弓を選び、金色の射位に立つ。"
+msgstr "Select the yumi with {Key}, then stand on the gold shooting line."
+
+#. Key:	Fetching
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,Fetching"
+msgid "矢取り：残り {Seconds} 秒"
+msgstr "Arrow retrieval: {Seconds} s"
+
+#. Key:	FiniteArrows
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,FiniteArrows"
+msgid "矢は有限だ。的場では矢取りを待ち、曲がった矢は鍛冶場で直す。"
+msgstr "Arrows are finite. At the range, wait for retrieval; repair bent arrows at the smithy."
+
+#. Key:	HangingProgress
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,HangingProgress"
+msgid "吊り的：{Hits} / 3 — 揺れと矢の落下を読む"
+msgstr "Hanging targets: {Hits} / 3 — lead the swing and arrow drop"
+
+#. Key:	LineInstructions
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,LineInstructions"
+msgid "金色の射位に立つ。弓を選び、攻撃を長押しして放す。"
+msgstr "Stand on the gold shooting line; select Bow, hold Attack, then release."
+
+#. Key:	NearProgress
+#: Source/SoraArena/Private/Game/SoraCampaignArchery.cpp
+msgctxt "SoraArena.Archery,NearProgress"
+msgid "近的：六射中 {Resolved} 射、四中まで {Hits} 中"
+msgstr "Near target: {Resolved} / 6 arrows resolved, {Hits} / 4 hits"
+
+#. Key:	TrainingOnly
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Archery,TrainingOnly"
+msgid "この立合いは稽古刀で行う。"
+msgstr "This sparring bout uses the practice sword."
+
 #. Key:	Bokken
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.Arms,Bokken"
 msgid "木刀 / 非致死の立合い"
 msgstr "Bokken / non-lethal sparring"
@@ -67,7 +109,7 @@ msgid "いま手にできる{Group}はない。"
 msgstr "No {Group} to hand right now."
 
 #. Key:	TakenUp
-#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.Arms,TakenUp"
 msgid "{Group}　{Arm}"
 msgstr "{Group}: {Arm}"
@@ -84,17 +126,59 @@ msgctxt "SoraArena.Campaign,ArmsFull"
 msgid "荷を抱えている。手にできるのは刀を片手で、が精一杯だ。"
 msgstr "Your arms are full: at most the katana in one paw."
 
+#. Key:	ArmsRecovered
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,ArmsRecovered"
+msgid "刀と脇差、弓、矢十二本を取り戻した。縄で操作を長押しして上がる。"
+msgstr "Katana, wakizashi, bow and twelve arrows recovered. Hold Interact on the rope to climb out."
+
+#. Key:	BundleAtBottom
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,BundleAtBottom"
+msgid "井戸の底だ。操作を離し、包みの前でもう一度長押しして弓に弦を張る。"
+msgstr "At the bottom. Release Interact, then hold it again at the bundle to string the bow."
+
 #. Key:	CannotDismount
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
 msgctxt "SoraArena.Campaign,CannotDismount"
 msgid "ここでは降りられない。"
 msgstr "You cannot dismount here."
 
+#. Key:	CrankHands
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,CrankHands"
+msgid "両手で輪を回している。手を離せば武器を使える。"
+msgstr "Both hands are on the wheel. Release it to use a weapon."
+
+#. Key:	FindBundleFirst
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,FindBundleFirst"
+msgid "先に空井戸の底から刀と弓を取り戻そう。"
+msgstr "Recover the katana and bow from the dry well first."
+
 #. Key:	FoundCollectible
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
 msgctxt "SoraArena.Campaign,FoundCollectible"
 msgid "見つけた：{Category}"
 msgstr "Found: {Category}"
+
+#. Key:	FoundryHands
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,FoundryHands"
+msgid "作業中は両手を使う。手を離せば武器を使える。"
+msgstr "Your hands are busy. Release the work before drawing a weapon."
+
+#. Key:	HiddenArms
+#: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
+msgctxt "SoraArena.Campaign,HiddenArms"
+msgid "刀と弓は空井戸の底に隠してある。今は脇差だけだ。"
+msgstr "The katana and bow are hidden in the dry well. Only the wakizashi is available."
+
+#. Key:	MaaiLesson
+#: Source/SoraArena/Private/Game/SoraCampaignDirector.cpp
+msgctxt "SoraArena.Campaign,MaaiLesson"
+msgid "間合い：師に向き、水月の輪を 0.5 秒保つ。{Done} / {Count} 歩"
+msgstr "MAAI: face Sensei; hold the moon ring for 0.5 s. Steps {Done} / {Count}"
 
 #. Key:	MountFromRight
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
@@ -107,6 +191,18 @@ msgstr "Mount from her right side, as riders do. Walk around to her right."
 msgctxt "SoraArena.Campaign,NotFromSaddle"
 msgid "馬上ではこの武器は使えない。"
 msgstr "That weapon cannot be used from the saddle."
+
+#. Key:	RopeDown
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,RopeDown"
+msgid "縄をつかんだ。操作を長押しして下りる。離せばその場で止まる。"
+msgstr "Hold Interact to descend the rope; release to stop."
+
+#. Key:	RopeOut
+#: Source/SoraArena/Private/Game/SoraCampaignRecovery.cpp
+msgctxt "SoraArena.Campaign,RopeOut"
+msgid "井戸から上がった。釣瓶で道具の箱を引き上げよう。"
+msgstr "Out of the well. Hoist the tool crates at the working well."
 
 #. Key:	SaddleKatanaArc
 #: Source/SoraArena/Private/Game/SoraCampaignDirectorWorld.cpp
@@ -157,18 +253,21 @@ msgid "後ろ"
 msgstr "behind"
 
 #. Key:	BladeBlocked
+#: Source/SoraArena/Private/SoraCaptureAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraCaptions.cpp
 msgctxt "SoraArena.Captions,BladeBlocked"
 msgid "刃を受け止める音"
 msgstr "Blade blocked"
 
 #. Key:	BladeDrawnBack
+#: Source/SoraArena/Private/SoraCaptureAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraCaptions.cpp
 msgctxt "SoraArena.Captions,BladeDrawnBack"
 msgid "刃を振りかぶる音"
 msgstr "Blade drawn back"
 
 #. Key:	BladesClash
+#: Source/SoraArena/Private/SoraCaptureAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraCaptions.cpp
 msgctxt "SoraArena.Captions,BladesClash"
 msgid "刃の打ち合う音"
@@ -217,6 +316,7 @@ msgid "爆発"
 msgstr "Explosion"
 
 #. Key:	Gunfire
+#: Source/SoraArena/Private/SoraCaptureAutomation.cpp
 #: Source/SoraArena/Private/UI/SoraCaptions.cpp
 msgctxt "SoraArena.Captions,Gunfire"
 msgid "銃声"
@@ -245,6 +345,66 @@ msgstr "Shell launched"
 msgctxt "SoraArena.Captions,WoodenSwordsKnock"
 msgid "木刀の打ち合う音"
 msgstr "Wooden swords knock"
+
+#. Key:	Challenge
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Challenge"
+msgid "弓の挑戦"
+msgstr "Archery challenge"
+
+#. Key:	Context
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Context"
+msgid "第{Chapter}章 · {Category}"
+msgstr "Chapter {Chapter} · {Category}"
+
+#. Key:	Empty
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Empty"
+msgid "まだ記録を見つけていない。"
+msgstr "No records discovered yet."
+
+#. Key:	OpenHint
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Codex,OpenHint"
+msgid "見つけた品と、達成した通し矢の記録を読む。"
+msgstr "Read the items you have found and the Toshiya challenge you have completed."
+
+#. Key:	ScrollDown
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Codex,ScrollDown"
+msgid "下へ"
+msgstr "Scroll down"
+
+#. Key:	ScrollUp
+#: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+msgctxt "SoraArena.Codex,ScrollUp"
+msgid "上へ"
+msgstr "Scroll up"
+
+#. Key:	Summary
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Summary"
+msgid "収集品 {Count} / 48\n見つけた記録を選んで読む。"
+msgstr "Collectibles {Count} / 48\nSelect a discovered record to read."
+
+#. Key:	Title
+#: Source/SoraArena/Private/UI/SoraFrontEnd.cpp
+msgctxt "SoraArena.Codex,Title"
+msgid "図鑑"
+msgstr "Codex"
+
+#. Key:	Toshiya
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Toshiya"
+msgid "通し矢"
+msgstr "Toshiya"
+
+#. Key:	Untitled
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
+msgctxt "SoraArena.Codex,Untitled"
+msgid "第{Chapter}章 · {Category} · {Number}"
+msgstr "Chapter {Chapter} · {Category} · {Number}"
 
 #. Key:	Banner.MovementByKeyboard
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
@@ -703,6 +863,18 @@ msgctxt "SoraArena.Fieldcraft,FireOut"
 msgid "竈の火が消えた　{Key} 長押しで点け直すまで炊き出しは止まる"
 msgstr "A cook-fire went out. The kitchen stops until you hold {Key} to relight it"
 
+#. Key:	FloodAirShaft
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,FloodAirShaft"
+msgid "頭上に空気　{Key} で浮かび、息を整えろ"
+msgstr "Air above. {Key} to rise and recover your breath"
+
+#. Key:	FloodDeepPassage
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,FloodDeepPassage"
+msgid "{Key} で潜れ　途中の明るい縦穴で息継ぎ"
+msgstr "{Key} to dive. Take a breath in the lit shaft midway"
+
 #. Key:	Free
 #: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
 msgctxt "SoraArena.Fieldcraft,Free"
@@ -811,6 +983,12 @@ msgctxt "SoraArena.Fieldcraft,Stones"
 msgid "礫 {Count} / {Max}　{Key} で投げる"
 msgstr "Stones {Count} / {Max}. {Key} to throw"
 
+#. Key:	StringBow
+#: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
+msgctxt "SoraArena.Fieldcraft,StringBow"
+msgid "{Key} 長押し：弓に弦を張る"
+msgstr "Hold {Key}: string the bow"
+
 #. Key:	Swimming
 #: Source/SoraArena/Private/HUD/SoraHUDFieldcraftPanel.cpp
 msgctxt "SoraArena.Fieldcraft,Swimming"
@@ -848,55 +1026,55 @@ msgid "的が遠い。{Range} m 以内の地面を示せ。"
 msgstr "Too far. Mark the ground within {Range} m."
 
 #. Key:	Ammo.Arrows
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Arrows"
 msgid "矢 {Ammo} / {Magazine}   {Fire} 長押し→離して射る"
 msgstr "Arrows {Ammo} / {Magazine}   hold {Fire}, release to loose"
 
 #. Key:	Ammo.Magazine
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Magazine"
 msgid "{Ammo} / {Magazine}   {Reload} 装填"
 msgstr "{Ammo} / {Magazine}   {Reload} reload"
 
 #. Key:	Ammo.Melee
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Melee"
 msgid "間合い / 斬突と残心"
 msgstr "Distance: cut, thrust, zanshin"
 
 #. Key:	Ammo.Reloading
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Reloading"
 msgid "装填中"
 msgstr "Reloading"
 
 #. Key:	Ammo.ReloadingFor
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.ReloadingFor"
 msgid "装填中 {Seconds} 秒   {Ammo} / {Magazine}"
 msgstr "Reloading {Seconds} s   {Ammo} / {Magazine}"
 
 #. Key:	Ammo.Rounds
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Rounds"
 msgid "弾数 {Ammo} / {Magazine}   {Reload} 装填"
 msgstr "Rounds {Ammo} / {Magazine}   {Reload} reload"
 
 #. Key:	Ammo.Sheathed
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Sheathed"
 msgid "納刀 ― 無刀の構え"
 msgstr "Sheathed: mutō-dori stance"
 
 #. Key:	Ammo.Sheathing
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Sheathing"
 msgid "納刀中……"
 msgstr "Sheathing…"
 
 #. Key:	Ammo.Swordplay
-#: Source/SoraArena/Private/HUD/SoraHUDCombatPanels.cpp
+#: Source/SoraArena/Private/HUD/SoraHUDWeaponPanel.cpp
 msgctxt "SoraArena.HUD,Ammo.Swordplay"
 msgid "剣術　{Melee}"
 msgstr "Swordplay: {Melee}"
@@ -974,6 +1152,7 @@ msgid "猫柳生、解放"
 msgstr "Nyaagyu liberated"
 
 #. Key:	Result.Next
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
 #: Source/SoraArena/Private/HUD/SoraHUDStoryPanels.cpp
 msgctxt "SoraArena.HUD,Result.Next"
 msgid "{Enter}  続ける    |    {Menu}  メニュー"
@@ -1161,6 +1340,7 @@ msgstr "View"
 
 #. Key:	Back
 #: Source/SoraArena/Private/UI/SSoraFrontEnd.cpp
+#: Source/SoraArena/Private/UI/SoraFrontEndCodex.cpp
 #: Source/SoraArena/Private/UI/SoraFrontEndRows.h
 msgctxt "SoraArena.Menu,Back"
 msgid "戻る"
@@ -1791,6 +1971,66 @@ msgctxt "SoraArena.Menu,Tradeoff.ShockEmitter"
 msgid "間近の敵を強く抑えるが、射程は短い。"
 msgstr "Strong close control; short range."
 
+#. Key:	Inspected
+#: Source/SoraArena/Private/Game/SoraCampaignRegistry.cpp
+msgctxt "SoraArena.Registry,Inspected"
+msgid "三者改め・割符"
+msgstr "Three-party inspection · Split tally"
+
+#. Key:	Inspector
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
+msgctxt "SoraArena.Registry,Inspector"
+msgid "改め役"
+msgstr "Inspector"
+
+#. Key:	Maker
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
+msgctxt "SoraArena.Registry,Maker"
+msgid "作り手"
+msgstr "Maker"
+
+#. Key:	Notice
+#: Source/SoraArena/Private/Game/SoraCampaignRegistry.cpp
+msgctxt "SoraArena.Registry,Notice"
+msgid "生産改帳：{Goods}"
+msgstr "Production registry: {Goods}"
+
+#. Key:	Receiver
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
+msgctxt "SoraArena.Registry,Receiver"
+msgid "受け手"
+msgstr "Receiver"
+
+#. Key:	Recorded
+#: Source/SoraArena/Private/Game/SoraCampaignRegistry.cpp
+msgctxt "SoraArena.Registry,Recorded"
+msgid "記帳済み"
+msgstr "Recorded"
+
+#. Key:	Returned
+#: Source/SoraArena/Private/Game/SoraCampaignRegistry.cpp
+msgctxt "SoraArena.Registry,Returned"
+msgid "返還のみ記帳・札は切らず"
+msgstr "Recorded as returned. No tally cut."
+
+#. Key:	Title
+#: Source/SoraArena/Private/HUD/SoraHUDRegistryPanel.cpp
+msgctxt "SoraArena.Registry,Title"
+msgid "生産改帳"
+msgstr "Production registry"
+
+#. Key:	HammerCue
+#: Source/SoraArena/Private/Game/SoraCampaignRhythm.cpp
+msgctxt "SoraArena.Rhythm,HammerCue"
+msgid "〔小鎚の合図〕"
+msgstr "[Small-hammer cue]"
+
+#. Key:	LoomCue
+#: Source/SoraArena/Private/Game/SoraCampaignRhythm.cpp
+msgctxt "SoraArena.Rhythm,LoomCue"
+msgid "〔杼の合図〕"
+msgstr "[Shuttle cue]"
+
 #. Key:	AutoSteer
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
 msgctxt "SoraArena.Settings,AutoSteer"
@@ -1983,6 +2223,18 @@ msgctxt "SoraArena.Settings,Hold"
 msgid "長押し"
 msgstr "Hold"
 
+#. Key:	HoldToCrank
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,HoldToCrank"
+msgid "押し続けて歯車を回す"
+msgstr "Hold to crank"
+
+#. Key:	HoldToCrank.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,HoldToCrank.Hint"
+msgid "第七章の制御輪で、操作を押し続けると毎秒〇・六回の調子で回す。体力を使い、手を離すか攻撃を受けると止まる。"
+msgstr "On Chapter 7's override wheel, hold Interact to turn at 0.6 turns/s. Uses stamina; release or taking a hit stops work."
+
 #. Key:	Off
 #: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
 msgctxt "SoraArena.Settings,Off"
@@ -2120,6 +2372,18 @@ msgstr "Resolution scale (TSR)"
 msgctxt "SoraArena.Settings,ResolutionScale.Hint"
 msgid "TSR がこの割合で描き、画面の解像度へ高精細に戻す。"
 msgstr "TSR renders at this share of the display resolution and upscales to it."
+
+#. Key:	RhythmAssist
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,RhythmAssist"
+msgid "調子合わせの補助"
+msgstr "Rhythm assist"
+
+#. Key:	RhythmAssist.Hint
+#: Source/SoraArena/Private/UI/SoraFrontEndSettings.cpp
+msgctxt "SoraArena.Settings,RhythmAssist.Hint"
+msgid "第五章の踏鞴・相槌・空引きで、操作を押し続けると合図に合わせて働く。生産の速さは七割。踏鞴は体力を使う。"
+msgstr "Hold Interact for on-beat bellows, hammer and loom work in Chapter 5 at 70% production speed. Bellows still use stamina."
 
 #. Key:	Screen.Accessibility
 #: Source/SoraArena/Private/UI/SoraFrontEnd.cpp

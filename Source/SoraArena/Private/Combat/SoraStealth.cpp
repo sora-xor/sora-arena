@@ -6,6 +6,7 @@
 #include "SoraEquipmentComponent.h"
 #include "SoraGameEvents.h"
 #include "SoraPlayerCharacter.h"
+#include "SoraFieldcraft.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
@@ -95,6 +96,13 @@ void USoraStealth::AddSurface(const FBox& Volume, StealthRules::FSurface Surface
 
 StealthRules::FSurface USoraStealth::SurfaceAt(const FVector& Feet) const
 {
+    if(const auto* Craft=USoraFieldcraft::Get(this))
+    {
+        const int32 MoatSteps=Craft->MoatFootstepPermille(Feet);
+        if(MoatSteps>=0)return {MoatSteps,MoatSteps};
+        const int32 FloodSteps=Craft->FloodFootstepPermille(Feet);
+        if(FloodSteps>=0) return {FloodSteps,FloodSteps};
+    }
     // The last floor added wins, so a nightingale floor's silent edge strip
     // is added after the corridor it runs along.
     for (int32 Index = Floors.Num() - 1; Index >= 0; --Index)

@@ -1,10 +1,41 @@
 #include "SoraCatalog.h"
 #include "SoraCampaignRules.h"
 #include "SoraCatalogJson.h"
+#include "SoraCatalogRegistry.h"
+#include "SoraCatalogArchery.h"
+#include "SoraCatalogDojo.h"
+#include "SoraCatalogWood.h"
+#include "SoraCatalogCollectibles.h"
 
 namespace
 {
 using namespace SoraCatalogJson;
+
+bool ReadCargo(const FJsonObject& Params, FSoraBeat& Beat)
+{
+    const bool Active=Beat.Is(SoraBeatRules::EType::HorsebackRide)&&Beat.Has(SoraBeatRules::EGoal::Deliveries);
+    FString RideMode;
+    if(Beat.Is(SoraBeatRules::EType::HorsebackRide)&&
+        (!Str(Params,TEXT("mode"),RideMode)||((RideMode==TEXT("cargo"))!=Active))) return false;
+    if(!Active) return !Params.HasField(TEXT("cargo"));
+    const auto Cargo=Child(Params,TEXT("cargo"));
+    FString Mode,Item,Carrier;
+    TArray<FString> Dropoffs;
+    const auto Integer=[&](const TCHAR* Key,int& Out)
+    {
+        const auto Value=Cargo?Cargo->TryGetField(Key):nullptr;
+        return Value&&Value->Type==EJson::Number&&Int(*Cargo,Key,Out);
+    };
+    if(!Cargo||!Str(Params,TEXT("mode"),Mode)||Mode!=TEXT("cargo")||
+        !Str(*Cargo,TEXT("item"),Item)||Item!=TEXT("barley_sheaf")||
+        !Str(*Cargo,TEXT("carrier"),Carrier)||Carrier!=TEXT("pack_horse")||
+        !Integer(TEXT("qty"),Beat.Cargo.Total)||!Integer(TEXT("per_dropoff"),Beat.Cargo.PerDropoff)||
+        !Strings(Rows(*Cargo,TEXT("dropoffs")),Dropoffs)||Dropoffs!=Beat.Dropoffs||
+        !SoraCargoRules::Valid(Beat.Cargo,Beat.Task.Dropoffs)) return false;
+    TSet<FString> Unique;
+    for(const auto& Point:Dropoffs) { if(Unique.Contains(Point)) return false; Unique.Add(Point); }
+    return true;
+}
 
 // A beat's task block (build_campaign_data.py normalize_task): the goal and
 // its integer parameters for SoraBeatRules, and the names the director uses.
@@ -54,12 +85,13 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !O.TryGetBoolField(TEXT("pause_when_seen"), T.PauseWhenSeen) ||
         !Int(O, TEXT("max_alive"), T.MaxAlive) || !Int(O, TEXT("lesson_mask"), LessonMask) || LessonMask < 0 ||
         !O.TryGetBoolField(TEXT("flank_bouts"), T.FlankBouts) || !Named(O, TEXT("defeat"), Defeats, T.Defeat) ||
-        !Nullable(O, TEXT("capture_event"), Beat.CaptureEvent) || !Nullable(O, TEXT("carry_item"), Beat.CarryItem) ||
+        !Nullable(O, TEXT("capture_event"), Beat.CaptureEvent) ||
+        !Int(O,TEXT("capture_hold_ms"),Beat.CaptureHoldMs) || Beat.CaptureHoldMs<0 || !Nullable(O, TEXT("carry_item"), Beat.CarryItem) ||
         !Named(O, TEXT("loss"), Losses, T.Loss) || !Int(O, TEXT("loss_limit"), T.LossLimit) ||
         !Named(O, TEXT("contest"), Contests, T.Contest) || !Int(O, TEXT("decay_permille"), T.DecayPermille) ||
         !Int(O, TEXT("min_turn_ms"), T.MinTurnMs) || !Int(O, TEXT("max_turn_ms"), T.MaxTurnMs) ||
         !Int(O, TEXT("speed_cm_s"), T.SpeedCmS) || !Int(O, TEXT("wait_cm"), T.WaitCm) || !Int(O, TEXT("path_cm"), T.PathCm) ||
-        !O.TryGetBoolField(TEXT("drop_on_hit"), T.DropOnHit) || !Named(O, TEXT("on_detected"), Detections, T.OnDetected) ||
+        !Named(O, TEXT("on_detected"), Detections, T.OnDetected) ||
         !Int(O, TEXT("reinforce_wave"), T.ReinforceWave) || !O.TryGetBoolField(TEXT("horse_down_retries"), T.HorseDownRetries) ||
         !Points(O, TEXT("objectives"), Beat.Objectives) || !Points(O, TEXT("pickups"), Beat.Pickups) ||
         !Points(O, TEXT("dropoffs"), Beat.Dropoffs) || !Nullable(O, TEXT("lines_event"), Beat.LinesEvent) ||
@@ -68,13 +100,70 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         !Strings(Rows(O, TEXT("phase_events")), Beat.PhaseEvents) ||
         !Int(O, TEXT("carry_speed_permille"), T.CarrySpeedPermille) || !Int(O, TEXT("target_loss_limit"), T.TargetLossLimit) ||
         !Int(O, TEXT("pickup_hold_ms"), T.PickupHoldMs) || T.PickupHoldMs < 0 ||
+        !Int(O, TEXT("unload_hold_ms"), T.UnloadHoldMs) ||
         !WeaponMask(Rows(O, TEXT("carry_weapons")), T.CarryWeaponsMask))
         return false;
+    const auto PlayerValue = O.TryGetField(TEXT("crank_player"));
+    if (!PlayerValue.IsValid()) return false;
+    if (PlayerValue->Type != EJson::Null)
+    {
+        const auto Player = PlayerValue->Type == EJson::Object ? PlayerValue->AsObject() : nullptr;
+        if (!Player || Player->Values.Num() != 5 ||
+            !Int(*Player, TEXT("stamina_per_turn"), T.StaminaPerTurn) ||
+            !Int(*Player, TEXT("overspeed_cost_multiplier"), T.OverspeedCostMultiplier) ||
+            !Player->TryGetBoolField(TEXT("two_handed"), T.CrankTwoHanded) ||
+            !Player->TryGetBoolField(TEXT("alternate_treads"), T.AlternateTreads) ||
+            !Int(*Player, TEXT("hold_milliturns_s"), T.HoldMilliTurnsS)) return false;
+    }
+    const auto CoopValue = O.TryGetField(TEXT("crank_coop"));
+    if (!CoopValue.IsValid()) return false;
+    if (CoopValue->Type != EJson::Null)
+    {
+        const auto Coop = CoopValue->Type == EJson::Object ? CoopValue->AsObject() : nullptr;
+        const FJsonRows* Locks = Coop ? Rows(*Coop, TEXT("ratchets_permille")) : nullptr;
+        if (!Coop || Coop->Values.Num() != 6 || !Locks || Locks->Num() > 3 ||
+            !Points(*Coop, TEXT("npcs"), Beat.CrankNpcs) || Beat.CrankNpcs.IsEmpty() || Beat.CrankNpcs.Num()>3 ||
+            !Int(*Coop, TEXT("per_npc_milliturns_s"), T.CoopMilliTurnsS) || T.CoopMilliTurnsS <= 0 ||
+            !Int(*Coop, TEXT("progress_permille"), T.CoopProgressPermille) ||
+            !Coop->TryGetBoolField(TEXT("suspends_decay"), T.CoopSuspendsDecay) ||
+            !Int(*Coop, TEXT("retreat_cm"), T.CoopRetreatCm)) return false;
+        for (int32 Index = 0; Index < Beat.CrankNpcs.Num(); ++Index)
+            if (Beat.CrankNpcs.Find(Beat.CrankNpcs[Index]) != Index) return false;
+        T.CoopCount = Beat.CrankNpcs.Num();
+        T.RatchetCount = Locks->Num();
+        for (int32 Index = 0; Index < Locks->Num(); ++Index)
+        {
+            double Number = 0;
+            if (!(*Locks)[Index].IsValid() || !(*Locks)[Index]->TryGetNumber(Number) || Number != FMath::FloorToDouble(Number) || Number <= 0 || Number >= 1000) return false;
+            T.Ratchets[Index] = static_cast<int>(Number);
+        }
+    }
+    const auto DropPolicy = Child(O, TEXT("drop_on_hit"));
+    const TCHAR* DifficultyNames[] = {TEXT("easy"), TEXT("normal"), TEXT("hard")};
+    if (!DropPolicy || DropPolicy->Values.Num() != 3) return false;
+    for (int32 Difficulty = 0; Difficulty < 3; ++Difficulty)
+    {
+        const auto Value = DropPolicy->TryGetField(DifficultyNames[Difficulty]);
+        if (!Value.IsValid() || Value->Type != EJson::Boolean || !Value->TryGetBool(T.DropOnHitByDifficulty[Difficulty])) return false;
+    }
+    ApplyCarryDifficulty(T, 1);
+    const auto CarryGate = O.TryGetField(TEXT("carry_gate"));
+    if (!CarryGate.IsValid()) return false;
+    if (CarryGate->Type != EJson::Null)
+    {
+        const auto Gate = CarryGate->Type == EJson::Object ? CarryGate->AsObject() : nullptr;
+        FString Contest, Tool;
+        if (!Gate || Gate->Values.Num()!=4 || !Str(*Gate,TEXT("point"),Beat.CarryGatePoint) ||
+            !Int(*Gate,TEXT("hold_ms"),T.CarryGateMs) || T.CarryGateMs<=0 ||
+            !Str(*Gate,TEXT("contest"),Contest) || Contest!=TEXT("pause") ||
+            !Str(*Gate,TEXT("tool"),Tool) || Tool!=TEXT("yari_ishizuki")) return false;
+    }
     if (!TaskName.IsEmpty() && !Tasks.Contains(TaskName)) return false;
     T.Task = TaskName.IsEmpty() ? ETask::None : Tasks[TaskName];
     // A capture names the interaction that binds its boss, and a carry what
     // it moves; nothing else does.
     if ((T.Defeat == EDefeat::Capture) == Beat.CaptureEvent.IsEmpty() ||
+        (Beat.CaptureEvent==TEXT("interact:engine_spine"))!=(Beat.CaptureHoldMs>0) ||
         (T.Task == ETask::Carry) == Beat.CarryItem.IsEmpty() || (T.PickupHoldMs > 0 && T.Task != ETask::Carry))
         return false;
     const FJsonRows* RepRows = Rows(O, TEXT("form_reps"));
@@ -86,7 +175,60 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
             return false;
     }
     T.LessonMask = static_cast<unsigned>(LessonMask);
+    const TSharedPtr<FJsonValue> MaaiValue = O.TryGetField(TEXT("maai"));
+    if (!MaaiValue.IsValid()) return false;
+    if (MaaiValue->Type != EJson::Null)
+    {
+        const auto M = MaaiValue->Type == EJson::Object ? MaaiValue->AsObject() : nullptr;
+        const FJsonRows* Moves = M ? Rows(*M,TEXT("moves")) : nullptr;
+        if (!M || !Moves || Moves->IsEmpty() || Moves->Num() > SoraMaaiRules::MaxSteps ||
+            !Int(*M,TEXT("inner_cm"),T.Maai.InnerCm) || !Int(*M,TEXT("outer_cm"),T.Maai.OuterCm) ||
+            !Int(*M,TEXT("hold_ms"),T.Maai.HoldMs) || !Int(*M,TEXT("facing_permille"),T.Maai.FacingPermille) ||
+            !Int(*M,TEXT("hint_ms"),T.Maai.HintMs)) return false;
+        T.Maai.Count = Moves->Num();
+        for (int32 Index=0;Index<Moves->Num();++Index)
+        {
+            const auto Move = (*Moves)[Index].IsValid() && (*Moves)[Index]->Type == EJson::Object ? (*Moves)[Index]->AsObject() : nullptr;
+            if (!Move || !Int(*Move,TEXT("forward_cm"),T.Maai.Moves[Index].ForwardCm) ||
+                !Int(*Move,TEXT("right_cm"),T.Maai.Moves[Index].RightCm)) return false;
+        }
+    }
+    const auto Equipment = O.TryGetField(TEXT("equipment_weapons"));
+    const auto Recovery = O.TryGetField(TEXT("recovery"));
+    if (!Equipment.IsValid() || !Recovery.IsValid()) return false;
+    if (Equipment->Type != EJson::Null)
+    {
+        T.EquipmentMask=0u;
+        if (!WeaponMask(Rows(O,TEXT("equipment_weapons")),T.EquipmentMask)) return false;
+    }
+    if (Recovery->Type != EJson::Null)
+    {
+        const auto R = Recovery->Type == EJson::Object ? Recovery->AsObject() : nullptr;
+        if (!R || !Str(*R,TEXT("item"),Beat.RecoveryItem) || Beat.RecoveryItem != TEXT("sword_bundle") ||
+            !Str(*R,TEXT("interact"),Beat.RecoveryInteract) || Beat.RecoveryInteract != TEXT("act_b05_dry_well_rope") ||
+            !Int(*R,TEXT("depth_cm"),T.RecoveryDepthCm) || !Int(*R,TEXT("string_ms"),T.RecoveryStringMs) ||
+            !Int(*R,TEXT("quiver"),T.RecoveryQuiver) || !WeaponMask(Rows(*R,TEXT("weapons")),T.RecoveryWeapons)) return false;
+    }
     T.Pickups = Beat.Pickups.Num(); T.Dropoffs = Beat.Dropoffs.Num();
+    if (T.Dropoffs > MaxPoints) return false; // Bound fixed capacity storage before indexing it.
+    const auto CapacityValue = O.TryGetField(TEXT("dropoff_capacity"));
+    if (!CapacityValue.IsValid()) return false;
+    if (CapacityValue->Type != EJson::Null)
+    {
+        const auto Capacities = CapacityValue->Type == EJson::Object ? CapacityValue->AsObject() : nullptr;
+        if (!Capacities || T.Task != ETask::Carry || T.Dropoffs < 1 || Capacities->Values.Num() != T.Dropoffs) return false;
+        T.DropoffCapacityCount = T.Dropoffs;
+        for (int32 Index = 0; Index < T.Dropoffs; ++Index)
+        {
+            const FString& Name = Beat.Dropoffs[Index];
+            const auto Value = Capacities->TryGetField(Name);
+            double Number = 0;
+            if (Beat.Dropoffs.Find(Name) != Index || !Value.IsValid() || Value->Type != EJson::Number ||
+                !Value->TryGetNumber(Number) || !Whole(Number, T.DropoffCapacities[Index])) return false;
+            Beat.DropoffCapacities.Add(Name, T.DropoffCapacities[Index]);
+        }
+    }
+    if (!DropoffCapacitiesValid(T)) return false;
     Beat.Opponent = Opponent.IsEmpty() ? NAME_None : FName(*Opponent);
     const FJsonRows* HoldRows = Rows(O, TEXT("objective_hold_ms"));
     if (!HoldRows || HoldRows->Num() != Beat.Objectives.Num()) return false;
@@ -182,7 +324,8 @@ bool ReadTask(const FJsonObject& O, const FString& TypeName, FSoraBeat& Beat)
         const auto S = (*StepRows)[Index].IsValid() ? (*StepRows)[Index]->AsObject() : nullptr;
         FString StepKind; FStep& Step = T.Steps[Index];
         if (!S || !Str(*S, TEXT("kind"), StepKind) || !Int(*S, TEXT("count"), Step.Count) ||
-            !Int(*S, TEXT("beat_ms"), Step.BeatMs) || !Int(*S, TEXT("tolerance_ms"), Step.ToleranceMs))
+            !Int(*S, TEXT("beat_ms"), Step.BeatMs) || !Int(*S, TEXT("tolerance_ms"), Step.ToleranceMs) ||
+            !Int(*S, TEXT("phrase_strikes"), Step.PhraseStrikes) || !Int(*S, TEXT("phrase_pass"), Step.PhrasePass))
             return false;
         Beat.StepKinds.Add(StepKind);
     }
@@ -462,6 +605,11 @@ bool FSoraCatalog::LoadCampaign()
                 !O->TryGetBoolField(TEXT("repeatable"), Line.bRepeatable))
                 return Bad(FString::Printf(TEXT("invalid line %s"), *Line.Id));
             Line.DurationSeconds = static_cast<float>(Duration);
+            if (!IsNull(*O, TEXT("mode")) &&
+                (!Str(*O, TEXT("mode"), Line.Mode) ||
+                 (Line.Mode != TEXT("blocking") && Line.Mode != TEXT("ambient") &&
+                  Line.Mode != TEXT("radio") && Line.Mode != TEXT("bark") && Line.Mode != TEXT("cinematic"))))
+                return Bad(FString::Printf(TEXT("invalid dialogue mode for %s"), *Line.Id));
             LineIds.Add(Line.Id, C.Dialogue.Num());
             C.Dialogue.Add(MoveTemp(Line));
         }
@@ -488,7 +636,8 @@ bool FSoraCatalog::LoadCampaign()
                 !CollectibleCategories.ContainsByPredicate([&](const FSoraCollectibleCategory& Category) { return Category.Id == Item.Category; }) ||
                 !Int(*O, TEXT("mask_bit"), Item.MaskBit) || Item.MaskBit < 0 || Item.MaskBit >= CollectiblesPerChapter ||
                 (CollectibleBits & (1u << Item.MaskBit)) != 0u || !Strings(Rows(*O, TEXT("beats")), Beats) ||
-                !Str(*O, TEXT("place"), Item.Place) || !Str(*Codex, TEXT("ja"), Item.Codex) || !Str(*Codex, TEXT("en"), Item.CodexEnglish))
+                !Str(*O, TEXT("place"), Item.Place) ||
+                !SoraCatalogCollectibles::ReadTitles(*O, Item) || !Str(*Codex, TEXT("ja"), Item.Codex) || !Str(*Codex, TEXT("en"), Item.CodexEnglish))
                 return Bad(FString::Printf(TEXT("invalid collectible %s"), *Item.Id));
             for (const FString& Beat : Beats)
             {
@@ -562,6 +711,13 @@ bool FSoraCatalog::LoadCampaign()
             Rule.PhaseCheckpoints = PhaseCheckpoints[BeatIndex];
             if (!ReadTask(*Task, TypeName, Beat) || !SoraBeatRules::TaskValid(Beat.Task))
                 return Bad(FString::Printf(TEXT("beat %s has an invalid %s task"), *Beat.Id, *TypeName));
+            if (!ReadCargo(*Params, Beat)) return Bad(Beat.Id+TEXT(" has invalid authored cargo quantities"));
+            if (!SoraCatalogRegistry::Read(*O, Beat))
+                return Bad(FString::Printf(TEXT("beat %s has an invalid production registry entry"), *Beat.Id));
+            if (!SoraCatalogArchery::Read(*O, Beat))
+                return Bad(FString::Printf(TEXT("beat %s has invalid authored archery rules"), *Beat.Id));
+            if (!SoraCatalogDojo::Read(*O, Beat))
+                return Bad(FString::Printf(TEXT("beat %s has invalid authored pupil timing"), *Beat.Id));
             for (const FString& Kind : Beat.StepKinds)
                 if (!StepLabels.Contains(Kind)) return Bad(FString::Printf(TEXT("beat %s has an unlabelled step %s"), *Beat.Id, *Kind));
             for (const FString& Target : Beat.Targets)
@@ -571,19 +727,56 @@ bool FSoraCatalog::LoadCampaign()
                 (!LineRefs(Rows(*Params, TEXT("lines")), Beat.Lines) || Beat.Lines.Num() != Beat.Task.Count || Beat.LinesEvent.IsEmpty()))
                 return Bad(FString::Printf(TEXT("beat %s has invalid dialogue lines"), *Beat.Id));
             // Blocking lines are some of the dialogue's own lines.
+            if (const TSharedPtr<FJsonObject> Ext = Child(*O, TEXT("ext")); Ext && Ext->HasField(TEXT("supply_point")))
+            {
+                // Chapter three names an object with slots/refill metadata;
+                // later chapters use a bare station id. Preserve both forms.
+                const TSharedPtr<FJsonObject> Supply = Child(*Ext, TEXT("supply_point"));
+                const bool Named = Supply ? Supply->TryGetStringField(TEXT("id"), Beat.SupplyPoint)
+                    : Ext->TryGetStringField(TEXT("supply_point"), Beat.SupplyPoint);
+                if (!Named || Beat.SupplyPoint.IsEmpty())
+                    return Bad(FString::Printf(TEXT("beat %s has an invalid supply point"), *Beat.Id));
+            }
             if (const TSharedPtr<FJsonObject> Ext = Child(*O, TEXT("ext")); Ext && Ext->HasField(TEXT("blocking_lines")) &&
                 (!LineRefs(Rows(*Ext, TEXT("blocking_lines")), Beat.BlockingLines) ||
                  Beat.BlockingLines.ContainsByPredicate([&](int32 Line) { return !Beat.Lines.Contains(Line); })))
                 return Bad(FString::Printf(TEXT("beat %s has invalid blocking lines"), *Beat.Id));
             if (Beat.Is(SoraBeatRules::EType::ExploreOptional))
             {
+                if (Params->HasField(TEXT("pois")))
+                {
+                    const auto* Pois=Rows(*Params,TEXT("pois"));
+                    if(!Pois) return Bad(FString::Printf(TEXT("beat %s has invalid points of interest"),*Beat.Id));
+                    for(const auto& Value:*Pois)
+                    {
+                        const auto Poi=Value->AsObject();
+                        FSoraExplorePoi Point;
+                        if(!Poi||!Str(*Poi,TEXT("id"),Point.Id)||Point.Id.IsEmpty()||
+                            !Str(*Poi,TEXT("kind"),Point.Kind)||Point.Kind.IsEmpty()||
+                            Beat.Pois.ContainsByPredicate([&](const FSoraExplorePoi& P) { return P.Id==Point.Id; }))
+                            return Bad(FString::Printf(TEXT("beat %s has an invalid or repeated point of interest"),*Beat.Id));
+                        if(Poi->HasField(TEXT("interact"))&&!Str(*Poi,TEXT("interact"),Point.Interaction))
+                            return Bad(FString::Printf(TEXT("point %s has an invalid interaction"),*Point.Id));
+                        if(Poi->HasField(TEXT("collectible")))
+                        {
+                            FString Id;
+                            if(!Str(*Poi,TEXT("collectible"),Id)) return Bad(TEXT("invalid point collectible"));
+                            Point.Collectible=C.Collectibles.IndexOfByPredicate([&](const FSoraCollectible& Item) { return Item.Id==Id; });
+                            if(Point.Collectible==INDEX_NONE) return Bad(FString::Printf(TEXT("point %s names an unknown collectible"),*Point.Id));
+                        }
+                        Beat.Pois.Add(MoveTemp(Point));
+                    }
+                }
                 TArray<FString> Rewards;
                 if (!Strings(Rows(*Params, TEXT("rewards")), Rewards)) return Bad(FString::Printf(TEXT("beat %s has invalid rewards"), *Beat.Id));
-                // Arrows and other pickups refill at the cache; collectibles enter the codex.
+                // Collectibles enter the codex. The seized gallery also
+                // declares a finite arrow pickup; other pickup contracts
+                // remain owned by their chapter implementations.
                 for (const FString& Reward : Rewards)
                 {
                     const int32 Item = C.Collectibles.IndexOfByPredicate([&](const FSoraCollectible& Candidate) { return Candidate.Id == Reward; });
                     if (Item != INDEX_NONE) Beat.Rewards.Add(Item);
+                    if (Beat.Id==TEXT("ch08.b12")&&Reward==TEXT("arrows_12")) Beat.GalleryArrowReward=12;
                 }
             }
             C.Rules.Add(Rule);
@@ -594,7 +787,7 @@ bool FSoraCatalog::LoadCampaign()
         // Every task valid, the chapter opens on a cinematic (its title card),
         // only explore beats are optional and only bosses and duels save per phase.
         if (!SoraBeatRules::TasksValid(C.Rules.GetData(), C.Tasks.GetData(), C.Rules.Num())) return Bad(TEXT("beat tasks violate SoraBeatRules"));
-        // A collectible lies in an explore beat's cache or loose in the world
+        // A collectible belongs to an explore beat (cache or individual POI), or lies in the world
         // at its pickup (read with the space); the script's beats only hint
         // at when it is found.
         for (int32 Item = 0; Item < C.Collectibles.Num(); ++Item)
@@ -606,6 +799,7 @@ bool FSoraCatalog::LoadCampaign()
         }
         const TSharedPtr<FJsonObject> Space = Child(*Data, TEXT("space"));
         if (!Space || !LoadSpace(*Space, C)) return false;
+        if (!SoraCatalogWood::Read(*Data,C)) return Bad(TEXT("invalid chapter-one wood contract"));
         for (const FSoraCollectible& Collectible : C.Collectibles)
             if (Collectible.Beats.IsEmpty() == (Collectible.Pickup == INDEX_NONE))
                 return Bad(FString::Printf(TEXT("collectible %s must lie in one cache or at one pickup"), *Collectible.Id));
