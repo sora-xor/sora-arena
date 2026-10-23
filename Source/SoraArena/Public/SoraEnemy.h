@@ -136,6 +136,7 @@ public:
     ASoraBoss* Summoner() const;
     // Chapter 08 summit adds only. No mutation of the shared loom archetype.
     void EnableCollateralConstruct();
+    void EnableClimbSentry() { bClimbSentry=true; }
     bool IsCollateralConstruct() const { return bCollateralConstruct; }
     bool IsConstructCoreOpen() const;
     FVector ConstructCorePoint() const;
@@ -192,6 +193,7 @@ private:
     void TickConstruct(float DeltaSeconds);
     void ConstructSlam(const FSoraEnemyAttack& Attack);
     bool bCollateralConstruct = false;
+    bool bClimbSentry=false;
     bool bConstructSlamReleased = false;
     bool bGoodsReleased = false;
     bool bCoreWasOpen = false;

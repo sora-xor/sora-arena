@@ -59,6 +59,8 @@ bool USoraCampaignDirector::ObjectivePoint(FVector& Location,bool& bInteract) co
         bInteract=true; return true;
     }
     if(NeedsCarryGate()) return At(Space.CarryGate,true);
+    if(Space.Climb.bEnabled)
+        if(const auto* Craft=USoraFieldcraft::Get(this);Craft&&Craft->ClimbObjective(Location)) { bInteract=false;return true; }
     switch(Task.Goal)
     {
     case SoraBeatRules::EGoal::Lines:

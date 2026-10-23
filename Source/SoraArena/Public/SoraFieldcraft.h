@@ -175,6 +175,19 @@ public:
     void Stage(const FSoraBeat& Beat);
     void Clear();
     bool FloodExitReady() const { return !FloodSpace || SoraFloodRules::Ready(FloodRoute); }
+    bool ClimbExitReady() const { return !ClimbSpace || bClimbCrawled; }
+    bool ClimbObjective(FVector& At) const;
+    bool ClimbCrouch(ASoraPlayerCharacter& Player);
+    bool IsClimbCrawling() const { return bClimbCrawl; }
+    int32 ClimbRouteIndex() const { return ClimbRoute; }
+    int32 ClimbHoldIndex() const { return Grip.Hold; }
+    bool IsClimbResting() const;
+    int32 ClimbClock() const { return ClimbClockMs; }
+    bool ClimbSentryWatching() const;
+    FVector ClimbSentryAim() const;
+    bool DriveClimbSentry(ASoraEnemy& Enemy,float Dt);
+    bool IsClimbSentry(const ASoraEnemy& Enemy) const;
+    void AssignClimbSentry(ASoraEnemy& Enemy);
     int32 FloodElapsedMs() const { return FloodClockMs; }
     int32 FloodPassageStage() const { return FloodRoute.Stage; }
     bool FloodCarriesIota() const;
@@ -200,7 +213,7 @@ public:
     void CancelHeldInteraction();
     bool Jump(ASoraPlayerCharacter& Hero);
     // In the water or on the wall no arm is used and no weapon changes hands.
-    bool ArmsStowed() const { return bSwimming || bClimbing || LadderClimb != INDEX_NONE; }
+    bool ArmsStowed() const { return bSwimming || (bClimbing&&!IsClimbResting()) || bClimbCrawl || LadderClimb != INDEX_NONE; }
     // The hero's own movement input is ignored (the wall moves him).
     bool HoldsHero() const { return bClimbing || LadderClimb != INDEX_NONE; }
     // A cap on the hero's pace in cm/s (the water), or 0.
@@ -337,6 +350,11 @@ private:
     float FloodSurfaceAt(const FVector& At) const;
     bool InFloodWater(const FVector& At) const;
     void TickClimb(float DeltaTime, int32 DtMs);
+    void TickClimbRoutes(float DeltaTime,int32 DtMs);
+    void ClearClimbRoutes();
+    bool BeginClimbRoute(ASoraPlayerCharacter& Player);
+    bool AtClimbRoute(const ASoraPlayerCharacter& Player,int32& Route) const;
+    const FSoraClimbRoute* CurrentClimbRoute() const;
     void TickCandle();
     void TickLooks();
     void TickVolley(int32 DtMs);
@@ -414,6 +432,16 @@ private:
     bool bFalling = false;
     float FallFromZ = 0.f;
     TSet<int32> LedgesReached;
+    const FSoraClimbSpace* ClimbSpace=nullptr;
+    int32 ClimbRoute=INDEX_NONE, ClimbClockMs=0, ClimbStepTarget=INDEX_NONE;
+    float ClimbStepAlpha=0.f;
+    FVector ClimbStepStart=FVector::ZeroVector;
+    bool bClimbMounting=false,bClimbReachedTop=false,bClimbCrawl=false,bClimbCrawlWish=false,bClimbCrawled=false;
+    bool bClimbCrawlEntered=false,bClimbWatchRaised=false;
+    float ClimbOldRadius=0.f,ClimbOldCrouchHalf=0.f;
+    UPROPERTY() TWeakObjectPtr<ASoraEnemy> ClimbSentry;
+    UPROPERTY() TObjectPtr<USpotLightComponent> ClimbSentryLamp;
+    UPROPERTY() TArray<TObjectPtr<APointLight>> ClimbStripLights;
     // Stones and the candle.
     int32 Stones = 0;
     bool bCupped = false;

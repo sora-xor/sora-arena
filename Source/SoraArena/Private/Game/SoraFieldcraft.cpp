@@ -294,6 +294,7 @@ UStaticMeshComponent* USoraFieldcraft::Piece(const FString& Name, const TCHAR* M
 
 void USoraFieldcraft::Clear()
 {
+    ClearClimbRoutes();
     ClearFlood();
     ASoraPlayerCharacter* Player = Hero();
     if (bClimbing && Player) LetGo(*Player, false);
@@ -338,6 +339,7 @@ void USoraFieldcraft::Clear()
 void USoraFieldcraft::Stage(const FSoraBeat& Beat)
 {
     Clear();
+    ClimbSpace=Beat.Space.Climb.bEnabled?&Beat.Space.Climb:nullptr;
     if (Beat.Space.Fieldcraft.IsEmpty() || !GetWorld()) return;
     Staged = &Beat.Space.Fieldcraft;
     BeatId = Beat.Id;
@@ -417,7 +419,7 @@ void USoraFieldcraft::StageWorld(const FSoraBeat& Beat)
                     FVector(.12f), FLinearColor(.85f, .25f, .08f));
         }
     }
-    if (F.bClimb)
+    if (F.bClimb&&!ClimbSpace)
     {
         // Stone courses from the floor to the top, wall to wall; hold nubs on
         // its face and a shelf at each ledge. The only way on is up.
@@ -785,6 +787,7 @@ void USoraFieldcraft::TickLamps(int32 DtMs)
 // ---------------------------------------------------------------------------
 float USoraFieldcraft::HeroPace() const
 {
+    if(bClimbCrawl) return 90.f;
     return bSwimming && Staged ? static_cast<float>(bDiving ? Staged->Water.Rules.DiveCmS : Staged->Water.Rules.SurfaceCmS) : 0.f;
 }
 
@@ -847,6 +850,7 @@ void USoraFieldcraft::TickWater(int32 DtMs)
 // ---------------------------------------------------------------------------
 bool USoraFieldcraft::AtFace(const ASoraPlayerCharacter& Player) const
 {
+    if(ClimbSpace) { int32 Route=INDEX_NONE;return AtClimbRoute(Player,Route); }
     if (!Staged || !Staged->bClimb) return false;
     const FSoraClimbFace& Face = Staged->Climb;
     const FVector At = Player.GetActorLocation();
@@ -866,6 +870,7 @@ bool USoraFieldcraft::Jump(ASoraPlayerCharacter& Player)
         LetGo(Player, false);
         return true;
     }
+    if(ClimbSpace) return BeginClimbRoute(Player);
     if (!AtFace(Player)) return false;
     // Hands on the lowest holds: the wall carries him from here.
     bClimbing = true;
@@ -895,6 +900,7 @@ void USoraFieldcraft::LetGo(ASoraPlayerCharacter& Player, bool bFell)
 
 void USoraFieldcraft::TickClimb(float DeltaTime, int32 DtMs)
 {
+    if(ClimbSpace) { TickClimbRoutes(DeltaTime,DtMs);return; }
     ASoraPlayerCharacter* Player = Hero();
     if (!Staged->bClimb || !Player) return;
     const FSoraClimbFace& Face = Staged->Climb;
@@ -1393,7 +1399,7 @@ FSoraFieldcraftReadout USoraFieldcraft::Readout(const ASoraPlayerCharacter& Play
     Out.Breath = Staged->bWater ? static_cast<float>(Breath.BreathMs) / FMath::Max(1, Staged->Water.Rules.BreathMs) : 1.f;
     Out.bClimbing = bClimbing;
     Out.Grip = static_cast<float>(Grip.GripMilli) / (Craft::GripMax * 1000.f);
-    Out.bLedge = bClimbing && Craft::AtLedge(Staged->Climb.Rules, Grip);
+    Out.bLedge = ClimbSpace?IsClimbResting():bClimbing && Craft::AtLedge(Staged->Climb.Rules, Grip);
     Out.bAtFace = !bClimbing && AtFace(Player);
     Out.bStones = Staged->bStones;
     Out.Stones = Stones;

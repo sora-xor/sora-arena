@@ -94,6 +94,7 @@ bool ASoraEnemy::InitArchetype(FName ArchetypeName,int32 Slot,const FSoraPatrolR
         return false;
     }
     ResetConstruct();
+    bClimbSentry=false;
     Kind=Found; Variant=VariantName; VariantData=Chosen;
     NetRootOverrideMs=Kind->Behavior==ESoraEnemyBehavior::Drone&&Tuning?FMath::Max(0,Tuning->NetRootMs):0;
     bDojoPupil=false; EnemyIndex=Slot; RangedShots=0; ShotsSinceRelocation=0;
