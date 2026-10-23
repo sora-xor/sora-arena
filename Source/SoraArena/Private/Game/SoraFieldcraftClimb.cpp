@@ -2,6 +2,7 @@
 #include "SoraClimbRules.h"
 #include "SoraEnemy.h"
 #include "SoraEnemyController.h"
+#include "SoraEquipmentComponent.h"
 #include "SoraPlayerCharacter.h"
 #include "Combat/SoraDamage.h"
 #include "Components/CapsuleComponent.h"
@@ -42,6 +43,7 @@ bool USoraFieldcraft::AtClimbRoute(const ASoraPlayerCharacter& Player,int32& Rou
 bool USoraFieldcraft::BeginClimbRoute(ASoraPlayerCharacter& Player)
 {
     int32 Route=INDEX_NONE;if(!AtClimbRoute(Player,Route)) return false;
+    if(auto* Kit=Player.GetEquipment()) Kit->Halt();
     ClimbRoute=Route;Grip=SoraFieldcraftRules::StartClimb();ClimbStepTarget=0;ClimbStepAlpha=0;
     ClimbStepStart=SoraClimbRuntime::Feet(Player)-FVector(ClimbSpace->Origin,0);
     bClimbing=true;bFalling=false;bClimbMounting=false;LedgesReached.Reset();Player.StopSprint();
@@ -93,6 +95,7 @@ bool USoraFieldcraft::ClimbCrouch(ASoraPlayerCharacter& Player)
         P.X<1000||P.X>=ClimbSpace->CrawlEntryX||FMath::Abs(P.Y)>45||FMath::Abs(P.Z-1650)>18) return false;
     ClimbOldRadius=Player.GetCapsuleComponent()->GetUnscaledCapsuleRadius();
     ClimbOldCrouchHalf=Player.GetCharacterMovement()->GetCrouchedHalfHeight();
+    if(auto* Kit=Player.GetEquipment()) Kit->Halt();
     Player.StopSprint();Player.GetCapsuleComponent()->SetCapsuleRadius(SoraClimbRules::CrawlRadius);
     Player.GetCharacterMovement()->SetCrouchedHalfHeight(SoraClimbRules::CrawlHalfHeight);
     Player.Crouch();bClimbCrawl=bClimbCrawlWish=true;bClimbCrawlEntered=false;
@@ -147,6 +150,9 @@ void USoraFieldcraft::TickClimbRoutes(float DeltaTime,int32 DtMs)
         bClimbMounting=Grip.Hold==R->Points.Num()-1&&Up>0;
         const int32 Next=bClimbMounting?Grip.Hold:FMath::Clamp(Grip.Hold+(Up>0?1:-1),0,R->Points.Num()-1);
         if(Next==Grip.Hold&&!bClimbMounting) return;
+        // A shot may begin on a stationary rest. Taking the next hold needs
+        // both hands and must cancel that held action before release can fire.
+        if(auto* Kit=P->GetEquipment()) Kit->Halt();
         ClimbStepStart=SoraClimbRuntime::Feet(*P)-O;ClimbStepTarget=Next;ClimbStepAlpha=0;
     }
     // Releasing forward pauses at the actual point; no hold or paused time is

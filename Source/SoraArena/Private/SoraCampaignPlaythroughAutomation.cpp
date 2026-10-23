@@ -1,6 +1,7 @@
 #include "SoraGameMode.h"
 #include "SoraHelmAutomation.h"
 #include "SoraRidgeAutomation.h"
+#include "SoraClimbAutomation.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "SoraAutomationWorld.h"
@@ -1059,6 +1060,11 @@ bool PlayBeat(FAutomationTestBase& Test, FState& State)
     case EGoal::Hold:
     case EGoal::Escort:
     {
+        if(Beat.Space.Climb.bEnabled)
+        {
+            if(!Test.TestTrue(TEXT("The wall exit requires real holds and swept crawl input"),SoraClimbAutomation::Traverse(*State.World))) return false;
+            break;
+        }
         if(Beat.Space.Flood.bEnabled)
         {
             if(!Test.TestTrue(TEXT("The flood exit requires actual swimming, breathing and gate passage"),SoraFloodAutomation::Exit(*State.World))) return false;

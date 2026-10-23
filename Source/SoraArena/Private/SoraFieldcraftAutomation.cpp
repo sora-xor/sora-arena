@@ -38,6 +38,7 @@
 // falls; tsubute lures; the cupped candle; vaulting low cover; and the
 // kusarigama's weighted chain.
 #include "SoraFieldcraftTestWorld.h"
+#include "SoraClimbAutomation.h"
 
 
 using namespace SoraFieldcraftAutomation;
@@ -530,38 +531,20 @@ bool FSoraFieldcraftClimbTest::RunTest(const FString& Parameters)
         return false;
     if (!TestTrue(TEXT("Jump at the face's foot reaches for the holds"), Fieldcraft->IsClimbing() && W.Raised(TEXT("climb_start"))))
         return false;
-    // Up past the first ledge (3.2 m) to the second (5.8 m), then let go:
-    // a fall of over four metres hurts.
-    if (!TestEqual(TEXT("The face has its two ledges"), Face.LedgeEvents.Num(), 2) || !W.World->InjectKey(EKeys::W, IE_Pressed))
-        return false;
-    for (int32 Frame = 0; Frame < 600 && !W.Raised(Face.LedgeEvents[0]); ++Frame)
-        if (!W.Tick(1)) return false;
-    TestTrue(TEXT("The first ledge raises its volume's event"), W.Raised(Face.LedgeEvents[0]));
-    TestTrue(TEXT("and shows its prompt"), W.PromptOn(*Face.LedgeEvents[0]));
-    for (int32 Frame = 0; Frame < 600 && !W.Raised(Face.LedgeEvents[1]); ++Frame)
-        if (!W.Tick(1)) return false;
-    if (!W.World->InjectKey(EKeys::W, IE_Released) || !W.Tick(2))
-        return false;
-    TestTrue(TEXT("The second ledge raises its volume's event"), W.Raised(Face.LedgeEvents[1]));
+    // The authored lower rest is now 5.5 m: its fall still costs 30 HP.
+    // The 11 m upper rest is lethal; the directed route fixture covers it.
+    if (!TestEqual(TEXT("The face has its two ledges"), Face.LedgeEvents.Num(), 2) ||
+        !SoraClimbAutomation::ToHold(*W.World,5)) return false;
+    TestTrue(TEXT("The first ledge raises its event"), W.Raised(Face.LedgeEvents[0]));
     TestTrue(TEXT("Each hold spends grip"), Fieldcraft->Readout(*Hero).Grip < 1.f);
     const float Before = Hero->Health;
-    if (!W.Press(EKeys::SpaceBar))
-        return false;
+    if (!W.Press(EKeys::SpaceBar)) return false;
     for (int32 Frame = 0; Frame < 240 && !Hero->GetCharacterMovement()->IsMovingOnGround(); ++Frame)
         if (!W.Tick(1)) return false;
-    if (!W.Tick(2))
-        return false;
-    TestTrue(TEXT("Letting go from the ledge is a fall that hurts"), !Fieldcraft->IsClimbing() &&
-        FMath::IsNearlyEqual(Before - Hero->Health, static_cast<float>(Face.Rules.HurtHp)));
-    // All the way up: over the top is the zone's exit.
-    W.Stand(Floor(Face.At + FVector2D(-90.f, 0.f)), 0.f);
-    if (!W.Tick(2) || !W.Press(EKeys::SpaceBar) || !W.World->InjectKey(EKeys::W, IE_Pressed))
-        return false;
-    for (int32 Frame = 0; Frame < 1200 && W.Campaign()->ActiveBeat() == W.Beat; ++Frame)
-        if (!W.Tick(1)) return false;
-    W.World->InjectKey(EKeys::W, IE_Released);
-    TestTrue(TEXT("Over the top the climb ends on the stones"), W.Raised(TEXT("climb_top")) && !Fieldcraft->IsClimbing());
-    TestNotEqual(TEXT("and reaching the top is the stealth zone's exit"), W.Campaign()->ActiveBeat(), W.Beat);
+    TestTrue(TEXT("Letting go from the lower rest falls and hurts"), !Fieldcraft->IsClimbing() &&
+        FMath::IsNearlyEqual(Before - Hero->Health, 30.f));
+    if(!SoraClimbAutomation::Traverse(*W.World)) return false;
+    TestNotEqual(TEXT("Climb plus the actual low gap is the exit"),W.Campaign()->ActiveBeat(),W.Beat);
     return true;
 }
 

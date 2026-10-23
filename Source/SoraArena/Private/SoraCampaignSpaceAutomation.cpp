@@ -44,6 +44,11 @@ struct FProbe
     const FSoraBeatSpace* SupportSpace = nullptr;
     float FloorHeight(const FVector2D& Point) const
     {
+        if(SupportSpace&&SupportSpace->Climb.bEnabled)
+        {
+            const FVector2D Local=Point-SupportSpace->Climb.Origin;
+            return Local.X>=1100?1650.f:Local.X>=500?1600.f:0.f;
+        }
         if(SupportSpace && SupportSpace->Wind.Ridge())
         {
             const FVector2D Local=Point-SupportSpace->Wind.Origin;
@@ -102,7 +107,7 @@ const FSoraBeatSpace* SupportForZone(const FSoraChapter& Chapter,int32 Zone)
     // A later beat can revisit a previously built hangar without enabling
     // wind. Its support still belongs to the same physical place.
     for(const FSoraBeat& Beat:Chapter.Beats)
-        if(Beat.Space.Zone==Zone && (Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled)) return &Beat.Space;
+        if(Beat.Space.Zone==Zone && (Beat.Space.Wind.Enabled() || Beat.Space.Flood.bEnabled || Beat.Space.Climb.bEnabled)) return &Beat.Space;
     return nullptr;
 }
 
